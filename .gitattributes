@@ -1,0 +1,30 @@
+# If you want to convert text files to native line endings (CRLF on Windows)
+# on checkout, configure your Git client to do it (e.g. don't change anything:
+# default values: core.autocrlf=false and core.eol=native; or set core.autocrlf=true).
+
+# Explicitly declare text files you want to always be normalized and converted
+# to LF endings on checkout.
+*.sh         text eol=lf
+*.svg        text eol=lf
+*.po         text eol=lf
+
+# Denote all files that are truly binary and should not be modified.
+# (binary is a macro for -text -diff)
+*.zip        binary
+*.exe        binary
+*.pch        binary
+*.pdb        binary
+*.dll        binary
+*.lib        binary
+*.bmp        binary
+*.emf        binary
+*.jpg        binary
+*.jpeg       binary
+*.png        binary
+*.gif        binary
+*.ico        binary
+*.cur        binary
+*.raw        binary
+*.key        binary
+*.pdf        binary
+*.obj        binary

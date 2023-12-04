@@ -1,0 +1,10 @@
+
+# Visual Studio cache/options directory
+.vs/
+*.aps
+*.vcxproj.user
+/src/plugins/automation/generated/automation.tlb
+/src/plugins/automation/generated/dlldata.c
+/src/plugins/automation/generated/salamander_h.h
+/src/plugins/automation/generated/salamander_i.c
+/src/plugins/automation/generated/salamander_p.c
