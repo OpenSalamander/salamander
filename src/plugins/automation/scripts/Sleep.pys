@@ -1,0 +1,3 @@
+# Skript pro overeni, ze Automation ve spojeni s Pythonem pada na volani funkci,
+# ktere nemaji navratovou hodnotu.
+Salamander.Sleep(1)

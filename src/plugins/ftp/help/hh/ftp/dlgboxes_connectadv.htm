@@ -1,0 +1,158 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Advanced Options dialog box</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: FTP Client: Dialog Boxes</div>
+<div class="page">
+
+<h1>Advanced Options</h1>
+
+<p>Allows you to customize advanced options for connecting to the FTP server. This dialog
+can be opened using the <i>Advanced</i> button in the <a href="dlgboxes_connect.htm">Connect
+to FTP Server dialog box</a> or <a href="dlgboxes_orgbookmarks.htm">Organize Bookmarks
+dialog box</a>.
+</p>
+
+<h4>Options</h4>
+<dl>
+<dt><i>Proxy server</i></dt>
+<dd>If you are using a proxy server for access to the FTP server (usually on the Internet),
+specify settings for this proxy server here. A proxy server is an intermediary between
+local network (intranet) and the Internet. Choose <i>Default</i> to use settings for the
+proxy server specified in <a href="config_defaults.htm">Configuration/Defaults</a>. If you
+do not need to use a proxy server, select <i>Not Used</i>. To add settings for a proxy server
+click the Add button, it opens the <a href="dlgboxes_proxyserver.htm">Add/Edit Proxy Server
+dialog box</a>. You can add more settings for proxy servers and later just choose which
+one to use.
+</dd>
+
+<dt><i>Target panel path</i></dt>
+<dd>If you specify some path here, it will be displayed in inactive (target) panel when you
+connect to the FTP server. If you do not want to change the current directory in inactive
+panel, leave this edit box empty.
+</dd>
+
+<dt><i>Connect to port</i></dt>
+<dd>Specify a port where the FTP server waits for connections. It is usually 21 (default FTP
+server port).
+</dd>
+
+<dt><i>Server type</i></dt>
+<dd>Choose the server type used for parsing of plain text listings received from
+the FTP server. Choose <i>Autodetect</i> if the plugin should autodetect the
+appropriate server type. See <a href="appendix_parsing.htm">Getting Lists
+of Files and Directories from FTP Servers</a> for more information.
+</dd>
+
+<dt><i>File transfer mode</i></dt>
+<dd>Choose the mode for transferring of files. Select <i>Default</i> to use the
+transfer mode specified in <i>Default file transfer mode</i> section in
+<a href="config_defaults.htm">Configuration/Defaults</a>. See this option also for
+more information on transfer modes.
+</dd>
+
+<dt><i>Command for listing</i></dt>
+<dd>Specify what command should be used to receive the plain text listing of
+the current directory from the FTP server. FTP protocol contains two commands for listing: LIST (default) and NLST
+(name list). Some Unix FTP servers require an option "-a" behind the LIST command
+to list also hidden files and directories.
+</dd>
+
+<dt><i>Initial FTP commands</i></dt>
+<dd>You may need to send some auxiliary FTP commands to the FTP server whenever you
+connect to it. Enter the list of such commands here, the list is separated by ';'
+character (e.g. "CWD []; HELP"). Commands will be send to the FTP server immediately
+after the successful login. If you do not want to send any command, leave this
+edit box empty.
+</dd>
+
+<dt><i>Keep connections alive (prevents server from disconnecting you due to no activity)</i></dt>
+<dd>When checked, the FTP client tries to keep its connections alive. It means that if the FTP
+client is not sending commands or transferring data to/from the FTP server for longer than
+specified time, it starts periodical sending auxiliary commands or making auxiliary data
+transfers. This should prevent closing the connection by the FTP server due to no activity
+or no data transfer (usually after 5 or 10 minutes). Leave this check box in the third state
+if you want to use default settings (see <i>Keep connections alive</i> in
+<a href="config_defaults.htm">Configuration/Defaults</a>). Clear this check box to disable
+the keep connections alive feature.
+
+<p>When checked, choose a command which is sent to keep the connection alive (when the
+connection is not used to communicate with the server nor to send any data). NOOP and
+PWD commands are not transferring any data. If your FTP server closes connections due
+to no data transfer, use NLST or LIST commands. We recommend to use the NLST command
+because it transfers less data (the current path listing containing only filenames).
+Moreover specify a period of sending keep alive commands and when to stop sending keep
+alive commands.</p>
+</dd>
+
+<dt><i>Use passive transfer mode (may help if you are behind firewall or proxy server)</i></dt>
+<dd>When checked, data connections are opened in the passive mode. It means that the FTP client
+opens data connection by connecting to the supplied port on the FTP server. When cleared, data
+connections are opened in the active mode. It means that the data connection is opened by
+the FTP server by connecting to the supplied port on the FTP client. This mode is problematic
+if the FTP client is behind firewall or proxy server because they can block access to the FTP
+client (if they have not support for FTP protocol). The passive mode is not supported by some
+FTP servers (only few), you have to use active mode for accessing these FTP servers. Leave this
+check box in the third state if you want to use default settings (see <i>Use passive transfer
+mode</i> in <a href="config_defaults.htm">Configuration/Defaults</a>).
+</dd>
+
+<dt><i>Use cache for viewed files and lists of files and directories on server (faster browsing)</i></dt>
+<dd>When checked, all viewed files and all path listings (lists of files and directories)
+from the FTP server are cached. It allows to use these cached files and listings when they
+are requested next time. Advantage is faster browsing of already visited directories and viewing
+of already viewed files. Disadvantage is that listings and files could be changed and when they
+are taken from the cache, they can be out of date. Use the
+<a href="ms-its:salamand.chm::/hh/salamand/advwork_refresh.htm">Refresh</a> command to reset
+cache for the current directory and all its subdirectories (it removes all listings and all viewed
+files from cache). Cached files are stored in the temporary directory. Cached listings are
+stored in the memory cache, you can limit the size of this cache, see <i>Size limit for memory
+cache</i> in <a href="config_advanced.htm">Configuration/Advanced</a>. Leave this check box in
+the third state if you want to use default settings (see <i>Use cache for viewed files and lists
+of files and directories on server</i> in <a href="config_defaults.htm">Configuration/Defaults</a>).
+Clear this check box if you do not want to use any cache.
+</dd>
+
+<dt><i>Encrypt control connection with TLS/SSL</i><br/>
+<i>Encrypt data connection (file transfers and directory listings) with TLS/SSL</i></dt>
+<dd>Communication over the FTP protocol uses one control connection to transfer commands and login information.
+Then there are several data connections, each is used exactly for one transfer
+(in any direction) of one file or directory listing.<br/>
+The FTP plugin supports secure TLSv1/SSLv3 encryption using the AUTH TLS command
+specified in the RFC 4217 document. This way of encryption is sometimes called FTPES,
+i.e. FTP with Explicit SSL, but generally it is called FTPS, i.e. FTP-SSL.
+If the server supports it (public servers usually don't),
+the plugin can encrypt the communication. You can choose whether you wish to encrypt
+the control connection only (to hide your password) or also the data connections (to hide everything).
+These two check boxes are enabled only on Windows 2000 and later systems because FTPS is not supported on older systems.
+</dd>
+
+<dt><i>Compress data transfers if server supports compression (MODE Z)</i></dt>
+<dd>When checked, the plugin attempts to compress all data transfers (downloads and uploads, plus directory listings
+obtained from the server). No error is reported when the server does not support compression.
+However, you can check if compression is used: Check the result of the MODE Z command at the end of the Welcome
+Message or look for MODE Z just before the SYST or first PWD command in the FTP log.
+Leave this check box in the third state if you want to use default settings (see <i>Compress data transfers if
+server supports compression (MODE Z)</i> in <a href="config_defaults.htm">Configuration/Defaults</a>).
+</dd>
+
+</dl>
+
+<h4>See Also</h4>
+<p>
+<a href="dlgboxes_connect.htm">Connect to FTP Server dialog box</a><br/>
+<a href="config_defaults.htm">Configuration/Defaults</a><br/>
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

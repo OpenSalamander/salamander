@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Plugin File System Path Specifier</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Appendix: File and Directory Concepts</div>
+<div class="page">
+
+<h1>Plugin File System Path Specifier</h1>
+
+<p>The plugin file system path consists of a plugin file system name, ':' (colon) delimiter,
+and a plugin specific path. The plugin file system names can be found in the
+<a href="dlgboxes_plugn.htm">Plugins Manager dialog box</a>, see line <i>FS Name</i>.
+The plugin specific path is completely defined by plugin, there are no limitations for this
+path (except maximal length of 259 characters).</p>
+
+<h3>Samples of Plugin File System Paths:</h3>
+<table>
+
+<tr>
+<th>Plugin File System Path</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td class="nowrap">ftp://ftp.altap.cz/pub/altap/salamand</td>
+<td>FTP Client plugin: server ftp.altap.cz, path /pub/altap/salamand</td>
+</tr>
+
+<tr>
+<td class="nowrap">ftp://ftp.process.com/ANONYMOUS_ROOT:[SSH.DOCS]</td>
+<td>FTP Client plugin: server ftp.process.com, path ANONYMOUS_ROOT:[SSH.DOCS]</td>
+</tr>
+
+<tr>
+<td class="nowrap">ftp://user:password@ftp.server.com:21/path/on/server</td>
+<td>FTP Client plugin: server ftp.server.com, listening on port 21, login: user+password, path /path/on/server</td>
+</tr>
+
+<tr>
+<td class="nowrap">scp://Prague server/home/user</td>
+<td>WinSCP plugin: SCP session Prague server (session contains server address, protocol, authentication, etc.), path /home/user</td>
+</tr>
+
+<tr>
+<td class="nowrap">sftp://altap/etc/ssh</td>
+<td>WinSCP plugin: SFTP session altap, path /etc/ssh</td>
+</tr>
+
+<tr>
+<td class="nowrap">DEL:C:\UTIL</td>
+<td>Undelete plugin: recovering files from path C:\UTIL</td>
+</tr>
+
+<tr>
+<td class="nowrap">REG:\HKEY_CURRENT_USER\Software\Altap</td>
+<td>Registry Editor plugin: key HKEY_CURRENT_USER\&shy;Software\Altap</td>
+</tr>
+
+<tr>
+<td class="nowrap">CE:\Windows\Start Menu</td>
+<td>Windows Mobile plugin: path on connected mobile device: \Windows\Start Menu</td>
+</tr>
+
+</table>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

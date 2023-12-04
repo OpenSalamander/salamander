@@ -1,0 +1,103 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Keep Remote Directory Up To Date Dialog</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Dialog Boxes</div>
+<div class="page">
+<h1>Keep Remote Directory Up To Date Dialog</h1>
+
+<p>
+In the dialog you select options for function
+<em><a href="task_keep_up_to_date.htm">Keep remote directory up to date</a></em>. To display the dialog
+go to WinSCP plugin menu.
+</p>
+
+<a name="directories"></a>
+<h4>Directories</h4>
+
+<p>
+Enter root directories for the synchronization into the two
+boxes. By default the current working directories will be used.
+</p>
+
+<a name="synchronize_options"></a>
+<h4>Synchronize Options</h4>
+
+<p>
+The <em>Delete files</em> checkbox makes WinSCP delete files and subdirectories in remote directory that you
+delete in a corresponding local directory. Before using this, learn
+<a href="task_keep_up_to_date.htm#how_it_works">how it works</a>, so you know what you are doing.
+</p>
+
+<p>
+The <em>Existing files only</em> checkbox makes WinSCP not to consider files and subdirectories not existing
+in remote directory as new. Such files and subdirectories will be ignored.
+</p>
+
+<p>
+The <em>Update subdirectories</em> checkbox will make WinSCP watch for changes in subdirectories as well.
+</p>
+
+<p>
+The <em>Selected files only</em> checkbox makes WinSCP synchronize only files and directories
+selected in any file panel. The option is not available,
+if no file or directory is selected.
+</p>
+
+<p>
+Check <em>Use same options next time</em> if you want to make your options be default next time you use
+function <em><a href="task_keep_up_to_date.htm">Keep remote directory up to date</a></em>.
+This will not save transfer settings. You can change default transfer settings
+in <a href="ui_sal_pref_transfer.htm">preferences</a>.
+Note that this
+will affect function <em><a href="task_synchronize_full.htm">Synchronize</a></em> as well.
+</p>
+
+<p>
+Check <em>Synchronize on start</em> to perform full synchronization of remote directory on start
+(<a href="task_keep_up_to_date.htm#how_it_works">recommended</a>). Initially the checkbox is in undefined
+(grayed) state, making WinSCP ask you explicitly.
+</p>
+
+<a name="transfer_settings"></a>
+<h4>Transfer Settings</h4>
+
+<p>
+<em>Transfer settings</em> box shows current <a href="transfer_settings.htm">transfer settings</a>.
+</p>
+
+<p>
+Use button <em>Transfer preferences</em> to configure
+<a href="ui_transfer_custom.htm">transfer settings</a>
+(alternatively you may double-click <em>Transfer settings</em> box).
+</p>
+
+<p>
+You may want to change transfer settings particularly to
+<a href="ui_transfer.htm#other_options">exclude certain files and subdirectories</a> from synchronization.
+</p>
+
+<a name="start_stop_and_other_buttons"></a>
+<h4>Start/Stop and Other Buttons</h4>
+
+<p>
+Once you set our options, press <em>Start</em> button. Then WinSCP will collect data about the selected
+local directory and start watching for changes. It will stay watching until you press <em>Stop</em> button.
+</p>
+
+<p>
+If you want to change the options, you need to press <em>Stop</em>, change the options and press <em>Start</em> again.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

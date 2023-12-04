@@ -1,0 +1,109 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Panels configuration</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Dialog Boxes: Configuration</div>
+<div class="page">
+
+<h1>Panels</h1>
+    
+<p>Customize appearance and behavior of panels in this page.</p>
+
+<h4>Dialog Box Options</h4>
+<dl>
+
+<dt><i>Hide files and directories with hidden or system attribute (Ctrl+H)</i></dt>
+<dd>Select this check box to hide hidden and system files in the panel. When
+checked and current directory contains these files or directories, symbol for
+filter (<img src="images/filter.gif" width="13" height="10" class="vcentered"
+alt="filter"/>) appears in the Directory line.</dd>
+
+<dt><i>Include directories to select/unselect operations</i></dt>
+<dd>This option affect operations Select using masks, Unselect using masks,
+and Invert selection. See <a href="basicwork_select.htm">Selecting Files and
+Directories.</a></dd>
+
+<dt><i>Show names</i></dt>
+<dd>Allows you to specify how to display names of files and directories.</dd>
+
+<dt><i>Show sizes</i></dt>
+<dd>Allows you to specify how to display sizes of files and directories.</dd>
+
+<dt><b>Keyboard</b></dt>
+
+<dt><i>Redirect typing from panel to Command line (hold ALT for Quick Search)</i></dt>
+<dd>When checked, typing will be redirected from panel to the Command line; 
+for Quick search you must use Alt+letter. Otherwise typing in panel evokes
+<a href="basicwork_qsearch.htm">Quick search</a>. This option is provided only for
+compatibility with Norton Commander. Non conservative users should clear this
+check box. Quick search is very frequently used function and should be easily
+accessible.</dd>
+
+<dt><i>Use Shift+number for go to Hot Path (it conflicts with national keyboard
+layouts)</i></dt>
+<dd>When checked, Shift+number is used for go to Hot path command. Otherwise
+Ctrl+number must be used for go to Hot path command.</dd>
+
+<dt><b>Mouse</b></dt>
+
+<dt><i>Right-click to open context menu (hold CTRL to select/unselect)</i></dt>
+<dd>When checked, context menu appears on right-click in the panel;
+Ctrl+right-click will perform select/unselect operations. Otherwise right-click
+performs select/unselect operations and Ctrl+right-click brings context menu.
+See <a href="basicwork_select.htm">Selecting Files and Directories.</a> This option
+is provided only for compatibility with Norton Commander. Non conservative users
+should select this check box. Context menu on right-click is standard behavior
+in the Windows.</dd>
+
+<dt><i>Rename by slowly clicking the name twice</i></dt>
+<dd>When checked, you can rename files and directories directly in panel when
+you click on a focused name. If the name is not focused, click the first time to
+focus it, wait a moment (to prevent opening file or directory by double-click)
+and then click the second time to rename it.</dd>
+
+<dt><i>Cancel drag&amp;drop operations shorter than X ms</i></dt>
+<dd>When checked, drag and drop operations will be canceled if they are finished in
+shorter time then the value specified in the box. It should prevent users from
+unwanted drag and drop operations.</dd>
+
+<dt><b>Sorting</b></dt>
+
+<dt><i>Sort strings with respect to Regional Settings</i></dt>
+<dd>When checked, names in the panel will be sorted with respect to Regional
+settings (e.g. "ha" is less then "ch" in the Czech regional setting), otherwise
+standard ASCII table will be used for sorting.</dd>
+
+<dt><i>Use numerical sort for numbers contained in strings</i></dt>
+<dd>When checked, it tries to detect numbers in names and sort according to the
+values of such numbers. E.g. when this is turned on, you will see 2.txt followed by
+10.txt (2 is less than 10), if turned off, you'll see 10.txt followed by 2.txt
+(character '1' precedes '2').</dd>
+
+<dt><i>Sort by Time order: newer items on top</i></dt>
+<dd>When checked and items in panel are sorted by time, items will be sorted in
+descending order (newer items on top).</dd>
+
+<dt><i>Sort by Time: sort directories by name</i></dt>
+<dd>When checked and items in panel are sorted by time, directories will be sorted
+by name (only files are sorted by time).</dd>
+
+<dt><i>Treat directories as if have extensions (also show extensions in Ext column)</i></dt>
+<dd>When checked, directories will be sorted as if they have extensions (normally extensions
+do not exist in directories names). Moreover directories extensions will be displayed in
+separated Ext column (show this column in Configuration/Views). If you want to see the
+difference, sort panel by extension.</dd>
+
+</dl>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

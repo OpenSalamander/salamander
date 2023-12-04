@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Keep Remote Directory Up To Date</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Using WinSCP Plugin: Synchronizing</div>
+<div class="page">
+<h1>Keep Remote Directory up to Date</h1>
+
+<p>
+<em>Keep remote directory up to date</em> is a unique feature of WinSCP. With it you may let WinSCP watch
+for changes in a local directory and have it automatically reflect the changes on the selected remote directory.
+</p>
+
+<p>
+Using it, you can, with some limitations, work with local files using your favourite tools and the effect
+would be as if you were working with remote files directly. In other words, the feature partially replaces
+commercial remote directory drive mapping tools.
+</p>
+
+<p>
+Find the function in WinSCP plugin menu. The
+<a href="ui_keepuptodate.htm">Options dialog</a> will appear.
+</p>
+
+<p>
+Note that you will be warned if number of subdirectories to be watched exceeds 500. Watching for changes in large number
+of directories can significantly degrade the performance of your computer.
+</p>
+
+<a name="how_it_works"></a>
+<h4>How It Works</h4>
+
+<p>
+Once you start the function, WinSCP will register to receive notification whenever something changes in the
+selected local directory (and optionally in all its subdirectories). Once you make a change, for example when you
+save file in your favourite editor, WinSCP will receive notification about the change in the respective
+directory. Then it will perform <a href="task_synchronize_full.htm">synchronization</a> of the local directory
+with the corresponding remote directory. Thus your change will be automatically reflected on the remote side.
+</p>
+
+<p>
+WinSCP can even (optionally) delete remote files when you delete local files.
+</p>
+
+<p>
+Files and directories <a href="ui_transfer.htm#other_options">excluded from transfer</a> are ignored
+by the function.
+</p>
+
+<p>
+Before using the function you should know that:
+</p>
+
+<ul>
+<li>WinSCP must know the correct <a href="timestamp.htm">timestamps</a> of remote files, to avoid losing data.</li>
+<li>WinSCP will only detect that <strong>something</strong> has changed in the directory; it won't know what the
+    specific change was. So it must perform a full synchronization of that directory. As a result it may upload
+        not only the file changed just at the moment but any file that is out of sync. In other words, you should
+        start the <em>Keep remote directory up to date</em> function only when the selected local and remote directories
+        are already completely (or almost completely) <a href="task_synchronize_full.htm">synchronized</a>. You can
+        make WinSCP do this automatically for you, by checking option
+        <em><a href="ui_keepuptodate.htm#synchronize_options">Synchronize on start</a></em>.</li>
+<li>When you rename a file or directory, WinSCP will see it as removal of one file and addition of another and
+    it will reflect the change on remote directory as such. So it is not recommended to use the function to
+        &quot;rename&quot; large files and directories. You should do this manually.</li>
+</ul>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

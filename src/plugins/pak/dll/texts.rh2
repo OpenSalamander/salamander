@@ -1,0 +1,22 @@
+﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __PAK_TEXTS_RH2
+#define __PAK_TEXTS_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#define IDS_PAK_ERROPEN		500
+#define IDS_PAK_ERRINIT		501
+#define IDS_PAK_ERROPEN2	502
+#define IDS_PAK_ERRGETFILESIZE	503
+#define IDS_PAK_INVLAIDDATA	504
+#define IDS_PAK_LOWMEMORY	505
+#define IDS_PAK_CENTRDIR	506
+#define IDS_PAK_ERRSETFILEPTR	507
+#define IDS_PAK_ERRREADFILE	508
+#define IDS_PAK_ERRGETFILEPTR	509
+#define IDS_PAK_ERRWRITEFILE	510
+#define IDS_PAK_TOOLONGNAME	511
+
+#endif // __PAK_TEXTS_RH2

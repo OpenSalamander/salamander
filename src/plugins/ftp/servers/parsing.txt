@@ -1,0 +1,478 @@
+Popis formatu pravidel pro parsovani:
+=====================================
+
+Komentar zacina znakem '#' a je ukoncen koncem radky.
+
+Vsechny pravidla zacinaji znakem '*' a konci znakem ';'. Pocet
+pravidel neni omezen. Pravidlo se sklada z funkci vzajemne
+oddelenych znakem ','.
+
+Funkce se sklada ze jmena, znaku '(', seznamu parametru a
+znaku ')'.
+
+Seznam jmen funkci je uveden dale v dokumentu.
+
+V seznamu parametru funkce jsou jednotlive parametry vzajemne
+oddelene znakem ','. Parametry jsou vyrazy.
+
+Vyraz tvori identifikator sloupce, stavova promenna, konstanta
+nebo jedna binarni operace. Binarni operace se zapisuje
+v klasicke notaci (prvni_operand operacni_znak druhy_operand)
+a jako operandy se pouzivaji identifikatory sloupcu, stavove
+promenne nebo konstanty.
+
+Seznam stavovych promennych je uveden dale v dokumentu.
+
+Seznam operacnich znaku je uveden dale v dokumentu.
+
+Konstanty jsou typu retezec, cislo nebo boolean.
+
+Retezec je ohranicen znaky '"', retezec nemuze presahovat
+konec radky, escape-sekvence jsou uvozeny znakem '\': pro
+znak '"' je to "\"", pro znak '\' je to "\\", pro znak
+tabelator je to "\t", pro znaky konce radku CR+LF je to
+dvojice "\r" a "\n". Nezname escape-sekvence se hlasi jako
+chyby.
+
+Cislo se zapisuje desitkove bez jakychkoliv oddelovacu.
+Zaporne cislo zacina znakem '-'. Kladne cislo zacina
+znakem '+' (muze byt vynechan).
+
+Boolean je "true" nebo "false" (psano bez uvozovek).
+
+Uzivatel definuje sloupce. Kazdy sloupec ma jmeno identifikatoru,
+typ hodnot, prazdnou hodnotu a jmeno a popis pro zobrazeni
+v panelu. Identifikator se pouziva pri prirazovani hodnot
+do sloupcu. Kazda polozka muze mit ve sloupci prirazenou
+prave jednu hodnotu. Pokud nedoslo k prirazeni zadne hodnoty,
+pouziva se ve sloupci uzivatelem definovana prazdna hodnota.
+Dale se u sloupcu definuje, jestli se maji zobrazovat v panelu.
+Zobrazeni nelze vypnout u sloupcu typu "Name" a "Extension".
+
+Identifikator sloupce zacina znakem '<', obsahuje jmeno
+identifikatoru zadane uzivatelem a konci znakem '>'.
+
+Existuji nasledujici typy sloupcu:
+- Name - (retezec) prave jeden sloupec tohoto typu je povinny,
+  nemuze byt schovany, definice prazdne hodnoty u nej nema smysl,
+  parser do nej musi u kazdeho souboru a adresare priradit,
+  pokud k prirazeni nedojde, nevznika parsovanim podle aktualniho
+  pravidla zadny soubor ani adresar - pouziva se pro preskok
+  prazdnych radek a dalsich nepodstatnych casti listingu,
+  prirazeni prazdneho retezce do tohoto sloupce se povazuje
+  za chybu parsovani,
+- Extension - generuje se na zaklade hodnoty ve sloupci typu
+  "Name", nemuze byt schovany, definice prazdne hodnoty u nej
+  nema smysl,
+- Size - (cislo - unsigned int64), u adresaru je hodnota vzdy 0
+  a v panelu se zobrazuje "DIR", defaultni prazdna hodnota je 0,
+- Date - (datum) - datum musi byt platny (jinak je nahrazen hodnotou
+  1.1.1602), defaultni prazdna hodnota je 1.1.1602,
+- Time - (cas) - defaultni prazdna hodnota je 0:00:00,
+- Type - generuje se na zaklade hodnoty ve sloupci typu "Name",
+  definice prazdne hodnoty u nej nema smysl,
+- Any Text - (retezec) - defaultni prazdna hodnota je "",
+- Any Date - (datum) - datum musi byt platny (jinak je nahrazen
+  hodnotou 1.1.1602), defaultni prazdna hodnota je "",
+- Any Time - (cas) - defaultni prazdna hodnota je "",
+- Any Number - (cislo - signed int64) - defaultni prazdna hodnota
+  je "".
+
+Navic existuji tri sloupce s identifikatory "<is_dir>", "<is_hidden>"
+a "<is_link>". Do vsech tri se prirazuji hodnoty typu boolean a rikaji
+o polozce jestli je "soubor" nebo "adresar", jestli "je skryta" nebo
+"neni skryta" a jestli "je link" nebo "neni link". Prirazeni do techto
+sloupcu neni povinne, jejich prazdne hodnoty jsou "soubor",
+"neni skryta" a "neni link".
+
+
+Popis formatu podminky pro autodetekci:
+=======================================
+
+Jde o logicky vyraz. Operatory ve vyrazu jsou (od nejvyssi
+priority): NOT, AND a OR. NOT (logicka negace) je unarni, AND
+(logicky soucin) a OR (logicky soucet) jsou binarni. Ve vyrazu
+je dale mozne pouzivat zavorky (vymezeni podvyrazu). Jako operandy
+se pouzivaji nasledujici funkce:
+
+- syst_contains(retezec) - nabyva hodnoty TRUE pokud se v odpovedi
+  serveru na prikaz SYST (get type of operating system) vyskytuje
+  zadany retezec,
+
+- welcome_contains(retezec) - nabyva hodnoty TRUE pokud se v prvni
+  odpovedi serveru (hned po navazani spojeni) vyskytuje zadany
+  retezec,
+
+- reg_exp_in_syst(retezec_regularniho_vyrazu) - nabyva hodnoty TRUE
+  pokud se v odpovedi serveru na prikaz SYST (get type of operating
+  system) vyskytuje retezec odpovidajici zadanemu regularnimu
+  vyrazu,
+
+- reg_exp_in_welcome(retezec_regularniho_vyrazu) - nabyva hodnoty TRUE
+  pokud se v prvni odpovedi serveru (hned po navazani spojeni)
+  vyskytuje retezec odpovidajici zadanemu regularnimu vyrazu.
+
+
+Ziskani listingu pri pevne danem typu serveru:
+==============================================
+
+Spusti se parsovani textu listingu. Pokud parsovani dopadne dobre,
+pouziji se ziskane vysledky a algoritmus se ukonci. Pri neuspechu
+parsovani se zobrazi text listingu bez uprav v panelu.
+
+Pred umistenim listingu do panelu jeste probehne odstraneni adresare
+"." (je-li ve vysledcich parsovani) a u korenove cesty take
+adresare ".." (je-li ve vysledcich parsovani). Pokud v listingu
+zustava adresar "..", je vzdy viditelny (ignoruje se hodnota ve
+sloupci "<is_hidden>").
+
+
+Popis autodetekce typu serveru:
+=======================================
+
+Postupne se prochazeji vsechny definovane typy serveru. U kazdeho se
+vyhodnoti "autodetect condition". Pokud tato podminka neni splnena,
+pokracuje se v prochazeni dalsim typem serveru. Pri splneni podminky
+se spusti parsovani textu listingu. Pokud parsovani dopadne dobre,
+pouziji se ziskane vysledky a algoritmus se ukonci. Pokud nastane pri
+parsovani chyba, pokracuje se v prochazeni dalsim typem serveru.
+
+Pokud se timto zpusobem projdou vsechny typy serveru bez uspechu,
+pokracuje se postupnym prochazenim tech typu serveru, u kterych
+nebyla splnena "autodetect condition". U nich se spousti parsovani
+textu listingu. Stejne jako v predeslem pripade se algoritmus ukonci
+v okamziku, kdy parsovani probehne bez chyby.
+
+Pokud zadny parser z definovanych typu serveru neuspeje pri parsovani
+textu listingu, zobrazi se text listingu bez uprav v panelu.
+
+Autodetekce probehne timto zpusobem jen u listingu prvni cesty
+na serveru. Pro dalsi listingy ze serveru se zkusi pouzit stejny
+typ serveru jako pro predchozi listing (aby napr. prazdne listingy
+meli "spravne" sloupce v panelu, atp.). Jen pokud nastane pri
+parsovani timto typem serveru chyba, spusti se znovu proces
+autodetekce typu serveru.
+
+Pred umistenim listingu do panelu jeste probehne odstraneni adresare
+"." (je-li ve vysledcich parsovani) a u korenove cesty take
+adresare ".." (je-li ve vysledcich parsovani). Pokud v listingu
+zustava adresar "..", je vzdy viditelny (ignoruje se hodnota ve
+sloupci "<is_hidden>").
+
+
+Popis prubehu parsovani:
+========================
+
+Za uspech parseru se povazuje to, kdyz se podari pouzitim definovanych
+pravidel projit cely text listingu.
+
+Pro popis algoritmu zavedeme pojem "ukazovatko", ktery oznacuje
+pozici v textu listingu.
+
+Pravidla se skladaji z funkci. Pravidlo muze byt pouzito jen tehdy,
+kdyz se vsechny jeho funkce vyhodnoti jako uspesne, do sloupce typu
+"Name" nebyl prirazen prazdny retezec (tedy bud byl prirazen
+neprazdny retezec nebo k prirazeni vubec nedoslo) a ukazovatko
+skonci na konci nektere radky textu listingu. Po pouziti pravidla
+se ukazovatko automaticky presouva na zacatek nasledujici radky
+textu listingu.
+
+Funkce krome vyhodnoceni sve uspesnosti a posunu ukazovatka jeste
+muze prirazovat hodnotu do sloupce nebo tuto hodnotu muze menit.
+
+Parser muze mit definovanou celou radu pravidel. Vyber pravidla,
+ktere se ma v dany okamzik parsovani pouzit, se vzdy provadi
+v poradi jejich definice. Jinymi slovy, vzdy se pouzije prvni
+pouzitelne pravidlo.
+
+Text listingu muze byt nekompletni z duvodu preruseni jeho nacitani
+at jiz na zadost uzivatele nebo pro chybu spojeni se serverem.
+Nekompletni text listingu je upraveny tak, ze obsahuje jen kompletni
+radky textu (zbytek je oriznuty).
+
+Parsovani nekompletnich textu listingu je reseno na urovni pouzivani
+pravidel. V jednodussim pripade se ukazovatko dostane na konec
+textu po pouziti pravidla a tim se parsovani ukonci. Ve slozitejsim
+pripade se pri pouziti pravidla vyhodnocuje funkce, ktera ma
+ukazovatko posunout na dalsi radku. Tento posun neni mozny jen diky
+nekompletnosti textu listingu, a proto se parsovani ukonci uspesne
+(jako by text listingu koncil tak, ze by prave pouzivane pravidlo
+nebylo vubec treba).
+
+
+Zobrazeni celkove velikosti oznacenych souboru v info-line:
+===========================================================
+
+Aby se pri oznaceni skupiny souboru v info-line zobrazovala celkova
+velikost v bytech nebo blocich, je nutne aby byla velikost souboru
+ulozena ve sloupci typu "File Size in Bytes" nebo ve sloupci
+typu "Any Number" pojmenovanem standardnim jmenem "Blocks" nebo
+"BlkSz".
+
+
+Seznam funkci:
+==============
+
+Pokud neni uvedeno jinak, je funkce vzdy uspesna, neposouva ukazovatko
+a neprirazuje hodnotu do zadneho sloupce. Pokud funkce posouva
+ukazovatko, tak pokud neni uvedeno jinak, tak neumi preskocit konec
+radky.
+
+Pred pouzitim identifikatoru sloupce ve vyrazu je nutne do
+sloupce priradit hodnotu. Bez tohoto prirazeni vyraz nema
+smysl (takovy vyraz se da nahradit booleanovou konstantou
+vypocitanou dosazenim prazdne hodnoty pro dany sloupec do vyrazu).
+
+(white-space: mezera nebo tabelator)
+
+- skip_white_spaces() - preskoci ukazovatkem vsechny znaky white-space,
+
+- skip_to_number() - preskoci ukazovatkem k nejblizsi dekadicke cislici,
+
+- white_spaces() - preskoci ukazovatkem vsechny znaky white-space,
+  funkce je uspesna jen pokud dojde k posunu ukazovatka,
+
+- white_spaces(cislo) - preskoci ukazovatkem retezec znaku white-space
+  o delce 'cislo', funkce je uspesna jen pokud takovy retezec existuje,
+
+- white_spaces_and_line_ends() - preskoci ukazovatkem vsechny znaky
+  white-space a znaky konce radky, funkce je uspesna jen pokud
+  dojde k posunu ukazovatka a ukazovatko neskonci na konci listingu
+  (zarazi se na nejakem znaku),
+
+- rest_of_line() - posune ukazovatko na konec radky, funkce je uspesna
+  jen pokud dojde k posunu ukazovatka,
+
+- rest_of_line(<sloupec>) - (typ hodnot ve sloupci musi byt
+  retezec) - priradi do sloupce retezec, ktery saha od ukazovatka az
+  do konce radky, ukazovatko se posune na konec radky, funkce je uspesna,
+  pokud se posune ukazovatko,
+
+- word() - preskoci ukazovatkem vsechny znaky mimo white-space a znak
+  konce radky, funkce je uspesna jen pokud dojde k posunuti ukazovatka,
+
+- word(<sloupec>) - (typ hodnot ve sloupci musi byt retezec) - priradi do
+  sloupce retezec, ktery saha od ukazovatka az do prvniho white-space nebo
+  konce radky, ukazovatko se posune za konec tohoto retezce, funkce je
+  uspesna, pokud lze retezec ziskat (obsahuje aspon jeden znak),
+
+- number(<sloupec>) - (typ hodnot ve sloupci musi byt cislo) - priradi
+  do sloupce dekadicke cislo lezici na pozici ukazovatka, toto cislo
+  nesmi byt ukoncene pismenem - povolene jsou vsechny oddelovace (',',
+  '.', ';', ':', atd.) vcetne znaku white-space a konce radku, ukazovatko
+  se posune za konec tohoto cisla, funkce je uspesna, pokud cislo existuje,
+  je korektne ukoncene a pokud jde o sloupec typu "Size", pak jeste pokud
+  je cislo nezaporne,
+
+- positive_number(<sloupec>) - (typ hodnot ve sloupci musi byt cislo) - priradi
+  do sloupce kladne dekadicke cislo lezici na pozici ukazovatka, je-li cislo
+  zaporne, do sloupce se priradi defaultni prazdna hodnota (nula pro typ Size,
+  "" pro typ Any Number), toto cislo nesmi byt ukoncene pismenem - povolene
+  jsou vsechny oddelovace (',', '.', ';', ':', atd.) vcetne znaku white-space
+  a konce radku, ukazovatko se posune za konec tohoto cisla, funkce je uspesna,
+  pokud cislo existuje a je korektne ukoncene,
+
+- number_with_separators(<sloupec>, retezec) - (typ hodnot ve sloupci musi
+  byt cislo) - priradi do sloupce dekadicke cislo s oddelovaci radu
+  (pouziva se pro snazsi cteni velkych cisel, povolene oddelovace jsou
+  v retezci 'retezec', povolene jsou vsechny znaky krome '+', '-' a cislic)
+  lezici na pozici ukazovatka, toto cislo nesmi byt ukoncene
+  pismenem - povolene jsou vsechny oddelovace (',', '.', ';', ':', atd.)
+  vcetne znaku white-space a konce radku, ukazovatko se posune za konec
+  tohoto cisla, funkce je uspesna, pokud cislo existuje, je korektne
+  ukoncene a pokud jde o sloupec typu "Size", pak jeste pokud je cislo
+  nezaporne,
+
+- month_3(<sloupec>) - (typ hodnot ve sloupci musi byt datum) - obohati
+  hodnotu ve sloupci o mesic rozpoznany ve trech pismenech na pozici
+  ukazovatka, pracuje s nazvy mesicu v ruznych jazycich (zatim alespon
+  anglicky a nemecky), mesic nesmi byt ukonceny pismenem - povolene jsou
+  vsechny oddelovace (',', '.', ';', ':', atd.) vcetne znaku white-space
+  a konce radku, ukazovatko se posune za tato tri pismena, funkce je
+  uspesna jen pokud byl mesic rozpoznan a vsechny mesice v listingu
+  patri do jedineho jazyku,
+
+- month_3(<sloupec>, retezec) - (typ hodnot ve sloupci musi byt
+  datum) - obohati hodnotu ve sloupci o mesic rozpoznany ve trech
+  pismenech na pozici ukazovatka, nazvy mesicu jsou v retezci, ktery
+  musi obsahovat dvanact tripismenych nazvu mesicu vzajemne oddelenych
+  mezerami (napr. "jan feb mar apr may jun jul aug sep oct nov dec"
+  pro anglictinu), mesic nesmi byt ukonceny pismenem - povolene jsou
+  vsechny oddelovace (',', '.', ';', ':', atd.) vcetne znaku
+  white-space a konce radku, ukazovatko se posune za tato tri pismena,
+  funkce je uspesna jen pokud byl mesic rozpoznan,
+
+- month_txt(<sloupec>) - (typ hodnot ve sloupci musi byt datum) - obohati
+  hodnotu ve sloupci o mesic rozpoznany na pozici ukazovatka, pracuje
+  s nazvy mesicu v ruznych jazycich (zatim jen nemecky), mesic nesmi byt
+  ukonceny pismenem - povolene jsou vsechny oddelovace (',', '.', ';',
+  ':', atd.) vcetne znaku white-space a konce radku, ukazovatko se posune
+  za nazev mesice, funkce je uspesna jen pokud byl mesic rozpoznan a
+  vsechny mesice v listingu patri do jedineho jazyku,
+
+- month_txt(<sloupec>, retezec) - (typ hodnot ve sloupci musi byt
+  datum) - obohati hodnotu ve sloupci o mesic rozpoznany na pozici
+  ukazovatka, nazvy mesicu jsou v retezci, ktery musi obsahovat dvanact
+  nazvu mesicu vzajemne oddelenych mezerami (napr.
+  "Jan. Feb. März Apr. Mai Juni Juli Aug. Sept. Okt. Nov. Dez." pro
+  nemcinu), mesic nesmi byt ukonceny pismenem - povolene jsou vsechny
+  oddelovace (',', '.', ';', ':', atd.) vcetne znaku white-space a konce
+  radku, ukazovatko se posune za nazev mesice, funkce je uspesna jen pokud
+  byl mesic rozpoznan,
+
+- month(<sloupec>) - (typ hodnot ve sloupci musi byt datum) - obohati
+  hodnotu ve sloupci o mesic ulozeny jako dekadicke cislo na pozici
+  ukazovatka, toto cislo nesmi byt ukoncene pismenem - povolene jsou
+  vsechny oddelovace (',', '.', ';', ':', atd.) vcetne znaku white-space
+  a konce radku, ukazovatko se posune za konec cisla mesice, funkce je
+  uspesna jen pokud je cislo mesice platne (1 az 12),
+
+- day(<sloupec>) - (typ hodnot ve sloupci musi byt datum) - obohati
+  hodnotu ve sloupci o den ulozeny jako dekadicke cislo na pozici
+  ukazovatka, toto cislo nesmi byt ukoncene pismenem - povolene jsou
+  vsechny oddelovace (',', '.', ';', ':', atd.) vcetne znaku white-space
+  a konce radku, ukazovatko se posune za konec cisla dne, funkce je
+  uspesna jen pokud je cislo dne platne (1 az 31),
+
+- year(<sloupec>) - (typ hodnot ve sloupci musi byt datum) - obohati
+  hodnotu ve sloupci o rok ulozeny jako dekadicke cislo na pozici
+  ukazovatka, toto cislo nesmi byt ukoncene pismenem - povolene jsou
+  vsechny oddelovace (',', '.', ';', ':', atd.) vcetne znaku white-space
+  a konce radku, ukazovatko se posune za konec cisla roku, funkce je
+  uspesna jen pokud je cislo roku platne (0-999 (0-79=>+2000,
+  80-999=>+1900) nebo 1602-9999),
+
+- time(<sloupec>) - (typ hodnot ve sloupci musi byt cas) - obohati
+  hodnotu ve sloupci o hodiny, minuty, sekundy a pripadne i milisekundy
+  nalezene jako vzajemne oddelena dekadicka cisla na miste ukazovatka,
+  ocekavane formaty jsou 00:00 nebo 00:00:00 nebo 00:00:00.000, pokud
+  primo za posledni cislici casoveho udaje nasleduje retezec "a"/"am"
+  nebo "p"/"pm", je povazovan za "a.m." (rano) a "p.m." (vecer) a casovy
+  udaj se prislusne upravi, jinak casovy udaj nesmi byt ukoncen pismenem
+  ani cislem - povolene jsou vsechny oddelovace (',', '.', ';', ':', atd.)
+  vcetne znaku white-space a konce radku, ukazovatko se posune za konec
+  casoveho udaje, funkce je uspesna jen pokud je casovy udaj platny
+  (0-23, 0-59, 0-59 a 0-999),
+
+- year_or_time(<sloupec_datum>, <sloupec_cas>) - (typy hodnot ve sloupcich
+  sloupec_datum a sloupec_cas musi byt datum a cas) - ziska rok a pripadne
+  i cas (pokud je na pozici ukazovatka rok, cas neni znamy, je-li na pozici
+  ukazovatka cas, je rok urcen podle pravidla, ze cely datum by mel byt
+  stary mene nez sest mesicu od dnesniho datumu) a obohati hodnoty
+  ve sloupcich o rok a pripadne i o hodiny a minuty, rok je ulozeny jako
+  dekadicke cislo, cas je ulozen jako dve dekadicka cisla (hodiny a minuty)
+  oddelena dvojteckou, cisla nesmi byt ukoncena pismenem - povolene jsou
+  vsechny oddelovace (',', '.', ';', ':', atd.) vcetne znaku white-space
+  a konce radku, ukazovatko se posune za konec roku nebo casu, funkce je
+  uspesna jen pokud jsou cisla platna (1602-9999 a 0-23:0-59),
+
+- all(cislo) - ukazovatko se posune o 'cislo' znaku, funkce je uspesna,
+  pokud lze ukazovatko posunout,
+
+- all(<sloupec>, cislo) - (typ hodnot ve sloupci musi byt retezec) - priradi
+  do sloupce retezec o delce 'cislo', ktery zacina od ukazovatka, ukazovatko
+  se posune na konec tohoto retezce, funkce je uspesna, pokud lze retezec
+  ziskat,
+
+- all_to(retezec) - nastavi ukazovatko za prvni nasledujici vyskyt
+  retezce 'retezec' (porovnava se case insensitive),
+  funkce je uspesna jen pokud je retezec nalezen,
+
+- all_to(<sloupec>, retezec) - (typ hodnot ve sloupci musi byt
+  retezec) - priradi do sloupce retezec, ktery saha od ukazovatka az za
+  prvni nasledujici vyskyt retezce 'retezec' (porovnava se case
+  insensitive), ukazovatko se posune za konec nalezeneho retezce,
+  funkce je uspesna, pokud je retezec nalezen,
+
+- all_up_to(<sloupec>, retezec) - (typ hodnot ve sloupci musi byt
+  retezec) - priradi do sloupce retezec, ktery saha od ukazovatka az do
+  prvniho nasledujiciho vyskytu retezce 'retezec' (porovnava se case
+  insensitive), ukazovatko se posune za konec nalezeneho
+  retezce, funkce je uspesna, pokud je retezec nalezen,
+
+- unix_link(<is_dir>, <sloupec_name>, <sloupec_link>) - (typy sloupcu
+  sloupec_name a sloupec_link musi byt "Name" a "Any Text") - zpracuje
+  retezec, ktery saha od ukazovatka az do konce radky, ukazovatko se
+  posune na konec radky, ocekava format "link_name -> target_name"
+  nebo jen "link_name" (je-li odepreny pristup k cili linku),
+  ziska jmeno linku a pripadne i cil linku a provede detekci jestli
+  jde o soubor nebo o adresar (heuristika: pokud jmeno nebo pripadne
+  cil maji priponu, jde pravdepodobne o soubor, jinak o adresar;
+  pokud tato heuristika nevyhovuje, staci napr. za funkci unix_link
+  pridat funkci "assign(<is_dir>,false)"), ziskane hodnoty priradi
+  do sloupcu sloupec_name, sloupec_link (jen pokud se podaril cil
+  linku ziskat) a is_dir, funkce je uspesna, pokud zpracovavany
+  retezec odpovida formatu a nezacina na znak white-space,
+
+- unix_device(<sloupec>) - (typ hodnot ve sloupci musi byt retezec) -
+  priradi do sloupce retezec zacinajici u ukazovatka, ktery je slozeny
+  ze dvou dekadickych cisel oddelenych carkou a nekolika mezerami
+  (napr. "27,  26"), ukazovatko posune za tento retezec, funkce je uspesna,
+  pokud se podari tento retezec ziskat a pokud nekonci pismenem (povolene
+  jsou vsechny oddelovace (',', '.', ';', ':', atd.) vcetne znaku
+  white-space a konce radku),
+
+- if(vyraz) - (typ vysledne hodnoty vyrazu musi byt boolean) - funkce
+  je uspesna jen pokud je vyraz true,
+
+- assign(<sloupec>, vyraz) - (typ vysledne hodnoty vyrazu musi odpovidat
+  typu hodnot sloupce) - priradi hodnotu vyrazu do sloupce,
+
+- add_string_to_column(<sloupec>, vyraz) - (typ hodnot ve sloupci a typ
+  vysledne hodnoty vyrazu musi byt retezec) - prida retezec ziskany jako
+  hodnota vyrazu do sloupce,
+
+- cut_white_spaces_end(<sloupec>) - (typ hodnot ve sloupci musi byt
+  retezec) - orizne znaky white_space na konci retezce ve sloupci
+  a tento novy retezec priradi do sloupce,
+
+- cut_white_spaces_start(<sloupec>) - (typ hodnot ve sloupci musi byt
+  retezec) - orizne znaky white_space na zacatku retezce ve sloupci
+  a tento novy retezec priradi do sloupce,
+
+- cut_white_spaces(<sloupec>) - (typ hodnot ve sloupci musi byt
+  retezec) - orizne znaky white_space na zacatku a konci retezce ve
+  sloupci a tento novy retezec priradi do sloupce,
+
+- back(cislo) - posune ukazovatko zpet o 'cislo' znaku, funkce je
+  uspesna pokud je posun mozny.
+
+- cut_end_of_string(<sloupec>, cislo) - (typ hodnot ve sloupci musi byt
+  retezec) - orizne retezec ve sloupci o 'cislo' znaku a tento zkraceny
+  retezec priradi do sloupce, funkce je uspesna, pokud lze retezec zkratit
+  (pokud ma aspon 'cislo' znaku)
+
+
+Seznam stavovych promennych:
+============================
+
+- first_nonempty_line - (boolean) - true pokud je ukazovatko na
+  prvni neprazdne (obsahujici jine znaky nez white-spaces) radce,
+- last_nonempty_line - (boolean) - true pokud je ukazovatko na
+  posledni neprazdne (obsahujici jine znaky nez white-spaces) radce,
+  nebere se v uvahu jestli text listingu je nebo neni nekompletni,
+- next_char - (retezec) - retezec obsahujici jeden znak z pozice
+  ukazovatka, je-li ukazovatko na konci textu listingu, jde o prazdny
+  retezec,
+- next_word - (retezec) - retezec zacinajici na pozici ukazovatka a
+  ukonceny znakem white-space nebo koncem radky,
+- rest_of_line - (retezec) - retezec zacinajici na pozici ukazovatka a
+  ukonceny koncem radky,
+
+
+Seznam operacnich znaku:
+========================
+
+Pred pouzitim identifikatoru sloupce ve vyrazu je nutne do
+sloupce priradit hodnotu. Bez tohoto prirazeni vyraz nema
+smysl (takovy vyraz se da nahradit booleanovou konstantou
+vypocitanou dosazenim prazdne hodnoty pro dany sloupec do vyrazu).
+
+- == - rovnost (u retezcu je porovnani case sensitive)
+- != - nerovnost (u retezcu je porovnani case sensitive)
+- eq - rovnost retezcu (case insensitive)
+- not_eq - nerovnost retezcu (case insensitive)
+- in - podretezec je v retezci (case insensitive)
+- not_in - podretezec neni v retezci (case insensitive)
+- end_with - retezec konci na retezec (case insensitive)
+- not_end_with - retezec nekonci na retezec (case insensitive)

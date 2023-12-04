@@ -1,0 +1,20 @@
+﻿//
+// checksum.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "versinfo.rh2"
+#include "versinfo.rc2"
+
+IDI_CHECKMARK           ICON  "checkmrk.ico"
+IDI_FILE1               ICON  "file1.ico"
+IDI_FILE2               ICON  "file2.ico"
+IDI_FILE3               ICON  "file3.ico"
+IDI_FILE4               ICON  "file4.ico"
+IDB_CHECKSUM            BITMAP "checksum.bmp"

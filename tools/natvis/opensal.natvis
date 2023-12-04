@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <!--ALTAP's data arrays (TDirectArray and TIndirectArray)-->
+  <Type Name="TDirectArray&lt;*&gt;">
+    <DisplayString Condition="State != 0">TDirectArray in Error State: {State}</DisplayString>
+    <DisplayString Condition="Count == 0">TDirectArray empty</DisplayString>
+    <DisplayString Condition="Count == 1">[{Count}] {{{Data[0]}}}</DisplayString>
+    <DisplayString Condition="Count == 2">[{Count}] {{{Data[0]}, {Data[1]}}}</DisplayString>
+    <DisplayString Condition="Count == 3">[{Count}] {{{Data[0]}, {Data[1]}, {Data[2]}}}</DisplayString>
+    <DisplayString Condition="Count == 4">[{Count}] {{{Data[0]}, {Data[1]}, {Data[2]}, {Data[3]}}}</DisplayString>
+    <DisplayString Condition="Count == 5">[{Count}] {{{Data[0]}, {Data[1]}, {Data[2]}, {Data[3]}, {Data[4]}}}</DisplayString>
+    <DisplayString Condition="Count == 6">[{Count}] {{{Data[0]}, {Data[1]}, {Data[2]}, {Data[3]}, {Data[4]}, {Data[5]}}}</DisplayString>
+    <DisplayString Condition="Count == 7">[{Count}] {{{Data[0]}, {Data[1]}, {Data[2]}, {Data[3]}, {Data[4]}, {Data[5]}, {Data[6]}}}</DisplayString>
+    <DisplayString Condition="Count == 8">[{Count}] {{{Data[0]}, {Data[1]}, {Data[2]}, {Data[3]}, {Data[4]}, {Data[5]}, {Data[6]}, {Data[7]}}}</DisplayString>
+    <DisplayString Condition="Count == 9">[{Count}] {{{Data[0]}, {Data[1]}, {Data[2]}, {Data[3]}, {Data[4]}, {Data[5]}, {Data[6]}, {Data[7]}, {Data[8]}}}</DisplayString>
+    <DisplayString Condition="Count == 10">[{Count}] {{{Data[0]}, {Data[1]}, {Data[2]}, {Data[3]}, {Data[4]}, {Data[5]}, {Data[6]}, {Data[7]}, {Data[8]}, {Data[9]}}}</DisplayString>
+    <DisplayString Condition="Count &gt; 10">[{Count}] {{{Data[0]}, {Data[1]}, {Data[2]}, {Data[3]}, {Data[4]}, {Data[5]}, {Data[6]}, {Data[7]}, {Data[8]}, {Data[9]}, ...}}</DisplayString>
+    <Expand> 
+      <Item Name="State">State</Item> 
+      <Item Name="Count">Count</Item> 
+      <Item Name="Data">Data</Item> 
+      <Item Name="Available">Available</Item> 
+      <Item Name="Base">Base</Item> 
+      <Item Name="Delta">Delta</Item> 
+      <ArrayItems>
+        <Size>Count</Size>
+        <ValuePointer>Data</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+  <Type Name="TIndirectArray&lt;*&gt;">
+    <DisplayString Condition="State != 0">TIndirectArray in Error State: {State}</DisplayString>
+    <DisplayString Condition="Count == 0">TIndirectArray empty</DisplayString>
+    <DisplayString Condition="Count == 1">[{Count}] {{{*($T1*)Data[0]}}}</DisplayString>
+    <DisplayString Condition="Count == 2">[{Count}] {{{*($T1*)Data[0]}, {*($T1*)Data[1]}}}</DisplayString>
+    <DisplayString Condition="Count == 3">[{Count}] {{{*($T1*)Data[0]}, {*($T1*)Data[1]}, {*($T1*)Data[2]}}}</DisplayString>
+    <DisplayString Condition="Count == 4">[{Count}] {{{*($T1*)Data[0]}, {*($T1*)Data[1]}, {*($T1*)Data[2]}, {*($T1*)Data[3]}}}</DisplayString>
+    <DisplayString Condition="Count == 5">[{Count}] {{{*($T1*)Data[0]}, {*($T1*)Data[1]}, {*($T1*)Data[2]}, {*($T1*)Data[3]}, {*($T1*)Data[4]}}}</DisplayString>
+    <DisplayString Condition="Count == 6">[{Count}] {{{*($T1*)Data[0]}, {*($T1*)Data[1]}, {*($T1*)Data[2]}, {*($T1*)Data[3]}, {*($T1*)Data[4]}, {*($T1*)Data[5]}}}</DisplayString>
+    <DisplayString Condition="Count == 7">[{Count}] {{{*($T1*)Data[0]}, {*($T1*)Data[1]}, {*($T1*)Data[2]}, {*($T1*)Data[3]}, {*($T1*)Data[4]}, {*($T1*)Data[5]}, {*($T1*)Data[6]}}}</DisplayString>
+    <DisplayString Condition="Count == 8">[{Count}] {{{*($T1*)Data[0]}, {*($T1*)Data[1]}, {*($T1*)Data[2]}, {*($T1*)Data[3]}, {*($T1*)Data[4]}, {*($T1*)Data[5]}, {*($T1*)Data[6]}, {*($T1*)Data[7]}}}</DisplayString>
+    <DisplayString Condition="Count == 9">[{Count}] {{{*($T1*)Data[0]}, {*($T1*)Data[1]}, {*($T1*)Data[2]}, {*($T1*)Data[3]}, {*($T1*)Data[4]}, {*($T1*)Data[5]}, {*($T1*)Data[6]}, {*($T1*)Data[7]}, {*($T1*)Data[8]}}}</DisplayString>
+    <DisplayString Condition="Count == 10">[{Count}] {{{*($T1*)Data[0]}, {*($T1*)Data[1]}, {*($T1*)Data[2]}, {*($T1*)Data[3]}, {*($T1*)Data[4]}, {*($T1*)Data[5]}, {*($T1*)Data[6]}, {*($T1*)Data[7]}, {*($T1*)Data[8]}, {*($T1*)Data[9]}}}</DisplayString>
+    <DisplayString Condition="Count &gt; 10">[{Count}] {{{*($T1*)Data[0]}, {*($T1*)Data[1]}, {*($T1*)Data[2]}, {*($T1*)Data[3]}, {*($T1*)Data[4]}, {*($T1*)Data[5]}, {*($T1*)Data[6]}, {*($T1*)Data[7]}, {*($T1*)Data[8]}, {*($T1*)Data[9]}, ...}}</DisplayString>
+    <Expand> 
+      <Item Name="State">State</Item> 
+      <Item Name="Count">Count</Item> 
+      <Item Name="Data">Data</Item> 
+      <Item Name="Available">Available</Item> 
+      <Item Name="Base">Base</Item> 
+      <Item Name="Delta">Delta</Item> 
+      <Item Name="DeleteType">DeleteType</Item> 
+      <ArrayItems>
+        <Size>Count</Size>
+        <ValuePointer>($T1**)Data</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+</AutoVisualizer>

@@ -1,0 +1,135 @@
+Jan Patera 2012.02.26 - START
+
+The 7za folder contains a subset of the 7zip package version 9.22 Beta from 2011.04.18.
+The following comments still apply unmodified.
+
+Jan Patera 2012.02.26 - END
+
+Jan Patera 2010.09.23 - START
+
+The 7za folder contains a subset of the 7zip package version 9.16 Beta from 2010.09.08.
+The following comments still apply unmodified.
+
+Jan Patera 2010.09.23 - END
+
+Jan Patera 2010.04.27 - START
+
+The 7za folder contains a subset of the 7zip package version 9.13 Beta from 2010.04.15.
+The following comments still apply unmodified.
+
+Jan Patera 2010.04.27 - END
+
+Jan Patera 2010.03.27 - START
+
+The 7za folder contains a subset of the 7zip package version 9.12 Beta from 2010.03.24.
+The following comments still apply unmodified.
+
+Jan Patera 2010.03.27 - END
+
+Jan Patera 2009.12.17 - START
+
+The 7za folder contains a subset of the 7zip package version 9.09 Beta from 2009.12.14.
+The following comments still apply unmodified.
+
+Jan Patera 2009.12.17 - END
+
+Jan Patera 2009.09.16 - START
+
+The 7za folder contains a subset of the 7zip package version 9.07 Beta from 2009.08.29.
+We still cannot use the original (official) 7za.dll.
+However, one less file needs modification:
+  7za/CPP/7zip/Archive/7z/7zFolderOutStream.cpp no longer needs modifications
+and therefore item 2) in the comment of 2009.06.07 is no longer valid.
+
+Jan Patera 2009.09.16 - END
+
+Jan Patera 2009.06.07 - START
+
+The 7za folder contains a subset of the 7zip package version 4.65 from 2009.02.03.
+We cannot use the original (official) 7za.dll, several modifications are needed.
+They are located in 4 files, plus few files are added to the dll (located
+in 7za\spl). The reasons for the changes are described below and in ..\notes.
+
+The custom-modified files are:
+  7za/C/LzFindMt.c
+  7za/CPP/7zip/Archive/7z/7zFolderOutStream.cpp 
+  7za/CPP/7zip/Common/InMemStream.cpp
+  7za/CPP/7zip/Common/VirtThread.cpp 
+The changes:
+1) the way threads are created (using Salamander's call stacks)
+2) the order of SetOperationResult and closing files
+
+NOTES about buildability:
+a) defines COMPRESS_MF_MT and COMPRESS_MT cause multiple threads for
+  the same tasks
+b) no defines at all may still launch new threads for different tasks
+  (e.g. a new thread for branch compressor for executables)
+c) _ST_MODE that should really launch no threads actually has never been implemented.
+
+The original text written probably by David Andrs and timestamped 2007.07.28 follows.
+
+Jan Patera 2009.06.07 - END
+
+Vytvoreni 7ZA.DLL
+-----------------
+
+Tento dokument popisuje, jak vyrobit opatchovanou knihovnu 7za.dll, aby pracovala se 7zip.spl
+(plugin do Open Salamandera).
+
+Pouzivam unixove prikazy. Bud pouzijeme cygwin nebo unxutils (http://unxutils.sourceforge.org/). Ja
+pouzivam to druhe.
+
+*****************
+*** 7zip 4.XX ***
+
+Aktualni verze 4.51 (26.7.2007) je od 3.XX dost odlisna. Zasadnim zpusobem se zmenila adresarova
+struktura, takze na vytvareni 7za.dll nelze pouzit 7za-patch-1.0 a leave-7zadll.cmd
+
+- soubor s patchem pouzit pro kontrolu toho, zda to uz Igor nezmenil.
+- je treba ohlidat:
+
+  * zavirani souboru pred SetOperationResult (abychom s nimi v pluginu mohli pracovat)
+  * udelat wrapper na vlakna, aby bezela s CallStackObject
+
+
+*****************
+*** 7zip 3.XX ***
+
+Jaky patch pouzit pro jakou verzi SPLka:
+
+ SPL   7za.dll   patch
+-----------------------
+ 1.0   3.13      1.0
+
+
+
+Postup aplikace patche:
+-----------------------
+
+Zamenit cisla verzi podle tabulky vyse.
+
+
+I. Vytvorit adresar 7za\
+
+# mkdir 7za
+
+
+II. Rozbalit 7z313.tar.bz2 do adresare 7za\
+
+# cd 7za
+# tar -xvjz path\to\7za313.tar.bz2
+
+
+III. Zredukovat zdrojaky tak, aby zustaly jen ty, co jsou potreba pro 7za.dll
+
+# leave-7zadll.cmd
+
+
+IV. Aplikovat patch
+
+# unzip path\to\7za.dll-patch-1.0.zip
+# patch -p1 -E < path\to\7za.dll-patch-1.0
+
+Pozn. #1: pri aplikaci patche bychom meli byt v adresari 7za.
+Pozn. #2: soubor projektu 7za.dll.dsp je vytvoren aplikaci patche.
+

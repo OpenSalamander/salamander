@@ -1,0 +1,159 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Authentication Tab (Login Dialog)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Dialog Boxes: Configuring Session</div>
+<div class="page">
+<h1>Authentication Tab (Login Dialog)</h1>
+
+<p>
+<em>Authentication tab</em> allows you to configure <a href="ssh.htm#authentication_in_ssh">authentication</a>
+options of <acronym title="Secure Shell">SSH</acronym> protocol.
+</p>
+
+<p>
+You need to check <em>Advanced options</em> to reveal the tab.
+</p>
+
+<a name="bypassing_authentication"></a>
+<h4>Bypassing Authentication</h4>
+
+<p>
+In <acronym title="Secure Shell">SSH</acronym>-2,
+it is possible to establish a connection without using
+<acronym title="Secure Shell">SSH</acronym>'s mechanisms to identify
+or authenticate oneself to the server.
+Some servers may prefer to handle authentication in the data channel,
+for instance, or may simply require no authentication whatsoever.
+</p>
+
+<p>
+By default, WinSCP assumes the server requires authentication (most do),
+and thus must provide a username. If you find you are getting
+unwanted username prompts, you could try checking
+<em>Bypass authentication entirely</em>.
+</p>
+
+<p>
+This option only affects <acronym title="Secure Shell">SSH</acronym>-2 connections.
+<acronym title="Secure Shell">SSH</acronym>-1 connections always require
+an authentication step. <a href="#fn1">(see note 1)</a>
+</p>
+
+<a name="attempt_authentication_using_pagent"></a>
+<h4>Attempt Authentication Using Pagent</h4>
+
+<p>
+If this option is enabled, then WinSCP will look for Pageant
+and attempt to authenticate with any suitable public keys Pageant
+currently holds.
+</p>
+
+<p>
+This behaviour is almost always desirable,
+and is therefore enabled by default.
+In rare cases you might need to turn it off in order to force
+authentication by some non-public-key method such as passwords.
+<a href="#fn1">(see note 1)</a>
+</p>
+
+<p>
+Learn how to use the <a href="public_key.htm">Pageant</a>
+(PuTTY's <acronym title="Secure Shell">SSH</acronym> authentication agent)
+application for public key authentication.
+</p>
+
+<a name="attempt_tis_or_cryptocard_authentication"></a>
+<h4>Attempt TIS or CryptoCard authentication</h4>
+
+<p>
+TIS and CryptoCard authentication are (despite their names)
+generic forms of simple challenge/response authentication available in
+<acronym title="Secure Shell">SSH</acronym>-1 only. You might use them if you were using
+S/Key one-time passwords, for example, or if you had a physical security token that generated responses
+to authentication challenges. They can even be used to prompt 
+for simple passwords.
+</p>
+
+<p>
+With this switch enabled, WinSCP will attempt these forms of authentication if the server is willing to try
+them. You will be <a href="ui_authenticate.htm#keyboard_interactive">presented with a challenge string</a>
+(which may be different every time) and must supply the correct response in order to log in. If your
+server supports this, you should talk to your system administrator about precisely what form these challenges
+and responses take. <a href="#fn1">(see note 1)</a>
+</p>
+
+<a name="attempt_keyboard-interactive_authentication"></a>
+<h4>Attempt keyboard-interactive authentication</h4>
+
+<p>
+The <acronym title="Secure Shell">SSH</acronym>-2 equivalent of TIS authentication is called
+&quot;keyboard-interactive&quot;. It is a flexible authentication method using an arbitrary sequence of
+<a href="ui_authenticate.htm#keyboard_interactive">requests and responses</a>; so it is not only
+useful for challenge/response mechanisms such as S/Key, but it can also be used for (for
+example) asking the user for a new password when the old one has expired. <a href="#fn1">(see note 1)</a>
+</p>
+
+<p>
+WinSCP leaves this option enabled by default, but supplies a switch to turn it off in case you should
+have trouble with it. If your server uses keyboard-interactive authentication to ask for your password
+only, and you wish to allow WinSCP to reply with password entered on
+<em><a href="ui_login_session.htm">Session tab</a></em>, tick <em>Respond with password to
+the first prompt</em>.
+</p>
+
+<a name="attempt_gssapi_sspi_authentication"></a>
+<h4>Attempt GSSAPI/SSPI authentication</h4>
+
+<p>
+The switch tells WinSCP to attempt
+<acronym title="Generic Security Services Application Programming Interface">GSSAPI</acronym>
+or <acronym title="Security Support Provider Interface">SSPI</acronym>
+authentication.
+</p>
+
+<p>
+The <acronym title="Generic Security Services Application Programming Interface">GSSAPI</acronym> is a generic
+<acronym title="Application Programming Interface">API</acronym> for doing client-server authentication. The
+motivation behind it is that every security system has its own
+<acronym title="Application Programming Interface">API</acronym>, and the effort involved with adding different
+security systems to applications is extremely difficult with the variance between security APIs. However, with a
+common <acronym title="Application Programming Interface">API</acronym>, application vendors could use the
+generic <acronym title="Application Programming Interface">API</acronym> and it could work with any number of
+security platforms (Kerberos, Entrust, ...).
+</p>
+
+<p>
+The <acronym title="Security Support Provider Interface">SSPI</acronym>
+is Microsoft specific (non-standard) implementation of
+<acronym title="Generic Security Services Application Programming Interface">GSSAPI</acronym>.
+</p>
+
+<a name="allow_agent_forwarding"></a>
+<h4>Allow agent forwarding</h4>
+
+<p>
+This option allows the <acronym title="Secure Shell">SSH</acronym> server to open forwarded connections back
+to your local copy of Pageant. If you are not running Pageant, this option will do nothing. Learn more about
+<a href="https://tartarus.org/~simon/putty-snapshots/htmldoc/Chapter9.html#pageant-forward" target="_blank">agent forwarding</a>.
+<a href="#fn1">(see note 1)</a>
+</p>
+
+<h4>Notes:</h4>
+<p>
+<a name="fn1"></a>
+1) The text is copy of <a href="https://tartarus.org/~simon/putty-snapshots/htmldoc/" target="_blank">PuTTY User Manual</a> or was inspired by it.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

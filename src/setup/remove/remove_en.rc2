@@ -1,0 +1,9 @@
+﻿STRINGTABLE 
+BEGIN
+    IDS_REMOVE_SUCCESS      "The %s was successfully removed."
+    IDS_REMOVE_TITLE        "Uninstall Application"
+    IDS_REMOVE_ERROR_LOADINF "Error loading log file: %s."
+    IDS_REMOVE_APPRUNNING   "Uninstall has detected that uninstalled application is running:\n%s\n\nPlease close it and click Retry to continue."
+    IDS_REMOVE_DELETEFAILED "Cannot delete file\n%s\n\n%s"
+    IDS_REMOVE_XPRUNASADMIN "If you have used some administrator account to install this application, you should use the same administrative account to uninstall it. You can choose account in the following Run As window."
+END

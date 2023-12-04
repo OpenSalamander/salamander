@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Introduction</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: Undelete: Introduction</div>
+<div class="page">
+<h1>Getting Started with Undelete Plugin</h1>
+
+<p>The Undelete plugin allows you to recover deleted files from NTFS, FAT12, FAT16,
+FAT32, and exFAT partitions. On NTFS partitions, it also restores ADS (alternate data streams),
+compressed, and encrypted files. You can recover files and directories from all
+local volumes (mounted to drive letters or to directories, or even not mounted)
+and also from disk image files.</p>
+
+<p>See File System and Menu Extension sections in <a href="ms-its:salamand.chm::/hh/salamand/plugins_using.htm">Using Plugins</a>
+for a description of basic work with file system plugins and menu extensions.</p>
+
+
+<h3>Principles and Limitations</h3>
+
+<p>Each file on a disk is stored in short blocks called <a href="ms-its:salamand.chm::/hh/salamand/glossary_c.htm">
+clusters</a>. After a file is deleted, its clusters are only marked as free: the actual
+data are left on the disk until the clusters are used again for a different file.
+If used early enough, the Undelete plugin is able to find the clusters of the deleted file
+and copy them to a new file on another volume.</p>
+
+<p>It is important to avoid writing any data to the volume containing the deleted file so that
+the deleted clusters are not overwritten. This also means that deleted files should only be
+recovered to a different volume in order to avoid overwriting the files by themselves.
+If there are no alternate volumes on your computer usable for the recovery, removable media
+(e.g. diskettes, USB disks) and network drives are also good candidates.</p>
+
+<p>On FAT partitions it is unfortunately not possible to reliably identify
+all clusters of a deleted file, especially if the file was very large. A heuristic
+algorithm has to be used whose results may be incorrect. Note that this applies to all undelete
+programs.</p>
+
+<p>In general, successful recovery of deleted files is not guaranteed and the recovered
+data may be damaged. You should always check if the obtained data are valid.</p>
+
+<p>The chance to recover deleted file is displayed in the Condition column (switch panel to Detailed view):</p>
+
+<table>
+ <tr><td class="hdr">Good</td><td>File is not deleted, or is MFT-resident, or is deleted but no collision with other deleted or existing files was detected.</td><td>There is a chance to recover the entire file.</td></tr>
+ <tr><td class="hdr">Fair</td><td>Some clusters of the deleted file conflict with clusters of other deleted files.</td><td>There is a smaller chance to recover the entire file.</td></tr>
+ <tr><td class="hdr">Poor</td><td>Some clusters of the deleted file conflict with existing files.</td><td>Some parts of file are certainly damaged.</td></tr>
+ <tr><td class="hdr">Lost</td><td>All clusters of the deleted file are used again by existing files.</td><td>Zero chance to even partially recover such file.</td></tr>
+ <tr><td class="hdr">Unknown</td><td>Damage estimation failed or was not performed at all.</td><td></td></tr>
+</table>
+
+ 
+
+
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

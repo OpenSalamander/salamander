@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Directory Caching</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Features</div>
+<div class="page">
+
+<h1>Directory Caching</h1>
+
+<p>
+WinSCP supports caching directory content. The caching can be configured per-session. To configure it
+see <em><a href="ui_login_directories.htm">Directories tab</a></em> of Login dialog.
+</p>
+
+<p>
+There are two caches. The first cache stores file listing of already visited directories. The cache
+is enabled by default and can be disabled by unticking <em>Cache visited remote directories</em>
+checkbox. The cache is temporary, i.e. not preserved between sessions.
+</p>
+
+<p>
+The second cache stores information useful for changing directories, like existence of particular
+directory and canonical paths (useful for <acronym title="SSH File Transfer Protocol">SFTP</acronym>
+protocol only, as <acronym title="SSH File Transfer Protocol">SFTP</acronym> servers need not to
+follow Unix-style path handling). The cache in enabled by default and can be disabled by unticking
+the <em>Cache directory changes</em> checkbox. The cache can be permanent (enabled by default), i.e.
+preserved between sessions. Note
+that the cache is specific for a specific user/host. So you may need to disable it, if you are
+running two servers on the same host with different path semantics. For
+<acronym title="Secure Copy Protocol">SCP</acronym> protocol the cache has no benefit without
+<em>Cache visited remote directories</em> being turned on as well.
+</p>
+
+<p>
+When both caches are enabled, the already visited directory can be opened without any data exchange
+with the server, i.e. immediately.
+</p>
+
+<p>
+The directory cache is updated whenever you perform any operation on the directory, like file
+transfer. If the directory is changed externally (not from WinSCP), you may use <em>Refresh</em>
+command to reload directory content and update the cache. Note that running
+<a href="remote_command.htm">remote command</a> purges the cache for the current directory only. If your
+command modifies other directories too, you need to refresh them manually.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

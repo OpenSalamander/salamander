@@ -1,0 +1,9 @@
+﻿STRINGTABLE 
+BEGIN
+    IDS_REMOVE_SUCCESS      "Der %s wurde erfolgreich entfernt."
+    IDS_REMOVE_TITLE        "Anwendung deinstallieren"
+    IDS_REMOVE_ERROR_LOADINF "Fehler lade Logdatei: %s."
+    IDS_REMOVE_APPRUNNING   "Es wurde festgestellt, dass das zu entfernende Programm noch läuft:\n%s\n\nBeenden Sie es bitte und drücken Sie ""Wiederholen"" um fortzufahren."
+    IDS_REMOVE_DELETEFAILED "Die Datei\n%s\n\n%s kann nicht entfernt werden"
+    IDS_REMOVE_XPRUNASADMIN "Wenn Sie ein Administratorkonto verwendet haben, um diese Anwendung zu installieren, sollten Sie das Administratorkonto auch verwenden um diese zu entfernen. Sie können das Konto im folgenden ""Ausführen als""-Fenster auswählen."
+END

@@ -1,0 +1,13 @@
+Pri prechodu na VC2013 (z VC2008) jsem si dovolil zmenit pro Release a ReleaseEx
+randomizaci adresy modulu (zavedeni randomizace) a tim okamzikem prestalo na
+vygenerovanych sfxsmall.exe a sfxbig.exe fungovat sfxmake.exe a nasledne upx.exe
+(vsechny verze). Takze toto:
+
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <BaseAddress>%40..\..\..\shared\baseaddr_x86.txt,$(ProjectName)</BaseAddress>
+
+se NESMI ani v Release a ReleaseEx zmenit na:
+
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
+
+Petr

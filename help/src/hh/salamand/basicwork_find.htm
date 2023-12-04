@@ -1,0 +1,170 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Finding Files and Directories</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Basic Working with Files and Directories</div>
+<div class="page">
+
+<h1>Finding Files and Directories</h1>
+
+<p>You can search for files and directories using various criteria for name, size,
+date &amp; time, attributes, containing text, etc. After searching, you can work
+with found files and directories (view, edit, copy, move, delete them, etc.)</p>
+
+<h3>To search for files and directories:</h3>
+
+<ol>
+<li>Open the directory in which you want to start the search in the panel.</li> 
+
+<li>Open the <a href="finddlg_main.htm">Find dialog box</a>:
+<table>
+<tr><td class="hdr">Menu:</td><td>Commands/Find Files and Directories...</td></tr>
+<tr><td class="hdr">Shortcut key:</td><td>Alt+F7 or Ctrl+F</td></tr>
+<tr><td class="hdr">Toolbar:</td><td>Choose the Find Files and Directories
+  button on the Top, Middle, or Bottom toolbar.</td></tr>
+</table></li>
+
+<li>In the <i>Named</i> box, type the name of the searched file or directory. Use
+    <a href="appendix_filemasks.htm">file masks</a> to search for a group of
+    files or directories with similar names or extensions. Important note: when you specify
+    mask without asterisk (*), question mark (?), and point (.), you will find all files
+    and directories whose names are containing this mask (e.g. when you specify "dog", you
+    will find "dogs.txt", "hotdog.jpg", etc.), you can prevent this by adding point (.)
+    to the end of such mask (e.g. when you specify "dog.", you will find only "dog").</li>
+
+<li>Specify directories in which you want to start the search in the <i>Look in</i>
+    box. This box is preset to the current directory in panel. Use the <i>Add</i>
+    button to browse for another directory and add it to the <i>Look in</i> box or
+    to add all local or network drives to this box.</li>
+
+<li>Tick the <i>Search subdirectories</i> box if you want to search also in subdirectories
+    of directories specified in the <i>Look in</i> box.</li>
+
+<li>If you are searching for files containing some text, tick the <i>Search file content</i>
+    box and specify the searched text in <i>Containing</i> field.
+    See the <a href="finddlg_main.htm">Find dialog box</a> for details on searching options.</li>   
+
+<li>If you need to specify additional criteria for file size, attributes, or date &amp; time,
+    click on the Advanced button to open the <a href="finddlg_advan.htm">Advanced Options
+    dialog box</a>.</li>
+
+<li>You may want to ignore some directories (exclude them from search). For example
+    System Volume Information in root directories or directory with your temporary files.
+    Specify such directories in the <a href="finddlg_findign.htm">Ignore Directory
+    List dialog box</a>. Open it from menu Options/Ignore Directory List (the Ctrl+G key)
+    in the Find dialog box.</li>
+
+<li>All errors which occur during search and all ignored directories are added
+    to the <a href="finddlg_log.htm">Find Log dialog box</a>. Tick the Show Error Messages
+    After Finding item in the Options menu if you want to see this log when
+    search is finished and some error occurred. Use the Show Find Log (the Ctrl+L
+    key) item from the Commands menu or the Find Log button on the right side of the
+    <i>Found Items</i> listview header to show this log manually.</li>
+
+<li>Choose the <i>Find Now</i> button to start searching.</li>
+</ol>
+
+<h4>Remarks</h4>
+
+<p>Open Salamander displays the progress of the search. You can work with
+Open Salamander while the search continues in the background. You can open
+another Find dialog box and begin new search simultaneously.</p>
+
+<p>Searched files and directories are displayed in the <i>Found Items</i> listview.
+Click on columns headers to sort this list by name, size, path, or time. Or
+use sort commands from the View menu.
+</p>
+
+<p>When you find some files and directories, you can work with them. Go to the <i>Found Items</i>
+listview and use Files menu commands:</p>
+
+<ul>
+<li>Open (the Enter key): open the focused file or directory,</li>
+<li>Open All Selected (the Shift+Enter key): open all selected files and directories,</li>
+<li>Focus (the Space key): focus the focused file or directory in the active panel
+    (and switch to this panel),</li>
+<li>Hide (the Ctrl+H key): hide selected files or directories from the <i>Found Items</i> listview,</li>
+<li>Hide Duplicate Names (the Ctrl+Shift+H key): some items can be found several times
+    (see the Append to Found Items command below), hide redundant items from the <i>Found Items</i> listview,</li>
+<li>View (the F3 key), View With (the Ctrl+Shift+F3 key), Alternate View (the Alt+F3 key): view
+    the focused file,</li>
+<li>Edit (the F4 key) and Edit With (the Ctrl+Shift+F4 key): edit the focused file,</li>
+<li>Delete (the F8 or Delete key): delete (send to the Recycle Bin) selected files and directories,</li>
+<li>User Menu (the F9 key): open the <a href="advwork_usermenu.htm">User Menu</a> for selected
+    files and directories,</li>
+<li>Properties (the Alt+Enter key): open the Properties dialog box for selected
+    files and directories.</li>
+</ul>
+
+<p>You can use drag and drop to copy or move found files and directories
+from the <i>Found Items</i> listview to any desired location. Another option is to use
+the clipboard, you can Cut or Copy (see menu Edit) found files and directories from the <i>Found
+Items</i> listview to the clipboard and later Paste them anywhere you need.</p>
+
+<p>If you need to pick name of some found file or directory, use one of the following
+commands from menu Edit:</p>
+
+<ul>
+<li>Copy Path + Name as Text (the Alt+Insert key): copy a full path to a focused file or
+    directory to the clipboard,</li>
+<li>Copy Name as Text (the Alt+Shift+Insert key): copy a focused file or directory name to
+    the clipboard,</li>
+<li>Copy Path as Text (the Ctrl+Alt+Insert key): copy a focused file or directory path to
+    the clipboard,</li>
+<li>Copy UNC Path + Name as Text (the Ctrl+Shift+Insert key): copy a UNC path to a focused
+    file or directory to the clipboard.</li>
+</ul>
+
+<p>In some special situations you may appreciate that you can search in already
+found files (values in the <i>Named</i> and <i>Look in</i> boxes are ignored).
+Use the Refine - Intersect with Found Items (the Ctrl+I key) command from
+the Commands menu or from the drop-down menu on the Find Now button to keep only found
+files and directories which fulfill criteria given in the Find dialog box.
+For example, you can find all files containing a word "car" (using the Find Now command)
+and then refine found files only to files containing a word "John" (using the
+Refine - Intersect with Found Items command), so you will get all files containing
+both words. Similarly you can use the Refine - Subtract from Found Items (the Ctrl+S key)
+command to hide found files and directories which fulfill criteria given in the Find
+dialog box. If used in previous example, the result will be all files containing "car"
+but not containing "John".</p>
+
+<p>Another special command is Append to Found Items (the Ctrl+W key) in the Commands menu
+or in the drop-down menu on the Find Now button. The only difference when compared with
+the Find Now command is that it does not clear the <i>Found Items</i> listview before searching.
+It allows you to simply merge search results. When using this command, you may find some
+files or directories several times. Use the Hide Duplicate Names command to remove such
+redundant items.</p>
+
+<p>Duplicate files can be found in the Find dialog box. See
+<a href="advwork_finddup.htm">Finding Duplicate Files</a> for details.</p>
+
+<p>You can save current settings in Find dialog box using the Add Current (the Ctrl+N key)
+command from the Options menu. It opens the <a href="finddlg_setts.htm">Settings Manager
+dialog box</a>. You can use this settings next time, just choose its name from the Options
+menu. To view or remove these settings, use the Manage (the Ctrl+M key) command from the
+Options menu.</p>
+
+<h4>See Also</h4>
+<p>
+<a href="finddlg_main.htm">Find dialog box</a><br />
+<a href="finddlg_advan.htm">Advanced Options dialog box</a><br />
+<a href="finddlg_findign.htm">Ignore Directory List dialog box</a><br />
+<a href="finddlg_log.htm">Find Log dialog box</a><br />
+<a href="advwork_finddup.htm">Finding Duplicate Files</a><br />
+<a href="finddlg_setts.htm">Setting Manager dialog box</a><br />
+<a href="appendix_grouppolicy.htm">Group Policy Restrictions</a>
+
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

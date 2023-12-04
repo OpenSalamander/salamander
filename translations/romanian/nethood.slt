@@ -1,0 +1,40 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\romanian\nethood.atp"
+TEXTVERSION,"1.08 (x86)"
+VERSION,"1,0,8,180"
+
+[TRANSLATION]
+LANGID,1048
+AUTHOR,"Ioan Stefancu, Donca Radu"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6165"
+COMMENT,"Versiunea romana"
+
+[DIALOG 102]
+220,127,1,"Configurare Retea"
+1201,7,7,111,10,1,"Arata partajari &administrative"
+1203,13,22,176,10,1,"Arata partajari administrative ca obiecte asc&unse"
+1202,7,37,193,10,1,"Arata obiectele &My Network Places in directorul de sus"
+1204,7,52,154,10,1,"Arata retea &computere in directorul de sus"
+1206,7,67,165,10,1,"Arata &disk-uri conectate prin Remote Desktop"
+1205,7,82,153,10,1,"&Scaneaza reteaua la pornirea Salamander"
+3000,7,99,206,1,1,""
+1,30,106,50,14,1,"OK"
+2,85,106,50,14,1,"Anuleaza"
+9,140,106,50,14,1,"Help"
+
+[STRINGTABLE 0]
+128,1,"Retea"
+129,1,"Da acces computerelor la retea."
+
+[STRINGTABLE 1]
+1024,1,"Comentariu"
+1025,1,"{!}<%d> obiect selectat{|1|s}"
+1026,1,"Retea"
+1027,1,"Scaneaza reteaua…"
+1028,1,"Reteaua este indisponibila."
+1029,1,"Despre Plugin"
+1030,1,"%1 pe %2"
+1031,1,"Computer Local"
+1032,1,"Computer Gazda"
+1033,1,"Disk-uri din %s"
+

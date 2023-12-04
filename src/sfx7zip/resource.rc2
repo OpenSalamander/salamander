@@ -1,0 +1,78 @@
+﻿//
+// resource.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#ifdef OPEN_VERSION
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 2,0,0,0
+ PRODUCTVERSION 2,0,0,0
+ FILEFLAGSMASK 0x1L
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "Open Salamander"
+            VALUE "FileDescription", "Open Salamander Setup"
+            VALUE "FileVersion", "2.0.0.0"
+            VALUE "InternalName", "Open Salamander Installer"
+            VALUE "OriginalFilename", "sfx7zip.exe"
+            VALUE "LegalCopyright", "Copyright © 1997-2023 Open Salamander Authors"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+#else
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 2,0,0,0
+ PRODUCTVERSION 2,0,0,0
+ FILEFLAGSMASK 0x1L
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "PROTECH"
+            VALUE "FileDescription", "Instalace programů PROTECH"
+            VALUE "FileVersion", "2.0.0.0"
+            VALUE "InternalName", "Instalace programů PROTECH"
+            VALUE "OriginalFilename", "sfx7zip.exe"
+            VALUE "LegalCopyright", "Copyright © 1997-2013 PROTECH"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x405, 1200
+    END
+END
+#endif
+
+#ifdef OPEN_VERSION
+1 RT_MANIFEST "open.xml"
+#endif

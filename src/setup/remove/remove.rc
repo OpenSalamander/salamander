@@ -1,0 +1,223 @@
+﻿// Microsoft Visual C++ generated resource script.
+//
+#pragma code_page(65001)
+
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include <winresrc.h>
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include <winresrc.h>\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#ifndef INSIDE_SETUP\r\n"
+    "#include ""remove.rc2""\r\n"
+    "#endif\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CSY)\r\n"
+    "LANGUAGE LANG_CZECH, SUBLANG_DEFAULT\r\n"
+    "#include ""remove_cz.rc2""\r\n"
+    "LANGUAGE LANG_GERMAN, SUBLANG_NEUTRAL\r\n"
+    "#include ""remove_de.rc2""\r\n"
+    "LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US\r\n"
+    "#include ""remove_en.rc2""\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Czech resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CSY)
+LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+#ifndef INSIDE_SETUP
+IDD_CONFIRMATION DIALOGEX 85, 45, 336, 102
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Altap Uninstall"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    ICON            3100,IDC_MYICON,10,11,20,20
+    DEFPUSHBUTTON   "&Ano",IDYES,115,81,50,14,WS_GROUP
+    PUSHBUTTON      "&Ne",IDNO,169,81,50,14
+    LTEXT           "Opravdu si přejete odstranit %s?",IDC_QUESTION,39,10,290,18
+    LTEXT           "Obě x64 a x86 verze Open Salamandera sdílí jednu konfiguraci v Registru.",IDC_STATIC,39,36,290,8
+    CONTROL         "Zároveň odstranit &konfiguraci z Registru",IDC_REMOVECONFIGURATION,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,39,47,164,12
+END
+#endif //INSIDE_SETUP
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_CONFIRMATION, DIALOG
+    BEGIN
+        RIGHTMARGIN, 329
+        BOTTOMMARGIN, 122
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Czech resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// German (Neutral) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
+LANGUAGE LANG_GERMAN, SUBLANG_NEUTRAL
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+#ifndef INSIDE_SETUP
+IDD_CONFIRMATION DIALOGEX 85, 45, 362, 103
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Altap-Deinstallation"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    ICON            3100,IDC_MYICON,10,11,20,20
+    DEFPUSHBUTTON   "&Ja",IDYES,125,80,50,14,WS_GROUP
+    PUSHBUTTON      "&Nein",IDNO,179,80,50,14
+    LTEXT           "Möchten Sie %s wirklich entfernen?",IDC_QUESTION,39,10,305,18
+    LTEXT           "Beide Versionen von Open Salamander, die x64 und die x86, benutzen dieselbe Konfiguration.",IDC_STATIC,39,36,318,8
+    CONTROL         "Ebenfalls die &Konfiguration aus der Registry entfernen",IDC_REMOVECONFIGURATION,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,39,47,214,12
+END
+#endif //INSIDE_SETUP
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_CONFIRMATION, DIALOG
+    BEGIN
+        RIGHTMARGIN, 353
+        BOTTOMMARGIN, 96
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // German (Neutral) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+#ifndef INSIDE_SETUP
+IDD_CONFIRMATION DIALOGEX 85, 45, 337, 100
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Altap Uninstall"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    ICON            3100,IDC_MYICON,10,11,20,20
+    DEFPUSHBUTTON   "&Yes",IDYES,116,78,50,14,WS_GROUP
+    PUSHBUTTON      "&No",IDNO,170,78,50,14
+    LTEXT           "Are you sure that you want to remove the %s?",IDC_QUESTION,39,10,293,17
+    LTEXT           "Both x64 and x86 versions of Open Salamander are sharing the same configuration.",IDC_STATIC,39,35,293,8
+    CONTROL         "Remove also &configuration from Registry",IDC_REMOVECONFIGURATION,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,39,46,167,12
+END
+#endif //INSIDE_SETUP
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_CONFIRMATION, DIALOG
+    BEGIN
+        RIGHTMARGIN, 332
+        BOTTOMMARGIN, 123
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#ifndef INSIDE_SETUP
+#include "remove.rc2"
+#endif
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CSY)
+LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
+#include "remove_cz.rc2"
+LANGUAGE LANG_GERMAN, SUBLANG_NEUTRAL
+#include "remove_de.rc2"
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#include "remove_en.rc2"
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

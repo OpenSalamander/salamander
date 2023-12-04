@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<!-- Sitemap 1.0 -->
+</HEAD>
+<BODY>
+<OBJECT type="text/site properties">
+</OBJECT>
+<UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Introducing Check Version">
+		<param name="Local" value="hh\checkver\introduction_intro.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Checking For New Versions">
+		<param name="Local" value="hh\checkver\using_checkfornewver.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Dialog Box">
+		<param name="See Also" value="Dialog Box">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Check For New Versions">
+			<param name="Local" value="hh\checkver\dlgboxes_checkver.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Configuration of Check Version">
+			<param name="Local" value="hh\checkver\dlgboxes_config.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="CheckVer Internet Connection Settings">
+			<param name="Local" value="hh\checkver\dlgboxes_inetsettings.htm">
+			</OBJECT>
+	</UL>
+</UL>
+</BODY>
+</HTML>

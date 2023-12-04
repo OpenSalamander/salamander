@@ -1,0 +1,23 @@
+Prekopavka
+-ignore differences caused by ambiguilties in unicode encoding
+-ShiftBoundaries: mozna optimalizovat pomoci listu
+-odstranit _ASSERT
+-vyhazet _CrtCheckMemory()
+-DiscardConfusingLines puvodni diff pouziva trik -- DiscardConfusingLines
+
+Prechod na Unicode:
+-hlasit uzivateli surrogates (zatim ne, teprve az budem umet korektne makat s asijskejma fontama)
+
+-Plug-in File Comparator porovná soubor se sebou samým, aniž by uživatele
+ varoval, že dìlá cosi ne zrovna užiteèného.
+ To bychom mohli detekovat a zobrazit nejaky messagebox, ne?
+ "There is same file in the left and right panel." Nebo neco takoveho?
+-Pridat feature, compare multiple files:
+  -najde prunik mnozin nazvu souboru z obou panelu
+  -rozdilne soubory vyleje do sesnamu ze ktereho pujde volat compare
+-zprehlednit help-keyboard strukturovat jako napovedu k less
+-nekomu se ztraceji ikonky v toolbare
+  Na zaver: File Comparator som spustil asi 10 - 12x
+  > z toho asi 3-4x  ostal bez ikon, prikladam screen shot (.GIF)
+  > zobrazili sa bud pri znovu otvoreni FC alebo pri praci s nim.
+  > Prikladam REPERT o mojom SYSTEME:

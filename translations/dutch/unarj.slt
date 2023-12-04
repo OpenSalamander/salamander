@@ -1,0 +1,88 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\dutch\unarj.atp"
+TEXTVERSION,"1.21 (x86)"
+VERSION,"1,2,1,180"
+
+[TRANSLATION]
+LANGID,1043
+AUTHOR,"Cor van der Smissen, Marco Fung, Patrick Vijgeboom, S.V. (Stephan) Rietveld"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7009"
+COMMENT,"Nederlandse versie"
+
+[DIALOG 100]
+213,110,1,"Volgende archief volume"
+300,12,9,195,32,1,"Plaats diskette die het volgende archief volume bevat of zoek naar het desbetreffende bestand in de hardeschijf.\n\nDruk op OK indien gereed."
+301,12,48,60,8,1,"Vorige volume:"
+103,73,48,134,12,1,""
+302,12,62,63,8,1,"&Volgende volume:"
+101,12,72,174,12,1,""
+102,189,72,13,12,1,"..."
+1,50,91,50,14,1,"OK"
+2,113,91,50,14,1,"Annuleren"
+
+[DIALOG 103]
+356,85,1,"Fout"
+300,6,10,26,8,1,"Naam:"
+104,36,10,313,8,1,""
+301,6,23,26,8,1,"Fout:"
+302,36,23,313,16,1,"Bestand kan niet uitgepakt worden omdat het gecontinueerd wordt vanaf het vorige volume. Om het bestand uit te pakken moet je beginnen met het volume waar het bestand begint."
+105,36,44,183,12,1,"&Toon dit bericht niet in het vervolg."
+1,123,63,50,14,1,"OK"
+2,183,63,50,14,1,"Annuleren"
+
+[DIALOG 106]
+247,85,1,"UnARJ Configuratie"
+300,23,22,154,8,1,"uitpakken."
+107,12,10,212,12,1,"&Automatisch bestanden uit vorige volumes overslaan tijdens"
+301,23,44,111,8,1,"niet opgesomd kan worden."
+116,12,32,229,12,1,"A&ttentie niet weergeven wanneer de hele inhoud van het archief"
+302,6,60,235,1,1,""
+1,69,66,50,14,1,"OK"
+2,128,66,50,14,1,"Annuleren"
+
+[DIALOG 115]
+222,107,1,"UnARJ - Attentie"
+300,11,10,205,24,1,"Niet alle bestanden in het multi-volume archief kunnen opgesomd worden (en weergegeven worden in het paneel), omdat sommige archief volumes niet zijn gevonden."
+301,11,41,205,16,1,"Om de hele inhoud van het archief op te sommen, kopieer alle volumes naar dezelfde map."
+105,11,66,157,12,1,"&Toon dit bericht niet in het vervolg"
+302,5,83,212,1,1,""
+1,162,89,50,14,1,"OK"
+
+[STRINGTABLE 0]
+1000,1,"UnARJ"
+1001,1,"Onvoldoende geheugen."
+1002,1,"Onverwacht einde archief bestand."
+1005,1,"Archief is corrupt."
+1006,1,"Bestand heeft een onbekend formaat of is een ongeldige ARJ archief."
+1007,1,"Kan archief bestand niet openen."
+
+[STRINGTABLE 1]
+1008,1,"Onbekende fout opgetreden."
+1010,1,"Geen toegang tot het archief bestand."
+1011,1,"ARJ Archief bestanden (*.A*)"
+1012,1,"Selecteer archief bestand"
+1013,1,"Fout in gecomprimeerde data. CRC komt niet overeen."
+1014,1,"Kan archief niet toevoegen aan bestandslijst."
+1015,1,"Uitpakken ARJ Archive - %s"
+1016,1,"voorbereiding data en mappen aanmaken..."
+1017,1,"uitpakken..."
+1018,1,"uitpakken: "
+1019,1,"Kan bestand verwijzer niet benaderen: "
+1020,1,"Kan bestand niet wegschrijven:"
+1021,1,"Kan bestand verwijzer niet toewijzen: "
+1022,1,"Kan operatie niet voltooien vanwege te lange padnaam."
+1023,1,"Kan operatie niet voltooien vanwege te lange mask."
+
+[STRINGTABLE 2]
+1024,1,"Onbekende versie van gecomprimeerde bestand."
+1025,1,"Type gecomprimeerde bestand onbekend."
+1026,1,"Bestand is gecomprimeerd met een methode die niet ondersteund wordt door de UnARJ plugin."
+1027,1,"Sorry, gecodeerde bestanden worden niet ondersteund."
+1028,1,"Ongeldige volume of onbekende archief structuur."
+1029,1,"Sorry, plugin is verlopen. Bezoek onze website voor nieuwe versie."
+1030,1,"Bestand niet gevonden."
+1031,1,"Fout"
+1032,1,"Alle bestanden (*.*)"
+1033,1,"Blader en pak ARJ archieven uit."
+1034,1,"Omtrent plugin"
+

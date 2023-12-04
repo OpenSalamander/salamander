@@ -1,0 +1,277 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\spanish\mmviewer.atp"
+TEXTVERSION,"1.16 (x86)"
+VERSION,"1,1,6,180"
+
+[TRANSLATION]
+LANGID,3082
+AUTHOR,"Juan Pablo Barrio Lera"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6168"
+COMMENT,"Versión en español"
+
+[DIALOG 10500]
+361,132,1,"Acerca del  Plugin"
+2,303,113,50,14,1,"Cerrar"
+10506,11,9,20,20,1,""
+10501,46,9,310,8,1,"MMViewer %s - Visor multimedia para Open Salamander"
+10505,46,19,177,8,1,"dummy"
+10507,11,42,20,20,1,""
+13000,46,41,237,8,1,"MPEG, ID3 Tag version 1 y 2; analizadores OGG, WMA, VQF y Tracker"
+13001,46,51,56,8,1,"bajo licencia de"
+10504,104,51,200,8,1,"Disk Explorer Professional"
+13002,46,67,85,8,1,"Copyright 2003-2016 por"
+13003,132,67,60,8,1,"Tomas Jelinek"
+13004,46,78,30,8,1,"Email:"
+10502,132,78,119,8,1,"tomas@tjelinek.com"
+13005,46,89,49,8,1,"Página web:"
+10503,132,89,118,8,1,"www.tjelinek.com"
+13006,2,107,352,1,1,""
+
+[STRINGTABLE 0]
+11100,1,"Fuera de memoria"
+11101,1,"Fichero desconocido"
+11102,1,"Error de apertura"
+11103,1,"Error de lectura"
+
+[STRINGTABLE 1]
+11104,1,"Error de escritura"
+11105,1,"Erro de búsqueda"
+11106,1,"Fichero corrupto"
+11107,1,"Imposible inicializar extensiones de Windows"
+11110,1,"Visor multimedia"
+11111,1,"Hay abiertas algunas ventanas del visor multimedia. ¿Desea cerrarlas?"
+
+[STRINGTABLE 2]
+11120,1,"Ficheros multimedia (*.mp3;*.mp2;*.ogg;*.vqf;*.wma;*.wav;*.669;*.it;*.mod;*.mtm;*s3m;*.stm;*.xm)|*.mp3;*.mp2;*.ogg;*.wma;*.wav;*.wave;*.vqf;*.669;*.it;*.mod;*.mtm;*s3m;*.stm;*.xm|Todos los ficheros (*.*)|*.*||"
+11123,1,"Error abriendo %s.\nEste formato no es admitido por el visor multimedia."
+11124,1,"Ficheros HTML (*.htm;*.html)|*.htm;*.html|Todos los ficheros (*.*)|*.*||"
+11125,1,"¿Desea abrir datos exportados?"
+11126,1,"Exportar información en &HTML..."
+11127,1,"Propiedades de audio"
+11128,1,".html"
+11129,1,"Procesando ficheros, espere..."
+11130,1,"%lu de %lu filcheros fueron procesados con éxito."
+11131,1,"Presenta información sobre ficheros multimedia como MP3, OGG, WAV, etc."
+11132,1,"Acerca del Plugin"
+
+[STRINGTABLE 3]
+11200,1,"&Fichero"
+11201,1,"&Abrir...\tCtr+O"
+11202,1,"Propi&edades...\tCtrl+F1"
+11204,1,"Sa&lir\tAlt+F4"
+11205,1,"O&tros ficheros"
+11206,1,"P&rimero\tMays+Retroceso"
+11207,1,"&Ultimo\tMays+Espacio"
+11208,1,"&Previo\tRetroceso"
+11209,1,"&Siguiente\tEspacio"
+11210,1,"&Editar"
+11211,1,"&Copiar todo\tCtrl+A"
+
+[STRINGTABLE 4]
+11230,1,"&Ver"
+
+[STRINGTABLE 5]
+11232,1,"&Pantalla completa\tF11"
+
+[STRINGTABLE 6]
+11270,1,"&Opciones"
+11271,1,"&Configuración..."
+
+[STRINGTABLE 7]
+11280,1,"A&yuda"
+11281,1,"&Acerca de..."
+11290,1,"Exportar en &HTML...\tCtr+H"
+
+[STRINGTABLE 8]
+11500,1,"Copiar todo\tCtrl+A"
+11501,1,"Abrir\tCtrl+O"
+11502,1,"Buscar\tCtrl+F"
+11503,1,"Propiedades\tCtrl+F1"
+
+[STRINGTABLE 9]
+11504,1,"Pantalla completa\tF11"
+11505,1,"Abrir previo\tRetroceso"
+11506,1,"Abrir siguiente\tEspacio"
+11507,1,"Exportar en HTML\tCtrl+H"
+
+[STRINGTABLE 10]
+12001,1,"Sí"
+12002,1,"No"
+12009,1,"Información VQF"
+12010,1,"Copyright"
+12011,1,"Autor"
+12012,1,"Título"
+12013,1,"Comentarios"
+12014,1,"Año"
+12015,1,"Album"
+
+[STRINGTABLE 11]
+12016,1,"Pista"
+12017,1,"Fichero orig"
+12018,1,"LYRC"
+12019,1,"WORD"
+12020,1,"MUSC"
+12021,1,"ARNG"
+12022,1,"PROD"
+12023,1,"REMX"
+12024,1,"CDCT"
+12025,1,"SING"
+12026,1,"LABL"
+12027,1,"NOTE"
+12028,1,"PRSN"
+12029,1,"BAND"
+
+[STRINGTABLE 12]
+12100,1,"Información de Windows Media Audio"
+12101,1,"binario (%luB)"
+12102,1,"Duración"
+12103,1,"Bitrate (kbps)"
+12104,1,"Buscable"
+12105,1,"Saltable"
+12106,1,"Emitido"
+12107,1,"Protegido"
+12108,1,"Confiado"
+12109,1,"Nombre de firma"
+12110,1,"Título"
+12111,1,"Autor"
+
+[STRINGTABLE 13]
+12112,1,"Descripción"
+12113,1,"Calificación"
+12114,1,"Copyright"
+12115,1,"Album"
+12116,1,"Pista"
+12117,1,"URL promoción"
+12118,1,"URL cubierta"
+12119,1,"Género"
+12120,1,"Año"
+12121,1,"MCDI"
+12122,1,"Tipo imagen banner"
+12123,1,"Datos imagen banner"
+12124,1,"URL imagen banner"
+12125,1,"Copyright URL"
+12126,1,"Nombre NSC"
+12127,1,"Dirección NSC"
+
+[STRINGTABLE 14]
+12128,1,"Teléfono NSC"
+12129,1,"Email NSC"
+12130,1,"Descripción NSC"
+
+[STRINGTABLE 15]
+12200,1,"Información módulo tracker"
+12201,1,"Pautas"
+12202,1,"Muestras"
+12203,1,"Instrumentos"
+12204,1,"Título"
+
+[STRINGTABLE 16]
+12300,1,"Información OGG Vorbis"
+12301,1,"Versión"
+12302,1,"Bitrate nominal (kbps)"
+12303,1,"Frecuencia (Hz)"
+
+[STRINGTABLE 17]
+12304,1,"Canales"
+12305,1,"Copyright"
+12306,1,"Versión"
+12307,1,"Contacto"
+12308,1,"ISRC"
+12309,1,"Autor"
+12310,1,"Título"
+12311,1,"Género"
+12312,1,"Comentarios"
+12313,1,"Fecha"
+12314,1,"Album"
+12315,1,"Pista"
+12316,1,"Artista"
+12317,1,"Organización"
+12318,1,"Descripción"
+12319,1,"Detalles"
+
+[STRINGTABLE 18]
+12320,1,"Localización"
+12321,1,"Muestras"
+12322,1,"Longitud"
+12323,1,"Información adicional"
+12324,1,"ID disco"
+12325,1,"Vendedor"
+12326,1,"Marcas estándar"
+12327,1,"Otras marcas"
+
+[STRINGTABLE 19]
+12400,1,"Información WAVE"
+12401,1,"Muestreo (bps)"
+12402,1,"Frecuencia (Hz)"
+12403,1,"Modo"
+12404,1,"Compresión"
+12405,1,"Estereo"
+12406,1,"Mono"
+12407,1,"Longitud"
+
+[STRINGTABLE 20]
+12501,1,"Versión"
+12502,1,"MPEG %u.%u Layer %s"
+12503,1,"Muestreo (kbps)"
+12504,1,"Frecuencia (Hz)"
+12505,1,"Modo"
+12506,1,"Copyright (c)"
+12507,1,"Original"
+12508,1,"Autor"
+12509,1,"Título"
+12510,1,"Género"
+12511,1,"Comentarios"
+
+[STRINGTABLE 21]
+12512,1,"Año"
+12513,1,"Album"
+12514,1,"Énfasis"
+12515,1,"ID3 Tag v%u.%u"
+12516,1,"Información MPEG Audio"
+12517,1,"Cuadros"
+12518,1,"Longitud"
+12519,1,"Variable, media "
+12520,1,"Pista"
+12521,1,"-"
+12522,1,"50/15 microsegs"
+12523,1,"CCITT J 17"
+12524,1,"?"
+12525,1,"Estereo"
+12526,1,"Estereo unido"
+12527,1,"Canal dual"
+
+[STRINGTABLE 22]
+12528,1,"Canal único"
+12529,1,"Compositor"
+12530,1,"Artista orig"
+12531,1,"Codificado por"
+12532,1,"URL información comercial"
+12533,1,"URL Copyright/información legal"
+12534,1,"URL oficial fichero audio"
+12535,1,"URL Artista oficial"
+12536,1,"URL oficial fuente de audio"
+12537,1,"URL oficial estación radio internet"
+12538,1,"URL pago"
+12539,1,"URL editor oficial"
+12540,1,"Editor"
+12541,1,"URL personal"
+12542,1,"Texto personal"
+
+[STRINGTABLE 23]
+12600,1,"Información AAC"
+12601,1,"Muestreo (bps)"
+12602,1,"Tasa muestreo (Hz)"
+12603,1,"Canales"
+12604,1,"Duración"
+12605,1,"Tipo cabecera"
+12606,1,"MPEG Versión"
+12607,1,"MAIN"
+
+[STRINGTABLE 24]
+12608,1,"LC"
+12609,1,"SSR"
+12610,1,"LTP"
+12611,1,"RAW"
+12612,1,"ADIF"
+12613,1,"ADTS"
+

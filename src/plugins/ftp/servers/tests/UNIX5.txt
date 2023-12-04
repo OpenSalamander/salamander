@@ -1,0 +1,40 @@
+total 80
+lrwxrwxrwx   1 biaf     iplus         11 14 Dec 2004  BIAF_Wetter -> biaf_wetter
+drwxrwxr-x   5 ftp      ftp          4096  2 Aug 13:39 .
+drwxrwxr-x   3 ftp      ftp          4096 21 Dec 2001  ..
+drwx------    2 solin    users        4096 17 Oct 2001  mail
+dr-xr-xr-x   1 owner    group               0 25 Feb 2000  KBHelp
+-rw-r--r--    1 solin    users        2336 16 Nov 2001  readme.txt
+-r--r--r--   1 100      50         589722 21 Feb 2002  265058a.exe
+-r-xr-xr-x   1 owner    group            1427 25 Aug 1994  readme.txt
+lrwxrwxrwx    1 solin    users           4  5 Aug 12:15 file_link -> file
+lrwxrwxrwx    1 solin    users           4  5 Aug 09:51 file_link.txt -> file
+lrwxrwxrwx    1 solin    users          10  5 Aug 09:45 readme_link -> ../solin/readme.txt
+crw-r-----   1 root     disk      27,  24  8 Dec 1995  zqft0
+crw-r-----   1 root     disk      27,  25  8 Dec 1995  zqft1
+crw-r-----   1 root     disk      27,  26  8 Dec 1995  zqft2
+brw-rw----    1 root     disk      29,   0 24 Aug 2000  aztcd
+brw-rw----    1 root     disk      13, 121 24 Aug 2000  xdb57
+lrwx------    1 root     root            0 16 Oct 14:08 root
+lrwx------    1 root     root            0 16 Oct 14:08 cwd
+lrwx------    1 solin    users           0 16 Oct 14:15 cwd -> /proc/20493
+pr--r--r--    1 root     root            0 16 Oct 14:08 maps
+lrwxrwxrwx   1 biaf name     iplus         11 14 Dec 2004  BIAF_Wetter -> biaf_wetter
+drwxrwxr-x   5 ftp name      ftp          4096  2 Aug 13:39 .
+drwxrwxr-x   3 ftp name      ftp          4096 21 Dec 2001  ..
+drwx------    2 solin name    users        4096 17 Oct 2001  mail
+dr-xr-xr-x   1 owner name    group               0 25 Feb 2000  KBHelp
+-rw-r--r--    1 solin name    users        2336 16 Nov 2001  readme.txt
+-r-xr-xr-x   1 owner name    group            1427 25 Aug 1994  readme.txt
+lrwxrwxrwx    1 solin name    users           4  5 Aug 12:15 file_link -> file
+lrwxrwxrwx    1 solin name    users           4  5 Aug 09:51 file_link.txt -> file
+lrwxrwxrwx    1 solin name    users          10  5 Aug 09:45 readme_link -> ../solin/readme.txt
+crw-r-----   1 root name     disk      27,  24  8 Dec 1995  zqft0
+crw-r-----   1 root name     disk      27,  25  8 Dec 1995  zqft1
+crw-r-----   1 root name     disk      27,  26  8 Dec 1995  zqft2
+brw-rw----    1 root name     disk      29,   0 24 Aug 2000  aztcd
+brw-rw----    1 root name     disk      13, 121 24 Aug 2000  xdb57
+lrwx------    1 root name     root            0 16 Oct 14:08 root
+lrwx------    1 root name     root            0 16 Oct 14:08 cwd
+lrwx------    1 solin name    users           0 16 Oct 14:15 cwd -> /proc/20493
+pr--r--r--    1 root name    root            0 16 Oct 14:08 maps

@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "doxml2hh", "doxml2hh.vcproj", "{350E7FC3-FDDC-48EE-8A7F-9A9C7851387F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{350E7FC3-FDDC-48EE-8A7F-9A9C7851387F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{350E7FC3-FDDC-48EE-8A7F-9A9C7851387F}.Debug|Win32.Build.0 = Debug|Win32
+		{350E7FC3-FDDC-48EE-8A7F-9A9C7851387F}.Release|Win32.ActiveCfg = Release|Win32
+		{350E7FC3-FDDC-48EE-8A7F-9A9C7851387F}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

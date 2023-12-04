@@ -1,0 +1,259 @@
+﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __MMVIEWER_RH2
+#define __MMVIEWER_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#define IDC_STATIC_1 13000
+#include "statics.rh2"   // 13000 az 13039 jsou timto zabrane !!!
+
+#define IDI_MAIN                        9991
+#define IDI_DISKEXPLORER                9992
+
+#define IDB_TOOLBAR16                   9970
+#define IDB_TOOLBAR256                  9971
+#define IDB_TOOLBARMAIN                 9972
+
+#define IDA_ACCELERATORS                9998
+
+#define CM_FILES_OPEN                   10001
+#define CM_PROPERTIES                   10003
+#define CM_EXIT                         10004
+#define CM_ABOUT                        10005
+#define CM_COPY                         10006
+#define CM_FULLSCREEN                   10014
+#define CM_CONFIGURATION                10018
+#define CM_FILE_PREV                    10019
+#define CM_FILE_NEXT                    10020
+#define CM_FILE_FIRST                   10021
+#define CM_FILE_LAST                    10022
+#define CM_FILES_EXPORT_HTML            10300
+#define CM_FILES_EXPORT_XML             10301
+#define CML_FILES                       10251
+#define CML_EDIT                        10252
+#define CML_VIEW                        10253
+#define CML_OPTIONS                     10255
+#define CML_HELP                        10256
+#define CML_OTHERFILES                  10257
+
+#define IDS_MMV_OOM                     11100
+#define IDS_MMV_UNKNOWN_FILE            11101
+#define IDS_MMV_OPEN_ERROR              11102
+#define IDS_MMV_READ_ERROR              11103
+#define IDS_MMV_WRITE_ERROR             11104
+#define IDS_MMV_SEEK_ERROR              11105
+#define IDS_MMV_CORRUPTED_FILE          11106
+#define IDS_MMV_EXTENSION_ERROR         11107
+
+#define IDS_PLUGIN_NAME                 11110
+#define IDS_OPENED_WINDOWS              11111
+#define IDS_VIEWERFILTER                11120
+#define IDS_FONTDESCRIPTION             11121
+#define IDS_CFG_CONFLICT                11122
+#define IDS_ERROR_OPENING               11123
+#define IDS_HTMLEXPFILTER               11124
+#define IDS_EXPORTOPEN                  11125
+#define IDS_EXPORTHTML                  11126
+#define IDS_AUDIOINFO                   11127
+#define IDS_HTMLEXT                     11128
+#define IDS_PROCESSINGFILES             11129
+#define IDS_FILESPROCESSED              11130
+#define IDS_PLUGIN_DESCRIPTION          11131
+#define IDS_ABOUT                       11132
+
+#define IDS_MENU_FILES                  11200
+#define IDS_MENU_FILES_OPEN             11201
+#define IDS_MENU_FILES_PROPERTIES       11202
+#define IDS_MENU_FILES_EXIT             11204
+#define IDS_MENU_FILE_OTHER             11205
+#define IDS_MENU_FILE_FIRST             11206
+#define IDS_MENU_FILE_LAST              11207
+#define IDS_MENU_FILE_PREV              11208
+#define IDS_MENU_FILE_NEXT              11209
+#define IDS_MENU_FILES_EXPORT_HTML      11290
+#define IDS_MENU_FILES_EXPORT_XML       11291
+
+#define IDS_MENU_EDIT                   11210
+#define IDS_MENU_EDIT_COPY              11211
+#define IDS_MENU_EDIT_SELECT_ALL        11212
+#define IDS_MENU_VIEW                   11230
+#define IDS_MENU_VIEW_FULLSCREEN        11232
+#define IDS_MENU_OPTIONS                11270
+#define IDS_MENU_OPTIONS_CONFIG         11271
+#define IDS_MENU_HELP                   11280
+#define IDS_MENU_HELP_ABOUT             11281
+
+#define IDS_TBTT_COPY                   11500
+#define IDS_TBTT_OPEN                   11501
+#define IDS_TBTT_FIND                   11502
+#define IDS_TBTT_PROPERTIES             11503
+#define IDS_TBTT_FULLSCREEN             11504
+#define IDS_TBTT_PREV                   11505
+#define IDS_TBTT_NEXT                   11506
+#define IDS_TBTT_EXP_HTML               11507
+#define IDS_TBTT_EXP_XML                11508
+
+#define IDS_YES                         12001
+#define IDS_NO                          12002
+#define IDS_VQF_INFO                    12009
+#define IDS_VQF_COPYRIGHT               12010
+#define IDS_VQF_AUTHOR                  12011
+#define IDS_VQF_TITLE                   12012
+#define IDS_VQF_COMMENTS                12013
+#define IDS_VQF_YEAR                    12014
+#define IDS_VQF_ALBUM                   12015
+#define IDS_VQF_TRACK                   12016
+#define IDS_VQF_ORIGFILENAME            12017
+#define IDS_VQF_LYRC                    12018
+#define IDS_VQF_WORD                    12019
+#define IDS_VQF_MUSC                    12020
+#define IDS_VQF_ARNG                    12021
+#define IDS_VQF_PROD                    12022
+#define IDS_VQF_REMX                    12023
+#define IDS_VQF_CDCT                    12024
+#define IDS_VQF_SING                    12025
+#define IDS_VQF_LABL                    12026
+#define IDS_VQF_NOTE                    12027
+#define IDS_VQF_PRSN                    12028
+#define IDS_VQF_BAND                    12029
+
+#define IDS_WMA_INFO                    12100
+#define IDS_WMA_BINARY                  12101
+#define IDS_WMA_DURATION                12102
+#define IDS_WMA_BITRATE                 12103
+#define IDS_WMA_SEEKABLE                12104
+#define IDS_WMA_STRIDABLE               12105
+#define IDS_WMA_BROADCAST               12106
+#define IDS_WMA_PROTECTED               12107
+#define IDS_WMA_TRUSTED                 12108
+#define IDS_WMA_SIGNATURENAME           12109
+#define IDS_WMA_TITLE                   12110
+#define IDS_WMA_AUTHOR                  12111
+#define IDS_WMA_DESCRIPTION             12112
+#define IDS_WMA_RATING                  12113
+#define IDS_WMA_COPYRIGHT               12114
+#define IDS_WMA_ALBUMTITLE              12115
+#define IDS_WMA_TRACK                   12116
+#define IDS_WMA_PROMOTIONURL            12117
+#define IDS_WMA_ALBUMCOVERURL           12118
+#define IDS_WMA_GENRE                   12119
+#define IDS_WMA_YEAR                    12120
+#define IDS_WMA_MCDI                    12121
+#define IDS_WMA_BANNERIMAGETYPE         12122
+#define IDS_WMA_BANNERIMAGEDATA         12123
+#define IDS_WMA_BANNERIMAGEURL          12124
+#define IDS_WMA_COPYRIGHTURL            12125
+#define IDS_WMA_NSCNAME                 12126
+#define IDS_WMA_NSCADDRESS              12127
+#define IDS_WMA_NSCPHONE                12128
+#define IDS_WMA_NSCEMAIL                12129
+#define IDS_WMA_NSCDESCRIPTION          12130
+
+#define IDS_MOD_INFO                    12200
+#define IDS_MOD_PATTERNS                12201
+#define IDS_MOD_SAMPLES                 12202
+#define IDS_MOD_INSTRUMENTS             12203
+#define IDS_MOD_TITLE                   12204
+
+#define IDS_OGG_INFO                    12300
+#define IDS_OGG_VERSION                 12301
+#define IDS_OGG_BITRATE                 12302
+#define IDS_OGG_FREQUENCY               12303
+#define IDS_OGG_CHANNELS                12304
+#define IDS_OGG_COPYRIGHT               12305
+#define IDS_OGG_VERSIONS                12306
+#define IDS_OGG_CONTACT                 12307
+#define IDS_OGG_ISRC                    12308
+#define IDS_OGG_AUTHOR                  12309
+#define IDS_OGG_TITLE                   12310
+#define IDS_OGG_GENRE                   12311
+#define IDS_OGG_COMMENTS                12312
+#define IDS_OGG_DATE                    12313
+#define IDS_OGG_ALBUM                   12314
+#define IDS_OGG_TRACK                   12315
+#define IDS_OGG_PERFORMER               12316
+#define IDS_OGG_ORGANIZATION            12317
+#define IDS_OGG_DESCRIPTION             12318
+#define IDS_OGG_DETAILS                 12319
+#define IDS_OGG_LOCATION                12320
+#define IDS_OGG_SAMPLES                 12321
+#define IDS_OGG_LENGTH                  12322
+#define IDS_OGG_ADDINFO                 12323
+#define IDS_OGG_DISCID                  12324
+#define IDS_OGG_VENDOR                  12325
+#define IDS_OGG_STDTAGS                 12326
+#define IDS_OGG_OTHERTAG                12327
+
+#define IDS_WAV_INFO                    12400
+#define IDS_WAV_BITRATE                 12401
+#define IDS_WAV_FREQUENCY               12402
+#define IDS_WAV_MODE                    12403
+#define IDS_WAV_COMPRESSION             12404
+#define IDS_WAV_STEREO                  12405
+#define IDS_WAV_MONO                    12406
+#define IDS_WAV_LENGTH                  12407
+
+#define IDS_MP3_MP3VERSION              12501
+#define IDS_MP3_MP3VERSIONFMT           12502
+#define IDS_MP3_BITRATE                 12503
+#define IDS_MP3_FREQUENCY               12504
+#define IDS_MP3_MODE                    12505
+#define IDS_MP3_COPYRIGHT               12506
+#define IDS_MP3_ORIGINAL                12507
+#define IDS_MP3_AUTHOR                  12508
+#define IDS_MP3_TITLE                   12509
+#define IDS_MP3_GENRE                   12510
+#define IDS_MP3_COMMENTS                12511
+#define IDS_MP3_YEAR                    12512
+#define IDS_MP3_ALBUM                   12513
+#define IDS_MP3_EMPHASIS                12514
+#define IDS_MP3_ID3TAGV                 12515
+#define IDS_MP3_MP3INFO                 12516
+#define IDS_MP3_FRAMES                  12517
+#define IDS_MP3_LENGTH                  12518
+#define IDS_MP3_AVERAGE                 12519
+#define IDS_MP3_TRACK                   12520
+#define IDS_MP3_DASH                    12521
+#define IDS_MP3_5015MS                  12522
+#define IDS_MP3_CCITTJ17                12523
+#define IDS_MP3_QUESTIONMARK            12524
+#define IDS_MP3_STEREO                  12525
+#define IDS_MP3_JSTEREO                 12526
+#define IDS_MP3_DCHANNEL                12527
+#define IDS_MP3_SCHANNEL                12528
+#define IDS_MP3_COMPOSER                12529
+#define IDS_MP3_ORIGARTIST              12530
+#define IDS_MP3_ENCODEDBY               12531
+#define IDS_MP3_URL_COMINFO             12532
+#define IDS_MP3_URL_COPYRIGHT           12533
+#define IDS_MP3_URL_OFFICIAL            12534
+#define IDS_MP3_URL_ARTIST              12535
+#define IDS_MP3_URL_ASOURCE             12536
+#define IDS_MP3_URL_IRADIO              12537
+#define IDS_MP3_URL_PAYMENT             12538
+#define IDS_MP3_URL_PUBLISHER           12539
+#define IDS_MP3_PUBLISHER               12540
+#define IDS_MP3_USERURL                 12541
+#define IDS_MP3_USERTEXT                12542
+
+#define IDS_MP4_AACINFO                 12600
+#define IDS_MP4_BITRATE                 12601
+#define IDS_MP4_SAMPLINGRATE            12602
+#define IDS_MP4_CHANNELS                12603
+#define IDS_MP4_DURATION                12604
+#define IDS_MP4_AACHEADERTYPE           12605
+#define IDS_MP4_MPEGVERSION             12606
+#define IDS_MP4_OBJTYPE_MAIN            12607
+#define IDS_MP4_OBJTYPE_LC              12608
+#define IDS_MP4_OBJTYPE_SSR             12609
+#define IDS_MP4_OBJTYPE_LTP             12610
+#define IDS_MP4_HEADTYPE_RAW            12611
+#define IDS_MP4_HEADTYPE_ADIF           12612
+#define IDS_MP4_HEADTYPE_ADTS           12613
+
+// help IDs
+#define IDH_EXPORT                      13500
+
+#endif // __MMVIEWER_RH2

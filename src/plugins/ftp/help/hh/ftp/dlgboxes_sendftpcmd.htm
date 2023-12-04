@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Send FTP Command dialog box</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: FTP Client: Dialog Boxes</div>
+<div class="page">
+<h1>Send FTP Command</h1>
+
+<p>Use this dialog to send FTP commands directly to the FTP server.
+</p>
+
+<h4>Options</h4>
+<dl>
+<dt><i>Command</i></dt>
+<dd>Specify the command to send. Use the drop-down list to select previously used command.
+</dd>
+
+<dt><i>Secret command (hide typing and neither remember it nor show it in log)</i></dt>
+<dd>When checked, the Command edit box is in password mode (text in the box is not readable),
+the command will not be added to the list of previously used commands, and it will not be
+visible in the FTP log. Use this mode when you are sending some command containing sensitive
+data (e.g. password).
+</dd>
+
+<dt><i>Command can change working path on server (change path in panel too)</i></dt>
+<dd>When checked, the FTP client will get new current directory on the FTP server
+after sending of the command. Otherwise the FTP client does not expect that the current
+directory on the FTP server can be changed by sending of the command.
+</dd>
+
+<dt><i>Command can make changes on working path (refresh working path)</i></dt>
+<dd>When checked, the FTP client refreshes the current directory after sending of
+the command. Otherwise the panel content is not refreshed.
+</dd>
+
+</dl>
+
+<h4>See Also</h4>
+<p>
+<a href="using_sendftpcmd.htm">Sending FTP Command</a><br/>
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

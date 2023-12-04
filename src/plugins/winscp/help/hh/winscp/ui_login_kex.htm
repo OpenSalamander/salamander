@@ -1,0 +1,155 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Key Exchange Tab (Login Dialog)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Dialog Boxes: Configuring Session</div>
+<div class="page">
+<h1>Key Exchange Tab (Login Dialog)</h1>
+
+<p>
+<em>Key exchange tab</em> allows you to configure key exchange algorithm policy and key re-exchange options.
+</p>
+
+<p>
+You need to check <em>Advanced options</em> to reveal the tab.
+</p>
+
+<p>
+Key exchange occurs at the start of an <acronym title="Secure Shell">SSH</acronym> connection (and occasionally
+thereafter); it establishes a shared secret that is used as the basis for all of
+<acronym title="Secure Shell">SSH</acronym>'s security features. It is therefore very important for the
+security of the connection that the key exchange is secure. <a href="#fn1">(see note 1)</a>
+</p>
+
+<p>
+Key exchange is a cryptographically intensive process; if either the client or the server is a relatively slow
+machine, the slower methods may take several tens of seconds to complete.
+</p>
+
+<p>
+If connection startup is too slow, or the connection hangs periodically, you may want to try changing these settings.
+</p>
+
+<p>
+If you don't understand what any of this means, it's safe to leave these settings alone.
+</p>
+
+<p>
+This entire panel is only relevant to <acronym title="Secure Shell">SSH</acronym> protocol version 2; none
+of these settings affect <acronym title="Secure Shell">SSH</acronym>-1 at all.
+</p>
+
+<a name="key_exchange_algorithm_options"></a>
+<h4>Key Exchange Algorithm Options</h4>
+
+<p>
+WinSCP supports a variety of <acronym title="Secure Shell">SSH</acronym>-2 key exchange methods, and
+allows you to choose which one you prefer to use; configuration is similar to
+<a href="ui_login_ssh.htm#encryption_options">cipher selection</a>.
+</p>
+
+<p>
+WinSCP currently supports the following varieties of Diffie-Hellman and
+<acronym title="Generic Security Services Application Programming Interface">GSSAPI</acronym>
+key exchange:
+</p>
+
+<ul>
+<li><em>Group 14</em>: a well-known 2048-bit group. </li>
+<li><em>Group 1</em>: a well-known 1024-bit group. This is less secure than group 14, but may be faster
+    with slow client or server machines, and may be the only method supported by older server software. </li>
+<li><em>Group exchange</em>: with this method, instead of using a fixed group, WinSCP requests that the
+    server suggest a group to use for key exchange; the server can avoid groups known to be weak, and
+        possibly invent new ones over time, without any changes required to WinSCP's configuration. We
+        recommend use of this method, if possible.</li>
+</ul>
+
+<p>
+The <acronym title="Generic Security Services Application Programming Interface">GSSAPI</acronym>
+varieties are used only when
+<a href="ui_login_authentication.htm">GSSAPI/SSPI authentication</a> is used.
+</p>
+
+<p>
+If the first algorithm WinSCP finds is below the <em>warn below here</em> line, you will see a warning box
+when you make the connection, similar to that for <a href="ui_login_ssh.htm#encryption_options">cipher selection</a>.
+</p>
+
+<a name="reexchange"></a>
+<a name="options_controlling_key_re-exchange"></a>
+<h4>Options Controlling Key Re-exchange</h4>
+
+<p>
+If the session key negotiated at connection startup is used too much or for too long, it may become feasible
+to mount attacks against the <acronym title="Secure Shell">SSH</acronym> connection. Therefore, the
+<acronym title="Secure Shell">SSH</acronym>-2 protocol specifies that a new key exchange should take place
+every so often; this can be initiated by either the client or the server.
+</p>
+
+<p>
+While this renegotiation is taking place, no data can pass through the <acronym title="Secure Shell">SSH</acronym>
+connection, so it may appear to &quot;freeze&quot;. Usually the same algorithm is used as at the start of the connection,
+with a similar overhead.
+</p>
+
+<p>
+These options control how often WinSCP will initiate a repeat key exchange (&quot;rekey&quot;).
+</p>
+
+<p>
+<em>Max minutes before rekey</em> specifies the amount of time that is allowed to elapse before a rekey is
+initiated. If this is set to zero, WinSCP will not rekey due to elapsed time. The
+<acronym title="Secure Shell">SSH</acronym>-2 protocol specification recommends a timeout of at most 60 minutes.
+</p>
+
+<p>
+You might have a need to disable time-based rekeys completely for the same reasons that keepalives aren't
+always helpful. If you anticipate suffering a network dropout of several hours in the middle of an
+<acronym title="Secure Shell">SSH</acronym> connection, but were not actually planning to send data down that
+connection during those hours, then an attempted rekey in the middle of the dropout will probably cause the
+connection to be abandoned, whereas if rekeys are disabled then the connection should in principle survive
+(in the absence of interfering firewalls). Note, however, that the <acronym title="Secure Shell">SSH</acronym>
+server can still initiate rekeys.
+</p>
+
+<p>
+<em>Max data before rekey</em> specifies the amount of data (in bytes) that is permitted to flow in either
+direction before a rekey is initiated. If this is set to zero, WinSCP will not rekey due to transferred data.
+The <acronym title="Secure Shell">SSH</acronym>-2 protocol specification recommends a limit of at most 1 gigabyte.
+</p>
+
+<p>
+As well as specifying a value in bytes, the following shorthand can be used:
+</p>
+
+<ul>
+<li><code>1k</code> specifies 1 kilobyte (1024 bytes). </li>
+<li><code>1M</code> specifies 1 megabyte (1024 kilobytes). </li>
+<li><code>1G</code> specifies 1 gigabyte (1024 megabytes). </li>
+</ul>
+
+<p>
+Disabling data-based rekeys entirely is a bad idea. The integrity, and to a lesser extent, confidentiality
+of the <acronym title="Secure Shell">SSH</acronym>-2 protocol depend in part on rekeys occurring before
+a 32-bit packet sequence number wraps around. Unlike time-based rekeys, data-based rekeys won't occur when
+the <acronym title="Secure Shell">SSH</acronym> connection is idle, so they shouldn't cause the same problems.
+</p>
+
+<h4>Notes:</h4>
+<p>
+<a name="fn1"></a>
+1) The text is copy of <a href="https://tartarus.org/~simon/putty-snapshots/htmldoc/" target="_blank">PuTTY User Manual</a> or was inspired by it.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

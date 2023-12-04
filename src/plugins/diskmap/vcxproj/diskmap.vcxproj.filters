@@ -1,0 +1,229 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="cpp">
+      <UniqueIdentifier>{23960f69-b248-440b-ab7d-43024b1bd11c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="h">
+      <UniqueIdentifier>{4f7812ab-4bc2-4b82-b433-8599ebee4189}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rc">
+      <UniqueIdentifier>{43917c2a-e7e6-4a9c-b32e-be5659d96906}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shared">
+      <UniqueIdentifier>{61093062-d87b-4db4-8cbf-27e734fc8891}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TreeMap">
+      <UniqueIdentifier>{4b8ed5c9-a4a5-4597-9847-67e6af161cc1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\DiskMapPlugin\precomp.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DiskMapPlugin\DiskMapPlugin.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\DBG.CPP">
+      <Filter>shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DiskMap\GUI.CWindow.cpp">
+      <Filter>TreeMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DiskMap\GUI.MainWindow.cpp">
+      <Filter>TreeMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DiskMap\TreeMap.FileData.CZDirectory.cpp">
+      <Filter>TreeMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DiskMap\TreeMap.FileData.CZFile.cpp">
+      <Filter>TreeMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DiskMap\TreeMap.Graphics.CCushionGraphics.cpp">
+      <Filter>TreeMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DiskMap\Utils.CZLocalizer.cpp">
+      <Filter>TreeMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\AUXTOOLS.CPP" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\DiskMapPlugin\precomp.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMapPlugin\DiskMapPlugin.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\SPL_BASE.H">
+      <Filter>shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\SPL_COM.H">
+      <Filter>shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\SPL_GEN.H">
+      <Filter>shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\SPL_GUI.H">
+      <Filter>shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\SPL_MENU.H">
+      <Filter>shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\SPL_VERS.H">
+      <Filter>shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.AboutDialog.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.CAnimation.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.CChildWindow.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.CFrameWindow.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.CWindow.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.DirectoryLine.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.DiskMapView.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.LoadAnimation.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.LogWindow.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.MainWindow.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.ShellMenu.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.ToolTip.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.ViewConnectorBase.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\System.CLogger.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\System.Lock.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\System.RWLock.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\System.Themes.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\System.WorkerThread.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.CDiskMap.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.DiskMap.CDirectoryOverlay.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.DiskMap.CDiskMapOverlay.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.FileData.CZDirectory.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.FileData.CZFile.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.FileData.CZRoot.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.Graphics.CCushionGraphics.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.TreeData.CCushion.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.TreeData.CCushionDirectory.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.TreeData.CCushionHitInfo.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.TreeData.CCushionRow.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.TreeData.CTreeMap.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.TreeData.CTreeMapRenderer.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.TreeData.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\Utils.Array.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\Utils.CPixMap.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\Utils.CRegionAllocator.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\Utils.CStringFormatter.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\Utils.CZBitmap.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\Utils.CZColors.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\Utils.CZIconLoader.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\Utils.CZLocalizer.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\Utils.CZSmartIconLoader.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\Utils.CZString.h">
+      <Filter>TreeMap</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\DiskMapPlugin\VERSINFO.RH2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\DiskMap\Resources\DiskMap.Global.rc2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\DiskMap\Resources\DiskMap.rh2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\DiskMapPlugin\DiskMapPlugin.def">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\DiskMapPlugin\DiskMapPlugin.rh">
+      <Filter>rc</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\DiskMap\Resources\DiskMap.ico">
+      <Filter>rc</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\DiskMapPlugin\DiskMapPlugin.rc">
+      <Filter>rc</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

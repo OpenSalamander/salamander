@@ -1,0 +1,52 @@
+﻿//
+// lang.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "..\versinfo.rh2"
+#include "versinfo.rc2"
+
+STRINGTABLE
+{
+  IDS_PLUGINNAME, "UnCAB"
+  IDS_PLUGIN_DESCRIPTION, "Browse and extract CAB archives."
+  IDS_ABOUT, "About Plugin"
+  IDS_LOWMEM, "Insufficient memory."
+  IDS_UNKNOWN, "Unknown error occurred."
+  IDS_BROWSEARCHIVETITLE, "Select Folder"
+  IDS_LIST, "Unable to add archive entry to the files list."
+  IDS_EXTRPROGTITLE, "Unpacking CAB Archive - %s"
+  IDS_PREPAREDATA, "preparing data and creating directories..."
+  IDS_EXTRACTFILES, "unpacking..."
+  IDS_EXTRACTING, "unpacking: "
+  IDS_UNABLEGETFIELPOS, "Unable to get file pointer: "
+  IDS_UNABLEWRITE, "Unable to write to file:"
+  IDS_UNABLESEEK, "Unable to set file pointer: "
+  IDS_TOOLONGNAME, "Can't finish operation because of too long path name."
+  IDS_TOOLONGMASK, "Can't finish operation because of too long mask."
+  IDS_EXPIRE, "Sorry, the plugin has expired. Please check our web site for newer version."
+  IDS_UNABLECREATE, "Unable to create or open file."
+  IDS_UNABLEREAD, "Unable to read file."
+  IDS_BROWSEFOLDERTEXT, "Select a folder containing '%s'."
+  IDS_NOTFOUND, "File not found."
+  IDS_SKIPPING, "skipping file"
+  IDS_NEXTVOLTEXT, "Please insert a disk with the cabinet volume number %d or locate appropriate cabinet file on the disk.\n\nPress OK when ready."
+
+  // FDIERROR - Error codes returned in erf.erfOper field
+  IDS_CABINET_NOT_FOUND, "Cabinet not found."
+  IDS_NOT_A_CABINET, "Cabinet file does not have the correct format."
+  IDS_UNKNOWN_CABINET_VERSION, "Cabinet file has an unknown version number."
+  IDS_CORRUPT_CABINET, "Cabinet file is corrupt."
+  IDS_BAD_COMPR_TYPE, "Unknown compression type in a cabinet folder."
+  IDS_MDI_FAIL, "Failure decompressing data from a cabinet file."
+  IDS_RESERVE_MISMATCH, "Cabinets in a set do not have the same RESERVE sizes."
+  IDS_WRONG_CABINET, "Incorrect cabinet file."
+  IDS_USER_ABORT, "User break."
+  IDS_ERROR, "Error"
+}

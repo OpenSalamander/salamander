@@ -1,0 +1,228 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\french\dbviewer.atp"
+TEXTVERSION,"1.23 (x86)"
+VERSION,"1,2,3,180"
+
+[TRANSLATION]
+LANGID,1036
+AUTHOR,"Gérard Gréco, Arnaud Dupin de Beyssat, Jérémy Marc, Maxime Abbey"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6162"
+COMMENT,"Version française"
+
+[DIALOG 12200]
+235,181,1,"Propriétés"
+1,179,162,50,14,1,"OK"
+13000,4,155,227,1,1,""
+12201,5,5,224,143,1,""
+
+[DIALOG 12220]
+349,105,1,"Configuration du visualiseur de base de données"
+13000,6,10,337,35,1,"Police"
+12221,13,23,50,14,1,"&Police"
+12222,69,23,267,14,1,""
+13001,6,48,337,27,1,"Position de la fenêtre"
+12223,14,58,105,12,1,"&Sauvegarder à la fermeture"
+12224,127,58,210,12,1,"&Définir à la position de la fenêtre principale de Salamander"
+12225,13,85,60,14,1,"Options CSV..."
+1,180,85,50,14,1,"OK"
+2,235,85,50,14,1,"Annuler"
+9,290,85,50,14,1,"Aide"
+
+[DIALOG 12240]
+282,178,1,"Champs"
+12241,6,6,270,142,1,""
+13000,4,153,274,1,1,""
+12242,6,159,76,14,1,"&Valeurs par défaut"
+1,115,159,50,14,1,"OK"
+2,170,159,50,14,1,"Annuler"
+9,225,159,50,14,1,"Aide"
+
+[DIALOG 12250]
+335,137,1,"Options CSV"
+13000,6,6,84,101,1,"&Séparateur"
+12264,15,18,60,12,1,"Sélection auto"
+12261,15,32,48,12,1,"Tabulation"
+12260,15,46,66,12,1,"Point-virgule (;)"
+12259,15,60,47,12,1,"Virgule (,)"
+12258,15,74,48,12,1,"Espace ( )"
+12257,15,88,32,12,1,"Autre"
+12256,49,88,16,12,1,""
+13001,100,6,94,101,1,"Délimiteur de &Texte"
+12262,109,18,60,12,1,"Sélection auto"
+12255,109,32,80,12,1,"Guillemet double (")"
+12254,109,46,78,12,1,"Guillemet simple (')"
+12253,109,60,34,12,1,"Aucun"
+13002,204,6,124,101,1,"&Première ligne"
+12263,213,18,60,12,1,"Sélection auto"
+12265,213,32,108,12,1,"Comme les noms de colonne"
+12266,213,46,80,12,1,"Comme les données"
+1,168,118,50,14,1,"OK"
+2,223,118,50,14,1,"Annuler"
+9,278,118,50,14,1,"Aide"
+12252,6,118,70,14,1,"&Définir par défaut"
+
+[DIALOG 12300]
+210,131,1,"Rechercher"
+13000,52,11,150,1,1,""
+13001,9,7,41,8,1,"&Rechercher"
+12301,16,17,182,64,1,""
+13002,39,47,163,1,1,""
+13003,9,43,28,8,1,"Options"
+12302,16,53,80,12,1,"Recherche en avan&t"
+12303,16,65,83,12,1,"Recherche en &arrière"
+12304,113,53,54,12,1,"&Mots entiers"
+12305,113,65,76,12,1,"&Sensible à la casse"
+12306,113,77,80,12,1,"&Expression régulière"
+13004,8,102,194,1,1,""
+1,20,110,50,14,1,"OK"
+2,80,110,50,14,1,"Annuler"
+9,140,110,50,14,1,"Aide"
+
+[DIALOG 12400]
+150,54,1,"Aller à l'enregistrement"
+13000,8,9,56,8,1,"&Enregistrement:"
+100,67,7,74,12,1,""
+1,21,32,50,14,1,"OK"
+2,78,32,50,14,1,"Annuler"
+
+[STRINGTABLE 0]
+11089,1,"Visualiseur de base de données"
+11090,1,"Visualise les fichiers dBase, FoxPro et CSV."
+11092,1,"A propos du module"
+11101,1,"Des fenêtres de visualisation de base données sont ouvertes. Voulez-vous les fermer?"
+
+[STRINGTABLE 1]
+11110,1,"Mémoire insuffisante."
+11111,1,"Le fichier présente un format de base de données non reconnu."
+11112,1,"Fichier non trouvé."
+11113,1,"Erreur en lecture du fichier de base de données. Il pourrait avoir été tronqué."
+11114,1,"Erreur en écriture du fichier de base de données."
+11115,1,"Erreur de recherche du fichier de base de données."
+11116,1,"Le fichier Memo n'est pas disponible."
+11117,1,"Le fichier Memo est corrompu."
+
+[STRINGTABLE 2]
+11120,1,"Fichiers de base de données (*.csv;*.dbf;*.txt)|*.csv;*.dbf;*.txt|Tous les fichiers (*.*)|*.*|"
+11121,1,"%d pt. %s (%s)"
+11122,1,"La configuration est déjà ouverte."
+11123,1,"Nom"
+11124,1,"Type"
+11125,1,"Largeur"
+11126,1,"Décimales"
+11130,1,"dBase II"
+11131,1,"dBase III"
+11132,1,"dBase IV"
+11133,1,"dBase V"
+11134,1,"Visual dBase 7"
+11135,1,"FoxPro"
+
+[STRINGTABLE 3]
+11136,1,"Inconnu"
+11140,1,"Caractère"
+11141,1,"Nombre"
+11142,1,"Logique"
+11143,1,"Date"
+11144,1,"Mémo"
+11145,1,"Virgule flottante"
+11146,1,"Binaire"
+11147,1,"Général"
+11148,1,"Image"
+11149,1,"Devise"
+11150,1,"Date/Heure"
+11151,1,"Entier"
+
+[STRINGTABLE 4]
+11152,1,"Inconnu"
+11153,1,"Double"
+11154,1,"Horodatage"
+11155,1,"AutoIncrémentation"
+11160,1,"Au moiuns un champ doit être visible."
+11162,1,"Il n'y a pas de champs valides dans cette base de données."
+11163,1,"Vrai"
+11164,1,"Faux"
+11165,1,"Modifié"
+11166,1,"Taille"
+11167,1,"Version"
+
+[STRINGTABLE 5]
+11168,1,"Nombre d'enregistrements"
+11169,1,"Nombre de champs"
+11170,1,"Nombre de champs Memo"
+11171,1,"Taille d'entête"
+11172,1,"Taille d'enregistrement"
+11173,1,"Page de code"
+
+[STRINGTABLE 6]
+11194,1,"Erreur d'expression régulière"
+11195,1,"Chercher"
+11196,1,"Impossible de trouver la chaîne '%s'."
+11197,1,"Impossible de trouver une correspondance à l'expression régulière '%s'."
+
+[STRINGTABLE 7]
+11200,1,"&Fichier"
+11201,1,"&Ouvrir...\tCtr+O"
+11202,1,"&Rafraîchir\tCtr+R"
+11203,1,"Propri&étés...\tCtrl+F1"
+11204,1,"A&tres fichiers"
+11205,1,"&Précédent\tREspace arrière"
+11206,1,"&Suivant\tEspace"
+11207,1,"P&récemment sélectionné\tCtrl+Espace arrière"
+11208,1,"S&uivant sélectionné\tCtrl+Espace"
+11209,1,"Pr&emier\tMaj+Retour arrière"
+11210,1,"&Dernier\tMaj+Espace"
+11211,1,"&Quitter\tAlt+F4"
+
+[STRINGTABLE 8]
+11217,1,"&Editer"
+11218,1,"&Copier\tCtrl+C"
+11219,1,"&Tout sélectionner\tCtrl+A"
+11220,1,"&Rechercher...\tCtrl+F"
+11221,1,"Rechercher &suivant\tCtrl+N"
+11222,1,"Rechercher &précédent\tCtrl+P"
+11223,1,"&Echanger le signet\tCtrl+F2"
+11224,1,"Signet s&uivant\tF2"
+11225,1,"Sig&net précédent\tShift+F2"
+11226,1,"Eff&acer tous les signets\tCtrl+Shift+F2"
+11230,1,"&Visualiser"
+11231,1,"&Aller à l'enregistrement...\tG"
+
+[STRINGTABLE 9]
+11232,1,"C&hamps...\tI"
+11233,1,"&Plein écran\tF11"
+
+[STRINGTABLE 10]
+11250,1,"&Convertir"
+11251,1,"&Auto-Sélection"
+11252,1,"&Ne pas convertir"
+11253,1,"Définir par défaut"
+11254,1,"Suivant\tF8"
+11255,1,"Précédent\tShift+F8"
+
+[STRINGTABLE 11]
+11270,1,"&Options"
+11271,1,"Options C&SV..."
+11272,1,"&Configuration..."
+
+[STRINGTABLE 12]
+11280,1,"&Aide"
+11281,1,"&A propos..."
+11282,1,"&Contenu\tF1"
+11283,1,"&Index..."
+11284,1,"&Rechercher..."
+
+[STRINGTABLE 13]
+11500,1,"Copier\tCtrl+C"
+11501,1,"Ouvrir\tCtrl+O"
+11502,1,"Rechercher\tCtrl+F"
+11503,1,"Propriétés\tCtrl+F1"
+
+[STRINGTABLE 14]
+11504,1,"Plein écran\tF11"
+11505,1,"Enregistrement actuel/Nombre d'enregistrements\tG"
+
+[STRINGTABLE 15]
+11520,0,"Use &default font"
+11521,1,"Utiliser la fonte &personnelle..."
+11522,0,"default font"
+11523,1,"Fonte personnelle"
+

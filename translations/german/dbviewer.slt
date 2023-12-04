@@ -1,0 +1,228 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\german\dbviewer.atp"
+TEXTVERSION,"1.23 (x86)"
+VERSION,"1,2,3,180"
+
+[TRANSLATION]
+LANGID,1031
+AUTHOR,"Dirk Bornhütter, Thomas Kelso, Thomas Pagels, Thomas Wölk, Marko Meister und Mick Weiss"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7334"
+COMMENT,"Deutsche Version"
+
+[DIALOG 12200]
+235,181,1,"Eigenschaften"
+1,179,162,50,14,1,"OK"
+13000,4,155,227,1,1,""
+12201,5,5,224,143,1,""
+
+[DIALOG 12220]
+292,105,1,"Datenbankbetrachter - Konfiguration"
+13000,6,10,280,35,1,"Schrift"
+12221,13,23,50,14,1,"&Schrift"
+12222,69,23,210,14,1,""
+13001,6,48,280,27,1,"Fensterposition"
+12223,14,58,96,12,1,"Beim &Beenden speichern"
+12224,122,58,158,12,1,"Wie &Position des Salamander Hauptfensters"
+12225,13,85,70,14,1,"CSV Optionen..."
+1,123,85,50,14,1,"OK"
+2,178,85,50,14,1,"Abbrechen"
+9,233,85,50,14,1,"Hilfe"
+
+[DIALOG 12240]
+292,178,1,"Felder"
+12241,6,6,280,142,1,""
+13000,4,153,283,1,1,""
+12242,6,159,100,14,1,"&Standard wiederherstellen"
+1,125,159,50,14,1,"OK"
+2,180,159,50,14,1,"Abbrechen"
+9,235,159,50,14,1,"Hilfe"
+
+[DIALOG 12250]
+333,137,1,"CSV Optionen"
+13000,6,6,100,101,1,"Trenn&zeichen"
+12264,15,18,60,12,1,"Automatisch"
+12261,15,32,60,12,1,"Tabulator"
+12260,15,46,60,12,1,"Semikolon (;)"
+12259,15,60,60,12,1,"Komma (,)"
+12258,15,74,63,12,1,"Leerzeichen ( )"
+12257,15,88,37,12,1,"Andere"
+12256,53,88,16,12,1,""
+13001,116,6,100,101,1,"Text&begrenzer"
+12262,125,18,60,12,1,"Automatisch"
+12255,125,32,88,12,1,"Anführungszeichen (")"
+12254,125,46,60,12,1,"Apostroph (')"
+12253,125,60,60,12,1,"Keine"
+13002,226,6,100,101,1,"&Erste Zeile"
+12263,235,18,60,12,1,"Automatisch"
+12265,235,32,70,12,1,"Spaltennamen"
+12266,235,46,60,12,1,"Daten"
+1,166,118,50,14,1,"OK"
+2,221,118,50,14,1,"Abbrechen"
+9,276,118,50,14,1,"Hilfe"
+12252,6,118,63,14,1,"Als &Standard"
+
+[DIALOG 12300]
+210,131,1,"Suchen"
+13000,39,11,163,1,1,""
+13001,9,7,28,8,1,"&Suchen"
+12301,16,17,182,64,1,""
+13002,44,47,158,1,1,""
+13003,9,43,33,8,1,"Optionen"
+12302,16,53,69,12,1,"Vorwär&ts suchen"
+12303,16,65,74,12,1,"Rüc&kwärts suchen"
+12304,108,53,59,12,1,"Ganze &Wörter"
+12305,108,65,87,12,1,"&Groß-/Kleinschreibung"
+12306,108,77,78,12,1,"&Regulärer Ausdruck"
+13004,8,102,194,1,1,""
+1,20,110,50,14,1,"OK"
+2,80,110,50,14,1,"Abbrechen"
+9,140,110,50,14,1,"Hilfe"
+
+[DIALOG 12400]
+121,54,1,"Gehe zu Satz"
+13000,8,9,27,8,1,"&Satz:"
+100,38,7,74,12,1,""
+1,7,32,50,14,1,"OK"
+2,64,32,50,14,1,"Beenden"
+
+[STRINGTABLE 0]
+11089,1,"Datenbank Betrachter"
+11090,1,"Anzeige von dBase, FoxPro und CSV Datenbankdateien."
+11092,1,"Über Plugin"
+11101,1,"Es sind schon einige Fenster des Datenbankbetrachters geöffnet. Möchten Sie diese schließen?"
+
+[STRINGTABLE 1]
+11110,1,"Nicht genügend Speicher."
+11111,1,"Die Datei hat ein unbekanntes Datenbankformat."
+11112,1,"Die Datei wurde nicht gefunden."
+11113,1,"Fehler beim Lesen der Datenbankdatei. Sie könnte abgeschnitten sein."
+11114,1,"Fehler beim Schreiben der Datenbankdatei."
+11115,1,"Fehler beim Durchsuchen der Datenbankdatei."
+11116,1,"Memodatei nicht verfügbar."
+11117,1,"Memodatei ist defekt."
+
+[STRINGTABLE 2]
+11120,1,"Datenbankdateien (*.csv;*.dbf;*.txt)|*.csv;*.dbf;*.txt|Alle Dateien (*.*)|*.*|"
+11121,1,"%d pt. %s (%s)"
+11122,1,"Die Konfiguration ist bereits geöffnet."
+11123,1,"Name"
+11124,1,"Typ"
+11125,1,"Länge"
+11126,1,"Dezimal"
+11130,1,"dBase II"
+11131,1,"dBase III"
+11132,1,"dBase IV"
+11133,1,"dBase V"
+11134,1,"Visual dBase 7"
+11135,1,"FoxPro"
+
+[STRINGTABLE 3]
+11136,1,"Unbekannt"
+11140,1,"Zeichen"
+11141,1,"Nummer"
+11142,1,"Logisch"
+11143,1,"Datum"
+11144,1,"Memo"
+11145,1,"Gleitkomma"
+11146,1,"Binär"
+11147,1,"Allgemein"
+11148,1,"Bild"
+11149,1,"Währung"
+11150,1,"Datum/Zeit"
+11151,1,"Zahl"
+
+[STRINGTABLE 4]
+11152,1,"Unbekannt"
+11153,1,"Gleitkomma doppelte Genauigkeit"
+11154,1,"Zeitstempel"
+11155,1,"Autoerhöhung"
+11160,1,"Mindestens ein Feld muss sichtbar sein."
+11162,1,"Keine bekannten Felder in der Datenbank."
+11163,1,"Wahr"
+11164,1,"Falsch"
+11165,1,"Geändert"
+11166,1,"Größe"
+11167,1,"Version"
+
+[STRINGTABLE 5]
+11168,1,"Anzahl Sätze"
+11169,1,"Anzahl Felder"
+11170,1,"Anzahl Memofelder"
+11171,1,"Dateikopflänge"
+11172,1,"Satzlänge"
+11173,1,"Zeichensatz"
+
+[STRINGTABLE 6]
+11194,1,"Fehler im regulären Ausdruck"
+11195,1,"Suche"
+11196,1,"Kann die Zeichenfolge '%s' nicht finden."
+11197,1,"Kann keinen Treffer für den regulären Ausdruck '%s' finden."
+
+[STRINGTABLE 7]
+11200,1,"&Datei"
+11201,1,"Ö&ffnen...\tStrg+O"
+11202,1,"&Aktualisieren...\tStrg+R"
+11203,1,"Ei&genschaften...\tStrg+F1"
+11204,1,"Ge&he zu Datei"
+11205,1,"&Vorherige\tRücktaste"
+11206,1,"&Nächste\tLeertaste"
+11207,1,"Vo&rherige ausgewählte\tStrg+Rücktaste"
+11208,1,"Näch&ste ausgewählte\tStrg+Leertaste"
+11209,1,"&Erste\tUmschalt+Rücktaste"
+11210,1,"&Letzte\tUmschalt+Leertaste"
+11211,1,"&Beenden\tAlt+F4"
+
+[STRINGTABLE 8]
+11217,1,"&Bearbeiten"
+11218,1,"&Kopieren\tStrg+C"
+11219,1,"All&es auswählen\tStrg+A"
+11220,1,"&Suchen...\tStrg+F"
+11221,1,"&Nächsten suchen\tStrg+N"
+11222,1,"&Vorherigen suchen\tStrg+P"
+11223,1,"&Textmarke ein-/ausschalten\tStrg+F2"
+11224,1,"Näc&hste Textmarke\tF2"
+11225,1,"Vo&rherige Textmarke\tUmschalt+F2"
+11226,1,"A&lle Textmarken löschen\tStrg+Umschalt+F2"
+11230,1,"&Ansicht"
+11231,1,"&Gehe zu Satz...\tG"
+
+[STRINGTABLE 9]
+11232,1,"&Felder...\tI"
+11233,1,"&Vollbild\tF11"
+
+[STRINGTABLE 10]
+11250,1,"&Konvertieren"
+11251,1,"&Automatische Auswahl"
+11252,1,"&Nicht konvertieren"
+11253,1,"Als Standard setzen"
+11254,1,"Nächste\tF8"
+11255,1,"Vorherige\tShift+F8"
+
+[STRINGTABLE 11]
+11270,1,"&Optionen"
+11271,1,"&CSV Optionen..."
+11272,1,"&Konfiguration..."
+
+[STRINGTABLE 12]
+11280,1,"&Hilfe"
+11281,1,"Ü&ber..."
+11282,1,"&Inhalt\tF1"
+11283,1,"In&dex..."
+11284,1,"&Suchen..."
+
+[STRINGTABLE 13]
+11500,1,"Kopieren\tStrg+C"
+11501,1,"Öffnen\tStrg+O"
+11502,1,"Suchen\tStrg+F"
+11503,1,"Eigenschaften\tStrg+F1"
+
+[STRINGTABLE 14]
+11504,1,"Vollbild\tF11"
+11505,1,"Aktueller Satz/Anzahl Sätze\tG"
+
+[STRINGTABLE 15]
+11520,0,"Use &default font"
+11521,1,"&Benutzerdef. Schrift verwenden..."
+11522,0,"default font"
+11523,1,"Benutzerdef. Schrift"
+

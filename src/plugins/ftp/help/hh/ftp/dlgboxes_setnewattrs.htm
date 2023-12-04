@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Set New Attributes dialog box</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: FTP Client: Dialog Boxes</div>
+<div class="page">
+<h1>Set New Attributes</h1>
+
+<p>Allows you to set new access rights (attributes) to the file or directory on Unix
+FTP servers. To display this dialog use the Set New Attributes command in the Some of
+Existing Attributes Cannot be Preserved dialog box (it is one of
+<a href="dlgboxes_solveerror.htm">Solve Error dialog boxes</a>).
+</p>
+
+<h4>Options</h4>
+<dl>
+
+<dt><i>Path, Name</i></dt>
+<dd>Specifies the file or directory to which you are setting new access
+rights (attributes).
+</dd>
+
+<dt><i>Current attributes</i></dt>
+<dd>Shows the current access rights (attributes) of the file or directory.
+</dd>
+
+<dt><i>Owner: Read, Write, Execute (Access)</i><br/>
+<i>Group: Read, Write, Execute (Access)</i><br/>
+<i>Others: Read, Write, Execute (Access)</i></dt>
+<dd>Specify new access rights for owner, group, and others. When checked, the
+right will be set. When cleared, the right will be cleared.
+</dd>
+
+<dt><i>Numeric value</i></dt>
+<dd>You can also set access rights using their octal representation. First digit
+is for owner rights, second for group rights, and third for others rights. Numerical
+values for rights are these: 1 = Execute (Access), 2 = Write, 4 = Read. For example:
+"640" means read and write for owner, read for group, and no rights for others.
+</dd>
+
+<dt><i>Set New Attributes</i></dt>
+<dd>Click on this button to set new access rights (attributes).
+</dd>
+
+<dt><i>Use these attributes in operations with the same error now</i></dt>
+<dd>Select this check box if you want to set the same access rights (attributes)
+in all operations (see the Operations listview in <a href="dlgboxes_operationdlg.htm">Operation
+dialog box</a>) which are currently in the same error state (error: some of existing
+attributes cannot be preserved). Note: this will not apply to operations which
+will get to the same error state in the future.
+</dd>
+
+</dl>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

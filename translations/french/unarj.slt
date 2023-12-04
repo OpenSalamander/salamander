@@ -1,0 +1,88 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\french\unarj.atp"
+TEXTVERSION,"1.21 (x86)"
+VERSION,"1,2,1,180"
+
+[TRANSLATION]
+LANGID,1036
+AUTHOR,"Gérard Gréco, Arnaud Dupin de Beyssat, Jérémy Marc, Maxime Abbey"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6162"
+COMMENT,"Version française"
+
+[DIALOG 100]
+258,110,1,"Volume suivant de l'archive"
+300,12,9,234,32,1,"Veuillez insérer le disque contenant le volume suivant de l'archive, ou sélectionnez le fichier approprié à partir d'un autre emplacement.\n\nPuis appuyez sur OK pour continuer."
+301,12,48,66,8,1,"Volume précédent:"
+103,79,48,167,12,1,""
+302,12,62,56,8,1,"&Volume suivant:"
+101,12,72,219,12,1,""
+102,234,72,13,12,1,"..."
+1,72,91,50,14,1,"OK"
+2,135,91,50,14,1,"Annuler"
+
+[DIALOG 103]
+352,85,1,"Erreur"
+300,6,10,26,8,1,"Nom:"
+104,36,10,309,8,1,""
+301,6,23,26,8,1,"Erreur:"
+302,36,23,309,16,1,"Ce fichier ne peut pas être extrait, car il est partiellement contenu au sein d'un volume précédent. Pour extraire ce fichier, commencez par le volume contenant sa première partie."
+105,36,44,183,12,1,"&Ne plus afficher ce message à l'avenir."
+1,121,63,50,14,1,"OK"
+2,181,63,50,14,1,"Annuler"
+
+[DIALOG 106]
+286,85,1,"Configuration de UnARJ"
+300,23,22,154,8,1,"la décompression."
+107,12,10,263,12,1,"&Ignorer automatiquement les fichiers issus d'un volume précédent lors de"
+301,23,44,111,8,1,"ne peut être listé."
+116,12,32,263,12,1,"&Ne pas afficher d'avertissement lorsque l'ensemble du contenu de l'archive"
+302,6,60,274,1,1,""
+1,90,66,50,14,1,"OK"
+2,145,66,50,14,1,"Annuler"
+
+[DIALOG 115]
+223,107,1,"UnARJ - Avertissement"
+300,11,10,204,24,1,"Impossible de lister (et afficher) l'ensemble des fichiers contenus dans cette archive multi-volumes, car certains volumes n'ont pas été trouvés."
+301,11,41,202,16,1,"Pour lister l'intégralité des fichiers contenus dans l'archive, copiez l'ensemble de ses volumes dans le même dossier."
+105,11,66,157,12,1,"&Ne plus afficher ce message à l'avenir"
+302,5,83,213,1,1,""
+1,163,89,50,14,1,"OK"
+
+[STRINGTABLE 0]
+1000,1,"UnARJ"
+1001,1,"Mémoire insuffisante."
+1002,1,"La fin de l'archive a été atteinte avant d'avoir pu extraire les données."
+1005,1,"L'archive est corrompue."
+1006,1,"L'archive utilise un format inconnu, ou n'est pas une archive ARJ valide."
+1007,1,"Impossible d'ouvrir l'archive."
+
+[STRINGTABLE 1]
+1008,1,"Une erreur inconnue s'est produite."
+1010,1,"Impossible d'accéder au fichier archive."
+1011,1,"Fichiers d'Archives ARJ (*.A*)"
+1012,1,"Sélectionnez le fichier archive"
+1013,1,"Erreur au sein des données compressées. Le CRC ne correspond pas."
+1014,1,"Impossible d'ajouter une entrée parmi la liste des fichiers de l'archive."
+1015,1,"Décompression de l'archive ARJ - %s"
+1016,1,"préparation des données et création des dossiers..."
+1017,1,"décompression..."
+1018,1,"décompression de: "
+1019,1,"Impossible d'obtenir un pointeur sur le fichier: "
+1020,1,"Impossible d'écrire dans le fichier:"
+1021,1,"Impossible d'écrire dans le fichier: "
+1022,1,"L'opération ne peut pas être achevée en raison d'un nom de chemin trop long."
+1023,1,"L'opération ne peut pas être achevée en raison d'un masque trop long."
+
+[STRINGTABLE 2]
+1024,1,"La version de compression du fichier est inconnue."
+1025,1,"Le type de compression du fichier est inconnu."
+1026,1,"Le fichier a été compressé avec une méthode non prise en charge par le module UnARJ."
+1027,1,"Désolé, les fichiers chiffrés ne sont pas pris en charge."
+1028,1,"Volume invalide ou structure de l'archive inconnue."
+1029,1,"Nous sommes désolés, votre version du module a expiré. Veuillez consulter notre site Web pour obtenir une mise à jour."
+1030,1,"Fichier non trouvé."
+1031,1,"Erreur"
+1032,1,"Tous les fichiers (*.*)"
+1033,1,"Parcourir et extraire le contenu d'archives ARJ."
+1034,1,"A propos du module"
+

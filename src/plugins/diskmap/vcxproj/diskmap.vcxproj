@@ -1,0 +1,281 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{456EF980-3BB8-4719-8E3B-19152A0BC38E}</ProjectGuid>
+    <RootNamespace>diskmap</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props">
+  </Import>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props">
+  </Import>
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\x86.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_base.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_release.props">
+    </Import>
+    <Import Project="diskmap.props">
+    </Import>
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\x86.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_base.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_debug.props">
+    </Import>
+    <Import Project="diskmap.props">
+    </Import>
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\x64.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_base.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_release.props">
+    </Import>
+    <Import Project="diskmap.props">
+    </Import>
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\x64.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_base.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_debug.props">
+    </Import>
+    <Import Project="diskmap.props">
+    </Import>
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros">
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\shared\AUXTOOLS.CPP">
+    </ClCompile>
+    <ClCompile Include="..\..\shared\DBG.CPP">
+    </ClCompile>
+    <ClCompile Include="..\DiskMapPlugin\precomp.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\DiskMapPlugin\DiskMapPlugin.cpp">
+    </ClCompile>
+    <ClCompile Include="..\DiskMap\GUI.CWindow.cpp">
+    </ClCompile>
+    <ClCompile Include="..\DiskMap\GUI.MainWindow.cpp">
+    </ClCompile>
+    <ClCompile Include="..\DiskMap\TreeMap.FileData.CZDirectory.cpp">
+    </ClCompile>
+    <ClCompile Include="..\DiskMap\TreeMap.FileData.CZFile.cpp">
+    </ClCompile>
+    <ClCompile Include="..\DiskMap\TreeMap.Graphics.CCushionGraphics.cpp">
+    </ClCompile>
+    <ClCompile Include="..\DiskMap\Utils.CZLocalizer.cpp">
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\shared\SPL_BASE.H">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\SPL_COM.H">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\SPL_GEN.H">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\SPL_GUI.H">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\SPL_MENU.H">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\SPL_VERS.H">
+    </ClInclude>
+    <ClInclude Include="..\DiskMapPlugin\precomp.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMapPlugin\DiskMapPlugin.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.AboutDialog.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.CAnimation.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.CChildWindow.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.CFrameWindow.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.CWindow.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.DirectoryLine.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.DiskMapView.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.LoadAnimation.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.LogWindow.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.MainWindow.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.ShellMenu.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.ToolTip.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\GUI.ViewConnectorBase.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\System.CLogger.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\System.Lock.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\System.RWLock.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\System.Themes.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\System.WorkerThread.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.CDiskMap.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.DiskMap.CDirectoryOverlay.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.DiskMap.CDiskMapOverlay.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.FileData.CZDirectory.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.FileData.CZFile.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.FileData.CZRoot.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.Graphics.CCushionGraphics.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.TreeData.CCushion.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.TreeData.CCushionDirectory.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.TreeData.CCushionHitInfo.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.TreeData.CCushionRow.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.TreeData.CTreeMap.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.TreeData.CTreeMapRenderer.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\TreeMap.TreeData.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\Utils.Array.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\Utils.CPixMap.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\Utils.CRegionAllocator.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\Utils.CStringFormatter.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\Utils.CZBitmap.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\Utils.CZColors.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\Utils.CZIconLoader.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\Utils.CZLocalizer.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\Utils.CZSmartIconLoader.h">
+    </ClInclude>
+    <ClInclude Include="..\DiskMap\Utils.CZString.h">
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\DiskMapPlugin\VERSINFO.RH2">
+    </None>
+    <None Include="..\DiskMapPlugin\DiskMapPlugin.def">
+    </None>
+    <None Include="..\DiskMapPlugin\DiskMapPlugin.rh">
+    </None>
+    <None Include="..\DiskMap\Resources\DiskMap.Global.rc2">
+    </None>
+    <None Include="..\DiskMap\Resources\DiskMap.rh2">
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\DiskMap\Resources\DiskMap.ico">
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\DiskMapPlugin\DiskMapPlugin.rc">
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="lang_diskmap.vcxproj">
+      <Project>{47ca6e4b-2872-4bd4-b80f-6c17fa964f05}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets">
+  </Import>
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

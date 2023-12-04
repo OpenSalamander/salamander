@@ -1,0 +1,70 @@
+[OPTIONS]
+Auto Index=Yes
+Compatibility=1.1 or later
+Compiled file=splitcbn.chm
+Contents file=splitcbn.hhc
+Default Window=$global_ssdefault
+Default topic=hh\splitcbn\introduction_intro.htm
+Display compile progress=No
+Full text search stop list file=..\..\shared\help\en\stop.stp
+Full-text search=Yes
+Index file=splitcbn.hhk
+Language=0x409 English (United States)
+Title=Split & Combine Help
+
+[WINDOWS]
+$global_ssdefault=,"salamand.chm::\salamand.hhc","splitcbn.hhk","hh\splitcbn\introduction_intro.htm","hh\splitcbn\introduction_intro.htm",,,,"Web Help",0x3520,,0x180e,,,,,,,,0
+
+[FILES]
+hh\salamander_help.css
+hh\salamander_help_shared.css
+
+[ALIAS]
+IDH_COMBINE=hh\splitcbn\using_combine.htm
+IDH_SPLIT=hh\splitcbn\using_split.htm
+IDD_COMBINE=hh\splitcbn\dlgboxes_combine.htm
+IDD_CONFIG=hh\splitcbn\dlgboxes_config.htm
+IDD_SPLIT=hh\splitcbn\dlgboxes_split.htm
+
+[MAP]
+#include "..\splitcbn.rh"
+#include "..\splitcbn.rh2"
+#include "..\lang\lang.rh"
+
+[MERGE FILES]
+salamand.chm
+zip.chm
+demoplug.chm
+demoview.chm
+filecomp.chm
+7zip.chm
+dbviewer.chm
+ftp.chm
+checksum.chm
+checkver.chm
+ieviewer.chm
+mmviewer.chm
+pak.chm
+peviewer.chm
+pictview.chm
+regedt.chm
+renamer.chm
+tar.chm
+unarj.chm
+uncab.chm
+undelete.chm
+unfat.chm
+uniso.chm
+unlha.chm
+unmime.chm
+unrar.chm
+wmobile.chm
+winscp.chm
+nethood.chm
+unchm.chm
+automation.chm
+diskmap.chm
+demomenu.chm
+
+[INFOTYPES]
+

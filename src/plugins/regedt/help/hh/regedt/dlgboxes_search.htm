@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Windows Registry Search dialog box</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: Registry Editor: Dialog Boxes</div>
+<div class="page">
+<h1>Windows Registry Search</h1>
+
+<p>Use this dialog box to search in the Windows registry.</p>
+
+<h4>Options</h4>
+<dl>
+<dt><i>Search for</i></dt>
+
+<dd>Enter the text you are searching for (in names of keys or values or in data of values).
+</dd>
+
+<dt><i>Find Now/Stop</i></dt>
+
+<dd>The Find Now button starts searching. When searching is in progress, the Find Now button
+is replaced by the Stop button which you can use to stop searching.
+</dd>
+
+<dt><i>Look in</i></dt>
+
+<dd>Specifies the key in the registry where you want to start searching. The path "REG:\"
+stands for the root of the Windows registry (it means you will search in the whole registry).
+E.g. the path "REG:\HKEY_CURRENT_USER\Software" stands for the HKEY_CURRENT_USER\Software key.
+</dd>
+
+<dt><i>Help</i></dt>
+
+<dd>Displays this help page.
+</dd>
+
+<dt><i>Show options</i></dt>
+
+<dd>When checked, you can see more search options. Otherwise, you can see only
+the Found Items listview.
+</dd>
+
+<dt><i>Include subkeys</i></dt>
+
+<dd>Select this check box if you want to search all subkeys of the key listed in the Look in box.
+</dd>
+
+<dt><i>Look at: Keys, Values, and Data</i></dt>
+
+<dd>Specify if you want to search in names of keys, names of values, and/or data of values.
+</dd>
+
+<dt><i>HEX-mode</i></dt>
+
+<dd>This is the option for the <i>Search for</i> edit box. Hexadecimal mode will be used
+to set character by character in hexadecimal numbers. You can also input normal text in
+the hexadecimal mode, but it must be quoted using double quotes. So if you set
+'01 02 "text" 00', it will be a pattern with 7 characters, 2+4+1.
+</dd>
+
+<dt><i>Case sensitive</i></dt>
+
+<dd>This is the option for the <i>Search for</i> edit box. When checked, searching for
+a substring is case sensitive. Otherwise, searching is not case sensitive (upper and lower
+case characters are equal).
+</dd>
+
+<dt><i>Whole words</i></dt>
+
+<dd>This is the option for the <i>Search for</i> edit box. When checked, a found substring
+must be preceded and followed by a space, tab, or punctuation character, or be at the start
+or end of the name. Otherwise, the found substring may be a fragment of a larger string.
+</dd>
+
+<dt><i>Regular expression</i></dt>
+
+<dd>This is the option for the <i>Search for</i> edit box. When checked, the <i>Search for</i>
+field contains a regular expression. Otherwise, it contains a plain text. See description of
+<a href="ms-its:salamand.chm::/hh/salamand/appendix_regexp.htm">regular expressions</a>.
+</dd>
+
+<dt><i>Newer or equal to</i></dt>
+
+<dd>Searches only keys and values with date and time newer or equal to the specified date and time.
+</dd>
+
+<dt><i>Older or equal to</i></dt>
+
+<dd>Searches only keys and values with date and time older or equal to the specified date and time.
+</dd>
+
+<dt><i>Found items</i></dt>
+
+<dd>You can see found items here. Click on a header of a column to sort according to
+the column. Use the Space key to focus an item in an active panel.
+</dd>
+</dl>
+
+<h4>See Also</h4>
+<p>
+<a href="using_searchreg.htm">Searching in the Windows Registry</a><br/>
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,189 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="cpp">
+      <UniqueIdentifier>{5e7354c1-e856-4bc4-bfb8-70326b5b947e}</UniqueIdentifier>
+      <Extensions>cpp</Extensions>
+    </Filter>
+    <Filter Include="h">
+      <UniqueIdentifier>{81f5d245-977a-485a-b51b-59500bad23d9}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="sal">
+      <UniqueIdentifier>{2ba7e144-5d6b-458d-aafa-97a3c822956b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rc">
+      <UniqueIdentifier>{b2fbf6f2-9db7-41ea-b9f0-9ebecb1cb7e0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\dialogs.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\library\fat.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fs1.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fs2.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\library\miscstr.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\library\ntfs.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\library\os.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\library\precomp.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\restore.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\library\stream.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\undelete.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\library\volenum.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\library\volume.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\auxtools.cpp">
+      <Filter>sal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\dbg.cpp">
+      <Filter>sal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\mhandles.cpp">
+      <Filter>sal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\winliblt.cpp">
+      <Filter>sal</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\dialogs.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\library\fat.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\library\miscstr.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\library\ntfs.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\library\os.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\library\precomp.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\restore.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\library\snapshot.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\library\stream.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\undelete.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\library\volenum.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\library\volume.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\arraylt.h">
+      <Filter>sal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\auxtools.h">
+      <Filter>sal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\dbg.h">
+      <Filter>sal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\mhandles.h">
+      <Filter>sal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_arc.h">
+      <Filter>sal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_base.h">
+      <Filter>sal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_com.h">
+      <Filter>sal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_file.h">
+      <Filter>sal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_fs.h">
+      <Filter>sal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_gen.h">
+      <Filter>sal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_gui.h">
+      <Filter>sal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_menu.h">
+      <Filter>sal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_vers.h">
+      <Filter>sal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\winliblt.h">
+      <Filter>sal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\library\undelete.h">
+      <Filter>h</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\res\fs.bmp">
+      <Filter>rc</Filter>
+    </Image>
+    <Image Include="..\res\fs.ico">
+      <Filter>rc</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\lang\lang.rh">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\library\texts.rh2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\undelete.rc2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\undelete.rh">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\undelete.rh2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\versinfo.rh2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\undelete.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\undelete.rc">
+      <Filter>rc</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

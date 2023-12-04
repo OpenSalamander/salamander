@@ -1,0 +1,4 @@
+LIBRARY MMVIEWER.SPL
+
+EXPORTS SalamanderPluginEntry
+EXPORTS SalamanderPluginGetReqVer

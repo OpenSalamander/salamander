@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Logging Tab (Login Dialog)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Dialog Boxes: Configuring Session</div>
+<div class="page">
+<h1>Logging Tab (Login Dialog)</h1>
+
+<p>
+<em>Logging tab</em> allows user to configure session logging.
+Unlike most of the tabs of Login dialog
+its settings are global, not per-session.
+</p>
+
+<p>
+You need to check <em>Advanced options</em> to reveal the tab.
+</p>
+
+<p>
+To enable logging, select logging format,
+<em>Text log</em> or
+<em><acronym title="Extensible Markup Language">XML</acronym> log</em>.
+</p>
+
+<p>
+Once the logging is enabled, you can configure the <em>Logging options</em>.
+</p>
+
+<p>
+In <em>Logging level</em> you can select <em>Debug 1</em> or <em>Debug 2</em>
+for more verbose logging. You will probably need these (together with logging
+to file), when reporting bugs only.
+</p>
+
+<p>
+To enable logging to file tick <em>Log to file</em> checkbox and specify log
+file. Log file name can contain following patterns:
+<code>!Y</code> (year), <code>!M</code> (month), <code>!D</code>
+(day), <code>!T</code> (time), <code>!H</code> (hostname),
+<code>!S</code> (session name); <code>!!</code> (exclamation mark);
+and environment variables with syntax
+<code>%NAME%</code>.
+It is not possible to change log file name in middle of the session for
+XML logging.
+</p>
+
+<p>
+If you select <em>Append</em> option, and the logging file already exists,
+session log will be appended to the end of the file. Otherwise the existing
+file will be overwritten. If you enable logging to file in mid-session the
+past events will not be written to the log retrospectively. Note that
+simultaneous logging of several sessions to file is not supported. Passwords
+are not written to log file.
+Appending is not allowed for XML logging.
+</p>
+
+<p>
+If you enable logging to file in mid-session the past 
+events will not be written to the log retrospectively. Note 
+that simultaneous logging of several sessions to file is 
+not supported. Passwords are not written to log file.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

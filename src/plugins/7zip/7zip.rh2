@@ -1,0 +1,129 @@
+﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __7ZIP_RH2
+#define __7ZIP_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#define IDC_STATIC_1 1300
+#include "statics.rh2"   // 1300 az 1339 jsou timto zabrane !!!
+
+//***********************************************************************************
+//
+// ikony, bitmapy, kurzory
+//
+
+#define IDB_7ZIP                    900
+#define IDI_LOCK                    901
+
+//***********************************************************************************
+//
+// texty
+//
+
+#define IDS_PLUGINNAME              1000
+#define IDS_ABOUT                   1001
+#define IDS_PLUGIN_DESCRIPTION      1002
+#define IDS_INSUFFICIENT_MEMORY     1003
+#define IDS_CANT_LOAD_LIBRARY       1004
+#define IDS_CANT_GET_CRATEOBJECT    1005
+#define IDS_CANT_GET_CLASS_OBJECT   1006
+#define IDS_CANT_OPEN_ARCHIVE       1007
+#define IDS_CANT_OPEN_ARCHIVE_PWD   1008
+#define IDS_ERROR                   1009
+#define IDS_PACKING_ARCHIVE         1010
+#define IDS_UNPACKING_ARCHIVE       1011
+#define IDS_READING_DIRTREE         1012
+#define IDS_CANT_CREATE_ARCHIVE     1013
+#define IDS_REMOVING                1014
+#define IDS_TESTARCHIVE             1015
+#define IDS_TESTARCHIVECORRUPTED    1017
+#define IDS_TESTARCHIVEOK           1018
+#define IDS_TESTING_ARCHIVE         1019
+#define IDS_INCORRECTPASSWORD       1020
+#define IDS_INCORRECTPASSWORDBODY   1021
+#define IDS_PASSWORDSNOTMATCH       1022
+#define IDS_EMPTYPASSWORD           1023
+#define IDS_UPDATE_NOT_SUPPORTED    1024
+#define IDS_CANT_MOVE_TMPARCHIVE    1025
+#define IDS_CANT_DELETE_TMPARCHIVE  1026
+#define IDS_7Z_UPDATE_ERROR         1027
+#define IDS_7Z_SOLID_DELETE_UNSUP   1028
+#define IDS_CANT_UPDATE_ARCHIVE     1029
+#define IDS_CANT_CREATE_TMPFILE     1030
+//#define IDS_CANT_CREATEMUTEX        1030
+#define IDS_ARCHIVE_CHANGED         1031
+#define IDS_DELETE_ERROR            1032
+#define IDS_ADD_FILES_TO_ARCHIVE    1033
+#define IDS_CREATE_NEW_ARCHIVE      1034
+#define IDS_REMOVING_FILES          1035
+#define IDS_READING_ARCHIVEITEMS    1036
+#define IDS_UNPACKING               1037
+#define IDS_PACKING                 1038
+#define IDS_UPDATING_ARCHIVE        1039
+#define IDS_CANCELING_OPERATION     1040
+#define IDS_UNSUPPORTED_METHOD      1041
+#define IDS_CRC_FAILED              1042
+#define IDS_UNKNOWN_ERROR           1043
+#define IDS_DATA_ERROR              1044
+#define IDS_DATA_ERROR_PWD          1045
+#define IDS_BTN_DELETE              1046
+#define IDS_BTN_DELETE_ALL          1047
+#define IDS_BTN_KEEP                1048
+#define IDS_BTN_KEEP_ALL            1049
+#define IDS_ERROR_PROCESSING_FILE   1050
+#define IDS_ERROR_PROCESSING_FILE_PWD 1051
+#define IDS_OVERWRITE_FILE          1052
+#define IDS_UPDATING                1053
+#define IDS_READONLY_ARCHIVE        1054
+#define IDS_CANT_REMOVE_DIRECTORY   1055
+#define IDS_CANT_READ               1056
+#define IDS_CANT_READ_ARCHIVE       1057
+#define IDS_CANT_WRITE              1058
+
+#define IDS_STORE                   1060
+#define IDS_FASTEST                 1061
+#define IDS_FAST                    1062
+#define IDS_NORMAL                  1063
+#define IDS_MAXIMUM                 1064
+#define IDS_ULTRA                   1065
+
+#define IDS_METHOD_LZMA2            1069
+#define IDS_METHOD_LZMA             1070
+#define IDS_METHOD_PPMD             1071
+
+#define IDS_PACK_UPDATE_ERROR       1072
+#define IDS_UNPACK_ERROR            1073
+#define IDS_TEST_ERROR              1074
+#define IDS_UNSUPPORTED_ARCHIVE     1075
+
+#define IDS_7Z_FATAL_ERROR          1076
+#define IDS_7Z_UPDATE_UNKNOWN_ERROR 1077
+//#define IDS_7Z_SOLID_UPDATE_UNSUP   1078
+#define IDS_7Z_CREATE_UNKNOWN_ERROR 1079
+
+#define IDS_LISTINFO_PAKEDSIZE      1080
+#define IDS_LISTINFO_PAKEDSIZE_DESC 1081
+#define IDS_LISTINFO_METHOD         1082
+#define IDS_LISTINFO_METHOD_DESC    1083
+
+#define IDS_TESTING_ARCHIVE_NAME    1084
+
+#define IDS_BTN_RETRY               1090
+#define IDS_BTN_ABORT               1091
+
+#define IDS_ARCLOCK_ERROR           1095
+
+#define IDS_ERRADDFILE_TOOLONG      1096
+#define IDS_ERRADDDIR_TOOLONG       1097
+#define IDS_NAMEISTOOLONG           1098
+
+//***********************************************************************************
+//
+// help IDs
+//
+
+#define IDH_TESTARCHIVE             1500
+
+#endif // __7ZIP_RH2

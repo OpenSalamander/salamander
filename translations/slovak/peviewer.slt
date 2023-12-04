@@ -1,0 +1,38 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\slovak\peviewer.atp"
+TEXTVERSION,"3.0 (x86)"
+VERSION,"3,0,0,180"
+
+[TRANSLATION]
+LANGID,1051
+AUTHOR,"Roman Paholík"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6167"
+COMMENT,"Slovenská verzia"
+
+[DIALOG 8501]
+346,154,1,"Prehliadač spustitelných súborov - Konfigurácia"
+1300,7,7,64,8,1,"Do&stupné sekcie:"
+8700,7,17,105,130,1,""
+8702,119,17,50,14,1,"&Pridať ->"
+8703,119,35,50,14,1,"<- &Odobrať"
+1301,176,7,58,8,1,"Vi&diteľné sekcie:"
+8701,176,17,105,130,1,""
+8704,289,17,50,14,1,"&Hore"
+8705,289,35,50,14,1,"Dol&u"
+1,289,97,50,14,1,"OK"
+2,289,115,50,14,1,"Zrušiť"
+8706,289,133,50,14,1,"Pô&vodné"
+
+[STRINGTABLE 0]
+1016,1,"O plugine"
+
+[STRINGTABLE 1]
+10100,1,"Prehliadač spustitelných súborov"
+10101,1,"Nie je možné otvoriť súbor %s."
+10102,1,"Vytvorenie dočasného súboru zlyhalo."
+10103,1,"Vyskytla sa výnimka.\n\nPrehliadaný súbor: %s\n\nAk si myslíte, že prehliadaný súbor nie je poškodený, prosím pošlite tento súbor na support@altap.cz.\nMy preveríme a opravíme chybu prehliadača. Ďakujeme za spoluprácu!"
+10104,1,"Zobrazí informácie o prenosných spustiteľných súboroch, napr.: EXE, DLL, atď."
+
+[STRINGTABLE 2]
+10118,1,"V konfiguráci pluginu sa nenašli žiadne viditeľné sekcie. Na výber\nviditeľných sekcií použite v hlavnom okne Open Salamandera ponuku\nMožnosti > Konfigurácia pluginov > Prehliadač spustiteľných súborov."
+

@@ -1,0 +1,75 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\dutch\pak.atp"
+TEXTVERSION,"1.71 (x86)"
+VERSION,"1,7,1,180"
+
+[TRANSLATION]
+LANGID,1043
+AUTHOR,"Cor van der Smissen, Marco Fung, Patrick Vijgeboom, S.V. (Stephan) Rietveld"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7009"
+COMMENT,"Nederlandse versie"
+
+[DIALOG 100]
+222,73,1,"Optimaliseren PAK archief"
+300,8,9,91,8,1,"Geldige gegevens grootte:"
+101,101,9,109,8,1,""
+301,8,20,82,8,1,"Totale bestandsgrootte:"
+102,101,20,109,8,1,""
+302,8,31,70,8,1,"Verspilde ruimte:"
+103,101,31,109,8,1,""
+303,8,44,206,1,1,""
+1,49,53,57,14,1,"Optimaliseren"
+2,116,53,57,14,1,"Annuleren"
+
+[STRINGTABLE 0]
+500,1,"Kan bestand: %s niet openen"
+501,1,"Kan paklib interface niet initialiseren. Er is al een bestand geopend."
+502,1,"Kan bestand niet openen. Er is al een bestand geopend."
+503,1,"Kan bestandsgrootte: %s niet achterhalen"
+504,1,"Ongeldig data formaat."
+505,1,"Onvoldoende geheugen."
+506,1,"huidige PAK centrale map"
+507,1,"Kan bestandsverwijzing niet instellen: %s"
+508,1,"Kan bestand: %s niet lezen"
+509,1,"Kan bestandsverwijzing niet ophalen: %s"
+510,1,"Kan bestand: %s niet schrijven"
+511,1,"Kan bestand niet toevoegen vanwege te lange naam."
+
+[STRINGTABLE 1]
+1000,1,"PAK"
+1001,1,"Onvoldoende geheugen."
+1002,1,"Kan bestand niet toevoegen aan lijst."
+1003,1,"Kan paklib.dll niet laden of procedureadres niet ophalen: "
+1004,1,"Uitpakken PAK archief - %s"
+1005,1,"voorbereiding gegevens..."
+1006,1,"uitpakken..."
+1007,1,"uitpakken: "
+
+[STRINGTABLE 2]
+1008,1,"Kan bewerking niet voltooien wegens te lange padnaam."
+1009,1,"Kan bestandsverwijzing niet instellen: "
+1010,1,"Kan bestandsverwijzing niet ophalen: "
+1011,1,"Kan niet naar bestand schrijven:"
+1013,1,"Kan bestand niet openen: "
+1014,1,"Kan operatie niet voltooien wegens te lange masker."
+1015,1,"Verwijderen van PAK archief - %s"
+1016,1,"verwijderen..."
+1017,1,"verwijderen: "
+1018,1,"bewerking annuleren, ogenblik geduld a.u.b..."
+1019,1,"Inpakken naar PAK archief - %s"
+1020,1,"Kan bestand niet toevoegen: bestand is te groot."
+1021,1,"inpakken..."
+1022,1,"Kan bestand niet toevoegen wegens te lange naam."
+1023,1,"inpakken: "
+
+[STRINGTABLE 3]
+1024,1,"Kan bestand niet inlezen: "
+1025,1,"Kan plugin niet verbinden met Open Salamander."
+1026,1,"optimaliseren, ogenblik geduld a.u.b..."
+1027,1,"Optimiseer PAK archief - %s"
+1028,1,"Bestanden verwijderen is mislukt. U moet wellicht een PAK optimalisatie uitvoeren uit het PAK plugin menu om geen vrije schijfruimte te verspillen."
+1029,1,"&Optimaliseren PAK"
+1030,1,"Excuses, de plugin is niet meer geldig. Bezoek onze web site voor een nieuwere versie."
+1031,1,"Bladeren en Quake PAK archieven uitpakken."
+1032,1,"Over plugin"
+

@@ -1,0 +1,22 @@
+﻿//
+// ftp.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "versinfo.rh2"
+#include "versinfo.rc2"
+
+IDC_FTPICON     ICON "ftp.ico"
+IDC_FTPLOGICON  ICON "ftplog.ico"
+IDC_FTPOPERICON ICON "ftpoper.ico"
+IDC_WARNINGICON ICON "warning.ico"
+
+IDC_FTPICONBMP BITMAP "ftp.bmp"
+
+IDC_DRAGCURSOR CURSOR "drag.cur"

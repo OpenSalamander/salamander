@@ -1,0 +1,167 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Transfer Settings</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Dialog Boxes</div>
+<div class="page">
+<h1>Transfer Settings</h1>
+
+<p>
+On several occasions you need or have chance to configure <a href="transfer_settings.htm">transfer settings</a>.
+This includes:
+</p>
+
+<ul>
+<li>Setting <a href="ui_sal_pref_transfer.htm">default transfer settings</a>.</li>
+<li><a href="ui_copy.htm">Uploading/downloading</a> files.</li>
+<li>Configuring custom settings for functions <em><a href="ui_synchronize.htm">Synchronize</a></em> and
+<em><a href="ui_keepuptodate.htm">Keep remote directory up to date</a></em>.</li>
+</ul>
+
+<a name="transfer_mode"></a>
+<h4>Transfer Mode</h4>
+<p>
+Use box <em>Transfer mode</em> to select preferred <a href="transfer_mode.htm">transfer mode</a>. If you
+select <em>Automatic</em> mode, you should update the text <a href="file_mask.htm">file mask</a> in
+<em>Transfer following files in text mode</em>.
+</p>
+
+<a name="filename_modification"></a>
+<h4>Filename Modification</h4>
+
+<p>
+Use selector to choose a way how to convert filename case when transferring files. This is particularly useful
+when transferring files between platform with case-sensitive file-system (like Unix) and platform with
+case-insensitive file-system (like Windows or Mac). Special option <em>Lower case 8.3</em> is useful for
+<a href="task_upload.htm">uploads</a> only. With it only files whose filename follows legacy
+<acronym title="Microsoft">MS</acronym>-<acronym title="Disk Operating System">DOS</acronym> format (8-letter
+name and 3-letter extension, all letters uppercase) are converted to lower case.
+</p>
+
+<p>
+The <em>Replace &quot;\:*?&quot;</em> checkbox enables automatic modification of filenames to match Windows requirements.
+</p>
+
+<p>
+On download, WinSCP:
+</p>
+
+<ul>
+<li>Replaces characters that are not allowed in Windows filenames
+   (<code>/\:*?\"&lt;&gt;|</code>) with <code>%XX</code>,
+   where <code>XX</code> is hexadecimal representation of
+   character <acronym title="American Standard Code for Information Interchange">ASCII</acronym>
+   code;</li>
+<li>Replaces trailing space with <code>%20</code>;</li>
+<li>Replaces trailing dot with <code>%2E</code>;</li>
+<li>Addends <code>%00</code> to the end of names with reserved 
+    meaning on Windows (such as <code>NUL</code> or <code>PRN</code>).</li>
+</ul>
+
+<p>
+On upload, WinSCP reverses the modifications to restore original filename.
+</p>
+
+<p>
+As percent sign (<code>%</code>) has special meaning when the 
+replacing is enabled, the sign itself has to be replaced, 
+although it is allowed in Windows filenames. If you want to 
+prevent that you need to turn the replacing off.
+</p>
+
+<a name="attributes"></a>
+<h4>Attributes</h4>
+
+<a name="upload_options"></a>
+<h3>Upload Options</h3>
+
+<p>
+The <em>Set permissions</em> checkbox enables you to specify <a href="ui_permissions.htm">permissions</a> to be
+set for the <a href="task_upload.htm">uploaded</a> files. When unchecked the newly uploaded files will have
+default permissions <a href="#fn1">(see note 1)</a>,
+which is platform-dependent, and the overwritten files usually preserve their previous
+permissions, but this can also vary with the platform.
+</p>
+
+<p>
+Note that while you may have rights to overwrite the remote file, you may not have rights to change its permissions.
+You need then to uncheck the <em>Set permissions</em> to be able to upload the files without being prompted with an error
+message.
+</p>
+
+<p>
+The <em>Clear &quot;Archive&quot; attribute</em> checkbox makes plugin unset the &quot;archive&quot; attribute
+of source files once the upload finishes.
+</p>
+
+<a name="download_options"></a>
+<h3>Download Options</h3>
+
+<p>
+The <em>Preserve read-only</em> checkbox makes WinSCP to set &quot;read-only&quot; attribute to
+<a href="task_download.htm">downloaded</a> files that do not have user-write permission set. The option
+is not available if the server does not support UNIX-style permissions.
+</p>
+
+<a name="common_options"></a>
+<h3>Common Options</h3>
+
+<p>
+The <em>Preserve timestamp</em> checkbox makes WinSCP preserve the last modification timestamp of the
+transferred file. Note that there are several <a href="timestamp.htm">factors that can affect
+timestamp recalculation</a> between local and remote filesystem.
+</p>
+
+<p>
+Note that while you may have rights to overwrite the remote file, you may not have rights to change
+its timestamp.
+You need then to uncheck the <em>Preserve timestamp</em> to be able to <a href="task_upload.htm">upload</a>
+the files without being prompted with an error message.
+</p>
+
+<p>
+The <em>Calculate total size</em> checkbox make WinSCP calculate total size of all files to be
+transferred before the actual transfer. It allows it then to estimate time necessary to complete
+the transfer. Note that if you are going to transfer large number of files the calculation can
+take significant time.
+</p>
+
+<p>
+Use <em>Speed</em> to limit transfer speed.
+The limit is in <acronym title="Kibibyte (1,024 bytes)">KiB</acronym>/s.
+You can also change the speed on <a href="ui_progress.htm">progress windows</a>
+while files are being transferred. To remove speed limit, set it to "Unlimited".
+</p>
+
+<a name="other_options"></a>
+<h4>Other Options</h4>
+
+<p>
+In the <em>Exclude/Include mask</em> you can specify <a href="file_mask.htm">file mask</a> to
+exclude certain files/directories (or file types) from the transfer. When <em>Exclude</em> option
+is selected, the files/directories matching mask will be excluded from transfer. When <em>Include</em>
+option is selected, only the files/directories matching mask will be transferred.
+Leave mask empty to transfer all files/directories. The option also excludes files from
+<a href="task_synchronize_full.htm">synchronization</a> and makes them be ignored by function
+<em><a href="task_keep_up_to_date.htm">Keep remote directory up to date</a></em>.
+</p>
+
+<h4>Notes:</h4>
+<p>
+<a name="fn1"></a>
+1) Note that <code>umask</code> is not interpreted by some (if not all)
+<acronym title="SSH File Transfer Protocol">SFTP</acronym> servers.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

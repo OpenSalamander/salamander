@@ -1,0 +1,23 @@
+// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __TSERVER_RH2
+#define __TSERVER_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+//****************************************************************************
+//
+// Icons
+//
+
+#define IC_TSERVER_1              32512
+
+//****************************************************************************
+//
+// Bitmaps
+//
+
+#define BMP_TYPE                  90
+
+#endif // __TSERVER_RH2

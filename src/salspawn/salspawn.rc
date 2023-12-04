@@ -1,0 +1,36 @@
+﻿#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#include "..\plugins\shared\spl_vers.h"
+
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "manifest.xml"
+
+1 VERSIONINFO
+ FILEVERSION 1,0,2,VERSINFO_BUILDNUMBER
+ PRODUCTVERSION VERSINFO_SALAMANDER_MAJOR,VERSINFO_SALAMANDER_MINORA,VERSINFO_SALAMANDER_MINORB,VERSINFO_BUILDNUMBER
+ FILEFLAGSMASK 0x0L
+ FILEFLAGS 0x0L
+ FILEOS 0x4L
+ FILETYPE 0x1L  // VFT_APP=0x1
+ FILESUBTYPE 0x0L
+{
+ BLOCK "StringFileInfo"
+ {
+  BLOCK "040904b0"
+  {
+   VALUE "CompanyName", "Open Salamander\0"
+   VALUE "FileDescription", "Spawn for Open Salamander\0"
+   VALUE "FileVersion", "1.02\0"
+   VALUE "InternalName", "SALSPAWN\0"
+   VALUE "OriginalFilename", "SALSPAWN.EXE\0"
+   VALUE "LegalCopyright", "Copyright \251 1998-2023 Open Salamander Authors\0"
+   VALUE "ProductVersion", VERSINFO_SALAMANDER_VERSION "\0"
+   VALUE "ProductName", "Open Salamander\0"
+  }
+ }
+ BLOCK "VarFileInfo"
+ {
+  VALUE "Translation", 0x0409, 0x04b0
+ }
+}

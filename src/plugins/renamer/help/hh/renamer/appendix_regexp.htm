@@ -1,0 +1,297 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Regular Expressions</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: Renamer: Appendix</div>
+<div class="page">
+<h1>Regular Expressions in Renamer Plugin</h1>
+
+<p>The Renamer plugin uses more powerful regular expressions than Find and
+Internal Viewer in Open Salamander. It extends REGEXP library, which is
+a great work of Henry Spencer. First see the
+<a href="ms-its:salamand.chm::/hh/salamand/appendix_regexp.htm">Regular Expressions Syntax</a>
+in Open Salamander and then continue with description of Renamer extensions. These
+extensions were inspired in Perl.
+</p>
+
+
+
+<h3>Extended syntax</h3>
+
+<ul>
+<li>'*?' - non-greedy variant of '*' (match 0 or more times)</li>
+<li>'+?' - non-greedy variant of '+' (match 1 or more times)</li>
+<li>'??' - non-greedy variant of '?' (match 0 or 1 times)</li>
+<li>'$' - at the end of the expression matches the end of a line (or before newline at the end)</li>
+<li>'( )' - glues expressions in parentheses to one expression and captures a matched substring (see <a href="using_batchrename.htm#5">this example</a> to understand how it works)</li>
+<li>'(?: )' - works like "( )", but does not capture a matched substring</li>
+</ul>
+
+<p>Note: "non-greedy" means that it matches the minimum number of times possible.</p>
+
+
+
+<h3>Zero-width assertions</h3>
+<p>You can use following zero-width assertions (it does not match any character, just test
+if some condition is true or not):</p>
+
+<table>
+
+<tr>
+<th>Assertion</th>
+<th>Meaning</th>
+</tr>
+
+<tr>
+<td>\b</td>
+<td>Match a word boundary.</td>
+</tr>
+
+<tr>
+<td>\B</td>
+<td>Match a non-(word boundary).</td>
+</tr>
+
+<tr>
+<td>\A</td>
+<td>Match only at beginning of string.</td>
+</tr>
+
+<tr>
+<td>\Z</td>
+<td>Match only at end of string, or before newline at the end.</td>
+</tr>
+
+<tr>
+<td>\z</td>
+<td>Match only at end of string.</td>
+</tr>
+
+<tr>
+<td>(?= )</td>
+<td>Positive look-ahead assertion (for example, 'j(?=ohn)' matches 'j' in word 'john' but not in word 'june').</td>
+</tr>
+
+<tr>
+<td>(?! )</td>
+<td>Negative look-ahead assertion (for example, 'j(?!ohn)' matches 'j' in word 'june' but not in word 'john').</td>
+</tr>
+
+<tr>
+<td>(?&lt;= )</td>
+<td>Positive look-behind assertion (for example, '(?&lt;=joh)n' matches 'n' in word 'john' but not in word 'joan').</td>
+</tr>
+
+<tr>
+<td>(?&lt;! )</td>
+<td>Negative look-behind assertion (for example, '(?&lt;!joh)n' matches 'n' in word 'joan' but not in word 'john').</td>
+</tr>
+
+</table>
+
+<p>Within character classes "\b" represents backspace rather than a word boundary.</p>
+
+
+
+<h3>POSIX character classes</h3>
+<p>You can use following POSIX character classes:</p>
+
+<table>
+
+<tr>
+<th>Class</th>
+<th>Backslash Equivalent</th>
+<th>Meaning</th>
+</tr>
+
+<tr>
+<td>alpha</td>
+<td></td>
+<td>Alphabetic characters.</td>
+</tr>
+
+<tr>
+<td>alnum</td>
+<td></td>
+<td>Alphanumeric characters.</td>
+</tr>
+
+<tr>
+<td>ascii</td>
+<td></td>
+<td>ASCII characters.</td>
+</tr>
+
+<tr>
+<td>cntrl</td>
+<td></td>
+<td>Control characters.</td>
+</tr>
+
+<tr>
+<td>digit</td>
+<td>\d</td>
+<td>Decimal digits.</td>
+</tr>
+
+<tr>
+<td>graph</td>
+<td></td>
+<td>Characters that are both printable and visible (a space is printable but not visible).</td>
+</tr>
+
+<tr>
+<td>lower</td>
+<td></td>
+<td>Lowercase alphabetic characters.</td>
+</tr>
+
+<tr>
+<td>print</td>
+<td></td>
+<td>Printable characters (characters that are not control characters).</td>
+</tr>
+
+<tr>
+<td>punct</td>
+<td></td>
+<td>Punctuation characters (characters that are not letters, digits, control characters, or space characters).</td>
+</tr>
+
+<tr>
+<td>space</td>
+<td>\s</td>
+<td>Spacing characters (e.g. space, TAB, formfeed).</td>
+</tr>
+
+<tr>
+<td>upper</td>
+<td></td>
+<td>Uppercase alphabetic characters.</td>
+</tr>
+
+<tr>
+<td>word</td>
+<td>\w</td>
+<td>Alphanumeric characters plus underscore ("_").</td>
+</tr>
+
+<tr>
+<td>xdigit</td>
+<td></td>
+<td>Characters that are hexadecimal digits.</td>
+</tr>
+
+</table>
+
+<p>You can negate the character classes by prefixing the class name with a '^'.</p>
+
+<p>Usage: [[:alpha:]] (alphabetic characters), [01[:alpha:]%] (alphabetic characters plus 0, 1, and %),
+   [[:^digit:]] (all characters except decimal digits).</p>
+
+
+
+<h3>Short forms of some character classes</h3>
+<p>You can use following short forms of character classes:</p>
+
+<table>
+
+<tr>
+<th>Class</th>
+<th>Meaning</th>
+</tr>
+
+<tr>
+<td>\w</td>
+<td>Alphanumeric characters plus underscore ("_").</td>
+</tr>
+
+<tr>
+<td>\W</td>
+<td>All characters except alphanumeric characters and underscore ("_").</td>
+</tr>
+
+<tr>
+<td>\s</td>
+<td>Spacing characters (e.g. space, TAB, formfeed).</td>
+</tr>
+
+<tr>
+<td>\S</td>
+<td>All characters except spacing characters (e.g. space, TAB, formfeed).</td>
+</tr>
+
+<tr>
+<td>\d</td>
+<td>Decimal digits.</td>
+</tr>
+
+<tr>
+<td>\D</td>
+<td>All characters except decimal digits.</td>
+</tr>
+
+</table>
+
+
+
+<h3>Special characters</h3>
+
+<p>You can use following special characters:</p>
+
+<table>
+
+<tr>
+<th>Special character</th>
+<th>Meaning</th>
+</tr>
+
+<tr>
+<td>\t</td>
+<td>tab</td>
+</tr>
+
+<tr>
+<td>\n</td>
+<td>newline</td>
+</tr>
+
+<tr>
+<td>\r</td>
+<td>return</td>
+</tr>
+
+<tr>
+<td>\f</td>
+<td>formfeed</td>
+</tr>
+
+<tr>
+<td>\a</td>
+<td>alarm (bell)</td>
+</tr>
+
+<tr>
+<td>\b</td>
+<td>backspace</td>
+</tr>
+
+<tr>
+<td>\x5A</td>
+<td>character 'Z' with ordinal 0x5A (hexadecimal value)</td>
+</tr>
+
+</table>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

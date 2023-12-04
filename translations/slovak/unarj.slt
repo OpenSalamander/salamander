@@ -1,0 +1,88 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\slovak\unarj.atp"
+TEXTVERSION,"1.21 (x86)"
+VERSION,"1,2,1,180"
+
+[TRANSLATION]
+LANGID,1051
+AUTHOR,"Roman Paholík"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6167"
+COMMENT,"Slovenská verzia"
+
+[DIALOG 100]
+214,110,1,"Ďalší zväzok archívu"
+300,12,9,190,32,1,"Prosím vložte disketu s ďalším zväzkom archívu alebo nájdite príslušný súbor na disku.\n\nKliknite na OK, ak je pripravený."
+301,12,48,80,8,1,"Predchádzajúci zväzok:"
+103,93,48,109,12,1,""
+302,12,62,49,8,1,"&Ďalší zväzok:"
+101,12,72,175,12,1,""
+102,190,72,13,12,1,"..."
+1,50,91,50,14,1,"OK"
+2,113,91,50,14,1,"Zrušiť"
+
+[DIALOG 103]
+350,85,1,"Chyba"
+300,4,10,26,8,1,"Názov:"
+104,34,10,309,8,1,""
+301,4,23,26,8,1,"Chyba:"
+302,34,23,309,16,1,"Súbor nemôže byť extrahovaný, pretože je pokračujúci z predchádzajúceho zväzku. Na extrahovanie tohto súboru musíte začať zväzkom, v ktorom súbor začína."
+105,34,44,183,12,1,"&Nabudúce nezobrazovať."
+1,120,63,50,14,1,"OK"
+2,180,63,50,14,1,"Zrušiť"
+
+[DIALOG 106]
+225,85,1,"UnARJ - Konfigurácia"
+300,23,22,154,8,1,"z predchádzajúceho zväzku."
+107,12,10,206,12,1,"&Pri extrahovaní automaticky preskočiť súbory pokračujúce"
+301,23,44,111,8,1,"obsah archívu."
+116,12,32,201,12,1,"&Nezobrazovať upozornenie, ak nie je možné vypísať celý"
+302,6,60,213,1,1,""
+1,60,66,50,14,1,"OK"
+2,115,66,50,14,1,"Zrušiť"
+
+[DIALOG 115]
+213,107,1,"UnARJ - Upozornenie"
+300,11,10,194,24,1,"Nie všetky súbory vo viaczväzkovom archíve je možné vypísať (a zobraziť v paneli), pretože nie je možné nájsť niektorý zväzok archívu."
+301,11,41,192,16,1,"Na výpis celého obsahu archívu skopírujte všetky zväzky archívu do jedného adresára."
+105,11,66,157,12,1,"&Nabudúce nezobrazovať"
+302,5,83,203,1,1,""
+1,153,89,50,14,1,"OK"
+
+[STRINGTABLE 0]
+1000,1,"UnARJ"
+1001,1,"Nedostatok pamäti."
+1002,1,"Neočakávaný koniec archívu."
+1005,1,"Archív je poškodený."
+1006,1,"Súbor má neznámy formát alebo nie je platným ARJ archívom."
+1007,1,"Nie je možné otvoriť archív."
+
+[STRINGTABLE 1]
+1008,1,"Vyskytla sa neznáma chyba."
+1010,1,"Nie je možné sprístupniť archív."
+1011,1,"Súbory ARJ archívu (*.A*)"
+1012,1,"Výber komprimovaného súboru"
+1013,1,"Chyba v komprimovaných dátach. CRC nesúhlasí."
+1014,1,"Nie je možné pridať záznam archívu do výpisu súborov."
+1015,1,"Extrahovanie ARJ archívu - %s"
+1016,1,"pripravujem dáta a vytváram adresáre..."
+1017,1,"extrahujem..."
+1018,1,"extrahujem: "
+1019,1,"Nie je možné zistiť ukazovateľ súboru: "
+1020,1,"Nie je možné zapisovať do súboru:"
+1021,1,"Nie je možné nastaviť ukazovateľ súboru: "
+1022,1,"Nie je možné dokončiť operáciu, kvôli príliš dlhému názvu cesty."
+1023,1,"Nie je možné dokončiť operáciu, kvôli príliš dlhej maske."
+
+[STRINGTABLE 2]
+1024,1,"Neznáma verzia komprimovaného súboru."
+1025,1,"Neznámy typ komprimovaného súboru."
+1026,1,"Súbor je komprimovaný metódou, ktorá nie je podporovaná UnARJ pluginom."
+1027,1,"Ľutujeme, šifrované súbory nie sú podporované."
+1028,1,"Neplatný zväzok alebo neznáma štruktúra archívu."
+1029,1,"Ľutujeme, plugin vypršal. Prosím skontrolujte našu webstránku kvôli novšej verzii."
+1030,1,"Súbor nenájdený."
+1031,1,"Chyba"
+1032,1,"Všetky súbory (*.*)"
+1033,1,"Prehliada a extrahuje ARJ archívy."
+1034,1,"O plugine"
+

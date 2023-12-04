@@ -1,0 +1,95 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\dutch\uncab.atp"
+TEXTVERSION,"1.27 (x86)"
+VERSION,"1,2,7,180"
+
+[TRANSLATION]
+LANGID,1043
+AUTHOR,"Cor van der Smissen, Marco Fung, Patrick Vijgeboom, S.V. (Stephan) Rietveld"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7009"
+COMMENT,"Nederlandse versie"
+
+[DIALOG 100]
+221,122,1,"Volgende cabinet volume"
+112,12,9,198,32,1,""
+300,12,48,40,8,1,"Disk naam:"
+110,54,48,156,8,1,""
+301,12,59,40,8,1,"CAB Naam:"
+111,54,59,156,8,1,""
+302,12,70,19,8,1,"&Pad:"
+101,12,80,182,12,1,""
+102,197,80,13,12,1,"..."
+1,106,103,50,14,1,"OK"
+2,160,103,50,14,1,"Annuleren"
+303,6,97,209,1,1,""
+
+[DIALOG 103]
+356,85,1,"Fout"
+300,6,10,26,8,1,"Naam:"
+104,36,10,313,8,1,""
+301,6,23,26,8,1,"Fout:"
+302,36,23,313,16,1,"Bestand kan niet uitgepakt worden omdat het gecontinueerd wordt vanaf het vorige volume. Om het bestand uit te pakken moet je beginnen met het volume waar het bestand begint."
+105,36,44,183,12,1,"&Toon dit bericht niet in het vervolg."
+108,86,63,50,14,1,"&Overslaan"
+109,145,63,65,14,1,"&Alles oveslaan"
+2,219,63,50,14,1,"Annuleren"
+
+[DIALOG 106]
+247,85,1,"UnCAB Configuratie"
+300,23,22,154,8,1,"uitpakken."
+107,12,10,212,12,1,"&Automatisch bestanden uit vorige volumes overslaan tijdens"
+301,23,44,111,8,1,"niet opgesomd kan worden."
+116,12,32,229,12,1,"A&ttentie niet weergeven wanneer de hele inhoud van het archief"
+302,6,60,235,1,1,""
+1,69,66,50,14,1,"OK"
+2,128,66,50,14,1,"Annuleren"
+
+[DIALOG 115]
+232,108,1,"UnCAB - Attentie"
+300,11,9,215,24,1,"Niet alle bestanden in het multi-volume archief kunnen opgesomd worden (en weergegeven worden in het paneel), omdat sommige archief volumes niet zijn gevonden."
+301,11,40,215,16,1,"Om de hele inhoud van het archief op te sommen, kopieer alle volumes naar dezelfde map en open het eerste archief volume."
+105,11,65,157,12,1,"&Toon dit bericht niet in het vervolg"
+302,5,83,221,1,1,""
+1,173,90,50,14,1,"OK"
+
+[STRINGTABLE 0]
+1000,1,"UnCAB"
+1001,1,"Onvoldoende geheugen."
+
+[STRINGTABLE 1]
+1008,1,"Onbekend fout opgetreden."
+1012,1,"Selecteer map"
+1014,1,"Kan archief niet toevoegen aan bestandslijst."
+1015,1,"Uitpakken CAB archief - %s"
+1016,1,"voorbereiding data en mappen aanmaken..."
+1017,1,"uitpakken..."
+1018,1,"Uitpakken: "
+1019,1,"Kan bestand verwijzer niet benaderen: "
+1020,1,"Kan bestand niet wegschrijven:"
+1021,1,"Kan bestand verwijzer niet toewijzen: "
+1022,1,"Kan operatie niet voltooien vanwege te lange padnaam."
+1023,1,"Kan operatie niet voltooien vanwege te lange mask."
+
+[STRINGTABLE 2]
+1025,1,"Sorry, de plugin is niet meer geldig. Bezoek onze web site voor de nieuwste versie."
+1026,1,"Kan bestand niet aanmaken of openen."
+1027,1,"Kan bestand niet lezen."
+1028,1,"Cabinet niet gevonden."
+1029,1,"Cabinet bestand heeft niet het juiste formaat."
+1030,1,"Cabinet bestand heeft een onbekend versie nummer."
+1031,1,"Cabinet bestand is corrupt."
+1032,1,"Onbekend compressie type in cabinet map."
+1033,1,"Mislukt decompressie data van een cabinet bestand."
+1034,1,"Cabinets in dezelfde set hebben niet dezelfde INHOUDELIJKE grootten."
+1035,1,"Door gebruiker onderbroken."
+1036,1,"Selecteer een map met de inhoud '%s'."
+1037,1,"Onjuiste cabinet bestand."
+1038,1,"Bestand niet gevonden."
+1039,1,"bestand overslaan"
+
+[STRINGTABLE 3]
+1040,1,"Plaats disk met cabinet volume nummer %d of zoek het juiste cabinet bestand op de disk.\n\nDruk op OK indien gereed."
+1041,1,"Fout"
+1042,1,"Bladderen en CAB archieven uitpakken."
+1043,1,"Omtrent plugin"
+

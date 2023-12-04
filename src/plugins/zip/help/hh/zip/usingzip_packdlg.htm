@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Create New Archive Dialog</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: ZIP: Using ZIP Plugin</div>
+<div class="page">
+<h1>Create New Archive Dialog</h1>
+
+<p>This dialog is displayed just before the packing to ZIP archive starts (Pack or Copy command).
+This dialog is labeled as <b>Add Files to Archive</b> when adding files to an existing archive (i.e. using the Copy command).
+You can specify here the packing options. Packing starts immediately with the default
+settings when showing of this dialog is disabled in the ZIP plugin configuration.</p>
+
+<h4>Dialog Box Options</h4>
+<dl>
+<dt><i>Create multi-volume archive</i></dt>
+<dd>Allows you to create multi-volume (spanned) archive. Archive file is splitted
+into several files (volumes) with specified maximal size. Typical usage: storing files to
+removable media (floppy disk, CD-ROM, etc.). ZIP plugin enables you also to create
+multi-volume archive stored on the fixed disk (with sequential filenames, see below).</dd>
+
+<dt><i>Volume size</i></dt>
+<dd>Maximal size of archive volume. If you select <i>automatic</i> ZIP plugin will
+detect free space on each inserted medium on target path and set volume maximal size
+according to this space.</dd>
+
+<dt><i>Name files sequentially</i></dt>
+<dd>Allows you to add a volume number to each archive volume. If you are packing
+to the fixed drive, this option is necessary because it is impossible to store
+multiple files with the same name to the same directory.<br/>
+Note: not all zip archivers support multiple volume ZIP archives stored on the
+fixed disks or archives with sequential naming.</dd>
+
+<dt><i>Create self-extracting archive</i></dt>
+<dd>Enables you to create archive which can unpack itself. For more details see
+<a href="sfx_intro.htm">Self-Extracting Archives</a>.</dd>
+
+<dt><i>Advanced</i></dt>
+<dd>Displays <a href="sfxset_settings.htm">Self-Extractor Settings</a> dialog.</dd>
+
+<dt><i>Encrypt files</i></dt>
+<dd>Enables file encryption. This option does not affect files which are already in the
+archive.</dd>
+
+<dt><i>Encryption Method</i></dt>
+<dd>The ZIP plugin supports 2 different encryption schemes. The legacy ZIP 2.0 method
+is nowadays considered weak (experts say they need less than two hours on a Pentium 500Mhz with 128MB
+and it is not dependent on the password length). The second scheme supported is the modern
+Advanced Encryption Standard (AES), with 2 lengths of keys - 128&nbsp;bits and 256&nbsp;bits.
+The longer key delivers better security on the expense of slightly longer encryption and decryption times.
+The key is generated from the user-provided password using the algorithm described in the RFC2898 document.<br/>
+Warning: While virtually any software capable of dealing with ZIP archives can extract files encrypted with
+the legacy method, not every software can deal with AES-encrypted archives.<br/>
+Warning: to achieve good security, it is highly recommended to use long passwords (more than 30 characters)
+mixing digits, lower-case and upper-case characters and other non-alphabetical symbols, such as colon.<br/>
+You may also use the Encrypt plugin if you need higher level of security for your files.</dd>
+
+<dt><i>Don't show this dialog again</i></dt>
+<dd>Suppress displaying of this dialog before each packing to ZIP archive. You can
+enable displaying again in the <a href="usingzip_config.htm">ZIP Configuration</a>.</dd>
+
+<dt><i>Configure</i></dt>
+<dd>Opens the <a href="usingzip_config.htm">ZIP Configuration</a> dialog.</dd>
+
+</dl>
+
+<h4>See Also</h4>
+<p><a href="usingzip_config.htm">ZIP Configuration</a><br/>
+<a href="sfx_intro.htm">Self-Extracting Archives</a></p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

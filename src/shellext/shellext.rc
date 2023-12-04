@@ -1,0 +1,58 @@
+﻿#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#include <winresrc.h>
+
+#include "..\plugins\shared\spl_vers.h"
+
+#define FILE_SALVER "5.0"   // bez cisla buildu a platformy, napr. "3.1 beta 1"
+#define FILE_VER "1.49\0"
+#define FILE_COPYRIGHT "Copyright © 2003-2023 Open Salamander Authors\0"
+
+#ifdef _WIN64
+#define FILE_DESCR "Shell Extension (x64) for Open Salamander " FILE_SALVER "\0"
+#else // _WIN64
+#define FILE_DESCR "Shell Extension (x86) for Open Salamander " FILE_SALVER "\0"
+#endif // _WIN64
+
+1 VERSIONINFO
+ FILEVERSION 1,4,9,VERSINFO_BUILDNUMBER
+ PRODUCTVERSION VERSINFO_SALAMANDER_MAJOR,VERSINFO_SALAMANDER_MINORA,VERSINFO_SALAMANDER_MINORB,VERSINFO_BUILDNUMBER
+ FILEFLAGSMASK 0x0L
+ FILEFLAGS 0x0L
+ FILEOS 0x4L
+ FILETYPE 0x2L  /* VFT_DLL */
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "Comments", "This DLL is registered as a shell extension in the Windows registry. It provides support for Drag & Drop and Cut / Copy & Paste from archives and plugin file-systems to Windows Explorer. It can be locked by Windows, so it may not be possible to delete it directly. If you have uninstalled Open Salamander, you should restart Windows to remove this DLL (this DLL will be removed on next start of Windows). If you want to uninstall this DLL manually, open Command Prompt (run cmd.exe or command.com), run ""regsvr32 /u "
+#ifdef _WIN64
+            "salextx64"
+#else // _WIN64
+            "salextx86"
+#endif // _WIN64
+            ".dll"", restart Windows, and try to delete this DLL again (it should not be registered as the shell extension, so it should be possible to delete it).\0"
+            VALUE "CompanyName", "Open Salamander\0"
+            VALUE "FileDescription", FILE_DESCR
+            VALUE "FileVersion", FILE_VER
+#ifdef _WIN64
+            VALUE "InternalName", "salextx64\0"
+            VALUE "OriginalFilename", "salextx64.dll\0"
+#else // _WIN64
+            VALUE "InternalName", "salextx86\0"
+            VALUE "OriginalFilename", "salextx86.dll\0"
+#endif // _WIN64
+            VALUE "LegalCopyright", FILE_COPYRIGHT
+            VALUE "ProductVersion", VERSINFO_SALAMANDER_VERSION "\0"
+            VALUE "ProductName", "Open Salamander\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0409, 0x04b0
+    END
+END

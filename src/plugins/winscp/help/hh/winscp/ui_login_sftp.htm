@@ -1,0 +1,122 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>SFTP Tab (Login Dialog)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Dialog Boxes: Configuring Session</div>
+<div class="page">
+<h1>SFTP Tab (Login Dialog)</h1>
+
+<p>
+<em><acronym title="SSH File Transfer Protocol">SFTP</acronym> tab</em> allows user to configure
+<a href="protocols.htm#sftp">SFTP protocol</a> specific options.
+</p>
+
+<p>
+You need to check <em>Advanced options</em> to reveal the tab.
+</p>
+
+<a name="protocol_options"></a>
+<h4>Protocol Options</h4>
+
+<p>
+Use <em>SFTP server</em> to specify path to
+<acronym title="SSH File Transfer Protocol">SFTP</acronym> server binary.
+Keep value <em>Default</em> to use the default
+<acronym title="SSH File Transfer Protocol">SFTP</acronym> server.
+Usually there will not be more
+<acronym title="SSH File Transfer Protocol">SFTP</acronym> servers to
+choose from. However you may find the option useful to change
+the way the <acronym title="SSH File Transfer Protocol">SFTP</acronym>
+server is launched.
+Particularly you may want to change user (known as <code>su</code>)
+<a href="#fn1">(see note 1)</a>.
+</p>
+
+<p>
+Use <em>Preferred <acronym title="SSH File Transfer Protocol">SFTP</acronym> protocol version</em> to
+configure maximal version of <acronym title="SSH File Transfer Protocol">SFTP</acronym> protocol that
+WinSCP will attempt to use. WinSCP will seamlessly downgrade to any lower version that the server
+supports. The only reason, that you may want to change the option for, is bug either in
+<acronym title="SSH File Transfer Protocol">SFTP</acronym> server or WinSCP itself specific to particular
+version of the protocol.
+</p>
+
+<a name="detection_of_known_bugs_in_sftp_servers"></a>
+<h4>Detection of Known Bugs in SFTP Servers</h4>
+
+<p>
+The box allows you to configure the bugs WinSCP should expect to see in the
+<a href="protocols.htm#protocols_sftp_ssh_file_transfer_protocol">SFTP server</a>.
+</p>
+
+<p>
+Each bug can be configured in three states. With <em>Off</em> WinSCP will assume that the server does
+not have the bug. With <em>On</em> WinSCP will assume that the server does have the bug. With
+<em>Auto</em> (default) WinSCP will try to guess whether or not the server has the bug. The guessing
+is mostly based on software version string of the <acronym title="Secure Shell">SSH</acronym> server,
+as most current <acronym title="SSH File Transfer Protocol">SFTP</acronym> servers does announce their
+software version strings.
+</p>
+
+<p>
+WinSCP can work around the bugs of major <acronym title="SSH File Transfer Protocol">SFTP</acronym>
+servers only. There is many more known bugs in <acronym title="SSH File Transfer Protocol">SFTP</acronym>
+server implementations. Read more about <a href="interoperability.htm">interoperability</a> with
+<acronym title="SSH File Transfer Protocol">SFTP</acronym> servers.
+</p>
+
+<a name="reverses_order_of_symlink_command_arguments"></a>
+<h3>Reverses Order of Symlink Command Arguments</h3>
+
+<p>
+The <acronym title="SSH File Transfer Protocol">SFTP</acronym> command to create a symbolic link (symlink) has two
+arguments: the path the symbolic link should point to and the path of the symlink itself. Some servers
+incorrectly expects the arguments in reversed order.
+</p>
+
+<p>
+If the bug is detected, WinSCP will reverse the order of the arguments too.
+</p>
+
+<p>
+The bug is known on <acronym title="SSH File Transfer Protocol">SFTP</acronym> servers shipped with all
+versions of <a href="https://www.openssh.com/" target="_blank">OpenSSH</a> (bug
+<a href="https://bugzilla.mindrot.org/show_bug.cgi?id=861" target="_blank">#861</a>).
+</p>
+
+<a name="misinterprets_file_timestamps_prior_to_1970"></a>
+<h3>Misinterprets File Timestamps Prior to 1970</h3>
+
+<p>
+While specification for <acronym title="SSH File Transfer Protocol">SFTP</acronym> protocol version 3
+and older defines file timestamp to be unsigned 32-bit number representing number of seconds from
+Jan 1, 1970 in <acronym title="Universal Time Coordinated">UTC</acronym>, at least OpenSSH interprets
+it as signed number. The result is that files on the server with timestamps before 1970 will be interpreted
+by WinSCP as times after 2038. As it is probably quite common bug, it is currently considered to apply
+for all servers. Set the option to <em>Off</em> if it does not for your server.
+</p>
+
+<p>
+This is <acronym title="SSH File Transfer Protocol">SFTP</acronym>-3 and older specific bug.
+<acronym title="SSH File Transfer Protocol">SFTP</acronym>-4 introduced signed 64-bit timestamps.
+</p>
+
+<h4>Notes:</h4>
+<p>
+<a name="fn1"></a>
+1) See <a href="https://winscp.net/eng/docs/faq_su" target="_blank">FAQ</a> for details.
+</p>
+
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

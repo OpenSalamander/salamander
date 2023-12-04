@@ -1,0 +1,123 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{53D8DB2B-C867-4B87-AB47-68E0ACEB691B}</ProjectGuid>
+    <RootNamespace>zip2sfx</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props">
+  </Import>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props">
+  </Import>
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\..\..\shared\vcxproj\x86.props">
+    </Import>
+    <Import Project="zip2sfx_base.props">
+    </Import>
+    <Import Project="zip2sfx_release.props">
+    </Import>
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\..\..\shared\vcxproj\x86.props">
+    </Import>
+    <Import Project="zip2sfx_base.props">
+    </Import>
+    <Import Project="zip2sfx_debug.props">
+    </Import>
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros">
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\shared\lukas\resedit.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\chicon.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\iosfxset.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\zip2sfx\checkzip.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\zip2sfx\crc32.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\zip2sfx\inflate.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\zip2sfx\precomp.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\zip2sfx\zip2sfx.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\zip2sfx\zip2sfx2.cpp">
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\shared\lukas\resedit.h">
+    </ClInclude>
+    <ClInclude Include="..\..\chicon.h">
+    </ClInclude>
+    <ClInclude Include="..\..\iosfxset.h">
+    </ClInclude>
+    <ClInclude Include="..\..\typecons.h">
+    </ClInclude>
+    <ClInclude Include="..\..\zip2sfx\checkzip.h">
+    </ClInclude>
+    <ClInclude Include="..\..\zip2sfx\crc32.h">
+    </ClInclude>
+    <ClInclude Include="..\..\zip2sfx\inflate.h">
+    </ClInclude>
+    <ClInclude Include="..\..\zip2sfx\precomp.h">
+    </ClInclude>
+    <ClInclude Include="..\..\zip2sfx\texts.h">
+    </ClInclude>
+    <ClInclude Include="..\..\zip2sfx\zip2sfx.h">
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\zip2sfx\zip2sfx.rc">
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\zip2sfx\zip2sfx.rh">
+    </None>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets">
+  </Import>
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,0 +1,26 @@
+﻿//
+// tserver.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "manifest.xml"
+
+//****************************************************************************
+//
+// Icons
+//
+
+IC_TSERVER_1     ICON "tsrv1.ico"
+
+//****************************************************************************
+//
+// Bitmaps
+//
+
+BMP_TYPE         BITMAP "state.bmp"

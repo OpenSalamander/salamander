@@ -1,0 +1,111 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\dutch\uniso.atp"
+TEXTVERSION,"1.37 (x86)"
+VERSION,"1,3,7,180"
+
+[TRANSLATION]
+LANGID,1043
+AUTHOR,"Cor van der Smissen, Marco Fung, Patrick Vijgeboom, S.V. (Stephan) Rietveld"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7009"
+COMMENT,"Nederlandse versie"
+
+[DIALOG 1200]
+300,83,1,"UnISO Configuratie"
+1201,8,11,286,10,1,"&Verwijder het alleen lezen attribuut wanneer er gekopieerd wordt van een archief"
+1202,8,23,202,10,1,"&Toon sessie als map (toegang tot all sessies toegestaan)"
+1203,8,35,125,10,1,"T&oon boot image disk als bestand"
+3000,2,58,296,1,1,""
+1,188,64,50,14,1,"OK"
+2,243,64,50,14,1,"Annuleren"
+
+[STRINGTABLE 0]
+1000,1,"UnISO"
+1001,1,"Kan bestand niet openen."
+1002,1,"Ongespecificeerde fout."
+1003,1,"Uitpakken ISO archieven"
+1004,1,"Er is een fout opgetreden bij het uitpakken van het archief."
+1005,1,"Kan dit bestand niet verwerken."
+1006,1,"Onvoldoende geheugen."
+1007,1,"Over plugin"
+
+[STRINGTABLE 1]
+1009,1,"Bladeren en CD/DVD ISO image bestanden uitpakken."
+1010,1,"Kan tijdelijke map niet aanmaken."
+1011,1,"Kan tijdelijk bestand niet verwijderen."
+1012,1,"Onbekend bestandsformaat of ongeldig ISO image.\n\nAls u niet zeker weet of dit een geldige ISO image is, neemt u dan contact op met support@altap.cz en help ons dit formaat te ondersteunen."
+1013,1,"Kan bestand '%s' niet openen."
+1014,1,"Aanmaken van tijdelijk bestand is mislukt."
+1015,1,"Kan bestandattributen niet instellen."
+1016,1,"Kan map '%s' niet aanmaken."
+1020,1,"Ja"
+1021,1,"Nee"
+1022,1,"Fout"
+1023,1,"Waarschuwing"
+
+[STRINGTABLE 2]
+1024,1,"Een of meerdere fouten is/zijn opgetreden tijdens het lezen van de multisessie image.\n\nAlleen correct gelezen sessies worden getoond."
+1025,1,"Onbekend track type."
+1026,1,"Onbekend allocatie strategie (%d).\n\nNeem contact op met support@altap.cz en help ons dit probleem op te lossen."
+1027,1,"Slecht formaat van .CCD bestand.\n\nGetoonde image kan incompleet zijn."
+1028,1,"Ontbrekend .CCD bestand.\n\nGetoonde image kan incompleet zijn."
+1029,1,"Kan de sector #%08X niet lezen."
+1030,1,"Ongeldig UDF Tag ID."
+1031,1,"Fout bij het lezen van de mapstructuur in sector #%08X.\n\nIncomplete inhoud van het ISO image."
+1032,1,"Interne plugin fout."
+1033,1,"Leesfout van virtuele allocatie tabel in sector #%08X."
+1034,1,"Virtuele allocatie tabel ontbreekt."
+1035,1,"Slecht startpad ICB.\n\nKan de mapstructuur niet lezen."
+1036,1,"Bestand "%s" kan niet uitgepakt worden.\n\nInconsistentie tussen bestandsgrootte en ICB blocks."
+1037,1,"Kan track #%d niet openen."
+1038,1,"Dit bestand schijnt een floppy, een hardeschijf of een hard disk partitie image te zijn.\nProbeer het bestand te hernoemen naar .ima om de UnFAT plugin te activeren."
+1039,0,"This disk image contains the APFS file system.\nThis file system is not supported yet."
+
+[STRINGTABLE 3]
+1050,1,"Kan partitie header niet lezen. Bestand is te klein."
+1051,1,"Corrupte structuren in de Partitie Manager."
+1052,1,"Deze disk image bevat geen HFS Plus partitie."
+1053,1,"Deze disk image bevat HFS en geen HFS Plus bestandssysteem.\nHFS wordt niet ondersteund."
+1054,1,"Kan blok #%08X niet vinden.\nBestand %s zal niet uitgepakt worden."
+1055,1,"Kan blok #%08X niet vinden."
+
+[STRINGTABLE 4]
+1056,1,"Niet ondersteunde BTree start node type in de Catalogus."
+1057,1,"Het Catalogus bestand is gefragmenteerd in meer dan 8 fragmenten wat niet ondersteund wordt."
+1058,1,"Het bestand '%s' is gefragmenteerd in meer dan 8 fragmenten wat ondersteund wordt.\nHet bestand zal niet uitgepakt worden."
+1059,1,"De disk image bevat een te lang pad waar Open Salamander niet mee om kan gaan."
+1060,1,"Kan bewerking niet afmaken omdat de naam te lang is."
+1070,1,"Kan het pakket kenmerk niet lezen. Bestand is te klein."
+1071,1,"Dit pakket is gecodeerd.\nGecodeerde pakketten worden niet ondersteund."
+
+[STRINGTABLE 5]
+1072,1,"Dit bestand lijkt niet op een DMG pakket of is incompleet.\nHet bevat geen geldig DMG voetprint."
+1073,1,"Dit bestand lijkt niet op een geldig DMG pakket of is incompleet.\nHet bevat geen geldige eigenschappenlijst."
+1074,1,"Dit pakket bevat geen data blok van de HFS Plus partitie beginnend bij %I64u.\nDit blok is nodig voor de juiste verwerking van het pakket."
+1075,1,"Kan data van disk image niet lezen op positie %I64u."
+1076,1,"Kan niet zoeken in de disk image bij de positie %I64u."
+1077,1,"Interne fout: Zoek methode wordt niet ondersteund."
+1078,1,"Deze disk image bevat een gecomprimeerd blok met een onbekende methode.\nZulke disk images worden niet ondersteund."
+1079,1,"Uitpakken van een ZLIB-gecomprimeerd blok is mislukt. De disk image schijnt corrupt te zijn."
+1080,1,"Uitpakken van een BZIP2-gecomprimeerd blok is mislukt. De disk image schijnt corrupt te zijn."
+1085,1,"Dit bestand schijnt niet een comprimeerd ISZ image te zijn of is incompleet.\nHet bevat geen geldig ISZ kenmerk."
+1086,1,"Kan gecomprimeerd image kenmerk niet lezen. Bestand is te klein."
+1087,1,"Dit image is gesegmenteerd.\nGesegmenteerde images worden niet ondersteund."
+
+[STRINGTABLE 6]
+1088,1,"Dit image is gecodeerd.\nGecodeerde images worden niet ondersteund."
+1100,1,"Leesfout"
+1101,1,"Schrijffout"
+1102,1,"Audio tracks kunnen niet uitgepakt worden."
+1103,1,"Bezig met annuleren, een moment geduld alstublieft..."
+
+[STRINGTABLE 7]
+1150,1,"Informatie over image\n\n"
+1151,1,"Informatie over image "%s"\n\n"
+
+[STRINGTABLE 8]
+1152,1,"Aantal sessies: %d"
+1153,1,"\nSessie %d\n"
+1154,1,"  Aantal tracks: %d\n"
+1155,1,"  Track: %d, %s, Grootte: %d KBytes\n"
+1156,1,"  Track: %d, %s, Grootte: %d KBytes - "%s"\n"
+

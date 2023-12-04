@@ -1,0 +1,36 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\romanian\unlha.atp"
+TEXTVERSION,"1.13 (x86)"
+VERSION,"1,1,3,180"
+
+[TRANSLATION]
+LANGID,1048
+AUTHOR,"Ioan Stefancu, Donca Radu"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6165"
+COMMENT,"Versiunea romana"
+
+[STRINGTABLE 0]
+1,1,"Fisier invalid LZH sau format fisier necunoscut."
+2,1,"Eroare checksum cap fisier.\nArhiva e corupta - nu toate fisierele pot fi listate."
+3,1,"Am ramas fara memorie."
+4,1,"Eroare de scriere"
+5,1,"UnLHA"
+6,1,"Eroare la deschiderea arhivei."
+7,1,"Nu pot aduga intrare arhiva la lista de fisiere."
+8,1,"Arhiva contine unul sau mai multe link-uri simbolice UNIX, care nu sunt aratate."
+10,1,"Nu pot dezarhiva fisierul."
+11,1,"Eroare in data comprimata. CRC nu se potriveste."
+12,1,"Eroare in citirea arhivei."
+13,1,"Dezarhivarea Arhivei LHA - %s"
+14,1,"pregatesc datele si creez directoarele..."
+15,1,"dezarhivez: "
+
+[STRINGTABLE 1]
+16,1,"dezarhivez..."
+17,1,"Nu pot termina operatiunea pentru ca nume cale e prea lung."
+18,1,"Nu pot termina operatiunea pentru ca masca e prea lunga."
+19,1,"Metoda de compresie necunoscuta. Fisierul nu poate fi dezarhivat."
+20,1,"metoda necunoscuta sarit peste..."
+21,1,"Rasfoieste si extrage arhivele LHA."
+22,1,"Despre Plugin"
+

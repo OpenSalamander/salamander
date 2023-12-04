@@ -1,0 +1,75 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\czech\pak.atp"
+TEXTVERSION,"1.71 (x86)"
+VERSION,"1,7,1,180"
+
+[TRANSLATION]
+LANGID,1029
+AUTHOR,"Hynek Mikulič"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7008"
+COMMENT,"Česká verze"
+
+[DIALOG 100]
+225,73,1,"Optimalizace PAK archivu"
+300,8,9,74,8,1,"Velikost platných dat:"
+101,95,9,118,8,1,""
+301,8,20,86,8,1,"Celková velikost souboru:"
+102,95,20,118,8,1,""
+302,8,31,65,8,1,"Nadbytečné místo:"
+103,95,31,118,8,1,""
+303,8,44,209,1,1,""
+1,52,53,55,14,1,"Optimalizovat"
+2,117,53,55,14,1,"Storno"
+
+[STRINGTABLE 0]
+500,1,"Nelze otevřít soubor: %s"
+501,1,"Nelze inicializovat paklib rozhraní. Již je otevřen jeden soubor."
+502,1,"Nelze otevřít soubor. Již je otevřen jeden soubor."
+503,1,"Nelze získat velikost souboru: %s"
+504,1,"Neplatný formát dat."
+505,1,"Nedostatek paměti."
+506,1,"aktuální hlavní PAK adresář"
+507,1,"Nelze nastavit ukazatel souboru: %s"
+508,1,"Nelze číst ze souboru: %s"
+509,1,"Nelze získat ukazatel souboru: %s"
+510,1,"Nelze zapsat do souboru: %s"
+511,1,"Nelze přidat soubor, kvůli příliš dlouhému názvu."
+
+[STRINGTABLE 1]
+1000,1,"PAK"
+1001,1,"Nedostatek paměti."
+1002,1,"Nelze přidat soubor do výpisu."
+1003,1,"Nelze nahrát paklib.dll nebo získat procesní adresu: "
+1004,1,"Extrahování PAK archivu - %s"
+1005,1,"připravuji data..."
+1006,1,"extrahuji..."
+1007,1,"extrahuji: "
+
+[STRINGTABLE 2]
+1008,1,"Nelze dokončit operaci, kvůli příliš dlouhému názvu cesty."
+1009,1,"Nelze nastavit ukazatel souboru: "
+1010,1,"Nelze získat ukazatel souboru: "
+1011,1,"Nelze zapsat do souboru:"
+1013,1,"Nelze otevřít soubor: "
+1014,1,"Nelze dokončit operaci, kvůli příliš dlouhé masce."
+1015,1,"Odstraňuji z PAK archivu - %s"
+1016,1,"odstraňuji..."
+1017,1,"odstraňuji: "
+1018,1,"stornování operace, čekejte prosím..."
+1019,1,"Komprimace PAK archivu - %s"
+1020,1,"Nelze přidat soubore: Soubor je příliš velký."
+1021,1,"Komprimuji..."
+1022,1,"Nelze přidat soubor, kvůli příliš dlouhému názvu."
+1023,1,"komprimuji: "
+
+[STRINGTABLE 3]
+1024,1,"Nelze číst ze souboru: "
+1025,1,"Nelze připojit plugin k Open Salamanderu."
+1026,1,"optimalizace, čekejte prosím..."
+1027,1,"Optimalizace PAK archivu - %s"
+1028,1,"Odstranění souborů bylo úspěšně dokončeno. Může být potřeba spustit PAK optimalizaci z nabídky PAK pluginu, aby nedošlo k plýtvání místem na disku."
+1029,1,"&Optimalizovat PAK"
+1030,1,"Promiňte, plugin vypršel. Prosím prohlédněte naší web stránku pro novější verzi."
+1031,1,"Prohlíží a extrahuje Quake PAK archivy."
+1032,1,"O pluginu"
+

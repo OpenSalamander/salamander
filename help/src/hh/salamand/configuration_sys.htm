@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Recycle Bin configuration</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Dialog Boxes: Configuration</div>
+<div class="page">
+<h1>Recycle Bin</h1>
+
+<p>Specifies how you want to delete files and directories.</p>
+
+<h4>Dialog Box Options</h4>
+<dl>
+
+<dt><i>Move all deleted files and directories to the Recycle Bin</i></dt>
+<dd>All files and directories you delete are send to the Recycle Bin. They
+are not removed from your hard disk until you empty the Recycle Bin or until
+their total size is bigger than maximum size of Recycle Bin (usually 10%
+of drive size). Deleting with this option may be faster (files and directories are not
+deleted but only moved to other location on the same drive).
+<p>Open Salamander delete confirmations will be ignored. To set confirmations
+on delete and maximum size of Recycle Bin, open Properties from right-click
+context menu in the Recycle Bin icon on your desktop.</p>
+</dd>
+
+<dt><i>Remove files and directories immediately when deleted</i></dt>
+<dd>Files and directories will be removed from your disk as soon as you delete
+them. After delete operation will be beyond recovery. But you can still use some
+undelete utility to try to recover deleted files, e.g. the
+<a href="ms-its:undelete.chm::/hh/undelete/introduction_intro.htm">Undelete plugin</a>. If
+you want to delete files irreversibly, you need to use some shredding (wiping)
+utility.</dd>
+
+<dt><i>Move following files to the Recycle Bin, delete others permanently</i></dt>
+<dd>All files and directories matching specified <a href="appendix_filemasks.htm">file masks</a>
+are send to the Recycle Bin. All others are removed from your disk immediately.
+See previous two options for details.</dd>
+
+</dl>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,13 @@
+18
+
+"Arhiva ZIP Self-Extracting"
+
+"Acesta va extrage arhiva ZIP."
+
+"Versiunea 1.40"
+
+"&Extrage"
+
+"Self-Extractor © 2000-2023 Open Salamander Authors"
+
+"https://www.altap.cz"

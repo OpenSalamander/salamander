@@ -1,0 +1,75 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\german\automation.atp"
+TEXTVERSION,"1.7 (x86)"
+VERSION,"1,7,0,180"
+
+[TRANSLATION]
+LANGID,1031
+AUTHOR,"Dirk Bornhütter, Thomas Kelso, Thomas Pagels, Thomas Wölk, Marko Meister und Mick Weiss"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7334"
+COMMENT,"Deutsche Version"
+
+[DIALOG 100]
+205,64,1,"Eingabefeld"
+1150,8,8,189,8,1,"Abfrage:"
+101,8,18,189,12,1,""
+1,48,42,50,14,1,"OK"
+2,107,42,50,14,1,"Abbrechen"
+
+[DIALOG 101]
+332,143,1,"Automation Konfiguration"
+375,8,9,67,8,1,"&Skriptverzeichnisse:"
+371,8,19,316,73,1,""
+1001,8,102,110,10,1,"Skript&debuggen ermöglichen"
+1,75,121,50,14,1,"OK"
+2,141,121,50,14,1,"Abbrechen"
+9,207,121,50,14,1,"&Hilfe"
+
+[MENU 106]
+0,1,"[POPUP]"
+40013,1,"Durchsuchen…"
+40014,1,"Salamander Verzeichnis"
+40015,1,"Umgebungsvariable"
+
+[STRINGTABLE 0]
+1,1,"Automation"
+2,1,"Automatisiert allgemeine Aufgaben mit Hilfe von Skripts."
+3,1,"Über Plugin"
+
+[STRINGTABLE 1]
+128,1,"Automation Skriptfehler"
+129,1,"Zeile:\t%u\r\n"
+130,1,"Spalte:\t%u\r\n"
+131,1,"Fehler:\t%s"
+132,1,"Ausgewähltes Skript starten"
+134,1,"Fortschritt des Vorgangs"
+135,1,"Quelle:\t%s\r\n"
+136,1,"Skriptmenü öffnen"
+137,1,"(kein Skript)"
+138,1,"Skript '%s' konnte nicht ausgeführt werden.\r\n%s"
+139,1,"Unbekannter Fehler."
+140,1,"1\t&Abbrechen"
+141,1,"1\t&Debug\t2\t&Abbrechen"
+142,1,"Skriptverzeichnis"
+143,1,"Skriptablageverzeichnis wählen."
+
+[STRINGTABLE 2]
+144,1,"Skript abbrechen"
+145,1,"Laufendes Skript abbrechen\tStrg+Untbr"
+146,1,"Das Fenster des Open Salamanders ist durch das Automation-Plugin blockiert. Bitte beenden Sie das laufende Skript."
+147,1,"Fehler bei der Initialisierung des Scriptmoduls."
+
+[STRINGTABLE 3]
+256,1,"Ungültiges Archiv."
+257,1,"Aktueller Pfad kann nicht geschlossen werden."
+258,1,"Der Pfad wurde abgeschnitten."
+259,1,"Während das Fenster gezeigt wird, kann weder die Eigenschaft geändert noch die Methode %s aufgerufen werden."
+260,1,"Während das Fenster ausgeblendet ist, kann weder die Eigenschaft geändert noch die Methode %s aufgerufen werden."
+261,1,"Das Plugin konnte nicht geladen werden."
+262,1,"Plugin fehlerhaft."
+263,1,"Das Verschieben der Datei in den Festplattencache ist fehlgeschlagen."
+264,1,"Syntaxfehler in Dateimaske."
+265,1,"Nur Komponenten können dem Container hinzugefügt werden."
+266,1,"Formulare können dem Container nicht hinzugefügt werden."
+267,1,"Die Skriptausführung wurde vom Benutzer abgebrochen."
+

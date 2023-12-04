@@ -1,0 +1,95 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\hungarian\uncab.atp"
+TEXTVERSION,"1.27 (x86)"
+VERSION,"1,2,7,180"
+
+[TRANSLATION]
+LANGID,1038
+AUTHOR,"Török József"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6164"
+COMMENT,"Magyar változat"
+
+[DIALOG 100]
+221,122,1,"Következő kötet"
+112,12,9,198,32,1,""
+300,12,48,38,8,1,"Lemeznév:"
+110,54,48,156,8,1,""
+301,12,59,39,8,1,"CAB név:"
+111,54,59,156,8,1,""
+302,12,70,36,8,1,"&Elérési út:"
+101,12,80,182,12,1,""
+102,197,80,13,12,1,"..."
+1,106,103,50,14,1,"OK"
+2,160,103,50,14,1,"Mégse"
+303,6,97,209,1,1,""
+
+[DIALOG 103]
+350,85,1,"Hiba"
+300,8,10,22,8,1,"Név:"
+104,34,10,309,8,1,""
+301,8,23,22,8,1,"Hiba:"
+302,34,23,309,16,1,"A fájl nem tömöríthető ki, mert egy előző kötet folytatása. A fájl kibontásához, azzal a kötettel kell indítania, ahol a fájl kezdődik."
+105,34,44,183,12,1,"&Ne mutassa ezt az üzenetet."
+108,90,63,50,14,1,"&Kihagy"
+109,150,63,50,14,1,"Mind kih&agy"
+2,210,63,50,14,1,"Mégse"
+
+[DIALOG 106]
+220,85,1,"UnCAB beállítás"
+300,23,22,154,8,1,"folytatandó fájlokat."
+107,12,10,195,12,1,"Kibontáskor &automatikusan hagyja ki az előző kötetből"
+301,23,44,111,8,1,"listázható ki."
+116,12,32,199,12,1,"&Ne figyelmeztessen, ha az archívum teljes tartalma nem"
+302,6,60,208,1,1,""
+1,57,66,50,14,1,"OK"
+2,112,66,50,14,1,"Mégse"
+
+[DIALOG 115]
+218,108,1,"UnCAB - Figyelmeztetés"
+300,11,9,198,24,1,"A több-kötetes archívum nem minden fájlja listázható (és látható a panelben), mert néhány archívum kötet nem található."
+301,11,40,198,16,1,"A archívum teljes tartalmához, az archívum minden kötetét másoljon egy mappába és nyissa meg az ELSŐ kötetet."
+105,11,65,157,12,1,"&Ne mutassa ezt az üzenetet"
+302,5,83,207,1,1,""
+1,159,90,50,14,1,"OK"
+
+[STRINGTABLE 0]
+1000,1,"UnCAB"
+1001,1,"Kevés memória."
+
+[STRINGTABLE 1]
+1008,1,"Ismeretlen hiba lépett fel."
+1012,1,"Válasszon mappát"
+1014,1,"Nem adható archívum bejegyzés a fájl listához."
+1015,1,"CAB archívum kibontása - %s"
+1016,1,"adat előkészítése és mappák létrehozása..."
+1017,1,"kibontás..."
+1018,1,"kibontás: "
+1019,1,"Nem szerezhető meg a fájlmutató: "
+1020,1,"Nem lehet a fájlba írni:"
+1021,1,"Nem állítható be a fájlmutató: "
+1022,1,"Nem fejezhető be a művelet, mert túl hosszú az elérési név."
+1023,1,"Nem fejezhető be a művelet, mert a maszk túl hosszú."
+
+[STRINGTABLE 2]
+1025,1,"Sajnálom, a plugin lejárt. Látogassa meg weboldalunk az új verzióhoz."
+1026,1,"A fájl nem hozható létre vagy nyitható meg."
+1027,1,"A fájl nem olvasható."
+1028,1,"A Cabinet nem található."
+1029,1,"A Cabinet fájl nem érvényes formátumú."
+1030,1,"A Cabinet fájl ismeretlen verziószámú."
+1031,1,"A Cabinet fájl sérült."
+1032,1,"Ismeretlen tömörítési típus a cabinet mappában."
+1033,1,"Adat kitömörítése egy cabinet fájlból sikertelen."
+1034,1,"A Cabinet fájloknak nem lehet ugyanaz a FOGLALT méretük."
+1035,1,"Felhasználói megszakítás."
+1036,1,"Válassza ki a(z) '%s'-t tartalmazó mappát."
+1037,1,"Érvénytelen cabinet fájl."
+1038,1,"A fájl nem található."
+1039,1,"fájl kihagyása"
+
+[STRINGTABLE 3]
+1040,1,"Helyezze be a következő, %d számú kötetet vagy keresse meg a fájlt a lemezen.\n\nOK ha kész."
+1041,1,"Hiba"
+1042,1,"CAB archívumok böngészése és kibontása."
+1043,1,"Plugin névjegy"
+

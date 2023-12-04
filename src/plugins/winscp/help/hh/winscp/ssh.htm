@@ -1,0 +1,188 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Understanding SSH</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Introduction</div>
+<div class="page">
+
+<h1>Understanding SSH</h1>
+
+<p>
+<acronym title="Secure Shell">SSH</acronym> is a cryptographically protected remote login protocol
+that replaces the insecure telnet and rlogin protocols.
+It provides strong protection against password sniffing and third party
+session monitoring, better protecting your authentication credentials
+and privacy. In addition to protecting your passwords and your privacy,
+<acronym title="Secure Shell">SSH</acronym> offers additional authentication methods that are considered more
+secure than passwords, such as public key authentication, and extensive
+protection against spoofing.
+</p>
+
+<a name="authentication_in_ssh"></a>
+<h4>Authentication in SSH</h4>
+
+<p>
+<acronym title="Secure Shell">SSH</acronym> servers offer the client a selection of authentication
+methods. The server advertises what it supports, and the client
+attempts to authenticate over each method that it can support.
+Generally, the client will choose methods that are the least intrusive
+to the user, if they are available. In most cases, the client provides
+the option to choose which methods can be used. In WinSCP, you can configure this on
+<a href="ui_login_authentication.htm">Login dialog</a>.
+</p>
+
+<p>
+The actual order of authentication methods is as follows:
+<acronym title="Massachusetts Institute of Technology">MIT</acronym> Kerberos
+<acronym title="Generic Security Services Application Programming Interface">GSSAPI</acronym> 5
+(<acronym title="Secure Shell">SSH</acronym>-2 only), <a href="public_key.htm">public key</a> (using Pageant),
+<a href="public_key.htm">public key</a>
+(using <a href="ui_login_session.htm">configured file</a>),
+keyboard-interactive (<acronym title="Secure Shell">SSH</acronym>-2 only), TIS or Cryptocard
+(<acronym title="Secure Shell">SSH</acronym>-1 only), password.
+</p>
+
+<a name="verifying_the_host_key"></a>
+<h4>Verifying the Host Key</h4>
+
+<p>
+If you are using WinSCP to connect to a server for the first time, you will probably see a message looking
+something like this:
+</p>
+
+<div class="quote">
+<p>The server's host key was not found in the cache. You have no guarantee that the<br/>
+server is the computer you think it is.<br/>
+The server's rsa2 key fingerprint is:<br/>
+ssh-rsa 1024 94:3c:9e:2b:23:df:bd:53:b4:ad:f1:5f:4e:2f:9d:ba</p>
+</div>
+
+<p>
+This is a feature of the <acronym title="Secure Shell">SSH</acronym> protocol. It is designed to protect
+you against a network attack known as spoofing: secretly redirecting your connection to a different
+computer, so that you send your password to the wrong machine. Using this technique, an attacker would be
+able to learn the password that guards your login account, and could then log in as if they were you and
+use the account for their own purposes.
+</p>
+
+<p>
+To prevent this attack, each server has a unique identifying code, called a host key.
+These keys prevent a server from forging another server's key.
+If you connect to a server and you receive an unexpected host key, WinSCP can warn you that the server
+may have been switched and that a spoofing attack might be underway.
+</p>
+
+<p>
+WinSCP records the host key for each server you connect to.
+Every time you connect to a server, it compares the server's host key
+to the host key you received the last time you connected.
+If the keys differ, you will receive a warning and a chance to abandon your connection
+before you enter any private information such as a password.
+</p>
+
+<p>
+However, when you connect to a server for the first time, WinSCP has no way of telling whether
+the host key is the right one or not. So it gives the warning shown above, and asks you whether you want
+to trust this host key or not.
+</p>
+
+<p>
+Whether or not to trust the host key is your choice. If you are connecting within a company network, you
+might feel that all the network users are on the same side and spoofing attacks are unlikely, so you might
+choose to trust the key without checking it. If you are connecting across a hostile network (such as the
+Internet), you should check with your system administrator, perhaps by telephone or in person. (Some modern
+servers have more than one host key. If the system administrator sends you more than one fingerprint, you
+should make sure the one WinSCP shows you is on the list, but it doesn't matter which one it is.)
+<a href="#fn1">(see note 1)</a>
+</p>
+
+<p>
+Once the key is verified, you can see it during all future sessions on
+<a href="ui_fsinfo.htm">Server and Protocol Information Dialog</a>.
+</p>
+
+<p>
+<a href="administration.htm">System administrator can restrict</a> connection to server without having
+their host keys accepted in advance.
+</p>
+
+<a name="encryption_in_ssh"></a>
+<h4>Encryption in SSH</h4>
+
+<p>
+<acronym title="Secure Shell">SSH</acronym> clients and servers can use a number of encryption methods.
+In the older <acronym title="Secure Shell">SSH</acronym>-1 protocol,
+<acronym title="Triple Data Encryption Standard">3DES</acronym> and
+<acronym title="Data Encryption Standard">DES</acronym> are typically used.
+<acronym title="Secure Shell">SSH</acronym>-2 adds support for additional encryption methods including
+<acronym title="Advanced Encryption Standard">AES</acronym> and Blowfish. By default,
+<acronym title="Advanced Encryption Standard">AES</acronym> is used if supported by the server.
+While <acronym title="Advanced Encryption Standard">AES</acronym> is
+considered to be highly secure, <acronym title="Advanced Encryption Standard">AES</acronym> encryption
+requires substantial processor overhead.
+Blowfish is also considered secure, but with less computational overhead, it's also theoretically
+easier to perform a brute-force attack. Depending on your security and
+performance requirements, you may wish to configure WinSCP to prefer
+the Blowfish algorithm. <acronym title="Triple Data Encryption Standard">3DES</acronym> and
+<acronym title="Data Encryption Standard">DES</acronym> are used with
+<acronym title="Secure Shell">SSH</acronym>-1 servers. <acronym title="Data Encryption Standard">DES</acronym>
+is widely regarded as insecure, as the resources to perform an
+exhaustive brute-force attack have been well within the realm of
+commercial feasibility for some time.
+</p>
+
+<a name="ssh_protocols"></a>
+<h4>SSH Protocols</h4>
+
+<p>
+Two major versions of the <acronym title="Secure Shell">SSH</acronym> protocol are in widespread use.
+The <acronym title="Secure Shell">SSH</acronym>-1 protocol is an older version that's still
+widely supported despite its age and some technical issues. The <acronym title="Secure Shell">SSH</acronym>-2
+protocol has become the de-facto installation standard,
+though some systems only support <acronym title="Secure Shell">SSH</acronym>-1.
+In addition, many sites that use <acronym title="Secure Shell">SSH</acronym>-2 disable the
+<acronym title="Secure Shell">SSH</acronym>-1 protocol.
+</p>
+
+<p>
+WinSCP's default setting is to prefer <acronym title="Secure Shell">SSH</acronym>-2 and negotiate
+down to <acronym title="Secure Shell">SSH</acronym>-1 if <acronym title="Secure Shell">SSH</acronym>-2 is
+not available. If the majority of systems you
+connect to are using <acronym title="Secure Shell">SSH</acronym>-2, you may wish to change this setting in the
+<a href="ui_login_ssh.htm"><acronym title="Secure Shell">SSH</acronym> preferences</a>.
+</p>
+
+<a name="compression"></a>
+<h4>Compression</h4>
+
+<p>
+<acronym title="Secure Shell">SSH</acronym> supports data stream compression between the client
+and the server. On slow links, this may increase throughput, while in
+faster connections the added <acronym title="Central Processing Unit">CPU</acronym> overhead may
+actually result in slower transfers, particularly depending on the data type you're transferring.
+Large text files may still benefit significantly, while
+binaries may actually transfer more slowly. You may want to
+experiment to find what works best in your situation. Compression may
+also improve security slightly, in part by rendering known cyphertext
+attacks more difficult and by providing less data for
+cryptanalysis.
+</p>
+
+<h4>Notes:</h4>
+<p>
+<a name="fn1"></a>
+1) The text is copy of <a href="https://tartarus.org/~simon/putty-snapshots/htmldoc/" target="_blank">PuTTY User Manual</a> or was inspired by it.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

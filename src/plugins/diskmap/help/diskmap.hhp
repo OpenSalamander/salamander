@@ -1,0 +1,66 @@
+[OPTIONS]
+Auto Index=Yes
+Compatibility=1.1 or later
+Compiled file=diskmap.chm
+Contents file=diskmap.hhc
+Default Window=$global_ssdefault
+Default topic=hh\diskmap\introduction_intro.htm
+Display compile progress=No
+Full text search stop list file=..\..\shared\help\en\stop.stp
+Full-text search=Yes
+Index file=diskmap.hhk
+Language=0x409 English (United States)
+Title=DiskMap Help
+
+[WINDOWS]
+$global_ssdefault=,"salamand.chm::\salamand.hhc","diskmap.hhk","hh\diskmap\introduction_intro.htm","hh\diskmap\introduction_intro.htm",,,,"Web Help",0x3520,,0x180e,,,,,,,,0
+
+[FILES]
+hh\salamander_help.css
+hh\salamander_help_shared.css
+
+[ALIAS]
+IDH_SHOWDISKMAP=hh\diskmap\using_showdiskmap.htm
+
+[MAP]
+#include "..\DiskMap\Resources\DiskMap.rh2"
+#include "..\lang\lang.rh"
+#include "..\DiskMapPlugin\DiskMapPlugin.rh"
+
+[MERGE FILES]
+salamand.chm
+zip.chm
+filecomp.chm
+7zip.chm
+dbviewer.chm
+demoview.chm
+ftp.chm
+checksum.chm
+checkver.chm
+ieviewer.chm
+mmviewer.chm
+pak.chm
+peviewer.chm
+pictview.chm
+regedt.chm
+renamer.chm
+splitcbn.chm
+tar.chm
+unarj.chm
+uncab.chm
+undelete.chm
+unfat.chm
+uniso.chm
+unlha.chm
+unmime.chm
+unrar.chm
+wmobile.chm
+winscp.chm
+nethood.chm
+unchm.chm
+automation.chm
+demoplug.chm
+demomenu.chm
+
+[INFOTYPES]
+

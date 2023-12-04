@@ -1,0 +1,282 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Batch Rename dialog box</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: Renamer: Dialog Boxes</div>
+<div class="page">
+<h1>Batch Rename</h1>
+
+<p>Use this dialog to rename many files and directories in a batch using specified rules.</p>
+<h4>Menu</h4>
+
+The Batch Rename dialog contains menu with following commands:
+
+<a id="rename"></a>
+
+<dl>
+<dt><i>Commands/Rename</i></dt>
+
+<dd>Starts batch renaming. It changes filenames on disk according to rules
+specified in this dialog. It can also move files to another directories if you
+rename filenames including their full or relative paths.
+</dd>
+
+<dt><i>Commands/Validate</i></dt>
+
+<dd>Tries if batch renaming will succeed. It reports syntax errors in new filenames,
+duplicate filenames (more original filenames with the same resulting name), and some
+other errors. Use this command to prevent only partially finished batch rename
+operation.
+</dd>
+
+<dt><i>Commands/Undo</i></dt>
+
+<dd>Reverts all performed rename operations in the last batch (the last use of the
+Rename command).
+</dd>
+
+<dt><i>Commands/Exit</i></dt>
+
+<dd>Closes this Batch Rename dialog.
+</dd>
+
+<dt><i>Edit/Store List to Clipboard</i></dt>
+
+<dd>Works only in the manual mode of the batch rename, see the Manual mode checkbox.
+Copies the list of new names to clipboard, so you can e.g. paste it to your favorite
+text editor to edit them.
+</dd>
+
+<dt><i>Edit/Load List from Clipboard</i></dt>
+
+<dd>Works only in the manual mode of the batch rename, see the Manual mode checkbox.
+Replaces the list of new names by a text from the clipboard, so you can use it e.g.
+to copy the changed list of new names from your favorite text editor back
+to this dialog.
+</dd>
+
+<dt><i>Edit/Open List in External Editor...</i></dt>
+
+<dd>Works only in the manual mode of the batch rename, see the Manual mode checkbox.
+It saves the list of new names to a temporary file, opens this file in your favorite
+text editor, and waits until you finish editing and save changes. Then it loads back the
+list of new names from this temporary file. You can specify your favorite text editor
+in the <a href="dlgboxes_advoptions.htm">Advanced Options dialog</a>.
+</dd>
+
+<dt><i>Edit/Filter List Through Shell Command...</i></dt>
+
+<dd>Works only in the manual mode of the batch rename, see the Manual mode checkbox.
+It executes specified shell command (or any command line application) and sends it
+the list of new names to the standard input. The standard output of this shell command
+is used as the new list of new names.
+</dd>
+
+<dt><i>View/Sort by Original Name</i></dt>
+
+<dd>Changes sorting of items in the Preview listview to sorting by the Original Name column.
+</dd>
+
+<dt><i>View/Sort by Size</i></dt>
+
+<dd>Changes sorting of items in the Preview listview to sorting by the Size column.
+</dd>
+
+<dt><i>View/Sort by Time</i></dt>
+
+<dd>Changes sorting of items in the Preview listview to sorting by the Date and Time columns.
+</dd>
+
+<dt><i>View/Sort by Path</i></dt>
+
+<dd>Changes sorting of items in the Preview listview to sorting by the Path column.
+</dd>
+
+<dt><i>View/All Files</i></dt>
+
+<dd>Displays all files in the Preview listview.
+</dd>
+
+<dt><i>View/Successfully Renamed Files</i></dt>
+
+<dd>Displays only successfully renamed files in the Preview listview.
+</dd>
+
+<dt><i>View/Not Renamed Files</i></dt>
+
+<dd>Displays only not renamed files in the Preview listview. Renaming of these
+files has failed, you can try to correct their new names.
+</dd>
+
+<dt><i>Options/Rename Filenames</i></dt>
+
+<dd>Choose this option if you want to work only with filenames without paths.
+</dd>
+
+<dt><i>Options/Rename Relative Path</i></dt>
+
+<dd>Choose this option if you want to work with filenames with relative paths.
+It has sense only if you want to rename files in subdirectories selected in panel
+before opening of the Batch Renamer dialog. You need also to select the Include
+subdirectories check box. It enables you to move files to another directories.
+</dd>
+
+<dt><i>Options/Rename Full Path</i></dt>
+
+<dd>Choose this option if you want to work with filenames with full paths. It enables
+you to move files to another directories and drives.
+</dd>
+
+<dt><i>Options/Remove Emptied Directories</i></dt>
+
+<dd>When you rename (move) files to another directories, some of original directories
+can be emptied (all files from these directories are moved away). Check this option if
+you want to delete such empty directories.
+</dd>
+
+<dt><i>Options/Last Used</i></dt>
+
+<dd>Sets all options in this dialog to values used in the last batch rename
+operation. Use this command to easily repeat the same batch rename operation.
+</dd>
+
+<dt><i>Options/Reset</i></dt>
+
+<dd>Sets the default values to all options.
+</dd>
+
+<dt><i>Options/Advanced...</i></dt>
+
+<dd>Opens the <a href="dlgboxes_advoptions.htm">Advanced Options dialog</a>.
+</dd>
+
+<dt><i>Help/Batch Rename Dialog</i></dt>
+
+<dd>Displays this help page.
+</dd>
+
+<dt><i>Help/Regular Expressions</i></dt>
+
+<dd>Displays the <a href="appendix_regexp.htm">Regular Expressions</a> help page.
+</dd>
+
+</dl>
+
+<h4>Options</h4>
+<dl>
+<dt><i>Mask</i></dt>
+
+<dd>You can filter files for batch rename operation by this mask. It's especially
+important when you rename files in subdirectories (e.g. you want to rename only
+*.htm files).
+</dd>
+
+<dt><i>Include subdirectories</i></dt>
+
+<dd>When checked, you are working with all files contained in selected
+subdirectories in panel (instead of working with selected subdirectories).
+</dd>
+
+<dt><i>Rename/Validate/Undo</i></dt>
+
+<dd>See commands in menu <a href="#rename">Commands</a>.
+</dd>
+
+<dt><i>Manual mode</i></dt>
+
+<dd>When checked, you can edit a list of new names as a plain text directly in
+this dialog, using an external text editor, or change these names using a command
+line application.
+</dd>
+
+<dt><i>New name</i></dt>
+
+<dd>Specify a template for a new name here. You can use predefined variables
+containing various useful values (e.g. an original file name, a file extension,
+a counter). Click the button next to the combo box to see a context
+menu with all these variables.
+</dd>
+
+<dt><i>Search for/Replace with</i></dt>
+
+<dd>You can search for a substring in the new name and replace it with something
+else. You can use also <a href="appendix_regexp.htm">regular expressions</a> here,
+it can be used for sophisticated substitutions and reordering of words in the new name.
+Click buttons next to the combo boxes to see context menus with parts of regular
+expressions.
+</dd>
+
+<dt><i>Case sensitive</i></dt>
+
+<dd>When checked, searching for a substring is case sensitive. Otherwise, searching
+is not case sensitive (upper and lower case characters are equal).
+</dd>
+
+<dt><i>Only once in each name</i></dt>
+
+<dd>When checked, only one substring is replaced in each name (other occurrences
+of the substring are ignored).
+</dd>
+
+<dt><i>Whole words</i></dt>
+
+<dd>When checked, a found substring must be preceded and followed by a space, tab, or
+punctuation character, or be at the start or end of the name. Otherwise, the found
+substring may be a fragment of a larger string.
+</dd>
+
+<dt><i>Regular expression</i></dt>
+
+<dd>When checked, the Search for field contains a regular expression. Otherwise,
+it contains a plain text. See description of
+<a href="appendix_regexp.htm">regular expressions</a>.
+</dd>
+
+<dt><i>Exclude extension</i></dt>
+
+<dd>When checked, searching for a substring is performed only in a name part of
+the new name (the extension part of name is ignored).
+</dd>
+
+<dt><i>File name</i></dt>
+
+<dd>You can choose upper/lower/mixed case for a name part of the new name here.
+</dd>
+
+<dt><i>Extension</i></dt>
+
+<dd>You can choose upper/lower/mixed case for an extension part of the new name here.
+</dd>
+
+<dt><i>Include path part</i></dt>
+
+<dd>When checked, changing of case of a name part is applied also to a path part of the new name.
+</dd>
+
+<dt><i>Preview</i></dt>
+
+<dd>You can see all planned changes in a real-time preview of resulting names. Columns
+contain original names, new names, sizes, dates, times, and paths. New names are
+displayed in a gray color if they are the same as original names. You can sort this
+preview by clicking on column headers or in the View menu.
+</dd>
+
+</dl>
+
+<h4>See Also</h4>
+<p>
+<a href="using_batchrename.htm">Batch Renaming</a><br/>
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,106 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Connection Tab (Login Dialog)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Dialog Boxes: Configuring Session</div>
+<div class="page">
+<h1>Connection Tab (Login Dialog)</h1>
+
+<p>
+<em>Connection tab</em> allows you to configure general protocol-independent options for the connection.
+</p>
+
+<p>
+You need to check <em>Advanced options</em> to reveal the tab.
+</p>
+
+<p>
+More connection options are available on subtabs:
+</p>
+
+<ul>
+<li><a href="ui_login_proxy.htm">Proxy</a> (connection through proxy server)</li>
+<li><a href="ui_login_tunnel.htm">Tunnel</a> (connection through <acronym title="Secure Shell">SSH</acronym> tunnel)</li>
+</ul>
+
+<p>
+To configure connection thru proxy server, see <em><a href="ui_login_proxy.htm">Proxy tab</a></em>.
+</p>
+
+<a name="server_response_timeout"></a>
+<h4>Server Response Timeout</h4>
+
+<p>
+By the <em>Server response timeout</em> you define how long should WinSCP wait for an answer from the
+server before displaying window with option to <em>Abort</em> the connection. Note that the window does
+not block the waiting, so when it is displayed and the response is finally received it disappears itself.
+</p>
+
+<a name="keepalives"></a>
+<h4>Keepalives</h4>
+
+<p>
+Some servers (and also firewalls and routers on the way between the client and the server) disconnect
+clients if they do not receive any data from it within a defined period. In the <em>Keepalives</em> box, you may
+order WinSCP to send some dummy data in regular periods to avoid being disconnected. This period is defined
+with <em>Seconds between keepalives</em>.
+</p>
+
+<p>
+WinSCP implements two methods for keepalives. The basic option is to send <acronym title="Secure Shell">SSH</acronym>-level
+keepalives implemented by null <acronym title="Secure Shell">SSH</acronym> packets
+(<acronym title="Secure Shell">SSH</acronym> ignore messages). Some servers may be configured not to count
+these packets as data and thus they will still disconnect clients sending them. Also if you use
+<acronym title="Secure Shell">SSH</acronym>-1 and your server suffers
+<a href="ui_login_bugs.htm#chokes_on_ssh-1_ignore_messages">"SSH-1 ignore message" bug</a>, this
+method will not work.
+</p>
+
+<p>
+As an alternative WinSCP can send dummy commands of the transfer protocol instead. For
+<acronym title="SSH File Transfer Protocol">SFTP</acronym> it is implemented as canonization of path
+<code>/</code>. For <acronym title="Secure Copy Protocol">SCP</acronym> it is implemented as
+<code>echo</code> command. <a href="#fn2">(see note 2)</a>
+</p>
+
+<a name="internet_protocol_version"></a>
+<h4>Internet Protocol Version</h4>
+
+<p>
+This option allows the user to select between the old and new Internet protocols and addressing
+schemes (IPv4 and IPv6). The default setting is <em>Auto</em>, which means WinSCP will do something
+sensible and try to guess which protocol you wanted. (If you specify a literal Internet address, it
+will use whichever protocol that address implies. If you provide a hostname, it will see what kinds
+of address exist for that hostname; it will use IPv6 if there is an IPv6 address available, and fall
+back to IPv4 if not.)
+</p>
+
+<p>
+If you need to force WinSCP to use a particular protocol, you can explicitly set this to <em>IPv4</em>
+or <em>IPv6</em>. <a href="#fn1">(see note 1)</a>
+</p>
+
+<h4>Notes:</h4>
+<p>
+<a name="fn1"></a>
+1) The text is copy of <a href="https://tartarus.org/~simon/putty-snapshots/htmldoc/" target="_blank">PuTTY User Manual</a>
+or was inspired by it.
+</p>
+<p>
+<a name="fn2"></a>
+2) With <acronym title="Secure Copy Protocol">SCP</acronym> this keepalive
+method does not work while WinSCP waits for user prompt in the middle of file transfer.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

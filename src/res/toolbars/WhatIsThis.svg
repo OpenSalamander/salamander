@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="16px" height="16px" viewBox="0 0 16 16" enable-background="new 0 0 16 16" xml:space="preserve">
+<rect x="2" y="5" width="2" height="1"/>
+<rect x="3.0251265" y="7.4748735" transform="matrix(0.7071068 -0.7071068 0.7071068 0.7071068 -4.460155 5.1819806)" width="2" height="1"/>
+<rect x="6" y="8" width="1" height="2"/>
+<rect x="9" y="5" width="2" height="1"/>
+<rect x="7.9748735" y="2.5251262" transform="matrix(-0.7071068 0.7071068 -0.7071068 -0.7071068 17.4601555 -1.1819804)" width="2" height="1"/>
+<rect x="6" y="1" width="1" height="2"/>
+<rect x="3.0251265" y="2.5251262" transform="matrix(0.7071068 0.7071068 -0.7071068 0.7071068 3.3180196 -1.9601552)" width="2" height="1"/>
+<polygon points="14.5710678,9.3284273 7.5,6.5 10.3284273,13.5710678 10.858757,10.9194174 14.7478447,14.8085051 
+	15.8085051,13.7478447 11.9194174,9.858757 "/>
+</svg>

@@ -1,0 +1,37 @@
+﻿//****************************************************************************
+//
+// Copyright (c) 2023 Open Salamander Authors
+//
+// This is a part of the Open Salamander SDK library.
+//
+//****************************************************************************
+
+// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __UNFAT_RH2
+#define __UNFAT_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+//***********************************************************************************
+//
+// texty
+//
+
+#define IDS_PLUGINNAME              1000
+#define IDS_ABOUT                   1001
+#define IDS_PLUGIN_DESCRIPTION      1003
+
+#define IDS_ERROR_OPENING_FILE      1100
+#define IDS_ERROR_READING_FILE		1101
+#define IDS_ERROR_PARSING_FILE      1102
+#define IDS_ERROR_BS_CORRUPTED      1103
+#define IDS_ERROR_READING_DIR       1104
+#define IDS_ERROR_READING_FILE2     1106
+#define IDS_ERROR_WRITE             1107
+#define IDS_ERROR_MBR_UNSUPPORTED   1108
+#define IDS_EXTRACTING_ARCHIVE      1109
+#define IDS_EXTRACTING              1110
+
+#endif // __UNFAT_RH2

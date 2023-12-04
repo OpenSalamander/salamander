@@ -1,0 +1,111 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\german\uniso.atp"
+TEXTVERSION,"1.37 (x86)"
+VERSION,"1,3,7,180"
+
+[TRANSLATION]
+LANGID,1031
+AUTHOR,"Dirk Bornhütter, Thomas Kelso, Thomas Pagels, Thomas Wölk, Marko Meister und Mick Weiss"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7334"
+COMMENT,"Deutsche Version"
+
+[DIALOG 1200]
+252,83,1,"UnISO - Konfiguration"
+1201,8,11,226,10,1,"Schreibschutz-&Attribut beim Kopieren aus dem Archiv entfernen"
+1202,8,23,239,10,1,"Die &Session als Verzeichnis zeigen (erlaubt Zugriff auf alle Sessions)"
+1203,8,35,124,10,1,"&Boot-Image-Disk als Datei zeigen"
+3000,2,58,248,1,1,""
+1,140,64,50,14,1,"OK"
+2,195,64,50,14,1,"Abbrechen"
+
+[STRINGTABLE 0]
+1000,1,"UnISO"
+1001,1,"Kann die Datei nicht öffnen."
+1002,1,"Unbekannter Fehler."
+1003,1,"Entpacke ISO-Archiv"
+1004,1,"Fehler beim Entpacken des Archivs."
+1005,1,"Kann diese Datei nicht verarbeiten."
+1006,1,"Nicht genügend Speicher."
+1007,1,"Über Plugin"
+
+[STRINGTABLE 1]
+1009,1,"Durchsucht und entpackt CD/DVD ISO-Dateien."
+1010,1,"Kann kein temporäres Verzeichnis erstellen."
+1011,1,"Kann die temporäre Datei nicht löschen."
+1012,1,"Unbekanntes Dateiformat oder ungültiges ISO-Image.\n\nWenn Sie sicher sind, dass das ISO-Image gültig ist, kontaktieren Sie uns bitte unter support@altap.cz und helfen Sie uns bei der Unterstützung dieses Formats."
+1013,1,"Fehler beim Öffnen der Datei '%s'."
+1014,1,"Erstellen der temporären Datei fehlgeschlagen."
+1015,1,"Kann die Dateiattribute nicht setzten."
+1016,1,"Kann das Verzeichnis '%s' nicht erstellen."
+1020,1,"Ja"
+1021,1,"Nein"
+1022,1,"Fehler"
+1023,1,"Warnung"
+
+[STRINGTABLE 2]
+1024,1,"Während des Lesens des Multisession-Images sind einige Fehler aufgetreten.\n\nZeige nur die richtig gelesenen Sessions."
+1025,1,"Unbekannter Spurtyp."
+1026,1,"Unbekannte Aufteilungsstrategie (%d).\n\nBitte benachrichtigen Sie uns unter support@altap.cz und helfen Sie uns dieses Problem zubeseitigen."
+1027,1,"Falsches Format der .CCD Datei.\n\nGezeigtes Image könnte unvollständig sein."
+1028,1,"Fehlende .CCD Datei.\n\nGezeigtes Image könnte unvollständig sein."
+1029,1,"Kann Sektor #%08X nicht lesen."
+1030,1,"Ungültige UDF Tag ID."
+1031,1,"Lesefehler der Verzeichnisstruktur bei Sektor #%08X.\n\nUnvollständiger Inhalt des ISO Images."
+1032,1,"Interner Pluginfehler."
+1033,1,"Lesefehler der Virtual Allocation Table (VAT) bei Sektor #%08X."
+1034,1,"Fehlende Virtual Allocation Table (VAT)."
+1035,1,"Falsche Root ICB.\n\nKann die Verzeichnisstruktur nicht lesen."
+1036,1,"Datei "%s" kann nicht entpackt werden.\n\nUnstimmigkeit zwischen Dateigröße und ICB-Blöcken."
+1037,1,"Kann den Track #%d nicht öffnen."
+1038,1,"Diese Datei scheint das Image einer Diskette, einer Festplatte oder einer Festplattenpartition zu sein.\nVersuchen Sie die Datei in .ima umzubenennen um das UnFAT-Plugin zu aktivieren."
+1039,0,"This disk image contains the APFS file system.\nThis file system is not supported yet."
+
+[STRINGTABLE 3]
+1050,1,"Partitionskopf kann nicht gelesen werden. Datei ist zu klein."
+1051,1,"Beschädigte Partitionsmanager-Strukturen."
+1052,1,"Dieses Festplattenimage enthält keine HFS-Plus Partition."
+1053,1,"Dieses Festplattenimage enthält ein HFS und ein nicht HFS-Plus Dateisystem.\nHFS wird nicht unterstützt."
+1054,1,"Block #%08X kann nicht gelesen werden.\nDatei %s wird nicht entpackt."
+1055,1,"Block #%08X kann nicht gelesen werden."
+
+[STRINGTABLE 4]
+1056,1,"Nicht unterstützter BTree-Root-Knotentyp in der Katalogdatei."
+1057,1,"Die Katalogdatei ist in mehr als 8 Teile fragmentiert, das wird nicht unterstützt."
+1058,1,"Die Datei '%s' ist in mehr als 8 Teile fragmentiert, das wird nicht unterstützt.\nDie Datei kann nicht entpackt werden."
+1059,1,"Das Datenträgerabbild enthält eine zulange Pfadangabe, diese kann Open Salamander nicht verarbeiten."
+1060,1,"Vorgang kann nicht beendet werden, weil der Name zu lang ist."
+1070,1,"Paketkopf kann nicht gelesen werden. Datei ist zu klein."
+1071,1,"Dieses Paket ist verschlüsslet.\nVerschlüsselte Pakete werden nicht unterstützt."
+
+[STRINGTABLE 5]
+1072,1,"Diese Datei ist entweder kein DMG-Paket oder es ist unvollständig.\nEs enthält keine gültige DMG Fußzeile."
+1073,1,"Diese Datei ist entweder kein gültiges DMG-Paket oder sie ist unvollständig.\nSie enthält keine gültige Eigenschaftsliste."
+1074,1,"Dieses Paket enthält keinen HFS-Plus Partitions-Datenblock an %I64u.\nDieser Block wird für eine einwandfreie Bearbeitung des Pakets benötigt."
+1075,1,"Die Daten an Position %I64u des Disk-Images können nicht gelesen werden."
+1076,1,"Das Disk-Image kann nicht bis zur Position %I64u durchsucht werden."
+1077,1,"Interner Fehler: Nicht unterstützte Suchmethode."
+1078,1,"Dieses Paket enhält einen mit einer unbekannten Methode komprimierten Block.\nDiese Pakete werden nicht unterstützt."
+1079,1,"Das Entpacken des mit ZLIB komprimierten Blocks ist fehlgeschlagen. Das Disk-Image scheint beschädigt zu sein."
+1080,1,"Das Entpacken des mit BZIP2 komprimierten Blocks ist fehlgeschlagen. Das Disk-Image scheint beschädigt zu sein."
+1085,1,"Diese Datei scheint kein komprimiertes ISZ Image zu sein oder es ist unvollständig.\nEs enthält keinen gültigen ISZ-Kopf."
+1086,1,"Komprimierte Imagekopf kann nicht gelesen werden. Datei ist zu klein."
+1087,1,"Das Image ist segmentiert.\nSegmentierte Images werden nicht unterstützt."
+
+[STRINGTABLE 6]
+1088,1,"Dieses Image ist verschlüsslet.\nVerschlüsselte Images werden nicht unterstützt."
+1100,1,"Lesefehler"
+1101,1,"Schreibfehler"
+1102,1,"Tonspuren können nicht entpackt werden."
+1103,1,"Breche den Vorgang ab, bitte warten..."
+
+[STRINGTABLE 7]
+1150,1,"Image Information\n\n"
+1151,1,"Image Information "%s"\n\n"
+
+[STRINGTABLE 8]
+1152,1,"Anzahl der Sessions: %d"
+1153,1,"\nSession %d\n"
+1154,1,"  Spuranzahl: %d\n"
+1155,1,"  Spur: %d, %s, Größe: %d KBytes\n"
+1156,1,"  Spur: %d, %s, Größe: %d KBytes - "%s"\n"
+

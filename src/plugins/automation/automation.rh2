@@ -1,0 +1,20 @@
+﻿//	Automation Plugin for Open Salamander
+//	
+//	Copyright (c) 2009-2023 Milan Kase <manison@manison.cz>
+//	Copyright (c) 2010-2023 Open Salamander Authors
+//	
+//	automation.rh2
+//	Resources Microsoft Visual C++ does not edit directly.
+
+// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __AUTOMATION_RH2
+#define __AUTOMATION_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#define IDI_MAIN                        1
+#define IDB_ICONSTRIP                   128
+
+#endif // __AUTOMATION_RH2

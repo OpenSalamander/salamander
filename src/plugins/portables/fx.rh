@@ -1,0 +1,24 @@
+﻿/*
+	Salamander Plugin Development Framework
+	
+	Copyright (c) 2015 Milan Kase <manison@manison.cz>
+	Copyright (c) 2015 Open Salamander Authors
+	
+	fx.rh
+	Symbols for language independent resources.
+*/
+
+
+// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __PORTABLES_FX_RH
+#define __PORTABLES_FX_RH
+
+/**
+	This symbol indentifies bitmap stripe that contains plugin icons.
+	The resource must be PNG bitmap 16 pixels in height, width in multiple
+	of 16 pixels. Framework uses first icon as the plugin icon.
+	The resource type must be RCDATA.
+*/
+#define IDB_FX_PLUGIN_ICONS		8192
+
+#endif // __PORTABLES_FX_RH

@@ -1,0 +1,104 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Background &amp; Resume Tab (Preferences Dialog)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Dialog Boxes: Configuring Interface/Behaviour</div>
+<div class="page">
+<h1>Background &amp; Resume Tab (Preferences Dialog)</h1>
+
+<p>
+The Background &amp; Resume tab allows you to configure behaviour of WinSCP when
+<a href="transfer_queue.htm">transferring files on background</a> and
+<a href="resume.htm">resuming transfers</a>.
+</p>
+
+<a name="background_transfers"></a>
+<h4>Background Transfers</h4>
+
+<p>
+The <em>Transfer on background by default</em> checkbox makes WinSCP to perform all transfers
+on background. You can always alter this for particular transfer
+on <a href="ui_copy.htm">transfer options dialog</a> (if enabled).
+</p>
+
+<p>
+You can check <em>No confirmations for background transfers</em> to avoid
+<a href="ui_sal_pref_confirmations.htm">overwrite and other confirmations</a>
+for the background transfer.
+</p>
+
+<p>
+Use <em>Remember password of main session for background transfers</em> checkbox to avoid
+background transfers asking for password. WinSCP will save the main session password and reuse
+it for background transfer connections. Note that for this WinSCP must keep the password in memory,
+what may have security implications. If you have the password saved in
+<a href="ui_login_stored_sessions.htm">stored session</a>, what is not recommended at all,
+the saved password is used automatically for background transfers.
+</p>
+
+<a name="temporary"></a>
+<a name="transfer_resume_transfer_to_temporary_filename"></a>
+<h4>Transfer Resume/Transfer to Temporary Filename</h4>
+
+<p>
+WinSCP is able to store file being transferred to temporary filename first,
+renaming it to the target name only once the transfer successfully finishes.
+</p>
+
+<p>
+Reasons to do that:
+</p>
+
+<ul>
+<li>If the transfer is interrupted, on the next attempt,
+    WinSCP is able to detect the partial/temporary file and suggest you
+    transfer resuming automatically (or even resume automatically).</li>
+<li>While updating an existing file, the original version of the file exists
+    during whole transfer. This is particularly useful when updating
+    frequently accessed file on web sites.</li>
+</ul>
+
+<p>
+Reasons not to do that:
+</p>
+
+<ul>
+<li>As the file is uploaded to a temporary name, it is 
+    technically a new file, even though the file with target 
+    name already exists. So after the original file is deleted 
+    and temporary file is renamed to the original file name, 
+    you loose all attributes of the original file (such as 
+    owner and group) except for permissions.</li>
+</ul>
+
+<p>
+For performance reasons transfer to temporary file name is enabled by default for files
+larger then a given threshold.
+The threshold is initially 100 <acronym title="Kibibyte (1,024 bytes)">KiB</acronym>.
+You can change the threshold. You can also enable the feature for all files,
+particularly when looking to achieve the second impact.
+You may also need to disable the feature altogether,
+particularly if you do not have permissions required
+(e.g. permissions to create a new file in target directory).
+</p>
+
+<p>
+Transfer to temporary filename is supported with
+<a href="protocols.htm#sftp">SFTP protocol</a> only
+and only for <a href="transfer_mode.htm">binary transfers</a>.
+However with other protocols you can resume transfers also
+<a href="resume.htm#manual">manually</a>.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

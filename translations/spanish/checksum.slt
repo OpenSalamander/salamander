@@ -1,0 +1,115 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\spanish\checksum.atp"
+TEXTVERSION,"2.2 (x86)"
+VERSION,"2,2,0,180"
+
+[TRANSLATION]
+LANGID,3082
+AUTHOR,"Juan Pablo Barrio Lera"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6168"
+COMMENT,"Versión en español"
+
+[DIALOG 1000]
+344,84,1,"Calcular sumas de comprobación"
+1001,5,5,334,54,1,"List1"
+1007,5,68,42,8,1,"Calculando:"
+1006,50,68,105,8,1,"Progress1"
+1002,162,65,55,14,1,"Con&figurar..."
+1003,223,65,55,14,1,"&Guardar..."
+1004,284,65,55,14,1,"&Detener"
+1005,5,68,46,8,1,"portapapeles"
+
+[DIALOG 1001]
+189,109,1,"Configuración de sumas"
+300,8,5,174,76,1," Calcular sumas de comprobación "
+100,15,16,105,10,1,"&CRC/SFV"
+101,15,28,105,10,1,"&MD5"
+102,15,40,105,10,1,"SHA-&1"
+103,15,52,105,10,1,"SHA-&256"
+104,15,64,105,10,1,"SHA-&512"
+1,14,88,50,14,1,"Aceptar"
+2,69,88,50,14,1,"Cancelar"
+9,124,88,50,14,1,"Ayuda"
+
+[DIALOG 2000]
+260,84,1,""
+1001,5,5,250,54,1,"List1"
+1007,5,68,42,8,1,"Verificando:"
+1006,50,68,93,8,1,"Progress1"
+2002,5,68,140,8,1,""
+2001,149,65,50,14,1,"&Enfocar"
+1004,205,65,50,14,1,"&Detener"
+
+[STRINGTABLE 0]
+1,1,"Suma de comprobación"
+2,1,"Acerca del Plugin"
+3,1,"Verificador y calculador de sumas SFV, MD5, SHA-1, SHA-256 y SHA-512."
+4,1,"Memoria agotada"
+5,1,"Error al abrir fichero"
+6,1,"Error de lectura"
+7,1,"Error de escritura"
+
+[STRINGTABLE 1]
+40,1,"Saltado"
+41,1,"Calculando..."
+42,1,"Cancelado"
+43,1,"Click derecho sobre un elemento para copiar una suma al portapapeles."
+44,1,"Copiar valor &CRC al portapapeles\tCtrl+C"
+45,1,"Copiar suma  &MD5 al portapapeles\tCtrl+M"
+46,1,"Copiar suma SHA-&1 al portapapeles\tCtrl+1"
+47,1,"Copiar suma SHA-&256 al portapapeles\tCtrl+2"
+
+[STRINGTABLE 2]
+48,1,"Copiar suma SHA-&512 al portapapeles\tCtrl+5"
+53,1,"&Eliminar elemento\tSupr"
+54,1,"El fichero '%s' ya existe.\n¿Desea reemplazarlo?"
+55,1,"Error al crear fichero."
+56,1,"Los ficheros saltados o cancelados durante el cálculo no han sido guardados."
+57,1,"Error al abrir el fichero '%s'."
+58,1,"Ausente"
+59,1,"El fichero seleccionado no tiene extensión SFV, MD5, SHA1, SHA256 ni SHA512.¿Desea continuar de todos modos?"
+60,1,"El fichero seleccionado no es un fichero SFV, MD5, SHA-1, SHA-256 ni SHA-512 válido."
+61,1,"Verificando..."
+62,1,"Aceptar"
+63,1,"Corrupto"
+
+[STRINGTABLE 3]
+65,1,"&Verificando sumas de comprobación..."
+66,1,"&Calcular sumas de comprobación..."
+67,1,"La configuración ya está abierta."
+68,1,"Los cambios tendrán efecto cuando la ventana 'Calcular sumas de comprobación' se abra la próxima vez."
+70,1,"Todos los ficheros son correctos"
+71,1,"%d corruptos, %d ausentes, %d saltados"
+72,1,"Open Salamander está ocupado. El comando pedido no puede efectuarse, inténtelo más tarde."
+74,1,"&Cerrar"
+75,1,"Leyendo árbol de directorios, espere por favor..."
+76,1,"Error al leer directorio"
+77,1,"No hay ficheros"
+78,1,"Verificar sumas de comprobación"
+79,1,"Fichero"
+
+[STRINGTABLE 4]
+80,1,"Tamaño"
+81,1,"Estado"
+82,1,"CRC"
+83,1,"MD5"
+84,1,"SHA-1"
+85,1,"SHA-256"
+86,1,"SHA-512"
+90,1,"Guardar fichero de suma de comprobación"
+91,1,"Ficheros SFV (*.sfv)|*.sfv|"
+92,1,"Ficheros MD5 (*.md5)|*.md5|"
+93,1,"Ficheros SHA-1 (*.sha1)|*.sha1|"
+94,1,"Ficheros SHA-256 (*.sha256)|*.sha256|"
+95,1,"Ficheros SHA-512 (*.sha512)|*.sha512|"
+
+[STRINGTABLE 5]
+100,1,"Verificar CRC"
+101,1,"Verificar MD5"
+102,1,"Verificar SHA-1"
+103,1,"Verificar SHA-256"
+104,1,"Verificar SHA-512"
+
+[STRINGTABLE 6]
+120,1,"Imposible terminar la operación porque el nombre es demasiado largo."
+

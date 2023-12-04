@@ -1,0 +1,64 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\dutch\tar.atp"
+TEXTVERSION,"3.34 (x86)"
+VERSION,"3,3,4,180"
+
+[TRANSLATION]
+LANGID,1043
+AUTHOR,"Cor van der Smissen, Marco Fung, Patrick Vijgeboom, S.V. (Stephan) Rietveld"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7009"
+COMMENT,"Nederlandse versie"
+
+[STRINGTABLE 0]
+11200,1,"TAR plugin fout"
+11201,1,"Archief bestandsformaat wordt niet herkend of niet ondersteund."
+11202,1,"Ongeldige gegevens in TAR-kop - archiefbestand beschadigd."
+11203,1,"Slecht bestand of kop checksum - archiefbestand beschadigd."
+11204,1,"Interne fout: bestand datastractuur beschadigd."
+11205,1,"Onbekende block handtekening - overslaan."
+11206,1,"Vereist bestand niet gevonden in archiefbestand."
+11207,1,"Geheugen toewijzingsfout."
+
+[STRINGTABLE 1]
+11240,1,"LZH archiefbestanden worden nog niet ondersteund."
+
+[STRINGTABLE 2]
+11250,1,"Uitpakken"
+11251,1,"Extraheren "
+11252,1,"Overslaan "
+11260,1,"GZip fout"
+11261,1,"Onbekende compressie methode gebruikt, kan niet uitpakken."
+11262,1,"Dit bestand is gecodeerd. Codering wordt niet ondersteund in GZip archiefbestanden."
+11263,1,"Dit bestand is onderdeel van een multi-delig archiefbestand. Multi-delig wordt niet ondersteund in GZip archiefbestanden."
+
+[STRINGTABLE 3]
+11264,1,"Onbekende flags in GZip-kop ondervonden, kan niet uitpakken."
+11265,1,"Fout bij het openen van achiefbestand: "
+11266,1,"Voortijdig einde van het bestand ondervonden."
+11267,1,"Fout bij het lezen van archiefbestand: "
+11268,1,"Fout bij het schrijven naar bestand: "
+11269,1,"De functie WriteFile weigert alle gegevens weg te schrijven waarom werd gevraagd."
+11270,1,"Ongeldige block in GZip stream ondervonden, onmogelijk om uit te pakken."
+11271,1,"Interne fout in TAR plugin, laat ons aub weten via email support@altap.cz."
+11272,1,"Geheugen toewijzingsfout."
+11273,1,"CRC fout."
+11274,1,"Onverwachte gegevens in gecomprimeerde stream, archiefbestand beschadigd."
+11275,1,"Zoeken naar fouten in archiefbestand: "
+
+[STRINGTABLE 4]
+11280,1,"RPM bekijken"
+11281,1,"RPM fout"
+11282,1,"Fout bij het creëren van een tijdelijk bestandsnaam."
+11283,1,"Fout bij het creëren van een tijdelijk bestand."
+11284,1,"Het bestand wordt niet herkend als zijnde een RPM archiefbestand."
+11285,1,"De gevraagde versie van RPM door dit archiefbestand wordt nog niet ondersteund."
+11286,1,"Onbekend RPM archiefshandtekening ondervonden."
+11291,1,"Bestand heeft een incorrecte handtekening."
+11292,1,"Vermelding van beschadigd bestands-kop."
+11293,1,"Onbekend bestandsformaat van cpio-kop."
+
+[STRINGTABLE 5]
+11299,1,"TAR"
+11300,1,"Blader en extraheer Unix archiefbestanden."
+11301,1,"Over deze plugin"
+

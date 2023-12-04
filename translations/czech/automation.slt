@@ -1,0 +1,75 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\czech\automation.atp"
+TEXTVERSION,"1.7 (x86)"
+VERSION,"1,7,0,180"
+
+[TRANSLATION]
+LANGID,1029
+AUTHOR,"Hynek Mikulič"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7008"
+COMMENT,"Česká verze"
+
+[DIALOG 100]
+205,64,1,"Vstupní box"
+1150,8,8,189,8,1,"Výzva:"
+101,8,18,189,12,1,""
+1,48,42,50,14,1,"OK"
+2,107,42,50,14,1,"Storno"
+
+[DIALOG 101]
+332,143,1,"Automatizace - Konfigurace"
+375,8,9,67,8,1,"Adresáře &skriptů:"
+371,8,19,316,73,1,""
+1001,8,102,105,10,1,"Povolit &ladění skriptu"
+1,75,121,50,14,1,"OK"
+2,141,121,50,14,1,"Storno"
+9,207,121,50,14,1,"&Nápověda"
+
+[MENU 106]
+0,1,"[POPUP]"
+40013,1,"Procházet…"
+40014,1,"Adresář Salamander"
+40015,1,"Proměnná prostředí"
+
+[STRINGTABLE 0]
+1,1,"Automatizace"
+2,1,"Automatizuje běžné úkoly použitím skriptů."
+3,1,"O pluginu"
+
+[STRINGTABLE 1]
+128,1,"Chyba skriptu automatizace"
+129,1,"Řádek:\t%u\r\n"
+130,1,"Sloupec:\t%u\r\n"
+131,1,"Chyba:\t%s"
+132,1,"Spustit zaměřený skript"
+134,1,"Proces operace"
+135,1,"Zdroj:\t%s\r\n"
+136,1,"Otevřít nabídku skriptů"
+137,1,"(žádný skript)"
+138,1,"Selhalo provádění skriptu '%s'.\r\n%s"
+139,1,"Neznámá chyba."
+140,1,"1\t&Přerušit"
+141,1,"1\t&Ladit\t2\t&Přerušit"
+142,1,"Adresář skriptu"
+143,1,"Vyberte adresář úložiště skriptu."
+
+[STRINGTABLE 2]
+144,1,"Přerušit skript"
+145,1,"Přerušit spuštěný skript\tCtrl+Break"
+146,1,"Okno Open Salamanderu je uzamčené pluginem automatizace. Prosím dokončete spuštěný skript."
+147,1,"Nelze inicializovat skriptovací stroj."
+
+[STRINGTABLE 3]
+256,1,"Neplatný archiv."
+257,1,"Nelze zavřít aktuální cestu."
+258,1,"Cesta byla zkrácena."
+259,1,"Nelze změnit vlastnost nebo metodu volání %s při zobrazeném okně."
+260,1,"Nelze změnit vlastnost nebo metodu volání %s při skrytém okně."
+261,1,"Selhalo načítání pluginu."
+262,1,"Selhání pluginu."
+263,1,"Selhal přesun souboru do paměti disku."
+264,1,"Syntaktická chyba v souborové masce."
+265,1,"Do kontejneru můžou být přidány jen komponenty."
+266,1,"Formy nelze přidat do kontejneru."
+267,1,"Provádění skriptu bylo přerušeno uživatelem."
+

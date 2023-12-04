@@ -1,0 +1,57 @@
+﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __UNCAB_RH2
+#define __UNCAB_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#define IDC_STATIC_1 300
+#include "statics.rh2"   // 300 az 339 jsou timto zabrane !!!
+
+//***********************************************************************************
+//
+// texty
+//
+
+#define IDS_PLUGINNAME   1000
+#define IDS_LOWMEM    1001
+#define IDS_UNKNOWN   1008
+#define IDS_BROWSEARCHIVETITLE 1012
+#define IDS_LIST    1014
+#define IDS_EXTRPROGTITLE 1015
+#define IDS_PREPAREDATA   1016
+#define IDS_EXTRACTFILES  1017
+#define IDS_EXTRACTING    1018
+#define IDS_UNABLEGETFIELPOS  1019
+#define IDS_UNABLEWRITE   1020
+#define IDS_UNABLESEEK    1021
+#define IDS_TOOLONGNAME   1022
+#define IDS_TOOLONGMASK   1023
+#define IDS_EXPIRE      1025
+#define IDS_UNABLECREATE  1026
+#define IDS_UNABLEREAD    1027
+#define IDS_CABINET_NOT_FOUND 1028
+#define IDS_NOT_A_CABINET 1029
+#define IDS_UNKNOWN_CABINET_VERSION 1030
+#define IDS_CORRUPT_CABINET 1031
+#define IDS_BAD_COMPR_TYPE  1032
+#define IDS_MDI_FAIL    1033
+#define IDS_RESERVE_MISMATCH  1034
+#define IDS_USER_ABORT    1035
+#define IDS_BROWSEFOLDERTEXT  1036
+#define IDS_WRONG_CABINET 1037
+#define IDS_NOTFOUND    1038
+#define IDS_SKIPPING    1039
+#define IDS_NEXTVOLTEXT   1040
+#define IDS_ERROR   1041
+#define IDS_PLUGIN_DESCRIPTION  1042
+#define IDS_ABOUT               1043
+
+//***********************************************************************************
+//
+// ikony
+//
+#define IDI_LOCK  500
+
+#endif // __UNCAB_RH2

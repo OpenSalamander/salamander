@@ -1,0 +1,38 @@
+total 80
+drwxrwxr-x   5 ftp      ftp          4096 Aug  2 13:39 .
+drwxrwxr-x   3 ftp      ftp          4096 Dec 21  2001 ..
+drwx------    2 solin    users        4096 Oct 17  2001 mail
+dr-xr-xr-x   1 owner    group               0 Feb 25  2000 KBHelp
+-rw-r--r--    1 solin    users        2336 Nov 16  2001 readme.txt
+-r--r--r--   1 100      50         589722 Feb 21  2002 265058a.exe
+-r-xr-xr-x   1 owner    group            1427 Aug 25  1994 readme.txt
+lrwxrwxrwx    1 solin    users           4 Aug  5 12:15 file_link -> file
+lrwxrwxrwx    1 solin    users           4 Aug  5 09:51 file_link.txt -> file
+lrwxrwxrwx    1 solin    users          10 Aug  5 09:45 readme_link -> ../solin/readme.txt
+crw-r-----   1 root     disk      27,  24 Dec  8  1995 zqft0
+crw-r-----   1 root     disk      27,  25 Dec  8  1995 zqft1
+crw-r-----   1 root     disk      27,  26 Dec  8  1995 zqft2
+brw-rw----    1 root     disk      29,   0 Aug 24  2000 aztcd
+brw-rw----    1 root     disk      13, 121 Aug 24  2000 xdb57
+lrwx------    1 root     root            0 Oct 16 14:08 root
+lrwx------    1 root     root            0 Oct 16 14:08 cwd
+lrwx------    1 solin    users           0 Oct 16 14:15 cwd -> /proc/20493
+pr--r--r--    1 root     root            0 Oct 16 14:08 maps
+drwxrwxr-x   5 ftp name      ftp          4096 Aug  2 13:39 .
+drwxrwxr-x   3 ftp name      ftp          4096 Dec 21  2001 ..
+drwx------    2 solin name    users        4096 Oct 17  2001 mail
+dr-xr-xr-x   1 owner name    group               0 Feb 25  2000 KBHelp
+-rw-r--r--    1 solin name    users        2336 Nov 16  2001 readme.txt
+-r-xr-xr-x   1 owner name    group            1427 Aug 25  1994 readme.txt
+lrwxrwxrwx    1 solin name    users           4 Aug  5 12:15 file_link -> file
+lrwxrwxrwx    1 solin name    users           4 Aug  5 09:51 file_link.txt -> file
+lrwxrwxrwx    1 solin name    users          10 Aug  5 09:45 readme_link -> ../solin/readme.txt
+crw-r-----   1 root name     disk      27,  24 Dec  8  1995 zqft0
+crw-r-----   1 root name     disk      27,  25 Dec  8  1995 zqft1
+crw-r-----   1 root name     disk      27,  26 Dec  8  1995 zqft2
+brw-rw----    1 root name     disk      29,   0 Aug 24  2000 aztcd
+brw-rw----    1 root name     disk      13, 121 Aug 24  2000 xdb57
+lrwx------    1 root name     root            0 Oct 16 14:08 root
+lrwx------    1 root name     root            0 Oct 16 14:08 cwd
+lrwx------    1 solin name    users           0 Oct 16 14:15 cwd -> /proc/20493
+pr--r--r--    1 root name    root            0 Oct 16 14:08 maps

@@ -1,0 +1,99 @@
+﻿//
+// lang.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "..\versinfo.rh2"
+#include "versinfo.rc2"
+
+// String Table
+STRINGTABLE DISCARDABLE
+{
+    IDS_PLUGINNAME              "UnISO"
+    IDS_CANT_OPEN               "Cannot open file."
+    IDS_UNKNOW_ERROR            "Unspecified error."
+    IDS_UNPACKING_ARCHIVE       "Unpacking ISO Archive"
+    IDS_ERROR_UNPACKING         "Error unpacking archive."
+    IDS_CANT_HANDLE_FILE        "Cannot handle this file."
+    IDS_INSUFFICIENT_MEMORY     "Insufficient memory."
+    IDS_ERR_TOO_LONG_NAME       "Cannot finish operation because of too long name."
+    IDS_ABOUT                   "About Plugin"
+    IDS_PLUGIN_DESCRIPTION      "Browse and extract CD/DVD ISO image files."
+    IDS_CANT_CREATE_TEMP        "Cannot create temporary directory."
+    IDS_CANT_DELETE_TEMP_FILE   "Cannot delete temporary file."
+    IDS_UNKNOWN_FILE_FORMAT     "Unknown file format or not a valid ISO image.\n\nIf you are sure this is a valid ISO image, please contact support@altap.cz and help us to support this format."
+    IDS_CANT_OPEN_FILE          "Cannot open file '%s'."
+    IDS_ERR_TMP                 "Creation of temporary file has failed."
+    IDS_CANT_SET_ATTRS          "Cannot set file attributes."
+    IDS_CANT_CREATE_DIR         "Cannot create directory '%s'."
+    IDS_YES                     "Yes"
+    IDS_NO                      "No"
+    IDS_ERROR                   "Error"
+    IDS_WARNING                 "Warning"
+    IDS_ERROR_OPENING_MULTISESSION  "Some error(s) occured while reading multisession image.\n\nShowing only correctly read sessions."
+    IDS_UNKNOWN_TRACK_TYPE      "Unknown track type."
+    IDS_READERROR               "Read error"
+    IDS_WRITEERROR              "Write error"
+    IDS_CCD_BAD_FORMAT          "Bad format of .CCD file.\n\nDisplayed image could be incomplete."
+    IDS_CCD_MISSING             "Missing .CCD file.\n\nDisplayed image could be incomplete."
+    IDS_ERROR_READING_SECTOR    "Cannot read sector #%08X."
+    IDS_ERROR_LISTING_IMAGE     "Error reading directory structure at sector #%08X.\n\nIncomplete content of ISO image."
+    IDS_INTERNAL_PLUGIN_ERROR   "Internal plugin error."
+    IDS_UDF_UNKNOWN_ALLOCATION_STRATEGY  "Unknown allocation strategy (%d).\n\nPlease contact support@altap.cz and help us fix this problem."
+    IDS_UDF_INVALID_TAG_ID      "Invalid UDF Tag ID."
+    IDS_UDF_ERROR_READING_VAT   "Error reading virtual allocation table at sector #%08X."
+    IDS_UDF_MISSING_VAT         "Missing virtual allocation table."
+    IDS_UDF_BAD_ROOT_ICB        "Bad root ICB.\n\nCannot read directory structure."
+    IDS_UDF_ICB_AND_FILESIZE_MISMATCH "File ""%s"" cannot be extracted.\n\nMismatch between file size and ICB blocks."
+    IDS_CANT_OPEN_TRACK         "Cannot open track #%d."
+    IDS_BOOT_OR_MBR             "This file appears to be a floppy disk or hard disk or hard disk partition image.\nTry renaming the file to .ima to activate the UnFAT plugin."
+    IDS_UNSUPPORTED_APFS        "This disk image contains the APFS file system.\nThis file system is not supported yet."
+
+    IDS_ERR_HFS_READ            "Could not read partition header. File too small."
+    IDS_ERR_HFS_INVALID_PARTITION "Corrupted Partition Manager structures."
+    IDS_ERR_HFS_UNRECOGNIZED    "This disk image does not contain a HFS Plus partition."
+    IDS_ERR_HFS_ORIGINAL_HFS    "This disk image contains HFS and not HFS Plus file system.\nHFS is not supported."
+    IDS_ERR_HFS_SEEK_BLOCK_EXTR "Cannot seek to block #%08X.\nFile %s will not be extracted."
+    IDS_ERR_HFS_SEEK            "Cannot seek to block #%08X."
+    IDS_ERR_HFS_BTREE_NODETYPE  "Unsupported BTree root node type in the Catalog file."
+    IDS_ERR_HFS_BTREE_FRAGMENTED "The Catalog file is fragmented into more than 8 fragments which is not supported."
+    IDS_ERR_HFS_FILE_FRAGMENTED "The file '%s' is fragmented into more than 8 fragments which is not supported.\nThe file will not be extracted."
+
+    IDS_ERR_TOO_LONG_PATH       "This disk image contains a too long path that Open Salamander cannot handle."
+
+    IDS_ERR_DMG_READ_HDR        "Cannot read package header. File too small."
+    IDS_ERR_DMG_ENCRYPTED       "This package is encrypted.\nEncrypted packages are not supported."
+    IDS_ERR_DMG_NO_FOOTER       "This file does not appear to be a DMG package or is incomplete.\nIt does not contain a valid DMG footer."
+    IDS_ERR_DMG_PLIST           "This file does not appear to be a valid DMG package or is incomplete.\nIt does not contain a valid Property List."
+    IDS_ERR_DMG_BLOCK_UNDEFINED "This package does not contain a data block of HFS Plus partition starting at %I64u.\nThe block is needed for proper handling of the package."
+
+    IDS_ERR_BF_READ             "Cannot read data from the disk image at position %I64u."
+    IDS_ERR_BF_SEEK             "Cannot seek in the disk image to position %I64u."
+    IDS_ERR_BF_UNSUPPORTED_SEEK_METHOD "Internal error: Unsupported seek method."
+    IDS_ERR_BF_BLOCK_UNK_TYPE   "This disk image contains a block compressed with an unknown method.\nSuch disk images are not supported."
+    IDS_ERR_BF_ZLIB             "Unpacking a ZLIB-compressed block failed. The disk image seems corrupted."
+    IDS_ERR_BF_BZIP2            "Unpacking a BZIP2-compressed block failed. The disk image seems corrupted."
+
+    IDS_ERR_ISZ_NO_HEADER       "This file does not appear to be a compressed ISZ image or is incomplete.\nIt does not contain a valid ISZ header."
+    IDS_ERR_ISZ_READ_HDR        "Cannot read compressed image header. File too small."
+    IDS_ERR_ISZ_SEGMENTED       "This image is segmented.\nSegmented images are not supported."
+    IDS_ERR_ISZ_ENCRYPTED       "This image is encrypted.\nEncrypted images are not supported."
+
+    IDS_AUDIO_NOT_EXTRACTABLE   "Audio tracks cannot be extracted."
+
+    IDS_CANCELING_OPERATION     "Canceling operation, please wait..."
+
+    IDS_INFO_LABEL              "Information on image\n\n"
+    IDS_INFO_LABEL_LABEL        "Information on image ""%s""\n\n"
+    IDS_INFO_CNT_SESSIONS       "Number of sessions: %d"
+    IDS_INFO_SESSION_NUM        "\nSession %d\n"
+    IDS_INFO_CNT_TRACKS         "  Number of tracks: %d\n"
+    IDS_INFO_TRACK_TYPE_SIZE    "  Track: %d, %s, Size: %d KBytes\n"
+    IDS_INFO_TRACK_TYPE_SIZE_LABEL "  Track: %d, %s, Size: %d KBytes - ""%s""\n"
+}

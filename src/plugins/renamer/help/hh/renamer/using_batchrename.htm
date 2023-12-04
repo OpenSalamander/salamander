@@ -1,0 +1,235 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Batch Renaming</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: Renamer: Using Renamer Plugin</div>
+<div class="page">
+
+<h1>Batch Renaming</h1>
+
+<p>You can rename many files and directories in a batch using specified rules.</p>
+
+<h3>To batch rename:</h3>
+
+<ol>
+<li>Select the files and directories you want to rename.</li>
+<li>Open the <a href="dlgboxes_batchrename.htm">Batch Rename dialog box</a>:
+<table>
+ <tr><td class="hdr">Menu:</td><td>Plugins/Renamer/Batch Rename...</td></tr>
+ <tr><td class="hdr">Shortcut key:</td><td>Ctrl+Shift+R</td></tr>
+</table>
+</li>
+<li>Specify rules for renaming. See examples below.</li>
+<li>Click the Rename button.</li>
+</ol>
+
+<h4>Examples</h4>
+
+<p>You can find here examples of typical use of the Renamer plugin. Description
+of all options is in the <a href="dlgboxes_batchrename.htm">Batch Rename dialog box</a>.</p>
+
+<p>
+<a href="#ref1">Using a counter</a><br/>
+<a href="#ref2">Adding a prefix to all names</a><br/>
+<a href="#ref3">Replacing a word in all names</a><br/>
+<a href="#ref4">Removing spaces from all names</a><br/>
+<a href="#ref5">Reordering words in names</a><br/>
+<a href="#ref6">Using structured name to create directory structure</a><br/>
+<a href="#ref7">Moving all files from subdirectories into one directory</a><br/>
+<a href="#ref8">Removing only periods that are not surrounded by digits</a><br/>
+</p>
+
+<a id="ref1"></a>
+<h3>Using a counter</h3>
+
+<p>Lets say we have files P1020652.JPG, P1020653.JPG, and P1020654.JPG. And we
+want to rename them to House1.jpg, House2.jpg, and House3.jpg.
+</p>
+
+<ol>
+<li>Select our three files (P1020652.JPG, P1020653.JPG, and P1020654.JPG) in panel.</li>
+<li>Open the Batch Rename dialog box.</li>
+<li>Go to the <i>New name</i> combo box and type word "House" here.</li>
+<li>Click the button next to the <i>New name</i> combo box.</li>
+<li>Choose <i>Counter</i> from the context menu. It opens the Add Counter dialog.</li>
+<li>Type "1" to the <i>Start at</i> edit box.</li>
+<li>Choose the OK button.</li>
+<li>Counter has been added. Value in the <i>New name</i> combo box is "House$(Counter:1)".</li>
+<li>Go to the <i>New name</i> combo box and add ".jpg" to the end of text.</li>
+<li>Now you should see House1.jpg, House2.jpg, and House3.jpg in the <i>Preview</i> listview
+    in the <i>New Name</i> column.</li>
+<li>Choose the Rename button.</li>
+</ol>
+
+<a id="ref2"></a>
+<h3>Adding a prefix to all names</h3>
+
+<p>Lets say we have files House1.jpg, House2.jpg, and House3.jpg. And we want to
+rename them to NewHouse1.jpg, NewHouse2.jpg, and NewHouse3.jpg.
+</p>
+
+<ol>
+<li>Select our three files in panel.</li>
+<li>Open the Batch Rename dialog box.</li>
+<li>Go to the <i>New name</i> combo box and type word "New" here.</li>
+<li>Click the button next to the <i>New name</i> combo box.</li>
+<li>Choose <i>Original Name</i> from the context menu.</li>
+<li>Value in the <i>New name</i> combo box is "New$(OriginalName)".</li>
+<li>Now you should see NewHouse1.jpg, NewHouse2.jpg, and NewHouse3.jpg in the <i>Preview</i> listview
+    in the <i>New Name</i> column.</li>
+<li>Choose the Rename button.</li>
+</ol>
+
+<a id="ref3"></a>
+<h3>Replacing a word in all names</h3>
+
+<p>Lets say we have files NewHouse1.jpg, NewHouse2.jpg, and NewHouse3.jpg. And we want to
+rename them to New Car 1.jpg, New Car 2.jpg, and New Car 3.jpg.
+</p>
+
+<ol>
+<li>Select our three files in panel.</li>
+<li>Open the Batch Rename dialog box.</li>
+<li>Go to the <i>Search for</i> combo box and type word "House" here.</li>
+<li>Go to the <i>Replace with</i> combo box and type word " Car " here.</li>
+<li>Now you should see New Car 1.jpg, New Car 2.jpg, and New Car 3.jpg in the <i>Preview</i> listview
+    in the <i>New Name</i> column.</li>
+<li>Choose the Rename button.</li>
+</ol>
+
+<a id="ref4"></a>
+<h3>Removing spaces from all names</h3>
+
+<p>Lets say we have files New Car 1.jpg, New Car 2.jpg, and New Car 3.jpg. And we want to
+rename them to NewCar1.jpg, NewCar2.jpg, and NewCar3.jpg.
+</p>
+
+<ol>
+<li>Select our three files in panel.</li>
+<li>Open the Batch Rename dialog box.</li>
+<li>Go to the <i>Search for</i> combo box and type one space character here.</li>
+<li>Clear the <i>Only once in each name</i> check box.</li>
+<li>Now you should see NewCar1.jpg, NewCar2.jpg, and NewCar3.jpg in the <i>Preview</i> listview
+    in the <i>New Name</i> column.</li>
+<li>Choose the Rename button.</li>
+</ol>
+
+<a id="ref5"></a>
+<h3>Reordering words in names</h3>
+
+<p>Lets say we have files The Beatles - Yellow Submarine - Revolver.mp3,
+The Beatles - Michelle - Rubber Soul.mp3, and The Beatles - Yesterday - Help!.mp3 and we
+want to swap an album name (third part of the name) for a track name (second part of
+the name). So we want to rename them to The Beatles - Revolver - Yellow Submarine.mp3,
+The Beatles - Rubber Soul - Michelle.mp3, and The Beatles - Help! - Yesterday.mp3.
+</p>
+
+<ol>
+<li>Select our three files in panel.</li>
+<li>Open the Batch Rename dialog box.</li>
+<li>Select the <i>Regular expression</i> check box.</li>
+<li>Select the <i>Exclude extension</i> check box.</li>
+<li>Go to the <i>Search for</i> combo box and type "(.*) - (.*) - (.*)" here.
+    This <a href="appendix_regexp.htm">regular expression</a> contains:
+	".*" (any character repeated zero or more times), "()" (each subexpression is enclosed in
+	parenthesis), " - " (just a substring used as a delimiter in filenames).
+	Meaning of this expression is: find three substrings delimited by " - ".</li>
+<li>Go to the <i>Replace with</i> combo box and type "$1 - $3 - $2" here. This expression
+    contains: "$1", "$2", and "$3" (the first, second, and third matched subexpressions),
+	and " - " (again just a substring used as a delimiter in filenames).</li>
+<li>Now you should see The Beatles - Revolver - Yellow Submarine.mp3,
+    The Beatles - Rubber Soul - Michelle.mp3, and The Beatles - Help! - Yesterday.mp3
+	in the <i>Preview</i> listview in the <i>New Name</i> column.</li>
+<li>Choose the Rename button.</li>
+</ol>
+
+<a id="ref6"></a>
+<h3>Using structured name to create directory structure</h3>
+
+<p>Lets say we have files The Beatles - Revolver - Yellow Submarine.mp3,
+The Beatles - Rubber Soul - Michelle.mp3, and The Beatles - Help! - Yesterday.mp3.
+We want to create directory The Beatles with subdirectories Revolver, Rubber Soul,
+and Help!, and move MP3 files to these subdirectories only with the last part of name
+(a track name).
+</p>
+
+<ol>
+<li>Select our three files in panel.</li>
+<li>Open the Batch Rename dialog box.</li>
+<li>Choose the <i>Rename Relative Path</i> option from the <i>Options</i> menu.</li>
+<li>Clear the <i>Only once in each name</i> check box.</li>
+<li>Go to the <i>Search for</i> combo box and type " - " here.</li>
+<li>Go to the <i>Replace with</i> combo box and type "\" here.</li>
+<li>Now you should see The Beatles\Revolver\Yellow Submarine.mp3,
+	The Beatles\Rubber Soul\Michelle.mp3, and The Beatles\Help!\Yesterday.mp3
+	in the <i>Preview</i> listview in the <i>New Name</i> column.</li>
+<li>Choose the Rename button.</li>
+</ol>
+
+<a id="ref7"></a>
+<h3>Moving all files from subdirectories into one directory</h3>
+
+<p>Lets say we have two directories Car and House, and four files Car\1.jpg, Car\2.jpg,
+House\3.jpg, and House\4.jpg (two files in each directory). We want to move them to
+one directory Photos, so we want to rename them to Photos\1.jpg, Photos\2.jpg,
+Photos\3.jpg, and Photos\4.jpg.
+</p>
+
+<ol>
+<li>Select directories Car and House in panel.</li>
+<li>Open the Batch Rename dialog box.</li>
+<li>Select the <i>Include subdirectories</i> check box.</li>
+<li>Choose the <i>Rename Relative Path</i> option from the <i>Options</i> menu.</li>
+<li>Choose the <i>Remove Emptied Directories</i> option from the <i>Options</i> menu.</li>
+<li>Select the <i>Regular expression</i> check box.</li>
+<li>Go to the <i>Search for</i> combo box and type ".*\\" here.
+    This <a href="appendix_regexp.htm">regular expression</a> contains:
+	".*" (any character repeated zero or more times) and "\\" (a backslash character).
+	Meaning of this expression is: find the longest substring ending with a backslash.</li>
+<li>Go to the <i>Replace with</i> combo box and type "Photos\" here.</li>
+<li>Now you should see Photos\1.jpg, Photos\2.jpg, Photos\3.jpg, and Photos\4.jpg
+	in the <i>Preview</i> listview in the <i>New Name</i> column.</li>
+<li>Choose the Rename button.</li>
+</ol>
+
+<a id="ref8"></a>
+<h3>Removing only periods that are not surrounded by digits</h3>
+
+<p>Lets say we have directories Altap.Salamand.2.5 and Altap.Salamand.2.0.
+We want to rename them to Altap Salamand 2.5 and Altap Salamand 2.0.
+</p>
+
+<ol>
+<li>Select our two directories in panel.</li>
+<li>Open the Batch Rename dialog box.</li>
+<li>Select the <i>Regular expression</i> check box.</li>
+<li>Clear the <i>Only once in each name</i> check box.</li>
+<li>Go to the <i>Search for</i> combo box and type "(?&lt;=\D)\.|\.(?=\D)" here.
+    This <a href="appendix_regexp.htm">regular expression</a> contains:
+	"(?&lt;=\D)" (positive look behind for non-digit character ("\D")), "\." (a period character),
+	"|" (delimits two alternative expressions), and "(?=\D)" (positive look ahead for
+	non-digit character ("\D")). Meaning of this expression is: find
+	a period character which is preceded or followed by a non-digit character.</li>
+<li>Go to the <i>Replace with</i> combo box and type one space character here.</li>
+<li>Now you should see Altap Salamand 2.5 and Altap Salamand 2.0
+	in the <i>Preview</i> listview in the <i>New Name</i> column.</li>
+<li>Choose the Rename button.</li>
+</ol>
+
+<h4>See Also</h4>
+<p>
+<a href="dlgboxes_batchrename.htm">Batch Rename dialog box</a><br/>
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

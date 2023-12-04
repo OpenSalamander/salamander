@@ -1,0 +1,34 @@
+﻿#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "manifest.xml"
+
+1 VERSIONINFO
+ FILEVERSION 1,0,0,0
+ PRODUCTVERSION 1,0,0,0
+ FILEFLAGSMASK 0x0L
+ FILEFLAGS 0x0L
+ FILEOS 0x4L
+ FILETYPE 0x1L  // VFT_APP=0x1
+ FILESUBTYPE 0x0L
+{
+ BLOCK "StringFileInfo"
+ {
+  BLOCK "040904b0"
+  {
+   VALUE "CompanyName", "Open Salamander\0"
+   VALUE "FileDescription", "Maker of ZIP SFX packages\0"
+   VALUE "FileVersion", "1.0\0"
+   VALUE "InternalName", "SFXMAKE\0"
+   VALUE "OriginalFilename", "SFXMAKE.EXE\0"
+   VALUE "LegalCopyright", "Copyright \251 2000-2023 Open Salamander Authors\0"
+   VALUE "ProductVersion", "1.0\0"
+   VALUE "ProductName", "SFXMAKE\0"
+  }
+ }
+ BLOCK "VarFileInfo"
+ {
+  VALUE "Translation", 0x0409, 0x04b0
+ }
+}

@@ -1,0 +1,95 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\spanish\uncab.atp"
+TEXTVERSION,"1.27 (x86)"
+VERSION,"1,2,7,180"
+
+[TRANSLATION]
+LANGID,3082
+AUTHOR,"Juan Pablo Barrio Lera"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6168"
+COMMENT,"Versión en español"
+
+[DIALOG 100]
+246,122,1,"Siguiente volumen cabinet"
+112,12,9,223,32,1,""
+300,12,48,64,8,1,"Nombre del disco:"
+110,78,48,157,8,1,""
+301,12,59,60,8,1,"Nombre del CAB:"
+111,78,59,157,8,1,""
+302,12,70,21,8,1,"&Ruta:"
+101,12,80,207,12,1,""
+102,222,80,13,12,1,"..."
+1,131,103,50,14,1,"Aceptar"
+2,185,103,50,14,1,"Cancelar"
+303,6,97,234,1,1,""
+
+[DIALOG 103]
+352,85,1,"Error"
+300,6,10,32,8,1,"Nombre:"
+104,42,10,303,8,1,""
+301,6,23,32,8,1,"Error:"
+302,42,23,303,16,1,"El fichero no puede ser extraído porque continúa a partir de un voiumen previo. Para extraer este fichero debe empezar con un volumen donde empiece el fichero."
+105,42,44,177,12,1,"&No presentar este mensaje en lo sucesivo."
+108,91,63,50,14,1,"&Saltar"
+109,151,63,50,14,1,"Saltar &todos"
+2,211,63,50,14,1,"Cancelar"
+
+[DIALOG 106]
+260,85,1,"Configuración desCAB"
+300,23,22,154,8,1,"cuando se desempaquete."
+107,12,10,238,12,1,"&Automáticamente saltar ficheros continuados desde volumen previo"
+301,23,44,111,8,1,"no pueda ser listado."
+116,12,32,207,12,1,"&No mostrar atención cuando todo el contenido del archivo"
+302,6,60,248,1,1,""
+1,77,66,50,14,1,"Aceptar"
+2,132,66,50,14,1,"Cancelar"
+
+[DIALOG 115]
+258,108,1,"DesCAB - Atención"
+300,11,9,216,24,1,"No todos los ficheros del archivo multivolumen pueden ser listados (y verse en el panel) porque algunos volúmenes del archivo no se encuentran."
+301,11,40,235,16,1,"Para listar todo el contenido del archivo copie todos los volúmenes del archivo al mismo directorio y abra el PRIMER volumen del archivo."
+105,11,65,157,12,1,"&No mostrar este mensaje en lo sucesivo"
+302,5,83,247,1,1,""
+1,199,90,50,14,1,"Aceptar"
+
+[STRINGTABLE 0]
+1000,1,"DesCAB"
+1001,1,"Memoria insuficiente."
+
+[STRINGTABLE 1]
+1008,1,"Sucedió un error desconocido."
+1012,1,"Seleccione carpeta"
+1014,1,"Imposible añadir entrada de archivo a la lista de ficheros."
+1015,1,"Desempaquetando archivo CAB - %s"
+1016,1,"preparando datos y creando directorios..."
+1017,1,"desempaquetando..."
+1018,1,"desempaquetando: "
+1019,1,"Imposible conseguir puntero de fichero: "
+1020,1,"Imposible grabar a fichero:"
+1021,1,"Imposible disponer puntero a fichero: "
+1022,1,"Imposible terminar la operación por nombre de ruta muy largo."
+1023,1,"Imposible terminar la operación por plantilla muy larga."
+
+[STRINGTABLE 2]
+1025,1,"Lo siento, el plugin ha expirado. Compruebe nuestra página web para una versión más reciente."
+1026,1,"Imposible crear o abrir fichero."
+1027,1,"Imposible leer fichero."
+1028,1,"No se encuentra cabinet."
+1029,1,"El fichero cabinet no tiene el formato correcto."
+1030,1,"El fichero cabinet tiene un número de versión desconocido."
+1031,1,"El fichero cabinet está corrupto."
+1032,1,"Tipo de compresión desconocido en un fichero cabinet."
+1033,1,"Fallo al descomprimir datos de un fichero cabinet."
+1034,1,"Los cabinets de una serie no tienen los mismos tamaños de RESERVE."
+1035,1,"Interumpido por el usuario."
+1036,1,"Seleccione una carpeta que contenga '%s'."
+1037,1,"Fichero cabinet incorrecto."
+1038,1,"Fichero no encontrado."
+1039,1,"saltando fichero"
+
+[STRINGTABLE 3]
+1040,1,"Por favor, inserte un disco con el volumen de cabinet nº %d o localice el fichero cabinet adecuado en el disco.\n\nPulse Aceptar cuando esté preparado."
+1041,1,"Error"
+1042,1,"Hojear y extraer archivos CAB."
+1043,1,"Acerca del Plugin"
+

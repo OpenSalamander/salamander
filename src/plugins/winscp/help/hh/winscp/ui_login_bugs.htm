@@ -1,0 +1,245 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Bugs Tab (Login Dialog)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Dialog Boxes: Configuring Session</div>
+<div class="page">
+<h1>Bugs Tab (Login Dialog)</h1>
+
+<p>
+<em>Bugs tab</em> allows you to configure the bugs WinSCP should expect to see in the
+<a href="ssh.htm">SSH</a> server.
+</p>
+
+<p>
+You need to check <em>Advanced options</em> to reveal the tab.
+</p>
+
+<p>
+Not all <acronym title="Secure Shell">SSH</acronym> servers work properly. Various existing servers have bugs
+in them, which can make it impossible for a client to talk to them unless it knows about the bug and works around it.
+</p>
+
+<p>
+Since most servers announce their software version number at the beginning of the
+<acronym title="Secure Shell">SSH</acronym> connection, WinSCP will attempt to detect which bugs it can expect
+to see in the server and automatically enable workarounds. However, sometimes it will make mistakes; if the
+server has been deliberately configured to conceal its version number, or if the server is a version which
+WinSCP's bug database does not know about, then WinSCP will not know what bugs to expect.
+</p>
+
+<p>
+Each bug can be configured in three states. With <em>Off</em> WinSCP will assume that the server does not have
+the bug. With <em>On</em> WinSCP will assume that the server does have the bug. With <em>Auto</em> (default)
+WinSCP will try to guess whether or not the server has the bug.
+</p>
+
+<a name="chokes_on_ssh-1_ignore_messages"></a>
+<h4>Chokes on SSH-1 ignore messages</h4>
+<p>
+An ignore message (SSH_MSG_IGNORE) is a message in the <acronym title="Secure Shell">SSH</acronym> protocol
+which can be sent from the client to the server, or from the server to the client, at any time. Either side is
+required to ignore the message whenever it receives it. WinSCP uses ignore messages to hide the password
+packet in <acronym title="Secure Shell">SSH</acronym>-1, so that a listener cannot tell the length of the
+user's password; it also uses ignore messages for <a href="ui_login_connection.htm#keepalives">connection keepalives</a>.
+</p>
+
+<p>
+If this bug is detected, WinSCP will stop using ignore messages. This means that keepalives will stop working,
+and WinSCP will have to fall back to a secondary defense against
+<a href="ui_login_bugs.htm#refuses_all_ssh-1_password_camouflage">SSH-1 password-length eavesdropping</a>. If
+this bug is enabled when talking to a correct server, the session will succeed, but keepalives will not work
+and the session might be more vulnerable to eavesdroppers than it could be.
+</p>
+
+<p>
+This is an <acronym title="Secure Shell">SSH</acronym>-1-specific bug. No known
+<acronym title="Secure Shell">SSH</acronym>-2 server fails to deal with <acronym title="Secure Shell">SSH</acronym>-2
+ignore messages.
+</p>
+
+<a name="refuses_all_ssh-1_password_camouflage"></a>
+<h4>Refuses all SSH-1 password camouflage</h4>
+
+<p>
+When talking to an <acronym title="Secure Shell">SSH</acronym>-1 server which cannot deal with
+<a href="ui_login_bugs.htm#chokes_on_ssh-1_ignore_messages">ignore messages</a>, WinSCP will attempt to disguise the
+length of the user's password by sending additional padding within the password packet. This is technically
+a violation of the <acronym title="Secure Shell">SSH</acronym>-1 specification, and so WinSCP will only do
+it when it cannot use standards-compliant ignore messages as camouflage. In this sense, for a server to refuse
+to accept a padded password packet is not really a bug, but it does make life inconvenient if the server can
+also not handle ignore messages.
+</p>
+
+<p>
+If this bug is detected, WinSCP will assume that neither ignore messages nor padding are acceptable, and that it thus has no choice but to send the user's password with no form of camouflage,
+so that an eavesdropping user will be easily able to find out the exact length of the password.
+If this bug is enabled when talking to a correct server, the session will succeed, but will be more vulnerable
+to eavesdroppers than it could be.
+</p>
+
+<p>
+This is an <acronym title="Secure Shell">SSH</acronym>-1-specific bug. <acronym title="Secure Shell">SSH</acronym>-2
+is secure against this type of attack.
+</p>
+
+<a name="chokes_on_ssh-1_rsa_authentication"></a>
+<h4>Chokes on SSH-1 RSA authentication</h4>
+
+<p>
+Some <acronym title="Secure Shell">SSH</acronym>-1 servers cannot deal with
+<acronym title="Rivest, Shamir &amp; Adelman">RSA</acronym> authentication messages at all. If Pageant is running
+and contains any <acronym title="Secure Shell">SSH</acronym>-1 keys, WinSCP will normally automatically try
+<acronym title="Rivest, Shamir &amp; Adelman">RSA</acronym> authentication before falling back to passwords, so
+these servers will crash when they see the <acronym title="Rivest, Shamir &amp; Adelman">RSA</acronym> attempt.
+</p>
+
+<p>
+If this bug is detected, WinSCP will go straight to password authentication. If this bug is enabled when talking
+to a correct server, the session will succeed, but of course <acronym title="Rivest, Shamir &amp; Adelman">RSA</acronym>
+authentication will be impossible.
+</p>
+
+<p>
+This is an <acronym title="Secure Shell">SSH</acronym>-1-specific bug.
+</p>
+
+<a name="miscomputes_ssh-2_hmac_keys"></a>
+<h4>Miscomputes SSH-2 HMAC keys</h4>
+
+<p>
+Versions 2.3.0 and below of the <acronym title="Secure Shell">SSH</acronym> server software from ssh.com compute
+the keys for their HMAC message authentication codes incorrectly. A typical symptom of this problem is that WinSCP
+dies unexpectedly at the beginning of the session, saying &quot;Incorrect MAC received on packet&quot;.
+</p>
+
+<p>
+If this bug is detected, WinSCP will compute its HMAC keys in the same way as the buggy server, so that
+communication will still be possible. If this bug is enabled when talking to a correct server, communication
+will fail.
+</p>
+
+<p>
+This is an <acronym title="Secure Shell">SSH</acronym>-2-specific bug.
+</p>
+
+<a name="miscomputes_ssh-2_encryption_keys"></a>
+<h4>Miscomputes SSH-2 encryption keys</h4>
+
+<p>
+Versions below 2.0.11 of the <acronym title="Secure Shell">SSH</acronym> server software from ssh.com
+compute the keys for the session encryption incorrectly. This problem can cause various error messages,
+such as &quot;Incoming packet was garbled on decryption&quot;, or possibly even &quot;Out of memory&quot;.
+</p>
+
+<p>
+If this bug is detected, WinSCP will compute its encryption keys in the same way as the buggy server,
+so that communication will still be possible. If this bug is enabled when talking to a correct server,
+communication will fail.
+</p>
+
+<p>
+This is an <acronym title="Secure Shell">SSH</acronym>-2-specific bug.
+</p>
+
+<a name="requires_padding_on_ssh-2_rsa_signatures"></a>
+<h4>Requires padding on SSH-2 RSA signatures</h4>
+
+<p>
+Versions below 3.3 of <a href="https://www.openssh.com/" target="_blank">OpenSSH</a> require
+<acronym title="Secure Shell">SSH</acronym>-2 <acronym title="Rivest, Shamir &amp; Adelman">RSA</acronym>
+signatures to be padded with zero bytes to the same length as the
+<acronym title="Rivest, Shamir &amp; Adelman">RSA</acronym> key modulus. The
+<acronym title="Secure Shell">SSH</acronym>-2 draft specification says that an unpadded signature MUST
+be accepted, so this is a bug. A typical symptom of this problem is that WinSCP mysteriously fails
+<acronym title="Rivest, Shamir &amp; Adelman">RSA</acronym> authentication once in every few hundred
+attempts, and falls back to passwords.
+</p>
+
+<p>
+If this bug is detected, WinSCP will pad its signatures in the way OpenSSH expects. If this bug is enabled
+when talking to a correct server, it is likely that no damage will be done, since correct servers usually
+still accept padded signatures because they're used to talking to OpenSSH.
+</p>
+
+<p>
+This is an <acronym title="Secure Shell">SSH</acronym>-2-specific bug.
+</p>
+
+<a name="misuses_the_session_id_in_ssh-2_pk_auth"></a>
+<h4>Misuses the session ID in SSH-2 PK auth</h4>
+
+<p>
+Versions below 2.3 of <a href="https://www.openssh.com/" target="_blank">OpenSSH</a>
+require <acronym title="Secure Shell">SSH</acronym>-2 public-key authentication to be done slightly
+differently: the data to be signed by the client contains the session ID formatted in a different way.
+If public-key authentication mysteriously does not work but the session log shows that WinSCP has
+successfully sent a signature, it might be worth enabling the workaround for this bug to see if it helps.
+</p>
+
+<p>
+If this bug is detected, WinSCP will sign data in the way OpenSSH expects. If this bug is enabled when
+talking to a correct server, <acronym title="Secure Shell">SSH</acronym>-2 public-key authentication will fail.
+</p>
+
+<p>
+This is an <acronym title="Secure Shell">SSH</acronym>-2-specific bug.
+</p>
+
+<a name="handles_ssh-2_key_re-exchange_badly"></a>
+<h4>Handles SSH-2 key re-exchange badly</h4>
+
+<p>
+Some <acronym title="Secure Shell">SSH</acronym> servers cannot cope with repeat key exchange at all, and
+will ignore attempts by the client to start one. Since WinSCP pauses the session while performing a repeat
+key exchange, the effect of this would be to cause the session to hang after an hour (unless you have your
+<a href="ui_login_kex.htm">rekey timeout set differently</a>). Other, very old,
+<acronym title="Secure Shell">SSH</acronym> servers handle repeat key exchange even more badly, and
+disconnect upon receiving a repeat key exchange request.
+</p>
+
+<p>
+If this bug is detected, WinSCP will never initiate a repeat key exchange. If this bug is enabled when talking
+to a correct server, the session should still function, but may be less secure than you would expect.
+</p>
+
+<p>
+This is an <acronym title="Secure Shell">SSH</acronym>-2-specific bug.
+</p>
+
+<a name="ignores_ssh-2_maximum_packet_size"></a>
+<h4>Ignores SSH-2 maximum packet size</h4>
+
+<p>
+When an <acronym title="Secure Shell version 2">SSH-2</acronym> channel is set up, each end announces the maximum size
+of data packet that it is willing to receive for that channel.  Some
+servers ignore plugins&#8217;s announcement and send packets larger than plugin
+is willing to accept, causing it to report &#8220;Incoming packet was
+garbled on decryption&#8221;.
+</p>
+<p>
+If this bug is detected, plugin never allows the channel&#8217;s
+flow-control window to grow large enough to allow the server to
+send an over-sized packet.  If this bug is enabled when talking to a
+correct server, the session will work correctly, but download
+performance will be less than it could be <a href="#fn1">(see note 1)</a>.
+</p>
+
+<h4>Notes:</h4>
+<p>
+<a name="fn1"></a>
+1) The text is copy of <a href="https://tartarus.org/~simon/putty-snapshots/htmldoc/" target="_blank">PuTTY User Manual</a> or was inspired by it.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

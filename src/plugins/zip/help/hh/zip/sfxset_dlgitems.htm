@@ -1,0 +1,163 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Dialog Box Options</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: ZIP: Self-Extracting Archives: Self-Extractor Settings</div>
+<div class="page">
+<h1>Dialog Box Options</h1>
+
+<p>The <a href="sfxset_settings.htm">Self-Extractor Settings</a> dialog contains
+following options:</p>
+
+<dl>
+<dt><i>Extract to</i></dt>
+<dd><p>Specify the directory you want to be preset in <i>Extract to</i>
+editbox in the main dialog of self-extracting archive. You can enter either
+absolute or relative path. Relative path is relative to the current directory of
+the opened self-extracting archive. If <i>Extract to</i> specifies non-existing
+directory, user will be prompted whether to create it. To extract files to the
+current directory leave this field blank.
+</p>
+
+<p>Samples of relative paths:<br/>
+   Gallery\Van Gogh<br/>
+   \Program Files\My Program<br/>
+   ..\Pictures</p>
+
+<p>At the beginning of the absolute path you can use one of the following
+variables:<br/></p>
+
+<table>
+
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td>$(Temp)</td>
+<td>Temporary files directory. This variable should stand
+only alone (not followed by any path portion).</td>
+</tr>
+
+<tr>
+<td>$(ProgFiles)</td>
+<td><i>Program Files</i> directory.</td>
+</tr>
+
+<tr>
+<td>$(WinDir)</td>
+<td><i>Windows</i> directory.</td>
+</tr>
+
+<tr>
+<td>$(SysDir)</td>
+<td><i>System</i> directory.</td>
+</tr>
+
+<tr>
+<td>$[variable]</td>
+<td>Value of an environment variable.<br/>
+Sample: $[windir]\Fonts</td>
+</tr>
+
+<tr>
+<td>$&lt;variable&gt;</td>
+<td>Value of a Registry key value.<br/>
+Sample: $&lt;SOFTWARE\Microsoft\Windows\CurrentVersion\ProgramFilesDir&gt;\Outlook Express</td>
+</tr>
+</table>
+</dd>
+
+<dt><i>Allow user to change the directory</i></dt>
+<dd>Allows user to change <i>Extract to</i> directory.</dd>
+
+<dt><i>Execute command or open document</i></dt>
+<dd><p>Here you can enter command (with optional parameters), document name, or HTTP link (must start
+with http://). It is executed (opened) when unpacking of the self-extracted archive
+finishes. In case of command or document name you can enter absolute path or relative path
+(relative to the current directory of the opened self-extracted archive).</p>
+<p>Samples:<br/>
+   setup.exe -x<br/>
+   doc\readme.txt<br/>
+   https://www.altap.cz/</p>
+</dd>
+
+<dt><i>Remove extracted files</i></dt>
+<dd>Removes files extracted to the temporary directory when application
+(e.g. installer) specified in <i>Execute command or open document</i> finishes. This option
+is enabled only when unpacking to temporary directory (<i>Extract to</i> is set to $(Temp)) and
+is useful for installation software.</dd>
+
+<dt><i>Wait for</i></dt>
+<dd>Self-extractor can also wait for other application than the one specified
+in <i>Execute command or open document</i>. See <a href="sfxset_waiting.htm">Waiting
+for Another Application</a> for details.</dd>
+
+<dt><i>Texts</i></dt>
+<dd>Defines texts in the optional message box and main dialog of self-extracting archive.
+See <a href="sfxset_texts.htm">Self-Extractor Texts</a> dialog for details.</dd>
+
+<dt><i><a id="language">Language</a></i></dt>
+<dd>Lets you choose the language version of the created self-extracting archive.
+If custom texts (texts specified in <a href="sfxset_texts.htm">Self-Extractor Texts</a>
+dialog) were not changed and you change language, texts are changed
+to the defaults of currently selected language.
+If custom texts were changed and you change language, following action depends on
+<i>When SFX language changes</i> in the <a href="usingzip_config.htm">ZIP Configuration</a>.
+There are three variants: texts are changed to their default values,
+texts are left unchanged, or you are prompted whether to change their values to
+defaults or not.<br/>
+
+Note: You can set values of custom texts to their defaults in <i>Options</i> menu or in the
+Self-Extractor Texts dialog.</dd>
+
+<dt><i>Icon</i></dt>
+<dd>Icon of self-extracting archive. This icon appears also in the main dialog.
+Only icon from ICO file or from Win32 executable could be loaded. Loading
+icons from 16-bit (e.g. Win 3.11 and older) executables is not supported.</dd>
+
+<dt><i>Start extraction automatically</i></dt>
+<dd>Starts extraction immediately after the self-extracting archive is opened.
+It does not display any user prompt.</dd>
+
+<dt><i>Hide main self-extractor's dialog</i></dt>
+<dd>Doesn't show main self-extractor's dialog and unpacks silently at the background.
+But error messages or overwrite prompts are displayed. The option make sense only
+if 'Start extraction automatically' is turned on.</dd>
+
+<dt><i>Automatically create target directory</i></dt>
+<dd>It creates target directory (if it's not existing) without any user prompt.
+</dd>
+
+<dt><i>Show operation summary dialog</i></dt>
+<dd>Shows message box informing whether the extraction was finished successfully and
+how much files were extracted in case of success.</dd>
+
+<dt><i>Overwrite files automatically</i></dt>
+<dd>Overwrites existing files in the <i>Extract to</i> directory without any
+user prompt. Attention: it overwrites also readonly/hidden/system files.</dd>
+
+<dt><i>Requires administrative privileges</i></dt>
+<dd>Starts self-extracting archive with administrative privileges on Windows Vista
+(this will trigger UAC - User Account Control), so it can unpack files
+also to write-protected folders (e.g. Program Files).</dd>
+
+</dl>
+
+<h4>See Also</h4>
+<a href="sfxset_texts.htm">Self-Extractor Texts Dialog</a><br/>
+<a href="sfxset_waiting.htm">Waiting for Another Application</a>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

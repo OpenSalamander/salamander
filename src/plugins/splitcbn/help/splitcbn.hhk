@@ -1,0 +1,43 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<!-- Sitemap 1.0 -->
+</HEAD>
+<BODY>
+<OBJECT type="text/site properties">
+</OBJECT>
+<UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Introducing Split & Combine">
+		<param name="Local" value="hh\splitcbn\introduction_intro.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Splitting File to Parts">
+		<param name="Local" value="hh\splitcbn\using_split.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Combining Parts of File">
+		<param name="Local" value="hh\splitcbn\using_combine.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Dialog Box">
+		<param name="See Also" value="Dialog Box">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Split & Combine Configuration">
+			<param name="Local" value="hh\splitcbn\dlgboxes_config.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Split">
+			<param name="Local" value="hh\splitcbn\dlgboxes_split.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Combine">
+			<param name="Local" value="hh\splitcbn\dlgboxes_combine.htm">
+			</OBJECT>
+	</UL>
+</UL>
+</BODY>
+</HTML>

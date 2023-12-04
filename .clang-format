@@ -1,0 +1,13 @@
+# Microsoft coding style
+BasedOnStyle: LLVM
+IndentWidth: 4
+AccessModifierOffset: -4
+BreakBeforeBraces: Allman
+NamespaceIndentation: All
+AlignEscapedNewlines: DontAlign
+ColumnLimit: 0
+SortIncludes: false
+CommentPragmas:  '^'
+ReflowComments: false
+DerivePointerAlignment: false
+PointerAlignment: Left

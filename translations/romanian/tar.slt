@@ -1,0 +1,64 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\romanian\tar.atp"
+TEXTVERSION,"3.34 (x86)"
+VERSION,"3,3,4,180"
+
+[TRANSLATION]
+LANGID,1048
+AUTHOR,"Ioan Stefancu, Donca Radu"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6165"
+COMMENT,"Versiunea romana"
+
+[STRINGTABLE 0]
+11200,1,"Eroare Plugin TAR"
+11201,1,"Format arhiva nerecunoscut sau nesuportat."
+11202,1,"Date invalide in inceputul de fisier TAR - arhiva corupta."
+11203,1,"Fisier compromis sau CRC rau - arhiva corupta."
+11204,1,"Eroare interna : structura date fisier corupta."
+11205,1,"Semnatura bloc necunoscuta - se sare peste."
+11206,1,"Fisierul cautat nu se gaseste in arhiva."
+11207,1,"Eroare alocare memorie."
+
+[STRINGTABLE 1]
+11240,1,"Archivele LZH nu sunt inca suportate."
+
+[STRINGTABLE 2]
+11250,1,"Dezarhivare"
+11251,1,"Extrag "
+11252,1,"Sar Peste "
+11260,1,"Eroare GZip"
+11261,1,"Metoda de compresie folosita este necunoscuta, nu pot extrage."
+11262,1,"Acest fisier este criptat. Criptarea nu este suportata in arhivele GZip."
+11263,1,"Acest fisier este parte a unei arhive multi volum. Arhivele multi volum GZip nu sunt suportate."
+
+[STRINGTABLE 3]
+11264,1,"Marcaj necunoscut intalnit la inceputul de fisier GZip, nu pot extrage."
+11265,1,"Eroare deschidere fisier arhiva: "
+11266,1,"Sfarsit prematur fisier intalnit."
+11267,1,"Eroare citire fisier arhiva: "
+11268,1,"Eroare scriere in fisierul de iesire: "
+11269,1,"Functia ScrieFisier refuza sa scrie toate datele cerute."
+11270,1,"Bloc invalid in sirul GZip, nu pot extrage."
+11271,1,"Eroare interna in plugin-ul TAR, va rugam anuntati eroarea la support@altap.cz."
+11272,1,"Eroare alocare memorie."
+11273,1,"Eroare CRC."
+11274,1,"Date neasteptate in sirul comprimat, arhiva corupta."
+11275,1,"Eroare cautare in fisierul arhiva: "
+
+[STRINGTABLE 4]
+11280,1,"Vizualizator RPM"
+11281,1,"Eroare RPM"
+11282,1,"Eroare creare nume fisier temporar."
+11283,1,"Eroare creare fisier temporar."
+11284,1,"Fisierul nu a fost recunoscut ca arhiva RPM."
+11285,1,"Versiunea RPM ceruta de aceasta arhiva nu este suportata."
+11286,1,"Semnatura arhivei RPM intalnita e necunoscuta."
+11291,1,"Fisierul inregistrat are semnatura compromisa."
+11292,1,"Inregistrarea capului de fisier e corupta."
+11293,1,"Format necunoscut la inceputul de fisier cpio."
+
+[STRINGTABLE 5]
+11299,1,"TAR"
+11300,1,"Rasfoieste si extrage arhive Unix."
+11301,1,"Despre Plugin"
+

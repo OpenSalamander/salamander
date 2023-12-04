@@ -1,0 +1,336 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{365F0AE2-C644-40E9-9652-F24320A42699}</ProjectGuid>
+    <RootNamespace>automation</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props">
+  </Import>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props">
+  </Import>
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\x86.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_base.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_release.props">
+    </Import>
+    <Import Project="automation.props">
+    </Import>
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\x86.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_base.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_debug.props">
+    </Import>
+    <Import Project="automation.props">
+    </Import>
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\x64.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_base.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_release.props">
+    </Import>
+    <Import Project="automation.props">
+    </Import>
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\x64.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_base.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_debug.props">
+    </Import>
+    <Import Project="automation.props">
+    </Import>
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros">
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\shared\auxtools.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\shared\dbg.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\shared\mhandles.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\shared\winliblt.cpp">
+    </ClCompile>
+    <ClCompile Include="..\abortmodal.cpp">
+    </ClCompile>
+    <ClCompile Include="..\abortpalette.cpp">
+    </ClCompile>
+    <ClCompile Include="..\automationplug.cpp">
+    </ClCompile>
+    <ClCompile Include="..\aututils.cpp">
+    </ClCompile>
+    <ClCompile Include="..\cfgdlg.cpp">
+    </ClCompile>
+    <ClCompile Include="..\dialogimpl.cpp">
+    </ClCompile>
+    <ClCompile Include="..\engassoc.cpp">
+    </ClCompile>
+    <ClCompile Include="..\entry.cpp">
+    </ClCompile>
+    <ClCompile Include="..\fileinfo.cpp">
+    </ClCompile>
+    <ClCompile Include="..\generated\salamander_i.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\guibutton.cpp">
+    </ClCompile>
+    <ClCompile Include="..\guichkbox.cpp">
+    </ClCompile>
+    <ClCompile Include="..\guicomponent.cpp">
+    </ClCompile>
+    <ClCompile Include="..\guicontainer.cpp">
+    </ClCompile>
+    <ClCompile Include="..\guiform.cpp">
+    </ClCompile>
+    <ClCompile Include="..\guilabel.cpp">
+    </ClCompile>
+    <ClCompile Include="..\guinamespace.cpp">
+    </ClCompile>
+    <ClCompile Include="..\guitxtbox.cpp">
+    </ClCompile>
+    <ClCompile Include="..\itemaut.cpp">
+    </ClCompile>
+    <ClCompile Include="..\itemcoll.cpp">
+    </ClCompile>
+    <ClCompile Include="..\knownengines.cpp">
+    </ClCompile>
+    <ClCompile Include="..\panelaut.cpp">
+    </ClCompile>
+    <ClCompile Include="..\persistence.cpp">
+    </ClCompile>
+    <ClCompile Include="..\precomp.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\processlist.cpp">
+    </ClCompile>
+    <ClCompile Include="..\progressaut.cpp">
+    </ClCompile>
+    <ClCompile Include="..\raiserr.cpp">
+    </ClCompile>
+    <ClCompile Include="..\salamanderaut.cpp">
+    </ClCompile>
+    <ClCompile Include="..\saltypelib.cpp">
+    </ClCompile>
+    <ClCompile Include="..\scriptinfoaut.cpp">
+    </ClCompile>
+    <ClCompile Include="..\scriptlist.cpp">
+    </ClCompile>
+    <ClCompile Include="..\scriptsite.cpp">
+    </ClCompile>
+    <ClCompile Include="..\shim.cpp">
+    </ClCompile>
+    <ClCompile Include="..\strconv.cpp">
+    </ClCompile>
+    <ClCompile Include="..\waitwndaut.cpp">
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="..\salamander.idl">
+    </Midl>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\abortmodal.h">
+    </ClInclude>
+    <ClInclude Include="..\abortpalette.h">
+    </ClInclude>
+    <ClInclude Include="..\automationplug.h">
+    </ClInclude>
+    <ClInclude Include="..\aututils.h">
+    </ClInclude>
+    <ClInclude Include="..\cfgdlg.h">
+    </ClInclude>
+    <ClInclude Include="..\dialogimpl.h">
+    </ClInclude>
+    <ClInclude Include="..\dispimpl.h">
+    </ClInclude>
+    <ClInclude Include="..\engassoc.h">
+    </ClInclude>
+    <ClInclude Include="..\fileinfo.h">
+    </ClInclude>
+    <ClInclude Include="..\generated\salamander_h.h">
+    </ClInclude>
+    <ClInclude Include="..\guibutton.h">
+    </ClInclude>
+    <ClInclude Include="..\guichkbox.h">
+    </ClInclude>
+    <ClInclude Include="..\guicomponent.h">
+    </ClInclude>
+    <ClInclude Include="..\guicontainer.h">
+    </ClInclude>
+    <ClInclude Include="..\guidefs.h">
+    </ClInclude>
+    <ClInclude Include="..\guiform.h">
+    </ClInclude>
+    <ClInclude Include="..\guilabel.h">
+    </ClInclude>
+    <ClInclude Include="..\guinamespace.h">
+    </ClInclude>
+    <ClInclude Include="..\guitxtbox.h">
+    </ClInclude>
+    <ClInclude Include="..\inputbox.h">
+    </ClInclude>
+    <ClInclude Include="..\itemaut.h">
+    </ClInclude>
+    <ClInclude Include="..\itemcoll.h">
+    </ClInclude>
+    <ClInclude Include="..\knownengines.h">
+    </ClInclude>
+    <ClInclude Include="..\panelaut.h">
+    </ClInclude>
+    <ClInclude Include="..\persistence.h">
+    </ClInclude>
+    <ClInclude Include="..\precomp.h">
+    </ClInclude>
+    <ClInclude Include="..\processlist.h">
+    </ClInclude>
+    <ClInclude Include="..\progressaut.h">
+    </ClInclude>
+    <ClInclude Include="..\raiserr.h">
+    </ClInclude>
+    <ClInclude Include="..\salamander.h">
+    </ClInclude>
+    <ClInclude Include="..\salamanderaut.h">
+    </ClInclude>
+    <ClInclude Include="..\saltypelib.h">
+    </ClInclude>
+    <ClInclude Include="..\scriptinfoaut.h">
+    </ClInclude>
+    <ClInclude Include="..\scriptlist.h">
+    </ClInclude>
+    <ClInclude Include="..\scriptsite.h">
+    </ClInclude>
+    <ClInclude Include="..\shim.h">
+    </ClInclude>
+    <ClInclude Include="..\strconv.h">
+    </ClInclude>
+    <ClInclude Include="..\unkimpl.h">
+    </ClInclude>
+    <ClInclude Include="..\waitwndaut.h">
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\automation.rc2">
+    </None>
+    <None Include="..\automation.rh">
+    </None>
+    <None Include="..\automation.rh2">
+    </None>
+    <None Include="..\lang\lang.rh">
+    </None>
+    <None Include="..\typelib.rc2">
+    </None>
+    <None Include="..\versinfo.rh2">
+    </None>
+    <None Include="..\version.rc2">
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\res\automation.ico">
+    </Image>
+    <Image Include="..\res\automation_strip.png">
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\automation.rc">
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="lang_automation.vcxproj">
+      <Project>{90d0933d-53ec-4fb1-973e-1fd6fa13bda6}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets">
+  </Import>
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

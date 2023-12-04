@@ -1,0 +1,1670 @@
+/*
+	Automation Plugin for Open Salamander
+	
+	Copyright (c) 2009-2023 Milan Kase <manison@manison.cz>
+	Copyright (c) 2010-2023 Open Salamander Authors
+	
+	salamander.idl
+	Salamander Object Model interface description.
+*/
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+
+interface ISalamanderPanel;
+interface ISalamanderPanelItem;
+interface ISalamanderPanelItemCollection;
+interface ISalamanderProgressDialog;
+interface ISalamanderWaitWindow;
+interface ISalamanderGui;
+interface ISalamanderScriptInfo;
+
+
+/// \brief Salamander Object
+///
+/// The \b Salamander object is the root object of the Open Salamander
+/// Automation object model hierarchy. It never needs to be instantiated
+/// before invoking its properties and methods, and it is always available
+/// from any script file.
+[
+	object,
+	uuid(60F57ABE-95C7-48c7-AE37-9DA007B8D57F),
+	dual,
+	pointer_default(unique),
+	oleautomation,
+	nonextensible
+]
+interface ISalamander : IUnknown
+{
+	/// \brief Displays a message in a dialog box.
+	///
+	/// The \b MsgBox method displays a message in a dialog box.
+	///
+	/// \param prompt Required. String displayed as the message in the
+	///        dialog box.
+	/// 
+	/// \param buttons Optional. Numeric expression that is the sum of
+	///        values specifying the number and type of buttons to
+	///        display, the icon style to use and the identity of the
+	///        default button. If omitted, the default value for
+	///        <b><i>buttons</i></b> is 0.
+	///	<table>
+	///		<tr>
+	///			<th>Constant</th>
+	///			<th>Description</th>
+	///		</tr>
+	///		<tr>
+	///			<td>0</td>
+	///			<td>Display OK button only.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>1</td>
+	///			<td>Display OK and Cancel buttons.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>2</td>
+	///			<td>Display Abort, Retry and Ignore buttons.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>3</td>
+	///			<td>Display Yes, No and Cancel buttons.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>4</td>
+	///			<td>Display Yes and No buttons.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>5</td>
+	///			<td>Display Retry and Cancel buttons.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>6</td>
+	///			<td>Display Cancel, Try Again and Continue buttons.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>7</td>
+	///			<td>Display Continue and Abort buttons.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>16</td>
+	///			<td>Display error message icon.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>32</td>
+	///			<td>Display query message icon.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>48</td>
+	///			<td>Display warning message icon.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>64</td>
+	///			<td>Display information message icon.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>0</td>
+	///			<td>First button is default.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>256</td>
+	///			<td>Second button is default.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>512</td>
+	///			<td>Third button is default.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>768</td>
+	///			<td>Fourth button is default.</td>
+	///		</tr>
+	///	</table>
+	///
+	/// \param title Optional. String displayed in the title bar of the
+	///        dialog box.
+	///
+	/// \return
+	///	<table>
+	///		<tr>
+	///			<th>Value</th>
+	///			<th>Description</th>
+	///		</tr>
+	///		<tr>
+	///			<td>1</td>
+	///			<td>OK</td>
+	///		</tr>
+	///		<tr>
+	///			<td>2</td>
+	///			<td>Cancel</td>
+	///		</tr>
+	///		<tr>
+	///			<td>3</td>
+	///			<td>Abort</td>
+	///		</tr>
+	///		<tr>
+	///			<td>4</td>
+	///			<td>Retry</td>
+	///		</tr>
+	///		<tr>
+	///			<td>5</td>
+	///			<td>Ignore</td>
+	///		</tr>
+	///		<tr>
+	///			<td>6</td>
+	///			<td>Yes</td>
+	///		</tr>
+	///		<tr>
+	///			<td>7</td>
+	///			<td>No</td>
+	///		</tr>
+	///		<tr>
+	///			<td>10</td>
+	///			<td>Try Again</td>
+	///		</tr>
+	///		<tr>
+	///			<td>11</td>
+	///			<td>Continue</td>
+	///		</tr>
+	///	</table>
+	[id(1)]
+	HRESULT MsgBox(
+		[in] BSTR prompt,
+		[in, optional] VARIANT *buttons,
+		[in, optional] VARIANT *title,
+		[out, retval] int *result);
+
+	/// \brief Gets instance of the <a name="panel">Panel</a> object
+	///        representing the left panel.
+	[id(2), propget]
+	HRESULT LeftPanel(
+		[out, retval] ISalamanderPanel **panel);
+
+	/// \brief Gets instance of the <a name="panel">Panel</a> object
+	///        representing the right panel.
+	[id(3), propget]
+	HRESULT RightPanel(
+		[out, retval] ISalamanderPanel **panel);
+
+	/// \brief Gets instance of the <a name="panel">Panel</a> object
+	///        representing the source panel.
+	[id(4), propget]
+	HRESULT SourcePanel(
+		[out, retval] ISalamanderPanel **panel);
+
+	/// \brief Gets instance of the <a name="panel">Panel</a> object
+	///        representing the target panel.
+	[id(5), propget]
+	HRESULT TargetPanel(
+		[out, retval] ISalamanderPanel **panel);
+
+	/// \brief Gets the Open Salamander version number. 
+	[id(6), propget]
+	HRESULT Version(
+		[out, retval] int *version);
+
+	/// \brief Allows the user to input a text.
+	///
+	/// The \b InputBox method displays a prompt in a dialog box, waits
+	/// for the user to input text or click a button, and returns a string
+	/// containing the contents of the text box.
+	///
+	/// \param prompt Required. String displayed as the message in the
+	///        dialog box.
+	///
+	/// \param title Optional. String displayed in the title bar of the
+	///        dialog box.
+	///
+	/// \param _default Optional. String expression displayed in the text
+	///        box as the default response if no other input is provided.
+	///        If you omit default, the text box is displayed empty.
+	///
+	/// \return If the user clicks \b OK or presses ENTER, the \b InputBox
+	///         method returns whatever is in the text box. If the user
+	///         clicks \b Cancel, the function returns a zero-length
+	///         string ("").
+	[id(7)]
+	HRESULT InputBox(
+		[in] BSTR prompt,
+		[in, optional] VARIANT *title,
+		[in, optional] VARIANT *_default,
+		[out, retval] BSTR *result);
+
+	/// \brief Gets the Windows operating system packed version number.
+	///
+	/// \return Some of the possible property values are summarized in the
+	///         following table.
+	///	<table>
+	///		<tr>
+	///			<th>Constant</th>
+	///			<th>Description</th>
+	///		</tr>
+	///		<tr>
+	///			<td>51</td>
+	///			<td>Windows XP</td>
+	///		</tr>
+	///		<tr>
+	///			<td>60</td>
+	///			<td>Windows Vista</td>
+	///		</tr>
+	///		<tr>
+	///			<td>61</td>
+	///			<td>Windows 7</td>
+	///		</tr>
+	///	</table>
+	[id(8), propget]
+	HRESULT WindowsVersion(
+		[out, retval] int *version);
+
+	/// \brief Gets the Automation plugin version number.
+	///
+	/// Gets the Automation plugin packed version number.
+	///
+	/// \return Some of the possible property values are summarized in the
+	///         following table.
+	///	<table>
+	///		<tr>
+	///			<th>Constant</th>
+	///			<th>Description</th>
+	///		</tr>
+	///		<tr>
+	///			<td>10</td>
+	///			<td>Automation 1.0</td>
+	///		</tr>
+	///	</table>
+	[id(9), propget]
+	HRESULT AutomationVersion(
+		[out, retval] int *version);
+
+	/// \brief Suspends script execution for a specified length of time.
+	///
+	/// The Sleep method suspends script execution for a specified length
+	/// of time, then continues execution.
+	///
+	/// \param time Required. Integer value indicating the interval (in
+	///        milliseconds) you want the script process to be inactive.
+	///
+	/// \return This method does not return a value.
+	[id(10)]
+	HRESULT Sleep(
+		[in] int time);
+
+	/// \brief Forces script execution to stop.
+	///
+	/// The \b AbortScript method forces script execution to stop at any time.
+	///
+	/// \return This method does not return a value.
+	[id(11)]
+	HRESULT AbortScript();
+
+	/// \brief Sends an informational message to the Trace Server.
+	///
+	/// The \b TraceI method sends the informational level message to the
+	/// Trace Server.
+	///
+	/// \param message Required. String to be sent to the Trace Server.
+	///
+	/// \return This method does not return a value.
+	///
+	/// \remarks The Trace Server is the debugging tool available
+	///          as a part of Preview Build Open Salamander installations
+	///          or as a part of the Open Salamander Plugin SDK.
+	///          In release versions of the Open Salamander this method
+	///          does nothing.
+	[id(12)]
+	HRESULT TraceI(
+		[in] BSTR message);
+
+	/// \brief Sends an error message to the Trace Server.
+	///
+	/// The \b TraceE method sends the error level message to the Altap
+	/// Trace Server.
+	///
+	/// \param message Required. String to be sent to the Trace Server.
+	///
+	/// \return This method does not return a value.
+	///
+	/// \remarks The Trace Server is the debugging tool available
+	///          as a part of Preview Build Open Salamander installations
+	///          or as a part of the Open Salamander Plugin SDK.
+	///          In release versions of the Open Salamander this method
+	///          does nothing.
+	[id(13)]
+	HRESULT TraceE(
+		[in] BSTR message);
+
+	/// \brief Gets instance of the <a name="progressdialog">ProgressDialog</a>
+	///        object representing the progress dialog.
+	[id(14), propget]
+	HRESULT ProgressDialog(
+		[out, retval] ISalamanderProgressDialog **dialog);
+
+	/// \brief Gets instance of the <a name="waitwindow">WaitWindow</a>
+	///        object representing the wait window.
+	[id(15), propget]
+	HRESULT WaitWindow(
+		[out, retval] ISalamanderWaitWindow **window);
+
+	/// \brief Opens file in the associated viewer.
+	///
+	/// The \b ViewFile method opens the specified file in the associated
+	/// viewer.
+	///
+	/// \param file Required. The name of the file.
+	///
+	/// \param cache Optional. Specifies whether the disk cache should
+	///        be used when viewing the file. This can be one of the
+	///        following values:
+	///	<table>
+	///		<tr>
+	///			<th>Constant</th>
+	///			<th>Description</th>
+	///		</tr>
+	///		<tr>
+	///			<td>0</td>
+	///			<td>The disk cache will not be used. This is
+	///                     the default behavior.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>1</td>
+	///			<td>The file will be copied to the disk cache
+	///			before it is opened in the viewer. The caller
+	///                     can safely delete the file immediately after
+	///                     the method returns.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>2</td>
+	///			<td>The file will be moved to the disk cache
+	///			before it is opened in the viewer. The file
+	///                     will be automatically deleted from the cache
+	///                     once the user closes the viewer window.</td>
+	///		</tr>
+	///	</table>
+	///
+	/// \return This method does not return a value.
+	[id(16)]
+	HRESULT ViewFile(
+		[in] BSTR file,
+		[in, optional] VARIANT *cache);
+
+	/// \brief Matches file name against the specified file mask.
+	///
+	/// The \b MatchesMask performs match of the file name against the
+	/// specified file mask.
+	///
+	/// \param file Required. String specifying the name of the file the
+	///        match should be performed on.
+	///
+	/// \param mask	Required. String specifying the file mask the match
+	///        should be performed against.
+	///
+	/// \return If the file name matches the specified mask the return
+	///         value is <b><i>true</i></b>. Otherwise the return value
+	///         is <b><i>false</i></b>.
+	[id(17)]
+	HRESULT MatchesMask(
+		[in] BSTR file,
+		[in] BSTR mask,
+		[out, retval] VARIANT_BOOL *match);
+
+
+	/// \brief Breaks into the debugger.
+	///
+	/// The \b DebugBreak method causes a breakpoint in the script, where
+	/// you will be prompted to run the debugger.
+	///
+	/// \return This method does not return a value.
+	///
+	/// \remarks If script debugging is not enabled then this method
+	///          does nothing.
+	[id(18)]
+	HRESULT DebugBreak();
+
+	/// \brief Displays dialog box with an error message.
+	///
+	/// The \b ErrorDialog method displays dialog box with an error
+	/// message.
+	///
+	/// \param file Required. File that caused the error. This can be
+	///        either the \b File object obtained from the \b FileSystemObject
+	///        or the Salamander panel <a name="item">Item</a> or string
+	///        specifying the file path.
+	///
+	/// \param error Required. String containing the error description
+	///        or number specifying one of the predefined system error
+	///        codes.
+	///
+	/// \param buttons Required. Number specifying the type of buttons to
+	///        display.
+	///	<table>
+	///		<tr>
+	///			<th>Constant</th>
+	///			<th>Description</th>
+	///		</tr>
+	///		<tr>
+	///			<td>0</td>
+	///			<td>Display OK button only.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>1</td>
+	///			<td>Display Retry and Cancel buttons.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>2</td>
+	///			<td>Display Skip, Skip All and Cancel buttons.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>3</td>
+	///			<td>Display Retry, Skip, Skip All and Cancel buttons.</td>
+	///		</tr>
+	///	</table>
+	///
+	/// \param title Optional. String displayed in the title bar of the
+	///        dialog box.
+	///
+	/// \return
+	///	<table>
+	///		<tr>
+	///			<th>Value</th>
+	///			<th>Description</th>
+	///		</tr>
+	///		<tr>
+	///			<td>1</td>
+	///			<td>OK</td>
+	///		</tr>
+	///		<tr>
+	///			<td>2</td>
+	///			<td>Cancel</td>
+	///		</tr>
+	///		<tr>
+	///			<td>4</td>
+	///			<td>Retry</td>
+	///		</tr>
+	///		<tr>
+	///			<td>16</td>
+	///			<td>Skip</td>
+	///		</tr>
+	///		<tr>
+	///			<td>17</td>
+	///			<td>Skip All</td>
+	///		</tr>
+	///	</table>
+	[id(19)]
+	HRESULT ErrorDialog(
+		[in] VARIANT *file,
+		[in] VARIANT *error,
+		[in] int buttons,
+		[in, optional] VARIANT *title,
+		[out, retval] int *result);
+
+	/// \brief Displays dialog box with a question.
+	///
+	/// The \b QuestionDialog method displays dialog box with a question.
+	///
+	/// \param file Required. File that is subject of the question. This can be
+	///        either the \b File object obtained from the \b FileSystemObject
+	///        or the Salamander panel <a name="item">Item</a> or string
+	///        specifying the file path.
+	///
+	/// \param question Required. String specifying the question.
+	///
+	/// \param buttons Required. Number specifying the type of buttons to
+	///        display.
+	///	<table>
+	///		<tr>
+	///			<th>Constant</th>
+	///			<th>Description</th>
+	///		</tr>
+	///		<tr>
+	///			<td>4</td>
+	///			<td>Display Yes, All, Skip, Skip All and Cancel buttons.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>5</td>
+	///			<td>Display Yes, No and Cancel buttons.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>6</td>
+	///			<td>Display Yes, All and Cancel buttons.</td>
+	///		</tr>
+	///	</table>
+	///
+	/// \param title Optional. String displayed in the title bar of the
+	///        dialog box.
+	///
+	/// \return
+	///	<table>
+	///		<tr>
+	///			<th>Value</th>
+	///			<th>Description</th>
+	///		</tr>
+	///		<tr>
+	///			<td>2</td>
+	///			<td>Cancel</td>
+	///		</tr>
+	///		<tr>
+	///			<td>6</td>
+	///			<td>Yes</td>
+	///		</tr>
+	///		<tr>
+	///			<td>7</td>
+	///			<td>No</td>
+	///		</tr>
+	///		<tr>
+	///			<td>16</td>
+	///			<td>Skip</td>
+	///		</tr>
+	///		<tr>
+	///			<td>17</td>
+	///			<td>Skip All</td>
+	///		</tr>
+	///		<tr>
+	///			<td>18</td>
+	///			<td>All</td>
+	///		</tr>
+	///	</table>
+	[id(20)]
+	HRESULT QuestionDialog(
+		[in] VARIANT *file,
+		[in] BSTR question,
+		[in] int buttons,
+		[in, optional] VARIANT *title,
+		[out, retval] int *result);
+
+	/// \brief Displays file overwrite confirmation dialog box.
+	///
+	/// The \b OverwriteDialog method displays file overwrite confirmation
+	/// dialog box.
+	///
+	/// \param file1 Required. File that is supposed to overwrite the
+	///        second file. For more information see the following Remarks
+	///        section.
+	///
+	/// \param file2 Required. File that is supposed to be overwritten.
+	///        For more information see the following Remarks section.
+	///
+	/// \param buttons Required. Number specifying the type of buttons to
+	///        display.
+	///	<table>
+	///		<tr>
+	///			<th>Constant</th>
+	///			<th>Description</th>
+	///		</tr>
+	///		<tr>
+	///			<td>4</td>
+	///			<td>Display Yes, All, Skip, Skip All and Cancel buttons.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>5</td>
+	///			<td>Display Yes, No and Cancel buttons.</td>
+	///		</tr>
+	///	</table>
+	///
+	/// \return
+	///	<table>
+	///		<tr>
+	///			<th>Value</th>
+	///			<th>Description</th>
+	///		</tr>
+	///		<tr>
+	///			<td>2</td>
+	///			<td>Cancel</td>
+	///		</tr>
+	///		<tr>
+	///			<td>6</td>
+	///			<td>Yes</td>
+	///		</tr>
+	///		<tr>
+	///			<td>7</td>
+	///			<td>No</td>
+	///		</tr>
+	///		<tr>
+	///			<td>16</td>
+	///			<td>Skip</td>
+	///		</tr>
+	///		<tr>
+	///			<td>17</td>
+	///			<td>Skip All</td>
+	///		</tr>
+	///		<tr>
+	///			<td>18</td>
+	///			<td>All</td>
+	///		</tr>
+	///	</table>
+	///
+	/// \remarks The <b><i>file</i></b> parameters can be either the
+	///          \b File objects obtained from the \b FileSystemObject
+	///          or the Salamander panel <a name="item">Item</a> objects.
+	///          If you can retrieve neither of these object types
+	///          you can use multiline string in place of these parameters.
+	///          The first line of the text should specify the full file
+	///          path. The second line should specify additional information
+	///          like file size and date and time when the file was last
+	///          modified. The lines of text should be separated with the
+	///          new line (CR) character.
+	[id(21)]
+	HRESULT OverwriteDialog(
+		[in] VARIANT *file1,
+		[in] VARIANT *file2,
+		[in] int buttons,
+		[out, retval] int *result);
+
+	/// \brief Contains methods for creating user interface.
+	[id(22), propget]
+	HRESULT Forms(
+		[out, retval] ISalamanderGui **gui);
+
+	/// \brief Saves value accross script invocations.
+	///
+	/// The \b SetPersistentVal method saves value to the persistent
+	/// storage. The value is then available next time the script
+	/// is invoked and it is also accessible from different scripts.
+	///
+	/// \param key Required. String that specifies the name of the value.
+	///        The string may only contain upper and lower-case A-Z,
+	///        the numeric characters, 0-9, underscore, dot and colon.
+	///        Length of the string is limited to 255 characters.
+	///        Value names are not case sensitive.
+	///
+	/// \param val Value to be saved. Only string and integer data types
+	///        are supported. To delete a value set it to <b><i>null</i></b>.
+	///
+	/// \remarks Since the persistent values are shared among all the
+	///          scripts you should ensure to use unique name for private
+	///          values. Otherwise the name can clash with another script's
+	///          private value. By convention the private name is formed
+	///          according to the scheme <i>[script_name][dot][value_name]</i>.
+	///
+	/// \remarks To retrieve saved value the script uses the
+	///          <a name="salamander_getpersistentval">GetPersistentVal</a>
+	///          method.
+	[id(23)]
+	HRESULT SetPersistentVal(
+		[in] BSTR key,
+		[in] VARIANT *val);
+
+	/// \brief Retrieves value from the persistent storage.
+	///
+	/// The \b GetPersistentVal method retrieves value previously saved
+	/// to the persistent storage with the
+	/// <a name="salamander_setpersistentval">SetPersistentVal</a> method.
+	///
+	/// \param key Required. String that specifies the name of the value.
+	///        The string may only contain upper and lower-case A-Z,
+	///        the numeric characters, 0-9, underscore, dot and colon.
+	///        Length of the string is limited to 255 characters.
+	///        Value names are not case sensitive.
+	///
+	/// \return Returns value loaded from the persistent storage. If value
+	///         with the specified name was not found, the return value
+	///         is <b><i>null</i></b>.
+	[id(24)]
+	HRESULT GetPersistentVal(
+		[in] BSTR key,
+		[out, retval] VARIANT *val);
+
+	/// \brief Retrieves the <a name="scriptinfo">ScriptInfo</a> object
+	///        that contains information about currently running script.
+	[id(25), propget]
+	HRESULT Script(
+		[out, retval] ISalamanderScriptInfo **info);
+
+	/// \brief Converts relative or absolute path to clean absolute path. 
+	///        Clean path doesn't contain '.' or '..' parts.
+	///
+	/// \param path Required. String that specifies the relative or absolute 
+	///        path that should be converted.
+	///
+	/// \param panel Optional. <a name="panel">Panel</a> object to which
+	///        the relative path is related. You should use <b><i>SourcePanel</i></b>
+	///        when relative path should be related to the source panel or
+	///        <b><i>TargetPanel</i></b> when relative path should be related
+	///        to the target panel.	Don't specify this parameter or set it to
+	///        <b><i>null</i></b> when path should not be related to panels.
+	///        
+	/// \return Returns absolute path.
+	///        
+	/// \remarks Use exception handling to catch errors caused by invalid path.
+	[id(26)]
+	HRESULT GetFullPath(
+		[in] BSTR path,
+		[in, optional] VARIANT *panel,
+		[out, retval] BSTR *result);
+};
+
+
+/// \brief Panel Object
+///
+/// The \b Panel object represents one of the Salamander's panels.
+[
+	object,
+	uuid(F51AF265-ADB1-40b7-B2CB-A258FDE6901E),
+	dual,
+	pointer_default(unique),
+	oleautomation,
+	nonextensible
+]
+interface ISalamanderPanel : IUnknown
+{
+	/// \brief Gets or sets panel path.
+	[id(1), propput]
+	HRESULT Path(
+		[in] BSTR path);
+	
+	/// \brief Gets or sets panel path.
+	[id(1), propget]
+	HRESULT Path(
+		[out, retval] BSTR *path);
+
+	/// \brief Gets instance of the <a name="item">Item</a> object
+	///        representing the focused item.
+	[id(2), propget]
+	HRESULT FocusedItem(
+		[out, retval] ISalamanderPanelItem **item);
+
+	/// \brief Gets collection of the selected items.
+	[id(3), propget]
+	HRESULT SelectedItems(
+		[out, retval] ISalamanderPanelItemCollection **coll);
+
+	/// \brief Gets <a name="itemscollection">collection</a> of all the
+	///        items in the panel.
+	[id(4), propget]
+	HRESULT Items(
+		[out, retval] ISalamanderPanelItemCollection **coll);
+
+	/// \brief Selects all the items in the panel.
+	///
+	/// The \b SelectAll method selects all the items in the panel.
+	///
+	/// \return This method does not return a value.
+	[id(5)]
+	HRESULT SelectAll(void);
+
+	/// \brief Deselects all the items in the panel.
+	///
+	/// The \b DeselectAll method cancels the current selection
+	/// in the panel.
+	///
+	/// \param save	Optional. Boolean value determining whether
+	///        the current selection should be saved prior it is cancelled.
+	///        By default the selection is not saved.
+	///        For more information see the following Remarks section.
+	///
+	/// \return This method does not return a value.
+	///
+	/// \remarks To be consistent with other Open Salamander
+	///          operations the script should use this method to cancel
+	///          the selection after it finishes the operation in the panel.
+	///          Before deselecting the items the script should use the
+	///          <a name="panel_storeselection">StoreSelection</a> method
+	///          to save the selection so the user is allowed to use another
+	///          operation for the same files and directories.
+	///          Alternatively the script can save and cancel the selection
+	///          in one step by calling this method with the \b save parameter
+	///          set to <b><i>true</i></b>.
+	[id(6)]
+	HRESULT DeselectAll(
+		[in, optional] VARIANT *save);
+
+	/// \brief Gets type of the panel path.
+	///
+	/// \return
+	///	<table>
+	///		<tr>
+	///			<th>Constant</th>
+	///			<th>Description</th>
+	///		</tr>
+	///		<tr>
+	///			<td>1</td>
+	///			<td>The path is MS-DOS style or UNC style disk path.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>2</td>
+	///			<td>The path points to an archive.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>3</td>
+	///			<td>The path is a file system plugin path.</td>
+	///		</tr>
+	///	</table>
+	[id(7), propget]
+	HRESULT PathType(
+		[out, retval] int *type);
+
+	/// \brief Stores current selection to the selection memory.
+	///
+	/// The \b StoreSelection method saves the current selection
+	/// in the selection memory. The user can later use the
+	/// Restore Selection command to reload the selection.
+	///
+	/// \return This method does not return a value.
+	///
+	/// \remarks To be consistent with other Open Salamander
+	///          operations the script should cancel the selection
+	///          with the <a name="panel_deselectall">DeselectAll</a> method
+	///          after it finishes the operation in the panel. Before
+	///          deselecting the items the script should call this method
+	///          to save the selection so the user is allowed to use another
+	///          operation for the same files and directories.
+	[id(8)]
+	HRESULT StoreSelection(void);
+
+	/// Internal method to retrieve native panel index (PANEL_LEFT, PANEL_RIGHT).
+	[id(9), local, restricted, hidden]
+	int _GetPanelIndex();
+};
+
+
+/// \brief Item Object
+///
+/// The \b Item object represents a panel item.
+///
+/// \sa <a name="panel">Panel Object</a>
+[
+	object,
+	uuid(8CD33727-0A92-4560-80D7-1A4465120E9B),
+	dual,
+	pointer_default(unique),
+	oleautomation,
+	nonextensible
+]
+interface ISalamanderPanelItem : IUnknown
+{
+	/// \brief Gets item file name.
+	[id(DISPID_VALUE), propget]
+	HRESULT Name(
+		[out, retval] BSTR *name);
+
+	/// \brief Gets item full path.
+	[id(1), propget]
+	HRESULT Path(
+		[out, retval] BSTR *path);
+
+	/// \brief Gets size of the item, in bytes.
+	[id(2), propget]
+	HRESULT Size(
+		[out, retval] VARIANT *size);
+
+	/// \brief Gets the date and time that the specified file was
+	///        last modified.
+	[id(3), propget]
+        HRESULT DateLastModified(
+		[out, retval] DATE *date);
+
+	/// \brief Gets file attributes of the item.
+	[id(4), propget]
+	HRESULT Attributes(
+		[out, retval] int *attrs);
+};
+
+
+/// \brief Items Collection
+///
+/// Collection of <a name="item">Item</a> objects within a panel.
+[
+	object,
+	uuid(2B527FF9-DEAC-481a-9F2C-3E7B27ADCED8),
+	dual,
+	pointer_default(unique),
+	oleautomation,
+	nonextensible
+]
+interface ISalamanderPanelItemCollection : IUnknown
+{        
+	/// \brief Gets an item based on the specified key.
+	[id(DISPID_VALUE), propget]
+	HRESULT Item(
+		[in] VARIANT key,
+		[out, retval] ISalamanderPanelItem **item);
+
+	/// \brief Gets the number of items in a collection.
+	[id(1), propget]
+        HRESULT Count([out, retval] long *count);
+
+	[id(DISPID_NEWENUM), propget, restricted, hidden]
+	HRESULT _NewEnum(
+		[out, retval] IUnknown **ppenum);
+        
+};
+
+
+/// \brief ProgressDialog Object
+///
+/// The \b ProgressDialog object represents the dialog box with progress bars.
+[
+	object,
+	uuid(C51EBE57-76B2-4c8c-A44B-13E34F846F2E),
+	dual,
+	pointer_default(unique),
+	oleautomation,
+	nonextensible
+]
+interface ISalamanderProgressDialog : IUnknown
+{
+	/// \brief Shows the progress dialog.
+	[id(1)]
+	HRESULT Show(void);
+
+	/// \brief Hides the progress dialog.
+	[id(2)]
+	HRESULT Hide(void);
+
+	/// \brief Sets or gets the dialog box title.
+	[id(3), propget]
+	HRESULT Title(
+		[out, retval] BSTR *title);
+
+	[id(3), propput]
+	HRESULT Title(
+		[in] BSTR title);
+
+	/// \brief Adds line of text on the progress dialog.
+	///
+	/// The \b AddText method appends line of text to the text area of
+	/// the progress dialog.
+	///
+	/// \param text Required. String to be appended to the text area.
+	///
+	/// \return This method does not return a value.
+	[id(4)]
+	HRESULT AddText(
+		[in] BSTR text);
+
+	/// \brief Determines whether the user has cancelled the dialog.
+	[id(5), propget]
+	HRESULT IsCancelled(
+		[out, retval] VARIANT_BOOL *cancelled);
+
+	/// \brief Gets or sets position of the current step progress
+	///        indicator.
+	[id(6), propget]
+	HRESULT Position(
+		[out, retval] VARIANT *position);
+
+	[id(6), propput]
+	HRESULT Position(
+		[in] VARIANT *position);
+
+	/// \brief Gets or sets position of the overall progress indicator.
+	[id(7), propget]
+	HRESULT TotalPosition(
+		[out, retval] VARIANT *position);
+
+	[id(7), propput]
+	HRESULT TotalPosition(
+		[in] VARIANT *position);
+
+	/// \brief Advances the position by the specified increment.
+	/// 
+	/// The \b Step method advances the current position by the step 
+	/// increment
+	///
+	/// \param step The amount by which the current position should be
+	/// advanced.
+	///
+	/// \return This method does not return a value.
+	[id(8)]
+	HRESULT Step(
+		[in] int step);
+
+	/// \brief Determines whether the user can cancel the progress dialog.
+	[id(9), propget]
+	HRESULT CanCancel(
+		[out, retval] VARIANT_BOOL *enabled);
+
+	[id(9), propput]
+	HRESULT CanCancel(
+		[in] VARIANT_BOOL enabled);
+
+	/// \brief Gets or sets style of the progress dialog.
+	///
+	/// The \b Style property determines whether the dialog is single
+	/// progress bar or double progress bar dialog.
+	///
+	/// \return
+	///	<table>
+	///		<tr>
+	///			<th>Constant</th>
+	///			<th>Description</th>
+	///		</tr>
+	///		<tr>
+	///			<td>1</td>
+	///			<td>Single progress bar dialog box.</td>
+	///		</tr>
+	///		<tr>
+	///			<td>2</td>
+	///			<td>Double progress bar dialog box.</td>
+	///		</tr>
+	///	</table>
+	[id(10), propget]
+	HRESULT Style(
+		[out, retval] int *barcount);
+
+	[id(10), propput]
+	HRESULT Style(
+		[in] int barcount);
+
+	/// \brief Gets or sets maximum position of the current step progress
+	///        indicator.
+	[id(11), propget]
+	HRESULT Maximum(
+		[out, retval] VARIANT *max);
+
+	[id(11), propput]
+	HRESULT Maximum(
+		[in] VARIANT *max);
+
+	/// \brief Gets or sets maximum position of the overall progress indicator.
+	[id(12), propget]
+	HRESULT TotalMaximum(
+		[out, retval] VARIANT *max);
+
+	[id(12), propput]
+	HRESULT TotalMaximum(
+		[in] VARIANT *max);
+};
+
+
+/// \brief WaitWindow Object
+///
+/// The \b WaitWindow object represents the wait window. Wait windows are
+/// used to inform users about lengthy operations when progress of the
+/// operation cannot be determined. The <a name="progressdialog">ProgressDialog</a>
+/// object provides better alternative to inform users about progress of
+/// a lengthy operation.
+[
+	object,
+	uuid(77CD7E2F-5B62-451d-AB3D-812F8B9FCBA8),
+	dual,
+	pointer_default(unique),
+	oleautomation,
+	nonextensible
+]
+interface ISalamanderWaitWindow : IUnknown
+{
+	/// \brief Shows the wait window.
+	[id(1)]
+	HRESULT Show(void);
+
+	/// \brief Hides the wait window.
+	[id(2)]
+	HRESULT Hide(void);
+
+	/// \brief Sets or gets the wait window title.
+	[id(3), propget]
+	HRESULT Title(
+		[out, retval] BSTR *title);
+
+	[id(3), propput]
+	HRESULT Title(
+		[in] BSTR title);
+
+	/// \brief Sets or gets the text displayed inside the wait window.
+	[id(4), propget]
+	HRESULT Text(
+		[out, retval] BSTR *text);
+
+	[id(4), propput]
+	HRESULT Text(
+		[in] BSTR text);
+
+	/// \brief Determines whether the user has cancelled the dialog.
+	[id(5), propget]
+	HRESULT IsCancelled(
+		[out, retval] VARIANT_BOOL *cancelled);
+
+	/// \brief Gets or sets initial delay before the wait window is displayed.
+	[id(6), propget]
+	HRESULT Delay(
+		[out, retval] int *ms);
+
+	[id(6), propput]
+	HRESULT Delay(
+		[in] int ms);
+
+	/// \brief Determines whether the user can cancel the progress dialog.
+	[id(7), propget]
+	HRESULT CanCancel(
+		[out, retval] VARIANT_BOOL *enabled);
+
+	[id(7), propput]
+	HRESULT CanCancel(
+		[in] VARIANT_BOOL enabled);
+};
+
+
+/// \brief ScriptInfo Object
+///
+/// The \b ScriptInfo object contains information about the currently running
+/// script.
+///
+/// \sa <a name="salamander_script">Script Property</a>
+[
+	object,
+	uuid(99DBFA2F-9699-40eb-ACEE-B890908AA583),
+	dual,
+	pointer_default(unique),
+	oleautomation,
+	nonextensible
+]
+interface ISalamanderScriptInfo : IUnknown
+{
+	/// \brief Gets name of the currently running script.
+	[id(1), propget]
+	HRESULT Name(
+		[out, retval] BSTR *name);
+
+	/// \brief Gets full file path to the currently running script.
+	[id(2), propget]
+	HRESULT Path(
+		[out, retval] BSTR *path);
+};
+
+
+/// \brief Control Object
+///
+/// The \b Control object is base class for all controls.
+///
+/// \sa <a name="forms">Salamander Forms</a>
+[
+	object,
+	uuid(15711C8C-52B3-4a0b-90B0-123C8A0D525B),
+	dual,
+	pointer_default(unique),
+	oleautomation,
+	nonextensible
+]
+interface ISalamanderGuiComponent : IUnknown
+{
+	/// \brief Gets or sets the text associated with the control.
+	///
+	/// The \b Text property gets or sets the text associated with the
+	/// control.
+	///
+	/// \remarks The \b Text property of the control is used differently by
+	///          each derived class. For example the \b Text property of a
+	///          <a name="form">Form</a> is displayed in the title bar.
+	///          However, the \b Text property of a <a name="textbox">TextBox</a>
+	///          represents current text entered in the box.
+	[id(1), propget]
+	HRESULT Text(
+		[out, retval] BSTR *text);
+
+	[id(1), propput]
+	HRESULT Text(
+		[in] BSTR text);
+};
+
+
+/// Defines class (type) of the component.
+enum SALGUI_CLASS
+{
+	SALGUI_FORM	= 1,
+	SALGUI_BUTTON	= 2,
+	SALGUI_CHECKBOX = 3,
+	SALGUI_TEXTBOX	= 4,
+	SALGUI_LABEL	= 5
+};
+
+
+/// Holds location and dimension of the component.
+struct SALGUI_BOUNDS
+{
+	/// X-position of the component.
+	int x;
+	
+	/// Y-position of the component.
+	int y;
+	
+	/// Width of the component.
+	int cx;
+
+	/// Height of the component.
+	int cy;
+};
+
+
+/// Component style flags.
+enum SALGUI_STYLE
+{
+	/// The component supports autolayout and therefore
+	/// RecalcBounds will be invoked at various events.
+	SALGUI_STYLE_AUTOLAYOUT	= 1,
+
+	/// Width of the component will be extended to the parent's width.
+	SALGUI_STYLE_FULLWIDTH	= 2
+};
+
+
+/// Exposes methods and services important for inner
+/// workings of the GUI framework.
+[
+	local,
+	uuid(037905FB-A081-4a60-AE61-C848177F99E0),
+	pointer_default(unique)
+]
+interface ISalamanderGuiComponentInternal : IUnknown
+{
+	/// \return Returns name of the member within container.
+	LPCOLESTR GetMemberName();
+	
+	/// \return Returns dispatch ID of the member.
+	DISPID GetMemberId();
+	
+	/// \brief Sets member name and ID.
+	void SetMember(LPCOLESTR pszName, DISPID dispid);
+
+	/// \brief Returns next sibling.
+	/// \remarks Unlike common practice in COM, the output parameter
+	///          MUST NOT be AddRef-ed. The lifetime of the component
+	///          is controlled by the container and AddRef-ing the
+	///          component returned by this method will result in
+	///          object leak.
+	HRESULT GetSibling([out] ISalamanderGuiComponentInternal **ppComponent);
+
+	/// \brief Gets component location and size.
+	void GetBounds([out] struct SALGUI_BOUNDS *bounds);
+
+	/// \brief Sets component location and size.
+	void SetBounds(const struct SALGUI_BOUNDS *bounds);
+
+	/// \return Returns class of the component.
+	enum SALGUI_CLASS GetClass();
+
+	/// \brief Removes itself from the container.
+	void RemoveSelf();
+
+	/// \brief Unlinks component from the list of the children.
+	void RemoveComponent(ISalamanderGuiComponentInternal *pComponent);
+
+	/// \brief Adds component into the list of the children.
+	void AddComponent(ISalamanderGuiComponentInternal *pComponent);
+
+	/// \brief Sets component parent container.
+	void SetParent(ISalamanderGuiComponentInternal *pParent);
+
+	/// \brief Sets component sibling.
+	void SetSibling(ISalamanderGuiComponentInternal *pSibling);
+
+	/// \brief Creates component window.
+	HWND Create();
+
+	/// \return Returns handle to the component window.
+	HWND GetHwnd();
+
+	/// \brief Allows component to intercept window messages.
+	LRESULT OnMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+	/// \brief Allows component to transfer values to the window.
+	void TransferDataToWindow();
+
+	/// \brief Allows component to transfer values from the window.
+	void TransferDataFromWindow();
+
+	/// \brief Automatically determines the most optimal bounds.
+	void RecalcBounds(HWND hWnd, HDC hDC);
+
+	/// \brief Converts dialog units into pixels.
+	///
+	/// \param bounds On input the bounds structure contains values
+	///        in dialog units and on output the structure contains
+	///        values converted into pixels.
+	void BoundsToPixels([in, out] struct SALGUI_BOUNDS *bounds);
+
+	/// \brief Converts pixels into dialog units.
+	///
+	/// \param bounds On input the bounds structure contains values
+	///        in pixels and on output the structure contains
+	///        values converted into dialog units.
+	void PixelsToBounds([in, out] struct SALGUI_BOUNDS *bounds);
+
+	/// \brief Triggers automatic calculation of the component bounds.
+	///
+	/// \param pComponent Component whose bounds should be recalculated.
+	void AutosizeComponent(ISalamanderGuiComponentInternal *pComponent);
+
+	/// \brief Returns component style bitmask.
+	///
+	/// \return The return value is combination of one or more values from
+	///         the SALGUI_STYLE enumeration.
+	UINT GetStyle();
+};
+
+
+/// \brief CheckBox Object
+///
+/// The \b CheckBox object represents check box control.
+///
+/// \remarks Use a \b CheckBox to give the user an option, such as
+///          true/false or yes/no.
+///
+/// \sa <a name="control">Control Object</a>
+[
+	object,
+	uuid(A26789BB-CAA4-47d5-BCC5-386EF24220D4),
+	dual,
+	pointer_default(unique),
+	oleautomation
+]
+interface ISalamanderGuiCheckBox : ISalamanderGuiComponent
+{
+	/// \brief Indicates whether the check box is in the checked state.
+	[id(128), propget]
+	HRESULT Checked(
+		[out, retval] VARIANT_BOOL *val);
+
+	[id(128), propput]
+	HRESULT Checked(
+		[in] VARIANT_BOOL val);
+};
+
+
+/// \brief Button Object
+///
+/// The \b Button object represents push button control.
+///
+/// \sa <a name="control">Control Object</a>
+[
+	object,
+	uuid(F30E467C-0FEA-4e67-9F51-C2B1A2A30D4E),
+	dual,
+	pointer_default(unique),
+	oleautomation
+]
+interface ISalamanderGuiButton : ISalamanderGuiComponent
+{
+	/// \brief Specifies the return value from the Form.Execute method.
+	///
+	/// \return
+	///	<table>
+	///		<tr>
+	///			<th>Value</th>
+	///			<th>Description</th>
+	///		</tr>
+	///		<tr>
+	///			<td>1</td>
+	///			<td>OK</td>
+	///		</tr>
+	///		<tr>
+	///			<td>2</td>
+	///			<td>Cancel</td>
+	///		</tr>
+	///		<tr>
+	///			<td>3</td>
+	///			<td>Abort</td>
+	///		</tr>
+	///		<tr>
+	///			<td>4</td>
+	///			<td>Retry</td>
+	///		</tr>
+	///		<tr>
+	///			<td>5</td>
+	///			<td>Ignore</td>
+	///		</tr>
+	///		<tr>
+	///			<td>6</td>
+	///			<td>Yes</td>
+	///		</tr>
+	///		<tr>
+	///			<td>7</td>
+	///			<td>No</td>
+	///		</tr>
+	///		<tr>
+	///			<td>10</td>
+	///			<td>Try Again</td>
+	///		</tr>
+	///		<tr>
+	///			<td>11</td>
+	///			<td>Continue</td>
+	///		</tr>
+	///	</table>
+	///
+	/// \remarks If the \b DialogResult property is set to anything other
+	///          than 0, clicking the button closes the parent form. The
+	///          return value from the Form.Execute method will be the
+	///          \b DialogResult of the button when the button is clicked.
+	///          For example, to create a OK/Cancel dialog box,
+	///          simply add two buttons and set their \b DialogResult
+	///          properties to 1 and 2.
+	[id(128), propget]
+	HRESULT DialogResult(
+		[out, retval] int *val);
+
+	[id(128), propput]
+	HRESULT DialogResult(
+		[in] int val);
+};
+
+
+/// \brief Container Object
+///
+/// Base class for components that can contain child components.
+[
+	object,
+	uuid(6A31B232-B6AF-467a-B818-212CCC6F4C5D),
+	dual,
+	pointer_default(unique),
+	oleautomation
+]
+interface ISalamanderGuiContainer : ISalamanderGuiComponent
+{
+};
+
+
+/// \brief Form Object
+///
+/// The \b Form object represents a dialog box that makes up an
+/// application's user interface.
+///
+/// \sa <a name="forms">Salamander Forms</a>
+[
+	object,
+	uuid(7356DD12-A7DA-41EB-8E31-F42C465C87E1),
+	dual,
+	pointer_default(unique),
+	oleautomation
+]
+interface ISalamanderGuiForm : ISalamanderGuiContainer
+{
+	/// \brief Executes the form as a modal dialog box.
+	///
+	/// The \b Execute method executes the form as a modal dialog box.
+	///
+	/// \return Returns value of the <a name="button_dialogresult">DialogResult</a> property of the
+	///         <a name="button">Button</a> that an user pressed
+	///         to dismiss the dialog.
+	///
+	/// \sa <a name="button_dialogresult">Button.DialogResult Property</a>
+	[id(128)]
+	HRESULT Execute(
+		[out, retval] int *result);
+};
+
+
+/// \brief Salamander Forms
+///
+/// Contains methods for creating user interface.
+///
+/// \sa <a name="salamander">Salamander Object</a>
+[
+	object,
+	uuid(5DA5C3EE-E167-4E57-A8E9-22EF1C8B45C4),
+	dual,
+	pointer_default(unique),
+	oleautomation,
+	nonextensible
+]
+interface ISalamanderGui : IUnknown
+{
+	/// Creates new instance of the \b Form.
+	///
+	/// \param title Optional. String displayed in the title bar of the
+	///        dialog box.
+	[id(1)]
+	HRESULT Form(
+		[in, optional] VARIANT *title,
+		[out, retval] ISalamanderGuiComponent **component);
+
+	/// Creates new instance of the \b Button control.
+	///
+	/// \param text Optional. String displayed on the button.
+	///
+	/// \param result Optional. Result of the Form.Execute method when the
+	///        button is pressed. See <a name="button_dialogresult">DialogResult</a>
+	///        property of the \b Button control for more information.
+	[id(2)]
+	HRESULT Button(
+		[in, optional] VARIANT *text,
+		[in, optional] VARIANT *result,
+		[out, retval] ISalamanderGuiComponent **component);
+
+	/// Creates new instance of the \b CheckBox control.
+	///
+	/// \param text Optional. String displayed next to the check box.
+	[id(3)]
+	HRESULT CheckBox(
+		[in, optional] VARIANT *text,
+		[out, retval] ISalamanderGuiComponent **component);
+
+	/// Creates new instance of the \b TextBox control.
+	///
+	/// \param text Optional. Text initially displayed in the text box.
+	[id(4)]
+	HRESULT TextBox(
+		[in, optional] VARIANT *text,
+		[out, retval] ISalamanderGuiComponent **component);
+
+	/// Creates new instance of the \b Label control.
+	///
+	/// \param text Optional. String displayed on the label.
+	[id(5)]
+	HRESULT Label(
+		[in, optional] VARIANT *text,
+		[out, retval] ISalamanderGuiComponent **component);
+};
+
+
+[
+	uuid(7A30275F-F2DE-4b6c-B537-FFC397CF7CF6),
+	version(1.2)
+]
+library SalamanderLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+
+	[
+		uuid(4A871BAC-3572-4737-9110-D208BB58ACAF),
+		noncreatable
+	]
+	coclass Salamander
+	{
+		[default] interface ISalamander;
+	};
+
+	
+	[
+		uuid(76F49900-4C7D-4808-8DD3-7546CF1891DE),
+		noncreatable
+	]
+	coclass SalamanderPanel
+	{
+		[default] interface ISalamanderPanel;
+	};
+
+
+	[
+		uuid(968B2791-83A4-4198-B5A7-581CE0C8B961),
+		noncreatable
+	]
+	coclass PanelItem
+	{
+		[default] interface ISalamanderPanelItem;
+	};
+
+	
+	[
+		uuid(264D1DCA-E6B9-4a77-970E-D66AE7428E66),
+		noncreatable
+	]
+	coclass ItemCollection
+	{
+		[default] interface ISalamanderPanelItemCollection;
+	};
+
+
+	[
+		uuid(4870003D-1E6D-4c53-B561-7659B9D271C6),
+		noncreatable
+	]
+	coclass ProgressDialog
+	{
+		[default] interface ISalamanderProgressDialog;
+	};
+
+
+	[
+		uuid(B1CF10AA-00FA-4930-9E38-FEE9BB0D2978),
+		noncreatable
+	]
+	coclass WaitWindow
+	{
+		[default] interface ISalamanderWaitWindow;
+	};
+
+
+	[
+		uuid(18395B8C-C099-45f7-A8CD-433ADD8D1339),
+		noncreatable
+	]
+	coclass ScriptInfo
+	{
+		[default] interface ISalamanderScriptInfo;
+	};
+
+
+	[
+		uuid(67A0E6E0-4E9A-4fa1-846F-B58A08BB671F)
+	]
+	coclass Form
+	{
+		[default] interface ISalamanderGuiForm;
+	};
+
+	
+	[
+		uuid(578A8B4C-92E1-4581-9A7D-EE476574D856)
+	]
+	coclass Button
+	{
+		[default] interface ISalamanderGuiButton;
+	};
+
+
+	[
+		uuid(8525BEBC-3963-4782-9329-70FED124BC8F)
+	]
+	coclass CheckBox
+	{
+		[default] interface ISalamanderGuiCheckBox;
+	};
+
+	
+	[
+		uuid(45AA6FB3-7D7C-4e58-920F-1671A7FD1A2B)
+	]
+	coclass TextBox
+	{
+		[default] interface ISalamanderGuiComponent;
+	}
+
+	
+	[
+		uuid(14E99D22-2526-4fe7-AC7C-AA06D1362AFC)
+	]
+	coclass Label
+	{
+		[default] interface ISalamanderGuiComponent;
+	}
+};

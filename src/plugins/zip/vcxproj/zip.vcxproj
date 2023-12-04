@@ -1,0 +1,301 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{EBC5A947-15BF-4AED-A175-451AAB1DC084}</ProjectGuid>
+    <RootNamespace>zip</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props">
+  </Import>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props">
+  </Import>
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\x86.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_base.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_release.props">
+    </Import>
+    <Import Project="zip.props">
+    </Import>
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\x86.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_base.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_debug.props">
+    </Import>
+    <Import Project="zip.props">
+    </Import>
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\x64.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_base.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_release.props">
+    </Import>
+    <Import Project="zip.props">
+    </Import>
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\x64.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_base.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_debug.props">
+    </Import>
+    <Import Project="zip.props">
+    </Import>
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros">
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\shared\dbg.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\shared\lukas\resedit.cpp">
+    </ClCompile>
+    <ClCompile Include="..\add.cpp">
+    </ClCompile>
+    <ClCompile Include="..\add_del.cpp">
+    </ClCompile>
+    <ClCompile Include="..\bits.cpp">
+    </ClCompile>
+    <ClCompile Include="..\chicon.cpp">
+    </ClCompile>
+    <ClCompile Include="..\common.cpp">
+    </ClCompile>
+    <ClCompile Include="..\common2.cpp">
+    </ClCompile>
+    <ClCompile Include="..\const.cpp">
+    </ClCompile>
+    <ClCompile Include="..\crypt.cpp">
+    </ClCompile>
+    <ClCompile Include="..\deflate.cpp">
+    </ClCompile>
+    <ClCompile Include="..\del.cpp">
+    </ClCompile>
+    <ClCompile Include="..\dialogs.cpp">
+    </ClCompile>
+    <ClCompile Include="..\dialogs2.cpp">
+    </ClCompile>
+    <ClCompile Include="..\dialogs3.cpp">
+    </ClCompile>
+    <ClCompile Include="..\explode.cpp">
+    </ClCompile>
+    <ClCompile Include="..\extract.cpp">
+    </ClCompile>
+    <ClCompile Include="..\inflate.cpp">
+    </ClCompile>
+    <ClCompile Include="..\iosfxset.cpp">
+    </ClCompile>
+    <ClCompile Include="..\list.cpp">
+    </ClCompile>
+    <ClCompile Include="..\main.cpp">
+    </ClCompile>
+    <ClCompile Include="..\memapi.cpp">
+    </ClCompile>
+    <ClCompile Include="..\precomp.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\prevsfx.cpp">
+    </ClCompile>
+    <ClCompile Include="..\repair.cpp">
+    </ClCompile>
+    <ClCompile Include="..\trees.cpp">
+    </ClCompile>
+    <ClCompile Include="..\unbzip2.cpp">
+    </ClCompile>
+    <ClCompile Include="..\unreduce.cpp">
+    </ClCompile>
+    <ClCompile Include="..\unshrink.cpp">
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\shared\dbg.h">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\lukas\array2.h">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\lukas\resedit.h">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_arc.h">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_base.h">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_com.h">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_file.h">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_fs.h">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_gen.h">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_menu.h">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_vers.h">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_view.h">
+    </ClInclude>
+    <ClInclude Include="..\add_del.h">
+    </ClInclude>
+    <ClInclude Include="..\chicon.h">
+    </ClInclude>
+    <ClInclude Include="..\common.h">
+    </ClInclude>
+    <ClInclude Include="..\config.h">
+    </ClInclude>
+    <ClInclude Include="..\crypt.h">
+    </ClInclude>
+    <ClInclude Include="..\deflate.h">
+    </ClInclude>
+    <ClInclude Include="..\dialogs.h">
+    </ClInclude>
+    <ClInclude Include="..\explode.h">
+    </ClInclude>
+    <ClInclude Include="..\extract.h">
+    </ClInclude>
+    <ClInclude Include="..\inflate.h">
+    </ClInclude>
+    <ClInclude Include="..\iosfxset.h">
+    </ClInclude>
+    <ClInclude Include="..\list.h">
+    </ClInclude>
+    <ClInclude Include="..\main.h">
+    </ClInclude>
+    <ClInclude Include="..\memapi.h">
+    </ClInclude>
+    <ClInclude Include="..\precomp.h">
+    </ClInclude>
+    <ClInclude Include="..\prevsfx.h">
+    </ClInclude>
+    <ClInclude Include="..\repair.h">
+    </ClInclude>
+    <ClInclude Include="..\selfextr\comdefs.h">
+    </ClInclude>
+    <ClInclude Include="..\sfxmake\sfxmake.h">
+    </ClInclude>
+    <ClInclude Include="..\typecons.h">
+    </ClInclude>
+    <ClInclude Include="..\unbzip2.h">
+    </ClInclude>
+    <ClInclude Include="..\unreduce.h">
+    </ClInclude>
+    <ClInclude Include="..\unshrink.h">
+    </ClInclude>
+    <ClInclude Include="..\zipdll.h">
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\comment.ico">
+    </Image>
+    <Image Include="..\lock.ico">
+    </Image>
+    <Image Include="..\selfextr\icon.ico">
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\hand.cur">
+    </None>
+    <None Include="..\lang\lang.rh">
+    </None>
+    <None Include="..\versinfo.rh2">
+    </None>
+    <None Include="..\zip.def">
+    </None>
+    <None Include="..\zip.rc2">
+    </None>
+    <None Include="..\zip.rh">
+    </None>
+    <None Include="..\zip.rh2">
+    </None>
+    <None Include="ClassDiagram1.cd">
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\zip.rc">
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="lang_zip.vcxproj">
+      <Project>{bdd8f231-0c97-46d1-8dfc-7649741b7028}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets">
+  </Import>
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,0 +1,27 @@
+﻿//{{NO_DEPENDENCIES}}
+// Microsoft Visual C++ generated include file.
+// Used by lang.rc
+//
+#define IDD_CALCULATE                   1000
+#define IDC_LIST_FILES                  1001
+#define IDD_CONFIGURATION               1001
+#define IDC_BUTTON_CONFIGURE            1002
+#define IDC_BUTTON_SAVE                 1003
+#define IDC_BUTTON_CLOSE                1004
+#define IDC_LABEL_HINT                  1005
+#define IDC_PROGRESS                    1006
+#define IDC_LABEL                       1007
+#define IDD_VERIFY                      2000
+#define IDC_BUTTON_FOCUS                2001
+#define IDC_LABEL_RESULT                2002
+
+// Next default values for new objects
+// 
+#ifdef APSTUDIO_INVOKED
+#ifndef APSTUDIO_READONLY_SYMBOLS
+#define _APS_NEXT_RESOURCE_VALUE        8500
+#define _APS_NEXT_COMMAND_VALUE         40001
+#define _APS_NEXT_CONTROL_VALUE         8700
+#define _APS_NEXT_SYMED_VALUE           101
+#endif
+#endif

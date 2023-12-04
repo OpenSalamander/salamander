@@ -1,0 +1,101 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.06.00"/>
+    <PROJECT value="Salamand.spl"/>
+    <OBJFILES value="salamander\Salamand.obj
+      salamander\FileSystemInterface.obj salamander\FileSystem.obj
+      salamander\MenuInterface.obj salamander\SalamandInterface.obj
+      salamander\SalamandConfiguration.obj salamander\SalamandHelp.obj
+      salamander\SalamandQueue.obj salamander\SalamanderPreferences.obj
+      windows\CustomWinConfiguration.obj windows\SynchronizeController.obj
+      windows\GUIConfiguration.obj windows\GUITools.obj windows\WinInterface.obj
+      windows\Tools.obj ..\shared\dbg.obj
+      ..\shared\mhandles.obj ..\shared\winliblt.obj"/>
+    <RESFILES value="salamander\SalamanderShared.res Salamand.res"/>
+    <IDLFILES value=""/>
+    <IDLGENFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES) salamander\SalamanderPreferences.dfm"/>
+    <LIBFILES value="lib\ScpCore.lib lib\Putty.lib lib\SalamandForms.lib"/>
+    <LIBRARIES value="Moje_B5.lib ThemeManagerC6.lib rtl.lib vcl.lib
+      vclx.lib ws2_32.lib"/>
+    <SPARELIBS value="Moje_B5.lib ThemeManagerC6.lib rtl.lib vcl.lib
+      vclx.lib ws2_32.lib"/>
+    <PACKAGES value="dsnapcon.bpi dsnapcrba.bpi dss.bpi rtl.bpi vcl.bpi
+      vclx.bpi"/>
+    <PATHCPP value=".;salamander;windows;..\shared"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;salamander"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="ilink32"/>
+    <USERDEFINES value="CALLSTK_MEASURETIMES;TRACE_ENABLE;MHANDLES_ENABLE;LOCALINTERFACE;STRICT;NO_RESOURCES"/>
+    <SYSDEFINES value="NO_STRICT"/>
+    <MAINSOURCE value="Salamand.bpf"/>
+    <INCLUDEPATH value="salamander;..\shared;windows;core;forms;resource;packages\my;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="lib;salamander;windows;forms;..\shared;$(BCB)\lib;$(BCB)\lib\obj;$(BCB)\lib\psdk"/>
+    <WARNINGS value="-w8092 -w8091 -w8090 -w8089 -w8087 -wprc -wuse -wucp -wstv -wstu -wsig
+      -wpin -wnod -wnak -w-8027 -wdef -wcln -wbbf -wasm -wamp -wamb"/>
+    <OTHERFILES value=""/>
+  </MACROS>
+  <OPTIONS>
+    <IDLCFLAGS value="-I..\. -I..\shared\rsakey -I.. -I..\shared -I$(BCB)\include
+      -I$(BCB)\include\vcl -src_suffix cpp -DSTRICT -DENABLE_PROPERTYDIALOG
+      -DTRACE_ENABLE -DMHANDLES_ENABLE -D_DEBUG -boa"/>
+    <CFLAG1 value="-WD -O2 -H=$(BCB)\lib\vcl60.csm -Hc -Vx -Ve -X- -a8 -b- -k- -vi -tWD -tWM -c"/>
+    <PFLAGS value="-$Y- -$L- -$D- -$A8 -v -JPHNE -M"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-D -aa -Tpd -GD -s -Gn -Gi -M -b:0x28900000"/>
+    <OTHERFILES value=""/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0d32.obj sysinit.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mt.lib"/>
+    <OTHERFILES value=""/>
+  </LINKER>
+  <FILELIST>
+      <FILE FILENAME="Salamand.bpf" FORMNAME="" UNITNAME="Salamand" CONTAINERID="BPF" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="salamander\Salamand.cpp" FORMNAME="" UNITNAME="Salamand.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="salamander\SalamanderShared.rc" FORMNAME="" UNITNAME="SalamanderShared" CONTAINERID="RCCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="salamander\FileSystemInterface.cpp" FORMNAME="" UNITNAME="FileSystemInterface" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="salamander\FileSystem.cpp" FORMNAME="" UNITNAME="FileSystem" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="salamander\MenuInterface.cpp" FORMNAME="" UNITNAME="MenuInterface" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="salamander\SalamandInterface.cpp" FORMNAME="" UNITNAME="SalamandInterface" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="salamander\SalamandConfiguration.cpp" FORMNAME="" UNITNAME="SalamandConfiguration" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="salamander\SalamandHelp.cpp" FORMNAME="" UNITNAME="SalamandHelp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="salamander\SalamandQueue.cpp" FORMNAME="" UNITNAME="SalamandQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="salamander\SalamanderPreferences.cpp" FORMNAME="PreferencesDialog" UNITNAME="SalamanderPreferences" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="windows\CustomWinConfiguration.cpp" FORMNAME="" UNITNAME="CustomWinConfiguration" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="windows\SynchronizeController.cpp" FORMNAME="" UNITNAME="SynchronizeController" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="windows\GUIConfiguration.cpp" FORMNAME="" UNITNAME="GUIConfiguration" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="windows\GUITools.cpp" FORMNAME="" UNITNAME="GUITools" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="windows\WinInterface.cpp" FORMNAME="" UNITNAME="WinInterface" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="windows\Tools.cpp" FORMNAME="" UNITNAME="Tools" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\shared\checkkey.cpp" FORMNAME="" UNITNAME="checkkey" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\shared\dbg.cpp" FORMNAME="" UNITNAME="dbg.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\shared\mhandles.cpp" FORMNAME="" UNITNAME="mhandles.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\shared\winliblt.cpp" FORMNAME="" UNITNAME="winliblt" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="lib\ScpCore.lib" FORMNAME="" UNITNAME="ScpCore.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="lib\Putty.lib" FORMNAME="" UNITNAME="Putty.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="lib\SalamandForms.lib" FORMNAME="" UNITNAME="SalamandForms.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Salamand.res" FORMNAME="" UNITNAME="" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+  </FILELIST>
+  <BUILDTOOLS>
+  </BUILDTOOLS>
+
+  <IDEOPTIONS>
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=0
+
+[Linker]
+LibPrefix=
+LibSuffix=
+LibVersion=
+  </IDEOPTIONS>
+</PROJECT>

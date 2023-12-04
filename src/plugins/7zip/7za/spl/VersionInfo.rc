@@ -1,0 +1,3 @@
+﻿#include "../CPP/7Zip/MyVersionInfo.rc"
+
+MY_VERSION_INFO_DLL("Modified for use by Open Salamander", "7za")

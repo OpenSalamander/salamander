@@ -1,0 +1,117 @@
+- porad narazime na lidi, ktery chteji ukladat bookmarky, ale nechteji ukladat
+  konfiguraci Salama, aby si neco neopspinili (asi trochu uchylaci) ... resit
+  (dat tam tlacitko pro ulozeni jen FTP konfigu, jaka jsou rizika??? pri unloadu
+   pluginu to delame taky)
+- download/upload do "filename.part" a az po dokonceni prenosu rename na "filename"
+  (asi jen na UNIXovych serverech + kde to pujde snadno, u ostatnich nechat jak to je ted)
+
+- CPluginFSInterface::GetFullFSPath by mel nejspis vracet plnou cestu i pri pastnuti
+  jmena souboru do panelu (ted se tvrde zkousi zmena cesty, takze musi jit o adresar),
+  ted kvuli tomu nechodi focus souboru v panelu (pres paste jeho jmena do panelu)
+- moznost vybrat casovou zonu serveru (nebo aspon zadat o kolik hodin se vsechno
+  ma automaticky posouvat)
+- moznost vybrat transfer mode pro prave startovanou operaci (copy/move)???
+- komprese behem prenosu - MODE Z - zajem na foru nebyl, ale mohlo by byt celkem trivialni
+- umoznit userum konfiguraci poctu pripojeni pro operace: asi zadat pocet pro
+  kazdy typ operace zvlast a pak kdyz se operace nastartuje, zacit je postupne
+  pridavat (dokud je server nezacne odmitat)
+- Move (F6 key): mohlo by umet aspon hromadne prejmenovani na serveru: oznacim vic souboru,
+  zadam masku "*.old" a prejmenuje se to posloupnosti RNFR+RNTO
+- klavesa Enter by mela v progress dialogu v listview Operations i Connections otevirat
+  Solve Error dialogy
+- automaticke rolovani v listview Operations, aby user videl na operace, ktery se prave
+  provadeji (ted je nutne rolovat rucne), viz https://forum.altap.cz/viewtopic.php?f=2&t=3433
+- upload/download in lower/UPPER case - omrknout konkurenci
+- pri zmene bookmarku v Connect dialogu pridat potvrzeni (lidi si to meni nechtene)
+- pri reconnectech zjistovat znovu IP adresu serveru (muze byt dynamicka a zmenit se),
+  asi by stacilo jednou za 5 minut (otazka je, jestli to neni zbytecna komplikace, DNS
+  je snad lokalni sluzba, takze asi moc zdrzovat nebude)
+- pri kopirovani na FAT32 disk varovat u souboru vetsiho nez 4GB minus 2 byty, ze ho neni mozne
+  ulozit (viz testy v Salamovi: IDS_FILEISTOOBIGFORFAT32)
+- do konfigurace u problemu "if tgt file exists" pridat option "overwrite if src is newer" (chtel Tom
+  jako nahrazku synchronizace)
+- pridat moznost "select server code page": pro konverzi listingu do ANSI (ovsem musime si nechat
+  i originaly kvuli adresaci souboru na serveru): Kalashnikov Alexander <sasha@sinetic.ru>:
+  During files browsing I see unreadable symbols. Our FTP server supports only DOS code table.
+- pridat Paste do kontextoveho menu panelu (salamanderi command)
+- moznost specifikovat chovani FTP per connection pro veci jako je treba prepisovani souboru,
+  adresaru, kolize jmen, atp. Tedy to co je mozne nyni nastavit jen pro cely plugin.
+  Casto u nekterych FTP porad jen prepisuju (napr. kopirovani zdrojaku na testovaci masinu)
+  a nechci aby me 100 za den otravoval dialog na prepsani.
+- FXP: hodi se hlavne pri presunech/kopirovani dat v ramci jednoho serveru
+  (zrejme by nemuselo byt az tak slozite: pridat control-connectionu na
+  druhy server a zadat datovy prenos, datovou connectionu uz oteviraji servery
+  jen mezi sebou - takze nejsme schopny ukazat ani progres)
+- lidi chteji do "disconnect or keep connection?" dialogu pri odchodu z FTP
+  cesty checkbox "always disconnect" (ted je tam jen "always keep")
+- lidi taky nechapou, proc se to pta "disconnect or keep connection?" v situaci, kdy uz
+  byla connectiona zavrena (by server, due to inactive user): asi v teto situaci zmenit
+  dotaz na "close or keep FTP path?" a checkboxy asi nabizet take oba + zavest tomuto dotazu
+  zvlastni polozku v FTP-konfiguraci/Confirmations
+- Password Manager: pamet na hesla z bookmark ale i z quick-connectu a spojeni na
+  zaklade pastnuti URL do panelu -- mel by byt chranitelny heslem + uzamknutelny
+  (kdyz user odejde od masiny, aby se cizi osoba nedostala k jeho heslum)
+- casy na FTP nesedi o hodinu diky zmene casu letni/zimni. Doplnit korekci o cele hodiny?
+- SSL ("FTPS is simply ftp with SSL for the control channel" (viz CURL)
+  (server s SSL je GlobalSCAPE FTP Server - trial ver. viz X:\STORE))
+- udelat auto-focus polozky, kterou zpracovava vyfokusena connectiona - delat
+  to jen kdyz je user neaktivni (abych mu nescroloval behem toho, co sam neco hleda)
+- na FTP bookmarku dopsat Export, ktery vytvori soubor, ktery se da snadno
+  prenest a na druhe masine Importovat a pridat tak FTP bookmarku. Navic by
+  to melo by jit udelat pro vic vybranych bookmark najednou
+- lidi chteji i pamet na cesty v ramci kazdeho serveru (v ramci bookmarky),
+  je to naprgany ve FlashFXP
+- lidi chteji foldry v bookmarkach (kdyz jich nekdo ma stovky, neni se co divit),
+  proste silenci ;-)
+- keep-alive s data-transfer (NLST+LIST): cas pro poslani dalsiho keep-alive prikazu
+  by se mel urcovat od posledniho data-transferu a ne od posledni aktivity na serveru
+- fronta uloh FTP - svuj thread, load/save, export/import vyberu  (zprovoznit checkboxy
+  v F5/F8/F6/Ctrl+F2 dialozich)
+- prejit na bookmarkove cesty: ukladat do historie/hotpath/atd na zaklade udaju o serveru
+  z bookmark (treba ftp:///bookmarkUID/path) - resilo by pamet hesel+passive mode+list-cmd+...
+  "bookmarkUID" by se asi generovalo z usera + hosta + portu a delalo by se unikatni
+  pomoci "(cislo)" - user by si to mohl libovolne zmenit (jen zachovat unikatnost + '/' je
+  zakazany znak)
+  +co rozsirit hesla v ceste na scrambleny hesla (ftp://user:scrambledpasswd@server/path)???
+- periodicky update listingu (treba po deseti sekundach - nastavitelne) + user
+  by mel mit sanci povolit refresh pri aktivaci Salama s FTP v panelu
+- nekteri silenci chteji refresh uplne zakazat (nechat to ciste na nich, kdy si
+  stisknou Ctrl+R) - pisou o pomalem pripojeni a "nedulezitych operacich" typu
+  prejmenovani (asi vic malych operaci za sebou + prudi je cekat vzdy na refresh)
+- dodelat sloupce - razeni (nejen podle viditelnych sloupcu) + sirky u custom
+  sloupcu + zmenu viditelnosti sloupcu + volba zarovnani vlevo
+- podpora pro listingy vznikle prikazem NLST (jen jmena) - problem: jak to udelat,
+  aby to nevzalo vsechny listingy (rest-of-line bude TRUE pro vsechny listingy)
+  (asi to natvrdo ohackovat podle prikazu listovani - je-li "NLST", vubec nepouzivat
+   klasicky vyber parseru, proste to primo vrznout do panelu jako soubory)
+- pridavani/update server types:
+  -jmeno pridavaneho noveho typu serveru nekoliduje -> vlozime ho
+  -user uz novy typ serveru importoval, ale needitoval ho -> updatneme ho (prip. zmenime prioritu)
+  -user uz novy typ serveru importoval a editoval ho NEBO user pridal
+   novy typ a jmenem se trefil do nove importovaneho typu -> dotaz na skip/update/rename_existing_and_insert_new
+- raw listing v panelu ma zatim dva sloupce - Name+Listing -> predelat na
+  jeden sloupec (pridat vlastni razeni podle cisel radku a ne podle abecedy + vypnout
+  razeni podle jmena v panelu a na sloupci "Name")
+- HTTP support - staci stazeni jednoho souboru - vcetne retry je to
+  neocenitelny - WWW browsery jsou strasny sracky
+- operace bez parsnuteho listingu - manual mode - ma to vubec cenu prgat???
+
+
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+
+CRC ze serveru: XCRC (asi nepodporuje zrovna kazdy server)
+
+
+Cache entire structure (whole site): "LIST -laR"
+
+
+What I do miss at FTP is handling of file date and time. When I do
+uploads then currently I loose the original setting and the stored files
+on server will be dated with server dependent timestamps of when
+uploaded. Could you keep an eye on that point of view, please?
+
+With having an FTP Client open in both panels, will site to site
+transfer be supported without having the need to combine download with
+upload?

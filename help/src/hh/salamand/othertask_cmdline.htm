@@ -1,0 +1,101 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Working with Command Line</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Other Tasks</div>
+<div class="page">
+<h1>Working with Command Line</h1>
+
+<p>When the Command line became <a href="environment_swtcmd.htm">active</a>, you
+can type any command for the system shell, and then execute it with the Enter key.
+To insert the focused file or directory name from the panel to such command, use
+following shortcut keys:</p>
+
+<table>
+<tr>
+<th>Press</th>
+<th>To</th>
+</tr>
+<tr><td>Ctrl+Enter</td><td>Insert the name of the focused file or directory in the active panel.</td></tr>
+<tr><td>Ctrl+Shift+Enter</td><td>Insert the DOS name of the focused file or directory in the active panel.</td></tr>
+<tr><td>Ctrl+Space</td><td>Insert the full name of the current directory in the active panel.</td></tr>
+<tr><td>Ctrl+Shift+Space</td><td>Insert the DOS name of the current directory in the active panel.</td></tr>
+<tr><td>Ctrl+[</td><td>Insert the full name of the current directory in the left panel.</td></tr>
+<tr><td>Ctrl+Shift+[</td><td>Insert the DOS name of the current directory in the left panel.</td></tr>
+<tr><td>Ctrl+]</td><td>Insert the full name of the current directory in the right panel.</td></tr>
+<tr><td>Ctrl+Shift+]</td><td>Insert the DOS name of the current directory in the right panel.</td></tr>
+</table>
+
+<p>On the <a href="configuration_gener.htm">General</a> page in the Configuration
+dialog, you can choose if the system command shell window should be closed after
+execution of the command (<i>Close shell window after command execution</i>).
+If you execute the command with Alt+Enter key, this setting for the command will
+be inverted.</p>
+
+<p>The last thirty executed commands are stored in a Command line history. Use
+Ctrl+Up and Ctrl+Down keys to scroll in this history. If the Command line is
+active, and you need to switch to some other directory or execute some file in
+the panel, use Shift+Enter key or Enter key if Command line is empty (e.g. there
+is nothing to execute).</p>
+
+
+<h4>Command Line Length Limits</h4>
+<p>The maximal length of command with arguments depends on Windows version.
+Open Salamander executes commands through system command shell. It depends
+on COMSPEC environment variable, usually it is cmd.exe or command.com.
+See maximal lengths in the following table.</p>
+
+<table>
+
+<tr>
+<th>Windows Version</th><th>Maximal Length</th>
+</tr>
+
+<tr>
+ <td>Windows 2000</td>
+ <td>4096</td>
+</tr>
+
+<tr>
+ <td>Windows XP</td>
+ <td>8192</td>
+</tr>
+
+<tr>
+ <td>Windows XP x64</td>
+ <td>8156 (for COMSPEC=C:\Windows\system32\cmd.exe; longer COMSPEC, shorter limit)</td>
+</tr>
+
+<tr>
+ <td>Windows Vista</td>
+ <td>8156 (for COMSPEC=C:\Windows\system32\cmd.exe; longer COMSPEC, shorter limit)</td>
+</tr>
+
+<tr>
+ <td>Windows 7</td>
+ <td>8156 (for COMSPEC=C:\Windows\system32\cmd.exe; longer COMSPEC, shorter limit)</td>
+</tr>
+
+</table>
+
+
+<h4>See Also</h4>
+<p> 
+<a href="windows_cmdline.htm">Command Line</a><br />
+<a href="environment_swtcmd.htm">Activating Command Line</a><br />
+<a href="appendix_grouppolicy.htm">Group Policy Restrictions</a><br />
+</p>
+
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

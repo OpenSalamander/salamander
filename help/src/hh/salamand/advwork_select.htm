@@ -1,0 +1,63 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Saving and Loading Selection</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Advanced Working with Files and Directories</div>
+<div class="page">
+
+<h1>Saving and Loading Selection</h1>
+
+<p>Saving selection allows to use the selection again in the same directory or in
+a different directory. The selection is saved to a selection memory (only for use
+inside Salamander) or to the clipboard (it is saved as plain text, so you can use
+it in text editors, etc.). The saved selection can be used in both panels.</p>
+
+<p>When you want to use a previously saved selection, you can load the selection
+into the panel. The current selection in panel can be canceled or kept. If you
+want to keep it, you can add, subtract, or make intersection with the loaded
+selection.</p>
+
+<h3>To save selection:</h3>
+<table>
+<tr><td class="hdr">Menu:</td><td>Edit/Advanced/Save Selection</td></tr>
+<tr><td class="hdr">Shortcut key:</td><td>Ctrl+Shift+F5</td></tr>
+</table>
+
+<h3>To load selection:</h3>
+<table>
+<tr><td class="hdr">Menu:</td><td>Edit/Advanced/Load Selection</td></tr>
+<tr><td class="hdr">Shortcut key:</td><td>Ctrl+Shift+F6</td></tr>
+</table>
+
+<h4>Remarks</h4>
+<p>These commands are handy if you want to make a couple of operations
+(e.g. convert character set or line ends, change case of names, and
+pack to archive) on chosen subset of files and directories (each
+operation removes selection, so you need to restore selection before
+next operation, see also Restore Selection in
+<a href="basicwork_select.htm">Selecting Files and Directories</a>).
+You can use these commands also when you compare
+two directories and need to select same files and directories in
+both panels (e.g. to compare their total sizes or to see if they all
+exist in both panels - if not, numbers of selected items in panels
+will be different).</p>
+
+<h4>See Also</h4>
+<p>
+<a href="dlgboxes_savesel.htm">Save Selection dialog box</a><br/>
+<a href="dlgboxes_loadsel.htm">Load Selection dialog box</a><br/>
+<a href="basicwork_select.htm">Selecting Files and Directories</a><br/>
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

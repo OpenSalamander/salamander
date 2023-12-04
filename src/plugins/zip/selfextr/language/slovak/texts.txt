@@ -1,0 +1,13 @@
+1B
+
+"SamorozbalovacÌ ZIP archiv"
+
+"Tento program rozbalÌ ZIP archiv."
+
+"Verzia 1.40"
+
+"&Rozbaliù"
+
+"Self-Extractor © 2000-2023 Open Salamander Authors"
+
+"https://www.altap.cz"

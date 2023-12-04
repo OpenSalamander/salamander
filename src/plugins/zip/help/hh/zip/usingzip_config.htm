@@ -1,0 +1,95 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>ZIP Configuration</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: ZIP: Using ZIP Plugin</div>
+<div class="page">
+<h1>ZIP Configuration</h1>
+
+<p>Here you can set general options for the ZIP plugin. Configuration is accessible either
+from Open Salamander Plugins Manager dialog (menu Plugins/Plugins Manager) or
+from the <a href="usingzip_packdlg.htm">Create New Archive</a> dialog.
+See <a href="ms-its:salamand.chm::/hh/salamand/plugins_config.htm">Configuring Plugins</a>
+for general information on configuration.</p>
+
+<h4>Options</h4>
+
+<dl>
+<dt><i>Automatically expand multi-volume archives stored on fixed disk</i></dt>
+<dd>Automatically find the last archive volume file (it contains information about files
+in the archive) and don't prompt user for locating of last archive. When last archive is
+found it lists or unpacks it without prompting for other archive volumes. This option
+applies only for multi-volume archives stored in fixed disks not for archives on
+removable media (e.g. floppy disk, CD-ROM).</dd>
+
+<dt><i>Use temporary copy of archive for its modifications</i></dt>
+<dd>For any action which changes ZIP archive (like packing or deleting files) ZIP plugin
+creates at first a backup copy of the archive and proceed the desired action on the
+backup copy. When the action is successfully finished original archive is replaced by
+the updated archive. In case of error the original is left unchanged. On the other hand
+there is a little slowdown through the backuping operation. It's strongly recommended
+to let ZIP keep backup copies while modifying archives.</dd>
+
+<dt><i>Don't store empty directories in ZIP archive</i></dt>
+<dd>Ignores empty directories when packing. This option doesn't
+affect empty directories already stored in the archive.</dd>
+
+<dt><i>Set archive time to the newest file time when modifying archive</i></dt>
+<dd>After any action which modifies an archive (files packing or deleting) ZIP plugin
+sets the archive file time to the time of the newest file in the archive. This option
+can be useful e.g. for backuping purposes.</dd>
+
+<dt><i>Use WinZip compatible file names for multi-volume archives</i></dt>
+<dd>Names of multi-volume archive parts are created using WinZip name
+conventions except for self-extracting archives. These are created using
+Open Salamander naming conventions.</dd>
+
+<dt><i>Compression level</i></dt>
+<dd>Specify how much the files should be compressed. Level value <i>0</i> means store -
+no compression. Level <i>9</i> is the best possible (and slowest) compression which
+could be achieved with current ZIP compression algorithm (deflate).</dd>
+
+<dt><i>Default self-extractor language</i></dt>
+<dd>The default language of self-extracting archive. If you have invoked the ZIP Configuration
+dialog from the Create New Archive dialog, the change of the default language will not affect
+the current pack operation (use <i>Advanced</i> button from the Create New Archive dialog to change
+the language for the current pack operation).</dd>
+
+<dt><i>When SFX language changes</i></dt>
+<dd>You can specify your own texts for main window of self-extracting archive and 
+optional message box which is displayed before main window (see
+<a href="sfxset_texts.htm">Self-Extractor Texts</a> dialog). Choose here what action
+should be taken when you are using such own texts and when you change language for
+self-extracting archive. Options are: <i>Always ask before changing texts</i>,
+<i>Automatically replace texts with their default values</i>, or
+<i>Don't ask and leave always texts unchanged</i>.
+</dd>
+
+<dt><i>Display dialog with extended options before packing</i></dt>
+<dd>Displays the Create New Archive/Add File to Archive dialog before each pack operation to ZIP archives.
+This lets you specify many options for packing ZIP archives which ZIP plugin offers you
+(like archive spanning, self-extracting archives or encryption).</dd>
+
+<dt><i>Show column Packed when listing archive</i></dt>
+<dd>Controls whether an extra column <i>Packed</i> with compressed size of the respective file should be added
+to the panel listing the archive in <a href="ms-its:salamand.chm::/hh/salamand/environment_selview.htm"><i>Detailed mode</i></a>
+or <a href="ms-its:salamand.chm::/hh/salamand/environment_selview.htm"><i>Types mode</i></a>.
+</dd>
+
+</dl>
+
+<h4>See Also</h4>
+<p><a href="usingzip_packdlg.htm">Create New Archive and Add Files to Archive Dialogs</a></p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

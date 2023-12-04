@@ -1,0 +1,229 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Solve Error dialog box</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: FTP Client: Dialog Boxes</div>
+<div class="page">
+<h1>Solve Error Dialog Boxes</h1>
+
+<p>Use these dialog boxes to solve errors in operations, to answer confirmations and
+user prompts in operations, and to retry skipped operations. You can see the list of
+Solve Error dialog boxes in Remarks section. Dialogs are opened from the
+<a href="dlgboxes_operationdlg.htm">Operation dialog box</a> (see <i>Operations: Show
+only errors, Solve Error, Retry, Skip</i> options for details).
+</p>
+
+<h4>Options</h4>
+
+<dl>
+<dt><i>Details, Error description</i></dt>
+<dd>Contains additional information to help you better understand the problem.
+It may be for example a system error message description or an error reply
+received from the FTP server.
+</dd>
+
+<dt><i>Path, Name</i></dt>
+<dd>Specifies the file or directory which is a subject of the operation.
+</dd>
+
+<dt><i>Source path, Source Name</i></dt>
+<dd>Specifies the source file or directory.
+</dd>
+
+<dt><i>Target path, Target name</i></dt>
+<dd>Specifies the target file or directory. Often you can change the target name.
+If you rename target file or directory this way, use the Retry button to
+retry the operation with the new target name.
+</dd>
+
+<dt><i>Current attributes</i></dt>
+<dd>Displays the current access rights (attributes) of the file or directory which is
+a subject of the operation.
+</dd>
+
+<dt><i>New attributes</i></dt>
+<dd>Displays the suggested (new) access rights (attributes) for the file or directory which is
+a subject of the operation.
+</dd>
+
+<dt><i>Remember choice and do not show this dialog again for operations with the same error</i></dt>
+<dd>All operations with the same error (or the same confirmation or user prompt) in the
+current <a href="dlgboxes_operationdlg.htm">Operation dialog box</a> will be solved
+automatically in the same way as this operation (e.g. if this operation is skipped, all
+others will be skipped too).
+Note: this applies to all operations already in the same error state and also to all operations
+which will get to the same error state in the future.
+</dd>
+
+<dt><i>Apply to operations with the same error now</i></dt>
+<dd>All operations already in the same error state (or with the same confirmation or user prompt)
+in the current <a href="dlgboxes_operationdlg.htm">Operation dialog box</a> will be solved
+in the same way as this operation (e.g. if this operation is skipped, all others will be
+skipped too). Note: it does not apply to operations which will get to the same error state
+in the future.
+</dd>
+
+<dt><b>Buttons / Commands</b> (commands are in drop-down menu on the default button)</dt>
+
+<dt><i>Retry</i></dt>
+<dd>Use this button to process the operation again. You can use it if you think that
+this time the operation will succeed (e.g. you have removed some file in the way)
+or if you need to rename target file or directory (you must change its name in the
+Target Name edit box first).
+</dd>
+
+<dt><i>Skip</i></dt>
+<dd>Use this button to skip the operation.
+</dd>
+
+<dt><i>Cancel</i></dt>
+<dd>Use this button to close this dialog box (you can solve this error later). If you
+want to cancel whole operation, use the Cancel button in the
+<a href="dlgboxes_operationdlg.htm">Operation dialog box</a>. If you want to skip this
+operation, use the Skip button.
+</dd>
+
+<dt><i>Use Existing Directory</i></dt>
+<dd>Use this command to copy/move to existing target directory. See <i>If target directory
+already exists</i> options in <a href="config_operation1.htm">Configuration/Operations 1</a> and
+<a href="config_operation2.htm">Configuration/Operations 2</a> for details.
+</dd>
+
+<dt><i>Use Alternate Name</i></dt>
+<dd>This command finds some alternate target name (which is not existing) and copies/moves
+file or directory to this name.
+</dd>
+
+<dt><i>Resume</i></dt>
+<dd>Use this command to resume copying or moving of a file. It is useful when copying
+or moving was broken (e.g. when connection to the FTP server is lost) and you want to
+continue in copying or moving at the point where it was broken (instead of copying or
+moving whole file again). It can save a lot of time.
+</dd>
+
+<dt><i>Overwrite</i></dt>
+<dd>Use this button to overwrite the existing target file.
+</dd>
+
+<dt><i>Overwrite All</i></dt>
+<dd>Use this button to overwrite the existing target file. Moreover it selects the
+<i>Remember choice and do not show this dialog again for operations with the same error</i>
+option (see its description above).
+</dd>
+
+<dt><i>Resume or Overwrite</i></dt>
+<dd>This command tries to resume copying or moving of a file (see <i>Resume</i> above
+for details) and if it is not possible (e.g. the FTP server does not support it), it
+overwrites the existing target file (it copies or moves whole file again).
+</dd>
+
+<dt><i>Ignore</i></dt>
+<dd>Use this button to ignore the warning (e.g. that some of existing attributes cannot
+be preserved) and continue in processing of the operation.
+</dd>
+
+<dt><i>Set New Attributes</i></dt>
+<dd>Use this command to open the <a href="dlgboxes_setnewattrs.htm">Set New Attributes
+dialog box</a> where you can set new access rights (attributes) for the file or directory.
+</dd>
+
+<dt><i>Delete</i></dt>
+<dd>Use this button to confirm delete operation (e.g. allow deleting of hidden file).
+</dd>
+
+<dt><i>Mark as Deleted</i></dt>
+<dd>Use this command when deleting a file or directory and this file or directory
+has been already deleted (e.g. by other user or from other FTP client). The operation
+will be marked as finished.
+</dd>
+
+<dt><i>Reduce File Size And Try to Resume Again</i></dt>
+<dd>This command reduces file size (it cuts off the end of the file) and tries to resume
+copying or moving of the file again. The file is reduced by the number of verified
+bytes. See <i>Number of bytes to verify (at end of file) when resuming copying from server</i>
+in <a href="config_advanced.htm">Configuration/Advanced</a>.
+</dd>
+
+<dt><i>Mark File As Successfully Uploaded</i></dt>
+<dd>In some rare cases, it is not possible to test if the file was completely (successfully)
+uploaded (copied to the FTP server). You can test the file manually on the FTP server
+(or copy it back to this machine and then test it). Then use this command to
+mark file as successfully uploaded (e.g. when you are moving the file, the source file
+will be deleted only after your confirmation).
+
+<p>Note: this can happen only if the FTP client sends a whole file over a data connection
+to the FTP server and the FTP server does not confirm receiving of the file and the FTP client
+is not able to test target file size (if ASCII transfer mode is used, or if file size in bytes
+is not supported on the FTP server).
+</p>
+</dd>
+
+<dt><i>Use Binary Mode</i></dt>
+<dd>When you copy or move a file with binary content (the file type is detected from the first 10 KB
+of the file) using ASCII transfer mode, the possible conversion of end of line characters will
+probably corrupt the file. When this problem is detected, use this button to copy or move the file
+again but using the Binary transfer mode.
+</dd>
+
+</dl>
+
+
+<h4>Remarks</h4>
+
+<p>The list of Solve Error dialog boxes: 
+ASCII Transfer Mode is Set for File with Binary Content,
+Some of Existing Attributes Cannot be Preserved,
+Insufficient System Resources to Complete Operation,
+Error Creating Target Directory with Alternate Name,
+Error Creating Target Directory with Alternate Name,
+Error Creating Target Directory,
+Target Directory Already Exists,
+Error Creating Target File,
+Target File Already Exists,
+Transfer Has Failed,
+Target Directory or Link to Directory Already Exists,
+Error Creating Target File with Alternate Name,
+Confirm Deleting of Hidden Directory,
+Confirm Deleting of Hidden File,
+Confirm Deleting of Non-Empty Directory,
+Error Changing Working Path On Server,
+Error Getting Working Path On Server,
+Error Reading List of Files and Directories from Server,
+Error Preparing Active Data Connection,
+Error Resolving Link,
+Error Changing Attributes,
+Error Deleting File or Link,
+Error Deleting Directory,
+Error Listing Target Path,
+Error Reading List of Files and Directories from Disk,
+Error Opening Source File,
+Error Reading Source File,
+Error Parsing Listing of Files and Directories from Server,
+Target File Is Locked By Another Operation,
+Source File Is Locked By Another Operation,
+Error Resuming File,
+Error Reading Target File,
+Error Writing Target File,
+Error Retrieving File from Server,
+Error Deleting Source File After Successful Transfer,
+Error Storing File to Server, and
+Error Testing File.</p>
+
+
+<h4>See Also</h4>
+<p>
+<a href="dlgboxes_operationdlg.htm">Operation dialog box</a><br/>
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

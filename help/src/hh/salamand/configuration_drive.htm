@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Drives configuration</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Dialog Boxes: Configuration</div>
+<div class="page">
+<h1>Drives</h1>
+    
+<p>Specifies how Open Salamander reads icons and catches refresh events.</p>
+
+<h4>Dialog Box Options</h4>
+<dl>
+<dt><i>Use automatic refresh</i></dt>
+<dd>When checked, refresh of panel depends on change notifications from Windows.
+Otherwise refreshing of panel will be forced after each panel operation and
+main window activation (when you return from other application).
+Monitoring of change notifications is overall better option.</dd>
+
+<dt><i>Use simple icons</i></dt>
+<dd>When checked, only the simple symbols instead of default icons provided by
+the system will be shown in the panels. This is useful for slow-speed media
+such as floppy disks, where obtaining default icons can slow down browsing.</dd>
+
+<dt><i>Network drives: Use automatic refresh</i></dt>
+<dd>When checked, panels are refreshed when they receive change notifications
+from Windows (you will see all changes on network drive made from other computer).
+But always they are also refreshed after each panel operation and main window activation
+(this can be suppressed, see next option). This is because some network drives
+(e.g. Samba on Linux, unfortunately it's not possible to distinguish it from common
+Windows network drive) do not send change notifications properly, so panel contents
+were not updated properly.
+</dd>
+
+<dt><i>Network drives: Do not refresh on activation of Salamander</i></dt>
+<dd>When checked, network drives are not refreshed on main window activation
+(when you return from other application). On some network drives (e.g. Samba
+on Linux) you will have to refresh panel content manually if you turn on this
+option.</dd>
+
+<dt><i>If path in panel is inaccessible, go to</i></dt>
+<dd>Specify the path where to go if path in panel becomes inaccessible (you
+remove medium from CD/DVD drive, the network is not available, USB stick is
+unplugged, etc.).</dd>
+
+</dl>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

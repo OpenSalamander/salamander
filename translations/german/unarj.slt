@@ -1,0 +1,88 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\german\unarj.atp"
+TEXTVERSION,"1.21 (x86)"
+VERSION,"1,2,1,180"
+
+[TRANSLATION]
+LANGID,1031
+AUTHOR,"Dirk Bornhütter, Thomas Kelso, Thomas Pagels, Thomas Wölk, Marko Meister und Mick Weiss"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7334"
+COMMENT,"Deutsche Version"
+
+[DIALOG 100]
+199,110,1,"Nächstes Teilarchiv"
+300,12,9,175,32,1,"Legen Sie bitte den Datenträger mit dem nächsten Teilarchiv ein oder wählen Sie die passende Datei.\n\nDrücken Sie 'OK', wenn Sie bereit sind."
+301,12,48,60,8,1,"Vorheriger Teil:"
+103,73,48,114,12,1,""
+302,12,62,49,8,1,"&Nächster Teil:"
+101,12,72,160,12,1,""
+102,175,72,13,12,1,"..."
+1,43,91,50,14,1,"OK"
+2,106,91,50,14,1,"Abbrechen"
+
+[DIALOG 103]
+350,85,1,"Fehler"
+300,4,10,26,8,1,"Name:"
+104,34,10,309,8,1,""
+301,4,23,26,8,1,"Fehler:"
+302,34,23,309,16,1,"Die Datei kann nicht entpackt werden, da es sich um die Fortsetzung eines vorangehenden Teilarchivs handelt. Beginnen Sie mit dem ersten Teilarchiv, um die Datei zu entpacken."
+105,34,44,183,12,1,"&Diesen Hinweis in Zukunft nicht mehr anzeigen."
+1,120,63,50,14,1,"OK"
+2,180,63,50,14,1,"Abbrechen"
+
+[DIALOG 106]
+232,85,1,"UnARJ - Konfiguration"
+300,23,22,202,8,1,"von einem vorangegangenen Teilarchiv fortgesetzt werden."
+107,12,10,199,12,1,"Beim Entpacken &Dateien automatisch überspringen, die"
+301,23,44,146,8,1,"Archivinhalt nicht aufgelistet werden kann."
+116,12,32,189,12,1,"Keinen &Warnhinweis zeigen, wenn der gesamte"
+302,6,60,220,1,1,""
+1,63,66,50,14,1,"OK"
+2,118,66,50,14,1,"Abbrechen"
+
+[DIALOG 115]
+213,107,1,"UnARJ - Achtung"
+300,11,10,194,24,1,"Es können nicht alle Dateien des mehrteiligen Archivs aufgelistet (und im Dateifenster gezeigt) werden, da einige Teilarchive nicht gefunden wurden."
+301,11,41,192,16,1,"Um den gesamten Archivinhalt aufzulisten, kopieren Sie bitte alle Teilarchive in dasselbe Verzeichnis."
+105,11,66,171,12,1,"&Diesen Hinweis in Zukunft nicht mehr anzeigen"
+302,5,83,203,1,1,""
+1,153,89,50,14,1,"OK"
+
+[STRINGTABLE 0]
+1000,1,"UnARJ"
+1001,1,"Nicht genügend Speicher."
+1002,1,"Unerwartetes Ende der Archivdatei."
+1005,1,"Archiv ist beschädigt."
+1006,1,"Datei hat ein unbekanntes Format oder ist kein gültiges ARJ-Archiv."
+1007,1,"Öffnen der Archivdatei nicht möglich."
+
+[STRINGTABLE 1]
+1008,1,"Unbekannter Fehler aufgetreten."
+1010,1,"Zugriff auf Archivdatei nicht möglich."
+1011,1,"ARJ-Archivdateien (*.A*)"
+1012,1,"Wählen Sie die Archivdatei"
+1013,1,"Fehler in den komprimierten Daten. CRC stimmt nicht überein."
+1014,1,"Kann den Archiveintrag nicht zur Dateiliste hinzufügen."
+1015,1,"Entpacke ARJ-Archiv - %s"
+1016,1,"Daten werden vorbereitet und Verzeichnisse erstellt..."
+1017,1,"Entpacke..."
+1018,1,"Entpacke: "
+1019,1,"Kann den Dateizeiger nicht ermitteln: "
+1020,1,"Kann nicht in die Datei schreiben:"
+1021,1,"Kann den Dateizeiger nicht setzen: "
+1022,1,"Kann den Vorgang nicht beenden da der Pfadname zu lang ist."
+1023,1,"Kann den Vorgang nicht beenden da die Maske zu lang ist."
+
+[STRINGTABLE 2]
+1024,1,"Unbekannte Version einer komprimierten Datei."
+1025,1,"Unbekannter Typ einer komprimierten Datei."
+1026,1,"Datei ist mit einer Methode komprimiert, die vom UnARJ-Plugin nicht unterstützt wird."
+1027,1,"Verschlüsselte Dateien werden nicht unterstützt."
+1028,1,"Ungültiges Teilarchiv oder unbekannte Archivstruktur."
+1029,1,"Das Plugin ist abgelaufen. Bitte überprüfen Sie auf unserer Webseite, ob eine neuere Version vorhanden ist."
+1030,1,"Datei nicht gefunden."
+1031,1,"Fehler"
+1032,1,"Alle Dateien (*.*)"
+1033,1,"Durchsucht und entpackt ARJ-Archive."
+1034,1,"Über Plugin"
+

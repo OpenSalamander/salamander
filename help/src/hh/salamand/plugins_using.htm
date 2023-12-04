@@ -1,0 +1,97 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Using Plugins</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Using Plugins</div>
+<div class="page">
+<h1>Using Plugins</h1>
+
+<p>Every plugin consists of one or more plugin functions. We have following plugin
+functions: file viewer, archiver, menu extension, thumbnail loader, and file system.
+You can see the list of supported functions in the plugin in the
+<a href="dlgboxes_plugn.htm">Plugins Manager dialog box</a>. See how
+to use different plugin functions in following sections.</p>
+
+<p>Each plugin has its own help which is available in Plugins section of this
+help (see Contents tab). You can find there details on purpose, using, configuring,
+and keyboard shortcuts of all plugins.</p>
+
+<h4>File Viewer</h4>
+<p>This function adds an ability to display content of a file.</p>
+
+<p>See <a href="basicwork_view.htm">Viewing File</a> for details about using viewers.</p>
+
+<p>Every plugin with the file viewer function adds its file type associations into
+<a href="configuration_vwers.htm">Viewers configuration</a>, you can find there
+what file types are supported.</p>
+
+<h4>Archiver</h4>
+<p><a href="glossary_a.htm">Archiver</a> function includes packing, listing, unpacking,
+and deleting from <a href="glossary_a.htm">archive files</a>.</p>
+
+<p>See <a href="basicwork_openarchive.htm">Opening Archive Files</a>,
+<a href="basicwork_pack.htm">Packing Files and Directories</a>, and
+<a href="basicwork_unpack.htm">Unpacking Archive File</a> for details about using
+archivers.</p>
+
+<p>Some plugins support only unpacking - in such cases you can
+install additional archiver software and use it as external archiver (see 
+<a href="configuration_locat.htm">External Archivers Locations configuration</a>
+for supported types of archivers).</p>
+
+<p>Every plugin with the archiver function adds its archive file type associations into
+<a href="configuration_assoc.htm">Archives Associations in Panels configuration</a>,
+<a href="configuration_packr.htm">Packers in Pack Dialog Box configuration</a>, and
+<a href="configuration_unpck.htm">Unpackers in Unpack Dialog Box configuration</a>,
+you can find there what archive file types are supported.</p>
+
+<h4>Menu Extension</h4>
+<p>Plugin with this function adds commands to the Plugins menu. To separate commands
+added by different plugins Salamander creates submenu with the name of plugin
+for each such plugin.</p>
+
+<p>To make repeated use of plugin menu command easier we have added the
+Last Command (the Ctrl+I key) item to the Plugins menu (just below Plugins Manager).
+This item always changes to the last used plugin menu command.
+</p>
+
+<p>You can assign keyboard shortcut to any plugin menu command, see the
+<i>Keyboard</i> button in the <a href="dlgboxes_plugn.htm">Plugins Manager dialog box</a>.
+</p>
+
+<h4>Thumbnail Loader</h4>
+<p>When you use Thumbnails view mode in panel (see <a href="environment_selview.htm">Selecting Current View</a>),
+you can see thumbnail (small picture, preview) for each displayed file. Plugin
+with thumbnail loader function can supply thumbnails for many types of files, see
+the line <i>Thumbnails</i> in the <a href="dlgboxes_plugn.htm">Plugins Manager dialog box</a>.
+</p>
+
+<h4>File System</h4>
+<p>This function makes possible to communicate with various servers, services, and
+devices (e.g. FTP servers, SCP servers, Windows Registry, and Windows Mobile devices)
+as if they were local file systems. It means you can use e.g. the
+<a href="basicwork_copy.htm">Copy</a> command for downloading files from and
+uploading files to FTP/SCP servers, the <a href="basicwork_view.htm">View</a> command
+for viewing files from FTP/SCP servers, etc.</p>
+
+<p>See <a href="basicwork_openfs.htm">Opening Plugin File Systems</a> for
+details about using plugin file systems.</p>
+
+<h4>See Also</h4>
+<p>
+<a href="plugins_manage.htm">Managing Plugins</a><br />
+<a href="plugins_config.htm">Configuring Plugins</a>
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

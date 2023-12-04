@@ -1,0 +1,358 @@
+﻿// Microsoft Visual C++ generated resource script.
+//
+#pragma code_page(65001)
+
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winresrc.h"
+#include "sfx7zip.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_MAIN                ICON                    "setup.ico"
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Czech resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CSY)
+LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_PROGRESS DIALOGEX 61, 48, 194, 53
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION
+CAPTION "Rozbalování souborů"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Storno",IDCANCEL,72,33,50,14
+    LTEXT           "Rozbaluje se:",-1,8,66,50,9
+    LTEXT           "Do adresáře:",-1,8,80,50,9
+    LTEXT           "",IDC_FILE,62,66,130,9
+    LTEXT           "",IDC_DIR,62,80,130,9
+    CONTROL         "",IDC_PROGRESS,"msctls_progress32",WS_BORDER,5,8,184,15
+    CTEXT           "",IDC_STATUS,5,22,183,8,NOT WS_VISIBLE | NOT WS_GROUP
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winresrc.h""\r\n"
+    "#include ""sfx7zip.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)\r\n"
+    "LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL\r\n"
+    "#include ""resource.rc2""   // non-Microsoft Visual C++ edited resources\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    ARC_TITLE               "Samočinně rozbalovací archiv"
+    ARC_HELP                "Použití: install [/?] [/t tmp_path] [/x parametry]\n\n[x] znamená, že parametr x není povinný.\n\n/? -- Zobrazí tuto zprávu.\n/t -- Určí cestu pro tento samorozbalitelný archiv.\n/x -- Zbylé paramtery budou předány programu Setup.exe."
+    ERROR_TITLE             "Chyba při rozbalování archivu"
+END
+
+STRINGTABLE 
+BEGIN
+    ERROR_INFOPEN           "Chyba při otevírání archivního souboru: "
+    ERROR_INFREAD           "Chyba při čtení archivního souboru: "
+    ERROR_INFSEEK           "Chyba při pohybu po archivním souboru: "
+    ERROR_OUTFOPEN          "Chyba při otevírání souboru: "
+    ERROR_OUTFWRITE         "Chyba při zápisu do souboru: "
+    ERROR_OUTFCLOSE         "Chyba při zavírání souboru: "
+    ERROR_OUTMKDIR          "Chyba při vytváření adresáře: "
+    ERROR_OUTTIME           "Chyba při nastavování času souboru:"
+    ERROR_MEMORY            "Nedostatek paměti."
+    ERROR_TEMPPATH          "Nelze získat cestu k dočasným souborům: "
+    ERROR_TEMPNAME          "Nelze získat název dočasného soubotu: "
+    ERROR_DELFILE           "Nelze odstranit dočasný soubor: "
+END
+
+STRINGTABLE 
+BEGIN
+    ERROR_MKDIR             "Nelze vytvořit dočasný adresář: "
+    ERROR_TCREATE           "Nelze vytvořit nové vlákno: "
+    ERROR_DLGCREATE         "Nelze vytvořit dialog: "
+    ERROR_ERRWAIT           "Nelze čekat na ukončení vlákna: "
+    ERROR_EXITCODE          "Nelze získat návratový kód vlákna: "
+    ERROR_CREATEPROC        "Nelze spustit externí program: "
+    ERROR_X64               "64-bitovou verzi programu Open Salamander nelze nainstalovat na 32-bitovou verzi Windows.\n\nStáhněte si prosím 32-bitovou verzi programu Open Salamander."
+    ARC_INEOF               "Archiv je porušen, předčasné ukončení souboru."
+    ARC_FORMAT              "Neznámý formát archivu."
+    ARC_NUMFOLDERS          "V archivu je nepodporovaný počet složek."
+    ARC_NOFILES             "V archivu nejsou žádné soubory."
+    ARC_VERSION             "Nepodporovaná verze archivu."
+    ARC_UNSUPP              "Archiv obsahuje nepodporované vlastnosti."
+    ARC_METHOD              "Použita nepodporovaná kompresní metoda."
+    ARC_BADDATA             "Chyba v kompresených datech, archiv je porušen."
+END
+
+STRINGTABLE 
+BEGIN
+    ARC_DISKFULL            "Cílový disk je plný. Uvolněte prosím další místo nebo přesměrujte rozbalování\nna jiný disk použitím paramteru (použijte ""/?"" pro nápovědu)."
+    ARC_NOEXESIG            "Nebyla nalezena EXE signatura."
+    ARC_NOPESIG             "Nebyla nalezena PE signatura."
+END
+
+STRINGTABLE 
+BEGIN
+    ARC_BADPARAMS           "Chybné parametry příkazové řádky, použijte paramter ""/?"" pro nápovědu."
+    IDS_CREATEDIRFAILED     "Nelze vytvořit nový adresář:\n%s"
+    IDS_STATUS_STARTSETUP   "Spouští se instalace..."
+    IDS_STATUS_STARTNOTEPAD "Spouští se Notepad s ctime souborem..."
+    IDS_STATUS_STARTSALAM   "Spouští se Open Salamander..."
+END
+
+#endif    // Czech resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// German (Neutral) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
+LANGUAGE LANG_GERMAN, SUBLANG_NEUTRAL
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_PROGRESS DIALOGEX 61, 48, 194, 53
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION
+CAPTION "Entpacke"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Abbrechen",IDCANCEL,72,33,50,14
+    LTEXT           "Entpacke Datei:",-1,8,66,53,9
+    LTEXT           "Nach Verzeicnis:",-1,8,80,54,9
+    LTEXT           "",IDC_FILE,64,66,128,9
+    LTEXT           "",IDC_DIR,64,80,128,9
+    CONTROL         "",IDC_PROGRESS,"msctls_progress32",WS_BORDER,5,8,184,15
+    CTEXT           "",IDC_STATUS,5,22,183,8,NOT WS_VISIBLE | NOT WS_GROUP
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    ARC_TITLE               "Selbst-Entpackendes Archiv"
+    ARC_HELP                "Verwendung: Installer [/?] [/t Tmp_Pfad] [/x Parameter]\n\n[x] bedeutet, dass der Parameter x optional ist.\n\n/? -- Generiert diesen Nutzungshinweis.\n/t -- Gibt ein temporäres Verzeichnis für den Self-Extractor an.\n/x -- Restliche Parameter werden dem ausgeführten Installer übergeben."
+    ERROR_TITLE             "Fehler beim Entpacken des Archivs"
+END
+
+STRINGTABLE 
+BEGIN
+    ERROR_INFOPEN           "Fehler beim Öffnen der Archivdatei: "
+    ERROR_INFREAD           "Fehler beim Lesen der Archivdatei: "
+    ERROR_INFSEEK           "Fehler beim Suchen der Archivdatei: "
+    ERROR_OUTFOPEN          "Fehler beim Öffnen der Datei: "
+    ERROR_OUTFWRITE         "Fehler beim Schreiben der Datei: "
+    ERROR_OUTFCLOSE         "Fehler beim Schließen der Datei: "
+    ERROR_OUTMKDIR          "Fehler beim Erstellen der Datei: "
+    ERROR_OUTTIME           "Fehler in Dateizeitfolge:"
+    ERROR_MEMORY            "Nicht genügend Speicher"
+    ERROR_TEMPPATH          "Kann den Pfad für temporäre Dateien nicht abfragen: "
+    ERROR_TEMPNAME          "Kann die temporären Dateinamen nicht abfragen: "
+    ERROR_DELFILE           "Kann die temporäre Datei nicht löschen: "
+END
+
+STRINGTABLE 
+BEGIN
+    ERROR_MKDIR             "Kann das temporäre Verzeichnis nicht erstellen: "
+    ERROR_TCREATE           "Kann keinen neuen Thread erstellen: "
+    ERROR_DLGCREATE         "Kann kein Dialogfenster erstellen: "
+    ERROR_ERRWAIT           "Kann nicht auf Thread-Beendigung warten: "
+    ERROR_EXITCODE          "Kann kein Thread-Exit-Code erhalten: "
+    ERROR_CREATEPROC        "Kann kein externes Programm starten: "
+    ERROR_X64               "Sie können keine 64-Bit Version von Open Salamander auf eine 32-Bit Version von Windows installieren.\n\nLaden Sie bitte die 32-Bit Version von Open Salamander herunter."
+    ARC_INEOF               "Archiv beschädigt, vorzeitiges Ende der Datei."
+    ARC_FORMAT              "Unbekanntes Archivformat."
+    ARC_NUMFOLDERS          "Diese Anzahl von Ordnern im Archiv wird nicht unterstützt."
+    ARC_NOFILES             "Im Archiv sind keine Dateien."
+    ARC_VERSION             "Nicht unterstützte Version eines Archivs."
+    ARC_UNSUPP              "Nicht unterstützte Funktion im Archiv verwendet."
+    ARC_METHOD              "Nicht unterstützte Komprimierungsmethode entdeckt."
+    ARC_BADDATA             "Fehler im Komprimierungsstrom, Archiv beschädigt."
+END
+
+STRINGTABLE 
+BEGIN
+    ARC_DISKFULL            "Ziellaufwerk ist voll. Machen Sie bitte zusätzlichen Platz frei \noder leiten Sie mit Hilfe der Pfadparameter zu einem anderen Laufwerk um (verwenden Sie ""/?"" für Hilfe)."
+    ARC_NOEXESIG            "Keine EXE Signatur gefunden."
+    ARC_NOPESIG             "Keine PE Signatur gefunden."
+END
+
+STRINGTABLE 
+BEGIN
+    ARC_BADPARAMS           "Falsche(r) Befehlszeilenparameter, verwenden Sie ""/?"" Option für Hilfe."
+    IDS_CREATEDIRFAILED     "Kann das neue Verzeichnis nicht erstellen:\n%s"
+    IDS_STATUS_STARTSETUP   "Starte Installation..."
+    IDS_STATUS_STARTNOTEPAD "Starte Notepad mit der Liesmich-Datei..."
+    IDS_STATUS_STARTSALAM   "Starte Open Salamander..."
+END
+
+#endif    // German (Neutral) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_PROGRESS DIALOGEX 61, 48, 194, 53
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION
+CAPTION "Extracting"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Cancel",IDCANCEL,72,33,50,14
+    LTEXT           "Extracting file:",-1,8,66,50,9
+    LTEXT           "To directory:",-1,8,80,50,9
+    LTEXT           "",IDC_FILE,62,66,130,9
+    LTEXT           "",IDC_DIR,62,80,130,9
+    CONTROL         "",IDC_PROGRESS,"msctls_progress32",WS_BORDER,5,8,184,15
+    CTEXT           "",IDC_STATUS,5,22,183,8,NOT WS_VISIBLE | NOT WS_GROUP
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    ARC_TITLE               "Self-Extracting Archive"
+    ARC_HELP                "Usage: install [/?] [/t tmp_path] [/x parameters]\n\n[x] means that parameter x is optional.\n\n/? -- Generates this Usage message.\n/t -- Specifies a temporary directory for this self extractor.\n/x -- Remaining parameters will be passed to executed installer."
+    ERROR_TITLE             "Error extracting archive"
+END
+
+STRINGTABLE 
+BEGIN
+    ERROR_INFOPEN           "Error opening archive file: "
+    ERROR_INFREAD           "Error reading archive file: "
+    ERROR_INFSEEK           "Error seeking archive file: "
+    ERROR_OUTFOPEN          "Error opening file: "
+    ERROR_OUTFWRITE         "Error writing file: "
+    ERROR_OUTFCLOSE         "Error closing file: "
+    ERROR_OUTMKDIR          "Error creating directory: "
+    ERROR_OUTTIME           "Error sting file time:"
+    ERROR_MEMORY            "Not enough memory."
+    ERROR_TEMPPATH          "Unable to get path to temporary files: "
+    ERROR_TEMPNAME          "Unable to get temporary file name: "
+    ERROR_DELFILE           "Unable to delete temporary file: "
+END
+
+STRINGTABLE 
+BEGIN
+    ERROR_MKDIR             "Unable to create temporary directory: "
+    ERROR_TCREATE           "Unable to create new thread: "
+    ERROR_DLGCREATE         "Unable to create dialog window: "
+    ERROR_ERRWAIT           "Unable to wait for thread termination: "
+    ERROR_EXITCODE          "Unable to get thread exit code: "
+    ERROR_CREATEPROC        "Unable to spawn external program: "
+    ERROR_X64               "It is not possible to install 64-bit version of Open Salamander on 32-bit version of Windows.\n\nPlease download 32-bit version of Open Salamander."
+    ARC_INEOF               "Archive corrupted, premature end of file."
+    ARC_FORMAT              "Unknown archive format."
+    ARC_NUMFOLDERS          "This number of folders in the archive is not supported."
+    ARC_NOFILES             "There are no files in the archive."
+    ARC_VERSION             "Unsupported version of archive."
+    ARC_UNSUPP              "Unsupported feature used in archive."
+    ARC_METHOD              "Unsupported compression method detected."
+    ARC_BADDATA             "Error in compressed stream, archive corrupted."
+END
+
+STRINGTABLE 
+BEGIN
+    ARC_DISKFULL            "Target disk is full. Please free aditional space or redirect\nto another drive using path parameter (use ""/?"" for help)."
+    ARC_NOEXESIG            "No EXE signature found."
+    ARC_NOPESIG             "No PE signature found."
+END
+
+STRINGTABLE 
+BEGIN
+    ARC_BADPARAMS           "Bad command-line parameters, use ""/?"" option for help."
+    IDS_CREATEDIRFAILED     "Unable to create new directory:\n%s"
+    IDS_STATUS_STARTSETUP   "Starting installation..."
+    IDS_STATUS_STARTNOTEPAD "Starting Notepad with readme file..."
+    IDS_STATUS_STARTSALAM   "Starting Open Salamander..."
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL
+#include "resource.rc2"   // non-Microsoft Visual C++ edited resources
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

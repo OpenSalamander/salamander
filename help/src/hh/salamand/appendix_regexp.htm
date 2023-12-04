@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Regular Expressions Syntax</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Appendix</div>
+<div class="page">
+
+<h1>Regular Expressions Syntax</h1>
+
+<p>
+The following description of regular expressions contains part of documentation for
+the REGEXP library, which is a great work of Henry Spencer. Open Salamander uses
+this library to match regular expressions.</p>
+
+<h5>Basic Regular Expression Syntax</h5>
+<ul>
+<li>'^' - at the start of the expression matches the start of a line (for example,
+          '^test' matches all strings 'test' placed at the start of a line)</li>
+<li>'$' - at the end of the expression matches the end of a line</li>
+<li>'.' - matches any single character (for example, 'do.' matches 'dog', 'dot', 'doe', etc.;
+          'd..r' matches 'door', 'deer', etc.)</li>
+<li>'*' - after an expression matches 0 or more matches for the expression
+          (for example, 'ad*' matches 'a', 'ad', and as well as 'add' - in other
+           words, 'a' followed by any number of 'd')</li>
+<li>'+' - after an expression matches 1 or more matches for the expression
+          (for example, 'do+' matches 'do' and as well as 'doo' - in other words,
+           'd' followed by at least one 'o')</li>
+<li>'?' - after an expression matches 0 or 1 match for the expression
+          (for example, 'add?' matches 'ad' and 'add' - in other words, 'ad'
+           followed by optional 'd')</li>
+<li>'|' - between expressions matches match for first, match for second, etc.
+        (for example, 'red|blue|black' matches 'red', 'blue', and 'black'
+         - in other words, any of mentioned words)</li>
+<li>'[ ]' - characters in brackets match any one character that appears in the
+          brackets, but no others (for example, 'a[dts]' matches 'ad', 'at',
+          and 'as' - in other words, 'a' followed by 'd', 't', or 's')</li>
+<li>'[^ ]' - characters in brackets match any one character that doesn't appear in
+           the brackets, but no others (for example, '[^abc]' matches any
+           character except 'a', 'b', and 'c')</li>
+<li>'[-]' - signifies a range of characters (for example, '1[0-9]' matches all
+            numbers in range '10' to '19')</li>
+<li>'( )' - glues expressions in parentheses to one expression (for example,
+            '(very )*well' matches 'well', 'very well', and as well as
+            'very very well' - in other words, any number of 'very ' followed
+            by 'well')</li>
+<li>'\' - before any character matches this character (for example 'too\.'
+          matches only 'too.', note that 'too.' matches 'tool', 'took', and
+          as well as 'toon' - in other words, 'too' followed by any character)</li>
+</ul>
+<h5>Regular Expression Syntax</h5>
+<p>
+A regular expression is zero or more branches, separated by '|'.  It matches
+anything that matches one of the branches.</p>
+
+<p>
+A branch is zero or more pieces, concatenated.  It matches a match for the first,
+followed by a match for the second, etc.</p>
+<p>
+A piece is an atom possibly followed by '*', '+', or '?'. An atom followed by
+'*' matches a sequence of 0 or more matches of the atom.  An atom followed by
+'+' matches a sequence of 1 or more matches of the atom.  An atom followed by
+'?' matches a match of the atom, or the null string.</p>
+<p>
+An atom is a regular expression in parentheses (matching a match for the regular
+expression), a range (see below), '.' (matching any single character), '^'
+(matching the null string at the beginning of line), '$' (matching the null
+string at the end of line), a '\' followed by a single character (matching that
+character), or a single character with no other significance (matching that
+character).</p>
+<p>
+A range is a sequence of characters enclosed in '[]'. It normally matches any
+single character from the sequence. If the sequence begins with '^', it matches
+any single character not from the rest of the sequence.  If two characters in
+the sequence are separated by '-', this is shorthand for the full list of ASCII
+characters between them (e.g. '[0-9]' matches any decimal digit).  To include a
+literal ']' in the sequence, make it the first character (following a possible
+'^').  To include a literal '-', make it the first or last character.</p>
+
+<h5>Ambiguity</h5>
+<p>
+If a regular expression could match two different parts of the text, it will
+match the one, which begins earliest.  If both begin in the same place but match
+different lengths, or match the same length in different ways, life gets
+messier, as follows.</p>
+<p>
+In general, the possibilities in a list of branches are considered in
+left-to-right order, the possibilities for '*', '+', and '?' are considered
+longest-first, nested constructs are considered from the outermost in, and
+concatenated constructs are considered leftmost-first.  The match that will be
+chosen is the one that uses the earliest possibility.</p>
+<p>
+For example, '(ab|a)b*c' could match 'abc' in one of two ways. The first choice
+is between 'ab' and 'a'; since 'ab' is earlier, and does lead to a successful
+overall match, it is chosen.  Since the 'b' is already spoken for, the 'b*' must
+match its last possibility-the empty string-since it must respect the earlier
+choice.</p>
+<p>
+In the particular case where no '|'s are present and there is only one '*', '+',
+or '?', the net effect is that the longest possible match will be chosen.  So
+'ab*', presented with 'xabbbby', will match 'abbbb'.  Note that if 'ab*' is
+tried against 'xabyabbbz', it will match 'ab' just after 'x', due to the
+begins-earliest rule.</p>
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

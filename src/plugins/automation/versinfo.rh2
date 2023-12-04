@@ -1,0 +1,42 @@
+﻿/*
+	Automation Plugin for Open Salamander
+	
+	Copyright (c) 2009-2023 Milan Kase <manison@manison.cz>
+	Copyright (c) 2010-2023 Open Salamander Authors
+	
+	versinfo.rh2
+	Defines for plugin.SPL and plugin.SLG VERSIONINFO look at shared\versinfo.rc2.
+*/
+
+// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __AUTOMATION_VERSINFO_RH2
+#define __AUTOMATION_VERSINFO_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#define VERSINFO_MAJOR       1
+#define VERSINFO_MINORA      7
+#define VERSINFO_MINORB      0  // POZOR: tady musi byt 0, jinak vyleti assert pri buildu
+
+#include "spl_vers.h" // get version and build numbers
+
+#define VERSINFO_COPYRIGHT   "Copyright © 2009-2023 Open Salamander Authors"
+#define VERSINFO_COMPANY     "Open Salamander"
+
+#define VERSINFO_DESCRIPTION "Automation plugin for Open Salamander"
+
+#ifdef _LANG
+#define VERSINFO_INTERNAL    "ENGLISH"
+#define VERSINFO_ORIGINAL    VERSINFO_INTERNAL ".SLG"
+#else
+#define VERSINFO_INTERNAL    "AUTOMATION"
+#define VERSINFO_ORIGINAL    VERSINFO_INTERNAL ".SPL"
+#endif
+
+// for SLG translators
+#define VERSINFO_SLG_WEB     "www.altap.cz"
+#define VERSINFO_SLG_COMMENT "English version"
+
+#endif // __AUTOMATION_VERSINFO_RH2

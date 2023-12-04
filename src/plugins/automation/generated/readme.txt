@@ -1,0 +1,1 @@
+V tomto adresari jsou jen automaticky generovane soubory.

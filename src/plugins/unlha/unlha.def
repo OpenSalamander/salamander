@@ -1,0 +1,4 @@
+LIBRARY unlha.spl
+
+EXPORTS SalamanderPluginEntry
+EXPORTS SalamanderPluginGetReqVer

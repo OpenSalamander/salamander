@@ -1,0 +1,75 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\slovak\pak.atp"
+TEXTVERSION,"1.71 (x86)"
+VERSION,"1,7,1,180"
+
+[TRANSLATION]
+LANGID,1051
+AUTHOR,"Roman Paholík"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6167"
+COMMENT,"Slovenská verzia"
+
+[DIALOG 100]
+223,73,1,"Optimalizácia PAK archívu"
+300,8,9,75,8,1,"Veľkosť platných dát:"
+101,93,9,118,8,1,""
+301,8,20,84,8,1,"Celková veľkosť súboru:"
+102,93,20,118,8,1,""
+302,8,31,66,8,1,"Prebytočné miesto:"
+103,93,31,118,8,1,""
+303,8,44,207,1,1,""
+1,48,53,60,14,1,"Optimalizovať"
+2,114,53,60,14,1,"Zrušiť"
+
+[STRINGTABLE 0]
+500,1,"Nie je možné otvoriť súbor: %s"
+501,1,"Nie je možné inicializovať paklib rozhranie. Jeden súbor je už otvorený."
+502,1,"Nie je možné otvoriť súbor. Jeden súbor je už otvorený."
+503,1,"Nie je možné zistiť veľkosť súboru: %s"
+504,1,"Neplatný formát dát."
+505,1,"Nedostatok pamäti."
+506,1,"aktuálny hlavný PAK adresár"
+507,1,"Nie je možné nastaviť ukazovateľ súboru: %s"
+508,1,"Nie je možné čítať zo súboru: %s"
+509,1,"Nie je možné získať ukazovateľ súboru: %s"
+510,1,"Nie je možné zapisovať do súboru: %s"
+511,1,"Nie je možné pridať súbor, kvôli príliš dlhému názvu."
+
+[STRINGTABLE 1]
+1000,1,"PAK"
+1001,1,"Nedostatok pamäti."
+1002,1,"Nie je možné pridať súbor do výpisu."
+1003,1,"Nie je možné načítať paklib.dll alebo získať procesnú adresu: "
+1004,1,"Extrahovanie PAK archívu - %s"
+1005,1,"pripravujem dáta..."
+1006,1,"extrahujem..."
+1007,1,"extrahujem: "
+
+[STRINGTABLE 2]
+1008,1,"Nie je možné dokončiť operáciu, kvôli príliš dlhému názvu cesty."
+1009,1,"Nie je možné nastaviť ukazovateľ súboru: "
+1010,1,"Nie je možné získať ukazovateľ súboru: "
+1011,1,"Nie je možné zapisovať do súboru:"
+1013,1,"Nie je možné otvoriť súbor: "
+1014,1,"Nie je možné dokončiť operáciu, kvôli príliš dlhej maske."
+1015,1,"Odstraňujem z PAK archívu - %s"
+1016,1,"odstraňujem..."
+1017,1,"odstraňujem: "
+1018,1,"rušenie operácie, čakajte prosím..."
+1019,1,"Komprimácia PAK archívu - %s"
+1020,1,"Nie je možné pridať súbor: Súbor je príliš veľký."
+1021,1,"Komprimujem..."
+1022,1,"Nie je možné pridať súbor, kvôli príliš dlhému názvu."
+1023,1,"komprimujem: "
+
+[STRINGTABLE 3]
+1024,1,"Nie je možné čítať zo súboru: "
+1025,1,"Nie je možné pripojiť plugin k Open Salamanderu."
+1026,1,"optimalizácia, čakajte prosím..."
+1027,1,"Optimalizácia PAK archívu - %s"
+1028,1,"Odstránenie súborov bolo úspešne dokončené. Môže byť potrebné spustiť PAK optimalizáciu z ponuky PAK pluginu, aby nedošlo k plytvaniu miestom na disku."
+1029,1,"&Optimalizovať PAK"
+1030,1,"Ľutujeme, plugin vypršal. Prosím skontrolujte našu webovú stránku kvôli novšej verzii."
+1031,1,"Prehliada a extrahuje Quake PAK archívy."
+1032,1,"O plugine"
+

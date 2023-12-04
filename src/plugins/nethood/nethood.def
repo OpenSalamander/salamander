@@ -1,0 +1,13 @@
+;
+;	Network Plugin for Open Salamander
+;	
+;	Copyright (c) 2008-2016 Milan Kase <manison@manison.cz>
+;	
+;	TODO:
+;	Open-source license goes here...
+;
+
+EXPORTS
+	SalamanderPluginEntry
+        SalamanderPluginGetReqVer
+        

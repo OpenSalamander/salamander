@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>DeselectAll Method</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: Automation: Reference: Panel Object</div>
+<div class="page">
+
+<h1>DeselectAll Method</h1>
+
+<p>The <b>DeselectAll</b> method cancels the current selection in the panel.</p>
+
+<h2>Syntax</h2>
+<pre><code>DeselectAll([<i>save</i>])</code></pre>
+
+<h2>Parameters</h2>
+
+<h3>save</h3>
+<p>Optional. Boolean value determining whether the current selection should be
+saved prior it is cancelled. By default the selection is not saved. For more
+information see the following Remarks section.</p>
+
+<h2>Return Values</h2>
+<p>This method does not return a value.</p>
+
+<h2>Remarks</h2>
+<p>To be consistent with other Open Salamander operations the script should use
+this method to cancel the selection after it finishes the operation in the panel.
+Before deselecting the items the script should use the <a href="ref_panel_storeselection.htm">StoreSelection</a>
+method to save the selection so the user is allowed to use another operation for
+the same files and directories. Alternatively the script can save and cancel the
+selection in one step by calling this method with the <b>save</b> parameter set
+to <b><i>true</i></b>.</p>
+
+<h2>See Also</h2>
+<p><a href="ref_panel.htm">Panel Object</a></p>
+<p><a href="ref_panel_storeselection.htm">StoreSelection Method</a></p>
+
+</div>
+<div class="footer">&copy; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

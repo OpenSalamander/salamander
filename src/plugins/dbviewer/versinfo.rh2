@@ -1,0 +1,35 @@
+﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __DBVIEWER_VERSINFO_RH2
+#define __DBVIEWER_VERSINFO_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+// defines for plugin.SPL and plugin.SLG VERSIONINFO
+// look at shared\versinfo.rc
+
+#define VERSINFO_MAJOR       1
+#define VERSINFO_MINORA      2
+#define VERSINFO_MINORB      4
+
+#include "spl_vers.h" // vytahneme cisla verzi + buildu
+
+#define VERSINFO_COPYRIGHT   "Copyright © 2003-2023 Open Salamander Authors"
+#define VERSINFO_COMPANY     "Open Salamander"
+
+#define VERSINFO_DESCRIPTION "Database Viewer for Open Salamander"
+
+#ifdef _LANG
+#define VERSINFO_INTERNAL    "ENGLISH"
+#define VERSINFO_ORIGINAL    VERSINFO_INTERNAL ".SLG"
+#else
+#define VERSINFO_INTERNAL    "DBVIEWER"
+#define VERSINFO_ORIGINAL    VERSINFO_INTERNAL ".SPL"
+#endif
+
+// for SLG translators
+#define VERSINFO_SLG_WEB     "www.altap.cz"
+#define VERSINFO_SLG_COMMENT "English version"
+
+#endif // __DBVIEWER_VERSINFO_RH2

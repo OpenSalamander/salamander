@@ -1,0 +1,36 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\czech\unlha.atp"
+TEXTVERSION,"1.13 (x86)"
+VERSION,"1,1,3,180"
+
+[TRANSLATION]
+LANGID,1029
+AUTHOR,"Hynek Mikulič"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7008"
+COMMENT,"Česká verze"
+
+[STRINGTABLE 0]
+1,1,"Neplatný LZH soubor nebo neznámý formát souboru."
+2,1,"Chyba kontrolního součtu hlavičky.\nArchiv je poškozený - ne všechny soubory můžou být vypsány."
+3,1,"Mimo paměť."
+4,1,"Chyba zápisu"
+5,1,"UnLHA"
+6,1,"Chyba při otevírání archivu."
+7,1,"Nelze přidat záznam archivu do výpisu souborů."
+8,1,"Archiv obsahuje jeden nebo více UNIX značek spojení, která nebudou zobrazena."
+10,1,"Nelze extrahovat soubor."
+11,1,"Chyba v komprimovaných datech. CRC nesouhlasí."
+12,1,"Chyba při čtení archivu."
+13,1,"Extrahování LHA archivu - %s"
+14,1,"připravuji data a vytvářím adresáře..."
+15,1,"extrahuji: "
+
+[STRINGTABLE 1]
+16,1,"extrahuji..."
+17,1,"Nelze dokončit operaci, kvůli příliš dlouhému názvu cesty."
+18,1,"Nelze dokončit operaci, kvůli příliš dlouhé masce."
+19,1,"Neznámá komprimační metoda. Soubor nelze extrahovat."
+20,1,"přeskakuji neznámou metodu..."
+21,1,"Prohlíží a extrahuje LHA archivy."
+22,1,"O pluginu"
+

@@ -1,0 +1,37 @@
+﻿// defines for SALAMAND.EXE and ENGLISH.SLG VERSIONINFO
+// look at shared\versinfo.rc
+
+// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __VERSINFO_RH2
+#define __VERSINFO_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#include "plugins\shared\spl_vers.h" // vytahneme cisla verzi + buildu
+
+#define VERSINFO_MAJOR       VERSINFO_SALAMANDER_MAJOR
+#define VERSINFO_MINORA      VERSINFO_SALAMANDER_MINORA
+#define VERSINFO_MINORB      VERSINFO_SALAMANDER_MINORB
+#define VERSINFO_VERSION     VERSINFO_SALAMANDER_VERSION
+
+#define VERSINFO_COPYRIGHT   "Copyright © 1997-2023 Open Salamander Authors"
+#define VERSINFO_COMPANY     "Open Salamander"
+
+#define VERSINFO_DESCRIPTION "Open Salamander, File Manager"
+#define VERSINFO_COMMENT     "A small and fast two-pane file manager with open plugin architecture."
+
+#ifdef _LANG
+#define VERSINFO_INTERNAL    "ENGLISH"
+#define VERSINFO_ORIGINAL    VERSINFO_INTERNAL ".SLG"
+#else
+#define VERSINFO_INTERNAL    "SALAMAND"
+#define VERSINFO_ORIGINAL    VERSINFO_INTERNAL ".EXE"
+#endif
+
+// for SLG translators
+#define VERSINFO_SLG_WEB     "www.altap.cz"
+#define VERSINFO_SLG_COMMENT "English version"
+
+#endif // __VERSINFO_RH2

@@ -1,0 +1,18 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\chinesesimplified\ieviewer.atp"
+TEXTVERSION,"1.12 (x86)"
+VERSION,"1,1,2,180"
+
+[TRANSLATION]
+LANGID,2052
+AUTHOR,"Michael Lu"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6958"
+COMMENT,"简体中文版"
+
+[STRINGTABLE 0]
+10100,1,"Internet Explorer 查看器"
+10101,0,"Unable to open Internet Explorer Viewer.\nPlease report this problem to support@altap.cz."
+10102,1,"错误"
+10103,1,"基于 Internet Explorer 的轻量 HTML 和 XML 查看器。"
+10105,1,"关于插件"
+

@@ -1,0 +1,232 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<!-- Sitemap 1.0 -->
+</HEAD>
+<BODY>
+	<OBJECT type="text/site properties">
+		<param name="Window Styles" value="0x800027">
+	</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Introduction">
+	</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Introducing PictView Plugin">
+			<param name="Local" value="hh\pictview\introduction_intro.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Using PictView Plugin">
+	</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Basic Features">
+		</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Using Mouse in Viewer">
+				<param name="Local" value="hh\pictview\basic_usingmouse.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Zooming View">
+				<param name="Local" value="hh\pictview\basic_zoomkeys.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Rotating and Flipping Image">
+				<param name="Local" value="hh\pictview\basic_rotateandflip.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Opening Previous or Next File from Panel or Find Window">
+				<param name="Local" value="hh\pictview\basic_otherfiles.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Viewing in Full Screen">
+				<param name="Local" value="hh\pictview\basic_fullscreen.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Focusing File in Panel">
+				<param name="Local" value="hh\pictview\basic_focus.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Selecting File in Panel or Find Window">
+				<param name="Local" value="hh\pictview\basic_select.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Deleting File">
+				<param name="Local" value="hh\pictview\basic_delete.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Saving Image">
+				<param name="Local" value="hh\pictview\basic_saveas.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Showing Image Properties">
+				<param name="Local" value="hh\pictview\basic_properties.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Showing EXIF Information">
+				<param name="Local" value="hh\pictview\basic_showexif.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Setting Image as Wallpaper">
+				<param name="Local" value="hh\pictview\basic_wallpaper.htm">
+				</OBJECT>
+		</UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Advanced Features">
+		</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Capturing the Screen">
+				<param name="Local" value="hh\pictview\advanced_screencapture.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Viewing Bitmap from Clipboard">
+				<param name="Local" value="hh\pictview\advanced_viewbmpfromclip.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Working with Clipboard">
+				<param name="Local" value="hh\pictview\advanced_copypaste.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Updating Thumbnail">
+				<param name="Local" value="hh\pictview\advanced_updatethumbnail.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Cropping Image">
+				<param name="Local" value="hh\pictview\advanced_crop.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Copying File">
+				<param name="Local" value="hh\pictview\advanced_copyto.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Opening File">
+				<param name="Local" value="hh\pictview\advanced_openfile.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Printing Image">
+				<param name="Local" value="hh\pictview\advanced_print.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Renaming File">
+				<param name="Local" value="hh\pictview\advanced_rename.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Showing Histogram">
+				<param name="Local" value="hh\pictview\advanced_histogram.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Scanning Image">
+				<param name="Local" value="hh\pictview\advanced_scanimage.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Selecting Scanner Source">
+				<param name="Local" value="hh\pictview\advanced_selscannersrc.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Reverting Changes">
+				<param name="Local" value="hh\pictview\advanced_revert.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Selecting Whole Image">
+				<param name="Local" value="hh\pictview\advanced_select.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Viewing Multipage Images">
+				<param name="Local" value="hh\pictview\advanced_multipageimgs.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Opening File You've Used Recently">
+				<param name="Local" value="hh\pictview\advanced_recentfiles.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Opening File from Directory You've Used Recently">
+				<param name="Local" value="hh\pictview\advanced_recentdirs.htm">
+				</OBJECT>
+		</UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Typical Use">
+		</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Viewing Photos">
+				<param name="Local" value="hh\pictview\usage_viewphotos.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Selecting Photos">
+				<param name="Local" value="hh\pictview\usage_selectingphotos.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Making Screenshots">
+				<param name="Local" value="hh\pictview\usage_screenshots.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Image File Conversions">
+				<param name="Local" value="hh\pictview\usage_conversions.htm">
+				</OBJECT>
+		</UL>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Dialog Boxes">
+	</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Configuration">
+		</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Appearance">
+				<param name="Local" value="hh\pictview\config_appearance.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Colors">
+				<param name="Local" value="hh\pictview\config_colors.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Keyboard & Mouse">
+				<param name="Local" value="hh\pictview\config_keybandmouse.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Tools">
+				<param name="Local" value="hh\pictview\config_tools.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Advanced">
+				<param name="Local" value="hh\pictview\config_advanced.htm">
+				</OBJECT>
+		</UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Copy File To">
+			<param name="Local" value="hh\pictview\dlgboxes_copyto.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="EXIF">
+			<param name="Local" value="hh\pictview\dlgboxes_exif.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Image Properties">
+			<param name="Local" value="hh\pictview\dlgboxes_imgproperties.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Print">
+			<param name="Local" value="hh\pictview\dlgboxes_print.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Screen Capture">
+			<param name="Local" value="hh\pictview\dlgboxes_screencapture.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Appendix">
+	</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Supported File Formats">
+			<param name="Local" value="hh\pictview\appendix_fileformats.htm">
+			</OBJECT>
+	</UL>
+</BODY>
+</HTML>

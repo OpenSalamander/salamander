@@ -1,0 +1,100 @@
+﻿// Microsoft Visual C++ generated resource script.
+//
+#pragma code_page(65001)
+
+#include "renamer.rh"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winresrc.h"
+
+#include "renamer.rh2"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "renamer.rh\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winresrc.h""\r\n"
+    "\r\n"
+    "#include ""renamer.rh2""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)\r\n"
+    "LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL\r\n"
+    "#include ""renamer.rc2""   // non-Microsoft Visual C++ edited resources\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDA_ACCELS ACCELERATORS 
+BEGIN
+    VK_F6,          CMD_ALLFILES,           VIRTKEY, NOINVERT
+    VK_F4,          CMD_EDIT,               VIRTKEY, NOINVERT
+    "N",            CMD_FILENAMES,          VIRTKEY, CONTROL, NOINVERT
+    VK_F5,          CMD_FILTER,             VIRTKEY, NOINVERT
+    "F",            CMD_FULLPATH,           VIRTKEY, CONTROL, NOINVERT
+    "L",            CMD_LAST,               VIRTKEY, CONTROL, NOINVERT
+    VK_F3,          CMD_LOADLIST,           VIRTKEY, NOINVERT
+    VK_F8,          CMD_NOTRENAMED,         VIRTKEY, NOINVERT
+    "R",            CMD_RELATIVEPATH,       VIRTKEY, CONTROL, NOINVERT
+    VK_F7,          CMD_RENAMED,            VIRTKEY, NOINVERT
+    "D",            CMD_RESET,              VIRTKEY, CONTROL, NOINVERT
+    VK_F1,          CMD_SORTOLD,            VIRTKEY, CONTROL, NOINVERT
+    VK_F4,          CMD_SORTPATH,           VIRTKEY, CONTROL, NOINVERT
+    VK_F2,          CMD_SORTSIZE,           VIRTKEY, CONTROL, NOINVERT
+    VK_F3,          CMD_SORTTIME,           VIRTKEY, CONTROL, NOINVERT
+    VK_F2,          CMD_STORELIST,          VIRTKEY, NOINVERT
+    "U",            CMD_UNDO,               VIRTKEY, CONTROL, NOINVERT
+    "I",            CMD_VALIDATE,           VIRTKEY, CONTROL, NOINVERT
+END
+
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL
+#include "renamer.rc2"   // non-Microsoft Visual C++ edited resources
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

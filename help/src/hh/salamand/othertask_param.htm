@@ -1,0 +1,86 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Starting Open Salamander with Parameters</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Other Tasks</div>
+<div class="page">
+<h1>Starting Open Salamander with Parameters</h1>
+
+<p>Open Salamander supports command line parameters specifying directories
+to be opened, configuration file to be imported, etc.</p>
+
+<h4>Syntax</h4>
+
+<p><b>SALAMAND.EXE</b> [<b>-L</b> directory] [<b>-R</b> directory] [<b>-A</b> directory] [<b>-C</b> reg_file] [<b>-I</b> icon_index] [<b>-T</b> title_prefix] [<b>-O</b>] [<b>-P</b> panel_index]</p>
+
+<table>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+<tr><td><b>-L</b> path</td><td>Specifies the path for the left panel.
+  It works with <a href="appendix_paths.htm">full or relative disk paths</a>,
+  <a href="appendix_arcpaths.htm">archive paths</a>, and
+  <a href="appendix_fspaths.htm">plugin file system paths</a>.</td></tr>
+<tr><td><b>-R</b> path</td><td>Specifies the path for the right panel.
+  It works with <a href="appendix_paths.htm">full or relative disk paths</a>,
+  <a href="appendix_arcpaths.htm">archive paths</a>, and
+  <a href="appendix_fspaths.htm">plugin file system paths</a>.</td></tr>
+<tr><td><b>-A</b> path</td><td>Specifies the path for the active panel.
+  It works with <a href="appendix_paths.htm">full or relative disk paths</a>,
+  <a href="appendix_arcpaths.htm">archive paths</a>, and
+  <a href="appendix_fspaths.htm">plugin file system paths</a>.
+  This parameter is ignored when -L or -R parameter is specified.</td></tr>
+<tr><td><b>-C</b> reg_file</td><td>Specifies the <a href="customize_configuration.htm">exported
+  configuration</a> that will be imported to the registry before loading configuration from the
+  registry. If you do not specify full path to the configuration file, it is searched in the
+  installation directory and in Vista or later also in application data directory (typically
+  <i>C:\Users\&lt;user&gt;\AppData\Roaming\Open Salamander</i>)</td></tr>
+<tr><td><b>-I</b> icon_index</td><td>Specifies the icon color that will be used
+  for main window. 0 means DEFAULT icon, 1 means RED icon, 2 means GREEN icon, and 3 means BLUE icon.
+  You can also change the icon color in <a href="configuration_mainwnd.htm">configuration of main window</a>.</td></tr>
+<tr><td><b>-T</b> title_prefix</td><td>Specifies the text prefix displayed in the title bar of main window.
+  To suppress text prefix use the "" parameter. You can also change the prefix in <a href="configuration_mainwnd.htm">configuration of main window</a>.</td></tr>
+<tr><td><b>-O</b></td><td>Salamander will behave as when <a href="configuration_gener.htm">Allow only one instance of Salamander at one time</a> option is checked. The option value in configuration will not be affected.</td></tr>
+<tr><td><b>-P</b>&nbsp;panel_index</td><td>Specifies the panel that will be activated. 0 means DEFAULT panel, 1 means LEFT panel amd 2 means RIGHT panel.</td></tr>
+</table>
+
+<h4>Examples</h4>
+
+<ul> 
+<li>To open Open Salamander with "C:\Program Files" directory in the left panel:
+<dl><dt></dt><dd>
+<br />
+salamand.exe -L "C:\Program Files"
+</dd></dl>
+<br />
+</li>
+<li>To open Open Salamander with personal configuration stored in myconfig.reg:
+<dl><dt></dt><dd>
+<br />
+salamand.exe -C "myconfig.reg"
+</dd></dl>
+<br />
+</li>
+<li>To open Open Salamander with red icon and ADMIN prefix in the title bar:
+<dl><dt></dt><dd>
+<br />
+salamand.exe -I 1 -T "ADMIN"
+</dd></dl>
+<br />
+</li>
+</ul>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>
+

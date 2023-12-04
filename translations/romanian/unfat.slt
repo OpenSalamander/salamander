@@ -1,0 +1,30 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\romanian\unfat.atp"
+TEXTVERSION,"1.1 (x86)"
+VERSION,"1,1,0,180"
+
+[TRANSLATION]
+LANGID,1048
+AUTHOR,"Ioan Stefancu, Donca Radu"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6165"
+COMMENT,"Versiunea romana"
+
+[STRINGTABLE 0]
+1000,1,"UnFAT"
+1001,1,"Despre Plugin"
+1003,1,"Rasfoieste si extrage imaginile disk de  FAT 12, 16, si 32."
+
+[STRINGTABLE 1]
+1100,1,"Eroare la deschiderea fisierului "%s"."
+1101,1,"Eroare la citirea fisierului "%s"."
+1102,1,"Eroare in parcurgerea fisierului "%s".\n\n%s"
+1103,1,"Sectorul de boot e corupt sau acest fisier nu e imagine FAT 12, 16, sau 32."
+
+[STRINGTABLE 2]
+1104,1,"Eroare la citirea directorului din fisier "%s".\n%s\nSector: %d, Offset: 0x%s\n\nFisierul nu e o imagine valida de FAT 12, 16, sau 32."
+1106,1,"Eroare la citirea fisierului din fisier "%s".\n%s\nCluster: %d\n\nFisierul nu e imagine valida de FAT 12, 16, sau 32."
+1107,1,"Eroare la scrierea fisierului"
+1108,1,"Fisierul "%s" pare sa fie o imagine a intrgului hard disk.\nAsemenea imagini nu sunt suportate de plugin-ul UnFAT."
+1109,1,"Extrag imaginea - %s FAT"
+1110,1,"extrag: %s"
+

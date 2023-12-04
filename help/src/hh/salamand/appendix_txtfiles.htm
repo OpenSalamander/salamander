@@ -1,0 +1,122 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Text Files Coding and End of Line Characters</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Appendix: File and Directory Concepts</div>
+<div class="page">
+
+<h1>Text Files Coding and End of Line Characters</h1>
+
+<h5>Character Sets</h5>
+<p>Text files use character sets. A character set contains punctuation marks,
+numerals, uppercase and lowercase letters, and all other printable characters.
+Each element of a character set is identified by a number.</p>
+
+<p>Most character sets in use are supersets of the U.S. ASCII character set,
+which defines characters for the 96 numeric values from 32 through 127. There
+are major groups of character sets:</p>
+
+<dl>
+<dt><i>Windows Character Set (single-byte coding scheme)</i></dt>
+<dd>The Windows character set is the most commonly used character set in Windows.
+It is essentially equivalent to the ANSI character set. The Windows character set
+uses 8 bits to represent each character; therefore, the maximum number of
+characters that can be expressed using 8 bits is 256 (2^8).  This is usually
+sufficient for Western languages, including the diacritical marks used in Czech,
+French, German, Spanish, and other languages.</dd>
+
+<dt><i>Multibyte character set</i></dt>
+<dd>Eastern languages employ thousands of separate characters, which cannot be
+encoded by using a single-byte coding scheme. With the proliferation of computer
+commerce, double-byte coding schemes were developed so that characters could be
+represented in 8-bit, 16-bit, 24-bit, or 32-bit sequences. This requires
+complicated passing algorithms; even so, using different code sets could yield
+entirely different results on two different computers. 
+</dd>
+
+<dt><i>Unicode Character Set</i></dt>
+<dd>To address the problem of multiple coding schemes, the Unicode standard for
+data representation was developed. A 16-bit character coding scheme, Unicode
+can represent 65,536 (2^16) characters, which is enough to include all languages
+in computer commerce today, as well as punctuation marks, mathematical symbols,
+and room for future expansion. Unicode establishes a unique code for every
+character to ensure that character translation is always accurate.</dd>
+
+<dt><i>OEM Character Set</i></dt>
+<dd>The OEM character set is typically used in full-screen MS-DOS sessions for
+screen display. Characters 32 through 127 are usually the same in the OEM,
+U.S. ASCII, and Windows character sets. The other characters in the OEM
+character set (0 through 31 and 128 through 255) correspond to the characters
+that can be displayed in a full-screen MS-DOS session. These characters are
+generally different from the Windows characters.</dd>
+
+<dt><i>Symbol Character Set</i></dt>
+<dd>The Symbol character set contains special characters typically used to
+represent mathematical and scientific formulas.</dd>
+
+</dl>
+
+<h5>End of Line Characters</h5>
+
+<p>The MS-DOS (including Windows and OS/2), UNIX, and Macintosh operating
+systems all use different characters to designate the end of a line within
+a text file.</p>
+
+<table>
+
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+<th>Used</th>
+<th>Char</th>
+<th>Hex</th>
+</tr>
+
+<tr>
+ <td>CR</td>
+ <td>Carriage Return</td>
+ <td>Macintosh</td>
+ <td>\r</td>
+ <td>0x0d</td>
+</tr>
+<tr>
+ <td>LF</td>
+ <td>Line Feed</td>
+ <td>UNIX</td>
+ <td>\n</td>
+ <td>0x0a</td>
+</tr>
+<tr>
+ <td>CR/LF</td>
+ <td>Carriage Return/Line Feed</td>
+ <td>MS-DOS, Windows, OS/2</td>
+ <td>\r\n</td>
+ <td>0x0d, 0x0a</td>
+</tr>
+<tr>
+ <td>NULL</td>
+ <td>Null character</td>
+ <td></td>
+ <td>\0</td>
+ <td>0x00</td>
+</tr>
+
+</table>
+
+<h4>See Also</h4>
+<p>
+<a href="advwork_convert.htm">Converting Contents of Files</a><br />
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

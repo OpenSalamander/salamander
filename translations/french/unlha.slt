@@ -1,0 +1,36 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\french\unlha.atp"
+TEXTVERSION,"1.13 (x86)"
+VERSION,"1,1,3,180"
+
+[TRANSLATION]
+LANGID,1036
+AUTHOR,"Gérard Gréco, Arnaud Dupin de Beyssat, Jérémy Marc, Maxime Abbey"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6162"
+COMMENT,"Version française"
+
+[STRINGTABLE 0]
+1,1,"Fichier LZH invalide ou format de fichier inconnu."
+2,1,"Erreur de checksum d'en-tête.\nL'archive est abîmée - l'affichage de tous les fichiers n'est pas possible."
+3,1,"Mémoire insuffisante."
+4,1,"Erreur en écriture"
+5,1,"UnLHA"
+6,1,"Erreur d'ouverture de l'archive."
+7,1,"Impossible d'ajouter des entrées d'archive à la liste de fichiers."
+8,1,"L'archive contient un ou plusieurs liens symboliques UNIX, qui ne seront pas affichés."
+10,1,"Impossible de décompresser le fichier."
+11,1,"Erreur dans les données compressées. Les CRC ne correspondent pas."
+12,1,"Erreur de lecture de l'archive."
+13,1,"Décompression de l'archive LHA - %s"
+14,1,"préparation des données et création des répertoires..."
+15,1,"décompression: "
+
+[STRINGTABLE 1]
+16,1,"décompression..."
+17,1,"Impossible de terminer l'opération à cause d'un nom de chemin trop long."
+18,1,"Impossible de terminer l'opération à cause d'un masque trop long."
+19,1,"Méthode de compression inconnue.Le fichier ne peut être décompressé."
+20,1,"méthode inconnue non traitée..."
+21,1,"Parcourt et extrait les archives LHA."
+22,1,"A propos du module"
+

@@ -1,0 +1,78 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Remote Commands</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Features</div>
+<div class="page">
+<h1>Remote Commands</h1>
+
+<p>
+WinSCP offers unique feature to execute command on remote server as with regular
+terminal client. However as it cannot implement the
+terminal fully, there are some limitations. Particularly, you cannot execute commands that
+require terminal emulation or user input. See <a href="#limitations">below</a> for technical details.
+</p>
+
+<p>
+Basically the feature is supported only for <a href="protocols.htm#scp">SCP protocol</a>. With
+<a href="protocols.htm#sftp">SFTP</a> you can still use the feature by opening
+<a href="shell_session.htm">separate shell session</a>, which in fact takes place automatically for you.
+</p>
+
+<a name="how_to_enter_the_remote_command"></a>
+<h4>How to Enter the Remote Command</h4>
+
+<p>
+You can enter the command on the Open Salamander command line, while the WinSCP panel is the active one.
+</p>
+
+<a name="limitations"></a>
+<h4>Technical Background of Terminal Limitations</h4>
+
+<p>
+Plugin does not support commands that require terminal 
+emulation or user input.
+</p>
+
+<p>
+Terminal emulation cannot be implemented at all as it is 
+not possible to combine terminal emulation and file 
+transfers in the same session. The reason is that with 
+terminal emulation control characters have special meaning 
+that is interpreted by the server. On the other hand the 
+same characters (bytes) have special meaning in the file 
+transfer protocols or may be simply present in the (binary) 
+files being transferred.
+</p>
+
+<p>
+If you happen to try execute command requiring terminal 
+emulation, it will typically refuse to run with error 
+message like "Error opening terminal", "No TTY available",
+"stdin: is not a tty" or "Couldn't open /dev/tty for reading".
+</p>
+
+<p>
+Plugin may possibly support user input. However most 
+commands requiring user input does that via terminal 
+emulation features. If your command needs plain input 
+without terminal emulation you can use input redirection 
+like:
+</p>
+  
+<pre>
+echo "some input" | command
+</pre>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

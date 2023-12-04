@@ -1,0 +1,162 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Environment Tab (Login Dialog)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Dialog Boxes: Configuring Session</div>
+<div class="page">
+<h1>Environment Tab (Login Dialog)</h1>
+
+<p>
+<em>Environment tab</em> allows user to configure WinSCP adaptation for particular server/environment.
+</p>
+
+<p>
+More environmental options are available on subtabs:
+</p>
+
+<ul>
+<li><a href="ui_login_directories.htm">Directories</a> (initial directory, directory cache)</li>
+<li><a href="ui_login_recycle_bin.htm">Recycle Bin</a></li>
+<li><a href="ui_login_sftp.htm">SFTP</a> (<acronym title="SSH File Transfer Protocol">SFTP</acronym> protocol specific/compatibility options)</li>
+<li><a href="ui_login_scp.htm">SCP/Shell</a> (shell and <acronym title="Secure Copy Protocol">SCP</acronym> protocol specific/compatibility options)</li>
+</ul>
+
+<a name="server_environment"></a>
+<h4>Server Environment</h4>
+
+<a name="server_eol_characters"></a>
+<h5>Server EOL Characters</h5>
+
+<p>
+Use <em>End-of-line characters</em> to specify text file format used by
+the server.
+To allow <a href="transfer_mode.htm">text mode transfers</a>, WinSCP needs to know the format of text file.
+Generally there is plenty of text file formats, almost every platform has it own format. WinSCP
+supports two most used formats, Unix and Windows. As most servers are
+run on Unix system, generally you may leave the default Unix format. If your server runs on Windows, select the
+Windows format. If you do not use text mode transfers, the option is not important for you.
+</p>
+
+<p>
+With <a href="protocols.htm#sftp">SFTP-4 and newer</a>, the server tells itself what format it uses, so
+the configured option is not used.
+</p>
+
+<a name="daylight_saving_time"></a>
+<h5>UTF-8 Encoding for Filenames</h5>
+
+<p>
+Use <em>UTF-8 encoding for filenames</em> to configure if WinSCP should use
+<acronym title="8-bit Unicode Transformation Format">UTF-8</acronym> (Unicode)
+encoding for filenames in communication with the server.
+</p>
+
+<p>
+With default <em>Auto</em> value, WinSCP will try to autodetect
+if the server supports
+<acronym title="8-bit Unicode Transformation Format">UTF-8</acronym>.
+With <a href="protocols.htm#sftp">SFTP protocol</a> this means that
+<acronym title="8-bit Unicode Transformation Format">UTF-8</acronym>
+will be used for protocol version 4 and newer,
+unless the server is known not to support
+<acronym title="8-bit Unicode Transformation Format">UTF-8</acronym>
+<a href="#fn1">(see note 1)</a>.
+</p>
+
+<p>
+Set the option to <em>On</em> to force usage of
+<acronym title="8-bit Unicode Transformation Format">UTF-8</acronym>
+(useful for servers using
+<acronym title="8-bit Unicode Transformation Format">UTF-8</acronym> natively).
+Set the option to <em>Off</em> to unconditionally disable usage of
+<acronym title="8-bit Unicode Transformation Format">UTF-8</acronym>.
+</p>
+
+<p>
+<acronym title="8-bit Unicode Transformation Format">UTF-8</acronym>
+is not supported with <a href="protocols.htm#scp">SCP protocol</a>.
+</p>
+
+<a name="timezone_offset"></a>
+<h5>Timezone Offset</h5>
+
+<p>
+The <em>Timezone offset</em> allows user to configure timezone difference
+of the server.
+</p>
+
+<p>
+With <a href="protocols.htm#scp">SCP protocol</a> the option is used
+to counterweight time difference between
+<a href="timestamp.htm">timestamp</a> of remote file shown in directory listing and timestamp set on
+downloaded file, and vice versa. The difference is caused by fact that during transfer <code>scp</code>
+command usually uses <acronym title="Universal Time Coordinated">UTC</acronym> time format, while
+<code>ls</code> command may display time in local (for server) time format. The time difference can be
+negative. For example if the timestamps of remote files are two hours ahead of local files, set the
+option to -2 hours. Read about other issues with <a href="timestamp.htm">timestamps</a>.
+</p>
+
+<p>
+The option is not available with <a href="protocols.htm#sftp">SFTP protocol</a>,
+as with it, the server must report all timestamps in
+<acronym title="Universal Time Coordinated">UTC</acronym>.
+</p>
+
+<a name="daylight_saving_time"></a>
+<h4>Daylight Saving Time</h4>
+
+<p>
+Some servers (mostly on Windows) adjust <a href="timestamp.htm">file timestamp</a> with start of
+<acronym title="Daylight Savings Time">DST</acronym> and some not (Unix). The option selects between
+the two approaches.
+</p>
+
+<p>
+Change the option if timestamps of some files, either in directory listing or after transfer, are shifted
+by one hour. Note that the option must be set correctly before transferring the files. It does not make sense
+to try to use it to adjust the incorrect timestamp of already transferred file.
+</p>
+
+<p>
+Use the third option <em>Preserve remote timestamp</em>,
+if you want to see exact non-adjusted remote timestamp in remote panel.
+Drawback is that with the option selected,
+the <a href="task_synchronize.htm">synchronization</a>
+functions will not work.
+</p>
+
+<p>
+Read about other issues with <a href="timestamp.htm">timestamps</a>.
+</p>
+
+<a name="unix_windows_presets"></a>
+<h2>Unix/Windows Presets</h2>
+<p>
+Use <em>Unix</em> or <em>Windows</em> buttons to set the environment settings to values typical
+for a server running on these platforms.
+</p>
+
+<a name="other_settings"></a>
+<h2>Other Settings</h2>
+<p>
+Use link <em>Recycle bin</em> to reveal <em><a href="ui_login_recycle_bin.htm">Recycle bin tab</a></em>.
+</p>
+
+<h4>Notes:</h4>
+<p>
+<a name="fn1"></a>
+1) Foxit software WAC Server
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

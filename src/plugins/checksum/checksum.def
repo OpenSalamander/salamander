@@ -1,0 +1,4 @@
+LIBRARY checksum.spl
+
+EXPORTS SalamanderPluginEntry
+EXPORTS SalamanderPluginGetReqVer

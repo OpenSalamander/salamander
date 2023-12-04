@@ -1,0 +1,99 @@
+﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __CHECKVER_RH2
+#define __CHECKVER_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#define IDC_STATIC_1 400
+#include "statics.rh2"   // 400 az 439 jsou timto zabrane !!!
+
+// icons, cursors, bitmaps
+#define IDI_CHECKVER            80
+#define IDI_INTERNET            81
+#define IDB_CHECKVER            84
+
+// commands
+#define CM_CHECK_VERSION        90
+#define CM_AUTOCHECK_VERSION    91
+#define CM_ENUMMODULES          92
+#define CM_FIRSTCHECK_VERSION   93
+#define CM_OPENFILE             94  // pouze v debug verzi - v systemovem menu
+#define CM_ABOUT                95  // vyvola about dialog
+#define CM_CHECK_FIRSTLOAD      96  // pousti se pokud jde o prvni check z prave nainstalovaneho Salamandera (okno checkveru je zobrazene kvuli firewallu, aby user pochopil proc jdeme na internet)
+
+// texts
+#define IDS_PLUGIN_DESCRIPTION  190
+#define IDS_ABOUT               191
+
+#define IDS_CTXMENU_OPEN        210
+#define IDS_CTXMENU_COPY        211
+#define IDS_CTXMENU_FILTER      212
+#define IDS_PLUGINNAME          213
+#define IDS_FILTER_CONFIRM      214
+#define IDS_REMOVE_CNFRM        215
+#define IDS_SETDEF_CNFRM        216
+#define IDS_OPENED_WINDOWS      217
+#define IDS_ABORT_DOWNLOAD      218
+
+#define IDS_INET_INIT           220
+#define IDS_INET_INIT_FAILED    221
+#define IDS_INET_CONNECT        222
+#define IDS_INET_CONNECT_FAILED 223
+#define IDS_INET_READ           224
+#define IDS_INET_READ_FAILED    225
+#define IDS_INET_SUCCESS        226
+#define IDS_INET_ABORTED        227
+#define IDS_INET_PROTOCOL       228
+
+#define IDS_CFG_CONFLICT1       230
+#define IDS_CFG_CONFLICT2       231
+#define IDS_CFG_CONFLICT3       232
+
+#define IDS_CLOSE_CONFLICT      233
+#define IDS_PLUGIN_BUSY         234
+#define IDS_INFO_CORRUPTED      235
+
+#define IDS_FILTERED_MODULES    240
+#define IDS_INSTALLED_MODULES   241
+#define IDS_NEWREL_MODULES      242
+#define IDS_NEWBETA_MODULES     243
+#define IDS_NONEW_MODULES       244
+
+#define IDS_BTN_CHECK           247
+#define IDS_BTN_STOP            248
+
+#define IDS_COPYRIGHT1          250
+#define IDS_COPYRIGHT2          251
+
+#define IDS_MENU_ABOUT          253
+#define IDS_LAST_CHECK          254
+
+#define IDS_INTERNET_PHONE      255
+#define IDS_INTERNET_LAN        256
+#define IDS_INTERNET_NONE       257
+
+#define IDS_SKIP_CHECK          258
+#define IDS_CHECK_FOR_NEW_VER   260
+#define IDS_UPDATE_SCRIPT_LANG  266
+#define IDS_DONOTUSEFTP         267
+#define IDS_LOGWNDHELP1         268
+#define IDS_LOGWNDHELP2         269
+#define IDS_SHOWDETAILS         270
+#define IDS_HIDEDETAILS         271
+#define IDS_NEWPB_MODULES       272
+#define IDS_CTXMENU_DOWNLOAD    273
+#define IDS_FILTERVER_CONFIRM   274
+#define IDS_FILTERTHISVER       275
+
+#define IDS_MENU_OPENFILE       276
+#define IDS_FILE_OPENERROR      277
+#define IDS_FILE_READERROR      278
+#define IDS_FILE_OPENED         279
+
+// help IDs
+
+#define IDH_CHECKVER            500
+
+#endif // __CHECKVER_RH2

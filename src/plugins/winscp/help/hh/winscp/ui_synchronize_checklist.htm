@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Synchronization Checklist</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Dialog Boxes</div>
+<div class="page">
+<h1>Synchronization Checklist</h1>
+
+<p>
+You will be presented with the synchronization checklist if you have
+enabled option <em>Preview changes</em> on
+<a href="ui_synchronize.htm">Synchronize dialog</a>.
+In the checklist you can select those synchronization actions
+you want to actually apply.
+</p>
+
+<a name="information_displayed"></a>
+<h4>Information Displayed</h4>
+
+<p>
+In the checklist, there is one row per each synchronization action.
+For each action, you can see the action type, visualized by icon.
+Green arrows indicate a new file that does not exist in the target/destination
+directory and will be copied to the directory that the arrow points to
+<a href="#fn1">(see note 1)</a>. Blue arrows indicate a changed file that
+will be copied to the directory (overwriting the file with the same name)
+that the arrow points to <a href="#fn1">(see note 1)</a>.
+And finally red crosses indicate a file that only exists in
+the target/destination directory and will be deleted
+<a href="#fn1">(see note 1)</a>.
+For each action you can see also name of the file or directory
+(directories end with slash and can be distinguished also by an icon),
+and their attributes in either local or remote directory or both
+(for updated files). Columns <em>Local/Remote directory</em> indicate location
+of the files/directories relative to root directory of synchronization.
+</p>
+
+<a name="selecting_actions"></a>
+<h4>Selecting Actions</h4>
+
+<p>
+To select actions to be applied, use checkbox at the very beginning of each row.
+To check more actions at a time, select them and use buttons
+<em>(Un)Check</em> or context menu. Note that you can select all
+actions or certain type (like local file updates) by clicking on respective
+section of Status bar (at the bottom of the window).
+To add the actions to the existing selection, hold down <code>Ctrl</code> key,
+while clicking.
+</p>
+
+<p>
+Note that initially only those actions that you have requested by
+your synchronization options will be checked.
+I.e. if you have not enabled option <em>Delete files</em>,
+the deletion actions will be unchecked.
+</p>
+
+<h4>Notes:</h4>
+<p>
+<a name="fn1"></a>
+1) If the box on the left is checked.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

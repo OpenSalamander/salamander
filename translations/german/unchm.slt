@@ -1,0 +1,47 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\german\unchm.atp"
+TEXTVERSION,"1.03 (x86)"
+VERSION,"1,0,3,180"
+
+[TRANSLATION]
+LANGID,1031
+AUTHOR,"Dirk Bornhütter, Thomas Kelso, Thomas Pagels, Thomas Wölk, Marko Meister und Mick Weiss"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7334"
+COMMENT,"Deutsche Version"
+
+[STRINGTABLE 0]
+1000,1,"UnCHM"
+1001,1,"Die Datei kann nicht geöffnet werden."
+1002,1,"Unbekannter Fehler."
+1003,1,"Entpacke CHM-Archiv"
+1004,1,"Fehler beim Entpacken der Datei."
+1005,1,"Diese Datei kann nicht verarbeitet werden."
+1006,1,"Nicht genügend Arbeitsspeicher."
+1007,1,"Über Plugin"
+
+[STRINGTABLE 1]
+1009,1,"Durchsucht und entpackt CHM-Dateien."
+1010,1,"Kann kein temporäres Verzeichnis erstellen."
+1011,1,"Kann temporäre Datei nicht löschen."
+1012,1,"Unbekanntes Dateiformat oder ungültiges CHM-Abbild.\n\nWenn Sie sicher sind, dass dies ein gültiges CHM-Abbild ist, wenden Sie sich bitte an support@altap.cz und helfen uns dieses Format zu unterstützen."
+1013,1,"Diese Datei kann nicht geöffnet werden."
+1014,1,"Erstellen einer temporären Datei ist fehlgeschlagen."
+1015,1,"Dateiattribute können nicht gesetzt werden."
+1016,1,"Verzeichnis '%s' kann nicht erstellt werden."
+1020,1,"Ja"
+1021,1,"Nein"
+1022,1,"Fehler"
+1023,1,"Warnung"
+
+[STRINGTABLE 2]
+1032,1,"Interner Pluginfehler."
+
+[STRINGTABLE 3]
+1100,1,"Lesefehler"
+1101,1,"Schreibfehler"
+
+[STRINGTABLE 4]
+1105,1,"Ungültige Zahl."
+1106,1,"Vorgang wird abgebrochen, Bitte warten..."
+1107,1,"CHMLIB Bibliothek Copyright © 2001-2010 Jed Wing"
+

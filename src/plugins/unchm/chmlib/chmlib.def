@@ -1,0 +1,7 @@
+LIBRARY chmlib.dll
+
+EXPORTS chm_open
+EXPORTS chm_close
+EXPORTS chm_enumerate
+EXPORTS chm_retrieve_object
+EXPORTS chm_resolve_object

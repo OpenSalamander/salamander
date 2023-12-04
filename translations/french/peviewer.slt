@@ -1,0 +1,38 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\french\peviewer.atp"
+TEXTVERSION,"3.0 (x86)"
+VERSION,"3,0,0,180"
+
+[TRANSLATION]
+LANGID,1036
+AUTHOR,"Gérard Gréco, Arnaud Dupin de Beyssat, Jérémy Marc, Maxime Abbey"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6162"
+COMMENT,"Version française"
+
+[DIALOG 8501]
+346,154,1,"Configuration du Visualiseur de fichier exécutable"
+1300,7,7,72,8,1,"Sections disponi&bles:"
+8700,7,17,105,130,1,""
+8702,119,17,50,14,1,"&Ajouter ->"
+8703,119,35,50,14,1,"<- &Retirer"
+1301,176,7,58,8,1,"Sections &visibles:"
+8701,176,17,105,130,1,""
+8704,289,17,50,14,1,"Vers le &haut"
+8705,289,35,50,14,1,"Vers le ba&s"
+1,289,97,50,14,1,"OK"
+2,289,115,50,14,1,"Annuler"
+8706,289,133,50,14,1,"RA&Z"
+
+[STRINGTABLE 0]
+1016,1,"A propos du module"
+
+[STRINGTABLE 1]
+10100,1,"Visualiseur de fichier exécutable"
+10101,1,"Impossible d'ouvrir le fichier %s."
+10102,1,"La création d'un fichier temporaire a échoué."
+10103,1,"Une exception s'est produite.\n\nFichier visualisé: %s\n\nSi vous pensez que le fichier visualisé n'est pas corrompu, veuillez l'envoyer à support@altap.cz.\nNous reproduirons et réparerons le bogue du visualiseur. Merci de votre coopération!"
+10104,1,"Affiche des informations sur les fichiers exécutables de type EXE, DLL, etc."
+
+[STRINGTABLE 2]
+10118,1,"Aucune section d'exécutable n'a été sélectionnée dans la configuration du module.\nUtilisez le menu Options > Configuration de module > Visualiseur de fichier exécutable\ndans la feznêtre principale d'Open Salamander pour définir les sections visibles."
+

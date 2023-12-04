@@ -1,0 +1,50 @@
+OS/2:
+NOVELL/WINDOWS-NT:
+UNIX:
+/pub/d/dir ("/pub/d/dir" musi byt cesta a musi existovat)
+/pub/d/*.* ("/pub/d" musi byt cesta a musi existovat, "*.*" je maska)
+/pub/d/newname ("/pub/d" musi byt cesta a musi existovat, "/pub/d/newname"
+                neexistuje nebo jde o soubor (v tomto pripade musi byt oznaceny
+                soubor, u adresare nesmysl), "newname" je
+                novy nazev jedineho zdrojoveho souboru/adresare)
+
+VMS:
+PUB$DEVICE:[PUB.VMS] ("PUB$DEVICE:[PUB.VMS]" musi byt cesta a musi existovat)
+
+oznacene jen soubory:
+PUB$DEVICE:[PUB.VMS]*.* ("PUB$DEVICE:[PUB.VMS]" musi byt cesta a musi existovat, "*.*" je maska)
+
+oznaceny jeden soubor:
+PUB$DEVICE:[PUB.VMS]newname ("PUB$DEVICE:[PUB.VMS]" musi byt cesta a musi existovat,
+                             "PUB$DEVICE:[PUB.VMS]newname" neexistuje nebo jde o soubor,
+                             "newname" je novy nazev jedineho zdrojoveho souboru)
+
+oznacene jen adresare:
+PUB$DEVICE:[PUB.VMS.*] ("PUB$DEVICE:[PUB.VMS]" musi byt cesta a musi existovat, "*" je maska)
+
+oznaceny jeden adresar:
+PUB$DEVICE:[PUB.VMS.newname] ("PUB$DEVICE:[PUB.VMS]" musi byt cesta a musi existovat,
+                             "PUB$DEVICE:[PUB.VMS.newname]" neexistuje,
+                             "newname" je novy nazev jedineho zdrojoveho adresare)
+
+MVS:
+'VEA0016.MAIN.CLIST' ("'VEA0016.MAIN.CLIST'" musi byt cesta a musi existovat)
+'VEA0016.MAIN.CLIST.*' ("'VEA0016.MAIN.CLIST'" musi byt cesta a musi existovat, "*" je maska)
+'VEA0016.MAIN.CLIST.newname' ("'VEA0016.MAIN.CLIST'" musi byt cesta a musi existovat,
+                              'VEA0016.MAIN.CLIST.newname' neexistuje nebo je soubor,
+                              (v tomto pripade musi byt oznaceny soubor, u adresare nesmysl),
+                              "newname" je novy nazev jedineho zdrojoveho souboru/adresare)
+
+
+IBM z/VM (CMS):
+ACADEM:ANONYMOU.PICS ("ACADEM:ANONYMOU.PICS" musi byt cesta a musi existovat)
+
+oznacene jen soubory:
+ACADEM:ANONYMOU.PICS.*.* (maska je formatu: filename '.' filetype; "ACADEM:ANONYMOU.PICS"
+                          musi byt cesta a musi existovat)
+
+oznacene jen adresare:
+ACADEM:ANONYMOU.PICS.* (maska je formatu: dirname; "ACADEM:ANONYMOU.PICS" musi byt cesta
+                        a musi existovat)
+
+

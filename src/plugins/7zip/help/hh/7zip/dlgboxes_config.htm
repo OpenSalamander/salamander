@@ -1,0 +1,94 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>7-Zip Configuration dialog box</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: 7-ZIP: Dialog Boxes</div>
+<div class="page">
+
+<h1>7-Zip Configuration</h1>
+
+<p>Use this dialog box to setup the 7-Zip plugin.
+See <a href="ms-its:salamand.chm::/hh/salamand/plugins_config.htm">Configuring Plugins</a>
+for general information about configuration.</p>
+
+<h4>Options</h4>
+<dl>
+
+<dt><i>Display dialog box with extended options before packing</i></dt>
+
+<dd>When checked, the plugin displays the <a href="dlgboxes_newarc.htm">Create New Archive
+dialog box</a> (or Add Files to Archive dialog box if the archive already exists) before each
+pack operation to a 7-Zip archive. You can specify options for packing in this dialog (compression
+and encryption settings).
+</dd>
+
+<dt><i>Show extended info when listing archive: Packed, Method</i></dt>
+
+<dd>When checked, you can choose if you want to display any of the following columns in panel:
+<i>Packed</i> (packed size of file) and <i>Method</i> (compression method).
+Checked columns will be displayed in the panel.
+</dd>
+
+<dt><i>Compression level</i></dt>
+
+<dd>Choose the compression level. You can use one of the following values:
+<table>
+ <tr><th>Value</th><th>Description</th></tr>
+ <tr><td>Store</td><td>No compression is used, files are just stored in archive in its original size.</td></tr>
+ <tr><td>Fastest</td><td>Very fast compression with relatively low compression ratio.</td></tr>
+ <tr><td>Fast</td><td>Fast compression.</td></tr>
+ <tr><td>Normal</td><td>Recommended level of compression.</td></tr>
+ <tr><td>Maximum</td><td>Better compression, but it is slower and needs more memory.</td></tr>
+ <tr><td>Ultra</td><td>Best compression, but it is even slower and needs even more memory.</td></tr>
+</table>
+</dd>
+
+<dt><i>Compression method</i></dt>
+
+<dd>Select the compression method. You can use one of the following methods:
+
+<table>
+ <tr><th>Method</th><th>Description</th></tr>
+ <tr><td>LZMA</td><td>7-Zip's default compression method. It provides high compression ratio and very fast decompression.</td></tr>
+ <tr><td>PPMd</td><td>Dmitry Shkarin's PPMdH algorithm with small changes. Usually it provides high compression ratio and high speed for text files.</td></tr>
+</table>
+</dd>
+
+<dt><i>Dictionary size</i></dt>
+
+<dd>Enter the dictionary size for the compression method. The higher dictionary size means
+the better compression, but it is slower and needs more memory. Memory use for LZMA
+compressing is about 10 times the dictionary size. Memory use for LZMA decompressing
+is close to the dictionary size. Memory use for PPMd compressing and decompressing
+is almost equal to the dictionary size.
+</dd>
+
+<dt><i>Word size</i></dt>
+
+<dd>Enter the length of words, which will be used to find identical sequences of bytes for
+compression. For LZMA, big word size usually gives a little bit better compression ratio and
+slower compression process. Big word size parameter can significantly increase compression
+ratio in case when files contain long identical sequences of bytes. For PPMd word size has
+a big meaning. It strongly affects both compression ratio and compression/decompression speed.
+</dd>
+
+<dt><i>Create solid archive</i></dt>
+
+<dd>When checked, all files will be compressed as one continuous data stream.
+It usually improves compression ratio.
+</dd>
+
+</dl>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

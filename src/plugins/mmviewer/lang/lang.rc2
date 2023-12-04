@@ -1,0 +1,318 @@
+﻿//
+// lang.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "..\versinfo.rh2"
+#include "versinfo.rc2"
+
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_PLUGIN_DESCRIPTION  "Display information about multimedia files such as MP3, OGG, WAV, etc."
+    IDS_ABOUT               "About Plugin"
+    IDS_PLUGIN_NAME         "Multimedia Viewer"
+    IDS_OPENED_WINDOWS      "Some Multimedia Viewer windows are opened. Do you want to close them?"
+    IDS_ERROR_OPENING       "Error opening %s.\nThis format is not supported by Multimedia Viewer."
+END
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_MENU_FILES          "&File"
+    IDS_MENU_FILES_OPEN     "&Open...\tCtr+O"
+    IDS_MENU_FILES_EXPORT_HTML     "Export to &HTML...\tCtr+H"
+    //IDS_MENU_FILES_EXPORT_XML     "Export to &XML...\tCtr+X"
+    IDS_MENU_FILES_PROPERTIES "Prop&erties...\tCtrl+F1"
+    IDS_MENU_FILES_EXIT     "E&xit\tAlt+F4"
+
+    IDS_MENU_FILE_OTHER     "O&ther Files"
+    IDS_MENU_FILE_FIRST     "&First\tShift+Backspace"
+    IDS_MENU_FILE_LAST      "&Last\tShift+Space"
+    IDS_MENU_FILE_PREV      "&Previous\tBackspace"
+    IDS_MENU_FILE_NEXT      "&Next\tSpace"
+
+    IDS_MENU_EDIT           "&Edit"
+    IDS_MENU_EDIT_COPY      "&Copy All\tCtrl+A"
+    //IDS_MENU_EDIT_SELECT_ALL "&Select All\tCtrl+A"
+END
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_MENU_VIEW           "&View"
+END
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_MENU_VIEW_FULLSCREEN "&Full Screen\tF11"
+END
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_MENU_OPTIONS        "&Options"
+    IDS_MENU_OPTIONS_CONFIG "&Configuration..."
+END
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_MENU_HELP           "&Help"
+    IDS_MENU_HELP_ABOUT     "&About..."
+END
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_TBTT_COPY           "Copy All\tCtrl+A"
+    IDS_TBTT_OPEN           "Open\tCtrl+O"
+    IDS_TBTT_EXP_HTML       "Export to HTML\tCtrl+H"
+    //IDS_TBTT_EXP_XML        "Export to XML\tCtrl+X"
+    IDS_TBTT_FIND           "Find\tCtrl+F"
+    IDS_TBTT_PROPERTIES     "Properties\tCtrl+F1"
+    IDS_TBTT_FULLSCREEN     "Full Screen\tF11"
+    IDS_TBTT_PREV           "Open Previous\tBackspace"
+    IDS_TBTT_NEXT           "Open Next\tSpace"
+END
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_VIEWERFILTER        "Multimedia files (*.mp3;*.mp2;*.ogg;*.vqf;*.wma;*.wav;*.669;*.it;*.mod;*.mtm;*s3m;*.stm;*.xm)|*.mp3;*.mp2;*.ogg;*.wma;*.wav;*.wave;*.vqf;*.669;*.it;*.mod;*.mtm;*s3m;*.stm;*.xm|All Files (*.*)|*.*||"
+    IDS_HTMLEXPFILTER   "HTML files (*.htm;*.html)|*.htm;*.html|All Files (*.*)|*.*||"
+    IDS_EXPORTOPEN          "Do you wish to open exported data?"
+    IDS_EXPORTHTML          "Export Info into &HTML..."
+    IDS_AUDIOINFO     "Audio Properties"
+    IDS_HTMLEXT       ".html"
+    IDS_PROCESSINGFILES   "Processing files, please wait..."
+    IDS_FILESPROCESSED    "%lu of %lu files were successfully processed."
+END
+
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_YES                 "Yes"
+    IDS_NO                  "No"
+
+    IDS_VQF_INFO            "VQF Information"
+    IDS_VQF_COPYRIGHT       "Copyright"
+    IDS_VQF_AUTHOR          "Author"
+    IDS_VQF_TITLE           "Title"
+    IDS_VQF_COMMENTS        "Comments"
+    IDS_VQF_YEAR            "Year"
+    IDS_VQF_ALBUM           "Album"
+END
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_VQF_TRACK           "Track"
+    IDS_VQF_ORIGFILENAME    "Orig. filename"
+    IDS_VQF_LYRC            "LYRC"
+    IDS_VQF_WORD            "WORD"
+    IDS_VQF_MUSC            "MUSC"
+    IDS_VQF_ARNG            "ARNG"
+    IDS_VQF_PROD            "PROD"
+    IDS_VQF_REMX            "REMX"
+    IDS_VQF_CDCT            "CDCT"
+    IDS_VQF_SING            "SING"
+    IDS_VQF_LABL            "LABL"
+    IDS_VQF_NOTE            "NOTE"
+    IDS_VQF_PRSN            "PRSN"
+    IDS_VQF_BAND            "BAND"
+END
+
+STRINGTABLE DISCARDABLE
+BEGIN
+  IDS_WMA_INFO            "Windows Media Audio Information"
+    IDS_WMA_BINARY          "binary (%luB)"
+    IDS_WMA_DURATION        "Duration"
+    IDS_WMA_BITRATE         "Bitrate (kbps)"
+    IDS_WMA_SEEKABLE        "Seekable"
+    IDS_WMA_STRIDABLE       "Stridable"
+    IDS_WMA_BROADCAST       "Broadcast"
+    IDS_WMA_PROTECTED       "Protected"
+    IDS_WMA_TRUSTED         "Trusted"
+    IDS_WMA_SIGNATURENAME   "Signature Name"
+    IDS_WMA_TITLE           "Title"
+    IDS_WMA_AUTHOR          "Author"
+END
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_WMA_DESCRIPTION     "Description"
+    IDS_WMA_RATING          "Rating"
+    IDS_WMA_COPYRIGHT       "Copyright"
+    IDS_WMA_ALBUMTITLE      "Album"
+    IDS_WMA_TRACK           "Track"
+    IDS_WMA_PROMOTIONURL    "Promotion URL"
+    IDS_WMA_ALBUMCOVERURL   "Album Cover URL"
+    IDS_WMA_GENRE           "Genre"
+    IDS_WMA_YEAR            "Year"
+    IDS_WMA_MCDI            "MCDI"
+    IDS_WMA_BANNERIMAGETYPE "Banner Image Type"
+    IDS_WMA_BANNERIMAGEDATA "Banner Image Data"
+    IDS_WMA_BANNERIMAGEURL  "Banner Image URL"
+    IDS_WMA_COPYRIGHTURL    "Copyright URL"
+    IDS_WMA_NSCNAME         "NSC Name"
+    IDS_WMA_NSCADDRESS      "NSC Address"
+END
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_WMA_NSCPHONE        "NSC Phone"
+    IDS_WMA_NSCEMAIL        "NSC Email"
+    IDS_WMA_NSCDESCRIPTION  "NSC Description"
+END
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_MOD_INFO            "Tracker Module Information"
+    IDS_MOD_PATTERNS        "Patterns"
+    IDS_MOD_SAMPLES         "Samples"
+    IDS_MOD_INSTRUMENTS     "Instruments"
+    IDS_MOD_TITLE           "Title"
+END
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_OGG_INFO            "OGG Vorbis Information"
+    IDS_OGG_VERSION         "Version"
+    IDS_OGG_BITRATE         "Nominal bitrate (kbps)"
+    IDS_OGG_FREQUENCY       "Frequency (Hz)"
+END
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_OGG_CHANNELS        "Channels"
+    IDS_OGG_COPYRIGHT       "Copyright"
+    IDS_OGG_VERSIONS        "Version"
+    IDS_OGG_CONTACT         "Contact"
+    IDS_OGG_ISRC            "ISRC"
+    IDS_OGG_AUTHOR          "Author"
+    IDS_OGG_TITLE           "Title"
+    IDS_OGG_GENRE           "Genre"
+    IDS_OGG_COMMENTS        "Comments"
+    IDS_OGG_DATE            "Date"
+    IDS_OGG_ALBUM           "Album"
+    IDS_OGG_TRACK           "Track"
+    IDS_OGG_PERFORMER       "Performer"
+    IDS_OGG_ORGANIZATION    "Organization"
+    IDS_OGG_DESCRIPTION     "Description"
+    IDS_OGG_DETAILS         "Details"
+END
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_OGG_LOCATION        "Location"
+    IDS_OGG_SAMPLES         "Samples"
+    IDS_OGG_LENGTH          "Length"
+    IDS_OGG_ADDINFO         "Additional information"
+    IDS_OGG_DISCID          "Disc ID"
+    IDS_OGG_VENDOR          "Vendor"
+    IDS_OGG_STDTAGS         "Standard Tags"
+    IDS_OGG_OTHERTAG        "Other Tag"
+END
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_MP4_AACINFO         "AAC Information"
+    IDS_MP4_BITRATE         "Bitrate (bps)"
+    IDS_MP4_SAMPLINGRATE    "Sampling Rate (Hz)"
+    IDS_MP4_CHANNELS        "Channels"
+    IDS_MP4_DURATION        "Duration"
+    IDS_MP4_AACHEADERTYPE   "Header Type"
+    IDS_MP4_MPEGVERSION     "MPEG Version"
+    IDS_MP4_OBJTYPE_MAIN    "MAIN"
+    IDS_MP4_OBJTYPE_LC      "LC"
+    IDS_MP4_OBJTYPE_SSR     "SSR"
+    IDS_MP4_OBJTYPE_LTP     "LTP"
+    IDS_MP4_HEADTYPE_RAW    "RAW"
+    IDS_MP4_HEADTYPE_ADIF   "ADIF"
+    IDS_MP4_HEADTYPE_ADTS   "ADTS"
+END
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_WAV_INFO            "WAVE Information"
+    IDS_WAV_BITRATE         "Bitrate (bps)"
+    IDS_WAV_FREQUENCY       "Frequency (Hz)"
+    IDS_WAV_MODE            "Mode"
+    IDS_WAV_COMPRESSION     "Compression"
+    IDS_WAV_STEREO          "Stereo"
+    IDS_WAV_MONO            "Mono"
+    IDS_WAV_LENGTH          "Length"
+END
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_MP3_MP3VERSION      "Version"
+    IDS_MP3_MP3VERSIONFMT   "MPEG %u.%u Layer %s"
+    IDS_MP3_BITRATE         "Bitrate (kbps)"
+    IDS_MP3_FREQUENCY       "Frequency (Hz)"
+    IDS_MP3_MODE            "Mode"
+    IDS_MP3_COPYRIGHT       "Copyright (c)"
+    IDS_MP3_ORIGINAL        "Original"
+    IDS_MP3_AUTHOR          "Author"
+    IDS_MP3_TITLE           "Title"
+    IDS_MP3_GENRE           "Genre"
+    IDS_MP3_COMMENTS        "Comments"
+END
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_MP3_YEAR            "Year"
+    IDS_MP3_ALBUM           "Album"
+    IDS_MP3_EMPHASIS        "Emphasis"
+    IDS_MP3_ID3TAGV         "ID3 Tag v%u.%u"
+    IDS_MP3_MP3INFO         "MPEG Audio information"
+    IDS_MP3_FRAMES          "Frames"
+    IDS_MP3_LENGTH          "Length"
+    IDS_MP3_AVERAGE         "Variable, average "
+    IDS_MP3_TRACK           "Track"
+    IDS_MP3_DASH            "-"
+    IDS_MP3_5015MS          "50/15 microsecs"
+    IDS_MP3_CCITTJ17        "CCITT J 17"
+    IDS_MP3_QUESTIONMARK    "?"
+    IDS_MP3_STEREO          "Stereo"
+    IDS_MP3_JSTEREO         "Joint Stereo"
+    IDS_MP3_DCHANNEL        "Dual Channel"
+END
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_MP3_SCHANNEL        "Single Channel"
+    IDS_MP3_COMPOSER        "Composer"
+    IDS_MP3_ORIGARTIST      "Orig. Artist"
+    IDS_MP3_ENCODEDBY       "Encoded by"
+    IDS_MP3_URL_COMINFO     "Commercial information URL"
+    IDS_MP3_URL_COPYRIGHT   "Copyright/Legal information URL"
+    IDS_MP3_URL_OFFICIAL    "Official audio file URL"
+    IDS_MP3_URL_ARTIST      "Official artist/performer URL"
+    IDS_MP3_URL_ASOURCE     "Official audio source URL"
+    IDS_MP3_URL_IRADIO      "Official internet radio station URL"
+    IDS_MP3_URL_PAYMENT     "Payment URL"
+    IDS_MP3_URL_PUBLISHER   "Publishers official URL"
+    IDS_MP3_PUBLISHER       "Publisher"
+    IDS_MP3_USERURL         "Custom URL"
+    IDS_MP3_USERTEXT        "Custom Text"
+END
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_MMV_OOM             "Out of memory"
+    IDS_MMV_UNKNOWN_FILE    "Unknown file"
+    IDS_MMV_OPEN_ERROR      "Open error"
+    IDS_MMV_READ_ERROR      "Read error"
+    IDS_MMV_WRITE_ERROR     "Write error"
+    IDS_MMV_SEEK_ERROR      "Seek error"
+    IDS_MMV_CORRUPTED_FILE  "Corrupted file"
+END
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_MMV_EXTENSION_ERROR "Unable to initialize Windows extensions"
+END

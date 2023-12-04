@@ -1,0 +1,117 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Authentication Progress</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Dialog Boxes</div>
+<div class="page">
+<h1>Authentication Progress</h1>
+
+<p>
+During <a href="ssh.htm#authentication_in_ssh">authentication</a>
+WinSCP will present you with authentication window
+to show you progress of authentication and
+to prompt you to enter your credentials or other information.
+</p>
+
+<a name="username"></a>
+<h4>Username</h4>
+<p>
+If you do not specify username on
+<a href="ui_login_session.htm#session_group">Login dialog</a>,
+WinSCP will prompt you once it needs it for authentication.
+</p>
+
+<a name="password"></a>
+<h4>Password</h4>
+
+<p>
+If you are using password authentication, you can enter your password directly on
+<a href="ui_login_session.htm#session_group">Login dialog</a>. Otherwise WinSCP will prompt you
+once a server asks for it. You will be prompted again, if you enter invalid password. Also note
+that most of the servers will &quot;prompt&quot; for password when you use invalid username, not to allow
+attacker to learn if particular account exists.
+</p>
+
+<p>
+When authentication with stored password (if any) has failed before,
+the prompt will include <em>Change stored password to this one</em> check.
+Use it to overwrite stored password with new one.
+</p>
+
+<a name="keyboard_interactive"></a>
+<h4>Keyboard Interactive</h4>
+
+<p>
+For keyboard-interactive, TIS or Cryptocard authentication methodsthe server can issue its own
+prompt. Most of the servers use keyboard-interactive authentication just as different method for getting
+account password. For the reason WinSCP by default responds to the first keyboard-interactive prompt
+with the password entered on Login dialog (if any). To disable this behaviour unset keyboard-interactive
+authentication option
+<em><a href="ui_login_authentication.htm#attempt_keyboard-interactive_authentication">Respond with password
+to the first prompt</a></em>.
+</p>
+
+<p>
+The server may also issue multiple prompts at once.
+Some servers will use such prompt to request a password change.
+</p>
+
+<a name="private_key_passphrase"></a>
+<h4>Private Key Passphrase</h4>
+
+<p>
+If you are using <a href="public_key.htm">public key authentication</a> with encrypted
+<a href="public_key.htm#private">private key</a> you will be prompted to enter passphrase for your key.
+</p>
+
+<a name="authentication_banner"></a>
+<h4>Authentication Banner</h4>
+
+<p>
+During <a href="ssh.htm#authentication_in_ssh">authentication against SSH server</a> the server can issue authentication banner.
+It can contain various information, generally regarding security and server usage. After reviewing the text,
+press <em>Continue</em> button to continue.
+</p>
+
+<p>
+If you want to avoid seeing the banner each time you login, check <em>Never show this banner again</em>.
+It will make WinSCP ignore the same banner for the particular account and server the next time. However
+if the banner content changes you will see it again. Suppression of banners can be
+<a href="administration.htm">restricted by system administrator</a>.
+</p>
+
+<a name="password_change"></a>
+<h4>Password Change</h4>
+
+<p>
+During authentication, the server may request you to change a password,
+particularly if your password has expired.
+</p>
+
+<p>
+Enter your current password to <em>Current password</em>.
+</p>
+
+<p>
+Enter your new password to <em>New password</em> and once again to
+<em>Confirm new password</em>.
+</p>
+
+<p>
+Note that the server may use
+<a href="#keyboard_interactive">keyboard interactive</a>
+method for change password request. Then the prompts will differ.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

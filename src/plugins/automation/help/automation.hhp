@@ -1,0 +1,119 @@
+[OPTIONS]
+Auto Index=Yes
+Compatibility=1.1 or later
+Compiled file=automation.chm
+Contents file=automation.hhc
+Default Window=$global_ssdefault
+Default topic=hh\automation\introduction_intro.htm
+Display compile progress=No
+Full text search stop list file=..\..\shared\help\en\stop.stp
+Full-text search=Yes
+Index file=automation.hhk
+Language=0x409 English (United States)
+Title=Automation Help
+
+[WINDOWS]
+$global_ssdefault=,"salamand.chm::\salamand.hhc","automation.hhk","hh\automation\introduction_intro.htm","hh\automation\introduction_intro.htm",,,,"Web Help",0x3520,,0x180e,,,,,,,,0
+
+
+[FILES]
+hh\salamander_help.css
+hh\salamander_help_shared.css
+hh\automation\appendix_engines.htm
+hh\automation\appendix_samples.htm
+hh\automation\dlgboxes_config.htm
+hh\automation\introduction_intro.htm
+hh\automation\introduction_news.htm
+hh\automation\ref_button.htm
+hh\automation\ref_button_ctor.htm
+hh\automation\ref_button_dialogresult.htm
+hh\automation\ref_control.htm
+hh\automation\ref_control_text.htm
+hh\automation\ref_form.htm
+hh\automation\ref_form_ctor.htm
+hh\automation\ref_form_execute.htm
+hh\automation\ref_forms.htm
+hh\automation\ref_checkbox.htm
+hh\automation\ref_checkbox_ctor.htm
+hh\automation\ref_item.htm
+hh\automation\ref_itemcollection.htm
+hh\automation\ref_label.htm
+hh\automation\ref_label_ctor.htm
+hh\automation\ref_panel.htm
+hh\automation\ref_panel_deselectall.htm
+hh\automation\ref_panel_pathtype.htm
+hh\automation\ref_panel_selectall.htm
+hh\automation\ref_panel_storeselection.htm
+hh\automation\ref_progressdialog.htm
+hh\automation\ref_progressdialog_addtext.htm
+hh\automation\ref_progressdialog_cancancel.htm
+hh\automation\ref_progressdialog_step.htm
+hh\automation\ref_progressdialog_style.htm
+hh\automation\ref_salamander.htm
+hh\automation\ref_salamander_abortscript.htm
+hh\automation\ref_salamander_automationversion.htm
+hh\automation\ref_salamander_debugbreak.htm
+hh\automation\ref_salamander_errordialog.htm
+hh\automation\ref_salamander_getfullpath.htm
+hh\automation\ref_salamander_getpersistentval.htm
+hh\automation\ref_salamander_inputbox.htm
+hh\automation\ref_salamander_matchesmask.htm
+hh\automation\ref_salamander_msgbox.htm
+hh\automation\ref_salamander_overwritedialog.htm
+hh\automation\ref_salamander_questiondialog.htm
+hh\automation\ref_salamander_setpersistentval.htm
+hh\automation\ref_salamander_sleep.htm
+hh\automation\ref_salamander_trace.htm
+hh\automation\ref_salamander_viewfile.htm
+hh\automation\ref_salamander_windowsversion.htm
+hh\automation\ref_scriptinfo.htm
+hh\automation\ref_textbox.htm
+hh\automation\ref_textbox_ctor.htm
+hh\automation\ref_waitwindow.htm
+hh\automation\using_running.htm
+
+[ALIAS]
+IDD_CONFIG=hh\automation\dlgboxes_config.htm
+
+[MAP]
+#include "..\automation.rh"
+#include "..\automation.rh2"
+#include "..\lang\lang.rh"
+
+[MERGE FILES]
+salamand.chm
+zip.chm
+demoplug.chm
+demoview.chm
+filecomp.chm
+7zip.chm
+dbviewer.chm
+ftp.chm
+checksum.chm
+checkver.chm
+ieviewer.chm
+mmviewer.chm
+pak.chm
+peviewer.chm
+pictview.chm
+regedt.chm
+renamer.chm
+splitcbn.chm
+tar.chm
+unarj.chm
+uncab.chm
+undelete.chm
+unfat.chm
+uniso.chm
+unlha.chm
+unmime.chm
+unrar.chm
+wmobile.chm
+winscp.chm
+nethood.chm
+unchm.chm
+diskmap.chm
+demomenu.chm
+
+[INFOTYPES]
+

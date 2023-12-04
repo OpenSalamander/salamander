@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Separate Shell Session</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Features</div>
+<div class="page">
+<h1>Separate Shell Session</h1>
+
+<p>
+Some features allowed with <a href="protocols.htm">SCP protocol</a> are not supported by
+<a href="protocols.htm">SFTP protocol</a>. This includes execution of
+<a href="remote_command.htm">remote command</a> and
+direct <a href="task_move_duplicate.htm#duplicate">duplication of remote file</a>. To support
+these features with <acronym title="SSH File Transfer Protocol">SFTP</acronym> protocol,
+WinSCP can open a separate shell session, to perform the commands on. The shell session is
+opened automatically (with <a href="ui_sal_pref_confirmations.htm">suppressible confirmation</a>)
+when you attempt to use any of the mentioned features. After the command is executed,
+the shell session will be kept in background for future use.
+</p>
+
+<p>
+For the feature to work, WinSCP must be able to open a shell session similar to one used by
+<acronym title="Secure Copy Protocol">SCP</acronym> sessions. So while you are using
+<acronym title="SSH File Transfer Protocol">SFTP</acronym> protocol, you may still need to
+alter options on the <em><a href="ui_login_scp.htm">SCP/Shell tab</a></em> of the Login dialog
+if the defaults do not work. Also, for the feature to work, the shell must use the same path syntax
+as the <acronym title="SSH File Transfer Protocol">SFTP</acronym> server.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

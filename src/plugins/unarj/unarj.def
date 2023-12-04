@@ -1,0 +1,4 @@
+LIBRARY unarj.spl
+
+EXPORTS SalamanderPluginEntry
+EXPORTS SalamanderPluginGetReqVer

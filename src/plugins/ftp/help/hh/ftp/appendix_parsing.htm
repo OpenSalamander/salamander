@@ -1,0 +1,594 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Getting Lists of Files and Directories from FTP Servers</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: FTP Client: Appendix</div>
+<div class="page">
+<h1>Getting Lists of Files and Directories from FTP Servers</h1>
+
+<p>FTP client needs to get the list of files and directories in the current directory
+on the FTP server. It should contain as many information about files and directories
+as possible (date, size, user, group, access rights, etc.). These files and directories
+are listed in panel where you can work with them. The list of files and directories is
+got from the plain text listing received from the FTP server. This listing is designed
+only for reading by a human, not for automatic parsing. It means that nearly each FTP
+server software has its own format of this listing (format depends on the server
+operating system, its language version, etc.). So the FTP client must handle many
+formats of listings.</p>
+
+<p>For each format of listing we define one server type. It contains a condition
+used to autodetect server type (autodetect condition), a list of available data columns
+(including their visibility in panel), and a parser for plain text listing.
+All defined server types are displayed in <a href="config_servers.htm">Configuration/Servers</a>.
+You can add new or edit existing in <a href="dlgboxes_editsrvtype.htm">Edit Server Type
+dialog box</a>.</p>
+
+<p>You can choose if the server type should be autodetected or not. If not, choose
+what server type should be used. See the <i>Server type</i> option in the
+<a href="dlgboxes_connectadv.htm">Advanced Options dialog box</a>.</p>
+
+
+<h4>Getting Lists of Files and Directories with Specified Server Type</h4>
+
+<p>The specified server type is used to parse the plain text listing. If parsing
+is successful, the list of files and directories is its result. If not, the
+plugin displays warning and only the plain text listing is displayed in panel
+(such listing is unusable for any operation).</p>
+
+<p>A directory "." (if it is in the listing) and a directory ".." (if it is
+in the listing and if it is the listing for the root directory) are removed
+from the list of files and directories. The directory ".." (if it is in
+the list) is always visible (the hidden attribute is ignored).</p>
+
+
+<h4>Getting Lists of Files and Directories with Autodetected Server Type</h4>
+
+<p>All defined server types are tried one by one. The autodetect condition is
+evaluated for each server type. If it is false, the server type
+is skipped (and next one is tried). If it is true, the server type is used to
+parse the plain text listing. If parsing is successful, the list of files and
+directories is its result. If not, the server type is skipped (and next
+one is tried).</p>
+
+<p>If no server type was successfully used for parsing, all server types
+skipped due to autodetect condition are tried one by one.
+Each such server type is used to parse the plain text listing. If parsing is
+successful, the list of files and directories is its result. If not, the
+server type is skipped (and next one is tried).</p>
+
+<p>If all defined server types failed in parsing, the plugin displays warning
+and only the plain text listing is displayed in panel (such listing is
+unusable for any operation).</p>
+
+<p>The server type is autodetected only for the first listing from the server.
+The same server type is used for all other listings (it allows to display
+the same columns also for empty listings, etc.). If the listing
+cannot be parsed with the same server type, the plugin tries to
+autodetect another server type.</p>
+
+<p>A directory "." (if it is in the listing) and a directory ".." (if it is
+in the listing and if it is the listing for the root directory) are removed
+from the list of files and directories. The directory ".." (if it is in
+the list) is always visible (the hidden attribute is ignored).</p>
+
+
+<h4>Syntax of Parser</h4>
+
+<p>A line comment starts with '#' character (and ends on end of line character).</p>
+
+<p>Each rule starts with '*' character and ends with ';' character. The number
+of rules is not limited. The rule consists of functions delimited by ','
+character.</p>
+
+<p>The function consists of name, '(' character, list of parameters, and
+')' character. The complete list of functions is placed further in this
+page.</p>
+
+<p>Parameters in the list of parameters are delimited by ',' character.
+Parameters are expressions.</p>
+
+<p>The expression is a column identifier, a state variable, a constant, or
+one binary operation. The binary operation has a standard form (first_operand
+operation_symbol second_operand). The operand can be a column identifier,
+a state variable, or a constant.</p>
+
+<p>The column identifier consists of '&lt;' character, identifier name, and
+'&gt;' character.</p>
+
+<p>The complete lists of state variables and operation symbols are placed
+further in this page.</p>
+
+<p>The constant is a string, a number, or a boolean.</p>
+
+<p>The string is enclosed in double quotes ('"' characters). It must be defined
+in a single line. Escape-sequences are introduced by '\' character. Supported
+escape-sequences are: "\\" for '\' character, "\"" for '"' character, "\t" for
+tab character, "\r" and "\n" for end of line characters (CR and LF). Other
+escape-sequences are reported as syntax errors.</p>
+
+<p>The number consists of decimal digits. Negative number is introduced by '-'
+character. Positive number is introduced by '+' character (it can be omitted).</p>
+
+<p>The boolean is "true" or "false" (write it without double-quotes).</p>
+
+
+<h4>Columns</h4>
+
+<p>Each column has an identifier name, a type of values, an empty value, a name
+and description for displaying in panel, and an alignment of values. The identifier
+name is used in the column identifier which is used for assigning values to the
+column. Each column can contain only one value for each item (a file or directory).
+If no value was assigned to the column, the empty value defined for the column is
+used. The column can be visible in panel or not. Only columns of Name and Extension
+types are always visible in panel. Columns are defined in the
+<a href="dlgboxes_editcolumn.htm">New/Edit Column dialog box</a>.</p>
+
+<p>We have the following types of columns:</p>
+<table>
+ <colgroup>
+   <col class="nobr" />
+   <col />
+ </colgroup>
+ <tr><th>Type</th><th>Description</th></tr>
+ <tr><td>Name</td><td>string; file or directory name; exacly one column of this type is
+         neccessary; it cannot be hidden; the definition of the empty value for
+	 this column has no sense; parser must assign a value to this column for
+	 each file and directory; if no value is assigned, parsing using the current
+	 rule does not add any file nor directory (it is used for skipping empty lines and other
+	 not important parts of the plain text listing); assigning of the empty string ("") is
+	 considered to be an error in parsing</td></tr>
+ <tr><td>Extension</td><td>string; file extension; values are automatically generated from
+         values in the column of the Name type; it cannot be hidden; the definition of the
+	 empty value for this column has no sense</td></tr>
+ <tr><td>File Size in Bytes</td><td>64-bit unsigned integer; file size in bytes; the value is zero
+         and is displayed as "DIR" in panel for all directories; the default empty
+	 value is zero</td></tr>
+ <tr><td>Last Write Date</td><td>date; last write (modification) date; a date value must be valid (if not,
+         it is replaced by the value January 1, 1602); the default empty value is
+	 January 1, 1602</td></tr>
+ <tr><td>Last Write Time</td><td>time; last write (modification) time; the default empty value is 0:00:00</td></tr>
+ <tr><td>File Type</td><td>string; file type description (defined by Windows for file extensions);
+         values are automatically generated from values in the column of the Name type;
+	 the definition of the empty value for this column has no sense</td></tr>
+ <tr><td>Any Text</td><td>string; general purpose; the default empty value is the empty string ("")</td></tr>
+ <tr><td>Any Date</td><td>date; general purpose; a date value must be valid (if not,
+         it is replaced by the value January 1, 1602); the default empty value is the empty
+	 string (""), it means that if the value is not assigned, nothing is shown in panel</td></tr>
+ <tr><td>Any Time</td><td>time; general purpose; the default empty value is the empty
+         string (""), it means that if the value is not assigned, nothing is shown in panel</td></tr>
+ <tr><td>Any Number</td><td>64-bit signed integer; general purpose; the default empty
+         value is the empty string (""); it means that if the value is not assigned,
+	 nothing is shown in panel</td></tr>
+</table>
+
+<p>Moreover we have three virtual columns with identifiers &lt;is_dir&gt;, &lt;is_hidden&gt;
+a &lt;is_link&gt;. We assign boolean values to these columns. Their meanings are: "is
+item a directory?" (false means that it is a file), "is item hidden?" (false means that
+it has not hidden attribute), and "is item a link?" (false means that it is not a link).
+It is not neccessary to assign values to these columns, their empty values are: "is a file",
+"is not hidden", and "is not a link".</p>
+
+
+<h4>Syntax of Autodetect Condition</h4>
+
+<p>The autodetect condition is a logical expression. Operators in the expression are
+(from the highest priority): NOT, AND, and OR. NOT (logical negation) is unary,
+AND (logical conjunction) and OR (logical disjunction) are binary. The expression
+can contain subexpressions enclosed in parentheses. We have the following functions
+that are used as operands:</p>
+<table>
+ <colgroup>
+   <col class="nobr" />
+   <col />
+ </colgroup>
+ <tr><th>Function</th><th>Description</th></tr>
+ <tr><td>syst_contains(string)</td><td>returns true only if a reply
+         to the FTP command SYST (get type of operating system at the server)
+	 contains the specified string (searching is not case sensitive)</td></tr>
+ <tr><td>welcome_contains(string)</td><td>returns true only if the
+         first message from the server contains the specified string (searching
+	 is not case sensitive)</td></tr>
+ <tr><td>reg_exp_in_syst(regular_expression_string)</td><td>returns
+         true only if a reply to the FTP command SYST (get type of operating system
+	 at the server) contains a string matching to the specified regular
+	 expression (searching is not case sensitive)</td></tr>
+ <tr><td>reg_exp_in_welcome(regular_expression_string)</td><td>returns
+         true only if the first message from the server contains a string
+	 matching to the specified regular expression (searching is not case
+	 sensitive)</td></tr>
+</table>
+
+
+<h4>Parsing</h4>
+
+<p>The parsing is successful if the plain text listing is completely traversed
+by using defined rules.</p>
+
+<p>The current position in the listing will be mentioned as a pointer. The pointer
+is moved from the beginning to the end of the listing during parsing.</p>
+
+<p>The rule can be used only if all its functions are successfully evaluated,
+the empty string is not assigned to the column of the Name type (in other
+words non-empty string or nothing can be assigned to this column), and the
+pointer is moved to the end of some line of the listing. After using a rule,
+the pointer is always moved to the beginning of the next line in the listing.</p>
+
+<p>While the function is evaluated, it can move the pointer and assign or change
+values in columns.</p>
+
+<p>The parser can contain as many rules as needed. Rules are always tried in
+the order of their definition. In other words, always the first usable rule
+is used.</p>
+
+<p>The listing can be incomplete if user cancels its getting or due to some
+network failure. The incomplete listing is trimmed to contain only the
+complete text lines.</p>
+
+<p>The parsing of the incomplete listing is handled at the level of using
+rules. In simple case the pointer is moved (by using rules) to the end
+of the incomplete listing and it means the successful end of parsing.
+Otherwise during evaluation of some function from currently used rule,
+the pointer should be moved to the next line. But this is not possible
+because the listing is incomplete, so parsing is successfully ended
+(the same situation as if the line (or lines) traversed by the current
+rule were not in the incomplete listing).</p>
+
+
+<h4>Supported File Sizes</h4>
+
+<p>The plugin supports two types of file sizes: in bytes and in blocks.
+The file size should be assigned to the column of the File Size in Bytes type
+(if it is in bytes) or to the column of the Any Number type which is named
+using standard name "Blocks" or "BlkSize". If you do it, the total size in
+bytes or blocks will be displayed in the
+<a href="ms-its:salamand.chm::/hh/salamand/windows_infoline.htm">Information Line</a>
+when you select a group of files.</p>
+
+
+<h4>Functions for Parsing</h4>
+
+<p>If not explicitly stated, the function is assumed to be always successful, does not
+move the pointer, and does not assign any value to any column. If the function
+moves the pointer and if not explicitly stated, it is assumed that the pointer
+cannot move behind the end of line (to the next line).</p>
+
+<p>Before using the column identifier in the expression, it is neccessary to
+assign a value to this column. Otherwise the expression has no sense (such
+expression can be replaced by the boolean constant which is calculated using
+the column default empty value in the expression).</p>
+
+<p>Note: in the following table, the whitespace is the space or tab character.</p>
+
+<p>We have the following functions for parsing:</p>
+<table>
+ <colgroup>
+   <col class="nobr" />
+   <col />
+ </colgroup>
+ <tr><th>Function</th><th>Description</th></tr>
+
+ <tr><td>if(expression)</td><td>the type of the expression (<i>expression</i>
+         parameter) result must be boolean; the function is successful if the expression
+	 result is true</td></tr>
+
+ <tr><td>assign(&lt;column&gt;, expression)</td><td>the type of the expression
+         (<i>expression</i> parameter) result must be the same as the type of values in the
+	 column (<i>&lt;column&gt;</i> parameter); assigns the expression result to the
+	 column</td></tr>
+	 
+ <tr><td>skip_white_spaces()</td><td>skips all whitespaces at the pointer
+         position; it moves the pointer behind them (if any)</td></tr>
+
+ <tr><td>skip_to_number()</td><td>moves the pointer to the nearest decimal digit</td></tr>
+
+ <tr><td>white_spaces()</td><td>skips all whitespaces at the pointer position;
+         the function is successful only if the pointer moves</td></tr>
+
+ <tr><td>white_spaces(number)</td><td>skips a string containing the specified number
+         (<i>number</i> parameter) of whitespaces at the pointer position; it moves the pointer
+	 behind this string; the function is successful only if such string exists</td></tr>
+
+ <tr><td>white_spaces_and_line_ends()</td><td>skips all whitespaces and end of line
+         characters at the pointer position; the function is successful only if the pointer moves
+	 and if the pointer is not at the end of the listing (some character was found behind
+	 whitespaces and end of line characters)</td></tr>
+
+ <tr><td>rest_of_line()</td><td>moves the pointer to the end of line;
+         the function is successful only if the pointer moves</td></tr>
+
+ <tr><td>rest_of_line(&lt;column&gt;)</td><td>the type of values in the column
+         (<i>&lt;column&gt;</i> parameter) must be string; assigns a string starting from the pointer
+	 position and ending before the end of line to the column; the pointer moves to the end of line;
+	 the function is successful only if the pointer moves</td></tr>
+
+ <tr><td>word()</td><td>skips all characters except whitespaces and end of line
+         characters; the function is successful only if the pointer moves</td></tr>
+
+ <tr><td>word(&lt;column&gt;)</td><td>the type of values in the column
+         (<i>&lt;column&gt;</i> parameter) must be string; assigns a string starting from the pointer
+	 position and ending before the first whitespace or end of line character to the column;
+	 moves the pointer behind this string; the function is successful only if
+	 the pointer moves</td></tr>
+
+ <tr><td>number(&lt;column&gt;)</td><td>the type of values in the column
+         (<i>&lt;column&gt;</i> parameter) must be integer; assigns a decimal number starting at the
+	 pointer position to the column; this number must be followed by some common delimiter
+	 (',', '.', ';', ':', etc.), whitespace, or end of line character (not by a letter);
+	 moves the pointer behind this number; the function is successful only if
+	 the number exists, if it is properly terminated, and if the column type is File Size in Bytes,
+	 the number must not be negative</td></tr>
+
+ <tr><td>positive_number(&lt;column&gt;)</td><td>the type of values in the column
+         (<i>&lt;column&gt;</i> parameter) must be integer; assigns a positive decimal number starting
+	 at the pointer position to the column; if the number is negative, it assigns the default
+	 empty value (zero for the File Size in Bytes column type, the empty string for the Any Number column type) to the
+	 column; this number must be followed by some common delimiter (',', '.', ';', ':', etc.),
+	 whitespace, or end of line character (not by a letter); moves the pointer behind this
+	 number; the function is successful only if the number exists and if it is properly
+	 terminated</td></tr>
+
+ <tr><td>number_with_separators(&lt;column&gt;, string)</td><td>
+         the type of values in the column (<i>&lt;column&gt;</i> parameter) must be integer; assigns
+	 a decimal number with digit grouping symbols (separators; it is used to make reading
+	 of large numbers easier; allowed separators are in the <i>string</i> parameter; allowed are
+	 all characters except decimal digits and '+' and '-' characters) starting at the
+	 pointer position to the column; this number must be followed by some common delimiter
+	 (',', '.', ';', ':', etc.), whitespace, or end of line character (not by a letter);
+	 moves the pointer behind this number; the function is successful only if
+	 the number exists, if it is properly terminated, and if the column type is File Size in Bytes,
+	 the number must not be negative</td></tr>
+
+ <tr><td>month_3(&lt;column&gt;)</td><td>the type of values in the column
+         (<i>&lt;column&gt;</i> parameter) must be date; assigns a month represented by three letters
+	 at the pointer position to the column; works with month names in several languages
+	 (currently supported languages: English, German, Norweigan, and Swedish);
+	 the month name must be followed by some common delimiter (',', '.', ';', ':', etc.),
+	 whitespace, or end of line character (not by a letter); moves the pointer behind the
+	 month name; the function is successful only if month name is known and all month
+	 names in the listing are from the same language</td></tr>
+
+ <tr><td>month_3(&lt;column&gt;, string)</td><td>the type of values in the column
+         (<i>&lt;column&gt;</i> parameter) must be date; assigns a month represented by three letters
+	 at the pointer position to the column; works with month names specified in the string
+	 (<i>string</i> parameter), it contains twelve three letters month names separated by spaces
+	 (e.g. "jan feb mar apr may jun jul aug sep oct nov dec" for English);
+	 the month name must be followed by some common delimiter (',', '.', ';', ':', etc.),
+	 whitespace, or end of line character (not by a letter); moves the pointer behind the
+	 month name; the function is successful only if month name is in the string</td></tr>
+
+ <tr><td>month_txt(&lt;column&gt;)</td><td>the type of values in the column
+         (<i>&lt;column&gt;</i> parameter) must be date; assigns a month represented by its name
+	 at the pointer position to the column; works with month names in several languages
+	 (currently supported languages: German); the month name must be followed by some
+	 common delimiter (',', '.', ';', ':', etc.), whitespace, or end of line character
+	 (not by a letter); moves the pointer behind the month name; the function is
+	 successful only if month name is known and all month names in the listing are from
+	 the same language</td></tr>
+
+ <tr><td>month_txt(&lt;column&gt;, string)</td><td>the type of values in the column
+         (<i>&lt;column&gt;</i> parameter) must be date; assigns a month represented by its name
+	 at the pointer position to the column; works with month names specified in the string
+	 (<i>string</i> parameter), it contains twelve month names separated by spaces
+	 (e.g. "Jan. Feb. März Apr. Mai Juni Juli Aug. Sept. Okt. Nov. Dez." for German);
+	 the month name must be followed by some common delimiter (',', '.', ';', ':', etc.),
+	 whitespace, or end of line character (not by a letter); moves the pointer behind the
+	 month name; the function is successful only if month name is in the string</td></tr>
+
+ <tr><td>month(&lt;column&gt;)</td><td>the type of values in the column
+         (<i>&lt;column&gt;</i> parameter) must be date; assigns a month represented by a decimal number
+	 at the pointer position to the column; this number must be followed by some common
+	 delimiter (',', '.', ';', ':', etc.), whitespace, or end of line character (not by
+	 a letter); moves the pointer behind the number; the function is successful only if
+	 the number is in range 1 to 12</td></tr>
+
+ <tr><td>day(&lt;column&gt;)</td><td>the type of values in the column
+         (<i>&lt;column&gt;</i> parameter) must be date; assigns a day represented by a decimal number
+	 at the pointer position to the column; this number must be followed by some common
+	 delimiter (',', '.', ';', ':', etc.), whitespace, or end of line character (not by
+	 a letter); moves the pointer behind the number; the function is successful only if
+	 the number is in range 1 to 31</td></tr>
+
+ <tr><td>year(&lt;column&gt;)</td><td>the type of values in the column
+         (<i>&lt;column&gt;</i> parameter) must be date; assigns a year represented by a decimal number
+	 at the pointer position to the column; this number must be followed by some common
+	 delimiter (',', '.', ';', ':', etc.), whitespace, or end of line character (not by
+	 a letter); moves the pointer behind the number; the function is successful only if
+	 the number is in range 0 to 999 (in range 0 to 79 it adds 2000; in range 80 to 999 it
+	 adds 1900; e.g. year 107 means year 2007) or in range 1602 to 9999</td></tr>
+
+ <tr><td>time(&lt;column&gt;)</td><td>the type of values in the column
+         (<i>&lt;column&gt;</i> parameter) must be time; assigns hours, minutes, and
+	 eventually also seconds and milliseconds represented by decimal numbers at
+	 the pointer position to the column; supported time formats are: 00:00,
+	 00:00:00, or 00:00:00.000; if the time value is followed by "a", "am", "p",
+	 or "pm", it is considered to be "a.m." (morning) or "p.m." (evening) and the
+	 time value is properly corrected; the time value must be followed by some common
+	 delimiter (',', '.', ';', ':', etc.), whitespace, or end of line character
+	 (not by a letter or digit); moves the pointer behind the time value;
+	 the function is successful only if the time value is valid (ranges: 0-23,
+	 0-59, 0-59, and 0-999)</td></tr>
+
+ <tr><td>year_or_time(&lt;column_date&gt;, &lt;column_time&gt;)</td><td>
+         types of values in columns (<i>&lt;column_date&gt;</i> and <i>&lt;column_time&gt;</i> parameters)
+	 must be date and time; assigns year and eventually also time (only hours and minutes)
+	 represented by a decimal number (if it is year) or two decimal numbers separated by ':'
+	 character (if it is time) at the pointer position to the column; supports standard Unix
+	 format: if it is year at the pointer position, time is unknown, and if it is time at the
+	 pointer position, year is calculated from the current date according to the rule that
+	 the whole date should not be older than six months); numbers must be followed by some
+	 common delimiter (',', '.', ';', ':', etc.), whitespace, or end of line character
+	 (not by a letter); moves the pointer behind the year or time value;
+	 the function is successful only if the year or time value is valid (ranges: 1602-9999
+	 and 0-23:0-59)</td></tr>
+
+ <tr><td>all(number)</td><td>skips the specified number (<i>number</i> parameter)
+         of characters; moves the pointer behind skipped characters; the function is successful
+	 only if all specified characters were skipped</td></tr>
+
+ <tr><td>all(&lt;column&gt;, number)</td><td>the type of values in the column
+         (<i>&lt;column&gt;</i> parameter) must be string; assigns a string starting from
+	 the pointer position containing the specified number of characters (<i>number</i>
+	 parameter) to the column; moves the pointer behind this string; the function is
+	 successful only if such string exists</td></tr>
+
+ <tr><td>all_to(string)</td><td>finds the first occurence (searching is case
+         insensitive) of the specified string (<i>string</i> parameter) and moves the pointer
+	 behind this occurence; the function is successful only if the specified string
+	 was found</td></tr>
+
+ <tr><td>all_to(&lt;column&gt;, string)</td><td>the type of values in the column
+         (<i>&lt;column&gt;</i> parameter) must be string; assigns a string starting from
+	 the pointer position and ending behind the first occurence (searching is case
+         insensitive) of the specified string (<i>string</i> parameter) to the column;
+	 moves the pointer behind the found string; the function is successful only if the
+	 specified string was found</td></tr>
+
+ <tr><td>all_up_to(&lt;column&gt;, string)</td><td>the type of values in the column
+         (<i>&lt;column&gt;</i> parameter) must be string; assigns a string starting from
+	 the pointer position and ending before the first occurence (searching is case
+         insensitive) of the specified string (<i>string</i> parameter) to the column;
+	 moves the pointer behind the found string; the function is successful only if the
+	 specified string was found</td></tr>
+
+ <tr><td>unix_link(&lt;is_dir&gt;, &lt;column_name&gt;,
+         &lt;column_link&gt;)</td><td>types of columns <i>&lt;column_name&gt;</i>
+	 and <i>&lt;column_link&gt;</i> must be Name and Any Text; works with a string starting
+	 at the pointer position and ending before the end of line; moves the pointer behind this
+	 string; expects standard Unix format of link: "link_name -&gt; target_name" or "link_name"
+	 (if the link target is not accessible); gets the link name and eventually also the link
+	 target from the string and detects if it is the link to a file or directory (used
+	 heuristics: if the link name or target contains extension, it is probably the link to
+	 a file, otherwise it is the link to a directory; if this heuristics does not fit, you
+	 can still add e.g. the function "assign(&lt;is_dir&gt;,false)" behind the unix_link
+	 function); assigns the link name to the &lt;column_name&gt; column; if the link
+	 target is known, it is assigned to the &lt;column_link&gt; column; assigns true to
+	 the &lt;is_dir&gt; virtual column if it is the link to a directory; the function is
+	 successful only if the string has the expected format and does not start with
+	 whitespace</td></tr>
+
+ <tr><td>unix_device(&lt;column&gt;)</td><td>the type of values in the column
+         (<i>&lt;column&gt;</i> parameter) must be string; assigns a string starting from
+	 the pointer position containing two decimal numbers separated by ',' character and
+	 several spaces (e.g. "27,  26") to the column; the string must be followed by some
+	 common delimiter (',', '.', ';', ':', etc.), whitespace, or end of line character
+	 (not by a letter); moves the pointer behind the string; the function is successful
+	 only if the string is found</td></tr>
+
+ <tr><td>add_string_to_column(&lt;column&gt;, expression)</td><td>
+         the type of values in the column (<i>&lt;column&gt;</i> parameter) and the type of
+	 the expression (<i>expression</i> parameter) result must be string; adds the
+	 expression result to the column</td></tr>
+
+ <tr><td>cut_white_spaces_end(&lt;column&gt;)</td><td>the type of values in the
+         column (<i>&lt;column&gt;</i> parameter) must be string; cuts off whitespaces from the
+	 end of string in the column and assigns this new string to the column</td></tr>
+
+ <tr><td>cut_white_spaces_start(&lt;column&gt;)</td><td>the type of values in the
+         column (<i>&lt;column&gt;</i> parameter) must be string; cuts off whitespaces from the
+	 beginning of string in the column and assigns this new string to the column</td></tr>
+
+ <tr><td>cut_white_spaces(&lt;column&gt;)</td><td>the type of values in the
+         column (<i>&lt;column&gt;</i> parameter) must be string; cuts off whitespaces from the
+	 beginning and the end of string in the column and assigns this new string to the
+	 column</td></tr>
+
+ <tr><td>back(number)</td><td>moves the pointer the specified number (<i>number</i>
+         parameter) of characters back; the function is successful only if this move is
+	 possible (it is not possible to move the pointer to the previous line)</td></tr>
+
+ <tr><td>cut_end_of_string(&lt;column&gt;, number)</td><td>the type
+         of values in the column (<i>&lt;column&gt;</i> parameter) must be string; cuts off
+	 the specified number (<i>number</i> parameter) of characters from the end of string
+	 in the column and assigns this new string to the column; the function is successful
+	 only if the length of original value in the column was at least <i>number</i></td></tr>
+
+</table>
+
+
+<h4>State Variables Used in Parsing</h4>
+
+<p>We have the following state variables:</p>
+<table>
+ <colgroup>
+   <col class="nobr" />
+   <col />
+ </colgroup>
+ <tr><th>Variable</th><th>Description</th></tr>
+
+ <tr><td>first_nonempty_line</td><td>boolean; it is true only if the pointer is in the first
+         nonempty line (the line which does not contain only whitespaces)</td></tr>
+  
+ <tr><td>last_nonempty_line</td><td>boolean; it is true only if the pointer is in the last
+         nonempty line (the line which does not contain only whitespaces);
+	 ignores the fact if the listing is complete or incomplete</td></tr>
+  
+ <tr><td>next_char</td><td>string; the string containing one character at the pointer
+         position; if the pointer is at the end of the listing, the string is empty</td></tr>
+  
+ <tr><td>next_word</td><td>string; the string starting from the pointer position and
+         ending before the first whitespace or end of line character</td></tr>
+  
+ <tr><td>rest_of_line</td><td>string; the string starting from the pointer position
+         and ending before the end of line</td></tr>
+  
+</table>
+
+
+<h4>Operators Used in Parsing</h4>
+
+<p>Before using the column identifier in the expression, it is neccessary to
+assign a value to this column. Otherwise the expression has no sense (such
+expression can be replaced by the boolean constant which is calculated using
+the column default empty value in the expression).</p>
+
+<p>We have the following operators:</p>
+<table>
+ <colgroup>
+   <col class="nobr" />
+   <col />
+ </colgroup>
+ <tr><th>Operator</th><th>Description</th></tr>
+
+ <tr><td>==</td><td>equality; comparing of strings is case sensitive</td></tr>
+
+ <tr><td>!=</td><td>inequality; comparing of strings is case sensitive</td></tr>
+
+ <tr><td>eq</td><td>string equality; only for strings; comparing of strings is case insensitive</td></tr>
+
+ <tr><td>not_eq</td><td>string inequality; only for strings; comparing of strings is case insensitive</td></tr>
+
+ <tr><td>in</td><td>substring search; it is true only if the substring (left operand) is in the
+         string (right operand); comparing of strings is case insensitive</td></tr>
+
+ <tr><td>not_in</td><td>it is true only if the substring (left operand) is not in the
+         string (right operand); comparing of strings is case insensitive</td></tr>
+
+ <tr><td>end_with</td><td>it is true only if the string (left operand) ends with the
+         substring (right operand); comparing of strings is case insensitive</td></tr>
+
+ <tr><td>not_end_with</td><td>it is true only if the string (left operand) does not end with the
+         substring (right operand); comparing of strings is case insensitive</td></tr>
+
+</table>
+
+
+<h4>See Also</h4>
+<p>
+<a href="config_servers.htm">Configuration/Servers</a><br/>
+<a href="dlgboxes_editsrvtype.htm">Edit Server Type dialog box</a><br/>
+<a href="dlgboxes_editcolumn.htm">New/Edit Column dialog box</a><br/>
+<a href="dlgboxes_testparser.htm">Test of Parser dialog box</a><br/>
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

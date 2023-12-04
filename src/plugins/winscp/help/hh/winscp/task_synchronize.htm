@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Synchronizing</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Using WinSCP Plugin: Synchronizing</div>
+<div class="page">
+<h1>Synchronizing</h1>
+
+<p>
+WinSCP offers several ways to synchronize your remote and local directories.
+</p>
+
+<ul>
+<li>You can synchronize directories by manually uploading and downloading the changed files. For this you may
+    find useful feature <em>Compare directories</em> or transfer option
+        <em><a href="ui_copy.htm#additional_options">Newer and updated file(s) only</a></em>.</li>
+<li>You can use function <em><a href="task_synchronize_full.htm">Synchronize</a></em> to let WinSCP do the
+    synchronization for you.</li>
+<li>If you make your changes locally and immediately upload the changed files to remote directory, you can
+    make this much easier by making WinSCP watch for changes you make and automatically reflecting them on
+        the remote directory using the function <em><a href="task_keep_up_to_date.htm">Keep remote directory up
+        to date</a></em>.</li>
+<li>If you happen to have the same files locally and remotely with the different timestamps, you can update
+    them without transferring the files again. Use function <em><a href="task_synchronize_full.htm">Synchronize</a></em>
+        in <em><a href="task_synchronize_full.htm#synchronization_mode">Synchronize timestamps</a></em> mode.</li>
+</ul>
+
+<p>
+Before using any synchronization feature, make sure that WinSCP can correctly
+<a href="timestamp.htm">convert timestamps</a> from local conventions to remote server conventions and vice versa.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

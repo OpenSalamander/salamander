@@ -1,0 +1,64 @@
+﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __WMOBILE_RH2
+#define __WMOBILE_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#define IDC_STATIC_1 900
+#include "statics.rh2"   // 900 az 939 jsou timto zabrane !!!
+
+#define IDI_FS            1002
+
+#define IDS_PLUGINNAME          2000
+#define IDS_PLUGIN_DESCRIPTION  2001
+#define IDS_ABOUT               2002
+
+
+#define IDS_WMPLUGINTITLE           3000
+#define IDS_WMPLUGINTITLE_ERROR     3001
+#define IDS_WMPLUGINTITLE_QUESTION  3002
+
+#define IDS_ERR_CONNECTION          3003
+#define IDS_CONNECTING              3004
+#define IDS_PATH_ERROR              3005
+#define IDS_YESNO_CANCEL            3006
+#define IDS_ERR_MEMORYLOW           3007
+#define IDS_ERR_PATHTOOLONG         3008
+#define IDS_ERR_CREATEDIR           3009
+#define IDS_YESNO_CREATEDIR         3010
+#define IDS_ERR_DIRNAMEISFILE       3011
+#define IDS_ERR_INVALIDDATEFORMAT   3012
+#define IDS_ERR_NAMETOOLONG         3013
+#define IDS_ERR_FILEINPATH          3014
+#define IDS_YESNO_CONNETCLOSEPLUGIN 3015
+#define IDS_SORRY_CREATEDIR1        3016
+#define IDS_SORRY_CREATEDIR2        3017
+#define IDS_SORRY_CREATEDIR3        3018
+#define IDS_ERR_INVALIDPATH         3019
+#define IDS_READ                    3020
+#define IDS_READING                 3021
+#define IDS_WAIT_READINGDIRTREE     3022
+#define IDS_DELETE                  3023
+#define IDS_DELETING                3024
+#define IDS_YESNO_DELETENOEMPTYDIR  3025
+#define IDS_YESNO_DELETEHIDDENFILE  3026
+#define IDS_YESNO_DELETEHIDDENDIR   3027
+#define IDS_ERR_TARGETPATHNOEXISTS  3028
+#define IDS_ERR_COPYTOOTHERFS       3029
+#define IDS_ERR_COPYTOARCHIVES      3030
+#define IDS_COPY                    3031
+#define IDS_COPYING                 3032
+#define IDS_MOVE                    3033
+#define IDS_MOVING                  3034
+#define IDS_TO                      3035
+#define IDS_ERR_COPYDIRTOITSELF     3036
+#define IDS_ERR_COPYFILETOITSELF    3037
+#define IDS_YESNO_OVERWRITEHIDDENFILE 3038
+#define IDS_ERR_MOVEDIRTOITSELF     3039
+#define IDS_ERR_MOVEFILETOITSELF    3040
+#define IDS_ATTRIBUTES              3041
+#define IDS_CHANGING                3042
+
+#endif // __WMOBILE_RH2

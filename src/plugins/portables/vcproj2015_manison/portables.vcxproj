@@ -1,0 +1,191 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{21ec6980-0206-421c-be36-fd169ec2d654}</ProjectGuid>
+    <RootNamespace>portables</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
+    <ProjectName>portables</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props"></Import>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+<PlatformToolset>v140</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+<PlatformToolset>v140</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+<PlatformToolset>v140</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+<PlatformToolset>v140</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props"></Import>
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform"></Import>
+    <Import Project="..\..\shared\vcproj\x86.props"></Import>
+    <Import Project="..\..\shared\vcproj\plugin_base.props"></Import>
+    <Import Project="..\..\shared\vcproj\plugin_release.props"></Import>
+    <Import Project="portables.props"></Import>
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform"></Import>
+    <Import Project="..\..\shared\vcproj\x86.props"></Import>
+    <Import Project="..\..\shared\vcproj\plugin_base.props"></Import>
+    <Import Project="..\..\shared\vcproj\plugin_debug.props"></Import>
+    <Import Project="portables.props"></Import>
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform"></Import>
+    <Import Project="..\..\shared\vcproj\x64.props"></Import>
+    <Import Project="..\..\shared\vcproj\plugin_base.props"></Import>
+    <Import Project="..\..\shared\vcproj\plugin_release.props"></Import>
+    <Import Project="portables.props"></Import>
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform"></Import>
+    <Import Project="..\..\shared\vcproj\x64.props"></Import>
+    <Import Project="..\..\shared\vcproj\plugin_base.props"></Import>
+    <Import Project="..\..\shared\vcproj\plugin_debug.props"></Import>
+    <Import Project="portables.props"></Import>
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros"></PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <TargetExt>.spl</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <TargetExt>.spl</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetExt>.spl</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Link>
+      <BaseAddress>
+      </BaseAddress>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
+      <AdditionalDependencies>kernel32.lib;user32.lib;comctl32.lib;gdi32.lib;ole32.lib</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+    </Link>
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Link>
+      <BaseAddress>
+      </BaseAddress>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>salrtl9.lib</IgnoreSpecificDefaultLibraries>
+      <AdditionalDependencies></AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Link>
+      <BaseAddress></BaseAddress>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <AdditionalDependencies>kernel32.lib;user32.lib;comctl32.lib;gdi32.lib;ole32.lib;advapi32.lib</AdditionalDependencies>
+    </Link>
+    <ClCompile></ClCompile>
+    <ClCompile>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\shared\dbg.cpp"></ClCompile>
+    <ClCompile Include="..\..\shared\mhandles.cpp"></ClCompile>
+    <ClCompile Include="..\..\shared\winliblt.cpp"></ClCompile>
+    <ClCompile Include="..\device.cpp"></ClCompile>
+    <ClCompile Include="..\fxfs.cpp"></ClCompile>
+    <ClCompile Include="..\entry.cpp"></ClCompile>
+    <ClCompile Include="..\fx.cpp"></ClCompile>
+    <ClCompile Include="..\globals.cpp"></ClCompile>
+    <ClCompile Include="..\notifier.cpp"></ClCompile>
+    <ClCompile Include="..\wpddeviceicons.cpp"></ClCompile>
+    <ClCompile Include="..\wpdfs.cpp"></ClCompile>
+    <ClCompile Include="..\wpdfscontentlevel.cpp"></ClCompile>
+    <ClCompile Include="..\wpdfsdevicelevel.cpp"></ClCompile>
+    <ClCompile Include="..\wpdplug.cpp"></ClCompile>
+    <ClCompile Include="..\precomp.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\shared\dbg.h"></ClInclude>
+    <ClInclude Include="..\..\shared\mhandles.h"></ClInclude>
+    <ClInclude Include="..\..\shared\spl_arc.h"></ClInclude>
+    <ClInclude Include="..\..\shared\spl_base.h"></ClInclude>
+    <ClInclude Include="..\..\shared\spl_com.h"></ClInclude>
+    <ClInclude Include="..\..\shared\spl_fs.h"></ClInclude>
+    <ClInclude Include="..\..\shared\spl_gen.h"></ClInclude>
+    <ClInclude Include="..\..\shared\spl_menu.h"></ClInclude>
+    <ClInclude Include="..\..\shared\spl_vers.h"></ClInclude>
+    <ClInclude Include="..\..\shared\spl_view.h"></ClInclude>
+    <ClInclude Include="..\..\shared\winliblt.h"></ClInclude>
+    <ClInclude Include="..\device.h"></ClInclude>
+    <ClInclude Include="..\fxfs.h"></ClInclude>
+    <ClInclude Include="..\config.h"></ClInclude>
+    <ClInclude Include="..\fx.h"></ClInclude>
+    <ClInclude Include="..\fx_errcodes.h"></ClInclude>
+    <ClInclude Include="..\globals.h"></ClInclude>
+    <ClInclude Include="..\notifier.h"></ClInclude>
+    <ClInclude Include="..\precomp.h"></ClInclude>
+    <ClInclude Include="..\wpddeviceicons.h"></ClInclude>
+    <ClInclude Include="..\wpdfs.h"></ClInclude>
+    <ClInclude Include="..\wpdfscontentlevel.h"></ClInclude>
+    <ClInclude Include="..\wpdfsdevicelevel.h"></ClInclude>
+    <ClInclude Include="..\wpdhelpers.h"></ClInclude>
+    <ClInclude Include="..\wpdplug.h"></ClInclude>
+    <ClInclude Include="..\wpdplugfs.h"></ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\fx.rh"></None>
+    <None Include="..\fx_lang.rh"></None>
+    <None Include="..\lang\lang.rh"></None>
+    <None Include="..\portables.def"></None>
+    <None Include="..\wpd.rc2">
+      <FileType>RC</FileType>
+    </None>
+    <None Include="..\wpd.rh"></None>
+    <None Include="..\wpd.rh2"></None>
+    <None Include="..\versinfo.rh2"></None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\wpd.rc"></ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\res\portables.png"></Image>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"></Import>
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,0 +1,46 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Connection Tunneling</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Features</div>
+<div class="page">
+
+<h1>Connection Tunneling</h1>
+
+<p>
+The <acronym title="Secure Shell">SSH</acronym> protocol has the ability
+to forward arbitrary network connections over your encrypted
+<acronym title="Secure Shell">SSH</acronym> connection.
+WinSCP can use the ability to allow you to connect to a server
+(<em>Server B</em>) that cannot be reached directly from your working station,
+but can be accessed indirectly from another station (<em>Server A</em>)
+that can be reached. It does that by first opening
+<acronym title="Secure Shell">SSH</acronym> connection to the <em>Server A</em>,
+asking it to open forwarded connection to <em>Server B</em>.
+</p>
+
+<p>
+WinSCP also opens local listening port on your working station,
+that works as a tunnel to <em>Server B</em> via <em>Server A</em>.
+It can be used by any other
+<acronym title="Transmission Control Protocol/Internet Protocol">TCP/IP</acronym>
+application to reach <em>Server B</em>.
+</p>
+
+<p>
+To configure connection to be tunneled, use
+<em><a href="ui_login_tunnel.htm">Tunnel tab</a></em> of Login dialog.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,4 @@
+LIBRARY unchm.spl
+
+EXPORTS SalamanderPluginEntry
+EXPORTS SalamanderPluginGetReqVer

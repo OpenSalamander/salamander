@@ -1,0 +1,172 @@
+;Self-Extractor Settings
+
+;This is sample settings file for Self-Extractor. All values
+;used here are the default values.
+;
+;File format syntax:
+;
+;Lines beginning with ';' character are treated as comments and are
+;ignored while processing settings file.
+;
+;All variables except version are optional. If the variable isn't
+;found in the settings file, its default value is used.
+;Default values for language dependent variables (dlg_text, dlg_title,
+;button_text) are taken from the sfx package.
+;
+;All string values, including null strings, should be enclosed in
+;double quotes. To enter double quotes in the string use two
+;subsequent double quotes.
+;
+;Numbers cannot be enclosed in double quotes.
+
+
+;version of the settings file, current version is 2
+;this is the only mandatory variable
+
+version=2
+
+;target directory specification, it could be either absolute path
+;or relative path; relative path is relative to current directory
+;when sfx executable is launched
+;you could also use predefined variables at the beginning (!)
+;of the 'target_dir' string:
+;
+;  $(Temp)      temporary directory, should stand only alone
+;               in the target_dir field not followed by any path
+;               portion
+;  $(ProgFiles) user's 'Program Files' folder
+;  $(WinDir)    windows directory
+;  $(SysDir)    system directory
+;  $[variable]  value of an environment variable described by
+;               'variable'
+;  $<regkey>    value of registry key value described by 'regkey'
+;  e.g SOFTWARE\Microsoft\Windows\CurrentVersion\ProgramFilesDir
+
+target_dir=""
+
+;specify whether the user can change a target directory when
+;unpacking
+;set its value to 1 if you want to enable this
+
+allow_dir_change=1
+
+;specify whether to remove extracted files in the temporary folder
+;when a program specified by the 'command' variable is finished
+;set its value to 1 if you want to remove the temporary files
+;use of this variable make sense only if 'target_dir' is set to
+;"$(Temp)", otherwise the value is ignored
+
+remove_temp=0
+
+;This option enables you to wait for another process than the process
+;you specified in the field 'Command'. After this process is finished
+;the self-extractor removes temporary files and then finishes itself.
+;It is necessary only if the installation program launches another
+;executable which continues installation while the original installation
+;program is finished.
+;In this manner behaves e.g like some versions of Install Shield.
+;This option is ignored unless 'remove_temp' is set to 1.
+
+wait_for=""
+
+;specify whether to start extraction automatically when a user runs
+;self-extracting archive
+;set its value to 1 if you want the extraction to begin automatically
+
+autostart=0
+
+;specify whether to show a message box notifying of the operation
+;success after files extracting is finished
+;set its value to 1 if you want to show operation summary
+
+show_summary=1
+
+;specify whether to show the main dialog of self-extractor
+;set its value to 1 if you don't want to show the main sfx dialog
+;use of this variable makes sense only if 'autostart' is set to 1,
+;otherwise the value is ignored
+
+hide_dlg=0
+
+;specify whether to overwrite automatically all files in target
+;directory
+;set its value to 1 if you want the files to be overwritten
+;automatically
+
+ovewrite_all=0
+
+;specify whether to create target directory automatically without asking
+;user
+;set its value to 1 if you want the target directory to be created
+;automatically
+
+create_target_dir=0
+
+;program, http link or document to be run/opened when the files
+;extraction is successfully finished, the path is relative to the
+;extraction target directory, if you specify a program you can also
+;type in its arguments
+
+command=""
+
+;sfx package to be used when creating self-extracting archive
+;relative path is relative to the directory with zip2sfx.exe
+
+sfxpackage="..\sfx\english.sfx"
+
+;buttons in the optional message box
+;could be one of the following: "ok", "ok_cancel", "yes_no",
+;"agree_disagree"
+
+mbox_buttons="ok"
+
+;type of the optional message box
+;could be one of the following: "simple", "exclamation", "information",
+;"question", "long_message"
+
+mbox_type="simple"
+
+;text and title of the optional message box, which is shown before
+;the extraction begins
+;if you don't want to display any message box leave both fields
+;empty ("")
+
+mbox_text=""
+mbox_title=""
+
+;text which will be displayed in the main self-extractor's dialog
+
+dlg_text="This will extract ZIP archive."
+
+;title of the main self-extractor's dialog
+
+dlg_title="Self-Extracting ZIP Archive"
+
+;text in the extract button of the main sfx dialog
+
+button_text="&Extract"
+
+;vendor name in bottom-left corner of main sfx dialog
+
+vendor="Self-Extractor © 2000-2023 Open Salamander Authors"
+
+;www link in bottom-right corner of main sfx dialog
+
+link="https://www.altap.cz"
+
+;files containing icon data, it can be either an ICO file or an PE
+;executable file (like win32 EXEs or DLLs) containing the icon
+;relative path is relative to the directory with zip2sfx.exe
+
+icon_file="..\zip.spl"
+
+;positive value means the index of an icon in the executable file
+;specified by 'icon_file' variable
+;negative value means a resource ID of the icon
+;for ICO files the index is always 0 and its value is ignored
+
+icon_index=-500
+
+;requires administrative privileges to run on Windows Vista or later
+
+requires_administrative_privileges=1

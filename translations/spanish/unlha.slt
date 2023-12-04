@@ -1,0 +1,36 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\spanish\unlha.atp"
+TEXTVERSION,"1.13 (x86)"
+VERSION,"1,1,3,180"
+
+[TRANSLATION]
+LANGID,3082
+AUTHOR,"Juan Pablo Barrio Lera"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6168"
+COMMENT,"Versión en español"
+
+[STRINGTABLE 0]
+1,1,"Fichero LZH incorrecto o formato desconocido de fichero."
+2,1,"Error en suma de comprobación de cabecera.\nArchivo corrupto - no todos los ficheros pueden listarse."
+3,1,"Fuera de memoria."
+4,1,"Error de escritura"
+5,1,"UnLHA"
+6,1,"Error abriendo el archivo."
+7,1,"Imposible añadir entrada de archivo a la lista de ficheros."
+8,1,"El archivo contiene uno o más enlaces simbólicos UNIX, que no serán mostrados."
+10,1,"Imposible desempaquetar el fichero."
+11,1,"Error en datos comprimidos. EL CRC no concuerda."
+12,1,"Error leyendo el archivo."
+13,1,"Desempaquetando archivo LHA - %s"
+14,1,"preparando datos y creando directorios..."
+15,1,"desempaquetando: "
+
+[STRINGTABLE 1]
+16,1,"desempaquetando..."
+17,1,"No es posible terminar la operación por nombre de ruta muy largo."
+18,1,"No es posible terminar la operación por plantilla muy larga."
+19,1,"Método de compresión desconocido. El fichero no puede ser desempaquetado."
+20,1,"método desconocido saltado..."
+21,1,"Hojear y extraer archivos LHA."
+22,1,"Acerca del Plugin"
+

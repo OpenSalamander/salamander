@@ -1,0 +1,109 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\french\unrar.atp"
+TEXTVERSION,"3.01 (x86)"
+VERSION,"3,0,1,180"
+
+[TRANSLATION]
+LANGID,1036
+AUTHOR,"Gérard Gréco, Arnaud Dupin de Beyssat, Jérémy Marc, Maxime Abbey"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6162"
+COMMENT,"Version française"
+
+[DIALOG 100]
+258,95,1,"Volume suivant de l'archive"
+117,12,9,234,32,1,"Veuillez insérer le disque contenant le volume suivant de l'archive, ou sélectionnez le fichier approprié à partir d'un autre emplacement.\n\nPuis appuyez sur OK pour continuer."
+300,12,48,42,8,1,"&Fichier:"
+101,12,58,219,12,1,""
+102,234,58,13,12,1,"..."
+1,72,76,50,14,1,"OK"
+2,135,76,50,14,1,"Annuler"
+
+[DIALOG 103]
+352,85,1,"Erreur"
+300,6,10,26,8,1,"Nom:"
+104,36,10,309,8,1,""
+301,6,23,26,8,1,"Erreur:"
+302,36,23,309,16,1,"Ce fichier ne peut pas être extrait, car il est partiellement contenu au sein d'un volume précédent. Pour extraire ce fichier, commencez par le volume contenant sa première partie."
+105,36,44,183,12,1,"&Ne plus afficher ce message à l'avenir."
+1,121,63,50,14,1,"OK"
+2,181,63,50,14,1,"Annuler"
+
+[DIALOG 106]
+282,115,1,"Configuration de UnRAR"
+107,12,10,259,12,1,"&Ignorer automatiquement les fichiers issus d'un volume précédent lors de"
+116,12,32,263,12,1,"&Ne pas afficher d'avertissement lorsque l'ensemble du contenu de l'archive"
+300,23,22,154,8,1,"la décompression."
+301,23,44,111,8,1,"ne peut être listé."
+302,6,60,270,1,1,""
+117,12,70,230,12,1,"Afficher la colonne "&Compressé" en listant le contenu de l'archive"
+303,6,90,270,1,1,""
+1,88,96,50,14,1,"OK"
+2,143,96,50,14,1,"Annuler"
+
+[DIALOG 108]
+375,80,1,"Saisir le mot de passe"
+113,18,18,18,20,1,""
+300,57,10,312,8,1,"Le fichier est protégé par un mot de passe. Veuillez saisir le mot de passe pour le déchiffrer."
+301,57,25,27,8,1,"Fichier:"
+104,108,25,254,8,1,""
+302,57,38,50,8,1,"Mot de &passe:"
+110,108,36,173,12,1,""
+1,42,58,50,14,1,"&OK"
+112,102,58,50,14,1,"&Tout"
+109,162,58,50,14,1,"&Ignorer"
+111,222,58,50,14,1,"Tout i&gnorer"
+2,282,58,50,14,1,"Annuler"
+
+[DIALOG 115]
+223,105,1,"UnRAR - Avertissement"
+300,11,8,204,24,1,"Impossible de lister (et afficher) l'ensemble des fichiers contenus dans cette archive multi-volumes, car certains volumes n'ont pas été trouvés."
+301,11,39,204,16,1,"Pour lister l'intégralité des fichiers contenus dans l'archive, copiez l'ensemble de ses volumes dans le même dossier."
+105,11,64,157,12,1,"&Ne plus afficher ce message à l'avenir"
+302,5,81,212,1,1,""
+1,165,87,50,14,1,"OK"
+
+[STRINGTABLE 0]
+1000,1,"UnRAR"
+1001,1,"Mémoire insuffisante."
+1002,1,"Impossible de déterminer le nom de fichier du module."
+1003,1,"Impossible de charger la bibliothèque '%s'."
+1004,1,"Impossible d'obtenir l'adresse de la procédure."
+1005,1,"L'archive est corrompue. (Ou le mot de passe indiqué est incorrect?)"
+1006,1,"L'archive utilise un format inconnu, ou n'est pas une archive RAR valide (mot de passe incorrect ?)"
+1007,1,"Impossible d'ouvrir l'archive."
+
+[STRINGTABLE 1]
+1008,1,"Une erreur inconnue s'est produite."
+1009,1,"Impossible d'ouvrir le volume de l'archive."
+1010,1,"Impossible de lire le fichier de l'archive."
+1011,1,"Fichiers d'Archives RAR (*.R*)"
+1012,1,"Sélectionnez le fichier archive"
+1013,1,"Erreur au sein des données compressées. Le CRC ne correspond pas. (Ou le mot de passe est incorrect?)"
+1014,1,"Impossible d'ajouter une entrée parmi la liste des fichiers de l'archive."
+1015,1,"Décompression de l'archive RAR - %s"
+1016,1,"préparation des données et création des dossiers..."
+1017,1,"décompression..."
+1018,1,"décompression de: "
+1019,1,"Impossible d'obtenir un pointeur sur le fichier: "
+1020,1,"Impossible d'écrire dans le fichier:"
+1021,1,"Impossible de positionner un pointeur sur le fichier: "
+1022,1,"L'opération ne peut pas être achevée en raison d'un nom de chemin trop long."
+1023,1,"L'opération ne peut pas être achevée en raison d'un masque trop long."
+
+[STRINGTABLE 2]
+1024,1,"Veuillez saisir un caractère au minimum."
+1027,1,"Tous les Fichiers (*.*)"
+1028,1,"Erreur"
+1029,1,"Fichier non trouvé"
+1030,1,"Version du fichier unrar.dll incorrecte. Veuillez réinstaller le module UnRAR."
+1031,1,"Il semblerait que cette archive soit divisée en plusieurs volumes. Si tel est le cas, veuillez sélectionner le premier volume de l'archive et appuyer sur OK.\n\nS'il ne s'agit pas d'une archive multi-volumes, appuyez sur Annuler."
+1032,1,"Sélectionnez le premier volume"
+1033,1,"Parcourir et extraire le contenu d'archives RAR."
+1034,1,"A propos du module"
+1035,1,"Fichier non trouvé au sein de l'archive."
+1036,1,"Le mot de passe est incorrect. Les lettres du mot de passe doivent être saisies en respectant la casse (minuscules/MAJUSCULES). Veuillez vérifier que la touche Verr. Maj. (Caps Lock) ne soit pas activée involontairement."
+
+[STRINGTABLE 3]
+1040,1,"Compressé"
+1041,1,"Taille compressée du fichier"
+

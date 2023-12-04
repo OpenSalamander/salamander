@@ -1,0 +1,97 @@
+﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __TAR_RH2
+#define __TAR_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+// Title of tar errors
+#define IDS_TARERR_TITLE             11200
+// file is not any supported archive
+#define IDS_TARERR_UNKNOWN           11201
+// error in TAR header
+#define IDS_TARERR_HEADER            11202
+// bad checksum
+#define IDS_TARERR_CHECKSUM          11203
+// error accessing file-data object
+#define IDS_TARERR_FDATA             11204
+// unknown block type
+#define IDS_TARERR_BADSIG            11205
+// no file found in archive
+#define IDS_TARERR_NOTFOUND          11206
+// no file found in archive
+#define IDS_TARERR_MEMORY            11207
+
+#define IDS_LZH_NOT_IMPLEMENTED      11240
+
+// title of extracting progressbar
+#define IDS_UNPACKPROGRESS_TITLE     11250
+// text of extracting progressbar - extract
+#define IDS_UNPACKPROGRESS_TEXT      11251
+// text of extracting progressbar - skip
+#define IDS_SKIPPROGRESS_TEXT        11252
+
+// title of gzip errors
+#define IDS_GZERR_TITLE              11260
+// unknown compression method used
+#define IDS_GZERR_BADMETHOD          11261
+// file is encrypted - not supported
+#define IDS_GZERR_ENCRYPTED          11262
+// file is part of a multipart archive - not supported
+#define IDS_GZERR_MULTIPART          11263
+// unknown flags in header used
+#define IDS_GZERR_BADFLAGS           11264
+// can't open archive file
+#define IDS_GZERR_FOPEN              11265
+// premature end of file
+#define IDS_ERR_EOF                  11266
+// error reading archive file
+#define IDS_ERR_FREAD                11267
+// error writing output file
+#define IDS_TARERR_FWRITE            11268
+// not all the data written to the disk
+#define IDS_TARERR_WRSIZE            11269
+// invalid block type in gzip stream
+#define IDS_GZERR_BADBLOCKTYPE       11270
+// internal error
+#define IDS_ERR_INTERNAL             11271
+// memry allocation error
+#define IDS_ERR_MEMORY               11272
+// CRC error
+#define IDS_GZERR_CRC                11273
+// unexpected data in compressed stream
+#define IDS_ERR_CORRUPT              11274
+// error seeking
+#define IDS_GZERR_SEEK               11275
+
+// title for rpm errors
+#define IDS_RPM_VIEWTITLE            11280
+// title for rpm errors
+#define IDS_ERR_RPMTITLE             11281
+// error creating temporary file name
+#define IDS_RPMERR_TMPNAME           11282
+// error creating temporary file
+#define IDS_RPMERR_TMPFILE           11283
+// file is not an RPM archive
+#define IDS_ERR_NORPM                11284
+// the version reported is not supported
+#define IDS_ERR_BADRPMVERSION        11285
+// unknown RPM signature
+#define IDS_ERR_BADSIGNATURE         11286
+
+// cpio record has a bad signature
+#define IDS_CPIOERR_BADSIG           11291
+// data error in cpio header
+#define IDS_CPIOERR_HEADER           11292
+// unknown format of cpio header
+#define IDS_CPIOERR_FORMAT           11293
+
+// plugin name
+#define IDS_PLUGINNAME               11299
+// description for About and Plugins Manager
+#define IDS_PLUGIN_DESCRIPTION       11300
+// title of About message box
+#define IDS_ABOUT                    11301
+
+#endif // __TAR_RH2

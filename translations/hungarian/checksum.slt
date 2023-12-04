@@ -1,0 +1,115 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\hungarian\checksum.atp"
+TEXTVERSION,"2.2 (x86)"
+VERSION,"2,2,0,180"
+
+[TRANSLATION]
+LANGID,1038
+AUTHOR,"Török József"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6164"
+COMMENT,"Magyar változat"
+
+[DIALOG 1000]
+344,84,1,"Ellenőrzőösszeg számítása"
+1001,5,5,334,54,1,"List1"
+1007,5,68,35,8,1,"Számítás:"
+1006,43,68,112,8,1,"Progress1"
+1002,162,65,55,14,1,"&Beállítás..."
+1003,223,65,55,14,1,"Menté&s..."
+1004,284,65,55,14,1,"&Stop"
+1005,5,68,44,8,1,"vágólap tipp"
+
+[DIALOG 1001]
+189,109,1,"Ellenőrzőösszeg beállítás"
+300,8,5,174,76,1," Ellenőrzőösszegek számítása "
+100,15,16,105,10,1,"&CRC/SFV"
+101,15,28,105,10,1,"&MD5"
+102,15,40,105,10,1,"SHA-&1"
+103,15,52,105,10,1,"SHA-&256"
+104,15,64,105,10,1,"SHA-&512"
+1,14,88,50,14,1,"OK"
+2,69,88,50,14,1,"Mégse"
+9,124,88,50,14,1,"Súgó"
+
+[DIALOG 2000]
+260,84,1,""
+1001,5,5,250,54,1,"List1"
+1007,5,68,39,8,1,"Ellenőrzés:"
+1006,47,68,96,8,1,"Progress1"
+2002,5,68,140,8,1,""
+2001,149,65,50,14,1,"&Fókusz"
+1004,205,65,50,14,1,"&Stop"
+
+[STRINGTABLE 0]
+1,1,"Ellenőrzőösszeg"
+2,1,"Plugin névjegy"
+3,1,"SFV, MD5, SHA-1, SHA-256, és SHA-512 ellenőrzőösszeg vizsgálata és számítása."
+4,1,"Kevés memória"
+5,1,"Megnyitási hiba"
+6,1,"Olvasási hiba"
+7,1,"Írási hiba"
+
+[STRINGTABLE 1]
+40,1,"Kihagyva"
+41,1,"Számítás..."
+42,1,"Megszakítva"
+43,1,"Jobb gombbal az ellenőrzőösszeg vágólapra másolható."
+44,1,"&CRC érték vágólapra másolása\tCtrl+C"
+45,1,"&MD5 ellenőrzőösszeg vágólapra másolása\tCtrl+M"
+46,1,"SHA-&1 ellenőrzőösszeg vágólapra másolása\tCtrl+1"
+47,1,"SHA-&256 ellenőrzőösszeg vágólapra másolása\tCtrl+2"
+
+[STRINGTABLE 2]
+48,1,"SHA-&512 ellenőrzőösszeg vágólapra másolása\tCtrl+5"
+53,1,"Az elem tö&rlése\tTörlés"
+54,1,"A(z) '%s' fájl már létezik.\nFelül akarja írni?"
+55,1,"Fájl létrehozási hiba."
+56,1,"A számítás alatt kihagyott vagy megszakított fájlok nem lettek mentve."
+57,1,"A(z) '%s' fájl megnyitása sikertelen."
+58,1,"Hiányzik"
+59,1,"A kijelölt fájl nem SFV, MD5, SHA1, SHA256 vagy SHA512 kiterjesztés. Ennek ellenére folytatja?"
+60,1,"A kijelölt fájl nem érvényes SFV, MD5, SHA-1, SHA-256, vagy SHA-512  fájl."
+61,1,"Ellenőrzés..."
+62,1,"OK"
+63,1,"Sérült"
+
+[STRINGTABLE 3]
+65,1,"Ellenőrzőösszegek &vizsgálata..."
+66,1,"Ellenőrtőösszeg számo&lása..."
+67,1,"A beállítás már meg van nyitva."
+68,1,"A módosítások az 'Ellenőrzőösszeg számítása' ablak következő megnyitásakor lépnek életbe."
+70,1,"Minden fájl rendben"
+71,1,"%d sérült, %d hiányzik, %d kihagyva"
+72,1,"Az Open Salamander elfoglalt. A kért parancs nincs befejezve, próbálja újra később."
+74,1,"Bezárá&s"
+75,1,"Könyvtárfa olvasása, kérem várjon..."
+76,1,"Mappa olvasási hiba"
+77,1,"Nincs fájl"
+78,1,"Ellenőrzőösszegek vizsgálata"
+79,1,"Fájl"
+
+[STRINGTABLE 4]
+80,1,"Méret"
+81,1,"Állapot"
+82,1,"CRC"
+83,1,"MD5"
+84,1,"SHA-1"
+85,1,"SHA-256"
+86,1,"SHA-512"
+90,1,"Ellenőrzőösszeg mentése"
+91,1,"SFV fájlok (*.sfv)|*.sfv|"
+92,1,"MD5 fájlok (*.md5)|*.md5|"
+93,1,"SHA-1 fájlok (*.sha1)|*.sha1|"
+94,1,"SHA-256 fájlok (*.sha256)|*.sha256|"
+95,1,"SHA-512 fájlok (*.sha512)|*.sha512|"
+
+[STRINGTABLE 5]
+100,1,"CRC ellenőrzése"
+101,1,"MD5 ellenőrzése"
+102,1,"SHA-1 ellenőrzése"
+103,1,"SHA-256 ellenőrzése"
+104,1,"SHA-512 ellenőrzése"
+
+[STRINGTABLE 6]
+120,1,"A művelet nem fejezhető be, mert a fájlnév túl hosszú."
+

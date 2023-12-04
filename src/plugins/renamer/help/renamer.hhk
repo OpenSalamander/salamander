@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<!-- Sitemap 1.0 -->
+</HEAD>
+<BODY>
+<OBJECT type="text/site properties">
+</OBJECT>
+<UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Introducing Renamer">
+		<param name="Local" value="hh\renamer\introduction_intro.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Batch Renaming">
+		<param name="Local" value="hh\renamer\using_batchrename.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Regular Expressions">
+		<param name="Local" value="hh\renamer\appendix_regexp.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Dialog Box">
+		<param name="See Also" value="Dialog Box">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Batch Rename">
+			<param name="Local" value="hh\renamer\dlgboxes_batchrename.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Advanced Options">
+			<param name="Local" value="hh\renamer\dlgboxes_advoptions.htm">
+			</OBJECT>
+	</UL>
+</UL>
+</BODY>
+</HTML>

@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>OverwriteDialog Method</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: Automation: Reference: Salamander Object</div>
+<div class="page">
+
+<h1>OverwriteDialog Method</h1>
+<p>The <b>OverwriteDialog</b> method displays file overwrite confirmation dialog box.</p>
+
+<h2>Syntax</h2>
+<pre><code>OverwriteDialog(<i>file1</i>, <i>file2</i>, <i>buttons</i>)</code></pre>
+
+<h2>Parameters</h2>
+
+<h3>file1</h3>
+<p>Required. File that is supposed to be overwritten with the second file. For more
+information see the following Remarks section.</p>
+
+<h3>file2</h3>
+<p>Required. File that is supposed to overwrite the first file. For more information see
+the following Remarks section.</p>
+
+<h3>buttons</h3>
+<p>Required. Number specifying the type of buttons to display. </p><table><tr>
+<td class="hdr">Constant</td><td class="hdr">Description</td></tr>
+<tr>
+<td>4</td><td>Display Yes, All, Skip, Skip All and Cancel buttons.</td></tr>
+<tr>
+<td>5</td><td>Display Yes, No and Cancel buttons.</td></tr>
+</table>
+
+<h2>Return Values</h2>
+<p></p><table><tr>
+<td class="hdr">Value</td><td class="hdr">Description</td></tr>
+<tr>
+<td>2</td><td>Cancel</td></tr>
+<tr>
+<td>6</td><td>Yes</td></tr>
+<tr>
+<td>7</td><td>No</td></tr>
+<tr>
+<td>16</td><td>Skip</td></tr>
+<tr>
+<td>17</td><td>Skip All</td></tr>
+<tr>
+<td>18</td><td>All</td></tr>
+</table>
+
+<h2>Remarks</h2>
+<p>The <b><i>file</i></b> parameters can be either the <b>File</b> objects
+obtained from the <b>FileSystemObject</b> or the Salamander panel
+<a href="ref_item.htm">Item</a> objects. If you can retrieve neither of
+these object types you can use multiline string in place of these parameters.
+The first line of the text should specify the full file path. The second line
+should specify additional information like file size and date and time when the
+file was last modified. The lines of text should be separated with the new line
+(CR) character.</p>
+
+<h2>See Also</h2>
+<p><a href="ref_item.htm">Item Object</a></p>
+<p><a href="ref_salamander.htm">Salamander Object</a></p>
+
+</div>
+<div class="footer">&copy; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

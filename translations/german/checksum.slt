@@ -1,0 +1,115 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\german\checksum.atp"
+TEXTVERSION,"2.2 (x86)"
+VERSION,"2,2,0,180"
+
+[TRANSLATION]
+LANGID,1031
+AUTHOR,"Dirk Bornhütter, Thomas Kelso, Thomas Pagels, Thomas Wölk, Marko Meister und Mick Weiss"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7334"
+COMMENT,"Deutsche Version"
+
+[DIALOG 1000]
+362,84,1,"Prüfsummenberechnung"
+1001,5,5,352,54,1,"Liste1"
+1007,5,68,37,8,1,"Berechne:"
+1006,45,68,110,8,1,"Fortschritt1"
+1002,162,65,61,14,1,"&Konfigurieren..."
+1003,229,65,61,14,1,"&Speichern..."
+1004,296,65,61,14,1,"&Beenden"
+1005,5,68,84,8,1,"Hinweis Zwischenablage"
+
+[DIALOG 1001]
+189,109,1,"Prüfsummen - Konfiguration"
+300,8,5,174,76,1," Prüfsummenberechnung "
+100,15,16,105,10,1,"&CRC/SFV"
+101,15,28,105,10,1,"&MD5"
+102,15,40,105,10,1,"SHA-&1"
+103,15,52,105,10,1,"SHA-&256"
+104,15,64,105,10,1,"SHA-&512"
+1,14,88,50,14,1,"OK"
+2,69,88,50,14,1,"Abbrechen"
+9,124,88,50,14,1,"Hilfe"
+
+[DIALOG 2000]
+260,84,1,""
+1001,5,5,250,54,1,"Liste1"
+1007,5,68,23,8,1,"Prüfe:"
+1006,31,68,112,8,1,"Fortschritt1"
+2002,5,68,140,8,1,""
+2001,149,65,50,14,1,"&Fokus"
+1004,205,65,50,14,1,"&Beenden"
+
+[STRINGTABLE 0]
+1,1,"Prüfsumme"
+2,1,"Über Checksum"
+3,1,"SFV-, MD5-, SHA-1-, SHA-256 und SHA-512-Prüfsummen verifizieren/berechnen."
+4,1,"Nicht genügend Speicher"
+5,1,"Kann die Datei nicht öffnen"
+6,1,"Lesefehler"
+7,1,"Schreibfehler"
+
+[STRINGTABLE 1]
+40,1,"Übersprungen"
+41,1,"Berechne..."
+42,1,"Abgebrochen"
+43,1,"Rechtsklick auf einen Eintrag kopiert die Prüfsumme in die Zwischenablage."
+44,1,"Kopiere &CRC-Wert in die Zwischenablage\tStrg+C"
+45,1,"Kopiere &MD5-Prüfsumme in die Zwischenablage\tStrg+M"
+46,1,"Kopiere SHA-&1-Prüfsumme in die Zwischenablage\tStrg+1"
+47,1,"Kopiere SHA-&256-Prüfsumme in die Zwischenablage\tStrg+2"
+
+[STRINGTABLE 2]
+48,1,"Kopiere SHA-&512-Prüfsumme in die Zwischenablage\tStrg+5"
+53,1,"&Eintrag entfernen\tEntf"
+54,1,"Die Datei '%s' existiert bereits.\nSoll sie überschrieben werden?"
+55,1,"Fehler beim Erstellen der Datei."
+56,1,"Dateien, die während der Berechnung übersprungen/abgebrochen wurden, wurden nicht gespeichert."
+57,1,"Kann die Datei '%s' nicht öffnen."
+58,1,"Fehlt"
+59,1,"Die ausgewählte Datei hat weder eine SFV- noch eine MD5-, SHA1-, SHA256- oder SHA512-Erweiterung. Möchten Sie trotzdem fortfahren?"
+60,1,"Die ausgewählte Datei ist keine gültige SFV-, MD5-, SHA-1-, SHA-256- oder SHA-512-Datei."
+61,1,"Verifiziere..."
+62,1,"OK"
+63,1,"Beschädigt"
+
+[STRINGTABLE 3]
+65,1,"Prüfsummen &verifizieren..."
+66,1,"Prüfsummen &berechnen..."
+67,1,"Die Konfiguration ist bereits geöffnet."
+68,1,"Die Änderungen werden erst beim nächsten Öffnen der Prüfsummenberechnung wirksam."
+70,1,"Alle Dateien OK"
+71,1,"%d beschädigt, %d fehlen, %d übersprungen"
+72,1,"Der Open Salamander ist ausgelastet. Das angeforderte Kommando kann nicht ausgeführt werden, versuchen Sie es später noch einmal."
+74,1,"&Schließen"
+75,1,"Lese Verzeichnisbaum, bitte warten..."
+76,1,"Kann das Verzeichnis nicht lesen"
+77,1,"Keine Dateien"
+78,1,"Verifiziere Prüfsummen"
+79,1,"Datei"
+
+[STRINGTABLE 4]
+80,1,"Größe"
+81,1,"Status"
+82,1,"CRC"
+83,1,"MD5"
+84,1,"SHA-1"
+85,1,"SHA-256"
+86,1,"SHA-512"
+90,1,"Prüfsummendatei speichern"
+91,1,"SFV Dateien (*.sfv)|*.sfv|"
+92,1,"MD5 Dateien (*.md5)|*.md5|"
+93,1,"SHA-1 Dateien (*.sha1)|*.sha1|"
+94,1,"SHA-256 Dateien (*.sha256)|*.sha256|"
+95,1,"SHA-512 Dateien (*.sha512)|*.sha512|"
+
+[STRINGTABLE 5]
+100,1,"Verifiziere CRC"
+101,1,"Verifiziere MD5"
+102,1,"Verifiziere SHA-1"
+103,1,"Verifiziere SHA-256"
+104,1,"Verifiziere SHA-512"
+
+[STRINGTABLE 6]
+120,1,"Vorgang kann nicht beendet werden, weil der Name zu lang ist."
+

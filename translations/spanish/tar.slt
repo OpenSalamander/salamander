@@ -1,0 +1,64 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\spanish\tar.atp"
+TEXTVERSION,"3.34 (x86)"
+VERSION,"3,3,4,180"
+
+[TRANSLATION]
+LANGID,3082
+AUTHOR,"Juan Pablo Barrio Lera"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6168"
+COMMENT,"Versión en español"
+
+[STRINGTABLE 0]
+11200,1,"Error del plugin TAR"
+11201,1,"Formato de archivo no reconocido o no soportado."
+11202,1,"Datos inválidos en cabecera TAR - archivo corrupto."
+11203,1,"Suma de control incorrecta en fichero o cabecera - archivo corrupto."
+11204,1,"Error interno: estructura de datos del fichero corrupta."
+11205,1,"Firma de bloque desconocida - saltando."
+11206,1,"Fichero requertido no encontrado en el archivo."
+11207,1,"Error de asignación de memoria."
+
+[STRINGTABLE 1]
+11240,1,"No se admiten por ahora archivos LZH."
+
+[STRINGTABLE 2]
+11250,1,"Desempaquetar"
+11251,1,"Extrayendo "
+11252,1,"Saltando "
+11260,1,"Error GZip"
+11261,1,"Usado método de compresión desconocido, imposible extraer."
+11262,1,"Este fichero está encriptado. No se admite encriptación en archivos GZip."
+11263,1,"Este fichero es parte de un archivo en varias partes. Archivos GZip multiparte no son admitidos."
+
+[STRINGTABLE 3]
+11264,1,"Marcas desconocidas en cabecera GZip; imposible extraer."
+11265,1,"Error abriendo el archivo: "
+11266,1,"Se encontró un final de fichero prematuro."
+11267,1,"Error leyendo el archivo: "
+11268,1,"Error grabando al fichero de salida: "
+11269,1,"La función WriteFile rehusó escribir todos los datos pedidos."
+11270,1,"Encontrado un bloque inválido en corriente GZip; imposible extraer."
+11271,1,"Error interno en plugin TAR; por favor, notifíquelo por email a support@altap.cz."
+11272,1,"Error de asignación de memoria."
+11273,1,"Error CRC."
+11274,1,"Datos inesperados en corriente comprimida; archivo corrupto."
+11275,1,"Error buscando en el archivo: "
+
+[STRINGTABLE 4]
+11280,1,"Visor RPM"
+11281,1,"Error RPM"
+11282,1,"Error creando nombre de fichero temporal."
+11283,1,"Error creando fichero temporal."
+11284,1,"El fichero no fue reconocido como archivo RPM."
+11285,1,"La versión de RPM demandada por este archivo no es admitida."
+11286,1,"Encontrada una firma desconocida de archivo RPM."
+11291,1,"El registro del fichero tiene una firma inválida."
+11292,1,"Registro de cabecera de fichiero corrupto."
+11293,1,"Formato desconocido de cabecera cpio."
+
+[STRINGTABLE 5]
+11299,1,"TAR"
+11300,1,"Hojear y extraer archivos Unix."
+11301,1,"Acerca del Plugin"
+

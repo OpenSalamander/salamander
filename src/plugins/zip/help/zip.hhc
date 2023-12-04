@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<!-- Sitemap 1.0 -->
+</HEAD>
+<BODY>
+   <OBJECT type="text/site properties">
+     <param name="Window Styles" value="0x800027">
+   </OBJECT>
+      <LI><OBJECT type="text/sitemap">
+            <param name="Name" value="Introduction">
+          </OBJECT>
+      <UL>
+         <LI><OBJECT type="text/sitemap">
+               <param name="Name" value="Introducing ZIP Plugin">
+               <param name="Local" value="hh\zip\introduction_intro.htm">
+             </OBJECT>
+      </UL>
+      <LI><OBJECT type="text/sitemap">
+            <param name="Name" value="Using ZIP Plugin">
+          </OBJECT>
+      <UL>
+         <LI><OBJECT type="text/sitemap">
+               <param name="Name" value="Testing Archive">
+               <param name="Local" value="hh\zip\usingzip_test.htm">
+             </OBJECT>
+         <LI><OBJECT type="text/sitemap">
+               <param name="Name" value="Archive Comment">
+               <param name="Local" value="hh\zip\usingzip_comments.htm">
+             </OBJECT>
+         <LI><OBJECT type="text/sitemap">
+               <param name="Name" value="Create New Archive and Add Files to Archive Dialogs">
+               <param name="Local" value="hh\zip\usingzip_packdlg.htm">
+             </OBJECT>
+         <LI><OBJECT type="text/sitemap">
+               <param name="Name" value="ZIP Configuration">
+               <param name="Local" value="hh\zip\usingzip_config.htm">
+             </OBJECT>
+      </UL>
+      <LI><OBJECT type="text/sitemap">
+            <param name="Name" value="Self-Extracting Archives">
+          </OBJECT>
+      <UL>
+         <LI><OBJECT type="text/sitemap">
+               <param name="Name" value="Introduction">
+               <param name="Local" value="hh\zip\sfx_intro.htm">
+             </OBJECT>
+         <LI><OBJECT type="text/sitemap">
+               <param name="Name" value="Self-Extractor">
+               <param name="Local" value="hh\zip\sfx_sfx.htm">
+             </OBJECT>
+         <LI><OBJECT type="text/sitemap">
+               <param name="Name" value="Creating Self-Extracting Archive">
+               <param name="Local" value="hh\zip\sfx_creating.htm">
+             </OBJECT>
+         <LI><OBJECT type="text/sitemap">
+               <param name="Name" value="Self-Extractor Settings">
+             </OBJECT>
+         <UL>
+            <LI><OBJECT type="text/sitemap">
+                  <param name="Name" value="Self-Extractor Settings">
+                  <param name="Local" value="hh\zip\sfxset_settings.htm">
+                </OBJECT>
+            <LI><OBJECT type="text/sitemap">
+                  <param name="Name" value="Menu Commands">
+                  <param name="Local" value="hh\zip\sfxset_menu.htm">
+                </OBJECT>
+            <LI><OBJECT type="text/sitemap">
+                  <param name="Name" value="Dialog Box Options">
+                  <param name="Local" value="hh\zip\sfxset_dlgitems.htm">
+                </OBJECT>
+            <LI><OBJECT type="text/sitemap">
+                  <param name="Name" value="Self-Extractor Texts Dialog">
+                  <param name="Local" value="hh\zip\sfxset_texts.htm">
+                </OBJECT>
+            <LI><OBJECT type="text/sitemap">
+                  <param name="Name" value="Waiting for Another Application">
+                  <param name="Local" value="hh\zip\sfxset_waiting.htm">
+                </OBJECT>
+         </UL>
+         <LI><OBJECT type="text/sitemap">
+               <param name="Name" value="Self-Extractor Command Line Parameters">
+               <param name="Local" value="hh\zip\sfx_cmdline.htm">
+             </OBJECT>
+      </UL>
+      <LI><OBJECT type="text/sitemap">
+            <param name="Name" value="Frequently Asked Questions">
+          </OBJECT>
+      <UL>
+         <LI><OBJECT type="text/sitemap">
+               <param name="Name" value="Frequently Asked Questions">
+               <param name="Local" value="hh\zip\faq_faq.htm">
+             </OBJECT>
+      </UL>
+</BODY>
+</HTML>

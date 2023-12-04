@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Server and Protocol Information Dialog</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Dialog Boxes</div>
+<div class="page">
+<h1>Server and Protocol Information Dialog</h1>
+
+<p>
+The dialog shows information about server you are connected to,
+the <a href="protocols.htm">protocol</a> you are using and the remote file system.
+To show the dialog go to <em>Commands &gt; Drive Information</em>.
+</p>
+
+<p>
+The dialog has thee tabs. Each is described individually.
+</p>
+
+<a name="protocol"></a>
+<h4>Protocol</h4>
+
+<p>
+The <em>Protocol</em> tab shows information about the current session.
+</p>
+
+<p>
+With protocols based on <a href="ssh.htm">SSH</a>
+(<a href="protocols.htm#sftp">SFTP</a> and
+<a href="protocols.htm#scp">SCP</a>) the <em>Server Hostkey Fingerprint</em>
+box shows fingerprint of hostkey used for current SSH session.
+This is the key you have <a href="ssh.htm#verifying_the_host_key">verified</a> before
+(usually on the first attempt to connect to the server).
+</p>
+
+<a name="capabilities"></a>
+<h4>Capabilities</h4>
+
+<p>
+The list shows what the <a href="protocols.htm">transfer protocol</a>
+currently in use is capable of. Note that these are general information based
+on protocol and its version. The particular implementation
+(the actual server) can still lack some of the features.
+</p>
+
+<p>
+The box at the bottom shows additional (non-structured) information about the
+server/protocol.
+For <a href="protocols.htm#sftp">SFTP protocol</a>
+it is list of the extensions the server supports (both generic and
+proprietary).
+For <a href="protocols.htm#scp">SCP protocol</a> it is
+output of command <code>uname -a</code>.
+</p>
+
+<a name='space_available'></a>
+<h4>Space available</h4>
+
+<p>
+The <em>Space available</em> tab shows information about storage space for the current remote directory.
+You can request the information for another path by typing it to <em>Path</em> box and
+pressing <em>Check space</em> button.
+</p>
+
+<p>
+Note that the tab is disabled, if the server does not provide the functionality of checking space available
+(see <em>Protocol</em> tab). As an alternative you can execute <a href="remote_command.htm">remote command</a>
+<code>df</code>.
+</p>
+
+<a name='copying_information'></a>
+<h4>Copying Information</h4>
+
+<p>
+You can copy all information shown on the dialog into the clipboard by pressing
+<em>Copy to Clipboard</em> button.
+</p>
+
+<p>
+You can also copy some listed items individually, by selecting them and using <em>Copy</em> command from their context menu.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

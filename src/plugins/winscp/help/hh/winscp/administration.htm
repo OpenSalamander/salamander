@@ -1,0 +1,62 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Administration Tasks</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Appendix</div>
+<div class="page">
+<h1>Administration Tasks</h1>
+
+<p>
+WinSCP allows system administrators to restrict or enforce certain functionality of the application.
+</p>
+
+<a name="configuring_the_restrictions"></a>
+<h4>Configuring the Restrictions</h4>
+
+<p>
+System administrator can configure following:
+</p>
+
+<ul>
+<li>Restrict <a href="ui_login_session.htm#session_group">password storing</a>.</li>
+<li>Restrict connection to servers without having their <a href="ssh.htm#verifying_the_host_key">host
+    keys accepted in advance</a>.</li>
+<li>Force <a href="ui_authenticate.htm#authentication_banner">authentication banners</a> being shown.</li>
+</ul>
+
+<p>
+These restrictions are configured via &quot;local machine&quot; registry root key (modifiable only by system
+administrators). Example of corresponding registry export follows:
+</p>
+
+<div class="quote">
+<p>REGEDIT4<br/>
+ <br/>
+[HKEY_LOCAL_MACHINE\SOFTWARE\Martin Prikryl\WinSCP 2]<br/>
+"DisablePasswordStoring"=dword:00000001<br/>
+"DisableAcceptingHostKeys"=dword:00000001<br/>
+"ForceBanners"=dword:00000001</p>
+</div>
+
+<a name="unmodifiable_stored_session"></a>
+<a name="special_session"></a>
+<h4>Unmodifiable Stored Session</h4>
+
+<p>
+Administrator can set session setting <code>Special</code> to 1 to restrict user from modifying
+or deleting the session accidentally (Note that the setting can be changed by end-user). Such session
+will also be highlighted in <a href="ui_login_stored_sessions.htm">session list</a>.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

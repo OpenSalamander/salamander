@@ -1,0 +1,138 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Confirmations configuration</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Dialog Boxes: Configuration</div>
+<div class="page">
+
+<h1>Confirmations</h1>
+    
+<p>Specifies whether confirmation messages are displayed.</p>
+
+<h4>Dialog Box Options</h4>
+<dl>
+<dt><i>File or directory delete</i></dt>
+<dd>Clear this check box if you don't want to receive a confirmation message
+before deleting files.</dd>
+
+<dt><i>Non-empty directory delete</i></dt>
+<dd>Clear this check box if you don't want to receive a confirmation message
+before deleting non-empty directory. When you delete a directory, all the files
+and directories within it are deleted.</dd>
+
+<dt><i>File overwrite</i></dt>
+<dd>Clear this check box if you don't want to receive a confirmation message
+before replacing a file. It is recommended that you leave this option selected
+so that you don't inadvertently write over files you want to keep.</dd>
+
+<dt><i>System or hidden file delete</i></dt>
+<dd>Clear this check box if you don't want to receive a confirmation message
+before deleting system and hidden files.</dd>
+
+<dt><i>System or hidden directory delete</i></dt>
+<dd>Clear this check box if you don't want to receive a confirmation message
+before deleting system and hidden directories.</dd>
+
+<dt><i>System or hidden file overwrite</i></dt>
+<dd>Clear this check box if you don't want to receive a confirmation message
+before replacing system and hidden files.</dd>
+
+<dt><i>Directories merge</i></dt>
+<dd>Clear this check box if you don't want to receive a confirmation message
+before merging a directory (which you copy or move) with the existing directory
+(in the target directory).</dd>
+
+<dt><i>NTFS compress or uncompress</i></dt>
+<dd>Clear this check box if you don't want to receive a confirmation message
+before compressing or uncompressing files on NTFS drive.</dd>
+
+<dt><i>NTFS encrypt or decrypt</i></dt>
+<dd>Clear this check box if you don't want to receive a confirmation message
+before encrypting or decrypting files on NTFS drive.</dd>
+
+<dt><i>Drag and Drop operations</i></dt>
+<dd>When checked, all drag and drop operations will be confirmed using preceding 
+context menu.</dd>
+
+<dt><i>User Menu: always show dialog with names to compare</i></dt>
+<dd>This applies to User Menu command which uses variables for files or directories
+compare (First File to Compare, Second File to Compare, etc.).
+When checked, the dialog with names to compare will be displayed even if
+both names were specified in panel. Otherwise, this dialog is displayed only
+if you have to specify at least one name for compare.</dd>
+
+<dt><i>Compare Directories: ignored differences of exactly 1 or 2 hours</i></dt>
+<dd>When checked and the Compare Directories command detects pairs of files with
+time differences of exactly one or two hours, and these differences should be
+ignored, it ignores them, but it also shows a note about how many pairs of files
+have such time differences. Otherwise, this note is not displayed. See <i>Compare
+Directories: ignore time differences of exactly one or two hours</i> check box in
+<a href="configuration_gener.htm">Configuration/General</a>.</dd>
+
+<dt><i>Compare Directories: found differences of exactly 1 or 2 hours</i></dt>
+<dd>When checked and the Compare Directories command detects pairs of files with
+time differences of exactly one or two hours, and these differences should not be
+ignored, it informs you that you can change settings to ignore them (to bypass
+DST related file time shifts). Otherwise, this hint is not displayed. See <i>Compare
+Directories: ignore time differences of exactly one or two hours</i> check box in
+<a href="configuration_gener.htm">Configuration/General</a>.</dd>
+
+<dt><i>Archive is about to close... (only if editing files from archive)</i></dt>
+<dd>Clear this check box if you don't want to receive a confirmation message
+before closing archive from which files were edited or opened (files may be
+changed).</dd>
+
+<dt><i>Do you want to close Find?</i></dt>
+<dd>Clear this check box if you don't want to receive a confirmation message
+before closing Find window (see <a href="basicwork_find.htm">Finding Files and
+Directories</a>).</dd>
+
+<dt><i>Do you want to stop searching?</i></dt>
+<dd>Clear this check box if you don't want to receive a confirmation message
+before stopping of searching in Find window (see <a href="basicwork_find.htm">Finding
+Files and Directories</a>).</dd>
+
+<dt><i>Do you want to create target path?</i></dt>
+<dd>Clear this check box if you don't want to receive a confirmation message
+before creating specified non-existing target path in Copy/Move operation.</dd>
+
+<dt><i>Do you want to turn on Always on Top?</i></dt>
+<dd>Clear this check box if you don't want to receive a confirmation message
+before turning on Always on Top (see <a href="environment_alwaystop.htm">Setting
+Window Always on Top</a>).</dd>
+
+<dt><i>Do you want to close Open Salamander?</i></dt>
+<dd>Clear this check box if you don't want to receive a confirmation message
+before closing Open Salamander application.</dd>
+
+<dt><i>Do you want to Email selected files?</i></dt>
+<dd>Clear this check box if you don't want to receive a confirmation message
+before sending selected files by email (see <a href="advwork_email.htm">Emailing
+Files</a>).</dd>
+
+<dt><i>Do you want to add files into existing archive?</i></dt>
+<dd>Clear this check box if you don't want to receive a confirmation message
+before adding files to an existing archive. When checked, you can choose if to
+add files to existing archive or create a new archive (overwrite the existing
+archive).</dd>
+
+<dt><i>The directory doesn't exist. Do you want to create it?</i></dt>
+<dd>Clear this check box if you don't want to receive a confirmation message
+before creating of a directory in which some operation should be done (but which
+is not existing). This happens when creating a directory structure in Create Directory
+command (e.g. creating C:\a\b if c:\a does not exist)</dd>
+
+</dl>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

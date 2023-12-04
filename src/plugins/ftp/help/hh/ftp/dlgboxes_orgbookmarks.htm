@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Organize Bookmarks dialog box</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: FTP Client: Dialog Boxes</div>
+<div class="page">
+
+<h1>Organize Bookmarks</h1>
+
+<p>Use this dialog to manage your FTP bookmarks containing connection parameters for your
+favourite FTP servers.
+</p>
+
+<h4>Options</h4>
+<dl>
+<dt><i>List of FTP Bookmarks</i></dt>
+<dd>Contains the list of your FTP bookmarks. When you focus a bookmark, its parameters
+are shown in the rest of the dialog (e.g. Address, User Name, and Initial Path). Right
+click on a bookmark (or use the Shift+F10 key) to open the context menu with available
+commands. Use drag&amp;drop (or Move Up/Down commands) to change order of bookmarks.</dd>
+
+<dt><i>Address</i></dt>
+<dd>Specify the FTP server address. It can be IP address or name address. Use the drop-down
+list to select previously used address. You can also enter the URL address here (format
+<span class="nobr">ftp://user:password@server:port/path</span>), it will be split to user name, password,
+server address, port number, and initial path (when the edit box loses focus).
+</dd>
+
+<dt><i>Initial path</i></dt>
+<dd>Specify the initial path on the FTP server. When you connect to this server, the FTP
+client will try to change the working directory to this path. If you do not want to use it,
+leave it empty.
+</dd>
+
+<dt><i>Anonymous login</i></dt>
+<dd>When checked, the FTP client will try to login anonymously to the FTP server (user
+<i>anonymous</i>, password should be your email address, see <i>Password for anonymous
+connections</i> in <a href="config_general.htm">Configuration/General</a>). Otherwise,
+the FTP client will try to login using your user name and password.
+</dd>
+
+<dt><i>User name, Password, Save password, and Unlock</i></dt>
+<dd>Specify your user name and password here. You can also leave one or both
+of these edit boxes empty, the FTP client will ask you to enter these values if
+the FTP server will require them during login procedure. If you want to save
+the password to the bookmark, check the <i>Save password</i> check box.
+IMPORTANT: You should protect your saved passwords by the Master Password otherwise
+they can be easily displayed in this dialog or decrypted by malicious software that
+have infiltrated your computer, see
+<a href="ms-its:salamand.chm::/hh/salamand/othertask_pwdmanager.htm">Using Password Manager</a>
+for more information about saved passwords and related security risks.
+The <i>Unlock</i> button is displayed when you need to enter the Master Password to access
+the password. To clear the inaccessible password use the <i>Clear Password</i> command from
+drop-down menu on the <i>Unlock</i> button. To show the password hold the Ctrl key and right
+click to the <i>Password</i> edit box.
+</dd>
+
+<dt><i>Advanced</i></dt>
+<dd>Use this button to open the <a href="dlgboxes_connectadv.htm">Advanced
+Options dialog box</a>. Advanced options are displayed in brief in the box
+behind the Advanced button (just for quick preview).
+</dd>
+
+<dt><i>New, Rename, and Remove</i></dt>
+<dd>Use these buttons to manage bookmarks. The New button allows you also to
+copy parameters from the focused bookmark (duplicate bookmark).
+</dd>
+
+<dt><i>Close</i></dt>
+<dd>Use this button to close this dialog box. All changes in bookmarks will
+be kept. If you want to lose changes made in bookmarks, click the Cancel button.
+</dd>
+
+</dl>
+
+<h4>See Also</h4>
+<p>
+<a href="using_orgbookmarks.htm">Organizing Bookmarks</a><br/>
+<a href="using_addbookmark.htm">Adding Bookmark</a><br/>
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

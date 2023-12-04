@@ -1,0 +1,2 @@
+Client7z je puvodni sample EXE pro jednoduche volani 7za.dll. Prikladam pouze z dokumentacnich duvodu.
+7zwrapper je nase DLL postavene na Client7z, ktere slouzi pro snadne zabaleni souboru pomoci 7za.dll.

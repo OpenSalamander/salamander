@@ -1,0 +1,109 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\hungarian\unrar.atp"
+TEXTVERSION,"3.01 (x86)"
+VERSION,"3,0,1,180"
+
+[TRANSLATION]
+LANGID,1038
+AUTHOR,"Török József"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6164"
+COMMENT,"Magyar változat"
+
+[DIALOG 100]
+194,95,1,"Következő kötet"
+117,12,9,170,32,1,"Kérem helyezze be a következő kötet lemezét vagy keresse ki a következő fájlt.\n\nOK ha kész."
+300,12,48,42,8,1,"&Fájlnév:"
+101,12,58,155,12,1,""
+102,170,58,13,12,1,"..."
+1,39,76,50,14,1,"OK"
+2,102,76,50,14,1,"Mégse"
+
+[DIALOG 103]
+350,85,1,"Hiba"
+300,8,10,22,8,1,"Név:"
+104,34,10,309,8,1,""
+301,8,23,22,8,1,"Hiba:"
+302,34,23,309,16,1,"A fájl nem tömöríthető ki, mert egy előző kötet tartalmának folytatása. A fájl kitömörítéséhez az első kötettel kell kezdenie, ahol a fájl kezdődik."
+105,34,44,183,12,1,"&Ne mutassa ezt az üzenetet."
+1,120,63,50,14,1,"OK"
+2,180,63,50,14,1,"Mégse"
+
+[DIALOG 106]
+220,115,1,"UnRAR beállítás"
+107,12,10,195,12,1,"&Automatikusan hagyja ki az előző kötetekből"
+116,12,32,199,12,1,"&Ne figyelmeztessen, ha az archívum teljes tartalma nem"
+300,23,22,154,8,1,"folytatandó fájlokat."
+301,23,44,111,8,1,"listázható ki."
+302,6,60,208,1,1,""
+117,12,70,200,12,1,""&Tömörített" oszlop mutatása az archívum listázásakor"
+303,6,90,208,1,1,""
+1,57,96,50,14,1,"OK"
+2,112,96,50,14,1,"Mégse"
+
+[DIALOG 108]
+350,80,1,"Jelszó megadása"
+113,18,18,18,20,1,""
+300,57,10,197,8,1,"A fájl titkosított. Adja meg a dekódolási jelszót."
+301,57,25,17,8,1,"Fájl:"
+104,84,25,253,8,1,""
+302,57,38,24,8,1,"&Jelszó:"
+110,84,36,170,12,1,""
+1,30,58,50,14,1,"&OK"
+112,90,58,50,14,1,"&Mind"
+109,150,58,50,14,1,"Ki&hagy"
+111,210,58,50,14,1,"Mind &kihagy"
+2,270,58,50,14,1,"Mégse"
+
+[DIALOG 115]
+213,105,1,"UnRAR - Figyelmeztetés"
+300,11,8,194,24,1,"A több-kötetes archívum nem minden fájlja listázható (és látható a panelben), mert néhány archívum kötet nem található."
+301,11,39,194,16,1,""A archívum teljes tartalmához, az archívum minden kötetét másoljon egy mappába."
+105,11,64,157,12,1,"&Ne mutassa ezt az üzenetet"
+302,5,81,202,1,1,""
+1,155,87,50,14,1,"OK"
+
+[STRINGTABLE 0]
+1000,1,"UnRAR"
+1001,1,"Kevés memória."
+1002,1,"Nem szerezhető meg a modul fájlnév."
+1003,1,"Nem tölthető be a könyvtár: '%s'."
+1004,1,"Nem szerezhető meg az eljárás címe."
+1005,1,"Sérült archívum. (Rossz jelszó?)"
+1006,1,"A fájl ismeretlen formátumú vagy nem érvényes RAR archívum. (Rossz jelszó?)"
+1007,1,"Az archívum nem nyitható meg."
+
+[STRINGTABLE 1]
+1008,1,"Ismeretlen hiba lépett fel."
+1009,1,"Nem nyitható meg az archívum kötet."
+1010,1,"Az archívum nem olvasható."
+1011,1,"RAR archívum (*.R*)"
+1012,1,"Válasszon archívumot"
+1013,1,"Hiba a tömörített adatban. A CRC nem egyezik. (Rossz jelszó?)"
+1014,1,"Az archívumi bejegyzés nem adható hozzá a fájllistához."
+1015,1,"RAR archívum kibontása - %s"
+1016,1,"adat előkészítése és mappák létrehozása..."
+1017,1,"kibontás..."
+1018,1,"kibontás: "
+1019,1,"Nem szerezhető meg a fájlmutató: "
+1020,1,"Nem lehet a fájlba írni:"
+1021,1,"Nem állítható be a fájlmutató: "
+1022,1,"Nem fejezhető be a művelet, mert túl hosszú az elérési név."
+1023,1,"Nem fejezhető be a művelet, mert a maszk túl hosszú."
+
+[STRINGTABLE 2]
+1024,1,"Adjon meg legalább egy karaktert."
+1027,1,"Minden fájl (*.*)"
+1028,1,"Hiba"
+1029,1,"A fájl nem található"
+1030,1,"Helytelen verziós unrar.dll. Telepítse újra az UnRAR plugint."
+1031,1,"Úgy tűnik ez egy több-kötetes archívum. Ha így van, válassza ki az első kötetet majd nyomjon OK gombot.\n\nHa mégsem az, akkor Mégse gombot."
+1032,1,"Válasszon első kötetet"
+1033,1,"RAR archívumok böngészése és kibontása."
+1034,1,"Plugin névjegy"
+1035,1,"A fájl nem található az archívumban."
+1036,1,"A jelszó helytelen. A jelszó betűit pontosan kell megadni. Nézze meg, hogy a CapsLock nincs-e véletlenül benyomva."
+
+[STRINGTABLE 3]
+1040,1,"Tömörített"
+1041,1,"Tömörített fájlméret"
+

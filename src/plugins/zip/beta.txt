@@ -1,0 +1,189 @@
+This file contains a report about bug fixes and new features
+in ZIP. Plus sign means new feature addition, minus sign means 
+a bug fix. The latest news are at the top.
+
+
+-sfx: neukazujeme adresu majitele licence
+
+-pridana asociace na PK4 (DOOM3)
+
+-sfx: commandline pro prikaz spousteny po vybaleni prozeneme pred zpracovanim
+ pres ExpandEnvironmentalStrings
+
+-aktualizace helpu + oprava gramatiky
+
+-pouzijeme novy parametr funkce SafeFileCreate na predalokovani souboru kvuli
+ fragmentaci
+
+-pred vybalenim nastavime cilovou velikost souboru, aby se nefragmentoval disk,
+ nyni snad finalne:)
+
+-opraveny export/import volby "automatically create target directory" v
+ nastaveni sfx
+
+Sal 2.5 beta 4-----------------------------------------------------------------
+
+-opravena gramatika ve vzorovem souboru s nastavenim pro zip2sfx (com_cz.set)
+-zip2sfx podporene nove sfx balicky
+
+-sfx: Volba pro automatické vytváøení cílového adresáøe.
+-sfx: Možnost nastavení vlastního www odkazu v pravém dolním rohu dialogového
+ okénka
+-sfx: Možnost nastavení vlastního jména firmy v levém dolním rohu dialogového
+ okénka
+-kdyz nesedi CRC s centralnim headerem, tak ho jeste porovnam s lokalnim
+ headerem (pokud nebyl nastavem GPF_DATADESCR flag, ktery primo rika, ze obsah
+ local headeru jsou nesmysly)
+
+-opravena gramatika k ceskym komentarum v exportovanem konfiguracnim souboru
+ pro zip2sfx
+
+-oprava chyby zavlecene z pridani cache pro cteni souboru pri listingu, padacka
+ pokud se nepodarilo otevrit soubor v multivolume archivu a user dal retry
+
+-opravene poradi kontrolu v nekterych dialogach
+
+-upravena hlaska zobrazujici se pri nacteni poskozeneho comentare k zipu
+
+-pridan check box do Change Disk diagu pri rozbalovani umoznujici nastavit
+ zda se maji pouzivat winzip jmenne konvence (Disk numbers in extension)
+-vylepsena detekce winzip names pro vicesvazkove archivy
+-nastaven flag ES_AUTOHSCROLL edit boxum, ktere ho jeste nemeli
+-umime vybalit archivy, ktere obsahuji v cestach vice backslashu za sebou
+-optimalizova priprav dat pro rozbalovani slozitost zavisla na poctu vybranych
+ souboru snizena z nkvadrat na nlogn
+
+-umime smazat adresar s read-only flagem pri move do archivu
+
+-pred vybalenim nastavime cilovou velikost souboru, aby se nefragmentoval disk
+-zip2sfx: odmitneme vytvorit sfx ze zip64 archivu
+-odmitneme vytvorit sfx ze zip64 archivu
+-opravena chyba v deflate rutinach -- pocitadlo velikosti komprimovanych dat
+ bylo limitovano na 512MB (delka se pocitala v bitech a ukladala v unsigned 
+ long)
+-podpora pro cteni zip64 -- velke archivy
+-pri unpack-whole-archive na zipu nulove velikosti to nehlasi nesmysnou
+ chybovou hlasku
+-oprava hledani AES extra headeru
+
+-podpora pro vybalovani souboru zakryptovanych pomoci AES dle specifikace
+ vytvorene WinZip-em, umi to jejich WinZip 9.0
+
+-podpora pro vybalovani souboru zabalenych metodou Deflate64(tm) (umi napr.
+ PKZip 6.0 a WinZip 9.0)
+
+-opravene testy navratove hodnoty v nekterych volanich CreateFile
+-protazeni checkboxu obsahujicich text 'dialog box', ktere nedavno nekdo
+ opravil (obsahovaly puvodne jen 'dialog')
+
+-sfx: nahrada nekterych dynamicky allokovanych bufferu za staticke
+-sfx: oprava chyby pri vybalovani encrypteneho zip porizeneho jinym softem
+ nez ZIP plugin a obsahujicim 'stored' soubory
+
+-sfx: pri chybe MyGetDiskFreeSpace chybu ignorujeme
+
+-pri prepisu souboru v podadresari unixoveho archivu dochazelo k prepisu
+ pameti pri zpracovani jmena souboru
+-sfx: prikaz sousteny po vybaleni archivu neni automaticky doplnovan
+ na plnou cestu, ShellExecuteEx si ho v current adresari (target dir) najde
+ samo
+
+-progress ted funguje korektne i pri praci s nulovymi soubory
+-dojde-li pri listingu k chybe zobrazime, alespon to co se dosud poradilo
+ precist a dovolime to take vybalit, ale zaroven hlasime chybu
+-je-li vysledkem pack operace archiv, ktery ma 65535 souboru, je uzivatel
+ varovan, ze ZIP nebude kompatibilni se specifikaci a ze ho nektere archivery
+ nemusi umet vybalit
++podpora pro praci s archivy ktere maji vice 65535 souboru (unpack i pack)
++podpora pro winzipacky vicesvazkovy archiv (jmenne konvence) pri baleni
++podpora pro winzipacky vicesvazkovy archiv (jmenne konvence) pri rozbalovani
+
+-oprava nemciny v sfx
+
+-dialog -> dialog box
+-oprava spatneho chovani pri prepisu soboru v unixovem archivu, chovalo
+ se to podivne pokud bylo vice souboru lisicich se casem
+
+-pouziti CSalamanderGeneral::UpdateCrc32
+-je-li v nazvu souboru v zipu vice lomitek v ceste jsou nahrazeny
+ jedinym lomitkem
++podpora pro UNIX archivy:
+ -case-sensitive CSalamanderDirectory
+ -vybalovani (plne jmena i root path) case-sensitive
+ -baleni: root path case-sensitive, jmena (bez root path) case-insensitive (jsme na Win32)
+ -mazani case-sensitive
+
+-sfx uz umi robalit vicesvazkovy archiv s diakritikou ve svem nazvu
++hodnota 'none' promene 'mbox_type' v konfiguracnim souboru pro sfx
+ prejmenovana na 'simple'
++do konfiguracniho souboru pro sfx pridana volba pro vytvareni message
+ boxu s dlouym textem (vhodne napr pro license agreement); 
+ pridana nova hodnota 'agree_disagree' promene 'mbox_buttons'
+ a hodnota 'long_message' promene 'mbox_type'     
++v konfiguracnim souboru pro sfx byl zmenen nazev promene
+ 'mbox_icon' na 'mbox_type', platnost puvodniho nazvu zustava,
+ ale je lepsi pouzivat novy nazev
++v nastaveni textu pro sfx je mozne zvolit tlacitka "agree disagree"
+ pro dlouhy message box
++v nastaveni textu pro sfx je mozne zvolit novy typ message
+ boxu pro dlouhe zpravy (vhodne pro license agreement)
+-spatny link (backslash misto slash) v About dialogu                                                                         
+-doplneni 'NextVolume' dialogu o test existence zadaneho souboru
+-case-insensitive CSalamanderDirectory (dojde ke spojovani adresaru)
+-vybalovani: nazvy souboru (bez cesty) case-sensitive (aby chodilo F3),
+ cesty case-insensitive (jsou vsechny spojeny do jedne z nich - te co prisla prvni)
+-baleni: root path case-insensitive, jmena (bez root path) case-insensitive (jsme na Win32)
+-mazani: nazvy souboru (bez cesty) case-sensitive, cesta case-insensitive
+-varovani, ze ZIP archive byl pozkozen, vyskakovalo kdyz se uspesne nedokoncilo
+ baleni do nove vytvareneho archivu
++posilani notifikace o zmene na ceste pri exportu configurace pro sfx
++zvedl jsem verzi SFX na 1.12
++slovensky sfx balicek
+-oprava gramatiky v zip2sfx\sample.set a v komentari v exportovanem
+ konfiguracnim souboru pro zip2sfx
++handling zip files greater than 2GB
+
+version 1.11
++Improved handling of custom self-extractor text when changing self-extractor language
++HTML help for ZIP Plugin accesible from the most dialog boxes and from the plugins menu. 
+
+version 1.1 (sal 2.0)
++in some cases self-extractor didn't cleaned unsucessfully extracted files  
++zip configuration invoked from pack dialog wasn't saved if you canceled pack dialog
+
+version 1.0 beta 3 (sal 1.6 beta 7)
++self-extracting multi-volume archives are now extracting sequentialy (no need to switch 
+ to a last volume when extraction begins)
++self-extractor settings are exported with comments
++ability to wait for another process than the process specified by the 'command' field
++menu command in SFX setting for managing stored favorit settings
+-"Set archive time to newest file time" used also directory time not only file time
+-ZIP crashed when any directory was selected outside archive and menu command was invoked
++improved specification of target directory in sfx settings
++self-extractor is able to display user defined message boxes when launched
++new settings dialog for self-extracting archives
+
+version 1.0 beta 2 (sal 1.6 beta 6)
+-error in filenames coding, some unpackers used to extract files with wrong filenames
+-infinite loop in menu commands if there were some files selected in the archive
++new option "Set archive time to newest file time" in ZIP configuration
+
+version 1.0 beta 1 (sal 1.6 beta 5)
+-on some archives were displayed directories as files
+-self-extractor didn't preserve file times when unpacking
+-the sfx archive wasn't named correctly if it's name contained more than one '.' character 
+-on some archives didn't file attributes displayed correctly
++added command in Salamander's 'Command' menu for archive comment viewing and editing
++added command in Salamander's 'Command' menu for archive testing
++added command in Salamander's 'Command' menu for self-extracting archive creating
++strongly improved support for creating self-extracting archives
+-when extracting files from a zipfile under W95/98, the file dates wasn't set to the archive 
+ dates, but to the current date and time.
++changing selextractor's icon also under W95/98
+
+version 0.9 beta 2 (sal 1.6 beta 5)
+-plugin cannot load under W95 with IE30 or older (there were some functions imported
+ from shlwapi.dll)
+-bug when extracting files from a zipfile to drive root (double-backslash after drive letter)
+
+version 0.9 beta 1 (sal 1.6 beta 5) (4.6.2000) 

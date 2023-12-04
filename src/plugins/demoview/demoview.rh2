@@ -1,0 +1,85 @@
+﻿//****************************************************************************
+//
+// Copyright (c) 2023 Open Salamander Authors
+//
+// This is a part of the Open Salamander SDK library.
+//
+//****************************************************************************
+
+// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __DEMOVIEW_RH2
+#define __DEMOVIEW_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#define IDC_STATIC_1 3000
+#include "statics.rh2"   // 3000 az 3039 jsou timto zabrane !!!
+
+#define IDS_PLUGINNAME           46
+#define IDS_ABOUT                47
+#define IDS_PLUGIN_DESCRIPTION   48
+#define IDS_PLUGIN_HOME          49
+#define IDS_PLUGIN_BUGREP        50
+#define IDS_PLUGIN_EMAIL         51
+#define IDS_CFG_ALREADY_OPENED   52
+#define IDS_VIEWER_OPENWNDS      53
+#define IDS_CFG_TITLE            54
+#define IDS_INVALID_NUM          55
+#define IDS_DMV_FILES_FILTER     56
+
+#define IDB_TOOLBAR16            100
+#define IDB_TOOLBAR256           101
+
+#define IDH_VIEWBMPFROMCLIP      900
+
+#define IDB_PLUGINICO            1000
+
+#define CML_VIEWER_FILES         1500
+#define CM_VIEWER_OPEN           1501
+#define CM_VIEWER_EXIT           1502
+
+#define CML_VIEWER_EDIT          1520
+#define CM_VIEWER_CUT            1521
+#define CM_VIEWER_COPY           1522
+#define CM_VIEWER_PASTE          1523
+#define CM_VIEWER_FILTER         1523
+
+#define CML_VIEWER_OPTIONS       1525
+#define CM_VIEWER_CFG            1526
+
+#define CML_VIEWER_HELP          1530
+#define CM_VIEWER_ABOUT          1531
+
+#define CML_VIEWER_VIEW          1540
+#define CML_VIEWER_FILTER        1545
+
+#define CM_FILTER_FIRST          1550 // vyhrazeny interval
+#define CM_FILTER_LAST           1559
+
+#define IDS_MENU_FILES           2000
+#define IDS_MENU_FILES_OPEN      2001
+#define IDS_MENU_FILES_EXIT      2002
+
+#define IDS_MENU_EDIT            2010
+#define IDS_MENU_EDIT_CUT        2011
+#define IDS_MENU_EDIT_COPY       2012
+#define IDS_MENU_EDIT_PASTE      2013
+
+#define IDS_MENU_VIEW            2020
+#define IDS_MENU_FILTER          2021
+#define IDS_FILTER               2022
+
+#define IDS_MENU_OPTIONS         2025
+#define IDS_MENU_OPTIONS_CFG     2026
+
+#define IDS_MENU_HELP            2032
+#define IDS_MENU_HELP_ABOUT      2033
+
+#define IDS_TBTT_CUT             2500
+#define IDS_TBTT_COPY            2501
+#define IDS_TBTT_PASTE           2502
+#define IDS_TBTT_FILTER          2503
+
+#endif // __DEMOVIEW_RH2

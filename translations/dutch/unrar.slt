@@ -1,0 +1,109 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\dutch\unrar.atp"
+TEXTVERSION,"3.01 (x86)"
+VERSION,"3,0,1,180"
+
+[TRANSLATION]
+LANGID,1043
+AUTHOR,"Cor van der Smissen, Marco Fung, Patrick Vijgeboom, S.V. (Stephan) Rietveld"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7009"
+COMMENT,"Nederlandse versie"
+
+[DIALOG 100]
+212,95,1,"Volgende archief volume"
+117,12,9,192,32,1,"Plaats diskette die het volgende archief volume bevat of zoek naar het desbetreffende bestand in de hardeschijf.\n\nDruk op OK indien gereed."
+300,12,48,54,8,1,"&Bestandsnaam:"
+101,12,58,173,12,1,""
+102,188,58,13,12,1,"..."
+1,49,76,50,14,1,"OK"
+2,112,76,50,14,1,"Annuleren"
+
+[DIALOG 103]
+356,85,1,"Fout"
+300,6,10,26,8,1,"Naam:"
+104,36,10,313,8,1,""
+301,6,23,26,8,1,"Fout:"
+302,36,23,313,16,1,"Bestand kan niet uitgepakt worden omdat het gecontinueerd wordt vanaf het vorige volume. Om het bestand uit te pakken moet je beginnen met het volume waar het bestand begint."
+105,36,44,183,12,1,"&Toon dit bericht niet in het vervolg."
+1,123,63,50,14,1,"OK"
+2,183,63,50,14,1,"Annuleren"
+
+[DIALOG 106]
+250,115,1,"UnRAR Configuratie"
+107,12,10,212,12,1,"&Automatisch bestanden uit vorige volumes overslaan tijdens"
+116,12,32,229,12,1,"A&ttentie niet weergeven wanneer de hele inhoud van het archief"
+300,23,22,154,8,1,"uitpakken."
+301,23,44,111,8,1,"niet opgesomd kan worden."
+302,6,60,238,1,1,""
+117,12,70,200,12,1,"Kolom "&Ingepakt" weergeven bij archieflijst"
+303,6,90,238,1,1,""
+1,70,96,50,14,1,"OK"
+2,129,96,50,14,1,"Annuleren"
+
+[DIALOG 108]
+358,80,1,"Wachtwoord invoer"
+113,18,18,18,20,1,""
+300,57,10,233,8,1,"Dit bestand is gecodeerd. Voer het wachtwoord in om te decoderen."
+301,57,25,32,8,1,"Bestand:"
+104,105,25,240,8,1,""
+302,57,38,47,8,1,"&Wachtwoord:"
+110,105,36,157,12,1,""
+1,28,58,50,14,1,"&OK"
+112,87,58,50,14,1,"&Alle"
+109,146,58,50,14,1,"Over&slaan"
+111,205,58,65,14,1,"Alles overs&laan"
+2,279,58,50,14,1,"Annuleren"
+
+[DIALOG 115]
+224,105,1,"UnRAR - Attentie"
+300,11,8,206,24,1,"Niet alle bestanden in het multi-volume archief kunnen opgesomd worden (en weergegeven worden in het paneel), omdat sommige archief volumes niet zijn gevonden."
+301,11,39,205,16,1,"Om de hele inhoud van het archief op te sommen kopieer alle archief volumes naar dezelfde map."
+105,11,64,157,12,1,"&Toon dit bericht niet in het vervolg"
+302,5,81,213,1,1,""
+1,166,87,50,14,1,"OK"
+
+[STRINGTABLE 0]
+1000,1,"UnRAR"
+1001,1,"Onvoldoende geheugen."
+1002,1,"Kan module bestandsnaam niet vinden."
+1003,1,"Kan library niet laden '%s'."
+1004,1,"Kan procedure adres niet verkrijgen."
+1005,1,"Archief is corrupt. (Verkeerde wachtwoord?)"
+1006,1,"Bestand heeft een onbekend formaat of is een ongeldige RAR archief. (Verkeerde wachtwoord?)"
+1007,1,"Kan archief niet openen."
+
+[STRINGTABLE 1]
+1008,1,"Onbekende fout opgetreden."
+1009,1,"Kan archief volume niet openen."
+1010,1,"Kan archief niet lezen."
+1011,1,"RAR Archiefbestanden (*.R*)"
+1012,1,"Selecteer archiefbestand"
+1013,1,"Fout in gecomprimeerde data. CRC komt niet overeen. (Verkeerd wachtwoord?)"
+1014,1,"Kan archief niet toevoegen aan bestandslijst."
+1015,1,"Uitpakken RAR Archief - %s"
+1016,1,"voorbereiding data en mappen aanmaken..."
+1017,1,"uitpakken..."
+1018,1,"uitpakken: "
+1019,1,"Kan bestandverwijzing niet verkrijgen: "
+1020,1,"Kan bestand niet wegschrijven:"
+1021,1,"Kan bestandsverwijzing niet instellen: "
+1022,1,"Kan operatie niet voltooien vanwege te lange padnaam."
+1023,1,"Kan operatie niet voltooien vanwege te lange mask."
+
+[STRINGTABLE 2]
+1024,1,"Voer ten minste één karakter in."
+1027,1,"Alle Bestanden (*.*)"
+1028,1,"Fout"
+1029,1,"Bestand niet gevonden"
+1030,1,"Verkeerde versie van unrar.dll. herinstalleer de UnRAR plugin."
+1031,1,"Het schijnt dat deze een multi-volume archief is. Zo ja, selecteer het eerste archief volume en druk op OK.\n\nIndien het niet een multi-volume archief betreft, druk op Annuleer."
+1032,1,"Selecteer eerste volume"
+1033,1,"Blader en pak RAR archieven uit."
+1034,1,"Over deze plugin"
+1035,1,"Bestand niet gevonden in het archief."
+1036,1,"Het wachtwoord is onjuist. De letters in het wachtwoord kunnen/zijn hoofdletter gevoelig. Wees er zeker van dat de CapsLock niet per ongeluk is ingeschakeld."
+
+[STRINGTABLE 3]
+1040,1,"Ingepakt"
+1041,1,"Omvang ingepakte bestand"
+

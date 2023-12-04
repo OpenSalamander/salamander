@@ -1,0 +1,102 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>File Systems</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Appendix: File and Directory Concepts</div>
+<div class="page">
+
+<h1>File Systems</h1>
+<p>Windows supports four types of file systems on readable/writable disks: the
+NTFS file system and three file allocation table (FAT) file systems: FAT12,
+FAT16 and FAT32.</p>
+<p>Windows also supports two types of file systems on CD-ROM and digital video
+disk (DVD) media: Compact Disc File System (CDFS) and Universal Disk Format
+(UDF).</p>
+<p>The structures of the volumes formatted by each of these file systems, as well
+as the way each file system organizes data on the disk, are significantly
+different.</p>
+
+<h5>FAT</h5>
+<p>The FAT file system locates the file allocation table near the beginning of
+the volume. FAT12 is the original implementation of FAT and is intended for very
+small media (floppy disks). FAT16 was designed for small disks and simple directory
+structures. FAT32 allowed users to create large volumes on large disks.</p>
+<p>Two copies of the file allocation table are stored on the volume. In the event
+that one copy of the file allocation table is corrupted, the other is used. The
+file allocation table is stored in a byte offset specified in the FAT boot
+sector's BIOS Parameter Block (BPB) so that the files needed to start the system
+can be located.</p>
+
+<h5>NTFS</h5>
+<p>NTFS, the preferred native file system for Windows 2000/XP/Vista/7, is
+a much more sophisticated, robust, and secure file system than any of the FAT
+file systems. The NTFS data structures allow you to take advantage of new
+features, such as:
+</p>
+
+<p><b>Recoverability</b> NTFS is a recoverable file system. A user seldom needs to
+run a disk repair program on an NTFS volume. NTFS guarantees the consistency of
+the volume by using standard transaction logging and recovery techniques. In the
+event of a system failure, NTFS uses its log file and checkpoint information to
+automatically restore the consistency of the file system.</p>
+
+<p><b>Compression</b> NTFS supports compression on volumes, directories, and files.
+Files that are compressed on an NTFS volume can be read and written by any
+Windows-based application without first being decompressed by another program; 
+decompression happens automatically during the file read. The file is compressed
+again when it is closed or saved.</p>
+
+<p><b>Encryption</b> The Encrypting File System (EFS) provides the core file
+encryption technology used to store encrypted files on NTFS volumes. EFS
+keeps files safe from intruders who might gain unauthorized physical access
+to sensitive, stored data (for example, by stealing a portable computer or
+external disk drive).</p>
+
+<p><b>Security</b> On NTFS volumes, you can set permissions on shares, directories,
+and files that specify which groups and users have access, and what level of 
+access is permitted. NTFS file and directory permissions apply to users working on 
+the local computer and to users accessing the file over the network from a shared
+directory. You can also set share permissions that operate on network shares in
+combination with file and directory permissions.</p>
+
+<p><b>Disk quotas</b> You can use disk quotas to monitor and limit disk-space
+use.</p>
+
+<p><b>Reparse points</b> Reparse points are file system objects in NTFS that can
+be applied to NTFS files or directories. A file or directory that contains a reparse
+point acquires additional behavior not present in the underlying file system.
+Reparse points are used by many of the new storage features in Windows 2000,
+including volume mount points.</p>
+
+<p><b>Volume mount points</b> Based on reparse points, volume mount points allow
+administrators to graft access to the root of one local volume onto the directory
+structure of another local volume.</p>
+
+<p><b>Sparse files</b> Sparse files allow programs to create very large files
+but consume disk space only as needed.</p>
+
+<h5>Compact Disc File System (CDFS)</h5>
+<p>Windows provides support for the ISO 9660-compliant compact disc file system
+(CDFS), which supports long file names.</p>
+
+<h5>Universal Disk Format (UDF)</h5>
+<p>UDF is a file system defined by the Optical Storage Technology Association
+(OSTA). UDF is compliant with the ISO 13346 standard and is the successor to
+the CD-ROM file system (CDFS or ISO 9660).</p>
+<p>UDF is targeted for removable disk media like DVD, CD, and Magneto-Optical
+(MO) discs. Since UDF is based on open standards, it is intended to facilitate
+data interchange between operating systems, and between consumer devices.</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>
+

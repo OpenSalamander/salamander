@@ -1,0 +1,30 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\hungarian\unfat.atp"
+TEXTVERSION,"1.1 (x86)"
+VERSION,"1,1,0,180"
+
+[TRANSLATION]
+LANGID,1038
+AUTHOR,"Török József"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6164"
+COMMENT,"Magyar változat"
+
+[STRINGTABLE 0]
+1000,1,"UnFAT"
+1001,1,"Plugin névjegy"
+1003,1,"FAT 12, 16, és 32 lemezképek böngészése és kibontása."
+
+[STRINGTABLE 1]
+1100,1,"Fájl megnyitási hiba: "%s"."
+1101,1,"Fájl olvasási hiba: "%s"."
+1102,1,"Fájl elemzési hiba: "%s".\n\n%s"
+1103,1,"A boot szektor sérült vagy ez nem FAT 12, 16, vagy 32 kép."
+
+[STRINGTABLE 2]
+1104,1,"Mappa olvasása sikertelen a fájlból: "%s".\n%s\nSzektor: %d, Ofszet: 0x%s\n\nA fájl nem érvényes FAT 12, 16, vagy 32 kép."
+1106,1,"A fájl olvasása sikertelen a fájlból: "%s".\n%s\nKlaszter: %d\n\nA fájl nem érvényes FAT 12, 16, vagy 32 kép."
+1107,1,"Fájl írási hiba"
+1108,1,"A(z) "%s" fájl úgy tűnik egy egész merevlemez képe.\nAz ilyen képeket nem támogatja az UnFAT plugin."
+1109,1,"FAT kép kibontása - %s"
+1110,1,"kibontás: %s"
+

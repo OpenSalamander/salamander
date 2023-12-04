@@ -1,0 +1,47 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\chinesesimplified\unchm.atp"
+TEXTVERSION,"1.03 (x86)"
+VERSION,"1,0,3,180"
+
+[TRANSLATION]
+LANGID,2052
+AUTHOR,"Michael Lu"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6958"
+COMMENT,"简体中文版"
+
+[STRINGTABLE 0]
+1000,1,"UnCHM"
+1001,1,"不能打开文件。"
+1002,1,"未指定的错误。"
+1003,1,"正在解压 CHM 压缩包"
+1004,1,"解压文件错误。"
+1005,1,"不能处理此文件。"
+1006,1,"内存不足。"
+1007,1,"关于插件"
+
+[STRINGTABLE 1]
+1009,1,"浏览并解压 CHM 文件。"
+1010,1,"不能创建临时目录。"
+1011,1,"不能删除临时文件。"
+1012,1,"未知文件格式或不是有效的 CHM 镜像。\n\n如果你确定这是有效的 CHM 镜像，请联系 support@altap.cz 并帮助我们支持此格式。"
+1013,1,"不能打开此文件。"
+1014,1,"创建临时文件失败。"
+1015,1,"不能设置文件属性。"
+1016,1,"不能创建目录 '%s'。"
+1020,1,"是"
+1021,1,"否"
+1022,1,"错误"
+1023,1,"警告"
+
+[STRINGTABLE 2]
+1032,1,"内部插件错误。"
+
+[STRINGTABLE 3]
+1100,1,"读取错误"
+1101,1,"写入错误"
+
+[STRINGTABLE 4]
+1105,1,"无效数字。"
+1106,1,"正在取消操作，请等待..."
+1107,1,"CHMLIB 库版权所有 © 2001-2010 Jed Wing"
+

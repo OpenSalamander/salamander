@@ -1,0 +1,128 @@
+﻿//
+// lang.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "..\versinfo.rh2"
+#include "versinfo.rc2"
+
+// dialogs
+IDD_ENTERPASSWORD DIALOGEX 6, 15, 257, 87
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Enter 7-Zip password"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    ICON            "",IDC_LOCK_ICON,16,12,20,20
+    LTEXT           "This file is encrypted. Please enter password for decryption.",IDC_STATIC_1,48,12,204,8
+/*    LTEXT           "File:",IDC_STATIC_2,48,26,17,8
+    LTEXT           "",IDC_FILE,65,26,175,8 */
+    LTEXT           "Password:",IDC_STATIC_3,48,40,37,8
+    EDITTEXT        IDC_PASSWORD,88,38,151,12,ES_PASSWORD | ES_AUTOHSCROLL
+/*
+ // priprava pro skip a skip all
+    DEFPUSHBUTTON   "OK",IDOK,12,63,50,14
+    PUSHBUTTON      "Skip",IDC_SKIP,72,63,50,14
+    PUSHBUTTON      "Skip all",IDC_SKIPALL,132,63,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,192,63,50,14
+*/    
+    DEFPUSHBUTTON   "OK",IDOK,132,63,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,192,63,50,14
+END
+
+// String Table
+STRINGTABLE
+{
+  IDS_PLUGINNAME,             "7-Zip"
+  IDS_ABOUT,                  "About Plugin"
+  IDS_PLUGIN_DESCRIPTION,     "Create, browse, and extract 7-Zip archives."
+  IDS_INSUFFICIENT_MEMORY,    "Insufficient memory."
+  IDS_CANT_LOAD_LIBRARY,      "Cannot load library 7za.dll."
+  IDS_CANT_GET_CRATEOBJECT,   "Cannot get method CreateObject."
+  IDS_CANT_GET_CLASS_OBJECT,  "Cannot get class object."
+  IDS_CANT_OPEN_ARCHIVE,      "Cannot open archive '%s'."
+  IDS_CANT_OPEN_ARCHIVE_PWD,  "Cannot open archive '%s'.\nThe wrong archive password may have been entered."
+  IDS_ERROR,                  "Internal error."
+  IDS_PACKING_ARCHIVE,        "Packing 7-Zip Archive"
+  IDS_UNPACKING_ARCHIVE,      "Unpacking 7-Zip Archive"
+  IDS_UPDATING_ARCHIVE,       "Updating 7-Zip Archive"
+  IDS_TESTING_ARCHIVE,        "Testing 7-Zip Archive"
+  IDS_TESTING_ARCHIVE_NAME    "Testing archive '%s'..."
+  IDS_READING_DIRTREE,        "Reading directory tree..."
+  IDS_CANT_CREATE_ARCHIVE,    "Cannot create archive."
+  IDS_TESTARCHIVE,            "Test Archive"
+  IDS_TESTARCHIVECORRUPTED,   "Archive '%s' is corrupted."
+  IDS_TESTARCHIVEOK,          "Archive '%s' is OK."
+  IDS_INCORRECTPASSWORD,      "Incorrect password"
+  IDS_INCORRECTPASSWORDBODY,  "The password is incorrect. Please retype the password. Letters in password must\nbe typed using the correct case. Make sure that CapsLock is not accidentally on."
+  IDS_PASSWORDSNOTMATCH,      "The passwords you typed do not match."
+  IDS_EMPTYPASSWORD,          "Password should be at least one character long."
+  IDS_UPDATE_NOT_SUPPORTED,   "Update operations are not supported for this archive."
+  IDS_CANT_MOVE_TMPARCHIVE,   "Cannot move temporary archive '%s'."
+  IDS_CANT_DELETE_TMPARCHIVE, "Cannot delete temporary archive '%s'."
+  IDS_7Z_UPDATE_ERROR,        "An error occured when updating archive.\n\nThis is not a fault of Open Salamander 7zip plugin. The problem is in 7za.dll,\nso please do NOT send us bugreports, we know about this problem."
+  IDS_7Z_SOLID_DELETE_UNSUP,  "Deleting files from solid archives is not supported."
+  IDS_CANT_UPDATE_ARCHIVE,    "Cannot update archive '%s'."
+  IDS_CANT_CREATE_TMPFILE,    "Cannot create temporary file."
+//  IDS_CANT_CREATEMUTEX,       "Cannot create mutex."
+  IDS_ARCHIVE_CHANGED,        "Archive file '%s' has changed. Archive will be reopened in panel."
+  IDS_DELETE_ERROR,           "Delete Error"
+  IDS_ADD_FILES_TO_ARCHIVE,   "Add Files To Archive"
+  IDS_CREATE_NEW_ARCHIVE,     "Create New Archive"
+  IDS_REMOVING_FILES,         "Removing files..."
+  IDS_READING_ARCHIVEITEMS,   "Reading archive items..."
+  IDS_UNPACKING,              "Unpacking..."
+  IDS_PACKING,                "Packing..."
+  IDS_REMOVING,               "Removing..."
+  IDS_UPDATING,               "Updating..."
+  IDS_CANCELING_OPERATION,    "Canceling operation, please wait..."
+  IDS_UNSUPPORTED_METHOD,     "Unsupported method."
+  IDS_CRC_FAILED,             "CRC failed."
+  IDS_UNKNOWN_ERROR,          "Unknown error."
+  IDS_DATA_ERROR,             "Data error occured when unpacking file '%s'."
+  IDS_DATA_ERROR_PWD,         "Data error occured when unpacking file '%s'.\nThe wrong password may have been entered."
+  IDS_BTN_DELETE,             "&Delete"
+  IDS_BTN_DELETE_ALL,         "De&lete all"
+  IDS_BTN_KEEP,               "&Keep"
+  IDS_BTN_KEEP_ALL,           "K&eep all"
+  IDS_ERROR_PROCESSING_FILE,  "Error processing file '%s'.\n\nDo you want to delete or keep this file?"
+  IDS_ERROR_PROCESSING_FILE_PWD, "Error processing file '%s'.\nThe wrong password may have been entered.\n\nDo you want to delete or keep this file?"
+  IDS_OVERWRITE_FILE,         "Overwrite File";
+  IDS_READONLY_ARCHIVE,       "The archive file is read only. Please clear the read only attribute first."
+  IDS_CANT_REMOVE_DIRECTORY,  "Cannot remove directory '%s'"
+  IDS_CANT_READ_ARCHIVE       "Error reading from the archive file."
+  IDS_CANT_READ               "Error reading input file."
+  IDS_CANT_WRITE              "{!}Could not write %d byte{|1|s}."
+  IDS_BTN_RETRY               "Retry"
+  IDS_BTN_ABORT               "Abort"
+  IDS_STORE,                  "Store"
+  IDS_FASTEST,                "Fastest"
+  IDS_FAST,                   "Fast"
+  IDS_NORMAL,                 "Normal"
+  IDS_MAXIMUM,                "Maximum"
+  IDS_ULTRA,                  "Ultra"
+  IDS_METHOD_LZMA,            "LZMA"
+  IDS_METHOD_LZMA2,           "LZMA2"
+  IDS_METHOD_PPMD,            "PPMd"
+  IDS_PACK_UPDATE_ERROR,      "An error occured while packing/updating the archive."
+  IDS_UNPACK_ERROR,           "An error occured while unpacking the archive."
+  IDS_TEST_ERROR,             "An error occured while testing the archive."
+  IDS_UNSUPPORTED_ARCHIVE,    "Unsupported or unrecognized archive type.\nThe archive file may have been heavily damaged."
+  IDS_7Z_FATAL_ERROR          "The archive was not created due to fatal error."
+  IDS_7Z_UPDATE_UNKNOWN_ERROR "The archive was not updated due to unknown error %x."
+  IDS_7Z_CREATE_UNKNOWN_ERROR "The archive was not created due to unknown error %x."
+//  IDS_7Z_SOLID_UPDATE_UNSUP   "Updating files in solid archives is not supported."
+  IDS_LISTINFO_PAKEDSIZE      "Packed"
+  IDS_LISTINFO_PAKEDSIZE_DESC "Packed size of file"
+  IDS_LISTINFO_METHOD         "Method"
+  IDS_LISTINFO_METHOD_DESC    "Compression method"
+  IDS_ARCLOCK_ERROR           "Archive Lock Error"
+  IDS_ERRADDFILE_TOOLONG,     "Cannot add 1 or more files to the list. The total path is too long.\nSome directories or files may be missing in the archive listing."
+  IDS_ERRADDDIR_TOOLONG,      "Cannot add 1 or more directories to the list. The total path is too long.\nSome directories or files may be missing in the archive listing."
+  IDS_NAMEISTOOLONG,          "Name ""%s"" with full path is too long.\n\nPath: %s"
+}

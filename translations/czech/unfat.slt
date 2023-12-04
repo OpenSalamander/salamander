@@ -1,0 +1,30 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\czech\unfat.atp"
+TEXTVERSION,"1.1 (x86)"
+VERSION,"1,1,0,180"
+
+[TRANSLATION]
+LANGID,1029
+AUTHOR,"Hynek Mikulič"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7008"
+COMMENT,"Česká verze"
+
+[STRINGTABLE 0]
+1000,1,"UnFAT"
+1001,1,"O pluginu"
+1003,1,"Prohlíží a extrahuje FAT 12, 16, a 32 obrazy disku."
+
+[STRINGTABLE 1]
+1100,1,"Chyba otevírání souboru "%s"."
+1101,1,"Chyba načítání souboru "%s"."
+1102,1,"Chyba analýzy souboru "%s".\n\n%s"
+1103,1,"Boot sektor je poškozený nebo soubor není FAT 12, 16, nebo 32 obraz."
+
+[STRINGTABLE 2]
+1104,1,"Chyba načítání adresáře ze souboru "%s".\n%s\nSektor: %d, Offset: 0x%s\n\nSoubor není platný FAT 12, 16, nebo 32 obraz."
+1106,1,"Chyba načítání souboru ze souboru "%s".\n%s\nCluster: %d\n\nSoubor není platný FAT 12, 16, nebo 32 obraz."
+1107,1,"Chyba zápisu souboru"
+1108,1,"Soubor "%s" se zdá být obrazem celého pevného disku.\nTakové obrazy nejsou UnFAT pluginem podporovány."
+1109,1,"Extrahování FAT obrazu - %s"
+1110,1,"extrahuji: %s"
+

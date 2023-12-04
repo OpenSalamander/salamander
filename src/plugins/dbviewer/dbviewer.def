@@ -1,0 +1,4 @@
+LIBRARY DBVIEWER.SPL
+
+EXPORTS SalamanderPluginEntry
+EXPORTS SalamanderPluginGetReqVer

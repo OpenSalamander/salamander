@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>ViewFile Method</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: Automation: Reference: Salamander Object</div>
+<div class="page">
+
+<h1>ViewFile Method</h1>
+
+<p>The <b>ViewFile</b> method opens the specified file in the associated viewer.</p>
+<h2>Syntax</h2>
+<pre><code>ViewFile(<i>file</i>, [<i>cache</i>])</code></pre>
+<h2>Parameters</h2>
+<h3>file</h3>
+<p>Required. The name of the file.</p>
+<h3>cache</h3>
+<p>Optional. Specifies whether the disk cache should be used when viewing the file. This can be one of the following values: </p><table><tr>
+<td class="hdr">Constant</td><td class="hdr">Description</td></tr>
+<tr>
+<td>0</td><td>The disk cache will not be used. This is the default behavior.</td></tr>
+<tr>
+<td>1</td><td>The file will be copied to the disk cache before it is opened in the viewer. The caller can safely delete the file immediately after the method returns.</td></tr>
+<tr>
+<td>2</td><td>The file will be moved to the disk cache before it is opened in the viewer. The file will be automatically deleted from the cache once the user closes the viewer window.</td></tr>
+</table>
+<h2>Return Values</h2>
+<p>This method does not return a value.</p><h2>See Also</h2>
+<p><a href="ref_salamander.htm">Salamander Object</a></p>
+</div>
+<div class="footer">&copy; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

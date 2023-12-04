@@ -1,0 +1,33 @@
+﻿//****************************************************************************
+//
+// Copyright (c) 2023 Open Salamander Authors
+//
+// This is a part of the Open Salamander SDK library.
+//
+//****************************************************************************
+
+// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __NETHOOD_RH2
+#define __NETHOOD_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#define IDC_STATIC_1 3000
+#include "statics.rh2"   // 3000 az 3039 jsou timto zabrane !!!
+
+#define IDS_PLUGIN_NAME                 128
+#define IDS_DESCRIPTION                 129
+#define IDS_COLUMN_COMMENTS             1024
+#define IDS_INFOLINE_SELECTION_PLURAL   1025
+#define IDS_MENUITEM                    1026
+#define IDS_REFRESHING                  1027
+#define IDS_NETWORK_UNAVAILABLE         1028
+#define IDS_ABOUT                       1029
+#define IDS_TSCLIENT                    1030
+#define IDS_TSFOLDER                    1031
+#define IDS_TSHOST                      1032
+#define IDS_TSFOLDERCOMMENT             1033
+
+#endif // __NETHOOD_RH2

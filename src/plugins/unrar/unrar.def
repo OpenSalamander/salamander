@@ -1,0 +1,4 @@
+LIBRARY unrar.spl
+
+EXPORTS SalamanderPluginEntry
+EXPORTS SalamanderPluginGetReqVer

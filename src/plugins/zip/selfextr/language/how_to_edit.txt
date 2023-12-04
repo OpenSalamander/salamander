@@ -1,0 +1,18 @@
+Editace resourcu pro ceskou verzi
+=================================
+
+Preneseme rucne obsah ZIP\selfextr\language\czech\main.rc
+do ZIP\selfextr\edit_in_vs.rc. Vynechame jen dva radky:
+"#ifdef EXT_VER" a "#endif //EXT_VER". Podivame se do
+ZIP\selfextr\SELFEXTR.RC na kodovou stranku
+language\czech\main.rc (1250) a zapiseme ji do souboru
+ZIP\selfextr\edit_in_vs.rc (viz "#pragma code_page").
+
+Otevreme zip\vcproj\selfextr\selfextr.sln. Provedeme editaci
+otevrenim resourcu projektu EditInVS (edit_in_vs.vcproj).
+Preneseme zmeny zpet z ZIP\selfextr\edit_in_vs.rc do
+ZIP\selfextr\language\czech\main.rc. Nesmazneme puvodni
+"#ifdef EXT_VER" a "#endif //EXT_VER".
+
+Vycistime z ZIP\selfextr\edit_in_vs.rc vsechny dialogy, at to nemame
+na Hg redundantni.

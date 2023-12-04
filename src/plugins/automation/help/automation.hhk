@@ -1,0 +1,474 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<!-- Sitemap 1.0 -->
+</HEAD><BODY>
+<UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Aborting Scripts">
+		<param name="Name" value="Running Your Scripts">
+		<param name="Local" value="hh\automation\using_running.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Button Object">
+		<param name="Name" value="Button Object">
+		<param name="Local" value="hh\automation\ref_button.htm">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Constructor">
+			<param name="Name" value="Button Constructor">
+			<param name="Local" value="hh\automation\ref_button_ctor.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="DialogResult Property">
+			<param name="Name" value="DialogResult Property">
+			<param name="Local" value="hh\automation\ref_button_dialogresult.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Dialog Box">
+		<param name="See Also" value="Dialog Box">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Automation Configuration">
+			<param name="Local" value="hh\automation\dlgboxes_config.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="CheckBox Object">
+		<param name="Name" value="CheckBox Object">
+		<param name="Local" value="hh\automation\ref_checkbox.htm">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Checked Property">
+			<param name="Name" value="CheckBox Object">
+			<param name="Local" value="hh\automation\ref_checkbox.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Constructor">
+			<param name="Name" value="CheckBox Constructor">
+			<param name="Local" value="hh\automation\ref_checkbox_ctor.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Control Object">
+		<param name="Name" value="Control Object">
+		<param name="Local" value="hh\automation\ref_control.htm">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Text Property">
+			<param name="Name" value="Text Property">
+			<param name="Local" value="hh\automation\ref_control_text.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Form Object">
+		<param name="Name" value="Form Object">
+		<param name="Local" value="hh\automation\ref_form.htm">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Constructor">
+			<param name="Name" value="Form Constructor">
+			<param name="Local" value="hh\automation\ref_form_ctor.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Execute Method">
+			<param name="Name" value="Execute Method">
+			<param name="Local" value="hh\automation\ref_form_execute.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Item Object">
+		<param name="Name" value="Item Object">
+		<param name="Local" value="hh\automation\ref_item.htm">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Attributes Property">
+			<param name="Name" value="Item Object">
+			<param name="Local" value="hh\automation\ref_item.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="DateLastModified Property">
+			<param name="Name" value="Item Object">
+			<param name="Local" value="hh\automation\ref_item.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Name Property">
+			<param name="Name" value="Item Object">
+			<param name="Local" value="hh\automation\ref_item.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Path Property">
+			<param name="Name" value="Item Object">
+			<param name="Local" value="hh\automation\ref_item.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Size Property">
+			<param name="Name" value="Item Object">
+			<param name="Local" value="hh\automation\ref_item.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Items Collection">
+		<param name="Name" value="Items Collection">
+		<param name="Local" value="hh\automation\ref_itemcollection.htm">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Count Property">
+			<param name="Name" value="Items Collection">
+			<param name="Local" value="hh\automation\ref_itemcollection.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Item Property">
+			<param name="Name" value="Items Collection">
+			<param name="Local" value="hh\automation\ref_itemcollection.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Label Object">
+		<param name="Name" value="Label Object">
+		<param name="Local" value="hh\automation\ref_label.htm">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Constructor">
+			<param name="Name" value="Label Constructor">
+			<param name="Local" value="hh\automation\ref_label_ctor.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Panel Object">
+		<param name="Name" value="Panel Object">
+		<param name="Local" value="hh\automation\ref_panel.htm">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="DeselectAll Method">
+			<param name="Name" value="Panel Object">
+			<param name="Local" value="hh\automation\ref_panel_deselectall.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="FocusedItem Property">
+			<param name="Name" value="Panel Object">
+			<param name="Local" value="hh\automation\ref_panel.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Items Property">
+			<param name="Name" value="Panel Object">
+			<param name="Local" value="hh\automation\ref_panel.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Path Property">
+			<param name="Name" value="Panel Object">
+			<param name="Local" value="hh\automation\ref_panel.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="PathType Property">
+			<param name="Name" value="Panel Object">
+			<param name="Local" value="hh\automation\ref_panel_pathtype.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="SelectAll Method">
+			<param name="Name" value="Panel Object">
+			<param name="Local" value="hh\automation\ref_panel_selectall.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="SelectedItems Property">
+			<param name="Name" value="Panel Object">
+			<param name="Local" value="hh\automation\ref_panel.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="StoreSelection Method">
+			<param name="Name" value="Panel Object">
+			<param name="Local" value="hh\automation\ref_panel_storeselection.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="ProgressDialog Object">
+		<param name="Name" value="ProgressDialog Object">
+		<param name="Local" value="hh\automation\ref_progressdialog.htm">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="AddText Method">
+			<param name="Name" value="ProgressDialog Object">
+			<param name="Local" value="hh\automation\ref_progressdialog_addtext.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="CanCancel Property">
+			<param name="Name" value="ProgressDialog Object">
+			<param name="Local" value="hh\automation\ref_progressdialog.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Hide Method">
+			<param name="Name" value="ProgressDialog Object">
+			<param name="Local" value="hh\automation\ref_progressdialog.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="IsCancelled Property">
+			<param name="Name" value="ProgressDialog Object">
+			<param name="Local" value="hh\automation\ref_progressdialog.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Maximum Property">
+			<param name="Name" value="ProgressDialog Object">
+			<param name="Local" value="hh\automation\ref_progressdialog.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Position Property">
+			<param name="Name" value="ProgressDialog Object">
+			<param name="Local" value="hh\automation\ref_progressdialog.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Show Method">
+			<param name="Name" value="ProgressDialog Object">
+			<param name="Local" value="hh\automation\ref_progressdialog.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Step Method">
+			<param name="Name" value="ProgressDialog Object">
+			<param name="Local" value="hh\automation\ref_progressdialog_step.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Style Property">
+			<param name="Name" value="ProgressDialog Object">
+			<param name="Local" value="hh\automation\ref_progressdialog_style.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Title Property">
+			<param name="Name" value="ProgressDialog Object">
+			<param name="Local" value="hh\automation\ref_progressdialog.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="TotalMaximum Property">
+			<param name="Name" value="ProgressDialog Object">
+			<param name="Local" value="hh\automation\ref_progressdialog.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="TotalPosition Property">
+			<param name="Name" value="ProgressDialog Object">
+			<param name="Local" value="hh\automation\ref_progressdialog.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Running Scripts">
+		<param name="Name" value="Running Your Scripts">
+		<param name="Local" value="hh\automation\using_running.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Salamander Object">
+		<param name="Local" value="hh\automation\ref_salamander.htm">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="AbortScript Method">
+			<param name="Name" value="AbortScript Method">
+			<param name="Local" value="hh\automation\ref_salamander_abortscript.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="AutomationVersion Property">
+			<param name="Name" value="AutomationVersion Property">
+			<param name="Local" value="hh\automation\ref_salamander_automationversion.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="DebugBreak Method">
+			<param name="Name" value="DebugBreak Method">
+			<param name="Local" value="hh\automation\ref_salamander_debugbreak.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="ErrorDialog Method">
+			<param name="Name" value="ErrorDialog Method">
+			<param name="Local" value="hh\automation\ref_salamander_errordialog.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="GetFullPath Method">
+			<param name="Name" value="GetFullPath Method">
+			<param name="Local" value="hh\automation\ref_salamander_getfullpath.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="GetPersistentVal Method">
+			<param name="Name" value="GetPersistentVal Method">
+			<param name="Local" value="hh\automation\ref_salamander_getpersistentval.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="InputBox Method">
+			<param name="Name" value="InputBox Method">
+			<param name="Local" value="hh\automation\ref_salamander_inputbox.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="LeftPanel Property">
+			<param name="Name" value="Salamander Object">
+			<param name="Local" value="hh\automation\ref_salamander.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="MatchesMask Method">
+			<param name="Name" value="Salamander Object">
+			<param name="Local" value="hh\automation\ref_salamander_matchesmask.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="MsgBox Method">
+			<param name="Name" value="MsgBox Method">
+			<param name="Local" value="hh\automation\ref_salamander_msgbox.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="OverwriteDialog Method">
+			<param name="Name" value="OverwriteDialog Method">
+			<param name="Local" value="hh\automation\ref_salamander_overwritedialog.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="ProgressDialog Property">
+			<param name="Name" value="Salamander Object">
+			<param name="Local" value="hh\automation\ref_salamander.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="QuestionDialog Method">
+			<param name="Name" value="QuestionDialog Method">
+			<param name="Local" value="hh\automation\ref_salamander_questiondialog.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="RightPanel Property">
+			<param name="Name" value="Salamander Object">
+			<param name="Local" value="hh\automation\ref_salamander.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Script Property">
+			<param name="Name" value="Salamander Object">
+			<param name="Local" value="hh\automation\ref_salamander.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="SetPersistentVal Method">
+			<param name="Name" value="SetPersistentVal Method">
+			<param name="Local" value="hh\automation\ref_salamander_setpersistentval.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Sleep Method">
+			<param name="Name" value="Sleep Method">
+			<param name="Local" value="hh\automation\ref_salamander_sleep.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="SourcePanel Property">
+			<param name="Name" value="Salamander Object">
+			<param name="Local" value="hh\automation\ref_salamander.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="TargetPanel Property">
+			<param name="Name" value="Salamander Object">
+			<param name="Local" value="hh\automation\ref_salamander.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="TraceE and TraceI Methods">
+			<param name="Name" value="Trace Methods">
+			<param name="Local" value="hh\automation\ref_salamander_trace.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Version Property">
+			<param name="Name" value="Salamander Object">
+			<param name="Local" value="hh\automation\ref_salamander.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="ViewFile Method">
+			<param name="Name" value="Salamander Object">
+			<param name="Local" value="hh\automation\ref_salamander_viewfile.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="WaitWindow Property">
+			<param name="Name" value="Salamander Object">
+			<param name="Local" value="hh\automation\ref_salamander.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="WindowsVersion Property">
+			<param name="Name" value="WindowsVersion Property">
+			<param name="Local" value="hh\automation\ref_salamander_windowsversion.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Sample Scripts">
+		<param name="Name" value="Sample Scripts">
+		<param name="Local" value="hh\automation\appendix_samples.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="ScriptInfo Object">
+		<param name="Name" value="ScriptInfo Object">
+		<param name="Local" value="hh\automation\ref_scriptinfo.htm">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Name Property">
+			<param name="Name" value="ScriptInfo Object">
+			<param name="Local" value="hh\automation\ref_scriptinfo.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Path Property">
+			<param name="Name" value="ScriptInfo Object">
+			<param name="Local" value="hh\automation\ref_scriptinfo.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Scripting Engines">
+		<param name="Name" value="Scripting Engines">
+		<param name="Local" value="hh\automation\appendix_engines.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="TextBox Object">
+		<param name="Name" value="TextBox Object">
+		<param name="Local" value="hh\automation\ref_textbox.htm">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Constructor">
+			<param name="Name" value="TextBox Constructor">
+			<param name="Local" value="hh\automation\ref_textbox_ctor.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="WaitWindow Object">
+		<param name="Name" value="WaitWindow Object">
+		<param name="Local" value="hh\automation\ref_waitwindow.htm">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="CanCancel Property">
+			<param name="Name" value="WaitWindow Object">
+			<param name="Local" value="hh\automation\ref_waitwindow.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Delay Property">
+			<param name="Name" value="WaitWindow Object">
+			<param name="Local" value="hh\automation\ref_waitwindow.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Hide Method">
+			<param name="Name" value="WaitWindow Object">
+			<param name="Local" value="hh\automation\ref_waitwindow.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="IsCancelled Property">
+			<param name="Name" value="WaitWindow Object">
+			<param name="Local" value="hh\automation\ref_waitwindow.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Show Method">
+			<param name="Name" value="WaitWindow Object">
+			<param name="Local" value="hh\automation\ref_waitwindow.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Text Property">
+			<param name="Name" value="WaitWindow Object">
+			<param name="Local" value="hh\automation\ref_waitwindow.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Title Property">
+			<param name="Name" value="WaitWindow Object">
+			<param name="Local" value="hh\automation\ref_waitwindow.htm">
+			</OBJECT>
+	</UL>
+</UL>
+</BODY></HTML>

@@ -1,0 +1,4 @@
+LIBRARY uniso.spl
+
+EXPORTS SalamanderPluginEntry
+EXPORTS SalamanderPluginGetReqVer

@@ -1,0 +1,61 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Scripting Engines</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: Automation: Appendix</div>
+<div class="page">
+
+<h1>Scripting Engines</h1>
+
+<h2>JScript</h2>
+<p>JScript engine comes preinstalled by default on Microsoft Windows. The file
+extension is <i>.js</i>.</p>
+
+<h2>Perl</h2>
+<p><a href="http://www.activestate.com/activeperl" class="external">ActivePerl</a>
+scripting engine is available from <a href="http://www.activestate.com/" class="external">ActiveState</a>.</p>
+
+<h2>PHP</h2>
+<p>PHP active script extension is part of the <a href="http://pecl.php.net/" class="external">PECL</a>
+package. The last available version is 5.2.6. The extension seems to be no longer
+maintained and is quite buggy. After you install the extension as described
+in manual you will have to add following entries into the registry to associate
+the <i>.phps</i> extension with the PHP scripting engine.</p>
+
+<pre><code>Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\.phps]
+@="PHPScriptFile"
+
+[HKEY_CLASSES_ROOT\PHPScriptFile]
+@="PHP Script File"
+
+[HKEY_CLASSES_ROOT\PHPScriptFile\ScriptEngine]
+@="PHPScript"</code></pre>
+
+<h2>Python</h2>
+<p><a href="http://www.activestate.com/activepython" class="external">ActivePython</a>
+scripting engine is available from <a href="http://www.activestate.com/" class="external">ActiveState</a>.
+The file extension should be <i>.pys</i>.
+</p>
+
+<h2>Ruby</h2>
+<p><a href="https://www.artonx.org/data/asr/" class="external">ActiveScriptRuby</a>
+implements scripting engine for the Ruby language.</p>
+
+<h2>VBScript</h2>
+<p>Visual Basic scripting engine is installed by default in Microsoft Windows.
+The file extension is <i>.vbs</i>.</p>
+
+</div>
+<div class="footer">&copy; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

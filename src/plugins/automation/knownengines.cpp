@@ -1,0 +1,44 @@
+﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+/*
+	Automation Plugin for Open Salamander
+	
+	Copyright (c) 2009-2023 Milan Kase <manison@manison.cz>
+	Copyright (c) 2010-2023 Open Salamander Authors
+	
+	knownengines.cpp
+	List of some known script engines. Some of them require
+	special workarounds.
+*/
+
+#include "precomp.h"
+
+// PECL 5.2.6
+// {CF108A38-59A9-468A-AF45-1368D7855DAE}
+extern "C" const CLSID CLSID_PHPScript = {0xCF108A38, 0x59A9, 0x468A, 0xAF, 0x45, 0x13, 0x68, 0xD7, 0x85, 0x5D, 0xAE};
+
+// {5DBEF578-E278-11D3-8E7A-0000F45A3C05}
+//extern "C" const CLSID CLSID_RubyScript = { 0x5DBEF578, 0xE278, 0x11D3, 0x8E, 0x7A, 0x00, 0x00, 0xF4, 0x5A, 0x3C, 0x05};
+
+// ActiveScriptRuby http://arton.hp.infoseek.co.jp/
+// {0AC0D358-E866-11D3-8E82-0000F45A3C05}
+extern "C" const CLSID CLSID_GlobalRubyScript = {0x0AC0D358, 0xE866, 0x11D3, 0x8E, 0x82, 0x00, 0x00, 0xF4, 0x5A, 0x3C, 0x05};
+
+// RScript22 (Ruby)
+// https://www.artonx.org/data/asr/
+// https://github.com/arton/RScript22
+// {39D7243A-AF85-46BB-B70C-200EE1021A9B}
+extern "C" const CLSID CLSID_RScript22_v24 = {0x39D7243A, 0xAF85, 0x46BB, 0xB7, 0x0C, 0x20, 0x0E, 0xE1, 0x02, 0x1A, 0x9B};
+// {7DEFB9DD-E95C-4778-B2D8-014C05C69028}
+extern "C" const CLSID CLSID_RScript22_v23 = {0x7DEFB9DD, 0xE95C, 0x4778, 0xB2, 0xD8, 0x01, 0x4C, 0x05, 0xC6, 0x90, 0x28};
+// {456A3763-90A4-4F2A-BFF1-4B773C1056EC}
+extern "C" const CLSID CLSID_RScript22_v22 = {0x456A3763, 0x90A4, 0x4F2A, 0xBF, 0xF1, 0x4B, 0x77, 0x3C, 0x10, 0x56, 0xEC};
+
+extern "C" const CLSID CLSID_VBScript = {0xb54f3741, 0x5b07, 0x11cf, 0xa4, 0xb0, 0x00, 0xaa, 0x00, 0x4a, 0x55, 0xe8};
+
+extern "C" const CLSID CLSID_JScript = {0xf414c260, 0x6ac0, 0x11cf, 0xb6, 0xd1, 0x00, 0xaa, 0x00, 0xbb, 0xbb, 0x58};
+
+// ActiveState ActivePython
+// {DF630910-1C1D-11d0-AE36-8C0F5E000000}
+extern "C" const CLSID CLSID_Python = {0xDF630910, 0x1C1D, 0x11d0, 0xAE, 0x36, 0x8C, 0x0F, 0x5E, 0x00, 0x00, 0x00};

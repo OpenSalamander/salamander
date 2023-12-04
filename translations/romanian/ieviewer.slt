@@ -1,0 +1,18 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\romanian\ieviewer.atp"
+TEXTVERSION,"1.12 (x86)"
+VERSION,"1,1,2,180"
+
+[TRANSLATION]
+LANGID,1048
+AUTHOR,"Ioan Stefancu, Donca Radu"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6165"
+COMMENT,"Versiunea romana"
+
+[STRINGTABLE 0]
+10100,1,"Vizualizator Internet Explorer"
+10101,0,"Unable to open Internet Explorer Viewer.\nPlease report this problem to support@altap.cz."
+10102,1,"Eroare"
+10103,1,"Lightweight HTML si XML vizualizator bazate pe Internet Explorer."
+10105,1,"Despre Plugin"
+

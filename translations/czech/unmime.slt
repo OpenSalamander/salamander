@@ -1,0 +1,40 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\czech\unmime.atp"
+TEXTVERSION,"1.14 (x86)"
+VERSION,"1,1,4,180"
+
+[TRANSLATION]
+LANGID,1029
+AUTHOR,"Hynek Mikulič"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7008"
+COMMENT,"Česká verze"
+
+[DIALOG 101]
+241,111,1,"UnMIME - Konfigurace"
+2000,7,7,54,8,1,"Možnosti výpisu"
+2001,63,11,172,1,1,""
+1000,18,20,82,10,1,"Výpis e-mail &hlaviček"
+1001,18,35,62,10,1,"Výpis &těl zpráv"
+1003,31,50,196,10,1,"Přidat info o &znakové sadě, pokud je jiná než US-ASCII"
+1002,18,65,52,10,1,"Výpis &příloh"
+2002,6,82,229,1,1,""
+1,127,90,50,14,1,"OK"
+2,184,90,50,14,1,"Storno"
+
+[STRINGTABLE 0]
+1,1,"UnMIME"
+2,1,"Nelze otevřít soubor."
+3,1,"Nedostatek paměti."
+4,1,"Nelze přidat záznam archivu do výpisu souborů."
+5,1,"Tento soubor obsahuje jeden nebo více bloků s neznámým kódováním.\nTyto bloky nebudou dekódovány."
+6,1,"Chyba zápisu"
+7,1,"Extrahování e-mail souboru - %s"
+8,1,"extrahuji: "
+9,1,"Analyzuji soubor..."
+10,1,"Jeden nebo více %s bloků je poškozených nebo\nmají neznámý formát a nebudou dekódovány."
+11,1,"Neplatný CRC v jednom nebo více %s bloků.\nTyto bloky nebudou dekódovány."
+12,1,"Prohlíží a extrahuje MIME/Base64, UU/XXEncode, yEncode a BinHex soubory."
+13,1,"O pluginu"
+14,1,"Upozornění: tento soubor obsahuje Mac zdrojovou část.\nTato část nebude extrahována."
+15,1,"&Příště nezobrazovat"
+

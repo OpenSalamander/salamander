@@ -1,0 +1,1490 @@
+diff -urN 7z313\7zip\Archive\7z\7zFolderOutStream.cpp 7za\7zip\Archive\7z\7zFolderOutStream.cpp
+--- 7z313\7zip\Archive\7z\7zFolderOutStream.cpp	Wed Sep 03 22:07:54 2003
++++ 7za\7zip\Archive\7z\7zFolderOutStream.cpp	Thu Aug 12 18:50:05 2004
+@@ -67,9 +67,9 @@
+     if (!fileInfo.IsAnti && !fileInfo.IsDirectory && fileInfo.UnPackSize != 0)
+       return S_OK;
+     RINOK(OpenFile());
++    _outStreamWithHashSpec->ReleaseStream();
+     RINOK(_extractCallback->SetOperationResult(
+         NArchive::NExtract::NOperationResult::kOK));
+-    _outStreamWithHashSpec->ReleaseStream();
+   }
+   return S_OK;
+ }
+@@ -102,11 +102,11 @@
+         else
+           digestsAreEqual = true;
+ 
++        _outStreamWithHashSpec->ReleaseStream();
+         RINOK(_extractCallback->SetOperationResult(
+             digestsAreEqual ? 
+             NArchive::NExtract::NOperationResult::kOK :
+             NArchive::NExtract::NOperationResult::kCRCError));
+-        _outStreamWithHashSpec->ReleaseStream();
+         _fileIsOpen = false;
+         _currentIndex++;
+       }
+@@ -141,8 +141,8 @@
+   {
+     if (_fileIsOpen)
+     {
+-      RINOK(_extractCallback->SetOperationResult(resultEOperationResult));
+       _outStreamWithHashSpec->ReleaseStream();
++      RINOK(_extractCallback->SetOperationResult(resultEOperationResult));
+       _fileIsOpen = false;
+       _currentIndex++;
+     }
+diff -urN 7z313\7zip\Archive\7z\7zHandler.h 7za\7zip\Archive\7z\7zHandler.h
+--- 7z313\7zip\Archive\7z\7zHandler.h	Tue Oct 14 19:12:10 2003
++++ 7za\7zip\Archive\7z\7zHandler.h	Thu Aug 12 19:09:17 2004
+@@ -28,8 +28,8 @@
+ #endif
+ 
+ // {23170F69-40C1-278A-1000-000110050000}
+-DEFINE_GUID(CLSID_CFormat7z, 
+-  0x23170F69, 0x40C1, 0x278A, 0x10, 0x00, 0x00, 0x01, 0x10, 0x05, 0x00, 0x00);
++const GUID CLSID_CFormat7z = {
++  0x23170F69, 0x40C1, 0x278A, {0x10, 0x00, 0x00, 0x01, 0x10, 0x05, 0x00, 0x00}};
+ 
+ class CHandler: 
+   public IInArchive,
+diff -urN 7z313\7zip\Archive\7z\DllExports.cpp 7za\7zip\Archive\7z\DllExports.cpp
+--- 7z313\7zip\Archive\7z\DllExports.cpp	Tue Aug 19 15:08:42 2003
++++ 7za\7zip\Archive\7z\DllExports.cpp	Thu Aug 12 19:09:17 2004
+@@ -2,8 +2,6 @@
+ 
+ #include "StdAfx.h"
+ 
+-#include <initguid.h>
+-
+ #include "7zHandler.h"
+ #include "../../ICoder.h"
+ #include "../../IPassword.h"
+@@ -12,8 +10,8 @@
+ 
+ #ifndef EXCLUDE_COM
+ // {23170F69-40C1-278B-06F1-070100000100}
+-DEFINE_GUID(CLSID_CCrypto7zAESEncoder, 
+-0x23170F69, 0x40C1, 0x278B, 0x06, 0xF1, 0x07, 0x01, 0x00, 0x00, 0x01, 0x00);
++const GUID CLSID_CCrypto7zAESEncoder = {
++0x23170F69, 0x40C1, 0x278B, {0x06, 0xF1, 0x07, 0x01, 0x00, 0x00, 0x01, 0x00}};
+ #else
+ #include "../../Compress/LZ/IMatchFinder.h"
+ #endif
+diff -urN 7z313\7zip\Archive\Common\CoderMixer2.cpp 7za\7zip\Archive\Common\CoderMixer2.cpp
+--- 7z313\7zip\Archive\Common\CoderMixer2.cpp	Wed Sep 03 18:36:58 2003
++++ 7za\7zip\Archive\Common\CoderMixer2.cpp	Thu Aug 12 18:50:05 2004
+@@ -5,6 +5,12 @@
+ #include "CoderMixer2.h"
+ #include "CrossThreadProgress.h"
+ 
++// patch
++// musi byt mimo jeho namespace
++DWORD RunThreadWithCallStackObject(LPTHREAD_START_ROUTINE startAddress, LPVOID parameter);
++// end of patch
++
++
+ using namespace NWindows;
+ using namespace NSynchronization;
+ 
+@@ -216,6 +222,13 @@
+   }
+ }
+ 
++// patch
++static DWORD WINAPI CoderThreadWraper(void *aThreadCoderInfo)
++{
++  return ::RunThreadWithCallStackObject(CoderThread, aThreadCoderInfo);
++}
++// end of patch
++
+ //////////////////////////////////////
+ // CCoderMixer2
+ 
+@@ -228,9 +241,16 @@
+   }
+ }
+ 
++// patch
++static DWORD WINAPI MainCoderThreadWraper(void *aThreadCoderInfo)
++{
++  return ::RunThreadWithCallStackObject(MainCoderThread, aThreadCoderInfo);
++}
++// end of patch
++
+ CCoderMixer2::CCoderMixer2()
+ {
+-  if (!_mainThread.Create(MainCoderThread, this))
++  if (!_mainThread.Create(MainCoderThreadWraper, this))
+     throw 271825;
+ }
+ 
+@@ -269,7 +289,7 @@
+   _compressingCompletedEvents.Add(*_coderInfoVector.Back().CompressionCompletedEvent);
+ 
+   DWORD id;
+-  HANDLE newThread = ::CreateThread(NULL, 0, CoderThread, 
++  HANDLE newThread = ::CreateThread(NULL, 0, CoderThreadWraper, 
+       &_coderInfoVector.Back(), 0, &id);
+   if (newThread == 0)
+     throw 271824;
+diff -urN 7z313\7zip\Archive\IArchive.h 7za\7zip\Archive\IArchive.h
+--- 7z313\7zip\Archive\IArchive.h	Mon Aug 11 18:57:12 2003
++++ 7za\7zip\Archive\IArchive.h	Thu Aug 12 19:08:48 2004
+@@ -65,8 +65,8 @@
+ }
+ 
+ // {23170F69-40C1-278A-0000-000100010000}
+-DEFINE_GUID(IID_IArchiveOpenCallback, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00);
++const GUID IID_IArchiveOpenCallback = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000100010000")
+ IArchiveOpenCallback: public IUnknown
+ {
+@@ -76,8 +76,8 @@
+ };
+ 
+ // {23170F69-40C1-278A-0000-000100090000}
+-DEFINE_GUID(IID_IArchiveExtractCallback, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x01, 0x00, 0x09, 0x00, 0x00);
++const GUID IID_IArchiveExtractCallback = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x01, 0x00, 0x09, 0x00, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000100090000")
+ IArchiveExtractCallback: public IProgress
+ {
+@@ -90,8 +90,8 @@
+ 
+ 
+ // {23170F69-40C1-278A-0000-0001000D0000}
+-DEFINE_GUID(IID_IArchiveOpenVolumeCallback, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x01, 0x00, 0x0D, 0x00, 0x00);
++const GUID IID_IArchiveOpenVolumeCallback = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x01, 0x00, 0x0D, 0x00, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-0001000D0000")
+ IArchiveOpenVolumeCallback: public IUnknown
+ {
+@@ -102,8 +102,8 @@
+ 
+ 
+ // {23170F69-40C1-278A-0000-000100080000}
+-DEFINE_GUID(IID_IInArchive, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x01, 0x00, 0x08, 0x00, 0x00);
++const GUID IID_IInArchive = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x01, 0x00, 0x08, 0x00, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000100080000")
+ IInArchive: public IUnknown
+ {
+@@ -129,8 +129,8 @@
+ 
+ 
+ // {23170F69-40C1-278A-0000-000100040000}
+-DEFINE_GUID(IID_IArchiveUpdateCallback, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x01, 0x00, 0x04, 0x00, 0x00);
++const GUID IID_IArchiveUpdateCallback = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x01, 0x00, 0x04, 0x00, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000100040000")
+ IArchiveUpdateCallback: public IProgress
+ {
+@@ -149,8 +149,8 @@
+ };
+ 
+ // {23170F69-40C1-278A-0000-000100020000}
+-DEFINE_GUID(IID_IOutArchive, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x01, 0x00, 0x02, 0x00, 0x00);
++const GUID IID_IOutArchive = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x01, 0x00, 0x02, 0x00, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000100020000")
+ IOutArchive: public IUnknown
+ {
+@@ -160,8 +160,8 @@
+ };
+ 
+ // {23170F69-40C1-278A-0000-000100030000}
+-DEFINE_GUID(IID_ISetProperties, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x01, 0x00, 0x03, 0x00, 0x00);
++const GUID IID_ISetProperties = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x01, 0x00, 0x03, 0x00, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000100030000")
+ ISetProperties: public IUnknown
+ {
+diff -urN 7z313\7zip\Compress\LZ\IMatchFinder.h 7za\7zip\Compress\LZ\IMatchFinder.h
+--- 7z313\7zip\Compress\LZ\IMatchFinder.h	Sat Aug 09 15:47:22 2003
++++ 7za\7zip\Compress\LZ\IMatchFinder.h	Thu Aug 12 19:09:17 2004
+@@ -6,8 +6,8 @@
+ #define __IMATCHFINDER_H
+ 
+ // {23170F69-40C1-278A-0000-000200010000}
+-DEFINE_GUID(IID_IInWindowStream, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x02, 0x00, 0x01, 0x00, 0x00);
++const GUID IID_IInWindowStream = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x02, 0x00, 0x01, 0x00, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000200010000")
+ IInWindowStream: public IUnknown
+ {
+@@ -21,8 +21,8 @@
+ };
+  
+ // {23170F69-40C1-278A-0000-000200020000}
+-DEFINE_GUID(IID_IMatchFinder, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x02, 0x00, 0x02, 0x00, 0x00);
++const GUID IID_IMatchFinder = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x02, 0x00, 0x02, 0x00, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000200020000")
+ IMatchFinder: public IInWindowStream
+ {
+@@ -33,8 +33,8 @@
+ };
+ 
+ // {23170F69-40C1-278A-0000-000200020100}
+-DEFINE_GUID(IID_IMatchFinderCallback, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x02, 0x00, 0x02, 0x01, 0x00);
++const GUID IID_IMatchFinderCallback = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x02, 0x00, 0x02, 0x01, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000200020100")
+ IMatchFinderCallback: public IUnknown
+ {
+@@ -43,8 +43,8 @@
+ };
+ 
+ // {23170F69-40C1-278A-0000-000200020200}
+-DEFINE_GUID(IID_IMatchFinderSetCallback, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x02, 0x00, 0x02, 0x02, 0x00);
++const GUID IID_IMatchFinderSetCallback = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x02, 0x00, 0x02, 0x02, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000200020200")
+ IMatchFinderSetCallback: public IUnknown
+ {
+diff -urN 7z313\7zip\Compress\LZ\MT\MT.cpp 7za\7zip\Compress\LZ\MT\MT.cpp
+--- 7z313\7zip\Compress\LZ\MT\MT.cpp	Sat Aug 09 15:40:20 2003
++++ 7za\7zip\Compress\LZ\MT\MT.cpp	Thu Aug 12 18:50:05 2004
+@@ -211,6 +211,16 @@
+   */
+ }
+ 
++// patch
++DWORD RunThreadWithCallStackObject(LPTHREAD_START_ROUTINE startAddress, LPVOID parameter);
++
++static DWORD WINAPI MFThreadWraper(void *aThreadCoderInfo)
++{
++  return RunThreadWithCallStackObject(MFThread, aThreadCoderInfo);
++}
++// end of patch
++
++
+ CMatchFinderMT::CMatchFinderMT():
+   m_Buffer(0),
+   _multiThreadMult(100)
+@@ -224,7 +234,7 @@
+   m_WriteBufferIndex = 0;
+ 
+   m_ExitEvent.Reset();
+-  if (!m_Thread.Create(MFThread, this))
++  if (!m_Thread.Create(MFThreadWraper, this))
+     throw 271826;
+ }
+ CMatchFinderMT::~CMatchFinderMT() 
+diff -urN 7z313\7zip\ICoder.h 7za\7zip\ICoder.h
+--- 7z313\7zip\ICoder.h	Tue Aug 19 19:30:00 2003
++++ 7za\7zip\ICoder.h	Thu Aug 12 19:09:17 2004
+@@ -8,8 +8,8 @@
+ #include "IStream.h"
+ 
+ // {23170F69-40C1-278A-0000-000200040000}
+-DEFINE_GUID(IID_ICompressProgressInfo, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x02, 0x00, 0x04, 0x00, 0x00);
++const GUID IID_ICompressProgressInfo = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x02, 0x00, 0x04, 0x00, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000200040000")
+ ICompressProgressInfo: public IUnknown
+ {
+@@ -17,8 +17,8 @@
+ };
+ 
+ // {23170F69-40C1-278A-0000-000200050000}
+-DEFINE_GUID(IID_ICompressCoder, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x02, 0x00, 0x05, 0x00, 0x00);
++const GUID IID_ICompressCoder = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x02, 0x00, 0x05, 0x00, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000200050000")
+ ICompressCoder: public IUnknown
+ {
+@@ -30,8 +30,8 @@
+ };
+ 
+ // {23170F69-40C1-278A-0000-000200180000}
+-DEFINE_GUID(IID_ICompressCoder2, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x02, 0x00, 0x18, 0x00, 0x00);
++const GUID IID_ICompressCoder2 = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x02, 0x00, 0x18, 0x00, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000200180000")
+ ICompressCoder2: public IUnknown
+ {
+@@ -63,8 +63,8 @@
+ }
+ 
+ // {23170F69-40C1-278A-0000-000200200000}
+-DEFINE_GUID(IID_ICompressSetCoderProperties, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x02, 0x00, 0x20, 0x00, 0x00);
++const GUID IID_ICompressSetCoderProperties = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x02, 0x00, 0x20, 0x00, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000200200000")
+ ICompressSetCoderProperties: public IUnknown
+ {
+@@ -73,8 +73,8 @@
+ };
+ 
+ // {23170F69-40C1-278A-0000-000200210000}
+-DEFINE_GUID(IID_ICompressSetDecoderProperties, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x02, 0x00, 0x21, 0x00, 0x00);
++const GUID IID_ICompressSetDecoderProperties = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x02, 0x00, 0x21, 0x00, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000200210000")
+ ICompressSetDecoderProperties: public IUnknown
+ {
+@@ -82,8 +82,9 @@
+ };
+ 
+ // {23170F69-40C1-278A-0000-000200230000}
+-DEFINE_GUID(IID_ICompressWriteCoderProperties, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x02, 0x00, 0x23, 0x00, 0x00);
++//DEFINE_GUID(IID_ICompressWriteCoderProperties, 
++const GUID IID_ICompressWriteCoderProperties = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x02, 0x00, 0x23, 0x00, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000200230000")
+ ICompressWriteCoderProperties: public IUnknown
+ {
+@@ -91,8 +92,8 @@
+ };
+ 
+ // {23170F69-40C1-278A-0000-000200240000}
+-DEFINE_GUID(IID_ICompressGetInStreamProcessedSize, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x02, 0x00, 0x24, 0x00, 0x00);
++const GUID IID_ICompressGetInStreamProcessedSize = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x02, 0x00, 0x24, 0x00, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000200240000")
+ ICompressGetInStreamProcessedSize: public IUnknown
+ {
+@@ -100,8 +101,8 @@
+ };
+ 
+ // {23170F69-40C1-278A-0000-000200250000}
+-DEFINE_GUID(IID_ICompressGetSubStreamSize, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x02, 0x00, 0x25, 0x00, 0x00);
++const GUID IID_ICompressGetSubStreamSize = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x02, 0x00, 0x25, 0x00, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000200250000")
+ ICompressGetSubStreamSize: public IUnknown
+ {
+diff -urN 7z313\7zip\IMyUnknown.h 7za\7zip\IMyUnknown.h
+--- 7z313\7zip\IMyUnknown.h	Wed Jun 25 14:28:20 2003
++++ 7za\7zip\IMyUnknown.h	Mon Aug 30 11:33:02 2004
+@@ -8,7 +8,7 @@
+ #ifdef WIN32
+ 
+ // #include <guiddef.h>
+-#include <basetyps.h>
++// #include <basetyps.h>
+ 
+ #else 
+ 
+diff -urN 7z313\7zip\IPassword.h 7za\7zip\IPassword.h
+--- 7z313\7zip\IPassword.h	Mon Jul 21 17:12:04 2003
++++ 7za\7zip\IPassword.h	Thu Aug 12 19:09:17 2004
+@@ -8,8 +8,8 @@
+ // #include "Common/Types.h"
+ 
+ // {23170F69-40C1-278A-0000-000200250000}
+-DEFINE_GUID(IID_ICryptoSetPassword, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x02, 0x00, 0x25, 0x00, 0x00);
++const GUID IID_ICryptoSetPassword = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x02, 0x00, 0x25, 0x00, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000200250000")
+ ICryptoSetPassword: public IUnknown
+ {
+@@ -17,8 +17,8 @@
+ };
+ 
+ // {23170F69-40C1-278A-0000-000200251000}
+-DEFINE_GUID(IID_ICryptoSetCRC, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x02, 0x00, 0x25, 0x10, 0x00);
++const GUID IID_ICryptoSetCRC = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x02, 0x00, 0x25, 0x10, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000200251000")
+ ICryptoSetCRC: public IUnknown
+ {
+@@ -26,8 +26,8 @@
+ };
+ 
+ // {23170F69-40C1-278A-0000-000200270000}
+-DEFINE_GUID(IID_ICryptoGetTextPassword, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x02, 0x00, 0x27, 0x00, 0x00);
++const GUID IID_ICryptoGetTextPassword = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x02, 0x00, 0x27, 0x00, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000200270000")
+ ICryptoGetTextPassword: public IUnknown
+ {
+@@ -35,8 +35,8 @@
+ };
+ 
+ // {23170F69-40C1-278A-0000-000200270200}
+-DEFINE_GUID(IID_ICryptoGetTextPassword2, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x02, 0x00, 0x27, 0x02, 0x00);
++const GUID IID_ICryptoGetTextPassword2 = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x02, 0x00, 0x27, 0x02, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000200270200")
+ ICryptoGetTextPassword2: public IUnknown
+ {
+diff -urN 7z313\7zip\IProgress.h 7za\7zip\IProgress.h
+--- 7z313\7zip\IProgress.h	Fri Jun 27 13:35:20 2003
++++ 7za\7zip\IProgress.h	Thu Aug 12 19:09:17 2004
+@@ -6,8 +6,8 @@
+ #define __IPROGRESS_H
+ 
+ // {23170F69-40C1-278A-0000-000000050000}
+-DEFINE_GUID(IID_IProgress, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00);
++const GUID IID_IProgress = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000000050000")
+ IProgress: public IUnknown
+ {
+diff -urN 7z313\7zip\IStream.h 7za\7zip\IStream.h
+--- 7z313\7zip\IStream.h	Wed Jun 25 14:25:12 2003
++++ 7za\7zip\IStream.h	Thu Aug 12 19:28:20 2004
+@@ -8,8 +8,8 @@
+ #include "IMyUnknown.h"
+ 
+ // {23170F69-40C1-278A-0000-000000010000}
+-DEFINE_GUID(IID_ISequentialInStream, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00);
++const GUID IID_ISequentialInStream = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000000010000")
+ ISequentialInStream : public IUnknown
+ {
+@@ -20,8 +20,8 @@
+ };
+ 
+ // {23170F69-40C1-278A-0000-000000020000}
+-DEFINE_GUID(IID_ISequentialOutStream, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00);
++const GUID IID_ISequentialOutStream = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000000020000")
+ ISequentialOutStream : public IUnknown
+ {
+@@ -31,8 +31,8 @@
+ };
+ 
+ // {23170F69-40C1-278A-0000-000000030000}
+-DEFINE_GUID(IID_IInStream, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00);
++const GUID IID_IInStream = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000000030000")
+ IInStream : public ISequentialInStream
+ {
+@@ -41,8 +41,8 @@
+ };
+ 
+ // {23170F69-40C1-278A-0000-000000040000}
+-DEFINE_GUID(IID_IOutStream, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00);
++const GUID IID_IOutStream = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000000040000")
+ IOutStream : public ISequentialOutStream
+ {
+@@ -52,8 +52,8 @@
+ };
+ 
+ // {23170F69-40C1-278A-0000-000000060000}
+-DEFINE_GUID(IID_IStreamGetSize, 
+-0x23170F69, 0x40C1, 0x278A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06, 0x00, 0x00);
++const GUID IID_IStreamGetSize = {
++0x23170F69, 0x40C1, 0x278A, {0x00, 0x00, 0x00, 0x00, 0x00, 0x06, 0x00, 0x00}};
+ MIDL_INTERFACE("23170F69-40C1-278A-0000-000000060000")
+ IStreamGetSize : public IUnknown
+ {
+diff -urN 7z313\dsp\7za.dll.dsp 7za\dsp\7za.dll.dsp
+--- 7z313\dsp\7za.dll.dsp	Thu Jan 01 01:00:00 1970
++++ 7za\dsp\7za.dll.dsp	Mon Aug 30 11:43:05 2004
+@@ -0,0 +1,917 @@
++# Microsoft Developer Studio Project File - Name="7za.dll" - Package Owner=<4>
++# Microsoft Developer Studio Generated Build File, Format Version 6.00
++# ** DO NOT EDIT **
++
++# TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
++
++CFG=7za.dll - Win32 Debug
++!MESSAGE This is not a valid makefile. To build this project using NMAKE,
++!MESSAGE use the Export Makefile command and run
++!MESSAGE 
++!MESSAGE NMAKE /f "7za.dll.mak".
++!MESSAGE 
++!MESSAGE You can specify a configuration when running NMAKE
++!MESSAGE by defining the macro CFG on the command line. For example:
++!MESSAGE 
++!MESSAGE NMAKE /f "7za.dll.mak" CFG="7za.dll - Win32 Debug"
++!MESSAGE 
++!MESSAGE Possible choices for configuration are:
++!MESSAGE 
++!MESSAGE "7za.dll - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
++!MESSAGE "7za.dll - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
++!MESSAGE 
++
++# Begin Project
++# PROP AllowPerConfigDependencies 0
++# PROP Scc_ProjName ""
++# PROP Scc_LocalPath ""
++CPP=cl.exe
++MTL=midl.exe
++RSC=rc.exe
++
++!IF  "$(CFG)" == "7za.dll - Win32 Release"
++
++# PROP BASE Use_MFC 0
++# PROP BASE Use_Debug_Libraries 0
++# PROP BASE Output_Dir "Release"
++# PROP BASE Intermediate_Dir "Release"
++# PROP BASE Target_Dir ""
++# PROP Use_MFC 0
++# PROP Use_Debug_Libraries 0
++# PROP Output_Dir "Release"
++# PROP Intermediate_Dir "Release"
++# PROP Ignore_Export_Lib 1
++# PROP Target_Dir ""
++# ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "MY7Z_EXPORTS" /YX /FD /c
++# ADD CPP /nologo /Gz /MT /W3 /GX /O1 /I "$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "MY7Z_EXPORTS" /D "EXCLUDE_COM" /D "NO_REGISTRY" /D "FORMAT_7Z" /D "COMPRESS_LZMA" /D "COMPRESS_BCJ_X86" /D "COMPRESS_BCJ2" /D "COMPRESS_COPY" /D "COMPRESS_MF_PAT" /D "COMPRESS_MF_BT" /D "COMPRESS_MF_HC" /D "COMPRESS_MF_MT" /D "COMPRESS_PPMD" /D "CRYPTO_7ZAES" /D "CRYPTO_AES" /Yu"StdAfx.h" /FD /c
++# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
++# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
++# ADD BASE RSC /l 0x419 /d "NDEBUG"
++# ADD RSC /l 0x419 /d "NDEBUG"
++BSC32=bscmake.exe
++# ADD BASE BSC32 /nologo
++# ADD BSC32 /nologo
++LINK32=link.exe
++# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
++# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386 /out:"Release\7za.dll" /opt:NOWIN98
++# SUBTRACT LINK32 /pdb:none /debug
++
++!ELSEIF  "$(CFG)" == "7za.dll - Win32 Debug"
++
++# PROP BASE Use_MFC 0
++# PROP BASE Use_Debug_Libraries 1
++# PROP BASE Output_Dir "Debug"
++# PROP BASE Intermediate_Dir "Debug"
++# PROP BASE Target_Dir ""
++# PROP Use_MFC 0
++# PROP Use_Debug_Libraries 1
++# PROP Output_Dir "Debug"
++# PROP Intermediate_Dir "Debug"
++# PROP Ignore_Export_Lib 1
++# PROP Target_Dir ""
++# ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "MY7Z_EXPORTS" /YX /FD /GZ /c
++# ADD CPP /nologo /Gz /MTd /W3 /Gm /GX /ZI /Od /I "$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "MY7Z_EXPORTS" /D "EXCLUDE_COM" /D "NO_REGISTRY" /D "FORMAT_7Z" /D "COMPRESS_LZMA" /D "COMPRESS_BCJ_X86" /D "COMPRESS_BCJ2" /D "COMPRESS_COPY" /D "COMPRESS_MF_PAT" /D "COMPRESS_MF_BT" /D "COMPRESS_MF_HC" /D "COMPRESS_MF_MT" /D "COMPRESS_PPMD" /D "CRYPTO_7ZAES" /D "CRYPTO_AES" /Yu"StdAfx.h" /FD /GZ /c
++# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
++# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
++# ADD BASE RSC /l 0x419 /d "_DEBUG"
++# ADD RSC /l 0x419 /d "_DEBUG"
++BSC32=bscmake.exe
++# ADD BASE BSC32 /nologo
++# ADD BSC32 /nologo
++LINK32=link.exe
++# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
++# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /out:"Debug\7za.dll" /pdbtype:sept
++
++!ENDIF 
++
++# Begin Target
++
++# Name "7za.dll - Win32 Release"
++# Name "7za.dll - Win32 Debug"
++# Begin Group "Spec"
++
++# PROP Default_Filter ""
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7z.def"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7z.ico"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\DllExports.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\resource.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\resource.rc"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\StdAfx.cpp"
++# ADD CPP /Yc"StdAfx.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\StdAfx.h"
++# End Source File
++# End Group
++# Begin Group "Common"
++
++# PROP Default_Filter ""
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Common\AlignedBuffer.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Common\AlignedBuffer.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Common\CRC.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Common\CRC.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Common\IntToString.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Common\IntToString.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Common\String.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Common\String.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Common\StringConvert.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Common\StringConvert.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Common\StringToInt.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Common\StringToInt.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Common\Vector.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Common\Vector.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Common\Wildcard.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Common\Wildcard.h"
++# End Source File
++# End Group
++# Begin Group "Windows"
++
++# PROP Default_Filter ""
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Windows\FileDir.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Windows\FileDir.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Windows\FileFind.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Windows\FileFind.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Windows\FileIO.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Windows\FileIO.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Windows\PropVariant.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Windows\PropVariant.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Windows\Synchronization.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Windows\Synchronization.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Windows\System.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Windows\System.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\Windows\Thread.h"
++# End Source File
++# End Group
++# Begin Group "Archive common"
++
++# PROP Default_Filter ""
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\Common\CoderMixer2.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\Common\CoderMixer2.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\Common\CrossThreadProgress.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\Common\CrossThreadProgress.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\Common\InStreamWithCRC.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\Common\InStreamWithCRC.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\Common\ItemNameUtils.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\Common\ItemNameUtils.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\Common\OutStreamWithCRC.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\Common\OutStreamWithCRC.h"
++# End Source File
++# End Group
++# Begin Group "Compress"
++
++# PROP Default_Filter ""
++# Begin Group "LZ"
++
++# PROP Default_Filter ""
++# Begin Group "MT"
++
++# PROP Default_Filter ""
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\LZ\MT\MT.cpp"
++
++!IF  "$(CFG)" == "7za.dll - Win32 Release"
++
++# ADD CPP /O2
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ELSEIF  "$(CFG)" == "7za.dll - Win32 Debug"
++
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ENDIF 
++
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\LZ\MT\MT.h"
++# End Source File
++# End Group
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\LZ\LZInWindow.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\LZ\LZInWindow.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\LZ\LZOutWindow.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\LZ\LZOutWindow.h"
++# End Source File
++# End Group
++# Begin Group "PPMD"
++
++# PROP Default_Filter ""
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\PPMD\PPMDContext.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\PPMD\PPMDDecode.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\PPMD\PPMDDecoder.cpp"
++
++!IF  "$(CFG)" == "7za.dll - Win32 Release"
++
++# ADD CPP /O2
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ELSEIF  "$(CFG)" == "7za.dll - Win32 Debug"
++
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ENDIF 
++
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\PPMD\PPMDDecoder.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\PPMD\PPMDEncode.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\PPMD\PPMDEncoder.cpp"
++
++!IF  "$(CFG)" == "7za.dll - Win32 Release"
++
++# ADD CPP /O2
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ELSEIF  "$(CFG)" == "7za.dll - Win32 Debug"
++
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ENDIF 
++
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\PPMD\PPMDEncoder.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\PPMD\PPMDSubAlloc.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\PPMD\PPMDType.h"
++# End Source File
++# End Group
++# Begin Group "Branch"
++
++# PROP Default_Filter ""
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\Branch\x86.cpp"
++
++!IF  "$(CFG)" == "7za.dll - Win32 Release"
++
++# ADD CPP /O2
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ELSEIF  "$(CFG)" == "7za.dll - Win32 Debug"
++
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ENDIF 
++
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\Branch\x86.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\Branch\x86_2.cpp"
++
++!IF  "$(CFG)" == "7za.dll - Win32 Release"
++
++# ADD CPP /O2
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ELSEIF  "$(CFG)" == "7za.dll - Win32 Debug"
++
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ENDIF 
++
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\Branch\x86_2.h"
++# End Source File
++# End Group
++# Begin Group "LZMA"
++
++# PROP Default_Filter ""
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\LZMA\LZMA.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\LZMA\LZMADecoder.cpp"
++
++!IF  "$(CFG)" == "7za.dll - Win32 Release"
++
++# ADD CPP /O2
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ELSEIF  "$(CFG)" == "7za.dll - Win32 Debug"
++
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ENDIF 
++
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\LZMA\LZMADecoder.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\LZMA\LZMAEncoder.cpp"
++
++!IF  "$(CFG)" == "7za.dll - Win32 Release"
++
++# ADD CPP /O2
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ELSEIF  "$(CFG)" == "7za.dll - Win32 Debug"
++
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ENDIF 
++
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\LZMA\LZMAEncoder.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\LZMA\LZMALen.cpp"
++
++!IF  "$(CFG)" == "7za.dll - Win32 Release"
++
++# ADD CPP /O2
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ELSEIF  "$(CFG)" == "7za.dll - Win32 Debug"
++
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ENDIF 
++
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\LZMA\LZMALen.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\LZMA\LZMALiteral.cpp"
++
++!IF  "$(CFG)" == "7za.dll - Win32 Release"
++
++# ADD CPP /O2
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ELSEIF  "$(CFG)" == "7za.dll - Win32 Debug"
++
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ENDIF 
++
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\LZMA\LZMALiteral.h"
++# End Source File
++# End Group
++# Begin Group "Copy"
++
++# PROP Default_Filter ""
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\Copy\CopyCoder.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\Copy\CopyCoder.h"
++# End Source File
++# End Group
++# Begin Group "RangeCoder"
++
++# PROP Default_Filter ""
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\RangeCoder\RangeCoder.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\RangeCoder\RangeCoderBit.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\RangeCoder\RangeCoderBit.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\RangeCoder\RangeCoderBitTree.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Compress\RangeCoder\RangeCoderOpt.h"
++# End Source File
++# End Group
++# End Group
++# Begin Group "Crypto"
++
++# PROP Default_Filter ""
++# Begin Group "AES"
++
++# PROP Default_Filter ""
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Crypto\AES\aes.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Crypto\AES\AES_CBC.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Crypto\AES\aescpp.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Crypto\AES\aescrypt.c"
++
++!IF  "$(CFG)" == "7za.dll - Win32 Release"
++
++# ADD CPP /O2
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ELSEIF  "$(CFG)" == "7za.dll - Win32 Debug"
++
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ENDIF 
++
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Crypto\AES\aeskey.c"
++
++!IF  "$(CFG)" == "7za.dll - Win32 Release"
++
++# ADD CPP /O2
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ELSEIF  "$(CFG)" == "7za.dll - Win32 Debug"
++
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ENDIF 
++
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Crypto\AES\aesopt.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Crypto\AES\aestab.c"
++
++!IF  "$(CFG)" == "7za.dll - Win32 Release"
++
++# ADD CPP /O2
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ELSEIF  "$(CFG)" == "7za.dll - Win32 Debug"
++
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ENDIF 
++
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Crypto\AES\MyAES.cpp"
++
++!IF  "$(CFG)" == "7za.dll - Win32 Release"
++
++# ADD CPP /O2
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ELSEIF  "$(CFG)" == "7za.dll - Win32 Debug"
++
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ENDIF 
++
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Crypto\AES\MyAES.h"
++# End Source File
++# End Group
++# Begin Group "7zAES"
++
++# PROP Default_Filter ""
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Crypto\7zAES\7zAES.cpp"
++
++!IF  "$(CFG)" == "7za.dll - Win32 Release"
++
++# ADD CPP /O2
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ELSEIF  "$(CFG)" == "7za.dll - Win32 Debug"
++
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ENDIF 
++
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Crypto\7zAES\7zAES.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Crypto\7zAES\MySHA256.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Crypto\7zAES\SHA256.cpp"
++
++!IF  "$(CFG)" == "7za.dll - Win32 Release"
++
++# ADD CPP /O2
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ELSEIF  "$(CFG)" == "7za.dll - Win32 Debug"
++
++# SUBTRACT CPP /YX /Yc /Yu
++
++!ENDIF 
++
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Crypto\7zAES\SHA256.h"
++# End Source File
++# End Group
++# End Group
++# Begin Group "7z"
++
++# PROP Default_Filter ""
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zCompressionMode.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zCompressionMode.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zDecode.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zDecode.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zEncode.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zEncode.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zExtract.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zFolderInStream.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zFolderInStream.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zFolderOutStream.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zFolderOutStream.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zHandler.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zHandler.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zHandlerOut.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zHeader.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zHeader.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zIn.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zIn.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zItem.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zMethodID.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zMethodID.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zMethods.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zOut.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zOut.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zProperties.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zProperties.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zSpecStream.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zSpecStream.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zUpdate.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zUpdate.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Archive\7z\7zUpdateItem.h"
++# End Source File
++# End Group
++# Begin Group "7zip Common"
++
++# PROP Default_Filter ""
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Common\InBuffer.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Common\InBuffer.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Common\InOutTempBuffer.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Common\InOutTempBuffer.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Common\LimitedStreams.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Common\LimitedStreams.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Common\MultiStream.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Common\MultiStream.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Common\OutBuffer.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Common\OutBuffer.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Common\ProgressUtils.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Common\ProgressUtils.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Common\StreamBinder.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Common\StreamBinder.h"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Common\StreamObjects.cpp"
++# End Source File
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\7zip\Common\StreamObjects.h"
++# End Source File
++# End Group
++# Begin Group "spl"
++
++# PROP Default_Filter ""
++# Begin Source File
++
++SOURCE="$(CURRENT_LOCAL)\SALAMAND\PLUGINS\7ZIP\7ZA\spl\splthread.cpp"
++# End Source File
++# End Group
++# End Target
++# End Project
+diff -urN 7z313\spl\splthread.cpp 7za\spl\splthread.cpp
+--- 7z313\spl\splthread.cpp	Thu Jan 01 01:00:00 1970
++++ 7za\spl\splthread.cpp	Thu Aug 12 18:50:05 2004
+@@ -0,0 +1,43 @@
++//
++// Tohle je uprava pro Salamander 7zip plugin
++//
++
++#include "StdAfx.h"
++
++#ifndef _UNICODE
++#include "../Common/StringConvert.h"
++#endif
++
++struct AddCallStackObjectParam
++{
++  LPTHREAD_START_ROUTINE StartAddress;
++  LPVOID Parameter;
++};
++
++typedef
++  unsigned (__stdcall *FThreadBody)(void *);
++
++
++DWORD
++RunThreadWithCallStackObject(LPTHREAD_START_ROUTINE startAddress, LPVOID parameter)
++{
++  HMODULE module = NULL;
++  FThreadBody addCallStackObject = NULL;
++
++  if ((module = ::GetModuleHandle("7zip.spl")) != NULL &&
++      (addCallStackObject = (FThreadBody)::GetProcAddress(module, "AddCallStackObject")) != NULL)
++  {
++    // podarilo se nam ziskat AddCallStackObject ze 7zip.spl
++    AddCallStackObjectParam p;
++    p.StartAddress = startAddress;
++    p.Parameter = parameter;
++
++    return addCallStackObject(&p);
++  }
++  else
++  {
++    // smula, musime jet po stary koleji
++    return startAddress(parameter);
++  }
++}
++
+diff -urN 7z313\spl\StdAfx.h 7za\spl\StdAfx.h
+--- 7z313\spl\StdAfx.h	Thu Jan 01 01:00:00 1970
++++ 7za\spl\StdAfx.h	Thu Aug 12 18:50:05 2004
+@@ -0,0 +1,8 @@
++// stdafx.h
++
++#ifndef __STDAFX_H
++#define __STDAFX_H
++
++#include <windows.h>
++
++#endif 

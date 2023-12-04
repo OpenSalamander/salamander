@@ -1,0 +1,109 @@
+[OPTIONS]
+Auto Index=Yes
+Compatibility=1.1 or later
+Compiled file=winscp.chm
+Contents file=winscp.hhc
+Default Window=$global_ssdefault
+Default topic=hh\winscp\introduction_intro.htm
+Display compile progress=No
+Full text search stop list file=..\..\shared\help\en\stop.stp
+Full-text search=Yes
+Index file=winscp.hhk
+Language=0x409 English (United States)
+Title=WinSCP Help
+
+[WINDOWS]
+$global_ssdefault=,"salamand.chm::\salamand.hhc","winscp.hhk","hh\winscp\introduction_intro.htm","hh\winscp\introduction_intro.htm",,,,"Web Help",0x3520,,0x180e,,,,,,,,0
+
+[FILES]
+hh\salamander_help.css
+hh\salamander_help_shared.css
+
+[ALIAS]
+IDH_UI_ABOUT=hh\winscp\ui_about.htm
+IDH_SESSION_SAVE=hh\winscp\ui_login_save.htm
+IDH_UI_COPY=hh\winscp\ui_copy.htm
+IDH_UI_TRANSFER_CUSTOM=hh\winscp\ui_transfer_custom.htm
+IDH_UI_FSINFO=hh\winscp\ui_fsinfo.htm
+IDH_UI_SYNCHRONIZE=hh\winscp\ui_synchronize.htm
+IDH_UI_LOGIN=hh\winscp\ui_login.htm
+IDH_UI_LOGIN_SAVE=hh\winscp\ui_login_save.htm
+IDH_UI_LOGIN_STORED_SESSIONS=hh\winscp\ui_login_stored_sessions.htm
+IDH_UI_LOGIN_SESSION=hh\winscp\ui_login_session.htm
+IDH_UI_LOGIN_SSH=hh\winscp\ui_login_ssh.htm
+IDH_UI_LOGIN_ENVIRONMENT=hh\winscp\ui_login_environment.htm
+IDH_UI_LOGIN_DIRECTORIES=hh\winscp\ui_login_directories.htm
+IDH_UI_LOGIN_RECYCLE_BIN=hh\winscp\ui_login_recycle_bin.htm
+IDH_UI_LOGIN_SCP=hh\winscp\ui_login_scp.htm
+IDH_UI_LOGIN_SFTP=hh\winscp\ui_login_sftp.htm
+IDH_UI_LOGIN_LOGGING=hh\winscp\ui_login_logging.htm
+IDH_UI_LOGIN_CONNECTION=hh\winscp\ui_login_connection.htm
+IDH_UI_LOGIN_PROXY=hh\winscp\ui_login_proxy.htm
+IDH_UI_LOGIN_BUGS=hh\winscp\ui_login_bugs.htm
+IDH_UI_LOGIN_AUTHENTICATION=hh\winscp\ui_login_authentication.htm
+IDH_UI_LOGIN_KEX=hh\winscp\ui_login_kex.htm
+IDH_UI_PROGRESS=hh\winscp\ui_progress.htm
+IDH_UI_PROPERTIES=hh\winscp\ui_properties.htm
+IDH_UI_KEEPUPTODATE=hh\winscp\ui_keepuptodate.htm
+IDH_START=hh\winscp\introduction_intro.htm
+IDH_SESSION_SAVE_OVERWRITE=hh\winscp\ui_login_save.htm
+IDH_SYNCHRONIZE_SAVE_MODE=hh\winscp\ui_synchronize.htm
+IDH_SESSION_SAVE_PASSWORD=hh\winscp\ui_login_save.htm
+IDH_DELETE_SESSION=hh\winscp\ui_login_stored_sessions.htm
+IDH_SESSION_SAVE_DEFAULT=hh\winscp\ui_login_save.htm
+IDH_LOGIN_KEY_TYPE=hh\winscp\public_key.htm
+IDH_PROGRESS_CANCEL=hh\winscp\ui_progress.htm
+IDH_KEEPUPTODATE_SYNCHRONIZE=hh\winscp\task_keep_up_to_date.htm
+IDH_REMOTE_TRANSFER=hh\winscp\task_move_duplicate.htm
+IDH_UI_SAL_PREF_CONFIRMATIONS=hh\winscp\ui_sal_pref_confirmations.htm
+IDH_UI_SAL_PREF_TRANSFER=hh\winscp\ui_sal_pref_transfer.htm
+IDH_UI_SAL_PREF_QUEUE=hh\winscp\ui_sal_pref_queue.htm
+IDH_UI_SAL_PREF_PANEL=hh\winscp\ui_sal_pref_panel.htm
+IDH_DISCONNECT_F12=ms-its:salamand.chm::/hh\salamand\disk_net.htm
+IDH_DIR_SYNCHRONIZE=hh\winscp\task_synchronize_full.htm
+IDH_UI_SAL_PREFERENCES=hh\winscp\ui_sal_preferences.htm
+IDH_SHELL_SESSION=hh\winscp\shell_session.htm
+IDH_UI_AUTHENTICATE=hh\winscp\ui_authenticate.htm
+IDH_UI_CONSOLE=hh\winscp\ui_console.htm
+IDH_UI_LOGIN_TUNNEL=hh\winscp\ui_login_tunnel.htm
+IDH_UI_SYNCHRONIZE_CHECKLIST=hh\winscp\ui_synchronize_checklist.htm
+
+[MAP]
+#include "..\salamander\Salamander.rh"
+
+[MERGE FILES]
+salamand.chm
+zip.chm
+filecomp.chm
+7zip.chm
+dbviewer.chm
+ftp.chm
+checksum.chm
+checkver.chm
+ieviewer.chm
+mmviewer.chm
+pak.chm
+peviewer.chm
+pictview.chm
+regedt.chm
+renamer.chm
+splitcbn.chm
+tar.chm
+unarj.chm
+uncab.chm
+undelete.chm
+unfat.chm
+uniso.chm
+unlha.chm
+unmime.chm
+unrar.chm
+wmobile.chm
+demoplug.chm
+demoview.chm
+nethood.chm
+unchm.chm
+automation.chm
+diskmap.chm
+demomenu.chm
+
+[INFOTYPES]

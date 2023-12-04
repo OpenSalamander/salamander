@@ -1,0 +1,61 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Quick Searching File or Directory Name</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Basic Working with Files and Directories</div>
+<div class="page">
+<h1>Quick Searching File or Directory Name</h1>
+
+<p>You can quickly find any desired name in the list of directories and files.
+Just start typing a name, and the first name with the typed prefix will be
+focused. You can extend this prefix with Right arrow key, and on the contrary
+you can clip this prefix with Left arrow key or Backspace key. To focus the next
+or previous name with the same prefix, use Down or Up arrow key. To leave quick
+search mode, use Escape key.</p>
+
+<p>While Open Salamander is in quick search mode, following keys are used
+for walking through files and directories which matches quick search mask: Up, 
+Down, Page Up, Page Down, Home, End, Shift+Up, Shift+Down, Shift+Page Up,
+Shift+Page Down, Shift+Home, Shift+End, Alt+Up, Alt+Down, Alt+Home, and
+Alt+End. Keys with Shift modifier select or unselect files and directories
+and keys with Alt modifier walk only through selected files and directories.
+See <a href="shortcuts_keyboard.htm">Main Window Keyboard Shortcuts</a>.</p>
+
+<h4>Advanced Usage</h4>
+
+<p>When you type slash (/), backslash (\), or less than (&lt;) character, it will
+substitute any part of name (similar to '*' in file masks). Trailing dot (.)
+character is ignored when name has no extension. Examples:</p>
+
+<table>
+ <tr><th>When you type</th><th>It will find names</th>
+     <th>Corresponding file mask</th></tr>
+ <tr><td>/le</td><td>file.txt, less.exe, bmp.rle, etc.</td><td>*le*</td></tr>
+ <tr><td>pro/.htm</td><td>promote.html, prototype.htm, professional.htm, etc.</td><td>pro*.htm*</td></tr>
+ <tr><td>/.htm</td><td>any.htm, page.htm, index.html, etc.</td><td>*.htm*</td></tr>
+ <tr><td>/g.</td><td>flag, flag.txt, etc. Note: it will not find name pic.jpg.</td><td>*g.*</td></tr>
+</table>
+
+<p>Note for German users: you can use the same key in English and German keyboard layout,
+because backslash (\) and less than (&lt;) characters have the same functionality in
+quick search mode.
+</p>
+
+<h4>Remarks</h4>
+<p>When check box <i>Redirect typing from panel to Command line</i> in 
+   <a href="configuration_panels.htm">Configuration/Panels</a> is checked,
+   use Alt+letter to enter to quick search mode.</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>
+

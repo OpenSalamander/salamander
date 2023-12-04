@@ -1,0 +1,94 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Configuration of Check Version dialog box</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: Check Version: Dialog Boxes</div>
+<div class="page">
+<h1>Configuration of Check Version</h1>
+
+<p>You can customize behaviour of the Check Version plugin in this dialog.
+See <a href="ms-its:salamand.chm::/hh/salamand/plugins_config.htm">Configuring Plugins</a>
+for general information about configuration.</p>
+
+<h4>Options</h4>
+<dl>
+<dt><i>Internet Connection Settings</i></dt>
+
+<dd>Specify the type of your connection to the Internet and the protocol which is used to
+obtain data from the ALTAP server. Click on the Change button to see all types in the
+<a href="dlgboxes_inetsettings.htm">CheckVer Internet Connection Settings</a> dialog box.
+</dd>
+
+<dt><i>Open Check for New Versions window on Open Salamander start</i></dt>
+
+<dd>Choose the period for automatic checking for newer versions (never, every day, every week,
+every month, every three months, or every six months).
+</dd>
+
+<dt><i>When Check for New Versions window is opened, hide it and perform auto-connect</i></dt>
+
+<dd>When checked, the plugin automatically connects to the ALTAP server and gets
+information about newer versions. Otherwise you must click on the Check Now button
+in the <a href="dlgboxes_checkver.htm">Check For New Versions</a> window to
+start checking.
+</dd>
+
+<dt><i>Close window if no new version is found, otherwise show window</i></dt>
+
+<dd>When checked, the plugin is quiet until it finds some newer versions. If some
+new versions are available, it shows the <a href="dlgboxes_checkver.htm">Check For New Versions</a>
+window with found updates. When not checked, you must close the <a href="dlgboxes_checkver.htm">Check
+For New Versions</a> window manually every time using the Close button.
+</dd>
+
+<dt><i>Filters</i></dt>
+
+<dd>The Filters listbox contains versions of modules which are not interesting for you and should be
+filtered (ignored). You can add all versions of module (if no version is specified) or just one version
+of module (other versions will not be filtered). To add one or all versions of module to this list,
+right click the module name in the <i>Log window</i> in the <a href="dlgboxes_checkver.htm">Check For
+New Versions</a> window when it displays the list of newer versions (results of checking).
+</dd>
+
+<dt><i>Remove Selected Item From Filters</i></dt>
+
+<dd>Click this button to remove selected item (one or all versions of module) from Filters
+listbox. Such item will not be filtered any longer.
+</dd>
+
+<dt><i>Check for release versions of Open Salamander and plugins</i></dt>
+
+<dd>When checked, you are interested in new release versions. Otherwise new release versions
+are ignored.
+</dd>
+
+<dt><i>Check for beta versions of Open Salamander and plugins</i></dt>
+
+<dd>When checked, you are interested in new beta versions. Otherwise new beta versions
+are ignored.
+</dd>
+
+<dt><i>Check for preview build versions of Open Salamander and plugins</i></dt>
+
+<dd>When checked, you are interested in new preview build versions. Otherwise new preview build versions
+are ignored.
+</dd>
+
+<dt><i>Set defaults</i></dt>
+
+<dd>Choose this button to set defaults in this dialog (it depends on selected type of
+the connection to the Internet).
+</dd>
+</dl>
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

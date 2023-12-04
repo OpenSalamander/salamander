@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Disk Path Specifier</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Appendix: File and Directory Concepts</div>
+<div class="page">
+
+<h1>Disk Path Specifier</h1>
+<p>The directory can be specified by full or by relative path. The relative path
+uses current directory, it specifies the path relatively to current directory
+(e.g. subdirectory of current directory). The full path is totally
+independent on current directory, it specifies all necessary information to reach
+the directory.
+</p>
+
+<h5>Full Disk Paths</h5>
+<p>There are two types of full paths. The first, so-called local path, uses drive
+letters (e.g. C:\WINDOWS). The second, so-called UNC path, uses UNC (Universal
+Naming Convention, e.g. \\SERVER\SHARE\WINDOWS). You can see all available
+drive letters in the <a href="navigating_chdrvmenu.htm">Change Drive Menu</a>.
+First two parts of UNC paths (server and share) are listed in the Network
+window which is accessible from the
+<a href="navigating_chdrvmenu.htm">Change Drive Menu</a>.</p>
+
+<h5>Relative Disk Paths</h5>
+<p>Relative paths can be specified relatively to current directory (e.g. SUBDIR)
+or to the last visited directory on drive (e.g. C:SUBDIR is relative to the last visited
+directory on drive C:). If relative
+path begins with backslash, it specifies path relatively to the root. Relative
+path can contain special names - two points (..) and one point (.). Two points
+stand for parent directory and one point stands for current directory. See
+following table with samples of relative paths.
+</p>
+
+<h3>Relative Disk Paths:</h3>
+<table>
+
+<tr>
+<th>Current Directory</th>
+<th>Relative Disk Path</th>
+<th>Resulting Full Disk Path</th>
+</tr>
+
+<tr>
+<td>C:\WINDOWS</td>
+<td>SYSTEM</td>
+<td>C:\WINDOWS\SYSTEM</td>
+</tr>
+
+<tr>
+<td>C:\WINDOWS\SYSTEM</td>
+<td>D:</td>
+<td>D:\WORK (provided that last visited directory on drive D: is D:\WORK)</td>
+</tr>
+
+<tr>
+<td>C:\WINDOWS\SYSTEM</td>
+<td>D:TEST</td>
+<td>D:\WORK\TEST (provided that last visited directory on drive D: is D:\WORK)</td>
+</tr>
+
+<tr>
+<td>C:\WINDOWS\SYSTEM</td>
+<td>\TEMP</td>
+<td>C:\TEMP</td>
+</tr>
+
+<tr>
+<td>\\NTSERVER\BIGDISK\MEDIA\PICTURES</td>
+<td>..\MOVIES</td>
+<td>\\NTSERVER\BIGDISK\&shy;MEDIA\MOVIES</td>
+</tr>
+
+<tr>
+<td>\\NTSERVER\BIGDISK\MEDIA\PICTURES</td>
+<td>.</td>
+<td>\\NTSERVER\BIGDISK\&shy;MEDIA\PICTURES</td>
+</tr>
+
+<tr>
+<td>C:\WINDOWS\SYSTEM</td>
+<td>COLOR\..\..\HELP\.</td>
+<td>C:\WINDOWS\HELP (easier and equivalent relative path is ..\HELP)</td>
+</tr>
+
+</table>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

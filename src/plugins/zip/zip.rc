@@ -1,0 +1,92 @@
+﻿// Microsoft Visual C++ generated resource script.
+//
+#pragma code_page(65001)
+
+#include "zip.rh"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winresrc.h"
+
+#include "zip.rh2"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "zip.rh\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winresrc.h""\r\n"
+    "\r\n"
+    "#include ""zip.rh2""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)\r\n"
+    "LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL\r\n"
+    "#include ""zip.rc2""   // non-Microsoft Visual C++ edited resources\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDA_SFXACCELS ACCELERATORS 
+BEGIN
+    "A",            CM_SFX_ADD,             VIRTKEY, CONTROL, NOINVERT
+    "E",            CM_SFX_EXPORT,          VIRTKEY, CONTROL, NOINVERT
+    "F",            CM_SFX_FAVORITIES,      VIRTKEY, CONTROL, NOINVERT
+    "F",            CM_SFX_FAVORITIES,      VIRTKEY, CONTROL, NOINVERT
+    "I",            CM_SFX_IMPORT,          VIRTKEY, CONTROL, NOINVERT
+    "L",            CM_SFX_LASTUSED,        VIRTKEY, CONTROL, NOINVERT
+    "V",            CM_SFX_PREVIEW,         VIRTKEY, CONTROL, NOINVERT
+    "R",            CM_SFX_RESETALL,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "T",            CM_SFX_RESETTEXTS,      VIRTKEY, CONTROL, NOINVERT
+    "R",            CM_SFX_RESETVALUES,     VIRTKEY, CONTROL, NOINVERT
+END
+
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL
+#include "zip.rc2"   // non-Microsoft Visual C++ edited resources
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

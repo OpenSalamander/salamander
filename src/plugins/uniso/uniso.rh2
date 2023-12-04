@@ -1,0 +1,107 @@
+﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __UNISO_RH2
+#define __UNISO_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#define IDC_STATIC_1 3000
+#include "statics.rh2"   // 3000 az 3039 jsou timto zabrane !!!
+
+//***********************************************************************************
+//
+// ikony, bitmapy, kurzory
+//
+
+#define IDB_UNISO                    900
+
+//***********************************************************************************
+//
+// texty
+//
+
+#define IDS_PLUGINNAME              1000
+#define IDS_CANT_OPEN               1001
+
+#define IDS_UNKNOW_ERROR            1002
+#define IDS_UNPACKING_ARCHIVE       1003
+#define IDS_ERROR_UNPACKING         1004
+#define IDS_CANT_HANDLE_FILE        1005
+#define IDS_INSUFFICIENT_MEMORY     1006
+
+#define IDS_ABOUT                   1007
+#define IDS_PLUGIN_DESCRIPTION      1009
+#define IDS_CANT_CREATE_TEMP        1010
+#define IDS_CANT_DELETE_TEMP_FILE   1011
+#define IDS_UNKNOWN_FILE_FORMAT     1012
+#define IDS_CANT_OPEN_FILE          1013
+#define IDS_ERR_TMP                 1014
+#define IDS_CANT_SET_ATTRS          1015
+#define IDS_CANT_CREATE_DIR         1016
+#define IDS_YES                     1020
+#define IDS_NO                      1021
+#define IDS_ERROR                   1022
+#define IDS_WARNING                 1023
+#define IDS_ERROR_OPENING_MULTISESSION 1024
+#define IDS_UNKNOWN_TRACK_TYPE      1025
+#define IDS_UDF_UNKNOWN_ALLOCATION_STRATEGY 1026
+#define IDS_CCD_BAD_FORMAT          1027
+#define IDS_CCD_MISSING             1028
+#define IDS_ERROR_READING_SECTOR    1029
+#define IDS_UDF_INVALID_TAG_ID      1030
+#define IDS_ERROR_LISTING_IMAGE     1031
+#define IDS_INTERNAL_PLUGIN_ERROR   1032
+#define IDS_UDF_ERROR_READING_VAT   1033
+#define IDS_UDF_MISSING_VAT         1034
+#define IDS_UDF_BAD_ROOT_ICB        1035
+#define IDS_UDF_ICB_AND_FILESIZE_MISMATCH 1036
+#define IDS_CANT_OPEN_TRACK         1037
+#define IDS_BOOT_OR_MBR             1038
+#define IDS_UNSUPPORTED_APFS        1039
+
+#define IDS_ERR_HFS_READ            1050
+#define IDS_ERR_HFS_INVALID_PARTITION 1051
+#define IDS_ERR_HFS_UNRECOGNIZED    1052
+#define IDS_ERR_HFS_ORIGINAL_HFS    1053
+#define IDS_ERR_HFS_SEEK_BLOCK_EXTR 1054
+#define IDS_ERR_HFS_SEEK            1055
+#define IDS_ERR_HFS_BTREE_NODETYPE  1056
+#define IDS_ERR_HFS_BTREE_FRAGMENTED 1057
+#define IDS_ERR_HFS_FILE_FRAGMENTED 1058
+
+#define IDS_ERR_TOO_LONG_PATH       1059
+#define IDS_ERR_TOO_LONG_NAME       1060
+
+#define IDS_ERR_DMG_READ_HDR        1070
+#define IDS_ERR_DMG_ENCRYPTED       1071
+#define IDS_ERR_DMG_NO_FOOTER       1072
+#define IDS_ERR_DMG_PLIST           1073
+#define IDS_ERR_DMG_BLOCK_UNDEFINED 1074
+
+#define IDS_ERR_BF_READ             1075
+#define IDS_ERR_BF_SEEK             1076
+#define IDS_ERR_BF_UNSUPPORTED_SEEK_METHOD 1077
+#define IDS_ERR_BF_BLOCK_UNK_TYPE   1078
+#define IDS_ERR_BF_ZLIB             1079
+#define IDS_ERR_BF_BZIP2            1080
+
+#define IDS_ERR_ISZ_NO_HEADER       1085
+#define IDS_ERR_ISZ_READ_HDR        1086
+#define IDS_ERR_ISZ_SEGMENTED       1087
+#define IDS_ERR_ISZ_ENCRYPTED       1088
+
+#define IDS_READERROR               1100
+#define IDS_WRITEERROR              1101
+#define IDS_AUDIO_NOT_EXTRACTABLE   1102
+#define IDS_CANCELING_OPERATION     1103
+
+#define IDS_INFO_LABEL              1150
+#define IDS_INFO_LABEL_LABEL        1151
+#define IDS_INFO_CNT_SESSIONS       1152
+#define IDS_INFO_SESSION_NUM        1153
+#define IDS_INFO_CNT_TRACKS         1154
+#define IDS_INFO_TRACK_TYPE_SIZE    1155
+#define IDS_INFO_TRACK_TYPE_SIZE_LABEL 1156
+
+#endif // __UNISO_RH2

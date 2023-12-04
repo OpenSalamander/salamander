@@ -1,0 +1,55 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Comparing Files from Other Applications</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: File Comparator: Using File Comparator Plugin</div>
+<div class="page">
+
+<h1>Comparing Files from Other Applications</h1>
+
+<p>You can use File Comparator plugin from other applications, e.g. Tortoise Hg
+or Tortoise SVN. Use supplied fcremote.exe utility to start Open Salamander if it is not
+running and then to open new File Comparator window with two specified files to
+compare.</p>
+
+<h3>To compare files specified by other application:</h3>
+
+<ol>
+<li>Go to File Comparator plugin's directory, e.g. C:\Program Files\Open Salamander\plugins\filecomp.</li>
+<li>Find fcremote.exe utility.</li>
+<li>Use Copy Path + Name as Text command (Alt+Insert key) on fcremote.exe to copy full name
+of fcremote.exe to clipboard.</li>
+<li>Paste full name of fcremote.exe to application and give it two parameters with files to compare.
+If you need fcremote.exe to wait for closing File Comparator window (applications use it as a signal
+to remove temporary copies of compared files), use option -w before two files to compare.</li>
+</ol>
+
+<h3>Example: Using File Comparator plugin from Tortoise Hg:</h3>
+
+<ol>
+<li>Open your mercurial.ini file in text editor. You can do it e.g. from Tortoise Hg Settings dialog,
+click Edit File button.</li>
+<li>Find section [tortoisehg], add line:<br>
+vdiff = MySalDiff</li>
+<li>Find section [merge-tools], add lines:<br>
+MySalDiff.executable=C:\Program Files\Open Salamander\plugins\filecomp\fcremote.exe<br>
+MySalDiff.diffargs=-w $parent $child
+</li>
+</ol>
+
+<h4>See Also</h4>
+
+<p><a href="using_comparefiles.htm">Comparing Files</a></p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

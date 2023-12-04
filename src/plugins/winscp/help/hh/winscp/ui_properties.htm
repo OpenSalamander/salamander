@@ -1,0 +1,138 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Properties Dialog</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Dialog Boxes</div>
+<div class="page">
+<h1>Properties Dialog</h1>
+
+<p>
+In Properties Dialog you can view and <a href="task_properties.htm">change</a> properties of remote files and
+directories. To display the dialog go to <em>Files &gt; Change Attributes</em>.
+</p>
+
+<p>
+The dialog has two tabs. Each is described individually.
+</p>
+
+<a name="common"></a>
+<h4>Common</h4>
+
+<a name="file_information"></a>
+<h5>File Information</h5>
+
+<p>
+In the upper part of the dialog you can see information about the selected file(s). The counter will
+initially not include files and directories in subdirectories. Press <em>Calculate</em> button to
+count even these.
+</p>
+
+<p>
+The <em>Size</em> field will state &quot;Unknown&quot;, if the selection contains at least one directory. Press
+<em>Calculate</em> button next to it to calculate the total size of all files in the selected directories
+(symlinks are not followed).
+</p>
+
+<p>
+When properties are shown for single symbolic link (symlink), link target will be shown in additional <em>Links to</em>
+field. If you need to know link target frequently, you may want to display optional
+<em><a href="ui_sal_pref_panel.htm">Link target</a></em> column in file panel.
+</p>
+
+<a name="ownership"></a>
+<h5>Ownership</h5>
+
+<p>
+The <em>Group</em> and <em>Owner</em> boxes can be used to change ownership of the selected files. Initially
+the boxes will show current ownership as long as all selected files has the same owner/group. Otherwise
+the boxes will be empty. Leave them empty not to change the ownership, when you are changing other
+properties (like permissions).
+</p>
+
+<p>
+The boxes are disabled if current <a href="protocols.htm">protocol</a> does not allow changing ownership.
+</p>
+
+<p>
+Some protocols may allow changing ownership by specifying
+<acronym title="User ID">UID</acronym>/<acronym title="Group ID">GID</acronym>
+numbers only. In that case you will see both username/groupname and
+<acronym title="User ID">UID</acronym>/<acronym title="Group ID">GID</acronym>
+in the boxes in form <em>name [number]</em>.
+If you want to change ownership specify new number only.
+<a href="#fn1">(see note 1)</a>
+</p>
+
+<a name="permissions"></a>
+<h5>Permissions</h5>
+
+<p>
+The <a href="ui_permissions.htm">permissions</a> box can be used to change permissions of selected files.
+</p>
+
+<p>
+The box is disabled if current <a href="protocols.htm">protocol</a>
+does not allow changing permissions.
+</p>
+
+<p>
+You can also set permissions for newly uploaded files directly in <a href="transfer_settings.htm">transfer settings</a>.
+</p>
+
+<a name="changing_properties_recursively"></a>
+<h5>Changing Properties Recursively</h5>
+
+<p>
+If the selection contains at least one directory, there will be additional checkbox <em>Set group,
+ownership and permissions recursively</em>. It will make WinSCP change the properties for all files
+in selected directories.
+</p>
+
+<p>
+With <a href="protocols.htm#sftp">SFTP protocol</a> this can take considerable
+time as the change must be made for each file specially. With
+<a href="protocols.htm#scp">SCP protocol</a> the change is made once for each selected
+file or directory only, so it can be much quicker. However as consequence WinSCP will not be able to keep
+some properties, especially permissions, of files in subdirectories unchanged, when you request it.
+</p>
+
+<a name="checksum"></a>
+<h4>Checksum</h4>
+
+<p>
+The <em>Checksum</em> tab lets you calculate checksum/hash of selected file(s).
+The feature is available with <a href="protocols.htm#sftp">SFTP protocol</a>
+only, subject to support of respective
+<acronym title="SSH File Transfer Protocol">SFTP</acronym> extension.
+</p>
+
+<p>
+Use <em>Algorithm</em> selection to choose checksum/hash algorithm.
+The dropdown list contains standard algorithms, however you can type
+in name of any other algorithm supported by the server.
+Use button <em>Calculate checksum</em> to request the calculation.
+</p>
+
+<p>
+You can copy the calculated checksum(s) to clipboard using <em>Copy</em>
+command of the display context menu.
+</p>
+
+<h4>Notes:</h4>
+<p>
+<a name="fn1"></a>
+1) The text is copy of <a href="https://tartarus.org/~simon/putty-snapshots/htmldoc/" target="_blank">PuTTY User Manual</a> or was inspired by it.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

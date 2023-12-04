@@ -1,0 +1,157 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>MsgBox Method</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: Automation: Reference: Salamander Object</div>
+<div class="page">
+
+<h1>MsgBox Method</h1>
+<p>The <b>MsgBox</b> method displays a message in a dialog box.</p>
+
+<h2>Syntax</h2>
+<pre><code>MsgBox(<i>prompt</i>, [<i>buttons</i>], [<i>title</i>])</code></pre>
+
+<h2>Parameters</h2>
+
+<h3>prompt</h3>
+<p>Required. String displayed as the message in the dialog box.</p>
+
+<h3>buttons</h3>
+<p>Optional. Numeric expression that is the sum of values specifying the number
+and type of buttons to display, the icon style to use and the identity of the
+default button. If omitted, the default value for <b><i>buttons</i></b> is 0.</p>
+
+<table>
+	<tr>
+		<td class="hdr">Constant</td>
+		<td class="hdr">Description</td>
+	</tr>
+	<tr>
+		<td>0</td>
+		<td>Display OK button only.</td>
+	</tr>
+	<tr>
+		<td>1</td>
+		<td>Display OK and Cancel buttons.</td>
+	</tr>
+	<tr>
+		<td>2</td>
+		<td>Display Abort, Retry and Ignore buttons.</td>
+	</tr>
+	<tr>
+		<td>3</td>
+		<td>Display Yes, No and Cancel buttons.</td>
+	</tr>
+	<tr>
+		<td>4</td>
+		<td>Display Yes and No buttons.</td>
+	</tr>
+	<tr>
+		<td>5</td>
+		<td>Display Retry and Cancel buttons.</td>
+	</tr>
+	<tr>
+		<td>6</td>
+		<td>Display Cancel, Try Again and Continue buttons.</td>
+	</tr>
+	<tr>
+		<td>7</td>
+		<td>Display Continue and Abort buttons.</td>
+	</tr>
+	<tr>
+		<td>16</td>
+		<td>Display error message icon.</td>
+	</tr>
+	<tr>
+		<td>32</td>
+		<td>Display query message icon.</td>
+	</tr>
+	<tr>
+		<td>48</td>
+		<td>Display warning message icon.</td>
+	</tr>
+	<tr>
+		<td>64</td>
+		<td>Display information message icon.</td>
+	</tr>
+	<tr>
+		<td>0</td>
+		<td>First button is default.</td>
+	</tr>
+	<tr>
+		<td>256</td>
+		<td>Second button is default.</td>
+	</tr>
+	<tr>
+		<td>512</td>
+		<td>Third button is default.</td>
+	</tr>
+	<tr>
+		<td>768</td>
+		<td>Fourth button is default.</td>
+	</tr>
+</table>
+
+<h3>title</h3>
+<p>Optional. String displayed in the title bar of the dialog box.</p>
+
+<h2>Return Values</h2>
+
+<table>
+	<tr>
+		<td class="hdr">Value</td>
+		<td class="hdr">Description</td>
+	</tr>
+	<tr>
+		<td>1</td>
+		<td>OK</td>
+	</tr>
+	<tr>
+		<td>2</td>
+		<td>Cancel</td>
+	</tr>
+	<tr>
+		<td>3</td>
+		<td>Abort</td>
+	</tr>
+	<tr>
+		<td>4</td>
+		<td>Retry</td>
+	</tr>
+	<tr>
+		<td>5</td>
+		<td>Ignore</td>
+	</tr>
+	<tr>
+		<td>6</td>
+		<td>Yes</td>
+	</tr>
+	<tr>
+		<td>7</td>
+		<td>No</td>
+	</tr>
+	<tr>
+		<td>10</td>
+		<td>Try Again</td>
+	</tr>
+	<tr>
+		<td>11</td>
+		<td>Continue</td>
+	</tr>
+</table>
+
+<h2>See Also</h2>
+<p><a href="ref_salamander.htm">Salamander Object</a></p>
+
+</div>
+<div class="footer">&copy; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

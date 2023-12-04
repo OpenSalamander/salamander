@@ -1,0 +1,133 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Permissions</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Dialog Boxes</div>
+<div class="page">
+<h1>Permissions</h1>
+
+<p>
+On several occasions you need or have chance to set remote file permissions (Unix-style). This includes:
+</p>
+
+<ul>
+
+<li>Setting <a href="ui_transfer.htm">transfer options</a> when
+<ul>
+<li>setting <a href="ui_sal_pref_transfer.htm">default transfer options</a>.</li>
+<li><a href="task_upload.htm">uploading</a> files.</li>
+</ul>
+</li>
+
+<li>Explicitly <a href="ui_properties.htm">changing file permissions</a>.</li>
+
+</ul>
+
+<a name="simple_permissions"></a>
+<h4>Simple Permissions</h4>
+
+<p>
+The rows of checkboxes are used to set/unset specific permissions for the <em>Owner</em> (the owner of the file); the <em>Group</em> (members of file group); and
+<em>Others</em> (all others). The label <em>R</em> stands for &quot;read permissions&quot;,
+<em>W</em> for &quot;write&quot; and <em>X</em> for &quot;execute&quot;. For directories the &quot;execute permission&quot; means permission
+to enter the directory (make it working directory).
+</p>
+
+<a name="special_permissions"></a>
+<h4>Special Permissions</h4>
+
+<p>
+There are three special permissions. <em>Set <acronym title="User ID">UID</acronym></em> and
+<em>Set <acronym title="Group ID">GID</acronym></em> are used with executable files. They grant the user,
+who executes the file, permissions of file owner or group, respectively. <em>Sticky bit</em> for executable
+files makes the kernel keep the memory image of the process after it has terminated, in order to avoid the
+overhead of reloading it when it is re-invoked. <em>Sticky bit</em> for directories ensures that only the
+owner of a file can remove or delete the file or directory.
+</p>
+
+<p>
+Note that while non-Unix systems are usually able to map the 9 simple Unix-style permissions to their own
+style, they probably won't be able to handle the 3 special permissions.
+</p>
+
+<p>
+Also <a href="interoperability.htm">not all Unix SFTP servers</a>
+are able to set the special permissions.
+</p>
+
+<p>
+Also <a href="interoperability.htm">neither all Unix SFTP servers</a> are able to set the special permissions.
+</p>
+
+<a name="undefined_permissions"></a>
+<h4>Undefined Permissions</h4>
+
+<p>
+When explicitly changing permissions of existing remote files, the checkboxes can be set to undefined
+state <a href="#fn1">(see note 1)</a>.
+It means that the particular permissions should be left to its current state. This is useful when
+you want to change one particular permission for set of files/directories that have different permissions.
+</p>
+
+<p>
+Note that this will not work fully for <a href="protocols.htm#scp_secure_copy_protocol">SCP protocol</a>
+for files in subdirectories.
+</p>
+
+<a name="octal_format"></a>
+<h4>Octal Format</h4>
+
+<p>
+The <em>Octal</em> box shows octal number representation of the permissions set by the above checkboxes.
+You can enter the octal format directly instead of manually ticking the checkboxes. If you enter only
+three numbers, the leading zero for unset special permissions is added automatically. When any of the
+checkboxes are in undefined state the <em>Octal</em> box is empty.
+</p>
+
+<p>
+Note that if permissions box pops up from an edit box, you can enter permissions in octal format directly
+into the edit box, without having to pop it up.
+</p>
+
+<a name="other_options"></a>
+<h4>Other Options</h4>
+
+<p>
+The <em>Add X to directories</em> checkbox makes WinSCP add &quot;execute&quot; permission to directories for
+every permission group (owner/group/others) where there is a &quot;read&quot; permission set already.
+</p>
+
+<p>
+On <a href="ui_properties.htm">Properties dialog</a> the option is available only when there is at
+least one directory selected. Also it will not work for <a href="protocols.htm#scp_secure_copy_protocol">SCP protocol</a>
+for subdirectories of selected directories.
+</p>
+
+<p>
+The checkbox is disabled, if you check "execute" permissions explicitly
+for all permission groups, as it makes it effectively useless.
+</p>
+
+<p>
+The checkbox is disabled, if you check &quot;execute&quot; permissions explicitly for all permission groups,
+as it makes it effectively useless.
+</p>
+
+<h4>Notes:</h4>
+<p>
+<a name="fn1"></a>
+1) Grayed checkbox on Windows 2000 and older, green square on default theme of Windows XP
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Operation Masks</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Appendix: File and Directory Concepts</div>
+<div class="page">
+
+<h1>Operation Masks</h1>
+<p>Some Open Salamander operations, such as Copy, Move, or Rename, support
+entering of operation mask. Operation mask is appended behind the target path.</p>
+
+<p>Operation masks can contain special characters - asterisk (*) for the rest
+of the name or the extension and question mark (?) for a single character.
+So the operation mask 'new_*.???' will generate names which begin with 'new_'
+followed with the rest of the original name (from the fifth character to the end),
+and end with (.) followed with three characters from the original extension.</p>
+
+<p>Operation masks are usually used for simpler operations like changing
+extensions in the group of files (you can use '*.html' for renaming .htm files
+to .html files, etc.).</p>
+
+<p>If you need more sophisticated renaming or moving, consider using of
+<a href="ms-its:renamer.chm::/hh/renamer/introduction_intro.htm">Renamer plugin</a>.
+</p>
+
+<h3>Operation Masks Containing More Points</h3>
+
+<p>The mask is divided by the first point (from the left side) to mask for name and
+mask for extension. Example: filename is "a.b.c.d" (name is "a.b.c", extension is "d"),
+mask is "*.*.old", mask is divided to "*" and "*.old", resulting filename is "a.b.c.d.old"
+("a.b.c" + "*" = "a.b.c"; "d" + "*.old" = "d.old").</p>
+
+<h4>See Also</h4>
+
+<p>
+<a href="dlgboxes_copy.htm">Copy dialog box</a><br />
+<a href="dlgboxes_move.htm">Move/Rename dialog box</a><br />
+<a href="dlgboxes_renam.htm">Quick Rename dialog box</a><br />
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

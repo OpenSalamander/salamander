@@ -1,0 +1,126 @@
+Jan Patera 2008.12.16 - START
+
+Further comments to 7za.dll are located in patch\install.
+
+As of v4.62, 7za.dll can't really be built as truly single-threaded.
+It still launches new threads, when a new type of encoder is needed
+(namely brancher for executables). As a result, the callback to 7zip.spl
+can get invoked from the original thread used to call 7za.dll but
+also from threads launched by 7za.dll itself. Because Windows GUI and many
+Salamander's functions are not thread-safe or can only be called
+from the main Salamander's thread, the following environment is used.
+
+Here "main thread" means the thread of Salamander that calls the methods
+of CPluginInterfaceForArchiver in 7zip.spl.
+1) ProgressBar dialog is subclassed by the main thread.
+2) The main thread calls LaunchAndDo7ZipTask that launches a new worker
+  thread. The main thread processes message loop as long as the worker
+  thread exists.
+3) The worker thread calls a function in 7za.dll giving it a pointer
+  to a callback class.
+4) The callback class can get called from several threads. Whenever
+ a GUI update or user interaction is needed, it sends a message
+ to the ProgressBar dialog for doing so. It gets handled there by the
+ subclassed dialog proc.
+
+
+The original text written probably by David Andrs and timestamped 2004.08.30 follows.
+
+Jan Patera 2008.12.16 - END
+
+Poznamky i implementaci 7zip
+----------------------------
+
+- Autor je vul
+  Umi sice vybornou kompresi, ale jeho kod stoji za hovno. Aby se v tom prase vyznalo... 
+  Vubec zadne komentare. Absolutne k nicemu!
+
+- Progress pri vybalovani
+  Volaji se metody SetTotal a SetCompleted, kde se predavaji parametry toho, jak proces pokracuje
+  atd. Zde tedy volam metody salamandera ProgressSetTotalSize, ProgressAddSize. Z me
+  nepochopitelnych duvodu vsak total progress vubec nefachci. Ackoliv spocitana celkova velikost
+  je spravne.
+
+  Je mozne vyresit tim, ze bude jen jeden progress (nebude total proges, coz by byla skoda)
+
+  [SOLVED]
+  Progress je resen velmi divne. Abychom to pochopili musime to vzit ponekud zesiroka. Autor
+  vybaluje tak, ze sestavi pole indexu (index jednoznacne identifikuje polozku v archivu) to
+  predhodi metode Extract. Ja to delam tak, ze pro kazdy soubor zavolam Extract (s jednoprvkovym
+  polem - index je soubor, ktery chci vybalit).
+
+  Autoruv zpusob progressbaru. Podhodi pole metode Extract. Metoda SetTotal se zavola jednou. Pak se
+  v prubehu vybalovani vola metoda SetCompleted. Progress odpovida tomu co se deje.
+
+  Muj zpusob. Vola se SetTotal pro kazdy soubor, jenze hodnote, ktera do metody vstupuje vubec
+  nerozumim - rozhodne to neni velikost souboru, ani zapackovaneho, ani rozpakovaneho, co to je to
+  nevim. Takze dokazu pro kazdy soubor updatnou progress pred vybalenim souboru a po vybaleni. Proto
+  pouzivam jen jeden progress. Nedokazu predem (a hlavne jednoduse) ziskat tu celkovou velikost, 
+  ktera bude vstupovat do SetTotal, abych mohl prubezne updatovat file progress.
+
+  Muj zpusob je pomalejsi, protoze pri kazdem zavolani se vytvari nejaky ten objekt (ale neni jich
+  vic jak 5) a pak se provadeji v archivu nejake skipy nez se dojde na soubor, ktery ma byt vybalen.
+  Tyto skipy nejsou tak caste, pokud se predhodi cele pole (autoruv zpusob). Ovsem pak je zde "drobny"
+  problem s vybalovanim prazdnych adresaru.
+
+  [EDITED]
+  Uz to delam jako autor, predhodim pole a volam progressbarovy metody, takze progress odpovida,
+  melo by to by i rychlejsi, mene skipu v archivu. Jen nefunguje ProgressAddText a jine, viz nize
+  sekce Progress a Osetreni chybovych stavu.
+
+- Osetreni chybovych stavu
+  Nechapu jak dokaze osetrit, ze pri vybalovani souboru, pokud tento jiz existuje, tak jak predat
+  aktivitu uzivateli, aby rozhodl co s tim. Zkousel jsem pred jeho vytvoreni souboru zavolat
+  salamanderovsky SalamanderSafeFile->SafeFileCreate, ale sehlalo to s tim, ze v TRACE SERVERU se
+  objevila hlaska: Spatne volani, tento thread nema definovany call-stack object.
+  Co s tim?
+
+  EDITED:
+  Testovani existence souboru a predani aktivity uzivateli se provadi v metode GetStream
+  (callbackimp), ale SafeFileCreate porad nejde.
+  
+- Prechod na verzi, kdy se bude jeho zdrojak prikompilovavat k nasemu spl nevidim jako dobry, protoze
+  si asi moc nepomuzeme. Budeme ve stale stejnych srackach, ne-li ve vetsich (chybi dokumnetace,
+  komentare). Budeme sice moci zasahovat vice do toho, co se deje, ale pri vydani nove verze to
+  budeme muset vzdy preprogramovat.
+
+  Mozne reseni, vykuchat z jeho zdrojaku kompresi a dekompresni rutiny a zabalit je do naseho spl.
+  Ovsem bylo by nutne naspat ty sracky okolo, jako vytvoreni archivu, otevreni archivu, listovani
+  archivem a ja nevim co jeste...
+
+
+Progress
+--------
+
+- nejde volat ProgressAddText(...., TRUE) - (delayedPaint == TRUE) => zatuhne to, s FALSE to jde.
+
+
+Hesla
+-----
+
+- CExtractCallbackImp::GetPassword - v dobe zadani o heslo nevime na jaky soubor :(
+
+
+OperationResults
+----------------
+
+- Jsou 4 vysledky operaci (kOK, kUnSupportedMethod, kCRCError, kDataError) (pak je jeste unknown error,
+  to, kdyz to neni ani jedna z techto).
+  
+  Pokud se zada spatne heslo, tak se soubor vypakuje, ale pochopitelne blbe, a jako vysledek
+  operace se hodi kDataError. Takze muzu dat do konfigu, mazani blbe vybalenych souboru, nebo
+  zareagovat nejakym messageboxem, kde bude 'File blbe vybalen' smazat/nechat.
+  Problem bude, kdyz nebude zadano heslo, tak jestli to taky muze hodit dataerror (jelikoz jsem
+  nikde nevidel neco jako bad pwd, tak zadani spatneho heslo asi nejde rozpoznat...)
+  
+  Na CRC error, asi reagovat taky hlaskou Smazat/nechat.
+
+
+NEJDE (vubec)
+-------------
+
+- vymazat zaheslovany soubor z archivu (neni implementovano v 7za.dll - mozna ze vubec v celym 7zip)
+- skip/skip all pri zadavani hesla
+- zjistit ze bylo zadano spatne heslo
+- nektere soubory nejdou z archivu vymazat (asi zavisle na pakovaci metode)
+

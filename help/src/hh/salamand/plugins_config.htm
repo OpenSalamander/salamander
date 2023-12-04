@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Configuring Plugins</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Using Plugins</div>
+<div class="page">
+<h1>Configuring Plugins</h1>
+
+<p>Some plugins have configuration dialogs where you can customize their behavior.
+You can configure all these plugins from menu Options/Plugin Configuration. You can
+also use the <a href="dlgboxes_plugn.htm">Plugins Manager dialog box</a>,
+see the <i>Configure</i> button.</p>
+
+<h4>Loading and Saving Configuration</h4>
+<p>Plugin's configuration is stored together with Salamander's configuration in
+the registry (see <a href="customize_configuration.htm">Configuring Open Salamander</a>).</p>
+
+<p>Plugin reads its configuration from the registry on its load (when you first use
+the plugin). Plugin saves its configuration to the registry when you unload it
+(see the <a href="dlgboxes_plugn.htm">Plugins Manager dialog box</a>, the <i>Unload</i> button) or
+when it's unloaded on exit of Salamander (only if <i>Save configuration on exit</i>
+is checked in <a href="configuration_gener.htm">Configuration/General</a>).
+If you want to save all loaded plugins' configuration, you can also use command
+Options/Save Configuration (it saves also Salamander's configuration).
+</p>
+
+<h4>Remarks</h4>
+<p>Plugins configuration is stored in the Windows Registry:
+'HKEY_CURRENT_USER\Software\Open Salamander X\Plugins Configuration\PLUGIN-NAME',
+where X is Open Salamander version and PLUGIN-NAME is name of plugin.</p>
+
+<h4>See Also</h4>
+<p>
+<a href="customize_configuration.htm">Configuring Open Salamander</a>
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

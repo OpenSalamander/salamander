@@ -1,0 +1,189 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{509D1C83-66E9-49BF-8343-6D54EFAA2875}</ProjectGuid>
+    <RootNamespace>7zwrapper</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props">
+  </Import>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props">
+  </Import>
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\..\..\shared\vcxproj\x86.props">
+    </Import>
+    <Import Project="7zwrapper_base.props">
+    </Import>
+    <Import Project="7zwrapper_release.props">
+    </Import>
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\..\..\shared\vcxproj\x86.props">
+    </Import>
+    <Import Project="7zwrapper_base.props">
+    </Import>
+    <Import Project="7zwrapper_debug.props">
+    </Import>
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\..\..\shared\vcxproj\x64.props">
+    </Import>
+    <Import Project="7zwrapper_base.props">
+    </Import>
+    <Import Project="7zwrapper_release.props">
+    </Import>
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\..\..\shared\vcxproj\x64.props">
+    </Import>
+    <Import Project="7zwrapper_base.props">
+    </Import>
+    <Import Project="7zwrapper_debug.props">
+    </Import>
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros">
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <LanguageStandard>stdcpp14</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <LanguageStandard>stdcpp14</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <LanguageStandard>stdcpp14</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <LanguageStandard>stdcpp14</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\7za\cpp\7zip\Common\FileStreams.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\7za\cpp\7zip\UI\7zwrapper\7zwrapper.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\7za\cpp\7zip\UI\7zwrapper\StdAfx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\7za\cpp\Common\IntToString.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\7za\cpp\Common\MyString.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\7za\cpp\Common\MyVector.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\7za\cpp\Common\NewHandler.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\7za\cpp\Common\StringConvert.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\7za\cpp\Common\Wildcard.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\7za\cpp\Windows\DLL.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\7za\cpp\Windows\FileDir.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\7za\cpp\Windows\FileFind.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\7za\cpp\Windows\FileIO.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\7za\cpp\Windows\FileName.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\7za\cpp\Windows\PropVariant.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\7za\cpp\Windows\PropVariantConv.cpp">
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\7za\cpp\7zip\Common\FileStreams.h">
+    </ClInclude>
+    <ClInclude Include="..\..\7za\cpp\7zip\UI\7zwrapper\StdAfx.h">
+    </ClInclude>
+    <ClInclude Include="..\..\7za\cpp\Common\IntToString.h">
+    </ClInclude>
+    <ClInclude Include="..\..\7za\cpp\Common\MyString.h">
+    </ClInclude>
+    <ClInclude Include="..\..\7za\cpp\Common\MyVector.h">
+    </ClInclude>
+    <ClInclude Include="..\..\7za\cpp\Common\NewHandler.h">
+    </ClInclude>
+    <ClInclude Include="..\..\7za\cpp\Common\StringConvert.h">
+    </ClInclude>
+    <ClInclude Include="..\..\7za\cpp\Common\Wildcard.h">
+    </ClInclude>
+    <ClInclude Include="..\..\7za\cpp\Windows\DLL.h">
+    </ClInclude>
+    <ClInclude Include="..\..\7za\cpp\Windows\FileDir.h">
+    </ClInclude>
+    <ClInclude Include="..\..\7za\cpp\Windows\FileFind.h">
+    </ClInclude>
+    <ClInclude Include="..\..\7za\cpp\Windows\FileIO.h">
+    </ClInclude>
+    <ClInclude Include="..\..\7za\cpp\Windows\FileName.h">
+    </ClInclude>
+    <ClInclude Include="..\..\7za\cpp\Windows\PropVariant.h">
+    </ClInclude>
+    <ClInclude Include="..\..\7za\cpp\Windows\PropVariantConv.h">
+    </ClInclude>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets">
+  </Import>
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

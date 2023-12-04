@@ -1,0 +1,75 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\french\pak.atp"
+TEXTVERSION,"1.71 (x86)"
+VERSION,"1,7,1,180"
+
+[TRANSLATION]
+LANGID,1036
+AUTHOR,"Gérard Gréco, Arnaud Dupin de Beyssat, Jérémy Marc, Maxime Abbey"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6162"
+COMMENT,"Version française"
+
+[DIALOG 100]
+234,73,1,"Optimisation d'une archive PAK"
+300,8,9,92,8,1,"Taille des données valides:"
+101,102,9,120,8,1,""
+301,8,20,77,8,1,"Taille totale du fichier:"
+102,102,20,120,8,1,""
+302,8,31,51,8,1,"Espace perdu:"
+103,102,31,120,8,1,""
+303,8,44,218,1,1,""
+1,62,53,50,14,1,"Optimiser"
+2,122,53,50,14,1,"Annuler"
+
+[STRINGTABLE 0]
+500,1,"Impossible d'ouvrir le fichier: %s"
+501,1,"Impossible de lancer l'interface paklib. Un fichier est déjà ouvert."
+502,1,"Impossible d'ouvrir le fichier. Un fichier est déjà ouvert."
+503,1,"Impossible d'obtenir la taille du fichier: %s"
+504,1,"Format de donnée invalide."
+505,1,"Mémoire insuffisante."
+506,1,"répertoire central PAK actuel"
+507,1,"Impossible de définir un pointeur de fichier: %s"
+508,1,"Lecture impossible à partir du fichier: %s"
+509,1,"Impossible d'obtenir un pointeur de fichier: %s"
+510,1,"Ecriture impossible à partir du fichier: %s"
+511,1,"Ajout du fichier impossible, car son nom est trop long."
+
+[STRINGTABLE 1]
+1000,1,"PAK"
+1001,1,"Mémoire insuffisante."
+1002,1,"Impossible d'ajouter le fichier à la liste."
+1003,1,"Impossible de charger paklib.dll ou d'obtenir l'adresse de la procédure: "
+1004,1,"Décompression de l'archive PAK - %s"
+1005,1,"préparation des données..."
+1006,1,"décompression en cours..."
+1007,1,"décompression: "
+
+[STRINGTABLE 2]
+1008,1,"Impossible de terminer l'opération car le nom du chemin est trop long."
+1009,1,"Impossible de définir le pointeur de fichier: "
+1010,1,"Impossible d'obtenir le pointeur de fichier: "
+1011,1,"Impossible d'écrire dans le fichier:"
+1013,1,"Impossible d'ouvrir le fichier: "
+1014,1,"Impossible de terminer l'opération car le masque est trop long."
+1015,1,"Suppression de l'archive PAK - %s"
+1016,1,"suppression en cours..."
+1017,1,"suppression: "
+1018,1,"annulation de l'opération en cours, veuillez patienter..."
+1019,1,"Compression en archive PAK - %s"
+1020,1,"Impossible d'ajouter le fichier, car il est trop gros."
+1021,1,"compression en cours..."
+1022,1,"Impossible d'ajouter le fichier, car son nom est trop long."
+1023,1,"compression: "
+
+[STRINGTABLE 3]
+1024,1,"Lecture impossible à partir du fichier: "
+1025,1,"Impossible connecter le module à Open Salamander."
+1026,1,"optimisation en cours, veuillez patienter..."
+1027,1,"Optimisation de l'archive PAK - %s"
+1028,1,"La suppression de fichiers a échoué. Vous devriez lancer l'optimisation du PAK à partir du menu du Module PAK pour éviter la perte d'espace disque."
+1029,1,"&Optimisation du PAK"
+1030,1,"Désolé, la validité du module a expiré. Veuillez consulter notre site Web pour une obtenir une version plus récente."
+1031,1,"Parcourt et extrait les archives Quake PAK."
+1032,1,"A propos du module"
+

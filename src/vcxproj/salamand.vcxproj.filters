@@ -1,0 +1,891 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="cpp">
+      <UniqueIdentifier>{179c257b-6643-4872-a573-6d2d5885cf08}</UniqueIdentifier>
+      <Extensions>cpp</Extensions>
+    </Filter>
+    <Filter Include="h">
+      <UniqueIdentifier>{157e4e18-4200-41e6-820c-46878adc6b98}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="rc">
+      <UniqueIdentifier>{da4641ec-1f24-494a-bc25-e7d68c87104d}</UniqueIdentifier>
+      <Extensions>rc;ico;bmp</Extensions>
+    </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{8a207bdc-245b-40bc-a918-5d6fd02fbab2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="zlib">
+      <UniqueIdentifier>{5bda093c-97de-4740-9887-23bd128dd496}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bzip2">
+      <UniqueIdentifier>{ef14f658-710e-4121-8489-ef4153552efa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pnglite">
+      <UniqueIdentifier>{ba542554-32da-4655-b4c3-c20982541b09}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="crypt">
+      <UniqueIdentifier>{94ba0087-5842-49c1-a531-232744e4fbd9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\bitmap.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bugreprt.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cache.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\callstk.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\codetbl.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\color.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\plugins\shared\dbg.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dialogs.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dialogs2.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dialogs3.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dialogs4.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dialogs5.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dialogs6.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dialogse.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dialogsp.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\drivelst.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\editwnd.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\edtlbwnd.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\execute.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\filesbx1.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\filesbx2.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\filesmap.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fileswn0.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fileswn1.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fileswn2.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fileswn3.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fileswn4.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fileswn5.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fileswn6.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fileswn7.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fileswn8.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fileswn9.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fileswna.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fileswnb.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\filter.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\find.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\finddlg1.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\finddlg2.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\geticon.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gui.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\icncache.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\iconlist.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jumplist.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\keyboard.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logo.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mainwnd1.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mainwnd2.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mainwnd3.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mainwnd4.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mainwnd5.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mapi.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\masks.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\md5.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\menu1.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\menu2.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\menu3.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\menu4.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\menubar.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ms_init.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\msgbox.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\olespy.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\pack1.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\pack2.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\pack3.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\packac.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\packers.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\plugins1.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\plugins2.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\plugins3.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\plugins4.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\precomp.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\pwdmngr.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\reglib\src\regcopy.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\reglib\src\reginmem.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\reglib\src\registry.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\reglib\src\regparse.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\regwork.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\safefile.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\salamdr1.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\salamdr2.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\salamdr3.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\salamdr4.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\salamdr5.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\salamdr6.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\salamdr7.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\salbzip2.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\salinflt.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\salmoncl.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\salshlib.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\salzlib.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shares.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shellib.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shellsup.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shexreg.c">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shiconov.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\snooper.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sort.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stswnd.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tabwnd.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tasklist.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thumbnl.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\toolbar1.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\toolbar2.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\toolbar3.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\toolbar4.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\toolbar5.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\toolbar6.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\toolbar7.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\toolbar8.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tooltip.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\versinfo.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\viewer.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\viewer2.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\viewer3.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\worker.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zip.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\allochan.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\array.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\handles.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\heap.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\messages.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\moore.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\regexp.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\str.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\strutils.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\trace.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\winlib.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\zlib\adler32.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\zlib\compress.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\zlib\crc32.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\zlib\deflate.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\zlib\inffast.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\zlib\inflate.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\zlib\inftrees.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\zlib\trees.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\zlib\zutil.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\bzip2\blocksort.c">
+      <Filter>bzip2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\bzip2\bzlib.c">
+      <Filter>bzip2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\bzip2\compress.c">
+      <Filter>bzip2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\bzip2\crctable.c">
+      <Filter>bzip2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\bzip2\decompress.c">
+      <Filter>bzip2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\bzip2\huffman.c">
+      <Filter>bzip2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\bzip2\internal_e.cpp">
+      <Filter>bzip2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\bzip2\randtable.c">
+      <Filter>bzip2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\pnglite\pnglite.c">
+      <Filter>pnglite</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\crypt\aescrypt.c">
+      <Filter>crypt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\crypt\aeskey.c">
+      <Filter>crypt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\crypt\aestab.c">
+      <Filter>crypt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\crypt\fileenc.c">
+      <Filter>crypt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\crypt\hmac.c">
+      <Filter>crypt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\crypt\pwd2key.c">
+      <Filter>crypt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\crypt\sha1.c">
+      <Filter>crypt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svg.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\sheets.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\multimon.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\bitmap.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\cache.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\callstk.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\cfgdlg.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\codetbl.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\color.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\consts.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dialogs.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\drivelst.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\editwnd.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\edtlbwnd.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\execute.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\filesbox.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\fileswnd.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\filter.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\find.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\geticon.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gui.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\icncache.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\iconlist.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jumplist.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\logo.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mainwnd.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mapi.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\masks.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\md5.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\menu.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\olespy.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\pack.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\plugins.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\precomp.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\pwdmngr.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\reglib\src\regparse.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\regwork.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\salamand.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\salinflt.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\salmoncl.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\salshlib.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shellib.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shexreg.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shiconov.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\snooper.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sort.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\plugins\shared\spl_arc.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\plugins\shared\spl_base.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\plugins\shared\spl_com.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\plugins\shared\spl_file.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\plugins\shared\spl_fs.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\plugins\shared\spl_gen.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\plugins\shared\spl_gui.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\plugins\shared\spl_menu.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\plugins\shared\spl_thum.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\plugins\shared\spl_vers.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\plugins\shared\spl_view.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stswnd.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tabwnd.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tasklist.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thumbnl.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\toolbar.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tooltip.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\usermenu.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\versinfo.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\viewer.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\worker.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zip.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\allochan.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\array.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\handles.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\messages.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\moore.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\regexp.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\str.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\strutils.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\trace.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\winlib.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\dep\bzip2\bzlib.h">
+      <Filter>bzip2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\dep\bzip2\bzlib_private.h">
+      <Filter>bzip2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\dep\pnglite\pnglite.h">
+      <Filter>pnglite</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\dep\crypt\aes.h">
+      <Filter>crypt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\dep\crypt\aesopt.h">
+      <Filter>crypt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\dep\crypt\fileenc.h">
+      <Filter>crypt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\dep\crypt\hmac.h">
+      <Filter>crypt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\dep\crypt\pwd2key.h">
+      <Filter>crypt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\dep\crypt\sha1.h">
+      <Filter>crypt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\heap.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\svg.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\sheets.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\multimon.h">
+      <Filter>common</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\res\archive.ico">
+      <Filter>rc</Filter>
+    </Image>
+    <Image Include="..\res\bottomtb.bmp">
+      <Filter>rc</Filter>
+    </Image>
+    <Image Include="..\res\directory.ico">
+      <Filter>rc</Filter>
+    </Image>
+    <Image Include="..\res\empty.ico">
+      <Filter>rc</Filter>
+    </Image>
+    <Image Include="..\res\filter.bmp">
+      <Filter>rc</Filter>
+    </Image>
+    <Image Include="..\res\find.ico">
+      <Filter>rc</Filter>
+    </Image>
+    <Image Include="..\res\hdrwnd.bmp">
+      <Filter>rc</Filter>
+    </Image>
+    <Image Include="..\res\lock.png">
+      <Filter>rc</Filter>
+    </Image>
+    <Image Include="..\res\menuchck.bmp">
+      <Filter>rc</Filter>
+    </Image>
+    <Image Include="..\res\menuitms.bmp">
+      <Filter>rc</Filter>
+    </Image>
+    <Image Include="..\res\plugin.ico">
+      <Filter>rc</Filter>
+    </Image>
+    <Image Include="..\res\pluginfs.ico">
+      <Filter>rc</Filter>
+    </Image>
+    <Image Include="..\res\sal_b.ico">
+      <Filter>rc</Filter>
+    </Image>
+    <Image Include="..\res\sal_g.ico">
+      <Filter>rc</Filter>
+    </Image>
+    <Image Include="..\res\sal_r.ico">
+      <Filter>rc</Filter>
+    </Image>
+    <Image Include="..\res\salamand.ico">
+      <Filter>rc</Filter>
+    </Image>
+    <Image Include="..\res\throbber.png">
+      <Filter>rc</Filter>
+    </Image>
+    <Image Include="..\res\toolbar.bmp">
+      <Filter>rc</Filter>
+    </Image>
+    <Image Include="..\res\toolbar2.png">
+      <Filter>rc</Filter>
+    </Image>
+    <Image Include="..\res\updir.ico">
+      <Filter>rc</Filter>
+    </Image>
+    <Image Include="..\res\updown.bmp">
+      <Filter>rc</Filter>
+    </Image>
+    <Image Include="..\res\viewer.ico">
+      <Filter>rc</Filter>
+    </Image>
+    <Image Include="..\res\zoom.bmp">
+      <Filter>rc</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\plugins\shared\clrtable.dat">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\res\copyeff.cur">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\res\hand.cur">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\lang\lang.rh">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\resource.rh2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\salamand.rc2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\salamand.rh">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\res\split.cur">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\plugins\shared\statics.rh2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\lang\texts.rc2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\texts.rh2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\res\toolbar1.cur">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\res\toolbar2.cur">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\res\toolbar3.cur">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\plugins\shared\versinfo.rc2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\versinfo.rh2">
+      <Filter>rc</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\salamand.rc">
+      <Filter>rc</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

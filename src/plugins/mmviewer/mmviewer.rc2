@@ -1,0 +1,48 @@
+﻿//
+// mmviewer.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "versinfo.rh2"
+#include "versinfo.rc2"
+
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_MAIN                ICON    DISCARDABLE     "res\\main.ico"
+IDI_DISKEXPLORER        ICON    DISCARDABLE     "res\\diskexpl.ico"
+
+//
+// Bitmap
+//
+
+IDB_TOOLBAR16           BITMAP  MOVEABLE PURE   "res\\tb16.bmp"
+IDB_TOOLBARMAIN         BITMAP  MOVEABLE PURE   "res\\tb.bmp"
+IDB_TOOLBAR256          BITMAP  MOVEABLE PURE   "res\\tb256.bmp"
+
+//
+// Accelerator
+//
+
+IDA_ACCELERATORS ACCELERATORS MOVEABLE PURE
+BEGIN
+    "A",            CM_COPY,                VIRTKEY, CONTROL, NOINVERT
+    VK_ESCAPE,      CM_EXIT,                VIRTKEY, NOINVERT
+    "O",            CM_FILES_OPEN,          VIRTKEY, CONTROL, NOINVERT
+    "H",            CM_FILES_EXPORT_HTML,   VIRTKEY, CONTROL, NOINVERT
+    //"X",            CM_FILES_EXPORT_XML,   VIRTKEY, CONTROL, NOINVERT
+    VK_F11,         CM_FULLSCREEN,          VIRTKEY, NOINVERT
+    VK_BACK,        CM_FILE_FIRST, SHIFT, VIRTKEY, NOINVERT
+    VK_BACK,        CM_FILE_PREV, VIRTKEY, NOINVERT
+    VK_SPACE,       CM_FILE_NEXT, VIRTKEY, NOINVERT
+    VK_SPACE,       CM_FILE_LAST, SHIFT, VIRTKEY, NOINVERT
+END

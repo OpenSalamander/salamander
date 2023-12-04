@@ -1,0 +1,133 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>SCP Tab (Login Dialog)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Dialog Boxes: Configuring Session</div>
+<div class="page">
+<h1>SCP/Shell Tab (Login Dialog)</h1>
+
+<p>
+<em><acronym title="Secure Copy Protocol">SCP</acronym>/Shell tab</em> allows user to configure
+shell specific options. Mostly it helps WinSCP to modify remote
+environment to match its <a href="requirements.htm#scp_requirements">requirements</a>.
+The options are mainly used when working with
+<a href="protocols.htm#scp">SCP protocol</a>.
+Even if you are using <a href="protocols.htm#sftp">SFTP protocol</a>, some of the options are made available for you,
+in case are using some feature that require <a href="shell_session.htm">separate shell session</a>.
+</p>
+
+<p>
+You need to check <em>Advanced options</em> to reveal the tab.
+</p>
+
+<a name="shell"></a>
+<h4>Shell</h4>
+
+<p>
+Use the <em>Shell</em> option to specify what shell WinSCP will use.
+The <code>bash</code> shell is recommended for working with WinSCP. If your default shell does not
+work with WinSCP, you can specify another shell. Typing the full path (e.g. <code>/bin/bash</code>
+or <code>/usr/local/bin/bash</code>) is recommended.
+You can also make use of the option to alter session startup.
+For example to change the user after login (known as <code>su</code>)
+<a href="#fn1">(see note 1)</a>.
+The command to start shell is interpreted by the <acronym title="Secure Shell">SSH</acronym> server,
+so the syntax can change with the server <a href="#fn2">(see note 2)</a>.
+</p>
+
+<p>
+WinSCP needs to know what environment variable contains exit code of the last command. By default it
+tries to autodetect that. However the autodetection can fail and also slows down login. You may specify
+the variable directly instead in <em>Return code variable</em> box.
+</p>
+
+<a name="directory_listing"></a>
+<h4>Directory listing</h4>
+
+<p>
+Use the <em>Listing command</em> to change shell command,
+WinSCP uses to list directory contents.
+Particularly if your shell does not print group name in directory listing
+by default, use <code>ls -gla</code> to enforce it.
+</p>
+
+<p>
+When the <em>Ignore LS warnings</em> checkbox is ticked, WinSCP will ignore any error messages printed by
+the <code>ls</code> command as long as it produces some regular output too. It also makes WinSCP ignore exit
+code <code>1</code> of the command. The option was added primarily to override <code>pagefile.sys</code>
+access-error produced by <a href="http://sshwindows.sourceforge.net/" target="_blank">OpenSSH for Windows</a>
+whenever root directory was opened. However it may be useful even in other situations.
+</p>
+
+<p>
+The <em>Try to get full timestamp</em> makes WinSCP attempt to use <code>--full-time</code> option for
+<code>ls</code> command. It is particularly useful when you want to use some
+<a href="task_synchronize.htm">synchronization</a> command, for what you need precise timestamps. When
+it is ticked, WinSCP will add the option to the first <code>ls</code> command it issues. When the
+(first) command fails for whatever reason, WinSCP will stop using the option for the whole session.
+However in some cases WinSCP may fail to detect that the command failed. Then you need to disable the
+feature manually.
+</p>
+
+<a name="other_options"></a>
+<h4>Other Options</h4>
+
+<p>
+When <em>Lookup user groups</em> is ticked, WinSCP will use <code>groups</code> command on start-up to list
+groups the user belongs too. It will then offer the list on <a href="ui_properties.htm">Properties dialog</a>
+to allow user select the group instead of typing it.
+</p>
+
+<p>
+During WinSCP start up, you may receive an error indicating a problem with the <code>groups</code>
+command. Untick the <em>Lookup user groups</em> box. More than likely your Linux environment doesn't have
+the <code>groups</code> command available.
+</p>
+
+<p>
+On start-up WinSCP will by default clear all aliases on commands it uses. This is done to avoid unexpected
+behaviour (e.g. alias <code>rm</code> to <code>rm -i</code>). If there are no aliases influencing command
+behaviour, this feature can be disabled by unticking <em>Clear aliases</em>.
+</p>
+
+<p>
+WinSCP also clears set of environment variables know to influence the format of directory listing. These
+are: <code>LANG</code>, <code>LANGUAGE</code>, <code>LC_CTYPE</code>, <code>LC_COLLATE</code>,
+<code>LC_MONETARY</code>, <code>LC_NUMERIC</code>, <code>LC_TIME</code>, <code>LC_MESSAGES</code> and
+<code>LC_ALL</code>. If no such variable is set, untick <em>Clear national variables</em>. This setting
+speeds up the login process.
+</p>
+
+<p>
+WinSCP uses <code>scp</code> command to perform the transfer. On some <acronym title="Secure Shell">SSH</acronym>
+servers, particularly ssh.com, the <code>scp</code> may be a link to <code>scp2</code> command. The
+<code>scp2</code> is in fact <acronym title="SSH File Transfer Protocol">SFTP</acronym> server, that WinSCP
+cannot talk to in <acronym title="Secure Copy Protocol">SCP</acronym> mode. Check <em>Use scp2 with scp1
+compat.</em> to make WinSCP try to force the <code>scp</code> command to use really the
+<acronym title="Secure Copy Protocol">SCP</acronym> protocol (using <code>-1</code> option). Note that
+if the server supports <code>scp2</code>, it probably supports
+<a href="protocols.htm#sftp">SFTP protocol</a> too.
+</p>
+
+<h4>Notes:</h4>
+<p>
+<a name="fn1"></a>
+1) See <a href="https://winscp.net/eng/docs/faq_su" target="_blank">FAQ</a> for details.
+</p>
+<p>
+<a name="fn2"></a>
+2) Typically it is regular shell command interpreted by the default shell of user.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

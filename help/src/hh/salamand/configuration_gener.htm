@@ -1,0 +1,110 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>General configuration</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Dialog Boxes: Configuration</div>
+<div class="page">
+
+<h1>General</h1>
+
+<p>Allows you to change the general behavior of the Open Salamander.</p>
+
+<h4>Dialog Box Options</h4>
+<dl>
+<dt><i>Save configuration on exit</i></dt>
+<dd>When checked, configuration will be saved on Open Salamander exit. 
+Configuration contains settings from Configuration dialog, main window position,
+panel widths and current directories, and other options.</dd>
+
+<dt><i>Clear read-only attribute when copying from CD-ROM</i></dt>
+<dd>Files on CD-ROM have read-only attribute set. This check box allows clear
+this attribute during the copy operation. This is useful for further processing
+of these files.</dd>
+
+<dt><i>Allow only one instance of Salamander at one time</i></dt>
+<dd>When checked, only one instance if Open Salamander can run. If you try
+to start another instance of Open Salamander, the running instance will be
+activated instead.</dd>
+
+<dt><i>Use speaker beep to announce finishing of work in inactive window</i></dt>
+<dd>Allows you to be notified that operation in inactive window is done.</dd>
+
+<dt><i>Close shell window after command execution (in Command line)</i></dt>
+<dd>When checked, command shell will be closed after execution of command in
+the Command line. If you execute the command with Alt+Enter key, this setting
+for the command will be inverted.</dd>
+
+<dt><i>Compare Directories: ignore time differences up to</i></dt>
+<dd>When checked, Compare Directories command will compare files with the specified
+time toleration. Use this option to bypass different time accuracy on various file
+systems. See <a href="appendix_times.htm">File Times</a> for details.</dd>
+
+<dt><i>Compare Directories: ignore time differences of exactly one or two hours</i></dt>
+<dd>When checked, Compare Directories command will ignore time differences of exactly
+one or two hours. Such differences can appear because of DST (Daylight Saving Time) and
+different ways of storing time informations on various file systems. For example NTFS
+uses UTC (after adjusting clocks due to DST all times on NTFS seems to be shifted
+because of adjusted conversion of UTC to local time) and FAT32 uses values in local
+time zone (there are no shifts due to DST because no conversion to local time is
+needed). See <a href="appendix_times.htm">File Times</a> for details.</dd>
+
+<dt><i>Open files through salopen.exe (it bypasses shell extensions errors)</i></dt>
+<dd>When checked, execution of files in the panel will be carried through
+small program salopen.exe. This option can be useful when directories where you
+have opened files could not be possible to delete.</dd>
+
+<dt><i>Select also filename extension in Quick Rename and Pack commands</i></dt>
+<dd>When checked, whole name including extension will be initially selected when entering
+new filename in the Quick Rename or Pack dialog boxes. Otherwise, only name part will be 
+selected. You can use the Ctrl+A keyboard shortcut to select all.
+</dd>
+
+<dt><i>Select also filename extension in Edit New File command</i></dt>
+<dd>When checked, whole name including extension will be initially selected when entering
+new filename in the Edit New File dialog box. Otherwise, only name part will be 
+selected. You can use the Ctrl+A keyboard shortcut to select all.
+</dd>
+
+<dt><i>Use fast directory move on Novell Netware</i></dt>
+<dd>When checked and you are moving directory in scope of one Novell Netware drive,
+Salamander moves this directory just by renaming it directly to the target path
+(it is fast but not always working). Otherwise, Salamander renames only files, all
+necessary directories are created on target path and after moving contained files
+deleted in source directory (it can be much slower but always working). We recommend
+you to try turn on this option and turn it off only when moving of directories in
+scope of one Novell Netware drive fails.
+</dd>
+
+<dt><i>Copy files: use faster asynchronous algorithm on network (Windows 7 and later)</i></dt>
+<dd>When checked and you are copying files to or from network drive, Salamander uses
+asynchronous copy algorithm which is faster then conventional one (111 MB/s on GLAN
+instead of 86 MB/s). This advanced algorithm is available only on Windows 7 and later.
+Otherwise, Salamander copies files using conventional algorithm. This option affects
+also moving of files in case you are not moving in scope of one volume (then it is
+just rename, not copy and delete). Asynchronous copy algorithm is also optimized for
+network drives accessible via VPN (Virtual Private Network). It uses smaller blocks
+(size depends on current copy speed), so progress is smoother and you can cancel operation
+instantly.
+</dd>
+
+<dt><i>Keep environment variables updated to system values</i></dt>
+<dd>When checked, Salamander reads system environment variables on start and when 
+system environment variables are changed. Values of environment variables inherited
+from parent process are overwritten by values from system. Variables which do not
+exist in system remain untouched. Uncheck this option to use inherited environment
+variables in running Salamander and all processes started from it.</dd>
+
+</dl>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

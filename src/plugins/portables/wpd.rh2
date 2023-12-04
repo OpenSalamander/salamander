@@ -1,0 +1,14 @@
+﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __PORTABLES_WPD_RH2
+#define __PORTABLES_WPD_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#define IDC_STATIC_1 1300
+#include "statics.rh2"   // 1300 az 1339 jsou timto zabrane !!!
+
+// Strings
+
+#endif // __PORTABLES_WPD_RH2

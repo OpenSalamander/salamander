@@ -1,0 +1,69 @@
+[OPTIONS]
+Auto Index=Yes
+Compatibility=1.1 or later
+Compiled file=checkver.chm
+Contents file=checkver.hhc
+Default Window=$global_ssdefault
+Default topic=hh\checkver\introduction_intro.htm
+Display compile progress=No
+Full text search stop list file=..\..\shared\help\en\stop.stp
+Full-text search=Yes
+Index file=checkver.hhk
+Language=0x409 English (United States)
+Title=Check Version Help
+
+[WINDOWS]
+$global_ssdefault=,"salamand.chm::\salamand.hhc","checkver.hhk","hh\checkver\introduction_intro.htm","hh\checkver\introduction_intro.htm",,,,"Web Help",0x3520,,0x180e,,,,,,,,0
+
+[FILES]
+hh\salamander_help.css
+hh\salamander_help_shared.css
+
+[ALIAS]
+IDH_CHECKVER=hh\checkver\using_checkfornewver.htm
+IDD_MAIN=hh\checkver\dlgboxes_checkver.htm
+IDD_CONFIGURATION=hh\checkver\dlgboxes_config.htm
+IDD_INTERNET=hh\checkver\dlgboxes_inetsettings.htm
+
+[MAP]
+#include "..\checkver.rh"
+#include "..\checkver.rh2"
+#include "..\lang\lang.rh"
+
+[MERGE FILES]
+salamand.chm
+zip.chm
+demoplug.chm
+demoview.chm
+filecomp.chm
+7zip.chm
+dbviewer.chm
+ftp.chm
+checksum.chm
+ieviewer.chm
+mmviewer.chm
+pak.chm
+peviewer.chm
+pictview.chm
+regedt.chm
+renamer.chm
+splitcbn.chm
+tar.chm
+unarj.chm
+uncab.chm
+undelete.chm
+unfat.chm
+uniso.chm
+unlha.chm
+unmime.chm
+unrar.chm
+wmobile.chm
+winscp.chm
+nethood.chm
+unchm.chm
+automation.chm
+diskmap.chm
+demomenu.chm
+
+[INFOTYPES]
+

@@ -1,0 +1,31 @@
+https://github.com/libtom/libtomcrypt
+
+LibTomCrypt is a fairly comprehensive, modular and portable cryptographic toolkit that provides developers with a vast array 
+of well known published block ciphers, one-way hash functions, chaining modes, pseudo-random number generators, public key 
+cryptography and a plethora of other routines.
+
+http://www.libtom.org
+
+LibTomCrypt is licensed under DUAL licensing terms.
+Choose and use the license of your needs.
+
+[LICENSE #1]
+LibTomCrypt is public domain. As should all quality software be.
+Tom St Denis
+[/LICENSE #1]
+
+[LICENSE #2]
+            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+                    Version 2, December 2004
+
+ Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
+
+ Everyone is permitted to copy and distribute verbatim or modified
+ copies of this license document, and changing it is allowed as long
+ as the name is changed.
+
+            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+
+  0. You just DO WHAT THE FUCK YOU WANT TO.
+[/LICENSE #2]

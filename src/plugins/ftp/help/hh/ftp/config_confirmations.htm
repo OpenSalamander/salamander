@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Confirmations</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: FTP Client: Dialog Boxes: Configuration</div>
+<div class="page">
+<h1>Confirmations</h1>
+
+<p>Specifies whether confirmation messages are displayed.</p>
+
+<h4>Options</h4>
+<dl>
+<dt><i>Show message "You are leaving server. Do you wish to disconnect or to keep connection?"</i></dt>
+<dd>When checked and you are going to leave path to the FTP server in panel (change path
+to another FTP server, plugin file system, disk, or archive), the plugin will ask you if
+you want to disconnect from this FTP server or if you want to keep the connection (it can
+be accessed later from the <a href="ms-its:salamand.chm::/hh/salamand/navigating_chdrvmenu.htm">Change
+Drive menu</a>). Otherwise, connection to the FTP server will be kept without asking.
+</dd>
+
+<dt><i>Show message "Do you want to disconnect?"</i></dt>
+<dd>Clear this check box if you do not want to receive a confirmation message
+before disconnecting from the FTP server. This option applies only to Disconnect
+commands from context menus.
+</dd>
+
+<dt><i>Show message "Connection is closed. Do you want to reconnect?"</i></dt>
+<dd>Clear this check box if you do not want to receive a confirmation message
+before reconnecting to the FTP server when connection is lost. This option applies
+only to connections used in panels.
+</dd>
+
+<dt><i>Show message "Target name is already used. Do you want to overwrite it?" in Quick Rename</i></dt>
+<dd>Clear this check box if you do not want to receive a confirmation message
+before renaming file or directory to existing name in the Quick Rename command.
+</dd>
+
+<dt><i>Show message "Connection to FTP server has been lost"</i></dt>
+<dd>Clear this check box if you do not want to receive a message when the connection
+to the FTP server in panel has been lost. Usually the FTP server closes the connection
+if the FTP client is not active or is not transferring any data for some time, usually
+5 or 10 minutes. See <i>Keep connections alive</i> in
+<a href="config_defaults.htm">Configuration/Defaults</a> for details on how to prevent
+this.
+</dd>
+
+<dt><i>Show message "If you always want to list hidden files and directories on this FTP server, ..."</i></dt>
+<dd>Clear this check box if you do not want to receive a hint when changing the
+list command using the <a href="using_listhiddenonunix.htm">List Hidden Files and
+Directories (Unix)</a> command. The hint informs how to change the list command
+persistently (directly in the FTP server bookmark).
+</dd>
+
+</dl>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

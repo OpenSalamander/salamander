@@ -1,0 +1,113 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Group Policy Restrictions</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Appendix</div>
+<div class="page">
+
+<h1>Group Policy Restrictions</h1>
+
+<p>Open Salamander uses some Group Policy settings for Windows Explorer and for the 
+Windows interface.</p>
+
+<table>
+
+<tr>
+<th>Restriction</th><th>Description</th>
+</tr>
+
+<tr>
+ <td>NoRun</td>
+ <td>HKCU\Software\Microsoft\Windows\CurrentVersion\&shy;Policies\Explorer\NoRun<br />
+     Data type: REG_DWORD, Range: 0 | 1, Default value: 0
+     <br/><br />
+     The <a href="environment_swtcmd.htm">Command Line</a> will be disabled.
+     <br /><br />
+     When the value of this entry is 1, the Command Line is disabled; when the 
+     value is 0, Command Line operate normally.
+ </td>
+</tr>
+<tr>
+ <td>NoDrives</td>
+ <td>HKCU\Software\Microsoft\Windows\CurrentVersion\&shy;Policies\Explorer\NoDrives<br />
+     Data type: REG_DWORD, Range: 0x0-0x3FFFFFF, Default value: 0x0
+     <br /><br />
+     Removes the icons representing selected drives from <a href="navigating_chdrvmenu.htm">Change Drive Menu</a>. 
+     <br /><br />
+     The value of this entry consists of 32 bits. The lower 26 bits each represent 
+     a drive, with the lowest (right-most) bit representing drive A, and the 26th bit from the 
+     right representing drive Z. To hide a drive, set the bit that corresponds to its drive letter 
+     to 1. To display a drive, set the bit that corresponds to its drive letter to 0. To hide all 
+     26 drives, set all bits to 1, which corresponds to a value of 0x3FFFFFF.
+ </td>
+</tr>
+<tr>
+ <td>NoFind<br />
+     NoShellSearchButton
+ </td>
+ <td>HKCU\Software\Microsoft\Windows\CurrentVersion\&shy;Policies\Explorer\NoFind<br />
+     HKCU\Software\Microsoft\Windows\CurrentVersion\&shy;Policies\Explorer\NoShellSearchButton<br />
+     Data type: REG_DWORD, Range: 0 | 1, Default value: 0
+     <br /><br />
+     The <a href="basicwork_find.htm">Find Files and Directories</a> command will be disabled.
+     <br /><br />
+     When the value of this entry is 1, the Find Files and Directories command is disabled; when the 
+     value is 0, the Find Files and Directories command operate normally.
+ </td>
+</tr>
+<tr>
+ <td>NoNetHood</td>
+ <td>HKCU\Software\Microsoft\Windows\CurrentVersion\&shy;Policies\Explorer\NoNetHood<br />
+     Data type: REG_DWORD, Range: 0 | 1, Default value: 0
+     <br /><br />
+     The <a href="navigating_chdrvmenu.htm">Network</a> command will be disabled.
+     <br /><br />
+     When the value of this entry is 1, the Network command is disabled; when the 
+     value is 0, the Network command operates normally.
+ </td>
+</tr>
+<tr>
+ <td>NoNetConnectDisconnect</td>
+ <td>HKCU\Software\Microsoft\Windows\CurrentVersion\&shy;Policies\Explorer\NoNetConnectDisconnect<br />
+     Data type: REG_DWORD, Range: 0 | 1, Default value: 0
+     <br /><br />
+     The <a href="disk_net.htm">Connect (Disconnect) Network Drive</a> command will be disabled.
+     <br /><br />
+     When the value of this entry is 1, the Connect (Disconnect) Network Drive command is disabled; when the 
+     value is 0, the command operate normally.
+  </td>
+</tr>
+<tr>
+ <td>RestrictRun<br />
+     DisallowRun
+ </td>
+ <td>HKCU\Software\Microsoft\Windows\CurrentVersion\&shy;Policies\Explorer\RestrictRun<br />
+     HKCU\Software\Microsoft\Windows\CurrentVersion\&shy;Policies\Explorer\DisallowRun<br />
+     Data type: REG_DWORD, Range: 0 | 1, Default value: 0
+     <br /><br />
+     Prevents Open Salamander from starting the programs represented by entries in the RestrictRun 
+     (DisallowRun) subkey. Following features are affected by this restriction: 
+     <a href="othertask_cmdline.htm">Command Line</a>, 
+     <a href="configuration_vwers.htm">External Viewers</a>,
+     <a href="configuration_edtrs.htm">Editors</a>, and
+     <a href="othertask_shell.htm">Command Shell</a>
+     <br /><br />
+     When the value of this entry is 1, users cannot run programs represented by entries in the RestrictRun (DisallowRun) subkey;
+     when the value is 0, users can run all programs.
+  </td>
+</tr>
+
+</table>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

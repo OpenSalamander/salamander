@@ -1,0 +1,88 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\czech\unarj.atp"
+TEXTVERSION,"1.21 (x86)"
+VERSION,"1,2,1,180"
+
+[TRANSLATION]
+LANGID,1029
+AUTHOR,"Hynek Mikulič"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7008"
+COMMENT,"Česká verze"
+
+[DIALOG 100]
+194,110,1,"Další svazek archivu"
+300,12,9,170,32,1,"Prosím vložte disketu s dalším svazkem archivu nebo najděte příslušný soubor na disku.\n\nKlikněte na OK, pokud je připraven."
+301,12,48,60,8,1,"Předchozí svazek:"
+103,73,48,109,12,1,""
+302,12,62,49,8,1,"&Další svazek:"
+101,12,72,155,12,1,""
+102,170,72,13,12,1,"..."
+1,39,91,50,14,1,"OK"
+2,102,91,50,14,1,"Storno"
+
+[DIALOG 103]
+350,85,1,"Chyba"
+300,4,10,26,8,1,"Název:"
+104,34,10,309,8,1,""
+301,4,23,26,8,1,"Chyba:"
+302,34,23,309,16,1,"Soubor nemůže být extrahován, protože je pokračující z předchozího svazku. Pro extrahování tohoto souboru musíte začít svazkem, v kterém soubor začíná."
+105,34,44,183,12,1,"&Příště nezobrazovat."
+1,120,63,50,14,1,"OK"
+2,180,63,50,14,1,"Storno"
+
+[DIALOG 106]
+225,85,1,"UnARJ - Konfigurace"
+300,23,22,154,8,1,"z předchozího svazku."
+107,12,10,203,12,1,"&Při extrahování automaticky přeskočit soubory pokračující"
+301,23,44,111,8,1,"obsah archivu."
+116,12,32,205,12,1,"&Nezobrazovat upozornění, pokud nemůže být vypsán celý"
+302,6,60,213,1,1,""
+1,60,66,50,14,1,"OK"
+2,115,66,50,14,1,"Storno"
+
+[DIALOG 115]
+213,107,1,"UnARJ - Upozornění"
+300,11,10,194,24,1,"Ne všechny soubory ve více-svazkovém archivu můžou být vypsány (a zobrazeny v panelu), protože nelze nalézt některý svazek archivu."
+301,11,41,192,16,1,"Pro výpis celého obsahu archivu zkopírujte všechny svazky archivu do stejného adresáře."
+105,11,66,157,12,1,"&Příště nezobrazovat"
+302,5,83,203,1,1,""
+1,153,89,50,14,1,"OK"
+
+[STRINGTABLE 0]
+1000,1,"UnARJ"
+1001,1,"Nedostatek paměti."
+1002,1,"Neočekávaný konec archivu."
+1005,1,"Archiv je poškozen."
+1006,1,"Soubor má neznámý formát nebo není platným ARJ archivem."
+1007,1,"Nelze otevřít archiv."
+
+[STRINGTABLE 1]
+1008,1,"Vyskytla se neznámá chyba."
+1010,1,"Nelze zpřístupnit archiv."
+1011,1,"Soubory ARJ archivu (*.A*)"
+1012,1,"Výběr komprimovaného souboru"
+1013,1,"Chyba v komprimovaných datech. CRC nesouhlasí."
+1014,1,"Nelze přidat záznam archivu do výpisu souborů."
+1015,1,"Extrahování ARJ archivu - %s"
+1016,1,"připravuji data a vytvářím adresáře..."
+1017,1,"extrahuji..."
+1018,1,"extrahuji: "
+1019,1,"Nelze získat ukazatel souboru: "
+1020,1,"Nelze zapsat do souboru:"
+1021,1,"Nelze nastavit ukazatel souboru: "
+1022,1,"Nelze dokončit operaci, kvůli příliš dlouhému názvu cesty."
+1023,1,"Nelze dokončit operaci, kvůli příliš dlouhé masce."
+
+[STRINGTABLE 2]
+1024,1,"Neznámá verze komprimovaného souboru."
+1025,1,"Neznámý typ komprimovaného souboru."
+1026,1,"Soubor je komprimovaný metodou, která není podporovaná UnARJ pluginem."
+1027,1,"Promiňte, šifrované soubory nejsou podporovány."
+1028,1,"Neplatný svazek nebo neznámá struktura archivu."
+1029,1,"Promiňte, plugin vypršel. Prosím prohlédněte naší web stránku pro novější verzi."
+1030,1,"Soubor nenalezen."
+1031,1,"Chyba"
+1032,1,"Všechny soubory (*.*)"
+1033,1,"Prohlíží a extrahuje ARJ archivy."
+1034,1,"O pluginu"
+

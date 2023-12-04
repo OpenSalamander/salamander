@@ -1,0 +1,265 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Selecting Files and Directories</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Basic Working with Files and Directories</div>
+<div class="page">
+<h1>Selecting Files and Directories</h1>
+
+<p>Almost all file and directory operations (e.g. copying, moving, and deleting)
+work with chosen subset of files and directories from active (source) panel. We
+talk about this subset as about <i>selected files and directories</i>.
+</p>
+
+<p>The list of files and directories in the working area of panel can contain three
+types of items - focused item, selected items, and normal items (see
+<a href="windows_wrkarea.htm">Working Area of Panel</a> for details). When we talk
+about <i>selected files and directories</i>, we mean:</p>
+<ul>
+<li>all selected items (if any) in the list,</li>
+<li>or the focused item, if there are no selected items.</li>
+</ul>
+
+
+<p>We will present here only ways of selecting items in the list (ways of focusing
+item are described in <a href="environment_focus.htm">Focusing Item</a>).
+</p>
+
+
+
+<h3>Selecting Files and Directories Using the Keyboard</h3>
+
+<table>
+
+<tr>
+<th>Function</th>
+<th>Shortcuts</th>
+<th>Note</th>
+</tr>
+
+<tr>
+<td>Select or unselect focused item</td>
+<td>Insert or Space</td>
+<td>Changes selection of focused item (from unselected to selected and vice versa).
+The Space key also calculates directory size if it is used to select directory.</td>
+</tr>
+
+<tr>
+<td>Select all</td>
+<td>Edit/Select All (Ctrl+A or Ctrl+Num Plus)</td>
+<td></td>
+</tr>
+
+<tr>
+<td>Unselect all</td>
+<td>Edit/Unselect All (Ctrl+D or Ctrl+Num Minus)</td>
+<td></td>
+</tr>
+
+<tr>
+<td>Select using masks</td>
+<td>Edit/Select (Num Plus or Ctrl+=)</td>
+<td>Uses <a href="dlgboxes_sel.htm">Select dialog box</a>. 
+Works with files and optionally also with directories, see check box <i>Include
+directories to select/unselect operations</i> in
+<a href="configuration_panels.htm">Configuration/Panels</a>.
+For details on masks see <a href="appendix_filemasks.htm">File Masks</a>.</td>
+</tr>
+
+<tr>
+<td>Unselect using masks</td>
+<td>Edit/Unselect (Num Minus or Ctrl+-)</td>
+<td>Uses <a href="dlgboxes_unsel.htm">Unselect dialog box</a>.
+Works with files and optionally also with directories, see check box <i>Include
+directories to select/unselect operations</i> in
+<a href="configuration_panels.htm">Configuration/Panels</a>.
+For details on masks see <a href="appendix_filemasks.htm">File Masks</a>.</td>
+</tr>
+
+<tr>
+<td>Invert selection</td>
+<td>Edit/Invert Selection (Num Multiply) or Ctrl+Num Multiply</td>
+<td>The Ctrl+Num Multiply key works with files and directories.
+The Num Multiply key works with files and optionally also with directories, see
+check box <i>Include directories to select/unselect operations</i> in
+<a href="configuration_panels.htm">Configuration/Panels</a>.</td>
+</tr>
+
+<tr>
+<td>Restore Selection</td>
+<td>Edit/Restore Selection (Ctrl+W)</td>
+<td>Restores selection used for previous operation (selection is usually canceled
+when operation starts). It allows you to easily use another operation for the same
+files and directories.</td>
+</tr>
+
+<tr>
+<td>Incremental selecting and unselecting</td>
+<td>Shift+Arrows, Shift+Home, Shift+End, Shift+PageUp, Shift+PageDown</td>
+<td>Selects or unselects items as you change (move) focused item - it works with all items
+between original and new focused items. It selects items if the original focused item is
+unselected and unselects items otherwise. To understand what the keys do, forget their
+Shift modifier and see <a href="environment_focus.htm">Focusing Item</a>.</td>
+</tr>
+
+<tr>
+<td>Select all with the same extension</td>
+<td>Edit/Advanced/Select Same Extensions (Shift+Num Plus)</td>
+<td>Name parts can differ.</td>
+</tr>
+
+<tr>
+<td>Unselect all with the same extension</td>
+<td>Edit/Advanced/Unselect Same Extensions (Shift+Num Minus)</td>
+<td>Name parts can differ.</td>
+</tr>
+
+<tr>
+<td>Select all with the same name part</td>
+<td>Edit/Advanced/Select Same Names (Ctrl+Shift+Num Plus)</td>
+<td>Extensions can differ.</td>
+</tr>
+
+<tr>
+<td>Unselect all with the same name part</td>
+<td>Edit/Advanced/Unselect Same Names (Ctrl+Shift+Num Minus)</td>
+<td>Extensions can differ.</td>
+</tr>
+
+</table>
+
+
+
+<h3>Selecting Files and Directories Using a Mouse</h3>
+<p>There are two modes of using mouse in Open Salamander - classic and single-click modes,
+see check box <i>Single-click to open an item</i> in
+<a href="configuration_appea.htm">Configuration/Appearance</a>. We present three
+tables with functions - for both modes, for classic mode, and for single-click mode.
+</p>
+
+
+
+<p>
+Functions available in both modes of using mouse:
+</p>
+<table>
+
+<tr>
+<th>Function</th>
+<th>Shortcuts</th>
+<th>Note</th>
+</tr>
+
+<tr>
+<td>Select or unselect items in the box</td>
+<td>Drag or Right Drag optionally with Shift or Ctrl modifier keys</td>
+<td>Selects or unselects items as you drag the box over them. To start
+this action, you must press (and hold) left or right (no difference) mouse button
+behind items in the <a href="windows_wrkarea.htm">working area of panel</a>. It
+defines the first corner of the box (the opposite one is dragged by mouse pointer).
+If you start dragging without any modifier key, the current selection will be
+canceled. If you press (and hold) the Shift or Ctrl modifier key, the current
+selection will be kept. With the Shift modifier key all items in the box will
+be selected. With the Ctrl modifier key all selected items in the box will be
+unselected and vice versa.</td>
+</tr>
+
+<tr>
+<td>Incremental selecting and unselecting</td>
+<td>Ctrl+Right Drag or Right Drag</td>
+<td>Selects or unselects items as you drag mouse pointer over them. To start this
+action, you must press (and hold) right mouse button (and the Ctrl modifier key) on item.
+It selects items if this item is unselected and unselects items otherwise.
+Use the Ctrl modifier key if you have selected check box <i>Right-click to open shortcut
+menu </i> in <a href="configuration_panels.htm">Configuration/Panels</a>.
+If you place mouse pointer behind the border of working area of panel, the list of items
+in panel will scroll and so allow you to select/unselect also items which are
+currently not visible.</td>
+</tr>
+
+</table>
+
+
+
+<p>
+Functions available in classic mode of using mouse:
+</p>
+<table>
+
+<tr>
+<th>Function</th>
+<th>Shortcuts</th>
+<th>Note</th>
+</tr>
+
+<tr>
+<td>Select or unselect clicked item</td>
+<td>Ctrl+Click</td>
+<td>Changes selection of clicked item (from unselected to selected and vice versa).</td>
+</tr>
+
+<tr>
+<td>Select or unselect interval of items</td>
+<td>Shift+Click</td>
+<td>Selects or unselects items when you click item which is not focused - it works
+with all items between original and new focused items. It selects items if the
+original focused item is unselected and unselects items otherwise.</td>
+</tr>
+
+</table>
+
+
+
+<p>
+Functions available in single-click mode of using mouse:
+</p>
+<table>
+
+<tr>
+<th>Function</th>
+<th>Shortcuts</th>
+<th>Note</th>
+</tr>
+
+<tr>
+<td>Select or unselect item</td>
+<td>Ctrl+rest pointer on item</td>
+<td>Changes selection of item on which you rest mouse pointer (from unselected to
+selected and vice versa). It works only on item that is not under mouse pointer
+(selecting/unselecting must be preceded by moving mouse pointer to the item).</td>
+</tr>
+
+<tr>
+<td>Select or unselect interval of items</td>
+<td>Shift+rest pointer on item</td>
+<td>Selects or unselects items when you rest mouse pointer on item which is not
+focused - it works with all items between original and new focused items. It
+selects items if the original focused item is unselected and unselects items
+otherwise.</td>
+</tr>
+
+</table>
+
+
+
+<h4>See Also</h4>
+<p>
+<a href="windows_wrkarea.htm">Working Area of Panel</a><br />
+<a href="environment_focus.htm">Focusing Item</a><br />
+<a href="appendix_filemasks.htm">File Masks</a><br />
+<a href="dlgboxes_sel.htm">Select dialog box</a><br />
+<a href="dlgboxes_unsel.htm">Unselect dialog box</a><br />
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

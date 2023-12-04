@@ -1,0 +1,5 @@
+LIBRARY TAR.SPL
+VERSION 1.0
+
+EXPORTS SalamanderPluginEntry
+EXPORTS SalamanderPluginGetReqVer

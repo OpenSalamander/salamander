@@ -1,0 +1,75 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\romanian\automation.atp"
+TEXTVERSION,"1.7 (x86)"
+VERSION,"1,7,0,180"
+
+[TRANSLATION]
+LANGID,1048
+AUTHOR,"Ioan Stefancu, Donca Radu"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6165"
+COMMENT,"Versiunea romana"
+
+[DIALOG 100]
+205,64,1,"Dialog"
+1150,8,8,189,8,1,"Prompt:"
+101,8,18,189,12,1,""
+1,48,42,50,14,1,"OK"
+2,107,42,50,14,1,"Anulez"
+
+[DIALOG 101]
+332,143,1,"Configurare Automata"
+375,8,9,78,8,1,"Directoarele de &Script:"
+371,8,19,316,73,1,""
+1001,8,102,105,10,1,"Activeaza script &debugging"
+1,75,121,50,14,1,"OK"
+2,141,121,50,14,1,"Anulez"
+9,207,121,50,14,1,"&Help"
+
+[MENU 106]
+0,1,"[POPUP]"
+40013,1,"Rasfoieste…"
+40014,1,"Directorul Salamander"
+40015,1,"Variabila de Mediu"
+
+[STRINGTABLE 0]
+1,1,"Automat"
+2,1,"Face in mod automat tasks folosind scripturi."
+3,1,"Despre Plugin"
+
+[STRINGTABLE 1]
+128,1,"Eroare de Script Automat"
+129,1,"Linie:\t%u\r\n"
+130,1,"Coloana:\t%u\r\n"
+131,1,"Eroare:\t%s"
+132,1,"Ruleaza Script Focused"
+134,1,"Progresul Operatiunei"
+135,1,"Sursa:\t%s\r\n"
+136,1,"Deschide Meniul Scriptului"
+137,1,"(fara script)"
+138,1,"Eroare in a executa script '%s'.\r\n%s"
+139,1,"Eroare necunoscuta."
+140,1,"1\t&Renunta"
+141,1,"1\t&Debug\t2\t&Renunta"
+142,1,"Directorul scripturi"
+143,1,"Selectati directorul care detine scripturile."
+
+[STRINGTABLE 2]
+144,1,"Anuleaza script"
+145,1,"Anuleaza script care ruleaza\tCtrl+Break"
+146,1,"Fereastra Open Salamander este blocata de plugin Automation. Va rugam terminati de rulat scriptul."
+147,1,"Esuare in initializarea motorului de script."
+
+[STRINGTABLE 3]
+256,1,"Arhiva invalida."
+257,1,"Calea curenta nu poate fi inchisa."
+258,1,"Calea a fost trunchiata."
+259,1,"Nu pot schimba proprietatea sau a activa metoda '%s' in timp ce fereastra e afisata."
+260,1,"Nu pot schimba proprietatea sau a activa metoda '%s' in timp ce fereastra e ascunsa."
+261,1,"Nu am reusit sa incarc plugin."
+262,1,"Eroare de plugin."
+263,1,"Eroare in a muta fisierul in cache-ul disk-ului."
+264,1,"Eroare de sintaxa in masca fisierului."
+265,1,"Numai componentele pot fi adaugate container-ului."
+266,1,"Formele nu pot fi adaugate container-ului."
+267,1,"Executarea scriptului a fost anulata de utilizator."
+

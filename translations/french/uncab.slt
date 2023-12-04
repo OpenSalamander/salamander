@@ -1,0 +1,95 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\french\uncab.atp"
+TEXTVERSION,"1.27 (x86)"
+VERSION,"1,2,7,180"
+
+[TRANSLATION]
+LANGID,1036
+AUTHOR,"Gérard Gréco, Arnaud Dupin de Beyssat, Jérémy Marc, Maxime Abbey"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6162"
+COMMENT,"Version française"
+
+[DIALOG 100]
+243,122,1,"Volume suivant de l'archive Cabinet"
+112,12,9,220,32,1,""
+300,12,48,62,8,1,"Libellé du disque:"
+110,76,48,156,8,1,""
+301,12,59,62,8,1,"Nom du CAB:"
+111,76,59,156,8,1,""
+302,12,70,30,8,1,"&Chemin:"
+101,12,80,204,12,1,""
+102,219,80,13,12,1,"..."
+1,128,103,50,14,1,"OK"
+2,182,103,50,14,1,"Annuler"
+303,6,97,231,1,1,""
+
+[DIALOG 103]
+352,85,1,"Erreur"
+300,6,10,26,8,1,"Nom:"
+104,36,10,309,8,1,""
+301,6,23,26,8,1,"Erreur:"
+302,36,23,309,16,1,"Ce fichier ne peut pas être extrait, car il est partiellement contenu au sein d'un volume précédent. Pour extraire ce fichier, commencez par le volume contenant sa première partie."
+105,36,44,183,12,1,"&Ne plus afficher ce message à l'avenir."
+108,83,63,55,14,1,"&Ignorer"
+109,148,63,55,14,1,"&Tout Ignorer"
+2,213,63,55,14,1,"Annuler"
+
+[DIALOG 106]
+286,85,1,"Configuration de UnCAB"
+300,23,22,154,8,1,"la décompression."
+107,12,10,263,12,1,"&Ignorer automatiquement les fichiers issus d'un volume précédent lors de"
+301,23,44,111,8,1,"ne peut être listé."
+116,12,32,263,12,1,"&Ne pas afficher d'avertissement lorsque l'ensemble du contenu de l'archive"
+302,6,60,274,1,1,""
+1,90,66,50,14,1,"OK"
+2,145,66,50,14,1,"Annuler"
+
+[DIALOG 115]
+213,116,1,"UnCAB - Avertissement"
+300,11,9,193,24,1,"Impossible de lister (et afficher) l'ensemble des fichiers contenus dans cette archive multi-volumes, car certains volumes n'ont pas été trouvés."
+301,11,40,193,24,1,"Pour lister l'intégralité des fichiers contenus dans l'archive, copiez l'ensemble de ses volumes dans le même dossier, et ouvrez le PREMIER volume de l'archive."
+105,11,73,157,12,1,"&Ne plus afficher ce message à l'avenir"
+302,5,91,202,1,1,""
+1,154,98,50,14,1,"OK"
+
+[STRINGTABLE 0]
+1000,1,"UnCAB"
+1001,1,"Mémoire insuffisante."
+
+[STRINGTABLE 1]
+1008,1,"Une erreur inconnue s'est produite."
+1012,1,"Sélectionnez le Dossier"
+1014,1,"Impossible d'ajouter une entrée parmi la liste des fichiers de l'archive."
+1015,1,"Décompression de l'archive CAB - %s"
+1016,1,"préparation des données et création des dossiers..."
+1017,1,"décompression..."
+1018,1,"décompression de: "
+1019,1,"Impossible d'obtenir un pointeur sur le fichier: "
+1020,1,"Impossible d'écrire dans le fichier:"
+1021,1,"Impossible de positionner un pointeur sur le fichier: "
+1022,1,"L'opération ne peut pas être achevée en raison d'un nom de chemin trop long."
+1023,1,"L'opération ne peut pas être achevée en raison d'un masque trop long."
+
+[STRINGTABLE 2]
+1025,1,"Nous sommes désolés, votre version du module a expiré. Veuillez consulter notre site Web pour obtenir une mise à jour."
+1026,1,"Impossible de créer ou d'ouvrir le fichier."
+1027,1,"Impossible de lire le fichier."
+1028,1,"Fichier Cabinet non trouvé."
+1029,1,"Le format du fichier Cabinet est incorrect."
+1030,1,"La version du fichier Cabinet n'est pas prise en charge."
+1031,1,"Le fichier Cabinet est corrompu."
+1032,1,"Un type de compression non pris en charge a été détecté dans un dossier Cabinet."
+1033,1,"Une erreur est survenue lors de la décompression de données issues d'un fichier Cabinet."
+1034,1,"Les composants Cabinet de l'un des ensembles ne présentent pas la même taille de RESERVE."
+1035,1,"Interruption de l'utilisateur."
+1036,1,"Sélectionnez un dossier contenant '%s'."
+1037,1,"Fichier Cabinet incorrect."
+1038,1,"Fichier non trouvé."
+1039,1,"saut du fichier"
+
+[STRINGTABLE 3]
+1040,1,"Veuillez insérer un disque contenant le volume n°%d du fichier Cabinet, ou indiquez le chemin du fichier Cabinet approprié sur le disque.\n\nAppuyez sur OK lorsque vous êtes prêt(e)."
+1041,1,"Erreur"
+1042,1,"Parcourir et extraire le contenu d'archives CAB."
+1043,1,"A propos du module"
+

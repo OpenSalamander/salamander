@@ -1,0 +1,1950 @@
+﻿#include "..\texts.rh2"
+
+STRINGTABLE
+{
+ // main menu
+ IDS_MENU_LEFT,              "&Left"
+ IDS_MENU_LEFT_CHANGEDRIVE,  "&Change Drive\tAlt+F1"
+ IDS_MENU_LEFT_GO,           "&Go To"
+ IDS_MENU_LEFT_GO_BACK,      "&Back\tAlt+Left Arrow"
+ IDS_MENU_LEFT_GO_FORWARD,   "&Forward\tAlt+Right Arrow"
+ IDS_MENU_LEFT_GO_UPDIR,     "&Parent Directory\tBackspace"
+ IDS_MENU_LEFT_GO_ROOT,      "&Root Directory\tShift+Backspace"
+ IDS_MENU_LEFT_GO_OTHER,     "Path from &Other Panel\tCtrl+."
+ IDS_MENU_LEFT_FILTER,       "&Filter...\tCtrl+F12"
+ IDS_MENU_LEFT_VIEW,         "Choos&e Columns..."
+ IDS_MENU_LEFT_SORTBY,       "&Sort By"
+ IDS_MENU_LEFT_VSB,          "Sh&ow"
+ IDS_MENU_LEFT_VSB_DIRLINE,  "&Directory Line"
+ IDS_MENU_LEFT_VSB_HDRLINE,  "&Header Line"
+ IDS_MENU_LEFT_VSB_INFOLINE, "&Information Line"
+ IDS_MENU_LEFT_REFRESH,      "&Refresh\tCtrl+F9"
+ IDS_MENU_LEFT_ZOOM,         "&Maximize/Restore\tCtrl+F11"
+ IDS_MENU_LEFT_SWAPPANELS,   "S&wap\tCtrl+U"
+ IDS_MENU_LEFT_SORTOPTIONS,  "Sort &Options..."
+
+ IDS_MENU_FILES,             "&Files"
+ IDS_MENU_FILES_RENAME,      "&Quick Rename...\tF2"
+ IDS_MENU_FILES_VIEW,        "&View\tF3"
+ IDS_MENU_FILES_ALTVIEW,     "A&lternate View\tAlt+F3"
+ IDS_MENU_FILES_VIEWWITH,    "View Wit&h\tCtrl+Shift+F3"
+ IDS_MENU_FILES_EDIT,        "&Edit\tF4"
+ IDS_MENU_FILES_EDITNEW,     "Edit &New File...\tShift+F4"
+ IDS_MENU_FILES_EDITWITH,    "Edit With\tCtrl+Shift+F4"
+ IDS_MENU_FILES_COPY,        "&Copy...\tF5"
+ IDS_MENU_FILES_MOVE,        "&Move/Rename...\tF6"
+ IDS_MENU_FILES_EMAIL,       "Ema&il...\tCtrl+E"
+ IDS_MENU_FILES_DELETE,      "&Delete\tF8"
+ IDS_MENU_FILES_PROPERTIES,  "P&roperties\tAlt+Enter"
+ IDS_MENU_FILES_SECURITY,    "&Security\tCtrl+P"
+
+ IDS_MENU_FILES_CHANGEATTR,  "Change &Attributes...\tCtrl+F2"
+ IDS_MENU_FILES_CHANGECASE,  "Chan&ge Case...\tCtrl+F7"
+ IDS_MENU_FILES_CONVERT,     "Conver&t...\tCtrl+K"
+ IDS_MENU_FILES_COMPRESS,    "NTFS &Compress..."
+ IDS_MENU_FILES_UNCOMPRESS,  "NTFS &Uncompress..."
+ IDS_MENU_FILES_PACK,        "&Pack...\tAlt+F5"
+ IDS_MENU_FILES_UNPACK,      "Unpac&k...\tAlt+F9"
+ IDS_MENU_FILES_NEW,         "Ne&w"
+ IDS_MENU_FILES_EXIT,        "E&xit\tAlt+F4"
+ IDS_MENU_FILES_ENCRYPT,     "NTFS &Encrypt..."
+ IDS_MENU_FILES_DECRYPT,     "NTFS &Decrypt..."
+ IDS_MENU_FILES_NTFS,        "NT&FS Commands"
+
+ IDS_MENU_EDIT,              "&Edit"
+ IDS_MENU_EDIT_CUT,          "Cu&t\tCtrl+X"
+ IDS_MENU_EDIT_COPY,         "&Copy\tCtrl+C"
+ IDS_MENU_EDIT_COPYFULLNAME, "C&opy Path + Name as Text\tAlt+Insert"
+ IDS_MENU_EDIT_COPYNAME,     "Copy Name as Te&xt\tAlt+Shift+Insert"
+ IDS_MENU_EDIT_COPYFULLPATH, "Copy Pat&h as Text\tCtrl+Alt+Insert"
+ IDS_MENU_EDIT_COPYUNCNAME,  "Copy U&NC Path + Name as Text\tCtrl+Shift+Insert"
+ IDS_MENU_EDIT_PASTE,        "&Paste\tCtrl+V"
+ IDS_MENU_EDIT_PASTELINKS,   "Paste &Shortcut\tCtrl+S"
+ IDS_MENU_EDIT_SELECT,       "S&elect...\tNum +"
+ IDS_MENU_EDIT_UNSELECT,     "&Unselect...\tNum -"
+ IDS_MENU_EDIT_INVERTSEL,    "&Invert Selection\tNum *"
+ IDS_MENU_EDIT_SELECTALL,    "Select &All\tCtrl+A"
+ IDS_MENU_EDIT_UNSELECTALL,  "Unse&lect All\tCtrl+D"
+ IDS_MENU_EDIT_RESELECT,     "&Restore Selection\tCtrl+W"
+ IDS_MENU_EDIT_ADVANCED,     "A&dvanced"
+ IDS_MENU_EDIT_BY_SELEXT,    "&Select Same Extensions\tShift+Num +"
+ IDS_MENU_EDIT_BY_UNSELEXT,  "&Unselect Same Extensions\tShift+Num -"
+ IDS_MENU_EDIT_BY_SELNAME,   "S&elect Same Names\tCtrl+Shift+Num +"
+ IDS_MENU_EDIT_BY_UNSELNAME, "U&nselect Same Names\tCtrl+Shift+Num -"
+ IDS_MENU_EDIT_STORESEL,     "S&ave Selection\tCtrl+Shift+F5"
+ IDS_MENU_EDIT_RESTORESEL,   "L&oad Selection...\tCtrl+Shift+F6"
+ IDS_MENU_EDIT_PREVSEL,      "Go to Pre&vious Selected Name\tAlt+Up"
+ IDS_MENU_EDIT_NEXTSEL       "Go to Ne&xt Selected Name\tAlt+Down"
+ IDS_MENU_EDIT_HIDE_SEL      "&Hide Selected Names"
+ IDS_MENU_EDIT_HIDE_UNSEL    "H&ide Unselected Names"
+ IDS_MENU_EDIT_SHOW_ALL      "Sho&w Hidden Names"
+
+ IDS_MENU_CMD,               "&Commands"
+ IDS_MENU_CMD_CREATEDIR,     "&Create Directory...\tF7"
+ IDS_MENU_CMD_CHANGEDIR,     "C&hange Directory...\tShift+F7"
+ IDS_MENU_CMD_COMPAREDIR,    "C&ompare Directories...\tCtrl+F10"
+ IDS_MENU_CMD_OCCUPIED,      "Ca&lculate Occupied Space\tAlt+F10"
+ IDS_MENU_CMD_CALCDIRSIZES,  "Calculate D&irectory Sizes\tCtrl+Shift+F10"
+ IDS_MENU_CMD_MEMDIRSIZES,   "Remember Directory Sizes\tCtrl+Alt+F10"
+ IDS_MENU_CMD_DRIVEINFO,     "Dri&ve Information...\tCtrl+F1"
+ IDS_MENU_CMD_FINDFILE,      "&Find Files and Directories...\tAlt+F7"
+ IDS_MENU_CMD_FILELIST,      "M&ake File List...\tCtrl+M"
+ IDS_MENU_CMD_FILEHISTORY,   "Li&st of Opened Files\tAlt+F11"
+ IDS_MENU_CMD_DIRHISTORY,    "List of &Working Directories\tAlt+F12"
+ IDS_MENU_CMD_CONNECTNET,    "Connect &Network Drive...\tF11"
+ IDS_MENU_CMD_DISCONNECTNET, "&Disconnect...\tF12"
+ IDS_MENU_CMD_SHARES,        "Shared Direc&tories...\tCtrl+Shift+F9"
+ IDS_MENU_CMD_SHELL,         "Co&mmand Shell\tNum /"
+ IDS_MENU_CMD_REFRESHASSOC,  "&Reread Associations"
+ IDS_MENU_CMD_USERMENU,      "&User Menu\tF9"
+ IDS_MENU_CMD_FOCUSLNK,      "&Go to Shortcut or Link Target\tCtrl+T"
+ IDS_MENU_CMD_FLD,           "O&pen Folder"
+ IDS_MENU_CMD_FLD_ACTUAL,    "&Active Folder\tShift+F3"
+ IDS_MENU_CMD_FLD_DESKTOP,   "&Desktop"
+ IDS_MENU_CMD_FLD_MYCOMP,    "Co&mputer"
+ IDS_MENU_CMD_FLD_CTRLPANEL, "&Control Panel"
+ IDS_MENU_CMD_FLD_NET,       "&Network"
+ IDS_MENU_CMD_FLD_BIN,       "&Recycle Bin"
+ IDS_MENU_CMD_FLD_FONTS,     "&Fonts"
+ IDS_MENU_CMD_FLD_PRINTERS,  "&Printers"
+ IDS_MENU_CMD_FLD_RECENT,    "R&ecently Used Documents"
+ IDS_MENU_CMD_FLD_PERSONAL,  "My D&ocuments"
+ IDS_MENU_CMD_FLD_TEMPLATES, "Doc&ument Templates"
+ IDS_MENU_CMD_FLD_SENDTO,    "Send To D&irectory"
+ IDS_MENU_CMD_FLD_DESKTOPDIR,"Des&ktop Directory"
+ IDS_MENU_CMD_FLD_STARTMENU, "S&tart Menu Groups"
+ IDS_MENU_CMD_FLD_PROGRAMS,  "Program &Groups"
+ IDS_MENU_CMD_FLD_STARTUP,   "&Startup Group"
+
+ IDS_MENU_PLG,               "&Plugins"
+ IDS_MENU_PLG_PLUGINS,       "&Plugins Manager..."
+ IDS_MENU_PLG_LASTCMD,       "Last Command\tCtrl+I"
+
+ IDS_MENU_OPT,               "&Options"
+ IDS_MENU_OPT_SKILLLEVEL,    "User's Skill &Level..."
+ IDS_MENU_OPT_CONFIGURATION, "&Configuration..."
+ IDS_MENU_OPT_PLUGINS_CFG,   "&Plugin Configuration"
+ IDS_MENU_OPT_ARCHAUTOCFG,   "&Archivers Autoconfiguration..."
+ IDS_MENU_OPT_CST,           "C&ustomize"
+ IDS_MENU_OPT_CST_TOP,       "&Top Toolbar..."
+ IDS_MENU_OPT_CST_PLG,       "&Plugin Bar..."
+ IDS_MENU_OPT_CST_UM,        "&User Menu Bar..."
+ IDS_MENU_OPT_CST_HP,        "&Hot Path Bar..."
+ IDS_MENU_OPT_CST_LEFT,      "&Left Panel Toolbar..."
+ IDS_MENU_OPT_CST_RIGHT,     "&Right Panel Toolbar..."
+ IDS_MENU_OPT_CST_MID,       "&Middle Toolbar..."
+ IDS_MENU_OPT_VSB,           "Sh&ow"
+ IDS_MENU_OPT_VSB_TOP,       "&Top Toolbar"
+ IDS_MENU_OPT_VSB_PLG,       "&Plugin Bar"
+ IDS_MENU_OPT_VSB_HP,        "&Hot Path Bar"
+ IDS_MENU_OPT_VSB_MID,       "&Middle Toolbar"
+ IDS_MENU_OPT_VSB_UM,        "&User Menu Bar"
+ IDS_MENU_OPT_VSB_DB,        "&Drive Bar"
+ IDS_MENU_OPT_VSB_DB2,       "T&wo Drive Bars"
+ IDS_MENU_OPT_VSB_EDIT,      "C&ommand Line"
+ IDS_MENU_OPT_VSB_BOTTOM,    "&Bottom Toolbar"
+ IDS_MENU_OPT_VSB_UMLABELS,  "Te&xt Labels in User Menu Bar"
+ IDS_MENU_OPT_VSB_GRIPS,     "&Lock the Toolbars"
+ IDS_MENU_OPT_SAVECONFIG,    "&Save Configuration"
+ IDS_MENU_OPT_EXPORTCONFIG,  "&Export Configuration..."
+ IDS_MENU_OPT_IMPORTCONFIG,  "&Import Configuration..."
+
+ IDS_MENU_RIGHT,             "&Right"
+ IDS_MENU_RIGHT_CHANGEDRIVE, "&Change Drive\tAlt+F2"
+
+ IDS_MENU_HELP,              "&Help"
+ IDS_MENU_HELP_CONTENTS,     "&Contents\tF1"
+ IDS_MENU_HELP_INDEX,        "&Index..."
+ IDS_MENU_HELP_SEARCH,       "&Search..."
+ IDS_MENU_HELP_KEYBOARD,     "&Keyboard Shortcuts"
+ IDS_MENU_HELP_CONTEXT,      "&What is This?\tShift+F1"
+// IDS_MENU_HELP_TIP,          "&Tip of the Day"
+ IDS_MENU_HELP_TASKLIST,     "Task &List..."
+ IDS_MENU_HELP_FORUM,        "Official Support &Forum"
+ IDS_MENU_HELP_ABOUTPLUGINS, "About &Plugin"
+ IDS_MENU_HELP_ABOUT,        "&About Open Salamander"
+
+//
+// find file menu
+//
+
+ IDS_FFMENU_FILES,          "&Files"
+ IDS_FFMENU_FILES_OPEN,     "&Open\tEnter"
+ IDS_FFMENU_FILES_OPENSEL,  "Open All &Selected\tShift+Enter"
+ IDS_FFMENU_FILES_FOCUS,    "&Focus\tSpace"
+ IDS_FFMENU_FILES_HIDE,     "&Hide\tCtrl+H"
+ IDS_FFMENU_FILES_HIDE_DUP, "Hide Du&plicate Names\tCtrl+Shift+H"
+ IDS_FFMENU_FILES_VIEW,     "&View\tF3"
+ IDS_FFMENU_FILES_VIEWWITH, "View &With\tCtrl+Shift+F3"
+ IDS_FFMENU_FILES_ALT_VIEW, "&Alternate View\tAlt+F3"
+ IDS_FFMENU_FILES_EDIT,     "&Edit\tF4"
+ IDS_FFMENU_FILES_EDITWITH, "Edit Wi&th\tCtrl+Shift+F4"
+ IDS_FFMENU_FILES_DELETE,   "&Delete\tF8";
+ IDS_FFMENU_FILES_USERMENU, "&User Menu\tF9"
+ IDS_FFMENU_FILES_PROP,     "P&roperties\tAlt+Enter"
+ IDS_FFMENU_FILES_CLOSE,    "&Close\tAlt+F4"
+ IDS_FFMENU_FILES_FIND,     "Co&mmands"
+ IDS_FFMENU_FIND_NOW,       "&Find Now\tCtrl+F"
+ IDS_FFMENU_FIND_INTERSECT, "Refine - &Intersect with Found Items\tCtrl+I"
+ IDS_FFMENU_FIND_SUBTRACT,  "Refine - &Subtract from Found Items\tCtrl+S"
+ IDS_FFMENU_FIND_APPEND,    "&Append to Found Items\tCtrl+W"
+ IDS_FFMENU_FIND_DUPLICATES,"Find &Duplicate Files...\tCtrl+D"
+ IDS_FFMENU_OPT_ERRORS,     "Show Find &Log...\tCtrl+L"
+
+ IDS_FFMENU_EDIT,              "&Edit"
+ IDS_FFMENU_EDIT_CUT,          "Cu&t\tCtrl+X"
+ IDS_FFMENU_EDIT_COPY,         "&Copy\tCtrl+C"
+ IDS_FFMENU_EDIT_COPYFULLNAME, "C&opy Path + Name as Text\tAlt+Insert"
+ IDS_FFMENU_EDIT_COPYNAME,     "Copy Name as Te&xt\tAlt+Shift+Insert"
+ IDS_FFMENU_EDIT_COPYFULLPATH, "Copy Pat&h as Text\tCtrl+Alt+Insert"
+ IDS_FFMENU_EDIT_COPYUNCNAME,  "Copy U&NC Path + Name as Text\tCtrl+Shift+Insert"
+
+ IDS_FFMENU_EDIT_SELALL,    "Select &All\tCtrl+A"
+ IDS_FFMENU_EDIT_INVERTSEL, "&Invert Selection"
+
+ IDS_FFMENU_VIEW,           "&View"
+ IDS_FFMENU_VIEW_NAME,      "Sort by &Name\tCtrl+F3"
+ IDS_FFMENU_VIEW_PATH,      "Sort by &Path\tCtrl+F4"
+ IDS_FFMENU_VIEW_TIME,      "Sort by &Time\tCtrl+F5"
+ IDS_FFMENU_VIEW_SIZE,      "Sort by &Size\tCtrl+F6"
+
+ IDS_FFMENU_OPTIONS,        "&Options"
+ IDS_FFMENU_OPT_SHOWERRORS, "&Show Error Messages After Finding"
+ IDS_FFMENU_OPT_FULLROWSEL, "&Full Row Select"
+ IDS_FFMENU_OPT_ONEINSTANCE,"Allow Only &One Find Window"
+ IDS_FFMENU_OPT_ADD,        "&Add Current\tCtrl+N"
+ IDS_FFMENU_OPT_MANAGE,     "&Manage...\tCtrl+M"
+ IDS_FFMENU_OPT_IGNORE,     "&Ignore Directory List...\tCtrl+G"
+
+ IDS_FFMENU_HELP,           "&Help"
+
+//
+// archiv context menu
+//
+
+ IDS_ARCHIVEMENU_OPEN,      "&Open\tEnter"
+ IDS_ARCHIVEMENU_VIEW,      "&View\tF3"
+ IDS_ARCHIVEMENU_VIEWWITH,  "View &With\tCtrl+Shift+F3"
+ IDS_ARCHIVEMENU_ALT_VIEW,  "&Alternate View\tAlt+F3"
+ IDS_ARCHIVEMENU_EDIT,      "&Edit\tF4"
+ IDS_ARCHIVEMENU_EDITWITH,  "Edit Wi&th\tCtrl+Shift+F4"
+ IDS_ARCHIVEMENU_COPY,      "&Copy...\tF5"
+ IDS_ARCHIVEMENU_DELETE,    "&Delete...\tF8"
+ IDS_ARCHIVEMENU_CLIPCOPY,  "Cop&y to Clipboard\tCtrl+C"
+ IDS_ARCHIVEMENU_CLIPPASTE, "&Paste\tCtrl+V"
+
+ // other strings
+ IDS_QUESTION, "Question"
+ IDS_CANCELOPERATION, "Do you want to cancel this operation?"
+
+ IDS_USERITEMNAME, "Item Name"
+ IDS_USERITEMCOMMAND, "Command"
+
+ IDS_ALLFILTER, "All files (*.*)|*.*|"
+ IDS_EXEFILTER, "Executables (*.exe, *.pif, *.com)|*.exe;*.pif;*.com|All files (*.*)|*.*|"
+ IDS_REGFILTER, "Registry file (*.reg)|*.reg|"
+ IDS_ICOFILTER, "Icon files (*exe, *.dll, *.ico)|*.exe;*.dll;*.ico|Programs (*.exe)|*exe|Libraries (*.dll)|*.dll|Icons (*.ico)|*.ico|All files (*.*)|*.*|"
+ IDS_PLUGINFILTER, "Plugin files (*.spl)|*.spl|All files (*.*)|*.*|"
+
+ IDS_NETWORKERROR, "Network Error"
+
+ IDS_COMPACT_DISK, "Compact Disc"
+ IDS_LOCAL_DISK, "Local Drive"
+ IDS_REMOVABLE_DISK, "Removable Drive"
+
+ IDS_INCORRECTSYNTAX, "File mask is syntactically incorrect."
+
+ IDS_CANNOTCHECKPATH, "Cannot check path."
+
+ IDS_PATHINVALID, "Path has invalid format."
+
+ IDS_CONFIGURATION, "Configuration"
+
+ IDS_INFODLGYES, "yes"
+
+ IDS_INFODLGNO, "no"
+
+ IDS_INFODLGFLAG1, "preserves case of file names"
+ IDS_INFODLGFLAG2, "supports case-sensitive file names"
+ IDS_INFODLGFLAG3, "supports Unicode in file names"
+ IDS_INFODLGFLAG4, "preserves and enforces ACL (Access Control List)"
+ IDS_INFODLGFLAG5, "supports file-based compression"
+ IDS_INFODLGFLAG6, "compressed volume"
+
+ IDS_INFODLGTYPE1, "removable drive"
+ IDS_INFODLGTYPE2, "local drive"
+ IDS_INFODLGTYPE3, "network drive"
+ IDS_INFODLGTYPE4, "compact disc"
+ IDS_INFODLGTYPE5, "RAM drive"
+ IDS_INFODLGTYPE6, "unknown (type: %d)"
+ IDS_INFODLGTYPE7, "(subst: %s)"
+ IDS_INFODLGTYPE8, "(name: %s, user: %s)"
+ IDS_INFODLGTYPE9, "(junction to: %s)"
+ IDS_INFODLGTYPE10, "(symlink to: %s)"
+
+ IDS_NOMATCHESFOUND, "No matches found."
+ IDS_INFOTITLE, "Information"
+
+ IDS_UNABLETOGETASSOC, "Unable to read associations from Registry.\nError: %s"
+ IDS_UNABLETOGETASSOCTITLE, "Error Reading Associations"
+
+ IDS_TOOLONGNAME, "Cannot finish operation because of too long name."
+ IDS_TOOLONGNAME2, "Path to target directory is too long, press Skip button to skip whole directory.\n\nPath: %s\n\nName: %s"
+
+ IDS_ERRORTITLE, "Error"
+
+ IDS_ERRORFINDINGFILE, "Error Finding File"
+
+ IDS_STOPPED, "Stopped."
+
+ IDS_FINDFILESADD, "Add"
+
+ IDS_FINDFILESEDIT, "Edit"
+
+ IDS_COMMONPREFIXNOTFOUND, "All files and directories must be from the same drive."
+ IDS_FOUNDITEMNOTFOUND, "Some selected file or directory is not available.\nPress the Find Now button to refresh list of found items."
+
+ IDS_WANTTOSTOP, "Do you want to stop searching?"
+ IDS_WANTTOSTOPTITLE, "Find Files and Directories"
+ IDS_WANTTOCLOSEFIND, "Do you want to close Find?"
+ IDS_DONTSHOWAGAIN, "&Don't show this message again\thow to revert\tYou can change this option later on the Confirmations page in the Configuration."
+ IDS_DONTSHOWAGAINSE, "&Email selected files without asking next time\thow to revert\tYou can change this option later on the Confirmations page in the Configuration."
+ IDS_DONTSHOWAGAINSS, "&Stop searching without asking next time\thow to revert\tYou can change this option later on the Confirmations page in the Configuration."
+ IDS_DONTSHOWAGAINCF, "&Close Find without asking next time\thow to revert\tYou can change this option later on the Confirmations page in the Configuration."
+ IDS_DONTSHOWAGAINAT, "&Turn on Always on Top without asking next time\thow to revert\tYou can change this option later on the Confirmations page in the Configuration."
+ IDS_DONTSHOWAGAINCS, "&Close Open Salamander without asking next time\thow to revert\tYou can change this option later on the Confirmations page in the Configuration."
+ IDS_DONTSHOWAGAINCD, "&Create directory without asking next time\thow to revert\tYou can change this option later on the Confirmations page in the Configuration."
+
+ IDS_CANTSHOWRESULTS, "Cannot show results, out of memory."
+
+ IDS_INCLUDESUBDIRSYES, "yes"
+ IDS_INCLUDESUBDIRSNO, "no"
+
+ IDS_FILEERRORFORMAT, "File: ""%s""\nError: %s"
+
+ IDS_DIRERRORFORMAT, "Error reading directory: %s"
+ IDS_ERROR_OPENING_FILE2, "Error opening file: %s"
+ IDS_ERROR_READING_FILE2, "Error reading file: %s"
+ IDS_FILEREADERROR2, "Unable to read file."
+ IDS_GETLINKTGTFILESIZEERROR, "Error getting link target file size: %s"
+
+ IDS_SIZEMUSTBEPOSITIVE, "File size must be positive number."
+
+ IDS_INVALIDDATE, "Date has invalid format."
+
+ IDS_SIZE_LIMIT_16EB, "Size must be less than 16 EB."
+ IDS_SIZE_MAX_MIN, "Second size cannot be less than first size."
+ IDS_TIME_MIN, "Minimum value is 1 second."
+ IDS_TIME_MAX, "Maximum value is 300 years."
+ IDS_SPECIFY_DATE, "At least one date must be specified."
+ IDS_TIME_MAX_MIN, "Second time cannot be less than first time."
+
+ IDS_FIND_NO_FILES_FOUND, "No files or directories found."
+ IDS_FIND_NO_DUPS_FOUND, "No duplicate files found."
+ IDS_FIND_INIT_HINT, "Specify find options and click Find Now."
+ IDS_FIND_DUPS_NO_OPTION, "At least one option must be selected."
+ IDS_FIND_DUPS_RESULTS, "Determining file duplicates..."
+
+ IDS_SEARCHFORCOLUMN1, "Mask"
+ IDS_SEARCHFORCOLUMN2, "Path"
+ IDS_SEARCHFORCOLUMN3, "Subdirectories"
+
+ IDS_FOUNDFILESCOLUMN1, "Name"
+ IDS_FOUNDFILESCOLUMN2, "Path"
+ IDS_FOUNDFILESCOLUMN3, "Size"
+ IDS_FOUNDFILESCOLUMN4, "Date"
+ IDS_FOUNDFILESCOLUMN5, "Time"
+ IDS_FOUNDFILESCOLUMN6, "Attr"
+
+ IDS_FINDTB_FOCUS, "Focus"
+ IDS_FINDTBTT_FOCUS, "Focus Item\tSpace"
+ IDS_FINDTBTT_VIEW, "View File\tF3"
+ IDS_FINDTBTT_EDIT, "Edit File\tF4"
+ IDS_FINDTBTT_DELETE, "Delete File\tF8"
+ IDS_FINDTBTT_USERMENU, "User Menu\tF9"
+ IDS_FINDTBTT_PROPERTIES, "Properties\tAlt+Enter"
+ IDS_FINDTBTT_CUT, "Cut\tCtrl+X"
+ IDS_FINDTBTT_COPY, "Copy\tCtrl+C"
+ IDS_FINDTBTT_STOP, "Stop\tAlt+P"
+ IDS_FINDTBTT_MESSAGES, "Error Messages: %d\nInformation Messages: %d\nClick to show the Find Log"
+
+ IDS_TOOLONGPATH, "The path specified is too long."
+
+ IDS_ERROREXECVIEW, "Cannot execute external viewer '%s'.\n\n%s"
+
+ IDS_ERROREXECEDIT, "Cannot execute external editor '%s'.\n\n%s"
+
+ IDS_EXECERROR, "Cannot execute external command '%s'.\n\n%s"
+
+ IDS_COMMANDSHELL, "Command Shell"
+
+ IDS_ERRORREADINGFILE, "Error Reading File"
+
+ IDS_VIEWERTITLE, "Viewer"
+
+ IDS_ERRORLOADCONFIG, "Error Loading Configuration"
+
+ IDS_ERRORSAVECONFIG, "Error Saving Configuration"
+
+ IDS_UNEXPECTEDVALUETYPE, "Unexpected value type."
+ IDS_UNEXPECTEDVALUE, "Unexpected value."
+
+ IDS_ERRORRENAMINGFILE, "Error Renaming File"
+
+ IDS_ERROROPENINGFILE, "Error Opening File"
+
+ IDS_ERRORCREATINGFILE, "Error Creating File"
+
+ IDS_ERRORWRITINGFILE, "Error Writing File"
+
+ IDS_ERROROVERWRITINGFILE, "Error Overwriting File"
+
+ IDS_ERRORDELETINGFILE, "Error Deleting File"
+
+ IDS_ERRORCREATINGDIR, "Error Creating Directory"
+
+ IDS_ERRORDELETINGDIR, "Error Deleting Directory"
+ IDS_ERRORDELETINGDIRLINK, "Error Deleting Reparse Point"
+
+ IDS_ERRORCHANGINGATTRS, "Error Changing Attributes"
+
+ IDS_ERRORCOMPRESSING, "Error Changing Compression"
+ IDS_ERRORENCRYPTING, "Error Changing Encryption"
+
+ IDS_CONFIRMFILEOVERWRITING, "Confirm File Overwrite"
+
+ IDS_ERRORGETTINGLINKTGTSIZE, "Error Getting Link Target File Size"
+
+ IDS_WANTOVERWRITESHFILE, "Do you want to overwrite the file with SYSTEM or HIDDEN attribute?"
+
+ IDS_TERMINATEDBYUSER, "You have canceled path checking.\nChecked path: ""%s""."
+ IDS_CHECKINGPATHESC, "Checking path ""%s"", press the ESC key to cancel..."
+
+ IDS_NODISKINDRIVE, "There is no disk in drive %s.\n\nInsert a disk and then try again."
+
+ IDS_DIRNAMEINVALID, "The path or file name ""%s"" is invalid."
+
+ IDS_NOFILESFOUND, "No file or directory found"
+
+// IDS_INFOLINEFORMAT, "%s: DIR, %s, %s"
+ IDS_SEPARATOR, "Separator"
+
+ IDS_DIRCOLUMN, "DIR"
+
+ IDS_CHANGECASE, "Change Case"
+
+ IDS_DATEORTIMEINVALID, "Date or Time has invalid format."
+
+ IDS_CHANGEATTRSTITLE, "Change Attributes"
+
+ IDS_EDITNEWFILE_DEFAULTNAME, "new.txt"
+
+ IDS_CREATEDIRECTORY_TITLE, "Create Directory"
+ IDS_CREATEDIRECTORY_TEXT, "Directory Name:"
+
+ IDS_EDITNEWFILE, "Edit New File"
+ IDS_NEWFILENAME, "New file name:"
+
+ IDS_SERVERNAMEMISSING, "A server name is missing in the path specified."
+ IDS_SHARENAMEMISSING, "A share name is missing in the path specified."
+ IDS_INVALIDDRIVE, "An invalid drive in the path specified."
+
+ IDS_COMPAREDIR_ARE_IDENTICAL, "The files in two directories are identical."
+ IDS_COMPAREDIR_SEEMS_IDENTICAL, "The files in two directories appear to be identical."
+
+ IDS_COMPAREDIRSTITLE, "Compare Directories"
+
+ IDS_ERROREXECCMDLINE, "Error Executing Command Line"
+
+ IDS_ERROREXECPROMPT, "Error Executing Command Prompt"
+
+ IDS_RENAME_TITLE, "Quick Rename"
+ IDS_RENAME_TO, "Rename %s to"
+
+ IDS_COPY, "Copy"
+
+ IDS_MOVE, "Move/Rename"
+
+ IDS_DELETE, "Delete"
+
+ IDS_PATHISINVALID, "The path specified is invalid."
+
+ IDS_ERRORCOPY, "Copy Error"
+
+ IDS_ERRORMOVE, "Move Error"
+
+ IDS_NAMEISTOOLONG, "Name ""%s"" with full path is too long.\n\nPath: %s"
+
+ IDS_ERRORBUILDINGSCRIPT, "Error Building Script"
+
+ IDS_CANNOTREADDIR, "Cannot read directory ""%s"".\n%s"
+
+ IDS_CANNOTCOPYFILETOITSELF, "Cannot copy a file to itself."
+
+ IDS_STRINGISNOTHEX, "String is not valid hexadecimal pattern."
+
+ IDS_BADTABSIZE, "Tab size must be in range 1 to 30."
+
+ IDS_BADTIMERESOLUTION, "Time resolution must be in range 0 to 3600 s"
+
+ IDS_UNABLETOVIEWFILENT, "Unable to view files with size over 8 EB."
+
+ IDS_VIEWERFILTER, "All Files (*.*)|*.*|"
+
+ IDS_CONFIRMSHFILEDELETE, "Confirm File Delete"
+ IDS_DELETESHFILE, "Do you want to delete the file with SYSTEM or HIDDEN attribute?"
+
+ IDS_CONFIRMSFILEENCRYPT, "Confirm File Encrypt"
+ IDS_ENCRYPTSFILE, "Do you want to encrypt the file with SYSTEM attribute?"
+
+ IDS_NAMEALREADYUSED, "This name has already been used for a file."
+
+ IDS_DELETESHDIR, "The directory ""%s"" has SYSTEM or HIDDEN attribute.\nDo you want to delete it?"
+
+ IDS_COMPRNOTSUPPORTED, "Compressing is not supported on this volume or under this operating system."
+ IDS_ENCRYPNOTSUPPORTED, "Encrypting is not supported on this volume or under this operating system."
+
+ IDS_COPYING, "Copying"
+ IDS_COPYINGPREP, "to"
+ IDS_MOVING, "Moving"
+ IDS_MOVINGPREP, "to"
+ IDS_CREATINGDIR, "Creating"
+ IDS_DELETING, "Deleting"
+ IDS_CHANGINGATTRS, "Changing"
+
+ IDS_FINDTITLE, "Find"
+ IDS_EMPTYMATCH, "Regular expression matches empty string."
+
+ IDS_REGEXPERROR1, "No error"
+ IDS_REGEXPERROR2, "Low memory"
+ IDS_REGEXPERROR3, "Regular expression is empty"
+ IDS_REGEXPERROR4, "Regular expression is too big"
+ IDS_REGEXPERROR5, "Too many ()"
+ IDS_REGEXPERROR6, "Unmatched ()"
+ IDS_REGEXPERROR7, "*+ operand could be empty"
+ IDS_REGEXPERROR8, "Nested *?+"
+ IDS_REGEXPERROR9, "Invalid [] range"
+ IDS_REGEXPERROR10, "Unmatched []"
+ IDS_REGEXPERROR11, "?+* follows nothing"
+ IDS_REGEXPERROR12, "Trailing \\"
+ IDS_REGEXPERROR13, "Internal disaster"
+
+ IDS_CANNOTMOVEFILETOITSELF, "Cannot move a file to itself."
+
+ IDS_CANNOTMOVEDIRTOITSELF, "Cannot move a directory to itself."
+
+ IDS_NOTENOUGHSPACE, "There doesn't seem to be enough space on target drive.\nDo you want to continue?\n\nRequired space: %s bytes.\nAvailable space: %s bytes."
+
+ IDS_ERRORCHANGINGDIR, "Error Changing Directory"
+
+ IDS_LOSTCHANGEDDATA1, "You have changed only temporary data (use Add or Modify button to change User Menu item).\n\nDo you want to lost these changes?"
+
+ IDS_LOSTCHANGEDDATA2, "You have changed only temporary data (use Set button to change hot path).\n\nDo you want to lost these changes?"
+
+ IDS_NAMEALREADYUSEDFORDIR, "This name has already been used for a directory."
+ IDS_FILEALREADYEXIST, "File ""%s"" already exists.\n\nDo you want to replace it?"
+
+ IDS_PASTE_CHANGE_DIRECTORY, "Change Directory"
+
+ IDS_ALWAYSONTOP, "Always on &Top"
+ IDS_WANTALWAYSONTOP, "Always on Top prevents other application windows from open above Open Salamander windows. You will not be able to open these windows on top until you turn off Always on Top."
+
+ IDS_EMPTYHOTPATHS, "Empty (Use Ctrl+Shift+number key to assign Hot Path)"
+ IDS_NEWHOTPATH, "(New Hot Path)\tCtrl+Shift+="
+ IDS_EMPTYUSERMENU, "(Empty)"
+ IDS_ENDUSERSUBMENU, "(Submenu End)"
+ IDS_EMPTYPLUGINSMENU1, "(There are no plugins installed)"
+ IDS_EMPTYPLUGINSMENU2, "(There are no configurable plugins)"
+
+ IDS_MYDOCUMENTS, "Documents"
+ IDS_GOOGLEDRIVE, "Google Drive"
+ IDS_DROPBOX, "Dropbox"
+ IDS_ONEDRIVE, "OneDrive"
+ IDS_ONEDRIVEPERSONAL, "Personal"
+ IDS_NETWORKDRIVE, "Network"
+ IDS_ANOTHERPANEL, "As Other Panel"
+
+ IDS_CHANGEDRIVE, "Change Drive"
+ IDS_CHANGEDRIVETEXT, "Select the network path you want to visit."
+
+ IDS_BROWSECHANGEDIRTEXT, "Select the directory you want to visit."
+
+ IDS_BROWSETARGETDIRECTORY, "Select the target directory."
+
+ IDS_VIEWEROFFSETTIP, "offset: %s"
+
+ // font description in configuration dialog box   "10 pt. MS Shell Dlg"
+ IDS_FONTDESCRIPTION, "%d pt. %s (%s)"
+ IDS_FONTDESCRIPTION_DEF, "default font"
+ IDS_FONTDESCRIPTION_CST, "custom font"
+
+ // buttons for dialog
+ IDS_BUTTON_OK, "OK"
+ IDS_BUTTON_CANCEL, "Cancel"
+ IDS_BUTTON_HELP, "Help"
+ IDS_BUTTON_ABORT, "&Abort"
+ IDS_BUTTON_RETRY, "&Retry"
+ IDS_BUTTON_IGNORE, "&Ignore"
+ IDS_BUTTON_TRY, "&Try Again"
+ IDS_BUTTON_CONTINUE, "&Continue"
+ IDS_BUTTON_YES, "&Yes"
+ IDS_BUTTON_NO, "&No"
+
+ // name of configuration page Alternate Viewers
+ IDS_ALTVIEWERS, "Alternate Viewers"
+
+ // items for Command, Arguments and InitialDirectory menus
+ IDS_EXECUTE_DRIVE,       "Drive"
+ IDS_EXECUTE_PATH,        "Path"
+ IDS_EXECUTE_DOSPATH,     "DOS Path"
+ IDS_EXECUTE_NAME,        "Name"
+ IDS_EXECUTE_DOSNAME,     "DOS Name"
+ IDS_EXECUTE_ENV,         "Environment Variable"
+ IDS_EXECUTE_FULLNAME,    "Full Name"
+ IDS_EXECUTE_DOSFULLNAME, "DOS Full Name"
+ IDS_EXECUTE_FULLPATH,    "Full Path"
+ IDS_EXECUTE_WINDIR,      "Windows Directory"
+ IDS_EXECUTE_SYSDIR,      "System Directory"
+ IDS_EXECUTE_SALDIR,      "Salamander Directory"
+ IDS_EXECUTE_BROWSE,      "Browse..."
+ IDS_EXECUTE_DOSFULLPATH, "DOS Full Path"
+ IDS_EXECUTE_DOSWINDIR,   "DOS Windows Directory"
+ IDS_EXECUTE_DOSSYSDIR,   "DOS System Directory"
+ IDS_EXECUTE_NAMEPART,    "Name Part"
+ IDS_EXECUTE_EXTPART,     "Extension Part"
+ IDS_EXECUTE_DOSNAMEPART, "DOS Name Part"
+ IDS_EXECUTE_DOSEXTPART,  "DOS Extension Part"
+
+ IDS_EXECUTE_ADVANCEDMENU,       "Advanced"
+ IDS_EXECUTE_FULLPATHINACTIVE,   "Full Path in Inactive Panel"
+ IDS_EXECUTE_FULLPATHLEFT,       "Full Path in Left Panel"
+ IDS_EXECUTE_FULLPATHRIGHT,      "Full Path in Right Panel"
+ IDS_EXECUTE_COMPAREDFILELEFT,   "First File to Compare (prefer left panel)"
+ IDS_EXECUTE_COMPAREDFILERIGHT,  "Second File to Compare (prefer right panel)"
+ IDS_EXECUTE_COMPAREDDIRLEFT,    "First Directory to Compare (prefer left panel)"
+ IDS_EXECUTE_COMPAREDDIRRIGHT,   "Second Directory to Compare (prefer right panel)"
+ IDS_EXECUTE_COMPAREDFILEACT,    "First File to Compare (prefer active panel)"
+ IDS_EXECUTE_COMPAREDFILEINACT,  "Second File to Compare (prefer inactive panel)"
+ IDS_EXECUTE_COMPAREDDIRACT,     "First Directory to Compare (prefer active panel)"
+ IDS_EXECUTE_COMPAREDDIRINACT,   "Second Directory to Compare (prefer inactive panel)"
+ IDS_EXECUTE_LISTOFSELNAMES,     "List of Selected Names"
+ IDS_EXECUTE_LISTOFSELFULLNAMES, "List of Selected Names With Path"
+ IDS_EXECUTE_COMPAREDLEFT,       "First File or Directory to Compare (prefer left panel)"
+ IDS_EXECUTE_COMPAREDRIGHT,      "Second File or Directory to Compare (prefer right panel)"
+ IDS_EXECUTE_COMPAREDACT,        "First File or Directory to Compare (prefer active panel)"
+ IDS_EXECUTE_COMPAREDINACT,      "Second File or Directory to Compare (prefer inactive panel)"
+
+ // items for regular expression menus
+ IDS_REGEXP_ANYCHAR,            "Any Character"
+ IDS_REGEXP_SETOFCHAR,          "Any from Set of Characters"
+ IDS_REGEXP_NOTSETOFCHAR,       "Any Except Set of Characters"
+ IDS_REGEXP_RANGEOFCHAR,        "Any from Range of Characters"
+ IDS_REGEXP_BEGINOFLINE,        "Beginning of Line"
+ IDS_REGEXP_ENDOFLINE,          "End of Line"
+ IDS_REGEXP_OR,                 "Or"
+ IDS_REGEXP_0ORMORE,            "0 or More Matches"
+ IDS_REGEXP_1ORMORE,            "1 or More Matches"
+ IDS_REGEXP_0OR1,               "0 or 1 Matches"
+
+ IDS_REGEXP_ALPHANUMERIC_CHAR,  "Alphanumeric Character"
+ IDS_REGEXP_ALPHABETIC_CHAR,    "Alphabetic Character"
+ IDS_REGEXP_DECIMAL_DIGIT,      "Decimal Digit"
+
+ IDS_REGEXP_PARENTHESIS_L_CHAR,  "Left Parenthesis '('"
+ IDS_REGEXP_PARENTHESIS_R_CHAR,  "Right Parenthesis ')'"
+ IDS_REGEXP_DOT_CHAR,            "Dot '.'"
+ IDS_REGEXP_PLUS_CHAR,           "Plus '+'"
+ IDS_REGEXP_ASTERISK_CHAR,       "Asterisk '*'"
+
+ IDS_REGEXP_DECIMAL_NUMBER,     "Decimal Number"
+ IDS_REGEXP_HEXADECIMAL_NUMBER, "Hexadecimal Number"
+ IDS_REGEXP_REAL_NUMBER,        "Real Number"
+
+ IDS_REGEXP_QUOTED_STRING,      "Quoted String"
+ IDS_REGEXP_ALPHABETIC_STRING,  "Alphabetic String"
+ IDS_REGEXP_IDENTIFIER,         "Identifier"
+
+ IDS_REGEXP_HELP,               "Regular Expressions Help..."
+
+ IDS_VIEWWITH_EMPTY,            "Empty (Use Configuration to define viewers)"
+ IDS_EDITWITH_EMPTY,            "Empty (Use Configuration to define editors)"
+
+ // context menu items
+ IDS_SETHOTPATH,         "&Assign Hot Path"
+ IDS_TOPTOOLBAR,         "&Top Toolbar"
+ IDS_PLUGINSBAR,         "&Plugin Bar"
+ IDS_UMTOOLBAR,          "&User Menu Bar"
+ IDS_HPTOOLBAR,          "&Hot Path Bar"
+ IDS_DRIVEBAR,           "&Drive Bar"
+ IDS_DRIVEBAR2,          "T&wo Drive Bars"
+ IDS_COMMANDLINE,        "C&ommand Line"
+ IDS_BOTTOMTOOLBAR,      "&Bottom Toolbar"
+ IDS_CUSTOMIZE,          "&Customize Toolbar..."
+ IDS_SHOWLABELS,         "Te&xt Labels in User Menu Bar"
+ IDS_GRIPSINTOOLBAR,     "&Lock the Toolbars"
+ IDS_MIDDLETOOLBAR,      "&Middle Toolbar"
+ IDS_CHANGEDIRECTORY,    "Change &Directory...\tShift+F7"
+
+ IDS_HDR_ELASTIC,        "Automatic Column Width"
+ IDS_HDR_SMARTMODE,      "Smart Column Mode\tCtrl+N"
+ IDS_HDR_EXTENSION,      "Separated File E&xtension\tCtrl+E"
+ IDS_HDR_DOS,            "DOS &Name (8.3)"
+ IDS_HDR_SIZE,           "File &Size"
+ IDS_HDR_DATE,           "Last Write &Date"
+ IDS_HDR_TIME,           "Last Write &Time"
+ IDS_HDR_ATTR,           "File &Attributes"
+ IDS_DIRECTORYLINE,      "Directory &Line"
+ IDS_HEADERLINE,         "&Header Line"
+ IDS_INFORMATIONLINE,    "&Information Line"
+ IDS_CUSTOMIZEPANEL,     "Customize &Panel Toolbar..."
+
+// items Information Line Content menus
+ IDS_FILEDATA_FILENAME,    "File Name"
+ IDS_FILEDATA_FILESIZE,    "File Size"
+ IDS_FILEDATA_FILEDATE,    "Last Write Date"
+ IDS_FILEDATA_FILETIME,    "Last Write Time"
+ IDS_FILEDATA_FILEATTR,    "File Attributes"
+ IDS_FILEDATA_FILEDOSNAME, "DOS Name (8.3)"
+// items for Make File List
+ IDS_FILEDATA_FILENAMEPART,"File Name Part"
+ IDS_FILEDATA_FILEEXTENSION,"File Extension Part"
+
+ IDS_FILEDATA_LF           "LF (Unix Line End)"
+ IDS_FILEDATA_CR           "CR (MAC Line End)"
+ IDS_FILEDATA_CRLF         "CRLF (DOS, Windows, OS/2 Line End)"
+ IDS_FILEDATA_TAB          "TAB"
+
+ // buttons for Edit ListBox ToolBar
+ IDS_EDTLB_MODIFY, "Modify (F2)"
+ IDS_EDTLB_NEW, "New (Insert)"
+ IDS_EDTLB_DELETE, "Delete (Delete)"
+ IDS_EDTLB_SORT, "Sort Items Alphabetically"
+ IDS_EDTLB_UP, "Move Item Up (Alt + Up Arrow)"
+ IDS_EDTLB_DOWN, "Move Item Down (Alt + Down Arrow)"
+
+ // Bottom ToolBar Texts for F1 - F12
+ IDS_BTBTEXTS,     "Help,Rename,View,Edit,Copy,Move,MakeDir,Delete,UsrMenu,Menu,Connect,Disconnect"
+ // Alt
+ IDS_BTBTEXTS_A,   "LChDrv,RChDrv,AltView,Exit,Pack,Unpack,Find,,Unpack,CalcSpc,OpnFiles,WorkDirs"
+ // Ctrl
+ IDS_BTBTEXTS_C,   "DrvInfo,ChAttrs,ByName,ByExt,ByTime,BySize,ChCase,,Refresh,Compare,MaxPanel,Filter"
+ // Shift
+ IDS_BTBTEXTS_S,   "CtxHelp,,ActFolder,EditNew,,,ChDir,Delete,HotPaths,CtxMenu,,"
+ // Ctrl+Shift
+ IDS_BTBTEXTS_CS,  ",,ViewWith,EditWith,SaveSel,LoadSel,,,Shares,DirSizes,FullScreen,"
+ // Alt+Shift
+ IDS_BTBTEXTS_AS,  ",,,,,,,,,DirMenu,,"
+ // Menu
+ IDS_BTBTEXTS_MENU,"Help,,,,,,,,,Menu,,"
+
+ // ToolBar ToolTips
+ IDS_TBTT_CONNECTNET,          "Connect Network Drive\tF11"
+ IDS_TBTT_DISCONNECTNET,       "Disconnect\tF12"
+ IDS_TBTT_CREATEDIR,           "Create Directory\tF7"
+ IDS_TBTT_NEW,                 "New"
+ IDS_TBTT_FINDFILE,            "Find Files and Directories\tAlt+F7"
+ IDS_TBTT_VIEW_MODE,           "Views"
+ IDS_TBTT_SORTBYNAME,          "Sort by Name\tCtrl+F3"
+ IDS_TBTT_SORTBYEXT,           "Sort by Extension\tCtrl+F4"
+ IDS_TBTT_SORTBYSIZE,          "Sort by Size\tCtrl+F6"
+ IDS_TBTT_SORTBYDATE,          "Sort by Date\tCtrl+F5"
+ IDS_TBTT_PARENTDIR,           "Parent Directory\tBackspace"
+ IDS_TBTT_ROOTDIR,             "Root Directory\tShift+Backspace"
+ IDS_TBTT_FILTER,              "Filter\tCtrl+F12"
+ IDS_TBTT_BACK,                "Back\tAlt+Left Arrow"
+ IDS_TBTT_FORWARD,             "Forward\tAlt+Right Arrow"
+ IDS_TBTT_REFRESH,             "Refresh\tCtrl+F9"
+ IDS_TBTT_SWAPPANELS,          "Swap Panels\tCtrl+U"
+ IDS_TBTT_PROPERTIES,          "Properties\tAlt+Enter"
+ IDS_TBTT_USERMENU,            "User Menu\tF9"
+ IDS_TBTT_COMMANDSHELL,        "Command Shell\tNum /"
+ IDS_TBTT_COPY,                "Copy\tF5"
+ IDS_TBTT_MOVE,                "Move\tF6"
+ IDS_TBTT_DELETE,              "Delete\tF8"
+ IDS_TBTT_COMPRESS,            "NTFS Compress"
+ IDS_TBTT_UNCOMPRESS,          "NTFS Uncompress"
+ IDS_TBTT_QUICKRENAME,         "Quick Rename\tF2"
+ IDS_TBTT_CHANGECASE,          "Change Case\tCtrl+F7"
+ IDS_TBTT_VIEW,                "View\tF3"
+ IDS_TBTT_CLIPBOARDCUT,        "Clipboard Cut\tCtrl+X"
+ IDS_TBTT_CLIPBOARDCOPY,       "Clipboard Copy\tCtrl+C"
+ IDS_TBTT_CLIPBOARDPASTE,      "Clipboard Paste\tCtrl+V"
+ IDS_TBTT_PERMISSIONS,         "Security\tCtrl+P"
+ IDS_TBTT_CHANGEATTR,          "Change Attributes\tCtrl+F2"
+ IDS_TBTT_COMPAREDIR,          "Compare Directories\tCtrl+F10"
+ IDS_TBTT_DRIVEINFO,           "Drive Information\tCtrl+F1"
+ IDS_TBTT_HELP,                "Help Contents"
+ IDS_TBTT_CONTEXTHELP,         "What is This?\tShift+F1"
+ IDS_TBTT_CHANGEDRIVE,         "Change Drive"
+ IDS_TBTT_EDIT,                "Edit\tF4"
+ IDS_TBTT_OPENINOTHER_A        "Focus Name in Other Panel"
+ IDS_TBTT_OPENINOTHER          "Open Name in Other Panel"
+ IDS_TBTT_ASOTHERPANEL         "Go to Path from Other Panel"
+ IDS_TBTT_HIDE_SELECTED        "Hide Selected Names"
+ IDS_TBTT_HIDE_UNSELECTED      "Hide Unselected Names"
+ IDS_TBTT_SHOW_ALL             "Show Hidden Names"
+
+ IDS_TBTT_SELECT,              "Select\tNum +"
+ IDS_TBTT_UNSELECT,            "Unselect\tNum -"
+ IDS_TBTT_INVERTSEL,           "Invert Selection\tNum *"
+ IDS_TBTT_SELECTALL,           "Select All\tCtrl+A"
+ IDS_TBTT_UNSELECTALL,         "Unselect All\tCtrl+D"
+
+ IDS_TBTT_PACK,                "Pack\tAlt+F5"
+ IDS_TBTT_UNPACK,              "Unpack\tAlt+F9"
+
+ IDS_TBTT_OPENACTIVE,          "Open Active Folder\tShift+F3"
+ IDS_TBTT_OPENDESKTOP,         "Open Desktop"
+ IDS_TBTT_OPENMYCOMP,          "Open Computer"
+ IDS_TBTT_OPENCONTROL,         "Open Control Panel"
+ IDS_TBTT_OPENPRINTERS,        "Open Printers"
+ IDS_TBTT_OPENNETWORK,         "Open Network"
+ IDS_TBTT_OPENRECYCLE,         "Open Recycle Bin"
+ IDS_TBTT_OPENFONTS,           "Open Fonts"
+ IDS_TBTT_OPENMYDOC,           "Open Documents"
+
+ IDS_TBTT_SMARTMODE,           "Smart Column Mode\tCtrl+N"
+
+ IDS_TBTT_CONVERT,             "Convert\tCtrl+K"
+
+ IDS_TBTT_MENU                 "Enter or Leave Menu"
+ IDS_TBTT_ALTVIEW              "Alternate View"
+ IDS_TBTT_EXIT                 "Exit Open Salamander"
+ IDS_TBTT_OCCUPIEDSPACE        "Calculate Occupied Space\tAlt+F10"
+ IDS_TBTT_EDITNEW              "Edit New File\tShift+F4"
+ IDS_TBTT_CHANGEDIR            "Change Directory\tShift+F7"
+ IDS_TBTT_HOTPATHS             "Display Hot Paths"
+ IDS_TBTT_CONTEXTMENU          "Display Context Menu"
+ IDS_TBTT_VIEWWITH             "View With"
+ IDS_TBTT_EDITWITH             "Edit With"
+ IDS_TBTT_CALCDIRSIZES         "Calculate Directory Sizes\tCtrl+Shift+F10"
+ IDS_TBTT_FILEHISTORY          "List of Opened Files"
+ IDS_TBTT_DIRHISTORY           "List of Working Directories"
+ IDS_TBTT_HOTPATHSDROP         "Go to Hot Path\tShift+F9"
+ IDS_TBTT_EMAIL                "Email"
+ IDS_TBTT_ZOOMPANEL            "Maximize/Restore Panel"
+ IDS_TBTT_SHARES               "Shared Directories\tCtrl+Shift+F9"
+ IDS_TBTT_FULLSCREEN           "Toggle Full Screen"
+ IDS_TBTT_PREV_SEL             "Go to Previous Selected Name\tAlt+Up"
+ IDS_TBTT_NEXT_SEL             "Go to Next Selected Name\tAlt+Down"
+ IDS_TBTT_RESELECT             "Restore Selection\tCtrl+W"
+ IDS_TBTT_PASTESHORTCUT        "Paste Shortcut\tCtrl+S"
+ IDS_TBTT_FOCUSSHORTCUT        "Go to Shortcut or Link Target\tCtrl+T"
+ IDS_TBTT_SAVESELECTION        "Save Selection\tCtrl+Shift+F5"
+ IDS_TBTT_LOADSELECTION        "Load Selection\tCtrl+Shift+F6"
+ IDS_TBTT_SEL_BY_EXT           "Select Files with Same Extension\tShift+Num +"
+ IDS_TBTT_UNSEL_BY_EXT         "Unselect Files with Same Extension\tShift+Num -"
+ IDS_TBTT_SEL_BY_NAME          "Select Files with Same Name\tCtrl+Shift+Num +"
+ IDS_TBTT_UNSEL_BY_NAME        "Unselect Files with Same Name\tCtrl+Shift+Num -"
+ IDS_TBTT_OPEN_FOLDER          "Open Folder"
+ IDS_TBTT_CONFIGURATION        "Configuration"
+ IDS_TBTT_DIRMENU              "Current Directory Context Menu"
+
+// IDS_EOF_NONE,                 "&No change"
+// IDS_EOF_CR,                   "&CR (MAC)"
+// IDS_EOF_LF,                   "&LF (UNIX)"
+// IDS_EOF_CRLF,                 "CRL&F (DOS, Windows, OS/2)"
+
+ IDS_HELPERROR,               "Help Error"
+ IDS_FAILED_TO_LAUNCH_HELP,   "Unable to launch HtmlHelp."
+ IDS_FAILED_TO_FIND_HELP,     "Unable to find help file."
+
+// choose color context menu items
+ IDS_SETCOLOR_CUSTOM, "&Custom color..."
+ IDS_SETCOLOR_SYSTEM, "&Automatic color"
+ IDS_SETCOLOR_CUSTOM_FG, "Custom color of &text..."
+ IDS_SETCOLOR_CUSTOM_BK, "Custom color of &background..."
+ IDS_SETCOLOR_SYSTEM_FG, "&Automatic color of text"
+ IDS_SETCOLOR_SYSTEM_BK, "A&utomatic color of background"
+ IDS_SETCOLOR_DEFAULT_FG, "&Don't change color of text"
+ IDS_SETCOLOR_DEFAULT_BK, "D&on't change color of background"
+
+ IDS_UNPACKCOPY, "Copy"
+ IDS_PACKTITLE, "Pack"
+ IDS_UNPACKTMPMOVE, "Move"
+
+ IDS_CTRL, "Ctrl"
+ IDS_SHIFT, "Shift"
+ IDS_ESCAPE, "ESC"
+ IDS_F11, "F11"
+
+ IDS_CONFIGEXPORTED, "Configuration was successfully exported."
+ IDS_PREDCONFIGEXPORT, "Exported configuration file will be created using configuration in registry.\nDo you want to save configuration into registry before export?"
+ IDS_TEXTCOPIED, "Text was successfully copied to clipboard."
+ IDS_COPYTOCLIPBOARD, "&Copy To Clipboard"
+
+ IDS_CONFIGHOWTOIMPORT, "Importing the configuration is quite simple. Just find the file with configuration and open it (use Enter key or double-click on it). It should be opened in Registry Editor. When it shows question if you want to add information from the file to registry, you should close all running instances of Open Salamander. It will prevent overwriting of newly imported configuration by automatic save of configuration on exit of Open Salamander. When there is no running Open Salamander, press Yes in Registry Editor question message box. Then it will import the configuration from the file to registry."
+
+ IDS_ERRORUNPACK, "Error Unpacking Archive"
+
+ IDS_NEW_ARCHIVE, "archive."
+
+ IDS_UNPACKARCHIVE, "Unpack archive ""%s"" to"
+
+ IDS_CREATEDIRECTORY, "The directory ""%s"" doesn't exist.\n\nDo you want to create it?"
+ IDS_NAMEUSEDFORFILE, "The name ""%s"" has already been used for a file."
+ IDS_CREATEDIRFAILED, "Unable to create the directory ""%s""."
+
+ IDS_SE_INVALIDSUBMENUNAME, "Invalid submenu name.\nEmpty string is not allowed here."
+ IDS_SE_INVALIDOPTIONS, "At least one option must be checked."
+ IDS_SE_INVALIDOPTIONSCOMB, "Invalid options combination."
+
+ IDS_ACBUTTON_STOP, "&Stop"
+ IDS_ACBUTTON_RESCAN, "&Start"
+ IDS_ACCOLUMN1, "Pathname"
+ IDS_ACCOLUMN2, "Size"
+ IDS_ACCOLUMN3, "Date"
+ IDS_ACCOLUMN4, "Time"
+ IDS_ACBADDRIVE, "The path is not a valid directory."
+ IDS_ACSTATUSDONE, "Done."
+
+// Find File Advanced Dialog
+ IDS_FFA_ATTRIBUTES, "Attributes"
+ IDS_FFA_SIZE, "Size"
+ IDS_FFA_DATE, "Date"
+ IDS_FFA_TIME, "Time"
+ IDS_FFA_NONE, "No Advanced Options"
+ IDS_FFA_OPTIONS, "Using Advanced Options: "
+
+ IDS_FFA_SECONDS, "{!}second{s|0||1|s}"
+ IDS_FFA_MINUTES, "{!}minute{s|0||1|s}"
+ IDS_FFA_HOURS, "{!}hour{s|0||1|s}"
+ IDS_FFA_DAYS, "{!}day{s|0||1|s}"
+ IDS_FFA_WEEKS, "{!}week{s|0||1|s}"
+ IDS_FFA_MONTHS, "{!}month{s|0||1|s}"
+ IDS_FFA_YEARS, "{!}year{s|0||1|s}"
+ IDS_FFA_BYTES, "{!}byte{s|0||1|s}"
+
+// Find File Dialog
+ IDS_CHANGE_DIRECTORY, "Change Directory"
+ IDS_FF_IN, "in"
+ IDS_FF_STOP, "Sto&p"
+ 
+ IDS_FF_SEARCHING, "Searching:"
+ IDS_FF_NAME, "Find"
+ IDS_FF_NAMED, "searching"
+ IDS_FF_EMPTYSTRING, "Empty string is not allowed here."
+ IDS_FF_AUTOLOAD, "Options ""%s"" was loaded"
+ IDS_FF_BROWSE, "&Browse..."
+ IDS_FF_LOCALDRIVES, "All &Local Drives"
+ IDS_FF_ALLDRIVES, "&All Local and Network Drives"
+
+// View/Edit - cannot view/edit
+ IDS_CANT_VIEW_FILE, "Unable to find appropriate viewer for file ""%s"".\n\nSee the Configuration/Viewers and Editors/Viewers page for viewer associations."
+ IDS_CANT_VIEW_FILE_ALT, "Unable to find appropriate viewer for file ""%s"".\n\nSee the Configuration/Viewers and Editors/Alternate Viewers page for viewer associations."
+ IDS_CANT_EDIT_FILE, "Unable to find appropriate editor for file ""%s"".\n\nSee the Configuration/Viewers and Editors/Editors page for editor associations."
+
+//Startup
+ IDS_STARTUP_DATA, "Initializing data..."
+ IDS_STARTUP_SHARES, "Reading list of shared directories..."
+ IDS_STARTUP_ASSOCIATIONS, "Reading associations from registry..."
+ IDS_STARTUP_IMPORT_CONFIG, "Importing configuration to registry..."
+ IDS_STARTUP_CONFIG, "Reading configuration from registry..."
+ IDS_STARTUP_POLICY, "Reading group policy from registry..."
+ IDS_STARTUP_USERMENU, "Reading User Menu items from registry..."
+
+//trim or drag path
+ IDS_TRIM_DRAG_PATH, "Click to change path in panel or Drag path to other panel or to Command line"
+//copy or drag item
+ IDS_COPY_DRAG_TEXT, "Click to copy to clipboard or Drag text to Command line"
+
+//tip of the day
+// IDS_TOD_DIDYOUKNOW, "Did you know..."
+
+//view types
+ IDS_VIEW_MODE, "Mode"
+ IDS_ICONS_VIEW_NAME, "Icons"
+ IDS_BRIEF_VIEW_NAME, "Brief"
+ IDS_DETAILED_VIEW_NAME, "Detailed"
+ IDS_THUMBNAILS_VIEW_NAME, "Thumbnails"
+ IDS_TREE_VIEW_NAME, "Reserved"
+ IDS_TILES_VIEW_NAME, "Tiles"
+
+ IDS_TREE_VIEW, "Reserved"
+ IDS_ICONS_VIEW, "&Icons"
+ IDS_BRIEF_VIEW, "&Brief"
+ IDS_DETAILED_VIEW, "&Detailed"
+ IDS_THUMBNAILS_VIEW, "T&humbnails"
+ IDS_TYPES_VIEW, "T&ypes"
+ IDS_DESCRIPTIONS_VIEW, "D&escriptions"
+ IDS_TILES_VIEW, "Ti&les"
+
+// column names in panel
+ IDS_COLUMN_NAME_NAME, "Name"
+ IDS_COLUMN_NAME_EXT, "Ext"
+ IDS_COLUMN_NAME_DOSNAME, "DOS Name"
+ IDS_COLUMN_NAME_SIZE, "Size"
+ IDS_COLUMN_NAME_TYPE, "Type"
+ IDS_COLUMN_NAME_DATE, "Date"
+ IDS_COLUMN_NAME_TIME, "Time"
+ IDS_COLUMN_NAME_ATTR, "Attr"
+ IDS_COLUMN_NAME_DESC, "Description"
+
+// column names in view configuration dialog
+ IDS_COLUMN_CFG_NAME,    "Name"
+ IDS_COLUMN_CFG_EXT,     "Separated Extension"
+ IDS_COLUMN_CFG_DOSNAME, "DOS Name (8.3)"
+ IDS_COLUMN_CFG_SIZE,    "Size"
+ IDS_COLUMN_CFG_TYPE,    "Type"
+ IDS_COLUMN_CFG_DATE,    "Last Write Date"
+ IDS_COLUMN_CFG_TIME,    "Last Write Time"
+ IDS_COLUMN_CFG_ATTR,    "Attributes"
+ IDS_COLUMN_CFG_DESC,    "Description"
+
+// column descriptions in panel
+ IDS_COLUMN_DESC_NAME,   "Name"
+ IDS_COLUMN_DESC_EXT,    "Extension"
+ IDS_COLUMN_DESC_DOSNAME,"DOS Name (8.3)"
+ IDS_COLUMN_DESC_SIZE,   "Size"
+ IDS_COLUMN_DESC_TYPE,   "Type"
+ IDS_COLUMN_DESC_DATE,   "Last Write Date"
+ IDS_COLUMN_DESC_TIME,   "Last Write Time"
+ IDS_COLUMN_DESC_ATTR,   "Attributes"
+ IDS_COLUMN_DESC_DESC,   "Description"
+
+// column name in menu
+ IDS_COLUMN_MENU_NAME, "&Name\tCtrl+F3"
+ IDS_COLUMN_MENU_EXT, "&Extension\tCtrl+F4"
+ IDS_COLUMN_MENU_SIZE, "&Size\tCtrl+F6"
+ IDS_COLUMN_MENU_TIME, "&Time\tCtrl+F5"
+ IDS_COLUMN_MENU_ATTR, "&Attributes"
+
+ IDS_PACKERR_TITLE, "Packer Error"
+ IDS_PACKERR_NOMEM, "Insufficient memory."
+ IDS_PACKERR_ARCNAME_UNSUP, "Extension does not belong to any supported archive type."
+ IDS_PACKERR_PACKER_UNSUP, """Delete and Pack"" operations not supported on this type of archive."
+ IDS_PACKERR_GENERAL, "System error: %1"
+ IDS_PACKERR_PROCESS, "Unable to execute new process ""%1"". If you have not done so yet, run Archivers Autoconfiguration from the Options menu. The error was: %2"
+ IDS_PACKERR_RETURN, "External program ""%1"" has returned an error: %2"
+ IDS_PACKERR_NOTFOUND, "External archiver ""%1"" cannot be executed."
+ IDS_PACKERR_FILE, "Invalid temporary file."
+ IDS_PACKERR_PATH, "Path to file too long: %1"
+ IDS_PACKERR_CMDLNERR, "Error parsing archiver command line."
+ IDS_PACKERR_IDIRERR, "Error parsing archiver initial directory."
+ IDS_PACKERR_CMDLNLEN, "Command line too long: %1"
+ IDS_PACKERR_FDATA, "Insufficient memory."
+ IDS_PACKERR_COMSPEC, "Environment variable COMSPEC was not found."
+ IDS_PACKERR_MOVE, "Unable to move unpacked files to target path (from temporary path)."
+ IDS_PACKERR_PARSE, "Error encountered while parsing list of archived files."
+ IDS_PACKERR_ARCCFG, "Error in archiver configuration, no filename field found."
+ IDS_PACKERR_DATETIME, "The file date and/or time reported by archiver is invalid."
+ IDS_PACKERR_NOOUTPUT, "Got no output from external packer, check your configuration."
+ IDS_PACKERR_UNABLETOREN, "Unable to rename temporary archive file (%1) to archive name (%2)."
+ IDS_PACKERR_INVALIDNAME, "This file name is invalid on Windows file systems. External archivers do not support unpacking to another file name so it's not possible to unpack this file."
+
+ IDS_PACKRET_GENERAL, "Exit code %d."
+ IDS_PACKRET_WARNING, "Warning encountered."
+ IDS_PACKRET_EXTRACT, "File extraction error."
+ IDS_PACKRET_FATAL, "Fatal error encountered."
+ IDS_PACKRET_CRC, "CRC error encountered."
+ IDS_PACKRET_SECURITY, "Archive security violation."
+ IDS_PACKRET_DISK, "Disk full or write error."
+ IDS_PACKRET_FOPEN, "Error opening archive or file."
+ IDS_PACKRET_PARAMS, "User error - bad parameters."
+ IDS_PACKRET_MEMORY, "Not enough memory."
+ IDS_PACKRET_NOTARC, "File is not an archive."
+ IDS_PACKRET_XMSMEM, "XMS memory error."
+ IDS_PACKRET_BREAK, "User break."
+ IDS_PACKRET_BREAK2, "User break or unanswered query (repeat operation and click on ""salspawn.exe"" process in taskbar, you'll see archiver prompt)."
+ IDS_PACKRET_CHAPTERS, "Too many chapters in archive."
+ IDS_PACKRET_TEMP, "Cannot convert temporary file to archive."
+ IDS_PACKRET_INTERN, "Internal error."
+ IDS_PACKRET_UNKNOWN, "Unknown error."
+ IDS_PACKRET_SKIPPED, "Skipped a file."
+ IDS_PACKRET_DAMAGED, "Archive is damaged."
+ IDS_PACKRET_VIRUS, "Virus detected."
+ IDS_PACKRET_SPAWN, "Error in internal configuration: Bad params for salspawn.exe."
+ IDS_PACKRET_EXTRACT_LHA, "File extraction error or if you are deleting from archive, please ignore this error message."
+
+ IDS_PACK_ARC_NAME, "Full Name of Archive"
+ IDS_PACK_ARC_FILE, "Name of Archive"
+ IDS_PACK_ARC_PATH, "Path to Archive"
+ IDS_PACK_LST_NAME, "Full Name of List of Files"
+ IDS_PACK_ARC_DOSNAME, "DOS Full Name of Archive"
+ IDS_PACK_ARC_DOSFILE, "DOS Name of Archive"
+ IDS_PACK_LST_DOSNAME, "DOS Full Name of List of Files"
+ IDS_PACK_EXECUTING, "Executing external program, please wait..."
+
+ IDS_PACK_EXE_JAR32, "Jar32 Executable Pathname"
+ IDS_PACK_EXE_JAR16, "Jar16 Executable Pathname"
+ IDS_PACK_EXE_RAR32, "Rar32 Executable Pathname"
+ IDS_PACK_EXE_RAR16, "Rar16 Executable Pathname"
+ IDS_PACK_EXE_ARJ32, "Arj32 Executable Pathname"
+ IDS_PACK_EXE_ARJ16, "Arj16 Executable Pathname"
+ IDS_PACK_EXE_ACE32, "Ace32 Executable Pathname"
+ IDS_PACK_EXE_ACE16, "Ace16 Executable Pathname"
+ IDS_PACK_EXE_LHA16, "Lha Executable Pathname"
+ IDS_PACK_EXE_UC216, "UC2 Executable Pathname"
+ IDS_PACK_EXE_ZIP32, "PkZip32 Executable Pathname"
+ IDS_PACK_EXE_ZIP16, "PkZip16 Executable Pathname"
+ IDS_PACK_EXE_UZP16, "PkUnzip16 Executable Pathname"
+ IDS_PACK_EXE_BROWSE, "Browse for Executable"
+
+ IDS_PACKQRY_ARCPATH, "Archiver doesn't support compression to subdirectories.\nDo you want to place files to the root directory of the archive?"
+ IDS_PACKQRY_NOMOVE, "Archiver doesn't support ""move to archive"" command.\nDo you want to use ""copy to archive"" instead?"
+
+ IDS_THEPATHISINVALID, "The path is invalid."
+// IDS_THECOMMANDISINVALID, "The command ""%s"" specified for ""%s"" is invalid. Would you like to change the command?"
+
+ IDS_COMDLG_INVALIDFILENAME, "A filename ""%s"" is invalid."
+
+ IDS_NONEMPTYDIRDELCONFIRM, "The directory ""%s"" is not empty.\nDo you want to delete it?"
+
+ IDS_EXP_UNMATCHEDPAR, "Variable name must be terminated by ')'."
+ IDS_EXP_INTERNALERR, "Internal error."
+ IDS_EXP_VARNOTFOUND, "Variable ""%s"" was not found."
+ IDS_EXP_ENVVARNOTFOUND, "Environment variable ""%s"" was not found."
+ IDS_EXP_ENVVARTOOLARGE, "Value of environment variable ""%s"" is too large."
+ IDS_EXP_UNMATCHEDBRACKET, "Environment variable name must be terminated by ']'."
+ IDS_EXP_UNEXPECTEDCHAR, "Expecting variable name or '$' character."
+ IDS_EXP_SMALLBUFFER, "Expanded string is too large."
+ IDS_EXP_TRAILINGDOLLAR, "Unexpected end of string, character '$' must be followed by variable name or '$' character."
+ IDS_EXP_EMPTYSTR, "Empty string is not allowed here."
+ IDS_EXP_INVALIDVARWIDTH, "Invalid variable width (must be in range 1 to 9999 or text 'max' if it should fit the longest value of the variable)."
+
+ IDS_READDIRTERMINATED, "If you want to cancel listing (the list of files and directories will be incomplete), press the Yes button. If you want to continue with listing and temporarily suppress use of automatic refresh for current path, press the No button. If you want to continue with listing, press the Cancel button."
+ IDS_READINGPATHESC, "Listing path ""%s"", press the ESC key to cancel..."
+
+// ViewWith, EditWith:
+ IDS_VIEWWITH_EXTERNAL, "External Viewer [%s]"
+ IDS_VIEWWITH_INTERNAL, "Internal Viewer"
+ IDS_EDITWITH_EXTERNAL, "External Editor [%s]"
+
+// default user defined packers
+ IDS_DP_JAR_E, "JAR (External Win32, tested with v1.02)"
+ IDS_DP_JARV_E, "JAR to 1.44MB volumes (External Win32, tested with v1.02)"
+ IDS_DP_RAR_E, "RAR (External Win32, tested with v2.50)"
+ IDS_DP_RARV_E, "RAR to 1.44MB volumes (External Win32, tested with v2.50)"
+ IDS_DP_ARJ16_E, "ARJ (External DOS, tested with v2.60)"
+ IDS_DP_ARJ16V_E, "ARJ to 1.44MB volumes (External DOS, tested with v2.60)"
+ IDS_DP_LHA_E, "LHA (External DOS, tested with v2.55)"
+ IDS_DP_UC2_E, "UC2 (External DOS, tested with v2r3PRO)"
+ IDS_DP_ARJ32_E, "ARJ (External Win32, tested with v3.00c)"
+ IDS_DP_ARJ32V_E, "ARJ to 1.44MB volumes (External Win32, tested with v3.00c)"
+ IDS_DP_ACE_E, "ACE (External Win32, tested with v1.2b)"
+ IDS_DP_ACEV_E, "ACE to 1.44MB volumes (External Win32, tested with v1.2b)"
+ IDS_DP_ACE16_E, "ACE (External DOS, tested with v1.2b)"
+ IDS_DP_ACE16V_E, "ACE to 1.44MB volumes (External DOS, tested with v1.2b)"
+ IDS_DP_JAR16_E, "JAR (External DOS, tested with v1.02)"
+ IDS_DP_JAR16V_E, "JAR to 1.44MB volumes (External DOS, tested with v1.02)"
+ IDS_DP_RAR16_E, "RAR (External DOS, tested with v2.50)"
+ IDS_DP_RAR16V_E, "RAR to 1.44MB volumes (External DOS, tested with v2.50)"
+ IDS_DP_ZIP32_E, "PKZIP (External Win32, tested with v2.50)"
+ IDS_DP_ZIP16_E, "PKZIP (External DOS, tested with v2.04g)"
+
+// default user defined unpackers
+ IDS_DU_JAR_E, "JAR (External Win32, tested with v1.02)"
+ IDS_DU_RAR_E, "RAR (External Win32, tested with v2.50)"
+ IDS_DU_ARJ16_E, "ARJ (External DOS, tested with v2.60)"
+ IDS_DU_LHA_E, "LHA (External DOS, tested with v2.55)"
+ IDS_DU_UC2_E, "UC2 (External DOS, tested with v2r3PRO)"
+ IDS_DU_ARJ32_E, "ARJ (External Win32, tested with v3.00c)"
+ IDS_DU_ACE_E, "ACE (External Win32, tested with v1.2b)"
+ IDS_DU_ACE16_E, "ACE (External DOS, tested with v1.2b)"
+ IDS_DU_JAR16_E, "JAR (External DOS, tested with v1.02)"
+ IDS_DU_RAR16_E, "RAR (External DOS, tested with v2.50)"
+ IDS_DU_ZIP32_E, "PKZIP (External Win32, tested with v2.50)"
+ IDS_DU_ZIP16_E, "PKUNZIP (External DOS, tested with v2.04g)"
+
+// supported external archivers
+ IDS_EXT_JAR32,  "Win32 JAR console executable (tested with v1.02)"
+ IDS_EXT_RAR32,  "Win32 RAR console executable (tested with v2.50)"
+ IDS_EXT_ARJ16,  "MS-DOS ARJ executable (tested with v2.60)"
+ IDS_EXT_LHA16,  "MS-DOS LHA executable (tested with v2.55)"
+ IDS_EXT_UC216,  "MS-DOS UC2 executable (tested with v2r3PRO)"
+ IDS_EXT_JAR16,  "MS-DOS JAR executable (tested with v1.02)"
+ IDS_EXT_RAR16,  "MS-DOS RAR executable (tested with v2.50)"
+ IDS_EXT_ZIP32,  "Win32 PKZIP console executable (tested with v2.50)"
+ IDS_EXT_ZIP16,  "MS-DOS PKZIP/PKUNZIP executable (tested with v2.04g)"
+ IDS_EXT_ARJ32,  "Win32 ARJ console executable (tested with v3.00c)"
+ IDS_EXT_ACE32,  "Win32 ACE console executable (tested with v1.2b)"
+ IDS_EXT_ACE16,  "MS-DOS ACE executable (tested with v1.2b)"
+
+// packer/unpacker type
+ IDS_PUT_EXTERNAL, "External Program"
+ IDS_PUT_NONE, "-- not supported --"
+
+// color Scheme
+ IDS_COLORSCHEME_CUSTOM, "Custom"
+ IDS_COLORSCHEME_SALAMANDER, "Open Salamander"
+ IDS_COLORSCHEME_EXPLORER, "Windows Explorer"
+ IDS_COLORSCHEME_NORTON, "Norton Commander"
+ IDS_COLORSCHEME_NAVIGATOR, "DOS Navigator"
+// color Item
+ IDS_COLORITEM_PANELITEM, "Items in panel"
+ IDS_COLORITEM_FOCUSEDFRAME, "Frame of focused item in panel"
+ IDS_COLORITEM_THUMBNAILFRAME, "Frame around thumbnail in panel"
+ IDS_COLORITEM_BLENDEDICONS, "Icon tincture in panel"
+ IDS_COLORITEM_PROGRESS, "Operation progress"
+ IDS_COLORITEM_CAPTION, "Panel caption"
+ IDS_COLORITEM_HOT, "Hot items"
+
+// color Label
+ IDS_COLORLABEL_ACTIVENORMAL, "Active Normal"
+ IDS_COLORLABEL_ACTIVESELECTED, "Active Selected"
+ IDS_COLORLABEL_INACTIVENORMAL, "Inactive Normal"
+ IDS_COLORLABEL_INACTIVESELECTED, "Inactive Selected"
+ IDS_COLORLABEL_NORMAL, "Normal"
+ IDS_COLORLABEL_SELECTED, "Selected"
+ IDS_COLORLABEL_FOCUSED, "Focused"
+ IDS_COLORLABEL_FOCUSEDSELECTED, "Focused and Selected"
+ IDS_COLORLABEL_LEFTPART, "Left Part (done)"
+ IDS_COLORLABEL_RIGHTPART, "Right Part (to do)"
+ IDS_COLORLABEL_ACTIVE, "Active Panel"
+ IDS_COLORLABEL_INACTIVE, "Inactive Panel"
+ IDS_COLORLABEL_HOTPANEL, "Panel"
+ IDS_COLORLABEL_HOTACTIVE, "Active Caption"
+ IDS_COLORLABEL_HOTINACTIVE, "Inactive Caption"
+ IDS_COLORLABEL_HIGHLIGHTED, "Highlighted part of row"
+
+ IDS_FILEHISTORY_VIEW, "View"
+ IDS_FILEHISTORY_EDIT, "Edit"
+ IDS_FILEHISTORY_OPEN, "Open"
+
+// ConfigPage5 - HotPaths
+ IDS_HOTPATH_NAME, "Name"
+ IDS_HOTPATH_HOTKEY, "Hot Key"
+ IDS_COLUMN_NAME, "Name"
+
+ IDS_CUSTOMIZE_HOTPATHS, "Customize..."
+
+ IDS_CONTEXTMENU_EXIT, "Exit Open Salamander"
+
+// Directory and Status line Tooltips
+ IDS_PANELFILTER, "Filter is on"
+ IDS_FREESPACE, "Disk Free Space\nClick to display Drive Information (Ctrl+F1)"
+ IDS_DIRHISTORY, "List of Working Directories (Alt+F12)"
+ IDS_ZOOMPANEL, "Maximize/Restore Panel (Ctrl+F11)"
+
+ IDS_MENUNEWTITLE, "Ne&w"
+
+ IDS_UNABLETOCHANGEDRIVELABEL, "Unable to change drive label.\nError: %s"
+
+// wait window
+ IDS_ANALYSINGDIRTREEESC, "Reading directory tree, press the ESC key to cancel..."
+
+// conversions tables
+ IDS_CONVERSION_DESCRIPTION, "Description"
+ IDS_CONVERSION_CODEPAGE, "Code Page"
+ IDS_CONVERSION_PATH, "Path"
+
+// viewers name
+ IDS_VIEWER_INTERNAL, "Internal Viewer"
+ IDS_VIEWER_EXTERNAL, "External Viewer"
+
+ IDS_MAILERFAILED, "Unable to launch default mailer. Error number %d."
+
+ IDS_DROPMOVE, "&Move Here"
+ IDS_DROPCOPY, "&Copy Here"
+ IDS_DROPLINK, "&Other..."
+ IDS_DROPUNKNOWN, "&Finish Operation"
+ IDS_DROPCANCEL, "Cancel"
+
+ IDS_UNABLETOLOADPLUGIN, "Unable to load %s plugin (%s) or some of its components.\nError: %s\nSee plugin details in menu Plugins / Plugins Manager."
+ IDS_UNABLETOFINDPLUGINENTRY, "The SPL file %s is not an Open Salamander plugin."
+ IDS_REINSTALLPLUGIN, "%s plugin (%s) has been changed. Please reinstall (remove and add) this plugin (in menu Plugins / Plugins Manager)."
+ IDS_PLUGININVALID, "%s plugin (%s) has not been loaded. Plugin is not valid Open Salamander Plugin or some plugin internal error has occurred."
+ IDS_PLUGININVALID2, "This plugin (%s) has not been loaded. Plugin is not valid Open Salamander Plugin or some plugin internal error has occurred."
+ IDS_OLDPLUGINVERSION, "%s plugin (%s) is not supported by this version of Open Salamander. Please get updated version of this plugin."
+ IDS_OLDPLUGINVERSION2, "The plugin (%s) is not supported by this version of Open Salamander. Please get updated version of this plugin."
+
+ IDS_UPDATEFAILED, "Packing of updated file(s) into archive has failed. Do you want to try it again? If you choose NO, you'll get back to the Archive Update dialog, so you'll be able to copy updated file(s) to chosen disk folder (for later packing into the archive)."
+
+ IDS_NOICONS, "The file ""%s"" contains no icons."
+ IDS_CANNONTFINDFILE, "Cannot find the file ""%s""."
+
+ IDS_VIEWER_BLOCKTOOBIG, "The size of the block selected in this viewer is over 100MB. Copying this block to clipboard or moving it by drag & drop may be slow. Do you want to skip such operations for blocks over 100MB in this viewer?"
+ IDS_VIEWER_UNKNOWNERR, "Unknown error."
+ IDS_VIEWER_BINFILE, "This file contains line with more than 10000 characters. It's probably binary file.\nDo you want to see this file in hexadecimal mode?\n\nWARNING: Viewing of file with extremely long lines in text mode can be slow."
+ IDS_FINDTERMINATEDBYUSER, "You have canceled text searching."
+
+ IDS_VIEWERCODINGMENU, "&Convert"
+ IDS_VIEWERNONECODING, "&Don't Convert"
+ IDS_VIEWERANSI2OEMCODING, "&ANSI - OEM"
+ IDS_VIEWEROEM2ANSICODING, "&OEM - ANSI"
+ IDS_VIEWERANSICODEPAGE, "ANSI"
+ IDS_VIEWERBADFILESIZE, "Incorrect file size (not 256 bytes)."
+ IDS_VIEWERERROPENFILE, "Error opening file ""%s"".\n%s"
+ IDS_VIEWERBADINTCODING, "Unknown internal coding name (neither ANSI - OEM nor OEM - ANSI) in file ""%s""."
+ IDS_VIEWERINVALIDLINE, "Invalid line in file ""%s""."
+ IDS_VIEWERERROPENCODES, "Error opening file ""%s"".\n%s"
+ IDS_VIEWERAUTOCODING "&Auto-Select"
+ IDS_VIEWERSETDEFAULTCODING "Set as Default"
+
+ IDS_VIEWERNEXTCODING, "Next\tF8"
+ IDS_VIEWERPREVIOUSCODING, "Previous\tShift+F8"
+
+ IDS_EMPTYNAMENOTALLOWED, "Empty name has no sense here."
+ IDS_INCOMLETEFILENAME, "The path specified is incomplete, please specify full path."
+
+ IDS_SALAMANDBUSY, "Running instance of Open Salamander is busy.\nDo you want to run new instance?"
+ IDS_SALAMANDBUSY2, "Open Salamander is busy. The requested command cannot be accomplished, please try it again later."
+
+ IDS_VIEWERCOPYTOFILE, "Copy To File"
+
+ IDS_CONVERTTITLE, "Convert"
+ IDS_CONVERTING, "Converting"
+ IDS_ERRORCREATINGTMPFILE, "Error Creating Temporary File"
+
+ IDS_PLUGINFUNCVIEW, "List and Unpack Archive in Panel"
+ IDS_PLUGINFUNCEDIT, "Pack to and Delete from Archive in Panel"
+ IDS_PLUGINFUNCCUSTPACK, "Packer in Pack Dialog"
+ IDS_PLUGINFUNCCUSTUNPACK, "Unpacker in Unpack Dialog"
+ IDS_PLUGINFUNCFILEVIEWER, "File Viewer"
+ IDS_PLUGINFUNCMENUEXTENSION, "Menu Extension"
+ IDS_PLUGINFUNCFILESYSTEM, "File System (FS)"
+ IDS_PLUGINFUNCTHUMBLOADER, "Thumbnail Loader"
+ IDS_PLUGINADDTITLE, "Add Plugins"
+ IDS_PLUGINTESTOK, "%s plugin seems to work correctly."
+ IDS_PLUGINTESTALLOK, "All plugins seem to work correctly."
+ IDS_PLUGINSAVECONFIG, "%s plugin is about to unload.\n\nDo you want to save its configuration?"
+ IDS_PLUGINREMOVEOK, "Do you really want to remove %s plugin?\n\nNote: it doesn't delete plugin files from disk."
+ IDS_PLUGINEXISTS, "%s plugin (%s) has already been installed.\nYou can not add it once more."
+ IDS_PLUGINFORCEUNLOAD, "%s plugin has rejected to unload.\nDo you want to force it to unload?"
+ IDS_PLUGINEXTNONE, "(none)"
+ IDS_PLUGINFSNONE, "(none)"
+ IDS_PLUGINTHUMBNONE, "(none)"
+ IDS_PLUGINS_NAME, "Name"
+ IDS_PLUGINS_LOADED, "Loaded"
+ IDS_PLUGINS_LOADED_YES, "Yes"
+ IDS_PLUGINS_LOADED_NO, "No"
+ IDS_PLUGINS_VERSION, "Version"
+ IDS_PLUGINS_LOCATION, "Location"
+ IDS_PLUGIN_COMMAND, "Command"
+ IDS_PLUGIN_KEY, "Shortcut Key"
+ IDS_PLUGINRESETKEYS, "%s plugin must be unloaded and loaded to restore hot keys.\n\nDo you want restore hot keys?"
+
+
+ IDS_INVALIDCMDLINE, "Invalid command line parameters.\n\nUsage:\n  SALAMAND.EXE [-L path-to-left-panel] [-R path-to-right-panel] [-A path-to-active-panel] [-C use-configuration-file] [-I icon-index] [-T title-prefix] [-O only-one-instance] [-P panel-index]\n\n  [X] means that parameter X is optional"
+ IDS_FILEREADERROR, "Unable to read file ""%s""."
+ IDS_FILEWRITEERROR, "Unable to write file ""%s""."
+
+ IDS_ERRORCREATINGROOTDIR, "The directory is the root directory."
+ IDS_ERR_FILEOPEN, "Error querying file properties."
+
+ IDS_NOTARCHIVEPATH, "The path specified contains path to a file. The file is not registered archive file (see Configuration/Panel Archivers/Extensions), so Open Salamander doesn't know how to open it."
+ IDS_PATHNOTFOUND, "The path specified was not found."
+ IDS_NOTPLUGINFS, "The path specified contains unknown plugin file system (its name is before ':',\nsee menu Plugins / Plugins Manager for known plugin file systems)."
+
+ IDS_ARCHIVEFORCECLOSE, "Archive ""%s"" has rejected to close.\nDo you want to force it to close?"
+ IDS_ARCHIVEREFRESHEDIT, "Archive file ""%s"" has changed. Archive will be reopened in panel."
+ IDS_ARCHIVECLOSEEDIT, "Archive ""%s"" is about to close. If you are still editing some files from this archive, please save changes and close these files in editors now. Archive update will be offered in case of changes in edited files."
+ IDS_ARCHIVECLOSEEDIT2, "Archive update is necessary before using the requested command. If you are still editing some files from archive ""%s"", please save changes and close these files in editors now. Archive update will be offered only in case of changes in edited files. After archive update please check your selection in refreshed panel and repeat the command."
+ IDS_ARCHIVECLOSEEDIT3, "Archive update is necessary before starting drag&drop operation. If you are still editing some files from archive ""%s"", please save changes and close these files in editors now. Archive update will be offered only in case of changes in edited files. After archive update, please check your selection in refreshed panel and start drag&drop operation again."
+
+ IDS_UNABLETOFOCUSFILEONFS, "Unable to focus file ""%s"". The file is not found."
+
+ IDS_AUTOINSTALLPLUGINS, "Installing new plugins, please wait..."
+ IDS_AUTOINSTALLPLUGINS_INIT, "(initialization)"
+ IDS_LOADINGPLUGINS, "Loading all plugins, please wait..."
+ IDS_READINGASSOCIATIONS, "Reading associations from registry, please wait..."
+ IDS_TRYINGRECONNECTESC, "Trying to connect network drive, press the ESC key to cancel..."
+ IDS_SAVINGCONFIGURATION, "Saving configuration to registry, please wait..."
+ IDS_DELETINGCONFIGURATION, "Deleting old configuration from registry, please wait..."
+
+ IDS_SAVECFG_EXPFILEEXISTS, "The file ""%s"" was found. This file contains exported configuration which is loaded on every start of Open Salamander. If you don't want to load configuration from this file, rename or delete it. Press OK to save configuration or Cancel to focus the file."
+
+ IDS_FSFORCECLOSE, "The path ""%s"" has rejected to close.\nDo you want to force it to close?"
+
+ IDS_CREDENTIALCONFLICT, "Multiple connections to a server or shared resource by the same user, using more than one user name, are not allowed. Disconnect all previous connections to the server or shared resource and try again."
+
+ IDS_ARCREALLYIGNORESEL, "Do you want to ignore all selected files (to exclude them from archive update)?"
+ IDS_ARCREALLYIGNOREALL, "Do you want to ignore all updated files (to abort archive update)?"
+
+ IDS_BROWSEARCUPDATE, "Copy Updated Files"
+ IDS_BROWSEARCUPDATETEXT, "Select the target folder for updated files."
+
+ IDS_SEARCHINGTEXTESC, "Searching text, press the ESC key to cancel..."
+
+ IDS_PATHERRORFORMAT, "Path: ""%s""\nError: %s"
+ IDS_PATHINARCHIVENOTFOUND, "Path ""%s"" doesn't exist in archive."
+
+ IDS_EMPTYUSERNAME, "Empty username is not allowed here."
+
+ IDS_NEWISNOTAVAILABLE, "Menu New is not available."
+
+ IDS_TMPDIRERROR, "The directory specified by the TMP or TEMP environment variables doesn't exist or isn't accessible. Open Salamander will use the system directory for temporary files."
+
+ IDS_UPDIRTYPENAME, "Upper Directory"
+
+ IDS_FLOPPY350, "3.5 Floppy"
+ IDS_FLOPPY525, "5.25 Floppy"
+ IDS_FLOPPY800, "8.0 Floppy"
+
+ IDS_NEWNAME_COPY, "Copy"
+ IDS_NEWNAME_OF, "of"
+
+ IDS_NOITEMSINPANEL, "There are no items in this panel."
+
+ IDS_EMAILFILES_SUBJECT, "Emailing:"
+ IDS_EMAILFILES_BODY, "Your files are attached and ready to send with this message."
+ IDS_EMAILFILES_MAPIERROR, "Cannot send mail. No mail program is set up to send mail, MAPI32.DLL was not found."
+
+ IDS_PLUGINSUFFIX, " (Plugin)"
+
+ IDS_CURRENTPROCESSBREAK, "You cannot break this task (it makes no sense). Use another Open Salamander task to break this one."
+ IDS_CURRENTPROCESSTERMINATE, "Are you sure you wish to terminate current process?\n\nWARNING: All unsaved data in current process will be lost!"
+ IDS_CONFIRM_TERMINATE, "Are you sure you wish to terminate specified process?\n\nWARNING: All unsaved data in specified process will be lost!"
+ IDS_CONFIRM_BREAK, "Are you sure you wish to break specified process and send us bug report?\n\nWARNING: All unsaved data in specified process will be lost!"
+
+ IDS_UNABLETOREADFILE, "Unable to read file."
+
+ IDS_MOVECOPY_NONSENSE, "This operation has probably no sense. All selected files and directories have the same target name (they would overwrite one another).\nDo you want to continue with this operation?"
+
+ IDS_MOVECOPY_CREATEPATH, "Target path ""%s"" doesn't exist. Do you want to create it?"
+ IDS_MOVECOPY_CREATEPATH_CNFRM, "&Create target path without asking next time\thow to revert\tYou can change this option later on the Confirmations page in the Configuration."
+
+ IDS_MOVECOPY_OPMASKSNOTSUP, "Operation masks are not supported in archives (path into archive must end on backslash)."
+
+ IDS_INVALIDNUMBER, "Invalid number."
+
+ IDS_CLEARHISTORY_CNFRM, "Are you sure you want Open Salamander to delete all your history related data?\n\nHistory of Command line, copy, move, select, working directories, opened files, find, plugins, etc. will be deleted."
+ IDS_HISTORY_WAS_CLEARED, "All history related data was cleared from memory.\n\nPlease consider saving of Open Salamander's configuration.\nIt removes history related data even from Registry."
+
+ IDS_UNPACK_ONLYDISK, "Unpacking to archives or plugin file-systems is not supported yet."
+ IDS_UNPACK_OPMASKSNOTSUP, "Operation masks are not supported when unpacking from archives (target path must exist or end on backslash)."
+
+ IDS_LANGUAGE_CHANGE, "Language changes do not take effect until the Open Salamander is restarted."
+ IDS_CONVERSION_CHANGE, "Conversion Table changes do not take effect until the Open Salamander is restarted."
+
+ IDS_FSCOPYMOVE_ONLYDISK_A, "This plugin file-system doesn't support copying nor moving to archives."
+ IDS_FSCOPYMOVE_ONLYDISK_FS, "This plugin file-system doesn't support copying nor moving to specified plugin file-system."
+ IDS_FSCOPYMOVE_INCOMPLETEPATH, "Copying and moving inside this plugin file-system is not supported."
+ IDS_FSCOPYMOVE_OPMASKSNOTSUP, "This plugin file-system doesn't support operation masks (target path must exist or end on backslash)."
+ IDS_FSCOPYMOVE_TOFS_NOTSUP, "Copying and moving to specified plugin file-system are not supported."
+
+ IDS_GETCOMPRFILESIZEERROR, "Unable to get compressed file size for file: ""%s""\nError: %s\nDo you want to skip all similar errors?"
+
+ // pozor %s zde nesmi byt v uvozovkach, protoze bude obsahovat variabilni texty,
+ // ktere uvozovky budou mit
+ IDS_CONFIRM_NTFSCOMPRESS, "Are you sure you want to compress %s?\n\nWarning: files and directories will be decrypted before compressing."
+ IDS_CONFIRM_NTFSUNCOMPRESS, "Are you sure you want to uncompress %s?"
+ IDS_CONFIRM_NTFSENCRYPT, "Are you sure you want to encrypt %s?\n\nWarning: files and directories will be uncompressed before encrypting."
+ IDS_CONFIRM_NTFSDECRYPT, "Are you sure you want to decrypt %s?"
+ IDS_CONFIRM_DELETEFROMARCHIVE, "Are you sure you want to delete %s from archive?"
+ IDS_COPYFROMARCHIVETO, "Copy %s from archive to"
+ IDS_PACKTOARCHIVE, "Pack %s to archive"
+ IDS_COPYTO, "&Copy %s to"
+ IDS_MOVETO, "&Move %s to"
+ IDS_CONFIRM_DELETE, "Are you sure you want to delete %s?"
+ IDS_CONFIRM_DELETE2, "Are you sure you want to delete %s?\n\nAll files matching recycle masks will be sent to the Recycle Bin."
+
+ IDS_DELETETMPSALDIRS, "{!}Do you want to delete %d temporary director{y|1|ies} used by previous instances of Open Salamander?"
+ IDS_DELETETMPSALDIRS_YES, "&Yes";
+ IDS_DELETETMPSALDIRS_NO, "&No";
+ IDS_DELETETMPSALDIRS_FOCUS, "&Focus";
+
+ IDS_QUESTION_FILE, "file ""%s"""
+ IDS_DLG_QUESTION_FILE, "File ""%s"""
+ IDS_QUESTION_DIRECTORY, "directory ""%s"""
+ IDS_DLG_QUESTION_DIRECTORY, "Directory ""%s"""
+
+ IDS_CONFIRM_NTFSCOMPRESS_TITLE, "Confirm NTFS Compress"
+ IDS_CONFIRM_NTFSUNCOMPRESS_TITLE, "Confirm NTFS Uncompress"
+ IDS_CONFIRM_NTFSENCRYPT_TITLE, "Confirm NTFS Encrypt"
+ IDS_CONFIRM_NTFSDECRYPT_TITLE, "Confirm NTFS Decrypt"
+ IDS_CONFIRM_DELETE_TITLE, "Confirm Delete"
+
+ IDS_FIND_NOMATCH, "Cannot find the string '%s'."
+ IDS_FIND_NOREGEXPMATCH, "Cannot find a match for the regular expression '%s'."
+
+//
+// plural strings -- begin
+//
+// znaky '<' a '>' ohranicuji oblast, kterou lze mysi prenest na clipboard
+
+ IDS_PLURAL_X_BYTES, "{!}%s byte{s|0||1|s}"
+
+ IDS_PLURAL_X_SEL_FILES, "{!}%d selected file{s|0||1|s}"
+ IDS_PLURAL_X_SEL_DIRS, "{!}%d selected director{y|1|ies}"
+ IDS_PLURAL_X_SEL_FILES_Y_SEL_DIRS, "{!}%d selected file{s|0||1|s} and %d selected director{y|1|ies}"
+ IDS_DLG_PLURAL_X_SEL_FILES, "{!}%d Selected File{s|0||1|s}"
+ IDS_DLG_PLURAL_X_SEL_DIRS, "{!}%d Selected Director{y|1|ies}"
+ IDS_DLG_PLURAL_X_SEL_FILES_Y_SEL_DIRS, "{!}%d Selected File{s|0||1|s} and %d Selected Director{y|1|ies}"
+
+ IDS_PLURAL_X_HID_FILES, "{!}%d hidden file{s|0||1|s}"
+ IDS_PLURAL_X_HID_DIRS, "{!}%d hidden director{y|1|ies}"
+ IDS_PLURAL_X_HID_FILES_Y_HID_DIRS, "{!}%d hidden file{s|0||1|s} and %d hidden director{y|1|ies}"
+ IDS_DLG_PLURAL_X_HID_FILES, "{!}%d Hidden File{s|0||1|s}"
+ IDS_DLG_PLURAL_X_HID_DIRS, "{!}%d Hidden Director{y|1|ies}"
+ IDS_DLG_PLURAL_X_HID_FILES_Y_HID_DIRS, "{!}%d Hidden File{s|0||1|s} and %d Hidden Director{y|1|ies}"
+// IDS_PLURAL_SWITCH_HIDDEN, "{!}(to show/hide {it|1|them} use Ctrl+H)"
+
+ IDS_PLURAL_X_BYTES_Y_SEL_FILES, "{!}%s byte{s|0||1|s} in %d selected file{s|0||1|s}"
+ IDS_PLURAL_X_BYTES_Y_SEL_FILES2, "{!}<%s> byte{s|0||1|s} in %d selected file{s|0||1|s}"
+ IDS_PLURAL_X_BYTES_Y_SEL_DIRS, "{!}%s byte{s|0||1|s} in %d selected director{y|1|ies}"
+ IDS_PLURAL_X_BYTES_Y_SEL_DIRS2, "{!}<%s> byte{s|0||1|s} in %d selected director{y|1|ies}"
+ IDS_PLURAL_X_BYTES_Y_SEL_FILES_Z_SEL_DIRS, "{!}%s byte{s|0||1|s} in %d selected file{s|0||1|s} and %d selected director{y|1|ies}"
+ IDS_PLURAL_X_BYTES_Y_SEL_FILES_Z_SEL_DIRS2, "{!}<%s> byte{s|0||1|s} in %d selected file{s|0||1|s} and %d selected director{y|1|ies}"
+
+ IDS_PLURAL_X_FILES, "{!}%d file{s|0||1|s}"
+ IDS_PLURAL_X_DIRS, "{!}%d director{y|1|ies}"
+ IDS_PLURAL_X_FILES_Y_DIRS, "{!}%d file{|1|s} and %d director{y|1|ies}"
+ IDS_DLG_PLURAL_X_FILES, "{!}%d File{s|0||1|s}"
+ IDS_DLG_PLURAL_X_DIRS, "{!}%d Director{y|1|ies}"
+ IDS_DLG_PLURAL_X_FILES_Y_DIRS, "{!}%d File{|1|s} and %d Director{y|1|ies}"
+
+// IDS_PLURAL_X_FILES, "{!}%d {vybraný soubor|1|vybrané soubory|4|vybraných souborů}"
+// IDS_PLURAL_X_DIRS, "{!}%d {vybraný adresář|1|vybrané adresáře|4|vybraných adresářů}"
+// IDS_PLURAL_X_FILES_Y_DIRS, "{!}%d {vybraný soubor|1|vybrané soubory|4|vybraných souborů} a %d {vybraný adresář|1|vybrané adresáře|4|vybraných adresářů}"
+// IDS_PLURAL_X_BYTES_Y_FILES, "{!}%s bajt{ů|0||1|y|4|ů} {v %d vybraném souboru|1|ve %d vybraných souborech}"
+// IDS_PLURAL_X_BYTES_Y_DIRS, "{!}%s bajt{ů|0||1|y|4|ů} {v %d vybraném adresáři|1|ve %d vybraných adresářích}"
+// IDS_PLURAL_X_BYTES_Y_FILES_Z_DIRS, "{!}%s bajt{ů|0||1|y|4|ů} {v %d vybraném souboru|1|ve %d vybraných souborech} a %d {vybraném adresáři|1|vybraných adresářích}"
+
+//
+// plural strings -- end
+//
+
+ IDS_ARCPATHNOTSUPPORTED, "Target path for this operation cannot contain path to a file (archives are not supported here)."
+ IDS_TARGETPATHMUSTEXIST, "Target path for this operation must exist (creating of target path is not supported here)."
+
+ IDS_UNABLETOEDITDUPFILES, "Unable to edit or open file from archive. Name of this file is used for more than one file in archive (such files can be opened only in viewers)."
+ IDS_UNABLETOEDITINVFILES, "Unable to edit or open file from archive. Name of this file is invalid on Windows file systems (such files can be opened only in viewers)."
+
+ IDS_EDITPACKNOTSUPPORTED, "Packing to this type of archive is not supported. Open Salamander will not be able to update file in archive.\n\nDo you still want to edit this file?"
+
+ IDS_UNPACKINGFILEFROMARC, "Unpacking file from archive, please wait..."
+ IDS_LISTINGARCHIVE, "Reading list of files and directories from archive, please wait..."
+
+ IDS_POLICIESRESTRICTION_TITLE, "Restrictions"
+ IDS_POLICIESRESTRICTION, "This operation has been canceled due to restrictions in effect on this computer. Please contact your system administrator."
+
+ IDS_WARNINGTITLE, "Warning"
+
+ IDS_INVALIDREGEXP, "The string '%s' is not a valid regular expression.\nError: %s."
+
+ IDS_SALCMD_VIEWWITH, "View &With\tCtrl+Shift+F3"
+ IDS_SALCMD_EDITWITH, "Edit Wi&th\tCtrl+Shift+F4"
+ IDS_SALCMD_OPEN, "&Open\tEnter"
+
+ IDS_CANNOT_CREATE_UNC_NAME, "The name ""%s"" cannot be converted to UNC.\nName is neither from shared directory nor mapped drive."
+
+ // Shared Directories Dialog
+ IDS_CONFIRM_STOPSHARE, "Are you sure you wish to stop sharing ""%s""?"
+ IDS_SHARES_NAME, "Share Name"
+ IDS_SHARES_PATH, "Shared Path"
+ IDS_SHARES_COMMENT, "Comment"
+
+ IDS_DISCONNECT_NAME, "Name"
+ IDS_DISCONNECT_PATH, "Path"
+ IDS_DISCONNECT_NODRIVES, "There are no network connections to disconnect."
+
+ IDS_CONFIRM_EMAIL, "Do you want to email %s?\nTotal size: %s"
+ IDS_WANTEMAIL_NOFILE, "There is no file selected."
+
+ IDS_CONFIRM_ADDTOARCHIVE, "The file ""%s"" already exists.\n\nDo you want to add %s into existing archive or overwrite existing one?"
+ IDS_CONFIRM_ADDTOARCHIVE_ADD, "&Add"
+ IDS_CONFIRM_ADDTOARCHIVE_OVER, "&Overwrite"
+ IDS_CONFIRM_ADDTOARCHIVE_NOASK, "Add into archive &without asking next time\thow to revert\tYou can change this option later using the Confirmations page in the Configuration."
+
+ IDS_TITLEBAR_DIRECTORY, "Directory Name Only"
+ IDS_TITLEBAR_COMPOSITE, "Shortened Path"
+ IDS_TITLEBAR_FULLPATH, "Full Path"
+
+ IDS_SHORTCUT_INVALID, "The file '%s' is not valid shortcut nor link."
+ IDS_SHORTCUT_WRONG_PATH, "Cannot obtain shortcut target or target path is not accessible."
+ IDS_DIRLINK_WRONG_PATH, "Cannot get link target."
+ IDS_DIRLINK_MOUNT_POINT, "This link is volume mount point. Unable to show it in panel.\nPath: %s"
+
+ IDS_MASKS_HINT, "'*' stands for any number of characters. '?' stands for any character.\nExample: *.a? (.a1, anything.ai, etc)\nMasks are separated by semi-colon. Example: *.txt;*.doc (a.txt, b.doc, etc)\nExcluded masks are placed after '|'. Example: |*.txt;*.doc (anything except *.txt;*.doc)\nIf you need semi-colon inside mask, type it twice. Example: one;;mask"
+ IDS_EXTENDED_MASKS_HINT, "Masks are separated by semi-colon.\nCharacter '#' stands for any digit ('0' ... '9')"
+
+ IDS_FILELISTLINE_HINT, "You can set width of variable value to number of characters or to 'max' (to fit to the longest value).\nFor example: $(FileName:20) or $(FileName:max)."
+
+ IDS_SPECIFY_CONVERT_ACTION, "At least one convert action must be specified."
+ IDS_NOFILE_MATCHEDMASK, "There is no file that matches the specified file mask."
+
+ IDS_HIDDEN_ATTRIBUTE, "&Show Files And Directories With Hidden or System Attribute\tCtrl+H"
+ IDS_HIDDEN_FILTER, "&Do Not Use Filter\tCtrl+F12"
+ IDS_HIDDEN_HIDECMD, "S&how Hidden Names"
+
+ IDS_ERROR_OPENING_FILE, "Error opening file ""%s"".\n%s"
+ IDS_ERROR_READING_FILE, "Error reading file ""%s"".\n%s"
+
+ IDS_COMPARE_FS, "Comparing with plugin file-system is not supported yet."
+ IDS_COMPARE_SAMEPATH, "There is same path in the left and right panel."
+
+ IDS_FINDLOG_TYPE, "Type"
+ IDS_FINDLOG_TEXT, "Text"
+ IDS_FINDLOG_PATH, "File or Directory"
+ IDS_FINDLOG_ERROR, "Error"
+ IDS_FINDLOG_INFO, "Information"
+ IDS_FINDLOG_SKIP, "Skipping directory"
+ IDS_FINDLOG_IGNORE, "Do you want to add directory ""%s"" to the Ignore Directory List?"
+ IDS_FINDERRORS_SKIPPING, "Skipping %d errors..."
+ IDS_FINDERRORS_DEFER, "&Defer following error messages"
+
+ IDS_UNPACKFILEPROGRESS, "File:"
+
+ IDS_ARCFILESNOTFOUND, "Unable to unpack files and directories specified in clipboard. They are not in archive any more."
+ IDS_ARCFILESNOTFOUND2, "Some files or directories specified in clipboard were not found in archive.\n\nDo you want to continue?"
+ IDS_ARCUNABLETOPASTE1, "Unable to paste files and directories from clipboard here. Open Salamander's\nmain window must be accessible to process Paste command."
+ IDS_ARCUNABLETOPASTE2, "Unable to paste files and directories from clipboard now. Open Salamander's\nmain window must be accessible to process Paste command."
+
+ IDS_INFODLGFLAG7, "supports named streams"
+ IDS_INFODLGFLAG8, "volume is read-only"
+ IDS_INFODLGFLAG9, "supports the Encrypting File System (EFS)"
+ IDS_INFODLGFLAG10, "supports object identifiers"
+ IDS_INFODLGFLAG11, "supports reparse points"
+ IDS_INFODLGFLAG12, "supports sparse files"
+ IDS_INFODLGFLAG13, "supports disk quotas"
+
+ IDS_PROGDLGPAUSE, "&Pause"
+ IDS_PROGDLGRESUME, "&Resume"
+ IDS_PROGDLGPAUSED, "paused"
+ IDS_PROGDLGQUEUEPAUSED, "waiting"
+
+ IDS_EDITNEWALREADYEX, "The file already exists. Do you want to edit this existing file?"
+
+ IDS_SRCPATHUNICODEONLY, "Source path cannot be translated from Unicode to multibyte, so Open Salamander is not able to work on it."
+ IDS_SRCFILESNOTFOUND, "Some files or directories specified in drag&drop or clipboard operation were not found.\n\nDo you want to continue?"
+
+ IDS_PLUGINPACKERNOTFOUND, "Unable to found packer for %s plugin (see Packers in Pack Dialog Box page in Configuration)."
+ IDS_PLUGINUNPACKERNOTFOUND, "Unable to found unpacker for %s plugin (see Unpackers in Unpack Dialog Box page in Configuration)."
+
+ IDS_FILETITLE, "File:"
+ IDS_CONFADSLOSS_WARNING_MOVE_FILE, "File contains alternate data streams (ADS). ADS are not supported on target path. Press Yes button to move file without ADS (WARNING: ADS will be lost). Press Skip button to skip moving of this file."
+ IDS_CONFADSLOSS_WARNING_MOVE_DIR, "Directory contains alternate data streams (ADS). ADS are not supported on target path. Press Yes button to move directory without ADS (WARNING: ADS will be lost). Press Skip button to skip moving of this directory."
+ IDS_CONFADSLOSS_WARNING_COPY_FILE, "File contains alternate data streams (ADS). ADS are not supported on target path. Press Yes button to copy file without ADS. Press Skip button to skip copying of this file."
+ IDS_CONFADSLOSS_WARNING_COPY_DIR, "Directory contains alternate data streams (ADS). ADS are not supported on target path. Press Yes button to copy directory without ADS. Press Skip button to skip copying of this directory."
+
+ IDS_ERROROPENINGADS, "Error Opening Alternate Data Stream"
+ IDS_ERRORREADINGADS, "Error Reading Alternate Data Stream"
+ IDS_ERRORWRITINGADS, "Error Writing Alternate Data Stream"
+
+ IDS_ERRORGETTINGFILETIME, "Error Getting File Time"
+ IDS_ERRORSETTINGFILETIME, "Error Setting File Time"
+
+ IDS_USERMENUERROR, "User Menu Error"
+ IDS_TOOLONGLISTOFSELNAMES, "List of selected names is too long. Please unselect some names. Maximal length is 32771 characters."
+ IDS_EMPTYLISTOFSELNAMES, "List of selected names is empty. Please select some names or focus some name."
+ IDS_COMPAREARGSCOLISION, "You are using incompatible variables for Comparator. You can use only one pair of these variables."
+ IDS_COMPARENEEDSBOTHARGS, "You are using only one variable for Comparator. You have to use whole pair of these variables."
+ IDS_INCOMPATIBLEARGS, "You are using incompatible variables. Some variables are working with all selected names at once (ListOfSelectedNames, FileToCompareLeft, etc.) while some others (FullName, Name, etc.) are working with them one by one (User Menu command is executed for each selected name)."
+ IDS_NOTDEFFULLPATHLEFT, "This User Menu command uses variable FullPathLeft (full path in left panel) which is not defined in this context (used from Find window or left panel contains archive or plugin file-system path)."
+ IDS_NOTDEFFULLPATHRIGHT, "This User Menu command uses variable FullPathRight (full path in right panel) which is not defined in this context (used from Find window or right panel contains archive or plugin file-system path)."
+ IDS_NOTDEFFULLPATHINACTIVE, "This User Menu command uses variable FullPathInactive (full path in inactive panel) which is not defined in this context (used from Find window or inactive panel contains archive or plugin file-system path)."
+ IDS_TOOLONGLISTOFSELFULLNAMES, "List of selected names with path is too long. Please unselect some names. Maximal length is 32771 characters."
+ IDS_EMPTYLISTOFSELFULLNAMES, "List of selected names with path is empty. Please select some names or focus some name."
+
+ IDS_USERMENUCOMPAREARGSTITLE, "Choose Directories to Compare"
+ IDS_USERMENUCOMPAREARG1, "&Compare directory:"
+ IDS_USERMENUCOMPAREARG2, "&With directory:"
+ IDS_BROWSEUMCDIRTITLE, "Choose Directory"
+ IDS_BROWSEUMCDIRTEXT, "Choose the directory you want to compare."
+ IDS_UMCCONFIRMHOWTOREV, "You can change this option later on the Confirmations page in the Configuration."
+
+ IDS_USRMNUTOOLONGCMDORARGS, "Unable to execute User Menu command. Command or its arguments are too long. Maximal length of command with arguments depends on Windows version and if executing command through shell or not. See help for limits overview."
+
+ IDS_QUESTION_VOLMOUNTPOINT, "volume mount point ""%s"""
+ IDS_QUESTION_JUNCTION, "junction ""%s"""
+ IDS_QUESTION_SYMLINK, "symbolic link ""%s"""
+
+ IDS_CONFENCLOSS_WARNING_MOVE_FILE, "Target file should be encrypted (using EFS) but encryption is not supported on target path or it is not possible to encrypt file in current state. Press Yes button to move file without encryption. Press Skip button to skip moving of this file."
+ IDS_CONFENCLOSS_WARNING_MOVE_DIR, "Target directory should be encrypted (using EFS) but encryption is not supported on target path or it is not possible to encrypt directory in current state. Press Yes button to move directory without encryption. Press Skip button to skip moving of this directory."
+ IDS_CONFENCLOSS_WARNING_COPY_FILE, "Target file should be encrypted (using EFS) but encryption is not supported on target path or it is not possible to encrypt file in current state. Press Yes button to copy file without encryption. Press Skip button to skip copying of this file."
+ IDS_CONFENCLOSS_WARNING_COPY_DIR, "Target directory should be encrypted (using EFS) but encryption is not supported on target path or it is not possible to encrypt directory in current state. Press Yes button to copy directory without encryption. Press Skip button to skip copying of this directory."
+
+ // confirmations: groups
+ IDS_CNFRM_CONFIRMON, "Confirm on"
+ IDS_CNFRM_SHOWMESSAGE, "Show message"
+ // confirmations: confirm on
+ IDS_CNFRM_FILEDIRDEL, "File or directory delete (see note 1 below)"
+ IDS_CNFRM_NEDIRDEL, "Non-empty directory delete (see note 1 below)"
+ IDS_CNFRM_FILEOVER, "File overwrite (it is ignored in archives)"
+ IDS_CNFRM_SHFILEDEL, "System or hidden file delete (see note 2 below)"
+ IDS_CNFRM_SHDIRDEL, "System or hidden directory delete (see note 2 below)"
+ IDS_CNFRM_SHFILEOVER, "System or hidden file overwrite (it is ignored in archives)"
+ IDS_CNFRM_NTFSPRESS, "NTFS compress or uncompress (it is ignored in archives)"
+ IDS_CNFRM_NTFSCRYPT, "NTFS encrypt or decrypt (it is ignored in archives)"
+ IDS_CNFRM_DAD, "Drag and Drop operations"
+ IDS_CNFRM_DIRALREADYEXISTS, "Directories merge (it is ignored in archives)"
+ IDS_CNFRM_UMDIFFDLG, "User Menu: always show dialog with names to compare"
+ IDS_CNFRM_DSTIGNORED, "Compare Directories: ignored differences of exactly 1 or 2 hours"
+ IDS_CNFRM_DSTCANIGN, "Compare Directories: found differences of exactly 1 or 2 hours"
+ // confirmations: show message
+ IDS_CNFRM_CLOSEARCHIVE, "Archive is about to close... (only if editing files from archive)"
+ IDS_CNFRM_CLOSEFIND, "Do you want to close Find?"
+ IDS_CNFRM_STOPFIND, "Do you want to stop searching? (in Find Files and Directories)"
+ IDS_CNFRM_CREATEPATH, "Do you want to create target path? (in Copy/Move operations)"
+ IDS_CNFRM_ALWAYSONTOP, "Do you want to turn on Always on Top?"
+ IDS_CNFRM_ONSALCLOSE, "Do you want to close Open Salamander?"
+ IDS_CNFRM_ONSENDEMAIL, "Do you want to Email selected files?"
+ IDS_CNFRM_ONADDTOARCHIVE, "Do you want to add files into existing archive?"
+ IDS_CNFRM_ONCREATEDIR, "The directory doesn't exist. Do you want to create it?"
+ IDS_CNFRM_COPYMOVEOPTNS, "Copy/Move to archives and plugin FS: options will be ignored."
+
+ IDS_CANCLOSESALAMANDER, "Do you want to close Open Salamander?"
+
+ IDS_PLUGINURLNONE, "(none)"
+
+ IDS_SHELLEXTBREAK, "The main window of Open Salamander was destroyed by some faulty shell extension. Please send us the following bug report to help us resolve this problem.\n\nPress OK to open the Bug Report dialog box."
+ IDS_SHELLEXTBREAK2, "Some faulty shell extension has destroyed our window. Please send us the following bug report to help us resolve this problem.\n\nPress OK to open the Bug Report dialog box."
+ IDS_SHELLEXTCRASH, "Open Salamander becomes unstable because of some faulty shell extension. Please send us the following bug report to help us resolve this problem.\n\nPress OK to open the Bug Report dialog box."
+ IDS_SHELLEXTBREAK3, "This window cannot be closed at this time because there is some task pending that is using it. Press the Continue and wait until this task is finished.\n\nIf there is not any such task, press the Abort and send us a bug report to help us resolve this problem. Open Salamander will be terminated."
+ IDS_SHELLEXTBREAK4, "Unable to execute new task because executing of previous task was not finished yet. Press the Continue and wait until previous task is executed.\n\nIf there is not any such task, press the Abort and send us a bug report to help us resolve this problem. Open Salamander will be terminated."
+
+ IDS_NEWLYCREATEDFILE, "The file already exists. Do you want to replace it?"
+
+ IDS_UNPACKTOOLONGNAME, "Unable to unpack file from archive to temporary directory because\nresulting filename is too long."
+ IDS_UNPACKINVNAMERENUNSUP, "Unable to unpack file from archive because its name is invalid on Windows file systems and archiver plugin does not support unpacking to another file name."
+ 
+ IDS_VIEWFILEFAILED, "Unable to put file to temporary directory."
+ IDS_VIEWFILETOOLONGNAME, "The resulting filename is too long."
+
+ IDS_BROWSEONERRGOTOTITLE, "Select Path"
+ IDS_BROWSEONERRGOTOTEXT, "Select the path you want to visit when current path in panel is inaccessible."
+
+ IDS_ERROPENADS_IGNOREALL, "Ignore &All"
+
+ IDS_CHDHOTPATHS_HINT, "Visibility of Hot Path items (only in Change Drive menu) can be changed on Hot Paths page."
+ IDS_CHDPLUGINS_HINT, "Visibility of Plugin FS items can be changed in Plugins Manager (see menu Plugins)."
+
+ IDS_NAMEMANGLE_ONTHEDISK, "As they are stored on the disk"
+ IDS_NAMEMANGLE_EXPLORER, "In partially mixed case if they are in DOS format"
+ IDS_NAMEMANGLE_VC, "In lower case; directories in upper case"
+ IDS_NAMEMANGLE_PARTMIXEDCASE, "In partially mixed case"
+ IDS_NAMEMANGLE_LOWERCASE, "In lower case"
+ IDS_NAMEMANGLE_UPPERCASE, "In upper case"
+
+ IDS_SIZEMODE_BYTES, "In Bytes (Open Salamander default)"
+ IDS_SIZEMODE_KB, "In Kilo Bytes (Windows Explorer default)"
+ IDS_SIZEMODE_MIXED, "In short format (for example 15 B, 3.41 KB, or 12.5 MB)"
+
+ IDS_IMPORTCFG_DEFCFG, "Do not import, start with default configuration"
+
+ IDS_PATHMENU_BROWSE, "&Browse...\tCtrl+B"
+ IDS_PATHMENU_LEFT, "&Left Panel Path\tCtrl+["
+ IDS_PATHMENU_RIGHT, "&Right Panel Path\tCtrl+]"
+
+ IDS_NETWORK_NONE, "(none)"
+ IDS_NETWORK_NETWORK, "Network"
+ IDS_NETWORK_PLUGINS, "Plugins"
+
+ IDS_CHANGEDIR_HINT, "Enter the path you want to visit. Examples:\nLocal path: C:\\Program Files\nRelative path: ..\\doc\nUNC path: \\\\server\\share\nPlugin path: REG:\\HKEY_USERS\nArchive path: C:\\archive.zip"
+ IDS_CHANGEDIR_TC_HINT, "To change the current directory use the Change Directory command (Shift+F7)."
+ IDS_DONTSHOWAGAIN2, "&Don't show this message again"
+
+ IDS_HOTKEY_PLUGIN_CONFLICT, "Currently assigned to: %s"
+ IDS_HOTKEY_SAL_CONFLICT, "This shortcuts belongs to Open Salamander. Please, choose another one."
+
+ IDS_FINDIGNORE_RESET, "Are you sure you want to set paths to default values?"
+
+ IDS_BROWSE_BTN_TIP, "To open menu from edit field press Alt+Right"
+
+ IDS_MOVECOPY_OPTIONS_NOTSUPPORTED, "You have specified some special options (see Options button in Copy/Move dialog). These options are not supported when copying/moving to plugin file systems and archives. Options will be ignored."
+ IDS_MOVECOPY_OPTIONS_NOTSUPPORTED_AGAIN, "&Don't show this message again\thow to revert\tYou can change this option later on the Confirmations page in the Configuration."
+
+ IDS_COPYDLGTITLE, "Copy %s"
+ IDS_MOVEDLGTITLE, "Move %s"
+ IDS_COPYINGFROM, "From:"
+ IDS_COPYINGTO, "To:"
+
+ IDS_MAKEFILELIST_OUTPUT, "Make File List Output"
+
+ IDS_ACLNOTSUPPORTEDONTGTPATH, "Owners and permissions cannot be preserved. They are not supported\non target path (it is not NTFS volume).\n\nDo you want to continue?"
+
+ IDS_BUGREPORTCNFRM_TITLE, "Report a Bug"
+ IDS_BUGREPORTCNFRM_TEXT, "For bug reports or feature requests please use menu Help > Official Support Forum.\n\nUse this bug report only for sending us sensitive data or when we ask you."
+
+ IDS_MSGBOXBTN_SKIP, "&Skip"
+ IDS_MSGBOXBTN_SKIPALL, "S&kip All"
+ IDS_MSGBOXBTN_FOCUS, "&Focus"
+
+ IDS_CANTLOADPLUGINSLG1, "Unable to load this plugin in currently used language. Plugin language file %s was not found or is not valid. Open Salamander will try to search for some other plugin language file (.SLG)."
+ IDS_CANTLOADPLUGINSLG2, "Unable to load plugin language module which was formerly used by this plugin. Plugin language file %s was not found or is not valid. Open Salamander will try to search for some other plugin language file (.SLG)."
+ IDS_PLUGINSLGNOTFOUND, "It seems that you have no language modules (.SLG) for this plugin (see plugin's subdirectory LANG)."
+ IDS_DONOTSHOWCANTLOADPLUGINSLG, "&Do not show this message for other plugins"
+
+ IDS_CORRUPTEDCONFIGFOUND, "Configuration stored in registry is corrupted, so it cannot be loaded. Open Salamander was probably terminated during saving configuration. This happens mainly when Open Salamander is still running when you shutdown system (or log off). To prevent this problem, close Open Salamander before shutdown (or log off).\n\nYou can backup corrupted configuration now (run RegEdit.exe, rename key HKEY_CURRENT_USER\\%s). Later you can try to get some settings from this backup (User Menu, Hotpaths, FTP bookmarks, etc.), visit forum.altap.cz for details.\n\nCorrupted configuration must be removed from registry before starting Open Salamander."
+ IDS_CORRUPTEDCONFIGREMOVEBTN, "&Remove Configuration"
+ IDS_CHANGEDSHUTDOWNPARS, "You are using nonstandard values of the following parameters used during Log off and Shutdown. It probably causes corruption of Open Salamander's configuration (it's terminated during save of configuration).\n\nHKEY_CURRENT_USER\\Control Panel\\Desktop\\WaitToKillAppTimeout should be 20000.\nHKEY_CURRENT_USER\\Control Panel\\Desktop\\AutoEndTasks should be 0."
+
+ IDS_COMPAREFILESORDIRS, "Please specify if you want to compare files or directories."
+ IDS_MSGBOXBTN_FILES, "&Files"
+ IDS_MSGBOXBTN_DIRS, "&Directories"
+
+ IDS_FILEISTOOBIGFORFAT32, "The file cannot be copied to specified target path because it's too big for FAT32 file system.\n\nFile: %s"
+
+ IDS_INVALIDESCAPEPATH, "The path where to go if path in panel is inaccessible is invalid, please correct this path in configuration on Drives page."
+ 
+ IDS_SHEXT_NOTLOADEDYET, "Drag&drop operation from archive or plugin file system has failed. Please remove unwantedly created DROPFAKE directory (if any) from target directory.\n\nThis should happen only immediately after installation or if drop target is not Windows Explorer nor Open Salamander. If drop target is Windows Explorer, please restart Windows to correct this problem (advanced users can just kill explorer.exe process and start it again)."
+ 
+ IDS_SALAMANDERICON_DEFAULT, "Default"
+ IDS_SALAMANDERICON_RED, "Red"
+ IDS_SALAMANDERICON_GREEN, "Green"
+ IDS_SALAMANDERICON_BLUE, "Blue"
+ 
+ IDS_PROGDLGHOURS, "%d hr"
+ IDS_PROGDLGMINUTES, "%d min"
+ IDS_PROGDLGSECS, "%d sec"
+ 
+ IDS_PROGDLGSTATUSCOPY, "%s of %s copied"
+ IDS_PROGDLGSTATUSMOVE, "%s of %s moved"
+ IDS_PROGDLGTRRATE, "speed: %s/s"
+ IDS_PROGDLGTRRATELIM, "speed: %s/s (limit: %s/s)"
+ IDS_PROGDLGTIMELEFT, "time left: %s"
+ 
+ IDS_SPEEDLIMITSIZE, "Speed limit must be a number in range 1 B/s to 4 GB/s."
+ 
+ IDS_PROGDLGSETSPLIM, "&Set Speed Limit..."
+ IDS_PROGDLGAUTOPAUSE, "&Wait Until All Other Copy/Move Operations are Finished"
+ 
+ IDS_SELLANGEXITBUTTON, "&Exit"
+ 
+ IDS_PLUGINSAVEFAILED, "Unable to save configuration of %s plugin (error opening configuration key of Open Salamander).\n\nDo you still want to unload it?"
+ 
+ IDS_ICONOVRLS_NAME, "Name"
+ IDS_ICONOVRLS_DESCR, "Description"
+ IDS_ICONOVRLS_CHANGE, "Icon Overlays changes do not take effect until the Open Salamander is restarted."
+ IDS_ICONOVRLS_CRASH, "Open Salamander has become unstable. An unhandled exception has occurred in %s icon overlay handler. You can prevent similar crashes if Open Salamander will not use this handler (click This button) or will stop displaying custom icon overlays at all (click All button). You may also try to upgrade software providing this handler (search forum.altap.cz for details).\n\nWhat icon overlay handlers do you want to disable?\n\nNote: you can set up icon overlays in configuration dialog (see Icon Overlays page)."
+ IDS_ICONOVRLS_DISTHIS, "&This"
+ IDS_ICONOVRLS_DISALL, "&All"
+ 
+ IDS_IMPORTCFGFROMFILESKIPPED, "The config.reg file (or other file specified with -c parameter) was not imported to registry due to import of the configuration from the older version of Open Salamander. Please exit Open Salamander now and start it again to solve this problem."
+ IDS_NOTALLPLUGINSCFGIMPORTED, "You have upgraded to the new version of Open Salamander. It is importing the configuration of the old version now. The old version contained some plugins (listed below) which are missing (or which are not working) in the new version, so their configuration cannot be imported now. You can start Open Salamander without these plugins now (the configuration of the old version remains in registry, so you can import it later). Or exit Open Salamander now, install missing plugins, and start Open Salamander again.\n\nMissing (or not working) plugins: %s%s."
+ IDS_NUMOFSKIPPEDPLUGINNAMES, ", %d more plugins skipped"
+ IDS_STARTWITHOUTMISSINGPLUGINS, "&Start Without Missing Plugins"
+ 
+ IDS_ALLOCHANDLER_MSG, "Insufficient memory to allocate %Iu bytes. Try to release some memory (e.g. close some running application) and click Retry. If it does not help, you can click Ignore to pass memory allocation error to this application or click Abort to terminate this application."
+ IDS_ALLOCHANDLER_WRNIGNORE, "Do you really want to pass memory allocation error to this application?\n\nWARNING: Application may crash and then all unsaved data will be lost!\nHINT: We recommend to risk this action only if the application is trying to allocate extra large block of memory (i.e. more than 500 MB)."
+ IDS_ALLOCHANDLER_WRNABORT, "Do you really want to terminate this application?\n\nWARNING: All unsaved data will be lost!"
+ 
+ IDS_RECONNET_TITLE, "Connect to %s"
+ IDS_RECONNET_TEXT, "Incorrect password or unknown username for: %s"
+ 
+ IDS_COMMONFILETYPE, "File"
+ IDS_COMMONFILETYPE2, "%s File"
+ 
+ IDS_MASTERPASSWORD_NOTSET, "(not set)"
+ 
+ IDS_INSECUREPASSWORD, "Your password is too simple and may not provide enough security against dictionary or brute force attacks.\nAre you sure you want to use it?\n\nNote: good passwords have at least six characters and contain both lowercase and uppercase letters, numbers and special characters, such as delimiters, symbols, letters with accent, etc."
+ 
+ IDS_MASTERPASSWORD_CHANGED_TITLE, "Password Change Succeeded"
+ IDS_MASTERPASSWORD_REMOVED, "You have deleted your Master Password. Your stored passwords (for example FTP and WinSCP) will not be protected."
+ IDS_MASTERPASSWORD_SET, "Master Password successfully changed. Your stored passwords (for example FTP and WinSCP) are secured by AES cipher now."
+ IDS_WRONG_MASTERPASSWORD, "You did not enter the correct current Master Password. Please try again."
+
+ IDS_BROWSEDIRECTORY_TITLE, "Browse Directory"
+ IDS_BROWSEDIRECTORY_TEXT, "Choose the directory you want to use."
+ 
+ IDS_USEDEFAULTFONT, "Use &default font"
+ IDS_USECUSTOMFONT, "Use &custom font..."
+ 
+ IDS_TASKLISTLINE, "PID=%d, started on %s, %s%s"
+ IDS_TASKLISTCURLINE, ", current process"
+
+ IDS_EDITNEWFILE_SAVEASDEFAULT "Save current file name as default"
+ IDS_EDITNEWFILE_REVERTDEFAULT "Revert default file name to %s"
+ 
+ IDS_CMPDIRS_IGNDSTDIFFS, "{!}Compared directories contain at least %d pair{|1|s} of files with time difference of exactly one or two hours. {This difference was|1|These differences were} ignored as DST (Daylight Saving Time) related. You can suppress it on Configuration/General."
+ IDS_CMPDIRS_FOUNDDSTDIFFS, "{!}Compared directories contain at least %d pair{|1|s} of files with time difference of exactly one or two hours. {This difference is|1|These differences are} probably DST (Daylight Saving Time) related and can be ignored. See Configuration/General."
+ IDS_CMPDIRS_NOTE, "Note:"
+ IDS_CMPDIRS_DONTSHOWNOTEAG, "&Don't show information about ignored differences next time\thow to revert\tYou can change this option later on the Confirmations page in the Configuration."
+ IDS_CMPDIRS_IGNDSTDIFFSEXACT, "{!}Compared directories contain %d pair{|1|s} of files with time difference of exactly one or two hours. {This difference was|1|These differences were} ignored as DST (Daylight Saving Time) related. You can suppress it on Configuration/General."
+ 
+ IDS_COPYMOVE_RESETHIDE "Reset and hide options"
+ IDS_COPYMOVE_SAVEASDEF "Save options as defaults"
+ IDS_COPYMOVE_RESETDEFS "Reset options and defaults"
+ 
+ IDS_CONFIGEXPUPTOXP, "If you want to import configuration on every start of Open Salamander, export it to installation directory to file named config.reg. To import other configuration file use command line parameter -C (e.g. ""salamand.exe -C myconfig.reg"").\n\nWe recommend to add clearing of registry key with configuration directly to exported file. Otherwise imported configuration will be merged with the current one in registry and it may result in inconsistent configuration."
+ IDS_CONFIGEXPVISTA, "If you want to import configuration on every start of Open Salamander, export it to application data directory (or installation directory) to file named config.reg. To import other configuration file use command line parameter -C (e.g. ""salamand.exe -C myconfig.reg"").\n\nWe recommend to add clearing of registry key with configuration directly to exported file. Otherwise imported configuration will be merged with the current one in registry and it may result in inconsistent configuration."
+ IDS_CONFIGEXPCLEARKEY, "&Add clearing of registry key with configuration directly to exported file"
+ 
+ IDS_IMPORTCFG_OPENERR, "Unable to open or read the configuration file.\n\nFile: %s\nError: %s"
+ IDS_IMPORTCFG_TOOBIG, "The configuration file is too big.\n\nFile: %s"
+ IDS_IMPORTCFG_NOTREG, "Unable to import the specified file. It is not a configuration file.\n\nFile: %s"
+ IDS_IMPORTCFG_INVALIDFORMAT, "Unable to import the configuration file. It has invalid format.\n\nFile: %s"
+ IDS_IMPORTCFG_REGERR, "Unable to import the configuration file to registry. Error writing to registry.\n\nFile: %s"
+ 
+ IDS_IMPORTCFG_NOTOURVER, "The configuration file (%s) does not contain configuration for this version of Open Salamander.\n\nDo you want to import it anyway?"
+ 
+ IDS_EXPORTCFG_REGERR, "Unable to export configuration to the file. Error reading configuration from registry."
+ IDS_EXPORTCFG_FILEERR, "Unable to export configuration to the file. Error writing configuration to the file.\n\nFile: %s"
+ 
+ IDS_ERROPENMENUFORW64ALIAS, "Unable to open context menu for panel because the path in panel is only pseudo-directory for WOW64 redirector."
+ IDS_ERROPENMENUSELCONTW64ALIAS, "Unable to open context menu because current selection contains ""%s"" which is only pseudo-directory for WOW64 redirector."
+ IDS_ERROPENPROPSELCONTW64ALIAS, "Unable to open Properties window because current selection contains ""%s"" which is only pseudo-directory for WOW64 redirector."
+ IDS_ERRRENAMINGW64ALIAS, "It is not possible to rename ""%s"" because it is only pseudo-directory for WOW64 redirector."
+ IDS_ERRMOVESELCONTW64ALIAS, "Unable to move current selection because it contains ""%s"" which is only pseudo-directory for WOW64 redirector."
+ IDS_ERRDELETESELCONTW64ALIAS, "Unable to delete current selection because it contains ""%s"" which is only pseudo-directory for WOW64 redirector."
+ IDS_ERRCUTSELCONTW64ALIAS, "Unable to cut current selection because it contains ""%s"" which is only pseudo-directory for WOW64 redirector."
+
+ IDS_SIZE_B, "B"
+ IDS_SIZE_KB, "KB"
+ IDS_SIZE_MB, "MB"
+ IDS_SIZE_GB, "GB"
+ IDS_SIZE_TB, "TB"
+ IDS_SIZE_PB, "PB"
+ IDS_SIZE_EB, "EB"
+
+ IDS_SPEED_B_per_s, "B/s"
+ IDS_SPEED_KB_per_s, "KB/s"
+ IDS_SPEED_MB_per_s, "MB/s"
+ IDS_SPEED_GB_per_s, "GB/s"
+ 
+ IDS_INVALID_DATEORTIME, "[invalid]"
+ 
+ IDS_AS_ADMIN_TITLE, "Administrator"
+
+ IDS_SALMON_INVALIDEMAIL "Please enter a valid email address so we can assist you with reported problem."
+ IDS_SALMON_WAITFORUPLOAD "Please wait while compression and upload is finished."
+ IDS_SALMON_CONFIRMEXIT "Are you sure you don't want to let us know about this problem? Without your report we will not be able to fix it.\n\nClick OK to delete report without letting us know." 
+ IDS_SALMON_ERR_INI_SIZE "The uploaded file exceeds the allowed size. Code: %d."
+ IDS_SALMON_ERR_PARTIAL "The uploaded file was only partially uploaded. Code: %d."
+ IDS_SALMON_ERR_NO_FILE "No file was uploaded. Code: %d."
+ IDS_SALMON_ERR_NO_TMP_DIR "Missing a temporary folder. Code: %d."
+ IDS_SALMON_ERR_CANT_WRITE "Failed to write file to disk. Code: %d."
+ IDS_SALMON_ERR_EXTENSION "Some extension stopped the file upload. Code: %d."
+ IDS_SALMON_ERR_UNKNOWN "Unknown upload error. Code: %d."
+ IDS_SALMON_SYNTAX_ERROR_CLOSE "Syntax error in server response. Close tag not found."
+ IDS_SALMON_SYNTAX_ERROR_OPEN "Syntax error in server response. Open tag not found."
+ IDS_SALMON_SYNTAX_ERROR_VALUE "Syntax error in server response. Value not found."
+ IDS_SALMON_SOCK_ERR_RECV "Cannot receive data. Code: %d."
+ IDS_SALMON_SOCK_ERR_SHUTDOWN "Cannot shutdown connection. Code: %d."
+ IDS_SALMON_SOCK_ERR_SEND "Cannot send data. Code: %d."
+ IDS_SALMON_SOCK_ERR_CONNECT "Cannot connect to server. Code: %d."
+ IDS_SALMON_SOCK_ERR_SOCKET "Cannot open connection. Code: %d."
+ IDS_SALMON_SOCK_ERR_HOST "Cannot resolve host name. Code: %d."
+ IDS_SALMON_SOCK_ERR_INIT "Cannot initialize connection. Code: %d."
+ IDS_SALMON_READING_FILE "Error reading file %s" 
+ IDS_SALMON_OUT_OF_MEMORY "Out of memory" 
+ IDS_SALMON_FILE_SIZE "Getting size of file failed for %s"
+ IDS_SALMON_FILE_OPEN "Failed to open %s"
+ IDS_SALMON_MORE_REPORTS "Some older bug reports were found. Would you like to report also these bugs and help us improve Open Salamander?\n\nPress Yes to process old bug reports. Press No to delete old bug reports."
+ IDS_SALMON_TITLE "Open Salamander Bug Reporter"
+ IDS_SALMON_COMPRESSING "Compressing, wait please..."
+ IDS_SALMON_UPLOADING "Uploading, wait please..."
+ IDS_SALMON_UPLOADSUCCESS "Report has been uploaded successfully.\n\nThank you for helping us improve Open Salamander!" 
+ IDS_SALMON_UPLOADFAILED "Report upload has failed, reason: %s\n\nPlease send us report using email to support@altap.cz and delete them from your disk. Click OK to show the report."
+ IDS_SALMON_COMPRESSFAILED "Report compression has failed, reason: %s\n\nPlease pack your bug report using 7-Zip, email it to support@altap.cz, and delete report files from your disk. Click OK to show the report."
+ IDS_SALMON_LOAD_FAILED "Loading of %s failed."
+ IDS_SALMON_WRONG_CMDLINE "This is an internal Open Salamander utility, please don't start it directly."
+ IDS_SALMON_WRONG_VERSION "Incorrect version of Open Salamander Bug Reporter. Please contact us at support@altap.cz."
+ IDS_SALMON_MINIDUMP "A problem has occured, forcing Open Salamander to close.\nCreating a bug report, wait please..."
+ IDS_SALMON_BUGREPORT_PROBLEM "Some problem has occured during the bug report creation:\n%s"
+ IDS_SALMON_MINIDUMP_CREATE "Cannot create minidump file %s. Code: %d."
+ IDS_SALMON_MINIDUMP_CALL "Error during minidump creation. Code: %d."
+
+// IDS_SALMON_FAILED, "Starting of Bug Reporter failed. Please pack following bug report using 7-Zip packer and send it to our email address support@altap.cz.\n\nThank you for helping us improve Open Salamander."
+ IDS_SALMON_NOT_RUNNING, "Open Salamander Bug Reporter (salmon.exe) is not running. Open Salamander will not be able to handle potential crashes. Please restart Open Salamander."
+
+ IDS_SLGINCOMPLETE_TITLE, "Unfinished Translation of Open Salamander"
+ IDS_SLGINCOMPLETE_TEXT, "Translation of Open Salamander into your language is not finished. Please consider visiting our discussion forum and joining the translation effort:"
+ 
+ IDS_RECYCLEBINERROR, "Unable to send file or directory to the Recycle Bin because it has invalid name.\n\nInvalid part of name: ""%s""\n\nHint: Try to rename it before sending to the Recycle Bin or delete it permanently (try Shift+Delete key)."
+ 
+ IDS_PLUGINISX86ONLY, "Unable to load %s plugin. This plugin is available only in x86 (32-bit) version of Open Salamander. Please start x86 version of Open Salamander to use this plugin. Sorry for the inconvenience."
+ 
+ IDS_UNABLETORESOLVELINK, "unable to resolve link"
+ IDS_VOLMOUNTPOINT, "volume mount point"
+ 
+ IDS_DELFILESAFTERPACKINGNOLINKS, "You are trying to move selected files and directories to archive. This is not possible because selection contains link to directory (junction point, volume mount point, or symbolic link). Please continue without deleting files from disk after packing to archive.\n\nLink: %s"
+ 
+ IDS_BLOCKSHUTDOWNDISKOPER, "Disk operation is in progress."
+ IDS_BLOCKSHUTDOWNFINDFILES, "Searching is in progress."
+ IDS_BLOCKSHUTDOWNSAVECFG, "Saving configuration, please wait few seconds."
+ IDS_FORCEDSHUTDOWN, "Windows is rejecting to abort shutdown. This message will block it temporarily. Please wait to abort shutdown manually before you close this message, otherwise Open Salamander will be terminated without saving configuration."
+ IDS_FORCEDSHUTDOWNDISKOPER, "Windows is rejecting to abort shutdown. This message will block it temporarily.\n\nYou have some disk operations in progress. Do you want to cancel them now? Click No only if you have aborted shutdown manually, otherwise you risk having unfinished files on your disk.\n\nPlease wait to abort shutdown manually before you answer this question, otherwise Open Salamander will be terminated without saving configuration."
+ IDS_CLOSINGFINDWINDOWS, "Closing Find windows, please wait..."
+}

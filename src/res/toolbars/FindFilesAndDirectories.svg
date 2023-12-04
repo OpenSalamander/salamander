@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="16px" height="16px" viewBox="0 0 16 16" enable-background="new 0 0 16 16" xml:space="preserve">
+<g>
+	<circle fill="#FFFFFF" cx="5.5" cy="10.5" r="2.2"/>
+	<g>
+		<path fill="#00539C" d="M5.5,8.6c1.048,0,1.9,0.852,1.9,1.9s-0.852,1.9-1.9,1.9s-1.9-0.852-1.9-1.9S4.452,8.6,5.5,8.6 M5.5,8
+			C4.119,8,3,9.119,3,10.5S4.119,13,5.5,13S8,11.881,8,10.5S6.881,8,5.5,8L5.5,8z"/>
+	</g>
+</g>
+<line fill="none" stroke="#00539C" stroke-miterlimit="10" x1="1" y1="15" x2="4" y2="12"/>
+<g>
+	<path fill="#FFFFFF" d="M15,4.021v-2.5c0-0.276-0.224-0.5-0.5-0.5H8l-1,2v1H15z"/>
+</g>
+<g>
+	<polygon fill="none" points="8.618,2 8.118,3 14,3 14,2 	"/>
+	<path fill="#DCB47A" d="M14.5,1H8L7,3H3.5C3.224,3,3,3.224,3,3.5v4.556C3.635,7.406,4.519,7,5.5,7C7.433,7,9,8.567,9,10.5
+		c0,0.171-0.027,0.335-0.05,0.5h5.55c0.276,0,0.5-0.224,0.5-0.5V4V3V1.5C15,1.224,14.776,1,14.5,1z M8.118,3l0.5-1H14v1H8.118z"/>
+</g>
+</svg>

@@ -1,0 +1,4 @@
+LIBRARY PORTABLES.SPL
+
+EXPORTS SalamanderPluginEntry
+EXPORTS SalamanderPluginGetReqVer

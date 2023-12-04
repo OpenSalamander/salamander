@@ -1,0 +1,145 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Interoperability</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Appendix</div>
+<div class="page">
+<h1>Interoperability</h1>
+
+<p>
+Following table shows known issues of interoperability with various <a href="protocols.htm#sftp">SFTP</a>
+servers. It includes both problems of the servers or known problems (typically fixed) of WinSCP that
+emerge with particular server only. It also includes special (even proprietary) features of some servers
+that WinSCP can use.
+</p>
+
+<p>
+Workarounds for bugs of major <acronym title="SSH File Transfer Protocol">SFTP</acronym> servers can be
+configured on <em><a href="ui_login_sftp.htm#bugs">SFTP tab</a></em> of Login dialog.
+</p>
+
+<table>
+  <tr>
+    <th>Server </th>
+    <th>Issue </th>
+    <th>Solution / Use </th>
+  </tr>
+  <tr>
+    <th>OpenSSH </th>
+    <td>Supports <acronym title="SSH File Transfer Protocol">SFTP</acronym> version 3 only. </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <th> </th>
+    <td>Cannot handle <acronym title="SSH File Transfer Protocol">SFTP</acronym> packets larger than
+            256 <acronym title="Kibibyte (1,024 bytes)">KiB</acronym>,
+            but due to support for <acronym title="SSH File Transfer Protocol">SFTP</acronym> version 3 only, it
+                cannot report the limitation. </td>
+    <td>WinSCP automatically limits size of <acronym title="SSH File Transfer Protocol">SFTP</acronym>
+            packet to 256 <acronym title="Kibibyte (1,024 bytes)">KiB</acronym>
+            when connected to OpenSSH <acronym title="SSH File Transfer Protocol">SFTP</acronym> server. </td>
+  </tr>
+  <tr>
+    <th> </th>
+    <td><a href="ui_login_sftp.htm#symlink">Reverses order of symlink command arguments</a>
+            (<code>SSH_FXP_SYMLINK</code> request). </td>
+    <td>WinSCP automatically reverses the order too, when connected to OpenSSH
+            <acronym title="SSH File Transfer Protocol">SFTP</acronym> server.</td>
+  </tr>
+  <tr>
+    <th> </th>
+    <td><a href="ui_login_sftp.htm#signedts">Misinterprets file timestamps prior to 1970</a>. </td>
+    <td>WinSCP automatically interprets the timestamps in the same incorrect way when connected
+            to OpenSSH <acronym title="SSH File Transfer Protocol">SFTP</acronym> server. </td>
+  </tr>
+  <tr>
+    <th> </th>
+    <td>Cannot set <a href="ui_permissions.htm#special_permissions">special permissions</a>.</td>
+    <td>User can issue <a href="remote_command.htm">remote_command</a> to set these permissions.</td>
+  </tr>
+  <tr>
+    <th> </th>
+    <td>Cannot set <a href="ui_permissions.htm#special_permissions">special permissions</a>. </td>
+    <td>User can issue <a href="remote_command.htm">remote command</a> to set these permissions. </td>
+  </tr>
+  <tr>
+    <th>VShell </th>
+    <td>Windows version does not have Unix-like behaviour. </td>
+    <td>WinSCP can handle that, but if version 4 or newer of
+            <acronym title="SSH File Transfer Protocol">SFTP</acronym> protocol is used only. </td>
+  </tr>
+  <tr>
+    <th> </th>
+    <td>Provides file attributes (<code>SSH_FILEXFER_ATTR_BITS</code>) with
+            <acronym title="SSH File Transfer Protocol">SFTP</acronym> version 4, when it is allowed since
+                version 5 only. </td>
+    <td>WinSCP can handle that.</td>
+  </tr>
+  <tr>
+    <th> </th>
+    <td>Incorrectly encodes list of supported <acronym title="SSH File Transfer Protocol">SFTP</acronym> versions. </td>
+    <td>WinSCP can handle that. </td>
+  </tr>
+  <tr>
+    <th> </th>
+    <td>Windows version does not provide owner/group in directory listing. </td>
+    <td>WinSCP can request them explicitly before showing Properties dialog. </td>
+  </tr>
+  <tr>
+    <th>Sun SSH</th>
+    <td colspan="2">See OpenSSH.</td>
+  </tr>
+  <tr>
+    <th>FTPshell </th>
+    <td>Does not support reading of file attributes (<code>SSH_FXP_LSTAT</code> request). </td>
+    <td>WinSCP uses this also to check existence of directory before entering it. To allow user to enter
+            to directory on FTPshell server, WinSCP automatically fall backs to checking the
+                existence by reading directory content. This in turn forbids used to enter traverse-only
+                directories (with permissions 110). </td>
+  </tr>
+  <tr>
+    <th>MultiNet </th>
+    <td>For <acronym title="SSH File Transfer Protocol">SFTP</acronym> version 4, it indicates presence of
+            <acronym title="User ID">UID</acronym>/<acronym title="Graphical User Interface">GUI</acronym> in
+                directory listing, but actually it does not include them. </td>
+    <td>These attributes are not allowed for <acronym title="SSH File Transfer Protocol">SFTP</acronym>
+            version 4 and newer, so WinSCP ignores the indication. </td>
+  </tr>
+  <tr>
+    <th>Foxit WAC server </th>
+    <td><a href="ui_login_environment.htm#utf">Does not use UTF-8 encoding for SFTP version 4 and newer</a>. </td>
+    <td>WinSCP does not expect <acronym title="8-bit Unicode Transformation Format">UTF-8</acronym> encoding
+            when connected to Foxit WAC server. </td>
+  </tr>
+  <tr>
+    <th>Titan <acronym title="File Transfer Protocol">FTP</acronym> server </th>
+    <td>Incorrectly encodes the filenames to <acronym title="8-bit Unicode Transformation Format">UTF-8</acronym>. </td>
+    <td><a href="ui_login_sftp.htm#protocol_options">Force SFTP version 3</a> either on server or client side
+            to avoid <acronym title="8-bit Unicode Transformation Format">UTF-8</acronym> encoding. </td>
+  </tr>
+  <tr>
+    <th> </th>
+    <td>Incorrectly encodes server capabilities packet (<code>supported2</code> extension). </td>
+    <td><a href="ui_login_sftp.htm#protocol_options">Force SFTP version 4 or lower</a> either on server or client side
+            to avoid the server provide the incorrect packet. </td>
+  </tr>
+  <tr>
+    <th>CoreFTP server </th>
+    <td>Violates <acronym title="SSH File Transfer Protocol">SFTP</acronym> protocol in response to changing
+            file properties. </td>
+    <td>Turn off setting file properties (e.g. in <a href="ui_transfer.htm">transfer settings</a>). </td>
+  </tr>
+</table>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

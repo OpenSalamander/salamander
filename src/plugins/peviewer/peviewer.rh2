@@ -1,0 +1,38 @@
+﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __PEVIEWER_RH2
+#define __PEVIEWER_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#define IDC_STATIC_1 1300
+#include "statics.rh2"   // 1300 az 1339 jsou timto zabrane !!!
+
+// Strings
+#define IDS_PLUGIN_NAME                 10100
+#define IDS_ERR_OPEN_FILE               10101
+#define IDS_ERR_TMP                     10102
+#define IDS_EXCEPTION                   10103
+#define IDS_PLUGIN_DESCRIPTION          10104
+#define IDS_ABOUT                       1016
+
+// hlavicky sekci nejsou v resourcech, protoze je neprekladame (generovany report se tez nepreklada)
+#define IDS_DUMPER_FILETYPE             10105
+#define IDS_DUMPER_FILEVERSIONRESOURCE  10106
+#define IDS_DUMPER_FILEHEADER           10107
+#define IDS_DUMPER_OPTIONALFILEHEADER   10108
+#define IDS_DUMPER_EXPORTTABLE          10109
+#define IDS_DUMPER_IMPORTTABLE          10110
+#define IDS_DUMPER_SECTIONTABLE         10111
+#define IDS_DUMPER_DEBUGDIRECTORY       10112
+#define IDS_DUMPER_RESOURCEDIRECTORY    10113
+#define IDS_DUMPER_LOADCONFIG           10114
+#define IDS_DUMPER_MANIFEST             10115
+#define IDS_DUMPER_CORHEADER            10116
+#define IDS_DUMPER_CORMETADATA          10117
+// konec sekci, dal uz jsou zase normalni stringy, co se prekladaji
+
+#define IDS_HIDDEN_SECTIONS             10118
+
+#endif // __PEVIEWER_RH2

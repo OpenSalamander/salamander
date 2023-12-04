@@ -1,0 +1,228 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\spanish\dbviewer.atp"
+TEXTVERSION,"1.23 (x86)"
+VERSION,"1,2,3,180"
+
+[TRANSLATION]
+LANGID,3082
+AUTHOR,"Juan Pablo Barrio Lera"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6168"
+COMMENT,"Versión en español"
+
+[DIALOG 12200]
+235,181,1,"Propiedades"
+1,179,162,50,14,1,"Aceptar"
+13000,4,155,227,1,1,""
+12201,5,5,224,143,1,""
+
+[DIALOG 12220]
+282,105,1,"Configuración del visor de bases de datos"
+13000,6,10,270,35,1,"Fuente"
+12221,13,23,50,14,1,"&Fuente"
+12222,69,23,200,14,1,""
+13001,6,48,270,27,1,"Posición de ventana"
+12223,14,58,70,12,1,"&Guardar al cerrar"
+12224,118,58,152,12,1,"&Como la ventana principal de Salamander"
+12225,13,85,70,14,1,"Opciones CSV..."
+1,113,85,50,14,1,"Aceptar"
+2,168,85,50,14,1,"Cancelar"
+9,223,85,50,14,1,"Ayuda"
+
+[DIALOG 12240]
+282,178,1,"Campos"
+12241,6,6,270,142,1,""
+13000,4,153,273,1,1,""
+12242,6,159,80,14,1,"&Valores por omisión"
+1,115,159,50,14,1,"Aceptar"
+2,170,159,50,14,1,"Cancelar"
+9,225,159,50,14,1,"Ayuda"
+
+[DIALOG 12250]
+327,137,1,"Opciones CSV"
+13000,6,6,98,101,1,"&Separador"
+12264,15,18,70,12,1,"Autoselección"
+12261,15,32,70,12,1,"Tabulador"
+12260,15,46,70,12,1,"Punto y coma (;)"
+12259,15,60,70,12,1,"Coma (,)"
+12258,15,74,70,12,1,"Espacio ( )"
+12257,15,88,28,12,1,"Otro"
+12256,44,88,16,12,1,""
+13001,114,6,98,101,1,"&Calificador de texto"
+12262,123,18,70,12,1,"Autoselección"
+12255,123,32,79,12,1,"Comillas dobles (")"
+12254,123,46,70,12,1,"Comillas (')"
+12253,123,60,70,12,1,"Ninguno"
+13002,222,6,98,101,1,"&Primera fila"
+12263,231,18,70,12,1,"Autoselección"
+12265,231,32,84,12,1,"Nombres de columna"
+12266,231,46,70,12,1,"Como datos"
+1,160,118,50,14,1,"Aceptar"
+2,215,118,50,14,1,"Cancelar"
+9,270,118,50,14,1,"Ayuda"
+12252,6,118,80,14,1,"&Valores por omisión"
+
+[DIALOG 12300]
+217,131,1,"Buscar"
+13000,36,11,173,1,1,""
+13001,9,7,25,8,1,"&Buscar"
+12301,16,17,189,64,1,""
+13002,44,47,165,1,1,""
+13003,9,43,33,8,1,"Opciones"
+12302,16,53,86,12,1,"Buscar hacia &adelante"
+12303,16,65,74,12,1,"Buscar hacia a&trás"
+12304,113,53,78,12,1,"&Palabras completas"
+12305,113,65,93,12,1,"&Distinguir M/minúsculas"
+12306,113,77,71,12,1,"&Expresión regular"
+13004,8,102,201,1,1,""
+1,23,110,50,14,1,"Aceptar"
+2,83,110,50,14,1,"Cancelar"
+9,143,110,50,14,1,"Ayuda"
+
+[DIALOG 12400]
+125,54,1,"Ir a registro"
+13000,8,9,32,8,1,"&Registro:"
+100,41,7,74,12,1,""
+1,9,32,50,14,1,"Aceptar"
+2,66,32,50,14,1,"Cancelar"
+
+[STRINGTABLE 0]
+11089,1,"Visor de bases de datos"
+11090,1,"Ficheros de bases de datos Display dBase, FoxPro y CSV."
+11092,1,"Acerca del Plugin"
+11101,1,"Algunas ventanas del Visor de bases de datos están abiertas. ¿Quiere cerrarlas?"
+
+[STRINGTABLE 1]
+11110,1,"Memoria agotada."
+11111,1,"Fichero con formato de base de datos no reconocido."
+11112,1,"No se encontró el fichero."
+11113,1,"Error al leer el fichero de base de datos. Puede estar truncado."
+11114,1,"Error grabando el fichero de base de datos."
+11115,1,"Error buscando en el fichero de base de datos."
+11116,1,"El fichero memo no está disponible."
+11117,1,"El fichero memo está corrupto."
+
+[STRINGTABLE 2]
+11120,1,"Ficheros de base de datos (*.csv;*.dbf;*.txt)|*.csv;*.dbf;*.txt|Todos los ficheros (*.*)|*.*|"
+11121,1,"%d pt. %s (%s)"
+11122,1,"La configuración ya está abierta."
+11123,1,"Nombre"
+11124,1,"Tipo"
+11125,1,"Ancho"
+11126,1,"Decimales"
+11130,1,"dBase II"
+11131,1,"dBase III"
+11132,1,"dBase IV"
+11133,1,"dBase V"
+11134,1,"Visual dBase 7"
+11135,1,"FoxPro"
+
+[STRINGTABLE 3]
+11136,1,"Desconocido"
+11140,1,"Caracteres"
+11141,1,"Numérico"
+11142,1,"Lógico"
+11143,1,"Fecha"
+11144,1,"Memo"
+11145,1,"Decimal flotante"
+11146,1,"Binario"
+11147,1,"General"
+11148,1,"Imagen"
+11149,1,"Moneda"
+11150,1,"Fecha/Hora"
+11151,1,"Entero"
+
+[STRINGTABLE 4]
+11152,1,"Desconocoido"
+11153,1,"Doble"
+11154,1,"Tiempo"
+11155,1,"AutoIncremento"
+11160,1,"Al menos un campo debe ser visible."
+11162,1,"No hay campos válidos en esta base de datos."
+11163,1,"Verdadero"
+11164,1,"Falso"
+11165,1,"Modificado"
+11166,1,"Tamaño"
+11167,1,"Versión"
+
+[STRINGTABLE 5]
+11168,1,"Recuento de registros"
+11169,1,"Recuento de campos"
+11170,1,"Recuento de campos memo"
+11171,1,"Tamaño de cabecera"
+11172,1,"Tamaño de registro"
+11173,1,"Página de códigos"
+
+[STRINGTABLE 6]
+11194,1,"Error de expresión regular"
+11195,1,"Buscar"
+11196,1,"Imposible encontrar la cadena '%s'."
+11197,1,"Imposible encontrar concordancia con al expresión '%s'."
+
+[STRINGTABLE 7]
+11200,1,"&Fichero"
+11201,1,"&Abrir...\tCtr+O"
+11202,1,"&Refrescar\tCtr+R"
+11203,1,"Prop&iedades...\tCtrl+F1"
+11204,1,"O&tros ficheros"
+11205,1,"A&nterior\tRetroceso"
+11206,1,"&Siguiente\tEspacio"
+11207,1,"An&terior seleccionado\tCtrl+Retroceso"
+11208,1,"S&iguiente seleccionado\tCtrl+Espacio"
+11209,1,"Pri&mero\tMays+Retroceso"
+11210,1,"&Ultimo\tSMays+Espacio"
+11211,1,"Sa&lir\tAlt+F4"
+
+[STRINGTABLE 8]
+11217,1,"&Editar"
+11218,1,"&Copiar\tCtrl+C"
+11219,1,"&Seleccionar todo\tCtrl+A"
+11220,1,"&Buscar...\tCtrl+F"
+11221,1,"Buscar s&iguiente\tCtrl+N"
+11222,1,"B&uscar anterior\tCtrl+P"
+11223,1,"&Activar o no marcador\tCtrl+F2"
+11224,1,"Si&guiente marcador\tF2"
+11225,1,"Marcador a&nterior\tMays+F2"
+11226,1,"Borrar &todos los marcadores\tCtrl+Mays+F2"
+11230,1,"&Ver"
+11231,1,"&Ir al registro...\tG"
+
+[STRINGTABLE 9]
+11232,1,"&Camposs...\tI"
+11233,1,"&Pantalla completa\tF11"
+
+[STRINGTABLE 10]
+11250,1,"&Convertir"
+11251,1,"&Autoselección"
+11252,1,"&No convertir"
+11253,1,"Poner por omisión"
+11254,1,"Siguiente\tF8"
+11255,1,"Anterior\tMays+F8"
+
+[STRINGTABLE 11]
+11270,1,"&Opciones"
+11271,1,"Opciones C&SV..."
+11272,1,"&Configuración..."
+
+[STRINGTABLE 12]
+11280,1,"&Ayuda"
+11281,1,"&Acerca de..."
+11282,1,"&Contenidos\tF1"
+11283,1,"&Indice..."
+11284,1,"&Buscar..."
+
+[STRINGTABLE 13]
+11500,1,"Copiar\tCtrl+C"
+11501,1,"Abrir\tCtrl+O"
+11502,1,"Buscar\tCtrl+F"
+11503,1,"Propierdades\tCtrl+F1"
+
+[STRINGTABLE 14]
+11504,1,"Pantalla completa\tF11"
+11505,1,"Registro actual/Recuento de registros\tG"
+
+[STRINGTABLE 15]
+11520,0,"Use &default font"
+11521,1,"Usar fuente &personalizada..."
+11522,0,"default font"
+11523,1,"fuente personalizada"
+

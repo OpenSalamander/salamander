@@ -1,0 +1,86 @@
+
+----------------------------------------------------------------------
+UNIX - typ SUNOS:
+ftp://ftp.phon.ucl.ac.uk
+/pub/temp/..%20/.tagged/.by/%20/Ganja-For-Absolute/Photoshop-7-Cryotik/
+----------------------------------------------------------------------
+
+----------------------------------------------------------------------
+Adresare pristupne pro browseni pres HTTP:
+http://nongae.gsnu.ac.kr/~gsnucc/pub/telnet/TeraTerm/
+http://opensores.thebunker.net/pub/mirrors/ssh/
+----------------------------------------------------------------------
+
+----------------------------------------------------------------------
+cs.felk.cvut.cz - VMS
+mam Lukasovo konto (zapis), viz konta.txt
+----------------------------------------------------------------------
+
+----------------------------------------------------------------------
+VMS servery:
+ftp://ftp.process.com/vms-freeware/fileserv/
+ftp://ftp.tmk.com/vms-freeware/fileserv/
+ftp://mvb.saic.com/process/vms/fileserv/
+ftp://ftp.madgoat.com/madgoat/
+ftp://ftp.openvms.compaq.com/
+ftp://ftp.montagar.com/freeware/
+ftp://ftp.tmk.com/vms-freeware/freeware_cd/
+ftp://ftp.decus.org/
+ftp://ftp.cerritos.edu/mailserv/
+ftp://axp.psl.ku.dk/decwindows/
+ftp://ftp.qsl.net/pub/wb8tyw/
+----------------------------------------------------------------------
+
+----------------------------------------------------------------------
+troja.fjfi.cvut.cz - NOVELL / HellSoft (bohuzel neumi "passive mode")
+----------------------------------------------------------------------
+Connected to troja.fjfi.cvut.cz.
+220  FTP Server for NW 3.1x, 4.xx  (v1.10), (c) 1994 HellSoft.
+Name (troja.fjfi.cvut.cz:petr): anonymous
+331 Anonymous Login OK, send id as password.
+Password:
+230-User Logged, Read Only Access.
+230 Home Directory: /DATA/ANONYMOU
+ftp> list
+?Invalid command
+ftp> ls
+200 Command Accepted.
+150 Opening ASCII data connection.
+-[R----F-]  1 supervis     2432 Apr 29  1996 kfe.pm!
+-[R----F-]  1 supervis      960 Apr 26  1996 kjr.pm!
+-[R----F-]  1 supervis     9288 Apr 26  1996 kipl.pmr
+-[R----F-]  1 supervis     1280 Apr 26  1996 kipl.pm!
+-[R----F-]  1 supervis    17532 Apr 29  1996 kfe.pmr
+-[R----F-]  1 supervis     6998 Apr 26  1996 kjr.pmr
+d[R----F-]  1 supervis      512 Nov 30 08:02 limpouch
+226 Transfer complete.
+ftp> cd limpouch
+250 "/DATA/ANONYMOU/LIMPOUCH" is current directory.
+ftp> ls
+200 Command Accepted.
+150 Opening ASCII data connection.
+d[R----F-]  1 supervis      512 Nov 30 08:00 sigdat
+d[R----F-]  1 supervis      512 Nov 30 08:03 knihovny
+226 Transfer complete.
+ftp> cd knihovny
+250 "/DATA/ANONYMOU/LIMPOUCH/KNIHOVNY" is current directory.
+ftp> ls
+200 Command Accepted.
+150 Opening ASCII data connection.
+d[R----F-]  1 supervis      512 Mar 20 11:41 recipes.for
+d[R----F-]  1 supervis      512 Mar 20 11:41 recipes.c
+d[R----F-]  1 supervis      512 Nov 30 08:03 bakknih2
+d[R----F-]  1 supervis      512 Nov 30 08:03 bakknih
+d[R----F-]  1 supervis      512 Mar 20 11:41 recvyb.c2
+226 Transfer complete.
+ftp>
+----------------------------------------------------------------------
+
+----------------------------------------------------------------------
+netlab2.usu.edu - NOVELL NETWARE pristupny
+tjn.fjfi.cvut.cz - NOVELL / FTP daemon na netware 5.x & 6.x - ma pristup Jan Patera
+----------------------------------------------------------------------
+
+----------------------------------------------------------------------
+vm.marist.edu (nutny aktivni mod - NE "PASV") - IBM VM/CMS
+----------------------------------------------------------------------

@@ -1,0 +1,30 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\dutch\unfat.atp"
+TEXTVERSION,"1.1 (x86)"
+VERSION,"1,1,0,180"
+
+[TRANSLATION]
+LANGID,1043
+AUTHOR,"Cor van der Smissen, Marco Fung, Patrick Vijgeboom, S.V. (Stephan) Rietveld"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7009"
+COMMENT,"Nederlandse versie"
+
+[STRINGTABLE 0]
+1000,1,"UnFAT"
+1001,1,"Over de plugin"
+1003,1,"Blader en extraheer FAT 12, 16, en 32 schijf kopieën."
+
+[STRINGTABLE 1]
+1100,1,"Fout bij het openen van bestand "%s"."
+1101,1,"Fout bij het lezen van bestand "%s"."
+1102,1,"Fout bij het ontleden van bestand "%s".\n\n%s"
+1103,1,"De bootsector is beschadigd of dit bestand is geen geldig FAT 12, 16, of 32 kopiebestand."
+
+[STRINGTABLE 2]
+1104,1,"Fout bij het lezen van directory naar bestand "%s".\n%s\nSector: %d, Offset: 0x%s\n\nBestand is geen geldig FAT 12, 16, of 32 kopiebestand."
+1106,1,"Fout bij het lezen van bestand naar bestand "%s".\n%s\nCluster: %d\n\nBestand is geen geldig FAT 12, 16, of 32 kopiebestand."
+1107,1,"Fout bij het schrijven naar bestand"
+1108,1,"Het bestand "%s" lijkt een kopiebestand te zijn van een gehele harde schijf.\nZulke kopiebestanden worden niet ondersteund door de UnFAT plugin."
+1109,1,"Uitpakken van FAT kopiebestand - %s"
+1110,1,"uitpakken van: %s"
+

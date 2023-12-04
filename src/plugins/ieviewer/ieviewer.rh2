@@ -1,0 +1,23 @@
+﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __IEVIEWER_RH2
+#define __IEVIEWER_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#define IDI_IEVIEWER               10000
+
+// IEViewer - plugin name and windows title
+#define IDS_PLUGINNAME             10100
+
+// Unable to open Interner Explore
+#define IDS_UNABLETOOPENIE         10101
+
+// widely used title for error boxes
+#define IDS_ERRORTITLE             10102
+
+#define IDS_PLUGIN_DESCRIPTION     10103
+#define IDS_ABOUT                  10105
+
+#endif // __IEVIEWER_RH2

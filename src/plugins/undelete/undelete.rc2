@@ -1,0 +1,17 @@
+﻿//
+// undelete.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "versinfo.rh2"
+#include "versinfo.rc2"
+
+IDI_FS      ICON   "res/fs.ico"
+IDB_FS      BITMAP "res/fs.bmp"
+IDI_DELETED ICON   "res/deleted.ico"

@@ -1,0 +1,9 @@
+﻿STRINGTABLE 
+BEGIN
+    IDS_REMOVE_SUCCESS      "Aplikace %s byla úspěšně odinstalována."
+    IDS_REMOVE_TITLE        "Odinstalace aplikace"
+    IDS_REMOVE_ERROR_LOADINF "Chyba čtení log souboru: %s."
+    IDS_REMOVE_APPRUNNING   "Odinstalační program zjistil, že odinstalovávaná aplikace je spuštěná:\n%s\n\nZavřete prosím aplikaci a stiskněte Opakovat pro pokračování."
+    IDS_REMOVE_DELETEFAILED "Nelze vymazat soubor\n%s\n\n%s"
+    IDS_REMOVE_XPRUNASADMIN "Pokud jste pro instalaci této aplikace použili administrátorský učet, musíte použít stejný účet pro její odinstalování. Účet můžete zvolit v následujícím okně Spustit jako."
+END

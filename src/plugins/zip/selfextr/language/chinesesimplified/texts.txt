@@ -1,0 +1,13 @@
+04
+
+"自解压 ZIP 压缩包"
+
+"这将解压缩 ZIP 压缩包。"
+
+"版本 1.40"
+
+"解压(&E)"
+
+"Self-Extractor (c) 2000-2023 Open Salamander Authors"
+
+"https://www.altap.cz"

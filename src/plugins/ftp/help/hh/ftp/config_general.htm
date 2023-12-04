@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>General</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: FTP Client: Dialog Boxes: Configuration</div>
+<div class="page">
+
+
+<h1>General</h1>
+
+<p>Use this tab to change the general behavior of the FTP Client plugin.
+See <a href="ms-its:salamand.chm::/hh/salamand/plugins_config.htm">Configuring Plugins</a>
+for general information about configuration.</p>
+
+<h4>Options</h4>
+<dl>
+<dt><i>Show window with welcome message from server after connect</i></dt>
+<dd>Clear this check box if you do not want to see a window with a welcome message from
+the FTP server immediately after you connect to it. The message contains communication
+between the client and server up to successful login reply from server (you can find
+this communication also in the FTP log). Usually this message contains general rules
+on the server, number of connected clients, etc.
+</dd>
+
+<dt><i>Accept hex escape sequences in paths (known from web browsers, e.g. "%20" to " ")</i></dt>
+<dd>When checked, hex escape sequences are accepted (known from web browsers, e.g. "%20" to " ")
+in the <i>Address</i> box in the <a href="dlgboxes_connect.htm">Connect to FTP Server
+dialog box</a>. Otherwise these sequences are ignored (not translated).
+</dd>
+
+<dt><i>Close operation dialog automatically when operation is successfully finished in untouched dialog</i></dt>
+<dd>When checked, the <a href="dlgboxes_operationdlg.htm">Operation dialog box</a> is
+closed automatically when operation is successfully finished and you are not working with
+this dialog box (e.g. click some buttons or even only change focus). It closes this
+dialog box only if there is nothing important to see in it. Otherwise, you always have to
+close this dialog box manually.
+</dd>
+
+<dt><i>Open Solve Error dialogs for errors automatically if operation dialog is idle</i></dt>
+<dd>When checked, the plugin opens automatically the <a href="dlgboxes_solveerror.htm">Solve
+Error dialog boxes</a>. It opens these dialog boxes for all errors one by one and only if
+you are not currently working in the <a href="dlgboxes_operationdlg.htm">Operation
+dialog box</a>. It should simplify error handling in the Operation dialog box. Otherwise, you
+have to open Solve Error dialog boxes manually (using the Solve Error button).
+</dd>
+
+<dt><i>Password for anonymous connections (your e-mail)</i></dt>
+<dd>You can specify your email address here. It is used as a password for annomynous
+connections to public FTP servers (they usually require it but do not check it).
+</dd>
+
+</dl>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>
+

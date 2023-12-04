@@ -1,0 +1,88 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\spanish\unarj.atp"
+TEXTVERSION,"1.21 (x86)"
+VERSION,"1,2,1,180"
+
+[TRANSLATION]
+LANGID,3082
+AUTHOR,"Juan Pablo Barrio Lera"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6168"
+COMMENT,"Versión en español"
+
+[DIALOG 100]
+202,110,1,"Siguiente volumen del archivo"
+300,12,9,181,32,1,"Por favor, inserve el disco con el siguiente volumen del archivo o localice el fichero apropiado en el disco.\n\nPulse Aceptar cuando esté preparado."
+301,12,48,60,8,1,"Volumen previo:"
+103,73,48,117,12,1,""
+302,12,62,67,8,1,"Volumen &siguiente:"
+101,12,72,163,12,1,""
+102,178,72,13,12,1,"..."
+1,44,91,50,14,1,"Aceptar"
+2,107,91,50,14,1,"Cancelar"
+
+[DIALOG 103]
+352,85,1,"Error"
+300,6,10,32,8,1,"Nombre:"
+104,41,10,304,8,1,""
+301,6,23,32,8,1,"Error:"
+302,41,23,304,16,1,"El fichero no puede ser extraido porque continúa a partir de un volumen anterior. Para extraer este fichero debe empezar con el volumen donde comience el fichero."
+105,41,44,148,12,1,"&No mostrar este mensaje en lo sucesivo."
+1,121,63,50,14,1,"Correto"
+2,181,63,50,14,1,"Cancelar"
+
+[DIALOG 106]
+225,85,1,"Configuración de UnARJ"
+300,23,22,154,8,1,"volumen anterior cuando se desempaqueta."
+107,12,10,202,12,1,"&Saltar automáticamente ficheros que continúan desde el"
+301,23,44,111,8,1,"no pueda ser listado."
+116,12,32,195,12,1,"&No mostrar aviso cuando todo el contenido del archivo"
+302,6,60,213,1,1,""
+1,60,66,50,14,1,"Aceptar"
+2,115,66,50,14,1,"Cancelar"
+
+[DIALOG 115]
+213,107,1,"UnARJ - Aviso"
+300,11,10,194,24,1,"No todos los ficheros del archivo multivolumen pueden listarse (y verse en el panel) porque algunos de los volúmenes del archivo no pudieron encontrarse."
+301,11,41,192,16,1,"Para listar el contenido total del archivo copie todos los volúmenes del archivo en el mismo directorio."
+105,11,66,157,12,1,"&No mostrar este mensaje en lo sucesivo"
+302,5,83,203,1,1,""
+1,153,89,50,14,1,"Aceptar"
+
+[STRINGTABLE 0]
+1000,1,"UnARJ"
+1001,1,"Memoria insuficiente."
+1002,1,"Final de archivo inesperado."
+1005,1,"El archivo está corrupto."
+1006,1,"Fichero de formato desconocido o no es un archivo ARJ válido."
+1007,1,"Imposible abrir el fichero del archivo."
+
+[STRINGTABLE 1]
+1008,1,"Ocurrió un error desconocido."
+1010,1,"Imposible acceder al fichero del archivo."
+1011,1,"Archivos ARJ (*.A*)"
+1012,1,"Seleccione el fichero del archivo"
+1013,1,"Error en datos comprimidos. El CRC no concuerda."
+1014,1,"Imposible añadir entrada de archivo a la lista de ficheros."
+1015,1,"Desempaquetando archivo ARJ - %s"
+1016,1,"preparando datos y creando directorios..."
+1017,1,"desempaquetando..."
+1018,1,"desempaquetando: "
+1019,1,"Imposible conseguir puntero de ficihero: "
+1020,1,"Imposible grabar en el fichero:"
+1021,1,"Imposible disponer puntero de fichero: "
+1022,1,"La operación no puede terminar por nombre de ruta demasiado largo."
+1023,1,"La operación no puede terminar por plantilla demasiado larga."
+
+[STRINGTABLE 2]
+1024,1,"Versión desconocida de fichero comprimido."
+1025,1,"Tipo desconocido de fichero comprimido."
+1026,1,"El fichero está comprimido con un método no admitido por el plugin UnARJ."
+1027,1,"Lo siento pero no se admiten ficheros encriptados."
+1028,1,"Volumen incorrecto o estructura de archivo desconocida."
+1029,1,"Lo siento pero el plugin ha expirado. Compruebe nuestra página web para una versión más reciente."
+1030,1,"Fichero no encontrado."
+1031,1,"Error"
+1032,1,"Todos los ficheros (*.*)"
+1033,1,"Hojear y extraer archivos ARJ."
+1034,1,"Acerca del Plugin"
+

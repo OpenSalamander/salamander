@@ -1,0 +1,51 @@
+﻿//
+// lang.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "..\versinfo.rh2"
+#include "versinfo.rc2"
+
+#include "..\..\dll\language\english\texts.rc2"
+
+STRINGTABLE
+{
+ IDS_PLUGINNAME, "PAK"
+ IDS_PLUGIN_DESCRIPTION, "Browse and extract Quake PAK archives."
+ IDS_ABOUT, "About Plugin"
+ IDS_LOWMEM, "Insufficient memory."
+ IDS_ERRLIST, "Unable to add file to list."
+ IDS_ERRLOADPAKLIB, "Unable to load paklib.dll or get procedure address: "
+ IDS_EXTRPROGTITLE, "Unpacking PAK Archive - %s"
+ IDS_PREPAREDATA, "preparing data..."
+ IDS_EXTRACTFILES, "unpacking..."
+ IDS_EXTRACTING, "unpacking: "
+ IDS_TOOLONGNAME, "Can't finish operation because of too long path name."
+ IDS_UNABLESEEK, "Unable to set file pointer: "
+ IDS_UNABLEGETFIELPOS, "Unable to get file pointer: "
+ IDS_UNABLEWRITE, "Unable to write to file:"
+ IDS_ERROPEN, "Unable to open file: "
+ IDS_TOOLONGMASK, "Can't finish operation because of too long mask."
+ IDS_DELPROGTITLE, "Deleting From PAK Archive - %s"
+ IDS_DELFILES, "deleting..."
+ IDS_DELETING, "deleting: "
+ IDS_CANCELING, "cancelling operation, please wait..."
+ IDS_ADDPROGTITLE, "Packing to PAK Archive - %s"
+ IDS_TOOLARGE, "Can't add file: File is too large."
+ IDS_ADDFILES, "packing..."
+ IDS_TOOLONGNAME2, "Can't add file because of too long name."
+ IDS_PACKING, "packing: "
+ IDS_UNABLEREAD, "Unable to read from file: "
+ IDS_ERRCONNECT, "Unable to connect plugin to Open Salamander."
+ IDS_OPTIMIZING, "optimizing, please wait..."
+ IDS_OPTPROGTITLE, "Optimizing PAK Archive - %s"
+ IDS_NEEDOPT, "Files deleting was not finished successfully. You may need to run PAK optimalization from the PAK Plugin menu to preserve wasting of disk space."
+ IDS_MENUOPTIMIZE, "&Optimize PAK"
+ IDS_EXPIRE, "Sorry, the plugin has expired. Please check our web site for newer version."
+}

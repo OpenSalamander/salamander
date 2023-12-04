@@ -1,0 +1,40 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\german\nethood.atp"
+TEXTVERSION,"1.08 (x86)"
+VERSION,"1,0,8,180"
+
+[TRANSLATION]
+LANGID,1031
+AUTHOR,"Dirk Bornhütter, Thomas Kelso, Thomas Pagels, Thomas Wölk, Marko Meister und Mick Weiss"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7334"
+COMMENT,"Deutsche Version"
+
+[DIALOG 102]
+245,127,1,"Netzwerk - Konfiguration"
+1201,7,7,128,10,1,"&Administrative Freigaben anzeigen"
+1203,13,22,209,10,1,"Administrative Freigaben als &versteckte Elemente anzeigen"
+1202,7,37,232,10,1,"Elemente der &Netzwerkumgebung im Stammverzeichnis anzeigen"
+1204,7,52,180,10,1,"Netzwerk&computer im Stammverzeichnis anzeigen"
+1206,7,67,218,10,1,"&Laufwerke die über Remotedesktop verbunden sind anzeigen"
+1205,7,82,205,10,1,"Netzwerk beim &Start des Open Salamanders durchsuchen"
+3000,7,99,231,1,1,""
+1,42,106,50,14,1,"OK"
+2,97,106,50,14,1,"Abbrechen"
+9,152,106,50,14,1,"Hilfe"
+
+[STRINGTABLE 0]
+128,1,"Netzwerk"
+129,1,"Ermöglicht den Zugriff auf Computer im Netzwerk."
+
+[STRINGTABLE 1]
+1024,1,"Kommentar"
+1025,1,"{!}<%d> ausgewählte{s|1|} Objekt{1:|1|e}"
+1026,1,"Netzwerk"
+1027,1,"Durchsuche Netzwerk…"
+1028,1,"Netzwerk ist nicht verfügbar."
+1029,1,"Über Plugin"
+1030,1,"%1 auf %2"
+1031,1,"Lokaler Computer"
+1032,1,"Host-Computer"
+1033,1,"Laufwerke von %s"
+

@@ -1,0 +1,47 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\french\unchm.atp"
+TEXTVERSION,"1.03 (x86)"
+VERSION,"1,0,3,180"
+
+[TRANSLATION]
+LANGID,1036
+AUTHOR,"Gérard Gréco, Arnaud Dupin de Beyssat, Jérémy Marc, Maxime Abbey"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6162"
+COMMENT,"Version française"
+
+[STRINGTABLE 0]
+1000,1,"UnCHM"
+1001,1,"Impossible d'ouvrir le fichier."
+1002,1,"Erreur non précisée."
+1003,1,"Décompression d'archive CHM"
+1004,1,"Erreur à la décompression du fichier."
+1005,1,"Impossible de traiter ce fichier."
+1006,1,"Mémoire insuffisante."
+1007,1,"A propos du module"
+
+[STRINGTABLE 1]
+1009,1,"Parcourt et extrait les fichiers CHM."
+1010,1,"Impossible de créer le répertoire temporaire."
+1011,1,"Impossible de supprimer le fichier temporaire."
+1012,1,"Format de fichier inconnu ou image CHM invalide.\n\nSi vous êtes sûr qu'il s'agit d'une image CHM valide, veuillez contacter support@altap.cz pour nous permettre de supporter ce format."
+1013,1,"Impossible d'ouvrir ce fichier."
+1014,1,"La création du fichier temporaire a échoué."
+1015,1,"Impossible de définir les attributs de fichier."
+1016,1,"Impossible de créer le répertoire '%s'."
+1020,1,"Oui"
+1021,1,"Non"
+1022,1,"Erreur"
+1023,1,"Attention"
+
+[STRINGTABLE 2]
+1032,1,"Erreur interne du module."
+
+[STRINGTABLE 3]
+1100,1,"Erreur de lecture"
+1101,1,"Erreur d'écriture"
+
+[STRINGTABLE 4]
+1105,1,"Nombre invalide."
+1106,1,"annulation en cours, veuillez patienter..."
+1107,1,"Bibliothèque CHMLIB Copyright © 2001-2010 Jed Wing"
+

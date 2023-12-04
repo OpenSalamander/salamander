@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Transfer Options Dialog</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Dialog Boxes</div>
+<div class="page">
+<h1>Transfer Options Dialog</h1>
+
+<p>
+Transfer options dialog appears before transfer (<a href="task_upload.htm">upload</a>
+or <a href="task_download.htm">download</a>) actually starts, so you can set your transfer options.
+The initial options are determined by your preferred default
+<a href="transfer_settings.htm">transfer options</a>.
+In <a href="ui_sal_pref_confirmations.htm#confirmations">preferences</a>
+you can suppress the dialog at all for uploads, not to have to confirm two boxes for each transfer.
+</p>
+
+<p>
+The dialog slightly differs for <a href="task_upload.htm">uploads</a> and
+<a href="task_download.htm">downloads</a>.
+</p>
+
+<a name="target_directory"></a>
+<h4>Target Directory</h4>
+
+<p>
+For downloads, use the box at the top of dialog to set destination directory and <a href="operation_mask.htm">operation mask</a>.
+You can change the destination to remote path to change the operation into
+<a href="task_move_duplicate.htm">Move/Duplicate</a>.
+</p>
+
+<p>
+For uploads, the destination is set already by the <em>Copy</em> box shown before Transfer options dialog and cannot be changed.
+</p>
+
+<p>
+The destination directory is by default the current working directory (local for
+<a href="task_download.htm">downloads</a> and remote for
+<a href="task_upload.htm">uploads</a>).
+</p>
+
+<p>
+If you omit the <a href="operation_mask.htm">operation mask</a>, you must still include a trailing
+slash <code>/</code> (for upload) or backslash <code>\</code> (for download). Omitting the operation
+mask is the same as using mask <code>*.*</code>.
+</p>
+
+<a name="transfer_settings"></a>
+<h4>Transfer Settings</h4>
+
+<p>
+<em>Transfer settings</em> box shows current <a href="transfer_settings.htm">transfer settings</a>.
+</p>
+
+<p>
+To change the settings, use <em>Transfer settings</em> button
+(alternatively you may double-click <em>Transfer settings</em> box).
+</p>
+
+<a name="additional_options"></a>
+<h4>Additional Options</h4>
+
+<p>
+The <em>New and updated file(s) only</em> checkbox makes WinSCP ignore files in source directory for which
+there exist file in the target directory with the same filename and the same or newer timestamp. The option
+is not available for uploads with <a href="protocols.htm#scp">SCP protocol</a>.
+Make sure WinSCP can correctly <a href="timestamp.htm">convert timestamps</a> from local conventions to
+remote server conventions and vice versa before using the option.
+</p>
+
+<p>
+The <em>Use same settings next time</em> checkbox makes your options become default
+<a href="transfer_settings.htm">transfer options</a>. It has the same effect as changing
+<a href="ui_sal_pref_transfer.htm">default transfer options</a> in preferences.
+</p>
+
+<p>
+For <a href="task_upload.htm">uploads</a> you will have additional checkbox <em>Do not show this dialog box again</em>
+to disable the dialog for further transfers. You can always revert this in
+<a href="ui_sal_pref_confirmations.htm#confirmations">preferences</a>.
+</p>
+
+<p>
+Use <em>Transfer on background</em> checkbox to instruct WinSCP to perform the
+<a href="transfer_queue.htm#transferring_files_on_background">transfer on background</a>.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

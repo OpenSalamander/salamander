@@ -1,0 +1,32 @@
+﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __UNOLE2_RH2
+#define __UNOLE2_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+//***********************************************************************************
+//
+// texty
+//
+
+#define IDS_PLUGINNAME          1000
+#define IDS_LOWMEM              1001
+#define IDS_CANNOT_OPEN         1002
+#define IDS_MEMORY_ALLOCATOR    1003
+#define IDS_CANNOT_WRITE        1004
+#define IDS_CANNOT_CREATE_FILE  1005
+#define IDS_CANNOT_OPEN_STREAM  1006
+#define IDS_CANNOT_READ         1007
+#define IDS_UNKNOWN		1008
+#define IDS_LIST		1014
+#define IDS_EXTRPROGTITLE	1015
+#define IDS_EXTRACTFILES	1017
+#define IDS_EXTRACTING		1018
+#define IDS_EXPIRE              1025
+#define IDS_ERROR               1041
+#define IDS_PLUGIN_DESCRIPTION  1042
+#define IDS_ABOUT               1043
+
+#endif // __UNOLE2_RH2

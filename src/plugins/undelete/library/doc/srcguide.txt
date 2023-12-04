@@ -1,0 +1,542 @@
+// ****************************************************************************
+//
+//   Undelete library
+//
+//   Copyright (c) 2004-2023 Open Salamander Authors
+//
+// ****************************************************************************
+
+
+A QUICK GUIDE THROUGH THE CORE SOURCE FILES OF UNDELETE,
+WITH A PRELUDE ON THE FAT, NTFS, and exFAT FILE SYSTEMS
+=======================================================
+
+
+What are sectors and clusters
+-----------------------------
+
+To be able to specify a position on the disk, one has to give an address of some
+kind. It would be possible to number all the bytes on the disk. This is
+impractical though, as the total number of bytes is usually huge. Bytes are thus
+grouped into blocks called sectors. A sector is usually 512 bytes long.
+
+While it is true that sectors are then grouped into tracks and tracks into
+surfaces, it is not necessary to go this deep from the programmer's perspective,
+and one can pretend that the sectors are numbered sequentially.
+
+But 512 bytes is still quite a small block. File systems tend to define larger
+quantities called clusters. The size of a cluster varies from 512 bytes to around
+64K, but is always an integer multiple of the sector size. A cluster thus consists
+of one or more sectors (usually of a power of two).
+
+Clusters are numbered sequentially. Given a cluster number, one can calculate the
+sector number by multiplying by N, where N is the number of sectors per cluster,
+and possibly adding the position of the first cluster (the first sectors on the
+disk can be reserved for some special purposes). The sectors can then be read from
+the disk.
+
+When a file is created, a free cluster is assigned to it. As the file grows, more
+clusters are allocated (not necessarily those immediately following the last one).
+A file is typically defined by an ordered list of clusters. This list is sometimes
+called the cluster chain.
+
+Most file systems do not bother to overwrite the clusters of a file when it is
+deleted. Instead all the clusters are marked as free and are reused by other files
+in the future. This is what makes undelete untilies possible.
+
+The first sector on the disk is reserved and contains basic information such as
+the cluster size, the position of the first cluster, the total number of clusters,
+the name of the file system etc. This sector is called boot sector.
+
+
+Overview of the FAT file system
+-------------------------------
+
+The structure of FAT is very simple (this however does not imply that it is easier
+to undelete files contained in it). The central structure is the so-called File
+Allocation Table, which stores nothing more than pointers to clusters following
+any given cluster. Its length obviously corresponds to the total number of cluster
+on the volume. Its entries are 12, 16 or 32-bit integers. Any time one needs to
+know which cluster follows a certain cluster (say the cluster #5555), a look at
+the corresponding entry (in this case entry number 5555) gives the number of the
+cluster that follows in the file stream. A special value (EOC - end of chain)
+indicates the end of file. Another reserved value is used for empty clusters. To
+go through all bytes of a file, one only needs the number of the first cluster,
+read it, go to the next cluster (depending on what number is stored in the FAT at
+the corresponding position), read it, go to the next cluster etc. The FAT simply
+contains the cluster chains of all files.
+
+The FAT is stored at the beginning of the disk space and is followed by the actual
+clusters:
+
+   +-----+---------------------------------------------------------+
+   | FAT | CLUSTERS #0, #1, #2, ...                                |
+   +-----+---------------------------------------------------------+
+
+Directories are files which store the positions of the first clusters of the files
+contained in them, along with additional information: file name, size, date/time,
+attributes. One such record is called directory entry. Directories can also consist
+of one or more clusters, which are again linked by the numbers stored in FAT.
+
+The size of the directory entry is 32 bytes - just enough for 8.3 DOS names and
+all other file information. To enable storing longer filenames, Windows 95
+introduced an ugly hack: certain entries have impossible combination of attributes
+(so that they are ignored by older operating systems) and a different structure
+carrying a portion of the long name. One or more long name entries are allocated
+if needed and precede the standard short name entry, which still exists.
+
+The position of the root directory is stored in the boot sector. This is the
+gateway to all files and directories stored on the disk.
+
+On FAT12 and FAT16, for some unknown reason, the root directory is stored after
+the FAT and has a fixed size. Also, there can be one or more backup copies of the
+FAT. The real disk structure can look something like this:
+
+   +----+------+------+------+-------------------------------------+
+   |BOOT| FAT0 | FAT1 | ROOT | CLUSTERS #0, #1, #2, ...            |
+   +----+------+------+------+-------------------------------------+
+
+When a file is deleted, the first character in the short name entry is changed to
+0xE5 to indicate an unused entry. More importantly, all clusters of the file are
+marked as unused in the FAT. This effectively destroys the cluster chain, and
+contrary to what many people think, it is not possible to reliably recover the
+cluster chain after that. One can only hope that the file clusters were allocated
+in a contiguous row. If not, ie. if the file was fragmented, only the first
+fragment can be recovered and the positions of the others can only be guessed (see
+below). Obviously this must be done before the operating system stores another
+file's clusters over the 'deleted' ones and before the directory entry is reused.
+
+
+Overview of the NTFS file system
+--------------------------------
+
+NTFS is very different from FAT and almost no information from the previous
+section applies to it. The primary structure of NTFS is the Master File Table. It
+is a special file containing information about all files stored on the disk,
+including the MFT itself. The following picture shows a possible layout. The MFT,
+as other files, is not required to be contiguous, although for efficiency reasons
+the operating systems tries to reserve space where the MFT can grow. This space is
+called the MFT zone and no cluster in it is allocated for an ordinary file if
+there is some other free space on the disk.
+
+   +----+-------+-----+--------------+------------------------------+
+   |BOOT|       | MFT |   MFT ZONE   |                              |
+   +----+-------+-----+--------------+------------------------------+
+
+The MFT contains fixed-size records. The size is specified in the boot sector,
+along with the position of the first MFT cluster. The record size is typically
+1K-4K. Each record contains a complete description of the file, including its
+cluster chain (as opposed to FATxx, where these are stored separately - in the
+FAT). The first MFT record describes the MFT itself - ie. its size, placement
+(cluster chain) etc.
+
+The structure of the MFT record is defined quite loosely. It holds one or more
+attributes, which are blocks of bytes with known type and structure. Several
+common attributes are:
+
+  - $STANDARD_INFORMATION (code 0x10) - contains file attributes, date/time etc.
+  - $FILE_NAME (code 0x30) - contains file name and a reference to the directory
+    where the file resides (ie. the record number of that directory)
+  - $DATA (code 0x80) - holds one data stream, this stream can optionally have a name
+  - $INDEX_ROOT, $INDEX_ALLOCATION - only found in directories; these attributes
+    store a list of files contained in the directory. More precisely, B+ trees are
+    used for quick searching.
+
+New attributes can be defined. These definitions are stored in the system file
+$AttrDef. A file can have more than one $FILE_NAME and $DATA attributes. In the
+first case this means that it is accessible from more than one directory (an
+analogy to UNIX hard links). If there is more than one $DATA attributes, the file
+has multiple data streams. Alternate data streams must have names and are
+accessible to the user by appending :streamname to the filename.
+
+All attributes can be resident or non-resident. A resident attribute is contained
+entirely in the MFT record, as is the case eg. for $STANDARD_INFORMATION and
+$FILE_NAME. $DATA and $INDEX attributes are usually non-resident, which means that
+only its small portion (headers, etc.) is stored in the MFT record and the rest is
+placed in clusters outside the MFT. This makes NTFS efficient in storing small
+files - if a file's data stream is small enough to fit into the MFT record, no
+disk clusters are used.
+
+If an attribute is non-resident, there must exist a list of clusters which it
+occupies. On NTFS this is called 'data runs', an improved version of cluster
+chains. Since in many cases the clusters in the stream are contiguous, the cluster
+list is stored as pairs of (starting cluster #, length of run), which is often
+more efficient. The data runs are stored in attribute header inside the MFT
+record.
+
+If there is not enough room in the MFT record for all attributes, another record,
+called extension record, is allocated. A special attribute ($ATTRIBUTE_LIST) is
+placed in the base record that lists all extension records.
+
+NTFS contains a number of system files. These include
+
+  - $MFT - the MFT itself
+  - $MFTMirr - a backup copy of the first 4 records of MFT, usually placed
+    at the exact center of the disk
+  - $Bitmap - a file containing one bit for each disk cluster, determining
+    whether it is used or not
+  - $Volume - general volume information (label, NTFS version, etc.)
+  - $LogFile - journal file
+  - $Boot - points to the first cluster of the disk
+
+Non-resident attributes can be compressed. A simple algorithm that eliminates
+repeating strings, similar to LZ77, is used. The data stream is divided into
+blocks of 16 clusters, or compression units. Each compression unit is then
+compressed and if the result is smaller than 16 clusters, it is stored, otherwise
+the compression unit is stored in uncompressed form. If the compression unit
+consists of all zeros, it is not stored at all.
+
+NTFS also allows file encryption. Actually the EFS (Encrypting File System) layer
+is implemented above the NTFS driver. A special $DATA attribute, named '$EFS' is
+stored for each encrypted file and holds information about users who have access
+to the file, namely thier public keys.
+
+When a file is deleted, its MFT record is marked as unused, as are all its
+streams' clusters. All data runs in the record however remain intact and there is
+a good chance of reliable recovery of the file.
+
+Microsoft never released any official documentation on NTFS. The only (but almost
+complete) unofficial documentation can by found at http://www.linux-ntfs.org/
+
+
+Overview of the exFAT file system
+---------------------------------
+
+exFAT was introduced in 2006 as part of Windows CE 6.0 and is widely used in
+embedded systems. exFAT has been also adopted by SD Card Association as the
+default file system for SDXC cards larger than 32GB. exFAT belongs to FAT
+family but takes some features from NTFS (allocation bitmap to keep track
+of the cluster allocation status). In the embedded world there is exFAT
+based file system named TexFAT - Transaction-Safe FAT File System.
+Support for exFAT is based on reverse engineering efforts.
+
+exFAT volume has following regions: Volume Boot Region, FAT Region, and
+Data (Cluster Heap) Region:
+
+   +------+-----+-----+-----+-----------------------------------------+
+   | BOOT |     | FAT |     | CLUSTER HEAP (CLUSTER #0, #1, #2, ...)  |
+   +------+-----+-----+-----+-----------------------------------------+
+
+Volume Boot Region contains Volume Boot Record (VBR) with file system
+description. It defines limits and locations of the exFAT regions and
+pointer to the Root Directory (will be described later).
+
+In exFAT the File Allocation Table (FAT) is no longer used for allocation
+status. Like NTFS, the exFAT is using bitmap to keep allocation status instead.
+FAT is used only for fragmented files to track location of next clusters.
+The FAT is using single linked list of 32 bit cluster indexes. First two
+items are FAT[0]==0xFFFFFFF8 (media type) and FAT[1]==0xFFFFFFFF (constant).
+From FAT[2] follows mentioned single linked lists. Value 0xFFFFFFFF means
+end of file maker. Note: FAT is not used for continuous files.
+
+Cluster Heap is the data area of the file system volume, where all
+metafiles, files, and directories are placed. These items could be
+fragmented (and tracked by FAT) or continuous.
+
+The Root Directory is special File Directory Entry used to define volume label,
+location of UpCase table and Allocation Bitmap Table, files, and directories.
+
+Allocation Bitmap Table is bit array used to track of allocation status
+for Cluster Heap clusters. Bits that are 1 are allocated, 0 means free
+(unallocated). Note: deleted file and directories are rendered in Allocation
+Bitmap as free, but records are kept untouched in FAT.
+
+Up-Case Table is used for file names conversion to upper case, for
+some operations such as comparing names while searching.
+
+File Directory Entry defines file or directory. It contains entry type,
+file or directory attributes, creation, modification, and access time.
+One of entry type bits has special meaning - In Use bit. Deleted files
+and directories has this bit set to 0, existing to 1. File Directory Entry
+is followed by Stream Extension Directory Entry with information on
+the location and size of the file or directory. It is followed by
+(one or multiple) File Name Extension Directory Entry with file name
+description.
+
+
+Overview of the core source files
+---------------------------------
+
+There are four main compoments of the plugin (or DLL library):
+
+  - VOLUME, a module providing unified direct disk access,
+  - NTFS, containing NTFS-related functions,
+  - FAT, containing FAT-related functions, and
+  - EXFAT, containing exFAT-related functions, and
+  - STREAM, handling access to deleted (or existing) file streams.
+
+The modules NTFS, FAT, and EXFAT provide an identical interface defined in
+SNAPSHOT. The aim is to hide differences between NTFS, FAT, and exFAT in order to
+simplify higher-level modules. Therefore one only has to interact with the classes
+CSnapshot and CStreamReader.
+
+                    ^                         ^
+                    |                         |
+    +---------------*-------------+    +------*------+
+    | SNAPSHOT                    |*---| STREAM      |
+    +-----------------------------+    +-------------+
+        |          |          |               |
+    +---*---+  +---*---+  +---*---+           |
+    | NTFS  |  | FAT   |  | EXFAT |           |
+    +-------+  +-------+  +-------+           |
+        |          |          |               |
+    +---*----------*----------*---------------*------+
+    | VOLUME                                         |
+    +------------------------------------------------+
+
+
+Module VOLUME
+-------------
+
+To simplify direct disk access from the rest of the program, the class CVolume
+offers several methods for opening, reading and closing a given volume.
+
+Direct disk access is done differently on Windows 95/98/Me and Windows NT/2K/XP.
+On NT, all one has to do is open the file '\\.\X:' where X stands for the volume
+letter. This 'file' can then be seeked on and read/written. On Windows 9x the
+situation is slightly more complicated - the read/write commands must be sent to
+the VWIN32 device driver.
+
+CVolume::Open() determines the operating system and opens the volume or the
+driver. Then it reads the boot sector and calculates the cluster size. On FAT
+basic calculations regarding the position of the FAT, root, etc. are done. Note
+that the FAT type can only be determined from the total number of clusters.
+
+The methods ReadSectors,() ReadClusters() and Close() are fairly self-explanatory.
+
+
+Module NTFS
+-----------
+
+The NTFS file system snapshot is taken by reading relevant information from its
+MFT. The main functions doing this are Update() and ParseRecord() (both members of
+CMFTSnapshot).
+
+Update() first determines the size of the MFT record. Then it reads the first MFT
+cluster, the position of which can be found in the boot sector. Using
+ParseRecord() (see below) the very first MFT record is decoded to make it possible
+to use CStreamReader on MFT itself. The record also gives the total size of the
+MFT, ie. the total number of records.
+
+An array of pointers to FILE_RECORD is then allocated. Each pointer, if not NULL,
+will later point to a decoded MFT record. Existing files (if not required) are
+skipped. The stream reader is then started up and the entire MFT is read by chunks
+of 16 clusters.
+
+Special care must be taken when reading the chunks. If the MFT is heavily
+fragmented, extension records exist for the first MFT record (ie. the MFT itself).
+If the stream reader is nearly out of data runs, an extension record is expected
+to come soon. A request for a large chunk could make the stream reader run out of
+data runs, so much smaller chunks must be read to ensure the extension record will
+be processed in time.
+
+ParseRecord()'s aim is to decode an MFT record and store relevant information in
+the data structures of the plugin. Various checks are performed first, namely the
+record signature and sector fixups (see the NTFS specs) are checked. For extension
+records, no new item is created in the MFT array, all information is instead
+treated as belonging to the base record. Next all attributes are walked through.
+Only the following attributes are of interest to Undelete:
+
+$STANDARD_INFORMATION: file attributes and file times are extracted.
+
+$FILE_NAME: a check is made whether there already is a filename with the same
+parent (directory) number stored in the structure. If not, the name (hardlink) is
+added, otherwise the filename is rewritten (but this is unlikely). Ordinary names
+are preferred over DOS names, but this may be subject to change in the future (ie.
+the DOS names will not be ignored but stored along with the long name).
+
+$DATA: first a corresponding data stream is found in FILE_RECORD, if none can be
+found, a new one is created. The aim is to gather data pointers (runs) that are
+potentially dispersed among several (extension) records. The data runs are thus
+added to the correct list (DATA_STREAM::Next). If the $DATA attribute is resident,
+its actual payload is stored directly in DATA_STREAM::ResidentData.
+
+After decoding all relevant (ie. deleted and directory) MFT records the directory
+structure must be built atop of the FILE_RECORDs, ie. the members
+FILE_RECORD::DirItems must be filled for directories. Note that Undelete doesn't
+go into the trouble of reading and decoding the directory indexes (B+ trees).
+Instead, the directory tree is build from the parent links of all records.
+
+This is exactly what BuildDirectoryTree() does. First all records that do not have
+names are removed. These are often some of the system files from the beginning of
+the MFT. Then the root directory is found. It should be located at the record #5,
+but it is searched for anyway. The program can even handle the unprobabl
+situation of a missing root directory record, in which case an artificial
+FILE_RECORD is allocated for it. After that all directories containing deleted
+files are marked. This is done by walking through the MFT and calling the function
+Mark() for all files. The function marks its parent directory and also recursively
+all the parent directories of the parent directory. Subsequently, all directories
+that are not marked are freed, which is the goal: the user is not shown
+directories that do not contain any deleted files, not even in its subdirectories.
+Next the required length of the array FILE_RECORD::DirItems is calculated for all
+directories and these arrays are allocated. Finally, the directory structure can
+be created: each file is added to the DirItems of its parent directory. Moreover,
+the virtual directory '{All Deleted Files}' is created and each file is added to
+it as well.
+
+The directory '{All Deleted Files}' is an example of a directory that has been
+made up by the program. There is one more situtation which results in the
+inclusion of artifical directories in the root. Whenever a file's parent record is
+no longer what it originally was, for instance it is no longer a directory, there
+is nowhere to place the deleted file. Such files are placed to directories named
+'DirectoryXXXXX' in the root. A related problem is that with a little bit of bad
+luck, whole subtrees can be placed to unexpected locations if the original parent
+no loger exists and has been replaced by a new directory. It is therefore
+recommended to always take a look in '{All Deleted Files}' as a last resort if the
+deleted file does not appear where it used to reside.
+
+
+Module FAT
+----------
+
+Interestingly enough, writing undelete for FAT is a greater challenge than writing
+one for NTFS, despite FAT's simplicity. Unlike on NTFS, things can be done in
+various ways on FAT, ie. they can be done wrong. We have tried our best to do them
+right.
+
+First of all the program loads the entire FAT table into memory through the
+function LoadFAT(). FAT12 and FAT16 entries are converted to 32 bits (DWORD) for
+easier manipulation.
+
+The further actions can be split into four stages:
+
+  1. existing directory tree is loaded
+  2. deleted directory tree is loaded
+  3. free disk clusters are scanned for deleted directories not found in stage 2
+     (optional)
+  4. cluster chains are estimated for deleted files and encoded in NTFS format,
+     so that the same stream reader can be used no matter what the underlying
+     file system is
+
+In stages 1 and 2 the program employs a special technique of loading the directory
+trees. Instead of loading one directory at a time (ie. getting the directory
+cluster chain and loading all of its clusters), the clusters of the directory are
+merely scheduled for loading. The program maintains two priority queues, one for
+clusters behind the current position on the disk and the other one for clusters
+ahead of it. Cluster numbers from the 'ahead' queue are then repeatedly extracted
+and the corresponding clusters are loaded. Immediately after loading a directory
+cluster, the function ScanDirectoryCluster() searches for other directory
+positions in it and schedules them too. Clusters behind the current position (of
+the disk head) are always added to the 'behind' queue and the others to the
+'ahead' queue. When the 'ahead' queue is empty, the queues are swapped and the
+whole process repeats. When both the queues are empty, the algorithm ends. This
+way the movement of the disk head is minimized and the whole directory tree is
+loaded much faster.
+
+Of course this makes several things more complicated. A directory cannot be fully
+processed until all of its clusters have been gathered. Once this happens, the
+function DecodeDirectoryClusters() is called. In its main loop it walks through
+the directory entries and establishes a new FILE_RECORD for each of them. More
+precisely, only for the 'short' entries: the long entries, if encoutered, are
+accumulated to obtain the long name, which is then used for the following short
+entry. The usual information, such as file name, attributes and date/time, are
+extracted from the short entries.
+
+Stage 2 is somewhat similar to stage 1. It has its own 'ahead' and 'behind'
+queues. After stage 1 finishes, the 'ahead' queue contains starting positions of
+deleted directories, inserted during stage 1 by ScanDirectoryCluster. The main
+difference is that no cluster chains exist for the deleted directories. However,
+one can devise a simple heuristic based on the following assumption: large
+directory structures are often created by copying. As files are added to a
+directory, its first cluster gets filled eventually. It would be a mistake to look
+for the next cluster right after the first one - many files have already been
+created during the copy operation. There is a good chance that the next directory
+cluster is located *after the last cluster of the last file in the directory
+cluster*. If the last file is in fact another directory, the same reasoning can be
+applied recursively, which is what the function GetNextDirCluster() does.
+
+Another catch in loading deleted directories is that one cannot be sure that a
+certain cluster really is a directory cluster. It might have been overwritten
+already or the above heuristic could have failed. Before processing a deleted
+directory cluster the function AnalyzeCluster() is called. It takes a look at the
+directory entries and makes sure the entries have a valid structure. Several
+criteria are used, eg. if the short entry names contain legal characters, if the
+attributes make sense, if the starting cluster number is valid etc. The function
+also determines whether the cluster is the first cluster of a directory (ie.
+whether the first entries are '.' and '..').
+
+The first function of stage 3 is ScanVacantClusters(). It goes through all unused
+clusters of the disk and calls AnalyzeCluster() on each of them. Those that appear
+to be directory clusters are added to the array ScanResults.
+
+The function ProcessScannedClusters() operates on this array. By calling
+GetNextDirCluster() it tries to link together clusters probably belonging to the
+same directory. Also it marks directories that are referenced by other directories
+(ie. it marks subdirectories). Directories that are not referenced by any others
+are then placed to the root directory under artificial names and decoded together
+with their subdirectories by DecodeScannedCluster().
+
+Scanning of vacant clusters each time the volume snapshot is updated would
+definitely annoy the user, therefore it is possible to reuse the previously found
+positions and just reload the clusters. This is done by ReloadScannedClusters().
+
+Stage 4 consists of basically guessing the cluster chains of deleted files by the
+function EncodeDeletedChain(). If the first cluster of a deleted file is not in
+use, the function assumes that its original data is still there. Then it hopes
+that the clusters were allocated in a contiguous row and keeps adding them until
+the file size is exhausted or a used cluster is encountered. In the latter case
+the only hope is to assume that the original clusters continue after the used
+space, therefore it is skipped and the cycle continues.
+
+A different strategy is employed if the first cluster of the deleted file is used
+again. The function then hopes that only the beginning of the file is damaged so
+it accepts the used clusters. If, however, the used area is longer than the
+deleted file, there no chance that the file survived and the function assigns zero
+size to it.
+
+The function EncodeExistingChain() determines the cluster chain of an existing
+file, if these are required. In either case the cluster chains are finally packed
+into the NTFS format by EncodeDataRun().
+
+The rest of the module calls the above-mentioned functions and performs
+miscellaneous tasks on the resulting data structure such as removing empty
+directories, renaming duplicate directories etc.
+
+A not-so-obvious issue of this module is progress indication. Unlike on NTFS, the
+number of directories (or records) to be processed is not known at the beginning.
+When loading existing directories, a special trick is used: the progress bar limit
+is set to the total number of used clusters (which is known). As the existing
+directories are processed, the progress bar is increased by the total number of
+clusters used by the files in each directory. This is the reason that the progress
+bar does not always have a linear behavior, eg. when a directory with large files
+is processed. This is generally not a problem, though. When loading deleted
+directories, there is unfortunately no estimate to stick to and the progress bar
+stagnates during that stage. Luckily the second stage usually takes only a little
+time. The progress of vacant cluster scan is the easiest to estimate, since the
+size of disk free space is known.
+
+
+Module STREAM
+-------------
+
+This module implements the class CStreamReader, which allows sequential reading of
+stream clusters. If the stream is not compressed, the function GetClusters simply
+takes one data run after another and reads the corresponding clusters. Things get
+much more tricky on compressed streams. To fully understand the algorithm one
+needs to read the NTFS specs. What can be said here is that the second part of
+GetClusters repeatedly obtains one compression unit or creates a zero one if the
+current run is sparse. If the unit is really compressed, it calls the function
+DecompressBlock, which unpacks it.
+
+The last function, EncryptedFileImportCallback(), imitates the EFS backup stream
+by combining all streams of an encrypted file into a single one. The format of the
+backup stream is not documented and the meaning of most of the binary data had to
+be guessed from an actual output of ReadEncryptedFileRaw. Some of it is still
+unknown.
+
+
+
+Supported File Systems
+----------------------
+
+NTFS
+  Clusters count: up to 2^64
+
+FAT family: FAT12, FAT16, and FAT32
+  FAT12 Clusters count: up to 2^12 (4,096)
+  FAT16 Clusters count: up to 2^16 (65,536)
+  FAT32 Clusters count: from 2^16 (65,536) to 2^28 (268,435,456)
+
+exFAT
+  Clusters count: up to 2^32 (4,294,967,296)
+

@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Undelete Configuration dialog box</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: Undelete: Dialog Boxes</div>
+<div class="page">
+<h1>Undelete Configuration</h1>
+
+<p>You can customize Undelete plugin in this dialog. See
+<a href="ms-its:salamand.chm::/hh/salamand/plugins_config.htm">Configuring Plugins</a>
+for general information about configuration.</p>
+
+<h4>Options</h4>
+<dl>
+<dt><i>Alternative temporary directory for viewing files</i></dt>
+
+<dd>Deleted files being viewed must first be recovered to a temporary directory 
+(usually located on the system disk, e.g. C:\). Since volumes containing deleted
+files should not be written to, an alternative temporary directory located on a
+different volume must be used when viewing deleted files on the system disk.
+You will automatically be asked to specify the alternate directory the first
+time it is needed.
+</dd>
+
+<dt><i>Always reuse previous cluster scan information on FAT</i></dt>
+
+<dd>The Undelete plugin is looking for directories also in the vacant clusters 
+of FAT volumes. If you use the Refresh command to analyze the volume again, 
+you can skip this scanning as it usually takes a long time.</dd>
+
+<dt><i>Do not warn when undeleting to the same logical disk</i></dt>
+
+<dd>Select this option if you want to take the risk of overwriting some parts
+of deleted files and directories by recovering them to the same volume. It is possible
+to damage even the same file you are just recovering, so this option is
+not recommended. See <a href="introduction_intro.htm">Introduction</a> for details
+on the principles of recovering.</dd>
+
+<dt><i>Do not warn before undeleting encrypted files to FAT or exFAT</i></dt>
+
+<dd>FAT and exFAT volumes do not support encrypted files, so it is not possible to fully recover
+NTFS encrypted files to them. It is however possible to store the encrypted
+files in a raw (backup) format, see
+<a href="using_restoringencrfiles.htm">Restoring Encrypted Files from Backup</a>
+for details on further processing of these files.</dd>
+
+</dl>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

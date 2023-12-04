@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Session Tab (Login Dialog)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Dialog Boxes: Configuring Session</div>
+<div class="page">
+<h1>Session Tab (Login Dialog)</h1>
+
+<p>
+<em>Session tab</em> contains the most basic session options.
+</p>
+
+<a name="session_group"></a>
+<h4>Session Group</h4>
+
+<p>
+The <em>Host name</em> box is where you type the name, or the IP address, of the server you want to connect to.
+<em>Host name</em> is the only mandatory box that must be filled
+for a session to open.
+</p>
+
+<p>
+The <em>Username</em> box is where you type your account name on the server.
+If you do not fill the username and it needs to be known
+to complete authentication (most cases),
+you will be <a href="ui_authenticate.htm#username">prompted for username</a> then.
+</p>
+
+<p>
+Unless at least <em>Host name</em> and <em>Username</em> are filled a session cannot be opened
+(<em>Login</em> button is disabled).
+</p>
+
+<p>
+The <em>Port number</em> box lets you specify which port number on the server to connect to.
+<acronym title="Secure Shell">SSH</acronym> protocol uses port number 22 by default.
+</p>
+
+<p>
+The <em>Password</em> box is for the password associated with the account. You are advised not to fill
+it in if you are going to save the session to <a href="ui_login_stored_sessions.htm">stored session list</a>.
+Also do not fill the password if you are
+going to use other <a href="ssh.htm#authentication_in_ssh">authentication method</a> (like public key).
+If you do not fill the password and other authentication methods fail (password has the lowest
+preference), you will be <a href="ui_authenticate.htm#password">prompted for password</a> then. Password
+storing can be <a href="administration.htm">restricted by system administrator</a>.
+</p>
+
+<p>
+Use the <em>Private key file</em> box to specify path to your <a href="public_key.htm#private">private key file</a>
+if you are going to use <a href="public_key.htm">public key authentication</a>.
+You can use environment variables in the path, with syntax <code>%NAME%</code>.
+The file must be in
+<a href="public_key.htm#private">PuTTY format</a>. If the private key is passphrase-protected, you will be
+prompted for passphrase once the authentication begins.
+If you have your private keys loaded into <a href="public_key.htm">Pageant</a>, leave the box blank,
+unless you want to ensure that only that particular key is used for authentication.
+</p>
+
+<p>
+The passphrase cannot be entered in advance on Login dialog and thus it cannot be saved to
+<a href="ui_login_stored_sessions.htm">stored session</a>. If you need to login to server
+automatically without prompt, generate key without passphrase. Use this method carefully and only
+under special circumstances.
+</p>
+
+<a name="protocol_group"></a>
+<h4>Protocol Group</h4>
+<p>
+The <em>Protocol</em> selection lets you choose <a href="protocols.htm">transfer protocol</a>.
+</p>
+<p>
+By default <acronym title="SSH File Transfer Protocol">SFTP</acronym> is selected
+with option <em>Allow <acronym title="Secure Copy Protocol">SCP</acronym> fallback</em> enabled.
+With the option
+selected, WinSCP tries to find <acronym title="SSH File Transfer Protocol">SFTP</acronym>
+server and when it fails it initiates <acronym title="Secure Copy Protocol">SCP</acronym>
+protocol. Note that when fallback is disabled,
+WinSCP tries harder using non-standard methods to find the
+<acronym title="SSH File Transfer Protocol">SFTP</acronym> server. It is necessary to allow
+<acronym title="SSH File Transfer Protocol">SFTP</acronym> on <acronym title="Secure Shell">SSH</acronym>-1
+server (read <a href="requirements.htm#sftp_requirements">SFTP requirements</a> for more).
+</p>
+<p>
+You can see the protocol actually used on the <a href="ui_fsinfo.htm">Server and Protocol Information Dialog</a>.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

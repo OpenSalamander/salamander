@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>DialogResult Property</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: Automation: Reference: Button Object</div>
+<div class="page">
+
+<h1>DialogResult Property</h1>
+
+<p>Specifies the return value from the <a href="ref_form_execute.htm">Form.Execute</a> method.</p>
+
+<h2>Values</h2>
+<table><tr>
+<td class="hdr">Value</td><td class="hdr">Description</td></tr>
+<tr>
+<td>1</td><td>OK</td></tr>
+<tr>
+<td>2</td><td>Cancel</td></tr>
+<tr>
+<td>3</td><td>Abort</td></tr>
+<tr>
+<td>4</td><td>Retry</td></tr>
+<tr>
+<td>5</td><td>Ignore</td></tr>
+<tr>
+<td>6</td><td>Yes</td></tr>
+<tr>
+<td>7</td><td>No</td></tr>
+<tr>
+<td>10</td><td>Try Again</td></tr>
+<tr>
+<td>11</td><td>Continue</td></tr>
+</table>
+
+<h2>Remarks</h2>
+<p>If the <b>DialogResult</b> property is set to anything other than 0, clicking
+the button closes the parent form. The return value from the <a href="ref_form_execute.htm">Form.Execute</a> method
+will be the <b>DialogResult</b> of the button when the button is clicked. For
+example, to create a OK/Cancel dialog box, simply add two buttons and set their
+<b>DialogResult</b> properties to 1 and 2.</p>
+
+<h2>See Also</h2>
+<p><a href="ref_button.htm">Button Object</a></p>
+<p><a href="ref_form.htm">Form Object</a></p>
+
+</div>
+<div class="footer">&copy; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

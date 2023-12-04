@@ -1,0 +1,513 @@
+﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __PICTVIEW_RH2
+#define __PICTVIEW_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#define IDC_STATIC_1 3000
+#include "statics.rh2"   // 3000 az 3039 jsou timto zabrane !!!
+
+// ikona pro hlavni okno
+#define IDI_WINDOW_ICON       70
+#define IDI_SB_ANCHOR         71
+#define IDI_SB_CURSOR         72
+#define IDI_SB_PIPETTE        73
+#define IDI_SB_SIZE           74
+
+// kruzory: normalni a sevrena ruka
+#define IDC_HAND1             80
+#define IDC_HAND2             81
+#define IDC_PIPETA            82
+#define IDC_ZOOMIN            83
+#define IDC_ZOOMOUT           84
+#define IDC_SELECT            85
+
+#define IDA_ACCELERATORS      90
+
+// nastrojove listy
+#define IDB_TOOLBAR16         95
+#define IDB_TOOLBAR256        96
+#define IDB_PICTVIEW          97
+
+//
+// Commands
+//
+
+#define IDM_CTX_MENU          100
+#define CMD_ZOOM_TO           101
+#define CMD_ZOOM_IN           102
+#define CMD_ZOOM_OUT          103
+#define CMD_COPY              104
+#define CMD_PASTE             105
+#define CMD_ABOUT             106
+#define CMD_CFG               112
+#define CMD_RELOAD            113
+#define CMD_IMG_PROP          114
+#define CMD_IMG_EXIF          115
+#define CMD_MIRROR_HOR        120
+#define CMD_MIRROR_VERT       121
+#define CMD_OPEN              122
+#define CMD_SAVEAS            124
+#define CMD_EXIT              125
+#define CMD_ROTATE180         126
+#define CMD_ROTATE_RIGHT      127
+#define CMD_ROTATE_LEFT       128
+#define CMD_FULLSCREEN        129
+#define CMD_NEXTPAGE          130
+#define CMD_PREVPAGE          131
+#define CMD_FIRSTPAGE         132
+#define CMD_LASTPAGE          133
+#define CMD_PAGE              134
+#define CMD_ZOOMWHOLE         135
+#define CMD_ZOOMWIDTH         136
+#define CMD_ZOOMACTUAL        137
+#define CMD_ZOOMWINDOW        138
+#define CMD_SELECTALL         139
+#define CMD_DESELECT          140
+#define CMD_HELP_CONTENTS     141
+#define CMD_HELP_INDEX        142
+#define CMD_HELP_SEARCH       143
+//#define CMD_HELP_KEYBOARD     144
+//#define CMD_HELP_MOUSE        145
+#define CMD_FILE_PREV         146
+#define CMD_FILE_NEXT         147
+#define CMD_CAPTURE           148
+#define CMD_TOOLS_HAND        149
+#define CMD_TOOLS_ZOOM        150
+#define CMD_TOOLS_SELECT      151
+#define CMD_TOOLS_PIPETTE     152
+#define CMD_PAGE_SETUP        153
+#define CMD_PRINT             154
+#define CMD_CROP              155
+#define CMD_TOOLBAR           157
+#define CMD_STATUSBAR         158
+#define CMD_CAPTURE_INTERNAL  159
+#define CMD_V_PAGEUP          160
+#define CMD_V_PAGEDOWN        161
+#define CMD_V_HOME            162
+#define CMD_V_END             163
+#define CMD_H_PAGEUP          164
+#define CMD_H_PAGEDOWN        165
+#define CMD_H_HOME            166
+#define CMD_H_END             167
+#define CMD_CLOSE             168
+#define CMD_UP                169
+#define CMD_DOWN              170
+#define CMD_LEFT              171
+#define CMD_RIGHT             172
+#define CMD_PAGE_INTERNAL     173
+#define CMD_CAPTURE_CANCELED  174
+#define CMD_WALLPAPER_CENTER  175
+#define CMD_WALLPAPER_TILE    176
+#define CMD_WALLPAPER_STRETCH 177
+#define CMD_WALLPAPER_RESTORE 178
+#define CMD_WALLPAPER_NONE    179
+#define CMD_SCAN              180
+#define CMD_SCAN_SOURCE       181
+#define CMD_FILE_FIRST        182
+#define CMD_FILE_LAST         183
+#define CMD_IMG_FOCUS         184
+#define CMD_IMG_RENAME        185
+#define CMD_IMG_DELETE        186
+#define CMD_INTERNAL_FOCUS    187
+#define CMD_REGENERATE_THUMBNAIL 188
+#define CMD_IMG_HISTOGRAM     189
+#define CMD_FILE_TOGGLESELECT 190
+#define CMD_FILE_PREVSELFILE  191
+#define CMD_FILE_NEXTSELFILE  192
+#define CMD_ZOOM_INMAX        193
+#define CMD_IMG_COPYTO        194
+
+// Petr: zakomentoval jsem, uz snad nebude nikdy potreba...
+//#define CMD_INTERNAL_REFRESHLPANEL 195
+//#define CMD_INTERNAL_REFRESHRPANEL 196
+
+#define CMD_INTERNAL_REREADTHUMBS  197
+#define CMD_INTERNAL_SAVEAS   198
+#define CMD_INTERNAL_SCAN_EXTRA_IMAGES  199
+
+// intervaly pro Recent Files/Directories
+#define CMD_RECENTFILES_FIRST 460
+#define CMD_RECENTFILES_LAST  469
+#define CMD_RECENRDIRS_FIRST  470
+#define CMD_RECENTDIRS_LAST   479
+
+//
+// Menu Helpers IDs
+//
+
+#define CML_FILE              480
+#define CML_EDIT              481
+#define CML_IMAGE             482
+#define CML_VIEW              483
+#define CML_TOOLS             484
+#define CML_HELP              485
+#define CML_MULTIPAGE         486
+#define CML_RECENTFILES       487
+#define CML_RECENTDIRS        488
+#define CML_WALLPAPER         489
+#define CML_OTHERFILES        490
+#define CML_CONTEXT           491
+
+//
+// String Tables
+//
+
+#define IDS_MENU_FILE              500
+#define IDS_MENU_FILE_OPEN         501
+#define IDS_MENU_FILE_REFRESH      502
+#define IDS_MENU_FILE_WALLPAPER    503
+#define IDS_MENU_WALLPARER_CENTER  504
+#define IDS_MENU_WALLPARER_TILE    505
+#define IDS_MENU_WALLPARER_STRETCH 506
+#define IDS_MENU_WALLPARER_RESTORE 507
+#define IDS_MENU_WALLPARER_NONE    508
+#define IDS_MENU_FILE_SAVEAS       509
+#define IDS_MENU_FILE_PREV         510
+#define IDS_MENU_FILE_NEXT         511
+#define IDS_MENU_FILE_CAPTURE      512
+#define IDS_MENU_FILE_PROP         513
+#define IDS_MENU_FILE_PAGE         514
+#define IDS_MENU_FILE_PRINT        515
+#define IDS_MENU_FILE_FILES        516
+#define IDS_MENU_FILE_DIRS         517
+#define IDS_MENU_FILE_EXIT         518
+#define IDS_MENU_FILE_SCAN         519
+#define IDS_MENU_FILE_SCAN_SOURCE  520
+#define IDS_MENU_FILE_OTHER        521
+#define IDS_MENU_FILE_FIRST        522
+#define IDS_MENU_FILE_LAST         523
+#define IDS_MENU_FILE_FOCUS        524
+#define IDS_MENU_FILE_RENAME       525
+#define IDS_MENU_FILE_DELETE       526
+#define IDS_MENU_FILE_EXIF         527
+#define IDS_MENU_FILE_HISTOGRAM    528
+#define IDS_MENU_FILE_SELCRCFILE   529
+#define IDS_MENU_FILE_PREVSEL      550
+#define IDS_MENU_FILE_NEXTSEL      551
+#define IDS_MENU_FILE_COPYTO       552
+
+#define IDS_MENU_EDIT            530
+#define IDS_MENU_EDIT_COPY       531
+#define IDS_MENU_EDIT_PASTE      532
+#define IDS_MENU_EDIT_SELECTALL  533
+#define IDS_MENU_EDIT_DESELECT   534
+#define IDS_MENU_EDIT_CROP       535
+#define IDS_MENU_EDIT_180        541
+#define IDS_MENU_EDIT_RIGHT      542
+#define IDS_MENU_EDIT_LEFT       543
+#define IDS_MENU_EDIT_FLIPV      544
+#define IDS_MENU_EDIT_FLIPH      545
+// 550 az 552 jsou zabrane
+
+#define IDS_MENU_VIEW            560
+#define IDS_MENU_VIEW_ZOOMIN     561
+#define IDS_MENU_VIEW_ZOOMOUT    562
+#define IDS_MENU_VIEW_ZOOM       563
+#define IDS_MENU_VIEW_FULLSCREEN 564
+#define IDS_MENU_VIEW_WHOLE      565
+#define IDS_MENU_VIEW_WIDTH      566
+#define IDS_MENU_VIEW_ACTUAL     567
+#define IDS_MENU_VIEW_WINDOW     568
+#define IDS_MENU_VIEW_TOOLBAR    569
+#define IDS_MENU_VIEW_STATUSBAR  570
+
+#define IDS_MENU_TOOLS           580
+#define IDS_MENU_TOOLS_HAND      581
+#define IDS_MENU_TOOLS_ZOOM      582
+#define IDS_MENU_TOOLS_SELECT    583
+#define IDS_MENU_TOOLS_PICK      584
+#define IDS_MENU_TOOLS_OPTIONS   585
+
+#define IDS_MENU_HELP            590
+#define IDS_MENU_HELP_CONTENTS   591
+#define IDS_MENU_HELP_INDEX      592
+#define IDS_MENU_HELP_SEARCH     593
+#define IDS_MENU_HELP_KEYBOARD   594
+#define IDS_MENU_HELP_MOUSE      595
+#define IDS_MENU_HELP_ABOUT      596
+
+#define IDS_MENU_MULTIPAGE       610
+#define IDS_MENU_FIRSTPAGE       611
+#define IDS_MENU_LASTPAGE        612
+#define IDS_MENU_PAGE            613
+#define IDS_MENU_NEXTPAGE        614
+#define IDS_MENU_PREVPAGE        615
+
+#define IDS_PLUGINNAME         999
+#define IDS_LOWMEMORY         1000
+#define IDS_SOME_WINS_OPENED  1002
+#define IDS_ERROR_OPENING     1003
+#define IDS_TITLE             1004
+#define IDS_TITLE_MULTI       1005
+#define IDS_NCOLORS           1006
+#define IDS_NCOLORS_CMYK      1007
+#define IDS_NCOLORS_LAB       1008
+#define IDS_ERROR_CALLING_PVW32_DLL 1009
+#define IDS_RGB               1010
+#define IDS_RGB_HEX           1011
+#define IDS_RGBXY             1012
+#define IDS_RGBXY_HEX         1013
+#define IDS_INDEX             1019
+#define IDS_VIEW_BMP_IN_CLIPBOARD 1020
+#define IDS_PIXELS            1021
+#define IDS_BYTES             1022
+#define IDS_OF                1023
+#define IDS_FRAMES            1024
+#define IDS_UNKNOWN           1025
+#define IDS_CFG_CONFLICT      1026
+#define IDS_CONFIGURATION_TITLE 1027
+#define IDS_PLUGINSMENU_SCREEN_CAPTURE    1028
+#define IDS_ERRORTITLE        1029
+#define IDS_BADTIMER          1030
+#define IDS_BADHOTKEY         1031
+#define IDS_CAPTURECANCELED   1032
+#define IDS_CAPTURING         1033
+#define IDS_CLIPBOARD_TITLE   1034
+#define IDS_CAPTURE_TITLE     1035
+#define IDS_EMPTY             1036
+#define IDS_OPENFILTER        1037
+#define IDS_SCAN_TITLE        1038
+#define IDS_SAVEASFILTERMONO  1039
+#define IDS_SAVEASFILTERCOLOR 1040
+#define IDS_SAVEERROR         1041
+#define IDS_SAVE_AS_SUCCESS   1042
+#define IDS_SAVE_LOST_ALPHA   1143
+#define IDS_CUSTOM_COLOR      1043
+#define IDS_AUTOMATIC_COLOR   1044
+#define IDS_SAL_IS_BUSY       1045
+#define IDS_RENAME_TO         1046
+#define IDS_ERRORRENAMINGFILE 1047
+#define IDS_TOOLONGNAME       1048
+#define IDS_DELETED_TITLE     1049
+#define IDS_LOADEXIF          1050
+#define IDS_EXIF_TAG          1051
+#define IDS_EXIF_VALUE        1052
+#define IDS_EXIF_LOCALIZATION_FNAME 1142
+#define IDS_CLIPBOARD_FNAME   1053
+#define IDS_CAPTURE_FNAME     1054
+#define IDS_SCAN_FNAME        1055
+// Tooltips for capture dialog
+#define IDS_CAPTHINT_APPL     1056
+#define IDS_CAPTHINT_WINDOW   1057
+#define IDS_CAPTHINT_CLIENT   1058
+
+#define IDS_DONT_SHOW_AGAIN   1059
+#define IDS_PLUGINSMENU_REGENERATE_THUMBNAIL  1060
+#define IDS_REGENERATE_THUMBNAIL_TITLE 1061
+#define IDS_REGENERATE_THUMB_WARNING   1062
+#define IDS_REGENERATE_THUMB_WRITEFILE 1063
+
+#define IDS_N_OF_N_FILES_PROCESSED     1064
+#define IDS_NO_FILES_FOUND             1065
+#define IDS_NOT_JPEG_FILE              1066
+#define IDS_NOT_EXIF_CREATE_JFXX       1067
+#define IDS_ERROR_OPENING_CONTINUE     1068
+#define IDS_READ_ONLY_MODIFY           1069
+#define IDS_READ_ONLY_REWRITE          1070
+
+#define IDS_CLRS_MONO                  1071
+#define IDS_CLRS_16                    1072
+#define IDS_CLRS_256                   1073
+#define IDS_CLRS_HC15                  1074
+#define IDS_CLRS_HC16                  1075
+#define IDS_CLRS_TC24                  1076
+#define IDS_CLRS_TC32                  1077
+#define IDS_CLRS_256GR                 1078
+
+#define IDS_FLIP_NONE                  1079
+#define IDS_FLIP_VERT                  1080
+#define IDS_FLIP_HOR                   1081
+
+#define IDS_ROT_NONE                   1082
+#define IDS_ROT_90                     1083
+#define IDS_ROT_180                    1084
+#define IDS_ROT_270                    1085
+
+#define IDS_HIST_HISTOGRAM      1086
+#define IDS_HIST_LUMINOSITY     1087
+#define IDS_HIST_RED            1088
+#define IDS_HIST_GREEN          1089
+#define IDS_HIST_BLUE           1090
+#define IDS_HIST_RGBSUM         1091
+#define IDS_HIST_MENU_LUMINOSITY 1092
+#define IDS_HIST_MENU_RED       1093
+#define IDS_HIST_MENU_GREEN     1094
+#define IDS_HIST_MENU_BLUE      1095
+#define IDS_HIST_MENU_RGBSUM    1096
+#define IDS_HIST_TIP_LUMINOSITY 1097
+#define IDS_HIST_TIP_RED        1098
+#define IDS_HIST_TIP_GREEN      1099
+#define IDS_HIST_TIP_BLUE       1100
+#define IDS_HIST_TIP_RGBSUM     1101
+#define IDS_HIST_TIP_OTHERCHANELS 1102
+
+#define IDS_DLL_NOTFOUND        1109
+#define IDS_DLL_WRONG_VERSION   1110
+#define IDS_SELECT_REGION       1111
+
+#define IDS_SAVE_DEFAULT              1112
+#define IDS_SAVE_ERR_EXISTS_OVERWRITE 1113
+
+#define IDS_PLUGIN_DESCRIPTION  1114
+
+#define IDS_CANCELED_BY_USER    1115
+
+#define IDS_NO_MORE_IMAGES      1116
+#define IDS_IMGPROP_GRAY_NBIT   1117
+#define IDS_UNSUPPORTED_IMAGE_TYPE 1118
+#define IDS_MUSTBEPOSITIVE      1119
+
+#define IDS_SB_XY               1120
+#define IDS_SB_WH               1121
+#define IDS_SB_RGB              1122
+#define IDS_SB_TIP_SELECT_SQUARE 1129
+#define IDS_SB_CAGE             1130
+#define IDS_SB_ZOOM             1131
+#define IDS_SB_HAND             1132
+
+#define IDS_SB_AUTOROTATING     1133
+
+// for Copy To dialog box
+#define IDS_SELECTTARGETDIR     1140
+#define IDS_SPECIFYPATH         1141
+
+#define IDS_PICTVIEWPLUGINNAME  1145
+
+#define IDS_DONT_SHOW_AGAIN_SLA 1146
+#define IDS_DONT_SHOW_AGAIN_UTH 1147
+
+#define IDS_PLUGINSMENU_SCAN    1148
+
+#define IDS_WIA_ERROR_ACQUIREIMG            1160
+#define IDS_WIA_WAIT                        1161
+#define IDS_WIA_STATUS_TRANSFER_FROM_DEVICE 1162
+#define IDS_WIA_STATUS_PROCESSING_DATA      1163
+#define IDS_WIA_STATUS_TRANSFER_TO_CLIENT   1164
+
+#define IDS_SCAN_OPEN_EXTRA_IMGS 1170
+
+// Toolbar Tooltips
+#define IDS_TT_OPEN              2200
+#define IDS_TT_SAVE              2201
+#define IDS_TT_PREV              2202
+#define IDS_TT_NEXT              2203
+#define IDS_TT_COPY              2204
+#define IDS_TT_PASTE             2205
+#define IDS_TT_TOOL_HAND         2206
+#define IDS_TT_TOOL_ZOOM         2207
+#define IDS_TT_TOOL_SELECT       2208
+#define IDS_TT_TOOL_PIPETTE      2209
+#define IDS_TT_LEFT              2210
+#define IDS_TT_RIGHT             2211
+#define IDS_TT_ZOOM_OUT          2212
+#define IDS_TT_ZOOM_IN           2213
+#define IDS_TT_ZOOM_TO           2214
+#define IDS_TT_ZOOM_WIDTH        2215
+#define IDS_TT_ZOOM_WHOLE        2216
+#define IDS_TT_ZOOM_ACTUAL       2217
+#define IDS_TT_FULL_SCREEN       2218
+#define IDS_TT_PROPERTIES        2219
+#define IDS_TT_SELSRCFILE        2220
+#define IDS_TT_PREVSELFILE       2221
+#define IDS_TT_NEXTSELFILE       2222
+#define IDS_TT_CROP              2223
+#define IDS_TT_PRINT             2224
+
+// Twain strings
+#define IDS_TWAIN_ERROR            2229
+#define IDS_TWAIN_OPEN             2230
+#define IDS_TWCC_BUMMER            2231 /* Failure due to unknown causes             */
+#define IDS_TWCC_LOWMEMORY         2232 /* Not enough memory to perform operation    */
+#define IDS_TWCC_NODS              2233 /* No Data Source                            */
+#define IDS_TWCC_MAXCONNECTIONS    2234 /* DS is connected to max possible applications      */
+#define IDS_TWCC_OPERATIONERROR    2235 /* DS or DSM reported error, application shouldn't   */
+#define IDS_TWCC_BADCAP            2236 /* Unknown capability                        */
+#define IDS_TWCC_BADPROTOCOL       2237 /* Unrecognized MSG DG DAT combination       */
+#define IDS_TWCC_BADVALUE          2238 /* Data parameter out of range              */
+#define IDS_TWCC_SEQERROR          2239 /* DG DAT MSG out of expected sequence      */
+#define IDS_TWCC_BADDEST           2240 /* Unknown destination Application/Source in DSM_Entry */
+#define IDS_TWCC_CAPUNSUPPORTED    2241 /* Capability not supported by source            */
+#define IDS_TWCC_CAPBADOPERATION   2242 /* Operation not supported by capability         */
+#define IDS_TWCC_CAPSEQERROR       2243 /* Capability has dependancy on other capability */
+#define IDS_TWCC_DENIED            2244 /* File System operation is denied (file is protected) */
+#define IDS_TWCC_FILEEXISTS        2245 /* Operation failed because file already exists. */
+#define IDS_TWCC_FILENOTFOUND      2246 /* File not found */
+#define IDS_TWCC_NOTEMPTY          2247 /* Operation failed because directory is not empty */
+#define IDS_TWCC_PAPERJAM          2248  /* The feeder is jammed */
+#define IDS_TWCC_PAPERDOUBLEFEED   2249  /* The feeder detected multiple pages */
+#define IDS_TWCC_FILEWRITEERROR    2250  /* Error writing the file (meant for things like disk full conditions) */
+#define IDS_TWCC_CHECKDEVICEONLINE 2251  /* The device went offline prior to or during this operation */
+
+// print units
+#define IDS_UNIT_INCHES            2280
+#define IDS_UNIT_CM                2281
+#define IDS_UNIT_MM                2282
+#define IDS_UNIT_POINTS            2283
+#define IDS_UNIT_PICAS             2284
+
+
+// print dialog messages
+#define IDS_PRINT_NODEFPRINTER     2290
+#define IDS_PRINT_NOPRINTERS       2291
+#define IDS_PRINT_SETUPFAILED      2292
+#define IDS_PRINTING               2293
+#define IDS_PRINTING_FAILED        2294
+#define IDS_CHECK_EVENTLOG         2295
+#define IDS_UNKNOWN_ERROR          2296
+
+// licensing messages
+#define IDS_EXCEPT_INFO1           2306
+#define IDS_EXCEPT_INFO2           2307
+
+// Texts for PVW32Cnv.dll - reserved IDs 4000-4999 !!!
+#define IDS_DLL         4000
+
+// IDcka stranek v html helpu
+#define IDH_INTRODUCTION          3500
+#define IDH_SCANIMAGE             3501
+#define IDH_SCREENCAPTURE         3502
+#define IDH_SELSCANNERSOURCE      3503
+#define IDH_UPDATETHUMBNAIL       3504
+#define IDH_VIEWBMPFROMCLIP       3505
+
+// Save as dialog
+#define IDD_SAVEEX                2300
+#define IDC_SAVE_COMPRESSION_LABEL 2300
+#define IDC_SAVE_COMPRESSION      2301
+#define IDC_SAVE_ADVANCED         2302
+#define IDC_SAVE_BIT_DEPTH        2303
+#define IDC_SAVE_ROTATION         2304
+#define IDC_SAVE_FLIP             2305
+#define IDC_SAVE_INVERT           2307
+#define IDC_SAVE_COMMENT_STATIC   2308
+#define IDC_SAVE_COMMENT          2309
+#define IDC_SAVE_COMMENT_FIRST    2308 // IDC_SAVE_COMMENT_STATIC
+#define IDC_SAVE_COMMENT_LAST     2309 // IDC_SAVE_COMMENT
+#define IDC_SAVE_GROUP_GIF        2310
+#define IDC_SAVE_GIF_FIRST        2310 // IDC_SAVE_GROUP_GIF
+#define IDC_SAVE_GIF_INTERLACED   2311
+#define IDC_SAVE_GIF_89a          2312
+#define IDC_SAVE_GIF_LAST         2312 // IDC_SAVE_GIF_89a
+#define IDC_SAVE_GROUP_JPEG       2313
+#define IDC_SAVE_JPEG_FIRST       2313 // IDC_SAVE_GROUP_JPEG
+#define IDC_SAVE_JPEG_STATIC1     2314
+#define IDC_SAVE_JPEG_QUALITY     2315
+#define IDC_SAVE_JPEG_STATIC2     2316
+#define IDC_SAVE_JPEG_STATIC3     2317
+#define IDC_SAVE_JPEG_SUBSAMPLING 2318
+#define IDC_SAVE_JPEG_LAST        2318 // IDC_SAVE_JPEG_SUBSAMPLING
+#define IDC_SAVE_GROUP_TIFF       2319
+#define IDC_SAVE_TIFF_FIRST       2319 // IDC_SAVE_GROUP_TIFF
+#define IDC_SAVE_TIFF_MAKE_STRIPS 2320
+#define IDC_SAVE_TIFF_STATIC1     2321
+#define IDC_SAVE_TIFF_STRIP_SIZE  2322
+#define IDC_SAVE_TIFF_STATIC2     2323
+#define IDC_SAVE_TIFF_LAST        2323 // IDC_SAVE_TIFF_STATIC2
+#define IDC_SAVE_LOWEST           2319 // IDC_SAVE_GROUP_TIFF
+#define IDC_SAVE_ADVANCED_FIRST   2303 // IDC_SAVE_BIT_DEPTH
+#define IDC_SAVE_ADVANCED_LAST    2323 // IDC_SAVE_TIFF_STATIC2
+
+#endif // __PICTVIEW_RH2

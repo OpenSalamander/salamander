@@ -1,0 +1,1371 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<!-- Sitemap 1.0 -->
+</HEAD><BODY>
+<OBJECT type="text/site properties">
+	<param name="FrameName" value="right">
+	<param name="Window Styles" value="0x800027">
+</OBJECT>
+<UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Introduction">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Introducing Open Salamander">
+			<param name="Local" value="hh\salamand\introduction_intro.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Using Help">
+			<param name="Local" value="hh\salamand\introduction_usehelp.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="System Requirements">
+			<param name="Local" value="hh\salamand\introduction_require.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="License Agreement">
+			<param name="Local" value="hh\salamand\introduction_license.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Technical Support">
+			<param name="Local" value="hh\salamand\introduction_techsup.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="What's New in This Release">
+			<param name="Local" value="hh\salamand\introduction_news.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Window Components">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Main Window Components">
+			<param name="Local" value="hh\salamand\windows_mainwnd.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Menu Bar">
+			<param name="Local" value="hh\salamand\windows_menubar.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Top Toolbar">
+			<param name="Local" value="hh\salamand\windows_toptlb.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Plugin Bar">
+			<param name="Local" value="hh\salamand\windows_pluginsbar.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="User Menu Bar">
+			<param name="Local" value="hh\salamand\windows_usrmenu.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Hot Path Bar">
+			<param name="Local" value="hh\salamand\windows_hotpathbar.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Drive Bar">
+			<param name="Local" value="hh\salamand\windows_drivebar.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Middle Toolbar">
+			<param name="Local" value="hh\salamand\windows_midtoolbar.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Split Bar">
+			<param name="Local" value="hh\salamand\windows_splitbar.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Panel">
+			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Panel Components">
+				<param name="Local" value="hh\salamand\windows_panel.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Directory Line">
+				<param name="Local" value="hh\salamand\windows_dirline.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Header Line">
+				<param name="Local" value="hh\salamand\windows_hdrline.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Working Area">
+				<param name="Local" value="hh\salamand\windows_wrkarea.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Information Line">
+				<param name="Local" value="hh\salamand\windows_infoline.htm">
+				</OBJECT>
+		</UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Command Line">
+			<param name="Local" value="hh\salamand\windows_cmdline.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Bottom Toolbar">
+			<param name="Local" value="hh\salamand\windows_btmtlb.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Window Menu">
+			<param name="Local" value="hh\salamand\windows_sysmenucmds.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Minimize, Maximize, and Close Buttons">
+			<param name="Local" value="hh\salamand\windows_minmaxclosebtns.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Using Open Salamander">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Working with Windows and Panels">
+			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Activating Panel">
+				<param name="Local" value="hh\salamand\environment_activate.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Focusing Item">
+				<param name="Local" value="hh\salamand\environment_focus.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Activating Command Line">
+				<param name="Local" value="hh\salamand\environment_swtcmd.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Selecting Current View">
+				<param name="Local" value="hh\salamand\environment_selview.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Choosing Visible Columns">
+				<param name="Local" value="hh\salamand\environment_columns.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Setting Column Width">
+				<param name="Local" value="hh\salamand\environment_colwidths.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Setting Visibility of Window Components">
+				<param name="Local" value="hh\salamand\environment_wndvisibility.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Setting Visibility of Panel Components">
+				<param name="Local" value="hh\salamand\environment_panelvisibility.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Setting Panel Width">
+				<param name="Local" value="hh\salamand\environment_panelwidth.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Maximizing and Restoring Panel">
+				<param name="Local" value="hh\salamand\environment_maxrestpanel.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Swapping Panels">
+				<param name="Local" value="hh\salamand\environment_swappanel.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Setting Window Always on Top">
+				<param name="Local" value="hh\salamand\environment_alwaystop.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Common Shortcut Keys">
+				<param name="Local" value="hh\salamand\environment_window.htm">
+				</OBJECT>
+		</UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Navigating Through Directories">
+			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Changing Directory">
+				<param name="Local" value="hh\salamand\navigating_changedir.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Changing Directory in Other Panel">
+				<param name="Local" value="hh\salamand\navigating_changedirinothpan.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Change Drive Menu">
+				<param name="Local" value="hh\salamand\navigating_chdrvmenu.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Using Hot Paths">
+				<param name="Local" value="hh\salamand\navigating_hotpaths.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Opening Directory You've Worked In Recently">
+				<param name="Local" value="hh\salamand\navigating_dirhist.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Restoring Network Connections">
+				<param name="Local" value="hh\salamand\navigating_net.htm">
+				</OBJECT>
+		</UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Basic Working with Files and Directories">
+			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Sorting Panel Contents">
+				<param name="Local" value="hh\salamand\basicwork_sort.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Selecting Files and Directories">
+				<param name="Local" value="hh\salamand\basicwork_select.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Quick Searching File or Directory Name">
+				<param name="Local" value="hh\salamand\basicwork_qsearch.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Copying Files and Directories">
+				<param name="Local" value="hh\salamand\basicwork_copy.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Moving or Renaming Files and Directories">
+				<param name="Local" value="hh\salamand\basicwork_move.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Deleting Files and Directories">
+				<param name="Local" value="hh\salamand\basicwork_delete.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Creating a Directory">
+				<param name="Local" value="hh\salamand\basicwork_mkdir.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Viewing File">
+				<param name="Local" value="hh\salamand\basicwork_view.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Editing File">
+				<param name="Local" value="hh\salamand\basicwork_edit.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Opening Archive Files">
+				<param name="Local" value="hh\salamand\basicwork_openarchive.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Packing Files and Directories">
+				<param name="Local" value="hh\salamand\basicwork_pack.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Unpacking Archive File">
+				<param name="Local" value="hh\salamand\basicwork_unpack.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Finding Files and Directories">
+				<param name="Local" value="hh\salamand\basicwork_find.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Starting Application or Opening Document">
+				<param name="Local" value="hh\salamand\basicwork_open.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Opening Plugin File Systems">
+				<param name="Local" value="hh\salamand\basicwork_openfs.htm">
+				</OBJECT>
+		</UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Advanced Working with Files and Directories">
+			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Emailing Files">
+				<param name="Local" value="hh\salamand\advwork_email.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Saving and Loading Selection">
+				<param name="Local" value="hh\salamand\advwork_select.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Using Clipboard to Perform File and Directory Operations">
+				<param name="Local" value="hh\salamand\advwork_clipboard.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Copying File or Directory Name to Clipboard">
+				<param name="Local" value="hh\salamand\advwork_nameclip.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Opening File You've Used Recently">
+				<param name="Local" value="hh\salamand\advwork_filehist.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Changing the Name of File or Directory">
+				<param name="Local" value="hh\salamand\advwork_rename.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Changing Attributes of Files and Directories">
+				<param name="Local" value="hh\salamand\advwork_attr.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Compressing and Encrypting of Files and Directories">
+				<param name="Local" value="hh\salamand\advwork_ntfscmds.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Changing Name Case of Files and Directories">
+				<param name="Local" value="hh\salamand\advwork_case.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Converting Contents of Text Files">
+				<param name="Local" value="hh\salamand\advwork_convert.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Calculating Occupied Space">
+				<param name="Local" value="hh\salamand\advwork_calcspace.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Calculating Directory Sizes">
+				<param name="Local" value="hh\salamand\advwork_calcsize.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Comparing Directories">
+				<param name="Local" value="hh\salamand\advwork_compare.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Making List of Files and Directories">
+				<param name="Local" value="hh\salamand\advwork_list.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Opening Properties of Files and Directories">
+				<param name="Local" value="hh\salamand\advwork_properties.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Creating New Object">
+				<param name="Local" value="hh\salamand\advwork_new.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Finding Duplicate Files">
+				<param name="Local" value="hh\salamand\advwork_finddup.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Finding Shortcut or Link Target">
+				<param name="Local" value="hh\salamand\advwork_shortcuttgt.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Displaying Shared Directories">
+				<param name="Local" value="hh\salamand\advwork_shareddirs.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Limiting the Files and Directories to Display">
+				<param name="Local" value="hh\salamand\advwork_filter.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Highlighting Groups of Files and Directories">
+				<param name="Local" value="hh\salamand\advwork_hilight.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Refreshing Panel">
+				<param name="Local" value="hh\salamand\advwork_refresh.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Rereading Associations">
+				<param name="Local" value="hh\salamand\advwork_assoc.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Using User Menu">
+				<param name="Local" value="hh\salamand\advwork_usermenu.htm">
+				</OBJECT>
+		</UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Using Internal Viewer">
+			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Introduction to Internal Viewer">
+				<param name="Local" value="hh\salamand\viewer_intro.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Finding Text">
+				<param name="Local" value="hh\salamand\viewer_finding.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Copying Text to Clipboard">
+				<param name="Local" value="hh\salamand\viewer_clipboard.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Selecting Text">
+				<param name="Local" value="hh\salamand\viewer_select.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Changing View Mode">
+				<param name="Local" value="hh\salamand\viewer_chviewmode.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Opening Previous or Next File from Panel or Find Window">
+				<param name="Local" value="hh\salamand\viewer_otherfiles.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Drag & Drop">
+				<param name="Local" value="hh\salamand\viewer_dragdrop.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Text Wrapping">
+				<param name="Local" value="hh\salamand\viewer_wrap.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Converting Text">
+				<param name="Local" value="hh\salamand\viewer_convert.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Copying Text to File">
+				<param name="Local" value="hh\salamand\viewer_copyto.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Viewing in Full Screen">
+				<param name="Local" value="hh\salamand\viewer_fullscreen.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Opening File">
+				<param name="Local" value="hh\salamand\viewer_openfile.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Reloading File">
+				<param name="Local" value="hh\salamand\viewer_refresh.htm">
+				</OBJECT>
+		</UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Working with Disks">
+			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Formatting Disk">
+				<param name="Local" value="hh\salamand\disk_format.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Labeling Disk">
+				<param name="Local" value="hh\salamand\disk_label.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Displaying Drive Information">
+				<param name="Local" value="hh\salamand\disk_driveinfo.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Connecting to and Disconnecting from a Network Drive">
+				<param name="Local" value="hh\salamand\disk_net.htm">
+				</OBJECT>
+		</UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Securing Files and Directories">
+			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Setting Files and Directories Permissions">
+				<param name="Local" value="hh\salamand\security_permissions.htm">
+				</OBJECT>
+		</UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Using Plugins">
+			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Managing Plugins">
+				<param name="Local" value="hh\salamand\plugins_manage.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Using Plugins">
+				<param name="Local" value="hh\salamand\plugins_using.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Configuring Plugins">
+				<param name="Local" value="hh\salamand\plugins_config.htm">
+				</OBJECT>
+		</UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Customizing Open Salamander">
+			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Configuring Open Salamander">
+				<param name="Local" value="hh\salamand\customize_configuration.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Setting User's Skill Level">
+				<param name="Local" value="hh\salamand\customize_menuskilllevel.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Customizing Toolbars">
+				<param name="Local" value="hh\salamand\customize_toolbar.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Customizing Plugin Bar">
+				<param name="Local" value="hh\salamand\customize_pluginsbar.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Customizing User Menu">
+				<param name="Local" value="hh\salamand\customize_usrmn.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Archivers Autoconfiguration">
+				<param name="Local" value="hh\salamand\customize_arccfg.htm">
+				</OBJECT>
+		</UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Other Tasks">
+			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Working with Command Line">
+				<param name="Local" value="hh\salamand\othertask_cmdline.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Opening System Folder">
+				<param name="Local" value="hh\salamand\othertask_explore.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Opening Command Shell">
+				<param name="Local" value="hh\salamand\othertask_shell.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Using Password Manager">
+				<param name="Local" value="hh\salamand\othertask_pwdmanager.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Displaying About Dialog Boxes">
+				<param name="Local" value="hh\salamand\othertask_about.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Accessing Help">
+				<param name="Local" value="hh\salamand\othertask_help.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Using Open Salamander Task List">
+				<param name="Local" value="hh\salamand\othertask_tasklist.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Starting Open Salamander with Parameters">
+				<param name="Local" value="hh\salamand\othertask_param.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Exiting Open Salamander">
+				<param name="Local" value="hh\salamand\othertask_exit.htm">
+				</OBJECT>
+		</UL>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Dialog Boxes">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Configuration">
+			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Appearance">
+				<param name="Local" value="hh\salamand\configuration_appea.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Archivers">
+				<param name="Local" value="hh\salamand\configuration_archi.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Archives Associations in Panels">
+				<param name="Local" value="hh\salamand\configuration_assoc.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Change Drive Menu and Drive Bar">
+				<param name="Local" value="hh\salamand\configuration_chdrv.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Colors">
+				<param name="Local" value="hh\salamand\configuration_color.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Confirmations">
+				<param name="Local" value="hh\salamand\configuration_cnfir.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Drives">
+				<param name="Local" value="hh\salamand\configuration_drive.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Editors">
+				<param name="Local" value="hh\salamand\configuration_edtrs.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="External Archivers Locations">
+				<param name="Local" value="hh\salamand\configuration_locat.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="General">
+				<param name="Local" value="hh\salamand\configuration_gener.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="History">
+				<param name="Local" value="hh\salamand\configuration_history.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Hot Paths">
+				<param name="Local" value="hh\salamand\configuration_hotpa.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Security">
+				<param name="Local" value="hh\salamand\configuration_security.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Icon Overlays">
+				<param name="Local" value="hh\salamand\configuration_iconovrls.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Internal Viewer">
+				<param name="Local" value="hh\salamand\configuration_intvw.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Keyboard">
+				<param name="Local" value="hh\salamand\configuration_keyboard.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Main Window">
+				<param name="Local" value="hh\salamand\configuration_mainwnd.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Packers in Pack Dialog">
+				<param name="Local" value="hh\salamand\configuration_packr.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Panels">
+				<param name="Local" value="hh\salamand\configuration_panels.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Language">
+				<param name="Local" value="hh\salamand\configuration_reg.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Recycle Bin">
+				<param name="Local" value="hh\salamand\configuration_sys.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Unpackers in Unpack Dialog">
+				<param name="Local" value="hh\salamand\configuration_unpck.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="User Menu">
+				<param name="Local" value="hh\salamand\configuration_usrmn.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Viewers">
+				<param name="Local" value="hh\salamand\configuration_vwers.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Views">
+				<param name="Local" value="hh\salamand\configuration_views.htm">
+				</OBJECT>
+		</UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Find">
+			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Advanced Options">
+				<param name="Local" value="hh\salamand\finddlg_advan.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Find">
+				<param name="Local" value="hh\salamand\finddlg_main.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Find Duplicate Files">
+				<param name="Local" value="hh\salamand\finddlg_duplicate.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Find Log">
+				<param name="Local" value="hh\salamand\finddlg_log.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Ignore Directory List">
+				<param name="Local" value="hh\salamand\finddlg_findign.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Settings Manager">
+				<param name="Local" value="hh\salamand\finddlg_setts.htm">
+				</OBJECT>
+		</UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Internal Viewer">
+			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Find Dialog">
+				<param name="Local" value="hh\salamand\viewerdlg_find.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Go To Offset Dialog">
+				<param name="Local" value="hh\salamand\viewerdlg_gotooffset.htm">
+				</OBJECT>
+		</UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Password Manager">
+			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Enter Master Password">
+				<param name="Local" value="hh\salamand\dlgboxes_masterpwd_enter.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Change Master Password">
+				<param name="Local" value="hh\salamand\dlgboxes_masterpwd_change.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Remove Master Password">
+				<param name="Local" value="hh\salamand\dlgboxes_masterpwd_remove.htm">
+				</OBJECT>
+		</UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Open Salamander Task List">
+			<param name="Local" value="hh\salamand\dlgboxes_tasks.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Archive Update">
+			<param name="Local" value="hh\salamand\dlgboxes_arcup.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Archivers Autoconfiguration">
+			<param name="Local" value="hh\salamand\dlgboxes_arcac.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Archivers Autoconfiguration Drives">
+			<param name="Local" value="hh\salamand\dlgboxes_arcacdrv.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Calculate Occupied Space">
+			<param name="Local" value="hh\salamand\dlgboxes_sizeres.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Change Attributes">
+			<param name="Local" value="hh\salamand\dlgboxes_chatt.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Change Case">
+			<param name="Local" value="hh\salamand\dlgboxes_case.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Choose Directories to Compare">
+			<param name="Local" value="hh\salamand\dlgboxes_usrmncompargsdirs.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Change Directory">
+			<param name="Local" value="hh\salamand\dlgboxes_chdir.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Change Icon">
+			<param name="Local" value="hh\salamand\dlgboxes_chicn.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Choose Files to Compare">
+			<param name="Local" value="hh\salamand\dlgboxes_usrmncompargsfiles.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Code Page Conversion Tables">
+			<param name="Local" value="hh\salamand\dlgboxes_codpgconvtbl.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Compare Directories">
+			<param name="Local" value="hh\salamand\dlgboxes_cmpdirs.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Connect to Network Path">
+			<param name="Local" value="hh\salamand\dlgboxes_netps.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Convert">
+			<param name="Local" value="hh\salamand\dlgboxes_cnvrt.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Copy">
+			<param name="Local" value="hh\salamand\dlgboxes_copy.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Create Directory">
+			<param name="Local" value="hh\salamand\dlgboxes_mkdir.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Customize Toolbar">
+			<param name="Local" value="hh\salamand\dlgboxes_toolb.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Disconnect">
+			<param name="Local" value="hh\salamand\dlgboxes_disconnect.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Drive Information">
+			<param name="Local" value="hh\salamand\dlgboxes_drive.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Edit New File">
+			<param name="Local" value="hh\salamand\dlgboxes_edtnw.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Filter">
+			<param name="Local" value="hh\salamand\dlgboxes_filtr.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Load Selection">
+			<param name="Local" value="hh\salamand\dlgboxes_loadsel.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Make File List">
+			<param name="Local" value="hh\salamand\dlgboxes_flist.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Move/Rename">
+			<param name="Local" value="hh\salamand\dlgboxes_move.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Pack">
+			<param name="Local" value="hh\salamand\dlgboxes_pack.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Plugin Keyboard Shortcuts">
+			<param name="Local" value="hh\salamand\dlgboxes_plgkeys.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Plugins Manager">
+			<param name="Local" value="hh\salamand\dlgboxes_plugn.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Quick Rename">
+			<param name="Local" value="hh\salamand\dlgboxes_renam.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Save Selection">
+			<param name="Local" value="hh\salamand\dlgboxes_savesel.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Select">
+			<param name="Local" value="hh\salamand\dlgboxes_sel.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Set Speed Limit">
+			<param name="Local" value="hh\salamand\dlgboxes_setspeedlim.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Shared Directories">
+			<param name="Local" value="hh\salamand\dlgboxes_shares.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Unpack">
+			<param name="Local" value="hh\salamand\dlgboxes_unpck.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Unselect">
+			<param name="Local" value="hh\salamand\dlgboxes_unsel.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="User's Skill Level">
+			<param name="Local" value="hh\salamand\dlgboxes_skilllev.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Shortcuts">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Keyboard Shortcuts">
+			<param name="Local" value="hh\salamand\shortcuts_keyboard.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Mouse Shortcuts">
+			<param name="Local" value="hh\salamand\shortcuts_mouse.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Shortcut Menus">
+			<param name="Local" value="hh\salamand\shortcuts_menus.htm">
+			</OBJECT>
+	</UL>
+
+
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Plugins">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Plugins Concepts">
+			<param name="Local" value="hh\salamand\plugins_concepts.htm">
+			</OBJECT>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="7-ZIP">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="7zip.chm::\7zip.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Automation">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="automation.chm::\automation.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Checksum">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="checksum.chm::\checksum.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Check Version">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="checkver.chm::\checkver.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Database Viewer">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="dbviewer.chm::\dbviewer.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="DemoMenu">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="demomenu.chm::\demomenu.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="DemoView">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="demoview.chm::\demoview.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="DiskMap">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="diskmap.chm::\diskmap.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="File Comparator">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="filecomp.chm::\filecomp.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="FTP Client">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="ftp.chm::\ftp.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Internet Explorer Viewer">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="ieviewer.chm::\ieviewer.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Multimedia Viewer">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="mmviewer.chm::\mmviewer.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Network">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="nethood.chm::\nethood.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Quake PAK">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="pak.chm::\pak.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Portable Executable Viewer">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="peviewer.chm::\peviewer.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="PictView">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="pictview.chm::\pictview.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Registry Editor">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="regedt.chm::\regedt.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Renamer">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="renamer.chm::\renamer.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Salamander Demo Plugin">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="demoplug.chm::\demoplug.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Split & Combine">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="splitcbn.chm::\splitcbn.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="TAR">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="tar.chm::\tar.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="UnARJ">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="unarj.chm::\unarj.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="UnCAB">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="uncab.chm::\uncab.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="UnCHM">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="unchm.chm::\unchm.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Undelete">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="undelete.chm::\undelete.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="UnFAT">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="unfat.chm::\unfat.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="UnISO">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="uniso.chm::\uniso.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="UnLHA">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="unlha.chm::\unlha.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="UnMIME">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="unmime.chm::\unmime.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="UnRAR">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="unrar.chm::\unrar.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Windows Mobile">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="wmobile.chm::\wmobile.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="WinSCP">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="winscp.chm::\winscp.hhc">
+			</OBJECT>
+		</UL>
+
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="ZIP">
+			</OBJECT>
+		<UL>
+			<OBJECT type="text/sitemap">
+				<param name="Merge" value="zip.chm::\zip.hhc">
+			</OBJECT>
+		</UL>
+	</UL>
+
+
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Appendix">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="File and Directory Concepts">
+			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Understanding Files and Directories">
+				<param name="Local" value="hh\salamand\appendix_files.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="File Systems">
+				<param name="Local" value="hh\salamand\appendix_filesystems.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Naming a File or Directory">
+				<param name="Local" value="hh\salamand\appendix_filenames.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Disk Path Specifier">
+				<param name="Local" value="hh\salamand\appendix_paths.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="File and Directory Attributes">
+				<param name="Local" value="hh\salamand\appendix_attributes.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="File and Directory Times">
+				<param name="Local" value="hh\salamand\appendix_times.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Text Files Coding and End of Line Characters">
+				<param name="Local" value="hh\salamand\appendix_txtfiles.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Wildcard Characters">
+				<param name="Local" value="hh\salamand\appendix_wildcard.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="File Masks">
+				<param name="Local" value="hh\salamand\appendix_filemasks.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Operation Masks">
+				<param name="Local" value="hh\salamand\appendix_opmasks.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Archive Path Specifier">
+				<param name="Local" value="hh\salamand\appendix_arcpaths.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Plugin File System Path Specifier">
+				<param name="Local" value="hh\salamand\appendix_fspaths.htm">
+				</OBJECT>
+		</UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Regular Expressions Syntax">
+			<param name="Local" value="hh\salamand\appendix_regexp.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Group Policy Restriction">
+			<param name="Local" value="hh\salamand\appendix_grouppolicy.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Unicode Support">
+			<param name="Local" value="hh\salamand\appendix_unicodesupport.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Glossary">
+		<param name="Local" value="hh\salamand\glossary.htm">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="A">
+			<param name="Local" value="hh\salamand\glossary_a.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="B">
+			<param name="Local" value="hh\salamand\glossary_b.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="C">
+			<param name="Local" value="hh\salamand\glossary_c.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="D">
+			<param name="Local" value="hh\salamand\glossary_d.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="E">
+			<param name="Local" value="hh\salamand\glossary_e.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="F">
+			<param name="Local" value="hh\salamand\glossary_f.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="G">
+			<param name="Local" value="hh\salamand\glossary_g.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="H">
+			<param name="Local" value="hh\salamand\glossary_h.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="I">
+			<param name="Local" value="hh\salamand\glossary_i.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="J">
+			<param name="Local" value="hh\salamand\glossary_j.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="K">
+			<param name="Local" value="hh\salamand\glossary_k.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="L">
+			<param name="Local" value="hh\salamand\glossary_l.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="M">
+			<param name="Local" value="hh\salamand\glossary_m.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="N">
+			<param name="Local" value="hh\salamand\glossary_n.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="O">
+			<param name="Local" value="hh\salamand\glossary_o.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="P">
+			<param name="Local" value="hh\salamand\glossary_p.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Q">
+			<param name="Local" value="hh\salamand\glossary_q.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="R">
+			<param name="Local" value="hh\salamand\glossary_r.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="S">
+			<param name="Local" value="hh\salamand\glossary_s.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="T">
+			<param name="Local" value="hh\salamand\glossary_t.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="U">
+			<param name="Local" value="hh\salamand\glossary_u.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="V">
+			<param name="Local" value="hh\salamand\glossary_v.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="X">
+			<param name="Local" value="hh\salamand\glossary_x.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Y">
+			<param name="Local" value="hh\salamand\glossary_y.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Z">
+			<param name="Local" value="hh\salamand\glossary_z.htm">
+			</OBJECT>
+	</UL>
+</UL>
+</BODY></HTML>

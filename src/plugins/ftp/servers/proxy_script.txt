@@ -1,0 +1,144 @@
+Popis formatu prihlasovaciho skriptu (pro proxy-servery a firewally):
+=====================================================================
+
+Prvni radek skriptu je vzdy "Connect to:" nasledovany dvojici host:port - jde
+o hostitele (server) a port kam se mame pripojit. Hostitel musi byt definovany,
+neni-li definovany port, predpoklada se 21.
+
+Vsechny dalsi radky obsahuji prikazy posilane na server po pripojeni (co radek,
+to jeden prikaz). Radky muzou obsahovat promenne, ktere se pred poslanim
+prikazu nahradi obsahem techto promennych.
+
+Mame promenne dvou typu, lisi se podle toho co se deje kdyz promenna neni
+definovana (zadana uzivatelem) - prvni typ (rikejme mu "nepovinny") vede
+k preskoceni celeho radku (neposle se zadny prikaz), druhy (rikejme mu
+"povinny") vede k otevreni okna, kam uzivatel musi zadat hodnotu (nebo
+prerusit celou prihlasovani sekvenci). Promenne se pisou do zavorek a
+predchazi jim znak "$": napr. "$(Password)". "$$" je escape sekvence pro
+znak "$".
+
+Radky zacinajici na "3xx:" se preskakuji pokud byl prikaz z predchoziho radku
+preskocen nebo vratil jinou odpoved nez 3xx (3xx="posli dalsi prikaz, jde
+o sekvenci prikazu" - zde jde o user+password sekvence).
+
+Omezeni parametru na prvnim radku skriptu (za "Connect to:"): hostitele je
+mozne definovat jen jako text nebo text obsahujici promennou $(ProxyHost)
+nebo $(Host), port je mozne definovat jen jako cislo nebo promennou $(ProxyPort)
+nebo promennou $(Port).
+
+Prihlasovaci sekvence se povazuje za uspesnou (uzivatel je prihlasen na FTP
+serveru) pokud zadny spousteny prikaz nevrati odpoved 4xx ani 5xx (4xx="docasna
+chyba", 5xx="stala chyba") a posledni poslany prikaz vrati odpoved 2xx
+(2xx="uspech").
+
+
+Promenne:
+=========
+
+$(ProxyHost) - povinny - jmena adresa nebo IP proxy-serveru/firewallu
+$(ProxyPort) - vzdy definovany (nezada-li ho uzivatel, nastavi se na 21)
+$(ProxyUser) - nepovinny - uzivatelske jmeno pro proxy-server/firewall
+$(ProxyPassword) - povinny - heslo pro proxy-server/firewall
+$(Host) - vzdy definovany - hostitel (FTP server)
+$(Port) - vzdy definovany (nezada-li ho uzivatel, nastavi se na 21)
+$(User) - povinny - uzivatelske jmeno pro hostitele (FTP server)
+$(Password) - povinny - heslo pro hostitele (FTP server)
+$(Account) - povinny - ucet pro hostitele (FTP server)
+
+
+Skripty pro zname typy proxy-serveru/firewallu:
+===============================================
+
+"direct connection"
+Connect to: $(Host):$(Port)
+USER $(User)
+3xx: PASS $(Password)
+3xx: ACCT $(Account)
+
+"SITE host:port"
+Connect to: $(ProxyHost):$(ProxyPort)
+USER $(ProxyUser)
+3xx: PASS $(ProxyPassword)
+SITE $(Host):$(Port)
+USER $(User)
+3xx: PASS $(Password)
+3xx: ACCT $(Account)
+
+"SITE host port"
+Connect to: $(ProxyHost):$(ProxyPort)
+USER $(ProxyUser)
+3xx: PASS $(ProxyPassword)
+SITE $(Host) $(Port)
+USER $(User)
+3xx: PASS $(Password)
+3xx: ACCT $(Account)
+
+"SITE user@host:port"
+Connect to: $(ProxyHost):$(ProxyPort)
+USER $(ProxyUser)
+3xx: PASS $(ProxyPassword)
+SITE $(User)@$(Host):$(Port)
+3xx: PASS $(Password)
+3xx: ACCT $(Account)
+
+"SITE user@host port"
+Connect to: $(ProxyHost):$(ProxyPort)
+USER $(ProxyUser)
+3xx: PASS $(ProxyPassword)
+SITE $(User)@$(Host) $(Port)
+3xx: PASS $(Password)
+3xx: ACCT $(Account)
+
+"OPEN host:port"
+Connect to: $(ProxyHost):$(ProxyPort)
+USER $(ProxyUser)
+3xx: PASS $(ProxyPassword)
+OPEN $(Host):$(Port)
+USER $(User)
+3xx: PASS $(Password)
+3xx: ACCT $(Account)
+
+"transparent"
+Connect to: $(Host):$(Port)
+USER $(ProxyUser)
+3xx: PASS $(ProxyPassword)
+USER $(User)
+3xx: PASS $(Password)
+3xx: ACCT $(Account)
+
+"USER user@host:port"
+Connect to: $(ProxyHost):$(ProxyPort)
+USER $(ProxyUser)
+3xx: PASS $(ProxyPassword)
+USER $(User)@$(Host):$(Port)
+3xx: PASS $(Password)
+3xx: ACCT $(Account)
+
+"USER user@host port"
+Connect to: $(ProxyHost):$(ProxyPort)
+USER $(ProxyUser)
+3xx: PASS $(ProxyPassword)
+USER $(User)@$(Host) $(Port)
+3xx: PASS $(Password)
+3xx: ACCT $(Account)
+
+"USER proxy-user@host:port"
+Connect to: $(ProxyHost):$(ProxyPort)
+USER $(ProxyUser)@$(Host):$(Port)
+3xx: PASS $(ProxyPassword)
+USER $(User)
+3xx: PASS $(Password)
+3xx: ACCT $(Account)
+
+"USER user@host:port proxy-user"
+Connect to: $(ProxyHost):$(ProxyPort)
+USER $(User)@$(Host):$(Port) $(ProxyUser)
+3xx: PASS $(Password)
+3xx: ACCT $(ProxyPassword)
+3xx: ACCT $(Account)
+
+"USER user@proxy-user@host:port"
+Connect to: $(ProxyHost):$(ProxyPort)
+USER $(User)@$(ProxyUser)@$(Host):$(Port)
+3xx: PASS $(Password)@$(ProxyPassword)
+3xx: ACCT $(Account)

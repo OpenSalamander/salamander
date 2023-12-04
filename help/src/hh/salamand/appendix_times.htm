@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>File and Directory Times</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Appendix: File and Directory Concepts</div>
+<div class="page">
+
+<h1>File and Directory Times</h1>
+
+<p><i>Coordinated universal time (UTC)</i> is the standard international time
+used internally by the system. UTC is loosely defined as the current date and
+time of day in Greenwich, England. This time is called also <i>Greenwich mean
+time (GMT)</i>.</p>
+
+<p><i>Local time</i> is the date and time of day for your time zone. The current
+time-zone settings control how the system converts between UTC and local time.</p>
+
+<p>A file time represents the specific date and time at which a specified file
+was created, last accessed, or last written to. The system records file times
+whenever applications create, access, and write to files. The system records
+the times using a 64-bit value specifying the number of 100-nanosecond intervals
+that have elapsed since 12:00 A.M. January 1, 1601 (UTC). Writing to a file
+changes the last write time; writing to or reading from the file (including
+running an executable file) changes the last access time.</p>
+
+<p><b>Note</b> Not all file systems can record creation and last
+access time and not all file systems record them in the same manner. For
+example, on Windows NT FAT, create time has a resolution of 10 milliseconds,
+write time has a resolution of 2 seconds, and access time has a resolution
+of 1 day (really, the access date). On NTFS, access time has a resolution of
+1 hour. Furthermore, FAT records times on disk in local time, while NTFS records
+times on disk in UTC, so it is not affected by changes in time zone or daylight
+saving time.</p>
+
+<h4>See Also</h4>
+<p>
+<a href="appendix_filesystems.htm">File Systems</a><br />
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,131 @@
+﻿// Used by DiskMapPlugin.rc2 and lang.rc2
+//
+
+// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __ZAREVAK_DISKMAP_RH2
+#define __ZAREVAK_DISKMAP_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+
+// statics
+#define IDC_STATIC_1 3000
+#include "statics.rh2"   // 3000 az 3039 jsou timto zabrane !!!
+
+
+//Dialog:
+#define IDD_ABOUTBOX                    103
+//Dialog Control:
+#define IDC_MYICON                      2  //ID ikony na About Dialogu
+
+
+//Icon:
+#define IDI_ZAREVAKDISKMAP         107
+
+
+#define IDC_ZAREVAKDISKMAP         109 //ID hlavniho menu
+
+
+//Menu:
+#define IDM_FILE_OPEN                   111
+#define IDM_FILE_FOCUSINSALAMANDER      112
+#define IDM_FILE_ABORT                  113
+#define IDM_FILE_REFRESH                114
+#define IDM_FILE_EXIT                   115
+
+#define IDM_VIEW_ZOOMIN                 121
+#define IDM_VIEW_ZOOMOUT                122
+#define IDM_VIEW_GOTOROOT               123
+#define IDM_VIEW_LOG                    124
+
+#define IDM_OPTIONS_CONSFIRMCLOSE       141
+#define IDM_OPTIONS_SHOWFOLDERS         142
+#define IDM_OPTIONS_SHOWTOOLTIP         143
+
+#define IDM_HELP_ABOUT                  131
+
+#define IDM_DEBUG_EXPORTDIR             191
+
+#define IDM_DESIGN_FIRST                200
+#define IDM_DESIGN_BASIC                200
+#define IDM_DESIGN_PLASTIC              201
+#define IDM_DESIGN_GLASS                202
+#define IDM_DESIGN_SLEEK                203
+#define IDM_DESIGN_TEST                 204
+#define IDM_DESIGN_LAST                 204
+
+#define IDM_PATHFORMAT_FIRST            300
+#define IDM_PATHFORMAT_ABSOLUTE         300
+#define IDM_PATHFORMAT_RELATIVEROOT     301
+#define IDM_PATHFORMAT_RELATIVEVIEW     302
+#define IDM_PATHFORMAT_FILENAME         303
+#define IDM_PATHFORMAT_LAST             303
+
+//Retezce pluginu - nacitane pomoci LoadStr() v DiskMapPlugin.cpp
+#define IDS_PLUGIN_NAME                 32
+#define IDS_PLUGIN_DESCRIPTION          33
+#define IDS_PLUGIN_ABOUT                34
+#define IDS_PLUGIN_MENU                 35
+#define IDS_CLOSE_CONFIRMATION          40
+#define IDS_CLOSE_CONFIRMATION_CHECKBOX 41
+
+//Retezce DiskMapy - nacitane pomoci CZLocalizer a CZResourceString
+#define IDS_DISKMAP_FIRST               48
+
+//Main Window
+#define IDS_DISKMAP_TITLE               48
+#define IDS_DISKMAP_TITLEPREFIX         49
+//Load animation
+#define IDS_DISKMAP_LOAD_TITLE          50
+#define IDS_DISKMAP_LOAD_FOOTER         51
+#define IDS_DISKMAP_LOAD_HSIZE          52
+#define IDS_DISKMAP_LOAD_HFILE          53
+#define IDS_DISKMAP_LOAD_HDIRS          54
+//Abort info
+#define IDS_DISKMAP_ABORT_TITLE         55
+#define IDS_DISKMAP_ABORT_FOOTER        56
+//Log Window
+#define IDS_DISKMAP_LOG_TITLE           57
+#define IDS_DISKMAP_LOG_HTYPE           58
+#define IDS_DISKMAP_LOG_HTEXT           59
+#define IDS_DISKMAP_LOG_HFILE           60
+#define IDS_DISKMAP_LOG_LINFO           61
+#define IDS_DISKMAP_LOG_LWARN           62
+#define IDS_DISKMAP_LOG_LERROR          63
+
+//Shell menu
+#define IDS_DISKMAP_SHELL_FOCUS         64
+#define IDS_DISKMAP_SHELL_ZOOMIN        65
+#define IDS_DISKMAP_SHELL_ZOOMOUT       66
+#define IDS_DISKMAP_SHELL_DIROPEN       67
+#define IDS_DISKMAP_SHELL_DIRCHANGE     68
+
+//Tooltip
+#define IDS_DISKMAP_TTIP_TIMECREATE     69
+#define IDS_DISKMAP_TTIP_TIMEMODIFY     70
+#define IDS_DISKMAP_TTIP_TIMEACCESS     71
+#define IDS_DISKMAP_TTIP_SIZEDATA       72
+#define IDS_DISKMAP_TTIP_SIZEREAL       73
+#define IDS_DISKMAP_TTIP_SIZEDISK       74
+#define IDS_DISKMAP_TTIP_COUNTFILE      75
+#define IDS_DISKMAP_TTIP_COUNTDIRS      76
+
+//General
+#define IDS_DISKMAP_FORMAT_BYTE0        77 //pro "0 bajtu"
+#define IDS_DISKMAP_FORMAT_BYTE1        78 //pro "1 bajt"
+#define IDS_DISKMAP_FORMAT_BYTEN        79 //pro "n bajtu
+
+#define IDS_DISKMAP_LAST                79
+
+
+#define IDR_CUSHIONDATA_LEGACY          1
+#define IDR_CUSHIONDATA_GLASS           2
+#define IDR_CUSHIONDATA_SLEEK           3
+#define IDR_CUSHIONDATA_TEST            4
+
+// help IDs
+#define IDH_SHOWDISKMAP                 500
+
+#endif // __ZAREVAK_DISKMAP_RH2

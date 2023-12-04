@@ -1,0 +1,95 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\slovak\uncab.atp"
+TEXTVERSION,"1.27 (x86)"
+VERSION,"1,2,7,180"
+
+[TRANSLATION]
+LANGID,1051
+AUTHOR,"Roman Paholík"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6167"
+COMMENT,"Slovenská verzia"
+
+[DIALOG 100]
+228,122,1,"Ďalší zväzok kabinetu"
+112,12,9,205,32,1,""
+300,12,48,45,8,1,"Názov disku:"
+110,59,48,158,8,1,""
+301,12,59,46,8,1,"Názov CABu:"
+111,59,59,158,8,1,""
+302,12,70,24,8,1,"&Cesta:"
+101,12,80,189,12,1,""
+102,204,80,13,12,1,"..."
+1,113,103,50,14,1,"OK"
+2,167,103,50,14,1,"Zrušiť"
+303,6,97,216,1,1,""
+
+[DIALOG 103]
+350,85,1,"Chyba"
+300,4,10,26,8,1,"Názov:"
+104,34,10,309,8,1,""
+301,4,23,26,8,1,"Chyba:"
+302,34,23,309,16,1,"Súbor nemôže byť extrahovaný, pretože je pokračujúci z predchádzajúceho zväzku. Na extrahovanie tohto súboru musíte začať zväzkom, v ktorom súbor začína."
+105,34,44,183,12,1,"&Nabudúce nezobrazovať."
+108,81,63,55,14,1,"Pres&kočiť"
+109,142,63,65,14,1,"Preskočiť &všetko"
+2,213,63,55,14,1,"Zrušiť"
+
+[DIALOG 106]
+225,85,1,"UnCAB - Konfigurácia"
+300,23,22,154,8,1,"z predchádzajúceho zväzku."
+107,12,10,206,12,1,"&Pri extrahovaní automaticky preskočiť súbory pokračujúce"
+301,23,44,111,8,1,"obsah archívu."
+116,12,32,203,12,1,"&Nezobrazovať upozornenie, ak nemôže byť vypísaný celý"
+302,6,60,213,1,1,""
+1,60,66,50,14,1,"OK"
+2,115,66,50,14,1,"Zrušiť"
+
+[DIALOG 115]
+213,108,1,"UnCAB - Upozornenie"
+300,11,9,193,24,1,"Nie všetky súbory vo viaczväzkovom archívu je možné vypísať (a zobraziť v paneli), pretože nie je možné nájsť niektorý zväzok archívu."
+301,11,40,193,16,1,"Na výpis celého obsahu archívu skopírujte všetky zväzky archívu do jedného adresára a otvorte prvý zväzok."
+105,11,65,157,12,1,"&Nabudúce nezobrazovať"
+302,5,83,202,1,1,""
+1,154,90,50,14,1,"OK"
+
+[STRINGTABLE 0]
+1000,1,"UnCAB"
+1001,1,"Nedostatok pamäti."
+
+[STRINGTABLE 1]
+1008,1,"Vyskytla sa neznáma chyba."
+1012,1,"Vyberte adresár"
+1014,1,"Položku z archívu nie je možné pridať do výpisu súborov."
+1015,1,"Extrahovanie CAB archívu - %s"
+1016,1,"pripravujem dáta a vytváram adresáre..."
+1017,1,"extrahujem..."
+1018,1,"extrahujem: "
+1019,1,"Nie je možné získať ukazovateľ súboru: "
+1020,1,"Nie je možné zapísať súbor:"
+1021,1,"Nie je možné nastaviť ukazovateľ súboru: "
+1022,1,"Nie je možné dokončiť operáciu, kvôli príliš dlhému názvu cesty."
+1023,1,"Nie je možné dokončiť operáciu, kvôli príliš dlhej maske."
+
+[STRINGTABLE 2]
+1025,1,"Ľutujeme, plugin vypršal. Prosím skontrolujte našu webstránku kvôli novšej verzii."
+1026,1,"Nie je možné vytvoriť alebo otvoriť súbor."
+1027,1,"Nie je možné čítať súbor."
+1028,1,"Kabinet nenájdený."
+1029,1,"Kabinet nemá správny formát."
+1030,1,"Kabinet má neznáme číslo verzie."
+1031,1,"Kabinet je poškodený."
+1032,1,"Neznámy typ komprimácie v kabinet adresári."
+1033,1,"Zlyhala dekomprimácia dát z kabinet súboru."
+1034,1,"Kabinety nemajú nastavenú rovnakú rezervnú veľkosť."
+1035,1,"Prerušené užívateľom."
+1036,1,"Vybraný adresár obsahuje '%s'."
+1037,1,"Neplatný kabinet súbor."
+1038,1,"Súbor nenájdený."
+1039,1,"preskakujem súbor"
+
+[STRINGTABLE 3]
+1040,1,"Prosím vložte disketu so zväzkom kabinetu číslo %d alebo nájdite príslušný kabinet súbor na disku.\n\nKliknite na OK, keď je pripravený."
+1041,1,"Chyba"
+1042,1,"Prehliada a extrahuje CAB archívy."
+1043,1,"O plugine"
+

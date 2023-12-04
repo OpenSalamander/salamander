@@ -1,0 +1,103 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Unicode Support</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Appendix</div>
+<div class="page">
+
+
+<h1>Unicode Support</h1>
+
+<h3>Introduction</h3>
+<p>Unicode is an international standard to encode all of the world's languages correctly.
+From the file manager point of view we divide the Unicode support into two independent parts:</p>
+
+<ul>
+<li>Unicode in file names<br />
+Support for Unicode names of files and directories enable you display such names in
+panels and perform operations such as copy, move, delete, rename, change attributes, etc. 
+With "Unicode names" we mean names, which cannot be displayed by non-Unicode applications. 
+Instead of proper Korean or Japanese names the question marks are displayed 
+(??????.???).</li>
+<li>Unicode in text files<br />
+Support for Unicode encoded text files is useful during viewing content of files
+with viewer, converting files using Convert command, searching for some text
+pattern using the Find command, or comparing two Unicode files using Comparator
+plugin. </li>
+</ul>
+
+<p>
+Unfortunately, Unicode is not supported in Open Salamander 2.5. 
+We plan to support it in future versions. Now we will describe how to deal with foreign 
+names of files and directories. If you didn't encounter problems with names of files
+and directories, you can skip reading of this chapter.
+</p>
+
+<h3>Configure Regional and Language Options</h3>
+<p>The first step to successfully run non-Unicode applications is configuring Windows 
+for your primary language:</p>
+
+<ul>
+<li><b>System Locale</b> or "Language for non-Unicode programs" in Windows XP. This per system 
+variable does not affect anything but ANSI applications. It allows the OS to emulate ANSI 
+applications by using the selected language's code-page to convert between ANSI/OEM and 
+Unicode encodings. You will need administrator privileges to set this. Windows restart
+will be required.<br />
+<br />
+In Windows 2000: Open menu Start > Settings > Control Panel, choose the <b>Regional Options</b> icon.
+On the General page click the <b>Set default...</b> button and choose your language.<br />
+<br />
+Windows XP:
+Open menu Start > Settings > Control Panel, choose the <b>Regional and Language Options</b> icon.
+On the Advanced page in the <b>Language for non-Unicode programs</b> choose your language.<br />
+<br />
+
+If you don't want to (or cannot) change the system locale (for example you have no administrator
+privileges), or cannot restart OS (it is server), you can run non-Unicode applications under 
+Windows XP or Server 2003 using the <a href="https://en.wikipedia.org/wiki/AppLocale" target="_blank">Microsoft AppLocale Utility</a>.</li>
+
+<li><b>User Locale</b> or "Standards and formats" in Windows XP. This per user variable defines 
+user's preferences for formatting locale sensitive data (date, time, currency, etc). Setting this 
+option is suggested but not necessary. Option can be set on the fly.<br />
+<br />
+In Windows 2000: Open menu Start > Settings > Control Panel, choose the <b>Regional Options</b> icon.
+On the General page in the <b>Setting for the current user</b> choose your language.<br />
+<br />
+Windows XP:
+Open menu Start > Settings > Control Panel, choose the <b>Regional and Language Options</b> icon.
+On the Regional Options page in the <b>Standards and formats</b> choose your language.</li>
+</ul>
+
+<h3>Get around problems with Unicode names</h3>
+<p>If configuring Regional and Language Options didn't solve your problems or you need to work
+with more foreign languages at once, the following tips could help you.</p>
+
+<ul>
+<li>Open Windows Explorer for current directory<br />
+Windows Explorer is a Unicode-compliant application so you can use it for particular operation.
+To open Windows Explorer for current directory use the Commands > Open Folder > <b>Active Folder</b>
+command (Shift+F3).</li>
+<li>Basic Salamander commands working with Unicode names:<br />
+Files > <b>Quick Rename</b> (F2)<br />
+Files > <b>View</b> (F3)<br />
+Files > <b>View With</b> (Ctrl+Shift+F3)<br />
+Files > <b>Alternate View</b> (Alt+F3)<br />
+Files > <b>Edit</b> (F4)<br />
+Files > <b>Edit With</b> (Ctrl+Shift+F4)<br />
+Files > <b>Delete</b> (F8) (works only for one focused file or directory)<br />
+Commands > <b>Calculate Occupied Space</b> (Alt+F10)<br />
+Commands > <b>Calculate Directory Sizes</b> (Ctrl+Shift+F10)</li>
+</ul>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

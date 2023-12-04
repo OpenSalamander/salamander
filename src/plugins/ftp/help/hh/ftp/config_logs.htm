@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Logs</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: FTP Client: Dialog Boxes: Configuration</div>
+<div class="page">
+<h1>Logs</h1>
+
+<p>Specifies if and how the communication with servers is logged. All logs are
+stored only in memory.</p>
+
+<h4>Options</h4>
+<dl>
+<dt><i>Enable logging of communication with servers</i></dt>
+<dd>When checked, the communication between the FTP client and FTP servers
+is logged. See <a href="using_showlogs.htm">Showing FTP Logs</a>
+for details.
+</dd>
+
+<dt><i>Limit size of log for one server to XXX kilobytes</i></dt>
+<dd>When checked, you can specify the maximum size of the log for one
+server. If the communication is longer, the log contains only the last
+XXX kilobytes. Otherwise, the log size is limited only by the memory size.
+</dd>
+
+<dt><i>Maximal number of kept logs for disconnected connections</i></dt>
+<dd>When checked, you can specify the maximum number of kept disconnected
+connections logs. If there is more than specified number of such logs,
+the oldest is deleted. Otherwise, no logs are deleted.
+</dd>
+
+<dt><i>Disable logging for connections used for file operations</i></dt>
+<dd>When checked, connections used for file operations (in the
+<a href="dlgboxes_operationdlg.htm">Operation</a> dialog box) are not logged.
+Otherwise, these connections are logged.
+</dd>
+
+</dl>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>
+

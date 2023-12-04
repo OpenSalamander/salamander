@@ -1,0 +1,37 @@
+﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __PICTVIEW_VERSINFO_RH2
+#define __PICTVIEW_VERSINFO_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+// defines for plugin.SPL and plugin.SLG VERSIONINFO
+// look at shared\versinfo.rc
+
+#define VERSINFO_MAJOR       2
+#define VERSINFO_MINORA      1
+#define VERSINFO_MINORB      3
+
+#include "spl_vers.h" // get version & build numbers
+
+#define VERSINFO_COPYRIGHT   _T("Copyright © 2000-2023 Open Salamander Authors")
+#define VERSINFO_COMPANY     _T("Open Salamander")
+
+#define VERSINFO_DESCRIPTION "Picture Viewer for Open Salamander"
+
+#ifdef _LANG
+# ifndef VERSINFO_INTERNAL
+#  define VERSINFO_INTERNAL  "ENGLISH"
+# endif
+# define VERSINFO_ORIGINAL   VERSINFO_INTERNAL ".SLG"
+#else
+# define VERSINFO_INTERNAL   "PICTVIEW"
+# define VERSINFO_ORIGINAL   VERSINFO_INTERNAL ".SPL"
+#endif
+
+// for SLG translators
+#define VERSINFO_SLG_WEB     "www.altap.cz"
+#define VERSINFO_SLG_COMMENT "English version"
+
+#endif // __PICTVIEW_VERSINFO_RH2

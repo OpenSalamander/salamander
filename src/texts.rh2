@@ -1,0 +1,2714 @@
+﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __TEXTS_RH2
+#define __TEXTS_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+//#define CM_TEXTS_MIN             10000    // minimal texts id
+
+// after Cancel in copy/move progress dialog
+#define IDS_QUESTION               10000
+#define IDS_CANCELOPERATION        10001
+
+// column names in user menu listview - Configuration dialog/User Menu
+#define IDS_USERITEMNAME           10002
+#define IDS_USERITEMCOMMAND        10003
+
+// all-files filter for Browse buttons
+#define IDS_ALLFILTER              10004
+
+// executable-files filter for Browse buttons in Configuration dialog
+#define IDS_EXEFILTER              10005
+
+// registry filter
+#define IDS_REGFILTER              10006
+
+// icons filter
+#define IDS_ICOFILTER              10007
+
+// title of network error message-boxes
+#define IDS_NETWORKERROR           10008
+
+// error in syntax of Recycle Bin masks on page Configuration dialog/System
+#define IDS_INCORRECTSYNTAX        10010
+
+// user terminates checking of new hot-path on page Configuration dialog/Hot Paths
+#define IDS_CANNOTCHECKPATH        10013
+
+// path has invalid format
+#define IDS_PATHINVALID            10014
+
+// title of Configuration dialog
+#define IDS_CONFIGURATION          10016
+
+// positive reply to supports long filenames? in Drive Information dialog
+#define IDS_INFODLGYES             10017
+
+// negative reply to supports long filenames? in Drive Information dialog
+#define IDS_INFODLGNO              10018
+
+// file system flags in Drive Information dialog:
+// the file system preserves the case of filenames when it places a name on disk
+#define IDS_INFODLGFLAG1           10019
+// the file system supports case-sensitive filenames
+#define IDS_INFODLGFLAG2           10020
+// the file system supports Unicode in filenames as they appear on disk
+#define IDS_INFODLGFLAG3           10021
+// the file system preserves and enforces ACLs (Access Control Lists - user rights to files).
+#define IDS_INFODLGFLAG4           10022
+// the file system supports file-based compression
+#define IDS_INFODLGFLAG5           10023
+// the specified volume is a compressed volume; for example, a DoubleSpace volume
+#define IDS_INFODLGFLAG6           10024
+
+// drive types in Drive Information dialog:
+// the drive can be removed from the drive
+#define IDS_INFODLGTYPE1           10026
+// the disk cannot be removed from the drive
+#define IDS_INFODLGTYPE2           10027
+// the drive is a remote (network) drive
+#define IDS_INFODLGTYPE3           10028
+// the drive is a CD-ROM drive
+#define IDS_INFODLGTYPE4           10029
+// the drive is a RAM disk
+#define IDS_INFODLGTYPE5           10030
+// the drive type cannot be determined
+#define IDS_INFODLGTYPE6           10031
+
+// message box: no file can be selected by the mask (no one matches)
+// text
+#define IDS_NOMATCHESFOUND         10032
+// title
+#define IDS_INFOTITLE              10033
+
+// error box: Salamander can't read information about associations from Registry
+// text
+#define IDS_UNABLETOGETASSOC       10034
+// title
+#define IDS_UNABLETOGETASSOCTITLE  10035
+
+// error box: operation produces too long name
+#define IDS_TOOLONGNAME            10036
+
+// widely used title for error boxes
+#define IDS_ERRORTITLE             10037
+
+// widely used title for error boxes during finding file in Find Files dialog
+#define IDS_ERRORFINDINGFILE       10038
+
+// Find Files dialog: state of "Reading:" after stopping of search operation
+#define IDS_STOPPED                10039
+
+// Find Files dialog: title of Add path+mask dialog
+#define IDS_FINDFILESADD           10040
+
+// Find Files dialog: title of Edit path+mask dialog
+#define IDS_FINDFILESEDIT          10041
+
+// message box: Find Files dialog: after stop signal
+// question
+#define IDS_WANTTOSTOP             10043
+// title
+#define IDS_WANTTOSTOPTITLE        10044
+
+// error box: Find Files dialog: unable to add found file to list with results
+#define IDS_CANTSHOWRESULTS        10045
+
+// Find Files dialog: include subdirectories ?
+// yes
+#define IDS_INCLUDESUBDIRSYES      10046
+// no
+#define IDS_INCLUDESUBDIRSNO       10047
+
+// format string for common file errors
+#define IDS_FILEERRORFORMAT        10048
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FREESPACE
+
+// error message: Find Files/Advanced Find dialog: negative file size
+#define IDS_SIZEMUSTBEPOSITIVE     10051
+
+// error message: Find Files/Advanced Find dialog: invalid format of date
+#define IDS_INVALIDDATE            10052
+
+// Find/Advanced Options
+// Size must be less than 16 EB.
+#define IDS_SIZE_LIMIT_16EB        10053
+// Second size cannot be less than first size.
+#define IDS_SIZE_MAX_MIN           10054
+// Minimum value is 1 second.
+#define IDS_TIME_MIN               10055
+// Maximum value is 300 years.
+#define IDS_TIME_MAX               10056
+// At least one date must be specified.
+#define IDS_SPECIFY_DATE           10057
+// Second time cannot be less than first time.
+#define IDS_TIME_MAX_MIN           10058
+
+// Find Files dialog box/find duplicate files: Preparing results...
+#define IDS_FIND_DUPS_RESULTS      10059
+// Find Files dialog box/find result: No files or directories found
+#define IDS_FIND_NO_FILES_FOUND    10060
+// Find Files dialog box/find duplicate files result: No duplicate files found
+#define IDS_FIND_NO_DUPS_FOUND     10061
+// Find Files dialog box: Specify find options and click Find Now
+#define IDS_FIND_INIT_HINT         10062
+// Find Duplicate Files: At least one option must be selected
+#define IDS_FIND_DUPS_NO_OPTION    10063
+
+// At least one convert action must be specified
+#define IDS_SPECIFY_CONVERT_ACTION 10064
+// There is no file that matches the specified file mask.
+#define IDS_NOFILE_MATCHEDMASK     10065
+
+// Error opening file
+#define IDS_ERROR_OPENING_FILE     10066
+// Error reading file
+#define IDS_ERROR_READING_FILE     10067
+
+// Find Files dialog: columns in Search for listview
+// mask
+#define IDS_SEARCHFORCOLUMN1       10068
+// path
+#define IDS_SEARCHFORCOLUMN2       10069
+// include subdirectories
+#define IDS_SEARCHFORCOLUMN3       10070
+
+// Executing UserMenu item
+#define IDS_EXECERROR              10071
+
+// Find Files dialog: columns in Search for listview
+// name
+#define IDS_FOUNDFILESCOLUMN1      10072
+// path
+#define IDS_FOUNDFILESCOLUMN2      10073
+// size
+#define IDS_FOUNDFILESCOLUMN3      10074
+// date
+#define IDS_FOUNDFILESCOLUMN4      10075
+// time
+#define IDS_FOUNDFILESCOLUMN5      10076
+// attr
+#define IDS_FOUNDFILESCOLUMN6      10077
+
+// Find Files dialog: common prefix not found
+#define IDS_COMMONPREFIXNOTFOUND   10079
+
+#define IDS_FOUNDITEMNOTFOUND      10080
+
+// Do you want to close Find?
+#define IDS_WANTTOCLOSEFIND        10081
+
+// Don't show this message again
+#define IDS_DONTSHOWAGAIN          10082
+
+#define IDS_SAVECFG_EXPFILEEXISTS  10083
+
+// error box: operation produces too long path
+#define IDS_TOOLONGPATH            10084
+
+// error box title: some error during execution of viewer
+#define IDS_ERROREXECVIEW          10085
+
+// error box title: some error during execution of editor
+#define IDS_ERROREXECEDIT          10086
+
+// title of command shell window
+#define IDS_COMMANDSHELL           10087
+
+// error box title: some error during reading file
+#define IDS_ERRORREADINGFILE       10088
+
+// title of internal viewer
+#define IDS_VIEWERTITLE            10089
+
+// error box title: some error during loading configuration from Registry
+#define IDS_ERRORLOADCONFIG        10090
+
+// error box title: some error during saving configuration to Registry
+#define IDS_ERRORSAVECONFIG        10091
+
+// error message: loading configuration from Registry
+// unexpected value type
+#define IDS_UNEXPECTEDVALUETYPE    10092
+// unexpected value
+#define IDS_UNEXPECTEDVALUE        10093
+
+// error box title: some error during renaming file
+#define IDS_ERRORRENAMINGFILE      10094
+
+// error box title: some error during opening file
+#define IDS_ERROROPENINGFILE       10095
+
+// error box title: some error during writing file
+#define IDS_ERRORWRITINGFILE       10096
+
+// error box title: some error during overwriting file
+#define IDS_ERROROVERWRITINGFILE   10097
+
+// error box title: some error during deleting file
+#define IDS_ERRORDELETINGFILE      10098
+
+// error box title: some error during creating directory
+#define IDS_ERRORCREATINGDIR       10099
+
+// error box title: some error during deleting directory
+#define IDS_ERRORDELETINGDIR       10100
+
+// error box title: some error during changing attributes
+#define IDS_ERRORCHANGINGATTRS     10101
+
+// error box title: some error during changing compression on NTFS
+#define IDS_ERRORCOMPRESSING       10102
+
+// message box title: confirm file overwriting
+#define IDS_CONFIRMFILEOVERWRITING 10103
+
+// question: do you want to overwrite system or hidden file?
+#define IDS_WANTOVERWRITESHFILE    10104
+
+// message: after ESC during switching to some drive (inaccessible network volume)
+#define IDS_TERMINATEDBYUSER       10105
+
+// message: no disk in drive (floppy disk not ready)
+#define IDS_NODISKINDRIVE          10106
+
+// error box title: some error during deleting reparse point (junction point, volume mount point, etc.)
+#define IDS_ERRORDELETINGDIRLINK       10107
+
+// message: switch to drive with invalid actual directory
+#define IDS_DIRNAMEINVALID         10108
+
+// message: actual drive doesn't contain any file nor directory
+#define IDS_NOFILESFOUND           10109
+
+// panels - detail view - next to each directory name (in size column)
+#define IDS_DIRCOLUMN              10111
+
+// Progress dialog: title
+#define IDS_CHANGECASE             10112
+
+// error message: Change Attributes dialog: date or time is invalid
+#define IDS_DATEORTIMEINVALID      10113
+
+// title of progress dialog when changing attributes
+#define IDS_CHANGEATTRSTITLE       10114
+
+// default filename for new edited file (Shift+F4)
+#define IDS_EDITNEWFILE_DEFAULTNAME 10115
+
+// title of Edit New File dialog (Shift+F4)
+#define IDS_EDITNEWFILE            10116
+// title of editline in Edit New File dialog
+#define IDS_NEWFILENAME            10117
+
+// error in path specified - UNC name contains no server name (\\server\share\directory)
+#define IDS_SERVERNAMEMISSING      10118
+// error in path specified - UNC name contains no share name (\\server\share\directory)
+#define IDS_SHARENAMEMISSING       10119
+// error in path specified - invalid drive
+#define IDS_INVALIDDRIVE           10120
+
+// message: comparing directories: dirs are identical
+#define IDS_COMPAREDIR_ARE_IDENTICAL   10121
+// message: comparing directories: dirs seems identical
+#define IDS_COMPAREDIR_SEEMS_IDENTICAL 10122
+// title
+#define IDS_COMPAREDIRSTITLE       10123
+
+// title of error box: some error during command line's command execution
+#define IDS_ERROREXECCMDLINE       10124
+
+// title of error box: some error during executing command prompt (console window)
+#define IDS_ERROREXECPROMPT        10125
+
+// Rename dialog (F2)
+// title
+#define IDS_RENAME_TITLE           10126
+// text for directory
+#define IDS_RENAME_TO              10127
+
+// Copy and progress dialogs: title
+#define IDS_COPY                   10129
+
+// Move and progress dialogs: title
+#define IDS_MOVE                   10130
+
+// Delete: progress dialog title
+#define IDS_DELETE                 10131
+
+// error message: copy/move operations: target path is invalid
+#define IDS_PATHISINVALID          10132
+
+// copy operation: title of error boxs
+#define IDS_ERRORCOPY              10133
+
+// move operation: title of error boxs
+#define IDS_ERRORMOVE              10134
+
+// error message: file operation would produce too long full name
+#define IDS_NAMEISTOOLONG          10135
+
+// title of error box: some error during building subsidary script fop copy/move/...
+#define IDS_ERRORBUILDINGSCRIPT    10136
+
+// error message: error during building subsidary script: cannot open dir for reading
+#define IDS_CANNOTREADDIR          10137
+
+// error message: error during building subsidary script: cannot copy file to itself
+#define IDS_CANNOTCOPYFILETOITSELF 10138
+
+// error message: internal viewer/Find Files dialog: invalid hex pattern (find)
+#define IDS_STRINGISNOTHEX         10139
+
+// error message: internal viewer: bad tab size (out of range 1-30)
+#define IDS_BADTABSIZE             10140
+
+// error message: internal viewer: file must be smaller than 8 EB (8E+18 bytes) on NT
+#define IDS_UNABLETOVIEWFILENT     10141
+
+// internal viewer: all-files filter for file open dialog
+#define IDS_VIEWERFILTER           10142
+
+// message box: worker: before deleting file with system or hidden attribute
+// title
+#define IDS_CONFIRMSHFILEDELETE    10143
+// text
+#define IDS_DELETESHFILE           10144
+
+// error message: worker: create dir: can't create dir - file with same name exists
+#define IDS_NAMEALREADYUSED        10145
+
+// File operation - delete: directory has system or hidden attribute, do you still want to delete it?
+#define IDS_DELETESHDIR            10147
+
+// error message: worker: compressing on disk or system, which doesn't support it (e.g. FAT)
+#define IDS_COMPRNOTSUPPORTED      10148
+
+// texts in progress dialog
+// copy: operation
+#define IDS_COPYING                10149
+// copy: preposition
+#define IDS_COPYINGPREP            10150
+// move: operation
+#define IDS_MOVING                 10151
+// move: preposition
+#define IDS_MOVINGPREP             10152
+// creating dir: operation
+#define IDS_CREATINGDIR            10153
+// delete: operation
+#define IDS_DELETING               10154
+// change file/dir attributes: operation
+#define IDS_CHANGINGATTRS          10155
+
+// File Masks Help
+#define IDS_MASKS_HINT             10157
+#define IDS_EXTENDED_MASKS_HINT    10158
+
+#define IDS_FILELISTLINE_HINT      10160
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FREESPACE
+
+// internal viewer: find info title
+#define IDS_FINDTITLE              10164
+
+// internal viewer: info: regular expression matches empty string
+#define IDS_EMPTYMATCH             10165
+
+// regular expression: possible errors
+#define IDS_REGEXPERROR1           10166
+#define IDS_REGEXPERROR2           10167
+#define IDS_REGEXPERROR3           10168
+#define IDS_REGEXPERROR4           10169
+#define IDS_REGEXPERROR5           10170
+#define IDS_REGEXPERROR6           10171
+#define IDS_REGEXPERROR7           10172
+#define IDS_REGEXPERROR8           10173
+#define IDS_REGEXPERROR9           10174
+#define IDS_REGEXPERROR10          10175
+#define IDS_REGEXPERROR11          10176
+#define IDS_REGEXPERROR12          10177
+#define IDS_REGEXPERROR13          10178
+
+// error message: error during building subsidary script: cannot move file to itself
+#define IDS_CANNOTMOVEFILETOITSELF 10179
+
+// error message: error during building subsidary script: cannot move dir to itself
+#define IDS_CANNOTMOVEDIRTOITSELF  10180
+
+// error message: before copy or move: probably not enough space on target drive
+#define IDS_NOTENOUGHSPACE         10181
+
+// title of Change directory dialog
+#define IDS_ERRORCHANGINGDIR       10182
+
+// warning: Configuration/User Menu: do you want to lost your changes in temporary data?
+#define IDS_LOSTCHANGEDDATA1       10183
+
+// warning: Configuration/Hot Paths: do you want to lost your changes in temporary data?
+#define IDS_LOSTCHANGEDDATA2       10184
+
+// error in Viewer/Copy to: name already used for directory
+#define IDS_NAMEALREADYUSEDFORDIR  10185
+
+// question in Viewer/Copy to: file already exist, do you want to replace it?
+#define IDS_FILEALREADYEXIST       10186
+
+// main window system menu: Always On Top
+#define IDS_ALWAYSONTOP            10187
+
+// (Change Directory) string appended to the menu command Edit/Paste or toolbar tooltip
+#define IDS_PASTE_CHANGE_DIRECTORY 10188
+
+// menu Go to Hot Path problem: none hot-path defined (text for one disabled menu item)
+#define IDS_EMPTYHOTPATHS          10189
+
+// menu User Menu problem: none user-menu-item defined (text for one disabled menu item)
+#define IDS_EMPTYUSERMENU          10190
+
+// Change Drive window: text of Network item
+#define IDS_NETWORKDRIVE           10191
+
+// Change Drive window: text of Another Panel item
+#define IDS_ANOTHERPANEL           10192
+
+// Change Drive window: title of Network dialog
+#define IDS_CHANGEDRIVE            10193
+
+// Change Drive window: text in Network dialog
+#define IDS_CHANGEDRIVETEXT        10194
+
+// Assign Hot Path helper text (assign Hot Path to empty item)
+#define IDS_NEWHOTPATH             10195
+
+// Browse dialog in Change Directory dialog: comment
+#define IDS_BROWSECHANGEDIRTEXT    10196
+
+// Browse dialog Copy/Move/Unpack: comment
+#define IDS_BROWSETARGETDIRECTORY  10198
+
+// internal viewer: hex mode: tooltip with file-offset under mouse cursor
+#define IDS_VIEWEROFFSETTIP        10199
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FREESPACE
+
+// ZIP archiver: unpack: copy from archive (title)
+#define IDS_UNPACKCOPY             10220
+// ZIP archiver: unpack: copy from archive (title)
+#define IDS_PACKTITLE              10221
+// ZIP archiver: unpack: moving from temporary directory to unpack-target directory (title)
+#define IDS_UNPACKTMPMOVE          10222
+// ZIP archiver: unpack: some error
+#define IDS_ERRORUNPACK            10223
+
+// default filename (without extension) for new archive (Alt+F5)
+#define IDS_NEW_ARCHIVE            10254
+
+// Text in the Unpack dialog (Alt+F6)
+#define IDS_UNPACKARCHIVE          10255
+
+// question: the directory doesn't exist, do you want to create it?
+#define IDS_CREATEDIRECTORY        10256
+// message: target directory name is already used for file
+#define IDS_NAMEUSEDFORFILE        10257
+// message: unable to create target directory (unknown error)
+#define IDS_CREATEDIRFAILED        10258
+
+// column names in panel
+#define IDS_COLUMN_NAME_NAME       10260
+#define IDS_COLUMN_NAME_EXT        10261
+#define IDS_COLUMN_NAME_DOSNAME    10262
+#define IDS_COLUMN_NAME_SIZE       10263
+#define IDS_COLUMN_NAME_TYPE       10264
+#define IDS_COLUMN_NAME_DATE       10265
+#define IDS_COLUMN_NAME_TIME       10266
+#define IDS_COLUMN_NAME_ATTR       10267
+#define IDS_COLUMN_NAME_DESC       10268
+
+// column descriptions in panel
+#define IDS_COLUMN_DESC_NAME       10270
+#define IDS_COLUMN_DESC_EXT        10271
+#define IDS_COLUMN_DESC_DOSNAME    10272
+#define IDS_COLUMN_DESC_SIZE       10273
+#define IDS_COLUMN_DESC_TYPE       10274
+#define IDS_COLUMN_DESC_DATE       10275
+#define IDS_COLUMN_DESC_TIME       10276
+#define IDS_COLUMN_DESC_ATTR       10277
+#define IDS_COLUMN_DESC_DESC       10278
+
+// font description in configuration dialog   "10 pt. MS Shell Dlg"
+#define IDS_FONTDESCRIPTION        10280
+#define IDS_FONTDESCRIPTION_DEF    10281
+#define IDS_FONTDESCRIPTION_CST    10282
+
+// default user defined packers
+#define IDS_DP_JAR_E               10285
+#define IDS_DP_JARV_E              10286
+#define IDS_DP_RAR_E               10287
+#define IDS_DP_RARV_E              10288
+#define IDS_DP_ARJ16_E             10289
+#define IDS_DP_ARJ16V_E            10290
+#define IDS_DP_LHA_E               10291
+#define IDS_DP_UC2_E               10292
+#define IDS_DP_ARJ32_E             10293
+#define IDS_DP_ARJ32V_E            10294
+#define IDS_DP_ACE_E               10295
+#define IDS_DP_ACEV_E              10296
+#define IDS_DP_ACE16_E             10297
+#define IDS_DP_ACE16V_E            10298
+#define IDS_DP_JAR16_E             10299
+#define IDS_DP_JAR16V_E            10300
+#define IDS_DP_RAR16_E             10301
+#define IDS_DP_RAR16V_E            10302
+#define IDS_DP_ZIP32_E             10303
+#define IDS_DP_ZIP16_E             10304
+
+// default user defined unpackers
+#define IDS_DU_JAR_E               10307
+#define IDS_DU_RAR_E               10308
+#define IDS_DU_ARJ16_E             10309
+#define IDS_DU_LHA_E               10310
+#define IDS_DU_UC2_E               10311
+#define IDS_DU_ARJ32_E             10312
+#define IDS_DU_ACE_E               10313
+
+#define IDS_DU_ACE16_E             10314
+#define IDS_DU_JAR16_E             10315
+#define IDS_DU_RAR16_E             10316
+#define IDS_DU_ZIP32_E             10317
+#define IDS_DU_ZIP16_E             10318
+
+// supported external archivers
+#define IDS_EXT_JAR32              10319
+#define IDS_EXT_RAR32              10320
+#define IDS_EXT_ARJ16              10321
+#define IDS_EXT_LHA16              10322
+#define IDS_EXT_UC216              10323
+#define IDS_EXT_JAR16              10324
+#define IDS_EXT_RAR16              10325
+#define IDS_EXT_ZIP32              10326
+#define IDS_EXT_ZIP16              10327
+#define IDS_EXT_ARJ32              10328
+#define IDS_EXT_ACE32              10329
+#define IDS_EXT_ACE16              10330
+
+// buttons for Edit ListBox ToolBar
+#define IDS_EDTLB_MODIFY           10334
+#define IDS_EDTLB_NEW              10335
+#define IDS_EDTLB_DELETE           10336
+#define IDS_EDTLB_UP               10337
+#define IDS_EDTLB_DOWN             10338
+#define IDS_EDTLB_SORT             10339
+
+// name of configuration page Alternative Viewers
+#define IDS_ALTVIEWERS             10340
+
+// items for Command, Arguments and InitialDirectory menus
+#define IDS_EXECUTE_SALDIR         10343
+#define IDS_EXECUTE_BROWSE         10344
+#define IDS_EXECUTE_DRIVE          10345
+#define IDS_EXECUTE_PATH           10346
+#define IDS_EXECUTE_DOSPATH        10347
+#define IDS_EXECUTE_NAME           10348
+#define IDS_EXECUTE_DOSNAME        10349
+#define IDS_EXECUTE_ENV            10350
+#define IDS_EXECUTE_FULLNAME       10351
+#define IDS_EXECUTE_DOSFULLNAME    10352
+#define IDS_EXECUTE_FULLPATH       10353
+#define IDS_EXECUTE_WINDIR         10354
+#define IDS_EXECUTE_SYSDIR         10355
+#define IDS_EXECUTE_DOSFULLPATH    10356
+#define IDS_EXECUTE_DOSWINDIR      10357
+#define IDS_EXECUTE_DOSSYSDIR      10358
+#define IDS_EXECUTE_NAMEPART       10359
+#define IDS_EXECUTE_EXTPART        10360
+#define IDS_EXECUTE_DOSNAMEPART    10361
+#define IDS_EXECUTE_DOSEXTPART     10362
+
+// File operation - delete: directory is not empty, do you still want to delete it?
+#define IDS_NONEMPTYDIRDELCONFIRM  10364
+
+// ESC pressed during reading of directory content: Yes to cancel (incomplete listing), No to continue and suppress use of automatic refresh for current path, Cancel to continue
+#define IDS_READDIRTERMINATED      10365
+
+// error message: time resolution for file compare: (out of range 0-3600s)
+#define IDS_BADTIMERESOLUTION      10366
+
+// context menu items
+#define IDS_PLUGINSBAR             10367
+#define IDS_UMTOOLBAR              10368
+#define IDS_TOPTOOLBAR             10369
+#define IDS_HPTOOLBAR              10370
+#define IDS_COMMANDLINE            10371
+#define IDS_BOTTOMTOOLBAR          10372
+#define IDS_DIRECTORYLINE          10373
+#define IDS_HEADERLINE             10374
+#define IDS_INFORMATIONLINE        10375
+#define IDS_CUSTOMIZE              10376
+#define IDS_SHOWLABELS             10377
+#define IDS_HDR_ELASTIC            10378
+#define IDS_HDR_EXTENSION          10379
+#define IDS_HDR_DOS                10380
+#define IDS_HDR_SIZE               10381
+#define IDS_HDR_DATE               10382
+#define IDS_HDR_TIME               10383
+#define IDS_HDR_ATTR               10384
+#define IDS_CUSTOMIZEPANEL         10385
+#define IDS_SETHOTPATH             10386
+#define IDS_DRIVEBAR               10387
+#define IDS_DRIVEBAR2              10388
+#define IDS_GRIPSINTOOLBAR         10389
+#define IDS_HDR_SMARTMODE          10390
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FREESPACE
+
+//
+// ToolBars
+//
+
+// ToolBar Texts
+// Bottom ToolBar Texts for F1 - F12
+#define IDS_BTBTEXTS                 10400   // F1-F12
+#define IDS_BTBTEXTS_A               10401   // Alt
+#define IDS_BTBTEXTS_C               10402   // Ctrl
+#define IDS_BTBTEXTS_S               10403   // Shift
+#define IDS_BTBTEXTS_CS              10404   // Ctrl+Shift
+#define IDS_BTBTEXTS_CA              10405   // Ctrl+Alt
+#define IDS_BTBTEXTS_AS              10406   // Alt+Shift
+#define IDS_BTBTEXTS_CAS             10407   // Ctrl+Alt+Shift
+#define IDS_BTBTEXTS_MENU            10408   // MenuLoop
+
+// ToolBar ToolTips
+#define IDS_TBTT_CONNECTNET          10420   // Connect Network Drive
+#define IDS_TBTT_DISCONNECTNET       10421   // Disconnect Network Drive
+// 2x not used
+#define IDS_TBTT_CREATEDIR           10424   // Create Directory
+#define IDS_TBTT_NEW                 10425   // New
+#define IDS_TBTT_FINDFILE            10426   // Find Files
+#define IDS_TBTT_VIEW_MODE           10427   // View Mode
+// 1x not used
+#define IDS_TBTT_SORTBYNAME          10429   // Sort by Name
+#define IDS_TBTT_SORTBYEXT           10430   // Sort by Extension
+#define IDS_TBTT_SORTBYSIZE          10431   // Sort by Size
+#define IDS_TBTT_SORTBYDATE          10432   // Sort by Date
+#define IDS_TBTT_PARENTDIR           10433   // Parent Directory
+#define IDS_TBTT_ROOTDIR             10434   // Root Directory
+#define IDS_TBTT_FILTER              10435   // Filter
+#define IDS_TBTT_BACK                10436   // Back
+#define IDS_TBTT_FORWARD             10437   // Forward
+#define IDS_TBTT_REFRESH             10438   // Refresh
+#define IDS_TBTT_SWAPPANELS          10439   // Swap Panels
+#define IDS_TBTT_CHANGEATTR          10440   // Change Attributes
+#define IDS_TBTT_USERMENU            10441   // User Menu
+#define IDS_TBTT_COMMANDSHELL        10442   // Command Shell
+#define IDS_TBTT_COPY                10443   // Copy
+#define IDS_TBTT_MOVE                10444   // Move
+#define IDS_TBTT_DELETE              10445   // Delete
+// 1x not used
+#define IDS_TBTT_COMPRESS            10447   // Compress
+#define IDS_TBTT_UNCOMPRESS          10448   // UnCompress
+#define IDS_TBTT_QUICKRENAME         10449   // Quick Rename
+#define IDS_TBTT_CHANGECASE          10450   // Change Case
+#define IDS_TBTT_VIEW                10451   // View
+#define IDS_TBTT_CLIPBOARDCUT        10452   // Clipboard Cut
+#define IDS_TBTT_CLIPBOARDCOPY       10453   // Clipboard Copy
+#define IDS_TBTT_CLIPBOARDPASTE      10454   // Clipboard Paste
+#define IDS_TBTT_PERMISSIONS         10455   // Permissions
+#define IDS_TBTT_PROPERTIES          10456   // Properties
+#define IDS_TBTT_COMPAREDIR          10457   // Comapare Directories
+#define IDS_TBTT_DRIVEINFO           10458   // Drive Information
+#define IDS_TBTT_HELP                10460   // Help
+#define IDS_TBTT_CONTEXTHELP         10461   // Context Help
+#define IDS_TBTT_CHANGEDRIVE         10462   // Change Drive
+#define IDS_TBTT_EDIT                10463   // Edit
+
+#define IDS_TBTT_SORTBYATTR          10464   // Sort by Attr
+#define IDS_TBTT_SELECT              10465   // Select
+#define IDS_TBTT_UNSELECT            10466   // Unselect
+#define IDS_TBTT_INVERTSEL           10467   // Invert Selection
+#define IDS_TBTT_SELECTALL           10468   // Select All
+
+#define IDS_TBTT_PACK                10469   // Pack
+#define IDS_TBTT_UNPACK              10470   // Unpack
+
+#define IDS_TBTT_OPENACTIVE          10471   // Open Active Folder
+#define IDS_TBTT_OPENDESKTOP         10472   // Open Desktop
+#define IDS_TBTT_OPENMYCOMP          10473   // Open Computer
+#define IDS_TBTT_OPENCONTROL         10474   // Open Control Panel
+#define IDS_TBTT_OPENPRINTERS        10475   // Open Printers
+#define IDS_TBTT_OPENNETWORK         10476   // Open Network
+#define IDS_TBTT_OPENRECYCLE         10477   // Open Recycle Bin
+#define IDS_TBTT_OPENFONTS           10478   // Open Fonts
+
+#define IDS_TBTT_CONVERT             10479   // Convert
+#define IDS_TBTT_UNSELECTALL         10480   // Unselect All
+
+#define IDS_TBTT_MENU                10481   // Enter/Leave Menu
+#define IDS_TBTT_ALTVIEW             10482   // Alternate View
+#define IDS_TBTT_EXIT                10483   // Exit Salamander
+#define IDS_TBTT_OCCUPIEDSPACE       10484   // Calculate Occupied Space
+#define IDS_TBTT_EDITNEW             10485   // Edit New
+#define IDS_TBTT_CHANGEDIR           10486   // Change Directory
+#define IDS_TBTT_HOTPATHS            10487   // Display Hot Paths
+#define IDS_TBTT_CONTEXTMENU         10488   // Display Context Menu
+#define IDS_TBTT_VIEWWITH            10489   // View With
+#define IDS_TBTT_EDITWITH            10490   // Edit With
+#define IDS_TBTT_CALCDIRSIZES        10491   // Calculate Directory Sizes
+#define IDS_TBTT_FILEHISTORY         10492   // Directory History
+#define IDS_TBTT_DIRHISTORY          10493   // View Edit History
+#define IDS_TBTT_HOTPATHSDROP        10494   // Hot Paths
+#define IDS_TBTT_EMAIL               10495   // Email Files
+#define IDS_TBTT_ZOOMPANEL           10496   // Zoom Panel
+#define IDS_TBTT_SHARES              10497   // Shared Directories
+#define IDS_TBTT_FULLSCREEN          10498   // Full Screen
+#define IDS_TBTT_PREV_SEL            10499   // Previous Selected Name
+#define IDS_TBTT_NEXT_SEL            10500   // Next Selected Name
+#define IDS_TBTT_RESELECT            10501   // Reselect
+#define IDS_TBTT_PASTESHORTCUT       10502   // Paste Shortcut
+#define IDS_TBTT_FOCUSSHORTCUT       10503   // Focus Shortcut or Link Target
+#define IDS_TBTT_SAVESELECTION       10504   // Save Selection
+#define IDS_TBTT_LOADSELECTION       10505   // Load Selection
+#define IDS_TBTT_SEL_BY_EXT          10506   // Select Files With Same Extension
+#define IDS_TBTT_UNSEL_BY_EXT        10507   // Unselect Files With Same Extension
+#define IDS_TBTT_SEL_BY_NAME         10508   // Select Files With Same Name
+#define IDS_TBTT_UNSEL_BY_NAME       10509   // Unselect Files With Same Name
+#define IDS_TBTT_OPEN_FOLDER         10510   // Open Folder
+#define IDS_TBTT_CONFIGURATION       10511   // Configuration
+#define IDS_TBTT_DIRMENU             10512   // Current Directory Context Menu
+#define IDS_TBTT_OPENINOTHER_A       10513   // Focus Name in Other Panel
+#define IDS_TBTT_OPENINOTHER         10514   // Open Name in Other Panel
+#define IDS_TBTT_ASOTHERPANEL        10515   // Go To Path From Other Panel
+#define IDS_TBTT_HIDE_SELECTED       10516   // Hide Selected Names
+#define IDS_TBTT_HIDE_UNSELECTED     10517   // Hide Unselected Names
+#define IDS_TBTT_SHOW_ALL            10518   // Show All Names
+
+#define IDS_TBTT_OPENMYDOC           10519   // Open Documents
+#define IDS_TBTT_SMARTMODE           10520   // Smart Column Mode
+
+// Error codes for variable strings
+#define IDS_EXP_UNMATCHEDPAR         10530   // unmatched '('
+#define IDS_EXP_INTERNALERR          10531   // implementation error
+#define IDS_EXP_VARNOTFOUND          10532   // variable not found: %s
+#define IDS_EXP_ENVVARNOTFOUND       10533   // environment variable %s not found
+#define IDS_EXP_ENVVARTOOLARGE       10534   // value of environment variable %s is too large
+#define IDS_EXP_UNMATCHEDBRACKET     10535   // unmatched '['
+#define IDS_EXP_UNEXPECTEDCHAR       10536   // unexpected char following $
+#define IDS_EXP_SMALLBUFFER          10537   // small buffer
+#define IDS_EXP_TRAILINGDOLLAR       10538   // trailing $
+#define IDS_EXP_EMPTYSTR             10539   // empty string not allowed
+#define IDS_EXP_INVALIDVARWIDTH      10540   // invalid variable width (<1,9999> or "max")
+
+// packer/unpacker type
+#define IDS_PUT_EXTERNAL               10550
+#define IDS_PUT_NONE                   10551
+
+// choose color context menu items
+#define IDS_SETCOLOR_CUSTOM              10552
+#define IDS_SETCOLOR_SYSTEM              10553
+#define IDS_SETCOLOR_CUSTOM_FG           10554
+#define IDS_SETCOLOR_CUSTOM_BK           10555
+#define IDS_SETCOLOR_SYSTEM_FG           10556
+#define IDS_SETCOLOR_SYSTEM_BK           10557
+#define IDS_SETCOLOR_DEFAULT_FG          10558
+#define IDS_SETCOLOR_DEFAULT_BK          10559
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FREESPACE
+
+// Color Item
+#define IDS_COLORITEM_PANELITEM          10564
+#define IDS_COLORITEM_FOCUSEDFRAME       10565
+#define IDS_COLORITEM_BLENDEDICONS       10566
+#define IDS_COLORITEM_PROGRESS           10567
+#define IDS_COLORITEM_CAPTION            10568
+#define IDS_COLORITEM_HOT                10569
+
+// Color Label
+#define IDS_COLORLABEL_ACTIVENORMAL      10570
+#define IDS_COLORLABEL_ACTIVESELECTED    10571
+#define IDS_COLORLABEL_INACTIVENORMAL    10572
+#define IDS_COLORLABEL_INACTIVESELECTED  10573
+#define IDS_COLORLABEL_NORMAL            10574
+#define IDS_COLORLABEL_SELECTED          10575
+#define IDS_COLORLABEL_FOCUSED           10576
+#define IDS_COLORLABEL_FOCUSEDSELECTED   10577
+#define IDS_COLORLABEL_LEFTPART          10578
+#define IDS_COLORLABEL_RIGHTPART         10579
+#define IDS_COLORLABEL_ACTIVE            10580
+#define IDS_COLORLABEL_INACTIVE          10581
+#define IDS_COLORLABEL_HOTPANEL          10582
+#define IDS_COLORLABEL_HOTACTIVE         10583
+#define IDS_COLORLABEL_HOTINACTIVE       10584
+#define IDS_COLORLABEL_HIGHLIGHTED       10585
+
+// Color Item
+#define IDS_COLORITEM_THUMBNAILFRAME     10595
+
+// Color Scheme
+#define IDS_COLORSCHEME_CUSTOM           10600
+#define IDS_COLORSCHEME_SALAMANDER       10601
+#define IDS_COLORSCHEME_EXPLORER         10602
+#define IDS_COLORSCHEME_NORTON           10603
+#define IDS_COLORSCHEME_NAVIGATOR        10604
+
+// ConfigPage5 - HotPaths
+#define IDS_HOTPATH_NAME             10665
+#define IDS_HOTPATH_HOTKEY           10666
+#define IDS_COLUMN_NAME              10667
+
+// Directory and Status line Tooltips
+#define IDS_PANELFILTER              10671
+#define IDS_FREESPACE                10672
+#define IDS_DIRHISTORY               10673
+#define IDS_ZOOMPANEL                10674
+
+// wait window
+#define IDS_ANALYSINGDIRTREEESC      10675
+
+// viewers name
+#define IDS_VIEWER_INTERNAL          10680
+#define IDS_VIEWER_EXTERNAL          10681
+
+
+// "Unable to change drive label.\nError: %s"
+#define IDS_UNABLETOCHANGEDRIVELABEL 10694
+
+// Ctrl modifier for string substitutions
+#define IDS_CTRL                     10696
+
+// Ctrl modifier for string substitutions
+#define IDS_SHIFT                    10697
+
+// text was successfully copied to clipboard
+#define IDS_TEXTCOPIED               10698
+
+// Copy To Clipboard
+#define IDS_COPYTOCLIPBOARD          10699
+
+// The path is invalid
+#define IDS_THEPATHISINVALID         10700
+
+// The command '%s' is invalid. Would you like to change the command?
+//#define IDS_THECOMMANDISINVALID      10701
+
+// A filename is invalid
+#define IDS_COMDLG_INVALIDFILENAME   10702
+
+// The file '' contains no icons
+#define IDS_NOICONS                  10703
+
+// Cannot find the file "".
+#define IDS_CANNONTFINDFILE          10704
+
+// ViewWith, EditWith:
+#define IDS_VIEWWITH_EXTERNAL        10706
+#define IDS_VIEWWITH_INTERNAL        10707
+#define IDS_EDITWITH_EXTERNAL        10708
+
+// Customize...
+#define IDS_CUSTOMIZE_HOTPATHS       10709
+
+// Invalid submenu name. Empty string is not allowed here.
+#define IDS_SE_INVALIDSUBMENUNAME    10710
+#define IDS_SE_INVALIDOPTIONS        10711
+#define IDS_SE_INVALIDOPTIONSCOMB    10712
+
+#define IDS_FILEHISTORY_VIEW         10715
+#define IDS_FILEHISTORY_EDIT         10716
+#define IDS_FILEHISTORY_OPEN         10717
+
+// Find File Advanced Dialog
+#define IDS_FFA_ATTRIBUTES           10720
+#define IDS_FFA_SIZE                 10721
+#define IDS_FFA_DATE                 10722
+#define IDS_FFA_TIME                 10723
+#define IDS_FFA_NONE                 10725
+#define IDS_FFA_OPTIONS              10726
+
+// Find Files Dialog
+#define IDS_CHANGE_DIRECTORY         10730
+
+// "*.cpp" in "C:\"
+#define IDS_FF_IN                    10731
+#define IDS_FF_STOP                  10732
+
+#define IDS_FF_SEARCHING             10734
+#define IDS_FF_NAME                  10735
+#define IDS_FF_NAMED                 10736
+#define IDS_FF_EMPTYSTRING           10737
+#define IDS_FF_AUTOLOAD              10738
+#define IDS_FF_BROWSE                10739
+#define IDS_FF_LOCALDRIVES           10740
+#define IDS_FF_ALLDRIVES             10741
+
+// View/Edit - can't view/edit
+#define IDS_CANT_VIEW_FILE           10745
+#define IDS_CANT_VIEW_FILE_ALT       10746
+#define IDS_CANT_EDIT_FILE           10747
+
+// Separator
+#define IDS_SEPARATOR                10749
+
+// Startup
+#define IDS_STARTUP_DATA             10750
+#define IDS_STARTUP_SHARES           10751
+#define IDS_STARTUP_CONFIG           10752
+#define IDS_STARTUP_IMPORT_CONFIG    10753
+#define IDS_STARTUP_ASSOCIATIONS     10754
+#define IDS_STARTUP_USERMENU         10755
+
+
+// trim path
+#define IDS_TRIM_DRAG_PATH           10759
+
+//copy or drag item
+#define IDS_COPY_DRAG_TEXT           10760
+
+//tip of the day
+//#define IDS_TOD_DIDYOUKNOW           10761
+
+// Find Files/Log window: listview column name
+#define IDS_FINDLOG_TYPE             10762
+#define IDS_FINDLOG_TEXT             10763
+#define IDS_FINDLOG_PATH             10764
+#define IDS_FINDLOG_ERROR            10765
+#define IDS_FINDLOG_INFO             10766
+#define IDS_FINDLOG_SKIP             10767
+#define IDS_FINDLOG_IGNORE           10768
+// Find Files/Log window: Skipping %d errors...
+#define IDS_FINDERRORS_SKIPPING      10769
+// Find Files/Error message box/check box: Defer following error messages
+#define IDS_FINDERRORS_DEFER         10770
+
+#define IDS_CONTEXTMENU_EXIT         10771
+
+// Always on Top prevents other application windows from open above Open Salamander windows. You will not be able to open these windows on top until you turn off Always on Top.
+#define IDS_WANTALWAYSONTOP          10779
+
+// regular expressions menu
+#define IDS_REGEXP_ANYCHAR            10781
+#define IDS_REGEXP_SETOFCHAR          10782
+#define IDS_REGEXP_NOTSETOFCHAR       10783
+#define IDS_REGEXP_RANGEOFCHAR        10784
+#define IDS_REGEXP_BEGINOFLINE        10785
+#define IDS_REGEXP_ENDOFLINE          10786
+#define IDS_REGEXP_OR                 10787
+#define IDS_REGEXP_0ORMORE            10788
+#define IDS_REGEXP_1ORMORE            10789
+#define IDS_REGEXP_0OR1               10790
+
+#define IDS_REGEXP_PARENTHESIS_L_CHAR 10791
+#define IDS_REGEXP_PARENTHESIS_R_CHAR 10792
+#define IDS_REGEXP_DOT_CHAR           10793
+#define IDS_REGEXP_PLUS_CHAR          10794
+#define IDS_REGEXP_ASTERISK_CHAR      10795
+
+#define IDS_REGEXP_ALPHANUMERIC_CHAR  10796
+#define IDS_REGEXP_ALPHABETIC_CHAR    10797
+#define IDS_REGEXP_DECIMAL_DIGIT      10798
+
+#define IDS_REGEXP_DECIMAL_NUMBER     10799
+#define IDS_REGEXP_HEXADECIMAL_NUMBER 10800
+#define IDS_REGEXP_REAL_NUMBER        10801
+
+#define IDS_REGEXP_QUOTED_STRING      10802
+#define IDS_REGEXP_ALPHABETIC_STRING  10803
+#define IDS_REGEXP_IDENTIFIER         10804
+
+#define IDS_REGEXP_HELP               10805
+
+// Restrictions
+#define IDS_POLICIESRESTRICTION_TITLE 10806
+// This operation has been cancelled due to restrictions in effect on this
+// computer. Please contact your system administrator.
+#define IDS_POLICIESRESTRICTION       10807
+// Reading Group Policy from registry...
+#define IDS_STARTUP_POLICY            10808
+
+// Conversion Tables dialog
+#define IDS_CONVERSION_DESCRIPTION    10810
+#define IDS_CONVERSION_CODEPAGE       10811
+#define IDS_CONVERSION_PATH           10812
+
+// description of Compact Disk in Alt+F1/F2 menus (change drive)
+#define IDS_COMPACT_DISK              10813
+// description of Local Disk
+#define IDS_LOCAL_DISK                10814
+// description of Removable Disk
+#define IDS_REMOVABLE_DISK            10815
+
+// sending files through e-mail
+#define IDS_EMAILFILES_SUBJECT        10818
+#define IDS_EMAILFILES_BODY           10819
+#define IDS_EMAILFILES_MAPIERROR      10820
+
+// Find Files/Ignore Directory: Reset confirmation
+#define IDS_FINDIGNORE_RESET          10821
+
+// error message: Find Files dialog: cannot find files in the directory (access denied, etc.)
+#define IDS_DIRERRORFORMAT            10825
+#define IDS_ERROR_OPENING_FILE2       10826
+#define IDS_ERROR_READING_FILE2       10827
+#define IDS_FILEREADERROR2            10828
+#define IDS_GETLINKTGTFILESIZEERROR   10829
+
+// Help/About Plugin when no plugin is available (text for one disabled menu item)
+#define IDS_EMPTYPLUGINSMENU1         10830
+// Options/Plugin Configuration when no plugin with configuration is available (text for one disabled menu item)
+#define IDS_EMPTYPLUGINSMENU2         10831
+
+// cannot conver local path to UNC format
+#define IDS_CANNOT_CREATE_UNC_NAME    10832
+
+// strings for Shared Directories dialog
+#define IDS_CONFIRM_STOPSHARE         10833
+#define IDS_SHARES_NAME               10834
+#define IDS_SHARES_PATH               10835
+#define IDS_SHARES_COMMENT            10836
+
+// buttons for dialog
+#define IDS_BUTTON_OK                 10840
+#define IDS_BUTTON_CANCEL             10841
+#define IDS_BUTTON_HELP               10842
+#define IDS_BUTTON_ABORT              10843
+#define IDS_BUTTON_RETRY              10844
+#define IDS_BUTTON_IGNORE             10845
+#define IDS_BUTTON_TRY                10846
+#define IDS_BUTTON_CONTINUE           10847
+#define IDS_BUTTON_YES                10848
+#define IDS_BUTTON_NO                 10849
+// nechat jeste par polozek rezervu
+
+#define IDS_ESCAPE                    10860
+#define IDS_F11                       10861
+
+#define IDS_MIDDLETOOLBAR             10862
+
+// Configuration/Appearance/Show the current path in title bar
+#define IDS_TITLEBAR_FULLPATH         10863
+#define IDS_TITLEBAR_DIRECTORY        10864
+#define IDS_TITLEBAR_COMPOSITE        10865
+
+#define IDS_CREATEDIRECTORY_TITLE     10867
+#define IDS_CREATEDIRECTORY_TEXT      10868
+
+#define IDS_CHANGEDIRECTORY           10869
+
+// Empty (Use Configuration to define viewers)
+#define IDS_VIEWWITH_EMPTY            10870
+// Empty (Use Configuration to define editors)
+#define IDS_EDITWITH_EMPTY            10871
+
+// The file '%s' is not valid shortcut nor link.
+#define IDS_SHORTCUT_INVALID          10872
+// Cannot obtain shortcut target or target path is not accessible.
+#define IDS_SHORTCUT_WRONG_PATH       10873
+// Cannot get link target.
+#define IDS_DIRLINK_WRONG_PATH        10874
+// This link is volume mount point. Unable to show it in panel.\nPath: %s
+#define IDS_DIRLINK_MOUNT_POINT       10875
+
+
+// Find File Advanced Dialog
+#define IDS_FFA_SECONDS               10880
+#define IDS_FFA_MINUTES               10881
+#define IDS_FFA_HOURS                 10882
+#define IDS_FFA_DAYS                  10883
+#define IDS_FFA_WEEKS                 10884
+#define IDS_FFA_MONTHS                10885
+#define IDS_FFA_YEARS                 10886
+#define IDS_FFA_BYTES                 10887
+
+// Context menu items (displayed below filter symbol in the Directory Line).
+#define IDS_HIDDEN_ATTRIBUTE          10890
+#define IDS_HIDDEN_FILTER             10891
+#define IDS_HIDDEN_HIDECMD            10892
+
+// Comparing with plugin file-system is not supported yet.
+#define IDS_COMPARE_FS                10893
+// There is same path in the left and right panel.
+#define IDS_COMPARE_SAMEPATH          10894
+
+// error message: worker: encrypting on disk or system, which doesn't support it (e.g. FAT)
+#define IDS_ENCRYPNOTSUPPORTED        10900
+
+// error box title: some error during changing encryption on NTFS 5.0
+#define IDS_ERRORENCRYPTING           10905
+
+// message box: worker: before encrypting file with system attribute
+// title
+#define IDS_CONFIRMSFILEENCRYPT       10910
+// text
+#define IDS_ENCRYPTSFILE              10911
+
+// disk operations progress dialog, button Pause states:
+// Pause
+#define IDS_PROGDLGPAUSE              10920
+// Resume (after Pause button was clicked)
+#define IDS_PROGDLGRESUME             10921
+
+// disk operations progress dialog: substitution for number of percents in window caption when operation is paused (after Pause button was clicked)
+#define IDS_PROGDLGPAUSED             10922
+// disk operations progress dialog: substitution for number of percents in window caption when operation is waiting in queue (it will be resumed when running operation in queue ends)
+#define IDS_PROGDLGQUEUEPAUSED        10923
+
+// Subst x:
+#define IDS_INFODLGTYPE7              10925
+// name and user for network drive
+#define IDS_INFODLGTYPE8              10926
+// junction to: %s
+#define IDS_INFODLGTYPE9              10952
+// symbolic link to: %s
+#define IDS_INFODLGTYPE10             10953
+
+// Change Drive window: text of Documents item
+#define IDS_MYDOCUMENTS               10927
+
+// strings for Diconnect Network Drives dialog
+#define IDS_DISCONNECT_NAME           10930
+#define IDS_DISCONNECT_PATH           10931
+#define IDS_DISCONNECT_NODRIVES       10932
+
+// Plugins Manager dialog: plugin's home page (Internet) is empty string: "(none)"
+#define IDS_PLUGINURLNONE             10940
+
+// F3/F4/Enter on file from archive: file can't be unpacked to TEMP directory because of too long filename
+#define IDS_UNPACKTOOLONGNAME         10945
+// F3 on file from archive: Unable to unpack file from archive because its name is invalid on Windows file systems and archiver plugin does not support unpacking to another file name.
+#define IDS_UNPACKINVNAMERENUNSUP     10946
+
+// Configuration: Drives: title of Browse (...) path window: Select Path
+#define IDS_BROWSEONERRGOTOTITLE      10950
+// Configuration: Drives: text of Browse (...) path window: Select the path you want to visit when current path in panel is inaccessible
+#define IDS_BROWSEONERRGOTOTEXT       10951
+// 10952 je uz pouzite
+
+// Error Opening Alternate Data Stream dialog: second item in menu on Ignore button: Ignore &All
+#define IDS_ERROPENADS_IGNOREALL      10955
+
+// Show names -- mangle
+#define IDS_NAMEMANGLE_ONTHEDISK      10960
+#define IDS_NAMEMANGLE_EXPLORER       10961
+#define IDS_NAMEMANGLE_VC             10962
+#define IDS_NAMEMANGLE_PARTMIXEDCASE  10963
+#define IDS_NAMEMANGLE_LOWERCASE      10964
+#define IDS_NAMEMANGLE_UPPERCASE      10965
+
+#define IDS_IMPORTCFG_DEFCFG          10970
+
+// Copy/Move dialog box: menu for right-arrow
+#define IDS_PATHMENU_BROWSE           10980
+#define IDS_PATHMENU_LEFT       10981
+#define IDS_PATHMENU_RIGHT        10982
+
+// Panel > Size Column > Display mode
+#define IDS_SIZEMODE_BYTES            10985
+#define IDS_SIZEMODE_KB               10986
+#define IDS_SIZEMODE_MIXED            10987
+
+#define IDS_SHELLEXTBREAK4           10994
+#define IDS_SHELLEXTBREAK3           10995
+#define IDS_SHELLEXTCRASH            10996
+#define IDS_SHELLEXTBREAK            10997
+#define IDS_SHELLEXTBREAK2           10998
+
+// Title of packer errors
+#define IDS_PACKERR_TITLE            11000
+
+// low memory
+#define IDS_PACKERR_NOMEM            11001
+// archive type is not supported
+#define IDS_PACKERR_ARCNAME_UNSUP    11002
+// for this archive type are not supported operations modifying the archive
+#define IDS_PACKERR_PACKER_UNSUP     11003
+// some general error, e.g. system error
+#define IDS_PACKERR_GENERAL          11004
+// unable to execute new process
+#define IDS_PACKERR_PROCESS          11005
+// external archiver returns error
+#define IDS_PACKERR_RETURN           11006
+// external archiver not found
+#define IDS_PACKERR_NOTFOUND         11007
+// invalid temporary file
+#define IDS_PACKERR_FILE             11008
+// invalid path to file - too long
+#define IDS_PACKERR_PATH             11009
+// invalid command line - wrong variables ?
+#define IDS_PACKERR_CMDLNERR         11010
+// invalid command line - wrong variables ?
+#define IDS_PACKERR_IDIRERR          11011
+// invalid command line - too long
+#define IDS_PACKERR_CMDLNLEN         11012
+// not enough memory to create virtual file system with content of archive
+#define IDS_PACKERR_FDATA            11013
+// environment variable COMSPEC was not found
+#define IDS_PACKERR_COMSPEC          11014
+// error moving file to target path (from temporary path)
+#define IDS_PACKERR_MOVE             11015
+// error parsing archive listing
+#define IDS_PACKERR_PARSE            11016
+// error in archiver configuration - no name field found
+#define IDS_PACKERR_ARCCFG           11017
+// error in archive: date and/or time reported by archiver is invalid
+#define IDS_PACKERR_DATETIME         11018
+// error reading archive output - no output got
+#define IDS_PACKERR_NOOUTPUT         11019
+// error using external archiver - unable to rename temporary file (%1) to archive name (%2)
+#define IDS_PACKERR_UNABLETOREN      11020
+// error using external archiver - This file name is invalid on Windows file systems. External archivers do not support unpacking to another file name so it's not possible to unpack this file.
+#define IDS_PACKERR_INVALIDNAME      11021
+
+// Return codes of archivers
+// Message for displaying error number
+#define IDS_PACKRET_GENERAL          11025
+// Warning (Non fatal error)
+#define IDS_PACKRET_WARNING          11026
+// Extraction error
+#define IDS_PACKRET_EXTRACT          11027
+// Fatal error
+#define IDS_PACKRET_FATAL            11028
+// CRC error
+#define IDS_PACKRET_CRC              11029
+// Security error or modification of secured archive
+#define IDS_PACKRET_SECURITY         11030
+// Disk full or write error
+#define IDS_PACKRET_DISK             11031
+// Error opening archive or file
+#define IDS_PACKRET_FOPEN            11032
+// User error - bad parameters
+#define IDS_PACKRET_PARAMS           11033
+// Not enough memmory
+#define IDS_PACKRET_MEMORY           11034
+// File is not an archive file
+#define IDS_PACKRET_NOTARC           11035
+// XMS memmory error
+#define IDS_PACKRET_XMSMEM           11036
+// User break
+#define IDS_PACKRET_BREAK            11037
+// User break - ACE - maybe archiver have waited for your answer in its window (click on "salspawn.exe" window on taskbar to see archiver question)
+#define IDS_PACKRET_BREAK2           11070
+// Too many chapters
+#define IDS_PACKRET_CHAPTERS         11038
+// Failed to rename temporary file to archive file
+#define IDS_PACKRET_TEMP             11039
+// Internal error
+#define IDS_PACKRET_INTERN           11040
+// Undefined error
+#define IDS_PACKRET_UNKNOWN          11041
+// Skipped a file
+#define IDS_PACKRET_SKIPPED          11042
+// Archive damaged
+#define IDS_PACKRET_DAMAGED          11043
+// Virus detected
+#define IDS_PACKRET_VIRUS            11044
+// Error of salspawn.exe
+#define IDS_PACKRET_SPAWN            11045
+// Extraction error or if you are deleting from archive, please ignore this error message
+#define IDS_PACKRET_EXTRACT_LHA      11046
+
+// Full name of archive
+#define IDS_PACK_ARC_NAME            11047
+// Name of archive
+#define IDS_PACK_ARC_FILE            11048
+// Path to archive
+#define IDS_PACK_ARC_PATH            11049
+// Full name of list of files
+#define IDS_PACK_LST_NAME            11050
+// DOS full name of archive
+#define IDS_PACK_ARC_DOSNAME         11051
+// DOS name of archive
+#define IDS_PACK_ARC_DOSFILE         11052
+// DOS full name of list of files
+#define IDS_PACK_LST_DOSNAME         11053
+// Text in window while executing external unpacker
+#define IDS_PACK_EXECUTING           11054
+// paths to packer executables
+#define IDS_PACK_EXE_JAR32           11055
+#define IDS_PACK_EXE_JAR16           11056
+#define IDS_PACK_EXE_RAR32           11057
+#define IDS_PACK_EXE_RAR16           11058
+#define IDS_PACK_EXE_ARJ32           11059
+#define IDS_PACK_EXE_ARJ16           11060
+#define IDS_PACK_EXE_ACE32           11061
+#define IDS_PACK_EXE_ACE16           11062
+#define IDS_PACK_EXE_LHA16           11063
+#define IDS_PACK_EXE_UC216           11064
+#define IDS_PACK_EXE_ZIP32           11065
+#define IDS_PACK_EXE_ZIP16           11066
+#define IDS_PACK_EXE_UZP16           11067
+#define IDS_PACK_EXE_BROWSE          11068
+
+// 11070 je zabrany pro IDS_PACKRET_BREAK2
+
+#define IDS_PACKQRY_PREFIX           11101
+// User query, whether discard root dir in archive while compressing
+#define IDS_PACKQRY_ARCPATH          11102
+// User query, whether use copy instead of move if not supported
+#define IDS_PACKQRY_NOMOVE           11103
+
+// Requested drive in Autoconfig dialog is invalid
+#define IDS_ACBADDRIVE               11104
+
+// Change end of line characters
+// not to change
+//#define IDS_EOF_NONE                 11200
+// CR
+//#define IDS_EOF_CR                   11201
+// LF
+//#define IDS_EOF_LF                   11202
+// CRLF
+//#define IDS_EOF_CRLF                 11203
+
+#define IDS_HELPERROR                11209
+#define IDS_FAILED_TO_LAUNCH_HELP    11210
+#define IDS_FAILED_TO_FIND_HELP      11211
+
+#define IDS_BROWSE_BTN_TIP           11215
+
+// Find Files dialog: toolbar labels
+#define IDS_FINDTB_FOCUS             11220
+#define IDS_FINDTBTT_FOCUS           11221
+#define IDS_FINDTBTT_VIEW            11222
+#define IDS_FINDTBTT_EDIT            11223
+#define IDS_FINDTBTT_DELETE          11224
+#define IDS_FINDTBTT_USERMENU        11225
+#define IDS_FINDTBTT_CUT             11226
+#define IDS_FINDTBTT_COPY            11227
+#define IDS_FINDTBTT_STOP            11228
+#define IDS_FINDTBTT_MESSAGES        11229
+#define IDS_FINDTBTT_PROPERTIES      11231
+
+#define IDS_MOVECOPY_OPTIONS_NOTSUPPORTED       11240
+#define IDS_MOVECOPY_OPTIONS_NOTSUPPORTED_AGAIN 11241
+
+// Make File List values
+#define IDS_FILEDATA_FILENAMEPART    11245
+#define IDS_FILEDATA_FILEEXTENSION   11246
+
+// error box: disk operation produces too long target directory name, path+name is displayed in message
+#define IDS_TOOLONGNAME2             11250
+
+// Configuration > User Menu > Arguments > menu: Advanced submenu (name + items)
+#define IDS_EXECUTE_ADVANCEDMENU       11255
+#define IDS_EXECUTE_FULLPATHINACTIVE   11256
+#define IDS_EXECUTE_FULLPATHLEFT       11257
+#define IDS_EXECUTE_FULLPATHRIGHT      11258
+#define IDS_EXECUTE_COMPAREDFILELEFT   11259
+#define IDS_EXECUTE_COMPAREDFILERIGHT  11260
+#define IDS_EXECUTE_COMPAREDDIRLEFT    11261
+#define IDS_EXECUTE_COMPAREDDIRRIGHT   11262
+#define IDS_EXECUTE_COMPAREDFILEACT    11263
+#define IDS_EXECUTE_COMPAREDFILEINACT  11264
+#define IDS_EXECUTE_COMPAREDDIRACT     11265
+#define IDS_EXECUTE_COMPAREDDIRINACT   11266
+#define IDS_EXECUTE_LISTOFSELNAMES     11267
+#define IDS_EXECUTE_LISTOFSELFULLNAMES 11268
+#define IDS_EXECUTE_COMPAREDLEFT       11269
+#define IDS_EXECUTE_COMPAREDRIGHT      11270
+#define IDS_EXECUTE_COMPAREDACT        11271
+#define IDS_EXECUTE_COMPAREDINACT      11272
+
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FREESPACE
+
+
+// panel context menu: title of submenu New (system menu New)
+#define IDS_MENUNEWTITLE             12000
+
+// Unable to launch default mailer
+#define IDS_MAILERFAILED             12001
+
+// NTFS compress/uncompress: confirmation dialog title
+#define IDS_CONFIRM_NTFSCOMPRESS_TITLE   12002
+#define IDS_CONFIRM_NTFSUNCOMPRESS_TITLE 12003
+
+// confirmation menu: drag&drop operation
+// move ?
+#define IDS_DROPMOVE                 12004
+// copy ?
+#define IDS_DROPCOPY                 12005
+// link ?
+#define IDS_DROPLINK                 12006
+// do something else ?
+#define IDS_DROPUNKNOWN              12007
+// cancel
+#define IDS_DROPCANCEL               12008
+
+//Configuration was successfully exported
+#define IDS_CONFIGEXPORTED           12010
+//save config before export?
+#define IDS_PREDCONFIGEXPORT         12011
+
+// help: how to import configuration
+#define IDS_CONFIGHOWTOIMPORT        12015
+
+// error loading plug-in DLL (general - file is missing or something like this)
+#define IDS_UNABLETOLOADPLUGIN       12020
+// error loading plug-in DLL: unable to find entry point (it is not Salamander plug-in)
+#define IDS_UNABLETOFINDPLUGINENTRY  12021
+// error loading plug-in DLL: DLL file has changed, please reinstall plug-in ...
+#define IDS_REINSTALLPLUGIN          12022
+// error loading plug-in DLL: plug-in is not valid and its name is known
+#define IDS_PLUGININVALID            12023
+// error loading plug-in DLL: this plug-in version is not supported (old plug-in)
+#define IDS_OLDPLUGINVERSION         12024
+// error loading plug-in DLL: plug-in is not valid and its name is unknown
+#define IDS_PLUGININVALID2           12025
+// error loading plug-in DLL: this plug-in (with unknown name) version is not supported (old plug-in)
+#define IDS_OLDPLUGINVERSION2        12026
+
+// edit or assoc from archive: update failed, do you want to try it again?
+#define IDS_UPDATEFAILED             12033
+
+// internal text/hex viewer: selected block is too big (over 100MB), copying to clipboard or drag&drop may be slow, do you want to skip such operations?
+#define IDS_VIEWER_BLOCKTOOBIG       12039
+// internal text/hex viewer: unknown error
+#define IDS_VIEWER_UNKNOWNERR        12040
+// internal text/hex viewer: probably binary file, do you want switch to hex mode?
+#define IDS_VIEWER_BINFILE           12041
+// internal text/hex viewer: text search was terminated by ESC
+#define IDS_FINDTERMINATEDBYUSER     12042
+// internal text/hex viewer: menu 'Convert' title
+#define IDS_VIEWERCODINGMENU         12043
+// internal text/hex viewer: menu 'Convert': 'none' item name
+#define IDS_VIEWERNONECODING         12044
+// internal text/hex viewer: menu 'Convert': 'ANSI->OEM' item name
+#define IDS_VIEWERANSI2OEMCODING     12045
+// internal text/hex viewer: menu 'Convert': 'OEM->ANSI' item name
+#define IDS_VIEWEROEM2ANSICODING     12046
+// internal text/hex viewer: menu 'Convert': incorrect size of file with code table
+#define IDS_VIEWERBADFILESIZE        12047
+// internal text/hex viewer: menu 'Convert': error while opening file with code table
+#define IDS_VIEWERERROPENFILE        12048
+// internal text/hex viewer: menu 'Convert': incorrect internal coding name (neither ansi->oem nor oem->ansi)
+#define IDS_VIEWERBADINTCODING       12049
+// internal text/hex viewer: menu 'Convert': invalid line in file convert.cfg
+#define IDS_VIEWERINVALIDLINE        12050
+// internal text/hex viewer: menu 'Convert': error while opening file convert.cfg
+#define IDS_VIEWERERROPENCODES       12051
+// internal text/hex viewer: menu 'Convert': 'next' item name
+#define IDS_VIEWERNEXTCODING         12052
+// internal text/hex viewer: menu 'Convert': 'previous' item name
+#define IDS_VIEWERPREVIOUSCODING     12053
+// internal text/hex viewer: menu 'Convert': 'Recognize Code Page' item name
+#define IDS_VIEWERAUTOCODING         12054
+// internal text/hex viewer: menu 'Convert': 'Set as Default' item name
+#define IDS_VIEWERSETDEFAULTCODING   12055
+// internal text/hex viewer: menu 'Convert': 'ANSI' code page name
+#define IDS_VIEWERANSICODEPAGE       12056
+
+// general file name input: empty file name has no sence here ...
+#define IDS_EMPTYNAMENOTALLOWED      12060
+// general file name input: incomplete path, please specify full path
+#define IDS_INCOMLETEFILENAME        12061
+
+// Salamander starts with only-one-instance "on": running instance is busy: do you want to run another instance?
+#define IDS_SALAMANDBUSY             12080
+
+// salamander is busy and Find dialog requests command execution - requested
+// command cannot be accomplished, try again later
+#define IDS_SALAMANDBUSY2            12081
+
+// Internal text/hex viewer: Edit/Copy to file: title of window
+#define IDS_VIEWERCOPYTOFILE         12085
+
+// title of progress dialog when converting
+#define IDS_CONVERTTITLE             12086
+// converting: operation
+#define IDS_CONVERTING               12087
+// error box title: some error during creating temporary file for converting
+#define IDS_ERRORCREATINGTMPFILE     12088
+
+// plugins manager/hot keys: reset confirmation
+#define IDS_PLUGINRESETKEYS          12089
+// plugins manager/functions: panel archiver list and unpack
+#define IDS_PLUGINFUNCVIEW           12090
+// plugins manager/functions: panel archiver delete and pack
+#define IDS_PLUGINFUNCEDIT           12091
+// plugins manager/functions: custom archiver pack
+#define IDS_PLUGINFUNCCUSTPACK       12092
+// plugins manager/functions: custom archiver unpack
+#define IDS_PLUGINFUNCCUSTUNPACK     12093
+// plugins manager/functions: file viewer
+#define IDS_PLUGINFUNCFILEVIEWER     12094
+// plugins manager/functions: menu extension
+#define IDS_PLUGINFUNCMENUEXTENSION  12095
+// plugins manager/functions: file system
+#define IDS_PLUGINFUNCFILESYSTEM     12096
+// plugins manager/functions: thumbnail loader
+#define IDS_PLUGINFUNCTHUMBLOADER    12109
+// plugins manager/column loaded: yes/no
+#define IDS_PLUGINS_LOADED_YES       12097
+#define IDS_PLUGINS_LOADED_NO        12098
+// plugins manager/add: plug-in file-open-dialog filter
+#define IDS_PLUGINFILTER             12099
+// plugins manager/add: file-open-dialog title
+#define IDS_PLUGINADDTITLE           12100
+// plugins manager/test: plugin seems to work correctly
+#define IDS_PLUGINTESTOK             12101
+// plugins manager/unload: plugin is about to unload, do you want to save its configuration?
+#define IDS_PLUGINSAVECONFIG         12102
+// plugins manager/remove: do you really want to remove plugin?
+#define IDS_PLUGINREMOVEOK           12103
+// plugins manager/add: plug-in is already installed. you can't add it once more.
+#define IDS_PLUGINEXISTS             12104
+// plugins manager/unload: plug-in don't want to unload, do you want to force unload?
+#define IDS_PLUGINFORCEUNLOAD        12105
+// plugins manager: archives (extensions) is empty string: "(none)"
+#define IDS_PLUGINEXTNONE            12106
+// plugins manager: file system name (FS Name) is empty string: "(none)"
+#define IDS_PLUGINFSNONE             12107
+// plugins manager/test all: all plugins seem to work correctly
+#define IDS_PLUGINTESTALLOK          12108
+
+// 12109 je zabrane !!!
+
+// plugins manager/column name
+#define IDS_PLUGINS_NAME             12110
+// plugins manager/column name
+#define IDS_PLUGINS_LOADED           12111
+// plugins manager/column name
+#define IDS_PLUGINS_VERSION          12112
+// plugins manager/column name
+#define IDS_PLUGINS_LOCATION         12113
+// plugins manager: thumbnail extensions is empty string: "(none)"
+#define IDS_PLUGINTHUMBNONE          12114
+
+// pluing shortcuts dialog box: Command
+#define IDS_PLUGIN_COMMAND           12115
+// pluing shortcuts dialog box: Shortcut Keys
+#define IDS_PLUGIN_KEY               12116
+
+// command line parameters of Salamander: invalid parameters, usage: ...
+#define IDS_INVALIDCMDLINE           12119
+
+// unable to read file %s
+#define IDS_FILEREADERROR            12120
+// unable to write file %s
+#define IDS_FILEWRITEERROR           12121
+
+// confirm file overwrite with A NEWLY CREATED FILE
+#define IDS_NEWLYCREATEDFILE         12122
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+// error creating root directory
+#define IDS_ERRORCREATINGROOTDIR     12124
+
+// error creating file
+#define IDS_ERRORCREATINGFILE        12125
+// error opening existing file to get file info
+#define IDS_ERR_FILEOPEN             12126
+
+// changing path in panel: path not found
+#define IDS_PATHNOTFOUND             12130
+// changing path in panel: path to some file, which is not archive - don't know how to open it
+#define IDS_NOTARCHIVEPATH           12131
+// changing path in panel: path to unknown plugin file-system
+#define IDS_NOTPLUGINFS              12132
+
+// closing salamander with archive in panel: archive don't want to be closed, force close?
+#define IDS_ARCHIVEFORCECLOSE        12133
+// archive file has changed, so archive in panel will be reopened
+#define IDS_ARCHIVEREFRESHEDIT       12134
+// before closing archive in panel: if you are editing some files from archive, save changes and close files in editors
+#define IDS_ARCHIVECLOSEEDIT         12135
+// before copy, delete, calculate occupied space, and clipboard copy+cut: if you are editing some files from archive, save changes and close files in editors, then check selection in refreshed panel and repeat your command
+#define IDS_ARCHIVECLOSEEDIT2        12136
+// before drag&drop from archive: if you are editing some files from archive, save changes and close files in editors, then check selection in refreshed panel and start drag&drop again
+#define IDS_ARCHIVECLOSEEDIT3        12137
+
+// changing path to file on plugin FS (from Change Directory command): file should be focused, but it's not found
+#define IDS_UNABLETOFOCUSFILEONFS    12138
+
+// wait window: Salamander searches for plugins, init phase
+#define IDS_AUTOINSTALLPLUGINS_INIT  12139
+
+// wait window: after first start of Salamander - Salamander searches for plugins
+#define IDS_AUTOINSTALLPLUGINS       12140
+
+// wait window: Reading associations from registry, please wait...
+#define IDS_READINGASSOCIATIONS      12141
+
+// wait window: Trying to reconnect network drive, please wait...
+#define IDS_TRYINGRECONNECTESC       12142
+
+// wait window: Saving configuration to registry, please wait...
+#define IDS_SAVINGCONFIGURATION      12143
+
+// wait window: Deleting old configuration from registry, please wait...
+#define IDS_DELETINGCONFIGURATION    12145
+
+// wait window: Unpacking file from archive, please wait...
+#define IDS_UNPACKINGFILEFROMARC     12146
+
+// wait window: Reading list of files and directories from archive, please wait...
+#define IDS_LISTINGARCHIVE           12147
+
+// wait window: first start of Salamander with changed language - Salamander is loading plugins (to check if they contain chosen language version)
+#define IDS_LOADINGPLUGINS           12148
+
+// closing salamander with FS in panel: FS don't want to be closed, force close?
+#define IDS_FSFORCECLOSE             12160
+
+// error during reconnecting network drive: see ERROR_SESSION_CREDENTIAL_CONFLICT (used text is from XP/Vista system error description, previous versions of Windows have too short description)
+#define IDS_CREDENTIALCONFLICT       12165
+
+// archive update dialog: confirmation for "ignore selected" button
+#define IDS_ARCREALLYIGNORESEL       12170
+// archive update dialog: confirmation for "ignore all" button
+#define IDS_ARCREALLYIGNOREALL       12171
+// archive update dialog: "copy selected to": title of browse dialog
+#define IDS_BROWSEARCUPDATE          12172
+// archive update dialog: "copy selected to": text of browse dialog
+#define IDS_BROWSEARCUPDATETEXT      12173
+// during path checking: "checking path %s, press ESC to cancel..."
+#define IDS_CHECKINGPATHESC          12180
+// during path listing (reading): "reading path %s, press ESC to cancel..."
+#define IDS_READINGPATHESC           12181
+
+// during text searching: "searching text, press ESC to cancel..."
+#define IDS_SEARCHINGTEXTESC         12190
+
+// format string for common path errors
+#define IDS_PATHERRORFORMAT          12200
+// error during changing of path in panel: path %s doesn't exist in archive
+#define IDS_PATHINARCHIVENOTFOUND    12201
+
+// Connect To Network Path dialog: empty username is not allowed
+#define IDS_EMPTYUSERNAME            12205
+
+// Menu New is not available
+#define IDS_NEWISNOTAVAILABLE        12210
+
+// directory specified by TMP or TEMP env. variable doesn't exist
+#define IDS_TMPDIRERROR              12215
+
+// file-type for up-dir symbol ("..")
+#define IDS_UPDIRTYPENAME            12220
+
+// Change Drive window (menu): floppy media types (3.5", 5.25", 8")
+#define IDS_FLOPPY350                12225
+#define IDS_FLOPPY525                12226
+#define IDS_FLOPPY800                12227
+
+// Copy & Paste: when target file exists we create "copy (x) of name.ext" (XP and earlier) or "name - Copy (x).ext" (Vista) automatically
+// "copy" from "copy (x) of name.ext" and "name - Copy (x).ext"
+#define IDS_NEWNAME_COPY             12230
+// "of" from "copy (x) of name.ext", if you do not want to use it, set it to single space character (" ")
+#define IDS_NEWNAME_OF               12231
+
+// There are no items in this panel.
+#define IDS_NOITEMSINPANEL           12233
+
+// text, ktery je pridan ke jmenu plug-inu, aby zvyraznil ze jde o plug-in - " (Plug-in)"
+#define IDS_PLUGINSUFFIX             12235
+
+// task list dialog: You cannot break this task. Use another
+// Open Salamander task to break this one.
+#define IDS_CURRENTPROCESSBREAK      12240
+// task list dialog: You cannot terminate this task. Use another
+// Open Salamander task to terminate this one.
+#define IDS_CURRENTPROCESSTERMINATE  12241
+// task list dialog: process terminate confirmation
+#define IDS_CONFIRM_TERMINATE        12242
+
+// Do you want to email selected files?
+#define IDS_CONFIRM_EMAIL            12243
+
+// There is no file selected
+#define IDS_WANTEMAIL_NOFILE         12244
+
+// The file ""%s"" already exists.\n\nDo you want to add %s into existing archive or overwrite existing one?
+#define IDS_CONFIRM_ADDTOARCHIVE       12245
+#define IDS_CONFIRM_ADDTOARCHIVE_ADD   12246  // alias button "&Add"
+#define IDS_CONFIRM_ADDTOARCHIVE_OVER  12247  // alias button "&Overwrite"
+#define IDS_CONFIRM_ADDTOARCHIVE_NOASK 12248
+
+// task list dialog: process break confirmation
+#define IDS_CONFIRM_BREAK              12249
+
+// error message: Unable to read file
+#define IDS_UNABLETOREADFILE         12255
+
+// copy/move operation - all files and directories has the same target name (they would overwrite one another), do you want to continue?
+#define IDS_MOVECOPY_NONSENSE        12285
+
+// copy/move operation - target path doesn't exist, do you want to create it?
+#define IDS_MOVECOPY_CREATEPATH       12290
+// copy/move operation - create target path without asking next time...
+#define IDS_MOVECOPY_CREATEPATH_CNFRM 12291
+
+// copy/move operation - operation masks are not supported in archives
+#define IDS_MOVECOPY_OPMASKSNOTSUP    12295
+
+// edit controls in dialog boxes - when number is required - error text: invalid number
+#define IDS_INVALIDNUMBER             12300
+
+// unpacking from archives - unpacking to archives or plug-in FS is not supported yet
+#define IDS_UNPACK_ONLYDISK           12305
+// unpacking from archives - operation masks are not supported when unpacking from archives
+#define IDS_UNPACK_OPMASKSNOTSUP      12306
+
+// Language changes do not take affect until the Open Salamander is restarted.
+#define IDS_LANGUAGE_CHANGE           12307
+
+// Conversion Table changes do not take affect until the Open Salamander is restarted.
+#define IDS_CONVERSION_CHANGE         12308
+
+// copying/moving from FS - this plug-in FS doesn't support copying/moving to archives and general support for these operations is not implemented yet
+#define IDS_FSCOPYMOVE_ONLYDISK_A     12310
+// copying/moving from FS - this plug-in FS doesn't support copying/moving to FS and general support for these operations is not implemented yet
+#define IDS_FSCOPYMOVE_ONLYDISK_FS    12311
+// copying/moving from FS - this plug-in FS doesn't support operation masks
+#define IDS_FSCOPYMOVE_OPMASKSNOTSUP  12312
+// copying/moving from FS - copying/moving inside this plug-in FS is not supported
+#define IDS_FSCOPYMOVE_INCOMPLETEPATH 12313
+// copying/moving from disk to FS - copying/moving to this plugin FS are not supported
+#define IDS_FSCOPYMOVE_TOFS_NOTSUP    12314
+
+// calculating occupied space: format string: unable to get compressed file size + file + error + do you want to skip all other errors?
+#define IDS_GETCOMPRFILESIZEERROR     12320
+
+// copy/move operations from plug-in FS: target paths to archives are not supported here
+#define IDS_ARCPATHNOTSUPPORTED       12325
+// copy/move operations from plug-in FS: target path must exist (creating of target path is not supported here)
+#define IDS_TARGETPATHMUSTEXIST       12326
+
+// edit/open from archive: Unable to edit or open file from archive. Name of this file is used for more than one file in archive (such files can be opened only in viewers).
+#define IDS_UNABLETOEDITDUPFILES      12330
+// edit/open from archive: Unable to edit or open file from archive. Name of this file is invalid on Windows file systems (such files can be opened only in viewers).
+#define IDS_UNABLETOEDITINVFILES      12331
+
+// edit from archive: packing to archive is not supported, so Salamander will not be able to update changed file. Do you still want to edit this file?
+#define IDS_EDITPACKNOTSUPPORTED      12335
+
+// message box title: Warning
+#define IDS_WARNINGTITLE              12340
+
+// error in regular expression (Find or Internal Viewer): The string %s is not a valid regular expression. Error: %s.
+#define IDS_INVALIDREGEXP             12345
+
+// Salamander Commands (not included in main menu) called from plugins:
+#define IDS_SALCMD_VIEWWITH           12350
+#define IDS_SALCMD_EDITWITH           12351
+#define IDS_SALCMD_OPEN               12352
+
+#define IDS_FIND_NOMATCH              12353
+#define IDS_FIND_NOREGEXPMATCH        12354
+
+#define IDS_CLEARHISTORY_CNFRM        12355
+#define IDS_HISTORY_WAS_CLEARED       12356
+
+// Options/Configuration/User Menu; (Submenu End)
+#define IDS_ENDUSERSUBMENU            12357
+
+// start of first instance of Open Salamander: it has found Salamander's
+// temporary files in TEMP directory: Do you want to delete %d temporary
+// directories used by previous instances of Open Salamander?
+#define IDS_DELETETMPSALDIRS          12360
+// Yes/No/Focus buttons for message box
+#define IDS_DELETETMPSALDIRS_YES    12361
+#define IDS_DELETETMPSALDIRS_NO     12362
+#define IDS_DELETETMPSALDIRS_FOCUS    12363
+
+// Unpack dialog: description for progress-bar showing progress on each file separatelly (no total progress)
+#define IDS_UNPACKFILEPROGRESS        12365
+
+// Copy&Paste from archive: specified files and directories (names are placed in clipboard) were not found in archive
+#define IDS_ARCFILESNOTFOUND          12370
+// Copy&Paste from archive: some of specified files or directories (names are placed in clipboard) were not found in archive, do you want to continue?
+#define IDS_ARCFILESNOTFOUND2         12371
+// Copy&Paste from archive: Unable to paste files and directories from clipboard here. Open Salamander's main window must be accessible to process Paste command
+#define IDS_ARCUNABLETOPASTE1         12372
+// Copy&Paste from archive: Unable to paste files and directories from clipboard now. Open Salamander's\nmain window must be accessible to process Paste command
+#define IDS_ARCUNABLETOPASTE2         12373
+
+// file system flags for NTFS 5.0 in Drive Information dialog:
+// supports named streams
+#define IDS_INFODLGFLAG7              12380
+// volume is read-only
+#define IDS_INFODLGFLAG8              12381
+// supports the Encrypting File System (EFS)
+#define IDS_INFODLGFLAG9              12382
+// supports object identifiers
+#define IDS_INFODLGFLAG10             12383
+// supports reparse points
+#define IDS_INFODLGFLAG11             12384
+// supports sparse files
+#define IDS_INFODLGFLAG12             12385
+// supports disk quotas
+#define IDS_INFODLGFLAG13             12386
+
+// NTFS encrypt/decrypt: confirmation dialog title
+#define IDS_CONFIRM_NTFSENCRYPT_TITLE 12390
+#define IDS_CONFIRM_NTFSDECRYPT_TITLE 12391
+
+// Edit New File: File already exists. Do you want to edit existing file?
+#define IDS_EDITNEWALREADYEX          12395
+
+// drag&drop to archive or FS: Source path can't be translated from Unicode to multibyte, so Open Salamander is not able to work on it
+#define IDS_SRCPATHUNICODEONLY        12400
+// drag&drop or Paste to archive or FS: Some files or directories specified in drag&drop or clipboard operation were not found.\n\nDo you want to continue?
+#define IDS_SRCFILESNOTFOUND          12401
+
+// plugin tryies to open Pack dialog for its packer, but its packer is not found: Unable to found packer for %s plugin (see Packers in Pack Dialog Box page in Configuration)
+#define IDS_PLUGINPACKERNOTFOUND      12405
+// plugin tryies to open Unpack dialog for its unpacker, but its unpacker is not found: Unable to found unpacker for %s plugin (see Unpackers in Unpack Dialog Box page in Configuration)
+#define IDS_PLUGINUNPACKERNOTFOUND    12406
+
+// dialog Confirm ADS Loss: when working with file (instead of directory): "File:"
+#define IDS_FILETITLE                 12410
+// dialog Confirm ADS Loss: warning for Move File:
+#define IDS_CONFADSLOSS_WARNING_MOVE_FILE 12411
+// dialog Confirm ADS Loss: warning for Move Dir:
+#define IDS_CONFADSLOSS_WARNING_MOVE_DIR  12412
+// dialog Confirm ADS Loss: warning for Copy File:
+#define IDS_CONFADSLOSS_WARNING_COPY_FILE 12413
+// dialog Confirm ADS Loss: warning for Copy Dir:
+#define IDS_CONFADSLOSS_WARNING_COPY_DIR  12414
+
+// error box title: some error during opening Alternate Data Stream
+#define IDS_ERROROPENINGADS           12420
+// error box title: some error during reading Alternate Data Stream
+#define IDS_ERRORREADINGADS           12421
+// error box title: some error during writing Alternate Data Stream
+#define IDS_ERRORWRITINGADS           12422
+
+// error box title during Copy: some error during getting source file time
+#define IDS_ERRORGETTINGFILETIME      12425
+// error box title during Copy: some error during setting target file time
+#define IDS_ERRORSETTINGFILETIME      12426
+
+// items Status Line Content menus
+#define IDS_FILEDATA_FILENAME         12430
+#define IDS_FILEDATA_FILESIZE         12431
+#define IDS_FILEDATA_FILEDATE         12432
+#define IDS_FILEDATA_FILETIME         12433
+#define IDS_FILEDATA_FILEATTR         12434
+#define IDS_FILEDATA_FILEDOSNAME      12435
+
+#define IDS_FILEDATA_LF               12440
+#define IDS_FILEDATA_CR               12441
+#define IDS_FILEDATA_CRLF             12442
+#define IDS_FILEDATA_TAB              12443
+
+// User Menu: errors while expanding command arguments:
+#define IDS_USERMENUERROR             12450
+#define IDS_TOOLONGLISTOFSELNAMES     12451
+#define IDS_EMPTYLISTOFSELNAMES       12452
+#define IDS_COMPAREARGSCOLISION       12453
+#define IDS_COMPARENEEDSBOTHARGS      12454
+#define IDS_INCOMPATIBLEARGS          12455
+#define IDS_NOTDEFFULLPATHLEFT        12456
+#define IDS_NOTDEFFULLPATHRIGHT       12457
+#define IDS_NOTDEFFULLPATHINACTIVE    12458
+#define IDS_TOOLONGLISTOFSELFULLNAMES 12459
+#define IDS_EMPTYLISTOFSELFULLNAMES   12460
+
+#define IDS_USERMENUCOMPAREARGSTITLE  12465
+#define IDS_USERMENUCOMPAREARG1       12466
+#define IDS_USERMENUCOMPAREARG2       12467
+#define IDS_BROWSEUMCDIRTITLE         12468
+#define IDS_BROWSEUMCDIRTEXT          12469
+#define IDS_UMCCONFIRMHOWTOREV        12470
+
+// User Menu: unable to execute because of too long command or arguments (max. length depends on Windows version)
+#define IDS_USRMNUTOOLONGCMDORARGS    12474
+
+// volume mount point "%s"
+#define IDS_QUESTION_VOLMOUNTPOINT    12475
+// junction "%s"
+#define IDS_QUESTION_JUNCTION         12476
+// symbolic link "%s"
+#define IDS_QUESTION_SYMLINK          12477
+
+// dialog Confirm Encryption Loss: warning for Move File:
+#define IDS_CONFENCLOSS_WARNING_MOVE_FILE 12480
+// dialog Confirm Encryption Loss: warning for Move Dir:
+#define IDS_CONFENCLOSS_WARNING_MOVE_DIR  12481
+// dialog Confirm Encryption Loss: warning for Copy File:
+#define IDS_CONFENCLOSS_WARNING_COPY_FILE 12482
+// dialog Confirm Encryption Loss: warning for Copy Dir:
+#define IDS_CONFENCLOSS_WARNING_COPY_DIR  12483
+
+
+
+// ****************************************************************************
+// ****************************************************************************
+// konec sekce obycejnych textu (misto pro vkladani dalsich obyc. textu)
+// ****************************************************************************
+// ****************************************************************************
+
+// file "%s"
+#define IDS_QUESTION_FILE                         12801
+// directory "%s"
+#define IDS_QUESTION_DIRECTORY                    12802
+
+// Are you sure you want to compress %s?
+#define IDS_CONFIRM_NTFSCOMPRESS                  12803
+// Are you sure you want to uncompress %s?
+#define IDS_CONFIRM_NTFSUNCOMPRESS                12804
+// Are you sure you want to delete %s from archive?
+#define IDS_CONFIRM_DELETEFROMARCHIVE             12805
+// Copy %s from archive to
+#define IDS_COPYFROMARCHIVETO                     12806
+// Pack %s to archive
+#define IDS_PACKTOARCHIVE                         12807
+// &Copy %s to     (Note: ampersand must be defined for this string)
+#define IDS_COPYTO                                12808
+// &Move %s to     (Note: ampersand must be defined for this string)
+#define IDS_MOVETO                                12809
+// Are you sure you want to delete %s?
+#define IDS_CONFIRM_DELETE                        12810
+// Are you sure you want to delete %s?\n\nAll files matching recycle masks will be sent to the Recycle Bin.
+#define IDS_CONFIRM_DELETE2                       12811
+// Are you sure you want to encrypt %s?
+#define IDS_CONFIRM_NTFSENCRYPT                   12812
+// Are you sure you want to decrypt %s?
+#define IDS_CONFIRM_NTFSDECRYPT                   12813
+
+// Variants for dialog captions (first letters must be in upper case)
+// File "%s"
+#define IDS_DLG_QUESTION_FILE                     12815
+// Directory "%s"
+#define IDS_DLG_QUESTION_DIRECTORY                12816
+
+// Confirm Delete
+#define IDS_CONFIRM_DELETE_TITLE                  12818
+
+//
+// plural strings -- begin
+//
+
+// x byte(s)                                                      x >= 0
+#define IDS_PLURAL_X_BYTES                        12820
+
+// x selected file(s)                                             x >= 1
+#define IDS_PLURAL_X_SEL_FILES                    12821
+// x selected directory(ies)                                      x >= 1
+#define IDS_PLURAL_X_SEL_DIRS                     12822
+// x selected file(s) and y selected directory(ies)               x >= 1, y >= 1
+#define IDS_PLURAL_X_SEL_FILES_Y_SEL_DIRS         12823
+
+// x hidden file(s)                                               x >= 1
+#define IDS_PLURAL_X_HID_FILES                    12824
+// x hidden directory(ies)                                        x >= 1
+#define IDS_PLURAL_X_HID_DIRS                     12825
+// x hidden file(s) and y hidden directory(ies)                   x >= 1, y >= 1
+#define IDS_PLURAL_X_HID_FILES_Y_HID_DIRS         12826
+// to show/hide it/them use Ctrl+H                                x >= 1
+#define IDS_PLURAL_SWITCH_HIDDEN                  12827
+
+// x byte(s) in y selected file(s)                                x >= 0, y >= 1
+#define IDS_PLURAL_X_BYTES_Y_SEL_FILES            12828
+// x byte(s) in y selected directory(ies)                         x >= 0, y >= 1
+#define IDS_PLURAL_X_BYTES_Y_SEL_DIRS             12829
+// x byte(s) in y selected file(s) and z selected directory(ies)  x >= 0, y >= 1, z >= 1
+#define IDS_PLURAL_X_BYTES_Y_SEL_FILES_Z_SEL_DIRS 12830
+
+// x file(s)                                                      x >= 1
+#define IDS_PLURAL_X_FILES                        12831
+// x directory(ies)                                               x >= 1
+#define IDS_PLURAL_X_DIRS                         12832
+// x file(s) and y directory(ies)                                 x >= 1, y >= 1
+#define IDS_PLURAL_X_FILES_Y_DIRS                 12833
+
+// x byte(s) in y selected file(s) (for information line)         x >= 0, y >= 1
+#define IDS_PLURAL_X_BYTES_Y_SEL_FILES2           12834
+// x byte(s) in y selected directory(ies) (for information line)  x >= 0, y >= 1
+#define IDS_PLURAL_X_BYTES_Y_SEL_DIRS2            12835
+// x byte(s) in y selected file(s) and z selected directory(ies) (for information line)  x >= 0, y >= 1, z >= 1
+#define IDS_PLURAL_X_BYTES_Y_SEL_FILES_Z_SEL_DIRS2 12836
+
+// Variants for use in dialog captions (first letters must be in upper case)
+// x File(s)                                                      x >= 1
+#define IDS_DLG_PLURAL_X_FILES                    12837
+// x Directory(ies)                                               x >= 1
+#define IDS_DLG_PLURAL_X_DIRS                     12838
+// x File(s) and y Directory(ies)                                 x >= 1, y >= 1
+#define IDS_DLG_PLURAL_X_FILES_Y_DIRS             12839
+// x Selected File(s)                                             x >= 1
+#define IDS_DLG_PLURAL_X_SEL_FILES                12840
+// x Selected Directory(ies)                                      x >= 1
+#define IDS_DLG_PLURAL_X_SEL_DIRS                 12841
+// x Selected File(s) and y Selected Directory(ies)               x >= 1, y >= 1
+#define IDS_DLG_PLURAL_X_SEL_FILES_Y_SEL_DIRS     12842
+// x Hidden File(s)                                               x >= 1
+#define IDS_DLG_PLURAL_X_HID_FILES                12843
+// x Hidden Directory(ies)                                        x >= 1
+#define IDS_DLG_PLURAL_X_HID_DIRS                 12844
+// x Hidden File(s) and y Hidden Directory(ies)                   x >= 1, y >= 1
+#define IDS_DLG_PLURAL_X_HID_FILES_Y_HID_DIRS     12845
+
+//
+// plural strings -- end
+//
+
+//
+// menu
+//
+
+#define IDS_MENU_LEFT                13000
+#define IDS_MENU_LEFT_CHANGEDRIVE    13001
+#define IDS_MENU_LEFT_FILTER         13002
+#define IDS_MENU_LEFT_SORTBY         13003
+#define IDS_MENU_LEFT_VIEW           13004
+#define IDS_MENU_LEFT_VSB            13005
+#define IDS_MENU_LEFT_VSB_DIRLINE    13006
+#define IDS_MENU_LEFT_VSB_HDRLINE    13007
+#define IDS_MENU_LEFT_VSB_INFOLINE   13008
+#define IDS_MENU_LEFT_REFRESH        13009
+#define IDS_MENU_LEFT_GO             13010
+#define IDS_MENU_LEFT_GO_BACK        13011
+#define IDS_MENU_LEFT_GO_FORWARD     13012
+#define IDS_MENU_LEFT_GO_UPDIR       13013
+#define IDS_MENU_LEFT_GO_ROOT        13014
+#define IDS_MENU_LEFT_GO_OTHER       13015
+#define IDS_MENU_LEFT_ZOOM           13016
+#define IDS_MENU_LEFT_SWAPPANELS     13017
+#define IDS_MENU_LEFT_SORTOPTIONS    13018
+
+#define IDS_MENU_FILES               13020
+#define IDS_MENU_FILES_RENAME        13021
+#define IDS_MENU_FILES_VIEW          13022
+#define IDS_MENU_FILES_ALTVIEW       13023
+#define IDS_MENU_FILES_EDIT          13024
+#define IDS_MENU_FILES_EDITNEW       13025
+#define IDS_MENU_FILES_COPY          13026
+#define IDS_MENU_FILES_MOVE          13027
+#define IDS_MENU_FILES_DELETE        13028
+#define IDS_MENU_FILES_PROPERTIES    13029
+#define IDS_MENU_FILES_SECURITY      13030
+#define IDS_MENU_FILES_SEC_PERM      13031
+
+
+#define IDS_MENU_FILES_CHANGEATTR    13034
+#define IDS_MENU_FILES_CHANGECASE    13035
+#define IDS_MENU_FILES_CONVERT       13036
+#define IDS_MENU_FILES_COMPRESS      13037
+#define IDS_MENU_FILES_UNCOMPRESS    13038
+#define IDS_MENU_FILES_PACK          13039
+#define IDS_MENU_FILES_UNPACK        13040
+#define IDS_MENU_FILES_NEW           13041
+#define IDS_MENU_FILES_EXIT          13042
+#define IDS_MENU_FILES_EMAIL         13043
+#define IDS_MENU_FILES_VIEWWITH      13044
+#define IDS_MENU_FILES_EDITWITH      13045
+#define IDS_MENU_FILES_ENCRYPT       13046
+#define IDS_MENU_FILES_DECRYPT       13047
+#define IDS_MENU_FILES_NTFS          13048
+
+#define IDS_MENU_EDIT                13060
+#define IDS_MENU_EDIT_CUT            13061
+#define IDS_MENU_EDIT_COPY           13062
+#define IDS_MENU_EDIT_COPYFULLNAME   13063
+#define IDS_MENU_EDIT_COPYNAME       13064
+#define IDS_MENU_EDIT_COPYFULLPATH   13065
+#define IDS_MENU_EDIT_PASTE          13066
+#define IDS_MENU_EDIT_PASTELINKS     13067
+#define IDS_MENU_EDIT_SELECT         13068
+#define IDS_MENU_EDIT_UNSELECT       13069
+#define IDS_MENU_EDIT_INVERTSEL      13070
+#define IDS_MENU_EDIT_SELECTALL      13071
+#define IDS_MENU_EDIT_UNSELECTALL    13072
+#define IDS_MENU_EDIT_STORESEL       13073
+#define IDS_MENU_EDIT_RESTORESEL     13074
+#define IDS_MENU_EDIT_COPYUNCNAME    13075
+#define IDS_MENU_EDIT_PREVSEL        13076
+#define IDS_MENU_EDIT_NEXTSEL        13077
+#define IDS_MENU_EDIT_RESELECT       13078
+#define IDS_MENU_EDIT_ADVANCED       13079
+#define IDS_MENU_EDIT_BY_SELEXT      13080
+#define IDS_MENU_EDIT_BY_UNSELEXT    13081
+#define IDS_MENU_EDIT_BY_SELNAME     13082
+#define IDS_MENU_EDIT_BY_UNSELNAME   13083
+#define IDS_MENU_EDIT_HIDE_SEL       13084
+#define IDS_MENU_EDIT_HIDE_UNSEL     13085
+#define IDS_MENU_EDIT_SHOW_ALL       13086
+
+#define IDS_MENU_CMD                 13090
+#define IDS_MENU_CMD_CREATEDIR       13091
+#define IDS_MENU_CMD_CHANGEDIR       13092
+#define IDS_MENU_CMD_COMPAREDIR      13093
+#define IDS_MENU_CMD_OCCUPIED        13094
+#define IDS_MENU_CMD_MEMDIRSIZES     13095
+#define IDS_MENU_CMD_CALCDIRSIZES    13096
+#define IDS_MENU_CMD_DRIVEINFO       13097
+#define IDS_MENU_CMD_FINDFILE        13098
+#define IDS_MENU_CMD_FILELIST        13099
+#define IDS_MENU_CMD_FILEHISTORY     13100
+#define IDS_MENU_CMD_DIRHISTORY      13101
+#define IDS_MENU_CMD_CONNECTNET      13102
+#define IDS_MENU_CMD_DISCONNECTNET   13103
+#define IDS_MENU_CMD_SHELL           13104
+#define IDS_MENU_CMD_REFRESHASSOC    13105
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FREESPACE
+#define IDS_MENU_CMD_USERMENU        13107
+#define IDS_MENU_CMD_FLD             13109
+#define IDS_MENU_CMD_FLD_ACTUAL      13110
+#define IDS_MENU_CMD_FLD_DESKTOP     13111
+#define IDS_MENU_CMD_FLD_MYCOMP      13112
+#define IDS_MENU_CMD_FLD_CTRLPANEL   13113
+#define IDS_MENU_CMD_FLD_NET         13114
+#define IDS_MENU_CMD_FLD_BIN         13115
+#define IDS_MENU_CMD_FLD_FONTS       13116
+#define IDS_MENU_CMD_FLD_PRINTERS    13117
+#define IDS_MENU_CMD_FLD_RECENT      13118
+#define IDS_MENU_CMD_FLD_PERSONAL    13119
+#define IDS_MENU_CMD_FLD_TEMPLATES   13120
+#define IDS_MENU_CMD_FLD_SENDTO      13121
+#define IDS_MENU_CMD_FLD_DESKTOPDIR  13122
+#define IDS_MENU_CMD_FLD_STARTMENU   13123
+#define IDS_MENU_CMD_FLD_PROGRAMS    13124
+#define IDS_MENU_CMD_FLD_STARTUP     13125
+#define IDS_MENU_CMD_SHARES          13126
+#define IDS_MENU_CMD_FOCUSLNK        13127
+
+#define IDS_MENU_PLG                 13130
+#define IDS_MENU_PLG_PLUGINS         13131
+#define IDS_MENU_PLG_LASTCMD         13132
+
+#define IDS_MENU_OPT                 13140
+#define IDS_MENU_OPT_CONFIGURATION   13141
+#define IDS_MENU_OPT_ARCHAUTOCFG     13142
+#define IDS_MENU_OPT_CST             13143
+#define IDS_MENU_OPT_CST_TOP         13144
+#define IDS_MENU_OPT_CST_UM          13145
+#define IDS_MENU_OPT_CST_LEFT        13146
+#define IDS_MENU_OPT_CST_RIGHT       13147
+#define IDS_MENU_OPT_VSB             13148
+#define IDS_MENU_OPT_VSB_TOP         13149
+#define IDS_MENU_OPT_VSB_UM          13150
+#define IDS_MENU_OPT_VSB_EDIT        13151
+#define IDS_MENU_OPT_VSB_BOTTOM      13152
+#define IDS_MENU_OPT_SAVECONFIG      13153
+#define IDS_MENU_OPT_EXPORTCONFIG    13154
+#define IDS_MENU_OPT_VSB_DB          13155
+#define IDS_MENU_OPT_VSB_DB2         13156
+#define IDS_MENU_OPT_SKILLLEVEL      13157
+#define IDS_MENU_OPT_VSB_UMLABELS    13158
+#define IDS_MENU_OPT_VSB_GRIPS       13159
+#define IDS_MENU_OPT_PLUGINS_CFG     13160
+#define IDS_MENU_OPT_VSB_MID         13161
+#define IDS_MENU_OPT_CST_MID         13162
+#define IDS_MENU_OPT_VSB_HP          13163
+#define IDS_MENU_OPT_CST_HP          13164
+#define IDS_MENU_OPT_VSB_PLG         13165
+#define IDS_MENU_OPT_CST_PLG         13166
+#define IDS_MENU_OPT_IMPORTCONFIG    13167
+
+#define IDS_MENU_RIGHT               13170
+#define IDS_MENU_RIGHT_CHANGEDRIVE   13171
+
+#define IDS_MENU_HELP                13190
+#define IDS_MENU_HELP_CONTENTS       13191
+#define IDS_MENU_HELP_SEARCH         13192
+#define IDS_MENU_HELP_CONTEXT        13193
+#define IDS_MENU_HELP_KEYBOARD       13194
+//#define IDS_MENU_HELP_TIP            13195
+#define IDS_MENU_HELP_INDEX          13196
+#define IDS_MENU_HELP_TASKLIST       13197
+#define IDS_MENU_HELP_ABOUTPLUGINS   13199
+#define IDS_MENU_HELP_ABOUT          13200
+#define IDS_MENU_HELP_FORUM          13202
+
+//
+// find file menu
+//
+
+#define IDS_FFMENU_FILES                13300
+#define IDS_FFMENU_FILES_OPEN           13301
+#define IDS_FFMENU_FILES_FOCUS          13302
+#define IDS_FFMENU_FILES_HIDE           13303
+#define IDS_FFMENU_FILES_VIEW           13304
+#define IDS_FFMENU_FILES_VIEWWITH       13305
+#define IDS_FFMENU_FILES_ALT_VIEW       13306
+#define IDS_FFMENU_FILES_EDIT           13307
+#define IDS_FFMENU_FILES_EDITWITH       13308
+#define IDS_FFMENU_FILES_DELETE         13309
+#define IDS_FFMENU_FILES_USERMENU       13310
+#define IDS_FFMENU_FILES_CLOSE          13311
+#define IDS_FFMENU_FILES_HIDE_DUP       13312
+#define IDS_FFMENU_FILES_FIND           13313
+#define IDS_FFMENU_FILES_PROP           13314
+#define IDS_FFMENU_FILES_OPENSEL        13315
+
+#define IDS_FFMENU_EDIT                 13320
+#define IDS_FFMENU_EDIT_CUT             13321
+#define IDS_FFMENU_EDIT_COPY            13322
+#define IDS_FFMENU_EDIT_SELALL          13323
+#define IDS_FFMENU_EDIT_INVERTSEL       13324
+#define IDS_FFMENU_EDIT_COPYFULLNAME    13325
+#define IDS_FFMENU_EDIT_COPYNAME        13326
+#define IDS_FFMENU_EDIT_COPYFULLPATH    13327
+#define IDS_FFMENU_EDIT_COPYUNCNAME     13328
+
+#define IDS_FFMENU_VIEW                 13330
+#define IDS_FFMENU_VIEW_NAME            13331
+#define IDS_FFMENU_VIEW_PATH            13332
+#define IDS_FFMENU_VIEW_TIME            13333
+#define IDS_FFMENU_VIEW_SIZE            13334
+
+#define IDS_FFMENU_OPTIONS              13340
+#define IDS_FFMENU_OPT_SHOWERRORS       13341
+#define IDS_FFMENU_OPT_ADD              13342
+#define IDS_FFMENU_OPT_MANAGE           13343
+#define IDS_FFMENU_OPT_ONEINSTANCE      13344
+#define IDS_FFMENU_OPT_ERRORS           13345
+#define IDS_FFMENU_OPT_IGNORE           13346
+#define IDS_FFMENU_OPT_FULLROWSEL       13347
+
+#define IDS_FFMENU_HELP                 13350
+
+#define IDS_FFMENU_FIND_NOW             13355
+#define IDS_FFMENU_FIND_INTERSECT       13356
+#define IDS_FFMENU_FIND_SUBTRACT        13357
+#define IDS_FFMENU_FIND_APPEND          13358
+#define IDS_FFMENU_FIND_DUPLICATES      13359
+
+//
+// archiv context menu
+//
+
+#define IDS_ARCHIVEMENU_OPEN            13360
+#define IDS_ARCHIVEMENU_VIEW            13361
+#define IDS_ARCHIVEMENU_VIEWWITH        13362
+#define IDS_ARCHIVEMENU_ALT_VIEW        13363
+#define IDS_ARCHIVEMENU_EDIT            13364
+#define IDS_ARCHIVEMENU_EDITWITH        13365
+#define IDS_ARCHIVEMENU_COPY            13366
+#define IDS_ARCHIVEMENU_DELETE          13367
+#define IDS_ARCHIVEMENU_CLIPCOPY        13368
+#define IDS_ARCHIVEMENU_CLIPPASTE       13369
+
+// column names in view configuration dialog
+#define IDS_COLUMN_CFG_NAME             13380
+#define IDS_COLUMN_CFG_EXT              13381
+#define IDS_COLUMN_CFG_DOSNAME          13382
+#define IDS_COLUMN_CFG_SIZE             13383
+#define IDS_COLUMN_CFG_TYPE             13384
+#define IDS_COLUMN_CFG_DATE             13385
+#define IDS_COLUMN_CFG_TIME             13386
+#define IDS_COLUMN_CFG_ATTR             13387
+#define IDS_COLUMN_CFG_DESC             13388
+
+// column names in menu
+#define IDS_COLUMN_MENU_NAME            13400
+#define IDS_COLUMN_MENU_EXT             13401
+#define IDS_COLUMN_MENU_SIZE            13402
+#define IDS_COLUMN_MENU_TIME            13403
+#define IDS_COLUMN_MENU_ATTR            13404
+
+// confirmations: groups
+#define IDS_CNFRM_CONFIRMON             13445
+#define IDS_CNFRM_SHOWMESSAGE           13446
+// confirmations: confirm on
+#define IDS_CNFRM_FILEDIRDEL            13450
+#define IDS_CNFRM_NEDIRDEL              13451
+#define IDS_CNFRM_FILEOVER              13452
+#define IDS_CNFRM_SHFILEDEL             13453
+#define IDS_CNFRM_SHDIRDEL              13454
+#define IDS_CNFRM_SHFILEOVER            13455
+#define IDS_CNFRM_NTFSPRESS             13456
+#define IDS_CNFRM_NTFSCRYPT             13457
+#define IDS_CNFRM_DAD                   13458
+#define IDS_CNFRM_DIRALREADYEXISTS      13459
+#define IDS_CNFRM_UMDIFFDLG             13460
+#define IDS_CNFRM_DSTIGNORED            13461
+#define IDS_CNFRM_DSTCANIGN             13462
+#define IDS_CNFRM_COPYMOVEOPTNS         13463
+// confirmations: show message
+#define IDS_CNFRM_CLOSEFIND             13470
+#define IDS_CNFRM_CREATEPATH            13471
+#define IDS_CNFRM_ALWAYSONTOP           13472
+#define IDS_CNFRM_ONSALCLOSE            13473
+#define IDS_CNFRM_ONSENDEMAIL           13474
+#define IDS_CNFRM_ONADDTOARCHIVE        13475
+#define IDS_CNFRM_STOPFIND              13476
+#define IDS_CNFRM_CLOSEARCHIVE          13477
+#define IDS_CNFRM_ONCREATEDIR           13478
+
+//                        rezervovat do 13550
+#define IDS_CANCLOSESALAMANDER          13551
+
+// Do you want to close Find?
+#define IDS_WANTTOSTOPFIND              13552
+
+// Disconnect: (none)
+#define IDS_NETWORK_NONE                13553
+#define IDS_NETWORK_NETWORK             13554
+#define IDS_NETWORK_PLUGINS             13555
+
+// Change Directory (Shift+F7) hint
+#define IDS_CHANGEDIR_HINT              13556
+
+// Use the Change Directory command
+#define IDS_CHANGEDIR_TC_HINT           13557
+
+// Don't show this message again
+#define IDS_DONTSHOWAGAIN2              13558
+// Files/Email command confirmation
+#define IDS_DONTSHOWAGAINSE             13559
+// Find: stop searching confirmation
+#define IDS_DONTSHOWAGAINSS             13560
+// Find: close window confirmation
+#define IDS_DONTSHOWAGAINCF             13561
+// Always on Top: turning on confirmation
+#define IDS_DONTSHOWAGAINAT             13562
+// Close Open Salamander confirmation
+#define IDS_DONTSHOWAGAINCS             13563
+// create non-existing directory confirmation
+#define IDS_DONTSHOWAGAINCD             13564
+
+//view types
+#define IDS_VIEW_MODE                   13670
+#define IDS_THUMBNAILS_VIEW_NAME        13671
+#define IDS_BRIEF_VIEW_NAME             13672
+#define IDS_DETAILED_VIEW_NAME          13673
+#define IDS_ICONS_VIEW_NAME             13674
+#define IDS_TREE_VIEW_NAME              13675
+#define IDS_TILES_VIEW_NAME             13676
+
+#define IDS_THUMBNAILS_VIEW             13680
+#define IDS_BRIEF_VIEW                  13681
+#define IDS_DETAILED_VIEW               13682
+#define IDS_TYPES_VIEW                  13683
+#define IDS_DESCRIPTIONS_VIEW           13684
+#define IDS_ICONS_VIEW                  13685
+#define IDS_TREE_VIEW                   13686
+#define IDS_TILES_VIEW                  13687
+
+#define IDS_HOTKEY_PLUGIN_CONFLICT      13700
+#define IDS_HOTKEY_SAL_CONFLICT         13701
+
+#define IDS_COPYDLGTITLE                13710
+#define IDS_MOVEDLGTITLE                13711
+#define IDS_COPYINGFROM                 13712
+#define IDS_COPYINGTO                   13713
+
+#define IDS_MAKEFILELIST_OUTPUT         13720
+
+#define IDS_ACLNOTSUPPORTEDONTGTPATH    13725
+
+#define IDS_BUGREPORTCNFRM_TITLE        13730
+#define IDS_BUGREPORTCNFRM_TEXT         13731
+
+// too long name in disk operation: error messagebox buttons:
+#define IDS_MSGBOXBTN_SKIP              13735
+#define IDS_MSGBOXBTN_SKIPALL           13736
+#define IDS_MSGBOXBTN_FOCUS             13737
+
+#define IDS_CANTLOADPLUGINSLG1          13740
+#define IDS_CANTLOADPLUGINSLG2          13741
+#define IDS_PLUGINSLGNOTFOUND           13742
+#define IDS_DONOTSHOWCANTLOADPLUGINSLG  13743
+
+// we have found out that configuration stored in registry is corrupted
+#define IDS_CORRUPTEDCONFIGFOUND        13750
+// current shutdown parameters (WaitToKillAppTimeout and AutoEndTasks) were changed, it probably causes problems with configuration (it was corrupted during last save)
+#define IDS_CHANGEDSHUTDOWNPARS         13751
+// we have found out that configuration stored in registry is corrupted: label of Remove Configuration button
+#define IDS_CORRUPTEDCONFIGREMOVEBTN    13752
+
+#define IDS_COMPAREFILESORDIRS          13755
+#define IDS_MSGBOXBTN_FILES             13756
+#define IDS_MSGBOXBTN_DIRS              13757
+
+#define IDS_FILEISTOOBIGFORFAT32        13760
+
+#define IDS_INVALIDESCAPEPATH           13765
+
+// putting file to temp directory failed
+#define IDS_VIEWFILEFAILED              13770
+#define IDS_VIEWFILETOOLONGNAME         13771
+
+// drag&drop from archive or plugin FS to Explorer: shellext.dll is not loaded yet
+#define IDS_SHEXT_NOTLOADEDYET          13775
+
+// Main Window icon colors
+#define IDS_SALAMANDERICON_DEFAULT      13776
+#define IDS_SALAMANDERICON_RED          13777
+#define IDS_SALAMANDERICON_GREEN        13778
+#define IDS_SALAMANDERICON_BLUE         13779
+
+// Copy/Move progress dialog: number of hours in "time left": %d hr
+#define IDS_PROGDLGHOURS                13800
+// Copy/Move progress dialog: number of minutes in "time left": %d min
+#define IDS_PROGDLGMINUTES              13801
+// Copy/Move progress dialog: number of seconds in "time left": %d sec
+#define IDS_PROGDLGSECS                 13802
+
+// Copy/Move progress dialog: status of operation:
+// copy operation status in bytes (e.g. "200MB of 4GB copied")
+#define IDS_PROGDLGSTATUSCOPY           13805
+// move operation status in bytes (e.g. "200MB of 4GB moved")
+#define IDS_PROGDLGSTATUSMOVE           13806
+// speed (transfer rate) (e.g. "5 MB/sec")
+#define IDS_PROGDLGTRRATE               13807
+// speed (transfer rate) with speed limit (e.g. "5 MB/s (limit: 5MB/s)")
+#define IDS_PROGDLGTRRATELIM            13808
+// time left (e.g. "1 min 43 sec")
+#define IDS_PROGDLGTIMELEFT             13809
+
+// Copy/Move dialog, Options, Speed limit: range error
+#define IDS_SPEEDLIMITSIZE              13815
+
+// Copy/Move progress dialog: menu on Pause/Resume button: Set Speed Limit command
+#define IDS_PROGDLGSETSPLIM             13820
+// Wait Until All Other Copy/Move Operations Are Finished command
+#define IDS_PROGDLGAUTOPAUSE            13821
+
+// Select Language dialog opened on first start of Salamander and Corrupted Configuration Found messagebox: label of Exit button
+#define IDS_SELLANGEXITBUTTON           13825
+
+// plugins manager/unload: unable to save plugin's configuration
+#define IDS_PLUGINSAVEFAILED            13850
+
+// Configuration: Icon Overlays: listview Icon Overlay Handlers: name of first column: Name
+#define IDS_ICONOVRLS_NAME              13855
+// Configuration: Icon Overlays: listview Icon Overlay Handlers: name of second column: Description
+#define IDS_ICONOVRLS_DESCR             13856
+// Configuration: Icon Overlays: settings were changed, you must restart Salamander to use new settings
+#define IDS_ICONOVRLS_CHANGE            13857
+
+// message displayed when some icon overlay handler crashes, button labels from this dialog follows:
+#define IDS_ICONOVRLS_CRASH             13865
+// button label: &This
+#define IDS_ICONOVRLS_DISTHIS           13866
+// button label: &All
+#define IDS_ICONOVRLS_DISALL            13867
+
+// message displayed when Salamander is started for the first time after UPGRADE (new version installed over older version) with '-c' parameter or existing config.reg file (configuration should be imported from .reg file to registry before loading configuration): The config.reg file (or other file specified with -c parameter) was not imported to registry due to import of the configuration from the older version of Salamander. Please exit Salamander now and start it again to solve this problem.
+#define IDS_IMPORTCFGFROMFILESKIPPED    13870
+// message displayed when Salamander is started for the first time after UPGRADE (new version installed over older version) if older version contained some plugins not contained in new version - their configuration cannot be imported
+#define IDS_NOTALLPLUGINSCFGIMPORTED    13871
+// if there is more than 10 missing plugins, it displays first 10 and on extra row: (%d more plugins skipped)
+#define IDS_NUMOFSKIPPEDPLUGINNAMES     13872
+// button in messagebox with IDS_NOTALLPLUGINSCFGIMPORTED message: Start Without Missing Plugins
+#define IDS_STARTWITHOUTMISSINGPLUGINS  13873
+
+// memory allocation handler: message displayed when there is insufficient memory to allocate requested new block
+#define IDS_ALLOCHANDLER_MSG            13880
+// memory allocation handler: warning displayed when user chooses to pass memory allocation error to application
+#define IDS_ALLOCHANDLER_WRNIGNORE      13881
+// memory allocation handler: warning displayed when user chooses to terminate application
+#define IDS_ALLOCHANDLER_WRNABORT       13882
+
+// reconnect network mapped drive: title
+#define IDS_RECONNET_TITLE              13885
+// reconnect network mapped drive: text
+#define IDS_RECONNET_TEXT               13886
+
+// file type (text displayed in Type column in panel) for common files without predefined
+// file type (text for non-associated file extensions):
+// if file extension contains space (e.g. "file.ext with spaces")
+#define IDS_COMMONFILETYPE              13890
+// if file extension does not contain space (e.g. "file.ext_without_spaces")
+#define IDS_COMMONFILETYPE2             13891
+
+// the password is not strong enough
+#define IDS_INSECUREPASSWORD            13900
+// master password is not set
+#define IDS_MASTERPASSWORD_NOTSET       13901
+
+// Password Change Succeeded
+#define IDS_MASTERPASSWORD_CHANGED_TITLE 13902
+
+// You have deleted your Master Password. Your stored passwords (for example FTP and WinSCP) will not be protected.
+#define IDS_MASTERPASSWORD_REMOVED      13903
+
+// Master Password successfully changed
+#define IDS_MASTERPASSWORD_SET          13904
+
+// You did not enter the correct Master Password. Please try again.
+#define IDS_WRONG_MASTERPASSWORD        13905
+
+// Browse Directory
+#define IDS_BROWSEDIRECTORY_TITLE       13906
+// Choose the directory you want to use
+#define IDS_BROWSEDIRECTORY_TEXT        13907
+
+// Configuration/Appearance/Font: items in submenu
+// Configuration/Internal Viewer/Font: items in submenu
+#define IDS_USEDEFAULTFONT              13910
+#define IDS_USECUSTOMFONT               13911
+
+// Help/Task List: format of lines
+#define IDS_TASKLISTLINE                13915
+// Help/Task List: suffix is the process is the current one
+#define IDS_TASKLISTCURLINE             13916
+
+// Edit New File: Save current filename as default
+#define IDS_EDITNEWFILE_SAVEASDEFAULT   13920
+// Edit New File: Revert default filename to
+#define IDS_EDITNEWFILE_REVERTDEFAULT   13921
+
+// Compare Directories: after comparing: if some pairs of files were different exactly one or two hours, this message informs user that these differences (at least X differences) were ignored
+#define IDS_CMPDIRS_IGNDSTDIFFS         13925
+// Compare Directories: after comparing: if some pairs of files were different exactly one or two hours, this message informs user that these differences can be ignored (see options in Configuration / General)
+#define IDS_CMPDIRS_FOUNDDSTDIFFS       13926
+// Compare Directories: when no differences was found and moreover we need to display IDS_CMPDIRS_IGNDSTDIFFS (some DST time differences were ignored): prefix of IDS_CMPDIRS_IGNDSTDIFFS
+#define IDS_CMPDIRS_NOTE                13927
+// Compare Directories: when no differences was found and moreover we need to display IDS_CMPDIRS_IGNDSTDIFFS (some DST time differences were ignored): checkbox text
+#define IDS_CMPDIRS_DONTSHOWNOTEAG      13928
+// Compare Directories: after comparing: if some pairs of files were different exactly one or two hours, this message informs user that these differences (exact number) were ignored
+#define IDS_CMPDIRS_IGNDSTDIFFSEXACT    13929
+
+// Copy/Move dialog box options drop down menu: Reset and hide options
+#define IDS_COPYMOVE_RESETHIDE          13932
+// Copy/Move dialog box options drop down menu: Save options as defaults
+#define IDS_COPYMOVE_SAVEASDEF          13933
+// Copy/Move dialog box options drop down menu: Reset options and defaults
+#define IDS_COPYMOVE_RESETDEFS          13934
+
+// information: rename config_.reg to config.reg + why to clear key with configuration before import
+// version for W2K and XP
+#define IDS_CONFIGEXPUPTOXP             13945
+// version for Vista and later
+#define IDS_CONFIGEXPVISTA              13946
+// checkbox: clear key with configuration before import
+#define IDS_CONFIGEXPCLEARKEY           13947
+
+// Import configuration file to registry: error messages:
+#define IDS_IMPORTCFG_OPENERR           13950
+#define IDS_IMPORTCFG_TOOBIG            13951
+#define IDS_IMPORTCFG_NOTREG            13952
+#define IDS_IMPORTCFG_INVALIDFORMAT     13953
+#define IDS_IMPORTCFG_REGERR            13954
+
+// Import configuration file to registry: configuration file does not contain configuration for this version of Salamander, import anyway?
+#define IDS_IMPORTCFG_NOTOURVER         13960
+
+// Export configuration from registry to file: error messages:
+#define IDS_EXPORTCFG_REGERR            13965
+#define IDS_EXPORTCFG_FILEERR           13966
+
+// Unable to open context menu for panel with e.g. C:\Windows\Sysnative path which is only pseudo-directory, not a real directory.
+#define IDS_ERROPENMENUFORW64ALIAS      13970
+// Unable to open context menu for current selection because it contains pseudo-directory "%s".
+#define IDS_ERROPENMENUSELCONTW64ALIAS  13971
+// Unable to Properties window for current selection because it contains pseudo-directory "%s".
+#define IDS_ERROPENPROPSELCONTW64ALIAS  13972
+// Unable to rename pseudo-directory "%s".
+#define IDS_ERRRENAMINGW64ALIAS         13973
+// Unable to move current selection because it contains pseudo-directory "%s".
+#define IDS_ERRMOVESELCONTW64ALIAS      13974
+// Unable to delete current selection because it contains pseudo-directory "%s".
+#define IDS_ERRDELETESELCONTW64ALIAS    13975
+// Unable to cut current selection because it contains pseudo-directory "%s".
+#define IDS_ERRCUTSELCONTW64ALIAS       13976
+
+// file size units
+#define IDS_SIZE_B                      13980
+#define IDS_SIZE_KB                     13981
+#define IDS_SIZE_MB                     13982
+#define IDS_SIZE_GB                     13983
+#define IDS_SIZE_TB                     13984
+#define IDS_SIZE_PB                     13985
+#define IDS_SIZE_EB                     13986
+
+// speed limit units
+#define IDS_SPEED_B_per_s               13990
+#define IDS_SPEED_KB_per_s              13991
+#define IDS_SPEED_MB_per_s              13992
+#define IDS_SPEED_GB_per_s              13993
+
+// date or time is invalid
+#define IDS_INVALID_DATEORTIME          14000
+
+// when Salamander runs "As Admin", display in main window title: Administrator
+#define IDS_AS_ADMIN_TITLE              14005
+
+// Open Salamander Bug Reporter
+#define IDS_SALMON_INVALIDEMAIL         14010
+#define IDS_SALMON_WAITFORUPLOAD        14011
+#define IDS_SALMON_CONFIRMEXIT          14012
+#define IDS_SALMON_ERR_INI_SIZE         14020
+#define IDS_SALMON_ERR_PARTIAL          14021
+#define IDS_SALMON_ERR_NO_FILE          14022
+#define IDS_SALMON_ERR_NO_TMP_DIR       14023
+#define IDS_SALMON_ERR_CANT_WRITE       14024
+#define IDS_SALMON_ERR_EXTENSION        14025
+#define IDS_SALMON_ERR_UNKNOWN          14026
+#define IDS_SALMON_SYNTAX_ERROR_OPEN    14030
+#define IDS_SALMON_SYNTAX_ERROR_CLOSE   14031
+#define IDS_SALMON_SYNTAX_ERROR_VALUE   14032
+#define IDS_SALMON_SOCK_ERR_RECV        14040
+#define IDS_SALMON_SOCK_ERR_SHUTDOWN    14041
+#define IDS_SALMON_SOCK_ERR_SEND        14042
+#define IDS_SALMON_SOCK_ERR_CONNECT     14043
+#define IDS_SALMON_SOCK_ERR_SOCKET      14044
+#define IDS_SALMON_SOCK_ERR_HOST        14045
+#define IDS_SALMON_SOCK_ERR_INIT        14046
+#define IDS_SALMON_READING_FILE         14050
+#define IDS_SALMON_OUT_OF_MEMORY        14051
+#define IDS_SALMON_FILE_SIZE            14052
+#define IDS_SALMON_FILE_OPEN            14053
+#define IDS_SALMON_MORE_REPORTS         14061
+#define IDS_SALMON_TITLE                14062
+#define IDS_SALMON_COMPRESSING          14063
+#define IDS_SALMON_UPLOADING            14064
+#define IDS_SALMON_UPLOADSUCCESS        14065
+#define IDS_SALMON_UPLOADFAILED         14066
+#define IDS_SALMON_COMPRESSFAILED       14067
+#define IDS_SALMON_LOAD_FAILED          14068
+#define IDS_SALMON_WRONG_CMDLINE        14070
+#define IDS_SALMON_WRONG_VERSION        14071
+#define IDS_SALMON_MINIDUMP             14072
+#define IDS_SALMON_BUGREPORT_PROBLEM    14073
+#define IDS_SALMON_MINIDUMP_CREATE      14074
+#define IDS_SALMON_MINIDUMP_CALL        14075
+
+// salmon.exe is not running
+#define IDS_SALMON_NOT_RUNNING          14100
+
+// Translation of Open Salamander into your language is not finished. Please join the translation effort.
+#define IDS_SLGINCOMPLETE_TITLE         14150
+#define IDS_SLGINCOMPLETE_TEXT          14151
+
+// deleting to Recycle Bin does not support invalid names (names ending with space or dot), displaying invalid part of name, hint: rename it or delete permanently
+#define IDS_RECYCLEBINERROR             14155
+
+// Salamander is trying to load plugin which is available only in 32-bit (x86) version,
+// inform user to use x86 version of Salamander to work with this plugin
+#define IDS_PLUGINISX86ONLY             14160
+
+// Change Drive window: text of Google Drive item
+#define IDS_GOOGLEDRIVE                 14165
+// Change Drive window: text of Dropbox item
+#define IDS_DROPBOX                     14166
+// Change Drive window: text of OneDrive item
+#define IDS_ONEDRIVE                    14167
+// Change Drive window: text of OneDrive Personal item (displayed as: OneDrive - Personal)
+#define IDS_ONEDRIVEPERSONAL            14168
+
+// Copy/Move operation: when it founds link, it tries to resolve it (junction/symlink/volume-mount-point + get target path): what's displayed if it fails
+#define IDS_UNABLETORESOLVELINK         14170
+// Copy/Move operation: when it founds link and it is volume mount point
+#define IDS_VOLMOUNTPOINT               14171
+
+// error box title: some error during getting file size of link target
+#define IDS_ERRORGETTINGLINKTGTSIZE     14180
+
+// Pack: Option "Delete files from disk after packing to archive" can be used only if selection contains no links to directories
+#define IDS_DELFILESAFTERPACKINGNOLINKS 14181
+
+// Shutdown or Log Off: blocking reason: Disk operation is in progress. (e.g. Copy, Move, Delete files on disk running on background)
+#define IDS_BLOCKSHUTDOWNDISKOPER       14185
+// Shutdown or Log Off: blocking reason: Searching is in progress. (Find Files and Directories, Alt+F7)
+#define IDS_BLOCKSHUTDOWNFINDFILES      14186
+// Shutdown or Log Off: blocking reason: Saving configuration, please wait few seconds.
+#define IDS_BLOCKSHUTDOWNSAVECFG        14187
+// Shutdown or Log Off: we want to abort shutdown, but system does not allow it, user can abort it manually
+#define IDS_FORCEDSHUTDOWN              14188
+// Shutdown or Log Off: some disk operations are in progress, we want to abort shutdown, but system does not allow it, user can abort it manually
+#define IDS_FORCEDSHUTDOWNDISKOPER      14189
+
+// shutdown: wait window: Closing Find windows, please wait...
+#define IDS_CLOSINGFINDWINDOWS          14195
+
+//#define CM_TEXTS_MAX                  18000    // maximal texts id
+
+#endif // __TEXTS_RH2

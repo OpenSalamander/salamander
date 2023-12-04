@@ -1,0 +1,43 @@
+﻿#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+// here are texts shared between Undelete plugin and DLL
+STRINGTABLE
+{
+  IDS_LOWMEM, "Not enough memory."
+  IDS_ERRORREADINGMFT, "Error reading MFT clusters."
+  IDS_MFTRECORDDAMAGED, "Error reading MFT: the first record is damaged."
+  IDS_ROOTNOTFOUND, "Could not find root directory."
+  IDS_VDIRECTORY, "Directory%06d"
+  IDS_ALLDELETEDFILES, "{All Deleted Files}"
+  IDS_ERRORNOTNTFS, "Internal error: volume is not NTFS."
+  IDS_ERRORNOTOPEN, "Internal error: volume is not open."
+  IDS_ERROROPENINGVOLUME, "Error opening volume."
+  IDS_ERRORREADINGBOOT, "Error reading boot sector."
+  IDS_ERRORVOLUMETYPE, "Unrecognized volume type, only FAT 12, 16, 32 and NTFS volumes are supported."
+  IDS_READINGMFT, "Reading MFT..."
+  IDS_ERRORREADINGFAT, "Error reading FAT."
+  IDS_ERRORREADINGDIRCLUSTERS, "Error reading directory clusters."
+  IDS_ERRORNOTFAT, "Internal error: volume is not FAT."
+  IDS_LOADINGFAT, "Reading FAT..."
+  IDS_READINGDIRS, "Reading directories..."
+  IDS_READINGEXISTINGDIRS, "Reading existing directories..."
+  IDS_READINGDELETEDDIRS, "Reading deleted directories..."
+  IDS_SCANNINGVACANTCLUSTERS, "Scanning vacant clusters..."
+  IDS_REUSESCANNEDINFO, "Do you want to reuse information from previous cluster scan?"
+  IDS_RELOADINGCLUSTERS, "Reloading previously found clusters..."
+  IDS_FLOPPY350, "3.5 Floppy"
+  IDS_FLOPPY525, "5.25 Floppy"
+  IDS_FLOPPY800, "8.0 Floppy"
+  IDS_COMPACT_DISK, "Compact Disk"
+  IDS_LOCAL_DISK, "Local Disk"
+  IDS_REMOVABLE_DISK, "Removable Disk"
+  IDS_ANALYZINGDIRS, "Analyzing directories..."
+  IDS_INCOMPLETEMFT, "Undelete was unable to scan the whole MFT (Master File Table). Do you want to display partial results?"
+  IDS_BITMAPNOTFOUND, "Failed to locate $Bitmap on this volume. File damage estimation aborted."
+  IDS_BITMAPNOSTREAM, "Failed to locate default stream of the file $Bitmap. File damage estimation aborted."
+  IDS_LOWMEMBITMAP, "Not enough memory to load cluster bitmap file. File damage estimation will be aborted."
+  IDS_ERRORREADINGBMP, "Error reading $Bitmap file. File damage estimation aborted."
+  IDS_BITMAPISEMPTY, "$Bitmap has zero size. File damage estimation aborted."
+}

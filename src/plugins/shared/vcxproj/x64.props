@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="root.props"></Import>
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros">
+    <ShortPlatform>x64</ShortPlatform>
+    <SalPath>$(OPENSAL_BUILD_DIR)salamander\$(Configuration)_$(ShortPlatform)\salamand.exe</SalPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <BuildMacro Include="ShortPlatform">
+      <Value>$(ShortPlatform)</Value>
+    </BuildMacro>
+    <BuildMacro Include="SalPath">
+      <Value>$(SalPath)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>

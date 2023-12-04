@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Waiting for Another Application</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: ZIP: Self-Extracting Archives: Self-Extractor Settings</div>
+<div class="page">
+<h1>Waiting for Another Application</h1>
+
+<p>Use the <i>Wait For</i> button in the <a href="sfxset_settings.htm">Self-Extractor Settings</a>
+dialog to open the Wait For dialog. This button is enabled only when unpacking to
+temporary directory (<i>Extract to</i> is set to $(Temp)) and <i>Remove extracted
+files</i> is checked.</p>
+
+<p>Self-Extractor can unpack files to temporary folder. Then it can
+start application specified in the Self-Extractor Settings dialog in the field
+<i>Execute command or open document</i>. When the started application finishes,
+self-extractor can remove temporary files and finish itself.</p>
+
+<p>In some rare cases (some versions of Install Shield) the started
+application (let's call it App1) starts another application (App2) and
+finishes while the App2 is still running. In normal case the Self-Extractor
+detects that the App1 has finished and because it does not know anything about the App2,
+it removes the temporary files and finishes itself. To prevent this problem you can
+specify the application for which the Self-Extractor should wait. You
+can do it by specifying the filename of the App2 executable in the <i>Wait for</i> dialog.</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

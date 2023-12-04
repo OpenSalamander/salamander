@@ -1,0 +1,184 @@
+﻿//
+// DiskMap.Language.English.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+//
+// Menu
+//
+
+IDC_ZAREVAKDISKMAP MENU 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Open File",                       IDM_FILE_OPEN
+#ifdef SALAMANDER
+        MENUITEM "&Focus in Panel\tF",        IDM_FILE_FOCUSINSALAMANDER
+#endif
+        MENUITEM SEPARATOR
+        MENUITEM "&Abort\tEsc",                      IDM_FILE_ABORT
+        MENUITEM "&Refresh\tCtrl+R",            IDM_FILE_REFRESH
+        MENUITEM SEPARATOR
+#ifdef SALAMANDER
+        MENUITEM "&Close\tAlt+F4",                      IDM_FILE_EXIT
+#else
+        MENUITEM "E&xit\tAlt+F4",                       IDM_FILE_EXIT
+#endif
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "Zoom &In\t+",                 IDM_VIEW_ZOOMIN
+        MENUITEM "Zoom &Out\t -",                IDM_VIEW_ZOOMOUT
+        MENUITEM "&Unzoom\t Shift+Backspace",   IDM_VIEW_GOTOROOT
+        MENUITEM SEPARATOR
+        MENUITEM "&Log Window...\tCtrl+L",              IDM_VIEW_LOG
+    END
+
+    POPUP "&Options"
+    BEGIN
+#ifdef _DEBUG_provizorne_blokuju_Petr
+        POPUP "C&ushion Design"
+        BEGIN
+            MENUITEM "&Basic",            IDM_DESIGN_BASIC
+            MENUITEM "&Plastic",          IDM_DESIGN_PLASTIC
+            MENUITEM "&Glass",            IDM_DESIGN_GLASS
+            MENUITEM "&Sleek",            IDM_DESIGN_SLEEK
+            MENUITEM "&Test",             IDM_DESIGN_TEST
+        END
+        MENUITEM SEPARATOR
+#endif
+	MENUITEM "&Highlight Folders",          IDM_OPTIONS_SHOWFOLDERS, CHECKED
+	MENUITEM "&Display Tooltip\tCtrl+D",    IDM_OPTIONS_SHOWTOOLTIP, CHECKED
+        POPUP "Tooltip Path &Format"
+        BEGIN
+            MENUITEM "&Filename",            IDM_PATHFORMAT_FILENAME
+            MENUITEM "&Relative",            IDM_PATHFORMAT_RELATIVEVIEW
+//            MENUITEM "&Relative to Root",  IDM_PATHFORMAT_RELATIVEROOT
+            MENUITEM "&Absolute",            IDM_PATHFORMAT_ABSOLUTE
+        END
+#ifdef SALAMANDER
+        MENUITEM SEPARATOR
+        MENUITEM "&Confirm Close on Esc",       IDM_OPTIONS_CONSFIRMCLOSE, CHECKED
+#endif
+    END
+    POPUP "&Help"
+    BEGIN
+//        POPUP "&Debug"
+//        BEGIN
+//            MENUITEM "&Export Directory Structure...", IDM_DEBUG_EXPORTDIR
+//        END
+//        MENUITEM SEPARATOR
+        MENUITEM "&About...",                  IDM_HELP_ABOUT
+    END
+END
+
+
+
+
+//
+// Accelerator
+//
+
+IDC_ZAREVAKDISKMAP ACCELERATORS 
+BEGIN
+    "R",         IDM_FILE_REFRESH,   VIRTKEY, CONTROL
+    VK_F5,       IDM_FILE_REFRESH,   VIRTKEY
+
+    VK_BACK,     IDM_VIEW_ZOOMOUT,   VIRTKEY
+    VK_SUBTRACT, IDM_VIEW_ZOOMOUT,   VIRTKEY
+
+    VK_RETURN,   IDM_VIEW_ZOOMIN,    VIRTKEY
+    VK_ADD,      IDM_VIEW_ZOOMIN,    VIRTKEY
+
+    VK_BACK,     IDM_VIEW_GOTOROOT,  VIRTKEY, SHIFT
+    VK_BACK,     IDM_VIEW_GOTOROOT,  VIRTKEY, CONTROL
+
+    "L",         IDM_VIEW_LOG,       VIRTKEY, CONTROL
+
+    "D",         IDM_OPTIONS_SHOWTOOLTIP,      VIRTKEY, CONTROL
+
+#ifdef SALAMANDER
+    "F",         IDM_FILE_FOCUSINSALAMANDER,   VIRTKEY
+    VK_SPACE,    IDM_FILE_FOCUSINSALAMANDER,   VIRTKEY
+#endif
+END
+
+
+
+
+//
+// Dialog
+//
+#ifndef SALAMANDER
+
+IDD_ABOUTBOX DIALOGEX 22, 17, 260, 75
+STYLE DS_SHELLFONT | DS_MODALFRAME | WS_CAPTION | WS_SYSMENU
+CAPTION "About DiskMap"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    ICON            IDI_ZAREVAKDISKMAP, IDC_MYICON, 14,9,20,20
+    LTEXT           "DiskMap Version 1.0", IDC_STATIC_1, 50,10,120,9, SS_NOPREFIX
+    LTEXT           "Copyright (C) 2009-2023 Ondřej Zarevúcky", IDC_STATIC_2, 50,20,140,9
+    DEFPUSHBUTTON   "OK", IDOK, 200,8,50,14, WS_GROUP
+END
+
+#endif
+
+
+
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_PLUGIN_NAME,            "DiskMap"
+    IDS_PLUGIN_DESCRIPTION,     "Displays a treemap of files on your disk."
+    IDS_PLUGIN_ABOUT,           "About Salamander DiskMap Plugin"
+    IDS_PLUGIN_MENU,            "Show &DiskMap"
+    IDS_CLOSE_CONFIRMATION,     "Do you want to close DiskMap?"
+    IDS_CLOSE_CONFIRMATION_CHECKBOX, "Don't show this message again and close DiskMap without asking"
+
+    IDS_DISKMAP_TITLE,               "DiskMap"
+    IDS_DISKMAP_TITLEPREFIX,         "DiskMap - "
+
+    IDS_DISKMAP_LOAD_TITLE,          "Searching for files..."
+    IDS_DISKMAP_LOAD_FOOTER,         "...press the ESC key to abort"
+    IDS_DISKMAP_LOAD_HSIZE,          "Size:"
+    IDS_DISKMAP_LOAD_HFILE,          "Files:"
+    IDS_DISKMAP_LOAD_HDIRS,          "Folders:"
+
+    IDS_DISKMAP_ABORT_TITLE,         "File search cancelled..."
+    IDS_DISKMAP_ABORT_FOOTER,        "...press Ctrl+R to refresh the view"
+
+    IDS_DISKMAP_LOG_TITLE,           "Log"
+    IDS_DISKMAP_LOG_HTYPE,           "Type"
+    IDS_DISKMAP_LOG_HTEXT,           "Text"
+    IDS_DISKMAP_LOG_HFILE,           "File or Directory"
+    IDS_DISKMAP_LOG_LINFO,           "Information"
+    IDS_DISKMAP_LOG_LWARN,           "Warning"
+    IDS_DISKMAP_LOG_LERROR,          "Error"
+
+    IDS_DISKMAP_SHELL_FOCUS,         "&Focus in Panel"
+    IDS_DISKMAP_SHELL_ZOOMIN,        "Zoom &In"
+    IDS_DISKMAP_SHELL_ZOOMOUT,       "Zoom &Out"
+    IDS_DISKMAP_SHELL_DIROPEN,       "&Open in Panel"
+    IDS_DISKMAP_SHELL_DIRCHANGE,     "Change &Directory"
+
+    IDS_DISKMAP_TTIP_TIMECREATE,     "Created:"
+    IDS_DISKMAP_TTIP_TIMEMODIFY,     "Modified:"
+    IDS_DISKMAP_TTIP_TIMEACCESS,     "Accessed:"
+    IDS_DISKMAP_TTIP_SIZEDATA,       "Data size:"
+    IDS_DISKMAP_TTIP_SIZEREAL,       "Real size:"
+    IDS_DISKMAP_TTIP_SIZEDISK,       "Disk size:"
+    IDS_DISKMAP_TTIP_COUNTFILE,      "Files:"
+    IDS_DISKMAP_TTIP_COUNTDIRS,      "Folders:"
+
+    IDS_DISKMAP_FORMAT_BYTE0,        "bytes"
+    IDS_DISKMAP_FORMAT_BYTE1,        "byte"
+    IDS_DISKMAP_FORMAT_BYTEN,        "bytes"
+END
+

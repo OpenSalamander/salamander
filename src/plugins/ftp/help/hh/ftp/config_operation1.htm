@@ -1,0 +1,194 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Operations</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: FTP Client: Dialog Boxes: Configuration</div>
+<div class="page">
+<h1>Operations 1</h1>
+
+<p>Use this tab to set the default behaviour of file operations (copy and move from
+the FTP server, change attributes on the FTP server, delete on the FTP server).</p>
+
+<h4>Options</h4>
+<dl>
+<dt><b>Copy and Move from FTP server</b></dt>
+
+<dt><i>If target file already exists</i></dt>
+<dd>Specify what to do if target file already exists. Choose one of the following actions:
+<table>
+ <tr><th>Action</th><th>Description</th></tr>
+ <tr><td>Ask User</td><td>Displays dialog box where you can choose what to do.</td></tr>
+ <tr><td>Use Alternate Name</td><td>Finds some alternate file name (which is not
+         existing) and uses it as the new target file name.</td></tr>
+ <tr><td>Resume</td><td>Tries to resume copying or moving of the file. It uses already
+         copied/moved part of the file, so it saves time and compensates network failures
+	 during copying/moving of the file. Unfortunately not all FTP servers support
+	 resuming (the REST command).</td></tr>
+ <tr><td>Resume or Overwrite</td><td>Tries to resume copying or moving of the file.
+         If it is not possible, it overwrites the target file (it copies/moves whole file).</td></tr>
+ <tr><td>Overwrite</td><td>Overwrites the target file (it copies/moves whole file).</td></tr>
+ <tr><td>Skip</td><td>Skips the file (the file is not copied/moved).</td></tr>
+</table>
+</dd>
+
+<dt><i>If target directory already exists</i></dt>
+<dd>Specify what to do if target directory already exists. Choose one of the following actions:
+<table>
+ <tr><th>Action</th><th>Description</th></tr>
+ <tr><td>Ask User</td><td>Displays dialog box where you can choose what to do.</td></tr>
+ <tr><td>Use Alternate Name</td><td>Finds some alternate directory name (which is not
+         existing) and uses it as the new target directory name.</td></tr>
+ <tr><td>Use Existing Directory</td><td>Copies/moves the directory content to
+         the existing directory.</td></tr>
+ <tr><td>Skip</td><td>Skips the directory (the directory is not copied/moved).</td></tr>
+</table>
+</dd>
+
+<dt><i>If target file name cannot be created</i></dt>
+<dd>Specify what to do if target file name cannot be created. Choose one of the following actions:
+<table>
+ <tr><th>Action</th><th>Description</th></tr>
+ <tr><td>Ask User</td><td>Displays dialog box where you can choose what to do.</td></tr>
+ <tr><td>Use Alternate Name</td><td>Finds some alternate file name (which is not
+         existing) and uses it as the new target file name.</td></tr>
+ <tr><td>Skip</td><td>Skips the file (the file is not copied/moved).</td></tr>
+</table>
+</dd>
+
+<dt><i>If target directory name cannot be created</i></dt>
+<dd>Specify what to do if target directory name cannot be created. Choose one of the following actions:
+<table>
+ <tr><th>Action</th><th>Description</th></tr>
+ <tr><td>Ask User</td><td>Displays dialog box where you can choose what to do.</td></tr>
+ <tr><td>Use Alternate Name</td><td>Finds some alternate directory name (which is not
+         existing) and uses it as the new target directory name.</td></tr>
+ <tr><td>Skip</td><td>Skips the directory (the directory is not copied/moved).</td></tr>
+</table>
+</dd>
+
+<dt><i>If transfer fails, how to retry it in case target file was created</i></dt>
+<dd>Specify what to do if transfer fails. The target file was created or overwritten
+(not resumed). Choose one of the following actions:
+<table>
+ <tr><th>Action</th><th>Description</th></tr>
+ <tr><td>Ask User</td><td>Displays dialog box where you can choose what to do.</td></tr>
+ <tr><td>Use Alternate Name</td><td>Finds some alternate file name (which is not
+         existing) and uses it as the new target file name (it copies/moves whole file again).</td></tr>
+ <tr><td>Resume</td><td>Tries to resume copying or moving of the file. It uses already
+         copied/moved part of the file, so it saves time and compensates network failures
+	 during copying/moving of the file. Unfortunatelly not all FTP servers support
+	 resuming (the REST command).</td></tr>
+ <tr><td>Resume or Overwrite</td><td>Tries to resume copying or moving of the file.
+         If it is not possible, it overwrites the target file (it copies/moves whole file again).</td></tr>
+ <tr><td>Overwrite</td><td>Overwrites the target file (it copies/moves whole file again).</td></tr>
+ <tr><td>Skip</td><td>Skips the file (only a part of the file was copied/moved).</td></tr>
+</table>
+</dd>
+
+<dt><i>If transfer fails, how to retry it in case target file was resumed</i></dt>
+<dd>Specify what to do if transfer fails. The target file was resumed (in fact it would not
+have to be resumed if the size of already copied/moved part of file was smaller than specified
+minimum, see <i>Try to resume copying only if already copied part of file is at least XXX bytes</i>
+in <a href="config_advanced.htm">Configuration/Advanced</a>). Choose one of the following actions:
+<table>
+ <tr><th>Action</th><th>Description</th></tr>
+ <tr><td>Ask User</td><td>Displays dialog box where you can choose what to do.</td></tr>
+ <tr><td>Use Alternate Name</td><td>Finds some alternate file name (which is not
+         existing) and uses it as the new target file name (it copies/moves whole file again).</td></tr>
+ <tr><td>Resume</td><td>Tries to resume copying or moving of the file. It uses already
+         copied/moved part of the file, so it saves time and compensates network failures
+	 during copying/moving of the file. Unfortunatelly not all FTP servers support
+	 resuming (the REST command).</td></tr>
+ <tr><td>Resume or Overwrite</td><td>Tries to resume copying or moving of the file.
+         If it is not possible, it overwrites the target file (it copies/moves whole file again).</td></tr>
+ <tr><td>Overwrite</td><td>Overwrites the target file (it copies/moves whole file again).</td></tr>
+ <tr><td>Skip</td><td>Skips the file (only a part of the file was copied/moved).</td></tr>
+</table>
+</dd>
+
+<dt><i>If ASCII transfer mode is set for file with binary content</i></dt>
+<dd>Specify what to do if ASCII transfer mode is set for the file with binary content
+(the file type is detected from the first 10 KB of the file). If the file has binary
+content, the possible conversion of end of line characters will probably corrupt
+the file. Choose one of the following actions:
+<table>
+ <tr><th>Action</th><th>Description</th></tr>
+ <tr><td>Ask User</td><td>Displays dialog box where you can choose what to do.</td></tr>
+ <tr><td>Ignore</td><td>Ignores this warning, the file copying/moving is finished
+	 in ASCII transfer mode. Use this action only if you are sure that it is
+	 a plain text file.</td></tr>
+ <tr><td>Use Binary Mode</td><td>It copies/moves the whole file again in Binary transfer mode.</td></tr>
+ <tr><td>Skip</td><td>Skips the file (the file is not copied/moved).</td></tr>
+</table>
+</dd>
+
+<dt><b>Change Attributes on FTP server</b></dt>
+
+<dt><i>If existing attributes cannot be preserved (e.g. Unix 's' mode)</i></dt>
+<dd>Specify what to do if existing access rights (attributes) cannot be preserved. For example
+if you want to set Read and Write and preserve Execute owner rights for file with
+'r-s------' rights on Unix. The problem is that the FTP client can set only
+basic Unix rights ('rwxrwxrwx') and cannot modify only part of these rights.
+See <a href="using_changeattrs.htm">Changing Access Rights</a> for details.
+Choose one of the following actions:
+<table>
+ <tr><th>Action</th><th>Description</th></tr>
+ <tr><td>Ask User</td><td>Displays dialog box where you can choose what to do.</td></tr>
+ <tr><td>Ignore</td><td>Ignores this problem, only basic access rights are set to
+         the file. It means that existing rights (attributes) are not preserved (e.g.
+	 in preceding example it will set 'rwx------' instead of 'rws------').</td></tr>
+ <tr><td>Skip</td><td>Skips the file (the file access rights are not changed).</td></tr>
+</table>
+</dd>
+
+<dt><b>Delete on FTP server</b></dt>
+
+<dt><i>If directory is not empty</i></dt>
+<dd>Specify what to do if directory is not empty. Choose one of the following actions:
+<table>
+ <tr><th>Action</th><th>Description</th></tr>
+ <tr><td>Ask User</td><td>Displays dialog box where you can choose what to do.</td></tr>
+ <tr><td>Delete</td><td>Deletes the directory (including its content).</td></tr>
+ <tr><td>Skip</td><td>Skips the directory (the directory is not deleted).</td></tr>
+</table>
+</dd>
+
+<dt><i>If file is hidden</i></dt>
+<dd>Specify what to do if file is hidden. Choose one of the following actions:
+<table>
+ <tr><th>Action</th><th>Description</th></tr>
+ <tr><td>Ask User</td><td>Displays dialog box where you can choose what to do.</td></tr>
+ <tr><td>Delete</td><td>Deletes the file.</td></tr>
+ <tr><td>Skip</td><td>Skips the file (the file is not deleted).</td></tr>
+</table>
+</dd>
+
+<dt><i>If directory is hidden</i></dt>
+<dd>Specify what to do if directory is hidden. Choose one of the following actions:
+<table>
+ <tr><th>Action</th><th>Description</th></tr>
+ <tr><td>Ask User</td><td>Displays dialog box where you can choose what to do.</td></tr>
+ <tr><td>Delete</td><td>Deletes the directory (including its content).</td></tr>
+ <tr><td>Skip</td><td>Skips the directory (the directory is not deleted).</td></tr>
+</table>
+</dd>
+
+</dl>
+
+<h4>See Also</h4>
+<p>
+<a href="config_operation2.htm">Configuration/Operations 2</a><br/>
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

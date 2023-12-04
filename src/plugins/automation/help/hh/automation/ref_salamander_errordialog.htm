@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>ErrorDialog Method</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: Automation: Reference: Salamander Object</div>
+<div class="page">
+
+<h1>ErrorDialog Method</h1>
+<p>The <b>ErrorDialog</b> method displays dialog box with an error message.</p>
+
+<h2>Syntax</h2>
+<pre><code>ErrorDialog(<i>file</i>, <i>error</i>, <i>buttons</i>, [<i>title</i>])</code></pre>
+
+<h2>Parameters</h2>
+
+<h3>file</h3>
+<p>Required. File that caused the error. This can be either the <b>File</b>
+object obtained from the <b>FileSystemObject</b> or the Salamander panel
+<a href="ref_item.htm">Item</a> or string specifying the file path.</p>
+
+<h3>error</h3>
+<p>Required. String containing the error description or number specifying one of
+the predefined system error codes.</p>
+
+<h3>buttons</h3>
+<p>Required. Number specifying the type of buttons to display. </p><table><tr>
+<td class="hdr">Constant</td><td class="hdr">Description</td></tr>
+<tr>
+<td>0</td><td>Display OK button only.</td></tr>
+<tr>
+<td>1</td><td>Display Retry and Cancel buttons.</td></tr>
+<tr>
+<td>2</td><td>Display Skip, Skip All and Cancel buttons.</td></tr>
+<tr>
+<td>3</td><td>Display Retry, Skip, Skip All and Cancel buttons.</td></tr>
+</table>
+
+<h3>title</h3>
+<p>Optional. String displayed in the title bar of the dialog box.</p>
+
+<h2>Return Values</h2>
+<p></p><table><tr>
+<td class="hdr">Value</td><td class="hdr">Description</td></tr>
+<tr>
+<td>1</td><td>OK</td></tr>
+<tr>
+<td>2</td><td>Cancel</td></tr>
+<tr>
+<td>4</td><td>Retry</td></tr>
+<tr>
+<td>16</td><td>Skip</td></tr>
+<tr>
+<td>17</td><td>Skip All</td></tr>
+</table>
+
+<h2>See Also</h2>
+<p><a href="ref_item.htm">Item Object</a></p>
+<p><a href="ref_salamander.htm">Salamander Object</a></p>
+
+</div>
+<div class="footer">&copy; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

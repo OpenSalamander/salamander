@@ -1,0 +1,228 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\slovak\dbviewer.atp"
+TEXTVERSION,"1.23 (x86)"
+VERSION,"1,2,3,180"
+
+[TRANSLATION]
+LANGID,1051
+AUTHOR,"Roman Paholík"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6167"
+COMMENT,"Slovenská verzia"
+
+[DIALOG 12200]
+235,181,1,"Vlastnosti"
+1,179,162,50,14,1,"OK"
+13000,4,155,227,1,1,""
+12201,5,5,224,143,1,""
+
+[DIALOG 12220]
+282,105,1,"Prehliadač databáz - Konfigurácia"
+13000,6,10,270,35,1,"Písmo"
+12221,13,23,50,14,1,"&Písmo"
+12222,69,23,200,14,1,""
+13001,6,48,270,27,1,"Pozícia okna"
+12223,14,58,67,12,1,"&Uložiť a zatvoriť"
+12224,105,58,165,12,1,"&Nastaviť pozíciu na hlavné okno Salamandera"
+12225,13,85,65,14,1,"Možnosti CSV..."
+1,113,85,50,14,1,"OK"
+2,168,85,50,14,1,"Zrušiť"
+9,223,85,50,14,1,"Nápoveda"
+
+[DIALOG 12240]
+282,178,1,"Pole"
+12241,6,6,270,142,1,""
+13000,4,153,273,1,1,""
+12242,6,159,79,14,1,"&Obnoviť predvolené"
+1,115,159,50,14,1,"OK"
+2,170,159,50,14,1,"Zrušiť"
+9,225,159,50,14,1,"Nápoveda"
+
+[DIALOG 12250]
+333,137,1,"Možnosti CSV"
+13000,6,6,100,101,1,"&Oddeľovač"
+12264,15,18,60,12,1,"Auto-výber"
+12261,15,32,60,12,1,"Tabulátor"
+12260,15,46,64,12,1,"Bodkočiarka (;)"
+12259,15,60,60,12,1,"Čiarka (,)"
+12258,15,74,60,12,1,"Medzera ( )"
+12257,15,88,24,12,1,"Iný"
+12256,41,88,16,12,1,""
+13001,116,6,100,101,1,"Označenie &textu"
+12262,125,18,60,12,1,"Auto-výber"
+12255,125,32,85,12,1,"Dvojité úvodzovky (")"
+12254,125,46,60,12,1,"Úvodzovky (')"
+12253,125,60,60,12,1,"Nie je"
+13002,226,6,100,101,1,"&Prvý rad"
+12263,235,18,60,12,1,"Auto-výber"
+12265,235,32,75,12,1,"Ako názov stĺpca"
+12266,235,46,60,12,1,"Ako dáta"
+1,166,118,50,14,1,"OK"
+2,221,118,50,14,1,"Zrušiť"
+9,276,118,50,14,1,"Nápoveda"
+12252,6,118,85,14,1,"&Uložiť ako predvolené"
+
+[DIALOG 12300]
+226,131,1,"Hľadanie"
+13000,31,11,187,1,1,""
+13001,9,7,20,8,1,"&Nájsť"
+12301,16,17,198,64,1,""
+13002,48,47,170,1,1,""
+13003,9,43,38,8,1,"Nastavenie"
+12302,16,53,66,12,1,"Hľadať &dopredu"
+12303,16,65,72,12,1,"Hľadať do&zadu"
+12304,113,53,57,12,1,"&Celé slová"
+12305,113,65,101,12,1,"Rozlišovať &veľkosť písmen"
+12306,113,77,75,12,1,"&Regulárny výraz"
+13004,8,102,210,1,1,""
+1,28,110,50,14,1,"OK"
+2,88,110,50,14,1,"Zrušiť"
+9,148,110,50,14,1,"Nápoveda"
+
+[DIALOG 12400]
+124,54,1,"Prejsť na záznam"
+13000,8,9,32,8,1,"&Záznam:"
+100,41,7,74,12,1,""
+1,8,32,50,14,1,"OK"
+2,65,32,50,14,1,"Zrušiť"
+
+[STRINGTABLE 0]
+11089,1,"Prehliadač databáz"
+11090,1,"Zobrazí dBase, FoxPro a CSV súbory databázy."
+11092,1,"O plugine"
+11101,1,"Prehliadač databáz má otvorené najmenej jedno okno. Chcete ho zatvoriť?"
+
+[STRINGTABLE 1]
+11110,1,"Nedostatok pamäti."
+11111,1,"Súbor má neznámy formát databázy."
+11112,1,"Súbor nebol nájdený."
+11113,1,"Chyba čítania súboru databázy. Môže byť skrátený."
+11114,1,"Chyba zápisu súboru databázy."
+11115,1,"Chyba hľadania súboru databázy."
+11116,1,"Memo súbor je nedostupný."
+11117,1,"Memo súbor je poškodený."
+
+[STRINGTABLE 2]
+11120,1,"Súbory databázy (*.csv;*.dbf;*.txt)|*.csv;*.dbf;*.txt|Všetky súbory (*.*)|*.*|"
+11121,1,"%d pt. %s (%s)"
+11122,1,"Konfigurácia je už otvorená."
+11123,1,"Názov"
+11124,1,"Typ"
+11125,1,"Šírka"
+11126,1,"Desiatkový"
+11130,1,"dBase II"
+11131,1,"dBase III"
+11132,1,"dBase IV"
+11133,1,"dBase V"
+11134,1,"Visual dBase 7"
+11135,1,"FoxPro"
+
+[STRINGTABLE 3]
+11136,1,"Neznámy"
+11140,1,"Znakový"
+11141,1,"Číselný"
+11142,1,"Logický"
+11143,1,"Dátum"
+11144,1,"Memo"
+11145,1,"Plávajúci bod"
+11146,1,"Binárny"
+11147,1,"Hlavný"
+11148,1,"Obrázok"
+11149,1,"Mena"
+11150,1,"Dátum/Čas"
+11151,1,"Celok"
+
+[STRINGTABLE 4]
+11152,1,"Neznámy"
+11153,1,"Dvojitý"
+11154,1,"Časová značka"
+11155,1,"AutoPrídavok"
+11160,1,"Najmenej jedno pole musí byť viditeľné."
+11162,1,"V tejto databáze nie je žiadne platné pole."
+11163,1,"Správne"
+11164,1,"Zle"
+11165,1,"Upravené"
+11166,1,"Veľkosť"
+11167,1,"Verzia"
+
+[STRINGTABLE 5]
+11168,1,"Počet záznamov"
+11169,1,"Počet polí"
+11170,1,"Počet Memo-polí"
+11171,1,"Veľkosť hlavičky"
+11172,1,"Veľkosť záznamu"
+11173,1,"Kódová stránka"
+
+[STRINGTABLE 6]
+11194,1,"Chyba regulárneho výrazu"
+11195,1,"Nájsť"
+11196,1,"Nie je možné nájsť tento reťazec '%s'."
+11197,1,"Nie je možné nájsť zhodu pre regulárny výraz '%s'."
+
+[STRINGTABLE 7]
+11200,1,"&Súbor"
+11201,1,"&Otvoriť...\tCtr+O"
+11202,1,"O&bnoviť\tCtr+R"
+11203,1,"&Vlastnosti...\tCtrl+F1"
+11204,1,"O&statné súbory"
+11205,1,"&Predchádzajúci\tBackspace"
+11206,1,"&Nasledujúci\tSpace"
+11207,1,"Pre&dchádzajúci vybraný\tCtrl+Backspace"
+11208,1,"Nas&ledujúci vybraný\tCtrl+Space"
+11209,1,"P&rvý\tShift+Backspace"
+11210,1,"Posl&edný\tShift+Space"
+11211,1,"&Koniec\tAlt+F4"
+
+[STRINGTABLE 8]
+11217,1,"Úpr&avy"
+11218,1,"&Kopírovať\tCtrl+C"
+11219,1,"Vybrať &všetko\tCtrl+A"
+11220,1,"&Nájsť...\tCtrl+F"
+11221,1,"Nájsť &ďalší\tCtrl+N"
+11222,1,"Nájsť &predchádzajúci\tCtrl+P"
+11223,1,"Prepn&úť záložku\tCtrl+F2"
+11224,1,"Nas&ledujúca záložka\tF2"
+11225,1,"Pr&edchádzajúca záložka\tShift+F2"
+11226,1,"Odstrániť všetky &záložky\tCtrl+Shift+F2"
+11230,1,"&Zobrazenie"
+11231,1,"&Prejsť na záznam...\tG"
+
+[STRINGTABLE 9]
+11232,1,"P&ole...\tI"
+11233,1,"&Celá obrazovka\tF11"
+
+[STRINGTABLE 10]
+11250,1,"&Konvertovať"
+11251,1,"&Auto-výber"
+11252,1,"&Nekonvertovať"
+11253,1,"Nastaviť ako predvolený"
+11254,1,"Nasledujúci\tF8"
+11255,1,"Predchádzajúci\tShift+F8"
+
+[STRINGTABLE 11]
+11270,1,"Nasta&venie"
+11271,1,"&Možnosti CSV..."
+11272,1,"&Konfigurácia..."
+
+[STRINGTABLE 12]
+11280,1,"&Nápoveda"
+11281,1,"&O plugine..."
+11282,1,"O&bsah\tF1"
+11283,1,"&Index..."
+11284,1,"&Hľadanie..."
+
+[STRINGTABLE 13]
+11500,1,"Kopírovať\tCtrl+C"
+11501,1,"Otvoriť\tCtrl+O"
+11502,1,"Nájsť\tCtrl+F"
+11503,1,"Vlastnosti\tCtrl+F1"
+
+[STRINGTABLE 14]
+11504,1,"Celá obrazovka\tF11"
+11505,1,"Aktuálny záznam/Počet záznamov\tG"
+
+[STRINGTABLE 15]
+11520,0,"Use &default font"
+11521,1,"Použiť &vlastné písmo..."
+11522,0,"default font"
+11523,1,"vlastné písmo"
+

@@ -1,0 +1,64 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\czech\tar.atp"
+TEXTVERSION,"3.34 (x86)"
+VERSION,"3,3,4,180"
+
+[TRANSLATION]
+LANGID,1029
+AUTHOR,"Hynek Mikulič"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7008"
+COMMENT,"Česká verze"
+
+[STRINGTABLE 0]
+11200,1,"Chyba TAR pluginu"
+11201,1,"Nerozpoznaný nebo nepodporovaný formát archivu."
+11202,1,"Neplatná data TAR hlavičky - poškozený archiv."
+11203,1,"Neplatný soubor nebo kontrolní součet hlavičky - poškozený archiv."
+11204,1,"Interní chyba: poškozená struktura dat souboru."
+11205,1,"Neznámá značka bloku - přeskakuji."
+11206,1,"Požadovaný soubor nebyl v archivu nalezen."
+11207,1,"Chyba alokace paměti."
+
+[STRINGTABLE 1]
+11240,1,"LZH archivy nejsou podporovány."
+
+[STRINGTABLE 2]
+11250,1,"Extrahovat"
+11251,1,"Extrahuji "
+11252,1,"Přeskakuji "
+11260,1,"GZip Chyba"
+11261,1,"Použita neznámá komprimační metoda, nelze extrahovat."
+11262,1,"Tento soubor je šifrovaný. V GZip archivech není šifrování podporováno."
+11263,1,"Tento soubor je částí více-svazkového archivu. Více-svazkové GZip archivy nejsou podporovány."
+
+[STRINGTABLE 3]
+11264,1,"Zjištěna neznámá značka v GZip hlavičce, nelze extrahovat."
+11265,1,"Chyba otevírání archivu: "
+11266,1,"Neočekávaný konec souboru."
+11267,1,"Chyba načítání archivu: "
+11268,1,"Chyba zápisu archivu: "
+11269,1,"Funkce zápis souboru odmítla zapsat všechna požadovaná data."
+11270,1,"Zjištěn neplatný blok v GZip streamu, nelze extrahovat."
+11271,1,"Interní chyba v pluginu TAR, dejte nám prosím vědět na email support@altap.cz."
+11272,1,"Chyba alokace paměti."
+11273,1,"CRC chyba."
+11274,1,"Neočekávaná data v komprimovaném streamu, poškozený archiv."
+11275,1,"Chyba hledání v archivu: "
+
+[STRINGTABLE 4]
+11280,1,"RPM Prohlížeč"
+11281,1,"RPM Chyba"
+11282,1,"Chyba vytváření názvu dočasného souboru."
+11283,1,"Chyba vytváření dočasného souboru."
+11284,1,"Soubor nebyl rozpoznán jako RPM archiv."
+11285,1,"Verze RPM požadovaná tímto archivem není podporována."
+11286,1,"Zjištěn neznámý podpis RPM archivu."
+11291,1,"Záznam souboru má neplatný podpis."
+11292,1,"Neplatný záznam hlavičky souboru."
+11293,1,"Neznámý formát cpio hlavičky."
+
+[STRINGTABLE 5]
+11299,1,"TAR"
+11300,1,"Prohlíží a extrahuje Unix archivy."
+11301,1,"O pluginu"
+

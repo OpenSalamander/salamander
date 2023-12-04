@@ -1,0 +1,40 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\spanish\unmime.atp"
+TEXTVERSION,"1.14 (x86)"
+VERSION,"1,1,4,180"
+
+[TRANSLATION]
+LANGID,3082
+AUTHOR,"Juan Pablo Barrio Lera"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6168"
+COMMENT,"Versión en español"
+
+[DIALOG 101]
+271,111,1,"Configuración de UnMIME"
+2000,7,7,67,8,1,"Opciones de listado"
+2001,76,11,189,1,1,""
+1000,18,20,110,10,1,"Listar &encabezados de correo"
+1001,18,35,104,10,1,"Listar &cuerpos de mensajes"
+1003,31,50,230,10,1,"Añadir &info de caracteres al nombre de fichero si no es US-ASCII"
+1002,18,65,62,10,1,"Listar &adjuntos"
+2002,6,82,259,1,1,""
+1,157,90,50,14,1,"Aceptar"
+2,214,90,50,14,1,"Cancelar"
+
+[STRINGTABLE 0]
+1,1,"UnMIME"
+2,1,"No se pudo abrir el fichero."
+3,1,"Memoria insuficiente."
+4,1,"No se pudo añadir entrada de archivo a la lista de ficheros."
+5,1,"Este fichero contiene uno o más bloques con codificación desconocida.\nEstos bloques no serán decodificados."
+6,1,"Error de escritura"
+7,1,"Desempaquetando fichero de correo - %s"
+8,1,"desempaquetando: "
+9,1,"Analizando fichero..."
+10,1,"Uno o más bloques %s están dañados o tienen\nformato desconocido y no se decodificarán."
+11,1,"CRC mal en uno o más bloques %s.\nEstos bloques no serán decodificados."
+12,1,"Hojear y extraer ficheros MIME/Base64, UU/XXEncode, yEncode y BinHex."
+13,1,"Acerca del Plugin"
+14,1,"Aviso: este fichero contiene un resource fork de Mac.\nEste fork no será desempaquetado."
+15,1,"&No mostrar esto de nuevo"
+

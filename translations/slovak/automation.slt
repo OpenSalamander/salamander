@@ -1,0 +1,75 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\slovak\automation.atp"
+TEXTVERSION,"1.7 (x86)"
+VERSION,"1,7,0,180"
+
+[TRANSLATION]
+LANGID,1051
+AUTHOR,"Roman Paholík"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6167"
+COMMENT,"Slovenská verzia"
+
+[DIALOG 100]
+205,64,1,"Vstupný box"
+1150,8,8,189,8,1,"Výzva:"
+101,8,18,189,12,1,""
+1,48,42,50,14,1,"OK"
+2,107,42,50,14,1,"Zrušiť"
+
+[DIALOG 101]
+332,143,1,"Automatizácia - Konfigurácia"
+375,8,9,67,8,1,"Adresáre &skriptov:"
+371,8,19,316,73,1,""
+1001,8,102,105,10,1,"Povoliť &ladenie skriptu"
+1,75,121,50,14,1,"OK"
+2,141,121,50,14,1,"Zrušiť"
+9,207,121,50,14,1,"&Nápoveda"
+
+[MENU 106]
+0,1,"[POPUP]"
+40013,1,"Prechádzať…"
+40014,1,"Adresár Salamander"
+40015,1,"Premenná prostredia"
+
+[STRINGTABLE 0]
+1,1,"Automatizácia"
+2,1,"Automatizuje bežné úlohy použitím skriptov."
+3,1,"O plugine"
+
+[STRINGTABLE 1]
+128,1,"Chyba skriptu automatizácie"
+129,1,"Riadok:\t%u\r\n"
+130,1,"Stĺpec:\t%u\r\n"
+131,1,"Chyba:\t%s"
+132,1,"Spustiť zameraný skript"
+134,1,"Proces operácie"
+135,1,"Zdroj:\t%s\r\n"
+136,1,"Otvoriť ponuku skriptov"
+137,1,"(žiadny skript)"
+138,1,"Zlyhalo vykonanie skriptu '%s'.\r\n%s"
+139,1,"Neznáma chyba."
+140,1,"1\t&Prerušiť"
+141,1,"1\t&Ladiť\t2\t&Prerušiť"
+142,1,"Adresár skriptu"
+143,1,"Vyberte adresár úložiska skriptu."
+
+[STRINGTABLE 2]
+144,1,"Prerušiť skript"
+145,1,"Prerušiť spustený skript\tCtrl+Break"
+146,1,"Okno Open Salamandera je uzamknuté pluginom automatizácie. Prosím ukončite spustený skript."
+147,1,"Nie je možné inicializovať skriptovací stroj."
+
+[STRINGTABLE 3]
+256,1,"Neplatný archív."
+257,1,"Nie je možné zatvoriť aktuálnu cestu."
+258,1,"Cesta bola skrátená."
+259,1,"Nie je možné zmeniť vlastnosť alebo metódu volania %s pri zobrazenom okne."
+260,1,"Nie je možné zmeniť vlastnosť alebo metódu volania %s pri skrytom okne."
+261,1,"Zlyhalo načítanie pluginu."
+262,1,"Zlyhanie pluginu."
+263,1,"Zlyhal presun súboru do pamäti disku."
+264,1,"Syntaktická chyba v súborovej maske."
+265,1,"Do kontajnera môžu byť pridané iba komponenty."
+266,1,"Formy nie je možné pridať do kontejnera."
+267,1,"Beh skriptu bol prerušený používateľom."
+

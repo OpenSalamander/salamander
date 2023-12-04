@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<!-- Sitemap 1.0 -->
+</HEAD>
+<BODY>
+<OBJECT type="text/site properties">
+</OBJECT>
+<UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Self-Extractor">
+		<param name="Local" value="hh\zip\sfx_sfx.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Comment of ZIP Archive">
+		<param name="Local" value="hh\zip\usingzip_comments.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Configuring ZIP Plugin">
+		<param name="Local" value="hh\zip\usingzip_config.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Creating Self-Extracting Archive">
+		<param name="Local" value="hh\zip\sfx_creating.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Dialog Box">
+		<param name="See Also" value="Dialog Box">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Create New Archive and Add Files to Archive Dialogs">
+			<param name="Local" value="hh\zip\usingzip_packdlg.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Self-Extractor Settings">
+			<param name="Local" value="hh\zip\sfxset_settings.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Self-Extractor Texts Dialog">
+			<param name="Local" value="hh\zip\sfxset_texts.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="ZIP Configuration">
+			<param name="Local" value="hh\zip\usingzip_config.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Features of Self-Extractor">
+		<param name="Local" value="hh\zip\sfx_sfx.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Features of ZIP Plugin">
+		<param name="Local" value="hh\zip\introduction_intro.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Frequently Asked Questions">
+		<param name="Local" value="hh\zip\faq_faq.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Introducing ZIP Plugin for Open Salamander">
+		<param name="Local" value="hh\zip\introduction_intro.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Self-Extracting Archives">
+		<param name="Local" value="hh\zip\sfx_intro.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Self-Extractor Command Line Parameters">
+		<param name="Local" value="hh\zip\sfx_cmdline.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Testing Archive">
+		<param name="Local" value="hh\zip\usingzip_test.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Waiting for Another Application">
+		<param name="Local" value="hh\zip\sfxset_waiting.htm">
+		</OBJECT>
+</UL>
+</BODY>
+</HTML>

@@ -1,0 +1,38 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\spanish\peviewer.atp"
+TEXTVERSION,"3.0 (x86)"
+VERSION,"3,0,0,180"
+
+[TRANSLATION]
+LANGID,3082
+AUTHOR,"Juan Pablo Barrio Lera"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6168"
+COMMENT,"Versión en español"
+
+[DIALOG 8501]
+352,154,1,"Configuración del visor de ejecutable portátil"
+1300,7,7,76,8,1,"Secciones disponi&bles:"
+8700,7,17,105,130,1,""
+8702,119,17,53,14,1,"&Añadir ->"
+8703,119,35,53,14,1,"<- &Quitar"
+1301,179,7,63,8,1,"Secciones &visibles:"
+8701,179,17,105,130,1,""
+8704,292,17,53,14,1,"Mover a&rriba"
+8705,292,35,53,14,1,"Mover aba&jo"
+1,292,97,53,14,1,"Aceptar"
+2,292,115,53,14,1,"Cancelar"
+8706,292,133,53,14,1,"R&einiciar"
+
+[STRINGTABLE 0]
+1016,1,"Acerca del Plugin"
+
+[STRINGTABLE 1]
+10100,1,"Visor de ejecutable portátil"
+10101,1,"Imposible abrir el fichero %s."
+10102,1,"Ha fallado la creación de un fichero temporal."
+10103,1,"Ha sucedido una excepción.\n\nFichero visto: %s\n\nSi cree que el fichero visto no está corrupto, envíe este fichero a support@altap.cz.\nLo reproduciremos y corregiremos el fallo. ¡Gracias por su cooperación!"
+10104,1,"Presenta información sobre ficheros ejecutables portátiles como EXE, DLL, etc."
+
+[STRINGTABLE 2]
+10118,1,"No se encontró sección de ejecutable portátil en la configuración del plugin.\nUse menú Opciones > Configuración del plugin > Visor de ejecutable portátil\nen la ventana principal de Open Salamander para configurar secciones visibles."
+

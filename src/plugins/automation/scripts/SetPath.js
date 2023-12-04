@@ -1,0 +1,1 @@
+Salamander.TargetPanel.Path = "C:\\autoexec.bat";

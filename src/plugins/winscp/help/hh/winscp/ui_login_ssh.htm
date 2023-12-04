@@ -1,0 +1,128 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>SSH Tab (Login Dialog)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Dialog Boxes: Configuring Session</div>
+<div class="page">
+<h1>SSH Tab (Login Dialog)</h1>
+
+<p>
+The <em><acronym title="Secure Shell">SSH</acronym> tab</em> allows you to configure options of
+<a href="ssh.htm">SSH protocol</a> and encryption.
+</p>
+
+<p>
+More <acronym title="Secure Shell">SSH</acronym> options are available on subtabs:
+</p>
+
+<ul>
+<li><a href="ui_login_kex.htm">Key exchange</a> (key exchange and reexchange options)</li>
+<li><a href="ui_login_authentication.htm">Authentication</a> (advanced authentication options)</li>
+<li><a href="ui_login_bugs.htm">Bugs</a> (detections of known bugs in <acronym title="Secure Shell">SSH</acronym> servers)</li>
+</ul>
+
+<a name="protocol_options"></a>
+<h4>Protocol Options</h4>
+
+<p>
+The <em>Enable compression</em> checkbox enables <a href="ssh.htm#compression">data compression</a>
+in the <acronym title="Secure Shell">SSH</acronym> connection: data sent by the server is compressed
+before sending, and decompressed at the client end.
+</p>
+
+<p>
+The <em>Preferred <acronym title="Secure Shell">SSH</acronym> protocol version</em> selection allows
+you to select whether you would like to use <acronym title="Secure Shell">SSH</acronym> protocol version
+1 or version 2. WinSCP will attempt to use protocol 1 if the server you connect to does not offer
+protocol 2, and vice versa. If you select <em>1 only</em> or <em>2 only</em> here, WinSCP will only
+connect if the server you connect to offers the <acronym title="Secure Shell">SSH</acronym> protocol
+version you have specified. <a href="#fn1">(see note 1)</a>
+</p>
+
+<p>
+You can see actually used protocol version on <a href="ui_fsinfo.htm">Server and Protocol Information Dialog</a>.
+</p>
+
+<a name="encryption_options"></a>
+<h4>Encryption Options</h4>
+
+<p>
+WinSCP supports a variety of different encryption algorithms, and allows you to choose which one you prefer to
+use. You can do this by dragging the algorithms up and down in the list box (or moving them using the <em>Up</em> and
+<em>Down</em> buttons) to specify a preference order. When you make an <acronym title="Secure Shell">SSH</acronym>
+connection, WinSCP will search down the list from the top until it finds an algorithm supported by the server,
+and then use that.
+</p>
+
+<p>
+WinSCP currently supports the following algorithms:
+</p>
+
+<ul>
+<li><em><acronym title="Advanced Encryption Standard">AES</acronym></em> (Rijndael) - 256, 192, or 128-bit <acronym title="Stateful-decryption Counter">SDCTR</acronym> or <acronym title="Cipher Block Chaining">CBC</acronym>
+   (<acronym title="Secure Shell">SSH</acronym>-2 only)</li>
+<li><em><acronym title="Alleged Rivest Cipher 4">Arcfour</acronym></em> (RC4) - 256 or 128-bit stream cipher (<acronym title="Secure Shell">SSH</acronym>-2 only)</li>
+<li><em>Blowfish</em> - 256-bit <acronym title="Stateful-decryption Counter">SDCTR</acronym> (<acronym title="Secure Shell">SSH</acronym>-2 only) or 128-bit <acronym title="Cipher Block Chaining">CBC</acronym></li>
+<li><em>Triple-<acronym title="Data Encryption Standard">DES</acronym></em> - 168-bit CBC <acronym title="Stateful-decryption Counter">SDCTR</acronym> (<acronym title="Secure Shell">SSH</acronym>-2 only) or <acronym title="Cipher Block Chaining">CBC</acronym></li>
+<li><em>Single-<acronym title="Data Encryption Standard">DES</acronym></em> - 56-bit CBC (see below for
+    <acronym title="Secure Shell">SSH</acronym>-2) </li>
+</ul>
+
+<p>
+If the algorithm WinSCP finds is below the <em>warn below here</em> line, you will see a warning box when you
+make the connection:
+</p>
+
+<div class="quote">
+<p>The first cipher supported by the server is
+   single-<acronym title="Data Encryption Standard">DES</acronym>, which is below the configured warning threshold.
+</p>
+<p>
+Do you want to continue with this connection?
+</p>
+</div>
+
+<p>
+This warns you that the first available encryption is not a very secure one. Typically you would put the
+<em>warn below here</em> line between the encryptions you consider secure and the ones you consider substandard.
+By default, WinSCP supplies a preference order intended to reflect a reasonable preference in terms of
+security and speed.
+</p>
+
+<p>
+In <acronym title="Secure Shell">SSH</acronym>-2, the encryption algorithm is negotiated independently for each
+direction of the connection, although WinSCP does not support separate configuration of the preference orders.
+As a result you may get two warnings similar to the one above, possibly with different encryptions.
+</p>
+
+<p>
+Single-<acronym title="Data Encryption Standard">DES</acronym> is not recommended in the
+<acronym title="Secure Shell">SSH</acronym>-2 protocol standards, but one or two server implementations
+do support it. WinSCP can use single-<acronym title="Data Encryption Standard">DES</acronym> to interoperate
+with these servers if you enable the <em>Enable legacy use of
+single-<acronym title="Data Encryption Standard">DES</acronym> in <acronym title="Secure Shell">SSH</acronym>-2</em>
+option; by default this is disabled and WinSCP will stick to recommended ciphers. <a href="#fn1">(see note 1)</a>
+</p>
+
+<p>
+You can see actually used encryption algorithm on <a href="ui_fsinfo.htm">Server and Protocol Information Dialog</a>.
+</p>
+
+<h4>Notes:</h4>
+<p>
+<a name="fn1"></a>
+1) The text is copy of <a href="https://tartarus.org/~simon/putty-snapshots/htmldoc/" target="_blank">PuTTY User Manual</a> or was inspired by it.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

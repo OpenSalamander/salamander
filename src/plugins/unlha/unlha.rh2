@@ -1,0 +1,36 @@
+﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __UNLHA_RH2
+#define __UNLHA_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+// ********************************************************************************
+//
+//  TEXTY
+//
+
+#define IDS_FILECORRUPT                 1
+#define IDS_CHECKSUMERROR               2
+#define IDS_LOWMEM                      3
+#define IDS_WRITEERROR                  4
+#define IDS_PLUGINNAME                  5
+#define IDS_OPENERROR                   6
+#define IDS_LIST                        7
+#define IDS_SYMLINK                     8
+#define IDS_UNPACKERROR                 10
+#define IDS_CRCERROR                    11
+#define IDS_READERROR                   12
+#define IDS_EXTRPROGTITLE               13
+#define IDS_PREPAREDATA                 14
+#define IDS_UNPACKING                   15
+#define IDS_EXTRACTFILES                16
+#define IDS_TOOLONGNAME                 17
+#define IDS_TOOLONGMASK                 18
+#define IDS_METHOD                      19
+#define IDS_METHOD2                     20
+#define IDS_PLUGIN_DESCRIPTION          21
+#define IDS_ABOUT                       22
+
+#endif // __UNLHA_RH2

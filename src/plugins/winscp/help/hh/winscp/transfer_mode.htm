@@ -1,0 +1,94 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Transfer Modes</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Appendix</div>
+<div class="page">
+
+<h1>Transfer Modes</h1>
+
+<p>
+As different platforms (operating systems) uses different format of text files, many transfer protocols
+support special mode for transferring text files (called text or <acronym title="American Standard Code
+for Information Interchange">ASCII</acronym> mode). In the mode the file is not only transferred, but
+also converted to format used by the target platform. The mode must not be used for binary files (including
+document files from modern text processors, like Microsoft Word), as they must be transferred without
+modification.
+</p>
+
+<a name="available_modes"></a>
+<h4>Available Modes</h4>
+
+<p>
+WinSCP offers you the chance to select between <em>Text</em> and <em>Binary</em> transfer modes. It is set
+as one of the <a href="transfer_settings.htm">transfer settings</a>.
+</p>
+
+<p>
+WinSCP also has a special <em>Automatic</em> mode (default). With this mode WinSCP decides automatically
+about transfer mode for a particular file based on its filename (usually the file extension). The so-called
+text file mask can be configured in dialogs mentioned above. By default it includes
+HTML, TXT, PHP, XML, INI, C, CPP and other file types. You can modify the mask as you need. Files not matching the mask are
+transferred using <em>Binary</em> mode.
+</p>
+
+<a name="server-side_text_file_format"></a>
+<h4>Server-side Text File Format</h4>
+
+<p>
+There are two options how to support text mode transfers. The first option is that the client (WinSCP) knows
+directly the text file format used by the server and converts the file to the format before transfer. The
+second option is that there is some in advance agreed canonical format to which the client converts the file
+before transfer and from which the server converts it (if necessary) after transfer to its own format.
+</p>
+
+<p>
+The second option is more universal, but it is supported only by <a href="protocols.htm#sftp">SFTP-4</a>
+and newer.
+</p>
+
+<p>
+The first option is used by WinSCP for <a href="protocols.htm#scp">SCP</a> SFTP-3 and older protocols.
+It this case the client (WinSCP) must directly know and support the server-side format. Generally there
+are plenty of text file formats, almost every platform has it own format. WinSCP supports two of the most
+used formats, Unix and Windows. You can select between them on
+<em><a href="ui_login_environment.htm#end-of-line_characters">Environment tab</a></em> of Login Dialog. As most
+<acronym title="Secure Shell">SSH</acronym> servers are run on Unix system, generally you may leave the
+default Unix format.
+</p>
+
+<a name="transferring_large_text_files_with_scp_protocol"></a>
+<h4>Transferring Large Text Files with SCP Protocol</h4>
+
+<p>
+Note that due to <a href="protocols.htm">SCP protocol</a> requirements WinSCP needs to know
+the size of converted text files before the transfer actually starts. For that reason with
+<acronym title="Secure Copy Protocol">SCP</acronym> protocol, the whole file is converted in
+memory before the transfer.
+</p>
+
+<p>
+If the file is too large (not common for text files), you can run out of memory during
+conversion. So to transfer large text file, either force binary mode (if possible) or switch
+to <a href="protocols.htm">SFTP protocol</a>.
+</p>
+
+<a name="changing_transfer_mode"></a>
+<h4>Changing Transfer Mode</h4>
+
+<p>
+The transfer mode is set as part of <a href="transfer_settings.htm">transfer settings</a>.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

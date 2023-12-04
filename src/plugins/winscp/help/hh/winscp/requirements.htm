@@ -1,0 +1,149 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>WinSCP Technical Requirements</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Introduction</div>
+<div class="page">
+
+<h1>WinSCP Technical Requirements</h1>
+
+<a name="server_requirements"></a>
+<h4>Server Requirements</h4>
+
+<p>
+Using WinSCP, you can connect to a <a href="ssh.htm">SSH</a> (Secure Shell) server
+with <a href="protocols.htm#sftp">SFTP</a> (<acronym title="Secure Shell">SSH</acronym> File
+Transfer Protocol) or <a href="protocols.htm#scp">SCP</a> (Secure Copy Protocol) service.
+</p>
+
+<p>
+<acronym title="SSH File Transfer Protocol">SFTP</acronym> is a standard
+part of <acronym title="Secure Shell">SSH</acronym>-2 package. <acronym title="Secure Copy Protocol">SCP</acronym>
+is a standard part of <acronym title="Secure Shell">SSH</acronym>-1 package.
+You can also run both protocols on the latter <acronym title="Secure Shell">SSH</acronym> version.
+WinSCP supports both <acronym title="Secure Shell">SSH</acronym>-1 and <acronym title="Secure Shell">SSH</acronym>-2.
+For authentication, the user can use user name and password or <a href="public_key.htm">public key</a>
+(<acronym title="Rivest, Shamir &amp; Adelman">RSA</acronym> or
+<acronym title="Digital Signature Algorithm">DSA</acronym>). Other supported means of authorization
+include TIS, Cryptocard, Keyboard-interactive, and Kerberos.
+</p>
+
+<a name="sftp_requirements"></a>
+<a name="sftp"></a>
+<h4>SFTP Requirements</h4>
+
+<p>
+For <acronym title="SSH File Transfer Protocol">SFTP</acronym>, the only requirement beyond the server requirements
+above is to run <acronym title="SSH File Transfer Protocol">SFTP</acronym> on the server. It is best to run it as
+a <acronym title="Secure Shell">SSH</acronym>-2 subsystem. If you select
+<acronym title="SSH File Transfer Protocol">SFTP</acronym>-only on the login screen and the
+<acronym title="SSH File Transfer Protocol">SFTP</acronym> subsystem is not found, WinSCP will try to find the
+<acronym title="SSH File Transfer Protocol">SFTP</acronym> server in some common directories
+(<code>/usr/lib/sftp-server</code>, <code>/usr/local/lib/sftp-server</code>, etc.). This way, it is possible
+to use <acronym title="SSH File Transfer Protocol">SFTP</acronym> even with
+<acronym title="Secure Shell">SSH</acronym>-1, which does not support subsystems.
+</p>
+
+<a name="scp_requirements"></a>
+<a name="scp"></a>
+<h4>SCP Requirements</h4>
+
+<p>
+To transfer files, <code>scp1</code> is used (it is called from within <code>scp</code>). If only <code>scp2</code>
+is allowed on your server, check the <em><a href="ui_login_scp.htm#other_options">Use scp2 with scp1 compatibility</a></em>
+option on the <a href="ui_login_scp.htm">SCP/Shell tab</a> in the Login dialog.
+</p>
+
+<p>
+For correct functionality, you must do the following. The <code>bash</code> shell is recommended
+for working with WinSCP. If your default shell doesn't work with WinSCP, you can make WinSCP use
+<a href="ui_login_scp.htm#shell">other shell</a>.
+</p>
+
+<p>
+For its operation, WinSCP needs several commands: <code>cd</code>, <code>chgrp</code>,
+<code>chmod</code>, <code>chown</code>, <code>echo</code>, <code>groups</code>, <code>ls</code>,
+<code>mkdir</code>, <code>mv</code>, <code>pwd</code>, <code>scp</code>, <code>rm</code>, <code>ln</code>,
+<code>unalias</code> and <code>unset</code>. These commands have to be placed in the path and user must have
+sufficient permissions to execute them. WinSCP expects &quot;standard&quot; behavior of these commands. You can avoid
+needing these commands by not using some of WinSCP functions (<code>mkdir</code>, <code>chown</code>,
+<code>ln</code>, etc.) or by changing some configuration options (<code>groups</code>,
+<code>unalias</code> and <code>unset</code>).
+</p>
+
+<p>
+Just after establishing the connection with server, all <a href="ui_login_scp.htm#other_options">aliases on the
+above commands are cleared</a>. This helps avoid unexpected behavior.
+</p>
+
+<p>
+Another precondition is that the output of all commands is in English. This mostly concerns names of months
+in directory listings (<code>ls -la</code>). Because of this, WinSCP <a href="ui_login_scp.htm#other_options">clears
+all user variables that govern command output</a> after login. If command output also reflects some other
+server settings, it may be necessary to change this before WinSCP can be used.
+</p>
+
+<p>
+The last necessary condition is the proper output of <code>ls -la</code> command.
+Particularly standard number and ordering of the columns.
+If the default output does not satisfy WinSCP need, you can use
+<em><a href="ui_login_scp.htm#directory_listing">Listing command</a></em> option
+on the <em>SCP/Shell tab</em> in the Login dialog to modify it.
+</p>
+
+<p>
+WinSCP will attempt detect support for <code>--full-time</code> switch of the <code>ls</code> command.
+If the detection causes you problems, you can <a href="ui_login_scp.htm#directory_listing">disable</a> it.
+</p>
+
+<a name="using_winscp_with_restricted_shell_environments"></a>
+<h4>Using WinSCP with Restricted Shell Environments</h4>
+
+<p>
+A number of restricted shell environments exist for supporting
+<acronym title="SSH File Transfer Protocol">SFTP</acronym>/<acronym title="Secure Copy Protocol">SCP</acronym>
+only accounts. These systems restrict the user to a small subset of commands needed to manipulate files
+while denying the ability to execute arbitrary commands. Some of these environments create incompatibilities
+with WinSCP, particularly if using <acronym title="Secure Copy Protocol">SCP</acronym> instead of
+<acronym title="SSH File Transfer Protocol">SFTP</acronym>.
+</p>
+
+<a name="configuring_winscp_sessions"></a>
+<h4>Effect of Remote User Environment on WinSCP Sessions</h4>
+
+<p>
+Most shells nowadays offer options to make the user experience better. Unfortunately many of these options
+make the shell incompatible with WinSCP.
+</p>
+
+<p>
+This mainly affects the <acronym title="Secure Copy Protocol">SCP</acronym> protocol. An example is colorized
+output with the <code>ls</code> command that outputs ANSI color sequences to the command output which WinSCP is
+unable to parse.
+</p>
+
+<p>
+Also, the <acronym title="SSH File Transfer Protocol">SFTP</acronym> protocol can be affected. A typical example
+is where some message is printed from a start-up script. WinSCP (and any other
+<acronym title="SSH File Transfer Protocol">SFTP</acronym> client) will attempt to parse the message as an
+<acronym title="SSH File Transfer Protocol">SFTP</acronym> packet, which will obviously fail.
+</p>
+
+<p>
+You should configure your start-up scripts to conform to non-interactive sessions (like WinSCP). Some shells
+call different profile/start-up scripts for interactive and non-interactive sessions. You can also use some
+environment variables, such as <code>TERM</code> to distinguish interactive and non-interactive sessions.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

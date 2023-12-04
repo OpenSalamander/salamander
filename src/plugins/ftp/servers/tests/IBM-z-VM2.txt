@@ -1,0 +1,4 @@
+README   FIRST    F         80         37          1  1/22/91 11:22:50 ANONYM
+RFC1118  TXT      V         73       1347         16 10/09/89  9:51:07 ANONYM
+ROOTS-L  DISK     F         80          5          1  8/31/90 14:22:14 ANONYM
+WRITERS  DISK     F         80          8          1 12/18/90 16:51:15 ANONYM

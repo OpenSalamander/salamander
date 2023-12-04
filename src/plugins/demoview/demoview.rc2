@@ -1,0 +1,25 @@
+﻿//****************************************************************************
+//
+// Copyright (c) 2023 Open Salamander Authors
+//
+// This is a part of the Open Salamander SDK library.
+//
+//****************************************************************************
+
+//
+// demoview.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "versinfo.rh2"
+#include "versinfo.rc2"
+
+IDB_PLUGINICO BITMAP "res\\plugico.bmp"
+IDB_TOOLBAR16 BITMAP "res\\tb16.bmp"
+IDB_TOOLBAR256 BITMAP "res\\tb256.bmp"

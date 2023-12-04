@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29009.5
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "translator", "translator.vcxproj", "{C5833A09-5056-4C59-9E53-721A4D011936}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{428B298A-053C-4883-8134-00B930F5593B}"
+	ProjectSection(SolutionItems) = preProject
+		..\.editorconfig = ..\.editorconfig
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C5833A09-5056-4C59-9E53-721A4D011936}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C5833A09-5056-4C59-9E53-721A4D011936}.Debug|Win32.Build.0 = Debug|Win32
+		{C5833A09-5056-4C59-9E53-721A4D011936}.Release|Win32.ActiveCfg = Release|Win32
+		{C5833A09-5056-4C59-9E53-721A4D011936}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5FDC92CD-C733-49EB-841B-4384F2C3E6F9}
+	EndGlobalSection
+EndGlobal

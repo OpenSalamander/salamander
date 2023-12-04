@@ -1,0 +1,71 @@
+[OPTIONS]
+Auto Index=Yes
+Compatibility=1.1 or later
+Compiled file=filecomp.chm
+Contents file=filecomp.hhc
+Default Window=$global_ssdefault
+Default topic=hh\filecomp\introduction_intro.htm
+Display compile progress=No
+Full text search stop list file=..\..\shared\help\en\stop.stp
+Full-text search=Yes
+Index file=filecomp.hhk
+Language=0x409 English (United States)
+Title=File Comparator Plugin Help
+
+[WINDOWS]
+$global_ssdefault=,"salamand.chm::\salamand.hhc","filecomp.hhk","hh\filecomp\introduction_intro.htm","hh\filecomp\introduction_intro.htm",,,,"Web Help",0x3520,,0x180e,,,,,,,,0
+
+[FILES]
+hh\salamander_help.css
+hh\salamander_help_shared.css
+
+[ALIAS]
+IDH_INTRODUCTION=hh\filecomp\introduction_intro.htm
+IDH_KEYBOARD=hh\filecomp\shortcuts_keyboard.htm
+IDH_COMPAREFILES=hh\filecomp\using_comparefiles.htm
+IDD_ADVANCEDOPTIONS=hh\filecomp\dlgboxes_advoptions.htm
+IDD_CFGGENERAL=hh\filecomp\config_general.htm
+IDD_CFGDEFOPTIONS=hh\filecomp\config_defcompopts.htm
+IDD_CFGCOLORS=hh\filecomp\config_colors.htm
+
+[MAP]
+#include "..\filecomp.rh"
+#include "..\filecomp.rh2"
+#include "..\lang\lang.rh"
+
+[MERGE FILES]
+salamand.chm
+zip.chm
+demoplug.chm
+demoview.chm
+7zip.chm
+dbviewer.chm
+ftp.chm
+checksum.chm
+checkver.chm
+ieviewer.chm
+mmviewer.chm
+pak.chm
+peviewer.chm
+pictview.chm
+regedt.chm
+renamer.chm
+splitcbn.chm
+tar.chm
+unarj.chm
+uncab.chm
+undelete.chm
+unfat.chm
+uniso.chm
+unlha.chm
+unmime.chm
+unrar.chm
+wmobile.chm
+winscp.chm
+nethood.chm
+unchm.chm
+automation.chm
+diskmap.chm
+demomenu.chm
+
+[INFOTYPES]

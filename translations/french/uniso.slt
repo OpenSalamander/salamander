@@ -1,0 +1,111 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\french\uniso.atp"
+TEXTVERSION,"1.37 (x86)"
+VERSION,"1,3,7,180"
+
+[TRANSLATION]
+LANGID,1036
+AUTHOR,"Gérard Gréco, Arnaud Dupin de Beyssat, Jérémy Marc, Maxime Abbey"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6162"
+COMMENT,"Version française"
+
+[DIALOG 1200]
+305,83,1,"Configuration de UnISO"
+1201,8,11,288,10,1,"&Supprimer l'attribut Lecture seule lorsqu'une copie est réalisée à partir de l'archive"
+1202,8,23,283,10,1,"&Afficher une session en tant que dossier (permet d'accéder à toutes les sessions)"
+1203,8,35,203,10,1,"A&fficher l'image disque de démarrage en tant que fichier"
+3000,2,58,301,1,1,""
+1,193,64,50,14,1,"OK"
+2,248,64,50,14,1,"Annuler"
+
+[STRINGTABLE 0]
+1000,1,"UnISO"
+1001,1,"Impossible d'ouvrir le fichier."
+1002,1,"Erreur non spécifiée."
+1003,1,"Décompression de l'archive ISO"
+1004,1,"Erreur lors de la décompression de l'archive."
+1005,1,"Impossible de prendre en charge ce fichier."
+1006,1,"Mémoire insuffisante."
+1007,1,"A propos du module"
+
+[STRINGTABLE 1]
+1009,1,"Parcourir et extraire le contenu d'images CD/DVD au format ISO."
+1010,1,"Impossible de créer le dossier temporaire."
+1011,1,"Impossible de supprimer le fichier temporaire."
+1012,1,"Format de fichier inconnu ou image ISO invalide.\n\nSi vous êtes certain(e) qu'il s'agit d'une image ISO valide, veuillez contacter support@altap.cz pour nous aider à prendre en charge ce format."
+1013,1,"Impossible d'ouvrir le fichier '%s'."
+1014,1,"La création du fichier temporaire a échoué."
+1015,1,"Impossible de paramétrer les attributs du fichier."
+1016,1,"Impossible de créer le dossier '%s'."
+1020,1,"Oui"
+1021,1,"Non"
+1022,1,"Erreur"
+1023,1,"Avertissement"
+
+[STRINGTABLE 2]
+1024,1,"Une ou plusieurs erreur(s) sont survenues lors de la lecture d'une image multisession.\n\nSeules les sessions lues avec succès seront affichées."
+1025,1,"Type de piste inconnu."
+1026,1,"Stratégie d'allocation inconnue (%d).\n\nVeuillez contacter support@altap.cz pour nous aider à corriger ce problème."
+1027,1,"Mauvais format de fichier .CCD.\n\nL'image affichée pourrait être incomplète."
+1028,1,"Le fichier .CCD est manquant.\n\nL'image affichée pourrait être incomplète."
+1029,1,"Impossible de lire le secteur n°%08X."
+1030,1,"Identifiant de Tag UDF invalide."
+1031,1,"Une erreur est survenue lors de la lecture de la structure du dossier situé sur le secteur n°%08X.\n\nLe contenu de l'image ISO est incomplet."
+1032,1,"Erreur interne au sein du module."
+1033,1,"Erreur lors de la lecture de la table d'allocation virtuelle sur le secteur n°%08X."
+1034,1,"La table d'allocation virtuelle est manquante."
+1035,1,"L'ICB (Information Control Block) racine est endommagé.\n\nImpossible de lire la structure de dossiers."
+1036,1,"Le fichier "%s" ne peut pas être extrait.\n\nIl y a un conflit entre la taille du fichier et les blocs ICB."
+1037,1,"Impossible d'ouvrir la piste n°%d."
+1038,1,"Ce fichier semble être une image de disquette, disque dur ou partition de disque dur.\nEssayez de renommer le fichier avec l'extension .ima pour l'ouvrir avec le module UnFAT."
+1039,0,"This disk image contains the APFS file system.\nThis file system is not supported yet."
+
+[STRINGTABLE 3]
+1050,1,"Impossible de lire l'entête de la partition. Le fichier est trop petit."
+1051,1,"Les structures du Gestionnaire de Partition sont corrompues."
+1052,1,"L'image disque ne contient pas de partition HFS Plus."
+1053,1,"L'image disque contient un système de fichiers au format HFS et non HFS Plus.\nHFS n'est pas pris en charge."
+1054,1,"Impossible de se positionner sur le bloc n°%08X.\nLe fichier %s ne sera pas extrait."
+1055,1,"Impossible de se positionner sur le bloc n°%08X."
+
+[STRINGTABLE 4]
+1056,1,"Le type de noeud racine BTree du fichier Catalogue n'est pas pris en charge."
+1057,1,"Le fichier Catalogue est fragmenté en plus de 8 fragments, ce qui n'est pas pris en charge."
+1058,1,"Le fichier '%s' est fragmenté en plus de 8 fragments, ce qui n'est pas pris en charge.\nLe fichier ne sera pas extrait."
+1059,1,"L'image disque contient un nom de chemin trop long, qu'Open Salamander ne peut pas prendre en charge."
+1060,1,"Impossible de terminer l'opération en raison d'un nom de fichier trop long."
+1070,1,"Impossible de lire l'entête du paquet. Le fichier est trop petit."
+1071,1,"Le paquet est chiffré.\nLes paquets chiffrés ne sont pas pris en charge."
+
+[STRINGTABLE 5]
+1072,1,"Ce fichier ne semble pas être un paquet DMG, ou est incomplet.\nIl ne contient pas de pied valide au format DMG."
+1073,1,"Ce fichier ne semble pas être un paquet DMG, ou est incomplet.\nIl ne contient pas de Liste de Propriétés valide."
+1074,1,"Ce paquet ne contient pas de bloc de données de partition HFS Plus démarrant à %I64u.\nLe bloc est requis pour charger correctement le paquet."
+1075,1,"Impossible de lire les données à la position %I64u depuis l'image disque."
+1076,1,"Impossible de se positionner au sein de l'image disque à la position %I64u."
+1077,1,"Erreur interne. Méthode de positionnement non prise en charge."
+1078,1,"L'image disque comporte un bloc compressé avec une méthode inconnue.\nCe type d'images disque n'est pas pris en charge."
+1079,1,"La décompression d'un bloc compressé avec ZLIB a échoué. L'image disque semble corrompue."
+1080,1,"La décompression d'un bloc compressé avec BZIP2 a échoué. L'image disque semble corrompue."
+1085,1,"Ce fichier ne semble pas être une image ISZ compressée, ou est incomplet.\nIl ne contient pas d'entête ISZ valide."
+1086,1,"Impossible de lire l'entête de l'image compressée. Le fichier est trop petit."
+1087,1,"L'image est segmentée.\nLes images segmentées ne sont pas prises en charge."
+
+[STRINGTABLE 6]
+1088,1,"L'image est chiffrée.\nLes images chiffrées ne sont pas prises en charge."
+1100,1,"Erreur de lecture"
+1101,1,"Erreur d'écriture"
+1102,1,"Les pistes audio ne peuvent pas être extraites."
+1103,1,"Annulation de l'opération, veuillez patienter..."
+
+[STRINGTABLE 7]
+1150,1,"Informations sur l'image\n\n"
+1151,1,"Informations sur l'image "%s"\n\n"
+
+[STRINGTABLE 8]
+1152,1,"Nombre de sessions : %d"
+1153,1,"\nSession %d\n"
+1154,1,"  Nombre de pistes : %d\n"
+1155,1,"  Piste : %d, %s, Taille : %d Ko\n"
+1156,1,"  Piste : %d, %s, Taille : %d Ko - "%s"\n"
+

@@ -1,0 +1,120 @@
+﻿//{{NO_DEPENDENCIES}}
+// Microsoft Visual C++ generated include file.
+// Used by lang.rc
+//
+#define IDC_MBOXTEXT                    11
+#define IDD_EXPACKOPTIONS               100
+#define IDC_ARCHIVE                     101
+#define IDC_MULTIVOL                    102
+#define IDC_VOLSIZE                     103
+#define IDC_SELFEXTR                    104
+#define IDC_ADVANCED                    105
+#define IDC_ENCRYPT                     106
+#define IDC_PASSWORD1                   107
+#define IDC_PASSWORD2                   108
+#define IDC_CONFIG                      109
+#define IDC_DONTSHOW                    110
+#define IDC_UNITS                       111
+#define IDD_CONFIG                      112
+#define IDC_DEFAULT                     113
+#define IDC_BACKUP                      114
+#define IDC_NOEMPTYDIRS                 115
+#define IDC_LEVEL                       116
+#define IDC_SHOWEXOPTIONS               117
+#define IDC_SKIP                        118
+#define IDC_WINZIPNAMES                 118
+#define IDC_SKIPALL                     119
+#define IDC_PASSWORD                    120
+#define IDC_FILE                        121
+#define IDC_ENC_ZIP20                   121
+#define IDC_ENC_AES128                  122
+#define IDD_PASSWORD                    123
+#define IDC_CFG_LISTINFOPACKEDSIZE      123
+#define IDC_ENC_AES256                  123
+#define IDC_LOCK                        124
+#define IDC_SEQNAME                     125
+#define IDC_WINZIP                      126
+#define IDD_LOWFREESPACE                126
+#define IDC_IGNORE                      127
+#define IDC_ALL                         128
+#define IDC_RETRY                       129
+#define IDC_PATH                        130
+#define IDC_FREESPACE                   131
+#define IDC_VOLUMESIZE                  133
+#define IDC_TEXT                        134
+#define IDD_CHANGEDISK                  135
+#define IDC_CHDISKTEXT                  136
+#define IDD_OVERWRITE                   137
+#define IDC_YES                         138
+#define IDS_ABOUTPLUGINTITLE            139
+#define IDC_FILEATTR                    140
+#define IDD_CHANGEDISK2                 141
+#define IDC_BROWSE                      141
+#define IDD_CHANGEDISK3                 142
+#define IDC_FILENAME                    142
+#define IDC_PROCEEDALL                  143
+#define IDC_AUTOEXPANDMV                145
+#define IDD_ADVANCEDSE                  146
+#define IDC_EXECUTE                     150
+#define IDD_OVERWRITE2                  152
+#define IDC_NO_                         153
+#define IDC_OVEWRITE                    154
+#define IDC_AUTO                        155
+#define IDC_HIDEMAINDLG                 157
+#define IDC_SUMDLG                      158
+#define IDC_EXEICON                     159
+#define IDC_CHANGEICON                  160
+#define IDC_AUTODIR                     161
+#define IDC_TITLE                       161
+#define IDC_ALLOWUSER                   162
+#define IDC_LANGUAGE                    163
+#define IDC_BUTTONTEXT                  165
+#define IDD_RENAMEFAVSET                166
+#define IDC_NAME                        167
+#define IDD_CREATESFX                   170
+#define IDC_NEWARCHIVE                  171
+#define IDC_SOURCE                      172
+#define IDC_TARGET                      173
+#define IDC_SETFILETIME                 174
+#define IDD_COMMENT                     180
+#define IDC_COMMENT                     181
+#define IDD_SFXTEXTS                    190
+#define IDC_TEXTS                       191
+#define IDC_WAITFOR                     192
+#define IDC_TARGETDIR                   193
+#define IDC_MBOXTITLE                   194
+#define IDS_VENDOR                      195
+#define IDC_MBOXBUTTONS                 196
+#define IDC_MBOXICON                    197
+#define IDC_RESET                       198
+#define IDE_VENDOR                      199
+#define IDC_SPECDIR                     200
+#define IDS_WWW                         201
+#define IDE_WWW                         202
+#define IDD_MANFAVS                     210
+#define IDC_FAVORITIES                  211
+#define IDC_RENAME                      212
+#define IDC_REMOVE                      213
+#define IDC_REMOVEALL                   214
+#define IDD_WAITFOR                     220
+#define IDD_CHANGELANG                  250
+#define IDC_ASK                         251
+#define IDC_REPLACE                     252
+#define IDC_LEAVE                       253
+#define IDC_SFXICON                     255
+#define IDC_REQSADMIN                   256
+#define IDM_SFXMENU                     400
+#define IDM_FAVMANMENU                  800
+#define IDM_COMMENTMENU                 850
+#define IDM_SPECDIR                     860
+
+// Next default values for new objects
+// 
+#ifdef APSTUDIO_INVOKED
+#ifndef APSTUDIO_READONLY_SYMBOLS
+#define _APS_NEXT_RESOURCE_VALUE        8500
+#define _APS_NEXT_COMMAND_VALUE         40001
+#define _APS_NEXT_CONTROL_VALUE         8700
+#define _APS_NEXT_SYMED_VALUE           101
+#endif
+#endif

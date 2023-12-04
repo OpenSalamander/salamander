@@ -1,0 +1,102 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Advanced Options dialog box</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: File Comparator: Dialog Boxes</div>
+<div class="page">
+<h1>Advanced Options</h1>
+
+<p>Use this dialog to set options for comparing files. You can choose if to use these options
+only for the current comparison or set them as defaults. You can preset these options
+also on <a href="config_defcompopts.htm">Default Compare Options</a> tab in Configuration
+dialog.</p>
+
+<h4>Options</h4>
+<dl>
+<dt><i>Ignores: All white space</i> (only when comparing text files)</dt>
+
+<dd>When checked, the file comparator ignores all horizontal and vertical white space characters
+(space, tab, end of line). You can imagine that it removes all white space characters
+before it starts any other actions.
+</dd>
+
+<dt><i>Ignores: Changes in the amount of white space</i> (only when comparing text files)</dt>
+
+<dd>When checked, the file comparator ignores all changes in horizontal and vertical white
+space characters (space, tab, end of line). You can imagine that it replaces every sequence of
+white space characters by a single space character before it starts any other actions.
+</dd>
+
+<dt><i>Ignores: Case</i> (only when comparing text files)</dt>
+
+<dd>When checked, the file comparator ignores case (upper and lower case
+characters are equivalent).
+</dd>
+
+<dt><i>Files type: Autodetect, Text, or Binary</i></dt>
+
+<dd>If you choose autodetect, both files will be tested if they are text files.
+If yes, they will be compared as text files. Otherwise they will be compared as
+binary files. If you don't want the files types to be autodetected, select if the plugin
+should compare them as text or as binary files.
+</dd>
+
+<dt><i>Encoding of text files</i></dt>
+
+<dd>You can let File Comparator autodetect the encoding (or code page) of the compared files
+when comparing as text files. Or you can choose one of several encodings and conversions.<br/>
+There are 2 groups of available options:
+<ul>
+<li>ASCII-8: Conversions between several various encodings (code pages) of one of 3&nbsp;groups of languages:
+Central European, Cyrillic and Western European. Only 1&nbsp;group is available at a time.
+It is the same group as in the Internal Viewer of Open Salamander. Another group can be chosen
+in the <a href="ms-its:salamand.chm::/hh/salamand/configuration_reg.htm">Language page in Configuration</a>
+of Open Salamander as <i>Code page conversion tables</i>.<br/>
+When a conversion is selected, the entire file is first converted in memory and then compared with the other file.<br/>
+Choosing a conversion is suitable when comparing files in different encodings. Otherwise usually
+no conversion is needed. For better (correct) display, it is advisable to convert both files
+either to CP12xx or ASCII codepage.
+<li>Unicode: Various Unicode encodings
+</ul>
+</dd>
+
+<dt><i>Line ends</i> (only when comparing text files)</dt>
+
+<dd>Choose what types of line ends should be recognized in the first and second file.
+</dd>
+
+<dt><i>Combine diacritic marks to precomposed characters</i></dt>
+
+<dd>Many accented characters can be represented in several ways in Unicode. Either as a pair (or triple)
+of characters (the unaccented version of the character plus the accent(s), this is called decomposed or composite character)
+or as a single character (precomposed character). While on Windows the precomposed form is the usual
+one, files originating on other operating systems can use the decomposed form. Both forms are equivalent in terms
+of rendering, but stored differently.<br/> When this option is checked, File Comparator on Unicode input files attempts to convert
+decomposed characters to precomposed ones to achieve so called <i>Normalization Form C</i> of Unicode.
+The Form C allows comparison of the content rather than the way the text is stored.<br/>
+NOTE: Not every decomposed pair or triple has its precomposed equivalent.<br/>
+NOTE: This function is available only on systems that contain a system library called <i>normaliz.dll</i>.
+It is a part of Windows Vista and newer OS versions, but is also part of MSIE 7 or Windows Media Player 11 when
+installed on Windows XP or 2003. It can also be installed separately as <i>Microsoft Internationalized Domain Names</i>
+(idndlpackage.EXE) from <a href="http://www.microsoft.com/en-us/download" target="_blank">Microsoft downloads</a>.</dd>
+
+<dt><i>Use these settings in future comparisons</i></dt>
+
+<dd>When checked, options will be saved as defaults and will be used for all future
+comparisons. Otherwise these options are used only for the current comparison.
+</dd>
+
+</dl>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

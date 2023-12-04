@@ -1,0 +1,112 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Using Public Keys for Authentication</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Appendix</div>
+<div class="page">
+<h1>Using Public Keys for Authentication</h1>
+
+<a name="introduction"></a>
+<h4>Introduction</h4>
+
+<p>
+Public key authentication is an alternative means of identifying yourself to a login server, instead of typing
+a password. It is more secure and more flexible, but more difficult to set up.
+</p>
+
+<p>
+In conventional password authentication, you prove you are who you claim to be by proving that you know the
+correct password. The only way to prove you know the password is to tell the server what you think the password
+is. This means that if the server has been hacked, or spoofed, an attacker can learn your password.
+</p>
+
+<p>
+Public key authentication solves this problem. You <a href="#generate">generate a key pair</a>,
+consisting of a public key (which everybody is allowed to know) and a private key (which you keep secret and
+do not give to anybody). The private key is able to generate signatures. A signature created using your private
+key cannot be forged by anybody who does not have that key; but anybody who has your public key can verify that
+a particular signature is genuine.
+</p>
+
+<p>
+So you generate a key pair on your own computer, and you copy the public key to the server under a certain name.
+Then, when the server asks you to prove who you are, WinSCP can generate a signature using your private key. The
+server can verify that signature (since it has your public key) and allow you to log in. Now if the server is
+hacked or spoofed, the attacker does not gain your private key or password; they only gain one signature. And
+signatures cannot be re-used, so they have gained nothing.
+</p>
+
+<p>
+There is a problem with this: if your <a href="#private">private key</a> is stored unprotected
+on your own computer, then anybody who gains access to that will be able to generate signatures as if they were
+you. So they will be able to log in to your server under your account. For this reason, your private key is
+usually encrypted when it is stored on your local machine, using a passphrase of your choice. In order to
+generate a signature, WinSCP must decrypt the key, so you have to type your passphrase.
+</p>
+
+<p>
+This can make public-key authentication less convenient than password authentication: every time you log in
+to the server, instead of typing a short password, you have to type a longer passphrase. One solution to this
+is to use an authentication agent, a separate program which holds decrypted private keys and generates
+signatures on request. WinSCP can use PuTTY's authentication agent, called
+<a href="https://tartarus.org/~simon/putty-snapshots/htmldoc/Chapter9.html#pageant" target="_blank">Pageant</a>. When you
+begin a Windows session, you start Pageant and load your private key into it (typing your passphrase once).
+For the rest of your session, you can start WinSCP any number of times and Pageant will automatically generate
+signatures without you having to do anything. When you close your Windows session, Pageant shuts down, without
+ever having stored your decrypted private key on disk. Many people feel this is a good compromise between
+security and convenience.
+</p>
+
+<p>
+There is more than one public-key algorithm available. The most common is
+<acronym title="Rivest, Shamir &amp; Adelman">RSA</acronym>, but others exist, notably
+<acronym title="Digital Signature Algorithm">DSA</acronym> (otherwise known as DSS), the USA's federal Digital
+Signature Standard. <a href="#fn1">(see note 1)</a>
+</p>
+
+<a name="generating_keys"></a>
+<a name="generate"></a>
+<h4>Generating Keys</h4>
+
+<p>
+To generate a key pair, use the
+<a href="https://tartarus.org/~simon/putty-snapshots/htmldoc/Chapter8.html#pubkey-puttygen" target="_blank">PuTTYgen</a> application.
+</p>
+
+<a name="private_keys"></a>
+<a name="private"></a>
+<h4>Private Keys</h4>
+
+<p>
+Different file formats are used to store <acronym title="Secure Shell">SSH</acronym>-1 and
+<acronym title="Secure Shell">SSH</acronym>-2 private keys. While there is only one commonly used format
+for <acronym title="Secure Shell">SSH</acronym>-1 keys, there are several formats used for
+<acronym title="Secure Shell">SSH</acronym>-2 keys. WinSCP supports PuTTY format, as authors of PuTTY
+<a href="http://www.chiark.greenend.org.uk/%7Esgtatham/putty/wishlist/key-formats.html" target="_blank">claim that
+it is the best one</a>.
+</p>
+
+<p>
+WinSCP also recognizes (but does not accept) the other two formats (OpenSSH and ssh.com), so it can
+suggest you to convert them. To convert the key file use
+<a href="https://tartarus.org/~simon/putty-snapshots/htmldoc/Chapter8.html#pubkey-puttygen" target="_blank">PuTTYgen</a> application.
+</p>
+
+<h4>Notes:</h4>
+<p>
+<a name="fn1"></a>
+1) The text is copy of <a href="https://tartarus.org/~simon/putty-snapshots/htmldoc/" target="_blank">PuTTY User Manual</a> or was inspired by it.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

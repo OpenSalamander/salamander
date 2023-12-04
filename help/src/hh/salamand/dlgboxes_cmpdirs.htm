@@ -1,0 +1,81 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Compare Directories dialog box</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Dialog Boxes</div>
+<div class="page">
+<h1>Compare Directories</h1>
+
+<p>Use this dialog to set criteria for comparing directories in the left and right panels.
+Comparing starts with canceling selection in both panels and selecting files existing
+only in one panel.</p>
+
+<h4>Dialog Box Options</h4>
+
+<dl>
+<dt><b>Compare files with same name by</b></dt>
+
+<dt><i>Size</i></dt>
+<dd>When checked, bigger files will be selected. Otherwise files are not compared
+by size.</dd>
+
+<dt><i>Date and time</i></dt>
+<dd>When checked, newer files will be selected. Otherwise files are not compared
+by time.</dd>
+
+<dt><i>Attributes</i></dt>
+<dd>When checked, files with different attributes will be selected in both panels.
+Otherwise, files are not compared by attributes.</dd>
+
+<dt><i>Content</i></dt>
+<dd>When checked, files with different contents will be selected in both panels.
+Otherwise, files are not compared by content.</dd>
+
+<dt><b>Subdirectories options</b></dt>
+
+<dt><i>Compare subdirectories</i></dt>
+<dd>When checked, directories existing only in one panel will be selected and
+directories with different contents will be selected in both panels. Otherwise
+directories are ignored. Content of directories is compared using the criteria
+chosen in this dialog (e.g. file sizes are compared only if <i>Size</i> box
+is ticked).</dd>
+
+<dt><i>Compare attributes of subdirectories</i></dt>
+<dd>When checked, directories with different attributes will be selected in both
+panels. Otherwise, directories are not compared by attributes.</dd>
+
+<dt><i>Select subdirectories contained only in one panel</i></dt>
+<dd>When checked, directories existing only in one panel will be selected.
+</dd>
+
+<dt><b>Other options</b></dt>
+
+<dt><i>Ignore files</i></dt>
+<dd>When checked, files matching the specified <a href="appendix_filemasks.htm">file mask</a> will be ignored.
+If you want to filter files to compare (to ignore all other files), use excluded masks part of
+<a href="appendix_filemasks.htm">file mask</a> (e.g. |*.cpp;*.h will ignore anything except *.cpp;*.h).
+</dd>
+
+<dt><i>Ignore directories</i></dt>
+<dd>When checked, directories matching the specified <a href="appendix_filemasks.htm">file mask</a> will be ignored.
+</dd>
+
+</dl>
+
+<h4>See Also</h4>
+<p>
+<a href="advwork_compare.htm">Comparing Directories</a>
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

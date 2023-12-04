@@ -1,0 +1,40 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\hungarian\nethood.atp"
+TEXTVERSION,"1.08 (x86)"
+VERSION,"1,0,8,180"
+
+[TRANSLATION]
+LANGID,1038
+AUTHOR,"Török József"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6164"
+COMMENT,"Magyar változat"
+
+[DIALOG 102]
+235,127,1,"Hálózati beállítás"
+1201,7,7,154,10,1,"&Adminisztratív megosztások megjelenítése"
+1203,13,22,210,10,1,"Adm&inisztratív megosztások megjelenítése rejtett elemként"
+1202,7,37,216,10,1,"Hálózati helyek elemeinek &megjelenítése a legfelső mappánál"
+1204,7,52,204,10,1,"&Hálózati számítógépek megjelenítése a legfelső mappánál"
+1206,7,67,173,10,1,"Távoli asztalon át kapcsoló&dó lemezek mutatása"
+1205,7,82,155,10,1,"Hálózat vizsgálta a Salamander indítá&sakor"
+3000,7,99,221,1,1,""
+1,37,106,50,14,1,"OK"
+2,92,106,50,14,1,"Mégse"
+9,147,106,50,14,1,"Súgó"
+
+[STRINGTABLE 0]
+128,1,"Hálózat"
+129,1,"Hozzáférést biztosít a hálózati számítógépekhez."
+
+[STRINGTABLE 1]
+1024,1,"Megjegyzés"
+1025,1,"{!}<%d> kijelölt tárgy{|1|}"
+1026,1,"Hálózat"
+1027,1,"Hálózat vizsgálata…"
+1028,1,"A hálózat nem érhető el."
+1029,1,"Plugin névjegy"
+1030,1,"%1 / %2"
+1031,1,"Helyi számítógép"
+1032,1,"Gazda számítógép"
+1033,1,"%s lemezei"
+

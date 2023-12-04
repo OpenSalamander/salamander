@@ -1,0 +1,4 @@
+LIBRARY uncab.spl
+
+EXPORTS SalamanderPluginEntry
+EXPORTS SalamanderPluginGetReqVer

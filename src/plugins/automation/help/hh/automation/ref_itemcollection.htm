@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Items Collection</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: Automation: Reference</div>
+<div class="page">
+
+<h1>Items Collection</h1>
+
+<p>Collection of <a href="ref_item.htm">Item</a> objects within a panel.</p>
+
+<h2>Properties</h2>
+<table>
+	<tr>
+		<td class="hdr">Name</td>
+		<td class="hdr">Description</td>
+	</tr>
+	<tr>
+		<td class="property">Count</td>
+		<td>Gets the number of items in a collection.</td>
+	</tr>
+	<tr>
+		<td class="property">Item</td>
+		<td>Gets an item based on the specified key.</td>
+	</tr>
+</table>
+
+<h2>Example</h2>
+<h3>VBScript</h3>
+<pre><code>Dim TotalSize
+TotalSize = 0
+for each Item in Salamander.SourcePanel.Items
+  TotalSize = TotalSize + Item.Size
+next
+Salamander.MsgBox("Total size of all items in the panel: " +
+  CStr(TotalSize) + " bytes")</code></pre>
+
+<h2>See Also</h2>
+<p><a href="ref_item.htm">Item Object</a></p>
+
+</div>
+<div class="footer">&copy; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

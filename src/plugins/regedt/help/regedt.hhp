@@ -1,0 +1,69 @@
+[OPTIONS]
+Auto Index=Yes
+Compatibility=1.1 or later
+Compiled file=regedt.chm
+Contents file=regedt.hhc
+Default Window=$global_ssdefault
+Default topic=hh\regedt\introduction_intro.htm
+Display compile progress=No
+Full text search stop list file=..\..\shared\help\en\stop.stp
+Full-text search=Yes
+Index file=regedt.hhk
+Language=0x409 English (United States)
+Title=Registry Editor Help
+
+[WINDOWS]
+$global_ssdefault=,"salamand.chm::\salamand.hhc","regedt.hhk","hh\regedt\introduction_intro.htm","hh\regedt\introduction_intro.htm",,,,"Web Help",0x3520,,0x180e,,,,,,,,0
+
+[FILES]
+hh\salamander_help.css
+
+[ALIAS]
+IDH_SEARCHREG=hh\regedt\using_searchreg.htm
+IDH_NEWKEY=hh\regedt\using_newkey.htm
+IDH_NEWVALUE=hh\regedt\using_newvalue.htm
+IDH_EXPORT=hh\regedt\using_export.htm
+IDD_SEARCH=hh\regedt\dlgboxes_search.htm
+
+[MAP]
+#include "..\regedt.rh"
+#include "..\regedt.rh2"
+#include "..\lang\lang.rh"
+
+[MERGE FILES]
+salamand.chm
+zip.chm
+demoplug.chm
+demoview.chm
+filecomp.chm
+7zip.chm
+dbviewer.chm
+ftp.chm
+checksum.chm
+checkver.chm
+ieviewer.chm
+mmviewer.chm
+pak.chm
+peviewer.chm
+pictview.chm
+renamer.chm
+splitcbn.chm
+tar.chm
+unarj.chm
+uncab.chm
+undelete.chm
+unfat.chm
+uniso.chm
+unlha.chm
+unmime.chm
+unrar.chm
+wmobile.chm
+winscp.chm
+nethood.chm
+unchm.chm
+automation.chm
+diskmap.chm
+demomenu.chm
+
+[INFOTYPES]
+

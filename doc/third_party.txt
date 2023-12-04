@@ -1,0 +1,96 @@
+﻿Open Salamander Third Party Software Notices
+
+=== Igor Pavlov and Brian Gladman === 
+The 7-ZIP plugin utilizes 7-Zip file archiver library.
+7-Zip Copyright (C) 1999-2019 Igor Pavlov
+
+=== Jean-loup Gailly and Mark Adler ===
+Portions of ZIP plugin utilizes zlib library.
+ZLIB Library Copyright (C) 1995-2002 Jean-loup Gailly and Mark Adler
+
+=== Tomas Jelinek ===
+The Multimedia Viewer plugin includes software written by Tomas Jelinek.
+Copyright (C) 2003-2023 Tomas Jelinek
+
+=== Jan Patera ===
+Portions of PictView plugin licensed from Jan Patera.
+Copyright (C) 1994-2023 Jan Patera
+
+=== Curtis Galloway and Lutz Muller ===
+Portions of PictView plugin utilizes libexif library.
+Libexif Library Copyright (C) 2001-2019 Curtis Galloway and Lutz Muller
+
+=== Julian R Seward ===
+The TAR plugin utilizes bzip2 library.
+Bzip2 Library Copyright (C) 1996-2000 Julian R Seward
+
+=== ARJ Software, Inc ===
+Portions of UnARJ plugin utilizes decompression library written by ARJ Software, Inc.
+Copyright (C) 1990-97 ARJ Software, Inc.
+
+=== Microsoft Corporation ===
+Portions of UnCAB plugin utilizes decompression library written by Microsoft Corporation.
+Copyright (C) Microsoft Corporation 1993-1997
+
+=== Alexander Roshal ===
+Portions of UnRAR plugin utilizes decompression library written by Alexander Roshal.
+Copyright (C) 1993-2019 Alexander Roshal
+
+=== Martin Prikryl ===
+Portions of WinSCP plugin licensed from Martin Prikryl.
+Copyright (C) 2000-2023 Martin Prikryl
+
+=== Juraj Rojko ===
+The Windows Mobile plugin includes software written by Juraj Rojko.
+Copyright (C) 2003-2023 Juraj Rojko
+
+=== Jed Wing === 
+The UnCHM plugin utilizes CHMLIB library.
+CHMLIB Library Copyright (C) 2001-2010 Jed Wing
+
+=== LGPL Libraries ===
+LGPL Libraries are licensed under the GNU Library General Public License,
+a copy of which is included with this software.
+
+=== Dr Brian Gladman === 
+Crypto library utilizes AES code written by Dr Brian Gladman.
+Copyright (C) 2001, Dr Brian Gladman
+
+=== Henry Spencer === 
+Regular expression matching uses REGEXP library.
+REGEXP Library Copyright (C) 1986 Henry Spencer, University of Toronto
+
+=== Daniel Karling ===
+PNG library is based on PNGLite library.
+PNGLite Library Copyright (C) 2007 Daniel Karling
+
+=== EZB Systems, Inc. ===
+Portion of UnISO plugin utilizes ISZ SDK.
+ISZ SDK Copyright (C) 2002-2006 EZB Systems, Inc., All Rights Reserved.
+
+=== OpenSSL Project === 
+The FTP Client plugin can utilize OpenSSL library.
+Copyright (c) 1998-2019 The OpenSSL Project.  All rights reserved.
+
+=== SQLite === 
+Open Salamander uses SQLite. SQLite is in the Public Domain.
+
+=== LibTomCrypt ===
+The Checksum plugin utilizes LibTomCrypt library.
+LibTomCrypt is public domain.  As should all quality software be. Tom St Denis
+
+=== Nano SVG ===
+Copyright (c) 2013-14 Mikko Mononen 
+
+=== github/cmark-gfm ===
+GitHub's fork of commonmark/cmark, a CommonMark parsing and rendering library and program in C.
+Copyright (C) 2009 Public Software Group e. V., Berlin, Germany.
+Copyright (C) 2012 Vicent Marti
+Copyright (C) 2012 Github, Inc.
+Copyright (C) 2014-15 John MacFarlane
+Copyright (c) 2013 Karl Dubost
+
+=== sindresorhus/github-markdown-css ===
+Copyright (c) 2014 Dave Liepmann
+Copyright (c) Sindre Sorhus
+Copyright (c) 2016 Osmo Salomaa

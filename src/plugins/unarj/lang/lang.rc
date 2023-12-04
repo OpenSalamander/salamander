@@ -1,0 +1,137 @@
+﻿// Microsoft Visual C++ generated resource script.
+//
+#pragma code_page(65001)
+
+#include "lang.rh"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winresrc.h"
+
+#include "..\unarj.rh2"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "lang.rh\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winresrc.h""\r\n"
+    "\r\n"
+    "#include ""..\\unarj.rh2""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)\r\n"
+    "LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL\r\n"
+    "#include ""lang.rc2""   // non-Microsoft Visual C++ edited resources\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_CHANGEDISK DIALOGEX 6, 15, 194, 110
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Next archive volume"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Please insert disk with the next archive volume or locate appropriate file on the disk.\n\nPress OK when ready.",IDC_STATIC_1,12,9,170,32
+    LTEXT           "Previous volume:",IDC_STATIC_2,12,48,60,8
+    EDITTEXT        IDC_PREVVOL,73,48,109,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
+    LTEXT           "&Next volume:",IDC_STATIC_3,12,62,49,8
+    EDITTEXT        IDC_FILENAME,12,72,155,12
+    PUSHBUTTON      "...",IDC_BROWSE,170,72,13,12
+    DEFPUSHBUTTON   "OK",IDOK,39,91,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,102,91,50,14
+END
+
+IDD_ERROR DIALOGEX 15, 34, 352, 85
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Error"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    RTEXT           "Name:",IDC_STATIC_1,6,10,26,8
+    LTEXT           "",IDS_FILENAME,36,10,309,8,SS_NOPREFIX | NOT WS_GROUP
+    RTEXT           "Error:",IDC_STATIC_2,6,23,26,8,NOT WS_GROUP
+    LTEXT           "File can't be extracted because it is continued from a previous volume. To extract this file, you must start with a volume where file begins.",IDC_STATIC_3,36,23,309,16,SS_NOPREFIX | NOT WS_GROUP
+    CONTROL         "&Don't display this message in the future.",IDC_DONTSHOW,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,36,44,183,12
+    DEFPUSHBUTTON   "OK",IDOK,121,63,50,14,WS_GROUP
+    PUSHBUTTON      "Cancel",IDCANCEL,181,63,50,14
+END
+
+IDD_CONFIG DIALOGEX 22, 38, 220, 85
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "UnARJ Configuration"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "when unpacking.",IDC_STATIC_1,23,22,154,8
+    CONTROL         "&Automatically skip files continued from previous volume",IDC_SKIPCONTINUED,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,10,197,12
+    LTEXT           "cannot be listed.",IDC_STATIC_2,23,44,111,8
+    CONTROL         "&Don't display attention when the whole archive content",IDC_NOVOLATTENTION,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,32,197,12
+    CONTROL         "",IDC_STATIC_3,"Static",SS_ETCHEDHORZ | WS_GROUP,6,60,208,1
+    DEFPUSHBUTTON   "OK",IDOK,57,66,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,112,66,50,14
+END
+
+IDD_WARNING DIALOGEX 6, 15, 213, 107
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "UnARJ - Attention"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Not all files in the multi-volume archive can be listed (and seen in the panel), because some of archive volumes cannot be found.",IDC_STATIC_1,11,10,194,24
+    LTEXT           "To list whole archive content copy all archive volumes to the same directory.",IDC_STATIC_2,11,41,192,16
+    CONTROL         "&Don't display this message in the future",IDC_DONTSHOW,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,66,157,12
+    CONTROL         "",IDC_STATIC_3,"Static",SS_ETCHEDHORZ | WS_GROUP,5,83,203,1
+    DEFPUSHBUTTON   "OK",IDOK,153,89,50,14
+END
+
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL
+#include "lang.rc2"   // non-Microsoft Visual C++ edited resources
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

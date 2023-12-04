@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Tunnel Tab (Login Dialog)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Dialog Boxes: Configuring Session</div>
+<div class="page">
+<h1>Tunnel Tab (Login Dialog)</h1>
+
+<p>
+<em>Tunnel tab</em> allows you to setup your session to
+<a href="tunneling.htm">tunnel</a> through
+<acronym title="Secure Shell">SSH</acronym> connection.
+</p>
+
+<p>
+You need to check <em>Advanced options</em> to reveal the tab.
+</p>
+
+<a name="session_tunneling"></a>
+<h4>Session Tunneling</h4>
+
+<p>
+To enable <a href="tunneling.htm">tunneling</a>,
+tick the <em>Connect through SSH tunnel</em>.
+</p>
+
+<p>
+<em>Host to setup tunnel on</em> box configure basic settings for
+the <acronym title="Secure Shell">SSH</acronym> tunnel session.
+The meaning of the boxes is the same as the respective options
+for the main session on the
+<em><a href="ui_login_session.htm">Session tab</a></em>.
+</p>
+
+<p>
+For more complex tunnels
+(non-default <acronym title="Secure Shell">SSH</acronym> settings,
+multiple hops, etc.) you need to setup tunnel using external tool, such as
+<a href="http://www.chiark.greenend.org.uk/~sgtatham/putty/" target="_blank">PuTTY SSH client</a>.
+<a href="#fn1">(see note 1)</a>
+</p>
+
+<a name="tunnel_options"></a>
+<h4>Tunnel Options</h4>
+
+<p>
+Use <em>Local tunnel port</em> if you need to use specific port
+for the <acronym title="Secure Shell">SSH</acronym> tunnel.
+This is particularly useful if you want to use the opened tunnel for
+another applications. When <em>Autoselect</em> is selected,
+WinSCP will automatically pick a free port from range 50000 through 50099.
+</p>
+
+<h4>Notes:</h4>
+<p>
+<a name="fn1"></a>
+1) See <a href="https://winscp.net/eng/docs/guide_tunnel" target="_blank">FAQ</a> for help.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

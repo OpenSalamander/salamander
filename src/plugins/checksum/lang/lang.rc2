@@ -1,0 +1,76 @@
+﻿//
+// lang.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "..\versinfo.rh2"
+#include "versinfo.rc2"
+
+STRINGTABLE
+{
+ IDS_PLUGINNAME "Checksum"
+ IDS_ABOUTTITLE "About Plugin"
+ IDS_PLUGIN_DESCRIPTION "SFV, MD5, SHA-1, SHA-256, and SHA-512 checksum verifier and calculator."
+ IDS_OUTOFMEM "Out of memory"
+ IDS_ERROROPENING, "Error opening file"
+ IDS_READERROR "Read error"
+ IDS_WRITEERROR "Write error"
+ IDS_SKIPPED "Skipped"
+ IDS_CALCULATING "Calculating..."
+ IDS_CANCELED "Canceled"
+ IDS_HINT "Right-click an item to copy a checksum to the clipboard."
+ IDS_COPYTOCBOARD_CRC "Copy &CRC Value to Clipboard\tCtrl+C"
+ IDS_COPYTOCBOARD_MD5 "Copy &MD5 Checksum to Clipboard\tCtrl+M"
+ IDS_COPYTOCBOARD_SHA1 "Copy SHA-&1 Checksum to Clipboard\tCtrl+1"
+ IDS_COPYTOCBOARD_SHA256 "Copy SHA-&256 Checksum to Clipboard\tCtrl+2"
+ IDS_COPYTOCBOARD_SHA512 "Copy SHA-&512 Checksum to Clipboard\tCtrl+5"
+ IDS_REMOVEITEM "&Remove Item\tDelete"
+ IDS_SAVE_TITLE  "Save Checksum File"
+ IDS_SAVE_FILTER_CRC  "SFV Files (*.sfv)|*.sfv|"
+ IDS_SAVE_FILTER_MD5  "MD5 Files (*.md5)|*.md5|"
+ IDS_SAVE_FILTER_SHA1 "SHA-1 Files (*.sha1)|*.sha1|"
+ IDS_SAVE_FILTER_SHA256 "SHA-256 Files (*.sha256)|*.sha256|"
+ IDS_SAVE_FILTER_SHA512 "SHA-512 Files (*.sha512)|*.sha512|"
+ IDS_SAVE_OVERWRITE, "The file '%s' already exists.\nDo you wish to overwrite it?"
+ IDS_ERRORCREATINGFILE "Error creating file."
+ IDS_SKIPPEDFILES "Files skipped or canceled during the calculation were not saved."
+ IDS_ERROROPENING2 "Error opening the file '%s'."
+ IDS_MISSING "Missing"
+ IDS_BADEXT "The selected file has no SFV, MD5, SHA1, SHA256, nor SHA512 extension. Do you want to continue anyway?"
+ IDS_BADFILE "The selected file is not a valid SFV, MD5, SHA-1, SHA-256, nor SHA-512 file."
+ IDS_VERIFYING "Verifying..."
+ IDS_OK "OK"
+ IDS_CORRUPT "Corrupted"
+ IDS_MENU_CALCULATE "&Calculate Checksums..."
+ IDS_MENU_VERIFY "&Verify Checksums..."
+ IDS_CONFIG_CONFLICT "The configuration is already opened."
+ IDS_CONFIG_CHANGES_EFFECT "The changes will take effect when the 'Calculate Checksums' window is opened next time."
+ IDS_ALLOK "All files OK"
+ IDS_RESULT "%d corrupted, %d missing, %d skipped"
+ IDS_BUSY "Open Salamander is busy. The requested command cannot be accomplished, please try it again later."
+ IDS_CLOSE "&Close"
+ IDS_READINGTREE "Reading directory tree, please wait..."
+ IDS_ERRORREADINGDIR "Error reading directory"
+ IDS_NOFILES "No files"
+ IDS_VERIFYTITLE "Verify Checksums"
+ IDS_VERIFY_CRC "Verify CRC"
+ IDS_VERIFY_MD5 "Verify MD5"
+ IDS_VERIFY_SHA1 "Verify SHA-1"
+ IDS_VERIFY_SHA256 "Verify SHA-256"
+ IDS_VERIFY_SHA512 "Verify SHA-512"
+ IDS_COLUMN_FILE "File"
+ IDS_COLUMN_SIZE "Size"
+ IDS_COLUMN_STATUS "Status"
+ IDS_COLUMN_CRC "CRC"
+ IDS_COLUMN_MD5 "MD5"
+ IDS_COLUMN_SHA1 "SHA-1"
+ IDS_COLUMN_SHA256 "SHA-256"
+ IDS_COLUMN_SHA512 "SHA-512"
+ IDS_TOOLONGNAME, "Cannot finish operation because of too long name."
+}

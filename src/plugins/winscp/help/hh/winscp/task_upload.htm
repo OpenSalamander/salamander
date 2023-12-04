@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Uploading Files</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Using WinSCP Plugin: Uploading</div>
+<div class="page">
+<h1>Uploading Files</h1>
+
+<a name="basics"></a>
+<h4>Basics</h4>
+<p>
+First select the local files or directories you want to upload. Make sure that local panel is still active and use
+command <em>Files &gt; Copy</em> (or press <code>F5</code> key).
+</p>
+<p>
+Before the upload actually starts, the <a href="ui_copy.htm">transfer options dialog</a> will show.
+There you will have a chance to change the transfer options or the target directory.
+The target directory is by default the current remote directory.
+</p>
+<p>
+If you use <em>Files &gt; Move</em> (or press <code>F6</code> key), the files will be moved to remote directory (i.e. 
+transferred and deleted from local directory).
+</p>
+
+<a name="upload_on_background"></a>
+<h4>Upload on Background</h4>
+<p>
+By default the upload starts on foreground, blocking the WinSCP window until it finishes.
+Learn how to schedule the <a href="transfer_queue.htm">background transfer</a>.
+</p>
+
+<a name="preserving_overwritten_remote_files"></a>
+<h4>Preserving Overwritten Remote Files</h4>
+<p>
+You can setup <a href="ui_login_environment.htm#recycle_bin">remote recycle bin</a> to backup files that you overwrite
+during upload.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

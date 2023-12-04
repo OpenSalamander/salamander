@@ -1,0 +1,4 @@
+LIBRARY ZIP.SPL
+
+EXPORTS SalamanderPluginEntry
+EXPORTS SalamanderPluginGetReqVer

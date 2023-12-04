@@ -1,0 +1,16 @@
+Volume Unit    Referred Ext Used Recfm Lrecl BlkSz Dsorg Dsname
+Migrated                                                AUS6B1.BLKSIZE.ERROR
+P00051 3390   2001/06/08  1    1  FB     150  1500  PS  BRODCAST
+P00787 3390   2001/06/08  1    6  FB      80 11440  PO  ISPF.ISPPROF
+P00786 3390   2001/06/05  1    1  U    13680 13680  PS  ISR0001.BACKUP
+P00786 3390   2001/06/07  1    1  VB     255  3120  PS  LOG.MISC
+Pseudo Directory V191
+                                                   GDG  POSY.AW.ZWIDAT.GDG
+                                                   GDG  POSY.AWTREFF8.ZWIDAT.GDG
+                                                   VSAM POSY.KLV.DATEN
+P30087 3390                                        VSAM POSY.KLV.DATEN.D
+P30082 3390   **NONE**    1    1  VB     500 27998  PS  POSY.PA.J00682.A001R00.#021021
+Error determining attributes                            ASTEX.DISTLLIB
+VGSA03 Tape                                             BOOL.IMF.SA03.SVCDUMP
+P20003 3390   2002/10/28  110500  FBM    161 27853  PS  POSY.T028.INFOPOST.#990302
+                                                   PATH CAPRI.CSD.PATHA

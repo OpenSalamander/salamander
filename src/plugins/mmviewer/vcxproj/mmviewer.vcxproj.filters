@@ -1,0 +1,228 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="cpp">
+      <UniqueIdentifier>{4431eb25-36f7-45e2-90f9-1a20f5656012}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="h">
+      <UniqueIdentifier>{ecaf3aca-a8f8-4b19-82f3-8ea2db3f38d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{aad73279-bca8-43ce-81bf-9fe3c7b60ecf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="mp3">
+      <UniqueIdentifier>{43bc7ba3-f3a1-4aeb-b9d9-a1de62fa0d03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="mod">
+      <UniqueIdentifier>{7e934cbb-465c-40d3-8bbf-8d54077a5b1c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="mp4">
+      <UniqueIdentifier>{38056448-bfb7-4f16-afd0-2623fbebad8d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vqf">
+      <UniqueIdentifier>{6ad6f77e-5d90-4e50-bb41-dae37f870827}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="wma">
+      <UniqueIdentifier>{607c81cc-0b81-40f5-8623-3daa2e71b472}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="wav">
+      <UniqueIdentifier>{2bd3bd3e-13d2-4d47-9b76-0cc966a4af97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ogg">
+      <UniqueIdentifier>{c5295d4e-8f2d-4afe-ab9e-dcede2d08109}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\buffer.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dialogs.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\exporthtml.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\exportxml.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mmviewer.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\output.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\parser.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\precomp.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\renmain.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\renpaint.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\auxtools.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\dbg.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\mhandles.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\winliblt.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mp3\id3tagv1.cpp">
+      <Filter>mp3</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mp3\id3tagv2.cpp">
+      <Filter>mp3</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mp3\mpeghead.cpp">
+      <Filter>mp3</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mp3\mpgparser.cpp">
+      <Filter>mp3</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mod\modparser.cpp">
+      <Filter>mod</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mp4\mp4head.cpp">
+      <Filter>mp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mp4\mp4parser.cpp">
+      <Filter>mp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mp4\mp4tag.cpp">
+      <Filter>mp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VQF\VQFPARSER.CPP">
+      <Filter>vqf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\wma\wmaparser.cpp">
+      <Filter>wma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\wav\wavparser.cpp">
+      <Filter>wav</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ogg\oggparser.cpp">
+      <Filter>ogg</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\buffer.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dialogs.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mmviewer.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\output.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\parser.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\precomp.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\renderer.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\arraylt.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\auxtools.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\dbg.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\mhandles.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_arc.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_base.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_com.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_gen.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_gui.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_vers.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_view.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\winliblt.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mp3\id3tagv1.h">
+      <Filter>mp3</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mp3\id3tagv2.h">
+      <Filter>mp3</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mp3\mpeghead.h">
+      <Filter>mp3</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mp3\mpgparser.h">
+      <Filter>mp3</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mod\modparser.h">
+      <Filter>mod</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mp4\mp4head.h">
+      <Filter>mp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mp4\mp4parser.h">
+      <Filter>mp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mp4\mp4tag.h">
+      <Filter>mp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VQF\VQFPARSER.H">
+      <Filter>vqf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\wma\wmaparser.h">
+      <Filter>wma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\wav\wavparser.h">
+      <Filter>wav</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ogg\oggparser.h">
+      <Filter>ogg</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\res\diskexpl.ico" />
+    <Image Include="..\res\main.ico" />
+    <Image Include="..\res\tb.bmp" />
+    <Image Include="..\res\tb16.bmp" />
+    <Image Include="..\res\tb256.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\lang\lang.rh" />
+    <None Include="..\mmviewer.def" />
+    <None Include="..\mmviewer.rc2" />
+    <None Include="..\mmviewer.rh" />
+    <None Include="..\mmviewer.rh2" />
+    <None Include="..\versinfo.rh2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\mmviewer.rc" />
+  </ItemGroup>
+</Project>

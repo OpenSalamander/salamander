@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="cpp">
+      <UniqueIdentifier>{d0bdc2c2-84f9-469c-832e-f75e3471d4e6}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="h">
+      <UniqueIdentifier>{ffa59c82-688d-44aa-94a3-e2eccca1252a}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="rc">
+      <UniqueIdentifier>{8725b6bb-7442-4a7f-ac6c-bdd448d68ccc}</UniqueIdentifier>
+      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\zip2sfx\checkzip.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\chicon.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\zip2sfx\crc32.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\zip2sfx\inflate.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\iosfxset.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\zip2sfx\precomp.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\shared\lukas\resedit.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\zip2sfx\zip2sfx.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\zip2sfx\zip2sfx2.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\zip2sfx\checkzip.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\chicon.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\zip2sfx\crc32.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\zip2sfx\inflate.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\iosfxset.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\zip2sfx\precomp.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shared\lukas\resedit.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\zip2sfx\texts.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\typecons.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\zip2sfx\zip2sfx.h">
+      <Filter>h</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\zip2sfx\zip2sfx.rc">
+      <Filter>rc</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\zip2sfx\zip2sfx.rh">
+      <Filter>rc</Filter>
+    </None>
+  </ItemGroup>
+</Project>

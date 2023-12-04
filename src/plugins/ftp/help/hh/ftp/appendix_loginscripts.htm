@@ -1,0 +1,122 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Login Scripts for FTP Proxy Servers</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: FTP Client: Appendix</div>
+<div class="page">
+<h1>Login Scripts for FTP Proxy Servers</h1>
+
+<p>The login script defines how the FTP client should communicate with the FTP proxy
+server to connect to the desired FTP server. The FTP proxy server acts as an FTP server.
+The FTP client connects to it and sends it all required parameters: user name and password
+for proxy server (optional), address and port of desired FTP server, and user name and
+password for this FTP server. The FTP proxy server connects to the desired FTP server
+and forwards all commands and replies between the FTP client and the FTP server.
+</p>
+
+
+<h4>Description of Login Script</h4>
+
+<p>The first line of the login script is always "Connect to:" followed by a server address
+and port delimited by ':' character. The server address and port define where should
+the FTP client connect to. The server address must be defined. If the server port is not
+defined, it is assumed to be 21.
+</p>
+
+<p>All other lines contain commands which are sent to the server. Each line contains
+only one command. Lines can contain variables which are expanded before sending
+commands to the server.
+</p>
+
+<p>We have two types of variables: optional and obligatory. They differ in action
+taken when the variable is used in a command (line) but it is not defined (specified by user).
+If an optional variable is not defined, the whole line (command) is skipped. If
+an obligatory variable is not defined, a dialog box is opened and user must specify
+a value for this variable (or cancel connection). Variables are prefixed by '$'
+character and enclosed in parenthesis (e.g. "$(Password)"). The escape sequence for
+'$' character is "$$".
+</p>
+
+<p>Lines starting with "3xx:" are skipped if the command from the previous line was
+skipped or if the server reply to this command was not 3xx. The 3xx reply means that
+the first digit of the FTP reply is '3' (it means "partial success"). It is used in
+command sequences and it means: continue with next command in sequence (e.g. the
+user name is accepted, send me a password).
+</p>
+
+<p>Restrictions for the first line of the login script: the server address can be
+defined only as text without variables or as text containing only the ProxyHost or
+Host variable; the server port can be defined only as decimal number or as the
+ProxyPort or Port variable.
+</p>
+
+<p>The login sequence is considered to be successful (user is successfully connected
+to the FTP server) if no reply to sent commands is 4xx or 5xx (4xx is transient
+error, 5xx is permanent error) and the reply to the last sent command is 2xx
+(2xx is success).
+</p>
+
+
+<h4>Variables</h4>
+
+<p>We have the following variables:</p>
+<table>
+ <tr><th>Variable</th><th>Description</th></tr>
+
+ <tr><td>ProxyHost</td><td>obligatory; the name or IP address of the proxy server (firewall)</td></tr>
+
+ <tr><td>ProxyPort</td><td>always defined; the port number where is the proxy server (firewall)
+	 listening; the default port is 21 (if it is not specified by user)</td></tr>
+
+ <tr><td>ProxyUser</td><td>optional; the user name for the proxy server (firewall)</td></tr>
+
+ <tr><td>ProxyPassword</td><td>obligatory; the password for the proxy server (firewall)</td></tr>
+
+ <tr><td>Host</td><td>always defined; the name or IP address of the desired FTP server</td></tr>
+
+ <tr><td>Port</td><td>always defined; the port number where is the desired FTP server
+	 listening; the default port is 21 (if it is not specified by user)</td></tr>
+
+ <tr><td>User</td><td>obligatory; the user name for the desired FTP server</td></tr>
+
+ <tr><td>Password</td><td>obligatory; the password for the desired FTP server</td></tr>
+
+ <tr><td>Account</td><td>obligatory; the account for the desired FTP server</td></tr>
+
+</table>
+
+
+<h4>Samples</h4>
+
+<h3>Login script for direct connection (without proxy server):</h3>
+<pre>Connect to: $(Host):$(Port)
+USER $(User)
+3xx: PASS $(Password)
+3xx: ACCT $(Account)</pre>
+
+<h3>Login script for the FTP proxy server type "USER user@host:port":</h3>
+<pre>Connect to: $(ProxyHost):$(ProxyPort)
+USER $(ProxyUser)
+3xx: PASS $(ProxyPassword)
+USER $(User)@$(Host):$(Port)
+3xx: PASS $(Password)
+3xx: ACCT $(Account)</pre>
+
+
+<h4>See Also</h4>
+<p>
+<a href="dlgboxes_proxyserver.htm">Add/Edit Proxy Server dialog box</a><br/>
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

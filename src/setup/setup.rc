@@ -1,0 +1,1008 @@
+﻿// Microsoft Visual C++ generated resource script.
+//
+#pragma code_page(65001)
+
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winresrc.h"
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// RT_MANIFEST
+//
+
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "manifest.xml"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,70,0,0
+ PRODUCTVERSION 1,70,0,0
+ FILEFLAGSMASK 0x1L
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "Open Salamander"
+            VALUE "FileDescription", "Open Salamander Setup"
+            VALUE "FileVersion", "1.70.0.0"
+            VALUE "InternalName", "Open Salamander Installer"
+            VALUE "OriginalFilename", "setup.exe"
+            VALUE "LegalCopyright", "Copyright © 1997-2023 Open Salamander Authors"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+EXE_ICON                ICON                    "res\\setup.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_WELCOME             BITMAP                  "res\\welcome.bmp"
+IDB_ICON                BITMAP                  "res\\icon.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDC_HANDICON            CURSOR                  "res\\hand.cur"
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winresrc.h""\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define INSIDE_SETUP\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CSY)\r\n"
+    "#include ""remove\\resource.h""\r\n"
+    "LANGUAGE LANG_CZECH, SUBLANG_DEFAULT\r\n"
+    "#include ""remove\\remove_cz.rc2""\r\n"
+    "LANGUAGE LANG_GERMAN, SUBLANG_NEUTRAL\r\n"
+    "#include ""remove\\remove_de.rc2""\r\n"
+    "LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US\r\n"
+    "#include ""remove\\remove_en.rc2""\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Czech resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CSY)
+LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_WIZARD DIALOGEX 61, 53, 330, 220
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_WIZARD_SEPARATOR,"Static",SS_ETCHEDHORZ | WS_GROUP,0,193,333,1
+    LTEXT           "Copyright © 1997-2023 Open Salamander Authors",-1,7,197,141,10,NOT WS_GROUP
+    LTEXT           "www.altap.cz",IDC_WWW,7,208,67,10,NOT WS_GROUP
+    PUSHBUTTON      "",5,165,200,50,14
+    PUSHBUTTON      "",IDOK,220,200,50,14
+    PUSHBUTTON      "",IDCANCEL,274,200,50,14
+END
+
+IDD_CF_OVERWRITE DIALOGEX 61, 53, 349, 89
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Potvrdit nahrazení souboru"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    RTEXT           "Nahradit soubor:",-1,5,9,59,8
+    LTEXT           "fnTarget",IDC_CF_TARGETFILENAME,69,9,275,8
+    LTEXT           "attrTarget",IDC_CF_TARGETFILEATTR,69,20,275,8
+    RTEXT           "souborem:",-1,5,39,59,8
+    LTEXT           "fnSource",IDC_CF_SOURCEFILENAME,69,39,275,8
+    LTEXT           "attrSource",IDC_CF_SOURCEFILEATTR,69,50,275,8
+    DEFPUSHBUTTON   "&Ano",IDOK,8,69,60,14
+    PUSHBUTTON      "&Vše",IDC_CF_YESALL,76,69,60,14
+    PUSHBUTTON      "&Přeskočit",IDC_CF_SKIP,144,69,60,14
+    PUSHBUTTON      "Př&eskočit vše",IDC_CF_SKIPALL,212,69,60,14
+    PUSHBUTTON      "Storno",IDCANCEL,280,69,60,14
+END
+
+IDD_CF_RETRY DIALOGEX 31, 84, 350, 86
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Chyba při vytváření souboru"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    RTEXT           "Soubor:",-1,5,9,46,8
+    LTEXT           "fnName",IDC_CF_RETRYNAME,59,9,279,8
+    RTEXT           "Chyba:",-1,20,29,31,8
+    LTEXT           "fnError",IDC_CF_RETRYERROR,59,29,279,21
+    PUSHBUTTON      "&Opakovat",IDOK,43,64,60,14
+    PUSHBUTTON      "&Přeskočit",IDC_CF_SKIP,111,64,60,14
+    PUSHBUTTON      "Př&eskočit vše",IDC_CF_SKIPALL,179,64,60,14
+    PUSHBUTTON      "Storno",IDCANCEL,247,64,60,14
+END
+
+IDD_COMMONCONTROL DIALOGEX 84, 53, 280, 107
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Instalační program"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Vaše verze COMCTL32.DLL je:",-1,6,40,104,8
+    LTEXT           "Text",IDC_CC_VERSION,111,40,60,8
+    DEFPUSHBUTTON   "OK",IDOK,114,87,50,14,WS_GROUP
+    LTEXT           "Používáte starou verzi systémové knihovny COMCTL32.DLL. Instalovaný program",-1,6,7,270,8
+    LTEXT           "vyžaduje COMCTL32.DLL ve verzi %d.%d nebo novější.",IDC_CC_VERSION_NEED,6,15,270,8
+    LTEXT           "Nainstalujte prosím volně dostupnou aktualizaci knihovny COMCTL32.DLL.",-1,6,23,270,8
+    LTEXT           "Poslední verze knihovny COMCTL32.DLL je dostupná na:",-1,6,57,205,8
+    EDITTEXT        -1,4,67,268,10,ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
+END
+
+IDD_DESTINATION DIALOGEX 35, 58, 330, 159
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Zvolte cílový adresář"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_WHITE_RECT,0,0,331,35,WS_CLIPCHILDREN | NOT WS_GROUP
+    LTEXT           "Zvolte cílový adresář",IDC_BOLDWHITE_TEXT,12,8,89,8
+    LTEXT           "Zvolte adresář, do kterého si přejete nainstalovat program.",IDC_NORMALWHITE_TEXT,22,18,263,8
+    CONTROL         111,IDC_INSTALL_ICON,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_REALSIZEIMAGE,290,0,36,36
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,0,35,333,1
+    LTEXT           "Instalační program bude instalovat program %s do následujícího adresáře.",IDC_CDL_1,22,51,303,8
+    LTEXT           "&Cílový adresář",-1,22,68,78,8
+    EDITTEXT        IDC_CDL_PATH,22,78,229,13,ES_AUTOHSCROLL
+    PUSHBUTTON      "&Procházet",IDC_CDL_BROWSE,257,77,50,15
+    LTEXT           "Pro instalaci do tohoto adresáře klikněte na tlačítko Další.",-1,22,110,273,8
+    LTEXT           "Pro instalaci do jiného adresáře napište cestu nebo klikněte na tlačítko Procházet.",-1,22,120,286,8
+    LTEXT           "Poznámka: pro upgrade starší verze (nebo opravu současné verze) zvolte její adresář.",-1,22,140,299,8
+END
+
+IDD_DONE DIALOGEX 0, 0, 330, 187
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Dokončeno"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Instalační program dokončil instalaci programu %s na Váš počítač. Program lze spustit kliknutím na jeho zástupce.",IDC_DONE_TEXT,13,13,191,37
+    LTEXT           "Klikněte na tlačítko Dokončit pro ukončení instalačního programu.",-1,13,131,236,11
+    CONTROL         "&Zobrazit Čti mě",IDC_DONE_README,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,151,119,10
+    CONTROL         "&Spustit %s",IDC_DONE_RUN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,166,219,10
+END
+
+IDD_FINISH DIALOGEX 0, 0, 330, 187
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Potvrďte svůj výběr"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_WHITE_RECT,0,0,331,35,WS_CLIPCHILDREN | NOT WS_GROUP
+    LTEXT           "Připraveno k instalaci",IDC_BOLDWHITE_TEXT,12,8,89,8
+    LTEXT           "Instalace programu %s na Váš počítač je připravena.",IDC_NORMALWHITE_TEXT,22,18,263,8
+    CONTROL         111,IDC_INSTALL_ICON,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_REALSIZEIMAGE,290,0,36,36
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,0,35,333,1
+    LTEXT           "&Aktuální nastavení:",-1,22,40,80,8
+    EDITTEXT        IDC_CYS_TEXT,22,50,284,106,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Klikněte na tlačítko Instalovat pro spuštění instalace nebo na tlačítko Zpět, pokud si přejete změnit nastavení.",-1,22,160,278,16
+END
+
+IDD_FOLDER DIALOGEX 54, 36, 330, 187
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Zvolte složky"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_WHITE_RECT,0,0,331,35,WS_CLIPCHILDREN | NOT WS_GROUP
+    LTEXT           "Zástupce programu",IDC_BOLDWHITE_TEXT,12,8,126,8
+    LTEXT           "Instalační program vytvoří následující zástupce.",IDC_NORMALWHITE_TEXT,22,18,263,8
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,0,35,333,1
+    LTEXT           "Zvolte, kam si přejete nainstalovat zástupce programu:",-1,20,50,209,8
+    CONTROL         "&Plocha",IDC_SPF_DESKTOP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,61,54,12
+    CONTROL         "&Nabídka Start",IDC_SPF_LINK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,73,73,12
+    //CONTROL         "Připn&out na hlavní panel",IDC_SPF_PINTOTASKBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,85,153,12
+    LTEXT           "Instalovat zástupce pro:",IDC_SPF_FOLDERS,19,111,197,8
+    CONTROL         "&Aktuálního uživatele",IDC_SPF_PERSONAL,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,29,122,96,12
+    CONTROL         "&Všechny uživatele",IDC_SPF_COMMON,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,29,134,108,12
+    CONTROL         111,IDC_INSTALL_ICON,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_REALSIZEIMAGE,290,0,36,36
+END
+
+IDD_LICENSE DIALOGEX 10, 20, 330, 187
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Souhlas s licenční smlouvou"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_WHITE_RECT,0,0,331,35,WS_CLIPCHILDREN | NOT WS_GROUP
+    LTEXT           "Licenční smlouva",IDC_BOLDWHITE_TEXT,12,8,89,8
+    LTEXT           "Než budete pokračovat, přečtěte si prosím následující důležité informace.",IDC_NORMALWHITE_TEXT,22,18,263,8
+    CONTROL         111,IDC_INSTALL_ICON,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_REALSIZEIMAGE,290,0,36,36
+    LTEXT           "Přečtěte si prosím následující licenční smlouvu. Použijte posuvník nebo stiskněte klávesu Page Down pro zobrazení zbytku licenční smlouvy.",-1,22,43,288,18
+    EDITTEXT        IDC_SLA_LICENSE,22,64,286,102,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL
+    LTEXT           "Souhlasíte s licenční smlouvou? Pokud zvolíte Ne, instalační program se ukončí. Pro instalaci programu %s, musíte stisknout tlačítko Ano.",IDC_SLA_BOTTOM,22,169,293,16
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,0,35,333,1
+END
+
+IDD_PROGRESS DIALOGEX 0, 0, 330, 187
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Kopírování"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_WHITE_RECT,0,0,331,35,WS_CLIPCHILDREN | NOT WS_GROUP
+    LTEXT           "Informace o instalaci",IDC_BOLDWHITE_TEXT,12,8,89,8
+    LTEXT           "Vyčkejte prosím, dokud instalační program kopíruje soubory na Váš počítač.",IDC_NORMALWHITE_TEXT,22,18,263,8
+    CONTROL         111,IDC_INSTALL_ICON,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_REALSIZEIMAGE,290,0,36,36
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,0,35,333,1
+    RTEXT           "Z:",-1,23,46,18,8
+    CONTROL         "",IDC_PGS_FROM,"Static",SS_SIMPLE | SS_NOPREFIX,50,46,256,8
+    RTEXT           "Do:",-1,23,60,18,8
+    CONTROL         "",IDC_PGS_TO,"Static",SS_SIMPLE | SS_NOPREFIX,50,60,256,8
+    LTEXT           "Celkem:",-1,17,83,30,8
+    CONTROL         "Progress1",IDC_PGS_PGS,"msctls_progress32",WS_BORDER,50,82,256,11
+END
+
+IDD_README DIALOGEX 10, 20, 330, 187
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Čti mě"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_WHITE_RECT,0,0,331,35,WS_CLIPCHILDREN | NOT WS_GROUP
+    LTEXT           "Čti mě",IDC_BOLDWHITE_TEXT,12,8,89,8
+    LTEXT           "Přečtěte si prosím následujíci důležité informace, než budete pokračovat.",IDC_NORMALWHITE_TEXT,22,18,263,8
+    CONTROL         111,IDC_INSTALL_ICON,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_REALSIZEIMAGE,290,0,36,36
+    EDITTEXT        IDC_SLA_LICENSE,6,41,319,143,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,0,35,333,1
+END
+
+IDD_UNINSTALL DIALOGEX 0, 0, 330, 187
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Odinstalace"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_WHITE_RECT,0,0,331,35,WS_CLIPCHILDREN | NOT WS_GROUP
+    LTEXT           "Informace o odinstalaci",IDC_BOLDWHITE_TEXT,12,8,89,8
+    LTEXT           "Vyčkejte prosím, instalační program odstraňuje předchozí verzi programu.",IDC_NORMALWHITE_TEXT,22,18,263,8
+    CONTROL         111,IDC_INSTALL_ICON,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_REALSIZEIMAGE,290,0,36,36
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,0,35,333,1
+    LTEXT           "Soubor:",-1,18,46,29,8
+    CONTROL         "",IDC_PGS_FROM,"Static",SS_SIMPLE | SS_NOPREFIX,50,46,256,8
+END
+
+IDD_WELCOME DIALOGEX 10, 20, 331, 194
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Vítejte"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Vítejte v instalaci programu %s",IDC_WLC_A,13,13,204,25
+    LTEXT           "Tento průvodce Vás provede instalací programu\n%s",IDC_WLC_B,13,44,181,21
+    LTEXT           "Klikněte na tlačítko Další pro pokračování.",IDC_WLC_WARNING,13,131,305,52
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_WELCOME, DIALOG
+    BEGIN
+        RIGHTMARGIN, 330
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_WZR_BACK            "< &Zpět"
+    IDS_WZR_NEXT            "&Další >"
+    IDS_WZR_EXIT            "Storno"
+    IDS_WZR_YES             "&Ano"
+    IDS_WZR_NO              "&Ne"
+    ERROR_CREATEWIZARD      "Chyba při vytváření dialogu průvodce"
+    ERROR_LOADINF           "Chyba při přístupu k souboru: %s."
+    ERROR_LOADLICENSE       "Chyba při přístupu k licenčnímu souboru."
+    IDS_INSTALLING          "%s"
+    IDS_CHOOSEDIR           "Zvolte adresář"
+    IDS_NODIR               "Adresář:\n\n'%s'\n\nneexistuje. Chcete ho vytvořit?"
+    IDS_NOSPACE             "Na disku %s není dostatek místa\n\npotřebné místo: %ld bytů\ndostupné místo: %ld bytů\n\nUvoněte prosím místo na disku.\nStiskněte Storno, pokud chcete ignorovat toto varování."
+    IDS_WZR_FINISH          "&Dokončit"
+    IDS_TARGETDIR           "Cílový adresář"
+    IDS_PERSONAL            "Zástupce pouze pro aktuálního uživatele"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_WZR_INSTALL         "&Instalovat"
+    IDS_INSTFAILED          "Instalace není kompletní. Program %s není nainstalován.\n\nInstalační program můžete spustit později a instalaci dokončit."
+    ERROR_CMDLINE           "Použití:\nSETUP [/?] [/s] [/d dest_dir] [/id <y,n>] [/is <y,n>] [/au <y,n>]\n\n[x] znamená, že je parametr x nepovinný.\n<y,n> znamená, že jsou parametry y nebo n povinné.\n\n/? -- Zobrazí tuto zprávu o použití.\n/s -- Tichá instalace.\n/d -- Cílový adresář.\n/id -- Nainstalovat zástupce na plochu.\n/is -- Nainstalovat zástupce do nabídky Start.\n/au -- Společné složky všech uživatelů."
+    IDS_CONFLICTWITHNEWER   "Adresář '%s' již obsahuje novější verzi instalovaného programu.\n\nPro instalaci do tohoto adresáře napřed odinstalujte existující Open Salamander.\n\nPřípadně můžete zvolit jiný adresář."
+    IDS_INSTNEEDRESTART     "Instalace nebyla dokončena. Pro dokončení instalace je potřeba provést restart Windows, po kterém se odinstalují shell extensions.\n\nRestartujte prosím Windows a spusťte tento instalační program znovu pro dokončení instalace."
+    IDS_TARGETDIRUPGRADE    "Cílový adresář (upgrade)"
+    IDS_CONFLICTPRIOR       "Adresář '%s' již obsahuje starší verzi instalovaného programu.\n\nStiskněte OK pro jeho upgrade.\nStiskněte Storno pro instalaci do jiného adresáře."
+    IDS_CONFLICTSAME        "Adresář '%s' již obsahuje stejnou verzi instalovaného programu.\n\nStiskněte OK pro jeho opravu.\nStiskněte Storno pro instalaci do jiného adresáře."
+    IDS_PREVIEWBUILDWARNING "Toto je PREVIEW BUILD programu Open Salamander, uvolněný v Early Access Programu. Tato verze by neměla být používána v produkčním prostředí. Používejte ji pouze pro testování. Těšíme se na Vaše připomínky a náměty, které vkládejte do Early Access Program sekce na forum.altap.cz.\nPoznámka: tato verze je časově omezená."
+    IDS_BETAWARNING         "Toto je BETA verze programu Open Salamander. Tato verze by neměla být používána v produkčním prostředí. Používejte ji pouze pro testování. Těšíme se na Vaše připomínky a náměty, které vkládejte na forum.altap.cz.\nPoznámka: tato verze je časově omezená."
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_COMMON              "Zástupce pro všechny uživatele"
+    IDS_INSERT_DESKTOP      "Vložit zástupce programu na plochu"
+    IDS_INSERT_MENU         "Vložit zástupce programu do nabídky Start"
+    IDS_INVALIDPATH         "Cílový adresář '%s' je neplatný."
+    IDS_NAMEUSEDFORFILE     "Název ""%s"" byl již použit po jiný soubor."
+    IDS_CREATEDIRFAILED     "Nelze vytvořít adresář:\n%s"
+    IDS_ERRORCREATELOG      "Chyba při vytváření log souboru %s."
+    IDS_APPRUNNING          "Instalační program detekoval, že instalovaný program je spuštěný.\nZavřete prosím program a stiskněte OK pro pokračování.\nTitulek programu je %s."
+    IDS_MAINWINDOWTITLE     "Instalační program"
+    IDS_SETUPCOPYRIGHT1     "Copyright © 1997-2023 Open Salamander Authors"
+    IDS_INSTALL_STOP        "Instalace není kompletní. Pokud ji nyní ukončíte, program nebude nainstalován.\n\nInstalační program můžete spustit později a instalaci dokončit.\n\nUkončit instalaci?"
+    IDS_INSTALL_STOP_TITLE  "Ukončit instalační program"
+    IDS_WIZ_TITLE           "Instalační program - %s"
+END
+
+STRINGTABLE 
+BEGIN
+    ERROR_CF_OPENFILE       "Chyba při otevírání souboru %s\n"
+    ERROR_CF_FILEINFORMATION "Chyba při získávání informací o souboru %s\n"
+    ERROR_CF_CREATEFILE     "Chyba při vytváření souboru %s\n"
+    ERROR_CF_FILESETATTR    "Chyba při nastavování atributů souboru %s\n"
+    ERROR_CF_READFILE       "Chyba při čtení ze souboru %s\n"
+    ERROR_CF_WRITEFILE      "Chyba při zápisu do souboru %s\n"
+    ERROR_CF_GETATTR        "Chyba při získávání atributů: "
+    ERROR_DLGCREATE         "Chyba při otevírání dialogu: "
+END
+
+STRINGTABLE 
+BEGIN
+    ERROR_CREATESHORTCUT    "Chyba (%08X) při vytváření zástupce %s\n"
+END
+
+#endif    // Czech resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// German (Neutral) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
+LANGUAGE LANG_GERMAN, SUBLANG_NEUTRAL
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_WIZARD DIALOGEX 61, 53, 360, 220
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_WIZARD_SEPARATOR,"Static",SS_ETCHEDHORZ | WS_GROUP,0,193,363,1
+    LTEXT           "Copyright © 1997-2023 Open Salamander Authors",-1,7,197,141,10,NOT WS_GROUP
+    LTEXT           "www.altap.cz",IDC_WWW,7,208,62,10,NOT WS_GROUP
+    PUSHBUTTON      "",5,195,200,50,14
+    PUSHBUTTON      "",IDOK,250,200,50,14
+    PUSHBUTTON      "",IDCANCEL,304,200,50,14
+END
+
+IDD_WELCOME DIALOGEX 23, 32, 360, 194
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Willkommen"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Willkommen zum %s Setup-Programm.",IDC_WLC_A,13,13,231,25
+    LTEXT           "Dieser Assistent wird Sie durch die Installation von\n%s führen.",IDC_WLC_B,13,44,195,21
+    LTEXT           "Klicken Sie auf ""Weiter"", um fortzufahren.",IDC_WLC_WARNING,13,131,333,52
+END
+
+IDD_LICENSE DIALOGEX 10, 20, 360, 187
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Software-Lizenzvereinbarung"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_WHITE_RECT,0,0,361,35,WS_CLIPCHILDREN | NOT WS_GROUP
+    LTEXT           "Lizenzvereinbarung",IDC_BOLDWHITE_TEXT,12,8,89,8
+    LTEXT           "Lesen Sie bitte folgende wichtige Informationen, bevor Sie fortfahren.",IDC_NORMALWHITE_TEXT,22,18,294,8
+    CONTROL         111,IDC_INSTALL_ICON,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_REALSIZEIMAGE,320,0,36,36
+    LTEXT           "Lesen Sie bitte die folgende Lizenzvereinbarung. Benutzen Sie die Bildlaufleiste oder drücken Sie die ""Bild-runter""-Taste um den Rest der Vereinbarung anzusehen.",-1,22,43,316,18
+    EDITTEXT        IDC_SLA_LICENSE,22,64,320,94,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL
+    LTEXT           "Akzeptieren Sie alle Bedingungen der oberen Lizenzvereinbarung? Wenn Sie ""Nein"" wählen, wird das Setup beendet. Um %s zu installieren, müssen Sie der Vereinbarung zustimmen.",IDC_SLA_BOTTOM,22,161,300,24
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,0,35,363,1
+END
+
+IDD_README DIALOGEX 10, 20, 360, 187
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Liesmich"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_WHITE_RECT,0,0,361,35,WS_CLIPCHILDREN | NOT WS_GROUP
+    LTEXT           "Liesmich",IDC_BOLDWHITE_TEXT,12,8,89,8
+    LTEXT           "Lesen Sie bitte folgende wichtige Informationen, bevor Sie fortfahren.",IDC_NORMALWHITE_TEXT,22,18,281,8
+    CONTROL         111,IDC_INSTALL_ICON,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_REALSIZEIMAGE,320,0,36,36
+    EDITTEXT        IDC_SLA_LICENSE,6,41,349,143,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,0,35,363,1
+END
+
+IDD_DESTINATION DIALOGEX 35, 58, 360, 175
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Zielordner wählen"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_WHITE_RECT,0,0,361,35,WS_CLIPCHILDREN | NOT WS_GROUP
+    LTEXT           "Zielverzeichnis wählen",IDC_BOLDWHITE_TEXT,12,8,102,8
+    LTEXT           "Wählen Sie das Verzeichnis, in dem das Setup die Dateien installieren soll.",IDC_NORMALWHITE_TEXT,22,18,296,8
+    CONTROL         111,IDC_INSTALL_ICON,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_REALSIZEIMAGE,320,0,36,36
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,0,35,363,1
+    LTEXT           "Das Setup wird %s in das folgende Verzeichnis installieren.",IDC_CDL_1,22,51,325,8
+    LTEXT           "&Zielverzeichnis",-1,22,68,78,8
+    EDITTEXT        IDC_CDL_PATH,22,78,259,13,ES_AUTOHSCROLL
+    PUSHBUTTON      "D&urchsuchen",IDC_CDL_BROWSE,287,77,57,15
+    LTEXT           "Klicken Sie auf ""Weiter"", um in dieses Verzeichnis zu installieren.",-1,22,110,310,8
+    LTEXT           "Um in ein anderes Verzeichnis zu installieren, geben Sie das neue Zielverzeichnis an oder klicken Sie auf ""Durchsuchen"".",-1,22,120,263,16
+    LTEXT           "Hinweis: Wenn Sie eine ältere Version aktualisieren (oder reparieren) möchten, geben Sie das entsprechende Verzeichnis an.",-1,22,148,263,16
+END
+
+IDD_FOLDER DIALOGEX 54, 36, 360, 187
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Startmenü-Ordner auswählen"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_WHITE_RECT,0,0,361,35,WS_CLIPCHILDREN | NOT WS_GROUP
+    LTEXT           "Programm-Verknüpfungen",IDC_BOLDWHITE_TEXT,12,8,126,8
+    LTEXT           "Das Setup wird die Programm-Verknüpfungen hinzufügen.",IDC_NORMALWHITE_TEXT,22,18,263,8
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,0,35,363,1
+    LTEXT           "Wählen Sie, wo Sie die Programm-Verknüpfung installieren möchten:",-1,20,50,244,8
+    CONTROL         "&Desktop",IDC_SPF_DESKTOP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,61,50,12
+    CONTROL         "&Startmenü",IDC_SPF_LINK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,73,63,12
+    //CONTROL         "An &Taskleiste anheften", IDC_SPF_PINTOTASKBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,85,87,12
+    LTEXT           "Installiere Verknüpfungen für:",IDC_SPF_FOLDERS,19,111,197,8
+    CONTROL         "&Aktuellen Benutzer",IDC_SPF_PERSONAL,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,29,122,89,12
+    CONTROL         "A&lle Benutzer",IDC_SPF_COMMON,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,29,134,70,12
+    CONTROL         111,IDC_INSTALL_ICON,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_REALSIZEIMAGE,320,0,36,36
+END
+
+IDD_FINISH DIALOGEX 16, 26, 360, 187
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Bestätigen Sie Ihre Auswahl"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_WHITE_RECT,0,0,361,35,WS_CLIPCHILDREN | NOT WS_GROUP
+    LTEXT           "Installation durchführen",IDC_BOLDWHITE_TEXT,12,8,102,8
+    LTEXT           "Das Setup ist jetzt bereit, %s auf Ihrem Computer zu installieren.",IDC_NORMALWHITE_TEXT,22,18,293,8
+    CONTROL         111,IDC_INSTALL_ICON,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_REALSIZEIMAGE,320,0,36,36
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,0,35,363,1
+    LTEXT           "&Aktuelle Einstellungen:",-1,22,40,94,8
+    EDITTEXT        IDC_CYS_TEXT,22,50,314,106,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Klicken Sie auf ""Installieren"", um mit der Installation fortzufahren oder klicken Sie auf ""Zurück"", wenn Sie die Einstellungen überprüfen oder ändern möchten.",-1,22,160,312,16
+END
+
+IDD_UNINSTALL DIALOGEX 39, 38, 360, 187
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Deinstallieren"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_WHITE_RECT,0,0,361,35,WS_CLIPCHILDREN | NOT WS_GROUP
+    LTEXT           "Setup Status",IDC_BOLDWHITE_TEXT,12,8,89,8
+    LTEXT           "Bitte warten Sie während das Setup die frühere Version der Anwendung entfernt.",IDC_NORMALWHITE_TEXT,22,18,293,8
+    CONTROL         111,IDC_INSTALL_ICON,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_REALSIZEIMAGE,320,0,36,36
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,0,35,363,1
+    LTEXT           "Datei:",-1,22,46,25,8
+    CONTROL         "",IDC_PGS_FROM,"Static",SS_SIMPLE | SS_NOPREFIX,50,46,304,8
+END
+
+IDD_PROGRESS DIALOGEX 16, 29, 360, 187
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Fortschritt"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_WHITE_RECT,0,0,361,35,WS_CLIPCHILDREN | NOT WS_GROUP
+    LTEXT           "Setup Status",IDC_BOLDWHITE_TEXT,12,8,89,8
+    LTEXT           "Warten Sie bitte während das Setup Dateien auf Ihren Computer kopiert.",IDC_NORMALWHITE_TEXT,22,18,292,8
+    CONTROL         111,IDC_INSTALL_ICON,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_REALSIZEIMAGE,320,0,36,36
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,0,35,363,1
+    LTEXT           "Von:",-1,22,46,22,8
+    CONTROL         "",IDC_PGS_FROM,"Static",SS_SIMPLE | SS_NOPREFIX,63,46,287,8
+    LTEXT           "Nach:",-1,22,60,22,8
+    CONTROL         "",IDC_PGS_TO,"Static",SS_SIMPLE | SS_NOPREFIX,63,60,287,8
+    LTEXT           "Insgesamt:",-1,22,83,40,8
+    CONTROL         "Progress1",IDC_PGS_PGS,"msctls_progress32",WS_BORDER,63,82,285,11
+END
+
+IDD_DONE DIALOGEX 17, 29, 360, 187
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Beendet"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Das Setup hat die Installation von %s auf Ihren Computer abgeschlossen. Die Anwendung kann über die installierten Programm-Verknüpfungen gestartet werden.",IDC_DONE_TEXT,13,13,228,32
+    LTEXT           "Klicken Sie auf ""Fertigstellen"", um das Setup zu beenden.",-1,13,131,228,11
+    CONTROL         "&Liesmich anzeigen",IDC_DONE_README,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,151,184,10
+    CONTROL         "&%s starten",IDC_DONE_RUN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,166,232,10
+END
+
+IDD_COMMONCONTROL DIALOGEX 84, 53, 322, 107
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Setup"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Ihre Version von COMCTL32.DLL ist:",-1,6,40,123,8
+    LTEXT           "Text",IDC_CC_VERSION,130,40,111,8
+    DEFPUSHBUTTON   "OK",IDOK,135,87,50,14,WS_GROUP
+    LTEXT           "Sie benutzen eine alte Version der Systembibliothek COMCTL32.DLL. Installierte Anwendung",-1,6,7,311,8
+    LTEXT           "Benötigte COMCTL32.DLL Version %d.%d oder neuer.",IDC_CC_VERSION_NEED,6,15,311,8
+    LTEXT           "Bitte zögern Sie nicht und installieren Sie die kostenlose aktuelle COMCTL32.DLL Bibliothek.",-1,6,23,311,8
+    LTEXT           "Downloadseiten der neusten Version von COMCTL32.DLL:",-1,6,57,213,8
+    EDITTEXT        -1,4,67,305,10,ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
+END
+
+IDD_CF_OVERWRITE DIALOGEX 63, 56, 366, 89
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Überschreiben der Datei bestätigen"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    RTEXT           "Datei überschreiben:",-1,5,9,73,8
+    LTEXT           "fnZiel",IDC_CF_TARGETFILENAME,83,9,278,8
+    LTEXT           "attrZiel",IDC_CF_TARGETFILEATTR,83,20,278,8
+    RTEXT           "Mit Datei:",-1,5,39,73,8
+    LTEXT           "fnQuelle",IDC_CF_SOURCEFILENAME,83,39,278,8
+    LTEXT           "attrQuelle",IDC_CF_SOURCEFILEATTR,83,50,278,8
+    DEFPUSHBUTTON   "&Ja",IDOK,19,69,50,14
+    PUSHBUTTON      "&Alles",IDC_CF_YESALL,77,69,50,14
+    PUSHBUTTON      "&Überspringen",IDC_CF_SKIP,135,69,72,14
+    PUSHBUTTON      "Alles üb&erspringen",IDC_CF_SKIPALL,215,69,72,14
+    PUSHBUTTON      "Abbrechen",IDCANCEL,295,69,50,14
+END
+
+IDD_CF_RETRY DIALOGEX 31, 84, 350, 86
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Fehler beim Dateierstellen"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    RTEXT           "Erstelle Datei:",-1,4,9,50,8
+    LTEXT           "fnName",IDC_CF_RETRYNAME,62,9,284,8
+    RTEXT           "Fehler:",-1,4,29,50,8
+    LTEXT           "fnFehler",IDC_CF_RETRYERROR,62,29,284,21
+    PUSHBUTTON      "&Wiederholen",IDOK,31,64,72,14
+    PUSHBUTTON      "&Überspringen",IDC_CF_SKIP,110,64,72,14
+    PUSHBUTTON      "&Alles überspringen",IDC_CF_SKIPALL,189,64,72,14
+    PUSHBUTTON      "Abbrechen",IDCANCEL,268,64,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_WZR_BACK            "< &Zurück"
+    IDS_WZR_NEXT            "&Weiter >"
+    IDS_WZR_EXIT            "Abbrechen"
+    IDS_WZR_YES             "&Ja"
+    IDS_WZR_NO              "&Nein"
+    ERROR_CREATEWIZARD      "Erstellen des Setup-Assistenten fehlgeschlagen"
+    ERROR_LOADINF           "Fehler beim Zugriff auf Datei: %s."
+    ERROR_LOADLICENSE       "Fehler beim Zugriff auf Lizenzdatei."
+    IDS_INSTALLING          "%s"
+    IDS_CHOOSEDIR           "Wählen Sie das Verzeichnis"
+    IDS_NODIR               "Das Verzeichnis:\n\n'%s'\n\nexistiert nicht. Soll das Verzeichnis erstellt werden?"
+    IDS_NOSPACE             "Nicht genug Speicherplatz auf Laufwerk %s \n\nBenötigter Platz: %ld Bytes\nVorhandener Platz: %ld Bytes\n\nGeben Sie bitte mehr Speicherplatz frei.\nDrücken Sie ""Abbrechen"" um diese Warnung zu ignorieren."
+    IDS_WZR_FINISH          "&Fertigstellen"
+    IDS_TARGETDIR           "Zielverzeichnis"
+    IDS_PERSONAL            "Verknüpfungen nur für aktuellen Benutzer"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_WZR_INSTALL         "&Installieren"
+    IDS_INSTFAILED          "Das Setup ist noch nicht abgeschlossen. Die Anwendung %s wurde nicht installiert.\n\nSie können das Setup zu einem späteren Zeitpunkt nochmals ausführen, um die Installation zu vervollständigen."
+    ERROR_CMDLINE           "Verwendung:\nSETUP [/?] [/s] [/d Ziel_Verz] [/id <y,n>] [/is <y,n>] [/au <y,n>]\n\n[x] bedeutet, dass der Parameter x optional ist.\n<y,n> bedeutet, dass der Parameter y oder n benötigt wird.\n\n/? -- Generiert diesen Nutzungshinweis.\n/s -- Automatische unbeaufsichtigte Installation.\n/d -- Zielverzeichnis.\n/id -- Installiert Desktop-Verknüpfung.\n/is -- Installiert Startmenü-Verknüpfung.\n/au -- Für alle Benutzer gemeinsame Ordner."
+    IDS_CONFLICTWITHNEWER   "Das Verzeichnis '%s' enthält bereits eine neuere Version der installierten Anwendung.\n\nUm in dieses Verzeichnis zu installieren, müssen Sie die jetzige Version entfernen. Anschließend können Sie diese Version von Open Salamander installieren.\n\nAlternativ können Sie auch ein anderes Verzeichnis wählen."
+    IDS_INSTNEEDRESTART     "Das Setup ist noch nicht abgeschlossen. Ein Windows-Neustart ist nötig um die verwendeten Shell-Erweiterungen zu deinstallieren.\n\nBitte starten Sie Windows neu und führen Sie das Setup nochmals aus um die Installation zu vervollständigen."
+    IDS_TARGETDIRUPGRADE    "Zielverzeichnis (Aktualisierung)"
+    IDS_CONFLICTPRIOR       "Das Verzeichnis '%s' enthält bereits eine frühere Version der installierten Anwendung.\n\nDrücken Sie ""OK"", um diese zu aktualisieren.\nDrücken Sie auf ""Abbrechen"", um sie in ein anderes Verzeichnis zu installieren."
+    IDS_CONFLICTSAME        "Das Verzeichnis '%s' enthält bereits die selbe Version der installierten Anwendung.\n\nDrücken Sie ""OK"", um diese zu reparieren.\nDrücken Sie auf ""Abbrechen"", um sie in ein anderes Verzeichnis zu installieren."
+    IDS_PREVIEWBUILDWARNING "Dies ist eine Vorabversion von Open Salamander, veröffentlicht im Early Access Programm. Sie sollte NICHT in Produktionsumgebungen verwendet werden. Benutzen Sie diese nur für Testzwecke. Wir freuen uns auf Ihre Meinung in der ""Early Access Program Section"" im forum.altap.cz.\nHinweis: diese Version ist zeitlich begrenzt."
+    IDS_BETAWARNING         "Dies ist eine BETA Version von Open Salamander. Sie sollte NICHT in Produktionsumgebungen verwendet werden. Benutzen Sie diese nur für Testzwecke. Wir freuen uns auf Ihre Meinung im forum.altap.cz.\nHinweis: diese Version ist zeitlich begrenzt."
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_COMMON              "Verknüpfungen für alle Benutzer"
+    IDS_INSERT_DESKTOP      "Programm-Verknüpfung auf dem Desktop anlegen"
+    IDS_INSERT_MENU         "Programm-Verknüpfung für das Startmenü anlegen"
+    IDS_INVALIDPATH         "Das Zielbverzeichnis '%s' ist ungültig."
+    IDS_NAMEUSEDFORFILE     "Der Name ""%s"" wurde bereits für eine Datei verwendet."
+    IDS_CREATEDIRFAILED     "Kann das neue Verzeichnis nicht erstellen:\n%s"
+    IDS_ERRORCREATELOG      "Erstellen der Logdatei %s fehlgeschlagen."
+    IDS_APPRUNNING          "Das Setup hat festgestellt, dass die Anwendung bereits läuft.\nSchließen Sie diese bitte und klicken Sie ""OK"" um fortzufahren.\nName der Anwendung lautet %s."
+    IDS_MAINWINDOWTITLE     "Setup"
+    IDS_SETUPCOPYRIGHT1     "Copyright © 1997-2023 Open Salamander Authors"
+    IDS_INSTALL_STOP        "Das Setup ist noch nicht abgeschlossen. Wenn Sie jetzt beenden, wird das Programm nicht installiert.\n\nSie können das Setup zu einem späteren Zeitpunkt nochmals ausführen, um die Installation zu vervollständigen.\n\nSetup verlassen?"
+    IDS_INSTALL_STOP_TITLE  "Setup verlassen"
+    IDS_WIZ_TITLE           "Setup - %s"
+END
+
+STRINGTABLE 
+BEGIN
+    ERROR_CF_OPENFILE       "Fehler beim Öffnen der Datei %s\n"
+    ERROR_CF_FILEINFORMATION "Fehler beim Abrufen der Dateiinformationen %s\n"
+    ERROR_CF_CREATEFILE     "Fehler beim Erstellen der Datei %s\n"
+    ERROR_CF_FILESETATTR    "Fehler beim Setzen von Dateiattributen %s\n"
+    ERROR_CF_READFILE       "Fehler beim Lesen der Datei %s\n"
+    ERROR_CF_WRITEFILE      "Fehler beim Schreiben der Datei %s\n"
+    ERROR_CF_GETATTR        "Fehler beim Abrufen der Dateiattribute: "
+    ERROR_DLGCREATE         "Fehler beim Erstellen des Dialogfensters: "
+END
+
+STRINGTABLE 
+BEGIN
+    ERROR_CREATESHORTCUT    "Fehler (%08X) beim Erstellen der Verknüpfung %s\n"
+END
+
+#endif    // German (Neutral) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_WIZARD DIALOGEX 61, 53, 330, 220
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_WIZARD_SEPARATOR,"Static",SS_ETCHEDHORZ | WS_GROUP,0,193,333,1
+    LTEXT           "Copyright © 1997-2023 Open Salamander Authors",-1,7,197,141,10,NOT WS_GROUP
+    LTEXT           "www.altap.cz",IDC_WWW,7,208,63,10,NOT WS_GROUP
+    PUSHBUTTON      "",5,165,200,50,14
+    PUSHBUTTON      "",IDOK,220,200,50,14
+    PUSHBUTTON      "",IDCANCEL,274,200,50,14
+END
+
+IDD_WELCOME DIALOGEX 10, 20, 330, 194
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Welcome"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Welcome to the %s setup program",IDC_WLC_A,13,13,203,25
+    LTEXT           "This wizard will guide you through installation of\n%s",IDC_WLC_B,13,44,173,21
+    LTEXT           "Click Next to continue.",IDC_WLC_WARNING,13,131,304,52
+END
+
+IDD_LICENSE DIALOGEX 10, 20, 330, 187
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Software License Agreement"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_WHITE_RECT,0,0,331,35,WS_CLIPCHILDREN | NOT WS_GROUP
+    LTEXT           "License agreement",IDC_BOLDWHITE_TEXT,12,8,89,8
+    LTEXT           "Please read the following important information before continuing.",IDC_NORMALWHITE_TEXT,22,18,263,8
+    CONTROL         111,IDC_INSTALL_ICON,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_REALSIZEIMAGE,290,0,36,36
+    LTEXT           "Please read the following License Agreement. Use the scroll bar or press the Page Down key to view the rest of the agreement.",-1,22,43,288,18
+    EDITTEXT        IDC_SLA_LICENSE,22,64,286,102,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL
+    LTEXT           "Do you accept all the terms of the preceding License Agreement? If you choose No, Setup will close. To install %s, you must accept this agreement.",IDC_SLA_BOTTOM,22,169,293,16
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,0,35,333,1
+END
+
+IDD_README DIALOGEX 10, 20, 330, 187
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Read Me"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_WHITE_RECT,0,0,331,35,WS_CLIPCHILDREN | NOT WS_GROUP
+    LTEXT           "Read Me",IDC_BOLDWHITE_TEXT,12,8,89,8
+    LTEXT           "Please read the following important information before continuing.",IDC_NORMALWHITE_TEXT,22,18,263,8
+    CONTROL         111,IDC_INSTALL_ICON,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_REALSIZEIMAGE,290,0,36,36
+    EDITTEXT        IDC_SLA_LICENSE,6,41,319,143,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,0,35,333,1
+END
+
+IDD_DESTINATION DIALOGEX 35, 58, 330, 159
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Choose Destination Location"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_WHITE_RECT,0,0,331,35,WS_CLIPCHILDREN | NOT WS_GROUP
+    LTEXT           "Select Destination Directory",IDC_BOLDWHITE_TEXT,12,8,119,8
+    LTEXT           "Select the directory you would like Setup to install files.",IDC_NORMALWHITE_TEXT,22,18,263,8
+    CONTROL         111,IDC_INSTALL_ICON,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_REALSIZEIMAGE,290,0,36,36
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,0,35,333,1
+    LTEXT           "Setup will install %s into the following directory.",IDC_CDL_1,22,51,248,8
+    LTEXT           "&Destination Directory",-1,22,68,97,8
+    EDITTEXT        IDC_CDL_PATH,22,78,229,13,ES_AUTOHSCROLL
+    PUSHBUTTON      "B&rowse",IDC_CDL_BROWSE,257,77,50,15
+    LTEXT           "To install to this directory, click Next.",-1,22,110,146,8
+    LTEXT           "To install to different directory, type the new destination directory or click Browse.",-1,22,120,290,8
+    LTEXT           "Note: to upgrade a prior version (or repair current version) specify its directory.",-1,22,140,284,8
+END
+
+IDD_FOLDER DIALOGEX 54, 36, 330, 187
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Select Application Folder"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_WHITE_RECT,0,0,331,35,WS_CLIPCHILDREN | NOT WS_GROUP
+    LTEXT           "Program shortcuts",IDC_BOLDWHITE_TEXT,12,8,126,8
+    LTEXT           "Setup will add the program shortcuts.",IDC_NORMALWHITE_TEXT,22,18,263,8
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,0,35,333,1
+    LTEXT           "Select where you want to install program shortcut:",-1,20,50,189,8
+    CONTROL         "&Desktop",IDC_SPF_DESKTOP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,61,55,12
+    CONTROL         "&Start Menu",IDC_SPF_LINK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,73,68,12
+    //CONTROL         "&Pin to Taskbar", IDC_SPF_PINTOTASKBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,85,80,12
+    LTEXT           "Install shortcuts for:",IDC_SPF_FOLDERS,19,111,197,8
+    CONTROL         "&Current user only",IDC_SPF_PERSONAL,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,29,122,85,12
+    CONTROL         "&All users",IDC_SPF_COMMON,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,29,134,102,12
+    CONTROL         111,IDC_INSTALL_ICON,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_REALSIZEIMAGE,290,0,36,36
+END
+
+IDD_FINISH DIALOGEX 0, 0, 330, 187
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Confirm Your Selections"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_WHITE_RECT,0,0,331,35,WS_CLIPCHILDREN | NOT WS_GROUP
+    LTEXT           "Ready to Install",IDC_BOLDWHITE_TEXT,12,8,89,8
+    LTEXT           "Setup is now ready to begin installing %s on your computer.",IDC_NORMALWHITE_TEXT,22,18,263,8
+    CONTROL         111,IDC_INSTALL_ICON,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_REALSIZEIMAGE,290,0,36,36
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,0,35,333,1
+    LTEXT           "&Current settings:",-1,22,40,83,8
+    EDITTEXT        IDC_CYS_TEXT,22,50,284,106,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Click Install to continue with the installation, or click Back if you want to review or change any settings.",-1,22,160,278,16
+END
+
+IDD_UNINSTALL DIALOGEX 0, 0, 330, 187
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Uninstall"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_WHITE_RECT,0,0,331,35,WS_CLIPCHILDREN | NOT WS_GROUP
+    LTEXT           "Setup Status",IDC_BOLDWHITE_TEXT,12,8,89,8
+    LTEXT           "Please wait while Setup is removing previous version of application.",IDC_NORMALWHITE_TEXT,22,18,263,8
+    CONTROL         111,IDC_INSTALL_ICON,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_REALSIZEIMAGE,290,0,36,36
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,0,35,333,1
+    LTEXT           "File:",-1,22,46,23,8
+    CONTROL         "",IDC_PGS_FROM,"Static",SS_SIMPLE | SS_NOPREFIX,50,46,256,8
+END
+
+IDD_PROGRESS DIALOGEX 0, 0, 330, 187
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Progress"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_WHITE_RECT,0,0,331,35,WS_CLIPCHILDREN | NOT WS_GROUP
+    LTEXT           "Setup Status",IDC_BOLDWHITE_TEXT,12,8,89,8
+    LTEXT           "Please wait while Setup is copying files on your computer.",IDC_NORMALWHITE_TEXT,22,18,263,8
+    CONTROL         111,IDC_INSTALL_ICON,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_REALSIZEIMAGE,290,0,36,36
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,0,35,333,1
+    LTEXT           "From:",-1,22,46,22,8
+    CONTROL         "",IDC_PGS_FROM,"Static",SS_SIMPLE | SS_NOPREFIX,50,46,256,8
+    LTEXT           "To:",-1,22,60,22,8
+    CONTROL         "",IDC_PGS_TO,"Static",SS_SIMPLE | SS_NOPREFIX,50,60,256,8
+    LTEXT           "Total:",-1,22,83,24,8
+    CONTROL         "Progress1",IDC_PGS_PGS,"msctls_progress32",WS_BORDER,50,82,256,11
+END
+
+IDD_DONE DIALOGEX 0, 0, 330, 187
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN | WS_CAPTION
+CAPTION "Finished"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Setup has finished installing %s on your computer. The application may be started by clicking on the installed shorcuts.",IDC_DONE_TEXT,13,13,198,25
+    LTEXT           "Click Finish to exit Setup.",-1,13,131,198,11
+    CONTROL         "&View Read Me",IDC_DONE_README,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,151,119,10
+    CONTROL         "&Launch %s",IDC_DONE_RUN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,166,223,10
+END
+
+IDD_COMMONCONTROL DIALOGEX 84, 53, 287, 107
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Setup"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Your version of COMCTL32.DLL is:",-1,6,40,116,8
+    LTEXT           "Text",IDC_CC_VERSION,123,40,60,8
+    DEFPUSHBUTTON   "OK",IDOK,118,87,50,14,WS_GROUP
+    LTEXT           "You are using old version of a system library COMCTL32.DLL. Installed application",-1,6,7,277,8
+    LTEXT           "requires COMCTL32.DLL in version %d.%d or later.",IDC_CC_VERSION_NEED,6,15,277,8
+    LTEXT           "Please do not hesitate and install free available upgrade of COMCTL32.DLL library.",-1,6,23,277,8
+    LTEXT           "The latest version of COMCTL32.DLL download pages:",-1,6,57,201,8
+    EDITTEXT        -1,4,67,269,10,ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
+END
+
+IDD_CF_OVERWRITE DIALOGEX 61, 53, 349, 89
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Confirm File Overwrite"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    RTEXT           "Overwrite File:",-1,5,9,51,8
+    LTEXT           "fnTarget",IDC_CF_TARGETFILENAME,61,9,283,8
+    LTEXT           "attrTarget",IDC_CF_TARGETFILEATTR,61,20,283,8
+    RTEXT           "With File:",-1,5,39,51,8
+    LTEXT           "fnSource",IDC_CF_SOURCEFILENAME,61,39,283,8
+    LTEXT           "attrSource",IDC_CF_SOURCEFILEATTR,61,50,283,8
+    DEFPUSHBUTTON   "&Yes",IDOK,8,69,60,14
+    PUSHBUTTON      "&All",IDC_CF_YESALL,76,69,60,14
+    PUSHBUTTON      "&Skip",IDC_CF_SKIP,144,69,60,14
+    PUSHBUTTON      "S&kip All",IDC_CF_SKIPALL,212,69,60,14
+    PUSHBUTTON      "Cancel",IDCANCEL,280,69,60,14
+END
+
+IDD_CF_RETRY DIALOGEX 31, 84, 350, 86
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Error Creating File"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    RTEXT           "Creating File:",-1,5,9,47,8
+    LTEXT           "fnName",IDC_CF_RETRYNAME,60,9,279,8
+    RTEXT           "Error:",-1,5,29,47,8
+    LTEXT           "fnError",IDC_CF_RETRYERROR,60,29,279,21
+    PUSHBUTTON      "&Retry",IDOK,43,64,60,14
+    PUSHBUTTON      "&Skip",IDC_CF_SKIP,111,64,60,14
+    PUSHBUTTON      "S&kip All",IDC_CF_SKIPALL,179,64,60,14
+    PUSHBUTTON      "Cancel",IDCANCEL,247,64,60,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_WZR_BACK            "< &Back"
+    IDS_WZR_NEXT            "&Next >"
+    IDS_WZR_EXIT            "Cancel"
+    IDS_WZR_YES             "&Yes"
+    IDS_WZR_NO              "&No"
+    ERROR_CREATEWIZARD      "Creation of Wizard dialog failed"
+    ERROR_LOADINF           "Error accessing file: %s."
+    ERROR_LOADLICENSE       "Error accessing license file."
+    IDS_INSTALLING          "%s"
+    IDS_CHOOSEDIR           "Choose Directory"
+    IDS_NODIR               "The directory:\n\n'%s'\n\ndoes not exist. Do you want the directory to be created?"
+    IDS_NOSPACE             "There is not enough space on disk %s\n\nspace required: %ld bytes\nspace available: %ld bytes\n\nPlease free up some disk space.\nPress Cancel to ignore this warning."
+    IDS_WZR_FINISH          "&Finish"
+    IDS_TARGETDIR           "Target directory"
+    IDS_PERSONAL            "Shortcuts for current user only"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_WZR_INSTALL         "&Install"
+    IDS_INSTFAILED          "Setup is not complete. Application %s is not installed.\n\nYou may run the Setup program at a later time to complete the installation."
+    ERROR_CMDLINE           "Usage:\nSETUP [/?] [/s] [/d dest_dir] [/id <y,n>] [/is <y,n>] [/au <y,n>]\n\n[x] means that parameter x is optional.\n<y,n> means that parameter y or n is required.\n\n/? -- Generates this Usage message.\n/s -- Silent unattended install.\n/d -- Destination directory.\n/id -- Install Desktop Shortcut.\n/is -- Install Start Menu Shortcut.\n/au -- All users common folders."
+    IDS_CONFLICTWITHNEWER   "The directory '%s' already contains newer version of installed application.\n\nTo install to this directory, uninstall the existing Open Salamander. Then you can install this version of Open Salamander.\n\nOtherwise you can choose another directory."
+    IDS_INSTNEEDRESTART     "Setup is not complete. Windows restart is needed to finish uninstalling shell extensions that are in use.\n\nPlease restart your Windows and run the Setup program again to complete the installation."
+    IDS_TARGETDIRUPGRADE    "Target directory (Upgrade)"
+    IDS_CONFLICTPRIOR       "The directory '%s' already contains a prior version of the installed application.\n\nPress OK to upgrade it.\nPress Cancel to install to another directory."
+    IDS_CONFLICTSAME        "The directory '%s' already contains the same version of the installed application.\n\nPress OK to repair it.\nPress Cancel to install to another directory."
+    IDS_PREVIEWBUILDWARNING "This is PREVIEW BUILD of Open Salamander, released in Early Access Program. It should NOT be used in production environments. Use it for testing only. We are looking for your feedback at Early Access Program section on forum.altap.cz.\nNote: this version is time limited."
+    IDS_BETAWARNING         "This is BETA version of Open Salamander. It should NOT be used in production environments. Use it for testing purpose only. We are looking for your feedback on forum.altap.cz.\nNote: this version is time limited."
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_COMMON              "Shortcuts for all users"
+    IDS_INSERT_DESKTOP      "Insert program shortcut to Desktop"
+    IDS_INSERT_MENU         "Insert program shortcut in Start Menu"
+    IDS_INVALIDPATH         "Destination directory '%s' is invalid."
+    IDS_NAMEUSEDFORFILE     "The name ""%s"" has already been used for a file."
+    IDS_CREATEDIRFAILED     "Unable to create new directory:\n%s"
+    IDS_ERRORCREATELOG      "Creating log file %s failed."
+    IDS_APPRUNNING          "Setup has detected that installed application is running.\nPlease close it and click OK to continue.\nApplication title is %s."
+    IDS_MAINWINDOWTITLE     "Setup"
+    IDS_SETUPCOPYRIGHT1     "Copyright © 1997-2023 Open Salamander Authors"
+    IDS_INSTALL_STOP        "Setup is not complete. If you quit now, the program will not be installed.\n\nYou may run the Setup program again at another time to complete the installation.\n\nExit Setup?"
+    IDS_INSTALL_STOP_TITLE  "Exit Setup"
+    IDS_WIZ_TITLE           "Setup - %s"
+END
+
+STRINGTABLE 
+BEGIN
+    ERROR_CF_OPENFILE       "Error opening file %s\n"
+    ERROR_CF_FILEINFORMATION "Error getting file informations %s\n"
+    ERROR_CF_CREATEFILE     "Error creating file %s\n"
+    ERROR_CF_FILESETATTR    "Error setting file attributes %s\n"
+    ERROR_CF_READFILE       "Error reading file %s\n"
+    ERROR_CF_WRITEFILE      "Error writing file %s\n"
+    ERROR_CF_GETATTR        "Error getting file attributes: "
+    ERROR_DLGCREATE         "Error creating dialog window: "
+END
+
+STRINGTABLE 
+BEGIN
+    ERROR_CREATESHORTCUT    "Error (%08X) creating shortcut %s\n"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define INSIDE_SETUP
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CSY)
+#include "remove\resource.h"
+LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
+#include "remove\remove_cz.rc2"
+LANGUAGE LANG_GERMAN, SUBLANG_NEUTRAL
+#include "remove\remove_de.rc2"
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#include "remove\remove_en.rc2"
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

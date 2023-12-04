@@ -1,0 +1,172 @@
+This file contains a report about bug fixes and new features
+in Altap Salamander. Plus sign means new feature addition, 
+minus sign means a bug fix.
+
+FTP released with Altap Salamanderem 2.52: (08/28/2009)
+-MODE Z: nektere servery (napr. Serv-U 7 a 8) neukoncuji stream komprimovanych
+ dat, ukazovali jsme to jako chybu po kazdem prenosu, ted uz to ignorujeme
+-pri kopirovani bookmarky v Connect/Bookmark dialogu se nekopirovalo nastaveni
+ MODE Z (jen je-li zaple)
+-pridani bookmarky z panelu chybne inicializovalo pouzity proxy server (rozjely
+ se default hodnoty ve volani metody AddServer(), chybela hodnota 0 pro
+ 'encryptedPasswordSize')
+
+FTP released with Altap Salamanderem 2.52 beta 2: (08/21/2009)
+-cache listingu a prohlizenych souboru ze serveru se maze pred pripojenim na
+ server, pokud neni stejny server pripojen do druheho panelu nebo neni mezi
+ odpojenymi FS (tedy po zavreni vsech FTP spojeni v panelu a novem otevreni
+ FTP spojeni se uz neukazuji cachovana data)
+-podpora komprese datoveho spojeni (MODE Z)
+-drag&drop bez modifikatoru (ani Shift, ani Ctrl) z FTP v panelu do Explorera
+ na disk s TEMP adresarem nabizel necekane Move misto Copy, viz
+ https://forum.altap.cz/viewtopic.php?f=7&t=3303
+-cache listingu rozlisuje prikazy, kterymi byl listing ziskan (drive se chybne
+ pouzivaly vysledky z cache i po zmene listovaciho prikazu)
+-automaticke aktivovani logu v Logs okne nefungovalo dobre pri pripojeni FTP do
+ neaktivniho panelu (kliknuti na Drive bare neaktivniho panelu) a pri neuspesnem
+ pripojeni (v Logs okne zustaval log neuspesneho spojeni misto navratu k logu
+ v aktivnim panelu)
+-dialogy ukazane behem provadeni FTP prikazu nad panelem se nechovaly jako modalni,
+ kliknuti do okna Salamandera je neaktivovalo
+-pod Vistou nefungovalo kliknuti mysi na zaviraci krizek wait okenek nad panelem
+-podpora FTPS (FTP over TLS/SSL)
+-provadel se refresh panelu v neaktivnim Salamanderovi i napr. pri uploadu, pri
+ dotazu na prepis existujiciho souboru na serveru, v panelu se tedy zobrazoval
+ dotaz na reconnect (connectiona je z panelu pujcena do operace) - staronove se
+ refresh provadi az pri aktivaci hl. okna nebo po dokonceni operace (a tedy
+ vraceni connectiony do panelu)
+
+
+FTP released with Altap Salamanderem 2.52 beta 1: (01/29/2009)
++pri chybe Error Storing File to Server je nove mozne rucne prejmenovat soubor (tato
+ chyba se plete s chybou Error Creating Target File, staci aby byl server zbytecne
+ aktivni a navazal data connectionu jeste pred tim, nez zkusi otevrit soubor na
+ disku, coz dela napr. ftp.shutterstock.com)
+-zrusena hlaska "No path is accessible on this FTP server.", zbytecny pruzeni lidi,
+ nove provedeme tise disconnect bez dotazu (tyhle hlasce totiz vzdycky predchazi
+ dotaz na reconnect)
+-pri otevreni maximalizovaneho progress dialogu (k tomu dojde kdyz je maximalizovany
+ pri predchozim zavreni) se vzdy vypinal checkbox "Close this dialog when operation
+ finishes"
+-neumeli jsme pracovat s URL, ktere v uzivatelskem jmene obsahuji backslash,
+ napr.: ftp://corp\tomas.kopal@destft01.corp.alpine.eu/
+-pri zadani spatneho cisla portu (neni cislo nebo je mimo 1 az 65535) hlasime
+ chybu (predtim se ignorovalo)
+
+FTP released with Altap Salamanderem 2.5 RC3: (04/13/2007)
+-upload: vypadek data-connectiony pokud control-connectiona zustala OK,
+ se behem Resume (appendu) vyhodnocoval, jako ze Resume neni mozny, tedy
+ pri "Resume or Overwrite" dochazelo k automatickemu prechodu na Overwrite
++obohacene hlaseni do Logu: hlasime duvody selhani Resume, automaticky
+ prechod na Overwrite a par dalsich zajimavych udalosti
+-SOCKS 4A/5: preferuji posilani IP adresy pred posilanim jmene adresy obsahujici IP
+ (nektere proxy servery neumi preklad string_IP->IP)
+
+FTP released with Servant Salamanderem 2.5 RC2: (10/27/2006)
++new option in context menu and plugin's menu: List Hidden Files and Directories
+ (uses "LIST -a" for listing hidden files and dirs on Unix FTP servers)
+
+FTP released with Servant Salamanderem 2.5 RC1: (04/27/2006)
++kontextove menu na souborech/adresarich v panelu
++Solve Error dialogy: zmena checkboxu na "Remember choice and do not show
+ this dialog again for operations with the same error" + vyhozeni comboboxu
+ "If this error occurs again" (ekvivalent vyber v comboboxu se nove dela na
+ zaklade tlacitka, ktere si user zvoli)
++Solve Error "file already exists" dialog: pridano tlacitko "Overwrite All"
+ (snazsi nez zapnout checkbox "Remember choice..." a kliknout na Overwrite)
++UNIX parsery: user+group muzou obsahovat mezery, v tomto pripade je jen
+ preskocime (nelze rozsoudit co je user a co groupa)
++parsery listingu: pridana funkce skip_to_number() - preskoci vse az k
+ nejblizsi dekadicke cislici
++parsery listingu: datum s rokem 1601 se automaticky predelava na rok 1602
+ (stejne je to nesmyslna hodnota, s rokem 1601 je problem pri prevodu na UTC)
++IBM iSeries/i5, AS/400: pri downloadu z cesty /QSYS.LIB se automaticky
+ orezava .FILE cast jmena (A.FILE/A.MBR -> A.MBR + A.FILE/B.MBR -> A.B.MBR),
+ pri uploadu se naopak automaticky pridava .FILE cast jmena
++parser listingu pro IBM iSeries/i5, AS/400
++pridan skryty prikaz Disconnect do menu (slouzi jen pro definici hot-key),
+ lidi si stezovali, ze chteji disconnect na jedinou klavesu (ne F12, Enter)
+
+FTP released with Servant Salamanderem 2.5 beta 11: (01/27/2006)
++pri prepisu souboru (download i upload) je fokus na Overwrite tlacitku
++dokoncena podpora pro HTTP 1.1 proxy servery
++dokoncena podpora pro SOCKS4A a SOCKS5 proxy servery
++parser listingu: doplneny svedske a norske nazvy mesicu
+-pri neaktualnim listingu v cilovem panelu s FTP dochazelo pri uploadu adresaru
+ ke hlaseni nesmyslnych chyb typu "dir already exists" nebo "dir not found"
+ (ted se pri takoveto chybe nejprve zkontroluje jestli listing neni prevzaty
+ z panelu a pripadne se listing automaticky refreshne)
+-odstranen deadlock (projevoval se dost zridka) pri downloadu souboru pro viewer
++dokoncena podpora pro SOCKS4 proxy servery
+-uploady pod XP na lokalni siti ve specialnich pripadech bezely pouze 160KB/s,
+ XP se v techto pripadech nejak nevyporadaji se zapisem dat na socket po 32KB,
+ doplnil jsem detekci tohoto zpomaleni a zapisuji po mensich blocich (16KB)
+-pod VM-Ware v XP se pri prenosech kolem 1MB/s nehybal progress - message queue
+ byla preplnena a tedy nedochazelo k dorucovani WM_TIMER (ted se WM_TIMER pri
+ velke zatezi generuje umele, aby pouzite timery aspon trochu fungovaly)
++moznost potlacit warning "connection has been lost" (nektere usery nezajima, ze
+ panel nema otevrene spojeni)
++zmena default hodnoty: upload-transfer-failed-on-created-file = Resume or Overwrite
+ (misto Overwrite) - ukazalo se, ze lepsi bude risknout chybu Resume (dost
+ nepravdepodobne), nez pouzivat jen Overwrite (u delsich uploadu se bez Resume
+ proste neda zit)
++zmena default hodnoty: logovani spojeni pouzivanych pro operace je ted
+ defaultne zapnute (rezie je minimalni, odpada vysvetlovani "jak logovani zapnout"
+ kazdemu, kdo ma nejaky problem s FTP)
++v pluginovem menu se pouziva prikaz SALCMD_DISCONNECT - propagace klavesy
+ F12 pro Disconnect
++heuristika pro ziskani jmena OS z odpovedi na SYST prikaz (nebere
+ tupe prvni slovo, jak rika RCF o FTP, ale hleda postupne po slovech
+ znamy typ OS - ted funguje i napr. nemecky preklad: "215 Betriebssystem OS/2")
+-na zaklade bugreportu od usera vime, ze nejen pri uploadech delsich
+ nez 1,5 hodiny dochazi k tomu, ze server neodpovi na STOR prikaz - nove jsem
+ dopsal podporu pro kontrolu velikosti souboru uploadleho v ASCII rezimu
+ (testuje velikost na shodu s CRLF- nebo LF-velikosti, neni to 100%,
+ muze hlasit "shodu" i pri nekompletnim souboru, je-li zkracen presne
+ o tolik znaku, kolik ma radek + ma CRLF konce radek)
+-v dialogu Add/Edit Proxy Server se pri otevreni vzdy nastavil defaultni
+ port podle typu proxy serveru (premazalo se nastaveni usera)
++po dokonceni operace na FTP serveru se provede ihned refresh panelu (neceka
+ se na aktivaci panelu - pokud si uzivatel odskocil do jineho programu, vrati
+ se do panelu s aktualnim listingem)
+-pri presunu souboru mezi FTP a sitovou cestou dochazelo ke zbytecnym ztratam
+ spojeni (operace neumela predat spojeni zpet do panelu, takze si panel zadal
+ o otevreni noveho spojeni a puvodni spojeni se zahazovalo)
+-Add Bookmark z kontextoveho menu v panelu nefungovala korektne (mela posunute
+ parametry)
++podpora pro dalsi mainframe: Tandem
+
+FTP released with Servant Salamanderem 2.5 beta 10a: (09/30/2005)
+-pri automatickem reconnectu v panelu se nezobrazoval duvod reconnectu
+ (napr. "connection lost"), ale prazdny text
+
+FTP released with Servant Salamanderem 2.5 beta 10: (09/27/2005)
++podpora pro FTP proxy servery (proxy na portu 21, proti klasickemu FTP jen
+ upravena sekvence login prikazu)
+-pri delsich uploadech/downloadech nez 1,5 hodiny dochazi k tomu, ze server
+ neodpovi na STOR/RETR prikaz - doted to znamenalo fail a tedy treba i nove
+ tahani celeho souboru - nove se dela test velikosti / Resume
+-uprava parseru VMS1-4 podle novejsi verze listingu prazdneho adresare z
+ cs.felk.cvut.cz (misto chyby vraci listing s jednim radkem
+ "Total of 0 files, 0/0 blocks")
++dopsano Skip tlacitko v operacnim dialogu
++dopsana Pause tlacitka v operacnim dialogu
++podpora pro IBM AIX v nemecke verzi (proti stavajicimu parseru ma prohozene
+ sloupce mesic a den) + PWD odpovedi maji nestandardni format
++Solve Error dialogy uz nevypinaji checkbox "Close this dialog when operation
+ finishes" (po vyreseni chyb se okno operace samo zavre)
++View, Quick Rename, Delete, Copy/Move from server (download): dopsane zamykani
+ pouzivanych souboru na serveru (prevence kolizi)
++Quick Rename se pta na prepis existujiciho souboru (da se potlacit v konfiguraci
+ na Confirmations)
++nove umi i prepis souboru jineho usera na unixovych FTP serverch (pokud
+ overwrite hlasi chybu, provede se nejdrive delete souboru a pak teprve zapis)
++Solve Error dialogy maji az pet tlacitek (pribylo Resume a Overwrite),
+ zbytek funkci je stale v kontextovem menu na Retry buttonu
+-pokud username obsahoval '@', nefungoval upload a mnohe dalsi veci (ted uz
+ snad username muze obsahovat cokoliv i ':', '/' a '\\')
+-pri maximalizovanem dialogu operace se Solve Error dialogy otevirali az po
+ deseti sekundovem cekani + "close when finished" se sam cistil (maximalizace
+ se chovala jako userova akce v dialogu)
+-Microsoft IIS (Windows NT) parser nove umi preskocit adresare a soubory beze
+ jmena (jen mezery v nazvu)

@@ -1,0 +1,2016 @@
+﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __FTP_RH2
+#define __FTP_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#define IDC_STATIC_1 3000
+#include "statics.rh2"   // 3000 az 3039 jsou timto zabrane !!!
+
+
+// ICONS/CURSORS/BITMAPS:
+
+
+#define IDC_FTPICON           1000
+#define IDC_FTPLOGICON        1001
+#define IDC_DRAGCURSOR        1002
+#define IDC_FTPOPERICON       1003
+#define IDC_FTPICONBMP        1004
+#define IDC_WARNINGICON       1005
+
+
+// MENU:
+
+
+// context menu in Connect to FTP Server dialog - in listbox with bookmarks
+#define IDM_SRVCONTEXTMENU     1100
+// context menu in Connect to FTP Server dialog (in "Organize Bookmarks" mode) - in listbox with bookmarks
+#define IDM_SRVCONTEXTMENU2    1101
+// context menu in Alt+F1/F2 (for active FS) and for change drive button in panel toolbar and for panel (behind items)
+#define IDM_ACTPATHCONTEXTMENU 1102
+// context menu in Alt+F1/F2 (for FS item - "FTP Client")
+#define IDM_CHNGDRVCONTMENU    1103
+// context menu in Alt+F1/F2 (for detached FS)
+#define IDM_DETPATHCONTEXTMENU 1104
+// menu in Logs dialog
+#define IDM_LOGSMENU           1105
+// menu in Configuration dialog on page Servers on button Other
+#define IDM_SERVERSOTHERACT    1106
+// menu in Configuration dialog on page Servers in listbox Supported Servers
+#define IDM_SERVERSACTIONS     1107
+// menu in Configuration/Servers/Edit on button Move
+#define IDM_SRVTYPEMOVECOLUMN  1108
+// menu in Configuration/Servers/Edit in edit Rules for Parsing
+#define IDM_SRVTYPERULESMENU   1109
+// menu in Configuration/Servers/Edit in listview Columns
+#define IDM_SRVTYPECOLUMNS     1110
+// menu on button Retry in Error Creating Target Directory dialog and Target Directory Already Exists dialogs (see Solve Error button in operation dialog)
+#define IDM_DIREXISTSERRRETRY  1111
+// menu on button Retry in Target File Already Exists dialog (see second Solve Error button in operation dialog)
+#define IDM_FILEEXISTSERRRETRY 1112
+// menu on button Ignore in Some of Existing Attributes Cannot be Preserved dialog (see second Solve Error button in operation dialog)
+#define IDM_UNKATTRSERRIGNORE  1113
+// menu on button Retry in Confirm Deleting of Hidden Directory, Confirm Deleting of Hidden File, and Confirm Deleting of Non-Empty Directory dialogs (see Solve Error button in operation dialog)
+#define IDM_DELETEERRORRETRY   1114
+// menu on button Retry in Error Deleting File or Link and Error Deleting Directory dialogs (see Solve Error button in operation dialog)
+#define IDM_DELETEERRORONSRVRETRY 1115
+// menu on button Retry in Error Resuming File dialog (see Solve Error button in operation dialog)
+#define IDM_RESUMEERRORONRETRY 1116
+// menu on button Retry in Error Resuming File dialog (see Solve Error button in operation dialog)
+#define IDM_RESUMETESTFAILEDONRETRY 1117
+// menu on button Use Binary Mode in ASCII Transfer Mode is Set for File with Binary Content dialog (see Solve Error button in operation dialog)
+#define IDM_ASCIITRFORBINFILE  1118
+// menu on Add button in FTP Configuration > General (Proxy Server combobox)
+#define IDM_ADDPROXYSERVER     1119
+// menu in Proxy Server dialog, in Script editbox
+#define IDM_PRXSRVSCRIPTMENU   1120
+// menu on button Retry in Error Testing File dialog (see Solve Error button in operation dialog)
+#define IDM_UPLTESTIFFINISHEDONRETRY 1121
+// menu on button Retry in Error Creating Target File dialog (see second Solve Error button in operation dialog)
+#define IDM_CANTCRFILEERRRETRY 1122
+// menu on button Retry in Transfer Has Failed dialogs (see second Solve Error button in operation dialog)
+#define IDM_TRANSFERFAILEDERRRETRY 1123
+// menu in Connect dialog and Proxy Server dialog on the (password) Unlock button
+#define IDM_UNLOCKPASSWORD    1124
+
+
+// COMMANDS:
+
+
+#define CM_MOVEUPBOOKMARK     1200
+#define CM_MOVEDOWNBOOKMARK   1201
+#define CM_COPYSRVTO          1202
+#define CM_DISCONNECTSRV      1203
+#define CM_ADDBOOKMARK        1204
+#define CM_CONNECTSRV         1205
+#define CM_OPENDETACHED       1206
+#define CM_SAVELOG            1207
+#define CM_SAVEALLLOGS        1208
+#define CM_COPYLOG            1209
+#define CM_COPYALLLOGS        1210
+#define CM_CLEARLOG           1211
+#define CM_REMOVELOG          1212
+#define CM_REMOVEALLLOGS      1213
+#define CM_SHOWLOG            1214
+#define CM_SENDFTPCOMMAND     1215
+#define CM_SHOWLOGFORPANEL    1216
+#define CM_ORGBOOKMARKS       1217
+#define CM_SHOWLOGS           1218
+#define CM_SHOWRAWLISTING     1219
+#define CM_COPYSERVERTO       1220
+#define CM_RENAMESERVER       1221
+#define CM_REMOVESERVER       1222
+#define CM_IMPORTSERVER       1223
+#define CM_EXPORTSERVER       1224
+#define CM_MOVECOLUMNUP       1225
+#define CM_MOVECOLUMNDOWN     1226
+
+#define CM_STRM_UNDO               1227
+#define CM_STRM_CUT                1228
+#define CM_STRM_COPY               1229
+#define CM_STRM_PASTE              1230
+#define CM_STRM_DELETE             1231
+#define CM_STRM_SELECTALL          1232
+#define CM_STRM_RULESTART          1233
+#define CM_STRM_RULEEND            1234
+#define CM_STRM_COMMENT            1235
+#define CM_STRM_SKIPWSIFANY        1236
+#define CM_STRM_SKIPWS             1237
+#define CM_STRM_SKIPNUMOFWS        1238
+#define CM_STRM_SKIPWSENDEOLS      1239
+#define CM_STRM_SKIPRESTOFLINE     1240
+#define CM_STRM_SKIPWORD           1241
+#define CM_STRM_SKIPNUMOFLETTERS   1242
+#define CM_STRM_SKIPALLTO          1243
+#define CM_STRM_ASGNRESTOFLINE     1244
+#define CM_STRM_ASGNWORD           1245
+#define CM_STRM_ASGNNUM            1246
+#define CM_STRM_ASGNNUMWITHSEP     1247
+#define CM_STRM_ASGN3LETTERMONTH   1248
+#define CM_STRM_ASGNMONTH          1249
+#define CM_STRM_ASGNDAY            1250
+#define CM_STRM_ASGNYEAR           1251
+#define CM_STRM_ASGNTIME           1252
+#define CM_STRM_ASGNYEARORTIME     1253
+#define CM_STRM_ASGNNUMOFLETTERS   1254
+#define CM_STRM_ASGNALLTO          1255
+#define CM_STRM_ASGNALLUPTO        1256
+#define CM_STRM_ASGNUNIXLINK       1257
+#define CM_STRM_ASGNUNIXDEV        1258
+#define CM_STRM_ASGNEXPR           1259
+#define CM_STRM_CUTWSINIT          1260
+#define CM_STRM_CUTWSTRAIL         1261
+#define CM_STRM_CUTWSBOTH          1262
+#define CM_STRM_STVARISFIRSTNELINE 1263
+#define CM_STRM_STVARISLASTNELINE  1264
+#define CM_STRM_STVARNEXTCHAR      1265
+#define CM_STRM_STVARNEXTWORD      1266
+#define CM_STRM_STVARRESTOFLINE    1267
+#define CM_STRM_OPEREQUAL          1268
+#define CM_STRM_OPERNOTEQUAL       1269
+#define CM_STRM_OPERSTREQUAL       1270
+#define CM_STRM_OPERSTRNOTEQUAL    1271
+#define CM_STRM_OPERISINSTR        1272
+#define CM_STRM_OPERISNOTINSTR     1273
+#define CM_STRM_IF                 1274
+#define CM_STRM_BACK               1275
+#define CM_STRM_ADDSTRTOCOL        1276
+#define CM_STRM_ASGN3LETMONTHGEN   1277
+#define CM_STRM_ASGNTEXTMONTH      1278
+#define CM_STRM_ASGNTEXTMONTHGEN   1279
+#define CM_STRM_ASGNPOSNUM         1280
+#define CM_STRM_OPERENDWITH        1281
+#define CM_STRM_OPERNOTENDWITH     1282
+#define CM_STRM_CUTENDOFSTR        1283
+#define CM_STRM_SKIPALLTONUMBER    1284
+
+#define CM_TRMODEAUTO          1300
+#define CM_TRMODEASCII         1301
+#define CM_TRMODEBINARY        1302
+#define CM_REFRESHPATH         1303
+#define CM_SCRD_USEALTNAME     1304
+#define CM_SDEX_USEEXISTINGDIR 1305
+#define CM_SIED_RESUME         1306
+#define CM_SIED_RESUMEOROVR    1307
+#define CM_SIED_OVERWRITE      1308
+#define CM_SIED_OVERWRITEALL   1309
+#define CM_SIEA_RETRY          1310
+#define CM_SIEA_SETNEWATTRS    1311
+#define CM_SISE_RETRY          1312
+#define CM_SSCD_MARKASDELETED  1313
+#define CM_SSCD_USEALTNAME     1314
+#define CM_SSCD_RESUME         1315
+#define CM_SSCD_RESUMEOROVR    1316
+#define CM_SSCD_OVERWRITE      1317
+#define CM_SSCD_REDUCEFILESIZE 1318
+#define CM_SSCD_MARKASUPLOADED 1319
+#define CM_SATR_RETRY          1320
+#define CM_SATR_IGNORE         1321
+
+#define CM_EDITPROXYSRV        1330
+#define CM_DELETEPROXYSRV      1331
+#define CM_MOVEUPPROXYSRV      1332
+#define CM_MOVEDOWNPROXYSRV    1333
+
+#define CM_PSS_3XX             1340
+#define CM_PSS_PROXYHOST       1341
+#define CM_PSS_PROXYPORT       1342
+#define CM_PSS_PROXYUSER       1343
+#define CM_PSS_PROXYPASSWD     1344
+#define CM_PSS_HOST            1345
+#define CM_PSS_PORT            1346
+#define CM_PSS_USER            1347
+#define CM_PSS_PASSWD          1348
+#define CM_PSS_ACCOUNT         1349
+#define CM_PSS_UNDO            1350
+#define CM_PSS_CUT             1351
+#define CM_PSS_COPY            1352
+#define CM_PSS_PASTE           1353
+#define CM_PSS_DELETE          1354
+#define CM_PSS_SELECTALL       1355
+
+#define CM_LISTHIDDENFILES     1356
+
+#define CM_HELPFORLOGSWND      1357
+
+#define CM_SHOWCERT            1358
+
+#define CM_UNLOCKPASSWORD      1360
+#define CM_CLEARPASSWORD       1361
+
+
+// IDs for addressing html help pages
+
+
+#define IDH_CONNECTFTPSERVER   2000
+#define IDH_ORGANIZEBOOKMARKS  2001
+#define IDH_SHOWLOGS           2002
+#define IDH_DISCONNECT_F12     2003
+#define IDH_TRMODESUBMENU      2004
+#define IDH_REFRESHPATH        2005
+#define IDH_ADDBOOKMARK        2006
+#define IDH_SENDFTPCOMMAND     2007
+#define IDH_SHOWRAWLISTING     2008
+#define IDH_LISTHIDDENFILES    2009
+#define IDH_MOVEDLG            2010
+#define IDH_ORGBOOKMARKSDLG    2011
+#define IDH_FTPLOGSWINDOW      2012
+#define IDH_SOLVEERROR         2013
+#define IDH_SHOWCERT           2014
+
+
+// TEXTS:
+
+
+// title of messageboxes
+#define IDS_FTPPLUGINTITLE   10000
+
+// WinLibLT error message: invalid number! (it's shown in dialogs when invalid number is entered to edit line)
+#define IDS_INVALIDNUMBER    10005
+
+// information about this plug-in to the Plug-ins dialog (name, version, copyright, description)
+#define IDS_PLUGINNAME       10010
+#define IDS_PLUGINDESCR      10011
+
+// About dialog (title + text):
+#define IDS_ABOUTPLUGINTITLE 10020
+
+// change drive menu (Alt+F1/F2) item name
+#define IDS_FTPCHNGDRVITEM   10030
+
+// general error box title
+#define IDS_FTPERRORTITLE    10040
+// error text: unable to finish operation because of too long path
+#define IDS_TOOLONGPATH      10041
+// error text: A host name is missing in the path specified
+#define IDS_HOSTNAMEMISSING  10042
+// error text: Port is not a number or is not in range 1 to 65535 in the path specified
+#define IDS_INVALIDPORT      10043
+
+// configuration dialog title
+#define IDS_CONFIGTITLE      10050
+
+// error message for group masks: file mask is syntactically incorrect
+#define IDS_INCORRECTSYNTAX  10055
+
+// error message for edit line with number: the number must be positive
+#define IDS_MUSTBEPOSITIVE   10060
+
+// error message for edit line with number: the number must be greater than zero
+#define IDS_MUSTBEGRTHANZERO 10065
+
+// error message in configuration/advanced - keep alive settings: stop time may not be less than sending period
+#define IDS_KAEVERYGRTHSTOP  10070
+// error message in configuration/advanced - keep alive settings: the sending period may not be greater than 10000 seconds
+#define IDS_KAEVERYTOOBIG    10071
+// error message in configuration/advanced - keep alive settings: stop time may not be greater than 10000 minutes
+#define IDS_KASTOPTOOBIG     10072
+
+// keep alive settings: name of commands to send
+#define IDS_KEEPALIVECMDNOOP 10075
+#define IDS_KEEPALIVECMDPWD  10076
+#define IDS_KEEPALIVECMDNLST 10077
+#define IDS_KEEPALIVECMDLIST 10078
+
+// menu command name: Connect FTP Server...
+#define IDS_CONNECTFTPSERVER 10090
+// menu command name: Disconnect...\tF12
+#define IDS_DISCONNECT       10091
+// menu command name: Add Bookmark...
+#define IDS_ADDBOOKMARK      10092
+// menu command name: Show Logs...
+#define IDS_SHOWLOGS         10093
+// menu command name: Send FTP Command...
+#define IDS_SENDFTPCOMMAND   10094
+// menu command name: Organize Bookmarks...
+#define IDS_ORGBOOKMARKSCMD  10095
+// menu command name: Show Raw Listing...
+#define IDS_SHOWRAWLISTING   10096
+// menu command name: Refresh
+#define IDS_REFRESHPATH      10097
+// menu command name: List Hidden Files and Directories (Unix)
+#define IDS_LISTHIDDENFILES  10098
+// menu command name: Show Certificate
+#define IDS_SHOWCERT         10099
+
+// Connect to FTP Server dialog: first item in listbox - Quick Connect
+#define IDS_QUICKCONNECT     10100
+
+// Connect to FTP Server dialog: texts for editline with short description of Advanced features
+// no advaced options
+#define IDS_ADVSTRNONE          10105
+// target path is set
+#define IDS_ADVSTRTARGETPATH    10106
+// server type is set
+#define IDS_ADVSTRSERVERTYPE    10107
+// port is set
+#define IDS_ADVSTRPORT          10108
+// passive mode is ON
+#define IDS_ADVSTRSERVERPASVYES 10109
+// passive mode is OFF
+#define IDS_ADVSTRSERVERPASVNO  10110
+// keep alive is ON (uses own keep-alive settings)
+#define IDS_ADVSTRKEEPALIVEYES  10111
+// keep alive is OFF
+#define IDS_ADVSTRKEEPALIVENO   10112
+// maximal number of concurrent connections is set (uses other number than default)
+#define IDS_ADVSTRMAXCONCURCON  10113
+// unlimited number of concurrent connections
+#define IDS_ADVSTRUNLIMITEDCON  10114
+// server speed limit is set (uses other number than default)
+#define IDS_ADVSTRSPEEDLIM      10115
+// unlimited server speed
+#define IDS_ADVSTRUNLIMITEDSPEED 10116
+// transfer mode: binary
+#define IDS_ADVSTRTRMODBINARY   10117
+// transfer mode: ASCII
+#define IDS_ADVSTRTRMODASCII    10118
+// transfer mode: automatic
+#define IDS_ADVSTRTRMODAUTO     10119
+// store lists of files and directories to cache is ON
+#define IDS_ADVSTRUSECACHEYES   10120
+// store lists of files and directories to cache is OFF
+#define IDS_ADVSTRUSECACHENO    10121
+// initial FTP commands are set
+#define IDS_ADVSTRINITFTPCMDS   10122
+// FTP command for listing
+#define IDS_ADVSTRLISTCOMMAND   10123
+// Proxy: %s
+#define IDS_ADVSTRPROXYSRV      10124
+// if no proxy server is used (direct connection): Not Used
+#define IDS_ADVSTRPROXYNOTUSED  10125
+// Only control connection encrypted
+#define IDS_ADVSTRSSLCONTRONLY  10126
+// Both control and data connections encrypted
+#define IDS_ADVSTRSSLCONTRDATA  10127
+// Data transfers are compressed (MODE Z)
+#define IDS_ADVSTRMODEZ         10128
+// Data transfers are not compressed (no MODE Z)
+#define IDS_ADVSTRNOMODEZ       10129
+
+// Connect to FTP Server dialog: Advanced Options: Server Type: text for Autodetect
+#define IDS_SRVTYPEAUTODETECT   10130
+
+// Connect to FTP Server dialog: Advanced Options: File transfer mode: combo box values
+// default mode from configuration
+#define IDS_TRANSFMODEDEFAULT   10133
+// binary mode
+#define IDS_TRANSFMODEBINARY    10134
+// ASCII mode
+#define IDS_TRANSFMODEASCII     10135
+// automatic - masks for ASCII mode is in Configuration
+#define IDS_TRANSFMODEAUTO      10136
+
+// Connect to FTP Server dialog: Advanced Options: browse for directory to target panel - comment
+#define IDS_SELECTTARGETDIR     10138
+
+// Connect to FTP Server dialog + Configuration/Servers page: Rename: text - Rename XXX to
+#define IDS_RENAMESRVTO         10140
+// Connect to FTP Server dialog: New: checkbox - Copy data from XXX bookmark
+#define IDS_COPYDATAFROM        10141
+// bookmark and user name: error - empty value is not allowed here
+#define IDS_MAYNOTBEEMPTY       10142
+// Connect to FTP Server dialog: Remove: confirmation - Do you really want to remove bookmark XXX?
+#define IDS_REMOVECONFIRM       10143
+
+// Connect to FTP Server dialog: unable to connect because server address is empty
+#define IDS_HOSTMAYNOTBEEMPTY   10145
+
+// Connect to FTP Server dialog: title when used in "Organize Bookmarks" mode (after "Add Bookmark" command)
+#define IDS_ORGANIZEBOOKMARKS   10148
+
+// when changing path in panel with FTP connection: do you want to close connection in panel? if you choose not to close it, you can access it later from change drive menu
+#define IDS_CLOSECONINPANEL     10150
+// when changing path in panel with FTP connection: Always choose No - not to disconnect (adjustable on Confirmations page in FTP Configuration)
+#define IDS_ALWAYSNOTCLOSE      10151
+// when changing path in panel with FTP connection: first button: Disconnect
+#define IDS_DISCONNECTBUTTON    10152
+// when changing path in panel with FTP connection: second button: Keep
+#define IDS_KEEPCONBUTTON       10153
+
+// Add Bookmark: title of dialog
+#define IDS_ADDBOOKMARKTITLE    10155
+// Add Bookmark: text - New bookmark name:
+#define IDS_ADDBOOKMARKTEXT     10156
+
+// Windows Sockets Library: unable to initialize, error: %s
+#define IDS_WINSOCKETSERROR     10160
+
+// Disconnect command: Do you want to close connection?
+#define IDS_WANTDISCONNECT      10165
+// Disconnect command: Close connection without asking next time (adjustable on Confirmations page in Configuration)
+#define IDS_ALWAYSCLOSE         10166
+
+// wait window: (messages during connecting/disconnecting/sending_commands to FTP server)
+// Getting IP address of server "%s", press the ESC key to cancel...
+#define IDS_GETTINGIPOFSERVER   10170
+// Opening connection to FTP server "%s" (IP: %s, port: %d).\nPress the ESC key to cancel...
+#define IDS_OPENINGCONTOSERVER  10171
+// Unable to connect to server "%s" (IP: %s, port: %d).\nError: %s
+#define IDS_WAITINGTORETRY      10172
+// Unable to connect to server ""%s"" (port: %d).\nError: %s
+#define IDS_WAITINGTORETRY2     10173
+// suffix for error message displayed while waiting to reconnect (first %s is for error message): %s\n\nWaiting %d seconds to reconnect (attempt no. %d of %d), press the ESC key to cancel...
+#define IDS_WAITINGTORETRYSUF   10174
+// Waiting for login prompt, press the ESC key to cancel...
+#define IDS_WAITINGFORLOGIN     10175
+// Sending command "%s", press the ESC key to cancel...
+#define IDS_SENDINGLOGINCMD     10176
+// Closing connection to "%s", press the ESC key to terminate it...
+#define IDS_CLOSINGCONNECTION   10177
+// Sending command "%s", press the ESC key to abort it...
+#define IDS_SENDINGCOMMAND      10178
+// Aborting FTP command, press the ESC key to cancel...
+#define IDS_ABORTINGCOMMAND     10179
+// Opening connection to FTP server ""%s"" (port: %d),\npress the ESC key to cancel...
+#define IDS_OPENINGCONTOSERVER2 10180
+// Preparing active data connection, press the ESC key to cancel...
+#define IDS_PREPARINGACTDATACON 10181
+
+// messages when trying to connect or send command to FTP/Proxy server and ESC was pressed or operation has timed out:
+// Do you want to cancel getting of IP address of server?
+#define IDS_GETIPESC            10190
+// Getting of IP address of server has timed out
+#define IDS_GETIPTIMEOUT        10191
+// Do you want to cancel opening of connection to server?
+#define IDS_OPENCONESC          10192
+// Opening of connection to FTP server has timed out
+#define IDS_OPENCONTIMEOUT      10193
+// Do you want to cancel waiting for login prompt?
+#define IDS_WAITFORLOGESC       10194
+// Waiting for login prompt has timed out
+#define IDS_WAITFORLOGTIMEOUT   10195
+// Do you want to terminate connection immediately?
+#define IDS_CLOSECONESC         10196
+// message to log when user cancels any operation (connect, disconnect, etc.): Operation canceled by user.
+#define IDS_LOGMSGACTIONCANCELED 10197
+// message to log: Disconnecting from server has timed out. Connection has been terminated.
+#define IDS_LOGMSGDISCONTIMEOUT 10198
+// first ESC when sending FTP command: Do you want to abort FTP command?
+#define IDS_SENDCOMMANDESC      10199
+// first ESC when sending FTP command and abort isn't possible: Do you want to cancel FTP command? Connection to FTP server will be terminated.
+#define IDS_SENDCOMMANDESC2     10200
+// second ESC when sending FTP command: Do you want to cancel aborting of FTP command? Connection to FTP server will be terminated.
+#define IDS_ABORTCOMMANDESC     10201
+// Sending or aborting of FTP command has timed out
+#define IDS_SNDORABORCMDTIMEOUT 10202
+// Sending or aborting of list command has timed out. Note: if data transfer was not started, try to\nchange transfer mode (see Connect to FTP Server dialog > Advanced > Use passive transfer mode)
+#define IDS_LISTCMDTIMEOUT      10203
+// unexpected error: Fatal error in communication with server. Connection has been terminated.\r\n
+#define IDS_LOGMSGFATALERROR    10204
+// unexpected error (internal): Fatal error has occurred. Connection has been terminated.\r\n
+#define IDS_LOGMSGFATALERROR2   10205
+// Press the Abort button to give up all next login attempts. Press the Retry button to skip waiting before next login attempt. Press the Wait button to continue waiting before next login attempt.
+#define IDS_WAITRETRESC         10206
+// Abort button name: Abort
+#define IDS_WAITRETRESCABORTBTN 10207
+// Retry button name: Retry
+#define IDS_WAITRETRESCRETRYBTN 10208
+// Wait button name: Wait
+#define IDS_WAITRETRESCWAITBTN  10209
+// Opening of connection to proxy server has timed out.
+#define IDS_OPENPROXYSRVCONTIMEOUT 10210
+// ESC when preparing active data connection: Do you want to cancel preparing of active data connection? Connection to FTP server will be terminated.
+#define IDS_PREPACTDATACONESC   10211
+// Preparing of active data connection has timed out
+#define IDS_PREPACTDATACONTIMEOUT 10212
+
+// error messages when trying to connect to FTP/Proxy server:
+// unknown error (includes all errors which are likely to never occur - e.g. insufficient system resources)
+#define IDS_UNKNOWNERROR        10220
+// some error when getting IP: Unable to get IP address of server "%s"\nError: %%s
+#define IDS_GETIPERROR          10221
+// some error when opening connection: Unable to open connection to server "%s" (IP: %s, port: %d).\nError: %%s
+#define IDS_OPENCONERROR        10222
+// Connection to server has been unexpectedly lost
+#define IDS_CONNECTIONLOSTERROR 10223
+// Connection to server has failed. Most likely, it is not FTP server nor FTP proxy server.\nServer reply: %s
+#define IDS_NOTFTPSERVERERROR   10224
+// Unable to send command to server.\nError: %s
+#define IDS_SENDCOMMANDERROR    10225
+// after error reply from FTP or proxy server when sending user/password/account: Unable to login to FTP server or FTP proxy server.\nError: %s
+#define IDS_LOGINERROR          10226
+// sending FTP command: aborting command: error: Unable to abort command.\nError: %s
+#define IDS_ABORTCOMMANDERROR   10227
+// getting current working path: error: Unable to get current working path on FTP server.\nServer reply: %s
+#define IDS_GETCURWORKPATHERROR 10228
+// sending "change of working path" FTP command: error: Unable to change path on FTP server.\nPath: %s\nServer reply: %s
+#define IDS_CHANGEWORKPATHERROR 10229
+// sending "create directory" FTP command: error: Unable to create directory on FTP server.\n\nDirectory: %s\nServer reply: %s
+#define IDS_CREATEDIRERROR      10230
+// sending "rename from" and "rename to" FTP commands: error: Unable to rename file or directory on FTP server.\n\nName: %s\nRename to: %s\nServer reply: %s
+#define IDS_QUICKRENAMEERROR    10231
+// quick rename for file: source or target file is locked: Unable to rename file on FTP server.\n\nName: %s\nRename to: %s\n"
+#define IDS_QUICKRENAMEFILEERR  10232
+// suffix for IDS_QUICKRENAMEFILEERR: Error: Source file is locked by another operation."
+#define IDS_QUICKRENAMEFILEERRSUF1 10233
+// suffix for IDS_QUICKRENAMEFILEERR: Error: Target file is locked by another operation."
+#define IDS_QUICKRENAMEFILEERRSUF2 10234
+// proxy script error: Error has occured while processing proxy server script.\n\nError: %s
+#define IDS_ERRINPROXYSCRIPT    10235
+// Proxy server address is empty.
+#define IDS_PROXYSRVADREMPTY    10236
+// proxy server reports some error when opening connection to FTP server: Proxy server is not able to open connection to FTP server ""%s"" (port: %d).\n\nError: %%s
+#define IDS_PROXYOPENCONERROR   10237
+// Unable to send request to proxy server.\n\nError: %%s
+#define IDS_PROXYSENDREQERROR   10238
+// Unable to receive reply from proxy server.\n\nError: %%s
+#define IDS_PROXYRECVREPERROR   10239
+// Unexpected reply received from proxy server. You have probably specified incorrect type of proxy server.
+#define IDS_PROXYUNEXPECTEDREPLY 10240
+
+// Enter Password dialog: title: Enter Password
+#define IDS_ENTERPASSTITLE          10243
+// Enter Password dialog: text: &Password:
+#define IDS_ENTERPASSTEXT           10244
+// Enter Account dialog: title: Enter Account
+#define IDS_ENTERACCTTITLE          10245
+// Enter Account dialog: text: &Account:
+#define IDS_ENTERACCTTEXT           10246
+// Enter User name dialog: info: Connecting to "%s".
+#define IDS_CONNECTINGTOAS1         10247
+// Enter Password/Acount dialog: info: Connecting to "%s" as "%s".
+#define IDS_CONNECTINGTOAS2         10248
+
+// word "hidden" instead of real password or account in log-file or welcome message
+#define IDS_HIDDENPASSWORD          10250
+
+// in idle state: we received "connection lost" for connection in panel - notification for user:
+// Connection to FTP server in left panel has been lost.\nServer reply: %s
+#define IDS_LCONLOSTFORMATERROR     10255
+// Connection to FTP server in right panel has been lost.\nServer reply: %s
+#define IDS_RCONLOSTFORMATERROR     10256
+// detached FS is entering panel + "connection lost" detected: Connection to FTP server has been lost.\nServer reply: %s
+#define IDS_DCONLOSTFORMATERROR     10257
+// "(none)" - none reply from server
+#define IDS_NONEREPLY               10258
+// checkbox to skip this warning message: Do not show this message next time\thow to revert\tYou can change this option later on Confirmations page in FTP Configuration
+#define IDS_WARNWHENCONLOST         10259
+
+// header of log messages for connecting: Connecting to "%s" (%s) on port %d.\r\nLog UID is %d, time is %s.\r\n\r\n
+#define IDS_LOGHEADER                 10300
+// header of log messages for reconnecting: \r\n-----\r\n\r\nReconnecting to "%s" (%s) on port %d (attempt %d).\r\nTime is %s.\r\n\r\n
+#define IDS_RECONLOGHEADER            10301
+// header of log messages for connecting with proxy server: FTP server address: %s, port: %d, user: %s\r\nProxy server name: %s, type: %s\r\nProxy server address: %s, port: %d, user: %s\r\nConnecting to ""%s"" (%s) on port %d.\r\nLog UID is %d, time is %s.\r\n\r\n
+#define IDS_PRXSRVLOGHEADER           10302
+// header of log messages for reconnecting with proxy server: \r\n-----\r\n\r\nFTP server address: %s, port: %d, user: %s\r\nProxy server name: %s, type: %s\r\nProxy server address: %s, port: %d, user: %s\r\nReconnecting to ""%s"" (%s) on port %d (attempt no. %d).\r\nTime is %s.\r\n\r\n
+#define IDS_PRXSRVRECONLOGHEADER      10303
+
+// FTP Logs window + no log exists: There are no logs to view
+#define IDS_NOLOGS                    10305
+
+// FTP Logs window: position of logged connection:
+// in left panel
+#define IDS_FTPINLEFTPANEL            10310
+// in right panel
+#define IDS_FTPINRIGHTPANEL           10311
+// not in panel (not disconnected, still accessible from Alt+F1/F2 menu)
+#define IDS_FTPNOTINPANEL             10312
+// used for operation
+#define IDS_FTPOPERATION              10313
+// disconnected
+#define IDS_FTPDISCONNECTED           10314
+// stopped (connection was used for operation)
+#define IDS_OPERSTOPPED               10315
+// additional information for left/right/not_in_panel/operation positions: connection inactive (internet connection not opened)
+#define IDS_FTPINACTIVE               10316
+
+// Show Log command from context menu - error: no log, probably disabled logging in configuration
+#define IDS_FSHAVENOLOG               10320
+
+// Logs dialog: texts for commands
+// Are you sure you want to clear log "%s"?
+#define IDS_CLEARLOGQUESTION          10325
+// Are you sure you want to remove log "%s"?
+#define IDS_REMOVELOGQUESTION         10326
+// Are you sure you want to remove all logs?
+#define IDS_REMOVEALLLOGSQUESTION     10327
+// Text was successfully copied to clipboard.
+#define IDS_TEXTCOPIEDTOCLIPBOARD     10328
+// Unable to copy text to clipboard.
+#define IDS_COPYTOCLIPBOARDERROR      10329
+// file filter for saving log as: Log files (*.log)|*.log|All files (*.*)|*.*|
+#define IDS_SAVELOGFILTER             10330
+// saving log as dialog title: Save Log As
+#define IDS_SAVEASTITLE               10331
+// saving all logs as dialog title: Save All Logs As
+#define IDS_SAVEALLASTITLE            10332
+// saving error: Unable to save log to file.\nError: %s
+#define IDS_SAVELOGERROR              10333
+
+// Send FTP Command dialog: error: Empty command is not allowed
+#define IDS_CMDMAYNOTBEEMPTY          10340
+// Send FTP Command: message for log when sending secret FTP command: (secret command)
+#define IDS_SECRETFTPCOMMAND          10341
+// Send FTP Command: title of dialog box with FTP server reply: FTP Server Reply to "%s"
+#define IDS_SERVERREPLYTITLE          10342
+
+// when connection is lost and user asks some FTP command: Connection to FTP server is closed. Do you want to reconnect to FTP server?
+#define IDS_RECONNECTTOSRV            10343
+// when connection is lost and user asks some FTP command: checkbox to skip this warning message: Reconnect without asking next time\thow to revert\tYou can change this option later on Confirmations page in FTP Configuration
+#define IDS_ALWAYSRECONNECT           10344
+
+// Status messages to Log:
+// after login: Logged in successfully, getting system information...\r\n
+#define IDS_LOGMSGLOGINSUCCESS        10350
+// before changing path on FTP server: Changing path to "%s"...\r\n
+#define IDS_LOGMSGCHANGINGPATH        10351
+// before sending of user command: Sending user command "%s"...\r\n
+#define IDS_LOGMSGSENDINGUSRCMD       10352
+// before refreshing path on FTP server: Refreshing path "%s"...\r\n
+#define IDS_LOGMSGREFRESHINGPATH      10353
+// after detaching FTP connection from panel: Connection has left panel...\r\n
+#define IDS_LOGMSGDETACHED            10354
+// after attaching FTP connection to panel: Connection has returned to panel...\r\n
+#define IDS_LOGMSGATTACHED            10355
+// before disconnecting: Disconnecting from server...\r\n
+#define IDS_LOGMSGDISCONNECT          10356
+// before listing path from cache: Listing path "%s" from cache...\r\n
+#define IDS_LOGMSGLISTINGCACHEDPATH   10357
+// before listing path: Listing path "%s"...\r\n
+#define IDS_LOGMSGLISTINGPATH         10358
+// before trying if link is directory or file (resolving link): Resolving link "%s"...\r\n
+#define IDS_LOGMSGRESOLVINGLINK       10359
+// before viewing file from disk-cache: Viewing file ""%s"" from cache...\r\n
+#define IDS_LOGMSGVIEWCACHEDFILE      10360
+// before getting (downloading) file for viewer: Getting file ""%s"" for viewer...\r\n
+#define IDS_LOGMSGVIEWFILE            10361
+// before creating directory (user command - F7 key): Creating directory ""%s""...\r\n
+#define IDS_LOGMSGCREATEDIR           10362
+// Renaming ""%s"" to ""%s""...\r\n
+#define IDS_LOGMSGQUICKRENAME         10363
+// before downloading file (Copy/Move operation): Downloading file ""%s""...\r\n
+#define IDS_LOGMSGDOWNLOADFILE        10364
+// before uploading file (Copy/Move operation): Uploading file ""%s""...\r\n
+#define IDS_LOGMSGUPLOADFILE          10365
+// when user press Pause button in operation dialog: User wants to pause this connection...\r\n
+#define IDS_LOGMSGPAUSE               10366
+// when user press Resume button in operation dialog: User wants to resume this paused connection...\r\n
+#define IDS_LOGMSGRESUME              10367
+// upload failed only due to missing server reply to STOR command - we have tested file size and it's OK: File ""%s"" was uploaded completely (file size on server is %s)...\r\n
+#define IDS_LOGMSGUPLOADISCOMPL       10368
+// upload failed only due to missing server reply to STOR command - we have tested text file size and it's OK: Text file ""%s"" was uploaded completely...\r\n
+#define IDS_LOGMSGUPLOADISCOMPL2      10369
+// upload failed only due to missing server reply to STOR command - we have tested file size and it's NOT OK: File ""%s"" was not uploaded completely (file size on server is not %s)...\r\n
+#define IDS_LOGMSGUPLOADISNOTCOMPL    10370
+// upload failed only due to missing server reply to STOR command - we have tested text file size and it's NOT OK: Text file ""%s"" was not uploaded completely...\r\n
+#define IDS_LOGMSGUPLOADISNOTCOMPL2   10371
+// download failed only due to missing server reply to RETR command - file is probably OK, so it worths to Resume it: Forcing Resume for file ""%s"" (file content was successfully received but server did not confirm successful sending of this file).\r\n
+#define IDS_LOGMSGDWNLOADFORCRESUM    10372
+// upload: autorename tryies to upload file to newly generated name: Renaming file for upload to ""%s""...\r\n
+#define IDS_LOGMSGUPLOADRENFILE       10373
+// Downloading file ""%s"" to ""%s""...\r\n
+#define IDS_LOGMSGDOWNLOADFILE2       10374
+
+// error: unable to reconnect during listing of path: Unable to read the whole list of files and directories from server. The list displayed in panel can be incomplete.
+#define IDS_UNABLETOREADLIST          10380
+// suffix for IDS_UNABLETOREADLIST - when we know other reason (system error) than reconnect failure, we append it: \n\nError: %s
+#define IDS_UNABLETOREADLISTSUFFIX    10381
+// suffix for IDS_UNABLETOREADLIST - when we know other reason (server reply) than reconnect failure, we append it: \n\nServer reply: %s
+#define IDS_UNABLETOREADLISTSUFFIX2   10382
+// suffix for IDS_UNABLETOREADLIST - when we know other reason (timeout) than reconnect failure, we append it: \n\nError: %s\nNote: if data transfer was not started, try to change transfer mode (see Connect to FTP Server dialog > Advanced > Use passive transfer mode)
+#define IDS_UNABLETOREADLISTSUFFIX3   10383
+// suffix for IDS_UNABLETOREADLIST - when we know other reason (server reply) than reconnect failure, we append it: \n\nServer reply: %s\nNote: if data transfer was not started, try to change transfer mode (see Connect to FTP Server dialog > Advanced > Use passive transfer mode)
+#define IDS_UNABLETOREADLISTSUFFIX4   10384
+// error to log: Passive mode is not supported on this site, trying active mode...\r\n
+#define IDS_LOGMSGPASVNOTSUPPORTED    10385
+// list command returned error: Unable to read the list of files and directories for new path on server.\nDo you want to show this path in panel anyway?\n\nPath: %s\nServer reply: %s
+#define IDS_LISTPATHERROR             10386
+// error when trying to prepare active data connection (unable to listen on socket): Unable to prepare active data connection.\n\nError: %s
+#define IDS_OPENACTDATACONERROR       10387
+
+// data connection errors and messages to log:
+// Unable to open passive data connection (IP: %s, port: %d)...\r\n
+#define IDS_LOGMSGUNABLETOOPEN        10390
+// Unable to open passive data connection (IP: %s, port: %d), error: %s...\r\n
+#define IDS_LOGMSGUNABLETOOPEN2       10391
+// Data connection was terminated on user demand...\r\n
+#define IDS_LOGMSGDATACONTERMINATED   10392
+// preliminar attempt to open passive data con. has failed, reconnecting (after sending of FTP transfer command): Reconnecting data connection...\r\n
+#define IDS_LOGMSGDATACONRECON        10393
+// some error has occured in data connection: Data connection error: %s\r\n
+#define IDS_LOGMSGDATCONERROR         10394
+// unexpected server reply (some extra reply received before sending of next command): Unexpected reply:
+#define IDS_LOGMSGUNEXPREPLY          10395
+// Data connection was terminated because it's too long idle...\r\n
+#define IDS_LOGMSGNODATATRTIMEOUT     10396
+// Data connection was not opened...\r\n
+#define IDS_LOGMSGDATACONNOTOPENED    10397
+// Data connection was terminated because it's too long idle.
+#define IDS_ERRDATACONNODATATRTIMEOUT 10398
+// Data connection was not opened.
+#define IDS_ERRDATACONNOTOPENED       10399
+// Unable to open connection to proxy server (IP: %s, port: %d)...\r\n
+#define IDS_LOGMSGUNABLETOCONPRX      10400
+// Unable to open connection to proxy server (IP: %s, port: %d), error: %s...\r\n
+#define IDS_LOGMSGUNABLETOCONPRX2     10401
+// Unable to establish encrypted data connection (SSL).
+#define IDS_ERRDATACONSSLCONNECTERROR 10402
+// Data is corrupted or incomplete so it cannot be properly decompressed (MODE Z).
+#define IDS_ERRDATACONDECOMPRERROR    10403
+// Unable to decompress data (MODE Z), it is corrupted.
+#define IDS_LOGMSGDECOMPRERROR        10404
+
+// name of column in panel with line numbers of raw (as it comes from server) listing: Line
+#define IDS_LINENUMCOLUMN             10410
+// description of column in panel with line numbers of raw (as it comes from server) listing: Line Numbers of Raw FTP Server Listing
+#define IDS_LINENUMCOLUMNDESC         10411
+// name of column in panel with raw (as it comes from server) listing: Listing
+#define IDS_RAWLISTCOLUMN             10412
+// description of column in panel with raw (as it comes from server) listing: Raw FTP Server Listing
+#define IDS_RAWLISTCOLUMNDESC         10413
+
+// texts in wait-window displayed when downloading list of files and directories from server:
+// normal text: Downloading the list of files and directories from %s, press the ESC key to cancel...
+#define IDS_LISTWNDDOWNLOADING        10420
+// download speed (e.g. "at 4.5 KB/s"): at %s/s
+#define IDS_LISTWNDDOWNLOADSPEED      10421
+// when data connection is idle for more than 30 seconds, replace "speed" by ("%s" is idle time, e.g. "1 hr 45 min 34 secs"): connection idle for %s
+#define IDS_LISTWNDCONNECTIONIDLE     10422
+// operation status when total size is known (e.g. "4 KB of 234 KB (at 8 KB/s)"): %s of %s (%s)
+#define IDS_LISTWNDSTATUS1            10423
+// operation status when total size is unknown (e.g. "4 KB (at 8 KB/s)"): %s (%s)
+#define IDS_LISTWNDSTATUS2            10424
+// when it's not possible to estimate time left: (unknown)
+#define IDS_LISTWNDESTIMTIMEUNKNOWN   10425
+// text when aborting: Aborting download of the list of files and directories, press the ESC key to cancel...
+#define IDS_LISTWNDABORTINGCOMMAND    10426
+// first ESC: if abort is possible: Do you want to abort downloading of the list? It may cause the list of files and directories in panel will be incomplete.\n\nNote: if data transfer was not started, try to change transfer mode (see Connect to FTP Server dialog > Advanced > Use passive transfer mode)
+#define IDS_LISTWNDSENDCOMMANDESC     10427
+// first ESC: if abort is not possible (terminating of connection is the only way): Do you want to cancel download of the list? Connection to FTP server will be terminated. It may cause the list of files and directories in panel will be incomplete.\n\nNote: if data transfer was not started, try to change transfer mode (see Connect to FTP Server dialog > Advanced > Use passive transfer mode)
+#define IDS_LISTWNDSENDCOMMANDESC2    10428
+// second ESC: if abort is in progress: Do you want to cancel aborting? Connection to FTP server will be terminated.
+#define IDS_LISTWNDABORTCOMMANDESC    10429
+
+// downloading file for View command: Downloading file %s from %s, press the ESC key to cancel...
+#define IDS_LISTWNDDOWNLOADINGFILE    10433
+// text when aborting: Aborting file download, press the ESC key to cancel...
+#define IDS_LISTWNDDOWNLFILEABORTING  10434
+// first ESC: if abort is possible: Do you want to abort downloading? It may cause viewing of incomplete file.
+#define IDS_LISTWNDDOWNLFILESENDCMDESC 10435
+// first ESC: if abort is not possible (terminating of connection is the only way): Do you want to cancel downloading? Connection to FTP server will be terminated. It may cause viewing of incomplete file.
+#define IDS_LISTWNDDOWNLFILESENDCMDESC2 10436
+// Downloading has timed out.
+#define IDS_LISTWNDDOWNLFILETIMEOUT   10437
+
+// dialog title (for Show Raw Listing command): Raw Listing
+#define IDS_RAWLISTINGTITLE           10440
+// Show Raw Listing command (and Load Listing from File in Configuration/Servers/Edit/Test of Parser): Save As (and Load) filter: Listing files (*.txt)|*.txt|All files (*.*)|*.*|
+#define IDS_RAWLISTINGFILTER          10441
+// Show Raw Listing command: Save As dialog title: Save Raw Listing As
+#define IDS_RAWLISTSAVEASTITLE        10442
+// Show Raw Listing command: Save As error: Unable to save raw listing to file.\nError: %s
+#define IDS_RAWLISTSAVEERROR          10443
+
+// Configuration/Servers: confirmation for remove: Are you sure you want to remove support for servers of type "%s"?
+#define IDS_SRVTYPEREMOVECONF         10450
+// Configuration/Servers: title of New Server Type dialog: New Server Type
+#define IDS_SRVTYPENEWTITLE           10451
+// Configuration/Servers: subject in New Server Type dialog: &Name of server type:
+#define IDS_SRVTYPENEWSUBJECT         10452
+// Configuration/Servers: title of Rename Server Type dialog: Rename Server Type
+#define IDS_SRVTYPERENAMETITLE        10453
+// Configuration/Servers: checkbox in Rename Server Type dialog: &Copy data from server type "%s"
+#define IDS_SRVTYPECOPYFROM           10454
+// Configuration/Servers: suffix for user defined server types: (user defined)
+#define IDS_SRVTYPEUSERDEF            10455
+// Configuration/Servers: New/Rename/CopyTo server type name is not unique: Server type "%s" already exists, please choose other name.
+#define IDS_SRVTYPENOTUNIQUE          10456
+// Configuration/Servers: file filter for exported server types: Server type files (*.str)|*.str|All files (*.*)|*.*|
+#define IDS_SRVTYPEFILEFILTER         10457
+// Configuration/Servers: export server type dialog title: Export Server Type to
+#define IDS_SRVTYPESAVEASTITLE        10458
+// Configuration/Servers: error when exporting server type: Unable to export server type to file.\n\nError: %s
+#define IDS_SRVTYPEEXPORTERROR        10459
+// Configuration/Servers: error when importing server type: Unable to import server type from file.\n\nError: %s
+#define IDS_SRVTYPEIMPORTERROR        10460
+// Configuration/Servers: error when importing server type: too long line or file: File contains too long line or more data than expected.
+#define IDS_SRVTYPEIMPMOREDATA        10461
+// Configuration/Servers: error when importing server type: File is corrupted or not valid server type file.
+#define IDS_SRVTYPEIMPNOTSTRFILE      10462
+// Configuration/Servers: error when importing server type: Unexpected format of file or insufficient system resources.
+#define IDS_SRVTYPEIMPSYNERR          10463
+// Configuration/Servers: import of existing server type: Server type "%s" already exists. Do you want to replace it?
+#define IDS_SRVTYPEOVERWRITE          10464
+// Configuration/Servers: import of existing server type: Rules for parsing contain error
+#define IDS_SRVTYPEIMPERRINRULES      10465
+// Configuration/Servers: import of existing server type: Autodetect condition contains error
+#define IDS_SRVTYPEIMPERRINACOND      10466
+
+// Configuration/Servers/Edit: items (strings to insert) in button-menu after editline "Autodetect condition"
+// boolean operator: And
+#define IDS_ADCSTR_AND                10470
+// boolean operator: Or
+#define IDS_ADCSTR_OR                 10471
+// boolean operator: Not
+#define IDS_ADCSTR_NOT                10472
+// start of subexpression
+#define IDS_ADCSTR_LEFTPAR            10473
+// end of subexpression
+#define IDS_ADCSTR_RIGHTPAR           10474
+// true if FTP server SYST reply contains user defined string: SYST Reply Contains
+#define IDS_ADCSTR_SYSTCONTAINS       10475
+// true if welcome (first) FTP server reply contains user defined string: Welcome Reply Contains
+#define IDS_ADCSTR_WELMSGCONTAINS     10476
+// true if user defined regular expression is found in FTP server SYST reply: Regular Expression Found in SYST Reply
+#define IDS_ADCSTR_SYSTCONTAINSREG    10477
+// true if user defined regular expression is found in welcome (first) FTP server reply: Regular Expression Found in Welcome Reply
+#define IDS_ADCSTR_WELMSGCONTAINSREG  10478
+
+// Configuration/Servers/Edit: Columns listview: names of columns:
+// column identifier name
+#define IDS_SRVTYPECOL_ID             10480
+// name of column in panel
+#define IDS_SRVTYPECOL_NAME           10481
+// description (tooltip) for column in panel
+#define IDS_SRVTYPECOL_DESCR          10482
+// type of data in column
+#define IDS_SRVTYPECOL_TYPE           10483
+// empty value (if listing parser doesn't get any value for column, use "empty value")
+#define IDS_SRVTYPECOL_EMPTYVAL       10484
+// alignment of data in column (left or right)
+#define IDS_SRVTYPECOL_ALIGN          10485
+
+// predefined names for columns in panel (used e.g. in Configuration/Servers/Edit: Columns listview/Edit)
+// name
+#define IDS_STC_STDNAME_NAME          10490
+// extension
+#define IDS_STC_STDNAME_EXT           10491
+// size
+#define IDS_STC_STDNAME_SIZE          10492
+// date
+#define IDS_STC_STDNAME_DATE          10493
+// time
+#define IDS_STC_STDNAME_TIME          10494
+// type
+#define IDS_STC_STDNAME_TYPE          10495
+// Access Rights
+#define IDS_STC_STDNAME_RIGHTS        10496
+// user
+#define IDS_STC_STDNAME_USER          10497
+// group
+#define IDS_STC_STDNAME_GROUP         10498
+// Major and Minor Device Numbers
+#define IDS_STC_STDNAME_DEVICE        10499
+// size in block
+#define IDS_STC_STDNAME_BLKSIZE       10500
+// allocated blocks
+#define IDS_STC_STDNAME_ALLOCBLKS     10501
+// link target
+#define IDS_STC_STDNAME_LINKTGT       10502
+// format (used in IBM z/VM (CMS))
+#define IDS_STC_STDNAME_FORMAT        10503
+// logical record length (used in IBM z/VM (CMS))
+#define IDS_STC_STDNAME_LRECL         10504
+// number of records (used in IBM z/VM (CMS))
+#define IDS_STC_STDNAME_RECORDS       10505
+// filemode (used in IBM z/VM (CMS))
+#define IDS_STC_STDNAME_FILEMODE      10506
+// Volume (used in MVS)
+#define IDS_STC_STDNAME_VOLUME        10507
+// Unit (used in MVS)
+#define IDS_STC_STDNAME_UNIT          10508
+// Extents (used in MVS)
+#define IDS_STC_STDNAME_EXTENTS       10509
+// Used (used in MVS)
+#define IDS_STC_STDNAME_USED          10510
+// Record Format (used in MVS)
+#define IDS_STC_STDNAME_RECFM         10511
+// Physical Block Length (used in MVS)
+#define IDS_STC_STDNAME_BLKSZ         10512
+// Data Set Organization (used in MVS)
+#define IDS_STC_STDNAME_DSORG         10513
+// VV.MM (used in MVS)
+#define IDS_STC_STDNAME_VVMM          10514
+// Created (used in MVS)
+#define IDS_STC_STDNAME_CREATED       10515
+// Initial Size (used in MVS)
+#define IDS_STC_STDNAME_INIT          10516
+// Mod (used in MVS)
+#define IDS_STC_STDNAME_MOD           10517
+// Id (used in MVS)
+#define IDS_STC_STDNAME_ID            10518
+// TTR (used in MVS)
+#define IDS_STC_STDNAME_TTR           10519
+// Alias-of (used in MVS)
+#define IDS_STC_STDNAME_ALIASOF       10520
+// AC (used in MVS)
+#define IDS_STC_STDNAME_AC            10521
+// Attributes (used in MVS)
+#define IDS_STC_STDNAME_ATTR          10522
+// Amode (used in MVS)
+#define IDS_STC_STDNAME_AMODE         10523
+// Rmode (used in MVS)
+#define IDS_STC_STDNAME_RMODE         10524
+// Code (used in Tandem)
+#define IDS_STC_STDNAME_CODE          10525
+// RWEP (used in Tandem)
+#define IDS_STC_STDNAME_RWEP          10526
+
+// predefined descriptions for columns in panel (used e.g. in Configuration/Servers/Edit: Columns listview/Edit)
+// name
+#define IDS_STC_STDDESCR_NAME         10540
+// extension
+#define IDS_STC_STDDESCR_EXT          10541
+// size
+#define IDS_STC_STDDESCR_SIZE         10542
+// date
+#define IDS_STC_STDDESCR_DATE         10543
+// time
+#define IDS_STC_STDDESCR_TIME         10544
+// type
+#define IDS_STC_STDDESCR_TYPE         10545
+// Access Rights
+#define IDS_STC_STDDESCR_RIGHTS       10546
+// User
+#define IDS_STC_STDDESCR_USER         10547
+// group
+#define IDS_STC_STDDESCR_GROUP        10548
+// Major and Minor Device Numbers
+#define IDS_STC_STDDESCR_DEVICE       10549
+// size in block
+#define IDS_STC_STDDESCR_BLKSIZE      10550
+// allocated blocks
+#define IDS_STC_STDDESCR_ALLOCBLKS    10551
+// link target
+#define IDS_STC_STDDESCR_LINKTGT      10552
+// format (used in IBM z/VM (CMS))
+#define IDS_STC_STDDESCR_FORMAT       10553
+// logical record length (used in IBM z/VM (CMS))
+#define IDS_STC_STDDESCR_LRECL        10554
+// number of records (used in IBM z/VM (CMS))
+#define IDS_STC_STDDESCR_RECORDS      10555
+// filemode (used in IBM z/VM (CMS))
+#define IDS_STC_STDDESCR_FILEMODE     10556
+// Volume (used in MVS)
+#define IDS_STC_STDDESCR_VOLUME       10557
+// Unit (used in MVS)
+#define IDS_STC_STDDESCR_UNIT         10558
+// Extents (used in MVS)
+#define IDS_STC_STDDESCR_EXTENTS      10559
+// Used (used in MVS)
+#define IDS_STC_STDDESCR_USED         10560
+// Record Format (used in MVS)
+#define IDS_STC_STDDESCR_RECFM        10561
+// Physical Block Length (used in MVS)
+#define IDS_STC_STDDESCR_BLKSZ        10562
+// Data Set Organization (used in MVS)
+#define IDS_STC_STDDESCR_DSORG        10563
+// VV.MM (used in MVS)
+#define IDS_STC_STDDESCR_VVMM         10564
+// Created (used in MVS)
+#define IDS_STC_STDDESCR_CREATED      10565
+// Initial Size (used in MVS)
+#define IDS_STC_STDDESCR_INIT         10566
+// Mod (used in MVS)
+#define IDS_STC_STDDESCR_MOD          10567
+// Id (used in MVS)
+#define IDS_STC_STDDESCR_ID           10568
+// TTR (used in MVS)
+#define IDS_STC_STDDESCR_TTR          10579
+// Alias-of (used in MVS)
+#define IDS_STC_STDDESCR_ALIASOF      10570
+// AC (used in MVS)
+#define IDS_STC_STDDESCR_AC           10571
+// Attributes (used in MVS)
+#define IDS_STC_STDDESCR_ATTR         10572
+// Amode (used in MVS)
+#define IDS_STC_STDDESCR_AMODE        10573
+// Rmode (used in MVS)
+#define IDS_STC_STDDESCR_RMODE        10574
+// Code (used in Tandem)
+#define IDS_STC_STDDESCR_CODE         10575
+// RWEP (used in Tandem)
+#define IDS_STC_STDDESCR_RWEP         10576
+
+// types for data in columns in panel (used e.g. in Configuration/Servers/Edit: Columns listview/Edit)
+// Name (required)
+#define IDS_STC_TYPE_NAME             10590
+// Extension (generated from file name)
+#define IDS_STC_TYPE_EXT              10591
+// File Size in Bytes
+#define IDS_STC_TYPE_SIZE             10592
+// Last Write Date
+#define IDS_STC_TYPE_DATE             10593
+// Last Write Time
+#define IDS_STC_TYPE_TIME             10594
+// File Type (generated from extension)
+#define IDS_STC_TYPE_TYPE             10595
+// Any Text
+#define IDS_STC_TYPE_ANYTEXT          10596
+// Any Date
+#define IDS_STC_TYPE_ANYDATE          10597
+// Any Time
+#define IDS_STC_TYPE_ANYTIME          10598
+// Any Number
+#define IDS_STC_TYPE_ANYNUM           10599
+
+// errors when loading/editing columns in server type:
+// The first column in server type must be visible and has type "Name"
+#define IDS_STC_ERR_NAMEERR           10610
+// The column with type "Extension" in server type must follow column with type "Name" and must be visible
+#define IDS_STC_ERR_EXTERR            10611
+// Column identifier in server type may not be empty
+#define IDS_STC_ERR_IDEMPTY           10612
+// Format of column identifier in server type is invalid. It must start on letter or underscore and contain only letters, numbers, and underscores.
+#define IDS_STC_ERR_IDINVALID         10613
+// Column identifier in server type may not use reserved names ("is_dir", "is_hidden", and "is_link")
+#define IDS_STC_ERR_IDRESERVED        10614
+// The same identifier for two columns in server type is not allowed
+#define IDS_STC_ERR_IDNOTUNIQUE       10615
+// Incorrect (repeated) use of column types in server type
+#define IDS_STC_ERR_TYPEERR           10616
+// Invalid empty value for column in server type
+#define IDS_STC_ERR_INVALEMPTY        10617
+// Column name in server type may not be empty
+#define IDS_STC_ERR_EMPTYNAME         10618
+// Column description in server type may not be empty
+#define IDS_STC_ERR_EMPTYDESCR        10619
+
+// Configuration/Servers/Edit: confirmation for column remove: Are you sure you want to remove column "%s"?
+#define IDS_SRVTYPECOL_REMOVECONF     10620
+// Configuration/Servers/Edit: confirmation for ESC: You have made some changes. Do you really want to ignore these changes and close dialog?
+#define IDS_SRVTYPE_EXITCONF          10621
+
+// Configuration/Servers/Edit/New - dialog title
+#define IDS_SRVTYPECOL_NEWTITLE       10625
+// Configuration/Servers/Edit: Edit or New: expected format of "Empty Value"
+// date
+#define IDS_SRVTYPECOL_FORMDATE       10626
+// time
+#define IDS_SRVTYPECOL_FORMTIME       10627
+// number
+#define IDS_SRVTYPECOL_FORMNUM        10628
+// string
+#define IDS_SRVTYPECOL_FORMSTR        10629
+// Configuration/Servers/Edit/Edit column type: Alignment: Left + used also in Configuration/Servers/Edit: value "left" for listview column Alignment
+#define IDS_SRVTYPECOL_ALIGNLEFT      10630
+// Configuration/Servers/Edit/Edit column type: Alignment: Right + used also in Configuration/Servers/Edit: value "right" for listview column Alignment
+#define IDS_SRVTYPECOL_ALIGNRIGHT     10631
+
+// Configuration/Servers/Edit/Test of Parser: error when reading raw listing from file: Unable to read raw listing from file.\n\nError: %s
+#define IDS_SRVTYPE_READRAWLISTERR    10635
+// Configuration/Servers/Edit/Test of Parser: reading raw listing from big file: Warning: reading only first 1 MB of text from the file.
+#define IDS_SRVTYPE_READRAWLISTLIMIT  10636
+// Configuration/Servers/Edit/Test of Parser: listview with columns: columns of type Extension and Type can be generated and displayed only in panel: (only in panel)
+#define IDS_SRVTYPE_ONLYINPANEL       10637
+// Configuration/Servers/Edit/Test of Parser: listview with columns: column of type Size on directory (see column Size for some directory on disk in panel): DIR
+// +infoline: value for column of type Size on directory (see column Size for some directory on disk in panel)
+#define IDS_SRVTYPE_SIZEISDIR         10638
+// Configuration/Servers/Edit: error when preparing rules for parsing for use in Test of Parser dialog: Unable to compile parser. Rules for parsing contain error.\n\nError: %s
+#define IDS_STPAR_UNABLECOMPPARSER    10639
+// Configuration/Servers/Edit/Test of Parser: error during parsing of listing (button Parse Raw Listing): Unable to parse whole raw listing.
+#define IDS_SRVTYPE_PARSEERROR        10640
+
+// Errors connected with analyzing of "rules for parser" and "autodetect condition" in server types:
+// Unexpected symbol has been found
+#define IDS_STPAR_ERR_UNEXPSYM        10645
+// Missing end of rule (symbol ';')
+#define IDS_STPAR_ERR_MISSINGRULEEND  10646
+// Invalid function name
+#define IDS_STPAR_ERR_INVALIDFUNCNAME 10647
+// Missing function parameters (symbol '(')
+#define IDS_STPAR_ERR_MISSINGFUNCPARS 10648
+// Function name has not been found (maybe superfluous symbol ',')
+#define IDS_STPAR_ERR_FUNCEXPECTED    10649
+// Unknown function has been found
+#define IDS_STPAR_ERR_UNKNOWNFUNC     10650
+// Missing end of function parameters (symbol ')')
+#define IDS_STPAR_ERR_MISSINGPAREND   10651
+// Function parameter has not been found (maybe superfluous symbol ',')
+#define IDS_STPAR_ERR_PAREXPECTED     10652
+// Missing column identifier
+#define IDS_STPAR_ERR_MISSINGCOLUMNID 10653
+// Invalid column identifier
+#define IDS_STPAR_ERR_INVALIDCOLUMNID 10654
+// Unknown column identifier has been found
+#define IDS_STPAR_ERR_UNKNOWNCOLUMN   10655
+// Column with type "Extension" or "Type" can't be used in rules for parsing
+#define IDS_STPAR_ERR_GENERCOLUMN     10656
+// Missing end of column identifier (symbol '>')
+#define IDS_STPAR_ERR_MISSINGCOLIDEND 10657
+// Missing end of string (symbol '"')
+#define IDS_STPAR_ERR_MISSINGSTREND   10658
+// Unknown escape sequence used in string (use escape sequence "\\" for backslash character)
+#define IDS_STPAR_ERR_STRUNKNESCSEQ   10659
+// Invalid number
+#define IDS_STPAR_ERR_INVALIDNUMBER   10660
+// Unexpected symbol has been found (maybe invalid state variable or boolean value)
+#define IDS_STPAR_ERR_INVALVARORBOOL  10661
+// Unknown state variable has been found
+#define IDS_STPAR_ERR_UNKNOWNSTVAR    10662
+// Right operand in expression has not been found
+#define IDS_STPAR_ERR_RIGHTPAREXPECT  10663
+// Unexpected symbol or unknown operator has been found
+#define IDS_STPAR_ERR_UNEXPSYORUNKNOP 10664
+// Unsupported expression. Only one operator is allowed.
+#define IDS_STPAR_ERR_UNSUPEXPRESSION 10665
+// Incorrect use of operator. Mismatch in types of operands or unexpected types of operands.
+#define IDS_STPAR_ERR_UNEXPTYPESINEXP 10666
+// Incorrect use of function. Unexpected count or types of parameters.
+#define IDS_STPAR_ERR_BADPARINFUNC    10667
+// Incorrect use of column identifier. You need to assign some value to column before you use it.
+#define IDS_STPAR_ERR_BADUSEOFCOLID   10668
+// Invalid string with three-letter months (format: 12 three-letter months separated with spaces)
+#define IDS_STPAR_ERR_BADMONTH3STR    10669
+// Missing string parameter (symbol '"')
+#define IDS_STPAR_ERR_MISSINGSTRPAR   10670
+// Missing end of subexpression (symbol ')')
+#define IDS_STPAR_ERR_MISSINGRIGHTPAR 10671
+// Invalid regular expression: %s
+#define IDS_STPAR_ERR_INVALREGEXP     10672
+// Invalid regular expression
+#define IDS_STPAR_ERR_INVALREGEXP2    10673
+// Invalid string with text months (format: 12 months separated with spaces).
+#define IDS_STPAR_ERR_BADMONTHTXTSTR  10674
+
+// Configuration/Servers/Edit: error in autodetect condition: Autodetect condition contains error.\n\nError: %s
+#define IDS_STPAR_UNABLECOMPAUTODCOND 10680
+
+// message to Log when it's not possible to find parser for text listing (autodetecting server type): Unknown server type, unable to parse text listing...\r\n
+#define IDS_LOGMSGUNKNOWNSRVTYPE      10685
+// message for user when it's not possible to find parser for text listing (autodetecting server type): Unable to parse listing of files and directories from server. Only plain text of listing will be displayed in panel.\n\nPlease check our web pages for newer version of Open Salamander. If you are using the latest version, please send us raw listing (if not confidential; right click in panel > Show Raw Listing > Save As) to email support@altap.cz. Please help us to support as many types of servers as possible.
+#define IDS_UNKNOWNSRVTYPEINFO        10686
+// message to Log when it's not possible to use selected parser for text listing: Unable to parse text listing using selected server type...\r\n
+#define IDS_LOGMSGUNKNOWNSRVTYPE2     10687
+// message for user when it's not possible to use selected parser for text listing: Unable to parse listing of files and directories from server. Only plain text of listing will be displayed in panel.\n\nTry to select different server type or let FTP client to autodetect it (use Advanced button in Connect to FTP Server dialog).
+#define IDS_UNKNOWNSRVTYPEINFO2       10688
+// message to Log when parser for text listing was found: Text listing was parsed by "%s" server type...\r\n
+#define IDS_LOGMSGPARSEDBYSRVTYPE     10689
+// wait window during parsing of text listing: Parsing listing of files and directories from server, please wait...
+#define IDS_WAITWNDPARSINGLST         10690
+
+// for listings with "Blocks" and without "Size" column: when files are selected in panel: plural string for infoline: {!}<%s> block{s|0||1|s} in <%s> selected file{s|0||1|s}
+#define IDS_PLSTR_BLOCKSINSELFILES    10695
+
+// Configuration/Advanced: error message for edit line with Size limit for memory cache: The size limit must be at least 100KB and at most 1GB
+#define IDS_INVALIDMEMCACHESIZE       10700
+// Configuration/Advanced: error message for edit line with Number of bytes to verify when resuming: The number of verified bytes can be at most 1GB
+#define IDS_INVALIDRESUMEOVERLAP      10701
+
+// when there is nothing to display in panel (no accessible path or user don't want to reconnect to server): No path is accessible on this FTP server. Do you wish to disconnect from this server?
+//#define IDS_NOPATHACCESSINPANEL       10705
+
+// Keep Alive message to log: Sending command to keep the connection alive...\r\n
+#define IDS_LOGMSGKEEPALIVE           10710
+// wait window: message displayed if keep alive command is processing: Finishing command sent to keep the connection alive, press the ESC key to cancel...
+#define IDS_FINISHINGKEEPALIVECMD     10711
+// when keep alive command is processing and user press ESC: Do you want to cancel command sent to keep the connection alive? Connection to FTP server will be terminated.
+#define IDS_KEEPALIVECMDESC           10712
+// message to log: when keep alive command is processing and FTP client want to send another command and when timeout occures: Sending of command to keep the connection alive has timed out.\r\n
+#define IDS_LOGMSGKEEPALIVECMDTIMEOUT 10713
+// message to log: NLST/LIST keep-alive command: error when trying to prepare active data connection (unable to listen on socket): Unable to prepare active data connection.\r\n
+#define IDS_LOGMSGOPENACTDATACONERROR 10714
+// message to log (note: keep-alive doesn't try to use active mode if passive fails): Passive mode is not supported on this site.\r\n
+#define IDS_LOGMSGKAPASVNOTSUPPORTED  10715
+// Sending of commands to keep the connection alive was stopped...\r\n
+#define IDS_LOGMSGKASTOPPED           10716
+// message to log: NLST/LIST keep-alive command: error when trying to prepare active data connection through proxy server: Unable to connect to proxy server.\r\n
+#define IDS_LOGMSGOPENACTDATACONERROR2 10717
+
+// resources for description of edit-box with target path in Copy/Move dialog
+// Copy %s from FTP server to
+#define IDS_COPYFROMFTP               10720
+// Move %s from FTP server to
+#define IDS_MOVEFROMFTP               10721
+// title of Copy dialog: Copy
+#define IDS_COPYTITLE                 10722
+// title of Move dialog: Move
+#define IDS_MOVETITLE                 10723
+
+// Confirmation in Delete files/dirs dialog: Are you sure you want to delete %s from FTP server?
+#define IDS_DELETEFROMFTP             10727
+
+// warning before opening of Change Attributes dialog for other than UNIX-type servers with traditional permission model: Change Attributes command will probably not work on this server. It works only on UNIX servers with traditional permission model.\n\nDo you still want to use Change Attributes command?
+#define IDS_CHATTRNOTUNIXSRV          10730
+// subject in Change Attributes dialog: Change attributes of %s to
+#define IDS_CHANGEATTRSONFTP          10731
+// Change Attributes dialog: checkboxes for files and directories are cleared: Nothing to do. Please select changing of attributes for files or directories.
+#define IDS_CHATTRNOTHINGTODO         10732
+// Change Attributes dialog: Numeric value must have three digits
+#define IDS_CHATTRNUMVAL3DIGITS       10733
+// Change Attributes dialog: all attributes (rights) should be remain unchanged: Nothing to do. Please select changing of some attributes.
+#define IDS_CHATTRNOTHINGTODO2        10734
+
+// main menu - submenu name: &Transfer Mode
+#define IDS_MENUTRANSFERMODE          10740
+// main menu - submenu Transfer Mode: &Automatic
+#define IDS_MENUTRMODEAUTO            10741
+// main menu - submenu Transfer Mode: A&SCII
+#define IDS_MENUTRMODEASCII           10742
+// main menu - submenu Transfer Mode: &Binary
+#define IDS_MENUTRMODEBINARY          10743
+
+// combo box values in Configuration on page Operations:
+// Ask User
+#define IDS_OPERATIONSUSERPROMPT      10750
+// Use Alternate Name
+#define IDS_OPERATIONSAUTORENAME      10751
+// Resume
+#define IDS_OPERATIONSRESUME          10752
+// Resume or Overwrite
+#define IDS_OPERATIONSRESUMEOROVERWR  10753
+// Overwrite
+#define IDS_OPERATIONSOVERWRITE       10754
+// Skip
+#define IDS_OPERATIONSSKIP            10755
+// Use Existing Directory
+#define IDS_OPERATIONSUSEEXISTINGDIR  10756
+// Ignore
+#define IDS_OPERATIONSIGNORE          10757
+// Use Binary Mode
+#define IDS_OPERATIONSINBINMODE       10758
+// Delete
+#define IDS_OPERATIONSDELETE          10759
+
+// Configuration: Defaults: ASCII masks hint: '*' stands for any number of characters. '?' stands for any character.\nExample: *.a? (.a1, anything.ai, etc)\nMasks are separated by semi-colon. Example: *.txt;*.doc (a.txt, b.doc, etc)\nExcluded masks are placed after '|'. Example: |*.txt;*.doc (anything except *.txt;*.doc)\nIf you need semi-colon inside mask, type it twice. Example: one;;mask
+#define IDS_MASKS_HINT                10768
+
+// title of FTP operation dialog (for each operation type):
+// Delete: Delete %s from %s
+#define IDS_OPERDLGDELETETITLE        10770
+// Copy: Copy %s from %s
+#define IDS_OPERDLGCOPYDOWNLOADTITLE  10771
+// Move: Move %s from %s
+#define IDS_OPERDLGMOVEDOWNLOADTITLE  10772
+// Copy: Copy %s to %s
+#define IDS_OPERDLGCOPYUPLOADTITLE    10773
+// Move: Move %s to %s
+#define IDS_OPERDLGMOVEUPLOADTITLE    10774
+// Change Attributes: Change Attributes of %s from %s
+#define IDS_OPERDLGCHATTRSTITLE       10775
+
+// FTP operation dialog texts:
+// copy & move, operation source title: Source path:
+#define IDS_OPERDLGSRCPATH            10776
+// copy & move, operation target title: Target path:
+#define IDS_OPERDLGTGTPATH            10777
+// delete & change-attrs, operation path title: Path:
+#define IDS_OPERDLGPATH               10778
+// cancel confirmation: Do you really want to cancel operation?
+#define IDS_OPERDLGCONFIRMCANCEL      10779
+// text on Close/Cancel button when operation is finished (even with errors/skips): Close
+#define IDS_OPERDLGCLOSEBUTTON1       10780
+// text on Close/Cancel button when operation is in progress: Cancel
+#define IDS_OPERDLGCLOSEBUTTON2       10781
+// close confirmation (only if there are some errors/skips): Some parts of operation were not finished successfully.\n\nDo you really want to close unfinished operation?
+#define IDS_OPERDLGCONFIRMCLOSE       10782
+
+// Connections listview: first column: ID
+#define IDS_OPERDLGCONS_ID            10785
+// Connections listview: second column: Action
+#define IDS_OPERDLGCONS_ACTION        10786
+// Connections listview: third column: Status
+#define IDS_OPERDLGCONS_STATUS        10787
+
+// Operations listview: first column: Description
+#define IDS_OPERDLGOPERS_DESCR        10795
+// Operations listview: second column: Status
+#define IDS_OPERDLGOPERS_STATUS       10796
+
+// second column in Operations listview (status) values:
+// Finished
+#define IDS_OPERDLGOPSTS_FINISHED     10800
+// Skipped: %s
+#define IDS_OPERDLGOPSTS_SKIPPED      10801
+// error which could not be solved by user, but automatic solution failed (e.g. error during searching for alternate name): Error: %s
+#define IDS_OPERDLGOPSTS_FAILED       10802
+// error which should be solved by user (option "Ask User"): Ask user: %s, what to do?
+#define IDS_OPERDLGOPSTS_WAITUSER     10803
+// Waiting
+#define IDS_OPERDLGOPSTS_WAITING      10804
+// Processing
+#define IDS_OPERDLGOPSTS_PROCESSING   10805
+// Postponed: subitems are not finished yet
+#define IDS_OPERDLGOPSTS_DELAYED      10806
+// Failed: subitems were not successfully finished
+#define IDS_OPERDLGOPSTS_FORCEDTOFAIL 10807
+
+// FTP operations descriptions:
+// Delete link %s from %s
+#define IDS_OPERDOPDS_DELLINK         10810
+// Delete file %s from %s
+#define IDS_OPERDOPDS_DELFILE         10811
+// Delete directory %s from %s
+#define IDS_OPERDOPDS_DELDIR          10812
+// Explore directory %s from %s for changing of attributes
+#define IDS_OPERDOPDS_CHATTREXPLDIR   10813
+// Resolve link %s from %s
+#define IDS_OPERDOPDS_RESLINK         10814
+// Copy %s%s from %s to %s in %s transfer mode (%s meaning: name, size, path, target path, transfer mode)
+#define IDS_OPERDOPDS_COPY1           10815
+// Copy %s%s from %s to %s as %s in %s transfer mode (%s meaning: name, size, path, target path, target name, transfer mode)
+#define IDS_OPERDOPDS_COPY2           10816
+// Move %s%s from %s to %s in %s transfer mode (%s meaning: name, size, path, target path, transfer mode)
+#define IDS_OPERDOPDS_MOVE1           10817
+// Move %s%s from %s to %s as %s in %s transfer mode (%s meaning: name, size, path, target path, target name, transfer mode)
+#define IDS_OPERDOPDS_MOVE2           10818
+// ASCII transfer mode: ASCII
+#define IDS_OPERDOPDS_ASCIITRMODE     10819
+// binary transfer mode: binary
+#define IDS_OPERDOPDS_BINARYTRMODE    10820
+// if size is in blocks, append word: blocks
+#define IDS_OPERDOPDS_SIZEINBLOCKS    10821
+// Delete directory %s from %s after moving of its content
+#define IDS_OPERDOPDS_MOVEDELDIR      10822
+// Delete directory link %s from %s after moving of its content
+#define IDS_OPERDOPDS_MOVEDELDIRLNK   10823
+// Explore directory %s from %s for copying to %s as %s
+#define IDS_OPERDOPDS_COPYEXPLDIR     10824
+// Explore directory %s from %s for moving to %s as %s
+#define IDS_OPERDOPDS_MOVEEXPLDIR     10825
+// Explore directory link %s from %s for moving to %s as %s
+#define IDS_OPERDOPDS_MOVEEXPLDIRLNK  10826
+// Change attributes of file %s from %s to %s
+#define IDS_OPERDOPDS_CHATTRFILE      10827
+// Change attributes of directory %s from %s to %s
+#define IDS_OPERDOPDS_CHATTRDIR       10828
+// Explore directory link %s from %s for changing of attributes
+#define IDS_OPERDOPDS_CHATTREXPLDIRLNK 10829
+// Explore directory %s from %s for delete
+#define IDS_OPERDOPDS_DELEXPLDIR      10830
+
+// FTP operation problems (errors) descriptions:
+// Success
+#define IDS_OPERDOPPR_OK              10835
+// Insufficient system resources
+#define IDS_OPERDOPPR_LOWMEM          10836
+// Target file cannot be created or opened, system error: %s
+#define IDS_OPERDOPPR_CANTCRTGTFILE   10837
+// Target directory cannot be created, system error: %s
+#define IDS_OPERDOPPR_CANTCRTGTDIR    10838
+// Target file already exists
+#define IDS_OPERDOPPR_TGTFILEEXISTS   10839
+// Target directory already exists
+#define IDS_OPERDOPPR_TGTDIREXISTS    10840
+// Transfer has failed
+#define IDS_OPERDOPPR_TRANSFERFAILED  10841
+// ASCII transfer mode is set for file with binary content
+#define IDS_OPERDOPPR_ASCIITRBINFILE  10842
+// Some of existing attributes (%s) cannot be preserved
+#define IDS_OPERDOPPR_UNKNOWNATTRS    10843
+// unknown value of existing attributes: unknown
+#define IDS_OPERDOPPR_UNKEXISTATTR    10844
+// Path to directory is too long or invalid
+#define IDS_OPERDOPPR_INVALIDPATHTODIR 10845
+// Unable to change working path, server reply:
+#define IDS_OPERDOPPR_UNABLETOCWD     10846
+// Unable to get working path, server reply:
+#define IDS_OPERDOPPR_UNABLETOPWD     10847
+// Exploring of this directory would start endless loop
+#define IDS_OPERDOPPR_DIREXPLENDLESSLOOP 10848
+// Unable to prepare active data connection: %s
+#define IDS_OPERDOPPR_LISTENFAILURE   10849
+// Unable to read the whole list of files and directories from server, error:
+#define IDS_OPERDOPPR_INCOMPLLISTING1 10850
+// Unable to read the whole list of files and directories from server, server reply:
+#define IDS_OPERDOPPR_INCOMPLLISTING2 10851
+// Unable to parse listing of files and directories from server
+#define IDS_OPERDOPPR_UNABLETOPARSELISTING 10852
+// Directory is hidden
+#define IDS_OPERDOPPR_DIRISHIDDEN     10853
+// Directory is not empty
+#define IDS_OPERDOPPR_DIRISNOTEMPTY   10854
+// File is hidden
+#define IDS_OPERDOPPR_FILEISHIDDEN    10855
+// Full name of link is too long or invalid
+#define IDS_OPERDOPPR_INVALIDPATHTOLINK 10856
+// Unable to resolve if link is to directory or to file, server reply:
+#define IDS_OPERDOPPR_UNABLETORESOLVELNK 10857
+// Unable to delete file or link, server reply:
+#define IDS_OPERDOPPR_UNABLETODELFILE 10858
+// Unable to delete directory, server reply:
+#define IDS_OPERDOPPR_UNABLETODELDIR  10859
+// Unable to change attributes, server reply:
+#define IDS_OPERDOPPR_UNABLETOCHATTRS 10860
+// Unable to resume file transfer (server does not support resuming)
+#define IDS_OPERDOPPR_UNABLETORESUME  10861
+// Unable to resume file transfer, unexpected tail of file (file has changed or server fails to resume correctly if you are using ASCII transfer mode)
+#define IDS_OPERDOPPR_RESUMETESTFAILED  10862
+// Unable to read target file, system error: %s
+#define IDS_OPERDOPPR_TGTFILEREADERROR  10863
+// Unable to write target file, system error: %s
+#define IDS_OPERDOPPR_TGTFILEWRITEERROR 10864
+// Unable to retrieve file from server, error: %s
+#define IDS_OPERDOPPR_INCOMPLDOWNLOAD1  10865
+// Unable to retrieve file from server, server reply:
+#define IDS_OPERDOPPR_INCOMPLDOWNLOAD2  10866
+// Move operation: Unable to delete source file or link after successful transfer, server reply:
+#define IDS_OPERDOPPR_UNABLETODELSRCFILE 10867
+// dalsi viz IDS_OPERDOPPR_UPLCANTCRTGTDIR
+
+// second column in Connections listview (Action) values:
+// Stopping
+#define IDS_OPERDLGCOACT_STOPPING     10870
+// Looking for operation to process
+#define IDS_OPERDLGCOACT_LOOKFORWORK  10871
+// Idle
+#define IDS_OPERDLGCOACT_SLEEPING     10872
+// Waiting for user assistance
+#define IDS_OPERDLGCOACT_WAITFORUSER  10873
+// Deleting link %s
+#define IDS_OPERDLGCOACT_DELLINK      10874
+// Deleting file %s
+#define IDS_OPERDLGCOACT_DELFILE      10875
+// Deleting directory %s
+#define IDS_OPERDLGCOACT_DELDIR       10876
+// Exploring directory %s
+#define IDS_OPERDLGCOACT_EXPLDIR      10877
+// Resolving link %s
+#define IDS_OPERDLGCOACT_RESLINK      10878
+// Copying %s
+#define IDS_OPERDLGCOACT_COPY         10879
+// Moving %s
+#define IDS_OPERDLGCOACT_MOVE         10880
+// Changing attributes of %s
+#define IDS_OPERDLGCOACT_CHATTR       10881
+
+// third column in Connections listview (Status) values:
+// Preparing operation
+#define IDS_OPERDLGCOACT_PREPARING    10890
+// Connecting
+#define IDS_OPERDLGCOACT_CONNECTING   10891
+// Unable to connect, waiting %d seconds to retry (attempt no. %d of %d): %s
+#define IDS_OPERDLGCOACT_WAITRECON    10892
+// no more attemps to reconnect (%s is description of error of last attempt to open connection): Unable to connect: %s
+#define IDS_OPERDLGCOACT_CONERROR     10893
+// when downloading file, estimated time left: time left:
+#define IDS_OPERDLGCOACT_TIMELEFT     10894
+// when uploading file: connection needs target path listing, but some other connection is already listing this path, so we are only waiting for result: Waiting for target path listing
+#define IDS_OPERDLGCOACT_WAITFORLIST  10895
+// prefix when current work processing in connection is paused: paused
+#define IDS_OPERDLGCOACT_PAUSED       10896
+
+// header of log messages for operation connection: Host: ""%s"", port: %d.\r\nLog UID is %d, time is %s.\r\n\r\n
+#define IDS_WORKERLOGHEADER           10910
+// message from panel connection to Log: Connection was detached from panel to be used for operation...
+#define IDS_LOGMSGCONINWORKER         10911
+// message from panel connection to Log: Connection was attached to panel (it was used for operation)...
+#define IDS_LOGMSGCONFROMWORKER       10912
+// message from operation connection to Log: Using connection from panel...
+#define IDS_LOGMSGWORKERUSECON        10913
+// message from operation connection to Log: Connection was returned to panel...
+#define IDS_LOGMSGWORKERRETCON        10914
+
+// when unloading FTP plugin: Queue still contains some unfinished FTP operations. Do you want to cancel them?
+#define IDS_CANCELEXISTINGOPER        10917
+
+// wait window: message is displayed when stopping connection, cancelling operation, or unloading plugin:
+// Closing connection used for operation, press ESC key to terminate it...
+#define IDS_CLOSINGOPERCONS1          10920
+// Closing all connections used for operation, press ESC key to terminate them...
+#define IDS_CLOSINGOPERCONS2          10921
+// Closing all connections used for all operations, press ESC key to terminate them...
+#define IDS_CLOSINGOPERCONS3          10922
+// when ESC key is pressed when stopping connection, cancelling operation, or unloading plugin:
+// Do you want to terminate connection used for operation?
+#define IDS_TERMCONFOROPER1           10923
+// Do you want to terminate all connections used for operation?
+#define IDS_TERMCONFOROPER2           10924
+// Do you want to terminate all connections used for all operations?
+#define IDS_TERMCONFOROPER3           10925
+
+// operation dialog: Stop (connection) button: Do you really want to stop connection "%d"?
+#define IDS_WANTTOSTOPCON             10930
+
+// messages from operation connection to Log:
+// Sending of FTP command has timed out.\r\n
+#define IDS_LOGMSGCMDTIMEOUT          10935
+// first connect attempt: Connecting to ""%s"" (%s) on port %d...\r\n\r\n
+#define IDS_WORKERCONLOGHDR           10936
+// Waiting for login prompt has timed out.\r\n
+#define IDS_WORKERWAITLOGTIM          10937
+// after user changes password/account or SSL server certificate is accepted or verified (using Solve Error button)
+#define IDS_WORKERLOGPARCHANGED       10938
+// first connect attempt with proxy server: FTP server address: %s, port: %d, user: %s\r\nProxy server name: %s, type: %s\r\nProxy server address: %s, port: %d, user: %s\r\nConnecting to ""%s"" (%s) on port %d...\r\n\r\n
+#define IDS_PRXSRVWORKERCONLOGHDR     10939
+
+// error descriptions used in operation dialog in listview Connections as reasons why to reconnect or why connect attempts failed
+// Error getting IP address: %s
+#define IDS_WORKERGETIPERROR          10950
+// Error opening connection: %s
+#define IDS_WORKEROPENCONERR          10951
+// Proxy server address is required but it has not been specified yet
+#define IDS_WORKERUNKNOWNPROXYHOST    10952
+// Proxy server password is required but it has not been specified yet
+#define IDS_WORKERUNKNOWNPROXYPASSWORD 10953
+// Password is required but it has not been specified yet
+#define IDS_WORKERUNKNOWNPASSWD       10954
+// Account is required but it has not been specified yet
+#define IDS_WORKERUNKNOWNACCOUNT      10955
+// Login error: %s
+#define IDS_WORKERLOGINERR            10956
+
+// resources for dialog (IDD_LOGINERRORDLG) opened on Solve Error button (under Connections listview) in operation dialog:
+// first line in dialog: All connections used for this operation share following parameters.
+#define IDS_SOLVEERRSUBJECT           10965
+// new text for bottom checkbox: Al&ways try to reconnect (even if permanent login error occurs)
+#define IDS_SOLVEERRRETRY             10966
+// new text for error description subject: Error description:
+#define IDS_SOLVEERRREPLY             10967
+
+// on plugin unload: Closing disk operations thread, press ESC key to terminate it...
+#define IDS_CLOSINGDISKTHREAD         10975
+// on plugin unload, when ESC pressed: Do you really want to terminate disk operations thread?\n\nWarning: some disk files may remain opened after termination of this thread.
+#define IDS_CANCELDISKTHREAD          10976
+
+// titles of Solve Error dialogs opened from operation dialog (see Operations listview in this dialog)
+// Error Creating Target Directory
+#define IDS_SIED_TITLE1               10985
+// Target Directory Already Exists
+#define IDS_SIED_TITLE2               10986
+// Error Creating Target File
+#define IDS_SIED_TITLE3               10987
+// Target File Already Exists
+#define IDS_SIED_TITLE4               10988
+// Transfer Has Failed
+#define IDS_SIED_TITLE5               10989
+// Target Directory or Link to Directory Already Exists
+#define IDS_SIED_TITLE6               10990
+// Confirm Deleting of Hidden Directory
+#define IDS_SISE_TITLE1               10991
+// Confirm Deleting of Hidden File
+#define IDS_SISE_TITLE2               10992
+// Confirm Deleting of Non-Empty Directory
+#define IDS_SISE_TITLE3               10993
+// Error Changing Working Path On Server
+#define IDS_SSCD_TITLE1               10994
+// Error Getting Working Path On Server
+#define IDS_SSCD_TITLE2               10995
+// Error Reading List of Files and Directories from Server
+#define IDS_SSCD_TITLE3               10996
+// Error Preparing Active Data Connection
+#define IDS_SSCD_TITLE4               10997
+// Error Resolving Link
+#define IDS_SSCD_TITLE5               10998
+// Error Changing Attributes
+#define IDS_SSCD_TITLE6               10999
+// Error Deleting File or Link
+#define IDS_SSCD_TITLE7               11000
+// Error Deleting Directory
+#define IDS_SSCD_TITLE8               11001
+// Error Parsing Listing of Files and Directories from Server
+#define IDS_SCRD_TITLE1               11002
+// Error Resuming File
+#define IDS_SSCD2_TITLE1              11003
+// Error Reading Target File
+#define IDS_SSCD2_TITLE2              11004
+// Error Writing Target File
+#define IDS_SSCD2_TITLE3              11005
+// Error Retrieving File from Server
+#define IDS_SSCD2_TITLE4              11006
+// Error Deleting Source File After Successful Transfer
+#define IDS_SSCD2_TITLE5              11007
+// Error Listing Target Path
+#define IDS_SSCD_TITLE9               11008
+// Error Reading List of Files and Directories from Disk
+#define IDS_SSCD_TITLE10              11009
+// Error Opening Source File
+#define IDS_SSCD_TITLE11              11010
+// Target File Is Locked By Another Operation
+#define IDS_SCRD_TITLE2               11011
+// Error Reading Source File
+#define IDS_SSCD_TITLE12              11012
+// Error Storing File to Server
+#define IDS_SIED_TITLE8              11013
+// Error Creating Target File with Alternate Name
+#define IDS_SIED_TITLE7               11014
+// Source File Is Locked By Another Operation
+#define IDS_SCRD_TITLE3               11015
+// Error Testing File
+#define IDS_SSCD2_TITLE7              11016
+
+// texts for editbox Details in Solve Error dialogs opened from operation dialog (see Operations listview in this dialog)
+// error: transfer has failed, details: Target file was created or overwritten
+#define IDS_SIED_DETAIL1              11020
+// error: transfer has failed, details: Target file was resumed
+#define IDS_SIED_DETAIL2              11021
+// error: Server probably does not support resuming
+#define IDS_SSCD2_UNABLETORESUME      11022
+// error: Unexpected tail of file. File has changed or server fails to resume correctly\r\nif you are using ASCII transfer mode.
+#define IDS_SSCD2_RESUMETESTFAILED    11023
+
+// Drag&Drop target path doesn't exist (unexpected): Target path doesn't exist and creating of target path is not supported
+#define IDS_DRAGDROP_TGTNOTEXIST      11025
+// Drag&Drop from FTP to archive or file-system plugin: Copying and moving to archives or plugin file-systems are not supported
+#define IDS_DRAGDROP_TGTARCORFS       11026
+
+// Operation dialog: Copy & Move: status when all connections are idle too long (e.g. more than 30 sec), "%s" is idle time (e.g. "1 hr 23 min 21 secs"): no data transfer for %s
+#define IDS_OPERDLGCONNECTIONSIDLE    11030
+// Operation dialog: status: total transfer rate: %s/s
+#define IDS_OPERDLGSTATUS1            11031
+// Operation dialog: status (first %s is downloaded_bytes and second %s is total_bytes): %s of %s
+#define IDS_OPERDLGSTATUS2            11032
+// Operation dialog: status (first %d is number_of_done_or_skipped_operations and second %d is number_of_operations): {!}%d of %d operation{|1|s}
+#define IDS_OPERDLGSTATUS3            11033
+// Operation dialog: status: {!}%d operation{|1|s} with unknown size
+#define IDS_OPERDLGSTATUS4            11034
+// Operation dialog: status: {!}%d error{|1|s}
+#define IDS_OPERDLGSTATUS5            11035
+// Operation dialog: time left: operation is not in progress, waiting for user actions: (waiting for user)
+#define IDS_OPERDLGTIMLEFTWAIT        11039
+// Operation dialog: time left: operation is done: (done)
+#define IDS_OPERDLGTIMLEFTDONE        11040
+// Operation dialog: Delete & Change Attributes: status when all connections are idle too long (e.g. more than 30 sec), "%s" is idle time (e.g. "1 hr 23 min 21 secs"): idle for %s
+#define IDS_OPERDLGCONNECTIONSIDLE2   11041
+
+// Operation dialog: title when done: done
+#define IDS_OPERDLGTITLE_DONE         11050
+// Operation dialog: title when all items were processed and some items are not done nor skipped: errors
+#define IDS_OPERDLGTITLE_ERRORS       11051
+// Operation dialog: title when some items were not processed yet, but user had stopped all connections: stopped
+#define IDS_OPERDLGTITLE_STOPPED      11052
+// Operation dialog: title when all connections are paused: paused
+#define IDS_OPERDLGTITLE_PAUSED       11053
+// Operation dialog: title when all connections are waiting for user (e.g. password has changed or SSL server certificate has changed and its verification has failed)
+#define IDS_OPERDLGTITLE_WAITING      11054
+
+// Operation dialog: text of "low disk space" hint: There doesn't seem to be enough disk space on target path.\nRequired space: %s\nAvailable space: %s\nMissing disk space: %s
+#define IDS_LOWDISKSPACEONTGTPATH     11060
+
+// Copy/Move/Delete/Change Attributes: if raw listing was not parsed, operation fails: This operation is not prepared to work without properly parsed listing of files and directories from server.
+#define IDS_NEEDPARSEDLISTING         11065
+
+// downloading file for viewer: error occurs: Unable to download file from server.\n\nName: %s\nPath: %s\n
+#define IDS_DOWNLOADFILEERROR         11070
+// suffix for IDS_DOWNLOADFILEERROR: when have system error: Error: %s
+#define IDS_DOWNLOADFILEERRORSUFIX1   11071
+// suffix for IDS_DOWNLOADFILEERROR: when have server reply with error description: Server reply: %s
+#define IDS_DOWNLOADFILEERRORSUFIX2   11072
+// suffix for IDS_DOWNLOADFILEERROR: when have error when writing target file: Error writing target file: %s
+#define IDS_DOWNLOADFILEERRORSUFIX3   11073
+// suffix for IDS_DOWNLOADFILEERROR: when file is locked by another operation: Error: The file is locked by another operation
+#define IDS_DOWNLOADFILEERRORSUFIX4   11074
+
+// Copy/Move from disk to FTP (upload): You have specified home directory as target path, but home directory is not defined for\nthis connection to FTP server. Please specify some other target path on FTP server."
+#define IDS_HOMEDIRNOTDEFINED         11085
+// Copy/Move from disk to FTP (upload): The path specified is invalid.
+#define IDS_INVALIDPATH               11086
+// Copy/Move from disk to FTP (upload): This operation has probably no sense. All selected files and directories have the same target name (they would overwrite one another).\nDo you want to continue with this operation?
+#define IDS_COPYMOVE_NONSENSE         11087
+
+// FTP operation problems (errors) descriptions - second part (see IDS_OPERDOPPR_OK for first part):
+// Target directory cannot be created, its name is invalid on this server
+#define IDS_OPERDOPPR_UPLCANTCRTGTDIRINV    11100
+// Target directory cannot be created, its name is already used for file or link to file
+#define IDS_OPERDOPPR_UPLCANTCRTGTDIRFILEEX 11101
+// Target directory cannot be created, server reply:
+#define IDS_OPERDOPPR_UPLCANTCRTGTDIR       11102
+// Unable to list target path on server to detect file name collisions
+#define IDS_OPERDOPPR_UPLCANTLISTTGTPATH    11103
+// Unable to list target path on server to detect file name collisions, server reply:
+#define IDS_OPERDOPPR_UPLCANTLISTTGTPATH2   11104
+// Unable to list target path on server to detect file name collisions, error: %s
+#define IDS_OPERDOPPR_UPLCANTLISTTGTPATH3   11105
+// Unable to list source path, system error: %s
+#define IDS_OPERDOPPR_UPLCANTLISTSRCPATH    11106
+// failure of auto-rename for target directory: Unable to create target directory with alternate name, server reply:
+#define IDS_OPERDOPPR_UPLCRDIRAUTORENFAILED 11107
+// Unable to delete directory, system error: %s
+#define IDS_OPERDOPPR_UPLCANTDELSRCDISKDIR  11108
+// Target file cannot be created or opened, its name is invalid on this server
+#define IDS_OPERDOPPR_UPLCANTCRTGTFILEINV   11109
+// Target file cannot be created or opened, its name is already used for directory or link to directory
+#define IDS_OPERDOPPR_UPLCANTCRTGTFILEDIREX 11110
+// Target file cannot be created or opened, server reply:
+#define IDS_OPERDOPPR_UPLCANTCRTGTFILE      11111
+// Source file cannot be opened, system error: %s
+#define IDS_OPERDOPPR_UPLCANNOTOPENSRCFILE  11112
+// Target file or link to file already exists
+#define IDS_OPERDOPPR_UPLTGTFILEEXISTS      11113
+// Target directory or link to directory already exists
+#define IDS_OPERDOPPR_UPLTGTDIREXISTS       11114
+// Source file or link is locked by another operation
+#define IDS_OPERDOPPR_SRCFILEINUSE          11115
+// Target file or link is locked by another operation
+#define IDS_OPERDOPPR_TGTFILEINUSE          11116
+// Unable to read source file, system error: %s
+#define IDS_OPERDOPPR_SRCFILEREADERROR      11117
+// Unable to store file to server, error: %s
+#define IDS_OPERDOPPR_INCOMPLUPLOAD1        11118
+// Unable to store file to server, server reply:
+#define IDS_OPERDOPPR_INCOMPLUPLOAD2        11119
+// Unable to delete source file after successful transfer, system error: %s
+#define IDS_OPERDOPPR_UPLCANTDELSRCDISKFILE 11120
+// Resume is not supported in ASCII transfer mode (hint: upload file in binary mode if you need to resume)
+#define IDS_OPERDOPPR_UPLASCIIRESNOTSUP     11121
+// Unable to resume file because target file byte size is unknown
+#define IDS_OPERDOPPR_UPUNABLERESUNKSIZ     11122
+// Unable to resume file because target file is bigger than source file (file has changed)
+#define IDS_OPERDOPPR_UPUNABLERESBIGTGT     11123
+// failure of auto-rename for target file: Unable to create target file with alternate name, server reply:
+#define IDS_OPERDOPPR_UPLFILEAUTORENFAILED  11124
+// after user presses Skip button on waiting item in Operation dialog: Skipped by user
+#define IDS_OPERDOPPR_SKIPPEDBYUSER         11125
+// Unable to get file byte-size to test if file upload was successful (whole file was sent but server did not confirm receiving of this file)
+#define IDS_OPERDOPPR_UPLTESTIFFINNOTSUP    11126
+
+
+// Error descriptions for Solve Error dialogs for Upload operation:
+// Target directory name is invalid on this server.
+#define IDS_UPLERR_CANTCRTGTDIRINV    11150
+// Target directory name is already used for file or link to file.
+#define IDS_UPLERR_CANTCRTGTDIRFILEEX 11151
+// Target file name is invalid on this server.
+#define IDS_UPLERR_CANTCRTGTFILEINV   11152
+// Target file name is already used for directory or link to directory.
+#define IDS_UPLERR_CANTCRTGTFILEDIREX 11153
+// Resume is not supported in ASCII transfer mode.\r\nHint: upload file again in binary mode if you need to resume.
+#define IDS_UPLERR_UPLCANTRESUMINASC  11154
+// Unable to resume file because target file is bigger than source file\r\n(file has changed).
+#define IDS_UPLERR_UPLCANTRESUMBIGTGT 11155
+// Unable to get file byte-size to test if file upload was successful (whole\r\nfile was sent but server did not confirm receiving of this file)."
+#define IDS_UPLERR_UPLTESTIFFINNOTSUP 11156
+
+// Quick Rename: questions following test if target name is not already used
+// Target name is already used for file. Do you want to overwrite it?
+#define IDS_RENAME_FILEEXISTS         11170
+// Target name is already used for directory. Do you want to continue?
+#define IDS_RENAME_DIREXISTS          11171
+// Unable to check if target name is not already used. Do you want to continue?
+#define IDS_RENAME_UNABLETOGETLIST    11172
+// when renaming directory to existing file: Target name is already used for file. Do you want to continue?
+#define IDS_RENAME_FILEEXISTS2        11173
+
+// text for "Resume" button above "Connections" listview in operation progress
+// dialog - assign hotkey not conflicting with other controls in dialog: Resu&me
+#define IDS_OPERDLGRESUMEBUTTON       11180
+// text for "Resume" button under "Connections" listview in operation progress
+// dialog - assign hotkey not conflicting with other controls in dialog: Res&ume
+#define IDS_OPERDLGRESUMECONBUTTON    11181
+
+// texts for "Proxy Server" combo in Configuration/Defaults and Connect to FTP Server dialog
+// Not Used (direct connection)
+#define IDS_PROXYSERVER_NOTUSED       11190
+// Default (see Configuration/Defaults)
+#define IDS_PROXYSERVER_DEFAULT       11191
+// User Defined
+#define IDS_PROXYSERVER_USERDEF       11192
+// SOCKS 4
+#define IDS_PROXYSERVER_SOCKS4        11193
+// SOCKS 4A
+#define IDS_PROXYSERVER_SOCKS4A       11194
+// SOCKS 5
+#define IDS_PROXYSERVER_SOCKS5        11195
+// HTTP 1.1
+#define IDS_PROXYSERVER_HTTP11        11196
+// SITE host:port
+#define IDS_PROXYSERVER_SITE1         11197
+// SITE host port
+#define IDS_PROXYSERVER_SITE2         11198
+// SITE user@host:port
+#define IDS_PROXYSERVER_SITE3         11199
+// SITE user@host port
+#define IDS_PROXYSERVER_SITE4         11200
+// OPEN host:port
+#define IDS_PROXYSERVER_OPEN          11201
+// Transparent
+#define IDS_PROXYSERVER_TRANSPAR      11202
+// USER user@host:port
+#define IDS_PROXYSERVER_USER1         11203
+// USER user@host port
+#define IDS_PROXYSERVER_USER2         11204
+// USER proxy-user@host:port
+#define IDS_PROXYSERVER_USER3         11205
+// USER user@host:port proxy-user
+#define IDS_PROXYSERVER_USER4         11206
+// USER user@proxy-user@host:port
+#define IDS_PROXYSERVER_USER5         11207
+
+// Proxy Script error descriptions:
+// Script must begin with ""Connect to:"".
+#define IDS_PRXSCRERR_INVSTART        11220
+// when server address (follows "Connect to:") is empty: Host may not be empty.
+#define IDS_PRXSCRERR_HOSTEMPTY       11221
+// invalid format of server address (follows "Connect to:"): Invalid host or port specified (use ""host"" or ""host:port"" format).
+#define IDS_PRXSCRERR_INVHOSTORPORT   11222
+// Script contains unknown variable.
+#define IDS_PRXSCRERR_UNKNOWNVAR      11223
+// not all variables can be used in server address (follows "Connect to:"): You can use only $(ProxyHost) or $(Host) variables here.
+#define IDS_PRXSCRERR_HOSTVARSONLY    11224
+// invalid port definition in server address (follows "Connect to:"): You can set port only as number or as $(ProxyPort) or $(Port) variable.
+#define IDS_PRXSCRERR_INVPORT         11225
+// note: do not translate "USER" (it's FTP command): You cannot use ""3xx:"" condition for the first command, some preceeding command (typically ""USER"") is neccessary.
+#define IDS_PRXSCRERR_3XXONFIRSTLINE  11226
+// Proxy script must contain at least one command.
+#define IDS_PRXSCRERR_NONECMDS        11227
+
+// Edit Proxy Server dialog title: Edit Proxy Server
+#define IDS_EDITPROXYSRVTITLE         11230
+// Proxy Server dialog: error descriptions:
+// (used also in Connect to FTP Server / Advanced dialog + as Proxy Script error descriptions): Port number must be in range 1 to 65535.
+#define IDS_PORTISUSHORT              11231
+// Proxy name specified is either empty or used for some other proxy server. Please change it.
+#define IDS_INVPROXYNAME              11232
+// Proxy address cannot contain ':' character (hint: specify port number in next editbox).
+#define IDS_INVPROXYADDRESS           11233
+// Proxy address cannot be empty.
+#define IDS_EMPTYPROXYADDRESS         11234
+// Transparent proxy with empty user name has no sense. Please enter user name or connect without setting proxy server.
+#define IDS_EMPTYUSERFORTRANSPRX      11235
+
+// confirmation for delete of proxy server: Do you really want to delete ""%s"" proxy server?
+#define IDS_WANTDELPRXSRV             11240
+
+// Enter Proxy Server Address dialog: title: Enter Proxy Server Address
+#define IDS_ENTERPRXHOSTTITLE         11245
+// Enter Proxy Server Address dialog: text: &Proxy server address:
+#define IDS_ENTERPRXHOSTTEXT          11246
+// Enter Proxy Server Password dialog: title: Enter Proxy Server Password
+#define IDS_ENTERPRXPASSTITLE         11247
+// Enter Proxy Server Password dialog: text: &Proxy server password:
+#define IDS_ENTERPRXPASSTEXT          11248
+
+// when connecting and server demands more commands than is supplied in proxy script (text for messagebox): Proxy script is probably incomplete. See server reply to last script command for details.\r\n\r\nServer reply: %s
+#define IDS_INCOMPLETEPRXSCR          11255
+// when connecting and all commands from proxy script were skipped (text for messagebox and for Solve Error dialog in operation dialog): Proxy script is probably incomplete. All commands from script were skipped.
+#define IDS_INCOMPLETEPRXSCR2         11256
+// when connecting and server demands more commands than is supplied in proxy script (text for Solve Error dialog in operation dialog): Proxy script is probably incomplete. See server reply to last script command for details: %s
+#define IDS_INCOMPLETEPRXSCR3         11257
+
+// proxy server error codes (when proxy server tryies to connect to FTP server):
+// Connection was rejected or failed.
+#define IDS_PROXYERRREJORFAIL         11265
+// Unable to connect to identd on client (you probably need to install identd service).
+#define IDS_PROXYERRNEEDIDENTD        11266
+// Connection was rejected because proxy user name and user name returned by identd are different.
+#define IDS_PROXYERRDIFFUSERS         11267
+// proxy server error codes (when proxy server prepares for inbound connection from FTP server):
+// Connection from unknown IP address cannot be accepted.
+#define IDS_PROXYERRINVHOST           11268
+
+// error messages when connecting through proxy server
+// Error getting IP address of ""%s"": %s
+#define IDS_PROXYERRGETIP             11275
+// Error sending request to proxy server: %s
+#define IDS_PROXYERRSENDREQ           11276
+// Error receiving reply from proxy server: %s
+#define IDS_PROXYERRRECVREP           11277
+// Proxy server is not able to open connection to FTP server ""%s"" (port: %d), error: %s
+#define IDS_PROXYERROPENCON           11278
+// Unable to connect to proxy server.
+#define IDS_PROXYERRUNABLETOCON       11279
+// Unable to connect to proxy server or proxy server rejects opening of active data connection.
+#define IDS_PROXYERROPENACTDATA       11280
+// Unable to connect to proxy server, error: %s
+#define IDS_PROXYERRUNABLETOCON2      11281
+// Proxy server rejects anonymous users, please add your username and password to proxy server definition.
+#define IDS_PROXYERRNOAUTHUNSUP       11282
+// Proxy server does not support username+password authentification, please try anonymous access (clear username and password in proxy server definition).
+#define IDS_PROXYERRUSERPASSAUTHUNSUP 11283
+// Proxy server rejects your username and password.
+#define IDS_PROXYERRUSERPASSFAIL      11284
+// Proxy server does not support opening of active data connection.
+#define IDS_PROXYERRLISTENUNSUP       11285
+
+// Status messages to Log:
+// Deleting file ""%s""...\r\n
+#define IDS_LOGMSGDELETEFILE          11290
+// Deleting link ""%s""...\r\n
+#define IDS_LOGMSGDELETELINK          11291
+// Deleting directory ""%s""...\r\n
+#define IDS_LOGMSGDELETEDIR           11292
+// Deleting directory link ""%s""...\r\n
+#define IDS_LOGMSGDELETEDIRLINK       11293
+// Changing attributes of file ""%s""...\r\n
+#define IDS_LOGMSGCHATTRSFILE         11294
+// Changing attributes of directory ""%s""...\r\n
+#define IDS_LOGMSGCHATTRSDIR          11295
+// Exploring directory ""%s"" on path ""%s""...\r\n
+#define IDS_LOGMSGEXPLORINGDIR        11296
+
+// SOCKS 5 error messages:
+// General SOCKS server failure.
+#define IDS_PROXYERRGENFAIL           11300
+// Connection not allowed by ruleset.
+#define IDS_PROXYERRRULESET           11301
+// Network unreachable.
+#define IDS_PROXYERRNETUNR            11302
+// Host unreachable.
+#define IDS_PROXYERRHOSTUNR           11303
+// Connection refused.
+#define IDS_PROXYERRCONREF            11304
+// TTL expired.
+#define IDS_PROXYERRTTLEXP            11305
+// Command not supported.
+#define IDS_PROXYERRCMDNOTSUP         11306
+// Address type not supported.
+#define IDS_PROXYERRADRTYPEUNSUP      11307
+
+// FTP configuration: page Defaults:
+// Type of your default proxy server is HTTP 1.1. It supports only passive transfer mode. Please change your default transfer mode to passive (or change your default proxy server).
+#define IDS_HTTPNEEDPASSIVETRMODE     11320
+// Connect FTP Server dialog: after click on Connect button:
+// You are connecting to FTP server through proxy server. Type of this proxy server is HTTP 1.1. It supports only passive transfer mode. Please change transfer mode to passive (click Advaced button, see Use passive transfer mode checkbox).
+#define IDS_HTTPNEEDPASSIVETRMODE2    11321
+
+// Hint "How to list hidden files and directories (unix)": (to display it, go to menu Plugins > FTP Client > List Hidden Files and Directories (Unix))
+// If you always want to list hidden files and directories on this FTP server, go to menu Plugins/FTP Client/Connect to FTP Server, find this server in bookmarks, click Advanced button, and set Command for listing to ""LIST -a"".
+#define IDS_HINTLISTHIDDENFILES       11325
+// &Do not show this hint next time\thow to revert\tYou can change this option later on Confirmations page in FTP Configuration
+#define IDS_DONOTSHOWHINTLISTHF       11326
+
+// Information messages to Log:
+// download: Unable to resume the file because verification of its tail has failed (file has changed).
+#define IDS_LOGMSGUNABLETORESUME      11330
+// download and upload: Trying to overwrite the target file (to copy/move the entire file again).
+#define IDS_LOGMSGOVERWRTGTFILE       11331
+// download and upload: Too small file for resume, the target file will be overwritten.
+#define IDS_LOGMSGRESUMEUSELESS       11332
+// download: Resume: getting file from the beginning to verify already downloaded part.
+#define IDS_LOGMSGRESUMEFROMBEG       11333
+// download and upload: Unable to resume the file (resume is not supported by server).
+#define IDS_LOGMSGRESUMENOTSUP        11334
+// download and upload: Unable to resume the file because it is shorter than already copied/moved part of file (file has changed).
+#define IDS_LOGMSGUNABLETORESUME2     11335
+// upload: Unable to resume (append) the file (append is not supported by server or you are uploading in ASCII transfer mode).
+#define IDS_LOGMSGUPLRESUMENOTSUP     11336
+// upload: Unable to get size (in bytes) of already copied/moved part of the target file.
+#define IDS_LOGMSGUPLUNABLETOGETSIZE  11337
+// upload: Unable to resume (append) the file (unexpected error).
+#define IDS_LOGMSGUPLRESUMEERR        11338
+// upload: Entire file was sent but server did not confirm its receiving.\r\nGoing to get file size (in bytes) to test if file was successfully copied/moved.
+#define IDS_LOGMSGUPLNOTCONFIRMED     11339
+
+#define IDS_SSL_ERR_OPENSSLNOTFOUND   11340
+#define IDS_SSL_ERR_NEW               11342
+#define IDS_SSL_ERR_NEW_LOG           11343
+#define IDS_SSL_ERR_CONNECT           11344
+#define IDS_SSL_ERR_CONNECT_ERR       11345
+#define IDS_SSL_ERR_CONNECT_LOG       11346
+#define IDS_SSL_ERR_CONTRENCUNSUP     11347
+#define IDS_SSL_ERR_DATAENCUNSUP      11348
+#define IDS_SSL_ERR_NOTYETVALID       11349
+#define IDS_SSL_ERR_EXPIRED           11350
+
+// tooltips on lock icon in Directory line (first in locked state, second in unlocked state)
+#define IDS_SSL_SECURITY_OK           11358
+#define IDS_SSL_SECURITY_UNVERIFIED   11359
+
+#define IDS_SSL_LOG_ALGO              11360
+#define IDS_SSL_LOG_OSSL_CERT_VERIFY  11361
+#define IDS_SSL_LOG_ISSUER            11362
+#define IDS_SSL_LOG_SUBJECT           11363
+
+// log message when server certificate was validated by its certification authority
+#define IDS_SSL_LOG_CERTVERIFIED      11370
+// log message when server certificate was not validated by its certification authority
+#define IDS_SSL_LOG_CERTNOTVERIFIED   11371
+// log messages with user choice in Server Identity Problem dialog (when server certificate was not validated by any certification authority)
+#define IDS_SSL_LOG_CERTACCEPTED      11372
+#define IDS_SSL_LOG_CERTREJECTED      11373
+// log message when server certificate has changed
+#define IDS_SSL_LOG_CERTCHANGED       11374
+
+#define IDS_MODEZ_LOG_UNSUPBYSERVER   11380
+
+// SSL error message when downloading listing of current directory in panel
+#define IDS_LISTCOMMANDERROR          11385
+// SSL error message when downloading file for viewing (F3 in panel)
+#define IDS_DOWNLOADONEFILEERROR      11386
+// SSL: connection state in progress dialog: when server certificate has changed and new certificate verification has failed (we need user to accept or reject the certificate)
+#define IDS_SSLNEWUNVERIFIEDCERT      11387
+
+// Connect dialog / Save password checkbox: "Protected by Master Password" when password is stored in the password manager (AES)
+#define IDS_SAVEPASSWORD_PROTECTED    11390
+
+// Some FTP passwords are not secured. Please enter the Master Password into the following dialog box.\n\nNote: if you click the Cancel button, these passwords will be stored unsecured.
+#define IDS_PASSWORD_UNSECURED        11395
+
+// Some FTP passwords cannot be decrypted.\n\nThey were probably encrypted using another Master Password.\nTry to change the Master Password to decrypt such passwords.
+#define IDS_CANNOT_DECRYPT_SOMEPASSWORDS 11396
+
+// The password cannot be decrypted.\n\nThe password was probably encrypted using another Master Password.\nTry to change the Master Password to decrypt this password.\nAlternatively you can clear it.\n\nDo you want to clear this password?
+#define IDS_CANNOT_DECRYPT_PASSWORD_DELETE 11398
+
+// Are you sure you wish to clear this password?
+#define IDS_CLEARPASSWORD_CONFIRMATION  11399
+
+// Are you sure you wish to show this password?
+#define IDS_SHOWPASSWORD_CONFIRMATION   11400
+// The password is: 
+#define IDS_PASSWORDIS                  11401
+
+#endif // __FTP_RH2

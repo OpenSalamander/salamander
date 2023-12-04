@@ -1,0 +1,200 @@
+﻿// Microsoft Visual C++ generated resource script.
+//
+#pragma code_page(65001)
+
+#include "lang.rh"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winresrc.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "lang.rh\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winresrc.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)\r\n"
+    "LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL\r\n"
+    "#include ""..\\version.rc2""\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_INPUTBOX DIALOGEX 75, 140, 205, 64
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Input Box"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Prompt:",IDC_PROMPT,8,8,189,8
+    EDITTEXT        IDC_INPUTBOX,8,18,189,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",1,48,42,50,14,WS_GROUP
+    PUSHBUTTON      "Cancel",2,107,42,50,14
+END
+
+IDD_CONFIG DIALOGEX 75, 140, 332, 143
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Automation Configuration"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "&Script Directories:",IDC_DIRLISTHEADER,8,9,67,8
+    CONTROL         "",IDC_DIRLIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_EDITLABELS | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,8,19,316,73
+    CONTROL         "Enable script &debugging",IDC_ENABLEDBG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,102,105,10
+    DEFPUSHBUTTON   "OK",IDOK,75,121,50,14,WS_GROUP
+    PUSHBUTTON      "Cancel",IDCANCEL,141,121,50,14
+    PUSHBUTTON      "&Help",IDHELP,207,121,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_INPUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 8
+        RIGHTMARGIN, 197
+        TOPMARGIN, 8
+        BOTTOMMARGIN, 56
+    END
+
+    IDD_CONFIG, DIALOG
+    BEGIN
+        LEFTMARGIN, 8
+        RIGHTMARGIN, 324
+        TOPMARGIN, 8
+        BOTTOMMARGIN, 135
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDM_BROWSE MENU
+BEGIN
+    POPUP "[POPUP]"
+    BEGIN
+        MENUITEM "Browse…",                     ID_BROWSE
+        MENUITEM SEPARATOR
+        MENUITEM "Salamander Directory",        ID_SALDIR
+        MENUITEM "Environment Variable",        ID_ENVVAR
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDS_SCRIPTERROR         "Automation Script Error"
+    IDS_LINE                "Line:\t%u\r\n"
+    IDS_COLUMN              "Column:\t%u\r\n"
+    IDS_ERROR               "Error:\t%s"
+    IDS_RUNFOCUSED          "Run Focused Script"
+    IDS_PROGRESSTITLE       "Operation Progress"
+    IDS_SOURCE              "Source:\t%s\r\n"
+    IDS_SCRIPTPOPUPMENU     "Open Script Menu"
+    IDS_MENUEMPTY           "(no script)"
+    IDS_LOADERRFMT          "Failed to execute script '%s'.\r\n%s"
+    IDS_UNKERROR            "Unknown error."
+    IDS_ABORT               "1\t&Abort"
+    IDS_DEBUGABORT          "1\t&Debug\t2\t&Abort"
+    IDS_ADDDIRTITLE         "Script Directory"
+    IDS_ADDDIRDESCR         "Select script repository directory."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_PLUGINNAME          "Automation"
+    IDS_DESCRIPTION         "Automates common tasks using scripts."
+    IDS_ABOUT               "About Plugin"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_E_INVALIDARCHIVE    "Invalid archive."
+    IDS_E_CANNOTCLOSEPATH   "Current path cannot be closed."
+    IDS_E_SHORTERPATH       "The path was truncated."
+    IDS_E_READONLYWHILEPROGRESSSHOWN 
+                            "Cannot change the property or call the method %s while the window is shown."
+    IDS_E_READONLYWHILEPROGRESSHIDDEN 
+                            "Cannot change the property or call the method %s while the window is hidden."
+    IDS_E_PLUGLOADFAIL      "Failed to load the plugin."
+    IDS_E_PLUGERROR         "Plugin failure."
+    IDS_E_CACHEERROR        "Failed to move the file to the disk cache."
+    IDS_E_FILEMASKSYNTAX    "File mask syntax error."
+    IDS_E_NOTCOMPONENT      "Only components can be added to the container."
+    IDS_E_FORMPUT           "Forms cannot be added to the container."
+    IDS_E_SCRIPTABORTED     "Script execution was aborted by the user."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_ABORTCAPTION        "Abort Script"
+    IDS_ABORTTIP            "Abort Running Script\tCtrl+Break"
+    IDS_MAINWINDOWLOCKED    "Open Salamander window is locked by Automation plugin. Please finish running script."
+    IDS_ENGINECREATEFAIL    "Failed to initialize the scripting engine."
+END
+
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL
+#include "..\version.rc2"
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

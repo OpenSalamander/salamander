@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Split &amp; Combine Configuration dialog box</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: Split &amp; Combine: Dialog Boxes</div>
+<div class="page">
+<h1>Split &amp; Combine Configuration</h1>
+
+<p>You can customize Split &amp; Combine plugin in this dialog. See
+<a href="ms-its:salamand.chm::/hh/salamand/plugins_config.htm">Configuring Plugins</a>
+for general information about configuration.</p>
+
+<h4>Options</h4>
+<dl>
+<dt><i>Include original extension to output filenames</i></dt>
+
+<dd>Results of splitting are files with sequence number in extension. You can
+choose here if this extension is just added or if it replaces the original
+extension.
+</dd>
+
+<dt><i>Create batch file for combining</i></dt>
+
+<dd>When checked, this plugin creates .bat file for combining parts to original
+file even without use of this plugin. Moreover some additional data is added to
+this .bat file: original filename, CRC checksum, and filetime. It's recommended to
+select this option because original file CRC checksum enables you to
+test combined file for transfer errors.
+</dd>
+
+<dt><i>Split to other panel</i></dt>
+
+<dd>When checked, split results are placed to other panel path (instead of current directory).
+</dd>
+
+<dt><i>Split to subdirectory named by source file</i></dt>
+
+<dd>When checked, split results are placed to a subdirectory with the same name as
+original file.
+</dd>
+
+<dt><i>Combine to other panel</i></dt>
+
+<dd>When checked, combined file is placed to other panel path (instead of current directory).
+</dd>
+
+</dl>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Change Attributes dialog box</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: FTP Client: Dialog Boxes</div>
+<div class="page">
+
+<h1>Change Attributes</h1>
+
+<p>Allows you to change access rights (attributes) on Unix FTP servers.
+</p>
+
+<h4>Options</h4>
+<dl>
+<dt><i>Owner: Read, Write, Execute (Access)</i><br/>
+<i>Group: Read, Write, Execute (Access)</i><br/>
+<i>Others: Read, Write, Execute (Access)</i></dt>
+<dd>Specify new access rights for owner, group, and others. When checked, the
+right will be set. When cleared, the right will be cleared. When the check box
+is in third state, the right will be preserved (it will stay as is).
+</dd>
+
+<dt><i>Numeric value</i></dt>
+<dd>You can also set access rights using their octal representation. First digit
+is for owner rights, second for group rights, and third for others rights. Numerical
+values for rights are these: 1 = Execute (Access), 2 = Write, 4 = Read. Use '-'
+character to preserve all rights (e.g. "6-0" means read and write for owner, preserve
+group rights, and no rights for others). Note: it is not possible to preserve only
+some part of rights (e.g. only read for owner) in this way.
+</dd>
+
+<dt><i>Include subdirectories</i></dt>
+<dd>When checked, it will process also files and directories in selected subdirectories.
+Otherwise it will process only selected subdirectories (without content).
+</dd>
+
+<dt><i>Change attributes of files</i></dt>
+<dd>When checked, selected files (and also files in subdirectories if
+<i>Include subdirectories</i> is checked) will be processed. Otherwise
+it will skip all files.
+</dd>
+
+<dt><i>Change attributes of directories</i></dt>
+<dd>When checked, selected directories (and also directories in subdirectories if
+<i>Include subdirectories</i> is checked) will be processed. Otherwise
+it will skip all directories.
+</dd>
+
+</dl>
+
+<h4>See Also</h4>
+<p>
+<a href="using_changeattrs.htm">Changing Access Rights (Unix)</a><br/>
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

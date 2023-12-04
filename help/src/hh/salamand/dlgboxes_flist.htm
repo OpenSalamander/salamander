@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Make File List dialog box</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Dialog Boxes</div>
+<div class="page">
+<h1>Make File List</h1>
+
+<p>Use this dialog box to create the list of selected files and directories.
+The list can be saved to a specified file, to the clipboard, or opened in the
+Internal Viewer. Format of lines in the list can be specified.</p>
+
+<h4>Dialog Box Options</h4>
+<dl>
+<dt><i>Line</i></dt>
+<dd>Specify the format string for lines of the list. Build the format string
+from your text and the variables contained in the context menu which can be
+opened by clicking the button on the right side of the <i>Line</i> field.
+You can set the width of the variable value to some fixed number of characters
+or to 'max' (to fit to the longest value). For example:
+"$(FileName:20)$(TAB)$(FileSize)$(CRLF)" or "$(FileName:max)$(TAB)$(FileSize)$(CRLF)".
+If you need to write a dollar character ($), type it twice
+(e.g. "$$30 utility $(FileName)$(CRLF)"). Use the drop-down list to
+select previously used format string.</dd>
+
+<dt><i>Destination: Clipboard, Internal Viewer, File</i></dt>
+<dd>Choose the destination for the list. If you want to save it to the file,
+specify here also its filename.</dd>
+
+<dt><i>Append to file</i></dt>
+<dd>When selected and the specified file already exists, output will be appended to the
+    file instead of overwriting it.</dd>
+
+</dl>
+
+<h4>See Also</h4>
+<p>
+<a href="advwork_list.htm">Making List of Files and Directories</a><br />
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

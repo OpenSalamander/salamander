@@ -1,0 +1,13 @@
+07
+
+"Selbstentpackendes ZIP-Archiv"
+
+"Dieses Programm entpackt das ZIP-Archiv."
+
+"Version 1.40"
+
+"&Entpacken"
+
+"Self-Extractor © 2000-2023 Open Salamander Authors"
+
+"https://www.altap.cz"

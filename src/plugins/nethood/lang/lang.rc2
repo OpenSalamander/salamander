@@ -1,0 +1,41 @@
+﻿//****************************************************************************
+//
+// Copyright (c) 2023 Open Salamander Authors
+//
+// This is a part of the Open Salamander SDK library.
+//
+//****************************************************************************
+
+//
+// lang.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "..\versinfo.rh2"
+#include "versinfo.rc2"
+
+STRINGTABLE 
+BEGIN
+    IDS_COLUMN_COMMENTS     "Comment"
+    IDS_INFOLINE_SELECTION_PLURAL "{!}<%d> selected object{|1|s}"
+    IDS_MENUITEM            "Network"
+    IDS_REFRESHING          "Scanning network…"
+    IDS_NETWORK_UNAVAILABLE "Network is not available."
+    IDS_ABOUT               "About Plugin"
+    IDS_TSCLIENT            "%1 on %2"
+    IDS_TSFOLDER            "Local Computer"
+    IDS_TSHOST              "Host Computer"
+    IDS_TSFOLDERCOMMENT     "Disks from %s"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_PLUGIN_NAME         "Network"
+    IDS_DESCRIPTION         "Provides access to computers on the network."
+END

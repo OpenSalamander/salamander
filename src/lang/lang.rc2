@@ -1,0 +1,120 @@
+﻿//
+// lang.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "..\\versinfo.rh2"
+#include "..\\plugins\\shared\\versinfo.rc2"
+
+#include "texts.rc2"   // non-Microsoft Visual C++ edited resources
+
+/*
+IDD_TIPOFTHEDAY DIALOGEX 67, 38, 279, 157
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Tip of the Day"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+{
+ LTEXT "", IDC_TOD_TIP, 7, 7, 264, 124
+ AUTOCHECKBOX "&Show tips at startup", IDC_TOD_SHOW, 7, 140, 113, 12
+ PUSHBUTTON "&Next Tip", IDC_TOD_NEXT, 162, 136, 50, 14
+ PUSHBUTTON "&Close", IDOK, 221, 136, 50, 14
+}
+*/
+
+IDM_VIEWERMENU MENU
+{
+ POPUP "&File"
+ {
+  MENUITEM "&Open...\tCtrl+O", CM_OPENFILE
+  MENUITEM "&Refresh\tCtrl+R", CM_REREADFILE
+  MENUITEM SEPARATOR
+  
+// POZOR: pokud se zmeni index tohoto submenu, je potreba zmenit VIEWER_FILE_MENU_OTHFILESINDEX
+  POPUP "Ot&her Files"
+  {
+   MENUITEM "&Previous\tBackspace", CM_PREVFILE
+   MENUITEM "&Next\tSpace", CM_NEXTFILE
+   MENUITEM SEPARATOR
+   MENUITEM "P&revious Selected\tCtrl+Backspace", CM_PREVSELFILE
+   MENUITEM "N&ext Selected\tCtrl+Space", CM_NEXTSELFILE
+   MENUITEM SEPARATOR
+   MENUITEM "&First\tShift+Backspace", CM_FIRSTFILE
+   MENUITEM "&Last\tShift+Space", CM_LASTFILE
+  } 
+  
+  MENUITEM SEPARATOR
+  MENUITEM "E&xit\tAlt+F4", CM_EXIT
+ }
+
+ POPUP "&Edit"
+ {
+  MENUITEM "&Copy\tCtrl+C", CM_COPYTOCLIP
+  MENUITEM "C&opy to File...\tCtrl+S", CM_COPYTOFILE
+  MENUITEM SEPARATOR
+  MENUITEM "Select &All\tCtrl+A", CM_SELECTALLTEXT
+ }
+
+ POPUP "&Search"
+ {
+  MENUITEM "&Find...\tCtrl+F", CM_FINDSET
+  MENUITEM "Find &Next\tCtrl+N", CM_FINDNEXT
+  MENUITEM "Find &Previous\tCtrl+P", CM_FINDPREV
+ }
+
+ POPUP "&View"
+ {
+  MENUITEM "&Auto-Select", CM_VIEW_AUTOSEL
+  MENUITEM SEPARATOR
+  MENUITEM "&Hex\tCtrl+H", CM_TO_HEX
+  MENUITEM "&Text\tCtrl+T", CM_TO_TEXT
+  MENUITEM SEPARATOR
+  MENUITEM "&Set as Default", CM_VIEW_SETDEFAULT
+  MENUITEM SEPARATOR
+  MENUITEM "&Full Screen\tF11", CM_VIEW_FULLSCREEN
+  MENUITEM SEPARATOR
+  MENUITEM "&Go To Offset...\tCtrl+G", CM_GOTOOFFSET
+  MENUITEM SEPARATOR
+  MENUITEM "&Wrap\tCtrl+W", CM_WRAPED
+ }
+
+ POPUP "&Options"
+ {
+  MENUITEM "&Configuration...", CM_VIEWER_CONFIG
+  MENUITEM SEPARATOR
+  MENUITEM "&Auto-Copy Selection to Clipboard", CM_VIEWER_AUTOCOPY
+ }
+
+ POPUP "&Help"
+ {
+  MENUITEM "&Contents\tF1", CM_VIEWERHLP_INTRO
+  MENUITEM "&Keyboard Shortcuts", CM_VIEWERHLP_KEYBOARD
+ }
+}
+
+IDM_VIEWERCONTEXTMENU MENU
+{
+ POPUP ""
+ {
+  MENUITEM "&Copy\tCtrl+C", CM_COPYTOCLIP
+  MENUITEM "C&opy to...", CM_COPYTOFILE
+  MENUITEM SEPARATOR
+  MENUITEM "Select &All\tCtrl+A", CM_SELECTALLTEXT
+  MENUITEM SEPARATOR
+  MENUITEM "&Find...\tCtrl+F", CM_FINDSET
+  MENUITEM "Find &Next\tCtrl+N", CM_FINDNEXT
+  MENUITEM "Find &Previous\tCtrl+P", CM_FINDPREV
+  MENUITEM SEPARATOR
+  MENUITEM "&Hex\tCtrl+H", CM_TO_HEX
+  MENUITEM "&Text\tCtrl+T", CM_TO_TEXT
+  MENUITEM SEPARATOR
+  MENUITEM "&Go To Offset...\tCtrl+G", CM_GOTOOFFSET
+  MENUITEM SEPARATOR
+  MENUITEM "&Wrap\tCtrl+W", CM_WRAPED
+ }
+}

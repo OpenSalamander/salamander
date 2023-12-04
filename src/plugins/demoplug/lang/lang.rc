@@ -1,0 +1,201 @@
+﻿// Microsoft Visual C++ generated resource script.
+//
+#pragma code_page(65001)
+
+#include "lang.rh"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winresrc.h"
+
+#include "..\demoplug.rh2"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "lang.rh\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winresrc.h""\r\n"
+    "\r\n"
+    "#include ""..\\demoplug.rh2""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)\r\n"
+    "LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL\r\n"
+    "#include ""lang.rc2""   // non-Microsoft Visual C++ edited resources\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_CFGPAGEFIRST DIALOGEX 66, 53, 205, 84
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CAPTION
+CAPTION "First page"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Test string:",IDC_STATIC_1,7,10,40,8
+    EDITTEXT        IDC_TESTSTRING,53,8,144,12,ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "Test number:",IDC_STATIC_2,7,25,44,8
+    EDITTEXT        IDC_TESTNUMBER,53,23,54,12,ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "must be less than 10",IDC_STATIC_3,112,25,72,8
+    CONTROL         "",IDC_STATIC_4,"Static",SS_ETCHEDHORZ | WS_GROUP,57,53,143,1
+    LTEXT           "Here is combo",IDC_STATIC_5,5,49,52,8
+    LTEXT           "Test combo:",IDC_STATIC_6,15,62,44,8
+    COMBOBOX        IDC_COMBO,61,60,113,50,CBS_DROPDOWNLIST | WS_GROUP | WS_TABSTOP
+END
+
+IDD_CFGPAGESECOND DIALOGEX 66, 53, 205, 61
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CAPTION
+CAPTION "Second page"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "Checkbox",IDC_CHECK,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,5,5,60,12
+    CONTROL         "Radio 1",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,5,20,60,12
+    CONTROL         "Radio 2",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,5,32,60,12
+    CONTROL         "Radio 3",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,5,44,60,12
+END
+
+IDD_CFGPAGEVIEWER DIALOGEX 66, 53, 205, 61
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CAPTION
+CAPTION "Viewer"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Window position",IDC_STATIC_1,4,6,199,41
+    CONTROL         "&Save on close",IDC_CFG_SAVEPOSONCLOSE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,11,17,63,12
+    CONTROL         "S&et to position of Salamander's window",IDC_CFG_SETBYMAINWINDOW,
+                    "Button",BS_AUTORADIOBUTTON,11,29,156,12
+END
+
+IDD_PATHDLG DIALOGEX 66, 53, 205, 79
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Enter Disk Path"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Path:",IDC_STATIC_1,7,10,40,8
+    EDITTEXT        IDC_PATHSTRING,53,8,144,12,ES_AUTOHSCROLL | WS_GROUP
+    CONTROL         "Path to file (off = path to directory)",IDC_FILECHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,9,31,128,12
+    DEFPUSHBUTTON   "OK",IDOK,18,55,50,14,WS_GROUP
+    PUSHBUTTON      "Cancel",IDCANCEL,77,55,50,14
+    PUSHBUTTON      "Help",IDHELP,136,55,50,14
+END
+
+IDD_CONNECT DIALOGEX 28, 35, 205, 68
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Connect Path"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "&Connect path:",IDC_STATIC_1,7,10,51,8
+    COMBOBOX        IDC_PATH,7,20,191,80,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,48,45,50,14,WS_GROUP
+    PUSHBUTTON      "Cancel",IDCANCEL,107,45,50,14
+END
+
+IDD_PROGRESSDLG DIALOGEX 18, 80, 353, 77
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    RTEXT           "Deleting",IDC_STATIC_1,3,11,37,8
+    CONTROL         "",IDT_FILENAME,"Static",SS_LEFTNOWORDWRAP | SS_NOPREFIX | WS_GROUP,43,11,305,8
+    RTEXT           "Total:",IDC_STATIC_2,16,35,24,8
+    CONTROL         "",IDP_PROGRESSBAR,"Static",0,43,34,297,12
+    PUSHBUTTON      "Cancel",IDCANCEL,151,57,50,14
+END
+
+IDD_CTRLEXAMPLE DIALOGEX 32, 40, 463, 236
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Controls provided by Open Salamander"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "CGUIStaticTextAbstract",IDC_STATIC_1,6,4,254,108
+    LTEXT           "Not attached static text",IDC_STATIC_2,14,17,80,8
+    LTEXT           "System was started %d ms ago.",IDC_CE_ST,102,17,152,8
+    LTEXT           "0 (no flags)",IDC_STATIC_3,14,27,75,8
+    LTEXT           "dummy",IDC_CE_STNONE,102,27,152,8
+    LTEXT           "STF_CACHED_PAINT",IDC_STATIC_4,14,37,75,8
+    LTEXT           "dummy",IDC_CE_STCACHE,102,37,152,8
+    LTEXT           "STF_BOLD",IDC_STATIC_5,14,47,75,8
+    CTEXT           "Bold &text",IDC_CE_STBOLD,102,47,152,8
+    LTEXT           "STF_UNDERLINE",IDC_STATIC_6,14,56,75,8
+    RTEXT           "Underlined text",IDC_CE_STUNDERLINE,102,56,152,8
+    LTEXT           "STF_END_ELLIPSIS",IDC_STATIC_7,14,66,75,8
+    LTEXT           "Long long long long long long long long long string.",IDC_CE_STEND,102,66,152,8
+    LTEXT           "STF_PATH_ELLIPSIS",IDC_STATIC_8,14,76,75,8
+    LTEXT           "C:\\Program Files\\Some Application With Long Path\\example.exe",IDC_CE_STPATH,102,76,152,8
+    LTEXT           "STF_PATH_ELLIPSIS",IDC_STATIC_9,14,87,75,8
+    LTEXT           "ftp://ftp.altap.cz/pub/salamander/example.exe",IDC_CE_STPATH2,102,87,152,8
+    RTEXT           "Drag texts to change their size.",IDC_STATIC_10,151,97,103,8
+    GROUPBOX        "CGUIProgressBarAbstract",IDC_STATIC_11,6,118,254,66
+    LTEXT           "Progress label",IDC_STATIC_12,15,129,60,8
+    CONTROL         "",IDC_CE_PROGRESS,"Static",0,15,138,235,12
+    LTEXT           "Unknown progress",IDC_STATIC_13,15,154,67,8
+    CONTROL         "",IDC_CE_PROGRESS2,"Static",0,15,163,235,12
+    GROUPBOX        "Button, CGUITextArrowButtonAbstract, CGUIColorArrowButtonAbstract",IDC_STATIC_14,6,188,254,40
+    PUSHBUTTON      "...",IDC_CE_PB2,15,204,15,14
+    PUSHBUTTON      "",IDC_CE_PB,37,204,15,14
+    PUSHBUTTON      "&Choose",IDC_CE_PBTEXT,60,204,50,14
+    PUSHBUTTON      "&Drop",IDC_CE_PBDROP,117,204,50,14
+    PUSHBUTTON      "",IDC_CE_PBCOLOR,174,204,33,14
+    PUSHBUTTON      "Text",IDC_CE_PBCOLOR2,215,204,33,14
+    GROUPBOX        "CGUIHyperLinkAbstract",IDC_STATIC_15,269,4,185,48
+    LTEXT           "SetActionOpen",IDC_STATIC_16,277,17,75,8
+    LTEXT           "www.altap.cz",IDC_CE_HLOPEN,365,17,47,8,WS_TABSTOP
+    LTEXT           "SetActionPostCommand",IDC_STATIC_17,277,27,81,8
+    LTEXT           "Say something!",IDC_CE_HLCOMMAND,365,27,55,8,WS_TABSTOP
+    LTEXT           "SetActionPostCommand",IDC_STATIC_18,277,37,81,8
+    LTEXT           "mask hints",IDC_CE_HLHINT,365,37,40,8,WS_TABSTOP
+    GROUPBOX        "SetCurrentToolTip",IDC_STATIC_19,269,59,185,31
+    LTEXT           "Pause the mouse pointer over this text.",IDC_CE_TOOLTIP,278,73,130,8,SS_NOTIFY
+    LTEXT           "CGUIToolbarHeaderAbstract",IDC_LIST_HEADER,269,102,96,8
+    CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_EDITLABELS | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,269,113,185,50
+    DEFPUSHBUTTON   "Close",IDOK,403,213,50,14
+END
+
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL
+#include "lang.rc2"   // non-Microsoft Visual C++ edited resources
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

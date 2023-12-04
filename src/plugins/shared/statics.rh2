@@ -1,0 +1,60 @@
+﻿//****************************************************************************
+//
+// Copyright (c) 2023 Open Salamander Authors
+//
+// This is a part of the Open Salamander SDK library.
+//
+//****************************************************************************
+
+// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __SHARED_STATICS_RH2
+#define __SHARED_STATICS_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+// modul, ktery includi statics.rh2 musi definovat IDC_STATIC_1 a rezervovat prostor pro 40 hodnot
+
+//#define IDC_STATIC_1        (IDC_STATIC_1+0) // definovano v nadrazenem headru
+#define IDC_STATIC_2        (IDC_STATIC_1+1)
+#define IDC_STATIC_3        (IDC_STATIC_1+2)
+#define IDC_STATIC_4        (IDC_STATIC_1+3)
+#define IDC_STATIC_5        (IDC_STATIC_1+4)
+#define IDC_STATIC_6        (IDC_STATIC_1+5)
+#define IDC_STATIC_7        (IDC_STATIC_1+6)
+#define IDC_STATIC_8        (IDC_STATIC_1+7)
+#define IDC_STATIC_9        (IDC_STATIC_1+8)
+#define IDC_STATIC_10       (IDC_STATIC_1+9)
+#define IDC_STATIC_11       (IDC_STATIC_1+10)
+#define IDC_STATIC_12       (IDC_STATIC_1+11)
+#define IDC_STATIC_13       (IDC_STATIC_1+12)
+#define IDC_STATIC_14       (IDC_STATIC_1+13)
+#define IDC_STATIC_15       (IDC_STATIC_1+14)
+#define IDC_STATIC_16       (IDC_STATIC_1+15)
+#define IDC_STATIC_17       (IDC_STATIC_1+16)
+#define IDC_STATIC_18       (IDC_STATIC_1+17)
+#define IDC_STATIC_19       (IDC_STATIC_1+18)
+#define IDC_STATIC_20       (IDC_STATIC_1+19)
+#define IDC_STATIC_21       (IDC_STATIC_1+20)
+#define IDC_STATIC_22       (IDC_STATIC_1+21)
+#define IDC_STATIC_23       (IDC_STATIC_1+22)
+#define IDC_STATIC_24       (IDC_STATIC_1+23)
+#define IDC_STATIC_25       (IDC_STATIC_1+24)
+#define IDC_STATIC_26       (IDC_STATIC_1+25)
+#define IDC_STATIC_27       (IDC_STATIC_1+26)
+#define IDC_STATIC_28       (IDC_STATIC_1+27)
+#define IDC_STATIC_29       (IDC_STATIC_1+28)
+#define IDC_STATIC_30       (IDC_STATIC_1+29)
+#define IDC_STATIC_31       (IDC_STATIC_1+30)
+#define IDC_STATIC_32       (IDC_STATIC_1+31)
+#define IDC_STATIC_33       (IDC_STATIC_1+32)
+#define IDC_STATIC_34       (IDC_STATIC_1+33)
+#define IDC_STATIC_35       (IDC_STATIC_1+34)
+#define IDC_STATIC_36       (IDC_STATIC_1+35)
+#define IDC_STATIC_37       (IDC_STATIC_1+36)
+#define IDC_STATIC_38       (IDC_STATIC_1+37)
+#define IDC_STATIC_39       (IDC_STATIC_1+38)
+#define IDC_STATIC_40       (IDC_STATIC_1+39)
+
+#endif // __SHARED_STATICS_RH2

@@ -1,0 +1,38 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\chinesesimplified\peviewer.atp"
+TEXTVERSION,"3.0 (x86)"
+VERSION,"3,0,0,180"
+
+[TRANSLATION]
+LANGID,2052
+AUTHOR,"Michael Lu"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6958"
+COMMENT,"简体中文版"
+
+[DIALOG 8501]
+346,154,1,"Portable Executable Viewer 配置"
+1300,7,7,64,8,1,"可用部分(&b):"
+8700,7,17,105,130,1,""
+8702,119,17,50,14,1,"添加(&A) ->"
+8703,119,35,50,14,1,"<- 移除(&R)"
+1301,176,7,58,8,1,"可见部分(&V):"
+8701,176,17,105,130,1,""
+8704,289,17,50,14,1,"上移(&U)"
+8705,289,35,50,14,1,"下移(&D)"
+1,289,97,50,14,1,"确定"
+2,289,115,50,14,1,"取消"
+8706,289,133,50,14,1,"重置(&e)"
+
+[STRINGTABLE 0]
+1016,1,"关于插件"
+
+[STRINGTABLE 1]
+10100,1,"Portable Executable Viewer"
+10101,1,"无法打开文件 %s."
+10102,1,"创建临时文件失败。"
+10103,1,"发生异常。\n\n查看的文件: %s\n\n如果你认为那个被查看的文件没有损坏，请发送这个文件到 support@altap.cz.\n我们将重现并修复这个查看器缺陷。感谢您的合作！"
+10104,1,"显示可移植的可执行文件，例如EXE，DLL等信息。"
+
+[STRINGTABLE 2]
+10118,1,"在插件配置中没有找到选中的 Portable Executable 部分。\n 在 Open Salamander 主窗口中使用菜单 选项> 插件配置 > Portable Executable Viewer \n来设置可见部分。"
+

@@ -1,0 +1,641 @@
+﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __RESOURCE_RH2
+#define __RESOURCE_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#define IDC_STATIC_1 1150
+#include "plugins\shared\statics.rh2"
+
+// virtualni IDcka - pouze pro vazbu mezi dialogem a helpem
+#define IDD_COPYDIALOG      105
+#define IDD_MOVEDIALOG      106
+#define IDD_EDITNEWDIALOG   107
+#define IDD_RENAMEDIALOG    108
+#define IDD_CREATEDIRDIALOG 109
+#define IDH_TOPTOOLBAR      117
+#define IDH_UMTOOLBAR       118
+#define IDH_MENUBAR         119
+#define IDH_SPLITBAR        120
+#define IDH_COMMANDLINE     121
+#define IDH_BOTTOMTOOLBAR   122
+#define IDH_DIRECTORYLINE   123
+#define IDH_HEADERLINE      124
+#define IDH_WORKINGAREA     125
+#define IDH_INFOLINE        126
+#define IDH_LICENSE         127
+#define IDH_REGISTRATION    128
+#define IDH_VIEWERKEYBOARD  129
+#define IDH_REGEXP          130
+#define IDH_DRIVEBAR        131
+#define IDH_MIDDLETOOLBAR   132
+#define IDH_HPTOOLBAR       133
+#define IDH_PLUGINSBAR      134
+#define IDH_INTRODUCTION    135
+#define IDH_USERMENUCOMPAREARGS_F  136
+#define IDH_USERMENUCOMPAREARGS_D  137
+#define IDH_SYSMENUCMDS     138
+#define IDH_MINMAXCLOSEBTNS 139
+#define IDH_VIEWERINTRO     140
+#define IDH_GROUPPOLICY     141
+#define IDH_PWDMANAGER      142
+// virtualni IDcka - END
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FREESPACE
+
+#define IDS_ZIPLINE1        491      // IDS_ZIPLINE1 .. IDS_ZIPLINE5 musi byt zasebou
+#define IDS_ZIPLINE2        492
+#define IDS_ZIPLINE3        493
+#define IDS_ZIPLINE4        494
+#define IDS_ZIPLINE5        495
+
+// commands
+#define CM_AUTOCONFIG       685      // KICKER - zatim jen pro ladeni...
+#define CM_CONFIGURATION    686
+#define CM_SAVECONFIG       687
+
+#define CM_LEFTNAME         688
+#define CM_LEFTEXT          689
+#define CM_LEFTTIME         690
+#define CM_LEFTSIZE         691
+#define CM_LEFTATTR         692
+#define CM_LEFTTYPE         693
+
+#define CM_RIGHTNAME        694
+#define CM_RIGHTEXT         695
+#define CM_RIGHTTIME        696
+#define CM_RIGHTSIZE        697
+#define CM_RIGHTATTR        698
+#define CM_RIGHTTYPE        699
+
+#define CM_ACTIVENAME       700
+#define CM_ACTIVEEXT        701
+#define CM_ACTIVETIME       702
+#define CM_ACTIVESIZE       703
+#define CM_ACTIVEATTR       704
+#define CM_ACTIVETYPE       705
+
+#define CM_LCHANGEDRIVE     707
+#define CM_RCHANGEDRIVE     708
+
+#define CM_CLIPCOPYFULLNAME 709
+#define CM_CLIPCOPYNAME     710
+#define CM_CLIPCOPYFULLPATH 711
+#define CM_CLIPCOPYUNCNAME  712
+
+#define CM_SORTOPTIONS      715
+
+#define CM_LEFTSTATUS       720
+#define CM_RIGHTSTATUS      721
+#define CM_LEFTDIRLINE      722
+#define CM_RIGHTDIRLINE     723
+
+#define CM_LEFTREFRESH      724
+#define CM_RIGHTREFRESH     725
+
+#define CM_REFRESHASSOC     726
+
+#define CM_COPYFILES        727
+#define CM_MOVEFILES        728
+#define CM_DELETEFILES      729
+#define CM_CREATEDIR        730
+#define CM_USERMENUDROP     731
+#define CM_OPEN             732
+#define CM_EMAILFILES       733
+
+#define CM_EXIT             734
+
+#define CM_CONNECTNET       735
+#define CM_DISCONNECTNET    736
+
+#define CM_COMPAREDIRS      737
+#define CM_DOSSHELL         738
+#define CM_OCCUPIEDSPACE    739
+#define CM_ACTIVEREFRESH    740
+#define CM_FINDFILE         741
+
+#define CM_VIEW             742
+#define CM_EDIT             743
+#define CM_EDITNEW          744
+
+#define CM_EDITLINE         745
+#define CM_TOGGLEEDITLINE   746
+
+#define CM_CHANGECASE       747
+#define CM_CHANGEATTR       748
+#define CM_COMPRESS         749
+#define CM_UNCOMPRESS       750
+
+#define CM_USERMENU         751
+#define CM_DRIVEINFO        752
+#define CM_ALTVIEW          753
+#define CM_RENAMEFILE       754
+
+#define CM_TOGGLEDRIVEBAR   755
+#define CM_TOGGLEDRIVEBAR2  756
+
+#define CM_OPENACTUALFOLDER 757
+#define CM_OPENRECYCLEBIN   758
+#define CM_OPENCONROLPANEL  759
+#define CM_OPENDESKTOP      760
+#define CM_OPENMYCOMP       761
+#define CM_OPENNETNEIGHBOR  762
+#define CM_OPENFONTS        763
+#define CM_OPENPRINTERS     764
+#define CM_OPENDESKTOPDIR   765
+#define CM_OPENPERSONAL     766
+#define CM_OPENPROGRAMS     767
+#define CM_OPENRECENT       768
+#define CM_OPENSENDTO       769
+#define CM_OPENSTARTMENU    770
+#define CM_OPENSTARTUP      771
+#define CM_OPENTEMPLATES    772
+#define CM_CLIPCOPY         773
+#define CM_CLIPCUT          774
+#define CM_CLIPPASTE        775
+#define CM_CLIPPASTELINKS   776
+#define CM_LCHANGEFILTER    777
+#define CM_RCHANGEFILTER    778
+#define CM_CHANGEFILTER     779
+#define CM_OPENHOTPATHS     780
+#define CM_OPENHOTPATHSDROP 781
+#define CM_OPEN_FOLDER_DROP 782
+#define CM_SWAPPANELS       783
+#define CM_ALWAYSONTOP      784
+
+#define CM_LAST_PLUGIN_CMD  785
+
+#define CM_LCUSTOMIZEVIEW   786
+#define CM_RCUSTOMIZEVIEW   787
+
+#define CM_SELECTBYFOCUSEDNAME   788
+#define CM_UNSELECTBYFOCUSEDNAME 789
+#define CM_SELECTBYFOCUSEDEXT    790
+#define CM_UNSELECTBYFOCUSEDEXT  791
+
+#define CM_TOGGLE_GRIPS      792
+#define CM_TOGGLE_UMLABELS   793
+
+#define CM_CUSTOMIZEHP       794
+#define CM_TOGGLEHOTPATHSBAR 795
+
+#define CM_TOGGLETOPTOOLBAR      801
+#define CM_TOGGLEBOTTOMTOOLBAR   802
+#define CM_TOGGLEUSERMENUTOOLBAR 803
+#define CM_CUSTOMIZETOP          804
+#define CM_CUSTOMIZELEFT         805
+#define CM_CUSTOMIZERIGHT        806
+#define CM_CUSTOMIZEUM           807
+
+#define CM_NEWMENU               808
+#define CM_SETENVFONT            809
+
+#define CM_FILELIST              811
+#define CM_PROPERTIES            812
+#define CM_CALCDIRSIZES          813
+
+#define CM_CONVERTFILES          814
+
+#define CM_PLUGINS               815
+
+#define CM_VIEW_WITH             816
+#define CM_EDIT_WITH             817
+
+#define CM_TOGGLEADVERTISINGBAR  818
+
+#define CM_DIRHISTORY            819
+#define CM_FILEHISTORY           820
+
+#define CM_MINIMIZE            821
+
+// for toolbars
+#define CM_ACTIVEPARENTDIR     822
+#define CM_ACTIVEROOTDIR       823
+#define CM_LPARENTDIR          824
+#define CM_LROOTDIR            825
+#define CM_RPARENTDIR          826
+#define CM_RROOTDIR            827
+#define CM_LDRIVEINFO          828
+#define CM_RDRIVEINFO          829
+
+#define CM_LEFTHEADER          830
+#define CM_RIGHTHEADER         831
+
+#define CM_ACTIVEBACK          832
+#define CM_ACTIVEFORWARD       833
+#define CM_LBACK               834
+#define CM_LFORWARD            835
+#define CM_RBACK               836
+#define CM_RFORWARD            837
+
+#define CM_AFOCUSSHORTCUT      838
+
+#define CM_ACTIVESELECT        841
+#define CM_ACTIVESELECTALL     842
+
+#define CM_ACTIVEUNSELECT      843
+#define CM_ACTIVEUNSELECTALL   844
+
+#define CM_ACTIVEINVERTSEL     845
+#define CM_ACTIVEINVERTSELALL  846
+
+#define CM_ACTIVE_AS_OTHER     847
+#define CM_LEFT_AS_OTHER       848
+#define CM_RIGHT_AS_OTHER      849
+
+#define CM_PACK                850
+#define CM_UNPACK              851
+
+#define CM_TOGGLEELASTICSMART  852
+#define CM_TOGGLEHIDDENFILES   853
+#define CM_TOGGLEEXTENSION     854
+
+#define CM_EXPORTCONFIG        855
+
+#define CM_TASKLIST            856
+
+#define CM_MENU                857    // vstoupi do MenuLoop (F10 || Alt || BottomTooblar)
+#define CM_CONTEXTMENU         858    // otevre context menu k focusu/selectu (Shift+F10 || VK_APPS)
+
+#define CM_SHARES              859    // zobrazi seznam sdilenych adresaru
+
+#define CM_TOGGLEMIDDLETOOLBAR 860
+#define CM_CUSTOMIZEMIDDLE     861
+
+#define CM_ACTIVE_CHANGEDIR    862
+#define CM_LEFT_CHANGEDIR      863
+#define CM_RIGHT_CHANGEDIR     864
+
+#define CM_RESELECT            865
+
+#define CM_STORESEL            866
+#define CM_RESTORESEL          867
+
+#define CM_NEWDROP             870
+
+// characters coding
+#define CM_CODING_MIN          871
+// rezervovat az do 920 (vcetne)
+#define CM_CODING_MAX          920
+
+#define CM_SEC_PERMISSIONS     921
+
+#define CM_DIRMENU             924        // otevre CtxMenu pro aktualni adresar aktivniho panelu
+
+#define CM_CUSTOMIZE_HOTPATHS  925
+#define CM_CUSTOMIZE_USERMENU  926
+
+#define CM_REMEMBERDIRSIZES    927
+
+#define CM_ENCRYPT             928
+#define CM_DECRYPT             929
+
+#define CM_CUSTOMIZEPLUGINS    930
+
+#define CM_RESUMEOPER          931
+
+#define CM_FORUM               932
+
+#define CM_SETSPLIMOPER        933
+
+#define CM_IMPORTCONFIG        934
+
+// accelerators
+#define IDA_MAINACCELS1        935        // pouzitelne i v editacnim modu
+#define IDA_MAINACCELS2        936        // zbytek
+#define IDA_FINDDIALOGACCELS   937
+
+// cursors
+#define IDC_SPLIT              940
+#define IDC_TOOLBAR_MOVE       942
+#define IDC_TOOLBAR_DEL        943
+#define IDC_TOOLBAR_ADD        944
+#define IDC_DRAGCOPYEFFECT     945
+
+// window controls
+#define IDC_FILES           950
+#define IDC_STATUSLINE      951
+#define IDC_DIRECTORYLINE   952
+#define IDC_HEADERLINE      953
+#define IDC_HEADERHOLDER    954
+#define IDC_EDITWINDOW      955
+#define IDC_EDITLINE        956
+#define IDC_DIRTEXT         957
+
+// icons
+#define IDI_SALAMANDER       960
+#define IDI_SALAMANDER_RED   961
+#define IDI_SALAMANDER_GREEN 962
+#define IDI_SALAMANDER_BLUE  963
+
+#define IDI_UPPERDIR        967
+#define IDI_ARCHIVE         968
+#define IDI_FIND            971
+//#define IDI_TIPOFTHEDAY     972
+#define IDI_PLUGINFS        973
+#define IDI_DIRECTORY       975
+#define IDI_PLUGIN          977
+
+#define IDI_EMPTY           980
+
+#define IDI_GOOGLEDRIVE     981
+#define IDI_DROPBOX         982
+#define IDI_ONEDRIVE        983
+
+// bitmaps
+#define IDB_LOCK            990
+#define IDB_TOOLBAR_16      991
+#define IDB_TOOLBAR_256     992
+#define IDB_BOTTOMTOOLBAR   993
+#define IDB_HEADER          994        // header: Up/Down
+#define IDB_MENU            995        // menu:   Dot/Up/Down
+#define IDB_EDTLBTB         996        // EditListBox - bitmapy pro toolbaru JRYFIXME: TOOLBARHDR_USE_SVG
+#define IDB_FILTER          997
+#define IDB_UPDOWN          999        // Menu popup/Up Down arrow
+#define IDB_ZOOM           1000        // Zoom Panel
+//#define IDB_WORKER         1001        // worker bitmap
+#define IDB_THROBBER       1001
+#define IDB_MENUITEMS      1003
+#define IDB_LOGO_HAND      1004
+#define IDB_LOGO_GRAD      1005
+#define IDB_LOGO_TEXT      1006
+
+#define IDC_COLORTABLE       1009
+
+#define IDB_ABOUT_GRAD     1010
+
+#define IDV_ARROW_RIGHT    1020
+#define IDV_ARROW_DOWN     1021
+#define IDV_ARROW_MORE     1030
+#define IDV_ARROW_LESS     1031
+
+#define CM_NEWMENU_MIN          1200     // interval vyhrazeny pro prikazy menu New
+#define CM_NEWMENU_MAX          2200
+
+#define CM_HELP_CONTENTS       2210
+#define CM_HELP_INDEX          2211
+#define CM_HELP_SEARCH         2212
+#define CM_HELP_KEYBOARD       2213
+#define CM_HELP_CONTEXT        2214
+//#define CM_HELP_TIP            2215
+#define CM_HELP_ABOUT          2216
+
+// commands pro find dialog
+#define CM_FIND_EXIT             2220
+#define CM_FIND_VIEW             2221
+#define CM_FIND_ALTVIEW          2222
+#define CM_FIND_EDIT             2223
+#define CM_FIND_USERMENU         2224
+#define CM_FIND_FOCUS            2225
+#define CM_FIND_VIEW_WITH        2226
+#define CM_FIND_EDIT_WITH        2227
+#define CM_FIND_OPEN             2228
+#define CM_FIND_CLIPCUT          2229
+#define CM_FIND_CLIPCOPY         2230
+#define CM_FIND_SELECTALL        2231
+#define CM_FIND_INVERTSEL        2232
+#define CM_FIND_MESSAGES         2233
+#define CM_FIND_SHOWERRORS       2236
+#define CM_FIND_NAME             2237
+#define CM_FIND_EXT              2238
+#define CM_FIND_TIME             2239
+#define CM_FIND_SIZE             2240
+#define CM_FIND_PATH             2241
+#define CM_FIND_OPENSEL          2242
+#define CM_FIND_ADD_CURRENT      2247
+#define CM_FIND_MANAGE           2248
+#define CM_FIND_PROPERTIES       2249
+#define CM_FIND_OPTIONS_FIRST    2250   // prvnich tricet polozek z options
+#define CM_FIND_OPTIONS_LAST     2280
+#define CM_FIND_HIDESEL          2281
+#define CM_FIND_DELETE           2282
+#define CM_FIND_CLIPCOPYFULLNAME 2283
+#define CM_FIND_CLIPCOPYNAME     2284
+#define CM_FIND_CLIPCOPYFULLPATH 2285
+#define CM_FIND_CLIPCOPYUNCNAME  2286
+#define CM_FIND_HIDE_DUP         2287
+#define CM_FIND_NOW              2288
+#define CM_FIND_INTERSECT        2289
+#define CM_FIND_SUBTRACT         2290
+#define CM_FIND_APPEND           2291
+#define CM_FIND_DUPLICATES       2292
+#define CM_FIND_IGNORE           2293
+#define CM_FIND_FULLROWSEL       2294
+
+#define CM_ACTIVEHOTPATH_MIN     2400    // goto hot path X (rezervace pro HOT_PATHS_COUNT)
+#define CM_ACTIVEHOTPATH_MAX     2429
+#define CM_LEFTHOTPATH_MIN       2430    // goto hot path X (rezervace pro HOT_PATHS_COUNT)
+#define CM_LEFTHOTPATH_MAX       2469
+#define CM_RIGHTHOTPATH_MIN      2470    // goto hot path X (rezervace pro HOT_PATHS_COUNT)
+#define CM_RIGHTHOTPATH_MAX      2499
+
+//#define IDD_TIPOFTHEDAY            2720
+
+#define CM_LEFTHISTORYPATH_MIN     2840    // historie adresaru pro menu Go To
+#define CM_LEFTHISTORYPATH_MAX     2849
+#define CM_RIGHTHISTORYPATH_MIN    2850    // historie adresaru pro menu Go To
+#define CM_RIGHTHISTORYPATH_MAX    2859
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FREESPACE
+
+// vyhrazene intervaly pro SortBy a FixedWidth po 20 polozkach; vic proste nezobrazime
+#define CM_LEFTSORTBY_MIN          2890
+#define CM_LEFTSORTBY_MAX          2909
+#define CM_RIGHTSORTBY_MIN         2910
+#define CM_RIGHTSORTBY_MAX         2929
+
+#define CM_SKILLLEVEL              2930
+
+#define CM_ACTIVEVIEWMODE          2931
+#define CM_LEFTVIEWMODE            2932
+#define CM_RIGHTVIEWMODE           2933
+
+#define CM_ACTIVEZOOMPANEL         2934  // maximalizuje aktivni panel nebo ho vraci zpet
+#define CM_LEFTZOOMPANEL           2935
+#define CM_RIGHTZOOMPANEL          2936
+
+#define CM_FULLSCREEN              2937  // maximalizuje hlavni okno a vraci ho zpet
+
+#define CM_GOTO_PREV_SEL           2938
+#define CM_GOTO_NEXT_SEL           2939
+
+#define CM_OPEN_IN_OTHER_PANEL     2940  // otevre focusene jmeno v druhem panelu
+#define CM_OPEN_IN_OTHER_PANEL_ACT 2941  // zaroven aktivuje druhy panel
+
+// nechat rezervu
+
+#define CM_HIDE_SELECTED_NAMES     2945  // schova z panelu oznacena jmena
+#define CM_HIDE_UNSELECTED_NAMES   2946  // schova z panelu neoznacena jmena
+#define CM_SHOW_ALL_NAME           2947  // zobrazi v panelu vsechna jmena
+
+#define CM_TOGGLEPLUGINSBAR      2950
+
+#define CM_ACTIVE_SMARTMODE        2951
+#define CM_LEFT_SMARTMODE          2952
+#define CM_RIGHT_SMARTMODE         2953
+
+#define CM_ACTIVEMODE_1            2970  // Alt+1..0 pro volbu rezimu aktivniho pohledu
+#define CM_ACTIVEMODE_2            2971
+#define CM_ACTIVEMODE_3            2972
+#define CM_ACTIVEMODE_10           2979
+#define CM_LEFTMODE_1              2980  // volba rezimu leveho pohledu
+#define CM_LEFTMODE_2              2981
+#define CM_LEFTMODE_3              2982
+#define CM_LEFTMODE_10             2989
+#define CM_RIGHTMODE_1             2990  // volba rezimu praveho pohledu
+#define CM_RIGHTMODE_2             2991
+#define CM_RIGHTMODE_3             2992
+#define CM_RIGHTMODE_10            2999
+
+#define CM_USERMENU_MIN         3000     // interval vyhrazeny pro prikazy user-menu
+#define CM_USERMENU_MAX         3499
+
+#define CM_DRIVEBAR_MIN         3500     // interval vyhrazeny pro drive bar
+#define CM_DRIVEBAR_MAX         3749
+
+#define CM_DRIVEBAR2_MIN        3750     // interval vyhrazeny pro drive bar 2
+#define CM_DRIVEBAR2_MAX        4000
+
+#define CM_PLUGINCMD_MIN        4001     // interval vyhrazeny pro prikazy z plug-inu
+#define CM_PLUGINCMD_MAX        4700
+
+#define CM_VIEWWITH_MIN         4701     // interval vyhrazeny pro prikazy view-with
+#define CM_VIEWWITH_MAX         5000
+
+#define CM_PLUGINABOUT_MIN      5001     // interval vyhrazeny pro abouty plug-inu
+#define CM_PLUGINABOUT_MAX      5500
+
+// command labels CML_xxx - nejde o normalni commandy, ale o pomocne identifikatory
+// separatoru a popup menu, pomoci kterych lze snadno identifikovat a lokalizovat
+// polozku menu
+#define CML_LEFT                5501
+#define CML_LEFT_CHANGEDRIVE    5502
+#define CML_LEFT_VIEWS1         5503
+#define CML_LEFT_VIEWS2         5504
+#define CML_LEFT_SORTBY         5505
+#define CML_LEFT_VISIBLE        5506
+#define CML_LEFT_GO             5507
+
+
+#define CML_FILES               5509
+#define CML_FILES_NEW           5511
+#define CML_FILES_VIEWWITH      5512
+#define CML_FILES_EDITWITH      5513
+#define CML_FILES_NTFS          5514
+
+#define CML_EDIT                5515
+#define CML_EDIT_ADVANCED       5516
+
+#define CML_COMMANDS            5520
+#define CML_COMMANDS_USERMENU   5521
+#define CML_COMMANDS_FOLDERS    5523
+
+#define CML_PLUGINS             5530
+#define CML_PLUGINS_SUBMENU     5531
+
+#define CML_OPTIONS             5535
+#define CML_OPTIONS_VISIBLE     5536
+#define CML_OPTIONS_PLUGINS     5537
+
+#define CML_RIGHT               5540
+#define CML_RIGHT_CHANGEDRIVE   5541
+#define CML_RIGHT_VIEWS1        5542
+#define CML_RIGHT_VIEWS2        5543
+#define CML_RIGHT_SORTBY        5544
+#define CML_RIGHT_VISIBLE       5545
+#define CML_RIGHT_GO            5546
+
+#define CML_HELP                5550
+#define CML_HELP_ABOUTPLUGINS   5551
+
+#define CML_FIND_FILES          5950
+#define CML_FIND_EDIT           5951
+#define CML_FIND_VIEW           5952
+#define CML_FIND_OPTIONS        5953
+#define CML_FIND_HELP           5954
+#define CML_FIND_FIND           5955
+
+#define CML_LAST                5999
+
+#define CM_PLUGINCFG_MIN      7001     // interval vyhrazeny pro konfiguraci plug-inu
+#define CM_PLUGINCFG_MAX      7500
+
+#define CM_EDITWITH_MIN       7501     // interval vyhrazeny pro prikazy edit-with
+#define CM_EDITWITH_MAX       7800
+
+//#define CM_INTERNALVIEWER_MIN      6000     // interval vyhrazeny pro internal viewer
+//#define CM_INTERNALVIEWER_MAX      6300
+
+// icons
+#define IDI_VIEWER            6000
+
+// accelerators
+#define IDA_VIEWERACCELS      6005
+
+// menus
+#define IDM_VIEWERMENU        6010
+#define IDM_VIEWERCONTEXTMENU 6011
+
+// commands
+#define CM_OPENFILE           6050
+#if !defined(INSIDE_SALAMANDER) && !defined(CM_EXIT)
+#define CM_EXIT               6051
+#endif
+#define CM_LINEUP             6052
+#define CM_LINEDOWN           6053
+#define CM_PAGEUP             6054
+#define CM_PAGEDOWN           6055
+#define CM_FILEBEGIN          6056
+#define CM_FILEEND            6057
+#define CM_LEFT               6058
+#define CM_RIGHT              6059
+#define CM_TO_HEX             6060   // pozor - musi byt o 1 mensi nez CM_TO_TEXT
+#define CM_TO_TEXT            6061   // pozor - musi byt o 1 vetsi nez CM_TO_HEX
+#define CM_COPYTOCLIP         6062
+#define CM_FINDSET            6063
+#define CM_FINDNEXT           6064
+#define CM_FINDPREV           6065
+#define CM_SELECTALLTEXT      6066
+#define CM_COPYTOFILE         6067
+#define CM_WRAPED             6068
+#define CM_REREADFILE         6069
+#define CM_NEXTCODING         6070
+#define CM_PREVCODING         6071
+#define CM_FASTLEFT           6072
+#define CM_FASTRIGHT          6073
+#define CM_VIEWER_CONFIG      6074
+#define CM_VIEWERHLP_KEYBOARD 6078
+#define CM_RECOGNIZE_CODEPAGE 6079
+#define CM_SETDEFAULT_CODING  6080
+#define CM_VIEW_AUTOSEL       6081
+#define CM_VIEW_SETDEFAULT    6082
+#define CM_VIEW_FULLSCREEN    6083
+#define CM_VIEWER_AUTOCOPY    6084
+#define CM_PREVFILE           6085
+#define CM_NEXTFILE           6086
+#define CM_PREVSELFILE        6087
+#define CM_NEXTSELFILE        6088
+#define CM_FIRSTFILE          6089
+#define CM_LASTFILE           6090
+#define CM_VIEWERHLP_INTRO    6091
+#define CM_GOTOOFFSET         6092
+#define CM_EXTSEL_LEFT        6093
+#define CM_EXTSEL_RIGHT       6094
+#define CM_EXTSEL_UP          6095
+#define CM_EXTSEL_DOWN        6096
+#define CM_EXTSEL_HOME        6097
+#define CM_EXTSEL_END         6098
+#define CM_EXTSEL_FILEBEG     6099
+#define CM_EXTSEL_FILEEND     6100
+
+
+// timers
+#define IDT_AUTOSCROLL        6200
+#define IDT_THUMBSCROLL       6201
+
+//#define CM_TEXTS_MIN               10000    // interval vyhrazeny pro texty
+//#define CM_TEXTS_MAX               18000
+
+#endif // __RESOURCE_RH2

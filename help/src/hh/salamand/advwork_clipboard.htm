@@ -1,0 +1,117 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Using Clipboard to Perform File and Directory Operations</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Advanced Working with Files and Directories</div>
+<div class="page">
+
+<h1>Using Clipboard to Perform File and Directory Operations</h1>
+
+<p>You can use Copy, Cut, and Paste commands from the Edit menu to copy or move
+selected files and directories to any directory. The copied or cut items
+remain on the clipboard until you cut or copy anything else to the clipboard
+(it overwrites items on the clipboard). The cut items are removed from the
+clipboard when you paste them (files and directories are moved).
+Files and directories are not stored in the clipboard directly; only references
+to them are stored.</p>
+
+<p>Packing to and unpacking from archives and copying and moving from disk to
+plugin file system using Cut, Copy, and Paste commands are also supported.</p>
+
+<p>You can use Copy, Cut, and Paste commands in different applications. For example,
+you can Copy files to the clipboard in Windows Explorer and Paste them to the archive
+opened in panel of Open Salamander (and vice versa).</p>
+
+<p>Once you have copied items on the clipboard you will see no change since the
+Paste operation will not affect selected files and directories. When the Cut command
+is used, icons of selected items will become ghosted. Moving
+these files and directories is delayed until the Paste command is invoked. When
+another Copy or Cut command follows instead of the Paste command, ghosted items
+will be reverted to the normal state.</p>
+
+<h3>To copy files and directories</h3>
+<ol> 
+<li>Select files and directories you want to copy.</li>
+<li>Choose the Copy command from the Edit menu.</li>
+<li>Open the directory where you want to put the copy.</li>
+<li>Choose the Paste command from the Edit menu.</li>
+</ol>
+
+<h3>To move files and directories</h3>
+<ol> 
+<li>Select files and directories you want to move.</li>
+<li>Choose the Cut command from the Edit menu.</li>
+<li>Open the directory where you want to put selected items.</li>
+<li>Choose the Paste command from the Edit menu.</li>
+</ol>
+
+<h3>To duplicate files and directories</h3>
+<ol> 
+<li>Select files and directories you want to duplicate.</li>
+<li>Choose the Copy command from the Edit menu.</li>
+<li>Choose the Paste command from the Edit menu.</li>
+</ol>
+
+<h3>To create shortcuts to files and directories</h3>
+<ol> 
+<li>Select files and directories you want to create shortcuts to.</li>
+<li>Choose the Copy command from the Edit menu.</li>
+<li>Open the directory you want to put the shortcuts.</li>
+<li>Choose the Paste Shortcut command from the Edit menu.</li>
+</ol>
+
+<h4>Location</h4>
+
+<h3>Copy to the Clipboard:</h3>
+<table>
+<tr><td class="hdr">Menu:</td><td>Edit/Copy</td></tr>
+<tr><td class="hdr">Context menu:</td><td>Right-click selected files and
+  directories and select Copy.</td></tr>
+<tr><td class="hdr">Shortcut key:</td><td>Ctrl+C or Ctrl+Insert</td></tr>
+<tr><td class="hdr">Toolbar:</td><td>Choose the Clipboard Copy button on the
+    Top or Middle toolbar.</td></tr>
+</table>
+
+<h3>Cut to the Clipboard:</h3>
+<table>
+<tr><td class="hdr">Menu:</td><td>Edit/Cut</td></tr>
+<tr><td class="hdr">Context menu:</td><td>Right-click selected files and
+  directories and select Cut.</td></tr>
+<tr><td class="hdr">Shortcut key:</td><td>Ctrl+X</td></tr>
+<tr><td class="hdr">Toolbar:</td><td>Choose the Clipboard Cut button on the
+    Top or Middle toolbar.</td></tr>
+</table>
+
+<h3>Paste from the Clipboard:</h3>
+<table>
+<tr><td class="hdr">Menu:</td><td>Edit/Paste</td></tr>
+<tr><td class="hdr">Context menu:</td><td>Right-click destination directory
+  and select Paste.</td></tr>
+<tr><td class="hdr">Shortcut key:</td><td>Ctrl+V or Shift+Insert</td></tr>
+<tr><td class="hdr">Toolbar:</td><td>Choose the Clipboard Paste button on the
+    Top or Middle toolbar.</td></tr>
+</table>
+
+<h3>Paste Shortcut from the Clipboard:</h3>
+<table>
+<tr><td class="hdr">Menu:</td><td>Edit/Paste Shortcut</td></tr>
+<tr><td class="hdr">Shortcut key:</td><td>Ctrl+S</td></tr>
+</table>
+
+<h4>See Also</h4>
+<p>
+<a href="advwork_nameclip.htm">Copying File or Directory Name to Clipboard</a><br/>
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

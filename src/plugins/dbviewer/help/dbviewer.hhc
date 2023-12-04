@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<!-- Sitemap 1.0 -->
+</HEAD>
+<BODY>
+	<OBJECT type="text/site properties">
+		<param name="Window Styles" value="0x800027">
+	</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Introduction">
+	</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Introducing Database Viewer Plugin">
+			<param name="Local" value="hh\dbviewer\introduction_intro.htm">
+		</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Using Database Viewer Plugin">
+	</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Displaying Columns">
+			<param name="Local" value="hh\dbviewer\using_fields.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Selecting Items">
+			<param name="Local" value="hh\dbviewer\using_select.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Copying Items to Clipboard">
+			<param name="Local" value="hh\dbviewer\using_clipboard.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Showing Properties">
+			<param name="Local" value="hh\dbviewer\using_properties.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Searching">
+			<param name="Local" value="hh\dbviewer\using_find.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Using Bookmarks">
+			<param name="Local" value="hh\dbviewer\using_bookmarks.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Configuring Viewer">
+			<param name="Local" value="hh\dbviewer\using_config.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Setting CSV Options">
+			<param name="Local" value="hh\dbviewer\using_csvopts.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Converting Text Values">
+			<param name="Local" value="hh\dbviewer\using_convert.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Viewing in Full Screen">
+			<param name="Local" value="hh\dbviewer\using_fullscreen.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Opening File">
+			<param name="Local" value="hh\dbviewer\using_openfile.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Opening Previous or Next File from Panel or Find Window">
+			<param name="Local" value="hh\dbviewer\using_otherfiles.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Reloading File">
+			<param name="Local" value="hh\dbviewer\using_refresh.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Dialog Boxes">
+	</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Database Viewer Configuration">
+			<param name="Local" value="hh\dbviewer\dlgboxes_config.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="CSV Options">
+			<param name="Local" value="hh\dbviewer\dlgboxes_csvopts.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Fields">
+			<param name="Local" value="hh\dbviewer\dlgboxes_fields.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Find">
+			<param name="Local" value="hh\dbviewer\dlgboxes_find.htm">
+			</OBJECT>
+	</UL>
+</BODY>
+</HTML>

@@ -1,0 +1,111 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\spanish\uniso.atp"
+TEXTVERSION,"1.37 (x86)"
+VERSION,"1,3,7,180"
+
+[TRANSLATION]
+LANGID,3082
+AUTHOR,"Juan Pablo Barrio Lera"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6168"
+COMMENT,"Versión en español"
+
+[DIALOG 1200]
+260,83,1,"Configuración UnISO"
+1201,8,11,192,10,1,"&Borrar atributo de sólo lectura al copiar desde archivo"
+1202,8,23,243,10,1,"&Mostrar sesión como directorio (permitir acceso a todas las sesiones)"
+1203,8,35,170,10,1,"&Ver imagen de disco de arranque como fichero"
+3000,2,58,256,1,1,""
+1,148,64,50,14,1,"Aceptar"
+2,203,64,50,14,1,"Cancelar"
+
+[STRINGTABLE 0]
+1000,1,"UnISO"
+1001,1,"Imposible abrir fichero."
+1002,1,"Error no especificado."
+1003,1,"Desempaquetando archivo ISO"
+1004,1,"Error desempaquetando archivo."
+1005,1,"No se puede gestionar este fichero."
+1006,1,"Memoria insuficiente."
+1007,1,"Acerca del Plugin"
+
+[STRINGTABLE 1]
+1009,1,"Hojear y extraer ficheros imágenes ISO de CD/DVD."
+1010,1,"Imposible crear directorio temporal."
+1011,1,"Imposible borrar fichero temporal."
+1012,1,"Foromato de fichero desconocido o imagen ISO no válida.\n\nSi está seguro de que es una imagen ISO válida, contacte con support@altap.cz y ayúdenos a mejorar este formato."
+1013,1,"Imposible abrir fichero '%s'."
+1014,1,"Falló la creación de fichero temporal."
+1015,1,"Imposible ajustar atributos de fichero."
+1016,1,"Imposible crear el directorio '%s'."
+1020,1,"Sí"
+1021,1,"No"
+1022,1,"Error"
+1023,1,"Aviso"
+
+[STRINGTABLE 2]
+1024,1,"Ocurrieron algunos errores al meer la imagen multisesión.\n\nSe mostrarán sólo las sesiones leídas correctamente."
+1025,1,"Tipo de pista desconocido."
+1026,1,"Estrategia de asignación desconocida (%d).\n\nContacte con support@altap.cz y ayúdenos a solucionar este problema."
+1027,1,"Mal formato de fichero .CCD.\n\nLa imagen mostrada podría estar incompleta."
+1028,1,"Falta fichero .CCD.\n\nLa imagen presentada podría estar incompleta."
+1029,1,"No se puede leer el sector #%08X."
+1030,1,"ID de marca UDF incorrecta."
+1031,1,"Error leyendo estructura de directorio en sector #%08X.\n\nContenido incompleto de imagen ISO."
+1032,1,"Error interno del plugin."
+1033,1,"Error leyendo tabla de asignación virtual en sector #%08X."
+1034,1,"Falta la tabla de asignación virtual."
+1035,1,"Mal ICB raíz.\n\nImposible leer estructura de directorios."
+1036,1,"El fichero "%s" no puede ser extraído.\n\nNo concuerdan tamaño de fichero y bloques ICB."
+1037,1,"Imposible abrir pista #%d."
+1038,1,"Este fichero parece ser una imagen de diskette o disco duro o partición de disco duro.\nPruebe a cambiarlo de nombre a .ima para activar el plugin UnFAT."
+1039,0,"This disk image contains the APFS file system.\nThis file system is not supported yet."
+
+[STRINGTABLE 3]
+1050,1,"No se pudo leer la cabecera de partición. Fichero demasiado pequeño."
+1051,1,"Estructuras corruptas del Gestor de Particiones."
+1052,1,"La imagen de disco no contiene una partición HFS Plus."
+1053,1,"Esta imagen de disco contiene un sistema de ficheros HFS y no HFS Plus.\nNo se admite HFS."
+1054,1,"No se puede buscar hasta el bloque #%08X.\nEl fichero %s no será extraído."
+1055,1,"No se puede buscar hasta el bloque #%08X."
+
+[STRINGTABLE 4]
+1056,1,"Tipo de nodo raíz BTree no admitido en el fichero Catálogo."
+1057,1,"El fichero Catálogo está fragmentado en más de 8 fragmentos, lo cual no es admitido."
+1058,1,"El fichero '%s' está fragmentado en más de 8 fragmentos, lo cual no es admitido.\nEl fichero no será extraído."
+1059,1,"Esta imagen de disco contiene una ruta demasiado larga que Open Salamander no puede gestionar."
+1060,1,"Imposible terminar la operación porque el nombre es demasiado largo."
+1070,1,"Imposible leer cabecera de paquete. Fichero demasiado pequeño."
+1071,1,"Este paquete está encriptado.\nNo se admiten paquetes encriptados."
+
+[STRINGTABLE 5]
+1072,1,"Este fichero no parece ser un paquete DMG o está incompleto.\nNo contiene un pie DMG válido."
+1073,1,"Este fichero no parece ser un paquete DMG válido o está incompleto.\nNo contiene una lista de Propiedades válida."
+1074,1,"Este fichero no contiene un bloque de datos o partición HFS Plus que cmpiece en %I64u.\nEl bloque es necesario para el manejo apropiado del paquete."
+1075,1,"No se pueden leer datos de la imagen de disco en la posición %I64u."
+1076,1,"No se puede buscar en la imagen de disco hasta la posición %I64u."
+1077,1,"Error interno: Método de búsqueda no admitido."
+1078,1,"Esta imagen de disco contiene un bloque comprimido con un método desconocido.\nTales imágenes de disco no son admitidas."
+1079,1,"Falló la descompresión de un bloque comprimido con ZLIB. La imagen del disco parece corrupta."
+1080,1,"Falló la descompresión de un bloque comprimido con BZIP2. La imagen del disco parece corrupta."
+1085,1,"Este fichero no parece ser una imagen ISZ comprimida o está incompleto.\nNo contiene una cabecera ISZ válida."
+1086,1,"Imposible leer cabecera de imagen comprimida. Fichreo demasiado pequeño."
+1087,1,"La imagen está segmentada.\nNo se admiten imágenes segmentadas."
+
+[STRINGTABLE 6]
+1088,1,"Esta imagen está encriptada.\nNo se admiten imágenes encriptadas."
+1100,1,"Error de lectura"
+1101,1,"Error de escritura"
+1102,1,"No se pueden extraer pistas de audio."
+1103,1,"Cancelando la operación, espere..."
+
+[STRINGTABLE 7]
+1150,1,"Imformación sobre imagen\n\n"
+1151,1,"Imformación sobre imagen "%s"\n\n"
+
+[STRINGTABLE 8]
+1152,1,"Número de sesiones: %d"
+1153,1,"\nSesión %d\n"
+1154,1,"  Número de pistas: %d\n"
+1155,1,"  Pista: %d, %s, Tamaño: %d KBytes\n"
+1156,1,"  Pista: %d, %s, Tamaño: %d KBytes - "%s"\n"
+

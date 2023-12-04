@@ -1,0 +1,9 @@
+ Name      Size   TTR   Alias-of AC --------- Attributes --------- Amode Rmode
+TOPASTCP  003930 003C1D          01 FO                              31    ANY
+TT008     000000 000714          01 FO NX          RN RU            24    24
+TT009     015900 000718          01 FO                              31    24
+BLDQS     001848 001403 ILBOQSU  00 FO                              24    24
+IGZCCCO   000448 00200E          00 FO                RU            31    ANY
+IGZCTCO   000228 00131F          00 FO                RU            31    24
+IGZEGOB   000288 00180E          00 FO                              ANY   24
+ILBOABN0  0000B8 000810 ILBOABN  00 FO             RN RU            31    ANY  

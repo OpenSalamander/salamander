@@ -1,0 +1,102 @@
+﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __CHECKSUM_RH2
+#define __CHECKSUM_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#define IDC_STATIC_1 300
+#include "statics.rh2"   // 300 az 339 jsou timto zabrane !!!
+
+#define IDS_PLUGINNAME                   1
+#define IDS_ABOUTTITLE                   2
+#define IDS_PLUGIN_DESCRIPTION           3
+#define IDS_OUTOFMEM                     4
+#define IDS_ERROROPENING                 5
+#define IDS_READERROR                    6
+#define IDS_WRITEERROR                   7
+#define IDS_SKIPPED                     40
+#define IDS_CALCULATING                 41
+#define IDS_CANCELED                    42
+#define IDS_HINT                        43
+#define IDS_COPYTOCBOARD_CRC            44
+#define IDS_COPYTOCBOARD_MD5            45
+#define IDS_COPYTOCBOARD_SHA1           46
+#define IDS_COPYTOCBOARD_SHA256         47
+#define IDS_COPYTOCBOARD_SHA512         48
+// 49-52 Reserved for other IDS_COPYTOCBOARD_xxx
+#define IDS_REMOVEITEM                  53
+#define IDS_SAVE_OVERWRITE              54
+#define IDS_ERRORCREATINGFILE           55
+#define IDS_SKIPPEDFILES                56
+#define IDS_ERROROPENING2               57
+#define IDS_MISSING                     58
+#define IDS_BADEXT                      59
+#define IDS_BADFILE                     60
+#define IDS_VERIFYING                   61
+#define IDS_OK                          62
+#define IDS_CORRUPT                     63
+#define IDS_MENU_VERIFY                 65
+#define IDS_MENU_CALCULATE              66
+#define IDS_CONFIG_CONFLICT             67
+#define IDS_CONFIG_CHANGES_EFFECT       68
+#define IDS_ALLOK                       70
+#define IDS_RESULT                      71
+#define IDS_BUSY                        72
+#define IDS_CLOSE                       74
+#define IDS_READINGTREE                 75
+#define IDS_ERRORREADINGDIR             76
+#define IDS_NOFILES                     77
+#define IDS_VERIFYTITLE                 78
+#define IDS_COLUMN_FILE                 79
+#define IDS_COLUMN_SIZE                 80
+#define IDS_COLUMN_STATUS               81
+#define IDS_COLUMN_CRC                  82
+#define IDS_COLUMN_MD5                  83
+#define IDS_COLUMN_SHA1                 84
+#define IDS_COLUMN_SHA256               85
+#define IDS_COLUMN_SHA512               86
+// 87-89 Reserved for other IDS_COLUMN_xxx
+#define IDS_SAVE_TITLE                  90
+#define IDS_SAVE_FILTER_CRC             91
+#define IDS_SAVE_FILTER_MD5             92
+#define IDS_SAVE_FILTER_SHA1            93
+#define IDS_SAVE_FILTER_SHA256          94
+#define IDS_SAVE_FILTER_SHA512          95
+// 96-99 Reserved for other IDS_SAVE_FILTER_xxx
+#define IDS_VERIFY_CRC                  100
+#define IDS_VERIFY_MD5                  101
+#define IDS_VERIFY_SHA1                 102
+#define IDS_VERIFY_SHA256               103
+#define IDS_VERIFY_SHA512               104
+// 105-110 Reserved for other IDS_VERIFY_xxx
+#define IDS_TOOLONGNAME                 120
+
+#define IDI_FILE1                       10001
+#define IDI_FILE2                       10002
+#define IDI_FILE3                       10003
+#define IDI_FILE4                       10004
+#define IDI_CHECKMARK                   10005 
+#define IDB_CHECKSUM                    10006
+
+
+#define IDH_CALCCHKSUM                  3000
+#define IDH_VERIFYCHKSUM                3001
+
+
+#define IDC_CFG_SUM_1                   100
+//#define IDC_CFG_CRC                     IDC_CFG_SUM_1  // tenhle zapis nezkompiluje HTML Help Compiler
+#define IDC_CFG_CRC                     100
+//#define IDC_CFG_MD5                     (IDC_CFG_CRC+1) // tenhle zapis nezkompiluje HTML Help Compiler
+#define IDC_CFG_MD5                     101
+//#define IDC_CFG_SHA1                    (IDC_CFG_MD5+1) // tenhle zapis nezkompiluje HTML Help Compiler
+#define IDC_CFG_SHA1                    102
+//#define IDC_CFG_SHA256                  (IDC_CFG_SHA1+1) // tenhle zapis nezkompiluje HTML Help Compiler
+#define IDC_CFG_SHA256                  103
+//#define IDC_CFG_SHA512                  (IDC_CFG_SHA256+1) // tenhle zapis nezkompiluje HTML Help Compiler
+#define IDC_CFG_SHA512                  104
+//#define IDC_CFG_SUM_COUNT               (IDC_CFG_SHA512+1) // tenhle zapis nezkompiluje HTML Help Compiler
+#define IDC_CFG_SUM_COUNT               105
+
+#endif // __CHECKSUM_RH2

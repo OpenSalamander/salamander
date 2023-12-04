@@ -1,0 +1,36 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\hungarian\unlha.atp"
+TEXTVERSION,"1.13 (x86)"
+VERSION,"1,1,3,180"
+
+[TRANSLATION]
+LANGID,1038
+AUTHOR,"Török József"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6164"
+COMMENT,"Magyar változat"
+
+[STRINGTABLE 0]
+1,1,"Érvénytelen LZH fájl vagy ismeretlen formátumú."
+2,1,"Fejléc ellenőrzési hiba.\nAz archívum sérült - nem minden fájl listázható ki."
+3,1,"Kevés memória."
+4,1,"Írási hiba"
+5,1,"UnLHA"
+6,1,"Archívum megnyitási hiba."
+7,1,"Nem adható archívum bejegyzés a fájl listához."
+8,1,"Az archívum egy vagy több UNIX szimbolikus linket tartalmaz, melyen nem jeleníthetők meg."
+10,1,"A fájl nem tömöríthető ki."
+11,1,"Hiba a tömörített adatban. A CRC nem egyezik."
+12,1,"Archívum olvasási hiba."
+13,1,"LHA archívum kibontása - %s"
+14,1,"adat előkészítése és mappák létrehozása..."
+15,1,"kibontás: "
+
+[STRINGTABLE 1]
+16,1,"kibontás..."
+17,1,"A művelet nem fejezhető be, mert az elérés túl hosszú."
+18,1,"A művelet nem fejezhető be, mert a maszk túl hosszú."
+19,1,"Ismeretlen tömörítési mód. A fájl nem tömöríthető ki."
+20,1,"ismeretlen mód, kihagyva..."
+21,1,"LHA archívumok böngészése és kibontása."
+22,1,"Plugin névjegy"
+

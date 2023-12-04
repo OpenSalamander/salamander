@@ -1,0 +1,153 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Salamander Object</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: Automation: Reference</div>
+<div class="page">
+
+<h1>Salamander Object</h1>
+
+<p>The <b>Salamander</b> object is the root object of the Open Salamander
+Automation object model hierarchy. It never needs to be instantiated before
+invoking its properties and methods, and it is always available from any script
+file.</p>
+
+<h2>Methods</h2>
+<table>
+	<tr>
+		<td class="hdr">Name</td>
+		<td class="hdr">Description</td>
+	</tr>
+	<tr>
+		<td class="method"><a href="ref_salamander_abortscript.htm">AbortScript</a></td>
+		<td>Forces script execution to stop.</td>
+	</tr>
+	<tr>
+		<td class="method"><a href="ref_salamander_debugbreak.htm">DebugBreak</a></td>
+		<td>Breaks into the debugger.</td>
+	</tr>
+	<tr>
+		<td class="method"><a href="ref_salamander_errordialog.htm">ErrorDialog</a></td>
+		<td>Displays dialog box with an error message.</td>
+	</tr>
+	<tr>
+		<td class="method"><a href="ref_salamander_getfullpath.htm">GetFullPath</a></td>
+		<td>Returns absolute canonical path for the specified path string.</td>
+	</tr>
+	<tr>
+		<td class="method"><a href="ref_salamander_getpersistentval.htm">GetPersistentVal</a></td>
+		<td>Retrieves value from the persistent storage.</td>
+	</tr>
+	<tr>
+		<td class="method"><a href="ref_salamander_inputbox.htm">InputBox</a></td>
+		<td>Allows the user to input a text.</td>
+	</tr>
+	<tr>
+		<td class="method"><a href="ref_salamander_matchesmask.htm">MatchesMask</a></td>
+		<td>Matches file name against the specified file mask.</td>
+	</tr>
+	<tr>
+		<td class="method"><a href="ref_salamander_msgbox.htm">MsgBox</a></td>
+		<td>Displays a message in a dialog box.</td>
+	</tr>
+	<tr>
+		<td class="method"><a href="ref_salamander_overwritedialog.htm">OverwriteDialog</a></td>
+		<td>Displays file overwrite confirmation dialog box.</td>
+	</tr>
+	<tr>
+		<td class="method"><a href="ref_salamander_questiondialog.htm">QuestionDialog</a></td>
+		<td>Displays dialog box with a question.</td>
+	</tr>
+	<tr>
+		<td class="method"><a href="ref_salamander_setpersistentval.htm">SetPersistentVal</a></td>
+		<td>Saves value accross script invocations.</td>
+	</tr>
+	<tr>
+		<td class="method"><a href="ref_salamander_sleep.htm">Sleep</a></td>
+		<td>Suspends script execution for a specified length of time.</td>
+	</tr>
+	<tr>
+		<td class="method"><a href="ref_salamander_trace.htm">TraceE</a></td>
+		<td>Sends an error message to the Trace Server.</td>
+	</tr>	
+	<tr>
+		<td class="method"><a href="ref_salamander_trace.htm">TraceI</a></td>
+		<td>Sends an informational message to the Trace Server.</td>
+	</tr>
+	<tr>
+		<td class="method"><a href="ref_salamander_viewfile.htm">ViewFile</a></td>
+		<td>Opens file in the associated viewer.</td>
+	</tr>
+</table>
+
+<h2>Properties</h2>
+<table>
+	<tr>
+		<td class="hdr">Name</td>
+		<td class="hdr">Description</td>
+	</tr>
+	<tr>
+		<td class="property"><a href="ref_salamander_automationversion.htm">AutomationVersion</a></td>
+		<td>Gets the Automation plugin version number.</td>
+	</tr>
+	<tr>
+		<td class="property"><a href="ref_forms.htm">Forms</a></td>
+		<td>Contains methods for creating user interface.</td>
+	</tr>
+	<tr>
+		<td class="property">LeftPanel</td>
+		<td>Gets instance of the <a href="ref_panel.htm">Panel</a> object representing the left panel.</td>
+	</tr>
+	<tr>
+		<td class="property">ProgressDialog</td>
+		<td>Gets instance of the <a href="ref_progressdialog.htm">ProgressDialog</a> object representing the progress dialog.</td>
+	</tr>
+	<tr>
+		<td class="property">RightPanel</td>
+		<td>Gets instance of the <b>Panel</b> object representing the right panel.</td>
+	</tr>
+	<tr>
+		<td class="property">Script</td>
+		<td>Retrieves the <a href="ref_scriptinfo.htm">ScriptInfo</a> object that contains information about currently running script.</td>
+	</tr>
+	<tr>
+		<td class="property">SourcePanel</td>
+		<td>Gets instance of the <b>Panel</b> object representing the source panel.</td>
+	</tr>
+	<tr>
+		<td class="property">TargetPanel</td>
+		<td>Gets instance of the <b>Panel</b> object representing the target panel.</td>
+	</tr>
+	<tr>
+		<td class="property">Version</td>
+		<td>Gets the Open Salamander version number.</td>
+	</tr>
+	<tr>
+		<td class="property">WaitWindow</td>
+		<td>Gets instance of the <a href="ref_waitwindow.htm">WaitWindow</a> object representing the wait window.</td>
+	</tr>
+	<tr>
+		<td class="property"><a href="ref_salamander_windowsversion.htm">WindowsVersion</a></td>
+		<td>Gets the Windows operating system packed version number.</td>
+	</tr>
+</table>
+
+<h2>See Also</h2>
+<p><a href="ref_panel.htm">Panel Object</a></p>
+<p><a href="ref_progressdialog.htm">ProgressDialog Object</a></p>
+<p><a href="ref_forms.htm">Salamander Forms</a></p>
+<p><a href="ref_scriptinfo.htm">ScriptInfo Object</a></p>
+<p><a href="ref_waitwindow.htm">WaitWindow Object</a></p>
+
+</div>
+<div class="footer">&copy; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

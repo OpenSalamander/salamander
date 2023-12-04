@@ -1,0 +1,40 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\french\nethood.atp"
+TEXTVERSION,"1.08 (x86)"
+VERSION,"1,0,8,180"
+
+[TRANSLATION]
+LANGID,1036
+AUTHOR,"Gérard Gréco, Arnaud Dupin de Beyssat, Jérémy Marc, Maxime Abbey"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6162"
+COMMENT,"Version française"
+
+[DIALOG 102]
+240,127,1,"Configuration de réseau"
+1201,7,7,129,10,1,"Montrer les &partages administratifs"
+1203,13,22,213,10,1,"Montrer les partages administratifs comme éléments &cachés"
+1202,7,37,225,10,1,"Montrer les éléments de Mes &Favoris Réseau de premier niveau"
+1204,7,52,190,10,1,"Montrer les &ordinateurs de premier niveau du réseau"
+1206,7,67,184,10,1,"Montrer les &disques connectés via le Bureau distant"
+1205,7,82,174,10,1,"&Analyser le réseau au lancement de Salamander"
+3000,7,99,226,1,1,""
+1,40,106,50,14,1,"OK"
+2,95,106,50,14,1,"Annuler"
+9,150,106,50,14,1,"Aide"
+
+[STRINGTABLE 0]
+128,1,"Réseau"
+129,1,"Permet l'accès aux ordinateurs du réseau."
+
+[STRINGTABLE 1]
+1024,1,"Commentaire"
+1025,1,"{!}<%d> objet{|1|s} sélectionné(s)"
+1026,1,"Réseau"
+1027,1,"Analyse du réseau en cours…"
+1028,1,"Le réseau est indisponible."
+1029,1,"A propos du module"
+1030,1,"%1 sur %2"
+1031,1,"Ordinateur local"
+1032,1,"Ordinateur hôte"
+1033,1,"Disques de %s"
+

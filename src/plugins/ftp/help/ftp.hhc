@@ -1,0 +1,185 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<!-- Sitemap 1.0 -->
+</HEAD>
+<BODY>
+	<OBJECT type="text/site properties">
+		<param name="Window Styles" value="0x800027">
+	</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Introduction">
+	</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Introducing FTP Client Plugin">
+			<param name="Local" value="hh\ftp\introduction_intro.htm">
+		</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Using FTP Client Plugin">
+	</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Connecting to FTP Server">
+			<param name="Local" value="hh\ftp\using_connect.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Setting Transfer Mode">
+			<param name="Local" value="hh\ftp\using_transfermode.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Adding Bookmark">
+			<param name="Local" value="hh\ftp\using_addbookmark.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Organizing Bookmarks">
+			<param name="Local" value="hh\ftp\using_orgbookmarks.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Listing Hidden Files and Directories (Unix)">
+			<param name="Local" value="hh\ftp\using_listhiddenonunix.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Showing Certificate">
+			<param name="Local" value="hh\ftp\using_showcert.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Refreshing Panel">
+			<param name="Local" value="hh\ftp\using_refresh.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Changing Access Rights (Unix)">
+			<param name="Local" value="hh\ftp\using_changeattrs.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Sending FTP Command">
+			<param name="Local" value="hh\ftp\using_sendftpcmd.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Showing Raw Listing">
+			<param name="Local" value="hh\ftp\using_showrawlisting.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Showing FTP Logs">
+			<param name="Local" value="hh\ftp\using_showlogs.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Dialog Boxes">
+	</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Configuration">
+		</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Advanced">
+				<param name="Local" value="hh\ftp\config_advanced.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Confirmations">
+				<param name="Local" value="hh\ftp\config_confirmations.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Defaults">
+				<param name="Local" value="hh\ftp\config_defaults.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="General">
+				<param name="Local" value="hh\ftp\config_general.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Logs">
+				<param name="Local" value="hh\ftp\config_logs.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Operations 1">
+				<param name="Local" value="hh\ftp\config_operation1.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Operations 2">
+				<param name="Local" value="hh\ftp\config_operation2.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Servers">
+				<param name="Local" value="hh\ftp\config_servers.htm">
+				</OBJECT>
+		</UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Add/Edit Proxy Server">
+			<param name="Local" value="hh\ftp\dlgboxes_proxyserver.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Advanced Options">
+			<param name="Local" value="hh\ftp\dlgboxes_connectadv.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Connect to FTP Server">
+			<param name="Local" value="hh\ftp\dlgboxes_connect.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Copy">
+			<param name="Local" value="hh\ftp\dlgboxes_copy.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="New/Edit Column">
+			<param name="Local" value="hh\ftp\dlgboxes_editcolumn.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Edit Server Type">
+			<param name="Local" value="hh\ftp\dlgboxes_editsrvtype.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="FTP Logs">
+			<param name="Local" value="hh\ftp\dlgboxes_ftplogswindow.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Change Attributes">
+			<param name="Local" value="hh\ftp\dlgboxes_chattrs.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Move">
+			<param name="Local" value="hh\ftp\dlgboxes_move.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Operation">
+			<param name="Local" value="hh\ftp\dlgboxes_operationdlg.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Organize Bookmarks">
+			<param name="Local" value="hh\ftp\dlgboxes_orgbookmarks.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Send FTP Command">
+			<param name="Local" value="hh\ftp\dlgboxes_sendftpcmd.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Set New Attributes">
+			<param name="Local" value="hh\ftp\dlgboxes_setnewattrs.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Solve Error Dialog Boxes">
+			<param name="Local" value="hh\ftp\dlgboxes_solveerror.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Test of Parser">
+			<param name="Local" value="hh\ftp\dlgboxes_testparser.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Appendix">
+	</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Getting Lists of Files and Directories from FTP Servers">
+			<param name="Local" value="hh\ftp\appendix_parsing.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Login Scripts for FTP Proxy Servers">
+			<param name="Local" value="hh\ftp\appendix_loginscripts.htm">
+			</OBJECT>
+	</UL>
+</BODY>
+</HTML>

@@ -1,0 +1,142 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Synchronize Dialog</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Dialog Boxes</div>
+<div class="page">
+<h1>Synchronize Dialog</h1>
+
+<p>
+In Synchronize Dialog you select direction, mode and options for
+<a href="task_synchronize_full.htm">synchronization</a>. To display the dialog go to
+<em>WinSCP plugin menu</em>.
+</p>
+
+<a name="directories"></a>
+<h4>Directories</h4>
+<p>
+Enter root directories for the synchronization into <em>Local directory</em> and <em>Remote directory</em>
+boxes. By default the current working directories will be used.
+</p>
+
+<a name="direction_target_directory"></a>
+<h4>Direction/Target directory</h4>
+<p>
+Use options <em>Both</em>, <em>Remote</em> or <em>Local</em> to select your preferred
+<a href="task_synchronize_full.htm#synchronization_direction">synchronization direction</a>.
+</p>
+
+<a name="mode"></a>
+<h4>Mode</h4>
+
+<p>
+Use options <em>Synchronize files</em>, <em>Mirror files</em> or
+<em>Synchronize timestamps</em> to select your preferred
+<a href="task_synchronize_full.htm#synchronization_mode">synchronization mode</a>.
+</p>
+
+<a name="synchronize_options"></a>
+<h4>Synchronize Options</h4>
+<p>
+The <em>Delete files</em> checkbox makes WinSCP delete files and subdirectories in target directory that are
+not present in a source directory. The option is not available for <em>Both</em> direction, because then
+such files and subdirectories are always considered as new and transferred into the opposite directory (unless
+<em>Existing files only</em> is checked).
+</p>
+
+<p>
+The <em>Existing files only</em> checkbox makes WinSCP not to consider files and subdirectories not existing
+in an opposite directory as new. Such files and subdirectories will be ignored.
+</p>
+
+<p>
+The <em>Preview changes</em> checkbox makes WinSCP request confirmation from you before each change it makes.
+</p>
+
+<p>
+The <em>Selected files only</em> checkbox makes WinSCP synchronize only files and directories
+selected in any file panel. The option is not available, if
+no file or directory is selected.
+</p>
+
+<a name="comparison_criteria"></a>
+<h4>Comparison Criteria</h4>
+
+<p>
+The section defines criteria for determining whether two files (local and remote) are the same or not.
+</p>
+
+<p>
+With <em>Modification time</em> checked (default) two files are considered different when they have different timestamps.
+</p>
+
+<p>
+With <em>File size</em> checked two files are considered different when they have different sizes. The
+option is not available with <em>Both</em> direction selected. When using the option, you should avoid
+<a href="transfer_mode.htm">text transfer mode</a> as it may change the file size.
+</p>
+
+<p>
+When both options are checked,
+<em>Modification time</em> has higher priority. As a consequence, file is not considered updated, despite
+having different size, if the source file is older than the destination file.
+</p>
+
+<p>
+When neither option is checked, existing files are 
+considered the same always. So only new files are 
+synchronized.
+</p>
+
+<p>
+With <em>Both</em> direction selected, <em>Modification time</em> is always checked and <em>File size</em> unchecked.
+</p>
+
+<p>
+For <em>Synchronize timestamps</em> mode checkbox <em>Same size only</em> is available.
+It makes WinSCP update timestamp of the files, that have same size in both directories, only.
+</p>
+
+<a name="transfer_settings"></a>
+<h4>Transfer Settings</h4>
+
+<p>
+<em>Transfer settings</em> box shows current <a href="transfer_settings.htm">transfer settings</a>.
+</p>
+
+<p>
+Use button <em>Transfer preferences</em> to configure
+<a href="ui_transfer_custom.htm">transfer settings</a>
+(alternatively you may double-click <em>Transfer settings</em> box).
+</p>
+
+<p>
+You may want to change transfer settings particularly to <a href="ui_transfer.htm#other_options">exclude
+certain files and subdirectories</a> from synchronization.
+</p>
+
+<a name="saving_options"></a>
+<h4>Saving Options</h4>
+
+<p>
+Check <em>Use same options next time</em> if you want to make your selected mode and options be default next time you use
+function <em><a href="task_synchronize_full.htm">Synchronize</a></em>.
+This will not save transfer settings.
+You can change default transfer settings in
+<a href="ui_sal_pref_transfer.htm">preferences</a>.
+Note that defaults affect
+function <em><a href="task_keep_up_to_date.htm">Keep remote directory up to date</a></em> as well.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

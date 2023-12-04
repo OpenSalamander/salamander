@@ -1,0 +1,54 @@
+﻿//
+// lang.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "..\versinfo.rh2"
+#include "versinfo.rc2"
+
+STRINGTABLE
+{
+  IDS_PLUGINNAME, "UnRAR"
+  IDS_PLUGIN_DESCRIPTION, "Browse and extract RAR archives."
+  IDS_ABOUT, "About Plugin"
+  IDS_LOWMEM, "Insufficient memory."
+  IDS_ERRMODULEFN, "Unable to get module filename."
+  IDS_ERRLOADLIB, "Unable to load library '%s'."
+  IDS_ERRGETPROCADDR, "Unable to get procedure address."
+  IDS_BADDATA, "Archive is corrupted. (Wrong password?)"
+  IDS_BADPASSWORD, "The password is incorrect. Letters in password must be typed using the correct case. Make sure that CapsLock is not accidentally on."
+  IDS_BADARC, "File is of an unknown format or not a valid RAR archive. (Wrong password?)"
+  IDS_ERROPENARC, "Unable to open archive file."
+  IDS_UNKNOWN, "Unknown error occurred."
+  IDS_VOLUMEERR, "Unable to open archive volume."
+  IDS_ERRREADARC, "Unable to read archive file."
+  IDS_RARARCHIVES, "RAR Archive Files (*.R*)"
+  IDS_BROWSEARCHIVETITLE, "Select Archive File"
+  IDS_CRC, "Error in compressed data. CRC doesn't match. (Wrong password?)"
+  IDS_LIST, "Unable to add archive entry to the file list."
+  IDS_EXTRPROGTITLE, "Unpacking RAR Archive - %s"
+  IDS_PREPAREDATA, "preparing data and creating directories..."
+  IDS_EXTRACTFILES, "unpacking..."
+  IDS_EXTRACTING, "unpacking: "
+  IDS_UNABLEGETFIELPOS, "Unable to get file pointer: "
+  IDS_UNABLEWRITE, "Unable to write to file:"
+  IDS_UNABLESEEK, "Unable to set file pointer: "
+  IDS_TOOLONGNAME, "Can't finish operation because of too long path name."
+  IDS_TOOLONGMASK, "Can't finish operation because of too long mask."
+  IDS_ENTERPWD, "Please enter at least one character."
+  IDS_ALLFILES, "All Files (*.*)"
+  IDS_ERROR, "Error"
+  IDS_NOTFOUND, "File not found"
+  IDS_BADDLL, "Incorrect version of unrar.dll. Please reinstall the UnRAR plugin."
+  IDS_SELECTFIRST, "It seems this is a multi-volume archive. If so, please select the first archive volume and press OK.\n\nIf it is not a multi-volume archive, press Cancel."
+  IDS_SELECTFIRSTTITLE, "Select First Volume"
+  IDS_FILENOTFOUND "File not found in the archive."
+  IDS_LISTINFO_PAKEDSIZE      "Packed"
+  IDS_LISTINFO_PAKEDSIZE_DESC "Packed size of file"
+}

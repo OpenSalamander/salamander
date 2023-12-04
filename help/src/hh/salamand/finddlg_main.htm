@@ -1,0 +1,103 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Find dialog box</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Dialog Boxes: Find</div>
+<div class="page">
+<h1>Find</h1>
+
+<p>Use this dialog box to search for files or directories on your computer or
+network drives.</p>
+
+<h4>Dialog Box Options</h4>
+<dl>
+<dt><i>Named</i></dt>
+<dd>Type the file or directory name in this box. Use <a href="appendix_filemasks.htm">file masks</a>
+to specify a group of files or directories. Use the drop-down list to select previous
+search masks. Important note: when you specify mask without asterisk (*), question mark (?), and
+point (.), you will find all files and directories whose names are containing this mask (e.g. when
+you specify "dog", you will find "dogs.txt", "hotdog.jpg", etc.), you can prevent this by adding
+point (.) to the end of such mask (e.g. when you specify "dog.", you will find only "dog").</dd>
+
+<dt><i>Find Now</i></dt>
+<dd>This button starts the search. Pressing Escape or the Stop button can
+interrupt it. Click on the right side of this button to open context menu
+with other commands.</dd>
+
+<dt><i>Look in</i></dt>
+<dd>This box contains directories in which you want to start the search.
+More starting directories can be specified using semi-colon (;) as a separator.
+Use the drop-down list to select previously used starting directories.</dd>
+
+<dt><i>Add</i></dt>
+<dd>Displays the context menu, where you can select from the three commands.
+The Browse command allows you to locate and add desired directory to the <i>Look in</i>
+box. The Add Local Drives command inserts all local drives to the <i>Look in</i> box.
+The Add Local and Network Drives command inserts all local and network (mapped) drives
+to the <i>Look in</i> box.</dd>
+
+<dt><i>Search subdirectories</i></dt>
+<dd>Select this check box if you want to search all subdirectories of the
+directories listed in the <i>Look in</i> box.</dd>
+
+<dt><i>Search file content</i></dt>
+<dd>When checked and the <i>Containing</i> box is not empty, the file content will be searched.</dd>
+
+<dt><i>Containing</i></dt>
+<dd>Type some text which should be contained in a file. If you don't know a file's name,
+you may be able to find the file by typing some of its contents. You can specify
+four additional options: HEX-mode, Case sensitive, Whole words, and Regular
+expression. Use the drop-down list to select previous search strings.</dd>
+
+<dt><i>HEX-mode</i></dt>
+<dd>Hexadecimal mode will be used to set character by character in hexadecimal
+numbers. You can also input normal text in the hexadecimal mode, but it must be
+quoted using double quotes. So if you set '01 02 "text" 00', it will be a pattern
+with 7 characters, 2+4+1.</dd>
+
+<dt><i>Case sensitive</i></dt>
+<dd>When selected, it searches for strings that match the <i>Containing</i>
+string exactly. Otherwise, it searches ignoring case of characters (lower and
+upper characters are equal).</dd>
+
+<dt><i>Whole words</i></dt>
+<dd>When selected, the found string must be preceded and followed by a space, tab,
+or punctuation character or the start or end of a line. Otherwise, the
+search finds any matching string, whether it is a fragment of a larger string
+or not.</dd>
+
+<dt><i>Regular expression</i></dt>
+<dd>When checked, type <a href="appendix_regexp.htm">regular expression</a> to the
+<i>Containing</i> box. The regular expressions are powerful, you can use them to find
+text which have specified attributes. These attributes are for example "pattern begins
+at the beginning of line", "pattern ends at the end of line", "pattern starts with
+some prefix and ends with some suffix", "pattern is one word from a set of words", or
+"pattern contains only characters from some character sequence (e.g. numbers)".</dd>
+
+<dt><i>Advanced</i></dt>
+<dd>Opens the <a href="finddlg_advan.htm">Advanced Options dialog box</a> where you can
+specify advanced search criteria.</dd>
+
+<dt><i>Found Items</i></dt>
+<dd>Contains a list of found files and directories. Click on columns headers to sort this
+list by name, size, path, or time. Or use sort commands from the View menu.</dd>
+
+</dl>
+
+<h4>See Also</h4>
+<p>
+<a href="basicwork_find.htm">Finding Files and Directories</a>
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

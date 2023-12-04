@@ -1,0 +1,85 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>User Menu configuration</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Dialog Boxes: Configuration</div>
+<div class="page">
+<h1>User Menu</h1>
+    
+<p>Allows you to manage User Menu commands used for executing external
+programs.</p>
+
+<h4>Dialog Box Options</h4>
+<dl>
+<dt><i>Menu Contents</i></dt>
+<dd>Lists all the User Menu commands you have defined. Placing an ampersand (&amp;)
+before a letter in the menu item text makes the letter an accelerator key.</dd>
+
+<dt><i>Submenu</i></dt>
+<dd>When checked, the current command becomes a start of a submenu. The name of the command
+is used as the name for this submenu. All commands between current command and Submenu End
+command (it's added automatically) will be placed in the submenu. Submenus can be nested,
+so you can create any structure of the User Menu. To move existing menu command to the
+submenu: focus this command and use buttons with arrows in <i>Menu Contents</i> toolbar or
+the Alt+Up and Down Arrows keys.</dd>
+
+<dt><i>Separator</i></dt>
+<dd>When checked, name of command will be ignored and item signify separator in
+the User Menu and in the User Menu bar.</dd>
+
+<dt><i>Change Icon</i></dt>
+<dd>Icon associated with command. You can change this icon by clicking Change
+Icon button.</dd>
+
+<dt><i>Command</i></dt>
+<dd>Specifies path to the executed external program.</dd>
+
+<dt><i>Arguments</i></dt>
+<dd>Specifies additional arguments for the external program each time you start
+it. The maximal length of command with arguments depends on Windows version and
+if you are executing command through shell or not (see <i>Execute through shell</i>
+check box later on this page). See <a href="customize_usrmn.htm">Customizing User Menu</a>
+for limits overview.</dd>
+
+<dt><i>Initial directory</i></dt>
+<dd>Specifies the working directory used for the external program.</dd>
+
+<dt><i>Execute through shell</i></dt>
+<dd>When checked, command is executed through system command shell. The executing
+through the system shell is useful for console-oriented applications with some
+interesting output and for execution queues (pipes, redirected input and output, etc.)
+Otherwise is command executed directly from Open Salamander as a new process.
+The direct execution is good for windowed applications.</dd>
+
+<dt><i>Open shell window</i></dt>
+<dd>When checked, specifies that the command shell window will be opened when
+command is executed.</dd>
+
+<dt><i>Close shell window</i></dt>
+<dd>When checked, specifies that the command shell window associated with the tool
+will close when you close the executed program.</dd>
+
+<dt><i>Show item in User Menu bar</i></dt>
+<dd>When checked, User Menu command is shown in the User Menu bar.</dd>
+
+</dl>
+
+<h4>See Also</h4>
+<p>
+<a href="customize_usrmn.htm">Customizing User Menu</a><br />
+<a href="advwork_usermenu.htm">Using User Menu</a><br />
+<a href="windows_usrmenu.htm">User Menu Bar</a><br />
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

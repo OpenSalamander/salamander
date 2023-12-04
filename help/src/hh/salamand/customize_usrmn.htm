@@ -1,0 +1,361 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Customizing User Menu</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Customizing Open Salamander</div>
+<div class="page">
+
+<h1>Customizing User Menu</h1>
+
+<p>The User Menu allows you to execute external programs or open documents. The User Menu
+is list of individual commands ("items") you have defined. Each item contains an
+item name and executed command. Moreover, icon, additional arguments, initial
+directory, and executing flags can be specified.</p>
+
+<p>You can use additional arguments to specify command-line arguments that are
+passed to the application each time you start it. For example you can use
+$(FullName) to pass the filenames of selected files (one User Menu command is
+executed for each selected file). See the List of Variables below for details.</p>
+
+<h3>To add new command to the User Menu:</h3>
+<ol>
+<li>In the Options menu, select Configuration..., and then choose the 
+    <a href="configuration_usrmn.htm">User Menu dialog box</a>.</li>
+<li>In the <i>Menu Contents</i> select the last empty row.</li>
+<li>Type the name of the created item.</li>
+<li>Press the Enter key.</li>
+<li>In the <i>Command</i> box, type path and filename of the file you want to
+    execute.</li>
+<li>Choose the OK button.</li>
+</ol>
+
+<h4>Advanced Features</h4>
+
+<p>The User Menu supports executing of utilities for comparing/merging of files
+and directories. You can use special variables in the <i>Arguments</i> box (see
+the List of Variables below for details) to pass two files or two directories to
+the compare/merge utility. For example, enter <i>"$(FileOrDirToCompareLeft)"
+"$(FileOrDirToCompareRight)"</i> to the <i>Arguments</i> box and two full names
+of two files/directories specified in panels will be used as arguments for the
+compare/merge utility (specify its .exe file in the <i>Command</i> box).
+See the following list to learn how to specify two files/directories for
+the compare/merge utility directly in panels:</p>
+    <ol>
+    <li>select both files/directories in one panel,</li>
+    <li>select first file/directory in left panel and then select second file/directory in right panel,</li>
+    <li>select first file/directory and then focus the second file/directory in one panel,</li>
+    <li>select first file/directory in left panel and then focus second file/directory in right panel (and vice versa),</li>
+    <li>if you have files/directories with the same name in both panels, focus first file/directory
+        in one panel and second file/directory with the same name will be taken from
+	opposite panel.</li>
+    </ol>
+
+
+<p>The list of selected files and directories can be used in command arguments in the
+User Menu. In this case only one User Menu command is executed for all selected files and directories.
+See $(ListOfSelectedNames) and $(ListOfSelectedNames) variables in the List of Variables below.</p>
+
+<h4>List of Variables</h4>
+
+<p>All variables are available from context menus on buttons on the right sides of
+the <i>Command</i>, <i>Arguments</i>, and <i>Initial directory</i> boxes.</p>
+
+<p>The User Menu command is executed for each selected file and directory or for
+the focused file or directory (if there is no selection). The file or directory
+for which is executed the User Menu command is called <i>the current file or
+directory</i> in the following table. Exception from this rule: if you use variables
+for compare/merge utilities or lists of selected files and directories, only one
+User Menu command is executed for all selected files and directories.</p>
+
+<table>
+
+<tr>
+<th>Variable</th><th>Description</th>
+</tr>
+
+<tr>
+ <td>$(WinDir)</td>
+ <td>Full path of the Windows directory (e.g. C:\Windows\).</td>
+</tr>
+<tr>
+ <td>$(SysDir)</td>
+ <td>Full path of the system directory (e.g. C:\Windows\system32\).</td>
+</tr>
+<tr>
+ <td>$(SalDir)</td>
+ <td>Full path of the Open Salamander directory (e.g. C:\Program Files\Open Salamander 2.5\).</td>
+</tr>
+<tr>
+ <td>$[ENV_VAR]</td>
+ <td>Value of environment variable (replace ENV_VAR by the environment variable name).</td>
+</tr>
+<tr>
+ <td>$(FullName)</td>
+ <td>Full name of the current file or directory (e.g. C:\Program Files\Outlook Express).</td>
+</tr>
+<tr>
+ <td>$(Drive)</td>
+ <td>Drive of the current file or directory (e.g. C:, D:, or \\server\share).</td>
+</tr>
+<tr>
+ <td>$(Path)</td>
+ <td>Path of the current file or directory (e.g. \Windows\system32\).</td>
+</tr>
+<tr>
+ <td>$(Name)</td>
+ <td>Name of the current file or directory (e.g. file.txt).</td>
+</tr>
+<tr>
+ <td>$(NamePart)</td>
+ <td>Name part of the current file or directory (e.g. file if filename is file.txt).</td>
+</tr>
+<tr>
+ <td>$(ExtPart)</td>
+ <td>Extension of the current file or directory (e.g. txt if filename is file.txt).</td>
+</tr>
+<tr>
+ <td>$(FullPath)</td>
+ <td>Full path of the current file or directory (e.g. C:\Windows\system32\).</td>
+</tr>
+<tr>
+ <td>$(DOSFullName)</td>
+ <td>Full DOS name (8.3 naming convention) of the current file or directory (e.g. C:\DOCUME~1\ALLUSE~1\APPLIC~1).</td>
+</tr>
+<tr>
+ <td>$(DOSPath)</td>
+ <td>DOS path (8.3 naming convention) of the current file or directory (e.g. \DOCUME~1\ALLUSE~1\).</td>
+</tr>
+<tr>
+ <td>$(DOSName)</td>
+ <td>DOS name (8.3 naming convention) of the current file or directory (e.g. APPLIC~1).</td>
+</tr>
+<tr>
+ <td>$(DOSNamePart)</td>
+ <td>DOS name part (8.3 naming convention) of the current file or directory (e.g. MYFIRS~1 if filename is my first document.html).</td>
+</tr>
+<tr>
+ <td>$(DOSExtPart)</td>
+ <td>DOS extension (8.3 naming convention) of the current file or directory (e.g. HTM if filename is my first document.html).</td>
+</tr>
+<tr>
+ <td>$(DOSFullPath)</td>
+ <td>Full DOS path (8.3 naming convention) of the current file or directory (e.g. C:\DOCUME~1\ALLUSE~1\).</td>
+</tr>
+<tr>
+ <td>$(DOSWinDir)</td>
+ <td>Full DOS path (8.3 naming convention) of the Windows directory (e.g. C:\Windows\).</td>
+</tr>
+<tr>
+ <td>$(DOSSysDir)</td>
+ <td>Full DOS path (8.3 naming convention) of the system directory (e.g. C:\Windows\system32\).</td>
+</tr>
+<tr>
+ <td>$(FullPathInactive)</td>
+ <td>Full path opened in the inactive (target) panel (e.g. C:\Windows\system32\).</td>
+</tr>
+<tr>
+ <td>$(FullPathLeft)</td>
+ <td>Full path opened in the left panel (e.g. C:\Windows\system32\).</td>
+</tr>
+<tr>
+ <td>$(FullPathRight)</td>
+ <td>Full path opened in the right panel (e.g. C:\Windows\system32\).</td>
+</tr>
+<tr>
+ <td>$(FileToCompareLeft)</td>
+ <td>Full name of the first file to compare/merge (e.g. C:\file1.txt). If both files
+     are not from the same panel, the file from the left panel is used. See the
+     Advanced Features section above for details on executing of utilities for
+     comparing/merging of files and directories.</td>
+</tr>
+<tr>
+ <td>$(FileToCompareRight)</td>
+ <td>Full name of the second file to compare/merge (e.g. C:\file2.txt). If both files
+     are not from the same panel, the file from the right panel is used. See the
+     Advanced Features section above for details on executing of utilities for
+     comparing/merging of files and directories.</td>
+</tr>
+<tr>
+ <td>$(DirToCompareLeft)</td>
+ <td>Full name of the first directory to compare/merge (e.g. C:\dir1). If both directories
+     are not from the same panel, the directory from the left panel is used. See the
+     Advanced Features section above for details on executing of utilities for
+     comparing/merging of files and directories.</td>
+</tr>
+<tr>
+ <td>$(DirToCompareRight)</td>
+ <td>Full name of the second directory to compare/merge (e.g. C:\dir2). If both directories
+     are not from the same panel, the directory from the right panel is used. See the
+     Advanced Features section above for details on executing of utilities for
+     comparing/merging of files and directories.</td>
+</tr>
+<tr>
+ <td>$(FileOrDirToCompareLeft)</td>
+ <td>Full name of the first file or directory to compare/merge (e.g. C:\file1.txt).
+     If both files or directories are not from the same panel, the file or directory
+     from the left panel is used. See the Advanced Features section above for details
+     on executing of utilities for comparing/merging of files and directories.</td>
+</tr>
+<tr>
+ <td>$(FileOrDirToCompareRight)</td>
+ <td>Full name of the second file or directory to compare/merge (e.g. C:\file2.txt).
+     If both files or directories are not from the same panel, the file or directory
+     from the right panel is used. See the Advanced Features section above for details
+     on executing of utilities for comparing/merging of files and directories.</td>
+</tr>
+<tr>
+ <td>$(FileToCompareActive)</td>
+ <td>Full name of the first file to compare/merge (e.g. C:\file1.txt). If both files
+     are not from the same panel, the file from the active (source) panel is used. See the
+     Advanced Features section above for details on executing of utilities for
+     comparing/merging of files and directories.</td>
+</tr>
+<tr>
+ <td>$(FileToCompareInactive)</td>
+ <td>Full name of the second file to compare/merge (e.g. C:\file2.txt). If both files
+     are not from the same panel, the file from the inactive (target) panel is used. See the
+     Advanced Features section above for details on executing of utilities for
+     comparing/merging of files and directories.</td>
+</tr>
+<tr>
+ <td>$(DirToCompareActive)</td>
+ <td>Full name of the first directory to compare/merge (e.g. C:\dir1). If both directories
+     are not from the same panel, the directory from the active (source) panel is used. See the
+     Advanced Features section above for details on executing of utilities for
+     comparing/merging of files and directories.</td>
+</tr>
+<tr>
+ <td>$(DirToCompareInactive)</td>
+ <td>Full name of the second directory to compare/merge (e.g. C:\dir2). If both directories
+     are not from the same panel, the directory from the inactive (target) panel is used. See the
+     Advanced Features section above for details on executing of utilities for
+     comparing/merging of files and directories.</td>
+</tr>
+<tr>
+ <td>$(FileOrDirToCompareActive)</td>
+ <td>Full name of the first file or directory to compare/merge (e.g. C:\file1.txt).
+     If both files or directories are not from the same panel, the file or directory
+     from the active (source) panel is used. See the Advanced Features section above for details
+     on executing of utilities for comparing/merging of files and directories.</td>
+</tr>
+<tr>
+ <td>$(FileOrDirToCompareInactive)</td>
+ <td>Full name of the second file or directory to compare/merge (e.g. C:\file2.txt).
+     If both files or directories are not from the same panel, the file or directory
+     from the inactive (target) panel is used. See the Advanced Features section above for details
+     on executing of utilities for comparing/merging of files and directories.</td>
+</tr>
+<tr>
+ <td>$(ListOfSelectedNames)</td>
+ <td>The list of selected files and directories from the active (source) panel. Names are
+     separated by space character. Names containing spaces are surrounded by double quotes
+     (e.g. dir1 file.txt "my first document.html"). The order of names in the list is the same
+     as in the panel or Find window. The maximum length of the list is 32771 characters (see
+     <i>Command Line Length Limits</i> later on this page for limits overview).</td>
+</tr>
+<tr>
+ <td>$(ListOfSelectedFullNames)</td>
+ <td>The list of full names of selected files and directories from the active (source) panel.
+     Full names are separated by space character. Full names containing spaces are surrounded
+     by double quotes (e.g. C:\test\dir1 C:\test\file.txt "C:\test\my first document.html").
+     The order of names in the list is the same as in the panel or Find window. The maximum
+     length of the list is 32771 characters (see <i>Command Line Length Limits</i> later on
+     this page for limits overview).</td>
+</tr>
+
+</table>
+
+
+<h4>Command Line Length Limits</h4>
+<p>The maximal length of command with arguments depends on Windows version and
+if you are executing command through shell or not (see <i>Execute through shell</i>
+check box in <a href="configuration_usrmn.htm">User Menu dialog box</a>).
+</p>
+
+<p>Maximal length of command with arguments when executing through system command
+shell (more precisely using batch file):</p>
+
+<table>
+
+<tr>
+<th>Windows Version</th><th>Maximal Length</th>
+</tr>
+
+<tr>
+ <td>Windows 2000</td>
+ <td>2041</td>
+</tr>
+
+<tr>
+ <td>Windows XP</td>
+ <td>8185</td>
+</tr>
+
+<tr>
+ <td>Windows Vista</td>
+ <td>8191</td>
+</tr>
+
+<tr>
+ <td>Windows 7</td>
+ <td>8191</td>
+</tr>
+
+</table>
+
+<p>Maximal length of command with arguments when executing directly (not through system command shell):</p>
+
+<table>
+
+<tr>
+<th>Windows Version</th><th>Maximal Length</th>
+</tr>
+
+<tr>
+ <td>Windows 2000</td>
+ <td>2080</td>
+</tr>
+
+<tr>
+ <td>Windows XP</td>
+ <td>2080</td>
+</tr>
+
+<tr>
+ <td>Windows Vista</td>
+ <td>2080</td>
+</tr>
+
+<tr>
+ <td>Windows 7</td>
+ <td>32764</td>
+</tr>
+
+</table>
+
+
+<h4>Remarks</h4>
+<p>When <a href="windows_usrmenu.htm">User Menu Bar</a> is visible, you can
+add new User Menu item using drag &amp; drop operation. Simply drag the application
+or document to the User Menu bar.</p>
+
+
+<h4>See also</h4>
+<p>
+<a href="advwork_usermenu.htm">Using User Menu</a><br />
+<a href="configuration_usrmn.htm">User Menu dialog box</a><br />
+<a href="windows_usrmenu.htm">User Menu Bar</a><br />
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

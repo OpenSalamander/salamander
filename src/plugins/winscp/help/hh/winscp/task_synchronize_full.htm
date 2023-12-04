@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Directory Synchronization</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Using WinSCP Plugin: Synchronizing</div>
+<div class="page">
+<h1>Directory Synchronization</h1>
+
+<p>
+WinSCP can synchronize content of local directory with remote one or vice versa or even mutually. Find
+the function in WinSCP plugin menu. <a href="ui_synchronize.htm">Synchronize dialog</a>
+will appear, where you can select synchronization mode and configure options.
+</p>
+
+<p>
+Once you confirm your options, synchronization will start. Whenever WinSCP finds some change,
+it can optionally ask you for confirmation (option <em>Preview changes</em>).
+</p>
+
+<p>
+Files and directories <a href="ui_transfer.htm#other_options">excluded from transfer</a> are excluded
+from synchronization too.
+</p>
+
+<p>
+Before using the function make sure that WinSCP knows correct <a href="timestamp.htm">timestamps</a> of remote files,
+to avoid losing data.
+</p>
+
+<a name="synchronization_direction"></a>
+<h4>Synchronization Direction</h4>
+
+<p>
+There are three possible directions (targets) of synchronization.
+</p>
+
+<p>
+With <em>Local</em> direction, changes from remote directory (source) are applied to local directory (target).
+Only the local directory is modified.
+</p>
+
+<p>
+<em>Remote</em> mode is the same as <em>Local</em>, just in an opposite direction: changes from the local directory (source)
+are applied to the remote directory (target). Only the remote directory is modified.
+</p>
+
+<p>
+In <em>Both</em> mode, both local and remote directories can be modified (both can act as both source and target).?
+</p>
+
+<a name="synchronization_mode"></a>
+<h4>Synchronization Mode</h4>
+
+<p>
+There are three modes of synchronization.
+</p>
+
+<p>
+With <em>Synchronize files</em> mode, the newer files in source directory are transferred to the opposite directory.
+Files in source directory not present in target directory can optionally be transferred as well
+(disable this using the option <em>Existing files only</em>).
+Files in target directory not present in source directory are optionally deleted
+(enable option <em>Delete files</em>).
+In <em>Both</em> mode (see above), file not present in an opposite directory is considered new,
+hence it is transferred (if allowed), but never deleted.
+In other words, in <em>Both</em> mode, no file is ever deleted.
+</p>
+
+<p>
+With <em>Mirror files</em> mode, the different (both newer and older) files in source directory are
+transferred to the opposite directory. Otherwise the mode is the same as <em>Synchronize files</em>.
+</p>
+
+<p>
+With <em>Synchronize timestamps</em> mode, the timestamps of target files are updated to match timestamps of source files.
+It will not do any transfers, nor delete anything.
+Simply, whenever it finds the same file in both directories it updates the timestamp of target file to match
+the one of source file. In <em>Both</em> mode, it always updates the older timestamp.
+The mode is available with <a href="protocols.htm#sftp">SFTP protocol</a> only.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

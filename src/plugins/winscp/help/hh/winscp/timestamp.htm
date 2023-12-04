@@ -1,0 +1,100 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Timestamps</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Appendix</div>
+<div class="page">
+
+<h1>Timestamps</h1>
+
+<p>
+Particularly when you want to use some of the <a href="task_synchronize.htm">synchronization</a> features,
+first make sure that WinSCP will be able to convert timestamps from local conventions to remote server
+conventions and vice versa.
+</p>
+
+<a name="conversion"></a>
+<h4>Conversion</h4>
+
+<p>
+There are several factors that affect conversion and interpretation of the timestamps:
+</p>
+
+<table>
+  <tr>
+    <th>Factor </th>
+    <th>Symptom </th>
+  </tr>
+  <tr>
+    <td><a href="ui_login_environment.htm#daylight_saving_time">Daylight saving time (DST)</a> </td>
+    <td>Timestamps of some files are shifted by one hour. </td>
+  </tr>
+  <tr>
+    <td><a href="ui_login_scp.htm#other_options">Server timezone offset</a> </td>
+    <td>Timestamps of all files are shifted by the same time span. Only
+		    <a href="protocols.htm#scp">SCP protocol</a> is affected. </td>
+  </tr>
+  <tr>
+    <td>Local file system is <acronym title="File Allocation Table">FAT</acronym> </td>
+    <td>File timestamp is always rounded to the next even second. This is property of old
+		    <acronym title="File Allocation Table">FAT</acronym> filesystem. For the reason WinSCP ignores
+				less than 2-seconds time difference with all its <a href="task_synchronize.htm">synchronization</a>
+				features. Note that <acronym title="File Allocation Table">FAT</acronym> is used rarely
+				nowadays, mostly with removable medias only. </td>
+  </tr>
+  <tr>
+    <td><a href="ui_login_scp.htm#directory_listing">Timestamp precision</a> </td>
+    <td>Files changed shortly after previous synchronization are not synchronized. Only
+		    <a href="protocols.htm#scp">SCP protocol</a> is affected. </td>
+  </tr>
+</table><br/>
+
+<p>
+Also note that for WinSCP to try to convert file timestamp at all, you need to have transfer option
+<em><a href="ui_transfer.htm#common_options">Preserve timestamp</a></em> enabled.
+</p>
+
+<a name="windows_vs._unix"></a>
+<a name="windows"></a>
+<h4>Windows vs. Unix</h4>
+
+<p>
+For certain reasons NT-class versions of Microsoft Windows (NT, 2000, XP, 2003, 7) shifts timestamps
+of ALL files by one hour once Daylight Saving Time starts and/or finishes <a href="#fn1">(see note 1)</a>.
+For example, for file created on 2005-02-25 14:00, the Windows applications (like Windows Explorer or
+WinSCP) will show modification time 2005-02-25 15:00, when <acronym title="Daylight Savings Time">DST</acronym>
+is in effect. Unfortunately, to allow <a href="task_synchronize.htm">synchronization</a> functions to
+work, WinSCP has to apply the same correction to timestamps of remote files as Windows apply to
+timestamps of local files. As the remote operating system, being typically Unix-style, usually does
+not perform the Windows NT-style correction, you will see different timestamps in directory listing
+of WinSCP, than you see in directory listing on the server (for example in <code>ls</code> listing).
+</p>
+
+<a name="synchronization"></a>
+<h4>Synchronization</h4>
+
+<p>
+If you happen to have the same files locally and remotely with the different timestamps, you can update
+them without transferring the files again. Use function <em><a href="task_synchronize_full.htm">Synchronize</a></em>
+with option <em><a href="ui_synchronize.htm#synchronize_options">Synchronize timestamps only, not files</a></em>.
+</p>
+
+<h4>Notes:</h4>
+<p>
+<a name="fn1"></a>
+1) See article <a href="https://www.codeproject.com/Articles/1144/Beating-the-Daylight-Savings-Time-bug-and-getting" target="_blank">Beating the Daylight Savings
+   Time bug</a>
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

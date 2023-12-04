@@ -1,0 +1,38 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\dutch\peviewer.atp"
+TEXTVERSION,"3.0 (x86)"
+VERSION,"3,0,0,180"
+
+[TRANSLATION]
+LANGID,1043
+AUTHOR,"Cor van der Smissen, Marco Fung, Patrick Vijgeboom, S.V. (Stephan) Rietveld"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7009"
+COMMENT,"Nederlandse versie"
+
+[DIALOG 8501]
+360,154,1,"Portable Executable Viewer Configuratie"
+1300,7,7,70,8,1,"&Beschikbare secties:"
+8700,7,17,105,130,1,""
+8702,119,17,64,14,1,"&Toevoegen ->"
+8703,119,35,64,14,1,"<- &Verwijderen"
+1301,190,7,62,8,1,"&Zichtbare secties:"
+8701,190,17,105,130,1,""
+8704,303,17,50,14,1,"Om&hoog"
+8705,303,35,50,14,1,"Om&laag"
+1,303,97,50,14,1,"OK"
+2,303,115,50,14,1,"Annuleren"
+8706,303,133,50,14,1,"Re&set"
+
+[STRINGTABLE 0]
+1016,1,"Over plugin"
+
+[STRINGTABLE 1]
+10100,1,"Portable Executable Viewer"
+10101,1,"Kan bestand %s niet openen."
+10102,1,"Maken van tijdelijk bestand is mislukt."
+10103,1,"Uitzondering opgetreden.\n\nGeopend bestand: %s\n\nAls u er zeker van bent dat dit bestand niet is beschadigd, stuurt u dit bestand dan a.u.b. op naar support@altap.cz.\nWij zullen uw probleem reproduceren en het voor u oplossen. Alvast bedankt voor uw medewerking!"
+10104,1,"Informatie weergeven over de Portable Executable bestanden zoals EXE, DLL, etc."
+
+[STRINGTABLE 2]
+10118,1,"Geen geselecteerde Portable Executable sectie werd in plugin configuratie gevonden.\nGebruik menu Opties > Plugin Configuratie > Portable Executable Viewer\nin Open Salamander hoofdvenster om zichtbare secties te installeren."
+

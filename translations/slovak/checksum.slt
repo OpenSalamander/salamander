@@ -1,0 +1,115 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\slovak\checksum.atp"
+TEXTVERSION,"2.2 (x86)"
+VERSION,"2,2,0,180"
+
+[TRANSLATION]
+LANGID,1051
+AUTHOR,"Roman Paholík"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6167"
+COMMENT,"Slovenská verzia"
+
+[DIALOG 1000]
+353,84,1,"Výpočet kontrolného súčtu"
+1001,5,5,343,54,1,"List1"
+1007,5,68,31,8,1,"Počítam:"
+1006,39,68,116,8,1,"Progress1"
+1002,162,65,58,14,1,"&Konfigurácia..."
+1003,226,65,58,14,1,"&Uložiť..."
+1004,290,65,58,14,1,"&Prerušiť"
+1005,5,68,43,8,1,"schránka tip"
+
+[DIALOG 1001]
+189,109,1,"Kontrolný súčet - Konfigurácia"
+300,8,5,174,76,1," Počítať kontrolné súčty "
+100,15,16,105,10,1,"&CRC/SFV"
+101,15,28,105,10,1,"&MD5"
+102,15,40,105,10,1,"SHA-&1"
+103,15,52,105,10,1,"SHA-&256"
+104,15,64,105,10,1,"SHA-&512"
+1,14,88,50,14,1,"OK"
+2,69,88,50,14,1,"Zrušiť"
+9,124,88,50,14,1,"Nápoveda"
+
+[DIALOG 2000]
+260,84,1,""
+1001,5,5,250,54,1,"List1"
+1007,5,68,38,8,1,"Overujem:"
+1006,46,68,97,8,1,"Progress1"
+2002,5,68,140,8,1,""
+2001,149,65,50,14,1,"&Zamerať"
+1004,205,65,50,14,1,"&Prerušiť"
+
+[STRINGTABLE 0]
+1,1,"Kontrolný súčet"
+2,1,"O plugine"
+3,1,"Overenie a výpočet SFV, MD5, SHA-1, SHA-256, a SHA-512 kontrolného súčtu."
+4,1,"Nedostatok pamäti"
+5,1,"Chyba pri otváraní súboru"
+6,1,"Chyba pri čítaní"
+7,1,"Chyba pri zápise"
+
+[STRINGTABLE 1]
+40,1,"Preskočený"
+41,1,"Počítam..."
+42,1,"Zrušené"
+43,1,"Pravý klik na položku na kopírovanie kontrolného súčtu do schránky."
+44,1,"Kopírovať &CRC hodnotu do schránky\tCtrl+C"
+45,1,"Kopírovať &MD5 kontrolný súčet do schránky\tCtrl+M"
+46,1,"Kopírovať SHA-&1 kontrolný súčet do schránky\tCtrl+1"
+47,1,"Kopírovať SHA-&256 kontrolný súčet do schránky\tCtrl+2"
+
+[STRINGTABLE 2]
+48,1,"Kopírovať SHA-&512 kontrolný súčet do schránky\tCtrl+5"
+53,1,"&Odstrániť položku\tDelete"
+54,1,"Súbor '%s' už existuje.\nChcete ho prepísať?"
+55,1,"Chyba pri vytváraní súboru."
+56,1,"Preskočené alebo zrušené súbory počas výpočtu nebudú uložené."
+57,1,"Chyba pri otváraní súboru '%s'."
+58,1,"Nenájdený"
+59,1,"Vybraný súbor nemá príponu SFV, MD5, SHA1, SHA256 ani SHA512. Chcete pokračovať?"
+60,1,"Vybraný súbor nie je platný SFV, MD5, SHA-1, SHA-256 ani SHA-512 súbor."
+61,1,"Overujem..."
+62,1,"OK"
+63,1,"Poškodený"
+
+[STRINGTABLE 3]
+65,1,"&Overiť kontrolný súčet..."
+66,1,"&Vypočítať kontrolný súčet..."
+67,1,"Nastavenie je už otvorené."
+68,1,"Vykonané zmeny sa prejavia pri ďalšom otvorení okna 'Výpočet kontrolného súčtu'."
+70,1,"Všetky súbory OK"
+71,1,"%d poškodené, %d nenájdené, %d preskočené"
+72,1,"Open Salamander je zaneprázdnený. Požadovaný príkaz nemôže byť vykonaný, prosím skúste znovu neskôr."
+74,1,"&Zatvoriť"
+75,1,"Čítanie stromu adresárov, čakajte prosím..."
+76,1,"Chyba pri čítaní adresára"
+77,1,"Žiadne súbory"
+78,1,"Overenie kontrolného súčtu"
+79,1,"Súbor"
+
+[STRINGTABLE 4]
+80,1,"Veľkosť"
+81,1,"Stav"
+82,1,"CRC"
+83,1,"MD5"
+84,1,"SHA-1"
+85,1,"SHA-256"
+86,1,"SHA-512"
+90,1,"Uloženie súboru s kontrolným súčtom"
+91,1,"SFV súbory (*.sfv)|*.sfv|"
+92,1,"MD5 súbory (*.md5)|*.md5|"
+93,1,"SHA-1 súbory (*.sha1)|*.sha1|"
+94,1,"SHA-256 súbory (*.sha256)|*.sha256|"
+95,1,"SHA-512 súbory (*.sha512)|*.sha512|"
+
+[STRINGTABLE 5]
+100,1,"Overenie CRC"
+101,1,"Overenie MD5"
+102,1,"Overenie SHA-1"
+103,1,"Overenie SHA-256"
+104,1,"Overenie SHA-512"
+
+[STRINGTABLE 6]
+120,1,"Nie je možné dokončiť operáciu kvôli príliš dlhému názvu."
+

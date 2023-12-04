@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Restoring Encrypted Files from Backup</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: Undelete: Using Undelete Plugin</div>
+<div class="page">
+<h1>Restoring Encrypted Files from Backup</h1>
+
+<p>Recovery of encrypted files (EFS on NTFS volumes, see
+<a href="ms-its:salamand.chm::/hh/salamand/appendix_filesystems.htm">File Systems</a>
+for details) is possible directly to another NTFS volume or, if not available,
+temporarily to FAT or exFAT volume. Since FAT and exFAT volumes do not support Encrypting File System
+(EFS), the encrypted files are recovered in raw (backup) format. These backup (*.bak) files
+can then be decoded to an NTFS volume, even back to the original one.</p>
+
+<h3>To restore encrypted files from backup:</h3>
+<ol> 
+<li>Select the files in backup format (*.bak).</li>
+<li>Open the <a href="dlgboxes_restoreencrfiles.htm">Restore Encrypted Files from Backup dialog box</a>:
+ <table>
+ <tr><td class="hdr">Menu:</td><td>Plugins/Undelete/Restore Encrypted Files from Backup...</td></tr>
+ </table></li>
+<li>Enter path to an NTFS volume where you want to restore the original files to.</li>
+<li>Choose the OK button.</li>
+</ol>
+
+<p>Note that you can restore a complete directory structure containing both standard
+and encrypted files from NTFS to FAT or exFAT. The function Restore Encrypted Files from Backup
+can transfer the whole structure back to an NTFS volume, decoding encrypted files from
+their backups while copying standard files along with them.</p>
+
+<h4>See Also</h4>
+<p>
+<a href="dlgboxes_restoreencrfiles.htm">Restore Encrypted Files from Backup dialog box</a><br/>
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>
+

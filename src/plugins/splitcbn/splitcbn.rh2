@@ -1,0 +1,97 @@
+﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __SPLITCBN_RH2
+#define __SPLITCBN_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#define IDC_STATIC_1 3000
+#include "statics.rh2"   // 3000 az 3039 jsou timto zabrane !!!
+
+// IDcka pro propojeni s helpem
+#define IDH_COMBINE                     2500
+#define IDH_SPLIT                       2501
+#define IDH_SPLIT2                      2502  // obchazime chybu Resource Workshopu (jinak nejde .rc otevrit, tragedie)
+#define IDH_SPLIT3                      2503  // obchazime chybu Resource Workshopu (jinak nejde .rc otevrit, tragedie)
+#define IDH_SPLIT4                      2504  // obchazime chybu Resource Workshopu (jinak nejde .rc otevrit, tragedie)
+
+// ********************************************************************************
+//
+//  TEXTY
+//
+
+#define IDS_PLUGINNAME                  1
+#define IDS_OPENERROR                   2
+#define IDS_SELECTDIR                   3
+#define IDS_ZEROSIZE                    4
+#define IDS_INSERTDISK                  5
+#define IDS_FIXEDNOSENSE                6
+#define IDS_OUTOFSPACE                  7
+#define IDS_OUTOFMEM                    8
+#define IDS_READERROR                   9
+#define IDS_WRITEERROR                  10
+#define IDS_INSERTNEXT                  11
+#define IDS_SPLIT                       12
+#define IDS_COMBINE                     13
+#define IDS_TOOMANYPARTS                14
+#define IDS_WRITING                     15
+#define IDS_TOOLONGNAME                 16
+#define IDS_ADDFILTER                   17
+#define IDS_ADDTITLE                    18
+#define IDS_BROWSETITLE                 19
+#define IDS_CRCERROR                    21
+#define IDS_PROCESSING                  22
+#define IDS_ZEROFILES                   23
+#define IDS_CANCEL                      24
+#define IDS_CRCTITLE                    25
+#define IDS_CRCDEC                      26
+#define IDS_CRCHEX                      27
+#define IDS_CRCNOTFOUND                 28
+#define IDS_CALCCRC                     29
+#define IDS_SPLITTITLE                  30
+#define IDS_144FLOPPY                   31
+#define IDS_720FLOPPY                   32
+#define IDS_12FLOPPY                    33
+#define IDS_360FLOPPY                   34
+#define IDS_AUTODETECT                  35
+#define IDS_FILECRCTITLE                36
+#define IDS_BATTOOLONG                  37
+#define IDS_BYTES                       38  // used when checking IDC_COMBO_SIZE syntax
+#define IDS_BYTE                        39  // used when checking IDC_COMBO_SIZE syntax
+#define IDS_PATHERROR                   40
+#define IDS_TARGETPATHEXIST             41
+#define IDS_WINPATH                     42
+#define IDS_SPECIFYFILE                 43
+#define IDS_MENU1                       63
+#define IDS_MENU2                       64
+#define IDS_ABOUTTITLE                  67
+#define IDS_PLUGIN_DESCRIPTION          68
+#define IDS_BATFILE_GENBYSAL            69
+#define IDS_BATFILE_CTRL_C_TO_QUIT      70
+#define IDS_BATFILE_DESCR               71
+#define IDS_SIZE_B                      72
+#define IDS_SIZE_KB                     73
+#define IDS_SIZE_K                      74
+#define IDS_SIZE_MB                     75
+#define IDS_SIZE_GB                     76
+#define IDS_100MB_ZIP                   77
+#define IDS_250MB_ZIP                   78
+#define IDS_120MB_LS120                 79
+#define IDS_650MB_CDR                   80
+#define IDS_700MB_CDR                   81
+#define IDS_TOOLONGNAME2                82
+
+// ********************************************************************************
+//
+//  IKONY
+//
+
+#define IDI_SPLIT                       2000
+#define IDI_FILE                        2001
+#define IDI_WARN                        2002
+#define IDI_OK                          2003
+#define IDC_DRAG                        2005
+#define IDB_SPLIT                       2010
+
+#endif // __SPLITCBN_RH2

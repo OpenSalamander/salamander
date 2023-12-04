@@ -1,0 +1,1772 @@
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+IBM AS/400 (Valentín Lacko <lacko@phoenix-zz.sk>, Gary Kuznitz <docfxit@theoffice.la>)
+--------------------------------------------------------------------------
+Autodetect: syst_contains(" OS/400 ")
+
+# parse lines with files
+* word(<user>), skip_white_spaces(), positive_number(<size>), skip_white_spaces(),
+  day(<date>), all(1), month(<date>), all(1), year(<date>), white_spaces(),
+  time(<time>), skip_white_spaces(), word(<type>), skip_white_spaces(),
+  if(rest_of_line not_end_with "/"), rest_of_line(<name>);
+
+# parse lines with files without size+date+time
+* word(<user>), skip_white_spaces(), word(<type>), skip_white_spaces(),
+  if(rest_of_line not_end_with "/"), if(" " not_in rest_of_line),
+  rest_of_line(<name>);
+
+# parse lines with files without user+type+size+date+time
+* white_spaces(40), skip_white_spaces(), if(rest_of_line not_end_with "/"),
+  rest_of_line(<name>);
+
+# parse lines with directories
+* word(<user>), skip_white_spaces(), positive_number(<size>), skip_white_spaces(),
+  day(<date>), all(1), month(<date>), all(1), year(<date>), white_spaces(),
+  time(<time>), skip_white_spaces(), word(<type>), skip_white_spaces(),
+  if(rest_of_line end_with "/"), assign(<is_dir>, true), rest_of_line(<name>),
+  cut_end_of_string(<name>, 1);
+
+# parse lines with directories without user
+* skip_white_spaces(), positive_number(<size>), skip_white_spaces(),
+  day(<date>), all(1), month(<date>), all(1), year(<date>), white_spaces(),
+  time(<time>), skip_white_spaces(), word(<type>), skip_white_spaces(),
+  if(rest_of_line end_with "/"), assign(<is_dir>, true), rest_of_line(<name>),
+  cut_end_of_string(<name>, 1);
+
+# parse lines with directories without user+type+size+date+time
+* white_spaces(40), skip_white_spaces(), if(rest_of_line end_with "/"),
+  assign(<is_dir>, true), rest_of_line(<name>), cut_end_of_string(<name>, 1);
+
+# parse lines with file without name (only on the first row)
+* if(first_nonempty_line), word(), skip_white_spaces(), positive_number(<size>),
+  skip_white_spaces(), day(<date>), all(1), month(<date>), all(1), year(<date>),
+  white_spaces(), time(<time>), skip_white_spaces(), if(next_word eq "*FILE"),
+  word(), skip_white_spaces();
+
+# skip empty lines anywhere
+* skip_white_spaces();
+---  CESKE datumy  -------------------------------------------------------
+QPGMR          475136 29.09.09 17:08:12 *FILE      
+VBR               205 03.02.06 11:26:55 *DOC       O0000579.TXT
+QSYS                                    *MEM       /QSYS.LIB/QACJINFO.FILE/QACJINFO.MBR
+QSYS           122880 09.02.00 15:49:26 *DIR       QOpenSys/
+                 8192 31.12.69 16:00:00 *FLR       QDLS/
+                                                   winsrv
+--------------------------------------------------------------------------
+Autodetect: syst_contains(" OS/400 ")
+
+# parse lines with files
+* word(<user>), skip_white_spaces(), positive_number(<size>), skip_white_spaces(),
+  month(<date>), all(1), day(<date>), all(1), year(<date>), white_spaces(),
+  time(<time>), skip_white_spaces(), word(<type>), skip_white_spaces(),
+  if(rest_of_line not_end_with "/"), rest_of_line(<name>);
+
+# parse lines with files without size+date+time
+* word(<user>), skip_white_spaces(), word(<type>), skip_white_spaces(),
+  if(rest_of_line not_end_with "/"), if(" " not_in rest_of_line),
+  rest_of_line(<name>);
+
+# parse lines with files without user+type+size+date+time
+* white_spaces(40), skip_white_spaces(), if(rest_of_line not_end_with "/"),
+  rest_of_line(<name>);
+
+# parse lines with directories
+* word(<user>), skip_white_spaces(), positive_number(<size>), skip_white_spaces(),
+  month(<date>), all(1), day(<date>), all(1), year(<date>), white_spaces(),
+  time(<time>), skip_white_spaces(), word(<type>), skip_white_spaces(),
+  if(rest_of_line end_with "/"), assign(<is_dir>, true), rest_of_line(<name>),
+  cut_end_of_string(<name>, 1);
+
+# parse lines with directories without user
+* skip_white_spaces(), positive_number(<size>), skip_white_spaces(),
+  month(<date>), all(1), day(<date>), all(1), year(<date>), white_spaces(),
+  time(<time>), skip_white_spaces(), word(<type>), skip_white_spaces(),
+  if(rest_of_line end_with "/"), assign(<is_dir>, true), rest_of_line(<name>),
+  cut_end_of_string(<name>, 1);
+
+# parse lines with directories without user+type+size+date+time
+* white_spaces(40), skip_white_spaces(), if(rest_of_line end_with "/"),
+  assign(<is_dir>, true), rest_of_line(<name>), cut_end_of_string(<name>, 1);
+
+# parse lines with file without name (only on the first row)
+* if(first_nonempty_line), word(), skip_white_spaces(), positive_number(<size>),
+  skip_white_spaces(), month(<date>), all(1), day(<date>), all(1), year(<date>),
+  white_spaces(), time(<time>), skip_white_spaces(), if(next_word eq "*FILE"),
+  word(), skip_white_spaces();
+
+# skip empty lines anywhere
+* skip_white_spaces();
+---  ANGLICKE datumy  ----------------------------------------------------
+QPGMR          475136 09/29/09 17:08:12 *FILE      
+QSYS            45056 11/04/99 19:50:02 *FILE      /QSYS.LIB/QACJINFO.FILE
+QSYS                                    *MEM       /QSYS.LIB/QACJINFO.FILE/QACJINFO.MBR
+QSYS           122880 02/09/00 15:49:26 *DIR       QOpenSys/
+                 8192 12/31/69 16:00:00 *FLR       QDLS/
+QSYS         11390976 11/17/02 01:02:47 *LIB       QSYS.LIB/
+QDFTOWN    2147483647 12/31/69 16:00:00 *DDIR      QOPT/
+                                                   winsrv
+
+
+
+
+
+
+
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+VxWorks: pomuze Eran Gluska <Eran_Gluska@packetlight.com>
+--------------------------------------------------------------------------
+Autodetect: welcome_contains(" VxWorks ")
+
+# parse lines with directories
+* skip_white_spaces(), positive_number(<size>), white_spaces(), month_3(<date>),
+  all(1), day(<date>), all(1), year(<date>), white_spaces(), time(<time>),
+  white_spaces(), all_up_to(<name>, "<"), cut_white_spaces_end(<name>),
+  if(next_word eq "DIR>"), all(4), assign(<is_dir>, true), skip_white_spaces();
+
+# parse lines with files
+* skip_white_spaces(), positive_number(<size>), white_spaces(), month_3(<date>),
+  all(1), day(<date>), all(1), year(<date>), white_spaces(), time(<time>),
+  white_spaces(), rest_of_line(<name>), cut_white_spaces_end(<name>),
+  if("<" not_in <name>);
+
+# skip first line "size date time ..."
+* if(first_nonempty_line), skip_white_spaces(), if (next_word eq "size"), word(),
+  skip_white_spaces(), if (next_word eq "date"), word(), skip_white_spaces(),
+  if (next_word eq "time"), rest_of_line();
+
+# skip second line "--------  ------ ..."
+* if("----" in next_word), rest_of_line();
+
+# skip empty lines anywhere
+* skip_white_spaces();
+--------------------------------------------------------------------------
+  size          date       time       name
+--------       ------     ------    --------
+    6338    Jan-01-1970  00:00:00   config_service.asp.bak  
+    2048    May-15-2015  02:16:04   Log               <DIR>
+      11    Jan-01-1999  00:00:04   sw_act            
+       0    Jan-01-1999  00:00:04   conf_act          
+    2048    Jan-01-1999  00:00:04   SW_A              <DIR>
+    2048    Jan-01-1999  00:00:04   SW_B              <DIR>
+    2048    Sep-08-2004  11:51:12   CONFIG_A          <DIR>
+    2048    Jan-01-1999  00:00:04   CONFIG_B          <DIR>
+
+
+
+
+
+
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+OS/2: pomuze Krzysztof Bytnerowicz <kbytner@telpacific.com.au>
+--------------------------------------------------------------------------
+# parse lines with files and directories
+* skip_white_spaces(), positive_number(<size>), white_spaces(1), all(<attrs>, 9),
+  cut_white_spaces(<attrs>), white_spaces(1),
+  assign(<is_dir>, next_word eq "DIR"), all(3), white_spaces(),
+  month(<date>), all(1), day(<date>), all(1), year(<date>),
+  white_spaces(), time(<time>), white_spaces(), rest_of_line(<name>);
+
+# skip empty lines anywhere
+* skip_white_spaces();
+--------------------------------------------------------------------------
+             40582      A          08-28-02   11:16  BACKPRN.EXE
+               121      A          06-13-03   19:55  APPROACH.INI
+                 0           DIR   06-11-03   18:33  APPS
+               319     RA          06-11-03   18:49  EPW.INI
+
+
+
+
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+NetPresenz v4.1: MACOS
+--------------------------------------------------------------------------
+Autodetect: welcome_contains(" NetPresenz ") and syst_contains(" MACOS ")
+
+# parse lines with files
+* if(next_char!="d"), all(<rights>, 10), white_spaces(), word(),
+  white_spaces(), word(), white_spaces(), positive_number(<size>),
+  white_spaces(), month_3(<date>), white_spaces(),
+  day(<date>), white_spaces(), year_or_time(<date>, <time>),
+  white_spaces(1), rest_of_line(<name>);
+
+# parse lines with directories
+* if(next_char=="d"), assign(<is_dir>, true), all(<rights>, 10), white_spaces(),
+  word(), white_spaces(), positive_number(<size>), white_spaces(),
+  month_3(<date>), white_spaces(), day(<date>), white_spaces(),
+  year_or_time(<date>, <time>), white_spaces(1), rest_of_line(<name>);
+
+# skip empty lines anywhere
+* skip_white_spaces();
+--------------------------------------------------------------------------
+-------r--           0     2166     2166 Mar 22 09:21 default.htm
+-------r--           0    16504    16504 Mar 21 14:32 FAQs.htm
+drwxr-xr-x               folder        5 Mar 22 10:06 FAQs_files
+-------r--           0      250      250 Mar 22 09:22 filelist.xml
+-------r--           0     1575     1575 Mar 21 14:22 image001.gif
+-------r--           0   631827   631827 Mar 21 14:22 image002.jpg
+-------r--           0    34318    34318 Mar 21 14:22 image003.jpg
+-------r--           0     9121     9121 Mar 22 09:30 MariborEnglishClubHomepage.htm
+drwxr-xr-x               folder        5 Mar 22 10:06 Photos_files
+-------r--           0     5995     5995 Mar 22 09:23 TOCFrame.htm
+drwxr-xr-x               folder        3 Mar 22 10:06 Upcoming Events_files
+
+
+
+
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+IBM z/VM (CMS): (jmena souboru jsou ze dvou casti - nutne doplnit '.' => napr.
+                soubor "WELCOME.README")
+help: Format: Fixed (F) or Variable (V) + "DIR" pro adresar
+      lrecl = file's logical record length
+--------------------------------------------------------------------------
+# parse lines with directories
+* word(<name>), all_to(" DIR"), assign(<is_dir>, true), white_spaces(),
+  word(), white_spaces(), word(), white_spaces(), word(), white_spaces(),
+  year(<date>), all(1), month(<date>), all(1), day(<date>),
+  white_spaces(), time(<time>), white_spaces(), word();
+
+# parse lines with files
+* word(<name>), white_spaces(), add_string_to_column(<name>, "."),
+  add_string_to_column(<name>, next_word), word(), white_spaces(),
+  word(<format>), white_spaces(), number(<lrecl>), white_spaces(),
+  number(<records>), white_spaces(), number(<blocks>), white_spaces(),
+  year(<date>), all(1), month(<date>), all(1), day(<date>),
+  white_spaces(), time(<time>), white_spaces(), word();
+
+# skip empty lines anywhere
+* skip_white_spaces();
+--------------------------------------------------------------------------
+AUTHORS           DIR        -          -          - 1999-09-20 10:31:11 -
+HARRINGTON        DIR        -          -          - 1997-02-12 15:33:28 -
+PICS              DIR        -          -          - 2000-10-12 15:43:23 -
+SYSFILE           DIR        -          -          - 2000-07-20 17:48:01 -
+VMNNTP            DIR        -          -          - 2002-08-27 14:59:51 -
+WELCNVT  EXEC     V         72          9          1 1999-09-20 17:16:18 -
+WELCOME  EREADME  F         80         21          1 1999-12-27 16:19:00 -
+WELCOME  README   V         82         21          1 1999-12-27 16:19:04 -
+----------  DRUHA VARIANTA: "DISK" oznacuje adresar (pro oznaceni adresare se nepouziva DIR)
+# parse lines with directories
+* word(<name>), all_to(" DISK"), assign(<is_dir>, true), white_spaces(),
+  word(<format>), white_spaces(), number(<lrecl>), white_spaces(),
+  number(<records>), white_spaces(), number(<blocks>), white_spaces(),
+  month(<date>), all(1), day(<date>), all(1), year(<date>),
+  white_spaces(), time(<time>), white_spaces(), word(<user>);
+
+# parse lines with files
+* word(<name>), white_spaces(), add_string_to_column(<name>, "."),
+  add_string_to_column(<name>, next_word), word(), white_spaces(),
+  word(<format>), white_spaces(), number(<lrecl>), white_spaces(),
+  number(<records>), white_spaces(), number(<blocks>), white_spaces(),
+  month(<date>), all(1), day(<date>), all(1), year(<date>),
+  white_spaces(), time(<time>), white_spaces(), word(<user>);
+
+# skip empty lines anywhere
+* skip_white_spaces();
+----------  NEMAME PRISTUP, test casem --------------------------------
+README   FIRST    F         80         37          1  1/22/91 11:22:50 ANONYM
+RFC1118  TXT      V         73       1347         16 10/09/89  9:51:07 ANONYM
+ROOTS-L  DISK     F         80          5          1  8/31/90 14:22:14 ANONYM
+WRITERS  DISK     F         80          8          1 12/18/90 16:51:15 ANONYM
+--------------  TRETI VARIANTA  ------------------------------------------
+Autodetect: syst_contains("z/VM")
+
+# parse lines with directories
+* word(<name>), white_spaces(), word(<fm>), all_to(" DIR"),
+  assign(<is_dir>, true), white_spaces(), word(), white_spaces(),
+  word(), white_spaces(), word(), white_spaces(), month(<date>),
+  all(1), day(<date>), all(1), year(<date>), white_spaces(),
+  time(<time>);
+
+# parse lines with files
+* word(<name>), white_spaces(), add_string_to_column(<name>, "."),
+  add_string_to_column(<name>, next_word), word(), white_spaces(),
+  word(<fm>), white_spaces(), word(<format>), white_spaces(),
+  number(<lrecl>), white_spaces(), number(<records>), white_spaces(),
+  number(<blocks>), white_spaces(), month(<date>), all(1),
+  day(<date>), all(1), year(<date>), white_spaces(), time(<time>);
+
+# skip first line "Filename FileType Fm ..."
+* if(first_nonempty_line), skip_white_spaces(), if (next_word eq "Filename"), word(),
+  skip_white_spaces(), if (next_word eq "FileType"), word(), skip_white_spaces(),
+  if (next_word eq "Fm"), rest_of_line();
+
+# skip empty lines anywhere
+* skip_white_spaces();
+----------  NEMAME PRISTUP, test casem --------------------------------
+Filename FileType  Fm Format Lrecl  Records Blocks Date      Time
+LASTING  GLOBALV   A1 V      41     21     1       9/16/91   15:10:32
+J43401   NETLOG    A0 V      77     1      1       9/12/91   12:36:04
+PROFILE  EXEC      A1 V      17     3      1       9/12/91   12:39:07
+DIRUNIX  SCRIPT    A1 V      77     1216   17      1/04/93   20:30:47
+MAIL     PROFILE   A2 F      80     1      1       10/14/92  16:12:27
+ABADY2K  DATE      A0 V      1      1      1       1/03/100  10:11:12
+BBADY2K  DATE      A0 V      1      1      1       11/03/100 10:11:12
+AUTHORS            A1 DIR    -      -      -       9/20/99   10:31:11
+
+
+
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+MVS: pomuze Michael Knigge <mk@set-software.de> nebo
+            Krzysztof Bytnerowicz <kbytner@telpacific.com.au>
+help: Ext = Extents, Dsorg = Data Set Organization (PO = partitioned organized
+      (library, brat jako archiv=soubor), PS = physical sequential (obycejny file)),
+      Dsname = Data Set Name, Recfm=Record Format, Lrecl=Logical Record Length,
+      BlkSz=Physical Block Length
+"Pseudo Directory" se objevuje jen, pokud je zapnuty pseudo-directory mode FTP serveru
+--------------------------------------------------------------------------
+Autodetect: syst_contains(" MVS ")
+
+# data sets
+* word(<volume>), white_spaces(), word(<unit>), white_spaces(), year(<date>),
+  all(1), month(<date>), all(1), day(<date>), white_spaces(), number(<extents>),
+  white_spaces(), number(<used>), white_spaces(), word(<recfm>), white_spaces(),
+  number(<lrecl>), white_spaces(), number(<blksz>), white_spaces(),
+  word(<dsorg>), assign(<is_dir>, <dsorg> eq "PO"), white_spaces(), word(<name>);
+
+# data sets with "**NONE**" date
+* word(<volume>), white_spaces(), word(<unit>), white_spaces(),
+  if(next_word eq "**NONE**"), word(), white_spaces(), number(<extents>),
+  white_spaces(), number(<used>), white_spaces(), word(<recfm>),
+  white_spaces(), number(<lrecl>), white_spaces(), number(<blksz>),
+  white_spaces(), word(<dsorg>), assign(<is_dir>, <dsorg> eq "PO"),
+  white_spaces(), word(<name>);
+
+# "Migrated" data sets
+* if(next_word eq "Migrated"), word(<unit>), white_spaces(),
+  word(<name>);
+
+# "MIGRAT" lines
+* if(next_word eq "MIGRAT"), all(<unit>, 55), white_spaces(),
+  cut_white_spaces_end(<unit>), word(<name>);
+
+# "ARCIVE" lines
+* if(next_word eq "ARCIVE"), all(<unit>, 55), white_spaces(),
+  cut_white_spaces_end(<unit>), word(<name>);
+
+# data sets with joined numbers from "Ext" and "Used" columns
+* word(<volume>), white_spaces(), word(<unit>), white_spaces(), year(<date>),
+  all(1), month(<date>), all(1), day(<date>), white_spaces(), word(),
+  white_spaces(), word(<recfm>), white_spaces(), number(<lrecl>), white_spaces(),
+  number(<blksz>), white_spaces(), word(<dsorg>), assign(<is_dir>, <dsorg> eq "PO"),
+  white_spaces(), word(<name>);
+
+# data sets with "**NONE**" date and with joined numbers from "Ext" and "Used" columns
+* word(<volume>), white_spaces(), word(<unit>), white_spaces(),
+  if(next_word eq "**NONE**"), word(), white_spaces(), word(), white_spaces(),
+  word(<recfm>), white_spaces(), number(<lrecl>), white_spaces(), number(<blksz>),
+  white_spaces(), word(<dsorg>), assign(<is_dir>, <dsorg> eq "PO"),
+  white_spaces(), word(<name>);
+
+# "Pseudo directories"
+* if(next_word eq "Pseudo"), word(), white_spaces(1), if(next_word eq "Directory"),
+  assign(<is_dir>, true), word(), white_spaces(), word(<name>);
+
+# "Error determining attributes"
+* if(next_word eq "Error"), word(), white_spaces(1), if(next_word eq "determining"),
+  word(), white_spaces(1), if(next_word eq "attributes"), word(), white_spaces(),
+  assign(<unit>, "Error determining attributes"), word(<name>);
+
+# Volume + "Error determining attributes"
+* word(<volume>), white_spaces(), if(next_word eq "Error"), word(),
+  white_spaces(1), if(next_word eq "determining"), word(), white_spaces(1),
+  if(next_word eq "attributes"), word(), white_spaces(),
+  assign(<unit>, "Error determining attributes"), word(<name>);
+
+# Volume + "Not Mounted"
+* word(<volume>), white_spaces(), if(next_word eq "Not"), word(),
+  white_spaces(1), if(next_word eq "Mounted"), word(), white_spaces(),
+  assign(<unit>, "Not Mounted"), word(<name>);
+
+# Volume + Unit + "<" + any error message + " > " + Dsname
+* all(<volume>, 6), white_spaces(1), all(<unit>, 6), white_spaces(),
+  if(next_word == "<"), all_to(<name>, " > "), cut_white_spaces(<volume>),
+  cut_white_spaces(<unit>), add_string_to_column(<unit>, " "),
+  add_string_to_column(<unit>, <name>), cut_white_spaces_end(<unit>),
+  skip_white_spaces(), word(<name>);
+
+# optional columns: Volume + Unit + Recfm + Dsorg; Dsname is necessary
+* all(<volume>, 6), white_spaces(1), all(<unit>, 6), white_spaces(20),
+  all(<recfm>, 5), white_spaces(12), all(<dsorg>, 5), white_spaces(),
+  word(<name>), cut_white_spaces(<volume>), cut_white_spaces(<unit>),
+  cut_white_spaces(<recfm>), cut_white_spaces(<dsorg>);
+
+# skip first line "Volume Unit Referred ..."
+* if(first_nonempty_line), skip_white_spaces(), if (next_word eq "Volume"), word(),
+  skip_white_spaces(), if (next_word eq "Unit"), word(), skip_white_spaces(),
+  if (next_word eq "Referred"), rest_of_line();
+
+# skip empty lines anywhere
+* skip_white_spaces();
+
+--------------------------------------------------------------------------
+Volume Unit    Referred Ext Used Recfm Lrecl BlkSz Dsorg Dsname
+MVXE61 Not Mounted                                      CSNM2.BKP.XE61
+P30087 3390                                        VSAM POSY.KLV.DATEN.D
+                                  GDG               B   ANDCL04.GDG01
+                                                   VSAM POSY.KLV.DATEN
+P20003 3390   2002/10/28  110500  FBM    161 27853  PS  POSY.T028.INFOPOST.#990302
+P00786 3390   2001/06/05  1    1  U    13680 13680  PS  ISR0001.BACKUP
+
+TSO61A 3390   < File not on volume >                    CSNM18.BKP.XE61
+CM1001 3490   < Not a DASD device >                     R600BASM.BACKUP1
+P00051 3390   2001/06/08  1    1  FB     150  1500  PS  BRODCAST
+MIGRAT < Not a DASD device >tape >                      CA71.SPFTEMP1.CNTL
+ARCIVE Not Direct Access Device                         CA71.SPFTEMP1.CNTL
+Migrated                                                AUS6B1.BLKSIZE.ERROR
+P00051 3390   2001/06/08  1    1  FB     150  1500  PS  BRODCAST
+P00787 3390   2001/06/08  1    6  FB      80 11440  PO  ISPF.ISPPROF
+P00786 3390   2001/06/07  1    1  VB     255  3120  PS  LOG.MISC
+Pseudo Directory V191
+                                                   GDG  POSY.AW.ZWIDAT.GDG
+                                                   GDG  POSY.AWTREFF8.ZWIDAT.GDG
+P30082 3390   **NONE**    1    1  VB     500 27998  PS  POSY.PA.J00682.A001R00.#021021
+Error determining attributes                            ASTEX.DISTLLIB
+TSO61A Error determining attributes                     CSNM18.BKP.XE61
+VGSA03 Tape                                             BOOL.IMF.SA03.SVCDUMP
+                                                   PATH CAPRI.CSD.PATHA
+
+----------- DRUHA VARIANTA LISTINGU (jiny datum) --------------------
+Autodetect: syst_contains(" MVS ")
+
+# data sets
+* word(<volume>), white_spaces(), word(<unit>), white_spaces(), month(<date>),
+  all(1), day(<date>), all(1), year(<date>), white_spaces(), number(<extents>),
+  white_spaces(), number(<used>), white_spaces(), word(<recfm>), white_spaces(),
+  number(<lrecl>), white_spaces(), number(<blksz>), white_spaces(),
+  word(<dsorg>), assign(<is_dir>, <dsorg> eq "PO"), white_spaces(), word(<name>);
+
+# data sets with "**NONE**" date
+* word(<volume>), white_spaces(), word(<unit>), white_spaces(),
+  if(next_word eq "**NONE**"), word(), white_spaces(), number(<extents>),
+  white_spaces(), number(<used>), white_spaces(), word(<recfm>),
+  white_spaces(), number(<lrecl>), white_spaces(), number(<blksz>),
+  white_spaces(), word(<dsorg>), assign(<is_dir>, <dsorg> eq "PO"),
+  white_spaces(), word(<name>);
+
+# "Migrated" data sets
+* if(next_word eq "Migrated"), word(<unit>), white_spaces(),
+  word(<name>);
+
+# "MIGRAT" lines
+* if(next_word eq "MIGRAT"), all(<unit>, 53), white_spaces(),
+  cut_white_spaces_end(<unit>), word(<name>);
+
+# "ARCIVE" lines
+* if(next_word eq "ARCIVE"), all(<unit>, 53), white_spaces(),
+  cut_white_spaces_end(<unit>), word(<name>);
+
+# "Pseudo directories"
+* if(next_word eq "Pseudo"), word(), white_spaces(1), if(next_word eq "Directory"),
+  assign(<is_dir>, true), word(), white_spaces(), word(<name>);
+
+# "Error determining attributes"
+* if(next_word eq "Error"), word(), white_spaces(1), if(next_word eq "determining"),
+  word(), white_spaces(1), if(next_word eq "attributes"), word(), white_spaces(),
+  assign(<unit>, "Error determining attributes"), word(<name>);
+
+# Volume + "Error determining attributes"
+* word(<volume>), white_spaces(), if(next_word eq "Error"), word(),
+  white_spaces(1), if(next_word eq "determining"), word(), white_spaces(1),
+  if(next_word eq "attributes"), word(), white_spaces(),
+  assign(<unit>, "Error determining attributes"), word(<name>);
+
+# Volume + "Not Mounted"
+* word(<volume>), white_spaces(), if(next_word eq "Not"), word(),
+  white_spaces(1), if(next_word eq "Mounted"), word(), white_spaces(),
+  assign(<unit>, "Not Mounted"), word(<name>);
+
+# Volume + Unit + "<" + any error message + " > " + Dsname
+* all(<volume>, 6), white_spaces(1), all(<unit>, 4), white_spaces(),
+  if(next_word == "<"), all_to(<name>, " > "), cut_white_spaces(<volume>),
+  cut_white_spaces(<unit>), add_string_to_column(<unit>, " "),
+  add_string_to_column(<unit>, <name>), cut_white_spaces_end(<unit>),
+  skip_white_spaces(), word(<name>);
+
+# optional columns: Volume + Unit + Recfm + Dsorg; Dsname is necessary
+* all(<volume>, 6), white_spaces(1), all(<unit>, 4), white_spaces(19),
+  all(<recfm>, 5), white_spaces(13), all(<dsorg>, 5), white_spaces(),
+  word(<name>), cut_white_spaces(<volume>), cut_white_spaces(<unit>),
+  cut_white_spaces(<recfm>), cut_white_spaces(<dsorg>);
+
+# skip first line "Volume Unit Referred ..."
+* if(first_nonempty_line), skip_white_spaces(), if (next_word eq "Volume"), word(),
+  skip_white_spaces(), if (next_word eq "Unit"), word(), skip_white_spaces(),
+  if (next_word eq "Referred"), rest_of_line();
+
+# skip empty lines anywhere
+* skip_white_spaces();
+
+--------------------------------------------------------------------------
+Volume Unit Referred Ext Used Recfm Lrecl BlkSz Dsorg Dsname
+ICS009 3390                   VS                PS    VS2
+ICS009 3390 03/19/96 1   1    VS    29389 29393 PS    VS
+TSO61A 3390 < File not on volume >                    CSNM18.BKP.XE61
+MIGRAT < Not a DASD device >tape >                    CA71.SPFTEMP1.CNTL
+ARCIVE Not Direct Access Device                       CA71.SPFTEMP1.CNTL
+Migrated                                              AUS6B1.BLKSIZE.ERROR
+Pseudo Directory V191
+Pseudo Directory V211
+Pseudo Directory V311
+Pseudo Directory V410
+                                                GDG   POSY.AW.ZWIDAT.GDG
+                                                GDG   POSY.AWTREFF8.ZWIDAT.GDG
+                                                VSAM  POSY.KLV.DATEN
+P30087 3390                                     VSAM  POSY.KLV.DATEN.D
+P30082 3390 **NONE** 1   1    VB      500 27998 PS    POSY.PA.J00682.A001R00.#021021
+Error determining attributes                          ASTEX.DISTLLIB
+TSO61A Error determining attributes                   CSNM18.BKP.XE61
+MVXE61 Not Mounted                                    CSNM2.BKP.XE61
+VGSA03 Tape                                           BOOL.IMF.SA03.SVCDUMP
+                                                PATH  CAPRI.CSD.PATHA
+
+------------------------ TRETI VARIANTA LISTINGU ---------------------
+help: Init=Initial Size, Id=User, Mod=???? (zeptat se Michaela !!!)
+--------------------------------------------------------------------------
+Autodetect: syst_contains(" MVS ")
+
+# members
+* word(<name>), white_spaces(), word(<vvmm>), white_spaces(), year(<created>),
+  all(1), month(<created>), all(1), day(<created>), white_spaces(),
+  year(<ch_date>), all(1), month(<ch_date>), all(1), day(<ch_date>),
+  white_spaces(), time(<ch_time>), white_spaces(), number(<size>),
+  white_spaces(), number(<init>), white_spaces(), number(<mod>),
+  white_spaces(), word(<id>), skip_white_spaces();
+
+# members without any other info
+* word(<name>), skip_white_spaces();
+
+# skip first line "Name VV.MM Created ..."
+* if(first_nonempty_line), skip_white_spaces(), if (next_word eq "Name"), word(),
+  skip_white_spaces(), if (next_word eq "VV.MM"), word(), skip_white_spaces(),
+  if (next_word eq "Created"), rest_of_line();
+
+# skip empty lines anywhere
+* skip_white_spaces();
+--------------------------------------------------------------------------
+ Name     VV.MM   Created       Changed      Size  Init   Mod   Id
+SPFSTART  01.09 1995/10/27 1997/10/09 08:30     1   116     1 VEA0016
+OMCSIRAU  01.01 1992/06/03 1992/06/03 14:46   349   349     0 ASEPMD
+OMCSIRBF
+ASCIITAB  01.00 1998/06/08 1998/06/08 13:32   526   526     0 VEA0013 
+
+------------------------ CTVRTA VARIANTA LISTINGU (jiny datum) -------
+Autodetect: syst_contains(" MVS ")
+
+# members
+* word(<name>), white_spaces(), word(<vvmm>), white_spaces(),
+  month(<created>), all(1), day(<created>), all(1), year(<created>),
+  white_spaces(), month(<ch_date>), all(1), day(<ch_date>), all(1),
+  year(<ch_date>), white_spaces(), time(<ch_time>), white_spaces(),
+  number(<size>), white_spaces(), number(<init>), white_spaces(),
+  number(<mod>), white_spaces(), word(<id>), skip_white_spaces();
+
+# members without any other info
+* word(<name>), skip_white_spaces();
+
+# skip first line "Name VV.MM Created ..."
+* if(first_nonempty_line), skip_white_spaces(), if (next_word eq "Name"), word(),
+  skip_white_spaces(), if (next_word eq "VV.MM"), word(), skip_white_spaces(),
+  if (next_word eq "Created"), rest_of_line();
+
+# skip empty lines anywhere
+* skip_white_spaces();
+--------------------------------------------------------------------------
+ Name     VV.MM   Created       Changed      Size  Init   Mod   Id
+FTPDEFAU   04.00  12/08/93   12/09/93    6:16   98   98  0 MVS
+FTPINTRO   01.00  12/09/93   12/09/93    6:18  134  134  0 MVS
+FTPNEWS    01:00  12/09/93   12/09/93   10:30   25   25  0 MVS
+GREETING   01:00  12/08/93   12/09/93    6:19   12   12  0 MVS
+OMCSIRBF
+GREE       01:00  12/08/93   12/09/93    6:19   12   12  0 MVS 
+
+------------------------ PATA VARIANTA LISTINGU (chybi created) -----
+Autodetect: syst_contains(" MVS ")
+
+# members
+* word(<name>), white_spaces(), word(<vvmm>), white_spaces(),
+  year(<ch_date>), all(1), month(<ch_date>), all(1), day(<ch_date>),
+  white_spaces(), time(<ch_time>), white_spaces(), number(<size>),
+  white_spaces(), number(<init>), white_spaces(), number(<mod>),
+  white_spaces(), word(<id>), skip_white_spaces();
+
+# members without any other info
+* word(<name>), skip_white_spaces();
+
+# skip first line "NAME VV.MM CHANGED ..."
+* if(first_nonempty_line), skip_white_spaces(), if (next_word eq "NAME"), word(),
+  skip_white_spaces(), if (next_word eq "VV.MM"), word(), skip_white_spaces(),
+  if (next_word eq "CHANGED"), rest_of_line();
+
+# skip empty lines anywhere
+* skip_white_spaces();
+--------------------------------------------------------------------------
+NAME                 VV.MM     CHANGED     SIZE  INIT   MOD   ID
+#PDF                  01.08 95/09/29 16:31    48    32     0 USER01
+#PDFB                 01.00 95/06/28 09:17    43    43     0 USER01
+#PDFRX                01.08 90/06/13 10:24    36    25     0 USER01
+#PDFX                 01.00 95/09/29 16:29    47    47     0 USER01
+OMCSIRBF
+#PDEX                 01.00 95/09/29 16:29    47    47     0 USER01 
+
+------------------------ SESTA VARIANTA LISTINGU -------------------------
+Autodetect: syst_contains(" MVS ")
+
+#datasets
+* word(<name>), white_spaces(), word(<size>), white_spaces(), word(<ttr>),
+  white_spaces(1), all(<alias>, 8), white_spaces(1), all(<ac>, 2), white_spaces(1),
+  all(<attr>, 30), cut_white_spaces_end(<alias>), cut_white_spaces_end(<ac>),
+  cut_white_spaces_end(<attr>), white_spaces(), word(<amode>), white_spaces(),
+  word(<rmode>), skip_white_spaces();
+
+# skip first line "Name Size TTR ..."
+* if(first_nonempty_line), skip_white_spaces(), if (next_word eq "Name"), word(),
+  skip_white_spaces(), if (next_word eq "Size"), word(), skip_white_spaces(),
+  if (next_word eq "TTR"), rest_of_line();
+
+# skip empty lines anywhere
+* skip_white_spaces();
+--------------------------------------------------------------------------
+ Name      Size   TTR   Alias-of AC --------- Attributes --------- Amode Rmode
+TOPASTCP  003930 003C1D          01 FO                              31    ANY
+TT008     000000 000714          01 FO NX          RN RU            24    24
+TT009     015900 000718          01 FO                              31    24
+BLDQS     001848 001403 ILBOQSU  00 FO                              24    24
+IGZCCCO   000448 00200E          00 FO                RU            31    ANY
+IGZCTCO   000228 00131F          00 FO                RU            31    24
+IGZEGOB   000288 00180E          00 FO                              ANY   24
+ILBOABN0  0000B8 000810 ILBOABN  00 FO             RN RU            31    ANY  
+BIB1      0010F8 000124             DC                              24    24   
+
+
+
+
+
+
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+VMS:  (ubvms.cc.buffalo.edu)
+--------------  PRVNI VARIANTA  ------------------------------------------
+Autodetect: syst_contains(" VMS ")
+
+# parse lines with directories
+* all_up_to(<name>, ".DIR;1"), assign(<is_dir>, true),
+  white_spaces_and_line_ends(), number(<blksize>),
+  white_spaces(), day(<date>), all(1), month_3(<date>), all(1),
+  year(<date>), white_spaces(), time(<time>), all_to("["),
+  all_up_to(<user>, "]"), all_to("("), all_up_to(<rights>, ")");
+
+# parse lines with directories with corrupted user string
+* all_up_to(<name>, ".DIR;1"), assign(<is_dir>, true),
+  white_spaces_and_line_ends(), number(<blksize>),
+  white_spaces(), day(<date>), all(1), month_3(<date>), all(1),
+  year(<date>), white_spaces(), time(<time>), all_to("["),
+  all_up_to(<user>, "("), cut_white_spaces_end(<user>),
+  all_up_to(<rights>, ")");
+
+# parse lines with files
+* word(<name>), white_spaces_and_line_ends(), number(<blksize>),
+  white_spaces(), day(<date>), all(1), month_3(<date>),
+  all(1), year(<date>), white_spaces(), time(<time>), all_to("["),
+  all_up_to(<user>, "]"), all_to("("), all_up_to(<rights>, ")");
+
+# parse lines with files with corrupted user string
+* word(<name>), white_spaces_and_line_ends(), number(<blksize>),
+  white_spaces(), day(<date>), all(1), month_3(<date>),
+  all(1), year(<date>), white_spaces(), time(<time>), all_to("["),
+  all_up_to(<user>, "("), cut_white_spaces_end(<user>),
+  all_up_to(<rights>, ")");
+
+# skip first line e.g. "Directory ???:[???]" - up to 3 words
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces();
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces(),
+  word(), skip_white_spaces();
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces(),
+  word(), skip_white_spaces(), word(), skip_white_spaces();
+
+# skip last line e.g. "Total of ??? files, ??? blocks."
+* if(last_nonempty_line), if(first_nonempty_line == false), rest_of_line();
+
+# skip last line containing "Total of ???"
+* if(last_nonempty_line), skip_white_spaces(), if(next_word eq "Total"),
+  word(), skip_white_spaces(), if(next_word eq "of"), rest_of_line();
+
+# parse lines with inaccessible directories (based on char "%")
+* all_up_to(<name>, ".DIR;1"), assign(<is_dir>, true),
+  white_spaces_and_line_ends(), if(next_char=="%"), rest_of_line(<rights>);
+
+# parse lines with inaccessible directories (based on word "privilege")
+* all_up_to(<name>, ".DIR;1"), assign(<is_dir>, true),
+  white_spaces_and_line_ends(), all_to(<rights>, "privilege"),
+  add_string_to_column(<rights>, rest_of_line), rest_of_line();
+
+# parse lines with inaccessible files (based on char "%")
+* word(<name>), white_spaces_and_line_ends(), if(next_char=="%"),
+  rest_of_line(<rights>);
+
+# parse lines with inaccessible files (based on word "privilege")
+* word(<name>), white_spaces_and_line_ends(), all_to(<rights>, "privilege"),
+  add_string_to_column(<rights>, rest_of_line), rest_of_line();
+
+# skip empty lines anywhere
+* skip_white_spaces();
+--------------------------------------------------------------------------
+
+SYS$SYSDEVICE:[FTP]
+
+AXP.DIR;1                   1  17-OCT-1997 20:15 [TKSLEN] (RWE,RWE,,R)
+AXPFILE.DIR;12              1  17-OCT-1997 20:15 [TKSLEN] (RWE,RWE,,R)
+HOME_PAGE_LISTING.DIR;1
+                            1  17-OCT-1997 20:16 [TKSLEN] (RWE,RWE,,R)
+00README.TXT;1             10  18-NOV-1994 11:36 [TKSLEN] (RE,RE,RE,R)
+02AVMSLT.TXT;1      %RMS-E-PRV, insufficient privilege or file protection violation
+02AVMSLT.DIR;1      %RMS-E-PRV, insufficient privilege or file protection violation
+EA95_0PS.GZ;1	No privilege for attempted operation
+EA95_0PSD.DIR;1	No privilege for attempted operation
+PLILP28.PS;1              329  3-APR-1997 17:51  [UCX$NOBO,UCX$NOBODY (RWED,RWED,RE,RE)
+PLILP28D.DIR;1              1  3-APR-1997 17:51  [UCX$NOBO,UCX$NOBODY (RWED,RWED,RE,RE)
+
+
+Total of 7 blocks in 7 files.
+
+
+------------------------ DRUHA VARIANTA - CS.FELK.CVUT.CZ ---------------------
+(petr.DIR;2 je soubor - aspon VMS na CS se k nemu tak chova)
+-------------------------------------------------------------------------------
+Autodetect: syst_contains(" VMS ")
+
+# parse lines with directories
+* all_up_to(<name>, ".DIR;1"), assign(<is_dir>, true),
+  white_spaces_and_line_ends(), number(<blksize>),
+  all(1), number(<allocblks>), white_spaces(), day(<date>), all(1),
+  month_3(<date>), all(1), year(<date>), white_spaces(), time(<time>),
+  all_to("["), all_up_to(<user>, "]"), all_to("("), all_up_to(<rights>, ")");
+
+# parse lines with directories with corrupted user string
+* all_up_to(<name>, ".DIR;1"), assign(<is_dir>, true),
+  white_spaces_and_line_ends(), number(<blksize>),
+  all(1), number(<allocblks>), white_spaces(), day(<date>), all(1),
+  month_3(<date>), all(1), year(<date>), white_spaces(), time(<time>),
+  all_to("["), all_up_to(<user>, "("), cut_white_spaces_end(<user>),
+  all_up_to(<rights>, ")");
+
+# parse lines with files
+* word(<name>), white_spaces_and_line_ends(), number(<blksize>),
+  all(1), number(<allocblks>), white_spaces(), day(<date>), all(1),
+  month_3(<date>), all(1), year(<date>), white_spaces(), time(<time>),
+  all_to("["), all_up_to(<user>, "]"), all_to("("), all_up_to(<rights>, ")");
+
+# parse lines with files with corrupted user string
+* word(<name>), white_spaces_and_line_ends(), number(<blksize>),
+  all(1), number(<allocblks>), white_spaces(), day(<date>), all(1),
+  month_3(<date>), all(1), year(<date>), white_spaces(), time(<time>),
+  all_to("["), all_up_to(<user>, "("), cut_white_spaces_end(<user>),
+  all_up_to(<rights>, ")");
+
+# skip first line e.g. "Directory ???:[???]" - up to 3 words
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces();
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces(),
+  word(), skip_white_spaces();
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces(),
+  word(), skip_white_spaces(), word(), skip_white_spaces();
+
+# skip last line e.g. "Total of ??? files, ??? blocks."
+* if(last_nonempty_line), if(first_nonempty_line == false), rest_of_line();
+
+# skip last line containing "Total of ???"
+* if(last_nonempty_line), skip_white_spaces(), if(next_word eq "Total"),
+  word(), skip_white_spaces(), if(next_word eq "of"), rest_of_line();
+
+# parse lines with inaccessible directories (based on char "%")
+* all_up_to(<name>, ".DIR;1"), assign(<is_dir>, true),
+  white_spaces_and_line_ends(), if(next_char=="%"), rest_of_line(<rights>);
+
+# parse lines with inaccessible directories (based on word "privilege")
+* all_up_to(<name>, ".DIR;1"), assign(<is_dir>, true),
+  white_spaces_and_line_ends(), all_to(<rights>, "privilege"),
+  add_string_to_column(<rights>, rest_of_line), rest_of_line();
+
+# parse lines with inaccessible files (based on char "%")
+* word(<name>), white_spaces_and_line_ends(), if(next_char=="%"),
+  rest_of_line(<rights>);
+
+# parse lines with inaccessible files (based on word "privilege")
+* word(<name>), white_spaces_and_line_ends(), all_to(<rights>, "privilege"),
+  add_string_to_column(<rights>, rest_of_line), rest_of_line();
+
+# skip empty lines anywhere
+* skip_white_spaces();
+-------------------------------------------------------------------------------
+
+Directory PUB$DEVICE:[PUB.HUMOR]
+
+0-README-FIRST.TXT;1
+                         1/6          10-NOV-1994 07:04:33  [375,5]                (RWED,RWED,RE,RE)
+3090.JOKE;1              8/12         10-NOV-1994 07:04:45  [375,5]                (RWED,RWED,RE,RE)
+XMAS.SANTA;1             3/6          10-NOV-1994 08:02:22  [SYSTEM]               (RWED,RWED,RE,RE)
+LISTS-ARCHIVE.DIR;1
+                         1/3           2-NOV-2000 13:57:58  [SYSTEM]               (RWED,RWED,RE,RE)
+MX.DIR;1                 1/3           2-NOV-2000 14:07:43  [SYSTEM]               (RWED,RWED,RE,RE)
+petr.DIR;1               1/8           8-AUG-2002 11:06:06  [CERMAL1]              (RWE,RWE,E,E)
+petr.DIR;2               1/8           8-AUG-2002 11:06:06  [CERMAL1]              (RWE,RWE,E,E)
+PETR.DIRE;2              1/8          18-SEP-2002 15:30:30  [CERMAL1]              (RWED,RWED,RE,)
+PETR.DIRE;1              0/8          18-SEP-2002 15:28:46  [CERMAL1]              (RWED,RWED,RE,)
+02AVMSLT.TXT;1      %RMS-E-PRV, insufficient privilege or file protection violation
+02AVMSLT.DIR;1      %RMS-E-PRV, insufficient privilege or file protection violation
+EA95_0PS.GZ;1	No privilege for attempted operation
+EA95_0PSD.DIR;1	No privilege for attempted operation
+PLILP28.PS;1           329/333         3-APR-1997 17:51:01  [UCX$NOBO,UCX$NOBODY   (RWED,RWED,RE,RE)
+PLILP28D.DIR;1           1/3           3-APR-1997 17:51:01  [UCX$NOBO,UCX$NOBODY   (RWED,RWED,RE,RE)
+
+Total of 527 files, 22268/24048 blocks
+
+------------------------ TRETI VARIANTA - web (byty/bloky) ---------------------
+Autodetect: syst_contains(" VMS ")
+
+# parse lines with directories
+* all_up_to(<name>, ".DIR;1"), assign(<is_dir>, true),
+  white_spaces_and_line_ends(), day(<date>), all(1),
+  month_3(<date>), all(1), year(<date>), white_spaces(), time(<time>),
+  white_spaces(), positive_number(<size>), all(1), number(<blksize>), all_to("("),
+  all_up_to(<rights>, ")");
+
+# parse lines with files
+* word(<name>), white_spaces_and_line_ends(), day(<date>),
+  all(1), month_3(<date>), all(1), year(<date>), white_spaces(), time(<time>),
+  white_spaces(), positive_number(<size>), all(1), number(<blksize>), all_to("("),
+  all_up_to(<rights>, ")");
+
+# skip first line e.g. "Directory ???:[???]" - up to 3 words
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces();
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces(),
+  word(), skip_white_spaces();
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces(),
+  word(), skip_white_spaces(), word(), skip_white_spaces();
+
+# skip last line e.g. "Total of ??? files, ??? blocks."
+* if(last_nonempty_line), if(first_nonempty_line == false), rest_of_line();
+
+# skip last line containing "Total of ???"
+* if(last_nonempty_line), skip_white_spaces(), if(next_word eq "Total"),
+  word(), skip_white_spaces(), if(next_word eq "of"), rest_of_line();
+
+# parse lines with inaccessible directories (based on char "%")
+* all_up_to(<name>, ".DIR;1"), assign(<is_dir>, true),
+  white_spaces_and_line_ends(), if(next_char=="%"), rest_of_line(<rights>);
+
+# parse lines with inaccessible directories (based on word "privilege")
+* all_up_to(<name>, ".DIR;1"), assign(<is_dir>, true),
+  white_spaces_and_line_ends(), all_to(<rights>, "privilege"),
+  add_string_to_column(<rights>, rest_of_line), rest_of_line();
+
+# parse lines with inaccessible files (based on char "%")
+* word(<name>), white_spaces_and_line_ends(), if(next_char=="%"),
+  rest_of_line(<rights>);
+
+# parse lines with inaccessible files (based on word "privilege")
+* word(<name>), white_spaces_and_line_ends(), all_to(<rights>, "privilege"),
+  add_string_to_column(<rights>, rest_of_line), rest_of_line();
+
+# skip empty lines anywhere
+* skip_white_spaces();
+--------------------------------------------------------------------------------
+CUTCP.DIR;1          18-DEC-1991 08:48:17      512/1      (RWE,RE,RE,RE)
+LIBRARY.DIR;1        30-APR-1991 11:13:06     1536/3      (RWE,RE,RE,RE)
+MAIL.MAI;1           13-OCT-1991 00:01:07    17408/34     (RW,RW,,)
+MICRO.DIR;1           3-FEB-1990 14:30:14      512/1      (RWED,RE,,R)
+NETINFO.DIR;1         3-FEB-1990 15:18:40     1536/3      (RWE,RE,,R)
+NETWORKS.HLP;45       8-JUN-1990 15:13:41   102788/201    (RWED,RE,,RE)
+TMP.DIR;1             9-OCT-1991 10:29:53      512/1      (RWE,RE,RE,RWE)
+02AVMSLT.TXT;1      %RMS-E-PRV, insufficient privilege or file protection violation
+02AVMSLT.DIR;1      %RMS-E-PRV, insufficient privilege or file protection violation
+EA95_0PS.GZ;1	No privilege for attempted operation
+EA95_0PSD.DIR;1	No privilege for attempted operation
+
+----- CTVRTA VARIANTA - ftp.process.com (cas na ms, chybi prava a bloky) -----
+Autodetect: syst_contains(" VMS ")
+
+# parse lines with directories
+* all_up_to(<name>, ".DIR;1"), assign(<is_dir>, true),
+  white_spaces_and_line_ends(), number(<blksize>),
+  white_spaces(), day(<date>), all(1), month_3(<date>), all(1),
+  year(<date>), white_spaces(), time(<time>);
+
+# parse lines with files
+* word(<name>), white_spaces_and_line_ends(), number(<blksize>),
+  white_spaces(), day(<date>), all(1), month_3(<date>),
+  all(1), year(<date>), white_spaces(), time(<time>);
+
+# skip first line e.g. "Directory ???:[???]" - up to 3 words
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces();
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces(),
+  word(), skip_white_spaces();
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces(),
+  word(), skip_white_spaces(), word(), skip_white_spaces();
+
+# skip last line e.g. "Total of ??? files, ??? blocks."
+* if(last_nonempty_line), if(first_nonempty_line == false), rest_of_line();
+
+# skip last line containing "Total of ???"
+* if(last_nonempty_line), skip_white_spaces(), if(next_word eq "Total"),
+  word(), skip_white_spaces(), if(next_word eq "of"), rest_of_line();
+
+# parse lines with inaccessible directories (based on char "%")
+* all_up_to(<name>, ".DIR;1"), assign(<is_dir>, true),
+  white_spaces_and_line_ends(), if(next_char=="%"), rest_of_line();
+
+# parse lines with inaccessible directories (based on word "privilege")
+* all_up_to(<name>, ".DIR;1"), assign(<is_dir>, true),
+  white_spaces_and_line_ends(), all_to("privilege"), rest_of_line();
+
+# parse lines with inaccessible files (based on char "%")
+* word(<name>), white_spaces_and_line_ends(), if(next_char=="%"),
+  rest_of_line();
+
+# parse lines with inaccessible files (based on word "privilege")
+* word(<name>), white_spaces_and_line_ends(), all_to("privilege"),
+  rest_of_line();
+
+# skip empty lines anywhere
+* skip_white_spaces();
+------------------------------------------------------------------------------
+Directory ANONYMOUS_ROOT:[000000]
+
+.WELCOME;1                 2  13-FEB-2002 23:32:40.47
+DECUS.DIR;1                1   9-MAY-2001 22:18:51.69
+MOZILLA.DIR;1              2  21-JUN-2001 14:57:51.38
+README.TXT;4               2  18-APR-2000 10:40:39.90
+SSH.DIR;1                  1  22-JUN-2002 15:11:12.71
+VMS-FREEWARE.DIR;1         1   9-MAY-2001 23:58:31.39
+02AVMSLT.TXT;1      %RMS-E-PRV, insufficient privilege or file protection violation
+02AVMSLT.DIR;1      %RMS-E-PRV, insufficient privilege or file protection violation
+EA95_0PS.GZ;1	No privilege for attempted operation
+EA95_0PSD.DIR;1	No privilege for attempted operation
+
+Total of 10 files, 16 blocks.
+
+
+
+
+
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+NETWARE:
+--------------------------------------------------------------------------
+Autodetect: not syst_contains("z/VM ") and not syst_contains("OS/2 ") and
+            not syst_contains(" MACOS ") and not syst_contains("Windows_NT")
+
+# parse lines from NETWARE FTP server
+* assign(<is_dir>, next_char=="d"), all(1), white_spaces(1), all_to("["),
+  all_up_to(<rights>, "]"), white_spaces(1), all(<user>, 28),
+  cut_white_spaces_end(<user>), white_spaces(), positive_number(<size>),
+  white_spaces(), month_3(<date>), white_spaces(), day(<date>),
+  white_spaces(), year_or_time(<date>, <time>), white_spaces(1),
+  rest_of_line(<name>);
+
+# parse lines from Hellsoft FTP server
+* assign(<is_dir>, next_char=="d"), all_to("["), all_up_to(<rights>, "]"),
+  white_spaces(), word(), white_spaces(), word(<user>),
+  white_spaces(), positive_number(<size>), white_spaces(), month_3(<date>),
+  white_spaces(), day(<date>), white_spaces(),
+  year_or_time(<date>, <time>), white_spaces(1), rest_of_line(<name>);
+
+# skip first line e.g. "total ???" or "--- listing ---" - up to 3 words
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces();
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces(),
+  word(), skip_white_spaces();
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces(),
+  word(), skip_white_spaces(), word(), skip_white_spaces();
+
+# skip empty lines anywhere
+* skip_white_spaces();
+--------------------------------------------------------------------------
+total 0
+- [RWCEAFMS] Patera                         594619 May 29 14:24 GS.TIF
+- [RWCEAFMS] Jmeeeiniiccckoo a jeste dels 2147483639 Aug 05 14:57 Souboreeeeeeecek
+d [RWCEAFMS] Patera                            512 Jun 24 13:59 Windows NT 5.0 Workstation Profile.03.17
+- [RWCEAFMS] Patera                         124275 Mar 24  2000 pv193cz.zip
+
+------------- DRUHA VARIANTA - Hellsoft (kod parseru viz vyse) -----------
+
+-------------- listing --------------
+-[RWCEMFA]  1 xpatera1     1140 Jun 22  2001 euro50.pcx
+d[RWCEMFA]  1 xpatera1      512 Dec 01  2001 petr
+-[R----F-]  1 supervis     6998 Apr 26  1996 kjr.pmr
+d[R----F-]  1 supervis      512 Nov 30 08:02 limpouch
+
+
+
+
+
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+UNIX: PRVNI VARIANTA (IBM AIX, Filezilla a dalsi)
+--------------------------------------------------------------------------
+(odlisnost od druhe varianty: maji dve mezery po roce pred jmenem)
+(ma prioritu, protoze pravdepodobnejsi jsou jmena bez mezer na zacatku)
+Autodetect: not syst_contains("z/VM ") and not syst_contains("OS/2 ") and
+            not syst_contains(" MACOS ") and not syst_contains("Windows_NT")
+
+# parse lines with files and directories
+* if(next_char!="l"), assign(<is_dir>, next_char=="d"), word(<rights>),
+  white_spaces(), word(), white_spaces(), word(<user>), white_spaces(),
+  word(<group>), white_spaces(), positive_number(<size>), white_spaces(),
+  month_3(<date>), white_spaces(), day(<date>), white_spaces(),
+  year(<date>), white_spaces(2),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with files and directories
+* if(next_char!="l"), assign(<is_dir>, next_char=="d"), word(<rights>),
+  white_spaces(), word(), white_spaces(), word(<user>), white_spaces(),
+  word(<group>), white_spaces(), positive_number(<size>), white_spaces(),
+  month_3(<date>), white_spaces(), day(<date>), white_spaces(),
+  year_or_time(<date>, <time>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with links
+* if(next_char=="l"), assign(<is_link>, true), word(<rights>), white_spaces(),
+  word(), white_spaces(), word(<user>), white_spaces(), word(<group>),
+  white_spaces(), word(), white_spaces(),
+  month_3(<date>), white_spaces(), day(<date>), white_spaces(),
+  year(<date>), white_spaces(2),
+  assign(<is_hidden>, next_char=="."), unix_link(<is_dir>, <name>, <link>);
+
+# parse lines with links
+* if(next_char=="l"), assign(<is_link>, true), word(<rights>), white_spaces(),
+  word(), white_spaces(), word(<user>), white_spaces(), word(<group>),
+  white_spaces(), word(), white_spaces(),
+  month_3(<date>), white_spaces(), day(<date>), white_spaces(),
+  year_or_time(<date>, <time>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), unix_link(<is_dir>, <name>, <link>);
+
+# parse lines with devices
+* word(<rights>), white_spaces(), word(), white_spaces(), word(<user>),
+  white_spaces(), word(<group>), white_spaces(), unix_device(<device>),
+  white_spaces(), month_3(<date>), white_spaces(), day(<date>), white_spaces(),
+  year(<date>), white_spaces(2),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with devices
+* word(<rights>), white_spaces(), word(), white_spaces(), word(<user>),
+  white_spaces(), word(<group>), white_spaces(), unix_device(<device>),
+  white_spaces(), month_3(<date>), white_spaces(), day(<date>), white_spaces(),
+  year_or_time(<date>, <time>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with files and directories (skipping user+group with more spaces)
+* if(next_char!="l"), assign(<is_dir>, next_char=="d"), word(<rights>),
+  white_spaces(), word(), skip_to_number(), positive_number(<size>),
+  white_spaces(), month_3(<date>), white_spaces(), day(<date>),
+  white_spaces(), year(<date>), white_spaces(2),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with files and directories (skipping user+group with more spaces)
+* if(next_char!="l"), assign(<is_dir>, next_char=="d"), word(<rights>),
+  white_spaces(), word(), skip_to_number(), positive_number(<size>),
+  white_spaces(), month_3(<date>), white_spaces(), day(<date>), white_spaces(),
+  year_or_time(<date>, <time>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with links (skipping user+group with more spaces)
+* if(next_char=="l"), assign(<is_link>, true), word(<rights>), white_spaces(),
+  word(), skip_to_number(), word(), white_spaces(), month_3(<date>),
+  white_spaces(), day(<date>), white_spaces(), year(<date>), white_spaces(2),
+  assign(<is_hidden>, next_char=="."), unix_link(<is_dir>, <name>, <link>);
+
+# parse lines with links (skipping user+group with more spaces)
+* if(next_char=="l"), assign(<is_link>, true), word(<rights>), white_spaces(),
+  word(), skip_to_number(), word(), white_spaces(), month_3(<date>),
+  white_spaces(), day(<date>), white_spaces(), year_or_time(<date>, <time>),
+  white_spaces(1), assign(<is_hidden>, next_char=="."),
+  unix_link(<is_dir>, <name>, <link>);
+
+# parse lines with devices (skipping user+group with more spaces)
+* word(<rights>), white_spaces(), word(), skip_to_number(),
+  unix_device(<device>), white_spaces(), month_3(<date>), white_spaces(),
+  day(<date>), white_spaces(), year(<date>), white_spaces(2),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with devices (skipping user+group with more spaces)
+* word(<rights>), white_spaces(), word(), skip_to_number(),
+  unix_device(<device>), white_spaces(), month_3(<date>), white_spaces(),
+  day(<date>), white_spaces(), year_or_time(<date>, <time>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# skip first line "total ????" - up to 3 words
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces();
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces(),
+  word(), skip_white_spaces();
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces(),
+  word(), skip_white_spaces(), word(), skip_white_spaces();
+
+# skip empty lines anywhere
+* skip_white_spaces();
+--------------------------------------------------------------------------
+total 80
+drwxrwxr-x   5 ftp      ftp          4096 Aug  2 13:39 .
+drwxrwxr-x   3 ftp      ftp          4096 Dec 21 2001  ..
+drwx------    2 solin    users        4096 Oct 17 2001  mail
+dr-xr-xr-x   1 owner    group               0 Feb 25 2000  KBHelp
+-rw-r--r--    1 solin    users        2336 Nov 16 2001  readme.txt
+-r--r--r--   1 100      50         589722 Feb 21 2002  265058a.exe
+-r-xr-xr-x   1 owner    group            1427 Aug 25 1994  readme.txt
+lrwxrwxrwx    1 solin    users           4 Aug  5 12:15 file_link -> file
+lrwxrwxrwx    1 solin    users           4 Aug  5 09:51 file_link.txt -> file
+lrwxrwxrwx    1 solin    users          10 Aug  5 09:45 readme_link -> ../solin/readme.txt
+crw-r-----   1 root     disk      27,  24 Dec  8 1995  zqft0
+crw-r-----   1 root     disk      27,  25 Dec  8 1995  zqft1
+crw-r-----   1 root     disk      27,  26 Dec  8 1995  zqft2
+brw-rw----    1 root     disk      29,   0 Aug 24 2000  aztcd
+brw-rw----    1 root     disk      13, 121 Aug 24 2000  xdb57
+lrwx------    1 root     root            0 Oct 16 14:08 root
+lrwx------    1 root     root            0 Oct 16 14:08 cwd
+lrwx------    1 solin    users           0 Oct 16 14:15 cwd -> /proc/20493
+pr--r--r--    1 root     root            0 Oct 16 14:08 maps
+drwxrwxr-x   5 ftp name      ftp          4096 Aug  2 13:39 .
+drwxrwxr-x   3 ftp name      ftp          4096 Dec 21 2001  ..
+drwx------    2 solin name    users        4096 Oct 17 2001  mail
+dr-xr-xr-x   1 owner name    group               0 Feb 25 2000  KBHelp
+-rw-r--r--    1 solin name    users        2336 Nov 16 2001  readme.txt
+-r-xr-xr-x   1 owner name    group            1427 Aug 25 1994  readme.txt
+lrwxrwxrwx    1 solin name    users           4 Aug  5 12:15 file_link -> file
+lrwxrwxrwx    1 solin name    users           4 Aug  5 09:51 file_link.txt -> file
+lrwxrwxrwx    1 solin name    users          10 Aug  5 09:45 readme_link -> ../solin/readme.txt
+crw-r-----   1 root name     disk      27,  24 Dec  8 1995  zqft0
+crw-r-----   1 root name     disk      27,  25 Dec  8 1995  zqft1
+crw-r-----   1 root name     disk      27,  26 Dec  8 1995  zqft2
+brw-rw----    1 root name     disk      29,   0 Aug 24 2000  aztcd
+brw-rw----    1 root name     disk      13, 121 Aug 24 2000  xdb57
+lrwx------    1 root name     root            0 Oct 16 14:08 root
+lrwx------    1 root name     root            0 Oct 16 14:08 cwd
+lrwx------    1 solin name    users           0 Oct 16 14:15 cwd -> /proc/20493
+pr--r--r--    1 root name    root            0 Oct 16 14:08 maps
+
+------------------------ DRUHA VARIANTA - ProFTPD a dalsi ----------
+(funguje korektne pro servery, ktere maji po roce pred jmenem jedinou mezeru;
+prvni varianta parseru totiz nekorektne orezava prvni mezeru ve jmene)
+Autodetect: not syst_contains("z/VM ") and not syst_contains("OS/2 ") and
+            not syst_contains(" MACOS ") and not syst_contains("Windows_NT")
+
+# parse lines with files and directories
+* if(next_char!="l"), assign(<is_dir>, next_char=="d"), word(<rights>),
+  white_spaces(), word(), white_spaces(), word(<user>), white_spaces(),
+  word(<group>), white_spaces(), positive_number(<size>), white_spaces(),
+  month_3(<date>), white_spaces(), day(<date>), white_spaces(),
+  year_or_time(<date>, <time>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with links
+* if(next_char=="l"), assign(<is_link>, true), word(<rights>), white_spaces(),
+  word(), white_spaces(), word(<user>), white_spaces(), word(<group>),
+  white_spaces(), word(), white_spaces(),
+  month_3(<date>), white_spaces(), day(<date>), white_spaces(),
+  year_or_time(<date>, <time>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), unix_link(<is_dir>, <name>, <link>);
+
+# parse lines with devices
+* word(<rights>), white_spaces(), word(), white_spaces(), word(<user>),
+  white_spaces(), word(<group>), white_spaces(), unix_device(<device>),
+  white_spaces(), month_3(<date>), white_spaces(), day(<date>), white_spaces(),
+  year_or_time(<date>, <time>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with files and directories (skipping user+group with more spaces)
+* if(next_char!="l"), assign(<is_dir>, next_char=="d"), word(<rights>),
+  white_spaces(), word(), skip_to_number(), positive_number(<size>),
+  white_spaces(), month_3(<date>), white_spaces(), day(<date>), white_spaces(),
+  year_or_time(<date>, <time>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with links (skipping user+group with more spaces)
+* if(next_char=="l"), assign(<is_link>, true), word(<rights>), white_spaces(),
+  word(), skip_to_number(), word(), white_spaces(), month_3(<date>),
+  white_spaces(), day(<date>), white_spaces(), year_or_time(<date>, <time>),
+  white_spaces(1), assign(<is_hidden>, next_char=="."),
+  unix_link(<is_dir>, <name>, <link>);
+
+# parse lines with devices (skipping user+group with more spaces)
+* word(<rights>), white_spaces(), word(), skip_to_number(),
+  unix_device(<device>), white_spaces(), month_3(<date>), white_spaces(),
+  day(<date>), white_spaces(), year_or_time(<date>, <time>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# skip first line "total ????" - up to 3 words
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces();
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces(),
+  word(), skip_white_spaces();
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces(),
+  word(), skip_white_spaces(), word(), skip_white_spaces();
+
+# skip empty lines anywhere
+* skip_white_spaces();
+--------------------------------------------------------------------------
+total 80
+drwxrwxr-x   5 ftp      ftp          4096 Aug  2 13:39 .
+drwxrwxr-x   3 ftp      ftp          4096 Dec 21  2001 ..
+drwx------    2 solin    users        4096 Oct 17  2001 mail
+dr-xr-xr-x   1 owner    group               0 Feb 25  2000 KBHelp
+-rw-r--r--    1 solin    users        2336 Nov 16  2001 readme.txt
+-r--r--r--   1 100      50         589722 Feb 21  2002 265058a.exe
+-r-xr-xr-x   1 owner    group            1427 Aug 25  1994 readme.txt
+lrwxrwxrwx    1 solin    users           4 Aug  5 12:15 file_link -> file
+lrwxrwxrwx    1 solin    users           4 Aug  5 09:51 file_link.txt -> file
+lrwxrwxrwx    1 solin    users          10 Aug  5 09:45 readme_link -> ../solin/readme.txt
+crw-r-----   1 root     disk      27,  24 Dec  8  1995 zqft0
+crw-r-----   1 root     disk      27,  25 Dec  8  1995 zqft1
+crw-r-----   1 root     disk      27,  26 Dec  8  1995 zqft2
+brw-rw----    1 root     disk      29,   0 Aug 24  2000 aztcd
+brw-rw----    1 root     disk      13, 121 Aug 24  2000 xdb57
+lrwx------    1 root     root            0 Oct 16 14:08 root
+lrwx------    1 root     root            0 Oct 16 14:08 cwd
+lrwx------    1 solin    users           0 Oct 16 14:15 cwd -> /proc/20493
+pr--r--r--    1 root     root            0 Oct 16 14:08 maps
+drwxrwxr-x   5 ftp name      ftp          4096 Aug  2 13:39 .
+drwxrwxr-x   3 ftp name      ftp          4096 Dec 21  2001 ..
+drwx------    2 solin name    users        4096 Oct 17  2001 mail
+dr-xr-xr-x   1 owner name    group               0 Feb 25  2000 KBHelp
+-rw-r--r--    1 solin name    users        2336 Nov 16  2001 readme.txt
+-r-xr-xr-x   1 owner name    group            1427 Aug 25  1994 readme.txt
+lrwxrwxrwx    1 solin name    users           4 Aug  5 12:15 file_link -> file
+lrwxrwxrwx    1 solin name    users           4 Aug  5 09:51 file_link.txt -> file
+lrwxrwxrwx    1 solin name    users          10 Aug  5 09:45 readme_link -> ../solin/readme.txt
+crw-r-----   1 root name     disk      27,  24 Dec  8  1995 zqft0
+crw-r-----   1 root name     disk      27,  25 Dec  8  1995 zqft1
+crw-r-----   1 root name     disk      27,  26 Dec  8  1995 zqft2
+brw-rw----    1 root name     disk      29,   0 Aug 24  2000 aztcd
+brw-rw----    1 root name     disk      13, 121 Aug 24  2000 xdb57
+lrwx------    1 root name     root            0 Oct 16 14:08 root
+lrwx------    1 root name     root            0 Oct 16 14:08 cwd
+lrwx------    1 solin name    users           0 Oct 16 14:15 cwd -> /proc/20493
+pr--r--r--    1 root name    root            0 Oct 16 14:08 maps
+
+------------------------ TRETI VARIANTA - Sun (nejen) ---------------------
+Autodetect: (not welcome_contains(" NW ") or not welcome_contains(" HellSoft.")) and
+            not syst_contains("z/VM ") and not syst_contains("OS/2 ") and
+            not syst_contains(" MACOS ") and not syst_contains("Windows_NT")
+
+# parse lines with files and directories
+* if(next_char!="l"), assign(<is_dir>, next_char=="d"), word(<rights>),
+  white_spaces(), word(), white_spaces(), word(<user>), white_spaces(),
+  positive_number(<size>), white_spaces(), month_3(<date>), white_spaces(),
+  day(<date>), white_spaces(), year_or_time(<date>, <time>),
+  white_spaces(1), assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with links
+* if(next_char=="l"), assign(<is_link>, true), word(<rights>), white_spaces(),
+  word(), white_spaces(), word(<user>), white_spaces(), word(), white_spaces(),
+  month_3(<date>), white_spaces(), day(<date>), white_spaces(),
+  year_or_time(<date>, <time>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), unix_link(<is_dir>, <name>, <link>);
+
+# parse lines with devices
+* word(<rights>), white_spaces(), word(), white_spaces(), word(<user>),
+  white_spaces(), unix_device(<device>), white_spaces(), month_3(<date>),
+  white_spaces(), day(<date>), white_spaces(), year_or_time(<date>, <time>),
+  white_spaces(1), assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with files and directories (skipping user with more spaces)
+* if(next_char!="l"), assign(<is_dir>, next_char=="d"), word(<rights>),
+  white_spaces(), word(), skip_to_number(), positive_number(<size>),
+  white_spaces(), month_3(<date>), white_spaces(), day(<date>),
+  white_spaces(), year_or_time(<date>, <time>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with links (skipping user with more spaces)
+* if(next_char=="l"), assign(<is_link>, true), word(<rights>), white_spaces(),
+  word(), skip_to_number(), word(), white_spaces(), month_3(<date>),
+  white_spaces(), day(<date>), white_spaces(), year_or_time(<date>, <time>),
+  white_spaces(1), assign(<is_hidden>, next_char=="."),
+  unix_link(<is_dir>, <name>, <link>);
+
+# parse lines with devices (skipping user with more spaces)
+* word(<rights>), white_spaces(), word(), skip_to_number(),
+  unix_device(<device>), white_spaces(), month_3(<date>), white_spaces(),
+  day(<date>), white_spaces(), year_or_time(<date>, <time>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# skip first line "total ????" - up to 3 words
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces();
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces(),
+  word(), skip_white_spaces();
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces(),
+  word(), skip_white_spaces(), word(), skip_white_spaces();
+
+# skip empty lines anywhere
+* skip_white_spaces();
+---------------------------------------------------------------------------
+total 640528
+-rw-r--r--   1 15          8334 Jun 10 05:09 2.3_MCAD_GFX.README
+-rw-r--r--   1 15       23291497 Jun 10 05:09 2.3_MCAD_GFX.tar.Z
+-rw-r--r--   1 15       18557069 Oct 12  1999 netra_ft_s26v1_Recommended.tar.Z
+lrwxrwxrwx   1 1             16 Oct  5  2001 downloads -> public/downloads
+crw-rw-rw-   1 3         42,  0 Oct  5  2001 tcp
+crw-rw-rw-   1 3        105,  1 Oct  5  2001 ticotsord
+drwxr-x---   2 1862        2048 Apr  7  1999 advpanel
+lrwxrwxrwx   1 other          7 Mar 22  2000 bin -> usr/bin
+lrwxrwxrwx   1 other          7 Jul 29 18:06 ccm -> pub/ccm
+-rw-r--r--   1 other name          8334 Jun 10 05:09 2.3_MCAD_GFX.README
+-rw-r--r--   1 other name       23291497 Jun 10 05:09 2.3_MCAD_GFX.tar.Z
+-rw-r--r--   1 other name       18557069 Oct 12  1999 netra_ft_s26v1_Recommended.tar.Z
+lrwxrwxrwx   1 other name             16 Oct  5  2001 downloads -> public/downloads
+crw-rw-rw-   1 other name         42,  0 Oct  5  2001 tcp
+crw-rw-rw-   1 other name        105,  1 Oct  5  2001 ticotsord
+drwxr-x---   2 other name        2048 Apr  7  1999 advpanel
+lrwxrwxrwx   1 other name          7 Mar 22  2000 bin -> usr/bin
+lrwxrwxrwx   1 other name         7 Jul 29 18:06 ccm -> pub/ccm
+
+------------------------ CTVRTA VARIANTA - HP-UNIX (nemecky) --------------
+Autodetect: not syst_contains("z/VM ") and not syst_contains("OS/2 ") and
+            not syst_contains(" MACOS ") and not syst_contains("Windows_NT")
+
+# parse lines with files and directories
+* if(next_char!="l"), assign(<is_dir>, next_char=="d"), word(<rights>),
+  white_spaces(), word(), white_spaces(), word(<user>), white_spaces(),
+  word(<group>), white_spaces(), positive_number(<size>), white_spaces(),
+  day(<date>), all(1), skip_white_spaces(), month_txt(<date>), all(1),
+  skip_white_spaces(), year_or_time(<date>, <time>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with links
+* if(next_char=="l"), assign(<is_link>, true), word(<rights>), white_spaces(),
+  word(), white_spaces(), word(<user>), white_spaces(), word(<group>),
+  white_spaces(), word(), white_spaces(), day(<date>), all(1), skip_white_spaces(),
+  month_txt(<date>), all(1), skip_white_spaces(), year_or_time(<date>, <time>),
+  white_spaces(1), assign(<is_hidden>, next_char=="."),
+  unix_link(<is_dir>, <name>, <link>);
+
+# parse lines with devices
+* word(<rights>), white_spaces(), word(), white_spaces(), word(<user>),
+  white_spaces(), word(<group>), white_spaces(), unix_device(<device>),
+  white_spaces(), day(<date>), all(1), skip_white_spaces(), month_txt(<date>),
+  all(1), skip_white_spaces(), year_or_time(<date>, <time>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with files and directories (skipping user+group with more spaces)
+* if(next_char!="l"), assign(<is_dir>, next_char=="d"), word(<rights>),
+  white_spaces(), word(), skip_to_number(), positive_number(<size>),
+  white_spaces(), day(<date>), all(1), skip_white_spaces(), month_txt(<date>),
+  all(1), skip_white_spaces(), year_or_time(<date>, <time>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with links (skipping user+group with more spaces)
+* if(next_char=="l"), assign(<is_link>, true), word(<rights>), white_spaces(),
+  word(), skip_to_number(), word(), white_spaces(), day(<date>), all(1),
+  skip_white_spaces(), month_txt(<date>), all(1), skip_white_spaces(),
+  year_or_time(<date>, <time>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), unix_link(<is_dir>, <name>, <link>);
+
+# parse lines with devices (skipping user+group with more spaces)
+* word(<rights>), white_spaces(), word(), skip_to_number(),
+  unix_device(<device>), white_spaces(), day(<date>), all(1),
+  skip_white_spaces(), month_txt(<date>), all(1), skip_white_spaces(),
+  year_or_time(<date>, <time>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# skip first line "total ????" - up to 3 words
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces();
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces(),
+  word(), skip_white_spaces();
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces(),
+  word(), skip_white_spaces(), word(), skip_white_spaces();
+
+# skip empty lines anywhere
+* skip_white_spaces();
+---------------------------------------------------------------------------
+insgesamt 611176
+drwxrwxr-x   5 ftp        ftp           4096  4. Jan., 14:00 .
+drwxrwxr-x   3 ftp        ftp           4096  4. Jan., 14:00 ..
+lrwxrwxrwx   1 solin      users            4 23. März 2004 file_link -> file
+crw-r-----   1 root       disk       27,  24  5. Feb. 2004 zqft0
+brw-rw----   1 root       disk       13, 121 19. Mai 2004 xdb57
+lrwx------   1 root       root             0 24. Juni 2004 cwd
+-rw-rw-rw-   1 catusr     catia           81  4. Jan., 14:00 CATDXF.in
+-rwxrwxrwx   1 catusr     catia       100403  5. Feb. 2004 CATOLER.out
+-rwxr-xr-x   1 catusr     catia          545 23. März 2004 catcust
+-rwxr-xr-x   1 catusr     catia          545 14. Apr. 2004 Acrobat_Reader
+-rw-rw-r--   1 catusr     catia      1640480 19. Mai 2004 11-59D_323326_BM_V00_ROB_SCHNELLWECHSELKUPPLUNG_VKR±30_40___030702_PJW.model
+-rw-r-----   1 catusr     catia        60640 24. Juni 2004 PECIATKA_STN.model
+-rwxrwxrwx   1 catusr     catia         2558  2. Juli 2003 MECENV.dcls
+-rw-rw-r--   1 catusr     catia         2916 18. Aug., 09:06 USRENV_1.dcls
+-rw-rw-r--   1 catusr     catia        25682 13. Sept., 15:48 catracecatusr3287.log
+drwxr--r--   2 catusr     catia           96 31. Okt. 2003 CATSettings
+-rw-rw-rw-   1 catusr     catia          358 19. Nov., 11:12 DXFCAT.out
+-rw-r-----   1 catusr     catia        11417 30. Dez., 11:10 ema_KG_update_rollmenu.dcls
+drwxrwxr-x   5 ftp name        ftp           4096  4. Jan., 14:00 .
+drwxrwxr-x   3 ftp name        ftp           4096  4. Jan., 14:00 ..
+lrwxrwxrwx   1 solin name      users            4 23. März 2004 file_link -> file
+crw-r-----   1 root name       disk       27,  24  5. Feb. 2004 zqft0
+brw-rw----   1 root name       disk       13, 121 19. Mai 2004 xdb57
+lrwx------   1 root name      root             0 24. Juni 2004 cwd
+-rw-rw-rw-   1 cat usr     catia           81  4. Jan., 14:00 CATDXF.in
+-rwxrwxrwx   1 cat usr     catia       100403  5. Feb. 2004 CATOLER.out
+-rwxr-xr-x   1 cat usr     catia          545 23. März 2004 catcust
+-rwxr-xr-x   1 cat usr     catia          545 14. Apr. 2004 Acrobat_Reader
+-rw-rw-r--   1 cat usr     catia      1640480 19. Mai 2004 11-59D_323326_BM_V00_ROB_SCHNELLWECHSELKUPPLUNG_VKR±30_40___030702_PJW.model
+-rw-r-----   1 cat usr     catia        60640 24. Juni 2004 PECIATKA_STN.model
+-rwxrwxrwx   1 cat usr     catia         2558  2. Juli 2003 MECENV.dcls
+-rw-rw-r--   1 cat usr     catia         2916 18. Aug., 09:06 USRENV_1.dcls
+-rw-rw-r--   1 cat usr     catia        25682 13. Sept., 15:48 catracecatusr3287.log
+drwxr--r--   2 cat usr     catia           96 31. Okt. 2003 CATSettings
+-rw-rw-rw-   1 cat usr     catia          358 19. Nov., 11:12 DXFCAT.out
+-rw-r-----   1 cat usr     catia        11417 30. Dez., 11:10 ema_KG_update_rollmenu.dcls
+
+------------------------ PATA VARIANTA - nemecky AIX ----------
+(kopie prvni varianty UNIX parseru, jen maji prohozeny mesic a den)
+Autodetect: not syst_contains("z/VM ") and not syst_contains("OS/2 ") and
+            not syst_contains(" MACOS ") and not syst_contains("Windows_NT")
+
+# parse lines with files and directories
+* if(next_char!="l"), assign(<is_dir>, next_char=="d"), word(<rights>),
+  white_spaces(), word(), white_spaces(), word(<user>), white_spaces(),
+  word(<group>), white_spaces(), positive_number(<size>), white_spaces(),
+  day(<date>), white_spaces(), month_3(<date>), white_spaces(),
+  year(<date>), white_spaces(2),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with files and directories
+* if(next_char!="l"), assign(<is_dir>, next_char=="d"), word(<rights>),
+  white_spaces(), word(), white_spaces(), word(<user>), white_spaces(),
+  word(<group>), white_spaces(), positive_number(<size>), white_spaces(),
+  day(<date>), white_spaces(), month_3(<date>), white_spaces(),
+  year_or_time(<date>, <time>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with links
+* if(next_char=="l"), assign(<is_link>, true), word(<rights>), white_spaces(),
+  word(), white_spaces(), word(<user>), white_spaces(), word(<group>),
+  white_spaces(), word(), white_spaces(),
+  day(<date>), white_spaces(), month_3(<date>), white_spaces(),
+  year(<date>), white_spaces(2),
+  assign(<is_hidden>, next_char=="."), unix_link(<is_dir>, <name>, <link>);
+
+# parse lines with links
+* if(next_char=="l"), assign(<is_link>, true), word(<rights>), white_spaces(),
+  word(), white_spaces(), word(<user>), white_spaces(), word(<group>),
+  white_spaces(), word(), white_spaces(),
+  day(<date>), white_spaces(), month_3(<date>), white_spaces(),
+  year_or_time(<date>, <time>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), unix_link(<is_dir>, <name>, <link>);
+
+# parse lines with devices
+* word(<rights>), white_spaces(), word(), white_spaces(), word(<user>),
+  white_spaces(), word(<group>), white_spaces(), unix_device(<device>),
+  white_spaces(), day(<date>), white_spaces(), month_3(<date>), white_spaces(),
+  year(<date>), white_spaces(2),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with devices
+* word(<rights>), white_spaces(), word(), white_spaces(), word(<user>),
+  white_spaces(), word(<group>), white_spaces(), unix_device(<device>),
+  white_spaces(), day(<date>), white_spaces(), month_3(<date>), white_spaces(),
+  year_or_time(<date>, <time>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with files and directories (skipping user+group with more spaces)
+* if(next_char!="l"), assign(<is_dir>, next_char=="d"), word(<rights>),
+  white_spaces(), word(), skip_to_number(), positive_number(<size>),
+  white_spaces(), day(<date>), white_spaces(), month_3(<date>), white_spaces(),
+  year(<date>), white_spaces(2),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with files and directories (skipping user+group with more spaces)
+* if(next_char!="l"), assign(<is_dir>, next_char=="d"), word(<rights>),
+  white_spaces(), word(), skip_to_number(), positive_number(<size>),
+  white_spaces(), day(<date>), white_spaces(), month_3(<date>), white_spaces(),
+  year_or_time(<date>, <time>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with links (skipping user+group with more spaces)
+* if(next_char=="l"), assign(<is_link>, true), word(<rights>), white_spaces(),
+  word(), skip_to_number(), word(), white_spaces(), day(<date>), white_spaces(),
+  month_3(<date>), white_spaces(), year(<date>), white_spaces(2),
+  assign(<is_hidden>, next_char=="."), unix_link(<is_dir>, <name>, <link>);
+
+# parse lines with links (skipping user+group with more spaces)
+* if(next_char=="l"), assign(<is_link>, true), word(<rights>), white_spaces(),
+  word(), skip_to_number(), word(), white_spaces(), day(<date>), white_spaces(),
+  month_3(<date>), white_spaces(), year_or_time(<date>, <time>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), unix_link(<is_dir>, <name>, <link>);
+
+# parse lines with devices (skipping user+group with more spaces)
+* word(<rights>), white_spaces(), word(), skip_to_number(),
+  unix_device(<device>), white_spaces(), day(<date>), white_spaces(),
+  month_3(<date>), white_spaces(), year(<date>), white_spaces(2),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with devices (skipping user+group with more spaces)
+* word(<rights>), white_spaces(), word(), skip_to_number(),
+  unix_device(<device>), white_spaces(), day(<date>), white_spaces(),
+  month_3(<date>), white_spaces(), year_or_time(<date>, <time>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# skip first line "total ????" - up to 3 words
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces();
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces(),
+  word(), skip_white_spaces();
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces(),
+  word(), skip_white_spaces(), word(), skip_white_spaces();
+
+# skip empty lines anywhere
+* skip_white_spaces();
+-----------  (pouzity testovaci listing s anglickyma mesicema)  ----------------
+total 80
+lrwxrwxrwx   1 biaf     iplus         11 14 Dec 2004  BIAF_Wetter -> biaf_wetter
+drwxrwxr-x   5 ftp      ftp          4096  2 Aug 13:39 .
+drwxrwxr-x   3 ftp      ftp          4096 21 Dec 2001  ..
+drwx------    2 solin    users        4096 17 Oct 2001  mail
+dr-xr-xr-x   1 owner    group               0 25 Feb 2000  KBHelp
+-rw-r--r--    1 solin    users        2336 16 Nov 2001  readme.txt
+-r--r--r--   1 100      50         589722 21 Feb 2002  265058a.exe
+-r-xr-xr-x   1 owner    group            1427 25 Aug 1994  readme.txt
+lrwxrwxrwx    1 solin    users           4  5 Aug 12:15 file_link -> file
+lrwxrwxrwx    1 solin    users           4  5 Aug 09:51 file_link.txt -> file
+lrwxrwxrwx    1 solin    users          10  5 Aug 09:45 readme_link -> ../solin/readme.txt
+crw-r-----   1 root     disk      27,  24  8 Dec 1995  zqft0
+crw-r-----   1 root     disk      27,  25  8 Dec 1995  zqft1
+crw-r-----   1 root     disk      27,  26  8 Dec 1995  zqft2
+brw-rw----    1 root     disk      29,   0 24 Aug 2000  aztcd
+brw-rw----    1 root     disk      13, 121 24 Aug 2000  xdb57
+lrwx------    1 root     root            0 16 Oct 14:08 root
+lrwx------    1 root     root            0 16 Oct 14:08 cwd
+lrwx------    1 solin    users           0 16 Oct 14:15 cwd -> /proc/20493
+pr--r--r--    1 root     root            0 16 Oct 14:08 maps
+lrwxrwxrwx   1 biaf name     iplus         11 14 Dec 2004  BIAF_Wetter -> biaf_wetter
+drwxrwxr-x   5 ftp name      ftp          4096  2 Aug 13:39 .
+drwxrwxr-x   3 ftp name      ftp          4096 21 Dec 2001  ..
+drwx------    2 solin name    users        4096 17 Oct 2001  mail
+dr-xr-xr-x   1 owner name    group               0 25 Feb 2000  KBHelp
+-rw-r--r--    1 solin name    users        2336 16 Nov 2001  readme.txt
+-r-xr-xr-x   1 owner name    group            1427 25 Aug 1994  readme.txt
+lrwxrwxrwx    1 solin name    users           4  5 Aug 12:15 file_link -> file
+lrwxrwxrwx    1 solin name    users           4  5 Aug 09:51 file_link.txt -> file
+lrwxrwxrwx    1 solin name    users          10  5 Aug 09:45 readme_link -> ../solin/readme.txt
+crw-r-----   1 root name     disk      27,  24  8 Dec 1995  zqft0
+crw-r-----   1 root name     disk      27,  25  8 Dec 1995  zqft1
+crw-r-----   1 root name     disk      27,  26  8 Dec 1995  zqft2
+brw-rw----    1 root name     disk      29,   0 24 Aug 2000  aztcd
+brw-rw----    1 root name     disk      13, 121 24 Aug 2000  xdb57
+lrwx------    1 root name     root            0 16 Oct 14:08 root
+lrwx------    1 root name     root            0 16 Oct 14:08 cwd
+lrwx------    1 solin name    users           0 16 Oct 14:15 cwd -> /proc/20493
+pr--r--r--    1 root name    root            0 16 Oct 14:08 maps
+
+------------------------ SESTA VARIANTA - MOXA (inetutils, Linux 2.6.9-MoXaRt) ----------
+(chybi casy + datumy)
+Autodetect: not syst_contains("z/VM ") and not syst_contains("OS/2 ") and
+            not syst_contains(" MACOS ") and not syst_contains("Windows_NT")
+
+# parse lines with files and directories
+* if(next_char!="l"), assign(<is_dir>, next_char=="d"), word(<rights>),
+  white_spaces(), word(), white_spaces(), word(<user>), white_spaces(),
+  word(<group>), white_spaces(), positive_number(<size>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with links
+* if(next_char=="l"), assign(<is_link>, true), word(<rights>), white_spaces(),
+  word(), white_spaces(), word(<user>), white_spaces(), word(<group>),
+  white_spaces(), word(), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), unix_link(<is_dir>, <name>, <link>);
+
+# parse lines with devices
+* word(<rights>), white_spaces(), word(), white_spaces(), word(<user>),
+  white_spaces(), word(<group>), white_spaces(), unix_device(<device>),
+  white_spaces(1), assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with files and directories (skipping user+group with more spaces)
+* if(next_char!="l"), assign(<is_dir>, next_char=="d"), word(<rights>),
+  white_spaces(), word(), skip_to_number(), positive_number(<size>),
+  white_spaces(1), assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# parse lines with links (skipping user+group with more spaces)
+* if(next_char=="l"), assign(<is_link>, true), word(<rights>), white_spaces(),
+  word(), skip_to_number(), word(), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), unix_link(<is_dir>, <name>, <link>);
+
+# parse lines with devices (skipping user+group with more spaces)
+* word(<rights>), white_spaces(), word(), skip_to_number(),
+  unix_device(<device>), white_spaces(1),
+  assign(<is_hidden>, next_char=="."), rest_of_line(<name>);
+
+# skip first line "total ????" - up to 3 words
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces();
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces(),
+  word(), skip_white_spaces();
+* if(first_nonempty_line), skip_white_spaces(), word(), skip_white_spaces(),
+  word(), skip_white_spaces(), word(), skip_white_spaces();
+
+# skip empty lines anywhere
+* skip_white_spaces();
+--------------------------------------------------------------------------
+drwxr-xr-x   13 0        0               0 .
+drwxr-xr-x   13 0        0               0 ..
+drwxrwxrwx    2 500      500             0 ramdisk
+lrwxrwxrwx    1 0        0               4 sbin -> /bin
+dr-xr-xr-x   29 0        0               0 proc
+lrwxrwxrwx    1 0        0               8 tmp -> /var/tmp
+drwxr-xr-x    2 0        0           16384 mnt
+-rw-r--r--    1 solin    users        2336 readme.txt
+-r--r--r--   1 100      50         589722 265058a.exe
+lrwxrwxrwx    1 solin    users          10 readme_link -> ../solin/readme.txt
+crw-r-----   1 root     disk      27,  24 zqft0
+brw-rw----    1 root     disk      29,   0 aztcd
+pr--r--r--    1 root     root            0 maps
+drwxrwxr-x   5 ftp name      ftp          4096 .
+drwxrwxr-x   3 ftp name      ftp          4096 ..
+drwx------    2 solin name    users        4096  mail
+dr-xr-xr-x   1 owner name    group               0  KBHelp
+-rw-r--r--    1 solin name    users        2336  readme.txt
+lrwxrwxrwx    1 solin name    users           4 file_link -> file
+crw-r-----   1 root name     disk      27,  24  zqft0
+brw-rw----    1 root name     disk      29,   0  aztcd
+lrwx------    1 root name     root            0 root
+pr--r--r--    1 root name    root            0 maps
+
+
+
+
+
+
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+WINNT (quote dirstyle: MSDOS-like directory output is on): (ftp.doble.com, ftp.nai.com/commonupdater)
+--------------------------------------------------------------------------
+# parse lines with files
+* month(<date>), all(1), day(<date>), all(1), year(<date>), white_spaces(),
+  time(<time>), white_spaces(), positive_number(<size>), white_spaces(),
+  rest_of_line(<name>);
+
+# parse lines with directories
+* month(<date>), all(1), day(<date>), all(1), year(<date>), white_spaces(),
+  time(<time>), white_spaces(), if(next_word eq "<dir>"), all(5),
+  assign(<is_dir>, true), white_spaces(), rest_of_line(<name>);
+
+# skip lines with files without name
+* month(<date>), all(1), day(<date>), all(1), year(<date>), white_spaces(),
+  time(<time>), white_spaces(), positive_number(<size>), white_spaces();
+
+# skip lines with directories without name
+* month(<date>), all(1), day(<date>), all(1), year(<date>), white_spaces(),
+  time(<time>), white_spaces(), if(next_word eq "<dir>"), all(5),
+  assign(<is_dir>, true), white_spaces();
+
+# skip empty lines anywhere
+* skip_white_spaces();
+---------------------------------------------------------------------------
+03-21-05  10:25AM       <DIR>           
+10-24-99  01:29AM              4368384  
+10-24-99  01:29AM              4368384 IMG00022.PCD
+05-18-01  07:52AM       <DIR>          jacubowsky
+07-14-00  01:35PM              2094926 canprankdesk.tif
+07-14-00  01:38PM              2250540 Valentineoffprank-HiRes.jpg
+---------------------------------------------------------------------------
+zatim nejsou podporeny (buh vi co to JUNCTION ma znamenat + co je => a ->):
+---------------------------------------------------------------------------
+07-21-00  07:22AM       <JUNCTION>     a_junction_sample
+10-23-00  01:27PM       <JUNCTION>     b_junction_sample => foo
+06-15-00  07:37AM       <JUNCTION>     c_junction_sample -> bar too
+
+
+
+
+
+
+
+
+
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+TANDEM (podpora psana pro: Peter C. Vanderhaden, peter.vanderhaden@brownco.com)
+--------------------------------------------------------------------------
+# parse lines with files
+* word(<name>), white_spaces(), number(<code>), white_spaces(),
+  positive_number(<size>), white_spaces(), day(<date>), all(1), month_3(<date>),
+  all(1), year(<date>), white_spaces(), time(<time>), white_spaces(),
+  all_up_to(<user>, "\""), cut_white_spaces_end(<user>), all_up_to(<RWEP>, "\"");
+
+# skip first line "File Code EOF ..."
+* if(first_nonempty_line), skip_white_spaces(), if (next_word eq "file"), word(),
+  skip_white_spaces(), if (next_word eq "code"), word(), skip_white_spaces(),
+  if (next_word eq "eof"), rest_of_line();
+
+# skip empty lines anywhere
+* skip_white_spaces();
+---------------------------------------------------------------------------
+File         Code             EOF  Last Modification    Owner  RWEP
+AAINDEX       101             2040  7-Jan-03 15:46:49 210,  4 "oooo"
+ABS           101              226  9-Nov-99 14:56:57 210,  4 "nono"
+ACATRPT1      101             2160 24-Mar-05 10:49:42 210,  4 "nono"
+ADDDEFS       101             3614 26-Aug-04 10:27:30 210,  4 "nono"
+ADDDEFS1      101              820 24-Feb-05 21:02:26 210,  4 "nono"
+
+
+
+
+
+
+**************************************************************************
+**************************************************************************
+**************************************************************************
+
+listingy, ktere mozna nekde existuji - snazime se byt pripraveni na
+podporu techto listingu, ale zatim ji psat nebudeme
+
+**************************************************************************
+**************************************************************************
+**************************************************************************
+
+
+--------------------------------------------------------------------------
+DOS: (web)
+--------------------------------------------------------------------------
+sas                  <DIR>
+windows              <DIR>
+chk                  <DIR>
+uw_win               <DIR>
+unlinfo2.wp5         39201
+win_wais             <DIR>
+pk_cal.fil           532
+
+
+
+
+--------------------------------------------------------------------------
+PC-NFSD: (WinCmd) - delene nazvy/pripony souboru, carky ve velikosti,
+                    adresarum chybi velikost, a.m./p.m. v casech
+--------------------------------------------------------------------------
+prog1    exe     2,563,136 06-10-99  10:00a
+temp         <dir>         01-27-97   3:41p
+
+
+
+
+--------------------------------------------------------------------------
+VOS (Stratus): (WinCmd) - adresare maji o sloupec mene
+--------------------------------------------------------------------------
+ w     10  seq       99-04-20 11:15:42  abbreviations
+ m      4  99-07-02 10:11:25  arsffs32
+
+
+
+
+--------------------------------------------------------------------------
+Unisys Clearpath: (WinCmd)
+--------------------------------------------------------------------------
+UCF/CONFIG/SAMPLE/TSA             SEQDATA            1428 09/22/1998 18:37
+
+FF990628/BD/0009942/0009943/000PRINT
+                                  BACKUPPRINTER      7200 01/01/2000 04:22

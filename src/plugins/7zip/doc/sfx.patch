@@ -1,0 +1,85 @@
+diff -ur c:\old\7zip\7za\7zip\Archive\7z\7zIn.cpp c:\new\7zip\7za\7zip\Archive\7z\7zIn.cpp
+--- c:\old\7zip\7za\7zip\Archive\7z\7zIn.cpp	Sun Dec 11 23:12:37 2005
++++ c:\new\7zip\7za\7zip\Archive\7z\7zIn.cpp	Thu Feb 09 13:16:10 2006
+@@ -194,6 +194,61 @@
+ }
+ #endif
+ 
++//
++// Added by David Andrs
++//
++// Find the beginning of 7zip archive (reading PE headers and skipping them)
++//
++HRESULT CInArchive::SkipSFXstub(IInStream *stream) {
++  RINOK(stream->Seek(0, STREAM_SEEK_SET, NULL));
++
++  unsigned char data[200];
++  unsigned long sectionOffset, sectionSize, direntries;
++  int sections;
++  UInt32 processedSize; 
++
++  RINOK(ReadDirect(stream, data, sizeof(IMAGE_DOS_HEADER), &processedSize));
++
++  // zkontroluj ze je tam MZ signatura
++  if (((IMAGE_DOS_HEADER *)data)->e_magic != ('M' + ('Z' << 8)))
++    return S_OK;
++  RINOK(stream->Seek(((IMAGE_DOS_HEADER *)data)->e_lfanew, STREAM_SEEK_SET, NULL));
++
++  // precti headery
++  RINOK(ReadDirect(stream, data, sizeof(unsigned long) + sizeof(IMAGE_FILE_HEADER) + 24 * 4, &processedSize));
++  if (processedSize != sizeof(unsigned long) + sizeof(IMAGE_FILE_HEADER) + 24 * 4)
++    return S_OK;
++  if (*(unsigned long *)data != ('P' + ('E' << 8) + ('\0' << 16) + ('\0' << 24)))
++    return S_OK;
++
++  // number of sections
++  sections = ((IMAGE_FILE_HEADER *)(data + sizeof(unsigned long)))->NumberOfSections;
++  // number of directory entries
++  direntries = ((IMAGE_OPTIONAL_HEADER *)(data + sizeof(unsigned long) + sizeof(IMAGE_FILE_HEADER)))->NumberOfRvaAndSizes;
++  // preskoc dir entries
++  RINOK(stream->Seek(direntries * sizeof(IMAGE_DATA_DIRECTORY), STREAM_SEEK_CUR, NULL));
++
++  sectionOffset = 0;
++  sectionSize = 0;
++  // precti hlavicky vsech sekci
++  for (; sections > 0; sections--)
++  {
++    RINOK(ReadDirect(stream, data, sizeof(IMAGE_SECTION_HEADER), &processedSize));
++    if (processedSize != sizeof(IMAGE_SECTION_HEADER))
++      return S_OK;
++
++    // get position and size of the last section
++    if (sectionOffset < ((IMAGE_SECTION_HEADER *)data)->PointerToRawData)
++    {
++      sectionOffset = ((IMAGE_SECTION_HEADER *)data)->PointerToRawData;
++      sectionSize = ((IMAGE_SECTION_HEADER *)data)->SizeOfRawData;
++    }
++  }
++
++  _arhiveBeginStreamPosition = sectionOffset + sectionSize;
++  return S_OK;
++}
++
+ HRESULT CInArchive::FindAndReadSignature(IInStream *stream, const UInt64 *searchHeaderSizeLimit)
+ {
+   _position = _arhiveBeginStreamPosition;
+@@ -307,6 +362,7 @@
+     RINOK(FindAndReadSignature(stream, searchHeaderSizeLimit));
+   }
+   #else
++  RINOK(SkipSFXstub(stream));    // Added by David Andrs
+   RINOK(FindAndReadSignature(stream, searchHeaderSizeLimit));
+   #endif
+   _stream = stream;
+diff -ur c:\old\7zip\7za\7zip\Archive\7z\7zIn.h c:\new\7zip\7za\7zip\Archive\7z\7zIn.h
+--- c:\old\7zip\7za\7zip\Archive\7z\7zIn.h	Sat Aug 13 14:29:16 2005
++++ c:\new\7zip\7za\7zip\Archive\7z\7zIn.h	Thu Feb 09 13:16:16 2006
+@@ -171,6 +171,7 @@
+   }
+ 
+ private:
++  HRESULT SkipSFXstub(IInStream *stream);
+   HRESULT FindAndReadSignature(IInStream *stream, const UInt64 *searchHeaderSizeLimit); // S_FALSE means is not archive
+   #ifdef _7Z_VOL
+   HRESULT FindFinishSignature(IInStream *stream, const UInt64 *searchHeaderSizeLimit); // S_FALSE means is not archive
+

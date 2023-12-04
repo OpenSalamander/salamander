@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Background Transfers</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Features</div>
+<div class="page">
+
+<h1>Background Transfers</h1>
+
+<p>
+By default WinSCP transfers files on foreground. This way it can use one connection to the server only
+all the time, however during the transfer you cannot use Open Salamander for any other task. Alternative way is
+to use background transfers.
+</p>
+
+<a name="transferring_files_on_background"></a>
+<h4>Transferring Files on Background</h4>
+
+<p>
+To instruct WinSCP to perform the transfer on background, check <em>Transfer on background</em>
+on <a href="ui_copy.htm">transfer options dialog</a> before the transfer. If you
+do not use the dialog or want to transfer file on background by default, check
+<em><a href="ui_sal_pref_queue.htm#background_transfers">Transfer on background by default</a></em>
+on <em>Background &amp; Resume tab</em> of Preferences dialog.
+</p>
+
+<p>
+Once you instruct WinSCP to perform the transfer on background, separate transfer progress window is shown, WinSCP opens
+separate <acronym title="Secure Shell">SSH</acronym> connection to the server using the same session
+option as used for the main session. Once the transfer finishes the connection is kept on background
+and reused for future transfers.
+</p>
+
+<p>
+Once the background transfer finishes, the target directory is reloaded (still on background) and content
+of the respective file panel is refreshed.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

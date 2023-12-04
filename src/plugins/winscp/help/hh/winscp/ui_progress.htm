@@ -1,0 +1,94 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Progress Window</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Dialog Boxes</div>
+<div class="page">
+<h1>Progress Window</h1>
+
+<p>
+You will see Progress window whenever WinSCP is performing some operation.
+Depending on kind of operation it will show various information about its progress.
+</p>
+
+<a name="general_information"></a>
+<h4>General Information</h4>
+
+<p>
+<em>File</em> box shows name of a file that WinSCP is currently working with.
+</p>
+
+<p>
+Progress indicator shows approximately what part of the operation is already complete. The indicator
+is more accurate when <a href="ui_transfer.htm#common_options">calculation of total transfer size</a>
+is enabled.
+</p>
+
+<a name="transfer_information"></a>
+<h4>Transfer Information</h4>
+
+<p>
+During transfer operation (<a href="task_upload.htm">upload</a> or
+<a href="task_download.htm">download</a>) additional information is shown.
+</p>
+
+<p>
+<em>Target</em> box shows target directory of the transfer (local for downloads, remote for uploads).
+</p>
+
+<p>
+<em>Time left</em> shows time estimated till operation end. If
+<a href="ui_transfer.htm#common_options">calculation of total transfer size</a> is disabled,
+<em>Start time</em> will be shown instead. <em>Time elapsed</em> shows time elapsed since operation started.
+</p>
+
+<p>
+<em>Bytes transferred</em> shows total number of bytes transferred in current operation.
+</p>
+
+<p>
+<em>CPS</em> shows transfer speed in characters (bytes) per second.
+</p>
+
+<p>
+The bottom progress indicator shows what part of the file was already transferred.
+</p>
+
+<a name="controlling"></a>
+<a name="controlling_the_operation"></a>
+<h4>Controlling the Operation</h4>
+
+<p>
+Use <em>Cancel</em> button to cancel the operation. Note that with
+<a href="protocols.htm#scp_secure_copy_protocol">SCP protocol</a> the transfer of file cannot be
+interrupted without closing whole session.
+</p>
+
+<p>
+Use <em>Once finished</em> to choose <a href="once_done.htm">action to do</a>
+once the operation is completed. Note that the chosen action may cancel any
+<a href="transfer_queue.htm">background transfers</a> associated with
+current session.
+</p>
+
+<p>
+Use <em>Speed</em> to limit transfer speed.
+Available only for transfer operation.
+The limit is in <acronym title="Kibibyte (1,024 bytes)">KiB</acronym>/s.
+To remove speed limit, set it to "Unlimited".
+Initial transfer speed can be set as part of
+<a href="ui_transfer.htm">transfer settings</a>.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

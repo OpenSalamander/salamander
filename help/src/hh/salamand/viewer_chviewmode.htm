@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Changing View Mode</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Using Internal Viewer</div>
+<div class="page">
+<h1>Changing View Mode</h1>
+
+<p>The file content can be displayed as text (the Text view mode) or as
+hexadecimal values (the Hex view mode) in the viewer. The viewer can autodetect
+text files and display them as text while all other (binary) files are
+displayed as hexadecimal values. You can prevent possible autodetection
+problems by forcing Text or Hex view mode for specified files (see
+<i>Force Text mode for files</i> and <i>Force Hex mode for files</i>
+options in <a href="configuration_intvw.htm">Configuration/Internal Viewer</a>).</p>
+
+<p>Use the following commands:</p>
+
+<ul>
+<li>Auto-Select: if checked, the viewer tries to autodetect if the file contains only
+    text and should be displayed in the Text view mode (if not, it is displayed in the
+    Hex view mode),</li>
+<li>Hex (the Ctrl+H or F4 key) and Text (the Ctrl+T or F5 key): currently used
+    view mode is checked, you can also change the view mode by selecting one
+    of these items,</li>
+<li>Set as Default: use this command to set the current view mode as default for all
+    future viewing (it also turns off Auto-Select).</li>
+</ul>
+
+<h4>Remarks</h4>
+
+<p>In the Text view mode, the file content is divided to text lines. You can choose
+what types of line endings should be accepted, see <i>Line Ends</i> option in the
+<a href="configuration_intvw.htm">Configuration/Internal Viewer</a>.</p>
+
+<p>In the Hex view mode, the file content is divided to 16 bytes long lines. The first
+displayed number is line offset (in hexadecimal number). The line content (up to 16 bytes)
+follows, first as hexadecimal values and then also as text.</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

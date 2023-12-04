@@ -1,0 +1,1 @@
+call signslgs.cmd Release_x64

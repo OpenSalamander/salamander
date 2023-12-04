@@ -1,0 +1,100 @@
+﻿// Microsoft Visual C++ generated resource script.
+//
+#pragma code_page(65001)
+
+#include "lang.rh"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winresrc.h"
+
+#include "..\mmviewer.rh2"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "lang.rh\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winresrc.h""\r\n"
+    "\r\n"
+    "#include ""..\\mmviewer.rh2""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)\r\n"
+    "LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL\r\n"
+    "#include ""lang.rc2""   // non-Microsoft Visual C++ edited resources\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUT DIALOGEX 87, 50, 364, 132
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About Plugin"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Close",IDCANCEL,306,113,50,14
+    ICON            "",IDC_MAIN_ICON,11,9,20,20
+    LTEXT           "MMViewer %s - Multimedia Viewer for Open Salamander",IDC_ABOUT_TITLE,46,9,313,8
+    LTEXT           "dummy",IDC_ABOUT_COPYRIGHT,46,19,177,8,SS_NOPREFIX
+    ICON            "",IDC_DISKEXPLORER_ICON,11,42,20,20
+    LTEXT           "MPEG, ID3 Tag version 1 and 2, OGG, WMA, VQF and Tracker parsers",IDC_STATIC_1,46,41,238,8
+    LTEXT           "are licensed from",IDC_STATIC_2,46,51,60,8
+    LTEXT           "Disk Explorer Professional",IDC_ABOUT_DEPRO,107,51,200,8
+    LTEXT           "Copyright 2003-2023 by",IDC_STATIC_3,46,67,82,8
+    LTEXT           "Tomas Jelinek",IDC_STATIC_4,128,67,60,8
+    LTEXT           "Email:",IDC_STATIC_5,46,78,30,8
+    LTEXT           "tomas@tjelinek.com",IDC_ABOUT_EMAIL,128,78,119,8,WS_TABSTOP
+    LTEXT           "Home page:",IDC_STATIC_6,46,89,49,8
+    LTEXT           "www.tjelinek.com",IDC_ABOUT_WWW,128,89,118,8,WS_TABSTOP
+    LTEXT           "",IDC_STATIC_7,2,107,356,1,SS_ETCHEDHORZ | WS_GROUP
+END
+
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL
+#include "lang.rc2"   // non-Microsoft Visual C++ edited resources
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

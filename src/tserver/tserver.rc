@@ -1,0 +1,221 @@
+﻿// Microsoft Visual C++ generated resource script.
+//
+#pragma code_page(65001)
+
+#include "tserver.rh"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winresrc.h"
+
+#include "tserver.rh2"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "tserver.rh\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winresrc.h""\r\n"
+    "\r\n"
+    "#include ""tserver.rh2""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)\r\n"
+    "LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL\r\n"
+    "#include ""tserver.rc2""   // non-Microsoft Visual C++ edited resources\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDM_MAIN MENU
+BEGIN
+    POPUP "&Log"
+    BEGIN
+        MENUITEM "&Export...",                  CM_EXPORT
+        MENUITEM "&Clear\tDelete",              CM_CLEAR
+        MENUITEM SEPARATOR
+        MENUITEM "&Show line in source code",   CM_SHOWINMSVC
+        MENUITEM "Show line &details...\tTab",  CM_DETAILS
+        MENUITEM SEPARATOR
+        MENUITEM "Show time &differences\tSpace", CM_DIFFTIME
+        MENUITEM SEPARATOR
+        MENUITEM "&Exit",                       CM_EXIT
+    END
+    POPUP "&Options"
+    BEGIN
+        MENUITEM "&Configuration...",           CM_CONFIGURATION
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About...",                   CM_ABOUT
+    END
+END
+
+IDM_ICON_POPUP MENU
+BEGIN
+    POPUP "0"
+    BEGIN
+        MENUITEM "&Clear",                      CM_CLEAR
+        MENUITEM "C&onfiguration...",           CM_CONFIGURATION
+        MENUITEM "&About",                      CM_ABOUT
+        MENUITEM SEPARATOR
+        MENUITEM "&Exit",                       CM_EXIT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUT DIALOGEX 97, 56, 180, 95
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "About"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    ICON            OCR_NORMAL,-1,10,9,20,20
+    LTEXT           "Trace Server",-1,50,9,64,8
+    LTEXT           "Copyright © 1996-2023 Open Salamander Authors",-1,50,23,111,8
+    LTEXT           "www.altap.cz",-1,50,37,60,8
+    LTEXT           "dummy",IDC_ABOUT_TEXT1,50,51,90,8
+    DEFPUSHBUTTON   "OK",IDOK,65,70,50,14
+END
+
+IDD_PSP_GENERAL DIALOGEX 28, 36, 250, 143
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "General Options",-1,6,7,54,8
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,59,11,181,1
+    CONTROL         "&Use toolbar caption for main window (don't show it on task list)",IDC_PSP1_TOOLBAR_CAPTION,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,17,213,12
+    CONTROL         "&Always on top",IDC_PSP1_ALWAYS_ON_TOP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,30,59,12
+    CONTROL         "&Limit number of kept messages to",IDC_PSP1_USE_MAX_MESSAGES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,43,122,12
+    EDITTEXT        IDC_PSP1_MAX_MESSAGES,137,43,44,12,ES_AUTOHSCROLL
+    CONTROL         "&Scroll to the latest message",IDC_PSP1_SCROLL_LATEST,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,56,103,12
+    CONTROL         "A&ctivate window on error message",IDC_PSP1_SHOW_ON_ERROR,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,69,125,12
+    CONTROL         "&Drop all messages on new program connect",IDC_PSP1_AUTO_CLEAR,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,82,153,12
+    LTEXT           "Hot key",-1,6,97,27,8
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,36,101,204,1
+    LTEXT           "Activate &window",-1,15,110,67,8
+    CONTROL         "",IDC_PSP1_HOTKEY,"msctls_hotkey32",WS_TABSTOP,97,108,96,12
+    LTEXT           "Cl&ear log",-1,15,127,64,8
+    CONTROL         "",IDC_PSP1_HOTKEYCLEAR,"msctls_hotkey32",WS_TABSTOP,97,125,96,12
+END
+
+IDD_PSP_VIEW DIALOGEX 37, 30, 250, 111
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Visible Columns",-1,6,7,51,8
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,59,11,183,1
+    CONTROL         "Message Type",IDC_PSP2_TYPE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,17,99,12
+    CONTROL         "PID (Process Identifier)",IDC_PSP2_PID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,29,89,12
+    CONTROL         "UPID (Unique Process Identifier)",IDC_PSP2_UPID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,41,117,12
+    CONTROL         "PName (Process Name)",IDC_PSP2_PNAME,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,53,88,12
+    CONTROL         "TID (Thread Identifier)",IDC_PSP2_TID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,66,86,12
+    CONTROL         "UTID (Unique Thread Identifier)",IDC_PSP2_UTID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,79,116,12
+    CONTROL         "TName (Thread Name)",IDC_PSP2_TNAME,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,92,86,12
+    CONTROL         "Date",IDC_PSP2_DATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,144,17,87,12
+    CONTROL         "Time",IDC_PSP2_TIME,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,144,29,87,12
+    CONTROL         "Exact Counter [ms]",IDC_PSP2_COUNTER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,144,42,87,12
+    CONTROL         "Module Name",IDC_PSP2_MODUL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,144,54,87,12
+    CONTROL         "Line Number",IDC_PSP2_LINE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,144,66,87,12
+    CONTROL         "Message Text",IDC_PSP2_MESSAGE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,144,79,87,12
+END
+
+IDD_DETAILS DIALOGEX 97, 56, 367, 183
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Message Details"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "M&essage",-1,4,59,60,8
+    EDITTEXT        IDC_DETAILS_MSG,4,68,358,86,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL | WS_HSCROLL
+    LTEXT           "Hint: selected text is copied to clipboard.",-1,5,167,161,8,NOT WS_VISIBLE
+    DEFPUSHBUTTON   "Close",IDOK,311,163,50,14
+    LTEXT           "&Module",-1,4,5,60,8
+    EDITTEXT        IDC_DETAILS_MODULE,4,14,358,12,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "&Line",-1,4,32,60,8
+    EDITTEXT        IDC_DETAILS_LINE,4,41,68,12,ES_AUTOHSCROLL | ES_READONLY
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_DETAILS, DIALOG
+    BEGIN
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_DETAILS AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL
+#include "tserver.rc2"   // non-Microsoft Visual C++ edited resources
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

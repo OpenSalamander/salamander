@@ -1,0 +1,228 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\romanian\dbviewer.atp"
+TEXTVERSION,"1.23 (x86)"
+VERSION,"1,2,3,180"
+
+[TRANSLATION]
+LANGID,1048
+AUTHOR,"Ioan Stefancu, Donca Radu"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6165"
+COMMENT,"Versiunea romana"
+
+[DIALOG 12200]
+235,181,1,"Proprietati"
+1,179,162,50,14,1,"OK"
+13000,4,155,227,1,1,""
+12201,5,5,224,143,1,""
+
+[DIALOG 12220]
+307,105,1,"Configurare Vizualizator Baze de Date"
+13000,6,10,295,35,1,"Font"
+12221,13,23,50,14,1,"&Font"
+12222,69,23,225,14,1,""
+13001,6,48,295,27,1,"Pozitia ferestrei"
+12223,14,58,83,12,1,"&Salveaza la inchidere"
+12224,114,58,182,12,1,"S&eteaza la pozitia ferestrei principale a Salamander"
+12225,13,85,60,14,1,"Optiuni CSV..."
+1,138,85,50,14,1,"OK"
+2,193,85,50,14,1,"Anuleaza"
+9,248,85,50,14,1,"Help"
+
+[DIALOG 12240]
+282,178,1,"Campuri"
+12241,6,6,270,142,1,""
+13000,4,153,273,1,1,""
+12242,6,159,79,14,1,"&Revenire la Defaults"
+1,115,159,50,14,1,"OK"
+2,170,159,50,14,1,"Anuleaza"
+9,225,159,50,14,1,"Help"
+
+[DIALOG 12250]
+324,137,1,"Optiuni CSV"
+13000,6,6,97,101,1,"&Separator"
+12264,15,18,60,12,1,"Auto-Select"
+12261,15,32,60,12,1,"Tabulator"
+12260,15,46,75,12,1,"Punct si Virgula (;)"
+12259,15,60,60,12,1,"Virgula (,)"
+12258,15,74,60,12,1,"Spatiu ( )"
+12257,15,88,29,12,1,"Altul"
+12256,45,88,16,12,1,""
+13001,113,6,97,101,1,"Text &Qualifier"
+12262,122,18,60,12,1,"Auto-Select"
+12255,122,32,77,12,1,"Ghilimele Duble (")"
+12254,122,46,78,12,1,"Ghilimele Simple (')"
+12253,122,60,60,12,1,"Nimic"
+13002,220,6,97,101,1,"&Primul rand"
+12263,229,18,60,12,1,"Auto-Select"
+12265,229,32,83,12,1,"Ca Nume de Coloana"
+12266,229,46,60,12,1,"Ca Data"
+1,157,118,50,14,1,"OK"
+2,212,118,50,14,1,"Anuleaza"
+9,267,118,50,14,1,"Help"
+12252,6,118,73,14,1,"Seteaza ca &Default"
+
+[DIALOG 12300]
+235,131,1,"Gaseste"
+13000,40,11,187,1,1,""
+13001,9,7,29,8,1,"&Gaseste"
+12301,16,17,207,64,1,""
+13002,37,47,190,1,1,""
+13003,9,43,26,8,1,"Optiuni"
+12302,16,53,66,12,1,"Cauta in fat&a"
+12303,16,65,72,12,1,"Cauta &in spate"
+12304,102,53,60,12,1,"C&uvinte intregi"
+12305,102,65,124,12,1,"Cau&ta exact (litere mari sau mici)"
+12306,102,77,75,12,1,"&Expresie obisnuita"
+13004,8,102,219,1,1,""
+1,32,110,50,14,1,"OK"
+2,92,110,50,14,1,"Anuleaza"
+9,152,110,50,14,1,"Help"
+
+[DIALOG 12400]
+135,54,1,"Mergi la Inregistrare"
+13000,8,9,43,8,1,"&Inregistrare:"
+100,52,7,74,12,1,""
+1,14,32,50,14,1,"OK"
+2,71,32,50,14,1,"Anuleaza"
+
+[STRINGTABLE 0]
+11089,1,"Vizualizator baze de date"
+11090,1,"Afiseaza fisiere baza de date tip dBase, FoxPro si CSV."
+11092,1,"Despre Plugin"
+11101,1,"Cateva ferestre de vizualizare baze de date sunt deschise. Doriti sa le inchid?"
+
+[STRINGTABLE 1]
+11110,1,"Lipsa memorie."
+11111,1,"Fisierul are un format necunoscut de baze de date."
+11112,1,"Fisierul nu a fost gasit."
+11113,1,"Eroare in citirea fisierului de baze de date. Poate a fost trunchiat."
+11114,1,"Eroare la scrierea in fisierul baze de date."
+11115,1,"Eroare in cautarea in fisierul de baze de date."
+11116,1,"Fisierul memo nu e disponibil."
+11117,1,"Fisierul memo e corupt."
+
+[STRINGTABLE 2]
+11120,1,"Tipuri fisiere de baze de date (*.csv;*.dbf;*.txt)|*.csv;*.dbf;*.txt|Toate fisierele (*.*)|*.*|"
+11121,1,"%d pt. %s (%s)"
+11122,1,"Configurarea e deja deschisa."
+11123,1,"Nume"
+11124,1,"Tip"
+11125,1,"Latime"
+11126,1,"Zecimale"
+11130,1,"dBase II"
+11131,1,"dBase III"
+11132,1,"dBase IV"
+11133,1,"dBase V"
+11134,1,"Visual dBase 7"
+11135,1,"FoxPro"
+
+[STRINGTABLE 3]
+11136,1,"Necunoscut"
+11140,1,"Character"
+11141,1,"Number"
+11142,1,"Logical"
+11143,1,"Date"
+11144,1,"Memo"
+11145,1,"Floating point"
+11146,1,"Binary"
+11147,1,"General"
+11148,1,"Poza"
+11149,1,"Moneda"
+11150,1,"Data/Timp"
+11151,1,"Integer"
+
+[STRINGTABLE 4]
+11152,1,"Necunoscut"
+11153,1,"Double"
+11154,1,"Datare ora si min"
+11155,1,"AutoIncrement"
+11160,1,"Cel putin un camp trebuie sa fie vizibil."
+11162,1,"Nu sunt campuri valide in aceasta baza de date."
+11163,1,"Adevarat"
+11164,1,"Fals"
+11165,1,"Modificat"
+11166,1,"Marime"
+11167,1,"Versiune"
+
+[STRINGTABLE 5]
+11168,1,"Numararea inregistrarilor"
+11169,1,"Numararea campurilor"
+11170,1,"Numararea campurilor-memo"
+11171,1,"Header size"
+11172,1,"Record size"
+11173,1,"Code page"
+
+[STRINGTABLE 6]
+11194,1,"Eroarea expresiei normale"
+11195,1,"Gaseste"
+11196,1,"Nu pot gasi sirul '%s'."
+11197,1,"Nu pot gasi nimic pentru expresia '%s' normala care sa se potriveasca."
+
+[STRINGTABLE 7]
+11200,1,"&Fisier"
+11201,1,"&Deschide...\tCtr+O"
+11202,1,"Rei&mprospateaza\tCtr+R"
+11203,1,"&Proprietati...\tCtrl+F1"
+11204,1,"A&lte Fisiere"
+11205,1,"&Anterior\tBackspace"
+11206,1,"Ur&mator\tSpace"
+11207,1,"Selectat A&nterior\tCtrl+Backspace"
+11208,1,"Selectat U&rmator\tCtrl+Space"
+11209,1,"&Primul\tShift+Backspace"
+11210,1,"U&ltimul\tShift+Space"
+11211,1,"E&xit\tAlt+F4"
+
+[STRINGTABLE 8]
+11217,1,"&Editare"
+11218,1,"&Copiere\tCtrl+C"
+11219,1,"&Selecteaza Tot\tCtrl+A"
+11220,1,"&Gaseste...\tCtrl+F"
+11221,1,"Gaseste &Urmatorul\tCtrl+N"
+11222,1,"Gaseste &Anteriorul\tCtrl+P"
+11223,1,"T&oggle Bookmark\tCtrl+F2"
+11224,1,"U&rmatorul Bookmark\tF2"
+11225,1,"Bookmark A&nterior\tShift+F2"
+11226,1,"St&erge Toate Bookmarks\tCtrl+Shift+F2"
+11230,1,"&Vizualizare"
+11231,1,"Me&rgi la Inregistrarea...\tG"
+
+[STRINGTABLE 9]
+11232,1,"&Campuri...\tI"
+11233,1,"&Pe tot ecranul\tF11"
+
+[STRINGTABLE 10]
+11250,1,"&Converteste"
+11251,1,"&Auto-Select"
+11252,1,"&Nu converti"
+11253,1,"Seteaza ca Default"
+11254,1,"Urmatorul\tF8"
+11255,1,"Anterior\tShift+F8"
+
+[STRINGTABLE 11]
+11270,1,"&Optiuni"
+11271,1,"Optiuni C&SV..."
+11272,1,"&Configurare..."
+
+[STRINGTABLE 12]
+11280,1,"&Help"
+11281,1,"&Despre..."
+11282,1,"Co&ntinut\tF1"
+11283,1,"&Index..."
+11284,1,"Ca&uta..."
+
+[STRINGTABLE 13]
+11500,1,"Copiere\tCtrl+C"
+11501,1,"Deschide\tCtrl+O"
+11502,1,"Gaseste\tCtrl+F"
+11503,1,"Proprietati\tCtrl+F1"
+
+[STRINGTABLE 14]
+11504,1,"Pe tot ecranul\tF11"
+11505,1,"Inregistrarea curenta/Numararea inregistrarilor\tG"
+
+[STRINGTABLE 15]
+11520,0,"Use &default font"
+11521,1,"&Foloseste font custom..."
+11522,0,"default font"
+11523,1,"custom font"
+

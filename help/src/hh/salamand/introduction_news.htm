@@ -1,0 +1,723 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>What's New in This Release</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Introduction</div>
+<div class="page">
+
+<h1>What's New in This Release</h1>
+
+<p>This section describes most important enhancements, new features, and changes that was made
+on Open Salamander.</p>
+
+<h3>Open Salamander 4.0</h3>
+<ul>
+<li>Altap was acquired by Fine company, the civil engineering software developer.</li>
+<li>Open Salamander 4.0 is released free of charge for both commercial and non-commercial use.</li>
+<li>Compiler switched to Visual C++ 2019.</li>
+<li>Open Salamander 4.0 requirements: Windows 10, 8.1, or 7 (x86 or x64). CPU with SSE2 support.</li>
+<li>High DPI support: proper size of panel icons and icon overlays.</li>
+<li>High DPI support: old toolbar icons are upscaled according to system DPI.</li>
+<li>High DPI support: support for SVG icons in toolbars. Conversion from bitmaps to SVG is not complete,
+    contacts us on <a href="https://forum.altap.cz">https://forum.altap.cz</a> if you would like to help with this redesign.</li>
+<li>High DPI support: several bitmaps used in dialog box controls are converted to SVG.</li>
+<li>High DPI support: Consolas font used for Internal Viewer, File Comparator, and FTP Client.</li>
+<li>Configuration window could be resized in vertical direction.</li>
+<li>OpenSSL upgraded to 1.0.2s for security bug fixes.</li>
+<li>Removed obsolete plugins: UnACE, DiskCopy.</li>
+<li>7-Zip
+  <ul>
+  <li>Fixed error handling when user entered wrong password while unpacking encrypted archive.</li>
+  </ul>
+</li>
+<li>IE Viewer
+  <ul>
+  <li>Support for viewing markdown files with GitHub extensions.</li>
+  </ul>
+</li>
+<li>PE Viewer
+  <ul>
+  <li>Support for new debug information format REPRO (PE determinism or reproducibility).</li>
+  <li>More information displayed for managed modules.</li>
+  <li>Thanks to Manison!</li>
+  </ul>
+</li>
+<li>UnMime
+  <ul>
+  <li>Better filenames sanitizing.</li>
+  </ul>
+</li>
+<li>ZIP
+  <ul>
+  <li>Fixed creation of SFX in x64 Salamander version.</li>
+  </ul>
+</li>
+<li>Encrypt
+  <ul>
+  <li>Option to suppress warning about using SSD disk for temporary files.</li>
+  </ul>
+</li>
+</ul>
+
+<h3>Open Salamander 3.08</h3>
+<ul>
+<li>OpenSSL upgraded to 1.0.2j for security bug fixes.</li>
+<li>Go to Shortcut Target: added support for links (junction points, symbolic links). This command was renamed to Go to Shortcut or Link Target.</li>
+<li>There is a new Focus button in error box displayed when disk operation cannot be finished because of too long name.
+It shows existing file or directory with too long name in source panel. Or it shows the file or directory that would
+cause too long name error (e.g. when copying it to longer target path).</li>
+<li>When changing path in panel (Paste or Change Directory or drag&amp;drop to Directory Line), file URL is translated to Windows path (e.g. file:///c|/WINDOWS to C:\WINDOWS).</li>
+<li>Paste path to panel, Load Selection from clipboard to panel, and drag&amp;drop path to Command Line and Directory Line from some applications (e.g. Google Chrome) has not worked properly because of stripped diacritics in transferred texts. Newly we are using unicode instead of multibyte strings to get these texts properly.</li>
+<li>Drag&amp;drop from Status Line and Directory Line to some applications (e.g. Google Chrome) has not worked properly because they expected strings in UTF-8 encoding instead of in active Windows code page. Newly we are using unicode to transfer these texts properly.</li>
+<li>Internal Viewer: you can extend the selected block by mouse or keyboard. Use Shift key and left mouse click or arrows, Home, and End keys. Details are in help: Open Salamander: Using Internal Viewer: Selecting Text.</li>
+<li>Internal Viewer: Go To Offset command newly remembers last value of HEX check box.</li>
+<li>Internal Viewer: tooltip in Hex mode shows offset in file in hex and newly also in decimal number.</li>
+<li>Internal Viewer: when copying block bigger than 100MB to clipboard or starting drag&amp;drop for such big block, warning that it will be slow is displayed and user can skip it.</li>
+<li>Internal Viewer: several bug fixes.</li>
+<li>File Overwrite confirmation window: besides file's size, date, and time are newly displayed also file's attributes.</li>
+<li>Context menu commands: fixed losing of focus for some commands creating temporary file just for a while. This file was
+focused and then disappeared.</li>
+<li>7-Zip plugin:
+  <ul>
+  <li>7-Zip engine upgraded to latest version 16.04.</li>
+  </ul>
+</li>
+</ul>
+
+<h3>Open Salamander 3.07</h3>
+<ul>
+<li>Internal viewer: added Go To Offset command to menu View (Ctrl+G).</li>
+<li>Support for OneDrive Business accounts.</li>
+<li>OneDrive: fixed icon in Change Drive menu.</li>
+<li>Updated paths to OneDrive and Dropbox directories.</li>
+<li>OpenSSL upgraded to 1.0.2h for security bug fixes.</li>
+<li>Improved Windows 10 support.</li>
+<li>Several major improvements in Windows shutdown handling. Solves problems involving corrupted Salamander configuration.</li>
+<li>Finished French and Dutch translations.</li>
+<li>Pack and Delete (move to archive): disabled for links to directories.</li>
+<li>Junction points with read-only attribute could be deleted.</li>
+<li>Find Files and Directories: directories in which you start the search cannot be ignored.</li>
+<li>Archivers Autoconfiguration and Create Directory: fixed problems on too long paths.</li>
+<li>Drive Information: added Volume mount point, Volume GUID path and Bytes per cluster fields. Tab key can be used to focus desired fields.</li>
+<li>Calculate Occupied Space: added 64KB and 128KB clusters.</li>
+<li>Support for treating symbolic links to files like common files.</li>
+<li>Improved handling of symbolic links in Convert, Find Files and Directories, and Email commands.</li>
+<li>Find Files and Directories and Command Line: better long path shortener.</li>
+<li>Improved plugins multithreading model during closing plugin, closing handles, or waiting for forced plugin shutdown.</li>
+<li>Sanitized file name input in Copy and Move, Edit New File, Change Directory, Create Directory, and Quick Rename commands (beginning and trailing spaces and dots).</li>
+<li>Internal Viewer: fixed several bugs in situation when viewed file changed and was reloaded.</li>
+<li>Internal Viewer: fixed painting errors after changing font.</li>
+<li>Better delete file handling when file has read-only attribute or is target of multiple hardlinks.</li>
+<li>Cleaning old TEMP directory on Open Salamander start: Focus button is available to review deleted files.</li>
+<li>7-Zip plugin:
+  <ul>
+  <li>7-Zip engine upgraded to latest version 16.02. Solves several security issues.</li>
+  </ul>
+</li>
+<li>Checksum plugin:
+  <ul>
+  <li>Reading of directory tree in modeless window.</li>
+  <li>Several speed optimizations, plugin is now prepared for large directories.</li>
+  <li>Improved SVF, MD5, SH1 format detection.</li>
+  </ul>
+</li>
+<li>Database viewer:
+  <ul>
+  <li>Fixed random crash when viewed file changed.</li>
+  </ul>
+</li>
+<li>Encrypt plugin:
+  <ul>
+  <li>Clean Free Disk Space: New method "Zeros overwrite" fills free disk space. Use for example before backuping disk image to get smaller compressed output.</li>
+  <li>Support for volume mount points. It is possible to clean volume mounted to directory on another volume.</li>
+  <li>Symbolic links supported.</li>
+  <li>Warning message when attempt to shred files on SSD drive is detected.</li>
+  <li>Support for SUBST paths resolving.</li>
+  <li>Fixed handling of too long paths.</li>
+  </ul>
+</li>
+<li>FTP Client plugin:
+  <ul>
+  <li>Improved download speed.</li>
+  <li>Better OpenSSL DLL loading, should solve "not found" problems on some systems.</li>
+  <li>Several GUI fixes.</li>
+  </ul>
+</li>
+<li>Internet Explorer Viewer:
+  <ul>
+  <li>Rendering with current IE engine instead of Quirks mode.</li>
+  <li>Support for IE 11.</li>
+  <li>High DPI support, GPU acceleration.</li>
+  </ul>
+</li>
+<li>Portable Executable Viewer:
+  <ul>
+  <li>New PE Viewer configuration (in Options > Plugin Configuration). It is possible to choose which sections will be displayed.</li>
+  <li>Support for new subsystems.</li>
+  <li>Support for new flags in DLL Characteristics.</li>
+  <li>Added Load Configuration Directory dumper (for now only SecurityCookie /GS).</li>
+  <li>Added several parsers and dumpers: resource section parser, manifest, StringFileInfo, VS_FIXEDFILEINFO,
+      .NET assembly, CLR header, target .NET Framework.</li>
+  </ul>
+</li>
+<li>PictView:
+  <ul>
+  <li>Support for scanning with WIA 1.0 from x64 Open Salamander build.</li>
+  <li>Support for scanning multiple pages.</li>
+  <li>Several bug fixes in file name handling.</li>
+  <li>Fixed several bugs causing crashes (long file paths names, NULL handles, ...).</li>
+  </ul>
+</li>
+<li>Renamer plugin:
+  <ul>
+  <li>Improved stability: fixed long path handling.</li>
+  <li>Command Options > Last used now sets Include Subdirectories option.</li>
+  </ul>
+</li>
+<li>Split and Combine plugin:
+  <ul>
+  <li>Support for symbolic links.</li>
+  <li>Fixed handling of too long paths.</li>
+  </ul>
+</li>
+<li>TAR plugin:
+  <ul>
+  <li>Improved GZip archive handling.</li>
+  </ul>
+</li>
+<li>Undelete plugin:
+  <ul>
+  <li>exFAT support.</li>
+  <li>Improved error handling.</li>
+  <li>Support for undeleting partially recoverable files.</li>
+  <li>New options in Undelete dialog box: Show files with zero size, Show empty directories, and Show partition metadata.</li>
+  <li>Metafiles on FAT and exFAT.</li>
+  <li>Fixed problem with All Deleted Files virtual folder on FAT: different files with the same name were displayed just once.</li>
+  <li>Deleted overlay icons.</li>
+  <li>Fixed support for NTFS sparse files with sparse data runs within valid data runs.</li>
+  <li>Implemented context menu.</li>
+  <li>Data Runs encoding and decoding refactored.</li>
+  <li>NTFS: Support for 512B MFT resident clusters.</li>
+  <li>NTFS: support for compressed files encoded into multiple sparse runs inside one compression unit.</li>
+  <li>NTFS: reading of Bitmap is now included into progress.</li>
+  <li>NTFS and exFAT: improved (20x) bitmap reading speed.</li>
+  </ul>
+</li>
+<li>ZIP plugin:
+  <ul>
+  <li>Improved long path handling.</li>
+  <li>Improved support for zip64.</li>
+  <li>When packing symbolic links to files, packing progress was not shown properly.</li>
+  </ul>
+</li>
+</ul>
+
+<h3>Open Salamander 3.06</h3>
+<ul>
+<li>OpenSSL upgraded to 1.0.1l for security bug fixes.</li>
+</ul>
+
+<h3>Open Salamander 3.05</h3>
+<ul>
+<li>Eroiica Viewer plugin is removed and will no longer be part of Open Salamander.
+    We are sorry for inconvenience, unfortunately the underlying rendering engine cannot 
+    be licensed anymore. If you know any suitable rendering engine that can be bundled 
+    with Salamander, please contact us on support@altap.cz. Thank you.</li>
+</ul>
+
+<h3>Open Salamander 3.04</h3>
+<ul>
+<li>OpenSSL upgraded to 1.0.1j for security bug fixes.</li>
+<li>Fixed Ctrl+Number hotkey in Copy/Move dialog box.</li>
+<li>It is possible to move User Menu submenu into/over another submenu.</li>
+<li>WinSCP: Failure when SSH authentication prompt with no actual prompts is received.</li>
+</ul>
+
+<h3>Open Salamander 3.03</h3>
+<ul>
+<li>When network path in panel has become inaccessible when Salamander's main
+    window was inactive, it was not possible to cancel checking of inaccessible
+    network path. You can use ESC key or click on close button in checking
+    path window now.</li>
+<li>FTP Client: OpenSSL updated to version 1.0.1h. Fixed SSL/TLS MITM
+    vulnerability - CVE-2014-0224. Both libeay32.dll and ssleay32.dll compiled
+    with /DYNAMICBASE (ASLR - Address Space Layout Randomization) and /NXCOMPAT
+    (DEP - Data Execution Prevention) options for better security.</li>
+<li>UnISO: Fixed extraction of files over 4GB from HFS+ (ISO/DMG) archives.
+    The extracted file content was clipped to modulo 4GB, leaving the rest
+    filled with zeros.</li>
+<li>UnISO: Xbox: Fixed extraction of CreationTime for the "Information on image"
+    summary. Fixed scanning directories spanning over multiple sectors.</li>
+</ul>
+
+<h3>Open Salamander 3.02</h3>
+<ul>
+<li>Shift+F3 (Open Active Folder command) uses short 8.3 name when available.
+    It is possible to display and focus any name (even names requiring support of
+    unicode) from panel in Window Explorer window.</li>
+<li>Open Salamander and plugins are compiled with /DYNAMICBASE (ASLR - Address Space Layout Randomization) and 
+    /NXCOMPAT (DEP - Data Execution Prevention) options for better security.</li>
+<li>Fixed old UI glitch. Empty panel hint "There are no items in this panel." was sometimes painted several times 
+    without erasing background.</li>
+<li>Getting OneDrive (formerly SkyDrive) folder location on Windows 8.1 works fine even with changed location of OneDrive folder.</li>
+<li>If Google Drive folder does not exist on disk (sometimes when you are not logged in), Google Drive icon is 
+    not shown in Change Drive menu and Drive toolbars.</li>
+<li>Portable Executable Viewer: Text descriptions for DLL Characteristics flags such as Image can be relocated at load 
+    time, Image is NX compatible, etc.</li>
+</ul>
+
+<h3>Open Salamander 3.01</h3>
+<ul>
+<li>Hot Paths count extended from 10 to 30. Use Ctrl+Shift+= to add the current directory to
+    Hot Paths. It works only if some Hot Path on position 11..30 is free.</li>
+<li>Find window: new command Open All Selected (Shift+Enter). Opens all selected files and directories.</li>
+<li>New option: Keep environment variables updated to system values.
+ It is checked by default, Salamander reads system environment variables on start
+ and when system environment variables are changed. Values of environment variables
+ inherited from parent process are overwritten by values from system. Variables which
+ do not exist in system remain untouched. Newly you can uncheck this option to use
+ inherited environment variables in running Salamander and all processes started
+ from it.</li>
+<li>UnRAR.DLL is W2K compatible again (added missing TzSpecificLocalTimeToSystemTime).</li>
+<li>Checksum plugin: fixed SHA-256 and SHA-512 for files with size from 0x20000000 bytes. Faster SHA-256 and SHA-512 algorithm.</li>
+<li>OpenSSL 1.0.1g with fix pro TLS heartbeat read overrun (CVE-2014-0160).</li>
+<li>Fixed Windows 8 problem with missing SALRTL9.DLL.</li>
+</ul>
+
+<h3>Open Salamander 3.0</h3>
+<ul>
+<li>Compatible with Windows 8.1, 8, 7, Vista, XP, and 2000 (both 32-bit and 64-bit). Fixed
+compatibility warning when starting Open Salamander on Windows 8.1.</li>
+<li>New native x64 version of Open Salamander to bypass limitations of x86
+applications (File System Redirector, Registry Redirector).
+With x64 version you will see real directories on your disks instead of
+redirected ones, x64 keys in Registry (x86 keys are under Wow6432Node),
+and context menu items coming from x64 shell extensions.
+All plugins were ported to x64 except of UnACE (there is no x64 version
+of UnACE library) and third-party plugins: WinSCP and Eroiica Viewer.
+Start x86 version for tasks you cannot finish with the x64 build.
+Both x64 and x86 versions of Open Salamander 3.0 can be installed
+at the same time and sharing the same configuration in the Registry.</li>
+<li>Copy files on Windows 7 and later: we have added faster asynchronous algorithm
+ for copying files to/from network. Its speed on our local GLAN network is 111 MB/s,
+ conventional algorithm speed is 86 MB/s. It affects also moving of files in case
+ you are not moving in scope of one volume (then it is just rename, not copy and
+ delete).</li>
+<li>Console version of WinRAR 5.0 supported.</li>
+<li>Support for progress bars in Windows 7 and 8 taskbar buttons.</li>
+<li>Hot paths are available in Open Salamander jump list (Windows 7+ feature).</li>
+<li>Open Salamander 3.0 has most reliable copy routine on the market:
+  <ul>
+  <li>When copying is interrupted (e.g. network is temporarily disconnected or target disk is full),
+  Salamander can retry copying and continue where copy operation was
+  interrupted. It verifies end of unfinished target file against source file
+  to detect potential write errors. It's especially useful for long transfers
+  via VPN or other slow networks. Explorer and Total Commander (TC) always
+  start from the beginning, retrying is not supported.</li>
+  <li>Copying/moving links (junction points, symlinks, or volume mount points)
+  to different disk: choose if you want to copy link target or skip it and
+  just create empty directory. Explorer always skips links when moving and
+  copies link target when copying, TC always copies link target.</li>
+  <li>Copy can optionally remove ADS from copied files/directories.</li>
+  <li>Copy is also optimized for slower VPN. It uses smaller blocks, so progress
+  is smooth and you can cancel operation instantly. Explorer and TC uses
+  always large blocks, so progress is changing slowly and cancel is unresponsible.</li>
+  <li>Copy files or directories with ADS to disk not supporting ADS (e.g. FAT32 flash
+  disk). Salamander asks if you want to continue and shows list of streams which
+  will be lost. Explorer asks if you want to copy without properties. TC copies
+  quietly without streams (it loses data without any warning).</li>
+  <li>Note: Open Salamander, Windows Explorer, and Total Commander were tested with default settings.</li>
+  </ul>
+</li>
+<li>Cloud Storage Services support:
+  <ul>
+  <li>Change Drive Menu and Drive Bar newly contain items for most popular
+  Cloud Storage Services. Currently we have supported Google Drive,
+  Dropbox, and Microsoft OneDrive.</li>
+  <li>Google Drive icon overlay handler crashed when called from two threads
+  simultaneously (for left and right panel), so we have added synchronization.
+  We use this handler only for files/folders located in Google Drive folder
+  (it is relatively slow).</li>
+  <li>Fixed getting of location of Microsoft OneDrive local folder on Windows 8.1.
+  Better displaying of files which are available online-only (they were hidden
+  together with hidden and system files).</li>
+  </ul>
+</li>
+<li>Language translations:
+  <ul>
+  <li>New language versions: Dutch, French, Russian, Simplified Chinese, and Slovak. 
+  Note: Dutch and French versions are not completely translated.</li>
+  <li>Existing language versions: English, Czech, German, Hungarian, Romanian, and Spanish.</li>
+  <li>All language versions were changed to work well with any DPI user chooses
+  (see Control Panel: Adjust font size). Many dialogs and their controls
+  were enlarged to prevent clipping of contained texts.</li>
+  </ul>
+</li>
+<li>Other changes:
+  <ul>
+  <li>When Salamander is started "As Administrator", it displays "(Administrator)" in main window title just after version.</li>
+  <li>Shift+F3: focused file name is selected in Windows Explorer window.</li>
+  <li>Completely revamped bug reporting system with minidump support and option to upload report to Altap server.</li>
+  <li>Commands Paste (Change Directory) and Change Directory (Shift+F7) trim double quotes (see <a href="https://forum.altap.cz/viewtopic.php?t=4160">forum.altap.cz/viewtopic.php?t=4160</a>) and expand environment variables.</li>
+  <li>Create Directory: added removing of spaces from beginning and end of specified directory name.</li>
+  <li>Compare Directories: compare by content is faster (up to 100%) for large files (more than 5MB) on Windows Vista/7/8/8.1.</li>
+  <li>Drive Information: it has displayed incorrect used space and free space for volumes with enabled disk quota.</li>
+  <li>User Menu: reading icons for menu items in separate thread, so it does not delay
+   start of Open Salamander even if icons are placed on network drives or encrypted
+   drives. Reading of these icons have higher priority than reading of icons for invisible
+   parts of panels. Until reading of icons is finished, User Menu contains just simple icons
+   but you can use it as usual. See <a href="https://forum.altap.cz/viewtopic.php?f=16&amp;t=6753">forum.altap.cz/viewtopic.php?f=16&amp;t=6753</a>.</li>
+  <li>Copy dialog: if you have "Preserve owners and permissions" as default and
+   start copying from FAT32 drive (e.g. USB flash disk), it is no longer
+   trying to preserve owners and permissions (it is not supported of FAT32).</li>
+  <li>Copy/Move with checked "Overwrite older and skip other existing files without
+   asking": speed up when used to copy/move from slow network disk (e.g. from
+   virtual private network - VPN) to local disk.</li>
+  <li>Copy/Move dialog new option: Ignore alternate data streams (ADS). Use this
+   option to remove unwanted ADS from copied files/directories. Use this option
+   also when you know copied/moved files and directories do not contain ADS and
+   you are copying/moving from slow network disk (e.g. from virtual private
+   network - VPN), it can speed up operation drastically, detection of ADS for
+   all copied/moved files/directories is very slow.</li>
+  <li>If filename contains ':' (impossible on Windows, but possible on unix), Salamander
+   reports error instead of working with ADS (Alternate Data Stream).</li>
+  <li>Command line parameters -L, -R, and -A can contain paths to archives which
+   can be expanded up to 520 chars (long path in archive on long path). Whole
+   command line limit is 4096 chars now.</li>
+  <li>Fixed missing 'SystemDrive' environment variable that caused problems
+   during starting various software (for example Visual Studio *.SLN) 
+   from Open Salamander: <a href="https://forum.altap.cz/viewtopic.php?t=6929&amp;p=26525">forum.altap.cz/viewtopic.php?t=6929&amp;p=26525</a>.</li>
+  <li>Windows 8: fixed broken command Open With invoked from the context menu.
+   <a href="https://forum.altap.cz/viewtopic.php?f=16&amp;t=6730">forum.altap.cz/viewtopic.php?f=16&amp;t=6730</a> and 
+   <a href="https://forum.altap.cz/viewtopic.php?t=6782">forum.altap.cz/viewtopic.php?t=6782</a>.</li>
+  <li>Paths for left/right/active panel passed in command line parameters
+   are expanded (environment variables), it is possible to use %APPDATA%, etc.
+   <a href="https://forum.altap.cz/viewtopic.php?f=6&amp;t=6943">forum.altap.cz/viewtopic.php?f=6&amp;t=6943</a>.</li>
+  <li>Fixed disabled look of "owner draw" buttons.</li>
+  <li>Flat progress bars look.</li>
+  <li>Using external packer/unpacker on path containing '$' failed due to erroneous
+   expansion of initial directory for packer/unpacker.</li>
+  <li>Find window: double click and Enter key open focused file or directory (not
+   all selected ones as in Explorer). You can still use Open command from right
+   click context menu to open all selected files if you need it.</li>
+  <li>Fixed environment variables reload problem:
+   <a href="https://forum.altap.cz/viewtopic.php?f=2&amp;t=6188">forum.altap.cz/viewtopic.php?f=2&amp;t=6188</a>.</li>
+  <li>Fixed wrong TortoiseSVN icon placement in Windows XP context menu:
+   <a href="https://forum.altap.cz/viewtopic.php?f=2&amp;t=5627">forum.altap.cz/viewtopic.php?f=2&amp;t=5627</a>.</li>
+  <li>Fixed context menu icons on Windows 7 with DPI > 100%.</li>
+  <li>Fixed <a href="https://forum.altap.cz/viewtopic.php?t=5475">several problems reported</a> in EAP versions.</li>
+  <li>x64 Windows and x86 Salamander: Drag&amp;Drop and Copy&amp;Paste from archives or file systems (e.g. FTP) to Explorer is working again (we have added 64-bit shell extension).</li>
+  <li>If viewer window is disabled, it does not accept any commands. It has fixed problem with ClipMate. 
+      See: <a href="https://forum.altap.cz/viewtopic.php?f=16&amp;t=7346">forum.altap.cz/viewtopic.php?f=16&amp;t=7346</a>.</li>
+  </ul>
+</li>
+<li>Automation plugin:
+  <ul>
+  <li>Fixed bug that caused Open Salamander to crash when executing Python scripts.
+  See <a href="https://forum.altap.cz/viewtopic.php?f=2&amp;t=6934">forum.altap.cz/viewtopic.php?f=2&amp;t=6934</a>.</li>
+  <li>Some blocking operations (Form, Sleep, MsgBox etc.) can now be aborted.</li>
+  <li>Improved plugin stability when using Ruby scripting engine.</li>
+  </ul>
+</li>
+<li>Check Version plugin:
+  <ul>
+  <li>Plugin is not auto-unloaded when Save configuration on exit option is turned off and
+  plugin configuration is changed. It is now possible to keep changed plugin settings.</li>
+  <li>Added link with option to ignore specified module version.</li>
+  </ul>
+</li>
+<li>Checksum plugin:
+  <ul>
+  <li>Support for SHA-512 (from SHA-2 family, based on FIPS 180-2 standard).</li>
+  </ul>
+</li>
+<li>File Comparator plugin:
+  <ul>
+  <li>If two compared files have the same bytes, File 
+  Comparator reports that they are identical. If it just cannot find any difference 
+  (all differences are ignored: encoding, white spaces, etc.), it reports only that 
+  files appear equal.</li>
+  <li>Fixed displaying of long text lines with differences (over 4681 chars).</li>
+  <li>Fixed opening File Comparator with fcremote.exe while Salamander window was minimized.</li>
+  <li>Small utility for starting File Comparator plugin from the command line, see plugins\filecomp\fcremote.exe.</li>
+  </ul>
+</li>
+<li>FTP Client plugin:
+  <ul>
+  <li>OpenSSL updated to version 1.0.1e.</li>
+  <li>Fixed problem with WEDOS / vsftpd server, see <a href="https://forum.altap.cz/viewtopic.php?f=2&amp;t=6667">forum.altap.cz/viewtopic.php?f=2&amp;t=6667</a>.
+  We are using more compatible SSLv23_client_method() now.</li>
+  <li>Security: SSL 2.0 was disabled using OPENSSL_NO_SSL2.</li>
+  <li>SSL session reuse is now supported. All data connections are using SSL session from control connection.
+  Faster and more secure solution, see <a href="http://scarybeastsecurity.blogspot.cz/2008/02/your-ftp-ssl-solution-is-really-secure.html">scarybeastsecurity.blogspot.cz/2008/02/your-ftp-ssl-solution-is-really-secure.html</a>.</li>
+  <li>Upload of empty file (zero bytes) over encrypted connection (SSL) has
+  failed on some FTP servers because our client did not encrypt data-connection
+  for empty files. We have fixed it to encrypt all data-connections.
+  See <a href="https://forum.altap.cz/viewtopic.php?f=6&amp;t=6931">forum.altap.cz/viewtopic.php?f=6&amp;t=6931</a>.</li>
+  </ul>
+</li>
+<li>Registry Editor plugin:
+  <ul>
+  <li>Registry Editor is using reg.exe instead of regedit.exe for Registry exports. The UAC escalation is not needed anymore.</li>
+  </ul>
+</li>
+<li>TAR plugin:
+  <ul>
+  <li>Don't touch OldGnuHeader if archive is not OldGnu format.</li>
+  </ul>
+</li>
+<li>UnRAR plugin:
+  <ul>
+  <li>Support for new RAR 5 format.</li>
+  </ul>
+</li>
+<li>WinSCP plugin:
+  <ul>
+  <li>Cherry pick from 5.2.2: Increase BUFFER_GRANULE, this leads to a nice performance improvement (e.g. 850KiB/s instead of 350KiB/s) at the expense of a little
+  memory. <a href="https://winscp.net/forum/viewtopic.php?t=12460">winscp.net/forum/viewtopic.php?t=12460</a> and 
+  <a href="https://forum.altap.cz/viewtopic.php?f=2&amp;t=7386">forum.altap.cz/viewtopic.php?f=2&amp;t=7386</a>.</li>
+  <li>WinSCP: Upgrade to 4.4.0
+  <a href="https://winscp.net/eng/docs/salamander_history?rev=1359333969&amp;rev2=1336860797&amp;do=diff">winscp.net/eng/docs/salamander_history?rev=1359333969&amp;rev2=1336860797&amp;do=diff</a>.</li>
+  <li>Back-propagated some fixes from WinSCP 5.1.5 beta - 5.1.7 beta releases:
+  <a href="https://winscp.net/eng/docs/salamander_history#1.6.9">winscp.net/eng/docs/salamander_history#1.6.9</a>.</li>
+  <li>Wrong set of transfer settings was available for uploads and downloads
+  <a href="https://forum.altap.cz/viewtopic.php?f=6&amp;t=6723">forum.altap.cz/viewtopic.php?f=6&amp;t=6723</a> and 
+  <a href="https://forum.altap.cz/viewtopic.php?f=2&amp;t=6928">forum.altap.cz/viewtopic.php?f=2&amp;t=6928</a>.</li>
+  </ul>
+</li>
+</ul>
+
+<h3>Open Salamander 2.54</h3>
+<ul>
+<li>Included translations: English, Czech, German, Spanish, Hungarian, and Romanian.</li>
+<li>Open Salamander now comes with 'Compatible with Windows 7' certification.</li>
+</ul>
+
+<h3>Open Salamander 2.53</h3>
+<ul>
+<li>Support for language translations. Standard package comes with English, Czech, and German translations.</li>
+<li>Support for x64 pseudo-directories as C:\Windows\Sysnative or C:\Windows\System32\drivers\etc.</li>
+<li>Several improvements in Compare Directories command (ignore DST shift, ignore masks).</li>
+<li>Copy/Move dialog box: option to save default options.</li>
+<li>Find: new option Full Row Select.</li>
+<li>Support for accelerated mouse wheel scrolling (Open Salamander panels, menu, viewers).</li>
+<li>Plugins Manager: alphabetically sorted plugins.</li>
+<li>Edit New File (Shift+F4): option to change default name.</li>
+<li>Support for longer commands in command line (up to 8KB).</li>
+<li>Option Use fast directory move on Novell Netware.</li>
+<li>Improved Open Salamander SDK version (trace server autostart, new samples).</li>
+<li>Early Access Program has started on our support forum.</li>
+<li>NEW PLUGIN: Automation - automate common tasks using JScript or VBScript.</li>
+<li>7Zip: updated to 9.10 beta. New LZMA2 method. Several improvements.</li>
+<li>Check Version: better presentation of results.</li>
+<li>File Comparator: up to 7x faster when comparing binary files on the same disk.</li>
+<li>Network plugin: better Remote Desktop (Terminal Services) support.</li>
+<li>PictView: new option "Remember path when saving screenshots, scans, clipboard pastes".</li>
+<li>Registry Editor: Shift+F3 opens regedit.exe with current registry key displayed. </li>
+<li>UnISO: support for compressed ISZ images, support for BZIP2-compressed DMG packages.</li>
+<li>UnRAR: support for multi-part archives named .001, .002, 003, etc.</li>
+</ul>
+
+<h3>Open Salamander 2.52</h3>
+<ul>
+<li>New Password Manager with option to protect your passwords with Master Password.</li>
+<li>Up to 7x faster Compare Directories (by content) command for files on the same disk.</li>
+<li>Backward compatibility for 2.5 and 2.51 plugins.</li>
+<li>Panel contents are refreshed even if Salamander's window is not active.</li>
+<li>Better handling of encrypted files (EFS) and files with alternate data stream (ADS).</li>
+<li>Fixes and improvements related to Fast User Switching and Terminal Services (Remote Desktop).</li>
+<li>Better support for mouse wheel (wheel tilting, new shortcuts).</li>
+<li>New command line parameters.</li>
+<li>New plugin for browsing network (network neighborhood) directly in panel.</li>
+<li>New DiskMap plugin: used disk space analyzer and visualizer.</li>
+<li>New UnCHM plugin: extractor of Microsoft Compiled HTML Help archives.</li>
+<li>FTP plugin: option to encrypt passwords with AES-256 (uses new Password Manager).</li>
+<li>FTP plugin: Support for TLS FTP (also known as FTPS or FTPES with AUTH TLS).</li>
+<li>FTP plugin: Support for ZLIB compression (MODE Z).</li>
+<li>UnISO plugin: Added support for Apple Hierachical File System Plus (HFS+).</li>
+<li>TAR plugin: Added support for Debian packages .DEB.</li>
+<li>File Comparator can compare Unicode files now.</li>
+<li>7-Zip plugin: updated to 7z 4.65.</li>
+<li>ZIP plugin can create files with size over 4GB.</li>
+<li>WinSCP plugin updated to latest WinSCP version.</li>
+<li>Checksum plugin: SHA1 and SHA256 hashes are supported.</li>
+<li>PictView supports autorotation when viewing JPEGs or digital camera RAW files with EXIF.</li>
+</ul>
+
+<h3>Open Salamander 2.51</h3>
+
+<ul>
+<li>Support for symbolic links (introduced in Windows Vista).</li>
+<li>ZIP plugin: Self-Extractor must be licensed for any use (except 30 days
+    evaluation). Licenses of Self-Extractor are significantly cheaper now.</li>
+</ul>
+
+<h3>Open Salamander 2.5</h3>
+
+<ul>                           
+<li>Operations Copy, Move, Delete, and others are running at background, the main window is
+    not blocked.</li>
+<li>Operations Copy and Move display current transfer speed and estimated time left (remaining time).
+    You can also set speed limit.</li>
+<li>Operations Copy, Move, Delete, and others can be Paused and Resumed.</li>
+<li>Compare Directories command can compare content of files and works with subdirectories.</li>
+<li>User Menu update: support for submenus, added variables for compare/merge applications
+    (two files or directories to compare/merge), active/inactive panel can be addressed,
+    and list of selected names can be passed to executed application. See the Advanced
+    submenu of the context menu on the button behind the Arguments box in
+    Configuration/User Menu. See <a href="customize_usrmn.htm">Customizing User Menu</a>
+    for details.</li>
+<li>Icon overlays are displayed in panels (Offline Files, Tortoise SVN, Tortoise CVS, etc.).</li>
+<li>Quick search mode: you can use either slash character (/) or backslash
+    character (\) to match any string of characters. Just type t/.doc to focus names matching
+    t*.doc* or type /.htm to focus names matching *.htm*. You can also select items using
+    Shift+Up/Down/Home/End keys.</li>
+<li>Full support for drag &amp; drop is finished. You can use drag &amp; drop to unpack from
+    archives to disk, pack from disk to archive opened in panel or simply drop files on the
+    archive file. You can use drag &amp; drop to move or copy between disk and plugin file
+    systems and also inside one plugin file system or between plugin file systems.</li>
+<li>Packing to and unpacking from archives using clipboard Cut, Copy, and Paste commands are
+    supported. Copying and moving from disk to plugin file system using clipboard Cut, Copy,
+    and Paste commands are also supported.</li>
+<li>Documents folder is accessible from Change Drive menu (Alt+F1/F2). You can hide this
+    item in the Configuration/Change Drive Menu.</li>
+<li>PictView plugin:
+    <ul>
+    <li>Full Screen view.</li>
+    <li>Rotating and flipping of displayed image.</li>
+    <li>Image saving and conversion to couple of formats.</li>
+    <li>Opening next/previous picture from panel or Find dialog</li>
+    <li>Show EXIF information about image file, such as shutter speed, aperture,
+        focal length, etc. Use the File/Show Exif command.</li>
+    <li>Command Select/Unselect opened file in Open Salamander panel or find.</li>
+    <li>You can select part of viewed image and copy it to the clipboard.</li>
+    <li>Print command.</li>
+    <li>Crop command.</li>
+    <li>Histogram command.</li>
+    <li>Screen Capture command.</li>
+    <li>Status bar.</li>
+    <li>Support for scanners.</li>
+    <li>Support for animated GIFs and cursors.</li>
+    <li>Alpha-channel support for ICO, PNG, TGA, TIF.</li>
+    <li>Reading/saving comments for Intergraph format.</li>
+    <li>Added reading of PNG-in-ICO for Windows Vista.</li>
+    <li>Support for *.HPI (Hemera Photo Images), *.NEF and *.CRW (Nikon and Canon digital
+        camera raw formats), *.2BP (Pocket PC/Windows CE bitmap), *.CLK (Corel R.A.V.E.),
+	*.ZNO (Digital Journal), *.MNG (Multiple Network Graphics), *.DDS and *.DTX (DirectX
+	textures).</li>
+    </ul>
+</li>
+<li>Options for Copy and Move operations:
+    <ul>
+    <li>Queuing option: Wait until all other Copy/Move operations are finished.</li>
+    <li>Overwrite older and skip other existing files without asking.</li>
+    <li>Set speed limit.</li>
+    <li>Preserve Archive, Compressed, and Encrypted attributes.</li>
+    <li>Preserve owners and permissions (not inherited) on NTFS drives.</li>
+    <li>Preserve dates and times of directories.</li>
+    <li>Only files: prevent creating of empty directories.</li>
+    <li>Filter by file names using wildcard.</li>
+    <li>Filter by file date, time, size, or attributes.</li>
+    </ul>
+</li>
+<li><a href="basicwork_find.htm">Find Files and Directories</a>:
+    <ul>
+    <li>Refine: search in files that were found previously.</li>
+    <li>Append: add to found files.</li>
+    <li>Find Duplicate Files.</li>
+    <li>Added the Ignore Directory List command to skip directories such as
+        "System Volume Information" and a temporary directory.</li>
+    <li>More powerful Advanced options.</li>
+    </ul>
+</li>
+<li>Added plugins (click on the plugin's name to get basic information about the plugin):
+    <ul>
+    <li><a href="ms-its:ftp.chm::/hh/ftp/introduction_intro.htm">FTP Client</a></li>
+    <li>Eroiica Viewer</li>
+    <li><a href="ms-its:uniso.chm::/hh/uniso/introduction_intro.htm">UnISO</a></li>
+    <li><a href="ms-its:undelete.chm::/hh/undelete/introduction_intro.htm">Undelete</a></li>
+    <li><a href="ms-its:7zip.chm::/hh/7zip/introduction_intro.htm">7-Zip</a></li>
+    <li><a href="ms-its:winscp.chm::/hh/winscp/introduction_intro.htm">WinSCP</a></li>
+    <li><a href="ms-its:mmviewer.chm::/hh/mmviewer/introduction_intro.htm">Multimedia Viewer</a></li>
+    <li><a href="ms-its:renamer.chm::/hh/renamer/introduction_intro.htm">Renamer</a></li>
+    <li><a href="ms-its:unlha.chm::/hh/unlha/introduction_intro.htm">UnLHA</a></li>
+    <li><a href="ms-its:splitcbn.chm::/hh/splitcbn/introduction_intro.htm">Split &amp; Combine</a></li>
+    <li><a href="ms-its:dbviewer.chm::/hh/dbviewer/introduction_intro.htm">Database Viewer</a></li>
+    <li><a href="ms-its:unmime.chm::/hh/unmime/introduction_intro.htm">UnMIME</a></li>
+    <li><a href="ms-its:regedt.chm::/hh/regedt/introduction_intro.htm">Registry Editor</a></li>
+    <li>Encrypt &amp; Decrypt</li>
+    <li>Disk Copy</li>
+    <li><a href="ms-its:wmobile.chm::/hh/wmobile/introduction_intro.htm">Windows Mobile</a></li>
+    <li><a href="ms-its:checksum.chm::/hh/checksum/introduction_intro.htm">Checksum</a></li>
+    <li><a href="ms-its:unfat.chm::/hh/unfat/introduction_intro.htm">UnFAT</a></li>
+    <li><a href="ms-its:filecomp.chm::/hh/filecomp/introduction_intro.htm">File Comparator</a></li>
+    </ul>
+</li>
+<li>Panel in Detailed modes: new Smart Column mode for Name column (default on). This mode
+    should minimize horizontal scrollbar usage. See
+    <a href="configuration_views.htm">Configuration/Views</a> for details.</li>
+<li>Panel in Detailed modes: new highlight mode. Try to turn on the
+    Configuration/Appearance/Highlight focused row option.</li>
+<li>Small step to Open Salamander portability: User Menu, Viewers, Editors, External
+    Archivers has a new path variables $(SalDir), $(WinDir), $(SysDir). You can use "..":
+    "$(SalDir)..\viewer\viewer.exe".</li>
+<li>Save/Load Selection command (see menu Edit/Advanced): selection can be saved to and
+    loaded from the clipboard or the internal buffer. This feature can be also used for
+    exporting selected names to the clipboard or to select names stored on the clipboard.</li>
+<li>Make File List command: archives and file systems can be listed and you can export
+    list to the clipboard, Internal Viewer, or to the file.</li>
+<li>Configurable shortcut keys for plugin's menu commands. See the Keyboard button in
+    the <a href="dlgboxes_plugn.htm">Plugins Manager</a> dialog box.</li>
+<li>New view modes in panels: Icons (32 x 32 icons), Thumbnails (small previews of pictures,
+    drawings, and documents), and Tiles (48 x 48 icons). See
+    <a href="environment_selview.htm">Selecting Current View</a> for details.</li>
+<li>You can choose the directory that will be opened when the current panel path is
+    inaccessible. Look at Drives configuration page.</li>
+<li>New options for the <a href="navigating_chdrvmenu.htm">Change Drive Menu</a> and the
+    <a href="windows_drivebar.htm">Drive Bar</a>. You can set visibility of your drives
+    and separate groups of drives. See
+    <a href="configuration_chdrv.htm">Configuration/Change Drive Menu and Drive Bar</a> for details.</li>
+<li>NTFS Junction Points are handled properly now.</li>
+<li>Better handling of disk changes when using removable media. Automatic Retry on
+    CD, DVD, ZIP disk insertion.</li>
+<li>Support for Alternate Data Streams (ADS) on NTFS partitions (supported from Windows NT 4.0).
+    Alternate Data Streams are copied and moved together with the owner files and directories.</li>
+<li>Create Directory command was improved: you can create multiple nested directories at
+    the same time. Simply separate individual directory names with the backslash
+    (e.q. newdir\suddir).</li>
+<li>New sort options for panels, see the Sorting section in
+    <a href="configuration_panels.htm">Configuration/Panels</a>.</li>
+<li>When Environment Variables are changed, Open Salamander will reload them automatically.</li>
+<li>Encrypting File System (EFS) on NTFS version 5 is supported. It provides cryptographic
+    protection of individual files on NTFS volumes using a public-key system. You can encrypt,
+    decrypt, and find encrypted files now. See <a href="advwork_ntfscmds.htm">Compressing and
+    Encrypting of Files and Directories</a>.</li>
+<li>Volume mount points and junction points are supported (on Windows 2000 and later).
+    It means that e.g. correct disk free space and drive information are displayed.</li>
+<li>New option in the Internal Viewer: Auto-Copy Selection to Clipboard. Select required
+    text and it will be automatically copied to the clipboard (without pressing Ctrl+C).</li>
+<li>TAR plugin now supports: TAR, TGZ, TAZ, TBZ, GZ, BZ, BZ2, Z, RPM, and CPIO.</li>
+<li>Viewing and searching in files with size over 4 GB.</li>
+<li>We have added support for code pages used in West Europe. We have added support for
+    code pages used for Cyrillic (Russia, Ukraine, Bulgaria, etc.). Automatic recognition
+    of file code page was added to viewers.</li>
+<li>Added the Hot Path bar. It provides another way to access Hot Paths.</li>
+<li>Added the Drives toolbar which contains all logical drives. Clicking on this toolbar
+    allows you to change drive in panel.</li>
+<li>Added the Middle toolbar (placed between panels) which can contain all buttons available
+    for the Top toolbar.</li>
+</ul>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>
+

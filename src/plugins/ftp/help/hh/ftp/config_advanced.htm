@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Advanced</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: FTP Client: Dialog Boxes: Configuration</div>
+<div class="page">
+<h1>Advanced</h1>
+
+<p>Allows you to change advanced options in the FTP Client plugin.</p>
+
+<h4>Options</h4>
+<dl>
+<dt><i>Size limit for memory cache</i></dt>
+<dd>Specify the size limit for the memory cache in kilobytes. The memory cache is used
+for storing of listings (lists of files and directories) of visited paths on FTP servers.
+See <i>Use cache for viewed files and lists of files and directories on server
+(faster browsing)</i> in <a href="config_defaults.htm">Configuration/Defaults</a> for
+details.
+</dd>
+
+<dt><i>Timeout for network actions</i></dt>
+<dd>Set the timeout for waiting for response from FTP server, resolving IP address from
+name address, and other network actions.
+</dd>
+
+<dt><i>Delay between connect retries</i> and <i>Number of connect retries</i></dt>
+<dd>If the connection to the FTP server is lost (e.g. due to some network failure)
+during some operation, the plugin tries to reconnect to the server and to finish
+the operation. Specify here how long to wait before next connect attempt and maximum
+number of connect attempts (when exhausted, error is reported).
+</dd>
+
+<dt><i>Cancel data connection if it is idle for XXX seconds</i></dt>
+<dd>The FTP server is transferring data to or from the FTP client over a data
+connection. It happens sometimes (e.g. due to some network failure) that data
+are no longer transferred over this connection but no error is reported to
+the FTP client. The plugin detects these failures by monitoring the data
+connection. If it is idle (without transfer) for longer time than specified,
+the plugin closes the connection to the FTP server and tries to reconnect and
+finish operation with fresh connection.
+</dd>
+
+<dt><i>Try to resume copying only if already copied part of file is at least XXX bytes</i>
+and <i>Number of bytes to verify (at end of file) when resuming copying from server</i></dt>
+<dd>If the connection to the FTP server is lost (e.g. due to some network failure)
+during copying of a file to or from the server, the plugin tries to reconnect to
+the server and resume copying (if it is specified in the configuration, see
+<a href="config_operation1.htm">Configuration/Operations 1</a> and
+<a href="config_operation2.htm">Configuration/Operations 2</a>).
+When resuming, there is always some potential risk that
+file will not be resumed correctly (due to some error in server or client software).
+To reduce this risk, the plugin does not resume copying if the already copied part
+of the file is smaller than specified limit (it starts copying of the whole file in such
+cases). Moreover when copying from the server to the local machine (or network), the plugin
+verifies specified number of bytes at the end of already copied part of the file
+(it downloads end part of file again to check if download will be resumed
+correctly). If this verification fails, the plugin offers you to cut off the end of
+already copied part of the file and try to resume copying again.
+</dd>
+
+</dl>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,28 @@
+﻿//
+// texts.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "..\..\texts.rh2"
+
+STRINGTABLE 
+{
+ IDS_PAK_ERROPEN, "Can't open file: %s"
+ IDS_PAK_ERRINIT, "Can't init paklib interface. Already one file opened."
+ IDS_PAK_ERROPEN2, "Can't open file. Already one file opened."
+ IDS_PAK_ERRGETFILESIZE, "Can't not get file size: %s"
+ IDS_PAK_INVLAIDDATA, "Invalid data format."
+ IDS_PAK_LOWMEMORY, "Insufficient memory."
+ IDS_PAK_CENTRDIR, "current PAK central directory"
+ IDS_PAK_ERRSETFILEPTR, "Unable to set file pointer: %s"
+ IDS_PAK_ERRREADFILE, "Unable read from file: %s"
+ IDS_PAK_ERRGETFILEPTR, "Unable to get file pointer: %s"
+ IDS_PAK_ERRWRITEFILE, "Unable write to file: %s"
+ IDS_PAK_TOOLONGNAME, "Can't add file because of too long name."
+}

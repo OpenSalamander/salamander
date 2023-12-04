@@ -1,0 +1,228 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\dutch\dbviewer.atp"
+TEXTVERSION,"1.23 (x86)"
+VERSION,"1,2,3,180"
+
+[TRANSLATION]
+LANGID,1043
+AUTHOR,"Cor van der Smissen, Marco Fung, Patrick Vijgeboom, S.V. (Stephan) Rietveld"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7009"
+COMMENT,"Nederlandse versie"
+
+[DIALOG 12200]
+235,181,1,"Eigenschappen"
+1,179,162,50,14,1,"OK"
+13000,4,155,227,1,1,""
+12201,5,5,224,143,1,""
+
+[DIALOG 12220]
+302,105,1,"Database Viewer Configuratie"
+13000,6,10,290,35,1,"Lettertype"
+12221,13,23,57,14,1,"&Lettertype"
+12222,76,23,213,14,1,""
+13001,6,48,290,27,1,"Venster positie"
+12223,14,58,95,12,1,"&Opslaan bij afsluiten"
+12224,127,58,161,12,1,"Zelfde positi&e als Salamander's hoofdvenster"
+12225,13,85,57,14,1,"CSV Opties..."
+1,133,85,50,14,1,"OK"
+2,188,85,50,14,1,"Annuleren"
+9,243,85,50,14,1,"Help"
+
+[DIALOG 12240]
+282,178,1,"Velden"
+12241,6,6,270,142,1,""
+13000,4,153,273,1,1,""
+12242,6,159,107,14,1,"&Standaardwaarden herstellen"
+1,115,159,50,14,1,"OK"
+2,170,159,50,14,1,"Annuleren"
+9,225,159,50,14,1,"Help"
+
+[DIALOG 12250]
+318,137,1,"CSV Opties"
+13000,6,6,95,101,1,"&Scheidingsteken"
+12264,15,18,60,12,1,"Auto-Select"
+12261,15,32,60,12,1,"Tab"
+12260,15,46,63,12,1,"Puntkomma (;)"
+12259,15,60,60,12,1,"Komma (,)"
+12258,15,74,60,12,1,"Spatie ( )"
+12257,15,88,37,12,1,"Andere"
+12256,53,88,16,12,1,""
+13001,111,6,95,101,1,"Tekst &kwalificatietype"
+12262,120,18,60,12,1,"Auto-Selectie"
+12255,120,32,78,12,1,"Dubbele Quotes (")"
+12254,120,46,60,12,1,"Quote (')"
+12253,120,60,60,12,1,"Geen"
+13002,216,6,95,101,1,"&Eerste regel"
+12263,225,18,60,12,1,"Auto-Select"
+12265,225,32,74,12,1,"Kolomnamen"
+12266,225,46,60,12,1,"Data"
+1,151,118,50,14,1,"OK"
+2,206,118,50,14,1,"Annuleren"
+9,261,118,50,14,1,"Help"
+12252,6,118,90,14,1,"Instellen als stan&daard"
+
+[DIALOG 12300]
+220,131,1,"Zoeken"
+13000,29,11,183,1,1,""
+13001,9,7,18,8,1,"&Zoek"
+12301,16,17,192,64,1,""
+13002,38,47,174,1,1,""
+13003,9,43,28,8,1,"Opties"
+12302,16,53,66,12,1,"&Vooruit zoeken"
+12303,16,65,72,12,1,"&Achteruit zoeken"
+12304,103,53,57,12,1,"Alle &woorden"
+12305,103,65,103,12,1,"&Hoofd-/klein letter gevoelig"
+12306,103,77,78,12,1,"&Reguliere expressie"
+13004,8,102,204,1,1,""
+1,25,110,50,14,1,"OK"
+2,85,110,50,14,1,"Annuleren"
+9,145,110,50,14,1,"Help"
+
+[DIALOG 12400]
+123,54,1,"Ga naar regel"
+13000,8,9,29,8,1,"&Regel:"
+100,40,7,74,12,1,""
+1,8,32,50,14,1,"OK"
+2,65,32,50,14,1,"Annuleren"
+
+[STRINGTABLE 0]
+11089,1,"Database Viewer"
+11090,1,"Weergave dBase, FoxPro en CSV database bestanden."
+11092,1,"Over plugin"
+11101,1,"Een aantal Database Viewer vensters zijn open. Wilt u ze afsluiten?"
+
+[STRINGTABLE 1]
+11110,1,"Onvoldoende geheugen."
+11111,1,"Bestand heeft een onbekend database formaat."
+11112,1,"Bestand niet gevonden."
+11113,1,"Fout tijdens lezen van database bestand. Het kan afgekapt zijn."
+11114,1,"Fout tijdens schrijven van database bestand."
+11115,1,"Fout tijdens lezen van database bestand."
+11116,1,"Notitiebestand is niet beschikbaar."
+11117,1,"Notitiebestand is beschadigd."
+
+[STRINGTABLE 2]
+11120,1,"Database bestanden (*.csv;*.dbf;*.txt)|*.csv;*.dbf;*.txt|Alle bestanden (*.*)|*.*|"
+11121,1,"%d pt. %s (%s)"
+11122,1,"Configuratie is al open."
+11123,1,"Naam"
+11124,1,"Type"
+11125,1,"Breedte"
+11126,1,"Decimalen"
+11130,1,"dBase II"
+11131,1,"dBase III"
+11132,1,"dBase IV"
+11133,1,"dBase V"
+11134,1,"Visual dBase 7"
+11135,1,"FoxPro"
+
+[STRINGTABLE 3]
+11136,1,"Onbekend"
+11140,1,"Teken"
+11141,1,"Getal"
+11142,1,"Logisch"
+11143,1,"Datum"
+11144,1,"Memo"
+11145,1,"Drijvende komma"
+11146,1,"Binair"
+11147,1,"Algemeen"
+11148,1,"Afbeelding"
+11149,1,"Valuta"
+11150,1,"Datum/Tijd"
+11151,1,"Integer"
+
+[STRINGTABLE 4]
+11152,1,"Onbekend"
+11153,1,"Double"
+11154,1,"Tijdstempel"
+11155,1,"AutoIncrement"
+11160,1,"Ten minste een veld moet zichtbaar zijn."
+11162,1,"Er zijn geen geldige velden in deze database."
+11163,1,"Waar"
+11164,1,"Onwaar"
+11165,1,"Gewijzigd"
+11166,1,"Grootte"
+11167,1,"Versie"
+
+[STRINGTABLE 5]
+11168,1,"Aantal regels"
+11169,1,"Aantal velden"
+11170,1,"Notitie-veld aantal"
+11171,1,"Koptekstgrootte"
+11172,1,"Regelgrootte"
+11173,1,"Code pagina"
+
+[STRINGTABLE 6]
+11194,1,"Reguliere expressie fout"
+11195,1,"Zoeken"
+11196,1,"Kan tekenreeks '%s' niet vinden."
+11197,1,"Kan geen overeenkomst vinden voor de reguliere expressie '%s'."
+
+[STRINGTABLE 7]
+11200,1,"&Bestand"
+11201,1,"O&penen...\tCtr+O"
+11202,1,"Ver&nieuwen\tCtr+R"
+11203,1,"&Eigenschappen...\tCtrl+F1"
+11204,1,"&Overige bestanden"
+11205,1,"Vori&ge\tBackspace"
+11206,1,"&Volgende\tSpatie"
+11207,1,"V&orige geselecteerde\tCtrl+Backspace"
+11208,1,"Volgende geselectee&rde\tCtrl+Spatie"
+11209,1,"Eers&te\tShift+Backspace"
+11210,1,"&Laatste\tShift+Spatie"
+11211,1,"E&xit\tAlt+F4"
+
+[STRINGTABLE 8]
+11217,1,"B&ewerken"
+11218,1,"&Kopiëren\tCtrl+C"
+11219,1,"&Alles selecteren\tCtrl+A"
+11220,1,"&Zoeken...\tCtrl+F"
+11221,1,"Zoek &volgendet\tCtrl+N"
+11222,1,"Zoek v&orige\tCtrl+P"
+11223,1,"&Bladwijzer weergeven/verbergen\tCtrl+F2"
+11224,1,"Volgende blad&wijzer\tF2"
+11225,1,"Vorige bla&dwijzer\tShift+F2"
+11226,1,"Bladwijzers opsc&honen\tCtrl+Shift+F2"
+11230,1,"Beel&d"
+11231,1,"&Ga naar regel...\tG"
+
+[STRINGTABLE 9]
+11232,1,"&Velden...\tI"
+11233,1,"Volledig &scherm\tF11"
+
+[STRINGTABLE 10]
+11250,1,"&Converteren"
+11251,1,"&Auto-Selectie"
+11252,1,"&Niet converteren"
+11253,1,"Als standaard instellen"
+11254,1,"Volgende\tF8"
+11255,1,"Vorige\tShift+F8"
+
+[STRINGTABLE 11]
+11270,1,"&Opties"
+11271,1,"C&SV Opties..."
+11272,1,"&Configuratie..."
+
+[STRINGTABLE 12]
+11280,1,"&Help"
+11281,1,"&Over..."
+11282,1,"&Inhoud\tF1"
+11283,1,"I&ndex..."
+11284,1,"&Zoeken..."
+
+[STRINGTABLE 13]
+11500,1,"Kopiëren\tCtrl+C"
+11501,1,"Openen\tCtrl+O"
+11502,1,"Zoeken\tCtrl+F"
+11503,1,"Eigenschappen\tCtrl+F1"
+
+[STRINGTABLE 14]
+11504,1,"Volledig scherm\tF11"
+11505,1,"Huidige regel/Aantal regels\tG"
+
+[STRINGTABLE 15]
+11520,0,"Use &default font"
+11521,1,"Gebruik &aangepast lettertype..."
+11522,0,"default font"
+11523,1,"aangepast lettertype"
+

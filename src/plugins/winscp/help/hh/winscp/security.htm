@@ -1,0 +1,81 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>A word of warning</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Introduction</div>
+<div class="page">
+<h1>A word of warning</h1>
+
+<p>
+Like with any security or cryptographic product, there are a number
+of concerns that should be addressed. To use WinSCP
+securely, you should understand how the program works and the concepts involved.
+Improper usage is often insecure usage, so please be sure to read the manual completely.
+</p>
+
+<a name="host_security"></a>
+<h4>Host Security</h4>
+
+<p>
+The security of the computer running WinSCP is a serious
+concern. Trojan Horse and Backdoor programs can steal authentication credentials
+such as passwords and <a href="public_key.htm#private">private keys</a>
+that have been stored or entered on the computer. Public computers
+often have session monitoring software - including key loggers -
+or other malicious software.
+</p>
+
+<p>
+WinSCP can support <acronym title="Secure Shell">SSH</acronym> &quot;keyboard-interactive&quot; authentication
+methods if offered by the server. With keyboard-interactive
+authentication, the server can prompt for special credentials such
+as a S/Key one-time password or <acronym title="Rivest, Shamir &amp; Adelman">RSA</acronym> SecurID generated value. These
+&quot;disposable&quot; credentials are preferable if you must use a public
+computer. Contact your system administrator to find out if any form
+of one-time authentication is offered.
+</p>
+
+<a name="stored_credentials"></a>
+<h4>Stored Credentials</h4>
+
+<p>
+WinSCP supports storing passwords with saved sessions. This is
+provided as a convenience, and is not recommended,
+unless protected by
+<a href="ms-its:salamand.chm::/hh/salamand/othertask_pwdmanager.htm">master password</a>.
+If you need to be
+able to log in without reentering your credentials, the recommended
+method with <acronym title="Secure Shell">SSH</acronym> is to use public key authentication and protect your private
+key with a pass phrase. The <acronym title="Secure Shell">SSH</acronym> Key Agent provided by PuTTY, Pageant,
+can store the decrypted key in memory, allowing you to enter your
+credentials once and continue using them until you close down the
+agent or log off of Windows entirely.
+</p>
+
+<p>
+Saved passwords, unless protected by
+<a href="ms-its:salamand.chm::/hh/salamand/othertask_pwdmanager.htm">master password</a>,
+are stored in a manner that they can easily be
+recovered. It is not possible to securely encrypt passwords in a way
+that still allows for automatic use. Do not use the save password
+feature if you are not absolutely sure of the physical and
+electronic security of the system on which you are storing
+passwords.
+</p>
+
+<p>
+Password storing can be <a href="administration.htm">restricted by system administrator</a>.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

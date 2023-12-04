@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Running Your Scripts</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" /><link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: Automation: Using Automation Plugin</div>
+<div class="page">
+
+<h1>Running Your Scripts</h1>
+<p>There are two options to run your scripts. You can either save your script
+to the script repository or you can run arbitrary script.</p>
+
+<h2>Running Scripts from Repository</h2>
+<p>Automation plugin looks into the script repositories for available scripts.
+Such scripts are placed to the Automation plugin menu and are available from Plugins menu,
+from the <a href="ms-its:salamand.chm::/hh/salamand/windows_pluginsbar.htm">Plugin Bar</a>,
+or using Automation Open Script Menu command (Ctrl+Shift+A).</p>
+<p>Script repositories are directories (including subdirectories) that could
+be set up in the <a href="dlgboxes_config.htm">configuration</a>.</p>
+
+<p>Default searched repositories are:
+$[AppData]\Open Salamander\Automation\scripts, $[AllUsersProfile]\Open Salamander\Automation\scripts, 
+$(SalDir)\plugins\automation\scripts. $(SalDir) is full path of the Open Salamander directory, $[ENV_VAR]
+is value of environment variable (replace ENV_VAR by the environment variable name).
+
+<p>It is possible to assign a shortcut key to the frequently used scripts in 
+the <a href="ms-its:salamand.chm::/hh/salamand/dlgboxes_plgkeys.htm">Plugin Keyboard Shortcuts dialog box</a>.</p>
+
+<h2>Running Arbitrary Script</h2>
+<p>To run arbitrary script, just focus the script file in a panel and select <i>Run
+Focused Script</i> from the Plugins or Script menu.</p>
+
+<h2>Aborting Script Execution</h2>
+<p>You can abort running script at any time using the <i>Abort Script</i> toolbar button
+or the Ctrl+Break keyboard shortcut.</p>
+
+<h2>See Also</h2>
+<p><a href="dlgboxes_config.htm">Automation Configuration</a></p>
+<p><a href="ms-its:salamand.chm::/hh/salamand/plugins_using.htm">Using Plugins</a></p>
+
+
+</div>
+<div class="footer">&copy; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

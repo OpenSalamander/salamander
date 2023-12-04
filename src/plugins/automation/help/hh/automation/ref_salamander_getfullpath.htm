@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>GetFullPath Method</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: Automation: Reference: Salamander Object</div>
+<div class="page">
+
+<h1>GetFullPath Method</h1>
+
+<p>The <b>GetFullPath</b> returns absolute path for the specified path string.
+</p>
+
+<h2>Syntax</h2>
+<pre><code>GetFullPath(<i>path</i>, [<i>panel</i>])</code></pre>
+
+<h2>Parameters</h2>
+
+<h3>path</h3>
+<p>Required. Absolute or relative path that should be converted to the absolute fully qualified path.</p>
+
+<h3>panel</h3>
+<p>Optional. Specify this parameter when path parameter is relative to source or target panel.
+Set it to <b><i>SourcePanel</i></b> for source (active) panel and <b><i>TargetPanel</i></b>
+for target (inactive) panel. When this parameter is not specified or is <b><i>null</i></b>,
+the path parameter must be absolute path.</p>
+
+<h2>Return Values</h2>
+<p>Returns absolute fully qualified path.</p>
+
+<h2>Remarks</h2>
+<p>This method uses current directories to get absolute path so path could be specified in form "c:test".</p>
+<p>Redundant path parts such as "." and ".." will be resolved.</p>
+<p>This method will throw exceptions when specified path is invalid.</p>
+
+<h2>See Also</h2>
+<p><a href="ref_panel.htm">Panel Object</a></p>
+<p><a href="ref_salamander.htm">Salamander Object</a></p>
+
+</div>
+<div class="footer">&copy; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

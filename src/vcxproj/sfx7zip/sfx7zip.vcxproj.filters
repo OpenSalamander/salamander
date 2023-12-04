@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="C">
+      <UniqueIdentifier>{9d7c9b0d-b136-4abf-b5df-a8de51836bd0}</UniqueIdentifier>
+      <Extensions>*.c</Extensions>
+    </Filter>
+    <Filter Include="H">
+      <UniqueIdentifier>{fcd1ac31-15d6-4cc1-8b9a-3215518abe11}</UniqueIdentifier>
+      <Extensions>*.h</Extensions>
+    </Filter>
+    <Filter Include="7zip">
+      <UniqueIdentifier>{1ac9188c-0db1-4b41-9d31-6f6f440e80f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lzma">
+      <UniqueIdentifier>{718c8bb3-65d1-4000-9248-2981fd6ef681}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="branch">
+      <UniqueIdentifier>{8c69d744-41b1-4166-9eb7-e5b0bef1ab67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{7539e918-d294-478e-9dd1-cfb16cfc48dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ASM">
+      <UniqueIdentifier>{61efdb67-e1f8-4b11-b356-9c8a28de8114}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\sfx7zip\7zip.c" />
+    <ClCompile Include="..\..\sfx7zip\7zip\archive\7zAlloc.c" />
+    <ClCompile Include="..\..\sfx7zip\7zip\archive\7zBuffer.c" />
+    <ClCompile Include="..\..\sfx7zip\7zip\archive\7zCrc.c" />
+    <ClCompile Include="..\..\sfx7zip\7zip\archive\7zDecode.c" />
+    <ClCompile Include="..\..\sfx7zip\7zip\archive\7zExtract.c" />
+    <ClCompile Include="..\..\sfx7zip\7zip\archive\7zHeader.c" />
+    <ClCompile Include="..\..\sfx7zip\7zip\archive\7zIn.c" />
+    <ClCompile Include="..\..\sfx7zip\7zip\archive\7zItem.c" />
+    <ClCompile Include="..\..\sfx7zip\7zip\archive\7zMethodID.c" />
+    <ClCompile Include="..\..\sfx7zip\Branch\BranchCoder.cpp" />
+    <ClCompile Include="..\..\sfx7zip\Branch\BranchX86.c" />
+    <ClCompile Include="..\..\sfx7zip\Branch\x86.cpp" />
+    <ClCompile Include="..\..\sfx7zip\extract.c" />
+    <ClCompile Include="..\..\sfx7zip\install.c" />
+    <ClCompile Include="..\..\sfx7zip\lzma\LzmaDecode.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\sfx7zip\7zip.h" />
+    <ClInclude Include="..\..\sfx7zip\7zip\archive\7zAlloc.h" />
+    <ClInclude Include="..\..\sfx7zip\7zip\archive\7zBuffer.h" />
+    <ClInclude Include="..\..\sfx7zip\7zip\archive\7zCrc.h" />
+    <ClInclude Include="..\..\sfx7zip\7zip\archive\7zDecode.h" />
+    <ClInclude Include="..\..\sfx7zip\7zip\archive\7zExtract.h" />
+    <ClInclude Include="..\..\sfx7zip\7zip\archive\7zHeader.h" />
+    <ClInclude Include="..\..\sfx7zip\7zip\archive\7zIn.h" />
+    <ClInclude Include="..\..\sfx7zip\7zip\archive\7zItem.h" />
+    <ClInclude Include="..\..\sfx7zip\7zip\archive\7zMethodID.h" />
+    <ClInclude Include="..\..\sfx7zip\7zip\archive\7zTypes.h" />
+    <ClInclude Include="..\..\sfx7zip\7zip\ICoder.h" />
+    <ClInclude Include="..\..\sfx7zip\Branch\BranchCoder.h" />
+    <ClInclude Include="..\..\sfx7zip\Branch\BranchX86.h" />
+    <ClInclude Include="..\..\sfx7zip\Branch\x86.h" />
+    <ClInclude Include="..\..\sfx7zip\common\MyCom.h" />
+    <ClInclude Include="..\..\sfx7zip\common\MyGuidDef.h" />
+    <ClInclude Include="..\..\sfx7zip\common\MyUnknown.h" />
+    <ClInclude Include="..\..\sfx7zip\extract.h" />
+    <ClInclude Include="..\..\sfx7zip\lzma\LzmaDecode.h" />
+    <ClInclude Include="..\..\sfx7zip\resource.h" />
+    <ClInclude Include="..\..\sfx7zip\sfx7zip.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\sfx7zip\resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\sfx7zip\setup.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="$(VCToolsInstallDir)crt\src\i386\llshl.asm">
+      <Filter>ASM</Filter>
+    </MASM>
+    <MASM Include="$(VCToolsInstallDir)crt\src\i386\ullshr.asm">
+      <Filter>ASM</Filter>
+    </MASM>
+  </ItemGroup>
+</Project>

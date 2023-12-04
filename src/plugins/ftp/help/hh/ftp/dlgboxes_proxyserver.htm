@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Add/Edit Proxy Server dialog box</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: FTP Client: Dialog Boxes</div>
+<div class="page">
+<h1>Add/Edit Proxy Server</h1>
+
+<p>Allows you to specify new settings for a proxy server or change existing settings. A proxy
+server is an intermediary between local network (intranet) and the Internet. Contact your
+network administrator if you are not sure how to specify these settings. This dialog
+can be opened using the Add or Edit button in the <a href="dlgboxes_connectadv.htm">Advanced
+Options dialog box</a> or <a href="config_defaults.htm">Configuration/Defaults</a>.
+</p>
+
+<h4>Options</h4>
+<dl>
+<dt><i>Name</i></dt>
+<dd>Choose some name (for future reference) for these settings for the proxy server.
+</dd>
+
+<dt><i>Type</i></dt>
+<dd>Choose the type of the proxy server.
+</dd>
+
+<dt><i>Address</i></dt>
+<dd>Specify the address (usually IP address) of the proxy server.
+</dd>
+
+<dt><i>Port</i></dt>
+<dd>Specify the port where is the proxy server listening (waiting for clients).
+</dd>
+
+<dt><i>User name, Password, Save password, and Unlock</i></dt>
+<dd>Enter user name and password used to authenticate to the proxy server.
+If your proxy server does not require authentication, leave these edit boxes empty.
+You can also leave only the <i>Password</i> edit box empty and the FTP client will ask
+you to enter the password just before connecting to the FTP server. If you want to save
+the password to the settings for the proxy server, check the <i>Save password</i> check box.
+IMPORTANT: You should protect your saved passwords by the Master Password otherwise
+they can be easily displayed in this dialog or decrypted by malicious software that
+have infiltrated your computer, see
+<a href="ms-its:salamand.chm::/hh/salamand/othertask_pwdmanager.htm">Using Password Manager</a>
+for more information about saved passwords and related security risks.
+The <i>Unlock</i> button is displayed when you need to enter the Master Password to access
+the password. To clear the inaccessible password use the <i>Clear Password</i> command from
+drop-down menu on the <i>Unlock</i> button. To show the password hold the Ctrl key and right
+click to the <i>Password</i> edit box.
+</dd>
+
+<dt><i>Login script</i></dt>
+<dd>You can see here a login script for chosen FTP proxy server type (all types except
+SOCKS 4/4A/5 and HTTP 1.1). The login script defines how the FTP client should
+communicate with the FTP proxy server to connect to the desired FTP server. The FTP proxy
+server acts as an FTP server. The FTP client connects to it and sends it all required
+parameters: user name and password for proxy server (optional), address and port of desired
+FTP server, and user name and password for this FTP server. The FTP proxy server
+connects to the desired FTP server and forwards all commands and replies between
+the FTP client and the FTP server. The plugin supports many
+FTP proxy servers, you can choose from them in the Type combo box. If your FTP proxy
+server is not supported, choose the User Defined type of the FTP proxy server
+(in the Type combo box) and write your own login script (see
+<a href="appendix_loginscripts.htm">Login Scripts for FTP Proxy Servers</a>).
+</dd>
+
+</dl>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

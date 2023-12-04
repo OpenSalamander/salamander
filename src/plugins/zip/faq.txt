@@ -1,0 +1,32 @@
+Q: I tried to Pack same files with ZIP. It was not Working. I coud not select 
+   a Packer my list was emty.
+
+A: Something gone wrong with the plugin installation. To reinstal the plugin
+   manually open the 'Plugins' diolog from 'Options' menu, if the ZIP plugin
+   in present in the list, remove it. Then add 'zip.spl' file, it should be found 
+   in the 'plugins\zip' subdirectory of your Servant Salamander directory.
+   If you can't found 'zip.spl' download the latest version from our web site or
+   reinstall Servant Salamander.
+
+
+Q: When I doubleclick on a .zip	file I get my external zip processor invoked 
+   instead of ZIP.
+
+A: You haven't associated ZIP with ZIP plugin. The association could be
+   set in Servant Salamander configuration ('Options'/'Configuration...'/
+   'Panel Archivers'/'Extensions'). 
+   Note: if the ZIP plugin isn't in the archivers list, reinstal the plugin
+   manually. Open the 'Plugins' diolog from 'Options' menu, if the ZIP plugin
+   in present in the list, remove it. Then add 'zip.spl' file, it should be found 
+   in the 'plugins\zip' subdirectory of your Servant Salamander directory.
+   If you can't found 'zip.spl' download the latest version from our web site or
+   reinstall Servant Salamander.
+
+
+Q: Every time I open the self-extractor settings dialog I get error a message
+   'Self-extractor file is corrupted.'
+
+A: Download the correct SFX file from our web site and install it over the corrupted 
+   one.
+   Or if you don't need it just remove the currupted *.sfx file from 
+   'plugins\zip\sfx' subdirectory of your Servant Salamander directory. 

@@ -1,0 +1,154 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Masks</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Appendix</div>
+<div class="page">
+<h1>Masks</h1>
+
+<p>
+To use the following features of WinSCP you need to specify a mask (wildcard) to select files (or other things):
+</p>
+
+<ul>
+<li>Text file mask for <a href="transfer_mode.htm">text mode transfers</a>.</li>
+<li><a href="ui_transfer.htm#other_options">Ignore mask</a> for transfers.</li>
+</ul>
+
+<h4>Filename Mask</h4>
+<p>
+When specifying the mask you can use following patterns:
+</p>
+
+<table>
+  <tr>
+    <th>Pattern </th>
+    <th>Meaning </th>
+    <th>Example </th>
+  </tr>
+  <tr>
+    <td><code>*</code> </td>
+    <td>Matches any number (including zero) of arbitrary characters. </td>
+    <td><code>*.doc; about*.html</code> </td>
+  </tr>
+  <tr>
+    <td><code>?</code> </td>
+    <td>Matches exactly one arbitrary character. </td>
+    <td><code>photo????.jpg</code> </td>
+  </tr>
+  <tr>
+    <td><code>[abc]</code> </td>
+    <td>Matches one character from the set. </td>
+    <td><code>index_[abc].html</code> </td>
+  </tr>
+  <tr>
+    <td><code>[a-z]</code> </td>
+    <td>Matches one character from the range. </td>
+    <td><code>index_[a-z].html</code> </td>
+  </tr>
+</table>
+
+<p>
+All other characters are treated literally.
+</p>
+
+<p>
+To escape character with special meaning (<code>*?[</code>) enclose 
+it into set pattern, e.g. <code>filewithstar[*]</code>.
+</p>
+
+<h4>Directory Mask</h4>
+
+<p>
+Particularly when specifying an <a href="ui_transfer.htm#other_options">include mask</a>
+for transfers, bear in mind that it is 
+applied to directories as well, so that <code>*.bak</code> will only 
+match backup files located in the current directory (unless 
+you happen to have a subdirectory whose own name ends in ".bak",
+in which case it will be applied to all backup files 
+in there too).
+</p>
+
+<p>
+A mask ending with slash matches only directories. The mask 
+<code>*/</code> matches any directory.
+</p>
+
+<p>
+For example to transfer only HTML files located in any 
+directory, use the include mask <code>*/; *.html</code>
+(see below for combining masks).
+</p>
+
+<p>
+To make operation non-recursive use exclude mask <code>*/</code>.
+</p>
+
+<h4>Path Mask</h4>
+
+<p>
+When the mask selects files and it makes sense to select them based on directory, you can extend the mask
+with a path mask. You should separate the path mask from the filename mask by a slash. For example
+mask <code>/home/martinp/*.txt</code> matches all text files within the directory, but not in subdirectories.
+To match all text files within subtree, use mask <code>/home/martinp/*.txt; /home/martinp/*/*.txt</code>
+(Simpler, but less precise, form would be <code>/home/martinp*/*.txt</code>).
+</p>
+
+<p>
+For a relative path mask it makes no difference whether you use back (<code>\</code>) or forward slashes (<code>/</code>); the
+mask will always work for both local and remote paths. For example, the mask
+<code>*/public_html/*.bak</code> will match backup files both in <code>D:\Documents\public_html</code>
+and <code>/home/martinp/public_html</code>. If you want to match directories only, add a slash at the end
+of the mask.
+</p>
+
+<p>
+You can also specify full path to specific file or directory, both local and remote.
+For example if you want to match only specific <code>.csv</code> directory, not all,
+use <code>/home/martinp/data/.csv/</code> instead of <code>.csv/</code>.
+</p>
+
+<p>
+Particularly when specifying an <a href="ui_transfer.htm#other_options">include mask</a> for transfers, bear
+in mind that it is applied to directories as well, so that <code>*.bak</code> will only match backup files
+located in the current directory (unless you happen to have a subdirectory whose own name ends in &quot;.bak&quot;, in
+which case it will be applied to all backup files in there too).
+</p>
+
+<p>
+The mask <code>*/</code> matches any directory. For example to transfer only
+<acronym title="HyperText Markup Language">HTML</acronym> files located in any directory, use the include
+mask <code>*/; *.html</code>.
+</p>
+
+<h4>Exceptions</h4>
+
+<p>
+For convenience, a masks <code>*.*</code> and <code>*.</code> are exceptions matching any file and any file
+without an extension, respectively, even if its name does not include any dot.
+</p>
+
+<h4>Combining masks and exclude mask</h4>
+
+<p>
+You can combine several masks using semicolon (<code>;</code>) or comma (<code>,</code>).
+</p>
+
+<p>
+You can add exclude mask by separating it by pipe (<code>|</code>) 
+from the include mask. To use exclude mask only, start with 
+pipe straight away.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,186 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Proxy Tab (Login Dialog)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: WinSCP: Dialog Boxes: Configuring Session</div>
+<div class="page">
+<h1>Proxy Tab (Login Dialog)</h1>
+
+<p>
+<em>Proxy tab</em> allows you to configure WinSCP to use various types of proxy in order to make its network connections.
+</p>
+
+<p>
+You need to check <em>Advanced options</em> to reveal the tab.
+</p>
+
+<a name="setting_the_proxy_type"></a>
+<h4>Setting the Proxy Type</h4>
+
+<p>
+First, select what type of proxy you want WinSCP to use for its network connections. The default setting
+is <em>None</em>. In this mode no proxy is used for the connection.
+</p>
+
+<p>
+Selecting <em><acronym title="Hyper Text Transfer Protocol">HTTP</acronym></em> allows you to proxy your
+connections through a web server supporting the <code><acronym title="Hyper Text Transfer Protocol">HTTP</acronym>
+CONNECT</code> command, as documented in <acronym title="Request For Comment">RFC</acronym> 2817.
+</p>
+
+<p>
+Selecting <em>SOCKS4</em> or <em>SOCKS5</em> allows you to proxy your connections through a SOCKS server.
+</p>
+
+<p>
+Many firewalls implement a less formal type of proxy in which a user can make a Telnet connection directly
+to the firewall machine and enter a command such as <code>connect myhost.com 22</code> to connect through to
+an external host. Selecting <em>Telnet</em> allows you to tell WinSCP to use this type of proxy.
+</p>
+
+<p>
+Selecting <em>Local</em> allows you to specify an arbitrary command
+on the local machine to act as a proxy.
+When the session is started, instead of creating a TCP connection,
+WinSCP runs the specified command, and uses its standard input and output
+streams.
+</p>
+
+<p>
+This could be used, for instance, to talk to some kind of network proxy
+that WinSCP does not natively support; or you could tunnel a connection
+over something other than
+<acronym title="Transmission Control Protocol/Internet Protocol">TCP/IP</acronym>
+entirely.
+</p>
+
+<a name="username_and_password"></a>
+<h4>Username and Password</h4>
+
+<p>
+If your proxy requires authentication, you can enter a username and a password in the <em>Username</em>
+and <em>Password</em> boxes.
+</p>
+
+<p>
+Authentication is not fully supported for all forms of proxy:
+</p>
+
+<ul>
+
+<li>Username and password authentication is supported for <acronym title="Hyper Text Transfer Protocol">HTTP</acronym>
+    proxies and SOCKS5 proxies.
+<ul>
+<li>With SOCKS5, authentication is via <acronym title="Challenge Handshake Authentication Protocol">CHAP</acronym>
+    if the proxy supports it, otherwise the password is sent to the proxy in plain text. </li>
+<li>With <acronym title="Hyper Text Transfer Protocol">HTTP</acronym> proxying, the only currently supported
+    authentication method is &quot;basic&quot;, where the password is sent to the proxy in plain text. </li>
+</ul>
+</li>
+
+<li>SOCKS4 can use the <em>Username</em> field, but does not support passwords. </li>
+
+<li>You can specify a way to include a username and password in the <em>Telnet/Local</em> proxy command.</li>
+
+</ul>
+
+<a name="telnet_local_proxy_command"></a>
+<h4>Telnet/Local Proxy Command</h4>
+
+<p>
+If you are using the <em>Telnet</em> proxy type, the usual command required by the firewall's Telnet
+server is <code>connect</code>, followed by a host name and a port number. If your proxy needs a different
+command, you can enter an alternative here.
+</p>
+
+<p>
+If you are using the <em>Local</em> proxy type, the local command to run is specified here.
+</p>
+
+<p>
+In this string, you can use <code>\n</code> to represent a new-line, <code>\r</code> to represent a carriage
+return, <code>\t</code> to represent a tab character, and <code>\x</code> followed by two hex digits to
+represent any other character. <code>\\</code> is used to encode the \ character itself.
+</p>
+
+<p>
+Also, the special strings <code>%host</code> and <code>%port</code> will be replaced by the host name and
+port number you want to connect to. The strings <code>%user</code> and <code>%pass</code> will be replaced
+by the proxy username and password you specify. To get a literal % sign, enter <code>%%</code>.
+</p>
+
+<p>
+If a Telnet proxy server prompts for a username and password before commands can be sent, you can use
+a command such as:
+</p>
+
+<pre>%user\n%pass\nconnect %host %port\n
+</pre>
+
+<p>
+This will send your username and password as the first two lines to the proxy, followed by a command to
+connect to the desired host and port. Note that if you do not include the
+<code>%user</code> or <code>%pass</code> tokens in the Telnet command, then the <em>Username</em> and
+<em>Password</em> configuration fields will be ignored.
+</p>
+
+<a name="name_resolution_when_using_a_proxy"></a>
+<h4>Name Resolution When Using a Proxy</h4>
+
+<p>
+If you are using a proxy to access a private network, it can make a difference whether
+<acronym title="Domain Name Server">DNS</acronym> name resolution is performed by WinSCP itself (on the
+client machine) or performed by the proxy.
+</p>
+
+<p>
+The <em>Do <acronym title="Domain Name Server">DNS</acronym> name lookup at proxy end</em> configuration
+option allows you to control this. If you set it to <em>No</em>, WinSCP will always do its own
+<acronym title="Domain Name Server">DNS</acronym>, and will always pass an IP address to the proxy. If
+you set it to <em>Yes</em>, WinSCP will always pass host names straight to the proxy without trying to
+look them up first.
+</p>
+
+<p>
+If you set this option to <em>Auto</em> (the default), WinSCP will do something it considers appropriate
+for each type of proxy. Telnet, <acronym title="Hyper Text Transfer Protocol">HTTP</acronym> and SOCKS5 proxies
+will have host names passed straight to them; SOCKS4 proxies will not.
+</p>
+
+<p>
+The original SOCKS4 protocol does not support proxy-side <acronym title="Domain Name Server">DNS</acronym>.
+There is a protocol extension (SOCKS4A) which does support it, but not all SOCKS4 servers provide this
+extension. If you enable proxy <acronym title="Domain Name Server">DNS</acronym> and your SOCKS4 server
+cannot deal with it, this might be why.
+</p>
+
+<a name="proxying_local_host_connections"></a>
+<h4>Proxying Local Host Connections</h4>
+
+<p>
+Connections to the local host (the host name <code>localhost</code>,
+and any loopback IP address) are not proxied by default.
+It is very unlikely that this behavior would ever cause problems,
+but if it does you can change it by enabling
+<em>Consider proxying local host connections</em>.
+<a href="#fn1">(see note 1)</a>
+</p>
+
+<h4>Notes:</h4>
+<p>
+<a name="fn1"></a>
+1) The text is copy of <a href="https://tartarus.org/~simon/putty-snapshots/htmldoc/" target="_blank">PuTTY User Manual</a> or was inspired by it.
+</p>
+
+</div>
+<div class="footer">&#169; 2006-2023 Martin Prikryl</div>
+</div>
+</body>
+</html>

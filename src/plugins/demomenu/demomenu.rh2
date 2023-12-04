@@ -1,0 +1,25 @@
+﻿//****************************************************************************
+//
+// Copyright (c) 2023 Open Salamander Authors
+//
+// This is a part of the Open Salamander SDK library.
+//
+//****************************************************************************
+
+// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __DEMOMENU_RH2
+#define __DEMOMENU_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#define IDS_PLUGINNAME           46
+#define IDS_ABOUT                47
+#define IDS_PLUGIN_DESCRIPTION   48
+#define IDS_PLUGIN_HOME          49
+#define IDS_TESTCMD              50
+
+#define IDH_TESTCMD              900
+
+#endif // __DEMOMENU_RH2

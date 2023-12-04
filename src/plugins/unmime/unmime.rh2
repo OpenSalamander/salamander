@@ -1,0 +1,33 @@
+﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __UNMIME_RH2
+#define __UNMIME_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#define IDC_STATIC_1 2000
+#include "statics.rh2"   // 2000 az 2039 jsou timto zabrane !!!
+
+// ********************************************************************************
+//
+//  TEXTY
+//
+
+#define IDS_PLUGINNAME                  1
+#define IDS_OPENERROR                   2
+#define IDS_LOWMEM                      3
+#define IDS_LIST                        4
+#define IDS_UNKNOWN                     5
+#define IDS_WRITEERROR                  6
+#define IDS_EXTRTITLE                   7
+#define IDS_UNPACKING                   8
+#define IDS_PARSE                       9
+#define IDS_BADBLOCK_DAMAGED            10
+#define IDS_BADBLOCK_CRC                11
+#define IDS_PLUGIN_DESCRIPTION          12
+#define IDS_ABOUT_TITLE                 13
+#define IDS_RESOURCE_FORK_LOST          14
+#define IDS_DONT_SHOW_AGAIN             15
+
+#endif // __UNMIME_RH2

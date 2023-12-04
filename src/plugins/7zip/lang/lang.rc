@@ -1,0 +1,139 @@
+﻿// Microsoft Visual C++ generated resource script.
+//
+#pragma code_page(65001)
+
+#include "lang.rh"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winresrc.h"
+
+#include "..\7zip.rh2"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "lang.rh\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winresrc.h""\r\n"
+    "\r\n"
+    "#include ""..\\7zip.rh2""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)\r\n"
+    "LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL\r\n"
+    "#include ""lang.rc2""   // non-Microsoft Visual C++ edited resources\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_CONFIGURATION DIALOGEX 23, 38, 220, 200
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "7-Zip Configuration"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Panel settings",IDC_STATIC_1,5,6,49,8
+    CONTROL         "",IDC_STATIC_2,"Static",SS_ETCHEDHORZ | WS_GROUP,56,10,161,1
+    CONTROL         "Display dialog box with extended &options before packing",IDC_CFG_SHOWEXTENDEDOPTIONS,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,10,19,202,10
+    CONTROL         "Show extended &info when listing archive",IDC_CFG_EXTENDEDLISTINFO,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,31,148,10
+    CONTROL         "Packed",IDC_CFG_LISTINFOPACKEDSIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,26,43,60,10
+    CONTROL         "Method",IDC_CFG_LISTINFOMETHOD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,26,55,38,10
+    LTEXT           "Default compression parameters",IDC_STATIC_3,5,70,111,8
+    CONTROL         "",IDC_STATIC_4,"Static",SS_ETCHEDHORZ | WS_GROUP,118,74,99,1
+    LTEXT           "Compression &level:",IDC_STATIC_5,10,85,76,8
+    COMBOBOX        IDC_CFG_COMPRESS_LEVEL,88,83,86,85,CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "Compression &method:",IDC_STATIC_6,10,103,76,8
+    COMBOBOX        IDC_CFG_COMPRESS_METHOD,88,101,86,41,CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "&Dictionary size:",IDC_STATIC_7,10,121,76,8
+    COMBOBOX        IDC_CFG_DICT_SIZE,88,119,86,114,CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "&Word size:",IDC_STATIC_8,10,139,76,8
+    COMBOBOX        IDC_CFG_WORD_SIZE,88,137,86,104,CBS_DROPDOWNLIST | WS_TABSTOP
+    CONTROL         "Create &solid archive",IDC_CFG_SOLID_ARCHIVE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,10,155,78,12
+    CONTROL         "",IDC_STATIC_9,"Static",SS_ETCHEDHORZ | WS_GROUP,3,175,214,1
+    DEFPUSHBUTTON   "OK",IDOK,53,181,50,14,WS_GROUP
+    PUSHBUTTON      "Cancel",IDCANCEL,108,181,50,14
+    PUSHBUTTON      "Help",IDHELP,163,181,50,14
+END
+
+IDD_NEWARCHIVE DIALOGEX 27, 37, 290, 224
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Create New Archive"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Archive:",IDC_STATIC_1,16,7,30,8
+    LTEXT           "",IDC_NA_ARCHIVE,48,7,233,8
+    CONTROL         "",IDC_STATIC_2,"Static",SS_ETCHEDHORZ | WS_GROUP,8,21,274,1
+    CONTROL         "&Encrypt files",IDC_NA_ENCRYPTFILES,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,16,28,53,10
+    LTEXT           "&Password:",IDC_NA_PASSWORD_TXT,105,29,60,8
+    EDITTEXT        IDC_NA_PASSWORD,172,27,78,12,ES_PASSWORD | ES_AUTOHSCROLL
+    LTEXT           "Confirm p&assword:",IDC_NA_CONFIRMPASSWORD_TXT,105,46,65,8
+    EDITTEXT        IDC_NA_CONFIRMPASSWORD,172,44,78,12,ES_PASSWORD | ES_AUTOHSCROLL
+    LTEXT           "Compression parameters",IDC_STATIC_3,8,67,85,8
+    CONTROL         "",IDC_STATIC_4,"Static",SS_ETCHEDHORZ | WS_GROUP,95,71,187,1
+    LTEXT           "Compression &level:",IDC_STATIC_5,16,85,65,8
+    COMBOBOX        IDC_CFG_COMPRESS_LEVEL,105,83,86,85,CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "Compression &method:",IDC_STATIC_6,16,103,76,8
+    COMBOBOX        IDC_CFG_COMPRESS_METHOD,105,101,86,41,CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "Di&ctionary size:",IDC_STATIC_7,16,121,54,8
+    COMBOBOX        IDC_CFG_DICT_SIZE,105,119,86,114,CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "&Word size:",IDC_STATIC_8,16,139,38,8
+    COMBOBOX        IDC_CFG_WORD_SIZE,105,137,86,104,CBS_DROPDOWNLIST | WS_TABSTOP
+    CONTROL         "Create &solid archive",IDC_CFG_SOLID_ARCHIVE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,16,159,78,12
+    CONTROL         "",IDC_STATIC_9,"Static",SS_ETCHEDHORZ | WS_GROUP,8,181,274,1
+    CONTROL         "&Don't show this dialog box again (you can change it later in config dialog)",IDC_NA_NOTAGAIN,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,16,187,260,12
+    PUSHBUTTON      "C&onfigure...",IDC_SHOW_CONFIG,10,204,50,14,WS_GROUP
+    DEFPUSHBUTTON   "OK",IDOK,120,204,50,14,WS_GROUP
+    PUSHBUTTON      "Cancel",IDCANCEL,175,204,50,14
+    PUSHBUTTON      "Help",IDHELP,230,204,50,14
+END
+
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL
+#include "lang.rc2"   // non-Microsoft Visual C++ edited resources
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

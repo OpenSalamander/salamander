@@ -1,0 +1,108 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Defaults</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Plugins: FTP Client: Dialog Boxes: Configuration</div>
+<div class="page">
+<h1>Defaults</h1>
+
+<p>Use this tab to set default advanced options for connections, default settings for keeping
+connections alive, and default file transfer mode.</p>
+
+<h4>Options</h4>
+<dl>
+<dt><b>Default advanced options for connections</b></dt>
+
+<dt><i>Proxy server</i></dt>
+<dd>If you are using a proxy server for access to FTP servers (usually on the Internet),
+specify settings for this proxy server here. A proxy server is an intermediary between
+local network (intranet) and the Internet. If you do not need to use a proxy server,
+select <i>Not Used</i>. To add settings for a proxy server click the Add button, it opens
+the <a href="dlgboxes_proxyserver.htm">Add/Edit Proxy Server dialog box</a>. You can
+add more settings for proxy servers and later just choose which one to use.
+</dd>
+
+<dt><i>Use passive transfer mode (may help if you are behind firewall or proxy server)</i></dt>
+<dd>When checked, data connections are opened in the passive mode. It means that the FTP client
+opens data connection by connecting to the supplied port on the FTP server. Otherwise, data
+connections are opened in the active mode. It means that the data connection is opened by
+the FTP server by connecting to the supplied port on the FTP client. This mode is problematic
+if the FTP client is behind firewall or proxy server because they can block access to the FTP
+client (if they have not support for FTP protocol). The passive mode is not supported by some
+FTP servers (only few), you have to use active mode for accessing these FTP servers.
+</dd>
+
+<dt><i>Keep connections alive (prevents server from disconnecting you due to no activity)</i></dt>
+<dd>When checked, the FTP client tries to keep its connections alive. It means that if the FTP
+client is not sending commands or transferring data to/from the FTP server for longer than
+specified time, it starts periodical sending auxiliary commands or making auxiliary data
+transfers. This should prevent closing the connection by the FTP server due to no activity
+or no data transfer (usually after 5 or 10 minutes). See <i>Default settings for keeping
+connections alive</i> below for more information about keeping connections alive.
+</dd>
+
+<dt><i>Use cache for viewed files and lists of files and directories on server (faster browsing)</i></dt>
+<dd>When checked, all viewed files and all path listings (lists of files and directories)
+from the FTP server are cached. It allows to use these cached files and listings when they
+are requested next time. Advantage is faster browsing of already visited directories and viewing
+of already viewed files. Disadvantage is that listings and files could be changed and when they
+are taken from the cache, they can be out of date. Use the
+<a href="using_refresh.htm">Refresh</a> command to reset
+cache for the current directory and all its subdirectories (it removes all listings and all viewed
+files from cache). Cached files are stored in the temporary directory. Cached listings are
+stored in the memory cache, you can limit the size of this cache, see <i>Size limit for memory
+cache</i> in <a href="config_advanced.htm">Configuration/Advanced</a>.
+</dd>
+
+<dt><i>Compress data transfers if server supports compression (MODE Z)</i></dt>
+<dd>When checked, the plugin attempts to compress all data transfers (downloads and uploads, plus directory listings
+obtained from the server). No error is reported when the server does not support compression.
+However, you can check if compression is used: Check the result of the MODE Z command at the end of the Welcome
+Message or look for MODE Z just before the SYST or first PWD command in the FTP log.
+</dd>
+
+<dt><b>Default settings for keeping connections alive</b></dt>
+<dd>Choose a command which is sent to keep the connection alive (when the connection is not
+used to communicate with the server nor to send any data). NOOP and PWD commands
+are not transferring any data. If your FTP server closes connections due to no data transfer,
+use NLST or LIST commands. We recommend to use the NLST command because it transfers less
+data (the current path listing containing only filenames). Moreover specify a period of
+sending keep alive commands and when to stop sending keep alive commands. See
+<i>Keep connections alive (prevents server from disconnecting you due to no activity)</i>
+above for details on activation of the keep alive feature.
+</dd>
+
+<dt><b>Default file transfer mode</b></dt>
+
+<dt><i>Binary mode (no changes during tranfers)</i></dt>
+<dd>When checked, all files are transferred in Binary mode. It means no changes in the file
+content during transfer.
+</dd>
+
+<dt><i>ASCII mode (convert files to use system default line ends)</i></dt>
+<dd>When checked, all files are transferred in ASCII mode. It means that all files
+are treated like text files and so all end of line characters will be converted
+to target system default end of line characters during transfer.
+</dd>
+
+<dt><i>Automatic - ASCII mode for specified files</i></dt>
+<dd>When checked, all files matching the specified
+<a href="ms-its:salamand.chm::/hh/salamand/appendix_filemasks.htm">file masks</a> are
+transferred in ASCII mode and all others are transferred in Binary mode. See Binary and
+ASCII mode description above.
+</dd>
+
+</dl>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>
