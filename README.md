@@ -35,14 +35,16 @@ This project welcomes contributions to build and enhance Open Salamander!
 ## Repository Content
 
 ```
-\help            User manual source files
 \convert         Conversion tables for the Convert command
 \doc             Documentation
+\help            User manual source files
 \src             Open Salamander core source code
-\src\reglib      Access to Windows Registry files
-\src\plugins     Plugins source code
 \src\common      Shared libraries
 \src\common\dep  Shared third-party libraries
+\src\lang        English resources
+\src\plugins     Plugins source code
+\src\reglib      Access to Windows Registry files
+\src\res         Image resources
 \src\salmon      Crash detecting and reporting
 \src\salopen     Open files helper
 \src\salspawn    Process spawning helper
@@ -51,8 +53,6 @@ This project welcomes contributions to build and enhance Open Salamander!
 \src\shellext    Shell extension DLL
 \src\translator  Translate Salamander UI to other languages
 \src\tserver     Trace Server to display info and error messages
-\src\lang        English resources
-\src\res         Image resources
 \src\vcxproj     Visual Studio project files
 \tools           Minor utilities
 \translations    Translations into other languages
