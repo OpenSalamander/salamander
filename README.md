@@ -45,7 +45,7 @@ This project welcomes contributions to build and enhance Open Salamander!
 \src\common\dep  Shared third-party libraries
 \src\salmon      Crash detecting and reporting
 \src\salopen     Open files helper
-\src\salspawn    Process spawing helper
+\src\salspawn    Process spawning helper
 \src\setup       Installer and uinstaller
 \src\sfx7zip     Self-extractor based on 7-Zip
 \src\shellext    Shell extension DLL
