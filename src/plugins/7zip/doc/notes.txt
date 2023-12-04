@@ -28,12 +28,8 @@ The original text written probably by David Andrs and timestamped 2004.08.30 fol
 
 Jan Patera 2008.12.16 - END
 
-Poznamky i implementaci 7zip
+Poznamky k implementaci 7zip
 ----------------------------
-
-- Autor je vul
-  Umi sice vybornou kompresi, ale jeho kod stoji za hovno. Aby se v tom prase vyznalo... 
-  Vubec zadne komentare. Absolutne k nicemu!
 
 - Progress pri vybalovani
   Volaji se metody SetTotal a SetCompleted, kde se predavaji parametry toho, jak proces pokracuje
@@ -80,12 +76,12 @@ Poznamky i implementaci 7zip
   (callbackimp), ale SafeFileCreate porad nejde.
   
 - Prechod na verzi, kdy se bude jeho zdrojak prikompilovavat k nasemu spl nevidim jako dobry, protoze
-  si asi moc nepomuzeme. Budeme ve stale stejnych srackach, ne-li ve vetsich (chybi dokumnetace,
+  si asi moc nepomuzeme. Budeme mit stale stejne problemy, ne-li vetsi (chybi dokumnetace,
   komentare). Budeme sice moci zasahovat vice do toho, co se deje, ale pri vydani nove verze to
   budeme muset vzdy preprogramovat.
 
   Mozne reseni, vykuchat z jeho zdrojaku kompresi a dekompresni rutiny a zabalit je do naseho spl.
-  Ovsem bylo by nutne naspat ty sracky okolo, jako vytvoreni archivu, otevreni archivu, listovani
+  Ovsem bylo by nutne napsat ten kod okolo jako vytvoreni archivu, otevreni archivu, listovani
   archivem a ja nevim co jeste...
 
 
@@ -123,4 +119,3 @@ NEJDE (vubec)
 - skip/skip all pri zadavani hesla
 - zjistit ze bylo zadano spatne heslo
 - nektere soubory nejdou z archivu vymazat (asi zavisle na pakovaci metode)
-

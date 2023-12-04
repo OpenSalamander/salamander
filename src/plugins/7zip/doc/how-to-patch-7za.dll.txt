@@ -31,7 +31,7 @@ I. uprava zdrojaku, aby sla prelozit ve starsich MS SDK (to je napr. muj pripad)
 
    -- v3.xx ---------------------------------------------------------------------------------------
 
-   Rusak pouziva COM, kde se musi definovat GUID pro jednotlive interfacy a buhvico jeste.
+   7za pouziva COM, kde se musi definovat GUID pro jednotlive interfacy a buhvico jeste.
    K tomu pouziva makro DEFINE_GUID, ktery koliduje s makrem stejneho jmena z MS SDK. Takze
    treba rozepiseme tato makra rucne:
 
@@ -70,7 +70,7 @@ II. Pridani callstack objektu
 
    -- v3.XX -----------------------------------------------------------------------------------------
 
-   Rusak to ma multithreadovy a nesynchronizuje! V pristich verzich by mela byt volba pro kompilaci
+   7za je multithreadovy a bez synchronizace! V pristich verzich by mela byt volba pro kompilaci
    bez multithreadingu (verze 3.13 nema).
    
    Pridan soubor patch.cpp do adresare patch\
@@ -118,7 +118,7 @@ II. Pridani callstack objektu
 III. zavedeni funkcnosti Keep/Delete corrupted file
 
    Bez tohoto patche by nebyla mozna funkcnost pro Keep/Delete corrupted file. Duvod patche je ten,
-   ze Rusak s vystupnim streamem pracuje takto:
+   ze 7za pracuje se vystupnim streamem timto zpusobem:
       - Otevre stream
       - provede na nem nejakou operaci
       - zavola callback->SetOperationResult
@@ -133,7 +133,7 @@ III. zavedeni funkcnosti Keep/Delete corrupted file
 
 IV. Fix pro SFX archivy
 
-   Igor hleda zacatek 7zip archivu tim, ze prohledava soubor od zacatku a hleda 7zip signaturu. To 
+   7za hleda zacatek 7zip archivu tim, ze prohledava soubor od zacatku a hleda 7zip signaturu. To
    je pochopitelne blbe, protoze kdyz se objevi nekde uvnitr STUBu (jako v pripade distribuce salama),
    tak pak archiv nejde otevrit, protoze pocita se spatnym offsetem zacatku archivu.
 
@@ -142,6 +142,5 @@ IV. Fix pro SFX archivy
 
 Poznamky:
 
-- Debug verze 7za.dll ma 1,1 MB!, Release ma 417 KB. Nemam optimalizujici kompiler. Rusakova verze
+- Debug verze 7za.dll ma 1,1 MB!, Release ma 417 KB. Nemam optimalizujici kompiler. Originalni verze
   ma 290 KB (ovsem je to verze 3.12).
-
