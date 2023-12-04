@@ -91,7 +91,7 @@ BOOL CBitmap::CreateBmpBW(int width, int height)
     return TRUE;
 }
 
-// vytvori bitmapu kompatibilni s DC
+// creates a DC compatible bitmap
 BOOL CBitmap::CreateBmp(HDC hDC, int width, int height)
 {
     if (HBmp != NULL)
@@ -128,7 +128,7 @@ BOOL CBitmap::CreateBmp(HDC hDC, int width, int height)
     if (releaseDC)
         HANDLES(ReleaseDC(NULL, hDC));
 
-    // vytahnu informace pro pozdejsi upravy
+    // fetch information for later changes
     BITMAP bmp;
     GetObject(HBmp, sizeof(bmp), &bmp);
     Planes = bmp.bmPlanes;
@@ -179,7 +179,7 @@ BOOL CBitmap::ReCreateForScreenDC(int width, int height)
     Width = width;
     Height = height;
 
-    // vytahnu informace pro pozdejsi upravy
+    // fetch information for later changes
     BITMAP bmp;
     GetObject(HBmp, sizeof(bmp), &bmp);
     Planes = bmp.bmPlanes;
@@ -217,10 +217,10 @@ BOOL CBitmap::Enlarge(int width, int height)
             width = Width;
         if (Height > height)
             height = Height;
-        // pokusim se vytvorit vetsi bitmapu
-        // !POZOR! Sal 2.5b6 byla pomala pri paintu do Vieweru (PgDn) proti 2.0
-        // Bylo to tim, ze jsme vytvareli cache pres CreateBitmap() misto pres CreateCompatibleBitmap()
-        // Podle MSDN se ma pouzivat CreateBitmap() pouze pro vyvareni B&W bitmap.
+        // try to create a larger bitmap
+        // !ALERT! Sal 2.5b6 was slow when painting to Viewer (PgDn) compared to 2.0
+        // Caused by creating the cache with CreateBitmap() instead of CreateCompatibleBitmap()
+        // According to MSDN, CreateBitmap() should only be used for B&W bitmaps.
         HBITMAP hTmpBmp;
         if (HMemDC == NULL || BlackAndWhite)
         {
