@@ -30,24 +30,24 @@ public:
     CBitmap();
     ~CBitmap();
 
-    // destukce bitmapy i DC
+    // destruction of both bitmap and DC
     void Destroy();
 
-    // vytvori bitmapu kompatibilni s DC (pokud je hDC==NULL, bude kompatibili s obrazovkou)
+    // creates a DC compatible bitmap (will be compatible with screen, if hDC==NULL)
     BOOL CreateBmp(HDC hDC, int width, int height);
-    // vytvori bitmapu
+    // creates a bitmap
     BOOL CreateBmpBW(int width, int height);
-    // nacte bitmapu z resource (pujde o DDB kompatibilni s obrazovkou)
+    // loads a bitmap from resource (DDB will be compatible with the screen)
     BOOL CreateBmpFrom(HINSTANCE hInstance, int resID);
-    // pokud doslo ke zmene barevne hloubky obrazovky, je treba znovu vytvorit bitmapu
-    // rozmery se upravi jen na vetsi a vybrane handly zustanou zachovany; bitmapa bude
-    // kompatibilni s obrazovkou
+    // if a change of screen color depth is changed, the bitmap has to be created again
+    // the dimensions will be enlarged and the selected handles will be kept; the bitmap
+    // will be compatible with the screen
     BOOL ReCreateForScreenDC(int width = -1, int height = -1);
 
-    // zvetsi bitmapu na pozadovanou velikost; pokud je uz bitmapa dostatecne
-    // velika, nezmensuje ji - pouze vrati TRUE
+    // enlarges the bitmap to desired size; if the bitmap is large enough already, it won't
+    // be shrinked - just returns TRUE
     BOOL Enlarge(int width, int height);
-    // vrati TRUE, pokud je treba bitmapu zvetsit
+    // returns TRUE, if the bitmap needs to be enlarged
     BOOL NeedEnlarge(int width, int height);
 
     DWORD GetWidth() { return Width; }
