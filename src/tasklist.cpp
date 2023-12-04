@@ -49,9 +49,9 @@ void RaiseBreakException()
 {
 #ifndef CALLSTK_DISABLE
     CCallStack stack;
-#endif                                                 // CALLSTK_DISABLE
+#endif                                                   // CALLSTK_DISABLE
     RaiseException(OPENSAL_EXCEPTION_BREAK, 0, 0, NULL); // nase vlastni "break" exception
-                                                       // sem uz se kod nedostane
+                                                         // sem uz se kod nedostane
 }
 
 //
