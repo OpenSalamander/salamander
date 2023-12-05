@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Run clang-format style check for C/C++.
-        uses: jidicula/clang-format-action@v5.2.0
+        uses: jidicula/clang-format-action@v4.3.0
         with:
           clang-format-version: '16'
           check-path: .
