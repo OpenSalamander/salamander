@@ -12,7 +12,7 @@
 
 CBitmap::CBitmap()
 {
-    Cleanup();
+Cleanup();
 }
 
 void CBitmap::Cleanup()
