@@ -8,6 +8,3 @@
 /src/plugins/automation/generated/salamander_h.h
 /src/plugins/automation/generated/salamander_i.c
 /src/plugins/automation/generated/salamander_p.c
-/src/plugins/portables/res/SpriteSheetPacker/src/sspack/obj/Debug
-/src/plugins/portables/res/SpriteSheetPacker/src/sspack/obj/Release
-/.gitignore
