@@ -11,32 +11,8 @@ $throttleLimit = 12
 $clangFormat = 'C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\Llvm\bin\clang-format.exe'
 Write-Host -ForegroundColor White 'Normalize Salamander Source Code'
 $clangIncludes = @('*.cpp', '*.h', '*.c')
-$clangExcludes = @(
-    '.\src\common\dep\*',
-    '.\src\sfx7zip\7zip\*',
-    '.\src\sfx7zip\branch\*',
-    '.\src\sfx7zip\lzma\*',
-    '.\src\plugins\7zip\7za\c\*',
-    '.\src\plugins\7zip\7za\cpp\*',
-    '.\src\plugins\automation\generated\*',
-    '.\src\plugins\checksum\tomcrypt\*',
-    '.\src\plugins\ftp\openssl\*',
-    '.\src\plugins\ieviewer\cmark-gfm\*',
-    '.\src\plugins\mmviewer\ogg\vorbis\*',
-    '.\src\plugins\mmviewer\wma\wmsdk\*',
-    '.\src\plugins\pictview\exif\libexif\*',
-    '.\src\plugins\pictview\exif\libjpeg\*',
-    '.\src\plugins\pictview\twain\*',
-    '.\src\plugins\portables\wtl\*',
-    '.\src\plugins\tar\bzip\*',
-    '.\src\plugins\unchm\chmlib\*',
-    '.\src\plugins\winscp\core\*',
-    '.\src\plugins\winscp\forms\*',
-    '.\src\plugins\winscp\packages\*',
-    '.\src\plugins\winscp\putty\*',
-    '.\src\plugins\winscp\resource\*',
-    '.\src\plugins\winscp\windows\*',
-    '.\src\plugins\wmobile\rapi\*')
+# from $clangExcludes we moved to .clang-format with DisableFormat: true
+$clangExcludes = @()
 
 $utfIncludes = @('*.c', '*.cc', '*.cxx', '*.cpp', '*.c++', '*.cs', '*.hpp', '*.h', '*.h++', '*.hh', '*.tlh',
     '*.tli', '*.inl', '*.pas', '*.dpr', '*.dproj', '*.rh', '*.rc', '*.rc2', '*.htm', '*.sln', '*.csproj',
