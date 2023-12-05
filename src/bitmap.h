@@ -39,7 +39,7 @@ public:
     BOOL CreateBmpBW(int width, int height);
     // loads a bitmap from resource (DDB will be compatible with the screen)
     BOOL CreateBmpFrom(HINSTANCE hInstance, int resID);
-    // if a change of screen color depth is changed, the bitmap has to be created again
+    // if a change of screen the color depth occurs, the bitmap has to be created again
     // the dimensions will be enlarged and the selected handles will be kept; the bitmap
     // will be compatible with the screen
     BOOL ReCreateForScreenDC(int width = -1, int height = -1);
