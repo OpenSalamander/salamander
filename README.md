@@ -10,6 +10,8 @@ The name Servant Salamander came about when Petr Šolín and his friend Pavel Sc
 
 Please bear with us as Salamander was our first major project where we learned to program in C++. From a technology standpoint, it does not use [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines), smart pointers, [RAII](https://en.cppreference.com/w/cpp/language/raii), [STL](https://github.com/microsoft/STL), or [WIL](https://github.com/microsoft/wil), all of which were just beginning to evolve during the time Salamander was created. Many of the comments are written in Czech, but this is manageable due to recent progress in AI-powered translation.
 
+We would like to thank [Fine company](https://www.finesoftware.eu/) for making the open sourced Salamander release possible.
+
 ## Development
 
 ### Prerequisites
