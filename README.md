@@ -8,6 +8,8 @@ The original version of Servant Salamander was developed by Petr Šolín during 
 
 Please bear with us as Salamander was our first major project where we learned to program in C++. From a technology standpoint, it does not use [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines), smart pointers, [RAII](https://en.cppreference.com/w/cpp/language/raii), [STL](https://github.com/microsoft/STL), or [WIL](https://github.com/microsoft/wil), all of which were just beginning to evolve during the time Salamander was created. Many of the comments are written in Czech, but this is manageable due to recent progress in AI-powered translation.
 
+The origin of the name 'Servant Salamander': It was back in 1997, during their time at the Czech Technical University, when Petr Šolín, the creator of a new file manager, and his friend Pavel Schreib were in their room brainstorming name for this project. At that time, the well-known programs were the aging Norton Commander and the rising Windows Commander. They questioned why a file manager should be named 'Commander', implying it commands users, instead of serving them. This thought led to the birth of the name "Servant Salamander".
+
 ## Development
 
 ### Prerequisites
