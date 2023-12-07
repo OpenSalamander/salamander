@@ -126,7 +126,7 @@ BOOL CCacheData::CleanFromDisk()
         else // the plugin should do deleting
         {
             if (OwnDeletePlugin != NULL) // we can start deleting (plugin can't be unloaded), otherwise the file
-            {                            // won't be  deleted (it's either already deleted or it's just 
+            {                            // won't be  deleted (it's either already deleted or it's just
                                          // disconnected - it chooses a plugin when unloading
                 DeleteManager.AddFile(TmpName, OwnDeletePlugin);
                 OwnDeletePlugin = NULL; // no more deleting will be done
@@ -345,7 +345,7 @@ CCacheDirData::~CCacheDirData()
         delete name;
     }
     if (PathLength > 0)
-        Path[PathLength - 1] = 0; // trimming a backslash 
+        Path[PathLength - 1] = 0; // trimming a backslash
     SetFileAttributes(Path, FILE_ATTRIBUTE_ARCHIVE);
     RemoveDirectory(Path);
 }
@@ -601,8 +601,8 @@ BOOL CCacheDirData::Release(CCacheData* data)
 {
     CALL_STACK_MESSAGE1("CCacheDirData::Release()");
     int i;
-    if (GetNameIndex(data->GetName(), i))  // 'data' found at index 'i'
-    {                                      // we took advantage of the fact that the name is unique, so that Names[i] == data
+    if (GetNameIndex(data->GetName(), i)) // 'data' found at index 'i'
+    {                                     // we took advantage of the fact that the name is unique, so that Names[i] == data
 #ifdef _DEBUG
         if (Names[i] != data)
         {
@@ -694,7 +694,7 @@ void CCacheDirData::FlushCache(const char* name)
 BOOL CCacheDirData::FlushOneFile(const char* name)
 {
     int i;
-    if (GetNameIndex(name, i))      // 'name' found at index 'i'
+    if (GetNameIndex(name, i)) // 'name' found at index 'i'
     {
         CCacheData* data = Names[i];
         if (data->IsLocked())
@@ -726,7 +726,7 @@ unsigned ThreadCacheHandlesBody(void* param)
     SetThreadNameInVCAndTrace("DiskCache");
     TRACE_I("Begin");
 
-    Sleep(300);     // so that Salamander can start
+    Sleep(300); // so that Salamander can start
 
     CCacheHandles* handles = (CCacheHandles*)param;
     while (1)
@@ -736,7 +736,7 @@ unsigned ThreadCacheHandlesBody(void* param)
         int index;
         handles->WaitForObjects(&handle, &owner, &index);
         CALL_STACK_MESSAGE1("ThreadCacheHandlesBody::WaitForObjects_end");
-        if (handle == handles->Terminate)   // we should end
+        if (handle == handles->Terminate) // we should end
         {
             break;
         }
@@ -749,7 +749,7 @@ unsigned ThreadCacheHandlesBody(void* param)
                     TRACE_E("ThreadCacheHandles(): Unable to receive data from the box.");
                     CALL_STACK_MESSAGE1("ThreadCacheHandlesBody::Unable_to_receive_box");
                     while (1)
-                        Sleep(1000);    // we will stuck on purpose ;-)
+                        Sleep(1000); // we will stuck on purpose ;-)
                 }
             }
             else
@@ -757,7 +757,7 @@ unsigned ThreadCacheHandlesBody(void* param)
                 if (handle == handles->TestIdle) // WaitForIdle unblocked WaitForObjects (we can ignore it)
                 {
                 }
-                else   // someone from outside changed the state of 'handle' to "signaled" (e.g. the application ended)
+                else // someone from outside changed the state of 'handle' to "signaled" (e.g. the application ended)
                 {
                     if (handle != NULL && owner != NULL)
                         handles->WaitSatisfied(handle, owner, index);
@@ -832,7 +832,7 @@ CCacheHandles::CCacheHandles() : Handles(100, 50), Owners(100, 50)
     }
     else
     {
-        Handles.Add(Terminate);  // we will add control objects to the beginning of the array
+        Handles.Add(Terminate); // we will add control objects to the beginning of the array
         Handles.Add(BoxFull);
         Handles.Add(TestIdle);
         Owners.Add(0);
@@ -866,7 +866,7 @@ CCacheHandles::CCacheHandles() : Handles(100, 50), Owners(100, 50)
 void CCacheHandles::Destroy()
 {
     CALL_STACK_MESSAGE1("CCacheHandles::Destroy()");
-    if (Thread != NULL)  // thread termination is required
+    if (Thread != NULL) // thread termination is required
     {
         SetEvent(Terminate);                                   // "you should end now"
         if (WaitForSingleObject(Thread, 1000) == WAIT_TIMEOUT) // let's give it 1 second
@@ -1128,7 +1128,7 @@ CDiskCache::GetName(const char* name, const char* tmpName, BOOL* exists, BOOL on
         const char* tmpPath;
         if (Dirs[i]->GetName(this, name, exists, &tmpPath,
                              tmpName != NULL && !onlyAdd, onlyAdd, errorCode))
-        {   // 'name' found; if 'tmpName' is NULL, it can be an unprepared tmp-file (it returns 'not found' error)
+        { // 'name' found; if 'tmpName' is NULL, it can be an unprepared tmp-file (it returns 'not found' error)
             // if 'onlyAdd' is TRUE, it can be a "file already exists" error
             Leave();
             return tmpPath;
@@ -1269,7 +1269,7 @@ BOOL CDiskCache::ReleaseName(const char* name, BOOL storeInCache)
         BOOL lastCached;
         if (Dirs[i]->ReleaseName(name, &ret, &lastCached, storeInCache)) // 'name' found
         {
-            if (lastCached) // tmp-file is without links and cached, we will see if we need 
+            if (lastCached) // tmp-file is without links and cached, we will see if we need
             {               // to release it, or if we need to release space on disk
                 CheckCachedFiles();
             }
@@ -1343,8 +1343,8 @@ void CDiskCache::CheckCachedFiles()
                 }
             }
             else
-                break; // at least one cached file must remain in cache, it will be 
-                       // the one which was released last, it prevents discarding 
+                break; // at least one cached file must remain in cache, it will be
+                       // the one which was released last, it prevents discarding
                        // of the file which the user is currently looking at
         }
     }
@@ -1359,8 +1359,8 @@ void CDiskCache::WaitSatisfied(HANDLE lock, CCacheData* owner)
     {
         if (last) // tmp-file is without links, we can cancel it
         {
-            if (owner->IsCached())  // we will see if we need to release it, 
-            {                       // or we will free space on disk
+            if (owner->IsCached()) // we will see if we need to release it,
+            {                      // or we will free space on disk
                 CheckCachedFiles();
             }
             else // we should delete the file directly
@@ -1462,7 +1462,7 @@ void CDiskCache::ClearTEMPIfNeeded(HWND parent, HWND hActivePanel)
     {
         SalPathAddBackslash(tmpDir, 2 * MAX_PATH);
         char* tmpDirEnd = tmpDir + strlen(tmpDir);
-        if (SalPathAppend(tmpDir, "SAL*.tmp", 2 * MAX_PATH))  // we will add a mask (it won't fit = no sense in searching anything)
+        if (SalPathAppend(tmpDir, "SAL*.tmp", 2 * MAX_PATH)) // we will add a mask (it won't fit = no sense in searching anything)
         {
             TIndirectArray<char> tmpDirs(10, 50);
 
@@ -1471,7 +1471,7 @@ void CDiskCache::ClearTEMPIfNeeded(HWND parent, HWND hActivePanel)
             if (find != INVALID_HANDLE_VALUE)
             {
                 do
-                {   // we will process all found directories (search errors are ignored)
+                { // we will process all found directories (search errors are ignored)
                     if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
                     {
                         char* s = data.cFileName + 3;
@@ -1666,20 +1666,20 @@ void CDeleteManager::PluginMayBeUnloaded(HWND parent, CPluginData* plugin)
                 // we will clean the message-queue from buffered WM_USER_PROCESSDELETEMAN
                 MSG msg;
                 PeekMessage(&msg, MainWindow->HWindow, WM_USER_PROCESSDELETEMAN, WM_USER_PROCESSDELETEMAN, PM_REMOVE);
-                KillTimer(MainWindow->HWindow, IDT_DELETEMNGR_PROCESS);  // timer for delayed data processing (it is posted in WM_USER_PROCESSDELETEMAN)
+                KillTimer(MainWindow->HWindow, IDT_DELETEMNGR_PROCESS); // timer for delayed data processing (it is posted in WM_USER_PROCESSDELETEMAN)
             }
         }
         else
             WaitingForProcessing = TRUE; // we will block sending WM_USER_PROCESSDELETEMAN - undesirable and unnecessary, data processing will take place at the end of the method
         HANDLES(LeaveCriticalSection(&CS));
 
-        BlockDataProcessing = TRUE;  // in case that WM_TIMER would leak posted to the main window (we block it because it can be delivered by the first unpacked messagebox and its messageloop)
+        BlockDataProcessing = TRUE; // in case that WM_TIMER would leak posted to the main window (we block it because it can be delivered by the first unpacked messagebox and its messageloop)
 
         int copiesCount = DiskCache.CountNamesDeletedByPlugin(plugin->GetPluginInterface()->GetInterface());
-        if (copiesCount > 0)  // plugin still has some tmp-files opened (and it should ensure their deletion)
+        if (copiesCount > 0) // plugin still has some tmp-files opened (and it should ensure their deletion)
         {
             if (plugin->PrematureDeleteTmpCopy(parent, copiesCount))
-            {   // user wants to delete tmp-files, even if they are still opened (they are in viewers, etc.)
+            { // user wants to delete tmp-files, even if they are still opened (they are in viewers, etc.)
                 if (parent != NULL)
                     UpdateWindow(parent);
                 DiskCache.PrematureDeleteByPlugin(plugin->GetPluginInterface()->GetInterface(), FALSE);

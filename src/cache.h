@@ -90,7 +90,7 @@ public:
     // waits until the tmp-file is prepared or until the method ReleaseName() is called
     // then 'exists' is set to return value matching CDiskCache::GetName()
     // NULL -> fatal error or "file not prepared" (see below)
-    // 
+    //
     // if 'onlyAdd' is TRUE, only the deleted tmp-file can be restored - if the tmp-file is prepared,
     // NULL is returned and 'exists' is set to FALSE (further interpreted as "file already exists" error);
     // 'canBlock' is TRUE if waiting for readiness of the tmp-file is expected, in case it's not
@@ -206,7 +206,7 @@ public:
     // seeks for 'name' in the tmp-directory; if it's found, returns TRUE and 'ret' is set to return value
     // CDiskCache::AssignName(name, lock, lockOwner, remove); if it's not found, returns FALSE
     // for description see CDiskCache::AssignName()
-    // 
+    //
     // handles - object for watching the 'lock' object
     BOOL AssignName(CCacheHandles* handles, const char* name, HANDLE lock, BOOL lockOwner,
                     CCacheRemoveType remove, BOOL* ret);
@@ -214,14 +214,14 @@ public:
     // seeks for 'name' in the tmp-directory; if it's found, returns TRUE and 'ret' is set to return value
     // CDiskCache::ReleaseName(name); if it's not found, returns FALSE
     // for description see CDiskCache::ReleaseName()
-    // 
+    //
     // lastCached - pointer to BOOL, which is set to TRUE if this is the last link to the cached tmp-file,
     //              or if it's necessary to decide about its further existence
     BOOL ReleaseName(const char* name, BOOL* ret, BOOL* lastCached, BOOL storeInCache);
 
     // seeks for 'data' in the tmp-directory; if it's found, returns TRUE and cancels tmp-file 'data';
     // if it's not found, returns FALSE
-    // 
+    //
     // data - tmp-file
     BOOL Release(CCacheData* data);
 
@@ -278,7 +278,7 @@ protected:
     HANDLE TestIdle;  // event for running idle-state test - "signaled" means "test"
     HANDLE IsIdle;    // event for marking idle-state - "signaled" means "we are in idle-state"
 
-    HANDLE Thread;  // watching thread
+    HANDLE Thread; // watching thread
 
     CDiskCache* DiskCache; // disk-cache, to which this object belongs
 
@@ -363,11 +363,11 @@ public:
     // in this case it's necessary to call NamePrepared() when the tmp-file is prepared (e.g.
     // downloaded from FTP) and then the tmp-file will be available to other threads;
     // WARNING: it's necessary to call AssignName() or ReleaseName()
-    // 
+    //
     // return value NULL -> "fatal error" ('exists' is TRUE) or in case 'tmpName' is NULL
     //                     "not found" ('exists' is FALSE), and in case 'onlyAdd' is TRUE
     //                     "file already exists" ('exists' is FALSE)
-    // 
+    //
     // name - unique item identification
     // tmpName - required name of the tmp-file or directory, a tmp-directory will be selected
     //           for it
@@ -375,7 +375,7 @@ public:
     // onlyAdd - if it is TRUE, it is possible to create only a new name (if the name exists,
     //           returns NULL) or restore a deleted tmp-file (the name exists, but the tmp-file
     //           is not prepared)
-    // 
+    //
     // rootTmpPath - if NULL, the tmp-directory with the tmp-file should be placed into TEMP, otherwise
     //               it's the path where to place the tmp-directory with the tmp-file
     // ownDelete - if FALSE, tmp-files should be deleted using DeleteFile(), otherwise using
@@ -390,9 +390,9 @@ public:
 
     // selects tmp-file related to 'name' for a valid one, provides it to other threads,
     // can be called only after GetName() returns 'exists' == FALSE
-    // 
+    //
     // returns success
-    // 
+    //
     // name - unique item identification
     // size - number of bytes occupied by the tmp-file on disk
     BOOL NamePrepared(const char* name, const CQuadWord& size);
@@ -400,9 +400,9 @@ public:
     // assigns system object to the acquired tmp-file, using 'lock' the minimal lifetime
     // of the tmp-file is controlled (depends on 'remove')
     // can be called only in pair with GetName()
-    // 
+    //
     // returns success
-    // 
+    //
     // name - unique item identification (later for searching)
     // lock - when this object is "signaled", it will be possible to "release" the tmp-file
     //        (depends on 'remove')
@@ -419,9 +419,9 @@ public:
     // tmp-file cancellation can occur only if 'storeInCache' is TRUE, tmp-file is prepared and
     // not locked, the tmp-file is marked as cached (if the maximum capacity of cache allows it,
     // it won't be deleted)
-    // 
+    //
     // returns success
-    // 
+    //
     // name - unique item identification (later for searching)
     BOOL ReleaseName(const char* name, BOOL storeInCache);
 
@@ -532,4 +532,3 @@ public:
 
 extern CDiskCache DiskCache;         // global disk-cache
 extern CDeleteManager DeleteManager; // global disk-cache delete-manager (deleting tmp-files in archivers plugins)
-
