@@ -41,4 +41,7 @@ public:
     BOOL UnpackWholeArchive(const char* mask, const char* targetPath);
 
     BOOL IsOk() { return bOK; };
+
+  private:
+    BOOL AssignArchive(const char *archName, CArchive *archive);
 };
