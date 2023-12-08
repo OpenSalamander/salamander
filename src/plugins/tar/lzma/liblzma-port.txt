@@ -1,0 +1,11 @@
+a minimalistic lzma library port
+================================
+
+source: https://tukaani.org/xz/
+version: 5.4.4
+license: public domain
+
+the port contains:
+- library sources \src\common and \src\liblzma
+- MSVC project file liblzma.vcxproj and config.h, taken from \windows\vz2019 and modified,
+- license and readme files
