@@ -103,7 +103,7 @@ CBZip::DecompressBlock(unsigned short needed)
       return FALSE;
     }
     BZStream->next_in = (char *)DataStart;
-    BZStream->avail_in = (unsigned int)(DataEnd - DataStart);
+    BZStream->avail_in = GetUnreadInputBufferSize();
     BZStream->next_out = (char *)ExtrEnd;
     BZStream->avail_out = BUFSIZE - (unsigned int)(ExtrEnd - Window);
     ret = BZ2_bzDecompress(BZStream);

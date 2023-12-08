@@ -185,6 +185,8 @@
     </ClCompile>
     <ClCompile Include="..\lzh\lzh.cpp">
     </ClCompile>
+    <ClCompile Include="..\lzma\unlzma.cpp">
+    </ClCompile>
     <ClCompile Include="..\names.cpp">
     </ClCompile>
     <ClCompile Include="..\precomp.cpp">
@@ -200,6 +202,8 @@
     <ClCompile Include="..\tardll.cpp">
     </ClCompile>
     <ClCompile Include="..\untar.cpp">
+    </ClCompile>
+    <ClCompile Include="..\zstd\unzstd.cpp">
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -243,6 +247,8 @@
     </ClInclude>
     <ClInclude Include="..\lzh\lzh.h">
     </ClInclude>
+    <ClInclude Include="..\lzma\unlzma.h">
+    </ClInclude>
     <ClInclude Include="..\names.h">
     </ClInclude>
     <ClInclude Include="..\precomp.h">
@@ -252,6 +258,8 @@
     <ClInclude Include="..\tar.h">
     </ClInclude>
     <ClInclude Include="..\tardll.h">
+    </ClInclude>
+    <ClInclude Include="..\zstd\unzstd.h">
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -273,6 +281,12 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\lzma\liblzma\vcxproj\liblzma.vcxproj">
+      <Project>{12728250-16ec-4dc6-94d7-e21dd88947f8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\zstd\libzstd\vcxproj\libzstd.vcxproj">
+      <Project>{8bfd8150-94d5-4bf9-8a50-7bd9929a0850}</Project>
+    </ProjectReference>
     <ProjectReference Include="lang_tar.vcxproj">
       <Project>{6090b150-683e-4782-b09a-1f728248d0b8}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>

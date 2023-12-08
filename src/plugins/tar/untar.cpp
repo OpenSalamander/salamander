@@ -127,7 +127,6 @@ BOOL FromOctalQ(const unsigned char* ptr, const int length, CQuadWord& result)
 SCommonHeader::SCommonHeader()
 {
     Path = NULL;
-    ;
     Name = NULL;
     FileInfo.Name = NULL;
     Initialize();

@@ -20,19 +20,23 @@ public:
     virtual BOOL BuggySize() { return FALSE; }
 
     // vraci, v jakem jsme stavu
-    BOOL IsOk() { return Ok; }
+    BOOL IsOk() const { return Ok; }
     // pokud nastala chyba, vraci jeji kod
-    const unsigned int GetErrorCode() { return ErrorCode; }
+    unsigned int GetErrorCode() const { return ErrorCode; }
     // pokud nastala systemova chyba (I/O etc.) vraci blizsi urceni (::GetLastError())
-    const DWORD GetLastErr() { return LastError; }
+    DWORD GetLastErr() const { return LastError; }
+    // vraci velikost bufferu s neprectenymi datami
+    size_t GetUnreadInputBufferSize() const { return min(size_t(DataEnd - DataStart), (InputSize - InputPos).LoDWord); }
     // vraci velikost archivu na disku
-    CQuadWord GetStreamSize() { return InputSize; }
+    CQuadWord GetStreamSize() const { return InputSize; }
+    // vraci soucasnou pozici v aktualnim souboru v archivu na disku
+    CQuadWord GetInputPos() const { return InputPos; }
     // vraci soucasnou pozici v archivu na disku
-    CQuadWord GetStreamPos() { return StreamPos; }
+    CQuadWord GetStreamPos() const { return StreamPos; }
     // vrati puvodni nazev souboru, ktery byl v archivu (nazev taru v gzipu apod.)
     const char* GetOldName();
     // vrati nazev souboru, se kterym pracuje (jmeno archivu)
-    const char* GetArchiveName() { return FileName; }
+    const char* GetArchiveName() const { return FileName; }
 
     // vrati cast nebo cely posledni precteny blok k dalsimu pouziti
     virtual void Rewind(unsigned short size);
@@ -54,6 +58,7 @@ protected:
     const char* FileName;     // nazev archivu, nad kterym pracujem
     char* OldName;            // puvodni nazev souboru pred zapakovanim
     CQuadWord InputSize;      // velikost archivu
+    CQuadWord InputPos;       // pozice v archivu (parcialni)
     CQuadWord StreamPos;      // pozice v archivu (pro progress)
     HANDLE File;              // otevreny archiv
     DWORD LastError;          // pokud byla chyba systemu (I/O...), tady je blizsi urceni

@@ -158,7 +158,7 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
                                    VERSINFO_VERSION_NO_PLATFORM,
                                    VERSINFO_COPYRIGHT,
                                    LoadStr(IDS_PLUGIN_DESCRIPTION),
-                                   "TAR" /* neprekladat! */, "tar;tgz;taz;tbz;gz;bz;bz2;z;rpm;cpio;deb");
+                                   "TAR" /* neprekladat! */, "tar;tgz;taz;tbz;gz;bz;bz2;xz;zst;z;rpm;cpio;deb");
 
     salamander->SetPluginHomePageURL("www.altap.cz");
 
@@ -169,7 +169,10 @@ void CPluginInterface::About(HWND parent)
 {
     char buf[1000];
     _snprintf_s(buf, _TRUNCATE,
-                "%s " VERSINFO_VERSION "\n\n" VERSINFO_COPYRIGHT "\nbzip2 library Copyright © 1996-2010 Julian R Seward\n\n"
+                "%s " VERSINFO_VERSION "\n"
+                VERSINFO_COPYRIGHT "\n\n"
+                "bzip2 library Copyright © 1996-2010 Julian R Seward\n"
+                "Zstandard library Copyright © 2016-2023 Facebook, Inc.\n\n"
                 "%s",
                 LoadStr(IDS_PLUGINNAME),
                 LoadStr(IDS_PLUGIN_DESCRIPTION));
@@ -214,7 +217,7 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
                                   "*.gz;*.bz;*.bz2;*.z;"
                                   "*.rpm;*.cpio;*.deb",
                                   ConfigVersion < 5);                                       // pri upgradech se ignoruje, az na pripad, kdy se upgraduje na verzi 4 - nutny update kvuli "*.z" a dalsim
-    salamander->AddPanelArchiver("tgz;tbz;taz;tar;gz;bz;bz2;z;rpm;cpio;deb", FALSE, FALSE); // pri upgradech pluginu se ignoruje
+    salamander->AddPanelArchiver("tgz;tbz;taz;tar;gz;bz;bz2;xz;zst;z;rpm;cpio;deb", FALSE, FALSE); // pri upgradech pluginu se ignoruje
     salamander->AddViewer("*.rpm", FALSE);                                                  // pri upgradech pluginu se ignoruje, az na pripad, kdy se upgraduje z verze, ktera jeste viewer nemela (verze pustena s SS 2.0)
 
     // cast pro upgrady:
