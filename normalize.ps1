@@ -35,6 +35,8 @@ $utfExcludes = @(
     '.\src\plugins\pictview\exif\libjpeg\*',
     '.\src\plugins\pictview\twain\*',
     '.\src\plugins\portables\wtl\*',
+    '.\src\plugins\tar\lzma\liblzma\*',
+    '.\src\plugins\tar\zstd\libzstd\*',
     '.\src\plugins\unchm\chmlib\*',
     '.\src\plugins\winscp\core\*',
     '.\src\plugins\winscp\forms\*',

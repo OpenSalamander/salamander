@@ -42,6 +42,6 @@ public:
 
     BOOL IsOk() { return bOK; };
 
-  private:
-    BOOL AssignArchive(const char *archName, CArchive *archive);
+private:
+    BOOL AssignArchive(const char* archName, CArchive* archive);
 };

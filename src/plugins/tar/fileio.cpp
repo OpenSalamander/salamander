@@ -143,9 +143,8 @@ CDecompressFile::CreateInstance(LPCTSTR fileName, DWORD inputOffset, CQuadWord i
 }
 
 // class constructor
-CDecompressFile::CDecompressFile(const char* filename, HANDLE file, unsigned char* buffer, unsigned long start, unsigned long read, CQuadWord inputSize) :
-    FileName(filename), File(file), Buffer(buffer), DataStart(buffer), DataEnd(buffer + read),
-    OldName(NULL), Ok(TRUE), InputPos(0, 0), StreamPos(start, 0), ErrorCode(0), LastError(0), FreeBufAndFile(TRUE)
+CDecompressFile::CDecompressFile(const char* filename, HANDLE file, unsigned char* buffer, unsigned long start, unsigned long read, CQuadWord inputSize) : FileName(filename), File(file), Buffer(buffer), DataStart(buffer), DataEnd(buffer + read),
+                                                                                                                                                           OldName(NULL), Ok(TRUE), InputPos(0, 0), StreamPos(start, 0), ErrorCode(0), LastError(0), FreeBufAndFile(TRUE)
 {
     CALL_STACK_MESSAGE3("CDecompressFile::CDecompressFile(%s, , %u)", filename, read);
 
@@ -365,8 +364,7 @@ void CDecompressFile::GetFileInfo(FILETIME& lastWrite, CQuadWord& fileSize, DWOR
 //  CZippedFile
 //
 
-CZippedFile::CZippedFile(const char* filename, HANDLE file, unsigned char* buffer, unsigned long start, unsigned long read, CQuadWord inputSize) :
-    CDecompressFile(filename, file, buffer, start, read, inputSize), Window(NULL), ExtrStart(NULL), ExtrEnd(NULL)
+CZippedFile::CZippedFile(const char* filename, HANDLE file, unsigned char* buffer, unsigned long start, unsigned long read, CQuadWord inputSize) : CDecompressFile(filename, file, buffer, start, read, inputSize), Window(NULL), ExtrStart(NULL), ExtrEnd(NULL)
 {
     // pokud neprosel konstruktor parenta, balime to rovnou
     if (!Ok)

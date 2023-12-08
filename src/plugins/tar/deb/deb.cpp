@@ -96,7 +96,7 @@ CDEBArchive::CDEBArchive(const char* fileName, CSalamanderForOperationsAbstract*
     pos += sizeof(ARBlock);
 
     // Open the fist subarchive
-    CArchive *archive = new CArchive(fileName, salamander, pos, CQuadWord(SubArchiveSize, 0));
+    CArchive* archive = new CArchive(fileName, salamander, pos, CQuadWord(SubArchiveSize, 0));
     if (!archive->IsOk())
     {
         delete archive;
@@ -322,12 +322,12 @@ BOOL CDEBArchive::UnpackWholeArchive(const char* mask, const char* targetPath)
 
 BOOL CDEBArchive::AssignArchive(const char* archName, CArchive* archive)
 {
-    if (!controlArchive && !strncmp(archName, DEB_STREAM_NAME_CONTROL".", sizeof(DEB_STREAM_NAME_CONTROL".") - 1))
+    if (!controlArchive && !strncmp(archName, DEB_STREAM_NAME_CONTROL ".", sizeof(DEB_STREAM_NAME_CONTROL ".") - 1))
     {
         controlArchive = archive;
         return TRUE;
     }
-    else if (!dataArchive && !strncmp(archName, DEB_STREAM_NAME_DATA".", sizeof(DEB_STREAM_NAME_DATA".") - 1))
+    else if (!dataArchive && !strncmp(archName, DEB_STREAM_NAME_DATA ".", sizeof(DEB_STREAM_NAME_DATA ".") - 1))
     {
         dataArchive = archive;
         return TRUE;

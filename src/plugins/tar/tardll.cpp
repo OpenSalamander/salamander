@@ -169,8 +169,7 @@ void CPluginInterface::About(HWND parent)
 {
     char buf[1000];
     _snprintf_s(buf, _TRUNCATE,
-                "%s " VERSINFO_VERSION "\n"
-                VERSINFO_COPYRIGHT "\n\n"
+                "%s " VERSINFO_VERSION "\n" VERSINFO_COPYRIGHT "\n\n"
                 "bzip2 library Copyright © 1996-2010 Julian R Seward\n"
                 "Zstandard library Copyright © 2016-2023 Facebook, Inc.\n\n"
                 "%s",
@@ -219,7 +218,7 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
     salamander->AddCustomUnpacker("TAR-gz (Plugin)", "*.gz;*.tgz;*.tar.gz;*_tar.gz;*_tar_gz;*.tar_gz", upgrade);
     salamander->AddCustomUnpacker("TAR (Plugin)", "*.tar;*.rpm;*.cpio;*.deb;*.ipk", upgrade);
     salamander->AddPanelArchiver("tgz;tbz;taz;tar;gz;bz;bz2;xz;zst;z;rpm;cpio;deb;ipk", FALSE, FALSE); // pri upgradech pluginu se ignoruje
-    salamander->AddViewer("*.rpm", FALSE);                                                  // pri upgradech pluginu se ignoruje, az na pripad, kdy se upgraduje z verze, ktera jeste viewer nemela (verze pustena s SS 2.0)
+    salamander->AddViewer("*.rpm", FALSE);                                                             // pri upgradech pluginu se ignoruje, az na pripad, kdy se upgraduje z verze, ktera jeste viewer nemela (verze pustena s SS 2.0)
 
     // cast pro upgrady:
     if (ConfigVersion < 1) // 1 - pracovni verze pred Servant Salamander 2.5 beta 1, pridan tbz,bz,bz2 a rpm
