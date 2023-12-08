@@ -158,7 +158,7 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
                                    VERSINFO_VERSION_NO_PLATFORM,
                                    VERSINFO_COPYRIGHT,
                                    LoadStr(IDS_PLUGIN_DESCRIPTION),
-                                   "TAR" /* neprekladat! */, "tar;tgz;taz;tbz;gz;bz;bz2;xz;zst;z;rpm;cpio;deb");
+                                   "TAR" /* neprekladat! */, "tar;tgz;taz;tbz;gz;bz;bz2;xz;zst;z;rpm;cpio;deb;ipk");
 
     salamander->SetPluginHomePageURL("www.altap.cz");
 
@@ -207,17 +207,18 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
 {
     CALL_STACK_MESSAGE1("CPluginInterface::Connect()");
 
+    // pri upgradech se ignoruje, az na pripad, kdy se upgraduje na verzi 4 - nutny update kvuli "*.z" a dalsim
+    bool upgrade = ConfigVersion < 5;
+
     // zakladni cast:
-    salamander->AddCustomUnpacker("TAR (Plugin)",
-                                  "*.tar;*.tgz;*.tbz;*.taz;"
-                                  "*.tar.gz;*.tar.bz;*.tar.bz2;*.tar.z;"
-                                  "*_tar.gz;*_tar.bz;*_tar.bz2;*_tar.z;"
-                                  "*_tar_gz;*_tar_bz;*_tar_bz2;*_tar_z;"
-                                  "*.tar_gz;*.tar_bz;*.tar_bz2;*.tar_z;"
-                                  "*.gz;*.bz;*.bz2;*.z;"
-                                  "*.rpm;*.cpio;*.deb",
-                                  ConfigVersion < 5);                                       // pri upgradech se ignoruje, az na pripad, kdy se upgraduje na verzi 4 - nutny update kvuli "*.z" a dalsim
-    salamander->AddPanelArchiver("tgz;tbz;taz;tar;gz;bz;bz2;xz;zst;z;rpm;cpio;deb", FALSE, FALSE); // pri upgradech pluginu se ignoruje
+    salamander->AddCustomUnpacker("TAR-z (Plugin)", "*.z;*.tz;*taz;*.tar.z;*_tar.z;*_tar_z;*.tar_z", upgrade);
+    salamander->AddCustomUnpacker("TAR-zst (Plugin)", "*.zst;*.tzs;*.tar.zst;*_tar.zst;*_tar_zst;*.tar_zst", upgrade);
+    salamander->AddCustomUnpacker("TAR-xz (Plugin)", "*.xz;*.txz;*.tar.xz;*_tar.xz;*_tar_xz;*.tar_xz", upgrade);
+    salamander->AddCustomUnpacker("TAR-bz2 (Plugin)", "*.bz2;*.tbz2;*.tar.bz2;*_tar.bz2;*_tar_bz2;*.tar_bz2", upgrade);
+    salamander->AddCustomUnpacker("TAR-bz (Plugin)", "*.bz;*.tbz;*.tar.bz;*_tar.bz;*_tar_bz;*.tar_bz;", upgrade);
+    salamander->AddCustomUnpacker("TAR-gz (Plugin)", "*.gz;*.tgz;*.tar.gz;*_tar.gz;*_tar_gz;*.tar_gz", upgrade);
+    salamander->AddCustomUnpacker("TAR (Plugin)", "*.tar;*.rpm;*.cpio;*.deb;*.ipk", upgrade);
+    salamander->AddPanelArchiver("tgz;tbz;taz;tar;gz;bz;bz2;xz;zst;z;rpm;cpio;deb;ipk", FALSE, FALSE); // pri upgradech pluginu se ignoruje
     salamander->AddViewer("*.rpm", FALSE);                                                  // pri upgradech pluginu se ignoruje, az na pripad, kdy se upgraduje z verze, ktera jeste viewer nemela (verze pustena s SS 2.0)
 
     // cast pro upgrady:
@@ -247,7 +248,7 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
     }
     if (ConfigVersion < 5) // 5 - pracovni verze pred Servant Salamander 2.52 beta 2, pridani .deb archivu
     {
-        salamander->AddPanelArchiver("deb", FALSE, TRUE);
+        salamander->AddPanelArchiver("deb;ipk", FALSE, TRUE);
     }
 }
 
