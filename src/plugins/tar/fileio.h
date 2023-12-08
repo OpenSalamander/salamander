@@ -57,7 +57,7 @@ protected:
     unsigned int ErrorCode;   // pokud nastala chyba, tady je uvedeno, jaka
     const char* FileName;     // nazev archivu, nad kterym pracujem
     char* OldName;            // puvodni nazev souboru pred zapakovanim
-    CQuadWord InputSize;      // velikost archivu
+    CQuadWord InputSize;      // velikost archivu (parcialni)
     CQuadWord InputPos;       // pozice v archivu (parcialni)
     CQuadWord StreamPos;      // pozice v archivu (pro progress)
     HANDLE File;              // otevreny archiv
