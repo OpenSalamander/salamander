@@ -1920,7 +1920,7 @@ BOOL CFilesWindow::ChangeDir(const char* newDir, int suggestedTopIndex, const ch
 
     BOOL useStopRefresh = newDir == NULL;
     if (useStopRefresh)
-        BeginStopRefresh(); // cmuchal will relax now
+        BeginStopRefresh(); // snooper will relax now
 
 CHANGE_AGAIN:
 
@@ -1959,7 +1959,7 @@ CHANGE_AGAIN:
                 if (newDir != NULL)
                 {
                     if (useStopRefresh)
-                        EndStopRefresh(); // cmuchal will be started again
+                        EndStopRefresh(); // snooper will be started again
                     if (failReason != NULL)
                         *failReason = CHPPFR_INVALIDPATH;
                     return FALSE; // we're finished, it can't be repeated
@@ -2041,7 +2041,7 @@ CHANGE_AGAIN:
                 else
                 {
                     if (useStopRefresh)
-                        EndStopRefresh(); // cmuchal will be started again
+                        EndStopRefresh(); // snooper will be started again
                     if (failReason != NULL)
                         *failReason = localFailReason;
                     return ret;
@@ -2055,7 +2055,7 @@ CHANGE_AGAIN:
                 if (newDir != NULL)
                 {
                     if (useStopRefresh)
-                        EndStopRefresh(); // cmuchal will be started again
+                        EndStopRefresh(); // snooper will be started again
                     if (failReason != NULL)
                         *failReason = CHPPFR_INVALIDPATH;
                     return FALSE; // finished, cannot be repeated
@@ -2112,7 +2112,7 @@ CHANGE_AGAIN:
                 if (errTextID == IDS_EMPTYNAMENOTALLOWED)
                 {
                     if (useStopRefresh)
-                        EndStopRefresh(); // cmuchal will be started again
+                        EndStopRefresh(); // snooper will be started again
                     if (failReason != NULL)
                         *failReason = CHPPFR_SUCCESS;
                     return FALSE; // empty string, nothing to do
@@ -2151,7 +2151,7 @@ CHANGE_AGAIN:
                                 if (newDir != NULL)
                                 {
                                     if (useStopRefresh)
-                                        EndStopRefresh(); // cmuchal will be started again
+                                        EndStopRefresh(); // snooper will be started again
                                     if (failReason != NULL)
                                         *failReason = CHPPFR_INVALIDPATH;
                                     return FALSE; // finished, cannot be repeated
@@ -2177,7 +2177,7 @@ CHANGE_AGAIN:
                     if (newDir != NULL)
                     {
                         if (useStopRefresh)
-                            EndStopRefresh(); // cmuchal will be started again
+                            EndStopRefresh(); // snooper will be started again
                         if (failReason != NULL)
                             *failReason = CHPPFR_INVALIDPATH;
                         return FALSE; // finished, cannot be repeated
@@ -2275,7 +2275,7 @@ CHANGE_AGAIN:
                                             BOOL ret = ChangePathToDisk(HWindow, copy, suggestedTopIndex, suggestedFocusName,
                                                                         NULL, TRUE, FALSE, FALSE, failReason);
                                             if (useStopRefresh)
-                                                EndStopRefresh(); // cmuchal will be started again
+                                                EndStopRefresh(); // snooper will be started again
                                             return ret;
                                         }
                                     }
@@ -2351,7 +2351,7 @@ CHANGE_AGAIN:
                                         if (failReason != NULL)
                                             *failReason = localFailReason;
                                         if (useStopRefresh)
-                                            EndStopRefresh(); // cmuchal will be started again
+                                            EndStopRefresh(); // snooper will be started again
                                         return ret;
                                     }
                                 }
@@ -2365,7 +2365,7 @@ CHANGE_AGAIN:
                                         // change of the path to absolute windows path + focus to the file
                                         ChangePathToDisk(HWindow, shortenedPath, -1, name, NULL, TRUE, FALSE, FALSE, failReason);
                                         if (useStopRefresh)
-                                            EndStopRefresh(); // cmuchal will be started again
+                                            EndStopRefresh(); // snooper will be started again
                                         if (failReason != NULL && *failReason == CHPPFR_SUCCESS)
                                             *failReason = CHPPFR_FILENAMEFOCUSED;
                                         return FALSE; // listing another path (file name is cut)
@@ -2454,7 +2454,7 @@ CHANGE_AGAIN:
                 if (newDir != NULL)
                 {
                     if (useStopRefresh)
-                        EndStopRefresh(); // cmuchal will be started again
+                        EndStopRefresh(); // snopper will be started again
                     if (failReason != NULL)
                         *failReason = textFailReason;
                     return FALSE; // finished, cannot be repeated
@@ -2467,14 +2467,14 @@ CHANGE_AGAIN:
                 BOOL ret = ChangePathToDisk(HWindow, path, suggestedTopIndex, suggestedFocusName,
                                             NULL, TRUE, FALSE, FALSE, failReason);
                 if (useStopRefresh)
-                    EndStopRefresh(); // cmuchal will be started again
+                    EndStopRefresh(); // snooper will be started again
                 return ret;
             }
         }
     }
     UpdateWindow(MainWindow->HWindow);
     if (useStopRefresh)
-        EndStopRefresh(); // cmuchal will be started again
+        EndStopRefresh(); // snooper will be started again
     if (failReason != NULL)
         *failReason = CHPPFR_INVALIDPATH;
     return FALSE;
