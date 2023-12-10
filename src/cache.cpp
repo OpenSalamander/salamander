@@ -117,17 +117,17 @@ BOOL CCacheData::CleanFromDisk()
                 }
                 DeleteFile(TmpName);
             }
-            attrs = SalGetFileAttributes(TmpName); // we will verify if it was deleted
+            attrs = SalGetFileAttributes(TmpName); // check if the deletion was successful
             if (attrs == 0xFFFFFFFF)
             {
                 return GetLastError() == ERROR_FILE_NOT_FOUND || GetLastError() == ERROR_PATH_NOT_FOUND;
             }
         }
-        else // the plugin should do deleting
+        else // deletion should be handled by the plugin
         {
             if (OwnDeletePlugin != NULL) // we can start deleting (plugin can't be unloaded), otherwise the file
             {                            // won't be  deleted (it's either already deleted or it's just
-                                         // disconnected - it chooses a plugin when unloading
+                                         // disconnected - the plugin decides this during its unload
                 DeleteManager.AddFile(TmpName, OwnDeletePlugin);
                 OwnDeletePlugin = NULL; // no more deleting will be done
             }
@@ -162,11 +162,11 @@ CCacheData::GetName(CDiskCache* monitor, BOOL* exists, BOOL canBlock, BOOL onlyA
             *exists = FALSE;
             if (errorCode != NULL)
                 *errorCode = onlyAdd ? DCGNE_ALREADYEXISTS : DCGNE_NOTFOUND;
-            return NULL; // "not found" error, and if 'onlyAdd' is TRUE, then 'the file already exists', too
+            return NULL; // "not found" error, and if 'onlyAdd' is TRUE, then also "file already exists"
         }
     }
 
-    if (res == WAIT_OBJECT_0) // tmp-file is ready or those who are allowed to prepare it are us (those who call GetName)
+    if (res == WAIT_OBJECT_0) // tmp-file is ready or we are allowed to prepare it (the one who calls GetName)
     {
         if (Prepared) // tmp-file is ready
         {
@@ -217,7 +217,7 @@ CCacheData::GetName(CDiskCache* monitor, BOOL* exists, BOOL canBlock, BOOL onlyA
     // tmp-file is not ready, the owning thread has been terminated
     // mutex Preparing is ours (either via WAIT_OBJECT_0 or WAIT_ABANDONED)
     *exists = FALSE;
-    if (!CleanFromDisk()) // name change is needed, the original tmp-file is probably still opened
+    if (!CleanFromDisk()) // name change is needed, the original tmp-file probably remained open
     {
         TRACE_E("Unable to delete tmp-file.");
     }
@@ -364,9 +364,9 @@ BOOL CCacheDirData::ContainTmpName(const char* tmpName, const char* rootTmpPath,
             s++;
         while (*s != 0 && *s != '\\')
             s++;
-        if (*s == 0 || *(s + 1) == 0) // there's already one name of a subdirectory after root-tmp-path (or with '\\' at the end)
+        if (*s == 0 || *(s + 1) == 0) // // after the root-tmp-path, there's only one subdirectory name (possibly with '\\' at the end)
         {
-            *canContainThisName = TRUE; // tmp-root answers, tmp-file can be placed here
+            *canContainThisName = TRUE; // tmp-root matches, tmp-file can be placed here
 
             char tmpFullName[MAX_PATH];
             memcpy(tmpFullName, Path, PathLength);
@@ -470,7 +470,7 @@ void CCacheDirData::RemoveEmptyTmpDirsOnlyFromDisk()
     if (PathLength > 0)
         Path[PathLength - 1] = 0; // backslash trimming
     SetFileAttributes(Path, FILE_ATTRIBUTE_ARCHIVE);
-    // the system deletes our tmp-directory only if it's empty (in case of other need of tmp-directory we will create it in CCacheDirData::GetName())
+    // the system deletes our tmp-directory only if it's empty (in case of further need for a tmp-directory, we will create it in CCacheDirData::GetName())
     RemoveDirectory(Path);
     if (PathLength > 0)
         Path[PathLength - 1] = '\\'; // returning of backslash
