@@ -32,6 +32,17 @@ for %%t in (Debug_x86 Release_x86 Debug_x64 Release_x64) do (
   call :clean_salbin_dir "%OPENSAL_BUILD_DIR%salamander\%%t"
 )
 
+for %%t in (Debug Release) do (
+  if exist "%OPENSAL_BUILD_DIR%sfx7zip\%%t" rmdir /s /q "%OPENSAL_BUILD_DIR%sfx7zip\%%t" 2>nul
+  if exist "%OPENSAL_BUILD_DIR%translator\%%t" rmdir /s /q "%OPENSAL_BUILD_DIR%translator\%%t" 2>nul
+  if exist "%OPENSAL_BUILD_DIR%tserver\%%t" rmdir /s /q "%OPENSAL_BUILD_DIR%tserver\%%t" 2>nul
+)
+
+for %%t in (Debug_x86 Release_x86 Debug_x64 Release_x64) do (
+  if exist "%OPENSAL_BUILD_DIR%setup\%%t" rmdir /s /q "%OPENSAL_BUILD_DIR%setup\%%t" 2>nul
+  if exist "%OPENSAL_BUILD_DIR%remove\%%t" rmdir /s /q "%OPENSAL_BUILD_DIR%remove\%%t" 2>nul
+)
+
 if "%skip_pauses_in_clean_all_interm%"=="" (
   echo.
   echo DONE
