@@ -176,7 +176,7 @@ public:
     BOOL ContainTmpName(const char* tmpName, const char* rootTmpPath, int rootTmpPathLen,
                         BOOL* canContainThisName);
 
-    // seeks for 'name' in the tmp-directory; if it's found, returns TRUE and values 'name' and 'tmpPath',
+    // searches for 'name' in the tmp-directory; if it's found, returns TRUE and values 'name' and 'tmpPath',
     // so that they match expected values from CDiskCache::GetName(); if it's not found,
     // returns FALSE
     //
@@ -198,12 +198,12 @@ public:
     const char* GetName(const char* name, const char* tmpName, BOOL* exists, BOOL ownDelete,
                         CPluginInterfaceAbstract* ownDeletePlugin, int* errorCode);
 
-    // seeks for 'name' in the tmp-directory; if it's found, returns TRUE and 'ret' is set to return value
+    // searches for 'name' in the tmp-directory; if it's found, returns TRUE and 'ret' is set to return value
     // CDiskCache::NamePrepared(name, size); if it's not found, returns FALSE
     // for description see CDiskCache::NamePrepared()
     BOOL NamePrepared(const char* name, const CQuadWord& size, BOOL* ret);
 
-    // seeks for 'name' in the tmp-directory; if it's found, returns TRUE and 'ret' is set to return value
+    // searches for 'name' in the tmp-directory; if it's found, returns TRUE and 'ret' is set to return value
     // CDiskCache::AssignName(name, lock, lockOwner, remove); if it's not found, returns FALSE
     // for description see CDiskCache::AssignName()
     //
@@ -211,7 +211,7 @@ public:
     BOOL AssignName(CCacheHandles* handles, const char* name, HANDLE lock, BOOL lockOwner,
                     CCacheRemoveType remove, BOOL* ret);
 
-    // seeks for 'name' in the tmp-directory; if it's found, returns TRUE and 'ret' is set to return value
+    // searches for 'name' in the tmp-directory; if it's found, returns TRUE and 'ret' is set to return value
     // CDiskCache::ReleaseName(name); if it's not found, returns FALSE
     // for description see CDiskCache::ReleaseName()
     //
@@ -219,7 +219,7 @@ public:
     //              or if it's necessary to decide about its further existence
     BOOL ReleaseName(const char* name, BOOL* ret, BOOL* lastCached, BOOL storeInCache);
 
-    // seeks for 'data' in the tmp-directory; if it's found, returns TRUE and cancels tmp-file 'data';
+    // searches for 'data' in the tmp-directory; if it's found, returns TRUE and cancels tmp-file 'data';
     // if it's not found, returns FALSE
     //
     // data - tmp-file
@@ -282,7 +282,7 @@ protected:
 
     CDiskCache* DiskCache; // disk-cache, to which this object belongs
 
-    int Idle; // this is used to determine if we found anything during one search
+    int Idle; // this is used to determine if we found anything during one round of searching
               // 0 - empty (and answer is no), 1 - query, 2 - checking answer, 3 - answer yes
 
 public:
@@ -460,7 +460,7 @@ public:
     void ClearTEMPIfNeeded(HWND parent, HWND hActivePanel);
 
 protected:
-    void Enter() { HANDLES(EnterCriticalSection(&Monitor)); } // called before entering methods
+    void Enter() { HANDLES(EnterCriticalSection(&Monitor)); } // called after entering methods
     void Leave() { HANDLES(LeaveCriticalSection(&Monitor)); } // called before leaving methods
 
     // checks conditions on disk, if necessary, releases some free cached tmp-files
@@ -499,7 +499,7 @@ class CDeleteManager
 protected:
     CRITICAL_SECTION CS; // section used for synchronization of this object
 
-    // file data, which should be deleted (in the main thread by calling the method
+    // data about the files that are to be deleted (in the main thread by calling the method
     // CPluginInterfaceForArchiverAbstract::DeleteTmpCopy of the plugin)
     TIndirectArray<CDeleteManagerItem> Data;
     BOOL WaitingForProcessing; // TRUE = message to the main window is on the way or the data

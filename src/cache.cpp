@@ -473,7 +473,7 @@ void CCacheDirData::RemoveEmptyTmpDirsOnlyFromDisk()
     // the system deletes our tmp-directory only if it's empty (in case of further need for a tmp-directory, we will create it in CCacheDirData::GetName())
     RemoveDirectory(Path);
     if (PathLength > 0)
-        Path[PathLength - 1] = '\\'; // returning of backslash
+        Path[PathLength - 1] = '\\'; // restoring backslash
 }
 
 BOOL CCacheDirData::GetName(CDiskCache* monitor, const char* name, BOOL* exists, const char** tmpPath,
@@ -582,7 +582,7 @@ BOOL CCacheDirData::ReleaseName(const char* name, BOOL* ret, BOOL* lastCached, B
         BOOL last;
         *ret = Names[i]->ReleaseName(&last, storeInCache);
         *lastCached = FALSE;
-        if (last) // contemporarily, it was the last link to this tmp-file
+        if (last) // contemporarily, this was also the last link to this tmp-file
         {
             if (Names[i]->IsCached())
                 *lastCached = TRUE;
@@ -667,7 +667,7 @@ void CCacheDirData::FlushCache(const char* name)
     int nameLen = (int)strlen(name);
     int i;
     GetNameIndex(name, i);       // we'll find the index (match/insertion) from which it makes sense to search for the same prefixes
-    for (; i < Names.Count; i++) // names are sorted -> elements with the same prefix are connected to each other
+    for (; i < Names.Count; i++) // names are sorted -> elements with the same prefix are continuously next to each other
     {
         if (strncmp(Names[i]->GetName(), name, nameLen) == 0) // mame ho
         {
@@ -996,7 +996,7 @@ void CCacheHandles::WaitForObjects(HANDLE* handle, CCacheData** owner, int* inde
         }
 
         // in the beginning of the handle checking cycle we will wait for a while (at this opportunity
-        // we are waiting for the first part of handle - it includes 'Terminate', 'BoxFull', 'TestIdle'
+        // we are waiting for the first part of handles - it includes 'Terminate', 'BoxFull', 'TestIdle'
         // and the first few normal handles)
         timeout = CACHE_HANDLES_WAIT;
     }
@@ -1037,7 +1037,7 @@ void CCacheHandles::WaitSatisfied(HANDLE handle, CCacheData* owner, int index)
     }
     Handles.Delete(index);
     Owners.Delete(index);
-    DiskCache->WaitSatisfied(handle, owner); // input to the disk-cache monitor
+    DiskCache->WaitSatisfied(handle, owner); // entering the disk-cache monitor
 }
 
 void CCacheHandles::WaitForIdle()
@@ -1045,7 +1045,7 @@ void CCacheHandles::WaitForIdle()
     CALL_STACK_MESSAGE1("CCacheHandles::WaitForIdle()");
     TRACE_I("CCacheHandles::WaitForIdle begin");
     Idle = 1;                              // we are asking
-    SetEvent(TestIdle);                    // if the watching thread is waiting, we will stop it (we will run the idle-state test)
+    SetEvent(TestIdle);                    // if the watching thread is waiting, we will stop the wait (we will run the idle-state test)
     WaitForSingleObject(IsIdle, INFINITE); // we are waiting for idle
     TRACE_I("CCacheHandles::WaitForIdle end");
 }
@@ -1135,7 +1135,7 @@ CDiskCache::GetName(const char* name, const char* tmpName, BOOL* exists, BOOL on
         }
     }
 
-    // if we are searching for an existing tmp-file, we will return "not found" error
+    // if we are just searching for an existing tmp-file, we will return "not found" error
     if (tmpName == NULL)
     {
         *exists = FALSE; // "not found" error (but not a fatal error)
@@ -1223,7 +1223,7 @@ BOOL CDiskCache::NamePrepared(const char* name, const CQuadWord& size)
     for (i = 0; i < Dirs.Count; i++)
     {
         BOOL ret;
-        if (Dirs[i]->NamePrepared(name, size, &ret)) // 'name' not found
+        if (Dirs[i]->NamePrepared(name, size, &ret)) // 'name' found
         {
             Leave();
             return ret;
@@ -1245,7 +1245,7 @@ BOOL CDiskCache::AssignName(const char* name, HANDLE lock, BOOL lockOwner, CCach
     {
         BOOL ret;
         if (Dirs[i]->AssignName(&Handles, name, lock, lockOwner, remove, &ret))
-        { // 'name' not found
+        { // 'name' found
             if (!ret)
                 Handles.ReleaseBox(); // an error occurred, we will release the box
             Leave();
@@ -1621,7 +1621,7 @@ void CDeleteManager::ProcessData()
             item = Data[0]; // we will select the oldest item (it can't be NULL)
             Data.Detach(0);
             if (!Data.IsGood())
-                Data.ResetState(); // the item disconnection did not occur, and the larger array is nothing wrong
+                Data.ResetState(); // the element has been detached, and it doesn't matter if the array is larger
         }
         else
             WaitingForProcessing = FALSE; // we are finishing processing
@@ -1655,7 +1655,7 @@ void CDeleteManager::PluginMayBeUnloaded(HWND parent, CPluginData* plugin)
 
     if (plugin->IsArchiverAndHaveOwnDelete())
     {
-        // we will lower the thread priority - we are going to delete a file to a plugin
+        // lower the thread's priority - we are going to delete a file in the plugin
         SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
         HANDLES(EnterCriticalSection(&CS));
@@ -1673,7 +1673,7 @@ void CDeleteManager::PluginMayBeUnloaded(HWND parent, CPluginData* plugin)
             WaitingForProcessing = TRUE; // we will block sending WM_USER_PROCESSDELETEMAN - undesirable and unnecessary, data processing will take place at the end of the method
         HANDLES(LeaveCriticalSection(&CS));
 
-        BlockDataProcessing = TRUE; // in case that WM_TIMER would leak posted to the main window (we block it because it can be delivered by the first unpacked messagebox and its messageloop)
+        BlockDataProcessing = TRUE; // // in case we missed a WM_TIMER message posted to the main window (we block it, because it can be delivered by the first displayed messagebox and its message loop)
 
         int copiesCount = DiskCache.CountNamesDeletedByPlugin(plugin->GetPluginInterface()->GetInterface());
         if (copiesCount > 0) // plugin still has some tmp-files opened (and it should ensure their deletion)
