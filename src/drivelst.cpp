@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -25,7 +26,7 @@ void GetNetworkDrives(DWORD& netDrives, char (*netRemotePath)[MAX_PATH])
 void GetNetworkDrivesBody(DWORD& netDrives, char (*netRemotePath)[MAX_PATH], char* buffer)
 {
     CALL_STACK_MESSAGE1("GetNetworkDrives(,)");
-    netDrives = 0; // bitove pole network disku
+    netDrives = 0; // bit array of network drives
 
     HANDLE hEnumNet;
     DWORD err = WNetOpenEnum(RESOURCE_REMEMBERED, RESOURCETYPE_DISK,
@@ -43,7 +44,7 @@ void GetNetworkDrivesBody(DWORD& netDrives, char (*netRemotePath)[MAX_PATH], cha
             if (err == ERROR_SUCCESS && e > 0)
             {
                 int i;
-                for (i = 0; i < (int)e; i++) // zpracujem nove data
+                for (i = 0; i < (int)e; i++) // we will process new data
                 {
                     char* name = netSources[i].lpLocalName;
                     if (name != NULL)
@@ -91,7 +92,7 @@ BOOL GetUserName(const char* drive, const char* remoteName, char* userName, DWOR
     HKEY network;
     LONG res = HANDLES_Q(RegOpenKeyEx(HKEY_CURRENT_USER, "Network", 0, KEY_READ, &network));
     if (res != ERROR_SUCCESS)
-        return FALSE; // tak nic ...
+        return FALSE; // well, nothing ...
 
     BOOL ret = FALSE;
     char keyName[MAX_PATH];
@@ -108,13 +109,13 @@ BOOL GetUserName(const char* drive, const char* remoteName, char* userName, DWOR
                                  (unsigned char*)keyName, &keyNameSize);
         if (res == ERROR_SUCCESS && type == REG_SZ && IsTheSamePath(keyName, remoteName))
         {
-            ret = TRUE; // ohlasime uspech, i kdyz uzivatelske jmeno neni definovane (ma se pouzit aktualni user)
+            ret = TRUE; // we will announce success, even if the user name is not defined (the current user should be used)
 
             keyNameSize = userBufSize;
             type = REG_SZ;
             res = SalRegQueryValueEx(driveKey, "UserName", 0, &type,
                                      (unsigned char*)userName, &keyNameSize);
-            if (res == ERROR_SUCCESS && type == REG_SZ && userName[0] != 0) // mame usera ?
+            if (res == ERROR_SUCCESS && type == REG_SZ && userName[0] != 0) // do we have a user?
                 TRACE_I("Found user name: " << keyName << ", " << userName);
             else
                 userName[0] = 0;
@@ -123,7 +124,7 @@ BOOL GetUserName(const char* drive, const char* remoteName, char* userName, DWOR
             type = REG_SZ;
             res = SalRegQueryValueEx(driveKey, "ProviderName", 0, &type,
                                      (unsigned char*)providerBuf, &keyNameSize);
-            if (res != ERROR_SUCCESS || type != REG_SZ) // pokud nemame providera, vynulujeme buffer
+            if (res != ERROR_SUCCESS || type != REG_SZ) // if we do not have a provider, we will reset the buffer
                 providerBuf[0] = 0;
         }
         HANDLES(RegCloseKey(driveKey));
@@ -157,7 +158,7 @@ DWORD WINAPI NBWNetAC3ThreadF(void* param)
 {
     CALL_STACK_MESSAGE_NONE
     CNBWNetAC3ThreadFParams* data = &NBWNetAC3ThreadFParams;
-    data->err = WNetAddConnection3(NULL /* nepouzivame CONNECT_INTERACTIVE, jsme v jinem threadu */,
+    data->err = WNetAddConnection3(NULL /* we're not using CONNECT_INTERACTIVE, we're in another thread */,
                                    &data->netResource, data->lpPassword, data->lpUserName, data->dwFlags);
     memset(data->bufPassword, 0, sizeof(data->bufPassword));
     if (data->err == ERROR_EXTENDED_ERROR &&
@@ -180,7 +181,7 @@ BOOL NonBlockingWNetAddConnection3(DWORD& err, LPNETRESOURCE lpNetResource,
     static CCriticalSection cs;
     CEnterCriticalSection enterCS(cs);
 
-    err = 0; // pro jistotu
+    err = 0; // for sure
     if (errProviderCode != NULL)
         *errProviderCode = 0;
     if (errBuf != NULL)
@@ -188,28 +189,28 @@ BOOL NonBlockingWNetAddConnection3(DWORD& err, LPNETRESOURCE lpNetResource,
     if (errProviderName != NULL)
         errProviderName[0] = 0;
 
-    // nejdrive pockame na dokonceni predchoziho "vypoctu"
-    GetAsyncKeyState(VK_ESCAPE); // init GetAsyncKeyState - viz help
+    // first all we will wait for the previous "calculation" to finish
+    GetAsyncKeyState(VK_ESCAPE); // init GetAsyncKeyState - see help
     if (NBWNetAC3Thread.ShutdownArrived)
-        return FALSE; // soft uz je ukonceny, zadna dalsi akce
+        return FALSE; // soft has already ended, no further action
     if (NBWNetAC3Thread.Thread != NULL)
     {
         while (1)
         {
             DWORD res = WaitForSingleObject(NBWNetAC3Thread.Thread, 200);
             if (res == WAIT_FAILED)
-                return FALSE; // invalidni handle threadu (zavreno zvenci pri ukoncovani softu)
+                return FALSE; // invalid thread handle (closed from outside when ending the soft)
             if (res != WAIT_TIMEOUT)
                 break;
             if (UserWantsToCancelSafeWaitWindow())
                 return FALSE;
         }
         if (NBWNetAC3Thread.ShutdownArrived)
-            return FALSE; // soft uz je ukonceny, zadna dalsi akce
+            return FALSE; // soft has already ended, no further action
         NBWNetAC3Thread.Close();
     }
 
-    // pak nastavime parametry a zkusime spustit novy thread
+    // then we will set the parameters and try to start a new thread
     if (lpUserName != NULL)
     {
         lstrcpyn(NBWNetAC3ThreadFParams.bufUserName, lpUserName, USERNAME_MAXLEN);
@@ -247,22 +248,22 @@ BOOL NonBlockingWNetAddConnection3(DWORD& err, LPNETRESOURCE lpNetResource,
     {
         memset(NBWNetAC3ThreadFParams.bufPassword, 0, sizeof(NBWNetAC3ThreadFParams.bufPassword));
         TRACE_E("Unable to start add-net-connection-3 thread.");
-        return FALSE; // chyba (simulace ESC)
+        return FALSE; // error (simulation of ESC)
     }
 
-    // pockame na dokonceni "vypoctu", abychom mohli vratit vysledek
+    // we will wait for the "calculation" to finish so that we can return the result
     while (1)
     {
         DWORD res = WaitForSingleObject(NBWNetAC3Thread.Thread, 200);
         if (res == WAIT_FAILED)
-            return FALSE; // invalidni handle threadu (zavreno zvenci pri ukoncovani softu)
+            return FALSE; // invalid thread handle (closed from outside when ending the soft)
         if (res != WAIT_TIMEOUT)
             break;
         if (UserWantsToCancelSafeWaitWindow())
             return FALSE;
     }
     if (NBWNetAC3Thread.ShutdownArrived)
-        return FALSE; // soft uz je ukonceny, zadna dalsi akce
+        return FALSE; // soft has already ended, no further action
     NBWNetAC3Thread.Close();
 
     if (errProviderCode != NULL)
@@ -277,7 +278,7 @@ BOOL NonBlockingWNetAddConnection3(DWORD& err, LPNETRESOURCE lpNetResource,
 
 BOOL IsLogonFailureErr(DWORD err)
 {
-    return err == ERROR_ACCESS_DENIED || // obrana proti napr. "no files found"
+    return err == ERROR_ACCESS_DENIED || // defense against e.g. "no files found"
            err == ERROR_LOGON_FAILURE ||
            err == ERROR_ACCOUNT_RESTRICTION ||
            err == ERROR_INVALID_LOGON_HOURS ||
@@ -296,7 +297,7 @@ BOOL IsLogonFailureErr(DWORD err)
            err == ERROR_BAD_USERNAME ||
            err == ERROR_NO_SUCH_USER ||
            err == ERROR_DOWNGRADE_DETECTED ||
-           err == ERROR_EXTENDED_ERROR; // cert vi co je to za extended chybu, ale pada sem "password expired", takze to obecne povazujeme za logon-failure (maximalne da user Cancel)
+           err == ERROR_EXTENDED_ERROR; // who knows what extended error this is, but "password expired" belongs here, so that it's a logon failure (at least user says Cancel)
 }
 
 BOOL IsBadUserNameOrPasswdErr(DWORD err)
@@ -325,7 +326,7 @@ BOOL CharIsAllowedInServerName(char c)
     case ')':
     case '=':
     case '+':
-        //    case '_':     // pri tomto znaku se objevi jen warning
+        //    case '_':          //  only warning appears for this character
     case '[':
     case ']':
     case '{':
@@ -356,8 +357,8 @@ BOOL IsAdminShareExtraLogonFailureErr(DWORD err, const char* root)
         const char* server = root + 2;
         root++;
         while (*++root != 0 && *root != '\\' && CharIsAllowedInServerName(*root))
-            ;             // preskok jmena serveru + jednoduchy test (neuplny, napr. zakazuje tecky i v IPv4 a IPv6), jestli skutecne nejde o invalid name (v tom pripade se nebudeme ptat na jmeno+heslo)
-        if (*root == '.') // osetrime jeste IPv4 adresy (na IPv6 kasleme)
+            ;             // skip server name + simple test (incomplete, e.g. forbids dots in IPv4 and IPv6), whether it is really an invalid name (in that case we will not ask for username+password)
+        if (*root == '.') // we will take care of IPv4 adresses (let's ignore IPv6)
         {
             const char* r = root;
             while (*++r != 0 && *r != '\\')
@@ -367,7 +368,7 @@ BOOL IsAdminShareExtraLogonFailureErr(DWORD err, const char* root)
                 char ip[51];
                 lstrcpyn(ip, server, (int)((r - server) + 1));
                 if (inet_addr(ip) != INADDR_NONE)
-                    root = r; // jde o IP string (aa.bb.cc.dd)
+                    root = r; // this is an IP string (aa.bb.cc.dd)
             }
         }
         if (*root == '\\')
@@ -375,7 +376,7 @@ BOOL IsAdminShareExtraLogonFailureErr(DWORD err, const char* root)
             while (*++root != 0 && *root != '\\')
                 ;
             if (*(root - 1) == '$')
-                return TRUE; // admin share (\\server\share$ nebo \\server\share$\...)
+                return TRUE; // admin share (\\server\share$ or \\server\share$\...)
         }
         else
         {
@@ -465,7 +466,7 @@ BOOL RestoreNetworkConnection(HWND parent, const char* name, const char* remoteN
                     lstrcpyn(serverName, lpNetResource->lpRemoteName + 2, (int)min(MAX_PATH, (end - (lpNetResource->lpRemoteName + 2)) + 1));
             }
         }
-        if (serverName[0] == 0) // nejde o variantu \\server ani \\server\, vyresime to volanim puvodniho kodu
+        if (serverName[0] == 0) // this is not a \\server or \\server\ variant, we will solve it by calling the original code
         {
             *retErr = WNetAddConnection2(lpNetResource, NULL, NULL, CONNECT_INTERACTIVE);
             return *retErr == NO_ERROR;
@@ -487,18 +488,18 @@ BOOL RestoreNetworkConnection(HWND parent, const char* name, const char* remoteN
             if (end != NULL && *(end + 1) != '\\' && *(end + 1) != 0)
             {
                 const char* last = strchr(end + 2, '\\');
-                if (last == NULL || *(last + 1) == 0) // vlastni dialog pod XP+Vista ukazeme jen pro proste UNC cesty: "\\\\server\share" a "\\\\server\\share\\"
+                if (last == NULL || *(last + 1) == 0) // the own dialog under XP+Vista will be only shown for simple UNC paths: "\\server\share" and "\\server\\share\\"
                     lstrcpyn(serverName, remoteName + 2, (int)min(MAX_PATH, (end - (remoteName + 2)) + 1));
             }
         }
 
-        if (name != NULL &&                                                                     // jen mapovane cesty (na pismenko drivu)
-            GetUserName(name, remoteName, userNameBuf, USERNAME_MAXLEN, providerBuf, MAX_PATH)) // nezname uzivatelske jmeno pro restorovanou connectionu
+        if (name != NULL &&                                                                     // mapped paths only (for the drive letter)
+            GetUserName(name, remoteName, userNameBuf, USERNAME_MAXLEN, providerBuf, MAX_PATH)) // unknown user name for the restored connection
         {
             if (userNameBuf[0] != 0)
                 userName = userNameBuf;
             if (providerBuf[0] != 0)
-                nsBuf.lpProvider = providerBuf; // znalost providera uzasne zrychluje sitovou odezvu (aspon na XP)
+                nsBuf.lpProvider = providerBuf; // knowledge of the provider greatly speeds up the network response (at least on XP)
         }
     }
 
@@ -507,8 +508,8 @@ BOOL RestoreNetworkConnection(HWND parent, const char* name, const char* remoteN
     DWORD err;
     char* passwd = NULL;
 
-    // XP+Vista: dynamicky vytahneme funkce pro ziskani username+password ve standardnim dialogu (vcetne moznosti ulozit do Credential Manageru - viz "Manage your network passwords" v User Accounts v Control Panelu)
-    // Windows 7: maji zase novy dialog a zatim jsem k nemu neobjevil rozhrani
+    // XP+Vista: we will dynamically extract functions for getting username+password in the standard dialog (including the option to save to Credential Manager - see "Manage your network passwords" in User Accounts in Control Panel)
+    // Windows 7: there is a new dialog again and I have not yet discovered the interface for it
     HMODULE credUIDLL = !Windows7AndLater ? HANDLES(LoadLibrary("CREDUI.DLL")) : NULL;
     FT_CredUIPromptForCredentialsA credUIPromptForCredentialsA = NULL;
     FT_CredUIConfirmCredentialsA credUIConfirmCredentialsA = NULL;
@@ -528,8 +529,8 @@ BOOL RestoreNetworkConnection(HWND parent, const char* name, const char* remoteN
         TRACE_E("RestoreNetworkConnection(): unable to use CredUIPromptForCredentialsA or CredUIConfirmCredentialsAfunction");
     }
 
-    BOOL connectInteractive = FALSE; // TRUE: Windows 7 vzdy, XP+Vista jen pokud neni k dispozici CREDUI.DLL nebo nejde o prostou UNC cestu: pouzijeme flag CONNECT_INTERACTIVE (umi delat s "network passwords") a tedy nutne i blokujici volani WNetAddConnection3 (musi byt s parentem ve stejnem threadu)
-    BOOL confirmCred = FALSE;        // TRUE: je potreba volat CredUIConfirmCredentialsA
+    BOOL connectInteractive = FALSE; // TRUE: Windows 7 always, XP+Vista only if CREDUI.DLL is not available or it is not a simple UNC path: we will use the CONNECT_INTERACTIVE flag (can do with "network passwords") and therefore the blocking call WNetAddConnection3 (must be in the same thread with the parent)
+    BOOL confirmCred = FALSE;        // TRUE: calling CredUIConfirmCredentialsA is needed
 
     //  char domain[DOMAIN_MAXLEN];
     CREDUI_INFOA uiInfo = {0};
@@ -541,11 +542,11 @@ BOOL RestoreNetworkConnection(HWND parent, const char* name, const char* remoteN
     char messageBuf[MAX_PATH + 100];
     messageBuf[0] = 0;
 
-    if (name == NULL) // mapovani UNC cest na "none"
+    if (name == NULL) // mapping UNC paths to "none"
     {
-        if (!Windows7AndLater && // na Windows 7 je zase novy dialog a zatim jsem k nemu neobjevil rozhrani
+        if (!Windows7AndLater && // there's a new dialog again on Windows 7 and I haven't found the interface for it yet
             credUIPromptForCredentialsA != NULL && credUIConfirmCredentialsA != NULL /*&& credUIParseUserNameA != NULL*/ &&
-            serverName[0] != 0) // vlastni dialog zadani jmena a hesla ukazeme jen pro proste UNC cesty (\\server\share), DFS a dalsi prenechame systemu
+            serverName[0] != 0) // own dialog for entering username+password we will show only for simple UNC paths (\\server\share), we will leave DFS and others to the system
         {
             BOOL save = FALSE;
 
@@ -553,18 +554,18 @@ BOOL RestoreNetworkConnection(HWND parent, const char* name, const char* remoteN
                                               dlg.Passwd, sizeof(dlg.Passwd), &save,
                                               CREDUI_FLAGS_EXPECT_CONFIRMATION);
             if (err == ERROR_CANCELLED)
-                ret = FALSE; // user dal Cancel
+                ret = FALSE; // user Canceled
             else
             {
                 if (lpNetResource == NULL)
-                    UpdateWindow(MainWindow->HWindow); // pro pouziti z nethoodu nema smysl
-                if (err == NO_ERROR)                   // user dal OK
+                    UpdateWindow(MainWindow->HWindow); // doesn't make sense to use from nethood
+                if (err == NO_ERROR)                   // user confirmed with OK
                 {
                     confirmCred = TRUE;
                     lstrcpyn(userNameBuf, dlg.User, USERNAME_MAXLEN);
                     userName = userNameBuf;
                     passwd = dlg.Passwd;
-                    /* // tady byl problem s orezem domeny z username, proste se jim neslo logovat, protoze jsme z jejich domenoveho jmena udelali lokalni
+                    /* // there was a problem with trimming the domain from the username, they just couldn't log in because we made their domain name local
           if (credUIParseUserNameA(dlg.User, userNameBuf, USERNAME_MAXLEN, domain, DOMAIN_MAXLEN) == NO_ERROR)
           {
             confirmCred = TRUE;
@@ -577,13 +578,13 @@ BOOL RestoreNetworkConnection(HWND parent, const char* name, const char* remoteN
             userNameBuf[0] = 0;
             userName = NULL;
             credUIConfirmCredentialsA(serverName, FALSE);
-            connectInteractive = TRUE;  // jina chyba, at si s tim poradi systemova varianta
+            connectInteractive = TRUE;  // another error, let the system variant deal with it
             err = ERROR_BAD_USERNAME;
           }
 */
                 }
                 else
-                    connectInteractive = TRUE; // jina chyba, at si s tim poradi systemova varianta
+                    connectInteractive = TRUE; // another error, let the system variant deal with it
             }
             if (!confirmCred)
                 memset(dlg.Passwd, 0, sizeof(dlg.Passwd));
@@ -611,9 +612,9 @@ BOOL RestoreNetworkConnection(HWND parent, const char* name, const char* remoteN
         char errProviderName[200];
         errProviderName[0] = 0;
 
-        if (connectInteractive) // nechame WNetAddConnection3 ukazat standardni okenko pro zadani user+password (resi i Credential Managera)
+        if (connectInteractive) // let's WNetAddConnection3 show the standard window for entering user+password (also solves the Credential Manager)
         {
-            err = WNetAddConnection3(parent, ns, passwd, userName, CONNECT_INTERACTIVE | (name != NULL ? CONNECT_UPDATE_PROFILE : 0)); // neanonymni si pamatujeme
+            err = WNetAddConnection3(parent, ns, passwd, userName, CONNECT_INTERACTIVE | (name != NULL ? CONNECT_UPDATE_PROFILE : 0)); // we will remember the non-anonymous
             memset(dlg.Passwd, 0, sizeof(dlg.Passwd));
             passwd = NULL;
 
@@ -651,7 +652,7 @@ BOOL RestoreNetworkConnection(HWND parent, const char* name, const char* remoteN
                 CreateSafeWaitWindow(LoadStr(IDS_TRYINGRECONNECTESC), NULL, 3000, TRUE, NULL);
 
                 brk = !NonBlockingWNetAddConnection3(err, ns, passwd, userName,
-                                                     name != NULL ? CONNECT_UPDATE_PROFILE : 0, // neanonymni si pamatujeme
+                                                     name != NULL ? CONNECT_UPDATE_PROFILE : 0, // we will remember the non-anonymous
                                                      &errProviderCode, errBuf, errProviderName);
 
                 DestroySafeWaitWindow();
@@ -661,7 +662,7 @@ BOOL RestoreNetworkConnection(HWND parent, const char* name, const char* remoteN
             memset(dlg.Passwd, 0, sizeof(dlg.Passwd));
             passwd = NULL;
 
-            if (confirmCred) // nahlasime vysledek overeni hesla (podle toho se bude nebo nebude neukladat do Credential Manageru)
+            if (confirmCred) // we will report the result of the password verification (according to this, it will or will not be saved in the Credential Manager)
             {
                 credUIConfirmCredentialsA(serverName, err == ERROR_SUCCESS);
                 confirmCred = FALSE;
@@ -669,7 +670,7 @@ BOOL RestoreNetworkConnection(HWND parent, const char* name, const char* remoteN
 
             if (brk)
             {
-                ret = FALSE; // ESC v NonBlockingWNetAddConnection3()
+                ret = FALSE; // ESC in NonBlockingWNetAddConnection3()
                 err = ERROR_CANCELLED;
                 break;
             }
@@ -677,7 +678,7 @@ BOOL RestoreNetworkConnection(HWND parent, const char* name, const char* remoteN
 
         if (err == ERROR_SESSION_CREDENTIAL_CONFLICT)
         {
-            if (lpNetResource == NULL) // chyba se ukaze v nethoodu, tady ji ukazovat nebudeme
+            if (lpNetResource == NULL) // the error will be shown in nethood, we will not show it here
             {
                 SalMessageBox(parent, LoadStr(IDS_CREDENTIALCONFLICT), LoadStr(IDS_NETWORKERROR),
                               MB_OK | MB_ICONEXCLAMATION);
@@ -688,12 +689,12 @@ BOOL RestoreNetworkConnection(HWND parent, const char* name, const char* remoteN
 
         if (err == ERROR_ALREADY_ASSIGNED)
         {
-            // asi renonc - ukazujeme, ze drive neni pripojeny a pritom uz pripojeny je -> nechame
-            // rebuildnout drive bar i change drive menu
+            // probably a mistake - we are showing that the drive is not connected and yet it is connected -> let
+            // rebuild drive bar and change drive menu
             if (MainWindow != NULL && MainWindow->HWindow != NULL)
                 PostMessage(MainWindow->HWindow, WM_USER_DRIVES_CHANGE, 0, 0);
 
-            break; // vracime TRUE
+            break; // return TRUE
         }
 
         if (IsLogonFailureErr(err))
@@ -714,9 +715,9 @@ BOOL RestoreNetworkConnection(HWND parent, const char* name, const char* remoteN
             }
 
             BOOL newConnectInteractive = FALSE;
-            if (!Windows7AndLater && // na Windows 7 je zase novy dialog a zatim jsem k nemu neobjevil rozhrani
+            if (!Windows7AndLater && // there's a new dialog again on Windows 7 and I haven't found the interface for it yet
                 credUIPromptForCredentialsA != NULL && credUIConfirmCredentialsA != NULL /*&& credUIParseUserNameA != NULL*/ &&
-                serverName[0] != 0) // vlastni dialog zadani jmena a hesla ukazeme jen pro proste UNC cesty (\\server\share), DFS a dalsi prenechame systemu
+                serverName[0] != 0) // own dialog for entering username+password we will show only for simple UNC paths (\\server\share), we will leave DFS and others to the system
             {
                 BOOL save = FALSE;
                 err = credUIPromptForCredentialsA(&uiInfo, serverName, NULL, 0, dlg.User, sizeof(dlg.User),
@@ -724,14 +725,14 @@ BOOL RestoreNetworkConnection(HWND parent, const char* name, const char* remoteN
                                                   (name != NULL ? CREDUI_FLAGS_DO_NOT_PERSIST | CREDUI_FLAGS_GENERIC_CREDENTIALS : CREDUI_FLAGS_EXPECT_CONFIRMATION));
                 if (err == ERROR_CANCELLED)
                 {
-                    ret = FALSE; // user dal Cancel
+                    ret = FALSE; // user Canceled
                     break;
                 }
                 else
                 {
                     if (lpNetResource == NULL)
-                        UpdateWindow(MainWindow->HWindow); // pro pouziti z nethoodu nema smysl
-                    if (err == NO_ERROR)                   // user dal OK
+                        UpdateWindow(MainWindow->HWindow); // doesn't make sense to use from nethood
+                    if (err == NO_ERROR)                   // user confirmed with OK
                     {
                         if (name == NULL)
                             confirmCred = TRUE;
@@ -739,7 +740,7 @@ BOOL RestoreNetworkConnection(HWND parent, const char* name, const char* remoteN
                         userName = name != NULL && dlg.User[0] == 0 ? NULL : userNameBuf;
                         passwd = name != NULL && dlg.User[0] == 0 && dlg.Passwd[0] == 0 ? NULL : dlg.Passwd;
                         continue;
-                        /*  // tady byl problem s orezem domeny z username, proste se jim neslo logovat, protoze jsme z jejich domenoveho jmena udelali lokalni
+                        /*  // there was a problem with trimming the domain from the username, they just couldn't log in because we made their domain name local
             BOOL onlyUserName = name != NULL && strchr(dlg.User, '\\') == NULL && strchr(dlg.User, '@') == NULL;
             if (name != NULL && dlg.User[0] == 0 || onlyUserName ||
                 credUIParseUserNameA(dlg.User, userNameBuf, USERNAME_MAXLEN, domain, DOMAIN_MAXLEN) == NO_ERROR)
@@ -756,13 +757,13 @@ BOOL RestoreNetworkConnection(HWND parent, const char* name, const char* remoteN
               userNameBuf[0] = 0;
               userName = NULL;
               if (name == NULL) credUIConfirmCredentialsA(serverName, FALSE);
-              newConnectInteractive = TRUE;  // jina chyba, at si s tim poradi systemova varianta
+              newConnectInteractive = TRUE;  // other error, let the system variant deal with it
               err = ERROR_BAD_USERNAME;
             }
 */
                     }
                     else
-                        newConnectInteractive = TRUE; // jina chyba, at si s tim poradi systemova varianta
+                        newConnectInteractive = TRUE; // other error, let the system variant deal with it
                 }
                 memset(dlg.Passwd, 0, sizeof(dlg.Passwd));
                 passwd = NULL;
@@ -772,7 +773,7 @@ BOOL RestoreNetworkConnection(HWND parent, const char* name, const char* remoteN
 
             if (newConnectInteractive)
             {
-                if (!connectInteractive) // zkusime interaktivni rezim jen pokud jsme v nem uz nejeli (obrana proti nekonecnemu cyklu)
+                if (!connectInteractive) // let's try an interactive mode only if we haven't used it already (a defense against an infinite cycle)
                 {
                     connectInteractive = TRUE;
                     continue;
@@ -787,7 +788,7 @@ BOOL RestoreNetworkConnection(HWND parent, const char* name, const char* remoteN
 
         if (err != ERROR_SUCCESS && err != ERROR_DEVICE_ALREADY_REMEMBERED)
         {
-            if (lpNetResource == NULL) // chyba se ukaze v nethoodu, tady ji ukazovat nebudeme
+            if (lpNetResource == NULL) // the error will be shown in nethood, we will not show it here
             {
                 SalMessageBox(parent, GetErrorText(err), LoadStr(IDS_NETWORKERROR),
                               MB_OK | MB_ICONEXCLAMATION);
@@ -797,14 +798,14 @@ BOOL RestoreNetworkConnection(HWND parent, const char* name, const char* remoteN
         }
         else
         {
-            // u Tomase Jelinka po pripojeni se na non-accessible UNC drive nedoslo
-            // k zaslani notifikace a tedy k rebuildu DriveBar a zustal tam preskrtly drive
-            // u me na W2K notifikace chodi az po dvou vterinach
-            // proc si ji tedy nevynutit obratem:
+            // At Tomas Jelinek, after connecting to a non-accessible UNC drive, no notification
+            // was sent and therefore the DriveBar was not rebuilt and the drive remained crossed out
+            // at me on W2K, notification comes only after two seconds
+            // why not to force it right away:
             if (MainWindow != NULL && MainWindow->HWindow != NULL)
                 PostMessage(MainWindow->HWindow, WM_USER_DRIVES_CHANGE, 0, 0);
 
-            break; // vracime TRUE
+            break; // returning TRUE
         }
     }
     memset(dlg.Passwd, 0, sizeof(dlg.Passwd));
@@ -820,25 +821,25 @@ BOOL CheckAndRestoreNetworkConnection(HWND parent, const char drive, BOOL& pathI
     CALL_STACK_MESSAGE2("CheckAndRestoreNetworkConnection(, %u,)", drive);
     pathInvalid = FALSE;
 
-    DWORD netDrives; // bitove pole network disku
+    DWORD netDrives; // bit array of network drives
     char netRemotePath['z' - 'a' + 1][MAX_PATH];
 
     GetNetworkDrives(netDrives, netRemotePath);
 
-    if (netDrives & (1 << (LowerCase[drive] - 'a'))) // disk existoval, zkusime obnovu
+    if (netDrives & (1 << (LowerCase[drive] - 'a'))) // disk existed, try to restore
     {
         char name[4] = " :";
         name[0] = drive;
-        if (GetLogicalDrives() & (1 << (LowerCase[drive] - 'a'))) // teoreticky neni co delat, je pristupny... ale na Viste po hibernaci dokaze mapovany disk vracet stale stejnou chybu (napr. "(31) device attached to system is not functioning"), probereme ho az pristupem na UNC cestu, zrejme nejaka MS chyba, ale v Exploreru jim to funguje, cert vi co tam delaji
+        if (GetLogicalDrives() & (1 << (LowerCase[drive] - 'a'))) // theoretically there is nothing to do, it is accessible ... but on Vista after hibernation, the mapped disk can return the same error over and over again (e.g. "(31) device attached to system is not functioning"), we will discuss it only by accessing the UNC path, probably some MS error, but in Explorer it works, who knows what they are doing there
         {
             name[2] = '\\';
             name[3] = 0;
             DWORD err = NO_ERROR;
             char* netPath = netRemotePath[LowerCase[drive] - 'a'];
-            if (netPath[0] == '\\' && netPath[1] == '\\' && strchr(netPath + 2, '\\') != NULL &&                                   // aspon primitivni test na validni UNC cestu
-                (err = SalCheckPath(FALSE, name, ERROR_SUCCESS, TRUE, parent)) != ERROR_SUCCESS && err != ERROR_USER_TERMINATED && // mapovany disk neni pristupny
-                (err = SalCheckPath(FALSE, netPath, ERROR_SUCCESS, TRUE, parent)) == ERROR_SUCCESS &&                              // UNC je pristupna
-                (err = SalCheckPath(FALSE, name, ERROR_SUCCESS, TRUE, parent)) == ERROR_SUCCESS)                                   // ted uz je pristupny i mapovany disk
+            if (netPath[0] == '\\' && netPath[1] == '\\' && strchr(netPath + 2, '\\') != NULL &&                                   // at least a primitive test of a valid UNC path
+                (err = SalCheckPath(FALSE, name, ERROR_SUCCESS, TRUE, parent)) != ERROR_SUCCESS && err != ERROR_USER_TERMINATED && // mapped disk is not accessible
+                (err = SalCheckPath(FALSE, netPath, ERROR_SUCCESS, TRUE, parent)) == ERROR_SUCCESS &&                              // UNC is accessible
+                (err = SalCheckPath(FALSE, name, ERROR_SUCCESS, TRUE, parent)) == ERROR_SUCCESS)                                   // now the mapped disk is accessible again
             {
                 return TRUE;
             }
@@ -863,7 +864,7 @@ BOOL CheckAndConnectUNCNetworkPath(HWND parent, const char* UNCPath, BOOL& pathI
     CALL_STACK_MESSAGE3("CheckAndConnectUNCNetworkPath(, %s, , %d)", UNCPath, donotReconnect);
     pathInvalid = FALSE;
     if (!IsUNCPath(UNCPath) || UNCPath[2] == '?')
-        return FALSE; // neni UNC cesta zakladniho formatu
+        return FALSE; // no basic format UNC path
 
     char root[MAX_PATH + 4];
     char* s = root + GetRootPath(root, UNCPath);
@@ -872,16 +873,16 @@ BOOL CheckAndConnectUNCNetworkPath(HWND parent, const char* UNCPath, BOOL& pathI
     WIN32_FIND_DATA data;
     HANDLE h;
     if ((h = HANDLES_Q(FindFirstFile(root, &data))) != INVALID_HANDLE_VALUE)
-    { // root cesta UNC je pristupna, neni co resit
+    { // UNC root path is accessible, we will not do anything
         HANDLES(FindClose(h));
     }
-    else // root UNC cesty je nelistovatelny
+    else // UNC root of the path is not listable
     {
-        *(s - 1) = 0; // odrizneme backslash na konci root cesty
+        *(s - 1) = 0; // we will trim the backslash at the end of the root path
         DWORD err = GetLastError();
-        BOOL trySharepoint = err == ERROR_BAD_NET_NAME; // zkusit pri chybe 67 zavolat shell, aby si cestu zpristupnil
+        BOOL trySharepoint = err == ERROR_BAD_NET_NAME; // try to call shell when error 67 occurs, so that it can make the path accessible
         if (!donotReconnect &&
-            (err == ERROR_FILE_NOT_FOUND || err == ERROR_PATH_NOT_FOUND)) // na XPckach se vraci tato chyba pokud user nema pristup na server nebo pokud dany share na serveru neexistuje, pro rozliseni techto dvou chyb volame WNetAddConnection3
+            (err == ERROR_FILE_NOT_FOUND || err == ERROR_PATH_NOT_FOUND)) // on XP, this error is returned if the user does not have access to the server or the share does not exist on the server, to distinguish these two errors, we call WNetAddConnection3
         {
             NETRESOURCE ns;
             ns.dwType = RESOURCETYPE_DISK;
@@ -892,15 +893,15 @@ BOOL CheckAndConnectUNCNetworkPath(HWND parent, const char* UNCPath, BOOL& pathI
                 err = ERROR_PATH_NOT_FOUND; // ESC
         }
 
-        if (IsLogonFailureErr(err) || // obrana proti napr. "no files found"
+        if (IsLogonFailureErr(err) || // a defense against e.g. "no files found"
             IsAdminShareExtraLogonFailureErr(err, root))
         {
             if (donotReconnect)
-                pathInvalid = TRUE; // rovnou hlasime chybu
+                pathInvalid = TRUE; // we report the error directly
             else
             {
-                // Petr: zakomentoval jsem, Explorer ani TC zadnou chybu pred zobrazenim dialogu pro zadani usera + passwordu neukazuji; navic
-                //       my ted nove chybu ukazujeme po pokusu o navazani spojeni (aby se user dozvedel, ze ma expirnuty password, atd.)
+                // Petr: I commented out, Explorer or TC do not show any error before displaying the dialog for entering user + password; besides
+                //       we now show a new error after trying to establish a connection (so that the user finds out that he has an expired password, etc.)
                 //          SalMessageBox(parent, GetErrorText(err), LoadStr(IDS_NETWORKERROR),
                 //                        MB_OK | MB_ICONEXCLAMATION);
 
@@ -910,7 +911,7 @@ BOOL CheckAndConnectUNCNetworkPath(HWND parent, const char* UNCPath, BOOL& pathI
         }
         else
         {
-            if (trySharepoint) // zkusime pri chybe 67 zavolat shell, aby si cestu zpristupnil
+            if (trySharepoint) // we will try to call shell when error 67 occurs, so that it can make the path accessible
             {
                 SHFILEINFO fi;
                 if (SHGetFileInfoAux(UNCPath, 0, &fi, sizeof(fi), SHGFI_ATTRIBUTES))
@@ -1006,8 +1007,8 @@ void DisplayMenuAux(IContextMenu2* contextMenu, CMINVOKECOMMANDINFO* ici)
 {
     CALL_STACK_MESSAGE_NONE
 
-    // docasne snizime prioritu threadu, aby nam nejaka zmatena shell extension nesezrala CPU
-    HANDLE hThread = GetCurrentThread(); // pseudo-handle, neni treba uvolnovat
+    // temporary lower the thread priority so that some confused shell extension doesn't eat our CPU
+    HANDLE hThread = GetCurrentThread(); // pseudo-handle, no need to release
     int oldThreadPriority = GetThreadPriority(hThread);
     SetThreadPriority(hThread, THREAD_PRIORITY_NORMAL);
 
@@ -1026,16 +1027,15 @@ void DisplayMenuAux(IContextMenu2* contextMenu, CMINVOKECOMMANDINFO* ici)
 void DisplayMenuAux2(IContextMenu2* contextMenu, HMENU h)
 {
     CALL_STACK_MESSAGE_NONE
-
-    // docasne snizime prioritu threadu, aby nam nejaka zmatena shell extension nesezrala CPU
-    HANDLE hThread = GetCurrentThread(); // pseudo-handle, neni treba uvolnovat
+    // temporary lower the thread priority so that some confused shell extension doesn't eat our CPU
+    HANDLE hThread = GetCurrentThread(); // pseudo-handle, no need to release
     int oldThreadPriority = GetThreadPriority(hThread);
     SetThreadPriority(hThread, THREAD_PRIORITY_NORMAL);
 
     __try
     {
         UINT flags = CMF_NORMAL | CMF_EXPLORE;
-        // osetrime stisknuty shift - rozsirene kontextove menu, pod W2K je tam napriklad Run as...
+        // we will take care of pressing the shift key - extended context menu, under W2K there is Run as ...
 #define CMF_EXTENDEDVERBS 0x00000100 // rarely used verbs
         BOOL shiftPressed = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
         if (shiftPressed)
@@ -1090,7 +1090,7 @@ CDrivesList::OwnGetDriveType(const char* rootPath)
     case DRIVE_REMOVABLE:
         ret = drvtRemovable;
         break;
-    case DRIVE_NO_ROOT_DIR: // subst, kteremu byl vymazan adresar (muze byt i remote, ale na to kasleme)
+    case DRIVE_NO_ROOT_DIR: // subst of which the directory was deleted (can also be remote, but we don't care about that)
     case DRIVE_FIXED:
         ret = drvtFixed;
         break;
@@ -1125,7 +1125,7 @@ void GetDisplayNameFromSystem(const char* root, char* volumeName, int volumeName
     }
 }
 
-unsigned ReadCDVolNameThreadFBody(void* param) // test pristupnosti adresare
+unsigned ReadCDVolNameThreadFBody(void* param) // directory accessibility test
 {
     CALL_STACK_MESSAGE1("ReadCDVolNameThreadFBody()");
     UINT_PTR uid = (UINT_PTR)param;
@@ -1136,7 +1136,7 @@ unsigned ReadCDVolNameThreadFBody(void* param) // test pristupnosti adresare
 
     HANDLES(EnterCriticalSection(&ReadCDVolNameCS));
     BOOL run = FALSE;
-    if (uid == ReadCDVolNameReqUID) // jeste nekdo ceka na odpoved
+    if (uid == ReadCDVolNameReqUID) // someone is still waiting for an answer
     {
         lstrcpyn(root, ReadCDVolNameBuffer, MAX_PATH);
         run = TRUE;
@@ -1153,7 +1153,7 @@ unsigned ReadCDVolNameThreadFBody(void* param) // test pristupnosti adresare
             GetDisplayNameFromSystem(root, buf, MAX_PATH);
 
         HANDLES(EnterCriticalSection(&ReadCDVolNameCS));
-        if (uid == ReadCDVolNameReqUID) // jeste nekdo ceka na odpoved
+        if (uid == ReadCDVolNameReqUID) // someone is still waiting for an answer
             lstrcpyn(ReadCDVolNameBuffer, buf, MAX_PATH);
         HANDLES(LeaveCriticalSection(&ReadCDVolNameCS));
     }
@@ -1174,7 +1174,7 @@ unsigned ReadCDVolNameThreadFEH(void* param)
     {
         TRACE_I("Thread ReadCDVolName: calling ExitProcess(1).");
         //    ExitProcess(1);
-        TerminateProcess(GetCurrentProcess(), 1); // tvrdsi exit (tenhle jeste neco vola)
+        TerminateProcess(GetCurrentProcess(), 1); // harder exit (this one still calls something)
         return 1;
     }
 #endif // CALLSTK_DISABLE
@@ -1219,7 +1219,7 @@ void SortPluginFSTimes(CPluginFSInterfaceEncapsulation** list, int left, int rig
 
 char* CreateIndexedDrvText(const char* driveText, int index)
 {
-    char* newText = (char*)malloc(strlen(driveText) + 15); // nechame si rezervu 14 znaku (" [-1234567890]")
+    char* newText = (char*)malloc(strlen(driveText) + 15); // we will keep a reserve of 14 characters (" [-1234567890]")
     if (newText != NULL)
     {
         const char* s = driveText;
@@ -1240,7 +1240,7 @@ int GetIndexForDrvText(CPluginFSInterfaceEncapsulation** fsList, int count,
 {
     CPluginFSInterfaceEncapsulation* fs = NULL;
     int z;
-    for (z = 0; z < count; z++) // dohledane zapouzdreni FS (pri chybe nedostatku pameti nemusi sedet indexy v fsList a Drives (od offsetu firstFSIndex))
+    for (z = 0; z < count; z++) // found encapsulation FS (if there is a lack of memory, the indexes in fsList and Drives (from the firstFSIndex offset) may not match)
     {
         if (fsList[z]->GetInterface() == fsIface)
         {
@@ -1248,7 +1248,7 @@ int GetIndexForDrvText(CPluginFSInterfaceEncapsulation** fsList, int count,
             break;
         }
     }
-    if (fs != NULL) // vyber indexu pro polozku (bud z FS nebo pridelime sekvencne)
+    if (fs != NULL) // selection of the index for the item (either from FS or we assign sequentially)
     {
         if (fs->GetChngDrvDuplicateItemIndex() < currentIndex)
             fs->SetChngDrvDuplicateItemIndex(currentIndex);
@@ -1258,8 +1258,8 @@ int GetIndexForDrvText(CPluginFSInterfaceEncapsulation** fsList, int count,
     return currentIndex;
 }
 
-// na zaklade 'hSrcIcon' vytvori cernobilou verzi ikony
-// POZOR, POMALE, pouzivat s rozvahou
+// based on 'hSrcIcon' creates a black and white version of the icon
+// WARNING, SLOW, use with caution
 HICON ConvertIcon16x16ToGray(HICON hSrcIcon)
 {
     CIconList il;
@@ -1277,8 +1277,8 @@ HICON ConvertIcon16x16ToGray(HICON hSrcIcon)
 
 const char Base64Table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-// provede in-place decode z base64; vraci uspech;
-// krome stavu, kdy je 'input_length' nula, vraci nulou terminovany string
+// performs in-place decode from base64; returns success;
+// except of the state when 'input_length' is zero, returns zero-terminated string
 BOOL base64_decode(char* data, int input_length, int* output_length, const char* errPrefix)
 {
     char decoding_table[256];
@@ -1324,13 +1324,13 @@ BOOL base64_decode(char* data, int input_length, int* output_length, const char*
     return TRUE;
 }
 
-// cesta k lokalnimu adresari Dropboxu
+// a path to the local Dropbox directory
 char DropboxPath[MAX_PATH] = "";
 
 void InitDropboxPath()
 {
     static BOOL alreadyCalled = FALSE;
-    if (!alreadyCalled) // zjistovat cestu ma smysl jen poprve, pak uz jen ignorujeme
+    if (!alreadyCalled) // it makes sense to find the path only once, then we just ignore it
     {
         DropboxPath[0] = 0;
         char sDbPath[MAX_PATH];
@@ -1356,7 +1356,7 @@ void InitDropboxPath()
                 if (hFile != INVALID_HANDLE_VALUE)
                 {
                     LARGE_INTEGER size;
-                    if (GetFileSizeEx(hFile, &size) && size.QuadPart < 100000) // 100KB je az az na blbej konfigurak
+                    if (GetFileSizeEx(hFile, &size) && size.QuadPart < 100000) // 100KB is enough for a stupid config file
                     {
                         char* buf = (char*)malloc(size.LowPart);
                         DWORD read;
@@ -1373,13 +1373,13 @@ void InitDropboxPath()
                             char* secRowEnd = secRow;
                             while (secRowEnd < end && *secRowEnd != '\r' && *secRowEnd != '\n')
                                 secRowEnd++;
-                            if (secRow < secRowEnd) // mam text 2. radky, kde je base64 zakodovana hledana cesta
+                            if (secRow < secRowEnd) // I have a text 2. rows, where the base64 encoded searched path is
                             {
                                 int pathLen;
                                 if (base64_decode(secRow, (int)(secRowEnd - secRow), &pathLen, "Dropbox path: "))
                                 {
-                                    WCHAR widePath[MAX_PATH]; // delsi cesty stejne neumime
-                                    char mbPath[MAX_PATH];    // ANSI nebo UTF8 cesta
+                                    WCHAR widePath[MAX_PATH]; // we can't do longer paths anyway
+                                    char mbPath[MAX_PATH];    // ANSI or UTF8 path
                                     if (ConvertA2U(secRow, -1, widePath, _countof(widePath), CP_UTF8) &&
                                         ConvertU2A(widePath, -1, mbPath, _countof(mbPath)))
                                     {
@@ -1414,13 +1414,13 @@ void InitDropboxPath()
 #define my_DEFINE_KNOWN_FOLDER(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
     EXTERN_C const GUID DECLSPEC_SELECTANY name = {l, w1, w2, {b1, b2, b3, b4, b5, b6, b7, b8}}
 
-// {A52BBA46-E9E1-435f-B3D9-28DAA648C0F6}  // OneDrive slozka ze systemu, zavedli az od Windows 8.1
+// {A52BBA46-E9E1-435f-B3D9-28DAA648C0F6}  // OneDriver folder from the system, introduced only since Windows 8.1
 my_DEFINE_KNOWN_FOLDER(my_FOLDERID_SkyDrive, 0xa52bba46, 0xe9e1, 0x435f, 0xb3, 0xd9, 0x28, 0xda, 0xa6, 0x48, 0xc0, 0xf6);
 
-// cesta k lokalnimu adresari OneDrive - Personal (jen pro personal ucet, pro business ucty mame OneDriveBusinessStorages)
+// the path to the local OneDrive folder - Personal (only for personal accounts, for business accounts we have OneDriveBusinessStorages)
 char OneDrivePath[MAX_PATH] = "";
 
-// cesty k lokalnim adresarum OneDrive - Business (jen pro business ucty, pro personal ucet mame OneDrivePath)
+// the paths to local OneDrive folders - Business (only for business accounts, for personal accounts we have OneDrivePath)
 COneDriveBusinessStorages OneDriveBusinessStorages;
 
 void COneDriveBusinessStorages::SortIn(COneDriveBusinessStorage* s)
@@ -1460,10 +1460,10 @@ BOOL COneDriveBusinessStorages::Find(const char* displayName, const char** userF
 
 void InitOneDrivePath()
 {
-    OneDrivePath[0] = 0; // cestu k OneDrive zjistujeme dokola, protoze po prikazu "Unlink OneDrive" (z OneDrive) bysme ho meli prestat ukazovat
+    OneDrivePath[0] = 0; // we find out the path to OneDrive over and over again, because after the commend "Unlink OneDrive" (from OneDrive) we should stop showing it
 
     BOOL done = FALSE;
-    if (WindowsVistaAndLater) // SHGetKnownFolderPath existuje od Visty
+    if (WindowsVistaAndLater) // SHGetKnownFolderPath has existed since Vista
     {
         typedef HRESULT(WINAPI * FSHGetKnownFolderPath)(REFKNOWNFOLDERID rfid,
                                                         DWORD /* KNOWN_FOLDER_FLAG */ dwFlags,
@@ -1476,11 +1476,11 @@ void InitOneDrivePath()
             PWSTR path = NULL;
             if (DynSHGetKnownFolderPath(my_FOLDERID_SkyDrive, 0, NULL, &path) == S_OK && path != NULL)
             {
-                if (path[0] != 0) // FOLDERID_SkyDrive zavedli ve Windows 8.1 = uz by nemelo byt potreba to lovit v registry
+                if (path[0] != 0) // FOLDERID_SkyDrive was introduced in Windows 8.1 = we should not need to hunt it in the registry
                 {
                     done = ConvertU2A(path, -1, OneDrivePath, _countof(OneDrivePath)) != 0;
                     if (!done)
-                        OneDrivePath[0] = 0; // jen pro sychr
+                        OneDrivePath[0] = 0; // just for sync
                                              //else TRACE_I("OneDrive path (FOLDERID_SkyDrive): " << OneDrivePath);
                 }
                 CoTaskMemFree(path);
@@ -1490,7 +1490,7 @@ void InitOneDrivePath()
 
     HKEY hKey;
     char path[MAX_PATH];
-    for (int i = 0; !done && i < 2; i++) // teoreticky potreba jen pro Windows 8 a nizsi (od 8.1 mame FOLDERID_SkyDrive)
+    for (int i = 0; !done && i < 2; i++) // theoretically only needed for Windows 8 and lower (from 8.1 we have FOLDERID_SkyDrive)
     {
         if (HANDLES_Q(RegOpenKeyEx(HKEY_CURRENT_USER,
                                    Windows8_1AndLater && !Windows10AndLater ? (i == 0 ? "Software\\Microsoft\\Windows\\CurrentVersion\\OneDrive" : // jen Win 8.1
@@ -1498,45 +1498,45 @@ void InitOneDrivePath()
                                                                             : (i == 0 ? "Software\\Microsoft\\OneDrive" : "Software\\Microsoft\\SkyDrive"), // krom Win 8.1
                                    0, KEY_READ, &hKey)) == ERROR_SUCCESS)
         {
-            DWORD size = sizeof(path); // velikost v bytech
+            DWORD size = sizeof(path); // size in bytes
             DWORD type;
             if (SalRegQueryValueEx(hKey, "UserFolder", 0, &type, (BYTE*)path, &size) == ERROR_SUCCESS &&
                 type == REG_SZ && size > 1)
             {
                 //TRACE_I("OneDrive path (UserFolder): " << path);
-                strcpy_s(OneDrivePath, path); // mame pozadovanou cestu
+                strcpy_s(OneDrivePath, path); // we have needed path
                 done = TRUE;
             }
             HANDLES(RegCloseKey(hKey));
         }
     }
 
-    // nacteme z registry OneDrive Business storage
+    // we will load OneDrive Business storages from the registry
     OneDriveBusinessStorages.DestroyMembers();
     if (HANDLES_Q(RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\Microsoft\\OneDrive\\Accounts",
                                0, KEY_READ, &hKey)) == ERROR_SUCCESS)
     {
         DWORD i = 0;
         while (1)
-        { // postupne enumnuti vsech pripon
+        { // enumarate all extensions one by one
             char keyName[300];
             DWORD keyNameLen = _countof(keyName);
             if (RegEnumKeyEx(hKey, i, keyName, &keyNameLen, NULL, NULL, NULL, NULL) == ERROR_SUCCESS)
-            { // otevreni klice uctu
+            { // opening the account key
                 HKEY hAccount;
-                if (StrICmp(keyName, "Personal") != 0 && // personal ucet tady cist nechceme (viz OneDrivePath)
+                if (StrICmp(keyName, "Personal") != 0 && // we don't want to read personal account here (see OneDrivePath)
                     HANDLES_Q(RegOpenKeyEx(hKey, keyName, 0, KEY_READ, &hAccount)) == ERROR_SUCCESS)
-                { // cteme vsechny ucty mimo Personal (zatim asi jen "Business???", kde ??? je poradove cislo)
+                { // we read all accounts except Personal (for now only "Business???", where ??? is a number)
                     char disp[ONEDRIVE_MAXBUSINESSDISPLAYNAME];
-                    DWORD size = sizeof(disp); // velikost v bytech
+                    DWORD size = sizeof(disp); // size in bytes
                     DWORD type;
                     if (SalRegQueryValueEx(hAccount, "DisplayName", 0, &type, (BYTE*)disp, &size) == ERROR_SUCCESS &&
                         type == REG_SZ && size > 1)
                     {
-                        size = sizeof(path); // velikost v bytech
+                        size = sizeof(path); // size in bytes
                         if (SalRegQueryValueEx(hAccount, "UserFolder", 0, &type, (BYTE*)path, &size) == ERROR_SUCCESS &&
                             type == REG_SZ && size > 1)
-                        { // posbirame vse co ma DisplayName a UserFolder, at uz je to cokoliv nabidneme to userovi pod "OneDrive"
+                        { // we will collect everything that has DisplayName and UserFolder, no matter what it is, we will offer it to the user under "OneDrive"
                             //TRACE_I("OneDrive Business: DisplayName: " << disp << ", UserFolder: " << path);
                             OneDriveBusinessStorages.SortIn(new COneDriveBusinessStorage(DupStr(disp), DupStr(path)));
                         }
@@ -1545,7 +1545,7 @@ void InitOneDrivePath()
                 }
             }
             else
-                break; // konec enumerace (muze byt i maly buffer, ale to nepovazuju za rozumny osetrovat)
+                break; // end of enumeration (can also be a small buffer, but I don't consider it reasonable to handle)
             i++;
         }
         HANDLES(RegCloseKey(hKey));
@@ -1561,7 +1561,7 @@ void CDrivesList::AddToDrives(CDriveData& drv, int textResId, char hotkey, CDriv
                               BOOL getGrayIcons, HICON icon, BOOL destroyIcon, const char* itemText)
 {
     const char* s = itemText != NULL ? itemText : LoadStr(textResId);
-    // POZOR: pro drvtOneDriveBus se DisplayName pozdeji taha z drv.DriveText, pri zmene formatu textu predelat !!!
+    // WARNING: for drvtOneDriveBus, DisplayName is later taken from drv.DriveText, when changing the text format, change it !!!
     char* txt = (char*)malloc(1 + (hotkey == 0 ? 0 : 1) + strlen(s) + 1);
     strcpy(txt, hotkey == 0 ? "\t" : " \t");
     if (hotkey != 0)
@@ -1574,7 +1574,7 @@ void CDrivesList::AddToDrives(CDriveData& drv, int textResId, char hotkey, CDriv
     drv.DestroyIcon = destroyIcon;
     drv.HIcon = icon;
     if (getGrayIcons && !destroyIcon)
-        TRACE_C("CDrivesList::AddToDrives(): unsupported combination of parameters"); // getGrayIcons je TRUE jen pro drive-bar a tam je jen jedna ikona (tlacitko)
+        TRACE_C("CDrivesList::AddToDrives(): unsupported combination of parameters"); // getGrayIcons is TRUE only for drive-bar and there is only one icon (button)
     if (getGrayIcons)
         drv.HGrayIcon = ConvertIcon16x16ToGray(drv.HIcon);
     else
@@ -1595,26 +1595,26 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
     int i = 1;
     char root[10] = " :\\";
 
-    // nejnizsi bit odpovida 'A', druhy bit 'B', ...
-    // dostupne disky
+    // two lowest bit matches 'A', the second bit 'B', ...
+    // available drives
     DWORD mask = GetLogicalDrives();
 
     CDriveData drv;
     drv.Param = 0;
-    drv.DestroyIcon = TRUE; // tyto ikony jsou alokovane
-    drv.PluginFS = NULL;    // jen pro poradek
-    drv.DLLName = NULL;     // jen pro poradek
+    drv.DestroyIcon = TRUE; // these icons are allocated
+    drv.PluginFS = NULL;    // just for sure
+    drv.DLLName = NULL;     // just for sure
     drv.HGrayIcon = NULL;
 
     CDriveData drvSeparator;
     ZeroMemory(&drvSeparator, sizeof(drvSeparator));
     drvSeparator.DriveType = drvtSeparator;
 
-    if (copyDrives != NULL) // optimalizace: data se jen zkopiruji (napr. jde o druhou Drives Baru, takze data pro ni zkopirujeme z prvni Drives Bary, pro kterou jsme je pred par ms ziskali ze systemu)
+    if (copyDrives != NULL) // optimization: data is just copied (e.g. it's the second Drives Bar, so we copy the data from the first Drives Bar, for which we got it from the system a few ms ago)
     {
         CachedDrivesMask = copyCachedDrivesMask;
 
-        // pridam disky a..z
+        // I will add drives a..z
         int lastDiskDrv = -1;
         int x;
         for (x = 0; x < copyDrives->Count; x++)
@@ -1657,29 +1657,29 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
     }
     else
     {
-        // zapamatovane a neobnovene sitove disky nebudou vraceny z GetLogicalDrives()
+        // remembered and not refreshed network drives will not be returned from GetLogicalDrives()
         DWORD netDrives; // bitove pole network disku
         char netRemotePath['z' - 'a' + 1][MAX_PATH];
         GetNetworkDrives(netDrives, netRemotePath);
 
-        CachedDrivesMask = mask | netDrives; // cache pro snadny test, zda pribyl/zmizel disk
+        CachedDrivesMask = mask | netDrives; // a cache for a simple test of whether a disk has been added / disappeared
 
-        // disky, ktere userum nemame ukazovat
+        // driver which should not be displayed to users
         DWORD noDrivesPolicy = SystemPolicies.GetNoDrives();
         noDrivesPolicy |= DRIVES_MASK & (~Configuration.VisibleDrives);
 
         char drive = 'A';
 
-        CQuadWord freeSpace; // kolik mame na disku mista
+        CQuadWord freeSpace; // how much space we have on the disk
 
-        Shares.PrepareSearch(""); // ted budeme hledat rooty disku
+        Shares.PrepareSearch(""); // now we will search for drives roots
 
-        BOOL separateNextDrive = FALSE; // nez vlozime drive, mame vlozit separator?
+        BOOL separateNextDrive = FALSE; // before we insert drive, should we insert separator?
 
-        // pridam disky a..z
+        // I will add drives a..z
         while (i != 0)
         {
-            if (!(noDrivesPolicy & i) && ((mask & i) || (netDrives & i))) // disk je pristupny
+            if (!(noDrivesPolicy & i) && ((mask & i) || (netDrives & i))) // disk is accessible
             {
                 root[0] = drive;
                 int driveType;
@@ -1700,11 +1700,11 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
                 freeSpace = CQuadWord(-1, -1);
                 switch (drv.DriveType)
                 {
-                case drvtRemovable: // diskety, zjistime jestli to je 3.5", 5.25", 8" nebo neznama
+                case drvtRemovable: // diskettes, we will find out if it is 3.5 ", 5.25", 8" or unknown
                 {
                     volumeName[0] = 0;
                     int drvIndex = drive - 'A' + 1;
-                    if (drvIndex >= 1 && drvIndex <= 26) // pro jistotu provedeme "range-check"
+                    if (drvIndex >= 1 && drvIndex <= 26) // we will do "range-check" for sure
                     {
                         DWORD medium = GetDriveFormFactor(drvIndex);
                         switch (medium)
@@ -1740,7 +1740,7 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
                     {
                         CQuadWord t;                              // total disk space
                         freeSpace = MyGetDiskFreeSpace(root, &t); // free disk space
-                        // zdvojime '&', aby se nezobrazovalo jako podtrzeni
+                        // double '&' so that it is not displayed as an underline
                         DuplicateAmpersands(volumeName, MAX_PATH);
                         if (volumeName[0] == 0)
                             strcpy(volumeName, LoadStr(IDS_LOCAL_DISK));
@@ -1771,7 +1771,7 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
                         if (!GetSubstInformation(drive - 'A', volumeName, MAX_PATH))
                             volumeName[0] = 0;
                     }
-                    // zdvojime '&', aby se nezobrazovalo jako podtrzeni
+                    // double '&' so that it is not displayed as an underline
                     DuplicateAmpersands(volumeName, MAX_PATH);
                     break;
                 }
@@ -1783,12 +1783,13 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
                     lstrcpyn(ReadCDVolNameBuffer, root, MAX_PATH);
                     HANDLES(LeaveCriticalSection(&ReadCDVolNameCS));
 
-                    // nahodime thread, ve kterem zjistime volume_name CD drivu
+                    // create a thread in which we will find out the volume_name of the CD drive
                     DWORD threadID;
                     HANDLE thread = HANDLES(CreateThread(NULL, 0, ReadCDVolNameThreadF,
                                                          (void*)uid, 0, &threadID));
                     if (thread != NULL && WaitForSingleObject(thread, noTimeout ? INFINITE : 500) == WAIT_OBJECT_0)
-                    { // dame mu 500ms na zjisteni volume-name
+
+                    { // give it 500ms to find out the volume-name
                         HANDLES(EnterCriticalSection(&ReadCDVolNameCS));
                         lstrcpyn(volumeName, ReadCDVolNameBuffer, MAX_PATH + 50);
                         HANDLES(LeaveCriticalSection(&ReadCDVolNameCS));
@@ -1796,12 +1797,12 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
                     else
                         volumeName[0] = 0;
                     if (thread != NULL)
-                        AddAuxThread(thread, TRUE); // pokud by thread nestihl dobehnout, vykillujeme ho pred uzavrenim softu
+                        AddAuxThread(thread, TRUE); // if the thread is not finished, we will kill it before closing the software
                     if (volumeName[0] == 0)
                         strcpy(volumeName, LoadStr(IDS_COMPACT_DISK));
                     else
                     {
-                        // zdvojime '&', aby se nezobrazovalo jako podtrzeni
+                        // double '&' so that it is not displayed as an underline
                         DuplicateAmpersands(volumeName, MAX_PATH);
                     }
                     break;
@@ -1849,11 +1850,11 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
                     drv.Shared = Shares.Search(root);
                 }
 
-                // separujeme drivy, u kterych si to uzivatel pral
+                // we separate drives that the user wanted to separate
                 if (separateNextDrive && Drives->Count > 0 && !IsLastItemSeparator())
                     Drives->Add(drvSeparator);
-                // pokud v systemu neni mechanika A a B a uzivatel si nastavil separator za A nebo B, zobrazili jsme ho za C
-                // proto musime shodit flag v kazdem pripade, nejen v predchozi podmince
+                // if there's no drive A or B in the system and the user has set the separator after A or B, we've shown it after C
+                // that's why we have to drop the flag in any case, not just in the previous condition
                 separateNextDrive = FALSE;
 
                 int index = Drives->Add(drv);
@@ -1866,7 +1867,7 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
         }
     }
 
-    // pridame odpojene a aktivni FS
+    // we will add disconnected and active FS
     drv.Accessible = FALSE;
     drv.Shared = FALSE;
     drv.DLLName = NULL;
@@ -1913,10 +1914,10 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
                     drv.DriveType = (fs == nonactivePanelFS ? drvtPluginFSInOtherPanel : drvtPluginFS);
                     int index = Drives->Add(drv);
                     if (fs == activePanelFS)
-                        currentFSIndex = index; // aktivni FS
+                        currentFSIndex = index; // active FS
                 }
             }
-            // zkontrolujeme unikatnost textu polozek, pripadne duplicitni polozky oindexujeme
+            // we will check the uniqueness of the text of the items, possibly duplicate items will be indexed
             for (i = firstFSIndex; i < Drives->Count; i++)
             {
                 BOOL freeDriveText = FALSE;
@@ -1926,9 +1927,9 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
                 for (x = i + 1; x < Drives->Count; x++)
                 {
                     char* testedDrvText = Drives->At(x).DriveText;
-                    if (StrICmp(driveText, testedDrvText) == 0) // shoda -> musime polozku oindexovat
+                    if (StrICmp(driveText, testedDrvText) == 0) // a match -> we have to index the item
                     {
-                        if (!freeDriveText) // nalezena prvni shoda, musime oindexovat i prvni vyskyt duplicitni polozky
+                        if (!freeDriveText) // first match found, we have to index the first occurrence of a duplicate item as well
                         {
                             currentIndex = GetIndexForDrvText(fsList, count, Drives->At(i).PluginFS, currentIndex);
                             Drives->At(i).DriveText = CreateIndexedDrvText(driveText, currentIndex++);
@@ -1951,26 +1952,26 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
         }
         free(fsList);
     }
-    drv.PluginFS = NULL; // jen pro poradek
-    drv.DLLName = NULL;  // jen pro poradek
+    drv.PluginFS = NULL; // just for sure
+    drv.DLLName = NULL;  // just for sure
     int iconSize = GetIconSizeForSystemDPI(ICONSIZE_16);
 
-    // pridam separator, pokud nebude prvni a pokud uz tam jeden neni
+    // I will add the separator if it is not the first item and if there is no separator yet
     if (Drives->Count > 0 && !IsLastItemSeparator())
         Drives->Add(drvSeparator);
 
-    // pridam Documents
+    // adding Documents
     if (Configuration.ChangeDriveShowMyDoc)
     {
         AddToDrives(drv, IDS_MYDOCUMENTS, ';', drvtMyDocuments, getGrayIcons,
                     SalLoadIcon(ImageResDLL, 112, iconSize));
     }
 
-    // pridam Cloud Storages (Google Drive, atd.), teda pokud nejaky najdu...
+    // adding Cloud Storages (Google Drive, etc.), if I find any...
     CachedCloudStoragesMask = 0;
     if (Configuration.ChangeDriveCloudStorage)
     {
-        CSQLite3DynLoadBase* sqlite3_Dyn_InOut = NULL; // nejak jsem ocekaval, ze sqlite3 bude potreba i pro Dropbox, coz se nakonec nesplnilo (takze tahle opicarna je tu jaksi do foroty)
+        CSQLite3DynLoadBase* sqlite3_Dyn_InOut = NULL; // I somewhat expected that sqlite3 will be needed for Dropbox, too, which eventually did not happen (so this is here just in case)
         ShellIconOverlays.InitGoogleDrivePath(&sqlite3_Dyn_InOut, TRUE);
         if (ShellIconOverlays.HasGoogleDrivePath())
         {
@@ -1998,25 +1999,25 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
         char itemText[200 + ONEDRIVE_MAXBUSINESSDISPLAYNAME];
         HICON oneDriveIco = c == 0 ? NULL : SalLoadIcon(HInstance, IDI_ONEDRIVE, iconSize);
         BOOL destroyOneDriveIco = oneDriveIco != NULL;
-        if (forDriveBar && c > 1) // data pro drive-bar && vice storages = nechame usera vybrat z menu (drop down)
+        if (forDriveBar && c > 1) // data for drive-bar && more storages = let the user choose from the menu (drop down)
         {
             strcpy_s(itemText, LoadStr(IDS_ONEDRIVE));
             AddToDrives(drv, 0, 0, drvtOneDriveMenu, getGrayIcons, oneDriveIco, destroyOneDriveIco, itemText);
             destroyOneDriveIco = FALSE;
         }
-        else // data pro change drive menu || drive-bar && jediny storage (dame jednoduche tlacitko na drive-bar)
+        else // data for change drive menu || drive-bar && the only storage (we give a simple button on the drive-bar)
         {
             if (OneDrivePath[0] != 0) // personal
             {
                 if (c == 1)
-                    strcpy_s(itemText, LoadStr(IDS_ONEDRIVE)); // jediny personal storage = piseme jen: OneDrive
+                    strcpy_s(itemText, LoadStr(IDS_ONEDRIVE)); // the only personal storage = we write only: OneDrive
                 else
                     sprintf_s(itemText, "%s - %s", LoadStr(IDS_ONEDRIVE), LoadStr(IDS_ONEDRIVEPERSONAL));
                 AddToDrives(drv, 0, 0, drvtOneDrive, getGrayIcons, oneDriveIco, destroyOneDriveIco, itemText);
                 destroyOneDriveIco = FALSE;
             }
             for (int i = 0; i < OneDriveBusinessStorages.Count; i++) // business
-            {                                                        // POZOR: pro drvtOneDriveBus se DisplayName pozdeji taha z drv.DriveText, pri zmene formatu textu predelat !!!
+            {                                                        // WARNING: for drvtOneDriveBus, DisplayName is later taken from drv.DriveText, when changing the text format, change it !!!
                 sprintf_s(itemText, "%s - %s", LoadStr(IDS_ONEDRIVE), OneDriveBusinessStorages[i]->DisplayName);
                 AddToDrives(drv, 0, 0, drvtOneDriveBus, getGrayIcons, oneDriveIco, destroyOneDriveIco, itemText);
                 destroyOneDriveIco = FALSE;
@@ -2026,10 +2027,10 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
             TRACE_C("CDrivesList::BuildData(): OneDrive icon unused, should never happen");
 
         if (sqlite3_Dyn_InOut != NULL)
-            delete sqlite3_Dyn_InOut; // uvolneni jiz nepotrebneho sqlite.dll
+            delete sqlite3_Dyn_InOut; // release sqlite.dll which is no longer needed
     }
 
-    // pridam Okolni Pocitace
+    // adding Network Neighborhood
     CPluginData* nethoodPlugin = NULL;
     BOOL existsNethoodPlugin = Plugins.GetFirstNethoodPluginFSName(NULL, &nethoodPlugin);
     if (!SystemPolicies.GetNoNetHood() && Configuration.ChangeDriveShowNet &&
@@ -2040,7 +2041,7 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
         neighborhoodIndex = Drives->Count - 1;
     }
 
-    // pridam prikazy FS ze vsech plug-inu
+    // adding FS commands from all plug-ins
     if (!Plugins.AddItemsToChangeDrvMenu(this, currentFSIndex,
                                          FilesWindow->GetPluginFS()->GetPluginInterfaceForFS()->GetInterface(),
                                          getGrayIcons))
@@ -2048,7 +2049,7 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
         return FALSE;
     }
 
-    // dohledam index Nethood pluginu a nastavim ho do neighborhoodIndex (zastupujeme Network polozku se vsim vsudy)
+    // finding the index of the Nethood plug-in and setting it to neighborhoodIndex (we represent the Network item with everything)
     if (existsNethoodPlugin && nethoodPlugin != NULL && neighborhoodIndex == -1)
     {
         int i2;
@@ -2063,7 +2064,7 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
         }
     }
 
-    // urcim aktivni polozku
+    // determining the active item
     FocusIndex = -1;
     if (FilesWindow->Is(ptPluginFS))
     {
@@ -2072,7 +2073,7 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
     }
     else
     {
-        if (CurrentPath[0] != 0) // jen pokud mame cestu (neni to ptPluginFS)
+        if (CurrentPath[0] != 0) // only if we have a path (it's not ptPluginFS)
         {
             if (currentDiskIndex != -1)
                 FocusIndex = currentDiskIndex;
@@ -2081,10 +2082,10 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
         }
     }
 
-    // pridam Another Panel
+    // adding Another Panel
     if (Configuration.ChangeDriveShowAnother)
     {
-        // varianta s retezcem 'Another Panel Path'
+        // a variant with a string 'Another Panel Path' ('As Another Panel'?)
         char* s = LoadStr(IDS_ANOTHERPANEL);
         char* txt = (char*)malloc(2 + strlen(s) + 1);
         if (txt != NULL)
@@ -2103,7 +2104,7 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
                 GetRootPath(root2, panel->GetPath());
                 drv.HIcon = GetDriveIcon(root2, type, TRUE);
                 drv.HGrayIcon = NULL;
-                drv.DestroyIcon = TRUE; // tyto ikony jsou alokovane
+                drv.DestroyIcon = TRUE; // these icons are allocated
             }
             else
             {
@@ -2111,7 +2112,7 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
                 {
                     drv.HIcon = SalLoadIcon(ImageResDLL, 174, iconSize);
                     drv.HGrayIcon = NULL;
-                    drv.DestroyIcon = TRUE; // tato ikona je alokovana
+                    drv.DestroyIcon = TRUE; // this icon is allocated
                 }
                 else
                 {
@@ -2119,17 +2120,17 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
                     {
                         BOOL destroyIcon;
                         HICON icon = panel->GetPluginFS()->GetFSIcon(destroyIcon);
-                        if (icon != NULL) // plug-inem definovana
+                        if (icon != NULL) // defined by a plugin
                         {
                             drv.HIcon = icon;
                             drv.HGrayIcon = NULL;
-                            drv.DestroyIcon = destroyIcon; // ridime se podle pluginu
+                            drv.DestroyIcon = destroyIcon; // we are driven by the plugin
                         }
-                        else // standardni
+                        else // standard
                         {
                             drv.HIcon = SalLoadIcon(HInstance, IDI_PLUGINFS, iconSize);
                             drv.HGrayIcon = NULL;
-                            drv.DestroyIcon = TRUE; // tato ikona je alokovana
+                            drv.DestroyIcon = TRUE; // this icon is allocated
                         }
                     }
                 }
@@ -2144,11 +2145,11 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
         }
     }
 
-    // naleju hot paths
+    // loading hot paths
     drv.DestroyIcon = FALSE;
     drv.HIcon = HFavoritIcon;
     drv.HGrayIcon = NULL;
-    BOOL addSeparator = (Drives->Count > 0 && !IsLastItemSeparator()); // nechceme dva separatory za sebou
+    BOOL addSeparator = (Drives->Count > 0 && !IsLastItemSeparator()); // wed do not want two separators in a row
     for (i = 0; i < HOT_PATHS_COUNT; i++)
     {
         if (MainWindow->HotPaths.GetVisible(i))
@@ -2159,7 +2160,7 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
             {
                 if (addSeparator)
                 {
-                    // pridam separator
+                    // adding separator
                     Drives->Add(drvSeparator);
                     addSeparator = FALSE;
                 }
@@ -2168,7 +2169,7 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
                     sprintf(text, "%d\t%s", i == 9 ? 0 : i + 1, srcName);
                 else
                     sprintf(text, "\t%s", srcName);
-                // zdvojime '&', aby se nezobrazovalo jako podtrzeni
+                // double '&' so that it is not displayed as an underline
                 DuplicateAmpersands(text + 2, MAX_PATH);
 
                 char* alloc = DupStr(text);
@@ -2180,7 +2181,7 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
                     drv.Accessible = TRUE;
                     drv.Shared = FALSE;
                     Drives->Add(drv);
-                    drv.DestroyIcon = FALSE; // ostatni ikony uz nebudu uklizet
+                    drv.DestroyIcon = FALSE; // I won't clean up other icons anymore
                 }
                 else
                 {
@@ -2191,11 +2192,11 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
         }
     }
 
-    // nechceme na konci samotny separator
+    // we don't want a separator at the end
     if (Drives->Count > 0 && IsLastItemSeparator())
         Drives->Delete(Drives->Count - 1);
 
-    if (drv.DestroyIcon) // zadna hot-path, musime tu ikonu oddelat tady
+    if (drv.DestroyIcon) // no hot path, we have to remove the icon here
     {
         HANDLES(DestroyIcon(drv.HIcon));
     }
@@ -2214,7 +2215,7 @@ void CDrivesList::DestroyDrives(TDirectArray<CDriveData>* drives)
                 free(drives->At(i).DriveText);
             if (drives->At(i).DestroyIcon && drives->At(i).HIcon != NULL)
             {
-                HANDLES(DestroyIcon(drives->At(i).HIcon)); // pres GetDriveIcon
+                HANDLES(DestroyIcon(drives->At(i).HIcon)); // via GetDriveIcon
                 drives->At(i).HIcon = NULL;
             }
             if (drives->At(i).DestroyIcon && drives->At(i).HGrayIcon != NULL)
@@ -2257,7 +2258,7 @@ BOOL CDrivesList::LoadMenuFromData()
                 mii.HOverlay = HSharedOverlays[ICONSIZE_16];
             mii.String = item->DriveText;
             mii.State = 0;
-            if (i == FocusIndex) // je-li FocusIndex==-1 neoznaci se nic
+            if (i == FocusIndex) // if FocusIndex==-1, nothing is marked
                 mii.State = MENU_STATE_CHECKED;
             if (item->DriveType == drvtPluginFSInOtherPanel)
                 mii.State |= MFS_DISABLED | MFS_GRAYED;
@@ -2279,14 +2280,14 @@ BOOL CDrivesList::ExecuteItem(int index, HWND hwnd, const RECT* exclude, BOOL* f
     }
     BOOL ret = TRUE;
     CDriveData* item = &Drives->At(index);
-    // transfer ven
+    // transfer outside
     CDriveTypeEnum dt = item->DriveType;
     *DriveType = dt;
     switch (dt)
     {
     case drvtOneDriveBus:
     {
-        // POZOR: pro drvtOneDriveBus se zde taha DisplayName z drv.DriveText, pri zmene formatu textu predelat !!!
+        // WARNING: for drvtOneDriveBus, DisplayName is taken from drv.DriveText here, when changing the text format, change it !!!
         const char* s = item->DriveText;
         const char* end = s + strlen(s);
         if (*s != '\t' && *s != 0)
@@ -2301,14 +2302,14 @@ BOOL CDrivesList::ExecuteItem(int index, HWND hwnd, const RECT* exclude, BOOL* f
         break;
     }
 
-    case drvtOneDriveMenu: // otevreme drop down menu pro vyber OneDrive storage
+    case drvtOneDriveMenu: // opening the drop down menu for OneDrive storage selection
     {
         if (fromDropDown != NULL)
             *fromDropDown = TRUE;
         InitOneDrivePath();
         int c = GetOneDriveStorages();
         if (c <= 1)
-        { // OneDrive uz neni na drop down, provedeme refresh obou Drive bar, at zmizi nebo se updatnou ikony
+        { // OneDrive is not in drop down anymore, we will refresh both Drive bars, so that the icons disappear or update
             if (MainWindow != NULL && MainWindow->HWindow != NULL)
                 PostMessage(MainWindow->HWindow, WM_USER_DRIVES_CHANGE, 0, 0);
             ret = FALSE;
@@ -2383,7 +2384,7 @@ BOOL CDrivesList::ExecuteItem(int index, HWND hwnd, const RECT* exclude, BOOL* f
     {
         *DriveTypeParam = item->DriveText[0];
 
-        // pokus o oziveni
+        // try to revive
         if (!item->Accessible)
         {
             char name[3] = " :";
@@ -2398,14 +2399,14 @@ BOOL CDrivesList::ExecuteItem(int index, HWND hwnd, const RECT* exclude, BOOL* f
         break;
     }
 
-    case drvtPluginFS:             // polozka z plug-inu: otevreny FS (aktivni/odpojeny)
-    case drvtPluginFSInOtherPanel: // nikdy by nemelo prijit, pripadne to stopneme pozdeji (zadna akce)
+    case drvtPluginFS:             // a plug-in item: opened FS (active/disconnected)
+    case drvtPluginFSInOtherPanel: // this should never come, we will stop it later (no action)
     {
         *DriveTypeParam = (DWORD_PTR)item->PluginFS;
         break;
     }
 
-    case drvtPluginCmd: // polozka z plug-inu: prikaz FS
+    case drvtPluginCmd: // a plug-in item: FS command
     {
         *DriveTypeParam = (DWORD_PTR)item->DLLName;
         break;
@@ -2440,8 +2441,8 @@ BOOL CDrivesList::Track()
         return FALSE;
     }
 
-    // zasynchronizujeme drive bars, pokud je to potreba
-    MainWindow->RebuildDriveBarsIfNeeded(TRUE, GetCachedDrivesMask(), // pro urychleni pouzijeme nase napocitane masky
+    // synchronize drive bars, if needed
+    MainWindow->RebuildDriveBarsIfNeeded(TRUE, GetCachedDrivesMask(), // to speed up, we will use our cached masks
                                          TRUE, GetCachedCloudStoragesMask());
 
     if (!LoadMenuFromData())
@@ -2454,13 +2455,13 @@ BOOL CDrivesList::Track()
 
     if (FocusIndex != -1)
         MenuPopup->SetSelectedItemIndex(FocusIndex);
-    FilesWindow->OpenedDrivesList = this; // aby nam FilesWindow dorucilo notifikace
+    FilesWindow->OpenedDrivesList = this; // so that FilesWindow deliver us notifications
     DWORD cmd = MenuPopup->Track(MENU_TRACK_RETURNCMD | MENU_TRACK_SELECT | MENU_TRACK_VERTICAL,
                                  buttonRect.left, buttonRect.bottom,
                                  FilesWindow->HWindow, &buttonRect);
     FilesWindow->OpenedDrivesList = NULL;
 
-    // nechame nastavit navratove promenne
+    // let the returning variable be set
     if (cmd != 0)
         if (!ExecuteItem(cmd - 1, NULL, NULL, NULL))
             cmd = 0;
@@ -2469,8 +2470,8 @@ BOOL CDrivesList::Track()
     delete MenuPopup;
     MenuPopup = NULL;
 
-    // jeste jednou zasynchronizujeme drive bars (mohlo dojit ke zmene behem otevreneho menu)
-    MainWindow->RebuildDriveBarsIfNeeded(TRUE, GetCachedDrivesMask(), // pro urychleni pouzijeme nase napocitane masky
+    // synchronize drive bars once more (it could have changed during the menu)
+    MainWindow->RebuildDriveBarsIfNeeded(TRUE, GetCachedDrivesMask(), // to speed up, we will use our cached masks
                                          TRUE, GetCachedCloudStoragesMask());
 
     return cmd != 0;
@@ -2496,7 +2497,7 @@ BOOL IncludeDriveInDriveBar(CDriveTypeEnum dt)
     case drvtPluginCmd:
         return TRUE;
     }
-    return FALSE; // nechceme fs, ...
+    return FALSE; // we don't want fs, ...
 }
 
 BOOL CDrivesList::FillDriveBar(CDriveBar* driveBar, BOOL bar2)
@@ -2577,12 +2578,12 @@ BOOL CDrivesList::GetDriveBarToolTip(int index, char* text)
     CDriveData* item = &Drives->At(index);
     switch (item->DriveType)
     {
-    case drvtRemovable: // diskety, zjistime jestli to je 3.5", 5.25", 8" nebo neznama
+    case drvtRemovable: // diskettes, we will find out if it is 3.5", 5.25", 8" or unknown
     {
         root[0] = item->DriveText[0];
         volumeName[0] = 0;
         int drv = item->DriveText[0] - 'A' + 1;
-        if (drv >= 1 && drv <= 26) // pro jistotu provedeme "range-check"
+        if (drv >= 1 && drv <= 26) // we will do "range-check" for sure
         {
             DWORD medium = GetDriveFormFactor(drv);
             switch (medium)
@@ -2635,12 +2636,12 @@ BOOL CDrivesList::GetDriveBarToolTip(int index, char* text)
         lstrcpyn(ReadCDVolNameBuffer, root, MAX_PATH);
         HANDLES(LeaveCriticalSection(&ReadCDVolNameCS));
 
-        // nahodime thread, ve kterem zjistime volume_name CD drivu
+        // create thread, in which we will find out the volume_name of the CD drive
         DWORD threadID;
         HANDLE thread = HANDLES(CreateThread(NULL, 0, ReadCDVolNameThreadF,
                                              (void*)uid, 0, &threadID));
         if (thread != NULL && WaitForSingleObject(thread, 500) == WAIT_OBJECT_0)
-        { // dame mu 500ms na zjisteni volume-name
+        { // give it 500ms to find out the volume-name
             HANDLES(EnterCriticalSection(&ReadCDVolNameCS));
             lstrcpyn(volumeName, ReadCDVolNameBuffer, MAX_PATH + 50);
             HANDLES(LeaveCriticalSection(&ReadCDVolNameCS));
@@ -2648,7 +2649,7 @@ BOOL CDrivesList::GetDriveBarToolTip(int index, char* text)
         else
             volumeName[0] = 0;
         if (thread != NULL)
-            AddAuxThread(thread, TRUE); // pokud by thread nestihl dobehnout, vykillujeme ho pred uzavrenim softu
+            AddAuxThread(thread, TRUE); // if the thread is still running, we will kill it before closing the program
         if (volumeName[0] == 0)
             strcpy(volumeName, LoadStr(IDS_COMPACT_DISK));
 
@@ -2696,13 +2697,13 @@ BOOL CDrivesList::GetDriveBarToolTip(int index, char* text)
 
     case drvtPluginCmd:
     {
-        // orizneme prvni sloupec ve jmene polozky
+        // trim the first column in the item name
         const char* p = item->DriveText;
         while (*p != 0 && *p != '\t')
             p++;
         if (*p == '\t')
         {
-            const char* e = p + 1; // orizneme pripadny treti sloupec ve jmene polozky (muze byt za druhym TABem)
+            const char* e = p + 1; // trim the potential third column in the item name (can be after the second TAB)
             while (*e != 0 && *e != '\t')
                 e++;
             lstrcpyn(text, p + 1, (int)(e - (p + 1) + 1));
@@ -2720,7 +2721,7 @@ BOOL CDrivesList::OnContextMenu(BOOL posByMouse, int itemIndex, int panel, const
     if (pluginFSDLLName != NULL)
         *pluginFSDLLName = NULL;
 
-    // na promennou MenuPopup se smi pristupovat pouze je-li posByMouse == FALSE
+    // for the MenuPopup variable, access is only allowed if posByMouse == FALSE
 
     int selectedIndex;
     if (itemIndex == -1 || !posByMouse)
@@ -2740,7 +2741,7 @@ BOOL CDrivesList::OnContextMenu(BOOL posByMouse, int itemIndex, int panel, const
     else
         selectedIndex = itemIndex;
 
-    // naleznu vybranou polozku
+    // finding a selected item
     RECT selectedIndexRect = {0};
     if (MenuPopup != NULL)
         MenuPopup->GetItemRect(selectedIndex, &selectedIndexRect);
@@ -2766,21 +2767,21 @@ BOOL CDrivesList::OnContextMenu(BOOL posByMouse, int itemIndex, int panel, const
             return FALSE;
         if (LowerCase[path[0]] >= 'a' && LowerCase[path[0]] <= 'z' && path[1] == ':' && (path[2] == '\\' || path[2] == '/') ||
             (path[0] == '\\' || path[0] == '/') && (path[1] == '\\' || path[1] == '/'))
-        { // absolutni cesta na disk nebo sit (UNC)
+        { // absolute path on disk or network (UNC)
             SlashesToBackslashesAndRemoveDups(path);
             int type;
             BOOL isDir;
             char* secondPart;
             if (!SalParsePath(MainWindow->HWindow, path, type, isDir, secondPart, LoadStr(IDS_ERRORTITLE),
                               NULL, FALSE, NULL, NULL, NULL, 2 * MAX_PATH) ||
-                type != PATH_TYPE_WINDOWS || // nejde o windowsovou cestu
-                !isDir || *secondPart != 0)  // cesta k souboru (ne adresari) nebo cast cesty neexistuje
+                type != PATH_TYPE_WINDOWS || // not a windows path
+                !isDir || *secondPart != 0)  // the path to a file (not a directory) or a part of the path does not exist
             {
-                return FALSE; // kontextove menu umime jen pro windowsovy cesty (ne pro cesty do archivu)
+                return FALSE; // we can do the context menu only for windows paths (not for archives)
             }
         }
         else
-            return FALSE; // pro jine typy cest (relativni cesty nebo pluginove FS) neumime kontextove menu
+            return FALSE; // we can't do the context menu for other types of paths (relative, FS plugin)
         break;
     }
 
@@ -2801,9 +2802,9 @@ BOOL CDrivesList::OnContextMenu(BOOL posByMouse, int itemIndex, int panel, const
         if (dt == drvtPluginFS)
         {
             CPluginFSInterfaceAbstract* fs = Drives->At(selectedIndex).PluginFS;
-            // musime overit, ze 'fs' je stale platny interface
+            // we need to verify, that 'fs' is still a valid interface
             if (FilesWindow->Is(ptPluginFS) && FilesWindow->GetPluginFS()->GetInterface() == fs)
-            { // vyber aktivniho FS - provedeme refresh
+            { // active FS selection - we will do refresh
                 pluginData = Plugins.GetPluginData(FilesWindow->GetPluginFS()->GetPluginInterfaceForFS()->GetInterface());
                 pluginFS = fs;
                 pluginFSName = FilesWindow->GetPluginFS()->GetPluginFSName();
@@ -2816,7 +2817,7 @@ BOOL CDrivesList::OnContextMenu(BOOL posByMouse, int itemIndex, int panel, const
                 for (i = 0; i < list->Count; i++)
                 {
                     if (list->At(i)->GetInterface() == fs)
-                    { // vyber odpojeneho FS
+                    { // disconnected FS selection
                         pluginData = Plugins.GetPluginData(list->At(i)->GetPluginInterfaceForFS()->GetInterface());
                         pluginFS = fs;
                         pluginFSName = list->At(i)->GetPluginFSName();
@@ -2849,7 +2850,7 @@ BOOL CDrivesList::OnContextMenu(BOOL posByMouse, int itemIndex, int panel, const
                 p.y = selectedIndexRect.bottom;
             }
 
-            char pluginFSNameBuf[MAX_PATH]; // 'pluginFS' muze prestat existovat, radsi dame 'fsName' do lokalniho bufferu
+            char pluginFSNameBuf[MAX_PATH]; // 'pluginFS' may cease to exist, so we put 'fsName' into a local buffer
             if (pluginFSName != NULL)
                 lstrcpyn(pluginFSNameBuf, pluginFSName, MAX_PATH);
             if (pluginData->ChangeDriveMenuItemContextMenu(MainWindow->HWindow, panel, p.x, p.y, pluginFS,
@@ -2861,7 +2862,7 @@ BOOL CDrivesList::OnContextMenu(BOOL posByMouse, int itemIndex, int panel, const
                 if (closeMenu)
                 {
                     BOOL failed = FALSE;
-                    if (MenuPopup != NULL) // hrozi refresh seznamu polozek change drive menu behem otevreneho context menu, takze hrozi i zmena fokusu na jinou polozku, nez pro kterou jsme ukazovali menu a tim by se post-prikaz poslal jinam nez potrebujeme
+                    if (MenuPopup != NULL) // item list of change drive menu refresh can occur during the opened context menu, so the focus can change to another item than the one for which we opened the menu and thus the post-command would be sent to another place than we need
                     {
                         selectedIndex = MenuPopup->GetSelectedItemIndex();
                         if (!(selectedIndex >= 0 && selectedIndex < Drives->Count &&
@@ -2884,22 +2885,22 @@ BOOL CDrivesList::OnContextMenu(BOOL posByMouse, int itemIndex, int panel, const
                     }
                     if (!failed)
                     {
-                        if (postCmd != 0) // zavreni Change Drive menu + spusteni prikazu postCmd
+                        if (postCmd != 0) // closing Change Drive menu + executing postCmd
                         {
                             *PostCmd = postCmd;
                             *PostCmdParam = postCmdParam;
                             *FromContextMenu = TRUE;
                             return TRUE;
                         }
-                        else // pouhe zavreni Change Drive menu
+                        else // just closing Change Drive menu
                         {
-                            *PostCmd = 0; // zbytecne (je nastaveno z konstruktoru), jen pro prehlednost
+                            *PostCmd = 0; // not needed (set from constructor), just for clarity
                             *FromContextMenu = TRUE;
                             return TRUE;
                         }
                     }
                 }
-                if (refreshMenu) // plug-in si zada refresh menu
+                if (refreshMenu) // plug-in asks for menu refresh
                 {
                     PostMessage(MainWindow->HWindow, WM_USER_DRIVES_CHANGE, 0, 0);
                 }
@@ -2908,7 +2909,7 @@ BOOL CDrivesList::OnContextMenu(BOOL posByMouse, int itemIndex, int panel, const
         return FALSE;
     }
 
-    case drvtPluginFSInOtherPanel: // zadne menu neotevreme (disablovana polozka menu)
+    case drvtPluginFSInOtherPanel: // no menu will be opened (menu item disabled)
     {
         return FALSE;
     }
@@ -2922,7 +2923,7 @@ BOOL CDrivesList::OnContextMenu(BOOL posByMouse, int itemIndex, int panel, const
     case drvtOneDriveBus:
     case drvtOneDriveMenu:
     {
-        // pro Documents, Network, As Other Panel a Cloud Storages neumime kontextove menu
+        // for Documents, Network, As Other Panel a Cloud Storages we can't do context menu)
         return FALSE;
     }
 
@@ -2933,12 +2934,12 @@ BOOL CDrivesList::OnContextMenu(BOOL posByMouse, int itemIndex, int panel, const
     }
     }
 
-    //p.s. zakomentovano, aby sel odpojit i prave nepristupny sitovy disk (delsi cekani se toleruje)
+    // commented out so that we can disconnect a network drive that is not accessible at the moment (longer waiting is tolerated)
     //  if (Drives->At(selectedIndex).DriveType == drvtRemote &&
-    //      Drives->At(selectedIndex).Accessible &&   // nepristupny umoznime odpojit, ostatni kontrolujeme
+    //      Drives->At(selectedIndex).Accessible &&   // we will allow to disconnect unaccessible network drives, we verify the others
     //      MainWindow->GetActivePanel()->CheckPath(TRUE, path) != ERROR_SUCCESS) return FALSE;
 
-    //  MainWindow->ReleaseMenuNew();  // Windows nejsou staveny na vic kontextovych menu
+    //  MainWindow->ReleaseMenuNew();  // windows weren't built for more context menus
 
     BOOL selectedIndexAccessible = Drives->At(selectedIndex).Accessible;
 
@@ -2972,32 +2973,32 @@ BOOL CDrivesList::OnContextMenu(BOOL posByMouse, int itemIndex, int panel, const
         DWORD cmd = contextPopup.Track(MENU_TRACK_RETURNCMD | MENU_TRACK_RIGHTBUTTON,
                                        pt.x, pt.y, MainWindow->HWindow, NULL);
 
-        // POZOR: behem vybaleneho context menu muze dojit k refreshi tohoto objektu (napr. user vlozi
-        //        USB stick nebo se odmapuje sitovy disk), je s tim potreba pocitat pri pristupu do dat
-        //        tohoto objektu (napr. Drives muze obsahovat jina data)
+        // WARNING: during the expanded context menu, the object can be refreshed (e.g. user inserts
+        // a USB stick or disconnects a network drive), we have to count on it when accessing the
+        // data of this object (e.g. Drives can contain different data)
 
         if (cmd != 0)
         {
-            BOOL releaseLeft = FALSE;  // odpojit levy panel od disku?
-            BOOL releaseRight = FALSE; // odpojit pravy panel od disku?
+            BOOL releaseLeft = FALSE;  // disconnect left panel from disk?
+            BOOL releaseRight = FALSE; // disconnect right panel from disk?
 
-            char cmdName[2000]; // schvalne mame 2000 misto 200, shell-extensiony obcas zapisuji dvojnasobek (uvaha: unicode = 2 * "pocet znaku"), atp.
+            char cmdName[2000]; // we have 2000 instead of 200 on purpose, shell extensions sometimes write double (consideration: unicode = 2 * "number of characters"), etc.
             if (AuxGetCommandString(MainWindow->ContextMenuChngDrv, cmd, GCS_VERB, NULL, cmdName, 200) != NOERROR)
             {
                 cmdName[0] = 0;
             }
-            if (stricmp(cmdName, "properties") != 0 && // u properties neni nutne
-                stricmp(cmdName, "find") != 0 &&       // u find neni nutne
-                stricmp(cmdName, "open") != 0 &&       // u open neni nutne
-                stricmp(cmdName, "explore") != 0 &&    // u explore neni nutne
-                stricmp(cmdName, "link") != 0)         // u create-short-cut neni nutne
+            if (stricmp(cmdName, "properties") != 0 && // not mandatory for properties
+                stricmp(cmdName, "find") != 0 &&       // not mandatory for find
+                stricmp(cmdName, "open") != 0 &&       // not mandatory for open
+                stricmp(cmdName, "explore") != 0 &&    // not mandatory for explore
+                stricmp(cmdName, "link") != 0)         // not mandatory for create-short-cut
             {
                 CFilesWindow* win;
                 int i;
                 for (i = 0; i < 2; i++)
                 {
                     win = i == 0 ? MainWindow->LeftPanel : MainWindow->RightPanel;
-                    if (HasTheSameRootPath(win->GetPath(), path)) // stejny disk (normal i UNC)
+                    if (HasTheSameRootPath(win->GetPath(), path)) // identical disk (both normal and UNC)
                     {
                         if (i == 0)
                             releaseLeft = TRUE;
@@ -3030,15 +3031,15 @@ BOOL CDrivesList::OnContextMenu(BOOL posByMouse, int itemIndex, int panel, const
                 ici.ptInvoke.y = pt.y;
             }
 
-            BOOL changeToFixedDrv = cmd == 35; // "format" neni modalni, nutna zmena na fixed drive
+            BOOL changeToFixedDrv = cmd == 35; // "format" is not modal, we need to change to fixed drive
             if (releaseLeft)
             {
                 if (changeToFixedDrv)
                 {
                     MainWindow->LeftPanel->ChangeToFixedDrive(MainWindow->LeftPanel->HWindow);
-                    // POZOR: je treba provest invalidate okna, abychom porusili cachovanou bitmapu Alt+F1/2 menu
-                    // jinak dochazelo k zobrazeni stare casti panelu pri teto situaci:
-                    // v levem panelu je disk S:; Alt+F1, right click na S, Format
+                    // WARNING: we have to invalidate the window, so that the cached bitmap of Alt+F1/2 menu is broken
+                    // otherwise, the old part of the panel was displayed in this situation:
+                    // there is disk S: in the left panel; Alt+F1, right click on S, Format
                     InvalidateRect(MainWindow->LeftPanel->HWindow, NULL, TRUE);
                 }
                 else
@@ -3057,9 +3058,9 @@ BOOL CDrivesList::OnContextMenu(BOOL posByMouse, int itemIndex, int panel, const
 
             DisplayMenuAux(MainWindow->ContextMenuChngDrv, (CMINVOKECOMMANDINFO*)&ici);
 
-            // z kontextovyho menu jde zmenit clipboard, overime to ...
-            IdleRefreshStates = TRUE;  // pri pristim Idle vynutime kontrolu stavovych promennych
-            IdleCheckClipboard = TRUE; // nechame kontrolovat take clipboard
+            // it's possible to change clipboard from context menu, we will check it ...
+            IdleRefreshStates = TRUE;  // we will force the check of the state variables at the next Idle
+            IdleCheckClipboard = TRUE; // we will the clipboard to be checked as well
 
             UpdateWindow(MainWindow->HWindow);
             if (releaseLeft && !changeToFixedDrv)
@@ -3067,12 +3068,12 @@ BOOL CDrivesList::OnContextMenu(BOOL posByMouse, int itemIndex, int panel, const
             if (releaseRight && !changeToFixedDrv)
                 MainWindow->RightPanel->HandsOff(FALSE);
 
-            if (!selectedIndexAccessible) // odmapovani zapamatovaneho neaktivniho sitoveho spojeni?
+            if (!selectedIndexAccessible) // unmap the remembered inactive network connection?
                 PostMessage(MainWindow->HWindow, WM_USER_DRIVES_CHANGE, 0, 0);
 
             /*
-// notifikace bude dorucena pres WM_DEVICECHANGE
-      if (GetLogicalDrives() < disks) // odmapovani?
+// the notification will be delivered through WM_DEVICECHANGE
+      if (GetLogicalDrives() < disks) // unmapping?
       {
         PostMessage(MainWindow->HWindow, WM_USER_DRIVES_CHANGE, 0, 0);
         TRACE_I("sending 1");
@@ -3099,18 +3100,18 @@ BOOL CDrivesList::RebuildMenu()
         TRACE_E("MenuPopup == NULL");
         return FALSE;
     }
-    // pozadame menu o modifikaci
+    // asking menu for modification
     if (MenuPopup->BeginModifyMode())
     {
-        // sestrelime stara data
+        // remove old data
         DestroyData();
-        // poridime nova
-        BuildData(TRUE); // nelze pouzit timeout, cteni labelu CD trva dlouho (1,5s) - system notifikuje drive nez ma nacteno
-        // vykopneme z menu polozky
+        // get new ones
+        BuildData(TRUE); // timeout can't be used, reading CD labels takes long time (1,5s) - system notifies the driver earlier than it's loaded
+        // remove items from menu
         MenuPopup->RemoveAllItems();
-        // naleje nove
+        // get new items
         LoadMenuFromData();
-        // nechame menu prekreslit
+        // let menu to be redrawn
         MenuPopup->EndModifyMode();
     }
     return TRUE;
@@ -3121,7 +3122,7 @@ BOOL CDrivesList::FindPanelPathIndex(CFilesWindow* panel, DWORD* index)
     if (panel->Is(ptPluginFS))
     {
         if (!panel->GetPluginFS()->IsServiceSupported(FS_SERVICE_GETCHANGEDRIVEORDISCONNECTITEM))
-        { // hledame jen pluginove FS bez vlastni polozky v Change Drive menu (tyto polozky totiz v Drive barach nejsou)
+        { // searching for a plug-in FS without its own item in Change Drive menu (these items are not in Drive bars)
             int i;
             for (i = 0; i < Drives->Count; i++)
             {
@@ -3140,7 +3141,7 @@ BOOL CDrivesList::FindPanelPathIndex(CFilesWindow* panel, DWORD* index)
         if (path[0] == '\\' && path[1] == '\\')
         {
             if (path[2] == '.' && path[3] == '\\' && path[4] != 0 && path[5] == ':')
-                return FALSE; // cesta typu "\\.\C:\"
+                return FALSE; // "\\.\C:\" type path
             CPluginData* nethoodPlugin = NULL;
             Plugins.GetFirstNethoodPluginFSName(NULL, &nethoodPlugin);
             int i;

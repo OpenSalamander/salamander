@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -12,7 +13,7 @@ struct COneDriveBusinessStorage
     char* DisplayName;
     char* UserFolder;
 
-    COneDriveBusinessStorage(char* displayName, char* userFolder) // ulozi si alokovane parametry
+    COneDriveBusinessStorage(char* displayName, char* userFolder) // saves allocated parameters
     {
         DisplayName = displayName;
         UserFolder = userFolder;
@@ -37,8 +38,8 @@ public:
 };
 
 extern char DropboxPath[MAX_PATH];
-extern char OneDrivePath[MAX_PATH];                        // jen pro personal ucet
-extern COneDriveBusinessStorages OneDriveBusinessStorages; // jen pro business ucty
+extern char OneDrivePath[MAX_PATH];                        // for personal account only
+extern COneDriveBusinessStorages OneDriveBusinessStorages; // for business accounts only
 
 void InitOneDrivePath();
 int GetOneDriveStorages();
@@ -48,8 +49,9 @@ int GetOneDriveStorages();
 // CDrivesList
 //
 
-// POZOR: v CDrivesList::BuildData se pouziva test "DriveType > drvtRAMDisk", pri zmenach
-//        enumu je s tim nutne pocitat !!!
+// WARNING: in CDrivesList::BuildData test "DriveType > drvtRAMDisk" is used, so
+//          it is necessary to bear this in mind when changing the enum !!!
+
 enum CDriveTypeEnum
 {
     drvtSeparator,            // This item is Separator (for Alt+F1/2 menu)
@@ -60,35 +62,35 @@ enum CDriveTypeEnum
     drvtCDROM,                // The drive is a CD-ROM drive
     drvtRAMDisk,              // The drive is a RAM disk
     drvtMyDocuments,          // The drive is a Documents
-    drvtGoogleDrive,          // polozka je Cloud Storage: Google Drive
-    drvtDropbox,              // polozka je Cloud Storage: Dropbox
-    drvtOneDrive,             // polozka je Cloud Storage: OneDrive - Personal
-    drvtOneDriveBus,          // polozka je Cloud Storage: OneDrive - Business
-    drvtOneDriveMenu,         // polozka je Cloud Storage: vyber z vice OneDrive storages (jen v DriveBar, do Change Drive menu se nedava)
+    drvtGoogleDrive,          // the item is a Cloud Storage: Google Drive
+    drvtDropbox,              // the item is a Cloud Storage: Dropbox
+    drvtOneDrive,             // the item is a Cloud Storage: OneDrive - Personal
+    drvtOneDriveBus,          // the item is a Cloud Storage: OneDrive - Business
+    drvtOneDriveMenu,         // the item is a Cloud Storage: selection from multiple OneDrive storages (only in DriveBar, not added to Change Drive menu)
     drvtNeighborhood,         // The drive is a Network
     drvtOtherPanel,           // The drive is a other panel
     drvtHotPath,              // The drive is a hot path
-    drvtPluginFS,             // polozka z plug-inu: otevreny FS (aktivni/odpojeny)
-    drvtPluginCmd,            // polozka z plug-inu: prikaz FS
-    drvtPluginFSInOtherPanel, // polozka z plug-inu: FS otevreny ve vedlejsim panelu
+    drvtPluginFS,             // the plugin item: opened FS (active/disconnected)
+    drvtPluginCmd,            // the plugin item: FS command
+    drvtPluginFSInOtherPanel, // the plugin item: FS opened in other panel
 };
 
 struct CDriveData
 {
-    CDriveTypeEnum DriveType; // pokud je drvtSeparator, ostatni polozky nejsou platne
+    CDriveTypeEnum DriveType; // if it's drvtSeparator, other items are not valid
     char* DriveText;
-    DWORD Param;      // zatim pro Hot Paths - jeji index
-    BOOL Accessible;  // u drvtRemote: FALSE - sedy symbol
-    BOOL Shared;      // je disk sdileny?
-    HICON HIcon;      // symbol drivu
-    HICON HGrayIcon;  // cernobila verze symbolu drivu
-    BOOL DestroyIcon; // ma se pri uklidu uvolnit HIcon?
+    DWORD Param;      // at the moment for Hot Paths - its index
+    BOOL Accessible;  // for drvtRemote: FALSE - gray symbol
+    BOOL Shared;      // is the drive shared?
+    HICON HIcon;      // drive symbol
+    HICON HGrayIcon;  // black and white version of the drive symbol
+    BOOL DestroyIcon; // should HIcon be released when cleaning up?
 
-    // jen pro drvtPluginFS a drvtPluginFSInOtherPanel: interface FS (nemusi byt platny, overovat)
+    // for drvtPluginFS and drvtPluginFSInOtherPanel only: interface FS (may be invalid, check it)
     CPluginFSInterfaceAbstract* PluginFS;
-    // jen pro drvtPluginCmd: ukazatel prevzaty z CPluginData plug-inu (jednoznacna identifikace
-    // plug-inu - DLLName se alokuje jen jednou; nemusi byt platny, overovat); nestaci ukazatel
-    // na CPluginData, protoze pri pridani/ubrani plug-inu by nebyl platny (realokace pole - viz array.h)
+    // for drvtPluginCmd only: pointer taken from CPluginData (unique identification of the
+    //  plugin - DLLName is allocated only once; may be invalid, check it); pointer to
+    //  CPluginData is not enough, because it would be invalid when adding/removing plugins (array reallocation - see array.h)
     const char* DLLName;
 };
 
@@ -101,22 +103,22 @@ class CDrivesList
 protected:
     CFilesWindow* FilesWindow;
     CDriveTypeEnum* DriveType;
-    DWORD_PTR* DriveTypeParam; // x64: refrencovana hodnota musi umet drzet ukazatel, takze DWORD_PTR
-    int* PostCmd;              // post-cmd pro plug-in FS kontextove menu
-    void** PostCmdParam;       // post-cmd-parameter pro plug-in FS kontextove menu
-    BOOL* FromContextMenu;     // je nastaveno na TRUE pokud prikaz menu spustilo kontextove menu
+    DWORD_PTR* DriveTypeParam; // x64: the referenced value must be able to hold a pointer, so DWORD_PTR
+    int* PostCmd;              // post-cmd for context menu of a FS plugin
+    void** PostCmdParam;       // post-cmd-parameter for context menu of a FS plugin
+    BOOL* FromContextMenu;     // set to TRUE if the menu was invoked from a context menu
     char CurrentPath[MAX_PATH];
     TDirectArray<CDriveData>* Drives;
     CMenuPopup* MenuPopup;
-    int FocusIndex; // ktera polozka z pole Drives ma byt focused
+    int FocusIndex; // what item from the Drives array should be focused
 
-    DWORD CachedDrivesMask;        // bitove pole disku, ktere jsme ziskali pri poslednim BuildData()
-    DWORD CachedCloudStoragesMask; // bitove pole cloud storages, ktere jsme ziskali pri poslednim BuildData()
+    DWORD CachedDrivesMask;        // bit array of drives, which we got during the last BuildData()
+    DWORD CachedCloudStoragesMask; // bit array of cloud storages, which we got during the last BuildData()
 
 public:
-    // vstup:
-    //   driveType = dummy
-    //   driveTypeParam = pismeno disku, ktery chceme aktivovat (nebo 0 (PluginFS) nebo '\\' (UNC))
+    // input:
+    // driveType = dummy
+    // driveTypeParam = letter of the drive to activate (or 0 (PluginFS) or '\\' (UNC))
     CDrivesList(CFilesWindow* filesWindow, const char* currentPath, CDriveTypeEnum* driveType,
                 DWORD_PTR* driveTypeParam, int* postCmd, void** postCmdParam, BOOL* fromContextMenu);
     ~CDrivesList()
@@ -125,7 +127,7 @@ public:
         Drives = NULL;
     }
 
-    // pridani prvku do pole Drives (pouziva se behem BuildData z Plugins)
+    // adding an item to Driver array (used during BuildData from Plugins)
     void AddDrive(CDriveData& drv, int& index)
     {
         index = Drives->Add(drv);
@@ -135,57 +137,56 @@ public:
 
     BOOL Track();
 
-    // naleje tlacitka do toolbary; bar2 ridi jejich IDcka pokud je FALSE, budou od
-    // CM_DRIVEBAR_MIN, jinak od CM_DRIVEBAR2_MIN
+    // loads buttons to the toolbar; their IDs are controlled by 'bar2' if FALSE, they will be from
+    // CM_DRIVEBAR_MIN, otherwise from CM_DRIVEBAR2_MIN
     BOOL FillDriveBar(CDriveBar* driveBar, BOOL bar2);
 
-    // tudy FilesWindow predava informaci o tom, ze user rclicknul na polozce
-    // 'posByMouse' udava, jestli mame vybalit menu na souradnicich mysi nebo
-    // pod vybranou polozkou; 'panel' udava se kterym panelem se pracuje (pri dvou
-    // Drive barach to muze byt i neaktivni panel - z Change Drive menu je vzdy PANEL_SOURCE,
-    // z Drive bary je PANEL_LEFT nebo PANEL_RIGHT); neni-li 'pluginFSDLLName' NULL
-    // a vybaluje se kontextove menu pro polozku FS, vraci se v nem jmeno DLLka pluginu (spise
-    // SPLka); vraci TRUE pokud se ma spustit prikaz, na kterem se vybalovalo kontextove menu
-    // (FALSE nedela nic); 'itemIndex' udava pro kterou plozku se vybali kontextove menu,
-    // 'posByMouse' pak musi byt = TRUE; pokud je 'itemIndex' -1, ziska se polozka z menu
+    // here FilesWindows passes information that user right-clicked on item
+    // 'posByMouse' says whether we should popup the menu at mouse coordinates or under the selected item;
+    // 'panel' says which panel is active (it can be also inactive panel when there are two DriveBars - from
+    // Change Drive menu it is always PANEL_SOURCE, from DriveBars it is PANEL_LEFT or PANEL_RIGHT);
+    // if 'pluginFSDLLName' is not NULL and we are popping up a context menu for a FS item, it returns the
+    // name of the plugin DLL (or SPL); returns TRUE if we should execute the command on which the context
+    // menu was popped up (FALSE does nothing); 'itemIndex' says for which item we are popping up the context
+    // menu, 'posByMouse' must be TRUE; if 'itemIndex' is -1, the item is taken from the menu
     BOOL OnContextMenu(BOOL posByMouse, int itemIndex, int panel, const char** pluginFSDLLName);
 
-    // Tudy je pozadano o nove nacteni polozek do menu. Predpokladem je, ze
-    // menu je zobrazene a program je v metode Track.
+    // A new loading of items into the menu is requested here. It is assumed that the menu is displayed
+    // and the program is in the Track method.
     BOOL RebuildMenu();
 
-    // je-li 'noTimeout' TRUE, ceka se na CD volume label neomezene (jinak jen 500ms);
-    // neni-li 'copyDrives' NULL, data se z nej jen zkopiruji (misto ziskavani dat ze systemu)
-    // pokud je 'getGrayIcons' TRUE, ziska se pro vybrane polozky cernobila verze ikony
-    // a nastavi se promenna 'HGrayIcon', jinak bude NULL
+    // if 'noTimeout' is TRUE, it waits for CD volume label without timeout (otherwise only 500ms);
+    // if 'copyDrives' is not NULL, data are copied from it (instead of getting data from the system)
+    // if 'getGrayIcons' is TRUE, black and white version of the icon is obtained for selected items
+    // and the 'HGrayIcon' variable is set, otherwise it will be NULL
     BOOL BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives = NULL,
                    DWORD copyCachedDrivesMask = 0, BOOL getGrayIcons = FALSE, BOOL forDriveBar = FALSE);
     void DestroyData();
     void DestroyDrives(TDirectArray<CDriveData>* drives);
 
-    // pomocna funkce pro pridani polozky do Drives
+    // helper function for adding an item to Drives
     void AddToDrives(CDriveData& drv, int textResId, char hotkey, CDriveTypeEnum driveType,
                      BOOL getGrayIcons, HICON icon, BOOL destroyIcon = TRUE, const char* itemText = NULL);
 
-    // nastavi *DriveType a *DriveTypeParam na zaklade indexu
-    // vrati FALSE, pokud je index mimo rozsah nebo se cestu nepodarilo ozivit
+    // sets *DriveType and *DriveTypeParam according to the index
+    // returns FALSE if the index is out of range or the path cannot be revived
     BOOL ExecuteItem(int index, HWND hwnd, const RECT* exclude, BOOL* fromDropDown);
 
-    // do bufferu text vlozit tooltip odpovidajici drivu urcenemu promennou index
+    // insert tooltip corresponding to the drive determined by the variable index to text buffer
     BOOL GetDriveBarToolTip(int index, char* text);
 
-    // jen pro Drive bary: prohleda data a pokud najde polozku s cestou z panelu 'panel', nastavi
-    // 'index' na jeji index a vrati TRUE, jinak vrati FALSE
+    // for Drive bars only: searches data and if it finds an item with path from 'panel' panel, it sets
+    // 'index' to its index and returns TRUE, otherwise it returns FALSE
     BOOL FindPanelPathIndex(CFilesWindow* panel, DWORD* index);
 
-    // vraci bitove pole disku, jak bylo ziskano pri poslednim BuildData()
-    // pokud BuildData() jeste neprobehlo, vraci 0
-    // lze pouzit pro rychlou detekci, zda nedoslo k nejake zmene disku
+    // returns bit array of drives, which we got during the last BuildData()
+    // if BuildDate() has not been called yet, returns 0
+    // can be used for quick detection of any change in the drives
     DWORD GetCachedDrivesMask();
 
-    // vraci bitove pole dostupnych cloud storages, jak bylo ziskano pri poslednim BuildData()
-    // pokud BuildData() jeste neprobehlo, vraci 0
-    // lze pouzit pro rychlou detekci, zda nedoslo k nejake zmene dostupnosti cloud storages
+    // returns bit array of available cloud storages, which we got during the last BuildData()
+    // if BuildDate() has not been called yet, returns 0
+    // can be used for quick detection of any change in the cloud storages
     DWORD GetCachedCloudStoragesMask();
 
     TDirectArray<CDriveData>* GetDrives() { return Drives; }
@@ -200,9 +201,9 @@ public:
 protected:
     BOOL LoadMenuFromData();
 
-    CDriveTypeEnum OwnGetDriveType(const char* rootPath); // prelozi system DriveType na nas CDriveTypeEnum
+    CDriveTypeEnum OwnGetDriveType(const char* rootPath); // translates system DriveType to our CDriveTypeEnum
 
-    // pomocna metoda; pomaha predchazet dvoum separatorum za sebou
+    // helper method; helps to prevent two separators in a row
     BOOL IsLastItemSeparator();
 };
 
@@ -222,7 +223,7 @@ struct CNBWNetAC3Thread
     {
         if (Thread != NULL)
         {
-            AddAuxThread(Thread, TRUE); // thread muze bezet jen pri ukoncovani softu, timto ho nechame zabit
+            AddAuxThread(Thread, TRUE); // thread can run only during shutdown, we will kill it by this
             Thread = NULL;
         }
         if (shutdown)
