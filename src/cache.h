@@ -3,15 +3,15 @@
 
 #pragma once
 
-// inicializace diskove cache, vraci uspech
+// disck cache initialization, returns success
 BOOL InitializeDiskCache();
 
-// jak dlouho se ceka mezi overenimi stavu sledovanych objektu
+// how long time to wait between checking the state of watched objects
 #define CACHE_HANDLES_WAIT 500
-// (100 MB) max. velikost disk-cache v bytech na disku, potreba prenest do konfigurace
+// (100 MB) max . size of disk-cache in bytes, should be moved to configuration
 #define MAX_CACHE_SIZE CQuadWord(104857600, 0)
 
-// kody chybovych stavu pro metodu CDiskCache::GetName():
+// error state codes for method CDiskCache::GetName()
 #define DCGNE_SUCCESS 0
 #define DCGNE_LOWMEMORY 1
 #define DCGNE_NOTFOUND 2
@@ -24,125 +24,124 @@ BOOL InitializeDiskCache();
 // CCacheData
 //
 
-enum CCacheRemoveType // pokud je mozne zrusit polozku v cache, kdy se tak stane?
+enum CCacheRemoveType // if it's possible to remove the item from cache, when it will happen?
 {
-    crtCache, // az si rekne cache (prekroceni limitu velikosti cache, ...) (FTP - rychlostni cache)
-    crtDirect // hned (neni treba vubec cachovat, zrusit hned jak neni potreba)
+    crtCache, // once the cache asks for it (cache size limit exceeded, ...) (FTP - speed cache)
+    crtDirect // immediately (no need to cache, remove it once it's not needed)
 };
 
 class CDiskCache;
 class CCacheHandles;
 
-class CCacheData // tmp-jmeno, informace o souboru nebo adresari na disku, interni pouziti
+class CCacheData // tmp-name, info about file or directory on disk, internal use
 {
 protected:
-    char* Name;       // identifikace polozky (cesta k originalu)
-    char* TmpName;    // jmeno tmp-souboru na disku (plna cesta)
-    HANDLE Preparing; // mutex, ktery "drzi" thread, ktery pripravuje tmp-soubor
+    char* Name;       // the item identification (path to original)
+    char* TmpName;    // the tmp-file name on disk (full path)
+    HANDLE Preparing; // mutex, which "holds" the thread, which prepares the tmp-file
 
-    // systemove objekty - pole typu (HANDLE): stav "signaled" -> zrusit tento 'lock'
+    // system objects - array of (HANDLE): state "signaled" -> remove this 'lock'
     TDirectArray<HANDLE> LockObject;
-    // vlastnictvi objektu - pole typu (BOOL): TRUE -> volat CloseHandle('lock')
+    // the object ownership - array of (BOOL): TRUE -> call CloseHandle('lock')
     TDirectArray<BOOL> LockObjOwner;
 
-    BOOL Cached;                               // jde o cachovany tmp-soubor? (prislo uz crtCache?)
-    BOOL Prepared;                             // je tmp-soubor pripraveny k pouziti? (napr. stazeny z FTP?)
-    int NewCount;                              // pocet novych zadosti o tmp-soubor
-    CQuadWord Size;                            // velikost tmp-souboru (v bytech)
-    int LastAccess;                            // "cas" posledniho pristupu k tmp-souboru (pro cache - vyhazujeme nejstarsi)
-    BOOL Detached;                             // TRUE => tmp-soubor se nema mazat
-    BOOL OutOfDate;                            // TRUE => jakmile to pujde, ziskame novou kopii (jakoby na disku nebyl)
-    BOOL OwnDelete;                            // FALSE = tmp-soubor mazat pres DeleteFile(), TRUE = mazat pres DeleteManager (maze plugin OwnDeletePlugin)
-    CPluginInterfaceAbstract* OwnDeletePlugin; // iface pluginu, ktery ma smazat tmp-soubor (NULL = plugin je unloaded, tmp-soubor se nema mazat)
+    BOOL Cached;                               // is it a cached tmp-file? (did CrtCache already arrive?)
+    BOOL Prepared;                             // is the tmp-file prepared for use? (e.g. downloaded from FTP?)
+    int NewCount;                              // the count of new requests for the tmp-file
+    CQuadWord Size;                            // tmp-file size (in bytes)
+    int LastAccess;                            // "time" of last access to the tmp-file (for cache - remove the oldest)
+    BOOL Detached;                             // TRUE => the tmp-file should not be deleted
+    BOOL OutOfDate;                            // TRUE => once possible, we acquire a new copy (as if it's not on disk)
+    BOOL OwnDelete;                            // FALSE = delete the tmp-file using DeleteFile(), TRUE = delete using DeleteManager (the plugin OwnDeletePlugin deletes)
+    CPluginInterfaceAbstract* OwnDeletePlugin; // plugin interface, which should delete the tmp-file (NULL = the plugin is unloaded, the tmp-file should not be deleted)
 
 public:
     CCacheData(const char* name, const char* tmpName, BOOL ownDelete,
                CPluginInterfaceAbstract* ownDeletePlugin);
     ~CCacheData();
 
-    // vraci nastavenou velikost tmp-souboru
+    // returns the set size of the tmp-file
     CQuadWord GetSize() { return Size; }
 
-    // vraci TRUE, pokud se tento tmp-soubor maze pluginem 'ownDeletePlugin'
+    // returns TRUE if the tmp-file is deleted by the plugin 'ownDeletePlugin'
     BOOL IsDeletedByPlugin(CPluginInterfaceAbstract* ownDeletePlugin)
     {
         return OwnDelete && OwnDeletePlugin == ownDeletePlugin;
     }
 
-    // vraci "cas" posledniho pristupu k tmp-souboru
+    // returns "time" of last access to the tmp-file
     int GetLastAccess() { return LastAccess; }
 
-    // zrusi tmp-soubor na disku, vraci uspech (Name jiz neni na disku)
+    // cancels tmp-file on disk, returns success (Name is not on disk anymore)
     BOOL CleanFromDisk();
 
-    // povedla se inicializace objektu ?
+    // did the object initialization succeeded?
     BOOL IsGood() { return Name != NULL; }
 
-    // ma byt tmp-soubor cachovany?
+    // should the tmp-file be cached?
     BOOL IsCached() { return Cached; }
 
-    // je tmp-soubor bezprizorny? (nema uz/jeste zadny link?)
+    // is the tmp-file without any link? (it still has no link/it has no link anymore?)
     BOOL IsLocked() { return LockObject.Count == 0 && NewCount == 0; }
 
     BOOL NameEqual(const char* name) { return StrICmp(Name, name) == 0; }
     BOOL TmpNameEqual(const char* tmpName) { return StrICmp(TmpName, tmpName) == 0; }
 
-    // ceka az bude tmp-soubor pripraven nebo bude zavolana ReleaseName(),
-    // pak nastavi 'exists' a navratovou hodnotu v souladu s CDiskCache::GetName()
-    // NULL -> fatalni chyba nebo "soubor nepripraven" (viz dale)
+    // waits until the tmp-file is prepared or until the method ReleaseName() is called
+    // then 'exists' is set to return value matching CDiskCache::GetName()
+    // NULL -> fatal error or "file not prepared" (see below)
     //
-    // je-li 'onlyAdd' TRUE, lze jen obnovit smazany tmp-soubor - pokud je tmp-soubor pripraveny,
-    // vrati NULL a 'exists' FALSE (dale chapano jako chyba "soubor jiz existuje");
-    // 'canBlock' je TRUE pokud ma dojit k cekani na pripravenost tmp-souboru v pripade, ze
-    // neni pripraveny, je-li 'canBlock' FALSE a tmp-soubor neni pripraven, vraci NULL a
-    // 'exists' FALSE ("nenalezeno"); neni-li 'errorCode' NULL, vraci se v nem kod chyby,
-    // ktera nastala (viz DCGNE_XXX)
+    // if 'onlyAdd' is TRUE, only the deleted tmp-file can be restored - if the tmp-file is prepared,
+    // NULL is returned and 'exists' is set to FALSE (further interpreted as "file already exists" error);
+    // 'canBlock' is TRUE if waiting for readiness of the tmp-file is expected, in case it's not
+    // prepared, if 'canBlock' is FALSE and the tmp-file is not prepared, NULL is returned and
+    // 'exists' is set to FALSE ("not found"); if 'errorCode' is not NULL, the error code is returned
+    // in it (see DCGNE_XXX)
     const char* GetName(CDiskCache* monitor, BOOL* exists, BOOL canBlock, BOOL onlyAdd,
                         int* errorCode);
 
-    // popis viz CDiskCache::NamePrepared()
+    // for description see CDiskCache::NamePrepared()
     BOOL NamePrepared(const CQuadWord& size);
 
-    // popis viz CDiskCache::AssignName()
+    // for description see CDiskCache::AssignName()
     //
-    // handles - objekt pro sledovani 'lock' objektu
+    // handles - object for watching the 'lock' object
     BOOL AssignName(CCacheHandles* handles, HANDLE lock, BOOL lockOwner, CCacheRemoveType remove);
 
-    // popis viz CDiskCache::ReleaseName()
+    // for description see CDiskCache::ReleaseName()
     //
-    // lastLock - ukazatel na BOOL, ve kterem metoda vraci TRUE pokud jiz nejsou zadne linky na tmp-soubor
+    // lastLock - pointer to BOOL, which is set to TRUE if there are no links to the tmp-file anymore
     BOOL ReleaseName(BOOL* lastLock, BOOL storeInCache);
 
-    // vraci plne jmeno tmp-souboru
+    // returns the full name of the tmp-file
     const char* GetTmpName() { return TmpName; }
 
-    // odpoji objekt 'lock' (v "signaled" stavu) od tmp-souboru (odpoji link)
+    // detaches the object 'lock' (in "signaled" state) from the tmp-file (detaches the link)
     //
-    // vraci uspech
+    // returns success
     //
-    // lock - objekt, ktery presel do "signaled" stavu
-    // lastLock - ukazatel na BOOL, ve kterem metoda vraci TRUE pokud jiz nejsou zadne linky na tmp-soubor
+    // lock - object, which is in "signaled" state
+    // lastLock - pointer to BOOL, which is set to TRUE if there are no links to the tmp-file anymore
     BOOL WaitSatisfied(HANDLE lock, BOOL* lastLock);
 
-    // pokud si rozmyslime smazani souboru na disku (napr. nepodaril se zapakovat, nechame
-    // ho tedy radsi v tempu, aby nas useri nezabili)
+    // if we change our mind about deleting the tmp-file on disk (e.g. it was not possible to pack it,
+    // so we leave it in temp, so that the users don't kill us)
     void DetachTmpFile() { Detached = TRUE; }
 
-    // meni typ tmp-souboru na crtDirect (prime smazani po pouziti)
+    // changes type of tmp-file to crtDirect (direct deletion after use)
     void SetOutOfDate()
     {
         Cached = FALSE;
         OutOfDate = TRUE;
     }
 
-    // vraci identifikaci polozky (cesta k originalu)
+    // returns item identification (path to original)
     const char* GetName() { return Name; }
 
-    // provede predcasne smazani tmp-souboru, pokud se maze pomoci pluginu
-    // 'ownDeletePlugin'; pouziva se pri unloadu pluginu (u tmp-souboru se nastavi,
-    // ze uz byl smazan - az se na nej zavrou vsechny odkazy, k mazani uz nedojde);
-    // je-li 'onlyDetach' TRUE, nedojde ke smazani, dojde jen k nastaveni, ze uz byl
-    // smazany (odpojeni pluginu od tmp-souboru)
+    // performs premature deletion of the tmp-file, which is deleted by the plugin 'ownDeletePlugin';
+    // used when unloading the plugin (the tmp-file is marked as deleted - once all links are closed,
+    // deletion won't occur); if 'onlyDetach' is TRUE, the tmp-file is not deleted, it's only marked
+    // as deleted (the plugin is detached from the tmp-file)
     void PrematureDeleteByPlugin(CPluginInterfaceAbstract* ownDeletePlugin, BOOL onlyDetach);
 };
 
@@ -151,12 +150,12 @@ public:
 // CCacheDirData
 //
 
-class CCacheDirData // tmp-adresar, obsahuje unikatni tmp-jmena, interni pouziti
+class CCacheDirData // tmp-directory, contains unique tmp-names, internal use
 {
 protected:
-    char Path[MAX_PATH];             // reprezentace tmp-adresare na disku
-    int PathLength;                  // delka retezce v Path
-    TDirectArray<CCacheData*> Names; // seznam zaznamu, typ polozky (CCacheData *)
+    char Path[MAX_PATH];             // tmp-directory representation on disk
+    int PathLength;                  // length of the string in Path
+    TDirectArray<CCacheData*> Names; // the list of records, type of item (CCacheData *)
 
 public:
     CCacheDirData(const char* path);
@@ -164,100 +163,99 @@ public:
 
     int GetNamesCount() { return Names.Count; }
 
-    // pokud v nasem tmp-adresari na disku neni zadny soubor, vymazeme ho z disku
-    // (docisteni TEMPu - viz CDiskCache::RemoveEmptyTmpDirsOnlyFromDisk())
+    // if there's no file in the tmp-directory, it's deleted from disk
+    // (finishing of TEMP cleaning - see CDiskCache::RemoveEmptyTmpDirsOnlyFromDisk())
     void RemoveEmptyTmpDirsOnlyFromDisk();
 
-    // vraci TRUE pokud tmp-adresar obsahuje tmpName (jmeno souboru/adresare na disku)
-    // rootTmpPath - cesta kam umistit tmp-adresar s tmp-souborem (nesmi byt NULL)
-    // rootTmpPathLen - delka retezce rootTmpPath
-    // canContainThisName - nesmi byt NULL, vraci se v nem TRUE pokud je mozne umistit
-    //                      tmp-soubor do tohoto tmp-adresare (odpovida tmp-root + nelezi
-    //                      v nem zadny soubor s DOS-name rovnym 'tmpName')
+    // returns TRUE if the tmp-directory contains 'tmpName' (name of file/directory on disk)
+    // rootTmpPath - path where to place the tmp-directory with the tmp-file (must not be NULL)
+    // rootTmpPathLen - length of the string in rootTmpPath
+    // canContainThisName - must not be NULL, returns TRUE in it if it's possible to place
+    //                      the tmp-file into this tmp-directory (matches tmp-root + there's
+    //                      no file with DOS-name equal to 'tmpName')
     BOOL ContainTmpName(const char* tmpName, const char* rootTmpPath, int rootTmpPathLen,
                         BOOL* canContainThisName);
 
-    // hleda 'name' v tmp-adresari; pokud najde, vraci TRUE a hodnoty 'name' a 'tmpPath'
-    // tak, aby odpovidaly predpokladanym hodnotam z CDiskCache::GetName(); pokud nenajde
-    // vraci FALSE
+    // searches for 'name' in the tmp-directory; if it's found, returns TRUE and values 'name' and 'tmpPath',
+    // so that they match expected values from CDiskCache::GetName(); if it's not found,
+    // returns FALSE
     //
-    // name - jednoznacna identifikace polozky
-    // exists - ukazatel na BOOL, ktery se nastavi dle vyse uvedeneho
-    // tmpPath - navratova hodnota CDiskCache::GetName() (NULL && 'exists'==TRUE -> fatalni chyba)
+    // name - unique item identification
+    // exists - pointer to BOOL, which is set per the description above
+    // tmpPath - return value of CDiskCache::GetName() (NULL && 'exists'==TRUE -> fatal error)
     //
-    // je-li 'onlyAdd' TRUE, lze vytvorit jen nove jmeno nebo obnovit smazany tmp-soubor
-    // (jmeno existuje, ale tmp-soubor neni pripraveny) - pokud jiz jmeno existuje,
-    // vrati TRUE, 'exists' FALSE a 'tmpPath' NULL ("soubor jiz existuje");
-    // 'canBlock' je TRUE pokud ma dojit k cekani na pripravenost tmp-souboru v pripade, ze
-    // 'name' v cache je, ale neni pripravene, je-li 'canBlock' FALSE a tmp-soubor neni
-    // pripraven, vraci TRUE, 'exists' FALSE a 'tmpPath' NULL ("nenalezeno");
-    // neni-li 'errorCode' NULL, vraci se v nem kod chyby, ktera nastala (viz DCGNE_XXX)
+    // if 'onlyAdd' is TRUE, it is possible to create only a new name or restore a deleted tmp-file
+    // (the name exists, but the tmp-file is not prepared) - if the name exists, returns TRUE,
+    // 'exists' FALSE and 'tmpPath' NULL ("file already exists");
+    // 'canBlock' is TRUE if waiting for readiness of the tmp-file is expected, in case 'name'
+    // is in cache, but it's not prepared, if 'canBlock' is FALSE and the tmp-file is not prepared,
+    // returns TRUE, 'exists' FALSE and 'tmpPath' NULL ("not found");
+    // if 'errorCode' is not NULL, the error code is returned in it (see DCGNE_XXX)
     BOOL GetName(CDiskCache* monitor, const char* name, BOOL* exists, const char** tmpPath,
                  BOOL canBlock, BOOL onlyAdd, int* errorCode);
 
-    // popis viz CDiskCache::GetName() - pridavani noveho 'name'
+    // for description see CDiskCache::GetName() - adding a new 'name'
     const char* GetName(const char* name, const char* tmpName, BOOL* exists, BOOL ownDelete,
                         CPluginInterfaceAbstract* ownDeletePlugin, int* errorCode);
 
-    // hleda 'name' v tmp-adresari; pokud najde, vraci TRUE a 'ret' je navratova hodnota
-    // CDiskCache::NamePrepared(name, size); pokud nenajde, vraci FALSE
-    // popis viz CDiskCache::NamePrepared()
+    // searches for 'name' in the tmp-directory; if it's found, returns TRUE and 'ret' is set to return value
+    // CDiskCache::NamePrepared(name, size); if it's not found, returns FALSE
+    // for description see CDiskCache::NamePrepared()
     BOOL NamePrepared(const char* name, const CQuadWord& size, BOOL* ret);
 
-    // hleda 'name' v tmp-adresari; pokud najde, vraci TRUE a 'ret' je navratova hodnota
-    // CDiskCache::AssignName(name, lock, lockOwner, remove); pokud nenajde, vraci FALSE
-    // popis viz CDiskCache::AssignName()
+    // searches for 'name' in the tmp-directory; if it's found, returns TRUE and 'ret' is set to return value
+    // CDiskCache::AssignName(name, lock, lockOwner, remove); if it's not found, returns FALSE
+    // for description see CDiskCache::AssignName()
     //
-    // handles - objekt pro sledovani 'lock' objektu
+    // handles - object for watching the 'lock' object
     BOOL AssignName(CCacheHandles* handles, const char* name, HANDLE lock, BOOL lockOwner,
                     CCacheRemoveType remove, BOOL* ret);
 
-    // hleda 'name' v tmp-adresari; pokud najde, vraci TRUE a 'ret' je navratova hodnota
-    // CDiskCache::ReleaseName(name); pokud nenajde, vraci FALSE
-    // popis viz CDiskCache::ReleaseName()
+    // searches for 'name' in the tmp-directory; if it's found, returns TRUE and 'ret' is set to return value
+    // CDiskCache::ReleaseName(name); if it's not found, returns FALSE
+    // for description see CDiskCache::ReleaseName()
     //
-    // lastCached - ukazatel na BOOL, ktery obsahuje TRUE pokud jde o posledni link na cachovany tmp-soubor,
-    //              nebo-li je potreba rozhodnout o jeho dalsi existenci
+    // lastCached - pointer to BOOL, which is set to TRUE if this is the last link to the cached tmp-file,
+    //              or if it's necessary to decide about its further existence
     BOOL ReleaseName(const char* name, BOOL* ret, BOOL* lastCached, BOOL storeInCache);
 
-    // hleda 'data' v tmp-adresari; pokud najde vraci TRUE a zrusi tmp-soubor 'data';
-    // pokud nenajde, vraci FALSE
+    // searches for 'data' in the tmp-directory; if it's found, returns TRUE and cancels tmp-file 'data';
+    // if it's not found, returns FALSE
     //
-    // data - tmp-soubor
+    // data - tmp-file
     BOOL Release(CCacheData* data);
 
-    // soucet celikosti tmp-souboru v tmp-adresari
+    // sum of sizes of tmp-files in the tmp-directory
     CQuadWord GetSizeOfFiles();
 
-    // naplni pole 'victArr' cachovanymi bezprizornymi tmp-soubory (POZOR: neradi od nejstarsiho po nejmladsi)
+    // fills the array 'victArr' with cached tmp-files without any link (WARNING: it doesn't sort from the oldest to the newest)
     void AddVictimsToArray(TDirectArray<CCacheData*>& victArr);
 
-    // pokud si rozmyslime smazani souboru na disku (napr. nepodaril se zapakovat, nechame
-    // ho tedy radsi v tempu, aby nas useri nezabili), vraci uspech
+    // if we change our mind about deleting the tmp-file on disk (e.g. it was not possible to pack it
+    // so we leave it in temp, so that the users don't kill us)
     BOOL DetachTmpFile(const char* tmpName);
 
-    // odstrani vsechny cachovane soubory, ktere zacinaji na "name" (napr. vsechny
-    // soubory z jednoho archivu), otevrene soubory oznaci out-of-date, takze se pri
-    // dalsim pouziti obnovi (soucasna kopie zustava, aby viewry nervaly)
+    // removes all cached tmp-files beginning with 'name' (e.g. all files from one archive)
+    // opened files will be marked as out-of-date, so that they will be restored when used again
+    // (the current copy remains, so that the viewers don't yell at us)
     void FlushCache(const char* name);
 
-    // odstrani cachovany soubor 'name', otevreny soubor oznaci out-of-date, takze se pri
-    // dalsim pouziti obnovi (soucasna kopie zustava, aby viewry nervali); vraci TRUE
-    // pokud byl soubor nalezen a odstranen
+    // removes cached file 'name'; the opened file will be marked as out-of-date, so that it will be
+    // restored when used again (the current copy remains, so that the viewers don't yell at us);
+    // returns TRUE if the file was found and removed
     BOOL FlushOneFile(const char* name);
 
-    // hledani jmena v poli Names; vraci TRUE pokud bylo 'name' nalezeno (vraci i kde - 'index');
-    // vraci FALSE pokud 'name' neni v Names (vraci i kam by se mohlo zaradit - 'index')
+    // search for the name in the array Names; returns TRUE if 'name' was found (returns also where - 'index');
+    // returns FALSE if 'name' is not in Names (returns also where it could be inserted - 'index')
     BOOL GetNameIndex(const char* name, int& index);
 
-    // spocita kolik tmp-adresar obsahuje tmp-souboru mazanych pluginem 'ownDeletePlugin'
+    // counts how many tmp-files are contained in tmp-directory, which are deleted by the plugin 'ownDeletePlugin'
     int CountNamesDeletedByPlugin(CPluginInterfaceAbstract* ownDeletePlugin);
 
-    // provede predcasne smazani vsech tmp-souboru, ktere se mazou pomoci pluginu
-    // 'ownDeletePlugin'; pouziva se pri unloadu pluginu (u tmp-souboru se nastavi,
-    // ze uz byly smazany - az se na ne zavrou vsechny odkazy, k mazani uz nedojde);
-    // je-li 'onlyDetach' TRUE, nedojde ke smazani, dojde jen k nastaveni, ze uz byl
-    // smazany (odpojeni pluginu od tmp-souboru)
+    // performs premature deletion of all tmp-files, which are deleted by the plugin 'ownDeletePlugin';
+    // used when unloading the plugin (the tmp-file is marked as deleted - once all links are closed,
+    // deletion won't occur); if 'onlyDetach' is TRUE, it is not deleted, it's only marked
+    // as deleted (the plugin is detached from the tmp-file)
     void PrematureDeleteByPlugin(CPluginInterfaceAbstract* ownDeletePlugin, BOOL onlyDetach);
 };
 
@@ -269,61 +267,61 @@ public:
 class CCacheHandles
 {
 protected:
-    TDirectArray<HANDLE> Handles;     // pole typu (HANDLE), pole pro WaitForXXX
-    TDirectArray<CCacheData*> Owners; // pole typu (CCacheData *), pole vlastniku handlu pro hledani
+    TDirectArray<HANDLE> Handles;     // array of (HANDLE), array for WaitForXXX
+    TDirectArray<CCacheData*> Owners; // array of (CCacheData *), array of owners for searching handles
 
-    HANDLE HandleInBox; // box pro predavani dat - handle+owner
+    HANDLE HandleInBox; // box for data transfer - handle+owner
     CCacheData* OwnerInBox;
-    HANDLE Box;       // event pro box - "signaled" znamena "box je volny"
-    HANDLE BoxFull;   // event pro vyber boxu - "signaled" znamena "vyber box"
-    HANDLE Terminate; // event pro ukonceni threadu - "signaled" znamena "koncime"
-    HANDLE TestIdle;  // event pro spusteni testu idle-stavu - "signaled" znamena "testuj"
-    HANDLE IsIdle;    // event pro oznaceni idle-stavu - "signaled" znamena "jsme v idle-stavu"
+    HANDLE Box;       // event for box - "signaled" means "box is free"
+    HANDLE BoxFull;   // event for box selection - "signaled" means "select box"
+    HANDLE Terminate; // event for thread termination - "signaled" means "terminate"
+    HANDLE TestIdle;  // event for running idle-state test - "signaled" means "test"
+    HANDLE IsIdle;    // event for marking idle-state - "signaled" means "we are in idle-state"
 
-    HANDLE Thread; // sledovaci thread
+    HANDLE Thread; // watching thread
 
-    CDiskCache* DiskCache; // disk-cache, ke ktere tento objekt nalezi
+    CDiskCache* DiskCache; // disk-cache, to which this object belongs
 
-    int Idle; // slouzi ke zjisteni, jestli jsme behem jednoho kola hledani nic nenasli
-              // 0 - prazny (a odpoved ne), 1 - dotaz, 2 - zjistuje odpoved, 3 - odpoved ano
+    int Idle; // this is used to determine if we found anything during one round of searching
+              // 0 - empty (and answer is no), 1 - query, 2 - checking answer, 3 - answer yes
 
 public:
     CCacheHandles();
     void SetDiskCache(CDiskCache* diskCache) { DiskCache = diskCache; }
 
-    // destructor objektu
+    // object destructor
     void Destroy();
 
-    // vraci uspech konstrukce objektu
+    // returns object construction success
     BOOL IsGood() { return Box != NULL; }
 
-    // ceka az bude box volny (pokud je box plny, ceka az si sledovaci thread cache prevezme data)
+    // waits until the box is free (if the box is full, waits until the watcher cache thread takes the data)
     void WaitForBox();
 
-    // nastavi data v boxu a oznami sledovacimu threadu, ze si ma box vybrat
+    // set data in the box and notify the watching thread to select the box
     void SetBox(HANDLE handle, CCacheData* owner);
 
-    // uvolneni boxu, nastala chyba, box neobsahuje zadna data
+    // release the box, an error occurred, the box contains no data
     void ReleaseBox();
 
-    // ceka na okamzik, kdy bude mit cache-handles "volno", hodi se pri hromadnem ruseni
-    // souboru pomoci jednoho lock objektu (pocka, az budou vsechny zavisle soubory
-    // smazane)
+    // waits until the moment when the cache-handles are "free", it's useful when mass
+    // deleting files with  the only lock object (waits until all dependent files are
+    // deleted)
     void WaitForIdle();
 
 protected:
-    // postupne (maximalne po MAXIMUM_WAIT_OBJECTS) ceka na zadane Handles,
-    // vraci trojici (handle, owner, index), pro kterou je handle "signaled" nebo "abandoned"
-    // a 'index' je index dvojice (handle, owner) v poli Handles
+    // gradually (max. MAXIMUM_WAIT_OBJECTS) waits for the given Handles,
+    // returns the triple (handle, owner, index), for which the handle is "signaled" or "abandoned"
+    // and 'index' is the index of the pair (handle, owner) in the array Handles
     void WaitForObjects(HANDLE* handle, CCacheData** owner, int* index);
 
-    // vybere data z boxu a vlozi je do poli
+    // selects data from the box and inserts them into the arrays
     BOOL ReceiveBox();
 
-    // reaguje na prechod nektereho z 'handle' do "signaled" stavu (tmp-souboru ubyva link),
+    // reacts to the transition of one of the 'handle' to the "signaled" state (the tmp-file loses a link)
     void WaitSatisfied(HANDLE handle, CCacheData* owner, int index);
 
-    friend unsigned ThreadCacheHandlesBody(void* param); // nas sledovaci thread
+    friend unsigned ThreadCacheHandlesBody(void* param); // our watching thread
 };
 
 //****************************************************************************
@@ -331,101 +329,105 @@ protected:
 // CDiskCache
 //
 
-class CDiskCache // prideluje jmena pro tmp-soubory
-{                // objekt je synchronizovany - monitor
+class CDiskCache // assigns names for tmp-files
+{                // object is synchronized - monitor
 protected:
-    CRITICAL_SECTION Monitor;          // sekce pouzita pro synchronizaci tohoto objektu (chovani - monitor)
-    CRITICAL_SECTION WaitForIdleCS;    // sekce pouzita pro synchronizaci volani WaitForIdle()
-    TDirectArray<CCacheDirData*> Dirs; // seznam tmp-adresaru, typ polozky (CCacheDirData *)
-    CCacheHandles Handles;             // objekt, ktery se stara o sledovani 'lock' objektu
+    CRITICAL_SECTION Monitor;          // section used for synchronization of this object (behavior - monitor)
+    CRITICAL_SECTION WaitForIdleCS;    // section used for synchronization of calling WaitForIdle()
+    TDirectArray<CCacheDirData*> Dirs; // list of tmp-directories, type of item (CCacheDirData *)
+    CCacheHandles Handles;             // object, which watches the 'lock' objects
 
 public:
     CDiskCache();
     ~CDiskCache();
 
-    // priprava objektu na ukonceni Salamandera (shutdown, log off, nebo jen obycejny exit)
+    // preparation of the object for Salamander shutdown (shutdown, log off, or just exit)
     void PrepareForShutdown();
 
-    // projde tmp-adresare na disku a vymaze ty, ktere jsou prazdne (docisteni vsech TEMPu
-    // (napr. Encrypt plugin ma svuj vlastni) po predchozim volani PrematureDeleteByPlugin())
+    // browses tmp-directories on disk and deletes those, which are empty (finishing of TEMP cleaning)
+    // (e.g. Encrypt plugin has its own) after previous call of PrematureDeleteByPlugin())
     void RemoveEmptyTmpDirsOnlyFromDisk();
 
-    // vraci uspech inicializace objektu
+    // returns success of object initialization
     BOOL IsGood() { return Handles.IsGood() && Dirs.IsGood(); }
 
-    // pokusi se najit 'name' v cache; pokud najde, ceka az bude tmp-soubor pripraven
-    // (napr. dotazen z FTP), pak vraci jmeno tmp-souboru a nastavi 'exists' na TRUE;
-    // pokud najde, ale tmp-soubor nekdo smazal z disku, vraci jmeno tmp-souboru a
-    // 'exists' FALSE, v tomto pripade je nutne znovu pripravit tmp-soubor, a pak zavolat
-    // NamePrepared(); je-li 'tmpName' NULL, ma se 'name' v cache jen najit (nezaklada novy
-    // tmp-soubor); je-li 'onlyAdd' TRUE, ma se do cache jen pridavat (pokud jiz tmp-soubor
-    // existuje, vraci chybu; pokud nekdo smazal tmp-soubor primo z disku, chape se obnoveni
-    // tmp-souboru jako pridani, a proto v tomto pripade nevraci chybu); pokud nenajde a
-    // 'tmpName' neni NULL, vytvori nove jmeno pro tmp-soubor, ktere ihned vraci a 'exists'
-    // nastavi na FALSE, v tomto pripade je nutne v okamziku pripravenosti tmp-souboru (napr.
-    // po jeho dotazeni z FTP) volat metodu NamePrepared() cimz bude soubor k dispozici
-    // ostatnim threadum;
-    // POZOR: nutne volat AssignName() nebo ReleaseName()
+    // tries to find 'name' in cache; if it's found, waits until the tmp-file is prepared
+    // (e.g. downloaded from FTP), then returns the tmp-file name and sets 'exists' to TRUE;
+    // if it's found, but the tmp-file was deleted from disk, returns the tmp-file name and
+    // 'exists' to FALSE, in this case it's necessary to prepare the tmp-file again and then
+    // call NamePrepared(); if 'tmpName' is NULL, only find 'name' in cache (don't create new
+    // tmp-file); if 'onlyAdd' is TRUE, only add to cache (if the tmp-file exists, returns
+    // error; if the tmp-file was deleted from disk, restoring it is considered as adding,
+    // so in this case it doesn't return error); if it's not found and 'tmpName' is not NULL,
+    // creates a new name for the tmp-file, returns it immediately and sets 'exists' to FALSE,
+    // in this case it's necessary to call NamePrepared() when the tmp-file is prepared (e.g.
+    // downloaded from FTP) and then the tmp-file will be available to other threads;
+    // WARNING: it's necessary to call AssignName() or ReleaseName()
     //
-    // navratova hodnota NULL -> "fatalni chyba" ('exists' je TRUE) nebo v pripade,
-    //                           ze 'tmpName' je NULL "nenalezeno" ('exists' je FALSE),
-    //                           a v pripade, ze 'onlyAdd' je TRUE "soubor jiz existuje"
-    //                           ('exists' je FALSE)
+    // return value NULL -> "fatal error" ('exists' is TRUE) or in case 'tmpName' is NULL
+    //                     "not found" ('exists' is FALSE), and in case 'onlyAdd' is TRUE
+    //                     "file already exists" ('exists' is FALSE)
     //
-    // name - jednoznacna identifikace polozky
-    // tmpName - pozadovane jmeno docasneho souboru nebo adresare, bude pro nej vybran tmp-adresar
-    // exists - ukazatel na BOOL, ktery se nastavi dle vyse uvedeneho
-    // onlyAdd - je-li TRUE, lze vytvorit jen nove jmeno (pokud jiz jmeno existuje, vrati NULL) nebo
-    //           obnovit smazany tmp-soubor (jmeno existuje, ale tmp-soubor neni pripraveny)
-    // rootTmpPath - je-li NULL, ma se tmp-adresar s tmp-souborem umistit do TEMPu, jinak je to
-    //               cesta kam umistit tmp-adresar s tmp-souborem
-    // ownDelete - je-li FALSE, maji se tmp-soubory mazat pres DeleteFile(), jinak pres
-    //             DeleteManagera (mazani pres plugin - viz ownDeletePlugin)
-    // ownDeletePlugin - je-li ownDelete TRUE, obsahuje iface pluginu, ktery provede
-    //                   mazani tmp-souboru
-    // errorCode - neni-li NULL a nastane-li chyba, jeji kod se vraci v teto promenne (kody viz DCGNE_XXX)
+    // name - unique item identification
+    // tmpName - required name of the tmp-file or directory, a tmp-directory will be selected
+    //           for it
+    // exists - pointer to BOOL, which is set per the description above
+    // onlyAdd - if it is TRUE, it is possible to create only a new name (if the name exists,
+    //           returns NULL) or restore a deleted tmp-file (the name exists, but the tmp-file
+    //           is not prepared)
+    //
+    // rootTmpPath - if NULL, the tmp-directory with the tmp-file should be placed into TEMP, otherwise
+    //               it's the path where to place the tmp-directory with the tmp-file
+    // ownDelete - if FALSE, tmp-files should be deleted using DeleteFile(), otherwise using
+    //             DeleteManager (deletion using plugin - see ownDeletePlugin)
+    // ownDeletePlugin - if ownDelete is TRUE, contains iface of the plugin, which should delete
+    //                   the tmp-file
+    // errorCode - if not NULL and an error occurs, its code is returned in this variable (for codes
+    //             see DCGNE_XXX)
     const char* GetName(const char* name, const char* tmpName, BOOL* exists, BOOL onlyAdd,
                         const char* rootTmpPath, BOOL ownDelete,
                         CPluginInterfaceAbstract* ownDeletePlugin, int* errorCode);
 
-    // oznaci tmp-soubor prislusici 'name' za platny, poskytne ho ostatnim threadum,
-    // vola se jedine pote, co metoda GetName() vrati 'exists' == FALSE
+    // selects tmp-file related to 'name' for a valid one, provides it to other threads,
+    // can be called only after GetName() returns 'exists' == FALSE
     //
-    // vraci uspech
+    // returns success
     //
-    // name - jednoznacna identifikace polozky
-    // size - pocet bytu zabranych tmp-souborem na disku
+    // name - unique item identification
+    // size - number of bytes occupied by the tmp-file on disk
     BOOL NamePrepared(const char* name, const CQuadWord& size);
 
-    // priradi systemovy objekt k ziskanemu tmp-souboru, pomoci 'lock' se ovlada
-    // minimalni zivotnost tmp-souboru (zavisi na 'remove')
-    // vola se jedine do paru k GetName()
+    // assigns system object to the acquired tmp-file, using 'lock' the minimal lifetime
+    // of the tmp-file is controlled (depends on 'remove')
+    // can be called only in pair with GetName()
     //
-    // vraci uspech
+    // returns success
     //
-    // name - identifikace polozky (pozdejsi pro hledani)
-    // lock - az bude tento objekt "signaled" bude mozne tmp-soubor "uvolnit" (zalezi na 'remove')
-    // lockOwner - ma se cache postarat o volani CloseHandle(lock) ?
-    // remove - kdy mazat tmp-soubor
+    // name - unique item identification (later for searching)
+    // lock - when this object is "signaled", it will be possible to "release" the tmp-file
+    //        (depends on 'remove')
+    // lockOwner - should the cache take care of calling CloseHandle(lock) ?
+    // remove - when to delete the tmp-file
     BOOL AssignName(const char* name, HANDLE lock, BOOL lockOwner, CCacheRemoveType remove);
 
-    // vola se pouze v pripade, ze po volani GetName() nelze zavolat NamePrepared() nebo AssignName(),
-    // je zde pro pripad chyby pri ziskavani tmp-souboru nebo objektu 'lock' (spousteni
-    // aplikace pro ktery se ziskaval tmp-soubor)
-    // v pripade, ze bylo potreba volat NamePrepared() da moznost vytvoreni tmp-souboru ostatnim
-    // threadum (ktere cekaji az bude tmp-soubor pripraven), v pripade, ze bylo potreba volat
-    // AssignName() zrusi "cekani" tmp-souboru na prirazeni objektu 'lock', muze dojit ke
-    // zruseni tmp-souboru; je-li 'storeInCache' TRUE, tmp-soubor je pripraven a neni zamceny,
-    // oznaci se tmp-soubor za cachovany (pokud to dovoli max. kapacita cache, nebude zrusen)
+    // only called when after calling GetName() it is not possible to call NamePrepared() or AssignName()
+    // it's present for the case of error when acquiring tmp-file or system object 'lock'
+    // (running application for which the tmp-file was acquired)
+    // in case that it was necessary to call NamePrepared(), it gives other threads the possibility
+    // to create tmp-file (which are waiting until the tmp-file is prepared), in case that it was
+    // necessary to call AssignName(), it cancels the tmp-file "waiting" for the system object 'lock',
+    // tmp-file cancellation can occur only if 'storeInCache' is TRUE, tmp-file is prepared and
+    // not locked, the tmp-file is marked as cached (if the maximum capacity of cache allows it,
+    // it won't be deleted)
     //
-    // vraci uspech
+    // returns success
     //
-    // name - identifikace polozky (pozdejsi pro hledani)
+    // name - unique item identification (later for searching)
     BOOL ReleaseName(const char* name, BOOL storeInCache);
 
-    // ceka na okamzik, kdy bude mit cache-handles "volno", hodi se pri hromadnem ruseni
-    // souboru pomoci jednoho lock objektu (pocka, az budou vsechny zavisle soubory
-    // smazane)
+    // waits for the moment when the cache-handles are "free", it's useful when mass
+    // deleting files with  the only lock object (waits until all dependent files are
+    // deleted)
     void WaitForIdle()
     {
         HANDLES(EnterCriticalSection(&WaitForIdleCS));
@@ -433,46 +435,45 @@ public:
         HANDLES(LeaveCriticalSection(&WaitForIdleCS));
     }
 
-    // pokud si rozmyslime smazani souboru na disku (napr. nepodaril se zapakovat, nechame
-    // ho tedy radsi v tempu, aby nas useri nezabili), vraci uspech
+    // when we change our mind about deleting the tmp-file on disk (e.g. it was not possible to pack it,
+    // so we leave it in temp, so that the users don't kill us), it returns success
     BOOL DetachTmpFile(const char* tmpName);
 
-    // odstrani vsechny cachovane soubory, ktere zacinaji na "name" (napr. vsechny
-    // soubory z jednoho archivu)
+    // removes all cached tmp-files beginning with 'name' (e.g. all files from one archive)
     void FlushCache(const char* name);
 
-    // odstrani cachovany soubor 'name'; vraci TRUE pokud byl soubor nalezen a odstranen
+    // removes cached file 'name'; returns TRUE if the file was found and removed
     BOOL FlushOneFile(const char* name);
 
-    // spocita kolik disk-cache obsahuje tmp-souboru mazanych pluginem 'ownDeletePlugin'
+    // counts how many tmp-files are contained in disk-cache, which are deleted by the plugin 'ownDeletePlugin'
     int CountNamesDeletedByPlugin(CPluginInterfaceAbstract* ownDeletePlugin);
 
-    // provede predcasne smazani vsech tmp-souboru, ktere se mazou pomoci pluginu
-    // 'ownDeletePlugin'; pouziva se pri unloadu pluginu (u tmp-souboru se nastavi,
-    // ze uz byly smazany - az se na ne zavrou vsechny odkazy, k mazani uz nedojde);
-    // je-li 'onlyDetach' TRUE, nedojde ke smazani, dojde jen k nastaveni, ze uz byl
-    // smazany (odpojeni pluginu od tmp-souboru)
+    // performs premature deletion of all tmp-files, which are deleted by the plugin 'ownDeletePlugin';
+    // used when unloading the plugin (the tmp-file is marked as deleted - once all links are closed,
+    // deletion won't occur); if 'onlyDetach' is TRUE, it is not deleted, it's only marked
+    // as deleted (the plugin is detached from the tmp-file)
     void PrematureDeleteByPlugin(CPluginInterfaceAbstract* ownDeletePlugin, BOOL onlyDetach);
 
-    // cisteni adresare TEMP od zbytku predchozich instanci; spousti jen prvni instance;
-    // najde-li podadresare "SAL*.tmp", zepta se usera na vymaz a pripadne ho provede
+    // the TEMP directory clean-up from the rest of previous instances; called only by the first instance
+    // if it finds subdirectories "SAL*.tmp", it asks the user if he wants to delete them and if so,
+    // it deletes them
     void ClearTEMPIfNeeded(HWND parent, HWND hActivePanel);
 
 protected:
-    void Enter() { HANDLES(EnterCriticalSection(&Monitor)); } // vola se po vstupu do metod
-    void Leave() { HANDLES(LeaveCriticalSection(&Monitor)); } // vola se pred opustenim metod
+    void Enter() { HANDLES(EnterCriticalSection(&Monitor)); } // called after entering methods
+    void Leave() { HANDLES(LeaveCriticalSection(&Monitor)); } // called before leaving methods
 
-    // zkontroluje podminky na disku, pripadne uvolni nektere volne cachovane tmp-soubory
+    // checks conditions on disk, if necessary, releases some free cached tmp-files
     void CheckCachedFiles();
 
-    // reaguje na prechod nektereho z 'lock' do "signaled" stavu (tmp-souboru ubyva link),
+    // reacts to the transition of one of the 'lock' to the "signaled" state (the tmp-file loses a link)
     //
-    // lock - handle sledovaneho objektu, ktery presel do "signaled" stavu
-    // owner - objekt obsahujici tento 'lock'
+    // lock - watched object handle, which turned to "signaled" state
+    // owner - an object containing this 'lock'
     void WaitSatisfied(HANDLE lock, CCacheData* owner);
 
-    friend class CCacheData;    // vola Enter() a Leave()
-    friend class CCacheHandles; // vola WaitSatisfied()
+    friend class CCacheData;    // calls Enter() and Leave()
+    friend class CCacheHandles; // calls WaitSatisfied()
 };
 
 //****************************************************************************
@@ -484,8 +485,9 @@ struct CPluginData;
 
 struct CDeleteManagerItem
 {
-    char* FileName;                   // jmeno souboru, ktery se ma smazat pres plugin
-    CPluginInterfaceAbstract* Plugin; // plugin, ktery bude mazat soubor pres CPluginInterfaceForArchiverAbstract::DeleteTmpCopy
+    char* FileName;                   // the name of file, which should be deleted by the plugin
+    CPluginInterfaceAbstract* Plugin; // a plugin, which will delete the file via the method
+                                      // CPluginInterfaceForArchiverAbstract::DeleteTmpCopy
 
     CDeleteManagerItem(const char* fileName, CPluginInterfaceAbstract* plugin);
     ~CDeleteManagerItem();
@@ -495,37 +497,38 @@ struct CDeleteManagerItem
 class CDeleteManager
 {
 protected:
-    CRITICAL_SECTION CS; // sekce pouzita pro synchronizaci dat objektu
+    CRITICAL_SECTION CS; // section used for synchronization of this object
 
-    // data o souborech, ktere se maji smazat (v hl. threadu volanim metody
-    // CPluginInterfaceForArchiverAbstract::DeleteTmpCopy pluginu)
+    // data about the files that are to be deleted (in the main thread by calling the method
+    // CPluginInterfaceForArchiverAbstract::DeleteTmpCopy of the plugin)
     TIndirectArray<CDeleteManagerItem> Data;
-    BOOL WaitingForProcessing; // TRUE = message hl. oknu je na ceste nebo prave probiha zpracovani dat (pridana polozka se ihned zpracuje)
-    BOOL BlockDataProcessing;  // TRUE = nemaji se procesit data (ProcessData() nic nedela)
+    BOOL WaitingForProcessing; // TRUE = message to the main window is on the way or the data
+                               // processing is in progress (the added item will be processed immediately)
+    BOOL BlockDataProcessing;  // TRUE = do not process data (ProcessData() does nothing)
 
 public:
     CDeleteManager();
     ~CDeleteManager();
 
-    // prida soubor pro smazani a zajisti co nejblizsi vyvolani metody pluginu
-    // CPluginInterfaceForArchiverAbstract::DeleteTmpCopy pro vymaz souboru;
-    // pri chybe nedojde k smazani souboru - plugin by mel pri unloadu/loadu
-    // promazavat svuj adresar (TEMP bude promazavat Salamander)
-    // mozne volat z libovolneho threadu
+    // adds file for deletion and ensures the closest call of the method
+    // CPluginInterfaceForArchiverAbstract::DeleteTmpCopy for file deletion;
+    // in case of error, the file won't be deleted - the plugin should delete its
+    // directory when loading/unloading (TEMP will be cleaned by Salamander)
+    // can be called from any thread
     void AddFile(const char* fileName, CPluginInterfaceAbstract* plugin);
 
-    // vola se v hl. threadu (vola po prijmu zpravy WM_USER_PROCESSDELETEMAN hl. okno);
-    // zpracovani novych dat - mazani souboru v pluginu
+    // called from the main thread (calls main window after receiving the message WM_USER_PROCESSDELETEMAN);
+    // processing of new data - deleting files in plugins
     void ProcessData();
 
-    // hrozi unload pluginu 'plugin': nechame unloadovany plugin zrusit tmp-kopie z disku
-    // (viz CPluginInterfaceForArchiverAbstract::PrematureDeleteTmpCopy)
+    // unloading of the plugin imminent: let the plugin which is being unloaded delete tmp-copies from disk
+    // (see CPluginInterfaceForArchiverAbstract::PrematureDeleteTmpCopy)
     void PluginMayBeUnloaded(HWND parent, CPluginData* plugin);
 
-    // probehl unload pluginu 'plugin', odpojime plugin od delete-manageru i disk-cache;
-    // 'unloadedPlugin' je jiz neplatne rozhrani pluginu (zaloha pred unloadem)
+    // unload of the plugin finished: detach the plugin from delete-manager and disk-cache;
+    // 'unloadedPlugin' is already invalid plugin interface (backup before unload)
     void PluginWasUnloaded(CPluginData* plugin, CPluginInterfaceAbstract* unloadedPlugin);
 };
 
-extern CDiskCache DiskCache;         // globalni disk-cache
-extern CDeleteManager DeleteManager; // globalni disk-cache delete-manager (mazani tmp-souboru v pluginech archivatoru)
+extern CDiskCache DiskCache;         // global disk-cache
+extern CDeleteManager DeleteManager; // global disk-cache delete-manager (deleting tmp-files in archivers plugins)
