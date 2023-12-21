@@ -62,7 +62,7 @@ public:
     // FALSE, creation of thumbnail is finished (whole image was processed) or it is
     // necessary to stop loading of thumbnail as soon as possible (e.g. user changed
     // path in panel, thumbnail is not needed anymore)
-    // 
+    //
     // WARNING: if method CPluginInterfaceForThumbLoader::LoadThumbnail is running,
     // change of path in panel is blocked. For this reason it is necessary to pass
     // and load larger images in parts and test return value of method ProcessBuffer
@@ -87,9 +87,9 @@ public:
 
     // returns TRUE if plugin should stop loading of thumbnail
     // returns FALSE if plugin should continue with loading of thumbnail
-    // 
+    //
     // method can be called before or after calling method SetParameters
-    // 
+    //
     // serves for detection of request for interruption in cases when plugin
     // needs to perform time-consuming operations before calling SetParameters
     // or in cases when plugin needs to pre-render image, i.e. after calling
@@ -125,7 +125,7 @@ public:
     // return thumbnail in good quality
     // limitation: because it is called from thread for loading icons (it is not
     // main thread), only methods which can be called from any thread can be used
-    // 
+    //
     // Recommended schema of implementation:
     //   - try to open image
     //   - if it fails, return FALSE

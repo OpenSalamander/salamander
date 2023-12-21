@@ -27,7 +27,7 @@ class CSalamanderForOperationsAbstract;
 // CSalamanderBuildMenuAbstract
 //
 // set of Salamander methods for building menu of plugin
-// 
+//
 // it is a subset of methods of CSalamanderConnectAbstract, methods behave the same,
 // the same constants are used, for description see CSalamanderConnectAbstract
 
@@ -64,7 +64,7 @@ public:
 // flags of menu item state (for menu extension plugins)
 #define MENU_ITEM_STATE_ENABLED 0x01 // enabled, without this flag item is disabled
 #define MENU_ITEM_STATE_CHECKED 0x02 // before item is "check" or "radio" tag
-#define MENU_ITEM_STATE_RADIO 0x04   // without MENU_ITEM_STATE_CHECKED it is ignored,
+#define MENU_ITEM_STATE_RADIO 0x04   // without MENU_ITEM_STATE_CHECKED it is ignored, \
                                      // "radio" tag, without this flag "check" tag
 #define MENU_ITEM_STATE_HIDDEN 0x08  // items is not supposed to be shown in menu
 

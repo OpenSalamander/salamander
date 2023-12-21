@@ -1,7 +1,7 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
 // CommentsTranslationProject: TRANSLATED
-// 
+//
 //****************************************************************************
 //
 // Copyright (c) 2023 Open Salamander Authors
@@ -59,7 +59,7 @@
 // various types of versions is in the file doc\versions.txt. Always introduce
 // a comment with a description of which version of Salamander the new build
 // number belongs to.
-// 
+//
 // Overview of used values of VERSINFO_BUILDNUMBER:
 // 9 - 2.5 beta 9
 // 10 - 2.5 beta 10
@@ -132,22 +132,22 @@
 // any method from the Salamander interface, because after checking the last version
 // of Salamander it has the certainty that Salamander contains it (it only threatens
 // to load into a newer version of Salamander, which must also contain these methods).
-// 
+//
 // It is also used in reverse: so that the internal plugin has the certainty that
 // Salamander will call all methods (including the latest ones), it returns this
 // version as the version for which the plugin was built (see the export of the
 // SalamanderPluginGetReqVer plugin).
-// 
+//
 // If any plugin returns a lower version from SalamanderPluginGetReqVer than
 // LAST_VERSION_OF_SALAMANDER (for backward compatibility with older versions
 // of Salamander), it should add the export SalamanderPluginGetSDKVer and return
 // LAST_VERSION_OF_SALAMANDER from it (the SDK version used to build the plugin),
 // so that Salamander (e.g. current or newer) can also use methods of the plugin
 // that were not yet in the version returned from SalamanderPluginGetReqVer.
-// 
+//
 // When changing the interface, it is necessary to follow the procedure given in
 // doc\how_to_change.txt.
-// 
+//
 // Overview of used values of LAST_VERSION_OF_SALAMANDER:
 //   1  - 1.6 beta 4 + 5
 //   2  - 1.6 beta 6
