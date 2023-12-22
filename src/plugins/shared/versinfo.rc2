@@ -15,17 +15,17 @@
 #endif //APSTUDIO_INVOKED
 
 //
-// sablona VERSIONINFO pro pluginy a jejich LANG soubory
-// kazdy modul/plugin definuje promenne VERSINFO_xxx zve svem versinfo.rh
-//
-// tento resource vkladame pomoci include jak do SALAMAND.EXE, LANG.SPL,
-// do vsech pluginu (SPL) a do jejich SLG
-// pri prekladu SLG je v projektu definovana konstanta _LANG
-//
-// VarFileInfo\[Translation, Author, Email, Web, Comment, HelpDir] umi nastavovat
-// Translator; originalni SLG je anglicke
-// VarFileInfo\Translation je zobrazovano ve vlastnostech souboru
-// na strance Version jako "Language"
+// template VERSIONINFO for plugins and their LANG files
+// each module/plugin defines VERSINFO_xxx variables in its versinfo.rh
+// 
+// this resource is included into SALAMAND.EXE, LANG.SPL, all plugins (SPL)
+// and their SLG files
+// when compiling SLG, _LANG constant is defined in the project
+// 
+// VarFileInfo\[Translation, Author, Email, Web, Comment, HelpDir] can set
+// Translator; original SLG is English
+// VarFileInfo\Translation is displayed in file properties
+// on Version page as "Language"
 //
 
 VS_VERSION_INFO VERSIONINFO
@@ -65,7 +65,7 @@ BEGIN
             VALUE "SLGCRCofImpSLT", "none\0"
 #ifdef _LANG_SALAMANDER
             VALUE "SLGHelpDir", "ENGLISH\0"
-            VALUE "SLGIncomplete", "\0" // pri nekompletnim prekladu davat: "https://forum.altap.cz/viewforum.php?f=23\0"
+            VALUE "SLGIncomplete", "\0" // for incomplete translation give: "https://forum.altap.cz/viewforum.php?f=23\0"
 #endif
 #endif
         END
