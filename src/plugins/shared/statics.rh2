@@ -5,6 +5,7 @@
 // This is a part of the Open Salamander SDK library.
 //
 //****************************************************************************
+// CommentsTranslationProject: TRANSLATED
 
 // WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
 #ifndef __SHARED_STATICS_RH2
