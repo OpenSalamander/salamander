@@ -1595,7 +1595,7 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
     int i = 1;
     char root[10] = " :\\";
 
-    // two lowest bit matches 'A', the second bit 'B', ...
+    // the lowest bit matches 'A', the second bit 'B', ...
     // available drives
     DWORD mask = GetLogicalDrives();
 
@@ -2973,7 +2973,7 @@ BOOL CDrivesList::OnContextMenu(BOOL posByMouse, int itemIndex, int panel, const
         DWORD cmd = contextPopup.Track(MENU_TRACK_RETURNCMD | MENU_TRACK_RIGHTBUTTON,
                                        pt.x, pt.y, MainWindow->HWindow, NULL);
 
-        // WARNING: during the expanded context menu, the object can be refreshed (e.g. user inserts
+        // WARNING: during the opened context menu, the object can be refreshed (e.g. user inserts
         // a USB stick or disconnects a network drive), we have to count on it when accessing the
         // data of this object (e.g. Drives can contain different data)
 
