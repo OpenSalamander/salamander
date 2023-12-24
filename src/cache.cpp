@@ -149,7 +149,6 @@ CCacheData::GetName(CDiskCache* monitor, BOOL* exists, BOOL canBlock, BOOL onlyA
     if (canBlock && !onlyAdd)
     {
         // release the monitor for other threads for the duration of waiting for the readiness of the tmp-file
-
         monitor->Leave();
         res = WaitForSingleObject(Preparing, INFINITE);
         monitor->Enter();
