@@ -3091,7 +3091,7 @@ CTsClientName::CTsClientName(CNethoodCache* pCache)
     }
     else
     {
-        // either error ocurred or not a remote session
+        // either error occurred or not a remote session
         TRACE_E("Failed to retrieve client name, error " << GetLastError());
 
         m_pszClientName = NULL;
