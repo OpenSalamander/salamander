@@ -186,7 +186,7 @@ public:
 
     // returns bit array of available cloud storages, which we got during the last BuildData()
     // if BuildDate() has not been called yet, returns 0
-    // can be used for quick detection of any change in the cloud storages
+    // can be used for quick detection of any changes in the availability of cloud storages
     DWORD GetCachedCloudStoragesMask();
 
     TDirectArray<CDriveData>* GetDrives() { return Drives; }
