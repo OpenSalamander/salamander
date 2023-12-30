@@ -13,6 +13,11 @@
 #include "tar.rh2"
 #include "lang\lang.rh"
 
+// just to get versions of the 3rd party libs
+#include <bzlib.h>
+#include <lzma.h>
+#include <zstd.h>
+
 // TODO: vyresit case-sensitivity
 // TODO: vyresit vyskyt vice souboru se stejnym jmenem v jednom archivu
 // TODO: dodelat vypis u rpm vieweru (konverze datumu do citelneho formatu atp.)
@@ -167,13 +172,23 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
 
 void CPluginInterface::About(HWND parent)
 {
-    char buf[1000];
+    // strip additional information after ',' from bzip version string
+    const char* bzip_ver = BZ2_bzlibVersion();
+    auto bzip_ver_len = strcspn(bzip_ver, ",");
+    if (!bzip_ver_len)
+        bzip_ver_len = strlen(bzip_ver);
+
+    char buf[3000];
     _snprintf_s(buf, _TRUNCATE,
                 "%s " VERSINFO_VERSION "\n" VERSINFO_COPYRIGHT "\n\n"
-                "bzip2 library Copyright © 1996-2010 Julian R Seward\n"
-                "Zstandard library Copyright © 2016-2023 Facebook, Inc.\n\n"
+                "bzip2 library Copyright © 1996-2023 Julian R Seward (version %.*s)\n"
+                "lzma library (version %s)\n"
+                "Zstandard library Copyright © 2016-2023 Facebook, Inc. (version %s)\n\n"
                 "%s",
                 LoadStr(IDS_PLUGINNAME),
+                bzip_ver_len, bzip_ver,
+                lzma_version_string(),
+                ZSTD_versionString(),
                 LoadStr(IDS_PLUGIN_DESCRIPTION));
     SalamanderGeneral->SalMessageBox(parent, buf, LoadStr(IDS_ABOUT), MB_OK | MB_ICONINFORMATION);
 }
