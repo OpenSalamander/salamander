@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -35,7 +36,7 @@ int DeltaForTotalCount(int total)
 #ifndef _WIN64
 
 BOOL AddWin64RedirectedDir(const char* path, CFilesArray* dirs, WIN32_FIND_DATA* fileData,
-                           int* index, BOOL* dirWithSameNameExists); // je dale v tomto modulu
+                           int* index, BOOL* dirWithSameNameExists); // is further in this module
 
 #endif // _WIN64
 
@@ -43,7 +44,7 @@ BOOL AddWin64RedirectedDir(const char* path, CFilesArray* dirs, WIN32_FIND_DATA*
 #define IO_REPARSE_TAG_FILE_PLACEHOLDER (0x80000015L) // winnt
 #endif                                                // IO_REPARSE_TAG_FILE_PLACEHOLDER
 
-// prevzal jsem z: http://msdn.microsoft.com/en-us/library/windows/desktop/dn323738%28v=vs.85%29.aspx
+// taken from: http://msdn.microsoft.com/en-us/library/windows/desktop/dn323738%28v=vs.85%29.aspx
 BOOL IsFilePlaceholder(WIN32_FIND_DATA const* findData)
 {
     return (findData->dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) &&
@@ -56,11 +57,11 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
 
     //  TRACE_I("ReadDirectory: begin");
 
-    //  MainWindow->ReleaseMenuNew();  // pro pripad, ze jde o tento adresar
+    //  MainWindow->ReleaseMenuNew();  // in case of it's about this directory
     HiddenDirsFilesReason = 0;
     HiddenDirsCount = HiddenFilesCount = 0;
 
-    CutToClipChanged = FALSE; // cut-to-clip flagy touto operaci zapomeneme
+    CutToClipChanged = FALSE; // forget cut-to-clip flags by this operation
 
     FocusFirstNewItem = FALSE;
     UseSystemIcons = FALSE;
@@ -70,45 +71,45 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
     VisibleItemsArray.InvalidateArr();
     VisibleItemsArraySurround.InvalidateArr();
     SelectedCount = 0;
-    NeedRefreshAfterIconsReading = FALSE; // ted uz by byl refresh nesmyslny (jestli bude potreba, nastavi se znovu behem nacitani ikon)
+    NeedRefreshAfterIconsReading = FALSE; // refresh would make no sense now (if needed, it will be set again during icon reading)
     NumberOfItemsInCurDir = 0;
     InactWinOptimizedReading = FALSE;
 
-    // vycisteni icon-cache
+    // icon-cache cleanup
     SleepIconCacheThread();
     IconCache->Release();
     EndOfIconReadingTime = GetTickCount() - 10000;
-    StopThumbnailLoading = FALSE; // cista icon-cache - konci obdobi, kdy nesla pouzivat data o "thumbnail-loaderech" v icon-cache
+    StopThumbnailLoading = FALSE; // icon-cache is cleaned, the period of impossibility of using data about "thumbnail-loaders" in icon-cache ends
 
     TemporarilySimpleIcons = FALSE;
 
     if (ColumnsTemplateIsForDisk != Is(ptDisk))
-        BuildColumnsTemplate();                      // pri zmene typu panelu je potreba template postavit znovu
-    CopyColumnsTemplateToColumns();                  // vytahnu z cache standardni sloupce
-    DeleteColumnsWithoutData();                      // vyhazeme sloupce, pro ktere nemame data (zobrazily by se v nich jen prazdne hodnoty)
-    GetPluginIconIndex = InternalGetPluginIconIndex; // nastavime standardni callback (jen vraci nulu)
+        BuildColumnsTemplate();                      // it's necessary to build template again when panel type changes
+    CopyColumnsTemplateToColumns();                  // fetching standard columns from cache
+    DeleteColumnsWithoutData();                      // removing columns for which we don't have data (empty values would be shown in them)
+    GetPluginIconIndex = InternalGetPluginIconIndex; // setting standard callback (just returns zero)
 
     char fileName[MAX_PATH + 4];
 
     if (Is(ptDisk))
     {
-        // nastavime velikost ikonek pro IconCache
+        // setting icon size for IconCache
         CIconSizeEnum iconSize = GetIconSizeForCurrentViewMode();
         IconCache->SetIconSize(iconSize);
 
         BOOL readThumbnails = (GetViewMode() == vmThumbnails);
 
         CALL_STACK_MESSAGE1("CFilesWindow::ReadDirectory::disk1");
-        // vybereme pluginy, ktere umi loadit thumbnaily (pro optimalizaci)
+        // choosing plugins which can load thumbnails (for optimization)
         TIndirectArray<CPluginData> thumbLoaderPlugins(10, 10, dtNoDelete);
-        TIndirectArray<CPluginData> foundThumbLoaderPlugins(10, 10, dtNoDelete); // pole pro pluginy, ktere umi loadit thumbnail pro aktualni soubor
+        TIndirectArray<CPluginData> foundThumbLoaderPlugins(10, 10, dtNoDelete); // the array for plugins which can load thumbnails for the current file
         if (readThumbnails)
         {
             if (thumbLoaderPlugins.IsGood())
                 Plugins.AddThumbLoaderPlugins(thumbLoaderPlugins);
             if (!thumbLoaderPlugins.IsGood() ||
-                !foundThumbLoaderPlugins.IsGood() || // chyba (malo pameti?)
-                thumbLoaderPlugins.Count == 0)       // nebo zadne pluginy pro ziskani thumbnailu nemame -> na thumbnaily kasleme
+                !foundThumbLoaderPlugins.IsGood() || // error (not enough memory?)
+                thumbLoaderPlugins.Count == 0)       // or we do not have any plugin which can load thumbnails -> we will not load thumbnails
             {
                 if (!thumbLoaderPlugins.IsGood())
                     thumbLoaderPlugins.ResetState();
@@ -119,7 +120,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
         }
         UseThumbnails = readThumbnails;
 
-        SetCurrentDirectory(GetPath()); // aby to lepe odsypalo ...
+        SetCurrentDirectory(GetPath()); // so that it works better
 
 #ifndef _WIN64
         BOOL isWindows64BitDir = Windows64Bit && WindowsDirectory[0] != 0 && IsTheSamePath(GetPath(), WindowsDirectory);
@@ -130,18 +131,19 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
         Files->SetDeleteData(TRUE);
         Dirs->SetDeleteData(TRUE);
 
-        if (WaitForESCReleaseBeforeTestingESC) // pockame na pusteni ESC (aby nedoslo okamzite k preruseni
-        {                                      // listovani - tenhle ESC nejspis ukoncil modalni dialog/messagebox)
+        if (WaitForESCReleaseBeforeTestingESC) // waiting for ESC release (so that listing is not interrupted
+                                               // immediately - this ESC probably ended modal dialog/messagebox)
+        {
             WaitForESCRelease();
-            WaitForESCReleaseBeforeTestingESC = FALSE; // dalsi cekani nema smysl
+            WaitForESCReleaseBeforeTestingESC = FALSE; // another waiting makes no sense
         }
 
-        GetAsyncKeyState(VK_ESCAPE); // init GetAsyncKeyState - viz help
+        GetAsyncKeyState(VK_ESCAPE); // init GetAsyncKeyState - see help
 
         GetRootPath(fileName, GetPath());
         BOOL isRootPath = (strlen(GetPath()) <= strlen(fileName));
 
-        //--- zjisteni typu drivu (sitove disky nebudeme obtezovat zjistovanim sharu)
+        //--- getting drive type (we will not bother network drives with getting shares)
         UINT drvType = MyGetDriveType(GetPath());
         BOOL testShares = drvType != DRIVE_REMOTE;
         if (testShares)
@@ -150,9 +152,9 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
         {
         case DRIVE_REMOVABLE:
         {
-            BOOL isDriveFloppy = FALSE; // floppy maji svuji konfiguraci vedle ostatnich removable drivu
+            BOOL isDriveFloppy = FALSE; // floppies have their own configuration beside other removable drives
             int drv = UpperCase[fileName[0]] - 'A' + 1;
-            if (drv >= 1 && drv <= 26) // pro jistotu provedeme "range-check"
+            if (drv >= 1 && drv <= 26) // doing "range-check" for sure
             {
                 DWORD medium = GetDriveFormFactor(drv);
                 if (medium == 350 || medium == 525 || medium == 800 || medium == 1)
@@ -174,7 +176,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
             break;
         }
 
-        default: // case DRIVE_FIXED:   // nejen fixed, ale i ty ostatni (RAM DISK, atd.)
+        default: // case DRIVE_FIXED:   // not just fixed, but also the others (RAM DISK, etc.)
         {
             UseSystemIcons = !Configuration.DrvSpecFixedSimple;
             break;
@@ -190,17 +192,17 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
             SetCurrentDirectoryToSystem();
             DirectoryLine->SetHidden(HiddenFilesCount, HiddenDirsCount);
             //      TRACE_I("ReadDirectory: end");
-            return FALSE; // prazdny string na vstupu
+            return FALSE; // empty string on input
         }
         if (*(st - 1) != '\\')
             *st++ = '\\';
         strcpy(st, "*");
         char* fileNameEnd = st;
-        //--- priprava pro nacitani ikon
+        //--- preparing for reading icons
         if (UseSystemIcons)
         {
             IconCacheValid = FALSE;
-            MSG msg; // musime zlikvidovat pripadnou WM_USER_ICONREADING_END, ktera by nastavila IconCacheValid = TRUE
+            MSG msg; // we must destroy possible WM_USER_ICONREADING_END which would set IconCacheValid = TRUE
             while (PeekMessage(&msg, HWindow, WM_USER_ICONREADING_END, WM_USER_ICONREADING_END, PM_REMOVE))
                 ;
 
@@ -208,7 +210,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
             for (i = 0; i < Associations.Count; i++)
             {
                 if (Associations[i].GetIndex(iconSize) == -3)
-                    Associations[i].SetIndex(-1, iconSize); // shozeni flagu "nacitana ikona"
+                    Associations[i].SetIndex(-1, iconSize); // removing the flag "loaded icon"
             }
         }
         else
@@ -216,21 +218,21 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
             if (UseThumbnails)
             {
                 IconCacheValid = FALSE;
-                MSG msg; // musime zlikvidovat pripadnou WM_USER_ICONREADING_END, ktera by nastavila IconCacheValid = TRUE
+                MSG msg; // we must destroy possible WM_USER_ICONREADING_END which would set IconCacheValid = TRUE
                 while (PeekMessage(&msg, HWindow, WM_USER_ICONREADING_END, WM_USER_ICONREADING_END, PM_REMOVE))
                     ;
             }
         }
-        //--- nacteni obsahu adresare
+        //--- reading directory content
         BOOL upDir;
         BOOL UNCRootUpDir = FALSE;
         if (GetPath()[0] == '\\' && GetPath()[1] == '\\')
         {
-            if (GetPath()[2] == '.' && GetPath()[3] == '\\' && GetPath()[4] != 0 && GetPath()[5] == ':') // cesta typu "\\.\C:\"
+            if (GetPath()[2] == '.' && GetPath()[3] == '\\' && GetPath()[4] != 0 && GetPath()[5] == ':') // "\\.\C:\" type path
             {
                 upDir = strlen(GetPath()) > 7;
             }
-            else // UNC cesta
+            else // UNC path
             {
                 const char* s2 = GetPath() + 2;
                 while (*s2 != 0 && *s2 != '\\')
@@ -254,14 +256,14 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
 
         CIconData iconData;
         iconData.FSFileData = NULL;
-        iconData.SetReadingDone(0); // jen tak pro formu
+        iconData.SetReadingDone(0); // just for the form
         BOOL addtoIconCache;
         CFileData file;
-        // inicializace clenu struktury, ktere uz dale nebudeme menit
-        file.PluginData = -1; // -1 jen tak, ignoruje se
+        // inicialization of structure members which will not be changed later
+        file.PluginData = -1; // -1 just like that, ignored
         file.Selected = 0;
         file.SizeValid = 0;
-        file.Dirty = 0; // zbytecne, jen pro formu
+        file.Dirty = 0; // unnecessary, just for the form
         file.CutToClip = 0;
         file.IconOverlayIndex = ICONOVERLAYINDEX_NOTUSED;
         file.IconOverlayDone = 0;
@@ -273,17 +275,19 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
 
     _TRY_AGAIN:
 
-        // po 2000 ms zobrazime okenko s prerusovaci napovedou
+        // after 2000 ms we will show a window with a cancel prompt
         char buf[2 * MAX_PATH + 100];
         sprintf(buf, LoadStr(IDS_READINGPATHESC), GetPath());
         CreateSafeWaitWindow(buf, NULL, 2000, TRUE, MainWindow->HWindow);
 
         DWORD lastEscCheckTime;
-        //lastEscCheckTime = GetTickCount() - 200;  // prvni ESC pujde hned
-        lastEscCheckTime = GetTickCount(); // prvni ESC pujde az po 200ms -- jde o ochranu
-        // pred nabidkou na cancel listingu po te, co uzivatel Escapem zavrel napriklad Files/Security/* dialogy
-        // a v panelu mel sitovy disk (a behem otevreneho dialogu se prepnul ze Salamandera a zpet, takze doslo
-        // k refresh directory)
+        //lastEscCheckTime = GetTickCount() - 200;  // the first ESC will go immediately
+        lastEscCheckTime = GetTickCount(); // the first ESC will go after 200 ms -- it's a protection
+                                           // against the cancel prompt for listing after the user
+                                           // has closed a dialog (e.g. Files/Security/*) by Esc and
+                                           // in the panel there was a network drive (and during the
+                                           // opened dialog the user switched to Salamander and back,
+                                           // so that there was a refresh of the directory)
 
         BOOL isUpDir = FALSE;
         WIN32_FIND_DATA fileData;
@@ -300,11 +304,11 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                     StatusLine->SetText(LoadStr(IDS_NOFILESFOUND));
                     SetCurrentDirectoryToSystem();
                     DirectoryLine->SetHidden(HiddenFilesCount, HiddenDirsCount);
-                    if (UseSystemIcons || UseThumbnails) // sice zadne ikony nemame, ale nacitani musime pustit (uz kvuli nahozeni IconCacheValid = TRUE)
+                    if (UseSystemIcons || UseThumbnails) // even though we don't have any icons, we need to start loading them (just to set IconCacheValid = TRUE)
                     {
                         if (IconCache->Count > 1)
                             IconCache->SortArray(0, IconCache->Count - 1, NULL);
-                        WakeupIconCacheThread(); // zacni nacitat ikony
+                        WakeupIconCacheThread(); // start loading icons
                     }
                     //          TRACE_I("ReadDirectory: end");
                     return TRUE;
@@ -316,7 +320,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                 RefreshListBox(0, -1, -1, FALSE, FALSE);
                 DirectoryLine->SetHidden(HiddenFilesCount, HiddenDirsCount);
                 DirectoryLine->InvalidateIfNeeded();
-                IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+                IdleRefreshStates = TRUE; // we will force checking of states of variables at the next Idle
                 StatusLine->SetText("");
                 UpdateWindow(HWindow);
 
@@ -335,7 +339,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                         {
                             drvType2 = DRIVE_REMOTE;
                             GetRootPath(drive, GetPath());
-                            drive[strlen(drive) - 1] = 0; // nestojime o posledni '\\'
+                            drive[strlen(drive) - 1] = 0; // we don't want the last '\\'
                         }
                         else
                         {
@@ -365,7 +369,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                 if (isRefresh &&
                     (err == ERROR_ACCESS_DENIED || err == ERROR_PATH_NOT_FOUND ||
                      err == ERROR_BAD_PATHNAME || err == ERROR_FILE_NOT_FOUND))
-                { // pri smazani cesty zobrazene v panelu se ukazuji tyhle chyby, coz nechceme, proste jen tise zkratime cestu na prvni existujici (bohuzel se to nechyti drive, protoze cesta existuje jeste nejakou dobu po svem smazani, proste to se zase neco ve woknech nepovedlo)
+                { // when deleting a path shown in the panel, these errors are shown, which we don't want, we just silently shorten the path to the first existing one (unfortunately it's not caught earlier, because the path exists for some time after its deletion, something in Windows just didn't work out again)
                     //          TRACE_I("ReadDirectory(): silently ignoring FindFirstFile failure: " << GetErrorText(err));
                     showErr = FALSE;
                 }
@@ -383,12 +387,12 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
             {
                 NumberOfItemsInCurDir++;
 
-                // test ESC - nechce to cteni user prerusit ?
-                if (GetTickCount() - lastEscCheckTime >= 200) // 5x za sekundu
+                // test ESC - doesn't user want to interrupt reading?
+                if (GetTickCount() - lastEscCheckTime >= 200) // 5 times per second
                 {
                     if (UserWantsToCancelSafeWaitWindow())
                     {
-                        MSG msg; // vyhodime nabufferovany ESC
+                        MSG msg; // remove buffered ESC
                         while (PeekMessage(&msg, NULL, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
                             ;
 
@@ -400,22 +404,22 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                         UpdateWindow(MainWindow->HWindow);
 
                         WaitForESCRelease();
-                        WaitForESCReleaseBeforeTestingESC = FALSE; // dalsi cekani nema smysl
-                        GetAsyncKeyState(VK_ESCAPE);               // novy init GetAsyncKeyState - viz help
+                        WaitForESCReleaseBeforeTestingESC = FALSE; // another waiting makes no sense
+                        GetAsyncKeyState(VK_ESCAPE);               // new init GetAsyncKeyState - see help
 
                         if (resBut == IDYES)
                         {
                             testFindNextErr = FALSE;
-                            break; // ukoncime nacitani
+                            break; // finish reading
                         }
                         else
                         {
                             if (resBut == IDNO)
                             {
-                                if (GetMonitorChanges()) // musime potlacit monitorovani zmen (autorefresh)
+                                if (GetMonitorChanges()) // need to suppress monitoring of changes (autorefresh)
                                 {
                                     DetachDirectory((CFilesWindow*)this);
-                                    SetMonitorChanges(FALSE); // dale uz se zmeny monitorovat nebudou
+                                    SetMonitorChanges(FALSE); // the changes won't be monitored anymore
                                 }
 
                                 SetSuppressAutoRefresh(TRUE);
@@ -430,19 +434,19 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                 BOOL isDir;
                 isDir = (fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
                 isUpDir = (len == 2 && *st == '.' && *(st + 1) == '.');
-                //--- osetreni '.', '..' a skrytych/systemovych souboru (soubor "." se neignoruje, FLAME spyware tyhle soubory pouziva, tak at jsou videt)
+                //--- handling of "." and ".." and hidden/system files (file "." is not ignored, FLAME spyware uses these files, so let them be visible)
                 if (len == 0 || len == 1 && *st == '.' && isDir ||
                     ((isRootPath || !isDir ||
-                      CQuadWord(fileData.ftLastWriteTime.dwLowDateTime, // datum na ".." je starsi nebo roven 1.1.1980, radsi ho nacteme pozdeji "poradne"
+                      CQuadWord(fileData.ftLastWriteTime.dwLowDateTime, // date on ".." is older or equal to 1.1.1980, we better read it later "properly"
                                 fileData.ftLastWriteTime.dwHighDateTime) <= CQuadWord(2148603904, 27846551)) &&
                      isUpDir))
                     continue;
 
                 if (Configuration.NotHiddenSystemFiles &&
-                    !IsFilePlaceholder(&fileData) && // placeholder je hidden, ale Explorer ho ukazuje normalne, budeme ho taky ukazovat
+                    !IsFilePlaceholder(&fileData) && // placeholder is hidden, but Explorer shows it normally, so we will show it normally too
                     (fileData.dwFileAttributes & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM)) &&
                     (len != 2 || *st != '.' || *(st + 1) != '.'))
-                { // skipnuti hidden souboru/adresare
+                { // skip hidden/system file/directory
                     if (isDir)
                         HiddenDirsCount++;
                     else
@@ -450,14 +454,14 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                     HiddenDirsFilesReason |= HIDDEN_REASON_ATTRIBUTE;
                     continue;
                 }
-                //--- na soubory se aplikuje filter
+                //--- applying filter to files
                 if (FilterEnabled && !isDir)
                 {
                     const char* ext = fileData.cFileName + len;
                     while (--ext >= fileData.cFileName && *ext != '.')
                         ;
                     if (ext < fileData.cFileName)
-                        ext = fileData.cFileName + len; // ".cvspass" ve Windows je pripona ...
+                        ext = fileData.cFileName + len; // ".cvspass" in Windows is an extension ...
                     else
                         ext++;
                     if (!Filter.AgreeMasks(fileData.cFileName, ext))
@@ -468,7 +472,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                     }
                 }
 
-                //--- pokud je jmeno obsazeno v poli HiddenNames, zahodime ho
+                //--- if the name is occupied in the array HiddenNames, we will discard it
                 if (HiddenNames.Contains(isDir, fileData.cFileName))
                 {
                     if (isDir)
@@ -479,10 +483,10 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                     continue;
                 }
 
-            ADD_ITEM: // pri pridani ".."
+            ADD_ITEM: // to add ".."
 
-                //--- jmeno
-                file.Name = (char*)malloc(len + 1); // alokace
+                //--- name
+                file.Name = (char*)malloc(len + 1); // allocation
                 if (file.Name == NULL)
                 {
                     if (search != NULL)
@@ -500,12 +504,12 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                     //          TRACE_I("ReadDirectory: end");
                     return FALSE;
                 }
-                memmove(file.Name, st, len + 1); // kopie textu
+                memmove(file.Name, st, len + 1); // copy of text
                 file.NameLen = len;
-                //--- pripona
-                if (!Configuration.SortDirsByExt && (fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) // jde o ptDisk
+                //--- extension
+                if (!Configuration.SortDirsByExt && (fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) // this is ptDisk
                 {
-                    file.Ext = file.Name + file.NameLen; // adresare nemaji pripony
+                    file.Ext = file.Name + file.NameLen; // directories have no extension
                 }
                 else
                 {
@@ -513,20 +517,20 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                     while (--s >= st && *s != '.')
                         ;
                     if (s >= st)
-                        file.Ext = file.Name + (s - st + 1); // ".cvspass" ve Windows je pripona ...
+                        file.Ext = file.Name + (s - st + 1); // ".cvspass" in Windows is an extension ...
                                                              //          if (s > st) file.Ext = file.Name + (s - st + 1);
                     else
                         file.Ext = file.Name + file.NameLen;
                 }
-                //--- ostatni
+                //--- others
                 file.Size = CQuadWord(fileData.nFileSizeLow, fileData.nFileSizeHigh);
                 file.Attr = fileData.dwFileAttributes;
                 file.LastWrite = fileData.ftLastWriteTime;
-                // placeholder je hidden, ale Explorer ho ukazuje normalne, budeme ho taky ukazovat normalne (bez ghosted ikony)
+                // placeholder is hidden, but Explorer shows it normally, so we will show it normally too (without ghosted icon)
                 file.Hidden = (file.Attr & FILE_ATTRIBUTE_HIDDEN) && !IsFilePlaceholder(&fileData) ? 1 : 0;
 
                 file.IsOffline = !isUpDir && (file.Attr & FILE_ATTRIBUTE_OFFLINE) ? 1 : 0;
-                if (testShares && (file.Attr & FILE_ATTRIBUTE_DIRECTORY)) // jde o ptDisk
+                if (testShares && (file.Attr & FILE_ATTRIBUTE_DIRECTORY)) // this is ptDisk
                 {
                     file.Shared = Shares.Search(file.Name);
                 }
@@ -559,22 +563,22 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                 }
                 else
                     file.DosName = NULL;
-                if (file.Attr & FILE_ATTRIBUTE_DIRECTORY) // jde o ptDisk
+                if (file.Attr & FILE_ATTRIBUTE_DIRECTORY) // this is ptDisk
                 {
                     file.Association = 0;
                     file.Archive = 0;
 #ifndef _WIN64
-                    file.IsLink = (isWin64RedirectedDir || (fileData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) || // POZOR: pseudo-directory musi mit nahozeny IsLink, jinak je nutne predelat ContainsWin64RedirectedDir
+                    file.IsLink = (isWin64RedirectedDir || (fileData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) || // CAUTION: pseudo-directory must have IsLink set, otherwise ContainsWin64RedirectedDir must be changed
                                    isWindows64BitDir && file.NameLen == 8 && StrICmp(file.Name, "system32") == 0)
                                       ? 1
-                                      : 0; // adresar system32 v 32-bitovem Salamovi je link do adresare SysWOW64 + win64 redirected-dir + volume mount point nebo junction point = zobrazime adresar s link overlayem
+                                      : 0; // system32 directory in 32-bit Salamander is link to SysWOW64 + win64 redirected-dir + volume mount point or junction point = show directory with link overlay
 #else                                      // _WIN64
-                    file.IsLink = (fileData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) ? 1 : 0; // volume mount point nebo junction point = zobrazime adresar s link overlayem
+                    file.IsLink = (fileData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) ? 1 : 0; // volume mount point or junction point = show directory with link overlay
 #endif                                     // _WIN64
                     if (len == 2 && *st == '.' && *(st + 1) == '.')
-                    { // osetreni ".."
+                    { // handling ".."
                         if (GetPath()[3] != 0)
-                            Dirs->Insert(0, file); // krom korene ...
+                            Dirs->Insert(0, file); // except of root...
                         else
                         {
                             if (file.Name != NULL)
@@ -613,15 +617,15 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                 }
                 else
                 {
-                    if (s >= st) // existuje pripona
+                    if (s >= st) // an extension exists
                     {
                         while (*++s != 0)
                             *st++ = LowerCase[*s];
-                        *(DWORD*)st = 0;         // nuly na konec
-                        st = fileData.cFileName; // pripona malymi pismeny
+                        *(DWORD*)st = 0;         // zeroes to the end
+                        st = fileData.cFileName; // lowercase extension
 
                         if (fileData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
-                            file.IsLink = 1; // pokud je soubor reparse-point (mozna vubec neni mozne) = zobrazime ho s link overlayem
+                            file.IsLink = 1; // if the file is reparse-point (maybe it's not possible at all) = show it with link overlay
                         else
                         {
                             file.IsLink = (*(DWORD*)st == *(DWORD*)"lnk" ||
@@ -631,7 +635,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                                               : 0;
                         }
 
-                        if (PackerFormatConfig.PackIsArchive(file.Name, file.NameLen)) // je to archiv, ktery umime zpracovat?
+                        if (PackerFormatConfig.PackIsArchive(file.Name, file.NameLen)) // is it an archive which we can process?
                         {
                             file.Association = 1;
                             file.Archive = 1;
@@ -641,22 +645,22 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                         {
                             file.Association = Associations.IsAssociated(st, addtoIconCache, iconSize);
                             file.Archive = 0;
-                            if (*(DWORD*)st == *(DWORD*)"scr" || // par vyjimek
+                            if (*(DWORD*)st == *(DWORD*)"scr" || // few exceptions
                                 *(DWORD*)st == *(DWORD*)"pif")
                             {
                                 addtoIconCache = TRUE;
                             }
                             else
                             {
-                                if (*(DWORD*)st == *(DWORD*)"lnk") // ikonky pres link
+                                if (*(DWORD*)st == *(DWORD*)"lnk") // icons via link
                                 {
                                     strcpy(fileData.cFileName, file.Name);
                                     char* ext2 = strrchr(fileData.cFileName, '.');
-                                    if (ext2 != NULL) // ".cvspass" ve Windows je pripona ...
+                                    if (ext2 != NULL) // ".cvspass" in Windows is an extesion
                                                       //                  if (ext2 != NULL && ext2 != fileData.cFileName)
                                     {
                                         *ext2 = 0;
-                                        if (PackerFormatConfig.PackIsArchive(fileData.cFileName)) // je to link na archiv, ktery umime zpracovat?
+                                        if (PackerFormatConfig.PackIsArchive(fileData.cFileName)) // is it a link to archive which we can process?
                                         {
                                             file.Association = 1;
                                             file.Archive = 1;
@@ -672,7 +676,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                     {
                         file.Association = 0;
                         file.Archive = 0;
-                        file.IsLink = (fileData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) ? 1 : 0; // pokud je soubor reparse-point (mozna vubec neni mozne) = zobrazime ho s link overlayem
+                        file.IsLink = (fileData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) ? 1 : 0; // if the file is reparse-point (maybe it's not possible at all) = show it with link overlay
                         addtoIconCache = FALSE;
                     }
 
@@ -696,10 +700,10 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                     }
                 }
 
-                // u souboru zkontrolujeme, jestli neni potreba nacist thumbnail
-                if (readThumbnails &&                              // maji se nacitat thumbnaily
-                    (file.Attr & FILE_ATTRIBUTE_DIRECTORY) == 0 && // (jde o ptDisk, proto je pouziti FILE_ATTRIBUTE_DIRECTORY je o.k.)
-                    file.Archive == 0)                             // ikona archivu ma prednost pred thumbnailem
+                // at the file, we will check if it's necessary to load its thumbnail
+                if (readThumbnails &&                              // thumbnail should be loaded
+                    (file.Attr & FILE_ATTRIBUTE_DIRECTORY) == 0 && // (it is ptDisk, so using FILE_ATTRIBUTE_DIRECTORY is o.k.)
+                    file.Archive == 0)                             // archive icon is preferred before thumbnail
                 {
                     foundThumbLoaderPlugins.DestroyMembers();
                     int i;
@@ -707,32 +711,32 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                     {
                         CPluginData* p = thumbLoaderPlugins[i];
                         if (p->ThumbnailMasks.AgreeMasks(file.Name, file.Ext) &&
-                            !p->ThumbnailMasksDisabled) // neprobiha jeho unload/remove
+                            !p->ThumbnailMasksDisabled) // its unload/remove is not in progress
                         {
-                            if (!p->GetLoaded()) // plugin je potreba naloadit (mozna zmena masky pro "thumbnail loader")
+                            if (!p->GetLoaded()) // plugin needs to be loaded (possible change of mask for "thumbnail loader")
                             {
-                                //                RefreshListBox(0, -1, -1, FALSE, FALSE);  // nahrazeno pres ListBox->SetItemsCount + WM_USER_UPDATEPANEL, protoze to blikalo napr. pri pridani prvniho souboru *.doc do adresare s obrazky (dojde k loadu Eroiicy (pro thumbnail *.doc))
+                                //                RefreshListBox(0, -1, -1, FALSE, FALSE); // replaced with ListBox->SetItemsCound + WM_USER_UPDATEPANEL, because it was blinking e.g. when adding the first *.doc file to a directory with images (Eroiica is loaded (for thumbnail *.doc))
 
-                                // muze dojit k zobrazeni napr. dialogu "PictView is not registered" -> v tom pripade je nutny
-                                // refresh listboxu (jinak zadny refresh nedelame, aby to neblikalo s panelem)
-                                // zabezpecime listbox proti chybam vzniklym zadosti o prekresleni (data se prave ctou z disku)
-                                ListBox->SetItemsCount(0, 0, 0, TRUE); // TRUE - zakazeme nastaveni scrollbar
-                                // Pokud se doruci WM_USER_UPDATEPANEL, dojde k prekresleni obsahu panelu a nastaveni
-                                // scrollbary. Dorucit ji muze message loopa pri vytvoreni message boxu (nebo dialogu).
-                                // Jinak se panel bude tvarit jako nezmeneny a message bude vyjmuta z fronty.
+                                // displaying "PictureView is not registered" dialog may occur -> in that case it's necessary
+                                // to refresh listbox (otherwise we don't do any refresh, so that it doesn't blink with the panel)
+                                // we protect listbox against errors caused by request for refresh (data is just being read from disk)
+                                ListBox->SetItemsCount(0, 0, 0, TRUE); // TRUE - we will disable setting scrollbar
+                                // If WM_USER_UPDATEPANEL is delivered, the panel will be redrawn and scrollbar will be set.
+                                // Message loop can deliver it when message box (or dialog) is created.
+                                // Otherwise the panel will behave as unchanged and the message will be removed from queue.
                                 PostMessage(HWindow, WM_USER_UPDATEPANEL, 0, 0);
 
                                 BOOL cont = FALSE;
-                                if (p->InitDLL(HWindow, FALSE, TRUE, FALSE) &&  // uspesny load pluginu
-                                    p->ThumbnailMasks.GetMasksString()[0] != 0) // plugin stale jeste je "thumbnail loader"
+                                if (p->InitDLL(HWindow, FALSE, TRUE, FALSE) &&  // plugin loaded successfully
+                                    p->ThumbnailMasks.GetMasksString()[0] != 0) // plugin is still "thumbnail loader"
                                 {
-                                    if (!p->ThumbnailMasks.AgreeMasks(file.Name, file.Ext) || // uz neumi thumbnaily pro tento soubor
-                                        p->ThumbnailMasksDisabled)                            // probiha jeho unload/remove
+                                    if (!p->ThumbnailMasks.AgreeMasks(file.Name, file.Ext) || // it can't do thumbnail for this file anymore
+                                        p->ThumbnailMasksDisabled)                            // its unload/remove is in progress
                                     {
                                         cont = TRUE;
                                     }
                                 }
-                                else // nelze naloadit -> vyhodime ho z pole zkousenych pluginu (opatreni proti opakovani chybovych hlasek)
+                                else // can't load -> we will remove it from the list of probed plugins (prevent from repeating error messages)
                                 {
                                     TRACE_I("Unable to use plugin " << p->Name << " as thumbnail loader.");
                                     thumbLoaderPlugins.Delete(i);
@@ -741,10 +745,10 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                                         thumbLoaderPlugins.ResetState();
                                     else
                                         i--;
-                                    cont = TRUE; // zkusime stesti s dalsim pluginem
+                                    cont = TRUE; // let's try our luck with another plugin
                                 }
 
-                                // vycistime message-queue od nabufferovane WM_USER_UPDATEPANEL
+                                // cleanup message-queue from buffered WM_USER_UPDATEPANEL
                                 MSG msg2;
                                 PeekMessage(&msg2, HWindow, WM_USER_UPDATEPANEL, WM_USER_UPDATEPANEL, PM_REMOVE);
 
@@ -760,29 +764,29 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                         if (foundThumbLoaderPlugins.Count > 0)
                         {
                             int size = len + 4;
-                            size -= (size & 0x3); // size % 4  (zarovnani po ctyrech bytech)
+                            size -= (size & 0x3); // size % 4 (alignment per four bytes)
                             int nameSize = size;
                             size += sizeof(CQuadWord) + sizeof(FILETIME);
-                            size += (foundThumbLoaderPlugins.Count + 1) * sizeof(void*); // misto pro ukazatele na rozhrani pluginu + NULL na konci
+                            size += (foundThumbLoaderPlugins.Count + 1) * sizeof(void*); // space for pointers to plugin interfaces + NULL at the end
                             iconData.NameAndData = (char*)malloc(size);
                             if (iconData.NameAndData != NULL)
                             {
                                 memcpy(iconData.NameAndData, file.Name, len);
-                                memset(iconData.NameAndData + len, 0, nameSize - len); // konec jmena vynulujem
-                                // pridame velikost + cas posl. zapisu do souboru
+                                memset(iconData.NameAndData + len, 0, nameSize - len); // end of name is zeroed
+                                // size is added + time of last write to file
                                 *(CQuadWord*)(iconData.NameAndData + nameSize) = file.Size;
                                 *(FILETIME*)(iconData.NameAndData + nameSize + sizeof(CQuadWord)) = file.LastWrite;
-                                // pridame seznam ukazatelu na zapouzdreni rozhrani pluginu pro ziskani thumbnailu
+                                // add list of pointers to encapsulation of plugin interfaces for getting thumbnails
                                 void** ifaces = (void**)(iconData.NameAndData + nameSize + sizeof(CQuadWord) + sizeof(FILETIME));
                                 int i2;
                                 for (i2 = 0; i2 < foundThumbLoaderPlugins.Count; i2++)
                                 {
                                     *ifaces++ = foundThumbLoaderPlugins[i2]->GetPluginInterfaceForThumbLoader();
                                 }
-                                *ifaces = NULL;      // ukonceni seznamu rozhrani pluginu
-                                iconData.SetFlag(4); // zatim nenacteny thumbnail
+                                *ifaces = NULL;      // the end of list of plugin interfaces
+                                iconData.SetFlag(4); // so far no unread thumbnail
 
-                                // musime naalokovat misto pro thumbnail, v threadu to nejde
+                                // we have to allocate space for thumbnail, because it can't be done in the thread
                                 iconData.SetIndex(IconCache->AllocThumbnail());
 
                                 if (iconData.GetIndex() != -1)
@@ -794,7 +798,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                                         IconCache->ResetState();
                                     }
                                     else
-                                        addtoIconCache = FALSE; // je to thumbnail, nemuze to byt zaroven i ikona
+                                        addtoIconCache = FALSE; // it's a thumbnail, it can't be an icon at the same time
                                 }
                                 else
                                     free(iconData.NameAndData);
@@ -805,18 +809,18 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                         foundThumbLoaderPlugins.ResetState();
                 }
 
-                // pridani adresare do IconCache -> je treba nacist ikonku
+                // adding directory to IconCache -> we need to load icon
                 if (UseSystemIcons && addtoIconCache)
                 {
                     int size = len + 4;
-                    size -= (size & 0x3); // size % 4  (zarovnani po ctyrech bytech)
+                    size -= (size & 0x3); // size % 4 (alignment per four bytes)
                     iconData.NameAndData = (char*)malloc(size);
                     if (iconData.NameAndData != NULL)
                     {
                         memmove(iconData.NameAndData, file.Name, len);
-                        memset(iconData.NameAndData + len, 0, size - len); // konec vynulujem
-                        iconData.SetFlag(0);                               // zatim nenactena ikona
-                                                                           // musime naalokovat misto pro bitmapky, v threadu to nejde
+                        memset(iconData.NameAndData + len, 0, size - len); // end of name is zeroed
+                        iconData.SetFlag(0);                               // no not-loaded icon yet
+                                                                           // need to allocate space for bitmaps, can't be done in thread
                         iconData.SetIndex(IconCache->AllocIcon(NULL, NULL));
                         if (iconData.GetIndex() != -1)
                         {
@@ -837,12 +841,12 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
 #ifndef _WIN64
                     isWin64RedirectedDir = FALSE;
 #endif                     // _WIN64
-                    break; // druhy pruchod (pridani ".." nebo win64 redirected-diru)
+                    break; // the second pass (adding ".." or win64 redirected-dir)
                 }
             } while (FindNextFile(search, &fileData));
             DWORD err = GetLastError();
 
-            if (search != NULL) // prvni pruchod
+            if (search != NULL) // the first pass
             {
                 DestroySafeWaitWindow();
                 HANDLES(FindClose(search));
@@ -861,14 +865,14 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
         if (upDir && (Dirs->Count == 0 || strcmp(Dirs->At(0).Name, "..") != 0))
         {
             upDir = FALSE;
-            *(fileNameEnd - 1) = 0; // neni to logicky, ale casy ".." jsou od akt. adresare
+            *(fileNameEnd - 1) = 0; // it's not logical, but times ".." are from current directory
             if (!UNCRootUpDir)
                 search = HANDLES_Q(FindFirstFile(fileName, &fileData));
             else
                 search = INVALID_HANDLE_VALUE;
             if (search == INVALID_HANDLE_VALUE)
             {
-                fileData.dwFileAttributes = FILE_ATTRIBUTE_DIRECTORY; // jde o ptDisk
+                fileData.dwFileAttributes = FILE_ATTRIBUTE_DIRECTORY; // this is ptDisk
                 SYSTEMTIME ltNone;
                 ltNone.wYear = 1602;
                 ltNone.wMonth = 1;
@@ -890,9 +894,9 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
             }
             else
                 HANDLES(FindClose(search));
-            search = NULL;                                              // druhy/treti pruchod ...
-            fileData.dwFileAttributes |= FILE_ATTRIBUTE_DIRECTORY;      // jde o ptDisk
-            fileData.dwFileAttributes &= ~FILE_ATTRIBUTE_REPARSE_POINT; // musime odstranit flag FILE_ATTRIBUTE_REPARSE_POINT, jinak bude link overlay na ".."
+            search = NULL;                                              // the second/third pass
+            fileData.dwFileAttributes |= FILE_ATTRIBUTE_DIRECTORY;      // this is ptDisk
+            fileData.dwFileAttributes &= ~FILE_ATTRIBUTE_REPARSE_POINT; // need to remove flag FILE_ATTRIBUTE_REPARSE_POINT, otherwise link overlay will be on ".."
             strcpy(fileData.cFileName, "..");
             fileData.cAlternateFileName[0] = 0;
             st = fileData.cFileName;
@@ -909,11 +913,11 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
         if (foundWin64RedirectedDirs < 10 &&
             AddWin64RedirectedDir(GetPath(), Dirs, &fileData, &foundWin64RedirectedDirs, &dirWithSameNameExists))
         {
-            foundWin64RedirectedDirs++; // napr. pod system32 jich muze byt 5, pridal jsem jistou rezervu do deseti...
+            foundWin64RedirectedDirs++; // e.g. under system32 there can be 5, I've added some reserve to 10...
 
             if (Configuration.NotHiddenSystemFiles &&
                 (fileData.dwFileAttributes & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM)))
-            { // skipnuti hidden adresare
+            { // skip hidden directory
                 if (!dirWithSameNameExists)
                 {
                     HiddenDirsCount++;
@@ -922,7 +926,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                 goto FIND_NEXT_WIN64_REDIRECTEDDIR;
             }
 
-            //--- pokud je jmeno obsazeno v poli HiddenNames, zahodime ho
+            //--- if the name is occupied in the array HiddenNames, we will discard it
             if (HiddenNames.Contains(TRUE, fileData.cFileName))
             {
                 if (!dirWithSameNameExists)
@@ -934,7 +938,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
             }
 
             isWin64RedirectedDir = TRUE;
-            search = NULL; // druhy/treti pruchod ...
+            search = NULL; // the second/third pass...
             st = fileData.cFileName;
             len = (int)strlen(st);
             isUpDir = FALSE;
@@ -950,14 +954,14 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
         if (Files->Count + Dirs->Count == 0)
             StatusLine->SetText(LoadStr(IDS_NOFILESFOUND));
 
-        // seradime Files a Dirs podle akt. zpusobu razeni
+        // sorting of Files and Dirs according to the current sorting method
         SortDirectory();
 
         if (UseSystemIcons || UseThumbnails)
         {
             if (IconCache->Count > 1)
                 IconCache->SortArray(0, IconCache->Count - 1, NULL);
-            WakeupIconCacheThread(); // zacni nacitat ikony
+            WakeupIconCacheThread(); // start loading icons
         }
     }
     else
@@ -973,19 +977,19 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                                      GetArchiveDir()->GetUpperDir(GetZIPPath()));
             }
 
-            // nastavime velikost ikonek pro IconCache
+            // setting of icon size for IconCache
             CIconSizeEnum iconSize = GetIconSizeForCurrentViewMode();
             IconCache->SetIconSize(iconSize);
 
             CFilesArray* ZIPFiles = GetArchiveDirFiles();
             CFilesArray* ZIPDirs = GetArchiveDirDirs();
 
-            Files->SetDeleteData(FALSE); // jen melke kopie dat
-            Dirs->SetDeleteData(FALSE);  // jen melke kopie dat
+            Files->SetDeleteData(FALSE); // only a shallow copy of data
+            Dirs->SetDeleteData(FALSE);  // only a shallow copy of data
 
             if (ZIPFiles != NULL && ZIPDirs != NULL)
             {
-                // viz komentar v pripade ptPluginFS
+                // see comment in case of ptPluginFS
                 Files->SetDelta(DeltaForTotalCount(ZIPFiles->Count));
                 Dirs->SetDelta(DeltaForTotalCount(ZIPDirs->Count));
 
@@ -994,9 +998,9 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                 {
                     CFileData* f = &ZIPFiles->At(i);
                     if (Configuration.NotHiddenSystemFiles &&
-                        (f->Hidden || // Hidden i Attr jsou nulovane pokud jsou neplatne -> testy failnou
+                        (f->Hidden || // both Hidden and Attr are nulled if they are invalid -> tests fail
                          (f->Attr & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM))))
-                    { // skipnuti hidden souboru/adresare
+                    { // skip hidden file/directory
                         HiddenFilesCount++;
                         HiddenDirsFilesReason |= HIDDEN_REASON_ATTRIBUTE;
                         continue;
@@ -1009,7 +1013,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                         continue;
                     }
 
-                    //--- pokud je jmeno obsazeno v poli HiddenNames, zahodime ho
+                    //--- if the name is occupied in the array HiddenNames, we will discard it
                     if (HiddenNames.Contains(FALSE, f->Name))
                     {
                         HiddenFilesCount++;
@@ -1021,13 +1025,13 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                 }
                 CFileData upDir;
                 static char buffUp[] = "..";
-                upDir.Name = buffUp; // nebude se volat free(), muzeme si dovolit ".."
+                upDir.Name = buffUp; // free() won't be called, we can afford ".."
                 upDir.Ext = upDir.Name + 2;
                 upDir.Size = CQuadWord(0, 0);
                 upDir.Attr = 0;
                 upDir.LastWrite = GetZIPArchiveDate();
                 upDir.DosName = NULL;
-                upDir.PluginData = 0; // 0 jen tak, plug-in si prepise na svou hodnotu
+                upDir.PluginData = 0; // 0 just like that, plug-in will overwrite it with its value
                 upDir.NameLen = 2;
                 upDir.Hidden = 0;
                 upDir.IsLink = 0;
@@ -1037,7 +1041,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                 upDir.Shared = 0;
                 upDir.Archive = 0;
                 upDir.SizeValid = 0;
-                upDir.Dirty = 0; // zbytecne, jen pro formu
+                upDir.Dirty = 0; // unnecessary, just for form
                 upDir.CutToClip = 0;
                 upDir.IconOverlayIndex = ICONOVERLAYINDEX_NOTUSED;
                 upDir.IconOverlayDone = 0;
@@ -1050,15 +1054,15 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                 {
                     CFileData* f = &ZIPDirs->At(i);
                     if (Configuration.NotHiddenSystemFiles &&
-                        (f->Hidden || // Hidden i Attr jsou nulovane pokud jsou neplatne -> testy failnou
+                        (f->Hidden || // both Hidden and Attr are nulled if they are invalid -> tests fail
                          (f->Attr & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM))))
-                    { // skipnuti hidden souboru/adresare
+                    { // skip hidden file/directory
                         HiddenDirsCount++;
                         HiddenDirsFilesReason |= HIDDEN_REASON_ATTRIBUTE;
                         continue;
                     }
 
-                    //--- pokud je jmeno obsazeno v poli HiddenNames, zahodime ho
+                    //--- if the name is occupied in the array HiddenNames, we will discard it
                     if (HiddenNames.Contains(TRUE, f->Name))
                     {
                         HiddenDirsCount++;
@@ -1083,18 +1087,18 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
             {
                 DirectoryLine->SetHidden(HiddenFilesCount, HiddenDirsCount);
                 //        TRACE_I("ReadDirectory: end");
-                return FALSE; // adresar prestal existovat ...
+                return FALSE; // the directory has ceased to exist ...
             }
 
-            // seradime Files a Dirs podle akt. zpusobu razeni
+            // sorting of Files and Dirs according to the current sorting method
             SortDirectory();
 
             UseSystemIcons = !Configuration.UseSimpleIconsInArchives;
             if (UseSystemIcons)
             {
-                // priprava pro nacitani ikon
+                // preparing for loading of icons
                 IconCacheValid = FALSE;
-                MSG msg; // musime zlikvidovat pripadnou WM_USER_ICONREADING_END, ktera by nastavila IconCacheValid = TRUE
+                MSG msg; // need to remove any WM_USER_ICONREADING_END, which would set IconCacheValid = TRUE
                 while (PeekMessage(&msg, HWindow, WM_USER_ICONREADING_END, WM_USER_ICONREADING_END, PM_REMOVE))
                     ;
 
@@ -1105,16 +1109,16 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                         Associations[i].SetIndex(-1, iconSize);
                 }
 
-                // ziskani potrebnych statickych ikon (vypakovavat nic nebudeme)
+                // getting of necessary static icons (we won't unpack them)
                 for (i = 0; i < Files->Count; i++)
                 {
                     const char* iconLocation = NULL;
                     CFileData* f = &Files->At(i);
 
-                    if (*f->Ext != 0) // existuje pripona
+                    if (*f->Ext != 0) // an extension exists
                     {
                         /*
-            if (PackerFormatConfig.PackIsArchive(f->Name))   // je to archiv, ktery umime zpracovat?
+            if (PackerFormatConfig.PackIsArchive(f->Name))   // is it an archive which we can process?
             {
               f->Association = TRUE;
               f->Archive = TRUE;
@@ -1126,8 +1130,8 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                         char* st = fileName;
                         while (*++s != 0)
                             *st++ = LowerCase[*s];
-                        *(DWORD*)st = 0; // nuly na konec
-                        st = fileName;   // pripona malymi pismeny
+                        *(DWORD*)st = 0; // zeroes to the end
+                        st = fileName;   // lowercase extension
 
                         f->Association = Associations.IsAssociatedStatic(st, iconLocation, iconSize);
                         f->Archive = FALSE;
@@ -1145,24 +1149,24 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                     {
                         CIconData iconData;
                         iconData.FSFileData = NULL;
-                        iconData.SetReadingDone(0); // jen tak pro formu
+                        iconData.SetReadingDone(0); // just for form
                         int size = (int)strlen(iconLocation) + 4;
-                        size -= (size & 0x3);                // size % 4  (zarovnani po ctyrech bytech)
-                        const char* s = iconLocation + size; // preskok zarovnani z nul
+                        size -= (size & 0x3);                // size % 4  (alignment per four bytes)
+                        const char* s = iconLocation + size; // skip alignment from zeros
                         int len = (int)strlen(s);
-                        if (len > 0) // icon-location neni prazdna
+                        if (len > 0) // icon-location is not empty
                         {
                             int nameLen = f->NameLen + 4;
-                            nameLen -= (nameLen & 0x3); // nameLen % 4  (zarovnani po ctyrech bytech)
+                            nameLen -= (nameLen & 0x3); // nameLen % 4  (alignment per four bytes)
                             iconData.NameAndData = (char*)malloc(nameLen + len + 1);
                             if (iconData.NameAndData != NULL)
                             {
-                                memcpy(iconData.NameAndData, f->Name, f->NameLen);                  // jmeno +
-                                memset(iconData.NameAndData + f->NameLen, 0, nameLen - f->NameLen); // zarovnani nul +
+                                memcpy(iconData.NameAndData, f->Name, f->NameLen);                  // name +
+                                memset(iconData.NameAndData + f->NameLen, 0, nameLen - f->NameLen); // zeroes alignment +
                                 memcpy(iconData.NameAndData + nameLen, s, len + 1);                 // icon-location + '\0'
 
-                                iconData.SetFlag(3); // nenactena ikona dana pouze icon-location
-                                                     // musime naalokovat misto pro bitmapky, v threadu to nejde
+                                iconData.SetFlag(3); // not-loaded icon given by icon-location only
+                                                     // we need to allocate space for bitmaps, can't be done in thread
                                 iconData.SetIndex(IconCache->AllocIcon(NULL, NULL));
                                 if (iconData.GetIndex() != -1)
                                 {
@@ -1180,10 +1184,10 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                     }
                 }
 
-                // probuzeni nacitani ikon
+                // waking up icon-reading
                 if (IconCache->Count > 1)
                     IconCache->SortArray(0, IconCache->Count - 1, NULL);
-                WakeupIconCacheThread(); // zacni nacitat ikony
+                WakeupIconCacheThread(); // start to load icons
             }
             else
             {
@@ -1192,10 +1196,10 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                 {
                     CFileData* f = &Files->At(i);
 
-                    if (*f->Ext != 0) // existuje pripona
+                    if (*f->Ext != 0) // an extension exists
                     {
                         /*
-            if (PackerFormatConfig.PackIsArchive(f->Name))   // je to archiv, ktery umime zpracovat?
+            if (PackerFormatConfig.PackIsArchive(f->Name))   // is it an archive which we can process?
             {
               f->Association = TRUE;
               f->Archive = TRUE;
@@ -1208,8 +1212,8 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                         char* st = buf;
                         while (*++s != 0)
                             *st++ = LowerCase[*s];
-                        *(DWORD*)st = 0; // nuly na konec
-                        st = buf;        // pripona malymi pismeny
+                        *(DWORD*)st = 0; // zeroes to the end
+                        st = buf;        // lowercase extension
 
                         f->Association = Associations.IsAssociated(st);
                         f->Archive = FALSE;
@@ -1237,22 +1241,21 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                     PluginData.SetupView(this == MainWindow->LeftPanel, &view, NULL, NULL);
                 }
 
-                // nastavime velikost ikonek pro IconCache
+                // setting of icon size for IconCache
                 CIconSizeEnum iconSize = GetIconSizeForCurrentViewMode();
                 IconCache->SetIconSize(iconSize);
 
                 CFilesArray* FSFiles = GetFSFiles();
                 CFilesArray* FSDirs = GetFSDirs();
 
-                Files->SetDeleteData(FALSE); // jen melke kopie dat
-                Dirs->SetDeleteData(FALSE);  // jen melke kopie dat
+                Files->SetDeleteData(FALSE); // only shallow copy of data
+                Dirs->SetDeleteData(FALSE);  // only shallow copy of data
 
                 if (FSFiles != NULL && FSDirs != NULL)
                 {
-                    // Undelete plugin dokaze ve sloucenem adresari zobrazit desitky tisic souboru
-                    // na jedne hromade a realokace CFilesArray po implicitnich 200 prvcich pak sla
-                    // do nekolika vterin. Protoze predem zname pocet polozek, muzeme zvolit lepsi
-                    // strategii pro realokace.
+                    // The Undelete plugin can show tens of thousands of files in one heap in the merged directory
+                    // and the reallocation of CFilesArray after implicit 200 items then took several seconds.
+                    // Because we know the number of items in advance, we can choose a better strategy for reallocations.
                     Files->SetDelta(DeltaForTotalCount(FSFiles->Count));
                     Dirs->SetDelta(DeltaForTotalCount(FSDirs->Count));
 
@@ -1262,9 +1265,9 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                         CFileData* f = &FSFiles->At(i);
 
                         if (Configuration.NotHiddenSystemFiles &&
-                            (f->Hidden || // Hidden i Attr jsou nulovane pokud jsou neplatne -> testy failnou
+                            (f->Hidden || // both Hidden and Attr are nulled if they are invalid -> tests fail
                              (f->Attr & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM))))
-                        { // skipnuti hidden souboru/adresare
+                        { // skip hidden file/directory
                             HiddenFilesCount++;
                             HiddenDirsFilesReason |= HIDDEN_REASON_ATTRIBUTE;
                             continue;
@@ -1277,7 +1280,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                             continue;
                         }
 
-                        //--- pokud je jmeno obsazeno v poli HiddenNames, zahodime ho
+                        //--- if the name is occupied in the array HiddenNames, we will discard it
                         if (HiddenNames.Contains(FALSE, f->Name))
                         {
                             HiddenFilesCount++;
@@ -1292,15 +1295,15 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                     {
                         CFileData* f = &FSDirs->At(i);
                         if (Configuration.NotHiddenSystemFiles &&
-                            (f->Hidden || // Hidden i Attr jsou nulovane pokud jsou neplatne -> testy failnou
+                            (f->Hidden || // both Hidden and Attr are nulled if they are invalid -> tests fail
                              (f->Attr & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM))))
-                        { // skipnuti hidden souboru/adresare
+                        { // skip hidden file/directory
                             HiddenDirsCount++;
                             HiddenDirsFilesReason |= HIDDEN_REASON_ATTRIBUTE;
                             continue;
                         }
 
-                        //--- pokud je jmeno obsazeno v poli HiddenNames, zahodime ho
+                        //--- if the name is occupied in the array HiddenNames, we will discard it
                         if (HiddenNames.Contains(TRUE, f->Name))
                         {
                             HiddenDirsCount++;
@@ -1326,10 +1329,10 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                 {
                     DirectoryLine->SetHidden(HiddenFilesCount, HiddenDirsCount);
                     //          TRACE_I("ReadDirectory: end");
-                    return FALSE; // adresar prestal existovat ...
+                    return FALSE; // the directory has ceased to exist ...
                 }
 
-                // pokud je prazdny panel, nastavime infoline na "No files found"
+                // if the panel is empty, we will set infoline to "No files found"
                 if (Files->Count + Dirs->Count == 0)
                 {
                     char buff[1000];
@@ -1347,16 +1350,16 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                         StatusLine->SetText(LoadStr(IDS_NOFILESFOUND));
                 }
 
-                // seradime Files a Dirs podle akt. zpusobu razeni
+                // sorting of Files and Dirs according to the current sorting method
                 SortDirectory();
 
                 if (GetPluginIconsType() == pitFromRegistry)
                 {
-                    UseSystemIcons = TRUE; // pro zjednoduseni draw-item v panelu
+                    UseSystemIcons = TRUE; // for simplification of draw-item in panel
 
-                    // priprava pro nacitani ikon
+                    // preparing for loading of icons
                     IconCacheValid = FALSE;
-                    MSG msg; // musime zlikvidovat pripadnou WM_USER_ICONREADING_END, ktera by nastavila IconCacheValid = TRUE
+                    MSG msg; // need to remove any WM_USER_ICONREADING_END, which would set IconCacheValid = TRUE
                     while (PeekMessage(&msg, HWindow, WM_USER_ICONREADING_END, WM_USER_ICONREADING_END, PM_REMOVE))
                         ;
 
@@ -1367,16 +1370,16 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                             Associations[i].SetIndex(-1, iconSize);
                     }
 
-                    // ziskani potrebnych statickych ikon (vypakovavat nic nebudeme)
+                    // getting of necessary static icons (we won't unpack anything)
                     for (i = 0; i < Files->Count; i++)
                     {
                         const char* iconLocation = NULL;
                         CFileData* f = &Files->At(i);
 
-                        if (*f->Ext != 0) // existuje pripona
+                        if (*f->Ext != 0) // an extension exists
                         {
                             /*
-              if (PackerFormatConfig.PackIsArchive(f->Name))   // je to archiv, ktery umime zpracovat?
+              if (PackerFormatConfig.PackIsArchive(f->Name))   // is it an archive which we can process?
               {
                 f->Association = TRUE;
                 f->Archive = TRUE;
@@ -1388,8 +1391,8 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                             char* st = fileName;
                             while (*++s != 0)
                                 *st++ = LowerCase[*s];
-                            *(DWORD*)st = 0; // nuly na konec
-                            st = fileName;   // pripona malymi pismeny
+                            *(DWORD*)st = 0; // zeroes to the end
+                            st = fileName;   // lowercase extension
 
                             f->Association = Associations.IsAssociatedStatic(st, iconLocation, iconSize);
                             f->Archive = FALSE;
@@ -1407,24 +1410,24 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                         {
                             CIconData iconData;
                             iconData.FSFileData = NULL;
-                            iconData.SetReadingDone(0); // jen tak pro formu
+                            iconData.SetReadingDone(0); // just for form
                             int size = (int)strlen(iconLocation) + 4;
-                            size -= (size & 0x3);                // size % 4  (zarovnani po ctyrech bytech)
-                            const char* s = iconLocation + size; // preskok zarovnani z nul
+                            size -= (size & 0x3);                // size % 4  (alignment per four bytes)
+                            const char* s = iconLocation + size; // skip alignment from zeros
                             int len = (int)strlen(s);
-                            if (len > 0) // icon-location neni prazdna
+                            if (len > 0) // icon-location is not empty
                             {
                                 int nameLen = f->NameLen + 4;
-                                nameLen -= (nameLen & 0x3); // nameLen % 4  (zarovnani po ctyrech bytech)
+                                nameLen -= (nameLen & 0x3); // nameLen % 4  (alignment per four bytes)
                                 iconData.NameAndData = (char*)malloc(nameLen + len + 1);
                                 if (iconData.NameAndData != NULL)
                                 {
-                                    memcpy(iconData.NameAndData, f->Name, f->NameLen);                  // jmeno +
-                                    memset(iconData.NameAndData + f->NameLen, 0, nameLen - f->NameLen); // zarovnani nul +
+                                    memcpy(iconData.NameAndData, f->Name, f->NameLen);                  // name +
+                                    memset(iconData.NameAndData + f->NameLen, 0, nameLen - f->NameLen); // zeroes alignment +
                                     memcpy(iconData.NameAndData + nameLen, s, len + 1);                 // icon-location + '\0'
 
-                                    iconData.SetFlag(3); // nenactena ikona dana pouze icon-location
-                                                         // musime naalokovat misto pro bitmapky, v threadu to nejde
+                                    iconData.SetFlag(3); // not-loaded icon given by icon-location only
+                                                         // we need to allocate space for bitmaps, can't be done in thread
                                     iconData.SetIndex(IconCache->AllocIcon(NULL, NULL));
                                     if (iconData.GetIndex() != -1)
                                     {
@@ -1442,21 +1445,21 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                         }
                     }
 
-                    // probuzeni nacitani ikon
+                    // waking up icon-reading
                     if (IconCache->Count > 1)
                         IconCache->SortArray(0, IconCache->Count - 1, NULL);
-                    WakeupIconCacheThread(); // zacni nacitat ikony
+                    WakeupIconCacheThread(); // start to load icons
                 }
                 else
                 {
                     if (GetPluginIconsType() == pitFromPlugin)
                     {
-#ifdef _DEBUG // nejspis zadna chyba, jen by se to teoreticky nemelo stat
+#ifdef _DEBUG // most likely no error, just it shouldn't happen theoretically
                         if (SimplePluginIcons != NULL)
                             TRACE_E("SimplePluginIcons is not NULL before GetSimplePluginIcons().");
 #endif // _DEBUG
                         SimplePluginIcons = PluginData.GetSimplePluginIcons(iconSize);
-                        if (SimplePluginIcons == NULL) // neuspech -> degradace na pitSimple
+                        if (SimplePluginIcons == NULL) // not a success -> degradation to pitSimple
                         {
                             SetPluginIconsType(pitSimple);
                         }
@@ -1464,17 +1467,17 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
 
                     if (GetPluginIconsType() == pitSimple)
                     {
-                        UseSystemIcons = FALSE; // pro zjednoduseni draw-item v panelu
+                        UseSystemIcons = FALSE; // for simplification of draw-item in panel
 
                         int i;
                         for (i = 0; i < Files->Count; i++)
                         {
                             CFileData* f = &Files->At(i);
 
-                            if (*f->Ext != 0) // existuje pripona
+                            if (*f->Ext != 0) // an extension exists
                             {
                                 /*
-                if (PackerFormatConfig.PackIsArchive(f->Name))   // je to archiv, ktery umime zpracovat?
+                if (PackerFormatConfig.PackIsArchive(f->Name))   // is it an archive which we can process?
                 {
                   f->Association = TRUE;
                   f->Archive = TRUE;
@@ -1487,8 +1490,8 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                                 char* st = buf;
                                 while (*++s != 0)
                                     *st++ = LowerCase[*s];
-                                *(DWORD*)st = 0; // nuly na konec
-                                st = buf;        // pripona malymi pismeny
+                                *(DWORD*)st = 0; // zeroes to the end
+                                st = buf;        // lowercase extension
 
                                 f->Association = Associations.IsAssociated(st);
                                 f->Archive = FALSE;
@@ -1507,17 +1510,17 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                     {
                         if (GetPluginIconsType() == pitFromPlugin)
                         {
-                            UseSystemIcons = TRUE; // pro zjednoduseni draw-item v panelu
+                            UseSystemIcons = TRUE; // for simplification of draw-item in panel
 
-                            // SimplePluginIcons uz je nastaveno (kod pred GetPluginIconsType() == pitSimple)
+                            // SimplePluginIcons is already set (code before GetPluginIconsType() == pitSimple)
 
-                            // priprava pro nacitani ikon
+                            // preparing for loading of icons
                             IconCacheValid = FALSE;
-                            MSG msg; // musime zlikvidovat pripadnou WM_USER_ICONREADING_END, ktera by nastavila IconCacheValid = TRUE
+                            MSG msg; // need to remove any WM_USER_ICONREADING_END, which would set IconCacheValid = TRUE
                             while (PeekMessage(&msg, HWindow, WM_USER_ICONREADING_END, WM_USER_ICONREADING_END, PM_REMOVE))
                                 ;
 
-                            // soubory/adresare, ktery nemaji jednoduchou ikonu pridame do icon-cache
+                            // file/directories which don't have a simple icon will be addeed to icon-cache
                             {
                                 CALL_STACK_MESSAGE1("CFilesWindow::ReadDirectory::FS-icons-from-plugin");
 
@@ -1529,12 +1532,12 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                                     BOOL isDir = i < FSDirs->Count;
                                     CFileData* f = (isDir ? &FSDirs->At(i) : &FSFiles->At(i - FSDirs->Count));
 
-                                    // potrebujeme ukazatel na CFileData do PluginFSDir, protoze ve Files a Dirs dochazi k presunum
-                                    // napr. pri sorteni (Files a Dirs jsou pole CFileData, ne (CFileData *), proto jsou tyto problemy)
+                                    // need a pointer to CFileData for PluginFSDir, because moving occurs in Files and Dirs
+                                    // e.g. when sorting (Files and Dirs are arrays of CFileData, not (CFileData *), that's why these problems exist)
                                     if (Configuration.NotHiddenSystemFiles &&
-                                        (f->Hidden || // Hidden i Attr jsou nulovane pokud jsou neplatne -> testy failnou
+                                        (f->Hidden || //both Hidden a Attr jsou nulovane pokud jsou neplatne -> testy failnou
                                          (f->Attr & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM))))
-                                    { // skipnuti hidden souboru/adresare
+                                    { // skip hidden file/directory
                                         continue;
                                     }
                                     if (!isDir)
@@ -1542,27 +1545,27 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                                         if (FilterEnabled && !Filter.AgreeMasks(f->Name, f->Ext))
                                             continue;
                                     }
-                                    //--- pokud je jmeno obsazeno v poli HiddenNames, zahodime ho
+                                    //--- if the name is occupied in the array HiddenNames, we will discard it
                                     if (HiddenNames.Contains(isDir, f->Name))
                                         continue;
                                     debugCount++;
 
                                     if ((!isDir || i != 0 || strcmp(f->Name, "..") != 0) &&
-                                        !PluginData.HasSimplePluginIcon(*f, isDir)) // pridat do icon-cache?
+                                        !PluginData.HasSimplePluginIcon(*f, isDir)) // add to icon-cache?
                                     {
                                         CIconData iconData;
                                         iconData.FSFileData = f;
-                                        iconData.SetReadingDone(0); // jen tak pro formu
+                                        iconData.SetReadingDone(0); // just for form
                                         int nameLen = f->NameLen + 4;
-                                        nameLen -= (nameLen & 0x3); // nameLen % 4  (zarovnani po ctyrech bytech)
+                                        nameLen -= (nameLen & 0x3); // nameLen % 4  (alignment per four bytes)
                                         iconData.NameAndData = (char*)malloc(nameLen);
                                         if (iconData.NameAndData != NULL)
                                         {
-                                            memcpy(iconData.NameAndData, f->Name, f->NameLen);                  // jmeno +
-                                            memset(iconData.NameAndData + f->NameLen, 0, nameLen - f->NameLen); // zarovnani nul
+                                            memcpy(iconData.NameAndData, f->Name, f->NameLen);                  // name +
+                                            memset(iconData.NameAndData + f->NameLen, 0, nameLen - f->NameLen); // zeroes alignment
 
-                                            iconData.SetFlag(0); // zatim nenactena ikona (plugin-icon)
-                                                                 // musime naalokovat misto pro bitmapky, v threadu to nejde
+                                            iconData.SetFlag(0); // so far not loaded icon (plugin-icon)
+                                                                 // need to allocate space for bitmaps, can't be done in thread
                                             iconData.SetIndex(IconCache->AllocIcon(NULL, NULL));
                                             if (iconData.GetIndex() != -1)
                                             {
@@ -1586,10 +1589,10 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                                 }
                             }
 
-                            // probuzeni nacitani ikon
+                            // waking up icon-reading
                             if (IconCache->Count > 1)
                                 IconCache->SortArray(0, IconCache->Count - 1, &PluginData);
-                            WakeupIconCacheThread(); // zacni nacitat ikony
+                            WakeupIconCacheThread(); // start to load icons
                         }
                         else
                             TRACE_E("Unexpected situation (1) in v CFilesWindow::ReadDirectory().");
@@ -1600,7 +1603,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
             {
                 TRACE_E("Unexpected situation (2) in CFilesWindow::ReadDirectory().");
                 DirectoryLine->SetHidden(HiddenFilesCount, HiddenDirsCount);
-                // nastavime velikost ikonek pro IconCache
+                // setting of icon size for IconCache
                 CIconSizeEnum iconSize = GetIconSizeForCurrentViewMode();
                 IconCache->SetIconSize(iconSize);
                 //        TRACE_I("ReadDirectory: end");
@@ -1610,26 +1613,26 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
     }
     DirectoryLine->SetHidden(HiddenFilesCount, HiddenDirsCount);
 
-    // pokud pro tuto cestu mame ulozene velikosti adresaru, priradime je
-    //  DirectorySizesHolder.Restore(this);
+    // if the sizes of directories are stored for this path, we will assign them
+    // to DirectorySizesHolder.Restore(this);
 
     //  TRACE_I("ReadDirectory: end");
     return TRUE;
 }
 
-// seradi pole Dirs a Files nazavisle na globalnich promennych
+// sorts array Dirs and Files independently on global variables
 void SortFilesAndDirectories(CFilesArray* files, CFilesArray* dirs, CSortType sortType, BOOL reverseSort, BOOL sortDirsByName)
 {
     CALL_STACK_MESSAGE1("SortDirectoryAux()");
 
-    // POZOR: musi odpovidat sort-kodu v RefreshDirectory, ChangeSortType a CompareDirectories !!!
+    // CAUTION: must correspond to sort-code in RefreshDirectory, ChangeSortType and CompareDirectories !!!
 
     if (dirs->Count > 0)
     {
         BOOL hasRoot = (dirs->At(0).NameLen == 2 && dirs->At(0).Name[0] == '.' &&
-                        dirs->At(0).Name[1] == '.'); // korenovy adresar
+                        dirs->At(0).Name[1] == '.'); // root directory
         int firstIndex = hasRoot ? 1 : 0;
-        if (dirs->Count - firstIndex > 1) // pokud je pouze jedna polozka, neni co radit
+        if (dirs->Count - firstIndex > 1) // if there's one item only, there's nothing to sort
         {
             switch (sortType)
             {
@@ -1689,8 +1692,8 @@ void CFilesWindow::SortDirectory(CFilesArray* files, CFilesArray* dirs)
         dirs = Dirs;
     SortFilesAndDirectories(files, dirs, SortType, ReverseSort, Configuration.SortDirsByName);
 
-    // jednoucelove hlidace zmen promennych Configuration.SortUsesLocale a
-    // Configuration.SortDetectNumbers pro metodu CFilesWindow::RefreshDirectory
+    // single-purpose monitors for changes of Configuration.SortUsesLocale and Configuration.SortDetectNumbers
+    // variables for the method CFilesWindow::RefreshDirectory
     SortedWithRegSet = Configuration.SortUsesLocale;
     SortedWithDetectNum = Configuration.SortDetectNumbers;
     VisibleItemsArray.InvalidateArr();
@@ -1714,7 +1717,7 @@ BOOL IsWin64RedirectedDirAux(const char* subDir, const char* redirectedDir, cons
             if (h != INVALID_HANDLE_VALUE)
             {
                 HANDLES(FindClose(h));
-                return FALSE; // nejde jen o pseudo-adresar, existuje tam stejne pojmenovany adresar, coz znamena, ze napr. kontextove menu bude vice mene normalne fungovat
+                return FALSE; // this is not just a pseudo-directory, there is a directory with the same name, which means that e.g. context menu will work more or less normally
             }
         }
 
@@ -1772,10 +1775,10 @@ BOOL ContainsWin64RedirectedDir(CFilesWindow* panel, int* indexes, int count, ch
         int i;
         for (i = 0; i < count; i++)
         {
-            if (indexes[i] >= 0 && indexes[i] < panel->Dirs->Count) // zajimaji me jen podadresare
+            if (indexes[i] >= 0 && indexes[i] < panel->Dirs->Count) // only subdirectories matter
             {
                 CFileData* dir = &panel->Dirs->At(indexes[i]);
-                if (dir->IsLink) // vsechny pseudo-directory maji nahozeny IsLink
+                if (dir->IsLink) // all pseudo-directories have IsLink set
                 {
                     *pathEnd = 0;
                     if (SalPathAppend(path, dir->Name, MAX_PATH) &&
@@ -1803,7 +1806,7 @@ BOOL AddWin64RedirectedDirAux(const char* path, const char* subDir, const char* 
             if (StrICmp(dirs->At(i).Name, redirectedDirLastComp) == 0)
             {
                 if (dirs->At(i).IsLink)
-                    return FALSE; // tenhle redirected-dir uz jsme pridali
+                    return FALSE; // this redirected-dir is already added
                 deleteIndex = i;
                 break;
             }
@@ -1814,14 +1817,14 @@ BOOL AddWin64RedirectedDirAux(const char* path, const char* subDir, const char* 
             SalPathAppend(findPath, "*", MAX_PATH))
         {
             HANDLE h;
-            h = HANDLES_Q(FindFirstFile(findPath, fileData)); // find-data pro redirected-dir ziskame z adresare "." v listingu redirected-diru
+            h = HANDLES_Q(FindFirstFile(findPath, fileData)); // find-data for redirected-dir can be obtained from the "." directory in the listing of redirected-dir
             if (h != INVALID_HANDLE_VALUE)
             {
                 BOOL found = FALSE;
                 do
                 {
                     if (strcmp(fileData->cFileName, "..") == 0 &&
-                        (fileData->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) // adresar "."
+                        (fileData->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) // "." directory
                     {
                         found = TRUE;
                         break;
@@ -1831,11 +1834,11 @@ BOOL AddWin64RedirectedDirAux(const char* path, const char* subDir, const char* 
                 if (found)
                 {
                     if (deleteIndex != -1)
-                        dirs->Delete(deleteIndex); // je tam adresar, smazneme ho, redirected-dir ma prednost (redirector ten adresar vyignoruje)
+                        dirs->Delete(deleteIndex); // there's is a directory here, we will delete it, redirected-dir has priority (redirector ignores this directory)
                     lstrcpyn(fileData->cFileName, redirectedDirLastComp, MAX_PATH);
                     fileData->cAlternateFileName[0] = 0;
 
-                    if (CutDirectory(findPath)) // zjistime, jestli na disku je adresar pojmenovany stejne jako redirected-dir (v poli 'dirs' nemusi byt napr. diky prikazu "Hide Selected Names")
+                    if (CutDirectory(findPath)) // find out if there's a directory with the same name as redirected-dir on the disk (it does not need to be in the 'dirs' array, e.g. because of the command "Hide Selected Names")
                     {
                         WIN32_FIND_DATA fd;
                         h = HANDLES_Q(FindFirstFile(findPath, &fd));
@@ -1870,7 +1873,7 @@ BOOL AddWin64RedirectedDir(const char* path, CFilesArray* dirs, WIN32_FIND_DATA*
         if (len > 0 && winDir[len - 1] != '\\')
             strcpy(winDir + len++, "\\");
         if ((int)strlen(path) + 1 == len)
-            winDir[--len] = 0; // patch kvuli path == win-dir (zahodime ukoncujici backslash)
+            winDir[--len] = 0; // patch due to path == win-dir (discard ending backslash)
         if (StrNICmp(winDir, path, len) == 0)
         {
             const char* subDir = path + len;
@@ -1897,7 +1900,7 @@ BOOL CFilesWindow::ChangeDir(const char* newDir, int suggestedTopIndex, const ch
     CALL_STACK_MESSAGE7("CFilesWindow::ChangeDir(%s, %d, %s, %d, , %d, %d)", newDir, suggestedTopIndex,
                         suggestedFocusName, mode, convertFSPathToInternal, showNewDirPathInErrBoxes);
 
-    // zazalohujeme retezec (mohl by se v prubehu provadeni zmenit - je-li to napr. Name z CFileData z panelu)
+    // backup the string (it could change during execution - e.g. Name from CFileData from panel)
     char backup[MAX_PATH];
     if (suggestedFocusName != NULL)
     {
@@ -1913,12 +1916,12 @@ BOOL CFilesWindow::ChangeDir(const char* newDir, int suggestedTopIndex, const ch
     BOOL sendDirectlyToPlugin = FALSE;
     CChangeDirDlg dlg(HWindow, path, MainWindow->GetActivePanel()->Is(ptPluginFS) ? &sendDirectlyToPlugin : NULL);
 
-    // obnova DefaultDir
+    // refresh DefaultDir
     MainWindow->UpdateDefaultDir(TRUE);
 
     BOOL useStopRefresh = newDir == NULL;
     if (useStopRefresh)
-        BeginStopRefresh(); // cmuchal si da pohov
+        BeginStopRefresh(); // snooper will relax now
 
 CHANGE_AGAIN:
 
@@ -1926,20 +1929,20 @@ CHANGE_AGAIN:
     {
         if (newDir == NULL)
         {
-            convertFSPathToInternal = TRUE; // pri zadani od uzivatele je konverze na interni format nutna
-            // postprocessing provedeme jen u cesty, ktera se nema poslat primo do pluginu
+            convertFSPathToInternal = TRUE; // after input from user, conversion to internal format is necessary
+            // postprocessing will be done only for path, which is not to be sent directly to plugin
             if (!sendDirectlyToPlugin && !PostProcessPathFromUser(HWindow, path))
                 goto CHANGE_AGAIN;
         }
         BOOL sendDirectlyToPluginLocal = sendDirectlyToPlugin;
-        TopIndexMem.Clear(); // dlouhy skok
+        TopIndexMem.Clear(); // long jump
 
     CHANGE_AGAIN_NO_DLG:
 
         UpdateWindow(MainWindow->HWindow);
         if (newDir != NULL)
             lstrcpyn(path, newDir, 2 * MAX_PATH);
-        else // u cesty z dialogu nebudeme provadet fokus a nastaveni top-indexu
+        else // focus and top-index setting won't be done for path from dialog
         {
             suggestedTopIndex = -1;
             suggestedFocusName = NULL;
@@ -1949,7 +1952,7 @@ CHANGE_AGAIN:
         char* fsUserPart;
         if (!sendDirectlyToPluginLocal && IsPluginFSPath(path, fsName, (const char**)&fsUserPart))
         {
-            if (strlen(fsUserPart) >= MAX_PATH) // pluginy s delsi cestou nepocitaji
+            if (strlen(fsUserPart) >= MAX_PATH) // plugins do not count with longer path
             {
                 sprintf(errBuf, LoadStr(IDS_PATHERRORFORMAT), path, LoadStr(IDS_TOOLONGPATH));
                 SalMessageBox(HWindow, errBuf, LoadStr(IDS_ERRORCHANGINGDIR),
@@ -1957,10 +1960,10 @@ CHANGE_AGAIN:
                 if (newDir != NULL)
                 {
                     if (useStopRefresh)
-                        EndStopRefresh(); // ted uz zase cmuchal nastartuje
+                        EndStopRefresh(); // snooper will be started again
                     if (failReason != NULL)
                         *failReason = CHPPFR_INVALIDPATH;
-                    return FALSE; // koncime, neda se opakovat
+                    return FALSE; // we're finished, it can't be repeated
                 }
                 goto CHANGE_AGAIN;
             }
@@ -1969,31 +1972,31 @@ CHANGE_AGAIN:
             if (Plugins.IsPluginFS(fsName, index, fsNameIndex))
             {
                 BOOL pluginFailure = FALSE;
-                if (convertFSPathToInternal) // prevedeme cestu na interni format
+                if (convertFSPathToInternal) // convert path to internal format
                 {
                     CPluginData* plugin = Plugins.Get(index);
-                    if (plugin != NULL && plugin->InitDLL(MainWindow->HWindow, FALSE, TRUE, TRUE)) // plugin nemusi byt naloadeny, pripadne ho nechame naloadit
+                    if (plugin != NULL && plugin->InitDLL(MainWindow->HWindow, FALSE, TRUE, TRUE)) // plugin does not have to be loaded, in which case we let it load
                         plugin->GetPluginInterfaceForFS()->ConvertPathToInternal(fsName, fsNameIndex, fsUserPart);
                     else
                     {
                         pluginFailure = TRUE;
-                        // TRACE_E("Unexpected situation in CFilesWindow::ChangeDir()");  // pokud je plugin blokovany uzivatelem (pokud chybi registracni klic k pluginu)
+                        // TRACE_E("Unexpected situation in CFilesWindow::ChangeDir()");  // if the plugin is blocked by the user (if the registration key is missing)
                     }
                 }
 
-                // vyber FS pro otevreni cesty ma toto poradi: aktivni FS, nektery z detached FS, az pak novy FS
+                // select FS for opening the path has this order: active FS, one of the detached FS, then new FS
 
                 // CPluginData *p = Plugins.Get(index);
-                // if (p != NULL) strcpy(fsName, );  // velikost pismen nechame na uzivateli, pro prevod na puvodni velikost pismen bysme museli prohledat pole p->FSNames
+                // if (p != NULL) strcpy(fsName, );  // let the size of the letters be determined by the user, for conversion to the original size of the letters we would have to search the array p->FSNames
                 int localFailReason;
                 BOOL ret;
                 BOOL done = FALSE;
 
-                // pokud cestu nelze vylistovat ve FS interfacu v panelu, zkusime najit odpojeny FS interface,
-                // ktery by cestu umel vylistovat (aby se zbytecne neoteviral novy FS)
+                // if the path cannot be listed in the FS interface in the panel, we will try to find a detached FS interface,
+                // which would be able to list the path (so that a new FS is not opened unnecessarily)
                 int fsNameIndexDummy;
                 BOOL convertPathToInternalDummy = FALSE;
-                if (!Is(ptPluginFS) || // FS interface v panelu cestu neumi vylistovat (ChangePathToPluginFS otevre novy FS)
+                if (!Is(ptPluginFS) || // FS interface in the panel cannot list the path (ChangePathToPluginFS opens a new FS)
                     !IsPathFromActiveFS(fsName, fsUserPart, fsNameIndexDummy, convertPathToInternalDummy))
                 {
                     CDetachedFSList* list = MainWindow->DetachedFSList;
@@ -2003,7 +2006,7 @@ CHANGE_AGAIN:
                         if (list->At(i)->IsPathFromThisFS(fsName, fsUserPart))
                         {
                             done = TRUE;
-                            // zkusime zmenu na pozadovanou cestu, zaroven pripojime odpojene FS
+                            // trying to change to needed path, at the same time we will connect the detached FS
                             ret = ChangePathToDetachedFS(i, suggestedTopIndex, suggestedFocusName, TRUE,
                                                          &localFailReason, fsName, fsUserPart, mode, mode == 3);
 
@@ -2019,7 +2022,7 @@ CHANGE_AGAIN:
                 }
                 else
                 {
-                    if (!done) // jen pokud jeste neni nastaveny 'ret' a 'localFailReason' z ChangePathToDetachedFS()
+                    if (!done) // only if 'ret' and 'localFailReason' from ChangePathToDetachedFS() are not set yet
                     {
                         ret = FALSE;
                         localFailReason = CHPPFR_INVALIDPATH;
@@ -2027,19 +2030,19 @@ CHANGE_AGAIN:
                 }
 
                 if (!ret && newDir == NULL && localFailReason == CHPPFR_INVALIDPATH)
-                { // chyba cesty (muze byt i chyba pluginu - nelze naloadit - to je ale dost nepravdepodobne)
-                    // prevedeme cestu na externi format
+                { // path error (can be caused by the path itself or by the plugin - it cannot be loaded - this is very unlikely)
+                    // convert path to external format
                     CPluginData* plugin = Plugins.Get(index);
-                    if (!pluginFailure && plugin != NULL && plugin->InitDLL(MainWindow->HWindow, FALSE, TRUE, FALSE)) // plugin nemusi byt naloadeny, pripadne ho nechame naloadit
+                    if (!pluginFailure && plugin != NULL && plugin->InitDLL(MainWindow->HWindow, FALSE, TRUE, FALSE)) // plugin does not have to be loaded, in which case we let it load
                         plugin->GetPluginInterfaceForFS()->ConvertPathToExternal(fsName, fsNameIndex, fsUserPart);
-                    // else TRACE_E("Unexpected situation (2) in CFilesWindow::ChangeDir()");  // pokud je plugin blokovany uzivatelem (pokud chybi registracni klic k pluginu)
+                    // else TRACE_E("Unexpected situation (2) in CFilesWindow::ChangeDir()");  // if the plugin is blocked by the user (if the registration key is missing)
 
-                    goto CHANGE_AGAIN; // vracime se zpet do dialogu zadani cesty
+                    goto CHANGE_AGAIN; // returning back to the dialog for entering the path
                 }
                 else
                 {
                     if (useStopRefresh)
-                        EndStopRefresh(); // ted uz zase cmuchal nastartuje
+                        EndStopRefresh(); // snooper will be started again
                     if (failReason != NULL)
                         *failReason = localFailReason;
                     return ret;
@@ -2053,10 +2056,10 @@ CHANGE_AGAIN:
                 if (newDir != NULL)
                 {
                     if (useStopRefresh)
-                        EndStopRefresh(); // ted uz zase cmuchal nastartuje
+                        EndStopRefresh(); // snooper will be started again
                     if (failReason != NULL)
                         *failReason = CHPPFR_INVALIDPATH;
-                    return FALSE; // koncime, neda se opakovat
+                    return FALSE; // finished, cannot be repeated
                 }
                 goto CHANGE_AGAIN;
             }
@@ -2064,16 +2067,16 @@ CHANGE_AGAIN:
         else
         {
             if (!sendDirectlyToPluginLocal &&
-                (path[0] != 0 && path[1] == ':' ||                                             // cesty typu X:...
-                 (path[0] == '/' || path[0] == '\\') && (path[1] == '/' || path[1] == '\\') || // UNC cesty
-                 Is(ptDisk) || Is(ptZIPArchive)))                                              // disk+archiv relativni cesty
-            {                                                                                  // jde o diskovou cestu (absolutni nebo relativni) - otocime vsechny '/' na '\\' + vyhodime zdvojene '\\'
+                (path[0] != 0 && path[1] == ':' ||                                             // X: type paths
+                 (path[0] == '/' || path[0] == '\\') && (path[1] == '/' || path[1] == '\\') || // UNC paths
+                 Is(ptDisk) || Is(ptZIPArchive)))                                              // disk+archive of the relative path
+            {                                                                                  // this is a disk path (absolute or relative) - turn all '/' to '\\' + remove duplicated '\\'
                 SlashesToBackslashesAndRemoveDups(path);
             }
 
             int errTextID;
-            const char* text = NULL;                 // pozor: nutne nastavovat textFailReason
-            int textFailReason = CHPPFR_INVALIDPATH; // je-li text != NULL, obsahuje kod chyby, ktera nastala
+            const char* text = NULL;                 // caution: textFailReason must be set
+            int textFailReason = CHPPFR_INVALIDPATH; // if text != NULL, it contains the code of error which occurred
             char curPath[2 * MAX_PATH];
             curPath[0] = 0;
             if (sendDirectlyToPluginLocal)
@@ -2084,7 +2087,7 @@ CHANGE_AGAIN:
                 //        if (!SalGetFullName(path, &errTextID, (MainWindow->GetActivePanel()->Is(ptDisk) ||
                 //                            MainWindow->GetActivePanel()->Is(ptZIPArchive)) ? curPath : NULL))
                 if (Is(ptDisk) || Is(ptZIPArchive))
-                    GetGeneralPath(curPath, 2 * MAX_PATH); // kvuli FTP pluginu - rel. cesta v "target panel path" pri connectu
+                    GetGeneralPath(curPath, 2 * MAX_PATH); // because of FTP plugin - relative path in "target panel path" when connecting
             }
             BOOL callNethood = FALSE;
             if (sendDirectlyToPluginLocal ||
@@ -2093,7 +2096,7 @@ CHANGE_AGAIN:
             {
                 sendDirectlyToPluginLocal = FALSE;
                 if ((errTextID == IDS_SERVERNAMEMISSING || errTextID == IDS_SHARENAMEMISSING) && callNethood)
-                { // nekompletni UNC cestu predame prvnimu pluginu, ktery podporuje FS a zavolal SalamanderGeneral->SetPluginIsNethood()
+                { // incomplete UNC path will be given to the first plugin which supports FS and called SalamanderGeneral->SetPluginIsNethood()
                     if (Plugins.GetFirstNethoodPluginFSName(absFSPath))
                     {
                         if (strlen(absFSPath) + 1 < MAX_PATH)
@@ -2101,21 +2104,21 @@ CHANGE_AGAIN:
                         if (strlen(absFSPath) + strlen(path) < MAX_PATH)
                             strcat(absFSPath, path);
                         if (newDir != NULL)
-                            newDir = absFSPath; // pro pripad, kdy je cesta zadana zvenci
+                            newDir = absFSPath; // in case that the path is entered from outside
                         else
                             strcpy(path, absFSPath);
-                        goto CHANGE_AGAIN_NO_DLG; // jdeme zkusit nekompletni UNC cestu otevrit v pluginu
+                        goto CHANGE_AGAIN_NO_DLG; // try to open the incomplete UNC path in the plugin
                     }
                 }
                 if (errTextID == IDS_EMPTYNAMENOTALLOWED)
                 {
                     if (useStopRefresh)
-                        EndStopRefresh(); // ted uz zase cmuchal nastartuje
+                        EndStopRefresh(); // snooper will be started again
                     if (failReason != NULL)
                         *failReason = CHPPFR_SUCCESS;
-                    return FALSE; // prazdny string, neni co delat
+                    return FALSE; // empty string, nothing to do
                 }
-                if (errTextID == IDS_INCOMLETEFILENAME) // relativni cesta na FS
+                if (errTextID == IDS_INCOMLETEFILENAME) // relative path on FS
                 {
                     if (MainWindow->GetActivePanel()->Is(ptPluginFS) &&
                         MainWindow->GetActivePanel()->GetPluginFS()->NotEmpty())
@@ -2135,26 +2138,26 @@ CHANGE_AGAIN:
                                                                                        MainWindow->GetActivePanel()->GetPluginFS()->GetPluginFSName(),
                                                                                        absFSPath, MAX_PATH, success))
                         {
-                            if (success) // mame absolutni cestu
+                            if (success) // we have the absolute path
                             {
                                 if (newDir != NULL)
-                                    newDir = absFSPath; // pro pripad, kdy je cesta zadana zvenci
+                                    newDir = absFSPath; // in case that the path is entered from outside
                                 else
                                     strcpy(path, absFSPath);
-                                convertFSPathToInternal = FALSE; // cesta je nove ziskana interni, takze ji nesmime znovu konvertovat na interni
-                                goto CHANGE_AGAIN_NO_DLG;        // jdeme zkusit zadanou absolutni cestu
+                                convertFSPathToInternal = FALSE; // the path is already in internal format, so we must not convert it to internal format again
+                                goto CHANGE_AGAIN_NO_DLG;        // let's try the entered absolute path
                             }
-                            else // chyba byla uzivateli vypsana
+                            else // the error has been displayed to the user
                             {
                                 if (newDir != NULL)
                                 {
                                     if (useStopRefresh)
-                                        EndStopRefresh(); // ted uz zase cmuchal nastartuje
+                                        EndStopRefresh(); // snooper will be started again
                                     if (failReason != NULL)
                                         *failReason = CHPPFR_INVALIDPATH;
-                                    return FALSE; // koncime, neda se opakovat
+                                    return FALSE; // finished, cannot be repeated
                                 }
-                                goto CHANGE_AGAIN; // ukazeme v dialogu znovu cestu, at si ji user muze poeditovat
+                                goto CHANGE_AGAIN; // show the path in dialog again, so that the user can correct it
                             }
                         }
                     }
@@ -2166,7 +2169,7 @@ CHANGE_AGAIN:
             if (text == NULL)
             {
                 if (*path != 0 && path[1] == ':')
-                    path[0] = UpperCase[path[0]]; // "c:" cesta bude "C:"
+                    path[0] = UpperCase[path[0]]; // "c:" path will be "C:"
                 char copy[2 * MAX_PATH + 10];
                 int len = GetRootPath(copy, path);
 
@@ -2175,19 +2178,19 @@ CHANGE_AGAIN:
                     if (newDir != NULL)
                     {
                         if (useStopRefresh)
-                            EndStopRefresh(); // ted uz zase cmuchal nastartuje
+                            EndStopRefresh(); // snooper will be started again
                         if (failReason != NULL)
                             *failReason = CHPPFR_INVALIDPATH;
-                        return FALSE; // koncime, neda se opakovat
+                        return FALSE; // finished, cannot be repeated
                     }
                     goto CHANGE_AGAIN;
                 }
 
-                if (len < (int)strlen(path)) // neni to root-cesta
+                if (len < (int)strlen(path)) // not a root path
                 {
-                    char* s = path + len - 1;     // odkud se bude kopirovat (ukazuje na '\\')
-                    char* end = s;                // konec kopirovaneho useku
-                    char* st = copy + (s - path); // kam budeme kopirovat
+                    char* s = path + len - 1;     // where to copy from (points to '\\')
+                    char* end = s;                // the end of the copied part
+                    char* st = copy + (s - path); // where to copy to
                     while (*end != 0)
                     {
                         while (*++end != 0 && *end != '\\')
@@ -2204,7 +2207,7 @@ CHANGE_AGAIN:
                         copyLen = (int)strlen(copy);
                         if (copyLen >= MAX_PATH)
                         {
-                            if (*end != 0 && !SalPathAppend(copy, end + 1, 2 * MAX_PATH)) // pokud by se dosud projita cast cesty prodlouzila a uz se nevesel zbytek cesty, pouzijeme puvodni podobu cesty
+                            if (*end != 0 && !SalPathAppend(copy, end + 1, 2 * MAX_PATH)) // if the so far processed part of the path is enlengthened and the rest of the path does not fit, we will use the original form of the path
                                 strcpy(copy, path);
                             text = LoadStr(IDS_TOOLONGPATH);
                             textFailReason = CHPPFR_INVALIDPATH;
@@ -2232,18 +2235,18 @@ CHANGE_AGAIN:
                             err = GetLastError();
                             if (err != ERROR_FILE_NOT_FOUND && err != ERROR_PATH_NOT_FOUND &&
                                 err != ERROR_BAD_PATHNAME && err != ERROR_INVALID_NAME)
-                            { // pokud je sance, ze jde o cestu obsahujici adresar, ke kteremu nemame pristup (zkusime jestli jsou pristupne dalsi komponenty cesty)
+                            { // if there's chance that the path contains a directory to which we don't have access (we will try if there are other components of the path accessible)
                                 DWORD firstErr = err;
                                 char* firstCopyEnd = st + strlen(st);
                                 while (*end != 0)
                                 {
-                                    st += strlen(st); // nepristupnou komponentu cesty jen nakopirujeme (muze zustat jako dos-name nebo s jinou velikosti pismenek)
+                                    st += strlen(st); // the inaccessible component of the path will be only copied (it can remain as dos-name or with different letter size)
                                     while (*++end != 0 && *end != '\\')
                                         ;
                                     memcpy(st, s, end - s);
                                     st[end - s] = 0;
                                     s = end;
-                                    if ((int)strlen(copy) >= MAX_PATH) // prilis dlouha cesta, koncime...
+                                    if ((int)strlen(copy) >= MAX_PATH) // too long path, we're finished...
                                     {
                                         h = INVALID_HANDLE_VALUE;
                                         break;
@@ -2252,38 +2255,38 @@ CHANGE_AGAIN:
                                     {
                                         h = HANDLES_Q(FindFirstFile(copy, &find));
                                         if (h != INVALID_HANDLE_VALUE)
-                                            break; // nasli jsme pristupnou komponentu, pokracujeme...
+                                            break; // we've found an accessible component, continuing...
                                         err = GetLastError();
                                         if (err == ERROR_FILE_NOT_FOUND || err == ERROR_PATH_NOT_FOUND ||
                                             err == ERROR_BAD_PATHNAME || err == ERROR_INVALID_NAME)
-                                            break; // chyba v ceste, koncime...
+                                            break; // an error in the path, we're finished...
                                     }
                                 }
-                                if (*end == 0 && h == INVALID_HANDLE_VALUE) // nenasli jsme dalsi pristupnou komponentu, zkusime jeste jestli nejde aktualni cesta vylistovat
+                                if (*end == 0 && h == INVALID_HANDLE_VALUE) // another accessible component not found, we will try if the current path can be listed
                                 {
                                     if ((int)strlen(copy) < MAX_PATH && SalPathAppend(copy, "*.*", MAX_PATH + 10))
                                     {
                                         h = HANDLES_Q(FindFirstFile(copy, &find));
                                         CutDirectory(copy);
-                                        if (h != INVALID_HANDLE_VALUE) // cesta jde listovat
+                                        if (h != INVALID_HANDLE_VALUE) // the path can be listed
                                         {
                                             HANDLES(FindClose(h));
 
-                                            // zmena cesty na absolutni windows cestu
+                                            // changing the path to absolute windows path
                                             BOOL ret = ChangePathToDisk(HWindow, copy, suggestedTopIndex, suggestedFocusName,
                                                                         NULL, TRUE, FALSE, FALSE, failReason);
                                             if (useStopRefresh)
-                                                EndStopRefresh(); // ted uz zase cmuchal nastartuje
+                                                EndStopRefresh(); // snooper will be started again
                                             return ret;
                                         }
                                     }
                                 }
-                                if (h == INVALID_HANDLE_VALUE) // nenasli jsme pristupnou cast cesty, ohlasime prvni nalezenou chybu
+                                if (h == INVALID_HANDLE_VALUE) // accessible part of the path not found, we will report the first found error
                                 {
                                     err = firstErr;
                                     *firstCopyEnd = 0;
 
-                                    // nepouzivaji se, ale radsi vynulujeme, at to v pripadnem nove pridanem kodu hnedka spadne a doresi se to...
+                                    // not used, but we'd better zero them, so that it immediately crashes in case of a new code and it's figured out...
                                     st = NULL;
                                     end = NULL;
                                     s = NULL;
@@ -2303,8 +2306,8 @@ CHANGE_AGAIN:
                             if (h != INVALID_HANDLE_VALUE)
                             {
                                 HANDLES(FindClose(h));
-                                int len2 = (int)strlen(find.cFileName); // musi se vejit (meni se jen velikost pismen - vysledek FindFirstFile)
-                                if ((int)strlen(st + 1) != len2)        // dela napr. pro "aaa  " vraci "aaa", reprodukovat: Paste (text bez vnejsich uvozovek): "   "   %TEMP%\aaa   "   "
+                                int len2 = (int)strlen(find.cFileName); // must fit (only the size of letters is changed - result of FindFirstFile)
+                                if ((int)strlen(st + 1) != len2)        // it does e.g. for "aaa  " returns "aaa", reproduce: Paste (text without quotes): "   "   %TEMP%\aaa   "   "
                                 {
                                     TRACE_E("CFilesWindow::ChangeDir(): unexpected situation: FindFirstFile returned name with "
                                             "different length: \""
@@ -2317,16 +2320,16 @@ CHANGE_AGAIN:
                             else
                                 st += strlen(st);
 
-                            // copy obsahuje "prelozenou" cestu
+                            // copy containts the "translated" path
                             if (!pathEndsWithSpaceOrDot)
                                 copyAttr = find.dwFileAttributes;
                             if ((copyAttr & FILE_ATTRIBUTE_DIRECTORY) == 0)
-                            { // soubor -> jde o archiv?
+                            { // file -> is it an archive?
                                 if (PackerFormatConfig.PackIsArchive(copy))
                                 {
-                                    if ((int)strlen(*end != 0 ? end + 1 : end) >= MAX_PATH) // prilis dlouha cesta v archivu
+                                    if ((int)strlen(*end != 0 ? end + 1 : end) >= MAX_PATH) // too long path in archive
                                     {
-                                        if (!SalPathAppend(copy, end + 1, 2 * MAX_PATH)) // pokud by se jmeno archivu prodlouzilo a uz se nevesla cesta do archivu, pouzijeme puvodni podobu cesty
+                                        if (!SalPathAppend(copy, end + 1, 2 * MAX_PATH)) // if the archive name is enlengthened and the rest of the path does not fit, we will use the original form of the path
                                             strcpy(copy, path);
                                         text = LoadStr(IDS_TOOLONGPATH);
                                         textFailReason = CHPPFR_INVALIDPATH;
@@ -2336,7 +2339,7 @@ CHANGE_AGAIN:
                                     {
                                         if (*end != 0)
                                             end++;
-                                        // zmena cesty na absolutni cestu do archivu
+                                        // changing the path to absolute path to archive
                                         int localFailReason;
                                         BOOL ret = ChangePathToArchive(copy, end, suggestedTopIndex, suggestedFocusName,
                                                                        FALSE, NULL, TRUE, &localFailReason, FALSE, TRUE);
@@ -2349,7 +2352,7 @@ CHANGE_AGAIN:
                                         if (failReason != NULL)
                                             *failReason = localFailReason;
                                         if (useStopRefresh)
-                                            EndStopRefresh(); // ted uz zase cmuchal nastartuje
+                                            EndStopRefresh(); // snooper will be started again
                                         return ret;
                                     }
                                 }
@@ -2358,15 +2361,15 @@ CHANGE_AGAIN:
                                     char* name;
                                     char shortenedPath[MAX_PATH];
                                     strcpy(shortenedPath, copy);
-                                    if (*end == 0 && CutDirectory(shortenedPath, &name)) // pokud cesta nekonci na '\\' (cesta k souboru)
+                                    if (*end == 0 && CutDirectory(shortenedPath, &name)) // when the path does not end with '\\' (path to file)
                                     {
-                                        // zmena cesty na absolutni windows cestu + fokus souboru
+                                        // change of the path to absolute windows path + focus to the file
                                         ChangePathToDisk(HWindow, shortenedPath, -1, name, NULL, TRUE, FALSE, FALSE, failReason);
                                         if (useStopRefresh)
-                                            EndStopRefresh(); // ted uz zase cmuchal nastartuje
+                                            EndStopRefresh(); // snooper will be started again
                                         if (failReason != NULL && *failReason == CHPPFR_SUCCESS)
                                             *failReason = CHPPFR_FILENAMEFOCUSED;
-                                        return FALSE; // listujeme jinou cestu (zkracenou o jmeno souboru)
+                                        return FALSE; // listing another path (file name is cut)
                                     }
                                     else
                                     {
@@ -2402,7 +2405,7 @@ CHANGE_AGAIN:
                                             {
                                                 drvType = DRIVE_REMOTE;
                                                 GetRootPath(drive, copy);
-                                                drive[strlen(drive) - 1] = 0; // nestojime o posledni '\\'
+                                                drive[strlen(drive) - 1] = 0; // we don't want the last '\\'
                                             }
                                             else
                                             {
@@ -2437,7 +2440,7 @@ CHANGE_AGAIN:
                             break;
                         }
                     }
-                    strcpy(path, copy); // vezmeme si novou cestu
+                    strcpy(path, copy); // taking a new path
                 }
             }
 
@@ -2452,27 +2455,27 @@ CHANGE_AGAIN:
                 if (newDir != NULL)
                 {
                     if (useStopRefresh)
-                        EndStopRefresh(); // ted uz zase cmuchal nastartuje
+                        EndStopRefresh(); // snopper will be started again
                     if (failReason != NULL)
                         *failReason = textFailReason;
-                    return FALSE; // koncime, neda se opakovat
+                    return FALSE; // finished, cannot be repeated
                 }
                 goto CHANGE_AGAIN;
             }
             else
             {
-                // zmena cesty na absolutni windows cestu
+                // changing the path to absolute windows path
                 BOOL ret = ChangePathToDisk(HWindow, path, suggestedTopIndex, suggestedFocusName,
                                             NULL, TRUE, FALSE, FALSE, failReason);
                 if (useStopRefresh)
-                    EndStopRefresh(); // ted uz zase cmuchal nastartuje
+                    EndStopRefresh(); // snooper will be started again
                 return ret;
             }
         }
     }
     UpdateWindow(MainWindow->HWindow);
     if (useStopRefresh)
-        EndStopRefresh(); // ted uz zase cmuchal nastartuje
+        EndStopRefresh(); // snooper will be started again
     if (failReason != NULL)
         *failReason = CHPPFR_INVALIDPATH;
     return FALSE;
@@ -2483,7 +2486,7 @@ BOOL CFilesWindow::ChangeDirLite(const char* newDir)
     int failReason;
     BOOL ret = ChangeDir(newDir, -1, NULL, 3, &failReason, TRUE);
     return ret || failReason == CHPPFR_SHORTERPATH || failReason == CHPPFR_FILENAMEFOCUSED ||
-           failReason == CHPPFR_SUCCESS /* nesmysl, ale zily se nam nezkrati */;
+           failReason == CHPPFR_SUCCESS /* non-sense, but we are not bothered by it */;
 }
 
 BOOL CFilesWindow::ChangePathToDrvType(HWND parent, int driveType, const char* displayName)
@@ -2495,7 +2498,7 @@ BOOL CFilesWindow::ChangePathToDrvType(HWND parent, int driveType, const char* d
         InitOneDrivePath();
         if (driveType == drvtOneDrive && OneDrivePath[0] == 0 ||
             driveType == drvtOneDriveBus && !OneDriveBusinessStorages.Find(displayName, &userFolderOneDrive))
-        { // OneDrive Personal/Business byl odpojen, provedeme refresh Drive bary, at zmizi nebo se updatne jeho ikona
+        { // OneDrive Personal/Business has been disconnected, we will refresh Drive bars, so that its icon disappears or is updated
             if (MainWindow != NULL && MainWindow->HWindow != NULL)
                 PostMessage(MainWindow->HWindow, WM_USER_DRIVES_CHANGE, 0, 0);
             return FALSE;
@@ -2515,9 +2518,9 @@ BOOL CFilesWindow::ChangePathToDrvType(HWND parent, int driveType, const char* d
 void CFilesWindow::ChangeDrive(char drive)
 {
     CALL_STACK_MESSAGE2("CFilesWindow::ChangeDrive(%u)", drive);
-    //---  obnova DefaultDir
+    //--- DefaultDire refresh
     MainWindow->UpdateDefaultDir(MainWindow->GetActivePanel() != this);
-    //---  pripadny vyber disku z dialogu
+    //---  possible disk selection from the dialog
     CFilesWindow* anotherPanel = (Parent->LeftPanel == this ? Parent->RightPanel : Parent->LeftPanel);
     if (drive == 0)
     {
@@ -2530,13 +2533,13 @@ void CFilesWindow::ChangeDrive(char drive)
                         &driveType, &driveTypeParam, &postCmd, &postCmdParam,
                         &fromContextMenu)
                     .Track() == FALSE ||
-            fromContextMenu && postCmd == 0) // pouze close-menu spustene z kontextoveho menu
+            fromContextMenu && postCmd == 0) // only close-menu executed from context menu
         {
             return;
         }
 
         if (!fromContextMenu && driveType != drvtPluginFS && driveType != drvtPluginCmd)
-            TopIndexMem.Clear(); // dlouhy skok
+            TopIndexMem.Clear(); // long jump
 
         UpdateWindow(MainWindow->HWindow);
 
@@ -2559,7 +2562,7 @@ void CFilesWindow::ChangeDrive(char drive)
             TRACE_E("CFilesWindow::ChangeDrive(): unexpected drive type: drvtOneDriveMenu");
             break;
 
-        // jde o Network?
+        // is it Network?
         case drvtNeighborhood:
         {
             if (GetTargetDirectory(HWindow, HWindow, LoadStr(IDS_CHANGEDRIVE),
@@ -2573,21 +2576,21 @@ void CFilesWindow::ChangeDrive(char drive)
                 return;
         }
 
-        // jde o other Panel?
+        // is it other Panel?
         case drvtOtherPanel:
         {
             ChangePathToOtherPanelPath();
             return;
         }
 
-        // jde o Hot Path?
+        // is it Hot Path?
         case drvtHotPath:
         {
             GotoHotPath((int)driveTypeParam);
             return;
         }
 
-        // jde o normalni cestu
+        // it's a normal path
         case drvtUnknow:
         case drvtRemovable:
         case drvtFixed:
@@ -2605,9 +2608,9 @@ void CFilesWindow::ChangeDrive(char drive)
         {
             CPluginFSInterfaceAbstract* fs = (CPluginFSInterfaceAbstract*)driveTypeParam;
             CPluginInterfaceForFSEncapsulation* ifaceForFS = NULL;
-            // musime overit, ze 'fs' je stale platny interface
+            // need to verify that 'fs' is still a valid interface
             if (Is(ptPluginFS) && GetPluginFS()->GetInterface() == fs)
-            { // vyber aktivniho FS - provedeme refresh
+            { // select active FS - perform refresh
                 if (!fromContextMenu)
                     RefreshDirectory();
                 else
@@ -2620,7 +2623,7 @@ void CFilesWindow::ChangeDrive(char drive)
                 for (i = 0; i < list->Count; i++)
                 {
                     if (list->At(i)->GetInterface() == fs)
-                    { // vyber odpojeneho FS
+                    { // select detached FS
                         if (!fromContextMenu)
                             ChangePathToDetachedFS(i);
                         else
@@ -2630,7 +2633,7 @@ void CFilesWindow::ChangeDrive(char drive)
                 }
             }
 
-            if (ifaceForFS != NULL) // post-cmd z kontextoveho menu aktivniho/odpojeneho FS
+            if (ifaceForFS != NULL) // post-cmd from context menu of active/detached FS
             {
                 ifaceForFS->ExecuteChangeDrivePostCommand(PANEL_SOURCE, postCmd, postCmdParam);
             }
@@ -2638,19 +2641,19 @@ void CFilesWindow::ChangeDrive(char drive)
         }
 
         case drvtPluginFSInOtherPanel:
-            return; // nepovolena akce (FS z vedlejsiho panelu nelze dat do aktivniho panelu)
+            return; // illegal action (FS from other panel cannot be given to active panel)
 
         case drvtPluginCmd:
         {
             const char* dllName = (const char*)driveTypeParam;
             CPluginData* data = Plugins.GetPluginData(dllName);
-            if (data != NULL) // plug-in existuje, jdeme spustit prikaz
+            if (data != NULL) // plugin exists, we can execute the command
             {
-                if (!fromContextMenu) // prikaz polozky FS
+                if (!fromContextMenu) // FS item command
                 {
                     data->ExecuteChangeDriveMenuItem(PANEL_SOURCE);
                 }
-                else // post-cmd z kontextoveho menu polozky FS
+                else // post-cmd from context menu of FS item
                 {
                     data->GetPluginInterfaceForFS()->ExecuteChangeDrivePostCommand(PANEL_SOURCE, postCmd, postCmdParam);
                 }
@@ -2666,7 +2669,7 @@ void CFilesWindow::ChangeDrive(char drive)
         }
     }
     else
-        TopIndexMem.Clear(); // dlouhy skok
+        TopIndexMem.Clear(); // long jump
 
     ChangePathToDisk(HWindow, DefaultDir[LowerCase[drive] - 'a'], -1, NULL,
                      NULL, TRUE, FALSE, FALSE, NULL, FALSE);
@@ -2684,7 +2687,7 @@ void CFilesWindow::UpdateDriveIcon(BOOL check)
     if (Is(ptDisk))
     {
         if (!check || CheckPath(FALSE) == ERROR_SUCCESS)
-        { // jen je-li cesta pristupna
+        { // only if the path is accessible
             if (DirectoryLine->HWindow != NULL)
             {
                 UINT type = MyGetDriveType(GetPath());
@@ -2694,8 +2697,8 @@ void CFilesWindow::UpdateDriveIcon(BOOL check)
                 DirectoryLine->SetDriveIcon(hIcon);
                 HANDLES(DestroyIcon(hIcon));
             }
-            // 2.5RC3: tlacitko v drive bars je treba nastavit i v pripade, ze vypnuta directory line
-            MainWindow->UpdateDriveBars(); // zamackneme v drive bar spravny disk
+            // 2.5RC3: the button in drive bars must be set even if directory line is disabled
+            MainWindow->UpdateDriveBars(); // press the correct disk in drive bar
         }
     }
     else
@@ -2717,21 +2720,21 @@ void CFilesWindow::UpdateDriveIcon(BOOL check)
                 {
                     BOOL destroyIcon;
                     HICON icon = GetPluginFS()->GetFSIcon(destroyIcon);
-                    if (icon != NULL) // plug-inem definovana
+                    if (icon != NULL) // defined by plugin
                     {
                         DirectoryLine->SetDriveIcon(icon);
                         if (destroyIcon)
                             HANDLES(DestroyIcon(icon));
                     }
-                    else // standardni
+                    else // standard
                     {
                         icon = SalLoadIcon(HInstance, IDI_PLUGINFS, IconSizes[ICONSIZE_16]);
                         DirectoryLine->SetDriveIcon(icon);
                         HANDLES(DestroyIcon(icon));
                     }
                 }
-                // 2.5RC3: tlacitko v drive bars je treba nastavit i v pripade, ze vypnuta directory line
-                MainWindow->UpdateDriveBars(); // zamackneme v drive bar spravny disk
+                // 2.5RC3: the button in drive bars must be set even if directory line is disabled
+                MainWindow->UpdateDriveBars(); // press the correct disk in drive bar
             }
         }
     }
