@@ -63,21 +63,6 @@
     <ClCompile Include="..\bzip\bunzip.cpp">
       <Filter>bzip</Filter>
     </ClCompile>
-    <ClCompile Include="..\bzip\bzlib.c">
-      <Filter>bzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\bzip\crctable.c">
-      <Filter>bzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\bzip\decompress.c">
-      <Filter>bzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\bzip\huffman.c">
-      <Filter>bzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\bzip\randtable.c">
-      <Filter>bzip</Filter>
-    </ClCompile>
     <ClCompile Include="..\deb\deb.cpp">
       <Filter>deb</Filter>
     </ClCompile>
@@ -153,12 +138,6 @@
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\bzip\bzip.h">
-      <Filter>bzip</Filter>
-    </ClInclude>
-    <ClInclude Include="..\bzip\bzlib.h">
-      <Filter>bzip</Filter>
-    </ClInclude>
-    <ClInclude Include="..\bzip\bzlib_private.h">
       <Filter>bzip</Filter>
     </ClInclude>
     <ClInclude Include="..\deb\deb.h">

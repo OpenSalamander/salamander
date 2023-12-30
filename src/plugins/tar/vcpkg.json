@@ -1,0 +1,8 @@
+{
+  "dependencies": [
+    "bzip2",
+    "liblzma",
+    "zstd"
+  ],
+  "builtin-baseline": "c8696863d371ab7f46e213d8f5ca923c4aef2a00"
+}

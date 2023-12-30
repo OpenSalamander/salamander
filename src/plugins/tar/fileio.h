@@ -16,8 +16,8 @@ public:
     CDecompressFile(const char* filename, HANDLE file, unsigned char* buffer, unsigned long start, unsigned long read, CQuadWord size);
     virtual ~CDecompressFile();
 
-    virtual BOOL IsCompressed() { return FALSE; }
-    virtual BOOL BuggySize() { return FALSE; }
+    virtual BOOL IsCompressed() const { return FALSE; }
+    virtual BOOL BuggySize() const { return FALSE; }
 
     // vraci, v jakem jsme stavu
     BOOL IsOk() const { return Ok; }
@@ -72,13 +72,13 @@ class CZippedFile : public CDecompressFile
 public:
     // konstruktor a destruktor
     CZippedFile(const char* filename, HANDLE file, unsigned char* buffer, unsigned long start, unsigned long read, CQuadWord inputSize);
-    virtual ~CZippedFile();
+    ~CZippedFile() override;
 
-    virtual BOOL IsCompressed() { return TRUE; }
+    BOOL IsCompressed() const override { return TRUE; }
 
-    virtual void GetFileInfo(FILETIME& lastWrite, CQuadWord& fileSize, DWORD& fileAttr);
-    virtual const unsigned char* GetBlock(unsigned short size, unsigned short* read);
-    virtual void Rewind(unsigned short size);
+    void GetFileInfo(FILETIME& lastWrite, CQuadWord& fileSize, DWORD& fileAttr) override;
+    const unsigned char* GetBlock(unsigned short size, unsigned short* read) override;
+    void Rewind(unsigned short size) override;
 
 protected:
     unsigned char* Window;    // output circular buffer

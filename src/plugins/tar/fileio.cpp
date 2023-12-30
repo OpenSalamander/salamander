@@ -7,7 +7,6 @@
 #include "fileio.h"
 
 #include "gzip/gzip.h"
-#include "bzip/bzlib.h"
 #include "bzip/bzip.h"
 #include "compress/compress.h"
 #include "rpm/rpm.h"

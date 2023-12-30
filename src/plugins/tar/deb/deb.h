@@ -31,16 +31,16 @@ private:
 
 public:
     CDEBArchive(LPCTSTR fileName, CSalamanderForOperationsAbstract* salamander);
-    ~CDEBArchive(void);
+    ~CDEBArchive(void) override;
 
-    BOOL ListArchive(const char* prefix, CSalamanderDirectoryAbstract* dir);
+    BOOL ListArchive(const char* prefix, CSalamanderDirectoryAbstract* dir) override;
     BOOL UnpackOneFile(const char* nameInArchive, const CFileData* fileData,
-                       const char* targetPath, const char* newFileName);
+                       const char* targetPath, const char* newFileName) override;
     BOOL UnpackArchive(const char* targetPath, const char* archiveRoot,
-                       SalEnumSelection nextName, void* param);
-    BOOL UnpackWholeArchive(const char* mask, const char* targetPath);
+                       SalEnumSelection nextName, void* param) override;
+    BOOL UnpackWholeArchive(const char* mask, const char* targetPath) override;
 
-    BOOL IsOk() { return bOK; };
+    BOOL IsOk() const override { return bOK; };
 
 private:
     BOOL AssignArchive(const char* archName, CArchive* archive);
