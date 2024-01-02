@@ -186,7 +186,7 @@ void CPluginInterface::About(HWND parent)
                 "Zstandard library Copyright © 2016-2023 Facebook, Inc. (version %s)\n\n"
                 "%s",
                 LoadStr(IDS_PLUGINNAME),
-                bzip_ver_len, bzip_ver,
+                static_cast<int>(bzip_ver_len), bzip_ver,
                 lzma_version_string(),
                 ZSTD_versionString(),
                 LoadStr(IDS_PLUGIN_DESCRIPTION));
