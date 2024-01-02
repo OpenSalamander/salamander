@@ -1205,7 +1205,8 @@ void CArchive::GetArchiveType(const unsigned char* buffer, const unsigned short 
     else if (*(unsigned short*)buffer == 0707070)
         header.Format = e_SwapBinary;
     else if ((preRead >= BLOCKSIZE) &&
-        IsTarHeader(buffer, header.Finished, header.Format));
+             IsTarHeader(buffer, header.Finished, header.Format))
+        ;
     else
         header.Format = e_Unknown;
 }
