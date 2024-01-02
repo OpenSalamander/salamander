@@ -55,3 +55,7 @@ version 3.30: (2009.02.28) J.Patera
   -CDecompressFile::Rewind() did not update StreamPos -> CPIO (e_OldASCII)
    archives could not open
   -GZIP: files longer than 4 GB before compression complained about premature EOF
+
+version 3.40: (2021.11.12) Vilo
+  +LZMA: Added support for .XZ archives
+  +ZSTD: Added support for .ZST archives

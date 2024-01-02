@@ -274,7 +274,7 @@ public:
                                SalEnumSelection nextName, void* param) = 0;
     virtual BOOL UnpackWholeArchive(const char* mask, const char* targetPath) = 0;
 
-    virtual BOOL IsOk() = 0;
+    virtual BOOL IsOk() const = 0;
 };
 
 class CArchive : public CArchiveAbstract
@@ -310,14 +310,14 @@ public:
     CArchive(LPCTSTR fileName, CSalamanderForOperationsAbstract* salamander, DWORD offset, CQuadWord inputSize);
     ~CArchive();
 
-    BOOL IsOk() { return Ok; }
+    BOOL IsOk() const override { return Ok; }
 
-    BOOL ListArchive(const char* prefix, CSalamanderDirectoryAbstract* dir);
+    BOOL ListArchive(const char* prefix, CSalamanderDirectoryAbstract* dir) override;
     BOOL UnpackOneFile(const char* nameInArchive, const CFileData* fileData,
-                       const char* targetPath, const char* newFileName);
+                       const char* targetPath, const char* newFileName) override;
     BOOL UnpackArchive(const char* targetPath, const char* archiveRoot,
-                       SalEnumSelection nextName, void* param);
-    BOOL UnpackWholeArchive(const char* mask, const char* targetPath);
+                       SalEnumSelection nextName, void* param) override;
+    BOOL UnpackWholeArchive(const char* mask, const char* targetPath) override;
 
     BOOL DoUnpackArchive(const char* targetPath, const char* archiveRoot, CNames& names);
 };

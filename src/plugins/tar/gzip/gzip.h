@@ -100,6 +100,6 @@ protected:
     int HufTableBuild(unsigned int* b, unsigned int n, unsigned int s,
                       unsigned short* d, unsigned short* e, SHufTable** t, int* m);
 
-    virtual BOOL CompactBuffer();
-    virtual BOOL DecompressBlock(unsigned short needed);
+    BOOL CompactBuffer() override;
+    BOOL DecompressBlock(unsigned short needed) override;
 };

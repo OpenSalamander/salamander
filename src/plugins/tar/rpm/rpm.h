@@ -292,15 +292,15 @@ private:
 
 public:
     CRPM(const char* filename, HANDLE file, unsigned char* buffer, unsigned long read, FILE* fContents = NULL);
-    ~CRPM(void);
+    ~CRPM(void) override;
 
     BOOL RPMDumpLead(FILE* fContents, short& SignatureType);
     BOOL RPMReadSignature(FILE* fContents, short signatureType);
     BOOL RPMReadSection(FILE* fContents);
     BOOL RPMReadHeader(FILE* fContents);
 
-    virtual const unsigned char* GetBlock(unsigned short size, unsigned short* read = NULL);
-    virtual void Rewind(unsigned short size);
-    virtual void GetFileInfo(FILETIME& lastWrite, CQuadWord& fileSize, DWORD& fileAttr);
+    const unsigned char* GetBlock(unsigned short size, unsigned short* read = NULL) override;
+    void Rewind(unsigned short size) override;
+    void GetFileInfo(FILETIME& lastWrite, CQuadWord& fileSize, DWORD& fileAttr) override;
     // Should other functions be forwarded to Stream?????
 };

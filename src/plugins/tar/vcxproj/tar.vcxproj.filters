@@ -34,6 +34,12 @@
     <Filter Include="shared">
       <UniqueIdentifier>{d598a82c-4f20-4296-a42b-e27d8d25cbb6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="zstd">
+      <UniqueIdentifier>{4a4672c0-e6c6-4eb9-a9dc-9db2aa071d80}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lzma">
+      <UniqueIdentifier>{b9574fa6-0ec0-4458-b4c0-3f9d4ab0d553}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\shared\dbg.cpp">
@@ -57,21 +63,6 @@
     <ClCompile Include="..\bzip\bunzip.cpp">
       <Filter>bzip</Filter>
     </ClCompile>
-    <ClCompile Include="..\bzip\bzlib.c">
-      <Filter>bzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\bzip\crctable.c">
-      <Filter>bzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\bzip\decompress.c">
-      <Filter>bzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\bzip\huffman.c">
-      <Filter>bzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\bzip\randtable.c">
-      <Filter>bzip</Filter>
-    </ClCompile>
     <ClCompile Include="..\deb\deb.cpp">
       <Filter>deb</Filter>
     </ClCompile>
@@ -89,6 +80,12 @@
     </ClCompile>
     <ClCompile Include="..\compress\uncompress.cpp">
       <Filter>compress</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zstd\unzstd.cpp">
+      <Filter>zstd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lzma\unlzma.cpp">
+      <Filter>lzma</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -143,12 +140,6 @@
     <ClInclude Include="..\bzip\bzip.h">
       <Filter>bzip</Filter>
     </ClInclude>
-    <ClInclude Include="..\bzip\bzlib.h">
-      <Filter>bzip</Filter>
-    </ClInclude>
-    <ClInclude Include="..\bzip\bzlib_private.h">
-      <Filter>bzip</Filter>
-    </ClInclude>
     <ClInclude Include="..\deb\deb.h">
       <Filter>deb</Filter>
     </ClInclude>
@@ -166,6 +157,12 @@
     </ClInclude>
     <ClInclude Include="..\..\shared\arraylt.h">
       <Filter>shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zstd\unzstd.h">
+      <Filter>zstd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lzma\unlzma.h">
+      <Filter>lzma</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -127,7 +127,6 @@ BOOL FromOctalQ(const unsigned char* ptr, const int length, CQuadWord& result)
 SCommonHeader::SCommonHeader()
 {
     Path = NULL;
-    ;
     Name = NULL;
     FileInfo.Name = NULL;
     Initialize();
@@ -242,9 +241,9 @@ BOOL CArchive::ListArchive(const char* prefix, CSalamanderDirectoryAbstract* dir
 
             if (prefix)
             {
-                strcpy(path, prefix);
+                strcpy_s(path, prefix);
                 if (header.Path)
-                    strcat(path, header.Path);
+                    strcat_s(path, header.Path);
             }
             // a pridame bud novy soubor, nebo adresar
             if (!header.IsDir)
@@ -605,10 +604,10 @@ int CArchive::WriteOutData(const SCommonHeader& header, const char* targetPath,
         {
             char progresstxt[1000];
             if (!toSkip)
-                strcpy(progresstxt, LoadStr(IDS_UNPACKPROGRESS_TEXT));
+                strcpy_s(progresstxt, LoadStr(IDS_UNPACKPROGRESS_TEXT));
             else
-                strcpy(progresstxt, LoadStr(IDS_SKIPPROGRESS_TEXT));
-            strcat(progresstxt, header.Name);
+                strcpy_s(progresstxt, LoadStr(IDS_SKIPPROGRESS_TEXT));
+            strcat_s(progresstxt, header.Name);
             SalamanderIf->ProgressDialogAddText(progresstxt, TRUE);
         }
     }
@@ -790,8 +789,8 @@ int CArchive::WriteOutData(const SCommonHeader& header, const char* targetPath,
             {
                 char buffer[1000];
                 DWORD err = GetLastError();
-                strcpy(buffer, LoadStr(IDS_TARERR_FWRITE));
-                strcat(buffer, SalamanderGeneral->GetErrorText(err));
+                strcpy_s(buffer, LoadStr(IDS_TARERR_FWRITE));
+                strcat_s(buffer, SalamanderGeneral->GetErrorText(err));
                 SalamanderGeneral->ShowMessageBox(buffer, LoadStr(IDS_TARERR_TITLE), MSGBOX_ERROR);
                 DeleteFile(extractedName);
                 free(extractedName);
@@ -1062,6 +1061,7 @@ int CArchive::ReadArchiveHeader(SCommonHeader& header, BOOL probe)
                 break;
             }
             // jinak je to zacatek nazvu a nechame to propadnout do kopirovani
+            [[fallthrough]];
         default:
             // pokud narazime na pismeno, proste kopirujem az do slashe
             while (*src != '\0' && *src != '\\' && *src != '/')
@@ -1753,8 +1753,8 @@ BOOL CArchive::UnpackStream(const char* targetPath, BOOL doProgress,
     if (doProgress)
     {
         char progresstxt[1000];
-        strcpy(progresstxt, LoadStr(IDS_UNPACKPROGRESS_TEXT));
-        strcat(progresstxt, header.Name);
+        strcpy_s(progresstxt, LoadStr(IDS_UNPACKPROGRESS_TEXT));
+        strcat_s(progresstxt, header.Name);
         SalamanderIf->ProgressDialogAddText(progresstxt, TRUE);
     }
     // polozka size v headeru nemusi byt platna, budem rozbalovat, dokud je co
@@ -1821,8 +1821,8 @@ BOOL CArchive::UnpackStream(const char* targetPath, BOOL doProgress,
     {
         char buffer[1000];
         DWORD err = GetLastError();
-        strcpy(buffer, LoadStr(IDS_TARERR_FWRITE));
-        strcat(buffer, SalamanderGeneral->GetErrorText(err));
+        strcpy_s(buffer, LoadStr(IDS_TARERR_FWRITE));
+        strcat_s(buffer, SalamanderGeneral->GetErrorText(err));
         SalamanderGeneral->ShowMessageBox(buffer, LoadStr(IDS_TARERR_TITLE), MSGBOX_ERROR);
         DeleteFile(extractedName);
         free(extractedName);

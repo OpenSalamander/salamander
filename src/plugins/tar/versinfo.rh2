@@ -10,8 +10,8 @@
 // look at shared\versinfo.rc
 
 #define VERSINFO_MAJOR       3
-#define VERSINFO_MINORA      3
-#define VERSINFO_MINORB      4
+#define VERSINFO_MINORA      4
+#define VERSINFO_MINORB      0
 
 #include "spl_vers.h" // vytahneme cisla verzi + buildu
 
