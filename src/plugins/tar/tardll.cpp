@@ -475,8 +475,8 @@ BOOL CPluginInterfaceForViewer::ViewFile(const char* name, int left, int top, in
         free(buffer);
         CloseHandle(file);
         buff[499] = '\0';
-        strcpy(buff, LoadStr(IDS_RPMERR_TMPFILE));
-        strncat(buff, name, 499 - strlen(buff));
+        strcpy_s(buff, LoadStr(IDS_RPMERR_TMPFILE));
+        strncat_s(buff, name, 499 - strlen(buff));
         SalamanderGeneral->ShowMessageBox(buff, LoadStr(IDS_ERR_RPMTITLE), MSGBOX_ERROR);
         return FALSE;
     }
@@ -521,8 +521,8 @@ BOOL CPluginInterfaceForViewer::ViewFile(const char* name, int left, int top, in
     textViewerData.Mode = 0; // text mode
     char caption[500];
     strncpy_s(caption, 451, name, _TRUNCATE);
-    strcat(caption, " - ");
-    strcat(caption, LoadStr(IDS_RPM_VIEWTITLE));
+    strcat_s(caption, " - ");
+    strcat_s(caption, LoadStr(IDS_RPM_VIEWTITLE));
     textViewerData.Caption = caption;
     textViewerData.WholeCaption = TRUE;
     // zobrazime soubor v text-view salamandera s jeho naslednym smazanim
