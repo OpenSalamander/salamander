@@ -44,7 +44,7 @@ void CElasticLayout::AddResizeCtrl(int resID)
         RECT r;
         GetWindowRect(hChild, &r);
 
-        // pokud je spodni hrana prvku vetsi nez SplitY, posuneme SplitY hranici
+        // if the bottom edge of the element is greater than SplitY, we move the SplitY boundary
         POINT p = {r.right, r.bottom};
         ScreenToClient(HWindow, &p);
         if (p.y > SplitY)
@@ -67,7 +67,7 @@ CElasticLayout::FindMoveControls(HWND hChild, LPARAM lParam)
 {
     CElasticLayout* el = (CElasticLayout*)lParam;
 
-    // pokud prvek lezi pod SplitY, pridame ho do seznamu prvku, ktere budou posouvat
+    // if the element lies below SplitY, we add it to the list of elements that will be moved
     RECT r;
     GetWindowRect(hChild, &r);
     POINT p = {r.left, r.top};
@@ -87,7 +87,7 @@ void CElasticLayout::FindMoveCtrls()
 {
     EnumChildWindows(HWindow, FindMoveControls, (LPARAM)this);
 
-    // najdeme obalku vsech 'move' prvku
+    // find the envelope of all 'move' elements
     RECT rEnvelope = {0};
     for (int i = 0; i < MoveCtrls.Count; i++)
     {
@@ -107,11 +107,11 @@ void CElasticLayout::FindMoveCtrls()
     POINT p = {rEnvelope.right, rEnvelope.bottom};
     ScreenToClient(HWindow, &p);
     int envelopeBottom = p.y;
-    // souradnice 'MoveCtrlsY' budou vztazene od spodni hrany obalky
+    // Coordinates 'MoveCtrlsY' will be relative to the bottom edge of the envelope
     for (int i = 0; i < MoveCtrls.Count; i++)
         MoveCtrls[i].Pos.y = envelopeBottom - MoveCtrls[i].Pos.y;
 
-    // pro prvky ResizeCtrls ulozime jejich vzdalenost spodni hrany od spodni hrany obalky
+    // for elements of ResizeCtrls we save their distance from the bottom edge to the bottom edge of the envelope
     for (int i = 0; i < ResizeCtrls.Count; i++)
     {
         if (ResizeCtrls[i].Pos.y == 0)
@@ -198,7 +198,7 @@ void CPropSheetPage::Init(const TCHAR* title, HINSTANCE modul, int resID,
     Flags = flags;
     Icon = icon;
 
-    ParentDialog = NULL; // nastavuje se z CPropertyDialog::Execute()
+    ParentDialog = NULL; // is set from CPropertyDialog::Execute()
     ParentPage = NULL;
     HTreeItem = NULL;
     Expanded = NULL;
@@ -290,7 +290,7 @@ CPropSheetPage::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         TransferData(ttDataToWindow);
         if (ElasticLayout != NULL)
             ElasticLayout->LayoutCtrls();
-        return TRUE; // chci focus od DefDlgProc
+        return TRUE; // I want focus from DefDlgProc
     }
 
     case WM_SIZE:
@@ -309,7 +309,7 @@ CPropSheetPage::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                (GetKeyState(VK_SHIFT) & 0x8000) != 0);
             return TRUE;
         }
-        break; // F1 nechame propadnout do parenta
+        break; // Let F1 fall through to the parent
     }
 
     case WM_CONTEXTMENU:
@@ -321,26 +321,26 @@ CPropSheetPage::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_NOTIFY:
     {
-        if (((NMHDR*)lParam)->code == PSN_KILLACTIVE) // deaktivace stranky
+        if (((NMHDR*)lParam)->code == PSN_KILLACTIVE) // deactivate page
         {
             if (ValidateData())
                 SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE);
-            else // nepovolime deaktivaci stranky
+            else // do not allow deactivation of the page
                 SetWindowLongPtr(HWindow, DWLP_MSGRESULT, TRUE);
             return TRUE;
         }
 
-        if (((NMHDR*)lParam)->code == PSN_SETACTIVE) // aktivace stranky
+        if (((NMHDR*)lParam)->code == PSN_SETACTIVE) // page activation
         {
             if (ParentDialog != NULL && ParentDialog->LastPage != NULL)
-            { // zapamatovani posledni stranky
+            { // remembering the last page
                 *ParentDialog->LastPage = ParentDialog->GetCurSel();
             }
             break;
         }
 
         if (((NMHDR*)lParam)->code == PSN_APPLY)
-        { // stisknuto tlacitko ApplyNow nebo OK
+        { // button ApplyNow or OK pressed
             if (TransferData(ttDataFromWindow))
                 SetWindowLongPtr(HWindow, DWLP_MSGRESULT, PSNRET_NOERROR);
             else
@@ -349,15 +349,15 @@ CPropSheetPage::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
 
         if (((NMHDR*)lParam)->code == PSN_WIZFINISH)
-        { // stisknuto tlacitko Finish
-            // neprislo PSN_KILLACTIVE - provedu validaci
+        { // Button Finish pressed
+            // PSN_KILLACTIVE did not arrive - I will perform validation
             if (!ValidateData())
             {
                 SetWindowLongPtr(HWindow, DWLP_MSGRESULT, TRUE);
                 return TRUE;
             }
 
-            // obehnu vsechny stranky pro transfer
+            // Loop through all pages for transfer
             for (int i = 0; i < ParentDialog->Count; i++)
             {
                 if (ParentDialog->At(i)->HWindow != NULL)
@@ -385,7 +385,7 @@ CPropSheetPage::CPropSheetPageProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
     CPropSheetPage* dlg;
     switch (uMsg)
     {
-    case WM_INITDIALOG: // prvni zprava - pripojeni objektu k dialogu
+    case WM_INITDIALOG: // first message - connecting an object to a dialog
     {
         dlg = (CPropSheetPage*)((PROPSHEETPAGE*)lParam)->lParam;
         if (dlg == NULL)
@@ -397,25 +397,25 @@ CPropSheetPage::CPropSheetPageProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
         {
             dlg->HWindow = hwndDlg;
             dlg->Parent = ::GetParent(hwndDlg);
-            //--- zarazeni okna podle hwndDlg do seznamu oken
-            if (!WindowsManager.AddWindow(hwndDlg, dlg)) // chyba
+            //--- insert window with hwndDlg into the list of windows
+            if (!WindowsManager.AddWindow(hwndDlg, dlg)) // error
             {
                 TRACE_ET(_T("Unable to create dialog."));
                 return TRUE;
             }
-            dlg->NotifDlgJustCreated(); // zavedeno jako misto pro upravu layoutu dialogu
+            dlg->NotifDlgJustCreated(); // Set as a place for editing the dialog layout
         }
         break;
     }
 
-    case WM_DESTROY: // posledni zprava - odpojeni objektu od dialogu
+    case WM_DESTROY: // last message - disconnecting object from dialog
     {
         dlg = (CPropSheetPage*)WindowsManager.GetWindowPtr(hwndDlg);
-        INT_PTR ret = FALSE; // pro pripad, ze ji nezpracuje
+        INT_PTR ret = FALSE; // in case it is not processed
         if (dlg != NULL && dlg->Is(otDialog))
         {
-            // Petr: posunul jsem dolu pod wnd->WindowProc(), aby behem WM_DESTROY
-            //       jeste dochazely zpravy (potreboval Lukas)
+            // Petr: I moved it down below wnd->WindowProc(), so that during WM_DESTROY
+            //       there were still messages (Lukas needed)
             // WindowsManager.DetachWindow(hwndDlg);
 
             ret = dlg->DialogProc(uMsg, wParam, lParam);
@@ -424,7 +424,7 @@ CPropSheetPage::CPropSheetPageProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
             if (dlg->IsAllocated())
                 delete dlg;
             else
-                dlg->HWindow = NULL; // informace o odpojeni
+                dlg->HWindow = NULL; // information about disconnection
         }
         return ret;
     }
@@ -441,11 +441,11 @@ CPropSheetPage::CPropSheetPageProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 #endif
     }
     }
-    //--- zavolani metody DialogProc(...) prislusneho objektu dialogu
+    //--- calling the DialogProc(...) method of the corresponding dialog object
     if (dlg != NULL)
         return dlg->DialogProc(uMsg, wParam, lParam);
     else
-        return FALSE; // chyba nebo message neprisla mezi WM_INITDIALOG a WM_DESTROY
+        return FALSE; // error or message did not arrive between WM_INITDIALOG and WM_DESTROY
 }
 
 //
@@ -511,14 +511,14 @@ int CPropertyDialog::GetCurSel()
 #define _TPD_IDC_CAPTION 3
 #define _TPD_IDC_RECT 4
 #define _TPD_IDC_OK 5
-// rozmery v dlg units
-#define _TPD_LEFTMARGIN 4  // odsazeni TreeView a Captionu od leveho okraje
-#define _TPD_TOPMARGIN 4   // odsazeni TreeView a Captionu od horniho okraje
-#define _TPD_TREE_W 100    // sirka TreeView
-#define _TPD_CAPTION_H 16  // vyska captionu
-#define _TPD_BUTTON_W 50   // sirka tlacitek
-#define _TPD_BUTTON_H 14   // vyska tlacitek
-#define _TPD_BUTTON_MARG 4 // rozestup mezi tlacitky
+// dimensions in dialog units
+#define _TPD_LEFTMARGIN 4  // Indentation of TreeView and Caption from the left edge
+#define _TPD_TOPMARGIN 4   // Indentation of TreeView and Caption from the top edge
+#define _TPD_TREE_W 100    // Width of TreeView
+#define _TPD_CAPTION_H 16  // height of the caption
+#define _TPD_BUTTON_W 50   // width of the button
+#define _TPD_BUTTON_H 14   // height of buttons
+#define _TPD_BUTTON_MARG 4 // spacing between buttons
 
 CTPHCaptionWindow::CTPHCaptionWindow(HWND hDlg, int ctrlID)
     : CWindow(hDlg, ctrlID, ooAllocated)
@@ -568,7 +568,7 @@ CTPHCaptionWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         GetClientRect(HWindow, &r);
 
         int devCaps = GetDeviceCaps(hdc, NUMCOLORS);
-        if (devCaps == -1) // gradient pouzijeme pouze pri vice nez 256 barvach
+        if (devCaps == -1) // gradient will be used only for more than 256 colors
         {
             HBRUSH hOldBrush = (HBRUSH)GetCurrentObject(hdc, OBJ_BRUSH);
 #define TPH_STEPS 100
@@ -585,11 +585,9 @@ CTPHCaptionWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                  max(GetGValue(base) - TPH_STEPS / 2 + i / 2 + 1, 0),
                                  max(GetBValue(base) - TPH_STEPS / 2 + i / 2 + 1, 0));
                 HBRUSH hColorBrush = CreateBrushIndirect(&lb);
-                /*
-        HBRUSH hColorBrush = CreateSolidBrush(RGB(max(GetRValue(base) - TPH_STEPS / 2 + i / 2 + 1, 0),
+                /*          HBRUSH hColorBrush = CreateSolidBrush(RGB(max(GetRValue(base) - TPH_STEPS / 2 + i / 2 + 1, 0),
         max(GetGValue(base) - TPH_STEPS / 2 + i / 2 + 1, 0),
-        max(GetBValue(base) - TPH_STEPS / 2 + i / 2 + 1, 0)));
-        */
+        max(GetBValue(base) - TPH_STEPS / 2 + i / 2 + 1, 0)));*/
                 FillRect(hdc, &r2, hColorBrush);
                 DeleteObject(hColorBrush);
                 r2.left = (long)(i * stepW);
@@ -609,7 +607,7 @@ CTPHCaptionWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             HFONT hSrcFont = (HFONT)HANDLES(GetStockObject(DEFAULT_GUI_FONT));
             GetObject(hSrcFont, sizeof(srcLF), &srcLF);
             srcLF.lfHeight = (int)(srcLF.lfHeight * 1.2);
-            // srcLF.lfWeight = FW_BOLD; // na vistach vypada bold dost hnusne + necitelne
+            // srcLF.lfWeight = FW_BOLD; // looks quite ugly + unreadable on Vista
             hFont = CreateFontIndirect(&srcLF);
             hOldFont = (HFONT)SelectObject(hdc, hFont);
 
@@ -641,7 +639,7 @@ CTPHGripWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_SETCURSOR:
     {
-        // chceme pouze north-south kurzor
+        // we only want the north-south cursor
         SetCursor(LoadCursor(NULL, IDC_SIZENS));
         return TRUE;
     }
@@ -666,9 +664,9 @@ CTreePropHolderDlg::CTreePropHolderDlg(HWND hParent, DWORD* windowHeight)
 INT_PTR
 CTreePropHolderDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    // WM_INITDIALOG zavolame az ve chvili, kdy budeme znat rozmery okna
+    // WM_INITDIALOG will be called once we know the dimensions of the window
     if (TPD != NULL && uMsg != WM_INITDIALOG)
-        TPD->DialogProc(uMsg, wParam, lParam); // forward zprav
+        TPD->DialogProc(uMsg, wParam, lParam); // forward message
     switch (uMsg)
     {
     case WM_INITDIALOG:
@@ -695,8 +693,8 @@ CTreePropHolderDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (appIsThemed)
         {
             RECT rect = {0, 0, 4, 8};
-            MapDialogRect(HWindow, &rect); // ziskame baseUnitX a baseUnitY pro prepocet dlg-units na pixels
-            treeIndent = MulDiv(9 /* odsazeni v dlg-units */, rect.right /* baseUnitX */, 4);
+            MapDialogRect(HWindow, &rect); // we obtain baseUnitX and baseUnitY for converting dlg-units to pixels
+            treeIndent = MulDiv(9 /* indentation in dlg-units*/, rect.right /* baseUnitX*/, 4);
             TreeView_SetIndent(HTreeView, treeIndent);
         }
 
@@ -722,7 +720,7 @@ CTreePropHolderDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         GripWindow = new CTPHGripWindow(HWindow, _TPD_IDC_GRIP);
 
-        // default rozmery jsou minimalni - ulozime si je, abychom je nasledne mohli hlidat
+        // default dimensions are minimal - we will save them so that we can monitor them later
         GetWindowRect(HWindow, &r);
         RECT cR;
         GetClientRect(HWindow, &cR);
@@ -734,9 +732,9 @@ CTreePropHolderDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                            MarginSize.cy + 1 + MarginSize.cy +
                            ButtonSize.cy + MarginSize.cy + marginH;
 
-        // nastavime uzivatelsky rozmer okna a provedeme layout prvku
+        // set the user dimension of the window and perform the layout of the element
         int height = (int)*WindowHeight;
-        RECT clipR; // nechceme byt vetsi nez vyska obrazovky
+        RECT clipR; // we do not want to be larger than the screen height
         MultiMonGetClipRectByWindow(HWindow, &clipR, NULL);
         if (height > clipR.bottom - clipR.top)
             height = clipR.bottom - clipR.top;
@@ -748,7 +746,7 @@ CTreePropHolderDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         LayoutControls();
         TreeView_EnsureVisible(HTreeView, TPD->At(TPD->StartPage)->HTreeItem);
 
-        TPD->DialogProc(uMsg, wParam, lParam); // forward zprav
+        TPD->DialogProc(uMsg, wParam, lParam); // forward message
 
         break;
     }
@@ -761,7 +759,7 @@ CTreePropHolderDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                (GetKeyState(VK_CONTROL) & 0x8000) != 0,
                                (GetKeyState(VK_SHIFT) & 0x8000) != 0);
         }
-        return TRUE; // F1 nenechame propadnout do parenta ani pokud nevolame WinLibHelp->OnHelp()
+        return TRUE; // We will not let F1 fall through to the parent even if we do not call WinLibHelp->OnHelp()
     }
 
     case WM_COMMAND:
@@ -787,11 +785,11 @@ CTreePropHolderDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         case _TPD_IDC_OK:
         {
-            // musim provest validaci aktualni stranky
+            // need to validate the current page
             if (!ChildDialog->ValidateData())
                 return TRUE;
 
-            // obehnu vsechny stranky pro transfer
+            // Loop through all pages for transfer
             for (int i = 0; i < TPD->Count; i++)
                 if (TPD->At(i)->HWindow != NULL)
                     if (!TPD->At(i)->TransferData(ttDataFromWindow))
@@ -805,7 +803,7 @@ CTreePropHolderDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         }
 
-        // preposleme message, aby chodil enter na default tlacitka
+        // Forward the message so that the Enter key activates the default button
         if (ChildDialog != NULL && HIWORD(wParam) == BN_CLICKED)
             ::SendMessage(ChildDialog->HWindow, uMsg, wParam, lParam);
 
@@ -873,7 +871,7 @@ CTreePropHolderDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_NCHITTEST:
     {
-        // Resize chceme pouze ve svyslem smeru
+        // We only want to resize in the vertical direction
         LRESULT ht = DefWindowProc(HWindow, uMsg, wParam, lParam);
         switch (ht)
         {
@@ -902,7 +900,7 @@ CTreePropHolderDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_GETMINMAXINFO:
     {
-        // Resize chceme pouze ve svyslem smeru
+        // We only want to resize in the vertical direction
         LPMINMAXINFO lpmmi = (LPMINMAXINFO)lParam;
         lpmmi->ptMinTrackSize.x = MinWindowSize.cx;
         lpmmi->ptMaxTrackSize.x = MinWindowSize.cx;
@@ -1025,9 +1023,9 @@ void CTreePropHolderDlg::LayoutControls()
                                       SWP_NOZORDER));
 
         HANDLES(EndDeferWindowPos(hdwp));
-        // hack: v treeview/common controls je zrejme chyba: pokud naskoci diky obsahu scrollbar,
-        // neprekresli se selected polozka, takze je vpravo orizla; muze to souviset s full row
-        // select a jeste aero lookem; kazdopadne prekresleni pod W7 neblika, asi si ho muzeme dovolit
+        // hack: there seems to be a bug in the treeview/common controls: if the scrollbar appears due to the content,
+        // the selected item is not redrawn, so it is cropped on the right; could it be related to full row
+        // select a and still aero look; in any case, the redraw under W7 doesn't blink, we can probably afford it
         InvalidateRect(HTreeView, NULL, false);
     }
 }
@@ -1046,19 +1044,19 @@ int CTreePropHolderDlg::BuildAndMeasureTree()
         tvis.item.pszText = TPD->At(i)->Title;
         tvis.item.cchTextMax = (int)_tcslen(TPD->At(i)->Title);
         tvis.item.state = 0;
-        // POZOR: expandovatelne polozky zde musime expandovat, jinak nasledne TreeView_GetItemRect() vrati FALSE
-        // a nahodna data v obdelniku RECT r
+        // WARNING: expandable items here must be expanded, otherwise subsequent TreeView_GetItemRect() will return FALSE
+        // and random data in the RECT r rectangle
         if (TPD->At(i)->Expanded != NULL)
             tvis.item.state |= TVIS_EXPANDED;
         tvis.item.stateMask = tvis.item.state;
         tvis.item.lParam = (LPARAM)TPD->At(i);
         TPD->At(i)->HTreeItem = TreeView_InsertItem(HTreeView, &tvis);
         RECT r;
-        // Radeji navratovou hodnotu TreeView_GetItemRect() vezmeme v potaz
+        // We should consider the return value of TreeView_GetItemRect() instead
         if (TreeView_GetItemRect(HTreeView, TPD->At(i)->HTreeItem, &r, TRUE) && r.right - r.left > width)
             width = r.right - r.left;
     }
-    // Nyni jiz muzeme pozavirat neexpandovane polozky
+    // We can now close non-expanded items
     for (int i = 0; i < TPD->Count; i++)
     {
         if (TPD->At(i)->Expanded != NULL && *TPD->At(i)->Expanded == FALSE)
@@ -1224,7 +1222,7 @@ int CTreePropDialog::Execute(const TCHAR* buttonOK,
         RECT maxPageRect;
         SetRectEmpty(&maxPageRect);
 
-        // zjistim maximalni rozmery
+        // find out the maximum dimensions
         for (int i = 0; i < Count; i++)
         {
             At(i)->ParentDialog = this;
@@ -1252,9 +1250,9 @@ int CTreePropDialog::Execute(const TCHAR* buttonOK,
             dlgStyle = *(DWORD*)(pageTemplate + 6); // style
             dlgCX = *(short*)(pageTemplate + 11);   // cx
             dlgCY = *(short*)(pageTemplate + 12);   // cy
-            WORD* t = pageTemplate + 13;            // menu, preskocime na tridu dialogu, a pak na jeho titulek
+            WORD* t = pageTemplate + 13;            // menu, let's skip to the dialog class, and then to its title
             if (*t == 0)
-                t++; // zadne menu
+                t++; // no menu
             else
             {
                 if (*t == 0xffff)
@@ -1263,13 +1261,13 @@ int CTreePropDialog::Execute(const TCHAR* buttonOK,
                     t += wcslen((wchar_t*)t) + 1; // menu string
             }
             if (*t == 0)
-                t++; // zadna trida dialogu
+                t++; // no dialog class
             else
             {
                 if (*t == 0xffff)
-                    t += 2; // ID tridy dialogu
+                    t += 2; // ID of the dialog class
                 else
-                    t += wcslen((wchar_t*)t) + 1; // string tridy dialogu
+                    t += wcslen((wchar_t*)t) + 1; // string of the dialog class
             }
             dlgTitle = (WCHAR*)t;
 
@@ -1302,7 +1300,7 @@ int CTreePropDialog::Execute(const TCHAR* buttonOK,
                 maxPageRect.bottom = dlgCY;
         }
 
-        // vyska od spodniho okraje dialogu ke spodku TreeView a ChildDialogu
+        // distance from the bottom edge of the dialog to the bottom of the TreeView and ChildDialog
         int lowMargin = 2 * _TPD_TOPMARGIN + _TPD_BUTTON_H + _TPD_TOPMARGIN + _TPD_TOPMARGIN / 2;
         SIZE dialogSize;
         dialogSize.cx = _TPD_LEFTMARGIN + _TPD_TREE_W + _TPD_LEFTMARGIN + maxPageRect.right +
@@ -1310,8 +1308,8 @@ int CTreePropDialog::Execute(const TCHAR* buttonOK,
         dialogSize.cy = _TPD_TOPMARGIN + _TPD_CAPTION_H + _TPD_TOPMARGIN + maxPageRect.bottom +
                         lowMargin;
 
-        // postavim template dialogu: DLG nebo DLGEX, podle formatu stranek, musi byt shodny,
-        // jinak dochazi k orezu controlu a lisi se pisma stranek a zbytku tree property dialogu
+        // build a template for the dialog: DLG or DLGEX, depending on the page format, must be consistent,
+        // otherwise, the control is pruned and the font of the pages differs from the rest of the tree property dialog
 
         HGLOBAL hgbl;
 
@@ -1333,16 +1331,16 @@ int CTreePropDialog::Execute(const TCHAR* buttonOK,
         lpw += 2;
         *lpw++ = 8; // cDlgItems (number of controls)
         *lpw++ = 0; // x
-        *lpw++ = 0; // y
+        *lpw++ = 0; // and
         *lpw++ = 0; // cx
         *lpw++ = 0; // cy
         *lpw++ = 0; // no menu
         *lpw++ = 0; // predefined dialog box class (by default)
         lpwsz = (LPWSTR)lpw;
         lpw += WinLibCopyText(lpwsz, Caption, 100); // title
-        *lpw++ = 8;                                 // velikost fontu
+        *lpw++ = 8;                                 // font size
         *lpw++ = FW_NORMAL;                         // font weight
-        *(BYTE*)lpw = FALSE;                        // is font italic?
+        *(BYTE*)lpw = FALSE;                        // Is the font italic?
         *((BYTE*)lpw + 1) = ANSI_CHARSET;           // font charset
         lpw++;
         lpwsz = (LPWSTR)lpw; // font typeface
@@ -1361,7 +1359,7 @@ int CTreePropDialog::Execute(const TCHAR* buttonOK,
         AddItemEx(lpw, _T("static"), _TPD_IDC_CAPTION,
                   0, 0, 0, 0,
                   WS_CHILD | WS_VISIBLE, 0, NULL);
-        // Static, ktery je behem initu nahrazen child dialogem
+        // Static, which is replaced by a child dialog during initialization
         AddItemEx(lpw, _T("static"), _TPD_IDC_RECT,
                   0, 0, maxPageRect.right, maxPageRect.bottom,
                   WS_CHILD, 0, NULL);
@@ -1369,7 +1367,7 @@ int CTreePropDialog::Execute(const TCHAR* buttonOK,
         AddItemEx(lpw, _T("static"), _TPD_IDC_SEP,
                   0, 0, 0, 0,
                   WS_GROUP | WS_CHILD | WS_VISIBLE | SS_ETCHEDHORZ, 0, NULL);
-        // Spodni rada tlacitek
+        // Bottom row of buttons
         AddItemEx(lpw, _T("button"), _TPD_IDC_OK,
                   0, 0, 0, 0,
                   WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON | WS_TABSTOP, 0, buttonOK);

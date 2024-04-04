@@ -66,11 +66,11 @@ void CFilesWindow::Execute(int index)
 
     if (Is(ptDisk))
     {
-        if (index >= Dirs->Count) // soubor
+        if (index >= Dirs->Count) // file
         {
-            if (CheckPath(FALSE) != ERROR_SUCCESS) // aktualni cesta neni pristupna
+            if (CheckPath(FALSE) != ERROR_SUCCESS) // current path is not accessible
             {
-                RefreshDirectory(); // obnovime panel (bud napr. vrati disketu nebo zmenime cestu)
+                RefreshDirectory(); // restore the panel (e.g. return the floppy disk or change the path)
                 EndStopRefresh();
                 return;
             }
@@ -90,16 +90,16 @@ void CFilesWindow::Execute(int index)
                     lstrcpy(fullPath, GetPath());
                     if (SalPathAppend(fullPath, file->DosName, MAX_PATH) &&
                         SalGetFileAttributes(fullPath) != INVALID_FILE_ATTRIBUTES)
-                    { // kdyz neni dostupne plne jmeno (problem zpetneho prevodu z multibyte na UNICODE), pouzijeme DOS-name
+                    { // When the full name is not available (issue with converting back from multibyte to UNICODE), we will use the DOS name
                         fileName = file->DosName;
                     }
                 }
             }
-            BOOL linkIsDir = FALSE;  // TRUE -> short-cut na adresar -> ChangePathToDisk
-            BOOL linkIsFile = FALSE; // TRUE -> short-cut na soubor -> test archivu
-            BOOL linkIsNet = FALSE;  // TRUE -> short-cut na sit -> ChangePathToPluginFS
+            BOOL linkIsDir = FALSE;  // TRUE -> short-cut to directory -> ChangePathToDisk
+            BOOL linkIsFile = FALSE; // TRUE -> shortcut to file -> test archive
+            BOOL linkIsNet = FALSE;  // TRUE -> shortcut to the network -> ChangePathToPluginFS
             DWORD err = ERROR_SUCCESS;
-            if (StrICmp(file->Ext, "lnk") == 0) // neni to short-cut adresare?
+            if (StrICmp(file->Ext, "lnk") == 0) // Isn't this a shortcut to the directory?
             {
                 strcpy(fullName, GetPath());
                 if (!SalPathAppend(fullName, fileName, MAX_PATH))
@@ -126,11 +126,11 @@ void CFilesWindow::Execute(int index)
                         if (fileInt->Load(oleName, STGM_READ) == S_OK)
                         {
                             if (link->GetPath(fullName, MAX_PATH, &data, SLGP_UNCPRIORITY) == NOERROR)
-                            {                                     // cvicne vytazena cesta poslouzi pro test pristupnosti, po Resolve ji vytahneme znovu
-                                err = CheckPath(FALSE, fullName); // fullName je plna cesta (linky jine nepodporuji)
-                                if (err != ERROR_USER_TERMINATED) // pokud user nepouzil ESC, prip. chybu ignorujeme
+                            {                                     // Exercise pulled path will serve to test accessibility, after Resolve we will pull it out again
+                                err = CheckPath(FALSE, fullName); // fullName is a full path (other links are not supported)
+                                if (err != ERROR_USER_TERMINATED) // if the user did not use ESC, we ignore the error
                                 {
-                                    err = ERROR_SUCCESS; // Resolve muze cestu zmenit, pak udelame test znovu
+                                    err = ERROR_SUCCESS; // Resolve can change the path, then we will run the test again
                                 }
                             }
                             if (err == ERROR_SUCCESS)
@@ -139,31 +139,31 @@ void CFilesWindow::Execute(int index)
                                 {
                                     if (link->GetPath(fullName, MAX_PATH, &data, SLGP_UNCPRIORITY) == NOERROR)
                                     {
-                                        // finalni podoba fullName - otestujeme jestli je o.k.
-                                        err = CheckPath(TRUE, fullName); // fullName je plna cesta (linky jine nepodporuji)
+                                        // final form of fullName - we will test if it's okay.
+                                        err = CheckPath(TRUE, fullName); // fullName is a full path (other links are not supported)
                                         if (err == ERROR_SUCCESS)
                                         {
-                                            DWORD attr = SalGetFileAttributes(fullName); // ziskavame zde, protoze data.dwFileAttributes se proste neplni, smula
+                                            DWORD attr = SalGetFileAttributes(fullName); // we are getting here because data.dwFileAttributes simply does not fill, bad luck
                                             if (attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY))
                                             {
-                                                linkIsDir = TRUE; // o.k. zkusime change-path-to-disk
+                                                linkIsDir = TRUE; // o.k. let's try change-path-to-disk
                                             }
                                             else
                                             {
-                                                linkIsFile = TRUE; // o.k. zkusime jestli to neni archiv
+                                                linkIsFile = TRUE; // o.k. let's see if it's not an archive
                                             }
                                         }
                                     }
-                                    else // linky primo na servery muzeme zkusit otevrit v Network pluginu (Nethoodu)
+                                    else // We can try to open links directly to servers in the Network plugin (Nethood)
                                     {
                                         if (Plugins.GetFirstNethoodPluginFSName(netFSName))
                                         {
                                             if (link->GetPath(fullName, MAX_PATH, NULL, SLGP_RAWPATH) != NOERROR)
-                                            { // cesta neni v linku ulozena textove, ale jen jako ID-list
+                                            { // The path is not stored in the link as text, but only as an ID list
                                                 fullName[0] = 0;
                                                 ITEMIDLIST* pidl;
                                                 if (link->GetIDList(&pidl) == S_OK && pidl != NULL)
-                                                { // ziskame ten ID-list a doptame se na jmeno posledniho IDcka v listu, ocekavame "\\\\server"
+                                                { // we will obtain the ID list and inquire about the name of the last ID in the list, expecting "\\\\server"
                                                     IMalloc* alloc;
                                                     if (SUCCEEDED(CoGetMalloc(1, &alloc)))
                                                     {
@@ -176,20 +176,20 @@ void CFilesWindow::Execute(int index)
                                                 }
                                             }
                                             if (fullName[0] == '\\' && fullName[1] == '\\' && fullName[2] != '\\')
-                                            { // zkusime jestli nejde o link na server (obsahuje cestu "\\\\server")
+                                            { // Let's try if it's not a link to the server (containing the path "\\\\server")
                                                 char* backslash = fullName + 2;
                                                 while (*backslash != 0 && *backslash != '\\')
                                                     backslash++;
                                                 if (*backslash == '\\')
                                                     backslash++;
-                                                if (*backslash == 0)  // bereme jen cesty "\\\\", "\\\\server", "\\\\server\\"
-                                                    linkIsNet = TRUE; // o.k. zkusime change-path-to-FS
+                                                if (*backslash == 0)  // we only take paths "\\\\", "\\\\server", "\\\\server\\"
+                                                    linkIsNet = TRUE; // o.k. let's try change-path-to-FS
                                             }
                                         }
                                     }
                                 }
                                 else
-                                    err = ERROR_USER_TERMINATED; // ve Windows "Missing Shortcut"
+                                    err = ERROR_USER_TERMINATED; // in Windows "Missing Shortcut"
                             }
                         }
                         fileInt->Release();
@@ -201,11 +201,11 @@ void CFilesWindow::Execute(int index)
             if (err != ERROR_SUCCESS)
             {
                 EndStopRefresh();
-                return; // chyba cesty nebo preruseni
+                return; // path error or interruption
             }
-            if (linkIsDir || linkIsNet) // link vede na sit nebo do adresare, cesta je o.k., prepneme se na ni
+            if (linkIsDir || linkIsNet) // the link leads to a network or directory, the path is okay, let's switch to it
             {
-                TopIndexMem.Clear(); // dlouhy skok
+                TopIndexMem.Clear(); // long jump
                 if (linkIsDir)
                     ChangePathToDisk(HWindow, fullName);
                 else
@@ -215,15 +215,15 @@ void CFilesWindow::Execute(int index)
                 return;
             }
 
-            if (PackerFormatConfig.PackIsArchive(linkIsFile ? fullName : fileName)) // neni to archiv?
+            if (PackerFormatConfig.PackIsArchive(linkIsFile ? fullName : fileName)) // Isn't it an archive?
             {
-                // zaloha udaju pro TopIndexMem
+                // Backup data for TopIndexMem
                 strcpy(path, GetPath());
                 int topIndex = ListBox->GetTopIndex();
 
                 if (!linkIsFile)
                 {
-                    // konstrukce plneho jmena archivu pro ChangePathToArchive
+                    // Constructs the full name of the archive for ChangePathToArchive
                     strcpy(fullName, GetPath());
                     if (!SalPathAppend(fullName, fileName, MAX_PATH))
                     {
@@ -235,17 +235,17 @@ void CFilesWindow::Execute(int index)
                     }
                 }
                 BOOL noChange;
-                if (ChangePathToArchive(fullName, "", -1, NULL, FALSE, &noChange)) // podarilo se vlezt do archivu
+                if (ChangePathToArchive(fullName, "", -1, NULL, FALSE, &noChange)) // managed to get into the archive
                 {
                     if (linkIsFile)
-                        TopIndexMem.Clear(); // dlouhy skok
+                        TopIndexMem.Clear(); // long jump
                     else
-                        TopIndexMem.Push(path, topIndex); // zapamatujeme top-index pro navrat
+                        TopIndexMem.Push(path, topIndex); // remember the top index for return
                 }
-                else // archiv neni pristupny
+                else // archive is not accessible
                 {
                     if (!noChange)
-                        TopIndexMem.Clear(); // neuspech + nejsme na puvodni ceste -> dlouhy skok
+                        TopIndexMem.Clear(); // failure + we are not on the original path -> long jump
                 }
                 UpdateWindow(HWindow);
                 EndStopRefresh();
@@ -254,24 +254,24 @@ void CFilesWindow::Execute(int index)
 
             UserWorkedOnThisPath = TRUE;
 
-            // nize umistene ExecuteAssociation umi zmenit cestu v panelu pri rekurzivnim
-            // volani (obsahuje message-loopu), proto si ulozime plne jmeno souboru uz tady
+            // The ExecuteAssociation function below can change the path in the panel recursively
+            // call (contains a message loop), so we will save the full file name here
             lstrcpy(fullPath, GetPath());
             if (!SalPathAppend(fullPath, fileName, MAX_PATH))
                 fullPath[0] = 0;
 
-            // spusteni default polozky z kontextoveho menu (asociace)
+            // launching the default item from the context menu (association)
             HCURSOR oldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
-            MainWindow->SetDefaultDirectories(); // aby startujici process zdedil spravne akt. adresare
+            MainWindow->SetDefaultDirectories(); // so that the starting process inherits the correct working directory
             ExecuteAssociation(GetListBoxHWND(), GetPath(), fileName);
 
-            // pridame soubor do historie
+            // add file to history
             if (fullPath[0] != 0)
                 MainWindow->FileHistory->AddFile(fhitOpen, 0, fullPath);
 
             SetCursor(oldCur);
         }
-        else // adresar
+        else // directory
         {
             strcpy(path, GetPath());
             CFileData* dir = &Dirs->At(index);
@@ -299,31 +299,31 @@ void CFilesWindow::Execute(int index)
                             ChangePathToPluginFS(doublePath, path, -1, focusName);
                             if (Is(ptPluginFS))
                             {
-                                TopIndexMem.Clear(); // pokud jsme nezustali na diskove ceste (v rootu UNC), jde o dlouhy skok
+                                TopIndexMem.Clear(); // if we did not stay on the disk path (in the root UNC), it is a long jump
                                 UpdateWindow(HWindow);
                             }
                         }
                     }
                     EndStopRefresh();
-                    return; // neni kam zkracovat nebo uz jsme na Nethood ceste
+                    return; // There is no need to cut or are we already on the Nethood road
                 }
-                int topIndex; // pristi top-index, -1 -> neplatny
+                int topIndex; // next top-index, -1 -> invalid
                 if (!TopIndexMem.FindAndPop(path, topIndex))
                     topIndex = -1;
                 if (!ChangePathToDisk(HWindow, path, topIndex, prevDir))
-                { // nepodarilo se zkratit cestu - dlouhy skok
+                { // failed to shorten the path - long jump
                     TopIndexMem.Clear();
                 }
             }
-            else // podadresar
+            else // subdirectory
             {
-                // zaloha udaju pro TopIndexMem (path + topIndex)
+                // Backup data for TopIndexMem (path + topIndex)
                 int topIndex = ListBox->GetTopIndex();
 
-                // zaloha caretu pro pripad access-denied adresare
+                // Backup the directory in case of access-denied
                 int caretIndex = GetCaretIndex();
 
-                // nova cesta
+                // new path
                 strcpy(fullName, path);
                 if (!SalPathAppend(fullName, dir->Name, MAX_PATH))
                 {
@@ -333,12 +333,12 @@ void CFilesWindow::Execute(int index)
                     return;
                 }
 
-                // Vista: resime nelistovatelny junction pointy: zmena cesty do cile junction pointu
+                // Vista: resolving non-listable junction points: changing the path to the target of junction points
                 char junctTgtPath[MAX_PATH];
                 int repPointType;
                 if (GetPathDriveType() == DRIVE_FIXED && (dir->Attr & FILE_ATTRIBUTE_REPARSE_POINT) &&
                     GetReparsePointDestination(fullName, junctTgtPath, MAX_PATH, &repPointType, TRUE) &&
-                    repPointType == 2 /* JUNCTION POINT */ &&
+                    repPointType == 2 /* JUNCTION POINT*/ &&
                     SalPathAppend(fullName, "*", MAX_PATH + 10))
                 {
                     WIN32_FIND_DATA fileData;
@@ -351,7 +351,7 @@ void CFilesWindow::Execute(int index)
                     {
                         if (err == ERROR_ACCESS_DENIED)
                         {
-                            TopIndexMem.Clear(); // dlouhy skok
+                            TopIndexMem.Clear(); // long jump
                             ChangePathToDisk(HWindow, junctTgtPath);
                             UpdateWindow(HWindow);
                             EndStopRefresh();
@@ -364,19 +364,19 @@ void CFilesWindow::Execute(int index)
                 BOOL refresh = TRUE;
                 if (ChangePathToDisk(HWindow, fullName, -1, NULL, &noChange, FALSE))
                 {
-                    TopIndexMem.Push(path, topIndex); // zapamatujeme top-index pro navrat
+                    TopIndexMem.Push(path, topIndex); // remember the top index for return
                 }
-                else // neuspech
+                else // failure
                 {
-                    if (!IsTheSamePath(path, GetPath())) // nejsme na puvodni ceste -> dlouhy skok
-                    {                                    // podminka "!noChange" nestaci - rika "zmena cesty nebo jeji znovunacteni - access-denied-dir"
+                    if (!IsTheSamePath(path, GetPath())) // we are not on the original path -> long jump
+                    {                                    // Condition "!noChange" is not enough - it says "change of path or its reloading - access-denied-dir"
                         TopIndexMem.Clear();
                     }
-                    else // nedoslo ke zmene cesty (cesta se ihned zkratila na puvodni)
+                    else // no change in the path occurred (the path immediately shortened back to the original)
                     {
                         refresh = FALSE;
-                        if (!noChange) // access-denied-dir: doslo k refreshi listingu, ale cesta je shodna
-                        {              // vratime listbox na puvodni indexy a dokoncime "refresh" za ChangePathToDisk
+                        if (!noChange) // access-denied-dir: listing refreshed, but the path is the same
+                        {              // return the listbox to the original indexes and finish the "refresh" after ChangePathToDisk
                             RefreshListBox(0, topIndex, caretIndex, FALSE, FALSE);
                         }
                     }
@@ -395,46 +395,46 @@ void CFilesWindow::Execute(int index)
             if (index >= Dirs->Count)
             {
                 UserWorkedOnThisPath = TRUE;
-                ExecuteFromArchive(index); // soubor
+                ExecuteFromArchive(index); // file
             }
-            else // adresar
+            else // directory
             {
                 CFileData* dir = &Dirs->At(index);
                 if (index == 0 && strcmp(dir->Name, "..") == 0) // ".. <Up>"
                 {
-                    if (GetZIPPath()[0] == 0) // vypadneme z archivu
+                    if (GetZIPPath()[0] == 0) // we will leave the archive
                     {
-                        const char* s = strrchr(GetZIPArchive(), '\\'); // zip-archive neobsahuje zbytecny '\\' nakonci
+                        const char* s = strrchr(GetZIPArchive(), '\\'); // zip-archive does not contain unnecessary '\\' at the end
                         if (s != NULL)                                  // "always true"
                         {
                             strcpy(path, s + 1); // prev-dir
 
-                            int topIndex; // pristi top-index, -1 -> neplatny
+                            int topIndex; // next top-index, -1 -> invalid
                             if (!TopIndexMem.FindAndPop(GetPath(), topIndex))
                                 topIndex = -1;
 
-                            // samotna zmena cesty
+                            // lonely change of path
                             BOOL noChange;
                             if (!ChangePathToDisk(HWindow, GetPath(), topIndex, path, &noChange))
-                            { // nepodarilo se zkratit cestu - reject-close-archive nebo dlouhy skok
+                            { // Failed to shorten the path - reject-close-archive or long jump
                                 if (!noChange)
-                                    TopIndexMem.Clear(); // dlouhy skok
+                                    TopIndexMem.Clear(); // long jump
                                 else
                                 {
-                                    if (topIndex != -1) // pokud se podaril top-index ziskat
+                                    if (topIndex != -1) // if the top index was successfully obtained
                                     {
-                                        TopIndexMem.Push(GetPath(), topIndex); // vratime top-index pro priste
+                                        TopIndexMem.Push(GetPath(), topIndex); // return top-index for next time
                                     }
                                 }
                             }
                         }
                     }
-                    else // zkracujeme cestu uvnitr archivu
+                    else // shortening the path inside the archive
                     {
-                        // rozdelime zip-path na novou zip-path a prev-dir
+                        // split the zip-path into a new zip-path and prev-dir
                         strcpy(path, GetZIPPath());
                         char* prevDir;
-                        char* s = strrchr(path, '\\'); // zip-path neobsahuje zbytecne backslashe (zacatek/konec)
+                        char* s = strrchr(path, '\\'); // zip-path does not contain unnecessary backslashes (beginning/end)
                         if (s != NULL)                 // format: "beg-path\\dir"
                         {
                             *s = 0;
@@ -447,28 +447,28 @@ void CFilesWindow::Execute(int index)
                             prevDir = path + 1;
                         }
 
-                        // sestavime zkracenou cestu do archivu a podle ni ziskame top-index
+                        // we will build a shortened path to the archive and obtain the top index according to it
                         strcpy(doublePath, GetZIPArchive());
                         SalPathAppend(doublePath, path, 2 * MAX_PATH);
-                        int topIndex; // pristi top-index, -1 -> neplatny
+                        int topIndex; // next top-index, -1 -> invalid
                         if (!TopIndexMem.FindAndPop(doublePath, topIndex))
                             topIndex = -1;
 
-                        // samotna zmena cesty
+                        // lonely change of path
                         if (!ChangePathToArchive(GetZIPArchive(), path, topIndex, prevDir)) // "always false"
-                        {                                                                   // nepodarilo se zkratit cestu - dlouhy skok
+                        {                                                                   // failed to shorten the path - long jump
                             TopIndexMem.Clear();
                         }
                     }
                 }
-                else // podadresar
+                else // subdirectory
                 {
-                    // zaloha udaju pro TopIndexMem (doublePath + topIndex)
+                    // Backup data for TopIndexMem (doublePath + topIndex)
                     strcpy(doublePath, GetZIPArchive());
                     SalPathAppend(doublePath, GetZIPPath(), 2 * MAX_PATH);
                     int topIndex = ListBox->GetTopIndex();
 
-                    // nova cesta
+                    // new path
                     strcpy(fullName, GetZIPPath());
                     if (!SalPathAppend(fullName, dir->Name, MAX_PATH))
                     {
@@ -480,12 +480,12 @@ void CFilesWindow::Execute(int index)
                         BOOL noChange;
                         if (ChangePathToArchive(GetZIPArchive(), fullName, -1, NULL, FALSE, &noChange)) // "always true"
                         {
-                            TopIndexMem.Push(doublePath, topIndex); // zapamatujeme top-index pro navrat
+                            TopIndexMem.Push(doublePath, topIndex); // remember the top index for return
                         }
                         else
                         {
                             if (!noChange)
-                                TopIndexMem.Clear(); // neuspech + nejsme na puvodni ceste -> dlouhy skok
+                                TopIndexMem.Clear(); // failure + we are not on the original path -> long jump
                         }
                     }
                 }
@@ -500,7 +500,7 @@ void CFilesWindow::Execute(int index)
                     isDir = 2; // up-dir
                 CFileData* file = isDir ? &Dirs->At(index) : &Files->At(index - Dirs->Count);
                 CPluginInterfaceForFSEncapsulation* ifaceForFS = GetPluginFS()->GetPluginInterfaceForFS();
-                char fsNameBuf[MAX_PATH]; // GetPluginFS() muze prestt existovat, radsi dame fsName do lokalniho bufferu
+                char fsNameBuf[MAX_PATH]; // GetPluginFS() may not exist, so let's put fsName into a local buffer instead
                 lstrcpyn(fsNameBuf, GetPluginFS()->GetPluginFSName(), MAX_PATH);
                 ifaceForFS->ExecuteOnFS(MainWindow->LeftPanel == this ? PANEL_LEFT : PANEL_RIGHT,
                                         GetPluginFS()->GetInterface(), fsNameBuf,
@@ -530,28 +530,28 @@ void CFilesWindow::ChangeSortType(CSortType newType, BOOL reverse, BOOL force)
         {
             ReverseSort = !ReverseSort;
 
-            //      EnumFileNamesChangeSourceUID(HWindow, &EnumFileNamesSourceUID);  // jen pri zmene razeni  // zakomentovano, nevim proc to tu je: Petr
+            //      EnumFileNamesChangeSourceUID(HWindow, &EnumFileNamesSourceUID);  // only when sorting changes  // commented out, I don't know why it's here: Petr
         }
     }
 
     MainWindow->CancelPanelsUI(); // cancel QuickSearch and QuickEdit
 
-    //---  ulozeni focusle polozky a setrideni starych polozek dle jmena
+    //--- saving the focus item and sorting old items by name
     int focusIndex = GetCaretIndex();
     CFileData d1;
     if (focusIndex >= 0 && focusIndex < Dirs->Count + Files->Count)
         d1 = (focusIndex < Dirs->Count) ? Dirs->At(focusIndex) : Files->At(focusIndex - Dirs->Count);
     else
         d1.Name = NULL;
-    //---  setrideni
+    //--- sorting
     if (UseSystemIcons || UseThumbnails)
         SleepIconCacheThread();
     SortDirectory();
     if (UseSystemIcons || UseThumbnails)
         WakeupIconCacheThread();
-    //---  vyber polozky pro focus + konecne setrideni
-    CLessFunction lessDirs;  // pro porovnani co je mensi; potrebne, viz optimalizace v hledacim cyklu
-    CLessFunction lessFiles; // pro porovnani co je mensi; potrebne, viz optimalizace v hledacim cyklu
+    //--- select item for focus + finally sorting
+    CLessFunction lessDirs;  // for comparison what is smaller; necessary, see optimization in the search loop
+    CLessFunction lessFiles; // for comparison what is smaller; necessary, see optimization in the search loop
     switch (SortType)
     {
     case stName:
@@ -581,15 +581,15 @@ void CFilesWindow::ChangeSortType(CSortType newType, BOOL reverse, BOOL force)
 
     int i;
     int count;
-    if (focusIndex < Dirs->Count) // hledame adresar
+    if (focusIndex < Dirs->Count) // looking for directory
     {
         i = 0;
         count = Dirs->Count;
     }
     else
     {
-        i = Dirs->Count;                    // hledame soubor
-        count = Dirs->Count + Files->Count; // tady byla chyba; count nebyla inicializovana
+        i = Dirs->Count;                    // searching for file
+        count = Dirs->Count + Files->Count; // There was an error here; count was not initialized
     }
 
     if (d1.Name != NULL)
@@ -602,27 +602,27 @@ void CFilesWindow::ChangeSortType(CSortType newType, BOOL reverse, BOOL force)
                 i = count;
             }
             else
-                i = 1; // ".." musime preskocit, neni zarazene
+                i = 1; // ".." we need to skip, it's not included
         }
         for (; i < count; i++)
         {
             if (i < Dirs->Count)
             {
                 CFileData* d2 = &Dirs->At(i);
-                if (!lessDirs(*d2, d1, ReverseSort)) // diky setrideni bude TRUE az na hledane polozce
+                if (!lessDirs(*d2, d1, ReverseSort)) // thanks to sorting, TRUE will be at the desired item
                 {
                     if (!lessDirs(d1, *d2, ReverseSort))
-                        focusIndex = i; // podminka zbytecna, mela by byt "always true"
+                        focusIndex = i; // Condition unnecessary, should be "always true"
                     break;
                 }
             }
             else
             {
                 CFileData* d2 = &Files->At(i - Dirs->Count);
-                if (!lessFiles(*d2, d1, ReverseSort)) // diky setrideni bude TRUE az na hledane polozce
+                if (!lessFiles(*d2, d1, ReverseSort)) // thanks to sorting, TRUE will be at the desired item
                 {
                     if (!lessFiles(d1, *d2, ReverseSort))
-                        focusIndex = i; // podminka zbytecna, mela by byt "always true"
+                        focusIndex = i; // Condition unnecessary, should be "always true"
                     break;
                 }
             }
@@ -630,9 +630,9 @@ void CFilesWindow::ChangeSortType(CSortType newType, BOOL reverse, BOOL force)
     }
     if (focusIndex >= count)
         focusIndex = count - 1;
-    //---  pouziti ziskanych dat pro konecne nastaveni listboxu
+    //--- using the acquired data to finally set up the listbox
     SetCaretIndex(focusIndex, FALSE); // focus
-    IdleRefreshStates = TRUE;         // pri pristim Idle vynutime kontrolu stavovych promennych
+    IdleRefreshStates = TRUE;         // During the next Idle, we will force the check of status variables
     ListBox->PaintHeaderLine();
     RepaintListBox(DRAWFLAG_SKIP_VISTEST);
     PostMessage(HWindow, WM_USER_SELCHANGED, 0, 0); // sel-change notify
@@ -657,14 +657,14 @@ BOOL CFilesWindow::ChangeToRescuePathOrFixedDrive(HWND parent, BOOL* noChange, B
         if (ret || failReasonInt == CHPPFR_SHORTERPATH)
         {
             if (failReason != NULL)
-                *failReason = CHPPFR_SUCCESS; // zkraceni "zachrane" cesty nebereme jako neuspech
+                *failReason = CHPPFR_SUCCESS; // Shortening "rescue" paths is not considered a failure
             return TRUE;
         }
         if (failReasonInt == CHPPFR_CANNOTCLOSEPATH)
         {
             if (failReason != NULL)
                 *failReason = failReasonInt;
-            return FALSE; // problem "nelze zavrit aktualni cestu v panelu" nevyresi ani prechod na fixed-drive (jen se pak hloupe dvakrat po sobe stejne ptame na disconnect)
+            return FALSE; // the problem "cannot close the current path in the panel" will not be solved by switching to fixed-drive (we will just stupidly ask for disconnect twice in a row)
         }
         noChangeUsed = TRUE;
     }
@@ -695,13 +695,13 @@ BOOL CFilesWindow::ChangeToFixedDrive(HWND parent, BOOL* noChange, BOOL refreshL
         root[0] = sysDir[0];
         if (GetDriveType(root) == DRIVE_FIXED)
         {
-            TopIndexMem.Clear(); // dlouhy skok
+            TopIndexMem.Clear(); // long jump
             return ChangePathToDisk(parent, root, -1, NULL, noChange, refreshListBox, canForce,
                                     FALSE, failReason, TRUE, tryCloseReason);
         }
     }
     DWORD disks = GetLogicalDrives();
-    disks >>= 2; // preskocime A: a B:, pri formatovani disket se nekde stavaji DRIVE_FIXED
+    disks >>= 2; // skip A: and B: when formatting disks, DRIVE_FIXED is becoming somewhere
     char d = 'C';
     while (d <= 'Z')
     {
@@ -710,7 +710,7 @@ BOOL CFilesWindow::ChangeToFixedDrive(HWND parent, BOOL* noChange, BOOL refreshL
             root[0] = d;
             if (GetDriveType(root) == DRIVE_FIXED)
             {
-                TopIndexMem.Clear(); // dlouhy skok
+                TopIndexMem.Clear(); // long jump
                 return ChangePathToDisk(parent, root, -1, NULL, noChange, refreshListBox, canForce,
                                         FALSE, failReason, TRUE, tryCloseReason);
             }
@@ -745,13 +745,13 @@ void CFilesWindow::ConnectNet(BOOL readOnlyUNC, const char* netRootPath, BOOL ch
         return;
     }
 
-    BeginStopRefresh(); // cmuchal si da pohov
+    BeginStopRefresh(); // He was snoring in his sleep
 
     DWORD disks = changeToNewDrive || newlyMappedDrive != NULL ? GetLogicalDrives() : 0;
 
     BOOL success;
     const char* netPath = netRootPath == NULL ? GetPath() : netRootPath;
-    if (netPath[0] == '\\' && netPath[1] == '\\') // UNC cesta
+    if (netPath[0] == '\\' && netPath[1] == '\\') // UNC path
     {
         CONNECTDLGSTRUCT cs;
         cs.cbStructure = sizeof(cs);
@@ -793,7 +793,7 @@ void CFilesWindow::ConnectNet(BOOL readOnlyUNC, const char* netRootPath, BOOL ch
         }
     }
 
-    EndStopRefresh(); // ted uz zase cmuchal nastartuje
+    EndStopRefresh(); // now he's sniffling again, he'll start up
 }
 
 void CFilesWindow::DisconnectNet()
@@ -814,29 +814,29 @@ void CFilesWindow::DisconnectNet()
         return;
     }
 
-    BeginSuspendMode(); // cmuchal si da pohov
+    BeginSuspendMode(); // He was snoring in his sleep
 
-    SetCurrentDirectoryToSystem(); // aby sel odmapovat i disk z panelu
+    SetCurrentDirectoryToSystem(); // to unmap the disk from the panel
 
-    // odpojime se od mapovaneho disku, jinak nepujde odpojit "bez reci" (system varuje, ze je pouzivan)
-    BOOL releaseLeft = MainWindow->LeftPanel->GetNetworkDrive() &&    // sitovy disk (jen ptDisk)
-                       MainWindow->LeftPanel->GetPath()[0] != '\\';   // ne UNC
-    BOOL releaseRight = MainWindow->RightPanel->GetNetworkDrive() &&  // sitovy disk (jen ptDisk)
-                        MainWindow->RightPanel->GetPath()[0] != '\\'; // ne UNC
+    // we will disconnect from the mapped disk, otherwise it will not be possible to disconnect "silently" (the system warns that it is in use)
+    BOOL releaseLeft = MainWindow->LeftPanel->GetNetworkDrive() &&    // network disk (only ptDisk)
+                       MainWindow->LeftPanel->GetPath()[0] != '\\';   // not UNC
+    BOOL releaseRight = MainWindow->RightPanel->GetNetworkDrive() &&  // network disk (only ptDisk)
+                        MainWindow->RightPanel->GetPath()[0] != '\\'; // not UNC
     if (releaseLeft)
         MainWindow->LeftPanel->HandsOff(TRUE);
     if (releaseRight)
         MainWindow->RightPanel->HandsOff(TRUE);
 
-    //  Pod Windows XP je WNetDisconnectDialog dialog nemodalni. Uzivatelum zapadnul za Salamandera
-    //  a oni se divili proc nechodi akceleratory. Pak pri zavirani Salamander padnul v teto metode
-    //  protoze MainWindow bylo NULL;
+    //  Under Windows XP, the WNetDisconnectDialog dialog is non-modal. Users are stuck behind Salamander.
+    //  and they wondered why the accelerators were not working. Then Salamander crashed in this method during closing
+    //  because MainWindow was NULL;
     //  WNetDisconnectDialog(HWindow, RESOURCETYPE_DISK);
 
     CDisconnectDialog dlg(this);
     if (dlg.Execute() == IDCANCEL && dlg.NoConnection())
     {
-        // dialog se ani nezobrazil, protoze obsahoval 0 resourcu -- zobrazime info
+        // the dialog did not even appear because it contained 0 resources -- we will display info
         SalMessageBox(HWindow, LoadStr(IDS_DISCONNECT_NODRIVES),
                       LoadStr(IDS_INFOTITLE), MB_OK | MB_ICONINFORMATION);
     }
@@ -851,7 +851,7 @@ void CFilesWindow::DisconnectNet()
     if (MainWindow->RightPanel->CheckPath(FALSE) != ERROR_SUCCESS)
         MainWindow->RightPanel->ChangeToRescuePathOrFixedDrive(MainWindow->RightPanel->HWindow);
 
-    EndSuspendMode(); // ted uz zase cmuchal nastartuje
+    EndSuspendMode(); // now he's sniffling again, he'll start up
 }
 
 void CFilesWindow::DriveInfo()
@@ -862,13 +862,13 @@ void CFilesWindow::DriveInfo()
         if (CheckPath(TRUE) != ERROR_SUCCESS)
             return;
 
-        BeginStopRefresh(); // cmuchal si da pohov
+        BeginStopRefresh(); // He was snoring in his sleep
 
         CDriveInfo dlg(HWindow, GetPath());
         dlg.Execute();
         UpdateWindow(MainWindow->HWindow);
 
-        EndStopRefresh(); // ted uz zase cmuchal nastartuje
+        EndStopRefresh(); // now he's sniffling again, he'll start up
     }
     else
     {
@@ -890,12 +890,12 @@ void CFilesWindow::ToggleDirectoryLine()
         TRACE_E("HWindow == NULL");
         return;
     }
-    if (DirectoryLine->HWindow != NULL) // vypnuti
+    if (DirectoryLine->HWindow != NULL) // turn off
     {
         DirectoryLine->ToggleToolBar();
         DestroyWindow(DirectoryLine->HWindow);
     }
-    else // zapnuti
+    else // turn on
     {
         if (!DirectoryLine->Create(CWINDOW_CLASSNAME2,
                                    "",
@@ -906,8 +906,8 @@ void CFilesWindow::ToggleDirectoryLine()
                                    HInstance,
                                    DirectoryLine))
             TRACE_E("Unable to create directory-line.");
-        IdleForceRefresh = TRUE;  // forcneme update
-        IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+        IdleForceRefresh = TRUE;  // force update
+        IdleRefreshStates = TRUE; // During the next Idle, we will force the check of status variables
     }
     InvalidateRect(HWindow, NULL, TRUE);
     RECT r;
@@ -919,7 +919,7 @@ void CFilesWindow::ToggleDirectoryLine()
         UpdateDriveIcon(TRUE);
         ShowWindow(DirectoryLine->HWindow, SW_SHOW);
     }
-    // pokud je zobrazena middle toolbar, dame ji prilezitost se umistit
+    // if the middle toolbar is displayed, we give it a chance to position itself
     if (MainWindow->MiddleToolBar != NULL && MainWindow->MiddleToolBar->HWindow != NULL)
         MainWindow->LayoutWindows();
 }
@@ -932,9 +932,9 @@ void CFilesWindow::ToggleStatusLine()
         TRACE_E("HWindow == NULL");
         return;
     }
-    if (StatusLine->HWindow != NULL) // vypnuti
+    if (StatusLine->HWindow != NULL) // turn off
         DestroyWindow(StatusLine->HWindow);
-    else // zapnuti
+    else // turn on
     {
         if (!StatusLine->Create(CWINDOW_CLASSNAME2,
                                 "",
@@ -981,12 +981,12 @@ int CFilesWindow::GetNextTemplateIndex(BOOL forward, BOOL wrap)
             if (forward)
             {
                 if (newIndex > 9)
-                    newIndex = 1; // krajni polozka byla nulova, skocime na druhou stranu seznamu
+                    newIndex = 1; // The end item was zero, let's jump to the other side of the list
             }
             else
             {
                 if (newIndex < 1)
-                    newIndex = 9; // krajni polozka byla nulova, skocime na druhou stranu seznamu
+                    newIndex = 9; // The end item was zero, let's jump to the other side of the list
             }
         }
         else
@@ -994,12 +994,12 @@ int CFilesWindow::GetNextTemplateIndex(BOOL forward, BOOL wrap)
             if (forward)
             {
                 if (newIndex > 9)
-                    newIndex = oldIndex; // krajni polozka byla nulova, vracime se na posledni validni
+                    newIndex = oldIndex; // The boundary item was zero, we return to the last valid one
             }
             else
             {
                 if (newIndex < 1)
-                    newIndex = oldIndex; // krajni polozka byla nulova, vracime se na posledni validni
+                    newIndex = oldIndex; // The boundary item was zero, we return to the last valid one
             }
         }
     } while (Parent->ViewTemplates.Items[newIndex].Name[0] == 0 && newIndex != oldIndex);
@@ -1009,7 +1009,7 @@ int CFilesWindow::GetNextTemplateIndex(BOOL forward, BOOL wrap)
 BOOL CFilesWindow::IsViewTemplateValid(int templateIndex)
 {
     CALL_STACK_MESSAGE2("CFilesWindow::IsViewTemplateValid(%d)", templateIndex);
-    if (templateIndex < 1) // tree zatim neumime
+    if (templateIndex < 1) // we cannot do tree yet
         return FALSE;
     CViewTemplate* newTemplate = &Parent->ViewTemplates.Items[templateIndex];
     if (lstrlen(newTemplate->Name) == 0)
@@ -1029,7 +1029,7 @@ BOOL CFilesWindow::SelectViewTemplate(int templateIndex, BOOL canRefreshPath,
     CViewTemplate* newTemplate = &Parent->ViewTemplates.Items[templateIndex];
     if (lstrlen(newTemplate->Name) == 0)
     {
-        // nedefinovany pohled nechceme - vnutime detailed, ktery urcite existuje
+        // We do not want an undefined view - we will force the detailed one, which definitely exists
         templateIndex = 2;
         newTemplate = &Parent->ViewTemplates.Items[templateIndex];
     }
@@ -1065,7 +1065,7 @@ BOOL CFilesWindow::SelectViewTemplate(int templateIndex, BOOL canRefreshPath,
         ListBox->SetMode(newViewMode, headerLine);
     }
 
-    // postavime nove sloupce
+    // build new columns
     BuildColumnsTemplate();
     CopyColumnsTemplateToColumns();
     DeleteColumnsWithoutData(columnValidMask);
@@ -1080,20 +1080,20 @@ BOOL CFilesWindow::SelectViewTemplate(int templateIndex, BOOL canRefreshPath,
                                  Is(ptZIPArchive) ? GetArchiveDir()->GetUpperDir(GetZIPPath()) : NULL);
         }
 
-        // jakmile se lisi view-mode, je potreba refreshnout (je potreba nacist jinou velikost
-        // ikon nebo thumbnaily) - jedina vyjimka je brief a detailed, ty maji oba stejne ikony
+        // When the view-mode changes, it is necessary to refresh (load a different size)
+        // icons or thumbnails) - the only exception is brief and detailed, they have the same icons
         BOOL needRefresh = oldViewMode != GetViewMode() &&
                            (oldViewMode != vmBrief || GetViewMode() != vmDetailed) &&
                            (oldViewMode != vmDetailed || GetViewMode() != vmBrief);
         if (canRefreshPath && needRefresh)
         {
-            // az do ReadDirectory pojedeme nad simple icons, protoze se meni geometrie ikonek
+            // Until we reach the ReadDirectory, we will go above simple icons, because the geometry of the icons is changing
             TemporarilySimpleIcons = TRUE;
 
-            // nechame napocitat rozmery polozek a zajistime viditelnost focused polozky
+            // we will calculate the dimensions of items and ensure the visibility of the focused item
             RefreshListBox(0, -1, FocusedIndex, FALSE, FALSE);
 
-            // provedeme tvrdy refresh
+            // perform a hard refresh
             HANDLES(EnterCriticalSection(&TimeCounterSection));
             int t1 = MyTimeCounter++;
             HANDLES(LeaveCriticalSection(&TimeCounterSection));
@@ -1105,16 +1105,16 @@ BOOL CFilesWindow::SelectViewTemplate(int templateIndex, BOOL canRefreshPath,
             {
                 if (!salamanderIsStarting)
                     TRACE_E("CFilesWindow::SelectViewTemplate(): unexpected situation: refresh is needed, but it's not allowed!");
-                // prozatim aspon: az do dalsiho refreshe (a tim ReadDirectory) pojedeme nad simple icons, protoze se meni geometrie ikonek
+                // For now at least: until the next refresh (and thus ReadDirectory) we will focus on simple icons, because the geometry of the icons is changing
                 TemporarilySimpleIcons = TRUE;
             }
-            // nechame napocitat rozmery polozek a zajistime viditelnost focused polozky
-            // je-li 'preserveTopIndex' TRUE, nemame nechat panel odrolvat za focusem
+            // we will calculate the dimensions of items and ensure the visibility of the focused item
+            // if 'preserveTopIndex' is TRUE, we should not let the panel scroll beyond the focus
             RefreshListBox(-1, preserveTopIndex ? ListBox->TopIndex : -1, FocusedIndex, FALSE, FALSE);
         }
     }
 
-    // pri zmene rezimu panelu musime vycistit pamet top-indexu (ukladaji se nekompatibilni data)
+    // When changing the panel mode, we need to clear the memory of the top index (incompatible data is stored)
     if (oldViewMode != GetViewMode())
         TopIndexMem.Clear();
 
@@ -1132,7 +1132,7 @@ void CFilesWindow::RedrawIndex(int index)
     if (index >= 0 && index < Dirs->Count + Files->Count)
         ListBox->PaintItem(index, DRAWFLAG_SELFOC_CHANGE);
     else if (Dirs->Count + Files->Count == 0)
-        ListBox->PaintAllItems(NULL, 0); // zajistime vykresleni textu o prazdnem panelu
+        ListBox->PaintAllItems(NULL, 0); // Ensure rendering text on an empty panel
 }
 
 void CFilesWindow::ItemFocused(int index)
@@ -1159,7 +1159,7 @@ void CFilesWindow::ItemFocused(int index)
                     done = TRUE;
                 }
                 else
-                    varPlacementsCount = 100; // mohlo se poskodit
+                    varPlacementsCount = 100; // could be damaged
             }
         }
 
@@ -1172,7 +1172,7 @@ void CFilesWindow::ItemFocused(int index)
                 StatusLine->SetSubTexts(varPlacements, varPlacementsCount);
         }
     }
-    IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+    IdleRefreshStates = TRUE; // During the next Idle, we will force the check of status variables
 }
 
 void CFilesWindow::SetValidFileData(DWORD validFileData)
@@ -1202,7 +1202,7 @@ BOOL CFilesWindow::PrepareCloseCurrentPath(HWND parent, BOOL canForce, BOOL canD
     if (Is(ptDisk))
     {
         detachFS = FALSE;
-        return TRUE; // cesta na disku jde zavrit vzdycky
+        return TRUE; // the path on the disk can always be closed
     }
     else
     {
@@ -1211,7 +1211,7 @@ BOOL CFilesWindow::PrepareCloseCurrentPath(HWND parent, BOOL canForce, BOOL canD
             BOOL someFilesChanged = FALSE;
             if (AssocUsed)
             {
-                // pokud to user nepotlacil, zobrazime info o zavirani archivu ve kterem jsou editovane soubory
+                // if the user did not suppress it, we will display information about closing the archive containing the edited files
                 if (Configuration.CnfrmCloseArchive && !CriticalShutdown)
                 {
                     char title[100];
@@ -1234,54 +1234,54 @@ BOOL CFilesWindow::PrepareCloseCurrentPath(HWND parent, BOOL canForce, BOOL canD
 
                     Configuration.CnfrmCloseArchive = !dontShow;
                 }
-                // zapakujeme zmenene soubory (jen nejde-li o critical shutdown), pripravime pro dalsi pouziti
+                // we will package the modified files (unless it is a critical shutdown), prepare for further use
                 UnpackedAssocFiles.CheckAndPackAndClear(parent, &someFilesChanged);
-                // pri critical shutdown se tvarime, ze updatle soubory neexistuji, zabalit zpet do archivu bysme
-                // je nestihly, ale smazat je nesmime, po startu musi zustat uzivateli sance updatle soubory
-                // rucne do archivu zabalit; vyjimka je pokud nebylo nic editovano, to lze vse smazat i pri
-                // critical shutdown (to je rychle a nebudeme pri startu mast usera zbytecnymi dotazy)
+                // During critical shutdown, we pretend that the updated files do not exist, we would pack them back into the archive
+                // It is not ready, but we must not delete it, after the start the user must have a chance to update the files
+                // manually pack into the archive; the exception is if nothing has been edited, everything can be deleted even then
+                // critical shutdown (this is fast and we won't bother the user with unnecessary questions at startup)
                 if (!someFilesChanged || !CriticalShutdown)
                 {
-                    SetEvent(ExecuteAssocEvent); // spustime uklid souboru
+                    SetEvent(ExecuteAssocEvent); // start file cleanup
                     DiskCache.WaitForIdle();
-                    ResetEvent(ExecuteAssocEvent); // ukoncime uklid souboru
+                    ResetEvent(ExecuteAssocEvent); // Finish cleaning up files
                 }
             }
             AssocUsed = FALSE;
-            // pokud muzou byt v diskcache editovane soubory nebo tento archiv neni otevren
-            // i v druhem panelu, vyhodime jeho cachovane soubory, pri dalsim otevreni se bude
-            // znovu vypakovavat (archiv muze byt mezitim editovan)
+            // if files in the disk cache can be edited or if this archive is not open
+            // and in the second panel, we will delete its cached files, it will be recreated upon next opening
+            // unpack again (archive may have been edited in the meantime)
             CFilesWindow* another = (MainWindow->LeftPanel == this) ? MainWindow->RightPanel : MainWindow->LeftPanel;
             if (someFilesChanged || !another->Is(ptZIPArchive) || StrICmp(another->GetZIPArchive(), GetZIPArchive()) != 0)
             {
-                StrICpy(buf, GetZIPArchive()); // v disk-cache je jmeno archivu malymi pismeny (umozni case-insensitive porovnani jmena z Windows file systemu)
+                StrICpy(buf, GetZIPArchive()); // the name of the archive in the disk cache is in lowercase (allows case-insensitive comparison of names from the Windows file system)
                 DiskCache.FlushCache(buf);
             }
 
-            // zavolame plug-inove CPluginInterfaceAbstract::CanCloseArchive
+            // call the plug-in's CPluginInterfaceAbstract::CanCloseArchive
             BOOL canclose = TRUE;
             int format = PackerFormatConfig.PackIsArchive(GetZIPArchive());
-            if (format != 0) // nasli jsme podporovany archiv
+            if (format != 0) // We found a supported archive
             {
                 format--;
                 BOOL userForce = FALSE;
                 BOOL userAsked = FALSE;
                 CPluginData* plugin = NULL;
                 int index = PackerFormatConfig.GetUnpackerIndex(format);
-                if (index < 0) // view: jde o interni zpracovani (plug-in)?
+                if (index < 0) // view: is it internal processing (plug-in)?
                 {
                     plugin = Plugins.Get(-index - 1);
                     if (plugin != NULL)
                     {
-                        if (!plugin->CanCloseArchive(this, GetZIPArchive(), CriticalShutdown)) // nechce se mu zavrit
+                        if (!plugin->CanCloseArchive(this, GetZIPArchive(), CriticalShutdown)) // he doesn't want to close it
                         {
                             canclose = FALSE;
-                            if (canForce) // muzeme se zeptat usera, jestli forcovat?
+                            if (canForce) // We can ask the user if they want to force?
                             {
                                 sprintf(buf, LoadStr(IDS_ARCHIVEFORCECLOSE), GetZIPArchive());
                                 userAsked = TRUE;
                                 if (SalMessageBox(parent, buf, LoadStr(IDS_QUESTION),
-                                                  MB_YESNO | MB_ICONQUESTION) == IDYES) // user rika "zavrit"
+                                                  MB_YESNO | MB_ICONQUESTION) == IDYES) // user says "close"
                                 {
                                     userForce = TRUE;
                                     plugin->CanCloseArchive(this, GetZIPArchive(), TRUE); // force==TRUE
@@ -1291,24 +1291,24 @@ BOOL CFilesWindow::PrepareCloseCurrentPath(HWND parent, BOOL canForce, BOOL canD
                         }
                     }
                 }
-                if (PackerFormatConfig.GetUsePacker(format)) // ma edit?
+                if (PackerFormatConfig.GetUsePacker(format)) // edit?
                 {
                     index = PackerFormatConfig.GetPackerIndex(format);
-                    if (index < 0) // jde o interni zpracovani (plug-in)?
+                    if (index < 0) // Is it about internal processing (plug-in)?
                     {
-                        if (plugin != Plugins.Get(-index - 1)) // je-li view==edit, nevolat podruhe
+                        if (plugin != Plugins.Get(-index - 1)) // if view==edit, do not call again
                         {
                             plugin = Plugins.Get(-index - 1);
                             if (plugin != NULL)
                             {
-                                if (!plugin->CanCloseArchive(this, GetZIPArchive(), userForce || CriticalShutdown)) // nechce se mu zavrit
+                                if (!plugin->CanCloseArchive(this, GetZIPArchive(), userForce || CriticalShutdown)) // he doesn't want to close it
                                 {
                                     canclose = FALSE;
-                                    if (canForce && !userAsked) // muzeme se zeptat usera, jestli forcovat?
+                                    if (canForce && !userAsked) // We can ask the user if they want to force?
                                     {
                                         sprintf(buf, LoadStr(IDS_ARCHIVEFORCECLOSE), GetZIPArchive());
                                         if (SalMessageBox(parent, buf, LoadStr(IDS_QUESTION),
-                                                          MB_YESNO | MB_ICONQUESTION) == IDYES) // user rika "zavrit"
+                                                          MB_YESNO | MB_ICONQUESTION) == IDYES) // user says "close"
                                         {
                                             plugin->CanCloseArchive(this, GetZIPArchive(), TRUE);
                                             canclose = TRUE;
@@ -1321,44 +1321,44 @@ BOOL CFilesWindow::PrepareCloseCurrentPath(HWND parent, BOOL canForce, BOOL canD
                 }
             }
 
-            return canclose; // zatim rozhoduji jen plug-inove CPluginInterfaceAbstract::CanCloseArchive
+            return canclose; // Currently, I am only deciding on the plug-in CPluginInterfaceAbstract::CanCloseArchive
         }
         else
         {
             if (Is(ptPluginFS))
             {
-                if (!canForce && !CriticalShutdown) // nemuzeme se usera ptat na force
+                if (!canForce && !CriticalShutdown) // We cannot ask the user for force
                 {
-                    detachFS = FALSE; // kdyby na to plug-in nesahl, tak aby tam byla znama hodnota
+                    detachFS = FALSE; // if the plug-in did not touch it, so that the known value would be there
                     BOOL r = GetPluginFS()->TryCloseOrDetach(FALSE, canDetach, detachFS, tryCloseReason);
                     if (!r || !canDetach)
-                        detachFS = FALSE; // kontrola/korekce vystupni hodnoty
+                        detachFS = FALSE; // Check/correct the output value
                     return r;
                 }
-                else // muzeme forcovat -> musime zavirat, odpojovani neni dovolene
+                else // We can force -> we must close, disconnecting is not allowed
                 {
-                    if (GetPluginFS()->TryCloseOrDetach(CriticalShutdown, FALSE, detachFS, tryCloseReason) || // test zavreni bez forceClose==TRUE (krome critical shutdownu)
+                    if (GetPluginFS()->TryCloseOrDetach(CriticalShutdown, FALSE, detachFS, tryCloseReason) || // test closing without forceClose == TRUE (except for critical shutdown)
                         CriticalShutdown)
                     {
                         detachFS = FALSE;
-                        return TRUE; // zavreni o.k.
+                        return TRUE; // closing o.k.
                     }
-                    else // optame se usera, jestli to chce zavrit i proti vuli FS
+                    else // Ask the user if they want to close it even against the will of the file system
                     {
                         char path[2 * MAX_PATH];
                         GetGeneralPath(path, 2 * MAX_PATH);
                         sprintf(buf, LoadStr(IDS_FSFORCECLOSE), path);
                         if (SalMessageBox(parent, buf, LoadStr(IDS_QUESTION),
-                                          MB_YESNO | MB_ICONQUESTION) == IDYES) // user rika "zavrit"
+                                          MB_YESNO | MB_ICONQUESTION) == IDYES) // user says "close"
                         {
                             GetPluginFS()->TryCloseOrDetach(TRUE, FALSE, detachFS, tryCloseReason);
                             detachFS = FALSE;
-                            return TRUE; // zavreni o.k.
+                            return TRUE; // closing o.k.
                         }
                         else
                         {
                             detachFS = FALSE;
-                            return FALSE; // nelze zavrit
+                            return FALSE; // cannot close
                         }
                     }
                 }
@@ -1385,7 +1385,7 @@ void CFilesWindow::CloseCurrentPath(HWND parent, BOOL cancel, BOOL detachFS, BOO
             if (UserWorkedOnThisPath)
             {
                 const char* path = GetPath();
-                // HICON hIcon = GetFileOrPathIconAux(path, FALSE, TRUE); // vytahneme ikonu
+                // HICON hIcon = GetFileOrPathIconAux(path, FALSE, TRUE); // extract the icon
                 MainWindow->DirHistoryAddPathUnique(0, path, NULL, NULL /*hIcon*/, NULL, NULL);
                 if (!newPathIsTheSame)
                     UserWorkedOnThisPath = FALSE;
@@ -1393,9 +1393,9 @@ void CFilesWindow::CloseCurrentPath(HWND parent, BOOL cancel, BOOL detachFS, BOO
 
             if (!newPathIsTheSame)
             {
-                // opoustime cestu
-                HiddenNames.Clear();  // uvolnime skryte nazvy
-                OldSelection.Clear(); // a starou selection
+                // leaving the road
+                HiddenNames.Clear();  // release hidden names
+                OldSelection.Clear(); // and the old selection
             }
 
             if (!isRefresh && canChangeSourceUID)
@@ -1420,15 +1420,15 @@ void CFilesWindow::CloseCurrentPath(HWND parent, BOOL cancel, BOOL detachFS, BOO
 
                 if (!newPathIsTheSame)
                 {
-                    // opoustime cestu
-                    HiddenNames.Clear();  // uvolnime skryte nazvy
-                    OldSelection.Clear(); // a starou selection
+                    // leaving the road
+                    HiddenNames.Clear();  // release hidden names
+                    OldSelection.Clear(); // and the old selection
                 }
 
                 if (!isRefresh && canChangeSourceUID)
                     EnumFileNamesChangeSourceUID(HWindow, &EnumFileNamesSourceUID);
 
-                // pokud se data archivu hodi SalShExtPastedData, predame mu je
+                // if the archive data fits SalShExtPastedData, we pass it to it
                 if (SalShExtPastedData.WantData(GetZIPArchive(), GetArchiveDir(), PluginData,
                                                 GetZIPArchiveDate(), GetZIPArchiveSize()))
                 {
@@ -1441,11 +1441,11 @@ void CFilesWindow::CloseCurrentPath(HWND parent, BOOL cancel, BOOL detachFS, BOO
                     delete GetArchiveDir();
                 SetArchiveDir(NULL);
                 SetPluginIface(NULL);
-                // jeste par zbytecnych nulovani, jen tak pro vetsi prehlednost
+                // Some additional unnecessary zeroing out, just for better clarity
                 SetZIPArchive("");
                 SetZIPPath("");
 
-                SetPanelType(ptDisk); // z bezpecnostnich duvodu (disk nema zadna PluginData, atd.)
+                SetPanelType(ptDisk); // for security reasons (the disk has no PluginData, etc.)
                 SetValidFileData(VALID_DATA_ALL);
             }
         }
@@ -1470,13 +1470,13 @@ void CFilesWindow::CloseCurrentPath(HWND parent, BOOL cancel, BOOL detachFS, BOO
                         }
                         if (!newPathIsTheSame)
                         {
-                            // opoustime cestu
-                            HiddenNames.Clear();  // uvolnime skryte nazvy
-                            OldSelection.Clear(); // a starou selection
+                            // leaving the road
+                            HiddenNames.Clear();  // release hidden names
+                            OldSelection.Clear(); // and the old selection
                         }
                     }
 
-                    if (detachFS) // jen odpojujeme -> pridani do MainWindow->DetachedFS
+                    if (detachFS) // just disconnecting -> adding to MainWindow->DetachedFS
                     {
                         detachedFS = new CPluginFSInterfaceEncapsulation(GetPluginFS()->GetInterface(),
                                                                          GetPluginFS()->GetDLLName(),
@@ -1496,10 +1496,10 @@ void CFilesWindow::CloseCurrentPath(HWND parent, BOOL cancel, BOOL detachFS, BOO
                             detachedFS = NULL;
                         }
                         else
-                            sendDetachEvent = TRUE; // volani nesmi byt primo zde, protoze FS jeste neni odpojen (je stale v panelu)
+                            sendDetachEvent = TRUE; // The call must not be made directly here, because the FS is not yet disconnected (it is still in the panel)
                     }
 
-                    if (!detachFS) // zavirame FS, nechame ho dealokovat + vypsat posledni messageboxy
+                    if (!detachFS) // Close the file system, let it deallocate + print the last message boxes
                     {
                         GetPluginFS()->ReleaseObject(parent);
                     }
@@ -1518,7 +1518,7 @@ void CFilesWindow::CloseCurrentPath(HWND parent, BOOL cancel, BOOL detachFS, BOO
                         SimplePluginIcons = NULL;
                     }
 
-                    if (!detachFS) // zavirame FS
+                    if (!detachFS) // closing file system
                     {
                         CPluginInterfaceForFSEncapsulation plugin(GetPluginFS()->GetPluginInterfaceForFS()->GetInterface(),
                                                                   GetPluginFS()->GetPluginInterfaceForFS()->GetBuiltForVersion());
@@ -1530,11 +1530,11 @@ void CFilesWindow::CloseCurrentPath(HWND parent, BOOL cancel, BOOL detachFS, BOO
                     SetPluginFS(NULL, NULL, NULL, NULL, NULL, NULL, -1, 0, 0, 0);
                     SetPluginIface(NULL);
 
-                    SetPanelType(ptDisk); // z bezpecnostnich duvodu (disk nema zadna PluginData, atd.)
+                    SetPanelType(ptDisk); // for security reasons (the disk has no PluginData, etc.)
                     SetValidFileData(VALID_DATA_ALL);
 
-                    if (sendDetachEvent && detachedFS != NULL /* always true */)
-                        detachedFS->Event(FSE_DETACHED, GetPanelCode()); // dame zpravu o uspesnem odpojeni plug-inu
+                    if (sendDetachEvent && detachedFS != NULL /* always true*/)
+                        detachedFS->Event(FSE_DETACHED, GetPanelCode()); // Provide a message about successful plug-in disconnection
                 }
                 else
                     GetPluginFS()->Event(FSE_CLOSEORDETACHCANCELED, GetPanelCode());
@@ -1550,12 +1550,12 @@ void CFilesWindow::RefreshPathHistoryData()
     CALL_STACK_MESSAGE1("CFilesWindow::RefreshPathHistoryData()");
 
     int index = GetCaretIndex();
-    if (index >= 0 && index < Files->Count + Dirs->Count) // pokud nejsou rozjeta data
+    if (index >= 0 && index < Files->Count + Dirs->Count) // if the data is not initialized
     {
         int topIndex = ListBox->GetTopIndex();
         CFileData* file = index < Dirs->Count ? &Dirs->At(index) : &Files->At(index - Dirs->Count);
 
-        // zkusime zapsat novy top-index a focus-name
+        // Let's try to write a new top-index and focus-name
         if (Is(ptZIPArchive))
         {
             PathHistory->ChangeActualPathData(1, GetZIPArchive(), GetZIPPath(), NULL, NULL, topIndex, file->Name);
@@ -1655,9 +1655,9 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
         return FALSE;
     }
 
-    // udelame zalozni kopie
+    // let's make backup copies
     char backup[MAX_PATH];
-    lstrcpyn(backup, path, MAX_PATH); // nutne udelat pred UpdateDefaultDir (muze byt ukazatel do DefaultDir[])
+    lstrcpyn(backup, path, MAX_PATH); // must be done before UpdateDefaultDir (can be a pointer to DefaultDir[])
     char backup2[MAX_PATH];
     if (suggestedFocusName != NULL)
     {
@@ -1665,7 +1665,7 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
         suggestedFocusName = backup2;
     }
 
-    // obnovime udaje o stavu panelu (top-index + focused-name) pred pripadnym zavrenim teto cesty
+    // we restore the data about the panel state (top-index + focused-name) before potentially closing this path
     RefreshPathHistoryData();
 
     if (noChange != NULL)
@@ -1673,14 +1673,14 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
 
     if (!isRefresh)
         MainWindow->CancelPanelsUI(); // cancel QuickSearch and QuickEdit
-    // obnova DefaultDir
+    // Restore DefaultDir
     MainWindow->UpdateDefaultDir(TRUE);
 
-    // pokud jde o rel. cestu, prevedeme ji na absolutni
+    // when it comes to the relative path, we will convert it to absolute
     int errTextID;
     //  if (!SalGetFullName(backup, &errTextID, MainWindow->GetActivePanel()->Is(ptDisk) ?
     //                      MainWindow->GetActivePanel()->GetPath() : NULL))
-    if (!SalGetFullName(backup, &errTextID, Is(ptDisk) ? GetPath() : NULL)) // kvuli FTP pluginu - rel. cesta v "target panel path" pri connectu
+    if (!SalGetFullName(backup, &errTextID, Is(ptDisk) ? GetPath() : NULL)) // for FTP plugin - relative path in "target panel path" when connecting
     {
         SalMessageBox(parent, LoadStr(errTextID), LoadStr(IDS_ERRORCHANGINGDIR),
                       MB_OK | MB_ICONEXCLAMATION);
@@ -1690,16 +1690,16 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
     }
     path = backup;
 
-    // nahozeni hodin
-    BOOL setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // ceka uz ?
+    // clock initialization
+    BOOL setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // Is it waiting already?
     HCURSOR oldCur;
     if (setWait)
         oldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
-    BeginStopRefresh(); // neprejeme si zadne refreshe -> znamenaly by rekurzi
+    BeginStopRefresh(); // we do not want any refreshes -> they would mean recursion
 
-    //  BOOL firstRun = TRUE;    // zakomentovane kvuli zakomentovani forceUpdate
+    //  BOOL firstRun = TRUE;    // commented out to disable forceUpdate
     BOOL fixedDrive = FALSE;
-    BOOL canTryUserRescuePath = FALSE; // povoluje pouziti Configuration.IfPathIsInaccessibleGoTo tesne pred fixed-drive cestou
+    BOOL canTryUserRescuePath = FALSE; // Enables the use of Configuration.IfPathIsInaccessibleGoTo just before the fixed-drive path
     BOOL openIfPathIsInaccessibleGoToCfg = FALSE;
     char ifPathIsInaccessibleGoTo[MAX_PATH];
     GetIfPathIsInaccessibleGoTo(ifPathIsInaccessibleGoTo);
@@ -1710,12 +1710,12 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
         canTryUserRescuePath = TRUE;
     }
     BOOL closeCalled = FALSE;
-    // pokud jde o zmeny v ramci jednoho disku (vcetne archivu), najdeme platny adresar i za cenu
-    // zmeny na "fixed-drive"
+    // when it comes to changes within one disk (including archives), we will find a valid directory at any cost
+    // Changes to "fixed-drive"
     BOOL forceUpdateInt = (Is(ptDisk) || Is(ptZIPArchive)) && HasTheSameRootPath(GetPath(), path);
     BOOL detachFS;
     if (PrepareCloseCurrentPath(parent, canForce, TRUE, detachFS, tryCloseReason))
-    { // zmena v ramci "ptDisk" nebo soucasnou cestu pujde zavrit, zkusime otevrit novou cestu
+    { // Change within "ptDisk" or the current path will be closed, let's try to open a new path
         char changedPath[MAX_PATH];
         strcpy(changedPath, path);
         BOOL tryNet = !CriticalShutdown && ((!Is(ptDisk) && !Is(ptZIPArchive)) || !HasTheSameRootPath(path, GetPath()));
@@ -1726,35 +1726,34 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
         BOOL pathInvalid, cut;
         SalCheckAndRestorePathWithCut(parent, changedPath, tryNet, err, lastErr, pathInvalid, cut, FALSE);
         if (cut)
-        { // zneplatnime navrhovane nastaveni listboxu (budeme listovat jinou cestu)
+        { // Disable the proposed settings of the listbox (we will navigate a different path)
             suggestedTopIndex = -1;
             suggestedFocusName = NULL;
         }
 
         if (!pathInvalid && err == ERROR_SUCCESS)
         {
-            /*    // zakomentovana optimalizace pripadu, kdy je nova cesta shodna se starou -> u disku to byl nezvyk...
+            /*    // commented optimization for the case when the new path is the same as the old one -> unusual for disks...
       if (!forceUpdate && firstRun && Is(ptDisk) && IsTheSamePath(changedPath, GetPath()))
-      {  // neni duvod menit cestu
-        CloseCurrentPath(parent, TRUE, detachFS, FALSE, isRefresh, FALSE);  // "cancel" - na teto ceste zustavame
+      {  // no reason to change the path
+        CloseCurrentPath(parent, TRUE, detachFS, FALSE, isRefresh, FALSE);  // "cancel" - we stay on this path
         EndStopRefresh();
         if (setWait) SetCursor(oldCur);
         if (IsTheSamePath(path, GetPath()))
         {
-          return TRUE; // nova cesta se shoduje se soucasnou cestou, neni co delat
+          return TRUE; // the new path matches the current path, nothing to do
         }
         else
         {
-          // zkracena cesta se shoduje se soucasnou cestou
-          // nastava napr. pri pokusu o vstup do nepristupneho adresare (okamzity navrat zpet)
-          CheckPath(TRUE, path, lastErr, TRUE, parent);  // ohlasime chybu, ktera vedla ke zkraceni cesty
-          return FALSE;  // pozadovana cesta neni dostupna
+          // the shortened path matches the current path
+          // occurs, for example, when trying to enter an inaccessible directory (immediate return back)
+          CheckPath(TRUE, path, lastErr, TRUE, parent);  // report the error that led to shortening the path
+          return FALSE;  // the requested path is not accessible
         }
       }
-      firstRun = FALSE;
-*/
+      firstRun = FALSE;*/
             BOOL updateIcon;
-            updateIcon = !Is(ptDisk) || // jednoduche kvuli zakomentovani forceUpdate
+            updateIcon = !Is(ptDisk) || // Simple because of commenting forceUpdate
                          !HasTheSameRootPath(changedPath, GetPath());
             //      updateIcon = forceUpdate || !Is(ptDisk) || !HasTheSameRootPath(changedPath, GetPath());
 
@@ -1762,66 +1761,66 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
                 SleepIconCacheThread();
 
             if (!closeCalled)
-            { // vleze to sem jen pri prvnim pruchodu, proto je mozne pouzit "Is(ptDisk)" a "GetPath()"
+            { // It enters here only on the first pass, so it is possible to use "Is(ptDisk)" and "GetPath()"
                 BOOL samePath = (Is(ptDisk) && IsTheSamePath(GetPath(), changedPath));
                 BOOL oldCanAddToDirHistory;
                 if (samePath)
                 {
-                    // nebudeme si pamatovat zaviranou cestu (aby cesta nepribyla jen kvuli change-dir na stejnou cestu)
+                    // We will not remember the closed path (so that the path does not increase just because of a change-dir to the same path)
                     oldCanAddToDirHistory = MainWindow->CanAddToDirHistory;
                     MainWindow->CanAddToDirHistory = FALSE;
                 }
 
-                CloseCurrentPath(parent, FALSE, detachFS, samePath, isRefresh, !samePath); // uspech, prejdeme na novou cestu
+                CloseCurrentPath(parent, FALSE, detachFS, samePath, isRefresh, !samePath); // success, let's move on to a new path
 
                 if (samePath)
                 {
-                    // prechod zpet do puvodniho rezimu pamatovani cest
+                    // transition back to the original path memory mode
                     MainWindow->CanAddToDirHistory = oldCanAddToDirHistory;
                 }
 
-                // schovame throbbera a ikonu zabezpeceni, na disku o ne nestojime
+                // Hide the throbber and security icon, we don't need them on disk
                 if (DirectoryLine != NULL)
                     DirectoryLine->HideThrobberAndSecurityIcon();
 
                 closeCalled = TRUE;
             }
-            //--- nastavime panel na "disk" cestu
+            //--- set the panel to the "disk" path
             SetPanelType(ptDisk);
             SetPath(changedPath);
             if (updateIcon ||
-                !GetNetworkDrive()) // aby zobrazovalo korektne ikony pri prechodu na mounted-volume (na lokale nezpomaluje, takze snad zadny problem)
+                !GetNetworkDrive()) // to display icons correctly when switching to mounted-volume (locally it does not slow down, so hopefully no problem)
             {
                 UpdateDriveIcon(FALSE);
             }
             if (noChange != NULL)
-                *noChange = FALSE; // listing se uvolnil
-            forceUpdateInt = TRUE; // tak a ted uz se neco musi povest nacist (jinak: prazdny panel)
+                *noChange = FALSE; // Listing has been released
+            forceUpdateInt = TRUE; // now something must be loaded (otherwise: empty panel)
 
-            // nechame nacist obsah nove cesty
+            // load the content of the new path
             BOOL cannotList;
             cannotList = !CommonRefresh(parent, suggestedTopIndex, suggestedFocusName, refreshListBox, TRUE, isRefresh);
             if (isRefresh && !cannotList && GetMonitorChanges() && !AutomaticRefresh)
-            {                                                                                                                // chyba auto-refreshe, overime jestli to neni kvuli vymazu adresare zobrazeneho v panelu (delalo mi pri mazani po siti z jine masiny) ... neprijemne je, ze pokud tuhle chybu ignorujeme, obsah panelu uz se proste neobnovi (protoze auto-refresh nefunguje)
-                Sleep(400);                                                                                                  // dame si chvilku pauzu, aby mohlo pokrocit mazani adresare (aby uz byl dost smazanej na to, aby nesel listovat, dobrej humus...)
+            {                                                                                                                // error in auto-refresh, we will verify if it's not due to deleting the directory displayed in the panel (it happened to me when deleting over the network from another machine) ... the unpleasant part is that if we ignore this error, the panel content simply won't refresh anymore (because auto-refresh is not working)
+                Sleep(400);                                                                                                  // Let's take a short break so that the directory deletion can proceed (so that it's already deleted enough not to need to scroll, good humus...)
                                                                                                                              //        TRACE_I("Calling CommonRefresh again... (unable to receive change notifications, first listing was OK, but maybe current directory is being deleted)");
-                cannotList = !CommonRefresh(parent, suggestedTopIndex, suggestedFocusName, refreshListBox, TRUE, isRefresh); // zopakneme si listovani, tohle uz by melo selhat
+                cannotList = !CommonRefresh(parent, suggestedTopIndex, suggestedFocusName, refreshListBox, TRUE, isRefresh); // Let's repeat the listing, this should fail now
             }
             if (cannotList)
-            { // zvolena cesta nejde vylistovat ("access denied" nebo low_memory) nebo jiz byla smazana
+            { // Selected path cannot be listed ("access denied" or low_memory) or has already been deleted
 
             FIXED_DRIVE:
 
                 BOOL change = FALSE;
-                if (fixedDrive || !CutDirectory(changedPath)) // pokusime se cestu zkratit
+                if (fixedDrive || !CutDirectory(changedPath)) // we will try to shorten the path
                 {
-                    if (canTryUserRescuePath) // nejdrive zkusime "unikovou cestu", kterou si preje user
+                    if (canTryUserRescuePath) // First, we will try the "escape route" that the user desires
                     {
-                        canTryUserRescuePath = FALSE; // nebudeme ji zkouset vickrat
+                        canTryUserRescuePath = FALSE; // we will not try it again
                         openIfPathIsInaccessibleGoToCfg = TRUE;
-                        fixedDrive = FALSE; // umoznime zmenu na fixed-drive (mozna uz se zkouselo, ale prednost dostala cesta usera)
+                        fixedDrive = FALSE; // Allow changing to fixed-drive (maybe it has been tried before, but the user's path was preferred)
                         GetIfPathIsInaccessibleGoTo(changedPath);
-                        shorterPathWarning = TRUE; // chceme videt chyby "rescue" cesty
+                        shorterPathWarning = TRUE; // we want to see errors "rescue" paths
                         change = TRUE;
                     }
                     else
@@ -1829,7 +1828,7 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
                         if (openIfPathIsInaccessibleGoToCfg)
                             OpenCfgToChangeIfPathIsInaccessibleGoTo = TRUE;
 
-                        // nelze zkratit, najdeme systemovy nebo prvni fixed-drive (nas "unikovy disk")
+                        // cannot be shortened, we will find a system or first fixed drive (our "escape disk")
                         char sysDir[MAX_PATH];
                         char root[4] = " :\\";
                         BOOL done = FALSE;
@@ -1842,7 +1841,7 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
                         if (!done)
                         {
                             DWORD disks = GetLogicalDrives();
-                            disks >>= 2; // preskocime A: a B:, pri formatovani disket se nekde stavaji DRIVE_FIXED
+                            disks >>= 2; // skip A: and B: when formatting disks, DRIVE_FIXED is becoming somewhere
                             char d = 'C';
                             while (d <= 'Z')
                             {
@@ -1850,35 +1849,35 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
                                 {
                                     root[0] = d;
                                     if (GetDriveType(root) == DRIVE_FIXED)
-                                        break; // mame nas "unikovy disk"
+                                        break; // we have our "leak disk"
                                 }
                                 disks >>= 1;
                                 d++;
                             }
                             if (d <= 'Z')
-                                done = TRUE; // nas "unikovy disk" byl nalezen
+                                done = TRUE; // Our "escape disk" was found
                         }
                         if (done)
                         {
-                            if (LowerCase[root[0]] != LowerCase[changedPath[0]]) // opatreni proti nekonecnemu cyklu
-                            {                                                    // UNC nebo jiny disk (typu "c:\")
-                                strcpy(changedPath, root);                       // zkusime nas "unikovy disk"
+                            if (LowerCase[root[0]] != LowerCase[changedPath[0]]) // Prevention of infinite loop
+                            {                                                    // UNC or another disk (like "c:\")
+                                strcpy(changedPath, root);                       // Let's try our "escape disk"
                                 change = TRUE;
                             }
                         }
                     }
                 }
                 else
-                    change = TRUE; // zkracena cesta
+                    change = TRUE; // shortened path
 
-                if (change) // jen pri nove ceste, jinak nechame panel prazdny (snad nehrozi, fixed-drive to jisti)
+                if (change) // only for a new road, otherwise we leave the panel empty (hopefully there is no danger, fixed-drive ensures this)
                 {
-                    // zneplatnime navrhovane nastaveni listboxu (budeme listovat jinou cestu)
+                    // Disable the proposed settings of the listbox (we will navigate a different path)
                     suggestedTopIndex = -1;
                     suggestedFocusName = NULL;
-                    // dochazi ke zmene "nove" cesty (v CloseCurrentPath mohlo prezit UserWorkedOnThisPath == TRUE)
+                    // there is a change in the "new" path (CloseCurrentPath could survive UserWorkedOnThisPath == TRUE)
                     UserWorkedOnThisPath = FALSE;
-                    // zkusime vylistovat upravenou cestu
+                    // let's try to list the modified path
                     goto _TRY_AGAIN;
                 }
                 if (failReason != NULL)
@@ -1886,16 +1885,16 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
             }
             else
             {
-                // prave jsme obdrzeli novy listing, pokud jsou hlaseny nejake zmeny v panelu, stornujeme je
+                // We have just received a new listing, if any changes are reported in the panel, we will cancel them
                 InvalidateChangesInPanelWeHaveNewListing();
 
                 if (lastErr != ERROR_SUCCESS && (!isRefresh || openIfPathIsInaccessibleGoToCfg) && shorterPathWarning)
-                {                        // pokud nejde o refresh a maji se vypisovat hlaseni o zkraceni cesty ...
-                    if (!refreshListBox) // budeme vypisovat hlaseni, musime provest refresh-list-box
+                {                        // if it is not about refresh and messages about shortcut should be displayed ...
+                    if (!refreshListBox) // we will be displaying messages, we need to refresh the list box
                     {
                         RefreshListBox(0, -1, -1, FALSE, FALSE);
                     }
-                    // ohlasime chybu, ktera vedla ke zkraceni cesty
+                    // reporting an error that led to a shortcut
                     char errBuf[2 * MAX_PATH + 100];
                     sprintf(errBuf, LoadStr(IDS_PATHERRORFORMAT),
                             openIfPathIsInaccessibleGoToCfg ? ifPathIsInaccessibleGoTo : path,
@@ -1908,12 +1907,12 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
                 if (failReason != NULL)
                     *failReason = CHPPFR_SUCCESS;
             }
-            //---  obnova DefaultDir
+            //--- Restore DefaultDir
             MainWindow->UpdateDefaultDir(MainWindow->GetActivePanel() == this);
         }
         else
         {
-            if (err == ERROR_NOT_READY) // jde-li o nepripravenou mechaniku (removable medium)
+            if (err == ERROR_NOT_READY) // when it comes to unprepared mechanics (removable medium)
             {
                 char text[100 + MAX_PATH];
                 char drive[MAX_PATH];
@@ -1922,7 +1921,7 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
                 {
                     drvType = DRIVE_REMOTE;
                     GetRootPath(drive, changedPath);
-                    drive[strlen(drive) - 1] = 0; // nestojime o posledni '\\'
+                    drive[strlen(drive) - 1] = 0; // we do not need the last '\\'
                 }
                 else
                 {
@@ -1944,7 +1943,7 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
                 sprintf(text, LoadStr(IDS_NODISKINDRIVE), drive);
                 int msgboxRes = (int)CDriveSelectErrDlg(parent, text, changedPath).Execute();
                 if (msgboxRes == IDCANCEL && CutDirectory(CheckPathRootWithRetryMsgBox))
-                { // aby se dalo dostat do rootu cesty pri namountenem volume (F:\DRIVE_CD -> F:\)
+                { // to be able to get to the root of the path when a volume is mounted (F:\DRIVE_CD -> F:\)
                     lstrcpyn(changedPath, CheckPathRootWithRetryMsgBox, MAX_PATH);
                     msgboxRes = IDRETRY;
                 }
@@ -1955,16 +1954,16 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
             }
             else
             {
-                if (!pathInvalid &&               // o neuspechu pri ozivovani UNC cesty uz user vi
-                    err != ERROR_USER_TERMINATED) // o preruseni (ESC) uz take user vi
+                if (!pathInvalid &&               // about failure when reviving UNC path, user already knows
+                    err != ERROR_USER_TERMINATED) // the user already knows about the interruption (ESC)
                 {
-                    CheckPath(TRUE, changedPath, err, TRUE, parent); // ostatni chyby - pouze vypis chyby
+                    CheckPath(TRUE, changedPath, err, TRUE, parent); // other errors - only print the error
                 }
             }
 
-            if (forceUpdateInt && !fixedDrive) // je-li nutny update, zkusime jeste fixed-drive
+            if (forceUpdateInt && !fixedDrive) // if an update is necessary, we will try fixed-drive
             {
-                fixedDrive = TRUE; // obrana proti cykleni + zmena na fixed-drive
+                fixedDrive = TRUE; // defense against cycling + change to fixed-drive
                 goto FIXED_DRIVE;
             }
             if (failReason != NULL)
@@ -1972,7 +1971,7 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
         }
 
         if (!closeCalled)
-            CloseCurrentPath(parent, TRUE, detachFS, FALSE, isRefresh, FALSE); // neuspech, zustaneme na puvodni ceste
+            CloseCurrentPath(parent, TRUE, detachFS, FALSE, isRefresh, FALSE); // failure, we will stay on the original path
     }
     else
     {
@@ -2002,7 +2001,7 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
                          archive, archivePath, suggestedTopIndex, suggestedFocusName,
                          forceUpdate, refreshListBox, isRefresh, canFocusFileName, isHistory);
 
-    // udelame zalozni kopie
+    // let's make backup copies
     char backup1[MAX_PATH];
     lstrcpyn(backup1, archive, MAX_PATH);
     char backup2[MAX_PATH];
@@ -2015,7 +2014,7 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
         suggestedFocusName = backup3;
     }
 
-    // obnovime udaje o stavu panelu (top-index + focused-name) pred pripadnym zavrenim teto cesty
+    // we restore the data about the panel state (top-index + focused-name) before potentially closing this path
     RefreshPathHistoryData();
 
     if (noChange != NULL)
@@ -2024,14 +2023,14 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
     if (!isRefresh)
         MainWindow->CancelPanelsUI(); // cancel QuickSearch and QuickEdit
 
-    // obnova DefaultDir
+    // Restore DefaultDir
     MainWindow->UpdateDefaultDir(TRUE);
 
-    // pokud je archive rel. cesta, prevedeme ji na absolutni
+    // if the archive is a relative path, we will convert it to an absolute one
     int errTextID;
     //  if (!SalGetFullName(backup1, &errTextID, MainWindow->GetActivePanel()->Is(ptDisk) ?
     //                      MainWindow->GetActivePanel()->GetPath() : NULL))
-    if (!SalGetFullName(backup1, &errTextID, Is(ptDisk) ? GetPath() : NULL)) // konzistence s ChangePathToDisk()
+    if (!SalGetFullName(backup1, &errTextID, Is(ptDisk) ? GetPath() : NULL)) // consistency with ChangePathToDisk()
     {
         SalMessageBox(HWindow, LoadStr(errTextID), LoadStr(IDS_ERRORCHANGINGDIR),
                       MB_OK | MB_ICONEXCLAMATION);
@@ -2041,24 +2040,24 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
     }
     archive = backup1;
 
-    //---  nahozeni hodin
-    BOOL setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // ceka uz ?
+    //--- clock initialization
+    BOOL setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // Is it waiting already?
     HCURSOR oldCur;
     if (setWait)
         oldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
-    BeginStopRefresh(); // neprejeme si zadne refreshe
+    BeginStopRefresh(); // We do not want any refreshes
 
-    BOOL nullFile;         // TRUE pokud je archive nulovy soubor (size==0)
-    FILETIME archiveDate;  // datum&cas souboru archivu
-    CQuadWord archiveSize; // velikost souboru archivu
+    BOOL nullFile;         // TRUE if the archive is an empty file (size==0)
+    FILETIME archiveDate;  // date and time of the archive file
+    CQuadWord archiveSize; // size of the archive file
 
     char text[MAX_PATH + 500];
     char path[MAX_PATH];
     BOOL sameArch;
     BOOL checkPath = TRUE;
-    BOOL forceUpdateInt = FALSE; // zmena cesty nutna? (prip. i na disk)
+    BOOL forceUpdateInt = FALSE; // change of path necessary? (possibly also to disk)
     BOOL tryPathWithArchiveOnError = isHistory;
-    if (!Is(ptZIPArchive) || StrICmp(GetZIPArchive(), archive) != 0) // neni archiv nebo jiny archiv
+    if (!Is(ptZIPArchive) || StrICmp(GetZIPArchive(), archive) != 0) // not an archive or another archive
     {
 
     _REOPEN_ARCHIVE:
@@ -2066,28 +2065,28 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
         sameArch = FALSE;
         BOOL detachFS;
         if (PrepareCloseCurrentPath(HWindow, FALSE, TRUE, detachFS, FSTRYCLOSE_CHANGEPATH))
-        { // soucasnou cestu pujde zavrit, zkusime otevrit novou cestu
-            // test pristupnosti cesty, na ktere archiv lezi
+        { // Will close the current path, we will try to open a new path
+            // test accessibility of the path on which the archive lies
             strcpy(path, archive);
             if (!CutDirectory(path, NULL))
             {
                 TRACE_E("Unexpected situation in CFilesWindow::ChangePathToArchive.");
                 if (failReason != NULL)
                     *failReason = CHPPFR_INVALIDPATH;
-                tryPathWithArchiveOnError = FALSE; // nesmyslna chyba, neresime
+                tryPathWithArchiveOnError = FALSE; // meaningless error, we are not solving
 
             ERROR_1:
 
-                CloseCurrentPath(HWindow, TRUE, detachFS, FALSE, isRefresh, FALSE); // neuspech, zustaneme na puvodni ceste
+                CloseCurrentPath(HWindow, TRUE, detachFS, FALSE, isRefresh, FALSE); // failure, we will stay on the original path
 
-                if (forceUpdateInt) // nutna zmena cesty; do archivu se to nepovedlo, jdeme na disk
-                {                   // jsme jiste v archivu (jde o "refresh" archivu v panelu)
-                    // pokud to pujde, vystoupime z archivu (pripadne az na "fixed-drive")
+                if (forceUpdateInt) // necessary change of path; it didn't work to the archive, we're going to disk
+                {                   // we are definitely in the archive (this is about "refresh" of the archive in the panel)
+                    // if possible, we will exit the archive (or possibly to the "fixed-drive")
                     ChangePathToDisk(HWindow, GetPath(), -1, NULL, noChange, refreshListBox, FALSE, isRefresh);
                 }
                 else
                 {
-                    if (tryPathWithArchiveOnError) // zkusime zmenu cesty na cestu co nejblize k archivu
+                    if (tryPathWithArchiveOnError) // Let's try changing the path to the path closest to the archive
                         ChangePathToDisk(HWindow, path, -1, NULL, noChange, refreshListBox, FALSE, isRefresh);
                 }
 
@@ -2098,18 +2097,18 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
                 return FALSE;
             }
 
-            // sitove cesty nebudeme testovat, pokud jsme na ne zrovna pristupovali
+            // We will not test network paths if we have not just accessed them.
             BOOL tryNet = (!Is(ptDisk) && !Is(ptZIPArchive)) || !HasTheSameRootPath(path, GetPath());
             DWORD err, lastErr;
             BOOL pathInvalid, cut;
             if (!SalCheckAndRestorePathWithCut(HWindow, path, tryNet, err, lastErr, pathInvalid, cut, FALSE) ||
                 cut)
-            { // cesta neni pristupna nebo je oriznuta (archiv neni mozne otevrit)
+            { // path is not accessible or is truncated (archive cannot be opened)
                 if (failReason != NULL)
                     *failReason = CHPPFR_INVALIDPATH;
                 if (tryPathWithArchiveOnError)
-                    tryPathWithArchiveOnError = (err == ERROR_SUCCESS && !pathInvalid); // kratsi cesta je pristupna, zkusime ji
-                if (!isRefresh)                                                         // pri refreshi se hlasky o zkracovani cesty nevypisuji
+                    tryPathWithArchiveOnError = (err == ERROR_SUCCESS && !pathInvalid); // Shorter path is accessible, let's try it
+                if (!isRefresh)                                                         // Messages about shortening the path are not displayed during refresh
                 {
                     sprintf(text, LoadStr(IDS_FILEERRORFORMAT), archive, GetErrorText(lastErr));
                     SalMessageBox(HWindow, text, LoadStr(IDS_ERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
@@ -2117,16 +2116,16 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
                 goto ERROR_1;
             }
 
-            if (PackerFormatConfig.PackIsArchive(archive)) // je to archiv?
+            if (PackerFormatConfig.PackIsArchive(archive)) // Is it an archive?
             {
-                // zjistime informace o souboru (existuje?, size, date&time)
+                // retrieve information about the file (exists?, size, date&time)
                 DWORD err2 = NO_ERROR;
                 HANDLE file = HANDLES_Q(CreateFile(archive, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
                                                    NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL));
                 if (file != INVALID_HANDLE_VALUE)
                 {
                     GetFileTime(file, NULL, NULL, &archiveDate);
-                    SalGetFileSize(file, archiveSize, err2); // vraci "uspech?" - ignorujeme, testujeme pozdeji 'err2'
+                    SalGetFileSize(file, archiveSize, err2); // returns "success?" - ignore, test later 'err2'
                     nullFile = archiveSize == CQuadWord(0, 0);
                     HANDLES(CloseHandle(file));
                 }
@@ -2135,16 +2134,16 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
 
                 if (err2 != NO_ERROR)
                 {
-                    if (!isRefresh) // pri refreshi se hlasky o neexistenci cesty nevypisuji
+                    if (!isRefresh) // Messages about the non-existence of the path are not displayed during refresh
                         DialogError(HWindow, BUTTONS_OK, archive, GetErrorText(err2), LoadStr(IDS_ERROROPENINGFILE));
                     if (failReason != NULL)
                         *failReason = CHPPFR_INVALIDPATH;
-                    goto ERROR_1; // chyba
+                    goto ERROR_1; // error
                 }
 
                 CSalamanderDirectory* newArchiveDir = new CSalamanderDirectory(FALSE);
 
-                // uplatnime optimalizovane pridavani do 'newArchiveDir'
+                // apply optimized adding to 'newArchiveDir'
                 newArchiveDir->AllocAddCache();
 
                 SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
@@ -2154,7 +2153,7 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
                     CreateSafeWaitWindow(LoadStr(IDS_LISTINGARCHIVE), NULL, 2000, FALSE, MainWindow->HWindow);
                 if (nullFile || PackList(this, archive, *newArchiveDir, pluginData, plugin))
                 {
-                    // uvolnime cache, at v objektu zbytecne nestrasi
+                    // Let's clear the cache so the object doesn't unnecessarily shake
                     newArchiveDir->FreeAddCache();
 
                     if (!nullFile)
@@ -2164,7 +2163,7 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
                     if (UseSystemIcons || UseThumbnails)
                         SleepIconCacheThread();
 
-                    BOOL isTheSamePath = FALSE; // TRUE = nedochazi ke zmene cesty
+                    BOOL isTheSamePath = FALSE; // TRUE = no change in path
                     if (Is(ptZIPArchive) && StrICmp(GetZIPArchive(), archive) == 0)
                     {
                         char buf[MAX_PATH];
@@ -2177,15 +2176,15 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
                             isTheSamePath = TRUE;
                     }
 
-                    // uspech, prejdeme na novou cestu - z duvodu mozne casove narocnosti listovani
-                    // archivu dojde ke zmene cesty i pokud cilova cesta neexistuje - tyka se prikazu
-                    // Change Directory (Shift+F7), ktery jinak v teto situaci cestu nemeni
+                    // Success, let's move on to a new path - due to the possible time-consuming nature of browsing
+                    // the archive will change the path even if the destination path does not exist - applies to commands
+                    // Change Directory (Shift+F7), which otherwise does not change the path in this situation
                     CloseCurrentPath(HWindow, FALSE, detachFS, isTheSamePath, isRefresh, !isTheSamePath);
 
-                    // prave jsme obdrzeli novy listing, pokud jsou hlaseny nejake zmeny v panelu, stornujeme je
+                    // We have just received a new listing, if any changes are reported in the panel, we will cancel them
                     InvalidateChangesInPanelWeHaveNewListing();
 
-                    // schovame throbbera a ikonu zabezpeceni, v archivech o ne nestojime
+                    // Hide the throbber and security icon, we don't care about them in the archives
                     if (DirectoryLine != NULL)
                         DirectoryLine->HideThrobberAndSecurityIcon();
 
@@ -2203,18 +2202,18 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
                                         plugin->GetPluginInterface()->GetInterface(), plugin->BuiltForVersion);
                     }
                     else
-                        PluginData.Init(NULL, NULL, NULL, NULL, 0); // pouzivaji jen plug-iny, Salamander ne
+                        PluginData.Init(NULL, NULL, NULL, NULL, 0); // only plugins are used, Salamander does not
                     SetValidFileData(nullFile ? VALID_DATA_ALL_FS_ARC : GetArchiveDir()->GetValidData());
                     checkPath = FALSE;
                     if (noChange != NULL)
                         *noChange = FALSE;
-                    // ZIPPath, Files a Dirs se nastavi pozdeji, az se nastavi archivePath ...
+                    // ZIPPath, Files and Dirs will be set later, once the archivePath is set ...
                     if (failReason != NULL)
                         *failReason = CHPPFR_SUCCESS;
                 }
                 else
                 {
-                    DestroySafeWaitWindow(); // nullFile musi byt FALSE, proto chybi test...
+                    DestroySafeWaitWindow(); // nullFile must be FALSE, so the test is missing...
                     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
                     TRACE_I("Unable to open file " << archive << ".");
                     delete newArchiveDir;
@@ -2231,7 +2230,7 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
                 goto ERROR_1;
             }
         }
-        else // soucasna cesta nejde zavrit
+        else // current path cannot be closed
         {
             EndStopRefresh();
             if (setWait)
@@ -2241,12 +2240,12 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
             return FALSE;
         }
     }
-    else // jiz otevreny archiv
+    else // already open archive
     {
-        if (forceUpdate) // ma se zkontrolovat jestli se archiv nezmenil?
+        if (forceUpdate) // It should be checked whether the archive has changed?
         {
             DWORD err;
-            if ((err = CheckPath(!isRefresh)) == ERROR_SUCCESS) // zde neni treba obnovovat sitova spojeni ...
+            if ((err = CheckPath(!isRefresh)) == ERROR_SUCCESS) // there is no need to refresh the network connection ...
             {
                 HANDLE file = HANDLES_Q(CreateFile(archive, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
                                                    NULL, OPEN_EXISTING, 0, NULL));
@@ -2255,43 +2254,43 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
                     SalGetFileSize(file, archiveSize, err);
                     nullFile = archiveSize == CQuadWord(0, 0);
                     FILETIME zipArchiveDate = GetZIPArchiveDate();
-                    BOOL change = (err != NO_ERROR ||                                     // nejde ziskat velikost
-                                   !GetFileTime(file, NULL, NULL, &archiveDate) ||        // nejde ziskat datum&cas
-                                   CompareFileTime(&archiveDate, &zipArchiveDate) != 0 || // nebo se lisi datum&cas
-                                   !IsSameZIPArchiveSize(archiveSize));                   // nebo se lisi velikost souboru
+                    BOOL change = (err != NO_ERROR ||                                     // unable to obtain size
+                                   !GetFileTime(file, NULL, NULL, &archiveDate) ||        // unable to obtain date&time
+                                   CompareFileTime(&archiveDate, &zipArchiveDate) != 0 || // or the date and time differ
+                                   !IsSameZIPArchiveSize(archiveSize));                   // or file size differs
                     HANDLES(CloseHandle(file));
 
-                    if (change) // soubor se zmenil
+                    if (change) // file has changed
                     {
-                        if (AssocUsed) // mame neco z archivu rozeditovaneho?
+                        if (AssocUsed) // Do we have anything from the edited archive?
                         {
-                            // oznamime, ze doslo ke zmenam, ze by si mel zavrit editory
+                            // we announce that there have been changes, so you should close the editors
                             char buf[MAX_PATH + 200];
                             sprintf(buf, LoadStr(IDS_ARCHIVEREFRESHEDIT), GetZIPArchive());
                             SalMessageBox(HWindow, buf, LoadStr(IDS_INFOTITLE), MB_OK | MB_ICONINFORMATION);
                         }
-                        forceUpdateInt = TRUE; // neni kam se vracet, zmena cesty nutna (prip. i na disk)
+                        forceUpdateInt = TRUE; // There is no going back, change of course necessary (possibly also to disk)
                         goto _REOPEN_ARCHIVE;
                     }
                 }
                 else
                 {
-                    err = GetLastError(); // soubor archivu nelze otevrit
-                    if (!isRefresh)       // pri refreshi se hlasky o neexistenci cesty nevypisuji
+                    err = GetLastError(); // Cannot open archive file
+                    if (!isRefresh)       // Messages about the non-existence of the path are not displayed during refresh
                     {
                         sprintf(text, LoadStr(IDS_FILEERRORFORMAT), archive, GetErrorText(err));
                         SalMessageBox(HWindow, text, LoadStr(IDS_ERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
                     }
                 }
             }
-            if (err != ERROR_SUCCESS) // prejdeme na existujici cestu
+            if (err != ERROR_SUCCESS) // Let's switch to the existing path
             {
                 if (err != ERROR_USER_TERMINATED)
                 {
-                    // pokud to pujde, vystoupime z archivu (pripadne az na "fixed-drive")
+                    // if possible, we will exit the archive (or possibly to the "fixed-drive")
                     ChangePathToDisk(HWindow, GetPath(), -1, NULL, noChange, refreshListBox, FALSE, isRefresh);
                 }
-                else // user dal ESC -> cesta je nejspis nepristupna, jdeme rovnou na "fixed-drive"
+                else // user pressed ESC -> the path is probably inaccessible, let's go straight to "fixed-drive"
                 {
                     ChangeToRescuePathOrFixedDrive(HWindow, noChange, refreshListBox);
                 }
@@ -2309,24 +2308,24 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
         sameArch = TRUE;
     }
 
-    // najdeme cestu v archivu, ktera jeste existuje (puvodni nebo zkracena)
+    // find a path in the archive that still exists (original or shortened)
     strcpy(path, *archivePath == '\\' ? archivePath + 1 : archivePath);
     char* end = path + strlen(path);
     if (end > path && *(end - 1) == '\\')
         *--end = 0;
 
-    if (sameArch && GetArchiveDir()->SalDirStrCmp(path, GetZIPPath()) == 0) // nova cesta se shoduje se soucasnou cestou
+    if (sameArch && GetArchiveDir()->SalDirStrCmp(path, GetZIPPath()) == 0) // new path matches the current path
     {
-        // aby se nevyignorovali 'suggestedTopIndex' a 'suggestedFocusName', zavolame CommonRefresh
+        // to prevent 'suggestedTopIndex' and 'suggestedFocusName' from being ignored, we call CommonRefresh
         CommonRefresh(HWindow, suggestedTopIndex, suggestedFocusName, refreshListBox, FALSE, isRefresh);
 
         EndStopRefresh();
         if (setWait)
             SetCursor(oldCur);
-        return TRUE; // neni co delat
+        return TRUE; // nothing to do
     }
 
-    // ulozime soucasnou cestu v archivu
+    // Save the current path in the archive
     char currentPath[MAX_PATH];
     strcpy(currentPath, GetZIPPath());
 
@@ -2337,7 +2336,7 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
     while (path[0] != 0 && GetArchiveDirFiles() == NULL)
     {
         end = strrchr(path, '\\');
-        useFileName = (canFocusFileName && suggestedFocusName == NULL && fileName == NULL); // fokus souboru je mozny + neni focus zvenci + jen prvni zkraceni
+        useFileName = (canFocusFileName && suggestedFocusName == NULL && fileName == NULL); // file focus is possible + not focus from outside + only first abbreviation
         if (end != NULL)
         {
             *end = 0;
@@ -2354,36 +2353,36 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
 
         if (!sameArch)
         {
-            // dochazi ke zmene "nove" cesty (v CloseCurrentPath mohlo prezit UserWorkedOnThisPath == TRUE)
+            // there is a change in the "new" path (CloseCurrentPath could survive UserWorkedOnThisPath == TRUE)
             UserWorkedOnThisPath = FALSE;
         }
     }
 
-    if (!useFileName && sameArch && GetArchiveDir()->SalDirStrCmp(currentPath, GetZIPPath()) == 0) // nefokusime soubor a zkracena cesta se shoduje se soucasnou cestou
-    {                                                                                              // nastava napr. pri pokusu o vstup do nepristupneho adresare (okamzity navrat zpet)
+    if (!useFileName && sameArch && GetArchiveDir()->SalDirStrCmp(currentPath, GetZIPPath()) == 0) // We are not focusing on the file and the shortened path matches the current path
+    {                                                                                              // Occurs, for example, when trying to access an inaccessible directory (immediate return back)
         EndStopRefresh();
         if (setWait)
             SetCursor(oldCur);
         if (failReason != NULL)
             *failReason = CHPPFR_SHORTERPATH;
-        return FALSE; // pozadovana cesta neni dostupna
+        return FALSE; // requested path is not available
     }
 
     if (!ok)
     {
-        // zneplatnime navrhovane nastaveni listboxu (budeme listovat jinou cestu)
+        // Disable the proposed settings of the listbox (we will navigate a different path)
         suggestedTopIndex = -1;
         suggestedFocusName = NULL;
         if (failReason != NULL)
             *failReason = useFileName ? CHPPFR_FILENAMEFOCUSED : CHPPFR_SHORTERPATH;
     }
 
-    // musi se povest (alespon root archivu vzdy existuje)
+    // must succeed (at least the root of the archive always exists)
     CommonRefresh(HWindow, suggestedTopIndex, useFileName ? fileName : suggestedFocusName,
                   refreshListBox, TRUE, isRefresh);
 
     if (refreshListBox && !ok && useFileName && GetCaretIndex() == 0)
-    { // pokus o vyber jmena souboru selhal -> nebylo to jmeno souboru
+    { // attempt to select file name failed -> it was not a file name
         if (failReason != NULL)
             *failReason = CHPPFR_SHORTERPATH;
     }
@@ -2392,9 +2391,9 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
     if (setWait)
         SetCursor(oldCur);
 
-    // pridame cestu, kterou jsme prave opustili (uvnitr archivu se cesty nezaviraji,
-    // takze se DirHistoryAddPathUnique jeste nevolalo) + jen kdyz nejde o aktualni
-    // cestu (nastava jen kdyz fokusime soubor)
+    // we add the path we just left (inside the archive, paths are not closed,
+    // so DirHistoryAddPathUnique has not been called yet) + only when it's not the current
+    // path (only occurs when we focus on the file)
     if (sameArch && GetArchiveDir()->SalDirStrCmp(currentPath, GetZIPPath()) != 0)
     {
         if (UserWorkedOnThisPath)
@@ -2403,9 +2402,9 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
             UserWorkedOnThisPath = FALSE;
         }
 
-        // opoustime cestu
-        HiddenNames.Clear();  // uvolnime skryte nazvy
-        OldSelection.Clear(); // a starou selection
+        // leaving the road
+        HiddenNames.Clear();  // release hidden names
+        OldSelection.Clear(); // and the old selection
     }
 
     return ok;
@@ -2424,9 +2423,9 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
     if (cutFileName != NULL)
         *cutFileName = 0;
     char bufFSUserPart[MAX_PATH];
-    const char* origUserPart; // user-part, na ktery mame zmenit cestu
+    const char* origUserPart; // user-part, which path should we change to
     int origFSNameIndex;
-    if (fsUserPart == NULL) // jde o odpojeny FS, obnova listingu...
+    if (fsUserPart == NULL) // It's about a disconnected file system, recovering the listing...
     {
         if (!pluginFS.GetCurrentPath(bufFSUserPart))
         {
@@ -2446,26 +2445,26 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
     if (keepOldListing != NULL && *keepOldListing)
     {
         workDir = new CSalamanderDirectory(TRUE);
-        if (workDir == NULL) // nedostatek pameti -> uvolnime listing (bude prazdny panel)
+        if (workDir == NULL) // out of memory -> release listing (will be an empty panel)
         {
             *keepOldListing = FALSE;
             workDir = dir;
 
             if (!firstCall)
             {
-                // uvolneni dat listingu v panelu
+                // Release data listing in panel
                 if (UseSystemIcons || UseThumbnails)
                     SleepIconCacheThread();
 
-                ReleaseListing();                 // pocitame s tim, ze 'dir' je PluginFSDir
-                workDir = dir = GetPluginFSDir(); // v ReleaseListing() se muze i jen odpojovat (viz OnlyDetachFSListing)
+                ReleaseListing();                 // we assume that 'dir' is PluginFSDir
+                workDir = dir = GetPluginFSDir(); // in ReleaseListing() it can also just detach (see OnlyDetachFSListing)
 
-                // zabezpecime listbox proti chybam vzniklym zadosti o prekresleni (prave jsme podrizli data)
+                // Secure the listbox against errors caused by a request for a redraw (we have just modified the data)
                 ListBox->SetItemsCount(0, 0, 0, TRUE);
                 SelectedCount = 0;
-                // Pokud se doruci WM_USER_UPDATEPANEL, dojde k prekreslnei obsahu panelu a nastaveni
-                // scrollbary. Dorucit ji muze message loopa pri vytvoreni message boxu.
-                // Jinak se panel bude tvarit jako nezmeneny a message bude vyjmuta z fronty.
+                // When WM_USER_UPDATEPANEL is delivered, the content of the panel will be redrawn and set
+                // scrollbars. It can be delivered by the message loop when creating a message box.
+                // Otherwise, the panel will appear unchanged and the message will be removed from the queue.
                 PostMessage(HWindow, WM_USER_UPDATEPANEL, 0, 0);
             }
         }
@@ -2474,7 +2473,7 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
     {
         if (!firstCall)
         {
-            workDir->Clear(NULL); // zbytecne (melo by byt prazdne), jen tak pro jistotu
+            workDir->Clear(NULL); // unnecessary (should be empty), just to be sure
         }
     }
 
@@ -2484,8 +2483,8 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
     pluginData = NULL;
     shorterPath = FALSE;
     if (cancel != NULL)
-        *cancel = FALSE; // nova data
-    // budeme se pokouset nacist obsah "adresare" (cesta se muze postupne zkracovat)
+        *cancel = FALSE; // new data
+    // we will attempt to load the contents of the "directory" (the path may gradually shorten)
     BOOL useCutFileName = TRUE;
     char fsNameBuf[MAX_PATH];
     fsNameBuf[0] = 0;
@@ -2501,9 +2500,9 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
                                                  fsNameIndex, user, cutFileName,
                                                  cutFileName != NULL ? &pathWasCut : NULL,
                                                  forceUpdate, mode);
-        if (changePathRet) // ChangePath nevraci error
+        if (changePathRet) // ChangePath does not return an error
         {
-            if (StrICmp(newFSName, fsName) != 0) // zmena fs-name, musime nove fs-name overit
+            if (StrICmp(newFSName, fsName) != 0) // change fs-name, we need to verify the new fs-name
             {
                 BOOL ok2 = FALSE;
                 int index;
@@ -2526,89 +2525,89 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
                 else
                     TRACE_E("CFilesWindow::ChangeAndListPathOnFS(): pluginFS.ChangePath() returned unknown fs-name: " << newFSName);
                 if (!ok2)
-                    changePathRet = FALSE; // zmena fs-name se nepovedla, simulujeme fatal error na FS
-                else                       // zacneme pouzivat nove jmeno FS (pro dalsi pruchod cyklem)
+                    changePathRet = FALSE; // failed to change fs-name, simulating fatal error on FS
+                else                       // we will start using a new name FS (for the next iteration of the loop)
                 {
                     lstrcpyn(fsNameBuf, newFSName, MAX_PATH);
                     fsName = fsNameBuf;
                     fsNameIndex = newFSNameIndex;
                 }
             }
-            if (changePathRet) // pouzite fs-name ulozime do 'pluginFS'
+            if (changePathRet) // Save the used fs-name to 'pluginFS'
                 pluginFS.SetPluginFS(fsName, fsNameIndex);
         }
 
         if (changePathRet)
-        { // cesta vypada o.k.
+        { // the road looks o.k.
             if (pathWasCut && cutFileName != NULL && *cutFileName == 0)
                 useCutFileName = FALSE;
-            if (firstCall) // zmena cesty v ramci FS, listing puvodni cesty neni uvolneny (stacil by?)
+            if (firstCall) // Change of path within the file system, the original path listing is not released (would it be enough?)
             {
                 if (!forceUpdate && currentPath != NULL &&
                     pluginFS.IsCurrentPath(pluginFS.GetPluginFSNameIndex(),
-                                           currentPathFSNameIndex, currentPath)) // cesta zkracena na puvodni cestu
-                {                                                                // neni duvod ke zmene cesty, puvodni listing staci
+                                           currentPathFSNameIndex, currentPath)) // path shortened to original path
+                {                                                                // There is no reason to change the route, the original listing is sufficient
                     shorterPath = !pluginFS.IsCurrentPath(pluginFS.GetPluginFSNameIndex(), origFSNameIndex, origUserPart);
                     if (cancel != NULL)
-                        *cancel = TRUE;                     // zachovali jsme puvodni data
-                    pluginIconsType = GetPluginIconsType(); // zbytecne (nebude se pouzivat), ale zustava stejny
+                        *cancel = TRUE;                     // we kept the original data
+                    pluginIconsType = GetPluginIconsType(); // unnecessary (will not be used), but remains the same
                     ok = TRUE;
                     break;
                 }
 
-                if (keepOldListing == NULL || !*keepOldListing) // neni dead-code (pouzije se pri chybe alokace workDir)
+                if (keepOldListing == NULL || !*keepOldListing) // not dead-code (used in case of allocation error workDir)
                 {
-                    // uvolneni dat listingu v panelu
+                    // Release data listing in panel
                     if (UseSystemIcons || UseThumbnails)
                         SleepIconCacheThread();
 
-                    ReleaseListing();                 // pocitame s tim, ze 'dir' je PluginFSDir
-                    workDir = dir = GetPluginFSDir(); // v ReleaseListing() se muze i jen odpojovat (viz OnlyDetachFSListing)
+                    ReleaseListing();                 // we assume that 'dir' is PluginFSDir
+                    workDir = dir = GetPluginFSDir(); // in ReleaseListing() it can also just detach (see OnlyDetachFSListing)
 
-                    // zabezpecime listbox proti chybam vzniklym zadosti o prekresleni (prave jsme podrizli data)
+                    // Secure the listbox against errors caused by a request for a redraw (we have just modified the data)
                     ListBox->SetItemsCount(0, 0, 0, TRUE);
                     SelectedCount = 0;
-                    // Pokud se doruci WM_USER_UPDATEPANEL, dojde k prekreslnei obsahu panelu a nastaveni
-                    // scrollbary. Dorucit ji muze message loopa pri vytvoreni message boxu.
-                    // Jinak se panel bude tvarit jako nezmeneny a message bude vyjmuta z fronty.
+                    // When WM_USER_UPDATEPANEL is delivered, the content of the panel will be redrawn and set
+                    // scrollbars. It can be delivered by the message loop when creating a message box.
+                    // Otherwise, the panel will appear unchanged and the message will be removed from the queue.
                     PostMessage(HWindow, WM_USER_UPDATEPANEL, 0, 0);
                 }
                 firstCall = FALSE;
             }
 
-            // pokusime se vylistovat soubory a adresare z akt. cesty
-            if (pluginFS.ListCurrentPath(workDir, pluginData, pluginIconsType, forceUpdate)) // podarilo se ...
+            // we will try to list files and directories from the current path
+            if (pluginFS.ListCurrentPath(workDir, pluginData, pluginIconsType, forceUpdate)) // succeeded ...
             {
-                if (keepOldListing != NULL && *keepOldListing) // uz mame novy listing, stary zrusime
+                if (keepOldListing != NULL && *keepOldListing) // We have a new listing now, we will cancel the old one
                 {
-                    // uvolneni dat listingu v panelu
+                    // Release data listing in panel
                     if (UseSystemIcons || UseThumbnails)
                         SleepIconCacheThread();
 
-                    ReleaseListing();       // pocitame s tim, ze 'dir' je PluginFSDir
-                    dir = GetPluginFSDir(); // v ReleaseListing() se muze i jen odpojovat (viz OnlyDetachFSListing)
+                    ReleaseListing();       // we assume that 'dir' is PluginFSDir
+                    dir = GetPluginFSDir(); // in ReleaseListing() it can also just detach (see OnlyDetachFSListing)
 
-                    // zabezpecime listbox proti chybam vzniklym zadosti o prekresleni (prave jsme podrizli data)
+                    // Secure the listbox against errors caused by a request for a redraw (we have just modified the data)
                     ListBox->SetItemsCount(0, 0, 0, TRUE);
                     SelectedCount = 0;
-                    // Pokud se doruci WM_USER_UPDATEPANEL, dojde k prekreslnei obsahu panelu a nastaveni
-                    // scrollbary. Dorucit ji muze message loopa pri vytvoreni message boxu.
-                    // Jinak se panel bude tvarit jako nezmeneny a message bude vyjmuta z fronty.
+                    // When WM_USER_UPDATEPANEL is delivered, the content of the panel will be redrawn and set
+                    // scrollbars. It can be delivered by the message loop when creating a message box.
+                    // Otherwise, the panel will appear unchanged and the message will be removed from the queue.
                     PostMessage(HWindow, WM_USER_UPDATEPANEL, 0, 0);
 
-                    SetPluginFSDir(workDir); // nastavime novy listing
+                    SetPluginFSDir(workDir); // set up a new listing
                     delete dir;
                     dir = workDir;
                 }
 
                 if (pluginIconsType != pitSimple &&
                     pluginIconsType != pitFromRegistry &&
-                    pluginIconsType != pitFromPlugin) // overime jestli se trefil do povolene hodnoty
+                    pluginIconsType != pitFromPlugin) // we will verify if it hit the allowed value
                 {
                     TRACE_E("Invalid plugin-icons-type!");
                     pluginIconsType = pitSimple;
                 }
-                if (pluginIconsType == pitFromPlugin && pluginData == NULL) // to by neslo, degradujeme typ
+                if (pluginIconsType == pitFromPlugin && pluginData == NULL) // it wouldn't work, we are degrading the type
                 {
                     TRACE_E("Plugin-icons-type is pitFromPlugin and plugin-data is NULL!");
                     pluginIconsType = pitSimple;
@@ -2617,34 +2616,34 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
                 ok = TRUE;
                 break;
             }
-            // pripravime dir na dalsi pouziti (pokud po sobe plug-in neco nechal, uvolnime to)
+            // Prepare the directory for the next use (if the plug-in left something behind, release it)
             workDir->Clear(NULL);
-            // cesta neni o.k., pokusime se ji zkratit v pristim pruchodu cyklu
+            // the path is not okay, we will try to shorten it in the next cycle pass
             if (!pluginFS.GetCurrentPath(user))
             {
                 TRACE_E("Unexpected situation in CFilesWindow::ChangeAndListPathOnFS()");
                 break;
             }
         }
-        else // fatal error, koncime
+        else // fatal error, we are ending
         {
             TRACE_I("Unable to open FS path " << fsName << ":" << origUserPart);
 
-            if (firstCall && (keepOldListing == NULL || !*keepOldListing)) // neni dead-code (pouzije se pri chybe alokace workDir)
+            if (firstCall && (keepOldListing == NULL || !*keepOldListing)) // not dead-code (used in case of allocation error workDir)
             {
-                // uvolneni dat listingu v panelu
+                // Release data listing in panel
                 if (UseSystemIcons || UseThumbnails)
                     SleepIconCacheThread();
 
-                ReleaseListing();                 // pocitame s tim, ze 'dir' je PluginFSDir
-                workDir = dir = GetPluginFSDir(); // v ReleaseListing() se muze i jen odpojovat (viz OnlyDetachFSListing)
+                ReleaseListing();                 // we assume that 'dir' is PluginFSDir
+                workDir = dir = GetPluginFSDir(); // in ReleaseListing() it can also just detach (see OnlyDetachFSListing)
 
-                // zabezpecime listbox proti chybam vzniklym zadosti o prekresleni (prave jsme podrizli data)
+                // Secure the listbox against errors caused by a request for a redraw (we have just modified the data)
                 ListBox->SetItemsCount(0, 0, 0, TRUE);
                 SelectedCount = 0;
-                // Pokud se doruci WM_USER_UPDATEPANEL, dojde k prekreslnei obsahu panelu a nastaveni
-                // scrollbary. Dorucit ji muze message loopa pri vytvoreni message boxu.
-                // Jinak se panel bude tvarit jako nezmeneny a message bude vyjmuta z fronty.
+                // When WM_USER_UPDATEPANEL is delivered, the content of the panel will be redrawn and set
+                // scrollbars. It can be delivered by the message loop when creating a message box.
+                // Otherwise, the panel will appear unchanged and the message will be removed from the queue.
                 PostMessage(HWindow, WM_USER_UPDATEPANEL, 0, 0);
             }
             useCutFileName = FALSE;
@@ -2655,11 +2654,11 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
     if (dir != workDir)
         delete workDir; // 'workDir' se nepouzil, uvolnime ho
 
-    // zkusime najit soubor k fokuseni v listingu z FS - neni dokonale, pokud je soubor skryty
-    // z listingu v panelu (napr. pres "nezobrazovat skryte soubory" nebo pres filtry), pak nemuze
-    // byt v panelu vyfokusen a user se o teto "chybe" nedozvi - nicmene asi to ani chybu hlasit
-    // nemuze, kdyz ten soubor ve skutecnosti existuje, takze na to kasleme (stejne jako u
-    // diskovych cest)...
+    // try to find the file to focus on in the listing from the FS - it's not perfect if the file is hidden
+    // from the listing in the panel (e.g. via "do not show hidden files" or via filters), then it cannot
+    // Apartment in the panel focused and the user does not find out about this "error" - however, it probably doesn't report an error either
+    // cannot, when the file actually exists, so let's forget about it (just like with
+    // disk paths)...
     if (ok && useCutFileName && cutFileName != NULL && *cutFileName != 0)
     {
         CFilesArray* files = dir->GetFiles("");
@@ -2673,7 +2672,7 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
                 StrICmpEx(f->Name, cutFileNameLen, cutFileName, cutFileNameLen) == 0)
                 break;
         }
-        if (i == count) // vypiseme chybu (soubor pro fokuseni nebyl nalezen)
+        if (i == count) // print an error (file for focusing was not found)
         {
             char errText[MAX_PATH + 200];
             sprintf(errText, LoadStr(IDS_UNABLETOFOCUSFILEONFS), cutFileName);
@@ -2683,7 +2682,7 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
     }
 
     if (!useCutFileName && cutFileName != NULL)
-        *cutFileName = 0; // nechceme pouzivat -> vynulujeme
+        *cutFileName = 0; // we do not want to use -> we reset
     return ok;
 }
 
@@ -2697,7 +2696,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                          mode, refreshListBox, isRefresh, canFocusFileName, convertPathToInternal);
     //TRACE_I("change-to-fs: begin");
 
-    // pro pripad, ze by fsName ukazovalo do meneneho retezce (GetPluginFS()->PluginFSName()), udelame zalozni kopii
+    // in case fsName points to a mutable string (GetPluginFS()->PluginFSName()), we will make a backup copy
     char backup[MAX_PATH];
     lstrcpyn(backup, fsName, MAX_PATH);
     fsName = backup;
@@ -2717,7 +2716,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
         MessageBox(HWindow, LoadStr(IDS_TOOLONGPATH), LoadStr(IDS_ERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
         return FALSE;
     }
-    // udelame zalozni kopie
+    // let's make backup copies
     char backup2[MAX_PATH];
     lstrcpyn(backup2, fsUserPart, MAX_PATH);
     fsUserPart = backup2;
@@ -2729,39 +2728,39 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
         suggestedFocusName = backup3;
     }
 
-    // obnovime udaje o stavu panelu (top-index + focused-name) pred pripadnym zavrenim teto cesty
+    // we restore the data about the panel state (top-index + focused-name) before potentially closing this path
     RefreshPathHistoryData();
 
     if (!isRefresh)
         MainWindow->CancelPanelsUI(); // cancel QuickSearch and QuickEdit
 
-    //---  nahozeni hodin
-    BOOL setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // ceka uz ?
+    //--- clock initialization
+    BOOL setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // Is it waiting already?
     HCURSOR oldCur;
     if (setWait)
         oldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
-    BeginStopRefresh(); // neprejeme si zadne refreshe
+    BeginStopRefresh(); // We do not want any refreshes
 
     BOOL ok = FALSE;
     BOOL shorterPath;
     char cutFileNameBuf[MAX_PATH];
     int fsNameIndex;
     if (!Is(ptPluginFS) || !IsPathFromActiveFS(fsName, fsUserPart2, fsNameIndex, convertPathToInternal))
-    { // neni FS nebo cesta je z jineho FS (i v ramci jednoho plug-inu - jednoho jmena FS)
+    { // if the file system is not FS or the path is from a different FS (even within one plug-in - one FS name)
         BOOL detachFS;
         if (PrepareCloseCurrentPath(HWindow, FALSE, TRUE, detachFS, FSTRYCLOSE_CHANGEPATH))
-        { // soucasnou cestu pujde zavrit, zkusime otevrit novou cestu
+        { // Will close the current path, we will try to open a new path
             int index;
             if (failReason != NULL)
                 *failReason = CHPPFR_INVALIDPATH;
-            if (Plugins.IsPluginFS(fsName, index, fsNameIndex)) // zjistime index pluginu
+            if (Plugins.IsPluginFS(fsName, index, fsNameIndex)) // find out the index of the plugin
             {
-                // ziskame plug-in s FS
+                // obtain plug-in with FS
                 CPluginData* plugin = Plugins.Get(index);
                 if (plugin != NULL)
                 {
-                    // otevreme novy FS
-                    // load plug-inu pred ziskanim DLLName, Version a plug-in ifacu
+                    // open new file system
+                    // load the plug-in before obtaining DLLName, Version, and plug-in interface
                     CPluginFSInterfaceAbstract* auxFS = plugin->OpenFS(fsName, fsNameIndex);
                     CPluginFSInterfaceEncapsulation pluginFS(auxFS, plugin->DLLName, plugin->Version,
                                                              plugin->GetPluginInterfaceForFS()->GetInterface(),
@@ -2770,24 +2769,24 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                     if (pluginFS.NotEmpty())
                     {
                         Plugins.SetWorkingPluginFS(&pluginFS);
-                        if (convertPathToInternal) // prevedeme cestu na interni format
+                        if (convertPathToInternal) // Convert the path to internal format
                             pluginFS.GetPluginInterfaceForFS()->ConvertPathToInternal(fsName, fsNameIndex, fsUserPart2);
-                        // vytvorime si novy objekt pro obsah akt. cesty file systemu
+                        // create a new object for the content of the current file system path
                         CSalamanderDirectory* newFSDir = new CSalamanderDirectory(TRUE);
                         SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
                         CPluginDataInterfaceAbstract* pluginData;
                         int pluginIconsType;
-                        char* cutFileName = canFocusFileName && suggestedFocusName == NULL ? cutFileNameBuf : NULL; // fokus souboru jen pokud neni navrzeny zadny jiny fokus
+                        char* cutFileName = canFocusFileName && suggestedFocusName == NULL ? cutFileNameBuf : NULL; // Focus on the file only if no other focus is suggested
                         if (ChangeAndListPathOnFS(fsName, fsNameIndex, fsUserPart2, pluginFS, newFSDir, pluginData,
                                                   shorterPath, pluginIconsType, mode, FALSE, NULL, NULL, -1,
                                                   FALSE, cutFileName, NULL))
-                        {                    // uspech, cesta (nebo podcesta) byla vylistovana
-                            if (shorterPath) // podcesta?
+                        {                    // success, the path (or subpath) was listed
+                            if (shorterPath) // subpath?
                             {
-                                // zneplatnime navrhovane nastaveni listboxu (budeme listovat jinou cestu)
+                                // Disable the proposed settings of the listbox (we will navigate a different path)
                                 suggestedTopIndex = -1;
                                 if (cutFileName != NULL && *cutFileName != 0)
-                                    suggestedFocusName = cutFileName; // fokus souboru
+                                    suggestedFocusName = cutFileName; // File focus
                                 else
                                     suggestedFocusName = NULL;
                                 if (failReason != NULL)
@@ -2804,17 +2803,17 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                             if (UseSystemIcons || UseThumbnails)
                                 SleepIconCacheThread();
 
-                            CloseCurrentPath(HWindow, FALSE, detachFS, FALSE, isRefresh, TRUE); // uspech, prejdeme na novou cestu
+                            CloseCurrentPath(HWindow, FALSE, detachFS, FALSE, isRefresh, TRUE); // success, let's move on to a new path
 
-                            // prave jsme obdrzeli novy listing, pokud jsou hlaseny nejake zmeny v panelu, stornujeme je
+                            // We have just received a new listing, if any changes are reported in the panel, we will cancel them
                             InvalidateChangesInPanelWeHaveNewListing();
 
-                            // schovame throbbera a ikonu zabezpeceni, jestli o ne stoji novy FS, musi si je zapnout (napr. v FSE_OPENED nebo FSE_PATHCHANGED)
+                            // Hide the throbber and security icon, if the new FS requires them, it must turn them on (for example in FSE_OPENED or FSE_PATHCHANGED)
                             if (DirectoryLine != NULL)
                                 DirectoryLine->HideThrobberAndSecurityIcon();
 
                             SetPanelType(ptPluginFS);
-                            SetPath(GetPath()); // odpojeni cesty od Snoopera (konec sledovani zmen na Path)
+                            SetPath(GetPath()); // Disconnecting the path from Snooper (end of tracking changes to Path)
                             SetPluginFS(pluginFS.GetInterface(), plugin->DLLName, plugin->Version,
                                         plugin->GetPluginInterfaceForFS()->GetInterface(),
                                         plugin->GetPluginInterface()->GetInterface(),
@@ -2831,11 +2830,11 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                             if (noChange != NULL)
                                 *noChange = FALSE;
 
-                            // obnovime panel
-                            UpdateDriveIcon(FALSE); // ziskame z plug-inu ikonku pro aktualni cestu
+                            // refresh panel
+                            UpdateDriveIcon(FALSE); // obtain an icon from the plug-in for the current path
                             CommonRefresh(HWindow, suggestedTopIndex, suggestedFocusName, refreshListBox, TRUE, isRefresh);
 
-                            // oznamime FS, ze je konecne otevreny
+                            // we will inform the FS that it is finally open
                             GetPluginFS()->Event(FSE_OPENED, GetPanelCode());
                             GetPluginFS()->Event(FSE_PATHCHANGED, GetPanelCode());
 
@@ -2860,7 +2859,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                 TRACE_I("Plugin containing file-system name " << fsName << " is no longer available.");
 
             if (!ok)
-                CloseCurrentPath(HWindow, TRUE, detachFS, FALSE, isRefresh, FALSE); // neuspech, zustaneme na puvodni ceste
+                CloseCurrentPath(HWindow, TRUE, detachFS, FALSE, isRefresh, FALSE); // failure, we will stay on the original path
 
             EndStopRefresh();
             if (setWait)
@@ -2869,7 +2868,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
             //TRACE_I("change-to-fs: end");
             return ok ? !shorterPath : FALSE;
         }
-        else // soucasna cesta nejde zavrit
+        else // current path cannot be closed
         {
             EndStopRefresh();
             if (setWait)
@@ -2882,13 +2881,13 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
     }
     else
     {
-        // poznamka: convertPathToInternal uz musi byt FALSE (cesta se prevedla v IsPathFromActiveFS())
+        // note: convertPathToInternal must now be FALSE (the path was converted in IsPathFromActiveFS())
 
-        // PluginFS odpovida fsName a cesta fsUserPart2 se na nem da overit
+        // PluginFS responds fsName and the path fsUserPart2 can be verified on it
         BOOL samePath = GetPluginFS()->IsCurrentPath(GetPluginFS()->GetPluginFSNameIndex(), fsNameIndex, fsUserPart2);
-        if (!forceUpdate && samePath) // cesta je identicka se soucasnou cestou
+        if (!forceUpdate && samePath) // path is identical to the current path
         {
-            // aby se nevyignorovali 'suggestedTopIndex' a 'suggestedFocusName', zavolame CommonRefresh
+            // to prevent 'suggestedTopIndex' and 'suggestedFocusName' from being ignored, we call CommonRefresh
             CommonRefresh(HWindow, suggestedTopIndex, suggestedFocusName, refreshListBox, FALSE, isRefresh);
 
             EndStopRefresh();
@@ -2898,10 +2897,10 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
             if (failReason != NULL)
                 *failReason = CHPPFR_SUCCESS;
             //TRACE_I("change-to-fs: end");
-            return TRUE; // neni co delat
+            return TRUE; // nothing to do
         }
 
-        // zazalohujeme si soucasnou cestu na FS (v pripade chyby ji zkusime znovu zvolit)
+        // We back up the current journey to FS (in case of an error, we will try to choose it again)
         BOOL currentPathOK = TRUE;
         char currentPath[MAX_PATH];
         if (!GetPluginFS()->GetCurrentPath(currentPath))
@@ -2927,36 +2926,36 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                 lstrcpyn(originalFocusName, file->Name, MAX_PATH);
         }
 
-        // zkusime zmenit cestu na soucasnem FS
+        // let's try to change the path on the current file system
         SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
         CPluginDataInterfaceAbstract* pluginData;
         int pluginIconsType;
         BOOL cancel;
         BOOL keepOldListing = TRUE;
-        char* cutFileName = canFocusFileName && suggestedFocusName == NULL ? cutFileNameBuf : NULL; // fokus souboru jen pokud neni navrzeny zadny jiny fokus
+        char* cutFileName = canFocusFileName && suggestedFocusName == NULL ? cutFileNameBuf : NULL; // Focus on the file only if no other focus is suggested
         if (ChangeAndListPathOnFS(fsName, fsNameIndex, fsUserPart2, *GetPluginFS(), GetPluginFSDir(),
                                   pluginData, shorterPath, pluginIconsType, mode, TRUE, &cancel,
                                   currentPathOK ? currentPath : NULL, currentPathFSNameIndex, forceUpdate,
                                   cutFileName, &keepOldListing))
-        { // uspech, cesta (nebo podcesta) byla vylistovana
+        { // success, the path (or subpath) was listed
             if (failReason != NULL)
             {
                 *failReason = shorterPath ? (cutFileName != NULL && *cutFileName != 0 ? CHPPFR_FILENAMEFOCUSED : CHPPFR_SHORTERPATH) : CHPPFR_SUCCESS;
             }
 
-            if (!cancel) // jen pokud byl nacten novy obsah (nezustal nacteny puvodni obsah)
+            if (!cancel) // only if new content has been loaded (the original content has not remained loaded)
             {
-                // prave jsme obdrzeli novy listing, pokud jsou hlaseny nejake zmeny v panelu, stornujeme je
+                // We have just received a new listing, if any changes are reported in the panel, we will cancel them
                 InvalidateChangesInPanelWeHaveNewListing();
 
                 // schovame throbbera a ikonu zabezpeceni, jestli o ne FS stoji i nadale, musi si je znovu zapnout (napr. v FSE_PATHCHANGED)
                 if (DirectoryLine != NULL)
                     DirectoryLine->HideThrobberAndSecurityIcon();
 
-                // pridame cestu, kterou jsme prave opustili (uvnitr FS se cesty nezaviraji,
-                // takze se DirHistoryAddPathUnique jeste nevolalo)
-                if (currentPathOK && (!samePath || samePath && shorterPath)) // doslo ke zmene cesty
+                // add the path we just left (inside the FS paths are not closed,
+                // so DirHistoryAddPathUnique has not been called yet)
+                if (currentPathOK && (!samePath || samePath && shorterPath)) // the path has changed
                 {
                     if (UserWorkedOnThisPath)
                     {
@@ -2964,23 +2963,23 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                                                             GetPluginFS()->GetInterface(), GetPluginFS());
                         UserWorkedOnThisPath = FALSE;
                     }
-                    // opoustime cestu
-                    HiddenNames.Clear();  // uvolnime skryte nazvy
-                    OldSelection.Clear(); // a starou selection
+                    // leaving the road
+                    HiddenNames.Clear();  // release hidden names
+                    OldSelection.Clear(); // and the old selection
                 }
 
-                if (shorterPath) // podcesta?
+                if (shorterPath) // subpath?
                 {
-                    // zneplatnime navrhovane nastaveni listboxu (budeme listovat jinou cestu)
+                    // Disable the proposed settings of the listbox (we will navigate a different path)
                     suggestedTopIndex = -1;
                     if (cutFileName != NULL && *cutFileName != 0)
-                        suggestedFocusName = cutFileName; // fokus souboru
+                        suggestedFocusName = cutFileName; // File focus
                     else
                     {
                         suggestedFocusName = NULL;
 
-                        // nova cesta se zkratila na puvodni cestu ("nelistovatelny podadresar"), zachovame
-                        // topIndex a focusName pred zahajenim operace (at se userovi neztrati fokus)
+                        // the new path was shortened to the original path ("non-listable subdirectory"), we will keep
+                        // topIndex and focusName before starting the operation (so the user doesn't lose focus)
                         if (currentPathOK &&
                             GetPluginFS()->IsCurrentPath(GetPluginFS()->GetPluginFSNameIndex(),
                                                          currentPathFSNameIndex, currentPath))
@@ -2993,7 +2992,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
 
                 //        if (UseSystemIcons || UseThumbnails) SleepIconCacheThread();   // vola se v ChangeAndListPathOnFS
 
-                // ke stavajicimu (nove naplnenemu) PluginFSDir pridame nove pluginData
+                // We add new pluginData to the existing (newly filled) PluginFSDir
                 PluginData.Init(pluginData, GetPluginFS()->GetDLLName(),
                                 GetPluginFS()->GetVersion(), GetPluginFS()->GetPluginInterface(),
                                 GetPluginFS()->GetBuiltForVersion());
@@ -3008,27 +3007,27 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                 if (noChange != NULL)
                     *noChange = FALSE;
 
-                // vycistime message-queue od nabufferovane WM_USER_UPDATEPANEL
+                // clean the message queue from buffered WM_USER_UPDATEPANEL
                 MSG msg2;
                 PeekMessage(&msg2, HWindow, WM_USER_UPDATEPANEL, WM_USER_UPDATEPANEL, PM_REMOVE);
 
-                // obnovime panel
-                UpdateDriveIcon(FALSE); // ziskame z plug-inu ikonku pro aktualni cestu
+                // refresh panel
+                UpdateDriveIcon(FALSE); // obtain an icon from the plug-in for the current path
                 CommonRefresh(HWindow, suggestedTopIndex, suggestedFocusName, refreshListBox, TRUE, isRefresh);
 
-                // oznamime FS, ze se zmenila cesta
+                // notify the file system that the path has changed
                 GetPluginFS()->Event(FSE_PATHCHANGED, GetPanelCode());
             }
             else
             {
-                if (shorterPath && cutFileName != NULL && *cutFileName != 0 && refreshListBox) // je treba fokusnout soubor
+                if (shorterPath && cutFileName != NULL && *cutFileName != 0 && refreshListBox) // it is necessary to focus on the file
                 {
                     int focusIndexCase = -1;
                     int focusIndexIgnCase = -1;
                     int i;
                     for (i = 0; i < Dirs->Count; i++)
-                    { // pro konzistenci s CommonRefresh hledame nejdrive v adresarich,
-                        // pak v souborech (aby se to chovalo stejne v obou pripadech)
+                    { // for consistency with CommonRefresh we first look in directories,
+                        // then in files (so that it behaves the same in both cases)
                         if (StrICmp(Dirs->At(i).Name, cutFileName) == 0)
                         {
                             if (focusIndexIgnCase == -1)
@@ -3057,7 +3056,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                         }
                     }
 
-                    if (focusIndexIgnCase != -1) // byl nalezen aspon soubor s moznym rozdilem ve velikosti pismen
+                    if (focusIndexIgnCase != -1) // at least one file with a possible difference in letter case was found
                     {
                         SetCaretIndex(focusIndexCase != -1 ? focusIndexCase : focusIndexIgnCase, FALSE);
                     }
@@ -3066,32 +3065,32 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
 
             ok = TRUE;
         }
-        else // pozadovana cesta neni dostupna, zkusime se vratit na puvodni cestu
+        else // requested path is not available, let's try to return to the original path
         {
             if (noChange != NULL)
-                *noChange = FALSE; // listing bude vycisteny nebo zmeneny
-            if (!samePath &&       // pokud nejde o refresh (zmena na stejnou cestu)
-                currentPathOK &&   // pokud se puvodni cestu podarilo ziskat
+                *noChange = FALSE; // the listing will be cleaned or modified
+            if (!samePath &&       // if it's not a refresh (change to the same path)
+                currentPathOK &&   // if the original path was successfully obtained
                 ChangeAndListPathOnFS(currentPathFSName, currentPathFSNameIndex, currentPath,
                                       *GetPluginFS(), GetPluginFSDir(),
                                       pluginData, shorterPath, pluginIconsType, mode,
                                       FALSE, NULL, NULL, -1, FALSE, NULL, &keepOldListing))
-            { // uspech, puvodni cesta (nebo jeji podcesta) byla vylistovana
-                // zneplatnime navrhovane nastaveni listboxu (budeme listovat jinou cestu)
+            { // success, the original path (or its subpath) was enumerated
+                // Disable the proposed settings of the listbox (we will navigate a different path)
                 suggestedTopIndex = -1;
                 suggestedFocusName = NULL;
 
-                // puvodni cesta je pristupna (nemuseli jsme zkracovat), zachovame topIndex
-                // a focusName pred zahajenim operace (at se userovi neztrati fokus)
+                // the original path is accessible (we didn't have to shorten), we will keep the topIndex
+                // and focusName before starting the operation (so that the user does not lose focus)
                 if (!shorterPath)
                 {
                     suggestedTopIndex = originalTopIndex;
                     suggestedFocusName = originalFocusName[0] == 0 ? NULL : originalFocusName;
                 }
 
-                // pridame cestu, kterou jsme prave opustili (uvnitr FS se cesty nezaviraji,
-                // takze se DirHistoryAddPathUnique jeste nevolalo)
-                if (currentPathOK && shorterPath) // pokud neni shorterPath, cesta se nezmenila...
+                // add the path we just left (inside the FS paths are not closed,
+                // so DirHistoryAddPathUnique has not been called yet)
+                if (currentPathOK && shorterPath) // if there is no shorterPath, the path has not changed...
                 {
                     if (UserWorkedOnThisPath)
                     {
@@ -3099,12 +3098,12 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                                                             GetPluginFS()->GetInterface(), GetPluginFS());
                         UserWorkedOnThisPath = FALSE;
                     }
-                    // opoustime cestu
-                    HiddenNames.Clear();  // uvolnime skryte nazvy
-                    OldSelection.Clear(); // a starou selection
+                    // leaving the road
+                    HiddenNames.Clear();  // release hidden names
+                    OldSelection.Clear(); // and the old selection
                 }
 
-                // prave jsme obdrzeli novy listing, pokud jsou hlaseny nejake zmeny v panelu, stornujeme je
+                // We have just received a new listing, if any changes are reported in the panel, we will cancel them
                 InvalidateChangesInPanelWeHaveNewListing();
 
                 // schovame throbbera a ikonu zabezpeceni, jestli o ne FS stoji i nadale, musi si je znovu zapnout (napr. v FSE_PATHCHANGED)
@@ -3114,7 +3113,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                 if (UseSystemIcons || UseThumbnails)
                     SleepIconCacheThread();
 
-                // ke stavajicimu (nove naplnenemu) PluginFSDir pridame nove pluginData
+                // We add new pluginData to the existing (newly filled) PluginFSDir
                 PluginData.Init(pluginData, GetPluginFS()->GetDLLName(),
                                 GetPluginFS()->GetVersion(), GetPluginFS()->GetPluginInterface(),
                                 GetPluginFS()->GetBuiltForVersion());
@@ -3126,50 +3125,50 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                 }
                 SetValidFileData(GetPluginFSDir()->GetValidData());
 
-                // vycistime message-queue od nabufferovane WM_USER_UPDATEPANEL
+                // clean the message queue from buffered WM_USER_UPDATEPANEL
                 MSG msg2;
                 PeekMessage(&msg2, HWindow, WM_USER_UPDATEPANEL, WM_USER_UPDATEPANEL, PM_REMOVE);
 
-                // obnovime panel
-                UpdateDriveIcon(FALSE); // ziskame z plug-inu ikonku pro aktualni cestu
+                // refresh panel
+                UpdateDriveIcon(FALSE); // obtain an icon from the plug-in for the current path
                 CommonRefresh(HWindow, suggestedTopIndex, suggestedFocusName, refreshListBox, TRUE, isRefresh);
                 if (failReason != NULL)
-                    *failReason = mode == 3 ? CHPPFR_INVALIDPATH : CHPPFR_SHORTERPATH; // bylo tu jen CHPPFR_SHORTERPATH, ale Shift+F7 z dfs:x:\zumpa na dfs:x:\zumpa\aaa jen ohlasilo chybu cesty a nevracelo se do Shift+F7 dialogu
+                    *failReason = mode == 3 ? CHPPFR_INVALIDPATH : CHPPFR_SHORTERPATH; // There was only CHPPFR_SHORTERPATH here, but Shift+F7 from dfs:x:\zumpa to dfs:x:\zumpa\aaa only reported a path error and did not return to the Shift+F7 dialog
 
-                // oznamime FS, ze se zmenila cesta
+                // notify the file system that the path has changed
                 GetPluginFS()->Event(FSE_PATHCHANGED, GetPanelCode());
             }
-            else // zobrazime prazdny panel, z FS nejde nic nacist, prepneme na fixed-drive
+            else // display an empty panel, nothing can be loaded from the FS, switch to fixed-drive
             {
                 if (keepOldListing)
                 {
-                    // uvolnime stary listing
+                    // release old listing
                     if (UseSystemIcons || UseThumbnails)
                         SleepIconCacheThread();
                     ReleaseListing();
-                    // zabezpecime listbox proti chybam vzniklym zadosti o prekresleni (prave jsme podrizli data)
+                    // Secure the listbox against errors caused by a request for a redraw (we have just modified the data)
                     ListBox->SetItemsCount(0, 0, 0, TRUE);
                     SelectedCount = 0;
                 }
-                else // neni dead-code, viz chyba alokace 'workDir' v ChangeAndListPathOnFS()
+                else // There is no dead code, see the allocation error 'workDir' in ChangeAndListPathOnFS()
                 {
-                    // vycistime message-queue od nabufferovane WM_USER_UPDATEPANEL
+                    // clean the message queue from buffered WM_USER_UPDATEPANEL
                     MSG msg2;
                     PeekMessage(&msg2, HWindow, WM_USER_UPDATEPANEL, WM_USER_UPDATEPANEL, PM_REMOVE);
                 }
 
-                // schovame throbbera a ikonu zabezpeceni, protoze FS opoustime...
+                // We hide the throbber and security icon because we are leaving the full screen...
                 if (DirectoryLine != NULL)
                     DirectoryLine->HideThrobberAndSecurityIcon();
 
-                // nutne, nepouzivat 'refreshListBox' - panel bude prazdny "delsi" dobu (+ hrozi message-boxy)
-                SetPluginIconsType(pitSimple); // PluginData==NULL, pitFromPlugin nelze ani s prazdnym panelem
+                // It is necessary not to use 'refreshListBox' - the panel will be empty for a "longer" period of time (+ message boxes are at risk)
+                SetPluginIconsType(pitSimple); // PluginData==NULL, pitFromPlugin cannot be done even with an empty panel
                 if (SimplePluginIcons != NULL)
                 {
                     delete SimplePluginIcons;
                     SimplePluginIcons = NULL;
                 }
-                // SetValidFileData(VALID_DATA_ALL_FS_ARC);   // nechame soucasnou hodnotu, neni duvod menit
+                // SetValidFileData(VALID_DATA_ALL_FS_ARC);   // keep the current value, no reason to change
                 CommonRefresh(HWindow, -1, NULL, TRUE, TRUE, isRefresh);
 
                 SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
@@ -3229,14 +3228,14 @@ BOOL CFilesWindow::ChangePathToDetachedFS(int fsIndex, int suggestedTopIndex,
         newFSName = backup3;
     }
 
-    // obnovime udaje o stavu panelu (top-index + focused-name) pred pripadnym zavrenim teto cesty
+    // we restore the data about the panel state (top-index + focused-name) before potentially closing this path
     RefreshPathHistoryData();
 
     MainWindow->CancelPanelsUI(); // cancel QuickSearch and QuickEdit
 
-    // ziskame z DetachedFSList zapouzdreni FS-ifacu
+    // we will obtain encapsulation of the FS interface from DetachedFSList
     if (!MainWindow->DetachedFSList->IsGood())
-    { // aby vysel pozdejsi Delete, musi byt pole o.k.
+    { // for a later Delete to work, the array must be okay.
         TRACE_E("DetachedFSList array returns error, unable to finish operation.");
         if (failReason != NULL)
             *failReason = CHPPFR_INVALIDPATH;
@@ -3251,14 +3250,14 @@ BOOL CFilesWindow::ChangePathToDetachedFS(int fsIndex, int suggestedTopIndex,
     }
     CPluginFSInterfaceEncapsulation* pluginFS = MainWindow->DetachedFSList->At(fsIndex);
 
-    // ziskame fs-name odpojeneho FS
+    // get fs-name of disconnected FS
     char fsName[MAX_PATH];
     int fsNameIndex;
-    if (newFSName != NULL) // pokud se mame prepnout na nove fs-name, musime zjistit jestli existuje a jaky ma fs-name-index
+    if (newFSName != NULL) // if we are switching to a new fs-name, we need to determine if it exists and what fs-name-index it has
     {
         strcpy(fsName, newFSName);
         int i;
-        if (!Plugins.IsPluginFS(fsName, i, fsNameIndex)) // "always false" (plugin se neunloadnul, fs-name nemohlo zmizet)
+        if (!Plugins.IsPluginFS(fsName, i, fsNameIndex)) // "always false" (plugin did not unload, fs-name could not disappear)
         {
             TRACE_E("CFilesWindow::ChangePathToDetachedFS(): unexpected situation: requested FS was not found! fs-name=" << newFSName);
             newUserPart = NULL;
@@ -3271,7 +3270,7 @@ BOOL CFilesWindow::ChangePathToDetachedFS(int fsIndex, int suggestedTopIndex,
         fsNameIndex = pluginFS->GetPluginFSNameIndex();
     }
     if (mode == -1)
-        mode = newUserPart == NULL ? 1 : 2 /* refresh nebo history */;
+        mode = newUserPart == NULL ? 1 : 2 /* refresh or history*/;
 
     if (mode != 3 && canFocusFileName)
     {
@@ -3288,38 +3287,38 @@ BOOL CFilesWindow::ChangePathToDetachedFS(int fsIndex, int suggestedTopIndex,
         return FALSE;
     }
 
-    //---  nahozeni hodin
-    BOOL setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // ceka uz ?
+    //--- clock initialization
+    BOOL setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // Is it waiting already?
     HCURSOR oldCur;
     if (setWait)
         oldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
-    BeginStopRefresh(); // neprejeme si zadne refreshe
+    BeginStopRefresh(); // We do not want any refreshes
 
     BOOL ok = FALSE;
     BOOL shorterPath;
     char cutFileNameBuf[MAX_PATH];
 
-    // neni FS nebo cesta je z jineho FS (i v ramci jednoho plug-inu - jednoho jmena FS)
+    // if the file system is not FS or the path is from a different FS (even within one plug-in - one FS name)
     BOOL detachFS;
     if (PrepareCloseCurrentPath(HWindow, FALSE, TRUE, detachFS, FSTRYCLOSE_CHANGEPATH))
-    { // soucasnou cestu pujde zavrit, zkusime otevrit novou cestu
-        // vytvorime si novy objekt pro obsah akt. cesty file systemu
+    { // Will close the current path, we will try to open a new path
+        // create a new object for the content of the current file system path
         CSalamanderDirectory* newFSDir = new CSalamanderDirectory(TRUE);
         BOOL closeDetachedFS = FALSE;
         SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
         CPluginDataInterfaceAbstract* pluginData;
         int pluginIconsType;
-        char* cutFileName = canFocusFileName && suggestedFocusName == NULL ? cutFileNameBuf : NULL; // fokus souboru jen pokud neni navrzeny zadny jiny fokus
+        char* cutFileName = canFocusFileName && suggestedFocusName == NULL ? cutFileNameBuf : NULL; // Focus on the file only if no other focus is suggested
         if (ChangeAndListPathOnFS(fsName, fsNameIndex, newUserPart, *pluginFS, newFSDir, pluginData,
                                   shorterPath, pluginIconsType, mode,
                                   FALSE, NULL, NULL, -1, FALSE, cutFileName, NULL))
-        {                    // uspech, cesta (nebo podcesta) byla vylistovana
-            if (shorterPath) // podcesta?
+        {                    // success, the path (or subpath) was listed
+            if (shorterPath) // subpath?
             {
-                // zneplatnime navrhovane nastaveni listboxu (budeme listovat jinou cestu)
+                // Disable the proposed settings of the listbox (we will navigate a different path)
                 suggestedTopIndex = -1;
                 if (cutFileName != NULL && *cutFileName != 0)
-                    suggestedFocusName = cutFileName; // fokus souboru
+                    suggestedFocusName = cutFileName; // File focus
                 else
                     suggestedFocusName = NULL;
                 if (failReason != NULL)
@@ -3336,17 +3335,17 @@ BOOL CFilesWindow::ChangePathToDetachedFS(int fsIndex, int suggestedTopIndex,
             if (UseSystemIcons || UseThumbnails)
                 SleepIconCacheThread();
 
-            CloseCurrentPath(HWindow, FALSE, detachFS, FALSE, FALSE, TRUE); // uspech, prejdeme na novou cestu
+            CloseCurrentPath(HWindow, FALSE, detachFS, FALSE, FALSE, TRUE); // success, let's move on to a new path
 
-            // prave jsme obdrzeli novy listing, pokud jsou hlaseny nejake zmeny v panelu, stornujeme je
+            // We have just received a new listing, if any changes are reported in the panel, we will cancel them
             InvalidateChangesInPanelWeHaveNewListing();
 
-            // schovame throbbera a ikonu zabezpeceni, jestli o ne stoji odpojeny FS, musi si je zapnout (napr. v FSE_ATTACHED nebo FSE_PATHCHANGED)
+            // Hide the throbber and security icon, if they are disconnected from the FS, they must turn them on (e.g. in FSE_ATTACHED or FSE_PATHCHANGED)
             if (DirectoryLine != NULL)
                 DirectoryLine->HideThrobberAndSecurityIcon();
 
             SetPanelType(ptPluginFS);
-            SetPath(GetPath()); // odpojeni cesty od Snoopera (konec sledovani zmen na Path)
+            SetPath(GetPath()); // Disconnecting the path from Snooper (end of tracking changes to Path)
             SetPluginFS(pluginFS->GetInterface(), plugin->DLLName, plugin->Version,
                         plugin->GetPluginInterfaceForFS()->GetInterface(),
                         plugin->GetPluginInterface()->GetInterface(),
@@ -3360,11 +3359,11 @@ BOOL CFilesWindow::ChangePathToDetachedFS(int fsIndex, int suggestedTopIndex,
             SetPluginIconsType(pluginIconsType);
             SetValidFileData(GetPluginFSDir()->GetValidData());
 
-            // obnovime panel
-            UpdateDriveIcon(FALSE); // ziskame z plug-inu ikonku pro aktualni cestu
+            // refresh panel
+            UpdateDriveIcon(FALSE); // obtain an icon from the plug-in for the current path
             CommonRefresh(HWindow, suggestedTopIndex, suggestedFocusName, refreshListBox);
 
-            // oznamime FS, ze uz je zase pripojeny
+            // notify the file system that it is connected again
             GetPluginFS()->Event(FSE_ATTACHED, GetPanelCode());
             GetPluginFS()->Event(FSE_PATHCHANGED, GetPanelCode());
 
@@ -3380,7 +3379,7 @@ BOOL CFilesWindow::ChangePathToDetachedFS(int fsIndex, int suggestedTopIndex,
         if (!ok)
         {
             delete newFSDir;
-            CloseCurrentPath(HWindow, TRUE, detachFS, FALSE, FALSE, FALSE); // neuspech, zustaneme na puvodni ceste
+            CloseCurrentPath(HWindow, TRUE, detachFS, FALSE, FALSE, FALSE); // failure, we will stay on the original path
         }
 
         EndStopRefresh();
@@ -3389,21 +3388,21 @@ BOOL CFilesWindow::ChangePathToDetachedFS(int fsIndex, int suggestedTopIndex,
 
         if (ok)
         {
-            // uspesne pripojeni, vyradime FS ze seznamu odpojenych (uspech Delete je jisty)
+            // successful connection, we will remove the FS from the list of disconnected (success of Delete is certain)
             MainWindow->DetachedFSList->Delete(fsIndex);
             if (!MainWindow->DetachedFSList->IsGood())
                 MainWindow->DetachedFSList->ResetState();
         }
         else
         {
-            if (closeDetachedFS) // na FS uz nelze otevrit zadnou cestu, zavreme ho
+            if (closeDetachedFS) // It is no longer possible to open any path on the file system, let's close it
             {
                 BOOL dummy;
                 if (pluginFS->TryCloseOrDetach(FALSE, FALSE, dummy, FSTRYCLOSE_ATTACHFAILURE))
-                { // optame se usera jestli ho chce zavrit nebo nechat (ve stavu po fatalni chybe ChangePath())
+                { // Ask the user if they want to close it or leave it (in the state after a fatal error ChangePath())
                     pluginFS->ReleaseObject(HWindow);
                     plugin->GetPluginInterfaceForFS()->CloseFS(pluginFS->GetInterface());
-                    // vyradime FS ze seznamu odpojenych (uspech Delete je jisty)
+                    // remove FS from the list of disconnected (success of Delete is certain)
                     MainWindow->DetachedFSList->Delete(fsIndex);
                     if (!MainWindow->DetachedFSList->IsGood())
                         MainWindow->DetachedFSList->ResetState();
@@ -3413,7 +3412,7 @@ BOOL CFilesWindow::ChangePathToDetachedFS(int fsIndex, int suggestedTopIndex,
 
         return ok ? !shorterPath : FALSE;
     }
-    else // soucasna cesta nejde zavrit
+    else // current path cannot be closed
     {
         EndStopRefresh();
         if (setWait)
@@ -3431,19 +3430,19 @@ void CFilesWindow::RefreshDiskFreeSpace(BOOL check, BOOL doNotRefreshOtherPanel)
     if (Is(ptDisk))
     {
         if (!check || CheckPath(FALSE) == ERROR_SUCCESS)
-        { // jen je-li cesta pristupna
+        { // only if the path is accessible
             CQuadWord r = MyGetDiskFreeSpace(GetPath());
             DirectoryLine->SetSize(r);
 
             if (!doNotRefreshOtherPanel)
             {
-                // pokud je ve vedlejsim panelu cesta se stejnym rootem, provedeme refresh
-                // disk-free-space i ve vedlejsim panelu (neni dokonale - idealni by bylo
-                // testovat, jestli jsou cesty na stejnem svazku, ale to by bylo moc pomale,
-                // toto zjednoduseni bude pro obycejne pouziti bohate stacit)
+                // if there is a path with the same root in the adjacent panel, we will refresh
+                // disk-free-space in the adjacent panel (not perfect - ideal would be
+                // test if the paths are on the same bundle, but that would be too slow,
+                // this simplification will be more than enough for ordinary use)
                 CFilesWindow* otherPanel = (MainWindow->LeftPanel == this) ? MainWindow->RightPanel : MainWindow->LeftPanel;
                 if (otherPanel->Is(ptDisk) && HasTheSameRootPath(GetPath(), otherPanel->GetPath()))
-                    otherPanel->RefreshDiskFreeSpace(TRUE, TRUE /* jinak nekonecna rekurze */);
+                    otherPanel->RefreshDiskFreeSpace(TRUE, TRUE /* otherwise infinite recursion*/);
             }
         }
     }
@@ -3451,14 +3450,14 @@ void CFilesWindow::RefreshDiskFreeSpace(BOOL check, BOOL doNotRefreshOtherPanel)
     {
         if (Is(ptZIPArchive))
         {
-            DirectoryLine->SetSize(CQuadWord(-1, -1)); // u archivu nema volne misto valny smysl, schovame udaj
+            DirectoryLine->SetSize(CQuadWord(-1, -1)); // There is no free space in the archive, it makes sense to hide the data
         }
         else
         {
             if (Is(ptPluginFS))
             {
                 CQuadWord r;
-                GetPluginFS()->GetFSFreeSpace(&r); // ziskame od plug-inu volne misto na FS
+                GetPluginFS()->GetFSFreeSpace(&r); // we will get free space on the file system from the plug-in
                 DirectoryLine->SetSize(r);
             }
         }
@@ -3490,10 +3489,10 @@ void GetCommonFileTypeStr(char* buf, int* resLen, const char* ext)
         *d++ = UpperCase[*ext++];
     *d = 0;
     if (*ext == 0 && uppercaseExt[0] != 0)
-    { // mame upper-case celou priponu (neobsahuje mezery a neni delsi nez MAX_PATH) + neni prazdna
+    { // we have an upper-case extension (does not contain spaces and is not longer than MAX_PATH) + is not empty
         *resLen = _snprintf_s(buf, TRANSFER_BUFFER_MAX, _TRUNCATE, CommonFileTypeName2, uppercaseExt);
         if (*resLen < 0)
-            *resLen = TRANSFER_BUFFER_MAX - 1; // _snprintf_s hlasi orez na velikost bufferu
+            *resLen = TRANSFER_BUFFER_MAX - 1; // _snprintf_s reports truncation to buffer size
     }
     else
     {
@@ -3511,7 +3510,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
 
     //TRACE_I("refreshlist: begin");
 
-    KillQuickRenameTimer(); // zamezime pripadnemu otevreni QuickRenameWindow
+    KillQuickRenameTimer(); // prevent possible opening of QuickRenameWindow
 
     NarrowedNameColumn = FALSE;
     FullWidthOfNameCol = 0;
@@ -3552,10 +3551,10 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
         CaretHeight = (short)act.cy;
 
         max.cx += 2 * IconSizes[ICONSIZE_16];
-        // minimalni sirka (napriklad pro prazdny panel) aby user dokazal trefit UpDir
+        // minimum width (for example for an empty panel) for the user to be able to hit UpDir
         if (max.cx < 4 * IconSizes[ICONSIZE_16])
             max.cx = 4 * IconSizes[ICONSIZE_16];
-        Columns[0].Width = max.cx; // sirka sloupce 'Name'
+        Columns[0].Width = max.cx; // Width of the column 'Name'
         max.cy += 4;
         if (max.cy < IconSizes[ICONSIZE_16] + 1)
             max.cy = IconSizes[ICONSIZE_16] + 1;
@@ -3588,7 +3587,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
         int w = IconSizes[ICONSIZE_48];
         int h = IconSizes[ICONSIZE_48];
         if (w < 48)
-            w = 48; // pro 32x32 sirka nedostacovala
+            w = 48; // the width was not sufficient for 32x32
         w += (int)(2.5 * (double)w);
         h += Configuration.TileSpacingVert;
         int textH = 3 * FontCharHeight + 4;
@@ -3609,7 +3608,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
         int columnWidthAttr = 0;
         int columnWidthDesc = 0;
 
-        // zjistime, ktere sloupce jsou skutecne zobrazene (plugin mohl sloupce zmodifikovat)
+        // we will determine which columns are actually displayed (the plugin could have modified the columns)
         BOOL extColumnIsVisible = FALSE;
         DWORD autoWidthColumns = 0;
         int i;
@@ -3667,7 +3666,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
 
         char text[50];
 
-        DWORD attrSkipCache[10]; // optimaliace ziskavani sirky atributu
+        DWORD attrSkipCache[10]; // optimizing the extraction of attribute width
         int attrSkipCacheCount = 0;
         ZeroMemory(&attrSkipCache, sizeof(attrSkipCache));
 
@@ -3676,11 +3675,11 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
         BOOL computeDate = autoWidthColumns & VIEW_SHOW_DATE;
         if (computeDate && (totalCount > 20))
         {
-            // zjistim, jestli jsme schopni predvidat sirky
+            // check if we are able to predict widths
             if (GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SSHORTDATE, text, 50) != 0)
             {
-                // zjistim, jestli format datumu neobsahuje svazky (dddd || MMMM),
-                // ktere jsou v dusledku textove: (pondeli || kveten)
+                // Check if the date format does not contain bundles (dddd || MMMM),
+                // which are textual consequences: (Monday || May)
                 if (strstr(text, "dddd") == NULL && strstr(text, "MMMM") == NULL)
                 {
                     SYSTEMTIME st;
@@ -3691,7 +3690,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                     st.wYear = 2000;
                     st.wMonth = 12;
                     st.wDay = 24;
-                    st.wDayOfWeek = 0; // nedele
+                    st.wDayOfWeek = 0; // Sunday
                     if (GetDateFormat(LOCALE_USER_DEFAULT, DATE_SHORTDATE, &st, NULL, text, 50) == 0)
                         sprintf(text, "%u.%u.%u", st.wDay, st.wMonth, st.wYear);
                     GetTextExtentPoint32(dc, text, (int)strlen(text), &act);
@@ -3715,10 +3714,10 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
             CFileData* f = isDir ? &Dirs->At(i) : &Files->At(i - dirsCount);
             //--- name
             BOOL extIsInExtColumn = extColumnIsVisible && (!isDir || Configuration.SortDirsByExt) &&
-                                    f->Ext[0] != 0 && f->Ext > f->Name + 1; // vyjimka pro jmena jako ".htaccess", ukazuji se ve sloupci Name i kdyz jde o pripony
+                                    f->Ext[0] != 0 && f->Ext > f->Name + 1; // Exception for names like ".htaccess", they are displayed in the Name column even though they are extensions
             if (Columns[0].FixedWidth == 0 || (autoWidthColumns & VIEW_SHOW_EXTENSION) && extIsInExtColumn)
             {
-                AlterFileName(formatedFileName, f->Name, f->NameLen, // priprava formatovaneho jmena i pro vypocet sire oddeleneho sloupce Ext
+                AlterFileName(formatedFileName, f->Name, f->NameLen, // preparation of the formatted name also for calculating the width of the separate Ext column
                               Configuration.FileNameFormat, 0, isDir);
                 if (Columns[0].FixedWidth == 0)
                 {
@@ -3740,7 +3739,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                 if (columnWidthExt < act.cx)
                     columnWidthExt = act.cx;
             }
-            //--- dosname
+            //--- get name
             if ((autoWidthColumns & VIEW_SHOW_DOSNAME) && f->DosName != NULL)
             {
                 GetTextExtentPoint32(dc, f->DosName, (int)strlen(f->DosName), &act);
@@ -3750,7 +3749,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
             }
             //--- size
             if ((autoWidthColumns & VIEW_SHOW_SIZE) &&
-                (!isDir || f->SizeValid)) // soubory a adresare s platnou napocitanou velikosti
+                (!isDir || f->SizeValid)) // files and directories with valid calculated size
             {
                 if (f->Size > maxSize)
                     maxSize = f->Size;
@@ -3781,7 +3780,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
             if (autoWidthColumns & VIEW_SHOW_ATTRIBUTES)
             {
                 //--- attr
-                // pripravim data pro cache !!! zde je treba naorovat pripadne dalsi merene atributy
+                // Prepare data for cache !!! Additional measured attributes may need to be aligned here
                 DWORD mask = f->Attr & (FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_HIDDEN |
                                         FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_ARCHIVE |
                                         FILE_ATTRIBUTE_TEMPORARY | FILE_ATTRIBUTE_COMPRESSED |
@@ -3795,19 +3794,19 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                         mask != attrSkipCache[8] && mask != attrSkipCache[9])
                     {
                         GetAttrsString(text, f->Attr);
-                        // tuhle kombinaci jsme jeste nemerili
+                        // we haven't measured this combination yet
                         GetTextExtentPoint32(dc, text, (int)strlen(text), &act);
                         act.cx += SPACE_WIDTH;
                         if (columnWidthAttr < act.cx)
                             columnWidthAttr = act.cx;
                         if (attrSkipCacheCount < 10)
                         {
-                            // jeste je misto, zaradim polozku da cache
+                            // There is still space, I will add the item to the cache
                             attrSkipCache[attrSkipCacheCount] = mask;
                             attrSkipCacheCount++;
                         }
                         else
-                            attrSkipCache[0] = mask; // dam ji na prvni misto
+                            attrSkipCache[0] = mask; // put her in first place
                     }
                 }
             }
@@ -3815,11 +3814,11 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
             if (autoWidthColumns & VIEW_SHOW_TYPE)
             {
                 //--- file-type
-                if (!isDir) // je to soubor
+                if (!isDir) // it is a file
                 {
                     char buf[TRANSFER_BUFFER_MAX];
                     BOOL commonFileType = TRUE;
-                    if (f->Ext[0] != 0) // existuje pripona
+                    if (f->Ext[0] != 0) // there is an extension
                     {
                         char* dst = buf;
                         char* src = f->Ext;
@@ -3830,7 +3829,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                         if (Associations.GetIndex(buf, index))
                         {
                             src = Associations[index].Type;
-                            if (src != NULL) // pokud nejde o prazdny retezec
+                            if (src != NULL) // if it's not an empty string
                             {
                                 commonFileType = FALSE;
                                 GetTextExtentPoint32(dc, src, (int)strlen(src), &act);
@@ -3850,9 +3849,9 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                             columnWidthType = act.cx;
                     }
                 }
-                else // je to adresar
+                else // it is a directory
                 {
-                    if (!dirTypeDone) // jen pokud uz jsme ho nepocitali
+                    if (!dirTypeDone) // only if we haven't counted it yet
                     {
                         if (i == 0 && isDir && strcmp(f->Name, "..") == 0)
                         {
@@ -3883,7 +3882,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                 break;
             }
 
-            case SIZE_FORMAT_KB: // pozor, stejny kod je na dalsim miste, hledat tuto konstantu
+            case SIZE_FORMAT_KB: // Attention, the same code is in another place, search for this constant
             {
                 PrintDiskSize(text, maxSize, 3);
                 numLen = (int)strlen(text);
@@ -3892,7 +3891,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
 
             case SIZE_FORMAT_MIXED:
             {
-                sprintf(text, "1023 GB"); // nejhorsi mozny pripad
+                sprintf(text, "1023 GB"); // worst case scenario
                 numLen = (int)strlen(text);
                 break;
             }
@@ -3913,14 +3912,14 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
             st.wMilliseconds = 0;
             st.wMinute = 59;
             st.wSecond = 59;
-            st.wHour = 10; // dopoledne
+            st.wHour = 10; // morning
             if (GetTimeFormat(LOCALE_USER_DEFAULT, 0, &st, NULL, text, 50) == 0)
                 sprintf(text, "%u:%02u:%02u", st.wHour, st.wMinute, st.wSecond);
             GetTextExtentPoint32(dc, text, (int)strlen(text), &act);
             act.cx += SPACE_WIDTH;
             if (columnWidthTime < act.cx)
                 columnWidthTime = act.cx;
-            st.wHour = 23; // odpoledne
+            st.wHour = 23; // afternoon
             if (GetTimeFormat(LOCALE_USER_DEFAULT, 0, &st, NULL, text, 50) == 0)
                 sprintf(text, "%u:%02u:%02u", st.wHour, st.wMinute, st.wSecond);
             GetTextExtentPoint32(dc, text, (int)strlen(text), &act);
@@ -3937,9 +3936,9 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
         {
             if (totalCount > 1)
                 IntSort(nameColWidths, 0, totalCount - 1);
-            WidthOfMostOfNames = (DWORD)(1.2 * nameColWidths[(DWORD)(totalCount * 0.85)]); // dame 20% sirky navic, jednak budou lip videt extra dlouha jmena a jednak se ukazi cela jmena blizka zvolene hranici
+            WidthOfMostOfNames = (DWORD)(1.2 * nameColWidths[(DWORD)(totalCount * 0.85)]); // we add 20% width, both extra long names will be better visible and whole names close to the chosen limit will be shown
             if (WidthOfMostOfNames * 1.2 >= FullWidthOfNameCol)
-                WidthOfMostOfNames = FullWidthOfNameCol; // pokud staci rozsirit o 44% (1.2*1.2), aby se vesly vsechny jmena, udelame to
+                WidthOfMostOfNames = FullWidthOfNameCol; // if expanding by 44% (1.2*1.2) is enough to fit all the names, we will do it
         }
         if (nameColWidths != NULL)
             free(nameColWidths);
@@ -3985,7 +3984,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                 {
                     TransferActCustomData = column->CustomData;
                     int columnMaxWidth = column->MinWidth;
-                    // doptame se pluginu
+                    // ask plugins
                     int j;
                     for (j = 0; j < totalCount; j++)
                     {
@@ -4000,7 +3999,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                             TransferIsDir = 0;
                         }
                         TransferRowData = 0;
-                        TransferAssocIndex = -2; // mozna zbytecne - pokud se nemuze volat InternalGetType()
+                        TransferAssocIndex = -2; // possibly unnecessary - if InternalGetType() cannot be called
                         column->GetText();
                         if (TransferLen > 0)
                         {
@@ -4021,18 +4020,18 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                     break;
                 }
             }
-            // osetrime meze, aby sirka nesla pod minimalni hodnoty header line
+            // Check boundaries to prevent width from going below the minimum value of the header line
             if (column->Width < column->MinWidth)
                 column->Width = column->MinWidth;
 
             totalWidth += column->Width;
         }
 
-        // osetrime Smart Mode sloupce Name
+        // we will treat the Smart Mode column Name
         BOOL leftPanel = (MainWindow->LeftPanel == this);
         if (Columns[0].FixedWidth == 0 &&
             (leftPanel && ViewTemplate->LeftSmartMode || !leftPanel && ViewTemplate->RightSmartMode) &&
-            ListBox->FilesRect.right - ListBox->FilesRect.left > 0) // jen pokud uz je files-box inicializovany
+            ListBox->FilesRect.right - ListBox->FilesRect.left > 0) // only if the files-box is already initialized
         {
             CColumn* column = &Columns[0];
             int narrow = totalWidth - (ListBox->FilesRect.right - ListBox->FilesRect.left);
@@ -4068,26 +4067,26 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
     if (suggestedFocusIndex != -1)
     {
         FocusedIndex = suggestedFocusIndex;
-        // pokud neni doporucen TopIndex nebo je vyzadovana
-        // viditelnost focusIndex, napocitam novy TopIndex
-        // -- prehlednejsi verze s podporou pro vmIcons a vmThumbnails
-        // -- zmena pro castecne viditelne polozky: drive se prepocital TopIndex
-        //    a doslo ke zbytecnemu cuknuti; ted TopIndex nechavame nezmeneny
+        // if TopIndex is not recommended or is required
+        // visibility of focusIndex, calculate new TopIndex
+        // -- more readable version with support for vmIcons and vmThumbnails
+        // -- change for partially visible items: TopIndex was recalculated earlier
+        //    and an unnecessary jerk occurred; now we leave TopIndex unchanged
 
-        BOOL findTopIndex = TRUE; // TRUE - budeme hledat TopIndex; FALSE - nechame soucasny
+        BOOL findTopIndex = TRUE; // TRUE - we will search for TopIndex; FALSE - we will leave the current one
         if (suggestedTopIndex != -1)
         {
-            // nechame napocitat EntireItemsInColumn
+            // let's calculate EntireItemsInColumn
             ListBox->SetItemsCount2(Files->Count + Dirs->Count);
             if (ensureFocusIndexVisible)
             {
-                // musime zajistit viditelnost focusu
+                // we need to ensure the visibility of focus
                 switch (ListBox->ViewMode)
                 {
                 case vmBrief:
                 {
                     if (suggestedFocusIndex < suggestedTopIndex)
-                        break; // focus lezi pred panelem, musime najit lepsi TopIndex
+                        break; // focus lies in front of the panel, we need to find a better TopIndex
 
                     int cols = (ListBox->FilesRect.right - ListBox->FilesRect.left +
                                 ListBox->ItemWidth - 1) /
@@ -4099,16 +4098,16 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                     {
                         if (suggestedTopIndex + cols * ListBox->EntireItemsInColumn <=
                             suggestedFocusIndex + ListBox->EntireItemsInColumn)
-                            break; // focus lezi za panelem, musime najit lepsi TopIndex
+                            break; // focus lies behind the panel, we need to find a better TopIndex
                     }
                     else
                     {
                         if (suggestedTopIndex + cols * ListBox->EntireItemsInColumn <=
                             suggestedFocusIndex)
-                            break; // focus lezi za panelem, musime najit lepsi TopIndex
+                            break; // focus lies behind the panel, we need to find a better TopIndex
                     }
 
-                    // focus je alespon castecne viditelny, potlacime hledani TopIndex
+                    // focus is at least partially visible, suppress searching for TopIndex
                     findTopIndex = FALSE;
                     break;
                 }
@@ -4116,7 +4115,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                 case vmDetailed:
                 {
                     if (suggestedFocusIndex < suggestedTopIndex)
-                        break; // focus lezi nad panelem, musime najit lepsi TopIndex
+                        break; // the focus is above the panel, we need to find a better TopIndex
 
                     int rows = (ListBox->FilesRect.bottom - ListBox->FilesRect.top +
                                 ListBox->ItemHeight - 1) /
@@ -4126,16 +4125,16 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
 
                     if (wholeItemVisible)
                     {
-                        if (suggestedTopIndex + rows <= suggestedFocusIndex + 1) // nechceme castecnou viditelnost, proto ta +1
-                            break;                                               // focus lezi pod panelem, musime najit lepsi TopIndex
+                        if (suggestedTopIndex + rows <= suggestedFocusIndex + 1) // we do not want partial visibility, hence the +1
+                            break;                                               // focus lies beneath the panel, we need to find a better TopIndex
                     }
                     else
                     {
                         if (suggestedTopIndex + rows <= suggestedFocusIndex)
-                            break; // focus lezi pod panelem, musime najit lepsi TopIndex
+                            break; // focus lies beneath the panel, we need to find a better TopIndex
                     }
 
-                    // focus je cely viditelny, potlacime hledani TopIndex
+                    // focus is fully visible, we suppress the search for TopIndex
                     findTopIndex = FALSE;
                     break;
                 }
@@ -4152,23 +4151,23 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                     if (wholeItemVisible)
                     {
                         if (suggestedTop < suggestedTopIndex)
-                            break; // focus lezi nad panelem, musime najit lepsi TopIndex
+                            break; // the focus is above the panel, we need to find a better TopIndex
 
                         if (suggestedBottom > suggestedTopIndex +
                                                   ListBox->FilesRect.bottom - ListBox->FilesRect.top)
-                            break; // focus lezi pod panelem, musime najit lepsi TopIndex
+                            break; // focus lies beneath the panel, we need to find a better TopIndex
                     }
                     else
                     {
                         if (suggestedBottom <= suggestedTopIndex)
-                            break; // focus lezi nad panelem, musime najit lepsi TopIndex
+                            break; // the focus is above the panel, we need to find a better TopIndex
 
                         if (suggestedTop >= suggestedTopIndex +
                                                 ListBox->FilesRect.bottom - ListBox->FilesRect.top)
-                            break; // focus lezi pod panelem, musime najit lepsi TopIndex
+                            break; // focus lies beneath the panel, we need to find a better TopIndex
                     }
 
-                    // focus je alespon castecne viditelny, potlacime hledani TopIndex
+                    // focus is at least partially visible, suppress searching for TopIndex
                     findTopIndex = FALSE;
                     break;
                 }
@@ -4182,9 +4181,8 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
             ListBox->SetItemsCount2(Files->Count + Dirs->Count);
             suggestedTopIndex = ListBox->PredictTopIndex(suggestedFocusIndex);
         }
-        /*
-    // pokud neni doporucen TopIndex nebo je vyzadovana
-    // viditelnost focusIndex, napocitam novy TopIndex
+        /*      // if TopIndex is not recommended or focusIndex visibility is required,
+    // calculate a new TopIndex
     if (suggestedTopIndex == -1 || (ensureFocusIndexVisible &&
                                     (suggestedFocusIndex < suggestedTopIndex ||
                                      ListBox->Mode == vmDetailed &&
@@ -4198,16 +4196,15 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
       ListBox->ItemsCount = Files->Count + Dirs->Count;
       ListBox->UpdateInternalData();
       suggestedTopIndex = ListBox->PredictTopIndex(suggestedFocusIndex);
-    }
-*/
+    }*/
     }
     else
     {
-        // p.s. patch situace, kdy suggestedTopIndex != -1 a suggestedFocusIndex == -1 (napr. Back v historii
-        // panelu do mista, kde puvodne fokusenej soubor v panelu uz neexistuje)
-        if (ensureFocusIndexVisible && suggestedTopIndex != -1) // focus ma byt videt
+        // p.s. patch the situation when suggestedTopIndex != -1 and suggestedFocusIndex == -1 (e.g. Back in history)
+        // to the location where the originally focused file in the panel no longer exists)
+        if (ensureFocusIndexVisible && suggestedTopIndex != -1) // focus should be visible
         {
-            suggestedTopIndex = -1; // top-index nemuzeme nastavovat (focus by nebyl videt)
+            suggestedTopIndex = -1; // Cannot set the top index (focus would not be visible)
         }
     }
 
@@ -4230,7 +4227,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
         UpdateWindow(ListBox->BottomBar.HWindow);
     ListBox->PaintAllItems(NULL, 0);
 
-    IdleRefreshStates = TRUE;                       // pri pristim Idle vynutime kontrolu stavovych promennych
+    IdleRefreshStates = TRUE;                       // During the next Idle, we will force the check of status variables
     PostMessage(HWindow, WM_USER_SELCHANGED, 0, 0); // sel-change notify
                                                     //TRACE_I("refreshlist: end");
 }
@@ -4243,7 +4240,7 @@ int CFilesWindow::GetResidualColumnWidth(int nameColWidth)
 
     int colsWidth = 0;
     int colNameWidth = nameColWidth;
-    // nascitam sirku zobrazenych sloupcu (mimo sloupce NAME)
+    // calculate the width of the displayed columns (excluding the NAME column)
     int i;
     for (i = 0; i < Columns.Count; i++)
     {

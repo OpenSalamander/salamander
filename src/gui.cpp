@@ -21,7 +21,7 @@
 // CGuiBitmap
 //
 
-// podpora pro nablble kresleni disabled varianty tlacikta
+// Support for disabled variant of the button for drawing disabled
 class CGuiBitmap : public CBitmap
 {
 public:
@@ -38,7 +38,7 @@ public:
         HBITMAP hOld = (HBITMAP)SelectObject(HMemDC, HOldBmp);
 
         HIMAGELIST hImageList = ImageList_Create(Width, Height, ILC_MASK | GetImageListColorFlags(), 1, 0);
-        ImageList_AddMasked(hImageList, HBmp, GetSysColor(COLOR_BTNFACE)); // j.r. zde byla barva natvrdo 192,192,192, coz zlobilo pod XPlookem
+        ImageList_AddMasked(hImageList, HBmp, GetSysColor(COLOR_BTNFACE)); // j.r. here the color was hard 192,192,192, which annoyed under XPlookem
         RECT r;
         r.left = 0;
         r.top = 0;
@@ -80,9 +80,9 @@ CProgressBar::CProgressBar(HWND hDlg, int ctrlID)
     }
 
     Progress = 0;
-    SelfMoveTime = 0xFFFFFFFF; // po zavolani SetProgress(-1) se obdelnik bude posouvat bez omezeni
+    SelfMoveTime = 0xFFFFFFFF; // after calling SetProgress(-1), the rectangle will move without restrictions
     SelfMoveTicks = 0;
-    SelfMoveSpeed = 50; // 20 pohybu za vterinu
+    SelfMoveSpeed = 50; // 20 movements per second
     TimerIsRunning = FALSE;
     Bitmap = new CBitmap();
     if (Bitmap != NULL)
@@ -97,10 +97,10 @@ CProgressBar::CProgressBar(HWND hDlg, int ctrlID)
     }
     Text = NULL;
 
-    // default font vytahneme z dialogu
+    // we will extract the default font from the dialog
     HFont = (HFONT)SendMessage(hDlg, WM_GETFONT, 0, 0);
     if (HFont == NULL)
-        HFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT); // pouziva systemovy font, tak si ho vytahneme ze systemu
+        HFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT); // uses system font, so we will extract it from the system
 }
 
 CProgressBar::~CProgressBar()
@@ -114,14 +114,14 @@ CProgressBar::~CProgressBar()
 
 void CProgressBar::SetProgress(DWORD progress, const char* text)
 {
-    // misto primeho volani pouzijeme SendMessage pro prekonani hranice threadu
+    // Instead of direct call, we will use SendMessage to overcome the thread boundary
     SendMessage(HWindow, WM_USER_SETPROGRESS, progress, (LPARAM)text);
 }
 
 void CProgressBar::SetProgress2(const CQuadWord& progressCurrent, const CQuadWord& progressTotal, const char* text)
 {
-    // muze se stat, ze progressTotal je 1 a progressCurrent je velke cislo, pak je vypocet
-    // nesmyslny (navic pada diky RTC) a je treba explicitne zadat 0% nebo 100% (hodnotu 1000)
+    // It can happen that progressTotal is 1 and progressCurrent is a large number, then the calculation is performed
+    // nonsensical (also crashes due to RTC) and it is necessary to explicitly enter 0% or 100% (value 1000)
     SetProgress(progressCurrent >= progressTotal ? (progressTotal.Value == 0 ? 0 : 1000) : (DWORD)((progressCurrent * CQuadWord(1000, 0)) / progressTotal).Value,
                 text);
 }
@@ -159,16 +159,16 @@ void CProgressBar::Paint(HDC hDC)
         releaseDC = TRUE;
     }
 
-    // pokud mame bitmapu, pojedeme pres cache
+    // if we have a bitmap, we will go through the cache
     HDC hMemDC = NULL;
-    if (Bitmap != NULL && Progress != -1) // Progress==-1 je zbytecne cachovat, nema tam co blikat
+    if (Bitmap != NULL && Progress != -1) // Caching Progress==-1 is unnecessary, there's nothing to blink there
         hMemDC = Bitmap->HMemDC;
     else
         hMemDC = hDC;
 
     if (Progress == -1)
     {
-        // neurcity rezim: bila, modry obdelnicek, bila
+        // undefined mode: white, blue rectangle, white
         RECT r;
         r.top = 1;
         r.bottom = Height - 1;
@@ -222,7 +222,7 @@ void CProgressBar::Paint(HDC hDC)
     }
     else
     {
-        // pripravime a omerime retezec
+        // prepare and measure the string
         char buff[50];
 
         char* progress;
@@ -236,17 +236,17 @@ void CProgressBar::Paint(HDC hDC)
         else
         {
             progress = buff;
-            progressLen = sprintf(progress, "%d %%", (int)((Progress /*+ 5*/) / 10)); // nezaokrouhlujeme progres, protoze jinak je 100% videt od 99,5%-100%, coz nektere uzivatele rozciluje (markatni u FTP, kde to muze byt treba i na pul minuty)
+            progressLen = sprintf(progress, "%d %%", (int)((Progress /*+ 5*/) / 10)); // We do not round the progress because otherwise it is 100% visible from 99.5% to 100%, which annoys some users (especially noticeable in FTP, where it can be even for half a minute)
         }
 
         SIZE sz;
         GetTextExtentPoint32(hMemDC, progress, progressLen, &sz);
 
-        // pozice textu -- centorvane v obou osach
+        // text position -- centered in both axes
         int x = (Width - sz.cx) / 2;
         int y = (Height - sz.cy) / 2;
 
-        // leva cast progressu (SELECTED)
+        // Left part of progress (SELECTED)
         RECT r;
         r.left = 1;
         r.right = 1 + (Width - 2) * Progress / 1000;
@@ -259,7 +259,7 @@ void CProgressBar::Paint(HDC hDC)
         COLORREF oldBkColor = SetBkColor(hMemDC, GetCOLORREF(CurrentColors[PROGRESS_BK_SELECTED]));
         ExtTextOut(hMemDC, x, y, ETO_OPAQUE | ETO_CLIPPED, &r, progress, progressLen, NULL);
 
-        // prava cast progressu (NORMAL)
+        // right part of progress (NORMAL)
         r.left = r.right;
         r.right = Width - 1;
 
@@ -278,7 +278,7 @@ void CProgressBar::Paint(HDC hDC)
     LineTo(hMemDC, 0, 0);
     SelectObject(hMemDC, hOldPen);
 
-    // pokud jedeme pres cache, posleme ji do obrazovky
+    // if we are going through cache, send it to the screen
     if (Bitmap != NULL && hMemDC != hDC)
         BitBlt(hDC, 0, 0, Width, Height, hMemDC, 0, 0, SRCCOPY);
 
@@ -290,7 +290,7 @@ void CProgressBar::MoveBar()
 {
     if (Progress != -1)
     {
-        // nastartujeme pohyb
+        // start the movement
         Progress = -1;
         BarX = 0;
         MoveBarRight = TRUE;
@@ -380,7 +380,7 @@ CProgressBar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     MoveBar();
                 }
                 else
-                    paint = FALSE; // ke zmene dojde az na timer, nyni nema smysl prekreslovat
+                    paint = FALSE; // The change will occur only on the timer, it doesn't make sense to redraw now
             }
             else
                 MoveBar();
@@ -390,18 +390,16 @@ CProgressBar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (TimerIsRunning)
                 Stop();
             if (progress > 1000)
-                progress = 1000; // max. 100% (kopie "aktivniho" souboru muze hlasit progress >100%)
+                progress = 1000; // max. 100% (copying the "active" file can report progress >100%)
             if (progress != Progress)
                 Progress = progress;
             else
-                paint = textChanged; // nedoslo ke zmene progresu, pokud nedoslo ani ke zmene textu, nebude se prekreslovat
-                                     /*
-        BOOL redraw = Progress == 0 ||                     // 0% zobrazime vzdycky
-                      Progress == 1000 ||                  // 100% zobrazime vzdycky
-                      Progress - DisplayedProgress >= 100; // zmenu o vice nez 10% zobrazime taky vzdycky
+                paint = textChanged; // There has been no change in progress, if there has been no change in the text, it will not be redrawn
+                                     /*          BOOL redraw = Progress == 0 ||                     // always display 0%
+                      Progress == 1000 ||                  // always display 100%
+                      Progress - DisplayedProgress >= 100; // also display a change of more than 10%
         if (redraw && Progress != DisplayedProgress)
-          Paint(NULL);
-        */
+          Paint(NULL);*/
         }
         if (paint)
             Paint(NULL);
@@ -469,27 +467,27 @@ CStaticText::CStaticText(HWND hDlg, int ctrlID, DWORD flags)
     HintMode = FALSE;
 
     if (HWindow == NULL)
-        return; // at neblikame obrazovkou
+        return; // we are not blinking the screen
 
     UIState = (WORD)SendMessage(HWindow, WM_QUERYUISTATE, 0, 0);
 
-    // vytahneme zarovnani
+    // extract alignment
     DWORD style = (DWORD)GetWindowLongPtr(HWindow, GWL_STYLE);
     if (style & SS_RIGHT)
         Alignment = 2;
     else if (style & SS_CENTER)
         Alignment = 1;
 
-    // omerime maximalni rozmer staticu
+    // measure the maximum size of the array
     RECT r;
     GetClientRect(HWindow, &r);
     Width = r.right - r.left;
     Height = r.bottom - r.top;
 
-    // pokud mame kreslit pres cache, vytvorime bitmapu
+    // if we are drawing through the cache, we will create a bitmap
     if (Flags & STF_CACHED_PAINT)
     {
-        Bitmap = new CBitmap(); // pokud alokace nedopadne, paint nebude cachovany
+        Bitmap = new CBitmap(); // if allocation fails, paint will not be cached
         if (Bitmap != NULL)
         {
             HDC hDC = HANDLES(GetDC(HWindow));
@@ -502,11 +500,11 @@ CStaticText::CStaticText(HWND hDlg, int ctrlID, DWORD flags)
         }
     }
 
-    // default font vytahneme z controlu
+    // we will extract the default font from the control
     HFont = (HFONT)SendMessage(HWindow, WM_GETFONT, 0, 0);
     if ((Flags & STF_BOLD) || (Flags & STF_UNDERLINE))
     {
-        // pokud je text BOLD nebo UNDERLINE, pripravime si vlastni font
+        // if the text is BOLD or UNDERLINE, we will prepare our own font
         LOGFONT lf;
         GetObject(HFont, sizeof(lf), &lf);
         if (Flags & STF_BOLD)
@@ -517,10 +515,10 @@ CStaticText::CStaticText(HWND hDlg, int ctrlID, DWORD flags)
         DestroyFont = TRUE;
     }
 
-    // vytahneme uvodni text staticu
+    // extract the initial text of the static
     char buff[4096];
     CWindow::WindowProc(WM_GETTEXT, 4096, (LPARAM)buff);
-    buff[4095] = 0; // pro jistotu...
+    buff[4095] = 0; // just in case...
     if (buff[0] != 0)
         SetText(buff);
 }
@@ -541,7 +539,7 @@ CStaticText::~CStaticText()
         HANDLES(DeleteObject(HFont));
 }
 
-// zamezuje cetnym realokacim pri postupnem alokovani vetsich a vetsich retezcu
+// prevents frequent reallocations when gradually allocating larger and larger strings
 #define ST_ALLOC_GRANULARITY 20
 
 BOOL CStaticText::SetText(const char* text)
@@ -571,7 +569,7 @@ BOOL CStaticText::SetText(const char* text)
                 free(newText);
                 return FALSE;
             }
-            char* newText2 = (char*)realloc(Text2, l + ST_ALLOC_GRANULARITY + 3); // 3: prostor pro "..." (muzu ubrat W a pridat "...")
+            char* newText2 = (char*)realloc(Text2, l + ST_ALLOC_GRANULARITY + 3); // 3: space for "..." (can remove W and add "...")
             if (newText2 == NULL)
             {
                 TRACE_E(LOW_MEMORY);
@@ -605,7 +603,7 @@ BOOL CStaticText::SetTextToDblQuotesIfNeeded(const char* text)
         if (len > 0 && (text[0] <= ' ' || text[len - 1] <= ' ') && len < 2 * MAX_PATH)
         {
             char buf[2 * MAX_PATH + 2];
-            sprintf(buf, "\"%s\"", text); // v uvozovkach budou videt mezery na zacatku a na konci (jinak jsou neviditelne)
+            sprintf(buf, "\"%s\"", text); // Spaces at the beginning and end will be visible in quotes (otherwise they are invisible)
             return SetText(buf);
         }
     }
@@ -617,7 +615,7 @@ void CStaticText::PrepareForPaint()
     ClipDraw = FALSE;
     Text2Draw = FALSE;
 
-    if (Text == NULL || TextLen == 0) // alogritmus je staveny pouze na nenulovy pocet znaku
+    if (Text == NULL || TextLen == 0) // the algorithm is built only for a non-zero number of characters
     {
         TextWidth = 0;
         TextHeight = 0;
@@ -631,21 +629,21 @@ void CStaticText::PrepareForPaint()
     {
         if (Flags & STF_END_ELLIPSIS)
         {
-            // STF_END_ELLIPSIS: retezec bude vypustkou zakoncen
-            // potrebujeme delky pouze pro znaky, ktere se vejdou
+            // STF_END_ELLIPSIS: the string will be terminated by an ellipsis
+            // We only need lengths for characters that fit
             int fitChars;
             GetTextExtentExPoint(hDC, Text, TextLen, Width, &fitChars, AlpDX, &sz);
 
             if (fitChars < TextLen)
             {
-                // nevesli jsme se -- musime vlozit vypustku
+                // We didn't paddle in -- we need to insert the drain plug
 
-                // vytahneme sirku "..." pro vypustku
+                // extract the width "..." for the cutout
                 SIZE ellipsisSZ;
                 GetTextExtentPoint32(hDC, "...", 3, &ellipsisSZ);
                 int ellipsisWidth = ellipsisSZ.cx;
 
-                // hledame zprava, kolik mame uzobnout z retezce, abychom mohli pripojit vypustku
+                // Searching from the right, how many characters we need to cut from the string in order to append a snippet
                 while (fitChars > 0 && AlpDX[fitChars - 1] + ellipsisWidth > Width)
                     fitChars--;
                 if (fitChars > 0)
@@ -672,20 +670,20 @@ void CStaticText::PrepareForPaint()
         }
         else
         {
-            // STF_PATH_ELLIPSIS: vypustka bude unvitr textu
-            // potrebujeme delky vsech podretezcu
+            // STF_PATH_ELLIPSIS: the ellipsis will be inside the text
+            // we need the lengths of all substrings
             GetTextExtentExPoint(hDC, Text, TextLen, 0, NULL, AlpDX, &sz);
 
             if (sz.cx > Width)
             {
-                // nevesli jsme se -- musime vlozit vypustku
+                // We didn't paddle in -- we need to insert the drain plug
 
-                // vytahneme sirku "..." pro vypustku
+                // extract the width "..." for the cutout
                 SIZE ellipsisSZ;
                 GetTextExtentPoint32(hDC, "...", 3, &ellipsisSZ);
                 int ellipsisWidth = ellipsisSZ.cx;
 
-                // zprava hledame separator cesty
+                // looking for the path separator from the right
                 const char* p = Text + TextLen - 1;
                 while (*p != PathSeparator && p > Text)
                     p--;
@@ -694,21 +692,21 @@ void CStaticText::PrepareForPaint()
                     p--;
                 int pIndex = (int)(p - Text);
 
-                // text od 'p' dal by se mel vejit cely vcetne elipsy
+                // text from 'p' should fit entirely including ellipsis
                 if (ellipsisWidth + sz.cx - AlpDX[pIndex] > Width)
                 {
-                    // nevesel se => hledame zleva misto, kam vlozime vypustku
+                    // unhappy => looking for a place on the left to insert a snippet
                     while (pIndex < TextLen && (ellipsisWidth + sz.cx - AlpDX[pIndex] > Width))
                         pIndex++;
 
-                    // vlozime vypustku a za ni zbytek textu
+                    // insert a paragraph break and then the rest of the text
                     pIndex++;
                     strcpy(Text2, "...");
                     Text2Len = 3;
                     TextWidth = ellipsisWidth;
                     if (pIndex < TextLen)
                     {
-                        memmove(Text2 + 3, Text + pIndex, TextLen - pIndex + 1); // vcetne terminatoru
+                        memmove(Text2 + 3, Text + pIndex, TextLen - pIndex + 1); // including the terminator
                         Text2Len += TextLen - pIndex;
                         TextWidth += sz.cx - AlpDX[pIndex - 1];
                     }
@@ -716,10 +714,10 @@ void CStaticText::PrepareForPaint()
                 else
                 {
                     int rightPartWidth = sz.cx - AlpDX[pIndex];
-                    // zjistime, kolik znaku nechame vlevo pred vypustkou
+                    // we will determine how many characters we leave to the left before the ellipsis
                     while (pIndex >= 0 && (AlpDX[pIndex] + ellipsisWidth + rightPartWidth) > Width)
                         pIndex--;
-                    // leva cast
+                    // left part
                     Text2Len = 0;
                     TextWidth = 0;
                     if (pIndex >= 0)
@@ -728,11 +726,11 @@ void CStaticText::PrepareForPaint()
                         Text2Len += pIndex + 1;
                         TextWidth += AlpDX[pIndex];
                     }
-                    // vypustka
+                    // pass
                     memmove(Text2 + Text2Len, "...", 3);
                     Text2Len += 3;
                     TextWidth += ellipsisWidth;
-                    // prava cast
+                    // right part
                     int rightPartLen = TextLen - (int)(p2 - Text);
                     memmove(Text2 + Text2Len, p2, rightPartLen + 1);
                     Text2Len += rightPartLen;
@@ -750,7 +748,7 @@ void CStaticText::PrepareForPaint()
     }
     else
     {
-        // staci nam celkove rozmery
+        // We only need the overall dimensions
         if (Flags & STF_HANDLEPREFIX)
         {
             RECT r;
@@ -766,7 +764,7 @@ void CStaticText::PrepareForPaint()
             TextHeight = sz.cy;
         }
     }
-    // pokud by text mel prelest hranici okna, musime pri paintu clipovat
+    // if the text exceeds the window boundary, we need to clip it during painting
     if (TextWidth > Width)
     {
         TextWidth = Width;
@@ -848,7 +846,7 @@ BOOL CStaticText::SetToolTipText(const char* text)
     HToolTipNW = NULL;
     ToolTipID = 0;
 
-    PostMessage(MainWindow->ToolTip->HWindow, WM_USER_REFRESHTOOLTIP, 0, 0); // pozadame okenko, aby nasalo novy text a znovu se vykreslilo
+    PostMessage(MainWindow->ToolTip->HWindow, WM_USER_REFRESHTOOLTIP, 0, 0); // Request the window to fetch new text and redraw itself
 
     return TRUE;
 }
@@ -893,7 +891,7 @@ void CStaticText::DrawFocus(HDC hDC)
     int oldColor = SetTextColor(hDC, GetSysColor(COLOR_BTNFACE));
     int oldBkColor = SetBkColor(hDC, GetSysColor(COLOR_BTNTEXT));
     POINT oldBrushPoint;
-    SetBrushOrgEx(hDC, 0, 0, &oldBrushPoint); // pod XP s Normal skinem zlobil paint pokud byl static umisten na gradientovem pozadi (konfigurace FTP klienta)
+    SetBrushOrgEx(hDC, 0, 0, &oldBrushPoint); // Under XP with Normal skin, Paint misbehaved if it was statically positioned on a gradient background (FTP client configuration)
     DrawFocusRect(hDC, &r);
     SetBrushOrgEx(hDC, oldBrushPoint.x, oldBrushPoint.y, NULL);
     SetTextColor(hDC, oldColor);
@@ -913,7 +911,7 @@ BOOL CStaticText::ShowHint()
 
     MainWindow->ToolTip->SetCurrentToolTip(HWindow, 1, -1);
     MainWindow->ToolTip->Show(r.left + xOffset, r.bottom, FALSE, TRUE, HWindow);
-    // pozor, Show ma parametr 'modal'==TRUE, takze sem se to vrati az po zavreni tooltipu
+    // Attention, Show has the parameter 'modal'==TRUE, so it will return here only after closing the tooltip
     return TRUE;
 }
 
@@ -942,7 +940,7 @@ CStaticText::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_ERASEBKGND:
     {
-        // podmazeme az v paintu
+        // we will grease it in paint
         return TRUE;
     }
 
@@ -987,11 +985,11 @@ CStaticText::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (wParam == TRUE)
             break;
-        // pokud nas nekdo zhasne, musime sestrelit tooltip
+        // if someone turns us off, we have to shoot down the tooltip
         if (MainWindow != NULL && MainWindow->ToolTip != NULL && MainWindow->ToolTip->HWindow != NULL)
             MainWindow->ToolTip->Hide();
         //PostMessage(MainWindow->ToolTip->HWindow, WM_CANCELMODE, 0, 0);
-    } // propadneme do WM_MOUSELEAVE
+    } // we will fall into WM_MOUSELEAVE
     case WM_MOUSELEAVE:
     {
         if (ToolTipAssigned())
@@ -1064,7 +1062,7 @@ CStaticText::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         PAINTSTRUCT ps;
         HANDLES(BeginPaint(HWindow, &ps));
 
-        // pokud mame bitmapu, budeme kreslit do ni, jinak primo do obrazovky
+        // if we have a bitmap, we will draw into it, otherwise directly onto the screen
         HDC hDC;
         if (Bitmap != NULL)
             hDC = Bitmap->HMemDC;
@@ -1077,10 +1075,10 @@ CStaticText::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         r.right = Width;
         r.bottom = Height;
 
-        // zobrazime vlastni text
+        // display custom text
         if (Text != NULL)
         {
-            // pod XPTheme si musime nechat podmazat pozadi od windows
+            // Under XPTheme, we need to let the background be greased by Windows
             BOOL bkErased = FALSE;
             if (IsAppThemed())
             {
@@ -1088,7 +1086,7 @@ CStaticText::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 bkErased = TRUE;
             }
 
-            // nastavime parametry DC a ulozime jejich puvodni hodnoty
+            // set the parameters of DC and save their original values
             int oldBkMode = SetBkMode(hDC, TRANSPARENT);
 
             HWND hParent = GetParent(HWindow);
@@ -1109,7 +1107,7 @@ CStaticText::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             //        COLORREF oldBkColor = SetBkColor(hDC, GetSysColor(COLOR_BTNFACE));
             HFONT hOldFont = (HFONT)SelectObject(hDC, HFont);
 
-            // vykreslime text
+            // draw text
             if (Flags & STF_HANDLEPREFIX)
             {
                 DWORD drawFlags = DT_SINGLELINE | DT_TOP;
@@ -1119,9 +1117,9 @@ CStaticText::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     drawFlags |= DT_RIGHT;
                 else
                     drawFlags |= DT_LEFT;
-                // kvuli cleartype, ktery presahuje mimo control a nechava parazitni barevne body musime
-                // clipovat vse; problem je videt v Plugins Manageru Salamander 2.51, kdyz jezdime seznamem
-                // pluginu nahoru/dolu, tak pred URL zustava cerveny bod
+                // because of cleartype, which extends beyond the control and leaves parasitic colored spots, we must
+                // clip everything; the problem is visible in the Plugins Manager of Salamander 2.51 when scrolling through the list
+                // plugin up/down, so there is a red dot in front of the URL
                 // if (!ClipDraw)
                 drawFlags |= DT_NOCLIP;
 
@@ -1145,7 +1143,7 @@ CStaticText::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     textLen = TextLen;
                 }
                 DWORD drawFlags = (bkErased) ? 0 : ETO_OPAQUE;
-                // if (ClipDraw) // stejny problem jako nahore
+                // if (ClipDraw) // same problem as above
                 drawFlags |= ETO_CLIPPED;
 
                 int xOffset = GetTextXOffset();
@@ -1154,7 +1152,7 @@ CStaticText::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             if (Flags & STF_DOTUNDERLINE)
             {
-                // carkovane podtrzeni
+                // underscore
                 int xOffset = GetTextXOffset();
 
                 HPEN hDottedPen = HANDLES(CreatePen(PS_DOT, 0, GetTextColor(hDC)));
@@ -1165,7 +1163,7 @@ CStaticText::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 HANDLES(DeleteObject(hDottedPen));
             }
 
-            // obnovime puvodni hodnoty DC
+            // restore the original DC values
             SelectObject(hDC, hOldFont);
             //        SetBkColor(hDC, oldBkColor);
             //        SetTextColor(hDC, oldTextColor);
@@ -1173,7 +1171,7 @@ CStaticText::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         else
         {
-            // nedrzime zadny text; musime alespon podmaznout pozadi
+            // we don't hold any text; we must at least lubricate the background
             if (IsAppThemed())
             {
                 DrawThemeParentBackground(HWindow, hDC, &r);
@@ -1187,7 +1185,7 @@ CStaticText::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         if (Bitmap != NULL)
         {
-            // pokud jedeme pres cache, musime ji soupnout do okna
+            // if we are going through the cache, we need to push it out the window
             BitBlt(ps.hdc, 0, 0, Width, Height, Bitmap->HMemDC, 0, 0, SRCCOPY);
         }
 
@@ -1197,10 +1195,10 @@ CStaticText::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_UPDATEUISTATE:
     {
-        // bohuzel nemuzeme spolehnout na handling standardniho staticku, protoze
+        // Unfortunately, we cannot rely on the handling of standard static, because
         // ten nam pod Vistou (mozna i drive) vykresli na Alt podtrzitko na nesmyslne
-        // misto; resenim by bylo sejmout text do naseho bufferu a zobrazovat z neho
-        // zvolil jsem jiny pristup a state si drzim u nas
+        // instead; the solution would be to remove the text into our buffer and display it from there
+        // I have chosen a different approach and I am keeping the state with us
         if (LOWORD(wParam) == UIS_CLEAR)
             UIState &= ~HIWORD(wParam);
         else if (LOWORD(wParam) == UIS_SET)
@@ -1209,7 +1207,7 @@ CStaticText::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         BOOL showAccel = (LOWORD(wParam) == UIS_CLEAR) && ((HIWORD(wParam) & UISF_HIDEACCEL) != 0);
         if (showAccel)
         {
-            InvalidateRect(HWindow, NULL, TRUE); // pokud nejsme cachovany, lehce bliknem, ale kaslu na to8
+            InvalidateRect(HWindow, NULL, TRUE); // if we are not cached, we will blink slightly, but I don't care about it
             UpdateWindow(HWindow);
         }
         return 0;
@@ -1231,7 +1229,7 @@ CHyperLink::CHyperLink(HWND hDlg, int ctrlID, DWORD flags)
     Command = 0;
     HDialog = hDlg;
 
-    // upravime styl - abychom dostavali message
+    // adjust the style - so that we receive a message
     DWORD style = (DWORD)GetWindowLongPtr(HWindow, GWL_STYLE);
     style |= SS_NOTIFY;
     SetWindowLongPtr(HWindow, GWL_STYLE, style);
@@ -1263,7 +1261,7 @@ BOOL CHyperLink::ExecuteIt()
     BOOL ret = TRUE;
     if (File[0] != 0)
     {
-        // neprechazet na shellExecuteWnd, pouzivame z BugReportu
+        // Do not switch to shellExecuteWnd, we are using it from BugReport
         int err = (int)(INT_PTR)ShellExecute(HWindow, "open", File, NULL, NULL, SW_SHOWNORMAL);
         if (err <= 32)
         {
@@ -1280,15 +1278,14 @@ BOOL CHyperLink::ExecuteIt()
 
 void CHyperLink::OnContextMenu(int x, int y)
 {
-    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volanim InsertMenu() dole...
+    /* used for the export_mnu.py script, which generates the salmenu.mnu for the Translator
+   to keep synchronized with the InsertMenu() call below...
 MENU_TEMPLATE_ITEM HyperLinkMenu[] = 
 {
   {MNTT_PB, 0
   {MNTT_IT, IDS_COPYTOCLIPBOARD
   {MNTT_PE, 0
-};
-*/
+};*/
     HMENU hMenu = CreatePopupMenu();
     InsertMenu(hMenu, 0, MF_BYPOSITION, 1, LoadStr(IDS_COPYTOCLIPBOARD));
     DWORD cmd = TrackPopupMenuEx(hMenu, TPM_RETURNCMD | TPM_LEFTALIGN | TPM_RIGHTBUTTON,
@@ -1379,8 +1376,8 @@ CHyperLink::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             OnContextMenu(r.left, r.bottom);
         }
 
-        // podpora pro nase message boxy, preposleme si Ctrl+C
-        // v klasickem dialogu by nemelo byt poslani WM_COPY na prekazku
+        // support for our message boxes, let's forward Ctrl+C
+        // In a classic dialog, sending WM_COPY should not be an obstacle
         if (!shiftPressed && controlPressed && !altPressed)
         {
             if (wParam == 'C')
@@ -1512,7 +1509,7 @@ void CColorGraph::PaintFace(HDC hdc)
     double elX = elX0 + elA * cos(beta);
     double elY = elB * sin(beta);
 
-    // vykreslim spodek
+    // draw the bottom
     HBRUSH hOldBrush = (HBRUSH)GetCurrentObject(hdc, OBJ_BRUSH);
     HPEN hBlackPen = HANDLES(CreatePen(PS_SOLID, 0, RGB(0, 0, 0)));
     HPEN hOldPen = (HPEN)SelectObject(hdc, hBlackPen);
@@ -1524,7 +1521,7 @@ void CColorGraph::PaintFace(HDC hdc)
 
     Ellipse(hdc, r.left, r.top + GRAPH_HEIGHT, r.right, r.bottom);
 
-    // osetrim variantu (b)
+    // handle case (b)
     if (UsedProc > 0 && UsedProc < 0.5)
     {
         SelectObject(hdc, Color2Dark); // used color
@@ -1535,7 +1532,7 @@ void CColorGraph::PaintFace(HDC hdc)
               x, y1, x, y2);
     }
 
-    // vykreslim vrsek
+    // draw the top
     if (UsedProc >= 0 && UsedProc < 1)
         SelectObject(hdc, Color1Light); // free color
     else
@@ -1548,7 +1545,7 @@ void CColorGraph::PaintFace(HDC hdc)
         SelectObject(hdc, Color2Light); // used color
         int y1 = (int)(elY0 + elY);
         int y2 = (int)elY0;
-        if (y1 == y2 && UsedProc < 0.1)     // prasarnicka
+        if (y1 == y2 && UsedProc < 0.1)     // little pig
             SelectObject(hdc, Color1Light); // used color
         Pie(hdc, r.left, r.top, r.right, r.bottom - GRAPH_HEIGHT,
             (int)elX, y1, r.right, y2);
@@ -1559,8 +1556,7 @@ void CColorGraph::PaintFace(HDC hdc)
     HANDLES(DeleteObject(hBlackPen));
 }
 
-/*
-LRESULT
+/*  LRESULT
 CColorGraph::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
   CALL_STACK_MESSAGE4("CColorGraph::WindowProc(0x%X, 0x%IX, 0x%IX)", uMsg, wParam, lParam);
@@ -1577,10 +1573,9 @@ CColorGraph::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
   }
   return  CWindow::WindowProc(uMsg, wParam, lParam);
-}
-*/
+}*/
 
-// tato varianta pres memDC funguje i pod XP (varianta nahore ma pod winXP okousane krivky)
+// This variant using memDC also works under XP (the variant above has jagged curves under WinXP)
 
 LRESULT
 CColorGraph::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -1681,24 +1676,24 @@ void CButton::NotifyParent(WORD notify)
 
 void CButton::PaintFrame(HDC hDC, const RECT* r, BOOL down)
 {
-    if (/*!(ButtonPressed && Pressed) && */ (Flags & BTF_CHECKBOX) && Checked)
+    if (/*!(ButtonPressed && Pressed) &&*/ (Flags & BTF_CHECKBOX) && Checked)
     {
-        // nejtmavsi vlevo a nahore
+        // darkest in the top left corner
         HPEN hOldPen = (HPEN)SelectObject(hDC, WndFramePen);
         MoveToEx(hDC, r->left, r->bottom - 2, NULL);
         LineTo(hDC, r->left, r->top);
         LineTo(hDC, r->right - 1, r->top);
-        // tmava vlevo a nahore uvnitr
+        // dark on the left and top inside
         SelectObject(hDC, BtnShadowPen);
         MoveToEx(hDC, r->left + 1, r->bottom - 3, NULL);
         LineTo(hDC, r->left + 1, r->top + 1);
         LineTo(hDC, r->right - 2, r->top + 1);
-        // trochu tmavsi vpravo a dole uvnitr
+        // slightly darker on the right and bottom inside
         SelectObject(hDC, Btn3DLightPen);
         MoveToEx(hDC, r->right - 2, r->top + 1, NULL);
         LineTo(hDC, r->right - 2, r->bottom - 2);
         LineTo(hDC, r->left, r->bottom - 2);
-        // svetla vpravo a dole
+        // lights on the right and bottom
         SelectObject(hDC, BtnHilightPen);
         MoveToEx(hDC, r->left, r->bottom - 1, NULL);
         LineTo(hDC, r->right - 1, r->bottom - 1);
@@ -1717,22 +1712,22 @@ void CButton::PaintFrame(HDC hDC, const RECT* r, BOOL down)
     }
     else
     {
-        // svetla vlevo a nahore
+        // lights on the left and top
         HPEN hOldPen = (HPEN)SelectObject(hDC, BtnHilightPen);
         MoveToEx(hDC, r->left, r->bottom - 2, NULL);
         LineTo(hDC, r->left, r->top);
         LineTo(hDC, r->right - 1, r->top);
-        // trochu tmavsi uvnitr
+        // slightly darker inside
         SelectObject(hDC, Btn3DLightPen);
         MoveToEx(hDC, r->left + 1, r->bottom - 3, NULL);
         LineTo(hDC, r->left + 1, r->top + 1);
         LineTo(hDC, r->right - 2, r->top + 1);
-        // tmava vpravo a dole
+        // dark to the right and below
         SelectObject(hDC, BtnShadowPen);
         MoveToEx(hDC, r->right - 2, r->top + 1, NULL);
         LineTo(hDC, r->right - 2, r->bottom - 2);
         LineTo(hDC, r->left, r->bottom - 2);
-        // nejtmavsi uplne venku
+        // darkest completely outside
         SelectObject(hDC, WndFramePen);
         MoveToEx(hDC, r->left, r->bottom - 1, NULL);
         LineTo(hDC, r->right - 1, r->bottom - 1);
@@ -1831,11 +1826,11 @@ void CButton::PaintFace(HDC hdc, const RECT* rect, BOOL enabled)
     {
         // text
 
-        // vytahnu text tlacitka
+        // extract text from button
         char buff[500];
         GetWindowText(HWindow, buff, 500);
 
-        // vytahnu aktualni font
+        // retrieve the current font
         HFONT hFont = (HFONT)SendMessage(HWindow, WM_GETFONT, 0, 0);
 
         HFONT hOldFont = (HFONT)SelectObject(hdc, hFont);
@@ -1867,7 +1862,7 @@ void CButton::PaintFace(HDC hdc, const RECT* rect, BOOL enabled)
 
         if (empty)
         {
-            // pokud jde o tlacitko obsahujici pouze sipku, vycentrujeme ji v obou osach
+            // If it is a button containing only an arrow, we will center it in both axes
             r = *rect;
             r.left += (int)((double)sz.cx * 0.3);
         }
@@ -2001,7 +1996,7 @@ CButton::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_SETTEXT:
     {
-        // WM_SETTEXT by explicitne prekreslil control -- tomu se budeme branit
+        // WM_SETTEXT explicitly redraws the control -- we will resist that
         SendMessage(HWindow, WM_SETREDRAW, FALSE, 0);
         LRESULT ret = CWindow::WindowProc(uMsg, wParam, lParam);
         SendMessage(HWindow, WM_SETREDRAW, TRUE, 0);
@@ -2022,14 +2017,14 @@ CButton::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             BOOL down = enabled && ButtonPressed && Pressed;
             BOOL focused = GetFocus() == HWindow;
 
-            // budeme kreslit pres memory dc
+            // we will draw through memory dc
             CGuiBitmap tmpBitmap;
             tmpBitmap.CreateBmp(hdc, ClientRect.right, ClientRect.bottom);
             HDC hMemDC = tmpBitmap.HMemDC;
 
             if (IsAppThemed())
             {
-                // pokud jedeme pod xp theme, pouzijeme je
+                // if we are under the xp theme, we will use them
                 HTHEME hTheme = OpenThemeData(HWindow, L"Button");
                 int state = PBS_DISABLED;
                 if (enabled)
@@ -2052,12 +2047,12 @@ CButton::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             state = PBS_DEFAULTED;
                     }
                 }
-                // podmazeme pozadi, tlacitko ma pruhledne oblasti
+                // we will grease the background, the button has transparent areas
                 HBRUSH hBrush = (HBRUSH)(COLOR_BTNFACE + 1);
                 //          if (!(ButtonPressed && Pressed) && (Flags & BTF_CHECKBOX) && Checked) hBrush = HDitherBrush;
                 FillRect(hMemDC, &ClientRect, hBrush);
 
-                // vykreslime pozadi tlacitka
+                // draw the button background
                 DrawThemeBackground(hTheme, hMemDC, BP_PUSHBUTTON, state, &ClientRect, NULL);
 
                 if (Flags & BTF_DROPDOWN)
@@ -2078,7 +2073,7 @@ CButton::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                     if (DropDownPressed && Pressed)
                     {
-                        // vykreslime pozadi tlacitka v drop-down casti
+                        // draw the background of the button in the drop-down part
                         r = ddR;
                         r.left += 2;
                         DrawThemeBackground(hTheme, hMemDC, BP_PUSHBUTTON, PBS_PRESSED, &ClientRect, &r);
@@ -2089,7 +2084,7 @@ CButton::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     PaintDrop(hMemDC, &ddR, enabled);
                 }
 
-                // vykreslime face
+                // draw face
                 RECT fr = ClientRect;
                 fr.left += 4;
                 fr.top += 4;
@@ -2097,7 +2092,7 @@ CButton::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 fr.bottom -= 4;
                 PaintFace(hMemDC, &fr, enabled);
 
-                // vykreslime focus
+                // draw focus
                 if (focused)
                 {
                     RECT r = ClientRect;
@@ -2111,9 +2106,9 @@ CButton::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             else
             {
-                // jinak se nakreslime sami
+                // otherwise we will draw ourselves
                 HBRUSH hBrush = (HBRUSH)(COLOR_BTNFACE + 1);
-                if (/*!(ButtonPressed && Pressed) && */ (Flags & BTF_CHECKBOX) && Checked)
+                if (/*!(ButtonPressed && Pressed) &&*/ (Flags & BTF_CHECKBOX) && Checked)
                 {
                     hBrush = HDitherBrush;
                     SetTextColor(hMemDC, GetSysColor(COLOR_BTNFACE));
@@ -2202,10 +2197,10 @@ CButton::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_UPDATEUISTATE:
     {
-        // bohuzel nemuzeme spolehnout na handling standardniho staticku, protoze
+        // Unfortunately, we cannot rely on the handling of standard static, because
         // ten nam pod Vistou (mozna i drive) vykresli na Alt podtrzitko na nesmyslne
-        // misto; resenim by bylo sejmout text do naseho bufferu a zobrazovat z neho
-        // zvolil jsem jiny pristup a state si drzim u nas
+        // instead; the solution would be to remove the text into our buffer and display it from there
+        // I have chosen a different approach and I am keeping the state with us
         if (LOWORD(wParam) == UIS_CLEAR)
             UIState &= ~HIWORD(wParam);
         else if (LOWORD(wParam) == UIS_SET)
@@ -2214,7 +2209,7 @@ CButton::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         BOOL showAccel = (LOWORD(wParam) == UIS_CLEAR) && ((HIWORD(wParam) & UISF_HIDEACCEL) != 0);
         if (showAccel)
         {
-            InvalidateRect(HWindow, NULL, TRUE); // jedeme pres cache bitmap, takze neblikneme
+            InvalidateRect(HWindow, NULL, TRUE); // we are going through the bitmap cache, so we won't flicker
             UpdateWindow(HWindow);
         }
         return 0;
@@ -2229,7 +2224,7 @@ CButton::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         if ((Flags & BTF_DROPDOWN) && (wParam == VK_RIGHT || wParam == VK_LEFT))
         {
-            // sipky vlevo a vpravo by mohly fungovat
+            // arrows left and right could work
             HWND hParent = GetParent(HWindow);
             if (hParent != NULL)
             {
@@ -2243,7 +2238,7 @@ CButton::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         if ((Flags & BTF_DROPDOWN) && (wParam == VK_DOWN || wParam == VK_UP))
         {
-            // kavesama Up/Down lze otevrit drop-down
+            // kavesama Up/Down can open the drop-down
             ButtonPressed = FALSE;
             DropDownPressed = TRUE;
             Pressed = TRUE;
@@ -2258,7 +2253,7 @@ CButton::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         if ((int)wParam == VK_SPACE)
         {
-            // space zamackne tlacitko
+            // presses the space button
             ButtonPressed = TRUE;
             Pressed = TRUE;
             RePaint();
@@ -2304,8 +2299,8 @@ CButton::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_LBUTTONDBLCLK:
     case WM_LBUTTONDOWN:
     {
-        // pokud kliknuti prislo do 25ms po odmacknuti drop downu, zahodime ho, aby nedoslo
-        // ke zbytecnemu novemu zamacknuti
+        // if the click came within 25ms after unlocking the drop down, we discard it to prevent it
+        // to unnecessary new pressing
         if (GetTickCount() - DropDownUpTime <= 25)
             return 0;
 
@@ -2517,8 +2512,7 @@ CButton::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 //
 // CColorButton
 //
-/*
-CColorButton::CColorButton(HWND hDlg, int ctrlID, CObjectOrigin origin)
+/*  CColorButton::CColorButton(HWND hDlg, int ctrlID, CObjectOrigin origin)
  : CButton(hDlg, ctrlID, origin, FALSE, FALSE)
 {
   Color = RGB(255, 255, 128);
@@ -2547,14 +2541,13 @@ CColorButton::PaintFace(HDC hdc, const RECT *rect)
   Rectangle(hdc, r.left, r.top, r.right, r.bottom);
   SelectObject(hdc, hOldBrush);
   SelectObject(hdc, hOldPen);
-}
-*/
+}*/
 
 //****************************************************************************
 //
 // CColorArrowButton
 //
-// pozadi s textem, za kterym je jeste sipka - slouzi pro rozbaleni menu
+// background with text, followed by an arrow - used for expanding the menu
 //
 
 CColorArrowButton::CColorArrowButton(HWND hDlg, int ctrlID, BOOL showArrow, CObjectOrigin origin)
@@ -2605,7 +2598,7 @@ void CColorArrowButton::PaintFace(HDC hdc, const RECT* rect, BOOL enabled)
     HFONT hFont = (HFONT)SendMessage(HWindow, WM_GETFONT, 0, 0);
     LOGFONT lf;
     GetObject(hFont, sizeof(lf), &lf);
-    lf.lfHeight += 1; // fix pro 100% DPI, kdy se nam prilis velky text dotykal obdelniku
+    lf.lfHeight += 1; // Fix for 100% DPI, when the text was too large and touched the rectangle
     hFont = HANDLES(CreateFontIndirect(&lf));
     HFONT hOldFont = (HFONT)SelectObject(hdc, hFont);
     int oldTextColor = ::SetTextColor(hdc, TextColor);
@@ -2735,7 +2728,7 @@ void CToolbarHeader::CreateImageLists(HIMAGELIST* enabled, HIMAGELIST* disabled)
     hEnabled = ImageList_Create(iconSize, iconSize,
                                 ILC_COLOR32, TOOLBARHDR_BUTTONS, 1);
     hDisabled = ImageList_Create(iconSize, iconSize,
-                                 ILC_COLOR32 /*ILC_COLORDDB */, TOOLBARHDR_BUTTONS, 1);
+                                 ILC_COLOR32 /*ILC_COLORDDB*/, TOOLBARHDR_BUTTONS, 1);
 
     HDC hDC = HANDLES(CreateCompatibleDC(NULL));
 
@@ -2755,7 +2748,7 @@ void CToolbarHeader::CreateImageLists(HIMAGELIST* enabled, HIMAGELIST* disabled)
                                             DIB_RGB_COLORS, &lpBits, NULL, 0));
 
     NSVGrasterizer* rast = nsvgCreateRasterizer();
-    // JRYFIXME: docasne cteme ze souboru, prejit na spolecne uloziste s toolbars
+    // JRYFIXME: temporarily reading from file, switch to shared storage with toolbars
     const char* svgNames[] = {"Modify", "New_Insert", "Delete", "SortByName", "MoveItemUp", "MoveItemDown"};
     for (int j = 0; j < 2; j++)
     {
@@ -2852,10 +2845,10 @@ CToolbarHeader::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_UPDATEUISTATE:
     {
-        // bohuzel nemuzeme spolehnout na handling standardniho staticku, protoze
+        // Unfortunately, we cannot rely on the handling of standard static, because
         // ten nam pod Vistou (mozna i drive) vykresli na Alt podtrzitko na nesmyslne
-        // misto; resenim by bylo sejmout text do naseho bufferu a zobrazovat z neho
-        // zvolil jsem jiny pristup a state si drzim u nas
+        // instead; the solution would be to remove the text into our buffer and display it from there
+        // I have chosen a different approach and I am keeping the state with us
         if (LOWORD(wParam) == UIS_CLEAR)
             UIState &= ~HIWORD(wParam);
         else if (LOWORD(wParam) == UIS_SET)
@@ -2903,8 +2896,7 @@ CToolbarHeader::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 // CAnimate
 //
 
-/*
-CAnimate::CAnimate(HBITMAP hBitmap, int framesCount, int firstLoopFrame, COLORREF bkColor, CObjectOrigin origin)
+/*  CAnimate::CAnimate(HBITMAP hBitmap, int framesCount, int firstLoopFrame, COLORREF bkColor, CObjectOrigin origin)
  : CWindow(origin)
 {
   HBitmap = hBitmap;
@@ -3237,12 +3229,11 @@ CAnimate::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 BOOL ChangeToArrowButton(HWND hParent, int ctrlID)
 {
     CALL_STACK_MESSAGE_NONE
-    // stary pristup nefungoval pri kontrastnich barvach, kde by se sipka mela vykreslit inverzne
-    // prechazime na nase vlastni kresleni
+    // The old approach did not work with high contrast colors, where the arrow should be rendered inversely.
+    // we are moving to our own drawing
     CButton* button = new CButton(hParent, ctrlID, BTF_RIGHTARROW);
-    /*
-  // pod XP neni BS_ICON kresleny pres theme, ma stary look
-  // vykreslime si tedy tlacitko po nasem
+    /*    // under XP, BS_ICON is not drawn using themes, it has an old look
+  // so we will draw the button ourselves
   CButton *button = new CButton(hParent, ctrlID, 0);
   HWND hButton = GetDlgItem(hParent, ctrlID);
   if (hButton == NULL)
@@ -3253,8 +3244,7 @@ BOOL ChangeToArrowButton(HWND hParent, int ctrlID)
   LONG_PTR l = GetWindowLongPtr(hButton, GWL_STYLE);
   l |= BS_ICON;
   SetWindowLongPtr(hButton, GWL_STYLE, l);
-  SendMessage(hButton, BM_SETIMAGE, IMAGE_ICON, (WPARAM)HANDLES(LoadIcon(HInstance, MAKEINTRESOURCE(IDI_BROWSE))));
-*/
+  SendMessage(hButton, BM_SETIMAGE, IMAGE_ICON, (WPARAM)HANDLES(LoadIcon(HInstance, MAKEINTRESOURCE(IDI_BROWSE)));*/
     return TRUE;
 }
 
@@ -3272,7 +3262,7 @@ BOOL ChangeToIconButton(HWND hParent, int ctrlID, int iconID)
     SetWindowLongPtr(hButton, GWL_STYLE, stl);
     SendMessage(hButton, BM_SETIMAGE, IMAGE_ICON, (WPARAM)HANDLES(LoadIcon(HInstance, MAKEINTRESOURCE(iconID))));
 
-    // upravim velikost tlacitka podle predesle editline nebo comboboxu
+    // Adjust the size of the button according to the previous editline or combobox
     HWND hPrevWnd = GetWindow(hButton, GW_HWNDPREV);
     if (hPrevWnd != NULL)
     {
@@ -3340,7 +3330,7 @@ void CondenseStaticTexts(HWND hWindow, int* staticsArr)
     while (staticsArr[count] != 0)
         count++;
     if (count < 2)
-        return; // neni co delat
+        return; // nothing to do
 
     HFONT hFont = (HFONT)SendDlgItemMessage(hWindow, staticsArr[0], WM_GETFONT, 0, 0);
     HDC hDC = HANDLES(GetDC(hWindow));
@@ -3387,7 +3377,7 @@ BOOL CALLBACK FindHorizLines(HWND hwnd, LPARAM lParam)
 {
     RECT r;
     GetClientRect(hwnd, &r);
-    if (r.bottom == 0) // horizontalni cara vysoka 0 bodu
+    if (r.bottom == 0) // horizontal line height 0 points
     {
         LONG style = GetWindowLong(hwnd, GWL_STYLE);
         if ((style & SS_TYPEMASK) == SS_ETCHEDHORZ)
@@ -3425,19 +3415,19 @@ struct CDataForFindHorizLineLabel
 BOOL CALLBACK FindHorizLineLabel(HWND hwnd, LPARAM lParam)
 {
     CDataForFindHorizLineLabel* data = (CDataForFindHorizLineLabel*)lParam;
-    if (data->Line != hwnd) // preskocime caru, pro kterou hledame label
+    if (data->Line != hwnd) // skip the line for which we are looking for a label
     {
         RECT r;
         GetWindowRect(hwnd, &r);
-        if (r.top <= data->LineRect.top && r.bottom >= data->LineRect.bottom) // label vertikalne prekryva caru
+        if (r.top <= data->LineRect.top && r.bottom >= data->LineRect.bottom) // label vertically overlaps the line
         {
-            if (r.left < data->LineRect.left && r.right < data->LineRect.right) // label zacina pred carou + cara konci az za labelem
+            if (r.left < data->LineRect.left && r.right < data->LineRect.right) // label starts before the line + line ends just after the label
             {
                 char className[300];
                 if (GetClassName(hwnd, className, _countof(className)))
                 {
                     LONG style = GetWindowLong(hwnd, GWL_STYLE);
-                    if (stricmp(className, "Static") == 0) // jde o levy static text
+                    if (stricmp(className, "Static") == 0) // It's about the left static text
                     {
                         if ((style & SS_TYPEMASK) == SS_LEFT ||
                             (style & SS_TYPEMASK) == SS_SIMPLE ||
@@ -3453,7 +3443,7 @@ BOOL CALLBACK FindHorizLineLabel(HWND hwnd, LPARAM lParam)
                     }
                     else
                     {
-                        if (stricmp(className, "Button") == 0) // jde o button (check box, radio box nebo tlacitko)
+                        if (stricmp(className, "Button") == 0) // it is a button (check box, radio box or push button)
                         {
                             if (((style & BS_TYPEMASK) == BS_CHECKBOX ||
                                  (style & BS_TYPEMASK) == BS_AUTOCHECKBOX ||
@@ -3490,16 +3480,16 @@ struct CDataForFindGroupBoxLabel
 BOOL CALLBACK FindGroupBoxLabel(HWND hwnd, LPARAM lParam)
 {
     CDataForFindGroupBoxLabel* data = (CDataForFindGroupBoxLabel*)lParam;
-    if (data->GroupBox != hwnd) // preskocime groupbox, pro ktery hledame label
+    if (data->GroupBox != hwnd) // skip the groupbox we are looking for the label for
     {
         RECT r;
         GetWindowRect(hwnd, &r);
-        if (r.top <= data->GroupBoxRect.top && r.bottom >= data->GroupBoxRect.top &&  // label vertikalne prekryva vrchni caru groupboxu
-            r.left >= data->GroupBoxRect.left && r.right <= data->GroupBoxRect.right) // label horizontalne lezi na groupboxu
+        if (r.top <= data->GroupBoxRect.top && r.bottom >= data->GroupBoxRect.top &&  // label vertically overlaps the top line of the groupbox
+            r.left >= data->GroupBoxRect.left && r.right <= data->GroupBoxRect.right) // label lies horizontally on the groupbox
         {
             char className[300];
             if (GetClassName(hwnd, className, _countof(className)) &&
-                stricmp(className, "Button") == 0) // jde o button (check box, radio box nebo tlacitko)
+                stricmp(className, "Button") == 0) // it is a button (check box, radio box or push button)
             {
                 LONG style = GetWindowLong(hwnd, GWL_STYLE);
                 if (((style & BS_TYPEMASK) == BS_CHECKBOX ||
@@ -3580,19 +3570,19 @@ void ArrangeHorizontalLines(HWND hWindow)
 
                 if (labelRect.right + 5 * spaceWidth < data.LineRect.left)
                     TRACE_E("ArrangeHorizontalLines(): unexpected situation: horizontal line begins more than five spaces behind label, ignoring label...");
-                else // zkratim label, aby neprekryval caru a caru dotahnu ke konci labelu
+                else // Shorten the label so it doesn't overlap the line and extend the line to the end of the label
                 {
                     if (data.IsCheckOrRadioBox)
                     {
                         LOGFONT lf;
                         GetObject(hFont, sizeof(LOGFONT), &lf);
-                        // na Win7 jsem zjistil, ze velikosti symbolu (napr. radio/check box) se meni
-                        // jen pro 100%, 125%, 150% a 200% DPI, mezilehla DPI pouzivaji vzdy symboly
-                        // z nizsiho "celeho" DPI, pro ne omerime vsechny mezilehle velikosti fontu,
-                        // tim bysme meli postihnout vsechna mozna DPI
+                        // On Win7, I found out that the size of symbols (e.g. radio/check box) changes
+                        // only for 100%, 125%, 150%, and 200% DPI, intermediate DPI always use symbols
+                        // from the lower "whole" DPI, for which we will measure all intermediate font sizes,
+                        // This should cover all possible DPIs
                         int boxSize = -lf.lfHeight < 13 ? 16 : // < 125% DPI
                                           -lf.lfHeight < 16 ? 20
-                                                            : // < 150% DPI
+                                                            : // Less than 150% DPI
                                           -lf.lfHeight < 21 ? 25
                                                             : 27; // < 200% DPI : == 200% DPI
                         if (p2.x + (data.LineRect.right - data.LineRect.left) > p.x + boxSize + txtR.right + 2 * spaceWidth)
@@ -3629,7 +3619,7 @@ void ArrangeHorizontalLines(HWND hWindow)
         }
     }
 
-    // zarovnani checkboxu a radioboxu slouzicich jako labely na groupboxech
+    // Alignment of checkboxes and radioboxes serving as labels on groupboxes
     horizLines.DestroyMembers();
     EnumChildWindows(hWindow, FindGroupBoxes, (LPARAM)&horizLines);
     for (int i = 0; i < horizLines.Count; i++)
@@ -3673,16 +3663,16 @@ void ArrangeHorizontalLines(HWND hWindow)
                 p.x = labelRect.left;
                 p.y = labelRect.top;
                 ScreenToClient(hWindow, &p);
-                // zkratim checkbox nebo radiobox podle obsahu a aktualniho pisma
+                // Shorten checkbox or radiobox based on content and current font
                 LOGFONT lf;
                 GetObject(hFont, sizeof(LOGFONT), &lf);
-                // na Win7 jsem zjistil, ze velikosti symbolu (napr. radio/check box) se meni
-                // jen pro 100%, 125%, 150% a 200% DPI, mezilehla DPI pouzivaji vzdy symboly
-                // z nizsiho "celeho" DPI, pro ne omerime vsechny mezilehle velikosti fontu,
-                // tim bysme meli postihnout vsechna mozna DPI
+                // On Win7, I found out that the size of symbols (e.g. radio/check box) changes
+                // only for 100%, 125%, 150%, and 200% DPI, intermediate DPI always use symbols
+                // from the lower "whole" DPI, for which we will measure all intermediate font sizes,
+                // This should cover all possible DPIs
                 int boxSize = -lf.lfHeight < 13 ? 16 : // < 125% DPI
                                   -lf.lfHeight < 16 ? 20
-                                                    : // < 150% DPI
+                                                    : // Less than 150% DPI
                                   -lf.lfHeight < 21 ? 25
                                                     : 27; // < 200% DPI : == 200% DPI
                 MoveWindow(data.Label, p.x, p.y, boxSize + txtR.right + 2 * spaceWidth, labelRect.bottom - labelRect.top, TRUE);
@@ -3708,9 +3698,9 @@ int GetWindowFontHeight(HWND hWindow)
         return -12;
     }
     return lf.lfHeight;
-    //  metoda ziskani velikosti pres GetTextMetrics() vraci pod W7 pri 150% DPI velikost fontu v edit line
-    //  -19, zatimco GetObject() vraci -16, coz je spravne; pokud pres CreateFont() vytvorim font
-    //  pro -19, lezou prilis velke texty
+    //  the method of obtaining the size through GetTextMetrics() returns the font size in the edit line at 150% DPI under W7
+    //  -19, while GetObject() returns -16, which is correct; if I create a font using CreateFont()
+    //  for -19, too large texts are crawling
     //  TEXTMETRIC tm;
     //  HDC hDC = HANDLES(GetDC(hWindow));
     //  HFONT hOldFont = (HFONT)SelectObject(hDC, hFont);

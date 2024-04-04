@@ -13,7 +13,7 @@
 //
 // CTruncatedString
 //
-// popis v Hcku
+// description in C
 //
 
 CTruncatedString::CTruncatedString()
@@ -83,7 +83,7 @@ BOOL CTruncatedString::Set(const char* str, const char* subStr)
                 if (*(p + 1) == '%')
                 {
                     p++;
-                    doubles++; // "%%" bude diky sprintf zkraceno na "%"
+                    doubles++; // "%%" will be shortened to "%" thanks to sprintf
                 }
                 else
                 {
@@ -107,7 +107,7 @@ BOOL CTruncatedString::Set(const char* str, const char* subStr)
         }
         else
         {
-            len -= 2; // odpocitame %s, ktere odpadne
+            len -= 2; // subtract %s that will be discarded
             subStrLen = (int)strlen(subStr);
             len += subStrLen;
         }
@@ -155,7 +155,7 @@ CTruncatedString::Get()
 
 BOOL CTruncatedString::TruncateText(HWND hWindow, BOOL forMessageBox)
 {
-    // pokud neni co zkracovat, vypadneme
+    // if there is nothing to shorten, we will leave
     if (SubStrIndex == -1)
         return TRUE;
 
@@ -166,9 +166,9 @@ BOOL CTruncatedString::TruncateText(HWND hWindow, BOOL forMessageBox)
     HFONT hOldFont = (HFONT)SelectObject(hDC, hFont);
 
     int fitChars;
-    int alpDx[8000]; // pro napocitavani sirek
+    int alpDx[8000]; // for calculating widths
     int textLen = (int)strlen(Text);
-    char* truncated = (char*)malloc(textLen + 1 + 3); // 3: rezerva pro vypustku v extremnim pripade
+    char* truncated = (char*)malloc(textLen + 1 + 3); // 3: reserve for emergency discharge
     if (truncated == NULL)
     {
         TRACE_E(LOW_MEMORY);
@@ -182,27 +182,27 @@ BOOL CTruncatedString::TruncateText(HWND hWindow, BOOL forMessageBox)
 
         if (forMessageBox)
         {
-            // pro messageboxy -- pouze zajistime, aby substring nebyl vetsi nez 400 bodu. (vejdeme se i pod 640x480)
+            // for message boxes -- we just ensure that the substring is not larger than 400 points. (fits even under 640x480)
             int chars = SubStrLen;
             int maxWidth = 400;
             SIZE sz;
             GetTextExtentExPoint(hDC, Text + SubStrIndex, SubStrLen, maxWidth, &fitChars, alpDx, &sz);
             if (fitChars < SubStrLen)
             {
-                // prvni cast se zkracenym substringem
+                // first part with shortened substring
                 memcpy(TruncatedText, Text, SubStrIndex + fitChars);
-                // vypustka
+                // pass
                 memcpy(TruncatedText + SubStrIndex + fitChars, "...", 3);
-                // zbytek
+                // remainder
                 strcpy(TruncatedText + SubStrIndex + fitChars + 3, Text + SubStrIndex + SubStrLen);
             }
             else
-                memcpy(TruncatedText, Text, textLen + 1); // pouze kopirujeme -- vejdeme se
+                memcpy(TruncatedText, Text, textLen + 1); // we just copy -- we fit
         }
         else
         {
-            // single line pro dialogy
-            // zjistime maximalni sirkou, kterou si muzeme dovolit
+            // single line for dialogues
+            // we will determine the maximum width that we can afford
             RECT r;
             GetClientRect(hWindow, &r);
             int maxWidth = r.right;
@@ -222,7 +222,7 @@ BOOL CTruncatedString::TruncateText(HWND hWindow, BOOL forMessageBox)
                 GetTextExtentPoint32(hDC, "...", 3, &sz);
                 int ellipsisWidth = sz.cx;
 
-                // budeme odebirat ze zkracovatelne casti
+                // we will be subtracting from the reducible part
                 int index = SubStrIndex + SubStrLen - 1;
                 maxWidth -= ellipsisWidth;
                 while (width > maxWidth && index >= SubStrIndex)
@@ -230,15 +230,15 @@ BOOL CTruncatedString::TruncateText(HWND hWindow, BOOL forMessageBox)
                     width -= (alpDx[index] - alpDx[index - 1]);
                     index--;
                 }
-                // prvni cast se zkracenym substringem
+                // first part with shortened substring
                 memcpy(TruncatedText, Text, index);
-                // vypustka
+                // pass
                 memcpy(TruncatedText + index, "...", 3);
-                // zbytek
+                // remainder
                 strcpy(TruncatedText + index + 3, Text + SubStrIndex + SubStrLen);
             }
             else
-                memcpy(TruncatedText, Text, textLen + 1); // pouze kopirujeme -- vejdeme se
+                memcpy(TruncatedText, Text, textLen + 1); // we just copy -- we fit
         }
     }
 
@@ -251,10 +251,10 @@ BOOL CTruncatedString::TruncateText(HWND hWindow, BOOL forMessageBox)
 //
 // StrToUInt64
 //
-// Prevede cislo (muze byt uvedeno znakem +) na unsigned __int64.
-// Promenna len udava maximalni pocet zpracovanych znaku
-// neni-li 'isNum' NULL, vraci se v nem TRUE, pokud cely retezec
-// 'str' reprezentuje cislo
+// Converts a number (which can be preceded by a + sign) to unsigned __int64.
+// Variable len specifies the maximum number of processed characters
+// if 'isNum' is not NULL, it returns TRUE in it if the entire string
+// 'str' represents a number
 //
 
 unsigned __int64
@@ -299,8 +299,8 @@ StrToUInt64(const char* str, int len, BOOL* isNum)
 //
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// POZOR: pri jakychkoliv upravach ExpandPluralString je nutne tez upravit
-//        ValidatePluralStrings v projektu TRANSLATOR
+// WARNING: when making any modifications to ExpandPluralString, it is also necessary to modify
+//        ValidatePluralStrings in the TRANSLATOR project
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 int ExpandPluralString(char* lpOut, int nOutMax, const char* lpFmt, int nParCount,
@@ -330,17 +330,17 @@ int ExpandPluralString(char* lpOut, int nOutMax, const char* lpFmt, int nParCoun
     if (nOutMax > 0 && lpOut != NULL)
         *lpOut = 0;
 
-    // zkontrolujeme a preskocime signaturu {!}
+    // we will check and skip the signature {!}
     if (input != NULL && *input++ == '{' && *input++ == '!' && *input++ == '}' && nOutMax > 0)
     {
         while (*input != 0)
         {
             if (*input == '\\' &&
                 (*(input + 1) == '|' || *(input + 1) == '\\' || *(input + 1) == ':' ||
-                 *(input + 1) == '{' || *(input + 1) == '}')) // escape sekvence
+                 *(input + 1) == '{' || *(input + 1) == '}')) // escape sequences
             {
                 input++;
-                if (output >= outputNullTerm) // do bufferu se musi vejit i koncova nula
+                if (output >= outputNullTerm) // The buffer must also fit the null terminator
                 {
                     lpOut[nOutMax - 1] = 0;
                     TRACE_E("ExpandPluralString: truncated output string.");
@@ -350,17 +350,17 @@ int ExpandPluralString(char* lpOut, int nOutMax, const char* lpFmt, int nParCoun
             }
             else
             {
-                if (*input == '{') // provedeme expanzi slozene zavorky
+                if (*input == '{') // we will perform expansion of a compound bracket
                 {
                     input++;
 
-                    // vytahneme odpovidajici hodnotu parametru z pole
+                    // retrieve the corresponding value of the parameter from the array
                     unsigned __int64 arg;
                     const char* parInd = input;
                     int parIndVal = 0;
                     while (*parInd >= '0' && *parInd <= '9')
                         parIndVal = 10 * parIndVal + *parInd++ - '0';
-                    if (*parInd == ':' && parInd > input) // mame prirazeny index, pouzijeme ho
+                    if (*parInd == ':' && parInd > input) // we have assigned an index, we will use it
                     {
                         if (parIndVal >= 1 && parIndVal <= nParCount)
                         {
@@ -375,7 +375,7 @@ int ExpandPluralString(char* lpOut, int nOutMax, const char* lpFmt, int nParCoun
                             return (int)(output - lpOut);
                         }
                     }
-                    else // pouzijeme dalsi parametr v rade
+                    else // we will use another parameter in the sequence
                     {
                         if (actParIndex < nParCount)
                         {
@@ -399,7 +399,7 @@ int ExpandPluralString(char* lpOut, int nOutMax, const char* lpFmt, int nParCoun
                         {
                             if (*input == '\\' &&
                                 (*(input + 1) == '|' || *(input + 1) == '\\' || *(input + 1) == ':' ||
-                                 *(input + 1) == '{' || *(input + 1) == '}')) // escape sekvence
+                                 *(input + 1) == '{' || *(input + 1) == '}')) // escape sequences
                                 input++;
                             subStrLen++;
                             input++;
@@ -415,7 +415,7 @@ int ExpandPluralString(char* lpOut, int nOutMax, const char* lpFmt, int nParCoun
                         {
                             if (*input == '\\' &&
                                 (*(input + 1) == '|' || *(input + 1) == '\\' || *(input + 1) == ':' ||
-                                 *(input + 1) == '{' || *(input + 1) == '}')) // escape sekvence
+                                 *(input + 1) == '{' || *(input + 1) == '}')) // escape sequences
                                 input++;
                             numStrLen++;
                             input++;
@@ -438,19 +438,19 @@ int ExpandPluralString(char* lpOut, int nOutMax, const char* lpFmt, int nParCoun
                                 TRACE_E("ExpandPluralString: contains limit that is not a number: " << lpFmt);
                         }
 
-                        // pokud jde o posledni retezec bez omezeni intervalu,
-                        // nebo je hodnota arg mensi nebo rovna hranici intervalu
+                        // when it comes to the last string without interval restrictions,
+                        // or the value of arg is less than or equal to the boundary of the interval
                         if (numStrLen == 0 || arg <= num)
                         {
-                            // vlozime do vystupniho retezce prislusny podretezec
+                            // we insert the corresponding substring into the output string
                             int i;
                             for (i = 0; i < subStrLen; i++)
                             {
                                 if (*subStr == '\\' &&
                                     (*(subStr + 1) == '|' || *(subStr + 1) == '\\' || *(subStr + 1) == ':' ||
-                                     *(subStr + 1) == '{' || *(subStr + 1) == '}')) // escape sekvence
+                                     *(subStr + 1) == '{' || *(subStr + 1) == '}')) // escape sequences
                                     subStr++;
-                                if (output >= outputNullTerm) // do bufferu se musi vejit i koncova nula
+                                if (output >= outputNullTerm) // The buffer must also fit the null terminator
                                 {
                                     lpOut[nOutMax - 1] = 0;
                                     TRACE_E("ExpandPluralString: truncated output string.");
@@ -459,12 +459,12 @@ int ExpandPluralString(char* lpOut, int nOutMax, const char* lpFmt, int nParCoun
                                 *output++ = *subStr++;
                             }
 
-                            // a ukoncime hledani
+                            // and let's end the search
                             while (*input != '}' && *input != 0)
                             {
                                 if (*input == '\\' &&
                                     (*(input + 1) == '|' || *(input + 1) == '\\' || *(input + 1) == ':' ||
-                                     *(input + 1) == '{' || *(input + 1) == '}')) // escape sekvence
+                                     *(input + 1) == '{' || *(input + 1) == '}')) // escape sequences
                                     input++;
                                 input++;
                             }
@@ -475,7 +475,7 @@ int ExpandPluralString(char* lpOut, int nOutMax, const char* lpFmt, int nParCoun
                 }
                 else
                 {
-                    if (output >= outputNullTerm) // do bufferu se musi vejit i koncova nula
+                    if (output >= outputNullTerm) // The buffer must also fit the null terminator
                     {
                         lpOut[nOutMax - 1] = 0;
                         TRACE_E("ExpandPluralString: truncated output string.");
@@ -485,7 +485,7 @@ int ExpandPluralString(char* lpOut, int nOutMax, const char* lpFmt, int nParCoun
                 }
             }
         }
-        *output = 0; // vlozime terminator
+        *output = 0; // insert terminator
     }
     else
         TRACE_E("ExpandPluralString: format string does not contain {!} signature or output buffer is too short.");
@@ -507,18 +507,18 @@ int ExpandPluralString(char* lpOut, int nOutMax, const char* lpFmt, int nParCoun
 //
 // ExpandPluralFilesDirs
 //
-// Do lpOut zapise retezec v zavislosti na promennych files a dirs:
+// Writes the string to lpOut depending on the variables files and dirs:
 // files > 0 && dirs == 0  ->  XXX (selected) files
 // files == 0 && dirs > 0  ->  YYY (selected) directories
 // files > 0 && dirs > 0   ->  XXX (selected) files and YYY directories
 //
-// kde XXX a YYY odpovidaji hodnotam promennych files a dirs.
-// Promenna selectedForm ridi vlozeni slova selected.
+// where XXX and YYY correspond to the values of the variables files and dirs.
+// Variable selectedForm controls the insertion of the selected word.
 //
-// V forDlgCaption je TRUE/FALSE pokud text je/neni urceny pro titulek dialogu
-// (v anglictine jsou nutna velka pocatecni pismena).
+// ForDlgCaption is TRUE/FALSE if the text is/is not intended for the dialog caption
+// (In English, capital letters at the beginning are required).
 //
-// Vrati pocet nakopirovanych znaku bez terminatoru.
+// Return the number of copied characters without the terminator.
 //
 
 int ExpandPluralFilesDirs(char* lpOut, int nOutMax, int files, int dirs, int mode, BOOL forDlgCaption)
@@ -537,7 +537,7 @@ int ExpandPluralFilesDirs(char* lpOut, int nOutMax, int files, int dirs, int mod
     char expanded[200];
     if (nOutMax > 200)
         nOutMax = 200;
-    nOutMax -= 20; // vytvorim misto pro cisla files a dirs
+    nOutMax -= 20; // create space for numbers of files and dirs
 
     int ret;
 
@@ -571,7 +571,7 @@ int ExpandPluralBytesFilesDirs(char* lpOut, int nOutMax, const CQuadWord& select
     char number[50];
     if (nOutMax > 200)
         nOutMax = 200;
-    nOutMax -= 30; // vytvorim misto pro cisla files a dirs
+    nOutMax -= 30; // create space for numbers of files and dirs
 
     int ret;
 
@@ -610,9 +610,9 @@ BOOL LookForSubTexts(char* text, DWORD* varPlacements, int* varPlacementsCount)
     int maxVars = *varPlacementsCount;
     *varPlacementsCount = 0;
 
-    const char* src = text; // z tohoto ukazatele bereme znak
-    char* dst = text;       // na tento ukazatel zapisujeme vysledek
-    char* var = NULL;       // ukazatel na prvni znak promenne
+    const char* src = text; // we take a character from this pointer
+    char* dst = text;       // we write the result to this pointer
+    char* var = NULL;       // pointer to the first character of a variable
 
     while (*src != 0)
     {
@@ -621,7 +621,7 @@ BOOL LookForSubTexts(char* text, DWORD* varPlacements, int* varPlacementsCount)
         case '\\':
         {
             if (*(src + 1) == '<' || *(src + 1) == '>' || *(src + 1) == '\\')
-                src++; // escape sekvecne
+                src++; // escape sequence
             break;
         }
 
@@ -662,7 +662,7 @@ BOOL LookForSubTexts(char* text, DWORD* varPlacements, int* varPlacementsCount)
         src++;
         dst++;
     }
-    // zapiseme terminator
+    // write terminator
     *dst = 0;
     if (var != NULL)
     {
@@ -686,7 +686,7 @@ const char* SALAMANDER_VIEWTEMPLATE_RIGHTSMARTMODE = "Right Smart Mode";
 
 CViewTemplates::CViewTemplates()
 {
-    // implicitni hodnoty
+    // default values
     Set(0, VIEW_MODE_TREE, LoadStr(IDS_TREE_VIEW), 0, TRUE, TRUE);
     Set(1, VIEW_MODE_BRIEF, LoadStr(IDS_BRIEF_VIEW), 0, TRUE, TRUE);
     Set(2, VIEW_MODE_DETAILED, LoadStr(IDS_DETAILED_VIEW), VIEW_SHOW_SIZE | VIEW_SHOW_DATE | VIEW_SHOW_TIME | VIEW_SHOW_ATTRIBUTES, TRUE, TRUE);
@@ -850,7 +850,7 @@ BOOL CViewTemplates::Load(HKEY hKey)
     {
         itoa(i < VIEW_TEMPLATES_COUNT - 1 ? i + 1 : 0, keyName, 10);
         if (i == 6 && Configuration.ConfigVersion < 23)
-            continue; // pro pohled IDS_TYPES_VIEW chceme defaultni sloupce
+            continue; // for the IDS_TYPES_VIEW view, we want default columns
         HKEY actKey;
         if (OpenKey(hKey, keyName, actKey))
         {
@@ -870,7 +870,7 @@ BOOL CViewTemplates::Load(HKEY hKey)
                 LoadColumns(Items[i].Columns, buff);
                 CleanName(name);
 
-                // prevalcujem nazvy souboru, kterere stejne user nemohl zmenit
+                // overriding file names that the same user could not change
                 int resID = -1;
                 switch (i)
                 {
@@ -929,7 +929,7 @@ DWORD AddUnicodeToClipboard(const char* str, int textLen)
             {
                 if (textLen > 0 && MultiByteToWideChar(CP_ACP, 0, str, textLen, unicodeStr, unicodeLen + 1) == 0)
                     err = GetLastError();
-                unicodeStr[unicodeLen] = 0; // koncova nula
+                unicodeStr[unicodeLen] = 0; // ending zero
                 HANDLES(GlobalUnlock(unicode));
                 if (err == ERROR_SUCCESS && SetClipboardData(CF_UNICODETEXT, unicode) == NULL)
                     err = GetLastError();
@@ -963,7 +963,7 @@ DWORD AddMultibyteToClipboard(const wchar_t* str, int textLen)
             {
                 if (textLen > 0 && WideCharToMultiByte(CP_ACP, 0, str, textLen, multibyteStr, mbLen + 1, NULL, NULL) == 0)
                     err = GetLastError();
-                multibyteStr[mbLen] = 0; // koncova nula
+                multibyteStr[mbLen] = 0; // ending zero
                 HANDLES(GlobalUnlock(multibyte));
                 if (err == ERROR_SUCCESS && SetClipboardData(CF_TEXT, multibyte) == NULL)
                     err = GetLastError();
@@ -1005,21 +1005,21 @@ BOOL CopyHTextToClipboardW(HGLOBAL hGlobalText, int textLen)
             {
                 if (textLen == -1)
                     textLen = (int)wcslen(text);
-                err = AddMultibyteToClipboard(text, textLen); // ulozime text nejprve v multibyte
+                err = AddMultibyteToClipboard(text, textLen); // we will first save the text in multibyte
                 HANDLES(GlobalUnlock(hGlobalText));
             }
             else
                 err = GetLastError();
 
-            if (SetClipboardData(CF_UNICODETEXT, hGlobalText) == NULL) // pak ulozime text multibyte
+            if (SetClipboardData(CF_UNICODETEXT, hGlobalText) == NULL) // then we save the multibyte text
                 err = GetLastError();
         }
         else
             err = GetLastError();
         CloseClipboard();
 
-        IdleRefreshStates = TRUE;  // pri pristim Idle vynutime kontrolu stavovych promennych
-        IdleCheckClipboard = TRUE; // nechame kontrolovat take clipboard
+        IdleRefreshStates = TRUE;  // During the next Idle, we will force the check of status variables
+        IdleCheckClipboard = TRUE; // we will also check the clipboard
     }
     else
     {
@@ -1142,21 +1142,21 @@ BOOL CopyHTextToClipboard(HGLOBAL hGlobalText, int textLen, BOOL showEcho, HWND 
             {
                 if (textLen == -1)
                     textLen = lstrlen(text);
-                err = AddUnicodeToClipboard(text, textLen); // ulozime text nejprve v Unicode
+                err = AddUnicodeToClipboard(text, textLen); // we will first save the text in Unicode
                 HANDLES(GlobalUnlock(hGlobalText));
             }
             else
                 err = GetLastError();
 
-            if (SetClipboardData(CF_TEXT, hGlobalText) == NULL) // pak ulozime text multibyte
+            if (SetClipboardData(CF_TEXT, hGlobalText) == NULL) // then we save the multibyte text
                 err = GetLastError();
         }
         else
             err = GetLastError();
         CloseClipboard();
 
-        IdleRefreshStates = TRUE;  // pri pristim Idle vynutime kontrolu stavovych promennych
-        IdleCheckClipboard = TRUE; // nechame kontrolovat take clipboard
+        IdleRefreshStates = TRUE;  // During the next Idle, we will force the check of status variables
+        IdleCheckClipboard = TRUE; // we will also check the clipboard
     }
     else
     {
@@ -1178,10 +1178,10 @@ BOOL CopyHTextToClipboard(HGLOBAL hGlobalText, int textLen, BOOL showEcho, HWND 
 
 //****************************************************************************
 //
-// Interni funkce pro ziskani obsahu sloupce
+// Internal function for retrieving the content of a column
 //
 
-// inicializovano v kreslici rutine pred volanim callbacku
+// initialized in the drawing routine before calling the callback
 const CFileData* TransferFileData;
 int TransferIsDir;
 char TransferBuffer[TRANSFER_BUFFER_MAX];
@@ -1205,7 +1205,7 @@ void WINAPI InternalGetDosName()
 
 void WINAPI InternalGetSize()
 {
-    if (TransferIsDir && !TransferFileData->SizeValid) // jen adresare bez zname velikosti
+    if (TransferIsDir && !TransferFileData->SizeValid) // only directories without known size
     {
         memmove(TransferBuffer, DirColumnStr, DirColumnStrLen);
         TransferLen = DirColumnStrLen;
@@ -1220,7 +1220,7 @@ void WINAPI InternalGetSize()
             break;
         }
 
-        case SIZE_FORMAT_KB: // pozor, stejny kod je na dalsim miste, hledat tuto konstantu
+        case SIZE_FORMAT_KB: // Attention, the same code is in another place, search for this constant
         {
             PrintDiskSize(TransferBuffer, TransferFileData->Size, 3);
             TransferLen = (int)strlen(TransferBuffer);
@@ -1237,21 +1237,21 @@ void WINAPI InternalGetSize()
     }
 }
 
-// pomocne globalky pro InternalGetType()
+// Helper globals for InternalGetType()
 char* InternalGetTypeAux1;
 char* InternalGetTypeAux2;
-char InternalGetTypeAux3[MAX_PATH + 4]; // pripona malymi pismeny, zarovnana na DWORDy
+char InternalGetTypeAux3[MAX_PATH + 4]; // suffix in lowercase, aligned to DWORDs
 
 void WINAPI InternalGetType()
 {
-    if (TransferIsDir) // adresare budeme muset resit jinak
+    if (TransferIsDir) // we will have to address it differently
     {
         TransferLen = TransferIsDir == 1 ? FolderTypeNameLen : UpDirTypeNameLen;
         memcpy(TransferBuffer, TransferIsDir == 1 ? FolderTypeName : UpDirTypeName, TransferLen);
     }
     else
     {
-        if (TransferAssocIndex == -2) // jeste jsme priponu nehledali
+        if (TransferAssocIndex == -2) // We haven't searched for the suffix yet.
         {
             if (TransferFileData->Ext[0] != 0)
             {
@@ -1261,10 +1261,10 @@ void WINAPI InternalGetType()
                     *InternalGetTypeAux1++ = LowerCase[*InternalGetTypeAux2++];
                 *((DWORD*)InternalGetTypeAux1) = 0;
                 if (!Associations.GetIndex(InternalGetTypeAux3, TransferAssocIndex))
-                    TransferAssocIndex = -1; // nenalezeno
+                    TransferAssocIndex = -1; // not found
             }
             else
-                TransferAssocIndex = -1; // bez pripony -> nemuze byt v Associations
+                TransferAssocIndex = -1; // without suffix -> cannot be in Associations
         }
 
         if (TransferAssocIndex == -1)
@@ -1272,7 +1272,7 @@ void WINAPI InternalGetType()
         else
         {
             InternalGetTypeAux1 = Associations[TransferAssocIndex].Type;
-            if (InternalGetTypeAux1 != NULL) // platny file-type
+            if (InternalGetTypeAux1 != NULL) // valid file type
             {
                 TransferLen = (int)strlen(InternalGetTypeAux1);
                 memcpy(TransferBuffer, InternalGetTypeAux1, TransferLen);
@@ -1283,7 +1283,7 @@ void WINAPI InternalGetType()
     }
 }
 
-// tuhle optimalizaci si muzeme dovolit, protoze nejsme volani z vice threadu soucasne
+// We can afford this optimization because we are not called from multiple threads simultaneously.
 static SYSTEMTIME InternalColumnST;
 static FILETIME InternalColumnFT;
 
@@ -1316,7 +1316,7 @@ void WINAPI InternalGetDateOnlyForDisk()
         }
         TransferRowData |= 0x00000001;
     }
-    if (TransferIsDir == 2 /* UP-DIR */ &&
+    if (TransferIsDir == 2 /* UP-DIR*/ &&
         InternalColumnST.wYear == 1602 && InternalColumnST.wMonth == 1 && InternalColumnST.wDay == 1 &&
         InternalColumnST.wHour == 0 && InternalColumnST.wMinute == 0 && InternalColumnST.wSecond == 0 &&
         InternalColumnST.wMilliseconds == 0)
@@ -1358,7 +1358,7 @@ void WINAPI InternalGetTimeOnlyForDisk()
         }
         TransferRowData |= 0x00000001;
     }
-    if (TransferIsDir == 2 /* UP-DIR */ &&
+    if (TransferIsDir == 2 /* UP-DIR*/ &&
         InternalColumnST.wYear == 1602 && InternalColumnST.wMonth == 1 && InternalColumnST.wDay == 1 &&
         InternalColumnST.wHour == 0 && InternalColumnST.wMinute == 0 && InternalColumnST.wSecond == 0 &&
         InternalColumnST.wMilliseconds == 0)
@@ -1374,7 +1374,7 @@ void WINAPI InternalGetTimeOnlyForDisk()
 void WINAPI InternalGetAttr()
 {
     TransferLen = 0;
-    // POZOR: pokud chceme zobrazovat dalsi atributy, je nutne predelat GetAttrsString() a masku DISPLAYED_ATTRIBUTES !!!
+    // WARNING: If we want to display additional attributes, it is necessary to modify GetAttrsString() and the DISPLAYED_ATTRIBUTES mask !!!
     if (TransferFileData->Attr & FILE_ATTRIBUTE_READONLY)
         TransferBuffer[TransferLen++] = 'R';
     if (TransferFileData->Attr & FILE_ATTRIBUTE_HIDDEN)
@@ -1400,7 +1400,7 @@ void WINAPI InternalGetDescr()
 
 //****************************************************************************
 //
-// Interni funkce pro ziskani indexu jednoduchych ikon pro FS s vlastnimi ikonami (pitFromPlugin)
+// Internal function for obtaining the index of simple icons for FS with custom icons (pitFromPlugin)
 //
 
 int WINAPI InternalGetPluginIconIndex()
@@ -1481,7 +1481,7 @@ BOOL CSalamanderView::InsertColumn(int index, const CColumn* column)
 {
     int low = 1;
     if (Panel->Columns.Count > 1 && Panel->Columns[1].ID == COLUMN_ID_EXTENSION)
-        low++; // nesmime je nechat vetrit mezi Name a Ext
+        low++; // we must not let them wander between Name and Ext
     if (index < low || index > Panel->Columns.Count)
     {
         TRACE_E("CSalamanderView::InsertColumn(): index=" << index << " is incorrect.");
@@ -1506,7 +1506,7 @@ BOOL CSalamanderView::InsertStandardColumn(int index, DWORD id)
 {
     int low = 1;
     if (Panel->Columns.Count > 1 && Panel->Columns[1].ID == COLUMN_ID_EXTENSION)
-        low++; // nesmime je nechat vetrit mezi Name a Ext
+        low++; // we must not let them wander between Name and Ext
     if (index < low || index > Panel->Columns.Count ||
         index != 1 && id == COLUMN_ID_EXTENSION)
     {
@@ -1523,7 +1523,7 @@ BOOL CSalamanderView::InsertStandardColumn(int index, DWORD id)
     int i;
     for (i = 0; i < STANDARD_COLUMNS_COUNT; i++)
     {
-        if (GetStdColumn(i, FALSE)->ID == id) // nalezen pozadovany std. sloupec
+        if (GetStdColumn(i, FALSE)->ID == id) // found the desired std. column
         {
             item = GetStdColumn(i, FALSE);
             break;
@@ -1543,7 +1543,7 @@ BOOL CSalamanderView::InsertStandardColumn(int index, DWORD id)
         BOOL leftPanel = Panel == MainWindow->LeftPanel;
         column.Width = leftPanel ? colCfg[i].LeftWidth : colCfg[i].RightWidth;
         column.FixedWidth = leftPanel ? colCfg[i].LeftFixedWidth : colCfg[i].RightFixedWidth;
-        column.MinWidth = 0; // dummy - bude prepsana pri dimenzovani HeaderLine
+        column.MinWidth = 0; // dummy - will be overwritten during HeaderLine dimensioning
 
         Panel->Columns.Insert(index, column);
         if (!Panel->Columns.IsGood())
@@ -1574,7 +1574,7 @@ BOOL CSalamanderView::SetColumnName(int index, const char* name, const char* des
         return FALSE;
     }
     if (index == 0 && !Panel->IsExtensionInSeparateColumn() && (Panel->ValidFileData & VALID_DATA_EXTENSION))
-    { // kontrola dvojitych (dvakrat null-terminated) stringu + neprazdnosti druheho z nich + jejich kopie
+    { // Check for double (twice null-terminated) strings + non-emptiness of the second one + their copies
         const char* s = name + strlen(name) + 1;
         const char* beg = s;
         while (s < name + COLUMN_NAME_MAX && *s != 0)
@@ -1593,7 +1593,7 @@ BOOL CSalamanderView::SetColumnName(int index, const char* name, const char* des
             TRACE_E("CSalamanderView::SetColumnName(): description is not double string (descriptions of Name and Ext columns are expected) or second string is empty.");
             return FALSE;
         }
-        // zkopirujeme dvojite stringy
+        // copy double strings
         int l = (int)(s - name);
         if (l >= COLUMN_NAME_MAX)
         {
@@ -1635,7 +1635,7 @@ BOOL CSalamanderView::DeleteColumn(int index)
     }
     Panel->Columns.Delete(index);
     if (!Panel->Columns.IsGood())
-        Panel->Columns.ResetState(); // nemuze failnout, jen se neredukovalo pole
+        Panel->Columns.ResetState(); // cannot fail, only the array was not reduced
     return TRUE;
 }
 
@@ -1643,7 +1643,7 @@ BOOL CSalamanderView::DeleteColumn(int index)
 //
 // CFileHistoryItem, CFileHistory
 //
-// Drzi seznam souboru, na ktere uzivatel volal View nebo Edit.
+// Keeps a list of files that the user has called View or Edit on.
 //
 
 CFileHistoryItem::CFileHistoryItem(CFileHistoryItemTypeEnum type, DWORD handlerID, const char* fileName)
@@ -1655,7 +1655,7 @@ CFileHistoryItem::CFileHistoryItem(CFileHistoryItemTypeEnum type, DWORD handlerI
     if (FileName == NULL)
         return;
 
-    // zkusim ze systemu vytahnout ikonu
+    // trying to extract an icon from the system
     HIcon = GetFileOrPathIconAux(FileName, FALSE, FALSE);
 }
 
@@ -1691,9 +1691,9 @@ BOOL CFileHistoryItem::Execute()
         char* ptr = strrchr(buff, '\\');
         if (ptr != NULL)
         {
-            *ptr = 0; // rozsekneme cestu na path a file name
+            *ptr = 0; // split the path and file name
             HCURSOR hOldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
-            MainWindow->SetDefaultDirectories(); // aby startujici process zdedil spravne akt. adresare
+            MainWindow->SetDefaultDirectories(); // so that the starting process inherits the correct working directory
             ExecuteAssociation(panel->GetListBoxHWND(), buff, ptr + 1);
             SetCursor(hOldCur);
         }
@@ -1709,17 +1709,17 @@ BOOL CFileHistoryItem::Execute()
 
 //****************************************************************************
 //
-// Sada funkci pro otevirani asociaci pomoci SalOpen.exe
+// Set of functions for opening associations using SalOpen.exe
 //
 
 BOOL SalOpenInit()
 {
-    // alokace sdileneho mista v pagefile.sys
-    SalOpenFileMapping = HANDLES(CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, // FIXME_X64 nepredavame x86/x64 nekompatibilni data?
+    // Allocation of shared space in pagefile.sys
+    SalOpenFileMapping = HANDLES(CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, // FIXME_X64 are we passing x86/x64 incompatible data?
                                                    MAX_PATH + 200, NULL));
     if (SalOpenFileMapping != NULL)
     {
-        SalOpenSharedMem = HANDLES(MapViewOfFile(SalOpenFileMapping, FILE_MAP_WRITE, 0, 0, 0)); // FIXME_X64 nepredavame x86/x64 nekompatibilni data?
+        SalOpenSharedMem = HANDLES(MapViewOfFile(SalOpenFileMapping, FILE_MAP_WRITE, 0, 0, 0)); // FIXME_X64 are we passing x86/x64 incompatible data?
         if (SalOpenSharedMem == NULL)
             TRACE_E("Unable to allocate shared memory (map view of file) for SalOpen.");
         else
@@ -1734,7 +1734,7 @@ BOOL SalOpenExecute(HWND hWindow, const char* fileName)
 {
     CALL_STACK_MESSAGE2("SalOpenExecute(, %s)", fileName);
 
-    // inicializace nutna pro spousteni SalOpen
+    // Initialization necessary for launching SalOpen
     static BOOL initCalled = FALSE;
     if (!initCalled)
     {
@@ -1763,7 +1763,7 @@ BOOL SalOpenExecute(HWND hWindow, const char* fileName)
             return FALSE;
         strcat(cmdline, add);
 
-        // spustime process salopen.exe
+        // start the process salopen.exe
         STARTUPINFO si;
         memset(&si, 0, sizeof(STARTUPINFO));
         si.cb = sizeof(STARTUPINFO);
@@ -1780,7 +1780,7 @@ BOOL SalOpenExecute(HWND hWindow, const char* fileName)
             }
             else
             {
-                { // kdyz se ceka, nechodi DDE asociovani (.html, .h, .cpp, atd.)
+                { // When waiting, do not associate DDE (.html, .h, .cpp, etc.)
                     //          CALL_STACK_MESSAGE1("SalOpenExecute::wait-for-process");
                     //          WaitForSingleObject(pi.hProcess, INFINITE);
                 }
@@ -1808,11 +1808,11 @@ BOOL IsFileURLPath(const char* path)
 {
     if (path == NULL)
         return FALSE;
-    // preskocime whitespaces na zacatku retezce
+    // skip whitespaces at the beginning of the string
     const char* s = path;
     while (*s != 0 && *s <= ' ')
         s++;
-    // najdeme jmeno FS
+    // find the name of the file system
     const char* name = s;
     while (*s != 0 && *s != ':' && s - name < 4)
         s++;
@@ -1831,24 +1831,24 @@ BOOL IsPluginFSPath(const char* path, char* fsName, const char** userPart)
     if (path == NULL)
         return FALSE;
     const char* start = path;
-    // preskocime whitespaces na zacatku retezce
+    // skip whitespaces at the beginning of the string
     while (*start >= 1 && *start <= ' ')
         start++;
-    // najdeme jmeno FS
+    // find the name of the file system
     const char* name = start;
     while (LowerCase[*name] >= 'a' && LowerCase[*name] <= 'z' ||
            *name >= '0' && *name <= '9' || *name == '_' || *name == '-' || *name == '+')
         name++;
-    // test jestli jmeno FS vyhovuje vsech podminkam (nasleduje ':' a >= 2 znaky)
+    // test if the name FS meets all conditions (followed by ':' and >= 2 characters)
     if (*name == ':' && name - start >= 2 && name - start < MAX_PATH)
     {
-        // kopie jmena FS
+        // Copy of the FS name
         if (fsName != NULL)
         {
             memmove(fsName, start, name - start);
             fsName[name - start] = 0;
         }
-        // ukazatel do 'path' na prvni znak pluginem definovane cesty (za prvni ':')
+        // pointer to the 'path' to the first character of the plugin-defined path (after the first ':')
         if (userPart != NULL)
             *userPart = name + 1;
         return TRUE;

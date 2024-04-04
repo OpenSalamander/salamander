@@ -126,29 +126,29 @@ BOOL CMainWindow::PtInChild(HWND hChild, POINT p)
 BOOL CMainWindow::CloseDetachedFS(HWND parent, CPluginFSInterfaceEncapsulation* detachedFS)
 {
     CALL_STACK_MESSAGE1("CMainWindow::CloseDetachedFS()");
-    BOOL dummy; // ignorovana navratova hodnota
+    BOOL dummy; // ignored return value
     if (!detachedFS->TryCloseOrDetach(CriticalShutdown, FALSE, dummy, FSTRYCLOSE_UNLOADCLOSEDETACHEDFS) &&
-        !CriticalShutdown) // test zavreni, forceClose==TRUE jen pri "critical shutdown"
-    {                      // optame se usera, jestli to chce zavrit i proti vuli FS
+        !CriticalShutdown) // test closing, forceClose==TRUE only on "critical shutdown"
+    {                      // Ask the user if they want to close it even against the will of the file system
         char path[2 * MAX_PATH];
         strcpy(path, detachedFS->GetPluginFSName());
         strcat(path, ":");
         char* s = path + strlen(path);
         if (!detachedFS->NotEmpty() || !detachedFS->GetCurrentPath(s))
-            *s = 0; // nelze ziskat user-part
+            *s = 0; // unable to retrieve user-part
 
         char buf[2 * MAX_PATH + 100];
         sprintf(buf, LoadStr(IDS_FSFORCECLOSE), path);
         if (SalMessageBox(parent, buf, LoadStr(IDS_QUESTION),
-                          MB_YESNO | MB_ICONQUESTION) == IDYES) // user rika "zavrit"
+                          MB_YESNO | MB_ICONQUESTION) == IDYES) // user says "close"
         {
             detachedFS->TryCloseOrDetach(TRUE, FALSE, dummy, FSTRYCLOSE_UNLOADCLOSEDETACHEDFS);
         }
         else
-            return FALSE; // user si nepreje zavrit odpojene FS
+            return FALSE; // user does not want to close disconnected FS
     }
 
-    // zavreme FS
+    // close the file system
     CPluginInterfaceForFSEncapsulation plugin(detachedFS->GetPluginInterfaceForFS()->GetInterface(),
                                               detachedFS->GetPluginInterfaceForFS()->GetBuiltForVersion());
     if (plugin.NotEmpty())
@@ -159,7 +159,7 @@ BOOL CMainWindow::CloseDetachedFS(HWND parent, CPluginFSInterfaceEncapsulation* 
     else
         TRACE_E("Unexpected situation (2) in CMainWindow::CloseDetachedFS()");
 
-    return TRUE; // FS je uzavreny
+    return TRUE; // FS is closed
 }
 
 BOOL CMainWindow::CanUnloadPlugin(HWND parent, CPluginInterfaceAbstract* plugin)
@@ -170,38 +170,38 @@ BOOL CMainWindow::CanUnloadPlugin(HWND parent, CPluginInterfaceAbstract* plugin)
     if (RightPanel != NULL && !RightPanel->CanUnloadPlugin(parent, plugin))
         return FALSE;
 
-    // najdeme odpojene FS patrici plug-inu 'plugin' a zkusime je zavrit
+    // we will find disconnected FS belonging to the 'plugin' plugin and try to close them
     int i;
-    for (i = DetachedFSList->Count - 1; i >= 0; i--) // odzadu, budeme mazat z pole (kvadr. slozitost)
+    for (i = DetachedFSList->Count - 1; i >= 0; i--) // from the back, we will delete from the array (quadratic complexity)
     {
         CPluginFSInterfaceEncapsulation* detachedFS = DetachedFSList->At(i);
-        if (detachedFS->GetPluginInterface() == plugin) // je plug-inu 'plugin'
+        if (detachedFS->GetPluginInterface() == plugin) // is the plug-in 'plugin'
         {
             if (CloseDetachedFS(parent, detachedFS))
             {
-                DetachedFSList->Delete(i); // vyhodime odpojeny FS z DetachedFSList
+                DetachedFSList->Delete(i); // remove disconnected FS from DetachedFSList
                 if (!DetachedFSList->IsGood())
                     DetachedFSList->ResetState();
             }
             else
-                return FALSE; // unload nelze provest (user si nepreje zavrit odpojene FS plug-inu)
+                return FALSE; // unload cannot be performed (user does not want to close the disconnected FS plug-in)
         }
     }
 
-    // zkontrolujeme jestli data z pluginu nejsou v SalShExtPastedData (mohly je tam
-    // predat panely opoustejici archivy z duvodu unloadu pluginu)
+    // Check if the data from the plugin is not in SalShExtPastedData (it could be there
+    // passing panels leaving archives due to unloading of the plugin)
     if (!SalShExtPastedData.CanUnloadPlugin(parent, plugin))
-        return FALSE; // unload nelze provest
+        return FALSE; // cannot perform unload
 
-    return TRUE; // unload je mozny, vsechny zdroje plug-inu jsou uvolnene
+    return TRUE; // unload is possible, all resources of the plug-in are released
 }
 
 void CMainWindow::MakeFileList()
 {
     CALL_STACK_MESSAGE1("CMainWindow::MakeFileList()");
 
-    BOOL files = FALSE; // kurzor na souboru nebo adresari nebo oznaceni
-    BOOL upDir = FALSE; // pritomnost ".."
+    BOOL files = FALSE; // cursor on a file or directory or selection
+    BOOL upDir = FALSE; // presence of ".."
 
     CFilesWindow* panel = GetActivePanel();
 
@@ -231,10 +231,10 @@ void CMainWindow::MakeFileList()
     if (!files)
         return;
 
-    // obnova DefaultDir
+    // Restore DefaultDir
     MainWindow->UpdateDefaultDir(TRUE);
 
-    BeginStopRefresh(); // cmuchal si da pohov
+    BeginStopRefresh(); // He was snoring in his sleep
 
     CFileListDialog dlg(HWindow);
     if (dlg.Execute() == IDOK)
@@ -287,14 +287,14 @@ void CMainWindow::MakeFileList()
                                                 NULL));
             if (hFile != INVALID_HANDLE_VALUE)
             {
-                // nastavim ukazovatko
+                // set the pointer
                 SetFilePointer(hFile, 0, NULL, append ? FILE_END : FILE_BEGIN);
 
-                // nacpem do souboru data - pro kazdy soubor / adresar vlozim jeden zaznam
+                // write into the file data - for each file/directory insert one record
                 BOOL deleteFile = TRUE;
                 if (panel->MakeFileList(hFile))
                 {
-                    panel->SetSel(FALSE, -1, TRUE);                        // explicitni prekresleni
+                    panel->SetSel(FALSE, -1, TRUE);                        // explicit override
                     PostMessage(panel->HWindow, WM_USER_SELCHANGED, 0, 0); // sel-change notify
                     deleteFile = FALSE;
                 }
@@ -326,14 +326,14 @@ void CMainWindow::MakeFileList()
                 }
                 HANDLES(CloseHandle(hFile));
 
-                // pokud byl cil clipboard, smazneme tmp soubor
+                // if the target was clipboard, we will delete the tmp file
                 if (deleteFile || Configuration.FileListDestination == 0) // clipboard
                     DeleteFile(fileName);
                 else
                 {
                     if (Configuration.FileListDestination == 1) // viewer
                     {
-                        // soubor ukazeme v internim prohlizeci, ktery soubor nasledne podrizne
+                        // the file will be shown in an internal browser, which will subsequently download the file
                         CSalamanderPluginInternalViewerData viewerData;
                         viewerData.Size = sizeof(viewerData);
                         viewerData.FileName = fileName;
@@ -345,15 +345,15 @@ void CMainWindow::MakeFileList()
                         int error;
                         if (!ViewFileInPluginViewer(NULL, &viewerData, TRUE, NULL, "mfl.txt", error))
                         {
-                            // soubor je smazan i v pripade neuspechu
+                            // file is deleted even in case of failure
                         }
                     }
                 }
 
                 if (Configuration.FileListDestination == 2) // file
                 {
-                    //---  refresh neautomaticky refreshovanych adresaru
-                    // zmena v adresari, kde byl vytvoren list souboru
+                    //--- refresh non-automatically refreshed directories
+                    // change in the directory where the list of files was created
                     CutDirectory(fileName);
                     MainWindow->PostChangeOnPathNotification(fileName, FALSE);
                 }
@@ -367,22 +367,22 @@ void CMainWindow::MakeFileList()
             }
         }
     }
-    EndStopRefresh(); // ted uz zase cmuchal nastartuje
+    EndStopRefresh(); // now he's sniffling again, he'll start up
 }
 
-// popis viz mainwnd.h
+// description see mainwnd.h
 BOOL GetNextFileFromPanel(int index, char* path, char* name, void* param)
 {
     CALL_STACK_MESSAGE2("GetNextFileFromPanel(%d, , ,)", index);
     CUMDataFromPanel* data = (CUMDataFromPanel*)param;
-    if (data->Count == -1) // ziskani dat
+    if (data->Count == -1) // data acquisition
     {
         BOOL upDir = (data->Window->Dirs->Count != 0 &&
                       strcmp(data->Window->Dirs->At(0).Name, "..") == 0);
         data->Count = data->Window->GetSelCount();
         if (data->Count < 0)
             data->Count = 0;
-        if (data->Count == 0) // bez oznaceni -> bereme fokus
+        if (data->Count == 0) // without marking -> we take focus
         {
             index = data->Window->GetCaretIndex();
             data->Index = NULL;
@@ -390,9 +390,9 @@ BOOL GetNextFileFromPanel(int index, char* path, char* name, void* param)
             if (index < 0 || index >= data->Window->Dirs->Count + data->Window->Files->Count ||
                 index == 0 && upDir)
             {
-                name[0] = 0; // pro up-dir nebo pro prvni polozku prazdneho panelu bude jmeno prazdne...
+                name[0] = 0; // for up-dir or for the first item of an empty panel, the name will be empty...
             }
-            else // ostatnim nakopirujeme jmeno
+            else // copy the name to others
             {
                 CFileData* f = &((index < data->Window->Dirs->Count) ? data->Window->Dirs->At(index) : data->Window->Files->At(index - data->Window->Dirs->Count));
                 strcpy(name, f->Name);
@@ -401,7 +401,7 @@ BOOL GetNextFileFromPanel(int index, char* path, char* name, void* param)
         }
         data->Index = new int[data->Count];
         if (data->Index == NULL)
-            return FALSE; // chyba
+            return FALSE; // error
         data->Window->GetSelItems(data->Count, data->Index);
     }
     if (index >= 0 && index < data->Count)
@@ -418,7 +418,7 @@ BOOL GetNextFileFromPanel(int index, char* path, char* name, void* param)
             delete[] (data->Index);
             data->Index = NULL;
         }
-        data->Window->SetSel(FALSE, -1, TRUE);                        // explicitni prekresleni
+        data->Window->SetSel(FALSE, -1, TRUE);                        // explicit override
         PostMessage(data->Window->HWindow, WM_USER_SELCHANGED, 0, 0); // sel-change notify
         return FALSE;
     }
@@ -426,30 +426,29 @@ BOOL GetNextFileFromPanel(int index, char* path, char* name, void* param)
 
 BOOL CheckIfCanBeExecuted(BOOL buildBat, int commandLen, int argumentsLen)
 {
-    /*  NAMERENE HODNOTY:
+    /*  MEASURED VALUES:
   Batak:
-    W2K: 2041 vcetne jmena exace, mezery a parametru
-    XP64/XP: 8185 vcetne jmena exace, mezery a parametru
-    Win7/Vista: 32776 vcetne jmena exace, mezery a parametru
+    W2K: 2041 including the name of the exaction, space, and parameters
+    XP64/XP: 8185 including the name of the exaction, space, and parameters
+    Win7/Vista: 32776 including the name of the exaction, space, and parameters
 
   ShellExecuteEx:
-    XP/XP64/Vista/W2K: 2080 vcetne jmena exace (bez uvozovek), mezery a parametru
-    Win7: 32764 vcetne jmena exace (bez uvozovek), mezery a parametru
-*/
+    XP/XP64/Vista/W2K: 2080 including the name of the exaction (without quotes), space, and parameters
+    Win7: 32764 including the name of the exaction (without quotes), space, and parameters*/
 
-    // POZOR: pokud se spousti .bat soubor, ktery obsahuje spousteni .exe a predani vsech parametru (%*),
-    //        muze pri delsim jmene .exe nez .bat dojit k chybe "too long name" i pri dodrzeni zde
-    //        uvedeneho limitu, limit je prekroceny po dosazeni parametru k .exe (tento problem uz
+    // WARNING: if you run a .bat file that contains the execution of .exe and passing all parameters (%*),
+    //        It can happen with a longer .exe name than .bat that the "too long name" error occurs even when adhering to the limit here
+    //        of the specified limit, the limit is exceeded after reaching the .exe parameter (this problem already
     //        bych neresil, musely by se prochazet .bat soubory, atd. a to je proste uchylarna)
 
-    int cmdLineLen = commandLen + argumentsLen + 1; // +1 za mezeru mezi prikazem a argumenty
-    if (buildBat)                                   // spousteni pres .bat soubor
+    int cmdLineLen = commandLen + argumentsLen + 1; // +1 for the space between the command and the arguments
+    if (buildBat)                                   // launching via .bat file
     {
         if (WindowsVistaAndLater)
-            return cmdLineLen <= 8191; // Vista/Win7: realne je sice 32776, ale funguje jen 8191 (u delsich parametru zrejme diky bugu woken dojde k vymazu znaku, testovano pod Vistou i Win7)
+            return cmdLineLen <= 8191; // Vista/Win7: technically it is 32776, but only 8191 works (for longer parameters, probably due to a bug in woken, characters will be deleted, tested on Vista and Win7)
         return cmdLineLen <= 8185;     // XP/XP64
     }
-    else // spousteni pres ShellExecuteEx
+    else // launching via ShellExecuteEx
     {
         if (Windows7AndLater)
             return cmdLineLen <= 32764; // Win7
@@ -461,22 +460,22 @@ BOOL CheckIfCanBeExecuted(BOOL buildBat, int commandLen, int argumentsLen)
 //
 // ExpandCommand2
 //
-// parent       - okno predka (pro chybove dialogy)
-// cmd          - buffer pro prelozeny prikaz
-// cmdSize      - velikost bufferu 'cmd'
-// args         - buffer pro prijem argumentu
-// argsSize     - velikost bufferu 'args'
-// buildBat     - pokud je TRUE, budou argumenty vlozeny do 'cmd'
-// initDir      - buffer pro cestu na ktere ma dojit ke spusteni
-// initDirSize  - delka bufferu initDir
-// item         - polozka user-menu
-// path         - long path k filu
+// parent - parent window (for error dialogs)
+// cmd - buffer for the translated command
+// cmdSize - size of the 'cmd' buffer
+// args - buffer for receiving arguments
+// argsSize - size of the 'args' buffer
+// buildBat - if TRUE, the arguments will be inserted into 'cmd'
+// initDir - buffer for the path to which it should navigate for execution
+// initDirSize - length of the initDir buffer
+// item         - user-menu item
+// path - long path to the file
 // longName     - long filename
-// fileNameUsed - vraci se TRUE pokud bylo pri expanzi argumentu pouzito jmeno nebo cesta k souboru
-// userMenuAdvancedData - hodnoty advanced parametru pro User Menu: pole Arguments
-// ignoreEnvVarNotFoundOrTooLong - viz popis ExpandVarString
+// fileNameUsed - returns TRUE if a file name or path was used during argument expansion
+// userMenuAdvancedData - values of advanced parameters for User Menu: Arguments array
+// ignoreEnvVarNotFoundOrTooLong - see description in ExpandVarString
 //
-// vraci uspech operace
+// returns the success of the operation
 
 BOOL ExpandCommand2(HWND parent,
                     char* cmd, int cmdSize,
@@ -523,7 +522,7 @@ BOOL ExpandCommand2(HWND parent,
             }
             else
             {
-                if (l == 2 && fileName[1] == ':') // musime doplnit '\\' za normal root cestu
+                if (l == 2 && fileName[1] == ':') // we need to add '\\' after the normal root path
                 {
                     fileName[l++] = '\\';
                 }
@@ -551,7 +550,7 @@ BOOL ExpandCommand2(HWND parent,
                 int lArgs = (int)strlen(expArguments);
                 if (CheckIfCanBeExecuted(buildBat, len, lArgs))
                 {
-                    if (!buildBat) // spousteni pres ShellExecuteEx: argumenty mame dodat zvlast
+                    if (!buildBat) // launching via ShellExecuteEx: we need to provide the arguments separately
                     {
                         if (len + 1 <= cmdSize && lArgs + 1 <= argsSize)
                         {
@@ -560,7 +559,7 @@ BOOL ExpandCommand2(HWND parent,
                             return TRUE;
                         }
                     }
-                    else // spousteni pres .bat: argumenty mame pripojit za command
+                    else // Launching via .bat: arguments should be appended after the command
                     {
                         if (len + lArgs + 2 <= cmdSize)
                         {
@@ -600,8 +599,7 @@ EXIT:
     return FALSE;
 }
 
-/*
-void RemoveRedundantBackslahes(char *text)
+/*  void RemoveRedundantBackslahes(char *text)
 {
   if (text == NULL)
   {
@@ -627,8 +625,7 @@ void RemoveRedundantBackslahes(char *text)
     }
   }
   *d = 0;
-}
-*/
+}*/
 
 void CMainWindow::UserMenu(HWND parent, int itemIndex, UM_GetNextFileName getNextFile, void* data,
                            CUserMenuAdvancedData* userMenuAdvancedData)
@@ -676,11 +673,11 @@ void CMainWindow::UserMenu(HWND parent, int itemIndex, UM_GetNextFileName getNex
             }
             if (ok && userMenuValidationData.UsedCompareType != 0)
             {
-                if ((userMenuValidationData.UsedCompareType == 6 /* file-or-dir-left-right */ ||
-                     userMenuValidationData.UsedCompareType == 7 /* file-or-dir-active-inactive */) &&
+                if ((userMenuValidationData.UsedCompareType == 6 /* file-or-dir-left-right*/ ||
+                     userMenuValidationData.UsedCompareType == 7 /* file-or-dir-active-inactive*/) &&
                     userMenuAdvancedData->CompareName1[0] == 0 &&
                     userMenuAdvancedData->CompareName2[0] == 0)
-                { // nevime jestli chce porovnavat soubory nebo adresare, musime se zeptat (dialog pro vyber jmen se lisi pro soubory/adresare)
+                { // we don't know if it wants to compare files or directories, we need to ask (the selection dialog for names differs for files/directories)
                     MSGBOXEX_PARAMS params;
                     memset(&params, 0, sizeof(params));
                     params.HParent = parent;
@@ -688,16 +685,15 @@ void CMainWindow::UserMenu(HWND parent, int itemIndex, UM_GetNextFileName getNex
                     params.Caption = LoadStr(IDS_QUESTION);
                     params.Text = LoadStr(IDS_COMPAREFILESORDIRS);
                     char aliasBtnNames[200];
-                    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   nechame pro tlacitka msgboxu resit kolize hotkeys tim, ze simulujeme, ze jde o menu
+                    /* is used for the export_mnu.py script, which generates the salmenu.mnu for Translator
+we will let the collision of hotkeys for the message box buttons be solved by simulating that it is a menu
 MENU_TEMPLATE_ITEM MsgBoxButtons[] = 
 {
   {MNTT_PB, 0
   {MNTT_IT, IDS_MSGBOXBTN_FILES
   {MNTT_IT, IDS_MSGBOXBTN_DIRS
   {MNTT_PE, 0
-};
-*/
+};*/
                     sprintf(aliasBtnNames, "%d\t%s\t%d\t%s",
                             DIALOG_YES, LoadStr(IDS_MSGBOXBTN_FILES),
                             DIALOG_NO, LoadStr(IDS_MSGBOXBTN_DIRS));
@@ -792,7 +788,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
             BOOL batNotEmpty = FALSE;
             char* batName;
             HANDLE file;
-            char batUniqueName[50]; // potrebujeme unikatni jmeno pro batak do cache
+            char batUniqueName[50]; // we need a unique name for the batak in the cache
             DWORD lastErr;
 
         _TRY_AGAIN:
@@ -802,9 +798,9 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
             {
                 BOOL exists;
                 batName = (char*)DiskCache.GetName(batUniqueName, "usermenu.bat", &exists, TRUE, NULL, FALSE, NULL, NULL);
-                if (batName == NULL) // chyba (je-li 'exists' TRUE -> fatal, jinak "soubor jiz existuje")
+                if (batName == NULL) // error (if 'exists' is TRUE -> fatal, otherwise "file already exists")
                 {
-                    if (!exists) // soubor existuje -> temer nemozne, stejne osetrime
+                    if (!exists) // file exists -> almost impossible, but we will handle it anyway
                     {
                         Sleep(100);
                         goto _TRY_AGAIN;
@@ -820,7 +816,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                 }
             }
 
-            // postavime .bat
+            // build .bat
             int index;
             index = 0;
             char cmdLine[USRMNUCMDLINE_MAXLEN];
@@ -843,8 +839,8 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                 strcpy(prevInitDir, initDir);
                 BOOL expandOK = ExpandCommand2(parent,
                                                cmdLine, USRMNUCMDLINE_MAXLEN,
-                                               arguments, USRMNUARGS_MAXLEN, buildBat, // pokud jedeme pres davku, nechame
-                                               initDir, MAX_PATH,                      // argumenty nalejt do cmdLine
+                                               arguments, USRMNUARGS_MAXLEN, buildBat, // if we go through the batch, we leave
+                                               initDir, MAX_PATH,                      // pour arguments into cmdLine
                                                UserMenuItems->At(itemIndex),
                                                path, name, &fileNameUsed,
                                                userMenuAdvancedData,
@@ -855,9 +851,9 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                     skipErrorMessage = TRUE;
                     break;
                 }
-                if (expandOK && (firstRound || fileNameUsed || strcmp(initDir, prevInitDir) != 0)) // blokujeme provadeni konstantniho prikazu pro vsechny polozky (sice chyba usera, ale deje se moc casto)
+                if (expandOK && (firstRound || fileNameUsed || strcmp(initDir, prevInitDir) != 0)) // we block the execution of a constant command for all items (although it is a user error, but it happens too often)
                 {
-                    if (buildBat) // stavba .bat souboru
+                    if (buildBat) // building a .bat file
                     {
                         char initDirOEM[MAX_PATH];
                         char cmdLineOEM[USRMNUCMDLINE_MAXLEN];
@@ -881,15 +877,15 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                             break;
                         }
                     }
-                    else // prime spousteni
+                    else // Prime execution
                     {
-                        // puvodni spousteni pres CreateProcess neumoznovalo spoustet screensavery (*.SCR)
-                        // a polozky z control panelu (*.cpl) a lide si soustavne stezovali
+                        // The original launching via CreateProcess did not allow running screensavers (*.SCR)
+                        // and items from the control panel (*.cpl) and people constantly complained
                         //
-                        // zkusime to pres ShellExecuteEx -- vypada to, ze to slape ;-)
-                        // navic budou osetreny spousteci policie
+                        // Let's try it via ShellExecuteEx -- it looks like it's working ;-)
+                        // in addition, launch police will be treated
 
-                        // nechame nastavit spravne default adresare pro jednotlive disky
+                        // we will set the correct default directories for individual disks
                         MainWindow->SetDefaultDirectories((initDir[0] != 0) ? initDir : NULL);
 
                         // abychom chodili se starejma konfiguracema, odebereme znak " ze zacatku a konce cmdLine
@@ -899,8 +895,8 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                             memmove(cmdLine, cmdLine + 1, cmdLen - 2);
                             cmdLine[cmdLen - 2] = 0;
                         }
-                        // radeji lomitka nebudeme pozirat, abychom neznicili nejake ole cesty
-                        //RemoveRedundantBackslahes(cmdLine); // ShellExecuteEx nema rado vicenasobna zpetna lomitka, "$(SalDir)\salamand.exe"
+                        // It is better not to break slashes so that we do not destroy any file paths
+                        //RemoveRedundantBackslashes(cmdLine); // ShellExecuteEx doesn't like multiple backslashes, "$(SalDir)\salamand.exe"
 
                         CShellExecuteWnd shellExecuteWnd;
                         SHELLEXECUTEINFO sei;
@@ -927,7 +923,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                 index++;
                 firstRound = FALSE;
                 if (userMenuValidationData.MustHandleItemsAsGroup)
-                    break; // v tomto rezimu se spousti jen jeden prikaz pro vsechny oznacene polozky
+                    break; // In this mode, only one command is executed for all selected items
             }
 
             if (buildBat)
@@ -939,7 +935,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
 
                 DiskCache.NamePrepared(batUniqueName, CQuadWord(size, 0));
 
-                if (!error) // spustime .bat
+                if (!error) // run .bat
                 {
                     if (batNotEmpty)
                     {
@@ -954,8 +950,8 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                         if (UserMenuItems->At(itemIndex)->UseWindow &&
                             MultiMonGetDefaultWindowPos(MainWindow->HWindow, &p))
                         {
-                            // pokud je hlavni okno na jinem monitoru, meli bychom tam take otevrit
-                            // okno vznikajici a nejlepe na default pozici (stejne jako na primaru)
+                            // if the main window is on a different monitor, we should also open it there
+                            // window being created and preferably at the default position (same as on primary)
                             si.dwFlags |= STARTF_USEPOSITION;
                             si.dwX = p.x;
                             si.dwY = p.y;
@@ -965,11 +961,11 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                         PROCESS_INFORMATION pi;
 
                         GetEnvironmentVariable("COMSPEC", cmdLine, USRMNUCMDLINE_MAXLEN - 20);
-                        AddDoubleQuotesIfNeeded(cmdLine, USRMNUCMDLINE_MAXLEN - 10); // CreateProcess chce mit jmeno s mezerama v uvozovkach (jinak zkousi ruzny varianty, viz help)
+                        AddDoubleQuotesIfNeeded(cmdLine, USRMNUCMDLINE_MAXLEN - 10); // CreateProcess wants the name with spaces in quotes (otherwise it tries various variants, see help)
                         if (!UserMenuItems->At(itemIndex)->UseWindow || UserMenuItems->At(itemIndex)->CloseShell)
-                            strcat(cmdLine, " /C "); // spust command + hned po skonceni se zavri
+                            strcat(cmdLine, " /C "); // Run the command + close immediately after it finishes
                         else
-                            strcat(cmdLine, " /K "); // spust command + po skonceni nezavirej
+                            strcat(cmdLine, " /K "); // Run command + do not close after finishing
 
                         char* s = cmdLine + strlen(cmdLine);
                         if ((s - cmdLine) + strlen(batName) < USRMNUCMDLINE_MAXLEN - 2)
@@ -984,7 +980,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                             DWORD err = GetLastError();
                             char buff[4 * MAX_PATH];
                             if (strlen(cmdLine) > 2 * MAX_PATH)
-                                strcpy(cmdLine + 2 * MAX_PATH, "..."); // pro sychr zkratime (asi nebude nikdy potreba)
+                                strcpy(cmdLine + 2 * MAX_PATH, "..."); // shorten for the sake of it (probably will never be needed)
                             sprintf(buff, LoadStr(IDS_EXECERROR), cmdLine, GetErrorText(err));
                             DiskCache.ReleaseName(batUniqueName, FALSE);
                             SalMessageBox(parent, buff, LoadStr(IDS_ERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
@@ -992,11 +988,11 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                         else
                         {
                             DiskCache.AssignName(batUniqueName, pi.hProcess, TRUE, crtDirect);
-                            //            HANDLES(CloseHandle(pi.hProcess));   // obstara DiskCache
+                            //            HANDLES(CloseHandle(pi.hProcess));   // handles DiskCache
                             HANDLES(CloseHandle(pi.hThread));
                         }
                     }
-                    else // prazdny .BAT nema cenu spoustet (pri nedostatku pameti a jinych silenych chybach)
+                    else // It is not worth running an empty .BAT file (due to lack of memory and other crazy errors)
                     {
                         DiskCache.ReleaseName(batUniqueName, FALSE);
                     }
@@ -1021,16 +1017,16 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
 void CMainWindow::SetDefaultDirectories(const char* curPath)
 {
     CALL_STACK_MESSAGE2("CMainWindow::SetDefaultDirectories(%s)", curPath);
-    //---  obnova DefaultDir
+    //--- Restore DefaultDir
     MainWindow->UpdateDefaultDir(TRUE);
-    //---  nastaveni environmentu
+    //--- setting up the environment
     char name[4] = "= :";
     const char* dir;
     char d;
     for (d = 'a'; d <= 'z'; d++)
     {
         name[1] = d;
-        if (curPath != NULL && d == LowerCase[curPath[0]]) // UNC se nepocitaji
+        if (curPath != NULL && d == LowerCase[curPath[0]]) // UNC paths are not counted
             dir = curPath;
         else
             dir = DefaultDir[d - 'a'];
@@ -1046,13 +1042,13 @@ BOOL CMainWindow::HandleCtrlLetter(char c)
 {
     CALL_STACK_MESSAGE2("CMainWindow::HandleCtrlLetter(%u)", c);
     if ((GetKeyState(VK_SHIFT) & 0x8000) != 0)
-    { // zmena disku pres Shift+pismeno
+    { // change disk via Shift+letter
         GetActivePanel()->ChangeDrive(c);
     }
     else // NC + Windows Ctrl+? hotkeys
     {
         WPARAM cmd;
-        switch (c) // leze sem vse upper-case
+        switch (c) // converts everything to upper-case here
         {
         case 'A':
             cmd = CM_ACTIVESELECTALL;
@@ -1088,7 +1084,7 @@ BOOL CMainWindow::HandleCtrlLetter(char c)
                     files = GetActivePanel()->GetCaretIndex() > 0;
             }
             if (!files)
-                return FALSE; // cut a copy nejdou provest
+                return FALSE; // cut a copy cannot be performed
             cmd = (c == 'C') ? CM_CLIPCOPY : CM_CLIPCUT;
             break;
         }
@@ -1172,7 +1168,7 @@ void CMainWindow::ChangePanel(BOOL force)
         change = TRUE;
     else
     {
-        // pokud je panel ZOOMed, minimalizujeme ho a ZOOMneme ten druhy
+        // if the panel is ZOOMed, we minimize it and ZOOM the other one
         if (IsPanelZoomed(TRUE) || IsPanelZoomed(FALSE))
         {
             if (IsPanelZoomed(TRUE))
@@ -1188,13 +1184,13 @@ void CMainWindow::ChangePanel(BOOL force)
     {
         SetActivePanel(p2);
 
-        // zajistime prekresleni aktivni hlavicky panelu
+        // Ensure redrawing of the active header of the panel
         if (p1->DirectoryLine != NULL)
             p1->DirectoryLine->InvalidateAndUpdate(FALSE);
         if (p2->DirectoryLine != NULL)
             p2->DirectoryLine->InvalidateAndUpdate(FALSE);
 
-        UpdateDriveBars(); // zamackneme v drive bar spravny disk
+        UpdateDriveBars(); // Press the correct disk in the drive bar
 
         //    ReleaseMenuNew();
         if (EditMode)
@@ -1214,10 +1210,10 @@ void CMainWindow::ChangePanel(BOOL force)
             p2->SetCaretIndex(i, FALSE);
         }
         EditWindowSetDirectory();
-        IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+        IdleRefreshStates = TRUE; // During the next Idle, we will force the check of status variables
         MainWindow->UpdateDefaultDir(TRUE);
 
-        // rozesleme tu novinu do vsech naloadenejch pluginu
+        // we will send this news to all loaded plugins
         Plugins.Event(PLUGINEVENT_PANELACTIVATED, p2 == LeftPanel ? PANEL_LEFT : PANEL_RIGHT);
     }
 }
@@ -1232,39 +1228,39 @@ void CMainWindow::FocusPanel(CFilesWindow* focus, BOOL testIfMainWndActive)
 
     if (GetFocus() != focus->GetListBoxHWND())
     {
-        if (!testIfMainWndActive || GetForegroundWindow() == HWindow) // fokus jen je-li hl. okno aktivni (plugin FTP s nemodalnim oknem Welcome Message pri vypnuti commandliny fokusil panel -> deaktivace Welcome Message)
+        if (!testIfMainWndActive || GetForegroundWindow() == HWindow) // Focus only if the main window is active (FTP plugin with a non-modal Welcome Message window focused the panel when the command line was turned off -> deactivation of Welcome Message)
             SetFocus(focus->GetListBoxHWND());
         else
-            focus->OnSetFocus(FALSE); // simulace fokusu v panelu
+            focus->OnSetFocus(FALSE); // simulation of focus in the panel
     }
 
     CFilesWindow* old = GetActivePanel();
     SetActivePanel(focus);
 
-    UpdateDriveBars(); // zamackneme v drive bar spravny disk
+    UpdateDriveBars(); // Press the correct disk in the drive bar
 
-    // zajistime prekresleni aktivni hlavicky panelu
+    // Ensure redrawing of the active header of the panel
     if (old != focus)
     {
-        // aktivovali jsme jiny panel, nechame pro nej nastavit enablery
+        // We have activated a different panel, we will let it set the enablers for it
         RefreshCommandStates();
-        // resi chybu (byla jeste v 2.5b10), kdy uzivatele meli aktivni jeden panel, focus na UpDiru
-        // a nasledne pravym tlacitkem klikli na soubor v pasivnim panelu a zvolili z contextmenu DELETE a
-        // nic se nestalo, protoze enabler EnablerFilesDelete byl FALSE (nebyl aktualizovan pro novy panel)
-        // vice viz https://forum.altap.cz/viewtopic.php?t=181
+        // Fixes a bug (which was still present in 2.5b10) where users had one panel active, with focus on UpDir
+        // and then right-clicked on the file in the passive panel and selected DELETE from the context menu
+        // nothing happened because the EnablerFilesDelete enabler was FALSE (not updated for the new panel)
+        // more at https://forum.altap.cz/viewtopic.php?t=181
 
-        // nechame premalovat directory line obou oken
+        // let's repaint the directory line of both windows
         if (old->DirectoryLine != NULL)
             old->DirectoryLine->InvalidateAndUpdate(FALSE);
         if (focus->DirectoryLine != NULL)
             focus->DirectoryLine->InvalidateAndUpdate(FALSE);
         //    ReleaseMenuNew();
         EditWindowSetDirectory();
-        IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
-        // rozesleme tu novinu do naloadenejch pluginu
+        IdleRefreshStates = TRUE; // During the next Idle, we will force the check of status variables
+        // We will send this news to the loaded plugins
         Plugins.Event(PLUGINEVENT_PANELACTIVATED, focus == LeftPanel ? PANEL_LEFT : PANEL_RIGHT);
     }
-    //---  obnova DefaultDir
+    //--- Restore DefaultDir
     MainWindow->UpdateDefaultDir(TRUE);
 }
 
@@ -1283,7 +1279,7 @@ void CMainWindow::ShowCommandLine()
         ShowWindow(EditWindow->HWindow, SW_SHOW);
         if (EditWindow->IsEnabled())
             SetFocus(EditWindow->HWindow);
-        IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+        IdleRefreshStates = TRUE; // During the next Idle, we will force the check of status variables
     }
 }
 
@@ -1299,7 +1295,7 @@ void CMainWindow::HideCommandLine(BOOL storeContent, BOOL focusPanel)
     if (focusPanel)
         FocusPanel(GetActivePanel());
     LayoutWindows();
-    IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+    IdleRefreshStates = TRUE; // During the next Idle, we will force the check of status variables
 }
 
 //****************************************************************************
@@ -1336,12 +1332,12 @@ BOOL ImageDragInterfereRect(const RECT* rect)
     if (ImageDragX == INT_MAX || ImageDragY == INT_MAX)
     {
         TRACE_E("ImageDragX == INT_MAX || ImageDragY == INT_MAX");
-        return TRUE; // pro jistotu
+        return TRUE; // for safety
     }
     if (ImageDragW == INT_MAX || ImageDragH == INT_MAX)
     {
         TRACE_E("ImageDragW == INT_MAX || ImageDragH == INT_MAX");
-        return TRUE; // pro jistotu
+        return TRUE; // for safety
     }
     RECT r;
     r.left = ImageDragX - ImageDragDxHotspot;
@@ -1568,7 +1564,7 @@ CMainWindow::MapClientArea(POINT point)
         break;
     }
 
-    // vytahneme IDcko tlacitka, na ktere user kliknul
+    // we extract the ID of the button that the user clicked on
     if (toolbar != NULL)
     {
         POINT p;
@@ -1592,8 +1588,7 @@ CMainWindow::MapNonClientArea(int iHit)
     DWORD dwContext = 0;
     switch (iHit)
     {
-        /*
-    case HTBORDER:
+        /*      case HTBORDER:
     case HTBOTTOM:
     case HTBOTTOMLEFT:
     case HTBOTTOMRIGHT:
@@ -1604,8 +1599,7 @@ CMainWindow::MapNonClientArea(int iHit)
     case HTTOPRIGHT:
     case HTCAPTION:
     case HTREDUCE:
-    case HTZOOM:
-*/
+    case HTZOOM:*/
 
     case HTMINBUTTON:
     case HTMAXBUTTON:
@@ -1658,18 +1652,18 @@ void CMainWindow::OnContextHelp()
     }
 
     IdleRefreshStates = TRUE; // trigger idle update
-    OnEnterIdle();            // nechame prereslit toolbaru
+    OnEnterIdle();            // let's redraw the toolbar
 
     if (HelpMode != HELP_ACTIVE)
         return;
 
     MenuBar->SetHelpMode(TRUE);
 
-    // bottom toolbar do standarniho stavu
+    // bottom toolbar to standard state
     BottomToolBar->SetState(btbsNormal);
     BottomToolBar->UpdateItemsState();
 
-    // pokud nekdo monitoruje mys, ukoncim monitoring
+    // if someone is monitoring the mouse, I will stop monitoring
     TRACKMOUSEEVENT tme;
     tme.cbSize = sizeof(tme);
     tme.dwFlags = TME_QUERY;
@@ -1699,17 +1693,17 @@ void CMainWindow::OnContextHelp()
         {
             if (first)
             {
-                // nabufferujeme pohnuti mysky, abychom propadli do toolbar je-li kurzor nad disabled tlacitky
+                // we buffer the mouse movement to fall into the toolbar if the cursor is above disabled buttons
                 POINT p;
                 GetCursorPos(&p);
                 ScreenToClient(HWindow, &p);
                 PostMessage(HWindow, WM_MOUSEMOVE, 0, MAKELPARAM(point.x, point.y));
-                // puvodne jsem mel toto nabufferovani pred cyklem, ale zlobilo to
-                // pokud byl zobrazen tooltip pro disabled button a dal jsem Shift+F1, pri zhasinani
-                // tooltipu se dorucovalo WM_MOUSELEAVE (PeekMessage rozesila zpravy, vis MSDN)
-                // takze tlacitko pod kurzorem se sice vykreslilo jako enabled, ale hned potom
-                // zase jako disabled -- touhle obezlickou si pockam, az budou vsechny zpravy
-                // doruceny a MOUSEMOVE se 100% uchyti
+                // I originally had this buffering before the loop, but it was causing issues
+                // if a tooltip was displayed for a disabled button and I pressed Shift+F1, when turning off
+                // tooltip was delivered WM_MOUSELEAVE (PeekMessage sends messages, see MSDN)
+                // so the button under the cursor was rendered as enabled, but right after that
+                // again as disabled -- I'll wait for this nonsense until all messages are ready
+                // delivered and MOUSEMOVE will be captured 100%
 
                 first = FALSE;
             }
@@ -1819,12 +1813,12 @@ BOOL CMainWindow::ProcessHelpMsg(MSG& msg, DWORD* pContext, HWND* hDirtyWindow)
                 // Hit one of our owned windows -- eat the message.
                 PeekMessage(&msg, NULL, msg.message, msg.message, PM_REMOVE);
 
-                // dame vedet oknum, ktera maji zajem o vysviceni polozek behem Shift+F1 rezimu
+                // let us know the numbers of those interested in highlighting items during Shift+F1 mode
                 if (msg.message == WM_MOUSEMOVE)
                 {
                     if (*hDirtyWindow != NULL && *hDirtyWindow != hWndHit)
                         SendMessage(*hDirtyWindow, WM_USER_HELP_MOUSELEAVE, 0, 0);
-                    *hDirtyWindow = hWndHit; // tomuto oknu bude treba zaslat LEAVE
+                    *hDirtyWindow = hWndHit; // LEAVE needs to be sent to this window
 
                     POINT p = msg.pt;
                     ScreenToClient(hWndHit, &p);
@@ -1882,7 +1876,7 @@ BOOL CMainWindow::ProcessHelpMsg(MSG& msg, DWORD* pContext, HWND* hDirtyWindow)
         }
         else
         {
-            // Hit one of our apps windows (or desktop) -- dispatch the message.
+            // Hit one of our app's windows (or desktop) -- dispatch the message.
             PeekMessage(&msg, NULL, msg.message, msg.message, PM_REMOVE);
 
             // Dispatch mouse messages that hit the desktop!
@@ -1903,8 +1897,8 @@ BOOL CMainWindow::ProcessHelpMsg(MSG& msg, DWORD* pContext, HWND* hDirtyWindow)
         {
             GetMessage(&msg, NULL, msg.message, msg.message);
 
-            // zajistime zaslani zprav do naseho menu (obchazime tim potrebu hooku pro klavesnici)
-            // podporime tim vstup do menu pres Alt/F10/Alt+pismeno behem help mode
+            // we will ensure sending messages to our menu (bypassing the need for keyboard hooks)
+            // Supporting entering the menu via Alt/F10/Alt+letter during help mode
             if (MenuBar == NULL || !MenuBar->IsMenuBarMessage(&msg))
             {
                 TranslateMessage(&msg);
@@ -1961,7 +1955,7 @@ void CMainWindow::UpdateDriveBars()
 
     if (DriveBar2->HWindow == NULL)
     {
-        // pokud mame pouze jeden drive bar, vztahuje se k aktivnimu panelu
+        // if we have only one drive bar, it applies to the active panel
         DriveBar->SetCheckedDrive(GetActivePanel());
     }
     else

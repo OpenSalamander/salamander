@@ -17,8 +17,8 @@
 
 CPlugins Plugins;
 
-// globalni "cas" (pocitadlo) pro ziskani "casu" vytvoreni FS
-DWORD CPluginFSInterfaceEncapsulation::PluginFSTime = 1; // nula je pouzita jako "neinicializovany cas"
+// global "time" (counter) for obtaining the "time" of FS creation
+DWORD CPluginFSInterfaceEncapsulation::PluginFSTime = 1; // zero is used as "uninitialized time"
 
 // ****************************************************************************
 
@@ -29,9 +29,9 @@ void EnterPlugin()
     if (AlreadyInPlugin == 0)
     {
 #ifdef _DEBUG
-        // kontrolni kod pro metodu CSalamanderGeneral::GetMsgBoxParent()
-        // v pripade chyby je treba doplnit dalsi okno pro PluginMsgBoxParent,
-        // pokud se bude menit nasledujici kod, je ho nutne zmenit i v CSalamanderGeneral::GetMsgBoxParent
+        // Checksum for the method CSalamanderGeneral::GetMsgBoxParent()
+        // in case of an error, it is necessary to add another window for PluginMsgBoxParent,
+        // If the following code changes, it is necessary to change it in CSalamanderGeneral::GetMsgBoxParent as well
         HWND wnd = PluginProgressDialog != NULL ? PluginProgressDialog : PluginMsgBoxParent;
         if (!IsWindowEnabled(wnd))
         {
@@ -39,8 +39,8 @@ void EnterPlugin()
         }
 #endif // _DEBUG
 
-        AllowChangeDirectory(FALSE); // nechceme aby se automaticky menil aktualni adresar
-        BeginStopRefresh(TRUE);      // nechceme aby se refreshovaly panely behem volani plug-inu
+        AllowChangeDirectory(FALSE); // We do not want the current directory to change automatically
+        BeginStopRefresh(TRUE);      // We do not want the panels to refresh during the plug-in call
         AlreadyInPlugin = 1;
     }
     else
@@ -54,8 +54,8 @@ void LeavePlugin()
 {
     if (AlreadyInPlugin == 1)
     {
-        // opatreni, aby se neprerusoval listing v panelu po kazdem ESC v pluginu (hlavne
-        // zavirani modalnich dialogu)
+        // measures to prevent the interruption of the listing in the panel after each ESC in the plugin (mainly
+        // closing modal dialogs)
         WaitForESCReleaseBeforeTestingESC = TRUE;
 
         EndStopRefresh(TRUE, TRUE);
@@ -63,11 +63,11 @@ void LeavePlugin()
         AlreadyInPlugin = 0;
 
         if (MainWindow != NULL && MainWindow->NeedToResentDispachChangeNotif &&
-            StopRefresh == 0) // pokud jeste neopustil stop-refresh rezim, nema posilani zpravy smysl
+            StopRefresh == 0) // if you haven't left the stop-refresh mode yet, sending a message doesn't make sense
         {
             MainWindow->NeedToResentDispachChangeNotif = FALSE;
 
-            // postneme zadost o rozeslani zprav o zmenach na cestach
+            // Request sending messages about road changes
             HANDLES(EnterCriticalSection(&TimeCounterSection));
             int t1 = MyTimeCounter++;
             HANDLES(LeaveCriticalSection(&TimeCounterSection));
@@ -102,11 +102,11 @@ BOOL CPluginFSInterfaceEncapsulation::IsPathFromThisFS(const char* fsName, const
                         fsName, fsUserPart, DLLName, Version);
 
     int fsNameIndex;
-    if (IsFSNameFromSamePluginAsThisFS(fsName, fsNameIndex)) // jmeno FS je ze stejneho pluginu?
+    if (IsFSNameFromSamePluginAsThisFS(fsName, fsNameIndex)) // Is the name of FS from the same plugin?
     {
-        return IsOurPath(PluginFSNameIndex, fsNameIndex, fsUserPart); // sedi user-part?
+        return IsOurPath(PluginFSNameIndex, fsNameIndex, fsUserPart); // Is the user-part correct?
     }
-    return FALSE; // neni nase cesta
+    return FALSE; // not our path
 }
 
 BOOL CPluginFSInterfaceEncapsulation::ListCurrentPath(CSalamanderDirectoryAbstract* dir,
@@ -120,7 +120,7 @@ BOOL CPluginFSInterfaceEncapsulation::ListCurrentPath(CSalamanderDirectoryAbstra
     BOOL r = Interface->ListCurrentPath(dir, pluginData, iconsType, forceRefresh);
     //TRACE_I("list path: end");
 #ifdef _DEBUG
-    if (r && pluginData != NULL) // zvysime OpenedPDCounter
+    if (r && pluginData != NULL) // increase OpenedPDCounter
     {
         CPluginData* data = Plugins.GetPluginData(Iface);
         if (data != NULL)
@@ -144,7 +144,7 @@ BOOL CPluginFSInterfaceEncapsulation::GetChangeDriveOrDisconnectItem(const char*
     {
         EnterPlugin();
         BOOL r = Interface->GetChangeDriveOrDisconnectItem(fsName, title, icon, destroyIcon);
-        if (r && icon != NULL && destroyIcon) // pridame handle na 'icon' do HANDLES
+        if (r && icon != NULL && destroyIcon) // add handle to 'icon' to HANDLES
             HANDLES_ADD(__htIcon, __hoLoadImage, icon);
         LeavePlugin();
         return r;
@@ -162,7 +162,7 @@ CPluginFSInterfaceEncapsulation::GetFSIcon(BOOL& destroyIcon)
     {
         EnterPlugin();
         HICON r = Interface->GetFSIcon(destroyIcon);
-        if (r != NULL && destroyIcon) // pridame handle na vracenou ikonu do HANDLES
+        if (r != NULL && destroyIcon) // add handle to the returned icon to HANDLES
             HANDLES_ADD(__htIcon, __hoLoadImage, r);
         LeavePlugin();
         return r;
@@ -194,7 +194,7 @@ void CPluginInterfaceForFSEncapsulation::CloseFS(CPluginFSInterfaceAbstract* fs)
                         data->DLLName, data->Version);
     EnterPlugin();
     Interface->CloseFS(fs);
-    Plugins.KillPluginFSTimer(fs, TRUE, 0); // musime zrusit timery zaviraneho FS (nesly by dorucit, objevily by se TRACE_E)
+    Plugins.KillPluginFSTimer(fs, TRUE, 0); // we need to cancel timers of the closed FS (they would not be delivered, TRACE_E would appear)
     LeavePlugin();
 
     if (MainWindow != NULL)
@@ -359,8 +359,8 @@ void CSalamanderDebug::TraceAttachThread(HANDLE thread, unsigned tid)
 {
 #if defined(MULTITHREADED_TRACE_ENABLE) && defined(TRACE_ENABLE)
     HANDLE handle;
-    if (NOHANDLES(DuplicateHandle(GetCurrentProcess(), thread, GetCurrentProcess(), // HANDLES nelze pouzit -> modul
-                                  &handle, 0, FALSE, DUPLICATE_SAME_ACCESS)))       // TRACE HANDLES nepouziva
+    if (NOHANDLES(DuplicateHandle(GetCurrentProcess(), thread, GetCurrentProcess(), // Cannot use HANDLES -> module
+                                  &handle, 0, FALSE, DUPLICATE_SAME_ACCESS)))       // TRACE HANDLES not used
     {
         HANDLES(EnterCriticalSection(&__Trace.CriticalSection));
         if (!__Trace.ThreadCache.Add(handle, tid))
@@ -443,7 +443,7 @@ CSalamanderDebug::CallWithCallStackEH(unsigned(WINAPI* threadBody)(void*), void*
     {
         TRACE_I("Thread address " << threadBody << ": calling ExitProcess(1).");
         //    ExitProcess(1);
-        TerminateProcess(GetCurrentProcess(), 1); // tvrdsi exit (tenhle jeste neco vola)
+        TerminateProcess(GetCurrentProcess(), 1); // tvrdší exit (this one still calls something)
         return 1;
     }
 #endif // CALLSTK_DISABLE
@@ -458,7 +458,7 @@ CSalamanderDebug::CallWithCallStack(unsigned(WINAPI* threadBody)(void*), void* p
     return CallWithCallStackEH(threadBody, param);
 }
 
-// abych neincludil cely intrin.h
+// to avoid including the entire intrin.h
 extern "C"
 {
     void* _AddressOfReturnAddress(void);
@@ -475,7 +475,7 @@ void CSalamanderDebug::Push(const char* format, va_list args, CCallStackMsgConte
         LARGE_INTEGER pushTime;
         QueryPerformanceCounter(&pushTime);
 #endif                             // (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
-        stack->Push(format, args); // nepodchyceny thready maji TLS na NULL
+        stack->Push(format, args); // uncaught threads have TLS set to NULL
 #if (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
         if (callStackMsgContext != NULL)
         {
@@ -538,20 +538,20 @@ void CSalamanderDebug::Pop(CCallStackMsgContext* callStackMsgContext)
         if (callStackMsgContext != NULL)
         {
             __int64 internalPushPerfTime = stack->PushPerfTimeCounter.QuadPart - callStackMsgContext->PushPerfTimeCounterStart.QuadPart;
-            if (internalPushPerfTime > 0) // jen pokud byly nejake vnorene volani Pushe
+            if (internalPushPerfTime > 0) // only if there were any nested Push calls
             {
                 LARGE_INTEGER endTime;
                 QueryPerformanceCounter(&endTime);
                 __int64 realPerfTime = (endTime.QuadPart - callStackMsgContext->StartTime.QuadPart) -
-                                       (stack->IgnoredPushPerfTimeCounter.QuadPart - callStackMsgContext->IgnoredPushPerfTimeCounterStart.QuadPart); // odecteme casy ignorovanych (nemerenych) Pushu, jinak by jen nesmyslne zlepsovaly pomer
+                                       (stack->IgnoredPushPerfTimeCounter.QuadPart - callStackMsgContext->IgnoredPushPerfTimeCounterStart.QuadPart); // subtract the times of ignored (unmeasured) pushes, otherwise they would just meaninglessly improve the ratio
                 if (realPerfTime / internalPushPerfTime < CALLSTK_MINRATIO && realPerfTime > 0 &&
                     ((realPerfTime * 1000) / CCallStack::SavedPerfFreq.QuadPart) > CALLSTK_MINWARNTIME)
                 {
                     DWORD aproxMinCallsCount = (DWORD)(((CCallStack::SpeedBenchmark * (internalPushPerfTime + stack->IgnoredPushPerfTimeCounter.QuadPart - callStackMsgContext->IgnoredPushPerfTimeCounterStart.QuadPart) * 1000) /
                                                         (CALLSTK_BENCHMARKTIME * CCallStack::SavedPerfFreq.QuadPart)) /
-                                                       3); // pocitame 3x pomalejsi nez omerovane call-stack makro
+                                                       3); // we calculate 3 times slower than the measured call-stack macro
                     if (CCallStack::SpeedBenchmark != 0 && aproxMinCallsCount < stack->PushesCounter - callStackMsgContext->PushesCounterStart)
-                    { // potlaceni pripadu navyseni casu pri preplanovani procesu/threadu (dokaze namerit 50ms pro 280 volani call-stacku)
+                    { // suppression of cases of time increase when re-scheduling processes/threads (able to measure 50ms for 280 call stack invocations)
                         TRACE_E("Call Stack Messages Slowdown Detected: time ratio callstack/total: " << (DWORD)(100 * internalPushPerfTime / realPerfTime) << "%, total time: " << (DWORD)((realPerfTime * 1000) / CCallStack::SavedPerfFreq.QuadPart) << "ms, push time: " << (DWORD)(internalPushPerfTime * 1000 / CCallStack::SavedPerfFreq.QuadPart) << "ms, ignored pushes: " << (DWORD)((stack->IgnoredPushPerfTimeCounter.QuadPart - callStackMsgContext->IgnoredPushPerfTimeCounterStart.QuadPart) * 1000 / CCallStack::SavedPerfFreq.QuadPart) << "ms, call address: 0x" << std::hex << callStackMsgContext->PushCallerAddress << std::dec << " (see next line in trace-server for text), count: " << (stack->PushesCounter - callStackMsgContext->PushesCounterStart));
                         printCallStackTop = TRUE;
                     }
@@ -562,9 +562,9 @@ void CSalamanderDebug::Pop(CCallStackMsgContext* callStackMsgContext)
         {
             TRACE_I("CSalamanderDebug::Pop(): callStackMsgContext == NULL! (not DEBUG version or missing macro CALLSTK_MEASURETIMES)");
         }
-        stack->Pop(printCallStackTop); // nepodchyceny thready maji TLS na NULL
+        stack->Pop(printCallStackTop); // uncaught threads have TLS set to NULL
 #else                                  // (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
-        stack->Pop(); // nepodchyceny thready maji TLS na NULL
+        stack->Pop(); // uncaught threads have TLS set to NULL
 #endif                                 // (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
         stack->PopPluginDLLName();
     }
@@ -596,7 +596,7 @@ void CSalamanderConnect::AddCustomPacker(const char* title, const char* defaultE
             int i;
             for (i = 0; i < PackerConfig.GetPackersCount(); i++)
             {
-                if (PackerConfig.GetPackerType(i) == -Index - 1) // nalezeno, provedeme obnovu udaju
+                if (PackerConfig.GetPackerType(i) == -Index - 1) // found, we will perform data recovery
                 {
                     PackerConfig.SetPacker(i, -Index - 1, title, defaultExtension, FALSE);
                     return;
@@ -622,7 +622,7 @@ void CSalamanderConnect::AddCustomUnpacker(const char* title, const char* masks,
             int i;
             for (i = 0; i < UnpackerConfig.GetUnpackersCount(); i++)
             {
-                if (UnpackerConfig.GetUnpackerType(i) == -Index - 1) // nalezeno, provedeme obnovu udaju
+                if (UnpackerConfig.GetUnpackerType(i) == -Index - 1) // found, we will perform data recovery
                 {
                     UnpackerConfig.SetUnpacker(i, -Index - 1, title, masks, FALSE);
                     return;
@@ -637,21 +637,21 @@ void CSalamanderConnect::AddViewer(const char* masks, BOOL force)
     CALL_STACK_MESSAGE3("CSalamanderConnect::AddViewer(%s, %d)", masks, force);
     if (strchr(masks, '|') != NULL)
     {
-        TRACE_E("CSalamanderConnect::AddViewer(): you can not use character '|', sorry"); // '|' je negace v group-masks, slucovani masek v GetViewersAssoc na to neni pripraveno
+        TRACE_E("CSalamanderConnect::AddViewer(): you can not use character '|', sorry"); // '|' is negation in group-masks, combining masks in GetViewersAssoc is not prepared for that
         return;
     }
     if (Viewer || force)
     {
-        char ext[300];        // kopie masks (';' nahrazujeme '\0')
-        char ext2[300];       // pro rozklad nalezenych masek (';' nahrazujeme '\0'), i pro ulozeni vysledku "force"
-        if (!Viewer && force) // jde o update, ne instalaci, prohledame jestli uz neni na seznamu
+        char ext[300];        // copy masks (';' replaced by '\0')
+        char ext2[300];       // for breaking down found masks (';' replaced by '\0'), also for storing the result in "force"
+        if (!Viewer && force) // This is an update, not an installation, we will check if it is not already on the list
         {
             int len = (int)strlen(masks);
             if (len > 299)
                 len = 299;
             memcpy(ext, masks, len);
             ext[len] = 0;
-            TDirectArray<char*> extArray(10, 5); // pole pripon z masks
+            TDirectArray<char*> extArray(10, 5); // array of suffixes from masks
             char* s = ext + len;
             while (s > ext)
             {
@@ -672,23 +672,23 @@ void CSalamanderConnect::AddViewer(const char* masks, BOOL force)
                 char* ss = s + 1 + strlen(s + 1);
                 while (--ss >= s + 1 && *ss <= ' ')
                     ;
-                *(ss + 1) = 0; // orizneme mezery na konci masky
+                *(ss + 1) = 0; // trim spaces at the end of the mask
                 ss = s + 1;
                 while (*ss != 0 && *ss <= ' ')
-                    ss++;     // preskocime mezery na zacatku masky
-                if (*ss != 0) // pokud neni maska prazdna, pridame ji do pole
+                    ss++;     // skip spaces at the beginning of the mask
+                if (*ss != 0) // if the mask is not empty, we add it to the array
                 {
-                    extArray.Insert(0, ss); // nektery z rady extensionu, O(n^2) pro zachovani poradi
+                    extArray.Insert(0, ss); // some of the extensions in the array, O(n^2) to preserve the order
                     if (!extArray.IsGood())
                         extArray.ResetState();
                 }
             }
 
-            // prorezeme seznam pripon (masks) o ty jiz registrovane...
+            // We will trim the list of extensions (masks) to those already registered...
             int i;
             for (i = 0; i < MainWindow->ViewerMasks->Count; i++)
             {
-                if (MainWindow->ViewerMasks->At(i)->ViewerType == -Index - 1) // spravny plugin
+                if (MainWindow->ViewerMasks->At(i)->ViewerType == -Index - 1) // correct plugin
                 {
                     const char* m = MainWindow->ViewerMasks->At(i)->Masks->GetMasksString();
                     len = (int)strlen(m);
@@ -716,14 +716,14 @@ void CSalamanderConnect::AddViewer(const char* masks, BOOL force)
                         char* ss = s + 1 + strlen(s + 1);
                         while (--ss >= s + 1 && *ss <= ' ')
                             ;
-                        *(ss + 1) = 0; // orizneme mezery na konci masky
+                        *(ss + 1) = 0; // trim spaces at the end of the mask
                         ss = s + 1;
                         while (*ss != 0 && *ss <= ' ')
-                            ss++; // preskocime mezery na zacatku masky
+                            ss++; // skip spaces at the beginning of the mask
                         int k;
                         for (k = 0; k < extArray.Count; k++)
                         {
-                            if (StrICmp(ss, extArray[k]) == 0) // tuhle masku uz mame, nebudeme pridavat
+                            if (StrICmp(ss, extArray[k]) == 0) // we already have this mask, we won't add it
                             {
                                 extArray.Delete(k);
                                 if (!extArray.IsGood())
@@ -735,14 +735,14 @@ void CSalamanderConnect::AddViewer(const char* masks, BOOL force)
                 }
             }
             if (extArray.Count == 0)
-                return; // prazdna maska -> neni co delat
-            // opetne spojeni masky 'masks' (uzitecneho zbytku)
+                return; // empty mask -> nothing to do
+            // reconnecting the mask 'masks' (useful residue)
             s = ext2;
             int k;
             for (k = 0; k < extArray.Count; k++)
             {
                 if (extArray[k][0] == ';' && s != ext2)
-                    *s++ = ' '; // mezera je nutna (jinak predchozi ';' nebude oddelovac, ale spoji se s timto ';')
+                    *s++ = ' '; // Space is necessary (otherwise the previous ';' will not be a separator, but will be joined with this ';')
                 strcpy(s, extArray[k]);
                 if (k + 1 < extArray.Count)
                     strcat(s, ";");
@@ -751,8 +751,8 @@ void CSalamanderConnect::AddViewer(const char* masks, BOOL force)
             masks = ext2;
         }
 
-        if (Viewer && !force || // instalace plug-inu
-            !Viewer && force)   // update plug-inu, ale ne behem jeho instalace
+        if (Viewer && !force || // Installing the plug-in
+            !Viewer && force)   // update the plug-in, but not during its installation
         {
             CViewerMasksItem* item = new CViewerMasksItem(masks, "", "", "", -Index - 1, FALSE);
             if (item != NULL && item->IsGood())
@@ -797,11 +797,11 @@ int StrICmpIgnoreSpacesOnStartAndEnd(const char* s1, const char* s2)
 void CSalamanderConnect::ForceRemoveViewer(const char* mask)
 {
     CALL_STACK_MESSAGE2("CSalamanderConnect::ForceRemoveViewer(%s)", mask);
-    char ext2[300]; // pro rozklad nalezenych masek (';' nahrazujeme '\0')
+    char ext2[300]; // for breaking down found masks (';' replaced by '\0')
     int i;
     for (i = 0; i < MainWindow->ViewerMasks->Count; i++)
     {
-        if (MainWindow->ViewerMasks->At(i)->ViewerType == -Index - 1) // spravny plugin
+        if (MainWindow->ViewerMasks->At(i)->ViewerType == -Index - 1) // correct plugin
         {
             const char* m = MainWindow->ViewerMasks->At(i)->Masks->GetMasksString();
             int len = (int)strlen(m);
@@ -810,7 +810,7 @@ void CSalamanderConnect::ForceRemoveViewer(const char* mask)
             memcpy(ext2, m, len);
             ext2[len] = 0;
             char* s = ext2 + len;
-            // nalezeni a eliminace pripony 'mask', side-effect zruseni ';' (nahrada za 0)
+            // finding and removing the 'mask' suffix, side-effect of removing ';' (replaced with 0)
             while (s > ext2)
             {
                 while (--s >= ext2)
@@ -827,7 +827,7 @@ void CSalamanderConnect::ForceRemoveViewer(const char* mask)
                 }
                 if (s >= ext2)
                     *s = 0;
-                if (StrICmpIgnoreSpacesOnStartAndEnd(s + 1, mask) == 0) // tuhle masku hledame, budeme mazat
+                if (StrICmpIgnoreSpacesOnStartAndEnd(s + 1, mask) == 0) // we are looking for this mask, we will delete
                 {
                     int sLen = (int)strlen(s + 1);
                     memmove(s + 1, s + 1 + sLen + 1, len - ((s + 1) - ext2) - sLen);
@@ -837,7 +837,7 @@ void CSalamanderConnect::ForceRemoveViewer(const char* mask)
                         ext2[(len = 0)] = 0;
                 }
             }
-            // obnova ';'
+            // recovery ';'
             s = ext2;
             while (s - ext2 < len)
             {
@@ -845,12 +845,12 @@ void CSalamanderConnect::ForceRemoveViewer(const char* mask)
                     *s = ';';
                 s++;
             }
-            if (ext2[0] != 0) // zmena masky
+            if (ext2[0] != 0) // change mask
             {
                 if (strcmp(ext2, m) != 0)
                     MainWindow->ViewerMasks->At(i)->Set(ext2, "", "", "");
             }
-            else // zruseni zaznamu (posledni maska zrusena)
+            else // deleting record (last mask deleted)
             {
                 MainWindow->EnterViewerMasksCS();
                 MainWindow->ViewerMasks->Delete(i);
@@ -868,15 +868,15 @@ void CSalamanderConnect::AddPanelArchiver(const char* extensions, BOOL edit, BOO
     CALL_STACK_MESSAGE3("CSalamanderConnect::AddPanelArchiver(%s, %d)", extensions, edit);
 
     if (!PanelView && (!edit || !PanelEdit) && !updateExts)
-        return; // neni co delat (ani upgrade plug-inu, ani update pripon)
+        return; // There is nothing to do (neither upgrade the plug-in, nor update the extension)
 
-    char ext[300]; // kopie extensions (';' nahrazujeme '\0')
+    char ext[300]; // copy extensions (';' replaced by '\0')
     int len = (int)strlen(extensions);
     if (len > 299)
         len = 299;
     memcpy(ext, extensions, len);
     ext[len] = 0;
-    TDirectArray<char*> extArray(10, 5); // pole pripon z extensions
+    TDirectArray<char*> extArray(10, 5); // array of extensions suffixes
     char* s = ext + len;
     while (s > ext)
     {
@@ -884,26 +884,26 @@ void CSalamanderConnect::AddPanelArchiver(const char* extensions, BOOL edit, BOO
             ;
         if (s >= ext)
             *s = 0;
-        extArray.Insert(0, s + 1); // nektery z rady extensionu, O(n^2) pro zachovani poradi
+        extArray.Insert(0, s + 1); // some of the extensions in the array, O(n^2) to preserve the order
         if (!extArray.IsGood())
             extArray.ResetState();
     }
 
-    int index = -1; // index hledaneho pruniku pripon nebo zaznamu kde plug-inu je aspon
-                    // jako "view" pri updatu pripon (plugin rozsiruje/predelava existujici zaznam)
-    char ext2[300]; // kopie extensiony z PackerFormatConfig (';' nahrazujeme '\0')
+    int index = -1; // index of the searched extension or record where at least one plug-in is
+                    // as "view" when updating attachments (plugin extends/overrides existing record)
+    char ext2[300]; // Copy extensions from PackerFormatConfig (';' replaced with '\0')
     int i;
     for (i = 0; i < PackerFormatConfig.GetFormatsCount(); i++)
     {
-        BOOL found = FALSE; // TRUE pokud pri updatu pripon tento plug-in zajistuje aspon "view"
-        if (updateExts)     // jde-li o update pripon
+        BOOL found = FALSE; // TRUE if this plug-in provides at least "view" during the update of extensions
+        if (updateExts)     // when it comes to updating the extension
         {
-            if (PackerFormatConfig.GetUnpackerIndex(i) == -Index - 1) // a je-li plug-in nastaven aspon pro "view"
+            if (PackerFormatConfig.GetUnpackerIndex(i) == -Index - 1) // and if the plug-in is set up at least for "view"
             {
                 found = TRUE;
             }
             else
-                continue; // jde o upgrade pripon, nehledame pruniky...
+                continue; // It's about upgrading extensions, we're not looking for intersections...
         }
 
         len = (int)strlen(PackerFormatConfig.GetExt(i));
@@ -921,17 +921,17 @@ void CSalamanderConnect::AddPanelArchiver(const char* extensions, BOOL edit, BOO
             int j;
             for (j = 0; j < extArray.Count; j++)
             {
-                if (found || StrICmp(s + 1, extArray[j]) == 0) // upgrade nebo mnoziny pripon maji neprazdny prunik
+                if (found || StrICmp(s + 1, extArray[j]) == 0) // upgrade or plural suffixes have a non-empty intersection
                 {
                     index = i;
 
-                    if (!found || StrICmp(s + 1, extArray[j]) == 0) // jen pokud se pripony shoduji
+                    if (!found || StrICmp(s + 1, extArray[j]) == 0) // only if the suffixes match
                     {
-                        extArray.Delete(j); // ta uz je v ext2, v ext byt nemusi
+                        extArray.Delete(j); // It is already in ext2, it doesn't have to be in ext
                         if (!extArray.IsGood())
                             extArray.ResetState();
                     }
-                    // prohledame zbytek ext2 a vyhazime z ext shodne pripony
+                    // we will search the rest of ext2 and remove matching extensions from ext
                     BOOL firstRound = TRUE;
                     while (s > ext2)
                     {
@@ -944,9 +944,9 @@ void CSalamanderConnect::AddPanelArchiver(const char* extensions, BOOL edit, BOO
                         }
                         for (j = 0; j < extArray.Count; j++)
                         {
-                            if (StrICmp(s + 1, extArray[j]) == 0) // dalsi stejna pripona
+                            if (StrICmp(s + 1, extArray[j]) == 0) // another same extension
                             {
-                                extArray.Delete(j); // ta uz je v ext2, v ext byt nemusi
+                                extArray.Delete(j); // It is already in ext2, it doesn't have to be in ext
                                 if (!extArray.IsGood())
                                     extArray.ResetState();
                                 break;
@@ -959,11 +959,11 @@ void CSalamanderConnect::AddPanelArchiver(const char* extensions, BOOL edit, BOO
             }
         }
         if (index != -1)
-            break; // index je nalezen
+            break; // index found
     }
 
     BOOL newItem = FALSE;
-    if (index == -1) // v extensions jsou naprosto nove pripony, pozdeji pripadne pridame novy zaznam
+    if (index == -1) // in extensions are completely new extensions, later we may add a new record
     {
         newItem = TRUE;
         ext2[0] = 0;
@@ -971,14 +971,14 @@ void CSalamanderConnect::AddPanelArchiver(const char* extensions, BOOL edit, BOO
     else
         strcpy(ext2, PackerFormatConfig.GetExt(index));
 
-    // do ext2 pripravime sjednoceni starych pripon a extensions nebo pouze extensions (nove pripony)
+    // unify old extensions and extensions in ext2 or only extensions (new extensions)
     len = (int)strlen(ext2);
     if (len > 0 && ext2[len - 1] == ';')
         len--;
     for (i = 0; i < extArray.Count; i++)
     {
         int len2 = (int)strlen(extArray[i]);
-        if (len + len2 + 1 <= 300) // pokud se vejde, pridame priponu do ext2
+        if (len + len2 + 1 <= 300) // if there is enough space, we will add the extension to ext2
         {
             if (len != 0)
                 ext2[len] = ';';
@@ -1006,7 +1006,7 @@ void CSalamanderConnect::AddPanelArchiver(const char* extensions, BOOL edit, BOO
     else
         usePacker = FALSE;
 
-    BOOL change = FALSE; // jsou nejake zmeny v nastaveni view a/nebo edit?
+    BOOL change = FALSE; // Are there any changes in the view and/or edit settings?
     if (PanelView && edit && PanelEdit)
     {
         packerIndex = unpackerIndex = -Index - 1; // view & edit
@@ -1037,32 +1037,32 @@ void CSalamanderConnect::AddPanelArchiver(const char* extensions, BOOL edit, BOO
                 packerIndex = -Index - 1;
                 change = TRUE;
             }
-            //      if (newItem)     // user si ji zrejme nepreje, proto ji nebudeme automaticky pridavat
+            //      if (newItem)     // the user probably does not want it, so we will not add it automatically
             //      {
             //        unpackerIndex = -Index - 1;
             //        change = TRUE;
             //      }
         }
     }
-    if (updateExts && newItem) // vsechny zaznamy plug-inu user vymazal, pridame aspon ty nove
+    if (updateExts && newItem) // All records of the user plug-in have been deleted, let's add at least the new ones
     {
         CPluginData* p = Plugins.Get(Index);
         if (p != NULL && p->SupportPanelView)
         {
-            packerIndex = unpackerIndex = -Index - 1; // view a mozna i edit
+            packerIndex = unpackerIndex = -Index - 1; // view and maybe even edit
             usePacker = p->SupportPanelEdit;
             change = TRUE;
         }
     }
-    if (updateExts && !newItem &&          // update listu pripon (jen pokud zaznam existuje)
-            -Index - 1 == unpackerIndex || // a tento plug-in dela aspon "view" (jinak nema cenu updatovat pripony)
-        change)                            // jen pri zmene (jinak by dochazelo k nechtenymu doplnovani
-    {                                      // podporovanych pripon archiveru)
-        if (newItem)                       // je potreba pridat novy zaznam
+    if (updateExts && !newItem &&          // Update the list of attachments (only if the record exists)
+            -Index - 1 == unpackerIndex || // and this plug-in at least does "view" (otherwise it's not worth updating extensions)
+        change)                            // only when changed (otherwise unwanted completion would occur)
+    {                                      // supported archive file extensions)
+        if (newItem)                       // it is necessary to add a new record
         {
             index = PackerFormatConfig.AddFormat();
             if (index == -1)
-                return; // chyba
+                return; // error
         }
         PackerFormatConfig.SetFormat(index, ext2, usePacker, usePacker ? packerIndex : -1, unpackerIndex, FALSE);
         PackerFormatConfig.BuildArray();
@@ -1078,7 +1078,7 @@ NEXT_ROUND:
 
     for (int i = 0; i < PackerFormatConfig.GetFormatsCount(); i++)
     {
-        if (PackerFormatConfig.GetUnpackerIndex(i) == -Index - 1) // je-li plug-in nastaven aspon pro "view"
+        if (PackerFormatConfig.GetUnpackerIndex(i) == -Index - 1) // if the plug-in is set at least for "view"
         {
             char ext[300];
             lstrcpyn(ext, PackerFormatConfig.GetExt(i), _countof(ext));
@@ -1090,7 +1090,7 @@ NEXT_ROUND:
                     ;
                 if (extEnd != NULL)
                     *extEnd = 0;
-                if (StrICmp(s + 1, extension) == 0) // hledana pripona nalezena
+                if (StrICmp(s + 1, extension) == 0) // desired extension found
                 {
                     if (s < ext)
                     {
@@ -1117,7 +1117,7 @@ NEXT_ROUND:
                     else
                         PackerFormatConfig.DeleteFormat(i);
                     needBuild = TRUE;
-                    goto NEXT_ROUND; // cele hledani spustime znovu (maly problem = zadny optimalizace nemaji smysl)
+                    goto NEXT_ROUND; // we will start the whole search again (small problem = no optimizations make sense)
                 }
                 if (extEnd != NULL)
                     *extEnd = ';';
@@ -1291,8 +1291,8 @@ void CSalamanderConnect::SetBitmapWithIcons(HBITMAP bitmap)
     CPluginData* p = Plugins.Get(Index);
     if (p != NULL)
     {
-        // nakopirujeme bitmapu 'bitmap' do naseho DIBu, ke kteremu
-        // budeme mit pristup na urovni RAW dat
+        // we copy the bitmap 'bitmap' to our DIB, to which
+        // we will have access to RAW data level
         BITMAP bmp;
         GetObject(bitmap, sizeof(bmp), &bmp);
 
@@ -1568,15 +1568,15 @@ BOOL CSalamanderPluginEntry::SetBasicPluginData(const char* pluginName, DWORD fu
         return FALSE;
     }
 
-    // jedna se o load instalovaneho plug-inu nebo pridani noveho plug-inu,
-    // provedeme kontrolu a update dat (novy plug-in by mel vzdy projit testy)
+    // it is about loading an installed plug-in or adding a new plug-in,
+    // we will perform data check and update (new plug-in should always pass tests)
     if (Plugin->SupportPanelView && !supportPanelView ||
         Plugin->SupportPanelEdit && !supportPanelEdit ||
         Plugin->SupportCustomPack && !supportCustomPack ||
         Plugin->SupportCustomUnpack && !supportCustomUnpack ||
         Plugin->SupportViewer && !supportViewer ||
         Plugin->SupportFS && !supportFS)
-    { // downgrade moznosti neni mozny ...
+    { // downgrade options are not possible ...
         char bufText[MAX_PATH + 200];
         sprintf(bufText, LoadStr(IDS_REINSTALLPLUGIN), Plugin->Name, Plugin->DLLName);
         SalMessageBox(Parent, bufText, LoadStr(IDS_ERRORTITLE), MB_OK | MB_ICONERROR);
@@ -1584,7 +1584,7 @@ BOOL CSalamanderPluginEntry::SetBasicPluginData(const char* pluginName, DWORD fu
         return FALSE;
     }
 
-    // update dat
+    // update data
     Plugin->SupportPanelView = supportPanelView;
     Plugin->SupportPanelEdit = supportPanelEdit;
     Plugin->SupportCustomPack = supportCustomPack;
@@ -1630,7 +1630,7 @@ BOOL CSalamanderPluginEntry::SetBasicPluginData(const char* pluginName, DWORD fu
     if (supportLoadSave)
     {
         if (Plugin->RegKeyName[0] == 0)
-        { // novy plug-in s load/save - nastavime nove jmeno klice v registry
+        { // new plug-in with load/save - set a new key name in the registry
             char uniqueKeyName[MAX_PATH];
             Plugins.GetUniqueRegKeyName(uniqueKeyName, regKeyName);
             s = DupStr(uniqueKeyName);
@@ -1641,7 +1641,7 @@ BOOL CSalamanderPluginEntry::SetBasicPluginData(const char* pluginName, DWORD fu
             }
         }
     }
-    else // nepodporuje load/save
+    else // does not support load/save
     {
         s = DupStr("");
         if (s != NULL)
@@ -1656,9 +1656,9 @@ BOOL CSalamanderPluginEntry::SetBasicPluginData(const char* pluginName, DWORD fu
         OldFSNames.Add(Plugin->FSNames.GetData(), Plugin->FSNames.Count);
         if (OldFSNames.IsGood())
         {
-            Plugin->FSNames.DetachMembers(); // retezce jsou ted uz v OldFSNames
+            Plugin->FSNames.DetachMembers(); // strings are now in OldFSNames
             if (!Plugin->FSNames.IsGood())
-                Plugin->FSNames.ResetState(); // ke smazani doslo, vic nas nezajima
+                Plugin->FSNames.ResetState(); // to delete, we are not interested anymore
 
             char uniqueFSName[MAX_PATH];
             Plugins.GetUniqueFSName(uniqueFSName, fsName, NULL, &OldFSNames);
@@ -1666,22 +1666,22 @@ BOOL CSalamanderPluginEntry::SetBasicPluginData(const char* pluginName, DWORD fu
             if (s != NULL)
             {
                 Plugin->FSNames.Add(s);
-                if (!Plugin->FSNames.IsGood()) // nemuze nastat (jde o pridani prvniho prvku pole), jen sychr...
+                if (!Plugin->FSNames.IsGood()) // cannot happen (adding the first element of the array), just dry...
                 {
                     Plugin->FSNames.ResetState();
                     free(s);
                 }
             }
-            else // nelze pouzit nove unikatni jmeno, nechame si aspon to stare
+            else // Cannot use a new unique name, let's at least keep the old one
             {
                 if (OldFSNames.Count > 0)
                 {
                     Plugin->FSNames.Add(OldFSNames[0]);
                     if (!Plugin->FSNames.IsGood())
-                        Plugin->FSNames.ResetState(); // nemuze nastat, jen sychr...
+                        Plugin->FSNames.ResetState(); // it cannot happen, only dry...
                     OldFSNames.Detach(0);
                     if (!OldFSNames.IsGood())
-                        OldFSNames.ResetState(); // k odpojeni doslo, vic nas nezajima
+                        OldFSNames.ResetState(); // disconnection occurred, we are not interested anymore
                 }
             }
         }
@@ -1691,19 +1691,19 @@ BOOL CSalamanderPluginEntry::SetBasicPluginData(const char* pluginName, DWORD fu
             int i;
             for (i = Plugin->FSNames.Count - 1; i > 0; i--)
             {
-                Plugin->FSNames.Delete(i); // vyhodime vsechny fs-name krome prvniho
+                Plugin->FSNames.Delete(i); // we discard all fs-names except the first one
                 if (!Plugin->FSNames.IsGood())
-                    Plugin->FSNames.ResetState(); // ke smazani doslo, vic nas nezajima
+                    Plugin->FSNames.ResetState(); // to delete, we are not interested anymore
             }
         }
     }
-    else // nepodporuje FS
+    else // does not support FS
     {
         Plugin->FSNames.DestroyMembers();
     }
 
     Valid = TRUE;
-    return TRUE; // uspesne prevzeti dat
+    return TRUE; // Successful data retrieval
 }
 
 HINSTANCE
@@ -1713,10 +1713,10 @@ CSalamanderPluginEntry::LoadLanguageModule(HWND parent, const char* pluginName)
     char path[MAX_PATH];
     char errorText[MAX_PATH + 300];
 
-    // ziskame cestu do LANG adresare pluginu
+    // get the path to the LANG directory of the plugin
     char* s = Plugin->DLLName;
-    if ((*s != '\\' || *(s + 1) != '\\') && // ne UNC
-        (*s == 0 || *(s + 1) != ':'))       // ne "c:" -> relativni cesta k podadresari plugins
+    if ((*s != '\\' || *(s + 1) != '\\') && // not UNC
+        (*s == 0 || *(s + 1) != ':'))       // not "c:" -> relative path to the subdirectory plugins
     {
         GetModuleFileName(HInstance, path, MAX_PATH);
         s = strrchr(path, '\\') + 1;
@@ -1730,17 +1730,17 @@ CSalamanderPluginEntry::LoadLanguageModule(HWND parent, const char* pluginName)
     char* slgName = path + strlen(path);
     int slgNameBufSize = MAX_PATH - (int)(slgName - path);
 
-    // nejdrive zkusime nahrat SLG stejneho jazyka v jakem prave bezi Salamander
+    // First, we will try to load an SLG of the same language in which Salamander is currently running
     lstrcpyn(slgName, Configuration.LoadedSLGName, slgNameBufSize);
     lang = HANDLES_Q(LoadLibrary(path));
     WORD languageID = 0;
     if (lang == NULL || !IsSLGFileValid(Plugin->GetPluginDLL(), lang, languageID, NULL))
-    { // SLG neexistuje nebo to neni ocekavane SLG (uplne jiny soubor nebo aspon jina verze)
+    { // SLG does not exist or it is not the expected SLG (completely different file or at least a different version)
         if (lang != NULL)
             HANDLES(FreeLibrary(lang));
         lang = NULL;
-        if (Plugin->LastSLGName == NULL ||               // nemame zadne .slg vybrane pri minulem loadu pluginu
-            _stricmp(slgName, Plugin->LastSLGName) == 0) // tohle .slg uz jsme zkouseli
+        if (Plugin->LastSLGName == NULL ||               // we have no .slg selected during the last plugin load
+            _stricmp(slgName, Plugin->LastSLGName) == 0) // we have already tried this .slg
         {
             if (!Configuration.DoNotDispCantLoadPluginSLG)
             {
@@ -1756,12 +1756,12 @@ CSalamanderPluginEntry::LoadLanguageModule(HWND parent, const char* pluginName)
                 SalMessageBoxEx(&params);
             }
         }
-        else // zkusime nahrat .slg vybrane pri minulem loadu pluginu
+        else // try to load the .slg selected during the last plugin load
         {
             lstrcpyn(slgName, Plugin->LastSLGName, slgNameBufSize);
             lang = HANDLES_Q(LoadLibrary(path));
             if (lang == NULL || !IsSLGFileValid(Plugin->GetPluginDLL(), lang, languageID, NULL))
-            { // SLG neexistuje nebo to neni ocekavane SLG (uplne jiny soubor nebo aspon jina verze)
+            { // SLG does not exist or it is not the expected SLG (completely different file or at least a different version)
                 if (lang != NULL)
                     HANDLES(FreeLibrary(lang));
                 lang = NULL;
@@ -1780,7 +1780,7 @@ CSalamanderPluginEntry::LoadLanguageModule(HWND parent, const char* pluginName)
                 }
             }
         }
-        if (lang == NULL) // najdeme vsechny .slg na disku u pluginu + pripadne nechame usera vybrat (pokud bude vice nez jedno .slg)
+        if (lang == NULL) // find all .slg files on the disk in the plugin folder + optionally let the user choose (if there is more than one .slg)
         {
             char selSLGName[MAX_PATH];
             selSLGName[0] = 0;
@@ -1792,7 +1792,7 @@ CSalamanderPluginEntry::LoadLanguageModule(HWND parent, const char* pluginName)
             else
             {
                 if (slgDialog.GetLanguagesCount() == 1)
-                    slgDialog.GetSLGName(selSLGName); // pokud existuje jen jeden jazyk, pouzijeme ho
+                    slgDialog.GetSLGName(selSLGName); // if there is only one language, we will use it
                 else
                 {
                     if (Configuration.UseAsAltSLGInOtherPlugins &&
@@ -1802,7 +1802,7 @@ CSalamanderPluginEntry::LoadLanguageModule(HWND parent, const char* pluginName)
                     }
                     else
                     {
-                        if (Configuration.UseAsAltSLGInOtherPlugins) // nahradni jazyk sice je definovany, ale neni dostupny u tohoto pluginu, takze nechame usera vybrat jiny nahradni jazyk
+                        if (Configuration.UseAsAltSLGInOtherPlugins) // Although the replacement language is defined, it is not available in this plugin, so we will let the user choose another replacement language
                             Configuration.UseAsAltSLGInOtherPlugins = FALSE;
                         slgDialog.Execute();
                     }
@@ -1810,7 +1810,7 @@ CSalamanderPluginEntry::LoadLanguageModule(HWND parent, const char* pluginName)
                 lstrcpyn(slgName, selSLGName, slgNameBufSize);
                 lang = HANDLES_Q(LoadLibrary(path));
                 if (lang == NULL || !IsSLGFileValid(Plugin->GetPluginDLL(), lang, languageID, NULL))
-                { // nemelo by teoreticky nastat (dialog overuje platnost .SLG modulu)
+                { // theoretically should not occur (dialog verifies the validity of the .SLG module)
                     if (lang != NULL)
                         HANDLES(FreeLibrary(lang));
                     lang = NULL;
@@ -1906,20 +1906,20 @@ CPluginMenuItem::CPluginMenuItem(int iconIndex, const char* name, DWORD hotKey, 
     Type = type;
     IconIndex = iconIndex;
     if (name != NULL)
-        Name = DupStr(name); // pri chybe se staneme separatorem ;-)
+        Name = DupStr(name); // in case of an error, we will become a separator ;-)
     else
         Name = NULL;
 #ifdef _DEBUG
     if (name != NULL && (hotKey & HOTKEY_HINT) == 0)
     {
-        // od verze 2.5 beta 7 zavedena podpora pro hot keys
-        // horka klavesa nesmi byt soucasti textu
+        // Support for hot keys introduced since version 2.5 beta 7
+        // The hotkey must not be part of the text
         char* p = Name;
         while (*p != 0)
         {
             if (*p == '\t')
             {
-                if (Configuration.ConfigVersion >= 25) // budeme rvat az na novejsich konfiguracich
+                if (Configuration.ConfigVersion >= 25) // we will tear apart on newer configurations
                     TRACE_E("Plugin menu item contains hot key (" << name << "). Use the AddMenuItem/'hotKey' parameter instead.");
                 *p = 0;
                 break;
@@ -1933,13 +1933,13 @@ CPluginMenuItem::CPluginMenuItem(int iconIndex, const char* name, DWORD hotKey, 
         (skillLevel & MENU_SKILLLEVEL_ALL) == 0)
     {
         TRACE_E("CPluginMenuItem::CPluginMenuItem wrong skillLevel=" << skillLevel);
-        // udelame korekci
+        // let's make a correction
         skillLevel = MENU_SKILLLEVEL_ALL;
     }
     SkillLevel = skillLevel;
     ID = id;
     SUID = -1;
-    HotKey = hotKey; // zadna hotkey, uzivatel ji smi nastavit
+    HotKey = hotKey; // no hotkey, user can set it
 }
 
 //
@@ -2143,11 +2143,11 @@ BOOL CPluginData::InitDLL(HWND parent, BOOL quiet, BOOL waitCursor, BOOL showUns
 
     char bufText[MAX_PATH + 200];
 
-#ifdef _WIN64 // FIXME_X64_WINSCP - tohle bude chtit asi poresit jinak... (ignorace chybejiciho WinSCP v x64 verzi Salama)
+#ifdef _WIN64 // FIXME_X64_WINSCP - this will probably need to be solved differently... (ignoring missing WinSCP in x64 version of Salama)
     const char* pluginNameEN;
     if (IsPluginUnsupportedOnX64(DLLName, &pluginNameEN))
     {
-        if (showUnsupOnX64) // napiseme userovi, ze tenhle plugin je k mani jen v 32-bit verzi (x86)
+        if (showUnsupOnX64) // Let's write to the user that this plugin is available only in the 32-bit version (x86)
         {
             sprintf(bufText, LoadStr(IDS_PLUGINISX86ONLY), Name == NULL || Name[0] == 0 ? pluginNameEN : Name);
             SalMessageBox(parent, bufText, LoadStr(IDS_INFOTITLE), MB_OK | MB_ICONINFORMATION);
@@ -2160,11 +2160,11 @@ BOOL CPluginData::InitDLL(HWND parent, BOOL quiet, BOOL waitCursor, BOOL showUns
     {
         BOOL refreshUNCRootPaths = FALSE;
 
-        // ziskame plne jmeno DLL
+        // get the full name of the DLL
         char buf[MAX_PATH];
         char* s = DLLName;
-        if ((*s != '\\' || *(s + 1) != '\\') && // ne UNC
-            (*s == 0 || *(s + 1) != ':'))       // ne "c:" -> relativni cesta k podadresari plugins
+        if ((*s != '\\' || *(s + 1) != '\\') && // not UNC
+            (*s == 0 || *(s + 1) != ':'))       // not "c:" -> relative path to the subdirectory plugins
         {
             GetModuleFileName(HInstance, buf, MAX_PATH);
             s = strrchr(buf, '\\') + 1;
@@ -2173,30 +2173,30 @@ BOOL CPluginData::InitDLL(HWND parent, BOOL quiet, BOOL waitCursor, BOOL showUns
             s = buf;
         }
 
-        // nacteme DLL
+        // Load the DLL
         HCURSOR oldCur;
         if (waitCursor)
             oldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
         DLL = HANDLES(LoadLibrary(s));
         if (waitCursor)
             SetCursor(oldCur);
-        if (DLL == NULL) // chyba
+        if (DLL == NULL) // error
         {
             DWORD err = GetLastError();
             sprintf(bufText, LoadStr(IDS_UNABLETOLOADPLUGIN), Name, s, GetErrorText(err));
             if (!quiet)
                 SalMessageBox(parent, bufText, LoadStr(IDS_ERRORTITLE), MB_OK | MB_ICONERROR);
         }
-        else // pripojime se na DLL
+        else // connect to the DLL
         {
-            FSalamanderPluginEntry entry = (FSalamanderPluginEntry)GetProcAddress(DLL, "SalamanderPluginEntry"); // entry-point pluginu
+            FSalamanderPluginEntry entry = (FSalamanderPluginEntry)GetProcAddress(DLL, "SalamanderPluginEntry"); // entry point of the plugin
             if (entry != NULL)
             {
 #ifdef _DEBUG
                 AddModuleWithPossibleMemoryLeaks(s);
 #endif // _DEBUG
 
-                // promenne pro zjisteni funkci, ktere se "upgraduji" (FALSE->TRUE)
+                // variables for determining functions that are "upgraded" (FALSE->TRUE)
                 BOOL supportPanelView = SupportPanelView;
                 BOOL supportPanelEdit = SupportPanelEdit;
                 BOOL supportCustomPack = SupportCustomPack;
@@ -2204,17 +2204,17 @@ BOOL CPluginData::InitDLL(HWND parent, BOOL quiet, BOOL waitCursor, BOOL showUns
                 BOOL supportViewer = SupportViewer;
 
                 CSalamanderPluginEntry salamander(parent, (CPluginData*)this);
-                // sestavime flag vraceny pres CSalamanderPluginEntry::GetLoadInformation()
-                salamander.AddLoadInfo(Plugins.LoadInfoBase); // zaklad (nic/auto-install/new-plugins.ver)
+                // we will construct the flag returned via CSalamanderPluginEntry::GetLoadInformation()
+                salamander.AddLoadInfo(Plugins.LoadInfoBase); // base (nothing/auto-install/new-plugins.ver)
                                                               //        if (LoadOnStart) salamander.AddLoadInfo(LOADINFO_LOADONSTART);  // "load on start" flag
 
-                // zrusime prikazy zdedene od posledniho loadu (na 99.9% bude pole prazdne)
+                // we will remove commands inherited from the last load (the array will be empty in 99.9% of cases)
                 Commands.DestroyMembers();
 
-                // zrusime icon-overlays (jen pro sychr, melo by byt prazdne)
+                // we will remove icon-overlays (only for sychr, it should be empty)
                 ReleaseIconOverlays();
 
-                // zrusime nastaveni disk-cache pro archiver, musime ho ziskat znovu
+                // we will disable the disk cache setting for the archiver, we need to retrieve it again
                 ArcCacheHaveInfo = FALSE;
                 if (ArcCacheTmpPath != NULL)
                     free(ArcCacheTmpPath);
@@ -2222,12 +2222,12 @@ BOOL CPluginData::InitDLL(HWND parent, BOOL quiet, BOOL waitCursor, BOOL showUns
                 ArcCacheOwnDelete = FALSE;
                 ArcCacheCacheCopies = TRUE;
 
-                FSalamanderPluginGetReqVer getReqVer = (FSalamanderPluginGetReqVer)GetProcAddress(DLL, "SalamanderPluginGetReqVer"); // funkce pluginu
-                BuiltForVersion = -1;                                                                                                // -1 = plugin je delany pro starsi verzi nez 2.5 beta 2 (nema export "SalamanderPluginGetReqVer")
+                FSalamanderPluginGetReqVer getReqVer = (FSalamanderPluginGetReqVer)GetProcAddress(DLL, "SalamanderPluginGetReqVer"); // Plugin function
+                BuiltForVersion = -1;                                                                                                // -1 = plugin is made for a version older than 2.5 beta 2 (it does not have the "SalamanderPluginGetReqVer" export)
                 if (getReqVer != NULL && (BuiltForVersion = getReqVer()) >= PLUGIN_REQVER)
                 {
-                    FSalamanderPluginGetSDKVer getSDKVer = (FSalamanderPluginGetSDKVer)GetProcAddress(DLL, "SalamanderPluginGetSDKVer"); // funkce pluginu
-                    if (getSDKVer != NULL)                                                                                               // pokud plugin exportuje tuto funkci, zrejme chce zvysit BuiltForVersion (tvari se stary kvuli kompatibilite se starymi verzemi Salamandera, ale s novejsimi verzemi Salamandera chce vyuzit i novych sluzeb)
+                    FSalamanderPluginGetSDKVer getSDKVer = (FSalamanderPluginGetSDKVer)GetProcAddress(DLL, "SalamanderPluginGetSDKVer"); // Plugin function
+                    if (getSDKVer != NULL)                                                                                               // if the plugin exports this function, it probably wants to increase BuiltForVersion (it looks old for compatibility with older versions of Salamander, but with newer versions of Salamander it wants to use new services)
                     {
                         int verSDK = getSDKVer();
                         if (BuiltForVersion <= verSDK)
@@ -2250,13 +2250,13 @@ BOOL CPluginData::InitDLL(HWND parent, BOOL quiet, BOOL waitCursor, BOOL showUns
                     PluginIsNethood = FALSE;
                     PluginUsesPasswordManager = FALSE;
 
-                    EnterPlugin(); // pro entry-point plug-inu
+                    EnterPlugin(); // for the entry-point of the plug-in
                     Plugins.EnterDataCS();
-                    PluginIface.Init((CPluginInterfaceAbstract*)-1, BuiltForVersion); // aby slo pouzivat SetFlagLoadOnSalamanderStart i z entry-pointu
+                    PluginIface.Init((CPluginInterfaceAbstract*)-1, BuiltForVersion); // to be able to use SetFlagLoadOnSalamanderStart from the entry-point
                     Plugins.LeaveDataCS();
-                    SalamanderGeneral.Init((CPluginInterfaceAbstract*)-1); // aby slo pouzivat SetFlagLoadOnSalamanderStart i z entry-pointu
+                    SalamanderGeneral.Init((CPluginInterfaceAbstract*)-1); // to be able to use SetFlagLoadOnSalamanderStart from the entry-point
 
-                    // !!! VOLANI ENTRY-POINTU plug-inu !!!
+                    // !!! CALLING THE ENTRY-POINT of the plug-in !!!
                     CPluginInterfaceAbstract* resIface = entry(&salamander);
 
                     Plugins.EnterDataCS();
@@ -2267,7 +2267,7 @@ BOOL CPluginData::InitDLL(HWND parent, BOOL quiet, BOOL waitCursor, BOOL showUns
 
                     if (!PluginIface.NotEmpty())
                     {
-                        PluginIsNethood = oldPluginIsNethood; // pri selhani entry-pointu vracime starou hodnotu
+                        PluginIsNethood = oldPluginIsNethood; // returning old value in case of entry-point failure
                         PluginUsesPasswordManager = oldPluginUsesPasswordManager;
                     }
                     else
@@ -2276,7 +2276,7 @@ BOOL CPluginData::InitDLL(HWND parent, BOOL quiet, BOOL waitCursor, BOOL showUns
                             refreshUNCRootPaths = TRUE;
                     }
                 }
-                else // nejspis zbytecne, jen tak pro sychr
+                else // probably unnecessary, just for fun
                 {
                     Plugins.EnterDataCS();
                     PluginIface.Init(NULL, 0);
@@ -2285,16 +2285,16 @@ BOOL CPluginData::InitDLL(HWND parent, BOOL quiet, BOOL waitCursor, BOOL showUns
                 }
 
                 if (!oldVer && PluginIface.NotEmpty() && salamander.DataValid())
-                { // vytahneme interfacy dalsich casti plug-in interfacu
+                { // we will extract interfaces of other parts of the plug-in interface
                     PluginIfaceForArchiver.Init(PluginIface.GetInterfaceForArchiver());
                     PluginIfaceForViewer.Init(PluginIface.GetInterfaceForViewer());
                     PluginIfaceForMenuExt.Init(PluginIface.GetInterfaceForMenuExt(), BuiltForVersion);
                     PluginIfaceForFS.Init(PluginIface.GetInterfaceForFS(), BuiltForVersion);
                     PluginIfaceForThumbLoader.Init(PluginIface.GetInterfaceForThumbLoader(), DLLName, Version);
                 }
-                else // vynulujeme i dalsi casti plug-in interfacu
+                else // We will also reset other parts of the plug-in interface
                 {
-                    if (salamander.ShowError() && oldVer) // stara verze a jeste to nehlasil...
+                    if (salamander.ShowError() && oldVer) // old version and still didn't report it...
                     {
                         if (Name == NULL || Name[0] == 0)
                             sprintf(bufText, LoadStr(IDS_OLDPLUGINVERSION2), s);
@@ -2315,7 +2315,7 @@ BOOL CPluginData::InitDLL(HWND parent, BOOL quiet, BOOL waitCursor, BOOL showUns
                                        !SupportCustomUnpack ||
                                    PluginIfaceForArchiver.NotEmpty());
                 BOOL viewerOK = !SupportViewer || PluginIfaceForViewer.NotEmpty();
-                // menuExtOK nelze zjistit - pokud nebude menu-ext iface k dispozici, nenechame polozky menu pridat
+                // menuExtOK cannot be determined - if the menu-ext iface is not available, we will not allow menu items to be added
                 BOOL FSOK = !SupportFS || PluginIfaceForFS.NotEmpty();
 
                 if (!oldVer && PluginIface.NotEmpty() && salamander.DataValid() &&
@@ -2328,7 +2328,7 @@ BOOL CPluginData::InitDLL(HWND parent, BOOL quiet, BOOL waitCursor, BOOL showUns
                     supportViewer = (!supportViewer && SupportViewer);
 
                     BOOL loaded = FALSE;
-                    if (SupportLoadSave) // pokud podporuje load/save z registry, provedeme ho
+                    if (SupportLoadSave) // if load/save from registry is supported, we will perform it
                     {
                         LoadSaveToRegistryMutex.Enter();
                         HKEY hSal;
@@ -2355,7 +2355,7 @@ BOOL CPluginData::InitDLL(HWND parent, BOOL quiet, BOOL waitCursor, BOOL showUns
                         }
                         LoadSaveToRegistryMutex.Leave();
                     }
-                    // pokud neprobehl load z registry, naloadime default hodnoty
+                    // if the registry load did not succeed, we will load default values
                     if (!loaded)
                     {
                         CSalamanderRegistry registry;
@@ -2365,39 +2365,39 @@ BOOL CPluginData::InitDLL(HWND parent, BOOL quiet, BOOL waitCursor, BOOL showUns
                         }
                     }
 
-                    ThumbnailMasks.SetMasksString(""); // zbavime se masek pro thumbnail loader, plati pouze nove ...
+                    ThumbnailMasks.SetMasksString(""); // Get rid of masks for thumbnail loader, only new ones apply ...
                     ThumbnailMasksDisabled = FALSE;
                     if (PluginIcons != NULL)
                     {
-                        delete PluginIcons; // zbavime se bitmapy s ikonami, plati pouze nova ...
+                        delete PluginIcons; // we will get rid of the bitmap with icons, only the new one is valid ...
                         PluginIcons = NULL;
                     }
                     if (PluginIconsGray != NULL)
                     {
-                        delete PluginIconsGray; // zbavime se bitmapy s ikonami, plati pouze nova ...
+                        delete PluginIconsGray; // we will get rid of the bitmap with icons, only the new one is valid ...
                         PluginIconsGray = NULL;
                     }
                     if (PluginDynMenuIcons != NULL)
                         TRACE_E("CPluginData::InitDLL(): PluginDynMenuIcons is not NULL, please contact Petr Solin");
-                    ReleasePluginDynMenuIcons(); // pokud nahodou existuje, zlikvidujeme ji, je zbytecna
-                    PluginIconIndex = -1;        // zbavime se indexu icony, plati jen novy ...
-                    PluginSubmenuIconIndex = -1; // zbavime se indexu icony, plati jen novy ...
-                    //j.r. tuto hodnotu nebudeme prepisovat; byla nastavena v konstruktoru, pripadne zmena uzivatelem
-                    //     a nastavena pri cteni konfigurace pluginu
-                    //ShowSubmenuInPluginsBar = FALSE;  // zbavime se buttonu v toolbare, ukaze se jen pokud si to plugin bude znovu prat...
+                    ReleasePluginDynMenuIcons(); // if by any chance it exists, we will destroy it, it is unnecessary
+                    PluginIconIndex = -1;        // we will get rid of the icon index, only the new one is valid ...
+                    PluginSubmenuIconIndex = -1; // we will get rid of the icon index, only the new one is valid ...
+                    //j.r. we will not overwrite this value; it was set in the constructor, possibly changed by the user
+                    //     and set when reading the configuration of the plugin
+                    //ShowSubmenuInPluginsBar = FALSE;  // get rid of the button in the toolbar, it will only be shown if the plugin wishes so again...
 
-                    // misto destrukce si stare pole zazalohujeme
-                    TIndirectArray<CPluginMenuItem> oldMenuItems(max(1, MenuItems.Count), 1); // kopie menu pro synchronizaci hot keys
-                    if (!SupportDynMenuExt)                                                   // dynamicke menu se nevytvari v Connect, takze ho jen ponechame na pozdeji
+                    // Instead of destruction, we back up the old array
+                    TIndirectArray<CPluginMenuItem> oldMenuItems(max(1, MenuItems.Count), 1); // copy of the menu for synchronizing hot keys
+                    if (!SupportDynMenuExt)                                                   // Dynamic menu is not created in Connect, so we will leave it for later
                     {
-                        oldMenuItems.Add(MenuItems.GetData(), MenuItems.Count); // pokud kopie nedopadne, IsGood() bude vracet FALSE
+                        oldMenuItems.Add(MenuItems.GetData(), MenuItems.Count); // if the copy fails, IsGood() will return FALSE
                         if (oldMenuItems.IsGood())
-                            MenuItems.DetachMembers(); // destrukci provedeme az po synchronizaci
+                            MenuItems.DetachMembers(); // destruction will be performed after synchronization
                         else
-                            MenuItems.DestroyMembers(); // zbavime se vsech polozek v menu, plati pouze nove ...
+                            MenuItems.DestroyMembers(); // we will remove all items from the menu, only the new one will be valid ...
                     }
 
-                    // zbavime se prikazu FS do change-drive menu, plati pouze novy ...
+                    // Remove the FS command from the change-drive menu, only the new one applies...
                     if (ChDrvMenuFSItemName != NULL)
                         free(ChDrvMenuFSItemName);
                     ChDrvMenuFSItemName = NULL;
@@ -2407,19 +2407,19 @@ BOOL CPluginData::InitDLL(HWND parent, BOOL quiet, BOOL waitCursor, BOOL showUns
                                                   supportPanelView, supportPanelEdit, supportViewer);
                     {
                         CALL_STACK_MESSAGE3("PluginIface.Connect(,) (%s v. %s)", DLLName, Version);
-                        PluginIface.Connect(parent, &salConnect); // zavolame connect plug-inu
+                        PluginIface.Connect(parent, &salConnect); // call the connect plug-in
                         if (!SupportDynMenuExt)
-                            HotKeysMerge(&oldMenuItems); // synchronizace hot keys
+                            HotKeysMerge(&oldMenuItems); // Synchronize hot keys
                         HotKeysEnsureIntegrity();        // zabrani konfliktum se Salamanderem nebo s jinym pluginem
                     }
                     if (oldMenuItems.IsGood())
-                        oldMenuItems.DestroyMembers(); // nyni uz stare pole muzeme sestrelit
+                        oldMenuItems.DestroyMembers(); // now we can shoot down the old field
 
                     if (SupportDynMenuExt)
                     {
                         BuildMenu(parent, TRUE);
                         if (releaseDynMenuIcons)
-                            ReleasePluginDynMenuIcons(); // tenhle objekt nikdo nepotrebuje (pro dalsi zobrazeni menu se vse ziska znovu)
+                            ReleasePluginDynMenuIcons(); // no one needs this object (for the next menu display, everything is retrieved again)
                     }
                 }
                 else
@@ -2457,11 +2457,11 @@ BOOL CPluginData::InitDLL(HWND parent, BOOL quiet, BOOL waitCursor, BOOL showUns
                     DLL = NULL;
                     BuiltForVersion = 0;
 
-                    // zrusime icon-overlays (pokud je plugin vubec stihl nastavit)
+                    // we will remove icon-overlays (if the plugin managed to set them up at all)
                     ReleaseIconOverlays();
 
                     if (!oldVer && salamander.ShowError())
-                    { // plug-in je spravne verze a nezavolal uspesne ani neuspesne SetBasicPluginData
+                    { // the plug-in is the correct version and did not successfully call SetBasicPluginData
                         if (Name == NULL || Name[0] == 0)
                             sprintf(bufText, LoadStr(IDS_PLUGININVALID2), s);
                         else
@@ -2471,7 +2471,7 @@ BOOL CPluginData::InitDLL(HWND parent, BOOL quiet, BOOL waitCursor, BOOL showUns
                     }
                 }
             }
-            else // plug-in nema Salamander Plugin Entry Point ...
+            else // plug-in does not have Salamander Plugin Entry Point ...
             {
                 HANDLES(FreeLibrary(DLL));
                 DLL = NULL;
@@ -2481,13 +2481,13 @@ BOOL CPluginData::InitDLL(HWND parent, BOOL quiet, BOOL waitCursor, BOOL showUns
                     SalMessageBox(parent, bufText, LoadStr(IDS_ERRORTITLE), MB_OK | MB_ICONERROR);
             }
         }
-        // dame hlavnimu oknu vedet o loadu pluginu
+        // inform the main window about loading the plugin
         if (DLL != NULL)
             MainWindow->OnPluginsStateChanged();
 
         if (refreshUNCRootPaths && MainWindow != NULL &&
             MainWindow->LeftPanel != NULL && MainWindow->RightPanel != NULL)
-        { // zmena navratove hodnoty CPlugins::GetFirstNethoodPluginFSName() - dotkne se rootu UNC cest (je/neni up-dir), nutny refresh
+        { // Change of return value of CPlugins::GetFirstNethoodPluginFSName() - affects root of UNC paths (is/is not up-dir), refresh necessary
             if (MainWindow->LeftPanel->Is(ptDisk) && IsUNCRootPath(MainWindow->LeftPanel->GetPath()))
             {
                 HANDLES(EnterCriticalSection(&TimeCounterSection));
@@ -2548,10 +2548,10 @@ void CPluginData::AddMenuItem(int iconIndex, const char* name, DWORD hotKey, int
         state = -1;
     else
     {
-        if (name != NULL)                                               // neni to separator
-            state = ((state_or & 0x7FFF) << 16) | (state_and & 0x7FFF); // aby nikdy nevysla -1 (0xFFFFFFFF)
+        if (name != NULL)                                               // it is not a separator
+            state = ((state_or & 0x7FFF) << 16) | (state_and & 0x7FFF); // to never return -1 (0xFFFFFFFF)
         else
-            id = 0; // separator nema 'id' pokud nema 'callGetState'==TRUE
+            id = 0; // separator does not have 'id' if 'callGetState'==TRUE
     }
     if (type == pmitEndSubmenu)
     {
@@ -2616,13 +2616,13 @@ BOOL CPluginData::Remove(HWND parent, int index, BOOL canDelPluginRegKey)
     {
         if (MainWindow == NULL || MainWindow->CanUnloadPlugin(parent, PluginIface.GetInterface()))
         {
-            // mozna dojde k unloadu pluginu: nechame plugin zrusit dosud nezrusene tmp-soubory z disk-cache
+            // maybe there will be an unload of the plugin: we will let the plugin delete previously undeleted tmp files from the disk cache
             CPluginInterfaceAbstract* unloadedPlugin = PluginIface.GetInterface();
             DeleteManager.PluginMayBeUnloaded(parent, this);
 
-            // plug-in jiz neni Salamanderem pouzivan, muze se unloadnout
+            // the plug-in is no longer used by Salamander, it can be unloaded
             if (PluginIface.Release(parent, FALSE))
-                unloaded = TRUE; // bude unloaded a bude mozne ho odstranit
+                unloaded = TRUE; // it will be unloaded and it will be possible to remove it
             else
             {
                 char buf[MAX_PATH + 100];
@@ -2630,12 +2630,12 @@ BOOL CPluginData::Remove(HWND parent, int index, BOOL canDelPluginRegKey)
                 if (SalMessageBox(parent, buf, LoadStr(IDS_QUESTION), MB_YESNO | MB_ICONQUESTION) == IDYES)
                 {
                     PluginIface.Release(parent, TRUE);
-                    unloaded = TRUE; // bude unloaded a bude mozne ho odstranit
+                    unloaded = TRUE; // it will be unloaded and it will be possible to remove it
                 }
             }
             if (unloaded)
             {
-                // provedeme unload SPL+SLG a cisteni rozhrani
+                // we will perform the unload SPL+SLG and clean the interface
                 SalamanderGeneral.Clear();
                 if (DLL != NULL)
                     HANDLES(FreeLibrary(DLL));
@@ -2651,10 +2651,10 @@ BOOL CPluginData::Remove(HWND parent, int index, BOOL canDelPluginRegKey)
                 PluginIfaceForThumbLoader.Init(NULL, NULL, NULL);
                 SalamanderGeneral.Init(NULL);
 
-                // pri unloadu pluginu zrusime jeho icon-overlays
+                // When unloading the plugin, we remove its icon overlays
                 ReleaseIconOverlays();
 
-                // odpojime unloadnuty plugin od delete-managera a disk-cache
+                // disconnect the unloaded plugin from the delete manager and disk cache
                 DeleteManager.PluginWasUnloaded(this, unloadedPlugin);
             }
         }
@@ -2662,7 +2662,7 @@ BOOL CPluginData::Remove(HWND parent, int index, BOOL canDelPluginRegKey)
 
     if (unloaded)
     {
-        // uprava "file viewer" - smazeme zaznamy o tomto plug-inu + opatreni kvuli sesunu pole Plugins
+        // Modify "file viewer" - delete records about this plug-in + measures to prevent crashing of the Plugins array
         CViewerMasks* viewerMasks;
         MainWindow->EnterViewerMasksCS();
         int k;
@@ -2676,14 +2676,14 @@ BOOL CPluginData::Remove(HWND parent, int index, BOOL canDelPluginRegKey)
             for (i = 0; i < viewerMasks->Count; i++)
             {
                 int type = viewerMasks->At(i)->ViewerType;
-                if (type < 0) // nejde o externi ani interni -> plug-inovy
+                if (type < 0) // It's not about external or internal -> plug-in
                 {
                     type = -type - 1;
                     if (type == index)
-                        viewerMasks->Delete(i--); // tento plug-in -> smazame zaznam
+                        viewerMasks->Delete(i--); // delete this plug-in record
                     else
                     {
-                        if (type > index) // dojde k sesunu pole Plugins -> snizime 'type' o jednu
+                        if (type > index) // the Plugins array will collapse -> we will decrease 'type' by one
                         {
                             type--;
                             viewerMasks->At(i)->ViewerType = -type - 1;
@@ -2694,19 +2694,19 @@ BOOL CPluginData::Remove(HWND parent, int index, BOOL canDelPluginRegKey)
         }
         MainWindow->LeaveViewerMasksCS();
 
-        // uprava "custom pack" - smazeme zaznamy o tomto plug-inu + opatreni kvuli sesunu pole Plugins
+        // Modify "custom pack" - delete records of this plug-in + measures to prevent the Plugins array from crashing
         int i;
         for (i = 0; i < PackerConfig.GetPackersCount(); i++)
         {
             int type = PackerConfig.GetPackerType(i);
-            if (type != CUSTOMPACKER_EXTERNAL) // nejde o externi
+            if (type != CUSTOMPACKER_EXTERNAL) // it's not about external
             {
                 type = -type - 1;
                 if (type == index)
-                    PackerConfig.DeletePacker(i--); // tento plug-in -> smazame zaznam
+                    PackerConfig.DeletePacker(i--); // delete this plug-in record
                 else
                 {
-                    if (type > index) // dojde k sesunu pole Plugins -> snizime 'type' o jednu
+                    if (type > index) // the Plugins array will collapse -> we will decrease 'type' by one
                     {
                         type--;
                         PackerConfig.SetPackerType(i, -type - 1);
@@ -2715,18 +2715,18 @@ BOOL CPluginData::Remove(HWND parent, int index, BOOL canDelPluginRegKey)
             }
         }
 
-        // uprava "custom unpack" - smazeme zaznamy o tomto plug-inu + opatreni kvuli sesunu pole Plugins
+        // Modification "custom unpack" - we will delete records about this plug-in + measures against the crash of the Plugins array
         for (i = 0; i < UnpackerConfig.GetUnpackersCount(); i++)
         {
             int type = UnpackerConfig.GetUnpackerType(i);
-            if (type != CUSTOMUNPACKER_EXTERNAL) // nejde o externi
+            if (type != CUSTOMUNPACKER_EXTERNAL) // it's not about external
             {
                 type = -type - 1;
                 if (type == index)
-                    UnpackerConfig.DeleteUnpacker(i--); // tento plug-in -> smazame zaznam
+                    UnpackerConfig.DeleteUnpacker(i--); // delete this plug-in record
                 else
                 {
-                    if (type > index) // dojde k sesunu pole Plugins -> snizime 'type' o jednu
+                    if (type > index) // the Plugins array will collapse -> we will decrease 'type' by one
                     {
                         type--;
                         UnpackerConfig.SetUnpackerType(i, -type - 1);
@@ -2735,8 +2735,8 @@ BOOL CPluginData::Remove(HWND parent, int index, BOOL canDelPluginRegKey)
             }
         }
 
-        // uprava "panel view/edit" - upravime/smazeme zaznamy o tomto plug-inu
-        // + opatreni kvuli sesunu pole Plugins
+        // modify "panel view/edit" - we will modify/delete records about this plug-in
+        // + measures due to the collapse of the Plugins field
         for (i = 0; i < PackerFormatConfig.GetFormatsCount(); i++)
         {
             BOOL usePack = PackerFormatConfig.GetUsePacker(i);
@@ -2746,28 +2746,28 @@ BOOL CPluginData::Remove(HWND parent, int index, BOOL canDelPluginRegKey)
             int unpack = PackerFormatConfig.GetUnpackerIndex(i);
             BOOL removePack = FALSE;
             BOOL removeUnpack = FALSE;
-            if (unpack < 0) // nejde o externi "view"
+            if (unpack < 0) // It's not an external "view"
             {
                 unpack = -unpack - 1;
                 if (unpack == index)
-                    removeUnpack = TRUE; // tento plug-in -> smazame zaznam
+                    removeUnpack = TRUE; // delete this plug-in record
                 else
                 {
-                    if (unpack > index) // dojde k sesunu pole Plugins -> snizime 'unpack' o jednu
+                    if (unpack > index) // Plugins array will collapse -> decrease 'unpack' by one
                     {
                         unpack--;
                         PackerFormatConfig.SetUnpackerIndex(i, -unpack - 1);
                     }
                 }
             }
-            if (usePack && pack < 0) // nejde o externi "edit"
+            if (usePack && pack < 0) // It's not about an external "edit"
             {
                 pack = -pack - 1;
                 if (pack == index)
-                    removePack = TRUE; // tento plug-in -> smazame zaznam
+                    removePack = TRUE; // delete this plug-in record
                 else
                 {
-                    if (pack > index) // dojde k sesunu pole Plugins -> snizime 'pack' o jednu
+                    if (pack > index) // the Plugins array will collapse -> we will decrease 'pack' by one
                     {
                         pack--;
                         PackerFormatConfig.SetPackerIndex(i, -pack - 1);
@@ -2775,38 +2775,38 @@ BOOL CPluginData::Remove(HWND parent, int index, BOOL canDelPluginRegKey)
                 }
             }
 
-            if (removePack || removeUnpack) // je potreba najit nahradu za "view" a/nebo "edit"
+            if (removePack || removeUnpack) // it is necessary to find a replacement for "view" and/or "edit"
             {
-                // budeme hledat, ktery archivator umi "view" a/nebo "edit" pro nekterou z pripon
+                // we will search for an archiver that can "view" and/or "edit" for some of the extensions
                 int newView, newEdit;
                 BOOL viewFound, editFound;
                 Plugins.FindViewEdit(PackerFormatConfig.GetExt(i), index, viewFound, newView, editFound, newEdit);
                 if (newView < 0 && -newView - 1 > index)
-                    newView++; // dojde k sesunu pole Plugins -> nutna uprava
+                    newView++; // There will be a collapse of the Plugins field -> necessary adjustment
                 if (newEdit < 0 && -newEdit - 1 > index)
-                    newEdit++; // dojde k sesunu pole Plugins -> nutna uprava
+                    newEdit++; // There will be a collapse of the Plugins field -> necessary adjustment
 
-                if (removeUnpack) // je treba nahradit "view"
+                if (removeUnpack) // need to replace "view"
                 {
                     if (viewFound)
-                        PackerFormatConfig.SetUnpackerIndex(i, newView); // pouzijeme novy "view"
+                        PackerFormatConfig.SetUnpackerIndex(i, newView); // we will use a new "view"
                     else
-                        PackerFormatConfig.DeleteFormat(i--); // bez "view" neni mozne fungovat
+                        PackerFormatConfig.DeleteFormat(i--); // it is not possible to function without "view"
                 }
-                if (removePack &&                 // je treba nahradit "edit" a
-                    (!removeUnpack || viewFound)) // zaznam nebyl smazan
+                if (removePack &&                 // "edit" needs to be replaced and
+                    (!removeUnpack || viewFound)) // record was not deleted
                 {
                     if (editFound)
-                        PackerFormatConfig.SetPackerIndex(i, newEdit); // pouzijeme novy "edit"
+                        PackerFormatConfig.SetPackerIndex(i, newEdit); // we will use the new "edit"
                     else
-                        PackerFormatConfig.SetUsePacker(i, FALSE); // neni "edit"
+                        PackerFormatConfig.SetUsePacker(i, FALSE); // not "edit"
                 }
             }
         }
         PackerFormatConfig.BuildArray();
 
-        if (SupportLoadSave && canDelPluginRegKey) // podporuje-li plugin load/save konfigurace + muzeme smazat jeho klic v registry (nejde o import konfigurace z predchozi verze Salamandera)
-        {                                          // pokusime se o otevreni soukromeho klice v registry, pokud se povede smazeme ho, uz nebude treba
+        if (SupportLoadSave && canDelPluginRegKey) // Does the plugin support loading/saving configuration + can we delete its key in the registry (this is not about importing configuration from a previous version of Salamander)
+        {                                          // We will try to open a private key in the registry, if successful we will delete it, it will no longer be needed
             BOOL shouldDelete = FALSE;
             LoadSaveToRegistryMutex.Enter();
             HKEY salamander;
@@ -2829,7 +2829,7 @@ BOOL CPluginData::Remove(HWND parent, int index, BOOL canDelPluginRegKey)
             if (shouldDelete)
             {
                 if (SALAMANDER_ROOT_REG != NULL &&
-                    CreateKey(HKEY_CURRENT_USER, SALAMANDER_ROOT_REG, salamander)) // aby byly write prava
+                    CreateKey(HKEY_CURRENT_USER, SALAMANDER_ROOT_REG, salamander)) // to have write permissions
                 {
                     HKEY actKey;
                     if (CreateKey(salamander, SALAMANDER_PLUGINSCONFIG, actKey))
@@ -2850,7 +2850,7 @@ BOOL CPluginData::Remove(HWND parent, int index, BOOL canDelPluginRegKey)
         }
         return TRUE;
     }
-    ThumbnailMasksDisabled = FALSE; // remove byl prerusen
+    ThumbnailMasksDisabled = FALSE; // remove was interrupted
     return FALSE;
 }
 
@@ -2881,7 +2881,7 @@ void CPluginData::Configuration(HWND parent)
 void CPluginData::Event(int event, DWORD param)
 {
     CALL_STACK_MESSAGE4("CPluginData::Event(%d,) (%s v. %s)", event, DLLName, Version);
-    if (GetLoaded() && PluginIface.NotEmpty()) // volame jen pokud je plug-in nacteny (jde jen o "notifikaci")
+    if (GetLoaded() && PluginIface.NotEmpty()) // we only call if the plug-in is loaded (it's just a "notification")
     {
         PluginIface.Event(event, param);
     }
@@ -2899,7 +2899,7 @@ void CPluginData::ClearHistory(HWND parent)
 void CPluginData::AcceptChangeOnPathNotification(const char* path, BOOL includingSubdirs)
 {
     CALL_STACK_MESSAGE3("CPluginData::AcceptChangeOnPathNotification() (%s v. %s)", DLLName, Version);
-    if (GetLoaded() && PluginIface.NotEmpty()) // volame jen pokud je plug-in nacteny (jde jen o "notifikaci")
+    if (GetLoaded() && PluginIface.NotEmpty()) // we only call if the plug-in is loaded (it's just a "notification")
     {
         PluginIface.AcceptChangeOnPathNotification(path, includingSubdirs);
     }
@@ -2908,7 +2908,7 @@ void CPluginData::AcceptChangeOnPathNotification(const char* path, BOOL includin
 void CPluginData::PasswordManagerEvent(HWND parent, int event)
 {
     CALL_STACK_MESSAGE4("CPluginData::PasswordManagerEvent(, %d) (%s v. %s)", event, DLLName, Version);
-    if (GetLoaded() && PluginUsesPasswordManager) // pro pripad, ze by plugin prestal pouzivat Password Manager (nezavolal SetPluginUsesPasswordManager())
+    if (GetLoaded() && PluginUsesPasswordManager) // in case the plugin stops using the Password Manager (does not call SetPluginUsesPasswordManager())
         PluginIface.PasswordManagerEvent(parent, event);
 }
 
@@ -2924,12 +2924,12 @@ void CPluginData::About(HWND parent)
 void CPluginData::CallLoadOrSaveConfiguration(BOOL load,
                                               FSalLoadOrSaveConfiguration loadOrSaveFunc,
                                               void* param)
-{ // vola se z plug-inu (neni treba vypisovat DLLName + Version)
+{ // It is called from the plug-in (there is no need to print DLLName + Version)
     CALL_STACK_MESSAGE2("CPluginData::CallLoadOrSaveConfiguration(%d, ,)", load);
     if (load) // load
     {
         BOOL loaded = FALSE;
-        if (SupportLoadSave) // pokud podporuje load/save z registry
+        if (SupportLoadSave) // if it supports load/save from registry
         {
             LoadSaveToRegistryMutex.Enter();
             HKEY salamander;
@@ -2940,7 +2940,7 @@ void CPluginData::CallLoadOrSaveConfiguration(BOOL load,
                 if (OpenKey(salamander, SALAMANDER_PLUGINSCONFIG, actKey))
                 {
                     HKEY regKey;
-                    if (OpenKey(actKey, RegKeyName, regKey)) // zkusime otevrit soukromy klic plug-inu
+                    if (OpenKey(actKey, RegKeyName, regKey)) // try to open the private key of the plug-in
                     {
                         CSalamanderRegistry registry;
                         {
@@ -2957,7 +2957,7 @@ void CPluginData::CallLoadOrSaveConfiguration(BOOL load,
             LoadSaveToRegistryMutex.Leave();
         }
 
-        // jinak load defaultni konfigurace
+        // otherwise load default configuration
         if (!loaded)
         {
             CSalamanderRegistry registry;
@@ -2969,13 +2969,13 @@ void CPluginData::CallLoadOrSaveConfiguration(BOOL load,
     }
     else // save
     {
-        if (SupportLoadSave) // jinak neni kam ukladat
+        if (SupportLoadSave) // otherwise there is nowhere to save
         {
             LoadSaveToRegistryMutex.Enter();
             HKEY salamander;
             if (SALAMANDER_ROOT_REG != NULL &&
-                OpenKeyAux(NULL, HKEY_CURRENT_USER, SALAMANDER_ROOT_REG, salamander)) // test jestli vubec existuje klic Salama (jinak nic neukladame)
-            {                                                                         // OpenKeyAux, protoze nechci hlasku o Load Configuration
+                OpenKeyAux(NULL, HKEY_CURRENT_USER, SALAMANDER_ROOT_REG, salamander)) // test if the key Salama even exists (otherwise we don't save anything)
+            {                                                                         // OpenKeyAux, because I don't want the message about Load Configuration
                 CloseKeyAux(salamander);
                 if (CreateKey(HKEY_CURRENT_USER, SALAMANDER_ROOT_REG, salamander))
                 {
@@ -2985,8 +2985,8 @@ void CPluginData::CallLoadOrSaveConfiguration(BOOL load,
                     {
                         DWORD saveInProgress = 1;
                         if (GetValueAux(NULL, salamander, SALAMANDER_SAVE_IN_PROGRESS, REG_DWORD, &saveInProgress, sizeof(DWORD)))
-                        {                    // GetValueAux, protoze nechci hlasku o Load Configuration
-                            cfgIsOK = FALSE; // jde o poskozenou konfiguraci, ulozenim se neopravi (neuklada se komplet)
+                        {                    // GetValueAux because I don't want a message about Load Configuration
+                            cfgIsOK = FALSE; // It is about a damaged configuration, it is not fixed by saving (it is not saved completely)
                             TRACE_E("CPluginData::CallLoadOrSaveConfiguration(): unable to save configuration, configuration key in registry is corrupted, plugin: " << Name);
                         }
                         else
@@ -3034,11 +3034,11 @@ BOOL CPluginData::Unload(HWND parent, BOOL ask)
     if (DLL != NULL)
     {
         if (MainWindow == NULL || MainWindow->CanUnloadPlugin(parent, PluginIface.GetInterface()))
-        { // plug-in jiz neni Salamanderem pouzivan, muze se unloadnout
+        { // the plug-in is no longer used by Salamander, it can be unloaded
             char buf[MAX_PATH + 300];
             BOOL skipUnload = FALSE;
             if (SupportLoadSave && ::Configuration.AutoSave)
-            { // chce si ulozit konfiguraci, kdyz ma "save on exit" "on"?
+            { // wants to save the configuration when "save on exit" is set to "on"?
                 sprintf(buf, LoadStr(IDS_PLUGINSAVECONFIG), Name);
                 if (!ask || SalMessageBox(parent, buf, LoadStr(IDS_QUESTION), MB_YESNO | MB_ICONQUESTION) == IDYES)
                 {
@@ -3046,8 +3046,8 @@ BOOL CPluginData::Unload(HWND parent, BOOL ask)
                     BOOL salKeyDoesNotExist = FALSE;
                     HKEY salamander;
                     if (SALAMANDER_ROOT_REG != NULL &&
-                        OpenKeyAux(NULL, HKEY_CURRENT_USER, SALAMANDER_ROOT_REG, salamander)) // test jestli vubec existuje klic Salama (jinak nic neukladame)
-                    {                                                                         // OpenKeyAux, protoze nechci hlasku o Load Configuration
+                        OpenKeyAux(NULL, HKEY_CURRENT_USER, SALAMANDER_ROOT_REG, salamander)) // test if the key Salama even exists (otherwise we don't save anything)
+                    {                                                                         // OpenKeyAux, because I don't want the message about Load Configuration
                         CloseKeyAux(salamander);
                         if (CreateKey(HKEY_CURRENT_USER, SALAMANDER_ROOT_REG, salamander))
                         {
@@ -3057,8 +3057,8 @@ BOOL CPluginData::Unload(HWND parent, BOOL ask)
                             {
                                 DWORD saveInProgress = 1;
                                 if (GetValueAux(NULL, salamander, SALAMANDER_SAVE_IN_PROGRESS, REG_DWORD, &saveInProgress, sizeof(DWORD)))
-                                {                    // GetValueAux, protoze nechci hlasku o Load Configuration
-                                    cfgIsOK = FALSE; // jde o poskozenou konfiguraci, ulozenim se neopravi (neuklada se komplet)
+                                {                    // GetValueAux because I don't want a message about Load Configuration
+                                    cfgIsOK = FALSE; // It is about a damaged configuration, it is not fixed by saving (it is not saved completely)
                                     salKeyDoesNotExist = TRUE;
                                     TRACE_E("CPluginData::Unload(): unable to save configuration, configuration key in registry is corrupted, plugin: " << Name);
                                 }
@@ -3105,7 +3105,7 @@ BOOL CPluginData::Unload(HWND parent, BOOL ask)
 
             if (!skipUnload && PluginIface.NotEmpty())
             {
-                // mozna dojde k unloadu pluginu: nechame plugin zrusit dosud nezrusene tmp-soubory z disk-cache
+                // maybe there will be an unload of the plugin: we will let the plugin delete previously undeleted tmp files from the disk cache
                 CPluginInterfaceAbstract* unloadedPlugin = PluginIface.GetInterface();
                 DeleteManager.PluginMayBeUnloaded(parent, this);
 
@@ -3123,7 +3123,7 @@ BOOL CPluginData::Unload(HWND parent, BOOL ask)
 
                 if (ret)
                 {
-                    // provedeme unload SPL+SLG a cisteni rozhrani
+                    // we will perform the unload SPL+SLG and clean the interface
                     SalamanderGeneral.Clear();
                     if (DLL != NULL)
                         HANDLES(FreeLibrary(DLL));
@@ -3139,15 +3139,15 @@ BOOL CPluginData::Unload(HWND parent, BOOL ask)
                     PluginIfaceForThumbLoader.Init(NULL, NULL, NULL);
                     SalamanderGeneral.Init(NULL);
 
-                    // pri unloadu pluginu zrusime jeho icon-overlays
+                    // When unloading the plugin, we remove its icon overlays
                     ReleaseIconOverlays();
 
-                    // odpojime unloadnuty plugin od delete-managera a disk-cache
+                    // disconnect the unloaded plugin from the delete manager and disk cache
                     DeleteManager.PluginWasUnloaded(this, unloadedPlugin);
                 }
             }
         }
-        ThumbnailMasksDisabled = FALSE; // unload byl dokoncen (uz muzeme zase klidne nechat plugin naloadit)
+        ThumbnailMasksDisabled = FALSE; // unload was completed (we can now safely let the plugin load again)
     }
     return ret;
 }
@@ -3158,7 +3158,7 @@ BOOL CPluginData::GetMenuItemStateType(int pluginIndex, int menuItemIndex, MENU_
 
     DWORD mask = GetMaskForMenuItems(pluginIndex);
 
-    if (item->StateMask == -1) // zjistovat stav polozky primo od plug-inu?
+    if (item->StateMask == -1) // Retrieve the status of an item directly from the plug-in?
     {
         DWORD state = 0;
         if (PluginIfaceForMenuExt.NotEmpty())
@@ -3178,10 +3178,10 @@ BOOL CPluginData::GetMenuItemStateType(int pluginIndex, int menuItemIndex, MENU_
                 mii->Type |= MENU_TYPE_RADIOCHECK;
         }
     }
-    else // stav polozky se pocita z and a or masky
+    else // item state is calculated from and and or masks
     {
-        if ((mask & HIWORD(item->StateMask)) != 0 &&                     // or-maska
-            (mask & LOWORD(item->StateMask)) == LOWORD(item->StateMask)) // and-maska
+        if ((mask & HIWORD(item->StateMask)) != 0 &&                     // bitwise OR mask
+            (mask & LOWORD(item->StateMask)) == LOWORD(item->StateMask)) // bitwise AND operator
         {
             mii->State = 0;
         }
@@ -3201,16 +3201,16 @@ void CPluginData::AddMenuItemsToSubmenuAux(CMenuPopup* menu, int& i, int count, 
     {
         CPluginMenuItem* item = MenuItems[i];
         if (item->Type == pmitEndSubmenu)
-            return; // navrat ze submenu
+            return; // Return from submenu
         BOOL skipSubMenu = FALSE;
-        if (item->SkillLevel & CfgSkillLevelToMenu(::Configuration.SkillLevel)) // promitneme skill-level redukci menu
+        if (item->SkillLevel & CfgSkillLevelToMenu(::Configuration.SkillLevel)) // we will project the skill-level reduction menu
         {
             BOOL hidden = FALSE;
             MENU_ITEM_INFO mi;
-            if (item->Name == NULL) // separator nebo chyba alokace jmena u start-submenu
+            if (item->Name == NULL) // separator or allocation error in the start-submenu name
             {
                 if (item->Type == pmitStartSubmenu)
-                    skipSubMenu = TRUE; // chyba alokace jmena start-submenu: vlozime separator + zbytek submenu preskocime
+                    skipSubMenu = TRUE; // Allocation error in the start-submenu name: insert separator + skip the rest of the submenu
                 mi.Mask = MENU_MASK_TYPE | MENU_MASK_SKILLLEVEL;
                 mi.Type = MENU_TYPE_SEPARATOR;
                 mi.SkillLevel = 0;
@@ -3220,7 +3220,7 @@ void CPluginData::AddMenuItemsToSubmenuAux(CMenuPopup* menu, int& i, int count, 
                     mi.SkillLevel |= MENU_LEVEL_INTERMEDIATE;
                 if (item->SkillLevel & MENU_SKILLLEVEL_ADVANCED)
                     mi.SkillLevel |= MENU_LEVEL_ADVANCED;
-                if (item->StateMask == -1) // zjistovat viditelnost separatoru primo od pluginu?
+                if (item->StateMask == -1) // Determine the visibility of the separator directly from the plugin?
                 {
                     DWORD state = PluginIfaceForMenuExt.GetMenuItemState(item->ID, mask);
 
@@ -3228,7 +3228,7 @@ void CPluginData::AddMenuItemsToSubmenuAux(CMenuPopup* menu, int& i, int count, 
                         hidden = TRUE;
                 }
             }
-            else // normalni polozka menu nebo submenu
+            else // normal menu item or submenu
             {
                 mi.Mask = MENU_MASK_TYPE | MENU_MASK_STATE | MENU_MASK_ID |
                           MENU_MASK_STRING | MENU_MASK_SKILLLEVEL | MENU_MASK_IMAGEINDEX |
@@ -3239,7 +3239,7 @@ void CPluginData::AddMenuItemsToSubmenuAux(CMenuPopup* menu, int& i, int count, 
 
                 if (HOTKEY_GET(item->HotKey) != 0)
                 {
-                    // pokud mame hint v textu, odstranime ho
+                    // If we have a hint in the text, we remove it
                     if ((item->HotKey & HOTKEY_HINT) != 0)
                     {
                         char* p = buff;
@@ -3265,7 +3265,7 @@ void CPluginData::AddMenuItemsToSubmenuAux(CMenuPopup* menu, int& i, int count, 
                     mi.SkillLevel |= MENU_LEVEL_INTERMEDIATE;
                 if (item->SkillLevel & MENU_SKILLLEVEL_ADVANCED)
                     mi.SkillLevel |= MENU_LEVEL_ADVANCED;
-                if (item->StateMask == -1) // zjistovat stav polozky primo od plug-inu?
+                if (item->StateMask == -1) // Retrieve the status of an item directly from the plug-in?
                 {
                     DWORD state = PluginIfaceForMenuExt.GetMenuItemState(item->ID, mask);
 
@@ -3282,10 +3282,10 @@ void CPluginData::AddMenuItemsToSubmenuAux(CMenuPopup* menu, int& i, int count, 
                             mi.Type |= MENU_TYPE_RADIOCHECK;
                     }
                 }
-                else // stav polozky se pocita z and a or masky
+                else // item state is calculated from and and or masks
                 {
-                    if ((mask & HIWORD(item->StateMask)) != 0 &&                     // or-maska
-                        (mask & LOWORD(item->StateMask)) == LOWORD(item->StateMask)) // and-maska
+                    if ((mask & HIWORD(item->StateMask)) != 0 &&                     // bitwise OR mask
+                        (mask & LOWORD(item->StateMask)) == LOWORD(item->StateMask)) // bitwise AND operator
                     {
                         mi.State = 0;
                     }
@@ -3295,14 +3295,14 @@ void CPluginData::AddMenuItemsToSubmenuAux(CMenuPopup* menu, int& i, int count, 
                     }
                 }
 
-                mi.ID = Plugins.LastSUID;      // dalsi unikatni cislo v ramci Salamandera (SUID)
-                item->SUID = Plugins.LastSUID; // zapamatujeme si jake SUID bylo prideleno
+                mi.ID = Plugins.LastSUID;      // next unique number within Salamander (SUID)
+                item->SUID = Plugins.LastSUID; // we will remember which SUID was assigned
                 if (Plugins.LastSUID < CM_PLUGINCMD_MAX)
-                    Plugins.LastSUID++; // generujeme dalsi SUID
+                    Plugins.LastSUID++; // generating another SUID
                 else
                     TRACE_E("Too much commands in plugins.");
 
-                if (item->Type == pmitStartSubmenu && !hidden) // nechame naplnit submenu
+                if (item->Type == pmitStartSubmenu && !hidden) // let's populate the submenu
                 {
                     mi.SubMenu = new CMenuPopup();
                     if ((mi.State & MENU_STATE_GRAYED) == 0 && mi.SubMenu != NULL)
@@ -3316,10 +3316,10 @@ void CPluginData::AddMenuItemsToSubmenuAux(CMenuPopup* menu, int& i, int count, 
                     {
                         if (mi.SubMenu == NULL)
                         {
-                            mi.Mask &= ~MENU_MASK_SUBMENU; // ze submenu udelame obycejnou polozku, co se da delat (spusti prikaz cislo 0, snad nevadi...)
+                            mi.Mask &= ~MENU_MASK_SUBMENU; // we will turn a submenu into a regular item that can be executed (by running command number 0, hopefully that's okay...)
                             TRACE_E(LOW_MEMORY);
                         }
-                        skipSubMenu = TRUE; // submenu se nepodarilo naalokovat nebo je disabled - preskocime ho
+                        skipSubMenu = TRUE; // submenu failed to allocate or is disabled - let's skip it
                     }
                 }
             }
@@ -3329,13 +3329,13 @@ void CPluginData::AddMenuItemsToSubmenuAux(CMenuPopup* menu, int& i, int count, 
                     delete mi.SubMenu;
             }
             else
-                skipSubMenu = TRUE; // polozka schovana diky hidden-stavu
+                skipSubMenu = TRUE; // item hidden thanks to the hidden state
         }
         else
-            skipSubMenu = TRUE; // polozka schovana diky skill-levelu
+            skipSubMenu = TRUE; // item hidden thanks to skill level
 
         if (skipSubMenu && item->Type == pmitStartSubmenu)
-        { // je-li to submenu, preskocime vnorene polozky a submenu (nebude se na ne vubec sahat)
+        { // if it is a submenu, we skip nested items and submenu (they will not be touched at all)
             int level = 1;
             for (i++; i < MenuItems.Count; i++)
             {
@@ -3345,7 +3345,7 @@ void CPluginData::AddMenuItemsToSubmenuAux(CMenuPopup* menu, int& i, int count, 
                 else
                 {
                     if (type == pmitEndSubmenu && --level == 0)
-                        break; // konec submenu nalezen
+                        break; // end of submenu found
                 }
             }
         }
@@ -3379,18 +3379,18 @@ void CPluginData::InitMenuItems(HWND parent, int index, CMenuPopup* menu)
 {
     CALL_STACK_MESSAGE4("CPluginData::InitMenuItems(, %d, ) (%s v. %s)", index, DLLName, Version);
     int count = menu->GetItemCount();
-    if (count == 0) // je potreba provest inicializaci submenu
+    if (count == 0) // Initialization of the submenu is needed
     {
 
     CHECK_MENU_AGAIN:
 
         BOOL ok = TRUE;
-        if (SupportDynMenuExt) // dynamicke menu: prebuildime, pokud se zmeni pri loadu pluginu na staticke, zkontrolujeme ho nize
+        if (SupportDynMenuExt) // dynamic menu: prebuild if changed to static during plugin load, check it below
         {
             if (GetLoaded())
-                BuildMenu(parent, FALSE); // pokud uz jsme nacteny, rebuildneme menu "rucne"
+                BuildMenu(parent, FALSE); // if we are already loaded, we will rebuild the "manual" menu
             else
-                InitDLL(parent, FALSE, TRUE, TRUE, FALSE); // pokud nejsme, rebuildne se menu samo pri loadu pluginu
+                InitDLL(parent, FALSE, TRUE, TRUE, FALSE); // if we are not, the menu will be rebuilt automatically when the plugin is loaded
             if (!GetLoaded() || SupportDynMenuExt && !PluginIfaceForMenuExt.NotEmpty())
                 ok = FALSE;
             else
@@ -3399,8 +3399,8 @@ void CPluginData::InitMenuItems(HWND parent, int index, CMenuPopup* menu)
                     TRACE_I("Plugin has dynamic menu which is empty (unexpected situation). We will not open submenu.");
             }
         }
-        // staticke menu: zjistime jestli je duvod k loadu pluginu (stav polozky zjistovany pres
-        // GetMenuItemState) a zaroven jestli v tomto pripade plugin vraci PluginIfaceForMenuExt (povinne)
+        // static menu: we will determine if there is a reason to load the plugin (state of the item determined through
+        // GetMenuItemState) and also whether in this case the plugin returns PluginIfaceForMenuExt (mandatory)
         if (ok && !SupportDynMenuExt)
         {
             DWORD mask = GetMaskForMenuItems(index);
@@ -3409,16 +3409,16 @@ void CPluginData::InitMenuItems(HWND parent, int index, CMenuPopup* menu)
             {
                 CPluginMenuItem* item = MenuItems[i];
                 BOOL skipSubMenu = FALSE;
-                if (item->SkillLevel & CfgSkillLevelToMenu(::Configuration.SkillLevel)) // promitneme skill-level redukci menu
+                if (item->SkillLevel & CfgSkillLevelToMenu(::Configuration.SkillLevel)) // we will project the skill-level reduction menu
                 {
                     if (item->StateMask == -1)
                     {
-                        if (GetLoaded()) // pokud je nactene, zkontrolujeme jestli mame menu-ext iface
+                        if (GetLoaded()) // if loaded, we will check if we have the menu-ext iface
                         {
                             if (!PluginIfaceForMenuExt.NotEmpty())
                                 TRACE_E("Plugin has menu with items whose state is determined by calling CPluginInterfaceForMenuExtAbstract::GetMenuItemState so it must have menu extension interface (see CPluginInterfaceAbstract::GetInterfaceForMenuExt).");
                         }
-                        else // natahne se DLL -> provede se update polozek v menu, musime provest cely test znovu
+                        else // the DLL will be loaded -> the menu items will be updated, we need to run the whole test again
                         {
                             if (InitDLL(parent))
                                 goto CHECK_MENU_AGAIN;
@@ -3428,18 +3428,18 @@ void CPluginData::InitMenuItems(HWND parent, int index, CMenuPopup* menu)
                     }
                     else
                     {
-                        if ((mask & HIWORD(item->StateMask)) == 0 ||                     // or-maska
-                            (mask & LOWORD(item->StateMask)) != LOWORD(item->StateMask)) // and-maska
-                        {                                                                // disabled polozka
+                        if ((mask & HIWORD(item->StateMask)) == 0 ||                     // bitwise OR mask
+                            (mask & LOWORD(item->StateMask)) != LOWORD(item->StateMask)) // bitwise AND operator
+                        {                                                                // disabled item
                             skipSubMenu = TRUE;
                         }
                     }
                 }
                 else
-                    skipSubMenu = TRUE; // polozka schovana diky skill-levelu
+                    skipSubMenu = TRUE; // item hidden thanks to skill level
 
                 if (skipSubMenu && item->Type == pmitStartSubmenu)
-                { // je-li to submenu, preskocime vnorene polozky a submenu (nebude se na ne vubec sahat)
+                { // if it is a submenu, we skip nested items and submenu (they will not be touched at all)
                     int level = 1;
                     for (i++; i < MenuItems.Count; i++)
                     {
@@ -3449,7 +3449,7 @@ void CPluginData::InitMenuItems(HWND parent, int index, CMenuPopup* menu)
                         else
                         {
                             if (type == pmitEndSubmenu && --level == 0)
-                                break; // konec submenu nalezen
+                                break; // end of submenu found
                         }
                     }
                 }
@@ -3459,7 +3459,7 @@ void CPluginData::InitMenuItems(HWND parent, int index, CMenuPopup* menu)
         if (ok)
         {
             int i = 0;
-            DWORD mask = GetMaskForMenuItems(index); // pokud doslo k loadu pluginu mohlo se neco zmenit
+            DWORD mask = GetMaskForMenuItems(index); // If the plugin was loaded, something could have changed
             AddMenuItemsToSubmenuAux(menu, i, count, mask);
             if (i < MenuItems.Count)
                 TRACE_E("CPluginData::InitMenuItems(): superfluous symbol of end of submenu - see CSalamanderConnectAbstract::AddSubmenuEnd()");
@@ -3475,7 +3475,7 @@ BOOL CPluginData::ExecuteMenuItem(CFilesWindow* panel, HWND parent, int index, i
     int i;
     for (i = 0; i < MenuItems.Count; i++)
     {
-        if (MenuItems[i]->SUID == suid) // porovnani SUID polozky menu a spousteneho prikazu
+        if (MenuItems[i]->SUID == suid) // Comparison of the SUID menu item and the executed command
         {
             id = MenuItems[i]->ID;
             if (InitDLL(parent) && PluginIfaceForMenuExt.NotEmpty())
@@ -3484,7 +3484,7 @@ BOOL CPluginData::ExecuteMenuItem(CFilesWindow* panel, HWND parent, int index, i
                 CSalamanderForOperations sm(panel);
                 unselect = PluginIfaceForMenuExt.ExecuteMenuItem(&sm, parent, id, mask);
             }
-            Plugins.SetLastPlgCmd(DLLName, id); // ulozime last command
+            Plugins.SetLastPlgCmd(DLLName, id); // save the last command
             return TRUE;
         }
     }
@@ -3498,7 +3498,7 @@ BOOL CPluginData::ExecuteMenuItem2(CFilesWindow* panel, HWND parent, int index, 
     int i;
     for (i = 0; i < MenuItems.Count; i++)
     {
-        if (MenuItems[i]->ID == id) // porovnani ID polozky menu a spousteneho prikazu
+        if (MenuItems[i]->ID == id) // comparison of the menu item ID and the executed command
         {
             if (PluginIfaceForMenuExt.NotEmpty())
             {
@@ -3508,7 +3508,7 @@ BOOL CPluginData::ExecuteMenuItem2(CFilesWindow* panel, HWND parent, int index, 
             }
             else
                 TRACE_E("PluginIfaceForMenuExt is not initialized!");
-            Plugins.SetLastPlgCmd(DLLName, id); // ulozime last command
+            Plugins.SetLastPlgCmd(DLLName, id); // save the last command
             return TRUE;
         }
     }
@@ -3523,7 +3523,7 @@ BOOL CPluginData::HelpForMenuItem(HWND parent, int index, int suid, BOOL& helpDi
     int i;
     for (i = 0; i < MenuItems.Count; i++)
     {
-        if (MenuItems[i]->SUID == suid) // porovnani SUID polozky menu a spousteneho prikazu
+        if (MenuItems[i]->SUID == suid) // Comparison of the SUID menu item and the executed command
         {
             id = MenuItems[i]->ID;
             if (InitDLL(parent) && PluginIfaceForMenuExt.NotEmpty())
@@ -3539,29 +3539,29 @@ BOOL CPluginData::BuildMenu(HWND parent, BOOL force)
     CALL_STACK_MESSAGE3("CPluginData::BuildMenu() (%s v. %s)", DLLName, Version);
     if (GetLoaded() && SupportDynMenuExt && (!DynMenuWasAlreadyBuild || force))
     {
-        DynMenuWasAlreadyBuild = TRUE; // obrana pred zbytecnym rebuildem menu: hlavne pro situaci, kdyz se menu buildi pro Last Command, a pak jeste jednou pri otevreni submenu pluginu s prikazem v Last Commandu
+        DynMenuWasAlreadyBuild = TRUE; // Defense against unnecessary menu rebuild: mainly for the situation when the menu is built for Last Command, and then again when opening a submenu of a plugin with a command in Last Command
         if (PluginDynMenuIcons != NULL)
             TRACE_E("CPluginData::BuildMenu(): PluginDynMenuIcons is not NULL, please contact Petr Solin");
-        ReleasePluginDynMenuIcons(); // pokud nahodou existuje, zbavime se ji, je zbytecna
+        ReleasePluginDynMenuIcons(); // if it happens to exist, let's get rid of it, it's unnecessary
         if (PluginIfaceForMenuExt.NotEmpty())
         {
-            // misto destrukce si stare pole zazalohujeme
-            TIndirectArray<CPluginMenuItem> oldMenuItems(max(1, MenuItems.Count), 1); // kopie menu pro synchronizaci hot keys
-            oldMenuItems.Add(MenuItems.GetData(), MenuItems.Count);                   // pokud kopie nedopadne, IsGood() bude vracet FALSE
+            // Instead of destruction, we back up the old array
+            TIndirectArray<CPluginMenuItem> oldMenuItems(max(1, MenuItems.Count), 1); // copy of the menu for synchronizing hot keys
+            oldMenuItems.Add(MenuItems.GetData(), MenuItems.Count);                   // if the copy fails, IsGood() will return FALSE
             if (oldMenuItems.IsGood())
-                MenuItems.DetachMembers(); // destrukci provedeme az po synchronizaci
+                MenuItems.DetachMembers(); // destruction will be performed after synchronization
             else
-                MenuItems.DestroyMembers(); // zbavime se vsech polozek v menu, plati pouze nove ...
+                MenuItems.DestroyMembers(); // we will remove all items from the menu, only the new one will be valid ...
 
             CSalamanderBuildMenu salBuildMenu(Plugins.GetIndexJustForConnect(this));
             {
                 CALL_STACK_MESSAGE3("PluginIfaceForMenuExt.BuildMenu(,) (%s v. %s)", DLLName, Version);
-                PluginIfaceForMenuExt.BuildMenu(parent, &salBuildMenu); // zavolame BuildMenu pluginu
-                HotKeysMerge(&oldMenuItems);                            // synchronizace hot keys
+                PluginIfaceForMenuExt.BuildMenu(parent, &salBuildMenu); // call the BuildMenu plugin
+                HotKeysMerge(&oldMenuItems);                            // Synchronize hot keys
                 HotKeysEnsureIntegrity();                               // zabrani konfliktum se Salamanderem nebo s jinym pluginem
             }
             if (oldMenuItems.IsGood())
-                oldMenuItems.DestroyMembers(); // nyni uz stare pole muzeme sestrelit
+                oldMenuItems.DestroyMembers(); // now we can shoot down the old field
         }
         else
             TRACE_E("Plugin has dynamic menu so it must have menu extension interface (see CPluginInterfaceAbstract::GetInterfaceForMenuExt).");
@@ -3580,7 +3580,7 @@ BOOL CPluginData::ListArchive(CFilesWindow* panel, const char* archiveFileName, 
         ret = PluginIfaceForArchiver.ListArchive(&sc, archiveFileName, &dir, pluginData);
 #ifdef _DEBUG
         if (ret && pluginData != NULL)
-            OpenedPDCounter++; // zvysime OpenedPDCounter
+            OpenedPDCounter++; // increase OpenedPDCounter
 #endif
     }
     return ret;
@@ -3688,7 +3688,7 @@ BOOL CPluginData::CanViewFile(const char* name)
     CALL_STACK_MESSAGE4("CPluginData::CanViewFile(%s) (%s v. %s)", name, DLLName, Version);
     BOOL ret = FALSE;
     if (InitDLL(MainWindow->HWindow)
-        /*&& PluginIfaceForViewer.NotEmpty()*/) // zbytecne, protoze downgrade neni mozny a InitDLL ifacy kontroluje
+        /*&& PluginIfaceForViewer.NotEmpty()*/) // unnecessary, because downgrade is not possible and InitDLL ifacy checks
     {
         ret = PluginIfaceForViewer.CanViewFile(name);
     }
@@ -3705,13 +3705,13 @@ BOOL CPluginData::ViewFile(const char* name, int left, int top, int width, int h
                          enumFilesSourceUID, enumFilesCurrentIndex, DLLName, Version);
     BOOL ret = FALSE;
     if (InitDLL(MainWindow->HWindow)
-        /*&& PluginIfaceForViewer.NotEmpty()*/) // zbytecne, protoze downgrade neni mozny a InitDLL ifacy kontroluje
+        /*&& PluginIfaceForViewer.NotEmpty()*/) // unnecessary, because downgrade is not possible and InitDLL ifacy checks
     {
         ret = PluginIfaceForViewer.ViewFile(name, left, top, width, height, showCmd, alwaysOnTop,
                                             returnLock, lock, lockOwner, NULL, enumFilesSourceUID,
                                             enumFilesCurrentIndex);
         if (ret && returnLock && *lock != NULL && *lockOwner)
-        { // pridame handle na 'lock' do HANDLES (disk-cache ho bude chtit uzavrit - bude ho hledat)
+        { // add handle to 'lock' to HANDLES (disk-cache will want to close it - it will be looking for it)
             HANDLES_ADD(__htEvent, __hoCreateEvent, *lock);
         }
     }
@@ -3724,12 +3724,12 @@ CPluginData::OpenFS(const char* fsName, int fsNameIndex)
     CALL_STACK_MESSAGE5("CPluginData::OpenFS(%s, %d) (%s v. %s)", fsName, fsNameIndex, DLLName, Version);
     CPluginFSInterfaceAbstract* ret = NULL;
     if (InitDLL(MainWindow->HWindow)
-        /*&& PluginIfaceForFS.NotEmpty()*/) // zbytecne, protoze downgrade neni mozny a InitDLL ifacy kontroluje
+        /*&& PluginIfaceForFS.NotEmpty()*/) // unnecessary, because downgrade is not possible and InitDLL ifacy checks
     {
         ret = PluginIfaceForFS.OpenFS(fsName, fsNameIndex);
 #ifdef _DEBUG
         if (ret != NULL)
-            OpenedFSCounter++; // zvysime OpenedFSCounter
+            OpenedFSCounter++; // increase OpenedFSCounter
 #endif
     }
     return ret;
@@ -3739,8 +3739,8 @@ void CPluginData::ExecuteChangeDriveMenuItem(int panel)
 {
     CALL_STACK_MESSAGE4("CPluginData::ExecuteChangeDriveMenuItem(%d) (%s v. %s)", panel, DLLName, Version);
     if (InitDLL(MainWindow->HWindow) &&
-        ChDrvMenuFSItemName != NULL         // pro pripad, ze by plug-in zrusil polozku prave pri tomto loadu
-        /*&& PluginIfaceForFS.NotEmpty()*/) // zbytecne, protoze downgrade neni mozny a InitDLL ifacy kontroluje
+        ChDrvMenuFSItemName != NULL         // in case the plug-in cancels the item right at this load
+        /*&& PluginIfaceForFS.NotEmpty()*/) // unnecessary, because downgrade is not possible and InitDLL ifacy checks
     {
         PluginIfaceForFS.ExecuteChangeDriveMenuItem(panel);
     }
@@ -3755,24 +3755,24 @@ BOOL CPluginData::ChangeDriveMenuItemContextMenu(HWND parent, int panel, int x, 
     CALL_STACK_MESSAGE9("CPluginData::ChangeDriveMenuItemContextMenu(, %d, %d, %d, , %s, %d, %d, , , ,) (%s v. %s)",
                         panel, x, y, pluginFSName, pluginFSNameIndex, isDetachedFS, DLLName, Version);
     if (InitDLL(parent) &&
-        (pluginFS != NULL || ChDrvMenuFSItemName != NULL) // pro pripad, ze by plug-in zrusil polozku prave pri tomto loadu
-        /*&& PluginIfaceForFS.NotEmpty()*/)               // zbytecne, protoze downgrade neni mozny a InitDLL ifacy kontroluje
+        (pluginFS != NULL || ChDrvMenuFSItemName != NULL) // in case the plug-in cancels the item right at this load
+        /*&& PluginIfaceForFS.NotEmpty()*/)               // unnecessary, because downgrade is not possible and InitDLL ifacy checks
     {
         return PluginIfaceForFS.ChangeDriveMenuItemContextMenu(parent, panel, x, y, pluginFS,
                                                                pluginFSName, pluginFSNameIndex,
                                                                isDetachedFS, refreshMenu,
                                                                closeMenu, postCmd, postCmdParam);
     }
-    return FALSE; // chyba, takze vratime "navratove parametry se maji ignorovat"
+    return FALSE; // error, so we return "return parameters should be ignored"
 }
 
 void CPluginData::EnsureShareExistsOnServer(HWND parent, int panel, const char* server, const char* share)
 {
     CALL_STACK_MESSAGE6("CPluginData::EnsureShareExistsOnServer(, %d, %s, %s) (%s v. %s)",
                         panel, server, share, DLLName, Version);
-    if (InitDLL(parent, TRUE) &&     // nechceme hlasit pripadne chyby pri loadu, EnsureShareExistsOnServer zajistuje jen doplnkove info (kdyz se nezavola, skoro nic se nestane)
-        PluginIsNethood &&           // pro pripad, ze by plugin prestal nahrazovat Network (nezavolal SetPluginIsNethood()) prave pri tomto loadu
-        PluginIfaceForFS.NotEmpty()) // PluginIsNethood nema vazbu na PluginIfaceForFS, tak ho zkontrolujeme zvlast
+    if (InitDLL(parent, TRUE) &&     // We don't want to report possible errors during loading, EnsureShareExistsOnServer provides only additional information (if not called, almost nothing will happen)
+        PluginIsNethood &&           // in case the plugin stops replacing Network (did not call SetPluginIsNethood()) right at this load
+        PluginIfaceForFS.NotEmpty()) // PluginIsNethood does not have a connection to PluginIfaceForFS, so we will check it separately
     {
         PluginIfaceForFS.EnsureShareExistsOnServer(panel, server, share);
     }
@@ -3782,9 +3782,9 @@ void CPluginData::GetCacheInfo(char* arcCacheTmpPath, BOOL* arcCacheOwnDelete, B
 {
     CALL_STACK_MESSAGE3("CPluginData::GetCacheInfo(, ,) (%s v. %s)", DLLName, Version);
     if (InitDLL(MainWindow->HWindow) &&
-        PluginIfaceForArchiver.NotEmpty()) // tato cast podminky je nejspis "always true"
+        PluginIfaceForArchiver.NotEmpty()) // this part of the condition is probably "always true"
     {
-        if (ArcCacheHaveInfo) // nastaveni mame zalohovane, uz nemusime plugin otravovat
+        if (ArcCacheHaveInfo) // we have the settings backed up, we don't have to bother with the plugin anymore
         {
             if (ArcCacheTmpPath != NULL)
                 strcpy(arcCacheTmpPath, ArcCacheTmpPath);
@@ -3796,8 +3796,8 @@ void CPluginData::GetCacheInfo(char* arcCacheTmpPath, BOOL* arcCacheOwnDelete, B
         else
         {
             if (!PluginIfaceForArchiver.GetCacheInfo(arcCacheTmpPath, arcCacheOwnDelete, arcCacheCacheCopies))
-            {                            // maji se pouzit std. hodnoty
-                ArcCacheHaveInfo = TRUE; // std. hodnoty jsou nastavene od InitDLL()
+            {                            // use standard values
+                ArcCacheHaveInfo = TRUE; // Default values are set from InitDLL()
                 arcCacheTmpPath[0] = 0;
                 *arcCacheOwnDelete = FALSE;
                 *arcCacheCacheCopies = TRUE;
@@ -3814,8 +3814,8 @@ void CPluginData::GetCacheInfo(char* arcCacheTmpPath, BOOL* arcCacheOwnDelete, B
                     else
                         TRACE_E(LOW_MEMORY);
                 }
-                ArcCacheOwnDelete = *arcCacheOwnDelete; // nastavuje se v kazdem pripade, duvod: metoda IsArchiverAndHaveOwnDelete()
-                if (l == 0 || p != NULL)                // pri nedostatku pameti nelze zalohovat nastaveni -> budeme plugin obtezovat vicekrat
+                ArcCacheOwnDelete = *arcCacheOwnDelete; // is set in any case, reason: method IsArchiverAndHaveOwnDelete()
+                if (l == 0 || p != NULL)                // When there is a lack of memory, it is not possible to back up the settings -> we will burden the plugin multiple times
                 {
                     ArcCacheHaveInfo = TRUE;
                     ArcCacheTmpPath = p;
@@ -3874,7 +3874,7 @@ CPluginData::CreateImageList(BOOL gray)
     else
         srcList = gray ? PluginIconsGray : PluginIcons;
     if (srcList == NULL)
-        return NULL; // plugin nema prirazenou bitmapu
+        return NULL; // plugin does not have an assigned bitmap
 
     HIMAGELIST ret = srcList->GetImageList();
     if (deleteSrcList)
@@ -3888,21 +3888,21 @@ void CPluginData::HotKeysMerge(TIndirectArray<CPluginMenuItem>* oldMenuItems)
     if (!oldMenuItems->IsGood())
         return;
 
-    // pokud stare menu melo nektere hot keys "dirty", preneseme je do noveho podle ID
+    // if the old menu had some hot keys "dirty", we will transfer them to the new one according to their ID
     int i;
     for (i = 0; i < oldMenuItems->Count; i++)
     {
         CPluginMenuItem* oldItem = oldMenuItems->At(i);
         if (oldItem->HotKey & HOTKEY_DIRTY)
         {
-            // nasli jsme dirty polozku, zkusime ji dohledat v novych ID
+            // We found a dirty item, we will try to locate it in the new IDs
             int j;
             for (j = 0; j < MenuItems.Count; j++)
             {
                 CPluginMenuItem* item = MenuItems[j];
                 if (item->ID == oldItem->ID)
                 {
-                    // preneseme hot key
+                    // transfer the hot key
                     item->HotKey = oldItem->HotKey;
                     break;
                 }
@@ -3925,24 +3925,24 @@ void CPluginData::HotKeysEnsureIntegrity()
         BOOL dirty = HOTKEY_GETDIRTY(item->HotKey);
         if (IsSalHotKey(hotKey))
         {
-            // horka klavesa nesmi patrit Salamanderu
+            // The hot key must not belong to the Salamander
             item->HotKey = 0;
             TRACE_E("CPluginData::HotKeysEnsureIntegrity() hot key is already assigned to Salamander; item:" << item->Name);
         }
         else
         {
-            // horka klavesa nesmi patrit jinemu pluginu
+            // Hotkey must not belong to another plugin
             int pluginIndex;
             int menuItemIndex;
             if (Plugins.FindHotKey(hotKey, TRUE, this, &pluginIndex, &menuItemIndex))
             {
-                if (dirty) // pokud mame predefinovanou hot key, sestrelime ji radeji u konkurenta
+                if (dirty) // if we have a predefined hot key, we prefer to shoot it down at the competitor
                     Plugins.Get(pluginIndex)->MenuItems[menuItemIndex]->HotKey = 0;
                 else
                     item->HotKey = 0;
             }
         }
-        // v ramci jednoho menu se nesmi horka klavesa opakovat
+        // Within one menu, the hotkey must not be repeated
         if (item->HotKey != 0)
         {
             int j;

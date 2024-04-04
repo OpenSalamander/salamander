@@ -4,7 +4,7 @@
 #include "precomp.h"
 
 #include <shlwapi.h>
-#undef PathIsPrefix // jinak kolize s CSalamanderGeneral::PathIsPrefix
+#undef PathIsPrefix // otherwise collision with CSalamanderGeneral::PathIsPrefix
 
 #include "cfgdlg.h"
 #include "mainwnd.h"
@@ -23,29 +23,29 @@ extern "C"
 }
 #include "salshlib.h"
 
-// !!! nepouzivat primo StdColumnsPrivate, pouzivat GetStdColumn()
+// !!! do not use StdColumnsPrivate directly, use GetStdColumn() instead
 CColumDataItem StdColumnsPrivate[STANDARD_COLUMNS_COUNT] =
     {
-        // Flag,                  Name,                    Description,             GetText function,   Sort, Left, ID
+        // Flag, Name, Description, GetText function, Sort, Left, ID
         /*0*/ {0, IDS_COLUMN_NAME_NAME, IDS_COLUMN_DESC_NAME, NULL, 1, 1, COLUMN_ID_NAME},
         /*1*/ {VIEW_SHOW_EXTENSION, IDS_COLUMN_NAME_EXT, IDS_COLUMN_DESC_EXT, NULL, 1, 1, COLUMN_ID_EXTENSION},
         /*2*/ {VIEW_SHOW_DOSNAME, IDS_COLUMN_NAME_DOSNAME, IDS_COLUMN_DESC_DOSNAME, InternalGetDosName, 0, 1, COLUMN_ID_DOSNAME},
         /*3*/ {VIEW_SHOW_SIZE, IDS_COLUMN_NAME_SIZE, IDS_COLUMN_DESC_SIZE, InternalGetSize, 1, 0, COLUMN_ID_SIZE},
         /*4*/ {VIEW_SHOW_TYPE, IDS_COLUMN_NAME_TYPE, IDS_COLUMN_DESC_TYPE, InternalGetType, 0, 1, COLUMN_ID_TYPE},
-        /*5*/ {VIEW_SHOW_DATE, IDS_COLUMN_NAME_DATE, IDS_COLUMN_DESC_DATE, NULL /* viz nize */, 1, 0, COLUMN_ID_DATE},
-        /*6*/ {VIEW_SHOW_TIME, IDS_COLUMN_NAME_TIME, IDS_COLUMN_DESC_TIME, NULL /* viz nize */, 1, 0, COLUMN_ID_TIME},
+        /*5*/ {VIEW_SHOW_DATE, IDS_COLUMN_NAME_DATE, IDS_COLUMN_DESC_DATE, NULL /* see below*/, 1, 0, COLUMN_ID_DATE},
+        /*6*/ {VIEW_SHOW_TIME, IDS_COLUMN_NAME_TIME, IDS_COLUMN_DESC_TIME, NULL /* see below*/, 1, 0, COLUMN_ID_TIME},
         /*7*/ {VIEW_SHOW_ATTRIBUTES, IDS_COLUMN_NAME_ATTR, IDS_COLUMN_DESC_ATTR, InternalGetAttr, 1, 0, COLUMN_ID_ATTRIBUTES},
         /*8*/ {VIEW_SHOW_DESCRIPTION, IDS_COLUMN_NAME_DESC, IDS_COLUMN_DESC_DESC, InternalGetDescr, 0, 1, COLUMN_ID_DESCRIPTION},
 };
 
 CColumDataItem* GetStdColumn(int i, BOOL isDisk)
 {
-    if (i == 5 /* date */)
-        StdColumnsPrivate[5].GetText = isDisk ? InternalGetDateOnlyForDisk : InternalGetDate; // na disku pouzivame 1.1.1602 0:00:00.000 jako prazdnou hodnotu (prazdne misto ve sloupci v panelu)
+    if (i == 5 /* date*/)
+        StdColumnsPrivate[5].GetText = isDisk ? InternalGetDateOnlyForDisk : InternalGetDate; // On disk, we use 1.1.1602 0:00:00.000 as an empty value (empty space in a column in the panel)
     else
     {
-        if (i == 6 /* time */)
-            StdColumnsPrivate[6].GetText = isDisk ? InternalGetTimeOnlyForDisk : InternalGetTime; // na disku pouzivame 1.1.1602 0:00:00.000 jako prazdnou hodnotu (prazdne misto ve sloupci v panelu)
+        if (i == 6 /* time*/)
+            StdColumnsPrivate[6].GetText = isDisk ? InternalGetTimeOnlyForDisk : InternalGetTime; // On disk, we use 1.1.1602 0:00:00.000 as an empty value (empty space in a column in the panel)
     }
     return &StdColumnsPrivate[i];
 }
@@ -84,8 +84,8 @@ BOOL SafeInvokeCommand(IContextMenu2* menu, CMINVOKECOMMANDINFO& ici)
 {
     CALL_STACK_MESSAGE_NONE
 
-    // docasne snizime prioritu threadu, aby nam nejaka zmatena shell extension nesezrala CPU
-    HANDLE hThread = GetCurrentThread(); // pseudo-handle, neni treba uvolnovat
+    // temporarily lower the priority of the thread so that some confused shell extension does not eat up the CPU
+    HANDLE hThread = GetCurrentThread(); // pseudo-handle, no need to release
     int oldThreadPriority = GetThreadPriority(hThread);
     SetThreadPriority(hThread, THREAD_PRIORITY_NORMAL);
 
@@ -107,14 +107,14 @@ BOOL CFilesWindow::ClipboardPaste(BOOL onlyLinks, BOOL onlyTest, const char* pas
 {
     CALL_STACK_MESSAGE4("CFilesWindow::ClipboardPaste(%d, %d, %s)", onlyLinks, onlyTest, pastePath);
     IDataObject* dataObj;
-    BOOL files = FALSE;       // zjistime jestli data na clipboardu jsou vubec soubory
-    BOOL filesOnClip = FALSE; // je na clipboardu neco naseho k "paste" souboru/adresaru?
+    BOOL files = FALSE;       // Check if the data on the clipboard are actually files
+    BOOL filesOnClip = FALSE; // Is there something of ours on the clipboard to "paste" into a file/directory?
                               //  TRACE_I("CFilesWindow::ClipboardPaste() called: " << (onlyLinks ? "links " : "") <<
                               //          (onlyTest ? "test " : "") << (pastePath != NULL ? pastePath : "(null)"));
     if (OleGetClipboard(&dataObj) == S_OK && dataObj != NULL)
     {
         if (!onlyLinks && !onlyTest && IsFakeDataObject(dataObj, NULL, NULL, 0) && SalShExtSharedMemView != NULL)
-        { // Salamanderovsky "fake" data object na clipboardu -> paste souboru/adresaru z archivu
+        { // Salamaner-like "fake" data object on clipboard -> paste file/directory from archive
             BOOL pasteFromOurData = FALSE;
             WaitForSingleObject(SalShExtSharedMemMutex, INFINITE);
             if (SalShExtSharedMemView->DoPasteFromSalamander &&
@@ -123,7 +123,7 @@ BOOL CFilesWindow::ClipboardPaste(BOOL onlyLinks, BOOL onlyTest, const char* pas
                 SalShExtSharedMemView->PastedDataID == SalShExtPastedData.GetDataID())
             {
                 pasteFromOurData = TRUE;
-                SalShExtSharedMemView->ClipDataObjLastGetDataTime = GetTickCount() - 60000; // pod W2K+ uz asi neni potreba: cas posledniho GetData() nastavime o minutu zpatky, aby pripadny nasledny Release data-objektu probehl hladce
+                SalShExtSharedMemView->ClipDataObjLastGetDataTime = GetTickCount() - 60000; // Under W2K+, it is probably no longer necessary: we will set the time of the last GetData() back by a minute so that any subsequent Release of the data object runs smoothly
             }
             ReleaseMutex(SalShExtSharedMemMutex);
 
@@ -147,36 +147,36 @@ BOOL CFilesWindow::ClipboardPaste(BOOL onlyLinks, BOOL onlyTest, const char* pas
                 else
                     TRACE_E("OpenClipboard() has failed!");
                 SalShExtPastedData.SetLock(TRUE);
-                dataObj->Release(); // jeste zustava jedna instance na clipboardu
+                dataObj->Release(); // there is still one instance left on the clipboard
                 pasteEffect &= DROPEFFECT_COPY | DROPEFFECT_MOVE;
                 if (pasteEffect == DROPEFFECT_COPY || pasteEffect == DROPEFFECT_MOVE)
                 {
-                    // move po sobe cisti clipboard (cut&paste), clipboard uvolnime jeste pred spustenim
-                    // samotne operace, aby ho mohly jine aplikace pouzivat pro dalsi prenosy dat
+                    // move cleans the clipboard after itself (cut & paste), we will release the clipboard even before starting
+                    // the operations themselves so that other applications can use it for further data transfers
                     if (pasteEffect == DROPEFFECT_MOVE)
                         OleSetClipboard(NULL);
 
-                    // provedeme samotny Paste
+                    // perform the Paste operation alone
                     SalShExtPastedData.DoPasteOperation(pasteEffect == DROPEFFECT_COPY,
                                                         pastePath != NULL ? pastePath : GetPath());
 
-                    FocusFirstNewItem = TRUE; // pokud to bude jeden novy soubor, at ho fokus najde
+                    FocusFirstNewItem = TRUE; // if it's a new file, let the focus find it
                     if (pasteEffect != DROPEFFECT_COPY)
                     {
-                        IdleRefreshStates = TRUE;  // pri pristim Idle vynutime kontrolu stavovych promennych
-                        IdleCheckClipboard = TRUE; // nechame kontrolovat take clipboard
+                        IdleRefreshStates = TRUE;  // During the next Idle, we will force the check of status variables
+                        IdleCheckClipboard = TRUE; // we will also check the clipboard
                     }
                 }
                 else
                     TRACE_E("Paste: unexpected paste-effect: " << pasteEffect);
 
                 SalShExtPastedData.SetLock(FALSE);
-                PostMessage(MainWindow->HWindow, WM_USER_SALSHEXT_TRYRELDATA, 0, 0); // po odemceni pripadne provedeme uvolneni dat
+                PostMessage(MainWindow->HWindow, WM_USER_SALSHEXT_TRYRELDATA, 0, 0); // after unlocking, we may release the data if necessary
                 return TRUE;
             }
         }
 
-        BOOL ownRutine = FALSE; // jsme to schopni udelat sami?
+        BOOL ownRutine = FALSE; // Are we able to do it ourselves?
         IEnumFORMATETC* enumFormat;
         UINT cfIdList = RegisterClipboardFormat(CFSTR_SHELLIDLIST);
         UINT cfFileContent = RegisterClipboardFormat(CFSTR_FILECONTENTS);
@@ -187,7 +187,7 @@ BOOL CFilesWindow::ClipboardPaste(BOOL onlyLinks, BOOL onlyTest, const char* pas
             while (enumFormat->Next(1, &formatEtc, NULL) == S_OK)
             {
                 if (formatEtc.cfFormat == cfIdList ||
-                    formatEtc.cfFormat == cfFileContent && !onlyLinks) // obsah souboru (uklada se pri Copy z Windows Mobile (WinCE)) - neumi delat shortcuty (na obsah souboru to neni dost dobre mozne)
+                    formatEtc.cfFormat == cfFileContent && !onlyLinks) // file contents (saved during Copy from Windows Mobile (WinCE)) - cannot create shortcuts (not easily possible for file contents)
                 {
                     files = TRUE;
                 }
@@ -199,13 +199,13 @@ BOOL CFilesWindow::ClipboardPaste(BOOL onlyLinks, BOOL onlyTest, const char* pas
 
         BOOL ourClipDataObject = FALSE;
         DWORD effect = 0;
-        if (ownRutine) // pokud je nadeje na vlastni provedeni, zjistime jestli jde o copy nebo move
+        if (ownRutine) // if there is hope for self-execution, we will determine whether it is a copy or a move
         {
             DWORD dropEffect = 0;
             UINT cfPrefDrop = RegisterClipboardFormat(CFSTR_PREFERREDDROPEFFECT);
             UINT cfSalDataObject = RegisterClipboardFormat(SALCF_IDATAOBJECT);
             if (onlyLinks || onlyTest)
-                ownRutine = FALSE; // linky neumime a testu neni treba
+                ownRutine = FALSE; // We don't know how to link and testing is not needed
 
             if (OpenClipboard(HWindow))
             {
@@ -225,7 +225,7 @@ BOOL CFilesWindow::ClipboardPaste(BOOL onlyLinks, BOOL onlyTest, const char* pas
                 if (GetClipboardData(cfSalDataObject) != NULL)
                     ourClipDataObject = TRUE;
                 else
-                    ownRutine = FALSE; // pokud to neni nas IDataObject, neprovedeme vlastni operaci
+                    ownRutine = FALSE; // if it is not our IDataObject, we will not perform our own operation
                 CloseClipboard();
             }
             else
@@ -235,12 +235,12 @@ BOOL CFilesWindow::ClipboardPaste(BOOL onlyLinks, BOOL onlyTest, const char* pas
             {
                 effect = (dropEffect & (DROPEFFECT_COPY | DROPEFFECT_MOVE));
                 if (effect == 0)
-                    ownRutine = FALSE; // ani copy, ani move - neumime nic jineho
+                    ownRutine = FALSE; // neither copy nor move - we don't know anything else
             }
         }
         filesOnClip = files && ourClipDataObject;
 
-        if (ownRutine) // provedeme vlastni rutinu - copy nebo move
+        if (ownRutine) // we will perform our own routine - copy or move
         {
             if (pastePath != NULL)
                 strcpy(DropPath, pastePath);
@@ -263,7 +263,7 @@ BOOL CFilesWindow::ClipboardPaste(BOOL onlyLinks, BOOL onlyTest, const char* pas
                 effect = eff;
                 dropTarget->Drop(dataObj, 0, pt, &eff);
 
-                FocusFirstNewItem = TRUE; // pokud to bude jeden novy soubor, at ho fokus najde
+                FocusFirstNewItem = TRUE; // if it's a new file, let the focus find it
 
                 dropTarget->Release();
                 OurClipDataObject = FALSE;
@@ -280,18 +280,18 @@ BOOL CFilesWindow::ClipboardPaste(BOOL onlyLinks, BOOL onlyTest, const char* pas
 
                 if (effect != DROPEFFECT_COPY)
                 {
-                    IdleRefreshStates = TRUE;  // pri pristim Idle vynutime kontrolu stavovych promennych
-                    IdleCheckClipboard = TRUE; // nechame kontrolovat take clipboard
+                    IdleRefreshStates = TRUE;  // During the next Idle, we will force the check of status variables
+                    IdleCheckClipboard = TRUE; // we will also check the clipboard
                 }
 
-                // refresh panelu se provede v DropCopyMove
+                // Refresh of the panel is done in DropCopyMove
             }
         }
         else
         {
-            if (files && !onlyTest) // provedeme paste/pastelink
+            if (files && !onlyTest) // perform paste/pastelink
             {
-                //        MainWindow->ReleaseMenuNew();  // Windows nejsou staveny na vic kontextovych menu
+                //        MainWindow->ReleaseMenuNew();  // Windows are not built for multiple context menus
 
                 IContextMenu2* menu = CreateIContextMenu2(MainWindow->HWindow, GetPath());
                 if (menu != NULL)
@@ -313,37 +313,37 @@ BOOL CFilesWindow::ClipboardPaste(BOOL onlyLinks, BOOL onlyTest, const char* pas
                     ici.hIcon = 0;
 
                     if (onlyLinks)
-                        PasteLinkIsRunning++; // radeji budu pocitat s konkurovanim si vice threadu
+                        PasteLinkIsRunning++; // I'd rather count on competing with more threads
 
                     SafeInvokeCommand(menu, ici);
 
                     if (onlyLinks && PasteLinkIsRunning > 0)
                         PasteLinkIsRunning--;
 
-                    IdleRefreshStates = TRUE;  // pri pristim Idle vynutime kontrolu stavovych promennych
-                    IdleCheckClipboard = TRUE; // nechame kontrolovat take clipboard
+                    IdleRefreshStates = TRUE;  // During the next Idle, we will force the check of status variables
+                    IdleCheckClipboard = TRUE; // we will also check the clipboard
 
-                    FocusFirstNewItem = TRUE; // pokud to bude jeden novy soubor, at ho fokus najde
+                    FocusFirstNewItem = TRUE; // if it's a new file, let the focus find it
 
                     menu->Release();
                     OurClipDataObject = FALSE;
                 }
 
-                //---  refresh neautomaticky refreshovanych adresaru
-                // zdrojovy adresar (dulezity u "move") nezname, budeme spolehat na refresh pri
-                // aktivaci hl. okna (u "copy" a "move" je, u "pastelink" neni);
-                // diky spousteni operace v jinem threadu neni sance zajistit korektni refresh,
-                // takze aspon jeden postneme, treba zabere...;
-                // 1/10 sekundy na provedeni operace nebo aspon jeji casti
+                //--- refresh non-automatically refreshed directories
+                // source directory (important for "move") is unknown, we will rely on refresh when
+                // activation of the main window (is present for "copy" and "move", not present for "paste link");
+                // Thanks to running the operation in another thread, there is no chance to ensure correct refresh,
+                // so at least one of us will post, maybe it will work...;
+                // 1/10 second to perform the operation or at least its part
                 Sleep(100);
-                // ohlasime zmenu v cilovem adresari a v jeho podadresarich
+                // we will report a change in the target directory and its subdirectories
                 MainWindow->PostChangeOnPathNotification(GetPath(), TRUE);
-                // postneme refreshe do obou panelu (pokud nejsou auto-refreshovane - tedy do panelu
-                // s FS to nedojde)
+                // we will post the refresh to both panels (if they are not auto-refreshed - that is, to the panel
+                // with FS it won't be enough)
                 if (!MainWindow->LeftPanel->AutomaticRefresh || !MainWindow->RightPanel->AutomaticRefresh)
                 {
-                    // dalsi 1/3 sekundy na provedeni operace nebo aspon jeji casti; aspon jeden panel
-                    // je nerefreshovany - "vyplati" se utracet cas usera
+                    // another 1/3 second to perform the operation or at least part of it; at least one panel
+                    // is not refreshed - "worth" spending user's time
                     Sleep(300);
 
                     HANDLES(EnterCriticalSection(&TimeCounterSection));
@@ -412,11 +412,11 @@ BOOL CFilesWindow::ClipboardPasteToArcOrFS(BOOL onlyTest, DWORD* pasteDefEffect)
             if (namesList == NULL)
                 TRACE_E(LOW_MEMORY);
         }
-        if (IsSimpleSelection(dataObj, namesList)) // zjistime jestli jde o soubory/adresare z disku a zaroven jestli jsou z jedne cesty
+        if (IsSimpleSelection(dataObj, namesList)) // we will determine if they are files/directories from the disk and at the same time if they are from one path
         {
             ret = TRUE;
-            // zjistime jestli jde o copy nebo move
-            DWORD dropEffect = DROPEFFECT_COPY | DROPEFFECT_MOVE; // pokud nezjistime effect, bereme implicitne oba (prioritne se pouzije Copy)
+            // we will determine whether it is a copy or a move
+            DWORD dropEffect = DROPEFFECT_COPY | DROPEFFECT_MOVE; // if we do not detect the effect, we implicitly take both (Copy will be used by default)
             UINT cfPrefDrop = RegisterClipboardFormat(CFSTR_PREFERREDDROPEFFECT);
             if (OpenClipboard(HWindow))
             {
@@ -438,23 +438,23 @@ BOOL CFilesWindow::ClipboardPasteToArcOrFS(BOOL onlyTest, DWORD* pasteDefEffect)
             if (pasteDefEffect != NULL)
                 *pasteDefEffect = dropEffect;
 
-            if (!onlyTest && namesList != NULL) // pokus nejde jen o test, provedeme pozadovanou operaci
+            if (!onlyTest && namesList != NULL) // attempt is not just a test, we will perform the desired operation
             {
                 BOOL moveOper = FALSE;
-                if (Is(ptZIPArchive)) // Paste do archivu
+                if (Is(ptZIPArchive)) // Paste into archive
                 {
                     int format = PackerFormatConfig.PackIsArchive(GetZIPArchive());
-                    if (format != 0 &&                               // nasli jsme podporovany archiv
-                        PackerFormatConfig.GetUsePacker(format - 1)) // ma edit?
+                    if (format != 0 &&                               // We found a supported archive
+                        PackerFormatConfig.GetUsePacker(format - 1)) // edit?
                     {
                         if (dropEffect == (DROPEFFECT_COPY | DROPEFFECT_MOVE))
-                            dropEffect = DROPEFFECT_COPY; // Copy ma prioritu (je bezpecnejsi)
+                            dropEffect = DROPEFFECT_COPY; // Copy has priority (it is safer)
                         if (dropEffect != 0)
                         {
                             DoDragDropOper(dropEffect == DROPEFFECT_COPY, TRUE, GetZIPArchive(),
                                            GetZIPPath(), namesList, this);
-                            namesList = NULL;         // DoDragDropOper ho necha dealokovat, tady uz to delat nebudeme
-                            FocusFirstNewItem = TRUE; // pokud to bude jeden novy soubor, at ho fokus najde
+                            namesList = NULL;         // DoDragDropOper deallocates it, we won't do it here anymore
+                            FocusFirstNewItem = TRUE; // if it's a new file, let the focus find it
                             moveOper = dropEffect == DROPEFFECT_MOVE;
                         }
                         else
@@ -463,7 +463,7 @@ BOOL CFilesWindow::ClipboardPasteToArcOrFS(BOOL onlyTest, DWORD* pasteDefEffect)
                 }
                 else
                 {
-                    if (Is(ptPluginFS) && GetPluginFS()->NotEmpty()) // Paste na FS
+                    if (Is(ptPluginFS) && GetPluginFS()->NotEmpty()) // Copy to file system
                     {
                         if ((dropEffect & DROPEFFECT_COPY) &&
                             GetPluginFS()->IsServiceSupported(FS_SERVICE_COPYFROMDISKTOFS))
@@ -487,8 +487,8 @@ BOOL CFilesWindow::ClipboardPasteToArcOrFS(BOOL onlyTest, DWORD* pasteDefEffect)
                             {
                                 DoDragDropOper(dropEffect == DROPEFFECT_COPY, FALSE, GetPluginFS()->GetPluginFSName(),
                                                userPart, namesList, this);
-                                namesList = NULL;         // DoDragDropOper ho necha dealokovat, tady uz to delat nebudeme
-                                FocusFirstNewItem = TRUE; // pokud to bude jeden novy soubor, at ho fokus najde
+                                namesList = NULL;         // DoDragDropOper deallocates it, we won't do it here anymore
+                                FocusFirstNewItem = TRUE; // if it's a new file, let the focus find it
                                 moveOper = dropEffect == DROPEFFECT_MOVE;
                             }
                             else
@@ -498,7 +498,7 @@ BOOL CFilesWindow::ClipboardPasteToArcOrFS(BOOL onlyTest, DWORD* pasteDefEffect)
                             TRACE_E("CFilesWindow::ClipboardPasteToArcOrFS(): unexpected paste-effect!");
                     }
                 }
-                if (moveOper) // Cut & Paste: musime vycistit clipboard
+                if (moveOper) // Cut & Paste: we need to clear the clipboard
                 {
                     if (OpenClipboard(HWindow))
                     {
@@ -507,8 +507,8 @@ BOOL CFilesWindow::ClipboardPasteToArcOrFS(BOOL onlyTest, DWORD* pasteDefEffect)
                     }
                     else
                         TRACE_E("OpenClipboard() has failed!");
-                    IdleRefreshStates = TRUE;  // pri pristim Idle vynutime kontrolu stavovych promennych
-                    IdleCheckClipboard = TRUE; // nechame kontrolovat take clipboard
+                    IdleRefreshStates = TRUE;  // During the next Idle, we will force the check of status variables
+                    IdleCheckClipboard = TRUE; // we will also check the clipboard
                 }
             }
         }
@@ -563,7 +563,7 @@ BOOL CFilesWindow::IsTextOnClipboard()
         else
         {
             if (attempt++ <= 10)
-                Sleep(10); // pockame jestli se clipboard neuvolni (max. 100 ms)
+                Sleep(10); // wait for the clipboard to be released (max. 100 ms)
             else
             {
                 TRACE_E("OpenClipboard() has failed!");
@@ -577,15 +577,15 @@ BOOL CFilesWindow::IsTextOnClipboard()
 BOOL CFilesWindow::PostProcessPathFromUser(HWND parent, char (&buff)[2 * MAX_PATH])
 {
     if (!IsFileURLPath(buff) && IsPluginFSPath(buff))
-        return TRUE; // zpracovani nechame na pluginu s FS
+        return TRUE; // processing will be left to the FS plugin
 
-    // orizneme mezery na zacatku a na konci
+    // trim spaces at the beginning and at the end
     CutSpacesFromBothSides(buff);
 
-    // orizneme uvozovky, viz https://forum.altap.cz/viewtopic.php?t=4160
+    // We will remove the quotation marks, see https://forum.altap.cz/viewtopic.php?t=4160
     CutDoubleQuotesFromBothSides(buff);
 
-    if (IsFileURLPath(buff)) // je to URL: prevedeme URL (file://) na wokeni cestu
+    if (IsFileURLPath(buff)) // it's a URL: we will convert the URL (file://) to a Windows path
     {
         char path[MAX_PATH];
         DWORD pathLen = _countof(path);
@@ -602,11 +602,11 @@ BOOL CFilesWindow::PostProcessPathFromUser(HWND parent, char (&buff)[2 * MAX_PAT
     else
     {
         if (IsPluginFSPath(buff))
-            return TRUE; // zpracovani nechame na pluginu s FS
+            return TRUE; // processing will be left to the FS plugin
     }
 
-    // expandujeme ENV promenne (na cetne zadosti na foru i pro nase potreby)
-    // pokud ENV promenna neexistuje, dostane prilezitost stejnojmenny adresar
+    // expanding ENV variables (due to numerous requests on the forum and for our own needs)
+    // if the ENV variable does not exist, it will have the opportunity to create a directory with the same name
     char expandedBuff[_countof(buff) + 1];
     DWORD auxRes = ExpandEnvironmentStrings(buff, expandedBuff, _countof(expandedBuff));
     if (auxRes == 0 || auxRes > _countof(buff))
@@ -638,25 +638,25 @@ void CFilesWindow::ClipboardPastePath()
             if (pathW != NULL)
             {
                 while (*pathW != 0 && *pathW <= L' ')
-                    pathW++; // orizneme mezery+CR+LF pred cestou
+                    pathW++; // Trim spaces+CR+LF before the path
                 if (ConvertU2A(pathW, -1, buff, _countof(buff)))
                     changePath = TRUE;
                 else
                 {
                     if (buff[0] != 0 && GetLastError() == ERROR_INSUFFICIENT_BUFFER)
-                        changePath = TRUE; // maly buffer, neresime (stejne jako ANSI varianta)
+                        changePath = TRUE; // small buffer, not handled (same as ANSI version)
                 }
                 HANDLES(GlobalUnlock(handle));
             }
         }
-        if (!changePath) // asi neni unicode, zkusime ANSI (kdyz unicode je, byva ANSI rozbite - bez diakritiky)
+        if (!changePath) // probably not unicode, let's try ANSI (if it's unicode, ANSI is often broken - without diacritics)
         {
             handle = GetClipboardData(CF_TEXT);
             char* path = (char*)HANDLES(GlobalLock(handle));
             if (path != NULL)
             {
                 while (*path != 0 && *path <= ' ')
-                    path++; // orizneme mezery+CR+LF pred cestou
+                    path++; // Trim spaces+CR+LF before the path
                 lstrcpyn(buff, path, _countof(buff));
 
                 changePath = TRUE;
@@ -668,13 +668,13 @@ void CFilesWindow::ClipboardPastePath()
     else
         TRACE_E("OpenClipboard() has failed!");
     if (changePath && PostProcessPathFromUser(HWindow, buff))
-        ChangeDir(buff); // zmenim cestu
+        ChangeDir(buff); // change path
 }
 
 void CFilesWindow::ChangeFilter(BOOL disable)
 {
     CALL_STACK_MESSAGE1("CFilesWindow::ChangeFilter()");
-    BeginStopRefresh(); // zadne refreshe nepotrebujeme
+    BeginStopRefresh(); // we do not need any refreshes
     if (disable || CFilterDialog(HWindow, &Filter, Configuration.FilterHistory, &FilterEnabled /*, &FilterInverse*/).Execute() == IDOK)
     {
         if (disable)
@@ -696,14 +696,14 @@ void CFilesWindow::ChangeFilter(BOOL disable)
 BOOL CFilesWindow::OnLButtonDown(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
 {
     CALL_STACK_MESSAGE_NONE
-    KillQuickRenameTimer(); // zamezime pripadnemu otevreni QuickRenameWindow
+    KillQuickRenameTimer(); // prevent possible opening of QuickRenameWindow
     LButtonDown.x = LOWORD(lParam);
     LButtonDown.y = HIWORD(lParam);
     LButtonDownTime = GetTickCount();
     DragBoxLeft = 1;
     FocusedSinceClick = FALSE;
 
-    BOOL noBeginDrag = FALSE; // user tahne levym tlacitkem a prida prave
+    BOOL noBeginDrag = FALSE; // user clicks with the left button and adds with the right
     if (BeginDragDrop)
     {
         noBeginDrag = TRUE;
@@ -716,9 +716,9 @@ BOOL CFilesWindow::OnLButtonDown(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
         noBeginDrag = TRUE;
     }
 
-    // kompatibilita s Windows Explorerem: kliknuti mimo (do aktivniho i neaktivniho panelu)
-    // znamena potvrzeni prejmenovni; jine akce (Alt+Tab) povazujeme (narozdil od Explorera)
-    // za storno prejmenovani
+    // Compatibility with Windows Explorer: clicking outside (in active and inactive panel)
+    // means renaming confirmation; we consider other actions (Alt+Tab) (unlike Explorer)
+    // for cancellation of renaming
     if (!MainWindow->DoQuickRename())
     {
         *lResult = 0;
@@ -756,7 +756,7 @@ BOOL CFilesWindow::OnLButtonDown(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
                     int last = index;
                     if (first != last)
                     {
-                        // skupinove odznaceni / oznaceni podle polozky sejmute pri stisku Shift
+                        // Group marking / marking by item removed when Shift is pressed
                         SetSelRange(SelectItems, first, last);
                     }
                     FocusedSinceClick = (index == FocusedIndex);
@@ -765,7 +765,7 @@ BOOL CFilesWindow::OnLButtonDown(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
                     if (first != last)
                         RepaintListBox(DRAWFLAG_DIRTY_ONLY | DRAWFLAG_SKIP_VISTEST);
                 }
-                else // ctrl+lbutton -> norml. sel.
+                else // ctrl+lbutton -> normal selection.
                 {
                     BOOL select = GetSel(index);
                     SetSel(!select, index);
@@ -777,7 +777,7 @@ BOOL CFilesWindow::OnLButtonDown(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
             }
             if (index == 0 && index < Dirs->Count && strcmp(Dirs->At(0).Name, "..") == 0)
             {
-                // hack pro UpDir, kde chceme umoznit tazeni klece (d&d stejne nema vyznam)
+                // hack for UpDir, where we want to allow dragging the cage (d&d doesn't make sense anyway)
                 if (GetFocus() != GetListBoxHWND())
                     MainWindow->FocusPanel(this);
                 if (!noBeginDrag)
@@ -878,7 +878,7 @@ BOOL CFilesWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
 BOOL CFilesWindow::OnLButtonDblclk(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
 {
     CALL_STACK_MESSAGE_NONE
-    KillQuickRenameTimer(); // zamezime pripadnemu otevreni QuickRenameWindow
+    KillQuickRenameTimer(); // prevent possible opening of QuickRenameWindow
     FocusedSinceClick = FALSE;
     MainWindow->CancelPanelsUI(); // cancel QuickSearch and QuickEdit
     if (GetFocus() != GetListBoxHWND())
@@ -907,11 +907,11 @@ BOOL CFilesWindow::OnLButtonDblclk(WPARAM wParam, LPARAM lParam, LRESULT* lResul
 BOOL CFilesWindow::OnRButtonDown(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
 {
     CALL_STACK_MESSAGE_NONE
-    KillQuickRenameTimer(); // zamezime pripadnemu otevreni QuickRenameWindow
+    KillQuickRenameTimer(); // prevent possible opening of QuickRenameWindow
     BOOL selecting = ((GetKeyState(VK_CONTROL) & 0x8000) != 0) ^
                      (Configuration.PrimaryContextMenu == FALSE);
 
-    BOOL noBeginDrag = FALSE; // user tahne levym tlacitkem a prida prave
+    BOOL noBeginDrag = FALSE; // user clicks with the left button and adds with the right
     if (BeginDragDrop)
     {
         noBeginDrag = TRUE;
@@ -952,7 +952,7 @@ BOOL CFilesWindow::OnRButtonDown(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
                     int last = index;
                     if (first != last)
                     {
-                        // skupinove odznaceni / oznaceni podle prvni polozky
+                        // group identification / identification based on the first item
                         SetSelRange(!GetSel(first), first, last);
                     }
                     SetCaretIndex(last, TRUE, TRUE);
@@ -975,7 +975,7 @@ BOOL CFilesWindow::OnRButtonDown(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
             {
                 if (index == 0 && index < Dirs->Count && strcmp(Dirs->At(0).Name, "..") == 0)
                 {
-                    // hack pro UpDir, kde chceme umoznit tazeni klece (d&d stejne nema vyznam)
+                    // hack for UpDir, where we want to allow dragging the cage (d&d doesn't make sense anyway)
                     if (GetFocus() != GetListBoxHWND())
                         MainWindow->FocusPanel(this);
                     if (!noBeginDrag)
@@ -1008,7 +1008,7 @@ BOOL CFilesWindow::OnRButtonDown(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
 BOOL CFilesWindow::OnRButtonUp(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
 {
     CALL_STACK_MESSAGE_NONE
-    KillQuickRenameTimer(); // zamezime pripadnemu otevreni QuickRenameWindow
+    KillQuickRenameTimer(); // prevent possible opening of QuickRenameWindow
     int x = LOWORD(lParam);
     int y = HIWORD(lParam);
     int index = GetIndex(x, y);
@@ -1031,7 +1031,7 @@ BOOL CFilesWindow::OnRButtonUp(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
     {
         ScrollObject.EndScroll();
         ReleaseCapture();
-        KillTimer(GetListBoxHWND(), IDT_SCROLL); // mohl by byt nahozeny
+        KillTimer(GetListBoxHWND(), IDT_SCROLL); // could be thrown
         DragSelect = FALSE;
     }
     if (DragBox)
@@ -1053,12 +1053,12 @@ BOOL CFilesWindow::OnRButtonUp(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
         {
             SetCaretIndex(index, TRUE);
 
-            if (GetSelCount() > 0) // existuje oznaceni?
+            if (GetSelCount() > 0) // Is there a label?
             {
                 if (index < Dirs->Count && !Dirs->At(index).Selected ||
                     index >= Dirs->Count && !Files->At(index - Dirs->Count).Selected)
-                {                                                   // test jestli kliknul v oznaceni (jinak musime zrusit oznaceni)
-                    SetSel(FALSE, -1, TRUE);                        // explicitni prekresleni
+                {                                                   // test if clicked in selection (otherwise we need to cancel the selection)
+                    SetSel(FALSE, -1, TRUE);                        // explicit override
                     PostMessage(HWindow, WM_USER_SELCHANGED, 0, 0); // sel-change notify
                     UpdateWindow(MainWindow->HWindow);
                 }
@@ -1069,29 +1069,29 @@ BOOL CFilesWindow::OnRButtonUp(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
         }
         else
         {
-            if (GetSelCount() > 0) // musime zrusit oznaceni (toto menu je pro panel - kliknuti za polozkami)
+            if (GetSelCount() > 0) // We need to remove the label (this menu is for the panel - click behind the items)
             {
-                SetSel(FALSE, -1, TRUE);                        // explicitni prekresleni
+                SetSel(FALSE, -1, TRUE);                        // explicit override
                 PostMessage(HWindow, WM_USER_SELCHANGED, 0, 0); // sel-change notify
                 UpdateWindow(MainWindow->HWindow);
             }
 
             UserWorkedOnThisPath = TRUE;
-            ShellAction(this, saContextMenu, FALSE, TRUE, TRUE); // menu jen pro panel (kliknuti za polozkami)
+            ShellAction(this, saContextMenu, FALSE, TRUE, TRUE); // menu only for panel (clicking behind items)
         }
         *lResult = 0;
-        return TRUE; // nechceme nechat nagenerovat WM_CONTEXTMENU
+        return TRUE; // we do not want to let WM_CONTEXTMENU be generated
     }
     return FALSE;
 }
 
 BOOL CFilesWindow::IsDragDropSafe(int x, int y)
 {
-    // uzivatel nechce nas bezpecnejsi drag-and-drop
+    // user does not want our safer drag-and-drop
     if (!Configuration.UseDragDropMinTime)
         return TRUE;
 
-    // povolime vytazeni mimo hlavni okno pro rychle dropnuti souboru
+    // Allow dragging outside the main window for quick file dropping
     POINT pt;
     pt.x = x;
     pt.y = y;
@@ -1101,7 +1101,7 @@ BOOL CFilesWindow::IsDragDropSafe(int x, int y)
     if (hWndHit != NULL && hTopHit != NULL && hTopHit != MainWindow->HWindow)
         return TRUE;
 
-    // od zacatku tazeni ubehlo dost casu
+    // It's been quite a while since the beginning of the pull
     if ((int)(GetTickCount() - LButtonDownTime) > Configuration.DragDropMinTime)
         return TRUE;
 
@@ -1111,26 +1111,26 @@ BOOL CFilesWindow::IsDragDropSafe(int x, int y)
 void CFilesWindow::OfferArchiveUpdateIfNeededAux(HWND parent, int textID, BOOL* archMaybeUpdated)
 {
     *archMaybeUpdated = FALSE;
-    if (AssocUsed) // pokud user editoval soubory z archivu, musime je pred operaci s archivem updatnout, jinak bysme makali se starymi verzemi editovanych souboru, ktere jsou ulozene primo v archivu
+    if (AssocUsed) // if the user edited files from the archive, we need to update them before operating with the archive, otherwise we would be working with old versions of edited files that are stored directly in the archive
     {
-        // zobrazime info o nutnosti updatu archivu, ve kterem jsou editovane soubory
+        // Display information about the need to update the archive in which edited files are stored
         char text[MAX_PATH + 500];
         sprintf(text, LoadStr(textID), GetZIPArchive());
         SalMessageBox(parent, text, LoadStr(IDS_INFOTITLE),
                       MSGBOXEX_OK | MSGBOXEX_ICONINFORMATION | MSGBOXEX_SILENT);
-        // zapakujeme zmenene soubory, pripravime pro dalsi pouziti
+        // we will package the modified files, prepare them for further use
         BOOL someFilesChanged;
         UnpackedAssocFiles.CheckAndPackAndClear(parent, &someFilesChanged, archMaybeUpdated);
-        SetEvent(ExecuteAssocEvent); // spustime uklid souboru
+        SetEvent(ExecuteAssocEvent); // start file cleanup
         DiskCache.WaitForIdle();
-        ResetEvent(ExecuteAssocEvent); // ukoncime uklid souboru
+        ResetEvent(ExecuteAssocEvent); // Finish cleaning up files
 
-        // pokud muzou byt v diskcache editovane soubory, vyhodime je, radsi at
-        // se pri pristupu na ne znovu vybali
+        // If files in the disk cache can be edited, we will discard them, better safe than sorry
+        // unpacks them again when accessed
         if (someFilesChanged)
         {
             char buf[MAX_PATH];
-            StrICpy(buf, GetZIPArchive()); // v disk-cache je jmeno archivu malymi pismeny (umozni case-insensitive porovnani jmena z Windows file systemu)
+            StrICpy(buf, GetZIPArchive()); // the name of the archive in the disk cache is in lowercase (allows case-insensitive comparison of names from the Windows file system)
             DiskCache.FlushCache(buf);
         }
         AssocUsed = FALSE;
@@ -1139,24 +1139,24 @@ void CFilesWindow::OfferArchiveUpdateIfNeededAux(HWND parent, int textID, BOOL* 
 
 void CFilesWindow::OfferArchiveUpdateIfNeeded(HWND parent, int textID, BOOL* archMaybeUpdated)
 {
-    BeginStopRefresh(); // zadne refreshe nepotrebujeme
+    BeginStopRefresh(); // we do not need any refreshes
 
     OfferArchiveUpdateIfNeededAux(parent, textID, archMaybeUpdated);
 
     CFilesWindow* otherPanel = MainWindow->LeftPanel == this ? MainWindow->RightPanel : MainWindow->LeftPanel;
     BOOL otherPanelArchMaybeUpdated = FALSE;
     if (otherPanel->Is(ptZIPArchive) && StrICmp(GetZIPArchive(), otherPanel->GetZIPArchive()) == 0)
-    { // stejny archiv je i v druhem panelu, musime provest i jeho update
+    { // The same archive is also in the second panel, we need to update it as well
         otherPanel->OfferArchiveUpdateIfNeededAux(parent, textID, &otherPanelArchMaybeUpdated);
         if (otherPanelArchMaybeUpdated)
             *archMaybeUpdated = TRUE;
     }
     if (*archMaybeUpdated)
     {
-        // trochu prasarna: user dal napr. F5 a my mu misto toho forcneme update archivu a jeho
-        // refresh v panelu ... F5 pak musi dat znovu (dalo by se to resit PostMessage(uMsg,
-        // wParam, lParam), ale at si radsi zkontroluje, co ma oznaceno v panelu a pak da teprve
-        // znovu F5) ... je to hodne okrajova vec, tak snad to bude takhle stacit
+        // a bit of a mess: the user pressed e.g. F5 and instead we force an update of the archive and his
+        // refresh in the panel ... F5 then must be pressed again (could be solved with PostMessage(uMsg,
+        // wParam, lParam), but he should rather check what is selected in the panel first and then proceed
+        // press F5 again) ... it's a very marginal thing, so hopefully this will be enough
         HANDLES(EnterCriticalSection(&TimeCounterSection));
         int t1 = MyTimeCounter++;
         int t2 = MyTimeCounter++;
@@ -1174,28 +1174,28 @@ BOOL CFilesWindow::OnMouseMove(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
 {
     CALL_STACK_MESSAGE_NONE
     *lResult = 0;
-    if (BeginDragDrop && (wParam & (MK_LBUTTON | MK_RBUTTON))) // "trhani" pro drag&drop
+    if (BeginDragDrop && (wParam & (MK_LBUTTON | MK_RBUTTON))) // "Dragging" for drag&drop
     {
         int x = abs(LButtonDown.x - (short)LOWORD(lParam));
         int y = abs(LButtonDown.y - (short)HIWORD(lParam));
-        if (x > GetSystemMetrics(SM_CXDRAG) || y > GetSystemMetrics(SM_CYDRAG)) // posun
+        if (x > GetSystemMetrics(SM_CXDRAG) || y > GetSystemMetrics(SM_CYDRAG)) // shift
         {
-            // podminka "!PerformingDragDrop" pridana po AS 2.52 kvuli stavu reportenemu od ehtera:
-            // v adresari je treba mit dva soubory (jedno EXE stazene pomoci IE, aby obsahovalo security ADS) a nejaky druhy soubor
-            // ten druhy soubor se pres d&d natahne na EXE, cimz vyskoci security okno, ktere je vsak NEMODALNI a ma message loop
+            // Condition "!PerformingDragDrop" added after AS 2.52 due to the state reported by ehter:
+            // There must be two files in the directory (one EXE downloaded using IE, containing security ADS) and some other file
+            // the second file is loaded onto the EXE through d&d, which pops up a security window, however, it is NON-MODAL and has a message loop
             // takze nam hlavni vlakno Salamandera uvazne v ShellAction(); potom druhy drag&drop vedl na pad
-            // pomoci tohoto patche novy d&d zakazeme, stejne jako to dela Windows Explorer
-            // reseni to neni ciste, protoze Salamander bezi pouze zdanlive (hlavni vlakno neni v nasi aplikacni smycce)
+            // Using this patch, we will disable the new d&d, just like Windows Explorer does
+            // The solution is not clean because Salamander runs only seemingly (the main thread is not in our application loop)
             if (!PerformingDragDrop)
             {
-                if (Is(ptZIPArchive) && AssocUsed) // pokud user editoval soubory z archivu, musime je pred operaci s archivem updatnout, jinak bysme makali se starymi verzemi editovanych souboru, ktere jsou ulozene primo v archivu
+                if (Is(ptZIPArchive) && AssocUsed) // if the user edited files from the archive, we need to update them before operating with the archive, otherwise we would be working with old versions of edited files that are stored directly in the archive
                 {
                     BOOL archMaybeUpdated;
                     OfferArchiveUpdateIfNeeded(MainWindow->HWindow, IDS_ARCHIVECLOSEEDIT3, &archMaybeUpdated);
                 }
                 else
                 {
-                    if (IsDragDropSafe((short)LOWORD(lParam), (short)HIWORD(lParam))) // min. cas
+                    if (IsDragDropSafe((short)LOWORD(lParam), (short)HIWORD(lParam))) // min. time
                     {
                         if (TrackingSingleClick)
                         {
@@ -1206,8 +1206,8 @@ BOOL CFilesWindow::OnMouseMove(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
                         ReleaseCapture();
                         KillTimer(GetListBoxHWND(), IDT_DRAGDROPTESTAGAIN);
 
-                        // pokud jsou oznacene urcite polozky a trhame za nekterou z neoznacenych,
-                        // sestrelime select
+                        // if certain items are marked and we tear one of the unmarked ones,
+                        // shoot down select
                         if (!GetSel(GetCaretIndex()) && GetSelCount() > 0)
                         {
                             SetSel(FALSE, -1, TRUE);
@@ -1230,7 +1230,7 @@ BOOL CFilesWindow::OnMouseMove(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
                         ImageList_Destroy(hDragIL);
                         PerformingDragDrop = FALSE;
 
-                        IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+                        IdleRefreshStates = TRUE; // During the next Idle, we will force the check of status variables
                     }
                     else
                     {
@@ -1245,7 +1245,7 @@ BOOL CFilesWindow::OnMouseMove(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
         return TRUE;
     }
 
-    if (BeginBoxSelect && (wParam & (MK_LBUTTON | MK_RBUTTON))) // "otevirame" selection box
+    if (BeginBoxSelect && (wParam & (MK_LBUTTON | MK_RBUTTON))) // "opening" selection box
     {
         short xPos = (short)LOWORD(lParam);
         short yPos = (short)HIWORD(lParam);
@@ -1376,7 +1376,7 @@ BOOL CFilesWindow::OnTimer(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
                 }
                 else
                 {
-                    // odchytim oznacovani
+                    // catch labeling
                     if ((GetKeyState(VK_CONTROL) & 0x8000) != 0 &&
                             (GetKeyState(VK_MENU) & 0x8000) == 0 &&
                             (GetKeyState(VK_SHIFT) & 0x8000) == 0 ||
@@ -1390,7 +1390,7 @@ BOOL CFilesWindow::OnTimer(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
                             int last = index;
                             if (first != last)
                             {
-                                // skupinove odznaceni / oznaceni podle polozky sejmute pri stisku Shift
+                                // Group marking / marking by item removed when Shift is pressed
                                 SetSelRange(SelectItems, first, last);
                                 PostMessage(HWindow, WM_USER_SELCHANGED, 0, 0);
                             }
@@ -1398,7 +1398,7 @@ BOOL CFilesWindow::OnTimer(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
                             if (first != last)
                                 RepaintListBox(DRAWFLAG_DIRTY_ONLY | DRAWFLAG_SKIP_VISTEST);
                         }
-                        else // ctrl+lbutton -> norml. sel.
+                        else // ctrl+lbutton -> normal selection.
                         {
                             BOOL select = GetSel(index);
                             SetSel(!select, index);
@@ -1420,7 +1420,7 @@ BOOL CFilesWindow::OnTimer(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
     }
     if (wParam == IDT_QUICKRENAMEBEGIN)
     {
-        KillQuickRenameTimer(); // zamezime pripadnemu otevreni QuickRenameWindow
+        KillQuickRenameTimer(); // prevent possible opening of QuickRenameWindow
         if (GetForegroundWindow() == MainWindow->HWindow &&
             MainWindow->GetActivePanel() == this)
         {
@@ -1477,7 +1477,7 @@ BOOL CFilesWindow::OnCancelMode(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
     return FALSE;
 }
 
-// vraci TRUE pokud DIB obsahuje nejaky alfa bajt jiny nez 0
+// returns TRUE if the DIB contains any alpha byte other than 0
 BOOL ContainsAlpha(void* lpBits, int width, int height)
 {
     int row;
@@ -1501,7 +1501,7 @@ BOOL ContainsAlpha(void* lpBits, int width, int height)
     return FALSE;
 }
 
-// prekopiruje masku do DIBu, aby bylo mozne najit pruhledna/nepruhledna mista a nastavi podle toho alfa kanal
+// copies the mask to the DIB in order to identify transparent/non-transparent areas and sets the alpha channel accordingly
 BOOL SetAlphaByMask(void* lpBits, int width, int height, HDC hMaskDC)
 {
     HDC hMemMaskDC = HANDLES(CreateCompatibleDC(NULL));
@@ -1609,7 +1609,7 @@ CFilesWindow::CreateDragImage(int cursorX, int cursorY, int& dxHotspot, int& dyH
     GetTextExtentPoint32(hDC, buff, buffLen, &sz);
     width = iconWidth + sz.cx;
     if (GetViewMode() == vmDetailed && trimWidth)
-        width = Columns[0].Width; // pokud je sloupec zkraceny, nechceme aby do tazeneho obrazku propadly dalsi sloupce
+        width = Columns[0].Width; // if the column is shortened, we do not want other columns to fall into the pulled image
 
     BITMAPINFOHEADER bmhdr;
     memset(&bmhdr, 0, sizeof(bmhdr));
@@ -1630,13 +1630,13 @@ CFilesWindow::CreateDragImage(int cursorX, int cursorY, int& dxHotspot, int& dyH
 
     HBITMAP hOldBmp = (HBITMAP)SelectObject(hDC, hBmp);
 
-    // vytvorim bitmapu s maskou
+    // create a bitmap with a mask
     HBITMAP hMaskBmp = HANDLES(CreateBitmap(width, height, 1, 1, NULL));
 
     HDC hMaskDC = HANDLES(CreateCompatibleDC(NULL));
     HBITMAP hOldMaskBitmap = (HBITMAP)SelectObject(hMaskDC, hMaskBmp);
 
-    // podmazu pozadi
+    // background underlay
     RECT r;
     r.left = 0;
     r.top = 0;
@@ -1672,20 +1672,20 @@ CFilesWindow::CreateDragImage(int cursorX, int cursorY, int& dxHotspot, int& dyH
         int oldXOffset = ListBox->XOffset;
         if (GetViewMode() == vmBrief || GetViewMode() == vmDetailed)
         {
-            ListBox->XOffset = 0; // ovlivnuje posunuti polozky v detailed rezimu
+            ListBox->XOffset = 0; // influences the shift of items in detailed mode
             DrawBriefDetailedItem(hDC, itemIndex, &r, DRAWFLAG_NO_FRAME | DRAWFLAG_NO_STATE | DRAWFLAG_SKIP_VISTEST | DRAWFLAG_DRAGDROP);
             DrawBriefDetailedItem(hMaskDC, itemIndex, &r, DRAWFLAG_NO_FRAME | DRAWFLAG_NO_STATE | DRAWFLAG_MASK | DRAWFLAG_SKIP_VISTEST);
             if (ContainsAlpha(lpBits, width, height))
             {
-                // pokud byla ikonka s alpha kanalem, nechame cely obrazek nastavit jako nepruhledny a nasledne prekreslime pouze ikonku
+                // if the icon had an alpha channel, we will set the entire image as opaque and then redraw only the icon
                 SetAlphaByMask(lpBits, width, height, hMaskDC);
-                //        zatim nedoresene, alpha-kanal body budou mit bile otrepy
-                //        problem je v tom, ze nektera data (napriklad stare ikonky nebo thumbnaily) neprichazeji s alpha kanalem
-                //        a budou tak zcela pruhledne
+                //        currently unresolved, alpha channel of the body will have white specks
+                //        the problem is that some data (such as old icons or thumbnails) do not come with an alpha channel
+                //        and they will be completely transparent
                 //        DrawBriefDetailedItem(hDC, itemIndex, &r, DRAWFLAG_NO_FRAME | DRAWFLAG_NO_STATE | DRAWFLAG_SKIP_VISTEST | DRAWFLAG_DRAGDROP | DRAWFLAG_ICON_ONLY);
             }
             ListBox->XOffset = oldXOffset;
-            if (GetViewMode() == vmBrief) // nevim, co je v brief v XOffsetu, tak sep ojistime, aby nebyl spatny dxHotspot
+            if (GetViewMode() == vmBrief) // I don't know what is in the brief in XOffset, so let's make sure it's not a wrong dxHotspot
                 oldXOffset = 0;
         }
         else if (GetViewMode() == vmIcons || GetViewMode() == vmThumbnails)
@@ -1696,7 +1696,7 @@ CFilesWindow::CreateDragImage(int cursorX, int cursorY, int& dxHotspot, int& dyH
             DrawIconThumbnailItem(hMaskDC, itemIndex, &r, DRAWFLAG_NO_FRAME | DRAWFLAG_NO_STATE | DRAWFLAG_MASK | DRAWFLAG_SKIP_VISTEST, iconSize);
             if (ContainsAlpha(lpBits, width, height))
             {
-                // pokud byla ikonka s alpha kanalem, nechame cely obrazek nastavit jako nepruhledny a nasledne prekreslime pouze ikonku
+                // if the icon had an alpha channel, we will set the entire image as opaque and then redraw only the icon
                 SetAlphaByMask(lpBits, width, height, hMaskDC);
                 //        DrawIconThumbnailItem(hDC, itemIndex, &r, DRAWFLAG_NO_FRAME | DRAWFLAG_NO_STATE | DRAWFLAG_SKIP_VISTEST | DRAWFLAG_DRAGDROP | DRAWFLAG_ICON_ONLY | DRAWFLAG_SKIP_FRAME, iconSize);
             }
@@ -1709,7 +1709,7 @@ CFilesWindow::CreateDragImage(int cursorX, int cursorY, int& dxHotspot, int& dyH
             DrawTileItem(hMaskDC, itemIndex, &r, DRAWFLAG_NO_FRAME | DRAWFLAG_NO_STATE | DRAWFLAG_MASK | DRAWFLAG_SKIP_VISTEST, iconSize);
             if (ContainsAlpha(lpBits, width, height))
             {
-                // pokud byla ikonka s alpha kanalem, nechame cely obrazek nastavit jako nepruhledny a nasledne prekreslime pouze ikonku
+                // if the icon had an alpha channel, we will set the entire image as opaque and then redraw only the icon
                 SetAlphaByMask(lpBits, width, height, hMaskDC);
                 //        DrawTileItem(hDC, itemIndex, &r, DRAWFLAG_NO_FRAME | DRAWFLAG_NO_STATE | DRAWFLAG_SKIP_VISTEST | DRAWFLAG_DRAGDROP | DRAWFLAG_ICON_ONLY, iconSize);
             }
@@ -1728,9 +1728,9 @@ CFilesWindow::CreateDragImage(int cursorX, int cursorY, int& dxHotspot, int& dyH
     int bitsPerPixel = GetCurrentBPP(hMaskDC);
     if (bitsPerPixel <= 8)
     {
-        // vlastni dither
-        // lepsi by bylo ditherovat pouze oblast ikonky/thumbnailu (neporusit text)
-        // zatim vemu obrazek cely
+        // custom dither
+        // It would be better to dither only the area of the icon/thumbnail (without disturbing the text)
+        // for now I will take the whole picture
         SelectObject(hMaskDC, HDitherBrush);
         SetBkColor(hMaskDC, RGB(0, 0, 0));
         SetTextColor(hMaskDC, RGB(255, 255, 255));
@@ -1741,16 +1741,14 @@ CFilesWindow::CreateDragImage(int cursorX, int cursorY, int& dxHotspot, int& dyH
     imgHeight = height;
     HIMAGELIST himl = ImageList_Create(width, height, GetImageListColorFlags() | ILC_MASK, 1, 0);
 
-    /*
-  // ladici zobrazeni obrazku+masky do main window
+    /*    // debugging display of image+mask into main window
   HDC hWndDC = GetWindowDC(MainWindow->HWindow);
   BitBlt(hWndDC, 0, 0, r.right, r.bottom, hDC, 0, 0, SRCCOPY);
   BitBlt(hWndDC, 0, r.bottom, r.right, r.bottom, hMaskDC, 0, 0, SRCCOPY);
-  ReleaseDC(MainWindow->HWindow, hWndDC);
-*/
+  ReleaseDC(MainWindow->HWindow, hWndDC);*/
 
     SelectObject(hMaskDC, hOldMaskBitmap);
-    SelectObject(hDC, hOldBmp); // uvolnim bitmapu pred pridani do imagelistu
+    SelectObject(hDC, hOldBmp); // Release the bitmap before adding it to the imagelist
     ImageList_Add(himl, hBmp, hMaskBmp);
 
     HANDLES(DeleteDC(hDC));
@@ -1765,37 +1763,37 @@ BOOL CopyUNCPathToClipboard(const char* path, const char* name, BOOL isDir, HWND
     char buff[2 * MAX_PATH];
     char uncPath[2 * MAX_PATH];
 
-    nestingLevel++; // pozor, zaroven slouzi k ovladani chybove hlasky, musime inkrementovat zde
+    nestingLevel++; // attention, also serves to control the error message, we must increment here
 
     strcpy(buff, path);
     SalPathAddBackslash(buff, 2 * MAX_PATH);
 
     if (buff[0] == '\\' && buff[1] == '\\')
     {
-        // cesta uz je v UNC tvaru
-        strcat(buff, name); // pripojime nazev focusene polozky
+        // the path is now in UNC format
+        strcat(buff, name); // attach the name of the focused item
         return CopyTextToClipboard(buff);
     }
 
-    // pokud jde o adresar, pripojime jej k ceste
+    // when it comes to the directory, we will append it to the path
     if (isDir)
         strcat(buff, name);
 
-    // pokusime se prevest lokalni cestu na UNC
+    // attempt to convert a local path to UNC
 
-    // podivame se po sdilenych adresari, zda nektery z nich neni soucasti cesty
+    // Let's look for shared directories to see if any of them are part of the path
     if (Shares.GetUNCPath(buff, uncPath, 2 * MAX_PATH))
     {
         if (!isDir)
         {
-            // pripojime nazev souboru
-            SalPathAddBackslash(uncPath, 2 * MAX_PATH); // na konci chceme backslash
+            // attach the file name
+            SalPathAddBackslash(uncPath, 2 * MAX_PATH); // at the end we want a backslash
             strcat(uncPath, name);
         }
         return CopyTextToClipboard(uncPath);
     }
 
-    // mohlo by se jednat o mapovany disk
+    // it could be a mapped disk
     char localRoot[3];
     localRoot[0] = buff[0];
     localRoot[1] = ':';
@@ -1811,12 +1809,12 @@ BOOL CopyUNCPathToClipboard(const char* path, const char* name, BOOL isDir, HWND
         }
         if (!isDir)
             strcat(uncPath, name);
-        if (SalGetFullName(uncPath)) // root "c:\\", ostatni bez '\\' na konci
+        if (SalGetFullName(uncPath)) // root "c:\\", others without '\\' at the end
             return CopyTextToClipboard(uncPath);
     }
 
-    // pokud nejde o UNC, mohlo by se jednat o SUBST drive
-    // 10 zanoreni musi stacit i pro mega uchylaky
+    // if it's not a UNC, it could be a SUBST drive
+    // 10 dives should be enough even for mega slackers
     if (nestingLevel < 10 && buff[0] != '\\' && buff[1] == ':')
     {
         char target[MAX_PATH];
@@ -1829,25 +1827,25 @@ BOOL CopyUNCPathToClipboard(const char* path, const char* name, BOOL isDir, HWND
         }
     }
 
-    // pouze na nejvyssi levelu zobrazuje chybovou hlasku
+    // Displays an error message only at the highest level
     if (nestingLevel == 1)
     {
-        // podivame se po hidden sharech, zda nektery z nich neni soucasti cesty
+        // Let's look for hidden shares to see if any of them are part of the path
         CShares allShares(FALSE);
         allShares.Refresh();
         if (allShares.GetUNCPath(buff, uncPath, 2 * MAX_PATH))
         {
             if (!isDir)
             {
-                // pripojime nazev souboru
-                SalPathAddBackslash(uncPath, 2 * MAX_PATH); // na konci chceme backslash
+                // attach the file name
+                SalPathAddBackslash(uncPath, 2 * MAX_PATH); // at the end we want a backslash
                 strcat(uncPath, name);
             }
             return CopyTextToClipboard(uncPath);
         }
 
-        // selhaly vsechny moznosti -- vzdavame to a vypisujeme chybovou hlasku
-        // cesta nemuze byt konvertovana do UNC, nejedna se ani o sdileny ani o mapovany disk
+        // all options failed -- we are giving up and printing an error message
+        // Path cannot be converted to UNC, it is neither a shared nor a mapped disk
         strcpy(buff, path);
         SalPathAddBackslash(buff, 2 * MAX_PATH);
         strcat(buff, name);
@@ -1865,9 +1863,9 @@ BOOL CFilesWindow::CopyFocusedNameToClipboard(CCopyFocusedNameModeEnum mode)
 
     if (FocusedIndex == 0 && FocusedIndex < Dirs->Count &&
         strcmp(Dirs->At(0).Name, "..") == 0)
-        return FALSE; // up-dir nebereme
+        return FALSE; // we don't take up-dir
     if (FocusedIndex < 0 || FocusedIndex >= Files->Count + Dirs->Count)
-        return FALSE; // nesmyslny index nebereme
+        return FALSE; // we do not take nonsensical index
 
     char buff[2 * MAX_PATH];
     buff[0] = 0;
@@ -1875,10 +1873,10 @@ BOOL CFilesWindow::CopyFocusedNameToClipboard(CCopyFocusedNameModeEnum mode)
     if (mode == cfnmUNC)
     {
         // full UNC name
-        // pokusime se prevest klasicke jmeno na UNC tvar
+        // attempt to convert a classic name to UNC format
         if (Is(ptDisk) || Is(ptZIPArchive))
         {
-            // vytahneme aktualni cestu v panelu
+            // get the current path in the panel
             GetGeneralPath(buff, 2 * MAX_PATH);
             SalPathAddBackslash(buff, 2 * MAX_PATH);
 
@@ -1964,26 +1962,26 @@ void AddStrToStr(char* dstStr, int dstBufSize, const char* srcStr)
     lstrcpyn(dstStr + dstStrLen + 1, srcStr, l + 1);
 }
 
-// pripravime predlohu pro promennou 'Columns'
+// prepare a template for the variable 'Columns'
 
 BOOL CFilesWindow::BuildColumnsTemplate()
 {
     CALL_STACK_MESSAGE1("CFilesWindow::BuildColumnsTemplate()");
-    // vyprazdnime existujici predlohu
+    // empty the existing template
     ColumnsTemplate.DetachMembers();
 
     ColumnsTemplateIsForDisk = Is(ptDisk);
 
     if (ViewTemplate->Mode == VIEW_MODE_BRIEF)
     {
-        // v brief modu sice nebude zobrazena headerline, ale zajistime pridani sloupce
-        // Name, aby fungovaly testy typu CFilesWindow::IsExtensionInSeparateColumn
+        // In brief mode, the headerline will not be displayed, but we will ensure the addition of a column
+        // Name, for the tests like CFilesWindow::IsExtensionInSeparateColumn to work
         CColumn column;
         column.CustomData = 0;
         lstrcpy(column.Name, LoadStr(IDS_COLUMN_NAME_NAME));
-        column.Name[strlen(column.Name) + 1] = 0; // dve nuly na konci (text "Ext" je za jmenem, tak at se to nepodela, kdyby ho to tam hledalo)
+        column.Name[strlen(column.Name) + 1] = 0; // two zeros at the end (the text "Ext" is behind the name, so that it doesn't mess up if it searches for it there)
         lstrcpy(column.Description, LoadStr(IDS_COLUMN_DESC_NAME));
-        column.Description[strlen(column.Description) + 1] = 0; // dve nuly na konci (popis "Ext" je za jmenem, tak at se to nepodela, kdyby ho to tam hledalo)
+        column.Description[strlen(column.Description) + 1] = 0; // two zeros at the end (the description "Ext" is after the name, so that it doesn't mess up if it looks for it there)
         column.GetText = NULL;
         column.SupportSorting = 1;
         column.LeftAlignment = 1;
@@ -2007,27 +2005,27 @@ BOOL CFilesWindow::BuildColumnsTemplate()
 
     BOOL leftPanel = (this == MainWindow->LeftPanel);
 
-    // vyberu s sablony pohledy odpovidajici konfiguracni pole
+    // select views matching the configuration array with templates
     CColumnConfig* colCfg = ViewTemplate->Columns;
 
-    // napridavam viditelne sloupce podle sablony
+    // adding visible columns according to the template
     int i;
     for (i = 0; i < STANDARD_COLUMNS_COUNT; i++)
     {
         item = GetStdColumn(i, Is(ptDisk));
-        // sloupec Name (i==0) je vzdy viditelny
+        // column Name (i==0) is always visible
         if (i == 0 || ViewTemplate->Flags & item->Flag)
         {
             lstrcpy(column.Name, LoadStr(item->NameResID));
             lstrcpy(column.Description, LoadStr(item->DescResID));
-            if (i == 0) // sloupec "Name"
+            if (i == 0) // column "Name"
             {
-                if ((ViewTemplate->Flags & VIEW_SHOW_EXTENSION) == 0) // "Ext" je soucasti sloupce "Name", jmeno+popis sloupce "Ext" je za terminujici nulou jmena+popisu
+                if ((ViewTemplate->Flags & VIEW_SHOW_EXTENSION) == 0) // "Ext" is part of the "Name" column, the name+description of the "Ext" column is after the terminating zero of the name+description
                 {
                     AddStrToStr(column.Name, COLUMN_NAME_MAX, ColExtStr);
                     AddStrToStr(column.Description, COLUMN_DESCRIPTION_MAX, LoadStr(IDS_COLUMN_DESC_EXT));
                 }
-                else // jen tak pro sychr udelame stringy double-null-terminated
+                else // Just for fun, let's make double-null-terminated strings
                 {
                     column.Name[strlen(column.Name) + 1] = 0;
                     column.Description[strlen(column.Description) + 1] = 0;
@@ -2039,7 +2037,7 @@ BOOL CFilesWindow::BuildColumnsTemplate()
             column.ID = item->ID;
             column.Width = leftPanel ? colCfg[i].LeftWidth : colCfg[i].RightWidth;
             column.FixedWidth = leftPanel ? colCfg[i].LeftFixedWidth : colCfg[i].RightFixedWidth;
-            column.MinWidth = 0; // dummy - bude prepsana pri dimenzovani HeaderLine
+            column.MinWidth = 0; // dummy - will be overwritten during HeaderLine dimensioning
 
             ColumnsTemplate.Add(column);
             if (!ColumnsTemplate.IsGood())
@@ -2081,7 +2079,7 @@ void CFilesWindow::DeleteColumnsWithoutData(DWORD columnValidMask)
         switch (c->ID)
         {
         case COLUMN_ID_NAME:
-            break; // jmeno je povinne (nelze ho smazat)
+            break; // name is required (cannot be deleted)
         case COLUMN_ID_EXTENSION:
             delColumn = (columnValidMask & VALID_DATA_EXTENSION) == 0;
             break;
@@ -2105,13 +2103,13 @@ void CFilesWindow::DeleteColumnsWithoutData(DWORD columnValidMask)
             break;
         case COLUMN_ID_DESCRIPTION:
             delColumn = TRUE;
-            break; // description se zatim nepouziva
+            break; // description is not used yet
         }
         if (delColumn)
         {
             Columns.Delete(i);
             if (!Columns.IsGood())
-                Columns.ResetState(); // nemuze failnout, jen se neredukovalo pole
+                Columns.ResetState(); // cannot fail, only the array was not reduced
         }
     }
 }
@@ -2119,7 +2117,7 @@ void CFilesWindow::DeleteColumnsWithoutData(DWORD columnValidMask)
 void CFilesWindow::OnHeaderLineColWidthChanged()
 {
     CALL_STACK_MESSAGE1("CFilesWindow::OnHeaderLineColWidthChanged()");
-    // prenesu data z panelu do sablony
+    // transfer data from the panel to the template
     BOOL pluginColMaybeChanged = FALSE;
     BOOL leftPanel = (this == MainWindow->LeftPanel);
     int i;
@@ -2157,9 +2155,9 @@ void CFilesWindow::OnHeaderLineColWidthChanged()
             colIndex = 8;
             break;
         }
-        if (column->ID == COLUMN_ID_CUSTOM) // jde o sloupec pridany pluginem
+        if (column->ID == COLUMN_ID_CUSTOM) // It's about the column added by the plugin
         {
-            if (column->FixedWidth && PluginData.NotEmpty()) // jen neelasticke sloupce + "always true"
+            if (column->FixedWidth && PluginData.NotEmpty()) // only non-elastic columns + "always true"
             {
                 PluginData.ColumnWidthWasChanged(leftPanel, column, column->Width);
                 pluginColMaybeChanged = TRUE;
@@ -2178,7 +2176,7 @@ void CFilesWindow::OnHeaderLineColWidthChanged()
                 TRACE_E("CFilesWindow::OnHeaderLineColWidthChanged(): unexpected column-ID!");
         }
     }
-    // nechame vytvorit novou predlohu (sloupce uz jsou modifikovany)
+    // we will create a new template (columns are already modified)
     BuildColumnsTemplate();
 }
 

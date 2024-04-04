@@ -52,9 +52,9 @@ void CFindDialog::OnHideSelection()
     if (deletedCount > 0)
     {
         // hack hack: https://forum.altap.cz/viewtopic.php?f=2&t=3112&p=14801#p14801
-        // bez resetu na nulu si listview pamatuje predchozi stav vyberu
+        // Without resetting to zero, the listview remembers the previous selection state
         ListView_SetItemCount(FoundFilesListView->HWindow, 0);
-        // reknu listview novy pocet polozek
+        // update listview with new item count
         ListView_SetItemCount(FoundFilesListView->HWindow, totalCount - deletedCount);
     }
 
@@ -82,10 +82,10 @@ void CFindDialog::OnHideDuplicateNames()
 
     HCURSOR hOldCursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
-    // seradime podle cesty
+    // sort by path
     FoundFilesListView->SortItems(1);
 
-    // pokud polozka bude mit stejnou cestu a jmeno jako predesla polozka, vyradime ji
+    // if the item has the same path and name as the previous item, we will exclude it
     int deletedCount = 0;
     CFoundFilesData* lastData = NULL;
     int i;
@@ -109,13 +109,13 @@ void CFindDialog::OnHideDuplicateNames()
     }
     if (deletedCount > 0)
     {
-        // reknu listview novy pocet polozek
+        // update listview with new item count
         ListView_SetItemCount(FoundFilesListView->HWindow, totalCount - deletedCount);
     }
 
     if (totalCount - deletedCount > 0)
     {
-        // hloupe nastavim selected na nultou polozku... zde by to casem stalo za vylepseni
+        // stupidly set selected to the zeroth item... this could use improvement over time
         ListView_SetItemState(hListView, -1, 0, LVIS_SELECTED);
         ListView_SetItemState(hListView, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
         ListView_EnsureVisible(hListView, 0, FALSE);
@@ -134,7 +134,7 @@ void CFindDialog::OnDelete(BOOL toRecycle)
     if (selCount == 0)
         return;
 
-    // necham napocitat vyslednou velikost listu
+    // calculate the final size of the list
     DWORD listSize = FoundFilesListView->GetSelectedListSize();
     if (listSize <= 2)
         return;
@@ -146,14 +146,14 @@ void CFindDialog::OnDelete(BOOL toRecycle)
         return;
     }
 
-    // necham naplnit list
+    // let the list be filled
     if (!FoundFilesListView->GetSelectedList(list, listSize))
     {
         free(list);
         return;
     }
 
-    // ulozime focused polozku a index
+    // we will save the focused item and index
     CFoundFilesData lastFocusedItem;
     int lastFocusedIndex = ListView_GetNextItem(FoundFilesListView->HWindow, 0, LVIS_FOCUSED);
     if (lastFocusedIndex != -1)
@@ -172,12 +172,12 @@ void CFindDialog::OnDelete(BOOL toRecycle)
     fo.fAnyOperationsAborted = FALSE;
     fo.hNameMappings = NULL;
     fo.lpszProgressTitle = "";
-    // provedeme samotne mazani - uzasne snadne, bohuzel jim sem tam pada ;-)
+    // we will perform the deletion itself - amazingly easy, unfortunately they sometimes fall here ;-)
     CALL_STACK_MESSAGE1("CFindDialog::OnDelete::SHFileOperation");
     SHFileOperation(&fo);
     free(list);
 
-    // necham aktualizovat seznam
+    // update the list
     FoundFilesListView->CheckAndRemoveSelectedItems(FALSE, lastFocusedIndex, &lastFocusedItem);
 }
 
@@ -295,7 +295,7 @@ CFindTBHeader::CFindTBHeader(HWND hDlg, int ctrlID)
     Text[0] = 0;
     ErrorsCount = 0;
     InfosCount = 0;
-    FoundCount = -1; // abychom si vynutili nastaveni
+    FoundCount = -1; // to force the settings
     FlashIconCounter = 0;
     StopFlash = FALSE;
 
@@ -437,7 +437,7 @@ void CFindTBHeader::StartFlashIcon()
 {
     StopFlash = FALSE;
     if (GetForegroundWindow() != HNotifyWindow)
-        SendMessage(HNotifyWindow, WM_USER_FLASHICON, 0, 0); // pokud nejsme aktivni, odlozime blikani na pozdeji
+        SendMessage(HNotifyWindow, WM_USER_FLASHICON, 0, 0); // if we are not active, we postpone blinking for later
     else
         SetTimer(HWindow, IDT_FLASHICON, FLASH_ICON_DELAY, NULL);
     FlashIconCounter = FLASH_ICON_COUNT;
@@ -463,7 +463,7 @@ void CFindTBHeader::SetErrorsInfosCount(int errorsCount, int infosCount)
         {
             change = CreateLogToolbar(errorsCount != 0, infosCount != 0);
             if (change)
-                StartFlashIcon(); // pokud prave neblikame, pak zablikame
+                StartFlashIcon(); // if we are not blinking right now, then we will blink
         }
         if (errorsCount == 0 && infosCount == 0 && LogToolBar != NULL)
         {
@@ -558,7 +558,7 @@ CFindTBHeader::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     {
                         FlashIconCounter = 1;
                         StopFlash = FALSE;
-                        stopped = TRUE; // abychom se zase nerozjeli
+                        stopped = TRUE; // so that we don't drift apart again
                     }
                 }
                 LogToolBar->SetItemInfo2(0, TRUE, &tii);
@@ -570,7 +570,7 @@ CFindTBHeader::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 KillTimer(HWindow, IDT_FLASHICON);
                 if (!stopped && GetForegroundWindow() != HNotifyWindow)
                 {
-                    // uzivatel asi nevidel blikani, zopakujem si ho pri pristi aktivaci Findu
+                    // The user probably didn't see the blinking, I will repeat it during the next activation of Findu
                     SendMessage(HNotifyWindow, WM_USER_FLASHICON, 0, 0);
                 }
             }
@@ -641,7 +641,7 @@ CFindManageDialog::CFindManageDialog(HWND hParent, const CFindOptionsItem* curre
         TRACE_E(LOW_MEMORY);
         return;
     }
-    FO->Load(FindOptions); // nacucnu do pracovni promenne globalni konfiguraci
+    FO->Load(FindOptions); // Load global configuration into the working variable
 }
 
 CFindManageDialog::~CFindManageDialog()
@@ -814,8 +814,7 @@ CFindManageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 break;
             }
-                /*
-            case EDTLBN_MOVEITEM:
+                /*              case EDTLBN_MOVEITEM:
             {
               EDTLB_DISPINFO *dispInfo = (EDTLB_DISPINFO *)lParam;
               int index;
@@ -828,10 +827,9 @@ CFindManageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
               *FO->At(srcIndex) = *FO->At(dstIndex);
               *FO->At(dstIndex) = tmp;
 
-              SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE);  // povolim prohozeni
+              SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE);  // allow swapping
               return TRUE;
-            }
-*/
+            }*/
             case EDTLBN_MOVEITEM2:
             {
                 EDTLB_DISPINFO* dispInfo = (EDTLB_DISPINFO*)lParam;
@@ -856,7 +854,7 @@ CFindManageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 *FO->At(dstIndex) = tmp;
 
-                SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE); // povolime zmenu
+                SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE); // allow change
                 return TRUE;
             }
 
@@ -865,7 +863,7 @@ CFindManageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 int index;
                 EditLB->GetCurSel(index);
                 FO->Delete(index);
-                SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE); // povolim smazani
+                SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE); // allow deletion
                 return TRUE;
             }
             }
@@ -909,7 +907,7 @@ CFindIgnoreDialog::CFindIgnoreDialog(HWND hParent, CFindIgnore* globalIgnoreList
         TRACE_E(LOW_MEMORY);
         return;
     }
-    IgnoreList->Load(GlobalIgnoreList); // nacucnu do pracovni promenne globalni konfiguraci
+    IgnoreList->Load(GlobalIgnoreList); // Load global configuration into the working variable
 }
 
 CFindIgnoreDialog::~CFindIgnoreDialog()
@@ -937,7 +935,7 @@ void CFindIgnoreDialog::Transfer(CTransferInfo& ti)
 
 BOOL IsIgnorePathValid(const char* path)
 {
-    // cesta nesmi obsahovat znaky '?' a '*' -- nepodporujeme masky
+    // path must not contain '?' and '*' characters -- we do not support wildcards
     BOOL foundChar = FALSE;
     const char* p = path;
     while (*p != 0)
@@ -991,7 +989,7 @@ CFindIgnoreDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        EditLB = new CEditListBox(HWindow, IDC_FFI_NAMES, ELB_ITEMINDEXES | ELB_ENABLECOMMANDS | ELB_SHOWICON | ELB_SPACEASICONCLICK); // potrebujeme enabler a ikony
+        EditLB = new CEditListBox(HWindow, IDC_FFI_NAMES, ELB_ITEMINDEXES | ELB_ENABLECOMMANDS | ELB_SHOWICON | ELB_SPACEASICONCLICK); // we need enabler and icons
         if (EditLB == NULL)
             TRACE_E(LOW_MEMORY);
         EditLB->MakeHeader(IDC_FFI_NAMESLABEL);
@@ -1117,7 +1115,7 @@ CFindIgnoreDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 int index;
                 EditLB->GetCurSel(index);
                 IgnoreList->Move(index, dispInfo->NewIndex);
-                SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE); // povolime zmenu
+                SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE); // allow change
                 return TRUE;
             }
 
@@ -1138,7 +1136,7 @@ CFindIgnoreDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 int index;
                 EditLB->GetCurSel(index);
                 IgnoreList->Delete(index);
-                SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE); // povolim smazani
+                SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE); // allow deletion
                 return TRUE;
             }
             }
@@ -1171,7 +1169,7 @@ void CFindDialog::UninitializeOle()
     {
         __try
         {
-            OleFlushClipboard(); // predame systemu data z IDataObjectu, ktery jsme na clipboardu nechali lezet (tento IDataObject se tim uvolni)
+            OleFlushClipboard(); // we pass the data from the IDataObject to the system, which we left lying on the clipboard (this IDataObject will be released by this)
             OleUninitialize();
         }
         __except (EXCEPTION_EXECUTE_HANDLER)
@@ -1221,7 +1219,7 @@ BOOL CFindDialog::GetCommonPrefixPath(char* buffer, int bufferMax, int& commonPr
             CFoundFilesData* file = FoundFilesListView->At(index);
             if (path[0] == 0)
             {
-                lstrcpy(path, file->Path); // v prvnim kroku pouze zapiseme cestu
+                lstrcpy(path, file->Path); // in the first step, we simply write down the path
                 pathLen = lstrlen(path);
             }
             else
@@ -1229,12 +1227,12 @@ BOOL CFindDialog::GetCommonPrefixPath(char* buffer, int bufferMax, int& commonPr
                 int count = CommonPrefixLength(path, file->Path);
                 if (count < pathLen)
                 {
-                    // doslo ke zkraceni cesty
+                    // the path has been shortened
                     path[count] = 0;
                     pathLen = count;
                 }
                 if (count == 0)
-                    return FALSE; // neexistuje spolecna cast cesty
+                    return FALSE; // there is no common part of the path
             }
         }
     } while (index != -1);
@@ -1255,11 +1253,11 @@ struct CMyEnumFileNamesData
 {
     CFindDialog* FindDialog;
     HWND HListView;
-    int CommonPrefixChars; // pocet znaku spolecne cesty
+    int CommonPrefixChars; // number of characters in the shared path
     int LastIndex;
 };
 
-static char MyEnumFileNamesBuffer[MAX_PATH]; // funkce je volana z GUI => nemuze byt zavolana ve vice threadech => muzeme si dovolit staticky buffer
+static char MyEnumFileNamesBuffer[MAX_PATH]; // the function is called from GUI => cannot be called in multiple threads => we can afford a static buffer
 const char* MyEnumFileNames(int index, void* param)
 {
     CMyEnumFileNamesData* data = (CMyEnumFileNamesData*)param;
@@ -1288,8 +1286,8 @@ void ContextMenuInvoke(IContextMenu2* contextMenu, CMINVOKECOMMANDINFO* ici)
 {
     CALL_STACK_MESSAGE_NONE
 
-    // docasne snizime prioritu threadu, aby nam nejaka zmatena shell extension nesezrala CPU
-    HANDLE hThread = GetCurrentThread(); // pseudo-handle, neni treba uvolnovat
+    // temporarily lower the priority of the thread so that some confused shell extension does not eat up the CPU
+    HANDLE hThread = GetCurrentThread(); // pseudo-handle, no need to release
     int oldThreadPriority = GetThreadPriority(hThread);
     SetThreadPriority(hThread, THREAD_PRIORITY_NORMAL);
 
@@ -1309,15 +1307,15 @@ void ContextMenuQuery(IContextMenu2* contextMenu, HMENU h)
 {
     CALL_STACK_MESSAGE_NONE
 
-    // docasne snizime prioritu threadu, aby nam nejaka zmatena shell extension nesezrala CPU
-    HANDLE hThread = GetCurrentThread(); // pseudo-handle, neni treba uvolnovat
+    // temporarily lower the priority of the thread so that some confused shell extension does not eat up the CPU
+    HANDLE hThread = GetCurrentThread(); // pseudo-handle, no need to release
     int oldThreadPriority = GetThreadPriority(hThread);
     SetThreadPriority(hThread, THREAD_PRIORITY_NORMAL);
 
     __try
     {
         UINT flags = CMF_NORMAL | CMF_EXPLORE;
-        // osetrime stisknuty shift - rozsirene kontextove menu, pod W2K je tam napriklad Run as...
+        // we will handle the pressed shift - extended context menu, under W2K there is for example Run as...
 #define CMF_EXTENDEDVERBS 0x00000100 // rarely used verbs
         BOOL shiftPressed = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
         if (shiftPressed)
@@ -1352,7 +1350,7 @@ void CFindDialog::OnDrag(BOOL rightMouseButton)
         return;
     }
 
-    // ulozime focused polozku a index
+    // we will save the focused item and index
     CFoundFilesData lastFocusedItem;
     int lastFocusedIndex = ListView_GetNextItem(FoundFilesListView->HWindow, 0, LVIS_FOCUSED);
     if (lastFocusedIndex != -1)
@@ -1391,17 +1389,17 @@ void CFindDialog::OnDrag(BOOL rightMouseButton)
 
     if (hr == DRAGDROP_S_DROP)
     {
-        // vraci dwEffect == 0 pri MOVE, viz "Handling Shell Data Transfer Scenarios" sekce
+        // returns dwEffect == 0 for MOVE, see "Handling Shell Data Transfer Scenarios" section
         // "Handling Optimized Move Operations": http://msdn.microsoft.com/en-us/library/windows/desktop/bb776904%28v=vs.85%29.aspx
-        // (zkracene: dela se optimalizovany Move, coz znamena ze se nedela kopie do cile nasledovana mazanim
-        //            originalu, aby zdroj nechtene nesmazal original (jeste nemusi byt presunuty), dostane
-        //            vysledek operace DROPEFFECT_NONE nebo DROPEFFECT_COPY),
-        // proto zavadime tuto obezlicku
-        if (!rightMouseButton && // prave tlacitko ma menu: tedy dropSource->LastEffect obsahuje effect pred zobrazenim menu a ne vysledny effect: ten je krome Move v dwEffect - pri Move je to 0 stejne jako pri Cancel - tedy nejsme schopni rozlisit Move a Cancel, tedy radsi nebudeme nic mazat
+        // (abbreviated: an optimized Move is being performed, which means no copy is made to the target followed by deletion
+        //            originalu, so that the source does not unintentionally delete the original (which may not have been moved yet), receives
+        //            result of the operation DROPEFFECT_NONE or DROPEFFECT_COPY),
+        // thus we initialize this variable
+        if (!rightMouseButton && // the right button has a menu: so dropSource->LastEffect contains the effect before displaying the menu and not the final effect: in addition to Move, it is 0 in dwEffect - for Move it is the same as for Cancel - so we are unable to distinguish Move and Cancel, so we better not delete anything
             (dropSource->LastEffect & DROPEFFECT_MOVE))
         {
-            // protoze operace move bezi ve vlastnim threadu, nejsou jeste soubory smazany
-            // proto forcneme remove (prasarna, ale nemusime dalsi tyden programovat...)
+            // because the move operation is running in its own thread, the files have not been deleted yet
+            // so we force remove (a mess, but we don't have to program for another week...)
             FoundFilesListView->CheckAndRemoveSelectedItems(TRUE, lastFocusedIndex, &lastFocusedItem);
         }
     }
@@ -1448,7 +1446,7 @@ void CFindDialog::OnContextMenu(int x, int y)
                                 x, y, HWindow, NULL);
         if (cmd != 0)
         {
-            char cmdName[2000]; // schvalne mame 2000 misto 200, shell-extensiony obcas zapisuji dvojnasobek (uvaha: unicode = 2 * "pocet znaku"), atp.
+            char cmdName[2000]; // intentionally we have 2000 instead of 200, shell extensions sometimes write double (consideration: unicode = 2 * "number of characters"), etc.
             if (AuxGetCommandString(ContextMenu, cmd, GCS_VERB, NULL, cmdName, 200) != NOERROR)
             {
                 cmdName[0] = 0;
@@ -1473,16 +1471,16 @@ void CFindDialog::OnContextMenu(int x, int y)
 
             if (!cmdDelete)
             {
-                ContextMenuInvoke(ContextMenu, (CMINVOKECOMMANDINFO*)&ici); // delete zavolame vlastni, at se to chova stejne na klavesu i z kontextoveho menu
+                ContextMenuInvoke(ContextMenu, (CMINVOKECOMMANDINFO*)&ici); // call our own delete, so it behaves the same on both the key and context menu
             }
 
             if (cmdCut || cmdCopy)
             {
-                // nastavime jeste preffered drop effect + puvod ze Salama
+                // set preferred drop effect + origin from Salama
                 SetClipCutCopyInfo(HWindow, cmdCopy, TRUE);
             }
 
-            // postneme si Delete command
+            // Let's add the Delete command
             if (cmdDelete)
                 PostMessage(HWindow, WM_COMMAND, CM_FIND_DELETE, 0);
         }
@@ -1550,7 +1548,7 @@ void CFindDialog::OnCutOrCopy(BOOL cut)
 {
     if (InvokeContextMenu(cut ? "cut" : "copy"))
     {
-        // nastavime jeste preffered drop effect + puvod ze Salama
+        // set preferred drop effect + origin from Salama
         SetClipCutCopyInfo(HWindow, !cut, TRUE);
     }
 }
@@ -1572,21 +1570,21 @@ void CFindDialog::OnOpen(BOOL onlyFocused)
     int index = -1;
     do
     {
-        // Petr: nahradil jsem LVNI_SELECTED za LVNI_FOCUSED, protoze si lidi stezovali, ze
-        // si oznaci hafo souboru a pak j enechtene double-clickem vsechny otevrou, coz
-        // znamena start mnoha procesu, proste bordel ... navrhovali konfirmaci pro otevreni
-        // vice nez peti souboru, ale logictejsi reseni mi prijde otevirat jen fokuslej
-        // (jako se to dela v panelu; nicmene Explorer otevira vsechny oznaceny, takze v tom
-        // se ted lisime)
-        // Honza 4/2014: pokud jsou vyhledane soubory z ruznych submenu, nefunguje pro ne
-        // prikaz Otevrit z context menu, takze jsme lidem zrusili starou funkcionalitu
-        // kdy otevreli vsechny soubory jednim Enterem. Zavadime proto novy prikaz Open Selected.
-        // Bug na foru: https://forum.altap.cz/viewtopic.php?f=6&t=7449
+        // Petr: I replaced LVNI_SELECTED with LVNI_FOCUSED because people were complaining that
+        // marks a bunch of files and then opens them all unintentionally with a double-click, which
+        // means the start of many processes, just a mess ... proposed confirmation for opening
+        // more than five files, but I find it more logical to open only the most focused ones
+        // (as done in the panel; however, Explorer opens all selected, so in that
+        // we are different now)
+        // Honza 4/2014: if the searched files are from different submenus, it does not work for them
+        // Open command from the context menu, so we removed the old functionality from people
+        // when they opened all files with one Enter. We are therefore introducing a new command Open Selected.
+        // Bug on the forum: https://forum.altap.cz/viewtopic.php?f=6&t=7449
         index = ListView_GetNextItem(FoundFilesListView->HWindow, index, onlyFocused ? LVNI_FOCUSED : LVNI_SELECTED);
         if (index != -1)
         {
             CFoundFilesData* file = FoundFilesListView->At(index);
-            BOOL setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // ceka uz ?
+            BOOL setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // Is it waiting already?
             HCURSOR oldCur;
             if (setWait)
                 oldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
@@ -1669,7 +1667,7 @@ CFindDuplicatesDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 // CFindLog
 //
 
-#define DEFERRED_ERRORS_MAX 300 // maximalni pocet pamatovanych chyb
+#define DEFERRED_ERRORS_MAX 300 // maximum number of stored errors
 
 CFindLog::CFindLog()
     : Items(1, 50)
@@ -1771,7 +1769,7 @@ void CFindLogDialog::Transfer(CTransferInfo& ti)
         HListView = GetDlgItem(HWindow, IDC_FINDLOG_LIST);
 
         int iconSize = IconSizes[ICONSIZE_16];
-        HIMAGELIST hIcons = ImageList_Create(iconSize, iconSize, ILC_MASK | GetImageListColorFlags(), 2, 0); // o destrukci se postara listview
+        HIMAGELIST hIcons = ImageList_Create(iconSize, iconSize, ILC_MASK | GetImageListColorFlags(), 2, 0); // listview will take care of destruction
 
         HICON hWarning;
         LoadIconWithScaleDown(NULL, (PCWSTR)IDI_EXCLAMATION, iconSize, iconSize, &hWarning);
@@ -1790,7 +1788,7 @@ void CFindLogDialog::Transfer(CTransferInfo& ti)
         DWORD origFlags = ListView_GetExtendedListViewStyle(HListView);
         ListView_SetExtendedListViewStyle(HListView, origFlags | exFlags); // 4.71
 
-        // inicializace sloupcu
+        // initialize columns
         int header[] = {IDS_FINDLOG_TYPE, IDS_FINDLOG_TEXT, IDS_FINDLOG_PATH, -1};
 
         LV_COLUMN lvc;
@@ -1804,7 +1802,7 @@ void CFindLogDialog::Transfer(CTransferInfo& ti)
             ListView_InsertColumn(HListView, i, &lvc);
         }
 
-        // pridani polozek
+        // adding items
         LVITEM lvi;
         lvi.mask = LVIF_IMAGE;
         lvi.iSubItem = 0;
@@ -1820,7 +1818,7 @@ void CFindLogDialog::Transfer(CTransferInfo& ti)
             ListView_InsertItem(HListView, &lvi);
             ListView_SetItemText(HListView, i, 0, LoadStr((item->Flags & FLI_ERROR) != 0 ? IDS_FINDLOG_ERROR : IDS_FINDLOG_INFO));
 
-            // odstranim z textu znaky '\r' a '\n'
+            // remove characters '\r' and '\n' from the text
             lstrcpyn(buff, item->Text, 4000);
             int j;
             for (j = 0; buff[j] != 0; j++)
@@ -1843,11 +1841,11 @@ void CFindLogDialog::Transfer(CTransferInfo& ti)
             ListView_SetItemText(HListView, i, 1, buff);
         }
 
-        // nulta polozka bude vybrana
+        // zeroth item will be selected
         DWORD state = LVIS_SELECTED | LVIS_FOCUSED;
         ListView_SetItemState(HListView, 0, state, state);
 
-        // nastavim sirky sloupcu
+        // set column widths
         ListView_SetColumnWidth(HListView, 0, LVSCW_AUTOSIZE_USEHEADER);
         ListView_SetColumnWidth(HListView, 1, LVSCW_AUTOSIZE_USEHEADER);
         ListView_SetColumnWidth(HListView, 2, LVSCW_AUTOSIZE_USEHEADER);
@@ -1863,8 +1861,8 @@ void CFindLogDialog::OnFocusFile()
 
     if (SalamanderBusy)
     {
-        Sleep(200); // dame Salamu cas - pokud slo o prepnuti z hlavniho okna, mohla
-                    // by jeste dobihat message queue od menu
+        Sleep(200); // give Salam cas - if it was about switching from the main window, she could
+                    // still need to finish processing the message queue from the menu
         if (SalamanderBusy)
         {
             SalMessageBox(HWindow, LoadStr(IDS_SALAMANDBUSY2),

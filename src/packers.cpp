@@ -24,7 +24,7 @@ const char* SALAMANDER_CP_ARGSMOVE = "Move Arguments";
 const char* SALAMANDER_CU_EXECEXTRACT = "Extract Command";
 const char* SALAMANDER_CU_ARGSEXTRACT = "Extract Arguments";
 
-// konverzni tanulka pro preklad exe->promenna
+// Conversion table for translating exe->variable
 struct SPackConvTable
 {
     const char* exe;
@@ -46,10 +46,10 @@ SPackConvTable PackConversionTable[] = {
     {"pkunzip", "$(Unzip16bitExecutable)"},
     {NULL, NULL}};
 
-// poradi, jak byly custom packery/unpackery historicky pridavany
+// order in which custom packers/unpackers were historically added
 int CustomOrder[] = {0, 1, 9, 10, 2, 3, 4, 11, 5, 6, 7, 8};
 
-// tabulka custom packeru
+// table of custom packers
 SPackCustomPacker CustomPackers[] = {
     // JAR32
     {{"a \"$(ArchiveFullName)\" !\"$(ListFullName)\"", "a -v1440 \"$(ArchiveFullName)\" !\"$(ListFullName)\""},
@@ -60,7 +60,7 @@ SPackCustomPacker CustomPackers[] = {
      FALSE,
      "jar32"},
     // RAR32
-    {{"a -scol \"$(ArchiveFullName)\" @\"$(ListFullName)\"", "a -scol -v1440 \"$(ArchiveFullName)\" @\"$(ListFullName)\""}, // od verze 5.0 musime vnutit -scol switch, verzi 4.20 nevadi; vyskytuje se na dalsich mistech a v registry
+    {{"a -scol \"$(ArchiveFullName)\" @\"$(ListFullName)\"", "a -scol -v1440 \"$(ArchiveFullName)\" @\"$(ListFullName)\""}, // from version 5.0 we need to enforce the -scol switch, version 4.20 doesn't mind; it occurs in other places and in the registry
      {"m -scol \"$(ArchiveFullName)\" @\"$(ListFullName)\"", "m -scol -v1440 \"$(ArchiveFullName)\" @\"$(ListFullName)\""},
      {IDS_DP_RAR_E, IDS_DP_RARV_E},
      "rar",
@@ -75,7 +75,7 @@ SPackCustomPacker CustomPackers[] = {
      FALSE,
      FALSE,
      "arj"},
-    // LZH
+    // LIE
     {{"a -m -p -a -l1 -x1 -c $(ArchiveDOSFullName) @$(ListDOSFullName)", NULL},
      {"m -m -p -a -l1 -x1 -c $(ArchiveDOSFullName) @$(ListDOSFullName)", NULL},
      {IDS_DP_LHA_E, -1},
@@ -149,15 +149,15 @@ SPackCustomPacker CustomPackers[] = {
      "ace"},
 };
 
-// tabulka custom unpackeru
+// Custom unpacker table
 SPackCustomUnpacker CustomUnpackers[] = {
     // JAR32
     {"x -jyc \"$(ArchiveFullName)\" !\"$(ListFullName)\"", IDS_DU_JAR_E, "*.j", TRUE, FALSE, "jar32"},
     // RAR32
-    {"x -scol \"$(ArchiveFullName)\" @\"$(ListFullName)\"", IDS_DU_RAR_E, "*.rar", TRUE, FALSE, "rar"}, // od verze 5.0 musime vnutit -scol switch, verzi 4.20 nevadi; vyskytuje se na dalsich mistech a v registry
+    {"x -scol \"$(ArchiveFullName)\" @\"$(ListFullName)\"", IDS_DU_RAR_E, "*.rar", TRUE, FALSE, "rar"}, // from version 5.0 we need to enforce the -scol switch, version 4.20 doesn't mind; it occurs in other places and in the registry
     // ARJ16
     {"x -va -jyc $(ArchiveDOSFullName) !$(ListDOSFullName)", IDS_DU_ARJ16_E, "*.arj", FALSE, FALSE, "arj"},
-    // LZH
+    // LIE
     {"x -a -l1 -c $(ArchiveDOSFullName) @$(ListDOSFullName)", IDS_DU_LHA_E, "*.lzh", FALSE, FALSE, "lha"},
     // UC2
     {"ESF $(ArchiveDOSFullName) @$(ListDOSFullName)", IDS_DU_UC2_E, "*.uc2", FALSE, FALSE, "uc"},
@@ -187,10 +187,8 @@ CPackerConfig::CPackerConfig(/*BOOL disableDefaultValues*/)
 {
     PreferedPacker = -1;
     Move = FALSE;
-    /*
-  if (!disableDefaultValues)
-    AddDefault(0);
-*/
+    /*    if (!disableDefaultValues)
+    AddDefault(0);*/
 }
 
 void CPackerConfig::InitializeDefaultValues()
@@ -200,32 +198,32 @@ void CPackerConfig::InitializeDefaultValues()
 
 void CPackerConfig::AddDefault(int SalamVersion)
 {
-    // POZOR: do verze 6 stary 'Type' hodnoty: 0 ZIP, 1 external, 2 TAR, 3 PAK
+    // WARNING: up to version 6 old 'Type' values: 0 ZIP, 1 external, 2 TAR, 3 PAK
 
-    // default hodnoty
+    // default values
     int index, i;
-    // nejprve interni, at je to serazene
+    // first internal, so that it is sorted
     switch (SalamVersion)
     {
     case 0: // default config
-    case 1: // v1.52 nemela pakovace
+    case 1: // v1.52 did not have a packer
         if ((index = AddPacker()) == -1)
             return;
         SetPacker(index, 0, "ZIP (Plugin)", "zip", TRUE);
-    case 2: // co pribylo po beta1
+    case 2: // what has been added since beta1
         if ((index = AddPacker()) == -1)
             return;
         SetPacker(index, 3, "PAK (Plugin)", "pak", TRUE);
-    case 3:  // co pribylo po beta2
-    case 4:  // beta 3 ale se starou konfiguraci (obsahuje $(SpawnName))
-    case 5:; // co je noveho v beta4 ?
+    case 3:  // what has been added after beta2
+    case 4:  // beta 3 but with old configuration (contains $(SpawnName))
+    case 5:; // What's new in beta4?
              //      if ((index = AddPacker()) == -1) return;
              //      SetPacker(index, 2, "TAR (Plugin)", "tgz", TRUE);
     }
-    // ted externi
+    // external now
     switch (SalamVersion)
     {
-        // format parametru
+        // format of the parameter
         //BOOL SetPacker(int index, int type, const char *title, const char *ext, BOOL old,
         //               BOOL supportLongNames = FALSE, BOOL supportMove = FALSE,
         //               const char *cmdExecCopy = NULL, const char *cmdArgsCopy = NULL,
@@ -233,7 +231,7 @@ void CPackerConfig::AddDefault(int SalamVersion)
         //               BOOL needANSIListFile = FALSE);
 
     case 0: // default config
-    case 1: // v1.52 nemela pakovace
+    case 1: // v1.52 did not have a packer
         for (i = 0; i < 7; i++)
         {
             int idx = CustomOrder[i];
@@ -255,7 +253,7 @@ void CPackerConfig::AddDefault(int SalamVersion)
                           CustomPackers[idx].Ansi);
             }
         }
-    case 2: // co pribylo po beta1
+    case 2: // what has been added since beta1
         for (i = 7; i < 12; i++)
         {
             int idx = CustomOrder[i];
@@ -277,9 +275,9 @@ void CPackerConfig::AddDefault(int SalamVersion)
                           CustomPackers[idx].Ansi);
             }
         }
-    case 3: // co pribylo po beta2
-    case 4: // beta 3 ale se starou konfiguraci (obsahuje $(SpawnName))
-        // u drivejsich verzi muze existovat promenna $(SpawnName), ktera nyni uz neexistuje - musime ji vyhodit
+    case 3: // what has been added after beta2
+    case 4: // beta 3 but with old configuration (contains $(SpawnName))
+        // In older versions, there may be a variable $(SpawnName) that no longer exists - we need to remove it
         for (index = 0; index < GetPackersCount(); index++)
             if (GetPackerType(index) == 1)
             {
@@ -330,62 +328,62 @@ void CPackerConfig::AddDefault(int SalamVersion)
                     free(ExtBuf);
                 }
             }
-    case 5: // beta 3 ale bez taru
-    case 6: // co je noveho v beta4 ?
-    case 7: // 1.6b6 - kvuli spravne konverzi podporovanych funkci pluginu (viz CPlugins::Load)
+    case 5: // beta 3 but without tar
+    case 6: // What's new in beta4?
+    case 7: // 1.6b6 - for correct conversion of supported plugin functions (see CPlugins::Load)
     case 8:
-        // prechod na pouzivani promennych misto primeho jmena exe souboru
+        // switch to using variables instead of the direct name of the exe file
         for (index = 0; index < GetPackersCount(); index++)
-            // uvazujeme pouze externi pakovace
+            // we consider only external packers
             if (((GetPackerOldType(index) && GetPackerType(index) == 1) ||
                  (!GetPackerOldType(index) && GetPackerType(index) == CUSTOMPACKER_EXTERNAL)) &&
                 GetPackerCmdExecCopy(index) != NULL && GetPackerCmdExecMove(index) != NULL)
             {
-                // vezmeme stare commandy
+                // let's take old commands
                 char* cmdC = DupStr(GetPackerCmdExecCopy(index));
                 char* cmdM = DupStr(GetPackerCmdExecMove(index));
                 i = 0;
                 BOOL found = FALSE;
-                // a prohledame s nimi tabulku
+                // and we will search the table with them
                 while (PackConversionTable[i].exe != NULL)
                 {
-                    // porovname s prvky tabulky
+                    // compare with elements of the table
                     if (!strcmp(cmdC, PackConversionTable[i].exe) || !strcmp(cmdM, PackConversionTable[i].exe))
                     {
-                        // a pokud najdeme, zmenime na promennou
+                        // and if we find it, we change it to a variable
                         if (!strcmp(cmdC, PackConversionTable[i].exe))
                         {
                             free(cmdC);
-                            // a jeden hnusnej hack kvuli raru
+                            // and one ugly hack because of the bug
                             if (i == 2)
-                                // je-li to rar, neumime poznat, jestli 16bit nebo 32bit primo, ale jen podle podpory dlouhych jmen
+                                // if it's a rar, we can't tell if it's 16bit or 32bit directly, only by the support of long names
                                 if (GetPackerSupLongNames(index))
                                     cmdC = DupStr(PackConversionTable[i].variable);
                                 else
                                     cmdC = DupStr("$(Rar16bitExecutable)");
                             else
-                                // pro ostatni je to jednoduche
+                                // for others it is simple
                                 cmdC = DupStr(PackConversionTable[i].variable);
                         }
                         if (!strcmp(cmdM, PackConversionTable[i].exe))
                         {
                             free(cmdM);
-                            // a jeden hnusnej hack kvuli raru
+                            // and one ugly hack because of the bug
                             if (i == 2)
-                                // je-li to rar, neumime poznat, jestli 16bit nebo 32bit primo, ale jen podle podpory dlouhych jmen
+                                // if it's a rar, we can't tell if it's 16bit or 32bit directly, only by the support of long names
                                 if (GetPackerSupLongNames(index))
                                     cmdM = DupStr(PackConversionTable[i].variable);
                                 else
                                     cmdM = DupStr("$(Rar16bitExecutable)");
                             else
-                                // pro ostatni je to jednoduche
+                                // for others it is simple
                                 cmdM = DupStr(PackConversionTable[i].variable);
                         }
                         found = TRUE;
                     }
                     i++;
                 }
-                // stringy se musi nekam nakopirovat, jinak je smazem driv, nez je pouzijem
+                // Strings must be copied somewhere, otherwise I will delete them before using them
                 char* title = DupStr(GetPackerTitle(index));
                 char* ext = DupStr(GetPackerExt(index));
                 char* argsC = DupStr(GetPackerCmdArgsCopy(index));
@@ -402,8 +400,8 @@ void CPackerConfig::AddDefault(int SalamVersion)
                 free(cmdC);
                 free(cmdM);
             }
-    case 9: // 1.6b6 - kvuli prechodu ze jmena exe na promennou u custom packers
-        // nahozeni ANSI file-listu u ACE32 a PKZIP25
+    case 9: // 1.6b6 - for transitioning from the name 'exe' to a variable in custom packers
+        // loading an ANSI file list in ACE32 and PKZIP25
         for (index = 0; index < GetPackersCount(); index++)
         {
             if ((GetPackerOldType(index) && GetPackerType(index) == 1) ||
@@ -417,29 +415,29 @@ void CPackerConfig::AddDefault(int SalamVersion)
                 }
             }
         }
-        // zmenime "XXX (Internal)" na "XXX (Plugin)"
-        // strasne to vyprasime, protoze menime na kratsi text -> vystacime proste s prepisem
+        // change "XXX (Internal)" to "XXX (Plugin)"
+        // It will be terribly exhausting because we are changing to a shorter text -> we will just stick with the transcript
         for (index = 0; index < GetPackersCount(); index++)
         {
             if ((GetPackerOldType(index) && GetPackerType(index) != 1) ||
                 (!GetPackerOldType(index) && GetPackerType(index) != CUSTOMPACKER_EXTERNAL))
-            { // bereme jen plug-iny (ne externi packery)
+            { // we only take plug-ins (not external packers)
                 char* s = Packers[index]->Title;
                 char* f;
-                if (s != NULL && (f = strstr(s, "(Internal)")) != NULL) // obsahuje (Internal)
+                if (s != NULL && (f = strstr(s, "(Internal)")) != NULL) // contains (Internal)
                 {
                     if (strlen(f) == 10)
-                        strcpy(f, "(Plugin)"); // (Internal) je na konci stringu
+                        strcpy(f, "(Plugin)"); // (Internal) is at the end of the string
                 }
             }
         }
-    case 10: // 1.6b6 - kvuli prejmenovani "XXX (Internal)" na "XXX (Plugin)" v Pack a Unpack dialozich
-             //         a kvuli nastaveni ANSI verze "list of files" souboru i pro (un)packery ACE32 a PKZIP25
-    case 11: // 1.6b7 - pribyl plugin CheckVer - zajistime jeho automatickou do-instalaci
-    case 12: // 2.0 - auto-vypnuti salopen.exe + pribyl plugin PEViewer - zajistime jeho automatickou do-instalaci
+    case 10: // 1.6b6 - due to renaming "XXX (Internal)" to "XXX (Plugin)" in Pack and Unpack dialogs
+             //         and for setting the ANSI version of the "list of files" file for ACE32 and PKZIP25 (un)packers
+    case 11: // 1.6b7 - CheckVer plugin added - we will ensure its automatic installation
+    case 12: // 2.0 - automatic shutdown of salopen.exe + added PEViewer plugin - we will ensure its automatic installation
     {
-        // u LHA pribylo "-m", musime ho doplnit a pokud archivers-auto-config pridal podruhe LHA
-        // z duvodu, ze nesedelo "-m", tak ten novy zaznam odstranime
+        // at LHA added "-m", we need to complete it and if archivers-auto-config added LHA again
+        // because it didn't match "-m", we will remove that new record
         const char* newLHACopyArgs = "a -m -p -a -l1 -x1 -c $(ArchiveDOSFullName) @$(ListDOSFullName)";
         const char* newLHAMoveArgs = "m -m -p -a -l1 -x1 -c $(ArchiveDOSFullName) @$(ListDOSFullName)";
         BOOL canDelLHA = FALSE;
@@ -453,11 +451,11 @@ void CPackerConfig::AddDefault(int SalamVersion)
                 const char* moveEXE = GetPackerCmdExecMove(index);
                 const char* moveArgs = GetPackerCmdArgsMove(index);
 
-                // test jestli jde o LHA custom packer
+                // test if it is an LHA custom packer
                 if (copyEXE != NULL && strcmp(copyEXE, "$(Lha16bitExecutable)") == 0 &&
                     moveEXE != NULL && strcmp(moveEXE, "$(Lha16bitExecutable)") == 0)
                 {
-                    // test jestli jde o stary zaznam LHA custom packeru
+                    // test if it is an old record of the LHA custom packer
                     if (copyArgs != NULL &&
                         strcmp(copyArgs, "a -p -a -l1 -x1 -c $(ArchiveDOSFullName) @$(ListDOSFullName)") == 0 &&
                         moveArgs != NULL &&
@@ -465,37 +463,37 @@ void CPackerConfig::AddDefault(int SalamVersion)
                     {
                         if (canDelLHA)
                         {
-                            // zaznam smazeme, je zbytecny (funkcni zaznam pro LHA jiz existuje)
+                            // We will delete the record, it is unnecessary (a functional record for LHA already exists)
                             DeletePacker(index);
                             index--;
                         }
                         else
                         {
                             canDelLHA = TRUE;
-                            // konverze na nove argumenty (pridane "-m")
+                            // conversion to new arguments (added "-m")
                             char* s = DupStr(newLHACopyArgs);
                             if (s != NULL)
                             {
-                                free(Packers[index]->CmdArgsCopy); // nemuze byt NULL (jsou zde stare argumenty)
+                                free(Packers[index]->CmdArgsCopy); // cannot be NULL (old arguments are present)
                                 Packers[index]->CmdArgsCopy = s;
                             }
                             s = DupStr(newLHAMoveArgs);
                             if (s != NULL)
                             {
-                                free(Packers[index]->CmdArgsMove); // nemuze byt NULL (jsou zde stare argumenty)
+                                free(Packers[index]->CmdArgsMove); // cannot be NULL (old arguments are present)
                                 Packers[index]->CmdArgsMove = s;
                             }
                         }
                     }
                     else
                     {
-                        // test jestli jde o archivers-auto-configem pridany zaznam LHA custom packeru
+                        // test if it is an archivers-auto-config entry added by the LHA custom packer
                         if (copyArgs != NULL && strcmp(copyArgs, newLHACopyArgs) == 0 &&
                             moveArgs != NULL && strcmp(moveArgs, newLHAMoveArgs) == 0)
                         {
                             if (canDelLHA)
                             {
-                                // pridany zaznam smazeme, je zbytecny (funkcni zaznam pro LHA jiz existuje)
+                                // We will delete the added record, it is unnecessary (a functional record for LHA already exists)
                                 DeletePacker(index);
                                 index--;
                             }
@@ -507,27 +505,27 @@ void CPackerConfig::AddDefault(int SalamVersion)
             }
         }
     }
-    case 13: // 2.5b1 - dopsana chybejici konverze konfigurace u custom-packeru - promitnuti zmeny u LHA
-    case 14: // 2.5b1 - Nove Advanced Options ve Find dialogu. Prechod na CFilterCriteria. Konverze inverzni masky u filtru.
-    case 15: // 2.5b2 - novejsi verze, at se naloadi pluginy (upgradnou zaznamy v registry)
-    case 16: // 2.5b2 - pridano barveni Encrypted souboru a adresaru (pridava se pri loadu konfigu + je v defaultnim konfigu)
-    case 17: // 2.5b2 - pridana maska *.xml do nastaveni interniho vieweru - "force text mode"
-    case 18: // 2.5b3 - zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b2
-    case 19: // 2.5b4 - zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b3
-    case 20: // 2.5b5 - zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b4
-    case 21: // 2.5b6 - zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b5(a)
-    case 22: // 2.5b6 - filtry v panelech -- sjednoceni na jednu historii
-    case 23: // 2.5b6 - novy pohled v panelu (Tiles)
-    case 24: // 2.5b7 - zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b6
-    case 25: // 2.5b7 - plugins: show in plugin bar -> prenos promenne do CPluginData
-    case 26: // 2.5b8 - zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b7
-    case 27: // 2.5b9 - zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b8
-    case 28: // 2.5b9 - nove barevne schema dle stareho DOS Navigator -> konverze 'scheme'
-    case 29: // 2.5b10 - zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b9
-    case 30: // 2.5b11 - zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b10
-    case 31: // 2.5b11 - zavedli jsme Floppy sekci v konfiguraci Drives a potrebujeme pro Removable forcnout cteni ikon
-    case 32: // 2.5b11 - Find: "Local Settings\\Temporary Internet Files" je implicitne prohledavane
-    case 33: // 2.5b12 - zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b11
+    case 13: // 2.5b1 - added missing configuration conversion for custom packers - reflecting changes in LHA
+    case 14: // 2.5b1 - New Advanced Options in the Find dialog. Transition to CFilterCriteria. Conversion of inverse mask in the filter.
+    case 15: // 2.5b2 - newer version, so that plugins can be loaded (upgrade records in the registry)
+    case 16: // 2.5b2 - added coloring of Encrypted files and directories (added during config load + is in the default config)
+    case 17: // 2.5b2 - added *.xml mask to the internal viewer settings - "force text mode"
+    case 18: // 2.5b3 - currently only for transferring plugin configuration from version 2.5b2
+    case 19: // 2.5b4 - currently only for transferring plugin configuration from version 2.5b3
+    case 20: // 2.5b5 - currently only for transferring plugin configuration from version 2.5b4
+    case 21: // 2.5b6 - currently only for transferring plugin configuration from version 2.5b5(a)
+    case 22: // 2.5b6 - filters in panels -- unified into one history
+    case 23: // 2.5b6 - new view in the panel (Tiles)
+    case 24: // 2.5b7 - currently only for transferring plugin configuration from version 2.5b6
+    case 25: // 2.5b7 - plugins: show in plugin bar -> transfer variable to CPluginData
+    case 26: // 2.5b8 - currently only for transferring plugin configuration from version 2.5b7
+    case 27: // 2.5b9 - currently only for transferring plugin configuration from version 2.5b8
+    case 28: // 2.5b9 - new color scheme based on the old DOS Navigator -> conversion 'scheme'
+    case 29: // 2.5b10 - currently only for transferring plugin configuration from version 2.5b9
+    case 30: // 2.5b11 - currently only for transferring plugin configuration from version 2.5b10
+    case 31: // 2.5b11 - we introduced the Floppy section in the Drives configuration and need to forcibly refresh the icon reading for Removable
+    case 32: // 2.5b11 - Find: "Local Settings\\Temporary Internet Files" is implicitly searched
+    case 33: // 2.5b12 - currently only for transferring plugin configuration from version 2.5b11
     {
         // u PKZIP25 pribylo "-nozipextension", musime ho doplnit
         const char* newPKZIP25CopyArgs = "-add -nozipextension -path -attr \"$(ArchiveFullName)\" @\"$(ListFullName)\"";
@@ -542,27 +540,27 @@ void CPackerConfig::AddDefault(int SalamVersion)
                 const char* moveEXE = GetPackerCmdExecMove(index);
                 const char* moveArgs = GetPackerCmdArgsMove(index);
 
-                // test jestli jde o PKZIP25 custom packer
+                // test if it is a PKZIP25 custom packer
                 if (copyEXE != NULL && strcmp(copyEXE, "$(Zip32bitExecutable)") == 0 &&
                     moveEXE != NULL && strcmp(moveEXE, "$(Zip32bitExecutable)") == 0)
                 {
-                    // test jestli jde o stary zaznam PKZIP25 custom packeru
+                    // test if it is an old record of PKZIP25 custom packer
                     if (copyArgs != NULL &&
                         strcmp(copyArgs, "-add -path -attr \"$(ArchiveFullName)\" @\"$(ListFullName)\"") == 0 &&
                         moveArgs != NULL &&
                         strcmp(moveArgs, "-add -move -path -attr \"$(ArchiveFullName)\" @\"$(ListFullName)\"") == 0)
                     {
-                        // konverze na nove argumenty (pridane "-nozipextension")
+                        // conversion to new arguments (added "-nozipextension")
                         char* s = DupStr(newPKZIP25CopyArgs);
                         if (s != NULL)
                         {
-                            free(Packers[index]->CmdArgsCopy); // nemuze byt NULL (jsou zde stare argumenty)
+                            free(Packers[index]->CmdArgsCopy); // cannot be NULL (old arguments are present)
                             Packers[index]->CmdArgsCopy = s;
                         }
                         s = DupStr(newPKZIP25MoveArgs);
                         if (s != NULL)
                         {
-                            free(Packers[index]->CmdArgsMove); // nemuze byt NULL (jsou zde stare argumenty)
+                            free(Packers[index]->CmdArgsMove); // cannot be NULL (old arguments are present)
                             Packers[index]->CmdArgsMove = s;
                         }
                     }
@@ -570,14 +568,14 @@ void CPackerConfig::AddDefault(int SalamVersion)
             }
         }
     }
-        // case 34:   // 2.5b12 - uprava externiho packeru/unpackeru PKZIP25 (externi Win32 verze)
+        // case 34:   // 2.5b12 - modification of external packer/unpacker PKZIP25 (external Win32 version)
 
     default:
         break;
     }
     if (SalamVersion > 1 && SalamVersion < 81)
     {
-        // od RAR 5.0 jsou filelists defaultne ANSI misto OEM, proto musime OEM vnutit pomoci switche
+        // Starting from RAR 5.0, filelists are by default ANSI instead of OEM, so we need to force OEM using a switch
         const char* newRAR5CopyArgs = "a -scol \"$(ArchiveFullName)\" @\"$(ListFullName)\"";
         const char* newRAR5MoveArgs = "m -scol \"$(ArchiveFullName)\" @\"$(ListFullName)\"";
         const char* newRAR5CopyVolArgs = "a -scol -v1440 \"$(ArchiveFullName)\" @\"$(ListFullName)\"";
@@ -592,20 +590,20 @@ void CPackerConfig::AddDefault(int SalamVersion)
                 const char* moveEXE = GetPackerCmdExecMove(index);
                 const char* moveArgs = GetPackerCmdArgsMove(index);
 
-                // test jestli jde o RAR Win32 custom packer
+                // test if it is a RAR Win32 custom packer
                 if (copyEXE != NULL && strcmp(copyEXE, "$(Rar32bitExecutable)") == 0 &&
                     moveEXE != NULL && strcmp(moveEXE, "$(Rar32bitExecutable)") == 0)
                 {
-                    // test jestli jde o stary zaznam RAR Win32 custom packeru
+                    // test if it is an old record of RAR Win32 custom packer
                     if (copyArgs != NULL &&
                         strcmp(copyArgs, "a \"$(ArchiveFullName)\" @\"$(ListFullName)\"") == 0 &&
                         moveArgs != NULL &&
                         strcmp(moveArgs, "m \"$(ArchiveFullName)\" @\"$(ListFullName)\"") == 0)
                     {
-                        // konverze na nove argumenty (pridane "-scol")
-                        free(Packers[index]->CmdArgsCopy); // nemuze byt NULL (jsou zde stare argumenty)
+                        // conversion to new arguments (added "-scol")
+                        free(Packers[index]->CmdArgsCopy); // cannot be NULL (old arguments are present)
                         Packers[index]->CmdArgsCopy = DupStr(newRAR5CopyArgs);
-                        free(Packers[index]->CmdArgsMove); // nemuze byt NULL (jsou zde stare argumenty)
+                        free(Packers[index]->CmdArgsMove); // cannot be NULL (old arguments are present)
                         Packers[index]->CmdArgsMove = DupStr(newRAR5MoveArgs);
                     }
                     if (copyArgs != NULL &&
@@ -613,10 +611,10 @@ void CPackerConfig::AddDefault(int SalamVersion)
                         moveArgs != NULL &&
                         strcmp(moveArgs, "m -v1440 \"$(ArchiveFullName)\" @\"$(ListFullName)\"") == 0)
                     {
-                        // konverze na nove argumenty (pridane "-scol")
-                        free(Packers[index]->CmdArgsCopy); // nemuze byt NULL (jsou zde stare argumenty)
+                        // conversion to new arguments (added "-scol")
+                        free(Packers[index]->CmdArgsCopy); // cannot be NULL (old arguments are present)
                         Packers[index]->CmdArgsCopy = DupStr(newRAR5CopyVolArgs);
-                        free(Packers[index]->CmdArgsMove); // nemuze byt NULL (jsou zde stare argumenty)
+                        free(Packers[index]->CmdArgsMove); // cannot be NULL (old arguments are present)
                         Packers[index]->CmdArgsMove = DupStr(newRAR5MoveVolArgs);
                     }
                 }
@@ -673,8 +671,7 @@ int CPackerConfig::AddPacker(BOOL toFirstIndex)
     return index;
 }
 
-/*
-BOOL
+/*  BOOL
 CPackerConfig::SwapPackers(int index1, int index2)
 {
   BYTE buff[sizeof(CPackerConfigData)];
@@ -682,8 +679,7 @@ CPackerConfig::SwapPackers(int index1, int index2)
   memcpy(Packers[index1], Packers[index2], sizeof(CPackerConfigData));
   memcpy(Packers[index2], buff, sizeof(CPackerConfigData));
   return TRUE;
-}
-*/
+}*/
 
 BOOL CPackerConfig::MovePacker(int srcIndex, int dstIndex)
 {
@@ -710,11 +706,11 @@ void CPackerConfig::DeletePacker(int index)
     if (PreferedPacker >= 0 && PreferedPacker < Packers.Count)
     {
         if (index < PreferedPacker)
-            PreferedPacker--; // uprava indexu, aby se reprezentoval stejnou polozku
+            PreferedPacker--; // Adjusting the index to represent the same item
         else
         {
             if (index == PreferedPacker)
-                PreferedPacker = -1; // prisli jsme o vybranou polozku
+                PreferedPacker = -1; // we lost the selected item
         }
     }
     Packers.Delete(index);
@@ -904,7 +900,7 @@ BOOL CPackerConfig::Load(HKEY hKey)
         if (ret)
         {
             if (!GetValue(hKey, SALAMANDER_CPU_ANSILIST, REG_DWORD, &needANSI, sizeof(DWORD)))
-                needANSI = FALSE; // ve starsich verzich nebylo, predpokladalo se FALSE
+                needANSI = FALSE; // in older versions it was not present, it was assumed FALSE
         }
 
         if (ret)
@@ -927,7 +923,7 @@ BOOL CPackerConfig::Load(HKEY hKey)
         int index;
         if ((index = AddPacker()) == -1)
             return FALSE;
-        if (Configuration.ConfigVersion < 44) // prevod pripony na lowercase
+        if (Configuration.ConfigVersion < 44) // convert extension to lowercase
         {
             char extAux[MAX_PATH + 2];
             lstrcpyn(extAux, ext, MAX_PATH + 2);
@@ -951,10 +947,8 @@ CUnpackerConfig::CUnpackerConfig(/*BOOL disableDefaultValues*/)
     : Unpackers(20, 10)
 {
     PreferedUnpacker = -1;
-    /*
-  if (!disableDefaultValues)
-    AddDefault(0);
-*/
+    /*    if (!disableDefaultValues)
+    AddDefault(0);*/
 }
 
 void CUnpackerConfig::InitializeDefaultValues()
@@ -964,9 +958,9 @@ void CUnpackerConfig::InitializeDefaultValues()
 
 void CUnpackerConfig::AddDefault(int SalamVersion)
 {
-    // POZOR: do verze 6 stary 'Type' hodnoty: 0 ZIP, 1 external, 2 TAR, 3 PAK
+    // WARNING: up to version 6 old 'Type' values: 0 ZIP, 1 external, 2 TAR, 3 PAK
 
-    // konvert nactenych hodnot z 1.6b1 - pripony nebyly masky ("EXT" -> "*.EXT")
+    // Convert loaded values from 1.6b1 - extensions were not masks ("EXT" -> "*.EXT")
     if (SalamVersion == 2)
     {
         int i;
@@ -1001,18 +995,18 @@ void CUnpackerConfig::AddDefault(int SalamVersion)
         }
     }
 
-    // default hodnoty
+    // default values
     int index, i;
-    // nejprve interni, at je to serazene
+    // first internal, so that it is sorted
     switch (SalamVersion)
     {
     case 0: // default config
-    case 1: // v1.52 nemela pakovace
+    case 1: // v1.52 did not have a packer
         if ((index = AddUnpacker()) == -1)
             return;
         SetUnpacker(index, 0, "ZIP (Plugin)", "*.zip", TRUE);
-    case 2: // co pribylo po beta1
-        // hack na pridani pk3 pripony k zipu
+    case 2: // what has been added since beta1
+        // hack to add the pk3 extension to a zip
         for (i = 0; i < Unpackers.Count; i++)
             if (!strnicmp(Unpackers[i]->Ext, "*.zip", 5))
             {
@@ -1026,13 +1020,13 @@ void CUnpackerConfig::AddDefault(int SalamVersion)
                 }
                 break;
             }
-        // a nove formaty
+        // and new formats
         if ((index = AddUnpacker()) == -1)
             return;
         SetUnpacker(index, 3, "PAK (Plugin)", "*.pak", TRUE);
-    case 3: // co pribylo po beta2
-    case 4: // beta 3 ale bez $(SpawnName) promenne
-    case 5: // co je noveho v beta4 ?
+    case 3: // what has been added after beta2
+    case 4: // beta 3 but without the $(SpawnName) variable
+    case 5: // What's new in beta4?
         if ((index = AddUnpacker()) == -1)
             return;
         SetUnpacker(index, 2, "TAR (Plugin)", "*.TAR;*.TGZ;*.TBZ;*.TAZ;"
@@ -1044,17 +1038,17 @@ void CUnpackerConfig::AddDefault(int SalamVersion)
                                               "*.RPM;*.CPIO",
                     TRUE);
     }
-    // ted externi
+    // external now
     switch (SalamVersion)
     {
-        // parametry
+        // parameters
         //BOOL SetUnpacker(int index, int type, const char *title, const char *ext, BOOL old,
         //                 BOOL supportLongNames = FALSE,
         //                 const char *cmdExecExtract = NULL, const char *cmdArgsExtract = NULL,
         //                 BOOL needANSIListFile = FALSE);
 
     case 0: // default config
-    case 1: // v1.52 nemela pakovace
+    case 1: // v1.52 did not have a packer
         for (i = 0; i < 7; i++)
         {
             int idx = CustomOrder[i];
@@ -1064,7 +1058,7 @@ void CUnpackerConfig::AddDefault(int SalamVersion)
                         CustomUnpackers[idx].SupLN, CustomUnpackers[idx].Exe,
                         CustomUnpackers[idx].Args, CustomUnpackers[idx].Ansi);
         }
-    case 2: // co pribylo po beta1
+    case 2: // what has been added since beta1
         for (i = 7; i < 12; i++)
         {
             int idx = CustomOrder[i];
@@ -1074,9 +1068,9 @@ void CUnpackerConfig::AddDefault(int SalamVersion)
                         CustomUnpackers[idx].SupLN, CustomUnpackers[idx].Exe,
                         CustomUnpackers[idx].Args, CustomUnpackers[idx].Ansi);
         }
-    case 3: // co pribylo po beta2
-    case 4: // beta 3 ale bez $(SpawnName) promenne
-        // u drivejsich verzi muze existovat promenna $(SpawnName), ktera nyni uz neexistuje - musime ji vyhodit
+    case 3: // what has been added after beta2
+    case 4: // beta 3 but without the $(SpawnName) variable
+        // In older versions, there may be a variable $(SpawnName) that no longer exists - we need to remove it
         for (index = 0; index < GetUnpackersCount(); index++)
             if (GetUnpackerType(index) == 1)
             {
@@ -1101,43 +1095,43 @@ void CUnpackerConfig::AddDefault(int SalamVersion)
                     free(ExtBuf);
                 }
             }
-    case 5: // beta 3 ale bez taru
-    case 6: // co je noveho v beta4 ?
-    case 7: // 1.6b6 - kvuli spravne konverzi podporovanych funkci pluginu (viz CPlugins::Load)
+    case 5: // beta 3 but without tar
+    case 6: // What's new in beta4?
+    case 7: // 1.6b6 - for correct conversion of supported plugin functions (see CPlugins::Load)
     case 8:
-        // prechod na pouzivani promennych misto primeho jmena exe souboru
+        // switch to using variables instead of the direct name of the exe file
         for (index = 0; index < GetUnpackersCount(); index++)
-            // uvazujeme pouze externi pakovace
+            // we consider only external packers
             if (((GetUnpackerOldType(index) && GetUnpackerType(index) == 1) ||
                  (!GetUnpackerOldType(index) && GetUnpackerType(index) == CUSTOMUNPACKER_EXTERNAL)) &&
                 GetUnpackerCmdExecExtract(index) != NULL)
             {
-                // vezmeme stare commandy
+                // let's take old commands
                 char* cmd = DupStr(GetUnpackerCmdExecExtract(index));
                 i = 0;
                 BOOL found = FALSE;
-                // a prohledame s nimi tabulku
+                // and we will search the table with them
                 while (PackConversionTable[i].exe != NULL)
                 {
-                    // porovname s prvky tabulky
+                    // compare with elements of the table
                     if (!strcmp(cmd, PackConversionTable[i].exe))
                     {
                         free(cmd);
-                        // a jeden hnusnej hack kvuli raru
+                        // and one ugly hack because of the bug
                         if (i == 2)
-                            // je-li to rar, neumime poznat, jestli 16bit nebo 32bit primo, ale jen podle podpory dlouhych jmen
+                            // if it's a rar, we can't tell if it's 16bit or 32bit directly, only by the support of long names
                             if (GetUnpackerSupLongNames(index))
                                 cmd = DupStr(PackConversionTable[i].variable);
                             else
                                 cmd = DupStr("$(Rar16bitExecutable)");
                         else
-                            // pro ostatni je to jednoduche
+                            // for others it is simple
                             cmd = DupStr(PackConversionTable[i].variable);
                         found = TRUE;
                     }
                     i++;
                 }
-                // stringy se musi nekam nakopirovat, jinak je smazem driv, nez je pouzijem
+                // Strings must be copied somewhere, otherwise I will delete them before using them
                 char* title = DupStr(GetUnpackerTitle(index));
                 char* ext = DupStr(GetUnpackerExt(index));
                 char* args = DupStr(GetUnpackerCmdArgsExtract(index));
@@ -1151,8 +1145,8 @@ void CUnpackerConfig::AddDefault(int SalamVersion)
                 free(ext);
                 free(cmd);
             }
-    case 9: // 1.6b6 - kvuli prechodu ze jmena exe na promennou u custom packers
-        // nahozeni ANSI file-listu u ACE32 a PKZIP25
+    case 9: // 1.6b6 - for transitioning from the name 'exe' to a variable in custom packers
+        // loading an ANSI file list in ACE32 and PKZIP25
         for (index = 0; index < GetUnpackersCount(); index++)
         {
             if ((GetUnpackerOldType(index) && GetUnpackerType(index) == 1) ||
@@ -1166,48 +1160,48 @@ void CUnpackerConfig::AddDefault(int SalamVersion)
                 }
             }
         }
-        // zmenime "XXX (Internal)" na "XXX (Plugin)"
-        // strasne to vyprasime, protoze menime na kratsi text -> vystacime proste s prepisem
+        // change "XXX (Internal)" to "XXX (Plugin)"
+        // It will be terribly exhausting because we are changing to a shorter text -> we will just stick with the transcript
         for (index = 0; index < GetUnpackersCount(); index++)
         {
             if ((GetUnpackerOldType(index) && GetUnpackerType(index) != 1) ||
                 (!GetUnpackerOldType(index) && GetUnpackerType(index) != CUSTOMUNPACKER_EXTERNAL))
-            { // bereme jen plug-iny (ne externi unpackery)
+            { // we only take plug-ins (not external unpackers)
                 char* s = Unpackers[index]->Title;
                 char* f;
-                if (s != NULL && (f = strstr(s, "(Internal)")) != NULL) // obsahuje (Internal)
+                if (s != NULL && (f = strstr(s, "(Internal)")) != NULL) // contains (Internal)
                 {
                     if (strlen(f) == 10)
-                        strcpy(f, "(Plugin)"); // (Internal) je na konci stringu
+                        strcpy(f, "(Plugin)"); // (Internal) is at the end of the string
                 }
             }
         }
-    case 10: // 1.6b6 - kvuli prejmenovani "XXX (Internal)" na "XXX (Plugin)" v Pack a Unpack dialozich
-    case 11: // 1.6b7 - pribyl plugin CheckVer - zajistime jeho automatickou do-instalaci
-    case 12: // 2.0 - auto-vypnuti salopen.exe + pribyl plugin PEViewer - zajistime jeho automatickou do-instalaci
-    case 13: // 2.5b1 - dopsana chybejici konverze konfigurace u custom-packeru - promitnuti zmeny u LHA
-    case 14: // 2.5b1 - Nove Advanced Options ve Find dialogu. Prechod na CFilterCriteria. Konverze inverzni masky u filtru.
-    case 15: // 2.5b2 - novejsi verze, at se naloadi pluginy (upgradnou zaznamy v registry)
-    case 16: // 2.5b2 - pridano barveni Encrypted souboru a adresaru (pridava se pri loadu konfigu + je v defaultnim konfigu)
-    case 17: // 2.5b2 - pridana maska *.xml do nastaveni interniho vieweru - "force text mode"
-    case 18: // 2.5b3 - zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b2
-    case 19: // 2.5b4 - zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b3
-    case 20: // 2.5b5 - zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b4
-    case 21: // 2.5b6 - zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b5(a)
-    case 22: // 2.5b6 - filtry v panelech -- sjednoceni na jednu historii
-    case 23: // 2.5b6 - novy pohled v panelu (Tiles)
-    case 24: // 2.5b7 - zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b6
-    case 25: // 2.5b7 - plugins: show in plugin bar -> prenos promenne do CPluginData
-    case 26: // 2.5b8 - zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b7
-    case 27: // 2.5b9 - zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b8
-    case 28: // 2.5b9 - nove barevne schema dle stareho DOS Navigator -> konverze 'scheme'
-    case 29: // 2.5b10 - zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b9
-    case 30: // 2.5b11 - zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b10
-    case 31: // 2.5b11 - zavedli jsme Floppy sekci v konfiguraci Drives a potrebujeme pro Removable forcnout cteni ikon
-    case 32: // 2.5b11 - Find: "Local Settings\\Temporary Internet Files" je implicitne prohledavane
-    case 33: // 2.5b12 - zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b11
+    case 10: // 1.6b6 - due to renaming "XXX (Internal)" to "XXX (Plugin)" in Pack and Unpack dialogs
+    case 11: // 1.6b7 - CheckVer plugin added - we will ensure its automatic installation
+    case 12: // 2.0 - automatic shutdown of salopen.exe + added PEViewer plugin - we will ensure its automatic installation
+    case 13: // 2.5b1 - added missing configuration conversion for custom packers - reflecting changes in LHA
+    case 14: // 2.5b1 - New Advanced Options in the Find dialog. Transition to CFilterCriteria. Conversion of inverse mask in the filter.
+    case 15: // 2.5b2 - newer version, so that plugins can be loaded (upgrade records in the registry)
+    case 16: // 2.5b2 - added coloring of Encrypted files and directories (added during config load + is in the default config)
+    case 17: // 2.5b2 - added *.xml mask to the internal viewer settings - "force text mode"
+    case 18: // 2.5b3 - currently only for transferring plugin configuration from version 2.5b2
+    case 19: // 2.5b4 - currently only for transferring plugin configuration from version 2.5b3
+    case 20: // 2.5b5 - currently only for transferring plugin configuration from version 2.5b4
+    case 21: // 2.5b6 - currently only for transferring plugin configuration from version 2.5b5(a)
+    case 22: // 2.5b6 - filters in panels -- unified into one history
+    case 23: // 2.5b6 - new view in the panel (Tiles)
+    case 24: // 2.5b7 - currently only for transferring plugin configuration from version 2.5b6
+    case 25: // 2.5b7 - plugins: show in plugin bar -> transfer variable to CPluginData
+    case 26: // 2.5b8 - currently only for transferring plugin configuration from version 2.5b7
+    case 27: // 2.5b9 - currently only for transferring plugin configuration from version 2.5b8
+    case 28: // 2.5b9 - new color scheme based on the old DOS Navigator -> conversion 'scheme'
+    case 29: // 2.5b10 - currently only for transferring plugin configuration from version 2.5b9
+    case 30: // 2.5b11 - currently only for transferring plugin configuration from version 2.5b10
+    case 31: // 2.5b11 - we introduced the Floppy section in the Drives configuration and need to forcibly refresh the icon reading for Removable
+    case 32: // 2.5b11 - Find: "Local Settings\\Temporary Internet Files" is implicitly searched
+    case 33: // 2.5b12 - currently only for transferring plugin configuration from version 2.5b11
     {
-        // u PKZIP25 pribylo "-nozipextension -directories" a "*.pk3;*.jar", musime to doplnit
+        // in PKZIP25 added "-nozipextension -directories" and "*.pk3;*.jar", we need to add it
         const char* newPKZIP25Args = "-ext -nozipextension -directories -path \"$(ArchiveFullName)\" @\"$(ListFullName)\"";
         const char* newPKZIP25Ext = "*.zip;*.pk3;*.jar";
         for (index = 0; index < GetUnpackersCount(); index++)
@@ -1219,25 +1213,25 @@ void CUnpackerConfig::AddDefault(int SalamVersion)
                 const char* extrArgs = GetUnpackerCmdArgsExtract(index);
                 const char* ext = GetUnpackerExt(index);
 
-                // test jestli jde o PKZIP25 custom unpacker
+                // test if it is a PKZIP25 custom unpacker
                 if (extrEXE != NULL && strcmp(extrEXE, "$(Zip32bitExecutable)") == 0)
                 {
-                    // test jestli jde o stary zaznam PKZIP25 custom unpackeru
+                    // test if it is an old record of PKZIP25 custom unpacker
                     if (extrArgs != NULL &&
                         strcmp(extrArgs, "-ext -path \"$(ArchiveFullName)\" @\"$(ListFullName)\"") == 0 &&
                         strcmp(ext, "*.zip") == 0)
                     {
-                        // konverze na nove argumenty (pridane "-nozipextension" + "*.pk3;*.jar")
+                        // Conversion to new arguments (added "-nozipextension" + "*.pk3;*.jar")
                         char* s = DupStr(newPKZIP25Args);
                         if (s != NULL)
                         {
-                            free(Unpackers[index]->CmdArgsExtract); // nemuze byt NULL (jsou zde stare argumenty)
+                            free(Unpackers[index]->CmdArgsExtract); // cannot be NULL (old arguments are present)
                             Unpackers[index]->CmdArgsExtract = s;
                         }
                         s = DupStr(newPKZIP25Ext);
                         if (s != NULL)
                         {
-                            free(Unpackers[index]->Ext); // nemuze byt NULL (jsou zde stare argumenty)
+                            free(Unpackers[index]->Ext); // cannot be NULL (old arguments are present)
                             Unpackers[index]->Ext = s;
                         }
                     }
@@ -1245,14 +1239,14 @@ void CUnpackerConfig::AddDefault(int SalamVersion)
             }
         }
     }
-        // case 34:   // 2.5b12 - uprava externiho packeru/unpackeru PKZIP25 (externi Win32 verze)
+        // case 34:   // 2.5b12 - modification of external packer/unpacker PKZIP25 (external Win32 version)
 
     default:
         break;
     }
     if (SalamVersion > 1 && SalamVersion < 81)
     {
-        // od RAR 5.0 jsou filelists defaultne ANSI misto OEM, proto musime OEM vnutit pomoci switche
+        // Starting from RAR 5.0, filelists are by default ANSI instead of OEM, so we need to force OEM using a switch
         const char* newRAR5Args = "x -scol \"$(ArchiveFullName)\" @\"$(ListFullName)\"";
         for (index = 0; index < GetUnpackersCount(); index++)
         {
@@ -1263,15 +1257,15 @@ void CUnpackerConfig::AddDefault(int SalamVersion)
                 const char* extrArgs = GetUnpackerCmdArgsExtract(index);
                 const char* ext = GetUnpackerExt(index);
 
-                // test jestli jde o RAR Win32 custom unpacker
+                // test if it is a RAR Win32 custom unpacker
                 if (extrEXE != NULL && strcmp(extrEXE, "$(Rar32bitExecutable)") == 0)
                 {
-                    // test jestli jde o stary zaznam RAR Win32 custom unpackeru
+                    // test if it is an old record of the RAR Win32 custom unpacker
                     if (extrArgs != NULL &&
                         strcmp(extrArgs, "x \"$(ArchiveFullName)\" @\"$(ListFullName)\"") == 0)
                     {
-                        // konverze na nove argumenty (pridane "-scol")
-                        free(Unpackers[index]->CmdArgsExtract); // nemuze byt NULL (jsou zde stare argumenty)
+                        // conversion to new arguments (added "-scol")
+                        free(Unpackers[index]->CmdArgsExtract); // cannot be NULL (old arguments are present)
                         Unpackers[index]->CmdArgsExtract = DupStr(newRAR5Args);
                     }
                 }
@@ -1324,8 +1318,7 @@ int CUnpackerConfig::AddUnpacker(BOOL toFirstIndex)
     return index;
 }
 
-/*
-BOOL
+/*  BOOL
 CUnpackerConfig::SwapUnpackers(int index1, int index2)
 {
   BYTE buff[sizeof(CUnpackerConfigData)];
@@ -1333,8 +1326,7 @@ CUnpackerConfig::SwapUnpackers(int index1, int index2)
   memcpy(Unpackers[index1], Unpackers[index2], sizeof(CUnpackerConfigData));
   memcpy(Unpackers[index2], buff, sizeof(CUnpackerConfigData));
   return TRUE;
-}
-*/
+}*/
 
 BOOL CUnpackerConfig::MoveUnpacker(int srcIndex, int dstIndex)
 {
@@ -1361,11 +1353,11 @@ void CUnpackerConfig::DeleteUnpacker(int index)
     if (PreferedUnpacker >= 0 && PreferedUnpacker < Unpackers.Count)
     {
         if (index < PreferedUnpacker)
-            PreferedUnpacker--; // uprava indexu, aby se reprezentoval stejnou polozku
+            PreferedUnpacker--; // Adjusting the index to represent the same item
         else
         {
             if (index == PreferedUnpacker)
-                PreferedUnpacker = -1; // prisli jsme o vybranou polozku
+                PreferedUnpacker = -1; // we lost the selected item
         }
     }
     Unpackers.Delete(index);
@@ -1439,7 +1431,7 @@ BOOL CUnpackerConfig::ExecuteUnpacker(HWND parent, CFilesWindow* panel, const ch
             }
             sprintf(command, "%s %s", data->CmdExecExtract, data->CmdArgsExtract);
 
-            // pointer musime ulozit kvuli dealokaci, bude znicen
+            // we need to save the pointer for deallocation, it will be destroyed
             char* tmpMask2 = tmpMask;
             BOOL ret = PackUniversalUncompress(parent, command, NULL, targetDir, FALSE, panel,
                                                data->SupportLongNames, zipFile, targetDir,
@@ -1517,7 +1509,7 @@ BOOL CUnpackerConfig::Load(HKEY hKey)
         if (ret)
         {
             if (!GetValue(hKey, SALAMANDER_CPU_ANSILIST, REG_DWORD, &needANSI, sizeof(DWORD)))
-                needANSI = FALSE; // ve starsich verzich nebylo, predpokladalo se FALSE
+                needANSI = FALSE; // in older versions it was not present, it was assumed FALSE
         }
 
         if (ret)
@@ -1533,7 +1525,7 @@ BOOL CUnpackerConfig::Load(HKEY hKey)
         int index;
         if ((index = AddUnpacker()) == -1)
             return FALSE;
-        if (Configuration.ConfigVersion < 44) // prevod pripon na lowercase
+        if (Configuration.ConfigVersion < 44) // convert suffixes to lowercase
         {
             char extAux[MAX_PATH + 2];
             lstrcpyn(extAux, ext, MAX_PATH + 2);

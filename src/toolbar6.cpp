@@ -24,7 +24,7 @@ CDriveBar::CDriveBar(HWND hNotifyWindow, CObjectOrigin origin)
 {
     CALL_STACK_MESSAGE_NONE
     List = NULL;
-    // tato inicializace je take ve WM_DESTROY, protoze okno se pouze zhasina a rozsveci
+    // This initialization is also in WM_DESTROY because the window is only being hidden and shown
     CheckedDrive[0] = 0;
     HDrivesIcons = NULL;
     HDrivesIconsGray = NULL;
@@ -55,8 +55,8 @@ BOOL CDriveBar::CreateDriveButtons(CDriveBar* copyDrivesListFrom)
     if (HWindow == NULL)
         return FALSE;
 
-    // potlacime kresleni, abychom predesli mrkani checked polozky (staci otevrit a zavrit plugins manager a mrkalo by to)
-    // take jsme mrkali pri spusteni salamandera
+    // We suppress drawing to prevent flickering of the checked item (just open and close the plugins manager and it should stop flickering)
+    // When we started the salamander, we took a look
     SendMessage(HWindow, WM_SETREDRAW, FALSE, 0);
     RemoveAllItems();
     SetStyle(TLB_STYLE_IMAGE | TLB_STYLE_TEXT);
@@ -111,7 +111,7 @@ BOOL CDriveBar::CreateDriveButtons(CDriveBar* copyDrivesListFrom)
 int CDriveBar::GetNeededHeight()
 {
     CALL_STACK_MESSAGE_NONE
-    // i v pripade, ze nedrzime zadnou ikonu budeem vracet spravnou vysku
+    // and in case we don't hold any icon, we will return the correct height
     int height = CToolBar::GetNeededHeight();
     int iconSize = GetIconSizeForSystemDPI(ICONSIZE_16);
     int minH = 3 + iconSize + 3;
@@ -139,7 +139,7 @@ void CDriveBar::Execute(DWORD id)
                 panel = MainWindow->GetActivePanel();
 
             if (DriveType != drvtPluginCmd)
-                panel->TopIndexMem.Clear(); // dlouhy skok
+                panel->TopIndexMem.Clear(); // long jump
 
             char path[MAX_PATH];
             switch (DriveType)
@@ -147,15 +147,15 @@ void CDriveBar::Execute(DWORD id)
             case drvtMyDocuments:
             case drvtGoogleDrive:
             case drvtDropbox:
-            case drvtOneDrive:    // bud primo tlacitko nebo vybrane z drop down menu
-            case drvtOneDriveBus: // bud primo tlacitko nebo vybrane z drop down menu
+            case drvtOneDrive:    // either a direct button or selected from a drop-down menu
+            case drvtOneDriveBus: // either a direct button or selected from a drop-down menu
             {
                 panel->ChangePathToDrvType(HWindow, DriveType, DriveType == drvtOneDriveBus ? (const char*)DriveTypeParam : NULL);
                 if (DriveType == drvtOneDriveBus)
                     free((char*)DriveTypeParam);
                 if ((DriveType == drvtOneDrive || DriveType == drvtOneDriveBus) &&
                     !fromDropDown && GetOneDriveStorages() > 1)
-                { // OneDrive by zase mel byt drop down, provedeme refresh obou Drive bar, at se updatne tlacitko
+                { // OneDrive should be a drop down again, we will refresh both Drive bars to update the button
                     if (MainWindow != NULL && MainWindow->HWindow != NULL)
                         PostMessage(MainWindow->HWindow, WM_USER_DRIVES_CHANGE, 0, 0);
                 }
@@ -166,7 +166,7 @@ void CDriveBar::Execute(DWORD id)
                 TRACE_E("CDriveBar::Execute(): unexpected drive type: drvtOneDriveMenu");
                 return;
 
-            // jde o Network?
+            // Is it about Network?
             case drvtNeighborhood:
             {
                 if (GetTargetDirectory(panel->HWindow, panel->HWindow, LoadStr(IDS_CHANGEDRIVE),
@@ -192,10 +192,10 @@ void CDriveBar::Execute(DWORD id)
 
             case drvtPluginCmd:
             {
-                // kod prevzaty z fileswn3.cpp, CFilesWindow::ChangeDrive()
+                // code taken from fileswn3.cpp, CFilesWindow::ChangeDrive()
                 const char* dllName = (const char*)DriveTypeParam;
                 CPluginData* data = Plugins.GetPluginData(dllName);
-                if (data != NULL) // plug-in existuje, jdeme spustit prikaz
+                if (data != NULL) // plug-in exists, let's execute the command
                     data->ExecuteChangeDriveMenuItem(panel == MainWindow->LeftPanel ? PANEL_LEFT : PANEL_RIGHT);
                 return;
             }
@@ -212,7 +212,7 @@ void CDriveBar::SetCheckedDrive(CFilesWindow* panel, BOOL force)
     if (isDiskOrArchive)
         lstrcpyn(CheckedDrive, panel->GetPath(), 3);
     else
-        CheckedDrive[0] = 0; // pro FS tato cache nefunguje
+        CheckedDrive[0] = 0; // for FS this cache does not work
     DWORD index;
     if (List == NULL || !List->FindPanelPathIndex(panel, &index))
         index = -1;
@@ -231,7 +231,7 @@ void CDriveBar::SetCheckedDrive(CFilesWindow* panel, BOOL force)
                 if (indexInList >= CM_DRIVEBAR2_MIN && indexInList <= CM_DRIVEBAR2_MAX)
                     indexInList -= CM_DRIVEBAR2_MIN;
                 else
-                    indexInList = -2; // nemelo by se stat
+                    indexInList = -2; // should not happen
             }
             CheckItem(i, TRUE, index == indexInList);
         }
@@ -280,7 +280,7 @@ BOOL CDriveBar::OnContextMenu()
                 if (indexInList >= CM_DRIVEBAR2_MIN && indexInList <= CM_DRIVEBAR2_MAX)
                     indexInList -= CM_DRIVEBAR2_MIN;
                 else
-                    return FALSE; // nemelo by se stat
+                    return FALSE; // should not happen
             }
             CFilesWindow* panel;
             BOOL bar2 = this == MainWindow->DriveBar2;
@@ -294,13 +294,13 @@ BOOL CDriveBar::OnContextMenu()
             FromContextMenu = FALSE;
             const char* dllName = NULL;
             List->OnContextMenu(TRUE, indexInList, panel == MainWindow->LeftPanel ? PANEL_LEFT : PANEL_RIGHT, &dllName);
-            if (PostCmd != 0) // nastavuje se jen na drvtPluginFS a drvtPluginCmd, pricemz drvtPluginFS nemuze byt na Drive bare
+            if (PostCmd != 0) // is set only to drvtPluginFS and drvtPluginCmd, where drvtPluginFS cannot be on Drive bare
             {
                 UpdateWindow(MainWindow->HWindow);
 
                 CPluginData* data = Plugins.GetPluginData(dllName);
-                if (data != NULL) // plug-in existuje, jdeme spustit prikaz
-                {                 // post-cmd z kontextoveho menu polozky FS
+                if (data != NULL) // plug-in exists, let's execute the command
+                {                 // post-cmd from the context menu of the FS item
                     data->GetPluginInterfaceForFS()->ExecuteChangeDrivePostCommand(panel == MainWindow->LeftPanel ? PANEL_LEFT : PANEL_RIGHT,
                                                                                    PostCmd, PostCmdParam);
                 }

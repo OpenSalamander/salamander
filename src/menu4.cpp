@@ -10,7 +10,7 @@ CMenuPopup ArchiveMenu;
 CMenuPopup ArchivePanelMenu;
 
 //
-// vytvori a naplni menu
+// creates and populates the menu
 //
 
 MENU_TEMPLATE_ITEM MainMenuTemplate[] =
@@ -86,7 +86,7 @@ MENU_TEMPLATE_ITEM MainMenuTemplate[] =
         {MNTT_PB, IDS_MENU_EDIT, MNTS_B | MNTS_I | MNTS_A, CML_EDIT, -1, 0, NULL},
         {MNTT_IT, IDS_MENU_EDIT_CUT, MNTS_B | MNTS_I | MNTS_A, CM_CLIPCUT, IDX_TB_CLIPBOARDCUT, 0, &EnablerFilesOnDisk},
         {MNTT_IT, IDS_MENU_EDIT_COPY, MNTS_B | MNTS_I | MNTS_A, CM_CLIPCOPY, IDX_TB_CLIPBOARDCOPY, 0, &EnablerFilesOnDiskOrArchive},
-        {MNTT_IT, IDS_MENU_EDIT_PASTE, MNTS_B | MNTS_I | MNTS_A, CM_CLIPPASTE, IDX_TB_CLIPBOARDPASTE, 0, &EnablerPaste}, // !POZOR!, polozka se meni v CMainWindow/WM_USER_INITMENUPOPUP (pri textu na clipboardu se pridava se "Change Directory")
+        {MNTT_IT, IDS_MENU_EDIT_PASTE, MNTS_B | MNTS_I | MNTS_A, CM_CLIPPASTE, IDX_TB_CLIPBOARDPASTE, 0, &EnablerPaste}, // !WARNING!, the item is changed in CMainWindow/WM_USER_INITMENUPOPUP (when there is text on the clipboard, "Change Directory" is added)
         {MNTT_IT, IDS_MENU_EDIT_PASTELINKS, MNTS_I | MNTS_A, CM_CLIPPASTELINKS, -1, 0, &EnablerPasteLinksOnDisk},
         {MNTT_SP, -1, MNTS_I | MNTS_A, 0, -1, 0, NULL},
         {MNTT_IT, IDS_MENU_EDIT_COPYFULLNAME, MNTS_I | MNTS_A, CM_CLIPCOPYFULLNAME, -1, 0, &EnablerFileDir},
@@ -362,16 +362,16 @@ MENU_TEMPLATE_ITEM ArchiveMenuTemplate[] =
 MENU_TEMPLATE_ITEM ArchivePanelMenuTemplate[] =
     {
         {MNTT_PB, -1, MNTS_B | MNTS_I | MNTS_A, 0, -1, 0, NULL},
-        {MNTT_IT, IDS_ARCHIVEMENU_CLIPPASTE, MNTS_B | MNTS_I | MNTS_A, CM_CLIPPASTE, IDX_TB_CLIPBOARDPASTE, 0, &EnablerPaste}, // !POZOR!, polozka se meni v ShellAction()/saContextMenu/onlyPanelMenu (pri textu na clipboardu se pridava se "Change Directory")
+        {MNTT_IT, IDS_ARCHIVEMENU_CLIPPASTE, MNTS_B | MNTS_I | MNTS_A, CM_CLIPPASTE, IDX_TB_CLIPBOARDPASTE, 0, &EnablerPaste}, // !WARNING!, the item is changed in ShellAction()/saContextMenu/onlyPanelMenu (when there is text on the clipboard, "Change Directory" is added)
         {MNTT_PE},                                                                                                             // terminator
 };
 
 BOOL BuildSalamanderMenus()
 {
     CALL_STACK_MESSAGE1("BuildSalamanderMenus()");
-    // menu hlavniho okna
+    // Menu of the main window
     MainMenu.LoadFromTemplate(HLanguage, MainMenuTemplate, NULL, HGrayToolBarImageList, HHotToolBarImageList);
-    // kontextove menu v archivech
+    // context menu in archives
     ArchiveMenu.LoadFromTemplate(HLanguage, ArchiveMenuTemplate, NULL, HGrayToolBarImageList, HHotToolBarImageList);
     ArchivePanelMenu.LoadFromTemplate(HLanguage, ArchivePanelMenuTemplate, NULL, HGrayToolBarImageList, HHotToolBarImageList);
     return TRUE;

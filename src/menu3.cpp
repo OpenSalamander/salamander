@@ -6,7 +6,7 @@
 #include "bitmap.h"
 #include "menu.h"
 
-#define COLUMN_L1_L2_MARGIN 5 // prostor mezi sloupcem L1 a L2
+#define COLUMN_L1_L2_MARGIN 5 // space between column L1 and L2
 #define STANDARD_BITMAP_SIZE 17
 
 //*****************************************************************************
@@ -17,7 +17,7 @@
 CMenuSharedResources::CMenuSharedResources()
 {
     CALL_STACK_MESSAGE_NONE
-    // barevne solid brushe
+    // colorful solid brushes
     NormalBkColor = 0xFFFFFFFF;
     SelectedBkColor = 0xFFFFFFFF;
     NormalTextColor = 0xFFFFFFFF;
@@ -84,7 +84,7 @@ BOOL CMenuSharedResources::Create(HWND hParent, int width, int height)
     CALL_STACK_MESSAGE3("CMenuSharedResources::Create(, %d, %d)", width, height);
     HParent = hParent;
 
-    // barvy
+    // colors
     NormalBkColor = GetSysColor(COLOR_BTNFACE);
     SelectedBkColor = GetSysColor(COLOR_HIGHLIGHT);
     NormalTextColor = GetSysColor(COLOR_BTNTEXT);
@@ -92,7 +92,7 @@ BOOL CMenuSharedResources::Create(HWND hParent, int width, int height)
     HilightColor = GetSysColor(COLOR_3DHILIGHT);
     GrayTextColor = GetSysColor(COLOR_3DSHADOW);
 
-    // z fontu pro menu si nageneruju kopii a tucnou verzi
+    // from the menu font, I'll generate a copy and a bold version
     NONCLIENTMETRICS ncm;
     ncm.cbSize = sizeof(ncm);
     SystemParametersInfo(SPI_GETNONCLIENTMETRICS, ncm.cbSize, &ncm, 0);
@@ -106,11 +106,11 @@ BOOL CMenuSharedResources::Create(HWND hParent, int width, int height)
     HDC hDC = HANDLES(GetDC(HParent));
     CacheBitmap->CreateBmp(hDC, 1, 1);
 
-    // vytvorim memory DC
+    // create memory DC
     HTempMemDC = HANDLES(CreateCompatibleDC(NULL));
     HTemp2MemDC = HANDLES(CreateCompatibleDC(NULL));
 
-    // vytahnu velikosti fontu
+    // retrieve font sizes
     TEXTMETRIC tm;
     HFONT hOldFont = (HFONT)SelectObject(hDC, HNormalFont);
     GetTextMetrics(hDC, &tm);
@@ -120,12 +120,12 @@ BOOL CMenuSharedResources::Create(HWND hParent, int width, int height)
     SelectObject(hDC, hOldFont);
     HANDLES(ReleaseDC(NULL, hDC));
 
-    // zjistim zvetsovaci faktor pro bitmapy
+    // Calculate the scaling factor for bitmaps
     BitmapsZoom = (TextItemHeight - 2) / STANDARD_BITMAP_SIZE;
     if (BitmapsZoom < 1)
         BitmapsZoom = 1;
 
-    // pripravim bitmapu pro check marky
+    // Prepare a bitmap for check marks
     MenuBitmapWidth = TextItemHeight - 3 - 3;
     HMenuBitmaps = HANDLES(CreateBitmap(MenuBitmapWidth * 1, MenuBitmapWidth, 1, 1, NULL));
     HBITMAP hOldBitmap = (HBITMAP)SelectObject(HTempMemDC, HMenuBitmaps);
@@ -135,8 +135,7 @@ BOOL CMenuSharedResources::Create(HWND hParent, int width, int height)
     r.bottom = MenuBitmapWidth;
     r.right = r.left + MenuBitmapWidth;
     DrawFrameControl(HTempMemDC, &r, DFC_MENU, DFCS_MENUARROW);
-    /*
-  r.top = 0;
+    /*    r.top = 0;
   r.left = 0;
   r.bottom = MenuBitmapWidth;
   r.right = r.left + MenuBitmapWidth;
@@ -144,16 +143,15 @@ BOOL CMenuSharedResources::Create(HWND hParent, int width, int height)
   r.left =  r.right;
   r.right = r.left + MenuBitmapWidth;
   DrawFrameControl(HTempMemDC, &r, DFC_MENU, DFCS_MENUARROW);
-  SelectObject(HTempMemDC, hOldBitmap);
-*/
-    // otocim levou a pravou sipku => nahoru a dolu
+  SelectObject(HTempMemDC, hOldBitmap);*/
+    // turn left and right arrow => up and down
     //  RotateBitmap90(HMenuBitmaps, menuBitmapArrowU * MenuBitmapWidth, 0, menuBitmapArrowL * MenuBitmapWidth, 0, MenuBitmapWidth);
     //  RotateBitmap90(HMenuBitmaps, menuBitmapArrowD * MenuBitmapWidth, 0, menuBitmapArrowR * MenuBitmapWidth, 0, MenuBitmapWidth);
 
-    // cernobila bitmapa pro masky
+    // black and white bitmap for masks
     MonoBitmap = new CBitmap();
     int iconSize = GetIconSizeForSystemDPI(ICONSIZE_16);
-    int bwWidth = max(MenuBitmapWidth, iconSize); // musi se nam do ni vejit male ikonky
+    int bwWidth = max(MenuBitmapWidth, iconSize); // small icons must fit into it
     MonoBitmap->CreateBmpBW(bwWidth, bwWidth);
 
     HCloseEvent = HANDLES(CreateEvent(NULL, TRUE, FALSE, NULL)); // "non-signaled" state, manual
@@ -174,9 +172,9 @@ void CMenuPopup::LayoutColumns()
 
     TotalHeight = 0;
 
-    int maxItemHeight = 0; // pro sdilenou bitmapu
-    // nastavim vysku vsem itemam
-    // v pripade stringu necham napocitat sirky sloupcu
+    int maxItemHeight = 0; // for a shared bitmap
+    // set the height for all items
+    // in case of a string, I let the column widths be calculated
     int i;
     for (i = 0; i < Items.Count; i++)
     {
@@ -186,10 +184,10 @@ void CMenuPopup::LayoutColumns()
             continue;
         int sectionWidth = 0;
         int itemHeight = 0;
-        // zjistim rozmery jednotlivych polozek
+        // find out the dimensions of individual items
         if (item->Type & MENU_TYPE_OWNERDRAW)
         {
-            // rozmery zjistim dotazem
+            // dimensions will be determined by query
             MEASUREITEMSTRUCT mis;
             mis.CtlType = ODT_MENU;
             mis.CtlID = 0;
@@ -210,7 +208,7 @@ void CMenuPopup::LayoutColumns()
                 item->MinWidth = 0;
                 if (item->HBmpItem == HBMMENU_CALLBACK)
                 {
-                    // rozmery zjistim dotazem (HBMMENU_CALLBACK pouziva TortoiseCVS pro ikonky v ctx menu)
+                    // dimensions are determined by query (HBMMENU_CALLBACK uses TortoiseCVS for icons in ctx menu)
                     MEASUREITEMSTRUCT mis;
                     mis.CtlType = ODT_MENU;
                     mis.CtlID = 0;
@@ -233,11 +231,11 @@ void CMenuPopup::LayoutColumns()
                 else
                 {
                     {
-                        // pro bitmapu vytahnu rozmery
+                        // extract dimensions for the bitmap
                         BITMAP bitmap;
                         if (!GetObject(item->HBmpItem, sizeof(bitmap), &bitmap))
                         {
-                            // pokud GetObject selze, predhodime alespon "nejake" hodnoty, abychom naprosto nerozhodili menu
+                            // if GetObject fails, we will provide at least "some" values to avoid completely crashing the menu
                             TRACE_E("GetObject() failed!");
                             bitmap.bmWidth = 10;
                             bitmap.bmHeight = 10;
@@ -247,7 +245,7 @@ void CMenuPopup::LayoutColumns()
                             item->Height = SharedRes->TextItemHeight;
                         item->MinWidth = SharedRes->TextItemHeight + 1 + 2 + bitmap.bmWidth;
 
-                        // zajistim dostatecnou velikost masky
+                        // ensure sufficient mask size
                         if (SharedRes->MonoBitmap->NeedEnlarge(bitmap.bmWidth, bitmap.bmHeight))
                             SharedRes->MonoBitmap->Enlarge(bitmap.bmWidth, bitmap.bmHeight);
                     }
@@ -259,7 +257,7 @@ void CMenuPopup::LayoutColumns()
             maxItemHeight = item->Height;
     }
 
-    // prvni sloupec musi byt stejne siroky pres vsechny polozky
+    // the first column must be equally wide across all items
     int col1MaxWidth = 0;
     if (threeCol)
     {
@@ -290,7 +288,7 @@ void CMenuPopup::LayoutColumns()
 
         if (!(item->Type & MENU_TYPE_OWNERDRAW) && (item->Type & MENU_TYPE_STRING))
         {
-            // sirka levych dvou sloupcu
+            // width of the left two columns
             int columnWidth = 0;
             if (item->ColumnL1 != NULL)
             {
@@ -310,22 +308,22 @@ void CMenuPopup::LayoutColumns()
                 }
                 columnWidth += item->ColumnL2Width;
             }
-            // sirka praveho sloupce
+            // width of the right column
             if (item->ColumnR != NULL)
             {
                 if (item->ColumnL1 != NULL || item->ColumnL2 != NULL)
                 {
-                    columnWidth += SharedRes->TextItemHeight; // odelovac sloupce R
+                    columnWidth += SharedRes->TextItemHeight; // separator column R
                 }
                 columnWidth += item->ColumnRWidth;
             }
             if (columnWidth > maxWidth)
                 maxWidth = columnWidth;
-            // roztazeni menu necham az po smycce
+            // I will expand the menu after the loop
         }
         else
         {
-            // roztahnu menu podle teto polozky
+            // expand the menu according to this item
             int width = 0;
             if (item->Type & MENU_TYPE_OWNERDRAW)
                 width = item->MinWidth + SharedRes->TextItemHeight;
@@ -343,7 +341,7 @@ void CMenuPopup::LayoutColumns()
     if (Width < maxWidth)
         Width = maxWidth;
 
-    // umistim sloupec R
+    // place column R
     for (i = 0; i < Items.Count; i++)
     {
         CMenuItem* item = Items[i];
@@ -356,7 +354,7 @@ void CMenuPopup::LayoutColumns()
         }
     }
 
-    // je-li treba, roztahnu cache bitmapu
+    // if necessary, expand the cache bitmap
     if (SharedRes->CacheBitmap->NeedEnlarge(SharedRes->TextItemHeight + 1, maxItemHeight))
         SharedRes->CacheBitmap->Enlarge(Width, maxItemHeight);
 }
@@ -367,40 +365,38 @@ void CMenuPopup::DrawCheckBitmapVista(HDC hDC, CMenuItem* item, int yOffset, BOO
 
     if (item->HBmpItem != NULL)
     {
-        // podmazu celou plochu normalni barvou
+        // Fill the entire area with the normal color
         HBRUSH hOldBrush = (HBRUSH)SelectObject(SharedRes->CacheBitmap->HMemDC, HDialogBrush);
         PatBlt(SharedRes->CacheBitmap->HMemDC, 0, 0, SharedRes->TextItemHeight + 1, item->Height, PATCOPY);
         SelectObject(SharedRes->CacheBitmap->HMemDC, hOldBrush);
 
-        // vycentruju check mark v pripade, ze vyska radku je vetsi nez vyska checkmarku
+        // Center the check mark if the row height is greater than the check mark height
         int myYOffset = 0;
         if (item->Height > SharedRes->TextItemHeight)
             myYOffset += (item->Height - SharedRes->TextItemHeight) / 2;
 
         HBITMAP hBitmap;
-        /*
-    if (item->State & MENU_STATE_CHECKED)
+        /*      if (item->State & MENU_STATE_CHECKED)
     {
       if (item->HBmpChecked != NULL)
-        hBitmap = item->HBmpChecked; // dodali si vlastni checkmark
+        hBitmap = item->HBmpChecked; // they added their own checkmark
     }
     else
-      hBitmap = item->HBmpUnchecked; // dodali si vlastni checkmark
-    */
+      hBitmap = item->HBmpUnchecked; // they added their own checkmark*/
         hBitmap = item->HBmpItem;
 
-        // bitmapa muze ve skutecnosti mensi, nez je pozadovana - pak zmensim hodnoty
+        // the bitmap can actually be smaller than requested - then I will reduce the values
         BITMAP bitmap;
         GetObject(hBitmap, sizeof(bitmap), &bitmap);
 
-        int bmpX = 0; // ze ktereho mista bitmapy se ma vytahnout obrazek
-        // 2.12.2012: pokud pod W7 nastavim rozliseni na 105% DPI (nebo 125, 150, atd) a zaroven se zde zvetsilo bmpW/bmpH
-        // pomoci puvodni max() funjce, nefungovalo nasledne volani AlphaBlend() a ikony se nezobrazily
+        int bmpX = 0; // from which point of the bitmap should the image be extracted
+        // 2.12.2012: if I set the resolution to 105% DPI (or 125, 150, etc.) under W7 and at the same time bmpW/bmpH increased here
+        // Using the original max() function did not work, subsequent calls to AlphaBlend() failed and the icons did not appear
         // prosel jsem historii zmen v repository a mam dojem, ze sem zadne obezlicky nepatri a hodnoty je treba primo priradit
-        // otestoval jsem pod W7 v ruznych DPI s TortoiseSVN a HG, SourceGear DiffMerge, BeyondCompare, Adobe Acrobat a vse vypada OK
+        // I tested it under W7 at various DPIs with TortoiseSVN and HG, SourceGear DiffMerge, BeyondCompare, Adobe Acrobat, and everything looks OK
         int bmpW = bitmap.bmWidth;
         int bmpH = bitmap.bmHeight;
-        int targetBmpW = bmpW; // jak to bude v cili velike
+        int targetBmpW = bmpW; // how it will be in the target big
         int targetBmpH = bmpW;
         BOOL monoBitmap = TRUE;
         if (SharedRes->BitmapsZoom > 1 &&
@@ -414,7 +410,7 @@ void CMenuPopup::DrawCheckBitmapVista(HDC hDC, CMenuItem* item, int yOffset, BOO
 
         if (selected || item->State & MENU_STATE_CHECKED)
         {
-            // podmazu pozadi
+            // background underlay
             RECT r;
             r.left = 0;
             r.top = myYOffset;
@@ -422,8 +418,8 @@ void CMenuPopup::DrawCheckBitmapVista(HDC hDC, CMenuItem* item, int yOffset, BOO
             r.bottom = myYOffset + SharedRes->TextItemHeight;
             if (!selected && item->State & MENU_STATE_CHECKED && !(item->State & MENU_STATE_GRAYED))
             {
-                // polozka je checked - vykreslim ditherovany brush
-                // zaroven neni selected, takze uz je podkreslena spravnou barvou
+                // if the item is checked - draw a dithered brush
+                // also not selected, so it is already highlighted in the correct color
                 SetBrushOrgEx(SharedRes->CacheBitmap->HMemDC, 0, r.top, NULL);
                 HBRUSH hOldBrush2 = (HBRUSH)SelectObject(SharedRes->CacheBitmap->HMemDC, HDitherBrush);
                 int oldTextColor = SetTextColor(SharedRes->CacheBitmap->HMemDC, GetSysColor(COLOR_BTNFACE));
@@ -436,7 +432,7 @@ void CMenuPopup::DrawCheckBitmapVista(HDC hDC, CMenuItem* item, int yOffset, BOO
                 SelectObject(SharedRes->CacheBitmap->HMemDC, hOldBrush2);
             }
 
-            // vykreslim ramecek v prislusnem stavu
+            // draw a frame in the corresponding state
             if (item->State & MENU_STATE_GRAYED && selected || !(item->State & MENU_STATE_GRAYED))
             {
                 DWORD mode = BDR_RAISEDINNER;
@@ -447,14 +443,14 @@ void CMenuPopup::DrawCheckBitmapVista(HDC hDC, CMenuItem* item, int yOffset, BOO
             }
         }
 
-        // vykreslim vlastni bitmapu
+        // draw my own bitmap
         int itemHeight = SharedRes->TextItemHeight - 2;
         int xO = (itemHeight - targetBmpW) / 2;
         int yO = (itemHeight - targetBmpH) / 2;
 
         if (!(item->State & MENU_STATE_GRAYED) && (item->State & MENU_STATE_CHECKED))
         {
-            // je-li tlacitko zamackle, posunu bitmapu o jeden bod vpravo a dolu
+            // if the button is pressed, move the bitmap one pixel to the right and down
             xO++;
             yO++;
         }
@@ -464,11 +460,11 @@ void CMenuPopup::DrawCheckBitmapVista(HDC hDC, CMenuItem* item, int yOffset, BOO
         BLENDFUNCTION bf;
         bf.BlendOp = AC_SRC_OVER;
         bf.BlendFlags = 0;
-        bf.SourceConstantAlpha = 0xff; // want to use per-pixel alpha values
+        bf.SourceConstantAlpha = 0xff; // Want to use per-pixel alpha values
         bf.AlphaFormat = AC_SRC_ALPHA;
 
         if (item->State & MENU_STATE_GRAYED)
-            bf.SourceConstantAlpha = 128; // sediva
+            bf.SourceConstantAlpha = 128; // gray
 
         AlphaBlend(SharedRes->CacheBitmap->HMemDC, 1 + xO, myYOffset + 1 + yO, targetBmpW, targetBmpH,
                    SharedRes->HTempMemDC, bmpX, 0, bmpW, bmpH, bf);
@@ -496,8 +492,8 @@ void CMenuPopup::DrawCheckBitmap(HDC hDC, CMenuItem* item, int yOffset, BOOL sel
 {
     CALL_STACK_MESSAGE_NONE
 
-    // hack pro TortoiseCVS, jehoz shell extension pouziva HBMMENU_CALLBACK pro pridavani
-    // ikonek do context menu
+    // hack for TortoiseCVS, whose shell extension uses HBMMENU_CALLBACK for adding
+    // icons to context menu
     if (item->HBmpItem == HBMMENU_CALLBACK)
     {
         // MENU_TYPE_OWNERDRAW
@@ -509,17 +505,17 @@ void CMenuPopup::DrawCheckBitmap(HDC hDC, CMenuItem* item, int yOffset, BOOL sel
         dis.itemState = GetOwnerDrawItemState(item, selected);
         dis.hwndItem = (HWND)HWindowsMenu;
         dis.hDC = hDC;
-        dis.rcItem.left = 0 + 2; // + 16; // TortoiseCVS umistuje ikonky o 16 bodu vlevo
+        dis.rcItem.left = 0 + 2; // + 16; // TortoiseCVS places icons 16 points to the left
         dis.rcItem.top = yOffset;
         dis.rcItem.right = Width;
         dis.rcItem.bottom = yOffset + item->Height;
         dis.itemData = item->CustomData;
 
-        // patch pro XP Visual Styles: nechame kreslit pruhledne, abychom nemuseli
-        // resit jakou barvou podkreslit pozadi (zlobilo v menu New)
+        // patch for XP Visual Styles: let's make them draw transparently so we don't have to
+        // Resolve what color to highlight the background (annoyed in the New menu)
         int oldBkMode = SetBkMode(hDC, /*OPAQUE*/ TRANSPARENT);
 
-        // necham aplikaci, aby dodala obsah
+        // let the application add content
         SendMessage(SharedRes->HParent, WM_DRAWITEM, 0, (LPARAM)&dis);
 
         return;
@@ -528,32 +524,32 @@ void CMenuPopup::DrawCheckBitmap(HDC hDC, CMenuItem* item, int yOffset, BOOL sel
     if (item->State & MENU_STATE_CHECKED ||
         (item->HBmpUnchecked != NULL && !(item->State & MENU_STATE_CHECKED)))
     {
-        // podmazu celou plochu normalni barvou
+        // Fill the entire area with the normal color
         HBRUSH hOldBrush = (HBRUSH)SelectObject(SharedRes->CacheBitmap->HMemDC, HDialogBrush);
         PatBlt(SharedRes->CacheBitmap->HMemDC, 0, 0, SharedRes->TextItemHeight + 1, item->Height, PATCOPY);
         SelectObject(SharedRes->CacheBitmap->HMemDC, hOldBrush);
 
-        // vycentruju check mark v pripade, ze vyska radku je vetsi nez vyska checkmarku
+        // Center the check mark if the row height is greater than the check mark height
         int myYOffset = 0;
         if (item->Height > SharedRes->TextItemHeight)
             myYOffset += (item->Height - SharedRes->TextItemHeight) / 2;
 
         HBITMAP hBitmap;
-        int bmpX = 0;                          // ze ktereho mista bitmapy se ma vytahnout obrazek
-        int bmpW = SharedRes->MenuBitmapWidth; // kolik se toho ma prenest
+        int bmpX = 0;                          // from which point of the bitmap should the image be extracted
+        int bmpW = SharedRes->MenuBitmapWidth; // how much of it should be transferred
         int bmpH = SharedRes->MenuBitmapWidth;
-        int targetBmpW = bmpW; // jak to bude v cili velike
+        int targetBmpW = bmpW; // how it will be in the target big
         int targetBmpH = bmpH;
         BOOL monoBitmap = TRUE;
         if (item->State & MENU_STATE_CHECKED)
         {
             if (item->HBmpChecked != NULL)
-                hBitmap = item->HBmpChecked; // dodali si vlastni checkmark
+                hBitmap = item->HBmpChecked; // added their own checkmark
         }
         else
-            hBitmap = item->HBmpUnchecked; // dodali si vlastni checkmark
+            hBitmap = item->HBmpUnchecked; // added their own checkmark
 
-        // bitmapa muze ve skutecnosti mensi, nez je pozadovana - pak zmensim hodnoty
+        // the bitmap can actually be smaller than requested - then I will reduce the values
         BITMAP bitmap;
         if (!GetObject(hBitmap, sizeof(bitmap), &bitmap))
         {
@@ -561,8 +557,8 @@ void CMenuPopup::DrawCheckBitmap(HDC hDC, CMenuItem* item, int yOffset, BOOL sel
             bitmap.bmWidth = 10;
             bitmap.bmHeight = 10;
         }
-        // DiffMerge x64 ma ikony 16x16, coz je o bod vetsi nez bmpW==15, co mam defaultne na Win7
-        // Acrobat prikaz "Convert to Adobe PDF" ma ikony 12x12
+        // DiffMerge x64 has 16x16 icons, which is one point larger than bmpW==15, which I have by default on Win7
+        // Acrobat command "Convert to Adobe PDF" has icons 12x12
         if (bitmap.bmWidth != bmpW)
         {
             bmpW = bitmap.bmWidth;
@@ -584,7 +580,7 @@ void CMenuPopup::DrawCheckBitmap(HDC hDC, CMenuItem* item, int yOffset, BOOL sel
 
         if (selected || item->State & MENU_STATE_CHECKED)
         {
-            // podmazu pozadi
+            // background underlay
             RECT r;
             r.left = 0;
             r.top = myYOffset;
@@ -592,8 +588,8 @@ void CMenuPopup::DrawCheckBitmap(HDC hDC, CMenuItem* item, int yOffset, BOOL sel
             r.bottom = myYOffset + SharedRes->TextItemHeight;
             if (!selected && item->State & MENU_STATE_CHECKED && !(item->State & MENU_STATE_GRAYED))
             {
-                // polozka je checked - vykreslim ditherovany brush
-                // zaroven neni selected, takze uz je podkreslena spravnou barvou
+                // if the item is checked - draw a dithered brush
+                // also not selected, so it is already highlighted in the correct color
                 SetBrushOrgEx(SharedRes->CacheBitmap->HMemDC, 0, r.top, NULL);
                 HBRUSH hOldBrush2 = (HBRUSH)SelectObject(SharedRes->CacheBitmap->HMemDC, HDitherBrush);
                 int oldTextColor = SetTextColor(SharedRes->CacheBitmap->HMemDC, GetSysColor(COLOR_BTNFACE));
@@ -606,7 +602,7 @@ void CMenuPopup::DrawCheckBitmap(HDC hDC, CMenuItem* item, int yOffset, BOOL sel
                 SelectObject(SharedRes->CacheBitmap->HMemDC, hOldBrush2);
             }
 
-            // vykreslim ramecek v prislusnem stavu
+            // draw a frame in the corresponding state
             if (item->State & MENU_STATE_GRAYED && selected || !(item->State & MENU_STATE_GRAYED))
             {
                 DWORD mode = BDR_RAISEDINNER;
@@ -617,7 +613,7 @@ void CMenuPopup::DrawCheckBitmap(HDC hDC, CMenuItem* item, int yOffset, BOOL sel
             }
         }
 
-        // vykreslim vlastni bitmapu
+        // draw my own bitmap
         int itemHeight = SharedRes->TextItemHeight - 2;
         int xO = (itemHeight - targetBmpW) / 2;
         int yO = (itemHeight - targetBmpH) / 2;
@@ -625,14 +621,14 @@ void CMenuPopup::DrawCheckBitmap(HDC hDC, CMenuItem* item, int yOffset, BOOL sel
         if (item->State & MENU_STATE_GRAYED)
         {
             HBITMAP hOldBitmap = (HBITMAP)SelectObject(SharedRes->HTempMemDC, hBitmap);
-            HDC hSourceDC = SharedRes->HTempMemDC; // vstupem bude cernobila bitmapa
+            HDC hSourceDC = SharedRes->HTempMemDC; // The input will be a black and white bitmap
             if (!monoBitmap)
             {
-                // neni-li bitmapa cernobila, vytvorim z ni masku
-                SetBkColor(SharedRes->HTempMemDC, WindowsVistaAndLater ? RGB(0, 0, 0) : RGB(255, 255, 255)); // od Visty je potreba pro masku cerna, jinak mi zlobily v ctx menu ikony DiffMerge a BeyondCompare
+                // If the bitmap is not black and white, I will create a mask from it
+                SetBkColor(SharedRes->HTempMemDC, WindowsVistaAndLater ? RGB(0, 0, 0) : RGB(255, 255, 255)); // from Vist needs a black mask, otherwise the icons of DiffMerge and BeyondCompare misbehaved in the context menu
                 BitBlt(SharedRes->MonoBitmap->HMemDC, 0, 0, bmpW, bmpH,
                        SharedRes->HTempMemDC, 0, 0, SRCCOPY);
-                // a tu pak presmeruju jako vstup
+                // and then redirect it as input
                 hSourceDC = SharedRes->MonoBitmap->HMemDC;
             }
             // mam cernobilou bitmapu a muzu ji vykreslit v disabled stavu
@@ -654,14 +650,14 @@ void CMenuPopup::DrawCheckBitmap(HDC hDC, CMenuItem* item, int yOffset, BOOL sel
         {
             if (item->State & MENU_STATE_CHECKED)
             {
-                // je-li tlacitko zamackle, posunu bitmapu o jeden bod vpravo a dolu
+                // if the button is pressed, move the bitmap one pixel to the right and down
                 xO++;
                 yO++;
             }
 
             HBITMAP hOldBitmap = (HBITMAP)SelectObject(SharedRes->HTempMemDC, hBitmap);
-            // pripravim masku
-            SetBkColor(SharedRes->HTempMemDC, WindowsVistaAndLater ? RGB(0, 0, 0) : RGB(255, 255, 255)); // od Visty je potreba pro masku cerna, jinak mi zlobily v ctx menu ikony DiffMerge a BeyondCompare
+            // prepare mask
+            SetBkColor(SharedRes->HTempMemDC, WindowsVistaAndLater ? RGB(0, 0, 0) : RGB(255, 255, 255)); // from Vist needs a black mask, otherwise the icons of DiffMerge and BeyondCompare misbehaved in the context menu
             BitBlt(SharedRes->MonoBitmap->HMemDC, 0, 0, bmpW, bmpH,
                    SharedRes->HTempMemDC, bmpX, 0, SRCCOPY);
 
@@ -672,7 +668,7 @@ void CMenuPopup::DrawCheckBitmap(HDC hDC, CMenuItem* item, int yOffset, BOOL sel
             StretchBlt(SharedRes->CacheBitmap->HMemDC, 1 + xO, myYOffset + 1 + yO, targetBmpW, targetBmpH,
                        SharedRes->MonoBitmap->HMemDC, 0, 0, bmpW, bmpH, SRCAND);
 
-            // quick hack pro B&W bitmapy v kombinaci s cernym pozadim - vnutim barvu textu
+            // quick hack for B&W bitmaps in combination with black background - forcing text color
             if (monoBitmap && SharedRes->NormalBkColor == RGB(0, 0, 0))
                 SetTextColor(SharedRes->CacheBitmap->HMemDC, SharedRes->SelectedTextColor);
 
@@ -693,17 +689,17 @@ void CMenuPopup::DrawCheckBitmap(HDC hDC, CMenuItem* item, int yOffset, BOOL sel
 void CMenuPopup::DrawCheckImage(HDC hDC, CMenuItem* item, int yOffset, BOOL selected)
 {
     CALL_STACK_MESSAGE_NONE
-    // podmazu celou plochu normalni barvou
+    // Fill the entire area with the normal color
     HBRUSH hOldBrush = (HBRUSH)SelectObject(SharedRes->CacheBitmap->HMemDC, HDialogBrush);
     PatBlt(SharedRes->CacheBitmap->HMemDC, 0, 0, SharedRes->TextItemHeight + 1, item->Height, PATCOPY);
     SelectObject(SharedRes->CacheBitmap->HMemDC, hOldBrush);
 
-    // vycentruju obrazek v pripade, ze vyska radku je vetsi nez vyska obrazku
+    // Center the image if the height of the rows is greater than the height of the image
     int myYOffset = 0;
     if (item->Height > SharedRes->TextItemHeight)
         myYOffset += (item->Height - SharedRes->TextItemHeight) / 2;
 
-    int targetBmpW = ImageWidth; // jak to bude v cili velike
+    int targetBmpW = ImageWidth; // how it will be in the target big
     int targetBmpH = ImageHeight;
     if (item->HIcon != NULL)
     {
@@ -716,7 +712,7 @@ void CMenuPopup::DrawCheckImage(HDC hDC, CMenuItem* item, int yOffset, BOOL sele
 
     if (selected || checked)
     {
-        // podmazu pozadi
+        // background underlay
         RECT r;
         r.left = 0;
         r.top = myYOffset;
@@ -724,8 +720,8 @@ void CMenuPopup::DrawCheckImage(HDC hDC, CMenuItem* item, int yOffset, BOOL sele
         r.bottom = myYOffset + SharedRes->TextItemHeight;
         if (!selected && checked && !(item->State & MENU_STATE_GRAYED))
         {
-            // polozka je checked - vykreslim ditherovany brush
-            // zaroven neni selected, takze uz je podkreslena spravnou barvou
+            // if the item is checked - draw a dithered brush
+            // also not selected, so it is already highlighted in the correct color
             SetBrushOrgEx(SharedRes->CacheBitmap->HMemDC, 0, r.top, NULL);
             HBRUSH hOldBrush2 = (HBRUSH)SelectObject(SharedRes->CacheBitmap->HMemDC, HDitherBrush);
             int oldTextColor = SetTextColor(SharedRes->CacheBitmap->HMemDC, GetSysColor(COLOR_BTNFACE));
@@ -738,7 +734,7 @@ void CMenuPopup::DrawCheckImage(HDC hDC, CMenuItem* item, int yOffset, BOOL sele
             SelectObject(SharedRes->CacheBitmap->HMemDC, hOldBrush2);
         }
 
-        // vykreslim ramecek v prislusnem stavu
+        // draw a frame in the corresponding state
         if (item->State & MENU_STATE_GRAYED && selected || !(item->State & MENU_STATE_GRAYED))
         {
             DWORD mode = BDR_RAISEDINNER;
@@ -749,7 +745,7 @@ void CMenuPopup::DrawCheckImage(HDC hDC, CMenuItem* item, int yOffset, BOOL sele
         }
     }
 
-    // vykreslim vlastni obrazek
+    // draw my own picture
     HIMAGELIST hImageList;
     int imageIndex;
 
@@ -765,7 +761,7 @@ void CMenuPopup::DrawCheckImage(HDC hDC, CMenuItem* item, int yOffset, BOOL sele
         hImageList = HMenuMarkImageList;
         imageIndex = item->Type & MENU_TYPE_RADIOCHECK ? 1 : 0;
         int iconSize = GetIconSizeForSystemDPI(ICONSIZE_16);
-        targetBmpW = iconSize; // rozmery HMenuMarkImageList
+        targetBmpW = iconSize; // dimensions of HMenuMarkImageList
         targetBmpH = iconSize;
     }
 
@@ -775,12 +771,12 @@ void CMenuPopup::DrawCheckImage(HDC hDC, CMenuItem* item, int yOffset, BOOL sele
 
     if (item->State & MENU_STATE_GRAYED)
     {
-        // cela bitmapa bude bila (pozadi)
+        // the entire bitmap will be white (background)
         PatBlt(SharedRes->MonoBitmap->HMemDC, 0, 0, targetBmpW, targetBmpH, WHITENESS);
 
         int iconSize = GetIconSizeForSystemDPI(ICONSIZE_16);
 
-        // prenesu do ni cernobilou verzi ikonky (bila bude bila)
+        // transfer the black and white version of the icon (white will remain white)
         if (item->HIcon != NULL)
             DrawIconEx(SharedRes->MonoBitmap->HMemDC, 0, 0, item->HIcon, iconSize, iconSize, 0, NULL, DI_NORMAL);
         else
@@ -788,7 +784,7 @@ void CMenuPopup::DrawCheckImage(HDC hDC, CMenuItem* item, int yOffset, BOOL sele
         if (item->HOverlay != NULL)
             DrawIconEx(SharedRes->MonoBitmap->HMemDC, 0, 0, item->HOverlay, iconSize, iconSize, 0, NULL, DI_NORMAL);
 
-        // a tu pak presmeruju jako vstup
+        // and then redirect it as input
         HDC hSourceDC = SharedRes->MonoBitmap->HMemDC;
 
         // mam cernobilou bitmapu a muzu ji vykreslit v disabled stavu
@@ -809,7 +805,7 @@ void CMenuPopup::DrawCheckImage(HDC hDC, CMenuItem* item, int yOffset, BOOL sele
         //    if (checked)
         //    {
 
-        // pro lepsi vzhled obetujeme zamackle polozky
+        // sacrifice complex items for a better appearance
         xO++;
         yO++;
         //    }
@@ -838,14 +834,14 @@ void CMenuPopup::DrawCheckMark(HDC hDC, CMenuItem* item, int yOffset, BOOL selec
     if (item->ImageIndex != -1 || item->HIcon != NULL ||
         item->HBmpChecked == NULL && (item->State & MENU_STATE_CHECKED))
     {
-        DrawCheckImage(hDC, item, yOffset, selected); // pred text soupnu image
+        DrawCheckImage(hDC, item, yOffset, selected); // before the text I insert an image
     }
     else
     {
         if (WindowsVistaAndLater && item->HBmpItem != NULL && item->HBmpItem != HBMMENU_CALLBACK)
             DrawCheckBitmapVista(hDC, item, yOffset, selected);
         else
-            DrawCheckBitmap(hDC, item, yOffset, selected); // pred text soupnu check mark (existuje-li)
+            DrawCheckBitmap(hDC, item, yOffset, selected); // before the text I will insert a check mark (if it exists)
     }
 }
 
@@ -853,7 +849,7 @@ void CMenuPopup::DrawItem(HDC hDC, CMenuItem* item, int yOffset, BOOL selected)
 {
     CALL_STACK_MESSAGE_NONE
 
-    // pokud polozka lezi mimo viditelnou oblast, nebudeme kreslit
+    // if the item is outside the visible area, we will not draw
     int topLimit = 0;
     int bottomLimit = Height;
     if (UpArrowVisible)
@@ -863,14 +859,14 @@ void CMenuPopup::DrawItem(HDC hDC, CMenuItem* item, int yOffset, BOOL selected)
     if (yOffset < topLimit || yOffset + item->Height > bottomLimit)
         return;
 
-    // podmazu podklad
+    // grease the substrate
     HBRUSH hBkBrush;
     if (selected && !(item->Type & MENU_TYPE_OWNERDRAW) && item->Type & MENU_TYPE_STRING)
         hBkBrush = HMenuSelectedBkBrush;
     else
         hBkBrush = HDialogBrush;
     HBRUSH hOldBrush = (HBRUSH)SelectObject(hDC, hBkBrush);
-    // abychom zamezili blikani, bude-li checkmark, posunu podmazani
+    // to prevent flickering, if there is a checkmark, we will move the lubrication
     int xO = 0;
     if (item->Height == SharedRes->TextItemHeight &&
         !(item->Type & MENU_TYPE_OWNERDRAW) &&
@@ -892,7 +888,7 @@ void CMenuPopup::DrawItem(HDC hDC, CMenuItem* item, int yOffset, BOOL selected)
             textR.bottom = yOffset + item->Height;
             textR.right = Width;
 
-            // ulozim puvodni hodnoty
+            // save original values
             COLORREF oldTextColor;
             COLORREF oldBkColor;
             int oldBkMode = SetBkMode(hDC, OPAQUE);
@@ -908,7 +904,7 @@ void CMenuPopup::DrawItem(HDC hDC, CMenuItem* item, int yOffset, BOOL selected)
                 oldBkColor = SetBkColor(hDC, SharedRes->NormalBkColor);
             }
 
-            // je-li polozka default, docasne vyberu tucny font
+            // if the item is default, temporarily select a bold font
             HFONT hOldFont;
             if (item->State & MENU_STATE_DEFAULT)
                 hOldFont = (HFONT)SelectObject(hDC, SharedRes->HBoldFont);
@@ -999,7 +995,7 @@ void CMenuPopup::DrawItem(HDC hDC, CMenuItem* item, int yOffset, BOOL selected)
                     DrawText(hDC, item->ColumnR, item->ColumnRLen,
                              &textR, DT_NOCLIP | DT_LEFT | DT_SINGLELINE | DT_VCENTER);
             }
-            // obnovim puvodni hodnoty
+            // restore original values
             if (item->State & MENU_STATE_DEFAULT)
                 SelectObject(hDC, hOldFont);
             SetTextColor(hDC, oldTextColor);
@@ -1011,10 +1007,10 @@ void CMenuPopup::DrawItem(HDC hDC, CMenuItem* item, int yOffset, BOOL selected)
             if (item->Type & MENU_TYPE_SEPARATOR)
             {
                 int y = yOffset + item->Height / 2 - 1;
-                // vodorovna sediva
+                // horizontal sit
                 HBRUSH hOldBrush2 = (HBRUSH)SelectObject(hDC, HMenuGrayTextBrush);
                 PatBlt(hDC, 2, y, Width - 2 * 2, 1, PATCOPY);
-                // vodorovna svetla
+                // horizontal lights
                 SelectObject(hDC, HMenuHilightBrush);
                 PatBlt(hDC, 2, y + 1, Width - 2 * 2, 1, PATCOPY);
                 SelectObject(hDC, hOldBrush2);
@@ -1025,22 +1021,22 @@ void CMenuPopup::DrawItem(HDC hDC, CMenuItem* item, int yOffset, BOOL selected)
                 {
                     DrawCheckMark(hDC, item, yOffset, selected);
 
-                    // vytahnu rozmery bitmapy
+                    // retrieve bitmap dimensions
                     BITMAP bitmap;
                     GetObject(item->HBmpItem, sizeof(bitmap), &bitmap);
 
-                    // vyberu bitmapu do HTempMemDC
+                    // select a bitmap into HTempMemDC
                     HBITMAP hOldBitmap = (HBITMAP)SelectObject(SharedRes->HTempMemDC, item->HBmpItem);
 
                     if (item->State & MENU_STATE_GRAYED)
                     {
-                        // vytvorim masku
+                        // create a mask
                         SetBkColor(SharedRes->HTempMemDC, RGB(255, 255, 255));
                         BitBlt(SharedRes->MonoBitmap->HMemDC, 0, 0,
                                bitmap.bmWidth, bitmap.bmHeight,
                                SharedRes->HTempMemDC, 0, 0, SRCCOPY);
 
-                        // vytvori disabled efekt
+                        // create disabled effect
                         int oldBkColor = SetBkColor(hDC, RGB(255, 255, 255));
                         int oldTextColor = SetTextColor(hDC, RGB(0, 0, 0));
                         HBRUSH hOldBrush2 = (HBRUSH)SelectObject(hDC, HMenuHilightBrush);
@@ -1058,7 +1054,7 @@ void CMenuPopup::DrawItem(HDC hDC, CMenuItem* item, int yOffset, BOOL selected)
                     else
                     {
                         int yO = (item->Height - bitmap.bmHeight) / 2;
-                        // vykreslim bitmapu - bud normalne nebo inversne
+                        // draw a bitmap - either normally or inversely
                         int mode = selected ? NOTSRCCOPY : SRCCOPY;
                         BitBlt(hDC, SharedRes->TextItemHeight + 1 + 2, yOffset + yO,
                                bitmap.bmWidth, bitmap.bmHeight,
@@ -1086,17 +1082,17 @@ void CMenuPopup::DrawItem(HDC hDC, CMenuItem* item, int yOffset, BOOL selected)
         dis.rcItem.bottom = yOffset + item->Height;
         dis.itemData = item->CustomData;
 
-        // ulozim hodnoty DC
+        // save the DC values
         COLORREF oldTextColor;
         COLORREF oldBkColor;
         HFONT hOldFont;
 
-        // patch pro XP Visual Styles: nechame kreslit pruhledne, abychom nemuseli
-        // resit jakou barvou podkreslit pozadi (zlobilo v menu New)
+        // patch for XP Visual Styles: let's make them draw transparently so we don't have to
+        // Resolve what color to highlight the background (annoyed in the New menu)
         int oldBkMode = SetBkMode(hDC, /*OPAQUE*/ TRANSPARENT);
 
-        // v kazdem pripade nastavim a obnovim font - nemuzu vedet,
-        // co zlotrilci provedou s DC
+        // in any case I will set and restore the font - I can't know,
+        // what the rebels will do with DC
         if (item->State & MENU_STATE_DEFAULT)
             hOldFont = (HFONT)SelectObject(hDC, SharedRes->HBoldFont);
         else
@@ -1112,10 +1108,10 @@ void CMenuPopup::DrawItem(HDC hDC, CMenuItem* item, int yOffset, BOOL selected)
             oldBkColor = SetBkColor(hDC, SharedRes->NormalBkColor);
         }
 
-        // necham aplikaci, aby dodala obsah
+        // let the application add content
         SendMessage(SharedRes->HParent, WM_DRAWITEM, 0, (LPARAM)&dis);
 
-        // obnovim puvodni hodnoty
+        // restore original values
         SetBkMode(hDC, oldBkMode);
         SetTextColor(hDC, oldTextColor);
         SetBkColor(hDC, oldBkColor);
@@ -1123,7 +1119,7 @@ void CMenuPopup::DrawItem(HDC hDC, CMenuItem* item, int yOffset, BOOL selected)
     }
     if (item->SubMenu != NULL)
     {
-        // ma-li polozka submenu, nakreslim sipku
+        // if the item has a submenu, draw an arrow
         // nemusim tvorit masku, protoze sipky jaou cernobila bitmapa
 
         int w = SharedRes->MenuBitmapWidth;
@@ -1169,7 +1165,7 @@ void CMenuPopup::DrawUpDownItem(HDC hDC, BOOL up)
     r.left = 0;
     r.right = Width;
 
-    // umistime obdelnik
+    // place rectangle
     if (up)
     {
         r.top = 0;
@@ -1213,11 +1209,11 @@ void CMenuPopup::DrawUpDownItem(HDC hDC, BOOL up)
     int oldTextColor = SetTextColor(hDC, RGB(0, 0, 0));
     HBRUSH hOldBrush = (HBRUSH)SelectObject(hDC, HButtonTextBrush);
 
-    int yOffset = up ? 0 : 1; // sipku dolu posuneme o bod dolu (vyvazeni)
+    int yOffset = up ? 0 : 1; // move the down arrow down by one point (balancing)
 
-    // podmazeme obdelnik
+    // we will grease the rectangle
     FillRect(hDC, &r, HDialogBrush);
-    // vysmazime sipku
+    // erase the arrow
     BitBlt(hDC, r.left + (r.right - r.left - w) / 2,
            arrowR.top + (arrowR.bottom - arrowR.top - h) / 2 + yOffset,
            w, h, SharedRes->HTempMemDC, bmpX, 0, ROP_PSDPxax);

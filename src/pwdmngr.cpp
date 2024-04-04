@@ -25,9 +25,8 @@ CSalamanderCryptAbstract* GetSalamanderCrypt();
        2     24      12      10       22
        3     32      16      10       26
 
-   The following macros assume that the mode value is correct.
-*/
-#define PASSWORD_MANAGER_AES_MODE 3 // NEMENIT, napriklad CMasterPasswordVerifier je deklarovana "natvrdo"
+   The following macros assume that the mode value is correct.*/
+#define PASSWORD_MANAGER_AES_MODE 3 // DO NOT CHANGE, for example CMasterPasswordVerifier is declared "hardcoded"
 
 //****************************************************************************
 //
@@ -49,8 +48,8 @@ void FillBufferWithRandomData(BYTE* buf, int len)
 //
 // ScramblePassword / UnscramblePassword
 //
-// Prevzato z FTP pluginu. Slouzi pro pripad, ze uzivatel nenastavi master
-// password a nepouziva se tedy silne AES sifrovani.
+// Adapted from the FTP plugin. Used in case the user does not set a master
+// password and therefore strong AES encryption is not used.
 //
 
 unsigned char ScrambleTable[256] =
@@ -76,11 +75,11 @@ BOOL InitUnscrambleTable = TRUE;
 BOOL InitSRand = TRUE;
 unsigned char UnscrambleTable[256];
 
-#define SCRAMBLE_LENGTH_EXTENSION 50 // pocet znaku o ktere musime rozsirit buffer, aby se vesel scramble
+#define SCRAMBLE_LENGTH_EXTENSION 50 // number of characters by which we need to expand the buffer to fit the scramble
 
 void ScramblePassword(char* password)
 {
-    // padding + jednotky delky + desitky delky + stovky delky + password
+    // padding + length units + tens length + hundreds length + password
     int len = (int)strlen(password);
     char* buf = (char*)malloc(len + SCRAMBLE_LENGTH_EXTENSION);
     if (InitSRand)
@@ -110,7 +109,7 @@ void ScramblePassword(char* password)
         s++;
     }
     strcpy(password, buf);
-    memset(buf, 0, len + SCRAMBLE_LENGTH_EXTENSION); // cisteni pameti obsahujici password
+    memset(buf, 0, len + SCRAMBLE_LENGTH_EXTENSION); // Clearing memory containing password
     free(buf);
 }
 
@@ -126,7 +125,7 @@ BOOL UnscramblePassword(char* password)
         InitUnscrambleTable = FALSE;
     }
 
-    char* backup = DupStr(password); // zaloha pro TRACE_E
+    char* backup = DupStr(password); // Backup for TRACE_E
 
     char* s = password;
     int last = 31;
@@ -142,7 +141,7 @@ BOOL UnscramblePassword(char* password)
 
     s = password;
     while (*s != 0 && (*s < '0' || *s > '9'))
-        s++; // najdeme si delku passwordu
+        s++; // find the length of the password
     BOOL ok = FALSE;
     if (strlen(s) >= 3)
     {
@@ -157,17 +156,17 @@ BOOL UnscramblePassword(char* password)
     }
     if (!ok)
     {
-        password[0] = 0; // nejaka chyba, zrusime password
+        password[0] = 0; // some error, we will remove the password
         TRACE_E("Unable to unscramble password! scrambled=" << backup);
     }
-    memset(backup, 0, lstrlen(backup)); // cisteni pameti obsahujici password
+    memset(backup, 0, lstrlen(backup)); // Clearing memory containing password
     free(backup);
     return ok;
 }
 
 //****************************************************************************
 //
-// CChangeMasterPassword
+// ChangeMasterPassword
 //
 
 CChangeMasterPassword::CChangeMasterPassword(HWND hParent, CPasswordManager* pwdManager)
@@ -181,7 +180,7 @@ void CChangeMasterPassword::Validate(CTransferInfo& ti)
     CALL_STACK_MESSAGE1("CChangeMasterPassword::Validate()");
     HWND hWnd;
 
-    // pokud je zapnuto pouzivani master password, musime overit, ze ho uzivatel zadal spravne
+    // if using master password is enabled, we need to verify that the user entered it correctly
     if (PwdManager->IsUsingMasterPassword() && ti.GetControl(hWnd, IDC_CHMP_CURRENTPWD))
     {
         char curPwd[SAL_AES_MAX_PWD_LENGTH + 1];
@@ -215,7 +214,7 @@ void CChangeMasterPassword::Transfer(CTransferInfo& ti)
 {
     if (ti.Type == ttDataToWindow)
     {
-        // limitujeme delku hesla, viz omezeni AES knihovny
+        // we limit the length of the password, see the limitations of the AES library
         SendDlgItemMessage(HWindow, IDC_CHMP_CURRENTPWD, EM_LIMITTEXT, SAL_AES_MAX_PWD_LENGTH, 0);
         SendDlgItemMessage(HWindow, IDC_CHMP_NEWPWD, EM_LIMITTEXT, SAL_AES_MAX_PWD_LENGTH, 0);
         SendDlgItemMessage(HWindow, IDC_CHMP_RETYPEPWD, EM_LIMITTEXT, SAL_AES_MAX_PWD_LENGTH, 0);
@@ -237,7 +236,7 @@ void CChangeMasterPassword::Transfer(CTransferInfo& ti)
         {
             char oldPwd[SAL_AES_MAX_PWD_LENGTH + 1];
             GetDlgItemText(HWindow, IDC_CHMP_CURRENTPWD, oldPwd, SAL_AES_MAX_PWD_LENGTH);
-            PwdManager->EnterMasterPassword(oldPwd); // prosla validace, tak uz toto projde take
+            PwdManager->EnterMasterPassword(oldPwd); // Validation passed, so this will also pass
         }
 
         char newPwd[SAL_AES_MAX_PWD_LENGTH + 1];
@@ -248,13 +247,13 @@ void CChangeMasterPassword::Transfer(CTransferInfo& ti)
 
 void CChangeMasterPassword::EnableControls()
 {
-    // nove (a kontrolni) heslo museji byt shodne, jinak zakazeme OK tlacitko
+    // the new (and confirmatory) password must match, otherwise we will disable the OK button
     char newPwd[SAL_AES_MAX_PWD_LENGTH + 1];
     char retypedPwd[SAL_AES_MAX_PWD_LENGTH + 1];
     GetDlgItemText(HWindow, IDC_CHMP_NEWPWD, newPwd, SAL_AES_MAX_PWD_LENGTH);
     GetDlgItemText(HWindow, IDC_CHMP_RETYPEPWD, retypedPwd, SAL_AES_MAX_PWD_LENGTH);
     BOOL enableOK = (stricmp(newPwd, retypedPwd) == 0);
-    if (enableOK && !PwdManager->IsUsingMasterPassword() && newPwd[0] == 0) // OK nesmime dovolit, pokud neni zadan MP a zaroven jsou obe hesla prazdna
+    if (enableOK && !PwdManager->IsUsingMasterPassword() && newPwd[0] == 0) // OK we must not allow if MP is not entered and both passwords are empty
         enableOK = FALSE;
     EnableWindow(GetDlgItem(HWindow, IDOK), enableOK);
 }
@@ -269,7 +268,7 @@ CChangeMasterPassword::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (HIWORD(wParam) == EN_CHANGE && (LOWORD(wParam) == IDC_CHMP_NEWPWD || LOWORD(wParam) == IDC_CHMP_RETYPEPWD))
         {
-            // nove (a kontrolni) heslo museji byt shodne, jinak zakazeme OK tlacitko
+            // the new (and confirmatory) password must match, otherwise we will disable the OK button
             EnableControls();
         }
         break;
@@ -280,7 +279,7 @@ CChangeMasterPassword::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 //****************************************************************************
 //
-// CEnterMasterPassword
+// EnterMasterPassword
 //
 
 CEnterMasterPassword::CEnterMasterPassword(HWND hParent, CPasswordManager* pwdManager)
@@ -314,7 +313,7 @@ void CEnterMasterPassword::Transfer(CTransferInfo& ti)
     {
         char plainMasterPassword[SAL_AES_MAX_PWD_LENGTH + 1];
         GetDlgItemText(HWindow, IDC_MPR_PASSWORD, plainMasterPassword, SAL_AES_MAX_PWD_LENGTH);
-        PwdManager->EnterMasterPassword(plainMasterPassword); // prosla validace, tak uz toto projde take
+        PwdManager->EnterMasterPassword(plainMasterPassword); // Validation passed, so this will also pass
     }
 }
 
@@ -327,7 +326,7 @@ CEnterMasterPassword::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 //****************************************************************************
 //
-// CRemoveMasterPassword
+// RemoveMasterPassword
 //
 
 CRemoveMasterPassword::CRemoveMasterPassword(HWND hParent, CPasswordManager* pwdManager)
@@ -361,8 +360,8 @@ void CRemoveMasterPassword::Transfer(CTransferInfo& ti)
     {
         char plainMasterPassword[SAL_AES_MAX_PWD_LENGTH + 1];
         GetDlgItemText(HWindow, IDC_RMP_CURRENTPWD, plainMasterPassword, SAL_AES_MAX_PWD_LENGTH);
-        // heslo musime predat password manageru, bude potreba pro event zasilany pluginum
-        PwdManager->EnterMasterPassword(plainMasterPassword); // prosla validace, tak uz toto projde take
+        // we need to pass the password to the password manager, it will be needed for the event sent to the plugins
+        PwdManager->EnterMasterPassword(plainMasterPassword); // Validation passed, so this will also pass
     }
 }
 
@@ -401,7 +400,7 @@ CCfgPageSecurity::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // obejdu Transfer(), jde o specialni ovladani checkboxu
+        // I will call Transfer(), it is a special handling of checkboxes
         CheckDlgButton(HWindow, IDC_SEC_ENABLE_MASTERPWD, PasswordManager.IsUsingMasterPassword() ? BST_CHECKED : BST_UNCHECKED);
 
         EnableControls();
@@ -412,14 +411,14 @@ CCfgPageSecurity::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_SEC_ENABLE_MASTERPWD)
         {
-            // kliknuti na checkbox
+            // clicking on the checkbox
             EnableControls();
 
-            // pokud uzivatel zaskrtnul volbu "Pouzivat Master Password", zobrazime dialog pro zmenu hesla
+            // if the user has checked the option "Use Master Password", we will display a dialog for changing the password
             BOOL useMasterPwd = IsDlgButtonChecked(HWindow, IDC_SEC_ENABLE_MASTERPWD);
             if (useMasterPwd)
             {
-                // uzivatel volbu zapnul
+                // user turned on the option
                 CChangeMasterPassword dlg(HWindow, &PasswordManager);
                 if (dlg.Execute() == IDOK)
                 {
@@ -427,13 +426,13 @@ CCfgPageSecurity::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 else
                 {
-                    // pokud uzivatel zadal Cancel, vypneme prave zapinanou volbu
+                    // if the user entered Cancel, we will turn off the currently selected option
                     CheckDlgButton(HWindow, IDC_SEC_ENABLE_MASTERPWD, BST_UNCHECKED);
                 }
             }
             else
             {
-                // uzivatel volbu vypnul
+                // user turned off the option
                 CRemoveMasterPassword dlg(HWindow, &PasswordManager);
                 if (dlg.Execute() == IDOK)
                 {
@@ -442,24 +441,24 @@ CCfgPageSecurity::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 else
                 {
-                    // pokud uzivatel zadal Cancel, vypneme zapneme vypinanou volbu
+                    // if the user entered Cancel, we will toggle the selected option
                     CheckDlgButton(HWindow, IDC_SEC_ENABLE_MASTERPWD, BST_CHECKED);
                 }
             }
-            EnableControls(); // CheckDlgButton() nerozesle notifikace, musime se zavolat sami
+            EnableControls(); // CheckDlgButton() does not send notifications, we have to call them ourselves
         }
 
         if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_SEC_CHANGE_MASTERPWD)
         {
             CChangeMasterPassword dlg(HWindow, &PasswordManager);
-            // pokud uzivatel resetnul heslo, vypneme checkbox
+            // if the user has reset the password, we will uncheck the checkbox
             if (dlg.Execute() == IDOK)
             {
                 if (!PasswordManager.IsUsingMasterPassword())
                 {
                     CheckDlgButton(HWindow, IDC_SEC_ENABLE_MASTERPWD, BST_UNCHECKED);
-                    SetFocus(GetDlgItem(HWindow, IDC_SEC_ENABLE_MASTERPWD)); // focus musi mimo tlacitko, ktere za chvili zakazeme
-                    EnableControls();                                        // CheckDlgButton() nerozesle notifikace, musime se zavolat sami
+                    SetFocus(GetDlgItem(HWindow, IDC_SEC_ENABLE_MASTERPWD)); // focus must be outside the button, which we will disable in a moment
+                    EnableControls();                                        // CheckDlgButton() does not send notifications, we have to call them ourselves
                 }
                 PasswordManager.NotifyAboutMasterPasswordChange(HWindow);
             }
@@ -476,9 +475,9 @@ CCfgPageSecurity::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 // CPasswordManager
 //
 
-// signatura binarne drzenych hesel
-#define PWDMNGR_SIGNATURE_SCRAMBLED 1 // heslo je pouze scrambled, pro ziskani plain text hesla neni potreba master password
-#define PWDMNGR_SIGNATURE_ENCRYPTED 2 // heslo je scrabled a navic AES sifrovane, vyzaduje master password
+// Signature of binary held passwords
+#define PWDMNGR_SIGNATURE_SCRAMBLED 1 // the password is only scrambled, no master password is needed to obtain the plain text password
+#define PWDMNGR_SIGNATURE_ENCRYPTED 2 // the password is scrambled and additionally AES encrypted, requires a master password
 
 CPasswordManager::CPasswordManager()
 {
@@ -542,49 +541,47 @@ BOOL CPasswordManager::EncryptPassword(const char* plainPassword, BYTE** encrypt
         return FALSE;
     }
 
-    // heslo vzdy protahneme scramblem, cimz odstinime mozny maly pocet znaku
-    char* scrambledPassword = (char*)malloc(lstrlen(plainPassword) + SCRAMBLE_LENGTH_EXTENSION); // rezerva pro scrambleni (password se tim prodluzuje)
+    // We always scramble the password, thus obscuring the possible small number of characters
+    char* scrambledPassword = (char*)malloc(lstrlen(plainPassword) + SCRAMBLE_LENGTH_EXTENSION); // Reservation for scrambling (password is extended by this)
     lstrcpy(scrambledPassword, plainPassword);
     ScramblePassword(scrambledPassword);
     int scrambledPasswordLen = (int)strlen(scrambledPassword);
 
     if (encrypt)
     {
-        *encryptedPassword = (BYTE*)malloc(1 + 16 + scrambledPasswordLen + 10);       // signatura + AES-SALT + pocet scrambled znaku + AES-MAC
-        **encryptedPassword = PWDMNGR_SIGNATURE_ENCRYPTED;                            // prvni znak nese signaturu
+        *encryptedPassword = (BYTE*)malloc(1 + 16 + scrambledPasswordLen + 10);       // signature + AES-SALT + number of scrambled characters + AES-MAC
+        **encryptedPassword = PWDMNGR_SIGNATURE_ENCRYPTED;                            // the first character carries the signature
         FillBufferWithRandomData(*encryptedPassword + 1, 16);                         // SALT
-        memcpy(*encryptedPassword + 1 + 16, scrambledPassword, scrambledPasswordLen); // pak nasleduje scrambled heslo bez terminatoru
+        memcpy(*encryptedPassword + 1 + 16, scrambledPassword, scrambledPasswordLen); // then follows a scrambled password without a terminator
 
         CSalAES aes;
-        WORD dummy; // zbytecna slabina, ignorujeme
+        WORD dummy; // unnecessary weakness, we ignore
         int ret = SalamanderCrypt->AESInit(&aes, PASSWORD_MANAGER_AES_MODE, PlainMasterPassword, strlen(PlainMasterPassword), *encryptedPassword + 1, &dummy);
         if (ret != SAL_AES_ERR_GOOD_RETURN)
-            TRACE_E("CPasswordManager::EncryptPassword(): unexpected state, ret=" << ret);       // nemelo by nastat
-        SalamanderCrypt->AESEncrypt(&aes, *encryptedPassword + 1 + 16, scrambledPasswordLen);    // scrambled heslo nechame prejet AESem
-        SalamanderCrypt->AESEnd(&aes, *encryptedPassword + 1 + 16 + scrambledPasswordLen, NULL); // ukladame vcetne MACu pro jednotliva hesla, kdyby se nam rozjela konfigurace
-        *encryptedPasswordSize = 1 + 16 + scrambledPasswordLen + 10;                             // zapiseme celkovou delku
+            TRACE_E("CPasswordManager::EncryptPassword(): unexpected state, ret=" << ret);       // should not occur
+        SalamanderCrypt->AESEncrypt(&aes, *encryptedPassword + 1 + 16, scrambledPasswordLen);    // we will let the scrambled password be processed by AES
+        SalamanderCrypt->AESEnd(&aes, *encryptedPassword + 1 + 16 + scrambledPasswordLen, NULL); // we are saving MAC addresses for individual passwords in case the configuration gets corrupted
+        *encryptedPasswordSize = 1 + 16 + scrambledPasswordLen + 10;                             // write down the total length
     }
     else
     {
-        *encryptedPassword = (BYTE*)malloc(1 + scrambledPasswordLen);            // signatura + pocet scrambled znaku bez terminatoru
-        **encryptedPassword = PWDMNGR_SIGNATURE_SCRAMBLED;                       // prvni znak nese signaturu
-        memcpy(*encryptedPassword + 1, scrambledPassword, scrambledPasswordLen); // nasleduje scrambled heslo bez NULL terminatoru
-        *encryptedPasswordSize = 1 + scrambledPasswordLen;                       // zapiseme celkovou delku
+        *encryptedPassword = (BYTE*)malloc(1 + scrambledPasswordLen);            // signature + number of scrambled characters without terminator
+        **encryptedPassword = PWDMNGR_SIGNATURE_SCRAMBLED;                       // the first character carries the signature
+        memcpy(*encryptedPassword + 1, scrambledPassword, scrambledPasswordLen); // follows scrambled password without NULL terminator
+        *encryptedPasswordSize = 1 + scrambledPasswordLen;                       // write down the total length
     }
     free(scrambledPassword);
 
     return TRUE;
 }
 
-/*
-extern "C"
+/*  extern "C"
 {
 void mytrace(const char *txt)
 {
   TRACE_I(txt);
 }
-}
-*/
+}*/
 
 BOOL CPasswordManager::DecryptPassword(const BYTE* encryptedPassword, int encryptedPasswordSize, char** plainPassword)
 {
@@ -595,14 +592,14 @@ BOOL CPasswordManager::DecryptPassword(const BYTE* encryptedPassword, int encryp
         TRACE_E("CPasswordManager::DecryptPassword(): encryptedPassword == NULL || encryptedPasswordSize == 0!");
         return FALSE;
     }
-    // pokud je heslo sifrovane pomoci AES a my nezname master password, selzeme
+    // if the password is encrypted using AES and we do not know the master password, we will fail
     BOOL encrypted = IsPasswordEncrypted(encryptedPassword, encryptedPasswordSize);
     if (encrypted && (!UseMasterPassword || PlainMasterPassword == NULL) && OldPlainMasterPassword == NULL)
     {
         TRACE_I("CPasswordManager::DecryptPassword(): Master Password was not entered. Call AskForMasterPassword() first.");
         return FALSE;
     }
-    if (encrypted && (encryptedPasswordSize < 1 + 16 + 1 + 10)) // na vlastni heslo musi byt alespon jeden znak (signatura + SALT + heslo + MAC)
+    if (encrypted && (encryptedPasswordSize < 1 + 16 + 1 + 10)) // the password itself must contain at least one character (signature + SALT + password + MAC)
     {
         TRACE_E("CPasswordManager::DecryptPassword(): stored password is too small, probably corrupted!");
         return FALSE;
@@ -617,29 +614,29 @@ BOOL CPasswordManager::DecryptPassword(const BYTE* encryptedPassword, int encryp
 
 TRY_DECRYPT_AGAIN:
 
-    BYTE* tmpBuff = (BYTE*)malloc(encryptedPasswordSize + 1); // +1 pro terminator, abychom mohli po AES zavolat unscramble
+    BYTE* tmpBuff = (BYTE*)malloc(encryptedPasswordSize + 1); // +1 for terminator, so we can call unscramble after AES
     memcpy(tmpBuff, encryptedPassword, encryptedPasswordSize);
-    tmpBuff[encryptedPasswordSize] = 0; // terminator pro unscramble
+    tmpBuff[encryptedPasswordSize] = 0; // terminator for unscramble
 
-    int pwdOffset = 1; // signatura
+    int pwdOffset = 1; // signature
     if (encrypted)
     {
-        // napred data rozsifrujeme pomoci AES
+        // First, we decrypt the data using AES
         CSalAES aes;
-        WORD dummy;                                                                                                                                 // zbytecna slabina, ignorujeme
-        int ret = SalamanderCrypt->AESInit(&aes, PASSWORD_MANAGER_AES_MODE, plainMasterPassword, strlen(plainMasterPassword), tmpBuff + 1, &dummy); // salt lezi za signaturou na 16 bajtech
+        WORD dummy;                                                                                                                                 // unnecessary weakness, we ignore
+        int ret = SalamanderCrypt->AESInit(&aes, PASSWORD_MANAGER_AES_MODE, plainMasterPassword, strlen(plainMasterPassword), tmpBuff + 1, &dummy); // salt is located behind the signature in 16 bytes
         if (ret != SAL_AES_ERR_GOOD_RETURN)
-            TRACE_E("CPasswordManager::DecryptPassword(): unexpected state, ret=" << ret);        // nemelo by nastat
-        SalamanderCrypt->AESDecrypt(&aes, tmpBuff + 1 + 16, encryptedPasswordSize - 1 - 16 - 10); // rozsifrujeme heslo
-        BYTE mac[10];                                                                             // pro overeni spravnosti master password nam poslouzi MAC
+            TRACE_E("CPasswordManager::DecryptPassword(): unexpected state, ret=" << ret);        // should not occur
+        SalamanderCrypt->AESDecrypt(&aes, tmpBuff + 1 + 16, encryptedPasswordSize - 1 - 16 - 10); // decrypt the password
+        BYTE mac[10];                                                                             // MAC will serve us to verify the correctness of the master password
         SalamanderCrypt->AESEnd(&aes, mac, NULL);
         if (memcmp(mac, &tmpBuff[encryptedPasswordSize - 10], 10) != 0)
         {
-            memset(tmpBuff, 0, encryptedPasswordSize); // nulujeme buffer s plain heslem
+            memset(tmpBuff, 0, encryptedPasswordSize); // we zero out the buffer with a plain password
             free(tmpBuff);
 
             if (plainMasterPassword == OldPlainMasterPassword && UseMasterPassword && PlainMasterPassword != NULL)
-            { // resi situaci, kdy mame heslo zasifrovane novym master passwordem (heslo nelze desifrovat puvodnim master passwordem, ale novym ano, tedy hlaska, ze heslo nejde desifrovat je matouci, protoze kdyz uzivatel zkusi heslo desifrovat novym master passwordem, povede se to a tedy uzivatel nema sanci najit to nedesifrovatelne heslo)
+            { // It solves the situation when we have a password encrypted with a new master password (the password cannot be decrypted with the original master password, but it can be decrypted with the new one, so the message that the password cannot be decrypted is misleading because when the user tries to decrypt the password with the new master password, it will succeed and therefore the user has no chance of finding that undecryptable password)
                 plainMasterPassword = PlainMasterPassword;
                 goto TRY_DECRYPT_AGAIN;
             }
@@ -647,13 +644,13 @@ TRY_DECRYPT_AGAIN:
             TRACE_I("CPasswordManager::DecryptPassword(): wrong master password, password cannot be decrypted!");
             return FALSE;
         }
-        pwdOffset += 16;                         // preskocime AES-SALT
-        tmpBuff[encryptedPasswordSize - 10] = 0; // terminator pro unscramble (na miste prvniho znak MAC)
+        pwdOffset += 16;                         // skip AES-SALT
+        tmpBuff[encryptedPasswordSize - 10] = 0; // terminator for unscramble (at the position of the first MAC character)
     }
-    // vnitrne jsou data scrambled, preskocime signaturu a pripadne AES-SALT
+    // internally the data is scrambled, let's skip the signature and possibly AES-SALT
     if (!UnscramblePassword((char*)tmpBuff + pwdOffset))
     {
-        memset(tmpBuff, 0, encryptedPasswordSize); // nulujeme buffer s plain heslem
+        memset(tmpBuff, 0, encryptedPasswordSize); // we zero out the buffer with a plain password
         free(tmpBuff);
         return FALSE;
     }
@@ -663,7 +660,7 @@ TRY_DECRYPT_AGAIN:
         *plainPassword = DupStr((char*)tmpBuff + pwdOffset);
     }
 
-    memset(tmpBuff, 0, encryptedPasswordSize); // nulujeme buffer s plain heslem
+    memset(tmpBuff, 0, encryptedPasswordSize); // we zero out the buffer with a plain password
     free(tmpBuff);
 
     return TRUE;
@@ -686,8 +683,8 @@ void CPasswordManager::SetMasterPassword(HWND hParent, const char* password)
 
     if (PlainMasterPassword != NULL)
     {
-        // pokud je nastaven master password, po dobu behu teto metody ho prehodime do OldPlainMasterPassword,
-        // aby mely pluginy moznost rozsifrovat jim zasifrovana hesla
+        // if the master password is set, we will switch it to OldPlainMasterPassword for the duration of this method,
+        // so that plugins have the option to decrypt passwords encrypted for them
         OldPlainMasterPassword = PlainMasterPassword;
         PlainMasterPassword = NULL;
     }
@@ -700,20 +697,20 @@ void CPasswordManager::SetMasterPassword(HWND hParent, const char* password)
 
     if (password == NULL || *password == 0)
     {
-        // zruseni master password
+        // disable master password
         UseMasterPassword = FALSE;
         Plugins.PasswordManagerEvent(hParent, PME_MASTERPASSWORDREMOVED);
     }
     else
     {
-        // nastaveni/zmena master password
+        // Setting/change master password
         UseMasterPassword = TRUE;
         PlainMasterPassword = DupStr(password);
         CreateMasterPasswordVerifier(PlainMasterPassword);
         Plugins.PasswordManagerEvent(hParent, OldPlainMasterPassword == NULL ? PME_MASTERPASSWORDCREATED : PME_MASTERPASSWORDCHANGED);
     }
 
-    // vlakno se nam vratilo z volani Plugins.PasswordManagerEvent(), muzeme zahodit OldPlainMasterPassword
+    // Thread returned to us from calling Plugins.PasswordManagerEvent(), we can discard OldPlainMasterPassword
     if (OldPlainMasterPassword != NULL)
     {
         free(OldPlainMasterPassword);
@@ -730,7 +727,7 @@ BOOL CPasswordManager::EnterMasterPassword(const char* password)
     }
     if (PlainMasterPassword != NULL)
     {
-        // pokud se nam snazi znovu vlozit aktualni heslo, tise to ignorujeme
+        // if someone tries to re-enter the current password, we quietly ignore it
         if (strcmp(PlainMasterPassword, password) == 0)
             return TRUE;
 
@@ -750,23 +747,23 @@ BOOL CPasswordManager::EnterMasterPassword(const char* password)
 
 void CPasswordManager::CreateMasterPasswordVerifier(const char* password)
 {
-    // naalokujeme strukturu pro verifier
+    // allocate structure for verifier
     CMasterPasswordVerifier* mpv;
     mpv = new CMasterPasswordVerifier;
 
-    // Salt a Dummy hodnoty budou nahodne
+    // Salt and Dummy values will be random
     FillBufferWithRandomData(mpv->Salt, 16);
     FillBufferWithRandomData(mpv->Dummy, 16);
 
     CSalAES aes;
-    WORD dummy; // zbytecna slabina, ignorujeme
+    WORD dummy; // unnecessary weakness, we ignore
     int ret = SalamanderCrypt->AESInit(&aes, PASSWORD_MANAGER_AES_MODE, password, strlen(password), mpv->Salt, &dummy);
     if (ret != SAL_AES_ERR_GOOD_RETURN)
-        TRACE_E("CPasswordManager::CreateMasterPasswordVerifier(): unexpected state, ret=" << ret); // nemelo by nastat
-    SalamanderCrypt->AESEncrypt(&aes, mpv->Dummy, 16);                                              // Dummy nechame zasifrovat
-    SalamanderCrypt->AESEnd(&aes, mpv->MAC, NULL);                                                  // MAC si ulozime pro vlastni verifikaci
+        TRACE_E("CPasswordManager::CreateMasterPasswordVerifier(): unexpected state, ret=" << ret); // should not occur
+    SalamanderCrypt->AESEncrypt(&aes, mpv->Dummy, 16);                                              // Let's encrypt the dummy
+    SalamanderCrypt->AESEnd(&aes, mpv->MAC, NULL);                                                  // Save the MAC for our own verification
 
-    // ulozime alokovanou strukturu
+    // we will save the allocated structure
     if (MasterPasswordVerifier != NULL)
         delete MasterPasswordVerifier;
     MasterPasswordVerifier = mpv;
@@ -780,7 +777,7 @@ BOOL CPasswordManager::VerifyMasterPassword(const char* password)
         return FALSE;
     }
 
-    // pokud drzime master password v otevrenem stavu, muzeme provest jednoduche porovnani
+    // if we keep the master password in an open state, we can perform a simple comparison
     if (PlainMasterPassword != NULL)
     {
         return (strcmp(PlainMasterPassword, password) == 0);
@@ -796,12 +793,12 @@ BOOL CPasswordManager::VerifyMasterPassword(const char* password)
     memcpy(&mpv, MasterPasswordVerifier, sizeof(CMasterPasswordVerifier));
 
     CSalAES aes;
-    WORD dummy; // zbytecna slabina, ignorujeme
+    WORD dummy; // unnecessary weakness, we ignore
     int ret = SalamanderCrypt->AESInit(&aes, PASSWORD_MANAGER_AES_MODE, password, strlen(password), mpv.Salt, &dummy);
     if (ret != SAL_AES_ERR_GOOD_RETURN)
-        TRACE_E("CPasswordManager::VerifyMasterPassword(): unexpected state, ret=" << ret); // nemelo by nastat
-    SalamanderCrypt->AESDecrypt(&aes, mpv.Dummy, 16);                                       // Dummy nechame rozsifrovat
-    SalamanderCrypt->AESEnd(&aes, mpv.MAC, NULL);                                           // MAC budeme kontrolovat
+        TRACE_E("CPasswordManager::VerifyMasterPassword(): unexpected state, ret=" << ret); // should not occur
+    SalamanderCrypt->AESDecrypt(&aes, mpv.Dummy, 16);                                       // Let's decrypt the dummy
+    SalamanderCrypt->AESEnd(&aes, mpv.MAC, NULL);                                           // We will check the MAC
     return (memcmp(mpv.MAC, MasterPasswordVerifier->MAC, sizeof(mpv.MAC)) == 0);
 }
 
@@ -816,7 +813,7 @@ BOOL CPasswordManager::Save(HKEY hKey)
 {
     BOOL ret = TRUE;
 
-    // konfigurace password managera
+    // configuration of the password manager
     if (ret)
         ret &= SetValue(hKey, SALAMANDER_PWDMNGR_USEMASTERPWD, REG_DWORD, &UseMasterPassword, sizeof(UseMasterPassword));
     if (UseMasterPassword)
@@ -835,7 +832,7 @@ BOOL CPasswordManager::Save(HKEY hKey)
 BOOL CPasswordManager::Load(HKEY hKey)
 {
     BOOL ret = TRUE;
-    // konfigurace password managera
+    // configuration of the password manager
     if (ret)
         ret &= GetValue(hKey, SALAMANDER_PWDMNGR_USEMASTERPWD, REG_DWORD, &UseMasterPassword, sizeof(UseMasterPassword));
     if (UseMasterPassword)
@@ -850,13 +847,13 @@ BOOL CPasswordManager::Load(HKEY hKey)
 
 BOOL CPasswordManager::AskForMasterPassword(HWND hParent)
 {
-    // pokud se master password nepouziva, vratime FALSE
+    // if the master password is not used, we return FALSE
     if (!UseMasterPassword)
         return FALSE;
 
-    // na master password doptame (i v pripade, ze ho jiz zname -- volajici si to mohl overit predem pomoci IsMasterPasswordSet())
+    // ask for the master password (even if we already know it - the caller could have verified it in advance using IsMasterPasswordSet())
     CEnterMasterPassword dlg(hParent, this);
-    return dlg.Execute() == IDOK; // pokud ho uzivatel spravne zadal, vratime TRUE, jinak FALSE
+    return dlg.Execute() == IDOK; // if the user entered it correctly, we return TRUE, otherwise FALSE
 }
 
 //****************************************************************************

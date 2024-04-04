@@ -1,8 +1,7 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * regcomp and regexec -- regsub and regerror are elsewhere
+/*   * regcomp and regexec -- regsub and regerror are elsewhere
  *
  *  Copyright (c) 1986 by University of Toronto.
  *  Written by Henry Spencer.  Not derived from licensed software.
@@ -23,8 +22,7 @@
  *
  * Beware that some of this code is subtly aware of the way operator
  * precedence is structured in regular expressions.  Serious changes in
- * regular-expression syntax might require a total rethink.
- */
+ * regular-expression syntax might require a total rethink.*/
 #include "precomp.h"
 
 #include <windows.h>
@@ -39,14 +37,14 @@
 
 #pragma warning(3 : 4706) // warning C4706: assignment within conditional expression
 
-//#include "trace.h" aby to slo pripojit i k pluginum, stejne tu zatim zadny TRACE neni
+//#include "trace.h" to make it possible to connect to plugins, there are currently no TRACEs here yet
 #include "str.h"
 #include "regexp.h"
 
 //*****************************************************************************
 //*****************************************************************************
 //
-// moje cast regexp.cpp
+// my part of regexp.cpp
 //
 //*****************************************************************************
 //*****************************************************************************
@@ -159,7 +157,7 @@ BOOL CRegularExpression::SetFlags(WORD flags)
     Expression = regcomp(pattern, LastErrorText);
 
     if (Expression != NULL && (Flags & sfForward) == 0)
-    { // vyraz je syntakticky o.k. + backward search
+    { // expression is syntactically okay + backward search
         if (Expression != NULL)
             free(Expression);
         Expression = NULL;
@@ -263,16 +261,16 @@ BOOL CRegularExpression::ExpandVariables(char* pattern, char* buffer, int bufSiz
 {
     char* sour = pattern;
     char* dest = buffer;
-    bufSize--; //rezervujeme si misto pro NULL
+    bufSize--; //Reserving space for NULL
     while (*sour)
     {
         if (!bufSize)
-            return FALSE; //dosel nam buffer
+            return FALSE; //we ran out of buffer
         if (*sour == '\\')
         {
             sour++;
             if (!*sour)
-                break; // tady bych asi mnel hodit chybu takovato sekvence neni definovana
+                break; // here I would probably throw an error such a sequence is not defined
             if (*sour >= '1' && *sour <= '9')
             {
                 int n = *sour - '0';
@@ -308,9 +306,9 @@ int CRegularExpression::ReplaceForward(int start, char* pattern, BOOL global,
     char* output = buffer;
     int len;
     while (start <= LineLength && regexec(Expression, Line, start) == 1 &&
-           Expression->endp[0] - Expression->startp[0] > 0 /*zero sized match neberem*/)
+           Expression->endp[0] - Expression->startp[0] > 0 /*we don't take zero sized match*/)
     {
-        //zkopirujeme nezmeny text, ktery predchazi match
+        //copy the unchanged text that precedes the match
         len = (int)((Expression->startp[0] - Line) - start);
         if (len + 1 > bufSize)
         {
@@ -319,7 +317,7 @@ int CRegularExpression::ReplaceForward(int start, char* pattern, BOOL global,
         memcpy(output, OrigLineStart + start, len);
         output += len;
         bufSize -= len;
-        //nahradime co jsme nasli
+        //replace what we found
         if (!ExpandVariables(pattern, output, bufSize, &len))
         {
             return FALSE;
@@ -334,7 +332,7 @@ int CRegularExpression::ReplaceForward(int start, char* pattern, BOOL global,
 
     if (ret && start < LineLength)
     {
-        //dokopirujeme text nasledujici match
+        //copy the text following the match
         if (LineLength - start + 1 > bufSize)
         {
             return FALSE;
@@ -350,9 +348,9 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
 
     while (s < srcExpEnd)
     {
-        //---  hledani konce atomu - pro zopakovani '*', '+' a '?'
-        char* ss;    // ukazuje za atom
-        BOOL addPar; // paruji zavorky? (ma se pridat zavorka do paru)
+        //--- finding end of atom - for repeating '*', '+' and '?'
+        char* ss;    // points to the atom
+        BOOL addPar; // Are parentheses steaming? (a parenthesis should be added to the pair)
         switch (*s)
         {
         case '\\':
@@ -362,8 +360,8 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
         case '(':
         case '[':
         {
-            int parNum = (*s == '(') ? 1 : 0; // pocty zavorek
-            int braNum = (*s == '[') ? 1 : 0; // pocty zavorek
+            int parNum = (*s == '(') ? 1 : 0; // counts of brackets
+            int braNum = (*s == '[') ? 1 : 0; // counts of brackets
             char* lastBra = (*s == '[') ? s : NULL;
             ss = s + 1;
             while (*ss != 0 && (parNum != 0 || braNum != 0))
@@ -373,10 +371,10 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
                 case '(':
                     if (braNum == 0)
                         parNum++;
-                    break; // [..(..] je povoleno
+                    break; // [..(..] is allowed
                 case '[':
                 {
-                    if (braNum == 0) // [..[..] je povoleno
+                    if (braNum == 0) // [..[..] is allowed
                     {
                         braNum++;
                         lastBra = ss - 1;
@@ -387,13 +385,13 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
                 case ')':
                     if (braNum == 0 && parNum > 0)
                         parNum--;
-                    break; // [..)..] je povoleno
+                    break; // [..)..] is allowed
                 case ']':
                 {
-                    if (braNum != 0) // ..].. je povoleno
+                    if (braNum != 0) // ..].. is allowed
                     {
-                        if (ss - 2 != lastBra &&                     // []..] je povoleno
-                            (ss - 3 != lastBra || *(ss - 2) != '^')) // [^]..] je take povoleno
+                        if (ss - 2 != lastBra &&                     // []..] is allowed
+                            (ss - 3 != lastBra || *(ss - 2) != '^')) // [^]..] is also allowed
                         {
                             braNum--;
                         }
@@ -405,7 +403,7 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
                 {
                     if (*ss != 0)
                         ss++;
-                    break; // znak za '\\' nemuze byt brany jako zavorka
+                    break; // character after '\\' cannot be interpreted as a parenthesis
                 }
                 }
             }
@@ -422,12 +420,12 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
             break;
         }
 
-        //---  nakopirovani vsech '*', '+' a '?' obsazenych za atomem
+        //--- copying all '*', '+' and '?' following the atom
         char* oldSS = ss;
         while (*ss == '*' || *ss == '?' || *ss == '+')
             *--dstExpEnd = *ss++;
 
-        //--- nakopirovani obraceneho atomu
+        //--- copying the reversed atom
         switch (*s)
         {
         case '\\':
@@ -446,13 +444,13 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
             else
                 *--dstExpEnd = (*s == '(') ? ')' : ']';
 
-            if (oldSS - s >= 2) // pokud vyraz nekonci otevrenou zavorkou
+            if (oldSS - s >= 2) // if the expression does not end with an open parenthesis
             {
                 if (*s == '(')
-                { // kopie reversovaneho vyrazu - ohraniceni
+                { // copy of the reversed expression - boundaries
                     ReverseRegExp(dstExpEnd, s + 1, oldSS - 1);
                 }
-                else // prosta kopie vnitrku - mnozina
+                else // simple copy of the inside - set
                 {
                     dstExpEnd -= (oldSS - 1) - (s + 1);
                     memcpy(dstExpEnd, s + 1, (oldSS - 1) - (s + 1));
@@ -476,7 +474,7 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
             break;
         }
 
-        //---  prechod na dalsi atom
+        //--- transition to the next atom
         s = ss;
     }
 }
@@ -484,19 +482,16 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
 //*****************************************************************************
 //*****************************************************************************
 //
-// puvodni regexp.cpp
+// original regexp.cpp
 //
 //*****************************************************************************
 //*****************************************************************************
 
-/*
- * The first byte of the regexp internal "program" is actually this magic
- * number; the start node begins in the second byte.
- */
+/*   * The first byte of the regexp internal "program" is actually this magic
+ * number; the start node begins in the second byte.*/
 #define MAGIC ((char)0234)
 
-/*
- * The "internal use only" fields in regexp.h are present to pass info from
+/*   * The "internal use only" fields in regexp.h are present to pass info from
  * compile to execute that permits the execute phase to run lots faster on
  * simple cases.  They are:
  *
@@ -512,44 +507,40 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
  * potentially expensive (at present, the only such thing detected is * or +
  * at the start of the r.e., which can involve a lot of backup).  Regmlen is
  * supplied because the test in regexec() needs it and regcomp() is computing
- * it anyway.
- */
+ * it anyway.*/
 
-/*
- * Structure for regexp "program".  This is essentially a linear encoding
+/*   * Structure for regexp "program". This is essentially a linear encoding
  * of a nondeterministic finite-state machine (aka syntax charts or
- * "railroad normal form" in parsing technology).  Each node is an opcode
- * plus a "next" pointer, possibly plus an operand.  "Next" pointers of
+ * "railroad normal form" in parsing technology). Each node is an opcode
+ * plus a "next" pointer, possibly plus an operand. "Next" pointers of
  * all nodes except BRANCH implement concatenation; a "next" pointer with
- * a BRANCH on both ends of it is connecting two alternatives.  (Here we
- * have one of the subtle syntax dependencies:  an individual BRANCH (as
+ * a BRANCH on both ends of it is connecting two alternatives. (Here we
+ * have one of the subtle syntax dependencies: an individual BRANCH (as
  * opposed to a collection of them) is never concatenated with anything
- * because of operator precedence.)  The operand of some types of node is
- * a literal string; for others, it is a node leading into a sub-FSM.  In
+ * because of operator precedence.) The operand of some types of node is
+ * a literal string; for others, it is a node leading into a sub-FSM. In
  * particular, the operand of a BRANCH node is the first node of the branch.
- * (NB this is *not* a tree structure:  the tail of the branch connects
- * to the thing following the set of BRANCHes.)  The opcodes are:
- */
+ * (NB this is *not* a tree structure: the tail of the branch connects
+ * to the thing following the set of BRANCHes.) The opcodes are:*/
 
-/* definition number  opnd? meaning */
-#define END 0     /* no End of program. */
-#define BOL 1     /* no Match "" at beginning of line. */
-#define EOL 2     /* no Match "" at end of line. */
-#define ANY 3     /* no Match any one character. */
-#define ANYOF 4   /* str  Match any character in this string. */
-#define ANYBUT 5  /* str  Match any character not in this string. */
-#define BRANCH 6  /* node Match this alternative, or the next... */
-#define BACK 7    /* no Match "", "next" ptr points backward. */
-#define EXACTLY 8 /* str  Match this string. */
-#define NOTHING 9 /* no Match empty string. */
-#define STAR 10   /* node Match this (simple) thing 0 or more times. */
-#define PLUS 11   /* node Match this (simple) thing 1 or more times. */
-#define OPEN 20   /* no Mark this point in input as start of #n. */
-                  /*  OPEN+1 is number 1, etc. */
-#define CLOSE 30  /* no Analogous to OPEN. */
+/* definition number  opnd? meaning*/
+#define END 0     /* End of program.*/
+#define BOL 1     /* no Match "" at beginning of line.*/
+#define EOL 2     /* no Match "" at end of line.*/
+#define ANY 3     /* no Match any one character.*/
+#define ANYOF 4   /* str Match any character in this string.*/
+#define ANYBUT 5  /* str Match any character not in this string.*/
+#define BRANCH 6  /* node Match this alternative, or the next...*/
+#define BACK 7    /* no Match "", "next" ptr points backward.*/
+#define EXACTLY 8 /* str  Match this string.*/
+#define NOTHING 9 /* no Match empty string.*/
+#define STAR 10   /* node Match this (simple) thing 0 or more times.*/
+#define PLUS 11   /* node Match this (simple) thing 1 or more times.*/
+#define OPEN 20   /* Mark this point in input as the start of #n.*/
+                  /*  OPEN+1 is number 1, etc.*/
+#define CLOSE 30  /* no Analogous to OPEN.*/
 
-/*
- * Opcode notes:
+/*   * Opcode notes:
  *
  * BRANCH The set of branches constituting a single choice are hooked
  *    together with their "next" pointers, since precedence prevents
@@ -567,30 +558,23 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
  *    per match) are implemented with STAR and PLUS for speed
  *    and to minimize recursive plunges.
  *
- * OPEN,CLOSE ...are numbered at compile time.
- */
+ * OPEN,CLOSE ...are numbered at compile time.*/
 
-/*
- * A node is one char of opcode followed by two chars of "next" pointer.
+/*   * A node is one char of opcode followed by two chars of "next" pointer.
  * "Next" pointers are stored as two 8-bit pieces, high order first.  The
  * value is a positive offset from the opcode of the node containing it.
  * An operand, if any, simply follows the node.  (Note that much of the
  * code generation knows about this implicit relationship.)
  *
  * Using two bytes for the "next" pointer is vast overkill for most things,
- * but allows patterns to get big without disasters.
- */
+ * but allows patterns to get big without disasters.*/
 #define OP(p) (*(p))
 #define NEXT(p) (((*((p) + 1) & 0377) << 8) + (*((p) + 2) & 0377))
 #define OPERAND(p) ((p) + 3)
 
-/*
- * See regmagic.h for one further detail of program structure.
- */
+/*   * See regmagic.h for one further detail of program structure.*/
 
-/*
- * Utility definitions.
- */
+/*   * Utility definitions.*/
 #ifndef CHARBITS
 #define UCHARAT(p) ((int)*(unsigned char*)(p))
 #else
@@ -605,26 +589,20 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
 #define ISMULT(c) ((c) == '*' || (c) == '+' || (c) == '?')
 #define META "^$.[()|?+*\\"
 
-/*
- * Flags to be passed up and down.
- */
-#define HASWIDTH 01 /* Known never to match null string. */
-#define SIMPLE 02   /* Simple enough to be STAR/PLUS operand. */
-#define SPSTART 04  /* Starts with * or +. */
-#define WORST 0     /* Worst case. */
+/*   * Flags to be passed up and down.*/
+#define HASWIDTH 01 /* Known never to match null string.*/
+#define SIMPLE 02   /* Simple enough to be a STAR/PLUS operand.*/
+#define SPSTART 04  /* Starts with * or +.*/
+#define WORST 0     /* Worst case.*/
 
-/*
- * Global work variables for regcomp().
- */
-char* regparse; /* Input-scan pointer. */
-int regnpar;    /* () count. */
+/*   * Global work variables for regcomp().*/
+char* regparse; /* Input-scan pointer.*/
+int regnpar;    /* () count.*/
 char regdummy;
-char* regcode; /* Code-emit pointer; &regdummy = don't. */
-long regsize;  /* Code size. */
+char* regcode; /* Code-emit pointer; &regdummy = don't.*/
+long regsize;  /* Code size.*/
 
-/*
- * Forward declarations for regcomp()'s friends.
- */
+/*   * Forward declarations for regcomp()'s friends.*/
 char* reg(int paren, int* flagp);
 char* regbranch(int* flagp);
 char* regpiece(int* flagp);
@@ -636,8 +614,7 @@ void reginsert(char op, char* opnd);
 void regtail(char* p, char* val);
 void regoptail(char* p, char* val);
 
-/*
- - regcomp - compile a regular expression into internal code
+/*   - regcomp - compile a regular expression into internal code
  *
  * We can't allocate space until we know how big the compiled form will be,
  * but we can't compile it (and thus know how big it is) until we've got a
@@ -649,8 +626,7 @@ void regoptail(char* p, char* val);
  * one piece because free() must be able to free it all.)
  *
  * Beware that the optimization-preparation code in here knows about some
- * of the structure of the compiled regexp.
- */
+ * of the structure of the compiled regexp.*/
 regexp* regcomp(char* exp, const char*& lastErrorText)
 {
     __RegExpSection.Enter();
@@ -662,7 +638,7 @@ regexp* regcomp(char* exp, const char*& lastErrorText)
     int len;
     int flags;
 
-    /* First pass: determine size, legality. */
+    /* First pass: determine size, legality.*/
     regparse = exp;
     regnpar = 1;
     regsize = 0L;
@@ -675,8 +651,8 @@ regexp* regcomp(char* exp, const char*& lastErrorText)
         return (NULL);
     }
 
-    /* Small enough for pointer-storage convention? */
-    if (regsize >= 32767L) /* Probably could be 65535L. */
+    /* Small enough for pointer-storage convention?*/
+    if (regsize >= 32767L) /* Probably could be 65535L.*/
     {
         regerror(RegExpErrorText(reeTooBig));
         lastErrorText = CRegularExpression::LastError;
@@ -684,7 +660,7 @@ regexp* regcomp(char* exp, const char*& lastErrorText)
         return (NULL);
     }
 
-    /* Allocate space. */
+    /* Allocate space.*/
     r = (regexp*)malloc(sizeof(regexp) + (unsigned)regsize);
     if (r == NULL)
     {
@@ -694,7 +670,7 @@ regexp* regcomp(char* exp, const char*& lastErrorText)
         return (NULL);
     }
 
-    /* Second pass: emit code. */
+    /* Second pass: emit code.*/
     regparse = exp;
     regnpar = 1;
     regcode = r->program;
@@ -706,30 +682,28 @@ regexp* regcomp(char* exp, const char*& lastErrorText)
         return (NULL);
     }
 
-    /* Dig out information for optimizations. */
-    r->regstart = '\0'; /* Worst-case defaults. */
+    /* Dig out information for optimizations.*/
+    r->regstart = '\0'; /* Worst-case defaults.*/
     r->reganch = 0;
     r->regmust = NULL;
     r->regmlen = 0;
-    scan = r->program + 1; /* First BRANCH. */
+    scan = r->program + 1; /* First BRANCH.*/
     if (OP(regnext(scan)) == END)
-    { /* Only one top-level choice. */
+    { /* Only one top-level choice.*/
         scan = OPERAND(scan);
 
-        /* Starting-point info. */
+        /* Starting-point info.*/
         if (OP(scan) == EXACTLY)
             r->regstart = *OPERAND(scan);
         else if (OP(scan) == BOL)
             r->reganch++;
 
-        /*
-     * If there's something expensive in the r.e., find the
+        /*       * If there's something expensive in the r.e., find the
      * longest literal string that must appear and make it the
      * regmust.  Resolve ties in favor of later strings, since
      * the regstart check works with the beginning of the r.e.
      * and avoiding duplication strengthens checking.  Not a
-     * strong reason, but sufficient in the absence of others.
-     */
+     * strong reason, but sufficient in the absence of others.*/
         if (flags & SPSTART)
         {
             longest = NULL;
@@ -745,21 +719,19 @@ regexp* regcomp(char* exp, const char*& lastErrorText)
         }
     }
 
-    lastErrorText = NULL; // uspesny navrat
+    lastErrorText = NULL; // successful return
     __RegExpSection.Leave();
     return (r);
 }
 
-/*
- - reg - regular expression, i.e. main body or parenthesized thing
+/*   - reg - regular expression, i.e. main body or parenthesized thing
  *
  * Caller must absorb opening parenthesis.
  *
  * Combining parenthesis handling with the base level of regular expression
  * is a trifle forced, but the need to tie the tails of the branches to what
- * follows makes it hard to avoid.
- */
-char* reg(int paren /* Parenthesized? */, int* flagp)
+ * follows makes it hard to avoid.*/
+char* reg(int paren /* Parenthesized?*/, int* flagp)
 {
     char* ret;
     char* br;
@@ -767,9 +739,9 @@ char* reg(int paren /* Parenthesized? */, int* flagp)
     int parno;
     int flags;
 
-    *flagp = HASWIDTH; /* Tentatively. */
+    *flagp = HASWIDTH; /* Tentatively.*/
 
-    /* Make an OPEN node, if parenthesized. */
+    /* Make an OPEN node, if parenthesized.*/
     if (paren)
     {
         if (regnpar >= NSUBEXP)
@@ -781,12 +753,12 @@ char* reg(int paren /* Parenthesized? */, int* flagp)
     else
         ret = NULL;
 
-    /* Pick up the branches, linking them together. */
+    /* Pick up the branches, linking them together.*/
     br = regbranch(&flags);
     if (br == NULL)
         return (NULL);
     if (ret != NULL)
-        regtail(ret, br); /* OPEN -> first. */
+        regtail(ret, br); /* OPEN -> first.*/
     else
         ret = br;
     if (!(flags & HASWIDTH))
@@ -798,21 +770,21 @@ char* reg(int paren /* Parenthesized? */, int* flagp)
         br = regbranch(&flags);
         if (br == NULL)
             return (NULL);
-        regtail(ret, br); /* BRANCH -> BRANCH. */
+        regtail(ret, br); /* BRANCH -> BRANCH.*/
         if (!(flags & HASWIDTH))
             *flagp &= ~HASWIDTH;
         *flagp |= flags & SPSTART;
     }
 
-    /* Make a closing node, and hook it on the end. */
+    /* Make a closing node, and hook it on the end.*/
     ender = regnode((char)((paren) ? CLOSE + parno : END));
     regtail(ret, ender);
 
-    /* Hook the tails of the branches to the closing node. */
+    /* Hook the tails of the branches to the closing node.*/
     for (br = ret; br != NULL; br = regnext(br))
         regoptail(br, ender);
 
-    /* Check for proper termination. */
+    /* Check for proper termination.*/
     if (paren && *regparse++ != ')')
     {
         FAIL(RegExpErrorText(reeUnmatchedParenthesis));
@@ -828,11 +800,9 @@ char* reg(int paren /* Parenthesized? */, int* flagp)
     return (ret);
 }
 
-/*
- - regbranch - one alternative of an | operator
+/*   - regbranch - one alternative of an | operator
  *
- * Implements the concatenation operator.
- */
+ * Implements the concatenation operator.*/
 char* regbranch(int* flagp)
 {
     char* ret;
@@ -840,7 +810,7 @@ char* regbranch(int* flagp)
     char* latest;
     int flags;
 
-    *flagp = WORST; /* Tentatively. */
+    *flagp = WORST; /* Tentatively.*/
 
     ret = regnode(BRANCH);
     chain = NULL;
@@ -850,27 +820,25 @@ char* regbranch(int* flagp)
         if (latest == NULL)
             return (NULL);
         *flagp |= flags & HASWIDTH;
-        if (chain == NULL) /* First piece. */
+        if (chain == NULL) /* First piece.*/
             *flagp |= flags & SPSTART;
         else
             regtail(chain, latest);
         chain = latest;
     }
-    if (chain == NULL) /* Loop ran zero times. */
+    if (chain == NULL) /* Loop ran zero times.*/
         (void)regnode(NOTHING);
 
     return (ret);
 }
 
-/*
- - regpiece - something followed by possible [*+?]
+/*   - regpiece - something followed by possible [*+?]
  *
  * Note that the branching code sequences used for ? and the general cases
  * of * and + are somewhat optimized:  they use the same NOTHING node as
  * both the endmarker for their branch list and the body of the last branch.
  * It might seem that this node could be dispensed with entirely, but the
- * endmarker role is not redundant.
- */
+ * endmarker role is not redundant.*/
 char* regpiece(int* flagp)
 {
     char* ret;
@@ -897,30 +865,30 @@ char* regpiece(int* flagp)
         reginsert(STAR, ret);
     else if (op == '*')
     {
-        /* Emit x* as (x&|), where & means "self". */
-        reginsert(BRANCH, ret);         /* Either x */
-        regoptail(ret, regnode(BACK));  /* and loop */
-        regoptail(ret, ret);            /* back */
-        regtail(ret, regnode(BRANCH));  /* or */
-        regtail(ret, regnode(NOTHING)); /* null. */
+        /* Emit x* as (x&|), where & means "self".*/
+        reginsert(BRANCH, ret);         /* Either x*/
+        regoptail(ret, regnode(BACK));  /* and loop*/
+        regoptail(ret, ret);            /* back*/
+        regtail(ret, regnode(BRANCH));  /* or*/
+        regtail(ret, regnode(NOTHING)); /* null.*/
     }
     else if (op == '+' && (flags & SIMPLE))
         reginsert(PLUS, ret);
     else if (op == '+')
     {
-        /* Emit x+ as x(&|), where & means "self". */
-        next = regnode(BRANCH); /* Either */
+        /* Emit x+ as x(&|), where & means "self".*/
+        next = regnode(BRANCH); /* Either*/
         regtail(ret, next);
-        regtail(regnode(BACK), ret);    /* loop back */
-        regtail(next, regnode(BRANCH)); /* or */
-        regtail(ret, regnode(NOTHING)); /* null. */
+        regtail(regnode(BACK), ret);    /* loop back*/
+        regtail(next, regnode(BRANCH)); /* or*/
+        regtail(ret, regnode(NOTHING)); /* null.*/
     }
     else if (op == '?')
     {
-        /* Emit x? as (x|) */
-        reginsert(BRANCH, ret);        /* Either x */
-        regtail(ret, regnode(BRANCH)); /* or */
-        next = regnode(NOTHING);       /* null. */
+        /* Emit x? as (x|)*/
+        reginsert(BRANCH, ret);        /* Either x*/
+        regtail(ret, regnode(BRANCH)); /* or*/
+        next = regnode(NOTHING);       /* null.*/
         regtail(ret, next);
         regoptail(ret, next);
     }
@@ -931,20 +899,18 @@ char* regpiece(int* flagp)
     return (ret);
 }
 
-/*
- - regatom - the lowest level
+/*   - regatom - the lowest level
  *
- * Optimization:  gobbles an entire sequence of ordinary characters so that
+ * Optimization: gobbles an entire sequence of ordinary characters so that
  * it can turn them into a single node, which is smaller to store and
- * faster to run.  Backslashed characters are exceptions, each becoming a
- * separate node; the code is simpler that way and it's not worth fixing.
- */
+ * faster to run. Backslashed characters are exceptions, each becoming a
+ * separate node; the code is simpler that way and it's not worth fixing.*/
 char* regatom(int* flagp)
 {
     char* ret;
     int flags;
 
-    *flagp = WORST; /* Tentatively. */
+    *flagp = WORST; /* Tentatively.*/
 
     switch (*regparse++)
     {
@@ -964,7 +930,7 @@ char* regatom(int* flagp)
         int classend;
 
         if (*regparse == '^')
-        { /* Complement of range. */
+        { /* Complement of range.*/
             ret = regnode(ANYBUT);
             regparse++;
         }
@@ -1032,7 +998,7 @@ char* regatom(int* flagp)
             FAIL(RegExpErrorText(reeInternalDisaster));
         ender = *(regparse + len);
         if (len > 1 && ISMULT(ender))
-            len--; /* Back off clear of ?+* operand. */
+            len--; /* Back off clear of ?+* operand.*/
         *flagp |= HASWIDTH;
         if (len == 1)
             *flagp |= SIMPLE;
@@ -1050,10 +1016,8 @@ char* regatom(int* flagp)
     return (ret);
 }
 
-/*
- - regnode - emit a node
- */
-char* regnode(char op) /* Location. */
+/*   - regnode - emit a node*/
+char* regnode(char op) /* Location.*/
 {
     char* ret;
     char* ptr;
@@ -1067,16 +1031,14 @@ char* regnode(char op) /* Location. */
 
     ptr = ret;
     *ptr++ = op;
-    *ptr++ = '\0'; /* Null "next" pointer. */
+    *ptr++ = '\0'; /* Null "next" pointer.*/
     *ptr++ = '\0';
     regcode = ptr;
 
     return (ret);
 }
 
-/*
- - regc - emit (if appropriate) a byte of code
- */
+/*   - regc - emit (if appropriate) a byte of code*/
 void regc(char b)
 {
     if (regcode != &regdummy)
@@ -1085,11 +1047,9 @@ void regc(char b)
         regsize++;
 }
 
-/*
- - reginsert - insert an operator in front of already-emitted operand
+/*   - reginsert - insert an operator in front of already-emitted operand
  *
- * Means relocating the operand.
- */
+ * Means relocating the operand.*/
 void reginsert(char op, char* opnd)
 {
     char* src;
@@ -1108,15 +1068,13 @@ void reginsert(char op, char* opnd)
     while (src > opnd)
         *--dst = *--src;
 
-    place = opnd; /* Op node, where operand used to be. */
+    place = opnd; /* Op node, where operand used to be.*/
     *place++ = op;
     *place++ = '\0';
     *place++ = '\0';
 }
 
-/*
- - regtail - set the next-pointer at the end of a node chain
- */
+/*   - regtail - set the next-pointer at the end of a node chain*/
 void regtail(char* p, char* val)
 {
     char* scan;
@@ -1126,7 +1084,7 @@ void regtail(char* p, char* val)
     if (p == &regdummy)
         return;
 
-    /* Find last node. */
+    /* Find last node.*/
     scan = p;
     for (;;)
     {
@@ -1144,72 +1102,62 @@ void regtail(char* p, char* val)
     *(scan + 2) = (char)(offset & 0377);
 }
 
-/*
- - regoptail - regtail on operand of first argument; nop if operandless
- */
+/*   - regoptail - regtail on operand of first argument; nop if operandless*/
 void regoptail(char* p, char* val)
 {
-    /* "Operandless" and "op != BRANCH" are synonymous in practice. */
+    /* "Operandless" and "op != BRANCH" are synonymous in practice.*/
     if (p == NULL || p == &regdummy || OP(p) != BRANCH)
         return;
     regtail(OPERAND(p), val);
 }
 
-/*
- * regexec and friends
- */
+/*   * regexec and friends*/
 
-/*
- * Global work variables for regexec().
- */
-char* reginput;   /* String-input pointer. */
-char* regbol;     /* Beginning of input, for ^ check. */
-char** regstartp; /* Pointer to startp array. */
-char** regendp;   /* Ditto for endp. */
+/*   * Global work variables for regexec().*/
+char* reginput;   /* String-input pointer.*/
+char* regbol;     /* Beginning of input, for ^ check.*/
+char** regstartp; /* Pointer to start array.*/
+char** regendp;   /* Ditto for endp.*/
 
-/*
- * Forwards.
- */
+/*   * Forwards.*/
 int regtry(regexp* prog, char* string);
 int regmatch(char* prog);
 int regrepeat(char* p);
 
-/*
- - regexec - match a regexp against a string
- */
+/*   - regexec - match a regexp against a string*/
 int regexec(regexp* prog, char* string, int offset)
 {
     __RegExpSection.Enter();
     char* s;
 
-    /* Check validity of program. */
+    /* Check validity of program.*/
     if (UCHARAT(prog->program) != MAGIC)
     {
         __RegExpSection.Leave();
         return (0);
     }
 
-    /* If there is a "must appear" string, look for it. */
+    /* If there is a "must appear" string, look for it.*/
     if (prog->regmust != NULL)
     {
         s = string + offset;
         while ((s = strchr(s, prog->regmust[0])) != NULL)
         {
             if (strncmp(s, prog->regmust, prog->regmlen) == 0)
-                break; /* Found it. */
+                break; /* Found it.*/
             s++;
         }
-        if (s == NULL) /* Not present. */
+        if (s == NULL) /* Not present.*/
         {
             __RegExpSection.Leave();
             return (0);
         }
     }
 
-    /* Mark beginning of line for ^ . */
+    /* Mark beginning of line for ^ .*/
     regbol = string;
 
-    /* Simplest case:  anchored match need be tried only once. */
+    /* Simplest case: anchored match need be tried only once.*/
     if (prog->reganch)
     {
         if (regtry(prog, string + offset))
@@ -1224,10 +1172,10 @@ int regexec(regexp* prog, char* string, int offset)
         }
     }
 
-    /* Messy cases:  unanchored match. */
+    /* Messy cases: unanchored match.*/
     s = string + offset;
     if (prog->regstart != '\0')
-        /* We know what char it must start with. */
+        /* We know what char it must start with.*/
         while ((s = strchr(s, prog->regstart)) != NULL)
         {
             if (regtry(prog, s))
@@ -1238,7 +1186,7 @@ int regexec(regexp* prog, char* string, int offset)
             s++;
         }
     else
-        /* We don't -- general case. */
+        /* We don't -- general case.*/
         do
         {
             if (regtry(prog, s))
@@ -1248,15 +1196,13 @@ int regexec(regexp* prog, char* string, int offset)
             }
         } while (*s++ != '\0');
 
-    /* Failure. */
+    /* Failure.*/
     __RegExpSection.Leave();
     return (0);
 }
 
-/*
- - regtry - try match at specific point
- */
-int regtry(regexp* prog, char* string) /* 0 failure, 1 success */
+/*   - regtry - try match at specific point*/
+int regtry(regexp* prog, char* string) /* 0 failure, 1 success*/
 {
     int i;
     char** sp;
@@ -1283,20 +1229,18 @@ int regtry(regexp* prog, char* string) /* 0 failure, 1 success */
         return (0);
 }
 
-/*
- - regmatch - main matching routine
+/*   - regmatch - main matching routine
  *
  * Conceptually the strategy is simple:  check to see whether the current
  * node matches, call self recursively to see whether the rest matches,
  * and then act accordingly.  In practice we make some effort to avoid
  * recursion, in particular by going through "ordinary" nodes (that don't
  * need to know whether the rest of the match failed) by a loop instead of
- * by recursion.
- */
-int regmatch(char* prog) /* 0 failure, 1 success */
+ * by recursion.*/
+int regmatch(char* prog) /* 0 failure, 1 success*/
 {
-    char* scan; /* Current node. */
-    char* next; /* Next node. */
+    char* scan; /* Current node.*/
+    char* next; /* Next node.*/
 
     scan = prog;
     while (scan != NULL)
@@ -1324,7 +1268,7 @@ int regmatch(char* prog) /* 0 failure, 1 success */
             char* opnd;
 
             opnd = OPERAND(scan);
-            /* Inline the first character, for speed. */
+            /* Inline the first character, for speed.*/
             if (*opnd != *reginput)
                 return (0);
             len = (int)strlen(opnd);
@@ -1365,11 +1309,9 @@ int regmatch(char* prog) /* 0 failure, 1 success */
 
             if (regmatch(next))
             {
-                /*
-             * Don't set startp if some later
+                /*               * Don't set startp if some later
              * invocation of the same parentheses
-             * already has.
-             */
+             * already has.*/
                 if (regstartp[no] == NULL)
                     regstartp[no] = save;
                 return (1);
@@ -1395,11 +1337,9 @@ int regmatch(char* prog) /* 0 failure, 1 success */
 
             if (regmatch(next))
             {
-                /*
-             * Don't set endp if some later
+                /*               * Don't set endp if some later
              * invocation of the same parentheses
-             * already has.
-             */
+             * already has.*/
                 if (regendp[no] == NULL)
                     regendp[no] = save;
                 return (1);
@@ -1411,8 +1351,8 @@ int regmatch(char* prog) /* 0 failure, 1 success */
         {
             char* save;
 
-            if (OP(next) != BRANCH)   /* No choice. */
-                next = OPERAND(scan); /* Avoid recursion. */
+            if (OP(next) != BRANCH)   /* No choice.*/
+                next = OPERAND(scan); /* Avoid recursion.*/
             else
             {
                 do
@@ -1424,7 +1364,7 @@ int regmatch(char* prog) /* 0 failure, 1 success */
                     scan = regnext(scan);
                 } while (scan != NULL && OP(scan) == BRANCH);
                 return (0);
-                /* NOTREACHED */
+                /* NOTREACHED*/
             }
         }
         break;
@@ -1436,10 +1376,8 @@ int regmatch(char* prog) /* 0 failure, 1 success */
             char* save;
             int min;
 
-            /*
-           * Lookahead to avoid useless match attempts
-           * when we know what character comes next.
-           */
+            /*             * Lookahead to avoid useless match attempts
+           * when we know what character comes next.*/
             nextch = '\0';
             if (OP(next) == EXACTLY)
                 nextch = *OPERAND(next);
@@ -1448,11 +1386,11 @@ int regmatch(char* prog) /* 0 failure, 1 success */
             no = regrepeat(OPERAND(scan));
             while (no >= min)
             {
-                /* If it could work, try it. */
+                /* If it could work, try it.*/
                 if (nextch == '\0' || *reginput == nextch)
                     if (regmatch(next))
                         return (1);
-                /* Couldn't or didn't -- back up. */
+                /* Couldn't or didn't -- back up.*/
                 no--;
                 reginput = save + no;
             }
@@ -1460,25 +1398,21 @@ int regmatch(char* prog) /* 0 failure, 1 success */
         }
 
         case END:
-            return (1); /* Success! */
+            return (1); /* Success!*/
         default:
-            return (0); /* memory corruption */
+            return (0); /* memory corruption*/
         }
 
         scan = next;
     }
 
-    /*
-   * We get here only if there's trouble -- normally "case END" is
-   * the terminating point.
-   */
+    /*     * We get here only if there's trouble -- normally "case END" is
+   * the terminating point.*/
     //  regerror("corrupted pointers");
     return (0);
 }
 
-/*
- - regrepeat - repeatedly match something simple, report how many
- */
+/*   - regrepeat - repeatedly match something simple, report how many*/
 int regrepeat(char* p)
 {
     int count = 0;
@@ -1514,9 +1448,9 @@ int regrepeat(char* p)
             scan++;
         }
         break;
-    default:       /* Oh dear.  Called inappropriately. */
+    default:       /* Oh dear. Called inappropriately.*/
                    //    regerror("internal foulup");
-        count = 0; /* Best compromise. */
+        count = 0; /* Best compromise.*/
         break;
     }
     reginput = scan;
@@ -1524,9 +1458,7 @@ int regrepeat(char* p)
     return (count);
 }
 
-/*
- - regnext - dig the "next" pointer out of a node
- */
+/*   - regnext - dig the "next" pointer out of a node*/
 char* regnext(char* p)
 {
     int offset;

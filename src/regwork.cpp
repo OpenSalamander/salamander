@@ -43,7 +43,7 @@ BOOL ClearKeyAux(HKEY key)
 
 BOOL CreateKeyAux(HWND parent, HKEY hKey, const char* name, HKEY& createdKey, BOOL quiet)
 {
-    DWORD createType; // info jestli byl klic vytvoren nebo jen otevren
+    DWORD createType; // Check if the key was created or just opened
     LONG res = HANDLES(RegCreateKeyEx(hKey, name, 0, NULL, REG_OPTION_NON_VOLATILE,
                                       KEY_READ | KEY_WRITE, NULL, &createdKey,
                                       &createType));
@@ -333,7 +333,7 @@ BOOL CRegistryWorkerThread::StartThread()
             // clean-up
             if (InUse)
                 TRACE_E("CRegistryWorkerThread::StartThread(): thread is not running and InUse is TRUE!");
-            InUse = FALSE; // jen pro sychr, na tomto miste nemuze byt TRUE
+            InUse = FALSE; // Only for dry, TRUE cannot be at this location
             ResetEvent(WorkReady);
             ResetEvent(WorkDone);
             WorkType = rwtNone;
@@ -342,11 +342,11 @@ BOOL CRegistryWorkerThread::StartThread()
             Thread = HANDLES(CreateThread(NULL, 0, CRegistryWorkerThread::ThreadBody, (void*)this, 0, &threadID));
             if (Thread != NULL)
             {
-                OwnerTID = GetCurrentThreadId(); // povolime pouzivani pro tento thread
+                OwnerTID = GetCurrentThreadId(); // Allow usage for this thread
                 StopWorkerSkipCount = 0;
                 int level = GetThreadPriority(GetCurrentThread());
                 SetThreadPriority(Thread, level);
-                ret = TRUE; // uspech!
+                ret = TRUE; // Success!
             }
             else
                 TRACE_E("CRegistryWorkerThread::StartThread(): unable to start registry-worker thread!");
@@ -387,10 +387,10 @@ void CRegistryWorkerThread::StopThread()
                     Thread = NULL;
                     OwnerTID = 0; // invalid TID
                 }
-                else // nikdy by se nemelo stat
+                else // it should never happen
                 {
-                    // prevence dead-locku, pokud tento thread uz ma praci v registry worker
-                    // threadu, jejiho dokonceni se zde nelze dockat
+                    // Prevention of dead-lock, if this thread already has work in the worker registry
+                    // thread, its completion cannot be awaited here
                     TRACE_E("CRegistryWorkerThread::StopThread(): preventing dead lock, skipping stop signal!");
                 }
             }
@@ -411,7 +411,7 @@ void CRegistryWorkerThread::WaitForWorkDoneWithMessageLoop()
     {
         DWORD waitRes = MsgWaitForMultipleObjects(1, &WorkDone, FALSE, INFINITE, QS_ALLINPUT);
         if (waitRes == WAIT_OBJECT_0)
-            break; // prace je hotova, pokracujeme...
+            break; // work is done, we continue...
         else
         {
             if (waitRes == WAIT_OBJECT_0 + 1) // new input
@@ -644,7 +644,7 @@ CRegistryWorkerThread::Body()
                 TRACE_I("End");
                 WorkType = rwtNone;
                 SetEvent(WorkDone);
-                return 0; // ukoncime thread
+                return 0; // Finish the thread
             }
 
             case rwtClearKey:
@@ -700,7 +700,7 @@ CRegistryWorkerThread::ThreadBodyFEH(void* param)
     {
         TRACE_I("CRegistryWorkerThread::ThreadBodyFEH: calling ExitProcess(1).");
         //    ExitProcess(1);
-        TerminateProcess(GetCurrentProcess(), 1); // tvrdsi exit (tenhle jeste neco vola)
+        TerminateProcess(GetCurrentProcess(), 1); // tvrdší exit (this one still calls something)
     }
     return 0;
 #endif // CALLSTK_DISABLE
@@ -725,14 +725,14 @@ CRegistryWorkerThread::CInUseHandler::~CInUseHandler()
 BOOL CRegistryWorkerThread::CInUseHandler::CanUseThread(CRegistryWorkerThread* t)
 {
     if (t->Thread != NULL && t->OwnerTID == GetCurrentThreadId())
-    { // prace ve workerovi se tyka jen threadu, ktery ho nastartoval
+    { // work in the worker is related only to the thread that started it
         BOOL ret = !t->InUse;
-        if (ret) // prace se muze spustit v threadu registry workera
+        if (ret) // work can be started in the thread of the registry worker
         {
             t->InUse = TRUE;
-            T = t; // v destruktoru se da T->InUse = FALSE
+            T = t; // Set T->InUse to FALSE in the destructor
         }
-        // else  // rekurzivni volani (diky message-loope a tim distribuci zprav) = praci v threadu odmitneme
+        // else  // recursive call (thanks to the message loop and message distribution) = we reject work in the thread
         return ret;
     }
     return FALSE;

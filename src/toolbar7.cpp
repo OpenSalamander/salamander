@@ -6,15 +6,13 @@
 #include "mainwnd.h"
 #include "usermenu.h"
 #include "toolbar.h"
-/*
-#include "shellib.h"
+/*  #include "shellib.h"
 #include "cfgdlg.h"
 #include "execute.h"
 extern "C" {
 #include "shexreg.h"
 }
-#include "salshlib.h"
-*/
+#include "salshlib.h"*/
 
 //*****************************************************************************
 //
@@ -35,8 +33,8 @@ CHotPathsBar::CHotPathsBar(HWND hNotifyWindow, CObjectOrigin origin)
 
     SetStyle(TLB_STYLE_IMAGE | TLB_STYLE_TEXT);
 
-    // naleju ikonky do vlastni toolbary
-    // vlozim pouze itemy a submenu z nejvyssi urovne; ostatni se bude rozbalovat jako submenu
+    // add icons to a custom toolbar
+    // Only insert items and submenus from the top level; the rest will expand as submenus
     int level = 0;
     TLBI_ITEM_INFO2 tii;
     int i;
@@ -56,8 +54,7 @@ CHotPathsBar::CHotPathsBar(HWND hNotifyWindow, CObjectOrigin origin)
             tii.ID = CM_ACTIVEHOTPATH_MIN + i;
             InsertItem2(0xFFFFFFFF, TRUE, &tii);
         }
-        /*
-    switch (item->Type)
+        /*      switch (item->Type)
     {
       case umitSubmenuEnd:
       {
@@ -97,8 +94,7 @@ CHotPathsBar::CHotPathsBar(HWND hNotifyWindow, CObjectOrigin origin)
           level++;
         break;
       }
-    }
-    */
+    }*/
     }
     return TRUE;
 }
@@ -106,7 +102,7 @@ CHotPathsBar::CHotPathsBar(HWND hNotifyWindow, CObjectOrigin origin)
 int CHotPathsBar::GetNeededHeight()
 {
     CALL_STACK_MESSAGE_NONE
-    // i v pripade, ze nedrzime zadnou ikonu budeem vracet spravnou vysku
+    // and in case we don't hold any icon, we will return the correct height
     int height = CToolBar::GetNeededHeight();
     int iconSize = GetIconSizeForSystemDPI(ICONSIZE_16);
     int minH = 3 + iconSize + 3;
@@ -118,7 +114,7 @@ int CHotPathsBar::GetNeededHeight()
 void CHotPathsBar::Customize()
 {
     CALL_STACK_MESSAGE_NONE
-    // nechame vybalit stranku HotPaths
+    // let's unpack the HotPaths page
     PostMessage(MainWindow->HWindow, WM_USER_CONFIGURATION, 1, -1);
 }
 
@@ -141,8 +137,7 @@ LRESULT
 CHotPathsBar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     CALL_STACK_MESSAGE4("CHotPathsBar::WindowProc(0x%X, 0x%IX, 0x%IX)", uMsg, wParam, lParam);
-    /*
-  switch (uMsg)
+    /*    switch (uMsg)
   {
     case WM_CREATE:
     {
@@ -153,7 +148,7 @@ CHotPathsBar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
           TRACE_E("RegisterDragDrop error.");
         }
-        dropTarget->Release();  // RegisterDragDrop volala AddRef()
+        dropTarget->Release();  // RegisterDragDrop called AddRef()
       }
       break;
     }
@@ -163,7 +158,6 @@ CHotPathsBar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       HANDLES(RevokeDragDrop(HWindow));
       break;
     }
-  }
-  */
+  }*/
     return CToolBar::WindowProc(uMsg, wParam, lParam);
 }

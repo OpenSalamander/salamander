@@ -10,13 +10,13 @@
 
 //
 // ****************************************************************************
-// Konstanty a globalni promenne
+// Constants and global variables
 // ****************************************************************************
 //
 
-// Tabulka definic archivu a zachazeni s nimi - modifikujici operace
-// !!! POZOR: pri zmenach poradi externich archivatoru je treba zmenit i poradi v poli
-// externalArchivers v metode CPlugins::FindViewEdit
+// Table of archive definitions and operations on them - modifying operations
+// !!! WARNING: when changing the order of external archivers, the order in the array must also be changed
+// externalArchivers in the method CPlugins::FindViewEdit
 const SPackModifyTable PackModifyTable[] =
     {
         // JAR 1.02 Win32
@@ -28,7 +28,7 @@ const SPackModifyTable PackModifyTable[] =
         // RAR 4.20 & 5.0 Win x86/x64
         {
             (TPackErrorTable*)&RARErrors, TRUE,
-            "$(SourcePath)", "$(Rar32bitExecutable) a -scol \"$(ArchiveFullName)\" -ap\"$(TargetPath)\" @\"$(ListFullName)\"", TRUE, // od verze 5.0 musime vnutit -scol switch, verzi 4.20 nevadi; vyskytuje se na dalsich mistech a v registry
+            "$(SourcePath)", "$(Rar32bitExecutable) a -scol \"$(ArchiveFullName)\" -ap\"$(TargetPath)\" @\"$(ListFullName)\"", TRUE, // from version 5.0 we need to enforce the -scol switch, version 4.20 doesn't mind; it occurs in other places and in the registry
             "$(ArchivePath)", "$(Rar32bitExecutable) d -scol \"$(ArchiveFileName)\" @\"$(ListFullName)\"", PMT_EMPDIRS_DELETE,
             "$(SourcePath)", "$(Rar32bitExecutable) m -scol \"$(ArchiveFullName)\" -ap\"$(TargetPath)\" @\"$(ListFullName)\"", FALSE},
         // ARJ 2.60 MS-DOS
@@ -43,7 +43,7 @@ const SPackModifyTable PackModifyTable[] =
             "$(SourcePath)", "$(Lha16bitExecutable) a -m -p -a -l1 -x1 -c $(ArchiveDOSFullName) @$(ListDOSFullName)", FALSE,
             ".", "$(Lha16bitExecutable) d -p -a -l1 -x1 -c $(ArchiveDOSFullName) @$(ListDOSFullName)", PMT_EMPDIRS_DELETEWITHASTERISK,
             "$(SourcePath)", "$(Lha16bitExecutable) m -m -p -a -l1 -x1 -c $(ArchiveDOSFullName) @$(ListDOSFullName)", FALSE},
-        // UC2 2r3 PRO MS-DOS
+        // UC2 2r3 FOR MS-DOS
         {
             (TPackErrorTable*)&UC2Errors, FALSE,
             "$(SourcePath)", "$(UC216bitExecutable) A !SYSHID=ON $(ArchiveDOSFullName) ##$(TargetPath) @$(ListDOSFullName)", TRUE,
@@ -58,9 +58,9 @@ const SPackModifyTable PackModifyTable[] =
         // RAR 2.50 MS-DOS
         {
             (TPackErrorTable*)&RARErrors, FALSE,
-            "$(SourcePath)", "$(Rar16bitExecutable) a $(ArchiveDOSFullName) @$(ListDOSFullName)", FALSE, //P.S. vyhozena schopnost baleni do podadresaru
+            "$(SourcePath)", "$(Rar16bitExecutable) a $(ArchiveDOSFullName) @$(ListDOSFullName)", FALSE, //P.S. ability to package into a subdirectory removed
             "$(ArchivePath)", "$(Rar16bitExecutable) d $(ArchiveDOSFileName) @$(ListDOSFullName)", PMT_EMPDIRS_DELETE,
-            "$(SourcePath)", "$(Rar16bitExecutable) m $(ArchiveDOSFullName) @$(ListDOSFullName)", FALSE //P.S. vyhozena schopnost baleni do podadresaru
+            "$(SourcePath)", "$(Rar16bitExecutable) m $(ArchiveDOSFullName) @$(ListDOSFullName)", FALSE //P.S. ability to package into a subdirectory removed
         },
         // PKZIP 2.50 Win32
         {
@@ -95,13 +95,13 @@ const SPackModifyTable PackModifyTable[] =
 
 //
 // ****************************************************************************
-// Funkce
+// Function
 // ****************************************************************************
 //
 
 //
 // ****************************************************************************
-// Funkce pro kompresi
+// Function for compression
 //
 
 //
@@ -110,18 +110,18 @@ const SPackModifyTable PackModifyTable[] =
 //                   const char *archiveRoot, BOOL move, const char *sourceDir,
 //                   SalEnumSelection2 nextName, void *param)
 //
-//   Funkce pro pridani pozadovanych souboru do archivu.
+//   Function for adding the desired files to the archive.
 //
-//   RET: vraci TRUE pri uspechu, FALSE pri chybe
-//        pri chybe vola callback funkci *PackErrorHandlerPtr
-//   IN:  parent je parent message-boxu
-//        panel je ukazatel na souborovy panel salamandra
-//        archiveFileName je nazev archivu, do ktereho balime
-//        archiveRoot je adresar v archivu, do ktereho balime
-//        move je TRUE, pokud soubory do archivu presunujeme
-//        sourceDir je cesta, ze ktere jsou soubory baleny
-//        nextName je callback funkce pro enumeraci nazvu k baleni
-//        param jsou parametry pro enumeracni funkci
+//   RET: returns TRUE on success, FALSE on error
+//        calls the callback function *PackErrorHandlerPtr in case of an error
+//   IN:  parent is the parent of the message box
+//        panel is a pointer to the file panel of the salamander
+//        archiveFileName is the name of the archive we are packing into
+//        archiveRoot is the directory in the archive where we are packaging
+//        move is TRUE if we are moving files to the archive
+//        sourceDir is the path from which files are being packaged
+//        nextName is a callback function for enumerating package names
+//        param are parameters for the enumeration function
 //   OUT:
 
 BOOL PackCompress(HWND parent, CFilesWindow* panel, const char* archiveFileName,
@@ -130,9 +130,9 @@ BOOL PackCompress(HWND parent, CFilesWindow* panel, const char* archiveFileName,
 {
     CALL_STACK_MESSAGE5("PackCompress(, , %s, %s, %d, %s, ,)", archiveFileName,
                         archiveRoot, move, sourceDir);
-    // najdeme ten pravy podle tabulky
+    // find the right one according to the table
     int format = PackerFormatConfig.PackIsArchive(archiveFileName);
-    // Nenasli jsme podporovany archiv - chyba
+    // We did not find a supported archive - error
     if (format == 0)
         return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_ARCNAME_UNSUP);
 
@@ -141,7 +141,7 @@ BOOL PackCompress(HWND parent, CFilesWindow* panel, const char* archiveFileName,
         return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_PACKER_UNSUP);
     int index = PackerFormatConfig.GetPackerIndex(format);
 
-    // Nejde o interni zpracovani (DLL) ?
+    // Isn't it about internal processing (DLL)?
     if (index < 0)
     {
         CPluginData* plugin = Plugins.Get(-index - 1);
@@ -155,7 +155,7 @@ BOOL PackCompress(HWND parent, CFilesWindow* panel, const char* archiveFileName,
 
     const SPackModifyTable* modifyTable = ArchiverConfig.GetPackerConfigTable(index);
 
-    // zjistime, jestli provadime copy nebo move
+    // Let's determine whether we are performing a copy or a move
     const char* compressCommand;
     const char* compressInitDir;
     if (!move)
@@ -181,24 +181,24 @@ BOOL PackCompress(HWND parent, CFilesWindow* panel, const char* archiveFileName,
     }
 
     //
-    // V pripade ze archivator nepodporuje baleni do adresare, musime to resit
+    // If the archiver does not support packing into a directory, we need to solve this
     //
     char archiveRootPath[MAX_PATH];
     if (archiveRoot != NULL && *archiveRoot != '\0')
     {
         strcpy(archiveRootPath, archiveRoot);
-        if (!modifyTable->CanPackToDir) // archivacni program ji nepodporuje
+        if (!modifyTable->CanPackToDir) // archiving program does not support it
         {
             if ((*PackErrorHandlerPtr)(parent, IDS_PACKQRY_ARCPATH))
-                strcpy(archiveRootPath, "\\"); // uzivatel ji chce ignorovat
+                strcpy(archiveRootPath, "\\"); // user wants to ignore it
             else
-                return FALSE; // uzivateli to vadi
+                return FALSE; // users mind it
         }
     }
     else
         strcpy(archiveRootPath, "\\");
 
-    // a provedeme vlastni pakovani
+    // and we will perform our own packaging
     return PackUniversalCompress(parent, compressCommand, modifyTable->ErrorTable,
                                  compressInitDir, TRUE, modifyTable->SupportLongNames, archiveFileName,
                                  sourceDir, archiveRootPath, nextName, param, modifyTable->NeedANSIListFile);
@@ -212,23 +212,23 @@ BOOL PackCompress(HWND parent, CFilesWindow* panel, const char* archiveFileName,
 //                            const char *archiveRoot, SalEnumSelection2 nextName,
 //                            void *param, BOOL needANSIListFile)
 //
-//   Funkce pro pridani pozadovanych souboru do archivu. Na rozdil od predchozi
-//   je obecnejsi, nepouziva konfiguracni tabulky - muze byt volana samostatne,
-//   vse je urceno pouze parametry
+//   Function for adding the desired files to the archive. Unlike the previous one
+//   is more general, does not use a configuration table - can be called independently,
+//   all is determined only by parameters
 //
-//   RET: vraci TRUE pri uspechu, FALSE pri chybe
-//        pri chybe vola callback funkci *PackErrorHandlerPtr
-//   IN:  parent je parent pro message-boxy
-//        command je prikazova radka pouzita pro baleni do archivu
-//        errorTable ukazatel na tabulku navratovych kodu archivatoru, nebo NULL, pokud neexistuje
-//        initDir je adresar, ve kterem bude program spusten
-//        supportLongNames znaci, jestli program podporuje pouziti dlouhych nazvu
-//        archiveFileName je nazev archivu, do ktereho balime
-//        sourceDir je cesta, ze ktere jsou soubory baleny
-//        archiveRoot je adresar v archivu, do ktereho balime
-//        nextName je callback funkce pro enumeraci nazvu k baleni
-//        param jsou parametry pro enumeracni funkci
-//        needANSIListFile je TRUE pokud ma byt file list v ANSI (ne OEM)
+//   RET: returns TRUE on success, FALSE on error
+//        calls the callback function *PackErrorHandlerPtr in case of an error
+//   IN:  parent is the parent for message boxes
+//        command is the command line used for archiving
+//        errorTable pointer to the table of return codes of the archiver, or NULL if it does not exist
+//        initDir is the directory in which the program will be executed
+//        supportLongNames indicates whether the program supports the use of long names
+//        archiveFileName is the name of the archive we are packing into
+//        sourceDir is the path from which files are being packaged
+//        archiveRoot is the directory in the archive where we are packaging
+//        nextName is a callback function for enumerating package names
+//        param are parameters for the enumeration function
+//        needANSIListFile is TRUE if the file list should be in ANSI (not OEM)
 //   OUT:
 
 BOOL PackUniversalCompress(HWND parent, const char* command, TPackErrorTable* const errorTable,
@@ -242,7 +242,7 @@ BOOL PackUniversalCompress(HWND parent, const char* command, TPackErrorTable* co
                         sourceDir, archiveRoot, needANSIListFile);
 
     //
-    // Musime upravit adresar v archivu do pozadovaneho formatu
+    // We need to adjust the directory in the archive to the desired format
     //
     char rootPath[MAX_PATH];
     rootPath[0] = '\0';
@@ -258,14 +258,14 @@ BOOL PackUniversalCompress(HWND parent, const char* command, TPackErrorTable* co
                 rootPath[strlen(rootPath) - 1] = '\0';
         }
     }
-    // u 32bit programu budou prazdne uvozovky, u 16bit dame slash
+    // For the 32-bit program, empty quotes will be used, for the 16-bit program we will use a slash
     if (!supportLongNames && rootPath[0] == '\0')
     {
         rootPath[0] = '\\';
         rootPath[1] = '\0';
     }
 
-    // Pro kontrolu delky cesty budeme potrebovat sourceDir v "kratkem" tvaru
+    // For checking the length of the path, we will need the sourceDir in a "short" form
     char sourceShortName[MAX_PATH];
     if (!supportLongNames)
     {
@@ -281,10 +281,10 @@ BOOL PackUniversalCompress(HWND parent, const char* command, TPackErrorTable* co
         strcpy(sourceShortName, sourceDir);
 
     //
-    // v %TEMP% adresari bude pomocny soubor se seznamem souboru k zabaleni
+    // There will be a helper file with a list of files to be packed in the %TEMP% directory
     //
 
-    // Vytvorime nazev temporary souboru
+    // Create a name for the temporary file
     char tmpListNameBuf[MAX_PATH];
     if (!SalGetTempFileName(NULL, "PACK", tmpListNameBuf, TRUE))
     {
@@ -294,7 +294,7 @@ BOOL PackUniversalCompress(HWND parent, const char* command, TPackErrorTable* co
         return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_GENERAL, buffer);
     }
 
-    // mame soubor, ted ho otevreme
+    // we have a file, now we will open it
     FILE* listFile;
     if ((listFile = fopen(tmpListNameBuf, "w")) == NULL)
     {
@@ -302,7 +302,7 @@ BOOL PackUniversalCompress(HWND parent, const char* command, TPackErrorTable* co
         return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_FILE);
     }
 
-    // a muzeme ho plnit
+    // and we can fulfill it
     BOOL isDir;
 
     const char* name;
@@ -316,7 +316,7 @@ BOOL PackUniversalCompress(HWND parent, const char* command, TPackErrorTable* co
         CharToOem(sourceShortName, sourceShortName);
     int sourceDirLen = (int)strlen(sourceShortName) + 1;
     int errorOccured;
-    // vybereme nazev
+    // choose a name
     while ((name = nextName(parent, 1, NULL, &isDir, NULL, NULL, NULL, param, &errorOccured)) != NULL)
     {
         if (supportLongNames)
@@ -343,7 +343,7 @@ BOOL PackUniversalCompress(HWND parent, const char* command, TPackErrorTable* co
                 CharToOem(namecnv, namecnv);
         }
 
-        // osetrime delku
+        // handle length
         if (sourceDirLen + strlen(namecnv) >= maxPath)
         {
             char buffer[1000];
@@ -353,7 +353,7 @@ BOOL PackUniversalCompress(HWND parent, const char* command, TPackErrorTable* co
             return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_PATH, buffer);
         }
 
-        // a soupnem ho do listu
+        // and push it into the list
         if (!isDir)
         {
             if (fprintf(listFile, "%s\n", namecnv) <= 0)
@@ -364,10 +364,10 @@ BOOL PackUniversalCompress(HWND parent, const char* command, TPackErrorTable* co
             }
         }
     }
-    // a je to
+    // and that's it
     fclose(listFile);
 
-    // pokud nastala chyba a uzivatel se rozhodl pro cancel operace, ukoncime ji
+    // If an error occurred and the user decided to cancel the operation, let's terminate it
     if (errorOccured == SALENUM_CANCEL)
     {
         DeleteFile(tmpListNameBuf);
@@ -375,12 +375,12 @@ BOOL PackUniversalCompress(HWND parent, const char* command, TPackErrorTable* co
     }
 
     //
-    // Ted budeme poustet externi program na vybaleni
+    // Now we will run an external program to unpack
     //
-    // vykonstruujeme prikazovou radku
+    // we will construct the command line
     char cmdLine[PACK_CMDLINE_MAXLEN];
-    // buffer pro nahradni jmeno (pokud vytvarime archiv s dlouhym jmenem a potrebujeme jeho DOS jmeno,
-    // expanduje se misto dlouheho jmena DOSTmpName, po vytvoreni archivu soubor prejmenujeme)
+    // buffer for the replacement name (if we are creating an archive with a long name and need its DOS name),
+    // the space for the long name DOSTmpName is being expanded, after creating the archive we will rename the file)
     char DOSTmpName[MAX_PATH];
     if (!PackExpandCmdLine(archiveFileName, rootPath, tmpListNameBuf, NULL,
                            command, cmdLine, PACK_CMDLINE_MAXLEN, DOSTmpName))
@@ -389,24 +389,24 @@ BOOL PackUniversalCompress(HWND parent, const char* command, TPackErrorTable* co
         return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_CMDLNERR);
     }
 
-    // hack pro RAR 4.x+, kteremu vadi -ap"" pro adresaci rootu archivu; zaroven je toto promazani kompatibilni se starou verzi RAR
-    // viz https://forum.altap.cz/viewtopic.php?f=2&t=5487
+    // hack for RAR 4.x+ that dislikes -ap"" for addressing the root of the archive; at the same time, this deletion is compatible with the old version of RAR
+    // see https://forum.altap.cz/viewtopic.php?f=2&t=5487
     if (*rootPath == 0 && strstr(command, "$(Rar32bitExecutable) ") == command)
     {
         char* pAP = strstr(cmdLine, "\" -ap\"\" @\"");
         if (pAP != NULL)
-            memmove(pAP + 1, "         ", 7); // sestrelime -ap"", ktery s novym RAR zlobi
+            memmove(pAP + 1, "         ", 7); // shoot down -ap"", which annoys with the new RAR
     }
-    // hack pro kopirovani do adresare v RAR - vadi mu, kdyz cesta zacina zpetnym lomitkem; vytvoril napr adresar \Test ktery ale Salam ukazuje jako Test
+    // hack for copying to a directory in RAR - it bothers him when the path starts with a backslash; he created for example a directory \Test which Salam shows as Test
     // https://forum.altap.cz/viewtopic.php?p=24586#p24586
     if (*rootPath == '\\' && strstr(command, "$(Rar32bitExecutable) ") == command)
     {
         char* pAP = strstr(cmdLine, "\" -ap\"\\");
         if (pAP != NULL)
-            memmove(pAP + 6, pAP + 7, strlen(pAP + 7) + 1); // odmazneme zpetne lomitko ze zacatku
+            memmove(pAP + 6, pAP + 7, strlen(pAP + 7) + 1); // remove the backslash from the beginning
     }
 
-    // zjistime, zda neni komandlajna moc dlouha
+    // check if the command line is not too long
     if (!supportLongNames && strlen(cmdLine) >= 128)
     {
         char buffer[1000];
@@ -415,7 +415,7 @@ BOOL PackUniversalCompress(HWND parent, const char* command, TPackErrorTable* co
         return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_CMDLNLEN, buffer);
     }
 
-    // vykonstruujeme aktualni adresar
+    // construct the current directory
     char currentDir[MAX_PATH];
     if (!expandInitDir)
     {
@@ -437,32 +437,32 @@ BOOL PackUniversalCompress(HWND parent, const char* command, TPackErrorTable* co
         }
     }
 
-    // zazalohujeme si kratky nazev souboru archivu, pozdeji testneme jestli dlouhe jmeno
-    // nezaniklo -> pokud kratke zustalo, prejmenujeme kratke na puvodni dlouhe
+    // We back up a short name of the archive file, later we will test a long name
+    // did not disappear -> if it remained short, we will rename short to original long
     char DOSArchiveFileName[MAX_PATH];
     if (!GetShortPathName(archiveFileName, DOSArchiveFileName, MAX_PATH))
         DOSArchiveFileName[0] = 0;
 
-    // a spustime externi program
+    // and we will launch an external program
     BOOL exec = PackExecute(parent, cmdLine, currentDir, errorTable);
-    // mezitim testneme jestli dlouhe jmeno nezaniklo -> pokud kratke zustalo, prejmenujeme kratke
-    // na puvodni dlouhe
+    // Meanwhile, we test if the long name has not disappeared -> if it remained short, we will rename it to short
+    // to the original long
     if (DOSArchiveFileName[0] != 0 &&
         SalGetFileAttributes(archiveFileName) == 0xFFFFFFFF &&
         SalGetFileAttributes(DOSArchiveFileName) != 0xFFFFFFFF)
     {
-        SalMoveFile(DOSArchiveFileName, archiveFileName); // pokud se nepovede, kasleme na to...
+        SalMoveFile(DOSArchiveFileName, archiveFileName); // if it fails, let's forget about it...
     }
     if (!exec)
     {
         DeleteFile(tmpListNameBuf);
-        return FALSE; // chybove hlaseni bylo jiz vyhozeno
+        return FALSE; // Error message has already been thrown
     }
 
-    // list souboru uz neni potreba
+    // list of files is no longer needed
     DeleteFile(tmpListNameBuf);
 
-    // pokud jsme pouzili nahradni DOS jmeno, prejmenujeme vsechny soubory tohoto jmena (jmeno.*) na pozadovane long jmeno
+    // if we used an alternative DOS name, we rename all files with this name (name.*) to the desired long name
     if (DOSTmpName[0] != 0)
     {
         char src[2 * MAX_PATH];
@@ -480,7 +480,7 @@ BOOL PackUniversalCompress(HWND parent, const char* command, TPackErrorTable* co
             ;
         //    if (dstExt == dstNameBuf || *dstExt == '\\' || *(dstExt - 1) == '\\') dstExt = dstNameBuf + strlen(dstNameBuf); // u "name", ".cvspass", "path\name" ani "path\.name" neni zadna pripona
         if (dstExt < dstNameBuf || *dstExt == '\\')
-            dstExt = dstNameBuf + strlen(dstNameBuf); // u "name" ani "path\name" neni zadna pripona; ".cvspass" ve Windows je pripona
+            dstExt = dstNameBuf + strlen(dstNameBuf); // there is no extension for "name" or "path\name"; ".cvspass" in Windows is an extension
         char path[MAX_PATH];
         strcpy(path, DOSTmpName);
         char* ext = path + strlen(path);
@@ -489,7 +489,7 @@ BOOL PackUniversalCompress(HWND parent, const char* command, TPackErrorTable* co
             ;
         //    if (ext == path || *ext == '\\' || *(ext - 1) == '\\') ext = path + strlen(path); // u "name", ".cvspass", "path\name" ani ""path\.name" neni zadna pripona
         if (ext < path || *ext == '\\')
-            ext = path + strlen(path); // u "name" ani "path\name" neni zadna pripona; ".cvspass" ve Windows je pripona
+            ext = path + strlen(path); // there is no extension for "name" or "path\name"; ".cvspass" in Windows is an extension
         strcpy(ext, ".*");
         WIN32_FIND_DATA findData;
         int i;
@@ -520,9 +520,9 @@ BOOL PackUniversalCompress(HWND parent, const char* command, TPackErrorTable* co
                     {
                         if (SalGetFileAttributes(dst) != 0xffffffff)
                         {
-                            HANDLES(FindClose(find)); // toto jmeno uz s nejakou priponou existuje, hledame dale
+                            HANDLES(FindClose(find)); // this name already exists with some suffix, we continue searching
                             (*PackErrorHandlerPtr)(parent, IDS_PACKERR_UNABLETOREN, src, dst);
-                            return TRUE; // povedlo se, jen jsou trochu jina jmena vysledneho archivu (i multivolume)
+                            return TRUE; // It worked, only the names of the resulting archive (including multivolume) are a bit different
                         }
                     }
                     else
@@ -534,7 +534,7 @@ BOOL PackUniversalCompress(HWND parent, const char* command, TPackErrorTable* co
                         }
                     }
                 } while (FindNextFile(find, &findData));
-                HANDLES(FindClose(find)); // toto jmeno uz s nejakou priponou existuje, hledame dale
+                HANDLES(FindClose(find)); // this name already exists with some suffix, we continue searching
             }
         }
     }
@@ -544,7 +544,7 @@ BOOL PackUniversalCompress(HWND parent, const char* command, TPackErrorTable* co
 
 //
 // ****************************************************************************
-// Funkce pro mazani z archivu
+// Function for deleting from the archive
 //
 
 //
@@ -554,16 +554,16 @@ BOOL PackUniversalCompress(HWND parent, const char* command, TPackErrorTable* co
 //                     const char *archiveRoot, SalEnumSelection nextName,
 //                     void *param)
 //
-//   Funkce pro vymazani pozadovanych souboru z archivu.
+//   Function for deleting the desired files from the archive.
 //
-//   RET: vraci TRUE pri uspechu, FALSE pri chybe
-//        pri chybe vola callback funkci *PackErrorHandlerPtr
-//   IN:  parent je parent pro message-boxy
-//        panel je ukazatel na souborovy panel salamandra
-//        archiveFileName je nazev archivu, ze ktereho mazeme
-//        archiveRoot je adresar v archivu, ze ktereho mazeme
-//        nextName je callback funkce pro enumeraci nazvu k mazani
-//        param jsou parametry pro enumeracni funkci
+//   RET: returns TRUE on success, FALSE on error
+//        calls the callback function *PackErrorHandlerPtr in case of an error
+//   IN:  parent is the parent for message boxes
+//        panel is a pointer to the file panel of the salamander
+//        archiveFileName is the name of the archive from which we are deleting
+//        archiveRoot is the directory in the archive from which we are deleting
+//        nextName is a callback function for enumerating names to delete
+//        param are parameters for the enumeration function
 //   OUT:
 
 BOOL PackDelFromArc(HWND parent, CFilesWindow* panel, const char* archiveFileName,
@@ -573,9 +573,9 @@ BOOL PackDelFromArc(HWND parent, CFilesWindow* panel, const char* archiveFileNam
 {
     CALL_STACK_MESSAGE3("PackDelFromArc(, , %s, , %s, , ,)", archiveFileName, archiveRoot);
 
-    // najdeme ten pravy podle tabulky
+    // find the right one according to the table
     int format = PackerFormatConfig.PackIsArchive(archiveFileName);
-    // Nenasli jsme podporovany archiv - chyba
+    // We did not find a supported archive - error
     if (format == 0)
         return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_ARCNAME_UNSUP);
 
@@ -584,7 +584,7 @@ BOOL PackDelFromArc(HWND parent, CFilesWindow* panel, const char* archiveFileNam
         return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_PACKER_UNSUP);
     int index = PackerFormatConfig.GetPackerIndex(format);
 
-    // Nejde o interni zpracovani (DLL) ?
+    // Isn't it about internal processing (DLL)?
     if (index < 0)
     {
         CPluginData* plugin = Plugins.Get(-index - 1);
@@ -600,7 +600,7 @@ BOOL PackDelFromArc(HWND parent, CFilesWindow* panel, const char* archiveFileNam
     BOOL needANSIListFile = modifyTable->NeedANSIListFile;
 
     //
-    // Musime upravit adresar v archivu do pozadovaneho formatu
+    // We need to adjust the directory in the archive to the desired format
     //
     char rootPath[MAX_PATH];
     if (archiveRoot != NULL && *archiveRoot != '\0')
@@ -622,9 +622,9 @@ BOOL PackDelFromArc(HWND parent, CFilesWindow* panel, const char* archiveFileNam
     }
 
     //
-    // v %TEMP% adresari bude pomocny soubor se seznamem souboru k vymazani
+    // There will be a temporary file in the %TEMP% directory with a list of files to be deleted
     //
-    // buffer pro fullname pomocneho souboru
+    // buffer for the fullname of the auxiliary file
     char tmpListNameBuf[MAX_PATH];
     if (!SalGetTempFileName(NULL, "PACK", tmpListNameBuf, TRUE))
     {
@@ -634,7 +634,7 @@ BOOL PackDelFromArc(HWND parent, CFilesWindow* panel, const char* archiveFileNam
         return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_GENERAL, buffer);
     }
 
-    // mame soubor, ted ho otevreme
+    // we have a file, now we will open it
     FILE* listFile;
     if ((listFile = fopen(tmpListNameBuf, "w")) == NULL)
     {
@@ -642,21 +642,21 @@ BOOL PackDelFromArc(HWND parent, CFilesWindow* panel, const char* archiveFileNam
         return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_FILE);
     }
 
-    // a muzeme ho plnit
+    // and we can fulfill it
     BOOL isDir;
     const char* name;
     char namecnv[MAX_PATH];
     int errorOccured;
     if (!needANSIListFile)
         CharToOem(rootPath, rootPath);
-    // vybereme nazev
+    // choose a name
     while ((name = nextName(parent, 1, &isDir, NULL, NULL, param, &errorOccured)) != NULL)
     {
         if (!needANSIListFile)
             CharToOem(name, namecnv);
         else
             strcpy(namecnv, name);
-        // a soupnem ho do listu
+        // and push it into the list
         if (!isDir)
         {
             if (fprintf(listFile, "%s%s\n", rootPath, namecnv) <= 0)
@@ -691,10 +691,10 @@ BOOL PackDelFromArc(HWND parent, CFilesWindow* panel, const char* archiveFileNam
             }
         }
     }
-    // a je to
+    // and that's it
     fclose(listFile);
 
-    // pokud nastala chyba a uzivatel se rozhodl pro cancel operace, ukoncime ji
+    // If an error occurred and the user decided to cancel the operation, let's terminate it
     if (errorOccured == SALENUM_CANCEL)
     {
         DeleteFile(tmpListNameBuf);
@@ -702,9 +702,9 @@ BOOL PackDelFromArc(HWND parent, CFilesWindow* panel, const char* archiveFileNam
     }
 
     //
-    // Ted budeme poustet externi program na mazani
+    // Now we will run an external program for deletion
     //
-    // vykonstruujeme prikazovou radku
+    // we will construct the command line
     char cmdLine[PACK_CMDLINE_MAXLEN];
     if (!PackExpandCmdLine(archiveFileName, NULL, tmpListNameBuf, NULL,
                            modifyTable->DeleteCommand, cmdLine, PACK_CMDLINE_MAXLEN, NULL))
@@ -713,7 +713,7 @@ BOOL PackDelFromArc(HWND parent, CFilesWindow* panel, const char* archiveFileNam
         return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_CMDLNERR);
     }
 
-    // zjistime, zda neni komandlajna moc dlouha
+    // check if the command line is not too long
     if (!modifyTable->SupportLongNames && strlen(cmdLine) >= 128)
     {
         char buffer[1000];
@@ -722,7 +722,7 @@ BOOL PackDelFromArc(HWND parent, CFilesWindow* panel, const char* archiveFileNam
         return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_CMDLNLEN, buffer);
     }
 
-    // vykonstruujeme aktualni adresar
+    // construct the current directory
     char currentDir[MAX_PATH];
     if (!PackExpandInitDir(archiveFileName, NULL, NULL, modifyTable->DeleteInitDir,
                            currentDir, MAX_PATH))
@@ -731,40 +731,40 @@ BOOL PackDelFromArc(HWND parent, CFilesWindow* panel, const char* archiveFileNam
         return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_IDIRERR);
     }
 
-    // vezmeme si atributy pro pripad pozdejsiho pouziti
+    // let's take attributes for later use
     DWORD fileAttrs = SalGetFileAttributes(archiveFileName);
     if (fileAttrs == 0xFFFFFFFF)
         fileAttrs = FILE_ATTRIBUTE_ARCHIVE;
 
-    // zazalohujeme si kratky nazev souboru archivu, pozdeji testneme jestli dlouhe jmeno
-    // nezaniklo -> pokud kratke zustalo, prejmenujeme kratke na puvodni dlouhe
+    // We back up a short name of the archive file, later we will test a long name
+    // did not disappear -> if it remained short, we will rename short to original long
     char DOSArchiveFileName[MAX_PATH];
     if (!GetShortPathName(archiveFileName, DOSArchiveFileName, MAX_PATH))
         DOSArchiveFileName[0] = 0;
 
-    // a spustime externi program
+    // and we will launch an external program
     BOOL exec = PackExecute(NULL, cmdLine, currentDir, modifyTable->ErrorTable);
-    // mezitim testneme jestli dlouhe jmeno nezaniklo -> pokud kratke zustalo, prejmenujeme kratke
-    // na puvodni dlouhe
+    // Meanwhile, we test if the long name has not disappeared -> if it remained short, we will rename it to short
+    // to the original long
     if (DOSArchiveFileName[0] != 0 &&
         SalGetFileAttributes(archiveFileName) == 0xFFFFFFFF &&
         SalGetFileAttributes(DOSArchiveFileName) != 0xFFFFFFFF)
     {
-        SalMoveFile(DOSArchiveFileName, archiveFileName); // pokud se nepovede, kasleme na to...
+        SalMoveFile(DOSArchiveFileName, archiveFileName); // if it fails, let's forget about it...
     }
     if (!exec)
     {
         DeleteFile(tmpListNameBuf);
-        return FALSE; // chybove hlaseni bylo jiz vyhozeno
+        return FALSE; // Error message has already been thrown
     }
 
-    // pokud mazani zrusilo archiv, vytvorime soubor s nulovou delkou
+    // if deleting the archive failed, we will create a file with zero length
     HANDLE tmpHandle = HANDLES_Q(CreateFile(archiveFileName, GENERIC_READ, 0, NULL,
                                             OPEN_ALWAYS, fileAttrs, NULL));
     if (tmpHandle != INVALID_HANDLE_VALUE)
         HANDLES(CloseHandle(tmpHandle));
 
-    // list souboru uz neni potreba
+    // list of files is no longer needed
     DeleteFile(tmpListNameBuf);
 
     return TRUE;

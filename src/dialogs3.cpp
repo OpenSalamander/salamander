@@ -134,13 +134,12 @@ void CConvertFilesDlg::UpdateCodingText()
     char buff[1024];
     CodeTables.GetCodeName(CodeType, buff, 1024);
 
-    // vykopu &
+    // dig &
     RemoveAmpersands(buff);
 
     SetDlgItemText(HWindow, IDC_CHC_CODING, buff);
 }
-/*
-int CEOFTypes[4] =
+/*  int CEOFTypes[4] =
 {
   IDS_EOF_NONE,
   IDS_EOF_CRLF,
@@ -148,16 +147,15 @@ int CEOFTypes[4] =
   IDS_EOF_CR
 };
 
-  void
+void
 CConvertFilesDlg::UpdateEOFText()
 {
   char *p = LoadStr(CEOFTypes[EOFType]);
-  // vykopu &
+  // remove &
   RemoveAmpersands(p);
 
   SetDlgItemText(HWindow, IDC_CHC_EOF, p);
-}
-*/
+}*/
 
 INT_PTR
 CConvertFilesDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -197,8 +195,7 @@ CConvertFilesDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             DestroyMenu(hMenu);
             return 0;
         }
-        /*
-      if (LOWORD(wParam) == IDC_CHC_CHANGEEOF)
+        /*        if (LOWORD(wParam) == IDC_CHC_CHANGEEOF)
       {
         RECT r;
         GetWindowRect(GetDlgItem(HWindow, IDC_CHC_CHANGEEOF), &r);
@@ -274,8 +271,8 @@ void CFilterDialog::Validate(CTransferInfo& ti)
     if (useFilter)
     {
         char buf[MAX_PATH];
-        lstrcpyn(buf, Filter->GetMasksString(), MAX_PATH); // zaloha
-        // poskytneme buffer na MasksString, je tu kontrola velikosti, o nic nejde
+        lstrcpyn(buf, Filter->GetMasksString(), MAX_PATH); // backup
+        // we provide a buffer for MasksString, there is a size check, nothing to worry about
         ti.EditLine(IDE_FILTER, Filter->GetWritableMasksString(), MAX_PATH);
         int errorPos;
         if (!Filter->PrepareMasks(errorPos))
@@ -286,7 +283,7 @@ void CFilterDialog::Validate(CTransferInfo& ti)
             SendMessage(GetDlgItem(HWindow, IDE_FILTER), EM_SETSEL, errorPos, errorPos + 1);
             ti.ErrorOn(IDE_FILTER);
         }
-        Filter->SetMasksString(buf); // obnova
+        Filter->SetMasksString(buf); // recovery
     }
 }
 
@@ -299,11 +296,9 @@ void CFilterDialog::Transfer(CTransferInfo& ti)
 
     if (ti.Type == ttDataToWindow)
         EnableControls();
-    /*
-  ti.EditLine(IDE_FILTER, Filter->MasksString, MAX_PATH);
+    /*    ti.EditLine(IDE_FILTER, Filter->MasksString, MAX_PATH);
   int errorPos;
-  Filter->PrepareMasks(errorPos);
-  */
+  Filter->PrepareMasks(errorPos);*/
     char** history = FilterHistory;
     HWND hWnd;
     if (ti.GetControl(hWnd, IDE_FILTER))
@@ -339,14 +334,14 @@ CFilterDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        InstallWordBreakProc(GetDlgItem(HWindow, IDE_FILTER)); // instalujeme WordBreakProc do comboboxu
+        InstallWordBreakProc(GetDlgItem(HWindow, IDE_FILTER)); // Installing WordBreakProc into the combobox
 
         CHyperLink* hl = new CHyperLink(HWindow, IDC_FILEMASK_HINT, STF_DOTUNDERLINE);
         if (hl != NULL)
             hl->SetActionShowHint(LoadStr(IDS_MASKS_HINT));
 
         if (*UseFilter)
-        { // chceme svuj vlastni fokus v editboxu filtru
+        { // we want our own focus in the filter editbox
             CCommonDialog::DialogProc(uMsg, wParam, lParam);
             SendMessage(HWindow, WM_NEXTDLGCTL, (WPARAM)GetDlgItem(HWindow, IDE_FILTER), TRUE);
             return FALSE;
@@ -406,7 +401,7 @@ CCopyMoveDialog::CCopyMoveDialog(HWND parent, char* path, int pathBufSize, char*
     PathBufSize = pathBufSize;
     History = history;
     HistoryCount = historyCount;
-    SetHelpID(helpID); // dialog se pouziva k vice ucelum - nastavime spravne helpID
+    SetHelpID(helpID); // dialog is used for multiple purposes - let's set the correct helpID
     SelectionEnd = -1; // -1 = select all
 }
 
@@ -449,13 +444,13 @@ CCopyMoveDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        InstallWordBreakProc(GetDlgItem(HWindow, IDE_PATH)); // instalujeme WordBreakProc do comboboxu
+        InstallWordBreakProc(GetDlgItem(HWindow, IDE_PATH)); // Installing WordBreakProc into the combobox
 
-        CreateKeyForwarder(HWindow, IDE_PATH); // abychom obdrzeli WM_USER_KEYDOWN
+        CreateKeyForwarder(HWindow, IDE_PATH); // to receive WM_USER_KEYDOWN
         if (DirectoryHelper)
         {
-            ChangeToIconButton(HWindow, IDB_BROWSE, IDI_DIRECTORY);   // tlacitko bude mit ikonku adresare a sipku vpravo
-            VerticalAlignChildToChild(HWindow, IDB_BROWSE, IDE_PATH); // umistime tlacitko presne za editline
+            ChangeToIconButton(HWindow, IDB_BROWSE, IDI_DIRECTORY);   // the button will have a folder icon and an arrow pointing to the right
+            VerticalAlignChildToChild(HWindow, IDB_BROWSE, IDE_PATH); // place the button right behind the editline
         }
 
         SetWindowText(HWindow, Title);
@@ -464,7 +459,7 @@ CCopyMoveDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             SetWindowText(hSubject, Subject->Get());
 
         INT_PTR ret = CCommonDialog::DialogProc(uMsg, wParam, lParam);
-        // umime vybirat pouze nazev bez tecky a pripony
+        // we can only select the name without the dot and extension
         PostMessage(GetDlgItem(HWindow, IDE_PATH), CB_SETEDITSEL, 0,
                     MAKELPARAM(0, SelectionEnd));
         return FALSE;
@@ -510,7 +505,7 @@ CEditNewFileDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_INITDIALOG:
     {
         ChangeToArrowButton(HWindow, IDB_BROWSE);
-        VerticalAlignChildToChild(HWindow, IDB_BROWSE, IDE_PATH); // umistime tlacitko presne za editline
+        VerticalAlignChildToChild(HWindow, IDB_BROWSE, IDE_PATH); // place the button right behind the editline
         break;
     }
 
@@ -518,16 +513,15 @@ CEditNewFileDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (LOWORD(wParam) == IDB_BROWSE)
         {
-            /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volanim InsertMenu() dole...
+            /* used for the export_mnu.py script, which generates the salmenu.mnu for the Translator
+   to keep synchronized with the InsertMenu() call below...
 MENU_TEMPLATE_ITEM EditNewFileDialogMenu[] = 
 {
   {MNTT_PB, 0
   {MNTT_IT, IDS_EDITNEWFILE_SAVEASDEFAULT
   {MNTT_IT, IDS_EDITNEWFILE_REVERTDEFAULT
   {MNTT_PE, 0
-};
-*/
+};*/
             HMENU hMenu = CreatePopupMenu();
             InsertMenu(hMenu, 0xFFFFFFFF, MF_BYCOMMAND | MF_STRING, 1, LoadStr(IDS_EDITNEWFILE_SAVEASDEFAULT));
             char buff[2 * MAX_PATH];
@@ -655,7 +649,7 @@ BOOL GetSpeedLimit(int sel, char* speedLimitText, DWORD* returnSpeedLimit)
                 break;
             }
             if (speedLimit - 1 == 0xFFFFFFFF)
-                speedLimit--; // 4GB bereme jako 0xFFFFFFFF, jinak to cislo neulozime
+                speedLimit--; // We consider 4GB as 0xFFFFFFFF, otherwise we will not store that number
             if (speedLimit > 0 && speedLimit <= 0xFFFFFFFF)
             {
                 if (returnSpeedLimit != NULL)
@@ -686,12 +680,12 @@ void CCopyMoveMoreDialog::TransferCriteriaControls(CTransferInfo& ti)
     {
         Criteria->Masks.SetMasksString(masks);
         int errpos = 0;
-        // masky museji jit ven v Prepared stavu
-        if (!Criteria->Masks.PrepareMasks(errpos)) // chybna maska, to by diky validaci nemelo nastat
+        // masks must go out in Prepared state
+        if (!Criteria->Masks.PrepareMasks(errpos)) // incorrect mask, this should not occur thanks to validation
             Criteria->UseMasks = FALSE;
         char dummy[200];
         Criteria->Advanced.GetAdvancedDescription(dummy, 200, Criteria->UseAdvanced);
-        // Advance musi byt take pripraveno
+        // Advance must also be prepared
         Criteria->Advanced.PrepareForTest();
 
         if (Criteria->UseSpeedLimit)
@@ -722,7 +716,7 @@ void CCopyMoveMoreDialog::TransferCriteriaControls(CTransferInfo& ti)
             {
                 speedLimNum /= 1024;
                 speedLimUnits++;
-                if (speedLimNum == 0 || speedLimUnits > 3) // nemuze nastat, jen pro klid v dusi
+                if (speedLimNum == 0 || speedLimUnits > 3) // cannot happen, just for peace of mind
                 {
                     TRACE_E("CCopyMoveMoreDialog::TransferCriteriaControls(): unexpected situation!");
                     speedLimNum = 4;
@@ -814,7 +808,7 @@ void CCopyMoveMoreDialog::SetOptionsButtonState(BOOL more)
 {
     CheckDlgButton(HWindow, IDC_MORE, more ? BST_CHECKED : BST_UNCHECKED);
 
-    // pokud je tlacitko zamacknute (options vybalene), neni MORE, ale je DROPDOWN (a obracene)
+    // if the button is pressed (options expanded), it is not MORE, but it is DROPDOWN (and vice versa)
     DWORD btnFlags = MoreButton->GetFlags();
     if (more)
     {
@@ -831,7 +825,7 @@ void CCopyMoveMoreDialog::SetOptionsButtonState(BOOL more)
 
 void CCopyMoveMoreDialog::DisplayMore(BOOL more, BOOL fast)
 {
-    // ukryvane controly musime HIDEnou, abychom je vyradili z tab orderu
+    // Hidden controls must be hidden in order to exclude them from the tab order
     int controls[] = {IDC_CM_NEWER, IDC_CM_STARTONIDLE, IDC_CM_SPEEDLIMIT, IDE_CM_SPEEDLIMIT,
                       IDC_CM_SPEEDLIMITUNITS, IDC_CM_SECURITY, IDC_CM_COPYATTRS,
                       IDC_CM_DIRTIME, IDC_CM_IGNADS, IDC_CM_EMPTY, IDC_CM_NAMED_MASK, IDC_CM_NAMED,
@@ -871,7 +865,7 @@ void CCopyMoveMoreDialog::DisplayMore(BOOL more, BOOL fast)
 
     SetOptionsButtonState(more);
 
-    if (!more && !fast) // fast je TRUE, pokud controly obsahuji default hodnoty a neni treba je resetit
+    if (!more && !fast) // fast is TRUE if the controls contain default values and there is no need to reset them
     {
         Criteria->Reset();
         CTransferInfo ti(HWindow, ttDataToWindow);
@@ -889,8 +883,7 @@ void CCopyMoveMoreDialog::EnableControls()
     EnableWindow(GetDlgItem(HWindow, IDC_CM_SPEEDLIMITUNITS), speedLimit);
 }
 
-/*
-BOOL
+/*  BOOL
 CCopyMoveMoreDialog::ManageHiddenShortcuts(const MSG *msg)
 {
   if (msg->message == WM_SYSKEYDOWN)
@@ -900,30 +893,29 @@ CCopyMoveMoreDialog::ManageHiddenShortcuts(const MSG *msg)
     BOOL shiftPressed = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
     if (!controlPressed && altPressed && !shiftPressed)
     {
-      // pokud je stisteno Alt+? a je zabalena Options cast, ma smysl zkoumat dal
+      // if Alt+? is pressed and the Options section is collapsed, it makes sense to investigate further
       if (!IsDlgButtonChecked(HWindow, IDC_FIND_GREP))
       {
-        // otukame horke klavesy sledovanych prvku 
+        // check the hotkeys of monitored elements
         int resID[] = {IDC_FIND_CONTAINING_TEXT, IDC_FIND_HEX, IDC_FIND_CASE,
-                       IDC_FIND_WHOLE, IDC_FIND_REGULAR, -1}; // (terminatovat -1)
-                       int i;
+                       IDC_FIND_WHOLE, IDC_FIND_REGULAR, -1}; // (terminate -1)
+        int i;
         for (i = 0; resID[i] != -1; i++)
         {
           char key = GetControlHotKey(HWindow, resID[i]);
           if (key != 0 && (WPARAM)key == msg->wParam)
           {
-            // rozbalime options cast
+            // expand the Options section
             CheckDlgButton(HWindow, IDC_FIND_GREP, BST_CHECKED);
             SendMessage(HWindow, WM_COMMAND, MAKEWPARAM(IDC_FIND_GREP, BN_CLICKED), 0);
-            return FALSE; // rozbaleno, o zbytek se postara IsDialogMessage po nasem navratu
+            return FALSE; // expanded, IsDialogMessage will take care of the rest upon our return
           }
         }
       }
     }
   }
-  return FALSE; // neni to nase message
-}
-*/
+  return FALSE; // not our message
+}*/
 
 INT_PTR
 CCopyMoveMoreDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -932,9 +924,9 @@ CCopyMoveMoreDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        InstallWordBreakProc(GetDlgItem(HWindow, IDE_PATH)); // instalujeme WordBreakProc do comboboxu
+        InstallWordBreakProc(GetDlgItem(HWindow, IDE_PATH)); // Installing WordBreakProc into the combobox
 
-        // od 2.53 umime ukladat options, takze IDC_CM_STARTONIDLE musi byt vzdy enabled, aby si uzivatel mohl volbu prednastavit
+        // Starting from version 2.53, we can save options, so IDC_CM_STARTONIDLE must always be enabled for the user to pre-set the choice
         // EnableWindow(GetDlgItem(HWindow, IDC_CM_STARTONIDLE), !OperationsQueue.IsEmpty());
         EnableWindow(GetDlgItem(HWindow, IDC_CM_SECURITY), HavePermissions);
         EnableWindow(GetDlgItem(HWindow, IDC_CM_IGNADS), SupportsADS);
@@ -942,8 +934,8 @@ CCopyMoveMoreDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         MoreButton = new CButton(HWindow, IDC_MORE, BTF_MORE | BTF_CHECKBOX);
         SetOptionsButtonState(TRUE);
 
-        CreateKeyForwarder(HWindow, IDE_PATH);                  // abychom obdrzeli WM_USER_KEYDOWN
-        ChangeToIconButton(HWindow, IDB_BROWSE, IDI_DIRECTORY); // tlacitko bude mit ikonku adresare a sipku vpravo
+        CreateKeyForwarder(HWindow, IDE_PATH);                  // to receive WM_USER_KEYDOWN
+        ChangeToIconButton(HWindow, IDB_BROWSE, IDI_DIRECTORY); // the button will have a folder icon and an arrow pointing to the right
 
         CHyperLink* hl = new CHyperLink(HWindow, IDC_FILEMASK_HINT, STF_DOTUNDERLINE);
         if (hl != NULL)
@@ -959,20 +951,20 @@ CCopyMoveMoreDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             SetWindowText(hSubject, buff);
         }
 
-        // nyni jsme v plne velikosti => omerime dialog
+        // now we are in full size => we will measure the dialog
         RECT r;
         GetWindowRect(HWindow, &r);
         OriginalWidth = r.right - r.left;
         OriginalHeight = r.bottom - r.top;
-        // originalni pozice tlacitek
+        // original position of buttons
         GetWindowRect(GetDlgItem(HWindow, IDOK), &r);
         ScreenToClient(HWindow, (LPPOINT)&r);
         OriginalButtonsY = r.top;
-        // vyska vymezovace
+        // height of the delimiter
         GetWindowRect(GetDlgItem(HWindow, IDC_CM_SPACER), &r);
         SpacerHeight = r.bottom - r.top;
 
-        if (!Criteria->IsDirty()) // dialog zabalime v pripade, ze Criteria neobsahuji nejaka data
+        if (!Criteria->IsDirty()) // Wrap the dialog in case Criteria does not contain any data
             DisplayMore(FALSE, TRUE);
         break;
     }
@@ -1047,11 +1039,11 @@ MENU_TEMPLATE_ITEM CopyMoveMoreDialogMenu[] =
 
                 case 2: // Save options as defaults
                 {
-                    // abychom mohli ulozit options, musi projit validace
+                    // to save options, validation must be passed
                     if (ValidateData())
                     {
                         if (TransferData(ttDataFromWindow))
-                            CopyMoveOptions.Set(Criteria->IsDirty() ? Criteria : NULL); // ulozime novy default
+                            CopyMoveOptions.Set(Criteria->IsDirty() ? Criteria : NULL); // save new default
                     }
                     break;
                 }
@@ -1060,7 +1052,7 @@ MENU_TEMPLATE_ITEM CopyMoveMoreDialogMenu[] =
                 {
                     CopyMoveOptions.Set(NULL);
 
-                    // vycistime dialog
+                    // clean up the dialog
                     Criteria->Reset();
                     TransferData(ttDataToWindow);
                     break;
@@ -1097,20 +1089,20 @@ MENU_TEMPLATE_ITEM CopyMoveMoreDialogMenu[] =
 
             EnableControls();
 
-            // pokud uzivatel kliknuch na checkbox pro povoleni masky, asi ji chce editovat
+            // If the user clicks on the checkbox to enable the mask, they probably want to edit it
             if (LOWORD(wParam) == IDC_CM_NAMED)
             {
                 if (IsDlgButtonChecked(HWindow, IDC_CM_NAMED))
-                    SendMessage(HWindow, WM_NEXTDLGCTL, FALSE, FALSE); // focus do masky
+                    SendMessage(HWindow, WM_NEXTDLGCTL, FALSE, FALSE); // focus on the mask
                 else
-                    SetDlgItemText(HWindow, IDC_CM_NAMED_MASK, "*.*"); // default hodnota do masky
+                    SetDlgItemText(HWindow, IDC_CM_NAMED_MASK, "*.*"); // default value into the mask
             }
 
-            // pokud uzivatel kliknuch na checkbox speed-limitu, asi ho chce editovat
+            // if the user clicks on the speed limit checkbox, they probably want to edit it
             if (LOWORD(wParam) == IDC_CM_SPEEDLIMIT)
             {
                 if (IsDlgButtonChecked(HWindow, IDC_CM_SPEEDLIMIT))
-                    SendMessage(HWindow, WM_NEXTDLGCTL, FALSE, FALSE); // focus do editboxu
+                    SendMessage(HWindow, WM_NEXTDLGCTL, FALSE, FALSE); // focus to editbox
             }
 
             if (LOWORD(wParam) == IDC_MORE)
@@ -1129,7 +1121,7 @@ MENU_TEMPLATE_ITEM CopyMoveMoreDialogMenu[] =
 
             if (LOWORD(wParam) == IDOK)
             {
-                // vlastni OK handling -- potrebuji vypropagovat ven Criteria
+                // Custom OK handling -- I need to propagate Criteria outside
                 if (!ValidateData() ||
                     !TransferData(ttDataFromWindow))
                     return TRUE;
@@ -1189,9 +1181,9 @@ CChangeDirDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (SendDirectlyToPlugin == NULL)
             EnableWindow(GetDlgItem(HWindow, IDC_SENDDIRECTTOPLG), FALSE);
-        InstallWordBreakProc(GetDlgItem(HWindow, IDE_PATH));    // instalujeme WordBreakProc do comboboxu
-        CreateKeyForwarder(HWindow, IDE_PATH);                  // abychom obdrzeli WM_USER_KEYDOWN
-        ChangeToIconButton(HWindow, IDB_BROWSE, IDI_DIRECTORY); // tlacitko bude mit ikonku adresare a sipku vpravo
+        InstallWordBreakProc(GetDlgItem(HWindow, IDE_PATH));    // Installing WordBreakProc into the combobox
+        CreateKeyForwarder(HWindow, IDE_PATH);                  // to receive WM_USER_KEYDOWN
+        ChangeToIconButton(HWindow, IDB_BROWSE, IDI_DIRECTORY); // the button will have a folder icon and an arrow pointing to the right
 
         CHyperLink* hl = new CHyperLink(HWindow, IDC_CHANGEDIR_HINT, STF_DOTUNDERLINE);
         if (hl != NULL)
@@ -1278,7 +1270,7 @@ void CDriveInfo::Transfer(CTransferInfo& ti)
     {
         BOOL err;
         //---  GetVolumeInformation
-        char volumeName[1000]; // pouzivano dale jako buffer
+        char volumeName[1000]; // used further as a buffer
         char buff[300];
         char volumePathWithBackslash[MAX_PATH];
         DWORD volumeSerialNumber;
@@ -1292,7 +1284,7 @@ void CDriveInfo::Transfer(CTransferInfo& ti)
                                       &fileSystemFlags, fileSystemNameBuffer, 100) == 0);
         lstrcpyn(VolumePath, volumePathWithBackslash, MAX_PATH);
         SalPathAddBackslash(volumePathWithBackslash, MAX_PATH);
-        //---  GetVolumeInformation - zobrazeni
+        //--- GetVolumeInformation - display
         if (!err)
         {
             SetWindowText(GetDlgItem(HWindow, IDE_VOLNAME), volumeName);
@@ -1310,7 +1302,7 @@ void CDriveInfo::Transfer(CTransferInfo& ti)
 
             strcpy(volumeName, VolumePath);
             if (volumeName[strlen(volumeName) - 1] == '\\')
-                volumeName[strlen(volumeName) - 1] = 0; // zkraceni o posledni znak ('\\')
+                volumeName[strlen(volumeName) - 1] = 0; // shortening by the last character ('\\')
             sprintf(buff, "(%s) ", volumeName);
             GetWindowText(HWindow, buff + strlen(buff), 100);
 
@@ -1441,7 +1433,7 @@ void CDriveInfo::Transfer(CTransferInfo& ti)
             diskFreeBytes = CQuadWord(bytesPerSector, 0) * CQuadWord(sectorsPerCluster, 0) *
                             CQuadWord(numberOfFreeClusters, 0);
         }
-        //---  GetDiskFreeSpace - zobrazeni
+        //--- GetDiskFreeSpace - display
         if (!err)
         {
             NumberToStr(volumeName, CQuadWord(sectorsPerCluster, 0));
@@ -1481,10 +1473,10 @@ void CDriveInfo::Transfer(CTransferInfo& ti)
             if (diskTotalBytes >= diskFreeBytes)
                 diskTotalBytes -= diskFreeBytes;
             else
-                diskTotalBytes.SetUI64(0); // radsi nula nez uplny nesmysl
+                diskTotalBytes.SetUI64(0); // rather zero than complete nonsense
             SetWindowText(GetDlgItem(HWindow, IDT_USEDSPACE), PrintDiskSize(volumeName, diskTotalBytes, 2));
             SetWindowText(GetDlgItem(HWindow, IDT_USEDSPACE_SHORT), PrintDiskSize(volumeName, diskTotalBytes, 0));
-            // umistime statiky
+            // place the statics
             int height;
             RECT r;
             GetClientRect(GetDlgItem(HWindow, IDT_CAPACITY), &r);
@@ -1493,7 +1485,7 @@ void CDriveInfo::Transfer(CTransferInfo& ti)
             GrowWidth(IDT_CAPACITY, longWidth);
             GrowWidth(IDT_FREESPACE, longWidth);
             GrowWidth(IDT_USEDSPACE, longWidth);
-            longWidth++; // prechod na editline zpusobil, ze prave strany byly o bod rozhozene
+            longWidth++; // Switching to editline caused the right sides to be slightly scattered
 
             int y1, y2, y3;
             int x;
@@ -1522,8 +1514,8 @@ void CDriveInfo::Transfer(CTransferInfo& ti)
             GrowWidth(IDT_CAPACITY_SHORT, shortWidth);
             GrowWidth(IDT_FREESPACE_SHORT, shortWidth);
             GrowWidth(IDT_USEDSPACE_SHORT, shortWidth);
-            shortWidth++;                                                                 // prechod na editline zpusobil, ze prave strany byly o bod rozhozene
-            x = r.left + longWidth + (spaceForLongAndShort - longWidth - shortWidth) / 2; // vycentrujeme SHORT mezi LONG a GRAF
+            shortWidth++;                                                                 // Switching to editline caused the right sides to be slightly scattered
+            x = r.left + longWidth + (spaceForLongAndShort - longWidth - shortWidth) / 2; // Center the SHORT between LONG and GRAPH
             if (x < r.left + longWidth)
                 x = r.left + longWidth + height;
             SetWindowPos(GetDlgItem(HWindow, IDT_CAPACITY_SHORT), NULL, x, y1, shortWidth, height,
@@ -1533,7 +1525,7 @@ void CDriveInfo::Transfer(CTransferInfo& ti)
             SetWindowPos(GetDlgItem(HWindow, IDT_USEDSPACE_SHORT), NULL, x, y3, shortWidth, height,
                          SWP_NOZORDER | SWP_NOOWNERZORDER);
         }
-        //---  GetDriveType
+        //--- GetDriveType
         UINT driveType;
         char remoteName[MAX_PATH];
         BOOL remoteNameValid = FALSE;
@@ -1552,7 +1544,7 @@ void CDriveInfo::Transfer(CTransferInfo& ti)
             l = 100;
             userNameValid = (WNetGetUser(buff, userName, &l) == NO_ERROR);
         }
-        //---  GetDriveType - zobrazeni
+        //--- GetDriveType - display
         if (!err)
         {
             switch (driveType)
@@ -1604,7 +1596,7 @@ void CDriveInfo::Transfer(CTransferInfo& ti)
             }
             SetWindowText(GetDlgItem(HWindow, IDT_DRIVETYPE), volumeName);
         }
-        //---  GetDriveIcon
+        //--- GetDriveIcon
         HDriveIcon = GetDriveIcon(volumePathWithBackslash, driveType, TRUE, TRUE);
         SendDlgItemMessage(HWindow, IDI_DI_DRIVE, STM_SETIMAGE, IMAGE_ICON, (LPARAM)HDriveIcon);
     }
@@ -1617,7 +1609,7 @@ void CDriveInfo::GrowWidth(int resID, int& width)
 
     HWND hItem = GetDlgItem(HWindow, resID);
     GetWindowText(hItem, buff, 200);
-    strcat(buff, "M"); // editbox ma nejake okraje, timto pridanym "M" je kompenzujeme
+    strcat(buff, "M"); // editbox has some borders, we compensate for this by adding this "M"
     HFONT hFont = (HFONT)SendMessage(hItem, WM_GETFONT, 0, 0);
 
     SIZE sz;
@@ -1643,7 +1635,7 @@ CDriveInfo::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         HDC hdc = HANDLES(GetDC(HWindow));
         int devCaps = GetDeviceCaps(hdc, NUMCOLORS);
         HANDLES(ReleaseDC(HWindow, hdc));
-        if (devCaps == -1) // vice nez 256 barvach
+        if (devCaps == -1) // more than 256 colors
         {
             FreeLight = RGB(35, 245, 156);
             FreeDark = RGB(9, 159, 96);
@@ -1666,7 +1658,7 @@ CDriveInfo::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (cr != NULL)
             cr->SetColor(UsedLight);
 
-        Graph = new CColorGraph(HWindow, IDB_GRAPH); // JRYFIXME - prepsat na W10 look, viz properties pro disk, nebylo by pohodlne jet pres GDI+, pripadne nase SVG?
+        Graph = new CColorGraph(HWindow, IDB_GRAPH); // JRYFIXME - rewrite to W10 look, see properties for disk, it wouldn't be convenient to use GDI+, maybe our SVG?
         if (Graph != NULL)
             Graph->SetColor(FreeLight, FreeDark, UsedLight, UsedDark);
 
@@ -1710,7 +1702,7 @@ CEnterPasswdDialog::CEnterPasswdDialog(HWND parent, const char* path, const char
 void CEnterPasswdDialog::Validate(CTransferInfo& ti)
 {
     CALL_STACK_MESSAGE1("CEnterPasswdDialog::Validate()");
-    /*  // prazdne user-name = defaultni username
+    /*  // empty user-name = default username
   HWND edit;
   if (ti.GetControl(edit, IDE_NETUSER) && ti.Type == ttDataFromWindow)
   {
@@ -1720,8 +1712,7 @@ void CEnterPasswdDialog::Validate(CTransferInfo& ti)
                     LoadStr(IDS_ERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
       ti.ErrorOn(IDE_NETUSER);
     }
-  }
-*/
+  }*/
 }
 
 void CEnterPasswdDialog::Transfer(CTransferInfo& ti)
@@ -1780,7 +1771,7 @@ void CPackDialog::Transfer(CTransferInfo& ti)
             {
                 SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)PackerConfig->GetPackerTitle(i));
             }
-            // nastavi pozici v combu, preferedPacker == -1 -> zadny selection
+            // set position in combu, preferedPacker == -1 -> no selection
             SendMessage(combo, CB_SETCURSEL, (WPARAM)PackerConfig->GetPreferedPacker(), 0);
 
             i = (int)SendMessage(combo, CB_GETCURSEL, 0, 0);
@@ -1806,10 +1797,10 @@ void CPackDialog::Transfer(CTransferInfo& ti)
 
     if (ti.Type == ttDataToWindow)
     {
-        // !!! POZOR: kod musi byt konzistentni s CPackDialog::DialogProc/WM_COMMAND
+        // !!! WARNING: the code must be consistent with CPackDialog::DialogProc/WM_COMMAND
         ti.GetControl(combo, IDE_PATH);
         SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)Path);
-        // pokud je alternativni cesta stejna jako prvni, nebudeme ji pridavat (target neni ptDisk)
+        // if the alternative path is the same as the first one, we will not add it (target is not ptDisk)
         if (StrICmp(Path, PathAlt) != 0)
             SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)PathAlt);
         SendMessage(combo, CB_SETCURSEL, 0, 0);
@@ -1817,15 +1808,15 @@ void CPackDialog::Transfer(CTransferInfo& ti)
     else
         ti.EditLine(IDE_PATH, Path, MAX_PATH);
 
-    if (ti.Type == ttDataFromWindow) // pokud zadane jmeno nema priponu, pridame mu ji automaticky
+    if (ti.Type == ttDataFromWindow) // if the entered name does not have an extension, we will add it automatically
     {
-        if (PackerConfig->GetPreferedPacker() != -1) // pokud mame priponu, jinak zadane jmeno nemenime
+        if (PackerConfig->GetPreferedPacker() != -1) // if we have an extension, otherwise we do not change the entered name
         {
             const char* ext = PackerConfig->GetPackerExt(PackerConfig->GetPreferedPacker());
             char* s = strrchr(Path, '.');
             char* s2 = strrchr(Path, '\\');
             int nameLen = (int)strlen(Path);
-            if ((s == NULL || s2 != NULL && s2 > s) && // ".cvspass" ve Windows je pripona ...
+            if ((s == NULL || s2 != NULL && s2 > s) && // ".cvspass" in Windows is an extension ...
                 (s2 == NULL || (s2 - Path + 1) < nameLen) &&
                 nameLen > 0 &&
                 nameLen + 1 + 1 + strlen(ext) < MAX_PATH)
@@ -1861,7 +1852,7 @@ BOOL CPackDialog::ChangeExtension(char* name, const char* ext)
 {
     char* s = strrchr(name, '.');
     char* s2 = strrchr(name, '\\');
-    if (s != NULL && // ".cvspass" ve Windows je pripona ...
+    if (s != NULL && // ".cvspass" in Windows is an extension ...
                      //if (s != NULL && s > name &&
         (s2 == NULL || s > s2) &&
         strlen(ext) + 1 + ((s + 1) - name) < MAX_PATH)
@@ -1893,14 +1884,14 @@ CPackDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        InstallWordBreakProc(GetDlgItem(HWindow, IDE_PATH)); // instalujeme WordBreakProc do editline
+        InstallWordBreakProc(GetDlgItem(HWindow, IDE_PATH)); // installing WordBreakProc into editline
 
         HWND hSubject = GetDlgItem(HWindow, IDS_SUBJECT);
         if (Subject->TruncateText(hSubject))
             SetWindowText(hSubject, Subject->Get());
 
         INT_PTR ret = CCommonDialog::DialogProc(uMsg, wParam, lParam);
-        // umime vybirat pouze nazev bez tecky a pripony
+        // we can only select the name without the dot and extension
         PostMessage(GetDlgItem(HWindow, IDE_PATH), CB_SETEDITSEL, 0, MAKELPARAM(0, SelectionEnd));
         return FALSE;
     }
@@ -1912,16 +1903,16 @@ CPackDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             int i = (int)SendMessage((HWND)lParam, CB_GETCURSEL, 0, 0);
             if (i != CB_ERR)
             {
-                // zamenim pripony
+                // change extensions
                 char name[MAX_PATH];
                 char name2[MAX_PATH];
 
                 int curSel = (int)SendDlgItemMessage(HWindow, IDE_PATH, CB_GETCURSEL, 0, 0);
-                if (curSel == CB_ERR) // text musim vytahnout uz tady, protoze CB_RESETCONTENT ho sestreli
+                if (curSel == CB_ERR) // I need to pull out the text here already, because CB_RESETCONTENT shoots it down
                     GetWindowText(GetDlgItem(HWindow, IDE_PATH), name2, MAX_PATH);
 
-                // !!! POZOR: kod musi byt konzistentni s CPackDialog::Transfer
-                // zamenim pripony v comboboxu
+                // !!! WARNING: the code must be consistent with CPackDialog::Transfer
+                // change the extensions in the combobox
                 SendDlgItemMessage(HWindow, IDE_PATH, CB_RESETCONTENT, 0, 0);
                 strcpy(name, Path);
                 if (ChangeExtension(name, PackerConfig->GetPackerExt(i)))
@@ -1929,7 +1920,7 @@ CPackDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 else
                     SendDlgItemMessage(HWindow, IDE_PATH, CB_ADDSTRING, 0, (LPARAM)Path);
 
-                // pokud je alternativni cesta stejna jako prvni, nebudeme ji pridavat (target neni ptDisk)
+                // if the alternative path is the same as the first one, we will not add it (target is not ptDisk)
                 if (StrICmp(Path, PathAlt) != 0)
                 {
                     strcpy(name, PathAlt);
@@ -1943,7 +1934,7 @@ CPackDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     SendDlgItemMessage(HWindow, IDE_PATH, CB_SETCURSEL, (WPARAM)curSel, 0);
                 else
                 {
-                    // pokud je editline modifikovana, zmenim priponu take v ni
+                    // if the editline is modified, I will also change the extension in it
                     if (ChangeExtension(name2, PackerConfig->GetPackerExt(i)))
                         SetWindowText(GetDlgItem(HWindow, IDE_PATH), name2);
                 }
@@ -2002,7 +1993,7 @@ void CUnpackDialog::Transfer(CTransferInfo& ti)
             {
                 SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)UnpackerConfig->GetUnpackerTitle(i));
             }
-            // nastavi pozici v combu, preferedUnpacker == -1 -> zadny selection
+            // set position in combu, preferedUnpacker == -1 -> no selection
             SendMessage(combo, CB_SETCURSEL, (WPARAM)UnpackerConfig->GetPreferedUnpacker(), 0);
             EnableDelArcCheckbox();
         }
@@ -2019,7 +2010,7 @@ void CUnpackDialog::Transfer(CTransferInfo& ti)
     {
         ti.GetControl(combo, IDE_PATH);
         SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)Path);
-        // pokud je alternativni cesta stejna jako prvni, nebudeme ji pridavat (target neni ptDisk)
+        // if the alternative path is the same as the first one, we will not add it (target is not ptDisk)
         if (StrICmp(Path, PathAlt) != 0)
             SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)PathAlt);
         SendMessage(combo, CB_SETCURSEL, 0, 0);
@@ -2044,8 +2035,8 @@ CUnpackDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        InstallWordBreakProc(GetDlgItem(HWindow, IDE_PATH)); // instalujeme WordBreakProc do editline
-        InstallWordBreakProc(GetDlgItem(HWindow, IDE_MASK)); // instalujeme WordBreakProc do editline
+        InstallWordBreakProc(GetDlgItem(HWindow, IDE_PATH)); // installing WordBreakProc into editline
+        InstallWordBreakProc(GetDlgItem(HWindow, IDE_MASK)); // installing WordBreakProc into editline
 
         HWND hSubject = GetDlgItem(HWindow, IDS_SUBJECT);
         if (Subject->TruncateText(hSubject))
@@ -2089,15 +2080,13 @@ CZIPSizeResultsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        /*
-      RECT r1;                        // horizontalni vycentrovani dialogu
+        /*        RECT r1;                        // horizontal centering of the dialog
       GetWindowRect(HWindow, &r1);
       RECT r2;
       GetWindowRect(MainWindow->GetActivePanelHWND(), &r2);
       int width = r1.right - r1.left;
       r1.left = (r2.right + r2.left - width) / 2;
-      MoveWindow(HWindow, r1.left, r1.top, width, r1.bottom - r1.top, FALSE);
-      */
+      MoveWindow(HWindow, r1.left, r1.top, width, r1.bottom - r1.top, FALSE);*/
         char buf[50];
         SetWindowText(GetDlgItem(HWindow, IDS_SIZE), PrintDiskSize(buf, Size, 1));
         SetWindowText(GetDlgItem(HWindow, IDS_FILESCOUNT), NumberToStr(buf, CQuadWord(Files, 0)));
@@ -2111,7 +2100,7 @@ CZIPSizeResultsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 //***************************************************************************
 //
-// CChangeIconDialog
+// ChangeIconDialog
 //
 
 CChangeIconDialog::CChangeIconDialog(HWND hParent, char* iconFile, int* iconIndex)
@@ -2180,11 +2169,11 @@ AGAIN:
         SalMessageBox(HWindow, buff, LoadStr(IDS_ERRORTITLE),
                       MB_OK | MB_ICONEXCLAMATION);
 
-        // dame default
+        // set default
         GetShell32(fileName);
     }
 
-    // enumerace ikon ze souboru *.ICO, *.EXE, *.DLL, vcetne 16-bit PE
+    // Enumerating icons from files *.ICO, *.EXE, *.DLL, including 16-bit PE
     int iconsCount = ExtractIconEx(fileName, -1, NULL, NULL, 0);
     if (iconsCount > 0)
     {
@@ -2192,7 +2181,7 @@ AGAIN:
         if (Icons != NULL)
         {
             IconsCount = ExtractIconEx(fileName, 0, Icons, NULL, iconsCount);
-            // pridame handle na 'HIcon' do HANDLES
+            // add handle to 'HIcon' to HANDLES
             for (DWORD i = 0; i < IconsCount; i++)
                 HANDLES_ADD(__htIcon, __hoLoadImage, Icons[i]);
         }
@@ -2207,9 +2196,9 @@ AGAIN:
         SalMessageBox(HWindow, buff, LoadStr(IDS_ERRORTITLE),
                       MB_OK | MB_ICONEXCLAMATION);
 
-        // dame default
+        // set default
         GetShell32(fileName);
-        if (counter < 2) // pojistka
+        if (counter < 2) // fuse
             goto AGAIN;
     }
 
@@ -2242,7 +2231,7 @@ CChangeIconDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         SendMessage(hList, LB_SETCOLUMNWIDTH, 32 + 8, 0);
         SendMessage(hList, LB_SETITEMHEIGHT, 0, MAKELPARAM(32 + 8, 0));
 
-        // upravim velikost listboxu
+        // adjust the size of the listbox
         RECT wRect;
         RECT cRect;
         GetWindowRect(hList, &wRect);
@@ -2264,11 +2253,11 @@ CChangeIconDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             RECT r = lpdis->rcItem;
 
-            // vykreslim pozadi
+            // draw background
             DWORD bkColor = (lpdis->itemState & ODS_SELECTED) ? COLOR_HIGHLIGHT : COLOR_WINDOW;
             FillRect(lpdis->hDC, &r, (HBRUSH)(DWORD_PTR)(bkColor + 1));
 
-            // vykreslim ikonku
+            // draw an icon
             DrawIconEx(lpdis->hDC, r.left + 4, r.top + 4, Icons[lpdis->itemID], 32, 32, 0, NULL, DI_NORMAL);
 
             if (lpdis->itemState & ODS_FOCUS)
@@ -2370,7 +2359,7 @@ void CWaitWindow::SetText(const char* text)
     if (HWindow != NULL && IsWindowVisible(HWindow))
     {
         HDC hDC = GetDC(HWindow);
-        if (CacheBitmap == NULL) // pouze pri zmenach textu pojedeme pres cache bitmap
+        if (CacheBitmap == NULL) // only when the text changes will we go through the bitmap cache
         {
             CacheBitmap = new CBitmap();
             if (CacheBitmap != NULL)
@@ -2411,7 +2400,7 @@ HWND CWaitWindow::Create(HWND hForegroundWnd)
     if (HForegroundWnd != NULL)
         HForegroundWnd = GetTopVisibleParent(HForegroundWnd);
 
-    // napocitame umisteni okenka; prioritne centrujeme k HForegroundWindow; v druhe rade k MainWindow
+    // calculate the position of the window; prioritize centering to HForegroundWindow; secondarily to MainWindow
     HWND hCenterWnd = NULL;
     if (HForegroundWnd != NULL)
         hCenterWnd = HForegroundWnd;
@@ -2424,7 +2413,7 @@ HWND CWaitWindow::Create(HWND hForegroundWnd)
     int scrW = clipRect.right - clipRect.left;
     int scrH = clipRect.bottom - clipRect.top;
 
-    // napocitam velikost textu => velikost okna
+    // calculate the size of the text => window size
     NeedWrap = FALSE;
     HDC dc = HANDLES(GetDC(NULL));
     if (dc != NULL)
@@ -2450,18 +2439,18 @@ HWND CWaitWindow::Create(HWND hForegroundWnd)
         HANDLES(ReleaseDC(NULL, dc));
     }
 
-    // aplikace prelozena s novejsim platform toolset pracuje jinak s velikosti oken, vice viz
+    // Application compiled with a newer platform toolset behaves differently with window sizes, see more at
     // https://social.msdn.microsoft.com/Forums/vstudio/en-US/7ca548b5-8931-41dc-ac1d-ed9aed223d7a/different-dialog-box-position-and-size-with-visual-c-2012
     // https://connect.microsoft.com/VisualStudio/feedback/details/768135/different-dialog-box-size-and-position-when-compiled-in-visual-c-2012-vs-2010-2008
-    // takze pouzijeme hack, kdy okno napred vytvorime, pak omerime client area a nasledne upravime velikost okna
-    // poznamka: AdjustWindowRectEx je nepouzitelne, protoze keca; puvodni pricitani ramecku je taky nepouzitelne, viz linky nahore
+    // So we will use a hack where we first create the window, then measure the client area, and then adjust the window size
+    // Note: AdjustWindowRectEx is unusable because it's nonsense; the original frame addition is also unusable, see the links above
 
     int width = TextSize.cx + 2 * WAITWINDOW_HMARGIN;
     int height = TextSize.cy + 2 * WAITWINDOW_VMARGIN;
 
     if (ShowProgressBar)
     {
-        height += 8; // vytvorime prostor pro progress bar
+        height += 8; // create space for progress bar
 
         BarRect.left = WAITWINDOW_HMARGIN;
         BarRect.top = WAITWINDOW_VMARGIN + TextSize.cy + 7;
@@ -2479,7 +2468,7 @@ HWND CWaitWindow::Create(HWND hForegroundWnd)
              HInstance,
              this);
 
-    // hack: real-time uprava velikosti okna, abychom slapali se starym (5 / XP compatible) i novym toolsetem
+    // hack: real-time window resizing to work with both old (5 / XP compatible) and new toolset
     RECT clientR;
     GetClientRect(HWindow, &clientR);
     width += width - (clientR.right - clientR.left);
@@ -2488,7 +2477,7 @@ HWND CWaitWindow::Create(HWND hForegroundWnd)
     SetWindowPos(HWindow, HWND_TOPMOST, 0, 0, width, height, SWP_NOMOVE | SWP_NOACTIVATE);
     MultiMonCenterWindow(HWindow, hCenterWnd, TRUE);
 
-    // pokud je HForegroundWnd != NULL, bude se zobrazeni resit jinde
+    // if HForegroundWnd != NULL, the display will be handled elsewhere
     if (HForegroundWnd == NULL)
         SetWindowPos(HWindow, HWND_NOTOPMOST, 0, 0, 0, 0,
                      SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
@@ -2588,8 +2577,8 @@ void CWaitWindow::PaintText(HDC hDC)
         HFONT hOldFont = (HFONT)SelectObject(hDestDC, EnvFont);
         int prevBkMode = SetBkMode(hDestDC, TRANSPARENT);
         SetTextColor(hDestDC, GetSysColor(COLOR_BTNTEXT));
-        // nebudeme klipovat, abychom ustali drobne prodlouzeni textu, ke kteremu
-        // muze dojit behem volani SetText
+        // we will not clip to achieve a slight extension of the text
+        // can occur during the SetText call
         DrawText(hDestDC, Text, (int)strlen(Text), &r, DT_LEFT | DT_NOPREFIX | DT_NOCLIP | (NeedWrap ? DT_WORDBREAK : 0));
         SetBkMode(hDestDC, prevBkMode);
         SelectObject(hDestDC, hOldFont);
@@ -2628,8 +2617,8 @@ CWaitWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_NCHITTEST:
     {
-        // zabranime presouvani okna pomoci tazeni za titulek
-        // zaroven zablokujeme tooltip nad Close tlacitkem
+        // prevent window from being moved by dragging the title bar
+        // at the same time we will block the tooltip above the Close button
         return HTCLIENT;
     }
 
@@ -2659,15 +2648,15 @@ CWaitWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             hActivate = MainWindow->HWindow;
         SetForegroundWindow(hActivate);
         SetActiveWindow(hActivate);
-        // radeji si dame jeste jedno kolo...
+        // Let's have one more round...
         SetForegroundWindow(hActivate);
         SetActiveWindow(hActivate);
 
-        // JR: puvodne jsme chytali pouze WM_LBUTTONDOWN, ale Manison nahlasil, ze mu nechodi detekce kliknuti na krizek z Automation pluginu
-        // zjistil jsem, ze pri kliknuti chodi WM_NCLBUTTONDOWN
+        // JR: Originally, we were only catching WM_LBUTTONDOWN, but Manison reported that the detection of clicking on the cross from the Automation plugin was not working for him
+        // I found out that WM_NCLBUTTONDOWN is triggered when clicking
         if (uMsg == WM_LBUTTONDOWN || uMsg == WM_NCLBUTTONDOWN)
         {
-            // pokud user kliknul na Close tlacitko, nastavime globalni promennou
+            // if the user clicked on the Close button, we set a global variable
             if (CWindow::WindowProc(WM_NCHITTEST, NULL, GetMessagePos()) == HTCLOSE)
                 SafeWaitWindowClosePressed = TRUE;
         }
@@ -2698,7 +2687,7 @@ void CConversionTablesDialog::Transfer(CTransferInfo& ti)
 {
     if (ti.Type == ttDataToWindow)
     {
-        // natahnu vsechny dostupne konverze
+        // stretch all available conversions
         CodeTables.PreloadAllConversions();
 
         HListView = GetDlgItem(HWindow, IDC_CT_LIST);
@@ -2707,7 +2696,7 @@ void CConversionTablesDialog::Transfer(CTransferInfo& ti)
         DWORD origFlags = ListView_GetExtendedListViewStyle(HListView);
         ListView_SetExtendedListViewStyle(HListView, origFlags | exFlags); // 4.71
 
-        // naleju do listview sloupce Name, Mode a HotKey
+        // I will pour the columns Name, Mode, and HotKey into the listview
         LVCOLUMN lvc;
         lvc.mask = LVCF_TEXT | LVCF_SUBITEM | LVCF_FMT;
         lvc.pszText = LoadStr(IDS_CONVERSION_DESCRIPTION);

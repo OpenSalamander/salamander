@@ -96,13 +96,13 @@ BOOL CFilesMap::CreateMap()
     Rows = rows;
     Columns = columns;
 
-    // projedu adresare a soubory a nastavim odpovidajici CFilesMapItem
+    // Iterate through directories and files and set the corresponding CFilesMapItem
     CFilesMapItem* itemIter = Map;
 
     if (panelMode == vmBrief || panelMode == vmDetailed)
     {
         // Brief || Detailed
-        // polozky budou ulozeny shora dolu a pak zleve doprava (pro Brief)
+        // Items will be stored from top to bottom and then from left to right (for Brief)
         char formatedFileName[MAX_PATH];
         HDC dc = HANDLES(GetDC(Panel->GetListBoxHWND()));
         HFONT hOldFont = (HFONT)SelectObject(dc, Font);
@@ -118,7 +118,7 @@ BOOL CFilesMap::CreateMap()
                     AlterFileName(formatedFileName, f->Name, -1, Configuration.FileNameFormat, 0, isDir);
 
                     const char* s = formatedFileName;
-                    // potlacime ".."
+                    // suppress ".."
                     if (*s == '.' && *(s + 1) == '.' && *(s + 2) == 0)
                         s = NULL;
 
@@ -128,7 +128,7 @@ BOOL CFilesMap::CreateMap()
                     if (s != NULL)
                     {
                         if ((!isDir || Configuration.SortDirsByExt) && Panel->GetViewMode() == vmDetailed &&
-                            Panel->IsExtensionInSeparateColumn() && f->Ext[0] != 0 && f->Ext > f->Name + 1) // vyjimka pro jmena jako ".htaccess", ukazuji se ve sloupci Name i kdyz jde o pripony
+                            Panel->IsExtensionInSeparateColumn() && f->Ext[0] != 0 && f->Ext > f->Name + 1) // Exception for names like ".htaccess", they are displayed in the Name column even though they are extensions
                         {
                             len = (int)(f->Ext - f->Name - 1);
                         }
@@ -140,7 +140,7 @@ BOOL CFilesMap::CreateMap()
                         len = 0;
                     }
 
-                    // zjistim skutecnou delku textu
+                    // find out the actual length of the text
                     SIZE sz;
                     GetTextExtentPoint32(dc, s, len, &sz);
                     width += sz.cx + 4;
@@ -150,7 +150,7 @@ BOOL CFilesMap::CreateMap()
                 }
                 if (Configuration.FullRowSelect && Panel->GetViewMode() == vmBrief)
                 {
-                    width = Panel->Columns[0].Width - 10; // korekce
+                    width = Panel->Columns[0].Width - 10; // correction
                 }
             }
 
@@ -169,7 +169,7 @@ BOOL CFilesMap::CreateMap()
     else
     {
         // Icons || Thumbnails
-        // polozky budou ulozeny zleva doprava a pak shora dolu
+        // Items will be stored from left to right and then from top to bottom
         int width = Panel->ListBox->GetItemWidth();
         int i;
         for (i = 0; i < count; i++)
@@ -219,7 +219,7 @@ void CFilesMap::SetAnchor(int x, int y)
         y = Panel->ListBox->FilesRect.top;
     else if (y > Panel->ListBox->FilesRect.bottom)
         y = Panel->ListBox->FilesRect.bottom;
-    // prevedu x a y na absolutni hodnoty
+    // Convert x and y to absolute values
     switch (Panel->GetViewMode())
     {
     case vmBrief:
@@ -265,9 +265,9 @@ CFilesMap::GetMapItem(int column, int row)
     CViewModeEnum panelMode = Panel->GetViewMode();
     int index;
     if (panelMode == vmBrief || panelMode == vmDetailed)
-        index = column * Rows + row; // polozky jsou shora dolu a pak zleva doprava
+        index = column * Rows + row; // items are from top to bottom and then from left to right
     else
-        index = row * Columns + column; // polozky jsou zleva doprava a pak shora dolu
+        index = row * Columns + column; // items are from left to right and then from top to bottom
     if (index >= MapItemsCount)
     {
         TRACE_E("Access to index out of array bounds.");
@@ -293,7 +293,7 @@ void CFilesMap::SetPoint(int x, int y)
         y = Panel->ListBox->FilesRect.top;
     else if (y > Panel->ListBox->FilesRect.bottom)
         y = Panel->ListBox->FilesRect.bottom;
-    // prevedu x a y na absolutni hodnoty
+    // Convert x and y to absolute values
     switch (Panel->GetViewMode())
     {
     case vmBrief:
@@ -371,7 +371,7 @@ void CFilesMap::SetPoint(int x, int y)
     GetCROfRect(x, y, newRect);
     RECT rect;
 
-    // najdu obepsany obdelnik
+    // find the circumscribed rectangle
     if (oldRect.left < newRect.left)
         rect.left = oldRect.left;
     else
@@ -392,7 +392,7 @@ void CFilesMap::SetPoint(int x, int y)
     else
         rect.bottom = newRect.bottom;
 
-    // prohledam ho
+    // search it
     CViewModeEnum panelMode = Panel->GetViewMode();
     int row, col;
     CFilesMapItem* item;
@@ -402,7 +402,7 @@ void CFilesMap::SetPoint(int x, int y)
     {
         for (col = rect.left; col <= rect.right; col++)
         {
-            // osetrim hranici pole
+            // handle array boundary
             if (panelMode == vmBrief || panelMode == vmDetailed)
             {
                 // Brief || Detailed
@@ -417,8 +417,8 @@ void CFilesMap::SetPoint(int x, int y)
             }
             item = GetMapItem(col, row);
 
-            if (item == NULL) // meli jsme nekolik padacek v CFilesMap::SetPoint; vznik neznamy
-                continue;     // takhle nepadneme, maximalne nebude chodit selection
+            if (item == NULL) // We had several crashes in CFilesMap::SetPoint; origin unknown
+                continue;     // so we don't fall, at most the selection won't work
 
             BOOL inOld = PointInRect(col, row, oldRect);
             if (inOld)
@@ -594,12 +594,12 @@ void CFilesMap::UpdatePanel()
     CALL_STACK_MESSAGE1("CFilesMap::UpdatePanel()");
     int dirsCount = Panel->Dirs->Count;
     int count = dirsCount + Panel->Files->Count;
-    int start; // od jakeho indexu zacit zjistovat oznaceni (preskoceni "..")
+    int start; // from which index to start checking the label (skipping "..")
     if (Panel->Dirs->Count > 0 && strcmp(Panel->Dirs->At(0).Name, "..") == 0)
         start = 1;
     else
         start = 0;
-    // nastavim prislusne selection bity
+    // set the corresponding selection bits
     Panel->SelectedCount = 0;
 
     int i;
@@ -799,7 +799,7 @@ void CScrollPanel::OnWMTimer()
     BOOL showDragBox = FALSE;
     if (Panel->DragBox && Panel->DragBoxVisible)
     {
-        Panel->DrawDragBox(Panel->OldBoxPoint); // zhasnem box
+        Panel->DrawDragBox(Panel->OldBoxPoint); // turn off the box
         showDragBox = TRUE;
     }
 
@@ -868,7 +868,7 @@ void CScrollPanel::OnWMTimer()
     }
     Panel->ScrollingWindow = oldScrolling;
     if (showDragBox)
-        Panel->DrawDragBox(Panel->OldBoxPoint); // zase ho nahodime
+        Panel->DrawDragBox(Panel->OldBoxPoint); // we'll throw it again
 
     if (!ScrollInside)
         PostMessage(Panel->ListBox->HWindow, WM_MOUSEMOVE, MK_LBUTTON | MK_RBUTTON, MAKEWPARAM(x, y));

@@ -73,7 +73,7 @@ BOOL IsSalHotKey(WORD hotKey)
         {
         case NONE:          // select + calculate directory size
         case CONTROL:       // brings current dir to command line
-        case ALT:           // window mwnu
+        case ALT:           // window menu
         case SHIFT:         // quick search
         case CONTROL_SHIFT: // brings current dir to command line (8.3)
             found = TRUE;
@@ -991,7 +991,7 @@ BOOL IsSalHotKey(WORD hotKey)
         switch (mods)
         {
         case NONE:    // quick search/type in command line
-        case CONTROL: // root dir
+        case CONTROL: // root directory
             found = TRUE;
         }
         break;
@@ -1023,8 +1023,7 @@ BOOL IsSalHotKey(WORD hotKey)
     return found;
 }
 
-/*
-//
+/*  //
 // Virtual Keys, Standard Set
 //
 #define VK_LBUTTON        0x01

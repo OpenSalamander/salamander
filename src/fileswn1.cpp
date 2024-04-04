@@ -94,7 +94,7 @@ void CFilesWindowAncestor::ReleaseListing()
     ((CFilesWindow*)this)->VisibleItemsArraySurround.InvalidateArr();
     if (OnlyDetachFSListing)
     {
-        // odpojime z panelu listing vcetne ikon
+        // Remove the listing from the panel including icons
         Files = NewFSFiles;
         Dirs = NewFSDirs;
         SetPluginFSDir(NewFSPluginFSDir);
@@ -123,7 +123,7 @@ BOOL CFilesWindowAncestor::IsPathFromActiveFS(const char* fsName, char* fsUserPa
     fsNameIndex = -1;
     if (Is(ptPluginFS) && PluginFS.NotEmpty())
     {
-        if (Plugins.AreFSNamesFromSamePlugin(PluginFS.GetPluginFSName(), fsName, fsNameIndex)) // porovname jestli jsou FS ze stejneho plug-inu
+        if (Plugins.AreFSNamesFromSamePlugin(PluginFS.GetPluginFSName(), fsName, fsNameIndex)) // compare if the file systems are from the same plug-in
         {
             if (convertPathToInternal)
             {
@@ -223,7 +223,7 @@ void CFilesWindowAncestor::SetPath(const char* path)
     DetachDirectory((CFilesWindow*)this);
     strcpy(Path, path);
 
-    //--- zjisteni file-based komprese/sifrovani a FAT32
+    //--- detection of file-based compression/encryption and FAT32
     DWORD dummy1, flags;
     if ((Is(ptDisk) || Is(ptZIPArchive)) &&
         MyGetVolumeInformation(path, NULL, NULL, NULL, NULL, 0, NULL, &dummy1, &flags, NULL, 0))
@@ -241,16 +241,16 @@ void CFilesWindowAncestor::SetPath(const char* path)
 
     MonitorChanges = FALSE;
     DriveType = DRIVE_UNKNOWN;
-    if (!Is(ptPluginFS)) // pluginFS zajistuje zmeny jinak ...
+    if (!Is(ptPluginFS)) // pluginFS ensures changes otherwise ...
     {
         DriveType = MyGetDriveType(Path);
         switch (DriveType)
         {
         case DRIVE_REMOVABLE:
         {
-            BOOL isDriveFloppy = FALSE; // floppy maji svuji konfiguraci vedle ostatnich removable drivu
+            BOOL isDriveFloppy = FALSE; // Floppy drives have their own configuration separate from other removable drives
             int drv = UpperCase[Path[0]] - 'A' + 1;
-            if (drv >= 1 && drv <= 26) // pro jistotu provedeme "range-check"
+            if (drv >= 1 && drv <= 26) // for safety we will perform a "range-check"
             {
                 DWORD medium = GetDriveFormFactor(drv);
                 if (medium == 350 || medium == 525 || medium == 800 || medium == 1)
@@ -272,25 +272,25 @@ void CFilesWindowAncestor::SetPath(const char* path)
             break;
         }
 
-        default: // case DRIVE_FIXED:   // nejen fixed, ale i ty ostatni (RAM DISK, atd.)
+        default: // case DRIVE_FIXED:   // not only fixed, but also the others (RAM DISK, etc.)
         {
             MonitorChanges = Configuration.DrvSpecFixedMon;
             break;
         }
         }
 
-        // osetrime potlaceni autorefreshe
+        // handle auto-refresh suppression
         if (SuppressAutoRefresh)
             MonitorChanges = FALSE;
 
         if (MonitorChanges)
             AddDirectory((CFilesWindow*)this, Path, DriveType == DRIVE_REMOVABLE || DriveType == DRIVE_FIXED);
-        else // pokud zmeny nemonitorujeme, nezavola snooper SetAutomaticRefresh -> udelame to tady
+        else // if we don't monitor changes, snooper won't call SetAutomaticRefresh -> we'll do it here
         {
             ((CFilesWindow*)this)->SetAutomaticRefresh(FALSE, TRUE);
         }
     }
-    else // ptPluginFS - nebudeme provadet zadne refreshe - plug-in si refreshovani ridi sam
+    else // ptPluginFS - we will not perform any refreshes - the plug-in manages refreshing on its own
     {
         ((CFilesWindow*)this)->SetAutomaticRefresh(TRUE, TRUE);
     }
@@ -338,10 +338,10 @@ void CFilesWindowAncestor::SetZIPPath(const char* path)
 {
     CALL_STACK_MESSAGE_NONE
     if (*path == '\\')
-        path++; // '\\' nebude na zacatku ZIPPath
+        path++; // '\\' will not be at the beginning of ZIPPath
     int l = (int)strlen(path);
     if (l > 0 && path[l - 1] == '\\')
-        l--; // ZIPPath nebude koncit na '\\'
+        l--; // ZIPPath will not end with '\\'
     memcpy(ZIPPath, path, l);
     ZIPPath[l] = 0;
 }
@@ -376,12 +376,12 @@ void IconThreadThreadFBodyAux(const char* path, SHFILEINFO& shi, CIconSizeEnum i
     CALL_STACK_MESSAGE_NONE
     __try
     {
-        // nenechame si vracet default icon; v pripade selhani se uplatni simple icons
+        // do not let the default icon be returned; in case of failure, apply simple icons
         if (!GetFileIcon(path, FALSE, &shi.hIcon, iconSize, FALSE, FALSE))
             shi.hIcon = NULL;
 
-        //Presli jsme na vlastni implementaci (mensi pametova narocnost, fungujici XOR ikonky)
-        //Navic nepodporuje ziskani EXTRALARGE a JUMBO ikon, je potreba pristupovat do system image list
+        //We switched to our own implementation (lower memory requirements, working XOR icons)
+        //Additionally, it does not support obtaining EXTRALARGE and JUMBO icons, you need to access the system image list
         //SHGetFileInfo(path, 0, &shi, sizeof(shi),
         //              SHGFI_ICON | SHGFI_SMALLICON | SHGFI_SHELLICONSIZE);
     }
@@ -400,7 +400,7 @@ unsigned IconThreadThreadFBody(void* parameter)
     TRACE_I("Begin");
     CFilesWindow* window = (CFilesWindow*)parameter;
 
-    // aby chodily shell-extensiony tahajici ikony pres IconHandler a dalsi COM/OLE sracky
+    // for shell extensions to work pulling icons through IconHandler and other COM/OLE stuff
     if (OleInitialize(NULL) != S_OK)
         TRACE_E("Error in OleInitialize.");
 
@@ -411,13 +411,13 @@ unsigned IconThreadThreadFBody(void* parameter)
     handles[1] = window->ICEventWork;
     DWORD wait = WAIT_TIMEOUT;
     BOOL run = TRUE;
-    BOOL firstRound = TRUE; // pri chybe se posila REFRESH, ale jen poprve
+    BOOL firstRound = TRUE; // REFRESH is sent in case of an error, but only the first time
 
     CSalamanderThumbnailMaker thumbMaker(window);
 
     while (run)
     {
-        if (wait == WAIT_TIMEOUT) // jinak je uz wait naplnen z work modu
+        if (wait == WAIT_TIMEOUT) // otherwise wait is already filled from work mode
             wait = WaitForMultipleObjects(2, handles, FALSE, INFINITE);
 
         switch (wait)
@@ -425,26 +425,26 @@ unsigned IconThreadThreadFBody(void* parameter)
         case WAIT_OBJECT_0 + 1: // work
         {
             CALL_STACK_MESSAGE1("IconThreadThreadFBody::work");
-            window->IconCacheValid = FALSE; // potreba pro refreshe (sleep/wake-up icon readera), jinak nastavuje hl.thread
+            window->IconCacheValid = FALSE; // Needed for refreshing (sleep/wake-up icon of the reader), otherwise sets the main thread
 
-            // j.r. puvodnich 200ms je uz asi zbytecne dlouha doba, zkracuji na 20ms
-            // j.r. 20ms bylo malo, thread stihal startovat pri prostem drzeni Enter na vstupu do adresare
-            // petr: hlavni thread se prekresluje prednostne, protoze je na vyssi priorite + kdyz tu byl
-            //       tenhle sleep, blikaly overlaye icon (napr. Tortoise SVN) jeste vic nez blikaji ted
-            // dame hl. threadu chvilku na kresleni a pripadne rychle preruseni pri zmene adresare
-            // (pouziva se uz jen jako "pauza", ve ktere stihne RefreshDirectory() vnutit nove ikony do icon-cache, viz 'WaitBeforeReadingIcons')
+            // The original 200ms delay is probably unnecessarily long, shortening it to 20ms
+            // 20ms was not enough, the thread was able to start just by pressing Enter when entering the directory
+            // petr: the main thread is redrawn with priority because it is at a higher priority + when he was here
+            //       this sleep, the overlay icons (e.g. Tortoise SVN) blink even more than they do now
+            // Give the main thread a moment for drawing and possibly a quick interruption when changing directories
+            // (now used only as a "pause" in which RefreshDirectory() manages to insert new icons into the icon-cache, see 'WaitBeforeReadingIcons')
             if (window->WaitBeforeReadingIcons > 0)
                 Sleep(window->WaitBeforeReadingIcons);
             if (window->WaitOneTimeBeforeReadingIcons > 0)
             {
                 DWORD time = window->WaitOneTimeBeforeReadingIcons;
                 window->WaitOneTimeBeforeReadingIcons = 0;
-                Sleep(time); // cekame pred zahajenim cteni icon-overlays, behem tohoto cekani by mely dorazit vsechny notifikace o zmenach od Tortoise SVN (viz IconOverlaysChangedOnPath())
+                Sleep(time); // we are waiting before starting to read icon-overlays, during this waiting all notifications about changes from Tortoise SVN should arrive (see IconOverlaysChangedOnPath())
             }
 
             HANDLES(EnterCriticalSection(&window->ICSleepSection));
 
-            // nemame zacit novou praci (wake-up -> sleep -> wake-up) nebo se terminovat?
+            // Should we start a new job (wake-up -> sleep -> wake-up) or terminate?
             wait = WaitForMultipleObjects(2, handles, FALSE, 0);
 
             //        BOOL postRefresh = FALSE;
@@ -457,9 +457,9 @@ unsigned IconThreadThreadFBody(void* parameter)
 
                 CIconList* iconList;
                 int iconListIndex;
-                SHFILEINFO shi; // z historickych duvodu (SHGetFileInfo) se pro vsechny typy ikon pouziva shi.hIcon
+                SHFILEINFO shi; // for historical reasons (SHGetFileInfo) shi.hIcon is used for all types of icons
 
-                // priprava plne cesty k nacitanym souborum/adresarum (jen pro window->Is(ptDisk))
+                // Preparing full path to loaded files/directories (only for window->Is(ptDisk))
                 char path[MAX_PATH + 10];
                 path[0] = 0;
                 WCHAR wPath[MAX_PATH + 10];
@@ -474,7 +474,7 @@ unsigned IconThreadThreadFBody(void* parameter)
                     memmove(path, window->GetPath(), l);
                     if (path[l - 1] != '\\')
                         path[l++] = '\\';
-                    name = path + l; // ukazatel na misto jmena ve fullnamu
+                    name = path + l; // pointer to the location of the full name
                     *name = 0;
                     MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, path, l, wPath, MAX_PATH + 10);
                     wName = wPath + l;
@@ -485,9 +485,9 @@ unsigned IconThreadThreadFBody(void* parameter)
                     isGoogleDrivePath = ShellIconOverlays.IsGoogleDrivePath(path);
                 }
 
-                BOOL readOnlyVisibleItems = window->InactWinOptimizedReading; // refreshe ze snooperu v neaktivnim okne: cteme jen viditelne ikony/thumbnaily/overlaye, setrime strojovy cas (jsme "na pozadi")
+                BOOL readOnlyVisibleItems = window->InactWinOptimizedReading; // Refresh from snooper in inactive window: we only read visible icons/thumbnails/overlays, saving machine time (we are "in the background")
                                                                               //          if (readOnlyVisibleItems) TRACE_I("Refresh in inactive window, reading only visible icons...");
-                BOOL readOnlyVisibleItemsDueToUMI = FALSE;                    // popis viz dole
+                BOOL readOnlyVisibleItemsDueToUMI = FALSE;                    // description below
                 if (!readOnlyVisibleItems && UserMenuIconBkgndReader.IsReadingIcons())
                 {
                     //            TRACE_I("Reading of usermenu icons is in progress, reading only visible icons...");
@@ -495,36 +495,36 @@ unsigned IconThreadThreadFBody(void* parameter)
                     readOnlyVisibleItemsDueToUMI = TRUE;
                 }
 
-                BOOL readThumbnails = window->UseThumbnails; // mame se pokusit nacitat thumbnaily?
+                BOOL readThumbnails = window->UseThumbnails; // should we try to load thumbnails?
 
                 if (window->StopThumbnailLoading)
-                    readThumbnails = FALSE; // nechteny wake-up - potlacime aspon load thumbnailu
+                    readThumbnails = FALSE; // Unwanted wake-up - let's at least suppress the loading of thumbnails
 
                 BOOL pluginFSIconsFromPlugin = window->Is(ptPluginFS) &&
                                                window->GetPluginIconsType() == pitFromPlugin;
                 BOOL pluginFSIconsFromRegistry = window->Is(ptPluginFS) &&
                                                  window->GetPluginIconsType() == pitFromRegistry;
 
-                BOOL waitBeforeFirstReadIcon = FALSE; // TRUE jen pri skoku na SECOND_ROUND:
-                BOOL repeatedRound = FALSE;           // TRUE pri opakovani nacitani ikon/thumbnailu kvuli probihajicimu cteni usermenu ikon
+                BOOL waitBeforeFirstReadIcon = FALSE; // TRUE only when jumping to SECOND_ROUND:
+                BOOL repeatedRound = FALSE;           // TRUE when reloading icons/thumbnails due to ongoing reading of usermenu icons
 
-            SECOND_ROUND: // pokud se na disku nepovede precist nejaka ikona, provede se nakonec jeste druhy pokus
+            SECOND_ROUND: // if an icon cannot be read from the disk, a second attempt will be made in the end
 
-                DWORD wanted = -1;                                 // neplatny -> nic neudela, pak sleepne
+                DWORD wanted = -1;                                 // invalid -> does nothing, then sleeps
                 if (window->Is(ptDisk) || pluginFSIconsFromPlugin) // disk + FS/icons-from-plugin
                 {
-                    wanted = 0; // nejprve nactem nove ikonky, pak teprve stare
+                    wanted = 0; // first load new icons, then old ones
                 }
                 else
                 {
-                    if (window->Is(ptZIPArchive) || pluginFSIconsFromRegistry) // archiv + FS/icons-from-registry
+                    if (window->Is(ptZIPArchive) || pluginFSIconsFromRegistry) // archive + FS/icons-from-registry
                     {
-                        wanted = 3; // nase ikonky jsou dane svou icon-location
+                        wanted = 3; // our icons are defined by their icon-location
                     }
                     else
                         TRACE_E("Unexpected situation.");
                 }
-                // pred zacatkem prace nastavime FALSE do "ReadingDone" vsech polozek icon-cache + do "IconOverlayDone" vsech polozek v panelu
+                // Before starting work, we will set FALSE to "ReadingDone" for all items in the icon-cache and to "IconOverlayDone" for all items in the panel
                 int x;
                 if (!repeatedRound)
                     for (x = 0; x < window->IconCache->Count; x++)
@@ -541,13 +541,13 @@ unsigned IconThreadThreadFBody(void* parameter)
                 BOOL destroyPluginIcon = TRUE;
 
                 int selectMode = 1;
-                // 1 = postupny pruchod (VisibleItemsArray.IsArrValid() == FALSE),
-                // 2 = pruchod podle VisibleItemsArray,
-                // 3 = pruchod podle VisibleItemsArraySurround,
-                // 4 = postupny pruchod (VisibleItemsArray.IsArrValid() == TRUE)
+                // 1 = sequential pass (VisibleItemsArray.IsArrValid() == FALSE),
+                // 2 = iteration according to VisibleItemsArray,
+                // 3 = traversal according to VisibleItemsArraySurround,
+                // 4 = sequential pass (VisibleItemsArray.IsArrValid() == TRUE)
 
                 BOOL canReadIconOverlays = firstRound && window->Is(ptDisk) && iconReadersIconOverlayIds != NULL;
-                BOOL readIconOverlaysNow = FALSE; // TRUE = ted se ctou overlaye, FALSE = ctou se ikony + thumbnaily
+                BOOL readIconOverlaysNow = FALSE; // TRUE = overlays are being read, FALSE = icons + thumbnails are being read
 
                 //          TRACE_I("wanted=" << wanted << ", selectMode=" << selectMode);
 
@@ -557,8 +557,8 @@ unsigned IconThreadThreadFBody(void* parameter)
                 int i = 0;
                 while (1)
                 {
-                    BOOL callWaitForObjects = TRUE;                                                                        // jen optimalizace - behem hledani polozky (netrva skoro zadny cas) se nevola WaitForMultipleObjects
-                    if (i < (readIconOverlaysNow ? window->Files->Count + window->Dirs->Count : window->IconCache->Count)) // nacteni ikony ze souboru/adresare nebo zjisteni icon-overlaye pro soubor/adresar
+                    BOOL callWaitForObjects = TRUE;                                                                        // only optimization - during the search for an item (which takes almost no time), WaitForMultipleObjects is not called
+                    if (i < (readIconOverlaysNow ? window->Files->Count + window->Dirs->Count : window->IconCache->Count)) // loading an icon from a file/directory or determining an icon overlay for a file/directory
                     {
                         CIconData* iconData = readIconOverlaysNow ? NULL : &window->IconCache->At(i);
 
@@ -646,29 +646,29 @@ unsigned IconThreadThreadFBody(void* parameter)
 
                         if (!skipName)
                         {
-                            if (readIconOverlaysNow) // nove ikonky/thumbnaily pro zvolenou oblast (viz 'selectMode') jsou nactene, ted nacitame icon-overlays
+                            if (readIconOverlaysNow) // new icons/thumbnails for the selected area (see 'selectMode') are loaded, now we are loading icon overlays
                             {
                                 CFileData* fileData = i < window->Dirs->Count ? &window->Dirs->At(i) : &window->Files->At(i - window->Dirs->Count);
                                 if (fileData->IconOverlayDone == 0 && (i > 0 || strcmp(fileData->Name, "..") != 0))
                                 {
-                                    fileData->IconOverlayDone = 1; // oznacime si, ze tento icon-overlay uz jsme ziskavali, at to zbytecne nedelame znovu
+                                    fileData->IconOverlayDone = 1; // Let's mark that we have already retrieved this icon-overlay, so we don't do it unnecessarily again
 
                                     char fileName[MAX_PATH];
                                     DWORD fileAttrs = fileData->Attr;
                                     memcpy(fileName, fileData->Name, fileData->NameLen + 1);
                                     int minPriority = 100;
-                                    if (i >= window->Dirs->Count && fileData->IsLink || // soubor je link
-                                        fileData->IsOffline ||                          // soubor nebo adresar je offline (slow)
-                                        i < window->Dirs->Count && fileData->Shared)    // adresar je sharovany
+                                    if (i >= window->Dirs->Count && fileData->IsLink || // file is a link
+                                        fileData->IsOffline ||                          // file or directory is offline (slow)
+                                        i < window->Dirs->Count && fileData->Shared)    // directory is encrypted
                                     {
-                                        minPriority = 9; // overlaye pro link, share a slow files (offline) maji prioritu 10, takze bereme jen overlaye s vyssi prioritou (nizsi cislo nez 10)
+                                        minPriority = 9; // Overlays for link sharing slow files (offline) have priority 10, so we only consider overlays with higher priority (lower number than 10)
                                     }
 
                                     if (window->ICSleep)
                                         goto GO_SLEEP_MODE;
                                     HANDLES(LeaveCriticalSection(&window->ICSleepSection));
 
-                                    // nechame nacist ikonu ze souboru, icon-reader behem nacitani muze prejit do sleep-modu
+                                    // Load the icon from a file, the icon reader can go into sleep mode during loading
                                     *name = 0;
                                     //                    TRACE_I("Getting icon overlay index for: " << fileName << "...");
                                     SLOW_CALL_STACK_MESSAGE5("IconThreadThreadFBody::GetIconOverlayIndex(%s%s, 0x%08X, %d)",
@@ -681,7 +681,7 @@ unsigned IconThreadThreadFBody(void* parameter)
 
                                     HANDLES(EnterCriticalSection(&window->ICSleepSection));
                                     if (window->ICSleep)
-                                        goto GO_SLEEP_MODE; // panel uz chce prejit do sleep-modu
+                                        goto GO_SLEEP_MODE; // panel wants to go into sleep mode now
 
                                     CFileData* fileDataCheck = i < window->Dirs->Count ? &window->Dirs->At(i) : i < window->Files->Count + window->Dirs->Count ? &window->Files->At(i - window->Dirs->Count)
                                                                                                                                                                : NULL;
@@ -699,25 +699,25 @@ unsigned IconThreadThreadFBody(void* parameter)
 
                                         int visArrVer;
                                         BOOL visArrValid;
-                                        if (redraw && // je potreba prekreslit index (zmena icon-overlaye)
+                                        if (redraw && // It is necessary to redraw the index (change the icon overlay)
                                             (window->VisibleItemsArray.ArrContainsIndex(i, &visArrValid, &visArrVer) || !visArrValid))
-                                        { // pokud vime, ze je polozka videt nebo pokud nevime nic o viditelnosti polozek, nechame index prekreslit
+                                        { // If we know that the item is visible or if we know nothing about the visibility of items, we let the index be redrawn
                                             PostMessage(window->HWindow, WM_USER_REFRESHINDEX2, i, 0);
                                         }
                                     }
                                 }
                                 else
-                                    callWaitForObjects = FALSE; // zadna prace -> zadne zdrzovani
+                                    callWaitForObjects = FALSE; // no work -> no delays
                             }
                             else
                             {
                                 if (iconData->GetReadingDone() == 0 &&
                                     iconData->GetFlag() == wanted)
                                 {
-                                    iconData->SetReadingDone(1);    // oznacime si, ze s touto ikonou uz jsme pracovali, at to zbytecne nezkousime znovu jeste behem tohoto cyklu
-                                    if (wanted == 0 || wanted == 2) // nacitani ikonek primo ze souboru nebo z plug-inu
+                                    iconData->SetReadingDone(1);    // Let's mark that we have already worked with this icon, so we don't unnecessarily try it again during this cycle
+                                    if (wanted == 0 || wanted == 2) // loading icons directly from a file or from a plug-in
                                     {
-                                        if (!pluginFSIconsFromPlugin) // ikona na disku
+                                        if (!pluginFSIconsFromPlugin) // icon on disk
                                         {
                                             if (strlen(iconData->NameAndData) + (name - path) < MAX_PATH)
                                             {
@@ -731,10 +731,10 @@ unsigned IconThreadThreadFBody(void* parameter)
                                                 {
                                                     waitBeforeFirstReadIcon = FALSE;
                                                     //                            TRACE_I("Waiting 500ms before reading first icon in second round to have bigger chance to succeed.");
-                                                    Sleep(500); // dame si chvili oraz (pred druhym pokusem o nacteni ikony)
+                                                    Sleep(500); // let's take a moment here (before the second attempt to load the icon)
                                                 }
 
-                                                // nechame nacist ikonu ze souboru, icon-reader behem nacitani muze prejit do sleep-modu
+                                                // Load the icon from a file, the icon reader can go into sleep mode during loading
                                                 CALL_STACK_MESSAGE3("IconThreadThreadFBody::GetFileIcon(%s, %d)", path, iconSize);
 
                                                 if (!pathIsInvalid)
@@ -760,7 +760,7 @@ unsigned IconThreadThreadFBody(void* parameter)
                                                 TRACE_I("Too long filename to get icon from: " << path << iconData->NameAndData);
                                             }
                                         }
-                                        else // ikona v plug-inovem FS - nacitani je neprerusitelne (hrozi zruseni PluginData)
+                                        else // Icon in the plug-in FS - loading is uninterruptible (risk of canceling PluginData)
                                         {
                                             const CFileData* f = iconData->GetFSFileData();
                                             if (f != NULL)
@@ -782,17 +782,17 @@ unsigned IconThreadThreadFBody(void* parameter)
                                     }
                                     else
                                     {
-                                        if (wanted == 3) // nacitani ikonek z icon-location
+                                        if (wanted == 3) // loading icons from icon-location
                                         {
                                             shi.hIcon = NULL;
                                             char* nameAndData = iconData->NameAndData;
                                             int size = (int)strlen(nameAndData) + 4;
-                                            size -= (size & 0x3);         // size % 4  (zarovnani po ctyrech bytech)
-                                            char* s = nameAndData + size; // preskok zarovnani z nul
+                                            size -= (size & 0x3);         // size % 4 (alignment to four bytes)
+                                            char* s = nameAndData + size; // skip zero alignment
                                             BOOL doExtractIcons = FALSE;
                                             BOOL doLoadImage = FALSE;
                                             int index = -1;
-                                            char* num = strrchr(s, ','); // cislo ikony je za posledni carkou
+                                            char* num = strrchr(s, ','); // the icon number is behind the last comma
                                             if (num != NULL)
                                             {
                                                 *num = 0;
@@ -827,13 +827,13 @@ unsigned IconThreadThreadFBody(void* parameter)
                                             {
                                                 waitBeforeFirstReadIcon = FALSE;
                                                 //                          TRACE_I("Waiting 500ms before reading first icon in second round to have bigger chance to succeed.");
-                                                Sleep(500); // dame si chvili oraz (pred druhym pokusem o nacteni ikony)
+                                                Sleep(500); // let's take a moment here (before the second attempt to load the icon)
                                             }
 
                                             if (doExtractIcons)
                                             {
-                                                // nechame nacist ikonu ze souboru (z resourcu vytahne podle indexu), icon-reader
-                                                // behem nacitani muze prejit do sleep-modu
+                                                // load an icon from a file (extracts from resources according to the index), icon-reader
+                                                // may go into sleep mode during loading
                                                 CALL_STACK_MESSAGE4("IconThreadThreadFBody::ExtractIcons(%s, %d, %d, ...)", path, index, IconSizes[iconSize]);
                                                 if (ExtractIcons(path, index, IconSizes[iconSize], IconSizes[iconSize], &shi.hIcon, NULL, 1, IconLRFlags) != 1)
                                                 {
@@ -847,16 +847,16 @@ unsigned IconThreadThreadFBody(void* parameter)
                                             if (doLoadImage)
                                             {
                                                 {
-                                                    // nechame nacist ikonu ze souboru (nejspis .ico), icon-reader behem nacitani
-                                                    // muze prejit do sleep-modu
+                                                    // we will load an icon from a file (most likely .ico), icon-reader during loading
+                                                    // can go to sleep mode
                                                     CALL_STACK_MESSAGE2("IconThreadThreadFBody::LoadImage(%s)", path);
                                                     shi.hIcon = (HICON)NOHANDLES(LoadImage(NULL, path, IMAGE_ICON, IconSizes[iconSize], IconSizes[iconSize],
                                                                                            LR_LOADFROMFILE | IconLRFlags));
                                                     //                            TRACE_I("LoadImage " << (shi.hIcon == NULL ? "has failed, now trying ExtractIcons..." : "is done."));
                                                 }
-                                                if (shi.hIcon == NULL) // pres LoadImage se to nepovedlo, zkusime jeste ExtractIcons (napr. ikona bez indexu ze zipfldr.dll pod XP: .zip archiv zabaleny v .7z archivu)
+                                                if (shi.hIcon == NULL) // It didn't work through LoadImage, let's try ExtractIcons instead (for example, an icon without an index from zipfldr.dll under XP: a .zip archive packed in a .7z archive)
                                                 {
-                                                    // nechame nacist prvni ikonu ze souboru, icon-reader behem nacitani muze prejit do sleep-modu
+                                                    // Load the first icon from the file, the icon-reader can go into sleep mode during loading
                                                     CALL_STACK_MESSAGE3("IconThreadThreadFBody::ExtractIcons(%s, (0), %d, ...)", path, IconSizes[iconSize]);
                                                     if (ExtractIcons(path, 0, IconSizes[iconSize], IconSizes[iconSize], &shi.hIcon, NULL, 1, IconLRFlags) != 1)
                                                     {
@@ -870,14 +870,14 @@ unsigned IconThreadThreadFBody(void* parameter)
 
                                             HANDLES(EnterCriticalSection(&window->ICSleepSection));
                                         }
-                                        else // wanted == 4 nebo 6; nacitani thumbnailu z plug-inu ("thumbnail loader")
+                                        else // wanted == 4 or 6; loading thumbnails from the plug-in ("thumbnail loader")
                                         {
-                                            shi.hIcon = NULL; // opatreni proti chybne dealokaci ikony (zadna tu nevznika)
+                                            shi.hIcon = NULL; // Prevention against incorrect deallocation of the icon (no memory leak occurs)
 
                                             char* s = iconData->NameAndData;
                                             int len = (int)strlen(s);
                                             int size = len + 4;
-                                            size -= (size & 0x3); // size % 4  (zarovnani po ctyrech bytech)
+                                            size -= (size & 0x3); // size % 4 (alignment to four bytes)
                                             if (strlen(s) + (name - path) < MAX_PATH)
                                             {
                                                 strcpy(name, s);
@@ -892,14 +892,14 @@ unsigned IconThreadThreadFBody(void* parameter)
                                                     CALL_STACK_MESSAGE3("IconThreadThreadFBody::LoadThumbnail(%s, %d)", path, wanted == 4);
                                                     if ((*loader)->LoadThumbnail(path, thumbnailSize, thumbnailSize, &thumbMaker, wanted == 4))
                                                     {
-                                                        thumbnailFlag = wanted == 4 /* prvni kolo nacitani thumbnailu */ ? (thumbMaker.IsOnlyPreview() ? 6 /* nekvalitni/mensi */ : 5 /* kvalitni */) : 5 /* v druhem kole uz jsou vsechny ziskane thumbnaily kvalitni */;
+                                                        thumbnailFlag = wanted == 4 /* first round of loading thumbnails*/ ? (thumbMaker.IsOnlyPreview() ? 6 /* low-quality/smaller*/ : 5 /* quality*/) : 5 /* in the second round, all obtained thumbnails are of good quality*/;
                                                         thumbMaker.HandleIncompleteImages();
-                                                        break; // thumbnail je mozna nacteny (kazdopadne se nema zkouset dalsi plugin)
+                                                        break; // thumbnail may be loaded (in any case, do not try another plugin)
                                                     }
-                                                    loader++; // zkusime dalsi plugin v rade, treba thumbnail nacte
+                                                    loader++; // Let's try another plugin in line, maybe it will load the thumbnail
                                                 }
                                                 if (*loader == NULL)
-                                                    thumbMaker.Clear(); // nepovedeny thumbnail -> radsi udelame cistku
+                                                    thumbMaker.Clear(); // failed thumbnail -> let's do a cleanup instead
                                                                         //                          TRACE_I("Load thumbnail is done.");
                                             }
                                             else
@@ -911,11 +911,11 @@ unsigned IconThreadThreadFBody(void* parameter)
                                         }
                                     }
 
-                                    if (window->ICSleep) // panel uz chce prejit do sleep-modu
+                                    if (window->ICSleep) // panel wants to go into sleep mode now
                                     {
-                                        thumbMaker.Clear(); // thumbnail uz nebude potreba
+                                        thumbMaker.Clear(); // thumbnail will no longer be needed
 
-                                        // pokud to neni ikona z plug-inu, ktery si nepreje ruseni ikony, zrusime ikonu
+                                        // if it is not an icon from a plug-in that does not want the icon to be removed, we will remove the icon
                                         if (shi.hIcon != NULL && (!pluginFSIconsFromPlugin || destroyPluginIcon))
                                         {
                                             ::NOHANDLES(DestroyIcon(shi.hIcon));
@@ -923,7 +923,7 @@ unsigned IconThreadThreadFBody(void* parameter)
                                         goto GO_SLEEP_MODE;
                                     }
 
-                                    if (wanted <= 3) // ziskavali jsme ikonu
+                                    if (wanted <= 3) // we were getting the icon
                                     {
                                         if (shi.hIcon == NULL)
                                             failed = TRUE;
@@ -935,13 +935,13 @@ unsigned IconThreadThreadFBody(void* parameter)
                                                 HANDLES(EnterCriticalSection(&window->ICSectionUsingIcon));
 
                                                 iconList->ReplaceIcon(iconListIndex, shi.hIcon);
-                                                iconData->SetFlag(1); // uz je nactena
+                                                iconData->SetFlag(1); // It is already loaded
 
                                                 HANDLES(LeaveCriticalSection(&window->ICSectionUsingIcon));
 
-                                                // najdeme index polozky, ktere jsme nacetli ikonu
+                                                // find the index of the item we loaded the icon for
 
-                                                if (pluginFSIconsFromPlugin) // pitFromPlugin: nechame plugin, aby polozky porovnal sam (musi jit o porovnani beze shod zadnych dvou polozek listingu)
+                                                if (pluginFSIconsFromPlugin) // pitFromPlugin: let the plugin compare items itself (must be a comparison without any two items in the listing matching)
                                                 {
                                                     const CFileData* file = iconData->GetFSFileData();
                                                     if (file != NULL)
@@ -957,7 +957,7 @@ unsigned IconThreadThreadFBody(void* parameter)
                                                                 break;
                                                             }
                                                         }
-                                                        if (z == window->Dirs->Count) // nebyl to adresar
+                                                        if (z == window->Dirs->Count) // it was not a directory
                                                         {
                                                             arr = window->Files;
                                                             int j;
@@ -973,8 +973,8 @@ unsigned IconThreadThreadFBody(void* parameter)
                                                         }
                                                     }
                                                 }
-                                                else // nehrozi duplicitni jmena (nebo nejsou na prekazku jako napr. u archivu, kde
-                                                {    // nemuzou byt ruzne ikony pri shodnych jmenech)
+                                                else // no duplicate names are threatened (or are not an obstacle as in the case of archives, where
+                                                {    // different icons cannot have the same names)
                                                     char* name2 = iconData->NameAndData;
                                                     CFilesArray* arr = window->Dirs;
                                                     int z;
@@ -986,7 +986,7 @@ unsigned IconThreadThreadFBody(void* parameter)
                                                             break;
                                                         }
                                                     }
-                                                    if (z == window->Dirs->Count) // nebyl to adresar
+                                                    if (z == window->Dirs->Count) // it was not a directory
                                                     {
                                                         arr = window->Files;
                                                         int j;
@@ -1002,14 +1002,14 @@ unsigned IconThreadThreadFBody(void* parameter)
                                                     }
                                                 }
                                             }
-                                            // pokud to neni ikona z plug-inu, ktery si nepreje ruseni ikony, zrusime ikonu
+                                            // if it is not an icon from a plug-in that does not want the icon to be removed, we will remove the icon
                                             if (!pluginFSIconsFromPlugin || destroyPluginIcon)
                                             {
                                                 ::NOHANDLES(DestroyIcon(shi.hIcon));
                                             }
                                         }
                                     }
-                                    else // ziskavali jsme thumbnail
+                                    else // we were getting the thumbnail
                                     {
                                         if (thumbMaker.ThumbnailReady())
                                         {
@@ -1023,16 +1023,16 @@ unsigned IconThreadThreadFBody(void* parameter)
                                                 thumbMaker.TransformThumbnail();
                                                 if (thumbMaker.RenderToThumbnailData(thumbnailData))
                                                 {
-                                                    iconData->SetFlag(thumbnailFlag); // uz je nacteny
-                                                    if (thumbnailFlag == 6 /* nekvalitni/mensi thumbnail v prvnim kole nacitani thumbnailu*/)
-                                                        iconData->SetReadingDone(0); // bude nasledovat druhe kolo cteni, takze jestli neni "done"
+                                                    iconData->SetFlag(thumbnailFlag); // It is already loaded
+                                                    if (thumbnailFlag == 6 /* Low-quality/smaller thumbnail in the first round of loading thumbnails*/)
+                                                        iconData->SetReadingDone(0); // the second round of reading will follow, so if it is not "done"
                                                     thumbnailCreated = TRUE;
                                                 }
                                                 HANDLES(LeaveCriticalSection(&window->ICSectionUsingThumb));
 
                                                 if (thumbnailCreated)
                                                 {
-                                                    // najdeme index souboru (adresare nemaji thubnaily), kteremu jsme nacetli thumbnail
+                                                    // find the index of the file (directories do not have thumbnails) to which we have loaded the thumbnail
                                                     char* name2 = iconData->NameAndData;
                                                     int z;
                                                     for (z = 0; z < window->Files->Count; z++)
@@ -1047,23 +1047,23 @@ unsigned IconThreadThreadFBody(void* parameter)
                                                 }
                                             }
                                         }
-                                        thumbMaker.Clear(); // thumbnail uz nebude potreba
+                                        thumbMaker.Clear(); // thumbnail will no longer be needed
                                     }
                                 }
                                 else
-                                    callWaitForObjects = FALSE; // zadna prace -> zadne zdrzovani
+                                    callWaitForObjects = FALSE; // no work -> no delays
                             }
                         }
                         else
                         {
-                            someNameSkipped = TRUE;     // preskocili jsme aspon jedno jmeno
-                            callWaitForObjects = FALSE; // zadna prace -> zadne zdrzovani
+                            someNameSkipped = TRUE;     // skipped at least one name
+                            callWaitForObjects = FALSE; // no work -> no delays
                         }
                     }
                     else
                     {
                         if (canReadIconOverlays && !readIconOverlaysNow)
-                        { // ted jdeme cist icon-overlaye
+                        { // now we are going to read icon overlays
                             i = 0;
                             readIconOverlaysNow = TRUE;
                             //                TRACE_I("readIconOverlaysNow=" << readIconOverlaysNow);
@@ -1083,35 +1083,35 @@ unsigned IconThreadThreadFBody(void* parameter)
                             continue;
                         }
 
-                        // prvni kolo cteni ikon je za nami, takze vsechny icon-overlaye uz jsou nactene -> zamezime zbytecnemu snazeni o jejich dalsi cteni
+                        // The first round of reading icons is behind us, so all icon overlays are already loaded -> we prevent unnecessary attempts to read them again
                         canReadIconOverlays = FALSE;
 
-                        // poradi nacitani: nove ikony, nove thumbnaily, stare ikony, stare thumbnaily
-                        BOOL done = FALSE; // TRUE == breakni, uz mame nacteno
+                        // loading order: new icons, new thumbnails, old icons, old thumbnails
+                        BOOL done = FALSE; // TRUE == break, we have already read
                         switch (wanted)
                         {
-                        case 0: // nove ikony uz jsme nacetli
+                        case 0: // We have already loaded the new icons
                         {
-                            // pokud se maji cist thumbnaily a jde o prvni kolo cteni (pluginy nefunguji
-                            // nahodne jako system, takze nenactou poprve = nenactou nikdy), nacteme
-                            // nove thumbnaily (wanted == 4)
+                            // if thumbnails are to be read and it is the first round of reading (plugins do not work)
+                            // randomly like a system, so they won't load for the first time = they will never load), we will load
+                            // new thumbnails (wanted == 4)
                             if (readThumbnails && firstRound)
                                 wanted = 4;
                             else
-                                wanted = 2; // jinak obnovime (nacteme znovu) stare (prevzate) ikony
+                                wanted = 2; // otherwise we will restore (reload) old (retrieved) icons
                             break;
                         }
 
-                        case 4: // nove thumbnaily uz jsme nacetli
+                        case 4: // We have already loaded the new thumbnails.
                         {
-                            wanted = 2; // obnovime (nacteme znovu) stare (prevzate) ikony
+                            wanted = 2; // restore (reload) old (retrieved) icons
                             break;
                         }
 
-                        case 2: // stare ikony uz jsme nacetli
+                        case 2: // we have already loaded the old icons
                         {
                             if (readThumbnails && firstRound)
-                                wanted = 6; // obnovime (nacteme znovu) stare (prevzate + nekvalitni/mensi) thumbnaily
+                                wanted = 6; // refresh (reload) old (retrieved + low quality/smaller) thumbnails
                             else
                                 done = TRUE;
                             break;
@@ -1122,7 +1122,7 @@ unsigned IconThreadThreadFBody(void* parameter)
                             break;
                         }
                         if (done)
-                            break; // hotovo - wanted 0 a 2 nebo 0, 4, 2 a 6 nebo jen 3 nebo -1 (chyba)
+                            break; // done - wanted 0 and 2 or 0, 4, 2 and 6 or just 3 or -1 (error)
 
                         //              TRACE_I("wanted=" << wanted);
 
@@ -1136,24 +1136,24 @@ unsigned IconThreadThreadFBody(void* parameter)
                             continue;
                         }
 
-                        i = -1;                     // aby se 'i' dostalo na nulu
-                        callWaitForObjects = FALSE; // zadna prace -> zadne zdrzovani
+                        i = -1;                     // so that 'i' reaches zero
+                        callWaitForObjects = FALSE; // no work -> no delays
                     }
 
                     i++;
                     if (callWaitForObjects)
                     {
                         wait = WaitForMultipleObjects(2, handles, FALSE, 0);
-                        // nebudeme ignorovat signal "work", protoze kazdy "sleep->wake-up" znamena zacit praci od zacatku
+                        // We will not ignore the "work" signal, because every "sleep->wake-up" means starting work from the beginning
                         if (wait != WAIT_TIMEOUT)
-                            break; // zpracuj wait udalost
+                            break; // Process the wait event
                     }
-                    // else wait = WAIT_TIMEOUT;  // zbytecne, wait uz je roven WAIT_TIMEOUT
+                    // else wait = WAIT_TIMEOUT;  // unnecessary, wait is already equal to WAIT_TIMEOUT
                 }
                 repeatedRound = FALSE;
 
                 if (wait == WAIT_TIMEOUT && readOnlyVisibleItemsDueToUMI)
-                { // nemusi byt nactene vsechny ikony kvuli poskytnute priorite pro ikony do usermenu (ctou se drive nez ikony mimo viditelnou plochu panelu)
+                { // Not all icons need to be loaded due to the priority provided for icons in the user menu (they are read before icons outside the visible area of the panel)
                     if (UserMenuIconBkgndReader.IsReadingIcons())
                     {
                         //              TRACE_I("Visible icons done, giving priority to usermenu icons...");
@@ -1163,18 +1163,18 @@ unsigned IconThreadThreadFBody(void* parameter)
                                 goto GO_SLEEP_MODE;
                             HANDLES(LeaveCriticalSection(&window->ICSleepSection));
 
-                            wait = WaitForMultipleObjects(2, handles, FALSE, 100); // dame cas pro nacitani ikon usermenu
+                            wait = WaitForMultipleObjects(2, handles, FALSE, 100); // give time for loading usermenu icons
 
                             HANDLES(EnterCriticalSection(&window->ICSleepSection));
                             if (window->ICSleep)
-                                goto GO_SLEEP_MODE; // panel uz chce prejit do sleep-modu
+                                goto GO_SLEEP_MODE; // panel wants to go into sleep mode now
 
                             if (wait != WAIT_TIMEOUT)
                             {
                                 //                  TRACE_I("Handling event...");
-                                break; // zpracuj wait udalost
+                                break; // Process the wait event
                             }
-                            int visArrVer; // zkontrolujeme, jestli se nezmenila viditelna oblast panelu, pokud ano, musime jit cist ikony
+                            int visArrVer; // we will check if the visible area of the panel has changed, if so, we need to go read the icons
                             if (someNameSkipped && window->VisibleItemsArray.IsArrValid(&visArrVer) && visArrVer != lastVisArrVersion)
                             {
                                 //                  TRACE_I("Change of visible items array...");
@@ -1183,13 +1183,13 @@ unsigned IconThreadThreadFBody(void* parameter)
                             if (!UserMenuIconBkgndReader.IsReadingIcons())
                             {
                                 //                  TRACE_I("Usermenu icons done...");
-                                break; // pokud uz jsou ikony usermenu hotove, docteme ikony v panelu
+                                break; // if the usermenu icons are already finished, we will read the icons in the panel
                             }
                         }
                     }
-                    if (wait == WAIT_TIMEOUT) // je duvod zopakovat cteni ikon (zmena viditelne oblasti nebo dokonceni cteni ikon usermenu)
+                    if (wait == WAIT_TIMEOUT) // there is a reason to repeat reading icons (change of visible area or completion of reading icons usermenu)
                     {
-                        if (!UserMenuIconBkgndReader.IsReadingIcons()) // jsou-li ikony usermenu hotove, docteme ikony mimo viditelnou plochu
+                        if (!UserMenuIconBkgndReader.IsReadingIcons()) // If the usermenu icons are ready, we will read icons outside the visible desktop
                         {
                             //                if (someNameSkipped) TRACE_I("Usermenu icons done, going to read the rest of icons in panel...");
                             readOnlyVisibleItems = FALSE;
@@ -1199,7 +1199,7 @@ unsigned IconThreadThreadFBody(void* parameter)
                         //                if (someNameSkipped) TRACE_I("Going to reread visible icons in panel...");
                         if (someNameSkipped)
                         {
-                            repeatedRound = TRUE; // jde o kolo navic (nechceme, aby se znovu cetly ikon-overlays)
+                            repeatedRound = TRUE; // It's about an extra cycle (we don't want the icon overlays to be read again)
                             goto SECOND_ROUND;
                         }
                         //              else
@@ -1207,12 +1207,12 @@ unsigned IconThreadThreadFBody(void* parameter)
                     }
                 }
 
-                if (wait == WAIT_TIMEOUT) // work is done -> informuj hl. thread
+                if (wait == WAIT_TIMEOUT) // work is done -> inform the main thread
                 {
                     if (window->Is(ptDisk) && failed && firstRound)
-                    {                                   // dame si to znovu (ne vsechny ikonky se povedly)
-                        firstRound = FALSE;             // jen jedno kolo navic
-                        waitBeforeFirstReadIcon = TRUE; // aby se ikona necetla okamzite znovu (mala sance na uspech)
+                    {                                   // Let's do it again (not all icons were successful)
+                        firstRound = FALSE;             // just one extra lap
+                        waitBeforeFirstReadIcon = TRUE; // to prevent the icon from being read immediately again (low chance of success)
                                                         //              TRACE_I("Going to second round of reading (some icons have not been read in the first round).");
                         goto SECOND_ROUND;
                         // postRefresh = TRUE;
@@ -1221,10 +1221,10 @@ unsigned IconThreadThreadFBody(void* parameter)
                         firstRound = TRUE;
 
                     //            TRACE_I("Stop reading.");
-                    // posleme notifikaci o ukonceni nacitani ikonek v panelu
+                    // Send a notification about finishing loading icons in the panel
                     if (window->HWindow == NULL ||
                         !PostMessage(window->HWindow, WM_USER_ICONREADING_END, 0, 0))
-                    { // neco nevyslo ("always false"), nastavime IconCacheValid = TRUE tady
+                    { // something went wrong ("always false"), let's set IconCacheValid = TRUE here
                         window->IconCacheValid = TRUE;
                     }
 
@@ -1236,7 +1236,7 @@ unsigned IconThreadThreadFBody(void* parameter)
 
                 GO_SLEEP_MODE:
 
-                    // preruseni (sleep-icon-cache-thread nebo nova prace nebo terminate)
+                    // interrupt (sleep-icon-cache-thread or new job or terminate)
                     firstRound = TRUE;
                     //            TRACE_I("Reading terminated.");
                 }
@@ -1247,16 +1247,15 @@ unsigned IconThreadThreadFBody(void* parameter)
             window->ICSleep = FALSE;
             HANDLES(LeaveCriticalSection(&window->ICSleepSection));
 
-            /*    // nahrazeno pres goto SECOND_ROUND (na sitovem disku to zamrzi, kdyz se zacne cely obsah cist znovu)
-        if (postRefresh)  // odsun Sleep(500) z kriticke sekce - zbytecne tuhlo ...
+            /*    // replaced with goto SECOND_ROUND (freezes on network drive when reading the entire content again)
+        if (postRefresh)  // moved Sleep(500) out of critical section - unnecessarily stiff ...
         {
-          HANDLES(EnterCriticalSection(&TimeCounterSection));  // sejmeme cas, kdy je treba refreshe
+          HANDLES(EnterCriticalSection(&TimeCounterSection));  // take the time when refresh is needed
           int t1 = MyTimeCounter++;
           HANDLES(LeaveCriticalSection(&TimeCounterSection));
-          Sleep(500);  // chvilka na vydech
+          Sleep(500);  // a moment to breathe
           PostMessage(window->HWindow, WM_USER_REFRESH_DIR, 0, t1);
-        }
-*/
+        }*/
 
             break;
         }
@@ -1291,7 +1290,7 @@ unsigned IconThreadThreadFEH(void* param)
     {
         TRACE_I("Thread IconReader: calling ExitProcess(1).");
         //    ExitProcess(1);
-        TerminateProcess(GetCurrentProcess(), 1); // tvrdsi exit (tenhle jeste neco vola)
+        TerminateProcess(GetCurrentProcess(), 1); // tvrdší exit (this one still calls something)
         return 1;
     }
 #endif // CALLSTK_DISABLE
@@ -1313,7 +1312,7 @@ CFilesWindow::CFilesWindow(CMainWindow* parent)
     NarrowedNameColumn = FALSE;
     FullWidthOfNameCol = 0;
     WidthOfMostOfNames = 0;
-    ColumnsTemplateIsForDisk = FALSE; // jen nulovani, nastavi se v BuildColumnsTemplate()
+    ColumnsTemplateIsForDisk = FALSE; // just zeroing, it will be set in BuildColumnsTemplate()
     StopThumbnailLoading = FALSE;
     UserWorkedOnThisPath = FALSE;
 
@@ -1350,7 +1349,7 @@ CFilesWindow::CFilesWindow(CMainWindow* parent)
     }
     else
     {
-        //    SetThreadPriority(IconCacheThread, THREAD_PRIORITY_IDLE); // nefunguje pak nacitani
+        //    SetThreadPriority(IconCacheThread, THREAD_PRIORITY_IDLE); // loading doesn't work afterwards
         IconCache = new CIconCache();
     }
 
@@ -1369,8 +1368,8 @@ CFilesWindow::CFilesWindow(CMainWindow* parent)
 
     SortType = stName;
     ReverseSort = FALSE;
-    SortedWithRegSet = FALSE;    // na uvodnim stavu nezalezi, nastavi se v metode SortDirectory()
-    SortedWithDetectNum = FALSE; // na uvodnim stavu nezalezi, nastavi se v metode SortDirectory()
+    SortedWithRegSet = FALSE;    // The initial state does not matter, it will be set in the SortDirectory() method
+    SortedWithDetectNum = FALSE; // The initial state does not matter, it will be set in the SortDirectory() method
     LastFocus = INT_MAX;
     SetValidFileData(VALID_DATA_ALL);
     AutomaticRefresh = TRUE;
@@ -1475,12 +1474,12 @@ CFilesWindow::~CFilesWindow()
 
     if (IconCacheThread != NULL)
     {
-        SetEvent(ICEventTerminate); // nacitaci ikonek terminuj se !
+        SetEvent(ICEventTerminate); // Load icons terminate now!
         if (WaitForSingleObject(IconCacheThread, 1000) == WAIT_TIMEOUT)
-        { // ma sekundu na jednoduchy odchod, pak nutny kill (window se dealokuje)
+        { // Wait a second for a clean exit, then force kill (window will deallocate)
             TRACE_E("Terminating Icon Thread");
             TerminateThread(IconCacheThread, 666);
-            WaitForSingleObject(IconCacheThread, INFINITE); // pockame az thread skutecne skonci, nekdy mu to dost trva
+            WaitForSingleObject(IconCacheThread, INFINITE); // Wait until the thread actually finishes, sometimes it takes quite a while
         }
         HANDLES(CloseHandle(IconCacheThread));
     }
@@ -1512,21 +1511,21 @@ void CFilesWindow::ClearHistory()
 void CFilesWindow::SleepIconCacheThread()
 {
     CALL_STACK_MESSAGE1("CFilesWindow::SleepIconCacheThread()");
-    ICSleep = TRUE;          // pro preruseni smycky nacitani ikon (ICSleepSection nemusi vubec opustit)
-    ICStopWork = TRUE;       // pro preruseni smycky nacitani ikon pokud uz je ICStopWork zpracovany
-    ResetEvent(ICEventWork); // pro preruseni smycky nacitani ikon pokud jeste neni ICStopWork zpracovany
-    // pockame az icon-reader vstoupi do casti, ve ktere se da prejit do sleep-modu
+    ICSleep = TRUE;          // for interrupting the loop of loading icons (ICSleepSection may not leave at all)
+    ICStopWork = TRUE;       // for interrupting the loop of loading icons if ICStopWork has already been processed
+    ResetEvent(ICEventWork); // for interrupting the loop of loading icons if ICStopWork has not been processed yet
+    // Wait until the icon-reader enters the part where it can switch to sleep mode
     HANDLES(EnterCriticalSection(&ICSleepSection));
-    ICSleep = ICWorking; // TRUE jen pokud icon-reader visi v SHGetFileInfo
+    ICSleep = ICWorking; // TRUE only if icon-reader is hanging in SHGetFileInfo
     HANDLES(LeaveCriticalSection(&ICSleepSection));
 }
 
 void CFilesWindow::WakeupIconCacheThread()
 {
     CALL_STACK_MESSAGE_NONE
-    ICStopWork = FALSE;    // aby se prace hned nazacatku neprerusila
-    SetEvent(ICEventWork); // prejdi do work modu, na reakci necekame
-    MSG msg;               // musime zlikvidovat pripadnou WM_USER_ICONREADING_END, ktera by nastavila IconCacheValid = TRUE
+    ICStopWork = FALSE;    // so that work is not interrupted right at the beginning
+    SetEvent(ICEventWork); // Switch to work mode, we don't expect a response
+    MSG msg;               // we need to handle the possible WM_USER_ICONREADING_END, which would set IconCacheValid = TRUE
     while (PeekMessage(&msg, HWindow, WM_USER_ICONREADING_END, WM_USER_ICONREADING_END, PM_REMOVE))
         ;
 }
@@ -1535,7 +1534,7 @@ BOOL CFilesWindow::CheckAndRestorePath(const char* path)
 {
     CALL_STACK_MESSAGE2("CFilesWindow::CheckAndRestorePath(%s)", path);
 
-    // sitove cesty nebudeme testovat, pokud jsme na ne zrovna pristupovali
+    // We will not test network paths if we have not just accessed them.
     BOOL tryNet = (!Is(ptDisk) && !Is(ptZIPArchive)) || !HasTheSameRootPath(path, GetPath());
 
     return SalCheckAndRestorePath(HWindow, path, tryNet);
@@ -1547,25 +1546,25 @@ BOOL CFilesWindow::CanUnloadPlugin(HWND parent, CPluginInterfaceAbstract* plugin
 
     if (Is(ptDisk))
     {
-        if (UseThumbnails && // nacitaji se thumbnaily
-            !IconCacheValid) // icon-reader jeste neskoncil nacitani
+        if (UseThumbnails && // thumbnails are being loaded
+            !IconCacheValid) // icon-reader has not finished loading yet
         {
             CPluginData* p = Plugins.GetPluginData(plugin);
             if (p != NULL) // "always true"
             {
                 if (p->ThumbnailMasks.GetMasksString()[0] != 0)
-                { // jde o plugin, ktery poskytuje thumbnaily - nevime jiste, jestli i pro
-                    // tento panel, ale vyloucit se to neda, takze musime zastavit cteni ikon
+                { // It's a plugin that provides thumbnails - we're not sure if it does
+                    // this panel, but it cannot be excluded, so we have to stop reading icons
                     SleepIconCacheThread();
-                    p->ThumbnailMasksDisabled = TRUE; // behem unload/remove pluginu nelze tento plugin pouzit pro load thumbnailu
-                    StopThumbnailLoading = TRUE;      // pro pripad, ze by se odnekud zavolal WakeupIconCacheThread (data o "thumbnail-loaderech" v icon-cache nelze pouzivat)
-                    UseThumbnails = FALSE;            // aby nenastal nechteny wake-up icon-readeru (volani WakeupIconCacheThread())
+                    p->ThumbnailMasksDisabled = TRUE; // During the unload/remove of the plugin, this plugin cannot be used to load thumbnails
+                    StopThumbnailLoading = TRUE;      // in case WakeupIconCacheThread is called from somewhere (data about "thumbnail loaders" in icon cache cannot be used)
+                    UseThumbnails = FALSE;            // to prevent unwanted wake-up of the icon-reader (calling WakeupIconCacheThread())
                     if (!CriticalShutdown)
                     {
                         HANDLES(EnterCriticalSection(&TimeCounterSection));
                         int t1 = MyTimeCounter++;
                         HANDLES(LeaveCriticalSection(&TimeCounterSection));
-                        PostMessage(HWindow, WM_USER_REFRESH_DIR, 0, t1); // postarame se o nove naplneni icon-cache (idealne probehne az po unloadu/remove pluginu)
+                        PostMessage(HWindow, WM_USER_REFRESH_DIR, 0, t1); // We will take care of the new icon-cache filling (ideally it will happen after unloading/removing the plugin).
                     }
                 }
             }
@@ -1580,34 +1579,34 @@ BOOL CFilesWindow::CanUnloadPlugin(HWND parent, CPluginInterfaceAbstract* plugin
             PluginData.NotEmpty() && PluginData.GetPluginInterface() == plugin)
             used = TRUE;
         else
-        { // FS nemusi pouzivat PluginData, proto musime jeste testnout PluginFS
+        { // FS does not have to use PluginData, so we still need to test PluginFS
             if (Is(ptPluginFS) && GetPluginFS()->NotEmpty() &&
                 GetPluginFS()->GetPluginInterface() == plugin)
                 used = TRUE;
             else
             {
                 if (Is(ptZIPArchive))
-                { // archiv nemusi pouzivat PluginData, proto musime jeste testnout asociace archivu
-                    // tato cast je dulezita jen pro ukoncovani Salamandera - jinak plug-in by se klidne
-                    // mohl unloadnout behem pouziti archivatoru (kazda funkce archivatoru si plug-in naloadi)
-                    // POZOR: vyjimkou jsou icon-overlays z pluginu, po unloadu pluginu by se prestaly kreslit
-                    //        (pri unloadu pluginu uvolnujeme jeho pole icon-overlays)
+                { // The archive does not have to use PluginData, so we still need to test the associations of the archive
+                    // This part is important only for terminating the Salamander - otherwise the plug-in would be calm
+                    // could be unloaded during the use of the archiver (each archiver function loads its plug-in)
+                    // WARNING: The exception are icon overlays from the plugin, they would stop being drawn after unloading the plugin
+                    //        (when unloading the plugin, we release its array of icon-overlays)
                     int format = PackerFormatConfig.PackIsArchive(GetZIPArchive());
-                    if (format != 0) // nasli jsme podporovany archiv
+                    if (format != 0) // We found a supported archive
                     {
                         format--;
                         CPluginData* data;
                         int index = PackerFormatConfig.GetUnpackerIndex(format);
-                        if (index < 0) // view: jde o interni zpracovani (plug-in)?
+                        if (index < 0) // view: is it internal processing (plug-in)?
                         {
                             data = Plugins.Get(-index - 1);
                             if (data != NULL && data->GetPluginInterface()->GetInterface() == plugin)
                                 used = TRUE;
                         }
-                        if (PackerFormatConfig.GetUsePacker(format)) // ma edit?
+                        if (PackerFormatConfig.GetUsePacker(format)) // edit?
                         {
                             index = PackerFormatConfig.GetPackerIndex(format);
-                            if (index < 0) // jde o interni zpracovani (plug-in)?
+                            if (index < 0) // Is it about internal processing (plug-in)?
                             {
                                 data = Plugins.Get(-index - 1);
                                 if (data != NULL && data->GetPluginInterface()->GetInterface() == plugin)
@@ -1620,26 +1619,26 @@ BOOL CFilesWindow::CanUnloadPlugin(HWND parent, CPluginInterfaceAbstract* plugin
         }
         if (used)
         {
-            if (Is(ptZIPArchive) || Is(ptPluginFS)) // archiv -> jen ho opustime; FS -> vracime se na posledni diskovou cestu
+            if (Is(ptZIPArchive) || Is(ptPluginFS)) // archive -> we just leave it; FS -> we return to the last disk path
             {
                 char path[MAX_PATH];
                 strcpy(path, GetPath());
 
                 DWORD err, lastErr;
                 BOOL pathInvalid, cut;
-                BOOL tryNet = FALSE; // uz zadny zdrzovani se siti, zbytecne...
+                BOOL tryNet = FALSE; // no more unnecessary delays with the network...
                 if (SalCheckAndRestorePathWithCut(HWindow, path, tryNet, err, lastErr, pathInvalid, cut, TRUE))
-                { // prepneme se na cestu, ktera by mela jit bez potizi nacist
+                { // Switch to a path that should load without any issues
                     ChangePathToDisk(parent, path, -1, NULL, NULL, TRUE, TRUE, FALSE, NULL, FALSE, FSTRYCLOSE_UNLOADCLOSEFS);
                 }
-                else // puvodni cesta (ani jeji podcesta) neni pristupna -> jdeme na fixed-drive (nelze volat
-                     // primo ChangePathToDisk, protoze jinak se vypisuje chyba - napr. "X: not ready")
+                else // original path (nor its subpath) is not accessible -> we are going to fixed-drive (cannot be called
+                     // directly ChangePathToDisk, because otherwise an error is displayed - for example, "X: not ready")
                 {
                     ChangeToRescuePathOrFixedDrive(parent, NULL, TRUE, TRUE, FSTRYCLOSE_UNLOADCLOSEFS);
                 }
                 if (!Is(ptDisk))
                 {
-                    return FALSE; // zmena cesty na disk se nepovedla, unload neni mozny
+                    return FALSE; // Changing the path to the disk failed, unload is not possible
                 }
             }
         }
@@ -1735,10 +1734,10 @@ void CFilesWindow::SelectUnselect(BOOL forceIncludeDirs, BOOL select, BOOL showM
     CALL_STACK_MESSAGE4("CFilesWindow::SelectUnselect(%d, %d, %d)", forceIncludeDirs, select, showMaskDlg);
     if (showMaskDlg)
     {
-        BeginStopRefresh(); // cmuchal si da pohov
+        BeginStopRefresh(); // He was snoring in his sleep
     }
     if (!showMaskDlg || CSelectDialog(HLanguage, select ? IDD_SELECTMASK : IDD_DESELECTMASK,
-                                      select ? IDD_SELECTMASK : IDD_DESELECTMASK /* helpID */,
+                                      select ? IDD_SELECTMASK : IDD_DESELECTMASK /* helpID*/,
                                       HWindow, MainWindow->SelectionMask)
                                 .Execute() == IDOK)
     {
@@ -1760,7 +1759,7 @@ void CFilesWindow::SelectUnselect(BOOL forceIncludeDirs, BOOL select, BOOL showM
             for (; i < count; i++)
             {
                 CFileData* d = (i < dirsCount) ? &Dirs->At(i) : &Files->At(i - dirsCount);
-                if (!showMaskDlg || mask.AgreeMasks(d->Name, i < dirsCount ? NULL : d->Ext)) // v pripade *.* nebudeme volat agree mask
+                if (!showMaskDlg || mask.AgreeMasks(d->Name, i < dirsCount ? NULL : d->Ext)) // in case *.* we will not call agree mask
                 {
                     SetSel(select, d);
                     changed = TRUE;
@@ -1779,7 +1778,7 @@ void CFilesWindow::SelectUnselect(BOOL forceIncludeDirs, BOOL select, BOOL showM
     if (showMaskDlg)
     {
         UpdateWindow(MainWindow->HWindow);
-        EndStopRefresh(); // ted uz zase cmuchal nastartuje
+        EndStopRefresh(); // now he's sniffling again, he'll start up
     }
 }
 
@@ -1842,7 +1841,7 @@ void CFilesWindow::SelectUnselectByFocusedItem(BOOL select, BOOL byName)
         const char* focusedStr = byName ? focusedItem->Name : (isDir ? "" : focusedItem->Ext);
         int focusedLen = byName ? (isDir ? focusedItem->NameLen : (int)(focusedItem->Ext - focusedItem->Name)) : (isDir ? 0 : (int)lstrlen(focusedItem->Ext));
         if (!isDir && byName && *focusedItem->Ext != 0)
-            focusedLen--; // preskocim '.'
+            focusedLen--; // skip '.'
         int i;
         for (i = firstIndex; i <= lastIndex; i++)
         {
@@ -1851,7 +1850,7 @@ void CFilesWindow::SelectUnselectByFocusedItem(BOOL select, BOOL byName)
             const char* str = byName ? item->Name : (itemIsDir ? "" : item->Ext);
             int len = byName ? (itemIsDir ? item->NameLen : (int)(item->Ext - item->Name)) : (itemIsDir ? 0 : (int)lstrlen(item->Ext));
             if (!itemIsDir && byName && *item->Ext != 0)
-                len--; // preskocim '.'
+                len--; // skip '.'
             if (len == focusedLen && StrNICmp(str, focusedStr, len) == 0)
                 SetSel(select, item);
         }
@@ -1869,7 +1868,7 @@ void CFilesWindow::StoreGlobalSelection()
     int count = GetSelCount();
     if (count != 0)
     {
-        BeginStopRefresh(); // cmuchal si da pohov
+        BeginStopRefresh(); // He was snoring in his sleep
 
         BOOL clipboard = FALSE;
         CSaveSelectionDialog dlg(HWindow, &clipboard);
@@ -1878,9 +1877,9 @@ void CFilesWindow::StoreGlobalSelection()
             int totalCount = Dirs->Count + Files->Count;
             if (clipboard)
             {
-                // seznam mame hodit na clipboard
+                // we need to put the list on the clipboard
 
-                // napocitame potrebnou velikost bufferu (nazev1CRLFnazev2CRLF...nazevNCRLF)
+                // calculate the required size of the buffer (name1CRLFname2CRLF...nameNCRLF)
                 DWORD size = 0;
                 int i;
                 for (i = 0; i < totalCount; i++)
@@ -1915,7 +1914,7 @@ void CFilesWindow::StoreGlobalSelection()
             }
             else
             {
-                // seznam mame hodit do GlobalSelection
+                // we need to put the list into GlobalSelection
                 GlobalSelection.Clear();
                 int i;
                 for (i = 0; i < totalCount; i++)
@@ -1929,11 +1928,11 @@ void CFilesWindow::StoreGlobalSelection()
                 }
                 GlobalSelection.Sort();
             }
-            IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+            IdleRefreshStates = TRUE; // During the next Idle, we will force the check of status variables
         }
         UpdateWindow(MainWindow->HWindow);
 
-        EndStopRefresh(); // ted uz zase cmuchal nastartuje
+        EndStopRefresh(); // now he's sniffling again, he'll start up
     }
 }
 
@@ -1945,7 +1944,7 @@ void CFilesWindow::RestoreGlobalSelection()
     BOOL globalValid = GlobalSelection.GetCount() > 0;
     if (clipboardValid || globalValid)
     {
-        BeginStopRefresh(); // cmuchal si da pohov
+        BeginStopRefresh(); // He was snoring in his sleep
 
         CLoadSelectionOperation operation = lsoCOPY;
         BOOL clipboard = !globalValid;
@@ -1968,7 +1967,7 @@ void CFilesWindow::RestoreGlobalSelection()
                 BOOL isDir = i < Dirs->Count;
                 CFileData* file = isDir ? &Dirs->At(i) : &Files->At(i - Dirs->Count);
                 if (clipboard)
-                    isDir = FALSE; // pokud jedeme pres clipboard, vse je ve Files
+                    isDir = FALSE; // if we go through the clipboard, everything is in Files
                 switch (operation)
                 {
                 case lsoCOPY:
@@ -2008,7 +2007,7 @@ void CFilesWindow::RestoreGlobalSelection()
             PostMessage(HWindow, WM_USER_SELCHANGED, 0, 0);
         }
         UpdateWindow(MainWindow->HWindow);
-        EndStopRefresh(); // ted uz zase cmuchal nastartuje
+        EndStopRefresh(); // now he's sniffling again, he'll start up
     }
 }
 
@@ -2033,7 +2032,7 @@ void CFilesWindow::StoreSelection()
             }
         }
         OldSelection.Sort();
-        IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+        IdleRefreshStates = TRUE; // During the next Idle, we will force the check of status variables
     }
 }
 
@@ -2077,7 +2076,7 @@ void CFilesWindow::ShowHideNames(int mode)
         {
             int totalCount = Files->Count + Dirs->Count;
             int startIndex = 0;
-            if (Dirs->Count > 0 && strcmp(Dirs->At(0).Name, "..") == 0) // ".." v poli nechceme
+            if (Dirs->Count > 0 && strcmp(Dirs->At(0).Name, "..") == 0) // We do not want ".." in the array
                 startIndex = 1;
             int i;
             for (i = 0; i < totalCount; i++)
@@ -2087,7 +2086,7 @@ void CFilesWindow::ShowHideNames(int mode)
                 if (f->Selected)
                 {
                     if (!HiddenNames.Add(isDir, f->Name))
-                        break; // low_memory, nebudeme pokracovat
+                        break; // low_memory, we will not continue
                     refreshPanel = TRUE;
                 }
             }
@@ -2099,7 +2098,7 @@ void CFilesWindow::ShowHideNames(int mode)
     {
         int totalCount = Files->Count + Dirs->Count;
         int startIndex = 0;
-        if (Dirs->Count > 0 && strcmp(Dirs->At(0).Name, "..") == 0) // ".." v poli nechceme
+        if (Dirs->Count > 0 && strcmp(Dirs->At(0).Name, "..") == 0) // We do not want ".." in the array
             startIndex = 1;
         int i;
         for (i = startIndex; i < totalCount; i++)
@@ -2109,7 +2108,7 @@ void CFilesWindow::ShowHideNames(int mode)
             if (!f->Selected)
             {
                 if (!HiddenNames.Add(isDir, f->Name))
-                    break; // low_memory, nebudeme pokracovat
+                    break; // low_memory, we will not continue
                 refreshPanel = TRUE;
             }
         }
@@ -2140,27 +2139,26 @@ void CFilesWindow::SetAutomaticRefresh(BOOL value, BOOL force)
     if (force || AutomaticRefresh != value)
     {
         AutomaticRefresh = value;
-        /* // "vyhozeni" refresh znacky z dir-liny
-    // tady nam to padalo; volal se zdestroyeny objekt
+        /* // "vyhozeni" refresh tag from dir-line
+    // it was crashing here; called on a destroyed object
     if (DirectoryLine != NULL)                       
-      DirectoryLine->SetAutomatic(AutomaticRefresh);
-*/
+      DirectoryLine->SetAutomatic(AutomaticRefresh);*/
     }
 }
 
 void CFilesWindow::GotoRoot()
 {
     CALL_STACK_MESSAGE1("CFilesWindow::GotoRoot()");
-    TopIndexMem.Clear(); // dlouhy skok
+    TopIndexMem.Clear(); // long jump
 
     char root[MAX_PATH];
     if (Is(ptDisk) || Is(ptZIPArchive))
     {
-        if (Is(ptZIPArchive) && GetZIPPath()[0] != 0) // nejsme v rootu archivu -> jdeme do nej
+        if (Is(ptZIPArchive) && GetZIPPath()[0] != 0) // we are not in the root of the archive -> let's go into it
         {
             ChangePathToArchive(GetZIPArchive(), "");
         }
-        else // jdeme do rootu windows cesty
+        else // go to the root of the Windows path
         {
             if (IsUNCRootPath(GetPath()) && Plugins.GetFirstNethoodPluginFSName(root))
             {
@@ -2170,7 +2168,7 @@ void CFilesWindow::GotoRoot()
             {
                 GetRootPath(root, GetPath());
                 if (root[0] == '\\')
-                    root[strlen(root) - 1] = 0; // UNC nebude koncit '\\'
+                    root[strlen(root) - 1] = 0; // UNC will not end with '\\'
                 ChangePathToDisk(HWindow, root);
             }
         }
@@ -2182,7 +2180,7 @@ void CFilesWindow::GotoRoot()
             if (GetPluginFS()->GetRootPath(root))
             {
                 char fsname[MAX_PATH];
-                strcpy(fsname, GetPluginFS()->GetPluginFSName()); // pro pripad zmeny, lokalni kopie jmena
+                strcpy(fsname, GetPluginFS()->GetPluginFSName()); // in case of change, local copy of the name
                 ChangePathToPluginFS(fsname, root);
             }
         }
@@ -2194,7 +2192,7 @@ void CFilesWindow::GotoHotPath(int index)
     CALL_STACK_MESSAGE2("CFilesWindow::GotoHotPath(%d)", index);
     if (index < 0 || index >= HOT_PATHS_COUNT)
         return;
-    //---  prepnuti na hot-path
+    //--- switch to hot-path
     char path[2 * MAX_PATH];
     if (MainWindow->GetExpandedHotPath(HWindow, index, path, 2 * MAX_PATH))
         ChangeDir(path);
@@ -2243,10 +2241,10 @@ void CFilesWindow::OpenActiveFolder()
         const char* path = GetPath();
 
 #ifndef _WIN64
-        // provedeme zamenu "C:\\Windows\\sysnative\\*" za "C:\\Windows\\system32\\*", 64-bitovy
+        // we will replace "C:\\Windows\\sysnative\\*" with "C:\\Windows\\system32\\*", 64-bit
         // proces Exploreru o "sysnative" nic nevi, nebudeme s tim otravovat lidi,
-        // zaroven provedeme zamenu "C:\\Windows\\system32\\*" za "C:\\Windows\\SysWOW64\\*"
-        // (az na skupinu adresaru vyjmutych z redirectoru, ktere tim smeruji zpet do System32)
+        // at the same time, we will replace "C:\\Windows\\system32\\*" with "C:\\Windows\\SysWOW64\\*"
+        // (except for the group of directories excluded from the redirector, which are redirected back to System32)
         char dirName[MAX_PATH];
         dirName[0] = 0;
         if (Windows64Bit && WindowsDirectory[0] != 0)
@@ -2259,7 +2257,7 @@ void CFilesWindow::OpenActiveFolder()
                 if (StrNICmp(path, dirName, len) == 0 && (path[len] == '\\' || path[len] == 0))
                 {
                     lstrcpyn(dirName, WindowsDirectory, MAX_PATH);
-                    SalPathAppend(dirName, "System32", MAX_PATH); // kdyz se vesel Sysnative, System32 se vejde taky
+                    SalPathAppend(dirName, "System32", MAX_PATH); // When Sysnative is happy, System32 fits in too
                     memmove(dirName + strlen(dirName), path + len, strlen(path + len) + 1);
                     path = dirName;
                     done = TRUE;
@@ -2273,7 +2271,7 @@ void CFilesWindow::OpenActiveFolder()
                     int len = (int)strlen(dirName);
                     if (StrNICmp(path, dirName, len) == 0 && (path[len] == '\\' || path[len] == 0))
                     {
-                        // zjistime jestli nejde o adresare vyjmute z redirectoru
+                        // Check if it is not a directory excluded from the redirector
                         if (path[len] == '\\' &&
                             (AreNextPathComponents(path + len + 1, "catroot") ||
                              AreNextPathComponents(path + len + 1, "catroot2") ||
@@ -2287,7 +2285,7 @@ void CFilesWindow::OpenActiveFolder()
                         if (!done)
                         {
                             lstrcpyn(dirName, WindowsDirectory, MAX_PATH);
-                            SalPathAppend(dirName, "SysWOW64", MAX_PATH); // kdyz se vesel System32, SysWOW64 se vejde taky
+                            SalPathAppend(dirName, "SysWOW64", MAX_PATH); // When System32 is happy, SysWOW64 fits in too
                             memmove(dirName + strlen(dirName), path + len, strlen(path + len) + 1);
                             path = dirName;
                         }
@@ -2302,7 +2300,7 @@ void CFilesWindow::OpenActiveFolder()
         if (FocusedIndex < Dirs->Count + Files->Count)
         {
             CFileData* item = (FocusedIndex < Dirs->Count) ? &Dirs->At(FocusedIndex) : &Files->At(FocusedIndex - Dirs->Count);
-            // hack pro lidi, kteri potrebuji focusnout unicode nazev v Exploreru, zkusime to pres short name
+            // hack for people who need to focus on the Unicode name in Explorer, let's try it via short name
             AlterFileName(itemName, item->DosName != NULL ? item->DosName : item->Name, -1, Configuration.FileNameFormat, 0, FocusedIndex < Dirs->Count);
             if (FocusedIndex < Dirs->Count && FocusedIndex == 0 && strcmp(itemName, "..") == 0)
                 itemName[0] = 0;
@@ -2326,7 +2324,7 @@ BOOL CFilesWindow::CommonRefresh(HWND parent, int suggestedTopIndex, const char*
                         suggestedFocusName, refreshListBox, readDirectory, isRefresh);
 
     //TRACE_I("common refresh: begin");
-    if (readDirectory) // pokud se ma jen promitnout top-index a focus-name, tohle neni potreba (muze byt jen na skodu, proto nevolame)
+    if (readDirectory) // if only the top-index and focus-name need to be projected, this is not necessary (it can only harm, so we don't call)
     {
         DirectoryLineSetText();
         if (Parent->GetActivePanel() == this)
@@ -2342,13 +2340,13 @@ BOOL CFilesWindow::CommonRefresh(HWND parent, int suggestedTopIndex, const char*
     else
     {
         if (Is(ptDisk) || Is(ptZIPArchive))
-            DetachDirectory(this); // cosi se podelalo
+            DetachDirectory(this); // something went wrong
     }
     //TRACE_I("read directory: begin");
 
     if (refreshListBox)
     {
-        // vyhledam polozku, kterou bych mel vybrat
+        // Search for the item I should select
         int suggestedFocusIndex = -1;
         int suggestedFocusIndexIgnCase = -1;
         if (suggestedFocusName != NULL)
@@ -2363,11 +2361,11 @@ BOOL CFilesWindow::CommonRefresh(HWND parent, int suggestedTopIndex, const char*
                     if (strcmp(Dirs->At(i).Name, suggestedFocusName) == 0)
                     {
                         suggestedFocusIndex = i;
-                        break; // nalezeno presne pozadovane jmeno
+                        break; // found exact desired name
                     }
                 }
             }
-            if (suggestedFocusIndex == -1) // hledame i mezi soubory (napr. pri navratu ze ZIP archivu)
+            if (suggestedFocusIndex == -1) // we are also looking among files (e.g. when returning from a ZIP archive)
             {
                 for (i = 0; i < Files->Count; i++)
                 {
@@ -2378,12 +2376,12 @@ BOOL CFilesWindow::CommonRefresh(HWND parent, int suggestedTopIndex, const char*
                         if (strcmp(Files->At(i).Name, suggestedFocusName) == 0)
                         {
                             suggestedFocusIndex = i + Dirs->Count;
-                            break; // nalezeno presne pozadovane jmeno
+                            break; // found exact desired name
                         }
                     }
                 }
             }
-            // pokud nebylo nalezeno presne pozadovane jmeno, pouzijeme jmeno shodne az na velikost pismen (je-li)
+            // if the exact desired name was not found, we will use a name that matches except for the case (if applicable)
             if (suggestedFocusIndex == -1)
                 suggestedFocusIndex = suggestedFocusIndexIgnCase;
         }

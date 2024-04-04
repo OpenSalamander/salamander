@@ -58,7 +58,7 @@ HWND CMenuPopup::PopupWindowFromPoint(POINT point)
 {
     HWND hWindow = WindowFromPoint(point);
 
-    // pokud jde o MenuBar, udelame vyjimku (je to child window)
+    // As for MenuBar, we will make an exception (it is a child window)
     if (hWindow != NULL && (SharedRes == NULL ||
                             SharedRes->MenuBar == NULL ||
                             SharedRes->MenuBar->HWindow != hWindow))
@@ -112,15 +112,15 @@ void CMenuPopup::AssignHotKeys()
 {
     CALL_STACK_MESSAGE1("CMenuPopup::AssignHotKeys()");
 
-    // udava zda je patricny znak uz prirazen
+    // indicates whether the character is already assigned
     BOOL assigned[256];
 
-    // dame k dispozici pouze sikovne znaky
+    // provide only clever characters
     int i;
     for (i = 0; i < 256; i++)
         assigned[i] = !IsCharAlpha(i);
 
-    // v prvni fazi objehneme vsechny polozky menu a detekujeme jiz pouzite horke klavesy
+    // In the first phase, we will loop through all menu items and detect already used hotkeys
     for (i = 0; i < Items.Count; i++)
     {
         CMenuItem* item = Items[i];
@@ -147,7 +147,7 @@ void CMenuPopup::AssignHotKeys()
             item->Temp = TRUE;
     }
 
-    // polozkam bez horke klavesy zkusime nejakou priradit
+    // Let's try assigning some items without the hotkey key
     char buff[1000];
     for (i = 0; i < Items.Count; i++)
     {
@@ -164,10 +164,10 @@ void CMenuPopup::AssignHotKeys()
                 continue;
             while (*p != 0)
             {
-                // v prvním kole se pokusime vyhnout znakum s diakritikou, aby uzivatel nemusel prepinat z anglicke klavesnice
-                // viz https://forum.altap.cz/viewtopic.php?f=23&t=4025
+                // In the first round, we will try to avoid characters with diacritics so that the user does not have to switch from an English keyboard
+                // see https://forum.altap.cz/viewtopic.php?f=23&t=4025
                 WCHAR buffw[10];
-                buffw[1] = 0; // abychom prosli ve druhem kole
+                buffw[1] = 0; // to advance to the second round
 
                 if (i2 == 0)
                 {
@@ -181,14 +181,14 @@ void CMenuPopup::AssignHotKeys()
                 if (buffw[1] == 0 && !assigned[upper])
                 {
                     int len = (int)strlen(item->String);
-                    if (len < 1000 - 1) // musime se vejit do bufferu
+                    if (len < 1000 - 1) // we need to fit into the buffer
                     {
                         int pos = (int)(p - item->String);
                         if (pos > 0)
                             memcpy(buff, item->String, len);
                         buff[pos] = '&';
                         memcpy(buff + pos + 1, item->String + pos, len - pos);
-                        // pokud se podarilo vlozit hot key, obsadime pole assigned
+                        // if the hot key was successfully inserted, we will occupy the assigned field
                         if (item->SetText(buff, len + 1))
                             assigned[upper] = TRUE;
                     }
@@ -214,7 +214,7 @@ BOOL CMenuPopup::BeginModifyMode()
         TRACE_E("MenuPopup is already in ModifyMode");
         return FALSE;
     }
-    // pokud mame otevrene nejake submenu, zavreme ho
+    // If we have any submenu open, we close it
     if (OpenedSubMenu != NULL)
         CloseOpenedSubmenu();
 
@@ -231,12 +231,12 @@ BOOL CMenuPopup::EndModifyMode()
     }
     if (HWindow != NULL)
     {
-        // osetrim meze
+        // handle boundaries
         if (SelectedItemIndex >= Items.Count)
             SelectedItemIndex = Items.Count - 1;
         if (SelectedItemIndex >= 0 && SelectedItemIndex < Items.Count)
         {
-            // vybrana polozka je separator - nalezneme nonseparator
+            // selected item is a separator - find non-separator
             if (Items[SelectedItemIndex]->Type & MENU_TYPE_SEPARATOR)
             {
                 int index = SelectedItemIndex;
@@ -245,10 +245,10 @@ BOOL CMenuPopup::EndModifyMode()
                     SelectedItemIndex = -1;
             }
         }
-        // napocitam rozmery menu
+        // calculate the dimensions of the menu
         LayoutColumns();
 
-        // napocitam rozmery okna
+        // calculate the dimensions of the window
         RECT clipRect;
         RECT r;
         GetWindowRect(HWindow, &r);
@@ -272,19 +272,17 @@ BOOL CMenuPopup::EndModifyMode()
         if (Style & MENU_POPUP_UPDATESTATES)
             UpdateItemsState();
 
-        // upravime rozmer okna
+        // adjust window size
         InvalidateRect(HWindow, NULL, TRUE);
         SetWindowPos(HWindow, NULL, 0, 0, width, height,
                      SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER);
         UpdateWindow(HWindow);
-        /*
-    // nechame aktualizovat aktualni polozku
+        /*      // let's update the current item
     POINT cursorPos;
     GetCursorPos(&cursorPos);
     ScreenToClient(HWindow, &cursorPos);
-    SharedRes->LastMouseMove.x = cursorPos.x - 1; // vyradime podminku
-    SendMessage(HWindow, WM_MOUSEMOVE, 0, MAKELPARAM(cursorPos.x, cursorPos.y));
-*/
+    SharedRes->LastMouseMove.x = cursorPos.x - 1; // exclude condition
+    SendMessage(HWindow, WM_MOUSEMOVE, 0, MAKELPARAM(cursorPos.x, cursorPos.y));*/
     }
     ModifyMode = FALSE;
     return TRUE;
@@ -360,8 +358,7 @@ void CMenuPopup::SetHotImageList(HIMAGELIST hImageList, BOOL subMenu)
 {
     CALL_STACK_MESSAGE_NONE
     HHotImageList = hImageList;
-    /*
-  if (HImageList != NULL)
+    /*    if (HImageList != NULL)
   {
     ImageList_GetIconSize(HImageList, &ImageWidth, &ImageHeight);
   }
@@ -369,8 +366,7 @@ void CMenuPopup::SetHotImageList(HIMAGELIST hImageList, BOOL subMenu)
   {
     ImageWidth = 0;
     ImageHeight = 0;
-  }
-*/
+  }*/
     if (subMenu)
     {
         int i;
@@ -399,7 +395,7 @@ void CMenuPopup::UpdateItemsState()
 
         if (item->Enabler != NULL)
         {
-            // bit TLBI_STATE_GRAYED je rizen
+            // bit TLBI_STATE_GRAYED is controlled
             BOOL enabled = (item->State & MENU_STATE_GRAYED) == 0;
             BOOL enabledSrc = *item->Enabler != 0;
             if (enabled != enabledSrc)
@@ -433,7 +429,7 @@ BOOL CMenuPopup::InsertItem(DWORD position, BOOL byPosition, const MENU_ITEM_INF
 {
     CALL_STACK_MESSAGE3("CMenuPopup::InsertItem(0x%X, %d, )", position, byPosition);
     int newPos;
-    // vyhledame pozici, kam prijde nova polozka
+    // Find the position where the new item will come
     if (byPosition)
     {
         if (position == -1 || position > (DWORD)Items.Count)
@@ -451,7 +447,7 @@ BOOL CMenuPopup::InsertItem(DWORD position, BOOL byPosition, const MENU_ITEM_INF
         }
     }
 
-    // naalokujeme polozku
+    // allocate item
     CMenuItem* item = new CMenuItem();
     if (item == NULL)
     {
@@ -459,7 +455,7 @@ BOOL CMenuPopup::InsertItem(DWORD position, BOOL byPosition, const MENU_ITEM_INF
         return FALSE;
     }
 
-    // vlozime polozku do pole
+    // insert item into array
     Items.Insert(newPos, item);
     if (!Items.IsGood())
     {
@@ -468,7 +464,7 @@ BOOL CMenuPopup::InsertItem(DWORD position, BOOL byPosition, const MENU_ITEM_INF
         return FALSE;
     }
 
-    // nastavime data
+    // set data
     if (!SetItemInfo(newPos, TRUE, mii))
     {
         Items.Delete(newPos);
@@ -482,7 +478,7 @@ BOOL CMenuPopup::SetItemInfo(DWORD position, BOOL byPosition, const MENU_ITEM_IN
 {
     CALL_STACK_MESSAGE3("CMenuPopup::SetItemInfo(0x%X, %d, )", position, byPosition);
     int newPos;
-    // vyhledame pozici, kam prijde nova polozka
+    // Find the position where the new item will come
     if (byPosition)
     {
         newPos = position;
@@ -514,7 +510,7 @@ BOOL CMenuPopup::SetItemInfo(DWORD position, BOOL byPosition, const MENU_ITEM_IN
         item->State = mii->State;
         if (item->State & MENU_STATE_DEFAULT)
         {
-            // zadna jina polozka nesmi mit nahozeny tento flag
+            // no other item must have this flag set
             int i;
             for (i = 0; i < Items.Count; i++)
             {
@@ -535,16 +531,14 @@ BOOL CMenuPopup::SetItemInfo(DWORD position, BOOL byPosition, const MENU_ITEM_IN
         item->SubMenu = (CMenuPopup*)mii->SubMenu;
         if (item->SubMenu != NULL)
         {
-            // tohle nedelalo dobrotu, propagovala se 0 i v pripade, ze polozka mela
-            // prirazene nejake ID
-            /*
-      if (mii->Mask & MENU_MASK_ID)
+            // this did not do any good, it was promoted even if the item had
+            // assign some ID
+            /*        if (mii->Mask & MENU_MASK_ID)
         item->SubMenu->ID = mii->ID;
       else
-        item->SubMenu->ID = 0;
-      */
+        item->SubMenu->ID = 0;*/
 
-            // radeji budeme vzdy propagovat ID polozky
+            // We will always prefer to promote the item ID
             item->SubMenu->ID = item->ID;
         }
     }
@@ -575,7 +569,7 @@ BOOL CMenuPopup::SetItemInfo(DWORD position, BOOL byPosition, const MENU_ITEM_IN
 
     if (mii->Mask & MENU_MASK_STRING)
     {
-        // typ string ma alokovany retezec, ktery budeme uvolnovat
+        // the string type has allocated a string that we will release
         const char* p = mii->String;
         if (p == NULL)
         {
@@ -589,7 +583,7 @@ BOOL CMenuPopup::SetItemInfo(DWORD position, BOOL byPosition, const MENU_ITEM_IN
         }
     }
 
-    // ochrana pred zmatecnejma datama
+    // Protection against misleading data
     if (item->Type & MENU_TYPE_STRING && item->String == NULL)
     {
         if (!item->SetText(""))
@@ -613,7 +607,7 @@ BOOL CMenuPopup::GetItemInfo(DWORD position, BOOL byPosition, MENU_ITEM_INFO* mi
     CALL_STACK_MESSAGE3("CMenuPopup::GetItemInfo(0x%X, %d, )", position,
                         byPosition);
     int newPos;
-    // vyhledame pozici, kam prijde nova polozka
+    // Find the position where the new item will come
     if (byPosition)
     {
         newPos = position;
@@ -693,7 +687,7 @@ BOOL CMenuPopup::CheckItem(DWORD position, BOOL byPosition, BOOL checked)
     CALL_STACK_MESSAGE4("CMenuPopup::CheckItem(0x%X, %d, %d)", position,
                         byPosition, checked);
     int newPos;
-    // vyhledame pozici, kam prijde nova polozka
+    // Find the position where the new item will come
     if (byPosition)
     {
         newPos = position;
@@ -729,7 +723,7 @@ BOOL CMenuPopup::CheckRadioItem(DWORD positionFirst, DWORD positionLast, DWORD p
 {
     CALL_STACK_MESSAGE5("CMenuPopup::CheckRadioItem(0x%X, 0x%X, 0x%X, %d)",
                         positionFirst, positionLast, positionCheck, byPosition);
-    // vyhledame pozici, kam prijde nova polozka
+    // Find the position where the new item will come
     if (byPosition)
     {
         int firstPos, lastPos, checkPos;
@@ -834,7 +828,7 @@ BOOL CMenuPopup::SetDefaultItem(DWORD position, BOOL byPosition)
     }
     else
     {
-        // vyhledame pozici, ktera bude oznacena jako default
+        // find the position marked as default
         if (byPosition)
         {
             newPos = position;
@@ -880,7 +874,7 @@ BOOL CMenuPopup::EnableItem(DWORD position, BOOL byPosition, BOOL enabled)
     CALL_STACK_MESSAGE4("CMenuPopup::EnableItem(0x%X, %d, %d)", position,
                         byPosition, enabled);
     int newPos;
-    // vyhledame pozici, kam prijde nova polozka
+    // Find the position where the new item will come
     if (byPosition)
     {
         newPos = position;
@@ -916,7 +910,7 @@ CMenuPopup::GetSubMenu(DWORD position, BOOL byPosition)
 {
     CALL_STACK_MESSAGE3("CMenuPopup::GetSubMenu(0x%X, %d)", position, byPosition);
     int newPos;
-    // vyhledame pozici, kam prijde nova polozka
+    // Find the position where the new item will come
     if (byPosition)
     {
         newPos = position;
@@ -942,14 +936,12 @@ CMenuPopupHittestEnum
 CMenuPopup::HitTest(const POINT* point, int* userData)
 {
     CALL_STACK_MESSAGE_NONE
-    /*
-  if (point->x < WindowRect.left || point->x >= WindowRect.right ||
+    /*    if (point->x < WindowRect.left || point->x >= WindowRect.right ||
       point->y < WindowRect.top || point->y >= WindowRect.bottom)
     return mphOutside;
   if (point->x < WindowRect.left + 3 || point->x >= WindowRect.right - 3 ||
       point->y < WindowRect.top + 3 || point->y >= WindowRect.bottom - 3)
-    return mphBorder;
-*/
+    return mphBorder;*/
     if (point->x < 0 || point->x > Width || point->y < 0 || point->y > Height)
         return mphBorderOrOutside;
 
@@ -971,7 +963,7 @@ CMenuPopup::HitTest(const POINT* point, int* userData)
             p.y < TopItemY + item->YOffset + item->Height)
         {
             if (DownArrowVisible && TopItemY + item->YOffset + item->Height > Height - UPDOWN_ITEM_HEIGHT)
-                return mphBorderOrOutside; // castecne viditelna polozka -> zadna polozka
+                return mphBorderOrOutside; // partially visible item -> no item
             *userData = i;
             return mphItem;
         }
@@ -1055,7 +1047,7 @@ BOOL CMenuPopup::GetStatesFromHWindowsMenu(HMENU hMenu)
     return TRUE;
 }
 
-// Tato verze slape od W2K, my ji vyuzivame od Visty, kde MS zavedli alpha blended ikonky do menu
+// This version works from W2K, we have been using it since Vista, where MS introduced alpha blended icons into the menu
 typedef struct
 {
     UINT cbSize;
@@ -1083,7 +1075,7 @@ BOOL CMenuPopup::LoadFromHandle()
     MENUITEMINFOA_NEW mii;
     mii.cbSize = sizeof(mii);
     mii.fMask = MIIM_CHECKMARKS | MIIM_DATA | MIIM_ID | MIIM_STATE | MIIM_SUBMENU | MIIM_FTYPE | MIIM_BITMAP | MIIM_STRING;
-    // vsechny polozky v menu prevedu na nase data
+    // convert all items in the menu to our data
     int count = GetMenuItemCount(HWindowsMenu);
     Items.DestroyMembers();
     int i;
@@ -1091,7 +1083,7 @@ BOOL CMenuPopup::LoadFromHandle()
     {
         mii.dwTypeData = buff;
         mii.cch = 2048;
-        // vytahnu vsechny dostupne informace o polozce z menu
+        // Retrieve all available information about the item from the menu
         if (!GetMenuItemInfo(HWindowsMenu, i, TRUE, (MENUITEMINFO*)&mii))
         {
             TRACE_E("GetMenuItemInfo failed");
@@ -1112,7 +1104,7 @@ BOOL CMenuPopup::LoadFromHandle()
             return FALSE;
         }
 
-        // konverze promenne mii.fType
+        // conversion of variable mii.fType
         if (mii.fType & MFT_BITMAP)
             item->Type |= MENU_TYPE_BITMAP;
         else if (mii.fType & MFT_SEPARATOR)
@@ -1125,10 +1117,10 @@ BOOL CMenuPopup::LoadFromHandle()
         if (mii.fType & MFT_RADIOCHECK)
             item->Type |= MENU_TYPE_RADIOCHECK;
 
-        // konverze promenne mii.fState
+        // conversion of variable mii.fState
         if (mii.fState & MFS_CHECKED)
         {
-            if (mii.hbmpChecked == NULL) // quick hack kvuli ICQ, ktere ma checked && mii.hbmpChecked
+            if (mii.hbmpChecked == NULL) // quick hack for ICQ, which has checked && mii.hbmpChecked
                 item->State |= MENU_STATE_CHECKED;
             else
                 mii.hbmpUnchecked = mii.hbmpChecked;
@@ -1141,7 +1133,7 @@ BOOL CMenuPopup::LoadFromHandle()
         // command
         item->ID = mii.wID;
 
-        // bitmapy
+        // bitmaps
         item->HBmpItem = mii.hbmpItem;
         item->HBmpChecked = mii.hbmpChecked;
         item->HBmpUnchecked = mii.hbmpUnchecked;
@@ -1149,7 +1141,7 @@ BOOL CMenuPopup::LoadFromHandle()
         // data
         item->CustomData = mii.dwItemData;
 
-        // v pripade stringu okopci retezec
+        // in case of a string, copy the string
         if (item->Type & MENU_TYPE_STRING)
         {
             const char* p = mii.dwTypeData;
@@ -1192,11 +1184,11 @@ BOOL CMenuPopup::LoadFromTemplate(HINSTANCE hInstance, const MENU_TEMPLATE_ITEM*
     return LoadFromTemplate2(hInstance, menuTemplate, enablersOffset, hImageList, hHotImageList, NULL);
 }
 
-// na zaklade sablony 'menuTemplate' naladuje 'menuPopup'
+// based on the template 'menuTemplate' loads 'menuPopup'
 BOOL CMenuPopup::LoadFromTemplate2(HINSTANCE hInstance, const MENU_TEMPLATE_ITEM* menuTemplate, DWORD* enablersOffset, HIMAGELIST hImageList, HIMAGELIST hHotImageList, int* addedRows)
 {
     CALL_STACK_MESSAGE1("CMenuPopup::LoadFromTemplate2(, , , , , )");
-    // inicializujeme a vycistime menu
+    // initialize and clean up the menu
     Cleanup();
     Items.DestroyMembers();
     if (addedRows != NULL)
@@ -1218,7 +1210,7 @@ BOOL CMenuPopup::LoadFromTemplate2(HINSTANCE hInstance, const MENU_TEMPLATE_ITEM
             TRACE_E("First row of template must be MNTP_PB type");
             return FALSE;
         }
-        ID = row->ID; // pro contextova menu, aby nosny popup mel prirazeni ID
+        ID = row->ID; // for the context menu, so that the wearable popup has an assigned ID
         row++;
     }
     while (row->RowType != MNTT_PE)
@@ -1236,8 +1228,8 @@ BOOL CMenuPopup::LoadFromTemplate2(HINSTANCE hInstance, const MENU_TEMPLATE_ITEM
             mii.ImageIndex = row->ImageIndex;
             mii.State = row->State;
             mii.SkillLevel = row->SkillLevel;
-            // pokud je enablersOffset != NULL, hodnota row->Enabler neni ukazatel
-            // na enabler, ale index do pole enableru
+            // if enablersOffset != NULL, the value of row->Enabler is not a pointer
+            // on enabler, but index into the enabler array
             if (enablersOffset != NULL && row->Enabler != NULL)
                 mii.Enabler = enablersOffset + (DWORD)(DWORD_PTR)row->Enabler;
             else
@@ -1274,7 +1266,7 @@ BOOL CMenuPopup::LoadFromTemplate2(HINSTANCE hInstance, const MENU_TEMPLATE_ITEM
                 return FALSE;
             }
 
-            subMenu->SetStyle(MENU_POPUP_UPDATESTATES); //j.r. zde je to malo obecne
+            subMenu->SetStyle(MENU_POPUP_UPDATESTATES); //j.r. here it is a bit specific
 
             mii.Mask = MENU_MASK_TYPE | MENU_MASK_ID | MENU_MASK_STRING |
                        MENU_MASK_IMAGEINDEX | MENU_MASK_SUBMENU | MENU_MASK_STATE |
@@ -1285,8 +1277,8 @@ BOOL CMenuPopup::LoadFromTemplate2(HINSTANCE hInstance, const MENU_TEMPLATE_ITEM
             mii.ImageIndex = row->ImageIndex;
             mii.SubMenu = subMenu;
             mii.State = row->State;
-            // pokud je enablersOffset != NULL, hodnota row->Enabler neni ukazatel
-            // na enabler, ale index do pole enableru
+            // if enablersOffset != NULL, the value of row->Enabler is not a pointer
+            // on enabler, but index into the enabler array
             if (enablersOffset != NULL && row->Enabler != NULL)
                 mii.Enabler = enablersOffset + (DWORD)(DWORD_PTR)row->Enabler;
             else
@@ -1351,7 +1343,7 @@ BOOL CMenuPopup::FindNextItemIndex(int fromIndex, BOOL topToDown, int* index)
                 return TRUE;
             }
         }
-        // pokud jsem nenasel polozku dole, doprohledam vrsek
+        // if I didn't find the item at the bottom, I'll search the top
         for (i = 0; i < fromIndex; i++)
         {
             if (!(SharedRes->SkillLevel & Items[i]->SkillLevel))
@@ -1385,7 +1377,7 @@ BOOL CMenuPopup::FindNextItemIndex(int fromIndex, BOOL topToDown, int* index)
                 return TRUE;
             }
         }
-        // pokud jsem nenasel polozku nahore, doprohledam spodek
+        // if I haven't found the item at the top, I will search the bottom
         for (i = Items.Count - 1; i > fromIndex; i--)
         {
             if (!(SharedRes->SkillLevel & Items[i]->SkillLevel))
@@ -1438,7 +1430,7 @@ void CMenuPopup::CheckSelectedPath(CMenuPopup* terminator)
             selectedItem = Items[SelectedItemIndex];
         if (selectedItem == NULL || OpenedSubMenu != selectedItem->SubMenu)
         {
-            // najdu polozku, kterou je treba vybrat
+            // find the item that needs to be selected
             int newItemIndex = -1;
             int i;
             for (i = 0; i < Items.Count; i++)
@@ -1452,20 +1444,20 @@ void CMenuPopup::CheckSelectedPath(CMenuPopup* terminator)
                 TRACE_E("newItemIndex == -1");
                 return;
             }
-            // musim opravit select
+            // need to fix select
             HDC hPrivateDC = NOHANDLES(GetDC(HWindow));
             if (selectedItem != NULL)
             {
-                // pokud je treba, deaktivuju minulou polozku
+                // if necessary, I will deactivate the previous item
                 DrawItem(hPrivateDC, selectedItem, TopItemY + selectedItem->YOffset, FALSE);
                 SelectedItemIndex = -1;
             }
-            // aktivuju novou polozku
+            // activate a new item
             CMenuItem* newItem = Items[newItemIndex];
             DrawItem(hPrivateDC, newItem, TopItemY + newItem->YOffset, TRUE);
             SelectedItemIndex = newItemIndex;
         }
-        // rekurzivne pro vsechny deti az po terminator
+        // recursively for all children up to the terminator
         OpenedSubMenu->CheckSelectedPath(terminator);
     }
 }
@@ -1475,7 +1467,7 @@ void CMenuPopup::OnKeyRight(BOOL* leaveMenu)
     CALL_STACK_MESSAGE1("CMenuPopup::OnKeyRight()");
     if (SelectedItemIndex != -1 && !(Items[SelectedItemIndex]->State & MENU_STATE_GRAYED))
     {
-        // otevreme submenu
+        // open submenu
         if (OpenedSubMenu != NULL)
             TRACE_E("OpenedSubMenu != NULL");
         CMenuItem* selectedItem = Items[SelectedItemIndex];
@@ -1495,7 +1487,7 @@ void CMenuPopup::OnKeyRight(BOOL* leaveMenu)
     }
     if (SharedRes->MenuBar != NULL)
     {
-        // zkusime se prepnout do dalsiho popupu
+        // Let's try to switch to the next popup
         int newHotIndex = SharedRes->MenuBar->HotIndex + 1;
         if (newHotIndex >= SharedRes->MenuBar->Menu->Items.Count)
             newHotIndex = 0;
@@ -1514,21 +1506,21 @@ void CMenuPopup::OnKeyReturn(BOOL* leaveMenu, DWORD* retValue)
     if (SelectedItemIndex == -1 ||
         (Items[SelectedItemIndex]->State & MENU_STATE_GRAYED) &&
             !(SharedRes->MenuBar != NULL && SharedRes->MenuBar->HelpMode &&                      // Petr: negace: jsme otevreni z menubar + jsme v HelpMode (Shift+F1) +
-              (Items[SelectedItemIndex]->SubMenu == NULL || Items[SelectedItemIndex]->ID != 0))) // Petr: + mame IDcko prikazu nebo submenu ("grayed" submenu nelze vybalit)
+              (Items[SelectedItemIndex]->SubMenu == NULL || Items[SelectedItemIndex]->ID != 0))) // Petr: + we have the ID of the command or submenu ("grayed" submenu cannot be expanded)
         return;
     if (OpenedSubMenu != NULL)
         TRACE_E("OpenedSubMenu != NULL");
     CMenuItem* selectedItem = Items[SelectedItemIndex];
     if (selectedItem->SubMenu != NULL &&
-        !(selectedItem->State & MENU_STATE_GRAYED)) // Petr: otevirat budeme jen submenu, ktera nejsou "grayed"
+        !(selectedItem->State & MENU_STATE_GRAYED)) // Petr: We will only open submenus that are not "grayed"
     {
         OnKeyRight(leaveMenu);
         return;
     }
     *leaveMenu = TRUE;
     *retValue = selectedItem->ID;
-    if (SharedRes->MenuBar != NULL)              // jsme otevreni z menubar
-        SharedRes->MenuBar->ExitMenuLoop = TRUE; // takze z ni vypadneme
+    if (SharedRes->MenuBar != NULL)              // we are open from the menubar
+        SharedRes->MenuBar->ExitMenuLoop = TRUE; // so we will fall out of it
 }
 
 int CMenuPopup::FindNextItemIndex(int firstIndex, char key)
@@ -1542,10 +1534,10 @@ int CMenuPopup::FindNextItemIndex(int firstIndex, char key)
     if (firstIndex > Items.Count - 1)
         firstIndex = 0;
 
-    int prefixIndexFirst = -1; // prvni vyskyt varianty s prefixem
-    int charIndexFirst = -1;   // prvni vyskyt varianty bex prefixu
-    int prefixIndex = -1;      // posledni vyskyt varianty s prefixem
-    int charIndex = -1;        // posledni vyskyt varianty bex prefixu
+    int prefixIndexFirst = -1; // first occurrence of a variant with a prefix
+    int charIndexFirst = -1;   // first occurrence of the variant bex prefix
+    int prefixIndex = -1;      // last occurrence of a variant with a prefix
+    int charIndex = -1;        // last occurrence of the variant bex prefix
     int i;
     for (i = 0; i < Items.Count; i++)
     {
@@ -1578,7 +1570,7 @@ int CMenuPopup::FindNextItemIndex(int firstIndex, char key)
                     }
                     p++;
                 }
-                // pokud jsme nenasli spravny prefix, ani jiny prefix, zkusim prvni pismeno
+                // if we haven't found the correct prefix, nor any other prefix, let's try the first letter
                 if (!prefixFound && !anotherPrefixFound)
                 {
                     p = item->String;
@@ -1602,7 +1594,7 @@ int CMenuPopup::FindNextItemIndex(int firstIndex, char key)
             }
         }
     }
-    // prefixy maji prioritu
+    // Prefixes have priority
     if (prefixIndexFirst != -1)
     {
         if (prefixIndex >= firstIndex)
@@ -1610,7 +1602,7 @@ int CMenuPopup::FindNextItemIndex(int firstIndex, char key)
         else
             return prefixIndexFirst;
     }
-    // pak prvni znaky
+    // then the first characters
     if (charIndexFirst != -1)
     {
         if (charIndex >= firstIndex)
@@ -1627,18 +1619,18 @@ void CMenuPopup::OnChar(char key, BOOL* leaveMenu, DWORD* retValue)
     int firstIndex = FindNextItemIndex(SelectedItemIndex, key);
     if (firstIndex == -1)
     {
-        // nenasli jsme zadnou odpovidajici polozku
-        // zkusime se doptat context menu (Tortoise SVN pouziva ownerdraw popupy, nevyplnuje retezce, ale resi WM_MENUCHAR)
+        // We did not find any matching item
+        // Let's try to ask the context menu (Tortoise SVN uses ownerdraw popups, it doesn't fill in strings, but handles WM_MENUCHAR)
         HMENU hMenu = GetTemplateMenu();
-        // x64 7zip vraci pri right-click na .7z souboru, rozbaleni 7Zip menu a stiku 'h' na klevesnici 0xcccccccccccccccc, coz
-        // je v rozporu s http://msdn.microsoft.com/en-us/library/windows/desktop/ms646349%28v=vs.85%29.aspx (mel by vratit 0, protoze nic na H v menu nezacina)
-        // kazdopadne nam padaly RTC, takze orezavam na spodni DWORD pomoci masky
+        // x64 7zip returns when right-clicking on a .7z file, unpacking the 7Zip menu and pressing 'h' on the keyboard 0xcccccccccccccccc, which
+        // is inconsistent with http://msdn.microsoft.com/en-us/library/windows/desktop/ms646349%28v=vs.85%29.aspx (should return 0 because nothing in the menu starts with H)
+        // Anyway, we were experiencing RTC failures, so I am trimming to the lower DWORD using a mask
         DWORD ret = (DWORD)(SendMessage(SharedRes->HParent, WM_MENUCHAR, MF_POPUP, (LPARAM)hMenu) & 0xffffffff);
         if (HIWORD(ret) == MNC_SELECT)
             SelectNewItemIndex(LOWORD(ret), FALSE);
         return;
     }
-    int nextIndex = FindNextItemIndex(firstIndex, key); // existuje jeste jedna?
+    int nextIndex = FindNextItemIndex(firstIndex, key); // Is there another one?
     if (nextIndex != firstIndex)
     {
         // select
@@ -1738,7 +1730,7 @@ void CMenuPopup::EnsureItemVisible(int index)
 
     if (TopItemY + item->YOffset < topLimit)
     {
-        // najdu spodni hranu posledni zobrazene polozky
+        // find the bottom edge of the last displayed item
         int firstVisibleTopY = 0;
         int i;
         for (i = 0; i < Items.Count; i++)
@@ -1751,8 +1743,7 @@ void CMenuPopup::EnsureItemVisible(int index)
                 break;
             }
         }
-        /*
-    int lastVisibleBottomY = 0;
+        /*      int lastVisibleBottomY = 0;
     for (i = 0; i < Items.Count; i++)
     {
       CMenuItem *iterator = Items[i];
@@ -1761,15 +1752,14 @@ void CMenuPopup::EnsureItemVisible(int index)
         lastVisibleBottomY = tmp;
       else
         break;
-    }
-*/
-        // pokud zobrazime nejakou polozku nad hornim okrajem, urcite se zaroven
-        // zobrazi sipka dolu
+    }*/
+        // if we display an item above the top edge, make sure
+        // display arrow down
         downArrow = TRUE;
         bottomLimit = Height - UPDOWN_ITEM_HEIGHT;
 
-        // pokud zobrazime prvni polozku ze seznamu, nebude uz existovat
-        // sipka nahoru
+        // if we display the first item from the list, it will no longer exist
+        // arrow up
         if (index == 0)
             upArrow = FALSE;
         else
@@ -1807,12 +1797,12 @@ void CMenuPopup::EnsureItemVisible(int index)
         HRGN hUpdateRgn = HANDLES(CreateRectRgn(0, 0, 0, 0));
         ScrollWindowEx(HWindow, 0, delta, &r, &r, hUpdateRgn, NULL, 0);
 
-        // rozsirime oblast prekresleni o spodni sipku
+        // expand the area of redrawing with a bottom arrow
         HRGN hItemRgn = HANDLES(CreateRectRgn(0, lastVisibleBottomY, Width, Height));
         CombineRgn(hUpdateRgn, hUpdateRgn, hItemRgn, RGN_OR);
         HANDLES(DeleteObject(hItemRgn));
 
-        // rozsirime oblast prekresleni o prostor zacinajici horni hranou drive prvni polozky
+        // we will extend the area of redrawing to the space starting at the upper edge of the previously first item
         hItemRgn = HANDLES(CreateRectRgn(0, 0, Width, firstVisibleTopY + delta));
         CombineRgn(hUpdateRgn, hUpdateRgn, hItemRgn, RGN_OR);
         HANDLES(DeleteObject(hItemRgn));
@@ -1827,7 +1817,7 @@ void CMenuPopup::EnsureItemVisible(int index)
 
     if (TopItemY + item->YOffset + item->Height > bottomLimit)
     {
-        // najdu spodni hranu posledni zobrazene polozky
+        // find the bottom edge of the last displayed item
         int lastVisibleBottomY = 0;
         int i;
         for (i = 0; i < Items.Count; i++)
@@ -1842,13 +1832,13 @@ void CMenuPopup::EnsureItemVisible(int index)
                 break;
         }
 
-        // pokud zobrazime nejakou polozku pod spodnim okrajem, urcite se zaroven
-        // zobrazi sipka nahoru
+        // if we display an item below the bottom edge, make sure
+        // display arrow up
         upArrow = TRUE;
         topLimit = UPDOWN_ITEM_HEIGHT;
 
-        // pokud zobrazime posledni polozku ze seznamu, nebude uz existovat
-        // sipka dolu
+        // if we display the last item from the list, it will no longer exist
+        // down arrow
         if (index == Items.Count - 1)
             downArrow = FALSE;
         else
@@ -1868,7 +1858,7 @@ void CMenuPopup::EnsureItemVisible(int index)
 
         TopItemY += delta;
 
-        // najdu horni hranu prvni zobrazene polozky
+        // find the top edge of the first displayed item
         int firstItemY = 0;
         for (i = 0; i < Items.Count; i++)
         {
@@ -1886,12 +1876,12 @@ void CMenuPopup::EnsureItemVisible(int index)
         HRGN hUpdateRgn = HANDLES(CreateRectRgn(0, 0, 0, 0));
         ScrollWindowEx(HWindow, 0, delta, &r, &r, hUpdateRgn, NULL, 0);
 
-        // rozsirim oblast prekresleni o horni sipku
+        // expand the area of redrawing by the upper arrow
         HRGN hItemRgn = HANDLES(CreateRectRgn(0, 0, Width, firstItemY));
         CombineRgn(hUpdateRgn, hUpdateRgn, hItemRgn, RGN_OR);
         HANDLES(DeleteObject(hItemRgn));
 
-        // rozsirime oblast prekresleni o prostor zacinajici spodni hranou drive posledni polozky
+        // expand the area of redrawing to the space starting from the bottom edge of the previous last item
         hItemRgn = HANDLES(CreateRectRgn(0, lastVisibleBottomY + delta, Width, Height));
         CombineRgn(hUpdateRgn, hUpdateRgn, hItemRgn, RGN_OR);
         HANDLES(DeleteObject(hItemRgn));
@@ -1911,18 +1901,18 @@ void CMenuPopup::OnMouseWheel(WPARAM wParam, LPARAM lParam)
     BOOL upArrow = UpArrowVisible;
     BOOL downArrow = DownArrowVisible;
 
-    // urcime vysku o kterou budeme rolovat
+    // we will determine the height at which we will scroll
     CMenuItem* item = Items[0];
-    int itemHeight = item->Height; // prvni polozka nebude separator
+    int itemHeight = item->Height; // first item will not be a separator
     if (itemHeight < 5)
-        itemHeight = 15; // kdyby to byl separator, budeme rolovat o 15 bodu
+        itemHeight = 15; // if it is a separator, we will scroll by 15 points
 
     short zDelta = (short)HIWORD(wParam);
     if ((zDelta < 0 && MouseWheelAccumulator > 0) || (zDelta > 0 && MouseWheelAccumulator < 0))
-        ResetMouseWheelAccumulator(); // pri zmene smeru naklapeni kolecka je potreba nulovat akumulator
+        ResetMouseWheelAccumulator(); // When changing the direction of the wheel tilt, it is necessary to reset the accumulator
 
-    DWORD wheelScroll = GetMouseWheelScrollLines();        // muze byt az WHEEL_PAGESCROLL(0xffffffff)
-    wheelScroll = max(1, min(wheelScroll, (DWORD)Height)); // omezime maximalne na delku stranky
+    DWORD wheelScroll = GetMouseWheelScrollLines();        // can be up to WHEEL_PAGESCROLL(0xffffffff)
+    wheelScroll = max(1, min(wheelScroll, (DWORD)Height)); // limit the maximum page length
 
     MouseWheelAccumulator += 1000 * zDelta;
     int stepsPerLine = max(1, (1000 * WHEEL_DELTA) / wheelScroll);
@@ -1933,7 +1923,7 @@ void CMenuPopup::OnMouseWheel(WPARAM wParam, LPARAM lParam)
     MouseWheelAccumulator -= linesToScroll * stepsPerLine;
     int delta = linesToScroll * itemHeight;
 
-    // vyhledam prvni a posledni viditelnou polozku
+    // Find the first and last visible item
     CMenuItem* firstVisibleItem = NULL;
     CMenuItem* lastVisibleItem = NULL;
     int i;
@@ -1949,9 +1939,9 @@ void CMenuPopup::OnMouseWheel(WPARAM wParam, LPARAM lParam)
     if (firstVisibleItem == NULL || lastVisibleItem == NULL)
         return;
     if (TopItemY == 0 && lastVisibleItem->YOffset + lastVisibleItem->Height <= Height)
-        return; // vsechny polozky jsou zobrazeny, v tomto popupu nema smysl rolovat
+        return; // all items are displayed, it doesn't make sense to scroll in this popup
 
-    // osetrime horni mez (aby horni polozka nebyla stazena dolu pod horni okraj menu)
+    // Adjust the upper limit (so that the top item is not pulled down below the top edge of the menu)
     if (TopItemY + delta >= 0)
     {
         delta = -TopItemY;
@@ -1960,7 +1950,7 @@ void CMenuPopup::OnMouseWheel(WPARAM wParam, LPARAM lParam)
     else
         upArrow = TRUE;
 
-    // osetrime spodni mez (aby spodni polozka nebyla vytazena nad spodni okraj menu)
+    // Adjust the bottom margin (so that the bottom item is not pulled above the bottom edge of the menu)
     if (lastVisibleItem->YOffset + lastVisibleItem->Height + TopItemY + delta <= Height)
     {
         delta = Height - (lastVisibleItem->YOffset + lastVisibleItem->Height + TopItemY);
@@ -1969,7 +1959,7 @@ void CMenuPopup::OnMouseWheel(WPARAM wParam, LPARAM lParam)
     else
         downArrow = TRUE;
 
-    // pokud se neco zmenilo, budeme kresli (kaslu na scrolling, pokud to bude blikat, muzeme doprogramovat)
+    // if something has changed, we will redraw (ignore scrolling, if it flickers, we can reprogram it)
     if (delta != 0 || UpArrowVisible != upArrow || DownArrowVisible != downArrow)
     {
         TopItemY += delta;
@@ -1979,7 +1969,7 @@ void CMenuPopup::OnMouseWheel(WPARAM wParam, LPARAM lParam)
         SelectedItemIndex = -1;
         PaintAllItems(NULL);
 
-        // nechame vybrat polozku pod kurzorem
+        // let's select the item under the cursor
         POINT cursorPos;
         GetCursorPos(&cursorPos);
         HWND hWndUnderCursor = WindowFromPoint(cursorPos);
@@ -1992,7 +1982,7 @@ void CMenuPopup::OnMouseWheel(WPARAM wParam, LPARAM lParam)
             myMsg.message = WM_MOUSEMOVE;
             myMsg.time = GetTickCount();
             myMsg.pt = cursorPos;
-            SharedRes->LastMouseMove.x = cursorPos.x - 1; // abychom prosli skrz uvodni test
+            SharedRes->LastMouseMove.x = cursorPos.x - 1; // to pass through the initial test
 
             BOOL dummy1;
             DWORD dummy2;
@@ -2039,7 +2029,7 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
     }
 
     case WM_CHAR:
-    case WM_SYSCHAR: //j.r.: aby fungovalo take Alt+PISMENO uvnitr menu
+    case WM_SYSCHAR: //j.r.: for Alt+LETTER to work inside the menu as well
     {
         CMenuPopup* popup = FindActivePopup();
         popup->OnChar((char)msg->wParam, leaveMenu, retValue);
@@ -2048,10 +2038,10 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
 
     case WM_SYSKEYUP:
     {
-        // pokud se sys key up s VK_F10 dorucilo do modalniho dialogu, doslo k zaslani
-        // zpravy WM_SYSCOMMAND s uCmdType=SC_KEYMENU a v dusledku k aktivaci window menu
-        // projevovalo se v Plugins/Encrypt/Create Key/Shift+F10 v jedne z editlines
-        // s passwordy, kde se vybaluje nase menu
+        // if the sys key up with VK_F10 was delivered to a modal dialog, a submission occurred
+        // messages WM_SYSCOMMAND with uCmdType=SC_KEYMENU and as a result of activating the window menu
+        // manifested in Plugins/Encrypt/Create Key/Shift+F10 in one of the editlines
+        // with passwords, where our menu is unpacked
         if (msg->wParam == VK_F10)
             return;
         break;
@@ -2070,17 +2060,17 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
                 if (SendMessage(SharedRes->HParent, WM_USER_CONTEXTMENU,
                                 (WPARAM)(CGUIMenuPopupAbstract*)popup, (LPARAM)FALSE))
                 {
-                    popup->OnKeyReturn(leaveMenu, retValue); //p.s. rozbaleni sub menu, nebo nageneruju command
+                    popup->OnKeyReturn(leaveMenu, retValue); //p.s. expanding sub menu, or I will not generate a command
                 }
             }
             return;
         }
-        if (msg->wParam == VK_MENU && (msg->lParam & 0x40000000) == 0 || // Alt down, ale ne autorepeat
+        if (msg->wParam == VK_MENU && (msg->lParam & 0x40000000) == 0 || // Alt down, but not autorepeat
             (!shiftPressed && msg->wParam == VK_F10))
         {
             *leaveMenu = TRUE;
-            if (SharedRes->MenuBar != NULL)              // jsme otevreni z menubar
-                SharedRes->MenuBar->ExitMenuLoop = TRUE; // takze z ni vypadneme
+            if (SharedRes->MenuBar != NULL)              // we are open from the menubar
+                SharedRes->MenuBar->ExitMenuLoop = TRUE; // so we will fall out of it
             return;
         }
 
@@ -2095,7 +2085,7 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
                 if (SendMessage(SharedRes->HParent, WM_USER_CONTEXTMENU,
                                 (WPARAM)(CGUIMenuPopupAbstract*)popup, (LPARAM)FALSE))
                 {
-                    popup->OnKeyReturn(leaveMenu, retValue); //p.s. rozbaleni sub menu, nebo nageneruju command
+                    popup->OnKeyReturn(leaveMenu, retValue); //p.s. expanding sub menu, or I will not generate a command
                 }
             }
             break;
@@ -2157,7 +2147,7 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
         case VK_ESCAPE:
         case VK_LEFT:
         {
-            // pracovni verze - pouze pro ladeni
+            // working version - for debugging purposes only
             CMenuPopup* iterator = this;
             while (iterator != NULL && iterator->OpenedSubMenu != NULL)
             {
@@ -2170,18 +2160,18 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
             }
             if (iterator == this)
             {
-                if (msg->wParam == VK_ESCAPE) // zavirani nejvrchnejsiho okna
+                if (msg->wParam == VK_ESCAPE) // closing the top window
                     *leaveMenu = TRUE;
 
                 if (SharedRes->MenuBar != NULL && SharedRes->MenuBar->HelpMode &&
                     msg->wParam == VK_ESCAPE)
                 {
-                    // zavreme menu, ukoncime menu loop a mizime
+                    // close the menu, end the menu loop and disappear
                     *leaveMenu = TRUE;
                     SharedRes->MenuBar->ExitMenuLoop = TRUE;
                     return;
                 }
-                if (SharedRes->MenuBar != NULL && msg->wParam == VK_LEFT) // zkusime se prepnout do predchoziho popupu
+                if (SharedRes->MenuBar != NULL && msg->wParam == VK_LEFT) // Let's try to switch back to the previous popup
                 {
                     int newHotIndex = SharedRes->MenuBar->HotIndex - 1;
                     if (newHotIndex < 0)
@@ -2194,23 +2184,23 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
                     }
                 }
             }
-            SharedRes->ChangeTickCount = INFINITE; // nechceme, aby se vybalovalo menu po timeoutu
+            SharedRes->ChangeTickCount = INFINITE; // We don't want the menu to be cleared after a timeout
             break;
         }
 
         case VK_RIGHT:
         {
-            popup->OnKeyRight(leaveMenu); // rozbaleni sub menu, je-li to mozne
+            popup->OnKeyRight(leaveMenu); // Expand submenu if possible
             break;
         }
 
         case VK_RETURN:
         {
-            popup->OnKeyReturn(leaveMenu, retValue); // rozbaleni sub menu, nebo nageneruju command
-            return;                                  // nesmime nechat Translatnou Return
+            popup->OnKeyReturn(leaveMenu, retValue); // Expand submenu or generate command
+            return;                                  // we must not let Translatnou Return
         }
         }
-        msg->hwnd = HWindow; // presmerujeme na nas (aby nedoslo k uniku klaves ven)
+        msg->hwnd = HWindow; // redirect to ours (to prevent the escape of keys)
         TranslateMessage(msg);
         return;
     }
@@ -2238,11 +2228,11 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
              msg->message == WM_MBUTTONDOWN ||
              msg->message == WM_RBUTTONDOWN))
         {
-            // mys stoji nad nevybranou polozkou a uzivatel stisknul nektere z tlacitek
-            // -> napred polozku nechame selectnout
+            // Mouse is hovering over an unselected item and the user pressed some of the buttons
+            // -> first we let the item be selected
             MSG myMsg = *msg;
             myMsg.message = WM_MOUSEMOVE;
-            SharedRes->LastMouseMove.x = myMsg.pt.x - 1; // abychom prosli skrze uvodni test
+            SharedRes->LastMouseMove.x = myMsg.pt.x - 1; // to pass through the initial test
             DoDispatchMessage(&myMsg, leaveMenu, retValue, dispatchLater);
         }
 
@@ -2257,16 +2247,16 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
         {
             CMenuItem* item = popup->Items[popup->SelectedItemIndex];
             if (!(item->State & MENU_STATE_GRAYED) ||
-                SharedRes->MenuBar != NULL && SharedRes->MenuBar->HelpMode && // Petr: jsme otevreni z menubar + jsme v HelpMode (Shift+F1) +
-                    (item->SubMenu == NULL || item->ID != 0))                 // Petr: + mame IDcko prikazu nebo submenu ("grayed" submenu nelze vybalit)
+                SharedRes->MenuBar != NULL && SharedRes->MenuBar->HelpMode && // Petr: we are open from the menubar + we are in HelpMode (Shift+F1) +
+                    (item->SubMenu == NULL || item->ID != 0))                 // Petr: + we have the ID of the command or submenu ("grayed" submenu cannot be expanded)
             {
-                if (!(item->State & MENU_STATE_GRAYED) && // Petr: otevirani "grayed" submenu neni mozne
+                if (!(item->State & MENU_STATE_GRAYED) && // Petr: opening "grayed" submenu is not possible
                     item->SubMenu != NULL && item->SubMenu != popup->OpenedSubMenu)
                 {
-                    // pokud je otevrene nejake sub-menu, zavru ho
+                    // if some sub-menu is open, close it
                     if (popup->OpenedSubMenu != NULL)
                         popup->CloseOpenedSubmenu();
-                    // ted muzu otevrit nove
+                    // now I can open new
                     RECT itemRect;
                     popup->GetItemRect(popup->SelectedItemIndex, &itemRect);
                     item->SubMenu->SharedRes = SharedRes;
@@ -2280,15 +2270,15 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
                 else
                 {
                     if (item->SubMenu == NULL ||
-                        (item->State & MENU_STATE_GRAYED) && item->SubMenu != NULL) // Petr: "grayed" submenu se v HelpMode chova jako prikaz
+                        (item->State & MENU_STATE_GRAYED) && item->SubMenu != NULL) // Petr: "grayed" submenu in HelpMode behaves like a command
                     {
-                        // kliknuti na enabled polozku, ktera neni submenu (Petr: + v HelpMode "grayed" polozku nebo submenu)
+                        // click on an enabled item that is not a submenu (Petr: + in HelpMode "grayed" item or submenu)
                         if (msg->message == WM_LBUTTONUP || msg->message == WM_RBUTTONUP)
                         {
                             *leaveMenu = TRUE;
                             *retValue = item->ID;
-                            if (SharedRes->MenuBar != NULL)              // jsme otevreni z menubar
-                                SharedRes->MenuBar->ExitMenuLoop = TRUE; // takze z ni vypadneme
+                            if (SharedRes->MenuBar != NULL)              // we are open from the menubar
+                                SharedRes->MenuBar->ExitMenuLoop = TRUE; // so we will fall out of it
                         }
                     }
                 }
@@ -2299,11 +2289,11 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
             !(FirstPopup->TrackFlags & MENU_TRACK_RIGHTBUTTON) &&
             msg->message == WM_RBUTTONUP)
         {
-            // user pustil tlacitko nad vybranou polozkou
+            // user clicked the button above the selected item
             if (SendMessage(SharedRes->HParent, WM_USER_CONTEXTMENU,
                             (WPARAM)(CGUIMenuPopupAbstract*)popup, (LPARAM)TRUE))
             {
-                popup->OnKeyReturn(leaveMenu, retValue); //p.s. rozbaleni sub menu, nebo nageneruju command
+                popup->OnKeyReturn(leaveMenu, retValue); //p.s. expanding sub menu, or I will not generate a command
             }
             return;
         }
@@ -2312,7 +2302,7 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
             if (SharedRes->MenuBar != NULL &&
                 (msg->message == WM_LBUTTONDOWN || msg->message == WM_LBUTTONDBLCLK))
             {
-                // jsme rozbaleni z MenuBar a prisel do ni LButtonUp => nesmime se zavrit
+                // we are unpacked from MenuBar and came into it LButtonUp => we must not close
                 if (hWndUnderCursor == SharedRes->MenuBar->HWindow)
                 {
                     int hitIndex;
@@ -2320,13 +2310,13 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
                     p = msg->pt;
                     ScreenToClient(SharedRes->MenuBar->HWindow, &p);
                     if (SharedRes->MenuBar->HitTest(p.x, p.y, hitIndex))
-                        return; // stopim
+                        return; // stop
                 }
             }
-            // nechame okno zavrit a pak dorucit zpravu
+            // Let's close the window and then deliver the message
             if (SharedRes->ExcludeRect != NULL && PtInRect(SharedRes->ExcludeRect, msg->pt) &&
                 (msg->message == WM_LBUTTONDOWN || msg->message == WM_LBUTTONDBLCLK))
-                *dispatchLater = FALSE; // nad timto obdelnikem nedorucim ldown, aby nedoslo k opetovnemu otevreni menu
+                *dispatchLater = FALSE; // I will not deliver the lid over this rectangle so that the menu does not reopen
             else
                 *dispatchLater = TRUE;
             *leaveMenu = TRUE;
@@ -2341,12 +2331,12 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
     {
         POINT p = msg->pt;
         if (SharedRes->LastMouseMove.x == p.x && SharedRes->LastMouseMove.y == p.y)
-            return; // nechceme zpravu dorucit
+            return; // we do not want to deliver the message
         SharedRes->LastMouseMove = p;
         HWND hWindowUnderCursor = PopupWindowFromPoint(p);
         if (SharedRes->MenuBar != NULL && hWindowUnderCursor == SharedRes->MenuBar->HWindow)
         {
-            // jsme otevreni z MenuBar okna a musime mu helpnout s prepinanim
+            // we are opening from the MenuBar of the window and we need to help it with switching
             POINT p2;
             p2 = p;
             ScreenToClient(SharedRes->MenuBar->HWindow, &p2);
@@ -2366,7 +2356,7 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
         if (popup != NULL)
         {
             ScreenToClient(popup->HWindow, &p);
-            // chceme pouze client area
+            // we only want the client area
             if (p.x >= 0 && p.x < popup->Width &&
                 p.y >= 0 && p.y < popup->Height)
             {
@@ -2376,7 +2366,7 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
                     !((popup->Items[itemIndex]->Type & MENU_TYPE_SEPARATOR) ||
                       (popup->Items[itemIndex]->State & MENU_STATE_GRAYED) &&
                           !(SharedRes->MenuBar != NULL && SharedRes->MenuBar->HelpMode &&                     // Petr: negace: jsme otevreni z menubar + jsme v HelpMode (Shift+F1) +
-                            (popup->Items[itemIndex]->SubMenu == NULL || popup->Items[itemIndex]->ID != 0)))) // Petr: + mame IDcko prikazu nebo submenu ("grayed" submenu nelze vybalit)
+                            (popup->Items[itemIndex]->SubMenu == NULL || popup->Items[itemIndex]->ID != 0)))) // Petr: + we have the ID of the command or submenu ("grayed" submenu cannot be expanded)
                 {
                     newItemIndex = itemIndex;
                 }
@@ -2388,7 +2378,7 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
             }
         }
 
-        // pokud je treba, deaktivuju vybranou polozku v aktivniho popupu
+        // if necessary, I will deactivate the selected item in the active popup
         if (activePopup != NULL && activePopup->SelectedByMouse &&
             (popup == NULL || popup != activePopup) && activePopup->SelectedItemIndex != -1)
         {
@@ -2401,12 +2391,11 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
         if (popup != NULL)
             CheckSelectedPath(popup);
 
-        // pokud doslo ke zmene, vykreslim ji
+        // if a change has occurred, I will render it
         if (popup != NULL && (newItemIndex != popup->SelectedItemIndex))
         {
             popup->SelectNewItemIndex(newItemIndex, TRUE);
-            /*
-        if (popup->OpenedSubMenu != NULL)
+            /*          if (popup->OpenedSubMenu != NULL)
         {
           // je-li otevrene submenu, nastavim cas pouze pro prvni zmenu
           if (SharedRes->ChangeTickCount == INFINITE)
@@ -2415,7 +2404,7 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
         else
           SharedRes->ChangeTickCount = GetTickCount();
         */
-            // John: klasicke menu se chova takto.
+            // John: The classic menu behaves like this.
             SharedRes->ChangeTickCount = GetTickCount();
         }
         return;
@@ -2434,7 +2423,7 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
             if (popup != NULL)
             {
                 ScreenToClient(popup->HWindow, &p);
-                // chceme pouze client area
+                // we only want the client area
                 int itemIndex;
                 CMenuPopupHittestEnum hittest = popup->HitTest(&p, &itemIndex);
                 if (hittest == mphUpArrow || hittest == mphDownArrow)
@@ -2442,7 +2431,7 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
                     int newIndex = -1;
                     if (hittest == mphDownArrow)
                     {
-                        // vyhledame prvni nezobrazenou polozku
+                        // find the first item not displayed
                         int bottomLimit = popup->Height - UPDOWN_ITEM_HEIGHT;
                         int i;
                         for (i = 0; i < popup->Items.Count; i++)
@@ -2458,7 +2447,7 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
                     }
                     else
                     {
-                        // vyhledame prvni nezobrazenou polozku
+                        // find the first item not displayed
                         int topLimit = UPDOWN_ITEM_HEIGHT;
                         int i;
                         for (i = 1; i < popup->Items.Count; i++)
@@ -2489,9 +2478,9 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
         }
         break;
         // do AS 2.52b1 zde byl return; se zavedeni throbberu se nam tim nedorucovalo IDT_THROBBER
-        // a throbber se netocil po dobu, co byl uzivatel v menu; bylo by mozne propustit explicitne
-        // jen tento timer, ale momentalne nevidim duvod, proc nedorucit vsechny; pokud se neco podela,
-        // muzeme poustet jen ten throbber
+        // and the throbber did not spin while the user was in the menu; it would be possible to dismiss it explicitly
+        // only this timer, but currently I don't see a reason not to deliver all; if something goes wrong,
+        // We can only run that throbber
         //      return;
     }
 
@@ -2510,8 +2499,8 @@ BOOL CMenuPopup::CreatePopupWindow(CMenuPopup* firstPopup, int x, int y, int sub
 
     FirstPopup = firstPopup;
 
-    // ! pozor: WM_USER_INITMENUPOPUP musi vzdy parovat s WM_USER_UNINITMENUPOPUP,
-    // protoze aplikace muze pri zavirani destruovat data
+    // ! warning: WM_USER_INITMENUPOPUP must always be paired with WM_USER_UNINITMENUPOPUP,
+    // because the application can destroy data when closing
 
     if (!(TrackFlags & MENU_TRACK_NONOTIFY))
         SendMessage(SharedRes->HParent, WM_USER_INITMENUPOPUP,
@@ -2524,16 +2513,16 @@ BOOL CMenuPopup::CreatePopupWindow(CMenuPopup* firstPopup, int x, int y, int sub
         LoadFromHandle();
     }
 
-    if (Items.Count == 0 || FirstPopup->Closing) // behem initu mohlo dojit k zavreni menu
+    if (Items.Count == 0 || FirstPopup->Closing) // the menu could have been closed during initialization
     {
-        // posleme notifikaci, aby nam parovala k WM_USER_INITMENUPOPUP
+        // Send a notification to match with WM_USER_INITMENUPOPUP
         if (!(TrackFlags & MENU_TRACK_NONOTIFY))
             SendMessage(SharedRes->HParent, WM_USER_UNINITMENUPOPUP,
                         (WPARAM)(CGUIMenuPopupAbstract*)this, MAKELPARAM(submenuItemPos, (WORD)ID));
         return FALSE;
     }
 
-    // pokud user predvybral polozku, osetrime krajni stavy
+    // if the user preselected an item, we handle edge cases
     if (TrackFlags & MENU_TRACK_SELECT)
     {
         if (SelectedItemIndex < 0 || SelectedItemIndex >= Items.Count)
@@ -2541,17 +2530,17 @@ BOOL CMenuPopup::CreatePopupWindow(CMenuPopup* firstPopup, int x, int y, int sub
 
         if (Items[SelectedItemIndex]->Type & MENU_TYPE_SEPARATOR)
         {
-            // trefili jsme se na separator, zkusime dohledat nejakou vybratelnou
+            // We hit a separator, let's try to find a selectable one
             int firstIndex;
             if (FindNextItemIndex(SelectedItemIndex, TRUE, &firstIndex))
                 SelectedItemIndex = firstIndex;
-            // kdyz nic nenajdeme, nechame to na tom separatoru
+            // if we don't find anything, we'll leave it at that separator
         }
     }
     else
         SelectedItemIndex = -1;
 
-    // napocitam rozmery menu
+    // calculate the dimensions of the menu
     LayoutColumns();
 
     RECT r;
@@ -2582,12 +2571,12 @@ BOOL CMenuPopup::CreatePopupWindow(CMenuPopup* firstPopup, int x, int y, int sub
     else if (TrackFlags & MENU_TRACK_BOTTOMALIGN)
         newY -= height;
 
-    // osetrime prelezeni prave a leve strany viditelne oblasti
+    // Handle the mouseover of the right and left side of the visible area
     if (newX + width > clipRect.right)
         newX = clipRect.right - width;
     if (newX < clipRect.left)
         newX = clipRect.left;
-    // osetrime prelezeni dolni a horni strany viditelne oblasti
+    // we will handle the overflow of the lower and upper sides of the visible area
     if (newY + height > clipRect.bottom)
         newY = clipRect.bottom - height;
     if (newY < clipRect.top)
@@ -2603,41 +2592,41 @@ BOOL CMenuPopup::CreatePopupWindow(CMenuPopup* firstPopup, int x, int y, int sub
     {
         if (TrackFlags & MENU_TRACK_VERTICAL)
         {
-            // mame ustoupit pod nebo nad exclude rectangle
+            // we need to move below or above the exclude rectangle
             int topHeight = max(0, min(height, r.top - clipRect.top));
             int bottomHeight = max(0, min(height, clipRect.bottom - r.bottom));
             if (topHeight <= bottomHeight)
             {
-                // menu umistime dolu
+                // place the menu at the bottom
                 newY = r.bottom;
                 height = bottomHeight;
             }
             else
             {
-                // menu umistime nahoru
+                // place the menu at the top
                 newY = r.top - topHeight;
                 height = topHeight;
             }
         }
         else
         {
-            // mame ustoupit pred nebo za exclude rectangle
+            // we need to retreat in front of or behind the exclude rectangle
             int leftWidth = max(0, min(width, r.left - clipRect.left));
             int rightWidth = max(0, min(width, clipRect.right - r.right));
             if (rightWidth >= leftWidth)
             {
-                // menu umistime vpravo
+                // place the menu on the right
                 newX = r.right;
             }
             else
             {
-                // menu umistime vlevo
+                // place the menu on the left
                 newX = r.left - leftWidth;
             }
         }
     }
 
-    // osetrime vyteceni dole z obrazovky pro menu, ktere nema MENU_TRACK_VERTICAL (napriklad User Menu)
+    // Handle the overflow at the bottom of the screen for menus that do not have MENU_TRACK_VERTICAL (e.g. User Menu)
     if (newY + height > clipRect.bottom && (clipRect.bottom - newY) > 0)
         height = clipRect.bottom - newY;
 
@@ -2663,7 +2652,7 @@ BOOL CMenuPopup::CreatePopupWindow(CMenuPopup* firstPopup, int x, int y, int sub
                  this) == NULL)
     {
         TRACE_E("Unable to create window.");
-        // posleme notifikaci, aby nam parovala k WM_USER_INITMENUPOPUP
+        // Send a notification to match with WM_USER_INITMENUPOPUP
         if (!(TrackFlags & MENU_TRACK_NONOTIFY))
             SendMessage(SharedRes->HParent, WM_USER_UNINITMENUPOPUP,
                         (WPARAM)(CGUIMenuPopupAbstract*)this, MAKELPARAM(submenuItemPos, (WORD)ID));
@@ -2678,8 +2667,8 @@ BOOL CMenuPopup::CreatePopupWindow(CMenuPopup* firstPopup, int x, int y, int sub
     return TRUE;
 }
 
-// zavru otevrene submenu, vcetne jeho childu
-// prvni se musi zavirat nejvzdalenejsi child a pak smerem k nam
+// close the open submenu, including its children
+// First, the furthest child must be closed, then towards us
 void CMenuPopup::CloseOpenedSubmenu()
 {
     CALL_STACK_MESSAGE1("CMenuPopup::CloseOpenedSubmenu()");
@@ -2698,7 +2687,7 @@ void CMenuPopup::CloseOpenedSubmenu()
         }
         iterator = iterator->OpenedSubMenu;
     }
-    // v obracenem poradi je postrilim
+    // in reverse order is the shooting
     int i;
     for (i = stack.Count - 1; i >= 0; i--)
     {
@@ -2726,7 +2715,7 @@ void CMenuPopup::HideAll()
             }
             iterator = iterator->OpenedSubMenu;
         }
-        // v obracenem poradi je zhasnu
+        // turn off in reverse order
         int i;
         for (i = stack.Count - 1; i >= 0; i--)
         {
@@ -2741,11 +2730,11 @@ void CMenuPopup::OnTimerTimeout()
 {
     CALL_STACK_MESSAGE1("CMenuPopup::OnTimerTimeout()");
     //
-    // rekurzivni funkce
-    // hleda od tatky smerem k poslednimu diteti takovy popup, kde nekoresponduje
-    // index vybrane polozky a otevreneho childa; takoveho childa pak zavre
+    // recursive function
+    // searches from the father towards the last child for such a popup where it does not correspond
+    // index of the selected item and an open child; it then closes such a child
     //
-    // pokud novy index stoji na popupu, otevre ho
+    // if the new index is on the popup, open it
     //
     CMenuItem* selectedItem = NULL;
     if (SelectedItemIndex != -1)
@@ -2764,7 +2753,7 @@ void CMenuPopup::OnTimerTimeout()
     {
     createLabel:
         if (selectedItem != NULL && selectedItem->SubMenu != NULL &&
-            !(selectedItem->State & MENU_STATE_GRAYED)) // Petr: otevirani "grayed" submenu neni mozne
+            !(selectedItem->State & MENU_STATE_GRAYED)) // Petr: opening "grayed" submenu is not possible
         {
             RECT itemRect;
             GetItemRect(SelectedItemIndex, &itemRect);
@@ -2779,19 +2768,17 @@ void CMenuPopup::OnTimerTimeout()
 
 void CMenuPopup::PaintAllItems(HRGN hUpdateRgn)
 {
-    // prevezmu si private DC
+    // take over private DC
     HDC hPrivateDC = NOHANDLES(GetDC(HWindow));
 
     if (hUpdateRgn != NULL)
         SelectClipRgn(hPrivateDC, hUpdateRgn);
-    /*
-  RECT clipRect;
+    /*    RECT clipRect;
   int clipRectType = GetClipBox(hPrivateDC, &clipRect);
 
   if (clipRectType == NULLREGION || clipRectType == SIMPLEREGION)
   {
-  }
-*/
+  }*/
     HFONT hOldFont = (HFONT)SelectObject(hPrivateDC, SharedRes->HNormalFont);
     int topY = 0;
     if (UpArrowVisible)
@@ -2799,7 +2786,7 @@ void CMenuPopup::PaintAllItems(HRGN hUpdateRgn)
     int y = TopItemY;
     int maxY = Height;
     if (DownArrowVisible)
-        maxY = Height - UPDOWN_ITEM_HEIGHT; // vytvorime prostor pro sipku dolu
+        maxY = Height - UPDOWN_ITEM_HEIGHT; // create space for the down arrow
     int i;
     for (i = 0; i < Items.Count; i++)
     {
@@ -2812,7 +2799,7 @@ void CMenuPopup::PaintAllItems(HRGN hUpdateRgn)
         DrawItem(hPrivateDC, item, y, SelectedItemIndex == i);
         y += item->Height;
     }
-    // pokud jsou viditelne, zobrazime sipky
+    // if they are visible, we display arrows
     if (UpArrowVisible)
         DrawUpDownItem(hPrivateDC, TRUE);
     if (DownArrowVisible)
@@ -2820,7 +2807,7 @@ void CMenuPopup::PaintAllItems(HRGN hUpdateRgn)
     SelectObject(hPrivateDC, hOldFont);
 
     if (hUpdateRgn != NULL)
-        SelectClipRgn(hPrivateDC, NULL); // vykopneme clip region, pokud jsme ho nastavili
+        SelectClipRgn(hPrivateDC, NULL); // we kick out the clip region if we have set it
 }
 
 LRESULT
@@ -2842,7 +2829,7 @@ CMenuPopup::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_USER_CLOSEMENU:
     {
         Closing = TRUE;
-        SetEvent(SharedRes->HCloseEvent); // nechame rozjet message queue
+        SetEvent(SharedRes->HCloseEvent); // let's start the message queue
         HideAll();
         return 0;
     }
@@ -2856,7 +2843,7 @@ CMenuPopup::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_DESTROY:
     {
-        // posleme notifikaci, aby nam parovala k WM_USER_INITMENUPOPUP
+        // Send a notification to match with WM_USER_INITMENUPOPUP
         if (!(TrackFlags & MENU_TRACK_NONOTIFY))
             SendMessage(SharedRes->HParent, WM_USER_UNINITMENUPOPUP,
                         (WPARAM)(CGUIMenuPopupAbstract*)this, MAKELPARAM(0, (WORD)ID));
@@ -2898,7 +2885,7 @@ CMenuPopup::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         r.left = 0;
         r.top = 0;
 
-        // tmavsi ramecek kolem menu
+        // Dark frame around the menu
         HBRUSH hOldBrush = (HBRUSH)SelectObject(hdc, HMenuGrayTextBrush);
         PatBlt(hdc, 0, 0, r.right, 1, PATCOPY);
         PatBlt(hdc, r.right - 1, 0, r.right, r.bottom, PATCOPY);
@@ -2906,7 +2893,7 @@ CMenuPopup::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         PatBlt(hdc, 0, 0, 1, r.bottom, PATCOPY);
         SelectObject(hdc, hOldBrush);
 
-        // vnitrek obycejne pozadi
+        // inner plain background
         InflateRect(&r, -1, -1);
         FillRect(hdc, &r, HDialogBrush);
 
@@ -2916,16 +2903,15 @@ CMenuPopup::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_PAINT:
     {
-        // nepojedeme pres CACHE - nakreslime to rovnou do obrazovky
-        // vzheldem k efektu otevirani nebude mrkani viditelne
+        // Let's not go through the CACHE - let's draw it directly on the screen
+        // Due to the opening effect, blinking will not be visible
         PAINTSTRUCT ps;
         HANDLES(BeginPaint(HWindow, &ps));
         PaintAllItems(NULL);
-        HANDLES(EndPaint(HWindow, &ps)); // pouze zhasina caret, ktery stejne nemame
+        HANDLES(EndPaint(HWindow, &ps)); // only turns off the caret, which we don't have anyway
         return 0;
     }
-        /*
-    // podpora pro animaci
+        /*      // support for animation
     case WM_PRINTCLIENT:
     {
       HDC hDC = (HDC) wParam; 
@@ -2941,8 +2927,7 @@ CMenuPopup::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
       }
       return 0;
-    }
-*/
+    }*/
     }
     return CWindow::WindowProc(uMsg, wParam, lParam);
 }
@@ -2954,28 +2939,28 @@ CMenuPopup::Track(DWORD trackFlags, int x, int y, HWND hwnd, const RECT* exclude
     MSG msg;
     BOOL dispatchMsg;
 
-    // zahakujeme tento thread
+    // hook this thread
     HHOOK hOldHookProc = OldMenuHookTlsAllocator.HookThread();
 
     if (!(trackFlags & MENU_TRACK_NONOTIFY))
         SendMessage(hwnd, WM_USER_ENTERMENULOOP, 0, 0);
 
-    SelectedByMouse = FALSE; // v 2.5b9 nebyla promenna inicializovana a ChangeDeriveMenu Alt+F1/2
-                             // se chovalo nahodile -- pohnuti kurzorem mimo menu obcas zpusobilo
-                             // ztratu selectiony
-                             // pokud se toto chovani nebude hodit pro CMenuPopup::Track(), je
-                             // vec asi zrala na zavedeni ridiciho flagu v trackFlags
+    SelectedByMouse = FALSE; // in 2.5b9 the variable was not initialized and ChangeDeriveMenu Alt+F1/2
+                             // behaved randomly -- moving the cursor outside the menu occasionally caused
+                             // loss of selection
+                             // if this behavior is not suitable for CMenuPopup::Track(),
+                             // thing probably hungry for introducing the control flag in trackFlags
     DWORD retValue = TrackInternal(trackFlags, x, y, hwnd, exclude, NULL, msg, dispatchMsg);
 
     if (!(trackFlags & MENU_TRACK_NONOTIFY))
         SendMessage(hwnd, WM_USER_LEAVEMENULOOP, 0, 0);
 
-    // pokud jsme hookovali, budeme take uvolnovat
+    // if we hooked, we will also release
     if (hOldHookProc != NULL)
         OldMenuHookTlsAllocator.UnhookThread(hOldHookProc);
 
-    // prichazi dorucovani vysledku - stejna vec se resi v CMenuBar::EnterMenuInternal
-    // simulujeme pohyb mysi, aby si ji ostatni mohli zachytit
+    // delivery of results is coming - the same thing is being handled in CMenuBar::EnterMenuInternal
+    // simulating mouse movement so that others can catch it
     POINT cursorPos;
     GetCursorPos(&cursorPos);
     HWND hWndUnderCursor = WindowFromPoint(cursorPos);
@@ -2984,13 +2969,13 @@ CMenuPopup::Track(DWORD trackFlags, int x, int y, HWND hwnd, const RECT* exclude
         ScreenToClient(hWndUnderCursor, &cursorPos);
         SendMessage(hWndUnderCursor, WM_MOUSEMOVE, 0, MAKELPARAM(cursorPos.x, cursorPos.y));
     }
-    // dorucime opozdenou message
+    // deliver delayed message
     if (dispatchMsg)
     {
         TranslateMessage(&msg);
         PostMessage(msg.hwnd, msg.message, msg.wParam, msg.lParam);
     }
-    // vratime command
+    // return command
     DWORD ret = TRUE;
 
     if (trackFlags & MENU_TRACK_RETURNCMD)
@@ -3014,7 +2999,7 @@ CMenuPopup::TrackInternal(DWORD trackFlags, int x, int y, HWND hwnd, const RECT*
                         trackFlags, x, y, dispatchDelayedMsg);
     //  TRACE_I("CMenuPopup::TrackInternal begin");
     dispatchDelayedMsg = FALSE;
-    // vytvorim sdilene prostredky
+    // create shared resources
     SharedRes = new CMenuSharedResources();
     if (SharedRes == NULL)
     {
@@ -3032,7 +3017,7 @@ CMenuPopup::TrackInternal(DWORD trackFlags, int x, int y, HWND hwnd, const RECT*
 
     if (trackFlags & MENU_TRACK_HIDEACCEL)
     {
-        // pokud je v systemu vnucene zobrazovani podtrzitek, budeme flag MENU_TRACK_HIDEACCEL ignorovat
+        // If the system enforces displaying underscores, we will ignore the MENU_TRACK_HIDEACCEL flag.
         BOOL alwaysVisible;
         if (SystemParametersInfo(SPI_GETKEYBOARDCUES, 0, &alwaysVisible, FALSE) == 0)
             alwaysVisible = TRUE;
@@ -3040,23 +3025,23 @@ CMenuPopup::TrackInternal(DWORD trackFlags, int x, int y, HWND hwnd, const RECT*
             SharedRes->HideAccel = TRUE;
     }
 
-    // tady nam to padalo s exception po nasazeni Microsoft Application Verifier
-    // event jeste nemusi existovat
+    // We were experiencing crashes with exceptions after deploying Microsoft Application Verifier.
+    // event may not exist yet
     if (SharedRes->HCloseEvent != NULL)
         ResetEvent(SharedRes->HCloseEvent);
 
     TrackFlags = trackFlags;
 
-    // necham je inicializovat
+    // let them be initialized
     if (!SharedRes->Create(hwnd, 1, 1))
         return 0;
 
     DWORD retValue = 0;
 
-    BeginStopRefresh();     // neprejeme si zadne refreshe
-    BeginStopIconRepaint(); // neprejeme si zadne repainty ikon
+    BeginStopRefresh();     // We do not want any refreshes
+    BeginStopIconRepaint(); // we do not want any repainting icons
 
-    // otevru okno - tatku
+    // open the window - dad
     //  TRACE_I("MENU: creating window");
     if (CreatePopupWindow(this, x, y, 0, exclude))
     {
@@ -3066,7 +3051,7 @@ CMenuPopup::TrackInternal(DWORD trackFlags, int x, int y, HWND hwnd, const RECT*
             ReleaseCapture();
         }
 
-        // pridame se do monitoringu zaviracich zprav
+        // we will add ourselves to the monitoring of closing messages
         MenuWindowQueue.Add(HWindow);
 
         MSG msg;
@@ -3078,8 +3063,8 @@ CMenuPopup::TrackInternal(DWORD trackFlags, int x, int y, HWND hwnd, const RECT*
             if (Closing)
             {
                 leaveMenu = TRUE;
-                if (SharedRes->MenuBar != NULL)              // jsme otevreni z menubar
-                    SharedRes->MenuBar->ExitMenuLoop = TRUE; // takze z ni vypadneme
+                if (SharedRes->MenuBar != NULL)              // we are open from the menubar
+                    SharedRes->MenuBar->ExitMenuLoop = TRUE; // so we will fall out of it
             }
             else
             {
@@ -3094,7 +3079,7 @@ CMenuPopup::TrackInternal(DWORD trackFlags, int x, int y, HWND hwnd, const RECT*
                             if (msg.message == WM_LBUTTONDOWN)
                                 skipFirstLBtnDblclk = FALSE;
                             if (msg.message == WM_LBUTTONDBLCLK)
-                                continue; // skipneme message, protoze je to preklep po lbuttondown
+                                continue; // Skipping message because it's a typo after lbuttondown
                         }
                         if (skipFirstLBtnUp)
                         {
@@ -3104,7 +3089,7 @@ CMenuPopup::TrackInternal(DWORD trackFlags, int x, int y, HWND hwnd, const RECT*
                             {
                                 skipFirstLBtnUp = FALSE;
                                 if (FindPopup(PopupWindowFromPoint(msg.pt)) == NULL)
-                                    continue; // skipneme message, aby nedoslo k okamzitemu zavreni okna
+                                    continue; // skip the message to prevent the window from closing immediately
                             }
                         }
                         DoDispatchMessage(&msg, &leaveMenu, &retValue, &dispatchLater);
@@ -3148,7 +3133,7 @@ CMenuPopup::TrackInternal(DWORD trackFlags, int x, int y, HWND hwnd, const RECT*
 
         CloseOpenedSubmenu();
 
-        // vyhodime se z monitoringu zaviracich zprav
+        // we will exclude ourselves from the monitoring of closing messages
         MenuWindowQueue.Remove(HWindow);
 
         DestroyWindow(HWindow);

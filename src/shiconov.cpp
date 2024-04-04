@@ -8,8 +8,8 @@
 #include "shiconov.h"
 #include "plugins\shared\sqlite\sqlite3.h"
 
-CShellIconOverlays ShellIconOverlays;                                  // pole vsech dostupnych icon-overlays
-TIndirectArray<CShellIconOverlayItem2> ListOfShellIconOverlays(15, 5); // seznam vsech icon overlay handleru
+CShellIconOverlays ShellIconOverlays;                                  // array of all available icon overlays
+TIndirectArray<CShellIconOverlayItem2> ListOfShellIconOverlays(15, 5); // list of all icon overlay handlers
 
 //
 // *****************************************************************************
@@ -79,10 +79,10 @@ BOOL GetGoogleDrivePath(char* gdPath, int gdPathMax, CSQLite3DynLoadBase** sqlit
     BOOL ret = FALSE;
     *pathIsFromConfig = FALSE;
 
-    WCHAR widePath[MAX_PATH]; // delsi cesty stejne neumime
-    char mbPath[MAX_PATH];    // ANSI nebo UTF8 cesta
+    WCHAR widePath[MAX_PATH]; // we still can't do longer journeys
+    char mbPath[MAX_PATH];    // ANSI or UTF8 path
     char sDbPath[MAX_PATH];
-    if (SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, 0 /* SHGFP_TYPE_CURRENT */, sDbPath) == S_OK)
+    if (SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, 0 /* SHGFP_TYPE_CURRENT*/, sDbPath) == S_OK)
     {
         BOOL pathOK = FALSE;
         char* sDbPathEnd = sDbPath + strlen(sDbPath);
@@ -98,15 +98,15 @@ BOOL GetGoogleDrivePath(char* gdPath, int gdPathMax, CSQLite3DynLoadBase** sqlit
         }
         if (pathOK)
         {
-            // loadime jen pokud jeste sqlite.dll neni loadle
+            // Load only if sqlite.dll has not been loaded yet
             CSQLite3DynLoad* sqlite3_Dyn = sqlite3_Dyn_InOut == NULL || *sqlite3_Dyn_InOut == NULL ? new CSQLite3DynLoad() : (CSQLite3DynLoad*)*sqlite3_Dyn_InOut;
             if (sqlite3_Dyn->OK)
             {
                 sqlite3* pDb;
                 sqlite3_stmt* pStmt;
-                char utf8Select[] = "SELECT data_value FROM data WHERE entry_key = 'local_sync_root_path';"; // UTF8 string (pokud by se tam dal jakykoliv extra znak, je to nutny prevest ANSI->UTF8)
+                char utf8Select[] = "SELECT data_value FROM data WHERE entry_key = 'local_sync_root_path';"; // UTF8 string (if any extra character is added there, it is necessary to convert ANSI->UTF8)
 
-                // sqlite3_open_v2 vyzaduje UTF8 cestu, takze ji jdeme prevest z ANSI na UTF8
+                // sqlite3_open_v2 requires a UTF8 path, so we need to convert it from ANSI to UTF8
                 if (ConvertA2U(sDbPath, -1, widePath, _countof(widePath)) &&
                     ConvertU2A(widePath, -1, mbPath, _countof(mbPath), FALSE, CP_UTF8))
                 {
@@ -146,7 +146,7 @@ BOOL GetGoogleDrivePath(char* gdPath, int gdPathMax, CSQLite3DynLoadBase** sqlit
                             sqlite3_Dyn->finalize(pStmt);
                         }
                         else
-                            TRACE_I("SQLite: cannot prepare " << sDbPath); // chodi to sem je-li GD instalovany, ale "not signed in"
+                            TRACE_I("SQLite: cannot prepare " << sDbPath); // It comes here if GD is installed, but "not signed in"
                     }
                     else
                         TRACE_E("SQLite: cannot open " << sDbPath);
@@ -154,9 +154,9 @@ BOOL GetGoogleDrivePath(char* gdPath, int gdPathMax, CSQLite3DynLoadBase** sqlit
                 }
             }
             if (sqlite3_Dyn_InOut != NULL)
-                *sqlite3_Dyn_InOut = sqlite3_Dyn; // vracime loadle sqlite.dll pro dalsi pouziti (mohlo byt loadle uz pred volanim teto funkce)
+                *sqlite3_Dyn_InOut = sqlite3_Dyn; // Returning the loaded sqlite.dll for further use (could have been loaded before calling this function)
             else
-                delete sqlite3_Dyn; // uvolnime sqlite.dll, nikdo na nej neceka
+                delete sqlite3_Dyn; // Release sqlite.dll, nobody is waiting for it
         }
         else
             TRACE_I("Cannot find Google Drive's configuration file: " << sDbPath);
@@ -167,7 +167,7 @@ BOOL GetGoogleDrivePath(char* gdPath, int gdPathMax, CSQLite3DynLoadBase** sqlit
     if (!ret)
     {
         if (SHGetFolderPath(NULL, WindowsVistaAndLater ? CSIDL_PROFILE : CSIDL_MYDOCUMENTS,
-                            NULL, 0 /* SHGFP_TYPE_CURRENT */, mbPath) == S_OK &&
+                            NULL, 0 /* SHGFP_TYPE_CURRENT*/, mbPath) == S_OK &&
             SalPathAppend(mbPath, "Google Drive", MAX_PATH) &&
             (int)strlen(mbPath) < gdPathMax)
         {
@@ -182,13 +182,11 @@ BOOL GetGoogleDrivePath(char* gdPath, int gdPathMax, CSQLite3DynLoadBase** sqlit
 //
 // *****************************************************************************
 
-/*
-// podle zadane adresy vraci modul (DLL), ve kterem se adresa funkce nachazi
-// (gets DLL module handle for specified function address)
-// pokud nas to zajima pro prave spousteny kod, je resenim i tohle (MS specific):
+/*  // gets DLL module handle for specified function address
+// if we are interested in the currently running code, this is also a solution (MS specific):
 // EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 // #define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
-// viz http://blogs.msdn.com/b/oldnewthing/archive/2004/10/25/247180.aspx
+// see http://blogs.msdn.com/b/oldnewthing/archive/2004/10/25/247180.aspx
 HMODULE GetModuleByAddress(void *address)
 {
   MEMORY_BASIC_INFORMATION mbi;
@@ -196,8 +194,7 @@ HMODULE GetModuleByAddress(void *address)
   if (VirtualQuery(address, &mbi, sizeof(mbi)))
     return (HMODULE)(mbi.AllocationBase);
   return NULL;
-}
-*/
+}*/
 
 void InitShellIconOverlaysAuxAux(CLSID* clsid, const char* name)
 {
@@ -205,7 +202,7 @@ void InitShellIconOverlaysAuxAux(CLSID* clsid, const char* name)
     if (CoCreateInstance(*clsid, NULL,
                          CLSCTX_INPROC_SERVER, IID_IShellIconOverlayIdentifier,
                          (LPVOID*)&iconOverlayIdentifier) == S_OK &&
-        iconOverlayIdentifier != NULL) // asi zbytecny test, jen se sychrujeme
+        iconOverlayIdentifier != NULL) // probably an unnecessary test, we're just drying ourselves off
     {
         OLECHAR iconFile[MAX_PATH];
         int iconIndex;
@@ -214,10 +211,10 @@ void InitShellIconOverlaysAuxAux(CLSID* clsid, const char* name)
         {
             if (flags & ISIOI_ICONFILE)
             {
-                int priority; // priorita: nejdrive se budeme na overlay ptat handleru s nejnizsim cislem priority
+                int priority; // priority: first we will ask the overlay for the handler with the lowest priority number
                 if (iconOverlayIdentifier->GetPriority(&priority) != S_OK)
                 {
-                    priority = 100; // nejnizsi priorita
+                    priority = 100; // lowest priority
                     TRACE_E("InitShellIconOverlays(): GetPriority method returns error for: " << name);
                 }
 
@@ -228,7 +225,7 @@ void InitShellIconOverlaysAuxAux(CLSID* clsid, const char* name)
                 WideCharToMultiByte(CP_ACP, 0, (wchar_t*)iconFile, -1, iconFileMB, MAX_PATH, NULL, NULL);
                 iconFileMB[MAX_PATH - 1] = 0;
 
-                // nacteme ikony vsech velikosti pro tento icon-overlay
+                // Load icons of all sizes for this icon-overlay
                 HICON hIcons[2] = {0};
                 ExtractIcons(iconFileMB, iconIndex,
                              MAKELONG(IconSizes[ICONSIZE_32], IconSizes[ICONSIZE_16]),
@@ -250,7 +247,7 @@ void InitShellIconOverlaysAuxAux(CLSID* clsid, const char* name)
                     if (iconOverlay[x] != NULL)
                         HANDLES_ADD(__htIcon, __hoLoadImage, iconOverlay[x]);
 
-                // vlozime handler do ShellIconOverlays
+                // insert handler into ShellIconOverlays
                 if (iconOverlay[ICONSIZE_16] != NULL && iconOverlay[ICONSIZE_32] != NULL && iconOverlay[ICONSIZE_48] != NULL)
                 {
                     BOOL isGoogleDrive = FALSE;
@@ -268,8 +265,8 @@ void InitShellIconOverlaysAuxAux(CLSID* clsid, const char* name)
                         stricmp(nameSkipWS, "GoogleDriveSyncing") == 0)
                     {
                         isGoogleDrive = TRUE;
-                        // handlery Google Drive volame jen pro podadresare cesty, kde bydli Google Drive
-                        ShellIconOverlays.InitGoogleDrivePath(NULL, FALSE /* icon overlays jeste nejsou nactene */);
+                        // We call Google Drive handlers only for subdirectories of the path where Google Drive resides
+                        ShellIconOverlays.InitGoogleDrivePath(NULL, FALSE /* icon overlays are not loaded yet*/);
                     }
 #ifdef _DEBUG
                     if (!isGoogleDrive && (StrIStr(name, "GDrive") != NULL || StrIStr(name, "GoogleDrive") != NULL))
@@ -308,12 +305,12 @@ void InitShellIconOverlaysAuxAux(CLSID* clsid, const char* name)
                 TRACE_I("InitShellIconOverlays(): unable to get icon overlay location for: " << name);
         }
         else
-            TRACE_I("InitShellIconOverlays(): GetOverlayInfo method returns error for: " << name); // Tortoise to dela, kdyz je registrovano vic nez 12 handleru
+            TRACE_I("InitShellIconOverlays(): GetOverlayInfo method returns error for: " << name); // What the tortoise does when more than 12 handlers are registered
         if (iconOverlayIdentifier != NULL)
             iconOverlayIdentifier->Release();
     }
     else
-        TRACE_I("InitShellIconOverlays(): unable to create object for: " << name); // napr. "Offline Files" na cistych XP tohle hlasi
+        TRACE_I("InitShellIconOverlays(): unable to create object for: " << name); // e.g. "Offline Files" reports this on clean XP
 }
 
 void InitShellIconOverlaysAux(CLSID* clsid, const char* name)
@@ -326,7 +323,7 @@ void InitShellIconOverlaysAux(CLSID* clsid, const char* name)
     {
         TRACE_I("InitShellIconOverlaysAux: calling ExitProcess(1).");
         //    ExitProcess(1);
-        TerminateProcess(GetCurrentProcess(), 1); // tvrdsi exit (tenhle jeste neco vola)
+        TerminateProcess(GetCurrentProcess(), 1); // tvrdší exit (this one still calls something)
     }
 }
 
@@ -352,12 +349,12 @@ void InitShellIconOverlays()
         char name[MAX_PATH];
         DWORD i = 0;
         while (1)
-        { // postupne enumnuti vsech icon-overlay-handleru
+        { // Gradual enumeration of all icon-overlay handlers
             FILETIME dummy;
             DWORD nameLen = MAX_PATH;
             if ((errRet = RegEnumKeyEx(key, i, name, &nameLen, NULL, NULL, NULL, &dummy)) == ERROR_SUCCESS)
             {
-                int s = 0; // zaradime nove jmeno, je jich cca 15, takze zadny quick-sort nepotrebujeme
+                int s = 0; // we will add a new name, there are about 15 of them, so we don't need any quick-sort
                 for (; s < keyNames.Count && stricmp(name, keyNames[s]) >= 0; s++)
                     ;
                 keyNames.Insert(s, DupStr(name));
@@ -370,10 +367,10 @@ void InitShellIconOverlays()
             }
             i++;
         }
-        // projedeme serazeny seznam icon-overlay-handleru (Explorer definuje prioritu handleru podle abecedy)
-        // bereme jen prvnich 15, Explorer dokonce jen prvnich 11
+        // We will go through the sorted list of icon-overlay handlers (Explorer defines the priority of handlers alphabetically)
+        // we only take the first 15, Explorer only takes the first 11
         for (int s = 0; s < keyNames.Count; s++)
-        { // otevreni klice icon-overlay-handleru
+        { // Opening the key of the icon-overlay handler
             HKEY handler;
             if ((errRet = HANDLES_Q(RegOpenKeyEx(key, keyNames[s], 0, KEY_QUERY_VALUE, &handler))) == ERROR_SUCCESS)
             {
@@ -384,10 +381,10 @@ void InitShellIconOverlays()
                 {
                     if (type == REG_SZ)
                     {
-                        txtClsId[99] = 0; // jen pro sychr
+                        txtClsId[99] = 0; // only for the dry
                         OLECHAR oleTxtClsId[100];
                         MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, txtClsId, -1, oleTxtClsId, 100);
-                        oleTxtClsId[99] = 0; // jen pro sychr
+                        oleTxtClsId[99] = 0; // only for the dry
 
                         CLSID clsid;
                         if (CLSIDFromString(oleTxtClsId, &clsid) == NOERROR)
@@ -411,7 +408,7 @@ void InitShellIconOverlays()
                                     }
                                     else
                                     {
-                                        if (errRet != ERROR_FILE_NOT_FOUND) // tuhle chybu to hlasi, kdyz handler nema zadnou descriptionu (coz zjevne neni chyba, protoze na Viste se to tyka napr. Offline Files)
+                                        if (errRet != ERROR_FILE_NOT_FOUND) // It reports this error when the handler has no description (which is obviously not an error, because on Vista it concerns, for example, Offline Files)
                                         {
                                             TRACE_E("InitShellIconOverlays(): error reading default value from CLSID\\" << txtClsId << " key: " << GetErrorText(errRet));
                                         }
@@ -421,10 +418,10 @@ void InitShellIconOverlays()
                                 }
                                 else
                                 {
-                                    // Petr: po updatu Google Drive 30.8.2015 pro GDriveSharedOverlay chybel klic
-                                    //       pod CLSID v registry, zadny rozdil v zobrazeni overlays proti Exploreru
-                                    //       jsem neobjevil, tuto prudici hlasku jsem tedy obesel vymazem klice
-                                    //       GDriveSharedOverlay ze seznamu ShellIconOverlayIdentifiers
+                                    // Petr: after updating Google Drive on 30.8.2015, the key for GDriveSharedOverlay was missing
+                                    //       under CLSID in the registry, no difference in displaying overlays compared to Explorer
+                                    //       I have not found it, so I bypassed this stubborn message by deleting the key
+                                    //       GDriveSharedOverlay from the list of ShellIconOverlayIdentifiers
                                     TRACE_E("InitShellIconOverlays(): error opening CLSID\\" << txtClsId << " key: " << GetErrorText(errRet));
                                 }
                             }
@@ -486,7 +483,7 @@ BOOL IsNameInListOfDisabledCustomIconOverlays(const char* name)
 {
     if (Configuration.DisabledCustomIconOverlays != NULL)
     {
-        static char buf[MAX_PATH]; // vola se i z Bug Reportu - nechceme zatezovat stack
+        static char buf[MAX_PATH]; // It is also called from Bug Report - we do not want to burden the stack
         const char* s = Configuration.DisabledCustomIconOverlays;
         char* d = buf;
         char* end = buf + MAX_PATH;
@@ -505,7 +502,7 @@ BOOL IsNameInListOfDisabledCustomIconOverlays(const char* name)
                     if (stricmp(name, buf) == 0)
                         return TRUE; // is disabled
 
-                    // jdeme na dalsi jmeno
+                    // going to the next name
                     s++;
                     d = buf;
                 }
@@ -514,7 +511,7 @@ BOOL IsNameInListOfDisabledCustomIconOverlays(const char* name)
                 *d++ = *s++;
             if (d >= end)
             {
-                d = end - 1; // u delsich jmen (nemelo by nastat), budeme prepisovat posledni znak (null-terminator)
+                d = end - 1; // For longer names (which should not occur), we will overwrite the last character (null-terminator)
                 TRACE_E("IsNameInListOfDisabledCustomIconOverlays(): unexpected situation: too long name in list of disabled icon overlay handlers!");
             }
         }
@@ -549,9 +546,9 @@ BOOL AddToListOfDisabledCustomIconOverlays(const char* name)
     if (*name == 0)
     {
         TRACE_E("AddToListOfDisabledCustomIconOverlays(): empty name is unexpected here!");
-        return TRUE; // neni co delat
+        return TRUE; // nothing to do
     }
-    static char n[2 * MAX_PATH]; // vola se i z Bug Reportu - nechceme zatezovat stack
+    static char n[2 * MAX_PATH]; // It is also called from Bug Report - we do not want to burden the stack
     char* d = n;
     const char* s = name;
     while (*s != 0)
@@ -613,7 +610,7 @@ void CShellIconOverlayItem::Cleanup()
         {
             TRACE_I("CShellIconOverlayItem::~CShellIconOverlayItem(): calling ExitProcess(1).");
             //      ExitProcess(1);
-            TerminateProcess(GetCurrentProcess(), 1); // tvrdsi exit (tenhle jeste neco vola)
+            TerminateProcess(GetCurrentProcess(), 1); // tvrdší exit (this one still calls something)
         }
     }
     int i;
@@ -624,9 +621,9 @@ void CShellIconOverlayItem::Cleanup()
 
 CShellIconOverlayItem::~CShellIconOverlayItem()
 {
-    // VC2015 se nelibil __try / __except blok v destruktoru, linker si v x64 verzi stezoval:
+    // VC2015 did not like the __try / __except block in the destructor, the linker complained in the x64 version:
     // error LNK2001: unresolved external symbol __C_specific_handler_noexcept
-    // prestehovani do funkce problem vyresilo
+    // moving the function solved the problem
     Cleanup();
 }
 
@@ -644,16 +641,14 @@ BOOL CShellIconOverlays::Add(CShellIconOverlayItem* item /*, int priority*/)
         TRACE_I("CShellIconOverlays::Add(): unexpected situation: more than 15 icon-overlay-handlers!");
         return FALSE;
     }
-    // razeni podle priority je nesmysl, MS pise, ze ji pouziva jen pokud ostatni metody priorizovani
-    // selzou, realne se jede podle abecedy v seznamu overlay handleru; priorita se pouziva asi jen na
-    // toto: overlaye pro link, share a slow files (offline) maji prioritu 10, takze pro takove soubory
-    // bereme uz jen overlaye s vyssi prioritou (nizsi cislo nez 10)
-    /*
-  int i;
+    // Sorting by priority is nonsense, MS writes that it uses it only if other methods are prioritized
+    // selzou, in reality it goes alphabetically in the list of overlay handlers; priority is probably only used for
+    // overlay for link, share, and slow files (offline) have priority 10, so for such files
+    // We only take overlays with higher priority (lower number than 10)
+    /*    int i;
   for (i = 0; i < Overlays.Count; i++)
     if (Overlays[i]->Priority > priority) break;
-  Overlays.Insert(i, item);
-*/
+  Overlays.Insert(i, item);*/
     Overlays.Add(item);
     BOOL ok = Overlays.IsGood();
     if (!ok)
@@ -666,9 +661,9 @@ void CreateIconReadersIconOverlayIdsAuxAux(CLSID* clsid, const char* name, IShel
     IShellIconOverlayIdentifier* iconOverlayIdentifier;
     if (CoCreateInstance(*clsid, NULL, CLSCTX_INPROC_SERVER, IID_IShellIconOverlayIdentifier,
                          (LPVOID*)&iconOverlayIdentifier) == S_OK &&
-        iconOverlayIdentifier != NULL) // asi zbytecny test, jen se sychrujeme
+        iconOverlayIdentifier != NULL) // probably an unnecessary test, we're just drying ourselves off
     {
-        // jen tak pro formu zavolame obvykle metody (jakobysme byli Explorer a chteli ty overlaye ukazovat)
+        // just for the sake of it, we will call the usual methods (as if we were Explorer and wanted to show those overlays)
         OLECHAR iconFile[MAX_PATH];
         int iconIndex;
         DWORD flags;
@@ -692,7 +687,7 @@ void CreateIconReadersIconOverlayIdsAux(CLSID* clsid, const char* name, IShellIc
     {
         TRACE_I("CreateIconReadersIconOverlayIdsAux: calling ExitProcess(1).");
         //    ExitProcess(1);
-        TerminateProcess(GetCurrentProcess(), 1); // tvrdsi exit (tenhle jeste neco vola)
+        TerminateProcess(GetCurrentProcess(), 1); // tvrdší exit (this one still calls something)
     }
 }
 
@@ -741,7 +736,7 @@ void CShellIconOverlays::ReleaseIconReadersIconOverlayIds(IShellIconOverlayIdent
                 {
                     TRACE_I("CShellIconOverlays::ReleaseIconReadersIconOverlayIds: calling ExitProcess(1).");
                     //          ExitProcess(1);
-                    TerminateProcess(GetCurrentProcess(), 1); // tvrdsi exit (tenhle jeste neco vola)
+                    TerminateProcess(GetCurrentProcess(), 1); // tvrdší exit (this one still calls something)
                 }
             }
         }
@@ -756,11 +751,11 @@ BOOL GetIconOverlayIndexAuxAux(IShellIconOverlayIdentifier** iconReadersIconOver
     if (iconReadersIconOverlayIds[i] != NULL &&
         (res = iconReadersIconOverlayIds[i]->IsMemberOf(wPath, shAttrs)) == S_OK)
     {
-        return TRUE; // nalezeno
+        return TRUE; // found
     }
     else
     {
-        if (res != S_FALSE && res != 0x80070002) // 0x80070002 je "file not found", vraci to "Offline Files" pro vsechno, co neni offline-available
+        if (res != S_FALSE && res != 0x80070002) // 0x80070002 is "file not found", returned by "Offline Files" for everything that is not offline-available
             TRACE_I("CShellIconOverlays::GetIconOverlayIndex(): overlay " << name << ": IsMemberOf() returns error: 0x" << std::hex << res << std::dec);
     }
     return FALSE;
@@ -777,9 +772,9 @@ BOOL GetIconOverlayIndexAux(IShellIconOverlayIdentifier** iconReadersIconOverlay
     {
         TRACE_I("GetIconOverlayIndexAux: calling ExitProcess(1).");
         //    ExitProcess(1);
-        TerminateProcess(GetCurrentProcess(), 1); // tvrdsi exit (tenhle jeste neco vola)
+        TerminateProcess(GetCurrentProcess(), 1); // tvrdší exit (this one still calls something)
     }
-    return FALSE; // jen kvuli kompilatoru
+    return FALSE; // just because of the compiler
 }
 
 DWORD_PTR SHGetFileInfoAux(LPCTSTR pszPath, DWORD dwFileAttributes, SHFILEINFO* psfi,
@@ -802,7 +797,7 @@ CShellIconOverlays::GetIconOverlayIndex(WCHAR* wPath, WCHAR* wName, char* aPath,
                                         IShellIconOverlayIdentifier** iconReadersIconOverlayIds,
                                         BOOL isGoogleDrivePath)
 {
-    CALL_STACK_MESSAGE_NONE // call-stack by tu jen zpomaloval
+    CALL_STACK_MESSAGE_NONE // call-stack was just slowing things down
 
         if ((wName - wPath) + strlen(name) >= MAX_PATH)
     {
@@ -810,27 +805,27 @@ CShellIconOverlays::GetIconOverlayIndex(WCHAR* wPath, WCHAR* wName, char* aPath,
         return ICONOVERLAYINDEX_NOTUSED;
     }
     MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, name, -1, wName, MAX_PATH - (int)(wName - wPath));
-    wPath[MAX_PATH - 1] = 0; // jen pro sychr
+    wPath[MAX_PATH - 1] = 0; // only for the dry
     strcpy(aName, name);
 
     //  SHFILEINFO fi;
     //  if (SHGetFileInfoAux(aPath, 0, &fi, sizeof(fi), SHGFI_ATTRIBUTES))
     //  {
-    // GoogleDrive pada pri soubehu volani IsMemberOf() z obou icon-readeru zaroven, jeden thread alokuje,
-    // druhy dealokuje a dojde k poruseni heapu (tezko rict proc, jejich chyba), ta kriticka sekce to
-    // pri cteni v obou panelech zaroven dost zpomaluje (2x), takze se snazime to pouzivat jen kdyz je GD
-    // aktivni (v jeho adresari)
+    // GoogleDrive crashes when calling IsMemberOf() from both icon-readers simultaneously, one thread allocates,
+    // the second one deallocates and a heap violation occurs (hard to say why, their mistake), the critical section does
+    // When reading in both panels at the same time, it significantly slows down (2x), so we try to use it only when necessary.
+    // active (in its directory)
     BOOL isGD_CS_entered = FALSE;
     for (int i = 0; i < Overlays.Count; i++)
     {
         CShellIconOverlayItem* overlay = Overlays[i];
         if (overlay->Priority > minPriority)
-            continue; // pouziti: overlaye pro link, share a slow files (offline) maji prioritu 10, takze bereme jen overlaye s vyssi prioritou (nizsi cislo nez 10)
+            continue; // Usage: overlays for link, share, and slow files (offline) have priority 10, so we only take overlays with higher priority (lower number than 10)
                       //      if (GetIconOverlayIndexAux(iconReadersIconOverlayIds, i, wPath, Overlays[i]->IconOverlayName, fi.dwAttributes))
         if (overlay->GoogleDriveOverlay)
         {
             if (!isGoogleDrivePath)
-                continue; // Google Drive handlery volame jen pro jejich adresar a jeho podadresare (jsou pomale a padaji bez pridane synchronizace)
+                continue; // We call Google Drive handlers only for their directory and its subdirectories (they are slow and crash without added synchronization)
             if (!isGD_CS_entered)
             {
                 HANDLES(EnterCriticalSection(&GD_CS));
@@ -841,14 +836,14 @@ CShellIconOverlays::GetIconOverlayIndex(WCHAR* wPath, WCHAR* wName, char* aPath,
         {
             if (isGD_CS_entered)
                 HANDLES(LeaveCriticalSection(&GD_CS));
-            return i; // nalezeno
+            return i; // found
         }
     }
     if (isGD_CS_entered)
         HANDLES(LeaveCriticalSection(&GD_CS));
     //  }
     //  else TRACE_I("CShellIconOverlays::GetIconOverlayIndex(): unable to get shell-attributes of: " << wPath);
-    return ICONOVERLAYINDEX_NOTUSED; // nenalezeno
+    return ICONOVERLAYINDEX_NOTUSED; // not found
 }
 
 void ColorsChangedAuxAux(CShellIconOverlayItem* item)
@@ -867,7 +862,7 @@ void ColorsChangedAuxAux(CShellIconOverlayItem* item)
             WideCharToMultiByte(CP_ACP, 0, (wchar_t*)iconFile, -1, iconFileMB, MAX_PATH, NULL, NULL);
             iconFileMB[MAX_PATH - 1] = 0;
 
-            // nacteme ikony vsech velikosti pro tento icon-overlay
+            // Load icons of all sizes for this icon-overlay
             HICON hIcons[2] = {0};
             ExtractIcons(iconFileMB, iconIndex,
                          MAKELONG(IconSizes[ICONSIZE_32], IconSizes[ICONSIZE_16]),
@@ -889,7 +884,7 @@ void ColorsChangedAuxAux(CShellIconOverlayItem* item)
                 if (iconOverlay[x] != NULL)
                     HANDLES_ADD(__htIcon, __hoLoadImage, iconOverlay[x]);
 
-            // vlozime nove ikony do 'item'
+            // insert new icons into 'item'
             if (iconOverlay[ICONSIZE_16] != NULL && iconOverlay[ICONSIZE_32] != NULL && iconOverlay[ICONSIZE_48] != NULL)
             {
                 for (x = 0; x < ICONSIZE_COUNT; x++)
@@ -923,7 +918,7 @@ void ColorsChangedAux(CShellIconOverlayItem* item)
     {
         TRACE_I("ColorsChangedAux: calling ExitProcess(1).");
         //    ExitProcess(1);
-        TerminateProcess(GetCurrentProcess(), 1); // tvrdsi exit (tenhle jeste neco vola)
+        TerminateProcess(GetCurrentProcess(), 1); // tvrdší exit (this one still calls something)
     }
 }
 
@@ -949,9 +944,9 @@ void CShellIconOverlays::InitGoogleDrivePath(CSQLite3DynLoadBase** sqlite3_Dyn_I
     }
 
 #ifdef _DEBUG
-    static BOOL firstCall = TRUE; // staci jeden test
+    static BOOL firstCall = TRUE; // just one test is enough
     if (firstCall && debugTestOverlays && HasGoogleDrivePath())
-    { // testujeme jen pokud budeme inzerovat Google Drive na toolbare a v change drive menu
+    { // We are testing only if we will advertise Google Drive on the toolbar and in the change drive menu
         firstCall = FALSE;
         BOOL found = FALSE;
         for (int j = 0; j < Overlays.Count; j++)
@@ -964,8 +959,8 @@ void CShellIconOverlays::InitGoogleDrivePath(CSQLite3DynLoadBase** sqlite3_Dyn_I
         }
         if (!found)
         {
-            // Google Drive se instaluje ve verzi podle Windows (x86 / x64). Takze Salamander x86
-            // na x64 Windows (a opacne) GD icon-handlery nenajde a neni to chyba.
+            // Google Drive is installed in the version according to Windows (x86 / x64). So Salamander x86
+            // on x64 Windows (and vice versa) GD icon handlers are not found and it is not an error.
 #ifdef _WIN64
             if (Windows64Bit)
 #else  // _WIN64

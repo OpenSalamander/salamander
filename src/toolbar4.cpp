@@ -18,26 +18,26 @@
 struct CButtonData
 {
     unsigned int ImageIndex : 16;   // zero base index
-    unsigned int Shell32ResID : 8;  // 0: ikona z image listu; 1..254: resID ikony z shell32.dll; 255: pouze alokovat volny prostor
-    unsigned int ToolTipResID : 16; // resID se stringem pro tooltip
-    unsigned int ID : 16;           // univerzalni Command
-    unsigned int LeftID : 16;       // Command pro levy panel
-    unsigned int RightID : 16;      // Command pro pravy panel
-    unsigned int DropDown : 1;      // bude mit drop down?
-    unsigned int WholeDropDown : 1; // bude mit whole drop down?
-    unsigned int Check : 1;         // jedna se o checkbox?
-    DWORD* Enabler;                 // ridici promenna pro enablovani tlacitka
-    DWORD* LeftEnabler;             // ridici promenna pro enablovani tlacitka
-    DWORD* RightEnabler;            // ridici promenna pro enablovani tlacitka
-    const char* SVGName;            // NULL pokud tlacitko nema SVG reprezentaci
+    unsigned int Shell32ResID : 8;  // 0: icon from image list; 1..254: icon resID from shell32.dll; 255: only allocate free space
+    unsigned int ToolTipResID : 16; // resID with a string for the tooltip
+    unsigned int ID : 16;           // universal Command
+    unsigned int LeftID : 16;       // Command for the left panel
+    unsigned int RightID : 16;      // Command for the right panel
+    unsigned int DropDown : 1;      // will have drop down?
+    unsigned int WholeDropDown : 1; // will have whole drop down?
+    unsigned int Check : 1;         // Is this a checkbox?
+    DWORD* Enabler;                 // Control variable for enabling the button
+    DWORD* LeftEnabler;             // Control variable for enabling the button
+    DWORD* RightEnabler;            // Control variable for enabling the button
+    const char* SVGName;            // NULL if the button does not have an SVG representation
 };
 
 //****************************************************************************
 //
 // TBButtonEnum
 //
-// Unikatni indexy do pole ToolBarButton -  slouzi k adresaci tohoto pole.
-// Do tohoto pole lze pouze pridavat na konec.
+// Unique indexes into the ToolBarButton array - used to address this array.
+// Elements can only be added to the end of this array.
 //
 
 #define TBBE_CONNECT_NET 0
@@ -45,12 +45,12 @@ struct CButtonData
 #define TBBE_CREATE_DIR 2
 #define TBBE_FIND_FILE 3
 #define TBBE_VIEW_MODE 4 // drive brief
-//#define TBBE_DETAILED            5  // vyrazeno
+//#define TBBE_DETAILED            5  // excluded
 #define TBBE_SORT_NAME 6
 #define TBBE_SORT_EXT 7
 #define TBBE_SORT_SIZE 8
 #define TBBE_SORT_DATE 9
-//#define TBBE_SORT_ATTR          10  // vyrazeno
+//#define TBBE_SORT_ATTR          10  // excluded
 #define TBBE_PARENT_DIR 11
 #define TBBE_ROOT_DIR 12
 #define TBBE_FILTER 13
@@ -97,7 +97,7 @@ struct CButtonData
 #define TBBE_PERMISSIONS 54
 #define TBBE_CONVERT 55
 #define TBBE_UNSELECT_ALL 56
-#define TBBE_MENU 57 // vstup do menu
+#define TBBE_MENU 57 // enter the menu
 #define TBBE_ALTVIEW 58
 #define TBBE_EXIT 59
 #define TBBE_OCCUPIEDSPACE 60
@@ -254,9 +254,9 @@ CButtonData ToolBarButtons[TBBE_TERMINATOR] =
 //
 // TopToolbar
 //
-// Vyjadruje vsechna mozna tlacitka, ktera muze obsahovat TopToolbar.
-// Poradi udava poradi tlacitek v konfiguracnim dialogu toolbary a muze
-// byt libovolne meneno.
+// Represents all possible buttons that TopToolbar can contain.
+// Order specifies the order of buttons in the configuration dialog of toolbars and can
+// Apartment arbitrarily named.
 //
 
 DWORD TopToolBarButtons[] =
@@ -357,7 +357,7 @@ DWORD TopToolBarButtons[] =
         NIB2(TBBE_HELP_CONTENTS)
             NIB2(TBBE_HELP_CONTEXT)
 
-                TBBE_TERMINATOR // terminator - musi zde byt !
+                TBBE_TERMINATOR // terminator - must be here!
 };
 
 DWORD LeftToolBarButtons[] =
@@ -378,7 +378,7 @@ DWORD LeftToolBarButtons[] =
         TBBE_REFRESH,
         TBBE_SMART_COLUMN_MODE,
 
-        TBBE_TERMINATOR // terminator - musi zde byt !
+        TBBE_TERMINATOR // terminator - must be here!
 };
 
 DWORD RightToolBarButtons[] =
@@ -399,7 +399,7 @@ DWORD RightToolBarButtons[] =
         TBBE_REFRESH,
         TBBE_SMART_COLUMN_MODE,
 
-        TBBE_TERMINATOR // terminator - musi zde byt !
+        TBBE_TERMINATOR // terminator - must be here!
 };
 
 void GetSVGIconsMainToolbar(CSVGIcon** svgIcons, int* svgIconsCount)
@@ -418,9 +418,9 @@ void GetSVGIconsMainToolbar(CSVGIcon** svgIcons, int* svgIconsCount)
 //
 // CreateGrayscaleAndMaskBitmaps
 //
-// Vytvori novou bitmapu o hloubce 24 bitu, nakopiruje do ni zdrojovou
-// bitmapu a prevede ji na stupne sedi. Zaroven pripravi druhou bitmapu
-// s maskou dle transparentni barvy.
+// Creates a new bitmap with a depth of 24 bits, copies the source into it
+// bitmap and converts it to grayscale. It also prepares a second bitmap
+// with a mask according to the transparent color.
 //
 
 BOOL CreateGrayscaleAndMaskBitmaps(HBITMAP hSource, COLORREF transparent,
@@ -434,11 +434,11 @@ BOOL CreateGrayscaleAndMaskBitmaps(HBITMAP hSource, COLORREF transparent,
     hMask = NULL;
     HDC hDC = HANDLES(GetDC(NULL));
 
-    // vytahnu rozmery bitmapy
+    // retrieve bitmap dimensions
     BITMAPINFO bi;
     memset(&bi, 0, sizeof(bi));
     bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
-    bi.bmiHeader.biBitCount = 0; // nechceme paletu
+    bi.bmiHeader.biBitCount = 0; // we do not want a palette
 
     if (!GetDIBits(hDC,
                    hSource,
@@ -457,9 +457,9 @@ BOOL CreateGrayscaleAndMaskBitmaps(HBITMAP hSource, COLORREF transparent,
         goto exitus;
     }
 
-    // pozadovana barevna hloubka je 24 bitu
+    // desired color depth is 24 bits
     bi.bmiHeader.biSizeImage = ((((bi.bmiHeader.biWidth * 24) + 31) & ~31) >> 3) * bi.bmiHeader.biHeight;
-    // naalokuju potrebny prostor
+    // allocate the necessary space
     lpvBits = malloc(bi.bmiHeader.biSizeImage);
     if (lpvBits == NULL)
     {
@@ -477,7 +477,7 @@ BOOL CreateGrayscaleAndMaskBitmaps(HBITMAP hSource, COLORREF transparent,
     bi.bmiHeader.biBitCount = 24;
     bi.bmiHeader.biCompression = BI_RGB;
 
-    // vytahnu vlastni data
+    // extract my own data
     if (!GetDIBits(hDC,
                    hSource,
                    0, bi.bmiHeader.biHeight,
@@ -489,7 +489,7 @@ BOOL CreateGrayscaleAndMaskBitmaps(HBITMAP hSource, COLORREF transparent,
         goto exitus;
     }
 
-    // vytahnu vlastni data pro mask
+    // extract my own data for the mask
     if (!GetDIBits(hDC,
                    hSource,
                    0, bi.bmiHeader.biHeight,
@@ -501,7 +501,7 @@ BOOL CreateGrayscaleAndMaskBitmaps(HBITMAP hSource, COLORREF transparent,
         goto exitus;
     }
 
-    // prevedu na grayscale
+    // convert to grayscale
     BYTE* rgb;
     BYTE* rgbMask;
     rgb = (BYTE*)lpvBits;
@@ -524,7 +524,7 @@ BOOL CreateGrayscaleAndMaskBitmaps(HBITMAP hSource, COLORREF transparent,
         rgbMask += 3;
     }
 
-    // vytvorim novou bitmapu nad grayscale datama
+    // create a new bitmap over grayscale data
     hGrayscale = HANDLES(CreateDIBitmap(hDC,
                                         &bi.bmiHeader,
                                         (LONG)CBM_INIT,
@@ -537,7 +537,7 @@ BOOL CreateGrayscaleAndMaskBitmaps(HBITMAP hSource, COLORREF transparent,
         goto exitus;
     }
 
-    // vytvorim novou bitmapu nad mask datama
+    // create a new bitmap over the mask data
     hMask = HANDLES(CreateDIBitmap(hDC,
                                    &bi.bmiHeader,
                                    (LONG)CBM_INIT,
@@ -563,7 +563,7 @@ exitus:
     return ret;
 }
 
-// JRYFIXME - docasne pro prechod na SVG
+// JRYFIXME - temporary for transition to SVG
 BOOL CreateGrayscaleAndMaskBitmaps_tmp(HBITMAP hSource, COLORREF transparent, COLORREF bkColorForAlpha,
                                        HBITMAP& hGrayscale, HBITMAP& hMask)
 {
@@ -575,11 +575,11 @@ BOOL CreateGrayscaleAndMaskBitmaps_tmp(HBITMAP hSource, COLORREF transparent, CO
     hMask = NULL;
     HDC hDC = HANDLES(GetDC(NULL));
 
-    // vytahnu rozmery bitmapy
+    // retrieve bitmap dimensions
     BITMAPINFO bi;
     memset(&bi, 0, sizeof(bi));
     bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
-    bi.bmiHeader.biBitCount = 0; // nechceme paletu
+    bi.bmiHeader.biBitCount = 0; // we do not want a palette
 
     if (!GetDIBits(hDC,
                    hSource,
@@ -598,9 +598,9 @@ BOOL CreateGrayscaleAndMaskBitmaps_tmp(HBITMAP hSource, COLORREF transparent, CO
         goto exitus;
     }
 
-    // pozadovana barevna hloubka je 24 bitu
+    // desired color depth is 24 bits
     bi.bmiHeader.biSizeImage = ((((bi.bmiHeader.biWidth * 24) + 31) & ~31) >> 3) * bi.bmiHeader.biHeight;
-    // naalokuju potrebny prostor
+    // allocate the necessary space
     lpvBits = malloc(bi.bmiHeader.biSizeImage);
     if (lpvBits == NULL)
     {
@@ -618,7 +618,7 @@ BOOL CreateGrayscaleAndMaskBitmaps_tmp(HBITMAP hSource, COLORREF transparent, CO
     bi.bmiHeader.biBitCount = 24;
     bi.bmiHeader.biCompression = BI_RGB;
 
-    // vytahnu vlastni data
+    // extract my own data
     if (!GetDIBits(hDC,
                    hSource,
                    0, bi.bmiHeader.biHeight,
@@ -630,7 +630,7 @@ BOOL CreateGrayscaleAndMaskBitmaps_tmp(HBITMAP hSource, COLORREF transparent, CO
         goto exitus;
     }
 
-    // vytahnu vlastni data pro mask
+    // extract my own data for the mask
     if (!GetDIBits(hDC,
                    hSource,
                    0, bi.bmiHeader.biHeight,
@@ -642,7 +642,7 @@ BOOL CreateGrayscaleAndMaskBitmaps_tmp(HBITMAP hSource, COLORREF transparent, CO
         goto exitus;
     }
 
-    // prevedu na grayscale
+    // convert to grayscale
     BYTE* rgb;
     BYTE* rgbMask;
     rgb = (BYTE*)lpvBits;
@@ -667,7 +667,7 @@ BOOL CreateGrayscaleAndMaskBitmaps_tmp(HBITMAP hSource, COLORREF transparent, CO
         rgbMask += 3;
     }
 
-    // vytvorim novou bitmapu nad grayscale datama
+    // create a new bitmap over grayscale data
     hGrayscale = HANDLES(CreateDIBitmap(hDC,
                                         &bi.bmiHeader,
                                         (LONG)CBM_INIT,
@@ -680,7 +680,7 @@ BOOL CreateGrayscaleAndMaskBitmaps_tmp(HBITMAP hSource, COLORREF transparent, CO
         goto exitus;
     }
 
-    // vytvorim novou bitmapu nad mask datama
+    // create a new bitmap over the mask data
     hMask = HANDLES(CreateDIBitmap(hDC,
                                    &bi.bmiHeader,
                                    (LONG)CBM_INIT,
@@ -709,7 +709,7 @@ exitus:
 void RenderSVGImages(HDC hDC, int iconSize, COLORREF bkColor, const CSVGIcon* svgIcons, int svgIconsCount)
 {
     NSVGrasterizer* rast = nsvgCreateRasterizer();
-    // JRYFIXME: docasne cteme ze souboru, prejit na spolecne uloziste s toolbars
+    // JRYFIXME: temporarily reading from file, switch to shared storage with toolbars
     for (int i = 0; i < svgIconsCount; i++)
         if (svgIcons[i].SVGName != NULL)
             RenderSVGImage(rast, hDC, svgIcons[i].ImageIndex * iconSize, 0, svgIcons[i].SVGName, iconSize, bkColor, TRUE);
@@ -721,10 +721,10 @@ void RenderSVGImages(HDC hDC, int iconSize, COLORREF bkColor, const CSVGIcon* sv
 //
 // CreateToolbarBitmaps
 //
-// Vytahne z resID bitmapu, nakopiruje ji do nove bitmapy, ktera je
-// barevne kompatibilni s obrazovkou. Potom k teto bitmape pripoji
-// ikonky z shell32.dll. Cti transparentni barvu.
-// bkColorForAlpha udava barvu, ktera bude prosvitat pod pruhlednou casti ikon (WinXP)
+// Extracts a bitmap from resID, copies it to a new bitmap, which is
+// color compatible with the screen. Then it connects to this bitmap
+// Icons from shell32.dll. Read the transparent color.
+// bkColorForAlpha specifies the color that will shine through the transparent part of icons (WinXP)
 //
 
 BOOL CreateToolbarBitmaps(HINSTANCE hInstance, int resID, COLORREF transparent, COLORREF bkColorForAlpha,
@@ -745,16 +745,16 @@ BOOL CreateToolbarBitmaps(HINSTANCE hInstance, int resID, COLORREF transparent, 
     int iconSize = GetIconSizeForSystemDPI(ICONSIZE_16); // small icon size
     int iconCount = 0;
 
-    // Windows XP a novejsi pouzivaji transparentni ikony; protoze je pomoci masky
-    // zobrazime do teto docasne bitmapy a zajistime, aby pod pruhlednou casti byla
-    // sediva barva z toolbary a ne nase fialova maskovaci
+    // Windows XP and newer use transparent icons; because of the mask
+    // we will display it in this temporary bitmap and ensure that it is under the transparent part
+    // gray color from the toolbar and not our purple camouflage
     HBITMAP hTmpBitmap = NULL;
     HDC hTmpMemDC = NULL;
     HBITMAP hOldTmpBitmap = NULL;
 
-    // nactu zdrojovou bitmapu
+    // load the source bitmap
     HBITMAP hSource;
-    if (resID == IDB_TOOLBAR_256) // dirty hack, chtelo by to detekci podle typu resourcu (RCDATA), pripadne podle PNG signatury
+    if (resID == IDB_TOOLBAR_256) // dirty hack, it would be nice to have detection based on the type of resource (RCDATA), possibly based on the PNG signature
         hSource = LoadPNGBitmap(hInstance, MAKEINTRESOURCE(resID), 0);
     else
         hSource = HANDLES(LoadBitmap(hInstance, MAKEINTRESOURCE(resID)));
@@ -765,11 +765,11 @@ BOOL CreateToolbarBitmaps(HINSTANCE hInstance, int resID, COLORREF transparent, 
     }
 
     hDC = HANDLES(GetDC(NULL));
-    // vytahnu rozmery bitmapy
+    // retrieve bitmap dimensions
     BITMAPINFO bi;
     memset(&bi, 0, sizeof(bi));
     bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
-    bi.bmiHeader.biBitCount = 0; // nechceme paletu
+    bi.bmiHeader.biBitCount = 0; // we do not want a palette
     if (!GetDIBits(hDC,
                    hSource,
                    0, 0,
@@ -791,13 +791,13 @@ BOOL CreateToolbarBitmaps(HINSTANCE hInstance, int resID, COLORREF transparent, 
                 tbbe_BMPCOUNT++;
     }
 
-    // pripravim novou bitmapu, do ktere se vejde hSource a ikonky z DLLka
-    // prodlouzim delku o ikonky z DLL
+    // prepare a new bitmap that will fit hSource and icons from the DLL
+    // Extend the length of icons from DLL
     iconCount = bi.bmiHeader.biWidth / 16 + tbbe_BMPCOUNT;
 
-    //  hColorBitmap = HANDLES(CreateBitmap(width, height, bh.bV4Planes, bh.bV4BitCount, NULL));
-    //protoze je CreateBitmap() vhodne pouze pro vytvareni B&W bitmap (viz MSDN)
-    //prechazime od sal 2.5b7 na rychlou CreateCompatibleBitmap()
+    //  hColorBitmap = CreateBitmap(width, height, bh.bV4Planes, bh.bV4BitCount, NULL);
+    //because CreateBitmap() is suitable only for creating B&W bitmaps (see MSDN)
+    //we are transitioning from room 2.5b7 to the fast CreateCompatibleBitmap()
     hColorBitmap = HANDLES(CreateCompatibleBitmap(hDC, iconSize * iconCount, iconSize));
 
     hTgtMemDC = HANDLES(CreateCompatibleDC(NULL));
@@ -805,12 +805,12 @@ BOOL CreateToolbarBitmaps(HINSTANCE hInstance, int resID, COLORREF transparent, 
     hOldTgtBitmap = (HBITMAP)SelectObject(hTgtMemDC, hColorBitmap);
     hOldSrcBitmap = (HBITMAP)SelectObject(hSrcMemDC, hSource);
 
-    // pro prenaseni icon (vcetne transparentnich)
+    // for transferring icons (including transparent ones)
     hTmpBitmap = HANDLES(CreateBitmap(iconSize, iconSize, 1, 1, NULL));
     hTmpMemDC = HANDLES(CreateCompatibleDC(NULL));
     hOldTmpBitmap = (HBITMAP)SelectObject(hTmpMemDC, hTmpBitmap);
 
-    // prenesu do nove bitmapy bitmapu puvodni
+    // Copy the original bitmap to a new bitmap
     if (!StretchBlt(hTgtMemDC, 0, 0, (iconCount - tbbe_BMPCOUNT) * iconSize, iconSize,
                     hSrcMemDC, 0, 0, bi.bmiHeader.biWidth, bi.bmiHeader.biHeight,
                     SRCCOPY))
@@ -819,23 +819,23 @@ BOOL CreateToolbarBitmaps(HINSTANCE hInstance, int resID, COLORREF transparent, 
         goto exitus;
     }
 
-    // zahodime zdrojovou bitmapu
+    // discard the source bitmap
     SelectObject(hSrcMemDC, hOldSrcBitmap);
     hOldSrcBitmap = NULL;
 
-    // pokud mame SVG verzi, pouzijeme ji
+    // if we have an SVG version, we will use it
     if (svgIcons != NULL)
     {
         RenderSVGImages(hTgtMemDC, iconSize, bkColorForAlpha, svgIcons, svgIconsCount);
     }
 
-    // pouzijeme pri BitBlt hTmpMemDC->hTgtMemDC
+    // we will use hTmpMemDC->hTgtMemDC in BitBlt
     //SetBkColor(hTgtMemDC, transparent);
     //SetTextColor(hTgtMemDC, bkColorForAlpha);
 
     if (appendIcons)
     {
-        // podojime shell32.dll
+        // Milking shell32.dll
         HICON hIcon;
         for (i = 0; i < TBBE_TERMINATOR; i++)
         {
@@ -853,7 +853,7 @@ BOOL CreateToolbarBitmaps(HINSTANCE hInstance, int resID, COLORREF transparent, 
             }
             else
             {
-                // Documents jsou od WinXP jinde
+                // Documents are elsewhere from WinXP
                 if (resID2 == 21)
                     resID2 = 235;
 
@@ -865,10 +865,10 @@ BOOL CreateToolbarBitmaps(HINSTANCE hInstance, int resID, COLORREF transparent, 
                 continue;
             }
 
-            // pripravime pozadi pro ikonky s alfa kanalem pod WinXP
+            // prepare the background for icons with alpha channel under WinXP
             DrawIconEx(hTmpMemDC, 0, 0, hIcon, iconSize, iconSize, 0, 0, DI_MASK);
 
-            // pouzijeme pri BitBlt hTmpMemDC->hTgtMemDC
+            // we will use hTmpMemDC->hTgtMemDC in BitBlt
             SetBkColor(hTgtMemDC, transparent);
             SetTextColor(hTgtMemDC, bkColorForAlpha);
             BitBlt(hTgtMemDC, iconSize * ToolBarButtons[i].ImageIndex, 0, iconSize, iconSize,
@@ -884,10 +884,9 @@ BOOL CreateToolbarBitmaps(HINSTANCE hInstance, int resID, COLORREF transparent, 
             }
             else
             {
-                /*
-        // --- sileny patch BEGIN
-        // John: pod W2K mi neslapalo pro ikonku 21 (Documents) DrawIconEx s parametrem DI_NORMAL
-        // z neznameho duvodu saturovalo pruhledny prostor a tim zmenilo barvu 'transparent'
+                /*          // --- crazy patch BEGIN
+        // John: under W2K, it didn't work for icon 21 (Documents) DrawIconEx with parameter DI_NORMAL
+        // for some unknown reason, it saturated the transparent space and thus changed the 'transparent' color
         SetBkColor(hTgtMemDC, RGB(0, 0, 0));
         SetTextColor(hTgtMemDC, RGB(255, 255, 255));
         BitBlt(hTgtMemDC, ICON16_CX * ToolBarButtons[i].ImageIndex, 0, ICON16_CX, ICON16_CX,
@@ -898,8 +897,7 @@ BOOL CreateToolbarBitmaps(HINSTANCE hInstance, int resID, COLORREF transparent, 
         BitBlt(hTgtMemDC, ICON16_CX * ToolBarButtons[i].ImageIndex, 0, ICON16_CX, ICON16_CX,
                hTmpMemDC, 0, 0,
                SRCPAINT);
-        // --- sileny patch END
-        */
+        // --- crazy patch END*/
                 HANDLES(DestroyIcon(hIcon));
             }
         }
@@ -944,9 +942,9 @@ exitus:
 //
 // PrepareToolTipText
 //
-// Prohleda buff na prvni vyskyt znaku '\t'. Pokud je nastavena promenna
-// stripHotKey, vlozi na jeho misto terminator a vrati se. Jinak na jeho
-// misto vlozi mezeru, zbytek posunu o znak vpravo a ozavorkuje.
+// Search the buff for the first occurrence of the '\t' character. If the variable is set
+// stripHotKey, inserts a terminator in its place and returns. Otherwise, in its
+// Inserts a space instead, shifts the rest by one character to the right, and encloses it in parentheses.
 //
 
 void PrepareToolTipText(char* buff, BOOL stripHotKey)
@@ -992,7 +990,7 @@ BOOL CMainToolBar::FillTII(int tbbeIndex, TLBI_ITEM_INFO2* tii, BOOL fillName)
     }
     if (ToolBarButtons[tbbeIndex].ImageIndex == 0xFFFF)
     {
-        // stara polozka, ktera v teto verzi byla zrusena
+        // old item that was removed in this version
         return FALSE;
     }
 
@@ -1047,7 +1045,7 @@ BOOL CMainToolBar::FillTII(int tbbeIndex, TLBI_ITEM_INFO2* tii, BOOL fillName)
         if (fillName)
         {
             tii->Name = LoadStr(ToolBarButtons[tbbeIndex].ToolTipResID);
-            // retezec bude orezan, proto muzeme operaci provest nad bufferem z LoadStr
+            // The string will be truncated, so we can perform the operation on the buffer from LoadStr
             PrepareToolTipText(tii->Name, TRUE);
         }
     }
@@ -1128,8 +1126,8 @@ void CMainToolBar::OnGetToolTip(LPARAM lParam)
             CFilesWindow* activePanel = MainWindow != NULL ? MainWindow->GetActivePanel() : NULL;
             BOOL activePanelIsDisk = (activePanel != NULL && activePanel->Is(ptDisk));
             if (EnablerPastePath &&
-                (!activePanelIsDisk || !EnablerPasteFiles) && // PasteFiles je prioritni
-                !EnablerPasteFilesToArcOrFS)                  // PasteFilesToArcOrFS je prioritni
+                (!activePanelIsDisk || !EnablerPasteFiles) && // PasteFiles is a priority
+                !EnablerPasteFilesToArcOrFS)                  // PasteFilesToArcOrFS is a priority
             {
                 char tail[50];
                 tail[0] = 0;
@@ -1164,7 +1162,7 @@ BOOL CMainToolBar::OnEnumButton(LPARAM lParam)
         break;
     }
     if (tbbeIndex == TBBE_TERMINATOR)
-        return FALSE; // vsechna tlacitka uz byla natlacena
+        return FALSE; // all buttons have already been pressed
     FillTII(tbbeIndex, tii, TRUE);
     return TRUE;
 }
@@ -1203,12 +1201,12 @@ void CMainToolBar::SetType(CMainToolBarType type)
 // CBottomToolBar
 //
 
-#define BOTTOMTB_TEXT_MAX 15 // maximalni delka retezce pro jednu klavesu
+#define BOTTOMTB_TEXT_MAX 15 // maximum length of string for one key
 struct CBottomTBData
 {
     DWORD Index;
-    BYTE TextLen;                 // pocet zanaku v promenne 'Text'
-    char Text[BOTTOMTB_TEXT_MAX]; // text bez terminatoru
+    BYTE TextLen;                 // number of characters in variable 'Text'
+    char Text[BOTTOMTB_TEXT_MAX]; // text without terminator
 };
 
 CBottomTBData BottomTBData[btbsCount][12] =
@@ -1325,14 +1323,14 @@ CBottomToolBar::CBottomToolBar(HWND hNotifyWindow, CObjectOrigin origin)
 {
     CALL_STACK_MESSAGE_NONE
     State = btbsCount;
-    Padding.ButtonIconText = 1; // pritahneme text k ikonce
-    Padding.IconLeft = 2;       // prostor pred ikonou
-    Padding.TextRight = 2;      // prostor za textem
+    Padding.ButtonIconText = 1; // align text to the icon
+    Padding.IconLeft = 2;       // space in front of the icon
+    Padding.TextRight = 2;      // space behind the text
 }
 
 // naplni v poli BottomTBData promennou 'Text', kterou vycte z resourcu
-// 'state' udava radek v poli BottomTBData a 'BottomTBData' oznacuje retezec s textama
-// texty pro jednotlive klavesy jsou oddeleny znakem ';'
+// 'state' indicates the row in the BottomTBData array and 'BottomTBData' denotes a string with texts
+// Texts for individual keys are separated by the character ';'
 BOOL CBottomToolBar::InitDataResRow(CBottomTBStateEnum state, int textResID)
 {
     CALL_STACK_MESSAGE2("CBottomToolBar::InitDataResRow(, %d)", textResID);
@@ -1479,7 +1477,7 @@ BOOL CBottomToolBar::SetState(CBottomTBStateEnum state)
         TLBI_ITEM_INFO2 tii;
         tii.Mask = TLBI_MASK_TEXT | TLBI_MASK_TEXTLEN | TLBI_MASK_ID | TLBI_MASK_ENABLER |
                    TLBI_MASK_STATE | TLBI_MASK_CUSTOMDATA;
-        tii.State = 0; // povolime command - bude volano UpdateItemsState(), ktere zakaze co je treba
+        tii.State = 0; // enable the command - it will call UpdateItemsState(), which will disable what is needed
         char emptyBuff[] = "";
         tii.Text = empty ? emptyBuff : BottomTBData[state][i].Text;
         tii.TextLen = empty ? 0 : BottomTBData[state][i].TextLen;
@@ -1501,7 +1499,7 @@ BOOL CBottomToolBar::SetState(CBottomTBStateEnum state)
     GetCursorPos(&p);
     if (WindowFromPoint(p) == HWindow)
     {
-        // zajistime obnovu pripadneho tooltipu
+        // ensure the restoration of the tooltip if necessary
         ScreenToClient(HWindow, &p);
         SetCurrentToolTip(NULL, 0);
         PostMessage(HWindow, WM_MOUSEMOVE, 0, MAKELPARAM(p.x, p.y));

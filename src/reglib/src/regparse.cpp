@@ -368,7 +368,7 @@ eRPE_ERROR Parse(LPTSTR buf, CSalamanderRegistryExAbstract* pRegistry, BOOL doNo
                     {
                         val = (LPBYTE)buf;
                     }
-                    // Cope with W2K/XP/Vista/W7 bug: regedit exports just low bytes of such items i.s.o. conversion to CP_ACP
+                    // Cope with W2K/XP/Vista/W7 bug: regedit exports just low bytes of such items instead of converting to CP_ACP
                     // We insert here zeros as high bytes
                     // But imports (at least on XP64) via CP_ACP :-(
                     size_t i;

@@ -50,8 +50,7 @@ CBottomBar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
     {
-        /*
-    case WM_ERASEBKGND:
+        /*      case WM_ERASEBKGND:
     {
       if (VertScrollSpace)
       {
@@ -61,8 +60,7 @@ CBottomBar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         FillRect((HDC)wParam, &r, DialogBrush);
       }
       return TRUE;
-    }
-*/
+    }*/
     case WM_ERASEBKGND:
     {
         return TRUE;
@@ -89,7 +87,7 @@ CBottomBar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_USER_MOUSEWHEEL:
     case WM_USER_MOUSEHWHEEL:
     {
-        // at kolecko slape take nad horizontal scrollbar
+        // and the wheel also scrolls above the horizontal scrollbar
         return SendMessage(GetParent(HWindow), uMsg, wParam, lParam);
     }
 
@@ -113,11 +111,11 @@ CHeaderLine::CHeaderLine()
 {
     Parent = NULL;
     Columns = NULL;
-    HotIndex = -1; // zadny sloupce nesviti
+    HotIndex = -1; // no columns are lit
     HotExt = FALSE;
-    DownIndex = -1; // zadny sloupce neni zamackly
+    DownIndex = -1; // no columns are compressed
     DownVisible = FALSE;
-    DragIndex = -1; // zadny sloupec nemeni sirku
+    DragIndex = -1; // no column changes width
     MouseIsTracked = FALSE;
     OldDragColWidth = -1;
 }
@@ -136,20 +134,18 @@ void CHeaderLine::PaintAllItems(HDC hDC, HRGN hUpdateRgn)
     int left = Parent->XOffset;
     int right = Parent->XOffset;
 
-    // Tato optimalizace zpusobovala problem behem connectu FTP klienta;
-    // pod zobrazenym welcome okenkem doslo k prekresleni a to bylo
-    // okenkem oclipovane; jenze okenko melo CS_SAVEBITS, takze po jeho
-    // zavreni byly zobrazene nesmyslne sloupce.
-    /*
-  RECT clipRect;
+    // This optimization was causing a problem during the FTP client connect;
+    // the displayed welcome window was redrawn and that was
+    // clipped window; however, the window had CS_SAVEBITS, so after its
+    // Columns displayed were nonsensical.
+    /*    RECT clipRect;
   int clipRectType = GetClipBox(hDC, &clipRect);
   if (clipRectType == SIMPLEREGION || clipRectType == COMPLEXREGION)
   {
     left += clipRect.left;
     right += clipRect.right;
   }
-  else
-  */
+  else*/
     right += Width;
     //  TRACE_I("PaintAllItems left:"<<left<<" right"<<right);
 
@@ -162,19 +158,19 @@ void CHeaderLine::PaintAllItems(HDC hDC, HRGN hUpdateRgn)
         if (i < columnsCount)
             width = Columns->At(i).Width;
         else
-            width = 60000; // prava strana bude urcite za rohem a dojde ke kresleni
+            width = 60000; // the right side will definitely be around the corner and drawing will occur
         if (!((x < left && x + width <= left) || (x >= right && x + width > right)))
             PaintItem(hDC, i, x);
-        x += width; // posledni pricteni nas nezajima - stejne opoustime smycku
+        x += width; // we are not interested in the last addition - we are leaving the loop anyway
     }
 
     if (hUpdateRgn != NULL)
-        SelectClipRgn(hDC, NULL); // vykopneme clip region, pokud jsme ho nastavili
+        SelectClipRgn(hDC, NULL); // we kick out the clip region if we have set it
     ValidateRect(HWindow, NULL);
 }
 
-#define SORT_BITMAP_W 8 // sirka bitmapy pro sort
-#define SORT_BITMAP_H 8 // vyska bitmapy pro sort
+#define SORT_BITMAP_W 8 // width of the bitmap for sorting
+#define SORT_BITMAP_H 8 // height of the bitmap for sorting
 
 void CHeaderLine::PaintItem(HDC hDC, int index, int x)
 {
@@ -208,7 +204,7 @@ void CHeaderLine::PaintItem(HDC hDC, int index, int x)
     else
         r.right = Width;
 
-    // podmazeme podklad
+    // grease the base
     RECT r2;
     r2 = r;
     r2.top++;
@@ -221,7 +217,7 @@ void CHeaderLine::PaintItem(HDC hDC, int index, int x)
         BOOL hot1 = HotIndex == index && (index > 0 || !HotExt);
         BOOL hot2 = HotIndex == index && index == 0 && HotExt;
 
-        // nazev sloupce
+        // column name
         HFONT hOldFont = (HFONT)SelectObject(ItemBitmap.HMemDC, hot1 && Configuration.SingleClick ? FontUL : Font);
         int oldMode = SetBkMode(ItemBitmap.HMemDC, TRANSPARENT);
         COLORREF oldColor = SetTextColor(ItemBitmap.HMemDC, hot1 ? GetCOLORREF(CurrentColors[HOT_PANEL]) : GetSysColor(COLOR_BTNTEXT));
@@ -244,7 +240,7 @@ void CHeaderLine::PaintItem(HDC hDC, int index, int x)
         else if (column->ID == COLUMN_ID_ATTRIBUTES && panel->SortType == stAttr)
             sort = TRUE;
 
-        // sipka se smerem razeni
+        // arrow pointing in the direction of shifting
         GetTextExtentPoint32(ItemBitmap.HMemDC, column->Name, nameLen, &sz);
         hMemDC = HANDLES(CreateCompatibleDC(hDC));
         SelectObject(hMemDC, HHeaderSort);
@@ -257,20 +253,20 @@ void CHeaderLine::PaintItem(HDC hDC, int index, int x)
 
         // "Ext" ve sloupci "Name"
         if (index == 0 && !Parent->Parent->IsExtensionInSeparateColumn() &&
-            (Parent->Parent->ValidFileData & VALID_DATA_EXTENSION)) //p.s.: odkomentoval jsem test na priponu, aby slo schovat "Ext" ze sloupce "Name" (pri highlighteni "Ext" uz tato podminka je)
+            (Parent->Parent->ValidFileData & VALID_DATA_EXTENSION)) //p.s.: I've uncommented the test for the extension so that "Ext" can be hidden from the "Name" column (when highlighting "Ext" this condition is already met)
         {
             int textLeft = r.left + 3 + sz.cx + 3 * SORT_BITMAP_W;
-            if (sz.cx == 0) // pokud jeste nemame namereno, udelame to ted
+            if (sz.cx == 0) // if we haven't measured yet, we'll do it now
                 GetTextExtentPoint32(ItemBitmap.HMemDC, column->Name, nameLen, &sz);
             SelectObject(ItemBitmap.HMemDC, hot2 && Configuration.SingleClick ? FontUL : Font);
             SetTextColor(ItemBitmap.HMemDC, hot2 ? GetCOLORREF(CurrentColors[HOT_PANEL]) : GetSysColor(COLOR_BTNTEXT));
-            char* colExtStr = column->Name + nameLen + 1; // text "Ext" je ulozen za jmenem (v tom samem bufferu)
+            char* colExtStr = column->Name + nameLen + 1; // the text "Ext" is stored behind the name (in the same buffer)
             int colExtStrLen = (int)strlen(colExtStr);
             TextOut(ItemBitmap.HMemDC, textLeft, (r.bottom - FontCharHeight) / 2,
                     colExtStr, colExtStrLen);
             if (panel->SortType == stExtension)
             {
-                // sipka se smerem razeni
+                // arrow pointing in the direction of shifting
                 GetTextExtentPoint32(ItemBitmap.HMemDC, colExtStr, colExtStrLen, &sz);
 
                 BitBlt(ItemBitmap.HMemDC,
@@ -288,7 +284,7 @@ void CHeaderLine::PaintItem(HDC hDC, int index, int x)
         SelectObject(ItemBitmap.HMemDC, hOldFont);
     }
 
-    // vykreslime obvodove cary
+    // draw perimeter lines
     HPEN hOldPen = (HPEN)SelectObject(ItemBitmap.HMemDC, BtnHilightPen);
     MoveToEx(ItemBitmap.HMemDC, r.left, r.top, NULL);
     LineTo(ItemBitmap.HMemDC, r.right, r.top);
@@ -343,19 +339,19 @@ void CHeaderLine::SetMinWidths()
         GetTextExtentPoint32(hDC, column->Name, lstrlen(column->Name), &sz);
         column->MinWidth = 1 + 3 + sz.cx + 3 + 1;
 
-        // pokud jde podle sloupce radit, prictu sirku bitmapy a prostoru kolem ni
+        // if advising by column, I add the width of the bitmap and the space around it
         if (column->SupportSorting == 1)
             column->MinWidth += 2 * SORT_BITMAP_W;
 
-        // pokud merime sloupec "Name" a dalsi sloupec neni "Ext" a zaroven
-        // je povolena integrace "Ext" do "Name", prictu sirku "Ext"
+        // if we are measuring the "Name" column and the next column is not "Ext" and also
+        // Integration of "Ext" into "Name" is allowed, adding the width "Ext"
         if (i == 0 && !Parent->Parent->IsExtensionInSeparateColumn() &&
             (Parent->Parent->ValidFileData & VALID_DATA_EXTENSION))
         {
-            char* colExtStr = column->Name + strlen(column->Name) + 1; // text "Ext" je ulozen za jmenem (v tom samem bufferu)
+            char* colExtStr = column->Name + strlen(column->Name) + 1; // the text "Ext" is stored behind the name (in the same buffer)
             int colExtStrLen = (int)strlen(colExtStr);
             GetTextExtentPoint32(hDC, colExtStr, colExtStrLen, &sz);
-            // "Ext" sloupec podporuje razeni
+            // "Ext" column supports sorting
             column->MinWidth += SORT_BITMAP_W + sz.cx + 2 * SORT_BITMAP_W;
         }
     }
@@ -379,7 +375,7 @@ CHeaderLine::HitTest(int xPos, int yPos, int& index, BOOL& extInName)
         right = left + column->Width;
         if (xPos >= left && xPos < right)
         {
-            // otestujeme oddelovace
+            // test the separators
             if (xPos < left + 2 && i > 0 && Columns->At(i - 1).FixedWidth == 1)
             {
                 index = i - 1;
@@ -394,7 +390,7 @@ CHeaderLine::HitTest(int xPos, int yPos, int& index, BOOL& extInName)
             if (index == 0 && (Parent->Parent->ValidFileData & VALID_DATA_EXTENSION) &&
                 !Parent->Parent->IsExtensionInSeparateColumn())
             {
-                // omerim zakladni text
+                // Measure the base text
                 SIZE sz;
                 HFONT hOldFont = (HFONT)SelectObject(ItemBitmap.HMemDC, Font);
                 GetTextExtentPoint32(ItemBitmap.HMemDC, column->Name, lstrlen(column->Name), &sz);
@@ -455,7 +451,7 @@ CHeaderLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         PAINTSTRUCT ps;
         HDC hDC = HANDLES(BeginPaint(HWindow, &ps));
-        PaintAllItems(hDC, NULL); // vykreslime oblast, ktera to botrebuje
+        PaintAllItems(hDC, NULL); // draw the area that needs it
         HANDLES(EndPaint(HWindow, &ps));
         return 0;
     }
@@ -478,7 +474,7 @@ CHeaderLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_USER_MOUSEWHEEL:
     case WM_USER_MOUSEHWHEEL:
     {
-        // at kolecko slape take nad header line
+        // and the wheel also spins above the header line
         return SendMessage(Parent->HWindow, uMsg, wParam, lParam);
     }
 
@@ -488,7 +484,7 @@ CHeaderLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         break;
     }
 
-    case WM_DESTROY: // pokud je kurzor nad headerline + je vysvicena polozka, chceme vysviceni zrusit pred zrusenim okna
+    case WM_DESTROY: // if the cursor is above the headerline + the item is highlighted, we want to remove the highlighting before closing the window
     case WM_CANCELMODE:
     {
         if (GetCapture() == HWindow)
@@ -499,8 +495,7 @@ CHeaderLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_USER_TTGETTEXT:
     {
-        /*
-      DWORD id = wParam;
+        /*        DWORD id = wParam;
       char *text = (char *)lParam;
       if (id != 0xFFFF)  // divider
       {
@@ -509,9 +504,8 @@ CHeaderLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (!ext && index < Columns->Count)
           lstrcpy(text, Columns->At(i).Description);
         if (ext && Columns->Count >= 2)
-          lstrcpy(text, Columns->At(1).Description); // vytahnu popis pro utrzenou extension
-      }
-*/
+          lstrcpy(text, Columns->At(1).Description); // extract description for the torn extension
+      }*/
         return 0;
     }
 
@@ -549,7 +543,7 @@ CHeaderLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 int delta = newWidth - (int)column->Width;
                 column->Width = newWidth;
-                // prekreslime header line
+                // redraw header line
                 HDC hDC = HANDLES(GetDC(HWindow));
                 HRGN hUpdateRgn = HANDLES(CreateRectRgn(0, 0, 0, 0));
                 RECT r;
@@ -560,11 +554,11 @@ CHeaderLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 //          TRACE_I("left:"<<r.left<<" right:"<<r.right<<" delta:"<<delta);
                 ScrollWindowEx(HWindow, delta, 0,
                                &r, &r, hUpdateRgn, NULL, 0);
-                // k oblasti k prekresleni pridam tazeny sloupec
+                // to the area to be redrawn, I will add a pulled column
                 HRGN hColRgn = HANDLES(CreateRectRgn(x, r.top, x + column->Width, r.bottom));
                 CombineRgn(hUpdateRgn, hUpdateRgn, hColRgn, RGN_OR);
                 HANDLES(DeleteObject(hColRgn));
-                // necham prekreslit header
+                // let's redraw the header
                 PaintAllItems(hDC, hUpdateRgn);
                 HANDLES(DeleteObject(hUpdateRgn));
                 HANDLES(ReleaseDC(HWindow, hDC));
@@ -574,17 +568,17 @@ CHeaderLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 Parent->SetupScrollBars(UPDATE_HORZ_SCROLL);
                 Parent->CheckAndCorrectBoundaries();
 
-                // prekreslime panel
+                // redraw panel
                 r = Parent->FilesRect;
                 r.left = x + column->Width;
                 hUpdateRgn = HANDLES(CreateRectRgn(0, 0, 0, 0));
                 ScrollWindowEx(Parent->HWindow, delta, 0,
                                &r, &r, hUpdateRgn, NULL, 0);
-                // k oblasti k prekresleni pridam tazeny sloupec
+                // to the area to be redrawn, I will add a pulled column
                 hColRgn = HANDLES(CreateRectRgn(x, r.top, x + column->Width, r.bottom));
                 CombineRgn(hUpdateRgn, hUpdateRgn, hColRgn, RGN_OR);
                 HANDLES(DeleteObject(hColRgn));
-                // necham prekreslit panel
+                // let the panel be redrawn
                 Parent->PaintAllItems(hUpdateRgn, 0);
                 HANDLES(DeleteObject(hUpdateRgn));
             }

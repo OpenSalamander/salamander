@@ -6,12 +6,12 @@
 DWORD SalamanderStartTime = 0;
 DWORD SalamanderExceptionTime = 0;
 
-// modul MS_INIT zajistuje volani konstruktoru statickych objektu ve spravnem poradi
-// a na urovni "lib" (pred "user")
+// module MS_INIT ensures calling the constructor of static objects in the correct order
+// and at the "lib" level (before "user")
 
-// POZOR: sekce jsou zarovnane na 4096 bajtu, coz je velikost o kterou se zvetsi
-// salamande.exe pridanim modulu obsahujici treba jen jedinou promennou DWORD
-// Viz PEViewer na salamand.exe, cas "Section Table".
+// WARNING: sections are aligned to 4096 bytes, which is the size by which they will be increased
+// salamande.exe by adding a module containing perhaps only a single DWORD variable
+// See PEViewer on salamand.exe, time "Section Table".
 
 #pragma warning(disable : 4073)
 #pragma init_seg(lib)

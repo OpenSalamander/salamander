@@ -14,15 +14,15 @@
 #include "fileswnd.h"
 #include "edtlbwnd.h"
 
-// typ polozky v tabulce extenzi pakovacu
+// type of item in the extension table of packers
 struct SPackAssocItem
 {
-    const char* Ext; // extenze pakovace
-    int nextIndex;   // index dalsiho pakovace pro stejny archiv, -1 pokud jiny neexistuje
+    const char* Ext; // extenze packers
+    int nextIndex;   // index of the next file for the same archive, -1 if no other exists
 };
 
-// tabluka extenzi asociaci pakovacu
-// prvni polozka je string masek, druha je index dalsiho pakovace stejneho typu
+// table of extension associations of packers
+// the first item is a string of masks, the second is the index of the next packer of the same type
 SPackAssocItem PackACExtensions[] = {
     {"j", 5},           // 0
     {"rar;r##", 6},     // 1
@@ -43,7 +43,7 @@ SPackAssocItem PackACExtensions[] = {
 // CPackACDialog
 //
 
-// dialog procedura hlavniho dialogu
+// dialog procedure of the main dialog
 INT_PTR
 CPackACDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -52,7 +52,7 @@ CPackACDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // konstrukce listview
+        // listview construction
         ListView = new CPackACListView(this);
         if (ListView == NULL)
         {
@@ -62,7 +62,7 @@ CPackACDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         // subclass listview
         ListView->AttachToControl(HWindow, IDC_ACLIST);
-        // vytvorim status bar
+        // create status bar
         HStatusBar = CreateWindowEx(0, STATUSCLASSNAME, (LPCTSTR)NULL,
                                     SBARS_SIZEGRIP | WS_CHILD | CCS_BOTTOM | WS_VISIBLE | WS_GROUP,
                                     0, 0, 0, 0, HWindow, (HMENU)IDC_ACSTATUS,
@@ -73,18 +73,18 @@ CPackACDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             PostMessage(HWindow, WM_COMMAND, IDCANCEL, 0);
             break;
         }
-        // tlacitko Stop/Restart bude tlacitko start
+        // Button Stop/Restart will be the start button
         SetDlgItemText(HWindow, IDB_ACSTOP, LoadStr(IDS_ACBUTTON_RESCAN));
-        // zakazeme OK a povolime Drives
+        // Disable OK and enable Drives
         EnableWindow(GetDlgItem(HWindow, IDB_ACDRIVES), TRUE);
         EnableWindow(GetDlgItem(HWindow, IDOK), FALSE);
-        // tlacitko OK ted nebude default push button
+        // the OK button will not be the default push button now
         PostMessage(GetDlgItem(HWindow, IDOK), BM_SETSTYLE, BS_PUSHBUTTON, TRUE);
-        // tlacitko Start ted bude default push button
+        // Button Start will now be the default push button
         PostMessage(HWindow, DM_SETDEFID, IDB_ACSTOP, NULL);
-        // nactu parametry pro layoutovani okna
+        // load parameters for window layout
         GetLayoutParams();
-        // layoutuji okno
+        // laying out the window
         LayoutControls();
         break;
     }
@@ -94,38 +94,38 @@ CPackACDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
         case IDB_ACSTOP:
         {
-            // pokud hledame, jde o STOP tlacitko, jinak Rescan
+            // if we are searching, it is the STOP button, otherwise Rescan
             if (SearchRunning)
             {
                 if (SalMessageBox(HWindow, LoadStr(IDS_WANTTOSTOP), LoadStr(IDS_QUESTION),
                                   MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDNO)
                     return TRUE;
-                // zastavime hledani na disku
+                // stop searching on disk
                 SetEvent(StopSearch);
                 return TRUE;
             }
             else
             {
-                // Restart tlacitko
-                // tlacitko Stop/Restart bude zase tlacitko stop
+                // Restart button
+                // Button Stop/Restart will be again button stop
                 SetDlgItemText(HWindow, IDB_ACSTOP, LoadStr(IDS_ACBUTTON_STOP));
-                // zakazeme OK a Drives
+                // Disable OK and Drives
                 EnableWindow(GetDlgItem(HWindow, IDB_ACDRIVES), FALSE);
                 EnableWindow(GetDlgItem(HWindow, IDOK), FALSE);
-                // tlacitko OK ted nebude default push button
+                // the OK button will not be the default push button now
                 PostMessage(GetDlgItem(HWindow, IDOK), BM_SETSTYLE, BS_PUSHBUTTON, TRUE);
-                // tlacitko STOP bude default push button
+                // the STOP button will be the default push button
                 HWND focus = GetFocus();
                 PostMessage(HWindow, DM_SETDEFID, IDB_ACSTOP, NULL);
                 if (focus != ListView->HWindow && focus != GetDlgItem(HWindow, IDC_ACMODCUSTOM))
                 {
-                    // pokud byl focus na nejakem z tlacitek, musime ho tam vratit
+                    // If the focus was on a button, we need to return it there
                     PostMessage(GetDlgItem(HWindow, IDB_ACSTOP), BM_SETSTYLE, BS_PUSHBUTTON, TRUE);
                     PostMessage(focus, BM_SETSTYLE, BS_DEFPUSHBUTTON, TRUE);
                 }
-                // vytvorime znovu event na signalizaci preruseni hledani
+                // we will create the event again to signal the interruption of the search
                 StopSearch = HANDLES(CreateEvent(NULL, TRUE, FALSE, NULL));
-                // a spustime prohledavaci thread
+                // and start the search thread
                 SearchRunning = TRUE;
                 DWORD threadID;
                 if (StopSearch != NULL)
@@ -147,13 +147,13 @@ CPackACDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         case IDCANCEL:
         {
-            // pokud bezi druhy thread, ptame se...
+            // if the second thread is running, we ask...
             if (SearchRunning)
             {
                 if (SalMessageBox(HWindow, LoadStr(IDS_CANCELOPERATION), LoadStr(IDS_QUESTION),
                                   MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDNO)
                     return TRUE;
-                // zastavime hledani na disku
+                // stop searching on disk
                 SetEvent(StopSearch);
                 WillExit = TRUE;
                 return TRUE;
@@ -176,14 +176,14 @@ CPackACDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
             case LVN_GETDISPINFO:
             {
-                // zobrazime polozku a jeji stav (data si drzime my, ne listview)
+                // display the item and its state (we hold the data, not the listview)
                 LV_DISPINFO* info = (LV_DISPINFO*)lParam;
                 int index;
                 CPackACPacker* packer = ListView->GetPacker(info->item.iItem, &index);
-                // pokud byl pozadovan text, vytahneme ho
+                // if the text was requested, we will extract it
                 if (info->item.mask & LVIF_TEXT)
                     info->item.pszText = (char*)packer->GetText(index, info->item.iSubItem);
-                // pokud ikonka checkboxu, vytahnem i ji
+                // if the checkbox icon is checked, we will also pull it out
                 if ((info->item.mask & LVIF_STATE) &&
                     (info->item.stateMask & LVIS_STATEIMAGEMASK))
                 {
@@ -203,7 +203,7 @@ CPackACDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     case WM_GETMINMAXINFO:
     {
-        // minimalni velikost okna
+        // minimum window size
         LPMINMAXINFO lpmmi = (LPMINMAXINFO)lParam;
         lpmmi->ptMinTrackSize.x = MinDlgW;
         lpmmi->ptMinTrackSize.y = MinDlgH;
@@ -211,62 +211,62 @@ CPackACDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     case WM_USER_ACADDFILE:
     {
-        // vyhledavaci thread pridal soubor, musime prekreslit postizene misto
+        // Search thread added a file, we need to redraw the affected area
         UpdateListViewItems((int)wParam);
         return TRUE;
     }
     case WM_USER_ACERROR:
     {
-        // mame problem, tak at o tom user vi...
-        // jsme li ikonka, skaceme nahoru
+        // We have a problem, so let the user know about it...
+        // we are an icon, jumping up
         if (IsIconic(HWindow))
             ShowWindow(HWindow, SW_RESTORE);
-        // a zobrazime error
+        // and display an error
         MessageBox(HWindow, (char*)wParam, LoadStr(IDS_ERRORFINDINGFILE), MB_OK | MB_ICONEXCLAMATION);
         return TRUE;
     }
     case WM_USER_ACSEARCHING:
     {
-        // vyhledavaci thread nam poslal novou cestu, na ktere pracuje, tak urizneme slash na konci...
+        // The search thread has sent us a new path it's working on, so we'll trim the slash at the end...
         if (((char*)wParam)[lstrlen((char*)wParam) - 1] == '\\')
             ((char*)wParam)[lstrlen((char*)wParam) - 1] = '\0';
-        // a zobrazime ji
+        // and display it
         SetDlgItemText(HWindow, IDC_ACSTATUS, (char*)wParam);
-        // a uvolnime pamet...
+        // and let's free the memory...
         HANDLES(GlobalFree((HGLOBAL)wParam));
         return TRUE;
     }
     case WM_USER_ACFINDFINISHED:
     {
-        // pockame na skutecne dokonceni vyhledavaciho threadu a uklidime
+        // Wait for the actual completion of the search thread and clean up
         if (HSearchThread != NULL)
         {
             WaitForSingleObject(HSearchThread, INFINITE);
             HANDLES(CloseHandle(HSearchThread));
             HSearchThread = NULL;
         }
-        // uvolnime signalizacni event
+        // Release the signaling event
         if (StopSearch != NULL)
         {
             HANDLES(CloseHandle(StopSearch));
             StopSearch = NULL;
         }
-        // pokud thread skoncil, protoze zavirame okno, pokracuj se zaviranim
+        // if the thread has finished because we are closing the window, continue with the closing
         if (WillExit)
             PostMessage(HWindow, WM_COMMAND, MAKELONG(IDCANCEL, 0), 0);
         else
         {
-            // uvedeme vse do poradku
+            // we will put everything in order
             SetDlgItemText(HWindow, IDB_ACSTOP, LoadStr(IDS_ACBUTTON_RESCAN));
             SetDlgItemText(HWindow, IDC_ACSTATUS, LoadStr(IDS_ACSTATUSDONE));
             EnableWindow(GetDlgItem(HWindow, IDB_ACDRIVES), TRUE);
             EnableWindow(GetDlgItem(HWindow, IDOK), TRUE);
-            // opravime default push button
+            // Fix the default push button
             HWND focus = GetFocus();
             PostMessage(HWindow, DM_SETDEFID, IDOK, NULL);
             if (focus != ListView->HWindow && focus != GetDlgItem(HWindow, IDC_ACMODCUSTOM))
             {
-                // pokud byl focus na nejakem z tlacitek, musime ho tam vratit
+                // If the focus was on a button, we need to return it there
                 PostMessage(GetDlgItem(HWindow, IDOK), BM_SETSTYLE, BS_PUSHBUTTON, TRUE);
                 PostMessage(focus, BM_SETSTYLE, BS_DEFPUSHBUTTON, TRUE);
             }
@@ -280,37 +280,37 @@ CPackACDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         break;
     }
     }
-    // default zpracovani messagi
+    // default message processing
     return CCommonDialog::DialogProc(uMsg, wParam, lParam);
 }
 
-// ulozi pocatecni rozmery dialogu pro resize
+// Stores the initial dimensions of the dialog for resizing
 void CPackACDialog::GetLayoutParams()
 {
     CALL_STACK_MESSAGE1("CPackACDialog::GetLayoutParams()");
-    // minimalni rozmery dialogu
+    // minimum dimensions of the dialog
     RECT wr;
     GetWindowRect(HWindow, &wr);
     MinDlgW = wr.right - wr.left;
     MinDlgH = wr.bottom - wr.top;
 
-    // klientska cast okna
+    // client part of the window
     RECT cr;
     GetClientRect(HWindow, &cr);
 
-    // pomocne rozmery pro prepocet non-client a client souradnic
+    // auxiliary dimensions for converting non-client and client coordinates
     int windowMargin = ((wr.right - wr.left) - (cr.right)) / 2;
     int captionH = wr.bottom - wr.top - cr.bottom - windowMargin;
 
-    // prostor vlevo a vpravo mezi rameckem dialogu a controly
+    // space to the left and right between the dialog frame and controls
     RECT br;
     GetWindowRect(GetDlgItem(HWindow, IDC_ACLIST), &br);
     HMargin = br.left - wr.left - windowMargin;
 
-    // prostor dole mezi tlacitky a status barou
+    // space below the buttons and above the status bar
     VMargin = HMargin;
 
-    // rozmery tlacitek
+    // dimensions of buttons
     GetWindowRect(GetDlgItem(HWindow, IDB_ACDRIVES), &br);
     ButtonW1 = br.right - br.left;
     GetWindowRect(GetDlgItem(HWindow, IDB_ACSTOP), &br);
@@ -325,81 +325,81 @@ void CPackACDialog::GetLayoutParams()
     ButtonW5 = br.right - br.left;
     ButtonMargin = br.left - ButtonMargin;
 
-    // vyska status bary
+    // height of status bar
     GetWindowRect(HStatusBar, &br);
     StatusHeight = br.bottom - br.top;
 
-    // vyska checkboxu
+    // height of the checkbox
     CheckH = br.bottom - br.top;
 
-    // umisteni seznamu vysledku
+    // placement of the result list
     GetWindowRect(GetDlgItem(HWindow, IDC_ACLIST), &br);
     ListY = br.top - wr.top - captionH;
 }
 
-// resizuje okno dialogu
+// resizes the dialog window
 void CPackACDialog::LayoutControls()
 {
     CALL_STACK_MESSAGE1("CPackACDialog::LayoutControls()");
     RECT clientRect;
 
-    // vezmi velikost, co mame k dispozici
+    // take the size that we have available
     GetClientRect(HWindow, &clientRect);
     clientRect.bottom -= StatusHeight;
 
-    // a ted to sjedem v jednom bloku
+    // and now we will eat it in one go
     HDWP hdwp = HANDLES(BeginDeferWindowPos(8));
     if (hdwp != NULL)
     {
-        // umistim Status Bar
+        // Place Status Bar
         hdwp = HANDLES(DeferWindowPos(hdwp, HStatusBar, NULL,
                                       0, clientRect.bottom, clientRect.right, StatusHeight,
                                       SWP_NOZORDER));
 
-        // umistim tlacitko Help
+        // Place the Help button
         hdwp = HANDLES(DeferWindowPos(hdwp, GetDlgItem(HWindow, IDHELP), NULL,
                                       clientRect.right - ButtonW5 - HMargin,
                                       clientRect.bottom - ButtonH - VMargin,
                                       0, 0, SWP_NOSIZE | SWP_NOZORDER));
 
-        // umistim tlacitko Cancel
+        // Place the Cancel button
         hdwp = HANDLES(DeferWindowPos(hdwp, GetDlgItem(HWindow, IDCANCEL), NULL,
                                       clientRect.right - (ButtonW4 + ButtonW5) - HMargin - ButtonMargin,
                                       clientRect.bottom - ButtonH - VMargin,
                                       0, 0, SWP_NOSIZE | SWP_NOZORDER));
 
-        // umistim tlacitko OK
+        // place the OK button
         hdwp = HANDLES(DeferWindowPos(hdwp, GetDlgItem(HWindow, IDOK), NULL,
                                       clientRect.right - (ButtonW3 + ButtonW4 + ButtonW5) - HMargin - ButtonMargin * 2,
                                       clientRect.bottom - ButtonH - VMargin,
                                       0, 0, SWP_NOSIZE | SWP_NOZORDER));
 
-        // umistim tlacitko Stop/Rescan
+        // Place the Stop/Rescan button
         hdwp = HANDLES(DeferWindowPos(hdwp, GetDlgItem(HWindow, IDB_ACSTOP), NULL,
                                       clientRect.right - (ButtonW2 + ButtonW3 + ButtonW4 + ButtonW5) - HMargin - ButtonMargin * 3,
                                       clientRect.bottom - ButtonH - VMargin,
                                       0, 0, SWP_NOSIZE | SWP_NOZORDER));
 
-        // umistim tlacitko Drives
+        // Place the button Drives
         hdwp = HANDLES(DeferWindowPos(hdwp, GetDlgItem(HWindow, IDB_ACDRIVES), NULL,
                                       clientRect.right - (ButtonW1 + ButtonW2 + ButtonW3 + ButtonW4 + ButtonW5) - HMargin - ButtonMargin * 4,
                                       clientRect.bottom - ButtonH - VMargin,
                                       0, 0, SWP_NOSIZE | SWP_NOZORDER));
 
-        // umitstim check-box Custom archivers
+        // Check-box Custom archivers
         hdwp = HANDLES(DeferWindowPos(hdwp, GetDlgItem(HWindow, IDC_ACMODCUSTOM), NULL,
                                       HMargin, clientRect.bottom - VMargin - ButtonH / 2 - CheckH / 2,
                                       0, 0, SWP_NOSIZE | SWP_NOZORDER));
 
-        // umistim a natahnu list view
+        // place and stretch the list view
         hdwp = HANDLES(DeferWindowPos(hdwp, GetDlgItem(HWindow, IDC_ACLIST), NULL,
                                       HMargin, ListY, clientRect.right - HMargin * 2,
                                       clientRect.bottom - ListY - ButtonH - VMargin * 2,
                                       SWP_NOZORDER));
-        // blok hotov
+        // block finished
         HANDLES(EndDeferWindowPos(hdwp));
     }
-    // a upravime sirku sloupcu v listview
+    // and adjust the width of the columns in the listview
     ListView->SetColumnWidth();
 }
 
@@ -419,7 +419,7 @@ BOOL CPackACDialog::MyGetBinaryType(LPCSTR filename, LPDWORD lpBinaryType)
             ReadFile(hfile, &mz_header, sizeof(mz_header), &len, NULL) &&
             len == sizeof(mz_header))
         {
-            // Now that we have the header check the e_magic field to see if this is a dos image.
+            // Now that we have the header, check the e_magic field to see if this is a DOS image.
             if (mz_header.e_magic == IMAGE_DOS_SIGNATURE)
             {
                 char magic[4];
@@ -428,7 +428,7 @@ BOOL CPackACDialog::MyGetBinaryType(LPCSTR filename, LPDWORD lpBinaryType)
                 // "Offset to extended header" and read in the "magic" field information at that location.
                 // This will tell us if there is more header information to read or not.
                 //
-                // But before we do we will make sure that header structure encompasses the "Offset to extended header" field.
+                // But before we do, we will make sure that the header structure encompasses the "Offset to extended header" field.
                 if ((mz_header.e_cparhdr << 4) >= sizeof(IMAGE_DOS_HEADER))
                     if ((mz_header.e_crlc == 0) ||
                         (mz_header.e_lfarlc >= sizeof(IMAGE_DOS_HEADER)))
@@ -456,8 +456,8 @@ BOOL CPackACDialog::MyGetBinaryType(LPCSTR filename, LPDWORD lpBinaryType)
                     else if (*(WORD*)magic == IMAGE_OS2_SIGNATURE)
                     {
                         // The IMAGE_OS2_SIGNATURE indicates that the "extended header is a Windows executable (NE)
-                        // header."  This can mean either a 16-bit OS/2 or a 16-bit Windows or even a DOS program
-                        // (running under a DOS extender).  To decide which, we'll have to read the NE header.
+                        // header." This can mean either a 16-bit OS/2 or a 16-bit Windows or even a DOS program
+                        // (running under a DOS extender). To decide which, we'll have to read the NE header.
                         IMAGE_OS2_HEADER ne;
                         if (SetFilePointer(hfile, mz_header.e_lfanew, NULL, FILE_BEGIN) != -1 &&
                             ReadFile(hfile, &ne, sizeof(ne), &len, NULL) &&
@@ -562,12 +562,12 @@ BOOL CPackACDialog::MyGetBinaryType(LPCSTR filename, LPDWORD lpBinaryType)
     return ret;
 }
 
-// vlastni vykonna (a rekurzivni :-) ) funkce pro prohledavani disku
+// own recursive (and recursive :-) ) function for disk searching
 BOOL CPackACDialog::DirectorySearch(char* path)
 {
     CALL_STACK_MESSAGE2("CPackACDialog::DirectorySearch(%s)", path);
 
-    // dame zpravu sefovi o tom, na cem delame
+    // Give the boss an update on what we are working on
     DWORD pathLen = (DWORD)strlen(path);
     char* workName = (char*)HANDLES(GlobalAlloc(GMEM_FIXED, pathLen + 1));
     if (workName == NULL)
@@ -577,12 +577,12 @@ BOOL CPackACDialog::DirectorySearch(char* path)
         return TRUE;
     }
     strcpy(workName, path);
-    // posleme nazev, uvolneni pameti udela adresat
+    // send the name, memory release will be done by the recipient
     if (!PostMessage(HWindow, WM_USER_ACSEARCHING, (WPARAM)workName, 0))
-        // pokud se to nepovedlo, kaslem na to...
+        // if it didn't work out, forget about it...
         HANDLES(GlobalFree((HGLOBAL)workName));
 
-    // alokujeme buffer pro masku hledani
+    // allocate a buffer for the search mask
     char* fileName = (char*)HANDLES(GlobalAlloc(GMEM_FIXED, pathLen + 3 + 1));
     if (fileName == NULL)
     {
@@ -590,14 +590,14 @@ BOOL CPackACDialog::DirectorySearch(char* path)
         TRACE_E(LOW_MEMORY);
         return TRUE;
     }
-    // pripravime si masku pro hledani
+    // prepare a mask for searching
     strcpy(fileName, path);
     strcat(fileName, "*");
 
-    // nastavime nejake promenne
+    // set some variables
     BOOL mustStop = FALSE;
     WIN32_FIND_DATA findData;
-    // zkusime najit prvni soubor
+    // let's try to find the first file
     HANDLE fileFind = HANDLES_Q(FindFirstFile(fileName, &findData));
     if (fileFind != INVALID_HANDLE_VALUE)
     {
@@ -606,14 +606,14 @@ BOOL CPackACDialog::DirectorySearch(char* path)
             unsigned int nameLen = (unsigned int)strlen(findData.cFileName);
             if ((findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
             {
-                // je to soubor, ted zkontrolujem, jestli exac
+                // It's a file, now we will check if it's executable
                 if (nameLen > 4 && pathLen + nameLen < MAX_PATH &&
                     (findData.cFileName[nameLen - 1] == 'e' || findData.cFileName[nameLen - 1] == 'E') &&
                     (findData.cFileName[nameLen - 2] == 'x' || findData.cFileName[nameLen - 2] == 'X') &&
                     (findData.cFileName[nameLen - 3] == 'e' || findData.cFileName[nameLen - 3] == 'E') &&
                     findData.cFileName[nameLen - 4] == '.')
                 {
-                    // zjistime typ programu
+                    // determine the type of program
                     char fullName[MAX_PATH];
                     DWORD type;
                     strcpy(fullName, path);
@@ -624,7 +624,7 @@ BOOL CPackACDialog::DirectorySearch(char* path)
                         TRACE_I("Invalid executable or error getting type: " << fullName);
                         continue;
                     }
-                    // a koukneme se, jestli o nej stojime...
+                    // and let's see if we're interested in him...
                     mustStop |= ListView->ConsiderItem(path, findData.cFileName,
                                                        findData.ftLastWriteTime,
                                                        CQuadWord(findData.nFileSizeLow,
@@ -634,14 +634,14 @@ BOOL CPackACDialog::DirectorySearch(char* path)
             }
             else
             {
-                // mame adresar - vyloucime '.' a '..'
+                // We have a directory - we exclude '.' and '..'
                 if (findData.cFileName[0] != 0 &&
                     (findData.cFileName[0] != '.' ||
                      (findData.cFileName[1] != '\0' &&
                       (findData.cFileName[1] != '.' || findData.cFileName[2] != '\0'))) &&
                     pathLen + 1 + nameLen < MAX_PATH)
                 {
-                    // vytvorime nazev adresare k prohledavani
+                    // create a directory name for searching
                     char* newPath = (char*)HANDLES(GlobalAlloc(GMEM_FIXED, pathLen + 1 + nameLen + 1));
                     if (newPath == NULL)
                     {
@@ -654,13 +654,13 @@ BOOL CPackACDialog::DirectorySearch(char* path)
                         strcpy(newPath, path);
                         strcat(newPath, findData.cFileName);
                         strcat(newPath, "\\");
-                        // a rekurzivne ho prohledame
+                        // and recursively search it
                         DirectorySearch(newPath);
                         HANDLES(GlobalFree((HGLOBAL)newPath));
                     }
                 }
             }
-            // zkontroluje, jestli neni signalizovano preruseni
+            // check if an interrupt is signaled
             DWORD ret = WaitForSingleObject(StopSearch, 0);
             if (ret != WAIT_TIMEOUT)
                 mustStop = TRUE;
@@ -668,16 +668,16 @@ BOOL CPackACDialog::DirectorySearch(char* path)
         HANDLES(FindClose(fileFind));
     }
     HANDLES(GlobalFree((HGLOBAL)fileName));
-    // a konec
+    // and the end
     return mustStop;
 }
 
-// vyvolani rekurzivniho vyhledavani pro vsechny lokalni pevne disky
+// calling recursive search for all local fixed disks
 DWORD
 CPackACDialog::DiskSearch()
 {
     CALL_STACK_MESSAGE1("CPackACDialog::DiskSearch()");
-    // inicializujeme trace pro novy thread
+    // initialize trace for a new thread
     SetThreadNameInVCAndTrace("AutoConfig");
     TRACE_I("Begin");
 
@@ -687,29 +687,29 @@ CPackACDialog::DiskSearch()
     else
     {
         char* drive = *DrivesList;
-        // a projedem vsechny drajvy co mame...
+        // and we will go through all the drives we have...
         BOOL mustStop = FALSE;
         while (*drive != '\0' && !mustStop)
         {
-            // a jedeme z kopce...
+            // and we're going downhill...
             TRACE_I("Searching drive " << drive);
             mustStop = DirectorySearch(drive);
-            // posunem se na dalsi v seznamu
+            // move to the next in the list
             while (*drive != '\0')
                 drive++;
-            // a preskocime koncovy null
+            // and skip the trailing null
             drive++;
         }
     }
-    // oznamime ukonceni hledani
+    // we will announce the end of the search
     PostMessage(HWindow, WM_USER_ACFINDFINISHED, 0, 0);
-    // uz nehledame
+    // we are not searching anymore
     SearchRunning = FALSE;
     TRACE_I("End");
     return 0;
 }
 
-// wraper pro vyhledavaci funkci s exception handlingem
+// Wrapper for search function with exception handling
 unsigned int
 CPackACDialog::PackACDiskSearchThreadEH(void* instance)
 {
@@ -717,20 +717,20 @@ CPackACDialog::PackACDiskSearchThreadEH(void* instance)
     __try
     {
 #endif // CALLSTK_DISABLE
-        // vyvolani vlastniho hledani
+        // triggering custom search
         return ((CPackACDialog*)instance)->DiskSearch();
 #ifndef CALLSTK_DISABLE
     }
     __except (CCallStack::HandleException(GetExceptionInformation()))
     {
         TRACE_I("PackACDiskSearchThreadEH: calling ExitProcess(1).");
-        TerminateProcess(GetCurrentProcess(), 1); // tvrdsi exit (tenhle jeste neco vola)
+        TerminateProcess(GetCurrentProcess(), 1); // tvrdší exit (this one still calls something)
         return 1;
     }
 #endif // CALLSTK_DISABLE
 }
 
-// wrapper pro wrapper pro vyhledavani - tentokrat static funkce volana z CreateThread
+// Wrapper for wrapper for searching - this time a static function called from CreateThread
 DWORD WINAPI
 CPackACDialog::PackACDiskSearchThread(void* param)
 {
@@ -744,15 +744,15 @@ void CPackACDialog::AddToExtensions(int foundIndex, int packerIndex, CPackACPack
 {
     CALL_STACK_MESSAGE3("CPackACDialog::AddToExtensions(%d, %d, )", foundIndex, packerIndex);
 
-    // pridame extenzi a mozna i custom packer, pokud neexistuje
-    // pakovac je pridan, pokud neexistuje maska souboru odpovidajici nalezenemu pakovaci
-    // pokud existuje a odkazuje na jiny nez na plugin nebo 32-bit, presmerujeme na nalezeny
+    // add extension and possibly a custom packer if it does not exist
+    // packer is added if there is no file mask corresponding to the found packer
+    // if it exists and points to something other than a plugin or 32-bit, redirect to the found
     char buffer[10];
     const char* ptr = PackACExtensions[packerIndex].Ext;
     int found;
     do
     {
-        // hledame, kdo nas pouziva
+        // we are looking for who is using us
         buffer[0] = '.';
         int j = 1;
         while (*ptr != ';' && *ptr != '\0')
@@ -766,20 +766,20 @@ void CPackACDialog::AddToExtensions(int foundIndex, int packerIndex, CPackACPack
         if (*ptr == ';')
             ptr++;
         buffer[j] = '\0';
-        // sestavili jsme "nazev archivu", ted jestli ho mame v extenzich...
+        // we have assembled "archive name", now if we have it in extensions...
         found = PackerFormatConfig.PackIsArchive(buffer);
         if (found != 0)
         {
             int pos;
             CPackACPacker* p = NULL;
-            // pokud pracujeme s pakovacem, opravime zaznam pro pakovac
+            // if we are working with a packer, we fix the record for the packer
             if (foundPacker->GetPackerType() == Packer_Packer || foundPacker->GetPackerType() == Packer_Standalone)
             {
-                // pokud jsme pouzivali pakovac, zjistime, jestli jsme ho nasli
+                // if we were using compression, we will check if we found it
                 if (PackerFormatConfig.GetUsePacker(found - 1))
                 {
                     pos = PackerFormatConfig.GetPackerIndex(found - 1);
-                    // zjistime, jestli jsme ho nasli
+                    // let's find out if we have found him
                     int k;
                     for (k = 0; k < ListView->GetPackersCount(); k++)
                     {
@@ -788,11 +788,11 @@ void CPackACDialog::AddToExtensions(int foundIndex, int packerIndex, CPackACPack
                             break;
                     }
                 }
-                // pakovac nahradime, pokud:
-                // 1) pakovac jsme vubec nepouzivali
-                // 2) nebo pouzivali jsme externi pakovac, jiny nez ktery kontrolujem a
-                // 3) puvodni pakovac nebyl nalezen nebo mam 32bitovy (jsme lepsi)
-                // pokud jsme packer predtim nepouzivali, nahodime ho
+                // replace packing if:
+                // 1) we didn't use the packer at all
+                // 2) or we used an external compressor, different from the one we are checking and
+                // 3) The original packer was not found or I have a 32-bit one (we are better)
+                // if we haven't used the packer before, we'll throw it on
                 if (!PackerFormatConfig.GetUsePacker(found - 1) ||
                     (pos >= 0 && pos != packerIndex &&
                      (p == NULL || p->GetSelectedFullName() == NULL || foundPacker->GetExeType() == EXE_32BIT)))
@@ -800,16 +800,16 @@ void CPackACDialog::AddToExtensions(int foundIndex, int packerIndex, CPackACPack
                     TRACE_I("Setting packer for extension " << PackACExtensions[packerIndex].Ext << " to the new one.");
                     PackerFormatConfig.SetPackerIndex(found - 1, packerIndex);
                     PackerFormatConfig.SetUsePacker(found - 1, TRUE);
-                    // a obnovime tabulku
+                    // and we will refresh the table
                     PackerFormatConfig.BuildArray();
                 }
             }
-            // pokud pracujeme s rozpakovavacem, upravime zaznam pro rozpakovavac
+            // if we are working with a unpacker, we modify the record for the unpacker
             if (foundPacker->GetPackerType() == Packer_Unpacker || foundPacker->GetPackerType() == Packer_Standalone)
             {
-                // pokud jsme nasli, zkontrolujem nastaveni
+                // if we found, we will check the settings
                 pos = PackerFormatConfig.GetUnpackerIndex(found - 1);
-                // zjistime, jestli jsme stavajici unpacker nasli
+                // check if we have found the current unpacker
                 int k;
                 for (k = 0; k < ListView->GetPackersCount(); k++)
                 {
@@ -817,22 +817,22 @@ void CPackACDialog::AddToExtensions(int foundIndex, int packerIndex, CPackACPack
                     if (p->GetArchiverIndex() == pos && p->GetPackerType() != Packer_Packer)
                         break;
                 }
-                // pokud stavajici pakovac neni plugin, nebo jsme ho nenasli, nebo je jiny a my mame 32bit
+                // if the current packer is not a plugin, or we haven't found it, or it is different and we have 32bit
                 if (pos >= 0 && pos != packerIndex &&
                     (p == NULL || p->GetSelectedFullName() == NULL || foundPacker->GetExeType() == EXE_32BIT))
                 {
                     TRACE_I("Changing unpacker for extension " << PackACExtensions[packerIndex].Ext << " to the new one.");
                     PackerFormatConfig.SetUnpackerIndex(found - 1, packerIndex);
-                    // a obnovime tabulku
+                    // and we will refresh the table
                     PackerFormatConfig.BuildArray();
                 }
             }
         }
     } while (*ptr != '\0');
-    // prohledali jsme vsechny extenze, a pokud jsme nenasli, musime pridat
+    // we searched all extensions, and if we didn't find any, we need to add
     if (found == 0)
     {
-        // pokud mame jen packer, pak musime mit i unpacker (plugin bychom uz nasli)
+        // if we only have a packer, then we must also have an unpacker (we would already find a plugin)
         if (foundPacker->GetPackerType() != Packer_Packer || ListView->GetPacker(foundIndex + 1)->GetSelectedFullName() != NULL)
         {
             TRACE_I("Adding extensions " << PackACExtensions[packerIndex].Ext);
@@ -853,34 +853,34 @@ void CPackACDialog::RemoveFromExtensions(int foundIndex, int packerIndex, CPackA
 {
     CALL_STACK_MESSAGE3("CPackACDialog::RemoveFromExtensions(%d, %d, )", foundIndex, packerIndex);
 
-    // vyhodime asociaci z extenzi
-    // asociace je vyhozena, jestlize viewer nebyl nalezen nebo byl nalezen, ale nebyl vybran (fullName == NULL)
+    // we remove the association from the extension
+    // association is thrown if the viewer was not found or was found but not selected (fullName == NULL)
     // pakovac je prepnut na --not supported--, pokud packer nebyl nalezen nebo byl nalezen, ale nebyl vybran (fullName == NULL)
 
-    // prohledame extenze
+    // search for extensions
     int i;
     for (i = PackerFormatConfig.GetFormatsCount() - 1; i >= 0; i--)
     {
-        // pokud nas asociace pouziva jako viewer, zkusime prehodit na jiny, jinak rezem
+        // if our association uses us as a viewer, we will try to switch to another one, otherwise we cut
         if (packerIndex == PackerFormatConfig.GetUnpackerIndex(i))
         {
-            // najdeme alternativu
+            // find an alternative
             CPackACPacker* p = NULL;
             if (PackACExtensions[packerIndex].nextIndex >= 0)
                 p = ListView->GetPacker(PackACExtensions[packerIndex].nextIndex);
-            // pokud je to jen packer (zip), vezmeme unpacker
+            // if it's just a packer (zip), we'll take the unpacker
             if (p != NULL && p->GetPackerType() == Packer_Packer)
                 p = ListView->GetPacker(PackACExtensions[packerIndex].nextIndex + 1);
             if (p == NULL || p->GetSelectedFullName() == NULL)
             {
-                // pokud neni alternativa, rezem
+                // if there is no alternative, we cut
                 TRACE_I("Removing extensions " << PackerFormatConfig.GetExt(i));
                 PackerFormatConfig.DeleteFormat(i);
                 PackerFormatConfig.BuildArray();
             }
             else
             {
-                // mame alternativu, kterou jsme nasli, prehodime
+                // We have an alternative that we found, let's switch
                 TRACE_I("Changing viewer for extensions " << PackerFormatConfig.GetExt(i) << " to another.");
                 PackerFormatConfig.SetUnpackerIndex(i, p->GetArchiverIndex());
                 PackerFormatConfig.BuildArray();
@@ -888,7 +888,7 @@ void CPackACDialog::RemoveFromExtensions(int foundIndex, int packerIndex, CPackA
         }
         else
         {
-            // pokud nas asociace pouziva jen jako editor, zkusime presmerovat, jinak nastavime na --not supported--
+            // if our association is used only as an editor, we will try to redirect, otherwise we will set it to --not supported--
             if (PackerFormatConfig.GetUsePacker(i) && PackerFormatConfig.GetPackerIndex(i) == packerIndex)
             {
                 CPackACPacker* p = NULL;
@@ -896,15 +896,15 @@ void CPackACDialog::RemoveFromExtensions(int foundIndex, int packerIndex, CPackA
                     p = ListView->GetPacker(PackACExtensions[packerIndex].nextIndex);
                 if (p == NULL || p->GetSelectedFullName() == NULL)
                 {
-                    // alternativa neexistuje
+                    // alternative does not exist
                     TRACE_I("Setting packer to --not supported-- for extension " << PackerFormatConfig.GetExt(i));
-                    // jiny unpacker je tu, nahodime pro packer --not supported--
+                    // another unpacker is here, we'll throw it for packer --not supported--
                     PackerFormatConfig.SetUsePacker(i, FALSE);
                     PackerFormatConfig.BuildArray();
                 }
                 else
                 {
-                    // mame alternativu, kterou jsme nasli, prehodime
+                    // We have an alternative that we found, let's switch
                     TRACE_I("Changing editor for extensions " << PackerFormatConfig.GetExt(i) << " to another.");
                     PackerFormatConfig.SetPackerIndex(i, p->GetArchiverIndex());
                     PackerFormatConfig.BuildArray();
@@ -918,15 +918,15 @@ void CPackACDialog::AddToCustom(int foundIndex, int packerIndex, CPackACPacker* 
 {
     CALL_STACK_MESSAGE3("CPackACDialog::AddToCustom(%d, %d, )", foundIndex, packerIndex);
 
-    // pridame custom packery pro nove nalezeny pakovac
+    // add custom packers for newly found packers
     char variable[50];
     int i;
     BOOL found1 = FALSE, found2 = FALSE;
     sprintf(variable, "$(%s)", ArchiverConfig->GetPackerVariable(packerIndex));
-    // prohledame custom packers, jestli uz tam nahodou neni
+    // search for custom packers to see if there are any already there
     for (i = 0; i < PackerConfig.GetPackersCount(); i++)
     {
-        // bereme jen externi
+        // we only take external
         if (PackerConfig.GetPackerType(i) >= 0)
         {
             const char* cmd = PackerConfig.GetPackerCmdExecCopy(i);
@@ -955,14 +955,14 @@ void CPackACDialog::AddToCustom(int foundIndex, int packerIndex, CPackACPacker* 
                                CustomPackers[packerIndex].Ansi);
     }
 
-    // pridame custom unpackery pro nove nalezeny pakovac
+    // we add custom unpackers for newly found packers
     if (!ArchiverConfig->ArchiverExesAreSame(packerIndex))
         sprintf(variable, "$(%s)", ArchiverConfig->GetUnpackerVariable(packerIndex));
     found1 = FALSE;
-    // prohledame custom packers, jestli uz tam nahodou neni
+    // search for custom packers to see if there are any already there
     for (i = 0; i < UnpackerConfig.GetUnpackersCount(); i++)
     {
-        // bereme jen externi
+        // we only take external
         if (UnpackerConfig.GetUnpackerType(i) >= 0)
         {
             const char* cmd = UnpackerConfig.GetUnpackerCmdExecExtract(i);
@@ -985,33 +985,33 @@ void CPackACDialog::RemoveFromCustom(int foundIndex, int packerIndex)
 {
     CALL_STACK_MESSAGE3("CPackACDialog::RemoveFromCustom(%d, %d)", foundIndex, packerIndex);
 
-    // custom packer/unpacker je vyhozen, jestlize:
-    //   1) pakovac nebyl nalezen nebo byl nalezen, ale nebyl vybran (fullName == NULL)
-    //   2) volany program je promenna odpovidajici tomuto pakovaci
+    // custom packer/unpacker is thrown away if:
+    //   1) the package was not found or was found but not selected (fullName == NULL)
+    //   2) The called program is a variable corresponding to this package
 
     CPackACPacker* p = NULL;
     char variable[50];
     sprintf(variable, "$(%s)", ArchiverConfig->GetPackerVariable(packerIndex));
     int i;
-    // prohledame custom packers (odzadu, abychom mohli odmazavat)
+    // search for custom packers (backwards so we can remove them)
     for (i = PackerConfig.GetPackersCount() - 1; i >= 0; i--)
-        // bereme jen externi
+        // we only take external
         if (PackerConfig.GetPackerType(i) >= 0)
         {
             const char* cmd = PackerConfig.GetPackerCmdExecCopy(i);
             if (!strcmp(cmd, variable))
             {
-                // tenhle pakovac vola program, ktery jsme nenasli - podriznout...
+                // this packer calls a program that we did not find - to be continued...
                 TRACE_I("Removing custom packer which uses not found packer: " << variable);
                 PackerConfig.DeletePacker(i);
-                // na move cmd uz se nemusime kouka, packer uz neexistuje
+                // we don't have to look at the move cmd anymore, the packer doesn't exist anymore
             }
             else if (PackerConfig.GetPackerSupMove(i))
             {
                 cmd = PackerConfig.GetPackerCmdExecMove(i);
                 if (!strcmp(cmd, variable))
                 {
-                    // vola na move cmd program, ktery neexistuje - vypnout
+                    // calls the move cmd program, which does not exist - turn off
                     TRACE_I("Disabling Move command for custom packer which uses not found packer: " << variable);
                     PackerConfig.SetPackerSupMove(i, FALSE);
                 }
@@ -1019,29 +1019,29 @@ void CPackACDialog::RemoveFromCustom(int foundIndex, int packerIndex)
         }
     if (!ArchiverConfig->ArchiverExesAreSame(packerIndex))
         sprintf(variable, "$(%s)", ArchiverConfig->GetUnpackerVariable(packerIndex));
-    // prohledame custom unpackers
+    // search for custom unpackers
     for (i = UnpackerConfig.GetUnpackersCount() - 1; i >= 0; i--)
-        // bereme jen externi
+        // we only take external
         if (UnpackerConfig.GetUnpackerType(i) >= 0)
         {
             const char* cmd = UnpackerConfig.GetUnpackerCmdExecExtract(i);
             if (!strcmp(cmd, variable))
             {
-                // tenhle rozpakovavac vola program, ktery jsme nenasli - podriznout...
+                // this unpacker calls a program that we did not find - to be continued...
                 TRACE_I("Removing custom unpacker which uses not found packer: " << variable);
                 UnpackerConfig.DeleteUnpacker(i);
             }
         }
 }
 
-// funkce volana pred startem a po ukonceni dialogu pro transfer dat
+// Function called before starting and after finishing the data transfer dialog
 void CPackACDialog::Transfer(CTransferInfo& ti)
 {
     CALL_STACK_MESSAGE1("CPackACDialog::Transfer()");
-    // zaciname nebo koncime ?
+    // Are we starting or finishing?
     if (ti.Type == ttDataToWindow)
     {
-        // vytvorime tabulku hledanych pakovacu
+        // create a table of searched packers
         APackACPackersTable* table = new APackACPackersTable(20, 10);
         int i;
         for (i = 0; i < ArchiverConfig->GetArchiversCount(); i++)
@@ -1062,31 +1062,31 @@ void CPackACDialog::Transfer(CTransferInfo& ti)
                                              ArchiverConfig->GetArchiverType(i)));
             }
         }
-        // soupneme ji do listview
+        // we will add it to the listview
         ListView->Initialize(table);
-        // checkbox defaultne zacheckovany
+        // checkbox checked by default
         int value = 1;
         ti.CheckBox(IDC_ACMODCUSTOM, value);
-        // ted nehledame
+        // we are not looking now
         SearchRunning = FALSE;
     }
     else
     {
         int doCustom;
-        // zjistime hodnotu checkboxu
+        // get the value of the checkbox
         ti.CheckBox(IDC_ACMODCUSTOM, doCustom);
         int i;
-        // projedem vsechny pakovace - nakonfigurujeme cesty a vyhodime asociace tem, ktere jsme nenasli
+        // we will go through all packages - configure paths and remove associations for those we did not find
         for (i = 0; i < ListView->GetPackersCount(); i++)
         {
-            // rekneme si o pakovac
+            // let's ask for a package
             CPackACPacker* packer = ListView->GetPacker(i);
             int index = packer->GetArchiverIndex();
             const char* fullName = packer->GetSelectedFullName();
-            // pokud jsme ho nenasli, nechamu puvodni hodnotu
+            // if we didn't find it, we leave the original value
             if (fullName != NULL)
             {
-                // ulozime cestu do konfigurace
+                // save the path to the configuration
                 if (packer->GetPackerType() == Packer_Unpacker)
                     ArchiverConfig->SetUnpackerExeFile(index, fullName);
                 else
@@ -1099,14 +1099,14 @@ void CPackACDialog::Transfer(CTransferInfo& ti)
                     RemoveFromCustom(i, index);
             }
         }
-        // projedem vsechny pakovace znovu, tentokrat jen pridame nove asociace
+        // we will go through all the packages again, this time just adding new associations
         for (i = 0; i < ListView->GetPackersCount(); i++)
         {
-            // rekneme si o pakovac
+            // let's ask for a package
             CPackACPacker* packer = ListView->GetPacker(i);
             int index = packer->GetArchiverIndex();
             const char* fullName = packer->GetSelectedFullName();
-            // pokud jsme ho nenasli, nechamu puvodni hodnotu
+            // if we didn't find it, we leave the original value
             if (fullName != NULL)
             {
                 AddToExtensions(i, index, packer);
@@ -1117,7 +1117,7 @@ void CPackACDialog::Transfer(CTransferInfo& ti)
     }
 }
 
-// vyridi pozadavek na pridani polozky do listview
+// handles the request to add an item to the listview
 void CPackACDialog::UpdateListViewItems(int index)
 {
     CALL_STACK_MESSAGE2("CPackACDialog::UpdateListViewItems(%d)", index);
@@ -1136,7 +1136,7 @@ void CPackACDialog::UpdateListViewItems(int index)
 // CPackACPacker
 //
 
-// vraci pocet pakovacu v arrayi
+// returns the number of packets in the array
 int CPackACPacker::GetCount()
 {
     SLOW_CALL_STACK_MESSAGE1("CPackACPacker::GetCount()");
@@ -1147,7 +1147,7 @@ int CPackACPacker::GetCount()
     return count;
 }
 
-// otoci oznaceni souboru (inverze checkboxu)
+// Toggle file selection (checkbox inversion)
 void CPackACPacker::InvertSelect(int index)
 {
     CALL_STACK_MESSAGE2("CPackACPacker::InvertSelect(%d)", index);
@@ -1159,7 +1159,7 @@ void CPackACPacker::InvertSelect(int index)
     }
 }
 
-// vrati text patrici do daneho sloupce
+// returns the text belonging to the given column
 const char*
 CPackACPacker::GetText(int index, int column)
 {
@@ -1181,7 +1181,7 @@ CPackACPacker::GetText(int index, int column)
     return ret;
 }
 
-// vrati zda je polozka vybrana ci ne (ci jde o nadpis)
+// returns whether the item is selected or not (whether it is a header)
 int CPackACPacker::GetSelectState(int index)
 {
     CALL_STACK_MESSAGE2("CPackACPacker::GetSelectState(%d)", index);
@@ -1192,33 +1192,33 @@ int CPackACPacker::GetSelectState(int index)
         BOOL sel = Found[index]->IsSelected();
         HANDLES(LeaveCriticalSection(&FoundDataCriticalSection));
         if (sel)
-            // je vybrana
+            // is selected
             ret = 2;
         else
-            // neni vybrana
+            // not selected
             ret = 1;
     }
     else
-        // nadpis
+        // title
         ret = 0;
     return ret;
 }
 
-// zjisti, zda stojime o dany program a pokud ano, prida ho
+// check if we are interested in the given program and if so, add it
 int CPackACPacker::CheckAndInsert(const char* path, const char* fileName, FILETIME lastWriteTime,
                                   const CQuadWord& size, EPackExeType exeType)
 {
     CALL_STACK_MESSAGE3("CPackACPacker::CheckAndInsert(%s, %s, , , )", path, fileName);
     const char* ref = Name;
     const char* act = fileName;
-    // sedi jmeno ?
+    // Is the name correct?
     while (*ref != '\0' && *act != '\0' && tolower(*ref) == tolower(*act))
     {
         ref++;
         act++;
     }
-    // priponu jsme uz zkontrolovali, ted jen jestli jsme na konci stringu
-    // a jestli sedi ostatni pozadavky (zatim jen typ, uvidime v budoucnu...)
+    // we have already checked the suffix, now just if we are at the end of the string
+    // and if other requirements are met (for now just the type, we will see in the future...)
     if (*ref == '\0' && act == &fileName[lstrlen(fileName) - 4] &&
         exeType == Type)
     {
@@ -1230,30 +1230,30 @@ int CPackACPacker::CheckAndInsert(const char* path, const char* fileName, FILETI
         }
         strcpy(fullName, path);
         strcat(fullName, fileName);
-        // mame novou nalezenou polozku, tak zkontrolujem, jestli je pro nas nova
+        // We have a new found item, so let's check if it's new for us
         int i;
         for (i = 0; i < Found.Count; i++)
         {
             char* n2 = Found.At(i)->FullName;
-            // pokud uz ji mame, navrat
+            // if we already have it, return
             if (!strcmp(fullName, n2))
             {
                 free(fullName);
                 return 0;
             }
         }
-        // a pridame ji
+        // and we add it
         CPackACFound* newItem = new CPackACFound;
         if (newItem != NULL)
         {
-            // zinicializujeme ji
+            // initialize it
             BOOL good = newItem->Set(fullName, size, lastWriteTime);
             free(fullName);
             int index;
             if (good)
             {
                 HANDLES(EnterCriticalSection(&FoundDataCriticalSection));
-                // a pridame do pole
+                // and add to the array
                 index = Found.AddAndCheck(newItem);
                 if (!Found.IsGood())
                 {
@@ -1262,7 +1262,7 @@ int CPackACPacker::CheckAndInsert(const char* path, const char* fileName, FILETI
                 }
                 HANDLES(LeaveCriticalSection(&FoundDataCriticalSection));
             }
-            // ted uz jen kontrola, jak jsme dopadli
+            // now just a check to see how we did
             if (good)
                 return index + 1;
             else
@@ -1283,56 +1283,56 @@ int CPackACPacker::CheckAndInsert(const char* path, const char* fileName, FILETI
 // CPackACArray
 //
 
-// zajisti vyselekteni pouze nejnovejsi polozky a prida ji do pole
+// Ensures selecting only the latest items and adds them to the array
 int CPackACArray::AddAndCheck(CPackACFound* member)
 {
     CALL_STACK_MESSAGE1("CPackACArray::AddAndCheck()");
-    // je-li prvni, bude vybrana
+    // if it is the first, it will be selected
     if (Count == 0)
         member->Selected = TRUE;
     else
     {
         int i;
         for (i = 0; i < Count; i++)
-            // porovname s polozkou v soucasnosti vybranou
+            // compare with the currently selected item
             if (At(i)->Selected && CompareFileTime(&At(i)->LastWrite, &member->LastWrite) == -1)
             {
-                // pokud je novejsi, nahradime vyber
+                // if it is newer, we replace the selection
                 At(i)->Selected = FALSE;
                 member->Selected = TRUE;
             }
     }
-    // a vlozime do pole
+    // and insert into the array
     return TIndirectArray<CPackACFound>::Add(member);
 }
 
-// otoci stav checkboxu polozky
+// Toggle the state of the checkbox item
 void CPackACArray::InvertSelect(int index)
 {
     CALL_STACK_MESSAGE2("CPackACArray::InvertSelect(%d)", index);
-    // musime uzivateli umoznit nevybrat nic
+    // we must allow the user to select nothing
     if (At(index)->Selected)
         At(index)->Selected = FALSE;
     else
     {
-        // ale vybrana muze byt jen jedna polozka
+        // but only one item can be selected
         int i;
         for (i = 0; i < Count; i++)
             At(i)->Selected = (i == index);
     }
 }
 
-// vrati FullName polozky, ktera byla vybrana
+// returns the FullName of the selected item
 const char*
 CPackACArray::GetSelectedFullName()
 {
     CALL_STACK_MESSAGE1("CPackACArray::GetSelectedFullName()");
-    // prohledej vsechny a vrat vybranou
+    // search all and return selected
     int i;
     for (i = 0; i < Count; i++)
         if (At(i)->Selected)
             return At(i)->FullName;
-    // pokud neni vybrana zadna, vrat NULL
+    // if none is selected, return NULL
     return NULL;
 }
 
@@ -1341,66 +1341,66 @@ CPackACArray::GetSelectedFullName()
 // CPackACListView
 //
 
-// vraci pocet jiz nalezenych pakovacu (vcetne nadpisu)
+// returns the number of already found packages (including the header)
 int CPackACListView::GetCount()
 {
     CALL_STACK_MESSAGE1("CPackACListView::GetCount()");
-    // pokud tabulka neni, mame 0 prvku
+    // if the table is not present, we have 0 elements
     if (PackersTable == NULL)
         return 0;
-    // projedem vsechny prvky tabulky
+    // iterate through all elements of the array
     int count = 0;
     int i;
     for (i = 0; i < PackersTable->Count; i++)
     {
-        // a kazdeho se zeptame, kolik toho ma, a pricteme i nadpis
+        // and we will ask everyone how much they have, and we will also add a title
         count += PackersTable->At(i)->GetCount() + 1;
     }
-    // vratime vysledek
+    // return the result
     return count;
 }
 
-// 'otoci' stav checkboxu dane polozky
+// 'toggle' the state of the checkbox of the given item
 void CPackACListView::InvertSelect(int index)
 {
     CALL_STACK_MESSAGE2("CPackACListView::InvertSelect(%d)", index);
     unsigned int archiver, arcIndex;
-    // zjistime indexy vybraneho archiveru
+    // find the indexes of the selected archive
     if (PackersTable != NULL && !FindArchiver(index, &archiver, &arcIndex))
     {
-        // 'otocime' stav checkboxu s kontrolou ostatnich ve skupine
+        // 'toggle' the state of the checkbox with checking the others in the group
         PackersTable->At(archiver)->InvertSelect(arcIndex);
-        // prekreslime polozky, kterych se zmena mohla dotknout
+        // Redraw items that may have been affected by the change
         ListView_RedrawItems(HWindow, index - arcIndex,
                              index - arcIndex + PackersTable->At(archiver)->GetCount() - 1);
-        // posuneme cvaknutou polozku do visitelne oblasti
+        // move the clicked item to the visible area
         ListView_EnsureVisible(HWindow, index, FALSE);
-        // a prekreslime, co je nutne
+        // and redraw what is necessary
         UpdateWindow(HWindow);
     }
 }
 
-// vrati nalezeny archiver podle polozky z listview
+// returns the found archive according to the item from the listview
 CPackACPacker*
 CPackACListView::GetPacker(int item, int* index)
 {
     CALL_STACK_MESSAGE2("CPackACListView::GetPacker(%d, )", item);
-    // kontrola konzistence
+    // consistency check
     if (PackersTable == NULL)
         return NULL;
     unsigned int archiver, arcIndex;
-    // zkusime najit archiver
+    // let's try to find the archiver
     if (FindArchiver(item, &archiver, &arcIndex))
-        // je to nadpis
+        // it's a heading
         *index = -1;
     else
-        // je to archiver
+        // it is an archiver
         *index = arcIndex;
-    // vratime pozadovany archiver
+    // return the requested archiver
     return PackersTable->At(archiver);
 }
 
-// hleda archiver podle indexu v listview
+// searches for an archiver by index in the listview
 BOOL CPackACListView::FindArchiver(unsigned int listViewIndex,
                                    unsigned int* archiver, unsigned int* arcIndex)
 {
@@ -1430,105 +1430,105 @@ BOOL CPackACListView::FindArchiver(unsigned int listViewIndex,
     }
 }
 
-// zinicializuje list view
+// initialize the list view
 void CPackACListView::Initialize(APackACPackersTable* table)
 {
     CALL_STACK_MESSAGE1("CPackACListView::Initialize()");
-    // konecne mame data
+    // finally we have data
     PackersTable = table;
-    // nastavim sloupce
+    // set columns
     InitColumns();
-    // nastavim pocatecni pocet prvku v listview
+    // set the initial number of items in the listview
     ListView_SetItemCount(HWindow, GetCount());
-    // nastavim focus na prvni polozku listview
+    // set focus to the first item in the listview
     ListView_SetItemState(HWindow, 0, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
 }
 
-// nastavi nadpisy a zakladni sirku sloupcu listview
+// set column headers and basic column width of the listview
 BOOL CPackACListView::InitColumns()
 {
     CALL_STACK_MESSAGE1("CPackACListView::InitColumns()");
     LV_COLUMN lvc;
-    // tabulka nazvu
+    // table name
     int header[4] = {IDS_ACCOLUMN1, IDS_ACCOLUMN2, IDS_ACCOLUMN3, IDS_ACCOLUMN4};
 
     lvc.mask = LVCF_FMT | LVCF_TEXT | LVCF_SUBITEM;
-    // vytvorim vsechny sloupce
+    // create all columns
     int i;
     for (i = 0; i < 4; i++)
     {
-        // FullName je zarovnan vlevo, ostatni vpravo
+        // FullName is aligned to the left, others to the right
         if (i == 0)
             lvc.fmt = LVCFMT_LEFT;
         else
             lvc.fmt = LVCFMT_RIGHT;
-        // nadpis
+        // title
         lvc.pszText = LoadStr(header[i]);
-        // cislo sloupce
+        // column number
         lvc.iSubItem = i;
-        // a vytvorime sloupec
+        // and we will create a column
         if (ListView_InsertColumn(HWindow, i, &lvc) == -1)
             return FALSE;
     }
 
-    // nastavime inicialni sirky sloupcu velikosti, data a casu
+    // set initial widths of columns for size, date, and time
     ListView_SetColumnWidth(HWindow, 3, ListView_GetStringWidth(HWindow, "00:00:00") + 20);
     ListView_SetColumnWidth(HWindow, 2, ListView_GetStringWidth(HWindow, "00.00.0000") + 20);
     ListView_SetColumnWidth(HWindow, 1, ListView_GetStringWidth(HWindow, "000 000") + 20);
-    // dopocitame sloupec fullname
+    // calculate the column fullname
     SetColumnWidth();
 
-    // zapneme checkboxy
+    // turn on the checkboxes
     ListView_SetExtendedListViewStyle(HWindow, LVS_EX_CHECKBOXES);
-    // a stav checkboxu drzime my, wokna si o nej rikaji
+    // and we hold the state of the checkbox, the windows call it
     ListView_SetCallbackMask(HWindow, LVIS_STATEIMAGEMASK);
     // done
     return TRUE;
 }
 
-// nastavi sirku sloupcu v listview podle velikosti okna
+// set the width of the columns in the listview according to the size of the window
 void CPackACListView::SetColumnWidth()
 {
     CALL_STACK_MESSAGE1("CPackACListView::SetColumnWidth()");
     RECT r;
-    // zjistime velikost, do ktere se musime vejit
+    // we will determine the size we need to fit into
     GetClientRect(HWindow, &r);
-    // sirka vseho
+    // width of everything
     DWORD cx = r.right - r.left - 1;
-    // odecteme velikosti fixnich sloupcu (velikost, datum, cas)
+    // subtract the sizes of fixed columns (size, date, time)
     cx -= ListView_GetColumnWidth(HWindow, 1) + ListView_GetColumnWidth(HWindow, 2) +
           ListView_GetColumnWidth(HWindow, 3) - 1;
-    // odecteme scrollbar
+    // subtract the scrollbar
     DWORD style = (DWORD)GetWindowLongPtr(HWindow, GWL_STYLE);
     if (!(style & WS_VSCROLL))
         cx -= GetSystemMetrics(SM_CXHSCROLL);
-    // a nastavime sirku variabilniho sloupce (fullname)
+    // and set the width of the variable column (fullname)
     ListView_SetColumnWidth(HWindow, 0, cx);
 }
 
-// zkontroluj nalezeny soubor, a pokud je to archiver, ktery chceme, pridej ho do pole Found
+// check the found file, and if it is the archiver we want, add it to the Found array
 BOOL CPackACListView::ConsiderItem(const char* path, const char* fileName, FILETIME lastWriteTime,
                                    const CQuadWord& size, EPackExeType type)
 {
     CALL_STACK_MESSAGE4("CPackACListView::ConsiderItem(%s, %s, , , %d)", path, fileName, type);
 
-    // kontrola konzistence
+    // consistency check
     if (PackersTable == NULL)
         return TRUE;
-    // inicializace
+    // Initialization
     BOOL stop = FALSE;
     int totalCount = 0;
-    // projedem vsechny pakovace, jestli to neni nektery z hledanych
+    // Iterate through all packages to see if any of them is the one being searched for
     int i;
     for (i = 0; i < PackersTable->Count; i++)
     {
-        // vezmem pakovac
+        // take the packer
         CPackACPacker* item = PackersTable->At(i);
-        // chceme ho ?
+        // do we want him?
         int ret = item->CheckAndInsert(path, fileName, lastWriteTime, size, type);
         if (ret < 0)
         {
-            // nejaky problem s arrayem
+            // some problem with the array
             SendMessage(ACDialog->HWindow, WM_USER_ACERROR, (WPARAM)LoadStr(IDS_CANTSHOWRESULTS), NULL);
             TRACE_E("Problems with array detected.");
             stop = TRUE;
@@ -1536,19 +1536,19 @@ BOOL CPackACListView::ConsiderItem(const char* path, const char* fileName, FILET
         else if (ret > 0)
         {
             TRACE_I("Packer " << fileName << " in location " << path << " found and added");
-            // pridali jsme polozku, prekreslime od zacatku kategorie dal (bez nadpisu)
+            // we added an item, let's redraw the entire category again (without the title)
             SendMessage(ACDialog->HWindow, WM_USER_ACADDFILE, (WPARAM)(totalCount + 1), 0);
-            // dalsi uz nehledame
+            // We are not looking for another one anymore
             break;
         }
-        // a pocitame celkovy pocet kvuli indexu v listview
+        // and we calculate the total count for the index in the listview
         totalCount += 1 + item->GetCount();
     }
-    // nastala chyba a musime zastavit ?
+    // an error occurred and we need to stop?
     return stop;
 }
 
-// Window procedura pro listview s nalezenymi archivery
+// Window procedure for listview with found archives
 LRESULT
 CPackACListView::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -1557,12 +1557,12 @@ CPackACListView::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_KEYDOWN:
     {
-        // zpracovani mezery, aby delala select/unselect checkboxu
+        // Handling space to toggle select/unselect checkbox
         if (wParam == VK_SPACE)
         {
-            // najdeme aktualni prvek
+            // find the current element
             int index = ListView_GetNextItem(HWindow, -1, LVNI_FOCUSED);
-            // a pokud to neni titulek, zmenime checkbox
+            // and if it's not a title, we'll change the checkbox
             if (index > -1)
                 InvertSelect(index);
         }
@@ -1570,12 +1570,12 @@ CPackACListView::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     case WM_LBUTTONDOWN:
     {
-        // zpracovani checkboxu od mysi
+        // processing checkbox from mouse
         LV_HITTESTINFO htInfo;
         htInfo.pt.x = LOWORD(lParam);
         htInfo.pt.y = HIWORD(lParam);
         ListView_HitTest(HWindow, &htInfo);
-        // pokud bylo kliknuto do checkboxu, zmenime jeho stav
+        // if the checkbox was clicked, we will change its state
         if (htInfo.flags & LVHT_ONITEMSTATEICON)
             InvertSelect(htInfo.iItem);
         break;
@@ -1590,23 +1590,23 @@ CPackACListView::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 // CPackACFound
 //
 
-// vrati text ktery prijde do daneho sloupce
+// returns the text that comes into the given column
 char* CPackACFound::GetText(int column)
 {
     CALL_STACK_MESSAGE2("CPackACFound::GetText(%d)", column);
     static char text[100];
     switch (column)
     {
-    // Jmeno
+    // Name
     case 0:
         return FullName;
-    // Velikost
+    // Size
     case 1:
     {
         NumberToStr(text, Size);
         return text;
     }
-    // Datum
+    // Date
     case 2:
     {
         SYSTEMTIME st;
@@ -1621,7 +1621,7 @@ char* CPackACFound::GetText(int column)
             strcpy(text, LoadStr(IDS_INVALID_DATEORTIME));
         return text;
     }
-    // Cas
+    // Time
     default:
     {
         SYSTEMTIME st;
@@ -1639,7 +1639,7 @@ char* CPackACFound::GetText(int column)
     }
 }
 
-// nastavi prvek na pozadovane hodnoty
+// set the element to the desired values
 BOOL CPackACFound::Set(const char* fullName, const CQuadWord& size, FILETIME lastWrite)
 {
     CALL_STACK_MESSAGE2("CPackACFound::Set(%s, , )", fullName);
@@ -1658,7 +1658,7 @@ BOOL CPackACFound::Set(const char* fullName, const CQuadWord& size, FILETIME las
 // CPackACDrives
 //
 
-// dialog procedura dialogu pro vyber disku k prohledani
+// dialog procedure for selecting a disk to search
 INT_PTR
 CPackACDrives::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -1696,7 +1696,7 @@ CPackACDrives::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         case IDCANCEL:
         {
-            // uvolnim z pameti kopii seznamu disku
+            // Release a copy of the disk list from memory
             int i;
             for (i = 0; i < EditLB->GetCount(); i++)
             {
@@ -1731,11 +1731,11 @@ CPackACDrives::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     Dirty = TRUE;
                     char* txt = dispInfo->Buffer;
-                    // odrizneme pocatecni mezery
+                    // remove leading spaces
                     while (*txt == ' ' || *txt == '\t')
                         txt++;
-                    // zjistime delku bez koncovych mezer
-                    int len = (int)strlen(txt) - 1; // pokud je txt prazdny retezec, bude len==-1
+                    // find the length without trailing spaces
+                    int len = (int)strlen(txt) - 1; // if txt is an empty string, len==-1
                     while (len > 0 && (*(txt + len) == ' ' || *(txt + len) == '\t'))
                         len--;
                     len++;
@@ -1759,8 +1759,7 @@ CPackACDrives::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 return TRUE;
             }
-            /*
-            case EDTLBN_MOVEITEM:
+            /*              case EDTLBN_MOVEITEM:
             {
               int srcItemID, dstItemID;
               EDTLB_DISPINFO *dispInfo = (EDTLB_DISPINFO *)lParam;
@@ -1770,10 +1769,9 @@ CPackACDrives::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
               EditLB->GetItemID(dstIndex, dstItemID);
               EditLB->SetItemID(srcIndex, dstItemID);
               EditLB->SetItemID(dstIndex, srcItemID);
-              SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE);  // povolim prohozeni
+              SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE);  // allow swapping
               return TRUE;
-            }
-            */
+            }*/
             case EDTLBN_MOVEITEM2:
             {
                 Dirty = TRUE;
@@ -1805,7 +1803,7 @@ CPackACDrives::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     }
                 }
                 EditLB->SetItemID(dstIndex, tmpItemID);
-                SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE); // povolime zmenu
+                SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE); // allow change
                 return TRUE;
             }
 
@@ -1813,7 +1811,7 @@ CPackACDrives::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 Dirty = TRUE;
                 free((char*)dispInfo->ItemID);
-                SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE); // povolim smazani
+                SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE); // allow deletion
                 return TRUE;
             }
             }
@@ -1833,7 +1831,7 @@ CPackACDrives::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         break;
     }
     }
-    // default zpracovani messagi
+    // default message processing
     return CCommonDialog::DialogProc(uMsg, wParam, lParam);
 }
 
@@ -1867,7 +1865,7 @@ void CPackACDrives::Transfer(CTransferInfo& ti)
     if (ti.Type == ttDataToWindow)
     {
         Dirty = FALSE;
-        // naleju seznam disku
+        // list of disks poured
         char* path = *DrivesList;
         while (*path != '\0')
         {
@@ -1890,14 +1888,14 @@ void CPackACDrives::Transfer(CTransferInfo& ti)
         {
             int i;
             unsigned long len = 0;
-            // zjistim velikost potrebneho mista pro seznam disku
+            // calculate the size of the required space for the disk list
             for (i = 0; i < EditLB->GetCount(); i++)
             {
                 INT_PTR itemID;
                 EditLB->GetItemID(i, itemID);
                 unsigned long pathlen = (unsigned long)strlen((char*)itemID);
                 len += pathlen + 1;
-                // pokud cesta nekonci backslashem, musim s nim pocitat
+                // if the path does not end with a backslash, I have to consider it
                 if (*((char*)itemID + pathlen - 1) != '\\')
                     len++;
             }
@@ -1908,7 +1906,7 @@ void CPackACDrives::Transfer(CTransferInfo& ti)
             else
             {
                 char* path = *DrivesList;
-                // a vytahnu seznam ven
+                // and I pull out the list
                 for (i = 0; i < EditLB->GetCount(); i++)
                 {
                     INT_PTR itemID;
@@ -1935,14 +1933,14 @@ void CPackACDrives::Transfer(CTransferInfo& ti)
 // Autoconfig
 //
 
-// spousti autokonfiguraci
+// starts auto-configuration
 void PackAutoconfig(HWND parent)
 {
     CALL_STACK_MESSAGE1("PackAutoconfig()");
 
-    // zastavime refreshe v hlavnim okne
+    // stop refreshing in the main window
     BeginStopRefresh();
-    // zjistime potrbny buffer pro disky k prohledavani
+    // we will determine the necessary buffer for disks for searching
     DWORD size = GetLogicalDriveStrings(0, NULL);
     char* sysDrives = (char*)HANDLES(GlobalAlloc(GMEM_FIXED, size));
     char* drives = (char*)HANDLES(GlobalAlloc(GMEM_FIXED, size));
@@ -1962,11 +1960,11 @@ void PackAutoconfig(HWND parent)
         else
         {
             char* dstDrive = drives;
-            // vyhazime non-fixed disky...
+            // we will remove non-fixed disks...
             char* srcDrive = sysDrives;
             while (*srcDrive != '\0')
             {
-                // co je zac ? stoji nam za to ?
+                // What is it? Is it worth it?
                 if (GetDriveType(srcDrive) == DRIVE_FIXED)
                 {
                     strcpy(dstDrive, srcDrive);
@@ -1978,11 +1976,11 @@ void PackAutoconfig(HWND parent)
             }
             *dstDrive = '\0';
             HANDLES(GlobalFree((HGLOBAL)sysDrives));
-            // otevreme vyhledavaci dialog
+            // open search dialog
             CPackACDialog(HLanguage, IDD_AUTOCONF, IDD_AUTOCONF, parent, &ArchiverConfig, &drives).Execute();
         }
         HANDLES(GlobalFree((HGLOBAL)drives));
     }
-    // dialog zavren, hlavni okno pokracuje v obnovovani
+    // dialog closed, main window continues refreshing
     EndStopRefresh();
 }

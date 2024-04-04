@@ -62,14 +62,14 @@ BOOL CFilesWindow::DeleteThroughRecycleBin(int* selection, int selCount, CFileDa
     strcpy(path, GetPath());
     SalPathAddBackslash(path, MAX_PATH);
     int pathLen = (int)strlen(path);
-    // overim, jestli v ceste nejsou komponenty zakoncene mezerou/teckou, z toho se
-    // Recycle Bin zblazni a maze na jine ceste (orezava tise ty mezery/tecky)
+    // check if there are no components ending with a space/dot in the path, from that
+    // Recycle Bin goes crazy and erases on a different path (quietly trims those spaces/dots)
     if (!PathContainsValidComponents(path, TRUE))
     {
         char textBuf[2 * MAX_PATH + 200];
         sprintf(textBuf, LoadStr(IDS_RECYCLEBINERROR), path);
         SalMessageBox(MainWindow->HWindow, textBuf, LoadStr(IDS_ERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
-        return FALSE; // quick dirty bloody hack - Recycle Bin proste s tema jmenama koncicima na mezeru/tecku neumi (maze jine jmeno vznikle oriznutim mezer/tecek, to rozhodne nechceme)
+        return FALSE; // quick dirty bloody hack - Recycle Bin simply cannot handle names ending in space/dot (it deletes a different name created by trimming spaces/dots, which we definitely don't want)
     }
     CDynamicStringImp names;
     do
@@ -84,17 +84,17 @@ BOOL CFilesWindow::DeleteThroughRecycleBin(int* selection, int selCount, CFileDa
             char textBuf[2 * MAX_PATH + 200];
             sprintf(textBuf, LoadStr(IDS_RECYCLEBINERROR), oneFile->Name);
             SalMessageBox(MainWindow->HWindow, textBuf, LoadStr(IDS_ERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
-            return FALSE; // quick dirty bloody hack - Recycle Bin proste s tema jmenama koncicima na mezeru/tecku neumi (maze jine jmeno vznikle oriznutim mezer/tecek, to rozhodne nechceme)
+            return FALSE; // quick dirty bloody hack - Recycle Bin simply cannot handle names ending in space/dot (it deletes a different name created by trimming spaces/dots, which we definitely don't want)
         }
-        // oneFile ukazuje na oznacenou nebo caret polozku ve fileboxu
+        // oneFile points to the selected or caret item in the filebox
         if (!names.Add(path, pathLen) ||
             !names.Add(oneFile->Name, oneFile->NameLen + 1))
             return FALSE;
     } while (i < selCount);
     if (!names.Add("\0", 2))
-        return FALSE; // dve nuly pro pripad prazdneho listu ("always false")
+        return FALSE; // two zeros for the case of an empty list ("always false")
 
-    SetCurrentDirectory(GetPath()); // pro rychlejsi operaci
+    SetCurrentDirectory(GetPath()); // for faster operation
 
     CShellExecuteWnd shellExecuteWnd;
     SHFILEOPSTRUCT fo;
@@ -106,13 +106,13 @@ BOOL CFilesWindow::DeleteThroughRecycleBin(int* selection, int selCount, CFileDa
     fo.fAnyOperationsAborted = FALSE;
     fo.hNameMappings = NULL;
     fo.lpszProgressTitle = "";
-    // provedeme samotne mazani - uzasne snadne, bohuzel jim sem tam pada ;-)
+    // we will perform the deletion itself - amazingly easy, unfortunately they sometimes fall here ;-)
     CALL_STACK_MESSAGE1("CFilesWindow::DeleteThroughRecycleBin::SHFileOperation");
     BOOL ret = DeleteThroughRecycleBinAux(&fo) == 0;
     SetCurrentDirectoryToSystem();
 
     return FALSE; /*ret && !fo.fAnyOperationsAborted*/
-    ;             // zatim proste nerusime oznaceni, navratovky nefukncni
+    ;             // for now, we simply ignore the labels, the returns are not working
 }
 
 void PluginFSConvertPathToExternal(char* path)
@@ -125,19 +125,19 @@ void PluginFSConvertPathToExternal(char* path)
         Plugins.IsPluginFS(fsName, index, fsNameIndex))
     {
         CPluginData* plugin = Plugins.Get(index);
-        if (plugin != NULL && plugin->InitDLL(MainWindow->HWindow, FALSE, TRUE, FALSE)) // plugin nemusi byt naloadeny, pripadne ho nechame naloadit
+        if (plugin != NULL && plugin->InitDLL(MainWindow->HWindow, FALSE, TRUE, FALSE)) // the plugin does not have to be loaded, or we will let it load
             plugin->GetPluginInterfaceForFS()->ConvertPathToExternal(fsName, fsNameIndex, fsUserPart);
     }
 }
 
-// countSizeMode - 0 normalni vypocet, 1 vypocet pro vybranou polozku, 2 vypocet pro vsechny podadresare
+// countSizeMode - 0 normal calculation, 1 calculation for selected item, 2 calculation for all subdirectories
 void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int countSizeMode)
 {
     CALL_STACK_MESSAGE3("CFilesWindow::FilesAction(%d, , %d)", type, countSizeMode);
     if (Dirs->Count + Files->Count == 0)
         return;
 
-    // obnova DefaultDir
+    // Restore DefaultDir
     MainWindow->UpdateDefaultDir(MainWindow->GetActivePanel() == this);
 
     BOOL invertRecycleBin = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
@@ -145,17 +145,17 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
     if (!FilesActionInProgress)
     {
         if (CheckPath(TRUE) != ERROR_SUCCESS)
-            return; // zdroj je vzdycky aktualni adresar
+            return; // source is always the current directory
 
         if (type != atCountSize && countSizeMode != 0)
-            countSizeMode = 0; // pro jistotu (dale se testuje uz jen countSizeMode)
+            countSizeMode = 0; // for safety (only countSizeMode is tested further)
 
         FilesActionInProgress = TRUE;
 
-        BeginSuspendMode(); // cmuchal si da pohov
-        BeginStopRefresh(); // jen aby se nedistribuovaly zpravy o zmenach na cestach
+        BeginSuspendMode(); // He was snoring in his sleep
+        BeginStopRefresh(); // just to avoid distributing news about changes on the roads
 
-        //---  zjisteni kolik je oznacenych adresaru a souboru
+        //--- finding out how many directories and files are marked
         BOOL subDir;
         if (Dirs->Count > 0)
             subDir = (strcmp(Dirs->At(0).Name, "..") == 0);
@@ -174,7 +174,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                 TRACE_E(LOW_MEMORY);
                 FilesActionInProgress = FALSE;
                 EndStopRefresh();
-                EndSuspendMode(); // ted uz zase cmuchal nastartuje
+                EndSuspendMode(); // now he's sniffling again, he'll start up
                 return;
             }
             else
@@ -192,7 +192,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
         }
         else
         {
-            if (countSizeMode == 2) // vypocet velikosti vsech podadresaru
+            if (countSizeMode == 2) // calculate the size of all subdirectories
             {
                 count = Dirs->Count;
                 if (subDir)
@@ -205,7 +205,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                         TRACE_E(LOW_MEMORY);
                         FilesActionInProgress = FALSE;
                         EndStopRefresh();
-                        EndSuspendMode(); // ted uz zase cmuchal nastartuje
+                        EndSuspendMode(); // now he's sniffling again, he'll start up
                         return;
                     }
                     else
@@ -246,14 +246,14 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                     delete[] (indexes);
                 FilesActionInProgress = FALSE;
                 EndStopRefresh();
-                EndSuspendMode(); // ted uz zase cmuchal nastartuje
+                EndSuspendMode(); // now he's sniffling again, he'll start up
                 return;
             }
         }
 #endif // _WIN64
 
-        //---  sestaveni cilove cesty pro copy/move
-        char path[2 * MAX_PATH + 200]; // + 200 je rezerva (Windows delaji cesty delsi nez MAX_PATH)
+        //--- building the target path for copy/move
+        char path[2 * MAX_PATH + 200]; // + 200 is a reserve (Windows makes paths longer than MAX_PATH)
         target->GetGeneralPath(path, 2 * MAX_PATH + 200);
         if (target->Is(ptDisk))
         {
@@ -265,11 +265,11 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
             {
                 SalPathAddBackslash(path, 2 * MAX_PATH + 200);
 
-                // pokud nelze pakovat do archivu ve vedlejsim panelu, nechame cestu prazdnou
+                // if it is not possible to pack into the archive in the side panel, we leave the path empty
                 int format = PackerFormatConfig.PackIsArchive(target->GetZIPArchive());
-                if (format != 0) // nasli jsme podporovany archiv
+                if (format != 0) // We found a supported archive
                 {
-                    if (!PackerFormatConfig.GetUsePacker(format - 1)) // nema edit -> prazdny cil operace
+                    if (!PackerFormatConfig.GetUsePacker(format - 1)) // no edit -> empty target operation
                     {
                         path[0] = 0;
                     }
@@ -283,15 +283,15 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                         (type == atCopy && target->GetPluginFS()->IsServiceSupported(FS_SERVICE_COPYFROMDISKTOFS) ||
                          type == atMove && target->GetPluginFS()->IsServiceSupported(FS_SERVICE_MOVEFROMDISKTOFS)))
                     {
-                        // jde jen o upravu textu cilove cesty v plug-inu -> nema smysl snizovat prioritu threadu
+                        // It's just about modifying the text of the target path in the plug-in -> it doesn't make sense to lower the thread priority
                         int selFiles = 0;
                         int selDirs = 0;
-                        if (count > 0) // nejake soubory jsou oznacene
+                        if (count > 0) // some files are marked
                         {
                             selFiles = files;
                             selDirs = count - files;
                         }
-                        else // bereme focus
+                        else // we take focus
                         {
                             int index = GetCaretIndex();
                             if (index >= Dirs->Count)
@@ -304,24 +304,24 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                                                                            HWindow, NULL, NULL, NULL,
                                                                            selFiles, selDirs, path, NULL))
                         {
-                            path[0] = 0; // chyba pri ziskavani cilove cesty
+                            path[0] = 0; // Error when retrieving the target path
                         }
                         else
                         {
-                            // prevedeme cestu na externi format (pred zobrazenim v dialogu)
+                            // Convert the path to an external format (before displaying it in the dialog)
                             PluginFSConvertPathToExternal(path);
                         }
                     }
                     else
                     {
-                        path[0] = 0; // nema copy/move from disk to FS
+                        path[0] = 0; // does not copy/move from disk to FS
                     }
                 }
             }
         }
         if (path[0] != 0)
         {
-            target->UserWorkedOnThisPath = TRUE; // default akce = prace s cestou v cilovem panelu
+            target->UserWorkedOnThisPath = TRUE; // default action = working with the path in the destination panel
         }
         //---
         int recycle = 0;
@@ -331,7 +331,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
             if (MyGetDriveType(GetPath()) != DRIVE_FIXED)
             {
                 recycle = 0;              // none
-                canUseRecycleBin = FALSE; // nejde to, protoze to Windows neumi
+                canUseRecycleBin = FALSE; // It doesn't work because Windows doesn't support it
             }
             else
             {
@@ -348,12 +348,12 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
         }
 
         CFileData* f = NULL;
-        char formatedFileName[MAX_PATH + 200]; // + 200 je rezerva (Windows delaji cesty delsi nez MAX_PATH)
+        char formatedFileName[MAX_PATH + 200]; // + 200 is a reserve (Windows makes paths longer than MAX_PATH)
         char expanded[200];
         BOOL deleteLink = FALSE;
-        if (count <= 1) // jedna oznacena polozka nebo zadna
+        if (count <= 1) // one marked item or none
         {
-            if (countSizeMode != 2) // neni vypocet velikosti vsech podadresaru (count je pocet oznacenych polozek)
+            if (countSizeMode != 2) // not calculating the size of all subdirectories (count is the number of selected items)
             {
                 int i;
                 if (count == 0)
@@ -361,28 +361,28 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                 else
                     GetSelItems(1, &i);
 
-                if (i < 0 || i >= Dirs->Count + Files->Count || // spatny index (zadne soubory)
-                    i == 0 && subDir)                           // se ".." nepracujem
+                if (i < 0 || i >= Dirs->Count + Files->Count || // bad index (no files)
+                    i == 0 && subDir)                           // I do not work with ".."
                 {
                     if (indexes != NULL)
                         delete[] (indexes);
                     FilesActionInProgress = FALSE;
                     EndStopRefresh();
-                    EndSuspendMode(); // ted uz zase cmuchal nastartuje
+                    EndSuspendMode(); // now he's sniffling again, he'll start up
                     return;
                 }
                 BOOL isDir = i < Dirs->Count;
                 f = isDir ? &Dirs->At(i) : &Files->At(i - Dirs->Count);
                 expanded[0] = 0;
                 if (type == atDelete && recycle != 1 && (f->Attr & FILE_ATTRIBUTE_REPARSE_POINT))
-                { // jde o link (junction nebo symlink nebo volume mount point)
+                { // it is a link (junction or symlink or volume mount point)
                     lstrcpyn(formatedFileName, GetPath(), MAX_PATH + 200);
                     ResolveSubsts(formatedFileName);
                     int repPointType;
                     if (SalPathAppend(formatedFileName, f->Name, MAX_PATH + 200) &&
                         GetReparsePointDestination(formatedFileName, NULL, 0, &repPointType, TRUE))
                     {
-                        lstrcpy(expanded, LoadStr(repPointType == 1 /* MOUNT POINT */ ? IDS_QUESTION_VOLMOUNTPOINT : repPointType == 2 /* JUNCTION POINT */ ? IDS_QUESTION_JUNCTION
+                        lstrcpy(expanded, LoadStr(repPointType == 1 /* MOUNT POINT*/ ? IDS_QUESTION_VOLMOUNTPOINT : repPointType == 2 /* JUNCTION POINT*/ ? IDS_QUESTION_JUNCTION
                                                                                                                                                             : IDS_QUESTION_SYMLINK));
                         deleteLink = TRUE;
                     }
@@ -392,9 +392,9 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                     lstrcpy(expanded, LoadStr(isDir ? IDS_QUESTION_DIRECTORY : IDS_QUESTION_FILE));
             }
             else
-                expanded[0] = 0; // nepouziva se
+                expanded[0] = 0; // not used
         }
-        else // count-files adresaru a files souboru
+        else // count the number of directories and files
         {
             ExpandPluralFilesDirs(expanded, 200, files, count - files, epfdmNormal, FALSE);
         }
@@ -416,7 +416,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                 resID = IDS_CONFIRM_DELETE;
                 break;
             case 1:
-                break; // tato hlaska se nezobrazi, protoze confirmation resi DeleteThroughRecycleBin()
+                break; // this message will not be displayed because the confirmation is handled by DeleteThroughRecycleBin()
             case 2:
                 resID = deleteLink ? IDS_CONFIRM_DELETE : IDS_CONFIRM_DELETE2;
                 break;
@@ -425,7 +425,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
         }
         }
         CTruncatedString str;
-        char subject[MAX_PATH + 100 + 200]; // + 200 je rezerva (Windows delaji cesty delsi nez MAX_PATH)
+        char subject[MAX_PATH + 100 + 200]; // + 200 is a reserve (Windows makes paths longer than MAX_PATH)
         if (resID != 0)
         {
             sprintf(subject, LoadStr(resID), expanded);
@@ -437,11 +437,11 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
         DWORD clusterSize = 0;
         CChangeCaseData changeCaseData;
         CCriteriaData criteria;
-        if (CopyMoveOptions.Get() != NULL) // pokud existuji, vytahneme defaults
+        if (CopyMoveOptions.Get() != NULL) // if they exist, we will pull defaults
             criteria = *CopyMoveOptions.Get();
-        CCriteriaData* criteriaPtr = NULL; // ukazatel na 'criteria'; pokud je NULL, ignoruji se
+        CCriteriaData* criteriaPtr = NULL; // pointer to 'criteria'; if NULL, it is ignored
         BOOL copyToExistingDir = FALSE;
-        char nextFocus[MAX_PATH + 200]; // + 200 je rezerva (Windows delaji cesty delsi nez MAX_PATH)
+        char nextFocus[MAX_PATH + 200]; // + 200 is a reserve (Windows makes paths longer than MAX_PATH)
         nextFocus[0] = 0;
         char* mask = NULL;
         switch (type)
@@ -458,7 +458,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
             while (1)
             {
                 if (strlen(path) >= 2 * MAX_PATH)
-                    path[0] = 0; // cesta je moc dlouha, tohle neni idealni reseni, ale na lepsi ted nemam nervy :(
+                    path[0] = 0; // the road is too long, this is not an ideal solution, but I don't have the nerves for better now :(
                 res = (int)CCopyMoveMoreDialog(HWindow, path, 2 * MAX_PATH,
                                                (type == atCopy) ? LoadStr(IDS_COPY) : LoadStr(IDS_MOVE), &str,
                                                (type == atCopy) ? IDD_COPYDIALOG : IDD_MOVEDIALOG,
@@ -473,17 +473,17 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                 UpdateWindow(MainWindow->HWindow);
 
                 if (!IsPluginFSPath(path) &&
-                    (path[0] != 0 && path[1] == ':' ||                                             // cesty typu X:...
-                     (path[0] == '/' || path[0] == '\\') && (path[1] == '/' || path[1] == '\\') || // UNC cesty
-                     Is(ptDisk) || Is(ptZIPArchive)))                                              // disk+archiv relativni cesty
-                {                                                                                  // jde o diskovou cestu (absolutni nebo relativni) - otocime vsechny '/' na '\\' a zahodime zdvojene '\\'
+                    (path[0] != 0 && path[1] == ':' ||                                             // paths of type X:...
+                     (path[0] == '/' || path[0] == '\\') && (path[1] == '/' || path[1] == '\\') || // UNC path
+                     Is(ptDisk) || Is(ptZIPArchive)))                                              // disk+archive relative paths
+                {                                                                                  // It's about the file path (absolute or relative) - we turn all '/' into '\\' and discard doubled '\\'
                     SlashesToBackslashesAndRemoveDups(path);
                 }
 
                 int len = (int)strlen(path);
-                BOOL backslashAtEnd = (len > 0 && path[len - 1] == '\\'); // cesta konci na backslash -> nutne adresar
+                BOOL backslashAtEnd = (len > 0 && path[len - 1] == '\\'); // path ends with a backslash -> directory required
                 BOOL mustBePath = (len == 2 && LowerCase[path[0]] >= 'a' && LowerCase[path[0]] <= 'z' &&
-                                   path[1] == ':'); // cesta typu "c:" musi byt i po expanzi cesta (ne soubor)
+                                   path[1] == ':'); // A path of type "c:" must be a path even after expansion (not a file)
 
                 int pathType;
                 BOOL pathIsDir;
@@ -494,7 +494,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                               count <= 1 ? nextFocus : NULL, NULL, 2 * MAX_PATH))
                 {
                     // misto konstrukce 'switch' pouzijeme 'if', aby fungovaly 'break' + 'continue'
-                    if (pathType == PATH_TYPE_WINDOWS) // Windows cesta (disk + UNC)
+                    if (pathType == PATH_TYPE_WINDOWS) // Windows path (disk + UNC)
                     {
                         if (strlen(path) >= MAX_PATH)
                         {
@@ -513,18 +513,18 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                         {
                             if (nextFocus[0] != 0 && secondPart[0] == 0)
                                 copyToExistingDir = TRUE;
-                            break; // opustime smycku Copy/Move a jdeme provest operaci
+                            break; // We will exit the Copy/Move loop and proceed with the operation
                         }
                         else
                         {
-                            continue; // znovu do Copy/Move dialogu
+                            continue; // back to the Copy/Move dialog
                         }
                     }
                     else
                     {
-                        if (pathType == PATH_TYPE_ARCHIVE) // cesta do archivu
+                        if (pathType == PATH_TYPE_ARCHIVE) // path to the archive
                         {
-                            if (strlen(secondPart) >= MAX_PATH) // neni prilis dlouha cesta v archivu?
+                            if (strlen(secondPart) >= MAX_PATH) // Isn't the path in the archive too long?
                             {
                                 SalMessageBox(HWindow, LoadStr(IDS_TOOLONGPATH),
                                               (type == atCopy) ? LoadStr(IDS_ERRORCOPY) : LoadStr(IDS_ERRORMOVE),
@@ -532,7 +532,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                                 continue;
                             }
 
-                            if (criteriaPtr != NULL && Configuration.CnfrmCopyMoveOptionsNS) // archivy nepodporuji options z Copy/Move dialogu
+                            if (criteriaPtr != NULL && Configuration.CnfrmCopyMoveOptionsNS) // archives do not support options from the Copy/Move dialog
                             {
                                 MSGBOXEX_PARAMS params;
                                 memset(&params, 0, sizeof(params));
@@ -549,16 +549,16 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
 
                             CPanelTmpEnumData data;
                             int oneIndex = -1;
-                            if (count > 0) // nejake soubory jsou oznacene
+                            if (count > 0) // some files are marked
                             {
                                 data.IndexesCount = count;
-                                data.Indexes = indexes; // dealokuje se pres 'indexes'
+                                data.Indexes = indexes; // deallocated through 'indexes'
                             }
-                            else // bereme focus
+                            else // we take focus
                             {
                                 oneIndex = GetCaretIndex();
                                 data.IndexesCount = 1;
-                                data.Indexes = &oneIndex; // nedealokuje se
+                                data.Indexes = &oneIndex; // not deallocated
                             }
                             data.CurrentIndex = 0;
                             data.ZIPPath = GetZIPPath();
@@ -569,18 +569,18 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                             data.EnumLastDir = NULL;
                             data.EnumLastIndex = -1;
 
-                            //---  zjistime jestli je to nulovy soubor
+                            //--- check if the file is empty
                             BOOL nullFile;
                             BOOL hasPath = *secondPart != 0;
-                            if (hasPath && !backslashAtEnd && !mustBePath) // zkontrolujeme, jestli nepouzili operacni masku -> neumime
+                            if (hasPath && !backslashAtEnd && !mustBePath) // we will check if they used the operation mask -> we cannot
                             {
                                 SalMessageBox(HWindow, LoadStr(IDS_MOVECOPY_OPMASKSNOTSUP),
                                               (type == atCopy) ? LoadStr(IDS_ERRORCOPY) : LoadStr(IDS_ERRORMOVE),
                                               MB_OK | MB_ICONEXCLAMATION);
-                                continue; // znovu do copy/move dialogu
+                                continue; // back to the copy/move dialog
                             }
 
-                            *secondPart = 0; // v 'path' je nazev souboru archivu
+                            *secondPart = 0; // in 'path' is the name of the archive file
                             BOOL haveSize = FALSE;
                             CQuadWord size;
                             DWORD err;
@@ -596,21 +596,21 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                             {
                                 nullFile = (size == CQuadWord(0, 0));
 
-                                //---  je-li to nulovy soubor, musime ho zrusit, archivatory s nimi neumi delat
+                                //If it is a zero file, we must delete it, archivers cannot handle them
                                 DWORD nullFileAttrs;
                                 if (nullFile)
                                 {
                                     nullFileAttrs = SalGetFileAttributes(path);
-                                    ClearReadOnlyAttr(path, nullFileAttrs); // aby sel smazat i read-only
+                                    ClearReadOnlyAttr(path, nullFileAttrs); // to be able to delete even if read-only
                                     DeleteFile(path);
                                 }
-                                //---  vlastni pakovani
+                                //--- custom packaging
                                 SetCurrentDirectory(GetPath());
                                 SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
                                 if (PackCompress(HWindow, this, path, hasPath ? secondPart + 1 : "",
                                                  type == atMove, GetPath(), PanelEnumDiskSelection, &data))
-                                {                   // pakovani se povedlo
-                                    if (nullFile && // nulovy soubor mohl mit jiny compressed atribut, nastavime archiv na stejny
+                                {                   // packing was successful
+                                    if (nullFile && // Zero file could have a different compressed attribute, let's set the archive to the same
                                         nullFileAttrs != INVALID_FILE_ATTRIBUTES)
                                     {
                                         HANDLE hFile2 = HANDLES_Q(CreateFile(path, GENERIC_READ | GENERIC_WRITE,
@@ -618,7 +618,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                                                                              0, NULL));
                                         if (hFile2 != INVALID_HANDLE_VALUE)
                                         {
-                                            // restorneme "compressed" flag, na FAT a FAT32 se to proste nepovede
+                                            // Restore the "compressed" flag, it simply won't work on FAT and FAT32
                                             USHORT state = (nullFileAttrs & FILE_ATTRIBUTE_COMPRESSED) ? COMPRESSION_FORMAT_DEFAULT : COMPRESSION_FORMAT_NONE;
                                             ULONG length;
                                             DeviceIoControl(hFile2, FSCTL_SET_COMPRESSION, &state,
@@ -627,12 +627,12 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                                             SetFileAttributes(path, nullFileAttrs);
                                         }
                                     }
-                                    SetSel(FALSE, -1, TRUE);                        // explicitni prekresleni
+                                    SetSel(FALSE, -1, TRUE);                        // explicit override
                                     PostMessage(HWindow, WM_USER_SELCHANGED, 0, 0); // sel-change notify
                                 }
                                 else
                                 {
-                                    if (nullFile) // nepovedlo se, musime ho zase vytvorit
+                                    if (nullFile) // It didn't work, we have to recreate it again
                                     {
                                         HANDLE hFile2 = HANDLES_Q(CreateFile(path, GENERIC_READ | GENERIC_WRITE,
                                                                              0, NULL, OPEN_ALWAYS,
@@ -641,7 +641,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                                         {
                                             if (nullFileAttrs != INVALID_FILE_ATTRIBUTES)
                                             {
-                                                // restorneme "compressed" flag, na FAT a FAT32 se to proste nepovede
+                                                // Restore the "compressed" flag, it simply won't work on FAT and FAT32
                                                 USHORT state = (nullFileAttrs & FILE_ATTRIBUTE_COMPRESSED) ? COMPRESSION_FORMAT_DEFAULT : COMPRESSION_FORMAT_NONE;
                                                 ULONG length;
                                                 DeviceIoControl(hFile2, FSCTL_SET_COMPRESSION, &state,
@@ -658,14 +658,14 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
 
                                 UpdateWindow(MainWindow->HWindow);
 
-                                //---  refresh neautomaticky refreshovanych adresaru
-                                // zmena v adresari s cilovym archivem (meni se soubor archivu)
-                                CutDirectory(path); // 'path' je jmeno archivu -> musi vzdy uspet
+                                //--- refresh non-automatically refreshed directories
+                                // Change in the directory with the target archive (the archive file is changing)
+                                CutDirectory(path); // 'path' is the name of the archive -> must always succeed
                                 MainWindow->PostChangeOnPathNotification(path, FALSE);
                                 if (type == atMove)
                                 {
-                                    // zmeny na zdrojove ceste (pri presunu souboru do archivu melo probehnout
-                                    // mazani souboru/adresaru)
+                                    // changes to the source path (when moving a file to the archive, it should have happened
+                                    // deleting files/directories)
                                     MainWindow->PostChangeOnPathNotification(GetPath(), TRUE);
                                 }
                             }
@@ -676,15 +676,15 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                                               (type == atCopy) ? LoadStr(IDS_ERRORCOPY) : LoadStr(IDS_ERRORMOVE),
                                               MB_OK | MB_ICONEXCLAMATION);
                                 if (hasPath)
-                                    *secondPart = '\\'; // obnova cesty - budeme editovat v Copy/Move dialogu
+                                    *secondPart = '\\'; // Path recovery - we will edit in the Copy/Move dialog
                                 if (backslashAtEnd || mustBePath)
                                     SalPathAddBackslash(path, 2 * MAX_PATH + 200);
-                                continue; // znovu do copy/move dialogu
+                                continue; // back to the copy/move dialog
                             }
 
                             if (indexes != NULL)
                                 delete[] (indexes);
-                            //---  pokud je aktivni nejaky okno salamandra, konci suspend mode
+                            //--- if any Salamander window is active, exit suspend mode
                             EndStopRefresh();
                             EndSuspendMode();
                             FilesActionInProgress = FALSE;
@@ -692,9 +692,9 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                         }
                         else
                         {
-                            if (pathType == PATH_TYPE_FS) // cesta na file-system
+                            if (pathType == PATH_TYPE_FS) // path to the file system
                             {
-                                if (strlen(secondPart) >= MAX_PATH) // neni prilis dlouhy user-part cesty na FS?
+                                if (strlen(secondPart) >= MAX_PATH) // Is the user-part of the path to the file system not too long?
                                 {
                                     SalMessageBox(HWindow, LoadStr(IDS_TOOLONGPATH),
                                                   (type == atCopy) ? LoadStr(IDS_ERRORCOPY) : LoadStr(IDS_ERRORMOVE),
@@ -702,7 +702,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                                     continue;
                                 }
 
-                                if (criteriaPtr != NULL && Configuration.CnfrmCopyMoveOptionsNS) // FS nepodporuji options z Copy/Move dialogu
+                                if (criteriaPtr != NULL && Configuration.CnfrmCopyMoveOptionsNS) // FS does not support options from the Copy/Move dialog
                                 {
                                     MSGBOXEX_PARAMS params;
                                     memset(&params, 0, sizeof(params));
@@ -717,19 +717,19 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                                     Configuration.CnfrmCopyMoveOptionsNS = !dontShow;
                                 }
 
-                                // pripravime data pro enumeraci souboru a adresaru z panelu
+                                // prepare data for enumerating files and directories from the panel
                                 CPanelTmpEnumData data;
                                 int oneIndex = -1;
                                 int selFiles = 0;
                                 int selDirs = 0;
-                                if (count > 0) // nejake soubory jsou oznacene
+                                if (count > 0) // some files are marked
                                 {
                                     selFiles = files;
                                     selDirs = count - files;
                                     data.IndexesCount = count;
-                                    data.Indexes = indexes; // dealokuje se pres 'indexes'
+                                    data.Indexes = indexes; // deallocated through 'indexes'
                                 }
-                                else // bereme focus
+                                else // we take focus
                                 {
                                     oneIndex = GetCaretIndex();
                                     if (oneIndex >= Dirs->Count)
@@ -737,7 +737,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                                     else
                                         selDirs = 1;
                                     data.IndexesCount = 1;
-                                    data.Indexes = &oneIndex; // nedealokuje se
+                                    data.Indexes = &oneIndex; // not deallocated
                                 }
                                 data.CurrentIndex = 0;
                                 data.ZIPPath = GetZIPPath();
@@ -748,15 +748,15 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                                 data.EnumLastDir = NULL;
                                 data.EnumLastIndex = -1;
 
-                                // ziskame jmeno file-systemu
+                                // get the name of the file system
                                 char fsName[MAX_PATH];
                                 memcpy(fsName, path, (secondPart - path) - 1);
                                 fsName[(secondPart - path) - 1] = 0;
 
-                                // snizime prioritu threadu na "normal" (aby operace prilis nezatezovaly stroj)
+                                // Lower the priority of the thread to "normal" (to prevent operations from overloading the machine)
                                 SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
-                                // vybereme FS, ktery operaci provede (poradi: aktivni, odlozeny, novy)
+                                // we select the file system that will perform the operation (order: active, deferred, new)
                                 BOOL invalidPath = FALSE;
                                 BOOL unselect = FALSE;
                                 char targetPath[2 * MAX_PATH];
@@ -765,21 +765,21 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                                 for (i = -1; i < list->Count; i++)
                                 {
                                     CPluginFSInterfaceEncapsulation* fs = NULL;
-                                    if (i == -1) // nejdrive zkusime aktivni FS v cilovem panelu
+                                    if (i == -1) // First, let's try active FS in the target panel
                                     {
                                         if (target->Is(ptPluginFS))
                                             fs = target->GetPluginFS();
                                     }
                                     else
-                                        fs = list->At(i); // pak odpojene FS
+                                        fs = list->At(i); // then disconnected file system
 
                                     int fsNameIndex;
-                                    if (fs != NULL && fs->NotEmpty() &&                          // iface je platny
-                                        fs->IsFSNameFromSamePluginAsThisFS(fsName, fsNameIndex)) // jmeno FS je ze stejneho pluginu (jinak ani nema cenu zkouset)
+                                    if (fs != NULL && fs->NotEmpty() &&                          // iface is valid
+                                        fs->IsFSNameFromSamePluginAsThisFS(fsName, fsNameIndex)) // the name FS is from the same plugin (otherwise it doesn't make sense to try)
                                     {
                                         BOOL invalidPathOrCancel;
-                                        lstrcpyn(targetPath, path, 2 * MAX_PATH); // hrozi i vetsi nez 2 * MAX_PATH
-                                        // prevedeme cestu na interni format
+                                        lstrcpyn(targetPath, path, 2 * MAX_PATH); // threatens even greater than 2 * MAX_PATH
+                                        // Convert the path to internal format
                                         fs->GetPluginInterfaceForFS()->ConvertPathToInternal(fsName, fsNameIndex,
                                                                                              targetPath + strlen(fsName) + 1);
                                         if (fs->CopyOrMoveFromDiskToFS(type == atCopy, 2, fs->GetPluginFSName(),
@@ -787,37 +787,37 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                                                                        selFiles, selDirs, targetPath, &invalidPathOrCancel))
                                         {
                                             unselect = !invalidPathOrCancel;
-                                            break; // hotovo
+                                            break; // done
                                         }
-                                        else // chyba
+                                        else // error
                                         {
-                                            // pred dalsim pouzitim musime resetnout (aby enumeroval opet od zacatku)
+                                            // before next use we need to reset (to enumerate again from the beginning)
                                             data.Reset();
 
                                             if (invalidPathOrCancel)
                                             {
-                                                // prevedeme cestu na externi format (pred zobrazenim v dialogu)
+                                                // Convert the path to an external format (before displaying it in the dialog)
                                                 PluginFSConvertPathToExternal(targetPath);
                                                 strcpy(path, targetPath);
                                                 invalidPath = TRUE;
-                                                break; // musime znovu do copy/move dialogu
+                                                break; // we need to go back to the copy/move dialog
                                             }
-                                            // zkusime jiny FS
+                                            // let's try a different file system
                                         }
                                     }
                                 }
-                                if (i == list->Count) // aktivni ani odpojene FS to nezvladly, vytvorime novy FS
+                                if (i == list->Count) // active or disconnected file systems couldn't handle it, we will create a new file system
                                 {
                                     int index;
                                     int fsNameIndex;
-                                    if (Plugins.IsPluginFS(fsName, index, fsNameIndex)) // zjistime index pluginu
+                                    if (Plugins.IsPluginFS(fsName, index, fsNameIndex)) // find out the index of the plugin
                                     {
-                                        // ziskame plug-in s FS
+                                        // obtain plug-in with FS
                                         CPluginData* plugin = Plugins.Get(index);
                                         if (plugin != NULL)
                                         {
-                                            // otevreme novy FS
-                                            // load plug-inu pred ziskanim DLLName, Version a plug-in ifacu
+                                            // open new file system
+                                            // load the plug-in before obtaining DLLName, Version, and plug-in interface
                                             CPluginFSInterfaceAbstract* auxFS = plugin->OpenFS(fsName, fsNameIndex);
                                             CPluginFSInterfaceEncapsulation pluginFS(auxFS, plugin->DLLName, plugin->Version,
                                                                                      plugin->GetPluginInterfaceForFS()->GetInterface(),
@@ -827,8 +827,8 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                                             {
                                                 Plugins.SetWorkingPluginFS(&pluginFS);
                                                 BOOL invalidPathOrCancel;
-                                                lstrcpyn(targetPath, path, 2 * MAX_PATH); // hrozi i vetsi nez 2 * MAX_PATH
-                                                // prevedeme cestu na interni format
+                                                lstrcpyn(targetPath, path, 2 * MAX_PATH); // threatens even greater than 2 * MAX_PATH
+                                                // Convert the path to internal format
                                                 pluginFS.GetPluginInterfaceForFS()->ConvertPathToInternal(fsName, fsNameIndex,
                                                                                                           targetPath + strlen(fsName) + 1);
                                                 if (pluginFS.CopyOrMoveFromDiskToFS(type == atCopy, 2,
@@ -837,19 +837,19 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                                                                                     PanelEnumDiskSelection, &data,
                                                                                     selFiles, selDirs, targetPath,
                                                                                     &invalidPathOrCancel))
-                                                { // hotovo/cancel
+                                                { // done/cancel
                                                     unselect = !invalidPathOrCancel;
                                                 }
-                                                else // chyba syntaxe/chyba plug-inu
+                                                else // syntax error/plugin error
                                                 {
                                                     if (invalidPathOrCancel)
                                                     {
-                                                        // prevedeme cestu na externi format (pred zobrazenim v dialogu)
+                                                        // Convert the path to an external format (before displaying it in the dialog)
                                                         PluginFSConvertPathToExternal(targetPath);
                                                         strcpy(path, targetPath);
-                                                        invalidPath = TRUE; // musime znovu do copy/move dialogu
+                                                        invalidPath = TRUE; // we need to go back to the copy/move dialog
                                                     }
-                                                    else // chyba plug-inu (novy FS, ale vraci chybu "v tomto FS nelze provest pozadovanou operaci")
+                                                    else // Plugin error (new file system, but returns error "the requested operation cannot be performed in this file system")
                                                     {
                                                         TRACE_E("CopyOrMoveFromDiskToFS on new (empty) FS may not return error 'unable to process operation'.");
                                                     }
@@ -871,22 +871,22 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                                     }
                                 }
 
-                                // opet zvysime prioritu threadu, operace dobehla
+                                // increase the thread priority again, operation completed
                                 SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
-                                SetCurrentDirectoryToSystem(); // pro vsechny pripady obnovime i cur-dir
+                                SetCurrentDirectoryToSystem(); // for all cases we will also restore the current directory
 
                                 if (invalidPath)
-                                    continue; // znovu do copy/move dialogu
+                                    continue; // back to the copy/move dialog
 
-                                if (unselect) // odznacime soubory/adresare v panelu
+                                if (unselect) // uncheck files/directories in the panel
                                 {
-                                    SetSel(FALSE, -1, TRUE);                        // explicitni prekresleni
+                                    SetSel(FALSE, -1, TRUE);                        // explicit override
                                     PostMessage(HWindow, WM_USER_SELCHANGED, 0, 0); // sel-change notify
                                 }
 
                                 if (indexes != NULL)
                                     delete[] (indexes);
-                                //---  pokud je aktivni nejaky okno salamandra, konci suspend mode
+                                //--- if any Salamander window is active, exit suspend mode
                                 EndStopRefresh();
                                 EndSuspendMode();
                                 FilesActionInProgress = FALSE;
@@ -902,7 +902,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
         case atDelete:
         {
             if (Configuration.CnfrmFileDirDel && recycle != 1)
-            {                                                                                                           // ptame se jen pokud chce a pokud nepouzijeme API funkci SHFileOperation na mazani
+            {                                                                                                           // we only ask if desired and if we do not use the SHFileOperation API function for deletion
                 HICON hIcon = (HICON)HANDLES(LoadImage(Shell32DLL, MAKEINTRESOURCE(WindowsVistaAndLater ? 16777 : 161), // delete icon
                                                        IMAGE_ICON, 32, 32, IconLRFlags));
                 int myRes = CMessageBox(HWindow, MSGBOXEX_YESNO | MSGBOXEX_ESCAPEENABLED | MSGBOXEX_SILENT,
@@ -933,20 +933,20 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
             break;
         }
         }
-        if (res == IDOK && // zacne prace na disku
+        if (res == IDOK && // start working on the disk
             CheckPath(TRUE) == ERROR_SUCCESS)
         {
             if (type == atDelete && recycle == 1)
             {
                 if (DeleteThroughRecycleBin(indexes, count, f))
                 {
-                    SetSel(FALSE, -1, TRUE);                        // explicitni prekresleni
+                    SetSel(FALSE, -1, TRUE);                        // explicit override
                     PostMessage(HWindow, WM_USER_SELCHANGED, 0, 0); // sel-change notify
                     UpdateWindow(MainWindow->HWindow);
                 }
 
-                //---  refresh neautomaticky refreshovanych adresaru
-                // zmena v adresari zobrazenem v panelu a v jeho podadresarich
+                //--- refresh non-automatically refreshed directories
+                // change in the directory displayed in the panel and its subdirectories
                 MainWindow->PostChangeOnPathNotification(GetPath(), TRUE);
             }
             else
@@ -1005,11 +1005,11 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                     if (criteriaPtr != NULL && criteriaPtr->UseSpeedLimit)
                         script->SetSpeedLimit(TRUE, criteriaPtr->SpeedLimit);
                     char captionBuf[50];
-                    lstrcpyn(captionBuf, caption, 50); // jinak dochazi k prepisu LoadStr bufferu jeste pred nakopirovanim do lokalniho bufferu dialogu
+                    lstrcpyn(captionBuf, caption, 50); // otherwise there is a transfer of the LoadStr buffer before copying it to the local buffer of the dialog
                     caption = captionBuf;
                     HWND hFocusedWnd = GetFocus();
                     CreateSafeWaitWindow(LoadStr(IDS_ANALYSINGDIRTREEESC), NULL, 1000, TRUE, MainWindow->HWindow);
-                    MainWindow->StartAnimate(); // priklad pouziti
+                    MainWindow->StartAnimate(); // example of usage
                     EnableWindow(MainWindow->HWindow, FALSE);
 
                     HCURSOR oldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
@@ -1023,28 +1023,28 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                     BOOL res2 = BuildScriptMain(script, type, auxTargetPath, mask, count, indexes,
                                                 f, NULL, &changeCaseData, countSizeMode != 0,
                                                 criteriaPtr);
-                    // pokud neni co delat, nebudeme vybalovat progress dialog
+                    // if there is nothing to do, we will not display the progress dialog
                     BOOL emptyScript = script->Count == 0 && type != atCountSize;
 
-                    // prohozeno kvuli umozneni aktivace hlavniho okna (nesmi byt disable), jinak prepina do jine app
+                    // Swapped to enable the main window activation (must not be disabled), otherwise switches to another app
                     EnableWindow(MainWindow->HWindow, TRUE);
                     DestroySafeWaitWindow();
-                    if (type == atCountSize) // jsou napocitane dalsi velikosti adresaru
+                    if (type == atCountSize) // additional directory sizes are calculated
                     {
-                        // radime pokud jsme pocitali pres vic jak jeden oznaceny adresar nebo pres vsechny
+                        // we advise if we have counted over more than one marked directory or over all
                         if (((countSizeMode == 0 && dirs > 1) || countSizeMode == 2) && SortType == stSize)
                         {
                             ChangeSortType(stSize, FALSE, TRUE);
                         }
 
-                        //            DirectorySizesHolder.Store(this); // ulozime jmena a velikosti adresaru
+                        //            DirectorySizesHolder.Store(this); // save directory names and sizes
 
-                        RefreshListBox(-1, -1, FocusedIndex, FALSE, FALSE); // prepocet sirek sloupcu
+                        RefreshListBox(-1, -1, FocusedIndex, FALSE, FALSE); // conversion of column widths
                     }
 
-                    // pokud je aktivni Salamander, zavolame SetFocus na zapamatovane okno (SetFocus nefunguje
-                    // pokud je hl. okno disablovane - po deaktivaci/aktivaci disablovaneho hl. okna aktivni panel
-                    // nema fokus)
+                    // if Salamander is active, we call SetFocus on the remembered window (SetFocus does not work)
+                    // if the main window is disabled - after deactivation/activation of the disabled main window, the active panel
+                    // no focus)
                     HWND hwnd = GetForegroundWindow();
                     while (hwnd != NULL && hwnd != MainWindow->HWindow)
                         hwnd = GetParent(hwnd);
@@ -1057,12 +1057,12 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                     if (!emptyScript && res2 && (type == atCopy || type == atMove))
                     {
                         BOOL occupiedSpTooBig = script->OccupiedSpace != CQuadWord(0, 0) &&
-                                                script->BytesPerCluster != 0 && // mame informace o disku
+                                                script->BytesPerCluster != 0 && // we have information about the disk
                                                 script->OccupiedSpace > script->FreeSpace &&
-                                                !IsSambaDrivePath(path); // Samba vraci nesmyslny cluster-size, takze muzeme pocitat jedine s TotalFileSize
+                                                !IsSambaDrivePath(path); // Samba returns nonsensical cluster-size, so we can only rely on TotalFileSize
 
                         if (occupiedSpTooBig ||
-                            script->BytesPerCluster != 0 && // mame informace o disku
+                            script->BytesPerCluster != 0 && // we have information about the disk
                                 script->TotalFileSize > script->FreeSpace)
                         {
                             char buf1[50];
@@ -1078,22 +1078,22 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
 
                     if (!cancel)
                     {
-                        // pripravime refresh neautomaticky refreshovanych adresaru
+                        // Prepare a refresh of non-automatically refreshed directories
                         if (!emptyScript && type != atCountSize)
                         {
                             if (type == atDelete || type == atChangeCase || type == atMove)
                             {
-                                // zmena v adresari zobrazenem v panelu a v jeho podadresarich
+                                // change in the directory displayed in the panel and its subdirectories
                                 script->SetWorkPath1(GetPath(), TRUE);
                             }
                             if (type == atCopy)
                             {
-                                // zmena v cilovem adresari a v jeho podadresarich
+                                // change in the target directory and its subdirectories
                                 script->SetWorkPath1(path, TRUE);
                             }
                             if (type == atMove)
                             {
-                                // zmena v cilovem adresari a v jeho podadresarich
+                                // change in the target directory and its subdirectories
                                 script->SetWorkPath2(path, TRUE);
                             }
                         }
@@ -1116,11 +1116,11 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                                 script->ResetState();
                             FreeScript(script);
                         }
-                        else // odstraneni sel. indexu
+                        else // removing invalid index
                         {
                             if (res2)
                             {
-                                SetSel(FALSE, -1, TRUE);                        // explicitni prekresleni
+                                SetSel(FALSE, -1, TRUE);                        // explicit override
                                 PostMessage(HWindow, WM_USER_SELCHANGED, 0, 0); // sel-change notify
                             }
                             if (!emptyScript && nextFocus[0] != 0)
@@ -1128,11 +1128,11 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                                 strcpy(NextFocusName, nextFocus);
                                 DontClearNextFocusName = TRUE;
                                 if (type == atCopy && copyToExistingDir)
-                                { // jedna-li se o copy do adresare, je potreba (RefreshDirectory nemusi probehnout)
+                                { // if it is a copy to a directory, it is necessary (RefreshDirectory does not have to run)
                                     PostMessage(HWindow, WM_USER_DONEXTFOCUS, 0, 0);
                                 }
                             }
-                            if (emptyScript) // pokud je skript prazdny, musime ho dealokovat
+                            if (emptyScript) // if the script is empty, we need to deallocate it
                             {
                                 if (!script->IsGood())
                                     script->ResetState();
@@ -1147,23 +1147,23 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                             script->ResetState();
                         FreeScript(script);
                     }
-                    MainWindow->StopAnimate(); // priklad pouziti
+                    MainWindow->StopAnimate(); // example of usage
                 }
             }
         }
         //---
         if (indexes != NULL)
             delete[] (indexes);
-        //---  pokud je aktivni nejaky okno salamandra, konci suspend mode
+        //--- if any Salamander window is active, exit suspend mode
         EndStopRefresh();
         EndSuspendMode();
         FilesActionInProgress = FALSE;
     }
 }
 
-// vytahne z adresare 'path' vsechny podadresare a vola sama sebe
-// soubory prida do mapi
-// vrati TRUE, pokud vse probehlo dobre; jinak vrati FALSE
+// It retrieves all subdirectories from the 'path' directory and calls itself
+// add files to the folder
+// returns TRUE if everything went well; otherwise returns FALSE
 BOOL EmailFilesAddDirectory(CSimpleMAPI* mapi, const char* path, BOOL* errGetFileSizeOfLnkTgtIgnAll)
 {
     WIN32_FIND_DATA file;
@@ -1186,11 +1186,11 @@ BOOL EmailFilesAddDirectory(CSimpleMAPI* mapi, const char* path, BOOL* errGetFil
                               MB_OKCANCEL | MB_ICONEXCLAMATION) == IDCANCEL)
             {
                 SetCursor(LoadCursor(NULL, IDC_WAIT));
-                return FALSE; // user chce koncit
+                return FALSE; // user wants to quit
             }
             SetCursor(LoadCursor(NULL, IDC_WAIT));
         }
-        return TRUE; // user chce pokracovat
+        return TRUE; // user wants to continue
     }
     BOOL ok = TRUE;
     do
@@ -1210,7 +1210,7 @@ BOOL EmailFilesAddDirectory(CSimpleMAPI* mapi, const char* path, BOOL* errGetFil
             }
             else
             {
-                // linky: size == 0, velikost souboru se musi ziskat pres GetLinkTgtFileSize() dodatecne
+                // links: size == 0, the file size must be obtained through GetLinkTgtFileSize() additionally
                 BOOL cancel = FALSE;
                 CQuadWord size(file.nFileSizeLow, file.nFileSizeHigh);
                 if ((file.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0 &&
@@ -1230,10 +1230,10 @@ BOOL EmailFilesAddDirectory(CSimpleMAPI* mapi, const char* path, BOOL* errGetFil
     return ok;
 }
 
-// vytahne selection z panelu a vsechny polozky probehne:
-// pokud jde o adresar, vola pro nej funkci EmailFilesAddDirectory
-// pokud jde o soubor, prida ho do mapi
-// pokud vse probehne dobre, necha vytvorit email
+// extracts the selection from the panel and iterates over all items:
+// as for the directory, the function EmailFilesAddDirectory is called for it
+// when it comes to the file, add it to the folder
+// if everything goes well, it will create an email
 void CFilesWindow::EmailFiles()
 {
     CALL_STACK_MESSAGE1("CFilesWindow::EmailFiles()");
@@ -1242,7 +1242,7 @@ void CFilesWindow::EmailFiles()
     if (!Is(ptDisk))
         return;
 
-    BeginStopRefresh(); // cmuchal si da pohov
+    BeginStopRefresh(); // He was snoring in his sleep
 
     if (!FilesActionInProgress)
     {
@@ -1297,7 +1297,7 @@ void CFilesWindow::EmailFiles()
                             }
                             else
                             {
-                                // linky: f->Size == 0, velikost souboru se musi ziskat pres GetLinkTgtFileSize() dodatecne
+                                // links: f->Size == 0, the file size must be obtained via GetLinkTgtFileSize() additionally
                                 BOOL cancel = FALSE;
                                 CQuadWord size = f->Size;
                                 if ((f->Attr & FILE_ATTRIBUTE_REPARSE_POINT) != 0 &&
@@ -1318,7 +1318,7 @@ void CFilesWindow::EmailFiles()
                 }
                 if (send && mapi->GetFilesCount() == 0)
                 {
-                    // zadny soubor k posilani, zobrazime informaci a vypadneme
+                    // No file to send, we will display the information and exit
                     SalMessageBox(HWindow, LoadStr(IDS_WANTEMAIL_NOFILE), LoadStr(IDS_INFOTITLE),
                                   MB_OK | MB_ICONINFORMATION);
                     send = FALSE;
@@ -1351,7 +1351,7 @@ void CFilesWindow::EmailFiles()
                     }
                     if (ret == IDYES)
                     {
-                        SimpleMAPISendMail(mapi); // vlastni thread; postara se o destrukci objektu 'mapi'
+                        SimpleMAPISendMail(mapi); // own thread; takes care of destroying the 'mapi' object
                     }
                     else
                         delete mapi;
@@ -1366,7 +1366,7 @@ void CFilesWindow::EmailFiles()
             TRACE_E(LOW_MEMORY);
         FilesActionInProgress = FALSE;
     }
-    EndStopRefresh(); // ted uz zase cmuchal nastartuje
+    EndStopRefresh(); // now he's sniffling again, he'll start up
 }
 
 BOOL CFilesWindow::OpenFocusedInOtherPanel(BOOL activate)
@@ -1375,11 +1375,11 @@ BOOL CFilesWindow::OpenFocusedInOtherPanel(BOOL activate)
     if (otherPanel == NULL)
         return FALSE;
 
-    // povolime otevrit up-dir
+    // allow opening up-dir
     //  if (FocusedIndex == 0 && FocusedIndex < Dirs->Count &&
-    //      strcmp(Dirs->At(0).Name, "..") == 0) return FALSE;   // up-dir nebereme
+    //      strcmp(Dirs->At(0).Name, "..") == 0) return FALSE;   // we do not take the up-dir
     if (FocusedIndex < 0 || FocusedIndex >= Files->Count + Dirs->Count)
-        return FALSE; // nesmyslny index nebereme
+        return FALSE; // we do not take nonsensical index
 
     char buff[2 * MAX_PATH];
     buff[0] = 0;
@@ -1391,7 +1391,7 @@ BOOL CFilesWindow::OpenFocusedInOtherPanel(BOOL activate)
         GetGeneralPath(buff, 2 * MAX_PATH);
         BOOL nethoodPath = FALSE;
         if (FocusedIndex == 0 && 0 < Dirs->Count && strcmp(Dirs->At(0).Name, "..") == 0 &&
-            IsUNCRootPath(buff)) // up-dir na UNC root ceste => prechod na Nethood
+            IsUNCRootPath(buff)) // up-dir to UNC root path => switch to Nethood
         {
             char* s = buff + 2;
             while (*s != 0 && *s != '\\')
@@ -1432,14 +1432,14 @@ BOOL CFilesWindow::OpenFocusedInOtherPanel(BOOL activate)
     if (buff[0] != 0)
     {
         int failReason;
-        BOOL ret = otherPanel->ChangeDir(buff, -1, NULL, 3 /* change-dir */, &failReason, FALSE);
+        BOOL ret = otherPanel->ChangeDir(buff, -1, NULL, 3 /* change-dir*/, &failReason, FALSE);
         if (activate && this == MainWindow->GetActivePanel())
         {
             if (ret || (failReason == CHPPFR_SUCCESS ||
                         failReason == CHPPFR_SHORTERPATH ||
                         failReason == CHPPFR_FILENAMEFOCUSED))
             {
-                // pokud se cesta ve druhem panelu zmenila, aktivujeme jej
+                // If the path in the second panel has changed, we activate it
                 MainWindow->ChangePanel();
                 return TRUE;
             }

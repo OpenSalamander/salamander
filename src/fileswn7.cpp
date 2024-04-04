@@ -101,7 +101,7 @@ ENUM_NEXT:
         {
             if (size != NULL)
                 *size = f->Size;
-            data->FilesCountReturnedFromWP++; // jen pro sichr, kdyby nekdo menil 'enumFiles' mezi 0 a 3
+            data->FilesCountReturnedFromWP++; // Just to be safe, in case someone changes 'enumFiles' between 0 and 3
         }
         if (fileData != NULL)
             *fileData = f;
@@ -109,7 +109,7 @@ ENUM_NEXT:
     }
     else
     {
-        if (data->EnumLastDir == NULL) // je potreba "otevrit" adresar
+        if (data->EnumLastDir == NULL) // it is necessary to "open" the directory
         {
             int i = data->Indexes[data->CurrentIndex];
             BOOL localIsDir = i < data->Dirs->Count;
@@ -120,7 +120,7 @@ ENUM_NEXT:
             {
                 int zipPathLen = (int)strlen(curZIPPath);
                 if (zipPathLen + (zipPathLen > 0 ? 1 : 0) + f->NameLen >= MAX_PATH)
-                { // prilis dlouha cesta
+                { // too long journey
                     if (errorOccured != NULL)
                         *errorOccured = SALENUM_ERROR;
                     _snprintf_s(errText, _TRUNCATE, LoadStr(IDS_NAMEISTOOLONG), f->Name, curZIPPath);
@@ -130,9 +130,9 @@ ENUM_NEXT:
                     {
                         if (errorOccured != NULL)
                             *errorOccured = SALENUM_CANCEL;
-                        return NULL; // cancel, koncime
+                        return NULL; // cancel, we are finishing
                     }
-                    data->CurrentIndex++; // preskocime adresar s dlouhym nazvem a pokracujeme dalsim adresarem nebo souborem
+                    data->CurrentIndex++; // skip the directory with a long name and continue with the next directory or file
                     goto ENUM_NEXT;
                 }
                 else
@@ -142,7 +142,7 @@ ENUM_NEXT:
                         data->EnumLastPath[zipPathLen++] = '\\';
                     strcpy(data->EnumLastPath + zipPathLen, f->Name);
                     if (data->DiskDirectoryTree != NULL)
-                    { // pokud se bude pouzivat EnumLastDosPath, bude zipPathLen == 0
+                    { // if EnumLastDosPath is used, zipPathLen will be equal to 0
                         strcpy(data->EnumLastDosPath, (f->DosName == NULL) ? f->Name : f->DosName);
                     }
                     if (data->DiskDirectoryTree == NULL)
@@ -151,7 +151,7 @@ ENUM_NEXT:
                         data->EnumLastDir = data->DiskDirectoryTree;
                     data->EnumLastDir = data->EnumLastDir->GetSalamanderDir(data->EnumLastPath, TRUE);
                     if (data->EnumLastDir == NULL)
-                        return NULL; // nejspis adresar "..", jinak neocekavana chyba
+                        return NULL; // probably directory "..", otherwise unexpected error
                     data->EnumLastIndex = 0;
                     goto FIND_NEXT;
                 }
@@ -162,7 +162,7 @@ ENUM_NEXT:
                 {
                     *size = f->Size;
                     if (enumFiles == 3 && data->DiskDirectoryTree != NULL && (f->Attr & FILE_ATTRIBUTE_REPARSE_POINT) != 0)
-                    { // zjistenou velikost cil. souboru linku musime vzit z data->DiskDirectoryTree
+                    { // we need to take the determined size of the target file link from data->DiskDirectoryTree
                         CFileData const* f2 = data->DiskDirectoryTree->GetFile(data->FilesCountReturnedFromWP);
                         if (f2 != NULL && strcmp(f2->Name, f->Name) == 0) // always true
                             *size = f2->Size;
@@ -186,13 +186,13 @@ ENUM_NEXT:
         }
         else
         {
-            data->EnumLastIndex++; // posuv na dalsi polozku
+            data->EnumLastIndex++; // move to the next item
 
-        FIND_NEXT: // najdeme dalsi soubor ve stromu
+        FIND_NEXT: // find another file in the tree
 
             while (1)
             {
-                if (data->EnumLastDir->IsDirectory(data->EnumLastIndex)) // adresar -> sestup
+                if (data->EnumLastDir->IsDirectory(data->EnumLastIndex)) // directory -> descending
                 {
                     CFileData* f = data->EnumLastDir->GetDirEx(data->EnumLastIndex);
                     BOOL tooLong1 = strlen(data->EnumLastPath) + 1 + f->NameLen >= MAX_PATH;
@@ -200,7 +200,7 @@ ENUM_NEXT:
                                                                                (f->DosName == NULL ? f->NameLen : strlen(f->DosName)) >=
                                                                            MAX_PATH;
                     if (tooLong1 || tooLong2)
-                    { // prilis dlouha cesta
+                    { // too long journey
                         if (errorOccured != NULL)
                             *errorOccured = SALENUM_ERROR;
                         _snprintf_s(errText, _TRUNCATE, LoadStr(IDS_NAMEISTOOLONG),
@@ -212,9 +212,9 @@ ENUM_NEXT:
                         {
                             if (errorOccured != NULL)
                                 *errorOccured = SALENUM_CANCEL;
-                            return NULL; // cancel, koncime
+                            return NULL; // cancel, we are finishing
                         }
-                        data->EnumLastIndex++; // preskocime adresar s dlouhym nazvem a pokracujeme dalsim adresarem nebo souborem (nebo vystupem z adresare)
+                        data->EnumLastIndex++; // skip the directory with a long name and continue with the next directory or file (or exit the directory)
                     }
                     else
                     {
@@ -231,10 +231,10 @@ ENUM_NEXT:
                 }
                 else
                 {
-                    if (data->EnumLastDir->IsFile(data->EnumLastIndex)) // soubor -> nalezeno
+                    if (data->EnumLastDir->IsFile(data->EnumLastIndex)) // file -> found
                     {
                         if (enumFiles == 2)
-                            goto ENUM_NEXT; // soubory z podadresaru ne, staci podadresare
+                            goto ENUM_NEXT; // files from subdirectories no, just subdirectories
 
                         CFileData* f = data->EnumLastDir->GetFileEx(data->EnumLastIndex);
                         int zipPathLen = (int)strlen(curZIPPath);
@@ -245,7 +245,7 @@ ENUM_NEXT:
                                                                                    (f->DosName == NULL ? f->NameLen : strlen(f->DosName)) >=
                                                                                MAX_PATH;
                         if (tooLong1 || tooLong2)
-                        { // prilis dlouha cesta
+                        { // too long journey
                             if (errorOccured != NULL)
                                 *errorOccured = SALENUM_ERROR;
                             _snprintf_s(errText, _TRUNCATE, LoadStr(IDS_NAMEISTOOLONG),
@@ -257,9 +257,9 @@ ENUM_NEXT:
                             {
                                 if (errorOccured != NULL)
                                     *errorOccured = SALENUM_CANCEL;
-                                return NULL; // cancel, koncime
+                                return NULL; // cancel, we are finishing
                             }
-                            data->EnumLastIndex++; // preskocime soubor s dlouhym nazvem a pokracujeme dalsim souborem (nebo vystupem z adresare)
+                            data->EnumLastIndex++; // skip the file with a long name and continue with the next file (or output from the directory)
                         }
                         else
                         {
@@ -272,7 +272,7 @@ ENUM_NEXT:
                             strcat(data->EnumTmpFileName, f->Name);
                             if (data->DiskDirectoryTree != NULL)
                             {
-                                strcpy(data->EnumTmpDosFileName, data->EnumLastDosPath); // pouziva-li se, je zipPathLen == 0
+                                strcpy(data->EnumTmpDosFileName, data->EnumLastDosPath); // if used, zipPathLen == 0
                                 strcat(data->EnumTmpDosFileName, "\\");
                                 strcat(data->EnumTmpDosFileName, (f->DosName == NULL) ? f->Name : f->DosName);
                                 if (dosName != NULL)
@@ -283,9 +283,9 @@ ENUM_NEXT:
                             return data->EnumTmpFileName;
                         }
                     }
-                    else // jsme na konci adresare -> vystup
+                    else // we are at the end of the directory -> output
                     {
-                        // rozdelime cestu na adresar a podadresar
+                        // divide the path into directory and subdirectory
                         const char* dir;
                         char* subDir = strrchr(data->EnumLastPath, '\\');
                         char* subDirDos = NULL;
@@ -298,17 +298,17 @@ ENUM_NEXT:
                             if (data->DiskDirectoryTree != NULL)
                                 *subDirDos++ = 0;
                         }
-                        else // urcite jsme vystoupili ze stromu
+                        else // we definitely stepped out of the tree
                         {
                             dir = "";
                             subDir = data->EnumLastPath;
                             if (data->DiskDirectoryTree != NULL)
                                 subDirDos = data->EnumLastDosPath;
                         }
-                        // overime jestli uz jsme nevystoupili ven ze stromu
+                        // Check if we haven't already stepped out of the tree
                         if (strlen(dir) == strlen(curZIPPath))
                         {
-                            if (fileData != NULL) // najdeme CFileData pro podadresar, ktery opoustime
+                            if (fileData != NULL) // find CFileData for the subdirectory we are leaving
                             {
                                 int i = data->Indexes[data->CurrentIndex];
                                 if (i < data->Dirs->Count)
@@ -317,7 +317,7 @@ ENUM_NEXT:
                                     TRACE_E("Unexpected situation in _PanelSalEnumSelection.");
                             }
 
-                            data->CurrentIndex++; // tento adresar jsme uz prosli
+                            data->CurrentIndex++; // we have already gone through this directory
                             data->EnumLastDir = NULL;
                             data->EnumLastIndex = -1;
 
@@ -330,9 +330,9 @@ ENUM_NEXT:
                                 if (dosName != NULL)
                                     *dosName = subDirDos;
                             }
-                            return subDir; // pri vystupu vratime adresar
+                            return subDir; // return the directory when exiting
                         }
-                        // dokoncime vystup a provedeme posun
+                        // finish the output and perform the shift
                         if (data->DiskDirectoryTree == NULL)
                             data->EnumLastDir = data->ArchiveDir;
                         else
@@ -340,7 +340,7 @@ ENUM_NEXT:
                         data->EnumLastDir = data->EnumLastDir->GetSalamanderDir(dir, TRUE);
                         data->EnumLastIndex = data->EnumLastDir->GetIndex(subDir);
 
-                        if (fileData != NULL) // najdeme CFileData pro podadresar, ktery opoustime
+                        if (fileData != NULL) // find CFileData for the subdirectory we are leaving
                         {
                             *fileData = data->EnumLastDir->GetDirEx(data->EnumLastIndex);
                         }
@@ -355,13 +355,13 @@ ENUM_NEXT:
                         strcat(data->EnumTmpFileName, subDir);
                         if (data->DiskDirectoryTree != NULL)
                         {
-                            strcpy(data->EnumTmpDosFileName, data->EnumLastDosPath); // pouziva-li se, je zipPathLen == 0
+                            strcpy(data->EnumTmpDosFileName, data->EnumLastDosPath); // if used, zipPathLen == 0
                             strcat(data->EnumTmpDosFileName, "\\");
                             strcat(data->EnumTmpDosFileName, subDirDos);
                             if (dosName != NULL)
                                 *dosName = data->EnumTmpDosFileName;
                         }
-                        return data->EnumTmpFileName; // pri vystupu vratime adresar
+                        return data->EnumTmpFileName; // return the directory when exiting
                     }
                 }
             }
@@ -390,13 +390,13 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
     if (Files->Count + Dirs->Count == 0)
         return;
 
-    // obnova DefaultDir
+    // Restore DefaultDir
     MainWindow->UpdateDefaultDir(MainWindow->GetActivePanel() == this);
 
-    BeginStopRefresh(); // cmuchal si da pohov
+    BeginStopRefresh(); // He was snoring in his sleep
 
-    //---  ziskani souboru a adresaru se kterymi budeme pracovat
-    char subject[MAX_PATH + 100]; // text do Unpack dialogu (co se rozpakovava)
+    //--- obtaining files and directories we will work with
+    char subject[MAX_PATH + 100]; // text for Unpack dialog (what is being unpacked)
     char path[MAX_PATH + 200];
     char expanded[200];
     CPanelTmpEnumData data;
@@ -406,14 +406,14 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
     else
         subDir = FALSE;
     data.IndexesCount = GetSelCount();
-    if (data.IndexesCount > 1) // platne oznaceni
+    if (data.IndexesCount > 1) // valid label
     {
-        int files = 0; // pocet oznacenych souboru
+        int files = 0; // number of selected files
         data.Indexes = new int[data.IndexesCount];
         if (data.Indexes == NULL)
         {
             TRACE_E(LOW_MEMORY);
-            EndStopRefresh(); // ted uz zase cmuchal nastartuje
+            EndStopRefresh(); // now he's sniffling again, he'll start up
             return;
         }
         else
@@ -428,10 +428,10 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
                     files++;
             }
         }
-        // sestavime subject pro dialog
+        // assemble subject for the dialogue
         ExpandPluralFilesDirs(expanded, 200, files, data.IndexesCount - files, epfdmNormal, FALSE);
     }
-    else // bereme vybrany soubor nebo adresar
+    else // we are taking the selected file or directory
     {
         int index;
         if (data.IndexesCount == 0)
@@ -441,8 +441,8 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
 
         if (subDir && index == 0)
         {
-            EndStopRefresh(); // ted uz zase cmuchal nastartuje
-            return;           // neni co delat
+            EndStopRefresh(); // now he's sniffling again, he'll start up
+            return;           // nothing to do
         }
         else
         {
@@ -450,14 +450,14 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
             if (data.Indexes == NULL)
             {
                 TRACE_E(LOW_MEMORY);
-                EndStopRefresh(); // ted uz zase cmuchal nastartuje
+                EndStopRefresh(); // now he's sniffling again, he'll start up
                 return;
             }
             else
             {
                 data.Indexes[0] = index;
                 data.IndexesCount = 1;
-                // sestavime subject pro dialog
+                // assemble subject for the dialogue
                 BOOL isDir = index < Dirs->Count;
                 CFileData* f = isDir ? &Dirs->At(index) : &Files->At(index - Dirs->Count);
                 AlterFileName(path, f->Name, -1, Configuration.FileNameFormat, 0, index < Dirs->Count);
@@ -477,17 +477,17 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
     data.EnumLastDir = NULL;
     data.EnumLastIndex = -1;
 
-    char changesRoot[MAX_PATH]; // adresar, od ktereho pripadaji v uvahu zmeny na disku
+    char changesRoot[MAX_PATH]; // directory from which disk changes are considered
     changesRoot[0] = 0;
 
     if (!deleteOp) // copy
     {
-        //---  ziskani ciloveho adresare
+        //--- obtaining the target directory
         if (target != NULL && target->Is(ptDisk))
         {
             strcpy(path, target->GetPath());
 
-            target->UserWorkedOnThisPath = TRUE; // default akce = prace s cestou v cilovem panelu
+            target->UserWorkedOnThisPath = TRUE; // default action = working with the path in the destination panel
         }
         else
             path[0] = 0;
@@ -502,20 +502,20 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
             if (tgtPath != NULL)
                 lstrcpyn(path, tgtPath, MAX_PATH);
             UpdateWindow(MainWindow->HWindow);
-            //---  u diskovych cest preklopime '/' na '\\' a zahodime zdvojene '\\'
+            //--- In disk paths, we switch '/' to '\\' and discard duplicated '\\'
             if (!IsPluginFSPath(path) &&
-                (path[0] != 0 && path[1] == ':' ||                                             // cesty typu X:...
-                 (path[0] == '/' || path[0] == '\\') && (path[1] == '/' || path[1] == '\\') || // UNC cesty
-                 Is(ptDisk) || Is(ptZIPArchive)))                                              // disk+archiv relativni cesty
-            {                                                                                  // jde o diskovou cestu (absolutni nebo relativni) - otocime vsechny '/' na '\\' a zahodime zdvojene '\\'
+                (path[0] != 0 && path[1] == ':' ||                                             // paths of type X:...
+                 (path[0] == '/' || path[0] == '\\') && (path[1] == '/' || path[1] == '\\') || // UNC path
+                 Is(ptDisk) || Is(ptZIPArchive)))                                              // disk+archive relative paths
+            {                                                                                  // It's about the file path (absolute or relative) - we turn all '/' into '\\' and discard doubled '\\'
                 SlashesToBackslashesAndRemoveDups(path);
             }
-            //---  uprava zadane cesty -> absolutni, bez '.' a '..'
+            //--- adjusting the entered path -> absolute, without '.' and '..'
 
             int len = (int)strlen(path);
-            BOOL backslashAtEnd = (len > 0 && path[len - 1] == '\\'); // cesta konci na backslash -> nutne adresar
+            BOOL backslashAtEnd = (len > 0 && path[len - 1] == '\\'); // path ends with a backslash -> directory required
             BOOL mustBePath = (len == 2 && LowerCase[path[0]] >= 'a' && LowerCase[path[0]] <= 'z' &&
-                               path[1] == ':'); // cesta typu "c:" musi byt i po expanzi cesta (ne soubor)
+                               path[1] == ':'); // A path of type "c:" must be a path even after expansion (not a file)
 
             int pathType;
             BOOL pathIsDir;
@@ -524,16 +524,16 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
             if (ParsePath(path, pathType, pathIsDir, secondPart, LoadStr(IDS_ERRORCOPY), NULL, NULL, MAX_PATH))
             {
                 // misto konstrukce 'switch' pouzijeme 'if', aby fungovali 'break' + 'continue'
-                if (pathType == PATH_TYPE_WINDOWS) // Windows cesta (disk + UNC)
+                if (pathType == PATH_TYPE_WINDOWS) // Windows path (disk + UNC)
                 {
-                    char newDirs[MAX_PATH]; // pokud se vytvari kvuli operaci adresar, pamatujeme si jeho jmeno (pri chybe ho muzeme smazat)
+                    char newDirs[MAX_PATH]; // if it is created for the operation of the directory, we remember its name (in case of an error, we can delete it)
                     newDirs[0] = 0;
 
-                    if (pathIsDir) // existujici cast cesty je adresar
+                    if (pathIsDir) // existing part of the path is a directory
                     {
-                        if (*secondPart != 0) // je zde i neexistujici cast cesty
+                        if (*secondPart != 0) // there is also a non-existent part of the path
                         {
-                            if (!backslashAtEnd && !mustBePath) // nova cesta musi koncit backslashem, jinak jde o operacni masku (nepodporovane)
+                            if (!backslashAtEnd && !mustBePath) // new path must end with a backslash, otherwise it is considered an operation mask (not supported)
                             {
                                 SalMessageBox(HWindow, LoadStr(IDS_UNPACK_OPMASKSNOTSUP), LoadStr(IDS_ERRORCOPY),
                                               MB_OK | MB_ICONEXCLAMATION);
@@ -547,10 +547,10 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
                                 goto _DLG_AGAIN;
                             }
 
-                            // vytvorime ty nove adresare
+                            // create those new directories
                             strcpy(newDirs, path);
 
-                            if (Configuration.CnfrmCreatePath) // zeptame se, jestli se ma cesta vytvorit
+                            if (Configuration.CnfrmCreatePath) // ask if the path should be created
                             {
                                 BOOL dontShow = FALSE;
                                 sprintf(textBuf, LoadStr(IDS_MOVECOPY_CREATEPATH), newDirs);
@@ -613,19 +613,19 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
                                 if (slash != NULL)
                                     *slash = '\\';
                                 else
-                                    break; // to byl posledni '\\'
+                                    break; // that was the last '\\'
                                 st = slash + 1;
                             }
 
-                            // zjisteni stare cesty (odkud se zakladaly nove adresare)
+                            // finding old paths (where new directories were created)
                             memcpy(changesRoot, path, secondPart - path);
                             changesRoot[secondPart - path] = 0;
 
                             if (!ok)
                             {
-                                //---  refresh neautomaticky refreshovanych adresaru
-                                // pokud selhalo vytvareni adresaru, provedeme hlaseni o zmenach hned (uzivatel muze
-                                // zvolit priste uplne jinou cestu); nove vytvorena cesta se nerusi (temer dead-code)
+                                //--- refresh non-automatically refreshed directories
+                                // If directory creation failed, we will report changes immediately (user may
+                                // choose a completely different path next time); the newly created path is not disturbed (almost dead-code)
                                 MainWindow->PostChangeOnPathNotification(changesRoot, TRUE);
 
                                 SalPathAddBackslash(path, MAX_PATH + 200);
@@ -639,10 +639,10 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
                                 goto _DLG_AGAIN;
                             }
                             if (firstSlash != NULL)
-                                *firstSlash = 0; // do newDirs prijde jmeno prvniho vytvoreneho adresare
+                                *firstSlash = 0; // the name of the first created directory comes to newDirs
                         }
                     }
-                    else // prepis souboru - 'secondPart' ukazuje na jmeno souboru v ceste 'path'
+                    else // copy file - 'secondPart' points to the file name in the path 'path'
                     {
                         SalMessageBox(HWindow, LoadStr(IDS_UNPACK_OPMASKSNOTSUP), LoadStr(IDS_ERRORCOPY),
                                       MB_OK | MB_ICONEXCLAMATION);
@@ -658,18 +658,18 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
                         goto _DLG_AGAIN;
                     }
 
-                    // pokud se nevytvareji zadne nove adresare, zmeny zacinaji na cilove ceste
+                    // if no new directories are being created, changes start at the target path
                     if (changesRoot[0] == 0)
                         strcpy(changesRoot, path);
 
-                    //---  vlastni rozpakovani
+                    //--- custom unpacking
                     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
                     if (PackUncompress(MainWindow->HWindow, this, GetZIPArchive(), PluginData.GetInterface(),
                                        path, GetZIPPath(), PanelSalEnumSelection, &data))
-                    {                        // rozpakovani se povedlo
-                        if (tgtPath == NULL) // pokud nejde o drag&drop (tam se odznacovani nedela)
+                    {                        // unpacking was successful
+                        if (tgtPath == NULL) // if it's not about drag&drop (deselection is not done there)
                         {
-                            SetSel(FALSE, -1, TRUE);                        // explicitni prekresleni
+                            SetSel(FALSE, -1, TRUE);                        // explicit override
                             PostMessage(HWindow, WM_USER_SELCHANGED, 0, 0); // sel-change notify
                         }
                     }
@@ -680,7 +680,7 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
                     }
                     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
 
-                    if (GetForegroundWindow() == MainWindow->HWindow) // z nepochopitelnych duvodu mizi fokus z panelu pri drag&dropu do Explorera, vratime ho tam
+                    if (GetForegroundWindow() == MainWindow->HWindow) // for some incomprehensible reason, the focus disappears from the panel when dragging and dropping into Explorer, we will return it there
                         RestoreFocusInSourcePanel();
                 }
                 else
@@ -713,17 +713,17 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
                 goto _DLG_AGAIN;
             }
 
-            //---  refresh neautomaticky refreshovanych adresaru
-            // zmena na cilove ceste a jejich podadresarich (vytvareni novych adresaru a vypakovani
-            // souboru/adresaru)
+            //--- refresh non-automatically refreshed directories
+            // change in the target path and its subdirectories (creating new directories and extracting
+            // file/directory)
             MainWindow->PostChangeOnPathNotification(changesRoot, TRUE);
-            // zmena v adresari, kde je umisteny archiv (pri unpacku by nemelo nastat, ale radsi refreshneme)
+            // change in the directory where the archive is located (unpacking should not occur, but let's refresh just in case)
             MainWindow->PostChangeOnPathNotification(GetPath(), FALSE);
         }
     }
     else // delete
     {
-        //---  zeptame se jestli to mysli vazne
+        //--- we will ask if he means it seriously
         HICON hIcon = (HICON)HANDLES(LoadImage(Shell32DLL, MAKEINTRESOURCE(WindowsVistaAndLater ? 16777 : 161), // delete icon
                                                IMAGE_ICON, 32, 32, IconLRFlags));
         if (!Configuration.CnfrmFileDirDel ||
@@ -733,7 +733,7 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
                     .Execute() == IDYES)
         {
             UpdateWindow(MainWindow->HWindow);
-            //---  nalezeni neprazdnych adresaru - pripadne dotazy na mazani
+            //--- finding non-empty directories - possible queries for deletion
             BOOL cancel = FALSE;
             if (Configuration.CnfrmNEDirDel)
             {
@@ -780,20 +780,20 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
                 if (data.IndexesCount == 0)
                     cancel = TRUE;
             }
-            //---  vlastni mazani
+            //--- custom deletion
             if (!cancel)
             {
                 SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
                 if (PackDelFromArc(MainWindow->HWindow, this, GetZIPArchive(), PluginData.GetInterface(),
                                    GetZIPPath(), PanelSalEnumSelection, &data))
-                {                                                   // mazani se povedlo
-                    SetSel(FALSE, -1, TRUE);                        // explicitni prekresleni
+                {                                                   // deletion successful
+                    SetSel(FALSE, -1, TRUE);                        // explicit override
                     PostMessage(HWindow, WM_USER_SELCHANGED, 0, 0); // sel-change notify
                 }
                 SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
 
-                //---  refresh neautomaticky refreshovanych adresaru
-                // zmena v adresari, kde je umisteny archiv
+                //--- refresh non-automatically refreshed directories
+                // change in the directory where the archive is located
                 MainWindow->PostChangeOnPathNotification(GetPath(), FALSE);
             }
         }
@@ -803,14 +803,14 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
     UpdateWindow(MainWindow->HWindow);
     delete[] (data.Indexes);
 
-    //---  pokud je aktivni nejake okno salamandra, konci suspend mode
+    //--- if any Total Commander window is active, exit suspend mode
     EndStopRefresh();
 }
 
 void CFilesWindow::DeleteFromZIPArchive()
 {
     CALL_STACK_MESSAGE1("CFilesWindow::DeleteFromZIPArchive()");
-    UnpackZIPArchive(NULL, TRUE); // jde temer o to same
+    UnpackZIPArchive(NULL, TRUE); // It's almost the same
 }
 
 BOOL _ReadDirectoryTree(HWND parent, char (&path)[MAX_PATH], char* name, CSalamanderDirectory* dir,
@@ -821,7 +821,7 @@ BOOL _ReadDirectoryTree(HWND parent, char (&path)[MAX_PATH], char* name, CSalama
     char* end = path + strlen(path);
     char text[2 * MAX_PATH + 100];
     if ((end - path) + (*(end - 1) != '\\' ? 1 : 0) + strlen(name) + 2 >= _countof(path))
-        return TRUE; // prilis dlouha cesta: budeme pokracovat, chybu ukazeme az pri enumeraci
+        return TRUE; // too long path: we will continue, we will show the error when enumerating
     if (*(end - 1) != '\\')
     {
         *end++ = '\\';
@@ -832,7 +832,7 @@ BOOL _ReadDirectoryTree(HWND parent, char (&path)[MAX_PATH], char* name, CSalama
 
     WIN32_FIND_DATA file;
     HANDLE find = HANDLES_Q(FindFirstFile(path, &file));
-    *end = 0; // opravime cestu
+    *end = 0; // repair the road
     if (find == INVALID_HANDLE_VALUE)
     {
         DWORD err = GetLastError();
@@ -842,33 +842,33 @@ BOOL _ReadDirectoryTree(HWND parent, char (&path)[MAX_PATH], char* name, CSalama
                 *errorOccured = SALENUM_ERROR;
             strcpy(end, name);
             sprintf(text, LoadStr(IDS_CANNOTREADDIR), path, GetErrorText(err));
-            *end = 0; // opravime cestu
+            *end = 0; // repair the road
             if (parent != NULL &&
                 SalMessageBox(parent, text, LoadStr(IDS_ERRORTITLE),
                               MB_OKCANCEL | MB_ICONEXCLAMATION) == IDCANCEL)
             {
                 if (errorOccured != NULL)
                     *errorOccured = SALENUM_CANCEL;
-                return FALSE; // user chce koncit
+                return FALSE; // user wants to quit
             }
         }
-        return TRUE; // user chce pokracovat
+        return TRUE; // user wants to continue
     }
     else
     {
         strcpy(end, name);
         char* end2 = end + strlen(end);
         BOOL ok = TRUE;
-        CFileData newF; // s temito polozkami uz nepracujeme
+        CFileData newF; // we no longer work with these items
         if (dir != NULL)
         {
-            newF.PluginData = -1; // -1 jen tak, ignoruje se
+            newF.PluginData = -1; // -1 is just ignored
             newF.Association = 0;
             newF.Selected = 0;
             newF.Shared = 0;
             newF.Archive = 0;
             newF.SizeValid = 0;
-            newF.Dirty = 0; // zbytecne, jen pro formu
+            newF.Dirty = 0; // unnecessary, just for the sake of it
             newF.CutToClip = 0;
             newF.IconOverlayIndex = ICONOVERLAYINDEX_NOTUSED;
             newF.IconOverlayDone = 0;
@@ -882,7 +882,7 @@ BOOL _ReadDirectoryTree(HWND parent, char (&path)[MAX_PATH], char* name, CSalama
             if (file.cFileName[0] == 0 ||
                 file.cFileName[0] == '.' &&
                     (file.cFileName[1] == 0 || (file.cFileName[1] == '.' && file.cFileName[2] == 0)))
-                continue; // "." a ".."
+                continue; // "." and ".."
 
             static DWORD lastBreakCheck = 0;
             if (containsDirLinks != NULL && GetTickCount() - lastBreakCheck > 200)
@@ -890,7 +890,7 @@ BOOL _ReadDirectoryTree(HWND parent, char (&path)[MAX_PATH], char* name, CSalama
                 lastBreakCheck = GetTickCount();
                 if (UserWantsToCancelSafeWaitWindow())
                 {
-                    *containsDirLinks = 2; // po preruseni simulujeme chybu, aby se hledani okamzite ukoncilo
+                    *containsDirLinks = 2; // After interruption, we simulate an error to immediately terminate the search
                     ok = FALSE;
                     testFindNextErr = FALSE;
                     break;
@@ -903,12 +903,12 @@ BOOL _ReadDirectoryTree(HWND parent, char (&path)[MAX_PATH], char* name, CSalama
 
                 BOOL cancel = FALSE;
                 if (getLinkTgtFileSize &&
-                    (file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0 &&   // jde o soubor
-                    (file.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0) // jde o link
-                {                                                                // u symlinku na soubor zjistime velikost ciloveho souboru
+                    (file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0 &&   // it's about the file
+                    (file.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0) // it's about the link
+                {                                                                // When using a symlink to a file, we determine the size of the target file
                     CQuadWord size;
                     if (SalPathAppend(path, file.cFileName, _countof(path)))
-                    { // jen neni-li prilis dlouha cesta (pripadnou chybu ukazeme az pri enumeraci)
+                    { // only if the path is not too long (we will show any errors during enumeration)
                         if (GetLinkTgtFileSize(parent, path, NULL, &size, &cancel, errGetFileSizeOfLnkTgtIgnAll))
                             newF.Size = size;
                         else
@@ -917,7 +917,7 @@ BOOL _ReadDirectoryTree(HWND parent, char (&path)[MAX_PATH], char* name, CSalama
                                 *errorOccured = SALENUM_CANCEL;
                         }
                     }
-                    *end2 = 0; // uvedeni 'path' do puvodniho stavu
+                    *end2 = 0; // restoring 'path' to its original state
                 }
 
                 newF.Name = !cancel ? DupStr(file.cFileName) : NULL;
@@ -929,15 +929,15 @@ BOOL _ReadDirectoryTree(HWND parent, char (&path)[MAX_PATH], char* name, CSalama
                     break;
                 }
                 newF.NameLen = strlen(newF.Name);
-                if (!Configuration.SortDirsByExt && (file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) // adresar, jde jiste o disk
+                if (!Configuration.SortDirsByExt && (file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) // directory, it must be a disk
                 {
-                    newF.Ext = newF.Name + newF.NameLen; // adresare nemaji pripony
+                    newF.Ext = newF.Name + newF.NameLen; // directories do not have extensions
                 }
                 else
                 {
                     newF.Ext = strrchr(newF.Name, '.');
                     if (newF.Ext == NULL)
-                        newF.Ext = newF.Name + newF.NameLen; // ".cvspass" ve Windows je pripona ...
+                        newF.Ext = newF.Name + newF.NameLen; // ".cvspass" in Windows is an extension ...
                                                              //        if (newF.Ext == NULL || newF.Ext == newF.Name) newF.Ext = newF.Name + newF.NameLen;
                     else
                         newF.Ext++;
@@ -961,15 +961,15 @@ BOOL _ReadDirectoryTree(HWND parent, char (&path)[MAX_PATH], char* name, CSalama
                 newF.IsOffline = newF.Attr & FILE_ATTRIBUTE_OFFLINE ? 1 : 0;
             }
 
-            if (file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) // adresar, jde jiste o disk
+            if (file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) // directory, it must be a disk
             {
                 CSalamanderDirectory* salDir = NULL;
                 if (dir != NULL)
                 {
-                    newF.IsLink = (newF.Attr & FILE_ATTRIBUTE_REPARSE_POINT) ? 1 : 0; // volume mount point nebo junction point = zobrazime adresar s link overlayem
+                    newF.IsLink = (newF.Attr & FILE_ATTRIBUTE_REPARSE_POINT) ? 1 : 0; // volume mount point or junction point = display directory with link overlay
                     BOOL addDirOK = dir->AddDir("", newF, NULL);
                     if (addDirOK)
-                        salDir = dir->GetSalamanderDir(newF.Name, FALSE); // alokujeme sal-dir pro zapis
+                        salDir = dir->GetSalamanderDir(newF.Name, FALSE); // allocate sal-dir for writing
                     else
                     {
                         free(newF.Name);
@@ -983,13 +983,13 @@ BOOL _ReadDirectoryTree(HWND parent, char (&path)[MAX_PATH], char* name, CSalama
                         break;
                     }
                 }
-                else // jen hledame 1. link na adresar
+                else // just looking for the 1st link to the directory
                 {
                     if ((file.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0)
                     {
-                        *containsDirLinks = 1; // po nalezeni simulujeme chybu, aby se hledani okamzite ukoncilo
+                        *containsDirLinks = 1; // After finding, we simulate an error to immediately terminate the search
                         *end2 = 0;
-                        _snprintf_s(linkName, MAX_PATH, _TRUNCATE, "%s\\%s", path, file.cFileName); // klidne orizneme, jen text do hlasky
+                        _snprintf_s(linkName, MAX_PATH, _TRUNCATE, "%s\\%s", path, file.cFileName); // we can safely cut, just the text to the message
                         ok = FALSE;
                         testFindNextErr = FALSE;
                         break;
@@ -1003,12 +1003,12 @@ BOOL _ReadDirectoryTree(HWND parent, char (&path)[MAX_PATH], char* name, CSalama
                     break;
                 }
             }
-            else // soubor
+            else // file
             {
                 if (dir != NULL)
                 {
                     if (newF.Attr & FILE_ATTRIBUTE_REPARSE_POINT)
-                        newF.IsLink = 1; // pokud je soubor reparse-point (mozna vubec neni mozne) = zobrazime ho s link overlayem
+                        newF.IsLink = 1; // if the file is a reparse-point (which may not be possible at all) = display it with a link overlay
                     else
                         newF.IsLink = IsFileLink(newF.Ext);
 
@@ -1026,7 +1026,7 @@ BOOL _ReadDirectoryTree(HWND parent, char (&path)[MAX_PATH], char* name, CSalama
         } while (FindNextFile(find, &file));
         DWORD err = GetLastError();
         HANDLES(FindClose(find));
-        *end = 0; // opravime cestu
+        *end = 0; // repair the road
 
         if (testFindNextErr && err != ERROR_NO_MORE_FILES)
         {
@@ -1034,14 +1034,14 @@ BOOL _ReadDirectoryTree(HWND parent, char (&path)[MAX_PATH], char* name, CSalama
                 *errorOccured = SALENUM_ERROR;
             strcpy(end, name);
             sprintf(text, LoadStr(IDS_CANNOTREADDIR), path, GetErrorText(err));
-            *end = 0; // opravime cestu
+            *end = 0; // repair the road
             if (parent != NULL &&
                 SalMessageBox(parent, text, LoadStr(IDS_ERRORTITLE),
                               MB_OKCANCEL | MB_ICONEXCLAMATION) == IDCANCEL)
             {
                 if (errorOccured != NULL)
                     *errorOccured = SALENUM_CANCEL;
-                return FALSE; // user chce koncit
+                return FALSE; // user wants to quit
             }
         }
 
@@ -1069,30 +1069,30 @@ CSalamanderDirectory* ReadDirectoryTree(HWND parent, CPanelTmpEnumData* data, in
         TRACE_E("Unexpected situation in ReadDirectoryTree().");
         if (errorOccured != NULL)
             *errorOccured = SALENUM_ERROR;
-        return NULL; // neni co delat
+        return NULL; // nothing to do
     }
 
-    BOOL errGetFileSizeOfLnkTgtIgnAll = parent == NULL; // tichy rezim = nezobrazovat chybu, vracet uspech
+    BOOL errGetFileSizeOfLnkTgtIgnAll = parent == NULL; // quiet mode = do not display error, return success
 
     CSalamanderDirectory* dir = containsDirLinks == NULL ? new CSalamanderDirectory(TRUE) : NULL;
     if (dir == NULL && containsDirLinks == NULL)
     {
         if (errorOccured != NULL)
             *errorOccured = SALENUM_ERROR;
-        return NULL; // nedostatek pameti
+        return NULL; // out of memory
     }
 
     int index = data->CurrentIndex;
     CFileData newF;
     if (dir != NULL)
     {
-        newF.PluginData = -1; // -1 jen tak, ignoruje se
+        newF.PluginData = -1; // -1 is just ignored
         newF.Association = 0;
         newF.Selected = 0;
         newF.Shared = 0;
         newF.Archive = 0;
         newF.SizeValid = 0;
-        newF.Dirty = 0; // zbytecne, jen pro formu
+        newF.Dirty = 0; // unnecessary, just for the sake of it
         newF.CutToClip = 0;
         newF.IconOverlayIndex = ICONOVERLAYINDEX_NOTUSED;
         newF.IconOverlayDone = 0;
@@ -1105,8 +1105,8 @@ CSalamanderDirectory* ReadDirectoryTree(HWND parent, CPanelTmpEnumData* data, in
         BOOL isDir = i < data->Dirs->Count;
         CFileData* f = &(isDir ? data->Dirs->At(i) : data->Files->At(i - data->Dirs->Count));
 
-        // pro jistotu preskocime ".." (prisel bug-report z "1.6 beta 5" na toto tema; nechapu jak
-        // to sem mohlo dojit)
+        // to be on the safe side, let's skip ".." (a bug report came from "1.6 beta 5" on this topic; I don't understand how
+        // it could have come to this)
         if (f->Name[0] == '.' && f->Name[1] == '.' && f->Name[2] == 0)
             continue;
 
@@ -1133,7 +1133,7 @@ CSalamanderDirectory* ReadDirectoryTree(HWND parent, CPanelTmpEnumData* data, in
         }
 
         char path[MAX_PATH];
-        if (isDir) // adresar
+        if (isDir) // directory
         {
             CSalamanderDirectory* salDir = NULL;
             if (dir != NULL)
@@ -1141,21 +1141,21 @@ CSalamanderDirectory* ReadDirectoryTree(HWND parent, CPanelTmpEnumData* data, in
                 BOOL addDirOK = dir->AddDir("", newF, NULL);
                 if (addDirOK)
                 {
-                    newF.Name = NULL; // uz je v dir, nesmi se na nej volat free() - pri chybe nize
+                    newF.Name = NULL; // It is already in the directory, do not call free() on it - in case of the error below
                     newF.DosName = NULL;
-                    salDir = dir->GetSalamanderDir(f->Name, FALSE); // alokujeme sal-dir pro zapis
+                    salDir = dir->GetSalamanderDir(f->Name, FALSE); // allocate sal-dir for writing
                 }
                 if (salDir == NULL)
                     goto RETURN_ERROR;
             }
             else
             {
-                if ((f->Attr & FILE_ATTRIBUTE_REPARSE_POINT) != 0) // nalezen link na adresar, koncime...
+                if ((f->Attr & FILE_ATTRIBUTE_REPARSE_POINT) != 0) // found link to directory, finishing...
                 {
                     *containsDirLinks = 1;
                     strcpy(path, data->WorkPath);
                     SalPathRemoveBackslash(path);
-                    _snprintf_s(linkName, MAX_PATH, _TRUNCATE, "%s\\%s", path, f->Name); // klidne orizneme, jen text do hlasky
+                    _snprintf_s(linkName, MAX_PATH, _TRUNCATE, "%s\\%s", path, f->Name); // we can safely cut, just the text to the message
                     break;
                 }
             }
@@ -1167,16 +1167,16 @@ CSalamanderDirectory* ReadDirectoryTree(HWND parent, CPanelTmpEnumData* data, in
                 goto RETURN_ERROR;
             }
         }
-        else // soubor
+        else // file
         {
             if (dir != NULL)
             {
                 if (getLinkTgtFileSize && (newF.Attr & FILE_ATTRIBUTE_REPARSE_POINT) != 0)
-                { // u symlinku na soubor zjistime velikost ciloveho souboru
+                { // When using a symlink to a file, we determine the size of the target file
                     CQuadWord size;
                     strcpy(path, data->WorkPath);
                     if (SalPathAppend(path, newF.Name, _countof(path)))
-                    { // jen neni-li prilis dlouha cesta (pripadnou chybu ukazeme az pri enumeraci)
+                    { // only if the path is not too long (we will show any errors during enumeration)
                         if (GetLinkTgtFileSize(parent, path, NULL, &size, &cancel, &errGetFileSizeOfLnkTgtIgnAll))
                             newF.Size = size;
                         else
@@ -1237,7 +1237,7 @@ const char* WINAPI PanelEnumDiskSelection(HWND parent, int enumFiles, const char
         {
             data->DiskDirectoryTree = ReadDirectoryTree(parent, data, errorOccured, enumFiles == 3, NULL, NULL);
             if (data->DiskDirectoryTree == NULL)
-                return NULL; // chyba, koncime
+                return NULL; // error, we are finishing
         }
         const CFileData* f = NULL;
         const char* ret = _PanelSalEnumSelection(enumFiles, dosName, isDir, size, &f, data, parent, errorOccured);
@@ -1286,13 +1286,13 @@ void CFilesWindow::Pack(CFilesWindow* target, int pluginIndex, const char* plugi
     if (Files->Count + Dirs->Count == 0)
         return;
 
-    // obnova DefaultDir
+    // Restore DefaultDir
     MainWindow->UpdateDefaultDir(MainWindow->GetActivePanel() == this);
 
-    BeginStopRefresh(); // cmuchal si da pohov
+    BeginStopRefresh(); // He was snoring in his sleep
 
-    //---  ziskani souboru a adresaru se kterymi budeme pracovat
-    char subject[MAX_PATH + 100]; // text do Unpack dialogu (co se rozpakovava)
+    //--- obtaining files and directories we will work with
+    char subject[MAX_PATH + 100]; // text for Unpack dialog (what is being unpacked)
     char path[MAX_PATH];
     char text[1000];
     BOOL nameByItem;
@@ -1304,15 +1304,15 @@ void CFilesWindow::Pack(CFilesWindow* target, int pluginIndex, const char* plugi
         subDir = FALSE;
     data.IndexesCount = GetSelCount();
     char expanded[MAX_PATH + 100];
-    int files = 0;             // pocet oznacenych souboru
-    if (data.IndexesCount > 1) // platne oznaceni
+    int files = 0;             // number of selected files
+    if (data.IndexesCount > 1) // valid label
     {
         nameByItem = FALSE;
         data.Indexes = new int[data.IndexesCount];
         if (data.Indexes == NULL)
         {
             TRACE_E(LOW_MEMORY);
-            EndStopRefresh(); // ted uz zase cmuchal nastartuje
+            EndStopRefresh(); // now he's sniffling again, he'll start up
             return;
         }
         else
@@ -1327,32 +1327,32 @@ void CFilesWindow::Pack(CFilesWindow* target, int pluginIndex, const char* plugi
                     files++;
             }
         }
-        // sestavime subject pro dialog
+        // assemble subject for the dialogue
         ExpandPluralFilesDirs(expanded, MAX_PATH + 100, files, data.IndexesCount - files, epfdmNormal, FALSE);
     }
-    else // bereme vybrany soubor nebo adresar
+    else // we are taking the selected file or directory
     {
         int index;
         if (data.IndexesCount == 0)
         {
             index = GetCaretIndex();
-            nameByItem = TRUE; // pro kompatibilitu se Sal2.0
+            nameByItem = TRUE; // for compatibility with Sal2.0
         }
         else
         {
             GetSelItems(1, &index);
-            nameByItem = FALSE; // pro kompatibilitu se Sal2.0
+            nameByItem = FALSE; // for compatibility with Sal2.0
         }
 
-        // poznamka ke kompatibilite s 2.0
+        // note on compatibility with 2.0
         // soucasna implementace je sice nelogicka, protoze se Salamander v pripade jednoho oznaceneho
-        // souboru chova jinak nez v pripade jednoho focuseneho soubory, ale ma to jednu vyhodu:
-        // uzivatel ma moznost volby predhazovaneho nazvu souboru
+        // file behaves differently than in the case of a single focused file, but it has one advantage:
+        // the user has the option to choose a default file name
 
         if (subDir && index == 0)
         {
-            EndStopRefresh(); // ted uz zase cmuchal nastartuje
-            return;           // neni co delat
+            EndStopRefresh(); // now he's sniffling again, he'll start up
+            return;           // nothing to do
         }
         else
         {
@@ -1360,14 +1360,14 @@ void CFilesWindow::Pack(CFilesWindow* target, int pluginIndex, const char* plugi
             if (data.Indexes == NULL)
             {
                 TRACE_E(LOW_MEMORY);
-                EndStopRefresh(); // ted uz zase cmuchal nastartuje
+                EndStopRefresh(); // now he's sniffling again, he'll start up
                 return;
             }
             else
             {
                 data.Indexes[0] = index;
                 data.IndexesCount = 1;
-                // sestavime subject pro dialog
+                // assemble subject for the dialogue
                 BOOL isDir = index < Dirs->Count;
                 if (!isDir)
                     files = 1;
@@ -1390,16 +1390,16 @@ void CFilesWindow::Pack(CFilesWindow* target, int pluginIndex, const char* plugi
     data.EnumLastDir = NULL;
     data.EnumLastIndex = -1;
 
-    //---  pakujeme do noveho souboru, zeptame se na jeho jmeno
-    char fileBuf[MAX_PATH];    // soubor, do ktereho budeme balit
-    char fileBufAlt[MAX_PATH]; // alternativni nazev, ktery bude v comboboxu Pack dialogu
+    //--- then we pack it into a new file, we ask for its name
+    char fileBuf[MAX_PATH];    // file to be packaged
+    char fileBufAlt[MAX_PATH]; // Alternative name that will be in the Pack dialog combobox
 
-    if (nameByItem) // pokud jde jen o jeden soubor/adresar, prebira archiv jeho jmeno
+    if (nameByItem) // If there is only one file/directory, the archive takes its name
     {
         char* ext = strrchr(path, '.');
-        if (data.Indexes[0] < Dirs->Count || ext == NULL) // ".cvspass" ve Windows je pripona ...
+        if (data.Indexes[0] < Dirs->Count || ext == NULL) // ".cvspass" in Windows is an extension ...
                                                           //  if (data.Indexes[0] < Dirs->Count || ext == NULL || ext == path)
-        {                                                 // podadresar nebo bez pripony
+        {                                                 // subdirectory or without extension
             strcpy(fileBuf, path);
             strcat(fileBuf, ".");
         }
@@ -1411,7 +1411,7 @@ void CFilesWindow::Pack(CFilesWindow* target, int pluginIndex, const char* plugi
     }
     else
     {
-        // sestaveni default jmena archivu
+        // build default archive name
         const char* end = GetPath() + strlen(GetPath());
         if (end > GetPath() && *(end - 1) == '\\')
             end--;
@@ -1442,32 +1442,32 @@ void CFilesWindow::Pack(CFilesWindow* target, int pluginIndex, const char* plugi
                 break;
             }
         }
-        if (i == PackerConfig.GetPackersCount()) // hledany plugin nebyl nalezen
+        if (i == PackerConfig.GetPackersCount()) // The requested plugin was not found
         {
             sprintf(subject, LoadStr(IDS_PLUGINPACKERNOTFOUND), pluginName);
             SalMessageBox(HWindow, subject, LoadStr(IDS_PACKTITLE), MB_OK | MB_ICONEXCLAMATION);
             delete[] (data.Indexes);
-            EndStopRefresh(); // ted uz zase cmuchal nastartuje
+            EndStopRefresh(); // now he's sniffling again, he'll start up
             return;
         }
     }
 
     if (PackerConfig.GetPreferedPacker() == -1)
-    { // pokud neni zadny prefered, vybereme prvni (aby useri blbe necumeli na prazdny combo)
+    { // if there is no preferred one, we will select the first one (so that users don't stare at an empty combo)
         PackerConfig.SetPreferedPacker(0);
     }
-    if (PackerConfig.GetPreferedPacker() != -1) // nutne i po Set (nemuselo se povest -> stale vraci -1)
+    if (PackerConfig.GetPreferedPacker() != -1) // necessary even after Set (did not have to spread -> still returns -1)
         strcat(fileBuf, PackerConfig.GetPackerExt(PackerConfig.GetPreferedPacker()));
 
     strcpy(fileBufAlt, fileBuf);
 
     if (target->Is(ptDisk))
     {
-        // na zaklade konfigurace upravime jedenu z cest tak, aby sla do target panelu
+        // Based on the configuration, we will modify one of the paths to go to the target panel
         char* buff = Configuration.UseAnotherPanelForPack ? fileBuf : fileBufAlt;
 
         if (Configuration.UseAnotherPanelForPack)
-            target->UserWorkedOnThisPath = TRUE; // default akce = prace s cestou v cilovem panelu
+            target->UserWorkedOnThisPath = TRUE; // default action = working with the path in the destination panel
 
         int l = (int)strlen(target->GetPath());
         if (l > 0 && target->GetPath()[l - 1] == '\\')
@@ -1481,14 +1481,14 @@ void CFilesWindow::Pack(CFilesWindow* target, int pluginIndex, const char* plugi
         }
     }
 
-    // pokud neni vybrana zadna polozka, vybereme tu pod focusem a ulozime jeji jmeno
+    // if no item is selected, we will select the one under focus and save its name
     char temporarySelected[MAX_PATH];
     temporarySelected[0] = 0;
     SelectFocusedItemAndGetName(temporarySelected, MAX_PATH);
 
     if (delFilesAfterPacking == 1)
         PackerConfig.Move = TRUE;
-    if (delFilesAfterPacking == 0 || // Petr: zmena defaultu: mazani si musi user vzdy zapnout, je to moc nebezpecne
+    if (delFilesAfterPacking == 0 || // Petr: change the default: user must always enable deletion, it is too dangerous
         delFilesAfterPacking == 2)
     {
         PackerConfig.Move = FALSE;
@@ -1500,33 +1500,33 @@ _PACK_AGAIN:
 
     CPackDialog dlg(HWindow, fileBuf, fileBufAlt, &str, &PackerConfig);
 
-    // Od Windows Vista MS zavedli velice zadanou vec: quick rename implicitne oznaci pouze nazev bez tecky a pripony
-    // stejny kod je jeste na druhem miste
+    // Since Windows Vista, Microsoft introduced a very useful feature: quick rename implicitly selects only the name without the dot and extension
+    // the same code is still in second place
     int selectionEnd = -1;
     if (first)
     {
         if (!Configuration.QuickRenameSelectAll)
         {
             const char* dot = strrchr(fileBuf, '.');
-            if (dot != NULL && dot > fileBuf) // sice plati, ze ".cvspass" ve Windows je pripona, ale Explorer pro ".cvspass" oznacuje cele jmeno, tak to delame take
+            if (dot != NULL && dot > fileBuf) // While it is true that ".cvspass" in Windows is an extension, Explorer marks the entire name for ".cvspass", so we do the same
                                               //    if (dot != NULL)
                 selectionEnd = (int)(dot - fileBuf);
             dlg.SetSelectionEnd(selectionEnd);
         }
-        first = FALSE; // po chybe jiz dostaneme plny nazev souboru, takze ho oznacime komplet
+        first = FALSE; // After an error, we will receive the full file name, so we will mark it completely
     }
 
     if (dlg.Execute() == IDOK)
     {
         UpdateWindow(MainWindow->HWindow);
-        //--- upravime jmeno archivu na full-name
+        //--- we will change the archive name to full-name
         int errTextID;
         BOOL empty = FALSE;
         char nextFocus[MAX_PATH];
         nextFocus[0] = 0;
         if (SalGetFullName(fileBuf, &errTextID, Is(ptDisk) ? GetPath() : NULL, nextFocus))
         {
-            //---  hledani linku na adresar ve zdroji baleni, nelze totiz kombinovat s "delete files after packing"
+            //--- searching for a link to a directory in the packaging source, as it cannot be combined with "delete files after packing"
             BOOL performPack = TRUE;
             if (PackerConfig.Move)
             {
@@ -1534,25 +1534,25 @@ _PACK_AGAIN:
                 SetCurrentDirectory(GetPath());
                 SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
-                GetAsyncKeyState(VK_ESCAPE); // init GetAsyncKeyState - viz help
+                GetAsyncKeyState(VK_ESCAPE); // init GetAsyncKeyState - see help
                 CreateSafeWaitWindow(LoadStr(IDS_ANALYSINGDIRTREEESC), NULL, 3000, TRUE, NULL);
 
-                // zkusime najit 1. link na adresar, pokud najdeme, simulujeme chybu pro ukonceni hledani
+                // Let's try to find the 1st link in the directory, if we find it, simulate an error to stop the search
                 char linkName[MAX_PATH];
                 linkName[0] = 0;
-                ReadDirectoryTree(NULL /* tichy rezim */, &data, NULL, FALSE, &containsDirLinks, linkName);
+                ReadDirectoryTree(NULL /* silent mode*/, &data, NULL, FALSE, &containsDirLinks, linkName);
 
                 DestroySafeWaitWindow();
 
                 SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
                 SetCurrentDirectoryToSystem();
 
-                // obsahuje link na adresar = nelze kombinovat s "delete files after packing":
-                // neumim resit situaci, kdy by se nepodarilo zabalit jeden soubor z adresare (staci aby
-                // byl soubor uzamceny nebo jsem k nemu nemel prava), kam jsem prosel pres link - smazat cely
-                // link je spatne, protoze nebude videt, ze se neco nepovedlo zabalit a smazat vse az na
-                // jeden soubor po pruchodu linku je taky spatne, protoze to ovlivni obsah puvodniho
-                // adresare, kde to pak budou hlasit jako bugu, protoze je to necekane
+                // contains a link to a directory = cannot be combined with "delete files after packing":
+                // I can't handle a situation where one file from a directory fails to be packed (it is enough if
+                // the file was locked or I didn't have the rights to it), where I went through the link - delete the whole
+                // The link is incorrect because it will not be visible that something failed to wrap and delete everything except for
+                // processing one file per link pass is also bad because it affects the original content
+                // directory where they will report it as a bug, because it is unexpected
                 if (containsDirLinks == 1)
                 {
                     _snprintf_s(text, _TRUNCATE, LoadStr(IDS_DELFILESAFTERPACKINGNOLINKS), linkName);
@@ -1560,11 +1560,11 @@ _PACK_AGAIN:
                     PackerConfig.Move = FALSE;
                     goto _PACK_AGAIN;
                 }
-                if (containsDirLinks == 2) // uzivatel nacitani prerusil (ESC nebo kliknul na krizek wait okna)
+                if (containsDirLinks == 2) // user interrupted loading (ESC or clicked on the close button of the waiting window)
                     performPack = FALSE;
             }
 
-            //--- konfirmace na pridani (update) do existujiciho archivu
+            //--- confirmation of adding (updating) to an existing archive
             if (performPack && Configuration.CnfrmAddToArchive && FileExists(fileBuf))
             {
                 BOOL dontShow = !Configuration.CnfrmAddToArchive;
@@ -1598,13 +1598,13 @@ _PACK_AGAIN:
                 performPack = (msgBoxRed == IDYES);
                 if (msgBoxRed == IDNO) // OVERWRITE
                 {
-                    ClearReadOnlyAttr(fileBuf); // aby sel smazat ...
+                    ClearReadOnlyAttr(fileBuf); // to be deleted ...
                     if (!DeleteFile(fileBuf))
                     {
                         DWORD err;
                         err = GetLastError();
                         SalMessageBox(HWindow, GetErrorText(err), LoadStr(IDS_ERROROVERWRITINGFILE), MB_OK | MB_ICONEXCLAMATION);
-                        // propadneme do _PACK_AGAIN
+                        // we will fall into _PACK_AGAIN
                     }
                     else
                         performPack = TRUE;
@@ -1614,31 +1614,31 @@ _PACK_AGAIN:
                     goto _PACK_AGAIN;
             }
 
-            //---  vlastni zapakovani
+            //--- custom packaging
             if (performPack)
             {
                 SetCurrentDirectory(GetPath());
                 SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
                 if (PackerConfig.ExecutePacker(this, fileBuf, PackerConfig.Move, GetPath(),
                                                PanelEnumDiskSelection, &data))
-                { // zapakovani se povedlo
+                { // packing was successful
                     // if (nextFocus[0] != 0) strcpy(NextFocusName, nextFocus);
-                    FocusFirstNewItem = TRUE; // fokusne i plug-inem prejmenovany archiv (treba SFX -> archiv.exe)
+                    FocusFirstNewItem = TRUE; // archive renamed with focus and plug-in (e.g. SFX -> archive.exe)
 
-                    SetSel(FALSE, -1, TRUE);                        // explicitni prekresleni
+                    SetSel(FALSE, -1, TRUE);                        // explicit override
                     PostMessage(HWindow, WM_USER_SELCHANGED, 0, 0); // sel-change notify
                 }
                 SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
                 SetCurrentDirectoryToSystem();
 
-                //---  refresh neautomaticky refreshovanych adresaru
-                // zmeny v adresari, ve kterem je umisten vznikajici archiv
-                CutDirectory(fileBuf); // nemusi jit, ale tento pripad neresime (refresh navic nevadi)
+                //--- refresh non-automatically refreshed directories
+                // changes in the directory where the resulting archive is located
+                CutDirectory(fileBuf); // It doesn't have to work, but we don't handle this case (refresh doesn't matter)
                 MainWindow->PostChangeOnPathNotification(fileBuf, FALSE);
-                // presun z disku do archivu -> zmena i na disku (smazani souboru/adresaru)
+                // Move from disk to archive -> also change on disk (delete file/directory)
                 if (PackerConfig.Move)
                 {
-                    // zmeny v aktualnim adresari v panelu vcetne jeho podadresaru
+                    // changes in the current directory in the panel including its subdirectories
                     MainWindow->PostChangeOnPathNotification(GetPath(), TRUE);
                 }
             }
@@ -1650,13 +1650,13 @@ _PACK_AGAIN:
         }
     }
 
-    // pokud jsme nejakou polozku vybrali, zase ji odvyberem
+    // if we have selected an item, we will deselect it again
     UnselectItemWithName(temporarySelected);
 
     UpdateWindow(MainWindow->HWindow);
     delete[] (data.Indexes);
 
-    //---  pokud je aktivni nejake okno salamandra, konci suspend mode
+    //--- if any Total Commander window is active, exit suspend mode
     EndStopRefresh();
 }
 
@@ -1664,7 +1664,7 @@ void CFilesWindow::Unpack(CFilesWindow* target, int pluginIndex, const char* plu
 {
     CALL_STACK_MESSAGE4("CFilesWindow::Unpack(, %d, %s, %s)", pluginIndex, pluginName, unpackMask);
 
-    // obnova DefaultDir
+    // Restore DefaultDir
     MainWindow->UpdateDefaultDir(MainWindow->GetActivePanel() == this);
 
     int i = GetCaretIndex();
@@ -1674,7 +1674,7 @@ void CFilesWindow::Unpack(CFilesWindow* target, int pluginIndex, const char* plu
 
         CFileData* file = &Files->At(i - Dirs->Count);
         char path[MAX_PATH];
-        char pathAlt[MAX_PATH]; // alternativni cesta, ktera bude v comboboxu UnPack dialogu
+        char pathAlt[MAX_PATH]; // alternative path that will be in the combobox of the UnPack dialog
         char mask[MAX_PATH];
         char subject[MAX_PATH + 100];
         path[0] = 0;
@@ -1683,7 +1683,7 @@ void CFilesWindow::Unpack(CFilesWindow* target, int pluginIndex, const char* plu
         {
             if (Configuration.UseAnotherPanelForUnpack)
             {
-                target->UserWorkedOnThisPath = TRUE; // default akce = prace s cestou v cilovem panelu
+                target->UserWorkedOnThisPath = TRUE; // default action = working with the path in the destination panel
                 strcpy(path, target->GetPath());
             }
             else
@@ -1694,7 +1694,7 @@ void CFilesWindow::Unpack(CFilesWindow* target, int pluginIndex, const char* plu
         if (Configuration.UseSubdirNameByArchiveForUnpack)
         {
             int i2;
-            for (i2 = 0; i2 < 2; i2++) // pro path a pathAlt
+            for (i2 = 0; i2 < 2; i2++) // for path and pathAlt
             {
                 char* buff = (i2 == 0) ? path : pathAlt;
                 int l = (int)strlen(buff);
@@ -1727,19 +1727,19 @@ void CFilesWindow::Unpack(CFilesWindow* target, int pluginIndex, const char* plu
                     break;
                 }
             }
-            if (i2 == UnpackerConfig.GetUnpackersCount()) // hledany plugin nebyl nalezen
+            if (i2 == UnpackerConfig.GetUnpackersCount()) // The requested plugin was not found
             {
                 sprintf(subject, LoadStr(IDS_PLUGINUNPACKERNOTFOUND), pluginName);
                 SalMessageBox(HWindow, subject, LoadStr(IDS_ERRORUNPACK), MB_OK | MB_ICONEXCLAMATION);
-                EndStopRefresh(); // ted uz zase cmuchal nastartuje
+                EndStopRefresh(); // now he's sniffling again, he'll start up
                 return;
             }
         }
-        else // vyber unpackeru podle pripony
+        else // select unpacker based on extension
         {
             CMaskGroup tmpmask;
             if (UnpackerConfig.GetPreferedUnpacker() == -1)
-            { // pokud neni zadny prefered, vybereme prvni (aby useri blbe necumeli na prazdny combo)
+            { // if there is no preferred one, we will select the first one (so that users don't stare at an empty combo)
                 UnpackerConfig.SetPreferedUnpacker(0);
             }
             if (UnpackerConfig.GetPreferedUnpacker() != -1)
@@ -1773,7 +1773,7 @@ void CFilesWindow::Unpack(CFilesWindow* target, int pluginIndex, const char* plu
         if (CUnpackDialog(HWindow, path, pathAlt, mask, &str, &UnpackerConfig, &delArchiveWhenDone).Execute() == IDOK)
         {
             UpdateWindow(MainWindow->HWindow);
-            //--- upravime jmeno archivu na full-name
+            //--- we will change the archive name to full-name
             int errTextID;
             char nextFocus[MAX_PATH];
             nextFocus[0] = 0;
@@ -1795,7 +1795,7 @@ void CFilesWindow::Unpack(CFilesWindow* target, int pluginIndex, const char* plu
                 char newDir[MAX_PATH];
                 if (CheckAndCreateDirectory(path, NULL, TRUE, NULL, 0, newDir, FALSE, TRUE))
                 {
-                    // spustime unpacker
+                    // start the unpacker
                     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
                     CDynamicStringImp archiveVolumes;
                     if (!UnpackerConfig.ExecuteUnpacker(MainWindow->HWindow, this, subject, mask,
@@ -1805,7 +1805,7 @@ void CFilesWindow::Unpack(CFilesWindow* target, int pluginIndex, const char* plu
                         if (newDir[0] != 0)
                             RemoveEmptyDirs(newDir);
                     }
-                    else // vypakovani se povedlo (zadny Cancel, Skip mozna byl)
+                    else // Unpacking was successful (no Cancel, Skip might have been)
                     {
                         if (delArchiveWhenDone && archiveVolumes.Length > 0)
                         {
@@ -1817,12 +1817,12 @@ void CFilesWindow::Unpack(CFilesWindow* target, int pluginIndex, const char* plu
                                 {
                                     while (1)
                                     {
-                                        ClearReadOnlyAttr(name); // aby sel smazat i read-only...
+                                        ClearReadOnlyAttr(name); // to be able to delete even read-only...
                                         if (!DeleteFile(name) && !skipAll)
                                         {
                                             DWORD err = GetLastError();
                                             if (err == ERROR_FILE_NOT_FOUND)
-                                                break; // pokud uz user stihl soubor smazat sam, je vse OK
+                                                break; // if the user managed to delete the file themselves, everything is OK
                                             int res = (int)CFileErrorDlg(MainWindow->HWindow, LoadStr(IDS_ERRORDELETINGFILE), name, GetErrorText(err)).Execute();
                                             if (res == IDB_SKIPALL)
                                                 skipAll = TRUE;
@@ -1831,13 +1831,13 @@ void CFilesWindow::Unpack(CFilesWindow* target, int pluginIndex, const char* plu
                                             if (res == IDCANCEL) // cancel
                                             {
                                                 name = archiveVolumes.Text + archiveVolumes.Length - 1;
-                                                nextFocus[0] = 0; // nechame kurzor na archivu, neskocime na adresar s vybalenym archivem
+                                                nextFocus[0] = 0; // Leave the cursor on the archive, do not jump to the directory with the unpacked archive
                                                 break;
                                             }
-                                            // IDRETRY nechame zkusit dalsi pruchod cyklem
+                                            // IDRETRY will let us try another pass through the loop
                                         }
                                         else
-                                            break; // smazano
+                                            break; // deleted
                                     }
                                 }
                                 name = name + strlen(name) + 1;
@@ -1846,24 +1846,24 @@ void CFilesWindow::Unpack(CFilesWindow* target, int pluginIndex, const char* plu
                         if (nextFocus[0] != 0)
                         {
                             strcpy(NextFocusName, nextFocus);
-                            PostMessage(HWindow, WM_USER_DONEXTFOCUS, 0, 0); // jde o adresar, musi byt
+                            PostMessage(HWindow, WM_USER_DONEXTFOCUS, 0, 0); // it's about the directory, must be
                         }
                     }
                     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
 
-                    //---  refresh neautomaticky refreshovanych adresaru
-                    // zmena v adresari, kde je umisteny archiv (pri unpacku by nemelo nastat, ale
-                    // radsi refreshneme)
+                    //--- refresh non-automatically refreshed directories
+                    // Change in the directory where the archive is located (should not occur during unpacking, but
+                    // let's refresh instead)
                     MainWindow->PostChangeOnPathNotification(GetPath(), FALSE);
-                    if (newDir[0] != 0) // na ceste se vytvarely nejake nove podadresare
+                    if (newDir[0] != 0) // new subdirectories were being created on the way
                     {
-                        CutDirectory(newDir); // melo by jit vzdy (cesta k prvnimu nove vytvorenemu adresari)
-                        // zmeny v adresari, kde byl vytvoren prvni novy podadresar
+                        CutDirectory(newDir); // should always go (path to the first newly created directory)
+                        // changes in the directory where the first new subdirectory was created
                         MainWindow->PostChangeOnPathNotification(newDir, TRUE);
                     }
                     else
                     {
-                        // zmeny v adresari, kam se vypakovavalo
+                        // changes in the directory where it was unpacked
                         MainWindow->PostChangeOnPathNotification(path, TRUE);
                     }
                 }
@@ -1871,11 +1871,11 @@ void CFilesWindow::Unpack(CFilesWindow* target, int pluginIndex, const char* plu
                 {
                     if (newDir[0] != 0)
                     {
-                        CutDirectory(newDir); // melo by jit vzdy (cesta k prvnimu nove vytvorenemu adresari)
+                        CutDirectory(newDir); // should always go (path to the first newly created directory)
 
-                        //---  refresh neautomaticky refreshovanych adresaru
-                        // pokud selhalo vytvareni adresaru, provedeme hlaseni o zmenach hned (uzivatel muze
-                        // zvolit priste uplne jinou cestu); nove vytvorena cesta se nerusi (temer dead-code)
+                        //--- refresh non-automatically refreshed directories
+                        // If directory creation failed, we will report changes immediately (user may
+                        // choose a completely different path next time); the newly created path is not disturbed (almost dead-code)
                         MainWindow->PostChangeOnPathNotification(newDir, TRUE);
                     }
                     goto DO_AGAIN;
@@ -1889,21 +1889,21 @@ void CFilesWindow::Unpack(CFilesWindow* target, int pluginIndex, const char* plu
         }
         UpdateWindow(MainWindow->HWindow);
 
-        //---  pokud je aktivni nejake okno salamandra, konci suspend mode
+        //--- if any Total Commander window is active, exit suspend mode
         EndStopRefresh();
     }
 }
 
-// countSizeMode - 0 normalni vypocet, 1 vypocet pro vybranou polozku, 2 vypocet pro vsechny podadresare
+// countSizeMode - 0 normal calculation, 1 calculation for selected item, 2 calculation for all subdirectories
 void CFilesWindow::CalculateOccupiedZIPSpace(int countSizeMode)
 {
     CALL_STACK_MESSAGE2("CFilesWindow::CalculateOccupiedZIPSpace(%d)", countSizeMode);
-    if (Is(ptZIPArchive) && (ValidFileData & VALID_DATA_SIZE)) // jen pokud je platne CFileData::Size (velikosti definovane pres plugin-data jsou u archivu dost nepravdepodobne, takze je v teto funkci zatim neresime...)
+    if (Is(ptZIPArchive) && (ValidFileData & VALID_DATA_SIZE)) // only if CFileData::Size is valid (sizes defined via plugin-data are highly unlikely for archives, so we are not addressing them in this function for now...)
     {
-        BeginStopRefresh(); // cmuchal bude cekat
+        BeginStopRefresh(); // cmuchal will wait
 
         TDirectArray<CQuadWord> sizes(200, 400);
-        CQuadWord totalSize(0, 0); // pocitana velikost
+        CQuadWord totalSize(0, 0); // calculated size
         int files = 0;
         int dirs = 0;
 
@@ -1914,7 +1914,7 @@ void CFilesWindow::CalculateOccupiedZIPSpace(int countSizeMode)
         else
             upDir = FALSE;
         int count = GetSelCount();
-        if (countSizeMode == 0 && count != 0 || countSizeMode == 2) // platne oznaceni
+        if (countSizeMode == 0 && count != 0 || countSizeMode == 2) // valid label
         {
             if (countSizeMode == 2)
                 count = Dirs->Count - (upDir ? 1 : 0);
@@ -1922,7 +1922,7 @@ void CFilesWindow::CalculateOccupiedZIPSpace(int countSizeMode)
             if (indexes == NULL)
             {
                 TRACE_E(LOW_MEMORY);
-                EndStopRefresh(); // ted uz zase cmuchal nastartuje
+                EndStopRefresh(); // now he's sniffling again, he'll start up
                 return;
             }
             else
@@ -1949,7 +1949,7 @@ void CFilesWindow::CalculateOccupiedZIPSpace(int countSizeMode)
                     }
                     else
                     {
-                        sizes.Add(f->Size); // chyba pridani je osetrena az na urovni vystupniho dialogu
+                        sizes.Add(f->Size); // error handling is handled up to the output dialog level
                         totalSize += f->Size;
                         files++;
                     }
@@ -1957,13 +1957,13 @@ void CFilesWindow::CalculateOccupiedZIPSpace(int countSizeMode)
             }
             delete[] (indexes);
         }
-        else // bereme vybrany soubor nebo adresar
+        else // we are taking the selected file or directory
         {
             selIndex = GetCaretIndex();
             if (upDir && selIndex == 0)
             {
-                EndStopRefresh(); // ted uz zase cmuchal nastartuje
-                return;           // neni co delat
+                EndStopRefresh(); // now he's sniffling again, he'll start up
+                return;           // nothing to do
             }
             else
             {
@@ -1982,19 +1982,19 @@ void CFilesWindow::CalculateOccupiedZIPSpace(int countSizeMode)
                 }
                 else
                 {
-                    sizes.Add(f->Size); // chyba pridani je osetrena az na urovni vystupniho dialogu
+                    sizes.Add(f->Size); // error handling is handled up to the output dialog level
                     totalSize += f->Size;
                     files++;
                 }
             }
         }
 
-        // radime pokud jsme pocitali pres vic jak jeden oznaceny adresar nebo pres vsechny
+        // we advise if we have counted over more than one marked directory or over all
         if (((countSizeMode == 0 && dirs > 1) || countSizeMode == 2) && SortType == stSize)
         {
             ChangeSortType(stSize, FALSE, TRUE);
         }
-        RefreshListBox(-1, -1, FocusedIndex, FALSE, FALSE); // prepocet sirek sloupcu
+        RefreshListBox(-1, -1, FocusedIndex, FALSE, FALSE); // conversion of column widths
         if (countSizeMode == 0)
         {
             CSizeResultsDlg(HWindow, totalSize, CQuadWord(-1, -1), CQuadWord(-1, -1),
@@ -2010,7 +2010,7 @@ void CFilesWindow::CalculateOccupiedZIPSpace(int countSizeMode)
         RepaintListBox(DRAWFLAG_DIRTY_ONLY | DRAWFLAG_SKIP_VISTEST);
         UpdateWindow(MainWindow->HWindow);
 
-        EndStopRefresh(); // ted uz zase cmuchal nastartuje
+        EndStopRefresh(); // now he's sniffling again, he'll start up
     }
 }
 
@@ -2022,23 +2022,23 @@ void CFilesWindow::AcceptChangeOnPathNotification(const char* path, BOOL includi
     BOOL refresh = FALSE;
     if ((Is(ptDisk) || Is(ptZIPArchive)) && (!AutomaticRefresh || GetNetworkDrive()))
     {
-        // otestujeme shodnost cest nebo aspon jejich prefixu (zajimaji nas jen diskove cesty,
-        // FS cesty v 'path' se vylouci automaticky, protoze se nemuzou nikdy shodovat s GetPath())
+        // we will test the equality of paths or at least their prefixes (we are only interested in disk paths,
+        // FS paths in 'path' are automatically excluded because they can never match GetPath()
         char path1[MAX_PATH];
         char path2[MAX_PATH];
         lstrcpyn(path1, path, MAX_PATH);
-        lstrcpyn(path2, GetPath(), MAX_PATH); // u archivu je zde cesta, na ktere je archiv
+        lstrcpyn(path2, GetPath(), MAX_PATH); // there is a path to the archive at the archive
         SalPathRemoveBackslash(path1);
         SalPathRemoveBackslash(path2);
         int len1 = (int)strlen(path1);
-        refresh = !includingSubdirs && StrICmp(path1, path2) == 0 ||       // presna shoda
-                  includingSubdirs && StrNICmp(path1, path2, len1) == 0 && // shoda prefixu
+        refresh = !includingSubdirs && StrICmp(path1, path2) == 0 ||       // exact match
+                  includingSubdirs && StrNICmp(path1, path2, len1) == 0 && // prefix match
                       (path2[len1] == 0 || path2[len1] == '\\');
-        if (Is(ptDisk) && !refresh && CutDirectory(path1)) // u archivu nema smysl
+        if (Is(ptDisk) && !refresh && CutDirectory(path1)) // It doesn't make sense near the archive
         {
             SalPathRemoveBackslash(path1);
-            // na NTFS se meni i datum posledniho podadresare v ceste (projevi se bohuzel az po vstupu
-            // do tohoto podadresare, ale treba to casem opravi, proto budeme preventivne refreshovat)
+            // on NTFS, even the date of the last subdirectory in the path changes (unfortunately only after entering
+            // into this subdirectory, but it may need to be fixed over time, so we will proactively refresh it)
             refresh = StrICmp(path1, path2) == 0;
         }
         if (refresh)
@@ -2051,21 +2051,21 @@ void CFilesWindow::AcceptChangeOnPathNotification(const char* path, BOOL includi
     }
     else
     {
-        if (Is(ptPluginFS) && GetPluginFS()->NotEmpty()) // poslani notifikace do FS
+        if (Is(ptPluginFS) && GetPluginFS()->NotEmpty()) // send notification to FS
         {
-            // sekce EnterPlugin+LeavePlugin musi byt vyvezena az sem (neni v zapouzdreni ifacu)
+            // Section EnterPlugin+LeavePlugin must be exported up to here (not in the encapsulation of interfaces)
             EnterPlugin();
             GetPluginFS()->AcceptChangeOnPathNotification(GetPluginFS()->GetPluginFSName(), path, includingSubdirs);
             LeavePlugin();
         }
     }
 
-    if (Is(ptDisk) && !refresh &&           // jen disky maji free-space (archivy ne a FS se resi jinde)
-        HasTheSameRootPath(path, GetPath()) // stejny root -> mozna zmena velikosti volneho mista na disku
+    if (Is(ptDisk) && !refresh &&           // only disks have free space (archives do not and FS is handled elsewhere)
+        HasTheSameRootPath(path, GetPath()) // same root -> possibly changing the amount of free disk space
 
-        /* && (!AutomaticRefresh ||  // zakomentovano, protoze pri zmenach v podadresarich na auto-refreshovane ceste nechodi notifikace a tudiz udaj o volnem miste zustaval neplatny
+        /* && (!AutomaticRefresh ||  // commented out because when changes occur in subdirectories on auto-refreshed path, notifications do not arrive and thus the information about free space remained invalid
        !IsTheSamePath(path, GetPath()))*/
-        ) // tato cesta se nemonitoruje na zmeny -> refresh urcite neprijde
+        ) // this path is not monitored for changes -> refresh definitely won't come
     {
         RefreshDiskFreeSpace(TRUE, TRUE);
     }
@@ -2075,14 +2075,14 @@ void CFilesWindow::IconOverlaysChangedOnPath(const char* path)
 {
     //  if ((int)(GetTickCount() - NextIconOvrRefreshTime) < 0)
     //    TRACE_I("CFilesWindow::IconOverlaysChangedOnPath: skipping notification for: " << path);
-    if ((int)(GetTickCount() - NextIconOvrRefreshTime) >= 0 &&             // refresh icon-overlays probehne az v case NextIconOvrRefreshTime, pred timto okamzikem nema smysl sledovat zmeny
-        !IconOvrRefreshTimerSet && !NeedIconOvrRefreshAfterIconsReading && // refresh icon-overlays jeste neni naplanovany
+    if ((int)(GetTickCount() - NextIconOvrRefreshTime) >= 0 &&             // refresh icon-overlays will occur at the time of NextIconOvrRefreshTime, before this moment it does not make sense to track changes
+        !IconOvrRefreshTimerSet && !NeedIconOvrRefreshAfterIconsReading && // refresh icon-overlays is not yet planned
         Configuration.EnableCustomIconOverlays && Is(ptDisk) &&
         (UseSystemIcons || UseThumbnails) && IconCache != NULL &&
         IsTheSamePath(path, GetPath()))
     {
         DWORD elapsed = GetTickCount() - LastIconOvrRefreshTime;
-        if (elapsed < ICONOVR_REFRESH_PERIOD) // vyckame pred dalsim refreshem icon overlayu, abysme to nedelali prilis casto
+        if (elapsed < ICONOVR_REFRESH_PERIOD) // We will wait before the next refresh of the icon overlay so that we don't do it too often
         {
             // TRACE_I("CFilesWindow::IconOverlaysChangedOnPath: setting timer for refresh");
             if (SetTimer(HWindow, IDT_ICONOVRREFRESH, max(200, ICONOVR_REFRESH_PERIOD - elapsed), NULL))
@@ -2090,15 +2090,15 @@ void CFilesWindow::IconOverlaysChangedOnPath(const char* path)
                 IconOvrRefreshTimerSet = TRUE;
                 return;
             }
-            // pri chybe timeru zkusime provest refresh okamzite...
+            // if there is a timer error, we will try to refresh immediately...
         }
-        // refresh zkusime provest okamzite (neprisel prilis brzy po predchozim)
-        if (!IconCacheValid) // provedeme ho az se dokonci nacitani ikon (muzou, ale nemusi byt nacetne spravne)
+        // refresh try to perform immediately (do not come too soon after the previous)
+        if (!IconCacheValid) // we will execute it after the icons finish loading (they may, but do not have to be loaded correctly)
         {
             // TRACE_I("CFilesWindow::IconOverlaysChangedOnPath: delaying refresh till end of reading of icons");
             NeedIconOvrRefreshAfterIconsReading = TRUE;
         }
-        else // provedeme refresh ihned
+        else // refresh immediately
         {
             // TRACE_I("CFilesWindow::IconOverlaysChangedOnPath: doing refresh: sleeping icon reader");
             SleepIconCacheThread();

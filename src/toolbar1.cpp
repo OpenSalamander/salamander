@@ -115,7 +115,7 @@ CToolBar::CToolBar(HWND hNotifyWindow, CObjectOrigin origin)
 CToolBar::~CToolBar()
 {
     CALL_STACK_MESSAGE1("CToolBar::~CToolBar()");
-    // destrukce je jeste v WM_DESTROY
+    // destruction is still in WM_DESTROY
     if (CacheBitmap != NULL)
     {
         delete CacheBitmap;
@@ -229,7 +229,7 @@ int CToolBar::GetNeededHeight()
     {
         if (HasIconDirty)
         {
-            // koukneme, jestli drzime nejakou ikonu
+            // Let's check if we are holding any icon
             HasIcon = FALSE;
             HasIconDirty = FALSE;
             int i;
@@ -322,8 +322,7 @@ void CToolBar::SetHotImageList(HIMAGELIST hImageList)
 {
     CALL_STACK_MESSAGE_NONE
     HHotImageList = hImageList;
-    /*
-  if (HImageList != NULL)
+    /*    if (HImageList != NULL)
   {
     ImageList_GetIconSize(HImageList, &ImageWidth, &ImageHeight);
     if (MonoBitmap != NULL)
@@ -333,8 +332,7 @@ void CToolBar::SetHotImageList(HIMAGELIST hImageList)
   {
     ImageWidth = 0;
     ImageHeight = 0;
-  }
-*/
+  }*/
     DirtyItems = TRUE;
     if (HWindow != NULL)
         InvalidateRect(HWindow, NULL, FALSE);
@@ -361,7 +359,7 @@ BOOL CToolBar::InsertItem2(DWORD position, BOOL byPosition, const TLBI_ITEM_INFO
 {
     CALL_STACK_MESSAGE3("CToolBar::InsertItem2(0x%X, %d, )", position, byPosition);
     int newPos;
-    // vyhledame pozici, kam prijde nova polozka
+    // Find the position where the new item will come
     if (byPosition)
     {
         if (position == -1 || position > (DWORD)Items.Count)
@@ -379,7 +377,7 @@ BOOL CToolBar::InsertItem2(DWORD position, BOOL byPosition, const TLBI_ITEM_INFO
         }
     }
 
-    // naalokujeme polozku
+    // allocate item
     CToolBarItem* item = new CToolBarItem();
     if (item == NULL)
     {
@@ -387,7 +385,7 @@ BOOL CToolBar::InsertItem2(DWORD position, BOOL byPosition, const TLBI_ITEM_INFO
         return FALSE;
     }
 
-    // vlozime polozku do pole
+    // insert item into array
     Items.Insert(newPos, item);
     if (!Items.IsGood())
     {
@@ -396,7 +394,7 @@ BOOL CToolBar::InsertItem2(DWORD position, BOOL byPosition, const TLBI_ITEM_INFO
         return FALSE;
     }
 
-    // nastavime data
+    // set data
     if (!SetItemInfo2(newPos, TRUE, tii))
     {
         Items.Delete(newPos);
@@ -459,7 +457,7 @@ BOOL CToolBar::SetItemInfo2(DWORD position, BOOL byPosition, const TLBI_ITEM_INF
         }
         else if (hadIcon)
         {
-            HasIconDirty = TRUE; // nevime, jestli jeste nejaka ikona zbyla - bude treba to zjistit
+            HasIconDirty = TRUE; // We don't know if there are any icons left - we will need to find out.
         }
     }
 
@@ -487,14 +485,14 @@ BOOL CToolBar::SetItemInfo2(DWORD position, BOOL byPosition, const TLBI_ITEM_INF
             tii->Mask & TLBI_MASK_IMAGEINDEX || tii->Mask & TLBI_MASK_ICON ||
             (tii->Mask & TLBI_MASK_WIDTH && item->Style & TLBI_STYLE_FIXEDWIDTH))
         {
-            // tato zmena muze mit dopad na celou toolbaru
+            // this change can have an impact on the entire toolbar
             DirtyItems = TRUE;
             if (HWindow != NULL)
                 InvalidateRect(HWindow, NULL, FALSE);
         }
         else
         {
-            // nechame prekreslit pouze jedno tlacitko, ktere se menilo
+            // We will only redraw one button that was changing
             if ((tii->Mask & TLBI_MASK_STATE) && HWindow != NULL)
             {
                 RECT r;
@@ -752,7 +750,7 @@ void CToolBar::SetStyle(DWORD style)
     }
     DWORD oldStyle = Style;
     Style = style;
-    // pokud se zmenilo zobrazovani textu, prealokuju si
+    // if the text display has changed, I will reallocate
     if ((oldStyle & TLB_STYLE_TEXT) != (Style & TLB_STYLE_TEXT))
         SetFont();
     DirtyItems = TRUE;
@@ -782,13 +780,11 @@ void CToolBar::SetPadding(const TOOLBAR_PADDING* padding)
         InvalidateRect(HWindow, NULL, FALSE);
 }
 
-/*
-int
+/*  int
 CToolBar::SetHotItem(int index)
 {
   if (GetCapture() == HWindow)
-}
-*/
+}*/
 
 void CToolBar::UpdateItemsState()
 {
@@ -800,7 +796,7 @@ void CToolBar::UpdateItemsState()
 
         if (item->Enabler != NULL)
         {
-            // bit TLBI_STATE_GRAYED je rizen
+            // bit TLBI_STATE_GRAYED is controlled
             BOOL enabled = (item->State & TLBI_STATE_GRAYED) == 0;
             BOOL enabledSrc = *item->Enabler != 0;
             if (enabled != enabledSrc)
@@ -822,7 +818,7 @@ void CToolBar::UpdateItemsState()
 
 void CToolBar::OnColorsChanged()
 {
-    // pokud existuje barevna bitmapa, nechame ji prebuildit pro aktualni barevnou hloubku
+    // if there is a color bitmap, we let it be prebuilt for the current color depth
     if (CacheBitmap != NULL)
         CacheBitmap->ReCreateForScreenDC();
 }
@@ -835,7 +831,7 @@ CToolBar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_DESTROY:
     {
-        // destrukce je jeste v destruktoru
+        // destruction is still in the destructor
         if (CacheBitmap != NULL)
         {
             delete CacheBitmap;
@@ -870,7 +866,7 @@ CToolBar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_ERASEBKGND:
     {
-        if (WindowsVistaAndLater) // pod vistou blika rebar
+        if (WindowsVistaAndLater) // under the flashing rib
             return TRUE;
         RECT r;
         GetClientRect(HWindow, &r);
@@ -896,7 +892,7 @@ CToolBar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_CANCELMODE:
     {
         MouseIsTracked = FALSE;
-        SetCurrentToolTip(NULL, 0); // vykopneme tooltip
+        SetCurrentToolTip(NULL, 0); // remove tooltip
         if (!MonitorCapture)
             break;
         if (HotIndex != -1)
@@ -969,7 +965,7 @@ CToolBar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         if (newHotIndex != HotIndex)
         {
-            // vykreslime zmeny
+            // draw changes
             int oldHotIndex = HotIndex;
             HotIndex = newHotIndex;
             if (oldHotIndex != -1)
@@ -989,19 +985,19 @@ CToolBar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_LBUTTONDOWN:
     case WM_LBUTTONDBLCLK:
     {
-        // pokud kliknuti prislo do 25ms po odmacknuti drop downu, zahodime ho, aby nedoslo
-        // ke zbytecnemu novemu zamacknuti
+        // if the click came within 25ms after unlocking the drop down, we discard it to prevent it
+        // to unnecessary new pressing
         if (GetTickCount() - DropDownUpTime <= 25)
             break;
 
-        SetCurrentToolTip(NULL, 0); // vykopneme tooltip
+        SetCurrentToolTip(NULL, 0); // remove tooltip
         int xPos = (short)LOWORD(lParam);
         int yPos = (short)HIWORD(lParam);
 
         int index;
         BOOL dropDown;
-        // Pokud je otevrene windows popup menu a klikneme do toolbary, prijde rovnou
-        // WM_LBUTTONDOWN takze HotIndex == -1, proto vyrazuji podminku index == HotIndex.
+        // If the Windows popup menu is open and we click into the toolbar, it will come right away
+        // WM_LBUTTONDOWN so HotIndex == -1, therefore I am removing the condition index == HotIndex.
         if (HitTest(xPos, yPos, index, dropDown) /*&& index == HotIndex*/)
         {
             CToolBarItem* item = Items[index];
@@ -1040,7 +1036,7 @@ CToolBar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     DownIndex = -1;
                     SendMessage(HWindow, WM_MOUSEMOVE, 0, MAKELPARAM(p.x, p.y));
                     if (HotIndex == index)
-                        DrawItem(HotIndex); // pokud nedoslo ke zmene, musim prekreslit stav
+                        DrawItem(HotIndex); // if no change has occurred, I need to redraw the state
                     RelayToolTip = TRUE;
                     DropDownUpTime = GetTickCount();
                 }
@@ -1056,7 +1052,7 @@ CToolBar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_LBUTTONUP:
     {
-        SetCurrentToolTip(NULL, 0); // vykopneme tooltip
+        SetCurrentToolTip(NULL, 0); // remove tooltip
         if (DownIndex != -1)
         {
             int xPos = (short)LOWORD(lParam);
@@ -1087,8 +1083,8 @@ CToolBar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 DrawItem(DownIndex);
             DownIndex = -1;
         }
-        // musim uvolnit capture, aby chodily WM_SYSCOMMAND generovane na
-        // zaklade kliknuti na tlacitko v toolbare
+        // I need to release the capture in order for WM_SYSCOMMANDs to work properly
+        // when the button in the toolbar is clicked
         if (GetCapture() == HWindow)
             ReleaseCapture();
         break;
@@ -1096,7 +1092,7 @@ CToolBar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_RBUTTONUP:
     {
-        SetCurrentToolTip(NULL, 0); // vykopneme tooltip
+        SetCurrentToolTip(NULL, 0); // remove tooltip
         NMHDR nmhdr;
         nmhdr.hwndFrom = HWindow;
         nmhdr.idFrom = (UINT_PTR)GetMenu(HWindow);
@@ -1108,13 +1104,13 @@ CToolBar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_USER_TTGETTEXT:
     {
-        DWORD index = (DWORD)wParam; // FIXME_X64 - overit pretypovani na (DWORD)
+        DWORD index = (DWORD)wParam; // FIXME_X64 - verify typecasting to (DWORD)
         char* text = (char*)lParam;
         if (index >= 0 && index < (DWORD)Items.Count)
         {
             CToolBarItem* item = Items[index];
             if (item->Style & TLBI_STYLE_SEPARATOR)
-                return 0; // separator nema tooltip
+                return 0; // separator does not have a tooltip
             TOOLBAR_TOOLTIP tt;
             tt.HToolBar = HWindow;
             tt.ID = item->ID;

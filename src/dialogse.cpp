@@ -18,9 +18,8 @@
 //
 // CCfgPageShellExt
 //
-/*
-CCfgPageShellExt::CCfgPageShellExt()
-  : CCommonPropSheetPage(NULL, HLanguage, IDD_CFGPAGE_SHELLEXT /* jestli casem ozivime, pridat help: , IDD_CFGPAGE_SHELLEXT*/
+/*  CCfgPageShellExt::CCfgPageShellExt()
+  : CCommonPropSheetPage(NULL, HLanguage, IDD_CFGPAGE_SHELLEXT /* if we revive it later, add help: , IDD_CFGPAGE_SHELLEXT*/
 /*, PSP_USETITLE, NULL)
 {
   EditLB = NULL;

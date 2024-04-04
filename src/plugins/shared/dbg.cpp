@@ -16,8 +16,8 @@
 #include <crtdbg.h>
 #endif // _MSC_VER
 
-// potlaceni warningu C4996: This function or variable may be unsafe. Consider using strcat_s instead.
-// duvod: lstrcat a dalsi Windows rutiny prost nejsou safe, takze to nema smysl resit tady
+// Suppressing warning C4996: This function or variable may be unsafe. Consider using strcat_s instead.
+// Reason: lstrcat and other Windows routines are simply not safe, so it doesn't make sense to solve it here
 #pragma warning(push)
 #pragma warning(disable : 4996)
 
@@ -209,8 +209,8 @@ C__Trace::SetInfoW(const WCHAR* file, int line)
 
 struct C__TraceMsgBoxThreadData
 {
-    char* Msg;        // alokovany text hlasky
-    const char* File; // jen odkaz na staticky string
+    char* Msg;        // allocated text of the message
+    const char* File; // just a reference to a static string
     int Line;
 };
 
@@ -239,8 +239,8 @@ DWORD WINAPI __TraceMsgBoxThread(void* param)
 
 struct C__TraceMsgBoxThreadDataW
 {
-    WCHAR* Msg;        // alokovany text hlasky
-    const WCHAR* File; // jen odkaz na staticky string
+    WCHAR* Msg;        // allocated text of the message
+    const WCHAR* File; // just a reference to a static string
     int Line;
 };
 
@@ -265,7 +265,7 @@ DWORD WINAPI __TraceMsgBoxThreadW(void* param)
 
 void C__Trace::SendMessageToServer(BOOL information, BOOL unicode, BOOL crash)
 {
-    // flushnuti do bufferu
+    // flushing to buffer
     if (unicode)
         TraceStrStreamW.flush();
     else
@@ -287,19 +287,19 @@ void C__Trace::SendMessageToServer(BOOL information, BOOL unicode, BOOL crash)
                 SalamanderDebug->TraceE(File, Line, TraceStringBuf.c_str());
         }
     }
-    // jen je-li crash==TRUE:
-    // vyrobime kopii dat, start threadu pro msgbox totiz muze vyvolat dalsi TRACE
-    // hlasky (napr. v DllMain reakce na DLL_THREAD_ATTACH), pokud bysme neopustili
-    // CriticalSection, nastal by deadlock;
-    // v DllMain se nesmi pouzivat TRACE_C, jinak dojde k deadlocku:
-    //   - pokud se da do DLL_THREAD_ATTACH: chce si otevrit novy thread pro msgbox
-    //     a to je z DllMainu blokovane
-    //   - pokud se da do DLL_THREAD_DETACH: pri cekani na zavreni threadu s msgboxem
+    // only if crash==TRUE:
+    // create a copy of the data, starting a thread for the msgbox can trigger additional TRACE
+    // messages (e.g. in DllMain response to DLL_THREAD_ATTACH), if we didn't exit
+    // CriticalSection, deadlock would occur;
+    // TRACE_C must not be used in DllMain, otherwise a deadlock will occur:
+    //   - if it is in DLL_THREAD_ATTACH: it wants to open a new thread for msgbox
+    //     and this is blocked from DllMain
+    //   - if it is possible to do in DLL_THREAD_DETACH: wait for the thread to close with a message box
     //     predesleho TRACE_C zachytime TRACE_C z DLL_THREAD_DETACH a nechame ho
-    //     cekat v nekonecnem cyklu, viz nize
-    // navic zavadime obranu proti mnozeni msgboxu pri vice TRACE_C zaroven, pusobilo
+    //     wait in an infinite loop, see below
+    // Additionally, we are implementing defense against multiplying msgboxes when multiple TRACE_C are active at the same time.
     // by to jen zmatky, ted se otevre msgbox jen pro prvni a ten po uzavreni vyvola
-    // padacku, ostatni TRACE_C zustanou chyceny v nekonecne cekaci smycce, viz nize
+    // If an exception occurs, other TRACE_C calls will be caught in an infinite waiting loop, see below
     static BOOL msgBoxOpened = FALSE;
     C__TraceMsgBoxThreadData threadData;
     C__TraceMsgBoxThreadDataW threadDataW;
@@ -307,7 +307,7 @@ void C__Trace::SendMessageToServer(BOOL information, BOOL unicode, BOOL crash)
         memset(&threadDataW, 0, sizeof(threadDataW));
     else
         memset(&threadData, 0, sizeof(threadData));
-    if (crash) // break/padacka po vypisu TRACE error hlasky (TRACE_C a TRACE_MC)
+    if (crash) // break/crash after printing TRACE error messages (TRACE_C and TRACE_MC)
     {
         if (!msgBoxOpened)
         {
@@ -343,36 +343,36 @@ void C__Trace::SendMessageToServer(BOOL information, BOOL unicode, BOOL crash)
         }
     }
     if (unicode)
-        TraceStringBufW.erase(); // priprava pro dalsi trace
+        TraceStringBufW.erase(); // preparation for the next trace
     else
         TraceStringBuf.erase();
     LeaveCriticalSection(&CriticalSection);
     if (crash)
     {
-        if (unicode && threadDataW.Msg != NULL || // break/padacka po vypisu TRACE error hlasky (TRACE_C a TRACE_MC)
+        if (unicode && threadDataW.Msg != NULL || // break/crash after printing TRACE error messages (TRACE_C and TRACE_MC)
             !unicode && threadData.Msg != NULL)
         {
-            // vypiseme hlasku v jinem threadu, aby nepumpovala zpravy aktualniho threadu
+            // Print a message in a different thread to avoid flooding messages of the current thread
             DWORD id;
             HANDLE msgBoxThread = CreateThread(NULL, 0, unicode ? __TraceMsgBoxThreadW : __TraceMsgBoxThread,
                                                unicode ? (void*)&threadDataW : (void*)&threadData, 0, &id);
             if (msgBoxThread != NULL)
             {
-                WaitForSingleObject(msgBoxThread, INFINITE); // pokud se da TRACE_C do DllMain do DLL_THREAD_ATTACH, dojde k deadlocku - silne nepravdepodobne, neresime
+                WaitForSingleObject(msgBoxThread, INFINITE); // if TRACE_C is placed in DllMain in DLL_THREAD_ATTACH, a deadlock will occur - highly unlikely, not addressed
                 CloseHandle(msgBoxThread);
             }
             msgBoxOpened = FALSE;
             GlobalFree(unicode ? (HGLOBAL)threadDataW.Msg : (HGLOBAL)threadData.Msg);
-            // pad softu vyvolame primo v kodu, kde je umisteny TRACE_C/TRACE_MC, aby
-            // bylo v bug reportu videt presne kde makra lezi; padacka tedy nasleduje
-            // po dokonceni teto metody
+            // Software crash will be triggered directly in the code where TRACE_C/TRACE_MC is located, in order to
+            // It was possible to see exactly where the macros are located in the bug report; therefore, the crash follows
+            // after finishing this method
         }
-        else // ostatni thready s TRACE_C zablokujeme, az se zavre msgbox otevreny pro
-        {    // prvni TRACE_C, tak to tam i spadne, at v tom neni bordel
+        else // Other threads with TRACE_C will be blocked until the msgbox opened for
+        {    // first TRACE_C, so it crashes there, let's not make a mess of it
             if (msgBoxOpened)
             {
                 while (1)
-                    Sleep(1000); // blokace vede na deadlock napr. kdyz je (a nema byt) TRACE_C v DLL_THREAD_DETACH
+                    Sleep(1000); // Deadlock can occur due to blocking, for example when TRACE_C is (and should not be) in DLL_THREAD_DETACH
             }
         }
     }
@@ -394,11 +394,11 @@ void* _sal_safe_memcpy(void* dest, const void* src, size_t count)
 
 #endif // defined(TRACE_ENABLE) && !defined(INSIDE_SALAMANDER)
 
-// pasticka na vlastni definici techto "zakazanych" operatoru (aby fungovala kontrola
-// zakazanych kombinaci stringu WCHAR / char v TRACE makrech, nesmi byt nasledujici
-// operatory definovany v jinych modulech - jinak by linker neohlasil chybu - idea:
-// v DEBUG verzi chytame chyby linkeru, v RELEASE verzi chytame chyby vlastni definice
-// operatoru)
+// template for defining these "forbidden" operators (to enable control
+// prohibited combinations of WCHAR / char strings in TRACE macros must not be the following
+// operators defined in other modules - otherwise the linker would not report an error - idea:
+// in DEBUG version we catch linker errors, in RELEASE version we catch errors in our own definition
+// operator)
 #if !defined(_DEBUG) && !defined(INSIDE_SALAMANDER) && !defined(__BORLANDC__)
 
 #include <ostream>

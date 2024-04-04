@@ -1,7 +1,7 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "precomp.h" // include slouzi pouze k prelozitelnosti v Salamanderu
+#include "precomp.h" // include is used only for translatability in Salamander
 
 //#include <assert.h>
 //#include <string.h>
@@ -147,9 +147,9 @@ void MD5::transform(uint1 block[64])
 
     decode(x, block, 64);
 
-    //  assert(!finalized);  // not just a user error, since the method is private
+    //  assert(!finalized); // not just a user error, since the method is private
 
-    /* Round 1 */
+    /* Round 1*/
     FF(a, b, c, d, x[0], S11, 0xd76aa478);  /* 1 */
     FF(d, a, b, c, x[1], S12, 0xe8c7b756);  /* 2 */
     FF(c, d, a, b, x[2], S13, 0x242070db);  /* 3 */
@@ -167,7 +167,7 @@ void MD5::transform(uint1 block[64])
     FF(c, d, a, b, x[14], S13, 0xa679438e); /* 15 */
     FF(b, c, d, a, x[15], S14, 0x49b40821); /* 16 */
 
-    /* Round 2 */
+    /* Round 2*/
     GG(a, b, c, d, x[1], S21, 0xf61e2562);  /* 17 */
     GG(d, a, b, c, x[6], S22, 0xc040b340);  /* 18 */
     GG(c, d, a, b, x[11], S23, 0x265e5a51); /* 19 */
@@ -185,7 +185,7 @@ void MD5::transform(uint1 block[64])
     GG(c, d, a, b, x[7], S23, 0x676f02d9);  /* 31 */
     GG(b, c, d, a, x[12], S24, 0x8d2a4c8a); /* 32 */
 
-    /* Round 3 */
+    /* Round 3*/
     HH(a, b, c, d, x[5], S31, 0xfffa3942);  /* 33 */
     HH(d, a, b, c, x[8], S32, 0x8771f681);  /* 34 */
     HH(c, d, a, b, x[11], S33, 0x6d9d6122); /* 35 */
@@ -203,7 +203,7 @@ void MD5::transform(uint1 block[64])
     HH(c, d, a, b, x[15], S33, 0x1fa27cf8); /* 47 */
     HH(b, c, d, a, x[2], S34, 0xc4ac5665);  /* 48 */
 
-    /* Round 4 */
+    /* Round 4*/
     II(a, b, c, d, x[0], S41, 0xf4292244);  /* 49 */
     II(d, a, b, c, x[7], S42, 0x432aff97);  /* 50 */
     II(c, d, a, b, x[14], S43, 0xab9423a7); /* 51 */

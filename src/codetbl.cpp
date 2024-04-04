@@ -14,7 +14,7 @@ CCodeTables CodeTables;
 //
 
 char* ReadTable(const char* fileName, char* table)
-{ // cte soubor 'fileName', prekoduje 'table', v pripade chyby vraci text, jinak NULL
+{ // reads file 'fileName', encodes 'table', returns text in case of error, otherwise NULL
     CALL_STACK_MESSAGE2("ReadTable(%s,)", fileName);
     char* text = NULL;
     HANDLE hFile = HANDLES_Q(CreateFile(fileName, GENERIC_READ,
@@ -59,11 +59,11 @@ void InitAux(HWND hWindow, TIndirectArray<CCodeTablesData>& Data,
     char* name;
     char table[256];
 
-    char convertCfgFileName[MAX_PATH]; // pro chybove hlasky
+    char convertCfgFileName[MAX_PATH]; // for error messages
     strcpy(convertCfgFileName, fileName);
 
     BOOL comment;
-    char* text; // != NULL - text chyby
+    char* text; // != NULL - error message
     char* endTxt = txt + fileSize;
     __try
     {
@@ -75,29 +75,29 @@ void InitAux(HWND hWindow, TIndirectArray<CCodeTablesData>& Data,
 
             if (endTxt - txt >= 18 && StrNICmp(txt, "WINDOWS_CODE_PAGE=", 18) == 0)
             {
-                txt += 18;      // preskok "WINDOWS_CODE_PAGE="
-                comment = TRUE; // dale nezpracovavat (jako komentar)
+                txt += 18;      // jump "WINDOWS_CODE_PAGE="
+                comment = TRUE; // do not process further (as a comment)
 
-                // nacteme jmeno "windows code page"
+                // read the name "windows code page"
                 while (txt < endTxt && (*txt == ' ' || *txt == '\t'))
-                    txt++; // preskok white-spaces
+                    txt++; // skip white-spaces
                 char* beg = txt;
                 while (txt < endTxt && *txt != '\r' && *txt != '\n')
                     txt++;
                 int l = (int)min(txt - beg, 100);
                 memcpy(winCodePage, beg, l);
                 while (l > 0 && (winCodePage[l - 1] == ' ' || winCodePage[l - 1] == '\t'))
-                    l--; // orez white-spaces
+                    l--; // Trim white-spaces
                 winCodePage[l] = 0;
             }
             else if (endTxt - txt >= 29 && StrNICmp(txt, "WINDOWS_CODE_PAGE_IDENTIFIER=", 29) == 0)
             {
-                txt += 29;      // preskok "WINDOWS_CODE_PAGE_IDENTIFIER="
-                comment = TRUE; // dale nezpracovavat (jako komentar)
+                txt += 29;      // jump "WINDOWS_CODE_PAGE_IDENTIFIER="
+                comment = TRUE; // do not process further (as a comment)
 
-                // nacteme identifier
+                // read the identifier
                 while (txt < endTxt && (*txt == ' ' || *txt == '\t'))
-                    txt++; // preskok white-spaces
+                    txt++; // skip white-spaces
                 char* beg = txt;
                 while (txt < endTxt && *txt != '\r' && *txt != '\n')
                     txt++;
@@ -105,25 +105,25 @@ void InitAux(HWND hWindow, TIndirectArray<CCodeTablesData>& Data,
                 char buff[101];
                 memcpy(buff, beg, l);
                 while (l > 0 && (identifier[l - 1] == ' ' || identifier[l - 1] == '\t'))
-                    l--; // orez white-spaces
+                    l--; // Trim white-spaces
                 buff[l] = 0;
                 *identifier = atoi(buff);
             }
             else if (endTxt - txt >= 30 && StrNICmp(txt, "WINDOWS_CODE_PAGE_DESCRIPTION=", 30) == 0)
             {
-                txt += 30;      // preskok "WINDOWS_CODE_PAGE_DESCRIPTION="
-                comment = TRUE; // dale nezpracovavat (jako komentar)
+                txt += 30;      // jump "WINDOWS_CODE_PAGE_DESCRIPTION="
+                comment = TRUE; // do not process further (as a comment)
 
-                // nacteme description
+                // read the description
                 while (txt < endTxt && (*txt == ' ' || *txt == '\t'))
-                    txt++; // preskok white-spaces
+                    txt++; // skip white-spaces
                 char* beg = txt;
                 while (txt < endTxt && *txt != '\r' && *txt != '\n')
                     txt++;
                 int l = (int)min(txt - beg, 100);
                 memcpy(description, beg, l);
                 while (l > 0 && (description[l - 1] == ' ' || description[l - 1] == '\t'))
-                    l--; // orez white-spaces
+                    l--; // Trim white-spaces
                 description[l] = 0;
             }
             else
@@ -134,7 +134,7 @@ void InitAux(HWND hWindow, TIndirectArray<CCodeTablesData>& Data,
                 }
                 else
                 {
-                    if (*txt == '#') // komentar
+                    if (*txt == '#') // comment
                     {
                         comment = TRUE;
                     }
@@ -160,11 +160,11 @@ void InitAux(HWND hWindow, TIndirectArray<CCodeTablesData>& Data,
                                 table[i] = i;
                             do
                             {
-                                txt++; // preskok '=' nebo '|'
+                                txt++; // jump '=' or '|'
                                 beg = txt;
                                 while (txt < endTxt && *txt != '\r' && *txt != '\n' && *txt != '|')
                                     txt++;
-                                if (beg < txt) // dalsi kodovaci soubor (nebo ANSI->OEM/OEM->ANSI)
+                                if (beg < txt) // another encoding file (or ANSI->OEM/OEM->ANSI)
                                 {
                                     if (*beg == '\\' || beg + 1 < txt && *(beg + 1) == ':') // full-name (UNC, normal)
                                     {
@@ -182,7 +182,7 @@ void InitAux(HWND hWindow, TIndirectArray<CCodeTablesData>& Data,
                                     }
                                     else
                                     {
-                                        if (*beg == ':') // vnitrni promenna (ANSI->OEM/OEM->ANSI)
+                                        if (*beg == ':') // internal variable (ANSI->OEM/OEM->ANSI)
                                         {
                                             char buf[256];
                                             l = (int)min((txt - beg) - 1, 255);
@@ -205,7 +205,7 @@ void InitAux(HWND hWindow, TIndirectArray<CCodeTablesData>& Data,
                                                 }
                                             }
                                         }
-                                        else // relativni jmeno souboru
+                                        else // relative file name
                                         {
                                             l = (int)min(txt - beg, maxFileNameLen);
                                             memcpy(fileNameEnd, beg, l);
@@ -222,7 +222,7 @@ void InitAux(HWND hWindow, TIndirectArray<CCodeTablesData>& Data,
                                 }
                             } while (text == NULL && txt < endTxt && *txt != '\r' && *txt != '\n');
                         }
-                        else // chybi '=' nebo je na zacatku radky (a neni zdvojene)
+                        else // missing '=' or is at the beginning of the line (and not doubled)
                         {
                             if (!white || txt < endTxt && *txt == '=')
                             {
@@ -236,12 +236,12 @@ void InitAux(HWND hWindow, TIndirectArray<CCodeTablesData>& Data,
                 }
             }
 
-            if (text == NULL && !comment) // pridani kodu do tabulky kodu
+            if (text == NULL && !comment) // adding code to the code table
             {
                 CCodeTablesData* code = new CCodeTablesData;
                 if (code != NULL)
                 {
-                    if (name != NULL) // normalni polozka
+                    if (name != NULL) // normal item
                     {
                         code->Name = DupStr(name);
                     }
@@ -268,7 +268,7 @@ void InitAux(HWND hWindow, TIndirectArray<CCodeTablesData>& Data,
                 }
             }
 
-            // posune txt za prvni EOL
+            // move txt after the first EOL
             while (txt < endTxt && *txt != '\r' && *txt != '\n')
                 txt++;
             if (txt < endTxt)
@@ -298,7 +298,7 @@ void InitAux(HWND hWindow, TIndirectArray<CCodeTablesData>& Data,
     }
     __except (HandleFileException(GetExceptionInformation(), fileMem, fileSize))
     {
-        // chyba v souboru
+        // error in file
         char buf[MAX_PATH + 100];
         sprintf(buf, LoadStr(IDS_FILEREADERROR), fileName);
         SalMessageBox(hWindow, buf, LoadStr(IDS_ERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
@@ -309,7 +309,7 @@ CCodeTable::CCodeTable(HWND hWindow, const char* dirName)
     : Data(10, 5)
 {
     WinCodePage[0] = 0;
-    WinCodePageIdentifier = 0xffffffff; // 0 neni vhodna, protoze GetACP vraci 0 pro UNICODE only kodovani
+    WinCodePageIdentifier = 0xffffffff; // 0 is not suitable because GetACP returns 0 for UNICODE only encoding
     WinCodePageDescription[0] = 0;
     strcpy(DirectoryName, dirName);
     State = ctsDefaultValues;
@@ -364,7 +364,7 @@ CCodeTable::CCodeTable(HWND hWindow, const char* dirName)
             SalMessageBox(hWindow, textBuf, LoadStr(IDS_ERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
         }
     }
-    else // neni convert\\xxx\\convert.cfg, "natahneme" defaultni konfiguraci
+    else // if there is no convert\\xxx\\convert.cfg, we will load the default configuration
     {
         lstrcpyn(WinCodePage, LoadStr(IDS_VIEWERANSICODEPAGE), 101); // "ANSI" code page
         int i;
@@ -464,7 +464,7 @@ void CCodeTables::PreloadAllConversions()
             {
                 if (find.cFileName[0] != 0 && strcmp(find.cFileName, ".") != 0 && strcmp(find.cFileName, "..") != 0)
                 {
-                    // pokusime se otevrit vnitrni soubor convert.cfg
+                    // try to open the internal file convert.cfg
                     CCodeTable* table = new CCodeTable(NULL, find.cFileName);
                     if (table == NULL)
                     {
@@ -482,7 +482,7 @@ void CCodeTables::PreloadAllConversions()
                         }
                     }
                     else
-                        delete table; // o implicitni tabulku nemame zajem -- zahodime ji
+                        delete table; // we are not interested in the default table -- we will discard it
                 }
             }
         } while (FindNextFile(hFind, &find));
@@ -529,7 +529,7 @@ BOOL CCodeTables::GetPreloadedIndex(const char* dirName, int* index)
 
 void CCodeTables::GetBestPreloadedConversion(const char* cfgDirName, char* dirName)
 {
-    //  kriterium (1): cfgDirName
+    //  criterion (1): cfgDirName
     int dummy;
     if (cfgDirName[0] != '*' &&
         GetPreloadedIndex(cfgDirName, &dummy))
@@ -538,7 +538,7 @@ void CCodeTables::GetBestPreloadedConversion(const char* cfgDirName, char* dirNa
         return;
     }
 
-    //  kriterium (2): Polozka odpovidajici kodove strance operacniho systemu
+    //  criterion (2): Item corresponding to the code page of the operating system
     DWORD cp = GetACP();
     int i;
     for (i = 0; i < Preloaded.Count; i++)
@@ -551,7 +551,7 @@ void CCodeTables::GetBestPreloadedConversion(const char* cfgDirName, char* dirNa
         }
     }
 
-    //  kriterium (3): westeuro
+    //  criterion (3): westeuro
     if (GetPreloadedIndex("westeuro", &dummy))
     {
         strcpy(dirName, "westeuro");
@@ -560,13 +560,13 @@ void CCodeTables::GetBestPreloadedConversion(const char* cfgDirName, char* dirNa
 
     if (Preloaded.Count > 0)
     {
-        //  kriterium (4): prvni v seznam
+        //  criterion (4): first in the list
         strcpy(dirName, Preloaded[0]->DirectoryName);
         return;
     }
     else
     {
-        //  kriterium (5): pokud neni zadna polozka v seznamu, vratime prazdny retezec
+        //  criterion (5): if there are no items in the list, we return an empty string
         dirName[0] = 0;
         return;
     }
@@ -582,11 +582,11 @@ BOOL CCodeTables::Init(HWND hWindow)
         BOOL findBest = FALSE;
         if (Configuration.ConversionTable[0] != '*')
         {
-            // pokud je inicializovana cesta ke convert.cfg, pokusime se jej nacist
+            // if the path to convert.cfg is initialized, we will try to load it
             Table = new CCodeTable(hWindow, Configuration.ConversionTable);
             if (Table != NULL && Table->GetState() != ctsSuccessfullyLoaded)
             {
-                // pokud se load nepovedl idealne, dame prilezitost ostatnim tabulkam
+                // if the load did not succeed perfectly, we will give a chance to other tables
                 findBest = TRUE;
             }
         }
@@ -606,7 +606,7 @@ BOOL CCodeTables::Init(HWND hWindow)
             FreePreloadedConversions();
             strcpy(Configuration.ConversionTable, dirName);
             Table = new CCodeTable(hWindow, Configuration.ConversionTable);
-            // Table->State uz netestujeme - bereme vse
+            // We no longer test Table->State - we take everything
         }
         if (Table == NULL)
             TRACE_E(LOW_MEMORY);
@@ -626,7 +626,7 @@ void CCodeTables::InitMenu(HMENU menu, int& codeType)
         return;
     }
     MENUITEMINFO mi;
-    if (GetMenuItemCount(menu) == 0) // prazdne menu, je treba naplnit
+    if (GetMenuItemCount(menu) == 0) // empty menu, needs to be filled
     {
         int count = 0;
         memset(&mi, 0, sizeof(mi));
@@ -642,7 +642,7 @@ void CCodeTables::InitMenu(HMENU menu, int& codeType)
         {
             if (Table->Data[i]->Name == NULL) // separator
             {
-                // pokud by za separatorem nic nebylo, nebudu ho vkladat
+                // if there is nothing behind the separator, I will not insert it
                 if (i == Table->Data.Count - 1)
                     continue;
 
@@ -658,7 +658,7 @@ void CCodeTables::InitMenu(HMENU menu, int& codeType)
                 mi.cbSize = sizeof(mi);
                 mi.fMask = MIIM_TYPE | MIIM_ID;
                 mi.fType = MFT_STRING;
-                mi.wID = CM_CODING_MIN + i + 1; // +1 kvuli 'None'
+                mi.wID = CM_CODING_MIN + i + 1; // +1 for 'None'
                 if (mi.wID > CM_CODING_MAX)
                 {
                     TRACE_E("mi.wID > CM_CODING_MAX");
@@ -670,10 +670,10 @@ void CCodeTables::InitMenu(HMENU menu, int& codeType)
         }
     }
 
-    // nastavime zvolene koncerzi radiak
+    // set the selected concert radio
     if (!Valid(codeType))
-        codeType = 0;                                             // invalidni codeType -> prechod na 'none'
-    if (codeType == 0 || Table->Data[codeType - 1]->Name != NULL) // ani 'none', ani separator
+        codeType = 0;                                             // invalid codeType -> switching to 'none'
+    if (codeType == 0 || Table->Data[codeType - 1]->Name != NULL) // neither 'none' nor separator
         CheckMenuRadioItem(menu, CM_CODING_MIN, CM_CODING_MAX, CM_CODING_MIN + codeType, MF_BYCOMMAND);
 }
 
@@ -781,7 +781,7 @@ BOOL CCodeTables::GetCodeType(const char* coding, int& codeType)
     for (i = 0; i < Table->Data.Count; i++)
     {
         const char* n = Table->Data[i]->Name;
-        if (n != NULL) // nejde o separator
+        if (n != NULL) // not a separator
         {
             const char* c = coding;
             while (1)
@@ -803,7 +803,7 @@ BOOL CCodeTables::GetCodeType(const char* coding, int& codeType)
         }
     }
     codeType = 0;
-    return FALSE; // nenalezeno
+    return FALSE; // not found
 }
 
 BOOL CCodeTables::Valid(int codeType)
@@ -879,7 +879,7 @@ void CCodeTables::RecognizeFileType(const char* pattern, int patternLen, BOOL fo
     {
         if (isText != NULL)
             *isText = TRUE;
-        return; // neni co delat
+        return; // nothing to do
     }
 
     char* buf = (char*)malloc(patternLen);
@@ -895,22 +895,22 @@ void CCodeTables::RecognizeFileType(const char* pattern, int patternLen, BOOL fo
         {
             const char* n = (i == -1 ? NULL : Table->Data[i]->Name);
             testBuf = NULL;
-            if (i == -1) // beze zmeny kodovani (text ve WinCodePage)
+            if (i == -1) // without changing the encoding (text in WinCodePage)
             {
                 testBuf = pattern;
                 strcpy(lastCodePage, Table->WinCodePage);
             }
             else
             {
-                if (n != NULL && winCodePageLen > 0) // nejde o separator + WinCodePage je nactene
+                if (n != NULL && winCodePageLen > 0) // It's not about the separator + WinCodePage is loaded
                 {
-                    // odstranime znaky '&', pri porovnavani by prekazely
+                    // remove characters '&', they would interfere with comparison
                     char buf3[200];
                     lstrcpyn(buf3, n, 200);
                     RemoveAmpersands(buf3);
                     n = buf3;
 
-                    int nameLen = (int)strlen(n); // test jestli "cil" konverze je WinCodePage
+                    int nameLen = (int)strlen(n); // test if the "target" conversion is WinCodePage
                     if (nameLen > winCodePageLen && StrICmp(n + nameLen - winCodePageLen, Table->WinCodePage) == 0)
                     {
                         const char* s = n + nameLen - winCodePageLen;
@@ -933,21 +933,21 @@ void CCodeTables::RecognizeFileType(const char* pattern, int patternLen, BOOL fo
 
             if (testBuf != NULL)
             {
-#define PENALTY_TWOSAME_ALPHA_NOR_NUM_PENALTY 50  // dva stejne alpha nebo num znaky
-#define PENALTY_NOT_ALPHA_NOR_NUM_PENALTY 20      // neni alpha ani num znak
-#define PENALTY_NOT_ALPHA_NOR_NUM_PENALTY_ADD1 2  // pridavek: neni alpha ani num znak + predchazi alpha/num
-#define PENALTY_NOT_ALPHA_NOR_NUM_PENALTY_ADD2 1  // pridavek: neni alpha ani num znak + nasleduje alpha/num
-#define PENALTY_NOT_ALPHA_NOR_NUM_PENALTY_ADD3 50 // pridavek: aspon tri stejne znaky (ani alpha ani num) + predchazi alpha/num
-#define PENALTY_NOT_ALPHA_NOR_NUM_PENALTY_ADD4 50 // pridavek: aspon tri stejne znaky (ani alpha ani num) + nasleduje alpha/num
-#define PENALTY_UPPER_TO_LOWER 2                  // velke pismeno nasledovane malym pismenem
-#define PENALTY_LOWER_TO_UPPER 10                 // male pismeno nasledovane velkym pismenem
-#define PENALTY_CHANGE 1                          // typ sousednich znaku se lisi (typ = male/velke/cislice)
-#define PENALTY_MAYBE_UNKNOWN_CHAR 1              // za pet znaku '?' - mozna jde o nezname znaky v cilovem kodovani (standard je nahrazeni neznameho znaku znakem '?')
+#define PENALTY_TWOSAME_ALPHA_NOR_NUM_PENALTY 50  // two same alpha or num characters
+#define PENALTY_NOT_ALPHA_NOR_NUM_PENALTY 20      // not an alpha nor a numeric character
+#define PENALTY_NOT_ALPHA_NOR_NUM_PENALTY_ADD1 2  // modifier: not an alpha or num character + preceded by an alpha/num
+#define PENALTY_NOT_ALPHA_NOR_NUM_PENALTY_ADD2 1  // condition: not an alpha or num character + followed by an alpha/num
+#define PENALTY_NOT_ALPHA_NOR_NUM_PENALTY_ADD3 50 // condition: at least three identical characters (neither alpha nor num) + preceded by alpha/num
+#define PENALTY_NOT_ALPHA_NOR_NUM_PENALTY_ADD4 50 // condition: at least three identical characters (neither alpha nor num) + followed by alpha/num
+#define PENALTY_UPPER_TO_LOWER 2                  // capital letter followed by a lowercase letter
+#define PENALTY_LOWER_TO_UPPER 10                 // lowercase letter followed by uppercase letter
+#define PENALTY_CHANGE 1                          // the type of neighboring characters differs (type = lowercase/uppercase/digit)
+#define PENALTY_MAYBE_UNKNOWN_CHAR 1              // for five characters '?' - it may be unknown characters in the target encoding (the standard is to replace an unknown character with '?')
 
                 const unsigned char* s = (const unsigned char*)testBuf;
                 DWORD penalty = 0;
                 const unsigned char* end = s + patternLen;
-                int nonAscii = 0; // znaky >= 128 (nepatri do ASCII)
+                int nonAscii = 0; // characters >= 128 (not part of ASCII)
                 int binar = 0;
                 int minBinar = patternLen / 200;
                 int nulls = 0;
@@ -960,25 +960,25 @@ void CCodeTables::RecognizeFileType(const char* pattern, int patternLen, BOOL fo
                         if (*s < ' ' && *s != 0 && *s != '\a' && *s != '\b' && *s != '\r' &&
                             *s != '\f' && *s != '\n' && *s != '\t' && *s != '\v' &&
                             *s != '\x1a' && *s != '\x04')
-                        { // nepovoleny znak
+                        { // illegal character
                             if (++binar > minBinar)
-                                break; // vic nez 0.5% nepovolenych znaku
+                                break; // more than 0.5% of illegal characters
                         }
                         if (*s == 0)
                         {
                             if (++nulls > 10)
-                                break; // vic nez deset NULL za sebou -> nejspis jde o binar
+                                break; // more than ten NULLs in a row -> probably binary
                         }
                         else
                             nulls = 0;
                     }
                     if (*s >= 128)
                         nonAscii++;
-                    if (IsNotAlphaNorNum[*s]) // znak neni alpha ani num
+                    if (IsNotAlphaNorNum[*s]) // character is neither alpha nor num
                     {
                         if (*s == '?')
                         {
-                            if (++questions == 5) // delime peti, abychom oslabili tuto penaltu proti ostatnim
+                            if (++questions == 5) // Dividing by five to weaken this penalty against the others
                             {
                                 penalty += PENALTY_MAYBE_UNKNOWN_CHAR;
                                 questions = 0;
@@ -986,9 +986,9 @@ void CCodeTables::RecognizeFileType(const char* pattern, int patternLen, BOOL fo
                         }
 
                         if (*s != ' ' && *s != '\t' && *s != '\r' && *s != '\n')
-                        { // mezery, tabelatory a konce radku ignorujeme
+                        { // we ignore spaces, tabs, and end of lines
                             BOOL skipChar = FALSE;
-                            if (*s >= 128) // jeden ne-ascii znak ignorujeme (zpusob jak skipnout extra-apostrof ('\x92') v ascii textu)
+                            if (*s >= 128) // we ignore one non-ascii character (way to skip extra-apostrophe ('\x92') in ascii text)
                             {
                                 if (ignoreChar != (DWORD)*s)
                                 {
@@ -1006,7 +1006,7 @@ void CCodeTables::RecognizeFileType(const char* pattern, int patternLen, BOOL fo
                                 if (s > (const unsigned char*)testBuf && !IsNotAlphaNorNum[*(s - 1)])
                                 {
                                     penalty += PENALTY_NOT_ALPHA_NOR_NUM_PENALTY_ADD1;
-                                    // aspon tri stejne znaky uvozene alpha nebo num (roh ramecku je pismenko - napr. text v CP437 a testovana stranka CP852)
+                                    // at least three identical characters enclosed in alpha or num (the corner frame is a letter - for example, text in CP437 and the tested page in CP852)
                                     if (s + 2 < end && *(s + 2) == *(s + 1) && *(s + 1) == *s)
                                     {
                                         penalty += PENALTY_NOT_ALPHA_NOR_NUM_PENALTY_ADD3;
@@ -1016,7 +1016,7 @@ void CCodeTables::RecognizeFileType(const char* pattern, int patternLen, BOOL fo
                                 if (s + 1 < end && !IsNotAlphaNorNum[*(s + 1)])
                                 {
                                     penalty += PENALTY_NOT_ALPHA_NOR_NUM_PENALTY_ADD2;
-                                    // aspon tri stejne znaky nasledovane alpha nebo num (roh ramecku je pismenko - napr. text v CP437 a testovana stranka CP852)
+                                    // at least three identical characters followed by an alpha or num (the corner bracket is a letter - for example, text in CP437 and the tested page in CP852)
                                     if (s - 2 >= (const unsigned char*)testBuf && *(s - 2) == *(s - 1) && *(s - 1) == *s)
                                     {
                                         penalty += PENALTY_NOT_ALPHA_NOR_NUM_PENALTY_ADD4;
@@ -1025,16 +1025,16 @@ void CCodeTables::RecognizeFileType(const char* pattern, int patternLen, BOOL fo
                             }
                         }
                     }
-                    else // znak je alpha nebo num
+                    else // character is alpha or num
                     {
-                        if (s + 1 < end && !IsNotAlphaNorNum[*(s + 1)]) // nasledujici znak je take alpha nebo num
+                        if (s + 1 < end && !IsNotAlphaNorNum[*(s + 1)]) // the following character is also alpha or num
                         {
-                            int c1; // aktualni znak je: 1 - lower, 2 - upper, 3 - cislice
+                            int c1; // current character is: 1 - lower, 2 - upper, 3 - digit
                             if (!IsAlpha[*s])
                                 c1 = 3;
                             else
                                 c1 = UpperCase[*s] == *s ? 2 : 1;
-                            int c2; // nasledujici znak je: 1 - lower, 2 - upper, 3 - cislice
+                            int c2; // the following character is: 1 - lower, 2 - upper, 3 - digit
                             if (!IsAlpha[*(s + 1)])
                                 c2 = 3;
                             else
@@ -1043,7 +1043,7 @@ void CCodeTables::RecognizeFileType(const char* pattern, int patternLen, BOOL fo
                             if (c1 == 2 && c2 == 1)
                             {
                                 if (s > (const unsigned char*)testBuf && IsAlpha[*(s - 1)])
-                                    penalty += PENALTY_UPPER_TO_LOWER; // slovo Úrok se jinak prekoduje na MACCE (velke 'U' se totiz zmeni v MACCE na male 'r')
+                                    penalty += PENALTY_UPPER_TO_LOWER; // The word 'Úrok' is otherwise encoded as MACCE (because the capital 'U' changes to lowercase 'r' in MACCE)
                             }
                             else
                             {
@@ -1065,12 +1065,12 @@ void CCodeTables::RecognizeFileType(const char* pattern, int patternLen, BOOL fo
                     s++;
                 }
 
-                if (s == end) // jde o text
-                // && penalty / patternLen <= 5)  // a neni to totalne necitelnej gulas (Lukasuv test:
-                // znaky 0x04 -> vyhovel jen EBCDIC, ale pomer byl
-                // 10 -> necitelne) - POZOR: nepouzitelne, protoze
-                // konfiguracni soubory a .inf soubory vypadaji
-                // podle 'penalty' taky jako totalni gulas
+                if (s == end) // it's about text
+                // && penalty / patternLen <= 5)  // and it's not a completely unreadable mess (Lukas's test:
+                // characters 0x04 -> only satisfied EBCDIC, but the ratio was
+                // 10 -> unreadable) - WARNING: unusable because
+                // configuration files and .inf files look
+                // according to 'penalty' also like total goulash
                 {
                     if (isText != NULL)
                         *isText = TRUE;
@@ -1082,7 +1082,7 @@ void CCodeTables::RecognizeFileType(const char* pattern, int patternLen, BOOL fo
                             strcpy(codePage, lastCodePage);
 
                         if (i == -1 && nonAscii * 200 < patternLen)
-                            break; // pod 0.5% ne-ASCII znaku -> ASCII, dal nehledame
+                            break; // below 0.5% non-ASCII characters -> ASCII, further we do not search
                     }
                 }
             }
@@ -1103,30 +1103,30 @@ int CCodeTables::GetConversionToWinCodePage(const char* codePage)
         return 0;
     }
 
-    // odstranime znaky '&', pri porovnavani by prekazely
+    // remove characters '&', they would interfere with comparison
     char buf2[200];
     lstrcpyn(buf2, codePage, 200);
     RemoveAmpersands(buf2);
     codePage = buf2;
 
     if (StrICmp(codePage, Table->WinCodePage) == 0)
-        return 0; // vracime "none"
+        return 0; // returning "none"
     int winCodePageLen = (int)strlen(Table->WinCodePage);
-    if (winCodePageLen > 0) // jen pokud je WinCodePage nactena
+    if (winCodePageLen > 0) // only if WinCodePage is loaded
     {
         int i;
         for (i = 0; i < Table->Data.Count; i++)
         {
             const char* n = Table->Data[i]->Name;
-            if (n != NULL) // nejde o separator
+            if (n != NULL) // not a separator
             {
-                // odstranime znaky '&', pri porovnavani by prekazely
+                // remove characters '&', they would interfere with comparison
                 char buf3[200];
                 lstrcpyn(buf3, n, 200);
                 RemoveAmpersands(buf3);
                 n = buf3;
 
-                int nameLen = (int)strlen(n); // test jestli "cil" konverze je WinCodePage
+                int nameLen = (int)strlen(n); // test if the "target" conversion is WinCodePage
                 if (nameLen > winCodePageLen && StrICmp(n + nameLen - winCodePageLen, Table->WinCodePage) == 0)
                 {
                     const char* s = n + nameLen - winCodePageLen;
@@ -1134,10 +1134,10 @@ int CCodeTables::GetConversionToWinCodePage(const char* codePage)
                         s--;
                     int l = (int)min(100, s - n);
                     if (StrNICmp(n, codePage, l) == 0)
-                        return i + 1; // nalezeno
+                        return i + 1; // found
                 }
             }
         }
     }
-    return -1; // nenalezeno
+    return -1; // not found
 }

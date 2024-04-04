@@ -27,9 +27,9 @@ BOOL CSimpleMAPI::Init(HWND hParent)
         HLibrary = HANDLES_Q(LoadLibrary("mapi32.dll"));
         if (HLibrary == NULL)
         {
-            // pod NT4.0 US + IE 4.01 US neni mapi32.dll instalovano, ale
-            // nasel jsem tam msoemapi.dll, ktere ma potrebny export a hlavne
-            // funguje, tak proc to nezkusit...
+            // under NT4.0 US + IE 4.01 US, mapi32.dll is not installed, but
+            // I found the msoemapi.dll there, which has the necessary export and mainly
+            // it works, so why not try it...
             HLibrary = HANDLES_Q(LoadLibrary("msoemapi.dll"));
             if (HLibrary == NULL)
             {
@@ -39,7 +39,7 @@ BOOL CSimpleMAPI::Init(HWND hParent)
             }
         }
 
-        MAPISendMail = (PFNMAPISENDMAIL)GetProcAddress(HLibrary, "MAPISendMail"); // nema header
+        MAPISendMail = (PFNMAPISENDMAIL)GetProcAddress(HLibrary, "MAPISendMail"); // no header
 
         if (MAPISendMail == NULL)
         {
@@ -55,14 +55,14 @@ BOOL CSimpleMAPI::Init(HWND hParent)
 void CSimpleMAPI::Release()
 {
     CALL_STACK_MESSAGE1("CSimpleMAPI::Release()");
-    // uvolnime alokovane retezce
+    // free allocated strings
     int i;
     for (i = 0; i < FileNames.Count; i++)
         free(FileNames[i]);
     FileNames.DestroyMembers();
-    // odvazeme funkce
+    // Unbind functions
     MAPISendMail = NULL;
-    // uvolnime knihovnu
+    // release the library
     if (HLibrary != NULL)
     {
         HANDLES(FreeLibrary(HLibrary));
@@ -143,7 +143,7 @@ BOOL CSimpleMAPI::SendMail()
     message.nFileCount = FileNames.Count;
     message.lpFiles = fileDesc;
 
-    char* subject = (char*)malloc(subjectSize + strlen(LoadStr(IDS_EMAILFILES_SUBJECT)) + 2); // space za emailing a koncovy NULL
+    char* subject = (char*)malloc(subjectSize + strlen(LoadStr(IDS_EMAILFILES_SUBJECT)) + 2); // space for emailing and terminating NULL
     if (subject == NULL)
     {
         TRACE_E(LOW_MEMORY);
@@ -175,26 +175,24 @@ BOOL CSimpleMAPI::SendMail()
     message.lpszNoteText = body;
 
     ULONG ret = MAPISendMail(0,
-                             /*(ULONG)hParent*/ 0, // budeme nemodalni
+                             /*(ULONG)hParent*/ 0, // we will be unable
                              &message,
                              MAPI_LOGON_UI | MAPI_DIALOG,
                              0L);
 
     free(subject);
     free(fileDesc);
-    // nic nehlasime, protoze ruzni clienti vraceji ruzne navratove hodnoty
-    // napriklad Outlook 6 pod XP hlasil 1 pri Stornu dopisu nebo 3 pri Stornu
-    // pruvodce pripojeni (kdyz nebyl nakonfigurovan)
-    /*
-  if (ret != 0)
+    // We do not report anything because different clients return different return values
+    // for example Outlook 6 under XP reported 1 when canceling a letter or 3 when canceling
+    // connection guide (when not configured)
+    /*    if (ret != 0)
   {
     char buff[50];
     sprintf(buff, "error 3: %d", err);
     SalMessageBox(hParent, buff, LoadStr(IDS_ERRORTITLE),
                   MB_OK | MB_ICONEXCLAMATION);
     return FALSE;
-  }
-*/
+  }*/
     return TRUE;
 }
 
@@ -203,7 +201,7 @@ unsigned SimpleMAPISendMailThreadBody(void* param)
     CALL_STACK_MESSAGE1("SimpleMAPISendMailThreadBody()");
     SetThreadNameInVCAndTrace("MapiSendMail");
     TRACE_I("Begin");
-    // snizime prioritu threadu na "normal" (aby operace prilis nezatezovaly stroj)
+    // Lower the priority of the thread to "normal" (to prevent operations from overloading the machine)
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
     CSimpleMAPI* mapi = (CSimpleMAPI*)param;
@@ -228,7 +226,7 @@ unsigned SimpleMAPISendMailThreadEH(void* param)
     {
         TRACE_I("Thread SimpleMAPISendMailThreadBody: calling ExitProcess(1).");
         //    ExitProcess(1);
-        TerminateProcess(GetCurrentProcess(), 1); // tvrdsi exit (tenhle jeste neco vola)
+        TerminateProcess(GetCurrentProcess(), 1); // tvrdší exit (this one still calls something)
         return 1;
     }
 #endif // CALLSTK_DISABLE
@@ -256,7 +254,7 @@ BOOL SimpleMAPISendMail(CSimpleMAPI* mapi)
         return FALSE;
     }
 
-    AddAuxThread(thread); // pridame thread mezi existujici viewry (kill pri exitu)
+    AddAuxThread(thread); // add a thread between existing viewers (kill on exit)
     SetCursor(hOldCur);
     return TRUE;
 }

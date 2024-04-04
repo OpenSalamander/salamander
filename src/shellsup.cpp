@@ -21,13 +21,13 @@ extern "C"
 
 //
 // ****************************************************************************
-// UseOwnRutine
+// UseOwnRoutine
 //
 
 BOOL UseOwnRutine(IDataObject* pDataObject)
 {
-    return DropSourcePanel != NULL || // bud se to tahne od nas
-           OurClipDataObject;         // nebo je to od nas na clipboardu
+    return DropSourcePanel != NULL || // it's dragging from us
+           OurClipDataObject;         // or it's on our clipboard
 }
 
 //
@@ -40,8 +40,8 @@ BOOL MouseConfirmDrop(DWORD& effect, DWORD& defEffect, DWORD& grfKeyState)
     HMENU menu = CreatePopupMenu();
     if (menu != NULL)
     {
-        /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volani AppendMenu() dole...
+        /* Used for the export_mnu.py script, which generates salmenu.mnu for Translator
+   to keep synchronized with the AppendMenu() calls below...
 MENU_TEMPLATE_ITEM MouseDropMenu1[] =
 {
 	{MNTT_PB, 0
@@ -57,8 +57,7 @@ MENU_TEMPLATE_ITEM MouseDropMenu2[] =
 	{MNTT_IT, IDS_DROPUNKNOWN
 	{MNTT_IT, IDS_DROPCANCEL
 	{MNTT_PE, 0
-};
-*/
+};*/
         DWORD cmd = 4;
         char *item1 = NULL, *item2 = NULL, *item3 = NULL, *item4 = NULL;
         if (effect & DROPEFFECT_MOVE)
@@ -228,7 +227,7 @@ void DoGetFSToFSDropEffect(const char* srcFSPath, const char* tgtFSPath,
                                             keyState, dropEffect);
     }
 
-    // pokud se FS nevyjadril nebo vratil blbost, dame prioritu Copy
+    // if the file system did not respond or returned nonsense, we give priority to Copy
     if (*dropEffect != DROPEFFECT_COPY && *dropEffect != DROPEFFECT_MOVE &&
         *dropEffect != DROPEFFECT_NONE)
     {
@@ -240,7 +239,7 @@ void DoGetFSToFSDropEffect(const char* srcFSPath, const char* tgtFSPath,
             if ((*dropEffect & DROPEFFECT_MOVE) != 0)
                 *dropEffect = DROPEFFECT_MOVE;
             else
-                *dropEffect = DROPEFFECT_NONE; // chyba drop-targetu
+                *dropEffect = DROPEFFECT_NONE; // error drop target
         }
     }
 }
@@ -254,7 +253,7 @@ const char* GetCurrentDir(POINTL& pt, void* param, DWORD* effect, BOOL rButton, 
                           DWORD keyState, int& tgtType, int srcType)
 {
     CFilesWindow* panel = (CFilesWindow*)param;
-    isTgtFile = FALSE; // zatim neni drop target file -> operaci muzeme resime i my
+    isTgtFile = FALSE; // there is currently no drop target file -> we can also handle the operation
     tgtType = idtttWindows;
     RECT r;
     GetWindowRect(panel->GetListBoxHWND(), &r);
@@ -264,19 +263,19 @@ const char* GetCurrentDir(POINTL& pt, void* param, DWORD* effect, BOOL rButton, 
         if (panel->Is(ptZIPArchive))
         {
             int format = PackerFormatConfig.PackIsArchive(panel->GetZIPArchive());
-            if (format != 0) // nasli jsme podporovany archiv
+            if (format != 0) // We found a supported archive
             {
                 format--;
                 if (PackerFormatConfig.GetUsePacker(format) &&
-                        (*effect & (DROPEFFECT_MOVE | DROPEFFECT_COPY)) != 0 || // ma edit? + effect je copy nebo move?
+                        (*effect & (DROPEFFECT_MOVE | DROPEFFECT_COPY)) != 0 || // Does edit have an effect? Is it copy or move?
                     index == 0 && panel->Dirs->Count > 0 && strcmp(panel->Dirs->At(0).Name, "..") == 0 &&
-                        (panel->GetZIPPath()[0] == 0 || panel->GetZIPPath()[0] == '\\' && panel->GetZIPPath()[1] == 0)) // drop na diskovou cestu
+                        (panel->GetZIPPath()[0] == 0 || panel->GetZIPPath()[0] == '\\' && panel->GetZIPPath()[1] == 0)) // drop to disk path
                 {
                     tgtType = idtttArchive;
                     DWORD origEffect = *effect;
-                    *effect &= (DROPEFFECT_MOVE | DROPEFFECT_COPY); // orizneme effect na copy+move
+                    *effect &= (DROPEFFECT_MOVE | DROPEFFECT_COPY); // Trim effect on copy+move
 
-                    if (index >= 0 && index < panel->Dirs->Count) // drop na adresari
+                    if (index >= 0 && index < panel->Dirs->Count) // drop on directory
                     {
                         panel->SetDropTarget(index);
                         int l = (int)strlen(panel->GetZIPPath());
@@ -286,7 +285,7 @@ const char* GetCurrentDir(POINTL& pt, void* param, DWORD* effect, BOOL rButton, 
                             if (l > 0 && panel->DropPath[l - 1] == '\\')
                                 panel->DropPath[--l] = 0;
                             int backSlash = 0;
-                            if (l == 0) // drop-path bude disk (".." vedou ven z archivu)
+                            if (l == 0) // drop-path will be the disk (".." leads out of the archive)
                             {
                                 tgtType = idtttWindows;
                                 *effect = origEffect;
@@ -310,7 +309,7 @@ const char* GetCurrentDir(POINTL& pt, void* param, DWORD* effect, BOOL rButton, 
                             {
                                 TRACE_E("GetCurrentDir(): too long file name!");
                                 tgtType = idtttWindows;
-                                panel->SetDropTarget(-1); // schovat znacku
+                                panel->SetDropTarget(-1); // hide the tag
                                 return NULL;
                             }
                             strcpy(panel->DropPath + l, panel->Dirs->At(index).Name);
@@ -319,7 +318,7 @@ const char* GetCurrentDir(POINTL& pt, void* param, DWORD* effect, BOOL rButton, 
                     }
                     else
                     {
-                        panel->SetDropTarget(-1); // schovat znacku
+                        panel->SetDropTarget(-1); // hide the tag
                         return panel->GetZIPPath();
                     }
                 }
@@ -329,25 +328,25 @@ const char* GetCurrentDir(POINTL& pt, void* param, DWORD* effect, BOOL rButton, 
         {
             if (panel->GetPluginFS()->NotEmpty())
             {
-                if (srcType == 2 /* FS */) // drag&drop z FS na FS (libovolne FS mezi sebou, omezeni az v CPluginFSInterfaceAbstract::CopyOrMoveFromFS)
+                if (srcType == 2 /* File system*/) // drag&drop from one file system to another file system (any file systems among each other, restrictions only in CPluginFSInterfaceAbstract::CopyOrMoveFromFS)
                 {
                     tgtType = idtttFullPluginFSPath;
                     int l = (int)strlen(panel->GetPluginFS()->GetPluginFSName());
                     memcpy(panel->DropPath, panel->GetPluginFS()->GetPluginFSName(), l);
                     panel->DropPath[l++] = ':';
-                    if (index >= 0 && index < panel->Dirs->Count) // drop na adresari
+                    if (index >= 0 && index < panel->Dirs->Count) // drop on directory
                     {
-                        if (panel == DropSourcePanel) // drag&drop v ramci jednoho panelu
+                        if (panel == DropSourcePanel) // drag&drop within one panel
                         {
                             if (panel->GetSelCount() == 0 &&
                                     index == panel->GetCaretIndex() ||
                                 panel->GetSel(index) != 0)
-                            {                             // adresar sam do sebe
-                                panel->SetDropTarget(-1); // schovat znacku (kopie pujde do akt. adresare, ne do fokusenyho podadresare)
+                            {                             // directory itself into itself
+                                panel->SetDropTarget(-1); // hide the tag (the copy will go to the current directory, not to the focused subdirectory)
                                 if (!rButton && (keyState & (MK_CONTROL | MK_SHIFT | MK_ALT)) == 0)
                                 {
                                     tgtType = idtttWindows;
-                                    return NULL; // bez modifikatoru zustava STOP kurzor (zabranuje nechtenemu kopirovani do aktualniho adresare)
+                                    return NULL; // Without a modifier, the STOP cursor remains (prevents unwanted copying to the current directory)
                                 }
                                 if (effect != NULL)
                                     *effect &= ~DROPEFFECT_MOVE;
@@ -367,8 +366,8 @@ const char* GetCurrentDir(POINTL& pt, void* param, DWORD* effect, BOOL rButton, 
                         {
                             if (DropSourcePanel != NULL && DropSourcePanel->Is(ptPluginFS) &&
                                 DropSourcePanel->GetPluginFS()->NotEmpty() && effect != NULL)
-                            { // zdrojovy FS muze ovlivnit povolene drop-effecty
-                                DropSourcePanel->GetPluginFS()->GetAllowedDropEffects(1 /* drag-over-fs */, panel->DropPath,
+                            { // Source FS can affect allowed drop effects
+                                DropSourcePanel->GetPluginFS()->GetAllowedDropEffects(1 /* drag-over-fs*/, panel->DropPath,
                                                                                       effect);
                             }
 
@@ -377,13 +376,13 @@ const char* GetCurrentDir(POINTL& pt, void* param, DWORD* effect, BOOL rButton, 
                         }
                     }
 
-                    panel->SetDropTarget(-1);                       // schovat znacku
-                    if (panel == DropSourcePanel && effect != NULL) // drag&drop v ramci jednoho panelu
+                    panel->SetDropTarget(-1);                       // hide the tag
+                    if (panel == DropSourcePanel && effect != NULL) // drag&drop within one panel
                     {
                         if (!rButton && (keyState & (MK_CONTROL | MK_SHIFT | MK_ALT)) == 0)
                         {
                             tgtType = idtttWindows;
-                            return NULL; // bez modifikatoru zustava STOP kurzor (zabranuje nechtenemu kopirovani do aktualniho adresare)
+                            return NULL; // Without a modifier, the STOP cursor remains (prevents unwanted copying to the current directory)
                         }
                         *effect &= ~DROPEFFECT_MOVE;
                     }
@@ -391,8 +390,8 @@ const char* GetCurrentDir(POINTL& pt, void* param, DWORD* effect, BOOL rButton, 
                     {
                         if (DropSourcePanel != NULL && DropSourcePanel->Is(ptPluginFS) &&
                             DropSourcePanel->GetPluginFS()->NotEmpty() && effect != NULL)
-                        { // zdrojovy FS muze ovlivnit povolene drop-effecty
-                            DropSourcePanel->GetPluginFS()->GetAllowedDropEffects(1 /* drag-over-fs */, panel->DropPath,
+                        { // Source FS can affect allowed drop effects
+                            DropSourcePanel->GetPluginFS()->GetAllowedDropEffects(1 /* drag-over-fs*/, panel->DropPath,
                                                                                   effect);
                         }
                         return panel->DropPath;
@@ -412,9 +411,9 @@ const char* GetCurrentDir(POINTL& pt, void* param, DWORD* effect, BOOL rButton, 
                 if ((*effect & posEff) != 0)
                 {
                     tgtType = idtttPluginFS;
-                    *effect &= posEff; // orizneme effect na moznosti FS
+                    *effect &= posEff; // Trim effect to FS capabilities
 
-                    if (index >= 0 && index < panel->Dirs->Count) // drop na adresari
+                    if (index >= 0 && index < panel->Dirs->Count) // drop on directory
                     {
                         if (panel->GetPluginFS()->GetFullName(panel->Dirs->At(index),
                                                               (index == 0 && strcmp(panel->Dirs->At(0).Name, "..") == 0) ? 2 : 1,
@@ -424,7 +423,7 @@ const char* GetCurrentDir(POINTL& pt, void* param, DWORD* effect, BOOL rButton, 
                             return panel->DropPath;
                         }
                     }
-                    panel->SetDropTarget(-1); // schovat znacku
+                    panel->SetDropTarget(-1); // hide the tag
                     if (panel->GetPluginFS()->GetCurrentPath(panel->DropPath))
                         return panel->DropPath;
                     else
@@ -435,21 +434,21 @@ const char* GetCurrentDir(POINTL& pt, void* param, DWORD* effect, BOOL rButton, 
                 }
             }
         }
-        panel->SetDropTarget(-1); // schovat znacku
+        panel->SetDropTarget(-1); // hide the tag
         return NULL;
     }
 
-    if (index >= 0 && index < panel->Dirs->Count) // drop na adresari
+    if (index >= 0 && index < panel->Dirs->Count) // drop on directory
     {
-        if (panel == DropSourcePanel) // drag&drop v ramci jednoho panelu
+        if (panel == DropSourcePanel) // drag&drop within one panel
         {
             if (panel->GetSelCount() == 0 &&
                     index == panel->GetCaretIndex() ||
                 panel->GetSel(index) != 0)
-            {                             // adresar sam do sebe
-                panel->SetDropTarget(-1); // schovat znacku (kopie/shortcuta pujde do akt. adresare, ne do fokusenyho podadresare)
+            {                             // directory itself into itself
+                panel->SetDropTarget(-1); // hide the tag (the copy/shortcut will go to the current directory, not to the focused subdirectory)
                 if (!rButton && (keyState & (MK_CONTROL | MK_SHIFT | MK_ALT)) == 0)
-                    return NULL; // bez modifikatoru zustava STOP kurzor (zabranuje nechtenemu kopirovani do aktualniho adresare)
+                    return NULL; // Without a modifier, the STOP cursor remains (prevents unwanted copying to the current directory)
                 if (effect != NULL)
                     *effect &= ~DROPEFFECT_MOVE;
                 return panel->GetPath();
@@ -476,7 +475,7 @@ const char* GetCurrentDir(POINTL& pt, void* param, DWORD* effect, BOOL rButton, 
             if (l + panel->Dirs->At(index).NameLen >= MAX_PATH)
             {
                 TRACE_E("GetCurrentDir(): too long file name!");
-                panel->SetDropTarget(-1); // schovat znacku
+                panel->SetDropTarget(-1); // hide the tag
                 return NULL;
             }
             strcpy(panel->DropPath + l, panel->Dirs->At(index).Name);
@@ -486,16 +485,16 @@ const char* GetCurrentDir(POINTL& pt, void* param, DWORD* effect, BOOL rButton, 
     else
     {
         if (index >= panel->Dirs->Count && index < panel->Dirs->Count + panel->Files->Count)
-        {                                 // drop na souboru
-            if (panel == DropSourcePanel) // drag&drop v ramci jednoho panelu
+        {                                 // drop on file
+            if (panel == DropSourcePanel) // drag&drop within one panel
             {
                 if (panel->GetSelCount() == 0 &&
                         index == panel->GetCaretIndex() ||
                     panel->GetSel(index) != 0)
-                {                             // soubor sam do sebe
-                    panel->SetDropTarget(-1); // schovat znacku (kopie/shortcuta pujde do akt. adresare, ne do fokusenyho souboru)
+                {                             // file itself into itself
+                    panel->SetDropTarget(-1); // hide the tag (the copy/shortcut will go to the current directory, not to the focused file)
                     if (!rButton && (keyState & (MK_CONTROL | MK_SHIFT | MK_ALT)) == 0)
-                        return NULL; // bez modifikatoru zustava STOP kurzor (zabranuje nechtenemu kopirovani do aktualniho adresare)
+                        return NULL; // Without a modifier, the STOP cursor remains (prevents unwanted copying to the current directory)
                     if (effect != NULL)
                         *effect &= ~DROPEFFECT_MOVE;
                     return panel->GetPath();
@@ -510,17 +509,17 @@ const char* GetCurrentDir(POINTL& pt, void* param, DWORD* effect, BOOL rButton, 
             if (l + file->NameLen >= MAX_PATH)
             {
                 TRACE_E("GetCurrentDir(): too long file name!");
-                panel->SetDropTarget(-1); // schovat znacku
+                panel->SetDropTarget(-1); // hide the tag
                 return NULL;
             }
             strcpy(fullName + l, file->Name);
 
-            // jde-li o shortcutu, provedeme jeji analyzu
-            BOOL linkIsDir = FALSE;  // TRUE -> short-cut na adresar -> ChangePathToDisk
-            BOOL linkIsFile = FALSE; // TRUE -> short-cut na soubor -> test archivu
+            // When it comes to shortcuts, we will analyze them
+            BOOL linkIsDir = FALSE;  // TRUE -> short-cut to directory -> ChangePathToDisk
+            BOOL linkIsFile = FALSE; // TRUE -> shortcut to file -> test archive
             char linkTgt[MAX_PATH];
             linkTgt[0] = 0;
-            if (StrICmp(file->Ext, "lnk") == 0) // neni to short-cut adresare?
+            if (StrICmp(file->Ext, "lnk") == 0) // Isn't this a shortcut to the directory?
             {
                 IShellLink* link;
                 if (CoCreateInstance(CLSID_ShellLink, NULL,
@@ -547,7 +546,7 @@ const char* GetCurrentDir(POINTL& pt, void* param, DWORD* effect, BOOL rButton, 
                     link->Release();
                 }
             }
-            if (linkIsDir) // link vede do adresare, cesta je o.k., prepneme se na ni
+            if (linkIsDir) // the link leads to a directory, the path is okay, let's switch to it
             {
                 panel->SetDropTarget(index);
                 strcpy(panel->DropPath, linkTgt);
@@ -555,37 +554,37 @@ const char* GetCurrentDir(POINTL& pt, void* param, DWORD* effect, BOOL rButton, 
             }
 
             int format = PackerFormatConfig.PackIsArchive(linkIsFile ? linkTgt : fullName);
-            if (format != 0) // nasli jsme podporovany archiv
+            if (format != 0) // We found a supported archive
             {
                 format--;
-                if (PackerFormatConfig.GetUsePacker(format) && // ma edit?
+                if (PackerFormatConfig.GetUsePacker(format) && // edit?
                     (*effect & (DROPEFFECT_MOVE | DROPEFFECT_COPY)) != 0)
                 {
                     tgtType = idtttArchiveOnWinPath;
-                    *effect &= (DROPEFFECT_MOVE | DROPEFFECT_COPY); // orizneme effect na copy+move
+                    *effect &= (DROPEFFECT_MOVE | DROPEFFECT_COPY); // Trim effect on copy+move
                     panel->SetDropTarget(index);
                     strcpy(panel->DropPath, linkIsFile ? linkTgt : fullName);
                     return panel->DropPath;
                 }
-                panel->SetDropTarget(-1); // schovat znacku
+                panel->SetDropTarget(-1); // hide the tag
                 return NULL;
             }
 
             if (HasDropTarget(fullName))
             {
-                isTgtFile = TRUE; // drop target file -> musi resit shell
+                isTgtFile = TRUE; // drop target file -> must handle shell
                 panel->SetDropTarget(index);
                 strcpy(panel->DropPath, fullName);
                 return panel->DropPath;
             }
         }
-        panel->SetDropTarget(-1); // schovat znacku
+        panel->SetDropTarget(-1); // hide the tag
     }
 
-    if (panel == DropSourcePanel && effect != NULL) // drag&drop v ramci jednoho panelu
+    if (panel == DropSourcePanel && effect != NULL) // drag&drop within one panel
     {
         if (!rButton && (keyState & (MK_CONTROL | MK_SHIFT | MK_ALT)) == 0)
-            return NULL; // bez modifikatoru zustava STOP kurzor (zabranuje nechtenemu kopirovani do aktualniho adresare)
+            return NULL; // Without a modifier, the STOP cursor remains (prevents unwanted copying to the current directory)
         *effect &= ~DROPEFFECT_MOVE;
     }
     return panel->GetPath();
@@ -593,11 +592,11 @@ const char* GetCurrentDir(POINTL& pt, void* param, DWORD* effect, BOOL rButton, 
 
 const char* GetCurrentDirClipboard(POINTL& pt, void* param, DWORD* effect, BOOL rButton,
                                    BOOL& isTgtFile, DWORD keyState, int& tgtType, int srcType)
-{ // jednodussi verze predchoziho pro "paste" z clipboardu
+{ // Simple version of the previous one for "paste" from clipboard
     CFilesWindow* panel = (CFilesWindow*)param;
     isTgtFile = FALSE;
     tgtType = idtttWindows;
-    if (panel->Is(ptZIPArchive) || panel->Is(ptPluginFS)) // do archivu a FS zatim ne
+    if (panel->Is(ptZIPArchive) || panel->Is(ptPluginFS)) // to the archive and not to the FS for now
     {
         //    if (panel->Is(ptZIPArchive)) tgtType = idtttArchive;
         //    else tgtType = idtttPluginFS;
@@ -641,7 +640,7 @@ void DropEnd(BOOL drop, BOOL shortcuts, void* param, BOOL ownRutine, BOOL isFake
     if (drop)
         MainWindow->FocusPanel(panel);
 
-    panel->SetDropTarget(-1); // schovat znacku
+    panel->SetDropTarget(-1); // hide the tag
     if (tgtType == idtttWindows &&
         !isFakeDataObject && (!ownRutine || shortcuts) && drop && // refresh panels
         (!MainWindow->LeftPanel->AutomaticRefresh ||
@@ -649,13 +648,13 @@ void DropEnd(BOOL drop, BOOL shortcuts, void* param, BOOL ownRutine, BOOL isFake
          MainWindow->LeftPanel->GetNetworkDrive() ||
          MainWindow->RightPanel->GetNetworkDrive()))
     {
-        BOOL again = TRUE; // dokud soubory pribyvaji, nacitame
+        BOOL again = TRUE; // as long as files are being added, we load
         int numLeft = MainWindow->LeftPanel->NumberOfItemsInCurDir;
         int numRight = MainWindow->RightPanel->NumberOfItemsInCurDir;
         while (again)
         {
             again = FALSE;
-            Sleep(shortcuts ? 333 : 1000); // makaj v jinym threadu, nechame jim cas
+            Sleep(shortcuts ? 333 : 1000); // Work in another thread, let them have some time
 
             if ((!MainWindow->LeftPanel->AutomaticRefresh || MainWindow->LeftPanel->GetNetworkDrive()) &&
                 MainWindow->LeftPanel->Is(ptDisk))
@@ -673,7 +672,7 @@ void DropEnd(BOOL drop, BOOL shortcuts, void* param, BOOL ownRutine, BOOL isFake
             }
         }
 
-        // nechame refreshnout panely
+        // let's refresh the panels
         HANDLES(EnterCriticalSection(&TimeCounterSection));
         int t1 = MyTimeCounter++;
         int t2 = MyTimeCounter++;
@@ -762,8 +761,8 @@ void AuxInvokeCommand2(CFilesWindow* panel, CMINVOKECOMMANDINFO* ici)
 {
     CALL_STACK_MESSAGE_NONE
 
-    // docasne snizime prioritu threadu, aby nam nejaka zmatena shell extension nesezrala CPU
-    HANDLE hThread = GetCurrentThread(); // pseudo-handle, neni treba uvolnovat
+    // temporarily lower the priority of the thread so that some confused shell extension does not eat up the CPU
+    HANDLE hThread = GetCurrentThread(); // pseudo-handle, no need to release
     int oldThreadPriority = GetThreadPriority(hThread);
     SetThreadPriority(hThread, THREAD_PRIORITY_NORMAL);
 
@@ -780,11 +779,11 @@ void AuxInvokeCommand2(CFilesWindow* panel, CMINVOKECOMMANDINFO* ici)
 }
 
 void AuxInvokeCommand(CFilesWindow* panel, CMINVOKECOMMANDINFO* ici)
-{ // POZOR: pouziva se i z CSalamanderGeneral::OpenNetworkContextMenu()
+{ // WARNING: also used in CSalamanderGeneral::OpenNetworkContextMenu()
     CALL_STACK_MESSAGE_NONE
 
-    // docasne snizime prioritu threadu, aby nam nejaka zmatena shell extension nesezrala CPU
-    HANDLE hThread = GetCurrentThread(); // pseudo-handle, neni treba uvolnovat
+    // temporarily lower the priority of the thread so that some confused shell extension does not eat up the CPU
+    HANDLE hThread = GetCurrentThread(); // pseudo-handle, no need to release
     int oldThreadPriority = GetThreadPriority(hThread);
     SetThreadPriority(hThread, THREAD_PRIORITY_NORMAL);
 
@@ -804,8 +803,8 @@ void AuxInvokeAndRelease(IContextMenu2* menu, CMINVOKECOMMANDINFO* ici)
 {
     CALL_STACK_MESSAGE_NONE
 
-    // docasne snizime prioritu threadu, aby nam nejaka zmatena shell extension nesezrala CPU
-    HANDLE hThread = GetCurrentThread(); // pseudo-handle, neni treba uvolnovat
+    // temporarily lower the priority of the thread so that some confused shell extension does not eat up the CPU
+    HANDLE hThread = GetCurrentThread(); // pseudo-handle, no need to release
     int oldThreadPriority = GetThreadPriority(hThread);
     SetThreadPriority(hThread, THREAD_PRIORITY_NORMAL);
 
@@ -836,8 +835,8 @@ HRESULT AuxGetCommandString(IContextMenu2* menu, UINT_PTR idCmd, UINT uType, UIN
     HRESULT ret = E_UNEXPECTED;
     __try
     {
-        // roky nam chodi pady pri volani IContextMenu2::GetCommandString()
-        // pro chod programu neni toto volani zasadni, takze ho osetrime do try/except bloku
+        // for years we have been getting crashes when calling IContextMenu2::GetCommandString()
+        // This function call is not essential for the program flow, so we will handle it in a try/except block
         ret = menu->GetCommandString(idCmd, uType, pReserved, pszName, cchMax);
     }
     __except (CCallStack::HandleException(GetExceptionInformation(), 19))
@@ -848,11 +847,11 @@ HRESULT AuxGetCommandString(IContextMenu2* menu, UINT_PTR idCmd, UINT uType, UIN
 }
 
 void ShellActionAux5(UINT flags, CFilesWindow* panel, HMENU h)
-{ // POZOR: pouziva se i z CSalamanderGeneral::OpenNetworkContextMenu()
+{ // WARNING: also used in CSalamanderGeneral::OpenNetworkContextMenu()
     CALL_STACK_MESSAGE_NONE
 
-    // docasne snizime prioritu threadu, aby nam nejaka zmatena shell extension nesezrala CPU
-    HANDLE hThread = GetCurrentThread(); // pseudo-handle, neni treba uvolnovat
+    // temporarily lower the priority of the thread so that some confused shell extension does not eat up the CPU
+    HANDLE hThread = GetCurrentThread(); // pseudo-handle, no need to release
     int oldThreadPriority = GetThreadPriority(hThread);
     SetThreadPriority(hThread, THREAD_PRIORITY_NORMAL);
 
@@ -869,7 +868,7 @@ void ShellActionAux5(UINT flags, CFilesWindow* panel, HMENU h)
 }
 
 void ShellActionAux6(CFilesWindow* panel)
-{ // POZOR: pouziva se i z CSalamanderGeneral::OpenNetworkContextMenu()
+{ // WARNING: also used in CSalamanderGeneral::OpenNetworkContextMenu()
     __try
     {
         if (panel->ContextMenu != NULL)
@@ -889,7 +888,7 @@ void ShellActionAux7(IDataObject* dataObject, CImpIDropSource* dropSource)
     __try
     {
         if (dropSource != NULL)
-            dropSource->Release(); // ten je nas, snad nespadne ;-)
+            dropSource->Release(); // That's ours, hopefully it won't fall ;-)
         if (dataObject != NULL)
             dataObject->Release();
     }
@@ -903,24 +902,24 @@ void DoDragFromArchiveOrFS(CFilesWindow* panel, BOOL& dropDone, char* targetPath
                            char* realDraggedPath, DWORD allowedEffects,
                            int srcType, const char* srcFSPath, BOOL leftMouseButton)
 {
-    if (SalShExtSharedMemView != NULL) // sdilena pamet je k dispozici (pri chybe drag&drop neumime)
+    if (SalShExtSharedMemView != NULL) // shared memory is available (we cannot handle drag&drop errors)
     {
         CALL_STACK_MESSAGE1("ShellAction::archive/FS::drag_files");
 
-        // vytvorime "fake" adresar
+        // create a "fake" directory
         char fakeRootDir[MAX_PATH];
         char* fakeName;
         if (SalGetTempFileName(NULL, "SAL", fakeRootDir, FALSE))
         {
             fakeName = fakeRootDir + strlen(fakeRootDir);
-            // jr: Nasel jsem na netu zminku "Did implementing "IPersistStream" and providing the undocumented
-            // "OleClipboardPersistOnFlush" format solve the problem?" -- pro pripad, ze bychom se potrebovali
-            // zbavit DROPFAKE metody
+            // jr: I found a mention on the internet "Did implementing "IPersistStream" and providing the undocumented
+            // "OleClipboardPersistOnFlush" format solve the problem?" -- in case we need to
+            // remove the DROPFAKE method
             if (SalPathAppend(fakeRootDir, "DROPFAKE", MAX_PATH))
             {
                 if (CreateDirectory(fakeRootDir, NULL))
                 {
-                    // vytvorime objekty pro drag&drop
+                    // create objects for drag&drop
                     *fakeName = 0;
                     IDataObject* dataObject = CreateIDataObject(MainWindow->HWindow, fakeRootDir,
                                                                 1, EnumOneFileName, fakeName + 1);
@@ -932,7 +931,7 @@ void DoDragFromArchiveOrFS(CFilesWindow* panel, BOOL& dropDone, char* targetPath
                                                                                               srcType, srcFSPath);
                         if (fakeDataObject != NULL)
                         {
-                            // inicializace sdilene pameti
+                            // Initialization of shared memory
                             WaitForSingleObject(SalShExtSharedMemMutex, INFINITE);
                             BOOL sharedMemOK = SalShExtSharedMemView->Size >= sizeof(CSalShExtSharedMem);
                             if (sharedMemOK)
@@ -951,16 +950,16 @@ void DoDragFromArchiveOrFS(CFilesWindow* panel, BOOL& dropDone, char* targetPath
                                 DWORD dwEffect;
                                 HRESULT hr;
                                 DropSourcePanel = panel;
-                                LastWndFromGetData = NULL; // pro jistotu, kdyby se nevolalo fakeDataObject->GetData
+                                LastWndFromGetData = NULL; // just in case, in case fakeDataObject->GetData is not called
                                 hr = DoDragDrop(fakeDataObject, dropSource, allowedEffects, &dwEffect);
                                 DropSourcePanel = NULL;
-                                // precteme vysledky drag&dropu
-                                // Poznamka: vraci dwEffect == 0 pri MOVE, proto zavadime obezlicku pres dropSource->LastEffect,
-                                // duvody viz "Handling Shell Data Transfer Scenarios" sekce "Handling Optimized Move Operations":
+                                // read the results of drag & drop
+                                // Note: returns dwEffect == 0 for MOVE, therefore we introduce a workaround through dropSource->LastEffect,
+                                // refer to "Handling Shell Data Transfer Scenarios" section "Handling Optimized Move Operations":
                                 // http://msdn.microsoft.com/en-us/library/windows/desktop/bb776904%28v=vs.85%29.aspx
-                                // (zkracene: dela se optimalizovany Move, coz znamena ze se nedela kopie do cile nasledovana mazanim
-                                //            originalu, aby zdroj nechtene nesmazal original (jeste nemusi byt presunuty), dostane
-                                //            vysledek operace DROPEFFECT_NONE nebo DROPEFFECT_COPY)
+                                // (abbreviated: an optimized Move is being performed, which means no copy is made to the target followed by deletion
+                                //            originalu, so that the source does not unintentionally delete the original (which may not have been moved yet), receives
+                                //            result of the operation DROPEFFECT_NONE or DROPEFFECT_COPY)
                                 if (hr == DRAGDROP_S_DROP && dropSource->LastEffect != DROPEFFECT_NONE)
                                 {
                                     WaitForSingleObject(SalShExtSharedMemMutex, INFINITE);
@@ -971,13 +970,13 @@ void DoDragFromArchiveOrFS(CFilesWindow* panel, BOOL& dropDone, char* targetPath
                                         lstrcpyn(targetPath, SalShExtSharedMemView->TargetPath, 2 * MAX_PATH);
                                         if (leftMouseButton && dragFromPluginFSWithCopyAndMove)
                                             operation = (dropSource->LastEffect & DROPEFFECT_MOVE) ? SALSHEXT_MOVE : SALSHEXT_COPY;
-                                        else // archivy + FS s Copy nebo Move (ne oboje) + FS s Copy+Move pri tazeni pravym tlacitkem, kdy vysledek z menu na pravem tlacitku neni ovlivnen zmenou kurzoru mysi (trik s Copy kurzorem pri Move effectu), takze vysledek bereme z copy-hooku (SalShExtSharedMemView->Operation)
+                                        else // archives + FS with Copy or Move (not both) + FS with Copy+Move when dragging with the right mouse button, where the result from the right-click menu is not affected by the change of the mouse cursor (trick with Copy cursor during Move effect), so we take the result from the copy-hook (SalShExtSharedMemView->Operation)
                                             operation = SalShExtSharedMemView->Operation;
                                     }
                                     ReleaseMutex(SalShExtSharedMemMutex);
 
-                                    if (!dropDone &&                 // nereaguje copy-hook nebo dal user Cancel v drop-menu (ukazuje se pri D&D pravym tlacitkem)
-                                        dwEffect != DROPEFFECT_NONE) // detekce Cancelu: vzhledem k tomu, ze nezabral copy-hook, je vraceny drop-effect platny, tedy ho porovname na Cancel
+                                    if (!dropDone &&                 // does not respond to the copy-hook or another user Cancel in the drop-down menu (appears when right-clicking during D&D)
+                                        dwEffect != DROPEFFECT_NONE) // Cancel detection: since the copy-hook did not work, the returned drop-effect is valid, so we compare it to Cancel
                                     {
                                         SalMessageBox(MainWindow->HWindow, LoadStr(IDS_SHEXT_NOTLOADEDYET),
                                                       LoadStr(IDS_ERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
@@ -992,7 +991,7 @@ void DoDragFromArchiveOrFS(CFilesWindow* panel, BOOL& dropDone, char* targetPath
                             }
                             else
                                 TRACE_E("Shared memory is too small!");
-                            fakeDataObject->Release(); // dataObject se uvolni pozdeji v ShellActionAux7
+                            fakeDataObject->Release(); // dataObject will be released later in ShellActionAux7
                         }
                         else
                             TRACE_E(LOW_MEMORY);
@@ -1017,7 +1016,7 @@ void GetLeftTopCornert(POINT* pt, BOOL posByMouse, BOOL useSelection, CFilesWind
 {
     if (posByMouse)
     {
-        // souradnice dle pozice mysi
+        // coordinates according to the mouse position
         DWORD pos = GetMessagePos();
         pt->x = GET_X_LPARAM(pos);
         pt->y = GET_Y_LPARAM(pos);
@@ -1026,12 +1025,12 @@ void GetLeftTopCornert(POINT* pt, BOOL posByMouse, BOOL useSelection, CFilesWind
     {
         if (useSelection)
         {
-            // dle pozice pro kontextove menu
+            // according to the position for the context menu
             panel->GetContextMenuPos(pt);
         }
         else
         {
-            // levy horni roh panelu
+            // top left corner of the panel
             RECT r;
             GetWindowRect(panel->GetListBoxHWND(), &r);
             pt->x = r.left;
@@ -1053,7 +1052,7 @@ void RemoveUselessSeparatorsFromMenu(HMENU h)
         mi.fMask = MIIM_TYPE;
         if (GetMenuItemInfo(h, i, TRUE, &mi) && (mi.fType & MFT_SEPARATOR))
         {
-            if (lastSep != -1 && lastSep == i + 1) // dva separatory po sobe, jeden smazeme, je nadbytecny
+            if (lastSep != -1 && lastSep == i + 1) // two separators in a row, we will delete one, it is redundant
                 DeleteMenu(h, i, MF_BYPOSITION);
             lastSep = i;
         }
@@ -1070,7 +1069,7 @@ BOOL ResourceGetDialogName(WCHAR* buff, int buffSize, char* name, int nameMax)
     if (style != 0xffff0001)
     {
         TRACE_E("ResourceGetDialogName(): resource is not DLGTEMPLATEEX!");
-        // cteni klasickeho DLGTEMPLATE viz altap translator, pravdepodobne ale nebude potreba implementovat
+        // reading classic DLGTEMPLATE as seen in Altap Translator, but probably won't need to implement
         return FALSE;
     }
 
@@ -1100,7 +1099,7 @@ BOOL ResourceGetDialogName(WCHAR* buff, int buffSize, char* name, int nameMax)
     buff += 2; // style
     buff += 1; // cDlgItems
     buff += 1; // x
-    buff += 1; // y
+    buff += 1; // and
     buff += 1; // cx
     buff += 1; // cy
 
@@ -1154,8 +1153,8 @@ BOOL ResourceGetDialogName(WCHAR* buff, int buffSize, char* name, int nameMax)
     return TRUE;
 }
 
-// pokusi se nacist aclui.dll a vytahnout nazev dialogu ulozeneho s ID 103 (zalozka Security)
-// v pripade uspechu naplni nazev dialogu do pageName a vrati TRUE; jinak vrati FALSE
+// try to load aclui.dll and retrieve the name of the dialog saved with ID 103 (Security tab)
+// If successful, fills the dialog title into pageName and returns TRUE; otherwise returns FALSE
 BOOL GetACLUISecurityPageName(char* pageName, int pageNameMax)
 {
     BOOL ret = FALSE;
@@ -1164,7 +1163,7 @@ BOOL GetACLUISecurityPageName(char* pageName, int pageNameMax)
 
     if (hModule != NULL)
     {
-        HRSRC hrsrc = FindResource(hModule, MAKEINTRESOURCE(103), RT_DIALOG); // 103 - security zalozka
+        HRSRC hrsrc = FindResource(hModule, MAKEINTRESOURCE(103), RT_DIALOG); // 103 - security tab
         if (hrsrc != NULL)
         {
             int size = SizeofResource(hModule, hrsrc);
@@ -1198,7 +1197,7 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
     if (panel->QuickSearchMode)
         panel->EndQuickSearch();
     if (panel->Dirs->Count + panel->Files->Count == 0 && useSelection)
-    { // bez souboru a adresaru -> neni co delat
+    { // without files and directories -> nothing to do
         return;
     }
 
@@ -1212,14 +1211,14 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
         }
         if (action == saCopyToClipboard && !SalShExtRegistered)
             TRACE_E("Copy&paste from archives is not possible, shell extension utils\\salextx86.dll or utils\\salextx64.dll is missing!");
-        // dalsi cinnosti v archivu zatim neumime
+        // We do not yet know how to perform other activities in the archive
         return;
     }
     if (panel->Is(ptPluginFS) && dragFiles &&
         (!SalShExtRegistered ||
          !panel->GetPluginFS()->NotEmpty() ||
-         !panel->GetPluginFS()->IsServiceSupported(FS_SERVICE_MOVEFROMFS) &&    // FS umi "move from FS"
-             !panel->GetPluginFS()->IsServiceSupported(FS_SERVICE_COPYFROMFS))) // FS umi "copy from FS"
+         !panel->GetPluginFS()->IsServiceSupported(FS_SERVICE_MOVEFROMFS) &&    // FS can "move from FS"
+             !panel->GetPluginFS()->IsServiceSupported(FS_SERVICE_COPYFROMFS))) // FS can "copy from FS"
     {
         if (!SalShExtRegistered)
             TRACE_E("Drag&drop from file-systems is not possible, shell extension utils\\salextx86.dll or utils\\salextx64.dll is missing!");
@@ -1228,9 +1227,9 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
         return;
     }
 
-    //  MainWindow->ReleaseMenuNew();  // Windows nejsou staveny na vic kontextovych menu
+    //  MainWindow->ReleaseMenuNew();  // Windows are not built for multiple context menus
 
-    BeginStopRefresh(); // zadne refreshe nepotrebujeme
+    BeginStopRefresh(); // we do not need any refreshes
 
     int* indexes = NULL;
     int index = 0;
@@ -1247,7 +1246,7 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
         if (count != 0)
         {
             indexes = new int[count];
-            panel->GetSelItems(count, indexes, action == saContextMenu); // od tohoto jsme ustoupili (viz GetSelItems): pro kontextova menu zaciname od fokusle polozky a koncime polozku pres fokusem (je tam mezilehle vraceni na zacatek seznamu jmen) (system to tak dela taky, viz Add To Windows Media Player List na MP3 souborech)
+            panel->GetSelItems(count, indexes, action == saContextMenu); // we have backed off from this (see GetSelItems): for the context menu, we start from the focused item and end with the item after the focus (there is an intermediate return to the beginning of the list of names) (the system does it too, see Add To Windows Media Player List on MP3 files)
         }
         else
         {
@@ -1270,8 +1269,8 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
     {
         if (dragFiles)
         {
-            // pokud tahne jediny podadresar archivu, zjistime ktery (pro zmenu cesty
-            // v directory-line a vlozeni do command-line)
+            // if there is only one subdirectory in the archive, we will determine which one (for changing the path
+            // in directory-line and insertion into command-line)
             int i = -1;
             if (count == 1)
                 i = indexes[0];
@@ -1298,13 +1297,13 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
             BOOL dropDone = FALSE;
             int operation = SALSHEXT_NONE;
             DoDragFromArchiveOrFS(panel, dropDone, targetPath, operation, realDraggedPath,
-                                  DROPEFFECT_COPY, 1 /* archiv */, NULL, action == saLeftDragFiles);
+                                  DROPEFFECT_COPY, 1 /* archive*/, NULL, action == saLeftDragFiles);
 
             if (indexes != NULL)
                 delete[] (indexes);
             EndStopRefresh();
 
-            if (dropDone) // nechame provest operaci
+            if (dropDone) // let's perform the operation
             {
                 char* p = DupStr(targetPath);
                 if (p != NULL)
@@ -1317,11 +1316,11 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
         {
             if (action == saCopyToClipboard)
             {
-                if (SalShExtSharedMemView != NULL) // sdilena pamet je k dispozici (pri chybe copy&paste neumime)
+                if (SalShExtSharedMemView != NULL) // shared memory is available (we cannot handle copy&paste errors)
                 {
                     CALL_STACK_MESSAGE1("ShellAction::archive::clipcopy_files");
 
-                    // vytvorime "fake" adresar
+                    // create a "fake" directory
                     char fakeRootDir[MAX_PATH];
                     char* fakeName;
                     if (SalGetTempFileName(NULL, "SAL", fakeRootDir, FALSE))
@@ -1332,9 +1331,9 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
                         {
                             if (CreateDirectory(fakeRootDir, NULL))
                             {
-                                DWORD prefferedDropEffect = DROPEFFECT_COPY; // DROPEFFECT_MOVE (pouzivali jsme pro ladici ucely)
+                                DWORD prefferedDropEffect = DROPEFFECT_COPY; // DROPEFFECT_MOVE (used for debugging purposes)
 
-                                // vytvorime objekty pro copy&paste
+                                // create objects for copy&paste
                                 *fakeName = 0;
                                 IDataObject* dataObject = CreateIDataObject(MainWindow->HWindow, fakeRootDir,
                                                                             1, EnumOneFileName, fakeName + 1);
@@ -1362,8 +1361,8 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
                                                 {
                                                     BOOL clearSalShExtPastedData = TRUE;
                                                     if (OleSetClipboard(fakeDataObject) == S_OK)
-                                                    { // pri uspesnem ulozeni system vola fakeDataObject->AddRef() +
-                                                        // ulozime default drop-effect
+                                                    { // after successful saving, the system calls fakeDataObject->AddRef() +
+                                                        // store default drop-effect
                                                         if (OpenClipboard(MainWindow->HWindow))
                                                         {
                                                             if (SetClipboardData(cfPrefDrop, effect) != NULL)
@@ -1373,16 +1372,16 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
                                                         else
                                                             TRACE_E("OpenClipboard() has failed!");
 
-                                                        // uz jsou na clipboardu nase data (pri exitu Salama je musime zrusit)
+                                                        // our data is now on the clipboard (we need to delete it when exiting Salama)
                                                         OurDataOnClipboard = TRUE;
 
-                                                        // inicializace sdilene pameti
+                                                        // Initialization of shared memory
                                                         WaitForSingleObject(SalShExtSharedMemMutex, INFINITE);
                                                         BOOL sharedMemOK = SalShExtSharedMemView->Size >= sizeof(CSalShExtSharedMem);
                                                         if (sharedMemOK)
                                                         {
                                                             SalShExtSharedMemView->DoPasteFromSalamander = TRUE;
-                                                            SalShExtSharedMemView->ClipDataObjLastGetDataTime = GetTickCount() - 60000; // inicializujeme na 1 minutu pred zalozenim data-objektu
+                                                            SalShExtSharedMemView->ClipDataObjLastGetDataTime = GetTickCount() - 60000; // initialize to 1 minute before creating the data object
                                                             *fakeName = '\\';
                                                             lstrcpyn(SalShExtSharedMemView->PasteFakeDirName, fakeRootDir, MAX_PATH);
                                                             SalShExtSharedMemView->SalamanderMainWndPID = GetCurrentProcessId();
@@ -1395,27 +1394,27 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
                                                             lstrcpyn(SalShExtSharedMemView->ArcUnableToPaste1, LoadStr(IDS_ARCUNABLETOPASTE1), 300);
                                                             lstrcpyn(SalShExtSharedMemView->ArcUnableToPaste2, LoadStr(IDS_ARCUNABLETOPASTE2), 300);
 
-                                                            delFakeDir = FALSE; // vse je OK, fake-dir se uzije
+                                                            delFakeDir = FALSE; // everything is OK, fake-dir is used
                                                             fakeDataObject->SetCutOrCopyDone();
                                                         }
                                                         else
                                                             TRACE_E("Shared memory is too small!");
                                                         ReleaseMutex(SalShExtSharedMemMutex);
 
-                                                        if (!sharedMemOK) // pokud neni mozne navazat komunikaci se salextx86.dll ani salextx64.dll, nema smysl nechavat data-object na clipboardu
+                                                        if (!sharedMemOK) // If it is not possible to establish communication with salextx86.dll or salextx64.dll, there is no point in leaving the data object on the clipboard
                                                         {
                                                             OleSetClipboard(NULL);
-                                                            OurDataOnClipboard = FALSE; // teoreticky zbytecne (melo by se nastavit v Release() fakeDataObjectu - o par radek nize)
+                                                            OurDataOnClipboard = FALSE; // theoretically unnecessary (should be set in the Release() of the fakeDataObject - a few lines below)
                                                         }
-                                                        // zmena clipboardu, overime to ...
-                                                        IdleRefreshStates = TRUE;  // pri pristim Idle vynutime kontrolu stavovych promennych
-                                                        IdleCheckClipboard = TRUE; // nechame kontrolovat take clipboard
+                                                        // change clipboard, we will verify it ...
+                                                        IdleRefreshStates = TRUE;  // During the next Idle, we will force the check of status variables
+                                                        IdleCheckClipboard = TRUE; // we will also check the clipboard
 
-                                                        // pri COPY vymazeme flag CutToClip
+                                                        // When copying, we clear the CutToClip flag
                                                         if (panel->CutToClipChanged)
                                                             panel->ClearCutToClipFlag(TRUE);
                                                         CFilesWindow* anotherPanel = MainWindow->LeftPanel == panel ? MainWindow->RightPanel : MainWindow->LeftPanel;
-                                                        // pri COPY vymazeme flag CutToClip i u druheho panelu
+                                                        // When copying, we also clear the CutToClip flag in the second panel
                                                         if (anotherPanel->CutToClipChanged)
                                                             anotherPanel->ClearCutToClipFlag(TRUE);
                                                     }
@@ -1430,7 +1429,7 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
                                         }
                                         else
                                             TRACE_E(LOW_MEMORY);
-                                        fakeDataObject->Release(); // pokud je fakeDataObject na clipboardu, uvolni se s koncem aplikace nebo uvolnenim z clipboardu
+                                        fakeDataObject->Release(); // if the fakeDataObject is on the clipboard, release it with the end of the application or by releasing it from the clipboard
                                     }
                                     else
                                         TRACE_E(LOW_MEMORY);
@@ -1459,7 +1458,7 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
 
     if (panel->Is(ptPluginFS))
     {
-        // snizime prioritu threadu na "normal" (aby operace prilis nezatezovaly stroj)
+        // Lower the priority of the thread to "normal" (to prevent operations from overloading the machine)
         SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
         int panelID = MainWindow->LeftPanel == panel ? PANEL_LEFT : PANEL_RIGHT;
@@ -1467,9 +1466,9 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
         int selectedDirs = 0;
         if (count > 0)
         {
-            // spocitame kolik adresaru je oznaceno (zbytek oznacenych polozek jsou soubory)
+            // we will count how many directories are marked (the rest of the marked items are files)
             int i;
-            for (i = 0; i < panel->Dirs->Count; i++) // ".." nemuzou byt oznaceny, test by byl zbytecny
+            for (i = 0; i < panel->Dirs->Count; i++) // ".." cannot be marked, the test would be pointless
             {
                 if (panel->Dirs->At(i).Selected)
                     selectedDirs++;
@@ -1490,7 +1489,7 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
                 panel->GetPluginFS()->NotEmpty() &&
                 panel->GetPluginFS()->IsServiceSupported(FS_SERVICE_CONTEXTMENU)) // context-menu
             {
-                // napocitame levy horni roh kontextoveho menu
+                // calculate the top left corner of the context menu
                 POINT p;
                 if (posByMouse)
                 {
@@ -1513,7 +1512,7 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
                     }
                 }
 
-                if (useSelection) // menu pro polozky v panelu (klik na polozce)
+                if (useSelection) // menu for items in the panel (click on item)
                 {
                     panel->GetPluginFS()->ContextMenu(panel->GetPluginFS()->GetPluginFSName(),
                                                       panel->GetListBoxHWND(), p.x, p.y, fscmItemsInPanel,
@@ -1521,13 +1520,13 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
                 }
                 else
                 {
-                    if (onlyPanelMenu) // menu panelu (kliknuti za polozkami v panelu)
+                    if (onlyPanelMenu) // menu panel (clicking behind items in the panel)
                     {
                         panel->GetPluginFS()->ContextMenu(panel->GetPluginFS()->GetPluginFSName(),
                                                           panel->GetListBoxHWND(), p.x, p.y, fscmPanel,
                                                           panelID, 0, 0);
                     }
-                    else // menu pro aktualni cestu (kliknuti na change-drive buttonu)
+                    else // menu for the current path (clicking on the change-drive button)
                     {
                         panel->GetPluginFS()->ContextMenu(panel->GetPluginFS()->GetPluginFSName(),
                                                           panel->GetListBoxHWND(), p.x, p.y, fscmPathInPanel,
@@ -1539,11 +1538,11 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
             {
                 if (dragFiles && SalShExtRegistered &&
                     panel->GetPluginFS()->NotEmpty() &&
-                    (panel->GetPluginFS()->IsServiceSupported(FS_SERVICE_MOVEFROMFS) || // FS umi "move from FS"
-                     panel->GetPluginFS()->IsServiceSupported(FS_SERVICE_COPYFROMFS)))  // FS umi "copy from FS"
+                    (panel->GetPluginFS()->IsServiceSupported(FS_SERVICE_MOVEFROMFS) || // FS can "move from FS"
+                     panel->GetPluginFS()->IsServiceSupported(FS_SERVICE_COPYFROMFS)))  // FS can "copy from FS"
                 {
-                    // pokud tahne jediny podadresar FS, zjistime ktery (pro zmenu cesty
-                    // v directory-line a vlozeni do command-line)
+                    // if there is only one subdirectory FS, we will determine which one (for changing the path
+                    // in directory-line and insertion into command-line)
                     int i = -1;
                     if (count == 1)
                         i = indexes[0];
@@ -1583,12 +1582,12 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
                     strcat(srcFSPath, ":");
                     if (!panel->GetPluginFS()->GetCurrentPath(srcFSPath + strlen(srcFSPath)))
                         srcFSPath[0] = 0;
-                    panel->GetPluginFS()->GetAllowedDropEffects(0 /* start */, NULL, &allowedEffects);
+                    panel->GetPluginFS()->GetAllowedDropEffects(0 /* start*/, NULL, &allowedEffects);
                     DoDragFromArchiveOrFS(panel, dropDone, targetPath, operation, realDraggedPath,
-                                          allowedEffects, 2 /* FS */, srcFSPath, action == saLeftDragFiles);
-                    panel->GetPluginFS()->GetAllowedDropEffects(2 /* end */, NULL, NULL);
+                                          allowedEffects, 2 /* File system*/, srcFSPath, action == saLeftDragFiles);
+                    panel->GetPluginFS()->GetAllowedDropEffects(2 /* end*/, NULL, NULL);
 
-                    if (dropDone) // nechame provest operaci
+                    if (dropDone) // let's perform the operation
                     {
                         char* p = DupStr(targetPath);
                         if (p != NULL)
@@ -1598,7 +1597,7 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
             }
         }
 
-        // opet zvysime prioritu threadu, operace dobehla
+        // increase the thread priority again, operation completed
         SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
 
         if (indexes != NULL)
@@ -1612,7 +1611,7 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
         if (indexes != NULL)
             delete[] (indexes);
         EndStopRefresh();
-        return; // pro jistotu dal nepustime jine typy panelu
+        return; // for safety reasons, we will not allow other types of panels
     }
 
 #ifndef _WIN64
@@ -1654,10 +1653,10 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
                     char pageName[200];
                     if (action == saPermissions)
                     {
-                        // vynutime otevreni zalozky Security; bohuzel je treba predavat string pro danou lokalizaci OS
+                        // Force opening the Security tab; unfortunately, a string for the specific OS localization needs to be passed
                         ici.lpParameters = pageName;
                         if (!GetACLUISecurityPageName(pageName, 200))
-                            lstrcpy(pageName, "Security"); // pokud se nepodarilo nazev vytahnout, dame anglicke "Security" a v lokalizovanych verzich tise nebudeme fungovat
+                            lstrcpy(pageName, "Security"); // if we failed to extract the name, we will use the English "Security" and in localized versions we will quietly not work
                     }
                     ici.lpDirectory = panel->GetPath();
                     ici.nShow = SW_SHOWNORMAL;
@@ -1709,14 +1708,14 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
 
                     AuxInvokeAndRelease(menu, &ici);
 
-                    // zmena clipboardu, overime to ...
-                    IdleRefreshStates = TRUE;  // pri pristim Idle vynutime kontrolu stavovych promennych
-                    IdleCheckClipboard = TRUE; // nechame kontrolovat take clipboard
+                    // change clipboard, we will verify it ...
+                    IdleRefreshStates = TRUE;  // During the next Idle, we will force the check of status variables
+                    IdleCheckClipboard = TRUE; // we will also check the clipboard
 
                     BOOL repaint = FALSE;
                     if (panel->CutToClipChanged)
                     {
-                        // pred CUT a COPY vymazeme flag CutToClip
+                        // before CUT and COPY we clear the CutToClip flag
                         panel->ClearCutToClipFlag(FALSE);
                         repaint = TRUE;
                     }
@@ -1725,13 +1724,13 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
                                      IsTheSamePath(panel->GetPath(), anotherPanel->GetPath());
                     if (anotherPanel->CutToClipChanged)
                     {
-                        // pred CUT a COPY vymazeme flag CutToClip i u druheho panelu
+                        // before CUT and COPY we clear the CutToClip flag also in the second panel
                         anotherPanel->ClearCutToClipFlag(!samePaths);
                     }
 
                     if (action != saCopyToClipboard)
                     {
-                        // v CUT pripade nastavime souboru bit CutToClip (ghosted)
+                        // In the CUT case, we will set the CutToClip (ghosted) bit of the file
                         int idxCount = count;
                         int* idxs = (idxCount == 0) ? &index : indexes;
                         if (idxCount == 0)
@@ -1743,9 +1742,9 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
                             CFileData* f = (idx < panel->Dirs->Count) ? &panel->Dirs->At(idx) : &panel->Files->At(idx - panel->Dirs->Count);
                             f->CutToClip = 1;
                             f->Dirty = 1;
-                            if (samePaths) // oznacime soubor/adresar v druhem panelu (kvadr. slozitost, nezajem ...)
+                            if (samePaths) // mark the file/directory in the second panel (quadratic complexity, disinterest ...)
                             {
-                                if (idx < panel->Dirs->Count) // hledame mezi adresari
+                                if (idx < panel->Dirs->Count) // searching among directories
                                 {
                                     int total = anotherPanel->Dirs->Count;
                                     int k;
@@ -1760,7 +1759,7 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
                                         }
                                     }
                                 }
-                                else // hledame mezi soubory
+                                else // searching among files
                                 {
                                     int total = anotherPanel->Files->Count;
                                     int k;
@@ -1788,7 +1787,7 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
                     if (samePaths)
                         anotherPanel->RepaintListBox(DRAWFLAG_DIRTY_ONLY | DRAWFLAG_SKIP_VISTEST);
 
-                    // nastavime jeste preffered drop effect + puvod ze Salama
+                    // set preferred drop effect + origin from Salama
                     SetClipCutCopyInfo(panel->HWindow, action == saCopyToClipboard, TRUE);
                 }
 #ifndef _WIN64
@@ -1830,36 +1829,36 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
     {
         CALL_STACK_MESSAGE1("ShellAction::context_menu");
 
-        // napocitame levy horni roh kontextoveho menu
+        // calculate the top left corner of the context menu
         POINT pt;
         GetLeftTopCornert(&pt, posByMouse, useSelection, panel);
 
         if (panel->Is(ptZIPArchive))
         {
-            if (useSelection) // jen pokud jde o polozky v panelu (ne o aktualni cestu v panelu)
+            if (useSelection) // only when it comes to items in the panel (not the current path in the panel)
             {
-                // pokud je treba napocitat stavy prikazu, provedeme to (ArchiveMenu.UpdateItemsState je pouziva)
+                // If it is necessary to calculate the states of commands, we will do it (ArchiveMenu.UpdateItemsState is used for this)
                 MainWindow->OnEnterIdle();
 
-                // necham nastavit stavy dle enableru a otevru menu
+                // Set states according to the enabler and open the menu
                 ArchiveMenu.UpdateItemsState();
                 DWORD cmd = ArchiveMenu.Track(MENU_TRACK_RETURNCMD | MENU_TRACK_RIGHTBUTTON,
                                               pt.x, pt.y, panel->GetListBoxHWND(), NULL);
-                // vysledek posleme hlavnimu oknu
+                // send the result to the main window
                 if (cmd != 0)
                     PostMessage(MainWindow->HWindow, WM_COMMAND, cmd, 0);
             }
             else
             {
-                if (onlyPanelMenu) // kontextove menu v panelu (za polozkami) -> jen paste
+                if (onlyPanelMenu) // context menu in the panel (behind items) -> just paste
                 {
-                    // pokud je treba napocitat stavy prikazu, provedeme to (ArchivePanelMenu.UpdateItemsState je pouziva)
+                    // If it is necessary to calculate the states of commands, we will do it (ArchivePanelMenu.UpdateItemsState is used for this)
                     MainWindow->OnEnterIdle();
 
-                    // necham nastavit stavy dle enableru a otevru menu
+                    // Set states according to the enabler and open the menu
                     ArchivePanelMenu.UpdateItemsState();
 
-                    // Pokud jde o paste typu "zmena adresare", zobrazime to do polozky Paste
+                    // When it comes to a paste of type "change directory", we will display it in the Paste item
                     char text[220];
                     char tail[50];
                     tail[0] = 0;
@@ -1867,8 +1866,8 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
                     strcpy(text, LoadStr(IDS_ARCHIVEMENU_CLIPPASTE));
 
                     if (EnablerPastePath &&
-                        (!panel->Is(ptDisk) || !EnablerPasteFiles) && // PasteFiles je prioritni
-                        !EnablerPasteFilesToArcOrFS)                  // PasteFilesToArcOrFS je prioritni
+                        (!panel->Is(ptDisk) || !EnablerPasteFiles) && // PasteFiles is a priority
+                        !EnablerPasteFilesToArcOrFS)                  // PasteFilesToArcOrFS is a priority
                     {
                         char* p = strrchr(text, '\t');
                         if (p != NULL)
@@ -1886,7 +1885,7 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
 
                     DWORD cmd = ArchivePanelMenu.Track(MENU_TRACK_RETURNCMD | MENU_TRACK_RIGHTBUTTON,
                                                        pt.x, pt.y, panel->GetListBoxHWND(), NULL);
-                    // vysledek posleme hlavnimu oknu
+                    // send the result to the main window
                     if (cmd != 0)
                         PostMessage(MainWindow->HWindow, WM_COMMAND, cmd, 0);
                 }
@@ -1895,7 +1894,7 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
         else
         {
             BOOL uncRootPath = FALSE;
-            if (panel->ContextMenu != NULL) // dostali jsme padacku zrejme zpusobenou rekurzivnim volanim pres message-loopu v contextPopup.Track (doslo k nulovani panel->ContextMenu, zrejme prave pri opusteni vnitrniho volani rekurze)
+            if (panel->ContextMenu != NULL) // We received a crash apparently caused by a recursive call through the message loop in contextPopup.Track (resulting in resetting panel->ContextMenu, presumably right when exiting the internal recursion call).
             {
                 TRACE_E("ShellAction::context_menu: panel->ContextMenu must be NULL (probably forbidden recursive call)!");
             }
@@ -1904,7 +1903,7 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
                 HMENU h = CreatePopupMenu();
 
                 UINT flags = CMF_NORMAL | CMF_EXPLORE;
-                // osetrime stisknuty shift - rozsirene kontextove menu, pod W2K je tam napriklad Run as...
+                // we will handle the pressed shift - extended context menu, under W2K there is for example Run as...
 #define CMF_EXTENDEDVERBS 0x00000100 // rarely used verbs
                 BOOL shiftPressed = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
                 if (shiftPressed)
@@ -1929,20 +1928,20 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
                         panel->ContextMenu = CreateIContextMenu2(MainWindow->HWindow, panel->GetPath());
                         if (panel->ContextMenu != NULL && h != NULL)
                         {
-                            // bypass bugy shell-extensiony TortoiseHg: ma globalku s mapovanim ID polozek
-                            // v menu a prikazu THg, tedy v nasem pripade, kdy se ziskavaji dve menu
+                            // bypass bugs in the TortoiseHg shell extensions: it has a global variable with item ID mappings
+                            // in the menu and the THg command, in our case, when two menus are obtained
                             // (panel->ContextMenu a panel->ContextSubmenuNew) dojde k premazani tohoto
-                            // mapovani pozdeji ziskanym menu (volani QueryContextMenu), tedy prikazy z drive
-                            // ziskaneho menu nejdou spoustet, v puvodni verzi slo o menu panel->ContextSubmenuNew,
-                            // ve kterem jsou u paneloveho kontextoveho menu vsechny prikazy az na Open a Explore:
-                            // k obejiti tohoto problemu vyuzijeme to, ze z menu panel->ContextMenu bereme
-                            // jen Open a Explore, tedy prikazy woken, ktere touto chybou netrpi, takze
-                            // staci jen ziskat menu (volat QueryContextMenu) od panel->ContextSubmenuNew jako
-                            // druhe v poradi
-                            // POZNAMKA: vzdycky to delat nemuzeme, protoze pokud se pridava jen menu New,
-                            //           je naopak rozumejsi ziskat druhe v poradi menu panel->ContextMenu,
-                            //           aby fungovaly jeho prikazy (napr. THg se do menu New vubec nepridava,
-                            //           takze zadny problem nevznika)
+                            // mapping of later obtained menu (calling QueryContextMenu), i.e. commands from before
+                            // The acquired menus cannot be launched, in the original version it was about the menu panel->ContextSubmenuNew,
+                            // where all commands are in the panel context menu except for Open and Explore:
+                            // To tackle this issue, we will take advantage of the fact that we are taking from the menu panel->ContextMenu
+                            // only Open and Explore, therefore the commands woken, which do not suffer from this error, so
+                            // just get the menu (call QueryContextMenu) from panel->ContextSubmenuNew as
+                            // second in order
+                            // NOTE: we cannot always do this because if only the New menu is added,
+                            //           On the contrary, it is more understandable to obtain the second in order from the menu panel->ContextMenu,
+                            //           to make its commands work (for example, THg is not added to the New menu at all,
+                            //           so no problem arises)
                             ShellActionAux5(flags, panel, h);
                             alreadyHaveContextMenu = TRUE;
                         }
@@ -1994,19 +1993,19 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
                     }
                 }
 
-                BOOL clipCopy = FALSE;     // jde o "nase copy"?
-                BOOL clipCut = FALSE;      // jde o "nase cut"?
-                BOOL cmdDelete = FALSE;    // jde o "nase delete"?
-                BOOL cmdMapNetDrv = FALSE; // jde o "nase Map Network Drive"? (jen UNC root, nebudeme si komplikovat zivot)
-                DWORD cmd = 0;             // cislo prikazu pro kontext. menu (10000 = "nas paste")
-                char pastePath[MAX_PATH];  // buffer pro cestu, na kterou se provede "nas paste" (nastane-li)
+                BOOL clipCopy = FALSE;     // Is it about "our copy"?
+                BOOL clipCut = FALSE;      // Is it about "our cut"?
+                BOOL cmdDelete = FALSE;    // Is it "our delete"?
+                BOOL cmdMapNetDrv = FALSE; // Is it about "our Map Network Drive"? (just UNC root, let's not complicate our lives)
+                DWORD cmd = 0;             // command number for context menu (10000 = "our paste")
+                char pastePath[MAX_PATH];  // buffer for the path to which "our paste" will be performed (if it occurs)
                 if (panel->ContextMenu != NULL && h != NULL)
                 {
                     if (!alreadyHaveContextMenu)
                         ShellActionAux5(flags, panel, h);
                     RemoveUselessSeparatorsFromMenu(h);
 
-                    char cmdName[2000]; // schvalne mame 2000 misto 200, shell-extensiony obcas zapisuji dvojnasobek (uvaha: unicode = 2 * "pocet znaku"), atp.
+                    char cmdName[2000]; // intentionally we have 2000 instead of 200, shell extensions sometimes write double (consideration: unicode = 2 * "number of characters"), etc.
                     if (onlyPanelMenu)
                     {
                         if (panel->ContextSubmenuNew->MenuIsAssigned())
@@ -2021,14 +2020,14 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
                             int i;
                             for (i = 0; i < miCount; i++)
                             {
-                                memset(&mi, 0, sizeof(mi)); // nutne zde
+                                memset(&mi, 0, sizeof(mi)); // required here
                                 mi.cbSize = sizeof(mi);
                                 mi.fMask = MIIM_STATE | MIIM_TYPE | MIIM_ID | MIIM_SUBMENU;
                                 mi.dwTypeData = itemName;
                                 mi.cch = 500;
                                 if (GetMenuItemInfo(h, i, TRUE, &mi))
                                 {
-                                    if (mi.hSubMenu == NULL && (mi.fType & MFT_SEPARATOR) == 0) // neni submenu ani separator
+                                    if (mi.hSubMenu == NULL && (mi.fType & MFT_SEPARATOR) == 0) // There is no submenu or separator
                                     {
                                         if (AuxGetCommandString(panel->ContextMenu, mi.wID, GCS_VERB, NULL, cmdName, 200) == NOERROR)
                                         {
@@ -2036,7 +2035,7 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
                                             {
                                                 InsertMenuItem(bckgndMenu, bckgndMenuInsert++, TRUE, &mi);
                                                 if (bckgndMenuInsert == 2)
-                                                    break; // vic polozek odsud nepotrebujeme
+                                                    break; // we don't need more items from here
                                             }
                                         }
                                     }
@@ -2047,7 +2046,7 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
                                     TRACE_E("Unable to get item information from menu: " << GetErrorText(err));
                                 }
                             }
-                            if (bckgndMenuInsert > 0) // oddelime Explore + Open od zbytku menu
+                            if (bckgndMenuInsert > 0) // Separate Explore + Open from the rest of the menu
                             {
                                 // separator
                                 mi.cbSize = sizeof(mi);
@@ -2057,8 +2056,8 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
                                 InsertMenuItem(bckgndMenu, bckgndMenuInsert++, TRUE, &mi);
                             }
 
-                            /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volanim InsertMenuItem() dole...
+                            /* is used for the export_mnu.py script, which generates the salmenu.mnu for the Translator
+   to keep synchronized with the InsertMenuItem() calls below...
 MENU_TEMPLATE_ITEM PanelBkgndMenu[] =
 {
   {MNTT_PB, 0
@@ -2066,14 +2065,13 @@ MENU_TEMPLATE_ITEM PanelBkgndMenu[] =
   {MNTT_IT, IDS_PASTE_CHANGE_DIRECTORY
   {MNTT_IT, IDS_MENU_EDIT_PASTELINKS   
   {MNTT_PE, 0
-};
-*/
+};*/
 
-                            // pridame prikaz Paste (pokud jde o paste typu "zmena adresare", zobrazime to do polozky Paste)
+                            // add the Paste command (if it is a "change directory" type of paste, display it in the Paste item)
                             char tail[50];
                             tail[0] = 0;
                             strcpy(itemName, LoadStr(IDS_MENU_EDIT_PASTE));
-                            if (EnablerPastePath && !EnablerPasteFiles) // PasteFiles je prioritni
+                            if (EnablerPastePath && !EnablerPasteFiles) // PasteFiles is a priority
                             {
                                 char* p = strrchr(itemName, '\t');
                                 if (p != NULL)
@@ -2091,7 +2089,7 @@ MENU_TEMPLATE_ITEM PanelBkgndMenu[] =
                             mi.wID = 10000;
                             InsertMenuItem(bckgndMenu, bckgndMenuInsert++, TRUE, &mi);
 
-                            // pridame prikaz Paste Shortcuts
+                            // add the Paste Shortcuts command
                             mi.cbSize = sizeof(mi);
                             mi.fMask = MIIM_STATE | MIIM_ID | MIIM_TYPE;
                             mi.fType = MFT_STRING;
@@ -2100,7 +2098,7 @@ MENU_TEMPLATE_ITEM PanelBkgndMenu[] =
                             mi.wID = 10001;
                             InsertMenuItem(bckgndMenu, bckgndMenuInsert++, TRUE, &mi);
 
-                            // pokud uz tam neni, vlozime separator
+                            // if it's not there already, we insert a separator
                             MENUITEMINFO mi2;
                             memset(&mi2, 0, sizeof(mi2));
                             mi2.cbSize = sizeof(mi);
@@ -2121,9 +2119,9 @@ MENU_TEMPLATE_ITEM PanelBkgndMenu[] =
                     }
                     else
                     {
-                        // puvodne bylo pridani New polozky volano pred ShellActionAux5, ale
-                        // pod Windows XP dochazelo pri zavolani ShellActionAux5 k smazani polozky
-                        // New (v pripade, ze byla napred provedena Edit/Copy operace)
+                        // Originally, adding a new item was called before ShellActionAux5, but
+                        // Under Windows XP, an error occurred when calling ShellActionAux5 to delete an item
+                        // New (in case an Edit/Copy operation was performed beforehand)
                         if (panel->ContextSubmenuNew->MenuIsAssigned())
                         {
                             MENUITEMINFO mi;
@@ -2146,13 +2144,13 @@ MENU_TEMPLATE_ITEM PanelBkgndMenu[] =
                         }
                     }
 
-                    if (GetMenuItemCount(h) > 0) // ochrana proti zcela vyrezanemu menu
+                    if (GetMenuItemCount(h) > 0) // Protection against completely cut menu
                     {
                         CMenuPopup contextPopup;
                         contextPopup.SetTemplateMenu(h);
                         cmd = contextPopup.Track(MENU_TRACK_RETURNCMD | MENU_TRACK_RIGHTBUTTON,
                                                  pt.x, pt.y, panel->GetListBoxHWND(), NULL);
-                        //            pouze pro testovani -- zobrazime menu pres Windows API
+                        //            for testing purposes only -- display menu using Windows API
                         //            cmd = TrackPopupMenuEx(h, TPM_RETURNCMD | TPM_LEFTALIGN |
                         //                                   TPM_LEFTBUTTON, pt.x, pt.y, panel->GetListBoxHWND(), NULL);
                     }
@@ -2172,7 +2170,7 @@ MENU_TEMPLATE_ITEM PanelBkgndMenu[] =
                             strcpy(pastePath, panel->GetPath());
                         if (cmd < 5000 && stricmp(cmdName, "paste") == 0 && count <= 1)
                         {
-                            if (useSelection) // paste do podadresare panel->GetPath()
+                            if (useSelection) // paste into the subdirectory panel->GetPath()
                             {
                                 int specialIndex;
                                 if (count == 1) // select
@@ -2189,20 +2187,20 @@ MENU_TEMPLATE_ITEM PanelBkgndMenu[] =
                                     if (s > pastePath && *(s - 1) != '\\')
                                         *s++ = '\\';
                                     strcpy(s, subdir);
-                                    cmd = 10000; // prikaz bude proveden jinde
+                                    cmd = 10000; // command will be executed elsewhere
                                 }
                             }
-                            else // paste do panel->GetPath()
+                            else // paste into panel->GetPath()
                             {
                                 strcpy(pastePath, panel->GetPath());
-                                cmd = 10000; // prikaz bude proveden jinde
+                                cmd = 10000; // command will be executed elsewhere
                             }
                         }
                         clipCopy = (cmd < 5000 && stricmp(cmdName, "copy") == 0);
                         clipCut = (cmd < 5000 && stricmp(cmdName, "cut") == 0);
                         cmdDelete = useSelection && (cmd < 5000 && stricmp(cmdName, "delete") == 0);
 
-                        // prikaz Map Network Drive je pod XP 40, pod W2K 43 a teprve pod Vistou ma definovane cmdName
+                        // the Map Network Drive command is defined under XP 40, under W2K 43, and only under Vista does it have cmdName defined
                         cmdMapNetDrv = uncRootPath && (stricmp(cmdName, "connectNetworkDrive") == 0 ||
                                                        !WindowsVistaAndLater && cmd == 40);
 
@@ -2217,29 +2215,29 @@ MENU_TEMPLATE_ITEM PanelBkgndMenu[] =
                                 }
                                 else
                                     specialIndex = -1;           // focus
-                                panel->RenameFile(specialIndex); // v uvahu pripada jen disk (enablovani "Rename" neni potreba)
+                                panel->RenameFile(specialIndex); // Only the disk is considered (enabling "Rename" is not necessary)
                             }
                             else
                             {
-                                BOOL releaseLeft = FALSE;                  // odpojit levy panel od disku?
-                                BOOL releaseRight = FALSE;                 // odpojit pravy panel od disku?
-                                if (!useSelection && cmd < 5000 &&         // jde o kontextove menu pro adresar
-                                    stricmp(cmdName, "properties") != 0 && // u properties neni nutne
-                                    stricmp(cmdName, "find") != 0 &&       // u find neni nutne
-                                    stricmp(cmdName, "open") != 0 &&       // u open neni nutne
-                                    stricmp(cmdName, "explore") != 0 &&    // u explore neni nutne
-                                    stricmp(cmdName, "link") != 0)         // u create-short-cut neni nutne
+                                BOOL releaseLeft = FALSE;                  // disconnect the left panel from the disk?
+                                BOOL releaseRight = FALSE;                 // disconnect the right panel from the disk?
+                                if (!useSelection && cmd < 5000 &&         // It's about a context menu for a directory
+                                    stricmp(cmdName, "properties") != 0 && // it is not necessary for properties
+                                    stricmp(cmdName, "find") != 0 &&       // u find is not necessary
+                                    stricmp(cmdName, "open") != 0 &&       // u open is not necessary
+                                    stricmp(cmdName, "explore") != 0 &&    // exploring is not necessary
+                                    stricmp(cmdName, "link") != 0)         // Creating a shortcut is not necessary
                                 {
                                     char root[MAX_PATH];
                                     GetRootPath(root, panel->GetPath());
-                                    if (strlen(root) >= strlen(panel->GetPath())) // menu pro cely disk - kvuli prikazum typu
-                                    {                                             // "format..." musime "dat ruce pryc" od media
+                                    if (strlen(root) >= strlen(panel->GetPath())) // menu for the entire disk - for commands like
+                                    {                                             // "format..." we need to "take hands off" from media
                                         CFilesWindow* win;
                                         int i;
                                         for (i = 0; i < 2; i++)
                                         {
                                             win = i == 0 ? MainWindow->LeftPanel : MainWindow->RightPanel;
-                                            if (HasTheSameRootPath(win->GetPath(), root)) // stejny disk (UNC i normal)
+                                            if (HasTheSameRootPath(win->GetPath(), root)) // same disk (UNC and normal)
                                             {
                                                 if (i == 0)
                                                     releaseLeft = TRUE;
@@ -2254,11 +2252,11 @@ MENU_TEMPLATE_ITEM PanelBkgndMenu[] =
                                 if (!useSelection || count == 0 && index < panel->Dirs->Count ||
                                     count == 1 && indexes[0] < panel->Dirs->Count)
                                 {
-                                    SetCurrentDirectoryToSystem(); // aby sel odmapovat i disk z panelu
+                                    SetCurrentDirectoryToSystem(); // to unmap the disk from the panel
                                 }
                                 else
                                 {
-                                    SetCurrentDirectory(panel->GetPath()); // pro soubory obsahujici ve jmene mezery: aby fungovalo Open With i pro Microsoft Paint (blblo pod W2K - psalo "d:\documents.bmp was not found" pro soubor "D:\Documents and Settings\petr\My Documents\example.bmp")
+                                    SetCurrentDirectory(panel->GetPath()); // for files containing spaces in their names: to make Open With work for Microsoft Paint as well (it was buggy under W2K - it would say "d:\documents.bmp was not found" for the file "D:\Documents and Settings\petr\My Documents\example.bmp")
                                 }
 
                                 DWORD disks = GetLogicalDrives();
@@ -2280,10 +2278,10 @@ MENU_TEMPLATE_ITEM PanelBkgndMenu[] =
                                 ici.nShow = SW_SHOWNORMAL;
                                 ici.ptInvoke = pt;
 
-                                panel->FocusFirstNewItem = TRUE; // jak pro WinZip a jeho archivy, tak pro menu New (funguje dobre jen pri autorefreshovani panelu)
+                                panel->FocusFirstNewItem = TRUE; // for WinZip and its archives, as well as for the New menu (works well only with auto-refresh of the panel)
                                 if (cmd < 5000)
                                 {
-                                    BOOL changeToFixedDrv = cmd == 35; // "format" neni modalni, nutna zmena na fixed drive
+                                    BOOL changeToFixedDrv = cmd == 35; // "format" is not modal, necessary change to fixed drive
                                     if (releaseLeft)
                                     {
                                         if (changeToFixedDrv)
@@ -2305,32 +2303,32 @@ MENU_TEMPLATE_ITEM PanelBkgndMenu[] =
 
                                     AuxInvokeCommand(panel, (CMINVOKECOMMANDINFO*)&ici);
 
-                                    // cut/copy/paste chytame, ale pro jistotu provedeme stejne refresh enableru clipboardu
-                                    IdleRefreshStates = TRUE;  // pri pristim Idle vynutime kontrolu stavovych promennych
-                                    IdleCheckClipboard = TRUE; // nechame kontrolovat take clipboard
+                                    // cut/copy/paste we catch, but just to be sure we will still perform the same refresh of the clipboard enabler
+                                    IdleRefreshStates = TRUE;  // During the next Idle, we will force the check of status variables
+                                    IdleCheckClipboard = TRUE; // we will also check the clipboard
 
                                     if (releaseLeft && !changeToFixedDrv)
                                         MainWindow->LeftPanel->HandsOff(FALSE);
                                     if (releaseRight && !changeToFixedDrv)
                                         MainWindow->RightPanel->HandsOff(FALSE);
 
-                                    //---  refresh neautomaticky refreshovanych adresaru
-                                    // ohlasime zmenu v aktualnim adresari a jeho podadresarich (radsi, buh vi co se spustilo)
+                                    //--- refresh non-automatically refreshed directories
+                                    // we report a change in the current directory and its subdirectories (better, who knows what started)
                                     MainWindow->PostChangeOnPathNotification(panel->GetPath(), TRUE);
                                 }
                                 else
                                 {
-                                    if (panel->ContextSubmenuNew->MenuIsAssigned()) // mohlo dojit k exceptione
+                                    if (panel->ContextSubmenuNew->MenuIsAssigned()) // an exception could occur
                                     {
                                         AuxInvokeCommand2(panel, (CMINVOKECOMMANDINFO*)&ici);
 
-                                        //---  refresh neautomaticky refreshovanych adresaru
-                                        // ohlasime zmenu v aktualnim adresari (novy soubor/adresar lze vytvorit snad jen v nem)
+                                        //--- refresh non-automatically refreshed directories
+                                        // we report a change in the current directory (a new file/directory can probably only be created in it)
                                         MainWindow->PostChangeOnPathNotification(panel->GetPath(), FALSE);
                                     }
                                 }
 
-                                if (GetLogicalDrives() < disks) // odmapovani
+                                if (GetLogicalDrives() < disks) // unmapping
                                 {
                                     if (MainWindow->LeftPanel->CheckPath(FALSE) != ERROR_SUCCESS)
                                         MainWindow->LeftPanel->ChangeToRescuePathOrFixedDrive(MainWindow->LeftPanel->HWindow);
@@ -2348,28 +2346,28 @@ MENU_TEMPLATE_ITEM PanelBkgndMenu[] =
                         DestroyMenu(h);
                 }
 
-                if (cmd == 10000) // nase vlastni "paste" na pastePath
+                if (cmd == 10000) // our own "paste" to pastePath
                 {
                     if (!panel->ClipboardPaste(FALSE, FALSE, pastePath))
-                        panel->ClipboardPastePath(); // klasicky paste selhal, nejspis mame jen zmenit aktualni cestu
+                        panel->ClipboardPastePath(); // classic paste failed, we probably just need to change the current path
                 }
                 else
                 {
-                    if (cmd == 10001) // nase vlastni "paste shortcuts" na pastePath
+                    if (cmd == 10001) // our own "paste shortcuts" to pastePath
                     {
                         panel->ClipboardPaste(TRUE, FALSE, pastePath);
                     }
                     else
                     {
-                        if (clipCopy) // nase vlastni "copy"
+                        if (clipCopy) // our own "copy"
                         {
-                            panel->ClipboardCopy(); // rekurzivni volani ShellAction
+                            panel->ClipboardCopy(); // recursive call of ShellAction
                         }
                         else
                         {
-                            if (clipCut) // nase vlastni "cut"
+                            if (clipCut) // our own "cut"
                             {
-                                panel->ClipboardCut(); // rekurzivni volani ShellAction
+                                panel->ClipboardCut(); // recursive call of ShellAction
                             }
                             else
                             {
@@ -2379,7 +2377,7 @@ MENU_TEMPLATE_ITEM PanelBkgndMenu[] =
                                 }
                                 else
                                 {
-                                    if (cmdMapNetDrv) // jde o "nase Map Network Drive"? (jen UNC root, nebudeme si komplikovat zivot)
+                                    if (cmdMapNetDrv) // Is it about "our Map Network Drive"? (just UNC root, let's not complicate our lives)
                                     {
                                         panel->ConnectNet(TRUE);
                                     }
@@ -2409,8 +2407,8 @@ void ExecuteAssociationAux(IContextMenu2* menu, CMINVOKECOMMANDINFO& ici)
 {
     CALL_STACK_MESSAGE_NONE
 
-    // docasne snizime prioritu threadu, aby nam nejaka zmatena shell extension nesezrala CPU
-    HANDLE hThread = GetCurrentThread(); // pseudo-handle, neni treba uvolnovat
+    // temporarily lower the priority of the thread so that some confused shell extension does not eat up the CPU
+    HANDLE hThread = GetCurrentThread(); // pseudo-handle, no need to release
     int oldThreadPriority = GetThreadPriority(hThread);
     SetThreadPriority(hThread, THREAD_PRIORITY_NORMAL);
 
@@ -2430,8 +2428,8 @@ void ExecuteAssociationAux2(IContextMenu2* menu, HMENU h, DWORD flags)
 {
     CALL_STACK_MESSAGE_NONE
 
-    // docasne snizime prioritu threadu, aby nam nejaka zmatena shell extension nesezrala CPU
-    HANDLE hThread = GetCurrentThread(); // pseudo-handle, neni treba uvolnovat
+    // temporarily lower the priority of the thread so that some confused shell extension does not eat up the CPU
+    HANDLE hThread = GetCurrentThread(); // pseudo-handle, no need to release
     int oldThreadPriority = GetThreadPriority(hThread);
     SetThreadPriority(hThread, THREAD_PRIORITY_NORMAL);
 
@@ -2459,33 +2457,33 @@ void ExecuteAssociationAux3(IContextMenu2* menu)
     }
 }
 
-extern DWORD ExecuteAssociationTlsIndex; // dovoli jen jedno volani zaroven (zamezi rekurzi) v kazdem threadu
+extern DWORD ExecuteAssociationTlsIndex; // Allows only one call at a time (prevents recursion) in each thread
 
 void ExecuteAssociation(HWND hWindow, const char* path, const char* name)
 {
     CALL_STACK_MESSAGE3("ExecuteAssociation(, %s, %s)", path, name);
 
-    if (ExecuteAssociationTlsIndex == TLS_OUT_OF_INDEXES || // neni alokovany TLS (always false)
-        TlsGetValue(ExecuteAssociationTlsIndex) == 0)       // nejde o rekurzivni volani
+    if (ExecuteAssociationTlsIndex == TLS_OUT_OF_INDEXES || // TLS is not allocated (always false)
+        TlsGetValue(ExecuteAssociationTlsIndex) == 0)       // it's not a recursive call
     {
-        if (ExecuteAssociationTlsIndex != TLS_OUT_OF_INDEXES) // nove volani neni mozne
+        if (ExecuteAssociationTlsIndex != TLS_OUT_OF_INDEXES) // new call is not possible
             TlsSetValue(ExecuteAssociationTlsIndex, (void*)1);
 
-        //  MainWindow->ReleaseMenuNew();  // Windows nejsou staveny na vic kontextovych menu
+        //  MainWindow->ReleaseMenuNew();  // Windows are not built for multiple context menus
 
         if (Configuration.UseSalOpen)
         {
-            // zkusime otevrit asociaci pres salopen.exe
-            char execName[MAX_PATH + 200]; // + 200 je rezerva pro delsi jmena (blby Windows)
+            // let's try to open the association via salopen.exe
+            char execName[MAX_PATH + 200]; // + 200 is a reserve for longer names (stupid Windows)
             strcpy(execName, path);
             if (SalPathAppend(execName, name, MAX_PATH + 200) && SalOpenExecute(hWindow, execName))
             {
-                if (ExecuteAssociationTlsIndex != TLS_OUT_OF_INDEXES) // uz je mozne nove volani
+                if (ExecuteAssociationTlsIndex != TLS_OUT_OF_INDEXES) // It is now possible to make a new call
                     TlsSetValue(ExecuteAssociationTlsIndex, (void*)0);
-                return; // hotovo, spustilo se to v procesu salopen.exe
+                return; // done, it started in the salopen.exe process
             }
 
-            // pokud selze salopen.exe, spoustime klasickym zpusobem (nebezpeci otevrenych handlu v adresari)
+            // if salopen.exe fails, we run it in the traditional way (danger of open handles in the directory)
         }
 
         IContextMenu2* menu = CreateIContextMenu2(hWindow, path, 1,
@@ -2500,7 +2498,7 @@ void ExecuteAssociation(HWND hWindow, const char* path, const char* name)
                 ExecuteAssociationAux2(menu, h, flags);
 
                 UINT cmd = GetMenuDefaultItem(h, FALSE, GMDI_GOINTOPOPUPS);
-                if (cmd == -1) // nenasli jsme default item -> zkusime hledat jen mezi verby
+                if (cmd == -1) // We did not find the default item -> let's try searching only among verbs
                 {
                     DestroyMenu(h);
                     h = CreatePopupMenu();
@@ -2510,7 +2508,7 @@ void ExecuteAssociation(HWND hWindow, const char* path, const char* name)
 
                         cmd = GetMenuDefaultItem(h, FALSE, GMDI_GOINTOPOPUPS);
                         if (cmd == -1)
-                            cmd = 0; // zkusime "default verb" (index 0)
+                            cmd = 0; // Let's try the "default verb" (index 0)
                     }
                 }
                 if (cmd != -1)
@@ -2536,50 +2534,49 @@ void ExecuteAssociation(HWND hWindow, const char* path, const char* name)
             ExecuteAssociationAux3(menu);
         }
 
-        if (ExecuteAssociationTlsIndex != TLS_OUT_OF_INDEXES) // uz je mozne nove volani
+        if (ExecuteAssociationTlsIndex != TLS_OUT_OF_INDEXES) // It is now possible to make a new call
             TlsSetValue(ExecuteAssociationTlsIndex, (void*)0);
     }
     else
     {
         // TRACE_E("Attempt to call ExecuteAssociation() recursively! (skipping this call...)");
-        // zeptame se, zda ma Salamander pokracovat nebo jestli ma vygenerovat bug report
+        // ask whether Salamander should continue or generate a bug report
         if (SalMessageBox(hWindow, LoadStr(IDS_SHELLEXTBREAK4), SALAMANDER_TEXT_VERSION,
                           MSGBOXEX_CONTINUEABORT | MB_ICONINFORMATION | MSGBOXEX_SETFOREGROUND) == IDABORT)
-        { // breakneme se
+        { // Let's break
             strcpy(BugReportReasonBreak, "Attempt to call ExecuteAssociation() recursively.");
             TaskList.FireEvent(TASKLIST_TODO_BREAK, GetCurrentProcessId());
-            // zamrazime tento thread
+            // Freeze this thread
             while (1)
                 Sleep(1000);
         }
     }
 }
 
-// vraci TRUE, pokud je "bezpecne" poskytnout do shell extension jako parent okno specialni neviditelne okno,
-// ktere pak muze shell extension napriklad sestrelit pres DestroyWindow (coz normalne zavre Explorera, ale shodilo Salama)
-// existuji vyjimky, kdy je nutne predat jako parent hlavni okno Salamandera
+// returns TRUE if it is "safe" to provide a special invisible window as the parent window to a shell extension,
+// which can then be shot down by a shell extension via DestroyWindow (which normally closes Explorer, but Salam crashed)
+// There are exceptions when it is necessary to pass the main window of Salamander as a parent
 BOOL CanUseShellExecuteWndAsParent(const char* cmdName)
 {
-    // pro Map Network Drive nejde pouzit shellExecuteWnd, jinak se to kousne (zdisabluji MainWindows->HWindow a okno Map Network Drive se neotevre)
+    // shellExecuteWnd cannot be used for Map Network Drive, otherwise it will freeze (disabling MainWindows->HWindow and the Map Network Drive window will not open)
     if (WindowsVistaAndLater && stricmp(cmdName, "connectNetworkDrive") == 0)
         return FALSE;
 
-    // pod Windows 8 zlobilo Open With - pri volbe vlastniho programu se nezobrazil Open dialog
-    // https://forum.altap.cz/viewtopic.php?f=16&t=6730 a https://forum.altap.cz/viewtopic.php?t=6782
-    // problem je tam v tom, ze se kod vrati z invoke, ale pozdeji si MS sahnou na parent okno, ktere my uz mame zrusene
-    // TODO: nabizelo by se reseni, kdy bychom ShellExecuteWnd nechavali zit (child okno, roztazene pres celou plochu Salama, uplne na jeho pozadi)
-    // pouze bychom si vzdy pred jeho predanim overili, ze zije (ze ho nekdo nestrelil)
-    // TODO2: tak jsem navrh cvicne zkusil a prave pod W8 a Open With to neslape, Open dialog neni modalni k nasemu hlavnimu oknu (pripadne Find okno)
-    // zatim budeme v tomto pripade predavat hlavni okno Salamandera
+    // Under Windows 8, Open With misbehaved - when choosing a custom program, the Open dialog did not appear
+    // https://forum.altap.cz/viewtopic.php?f=16&t=6730 and https://forum.altap.cz/viewtopic.php?t=6782
+    // The problem is that the code returns from the invoke, but later MS reaches for the parent window that we have already destroyed
+    // TODO: It would be a solution to let ShellExecuteWnd live (child window, stretched across the entire Salama surface, completely in its background)
+    // we would always verify that he is alive (that he has not been shot) before handing it over
+    // TODO2: so I tried the exercise design and right under W8 and Open With it doesn't work, the Open dialog is not modal to our main window (or the Find window)
+    // for now, we will be passing the main window of Salamander in this case
     if (Windows8AndLater && stricmp(cmdName, "openas") == 0)
         return FALSE;
 
-    // pro ostatni pripady (vetsina) lze pouzit ShellExecuteWnd
+    // for other cases (most of them) ShellExecuteWnd can be used
     return TRUE;
 }
 
-/*
-//const char *EnumFileNamesFunction_OneFile(int index, void *param)
+/*  //const char *EnumFileNamesFunction_OneFile(int index, void *param)
 //{
 //  return (const char *)param;
 //}
@@ -2588,13 +2585,13 @@ BOOL MakeFileAvailOfflineIfOneDriveOnWin81(HWND parent, const char *name)
 {
   CALL_STACK_MESSAGE2("MakeFileAvailOfflineIfOneDriveOnWin81(, %s)", name);
 
-  BOOL ret = TRUE;    // POZOR: chybi podpora pro OneDriveBusinessStorages, pripadne dopsat !!!
+  BOOL ret = TRUE;    // WARNING: missing support for OneDriveBusinessStorages, needs to be added !!!
   if (Windows8_1AndLater && OneDrivePath[0] != 0 && strlen(name) < MAX_PATH)
   {
     char path[MAX_PATH];
     char *cutName;
     strcpy_s(path, name);
-    if (CutDirectory(path, &cutName) && SalPathIsPrefix(OneDrivePath, path)) // resime to jen pod OneDrive slozkou
+    if (CutDirectory(path, &cutName) && SalPathIsPrefix(OneDrivePath, path)) // handling only under OneDrive folder
     {
       BOOL makeOffline = FALSE;
       WIN32_FIND_DATA findData;
@@ -2605,11 +2602,11 @@ BOOL MakeFileAvailOfflineIfOneDriveOnWin81(HWND parent, const char *name)
         FindClose(hFind);
       }
 
-      if (makeOffline)  // prevedu soubor na offline
+      if (makeOffline)  // convert file to offline
       {
-        // tak takhle debilne to nejde, je to asynchronni a ten prevod na offline (stazeni ze site)
-        // klidne probehne az za minutu nebo vubec neprobehne, nemame nad tim zadnou kontrolu,
-        // pockame az to pujde nejak pres Win32 API
+        // it doesn't work like this, it's asynchronous and the conversion to offline (download from the network)
+        // can take up to a minute or not happen at all, we have no control over it,
+        // we will wait until it can be done somehow through Win32 API
 //        IContextMenu2 *menu = CreateIContextMenu2(parent, path, 1, EnumFileNamesFunction_OneFile, cutName);
 //        if (menu != NULL)
 //        {
@@ -2634,5 +2631,4 @@ BOOL MakeFileAvailOfflineIfOneDriveOnWin81(HWND parent, const char *name)
     }
   }
   return ret;
-}
-*/
+}*/

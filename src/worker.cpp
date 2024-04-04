@@ -9,16 +9,16 @@
 #include <Aclapi.h>
 #include <Ntsecapi.h>
 
-// tyto funkce nemaji header, musime loadit dynamicky
+// these functions do not have a header, we need to load them dynamically
 NTQUERYINFORMATIONFILE DynNtQueryInformationFile = NULL;
 NTFSCONTROLFILE DynNtFsControlFile = NULL;
 
-COperationsQueue OperationsQueue; // fronta diskovych operaci
+COperationsQueue OperationsQueue; // queue of disk operations
 
-// je-li definovane, pisou se do TRACE ruzne debug hlasky
+// if defined, various debug messages are written to TRACE
 //#define WORKER_COPY_DEBUG_MSG
 
-// zakomentovat az nebudu chtit sledovat vsechny ty hlasky z prubehu algoritmu asynchronniho kopirovani
+// comment out if I don't want to track all those messages from the progress of the asynchronous copy algorithm
 //#define ASYNC_COPY_DEBUG_MSG
 
 //
@@ -49,28 +49,28 @@ void CTransferSpeedMeter::GetSpeed(CQuadWord* speed)
     DWORD time = GetTickCount();
 
     if (CountOfLastPackets >= 2)
-    { // otestujeme, jestli nejde o nizkou rychlost (vypocet z LastPacketsSize a LastPacketsTime)
+    { // we will test if it is not a low speed (calculation from LastPacketsSize and LastPacketsTime)
         int firstPacket = ((TRSPMETER_NUMOFSTOREDPACKETS + 1) + ActIndexInLastPackets - CountOfLastPackets) % (TRSPMETER_NUMOFSTOREDPACKETS + 1);
         int lastPacket = ((TRSPMETER_NUMOFSTOREDPACKETS + 1) + ActIndexInLastPackets - 1) % (TRSPMETER_NUMOFSTOREDPACKETS + 1);
         DWORD lastPacketTime = LastPacketsTime[lastPacket];
-        DWORD totalTime = lastPacketTime - LastPacketsTime[firstPacket]; // cas mezi prijmem prvniho a posledniho paketu
+        DWORD totalTime = lastPacketTime - LastPacketsTime[firstPacket]; // time between receiving the first and last packet
         if (totalTime >= ((DWORD)(CountOfLastPackets - 1) * TRSPMETER_STPCKTSMININTERVAL) / TRSPMETER_NUMOFSTOREDPACKETS)
-        {                                     // jde o nizkou rychlost (do TRSPMETER_NUMOFSTOREDPACKETS paketu za TRSPMETER_STPCKTSMININTERVAL ms)
-            if (time - lastPacketTime > 2000) // dvouvterinova "ochrana" doba pro posledni napocitanou pomalou rychlost
-            {                                 // zkusime, jestli nejde o vice nez dvojnasobne zpomaleni proti rychlosti posledniho paketu, pokud ano, zobrazime
-                                              // nulovou rychlost (abysme pri zastaveni pomaleho prenosu neukazovali porad posledni ziskany rychlostni udaj)
+        {                                     // it is about low speed (up to TRSPMETER_NUMOFSTOREDPACKETS packets in TRSPMETER_STPCKTSMININTERVAL ms)
+            if (time - lastPacketTime > 2000) // two-minute "guard" time for the last calculated slow speed
+            {                                 // we will try if it is not more than double the slowdown compared to the speed of the last packet, if so, we will display
+                                              // zero speed (so that we do not always show the last received speed value when stopping a slow transfer)
                 int preLastPacket = ((TRSPMETER_NUMOFSTOREDPACKETS + 1) + ActIndexInLastPackets - 2) % (TRSPMETER_NUMOFSTOREDPACKETS + 1);
                 if ((UINT64)2 * MaxPacketSize * (lastPacketTime - LastPacketsTime[preLastPacket]) < (UINT64)LastPacketsSize[lastPacket] * (time - lastPacketTime))
                 {
                     speed->SetUI64(0);
                     ResetSpeed = TRUE;
-                    return; // rychlost klesla aspon dvakrat, radsi ukazeme nulu
+                    return; // speed decreased at least twice, better show zero
                 }
             }
             if (totalTime > TRSPMETER_ACTSPEEDSTEP * TRSPMETER_ACTSPEEDNUMOFSTEPS)
-            { // rychlost budeme pocitat jen z dat co nejblizsi dobe TRSPMETER_ACTSPEEDSTEP * TRSPMETER_ACTSPEEDNUMOFSTEPS
-                // (pokud budou pakety chodit pomalu, muzou byt ve fronte treba pakety za poslednich pet minut - my tu ovsem
-                // pocitame "okamzitou" rychlost, ne prumer za poslednich pet minut)
+            { // we will calculate the speed only from the data in the nearest time TRSPMETER_ACTSPEEDSTEP * TRSPMETER_ACTSPEEDNUMOFSTEPS
+                // (if packets start arriving slowly, there may be packets in the queue from the last five minutes - however, we
+                // we calculate "instantaneous" speed, not the average over the last five minutes)
                 int i = firstPacket;
                 while (1)
                 {
@@ -82,7 +82,7 @@ void CTransferSpeedMeter::GetSpeed(CQuadWord* speed)
                 }
                 totalTime = lastPacketTime - LastPacketsTime[firstPacket];
             }
-            UINT64 totalSize = 0; // soucet vsech velikosti paketu, krome prvniho, ten vynechavame (z nej se bere jen cas)
+            UINT64 totalSize = 0; // sum of all packet sizes except the first one, which is omitted (only its time is taken)
             do
             {
                 if (++firstPacket >= TRSPMETER_NUMOFSTOREDPACKETS + 1)
@@ -90,43 +90,43 @@ void CTransferSpeedMeter::GetSpeed(CQuadWord* speed)
                 totalSize += LastPacketsSize[firstPacket];
             } while (firstPacket != lastPacket);
             speed->SetUI64((1000 * totalSize) / totalTime);
-            return; // mame spocitanou nizkou rychlost, koncime
+            return; // We have calculated a low speed, we are finishing
         }
-        else // jde o vysokou rychlost (vic nez TRSPMETER_NUMOFSTOREDPACKETS paketu za TRSPMETER_STPCKTSMININTERVAL ms),
-        {    // provedeme test na nahly pokles rychlosti (hlavne kdyz se zacnou kopirovat nulove soubory nebo vytvaret prazdne adresare)
+        else // it is about high speed (more than TRSPMETER_NUMOFSTOREDPACKETS packets in TRSPMETER_STPCKTSMININTERVAL ms),
+        {    // we will perform a test for sudden speed drop (especially when zero files start to be copied or empty directories are created)
             if (time - lastPacketTime > 800)
-            { // pokud uz 800ms neprisel zadny paket, budeme hlasit nulovou rychlost
+            { // if no packet has arrived within 800ms, we will report zero speed
                 speed->SetUI64(0);
                 ResetSpeed = TRUE;
                 return;
             }
         }
     }
-    else // neni z ceho pocitat, zatim hlasime "0 B/s"
+    else // There is nothing to calculate, currently reporting "0 B/s"
     {
         speed->SetUI64(0);
         return;
     }
-    // vysoka rychlost (vic nez TRSPMETER_NUMOFSTOREDPACKETS paketu za TRSPMETER_STPCKTSMININTERVAL ms)
-    if (CountOfTrBytesItems > 0) // po navazani spojeni je "always true"
+    // high speed (more than TRSPMETER_NUMOFSTOREDPACKETS packets in TRSPMETER_STPCKTSMININTERVAL ms)
+    if (CountOfTrBytesItems > 0) // after establishing the connection, it is "always true"
     {
-        int actIndexAdded = 0;                           // 0 = nebyl zapocitan akt. index, 1 = byl zapocitan akt. index
-        int emptyTrBytes = 0;                            // pocet zapocitanych prazdnych kroku
-        UINT64 total = 0;                                // celkovy pocet bytu za poslednich max. TRSPMETER_ACTSPEEDNUMOFSTEPS kroku
-        int addFromTrBytes = CountOfTrBytesItems - 1;    // pocet uzavrenych kroku k pridani z fronty
-        DWORD restTime = 0;                              // cas od posledniho zapocitaneho kroku do tohoto okamziku
-        if ((int)(time - ActIndexInTrBytesTimeLim) >= 0) // akt. index uz je uzavreny + mozna budou potreba i prazdne kroky
+        int actIndexAdded = 0;                           // 0 = current index was not counted, 1 = current index was counted
+        int emptyTrBytes = 0;                            // number of counted empty steps
+        UINT64 total = 0;                                // total number of apartments for the last max. TRSPMETER_ACTSPEEDNUMOFSTEPS steps
+        int addFromTrBytes = CountOfTrBytesItems - 1;    // number of steps closed to add from the queue
+        DWORD restTime = 0;                              // time elapsed from the last counted step to this moment
+        if ((int)(time - ActIndexInTrBytesTimeLim) >= 0) // current index is already closed + empty steps may be needed
         {
             emptyTrBytes = (time - ActIndexInTrBytesTimeLim) / TRSPMETER_ACTSPEEDSTEP;
             restTime = (time - ActIndexInTrBytesTimeLim) % TRSPMETER_ACTSPEEDSTEP;
             emptyTrBytes = min(emptyTrBytes, TRSPMETER_ACTSPEEDNUMOFSTEPS);
-            if (emptyTrBytes < TRSPMETER_ACTSPEEDNUMOFSTEPS) // nestaci jen prazdne kroky, zapocteme i akt. index
+            if (emptyTrBytes < TRSPMETER_ACTSPEEDNUMOFSTEPS) // Not only empty steps are enough, we will also count the activity index
             {
                 total = TransferedBytes[ActIndexInTrBytes];
                 actIndexAdded = 1;
             }
             addFromTrBytes = TRSPMETER_ACTSPEEDNUMOFSTEPS - actIndexAdded - emptyTrBytes;
-            addFromTrBytes = min(addFromTrBytes, CountOfTrBytesItems - 1); // kolik uzavrenych kroku z fronty jeste zapocist
+            addFromTrBytes = min(addFromTrBytes, CountOfTrBytesItems - 1); // how many closed steps are still pending from the queue
         }
         else
         {
@@ -139,17 +139,17 @@ void CTransferSpeedMeter::GetSpeed(CQuadWord* speed)
         for (i = 0; i < addFromTrBytes; i++)
         {
             if (--actIndex < 0)
-                actIndex = TRSPMETER_ACTSPEEDNUMOFSTEPS; // pohyb po kruh. fronte
+                actIndex = TRSPMETER_ACTSPEEDNUMOFSTEPS; // movement along a circular queue
             total += TransferedBytes[actIndex];
         }
         DWORD t = (addFromTrBytes + actIndexAdded + emptyTrBytes) * TRSPMETER_ACTSPEEDSTEP + restTime;
         if (t > 0)
             speed->SetUI64((total * 1000) / t);
         else
-            speed->SetUI64(0); // neni z ceho pocitat, zatim hlasime "0 B/s"
+            speed->SetUI64(0); // There is nothing to calculate, currently reporting "0 B/s"
     }
     else
-        speed->SetUI64(0); // neni z ceho pocitat, zatim hlasime "0 B/s"
+        speed->SetUI64(0); // There is nothing to calculate, currently reporting "0 B/s"
 }
 
 void CTransferSpeedMeter::JustConnected()
@@ -170,7 +170,7 @@ void CTransferSpeedMeter::JustConnected()
 
 void CTransferSpeedMeter::BytesReceived(DWORD count, DWORD time, DWORD maxPacketSize)
 {
-    DEBUG_SLOW_CALL_STACK_MESSAGE1("CTransferSpeedMeter::BytesReceived(, ,)"); // parametry ignorujeme z rychlostnich duvodu (call-stack uz tak brzdi)
+    DEBUG_SLOW_CALL_STACK_MESSAGE1("CTransferSpeedMeter::BytesReceived(, ,)"); // we ignore parameters for performance reasons (call-stack is already slowing down)
 
     MaxPacketSize = maxPacketSize;
 
@@ -189,25 +189,25 @@ void CTransferSpeedMeter::BytesReceived(DWORD count, DWORD time, DWORD maxPacket
         if (CountOfLastPackets < TRSPMETER_NUMOFSTOREDPACKETS + 1)
             CountOfLastPackets++;
     }
-    if ((int)(time - ActIndexInTrBytesTimeLim) < 0) // je v akt. casovem intervalu, jen pridame pocet bytu do intervalu
+    if ((int)(time - ActIndexInTrBytesTimeLim) < 0) // is in the current time interval, we just add the number of bytes to the interval
     {
         TransferedBytes[ActIndexInTrBytes] += count;
     }
-    else // neni v akt. casovem intervalu, musime zalozit novy interval
+    else // is not in the current time interval, we need to create a new interval
     {
         int emptyTrBytes = (time - ActIndexInTrBytesTimeLim) / TRSPMETER_ACTSPEEDSTEP;
-        int i = min(emptyTrBytes, TRSPMETER_ACTSPEEDNUMOFSTEPS); // vic uz nema vliv (nuluje se cela fronta)
+        int i = min(emptyTrBytes, TRSPMETER_ACTSPEEDNUMOFSTEPS); // no longer has an effect (the entire queue is reset)
         if (i > 0 && CountOfTrBytesItems <= TRSPMETER_ACTSPEEDNUMOFSTEPS)
             CountOfTrBytesItems = min(TRSPMETER_ACTSPEEDNUMOFSTEPS + 1, CountOfTrBytesItems + i);
         while (i--)
         {
             if (++ActIndexInTrBytes > TRSPMETER_ACTSPEEDNUMOFSTEPS)
-                ActIndexInTrBytes = 0; // pohyb po kruh. fronte
+                ActIndexInTrBytes = 0; // movement along a circular queue
             TransferedBytes[ActIndexInTrBytes] = 0;
         }
         ActIndexInTrBytesTimeLim += (emptyTrBytes + 1) * TRSPMETER_ACTSPEEDSTEP;
         if (++ActIndexInTrBytes > TRSPMETER_ACTSPEEDNUMOFSTEPS)
-            ActIndexInTrBytes = 0; // pohyb po kruh. fronte
+            ActIndexInTrBytes = 0; // movement along a circular queue
         if (CountOfTrBytesItems <= TRSPMETER_ACTSPEEDNUMOFSTEPS)
             CountOfTrBytesItems++;
         TransferedBytes[ActIndexInTrBytes] = count;
@@ -217,9 +217,9 @@ void CTransferSpeedMeter::BytesReceived(DWORD count, DWORD time, DWORD maxPacket
 void CTransferSpeedMeter::AdjustProgressBufferLimit(DWORD* progressBufferLimit, DWORD lastFileBlockCount,
                                                     DWORD lastFileStartTime)
 {
-    if (CountOfLastPackets > 1 && lastFileBlockCount > 0) // "always true": CountOfLastPackets je na zacatku souboru 1 (2 = mame jeden paket)
+    if (CountOfLastPackets > 1 && lastFileBlockCount > 0) // "always true": CountOfLastPackets is 1 at the beginning of the file (2 = we have one packet)
     {
-        unsigned __int64 size = 0; // celkova velikost ulozenych paketu posledniho souboru
+        unsigned __int64 size = 0; // total size of stored packets of the last file
         int i = ((TRSPMETER_NUMOFSTOREDPACKETS + 1) + ActIndexInLastPackets - 1) % (TRSPMETER_NUMOFSTOREDPACKETS + 1);
         int c = min((DWORD)(CountOfLastPackets - 1), lastFileBlockCount);
         int packets = c;
@@ -232,30 +232,30 @@ void CTransferSpeedMeter::AdjustProgressBufferLimit(DWORD* progressBufferLimit, 
             if (ti - LastPacketsTime[i] > 2000)
             {
                 packets -= c;
-                break; // bereme max. 2 vteriny stare pakety (snazime se spocitat "aktualni" rychlost)
+                break; // we take max. 2 seconds old packets (trying to calculate the "current" speed)
             }
         }
-        DWORD totalTime = min(ti - LastPacketsTime[i], ti - lastFileStartTime); // LastPacketsTime[i] muze byt starsi nez lastFileStartTime (je to posledni paket minuleho souboru), nas zajima jen cas straveny v tomto souboru
+        DWORD totalTime = min(ti - LastPacketsTime[i], ti - lastFileStartTime); // LastPacketsTime[i] can be older than lastFileStartTime (it is the last packet of the previous file), we are only interested in the time spent in this file
         if (totalTime == 0)
-            totalTime = 10; // 0ms bereme jako 10ms (cca krok GetTickCount())
+            totalTime = 10; // We consider 0ms as 10ms (approximately one step of GetTickCount())
         unsigned __int64 speed = (size * 1000) / totalTime;
         DWORD bufLimit = ASYNC_SLOW_COPY_BUF_SIZE;
         while (bufLimit < ASYNC_COPY_BUF_SIZE)
         {
-            // experimentalne zjisteno, ze Windows 7 milujou velikost bufferu 32KB, krivka vyuziti
-            // sitove linky je s ni vetsinou krasne hladka, kdezto pri 64KB to skace jak mrcha
-            // a celkova dosazena rychlost je tak o 5% mensi ... tedy dirty bloody hack: budeme take
-            // preferovat 32KB ... az do 8 * 128 (1024KB/s) ... tim preskocime 64KB a 128KB, dalsi
-            // buffer limit je az 256KB
+            // experimentally found that Windows 7 loves buffer size 32KB, utilization curve
+            // network lines are usually beautifully smooth with it, whereas at 64KB it jumps like a bitch
+            // and the overall achieved speed is about 5% lower ... so dirty bloody hack: we will also
+            // prefer 32KB ... up to 8 * 128 (1024KB/s) ... we will skip 64KB and 128KB, next
+            // buffer limit is up to 256KB
             // +
-            // provedeme opatreni proti oscilaci mezi dvema velikostmi buffer limitu u rychlosti na hranici
-            // mezi dvema velikostmi buffer limitu, zvyseni o jednu uroven bude tezsi (na vyber stejneho bufferu
-            // muze byt rychlost az 9 * bufLimit misto standardnich 8 * bufLimit)
-            if (bufLimit == 32 * 1024) // pro 32KB buffer-limit pouzijeme hodnoty pro 128KB buffer-limit (misto 64KB a 128KB vybereme 32KB)
+            // we will take measures against oscillation between two buffer limit sizes at the boundary speed
+            // between two buffer size limits, increasing by one level will be more difficult (choose the same buffer)
+            // speed can be up to 9 * bufLimit instead of the standard 8 * bufLimit
+            if (bufLimit == 32 * 1024) // For a 32KB buffer limit, we will use values for a 128KB buffer limit (instead of 64KB and 128KB we will choose 32KB)
             {
                 if (speed <= (bufLimit == *progressBufferLimit ? 9 * 128 * 1024 : 8 * 128 * 1024))
                     break;
-                bufLimit = 256 * 1024; // nevyslo 32KB, zkusime az 256KB (64KB a 128KB nehrozi, to by se vybralo 32KB)
+                bufLimit = 256 * 1024; // 32KB didn't work out, let's try 256KB (64KB and 128KB are not an option, that would select 32KB)
             }
             else
             {
@@ -302,27 +302,27 @@ void CProgressSpeedMeter::GetSpeed(CQuadWord* speed)
     DWORD time = GetTickCount();
 
     if (CountOfLastPackets >= 2)
-    { // otestujeme, jestli nejde o nizkou rychlost (vypocet z LastPacketsSize a LastPacketsTime)
+    { // we will test if it is not a low speed (calculation from LastPacketsSize and LastPacketsTime)
         int firstPacket = ((PRSPMETER_NUMOFSTOREDPACKETS + 1) + ActIndexInLastPackets - CountOfLastPackets) % (PRSPMETER_NUMOFSTOREDPACKETS + 1);
         int lastPacket = ((PRSPMETER_NUMOFSTOREDPACKETS + 1) + ActIndexInLastPackets - 1) % (PRSPMETER_NUMOFSTOREDPACKETS + 1);
         DWORD lastPacketTime = LastPacketsTime[lastPacket];
-        DWORD totalTime = lastPacketTime - LastPacketsTime[firstPacket]; // cas mezi prijmem prvniho a posledniho paketu
+        DWORD totalTime = lastPacketTime - LastPacketsTime[firstPacket]; // time between receiving the first and last packet
         if (totalTime >= ((DWORD)(CountOfLastPackets - 1) * PRSPMETER_STPCKTSMININTERVAL) / PRSPMETER_NUMOFSTOREDPACKETS)
-        {                                     // jde o nizkou rychlost (do PRSPMETER_NUMOFSTOREDPACKETS paketu za PRSPMETER_STPCKTSMININTERVAL ms)
-            if (time - lastPacketTime > 5000) // petivterinova "ochrana" doba pro posledni napocitanou pomalou rychlost
-            {                                 // zkusime jestli nejde o vice nez ctyrnasobne zpomaleni proti rychlosti posledniho paketu, pokud ano, zobrazime
-                                              // nulovou rychlost (abysme pri zastaveni pomaleho prenosu neukazovali porad posledni ziskany time-left udaj)
+        {                                     // it is about low speed (up to PRSPMETER_NUMOFSTOREDPACKETS packets in PRSPMETER_STPCKTSMININTERVAL ms)
+            if (time - lastPacketTime > 5000) // Five-minute "guard" period for the last counted slow speed
+            {                                 // Let's try if it's not more than four times slower than the speed of the last packet, if so, we will display
+                                              // zero speed (so that we don't show the last received time-left value when stopping a slow transfer)
                 int preLastPacket = ((PRSPMETER_NUMOFSTOREDPACKETS + 1) + ActIndexInLastPackets - 2) % (PRSPMETER_NUMOFSTOREDPACKETS + 1);
                 if ((UINT64)4 * MaxPacketSize * (lastPacketTime - LastPacketsTime[preLastPacket]) < (UINT64)LastPacketsSize[lastPacket] * (time - lastPacketTime))
                 {
                     speed->SetUI64(0);
-                    return; // rychlost klesla aspon dvakrat, radsi ukazeme nulu
+                    return; // speed decreased at least twice, better show zero
                 }
             }
             if (totalTime > PRSPMETER_ACTSPEEDSTEP * PRSPMETER_ACTSPEEDNUMOFSTEPS)
-            { // rychlost budeme pocitat jen z dat co nejblizsi dobe PRSPMETER_ACTSPEEDSTEP * PRSPMETER_ACTSPEEDNUMOFSTEPS
-                // (pokud budou pakety chodit pomalu, muzou byt ve fronte treba pakety za poslednich pet minut - my tu ovsem
-                // pocitame rychlost za poslednich X vterin, ne prumer za poslednich pet minut)
+            { // we will calculate the speed only from the data closest to the PRSPMETER_ACTSPEEDSTEP * PRSPMETER_ACTSPEEDNUMOFSTEPS
+                // (if packets start arriving slowly, there may be packets in the queue from the last five minutes - however, we
+                // we calculate the speed for the last X seconds, not the average for the last five minutes)
                 int i = firstPacket;
                 while (1)
                 {
@@ -334,7 +334,7 @@ void CProgressSpeedMeter::GetSpeed(CQuadWord* speed)
                 }
                 totalTime = lastPacketTime - LastPacketsTime[firstPacket];
             }
-            UINT64 totalSize = 0; // soucet vsech velikosti paketu, krome prvniho, ten vynechavame (z nej se bere jen cas)
+            UINT64 totalSize = 0; // sum of all packet sizes except the first one, which is omitted (only its time is taken)
             do
             {
                 if (++firstPacket >= PRSPMETER_NUMOFSTOREDPACKETS + 1)
@@ -342,42 +342,42 @@ void CProgressSpeedMeter::GetSpeed(CQuadWord* speed)
                 totalSize += LastPacketsSize[firstPacket];
             } while (firstPacket != lastPacket);
             speed->SetUI64((1000 * totalSize) / totalTime);
-            return; // mame spocitanou nizkou rychlost, koncime
+            return; // We have calculated a low speed, we are finishing
         }
-        else // jde o vysokou rychlost (vic nez PRSPMETER_NUMOFSTOREDPACKETS paketu za PRSPMETER_STPCKTSMININTERVAL ms),
-        {    // provedeme test na nahly pokles rychlosti (hlavne kdyz se zacnou kopirovat nulove soubory nebo vytvaret prazdne adresare)
+        else // it is about high speed (more than PRSPMETER_NUMOFSTOREDPACKETS packets in PRSPMETER_STPCKTSMININTERVAL ms),
+        {    // we will perform a test for sudden speed drop (especially when zero files start to be copied or empty directories are created)
             if (time - lastPacketTime > 5000)
-            { // pokud uz 5000ms neprisel zadny paket, budeme hlasit nulovou rychlost
+            { // if no packet has arrived within 5000ms, we will report zero speed
                 speed->SetUI64(0);
                 return;
             }
         }
     }
-    else // neni z ceho pocitat, zatim hlasime "0 B/s"
+    else // There is nothing to calculate, currently reporting "0 B/s"
     {
         speed->SetUI64(0);
         return;
     }
-    // vysoka rychlost (vic nez PRSPMETER_NUMOFSTOREDPACKETS paketu za PRSPMETER_STPCKTSMININTERVAL ms)
-    if (CountOfTrBytesItems > 0) // po navazani spojeni je "always true"
+    // high speed (more than PRSPMETER_NUMOFSTOREDPACKETS packets in PRSPMETER_STPCKTSMININTERVAL ms)
+    if (CountOfTrBytesItems > 0) // after establishing the connection, it is "always true"
     {
-        int actIndexAdded = 0;                           // 0 = nebyl zapocitan akt. index, 1 = byl zapocitan akt. index
-        int emptyTrBytes = 0;                            // pocet zapocitanych prazdnych kroku
-        UINT64 total = 0;                                // celkovy pocet bytu za poslednich max. PRSPMETER_ACTSPEEDNUMOFSTEPS kroku
-        int addFromTrBytes = CountOfTrBytesItems - 1;    // pocet uzavrenych kroku k pridani z fronty
-        DWORD restTime = 0;                              // cas od posledniho zapocitaneho kroku do tohoto okamziku
-        if ((int)(time - ActIndexInTrBytesTimeLim) >= 0) // akt. index uz je uzavreny + mozna budou potreba i prazdne kroky
+        int actIndexAdded = 0;                           // 0 = current index was not counted, 1 = current index was counted
+        int emptyTrBytes = 0;                            // number of counted empty steps
+        UINT64 total = 0;                                // total number of apartments for the last max. PRSPMETER_ACTSPEEDNUMOFSTEPS steps
+        int addFromTrBytes = CountOfTrBytesItems - 1;    // number of steps closed to add from the queue
+        DWORD restTime = 0;                              // time elapsed from the last counted step to this moment
+        if ((int)(time - ActIndexInTrBytesTimeLim) >= 0) // current index is already closed + empty steps may be needed
         {
             emptyTrBytes = (time - ActIndexInTrBytesTimeLim) / PRSPMETER_ACTSPEEDSTEP;
             restTime = (time - ActIndexInTrBytesTimeLim) % PRSPMETER_ACTSPEEDSTEP;
             emptyTrBytes = min(emptyTrBytes, PRSPMETER_ACTSPEEDNUMOFSTEPS);
-            if (emptyTrBytes < PRSPMETER_ACTSPEEDNUMOFSTEPS) // nestaci jen prazdne kroky, zapocteme i akt. index
+            if (emptyTrBytes < PRSPMETER_ACTSPEEDNUMOFSTEPS) // Not only empty steps are enough, we will also count the activity index
             {
                 total = TransferedBytes[ActIndexInTrBytes];
                 actIndexAdded = 1;
             }
             addFromTrBytes = PRSPMETER_ACTSPEEDNUMOFSTEPS - actIndexAdded - emptyTrBytes;
-            addFromTrBytes = min(addFromTrBytes, CountOfTrBytesItems - 1); // kolik uzavrenych kroku z fronty jeste zapocist
+            addFromTrBytes = min(addFromTrBytes, CountOfTrBytesItems - 1); // how many closed steps are still pending from the queue
         }
         else
         {
@@ -390,17 +390,17 @@ void CProgressSpeedMeter::GetSpeed(CQuadWord* speed)
         for (i = 0; i < addFromTrBytes; i++)
         {
             if (--actIndex < 0)
-                actIndex = PRSPMETER_ACTSPEEDNUMOFSTEPS; // pohyb po kruh. fronte
+                actIndex = PRSPMETER_ACTSPEEDNUMOFSTEPS; // movement along a circular queue
             total += TransferedBytes[actIndex];
         }
         DWORD t = (addFromTrBytes + actIndexAdded + emptyTrBytes) * PRSPMETER_ACTSPEEDSTEP + restTime;
         if (t > 0)
             speed->SetUI64((total * 1000) / t);
         else
-            speed->SetUI64(0); // neni z ceho pocitat, zatim hlasime "0 B/s"
+            speed->SetUI64(0); // There is nothing to calculate, currently reporting "0 B/s"
     }
     else
-        speed->SetUI64(0); // neni z ceho pocitat, zatim hlasime "0 B/s"
+        speed->SetUI64(0); // There is nothing to calculate, currently reporting "0 B/s"
 }
 
 void CProgressSpeedMeter::JustConnected()
@@ -420,7 +420,7 @@ void CProgressSpeedMeter::JustConnected()
 
 void CProgressSpeedMeter::BytesReceived(DWORD count, DWORD time, DWORD maxPacketSize)
 {
-    DEBUG_SLOW_CALL_STACK_MESSAGE1("CProgressSpeedMeter::BytesReceived(, ,)"); // parametry ignorujeme z rychlostnich duvodu (call-stack uz tak brzdi)
+    DEBUG_SLOW_CALL_STACK_MESSAGE1("CProgressSpeedMeter::BytesReceived(, ,)"); // we ignore parameters for performance reasons (call-stack is already slowing down)
 
     MaxPacketSize = maxPacketSize;
 
@@ -436,25 +436,25 @@ void CProgressSpeedMeter::BytesReceived(DWORD count, DWORD time, DWORD maxPacket
         if (CountOfLastPackets < PRSPMETER_NUMOFSTOREDPACKETS + 1)
             CountOfLastPackets++;
     }
-    if ((int)(time - ActIndexInTrBytesTimeLim) < 0) // je v akt. casovem intervalu, jen pridame pocet bytu do intervalu
+    if ((int)(time - ActIndexInTrBytesTimeLim) < 0) // is in the current time interval, we just add the number of bytes to the interval
     {
         TransferedBytes[ActIndexInTrBytes] += count;
     }
-    else // neni v akt. casovem intervalu, musime zalozit novy interval
+    else // is not in the current time interval, we need to create a new interval
     {
         int emptyTrBytes = (time - ActIndexInTrBytesTimeLim) / PRSPMETER_ACTSPEEDSTEP;
-        int i = min(emptyTrBytes, PRSPMETER_ACTSPEEDNUMOFSTEPS); // vic uz nema vliv (nuluje se cela fronta)
+        int i = min(emptyTrBytes, PRSPMETER_ACTSPEEDNUMOFSTEPS); // no longer has an effect (the entire queue is reset)
         if (i > 0 && CountOfTrBytesItems <= PRSPMETER_ACTSPEEDNUMOFSTEPS)
             CountOfTrBytesItems = min(PRSPMETER_ACTSPEEDNUMOFSTEPS + 1, CountOfTrBytesItems + i);
         while (i--)
         {
             if (++ActIndexInTrBytes > PRSPMETER_ACTSPEEDNUMOFSTEPS)
-                ActIndexInTrBytes = 0; // pohyb po kruh. fronte
+                ActIndexInTrBytes = 0; // movement along a circular queue
             TransferedBytes[ActIndexInTrBytes] = 0;
         }
         ActIndexInTrBytesTimeLim += (emptyTrBytes + 1) * PRSPMETER_ACTSPEEDSTEP;
         if (++ActIndexInTrBytes > PRSPMETER_ACTSPEEDNUMOFSTEPS)
-            ActIndexInTrBytes = 0; // pohyb po kruh. fronte
+            ActIndexInTrBytes = 0; // movement along a circular queue
         if (CountOfTrBytesItems <= PRSPMETER_ACTSPEEDNUMOFSTEPS)
             CountOfTrBytesItems++;
         TransferedBytes[ActIndexInTrBytes] = count;
@@ -505,9 +505,9 @@ COperations::COperations(int base, int delta, char* waitInQueueSubject, char* wa
     WorkPath1InclSubDirs = FALSE;
     WorkPath2[0] = 0;
     WorkPath2InclSubDirs = FALSE;
-    WaitInQueueSubject = waitInQueueSubject; // uvolnuje se ve FreeScript()
-    WaitInQueueFrom = waitInQueueFrom;       // uvolnuje se ve FreeScript()
-    WaitInQueueTo = waitInQueueTo;           // uvolnuje se ve FreeScript()
+    WaitInQueueSubject = waitInQueueSubject; // Released in FreeScript()
+    WaitInQueueFrom = waitInQueueFrom;       // Released in FreeScript()
+    WaitInQueueTo = waitInQueueTo;           // Released in FreeScript()
     HANDLES(InitializeCriticalSection(&StatusCS));
     TransferredFileSize = CQuadWord(0, 0);
     ProgressSize = CQuadWord(0, 0);
@@ -605,20 +605,20 @@ void COperations::AddBytesToSpeedMetersAndTFSandPS(DWORD bytesCount, BOOL onlyTo
                 if (UseSpeedLimit)
                 {
                     DWORD sleepNow = 0;
-                    if (SleepAfterWrite == -1) // tohle je prvni paket, nastavime parametry speed-limitu
+                    if (SleepAfterWrite == -1) // this is the first packet, we will set the speed limit parameters
                     {
                         CalcLimitBufferSize(limitBufferSize, bufferSize);
                         LastBufferLimit = *limitBufferSize;
                         if (SpeedLimit >= HIGH_SPEED_LIMIT)
-                        { // tady nehrozi, ze by prislo vic dat nez povoluje speed-limit (HIGH_SPEED_LIMIT musi byt >= nejvetsimu bufferu)
+                        { // There is no risk here that more data will arrive than allowed by the speed limit (HIGH_SPEED_LIMIT must be >= the largest buffer)
                             SleepAfterWrite = 0;
                             BytesTrFromLastSetup.SetUI64(bytesCount);
                         }
                         else
                         {
-                            SleepAfterWrite = (1000 * *limitBufferSize) / SpeedLimit; // na prvni vterinu prenosu predpokladame, ze samotny prenos je "nekonecne rychly" (urcit realnou rychlost z prvniho paketu je nerealne)
-                            if (bytesCount > SpeedLimit)                              // doslo ke zpomaleni behem operace (napr. probehl read&write 32KB bufferu a speed-limit je 1 B/s, tedy teoreticky bysme meli ted 32768 sekund cekat, coz je prirozene nerealne)
-                                sleepNow = 1000;                                      // pockame vterinu + do meraku rychlosti "prizname" jen byty do speed-limitu (napr. jen 1 B)
+                            SleepAfterWrite = (1000 * *limitBufferSize) / SpeedLimit; // in the first second of transmission, we assume that the transmission itself is "infinitely fast" (determining the actual speed from the first packet is unrealistic)
+                            if (bytesCount > SpeedLimit)                              // There has been a slowdown during the operation (e.g. a read&write of a 32KB buffer has taken place and the speed limit is 1 B/s, so theoretically we should now wait 32768 seconds, which is naturally unrealistic)
+                                sleepNow = 1000;                                      // wait a second + measure the speed "admit" only bytes up to the speed limit (e.g. only 1 B)
                             else
                                 sleepNow = (SleepAfterWrite * bytesCount) / *limitBufferSize;
                             BytesTrFromLastSetup.SetUI64(0);
@@ -629,19 +629,19 @@ void COperations::AddBytesToSpeedMetersAndTFSandPS(DWORD bytesCount, BOOL onlyTo
                     {
                         if ((int)(ti - LastSetupTime) >= 1000 || BytesTrFromLastSetup.Value + bytesCount >= SpeedLimit ||
                             SpeedLimit >= HIGH_SPEED_LIMIT && BytesTrFromLastSetup.Value + bytesCount >= SpeedLimit / HIGH_SPEED_LIMIT_BRAKE_DIV)
-                        { // je cas prepocitat parametry speed-limitu + pripadne "dobrzdit"
+                        { // It's time to recalculate the speed limit parameters + possibly "brake"
                             __int64 sleepFromLastSetup64 = (SleepAfterWrite * BytesTrFromLastSetup.Value) / LastBufferLimit;
                             DWORD sleepFromLastSetup = sleepFromLastSetup64 < 1000 ? (DWORD)sleepFromLastSetup64 : 1000;
                             BytesTrFromLastSetup += CQuadWord(bytesCount, 0);
-                            __int64 idealTotalTime64 = (1000 * BytesTrFromLastSetup.Value + SpeedLimit - 1) / SpeedLimit; // "+ SpeedLimit - 1" je kvuli zaokrouhlovani
+                            __int64 idealTotalTime64 = (1000 * BytesTrFromLastSetup.Value + SpeedLimit - 1) / SpeedLimit; // "+ SpeedLimit - 1" is due to rounding
                             int idealTotalTime = idealTotalTime64 < 10000 ? (int)idealTotalTime64 : 10000;
                             if (idealTotalTime > (int)(ti - LastSetupTime))
                             {
-                                sleepNow = idealTotalTime - (ti - LastSetupTime); // potrebujeme dobrzdit (jsme rychlejsi nebo jen o malo pomalejsi nez speed-limit)
-                                if (sleepNow > 1000)                              // cekat dele nez vterinu nema smysl (do meraku "prizname" max. *limitBufferSize)
+                                sleepNow = idealTotalTime - (ti - LastSetupTime); // we need to slow down (we are faster or just slightly slower than the speed limit)
+                                if (sleepNow > 1000)                              // It doesn't make sense to wait longer than a second (up to the "admitted" maximum in the *limitBufferSize gauge)
                                     sleepNow = 1000;
                             }
-                            // else sleepNow = 0;  // jsme pomalejsi nez speed-limit (pri idealni rychlosti bysme cekali pomernou cast ze SleepAfterWrite)
+                            // else sleepNow = 0;  // we are slower than the speed limit (at ideal speed, we would wait a proportional part of SleepAfterWrite)
 
                             CalcLimitBufferSize(limitBufferSize, bufferSize);
                             LastBufferLimit = *limitBufferSize;
@@ -651,29 +651,29 @@ void COperations::AddBytesToSpeedMetersAndTFSandPS(DWORD bytesCount, BOOL onlyTo
                             else
                             {
                                 int idealTotalSleep = (int)(sleepFromLastSetup + (idealTotalTime - (ti - LastSetupTime)));
-                                if (idealTotalSleep > 0) // speed-limit je nizsi nez rychlost kopirovani, budeme brzdit za kazdym paketem
+                                if (idealTotalSleep > 0) // speed-limit is lower than copying speed, we will slow down for each packet
                                     SleepAfterWrite = (DWORD)(((unsigned __int64)idealTotalSleep * LastBufferLimit) / BytesTrFromLastSetup.Value);
                                 else
-                                    SleepAfterWrite = 0; // speed-limit je vyssi nez rychlost kopirovani (neni proc brzdit)
+                                    SleepAfterWrite = 0; // speed-limit is higher than copying speed (no need to slow down)
                             }
                             LastSetupTime = ti + sleepNow;
                             BytesTrFromLastSetup.SetUI64(0);
                         }
-                        else // pro mezilehle pakety pouzijeme predpocitane parametry
+                        else // precomputed parameters will be used for intermediate packets
                         {
                             BytesTrFromLastSetup += CQuadWord(bytesCount, 0);
                             *limitBufferSize = LastBufferLimit < bufferSize ? LastBufferLimit : bufferSize;
                             if (SleepAfterWrite > 0)
                             {
                                 sleepNow = (SleepAfterWrite * bytesCount) / LastBufferLimit;
-                                if (sleepNow > 1000) // cekat dele nez vterinu nema smysl (do meraku "prizname" max. speed-limit)
+                                if (sleepNow > 1000) // Waiting for more than a second doesn't make sense (up to the "admitted" speed limit)
                                     sleepNow = 1000;
                             }
                         }
                     }
-                    if (bytesCount > SpeedLimit)               // doslo ke zpomaleni behem operace (napr. probehl read&write 32KB bufferu a speed-limit je 1 B/s, tedy teoreticky bysme meli ted 32768 sekund cekat, coz je prirozene nerealne)
-                        bytesCountForSpeedMeters = SpeedLimit; // do meraku rychlosti "prizname" jen byty do speed-limitu (napr. jen 1 B)
-                    if (sleepNow > 0)                          // brzdime kvuli speed-limitu
+                    if (bytesCount > SpeedLimit)               // There has been a slowdown during the operation (e.g. a read&write of a 32KB buffer has taken place and the speed limit is 1 B/s, so theoretically we should now wait 32768 seconds, which is naturally unrealistic)
+                        bytesCountForSpeedMeters = SpeedLimit; // for the speed measurement "admit" only entities up to the speed limit (e.g. only 1 B)
+                    if (sleepNow > 0)                          // we are braking because of the speed limit
                     {
                         HANDLES(LeaveCriticalSection(&StatusCS));
                         Sleep(sleepNow);
@@ -682,20 +682,20 @@ void COperations::AddBytesToSpeedMetersAndTFSandPS(DWORD bytesCount, BOOL onlyTo
                     }
                 }
                 else
-                    CalcLimitBufferSize(limitBufferSize, bufferSize); // bez limitu - plna rychlost (az na ProgressBufferLimit)
+                    CalcLimitBufferSize(limitBufferSize, bufferSize); // unlimited - full speed (except for ProgressBufferLimit)
             }
             TransferSpeedMeter.BytesReceived(bytesCountForSpeedMeters, ti, maxPacketSize);
             TransferredFileSize.Value += bytesCount;
 
             if (UseProgressBufferLimit &&
-                (++LastFileBlockCount >= ASYNC_SLOW_COPY_BUF_MINBLOCKS || // pokud neni malo dat pro test
+                (++LastFileBlockCount >= ASYNC_SLOW_COPY_BUF_MINBLOCKS || // if there is not enough data for testing
                  ProgressBufferLimit * LastFileBlockCount >= ASYNC_SLOW_COPY_BUF_MINBLOCKS * ASYNC_SLOW_COPY_BUF_SIZE) &&
-                ti - LastProgBufLimTestTime >= 1000) // a je cas na dalsi test
-            {                                        // napocitame ProgressBufferLimit pro pristi kolo (dalsi cteni jede jeste se stavajici hodnotou)
+                ti - LastProgBufLimTestTime >= 1000) // and it's time for another test
+            {                                        // we calculate the ProgressBufferLimit for the next round (further reading still uses the current value)
                 TransferSpeedMeter.AdjustProgressBufferLimit(&ProgressBufferLimit, LastFileBlockCount, LastFileStartTime);
                 LastProgBufLimTestTime = GetTickCount();
                 if (LastFileBlockCount > 1000000000)
-                    LastFileBlockCount = 1000000; // ochrana pred pretecenim (proste hafo bloku, presny pocet neni az tak dulezity)
+                    LastFileBlockCount = 1000000; // Protection against overflow (just a bunch of blocks, the exact number is not that important)
             }
         }
         ProgressSpeedMeter.BytesReceived(bytesCountForSpeedMeters, ti, maxPacketSize);
@@ -746,7 +746,7 @@ void COperations::GetTFSandResetTrSpeedIfNeeded(CQuadWord* TFS)
             TransferSpeedMeter.JustConnected();
             if (UseSpeedLimit)
             {
-                SleepAfterWrite = -1; // s prichodem prvniho paketu provedeme vypocet
+                SleepAfterWrite = -1; // Upon arrival of the first packet, we will perform the calculation
                 LastSetupTime = GetTickCount();
                 BytesTrFromLastSetup.SetUI64(0);
             }
@@ -788,16 +788,16 @@ void COperations::InitSpeedMeters(BOOL operInProgress)
         ProgressSpeedMeter.JustConnected();
         if (UseSpeedLimit)
         {
-            SleepAfterWrite = -1; // s prichodem prvniho paketu provedeme vypocet
+            SleepAfterWrite = -1; // Upon arrival of the first packet, we will perform the calculation
             LastSetupTime = GetTickCount();
             BytesTrFromLastSetup.SetUI64(0);
         }
-        // po pauze, zmene speed-limitu nebo error-dialogu ustrelime stara data
+        // after a pause, change of speed limit or error dialog, we will discard old data
         if (operInProgress)
         {
             LastFileBlockCount = 0;
             LastFileStartTime = GetTickCount();
-            LastProgBufLimTestTime = GetTickCount(); // a dalsi test odlozime o vterinu, abysme meli relevantni data
+            LastProgBufLimTestTime = GetTickCount(); // Let's delay the next test by a second to have relevant data
         }
         HANDLES(LeaveCriticalSection(&StatusCS));
     }
@@ -838,12 +838,12 @@ void COperations::GetSpeedLimit(BOOL* useSpeedLimit, DWORD* speedLimit)
 
 struct CAsyncCopyParams
 {
-    void* Buffers[8];         // alokovane buffery o velikosti ASYNC_COPY_BUF_SIZE bytu
-    OVERLAPPED Overlapped[8]; // struktury pro asynchronni operace
+    void* Buffers[8];         // allocated buffers of size ASYNC_COPY_BUF_SIZE bytes
+    OVERLAPPED Overlapped[8]; // structures for asynchronous operations
 
-    BOOL UseAsyncAlg; // TRUE = ma se pouzit asynchronni algoritmus (musi se alokovat data), FALSE = synchroni stary algouritmus (nic nealokujeme)
+    BOOL UseAsyncAlg; // TRUE = asynchronous algorithm should be used (data needs to be allocated), FALSE = synchronous old algorithm (no allocation needed)
 
-    BOOL HasFailed; // TRUE = nepodarilo se vytvorit nejaky event do pole Overlapped, struktura je nepouzitelna
+    BOOL HasFailed; // TRUE = failed to create any event in the Overlapped array, the structure is unusable
 
     CAsyncCopyParams();
     ~CAsyncCopyParams();
@@ -854,10 +854,10 @@ struct CAsyncCopyParams
 
     DWORD GetOverlappedFlag() { return UseAsyncAlg ? FILE_FLAG_OVERLAPPED : 0; }
 
-    OVERLAPPED* InitOverlapped(int i);                                    // vynuluje a vrati Overlapped[i]
-    OVERLAPPED* InitOverlappedWithOffset(int i, const CQuadWord& offset); // vynuluje, nastavi 'offset' a vrati Overlapped[i]
+    OVERLAPPED* InitOverlapped(int i);                                    // resets and returns Overlapped[i]
+    OVERLAPPED* InitOverlappedWithOffset(int i, const CQuadWord& offset); // resets, sets 'offset', and returns Overlapped[i]
     OVERLAPPED* GetOverlapped(int i) { return &Overlapped[i]; }
-    void SetOverlappedToEOF(int i, const CQuadWord& offset); // nastavi Overlapped[i] do stavu po dokonceni asynchronniho cteni, ktere detekovalo EOF
+    void SetOverlappedToEOF(int i, const CQuadWord& offset); // Set Overlapped[i] to the state after completing the asynchronous read that detected EOF
 };
 
 CAsyncCopyParams::CAsyncCopyParams()
@@ -907,7 +907,7 @@ CAsyncCopyParams::InitOverlapped(int i)
     Overlapped[i].InternalHigh = 0;
     Overlapped[i].Offset = 0;
     Overlapped[i].OffsetHigh = 0;
-    // Overlapped[i].Pointer = 0;  // je to union, Pointer se kryje s Offset a OffsetHigh
+    // Overlapped[i].Pointer = 0;  // it's a union, Pointer overlaps with Offset and OffsetHigh
     return &Overlapped[i];
 }
 
@@ -920,7 +920,7 @@ CAsyncCopyParams::InitOverlappedWithOffset(int i, const CQuadWord& offset)
     Overlapped[i].InternalHigh = 0;
     Overlapped[i].Offset = offset.LoDWord;
     Overlapped[i].OffsetHigh = offset.HiDWord;
-    // Overlapped[i].Pointer = 0;  // je to union, Pointer se kryje s Offset a OffsetHigh
+    // Overlapped[i].Pointer = 0;  // it's a union, Pointer overlaps with Offset and OffsetHigh
     return &Overlapped[i];
 }
 
@@ -928,24 +928,24 @@ void CAsyncCopyParams::SetOverlappedToEOF(int i, const CQuadWord& offset)
 {
     if (!UseAsyncAlg)
         TRACE_C("CAsyncCopyParams::SetOverlappedToEOF(): unexpected call, UseAsyncAlg is FALSE!");
-    Overlapped[i].Internal = 0xC0000011 /* STATUS_END_OF_FILE */; // NTSTATUS code equivalent to system error code ERROR_HANDLE_EOF
+    Overlapped[i].Internal = 0xC0000011 /* STATUS_END_OF_FILE*/; // NTSTATUS code equivalent to system error code ERROR_HANDLE_EOF
     Overlapped[i].InternalHigh = 0;
     Overlapped[i].Offset = offset.LoDWord;
     Overlapped[i].OffsetHigh = offset.HiDWord;
-    // Overlapped[i].Pointer = 0;  // je to union, Pointer se kryje s Offset a OffsetHigh
+    // Overlapped[i].Pointer = 0;  // it's a union, Pointer overlaps with Offset and OffsetHigh
     SetEvent(Overlapped[i].hEvent);
 }
 
 // **********************************************************************************
 
-BOOL HaveWriteOwnerRight = FALSE; // ma proces pravo WRITE_OWNER?
+BOOL HaveWriteOwnerRight = FALSE; // Does the process have the WRITE_OWNER right?
 
 void InitWorker()
 {
     if (NtDLL != NULL) // "always true"
     {
-        DynNtQueryInformationFile = (NTQUERYINFORMATIONFILE)GetProcAddress(NtDLL, "NtQueryInformationFile"); // nema header
-        DynNtFsControlFile = (NTFSCONTROLFILE)GetProcAddress(NtDLL, "NtFsControlFile");                      // nema header
+        DynNtQueryInformationFile = (NTQUERYINFORMATIONFILE)GetProcAddress(NtDLL, "NtQueryInformationFile"); // no header
+        DynNtFsControlFile = (NTFSCONTROLFILE)GetProcAddress(NtDLL, "NtFsControlFile");                      // no header
     }
 }
 
@@ -978,7 +978,7 @@ struct CProgressDlgData
     int* OperationProgress;
     int* SummaryProgress;
 
-    BOOL OverwriteAll; // drzi stav automatickeho prepisovani targetu sourcem
+    BOOL OverwriteAll; // Keeps the state of automatic target-to-source rewriting
     BOOL OverwriteHiddenAll;
     BOOL DeleteHiddenAll;
     BOOL EncryptSystemAll;
@@ -986,7 +986,7 @@ struct CProgressDlgData
     BOOL FileOutLossEncrAll;
     BOOL DirCrLossEncrAll;
 
-    BOOL SkipAllFileWrite; // pouzil se uz Skip All button?
+    BOOL SkipAllFileWrite; // Has the Skip All button been used yet?
     BOOL SkipAllFileRead;
     BOOL SkipAllOverwrite;
     BOOL SkipAllSystemOrHidden;
@@ -1017,7 +1017,7 @@ struct CProgressDlgData
     BOOL IgnoreAllCopyPermErr;
     BOOL IgnoreAllCopyDirTimeErr;
 
-    int CnfrmFileOver; // lokalni kopie konfigurace Salamandera
+    int CnfrmFileOver; // local copy of Salamander configuration
     int CnfrmDirOver;
     int CnfrmSHFileOver;
     int CnfrmSHFileDel;
@@ -1036,9 +1036,9 @@ struct CProgressDlgData
 };
 
 void SetProgressDialog(HWND hProgressDlg, CProgressData* data, CProgressDlgData& dlgData)
-{                                                              // pockame si na odpoved, ksicht musi byt zmenen
-    WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
-    if (!*dlgData.CancelWorker)                                // potrebujeme zastavit hl.thread
+{                                                              // we will wait for the response, the face must be changed
+    WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
+    if (!*dlgData.CancelWorker)                                // we need to stop the hl.thread
         SendMessage(hProgressDlg, WM_USER_SETDIALOG, (WPARAM)data, 0);
 }
 
@@ -1048,8 +1048,8 @@ int CaclProg(const CQuadWord& progressCurrent, const CQuadWord& progressTotal)
 }
 
 void SetProgress(HWND hProgressDlg, int operation, int summary, CProgressDlgData& dlgData)
-{                                                              // oznamime zmenu a jedeme dal bez cekani na odpoved
-    WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+{                                                              // we announce the change and continue without waiting for a response
+    WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
     if (!*dlgData.CancelWorker &&
         (*dlgData.OperationProgress != operation || *dlgData.SummaryProgress != summary))
     {
@@ -1060,7 +1060,7 @@ void SetProgress(HWND hProgressDlg, int operation, int summary, CProgressDlgData
 }
 
 void SetProgressWithoutSuspend(HWND hProgressDlg, int operation, int summary, CProgressDlgData& dlgData)
-{ // oznamime zmenu a jedeme dal bez cekani na odpoved
+{ // we announce the change and continue without waiting for a response
     if (!*dlgData.CancelWorker &&
         (*dlgData.OperationProgress != operation || *dlgData.SummaryProgress != summary))
     {
@@ -1112,7 +1112,7 @@ void GetFileOverwriteInfo(char* buff, int buffLen, HANDLE file, const char* file
     if (SalGetFileSize(file, size, err))
         NumberToStr(number, size);
     else
-        number[0] = 0; // chyba - velikost neznama
+        number[0] = 0; // error - size unknown
 
     _snprintf_s(buff, buffLen, _TRUNCATE, "%s, %s, %s%s", number, date, time, attr);
 }
@@ -1126,8 +1126,8 @@ void GetDirInfo(char* buffer, const char* dir)
     BOOL ok = FALSE;
     FILETIME lastWrite;
     if (NameEndsWithBackslash(dirFindFirst))
-    { // FindFirstFile selze pro 'dir' zakonceny backslashem (pouziva se pri invalidnich jmenech
-        // adresaru), proto to resime v teto situaci pres CreateFile a GetFileTime
+    { // FindFirstFile fails for 'dir' ending with a backslash (used for invalid names)
+        // directory), so we are solving it in this situation through CreateFile and GetFileTime
         HANDLE file = HANDLES_Q(CreateFile(dirFindFirst, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
                                            NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL));
         if (file != INVALID_HANDLE_VALUE)
@@ -1170,7 +1170,7 @@ void GetDirInfo(char* buffer, const char* dir)
         buffer[0] = 0;
 }
 
-BOOL IsDirectoryEmpty(const char* name) // adresare/podadresare neobsahuji zadne soubory
+BOOL IsDirectoryEmpty(const char* name) // directories/subdirectories do not contain any files
 {
     char dir[MAX_PATH + 5];
     int len = (int)strlen(name);
@@ -1195,7 +1195,7 @@ BOOL IsDirectoryEmpty(const char* name) // adresare/podadresare neobsahuji zadne
             if (fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
             {
                 strcpy(end, fileData.cFileName);
-                if (!IsDirectoryEmpty(dir)) // podadresar neni prazdny
+                if (!IsDirectoryEmpty(dir)) // subdirectory is not empty
                 {
                     HANDLES(FindClose(search));
                     return FALSE;
@@ -1203,7 +1203,7 @@ BOOL IsDirectoryEmpty(const char* name) // adresare/podadresare neobsahuji zadne
             }
             else
             {
-                HANDLES(FindClose(search)); // existuje zde soubor
+                HANDLES(FindClose(search)); // there is a file
                 return FALSE;
             }
         } while (FindNextFile(search, &fileData));
@@ -1268,7 +1268,7 @@ void GainWriteOwnerAccess()
                 else
                 {
                     if (i == 0)
-                        HaveWriteOwnerRight = TRUE; // podarilo se ziskat SE_RESTORE_NAME, WRITE_OWNER je garantovany
+                        HaveWriteOwnerRight = TRUE; // Managed to obtain SE_RESTORE_NAME, WRITE_OWNER is guaranteed
                 }
             }
             else
@@ -1280,8 +1280,7 @@ void GainWriteOwnerAccess()
         CloseHandle(tokenHandle);
     }
 }
-/*
-//  Purpose:    Determines if the user is a member of the administrators group.
+/*  //  Purpose:    Determines if the user is a member of the administrators group.
 //  Return:     TRUE if user is a admin
 //              FALSE if not
 #define STATUS_SUCCESS          ((NTSTATUS)0x00000000L) // ntsubauth
@@ -1406,7 +1405,7 @@ BOOL IsUserAdmin()
 
 */
 
-/* dle http://vcfaq.mvps.org/sdk/21.htm */
+/* according to http://vcfaq.mvps.org/sdk/21.htm*/
 #define BUFF_SIZE 1024
 BOOL IsUserAdmin()
 {
@@ -1445,7 +1444,7 @@ BOOL IsUserAdmin()
     return bSuccess;
 }
 
-struct CSrcSecurity // pomocna metoda pro drzeni security-info pro MoveFile (zdroj po operaci zmizi, jeho security-info je treba ulozit predem)
+struct CSrcSecurity // Helper method for holding security info for MoveFile (source disappears after operation, its security info needs to be saved in advance)
 {
     PSID SrcOwner;
     PSID SrcGroup;
@@ -1471,9 +1470,9 @@ struct CSrcSecurity // pomocna metoda pro drzeni security-info pro MoveFile (zdr
 
 BOOL DoCopySecurity(const char* sourceName, const char* targetName, DWORD* err, CSrcSecurity* srcSecurity)
 {
-    // pokud cesta konci mezerou/teckou, musime pripojit '\\', jinak
-    // GetNamedSecurityInfo (a dalsi) mezery/tecky orizne a pracuje
-    // tak s jinou cestou
+    // if the path ends with a space/dot, we need to append '\\', otherwise
+    // GetNamedSecurityInfo (and others) trims spaces/dots and works
+    // so with another way
     const char* sourceNameSec = sourceName;
     char sourceNameSecCopy[3 * MAX_PATH];
     MakeCopyWithBackslashIfNeeded(sourceNameSec, sourceNameSecCopy);
@@ -1485,7 +1484,7 @@ BOOL DoCopySecurity(const char* sourceName, const char* targetName, DWORD* err, 
     PSID srcGroup = NULL;
     PACL srcDACL = NULL;
     PSECURITY_DESCRIPTOR srcSD = NULL;
-    if (srcSecurity != NULL) // MoveFile: jen prevezmeme security-info
+    if (srcSecurity != NULL) // MoveFile: just take over security-info
     {
         srcOwner = srcSecurity->SrcOwner;
         srcGroup = srcSecurity->SrcGroup;
@@ -1494,7 +1493,7 @@ BOOL DoCopySecurity(const char* sourceName, const char* targetName, DWORD* err, 
         *err = srcSecurity->SrcError;
         srcSecurity->Clear();
     }
-    else // ziskame security-info ze zdroje
+    else // obtain security info from source
     {
         *err = GetNamedSecurityInfo((char*)sourceNameSec, SE_FILE_OBJECT,
                                     DACL_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | OWNER_SECURITY_INFORMATION,
@@ -1513,7 +1512,7 @@ BOOL DoCopySecurity(const char* sourceName, const char* targetName, DWORD* err, 
         }
         else
         {
-            BOOL inheritedDACL = /*(srcSDControl & SE_DACL_AUTO_INHERITED) != 0 &&*/ (srcSDControl & SE_DACL_PROTECTED) == 0; // SE_DACL_AUTO_INHERITED bohuzel neni vzdy nastaveno (napr. Total Cmd ho po presunu souboru nuluje, takze ho ignorujeme)
+            BOOL inheritedDACL = /*(srcSDControl & SE_DACL_AUTO_INHERITED) != 0 &&*/ (srcSDControl & SE_DACL_PROTECTED) == 0; // SE_DACL_AUTO_INHERITED is unfortunately not always set (for example, Total Commander resets it after moving a file, so we ignore it)
             DWORD attr = GetFileAttributes(targetNameSec);
             *err = SetNamedSecurityInfo((char*)targetNameSec, SE_FILE_OBJECT,
                                         DACL_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | OWNER_SECURITY_INFORMATION |
@@ -1523,8 +1522,8 @@ BOOL DoCopySecurity(const char* sourceName, const char* targetName, DWORD* err, 
 
             if (!ret)
             {
-                // pokud nejde menit ownera + groupu (nemame na to prava v adresari - mame napr. jen "change" prava),
-                // zkontrolujeme jestli jiz nejsou owner + groupa nastavene (to by totiz nebyla chyba)
+                // if it is not possible to change the owner and group (we do not have permissions in the directory - for example, we only have "change" permissions),
+                // we will check if owner + group are already set (as this would not be an error)
                 PSID tgtOwner = NULL;
                 PSID tgtGroup = NULL;
                 PACL tgtDACL = NULL;
@@ -1532,11 +1531,11 @@ BOOL DoCopySecurity(const char* sourceName, const char* targetName, DWORD* err, 
                 BOOL tgtRead = GetNamedSecurityInfo((char*)targetNameSec, SE_FILE_OBJECT,
                                                     DACL_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | OWNER_SECURITY_INFORMATION,
                                                     &tgtOwner, &tgtGroup, &tgtDACL, NULL, &tgtSD) == ERROR_SUCCESS;
-                // pokud neni owner ciloveho souboru current-user, zkusime ho nastavit ("take ownership") - jen
-                // pokud mame pravo zapisu ownera, abysme pak zase mohli zapsat zpet puvodniho vlastnika
+                // if the owner of the target file is not the current user, we will try to set it ("take ownership") - only
+                // if we have the right to write the owner, so that we can write back the original owner
                 BOOL ownerOfFile = FALSE;
-                if (!tgtRead ||         // pokud nejde nacist security-info z cile, nejspis neni owner current-user (jako owner ma prava ke cteni neblokovatelne)
-                    tgtOwner == NULL || // nejspis ptakovina, soubor musi mit nejakeho vlastnika, pokud nastane, zkusime nastavit ownera na current-usera
+                if (!tgtRead ||         // if it is not possible to load security-info from the target, probably the owner is not the current user (as the owner has non-blocking read permissions)
+                    tgtOwner == NULL || // probably nonsense, a file must have an owner, if it happens, we will try to set the owner to the current user
                     CurrentProcessTokenUserValid && CurrentProcessTokenUser->User.Sid != NULL &&
                         !EqualSid(tgtOwner, CurrentProcessTokenUser->User.Sid))
                 {
@@ -1544,7 +1543,7 @@ BOOL DoCopySecurity(const char* sourceName, const char* targetName, DWORD* err, 
                         CurrentProcessTokenUserValid && CurrentProcessTokenUser->User.Sid != NULL &&
                         SetNamedSecurityInfo((char*)targetNameSec, SE_FILE_OBJECT, OWNER_SECURITY_INFORMATION,
                                              CurrentProcessTokenUser->User.Sid, NULL, NULL, NULL) == ERROR_SUCCESS)
-                    { // nastaveni se podarilo, musime znovu ziskat 'tgtSD'
+                    { // settings were successful, we need to retrieve 'tgtSD' again
                         ownerOfFile = TRUE;
                         if (tgtSD != NULL)
                             LocalFree(tgtSD);
@@ -1566,9 +1565,9 @@ BOOL DoCopySecurity(const char* sourceName, const char* targetName, DWORD* err, 
                 BOOL ownerOK = FALSE;
                 BOOL groupOK = FALSE;
                 if (ownerOfFile && CurrentProcessTokenUserValid && CurrentProcessTokenUser->User.Sid != NULL)
-                { // jsme vlastnici souboru -> DACL zapisovat jde, zkusime si povolit zapis ownera+groupy+DACLu a zkusime zapsat potrebne hodnoty
+                { // we are the owners of the file -> writing to the DACL is possible, let's try to allow writing for owner+group+DACL and try to write the necessary values
                     int allowChPermDACLSize = sizeof(ACL) + sizeof(ACCESS_ALLOWED_ACE) - sizeof(ACCESS_ALLOWED_ACE().SidStart) +
-                                              GetLengthSid(CurrentProcessTokenUser->User.Sid) + 200 /* +200 bytu je jen paranoia */;
+                                              GetLengthSid(CurrentProcessTokenUser->User.Sid) + 200 /* +200 apartments is just paranoia*/;
                     char buff3[500];
                     PACL allowChPermDACL;
                     if (allowChPermDACLSize > 500)
@@ -1597,7 +1596,7 @@ BOOL DoCopySecurity(const char* sourceName, const char* targetName, DWORD* err, 
                 if (!ownerOK &&
                     (SetNamedSecurityInfo((char*)targetNameSec, SE_FILE_OBJECT, OWNER_SECURITY_INFORMATION,
                                           srcOwner, NULL, NULL, NULL) == ERROR_SUCCESS ||
-                     tgtRead && (srcOwner == NULL && tgtOwner == NULL || // pokud jiz je owner nastaveny, ignorujeme pripadnou chybu nastavovani
+                     tgtRead && (srcOwner == NULL && tgtOwner == NULL || // If the owner is already set, we ignore any potential setting error
                                  srcOwner != NULL && tgtOwner != NULL && EqualSid(srcOwner, tgtOwner))))
                 {
                     ownerOK = TRUE;
@@ -1605,12 +1604,12 @@ BOOL DoCopySecurity(const char* sourceName, const char* targetName, DWORD* err, 
                 if (!groupOK &&
                     (SetNamedSecurityInfo((char*)targetNameSec, SE_FILE_OBJECT, GROUP_SECURITY_INFORMATION,
                                           NULL, srcGroup, NULL, NULL) == ERROR_SUCCESS ||
-                     tgtRead && (srcGroup == NULL && tgtGroup == NULL || // pokud jiz je group nastaveny, ignorujeme pripadnou chybu nastavovani
+                     tgtRead && (srcGroup == NULL && tgtGroup == NULL || // If the group is already set, we ignore any potential setting error
                                  srcGroup != NULL && tgtGroup != NULL && EqualSid(srcGroup, tgtGroup))))
                 {
                     groupOK = TRUE;
                 }
-                if (!daclOK && // DACL musime nastavovat az posledni, protoze zavisi na ownerovi (CREATOR OWNER se nahrazuje realnym ownerem, atd.)
+                if (!daclOK && // We need to set the DACL last because it depends on the owner (CREATOR OWNER is replaced by the real owner, etc.)
                     SetNamedSecurityInfo((char*)targetNameSec, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION | (inheritedDACL ? UNPROTECTED_DACL_SECURITY_INFORMATION : PROTECTED_DACL_SECURITY_INFORMATION),
                                          NULL, NULL, srcDACL, NULL) == ERROR_SUCCESS)
                 {
@@ -1618,7 +1617,7 @@ BOOL DoCopySecurity(const char* sourceName, const char* targetName, DWORD* err, 
                 }
                 if (ownerOK && groupOK && daclOK)
                 {
-                    ret = TRUE; // vsechny tri slozky jsou OK -> celek je OK
+                    ret = TRUE; // all three components are OK -> the whole is OK
                     *err = NO_ERROR;
                 }
                 if (tgtSD != NULL)
@@ -1637,10 +1636,10 @@ DWORD CompressFile(char* fileName, DWORD attrs)
 {
     DWORD ret = ERROR_SUCCESS;
     if (attrs & FILE_ATTRIBUTE_COMPRESSED)
-        return ret; // uz je kompresenej
+        return ret; // It is already compressed
 
-    // pokud cesta konci mezerou/teckou, musime pripojit '\\', jinak CreateFile
-    // mezery/tecky orizne a pracuje tak s jinou cestou
+    // if the path ends with a space/dot, we need to append '\\', otherwise CreateFile
+    // Trims spaces/dots and operates with a different path
     const char* fileNameCrFile = fileName;
     char fileNameCrFileCopy[3 * MAX_PATH];
     MakeCopyWithBackslashIfNeeded(fileNameCrFile, fileNameCrFileCopy);
@@ -1667,7 +1666,7 @@ DWORD CompressFile(char* fileName, DWORD attrs)
         HANDLES(CloseHandle(file));
     }
     if (attrsChange)
-        SetFileAttributes(fileNameCrFile, attrs); // navrat k puvodnim atributum (pri chybe se atributy neprenastavi a zustavali nesmyslne zmenene)
+        SetFileAttributes(fileNameCrFile, attrs); // return to the original attributes (if an error occurs, the attributes will not be reset and will remain nonsensically changed)
     return ret;
 }
 
@@ -1675,10 +1674,10 @@ DWORD UncompressFile(char* fileName, DWORD attrs)
 {
     DWORD ret = ERROR_SUCCESS;
     if ((attrs & FILE_ATTRIBUTE_COMPRESSED) == 0)
-        return ret; // neni kompresenej
+        return ret; // not compressed
 
-    // pokud cesta konci mezerou/teckou, musime pripojit '\\', jinak CreateFile
-    // mezery/tecky orizne a pracuje tak s jinou cestou
+    // if the path ends with a space/dot, we need to append '\\', otherwise CreateFile
+    // Trims spaces/dots and operates with a different path
     const char* fileNameCrFile = fileName;
     char fileNameCrFileCopy[3 * MAX_PATH];
     MakeCopyWithBackslashIfNeeded(fileNameCrFile, fileNameCrFileCopy);
@@ -1706,7 +1705,7 @@ DWORD UncompressFile(char* fileName, DWORD attrs)
         HANDLES(CloseHandle(file));
     }
     if (attrsChange)
-        SetFileAttributes(fileNameCrFile, attrs); // navrat k puvodnim atributum (pri chybe se atributy neprenastavi a zustavali nesmyslne zmenene)
+        SetFileAttributes(fileNameCrFile, attrs); // return to the original attributes (if an error occurs, the attributes will not be reset and will remain nonsensically changed)
     return ret;
 }
 
@@ -1716,20 +1715,20 @@ DWORD MyEncryptFile(HWND hProgressDlg, char* fileName, DWORD attrs, DWORD finalA
     DWORD retEnc = ERROR_SUCCESS;
     cancelOper = FALSE;
     if (attrs & FILE_ATTRIBUTE_ENCRYPTED)
-        return retEnc; // uz je sifrovany
+        return retEnc; // it is now encrypted
 
-    // pokud cesta konci mezerou/teckou, musime pripojit '\\', jinak CreateFile
-    // mezery/tecky orizne a pracuje tak s jinou cestou
+    // if the path ends with a space/dot, we need to append '\\', otherwise CreateFile
+    // Trims spaces/dots and operates with a different path
     const char* fileNameCrFile = fileName;
     char fileNameCrFileCopy[3 * MAX_PATH];
     MakeCopyWithBackslashIfNeeded(fileNameCrFile, fileNameCrFileCopy);
 
-    // ma-li soubor SYSTEM atribut, hlasi API funkce EncryptFile chybu "access denied", resime:
+    // if the SYSTEM file has an attribute, the EncryptFile API function reports an "access denied" error, we are solving:
     if ((attrs & FILE_ATTRIBUTE_SYSTEM) && (finalAttrs & FILE_ATTRIBUTE_SYSTEM))
-    { // pokud ma a bude mit atribut SYSTEM, musime se optat usera jestli to mysli vazne
+    { // if it has an attribute SYSTEM, we need to ask the user if they are serious
         if (!dlgData.EncryptSystemAll)
         {
-            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
             if (*dlgData.CancelWorker)
                 return retEnc;
 
@@ -1807,7 +1806,7 @@ DWORD MyEncryptFile(HWND hProgressDlg, char* fileName, DWORD attrs, DWORD finalA
             retEnc = GetLastError();
     }
     if (attrsChange)
-        SetFileAttributes(fileNameCrFile, attrs); // navrat k puvodnim atributum (pri chybe se atributy neprenastavi a zustavali nesmyslne zmenene)
+        SetFileAttributes(fileNameCrFile, attrs); // return to the original attributes (if an error occurs, the attributes will not be reset and will remain nonsensically changed)
     return retEnc;
 }
 
@@ -1815,10 +1814,10 @@ DWORD MyDecryptFile(char* fileName, DWORD attrs, BOOL preserveDate)
 {
     DWORD ret = ERROR_SUCCESS;
     if ((attrs & FILE_ATTRIBUTE_ENCRYPTED) == 0)
-        return ret; // neni sifrovany
+        return ret; // not encrypted
 
-    // pokud cesta konci mezerou/teckou, musime pripojit '\\', jinak CreateFile
-    // mezery/tecky orizne a pracuje tak s jinou cestou
+    // if the path ends with a space/dot, we need to append '\\', otherwise CreateFile
+    // Trims spaces/dots and operates with a different path
     const char* fileNameCrFile = fileName;
     char fileNameCrFileCopy[3 * MAX_PATH];
     MakeCopyWithBackslashIfNeeded(fileNameCrFile, fileNameCrFileCopy);
@@ -1866,7 +1865,7 @@ DWORD MyDecryptFile(char* fileName, DWORD attrs, BOOL preserveDate)
             ret = GetLastError();
     }
     if (attrsChange)
-        SetFileAttributes(fileNameCrFile, attrs); // navrat k puvodnim atributum (pri chybe se atributy neprenastavi a zustavali nesmyslne zmenene)
+        SetFileAttributes(fileNameCrFile, attrs); // return to the original attributes (if an error occurs, the attributes will not be reset and will remain nonsensically changed)
     return ret;
 }
 
@@ -1892,8 +1891,8 @@ BOOL CheckFileOrDirADS(const char* fileName, BOOL isDir, CQuadWord* adsSize, wch
 
     if (DynNtQueryInformationFile != NULL) // "always true"
     {
-        // pokud cesta konci mezerou/teckou, musime pripojit '\\', jinak CreateFile
-        // mezery/tecky orizne a pracuje tak s jinou cestou
+        // if the path ends with a space/dot, we need to append '\\', otherwise CreateFile
+        // Trims spaces/dots and operates with a different path
         const char* fileNameCrFile = fileName;
         char fileNameCrFileCopy[3 * MAX_PATH];
         MakeCopyWithBackslashIfNeeded(fileNameCrFile, fileNameCrFileCopy);
@@ -1911,10 +1910,10 @@ BOOL CheckFileOrDirADS(const char* fileName, BOOL isDir, CQuadWord* adsSize, wch
         // get stream info
         NTSTATUS uStatus;
         IO_STATUS_BLOCK ioStatus;
-        BYTE buffer[65535]; // XPcka vic nez 65535 nesnesou (netusim proc)
+        BYTE buffer[65535]; // XP systems cannot handle more than 65535 (I don't know why)
         uStatus = DynNtQueryInformationFile(file, &ioStatus, buffer, sizeof(buffer), FileStreamInformation);
         HANDLES(CloseHandle(file));
-        if (uStatus != 0 /* cokoliv krome uspechu je chyba (i warningy) */)
+        if (uStatus != 0 /* anything but success is a mistake (including warnings)*/)
         {
             if (winError != NULL)
             {
@@ -1943,7 +1942,7 @@ BOOL CheckFileOrDirADS(const char* fileName, BOOL isDir, CQuadWord* adsSize, wch
         PFILE_STREAM_INFORMATION psi = (PFILE_STREAM_INFORMATION)buffer;
         BOOL ret = FALSE;
         BOOL lowMem = FALSE;
-        if (ioStatus.Information > 0) // zkontrolujeme, jestli jsme vubec ziskali nejaka data
+        if (ioStatus.Information > 0) // check if we have received any data at all
         {
             while (1)
             {
@@ -1951,7 +1950,7 @@ BOOL CheckFileOrDirADS(const char* fileName, BOOL isDir, CQuadWord* adsSize, wch
                 {
                     ret = TRUE;
                     if (adsSize != NULL)
-                        *adsSize += CQuadWord(psi->Size.LowPart, psi->Size.HighPart); // soucet celkove velikosti vsech alternate-data-streamu
+                        *adsSize += CQuadWord(psi->Size.LowPart, psi->Size.HighPart); // sum of the total size of all alternate data streams
                     if (adsOccupiedSpace != NULL && bytesPerCluster != 0)
                     {
                         CQuadWord fileSize(psi->Size.LowPart, psi->Size.HighPart);
@@ -1960,16 +1959,16 @@ BOOL CheckFileOrDirADS(const char* fileName, BOOL isDir, CQuadWord* adsSize, wch
                     }
 
                     if (onlyDiscardableStreams != NULL)
-                    {                                                                                                                      // pokud se objevi ADS, ktery je neznamy nebo nepostradatelny, prepneme 'onlyDiscardableStreams' na FALSE
-                        if ((psi->NameLength < 29 * 2 || _memicmp(psi->Name, L":\x05Q30lsldxJoudresxAaaqpcawXc:", 29 * 2) != 0) &&         // Win2K thumbnail v ADSku: 5952 bytu (zavisi na kompresy jpegu)
-                            (psi->NameLength < 40 * 2 || _memicmp(psi->Name, L":{4c8cc155-6c1e-11d1-8e41-00c04fb9386d}:", 40 * 2) != 0) && // Win2K thumbnail v ADSku: 0 bytu
-                            (psi->NameLength < 9 * 2 || _memicmp(psi->Name, L":KAVICHS:", 9 * 2) != 0))                                    // Kasperski antivirus: 36/68 bytes
+                    {                                                                                                                      // if an ADS appears that is unknown or non-essential, we will switch 'onlyDiscardableStreams' to FALSE
+                        if ((psi->NameLength < 29 * 2 || _memicmp(psi->Name, L":\x05Q30lsldxJoudresxAaaqpcawXc:", 29 * 2) != 0) &&         // Win2K thumbnail in ADS: 5952 bytes (depends on JPEG compression)
+                            (psi->NameLength < 40 * 2 || _memicmp(psi->Name, L":{4c8cc155-6c1e-11d1-8e41-00c04fb9386d}:", 40 * 2) != 0) && // Win2K thumbnail in ADS: 0 bytes
+                            (psi->NameLength < 9 * 2 || _memicmp(psi->Name, L":KAVICHS:", 9 * 2) != 0))                                    // Kaspersky antivirus: 36/68 bytes
                         {
                             *onlyDiscardableStreams = FALSE;
                         }
                     }
 
-                    if (streamNamesAux != NULL) // sbirani Unicode jmen alternate-data-streamu
+                    if (streamNamesAux != NULL) // Collecting Unicode names of alternate data streams
                     {
                         wchar_t* str = (wchar_t*)malloc(psi->NameLength + 2);
                         if (str != NULL)
@@ -1999,7 +1998,7 @@ BOOL CheckFileOrDirADS(const char* fileName, BOOL isDir, CQuadWord* adsSize, wch
                     else
                     {
                         if (adsSize == NULL && adsOccupiedSpace == NULL && onlyDiscardableStreams == NULL)
-                            break; // dale uz neni co zjistovat (nesbira jmena, ani velikosti streamu, ani only-discardable-streams)
+                            break; // There is nothing more to discover (does not collect names, stream sizes, or only-discardable-streams)
                     }
                 }
                 if (psi->NextEntry == 0)
@@ -2009,13 +2008,13 @@ BOOL CheckFileOrDirADS(const char* fileName, BOOL isDir, CQuadWord* adsSize, wch
         }
         if (streamNamesAux != NULL)
         {
-            if (lowMem || !ret) // nedostatek pameti nebo zadne ADS, uvolnime vsechna jmena
+            if (lowMem || !ret) // lack of memory or no ADS, release all names
             {
                 int i;
                 for (i = 0; i < streamNamesAux->Count; i++)
                     free(streamNamesAux->At(i));
             }
-            else // vse OK, predame jmena volajicimu
+            else // all OK, we will pass the names to the caller
             {
                 if (streamNamesCount != NULL)
                     *streamNamesCount = streamNamesAux->Count;
@@ -2036,9 +2035,9 @@ BOOL DeleteAllADS(HANDLE file, const char* fileName)
         // get stream info
         NTSTATUS uStatus;
         IO_STATUS_BLOCK ioStatus;
-        BYTE buffer[65535]; // XPcka vic nez 65535 nesnesou (netusim proc)
+        BYTE buffer[65535]; // XP systems cannot handle more than 65535 (I don't know why)
         uStatus = DynNtQueryInformationFile(file, &ioStatus, buffer, sizeof(buffer), FileStreamInformation);
-        if (uStatus != 0 /* cokoliv krome uspechu je chyba (i warningy) */)
+        if (uStatus != 0 /* anything but success is a mistake (including warnings)*/)
         {
             DWORD err;
             if (uStatus == STATUS_BUFFER_OVERFLOW)
@@ -2051,7 +2050,7 @@ BOOL DeleteAllADS(HANDLE file, const char* fileName)
 
         // iterate through the streams
         PFILE_STREAM_INFORMATION psi = (PFILE_STREAM_INFORMATION)buffer;
-        if (ioStatus.Information > 0) // zkontrolujeme, jestli jsme vubec ziskali nejaka data
+        if (ioStatus.Information > 0) // check if we have received any data at all
         {
             WCHAR adsFullName[2 * MAX_PATH];
             adsFullName[0] = 0;
@@ -2061,7 +2060,7 @@ BOOL DeleteAllADS(HANDLE file, const char* fileName)
             {
                 if (psi->NameLength != 7 * 2 || _memicmp(psi->Name, L"::$DATA", 7 * 2)) // ignore default stream
                 {
-                    if (adsFullName[0] == 0) // jmeno souboru prevadima az pri prvni potrebe, setrime strojovym casem
+                    if (adsFullName[0] == 0) // File name conversion is done only when needed, saving machine time
                     {
                         if (ConvertA2U(fileName, -1, adsFullName, 2 * MAX_PATH) == 0)
                             return FALSE; // "always false"
@@ -2124,13 +2123,13 @@ void CutADSNameSuffix(char* s)
         *end = 0;
 }
 
-// prevod do prodlouzene varianty cest, viz MSDN clanek "File Name Conventions"
+// Conversion to extended-length path, see MSDN article "File Name Conventions"
 void DoLongName(char* buf, const char* name, int bufSize)
 {
     if (*name == '\\')
         _snprintf_s(buf, bufSize, _TRUNCATE, "\\\\?\\UNC%s", name + 1); // UNC
     else
-        _snprintf_s(buf, bufSize, _TRUNCATE, "\\\\?\\%s", name); // klasicka cesta
+        _snprintf_s(buf, bufSize, _TRUNCATE, "\\\\?\\%s", name); // classic way
 }
 
 BOOL SalSetFilePointer(HANDLE file, const CQuadWord& offset)
@@ -2142,8 +2141,8 @@ BOOL SalSetFilePointer(HANDLE file, const CQuadWord& offset)
            lo == (LONG)offset.LoDWord && hi == (LONG)offset.HiDWord;
 }
 
-#define RETRYCOPY_TAIL_MINSIZE (32 * 1024) // minimalne dva bloky teto velikosti se zkontroluji na konci souboru, ktery se otestuje v CheckTailOfOutFile(); pak se velikost bloku zvysuje az k ASYNC_COPY_BUF_SIZE (je-li cteni dost rychle); POZOR: musi byt <= nez ASYNC_COPY_BUF_SIZE
-#define RETRYCOPY_TESTINGTIME 3000         // doba testovani v [ms] pro CheckTailOfOutFile()
+#define RETRYCOPY_TAIL_MINSIZE (32 * 1024) // At least two blocks of this size are checked at the end of the file, which is tested in CheckTailOfOutFile(); then the block size is increased up to ASYNC_COPY_BUF_SIZE (if reading is fast enough); WARNING: it must be <= than ASYNC_COPY_BUF_SIZE
+#define RETRYCOPY_TESTINGTIME 3000         // time in [ms] for testing in CheckTailOfOutFile()
 
 void CheckTailOfOutFileShowErr(const char* txt)
 {
@@ -2176,7 +2175,7 @@ BOOL CheckTailOfOutFile(CAsyncCopyParams* asyncPar, HANDLE in, HANDLE out, const
         if (size == 0)
         {
             ok = TRUE;
-            break; // neni co kontrolovat
+            break; // nothing to check
         }
 #ifdef WORKER_COPY_DEBUG_MSG
         TRACE_I("CheckTailOfOutFile(): check: " << start.Value << " - " << lastOffset.Value << ", size: " << size);
@@ -2184,15 +2183,15 @@ BOOL CheckTailOfOutFile(CAsyncCopyParams* asyncPar, HANDLE in, HANDLE out, const
         if (asyncPar == NULL)
         {
             if (SalSetFilePointer(in, start))
-            { // nastavime 'start' offset v in
+            { // set the 'start' offset in
                 if (SalSetFilePointer(out, start))
-                { // nastavime 'start' offset v out
+                { // set the 'start' offset in out
                     DWORD read;
                     if (ReadFile(out, bufOut, size, &read, NULL) && read == size)
-                    { // precteme 'size' bajtu do out bufferu (je-li otevren bez "read" accessu, selze)
+                    { // read 'size' bytes into the out buffer (fails if opened without "read" access)
                         if (ReadFile(in, bufIn, size, &read, NULL) && read == size)
-                        {                                         // precteme 'size' bajtu do in bufferu
-                            if (memcmp(bufIn, bufOut, size) == 0) // porovname, jestli jsou in/out buffery shodne
+                        {                                         // Read 'size' bytes into the buffer
+                            if (memcmp(bufIn, bufOut, size) == 0) // compare if the in/out buffers are identical
                                 ok = TRUE;
                             else
                                 TRACE_I("CheckTailOfOutFile(): tail of target file is different from source file, tail without differences: " << (offset.Value - lastOffset.Value));
@@ -2202,7 +2201,7 @@ BOOL CheckTailOfOutFile(CAsyncCopyParams* asyncPar, HANDLE in, HANDLE out, const
                     }
                     else
                     {
-                        if (ignoreReadErrOnOut) // pokud nastala chyba na in souboru, ignorujeme, ze out nemuzeme cist (in byl znovu otevreny a out je celou dobu otevreny)
+                        if (ignoreReadErrOnOut) // if an error occurred on the input file, we ignore that we cannot read from the output (the input was reopened and the output has been open all the time)
                         {
                             CheckTailOfOutFileShowErr("Unable to read OUT file, but it was not broken, so it's no problem.");
                             ok = TRUE;
@@ -2220,7 +2219,7 @@ BOOL CheckTailOfOutFile(CAsyncCopyParams* asyncPar, HANDLE in, HANDLE out, const
         }
         else
         {
-            // asynchronne precist z in a out blok 'start' o velikosti 'size' bajtu a porovnat
+            // Asynchronously read from the 'start' in and out block of 'size' bytes and compare
             DWORD readOut;
             if ((ReadFile(out, bufOut, size, NULL,
                           asyncPar->InitOverlappedWithOffset(0, start)) ||
@@ -2234,7 +2233,7 @@ BOOL CheckTailOfOutFile(CAsyncCopyParams* asyncPar, HANDLE in, HANDLE out, const
                     GetOverlappedResult(in, asyncPar->GetOverlapped(1), &readIn, TRUE))
                 {
                     if (readOut != size || readIn != size ||
-                        memcmp(bufIn, bufOut, size) != 0) // porovname, jestli jsou in/out buffery shodne
+                        memcmp(bufIn, bufOut, size) != 0) // compare if the in/out buffers are identical
                     {
                         TRACE_I("CheckTailOfOutFile(): tail of target file is different from source file (async), tail without differences: " << (offset.Value - lastOffset.Value));
                     }
@@ -2246,7 +2245,7 @@ BOOL CheckTailOfOutFile(CAsyncCopyParams* asyncPar, HANDLE in, HANDLE out, const
             }
             else
             {
-                if (ignoreReadErrOnOut) // pokud nastala chyba na in souboru, ignorujeme, ze out nemuzeme cist (in byl znovu otevreny a out je celou dobu otevreny)
+                if (ignoreReadErrOnOut) // if an error occurred on the input file, we ignore that we cannot read from the output (the input was reopened and the output has been open all the time)
                 {
                     CheckTailOfOutFileShowErr("Unable to read OUT file (async), but it was not broken, so it's no problem.");
                     ok = TRUE;
@@ -2267,7 +2266,7 @@ BOOL CheckTailOfOutFile(CAsyncCopyParams* asyncPar, HANDLE in, HANDLE out, const
             {
                 DWORD t1 = roundStartTime - lastRoundStartTime;
                 DWORD t2 = ti - roundStartTime;
-                if (roundNum == 2 && t1 > 300 && 10 * t2 < t1) // prvni kolo obsahuje cekani na "pripravenost" disku/site, upravime startovni cas (chceme po zvoleny cas cist a ne jen cekat)
+                if (roundNum == 2 && t1 > 300 && 10 * t2 < t1) // the first round involves waiting for the "readiness" of the disk/site, we will adjust the start time (we want to read after the selected time and not just wait)
                 {
 #ifdef WORKER_COPY_DEBUG_MSG
                     TRACE_I("CheckTailOfOutFile(): detected long lasting first block, start time shifted by " << ((roundStartTime - startTime) / 1000.0) << " secs.");
@@ -2277,7 +2276,7 @@ BOOL CheckTailOfOutFile(CAsyncCopyParams* asyncPar, HANDLE in, HANDLE out, const
                 else
                 {
                     if (t2 > 1000 && ((curBufSize * 10) / lastRoundBufSize) * t1 < t2)
-                    { // necekane dlouhe cteni bloku, nejspis obsahuje cekani na "verifikaci" disku ci co, pro jeden blok tento cas vyignorujeme, aby i tak probehla normalni kontrola
+                    { // Unexpectedly long reading of a block, probably involving waiting for "disk verification" or something, for one block we will ignore this time so that normal control can still take place
                         searchLongLastingBlock = FALSE;
                         DWORD sh = t2 - ((unsigned __int64)curBufSize * t1) / lastRoundBufSize;
 #ifdef WORKER_COPY_DEBUG_MSG
@@ -2288,9 +2287,9 @@ BOOL CheckTailOfOutFile(CAsyncCopyParams* asyncPar, HANDLE in, HANDLE out, const
                 }
             }
             if (ti - startTime > RETRYCOPY_TESTINGTIME)
-                break; // uz cteme dost dlouho, koncime (povina dve kola jsou za nami)
+                break; // we have been reading for quite a while now, we are finishing (two mandatory rounds are behind us)
             if (ti - roundStartTime < 300 && curBufSize < ASYNC_COPY_BUF_SIZE)
-            { // pokud jsme dost rychly, zvetsime buffer, at zbytecne casto neseekujeme (seekujeme neprirozene smerem k zacatku souboru)
+            { // if we are fast enough, we will increase the buffer size so that we do not seek unnecessarily often (unnatural seeking towards the beginning of the file)
                 curBufSize *= 2;
                 if (curBufSize > ASYNC_COPY_BUF_SIZE)
                     curBufSize = ASYNC_COPY_BUF_SIZE;
@@ -2301,7 +2300,7 @@ BOOL CheckTailOfOutFile(CAsyncCopyParams* asyncPar, HANDLE in, HANDLE out, const
         lastRoundBufSize = curBufSizeBackup;
     }
 
-    if (ok && asyncPar == NULL) // nastavime in+out na potrebne offsety
+    if (ok && asyncPar == NULL) // set in+out to the necessary offsets
     {
         if (!SalSetFilePointer(in, curInOffset))
         {
@@ -2327,9 +2326,9 @@ BOOL CheckTailOfOutFile(CAsyncCopyParams* asyncPar, HANDLE in, HANDLE out, const
     return ok;
 }
 
-// nakopiruje ADS do nove vznikleho souboru/adresare
-// FALSE vraci jen pri Cancel; uspech + Skip vraci TRUE; Skip nastavuje 'skip'
-// (neni-li NULL) na TRUE
+// copies the ADS to the newly created file/directory
+// FALSE returns only on Cancel; success + Skip returns TRUE; Skip sets 'skip'
+// (if not NULL) to TRUE
 BOOL DoCopyADS(HWND hProgressDlg, const char* sourceName, BOOL isDir, const char* targetName,
                CQuadWord const& totalDone, CQuadWord& operDone, CQuadWord const& operTotal,
                CProgressDlgData& dlgData, COperations* script, BOOL* skip, void* buffer)
@@ -2343,7 +2342,7 @@ BOOL DoCopyADS(HWND hProgressDlg, const char* sourceName, BOOL isDir, const char
     CQuadWord lastTransferredFileSize, finalTransferredFileSize;
     script->GetTFSandResetTrSpeedIfNeeded(&lastTransferredFileSize);
     finalTransferredFileSize = lastTransferredFileSize;
-    if (operTotal > operDone) // melo by byt vzdycky aspon ==, ale sychrujeme se...
+    if (operTotal > operDone) // It should always be at least ==, but we compromise...
         finalTransferredFileSize += (operTotal - operDone);
 
 COPY_ADS_AGAIN:
@@ -2351,8 +2350,8 @@ COPY_ADS_AGAIN:
     if (CheckFileOrDirADS(sourceName, isDir, NULL, &streamNames, &streamNamesCount,
                           &lowMemory, &adsWinError, 0, NULL, NULL) &&
         !lowMemory && streamNames != NULL)
-    {                                  // mame seznam ADS, zkusime je nakopirovat do ciloveho souboru/adresare
-        wchar_t srcName[2 * MAX_PATH]; // MAX_PATH pro jmeno souboru i pro jmeno ADS (netusim kolik jsou realne maximalni delky)
+    {                                  // We have a list of ADS, let's try to copy them to the target file/directory
+        wchar_t srcName[2 * MAX_PATH]; // MAX_PATH for file name and for ADS name (I don't know the actual maximum lengths)
         wchar_t tgtName[2 * MAX_PATH];
         char longSourceName[MAX_PATH + 100];
         char longTargetName[MAX_PATH + 100];
@@ -2418,10 +2417,10 @@ COPY_ADS_AGAIN:
                         {
                             canOverwriteMACADSs = FALSE;
 
-                            // pokud je to mozne, provedeme alokaci potrebneho mista pro soubor (nedochazi pak k fragmentaci disku + hladsi zapis na diskety)
+                            // if possible, we will allocate the necessary space for the file (to prevent disk fragmentation + smoother writing to floppy disks)
                             BOOL wholeFileAllocated = FALSE;
-                            if (fileSize > CQuadWord(limitBufferSize, 0) && // pod velikost kopirovaciho bufferu nema alokace souboru smysl
-                                fileSize < CQuadWord(0, 0x80000000))        // velikost souboru je kladne cislo (jinak nelze seekovat - jde o cisla nad 8EB, takze zrejme nikdy nenastane)
+                            if (fileSize > CQuadWord(limitBufferSize, 0) && // it doesn't make sense to allocate a file under the size of the copy buffer
+                                fileSize < CQuadWord(0, 0x80000000))        // file size is a positive number (otherwise seeking is not possible - these are numbers above 8EB, so it will probably never happen)
                             {
                                 BOOL fatal = TRUE;
                                 BOOL ignoreErr = FALSE;
@@ -2438,7 +2437,7 @@ COPY_ADS_AGAIN:
                                     else
                                     {
                                         if (GetLastError() == ERROR_DISK_FULL)
-                                            ignoreErr = TRUE; // malo mista na disku
+                                            ignoreErr = TRUE; // low disk space
                                     }
                                 }
                                 if (fatal)
@@ -2449,7 +2448,7 @@ COPY_ADS_AGAIN:
                                         TRACE_E("DoCopyADS(): unable to allocate whole file size before copy operation, please report under what conditions this occurs! GetLastError(): " << GetErrorText(err));
                                     }
 
-                                    // zkusime jeste soubor zkratit na nulu, aby nedoslo pri zavreni souboru k nejakemu zbytecnemu zapisu
+                                    // Let's try to truncate the file to zero to avoid any unnecessary writes when closing the file
                                     SetFilePointer(out, 0, NULL, FILE_BEGIN);
                                     SetEndOfFile(out);
 
@@ -2476,8 +2475,8 @@ COPY_ADS_AGAIN:
                                 {
                                     if (read == 0)
                                         break;                                                     // EOF
-                                    if (!script->ChangeSpeedLimit)                                 // pokud se muze zmenit speed-limit, tady neni "vhodne" misto pro cekani
-                                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                                    if (!script->ChangeSpeedLimit)                                 // if the speed limit can change, this is not a "suitable" place to wait
+                                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                                     if (*dlgData.CancelWorker)
                                     {
                                     COPY_ERROR_ADS:
@@ -2487,7 +2486,7 @@ COPY_ADS_AGAIN:
                                         if (out != NULL)
                                         {
                                             if (wholeFileAllocated)
-                                                SetEndOfFile(out); // u floppy by se jinak zapisoval zbytek souboru
+                                                SetEndOfFile(out); // Otherwise, the remainder of the file would be written to the floppy disk differently
                                             HANDLES(CloseHandle(out));
                                         }
                                         DeleteFileW(tgtName);
@@ -2506,7 +2505,7 @@ COPY_ADS_AGAIN:
                                         DWORD err;
                                         err = GetLastError();
 
-                                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                                         if (*dlgData.CancelWorker)
                                             goto COPY_ERROR_ADS;
 
@@ -2528,7 +2527,7 @@ COPY_ADS_AGAIN:
                                         SendMessage(hProgressDlg, WM_USER_DIALOG, 0, (LPARAM)data);
                                         switch (ret)
                                         {
-                                        case IDRETRY: // na siti musime otevrit znovu handle, na lokale to nedovoli sharing
+                                        case IDRETRY: // on the network we need to reopen the handle, locally it does not allow sharing
                                         {
                                             if (in == NULL && out == NULL)
                                             {
@@ -2538,28 +2537,28 @@ COPY_ADS_AGAIN:
                                             if (out != NULL)
                                             {
                                                 if (wholeFileAllocated)
-                                                    SetEndOfFile(out);     // u floppy by se jinak zapisoval zbytek souboru
-                                                HANDLES(CloseHandle(out)); // zavreme invalidni handle
+                                                    SetEndOfFile(out);     // Otherwise, the remainder of the file would be written to the floppy disk differently
+                                                HANDLES(CloseHandle(out)); // close invalid handle
                                             }
                                             out = CreateFileW(tgtName, GENERIC_WRITE | GENERIC_READ, 0, NULL, OPEN_ALWAYS,
                                                               FILE_FLAG_SEQUENTIAL_SCAN, NULL);
                                             HANDLES_ADD_EX(__otQuiet, out != INVALID_HANDLE_VALUE, __htFile,
                                                            __hoCreateFile, out, GetLastError(), TRUE);
-                                            if (out != INVALID_HANDLE_VALUE) // otevreno, jeste nastavime offset
+                                            if (out != INVALID_HANDLE_VALUE) // open, let's set the offset
                                             {
                                                 LONG lo, hi;
                                                 lo = GetFileSize(out, (DWORD*)&hi);
                                                 if (lo == INVALID_FILE_SIZE && GetLastError() != NO_ERROR ||
                                                     CQuadWord(lo, hi) < operationDone ||
                                                     !CheckTailOfOutFile(NULL, in, out, operationDone, operationDone + CQuadWord(read, 0), FALSE))
-                                                { // nelze ziskat velikost nebo je soubor prilis maly, jedeme to cely znovu
+                                                { // Unable to obtain size or file is too small, let's do it all over again
                                                     HANDLES(CloseHandle(in));
                                                     HANDLES(CloseHandle(out));
                                                     DeleteFileW(tgtName);
                                                     goto COPY_AGAIN_ADS;
                                                 }
                                             }
-                                            else // nejde otevrit, problem trva ...
+                                            else // cannot open, problem persists ...
                                             {
                                                 out = NULL;
                                                 goto WRITE_ERROR_ADS;
@@ -2578,7 +2577,7 @@ COPY_ADS_AGAIN:
                                             if (out != NULL)
                                             {
                                                 if (wholeFileAllocated)
-                                                    SetEndOfFile(out); // u floppy by se jinak zapisoval zbytek souboru
+                                                    SetEndOfFile(out); // Otherwise, the remainder of the file would be written to the floppy disk differently
                                                 HANDLES(CloseHandle(out));
                                             }
                                             DeleteFileW(tgtName);
@@ -2597,23 +2596,23 @@ COPY_ADS_AGAIN:
                                     }
                                     if (endProcessing)
                                         break;
-                                    if (!script->ChangeSpeedLimit)                                 // pokud se muze zmenit speed-limit, tady neni "vhodne" misto pro cekani
-                                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                                    if (!script->ChangeSpeedLimit)                                 // if the speed limit can change, this is not a "suitable" place to wait
+                                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                                     if (*dlgData.CancelWorker)
                                         goto COPY_ERROR_ADS;
 
                                     script->AddBytesToSpeedMetersAndTFSandPS(read, FALSE, bufferSize, &limitBufferSize);
 
-                                    if (!script->ChangeSpeedLimit)                                 // pokud se muze zmenit speed-limit, tady neni "vhodne" misto pro cekani
-                                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                                    if (!script->ChangeSpeedLimit)                                 // if the speed limit can change, this is not a "suitable" place to wait
+                                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                                     operationDone += CQuadWord(read, 0);
                                     SetProgressWithoutSuspend(hProgressDlg, CaclProg(operDone + operationDone, operTotal),
                                                               CaclProg(totalDone + operDone + operationDone, script->TotalSize),
                                                               dlgData);
 
-                                    if (script->ChangeSpeedLimit)                                  // asi se bude menit speed-limit, zde je "vhodne" misto na cekani, az se
-                                    {                                                              // worker zase rozbehne, ziskame znovu velikost bufferu pro kopirovani
-                                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                                    if (script->ChangeSpeedLimit)                                  // the speed limit may change, here is a "suitable" place to wait until
+                                    {                                                              // worker starts again, we will obtain the buffer size for copying again
+                                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                                         script->GetNewBufSize(&limitBufferSize, bufferSize);
                                     }
                                 }
@@ -2623,7 +2622,7 @@ COPY_ADS_AGAIN:
 
                                     DWORD err;
                                     err = GetLastError();
-                                    WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                                    WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                                     if (*dlgData.CancelWorker)
                                         goto COPY_ERROR_ADS;
 
@@ -2645,29 +2644,29 @@ COPY_ADS_AGAIN:
                                     case IDRETRY:
                                     {
                                         if (in != NULL)
-                                            HANDLES(CloseHandle(in)); // zavreme invalidni handle
+                                            HANDLES(CloseHandle(in)); // close invalid handle
 
                                         in = CreateFileW(srcName, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
                                                          OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
                                         HANDLES_ADD_EX(__otQuiet, in != INVALID_HANDLE_VALUE, __htFile,
                                                        __hoCreateFile, in, GetLastError(), TRUE);
-                                        if (in != INVALID_HANDLE_VALUE) // otevreno, jeste nastavime offset
+                                        if (in != INVALID_HANDLE_VALUE) // open, let's set the offset
                                         {
                                             LONG lo, hi;
                                             lo = GetFileSize(in, (DWORD*)&hi);
                                             if (lo == INVALID_FILE_SIZE && GetLastError() != NO_ERROR ||
                                                 CQuadWord(lo, hi) < operationDone ||
                                                 !CheckTailOfOutFile(NULL, in, out, operationDone, operationDone, TRUE))
-                                            { // nelze ziskat velikost nebo je soubor prilis maly, jedeme to cely znovu
+                                            { // Unable to obtain size or file is too small, let's do it all over again
                                                 HANDLES(CloseHandle(in));
                                                 if (wholeFileAllocated)
-                                                    SetEndOfFile(out); // u floppy by se jinak zapisoval zbytek souboru
+                                                    SetEndOfFile(out); // Otherwise, the remainder of the file would be written to the floppy disk differently
                                                 HANDLES(CloseHandle(out));
                                                 DeleteFileW(tgtName);
                                                 goto COPY_AGAIN_ADS;
                                             }
                                         }
-                                        else // nejde otevrit, problem trva ...
+                                        else // cannot open, problem persists ...
                                         {
                                             in = NULL;
                                             goto READ_ERROR_ADS;
@@ -2686,10 +2685,10 @@ COPY_ADS_AGAIN:
                             if (endProcessing)
                                 break;
 
-                            if (wholeFileAllocated &&     // alokovali jsme kompletni podobu souboru
-                                operationDone < fileSize) // a zdrojovy soubor se zmensil
+                            if (wholeFileAllocated &&     // We allocated the complete structure of the file
+                                operationDone < fileSize) // and the source file has been reduced
                             {
-                                if (!SetEndOfFile(out)) // musime ho zde zkratit
+                                if (!SetEndOfFile(out)) // we need to shorten it here
                                 {
                                     written = read = 0;
                                     goto WRITE_ERROR_ADS;
@@ -2702,9 +2701,9 @@ COPY_ADS_AGAIN:
                             //              SetFileTime(out, NULL /*&creation*/, NULL /*&lastAccess*/, &lastWrite);
 
                             HANDLES(CloseHandle(in));
-                            if (!HANDLES(CloseHandle(out))) // i po neuspesnem volani predpokladame, ze je handle zavreny,
-                            {                               // viz https://forum.altap.cz/viewtopic.php?f=6&t=8455
-                                in = out = NULL;            // (pise, ze cilovy soubor lze smazat, tedy nezustal otevreny jeho handle)
+                            if (!HANDLES(CloseHandle(out))) // Even after an unsuccessful call, we assume that the handle is closed,
+                            {                               // see https://forum.altap.cz/viewtopic.php?f=6&t=8455
+                                in = out = NULL;            // (it says that the target file can be deleted, so its handle was not left open)
                                 written = read = 0;
                                 goto WRITE_ERROR_ADS;
                             }
@@ -2723,8 +2722,8 @@ COPY_ADS_AGAIN:
 
                             DWORD err = GetLastError();
 
-                            // podpora pro MACintose: NTFS automaticky generuje ADSka myFile:Afp_Resource a myFile:Afp_AfpInfo,
-                            // bez dotazu je prepiseme verzemi ze zdrojoveho souboru
+                            // Support for MACintosh: NTFS automatically generates ADSka myFile:Afp_Resource and myFile:Afp_AfpInfo,
+                            // Without a query, we will overwrite it with versions from the source file
                             if (canOverwriteMACADSs &&
                                 (err == ERROR_FILE_EXISTS || err == ERROR_ALREADY_EXISTS) &&
                                 (_wcsnicmp(streamNames[i], L":Afp_Resource", 13) == 0 &&
@@ -2741,7 +2740,7 @@ COPY_ADS_AGAIN:
                                 goto COPY_OVERWRITE;
                             }
 
-                            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                             if (*dlgData.CancelWorker)
                                 goto CANCEL_OPEN2_ADS;
 
@@ -2768,7 +2767,7 @@ COPY_ADS_AGAIN:
                                 break;
 
                             case IDB_IGNOREALL:
-                                dlgData.IgnoreAllADSOpenOutErr = TRUE; // tady break; nechybi
+                                dlgData.IgnoreAllADSOpenOutErr = TRUE; // here break; is not missing
                             case IDB_IGNORE:
                             {
                             IGNORE_OPENOUTADS:
@@ -2813,7 +2812,7 @@ COPY_ADS_AGAIN:
                 else
                 {
                     DWORD err = GetLastError();
-                    WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                    WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                     if (*dlgData.CancelWorker)
                     {
                         doCopyADSRet = FALSE;
@@ -2874,9 +2873,9 @@ COPY_ADS_AGAIN:
     }
     else
     {
-        if (adsWinError != NO_ERROR) // musime zobrazit windows chybu (low memory jde jen do TRACE_E)
+        if (adsWinError != NO_ERROR) // we need to display a Windows error (low memory only goes to TRACE_E)
         {
-            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
             if (*dlgData.CancelWorker)
                 return FALSE;
 
@@ -2896,7 +2895,7 @@ COPY_ADS_AGAIN:
                 goto COPY_ADS_AGAIN;
 
             case IDB_IGNOREALL:
-                dlgData.IgnoreAllADSReadErr = TRUE; // tady break; nechybi
+                dlgData.IgnoreAllADSReadErr = TRUE; // here break; is not missing
             case IDB_IGNORE:
             {
             IGNORE_ADS:
@@ -2912,7 +2911,7 @@ COPY_ADS_AGAIN:
             }
         }
         if (lowMemory)
-            doCopyADSRet = FALSE; // nedostatek pameti -> cancelujeme operaci
+            doCopyADSRet = FALSE; // out of memory -> cancelling operation
     }
     if (doCopyADSRet && skipped)
     {
@@ -2932,7 +2931,7 @@ HANDLE SalCreateFileEx(const char* fileName, DWORD desiredAccess,
     {
         DWORD err = GetLastError();
         if (encryptionNotSupported != NULL && (flagsAndAttributes & FILE_ATTRIBUTE_ENCRYPTED))
-        { // pro pripad, ze na cilovem disku nelze vytvorit Encrypted soubor (hrozi na NTFS sitovem disku (ladeno na sharu z XPcek), na ktery jsme zalogovany pod jinym jmenem nez mame v systemu (na soucasny konzoli) - trik je v tom, ze na cilovem systemu je user se stejnym jmenem bez hesla, tedy sitove nepouzitelny)
+        { // in case it is not possible to create an Encrypted file on the target disk (there is a risk on an NTFS network disk (shared from XP machines) where we are logged in under a different name than we have in the system (on the current console) - the trick is that on the target system there is a user with the same name without a password, thus network unusable)
             out = NOHANDLES(CreateFile(fileName, desiredAccess, shareMode, NULL,
                                        CREATE_NEW, (flagsAndAttributes & ~(FILE_ATTRIBUTE_ENCRYPTED | FILE_ATTRIBUTE_READONLY)), NULL));
             if (out != INVALID_HANDLE_VALUE)
@@ -2940,11 +2939,11 @@ HANDLE SalCreateFileEx(const char* fileName, DWORD desiredAccess,
                 *encryptionNotSupported = TRUE;
                 NOHANDLES(CloseHandle(out));
                 out = INVALID_HANDLE_VALUE;
-                if (!DeleteFile(fileName)) // XP ani Vista si s tim hlavu nelamou, tak na to tez kaslu (ono taky co s tim, ze, leda varovat usera, ze jsme mu pridali nulovy soubor na disk, odkud ho nejde smazat)
+                if (!DeleteFile(fileName)) // XP or Vista don't bother with it, so I don't care either (also, what to do with it, except warn the user that we added a zero file to the disk that cannot be deleted)
                     TRACE_I("Unable to delete testing target file: " << fileName);
             }
         }
-        if (err == ERROR_FILE_EXISTS || // zkontrolujeme, jestli nejde jen o prepis dosoveho jmena souboru
+        if (err == ERROR_FILE_EXISTS || // we will check if it's just a rewrite of the DOS file name
             err == ERROR_ALREADY_EXISTS ||
             err == ERROR_ACCESS_DENIED)
         {
@@ -2956,10 +2955,10 @@ HANDLE SalCreateFileEx(const char* fileName, DWORD desiredAccess,
                 if (err != ERROR_ACCESS_DENIED || (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
                 {
                     const char* tgtName = SalPathFindFileName(fileName);
-                    if (StrICmp(tgtName, data.cAlternateFileName) == 0 && // shoda jen pro dos name
-                        StrICmp(tgtName, data.cFileName) != 0)            // (plne jmeno je jine)
+                    if (StrICmp(tgtName, data.cAlternateFileName) == 0 && // match only for two names
+                        StrICmp(tgtName, data.cFileName) != 0)            // (full name is different)
                     {
-                        // prejmenujeme ("uklidime") soubor/adresar s konfliktnim dos name do docasneho nazvu 8.3 (nepotrebuje extra dos name)
+                        // rename ("clean up") the file/directory with a conflicting long name to a temporary 8.3 name (does not require an extra long name)
                         char tmpName[MAX_PATH + 20];
                         lstrcpyn(tmpName, fileName, MAX_PATH);
                         CutDirectory(tmpName);
@@ -2983,13 +2982,13 @@ HANDLE SalCreateFileEx(const char* fileName, DWORD desiredAccess,
                                     break;
                                 }
                             }
-                            if (tmpName[0] != 0) // pokud se podarilo "uklidit" konfliktni soubor, zkusime vytvoreni
-                            {                    // ciloveho souboru znovu, pak vratime "uklizenemu" souboru jeho puvodni jmeno
+                            if (tmpName[0] != 0) // if the conflict file has been successfully "cleaned up", we will try to create
+                            {                    // target file again, then we return the "cleaned up" file to its original name
                                 out = NOHANDLES(CreateFile(fileName, desiredAccess, shareMode, NULL,
                                                            CREATE_NEW, flagsAndAttributes, NULL));
                                 if (out == INVALID_HANDLE_VALUE && encryptionNotSupported != NULL &&
                                     (flagsAndAttributes & FILE_ATTRIBUTE_ENCRYPTED))
-                                { // pro pripad, ze na cilovem disku nelze vytvorit Encrypted soubor (hrozi na NTFS sitovem disku (ladeno na sharu z XPcek), na ktery jsme zalogovany pod jinym jmenem nez mame v systemu (na soucasny konzoli) - trik je v tom, ze na cilovem systemu je user se stejnym jmenem bez hesla, tedy sitove nepouzitelny)
+                                { // in case it is not possible to create an Encrypted file on the target disk (there is a risk on an NTFS network disk (shared from XP machines) where we are logged in under a different name than we have in the system (on the current console) - the trick is that on the target system there is a user with the same name without a password, thus network unusable)
                                     out = NOHANDLES(CreateFile(fileName, desiredAccess, shareMode, NULL,
                                                                CREATE_NEW, (flagsAndAttributes & ~(FILE_ATTRIBUTE_ENCRYPTED | FILE_ATTRIBUTE_READONLY)), NULL));
                                     if (out != INVALID_HANDLE_VALUE)
@@ -2997,12 +2996,12 @@ HANDLE SalCreateFileEx(const char* fileName, DWORD desiredAccess,
                                         *encryptionNotSupported = TRUE;
                                         NOHANDLES(CloseHandle(out));
                                         out = INVALID_HANDLE_VALUE;
-                                        if (!DeleteFile(fileName)) // XP ani Vista si s tim hlavu nelamou, tak na to tez kaslu (ono taky co s tim, ze, leda varovat usera, ze jsme mu pridali nulovy soubor na disk, odkud ho nejde smazat)
+                                        if (!DeleteFile(fileName)) // XP or Vista don't bother with it, so I don't care either (also, what to do with it, except warn the user that we added a zero file to the disk that cannot be deleted)
                                             TRACE_E("Unable to delete testing target file: " << fileName);
                                     }
                                 }
                                 if (!SalMoveFile(tmpName, origFullName))
-                                { // toto se zjevne muze stat, nepochopitelne, ale Windows vytvori misto fileName (dos name) soubor se jmenem origFullName
+                                { // this can obviously happen, incomprehensible, but Windows will create a fileName (DOS name) file with the name origFullName
                                     TRACE_I("Unexpected situation in SalCreateFileEx(): unable to rename file from tmp-name to original long file name! " << origFullName);
 
                                     if (out != INVALID_HANDLE_VALUE)
@@ -3017,7 +3016,7 @@ HANDLE SalCreateFileEx(const char* fileName, DWORD desiredAccess,
                                 else
                                 {
                                     if ((origFullNameAttr & FILE_ATTRIBUTE_ARCHIVE) == 0)
-                                        SetFileAttributes(origFullName, origFullNameAttr); // nechame bez osetreni a retry, nedulezite (normalne se nastavuje chaoticky)
+                                        SetFileAttributes(origFullName, origFullNameAttr); // Leave it without handling and retry, unimportant (usually set chaotically)
                                 }
                             }
                         }
@@ -3037,22 +3036,22 @@ BOOL SyncOrAsyncDeviceIoControl(CAsyncCopyParams* asyncPar, HANDLE hDevice, DWOR
                                 LPVOID lpInBuffer, DWORD nInBufferSize, LPVOID lpOutBuffer,
                                 DWORD nOutBufferSize, LPDWORD lpBytesReturned, DWORD* err)
 {
-    if (asyncPar->UseAsyncAlg) // asynchronni varianta
+    if (asyncPar->UseAsyncAlg) // asynchronous version
     {
         if (!DeviceIoControl(hDevice, dwIoControlCode, lpInBuffer, nInBufferSize, lpOutBuffer,
                              nOutBufferSize, NULL, asyncPar->InitOverlapped(0)) &&
                 GetLastError() != ERROR_IO_PENDING ||
             !GetOverlappedResult(hDevice, asyncPar->GetOverlapped(0), lpBytesReturned, TRUE))
-        { // chyba, vracime FALSE
+        { // error, returning FALSE
             *err = GetLastError();
             return FALSE;
         }
     }
-    else // synchronni varianta
+    else // synchronous version
     {
         if (!DeviceIoControl(hDevice, dwIoControlCode, lpInBuffer, nInBufferSize, lpOutBuffer,
                              nOutBufferSize, lpBytesReturned, NULL))
-        { // chyba, vracime FALSE
+        { // error, returning FALSE
             *err = GetLastError();
             return FALSE;
         }
@@ -3082,9 +3081,9 @@ void SetCompressAndEncryptedAttrs(const char* name, DWORD attr, HANDLE* out, BOO
         }
         if (curAttr == INVALID_FILE_ATTRIBUTES ||
             (attr & FILE_ATTRIBUTE_ENCRYPTED) != (curAttr & FILE_ATTRIBUTE_ENCRYPTED))
-        { // v SalCreateFileEx (viz vyse) to nejspis nezabralo
+        { // in SalCreateFileEx (see above) it probably didn't work
             err = NO_ERROR;
-            HANDLES(CloseHandle(*out)); // zavreme soubor, jinak mu bohuzel nemuzeme menit Encrypt atribut
+            HANDLES(CloseHandle(*out)); // close the file, otherwise we unfortunately cannot change the Encrypt attribute
             if (attr & FILE_ATTRIBUTE_ENCRYPTED)
             {
                 if (!EncryptFile(name))
@@ -3101,22 +3100,22 @@ void SetCompressAndEncryptedAttrs(const char* name, DWORD attr, HANDLE* out, BOO
             }
             if (err != NO_ERROR)
                 TRACE_I("SetCompressAndEncryptedAttrs(): Unable to set Encrypted attribute for " << name << "! error=" << GetErrorText(err));
-            // otevreme existujici soubor a provedeme zapis
+            // open the existing file and perform writing
             *out = HANDLES_Q(CreateFile(name, GENERIC_WRITE | (openAlsoForRead ? GENERIC_READ : 0), 0, NULL, OPEN_ALWAYS,
                                         asyncPar->GetOverlappedFlag() | FILE_FLAG_SEQUENTIAL_SCAN, NULL));
-            if (openAlsoForRead && *out == INVALID_HANDLE_VALUE) // prusvih, soubor nejde znovu otevrit, zkusime ho jeste otevrit jen pro zapis
+            if (openAlsoForRead && *out == INVALID_HANDLE_VALUE) // Oops, the file cannot be reopened, let's try reopening it only for writing
             {
                 *out = HANDLES_Q(CreateFile(name, GENERIC_WRITE, 0, NULL, OPEN_ALWAYS,
                                             asyncPar->GetOverlappedFlag() | FILE_FLAG_SEQUENTIAL_SCAN, NULL));
             }
-            if (*out == INVALID_HANDLE_VALUE) // prusvih, soubor nejde znovu otevrit, zkusime ho smazat + ohlasime chybu
+            if (*out == INVALID_HANDLE_VALUE) // Oops, the file cannot be reopened, let's try deleting it + report an error
             {
                 err = GetLastError();
                 DeleteFile(name);
                 SetLastError(err);
             }
         }
-        if (*out != INVALID_HANDLE_VALUE && // jen pokud nedoslo chybe pri znovu otevirani souboru (a nasledne k jeho smazani)
+        if (*out != INVALID_HANDLE_VALUE && // only if there was no error when reopening the file (and subsequently deleting it)
             (curAttr == INVALID_FILE_ATTRIBUTES ||
              (attr & FILE_ATTRIBUTE_COMPRESSED) != (curAttr & FILE_ATTRIBUTE_COMPRESSED)) &&
             (attr & FILE_ATTRIBUTE_COMPRESSED) != 0)
@@ -3140,7 +3139,7 @@ void CorrectCaseOfTgtName(char* tgtName, BOOL dataRead, WIN32_FIND_DATA* data)
         if (find != INVALID_HANDLE_VALUE)
             HANDLES(FindClose(find));
         else
-            return; // nepodarilo se nacist data ciloveho souboru, koncime
+            return; // Failed to load the data of the target file, exiting
     }
     int len = (int)strlen(data->cFileName);
     int tgtNameLen = (int)strlen(tgtName);
@@ -3153,12 +3152,12 @@ void SetTFSandPSforSkippedFile(COperation* op, CQuadWord& lastTransferredFileSiz
 {
     if (op->FileSize < COPY_MIN_FILE_SIZE)
     {
-        lastTransferredFileSize += op->FileSize;                      // velikost souboru
-        if (op->Size > COPY_MIN_FILE_SIZE)                            // melo by byt vzdycky aspon COPY_MIN_FILE_SIZE, ale sychrujeme se...
-            lastTransferredFileSize += op->Size - COPY_MIN_FILE_SIZE; // pricteme velikost ADSek
+        lastTransferredFileSize += op->FileSize;                      // file size
+        if (op->Size > COPY_MIN_FILE_SIZE)                            // should always be at least COPY_MIN_FILE_SIZE, but we compromise...
+            lastTransferredFileSize += op->Size - COPY_MIN_FILE_SIZE; // add the size of ADSek
     }
     else
-        lastTransferredFileSize += op->Size; // velikost souboru + ADSek
+        lastTransferredFileSize += op->Size; // file size + ADSek
     script->SetTFSandProgressSize(lastTransferredFileSize, pSize);
 }
 
@@ -3178,8 +3177,8 @@ void DoCopyFileLoopOrig(HANDLE& in, HANDLE& out, void* buffer, int& limitBufferS
             autoRetryAttemptsSNAP = 0;
             if (read == 0)
                 break;                                                     // EOF
-            if (!script->ChangeSpeedLimit)                                 // pokud se muze zmenit speed-limit, tady neni "vhodne" misto pro cekani
-                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+            if (!script->ChangeSpeedLimit)                                 // if the speed limit can change, this is not a "suitable" place to wait
+                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
             if (*dlgData.CancelWorker)
             {
                 copyError = TRUE; // goto COPY_ERROR
@@ -3199,7 +3198,7 @@ void DoCopyFileLoopOrig(HANDLE& in, HANDLE& out, void* buffer, int& limitBufferS
                 DWORD err;
                 err = GetLastError();
 
-                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                 if (*dlgData.CancelWorker)
                 {
                     copyError = TRUE; // goto COPY_ERROR
@@ -3224,26 +3223,26 @@ void DoCopyFileLoopOrig(HANDLE& in, HANDLE& out, void* buffer, int& limitBufferS
                 SendMessage(hProgressDlg, WM_USER_DIALOG, 0, (LPARAM)data);
                 switch (ret)
                 {
-                case IDRETRY: // na siti musime otevrit znovu handle, na lokale to nedovoli sharing
+                case IDRETRY: // on the network we need to reopen the handle, locally it does not allow sharing
                 {
                     if (out != NULL)
                     {
                         if (wholeFileAllocated)
-                            SetEndOfFile(out);     // u floppy by se jinak zapisoval zbytek souboru
-                        HANDLES(CloseHandle(out)); // zavreme invalidni handle
+                            SetEndOfFile(out);     // Otherwise, the remainder of the file would be written to the floppy disk differently
+                        HANDLES(CloseHandle(out)); // close invalid handle
                     }
                     out = HANDLES_Q(CreateFile(op->TargetName, GENERIC_WRITE | GENERIC_READ, 0, NULL,
                                                OPEN_ALWAYS, FILE_FLAG_SEQUENTIAL_SCAN, NULL));
-                    if (out != INVALID_HANDLE_VALUE) // otevreno, jeste nastavime offset
+                    if (out != INVALID_HANDLE_VALUE) // open, let's set the offset
                     {
                         LONG lo, hi;
                         lo = GetFileSize(out, (DWORD*)&hi);
-                        if (lo == INVALID_FILE_SIZE && GetLastError() != NO_ERROR || // nelze ziskat velikost
-                            CQuadWord(lo, hi) < operationDone ||                     // soubor je prilis maly
+                        if (lo == INVALID_FILE_SIZE && GetLastError() != NO_ERROR || // unable to retrieve size
+                            CQuadWord(lo, hi) < operationDone ||                     // file is too small
                             wholeFileAllocated && CQuadWord(lo, hi) > fileSize &&
-                                CQuadWord(lo, hi) > operationDone + CQuadWord(read, 0) || // predalokovany soubor je prilis velky (vetsi nez predalokovana velikost a zaroven vetsi nez zapsana velikost vcetne posledniho zapisovaneho bloku) = doslo k pridani zapisovanych bytu na konec souboru (allocWholeFileOnStart by melo byt 0 /* need-test */)
+                                CQuadWord(lo, hi) > operationDone + CQuadWord(read, 0) || // Preallocated file is too large (larger than preallocated size and also larger than the written size including the last written block) = written bytes have been added to the end of the file (allocWholeFileOnStart should be 0 /* need-test */)
                             !CheckTailOfOutFile(NULL, in, out, operationDone, operationDone + CQuadWord(read, 0), FALSE))
-                        { // jedeme to cely znovu
+                        { // Let's do it all over again
                             HANDLES(CloseHandle(in));
                             HANDLES(CloseHandle(out));
                             DeleteFile(op->TargetName);
@@ -3251,7 +3250,7 @@ void DoCopyFileLoopOrig(HANDLE& in, HANDLE& out, void* buffer, int& limitBufferS
                             return;
                         }
                     }
-                    else // nejde otevrit, problem trva ...
+                    else // cannot open, problem persists ...
                     {
                         out = NULL;
                         goto WRITE_ERROR;
@@ -3274,8 +3273,8 @@ void DoCopyFileLoopOrig(HANDLE& in, HANDLE& out, void* buffer, int& limitBufferS
                 }
                 }
             }
-            if (!script->ChangeSpeedLimit)                                 // pokud se muze zmenit speed-limit, tady neni "vhodne" misto pro cekani
-                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+            if (!script->ChangeSpeedLimit)                                 // if the speed limit can change, this is not a "suitable" place to wait
+                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
             if (*dlgData.CancelWorker)
             {
                 copyError = TRUE; // goto COPY_ERROR
@@ -3284,15 +3283,15 @@ void DoCopyFileLoopOrig(HANDLE& in, HANDLE& out, void* buffer, int& limitBufferS
 
             script->AddBytesToSpeedMetersAndTFSandPS(read, FALSE, bufferSize, &limitBufferSize);
 
-            if (!script->ChangeSpeedLimit)                                 // pokud se muze zmenit speed-limit, tady neni "vhodne" misto pro cekani
-                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+            if (!script->ChangeSpeedLimit)                                 // if the speed limit can change, this is not a "suitable" place to wait
+                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
             operationDone += CQuadWord(read, 0);
             SetProgressWithoutSuspend(hProgressDlg, CaclProg(operationDone, op->Size),
                                       CaclProg(totalDone + operationDone, script->TotalSize), dlgData);
 
-            if (script->ChangeSpeedLimit)                                  // asi se bude menit speed-limit, zde je "vhodne" misto na cekani, az se
-            {                                                              // worker zase rozbehne, ziskame znovu velikost bufferu pro kopirovani
-                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+            if (script->ChangeSpeedLimit)                                  // the speed limit may change, here is a "suitable" place to wait until
+            {                                                              // worker starts again, we will obtain the buffer size for copying again
+                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                 script->GetNewBufSize(&limitBufferSize, bufferSize);
             }
         }
@@ -3302,7 +3301,7 @@ void DoCopyFileLoopOrig(HANDLE& in, HANDLE& out, void* buffer, int& limitBufferS
 
             DWORD err;
             err = GetLastError();
-            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
             if (*dlgData.CancelWorker)
             {
                 copyError = TRUE; // goto COPY_ERROR
@@ -3316,7 +3315,7 @@ void DoCopyFileLoopOrig(HANDLE& in, HANDLE& out, void* buffer, int& limitBufferS
             }
 
             if (err == ERROR_NETNAME_DELETED && ++autoRetryAttemptsSNAP <= 3)
-            { // na SNAP serveru dochazi pri cteni souboru k nahodnemu vyskytu chyby ERROR_NETNAME_DELETED, tlacitko Retry pry funguje, zkusime ho tedy automaticky
+            { // on the SNAP server, there is a random occurrence of the ERROR_NETNAME_DELETED error when reading a file, the Retry button supposedly works, so let's try it automatically
                 Sleep(100);
                 goto RETRY_COPY;
             }
@@ -3336,28 +3335,28 @@ void DoCopyFileLoopOrig(HANDLE& in, HANDLE& out, void* buffer, int& limitBufferS
             RETRY_COPY:
 
                 if (in != NULL)
-                    HANDLES(CloseHandle(in)); // zavreme invalidni handle
+                    HANDLES(CloseHandle(in)); // close invalid handle
                 in = HANDLES_Q(CreateFile(op->SourceName, GENERIC_READ,
                                           FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
                                           OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL));
-                if (in != INVALID_HANDLE_VALUE) // otevreno, jeste nastavime offset
+                if (in != INVALID_HANDLE_VALUE) // open, let's set the offset
                 {
                     LONG lo, hi;
                     lo = GetFileSize(in, (DWORD*)&hi);
                     if (lo == INVALID_FILE_SIZE && GetLastError() != NO_ERROR ||
                         CQuadWord(lo, hi) < operationDone ||
                         !CheckTailOfOutFile(NULL, in, out, operationDone, operationDone, TRUE))
-                    { // nelze ziskat velikost nebo je soubor prilis maly, jedeme to cely znovu
+                    { // Unable to obtain size or file is too small, let's do it all over again
                         HANDLES(CloseHandle(in));
                         if (wholeFileAllocated)
-                            SetEndOfFile(out); // u floppy by se jinak zapisoval zbytek souboru
+                            SetEndOfFile(out); // Otherwise, the remainder of the file would be written to the floppy disk differently
                         HANDLES(CloseHandle(out));
                         DeleteFile(op->TargetName);
                         copyAgain = TRUE; // goto COPY_AGAIN;
                         return;
                     }
                 }
-                else // nejde otevrit, problem trva ...
+                else // cannot open, problem persists ...
                 {
                     in = NULL;
                     goto READ_ERROR;
@@ -3382,25 +3381,25 @@ void DoCopyFileLoopOrig(HANDLE& in, HANDLE& out, void* buffer, int& limitBufferS
         }
     }
 
-    if (wholeFileAllocated) // alokovali jsme kompletni podobu souboru (znamena, ze alokace mela smysl, napr. soubor nemuze byt nulovy)
+    if (wholeFileAllocated) // We allocated the complete structure of the file (meaning that the allocation made sense, for example, the file cannot be null)
     {
-        if (operationDone < fileSize) // a zdrojovy soubor se zmensil
+        if (operationDone < fileSize) // and the source file has been reduced
         {
-            if (!SetEndOfFile(out)) // musime ho zde zkratit
+            if (!SetEndOfFile(out)) // we need to shorten it here
             {
                 written = read = 0;
                 goto WRITE_ERROR;
             }
         }
 
-        if (allocWholeFileOnStart == 0 /* need-test */)
+        if (allocWholeFileOnStart == 0 /* need-test*/)
         {
             CQuadWord curFileSize;
             curFileSize.LoDWord = GetFileSize(out, &curFileSize.HiDWord);
             BOOL getFileSizeSuccess = (curFileSize.LoDWord != INVALID_FILE_SIZE || GetLastError() == NO_ERROR);
             if (getFileSizeSuccess && curFileSize == operationDone)
-            { // kontrola, jestli nedoslo k pridani zapisovanych bytu na konec souboru + jestli umime soubor zkratit
-                allocWholeFileOnStart = 1 /* yes */;
+            { // check if no writable bytes have been added to the end of the file + if we can truncate the file
+                allocWholeFileOnStart = 1 /* yes*/;
             }
             else
             {
@@ -3421,11 +3420,11 @@ void DoCopyFileLoopOrig(HANDLE& in, HANDLE& out, void* buffer, int& limitBufferS
                             << op->TargetName << ") error: " << GetErrorText(err));
                 }
 #endif
-                allocWholeFileOnStart = 2 /* no */; // dalsi pokusy na tomhle cilovem disku si odpustime
+                allocWholeFileOnStart = 2 /* no*/; // We will refrain from further attempts on this target disk
 
                 HANDLES(CloseHandle(out));
                 out = NULL;
-                ClearReadOnlyAttr(op->TargetName); // kdyby vznikl jako read-only (nemelo by nikdy nastat), tak abychom si s nim poradili
+                ClearReadOnlyAttr(op->TargetName); // If it were to occur as read-only (it should never happen), we would handle it.
                 if (DeleteFile(op->TargetName))
                 {
                     HANDLES(CloseHandle(in));
@@ -3444,42 +3443,42 @@ void DoCopyFileLoopOrig(HANDLE& in, HANDLE& out, void* buffer, int& limitBufferS
 
 enum CCopy_BlkState
 {
-    cbsFree,       // blok se nepouziva
-    cbsRead,       // cteni zdrojoveho souboru do bloku - dokoncene (ceka na zapis)
-    cbsInProgress, // --- dole jsou stavy bloku "ceka se na dokonceni operace" (nahore jsou dokoncene stavy)
-    cbsReading,    // cteni zdrojoveho souboru do bloku - zadane (probiha)
-    cbsTestingEOF, // testovani konce zdrojoveho souboru
-    cbsWriting,    // zapis bloku do ciloveho souboru
-    cbsDiscarded,  // cteni zdrojoveho souboru za koncem souboru (melo by vratit jen error: EOF)
+    cbsFree,       // block is not used
+    cbsRead,       // reading source file into block - completed (waiting for write)
+    cbsInProgress, // --- below are the states of the "waiting for operation completion" blocks (completed states are above)
+    cbsReading,    // reading source file into block - in progress
+    cbsTestingEOF, // testing end of source file
+    cbsWriting,    // write block to target file
+    cbsDiscarded,  // Reading from the source file past the end of the file (should return only an error: EOF)
 };
 
 enum CCopy_ForceOp
 {
-    fopNotUsed, // muzeme cist nebo zapisovat, jak se zrovna hodi...
-    fopReading, // musime cist
-    fopWriting  // musime zapisovat
+    fopNotUsed, // we can read or write as needed...
+    fopReading, // we need to read
+    fopWriting  // we need to write
 };
 
 struct CCopy_Context
 {
     CAsyncCopyParams* AsyncPar;
 
-    CCopy_ForceOp ForceOp;        // TRUE = ted se musi cist, FALSE = ted se musi zapisovat
-    BOOL ReadingDone;             // TRUE = zdrojovy soubor uz je komplet nacteny
-    CCopy_BlkState BlockState[8]; // stav bloku
-    DWORD BlockDataLen[8];        // pro kazdy blok: ocekavana data (cbsReading + cbsTestingEOF), platna data (cbsWriting)
-    CQuadWord BlockOffset[8];     // pro kazdy blok: offset bloku ve zdrojovem/cilovem souboru (je i v OVERLAPPED strukture v 'AsyncPar')
-    DWORD BlockTime[8];           // pro kazdy blok: "cas" zahajeni posledni asynchronni operace v tomto bloku
+    CCopy_ForceOp ForceOp;        // TRUE = now it must be read, FALSE = now it must be written
+    BOOL ReadingDone;             // TRUE = source file is already fully loaded
+    CCopy_BlkState BlockState[8]; // block status
+    DWORD BlockDataLen[8];        // for each block: expected data (cbsReading + cbsTestingEOF), valid data (cbsWriting)
+    CQuadWord BlockOffset[8];     // for each block: block offset in the source/target file (also in the OVERLAPPED structure in 'AsyncPar')
+    DWORD BlockTime[8];           // for each block: "time" start of the last asynchronous operation in this block
     DWORD CurTime;                // "cas" pro 'BlockTime', pocitame s pretecenim (i kdyz je asi nerealne)
-    int FreeBlocks;               // aktualni pocet volnych bloku (cbsFree)
-    int FreeBlockIndex;           // tip na index bloku, ktery je volny (cbsFree), nutno overit!
-    int ReadingBlocks;            // aktualni pocet bloku, do kterych se zrovna cte (cbsReading a cbsTestingEOF)
-    int WritingBlocks;            // aktualni pocet bloku, ze kterych se zrovna zapisuje do souboru (cbsWriting)
-    CQuadWord ReadOffset;         // offset pro cteni dalsiho bloku ze zdrojoveho souboru (predchozi uz se cte/cetlo)
-    CQuadWord WriteOffset;        // offset pro zapis dalsiho bloku do ciloveho souboru (predchozi uz se zapisuje/zapsal)
-    int AutoRetryAttemptsSNAP;    // pocet opakovani automatickeho Retry (nedelame vic jak 3x): na SNAP serveru dochazi pri cteni souboru k nahodnemu vyskytu chyby ERROR_NETNAME_DELETED, tlacitko Retry pry funguje, "mackame" ho tedy automaticky
+    int FreeBlocks;               // current number of free blocks (cbsFree)
+    int FreeBlockIndex;           // Hint for the index of a block that is free (cbsFree), must be verified!
+    int ReadingBlocks;            // current number of blocks being read (cbsReading and cbsTestingEOF)
+    int WritingBlocks;            // current number of blocks being written to the file (cbsWriting)
+    CQuadWord ReadOffset;         // offset for reading the next block from the source file (the previous one has been read)
+    CQuadWord WriteOffset;        // offset for writing the next block to the target file (the previous one is being/was written)
+    int AutoRetryAttemptsSNAP;    // Number of automatic Retry repetitions (we do not do more than 3 times): on the SNAP server, when reading a file, there is a random occurrence of the ERROR_NETNAME_DELETED error, the Retry button supposedly works, so we press it automatically
 
-    // vybrane parametry DoCopyFileLoopAsync, at se to vsude nepredava v paremetrech volani
+    // selected parameters for DoCopyFileLoopAsync, so it doesn't have to be passed everywhere in the function call parameters
     CProgressDlgData* DlgData;
     COperation* Op;
     HWND HProgressDlg;
@@ -3540,12 +3539,12 @@ struct CCopy_Context
     BOOL HandleWritingErr(int blkIndex, DWORD err, BOOL* copyError, BOOL* skipCopy, BOOL* copyAgain,
                           const CQuadWord& allocFileSize, const CQuadWord& maxWriteOffset);
 
-    // prerusi pripadne asynchronni operace
+    // Interrupts any pending asynchronous operations
     void CancelOpPhase1();
-    // zajisti, ze vsechny asynchronni operace skutecne dobehly + nastavi ukazovatko na konec souvisle
-    // zapsane casti ciloveho souboru, aby se soubor spravne zarizl (pred pripadnym uzavrenim a vymazem)
-    // POZOR: uvolni nepotrebne bloky, zustavaji jen ty s nactenymi daty IN souboru, ktere navic
-    //        navazuji na WriteOffset (jsou pouzitelne pro Retry)
+    // Ensure that all asynchronous operations have actually completed + set the pointer to the end consistently
+    // written parts of the target file so that the file is properly handled (before potentially closing and deleting it)
+    // WARNING: release unnecessary blocks, only those with loaded data from the IN file remain, in addition
+    //        Continuing from WriteOffset (usable for Retry)
     void CancelOpPhase2(int errBlkIndex);
     BOOL RetryCopyReadErr(DWORD* err, BOOL* copyAgain, BOOL* errAgain);
     BOOL RetryCopyWriteErr(DWORD* err, BOOL* copyAgain, BOOL* errAgain, const CQuadWord& allocFileSize,
@@ -3561,15 +3560,15 @@ BOOL DisableLocalBuffering(CAsyncCopyParams* asyncPar, HANDLE file, DWORD* err)
         IO_STATUS_BLOCK ioStatus;
         ResetEvent(asyncPar->Overlapped[0].hEvent);
         ULONG status = DynNtFsControlFile(file, asyncPar->Overlapped[0].hEvent, NULL,
-                                          0, &ioStatus, 0x00140390 /* IOCTL_LMR_DISABLE_LOCAL_BUFFERING */,
+                                          0, &ioStatus, 0x00140390 /* IOCTL_LMR_DISABLE_LOCAL_BUFFERING*/,
                                           NULL, 0, NULL, 0);
-        if (status == STATUS_PENDING) // musime si pockat na dokonceni operace, probiha asynchronne
+        if (status == STATUS_PENDING) // we need to wait for the operation to finish, it is running asynchronously
         {
             CALL_STACK_MESSAGE1("DisableLocalBuffering(): STATUS_PENDING");
             WaitForSingleObject(asyncPar->Overlapped[0].hEvent, INFINITE);
             status = ioStatus.Status;
         }
-        if (status == 0 /* STATUS_SUCCESS */)
+        if (status == 0 /* STATUS_SUCCESS*/)
             return TRUE;
         *err = LsaNtStatusToWinError(status);
     }
@@ -3589,15 +3588,15 @@ BOOL CCopy_Context::StartReading(int blkIndex, DWORD readSize, DWORD* err, BOOL 
     if (!ReadFile(*In, AsyncPar->Buffers[blkIndex], readSize, NULL,
                   AsyncPar->InitOverlappedWithOffset(blkIndex, ReadOffset)) &&
         GetLastError() != ERROR_IO_PENDING)
-    { // nastala chyba cteni, jdeme ji poresit
+    { // an error occurred while reading, let's solve it
         *err = GetLastError();
-        if (*err == ERROR_HANDLE_EOF) // synchronne ohlaseny EOF, prevedeme ho na asynchronne hlaseny EOF
+        if (*err == ERROR_HANDLE_EOF) // synchronously reported EOF, we will convert it to asynchronously reported EOF
             AsyncPar->SetOverlappedToEOF(blkIndex, ReadOffset);
         else
             return FALSE;
     }
-    // pokud cteni probehlo synchronne (nebo z cache, coz bohuzel nejsem schopen detekovat), tak ted
-    // musime neco zapsat, jinak se muze zapis flakat = celkove zpomaleni operace
+    // if the reading was done synchronously (or from cache, which unfortunately I am not able to detect), then
+    // we need to write something, otherwise the write operation may fail = overall operation slowdown
     BOOL opCompleted = HasOverlappedIoCompleted(AsyncPar->GetOverlapped(blkIndex));
     ForceOp = opCompleted ? fopWriting : fopNotUsed;
 
@@ -3605,17 +3604,17 @@ BOOL CCopy_Context::StartReading(int blkIndex, DWORD readSize, DWORD* err, BOOL 
     TRACE_I("ReadFile result: " << (opCompleted ? "DONE" : "ASYNC"));
 #endif // ASYNC_COPY_DEBUG_MSG
 
-    if (opCompleted && !Script->ChangeSpeedLimit)                   // pokud se muze zmenit speed-limit, tady neni "vhodne" misto pro cekani
-        WaitForSingleObject(DlgData->WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+    if (opCompleted && !Script->ChangeSpeedLimit)                   // if the speed limit can change, this is not a "suitable" place to wait
+        WaitForSingleObject(DlgData->WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
     if (*DlgData->CancelWorker)
     {
         *err = ERROR_CANCELLED;
-        return FALSE; // cancel se provede v error-handlingu
+        return FALSE; // cancel is performed in error handling
     }
 
     BlockOffset[blkIndex] = ReadOffset;
     BlockDataLen[blkIndex] = readSize;
-    if (!testEOF) // blok byl pred volanim teto metody ve stavu cbsFree
+    if (!testEOF) // the block was in the cbsFree state before calling this method
     {
         ReadOffset.Value += readSize;
         BlockState[blkIndex] = cbsReading;
@@ -3639,12 +3638,12 @@ BOOL CCopy_Context::StartWriting(int blkIndex, DWORD* err)
     if (!WriteFile(*Out, AsyncPar->Buffers[blkIndex], BlockDataLen[blkIndex], NULL,
                    AsyncPar->InitOverlappedWithOffset(blkIndex, WriteOffset)) &&
         GetLastError() != ERROR_IO_PENDING)
-    { // nastala chyba zapisu, jdeme ji poresit
+    { // an error in writing occurred, let's solve it
         *err = GetLastError();
         return FALSE;
     }
-    // pokud zapis probehl synchronne (nebo do cache, coz bohuzel nejsem schopen detekovat), tak ted
-    // musime neco precist, jinak se muze cteni flakat = celkove zpomaleni operace
+    // if the write operation was synchronous (or to cache, which unfortunately I am not able to detect), then
+    // we need to read something, otherwise reading can fail = overall operation slowdown
     BOOL opCompleted = HasOverlappedIoCompleted(AsyncPar->GetOverlapped(blkIndex));
     ForceOp = !ReadingDone && opCompleted ? fopReading : fopNotUsed;
 
@@ -3652,16 +3651,16 @@ BOOL CCopy_Context::StartWriting(int blkIndex, DWORD* err)
     TRACE_I("WriteFile result: " << (opCompleted ? "DONE" : "ASYNC"));
 #endif // ASYNC_COPY_DEBUG_MSG
 
-    if (opCompleted && !Script->ChangeSpeedLimit)                   // pokud se muze zmenit speed-limit, tady neni "vhodne" misto pro cekani
-        WaitForSingleObject(DlgData->WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+    if (opCompleted && !Script->ChangeSpeedLimit)                   // if the speed limit can change, this is not a "suitable" place to wait
+        WaitForSingleObject(DlgData->WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
     if (*DlgData->CancelWorker)
     {
         *err = ERROR_CANCELLED;
-        return FALSE; // cancel se provede v error-handlingu
+        return FALSE; // cancel is performed in error handling
     }
 
     WriteOffset.Value += BlockDataLen[blkIndex];
-    BlockState[blkIndex] = cbsWriting; // blok byl pred volanim teto metody ve stavu cbsRead
+    BlockState[blkIndex] = cbsWriting; // the block was in the cbsRead state before calling this method
     BlockTime[blkIndex] = CurTime++;
     WritingBlocks++;
     return TRUE;
@@ -3673,7 +3672,7 @@ int CCopy_Context::FindBlock(CCopy_BlkState state)
         if (BlockState[i] == state)
             return i;
     TRACE_C("CCopy_Context::FindBlock(): unable to find block with required state (" << (int)state << ").");
-    return -1; // dead code, jen pro kompilator
+    return -1; // dead code, just for the compiler
 }
 
 void CCopy_Context::FreeBlock(int blkIndex)
@@ -3696,11 +3695,11 @@ void CCopy_Context::DiscardBlocksBehindEOF(const CQuadWord& fileSize, int exclud
         CCopy_BlkState st = BlockState[i];
         if ((st == cbsRead || st == cbsReading) && BlockOffset[i] >= fileSize)
         {
-            if (st == cbsRead) // zahodime nactena data za koncem souboru, nemaji smysl
+            if (st == cbsRead) // discard the read data beyond the end of the file, they are meaningless
                 FreeBlock(i);
             else
             {
-                BlockState[i] = cbsDiscarded; // cteni za koncem souboru nema smysl; BlockTime neni duvod menit
+                BlockState[i] = cbsDiscarded; // Reading beyond the end of the file doesn't make sense; BlockTime is not a reason to change
                 ReadingBlocks--;
             }
         }
@@ -3718,7 +3717,7 @@ void CCopy_Context::GetNewFileSize(const char* fileName, HANDLE file, CQuadWord*
     }
     else
     {
-        if (*fileSize < minFileSize) // pokud by nahodou GetFileSize vratila kratsi soubor nez uz mame nacteny
+        if (*fileSize < minFileSize) // if by any chance GetFileSize returned a file shorter than we have already loaded
             *fileSize = minFileSize;
     }
 }
@@ -3739,25 +3738,25 @@ void CCopy_Context::CancelOpPhase1()
 
 void CCopy_Context::CancelOpPhase2(int errBlkIndex)
 {
-    // POZOR: errBlkIndex == -1 pro chybu pri zadani asynchronniho cteni (nema prideleny blok)
-    //        nebo pro chybu pri zkracovani souboru po dobehnuti hl. kopirovaciho cyklu (nema prideleny blok)
-    //        nebo pro Cancel v progress dialogu (nema prideleny blok)
+    // WARNING: errBlkIndex == -1 for error in asynchronous read request (no block allocated)
+    //        or for an error when truncating the file after the main copying cycle has finished (no block allocated)
+    //        or for Cancel in the progress dialog (does not have a dedicated block)
 
     DWORD bytes;
     for (int i = 0; i < _countof(BlockState); i++)
     {
         if (BlockState[i] > cbsInProgress)
-        { // GetOverlappedResult by mel hned vratit vysledek, protoze jsme pro oba soubory volali CancelIo()
+        { // GetOverlappedResult should return the result immediately because we called CancelIo() for both files
             if (GetOverlappedResult(BlockState[i] == cbsWriting ? *Out : *In, AsyncPar->GetOverlapped(i), &bytes, TRUE))
             {
-                if (BlockState[i] == cbsReading && BlockDataLen[i] == bytes) // komplet prectene -> zmena na cbsRead blok
+                if (BlockState[i] == cbsReading && BlockDataLen[i] == bytes) // completely read -> change to cbsRead block
                 {
                     BlockState[i] = cbsRead;
                     ReadingBlocks--;
                 }
                 else
                 {
-                    if (BlockState[i] == cbsWriting && BlockDataLen[i] == bytes) // komplet zapsane -> zmena na cbsRead blok (mozna budeme zapisovat znovu, tak si ted blok nezahodime)
+                    if (BlockState[i] == cbsWriting && BlockDataLen[i] == bytes) // complete write -> change to cbsRead block (we may write again, so let's not discard the block now)
                     {
                         BlockState[i] = cbsRead;
                         WritingBlocks--;
@@ -3767,51 +3766,51 @@ void CCopy_Context::CancelOpPhase2(int errBlkIndex)
             else
             {
                 DWORD err = GetLastError();
-                if (i != errBlkIndex &&             // pro tento blok hlasime chybu, znovu ji hlasit do TRACE nema smysl
-                    err != ERROR_OPERATION_ABORTED) // tohle neni chyba, jen hlasi, ze to bylo preruseno (volanim CancelIo())
-                {                                   // vypiseme si chyby v dalsich blocich, nejspis nic duleziteho a meli bysme je proste jen ignorovat
+                if (i != errBlkIndex &&             // For this block, we report an error, reporting it again to TRACE doesn't make sense
+                    err != ERROR_OPERATION_ABORTED) // this is not an error, just reporting that it was interrupted (by calling CancelIo())
+                {                                   // we will print out errors in the following blocks, most likely nothing important and we should just ignore them
                     TRACE_I("CCopy_Context::CancelOpPhase2(): GetOverlappedResult(" << (BlockState[i] == cbsWriting ? "OUT" : "IN") << ", " << i << ") returned error: " << GetErrorText(err));
                 }
             }
             switch (BlockState[i])
             {
-            case cbsReading:    // neni kompletne prectene
-            case cbsTestingEOF: // nedokonceny test EOFu
+            case cbsReading:    // not completely read
+            case cbsTestingEOF: // unfinished test of EOF
             case cbsDiscarded:
                 FreeBlock(i);
                 break;
 
-            case cbsWriting:                      // nezapsany blok
-                if (WriteOffset > BlockOffset[i]) // pripadne snizime WriteOffset
+            case cbsWriting:                      // unregistered block
+                if (WriteOffset > BlockOffset[i]) // Alternatively, we can decrease WriteOffset
                     WriteOffset = BlockOffset[i];
-                BlockState[i] = cbsRead; // neni komplet zapsane, ale prectene ano -> zmena na cbsRead blok (mozna budeme zapisovat znovu, tak si ted blok nezahodime)
+                BlockState[i] = cbsRead; // not completely written, but read yes -> change to cbsRead block (we may rewrite, so let's not discard the block now)
                 WritingBlocks--;
                 break;
             }
         }
     }
 
-    ReadOffset = WriteOffset; // zjistime, kam az mame souvisle nactena data od offsetu, kde potrebujeme zacit zapis
+    ReadOffset = WriteOffset; // we will find out where we have continuously read data from the offset where we need to start writing
     for (int i = 0; i < _countof(BlockState); i++)
     {
-        if (BlockState[i] == cbsRead && BlockOffset[i] == ReadOffset) // mame nacteny blok navazujici na ReadOffset
+        if (BlockState[i] == cbsRead && BlockOffset[i] == ReadOffset) // We have read a block following ReadOffset
         {
             ReadOffset.Value += BlockDataLen[i];
-            i = -1; // a hledame zase pekne od zacatku (pri poctu 8 bloku si to muzeme dovolit, max. 36 pruchodu cyklem)
+            i = -1; // and we are looking again from the beginning (with 8 blocks we can afford it, max. 36 passes through the loop)
         }
     }
 
-    // zahodime bloky, ktere uz jsou zapsane nebo naopak jsou moc vpredu (nenavazuji),
-    // takze je radsi nechame nacist znovu
+    // discard blocks that are already written or, conversely, are too far ahead (not linked),
+    // so let's rather reload it
     for (int i = 0; i < _countof(BlockState); i++)
         if (BlockState[i] == cbsRead && (BlockOffset[i] < WriteOffset || BlockOffset[i] > ReadOffset))
             FreeBlock(i);
 
-    // pro pripad ruseni ciloveho souboru nastavime file pointer na konec zapsane casti, volajici
-    // pak pres SetEndOfFile zarizne soubor pred jeho vymazem (jinak by mohlo dojit k nesmyslnemu
-    // zapisu nul od konce zapsane casti az do konce souboru - soubor je predalokovany kvuli
-    // prevenci fragmentace)
-    if (*Out != NULL) // jen pokud mezitim nebyl cilovy soubor zavreny
+    // in case of target file corruption, we will set the file pointer to the end of the written part, caller
+    // then SetEndOfFile truncates the file before deleting it (otherwise it could lead to nonsense
+    // write zeros from the end of the written part to the end of the file - the file is preallocated because of
+    // prevention of fragmentation)
+    if (*Out != NULL) // only if the target file has not been closed in the meantime
     {
         if (!SalSetFilePointer(*Out, WriteOffset))
         {
@@ -3824,46 +3823,46 @@ void CCopy_Context::CancelOpPhase2(int errBlkIndex)
 BOOL CCopy_Context::RetryCopyReadErr(DWORD* err, BOOL* copyAgain, BOOL* errAgain)
 {
     if (*In != NULL)
-        HANDLES(CloseHandle(*In)); // zavreme invalidni handle
+        HANDLES(CloseHandle(*In)); // close invalid handle
     *In = HANDLES_Q(CreateFile(Op->SourceName, GENERIC_READ,
                                FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
                                OPEN_EXISTING, AsyncPar->GetOverlappedFlag() | FILE_FLAG_SEQUENTIAL_SCAN, NULL));
-    if (*In != INVALID_HANDLE_VALUE) // otevreno, jeste nastavime offset
+    if (*In != INVALID_HANDLE_VALUE) // open, let's set the offset
     {
         CQuadWord size;
         size.LoDWord = GetFileSize(*In, (DWORD*)&size.HiDWord);
         if ((size.LoDWord != INVALID_FILE_SIZE || GetLastError() == NO_ERROR) && size >= ReadOffset)
-        { // lze ziskat velikost a soubor je dost velky
-            // je-li zdroj na siti: disable local client-side in-memory caching
+        { // It is possible to obtain the size and the file is quite large
+            // if the source is on the network: disable local client-side in-memory caching
             // http://msdn.microsoft.com/en-us/library/ee210753%28v=vs.85%29.aspx
             //
-            // pouziti Overlapped[0].hEvent z AsyncPar je OK, ted neni nic "in-progress", event se nepouziva
-            // (ovsem POZOR: napr. Buffers[0] z AsyncPar se muze pouzivat)
+            // Using Overlapped[0].hEvent from AsyncPar is OK, nothing is "in-progress" now, the event is not being used
+            // (however BEWARE: for example, Buffers[0] from AsyncPar can be used)
             if ((Op->OpFlags & OPFL_SRCPATH_IS_NET) && !DisableLocalBuffering(AsyncPar, *In, err))
                 TRACE_E("CCopy_Context::RetryCopyReadErr(): IOCTL_LMR_DISABLE_LOCAL_BUFFERING failed for network source file: " << Op->SourceName << ", error: " << GetErrorText(*err));
-            // pouziti Overlapped[0 a 1].hEvent a Overlapped[0 a 1] z AsyncPar je OK, ted neni nic
-            // "in-progress", event ani overlapped struktura se nepouziva (ovsem POZOR: napr. Buffers[0]
-            // z AsyncPar se muze pouzivat)
+            // Using Overlapped[0 and 1].hEvent and Overlapped[0 and 1] from AsyncPar is OK, there is nothing now
+            // "in-progress", event or overlapped structure is not used (however BEWARE: for example Buffers[0]
+            // can be used from AsyncPar)
             if (CheckTailOfOutFile(AsyncPar, *In, *Out, WriteOffset, WriteOffset, TRUE))
             {
-                ForceOp = ReadOffset > WriteOffset ? fopWriting : fopNotUsed; // pokud mame nacteno napred, zacneme zapisem
+                ForceOp = ReadOffset > WriteOffset ? fopWriting : fopNotUsed; // if we have read first, we will start writing
                 *OperationDone = WriteOffset;
                 Script->SetTFSandProgressSize(*LastTransferredFileSize + *OperationDone, *TotalDone + *OperationDone);
                 SetProgressWithoutSuspend(HProgressDlg, CaclProg(*OperationDone, Op->Size),
                                           CaclProg(*TotalDone + *OperationDone, Script->TotalSize), *DlgData);
-                return TRUE; // uspech: jdeme na retry
+                return TRUE; // Success: let's go for a retry
             }
         }
-        // nelze ziskat velikost nebo je soubor moc maly nebo posledni zapsana cast souboru neodpovida zdroji, jedeme to cely znovu
+        // unable to obtain size or the file is too small or the last written part of the file does not match the source, let's do it all over again
         HANDLES(CloseHandle(*In));
         if (WholeFileAllocated)
-            SetEndOfFile(*Out); // u floppy by se jinak zapisoval zbytek souboru
+            SetEndOfFile(*Out); // Otherwise, the remainder of the file would be written to the floppy disk differently
         HANDLES(CloseHandle(*Out));
         DeleteFile(Op->TargetName);
         *copyAgain = TRUE; // goto COPY_AGAIN;
         return FALSE;
     }
-    else // nejde otevrit, problem trva ...
+    else // cannot open, problem persists ...
     {
         *err = GetLastError();
         *In = NULL;
@@ -3874,13 +3873,13 @@ BOOL CCopy_Context::RetryCopyReadErr(DWORD* err, BOOL* copyAgain, BOOL* errAgain
 
 BOOL CCopy_Context::HandleReadingErr(int blkIndex, DWORD err, BOOL* copyError, BOOL* skipCopy, BOOL* copyAgain)
 {
-    // POZOR: blkIndex == -1 pro chybu pri zadani asynchronniho cteni (nema prideleny blok)
+    // WARNING: blkIndex == -1 for an error in asynchronous read input (no block assigned)
 
     CancelOpPhase1();
 
     while (1)
     {
-        WaitForSingleObject(DlgData->WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+        WaitForSingleObject(DlgData->WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
         if (*DlgData->CancelWorker)
         {
             CancelOpPhase2(blkIndex);
@@ -3897,7 +3896,7 @@ BOOL CCopy_Context::HandleReadingErr(int blkIndex, DWORD err, BOOL* copyError, B
 
         int ret = IDCANCEL;
         if (err == ERROR_NETNAME_DELETED && ++AutoRetryAttemptsSNAP <= 3)
-        { // na SNAP serveru dochazi pri cteni souboru k nahodnemu vyskytu chyby ERROR_NETNAME_DELETED, tlacitko Retry pry funguje, zkusime ho tedy automaticky
+        { // on the SNAP server, there is a random occurrence of the ERROR_NETNAME_DELETED error when reading a file, the Retry button supposedly works, so let's try it automatically
             Sleep(100);
             ret = IDRETRY;
         }
@@ -3921,7 +3920,7 @@ BOOL CCopy_Context::HandleReadingErr(int blkIndex, DWORD err, BOOL* copyError, B
             else
             {
                 if (errAgain)
-                    break;    // stejny problem znovu, opakujeme hlaseni
+                    break;    // same problem again, repeating the message
                 return FALSE; // copyAgain==TRUE, goto COPY_AGAIN;
             }
         }
@@ -3941,7 +3940,7 @@ BOOL CCopy_Context::HandleReadingErr(int blkIndex, DWORD err, BOOL* copyError, B
         }
         }
         if (errAgain)
-            continue; // IDRETRY: stejny problem znovu, opakujeme hlaseni
+            continue; // IDRETRY: same problem again, repeating the message
         TRACE_C("CCopy_Context::HandleReadingErr(): unexpected result of WM_USER_DIALOG(0).");
         return TRUE;
     }
@@ -3953,33 +3952,33 @@ BOOL CCopy_Context::RetryCopyWriteErr(DWORD* err, BOOL* copyAgain, BOOL* errAgai
     if (*Out != NULL)
     {
         if (WholeFileAllocated)
-            SetEndOfFile(*Out);     // u floppy by se jinak zapisoval zbytek souboru
-        HANDLES(CloseHandle(*Out)); // zavreme invalidni handle
+            SetEndOfFile(*Out);     // Otherwise, the remainder of the file would be written to the floppy disk differently
+        HANDLES(CloseHandle(*Out)); // close invalid handle
     }
     *Out = HANDLES_Q(CreateFile(Op->TargetName, GENERIC_WRITE | GENERIC_READ, 0, NULL,
                                 OPEN_ALWAYS, AsyncPar->GetOverlappedFlag() | FILE_FLAG_SEQUENTIAL_SCAN, NULL));
-    if (*Out != INVALID_HANDLE_VALUE) // otevreno, jeste nastavime offset
+    if (*Out != INVALID_HANDLE_VALUE) // open, let's set the offset
     {
         BOOL ok = TRUE;
         CQuadWord size;
         size.LoDWord = GetFileSize(*Out, (DWORD*)&size.HiDWord);
-        if (size.LoDWord == INVALID_FILE_SIZE && GetLastError() != NO_ERROR ||   // nelze ziskat velikost
-            size < WriteOffset ||                                                // soubor je prilis maly
-            WholeFileAllocated && size > allocFileSize && size > maxWriteOffset) // predalokovany soubor je prilis velky (vetsi nez predalokovana velikost a zaroven vetsi nez zapsana velikost vcetne posledniho zapisovaneho bloku) = doslo k pridani zapisovanych bytu na konec souboru (allocWholeFileOnStart by melo byt 0 /* need-test */)
-        {                                                                        // jedeme to cely znovu
+        if (size.LoDWord == INVALID_FILE_SIZE && GetLastError() != NO_ERROR ||   // unable to retrieve size
+            size < WriteOffset ||                                                // file is too small
+            WholeFileAllocated && size > allocFileSize && size > maxWriteOffset) // Preallocated file is too large (larger than preallocated size and also larger than the written size including the last written block) = written bytes have been added to the end of the file (allocWholeFileOnStart should be 0 /* need-test */)
+        {                                                                        // Let's do it all over again
             ok = FALSE;
         }
-        // uspech (soubor je tak akorat veliky)
-        // je-li cil na siti: disable local client-side in-memory caching
+        // success (the file is just the right size)
+        // if the target on the network: disable local client-side in-memory caching
         // http://msdn.microsoft.com/en-us/library/ee210753%28v=vs.85%29.aspx
         //
-        // pouziti Overlapped[0].hEvent z AsyncPar je OK, ted neni nic "in-progress", event se nepouziva
-        // (ovsem POZOR: napr. Buffers[0] z AsyncPar se muze pouzivat)
+        // Using Overlapped[0].hEvent from AsyncPar is OK, nothing is "in-progress" now, the event is not being used
+        // (however BEWARE: for example, Buffers[0] from AsyncPar can be used)
         if (ok && (Op->OpFlags & OPFL_TGTPATH_IS_NET) && !DisableLocalBuffering(AsyncPar, *Out, err))
             TRACE_E("CCopy_Context::RetryCopyWriteErr(): IOCTL_LMR_DISABLE_LOCAL_BUFFERING failed for network target file: " << Op->TargetName << ", error: " << GetErrorText(*err));
-        // pouziti Overlapped[0 a 1].hEvent a Overlapped[0 a 1] z AsyncPar je OK, ted neni nic
-        // "in-progress", event ani overlapped struktura se nepouziva (ovsem POZOR: napr. Buffers[0]
-        // z AsyncPar se muze pouzivat)
+        // Using Overlapped[0 and 1].hEvent and Overlapped[0 and 1] from AsyncPar is OK, there is nothing now
+        // "in-progress", event or overlapped structure is not used (however BEWARE: for example Buffers[0]
+        // can be used from AsyncPar)
         if (!ok || !CheckTailOfOutFile(AsyncPar, *In, *Out, WriteOffset, WriteOffset, FALSE))
         {
             HANDLES(CloseHandle(*In));
@@ -3988,14 +3987,14 @@ BOOL CCopy_Context::RetryCopyWriteErr(DWORD* err, BOOL* copyAgain, BOOL* errAgai
             *copyAgain = TRUE; // goto COPY_AGAIN;
             return FALSE;
         }
-        ForceOp = ReadOffset > WriteOffset ? fopWriting : fopNotUsed; // pokud mame nacteno napred, zacneme zapisem
+        ForceOp = ReadOffset > WriteOffset ? fopWriting : fopNotUsed; // if we have read first, we will start writing
         *OperationDone = WriteOffset;
         Script->SetTFSandProgressSize(*LastTransferredFileSize + *OperationDone, *TotalDone + *OperationDone);
         SetProgressWithoutSuspend(HProgressDlg, CaclProg(*OperationDone, Op->Size),
                                   CaclProg(*TotalDone + *OperationDone, Script->TotalSize), *DlgData);
-        return TRUE; // uspech: jdeme na retry
+        return TRUE; // Success: let's go for a retry
     }
-    else // nejde otevrit, problem trva ...
+    else // cannot open, problem persists ...
     {
         *err = GetLastError();
         *Out = NULL;
@@ -4007,13 +4006,13 @@ BOOL CCopy_Context::RetryCopyWriteErr(DWORD* err, BOOL* copyAgain, BOOL* errAgai
 BOOL CCopy_Context::HandleWritingErr(int blkIndex, DWORD err, BOOL* copyError, BOOL* skipCopy, BOOL* copyAgain,
                                      const CQuadWord& allocFileSize, const CQuadWord& maxWriteOffset)
 {
-    // POZOR: blkIndex == -1 pro chybu pri zkracovani souboru po dobehnuti hl. kopirovaciho cyklu (nema prideleny blok)
+    // WARNING: blkIndex == -1 for an error when truncating a file after the main copying cycle has finished (no block allocated)
 
     CancelOpPhase1();
 
     while (1)
     {
-        WaitForSingleObject(DlgData->WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+        WaitForSingleObject(DlgData->WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
         if (*DlgData->CancelWorker)
         {
             CancelOpPhase2(blkIndex);
@@ -4046,7 +4045,7 @@ BOOL CCopy_Context::HandleWritingErr(int blkIndex, DWORD err, BOOL* copyError, B
             else
             {
                 if (errAgain)
-                    break;    // stejny problem znovu, opakujeme hlaseni
+                    break;    // same problem again, repeating the message
                 return FALSE; // copyAgain==TRUE, goto COPY_AGAIN;
             }
         }
@@ -4066,7 +4065,7 @@ BOOL CCopy_Context::HandleWritingErr(int blkIndex, DWORD err, BOOL* copyError, B
         }
         }
         if (errAgain)
-            continue; // IDRETRY: stejny problem znovu, opakujeme hlaseni
+            continue; // IDRETRY: same problem again, repeating the message
         TRACE_C("CCopy_Context::HandleWritingErr(): unexpected result of WM_USER_DIALOG(0).");
         return TRUE;
     }
@@ -4074,8 +4073,8 @@ BOOL CCopy_Context::HandleWritingErr(int blkIndex, DWORD err, BOOL* copyError, B
 
 BOOL CCopy_Context::HandleSuspModeAndCancel(BOOL* copyError)
 {
-    if (!Script->ChangeSpeedLimit)                                  // pokud se nemuze zmenit speed-limit (jinak tady neni "vhodne" misto pro cekani)
-        WaitForSingleObject(DlgData->WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+    if (!Script->ChangeSpeedLimit)                                  // if the speed limit cannot be changed (otherwise this is not a "suitable" place to wait)
+        WaitForSingleObject(DlgData->WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
     if (*DlgData->CancelWorker)
     {
         CancelOpPhase1();
@@ -4094,59 +4093,59 @@ void DoCopyFileLoopAsync(CAsyncCopyParams* asyncPar, HANDLE& in, HANDLE& out, vo
 {
     CQuadWord allocFileSize = fileSize;
     DWORD err = NO_ERROR;
-    DWORD bytes = 0; // pomocny DWORD - kolik bajtu se precetlo/zapsalo v bloku
+    DWORD bytes = 0; // helper DWORD - how many bytes were read/written in the block
 
-    // je-li zdroj/cil na siti: disable local client-side in-memory caching
+    // if the source/target is on the network: disable local client-side in-memory caching
     // http://msdn.microsoft.com/en-us/library/ee210753%28v=vs.85%29.aspx
     if ((op->OpFlags & OPFL_SRCPATH_IS_NET) && !DisableLocalBuffering(asyncPar, in, &err))
         TRACE_E("DoCopyFileLoopAsync(): IOCTL_LMR_DISABLE_LOCAL_BUFFERING failed for network source file: " << op->SourceName << ", error: " << GetErrorText(err));
     if ((op->OpFlags & OPFL_TGTPATH_IS_NET) && !DisableLocalBuffering(asyncPar, out, &err))
         TRACE_E("DoCopyFileLoopAsync(): IOCTL_LMR_DISABLE_LOCAL_BUFFERING failed for network target file: " << op->TargetName << ", error: " << GetErrorText(err));
 
-    // parametry kopirovaci smycky
+    // parameters of the copying loop
     int numOfBlocks = 8;
 
-    // kontext Copy operace (zabranuje predavani hromady parametru do pomocnych funkci, nyni metod kontextu)
+    // Context of the Copy operation (prevents passing a lot of parameters to helper functions, now methods of the context)
     CCopy_Context ctx(asyncPar, numOfBlocks, &dlgData, op, hProgressDlg, &in, &out, wholeFileAllocated, script,
                       &operationDone, &totalDone, &lastTransferredFileSize);
     BOOL doCopy = TRUE;
     while (doCopy)
     {
-        if (ctx.ForceOp != fopWriting && ctx.FreeBlocks > 0 && !ctx.ReadingDone && ctx.ReadingBlocks < (numOfBlocks + 1) / 2) // cist soubezne budeme maximalne do poloviny bloku
+        if (ctx.ForceOp != fopWriting && ctx.FreeBlocks > 0 && !ctx.ReadingDone && ctx.ReadingBlocks < (numOfBlocks + 1) / 2) // We will read concurrently up to half of the block at most
         {
             DWORD toRead = ctx.ReadOffset + CQuadWord(limitBufferSize, 0) <= fileSize ? limitBufferSize : (fileSize - ctx.ReadOffset).LoDWord;
             BOOL testEOF = toRead == 0;
-            if (!testEOF || ctx.ReadingBlocks == 0) // cteni dat nebo test EOFu (test EOFu se dela, jen kdyz jsou vsechna cteni dokoncena)
+            if (!testEOF || ctx.ReadingBlocks == 0) // reading data or testing EOF (testing EOF is done only when all readings are completed)
             {
                 if (ctx.BlockState[ctx.FreeBlockIndex] != cbsFree)
                     ctx.FreeBlockIndex = ctx.FindBlock(cbsFree);
-                // test EOFu = cteni do celeho bloku, jinak bezne cteni 'toRead'
+                // test if EOF is read, reading into a whole block, otherwise normal reading 'toRead'
                 if (ctx.StartReading(ctx.FreeBlockIndex, testEOF ? limitBufferSize : toRead, &err, testEOF))
-                    continue; // uspech (start asynchronniho cteni), zkusime nastartovat dalsi cteni
+                    continue; // success (start of asynchronous reading), let's try to start another reading
                 else
-                { // chyba (start asynchronniho cteni)
+                { // error (start of asynchronous reading)
                     if (!ctx.HandleReadingErr(-1, err, &copyError, &skipCopy, &copyAgain))
                         return; // cancel/skip(skip-all)/retry-complete
                     continue;   // retry-resume
                 }
             }
         }
-        // cteni uz je zadane nebo neni potreba, jdeme zjistit, jestli se neco nedokoncilo
-        BOOL shouldWait = TRUE; // TRUE = uz neni co dalsiho asynchronniho zadat, musime pockat na dokonceni nejake zadane operace
-        BOOL retryCopy = FALSE; // TRUE = po chybe se ma provest Retry = zacit pekne od zacatku cyklu "doCopy"
-        // dve kola jsou potreba jen v pripade synchronniho zapisu (chceme ho oznacit za
-        // dokonceny hned a ne az po dalsim cteni, uz kvuli progresu)
+        // Reading is already requested or not needed, let's find out if something is unfinished
+        BOOL shouldWait = TRUE; // TRUE = there is no more asynchronous task to submit, we have to wait for the completion of some requested operation
+        BOOL retryCopy = FALSE; // TRUE = retry should be performed after an error = start fresh from the beginning of the "doCopy" cycle
+        // Two wheels are needed only in case of synchronous writing (we want to mark it as
+        // completed immediately and not after the next reading, just for the sake of progress)
         for (int afterWriting = 0; afterWriting < 2; afterWriting++)
         {
             for (int i = 0; i < _countof(ctx.BlockState); i++)
             {
                 if (ctx.BlockState[i] > cbsInProgress && HasOverlappedIoCompleted(asyncPar->GetOverlapped(i)))
                 {
-                    shouldWait = FALSE; // v duchu "keep it simple" (jsou situace, kdy by to mohlo zustat TRUE, ale ignorujeme je)
+                    shouldWait = FALSE; // in the spirit of "keep it simple" (there are situations where it could remain TRUE, but we ignore them)
                     switch (ctx.BlockState[i])
                     {
-                    case cbsReading:    // cteni zdrojoveho souboru do bloku - zadane (probiha)
-                    case cbsTestingEOF: // testovani konce zdrojoveho souboru
+                    case cbsReading:    // reading source file into block - in progress
+                    case cbsTestingEOF: // testing end of source file
                     {
                         BOOL testingEOF = ctx.BlockState[i] == cbsTestingEOF;
 
@@ -4157,41 +4156,41 @@ void DoCopyFileLoopAsync(CAsyncCopyParams* asyncPar, HANDLE& in, HANDLE& out, vo
                         BOOL res = GetOverlappedResult(in, asyncPar->GetOverlapped(i), &bytes, TRUE);
                         if (testingEOF && res && bytes == 0)
                         {
-                            res = FALSE; // podle MSDN ma na EOFu vracet FALSE a ERROR_HANDLE_EOF, tak si to posychrujeme (na disku Novell Netware 6.5 vraci TRUE)
+                            res = FALSE; // According to MSDN, it should return FALSE and ERROR_HANDLE_EOF at EOF, so we will tweak it (on Novell Netware 6.5 disk it returns TRUE)
                             SetLastError(ERROR_HANDLE_EOF);
                         }
                         if (res || GetLastError() == ERROR_HANDLE_EOF)
                         {
                             ctx.AutoRetryAttemptsSNAP = 0;
-                            if (!res) // EOF na zacatku bloku (jen cbsReading: EOF muze byt i pred timto blokem, to se pripadne vyresi nalezenim EOFu pozdeji v bloku s nizsim offsetem)
+                            if (!res) // EOF at the beginning of the block (only cbsReading: EOF can also be before this block, which will be resolved by finding EOF later in the block with a lower offset if necessary)
                             {
-                                // kdyz GetOverlappedResult() vraci FALSE, nemusi vratit bytes==0 (byl tu na to TRACE_C
-                                // a padacky prisly), takze bytes vynulujeme explicitne
+                                // When GetOverlappedResult() returns FALSE, it may not return bytes==0 (TRACE_C was here for that)
+                                // and failures have occurred), so we explicitly reset the bytes
                                 bytes = 0;
                                 if (testingEOF)
-                                    ctx.ReadingDone = TRUE; // potvrzeny konec zdrojoveho souboru, dale uz nic necteme
-                                // nesmime forcovat fopWriting (nic jsme neprecetli, nemame co zapsat), pokud nejde o test EOFu,
-                                // nechame dokoncit ostatni asynchronni cteni, a pak provedeme test EOFu, a pak uz se bude jen zapisovat
+                                    ctx.ReadingDone = TRUE; // Confirmed end of source file, we do not read anything further
+                                // We must not force fopWriting (we haven't read anything, we have nothing to write) unless it's an EOF test,
+                                // Let the remaining asynchronous reads finish, then perform the EOF test, and then only writing will be done
                                 ctx.ForceOp = fopNotUsed;
                             }
-                            if (bytes < ctx.BlockDataLen[i]) // soubor je kratsi nez jsme cekali -> nastavime novou velikost souboru
+                            if (bytes < ctx.BlockDataLen[i]) // the file is shorter than we expected -> we will set a new file size
                             {
                                 if (!testingEOF || bytes != 0)
                                     ctx.ReadOffset = fileSize = ctx.BlockOffset[i] + CQuadWord(bytes, 0);
                                 if (!testingEOF)
                                     ctx.DiscardBlocksBehindEOF(fileSize, i);
-                                if (bytes == 0) // EOF = zadna data, uvolnime blok
+                                if (bytes == 0) // EOF = no data, release block
                                 {
                                     ctx.FreeBlock(i);
                                     if (testingEOF)
-                                        doCopy = !ctx.IsOperationDone(numOfBlocks); // otestujeme, jestli jsme timto nedokoncili kopirovani
+                                        doCopy = !ctx.IsOperationDone(numOfBlocks); // Let's test if we have finished copying this way
                                 }
                                 else
-                                    ctx.BlockDataLen[i] = bytes; // dale si hrajeme na to, ze jsme chteli nacist presne tolik
+                                    ctx.BlockDataLen[i] = bytes; // we are still pretending that we wanted to load exactly that much
                             }
                             else
                             {
-                                if (testingEOF) // hledali jsme EOF a nacetl se plny blok, asi doslo k razantnimu narustu souboru, zjistime novou velikost
+                                if (testingEOF) // we were looking for EOF and a full block was read, there must have been a significant increase in the file, we will determine the new size
                                 {
                                     ctx.ReadOffset = ctx.BlockOffset[i] + CQuadWord(bytes, 0);
                                     ctx.GetNewFileSize(op->SourceName, in, &fileSize, ctx.ReadOffset);
@@ -4203,7 +4202,7 @@ void DoCopyFileLoopAsync(CAsyncCopyParams* asyncPar, HANDLE& in, HANDLE& out, vo
                                 ctx.BlockState[i] = cbsRead;
                             }
                         }
-                        else // chyba
+                        else // error
                         {
                             if (!ctx.HandleReadingErr(i, GetLastError(), &copyError, &skipCopy, &copyAgain))
                                 return;       // cancel/skip(skip-all)/retry-complete
@@ -4212,14 +4211,14 @@ void DoCopyFileLoopAsync(CAsyncCopyParams* asyncPar, HANDLE& in, HANDLE& out, vo
                         break;
                     }
 
-                    case cbsWriting: // zapis bloku do ciloveho souboru
+                    case cbsWriting: // write block to target file
                     {
 #ifdef ASYNC_COPY_DEBUG_MSG
                         TRACE_I("WRITE done: " << i);
 #endif // ASYNC_COPY_DEBUG_MSG
 
                         BOOL res = GetOverlappedResult(out, asyncPar->GetOverlapped(i), &bytes, TRUE);
-                        if (!res || bytes != ctx.BlockDataLen[i]) // chyba
+                        if (!res || bytes != ctx.BlockDataLen[i]) // error
                         {
                             err = GetLastError();
                             if (err == NO_ERROR && bytes != ctx.BlockDataLen[i])
@@ -4236,21 +4235,21 @@ void DoCopyFileLoopAsync(CAsyncCopyParams* asyncPar, HANDLE& in, HANDLE& out, vo
 
                         script->AddBytesToSpeedMetersAndTFSandPS(bytes, FALSE, bufferSize, &limitBufferSize);
 
-                        if (!script->ChangeSpeedLimit)                                 // pokud se muze zmenit speed-limit, tady neni "vhodne" misto pro cekani
-                            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                        if (!script->ChangeSpeedLimit)                                 // if the speed limit can change, this is not a "suitable" place to wait
+                            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                         operationDone += CQuadWord(bytes, 0);
                         SetProgressWithoutSuspend(hProgressDlg, CaclProg(operationDone, op->Size),
                                                   CaclProg(totalDone + operationDone, script->TotalSize), dlgData);
 
-                        if (script->ChangeSpeedLimit)                                  // asi se bude menit speed-limit, zde je "vhodne" misto na cekani, az se
-                        {                                                              // worker zase rozbehne, ziskame znovu velikost bufferu pro kopirovani
-                            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                        if (script->ChangeSpeedLimit)                                  // the speed limit may change, here is a "suitable" place to wait until
+                        {                                                              // worker starts again, we will obtain the buffer size for copying again
+                            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                             script->GetNewBufSize(&limitBufferSize, bufferSize);
                         }
 
-                        // break; // tady break nechybi...
+                        // break; // break is not missing here...
                     }
-                    case cbsDiscarded: // cteni zdrojoveho souboru za koncem souboru (melo by vratit jen error: EOF)
+                    case cbsDiscarded: // Reading from the source file past the end of the file (should return only an error: EOF)
                     {
                         ctx.FreeBlock(i);
                         doCopy = !ctx.IsOperationDone(numOfBlocks);
@@ -4264,13 +4263,13 @@ void DoCopyFileLoopAsync(CAsyncCopyParams* asyncPar, HANDLE& in, HANDLE& out, vo
             if (!doCopy || retryCopy)
                 break;
 
-            // nacetli jsme data do bloku, zjistime, jestli by nesly zapsat do ciloveho souboru;
-            // uvolnili jsme zapsane/discardnute bloky (zase do nich pujdeme cist na zacatek smycky)
-            CQuadWord nextReadBlkOffset; // nejnizsi offset preskoceneho cbsRead bloku
+            // We have loaded the data into a block, let's see if they can be written to the target file;
+            // We have released the written/discarded blocks (we will go back to read from them at the beginning of the loop)
+            CQuadWord nextReadBlkOffset; // lowest offset of the skipped cbsRead block
             do
             {
                 nextReadBlkOffset.SetUI64(0);
-                // zapisovat soubezne budeme maximalne do poloviny bloku
+                // we will write concurrently up to half of the block
                 for (int i = 0; ctx.ForceOp != fopReading && i < _countof(ctx.BlockState) && ctx.WritingBlocks < (numOfBlocks + 1) / 2; i++)
                 {
                     if (ctx.BlockState[i] == cbsRead)
@@ -4278,7 +4277,7 @@ void DoCopyFileLoopAsync(CAsyncCopyParams* asyncPar, HANDLE& in, HANDLE& out, vo
                         if (ctx.WriteOffset == ctx.BlockOffset[i])
                         {
                             if (!ctx.StartWriting(i, &err))
-                            { // chyba (asynchronniho zapisu)
+                            { // error (asynchronous write)
                                 CQuadWord maxWriteOffset = ctx.WriteOffset + CQuadWord(ctx.BlockDataLen[i], 0);
                                 if (!ctx.HandleWritingErr(i, err, &copyError, &skipCopy, &copyAgain, allocFileSize, maxWriteOffset))
                                     return;       // cancel/skip(skip-all)/retry-complete
@@ -4292,17 +4291,17 @@ void DoCopyFileLoopAsync(CAsyncCopyParams* asyncPar, HANDLE& in, HANDLE& out, vo
                                 nextReadBlkOffset = ctx.BlockOffset[i];
                         }
                     }
-                } // mame dalsi cbsRead blok a navazuje na zapsanou cast ciloveho souboru -> zapisujeme dale
+                } // we have another cbsRead block and it continues from the written part of the target file -> we continue writing
             } while (!retryCopy && ctx.ForceOp != fopReading && nextReadBlkOffset.Value != 0 && nextReadBlkOffset == ctx.WriteOffset &&
-                     ctx.WritingBlocks < (numOfBlocks + 1) / 2); // zapisovat soubezne budeme maximalne do poloviny bloku
+                     ctx.WritingBlocks < (numOfBlocks + 1) / 2); // we will write concurrently up to half of the block
             if (retryCopy || ctx.ForceOp != fopReading)
-                break; // jdeme na Retry nebo zapis nebyl synchronni (tedy byl hotov za cca 0 ms) nebo uz jen zapisujeme, kazdopadne dve kola jsou zbytecna
+                break; // we go to Retry or the write was not synchronous (thus it was done in about 0 ms) or we are just writing, in any case, two rounds are unnecessary
         }
         if (!doCopy || retryCopy)
             continue;
 
-        if (shouldWait) // dalsi pruchod cyklem nema smysl, neni nadeje na zahajeni noveho cteni ani zapisu, pockame
-        {               // na dokonceni nejstarsi asynchronni operace
+        if (shouldWait) // Another cycle pass makes no sense, there is no hope for starting a new read or write, let's wait
+        {               // to complete the oldest asynchronous operation
             DWORD oldestBlockTime = 0;
             int oldestBlockIndex = -1;
             for (int i = 0; i < _countof(ctx.BlockState); i++)
@@ -4324,9 +4323,9 @@ void DoCopyFileLoopAsync(CAsyncCopyParams* asyncPar, HANDLE& in, HANDLE& out, vo
             TRACE_I("wait: GetOverlappedResult: " << oldestBlockIndex << (ctx.BlockState[oldestBlockIndex] == cbsWriting ? " WRITE" : " READ"));
 #endif // ASYNC_COPY_DEBUG_MSG
 
-            // zde pockame na dokonceni nejstarsi zadane probihajici asynchronni operace
-            // zdrojoveho souboru ('in') se tyka: cbsReading, cbsTestingEOF a cbsDiscarded
-            // ciloveho souboru ('out') se tyka jen cbsWriting
+            // here we wait for the oldest requested ongoing asynchronous operation to finish
+            // source file ('in') concerns: cbsReading, cbsTestingEOF, and cbsDiscarded
+            // the target file ('out') is only relevant to cbsWriting
             GetOverlappedResult(ctx.BlockState[oldestBlockIndex] == cbsWriting ? out : in,
                                 asyncPar->GetOverlapped(oldestBlockIndex), &bytes, TRUE);
 
@@ -4343,9 +4342,9 @@ void DoCopyFileLoopAsync(CAsyncCopyParams* asyncPar, HANDLE& in, HANDLE& out, vo
     if (ctx.ReadOffset != ctx.WriteOffset || operationDone != ctx.WriteOffset)
         TRACE_C("DoCopyFileLoopAsync(): unexpected situation after copy: ReadOffset != WriteOffset || operationDone != ctx.WriteOffset");
 
-    if (wholeFileAllocated) // alokovali jsme kompletni podobu souboru (znamena, ze alokace mela smysl, napr. soubor nemuze byt nulovy)
+    if (wholeFileAllocated) // We allocated the complete structure of the file (meaning that the allocation made sense, for example, the file cannot be null)
     {
-        if (operationDone < allocFileSize) // a zdrojovy soubor se zmensil, musime ho zde zkratit
+        if (operationDone < allocFileSize) // and the source file has been reduced, we need to shorten it here
         {
             while (1)
             {
@@ -4357,24 +4356,24 @@ void DoCopyFileLoopAsync(CAsyncCopyParams* asyncPar, HANDLE& in, HANDLE& out, vo
                 {
                     DWORD err2 = GetLastError();
                     if ((off.LoDWord != INVALID_SET_FILE_POINTER || err2 == NO_ERROR) && off != ctx.WriteOffset)
-                        err2 = ERROR_INVALID_FUNCTION; // uspesny SetFilePointer, ale off != ctx.WriteOffset: nejspis nikdy nenastane, jen pro uplnost
+                        err2 = ERROR_INVALID_FUNCTION; // Successful SetFilePointer, but off != ctx.WriteOffset: probably never happens, just for completeness
                     if (!ctx.HandleWritingErr(-1, err2, &copyError, &skipCopy, &copyAgain, allocFileSize, CQuadWord(0, 0)))
                         return; // cancel/skip(skip-all)/retry-complete
                                 // retry-resume
                 }
                 else
-                    break; // uspech
+                    break; // success
             }
         }
 
-        if (allocWholeFileOnStart == 0 /* need-test */)
+        if (allocWholeFileOnStart == 0 /* need-test*/)
         {
             CQuadWord curFileSize;
             curFileSize.LoDWord = GetFileSize(out, &curFileSize.HiDWord);
             BOOL getFileSizeSuccess = (curFileSize.LoDWord != INVALID_FILE_SIZE || GetLastError() == NO_ERROR);
             if (getFileSizeSuccess && curFileSize == operationDone)
-            { // kontrola, jestli nedoslo k pridani zapisovanych bytu na konec souboru + jestli umime soubor zkratit
-                allocWholeFileOnStart = 1 /* yes */;
+            { // check if no writable bytes have been added to the end of the file + if we can truncate the file
+                allocWholeFileOnStart = 1 /* yes*/;
             }
             else
             {
@@ -4395,13 +4394,13 @@ void DoCopyFileLoopAsync(CAsyncCopyParams* asyncPar, HANDLE& in, HANDLE& out, vo
                             << op->TargetName << ") error: " << GetErrorText(err2));
                 }
 #endif
-                allocWholeFileOnStart = 2 /* no */; // dalsi pokusy na tomhle cilovem disku si odpustime
+                allocWholeFileOnStart = 2 /* no*/; // We will refrain from further attempts on this target disk
 
                 while (1)
                 {
                     HANDLES(CloseHandle(out));
                     out = NULL;
-                    ClearReadOnlyAttr(op->TargetName); // kdyby vznikl jako read-only (nemelo by nikdy nastat), tak abychom si s nim poradili
+                    ClearReadOnlyAttr(op->TargetName); // If it were to occur as read-only (it should never happen), we would handle it.
                     if (DeleteFile(op->TargetName))
                     {
                         HANDLES(CloseHandle(in));
@@ -4430,15 +4429,15 @@ BOOL DoCopyFile(COperation* op, HWND hProgressDlg, void* buffer,
     if (script->CopyAttrs && copyAsEncrypted)
         TRACE_E("DoCopyFile(): unexpected parameter value: copyAsEncrypted is TRUE when script->CopyAttrs is TRUE!");
 
-    // pokud cesta konci mezerou/teckou, je invalidni a nesmime provest kopii,
-    // CreateFile mezery/tecky orizne a prekopiroval by se tak jiny soubor pripadne do jineho jmena
+    // if the path ends with a space/dot, it is invalid and we must not make a copy,
+    // CreateFile trims spaces/dots and would thus copy another file possibly to a different name
     BOOL invalidSrcName = FileNameIsInvalid(op->SourceName, TRUE);
     BOOL invalidTgtName = FileNameIsInvalid(op->TargetName, TRUE);
 
-    // optimalizace: zhruba 4x zrychli skipnuti vsech "starsich a stejnych" souboru,
-    // zpomaleni pokud je soubor novejsi je 5%, tedy myslim, ze se to silne vyplati
-    // (da se jiste predpokladat, ze "Overwrite Older" user zapne pokud dojde k tem skipum)
-    BOOL tgtNameCaseCorrected = FALSE; // TRUE = velikost pismen v cilovem jmene uz byla upravena podle existujiciho ciloveho souboru (aby pri prepisu nedoslo ke zmene velikosti pismen)
+    // optimization: roughly 4x speedup skipping all "older and same" files,
+    // Slowdown if the file is newer by 5%, so I think it's highly worth it
+    // (it can be assumed that the "Overwrite Older" user will enable it if there are any skips)
+    BOOL tgtNameCaseCorrected = FALSE; // TRUE = the letter case in the target name has already been adjusted according to the existing target file (to prevent a change in letter case during overwriting)
     WIN32_FIND_DATA dataIn, dataOut;
     if ((op->OpFlags & OPFL_OVERWROLDERALRTESTED) == 0 &&
         !invalidSrcName && !invalidTgtName && script->OverwriteOlder)
@@ -4453,26 +4452,26 @@ BOOL DoCopyFile(COperation* op, HWND hProgressDlg, void* buffer,
             tgtNameCaseCorrected = TRUE;
 
             const char* tgtName = SalPathFindFileName(op->TargetName);
-            if (StrICmp(tgtName, dataOut.cFileName) == 0 &&                 // pokud nejde jen o shodu DOS-name (tam dojde ke zmene DOS-name a ne k prepisu)
-                (dataOut.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) // pokud nejde o adresar (s tim overwrite-older nic nezmuze)
+            if (StrICmp(tgtName, dataOut.cFileName) == 0 &&                 // if it's not just about matching the DOS name (there will be a change in the DOS name, not just an overwrite)
+                (dataOut.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) // if it's not a directory (the overwrite-older won't change anything)
             {
                 find = HANDLES_Q(FindFirstFile(op->SourceName, &dataIn));
                 if (find != INVALID_HANDLE_VALUE)
                 {
                     HANDLES(FindClose(find));
 
-                    // orizneme casy na sekundy (ruzne FS ukladaji casy s ruznymi prestnostmi, takze dochazelo k "rozdilum" i mezi "shodnymi" casy)
+                    // We will truncate times to seconds (different file systems store times with different precisions, so there were "differences" even between "identical" times)
                     *(unsigned __int64*)&dataIn.ftLastWriteTime = *(unsigned __int64*)&dataIn.ftLastWriteTime - (*(unsigned __int64*)&dataIn.ftLastWriteTime % 10000000);
                     *(unsigned __int64*)&dataOut.ftLastWriteTime = *(unsigned __int64*)&dataOut.ftLastWriteTime - (*(unsigned __int64*)&dataOut.ftLastWriteTime % 10000000);
 
-                    if ((dataIn.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0 &&             // zkontrolujeme, ze zdroj je stale jeste soubor
-                        CompareFileTime(&dataIn.ftLastWriteTime, &dataOut.ftLastWriteTime) <= 0) // zdrojovy soubor neni novejsi nez cilovy soubor - skipneme copy operaci
+                    if ((dataIn.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0 &&             // check if the source is still a file
+                        CompareFileTime(&dataIn.ftLastWriteTime, &dataOut.ftLastWriteTime) <= 0) // source file is not newer than the target file - skipping the copy operation
                     {
                         CQuadWord fileSize(op->FileSize);
                         if (fileSize < COPY_MIN_FILE_SIZE)
                         {
-                            if (op->Size > COPY_MIN_FILE_SIZE)             // melo by byt vzdycky aspon COPY_MIN_FILE_SIZE, ale sychrujeme se...
-                                fileSize += op->Size - COPY_MIN_FILE_SIZE; // pricteme velikost ADSek
+                            if (op->Size > COPY_MIN_FILE_SIZE)             // should always be at least COPY_MIN_FILE_SIZE, but we compromise...
+                                fileSize += op->Size - COPY_MIN_FILE_SIZE; // add the size of ADSek
                         }
                         else
                             fileSize = op->Size;
@@ -4489,16 +4488,16 @@ BOOL DoCopyFile(COperation* op, HWND hProgressDlg, void* buffer,
         }
     }
 
-    // rozhodneme jakym algoritmem budeme kopirovat: konvencnim prastarym synchronim nebo
-    // asynchronim okoukanym od Windows 7 verze CopyFileEx:
-    // -pod Vistou se to zle sralo, kasleme na ni, uz stejne temer vymrela, navic
-    //  pri pouziti stareho algoritmu proti Win7 po siti jsem nezjistil zadny rychlostni
-    //  rozdil pro upload, u downloadu jsme byli o 15% pomalejsi (coz je unosne)
-    // -asynchroni algous ma smysl jen po siti + pokud mame rychly nebo sitovy zdroj/cil
-    // -se starym algousem je kopirovani ve Win7 po siti klidne 2x-3x pomalejsi ve smeru
-    //  download, skoro 2x pomalejsi upload a tak 30% pomalejsi sit-sit
+    // we will decide which algorithm we will use for copying: conventional old synchronous or
+    // asynchronously watched from the Windows 7 version of CopyFileEx:
+    // -under the Vistula it was bad, we don't care about it, she almost died anyway, besides
+    //  When using the old algorithm against Win7 over the network, I did not notice any speed
+    //  difference for upload, we were 15% slower for download (which is acceptable)
+    // Asynchronous algorithms only make sense over a network + if we have a fast or network source/target
+    // -with the old algous, copying in Win7 over the network is easily 2x-3x slower in one direction
+    //  download, almost 2 times slower upload and about 30% slower network-network
     BOOL useAsyncAlg = Windows7AndLater && Configuration.UseAsyncCopyAlg &&
-                       op->FileSize.Value > 0 && // prazdne soubory jedeme synchrone (zadna data)
+                       op->FileSize.Value > 0 && // empty files are processed synchronously (no data)
                        ((op->OpFlags & OPFL_SRCPATH_IS_NET) && ((op->OpFlags & OPFL_TGTPATH_IS_NET) ||
                                                                 (op->OpFlags & OPFL_TGTPATH_IS_FAST)) ||
                         (op->OpFlags & OPFL_TGTPATH_IS_NET) && (op->OpFlags & OPFL_SRCPATH_IS_FAST));
@@ -4508,7 +4507,7 @@ BOOL DoCopyFile(COperation* op, HWND hProgressDlg, void* buffer,
 
     asyncPar->Init(useAsyncAlg);
     script->EnableProgressBufferLimit(useAsyncAlg);
-    struct CDisableProgressBufferLimit // zajistime volani Script->EnableProgressBufferLimit(FALSE) na vsech exitech z teto funkce
+    struct CDisableProgressBufferLimit // we will ensure calling Script->EnableProgressBufferLimit(FALSE) on all exits from this function
     {
         COperations* Script;
         CDisableProgressBufferLimit(COperations* script) { Script = script; }
@@ -4574,13 +4573,13 @@ COPY_AGAIN:
                                   (script->CopyAttrs ? (op->Attr & (FILE_ATTRIBUTE_COMPRESSED | (lossEncryptionAttr ? 0 : FILE_ATTRIBUTE_ENCRYPTED))) : 0);
                 if (!invalidTgtName)
                 {
-                    // GENERIC_READ pro 'out' zpusobi zpomaleni u asynchronniho kopirovani z disku na sit (na Win7 x64 GLAN namereno 95MB/s misto 111MB/s)
+                    // GENERIC_READ for 'out' causes slowdown in asynchronous copying from disk to network (on Win7 x64 GLAN measured 95MB/s instead of 111MB/s)
                     out = SalCreateFileEx(op->TargetName, GENERIC_WRITE | (script->CopyAttrs ? GENERIC_READ : 0), 0, fileAttrs, &encryptionNotSupported);
-                    if (!encryptionNotSupported && script->CopyAttrs && out == INVALID_HANDLE_VALUE) // pro pripad, ze neni povolen read-access do adresare (ten jsme pridali jen kvuli nastavovani Compressed atributu) zkusime jeste vytvorit soubor jen pro zapis
+                    if (!encryptionNotSupported && script->CopyAttrs && out == INVALID_HANDLE_VALUE) // in case read-access to the directory is not allowed (which we added only for setting the Compressed attribute), we will try to create a file just for writing
                         out = SalCreateFileEx(op->TargetName, GENERIC_WRITE, 0, fileAttrs, &encryptionNotSupported);
 
                     if (out == INVALID_HANDLE_VALUE && encryptionNotSupported && dlgData.FileOutLossEncrAll && !lossEncryptionAttr)
-                    { // uzivatel souhlasil se ztratou Encrypted atributu pro vsechny problemove soubory, tak tuhle ztratu zaridime
+                    { // The user has agreed to the loss of the Encrypted attribute for all problematic files, so we will handle this loss.
                         lossEncryptionAttr = TRUE;
                         continue;
                     }
@@ -4593,16 +4592,16 @@ COPY_AGAIN:
                     }
 
                     if (out != INVALID_HANDLE_VALUE && (fileAttrs & FILE_ATTRIBUTE_ENCRYPTED))
-                    { // zkontrolujeme jestli je Encrypted skutecne nastaveny (treba na FATce se proste ignoruje, system chyby nevraci (konkretne pro CreateFile))
+                    { // we will check if Encrypted is actually set (for example, on FAT it is simply ignored, the system does not return an error (specifically for CreateFile))
                         DWORD attrs;
                         attrs = SalGetFileAttributes(op->TargetName);
                         if (attrs != INVALID_FILE_ATTRIBUTES && (attrs & FILE_ATTRIBUTE_ENCRYPTED) == 0)
-                        { // nejde nahodit Encrypted atribut, zeptame se usera co s tim...
+                        { // Unable to set the Encrypted attribute, let's ask the user what to do...
                             if (dlgData.FileOutLossEncrAll)
                                 lossEncryptionAttr = TRUE;
                             else
                             {
-                                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                                 if (*dlgData.CancelWorker)
                                     goto CANCEL_ENCNOTSUP;
 
@@ -4620,7 +4619,7 @@ COPY_AGAIN:
                                 switch (ret)
                                 {
                                 case IDB_ALL:
-                                    dlgData.FileOutLossEncrAll = TRUE; // tady break; nechybi
+                                    dlgData.FileOutLossEncrAll = TRUE; // here break; is not missing
                                 case IDYES:
                                     lossEncryptionAttr = TRUE;
                                     break;
@@ -4659,12 +4658,12 @@ COPY_AGAIN:
 
                 COPY:
 
-                    // pokud je to mozne, provedeme alokaci potrebneho mista pro soubor (nedochazi pak k fragmentaci disku + hladsi zapis na diskety)
+                    // if possible, we will allocate the necessary space for the file (to prevent disk fragmentation + smoother writing to floppy disks)
                     BOOL wholeFileAllocated = FALSE;
-                    if (!skipAllocWholeFileOnStart &&               // minule doslo k chybe, ted by nejspis doslo k te same
-                        allocWholeFileOnStart != 2 /* no */ &&      // alokovani celeho souboru neni zakazano
-                        fileSize > CQuadWord(limitBufferSize, 0) && // pod velikost kopirovaciho bufferu nema alokace souboru smysl
-                        fileSize < CQuadWord(0, 0x80000000))        // velikost souboru je kladne cislo (jinak nelze seekovat - jde o cisla nad 8EB, takze zrejme nikdy nenastane)
+                    if (!skipAllocWholeFileOnStart &&               // last time there was an error, now it would probably be the same
+                        allocWholeFileOnStart != 2 /* no*/ &&      // allocating the entire file is not prohibited
+                        fileSize > CQuadWord(limitBufferSize, 0) && // it doesn't make sense to allocate a file under the size of the copy buffer
+                        fileSize < CQuadWord(0, 0x80000000))        // file size is a positive number (otherwise seeking is not possible - these are numbers above 8EB, so it will probably never happen)
                     {
                         BOOL fatal = TRUE;
                         BOOL ignoreErr = FALSE;
@@ -4681,7 +4680,7 @@ COPY_AGAIN:
                             else
                             {
                                 if (GetLastError() == ERROR_DISK_FULL)
-                                    ignoreErr = TRUE; // malo mista na disku
+                                    ignoreErr = TRUE; // low disk space
                             }
                         }
                         if (fatal)
@@ -4690,16 +4689,16 @@ COPY_AGAIN:
                             {
                                 DWORD err = GetLastError();
                                 TRACE_E("DoCopyFile(): unable to allocate whole file size before copy operation, please report under what conditions this occurs! GetLastError(): " << GetErrorText(err));
-                                allocWholeFileOnStart = 2 /* no */; // dalsi pokusy na tomhle cilovem disku si odpustime
+                                allocWholeFileOnStart = 2 /* no*/; // We will refrain from further attempts on this target disk
                             }
 
-                            // zkusime jeste soubor zkratit na nulu, aby nedoslo pri zavreni souboru k nejakemu zbytecnemu zapisu
+                            // Let's try to truncate the file to zero to avoid any unnecessary writes when closing the file
                             SetFilePointer(out, 0, NULL, FILE_BEGIN);
                             SetEndOfFile(out);
 
                             HANDLES(CloseHandle(out));
                             out = INVALID_HANDLE_VALUE;
-                            ClearReadOnlyAttr(op->TargetName); // kdyby vznikl jako read-only (nemelo by nikdy nastat), tak abychom si s nim poradili
+                            ClearReadOnlyAttr(op->TargetName); // If it were to occur as read-only (it should never happen), we would handle it.
                             if (DeleteFile(op->TargetName))
                             {
                                 skipAllocWholeFileOnStart = TRUE;
@@ -4720,8 +4719,8 @@ COPY_AGAIN:
                         DoCopyFileLoopAsync(asyncPar, in, out, buffer, limitBufferSize, script, dlgData, wholeFileAllocated, op,
                                             totalDone, copyError, skipCopy, hProgressDlg, operationDone, fileSize,
                                             bufferSize, allocWholeFileOnStart, copyAgain, lastTransferredFileSize);
-                        // POZOR: 'in' ani 'out' nemaji nastaveny file-pointer (SetFilePointer) na konec souboru,
-                        //        respektive 'out' ho ma nastaveny jen pri (copyError || skipCopy)
+                        // WARNING: 'in' and 'out' do not have the file-pointer set to the end of the file,
+                        //        respectively 'out' is set only when (copyError || skipCopy)
                     }
                     else
                     {
@@ -4739,7 +4738,7 @@ COPY_AGAIN:
                         if (out != NULL)
                         {
                             if (wholeFileAllocated)
-                                SetEndOfFile(out); // u floppy by se jinak zapisoval zbytek souboru
+                                SetEndOfFile(out); // Otherwise, the remainder of the file would be written to the floppy disk differently
                             HANDLES(CloseHandle(out));
                         }
                         DeleteFile(op->TargetName);
@@ -4757,7 +4756,7 @@ COPY_AGAIN:
                         if (out != NULL)
                         {
                             if (wholeFileAllocated)
-                                SetEndOfFile(out); // u floppy by se jinak zapisoval zbytek souboru
+                                SetEndOfFile(out); // Otherwise, the remainder of the file would be written to the floppy disk differently
                             HANDLES(CloseHandle(out));
                         }
                         DeleteFile(op->TargetName);
@@ -4775,8 +4774,8 @@ COPY_AGAIN:
                         inSize.LoDWord = GetFileSize(in, &inSize.HiDWord);
                         outSize.LoDWord = GetFileSize(out, &outSize.HiDWord);
                         if (inSize != outSize)
-                        {                                                              // Lantastic 7.0, zdanlive vse bez problemu, ale vysledek spatny
-                            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                        {                                                              // Lantastic 7.0, seemingly everything without problems, but the result is wrong
+                            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                             if (*dlgData.CancelWorker)
                                 goto COPY_ERROR;
 
@@ -4797,9 +4796,9 @@ COPY_AGAIN:
                                 operationDone = CQuadWord(0, 0);
                                 script->SetTFSandProgressSize(lastTransferredFileSize, totalDone);
                                 SetProgress(hProgressDlg, 0, CaclProg(totalDone, script->TotalSize), dlgData);
-                                SetFilePointer(in, 0, NULL, FILE_BEGIN);  // cteme znovu
-                                SetFilePointer(out, 0, NULL, FILE_BEGIN); // zapisujeme znovu
-                                SetEndOfFile(out);                        // zariznem vystupni soubor
+                                SetFilePointer(in, 0, NULL, FILE_BEGIN);  // reading again
+                                SetFilePointer(out, 0, NULL, FILE_BEGIN); // writing again
+                                SetEndOfFile(out);                        // create output file
                                 goto COPY;
                             }
 
@@ -4821,7 +4820,7 @@ COPY_AGAIN:
                     {
                         DWORD err = GetLastError();
 
-                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                         if (*dlgData.CancelWorker)
                             goto COPY_ERROR;
 
@@ -4845,7 +4844,7 @@ COPY_AGAIN:
                             break;
 
                         case IDB_IGNOREALL:
-                            dlgData.IgnoreAllGetFileTimeErr = TRUE; // tady break; nechybi
+                            dlgData.IgnoreAllGetFileTimeErr = TRUE; // here break; is not missing
                         case IDB_IGNORE:
                         {
                         IGNORE_GETFILETIME:
@@ -4867,20 +4866,20 @@ COPY_AGAIN:
                     HANDLES(CloseHandle(in));
                     in = NULL;
 
-                    if (operationDone < COPY_MIN_FILE_SIZE) // nulove/male soubory trvaji aspon jako soubory s velikosti COPY_MIN_FILE_SIZE
+                    if (operationDone < COPY_MIN_FILE_SIZE) // Zero/Small files take at least as long as files with size COPY_MIN_FILE_SIZE
                         script->AddBytesToSpeedMetersAndTFSandPS((DWORD)(COPY_MIN_FILE_SIZE - operationDone).Value, TRUE, 0, NULL, MAX_OP_FILESIZE);
 
                     DWORD attr = op->Attr & clearReadonlyMask;
-                    if (copyADS) // je-li treba kopirovat ADS, udelame to
+                    if (copyADS) // if it is necessary to copy ADS, we will do it
                     {
-                        SetFileAttributes(op->TargetName, FILE_ATTRIBUTE_ARCHIVE); // nejspis zbytecne, proti samotnemu kopirovani moc nebrzdi, duvod: aby se se souborem dalo pracovat, nesmi mit read-only atribut
-                        CQuadWord operDone = operationDone;                        // uz je zkopirovany soubor
+                        SetFileAttributes(op->TargetName, FILE_ATTRIBUTE_ARCHIVE); // Probably unnecessary, doesn't really slow down copying itself, reason: in order to work with the file, it must not have the read-only attribute
+                        CQuadWord operDone = operationDone;                        // the file has been copied
                         if (operDone < COPY_MIN_FILE_SIZE)
-                            operDone = COPY_MIN_FILE_SIZE; // nulove/male soubory trvaji aspon jako soubory s velikosti COPY_MIN_FILE_SIZE
+                            operDone = COPY_MIN_FILE_SIZE; // Zero/Small files take at least as long as files with size COPY_MIN_FILE_SIZE
                         BOOL adsSkip = FALSE;
                         if (!DoCopyADS(hProgressDlg, op->SourceName, FALSE, op->TargetName, totalDone,
                                        operDone, op->Size, dlgData, script, &adsSkip, buffer) ||
-                            adsSkip) // user dal cancel nebo Skip aspon jedno ADS
+                            adsSkip) // user either clicked cancel or skipped at least one ad
                         {
                             if (out != NULL)
                                 HANDLES(CloseHandle(out));
@@ -4891,7 +4890,7 @@ COPY_AGAIN:
                                 TRACE_E("DoCopyFile(): Unable to remove newly created file: " << op->TargetName << ", error: " << GetErrorText(err));
                             }
                             if (!adsSkip)
-                                return FALSE; // cancel cele operace
+                                return FALSE; // cancel the whole operation
                             if (skip != NULL)
                                 *skip = TRUE; // jde o Skip, musime hlasit vyse (Move operace nesmi smazat zdrojovy soubor)
                         }
@@ -4899,7 +4898,7 @@ COPY_AGAIN:
 
                     if (out != NULL)
                     {
-                        if (!ignoreGetFileTimeErr) // jen pokud jsme neignorovali chybu cteni casu souboru (neni co nastavovat)
+                        if (!ignoreGetFileTimeErr) // only if we did not ignore the error of reading the file time (there is nothing to set)
                         {
                             BOOL ignoreSetFileTimeErr = FALSE;
                             while (!ignoreSetFileTimeErr &&
@@ -4907,7 +4906,7 @@ COPY_AGAIN:
                             {
                                 DWORD err = GetLastError();
 
-                                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                                 if (*dlgData.CancelWorker)
                                     goto COPY_ERROR;
 
@@ -4931,7 +4930,7 @@ COPY_AGAIN:
                                     break;
 
                                 case IDB_IGNOREALL:
-                                    dlgData.IgnoreAllSetFileTimeErr = TRUE; // tady break; nechybi
+                                    dlgData.IgnoreAllSetFileTimeErr = TRUE; // here break; is not missing
                                 case IDB_IGNORE:
                                 {
                                 IGNORE_SETFILETIME:
@@ -4954,7 +4953,7 @@ COPY_AGAIN:
                         {
                             out = NULL;
                             DWORD err = GetLastError();
-                            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                             if (*dlgData.CancelWorker)
                                 goto COPY_ERROR;
 
@@ -4993,13 +4992,13 @@ COPY_AGAIN:
                         SetFileAttributes(op->TargetName, script->CopyAttrs ? attr : (attr | FILE_ATTRIBUTE_ARCHIVE));
                     }
 
-                    if (script->CopyAttrs) // zkontrolujeme jestli se podarilo zachovat atributy zdrojoveho souboru
+                    if (script->CopyAttrs) // we will check if the attributes of the source file were preserved
                     {
                         DWORD curAttrs;
                         curAttrs = SalGetFileAttributes(op->TargetName);
                         if (curAttrs == INVALID_FILE_ATTRIBUTES || (curAttrs & DISPLAYED_ATTRIBUTES) != (attr & DISPLAYED_ATTRIBUTES))
-                        {                                                              // atributy se nejspis nepodarilo prenest, varujeme usera
-                            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                        {                                                              // Attributes probably failed to transfer, warning the user
+                            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                             if (*dlgData.CancelWorker)
                                 goto COPY_ERROR_2;
 
@@ -5019,7 +5018,7 @@ COPY_AGAIN:
                             switch (ret)
                             {
                             case IDB_IGNOREALL:
-                                dlgData.IgnoreAllSetAttrsErr = TRUE; // tady break; nechybi
+                                dlgData.IgnoreAllSetAttrsErr = TRUE; // here break; is not missing
                             case IDB_IGNORE:
                                 break;
 
@@ -5027,7 +5026,7 @@ COPY_AGAIN:
                             {
                             COPY_ERROR_2:
 
-                                ClearReadOnlyAttr(op->TargetName); // aby se dal soubor smazat, nesmi mit read-only atribut
+                                ClearReadOnlyAttr(op->TargetName); // to be able to delete the file, it must not have the read-only attribute
                                 DeleteFile(op->TargetName);
                                 return FALSE;
                             }
@@ -5035,12 +5034,12 @@ COPY_AGAIN:
                         }
                     }
 
-                    if (script->CopySecurity) // mame kopirovat NTFS security permissions?
+                    if (script->CopySecurity) // Should we copy NTFS security permissions?
                     {
                         DWORD err;
                         if (!DoCopySecurity(op->SourceName, op->TargetName, &err, NULL))
                         {
-                            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                             if (*dlgData.CancelWorker)
                                 goto COPY_ERROR_2;
 
@@ -5060,7 +5059,7 @@ COPY_AGAIN:
                             switch (ret)
                             {
                             case IDB_IGNOREALL:
-                                dlgData.IgnoreAllCopyPermErr = TRUE; // tady break; nechybi
+                                dlgData.IgnoreAllCopyPermErr = TRUE; // here break; is not missing
                             case IDB_IGNORE:
                                 break;
 
@@ -5078,7 +5077,7 @@ COPY_AGAIN:
                 {
                     if (!invalidTgtName && encryptionNotSupported)
                     {
-                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                         if (*dlgData.CancelWorker)
                             goto CANCEL_OPEN2;
 
@@ -5096,7 +5095,7 @@ COPY_AGAIN:
                         switch (ret)
                         {
                         case IDB_ALL:
-                            dlgData.FileOutLossEncrAll = TRUE; // tady break; nechybi
+                            dlgData.FileOutLossEncrAll = TRUE; // here break; is not missing
                         case IDYES:
                             lossEncryptionAttr = TRUE;
                             break;
@@ -5134,7 +5133,7 @@ COPY_AGAIN:
                         if (invalidTgtName)
                             err = ERROR_INVALID_NAME;
                         BOOL errDeletingFile = FALSE;
-                        if (err == ERROR_FILE_EXISTS || // prepsat soubor ?
+                        if (err == ERROR_FILE_EXISTS || // overwrite file?
                             err == ERROR_ALREADY_EXISTS)
                         {
                             if (!dlgData.OverwriteAll && (dlgData.CnfrmFileOver || script->OverwriteOlder))
@@ -5160,7 +5159,7 @@ COPY_AGAIN:
                                 }
                                 out = NULL;
 
-                                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                                 if (*dlgData.CancelWorker)
                                     goto CANCEL_OPEN;
 
@@ -5170,20 +5169,20 @@ COPY_AGAIN:
                                 int ret;
                                 ret = IDCANCEL;
 
-                                if (!getTimeFailed && script->OverwriteOlder) // option z Copy/Move dialogu
+                                if (!getTimeFailed && script->OverwriteOlder) // option from the Copy/Move dialog
                                 {
-                                    // orizneme casy na sekundy (ruzne FS ukladaji casy s ruznymi prestnostmi, takze dochazelo k "rozdilum" i mezi "shodnymi" casy)
+                                    // We will truncate times to seconds (different file systems store times with different precisions, so there were "differences" even between "identical" times)
                                     *(unsigned __int64*)&sFileTime = *(unsigned __int64*)&sFileTime - (*(unsigned __int64*)&sFileTime % 10000000);
                                     *(unsigned __int64*)&tFileTime = *(unsigned __int64*)&tFileTime - (*(unsigned __int64*)&tFileTime % 10000000);
 
                                     if (CompareFileTime(&sFileTime, &tFileTime) > 0)
-                                        ret = IDYES; // starsi mame bez ptani prepsat
+                                        ret = IDYES; // older mother without asking to rewrite
                                     else
-                                        ret = IDB_SKIP; // ostatni existujici skipnout
+                                        ret = IDB_SKIP; // skip the remaining existing
                                 }
                                 else
                                 {
-                                    // zobrazime dotaz
+                                    // display the query
                                     char* data[5];
                                     data[0] = (char*)&ret;
                                     data[1] = op->TargetName;
@@ -5197,7 +5196,7 @@ COPY_AGAIN:
                                 case IDB_ALL:
                                     dlgData.OverwriteAll = TRUE;
                                 case IDYES:
-                                default: // pro sychr (aby to odtud nemohlo odejit se zavrenym handlem in)
+                                default: // for safety (so that it cannot escape from here with a closed handle in)
                                 {
                                     in = HANDLES_Q(CreateFile(op->SourceName, GENERIC_READ,
                                                               FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
@@ -5234,12 +5233,12 @@ COPY_AGAIN:
                             DWORD attr = SalGetFileAttributes(op->TargetName);
                             if (attr != INVALID_FILE_ATTRIBUTES && (attr & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM)))
                             {
-                                if (!dlgData.OverwriteHiddenAll && dlgData.CnfrmSHFileOver) // zde script->OverwriteOlder ignorujeme, user chce videt, ze jde o SYSTEM or HIDDEN soubor i pri zaplem optionu
+                                if (!dlgData.OverwriteHiddenAll && dlgData.CnfrmSHFileOver) // Here we ignore script->OverwriteOlder, the user wants to see that it is a SYSTEM or HIDDEN file even with the option turned on
                                 {
                                     HANDLES(CloseHandle(in));
                                     in = NULL;
 
-                                    WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                                    WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                                     if (*dlgData.CancelWorker)
                                         goto CANCEL_OPEN;
 
@@ -5258,14 +5257,14 @@ COPY_AGAIN:
                                     case IDB_ALL:
                                         dlgData.OverwriteHiddenAll = TRUE;
                                     case IDYES:
-                                    default: // pro sychr (aby to odtud nemohlo odejit se zavrenym handlem in)
+                                    default: // for safety (so that it cannot escape from here with a closed handle in)
                                     {
                                         in = HANDLES_Q(CreateFile(op->SourceName, GENERIC_READ,
                                                                   FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
                                                                   OPEN_EXISTING, asyncPar->GetOverlappedFlag() | FILE_FLAG_SEQUENTIAL_SCAN, NULL));
                                         if (in == INVALID_HANDLE_VALUE)
                                             goto OPEN_IN_ERROR;
-                                        attr = SalGetFileAttributes(op->TargetName); // kdyby user atributy zmenil, tak at mame aktualni hodnoty
+                                        attr = SalGetFileAttributes(op->TargetName); // if the user changes the attributes, let's have the current values
                                         break;
                                     }
 
@@ -5283,8 +5282,8 @@ COPY_AGAIN:
                             BOOL targetCannotOpenForWrite = FALSE;
                             while (1)
                             {
-                                if (targetCannotOpenForWrite || mustDeleteFileBeforeOverwrite == 1 /* yes */)
-                                { // je nutne soubor nejdrive smazat
+                                if (targetCannotOpenForWrite || mustDeleteFileBeforeOverwrite == 1 /* yes*/)
+                                { // the file must be deleted first
                                     BOOL chAttr = ClearReadOnlyAttr(op->TargetName, attr);
 
                                     if (!tgtNameCaseCorrected)
@@ -5294,8 +5293,8 @@ COPY_AGAIN:
                                     }
 
                                     if (DeleteFile(op->TargetName))
-                                        goto OPEN_TGT_FILE; // je-li read-only (shozeni atributu nemuselo projit), pujde smazat jedine na Sambe s povolenym "delete readonly"
-                                    else                    // nelze ani smazat, koncime s chybou...
+                                        goto OPEN_TGT_FILE; // if it is read-only (clearing the attribute may not have passed), it can only be deleted on Samba with the "delete readonly" permission enabled
+                                    else                    // cannot delete, ending with an error...
                                     {
                                         err = GetLastError();
                                         if (chAttr)
@@ -5304,11 +5303,11 @@ COPY_AGAIN:
                                         goto NORMAL_ERROR;
                                     }
                                 }
-                                else // jdeme soubor prepsat na miste
+                                else // we are going to overwrite the file in place
                                 {
-                                    // pokud jsme jeste nedelali test funkcnosti zkraceni souboru na nulu, ziskame soucasnou velikost souboru
-                                    CQuadWord origFileSize(0, 0); // velikost souboru pred zkracenim
-                                    if (mustDeleteFileBeforeOverwrite == 0 /* need test */)
+                                    // if we haven't tested the file truncation functionality yet, we will obtain the current file size
+                                    CQuadWord origFileSize(0, 0); // file size before truncation
+                                    if (mustDeleteFileBeforeOverwrite == 0 /* need test*/)
                                     {
                                         out = HANDLES_Q(CreateFile(op->TargetName, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
                                                                    OPEN_EXISTING, 0, NULL));
@@ -5316,50 +5315,50 @@ COPY_AGAIN:
                                         {
                                             origFileSize.LoDWord = GetFileSize(out, &origFileSize.HiDWord);
                                             if (origFileSize.LoDWord == INVALID_FILE_SIZE && GetLastError() == NO_ERROR)
-                                                origFileSize.Set(0, 0); // chyba => dame velikost na nulu, testne se to na dalsim souboru
+                                                origFileSize.Set(0, 0); // error => set size to zero, test it on another file
                                             HANDLES(CloseHandle(out));
                                         }
                                     }
 
-                                    // otevreme soubor s vymazem ADS a zkracenim na nulu
+                                    // open the file with deletion of ADS and truncation to zero
                                     BOOL chAttr = FALSE;
                                     if (attr != INVALID_FILE_ATTRIBUTES &&
                                         (attr & (FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM)))
-                                    { // CREATE_ALWAYS se nesnasi s readonly, hidden a system atributama, takze je pripadne shodime
+                                    { // CREATE_ALWAYS does not tolerate readonly, hidden, and system attributes, so we may drop them if necessary
                                         chAttr = TRUE;
                                         SetFileAttributes(op->TargetName, 0);
                                     }
-                                    // GENERIC_READ pro 'out' zpusobi zpomaleni u asynchronniho kopirovani z disku na sit (na Win7 x64 GLAN namereno 95MB/s misto 111MB/s)
+                                    // GENERIC_READ for 'out' causes slowdown in asynchronous copying from disk to network (on Win7 x64 GLAN measured 95MB/s instead of 111MB/s)
                                     DWORD access = GENERIC_WRITE | (script->CopyAttrs ? GENERIC_READ : 0);
                                     fileAttrs = asyncPar->GetOverlappedFlag() | FILE_FLAG_SEQUENTIAL_SCAN |
-                                                (!lossEncryptionAttr && copyAsEncrypted ? FILE_ATTRIBUTE_ENCRYPTED : 0) | // nastaveni atributu pri CREATE_ALWAYS funguje od XPcek a pokud ma soubor prava read-denied, je to jedina moznost, jak nahodit Encrypted atribut
+                                                (!lossEncryptionAttr && copyAsEncrypted ? FILE_ATTRIBUTE_ENCRYPTED : 0) | // Setting the attribute during CREATE_ALWAYS works from XP onwards, and if the file has read-denied permissions, it is the only way to set the Encrypted attribute.
                                                 (script->CopyAttrs ? (op->Attr & (FILE_ATTRIBUTE_COMPRESSED | (lossEncryptionAttr ? 0 : FILE_ATTRIBUTE_ENCRYPTED))) : 0);
                                     out = HANDLES_Q(CreateFile(op->TargetName, access, 0, NULL, CREATE_ALWAYS, fileAttrs, NULL));
-                                    if (out == INVALID_HANDLE_VALUE && fileAttrs != (asyncPar->GetOverlappedFlag() | FILE_FLAG_SEQUENTIAL_SCAN)) // pokud soubor nejde vytvorit s Encrypted, zkusime to jeste bez (hrozi na NTFS sitovem disku (ladeno na sharu z XPcek), na ktery jsme zalogovany pod jinym jmenem nez mame v systemu (na soucasny konzoli) - trik je v tom, ze na cilovem systemu je user se stejnym jmenem bez hesla, tedy sitove nepouzitelny)
+                                    if (out == INVALID_HANDLE_VALUE && fileAttrs != (asyncPar->GetOverlappedFlag() | FILE_FLAG_SEQUENTIAL_SCAN)) // if the file cannot be created with Encrypted, we will try it without (there is a risk on an NTFS network drive (tuned on a share from XP machines), on which we are logged in under a different name than we have in the system (on the current console) - the trick is that on the target system there is a user with the same name without a password, so it is network unusable)
                                         out = HANDLES_Q(CreateFile(op->TargetName, access, 0, NULL, CREATE_ALWAYS, asyncPar->GetOverlappedFlag() | FILE_FLAG_SEQUENTIAL_SCAN, NULL));
                                     if (script->CopyAttrs && out == INVALID_HANDLE_VALUE)
-                                    { // pro pripad, ze neni povolen read-access do adresare (ten jsme pridali jen kvuli nastavovani Compressed atributu) zkusime jeste otevrit soubor jen pro zapis
+                                    { // in case read-access to the directory is not allowed (which we added just for setting the Compressed attribute), we will try to open the file only for writing
                                         access = GENERIC_WRITE;
                                         out = HANDLES_Q(CreateFile(op->TargetName, access, 0, NULL, CREATE_ALWAYS, fileAttrs, NULL));
-                                        if (out == INVALID_HANDLE_VALUE && fileAttrs != (asyncPar->GetOverlappedFlag() | FILE_FLAG_SEQUENTIAL_SCAN)) // pokud soubor nejde vytvorit s Encrypted, zkusime to jeste bez (hrozi na NTFS sitovem disku (ladeno na sharu z XPcek), na ktery jsme zalogovany pod jinym jmenem nez mame v systemu (na soucasny konzoli) - trik je v tom, ze na cilovem systemu je user se stejnym jmenem bez hesla, tedy sitove nepouzitelny)
+                                        if (out == INVALID_HANDLE_VALUE && fileAttrs != (asyncPar->GetOverlappedFlag() | FILE_FLAG_SEQUENTIAL_SCAN)) // if the file cannot be created with Encrypted, we will try it without (there is a risk on an NTFS network drive (tuned on a share from XP machines), on which we are logged in under a different name than we have in the system (on the current console) - the trick is that on the target system there is a user with the same name without a password, so it is network unusable)
                                             out = HANDLES_Q(CreateFile(op->TargetName, access, 0, NULL, CREATE_ALWAYS, asyncPar->GetOverlappedFlag() | FILE_FLAG_SEQUENTIAL_SCAN, NULL));
                                     }
-                                    if (out == INVALID_HANDLE_VALUE) // pro zapis nelze cilovy soubor otevrit, zkusime ho tedy smazat a vytvorit znovu
+                                    if (out == INVALID_HANDLE_VALUE) // Cannot open the target file for writing, so we will try to delete it and create it again
                                     {
-                                        // resi situaci, kdy je potreba prepsat soubor na Sambe:
-                                        // soubor ma 440+jinyho_vlastnika a je v adresari, kam ma akt. user zapis
-                                        // (smazat lze, ale primo prepsat ne (nelze otevrit pro zapis) - obchazime:
-                                        //  smazeme+vytvorime soubor znovu)
-                                        // (na Sambe lze povolit mazani read-only, coz umozni delete read-only souboru,
-                                        //  jinak nelze smazat, protoze Windows neumi smazat read-only soubor a zaroven
-                                        //  u toho souboru nelze shodit "read-only" atribut, protoze akt. user neni vlastnik)
+                                        // handles the situation when it is necessary to rewrite a file on Samba:
+                                        // file has 440+another_owner and is in a directory where the current user has write access
+                                        // (deletion is possible, but direct overwrite is not (cannot be opened for writing) - we bypass:
+                                        //  delete and create the file again
+                                        // (In Samba, it is possible to enable deleting read-only, which allows deleting read-only files,
+                                        //  otherwise it cannot be deleted, because Windows cannot delete a read-only file at the same time
+                                        //  It is not possible to remove the "read-only" attribute from that file because the current user is not the owner.
                                         if (chAttr)
                                             SetFileAttributes(op->TargetName, attr);
                                         targetCannotOpenForWrite = TRUE;
                                         continue;
                                     }
 
-                                    // na cilovych cestach podporujicich ADS provedeme jeste mazani ADSek na cilovem souboru (CREATE_ALWAYS by je mel smazat, ale na domacich W2K i XP zkratka zustavaji, netusim proc, W2K a XP z VMWare ADSka normalne mazou)
+                                    // On target paths supporting ADS, we will also delete ADS on the target file (CREATE_ALWAYS should delete them, but on home W2K and XP they remain, I don't know why, W2K and XP in VMWare normally delete ADS).
                                     if (script->TargetPathSupADS && !DeleteAllADS(out, op->TargetName))
                                     {
                                         HANDLES(CloseHandle(out));
@@ -5370,29 +5369,29 @@ COPY_AGAIN:
                                         continue;
                                     }
 
-                                    // pokud jsme jeste nedelali test funkcnosti zkraceni souboru na nulu, ziskame novou velikost souboru
-                                    if (mustDeleteFileBeforeOverwrite == 0 /* need test */)
+                                    // if we haven't tested the file truncation functionality yet, we will obtain the new file size
+                                    if (mustDeleteFileBeforeOverwrite == 0 /* need test*/)
                                     {
                                         HANDLES(CloseHandle(out));
                                         out = HANDLES_Q(CreateFile(op->TargetName, access, 0, NULL, OPEN_ALWAYS, asyncPar->GetOverlappedFlag() | FILE_FLAG_SEQUENTIAL_SCAN, NULL));
-                                        if (out == INVALID_HANDLE_VALUE) // nelze otevrit pred momentem otevreny cilovy soubor, nepravdepodobne, zkusime ho smazat a vytvorit znovu
+                                        if (out == INVALID_HANDLE_VALUE) // Cannot open the target file that was opened a moment ago, unlikely, let's try to delete it and create it again
                                         {
                                             targetCannotOpenForWrite = TRUE;
                                             continue;
                                         }
-                                        CQuadWord newFileSize(0, 0); // velikost souboru po zkraceni
+                                        CQuadWord newFileSize(0, 0); // file size after truncation
                                         newFileSize.LoDWord = GetFileSize(out, &newFileSize.HiDWord);
-                                        if ((newFileSize.LoDWord != INVALID_FILE_SIZE || GetLastError() == NO_ERROR) && // mame novou velikost
+                                        if ((newFileSize.LoDWord != INVALID_FILE_SIZE || GetLastError() == NO_ERROR) && // we have a new size
                                             newFileSize == CQuadWord(0, 0))                                             // soubor ma skutecne 0 bytu
                                         {
-                                            if (origFileSize != CQuadWord(0, 0))            // jestli zkracovani funguje lze testnout jen na nenulovem souboru
-                                                mustDeleteFileBeforeOverwrite = 2; /* no */ // zadarilo se (neni SNAP server - NSA drive, tam tohle nefunguje)
+                                            if (origFileSize != CQuadWord(0, 0))            // if shortening works, it can only be tested on a non-zero file
+                                                mustDeleteFileBeforeOverwrite = 2; /* no*/ // It succeeded (there is no SNAP server - NSA drive, this does not work there)
                                         }
                                         else
                                         {
                                             HANDLES(CloseHandle(out));
                                             out = INVALID_HANDLE_VALUE;
-                                            mustDeleteFileBeforeOverwrite = 1 /* yes */; // pri chybe nebo pokud neni velikost nula, sychrujeme se...
+                                            mustDeleteFileBeforeOverwrite = 1 /* yes*/; // in case of an error or if the size is not zero, we throw an exception...
                                             continue;
                                         }
                                     }
@@ -5402,13 +5401,13 @@ COPY_AGAIN:
                                         encryptionNotSupported = FALSE;
                                         SetCompressAndEncryptedAttrs(op->TargetName, (!lossEncryptionAttr && copyAsEncrypted ? FILE_ATTRIBUTE_ENCRYPTED : 0) | (script->CopyAttrs ? (op->Attr & (FILE_ATTRIBUTE_COMPRESSED | (lossEncryptionAttr ? 0 : FILE_ATTRIBUTE_ENCRYPTED))) : 0),
                                                                      &out, script->CopyAttrs, &encryptionNotSupported, asyncPar);
-                                        if (encryptionNotSupported) // nejde nahodit Encrypted atribut, zeptame se usera co s tim...
+                                        if (encryptionNotSupported) // Unable to set the Encrypted attribute, let's ask the user what to do...
                                         {
                                             if (dlgData.FileOutLossEncrAll)
                                                 lossEncryptionAttr = TRUE;
                                             else
                                             {
-                                                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                                                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                                                 if (*dlgData.CancelWorker)
                                                     goto CANCEL_ENCNOTSUP;
 
@@ -5426,7 +5425,7 @@ COPY_AGAIN:
                                                 switch (ret)
                                                 {
                                                 case IDB_ALL:
-                                                    dlgData.FileOutLossEncrAll = TRUE; // tady break; nechybi
+                                                    dlgData.FileOutLossEncrAll = TRUE; // here break; is not missing
                                                 case IDYES:
                                                     lossEncryptionAttr = TRUE;
                                                     break;
@@ -5448,11 +5447,11 @@ COPY_AGAIN:
 
                             goto COPY;
                         }
-                        else // obyc. error
+                        else // common error
                         {
                         NORMAL_ERROR:
 
-                            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                             if (*dlgData.CancelWorker)
                                 goto CANCEL_OPEN2;
 
@@ -5493,8 +5492,8 @@ COPY_AGAIN:
             if (invalidSrcName)
                 err = ERROR_INVALID_NAME;
             if (asyncPar->Failed())
-                err = ERROR_NOT_ENOUGH_MEMORY;                         // nelze vytvorit event pro synchronizaci = nedostatek resourcu (asi nikdy nenastane, tak se s tim nesereme)
-            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                err = ERROR_NOT_ENOUGH_MEMORY;                         // cannot create event for synchronization = lack of resources (probably will never happen, so don't worry about it)
+            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
             if (*dlgData.CancelWorker)
                 return FALSE;
 
@@ -5547,18 +5546,18 @@ BOOL DoMoveFile(COperation* op, HWND hProgressDlg, void* buffer,
     if (script->CopyAttrs && copyAsEncrypted)
         TRACE_E("DoMoveFile(): unexpected parameter value: copyAsEncrypted is TRUE when script->CopyAttrs is TRUE!");
 
-    // pokud cesta konci mezerou/teckou, je invalidni a nesmime provest presun,
-    // MoveFile mezery/tecky orizne a presune tak jiny soubor pripadne do jineho jmena,
-    // adresare jsou na tom lepe, tam zabira pridani backslashe na konec, presunu branime
-    // jen pokud vznika nove jmeno adresare, co je invalidni (pri presunu pod starym
-    // jmenem je 'ignInvalidName' TRUE)
+    // if the path ends with a space/dot, it is invalid and we must not perform the move,
+    // MoveFile trims spaces/dots and moves another file possibly to a different name,
+    // Directories are better off, adding a backslash to the end there, we move the defense
+    // only if a new directory name that is invalid is being created (when moving under the old
+    // named 'ignInvalidName' TRUE)
     BOOL invalidName = FileNameIsInvalid(op->SourceName, TRUE, dir) ||
                        FileNameIsInvalid(op->TargetName, TRUE, dir && ignInvalidName);
 
     if (!copyAsEncrypted && !script->SameRootButDiffVolume && HasTheSameRootPath(op->SourceName, op->TargetName))
     {
-        // pokud cesta konci mezerou/teckou, musime pripojit '\\', jinak GetNamedSecurityInfo,
-        // GetDirTime, SetFileAttributes i MoveFile mezery/tecky orizne a pracuje tak s jinou cestou
+        // if the path ends with a space/dot, we need to append '\\', otherwise GetNamedSecurityInfo,
+        // GetDirTime, SetFileAttributes and MoveFile will trim spaces/dots and work with a different path
         const char* sourceNameMvDir = op->SourceName;
         char sourceNameMvDirCopy[3 * MAX_PATH];
         MakeCopyWithBackslashIfNeeded(sourceNameMvDir, sourceNameMvDirCopy);
@@ -5569,16 +5568,16 @@ BOOL DoMoveFile(COperation* op, HWND hProgressDlg, void* buffer,
         int autoRetryAttempts = 0;
         CSrcSecurity srcSecurity;
         BOOL srcSecurityErr = FALSE;
-        if (!invalidName && script->CopySecurity) // mame kopirovat NTFS security permissions?
+        if (!invalidName && script->CopySecurity) // Should we copy NTFS security permissions?
         {
             srcSecurity.SrcError = GetNamedSecurityInfo(sourceNameMvDir, SE_FILE_OBJECT,
                                                         DACL_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | OWNER_SECURITY_INFORMATION,
                                                         &srcSecurity.SrcOwner, &srcSecurity.SrcGroup, &srcSecurity.SrcDACL,
                                                         NULL, &srcSecurity.SrcSD);
-            if (srcSecurity.SrcError != ERROR_SUCCESS) // chyba cteni security-info ze zdrojoveho souboru -> neni co nastavovat na cili
+            if (srcSecurity.SrcError != ERROR_SUCCESS) // error reading security-info from source file -> nothing to set on the target
             {
                 srcSecurityErr = TRUE;
-                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                 if (*dlgData.CancelWorker)
                     return FALSE;
 
@@ -5598,7 +5597,7 @@ BOOL DoMoveFile(COperation* op, HWND hProgressDlg, void* buffer,
                 switch (ret)
                 {
                 case IDB_IGNOREALL:
-                    dlgData.IgnoreAllCopyPermErr = TRUE; // tady break; nechybi
+                    dlgData.IgnoreAllCopyPermErr = TRUE; // here break; is not missing
                 case IDB_IGNORE:
                     break;
 
@@ -5609,24 +5608,24 @@ BOOL DoMoveFile(COperation* op, HWND hProgressDlg, void* buffer,
         }
         FILETIME dirTimeModified;
         BOOL dirTimeModifiedIsValid = FALSE;
-        if (!invalidName && dir && !*novellRenamePatch && *setDirTimeAfterMove != 2 /* no */) // problem se zrejme netyka Novell Netware, takze to tam vubec nebudeme resit (tyka se napr. Samby)
+        if (!invalidName && dir && !*novellRenamePatch && *setDirTimeAfterMove != 2 /* no*/) // The problem apparently does not concern Novell Netware, so we will not address it there at all (it concerns, for example, Samba)
             dirTimeModifiedIsValid = GetDirTime(sourceNameMvDir, &dirTimeModified);
         while (1)
         {
             if (!invalidName && !*novellRenamePatch && MoveFile(sourceNameMvDir, targetNameMvDir))
             {
-                if (script->CopyAttrs && (op->Attr & FILE_ATTRIBUTE_ARCHIVE) == 0) // nebyl nastaveny atribut Archive, MoveFile ho nastavil, zase ho vycistime
-                    SetFileAttributes(targetNameMvDir, op->Attr);                  // nechame bez osetreni a retry, nedulezite (normalne se nastavuje chaoticky)
+                if (script->CopyAttrs && (op->Attr & FILE_ATTRIBUTE_ARCHIVE) == 0) // Attribute Archive was not set, MoveFile set it, we will clean it up again
+                    SetFileAttributes(targetNameMvDir, op->Attr);                  // Leave it without handling and retry, unimportant (usually set chaotically)
 
             OPERATION_DONE:
 
-                if (script->CopyAttrs) // zkontrolujeme jestli se podarilo zachovat atributy zdrojoveho souboru
+                if (script->CopyAttrs) // we will check if the attributes of the source file were preserved
                 {
                     DWORD curAttrs;
                     curAttrs = SalGetFileAttributes(targetNameMvDir);
                     if (curAttrs == INVALID_FILE_ATTRIBUTES || (curAttrs & DISPLAYED_ATTRIBUTES) != (op->Attr & DISPLAYED_ATTRIBUTES))
-                    {                                                              // atributy se nejspis nepodarilo prenest, varujeme usera
-                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                    {                                                              // Attributes probably failed to transfer, warning the user
+                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                         if (*dlgData.CancelWorker)
                             goto MOVE_ERROR_2;
 
@@ -5646,7 +5645,7 @@ BOOL DoMoveFile(COperation* op, HWND hProgressDlg, void* buffer,
                         switch (ret)
                         {
                         case IDB_IGNOREALL:
-                            dlgData.IgnoreAllSetAttrsErr = TRUE; // tady break; nechybi
+                            dlgData.IgnoreAllSetAttrsErr = TRUE; // here break; is not missing
                         case IDB_IGNORE:
                             break;
 
@@ -5654,18 +5653,18 @@ BOOL DoMoveFile(COperation* op, HWND hProgressDlg, void* buffer,
                         {
                         MOVE_ERROR_2:
 
-                            return FALSE; // soubor se sice presunul do cile + nastal cancel, ale na presun zpet se radsi vykasleme, nejspis to nikomu nebude nijak extra vadit
+                            return FALSE; // the file did move to the destination + cancel occurred, but let's skip moving it back, probably no one will mind
                         }
                         }
                     }
                 }
 
-                if (script->CopySecurity && !srcSecurityErr) // mame kopirovat NTFS security permissions?
+                if (script->CopySecurity && !srcSecurityErr) // Should we copy NTFS security permissions?
                 {
                     DWORD err;
                     if (!DoCopySecurity(sourceNameMvDir, targetNameMvDir, &err, &srcSecurity))
                     {
-                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                         if (*dlgData.CancelWorker)
                             goto MOVE_ERROR_2;
 
@@ -5685,7 +5684,7 @@ BOOL DoMoveFile(COperation* op, HWND hProgressDlg, void* buffer,
                         switch (ret)
                         {
                         case IDB_IGNOREALL:
-                            dlgData.IgnoreAllCopyPermErr = TRUE; // tady break; nechybi
+                            dlgData.IgnoreAllCopyPermErr = TRUE; // here break; is not missing
                         case IDB_IGNORE:
                             break;
 
@@ -5695,20 +5694,20 @@ BOOL DoMoveFile(COperation* op, HWND hProgressDlg, void* buffer,
                     }
                 }
 
-                if (dir && dirTimeModifiedIsValid && *setDirTimeAfterMove != 2 /* no */)
+                if (dir && dirTimeModifiedIsValid && *setDirTimeAfterMove != 2 /* no*/)
                 {
                     FILETIME movedDirTimeModified;
                     if (GetDirTime(targetNameMvDir, &movedDirTimeModified))
                     {
                         if (CompareFileTime(&dirTimeModified, &movedDirTimeModified) == 0)
                         {
-                            if (*setDirTimeAfterMove == 0 /* need test */)
-                                *setDirTimeAfterMove = 2 /* no */;
+                            if (*setDirTimeAfterMove == 0 /* need test*/)
+                                *setDirTimeAfterMove = 2 /* no*/;
                         }
                         else
                         {
-                            if (*setDirTimeAfterMove == 0 /* need test */)
-                                *setDirTimeAfterMove = 1 /* yes */;
+                            if (*setDirTimeAfterMove == 0 /* need test*/)
+                                *setDirTimeAfterMove = 1 /* yes*/;
                             DoCopyDirTime(hProgressDlg, targetNameMvDir, &dirTimeModified, dlgData, TRUE); // pripadny neuspech ignorujeme, je to proste jen hack (ignorujeme uz i chybu cteni casu a datumu z adresare), MoveFile by casy menit nemel
                         }
                     }
@@ -5725,7 +5724,7 @@ BOOL DoMoveFile(COperation* op, HWND hProgressDlg, void* buffer,
                 DWORD err = GetLastError();
                 if (invalidName)
                     err = ERROR_INVALID_NAME;
-                // patch na Novellu - pred volanim MoveFile je treba shodit read-only atribut
+                // patch for Novell - before calling MoveFile, the read-only attribute needs to be removed
                 if (!invalidName && *novellRenamePatch || err == ERROR_ACCESS_DENIED)
                 {
                     DWORD attr = SalGetFileAttributes(sourceNameMvDir);
@@ -5733,7 +5732,7 @@ BOOL DoMoveFile(COperation* op, HWND hProgressDlg, void* buffer,
                     if (MoveFile(sourceNameMvDir, targetNameMvDir))
                     {
                         if (!*novellRenamePatch)
-                            *novellRenamePatch = TRUE; // dalsi operace uz pojedeme rovnou tudy
+                            *novellRenamePatch = TRUE; // We will proceed with the next operation straight ahead
                         if (setAttr || script->CopyAttrs && (attr & FILE_ATTRIBUTE_ARCHIVE) == 0)
                             SetFileAttributes(targetNameMvDir, attr);
 
@@ -5744,10 +5743,10 @@ BOOL DoMoveFile(COperation* op, HWND hProgressDlg, void* buffer,
                         SetFileAttributes(sourceNameMvDir, attr);
                 }
 
-                if (StrICmp(op->SourceName, op->TargetName) != 0 && // pokud nejde jen o change-case
-                    (err == ERROR_FILE_EXISTS ||                    // zkontrolujeme, jestli nejde jen o prepis dosoveho jmena souboru/adresare
+                if (StrICmp(op->SourceName, op->TargetName) != 0 && // if it's not just about change-case
+                    (err == ERROR_FILE_EXISTS ||                    // we will check if it's just a rewrite of the DOS file/directory name
                      err == ERROR_ALREADY_EXISTS) &&
-                    targetNameMvDir == op->TargetName) // zadna invalidni jmena sem nepustime
+                    targetNameMvDir == op->TargetName) // We will not allow any invalid names here
                 {
                     WIN32_FIND_DATA findData;
                     HANDLE find = HANDLES_Q(FindFirstFile(op->TargetName, &findData));
@@ -5755,10 +5754,10 @@ BOOL DoMoveFile(COperation* op, HWND hProgressDlg, void* buffer,
                     {
                         HANDLES(FindClose(find));
                         const char* tgtName = SalPathFindFileName(op->TargetName);
-                        if (StrICmp(tgtName, findData.cAlternateFileName) == 0 && // shoda jen pro dos name
-                            StrICmp(tgtName, findData.cFileName) != 0)            // (plne jmeno je jine)
+                        if (StrICmp(tgtName, findData.cAlternateFileName) == 0 && // match only for two names
+                            StrICmp(tgtName, findData.cFileName) != 0)            // (full name is different)
                         {
-                            // prejmenujeme ("uklidime") soubor/adresar s konfliktnim dos name do docasneho nazvu 8.3 (nepotrebuje extra dos name)
+                            // rename ("clean up") the file/directory with a conflicting long name to a temporary 8.3 name (does not require an extra long name)
                             char tmpName[MAX_PATH + 20];
                             lstrcpyn(tmpName, op->TargetName, MAX_PATH);
                             CutDirectory(tmpName);
@@ -5782,13 +5781,13 @@ BOOL DoMoveFile(COperation* op, HWND hProgressDlg, void* buffer,
                                         break;
                                     }
                                 }
-                                if (tmpName[0] != 0) // pokud se podarilo "uklidit" konfliktni soubor/adresar, zkusime presun
-                                {                    // souboru/adresare znovu, pak vratime "uklizenemu" souboru/adresari jeho puvodni jmeno
+                                if (tmpName[0] != 0) // if the conflict file/directory has been successfully "cleaned up", we will try to move
+                                {                    // file/directory again, then we will return the "cleaned up" file/directory its original name
                                     BOOL moveDone = SalMoveFile(sourceNameMvDir, op->TargetName);
-                                    if (script->CopyAttrs && (op->Attr & FILE_ATTRIBUTE_ARCHIVE) == 0) // nebyl nastave atribut Archive, MoveFile ho nastavil, zase ho vycistime
-                                        SetFileAttributes(op->TargetName, op->Attr);                   // nechame bez osetreni a retry, nedulezite (normalne se nastavuje chaoticky)
+                                    if (script->CopyAttrs && (op->Attr & FILE_ATTRIBUTE_ARCHIVE) == 0) // Attribute Archive was not set, MoveFile set it, we will clean it up again
+                                        SetFileAttributes(op->TargetName, op->Attr);                   // Leave it without handling and retry, unimportant (usually set chaotically)
                                     if (!SalMoveFile(tmpName, origFullName))
-                                    { // toto se zjevne muze stat, nepochopitelne, ale Windows vytvori misto op->TargetName (dos name) soubor se jmenem origFullName
+                                    { // this can obviously happen, incomprehensible, but Windows will create a space at op->TargetName (dos name) file named origFullName
                                         TRACE_I("DoMoveFile(): Unexpected situation: unable to rename file/dir from tmp-name to original long file name! " << origFullName);
                                         if (moveDone)
                                         {
@@ -5801,7 +5800,7 @@ BOOL DoMoveFile(COperation* op, HWND hProgressDlg, void* buffer,
                                     else
                                     {
                                         if ((origFullNameAttr & FILE_ATTRIBUTE_ARCHIVE) == 0)
-                                            SetFileAttributes(origFullName, origFullNameAttr); // nechame bez osetreni a retry, nedulezite (normalne se nastavuje chaoticky)
+                                            SetFileAttributes(origFullName, origFullNameAttr); // Leave it without handling and retry, unimportant (usually set chaotically)
                                     }
 
                                     if (moveDone)
@@ -5814,10 +5813,10 @@ BOOL DoMoveFile(COperation* op, HWND hProgressDlg, void* buffer,
                     }
                 }
 
-                if ((err == ERROR_ALREADY_EXISTS || // teoreticky muze nastat i pro adresare, tomu zabranime (overwrite prompt je jen pro soubory)
+                if ((err == ERROR_ALREADY_EXISTS || // theoretically it can also occur for directories, we prevent that (the overwrite prompt is only for files)
                      err == ERROR_FILE_EXISTS) &&
                     !dir && StrICmp(op->SourceName, op->TargetName) != 0 &&
-                    sourceNameMvDir == op->SourceName && targetNameMvDir == op->TargetName) // zadna invalidni jmena sem nepustime (je to jen pro soubory a u nich se jmena kontroluji)
+                    sourceNameMvDir == op->SourceName && targetNameMvDir == op->TargetName) // We will not allow any invalid names here (it's only for files and their names are checked).
                 {
                     HANDLE in, out;
                     in = HANDLES_Q(CreateFile(op->SourceName, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
@@ -5847,7 +5846,7 @@ BOOL DoMoveFile(COperation* op, HWND hProgressDlg, void* buffer,
                         HANDLES(CloseHandle(in));
                         HANDLES(CloseHandle(out));
 
-                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                         if (*dlgData.CancelWorker)
                             goto CANCEL_OPEN;
 
@@ -5860,20 +5859,20 @@ BOOL DoMoveFile(COperation* op, HWND hProgressDlg, void* buffer,
                         int ret;
                         ret = IDCANCEL;
 
-                        if (!getTimeFailed && script->OverwriteOlder) // option z Copy/Move dialogu
+                        if (!getTimeFailed && script->OverwriteOlder) // option from the Copy/Move dialog
                         {
-                            // orizneme casy na sekundy (ruzne FS ukladaji casy s ruznymi prestnostmi, takze dochazelo k "rozdilum" i mezi "shodnymi" casy)
+                            // We will truncate times to seconds (different file systems store times with different precisions, so there were "differences" even between "identical" times)
                             *(unsigned __int64*)&sFileTime = *(unsigned __int64*)&sFileTime - (*(unsigned __int64*)&sFileTime % 10000000);
                             *(unsigned __int64*)&tFileTime = *(unsigned __int64*)&tFileTime - (*(unsigned __int64*)&tFileTime % 10000000);
 
                             if (CompareFileTime(&sFileTime, &tFileTime) > 0)
-                                ret = IDYES; // starsi mame bez ptani prepsat
+                                ret = IDYES; // older mother without asking to rewrite
                             else
-                                ret = IDB_SKIP; // ostatni existujici skipnout
+                                ret = IDB_SKIP; // skip the remaining existing
                         }
                         else
                         {
-                            // zobrazime dotaz
+                            // display the query
                             char* data[5];
                             data[0] = (char*)&ret;
                             data[1] = op->TargetName;
@@ -5918,9 +5917,9 @@ BOOL DoMoveFile(COperation* op, HWND hProgressDlg, void* buffer,
                     DWORD attr = SalGetFileAttributes(op->TargetName);
                     if (attr != INVALID_FILE_ATTRIBUTES && (attr & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM)))
                     {
-                        if (!dlgData.OverwriteHiddenAll && dlgData.CnfrmSHFileOver) // zde script->OverwriteOlder ignorujeme, user chce videt, ze jde o SYSTEM or HIDDEN soubor i pri zaplem optionu
+                        if (!dlgData.OverwriteHiddenAll && dlgData.CnfrmSHFileOver) // Here we ignore script->OverwriteOlder, the user wants to see that it is a SYSTEM or HIDDEN file even with the option turned on
                         {
-                            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                             if (*dlgData.CancelWorker)
                                 goto CANCEL_OPEN;
 
@@ -5952,11 +5951,11 @@ BOOL DoMoveFile(COperation* op, HWND hProgressDlg, void* buffer,
                             case IDCANCEL:
                                 goto CANCEL_OPEN;
                             }
-                            attr = SalGetFileAttributes(op->TargetName); // muze i selhat (priradi se INVALID_FILE_ATTRIBUTES)
+                            attr = SalGetFileAttributes(op->TargetName); // can also fail (assigns INVALID_FILE_ATTRIBUTES)
                         }
                     }
 
-                    ClearReadOnlyAttr(op->TargetName, attr); // aby sel smazat ...
+                    ClearReadOnlyAttr(op->TargetName, attr); // to be deleted ...
                     while (1)
                     {
                         if (DeleteFile(op->TargetName))
@@ -5965,9 +5964,9 @@ BOOL DoMoveFile(COperation* op, HWND hProgressDlg, void* buffer,
                         {
                             DWORD err2 = GetLastError();
                             if (err2 == ERROR_FILE_NOT_FOUND)
-                                break; // pokud uz user stihl soubor smazat sam, je vse OK
+                                break; // if the user managed to delete the file themselves, everything is OK
 
-                            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                             if (*dlgData.CancelWorker)
                                 return FALSE;
 
@@ -6012,7 +6011,7 @@ BOOL DoMoveFile(COperation* op, HWND hProgressDlg, void* buffer,
                 {
                 NORMAL_ERROR:
 
-                    WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                    WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                     if (*dlgData.CancelWorker)
                         return FALSE;
 
@@ -6020,8 +6019,8 @@ BOOL DoMoveFile(COperation* op, HWND hProgressDlg, void* buffer,
                         goto SKIP_MOVE_ERROR;
 
                     if (err == ERROR_SHARING_VIOLATION && ++autoRetryAttempts <= 2)
-                    {               // auto-retry zavedeno kvuli chybam presuvu behem nacitani ikon v adresari (soubeh SHGetFileInfo a MoveFile)
-                        Sleep(100); // chvilku pockame pred dalsim pokusem
+                    {               // auto-retry introduced due to errors during moving icons in a directory (conflict between SHGetFileInfo and MoveFile)
+                        Sleep(100); // Let's wait a moment before the next attempt
                     }
                     else
                     {
@@ -6071,9 +6070,9 @@ BOOL DoMoveFile(COperation* op, HWND hProgressDlg, void* buffer,
                                    clearReadonlyMask, &skip, lantasticCheck,
                                    mustDeleteFileBeforeOverwrite, allocWholeFileOnStart,
                                    dlgData, copyADS, copyAsEncrypted, TRUE, asyncPar);
-        if (notError && !skip) // jeste je potreba uklidit soubor ze sourcu
+        if (notError && !skip) // the source file still needs to be cleaned up
         {
-            ClearReadOnlyAttr(op->SourceName); // aby sel smazat ...
+            ClearReadOnlyAttr(op->SourceName); // to be deleted ...
             while (1)
             {
                 if (DeleteFile(op->SourceName))
@@ -6081,7 +6080,7 @@ BOOL DoMoveFile(COperation* op, HWND hProgressDlg, void* buffer,
                 {
                     DWORD err = GetLastError();
 
-                    WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                    WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                     if (*dlgData.CancelWorker)
                         return FALSE;
 
@@ -6116,8 +6115,8 @@ BOOL DoMoveFile(COperation* op, HWND hProgressDlg, void* buffer,
 BOOL DoDeleteFile(HWND hProgressDlg, char* name, const CQuadWord& size, COperations* script,
                   CQuadWord& totalDone, DWORD attr, CProgressDlgData& dlgData)
 {
-    // pokud cesta konci mezerou/teckou, je invalidni a nesmime provest mazani,
-    // DeleteFile mezery/tecky orizne a smaze tak jiny soubor
+    // if the path ends with a space/dot, it is invalid and we must not perform deletion,
+    // DeleteFile trims spaces/dots and thus deletes another file
     BOOL invalidName = FileNameIsInvalid(name, TRUE);
 
     DWORD err;
@@ -6129,7 +6128,7 @@ BOOL DoDeleteFile(HWND hProgressDlg, char* name, const CQuadWord& size, COperati
             {
                 if (!dlgData.DeleteHiddenAll && dlgData.CnfrmSHFileDel)
                 {
-                    WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                    WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                     if (*dlgData.CancelWorker)
                         return FALSE;
 
@@ -6160,7 +6159,7 @@ BOOL DoDeleteFile(HWND hProgressDlg, char* name, const CQuadWord& size, COperati
                     }
                 }
             }
-            ClearReadOnlyAttr(name, attr); // aby sel smazat ...
+            ClearReadOnlyAttr(name, attr); // to be deleted ...
 
             err = ERROR_SUCCESS;
             BOOL useRecycleBin;
@@ -6187,7 +6186,7 @@ BOOL DoDeleteFile(HWND hProgressDlg, char* name, const CQuadWord& size, COperati
                         //            while (ext > fileName && *ext != '.') ext--;
                         while (--ext >= fileName && *ext != '.')
                             ;
-                        //            if (ext == fileName)   // ".cvspass" ve Windows je pripona ...
+                        //            if (ext == fileName)   // ".cvspass" in Windows is the extension ...
                         if (ext < fileName)
                             ext = fileName + tmpLen;
                         else
@@ -6196,7 +6195,7 @@ BOOL DoDeleteFile(HWND hProgressDlg, char* name, const CQuadWord& size, COperati
                     }
                     else
                     {
-                        useRecycleBin = TRUE; // pri chybe volime bezpecnou variantu, mazeme do kose
+                        useRecycleBin = TRUE; // in case of an error, we choose the safe option, delete to the trash
                         TRACE_E("DoDeleteFile(): unexpected situation: filename does not contain backslash: " << name);
                     }
                 }
@@ -6246,7 +6245,7 @@ BOOL DoDeleteFile(HWND hProgressDlg, char* name, const CQuadWord& size, COperati
         }
         else
         {
-            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
             if (*dlgData.CancelWorker)
                 return FALSE;
 
@@ -6283,7 +6282,7 @@ BOOL DoDeleteFile(HWND hProgressDlg, char* name, const CQuadWord& size, COperati
         }
         if (!invalidName)
         {
-            DWORD attr2 = SalGetFileAttributes(name); // zjistime aktualni stav atributu
+            DWORD attr2 = SalGetFileAttributes(name); // get the current state of the attribute
             if (attr2 != INVALID_FILE_ATTRIBUTES)
                 attr = attr2;
         }
@@ -6294,8 +6293,8 @@ BOOL SalCreateDirectoryEx(const char* name, DWORD* err)
 {
     if (err != NULL)
         *err = 0;
-    // pokud jmeno obsahuje mezeru/tecku na konci, je nutne pridat na konec '\\', jinak
-    // se vytvori jiny adresar (mezery/tecky na konci jmena CreateDirectory tise orizne)
+    // if the name contains a space/dot at the end, it is necessary to add '\\' to the end, otherwise
+    // another directory will be created (spaces/dots at the end of the CreateDirectory name will be silently trimmed)
     const char* nameCrDir = name;
     char nameCrDirBuf[3 * MAX_PATH];
     MakeCopyWithBackslashIfNeeded(nameCrDir, nameCrDirBuf);
@@ -6304,8 +6303,8 @@ BOOL SalCreateDirectoryEx(const char* name, DWORD* err)
     else
     {
         DWORD errLoc = GetLastError();
-        if (name == nameCrDir &&            // jmeno s mezerou/teckou na konci jiste nekoliduje s DOS jmenem
-            (errLoc == ERROR_FILE_EXISTS || // zkontrolujeme, jestli nejde jen o prepis dosoveho jmena souboru
+        if (name == nameCrDir &&            // name with space/dot at the end surely does not collide with DOS name
+            (errLoc == ERROR_FILE_EXISTS || // we will check if it's just a rewrite of the DOS file name
              errLoc == ERROR_ALREADY_EXISTS))
         {
             WIN32_FIND_DATA data;
@@ -6314,10 +6313,10 @@ BOOL SalCreateDirectoryEx(const char* name, DWORD* err)
             {
                 HANDLES(FindClose(find));
                 const char* tgtName = SalPathFindFileName(name);
-                if (StrICmp(tgtName, data.cAlternateFileName) == 0 && // shoda jen pro dos name
-                    StrICmp(tgtName, data.cFileName) != 0)            // (plne jmeno je jine)
+                if (StrICmp(tgtName, data.cAlternateFileName) == 0 && // match only for two names
+                    StrICmp(tgtName, data.cFileName) != 0)            // (full name is different)
                 {
-                    // prejmenujeme ("uklidime") soubor/adresar s konfliktnim dos name do docasneho nazvu 8.3 (nepotrebuje extra dos name)
+                    // rename ("clean up") the file/directory with a conflicting long name to a temporary 8.3 name (does not require an extra long name)
                     char tmpName[MAX_PATH + 20];
                     lstrcpyn(tmpName, name, MAX_PATH);
                     CutDirectory(tmpName);
@@ -6341,11 +6340,11 @@ BOOL SalCreateDirectoryEx(const char* name, DWORD* err)
                                 break;
                             }
                         }
-                        if (tmpName[0] != 0) // pokud se podarilo "uklidit" konfliktni soubor, zkusime presun
-                        {                    // souboru znovu, pak vratime "uklizenemu" souboru jeho puvodni jmeno
+                        if (tmpName[0] != 0) // if the conflict file has been "cleaned up", we will try to move
+                        {                    // file again, then we return the "cleaned up" file its original name
                             BOOL createDirDone = CreateDirectory(name, NULL);
                             if (!SalMoveFile(tmpName, origFullName))
-                            { // toto se zjevne muze stat, nepochopitelne, ale Windows vytvori misto name (dos name) soubor se jmenem origFullName
+                            { // this can obviously happen, incomprehensible, but Windows will create a file named origFullName in the directory (dos name)
                                 TRACE_I("Unexpected situation: unable to rename file from tmp-name to original long file name! " << origFullName);
                                 if (createDirDone)
                                 {
@@ -6358,7 +6357,7 @@ BOOL SalCreateDirectoryEx(const char* name, DWORD* err)
                             else
                             {
                                 if ((origFullNameAttr & FILE_ATTRIBUTE_ARCHIVE) == 0)
-                                    SetFileAttributes(origFullName, origFullNameAttr); // nechame bez osetreni a retry, nedulezite (normalne se nastavuje chaoticky)
+                                    SetFileAttributes(origFullName, origFullNameAttr); // Leave it without handling and retry, unimportant (usually set chaotically)
                             }
 
                             if (createDirDone)
@@ -6395,8 +6394,8 @@ BOOL GetDirTime(const char* dirName, FILETIME* ftModified)
 
 BOOL DoCopyDirTime(HWND hProgressDlg, const char* targetName, FILETIME* modified, CProgressDlgData& dlgData, BOOL quiet)
 {
-    // pokud cesta konci mezerou/teckou, musime pripojit '\\', jinak CreateFile
-    // mezery/tecky orizne a pracuje tak s jinou cestou
+    // if the path ends with a space/dot, we need to append '\\', otherwise CreateFile
+    // Trims spaces/dots and operates with a different path
     const char* targetNameCrFile = targetName;
     char targetNameCrFileCopy[3 * MAX_PATH];
     MakeCopyWithBackslashIfNeeded(targetNameCrFile, targetNameCrFileCopy);
@@ -6419,7 +6418,7 @@ BOOL DoCopyDirTime(HWND hProgressDlg, const char* targetName, FILETIME* modified
     if (file != INVALID_HANDLE_VALUE)
     {
         if (SetFileTime(file, NULL /*&ftCreated*/, NULL /*&ftAccessed*/, modified))
-            showError = FALSE; // uspech!
+            showError = FALSE; // Success!
         else
             error = GetLastError();
         HANDLES(CloseHandle(file));
@@ -6431,7 +6430,7 @@ BOOL DoCopyDirTime(HWND hProgressDlg, const char* targetName, FILETIME* modified
 
     if (showError)
     {
-        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
         if (*dlgData.CancelWorker)
             return FALSE;
 
@@ -6450,7 +6449,7 @@ BOOL DoCopyDirTime(HWND hProgressDlg, const char* targetName, FILETIME* modified
         switch (ret)
         {
         case IDB_IGNOREALL:
-            dlgData.IgnoreAllCopyDirTimeErr = TRUE; // tady break; nechybi
+            dlgData.IgnoreAllCopyDirTimeErr = TRUE; // here break; is not missing
         case IDB_IGNORE:
             break;
 
@@ -6478,8 +6477,8 @@ BOOL DoCreateDir(HWND hProgressDlg, char* name, DWORD attr,
 
     BOOL invalidName = FileNameIsInvalid(name, TRUE, ignInvalidName);
 
-    // pokud cesta konci mezerou/teckou, musime pripojit '\\', jinak SetFileAttributes
-    // a RemoveDirectory mezery/tecky orizne a pracuje tak s jinou cestou
+    // if the path ends with a space/dot, we need to append '\\', otherwise SetFileAttributes
+    // and RemoveDirectory trims spaces/dots and works with a different path
     const char* nameCrDir = name;
     char nameCrDirCopy[3 * MAX_PATH];
     MakeCopyWithBackslashIfNeeded(nameCrDir, nameCrDirCopy);
@@ -6493,16 +6492,16 @@ BOOL DoCreateDir(HWND hProgressDlg, char* name, DWORD attr,
         DWORD err;
         if (!invalidName && SalCreateDirectoryEx(name, &err))
         {
-            script->AddBytesToSpeedMetersAndTFSandPS((DWORD)CREATE_DIR_SIZE.Value, TRUE, 0, NULL, MAX_OP_FILESIZE); // uz je vytvoreny adresar
+            script->AddBytesToSpeedMetersAndTFSandPS((DWORD)CREATE_DIR_SIZE.Value, TRUE, 0, NULL, MAX_OP_FILESIZE); // directory has been created
 
             DWORD newAttr = attr & clearReadonlyMask;
-            if (sourceDir != NULL && adsCopy) // je-li treba kopirovat ADS, udelame to
+            if (sourceDir != NULL && adsCopy) // if it is necessary to copy ADS, we will do it
             {
-                CQuadWord operDone = CREATE_DIR_SIZE; // uz je vytvoreny adresar
+                CQuadWord operDone = CREATE_DIR_SIZE; // directory has been created
                 BOOL adsSkip = FALSE;
                 if (!DoCopyADS(hProgressDlg, sourceDir, TRUE, name, totalDone,
                                operDone, operTotal, dlgData, script, &adsSkip, buffer) ||
-                    adsSkip) // user dal cancel nebo Skipnul aspon jedno ADS
+                    adsSkip) // user either canceled or skipped at least one ADS
                 {
                     if (RemoveDirectory(nameCrDir) == 0)
                     {
@@ -6510,14 +6509,14 @@ BOOL DoCreateDir(HWND hProgressDlg, char* name, DWORD attr,
                         TRACE_E("Unable to remove newly created directory: " << name << ", error: " << GetErrorText(err2));
                     }
                     if (!adsSkip)
-                        return FALSE; // cancel cele operace (Skip musi vracet TRUE)
+                        return FALSE; // cancel the whole operation (Skip must return TRUE)
                     skip = TRUE;
-                    newAttr = -1; // adresar uz by nemel existovat, nebudeme mu tedy nastavovat atributy
+                    newAttr = -1; // the directory should no longer exist, so we will not set its attributes
                 }
             }
             if (newAttr != -1)
             {
-                if (script->CopyAttrs || createAsEncrypted) // nastavime Compressed & Encrypted atributy podle zdrojoveho adresare
+                if (script->CopyAttrs || createAsEncrypted) // Set Compressed & Encrypted attributes according to the source directory
                 {
                     if (createAsEncrypted)
                     {
@@ -6539,13 +6538,13 @@ BOOL DoCreateDir(HWND hProgressDlg, char* name, DWORD attr,
                             BOOL dummyCancelOper = FALSE;
                             if (newAttr & FILE_ATTRIBUTE_ENCRYPTED)
                             {
-                                changeAttrErr = MyEncryptFile(hProgressDlg, name, currentAttrs, 0 /* aby umel zasifrovat i adresare se SYSTEM atributem */,
+                                changeAttrErr = MyEncryptFile(hProgressDlg, name, currentAttrs, 0 /* to be able to encrypt directories with the SYSTEM attribute*/,
                                                               dlgData, dummyCancelOper, FALSE);
 
-                                if ( //(WindowsVistaAndLater || script->TargetPathSupEFS) &&  // rveme bez ohledu na system a podporu EFS; puvodne: ze adresar na FATce nejde zakryptit rvou az Visty, chovame se stejne (kvuli srovnani s Explorerem, Encrypted atribut neni az tak dulezity)
+                                if ( //(WindowsVistaAndLater || script->TargetPathSupEFS) &&  // we break regardless of the system and EFS support; originally: you can't encrypt a directory on FAT until Vista, we behave the same (for comparison with Explorer, the Encrypted attribute is not that important)
                                     !dlgData.DirCrLossEncrAll && changeAttrErr != ERROR_SUCCESS)
-                                {                                                              // adresari se nepodarilo nastavit Encrypted atribut, poptame se usera co s tim
-                                    WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                                {                                                              // Failed to set the Encrypted attribute for the directory, we will ask the user what to do about it
+                                    WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                                     if (*dlgData.CancelWorker)
                                         goto CANCEL_CRDIR;
 
@@ -6565,7 +6564,7 @@ BOOL DoCreateDir(HWND hProgressDlg, char* name, DWORD attr,
                                     switch (ret)
                                     {
                                     case IDB_ALL:
-                                        dlgData.DirCrLossEncrAll = TRUE; // tady break; nechybi
+                                        dlgData.DirCrLossEncrAll = TRUE; // here break; is not missing
                                     case IDYES:
                                         break;
 
@@ -6573,7 +6572,7 @@ BOOL DoCreateDir(HWND hProgressDlg, char* name, DWORD attr,
                                         dlgData.SkipAllDirCrLossEncr = TRUE;
                                     case IDB_SKIP:
                                     {
-                                        ClearReadOnlyAttr(nameCrDir); // aby se dal soubor smazat, nesmi mit read-only atribut
+                                        ClearReadOnlyAttr(nameCrDir); // to be able to delete the file, it must not have the read-only attribute
                                         RemoveDirectory(nameCrDir);
                                         script->SetTFS(lastTransferredFileSize); // TFS se pricte az za kompletni adresar venku; ProgressSize se srovna az venku (tady nema smysl ho rovnat)
                                         skip = TRUE;
@@ -6604,13 +6603,13 @@ BOOL DoCreateDir(HWND hProgressDlg, char* name, DWORD attr,
                 }
                 SetFileAttributes(nameCrDir, newAttr);
 
-                if (script->CopyAttrs) // zkontrolujeme jestli se podarilo zachovat atributy zdrojoveho souboru
+                if (script->CopyAttrs) // we will check if the attributes of the source file were preserved
                 {
                     DWORD curAttrs;
                     curAttrs = SalGetFileAttributes(name);
                     if (curAttrs == INVALID_FILE_ATTRIBUTES || (curAttrs & DISPLAYED_ATTRIBUTES) != (newAttr & DISPLAYED_ATTRIBUTES))
-                    {                                                              // atributy se nejspis nepodarilo prenest, varujeme usera
-                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                    {                                                              // Attributes probably failed to transfer, warning the user
+                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                         if (*dlgData.CancelWorker)
                             goto CANCEL_CRDIR;
 
@@ -6630,7 +6629,7 @@ BOOL DoCreateDir(HWND hProgressDlg, char* name, DWORD attr,
                         switch (ret)
                         {
                         case IDB_IGNOREALL:
-                            dlgData.IgnoreAllSetAttrsErr = TRUE; // tady break; nechybi
+                            dlgData.IgnoreAllSetAttrsErr = TRUE; // here break; is not missing
                         case IDB_IGNORE:
                             break;
 
@@ -6638,7 +6637,7 @@ BOOL DoCreateDir(HWND hProgressDlg, char* name, DWORD attr,
                         {
                         CANCEL_CRDIR:
 
-                            ClearReadOnlyAttr(nameCrDir); // aby se dal soubor smazat, nesmi mit read-only atribut
+                            ClearReadOnlyAttr(nameCrDir); // to be able to delete the file, it must not have the read-only attribute
                             RemoveDirectory(nameCrDir);
                             return FALSE;
                         }
@@ -6646,12 +6645,12 @@ BOOL DoCreateDir(HWND hProgressDlg, char* name, DWORD attr,
                     }
                 }
 
-                if (sourceDir != NULL && script->CopySecurity) // mame kopirovat NTFS security permissions?
+                if (sourceDir != NULL && script->CopySecurity) // Should we copy NTFS security permissions?
                 {
                     DWORD err2;
                     if (!DoCopySecurity(sourceDir, name, &err2, NULL))
                     {
-                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                         if (*dlgData.CancelWorker)
                             goto CANCEL_CRDIR;
 
@@ -6671,7 +6670,7 @@ BOOL DoCreateDir(HWND hProgressDlg, char* name, DWORD attr,
                         switch (ret)
                         {
                         case IDB_IGNOREALL:
-                            dlgData.IgnoreAllCopyPermErr = TRUE; // tady break; nechybi
+                            dlgData.IgnoreAllCopyPermErr = TRUE; // here break; is not missing
                         case IDB_IGNORE:
                             break;
 
@@ -6693,13 +6692,13 @@ BOOL DoCreateDir(HWND hProgressDlg, char* name, DWORD attr,
                 DWORD attr2 = SalGetFileAttributes(name);
                 if (attr2 & FILE_ATTRIBUTE_DIRECTORY) // "directory overwrite"
                 {
-                    if (dlgData.CnfrmDirOver && !dlgData.DirOverwriteAll) // mame se ptat usera na prepis adresare?
+                    if (dlgData.CnfrmDirOver && !dlgData.DirOverwriteAll) // Should we ask the user to overwrite the directory?
                     {
                         char sAttr[101], tAttr[101];
                         GetDirInfo(sAttr, sourceDir);
                         GetDirInfo(tAttr, name);
 
-                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                         if (*dlgData.CancelWorker)
                             return FALSE;
 
@@ -6734,7 +6733,7 @@ BOOL DoCreateDir(HWND hProgressDlg, char* name, DWORD attr,
                     return TRUE; // o.k.
                 }
 
-                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                 if (*dlgData.CancelWorker)
                     return FALSE;
 
@@ -6764,7 +6763,7 @@ BOOL DoCreateDir(HWND hProgressDlg, char* name, DWORD attr,
                 continue;
             }
 
-            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
             if (*dlgData.CancelWorker)
                 return FALSE;
 
@@ -6790,7 +6789,7 @@ BOOL DoCreateDir(HWND hProgressDlg, char* name, DWORD attr,
             {
             SKIP_CREATE_ERROR:
 
-                skip = TRUE; // jde o skip (musi se skipnout vsechny operace v adresari)
+                skip = TRUE; // It's about skipping (all operations in the directory must be skipped)
                 return TRUE;
             }
             case IDCANCEL:
@@ -6807,21 +6806,21 @@ BOOL DoDeleteDir(HWND hProgressDlg, char* name, const CQuadWord& size, COperatio
     int AutoRetryCounter = 0;
     DWORD startTime = GetTickCount();
 
-    // pokud cesta konci mezerou/teckou, musime pripojit '\\', jinak SetFileAttributes
-    // i RemoveDirectory mezery/tecky orizne a pracuje tak s jinou cestou
+    // if the path ends with a space/dot, we need to append '\\', otherwise SetFileAttributes
+    // i RemoveDirectory trims spaces/dots and thus works with a different path
     const char* nameRmDir = name;
     char nameRmDirCopy[3 * MAX_PATH];
     MakeCopyWithBackslashIfNeeded(nameRmDir, nameRmDirCopy);
 
     while (1)
     {
-        ClearReadOnlyAttr(nameRmDir, attr); // aby sel smazat ...
+        ClearReadOnlyAttr(nameRmDir, attr); // to be deleted ...
 
         err = ERROR_SUCCESS;
         if (script->CanUseRecycleBin && !dontUseRecycleBin &&
             (script->InvertRecycleBin && dlgData.UseRecycleBin == 0 ||
              !script->InvertRecycleBin && dlgData.UseRecycleBin == 1) &&
-            IsDirectoryEmpty(name)) // podadresar nesmi obsahovat zadne soubory !!!
+            IsDirectoryEmpty(name)) // subdirectory must not contain any files !!!
         {
             char nameList[MAX_PATH + 1];
             int l = (int)strlen(name) + 1;
@@ -6862,7 +6861,7 @@ BOOL DoDeleteDir(HWND hProgressDlg, char* name, const CQuadWord& size, COperatio
         }
         else
         {
-            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
             if (*dlgData.CancelWorker)
                 return FALSE;
 
@@ -6871,7 +6870,7 @@ BOOL DoDeleteDir(HWND hProgressDlg, char* name, const CQuadWord& size, COperatio
 
             if (AutoRetryCounter < 4 && GetTickCount() - startTime + (AutoRetryCounter + 1) * 100 <= 2000 &&
                 (err == ERROR_DIR_NOT_EMPTY || err == ERROR_SHARING_VIOLATION))
-            { // auto-retry sem davame, aby se resila tato situace: mam adresare 1\2\3, mazu 1 vcetne podadresaru, 3 je v panelu (sleduji se v nem zmeny) -> pri mazani 2 se ohlasi chyba "mazani neprazdneho adresare", protoze 3 zustava v "mezistavu" kvuli sledovani zmen (je sice smazany, tedy nejde listovat, atd., ale na disku porad jeste je, dobra pakarna)
+            { // auto-retry is used here to handle this situation: I have directories 1\2\3, I delete 1 including its subdirectories, 3 is in the panel (changes are being monitored in it) -> when deleting 2, an error "deleting a non-empty directory" is reported because 3 remains in an "intermediate state" due to change monitoring (even though it is deleted, so it cannot be listed, etc., but it still exists on the disk, a tricky situation)
                 //        TRACE_I("DoDeleteDir(): err: " << GetErrorText(err));
                 AutoRetryCounter++;
                 Sleep(AutoRetryCounter * 100);
@@ -6910,7 +6909,7 @@ BOOL DoDeleteDir(HWND hProgressDlg, char* name, const CQuadWord& size, COperatio
             }
         }
 
-        DWORD attr2 = SalGetFileAttributes(nameRmDir); // zjistime aktualni stav atributu
+        DWORD attr2 = SalGetFileAttributes(nameRmDir); // get the current state of the attribute
         if (attr2 != INVALID_FILE_ATTRIBUTES)
             attr = attr2;
     }
@@ -6984,14 +6983,14 @@ struct TMN_REPARSE_DATA_BUFFER
 
 BOOL DoDeleteDirLinkAux(const char* nameDelLink, DWORD* err)
 {
-    // vymaz reparse-pointu z adresare 'nameDelLink'
+    // delete reparse point from directory 'nameDelLink'
     if (err != NULL)
         *err = ERROR_SUCCESS;
     BOOL ok = FALSE;
     DWORD attr = GetFileAttributes(nameDelLink);
     if (attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_REPARSE_POINT))
     {
-        HANDLE dir = HANDLES_Q(CreateFile(nameDelLink, GENERIC_WRITE /* | GENERIC_READ */, 0, 0, OPEN_EXISTING,
+        HANDLE dir = HANDLES_Q(CreateFile(nameDelLink, GENERIC_WRITE /* | GENERIC_READ*/, 0, 0, OPEN_EXISTING,
                                           FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL));
         if (dir != INVALID_HANDLE_VALUE)
         {
@@ -7008,10 +7007,10 @@ BOOL DoDeleteDirLinkAux(const char* nameDelLink, DWORD* err)
             {
                 if (juncData->ReparseTag != IO_REPARSE_TAG_MOUNT_POINT &&
                     juncData->ReparseTag != IO_REPARSE_TAG_SYMLINK)
-                { // pokud nejde o volume mount point, junction ani symlink, jdeme ohlasit chybu (asi umime smazat, ale radsi to odmitneme, abysme neco neposrali...)
+                { // if it's not a volume mount point, junction, or symlink, we report an error (we probably know how to delete, but we'd rather refuse to avoid messing something up...)
                     TRACE_E("DoDeleteDirLinkAux(): Unknown type of reparse point (tag is 0x" << std::hex << juncData->ReparseTag << std::dec << "): " << nameDelLink);
                     if (err != NULL)
-                        *err = 4394 /* ERROR_REPARSE_TAG_MISMATCH */;
+                        *err = 4394 /* ERROR_REPARSE_TAG_MISMATCH*/;
                 }
                 else
                 {
@@ -7040,10 +7039,10 @@ BOOL DoDeleteDirLinkAux(const char* nameDelLink, DWORD* err)
         }
     }
     else
-        ok = TRUE; // uz je zrejme smazany reparse-point, zbyva jeste smazat prazdny adresar...
-    // odstranime prazdny adresar (co zbyl po vymazu reparse-pointu)
+        ok = TRUE; // the reparse point is now apparently deleted, only the empty directory remains to be deleted...
+    // remove empty directory (left after deleting the reparse point)
     if (ok)
-        ClearReadOnlyAttr(nameDelLink, attr); // aby sel smazat i s read-only atributem
+        ClearReadOnlyAttr(nameDelLink, attr); // to be able to delete with the read-only attribute
     if (ok && !RemoveDirectory(nameDelLink))
     {
         ok = FALSE;
@@ -7055,8 +7054,8 @@ BOOL DoDeleteDirLinkAux(const char* nameDelLink, DWORD* err)
 
 BOOL DeleteDirLink(const char* name, DWORD* err)
 {
-    // pokud cesta konci mezerou/teckou, musime pripojit '\\', jinak CreateFile
-    // i RemoveDirectory mezery/tecky orizne a pracuje tak s jinou cestou
+    // if the path ends with a space/dot, we need to append '\\', otherwise CreateFile
+    // i RemoveDirectory trims spaces/dots and thus works with a different path
     const char* nameDelLink = name;
     char nameDelLinkCopy[3 * MAX_PATH];
     MakeCopyWithBackslashIfNeeded(nameDelLink, nameDelLinkCopy);
@@ -7067,8 +7066,8 @@ BOOL DeleteDirLink(const char* name, DWORD* err)
 BOOL DoDeleteDirLink(HWND hProgressDlg, char* name, const CQuadWord& size, COperations* script,
                      CQuadWord& totalDone, CProgressDlgData& dlgData)
 {
-    // pokud cesta konci mezerou/teckou, musime pripojit '\\', jinak CreateFile
-    // i RemoveDirectory mezery/tecky orizne a pracuje tak s jinou cestou
+    // if the path ends with a space/dot, we need to append '\\', otherwise CreateFile
+    // i RemoveDirectory trims spaces/dots and thus works with a different path
     const char* nameDelLink = name;
     char nameDelLinkCopy[3 * MAX_PATH];
     MakeCopyWithBackslashIfNeeded(nameDelLink, nameDelLinkCopy);
@@ -7088,7 +7087,7 @@ BOOL DoDeleteDirLink(HWND hProgressDlg, char* name, const CQuadWord& size, COper
         }
         else
         {
-            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
             if (*dlgData.CancelWorker)
                 return FALSE;
 
@@ -7128,22 +7127,22 @@ BOOL DoDeleteDirLink(HWND hProgressDlg, char* name, const CQuadWord& size, COper
 }
 
 // a) ve stejnem adresari, jako je soubor name vytvori docasny soubor
-// b) obsah souboru name prenese do docasneho souboru a zaroven nad daty
-//    provadi konverze urcene promennou convertData.CodeType a convertData.EOFType
-// c) soubor name prepise docasnym souborem
+// b) transfers the content of the file name to a temporary file and simultaneously processes the data
+//    performs conversion specified by variables convertData.CodeType and convertData.EOFType
+// c) file name will be overwritten by a temporary file
 //
-// convertData.EOFType  - urcuje, cim se nahradi konce radku
-//            za konec radku se povazuji vsechny CR, LF a CRLF
-//            0: neprovadi se nahrada koncu radku
-//            1: konce radku se nahradi CRLF (DOS, Windows, OS/2)
-//            2: konce radku se nahradi LF (UNIX)
-//            3: konce radku se nahradi CR (MAC)
+// convertData.EOFType - specifies what will replace end of line characters
+//            All CR, LF, and CRLF are considered end of line
+//            0: no line ending replacement is performed
+//            1: end of line will be replaced by CRLF (DOS, Windows, OS/2)
+//            2: end of line is replaced by LF (UNIX)
+//            3: end of line will be replaced by CR (MAC)
 BOOL DoConvert(HWND hProgressDlg, char* name, char* sourceBuffer, char* targetBuffer,
                const CQuadWord& size, COperations* script, CQuadWord& totalDone,
                CConvertData& convertData, CProgressDlgData& dlgData)
 {
-    // pokud cesta konci mezerou/teckou, je invalidni a nesmime provest konverzi,
-    // CreateFile mezery/tecky orizne a zkonverti tak jiny soubor
+    // if the path ends with a space/dot, it is invalid and we must not perform the conversion,
+    // CreateFile trims spaces/dots and converts another file accordingly
     BOOL invalidName = FileNameIsInvalid(name, TRUE);
 
 CONVERT_AGAIN:
@@ -7152,7 +7151,7 @@ CONVERT_AGAIN:
     operationDone = CQuadWord(0, 0);
     while (1)
     {
-        // pokusim se otevrit zdrojovy soubor
+        // trying to open the source file
         HANDLE hSource;
         if (!invalidName)
         {
@@ -7166,20 +7165,20 @@ CONVERT_AGAIN:
         }
         if (hSource != INVALID_HANDLE_VALUE)
         {
-            // vytahnu si cestu pro docasny soubor
+            // Retrieve a path for a temporary file
             char tmpPath[MAX_PATH];
             strcpy(tmpPath, name);
             char* terminator = strrchr(tmpPath, '\\');
             if (terminator == NULL)
             {
-                // pracovni testik
+                // working test
                 TRACE_E("Parameter 'name' must be full path to file (including path)");
                 HANDLES(CloseHandle(hSource));
                 return FALSE;
             }
             *(terminator + 1) = 0;
 
-            // najdu nazev pro docasny soubor a necham soubor vytvorit
+            // find a name for a temporary file and create the file
             char tmpFileName[MAX_PATH];
             BOOL tmpFileExists = FALSE;
             while (1)
@@ -7188,14 +7187,14 @@ CONVERT_AGAIN:
                 {
                     tmpFileExists = TRUE;
 
-                    // nastavime atributy tmp-souboru dle zdrojoveho souboru
+                    // set the attributes of the temporary file according to the source file
                     DWORD srcAttrs = SalGetFileAttributes(name);
                     DWORD tgtAttrs = SalGetFileAttributes(tmpFileName);
                     BOOL changeAttrs = FALSE;
                     if (srcAttrs != INVALID_FILE_ATTRIBUTES && tgtAttrs != INVALID_FILE_ATTRIBUTES && srcAttrs != tgtAttrs)
                     {
-                        changeAttrs = TRUE; // pozdeji provedeme SetFileAttributes...
-                        // lisi se priznak kompresse na NTFS ?
+                        changeAttrs = TRUE; // later we will perform SetFileAttributes...
+                        // Is the compression attribute different on NTFS?
                         if ((srcAttrs & FILE_ATTRIBUTE_COMPRESSED) != (tgtAttrs & FILE_ATTRIBUTE_COMPRESSED) &&
                             (srcAttrs & FILE_ATTRIBUTE_COMPRESSED) == 0)
                         {
@@ -7206,7 +7205,7 @@ CONVERT_AGAIN:
                             BOOL cancelOper = FALSE;
                             if (srcAttrs & FILE_ATTRIBUTE_ENCRYPTED)
                             {
-                                MyEncryptFile(hProgressDlg, tmpFileName, tgtAttrs, 0 /* aby umel zasifrovat i soubory se SYSTEM atributem */,
+                                MyEncryptFile(hProgressDlg, tmpFileName, tgtAttrs, 0 /* to be able to encrypt files with the SYSTEM attribute*/,
                                               dlgData, cancelOper, FALSE);
                             }
                             else
@@ -7214,7 +7213,7 @@ CONVERT_AGAIN:
                             if (*dlgData.CancelWorker || cancelOper)
                             {
                                 HANDLES(CloseHandle(hSource));
-                                ClearReadOnlyAttr(tmpFileName); // aby sel smazat
+                                ClearReadOnlyAttr(tmpFileName); // to be deleted
                                 DeleteFile(tmpFileName);
                                 return FALSE;
                             }
@@ -7226,7 +7225,7 @@ CONVERT_AGAIN:
                         }
                     }
 
-                    // otevru prazdny docasny soubor
+                    // open an empty temporary file
                     HANDLE hTarget = HANDLES_Q(CreateFile(tmpFileName, GENERIC_WRITE, 0, NULL,
                                                           OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL));
                     if (hTarget != INVALID_HANDLE_VALUE)
@@ -7240,7 +7239,7 @@ CONVERT_AGAIN:
                                 DWORD written;
                                 if (read == 0)
                                     break;                                                 // EOF
-                                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                                 if (*dlgData.CancelWorker)
                                 {
                                 CONVERT_ERROR:
@@ -7249,26 +7248,26 @@ CONVERT_AGAIN:
                                         HANDLES(CloseHandle(hSource));
                                     if (hTarget != NULL)
                                         HANDLES(CloseHandle(hTarget));
-                                    ClearReadOnlyAttr(tmpFileName); // aby sel smazat
+                                    ClearReadOnlyAttr(tmpFileName); // to be deleted
                                     DeleteFile(tmpFileName);
                                     return FALSE;
                                 }
 
-                                // provedu preklad sourceBuffer -> targetBuffer
+                                // perform translation from sourceBuffer to targetBuffer
                                 char* sourceIterator;
                                 char* targetIterator;
                                 sourceIterator = sourceBuffer;
                                 targetIterator = targetBuffer;
                                 while (sourceIterator - sourceBuffer < (int)read)
                                 {
-                                    // lastChar je TRUE, pokud sourceIterator ukazuje na posledni znak v bufferu
+                                    // lastChar is TRUE if sourceIterator points to the last character in the buffer
                                     BOOL lastChar = (sourceIterator - sourceBuffer == (int)read - 1);
 
                                     if (convertData.EOFType != 0)
                                     {
                                         if (crlfBreak && sourceIterator == sourceBuffer && *sourceIterator == '\n')
                                         {
-                                            // toto CRLF mame uz zpracovano, ted necham LF byt
+                                            // we have already processed this CRLF, now let LF be
                                             crlfBreak = FALSE;
                                         }
                                         else
@@ -7290,10 +7289,10 @@ CONVERT_AGAIN:
                                                     break;
                                                 }
                                                 }
-                                                // odchytim CRLF, ktere se lame na rozhrani bufferu
+                                                // catch CRLF that breaks at the buffer interface
                                                 if (lastChar && *sourceIterator == '\r')
                                                     crlfBreak = TRUE;
-                                                // odchytim CRLF, ktere se nelame - musim preskocit LF
+                                                // catch CRLF that doesn't break - I have to skip LF
                                                 if (!lastChar &&
                                                     *sourceIterator == '\r' && *(sourceIterator + 1) == '\n')
                                                     sourceIterator++;
@@ -7313,7 +7312,7 @@ CONVERT_AGAIN:
                                     sourceIterator++;
                                 }
 
-                                // provedeme zapis do tmp souboru
+                                // we will write to the tmp file
                                 while (1)
                                 {
                                     if (WriteFile(hTarget, targetBuffer, (DWORD)(targetIterator - targetBuffer), &written, NULL) &&
@@ -7325,7 +7324,7 @@ CONVERT_AGAIN:
                                     DWORD err;
                                     err = GetLastError();
 
-                                    WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                                    WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                                     if (*dlgData.CancelWorker)
                                         goto CONVERT_ERROR;
 
@@ -7348,7 +7347,7 @@ CONVERT_AGAIN:
                                     {
                                         if (hSource == NULL && hTarget == NULL)
                                         {
-                                            ClearReadOnlyAttr(tmpFileName); // aby sel smazat
+                                            ClearReadOnlyAttr(tmpFileName); // to be deleted
                                             DeleteFile(tmpFileName);
                                             SetProgress(hProgressDlg, 0, CaclProg(totalDone, script->TotalSize), dlgData);
                                             goto CONVERT_AGAIN;
@@ -7367,7 +7366,7 @@ CONVERT_AGAIN:
                                             HANDLES(CloseHandle(hSource));
                                         if (hTarget != NULL)
                                             HANDLES(CloseHandle(hTarget));
-                                        ClearReadOnlyAttr(tmpFileName); // aby sel smazat
+                                        ClearReadOnlyAttr(tmpFileName); // to be deleted
                                         DeleteFile(tmpFileName);
                                         SetProgress(hProgressDlg, 0, CaclProg(totalDone, script->TotalSize), dlgData);
                                         return TRUE;
@@ -7377,7 +7376,7 @@ CONVERT_AGAIN:
                                         goto CONVERT_ERROR;
                                     }
                                 }
-                                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                                 if (*dlgData.CancelWorker)
                                     goto CONVERT_ERROR;
 
@@ -7389,7 +7388,7 @@ CONVERT_AGAIN:
                             else
                             {
                                 DWORD err = GetLastError();
-                                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                                 if (*dlgData.CancelWorker)
                                     goto CONVERT_ERROR;
 
@@ -7416,33 +7415,33 @@ CONVERT_AGAIN:
                                 }
                             }
                         }
-                        // zavreme soubory a nastavime globalni progress
-                        // nepouzijeme operationDone, aby byl progress korektni i pri zmenach souboru "pod nohama"
+                        // close files and set global progress
+                        // we will not use operationDone to ensure correct progress even when files are "moving under our feet"
                         HANDLES(CloseHandle(hSource));
-                        if (!HANDLES(CloseHandle(hTarget))) // i po neuspesnem volani predpokladame, ze je handle zavreny,
-                        {                                   // viz https://forum.altap.cz/viewtopic.php?f=6&t=8455
-                            hSource = hTarget = NULL;       // (pise, ze cilovy soubor lze smazat, tedy nezustal otevreny jeho handle)
+                        if (!HANDLES(CloseHandle(hTarget))) // Even after an unsuccessful call, we assume that the handle is closed,
+                        {                                   // see https://forum.altap.cz/viewtopic.php?f=6&t=8455
+                            hSource = hTarget = NULL;       // (it says that the target file can be deleted, so its handle was not left open)
                             goto WRITE_ERROR_CONVERT;
                         }
                         totalDone += size;
-                        // donastavime atributy (read-only pri zapisu dela potize)
+                        // we will not set attributes (read-only causes problems when writing)
                         if (changeAttrs)
                             SetFileAttributes(tmpFileName, srcAttrs);
-                        // prepiseme puvodni soubor tmp-souborem
+                        // we will overwrite the original file with a temporary file
                         while (1)
                         {
-                            ClearReadOnlyAttr(name); // aby sel smazat ...
+                            ClearReadOnlyAttr(name); // to be deleted ...
                             if (DeleteFile(name))
                             {
                                 while (1)
                                 {
                                     if (SalMoveFile(tmpFileName, name))
-                                        return TRUE; // uspesne koncime
+                                        return TRUE; // successfully finished
                                     else
                                     {
                                         DWORD err = GetLastError();
 
-                                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                                        WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                                         if (*dlgData.CancelWorker)
                                             return FALSE;
 
@@ -7476,12 +7475,12 @@ CONVERT_AGAIN:
                             {
                                 DWORD err = GetLastError();
 
-                                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                                WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                                 if (*dlgData.CancelWorker)
                                 {
                                 CANCEL_CONVERT:
 
-                                    ClearReadOnlyAttr(tmpFileName); // aby sel smazat ...
+                                    ClearReadOnlyAttr(tmpFileName); // to be deleted ...
                                     DeleteFile(tmpFileName);
                                     return FALSE;
                                 }
@@ -7508,7 +7507,7 @@ CONVERT_AGAIN:
                                 {
                                 SKIP_OVERWRITE_ERROR:
 
-                                    ClearReadOnlyAttr(tmpFileName); // aby sel smazat ...
+                                    ClearReadOnlyAttr(tmpFileName); // to be deleted ...
                                     DeleteFile(tmpFileName);
                                     return TRUE;
                                 }
@@ -7528,17 +7527,17 @@ CONVERT_AGAIN:
 
                     DWORD err = GetLastError();
 
-                    char fakeName[MAX_PATH]; // jmeno tmp-souboru, ktery nejde vytvorit/otevrit
+                    char fakeName[MAX_PATH]; // name of temporary file that cannot be created/opened
                     if (tmpFileExists)
                     {
                         strcpy(fakeName, tmpFileName);
-                        ClearReadOnlyAttr(tmpFileName); // aby sel smazat
-                        DeleteFile(tmpFileName);        // tmp byl vytvoren, pokusime se ho smazat ...
+                        ClearReadOnlyAttr(tmpFileName); // to be deleted
+                        DeleteFile(tmpFileName);        // tmp was created, we will try to delete it ...
                         tmpFileExists = FALSE;
                     }
                     else
                     {
-                        // dame dohromady smyslene jmeno tmp-filu, ktery se nepodarilo vytvorit
+                        // put together a meaningful name for the tmp file that failed to be created
                         char* s = tmpPath + strlen(tmpPath);
                         if (s > tmpPath && *(s - 1) == '\\')
                             s--;
@@ -7546,7 +7545,7 @@ CONVERT_AGAIN:
                         strcpy(fakeName + (s - tmpPath), "\\cnv0000.tmp");
                     }
 
-                    WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+                    WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
                     if (*dlgData.CancelWorker)
                         goto CANCEL_OPEN2;
 
@@ -7594,7 +7593,7 @@ CONVERT_AGAIN:
             DWORD err = GetLastError();
             if (invalidName)
                 err = ERROR_INVALID_NAME;
-            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
             if (*dlgData.CancelWorker)
                 return FALSE;
 
@@ -7638,9 +7637,9 @@ BOOL DoChangeAttrs(HWND hProgressDlg, char* name, const CQuadWord& size, DWORD a
                    BOOL& changeCompression, BOOL& changeEncryption, DWORD fileAttr,
                    CProgressDlgData& dlgData)
 {
-    // pokud cesta konci mezerou/teckou, musime pripojit '\\', jinak
-    // SetFileAttributes (a dalsi) mezery/tecky orizne a pracuje
-    // tak s jinou cestou
+    // if the path ends with a space/dot, we need to append '\\', otherwise
+    // SetFileAttributes (and others) trims spaces/dots and works
+    // so with another way
     const char* nameSetAttrs = name;
     char nameSetAttrsCopy[3 * MAX_PATH];
     MakeCopyWithBackslashIfNeeded(nameSetAttrs, nameSetAttrsCopy);
@@ -7696,7 +7695,7 @@ BOOL DoChangeAttrs(HWND hProgressDlg, char* name, const CQuadWord& size, DWORD a
         }
         if (showCompressErr || showEncryptErr)
         {
-            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
             if (*dlgData.CancelWorker)
                 return FALSE;
 
@@ -7714,7 +7713,7 @@ BOOL DoChangeAttrs(HWND hProgressDlg, char* name, const CQuadWord& size, DWORD a
         if (error == ERROR_SUCCESS && SetFileAttributes(nameSetAttrs, attrs))
         {
             BOOL isDir = ((attrs & FILE_ATTRIBUTE_DIRECTORY) != 0);
-            // pokud mame nastavit jeden z casu
+            // if we need to set one of the times
             if (timeModified != NULL || timeCreated != NULL || timeAccessed != NULL)
             {
                 HANDLE file;
@@ -7758,7 +7757,7 @@ BOOL DoChangeAttrs(HWND hProgressDlg, char* name, const CQuadWord& size, DWORD a
             if (errTitle == NULL)
                 errTitle = LoadStr(IDS_ERRORCHANGINGATTRS);
 
-            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
             if (*dlgData.CancelWorker)
                 return FALSE;
 
@@ -7803,7 +7802,7 @@ unsigned ThreadWorkerBody(void* parameter)
     TRACE_I("Begin");
 
     CWorkerData* data = (CWorkerData*)parameter;
-    //--- vytvorime lokalni kopii dat
+    //--- create a local copy of the data
     HANDLE wContinue = data->WContinue;
     CProgressDlgData dlgData;
     dlgData.WorkerNotSuspended = data->WorkerNotSuspended;
@@ -7842,8 +7841,8 @@ unsigned ThreadWorkerBody(void* parameter)
     COperations* script = data->Script;
     if (script->TotalSize == CQuadWord(0, 0))
     {
-        script->TotalSize = CQuadWord(1, 0); // proti deleni nulou
-                                             // TRACE_E("ThreadWorkerBody(): script->TotalSize may not be zero!");  // pri stavbe se nenastavuje "synchrovaci jednicka", zlobilo u Calculate Occupied Space
+        script->TotalSize = CQuadWord(1, 0); // against division by zero
+                                             // TRACE_E("ThreadWorkerBody(): script->TotalSize may not be zero!");  // "synchronization one" is not set during construction, caused trouble in Calculate Occupied Space
     }
 
     if (script->CopySecurity)
@@ -7855,32 +7854,32 @@ unsigned ThreadWorkerBody(void* parameter)
     CChangeAttrsData* attrsData = (CChangeAttrsData*)data->Buffer;
     DWORD clearReadonlyMask = data->ClearReadonlyMask;
     CConvertData convertData;
-    if (data->ConvertData != NULL) // udelame si kopii dat pro Convert
+    if (data->ConvertData != NULL) // Let's make a copy of the data for Convert
     {
         convertData = *data->ConvertData;
     }
-    SetEvent(wContinue); // data mame, pustime dal hl. thread nebo progress-dialog thread
+    SetEvent(wContinue); // we have the data, let's start either the main thread or the progress-dialog thread
                          //---
     SetProgress(hProgressDlg, 0, 0, dlgData);
     script->InitSpeedMeters(FALSE);
 
-    char lastLantasticCheckRoot[MAX_PATH]; // posledni root cesty kontrolovany na Lantastic ("" = nic nebylo kontrolovano)
+    char lastLantasticCheckRoot[MAX_PATH]; // last root of the path checked on Lantastic ("" = nothing was checked)
     lastLantasticCheckRoot[0] = 0;
-    BOOL lastIsLantasticPath = FALSE;                                                                                  // vysledek kontroly na rootu lastLantasticCheckRoot
-    int mustDeleteFileBeforeOverwrite = 0; /* need test */                                                             // (zavedeno kvuli SNAP serveru - NSA drive - neslape jim SetEndOfFile - 0/1/2 = need-test/yes/no)
-    int allocWholeFileOnStart = 0; /* need test */                                                                     // zavedeno jako jisteni (napr. na SNAP serveru - NSA drivech - asi nebude slapat), nemuzeme si dovolit riskovat nefunkcni Copy - 0/1/2 = need-test/yes/no
-    int setDirTimeAfterMove = script->PreserveDirTime && script->SourcePathIsNetwork ? 0 /* need test */ : 2 /* no */; // napr. na Sambe po presunu/prejmenovani adresare dochazi ke zmene jeho datumu a casu - 0/1/2 = need-test/yes/no
+    BOOL lastIsLantasticPath = FALSE;                                                                                  // Result of the check on the root lastLantasticCheckRoot
+    int mustDeleteFileBeforeOverwrite = 0; /* need test*/                                                             // (zavedeno kvuli SNAP serveru - NSA drive - neslape jim SetEndOfFile - 0/1/2 = need-test/yes/no)
+    int allocWholeFileOnStart = 0; /* need test*/                                                                     // Implemented as a backup (e.g. on a SNAP server - NSA drives - probably won't work), we cannot afford to risk a non-functional Copy - 0/1/2 = need-test/yes/no
+    int setDirTimeAfterMove = script->PreserveDirTime && script->SourcePathIsNetwork ? 0 /* need test*/ : 2 /* no*/; // e.g. when moving/renaming a directory on Samba, its date and time are changed - 0/1/2 = need-test/yes/no
 
     BOOL Error = FALSE;
     CQuadWord totalDone;
     totalDone = CQuadWord(0, 0);
     CProgressData pd;
-    BOOL novellRenamePatch = FALSE; // TRUE pokud je nutne odstranovat read-only atribut pred volanim MoveFile (nutne na Novellu)
-    char* tgtBuffer = NULL;         // prekladovy buffer pro ocConvert
+    BOOL novellRenamePatch = FALSE; // TRUE if it is necessary to remove the read-only attribute before calling MoveFile (necessary on Novell)
+    char* tgtBuffer = NULL;         // Translation buffer for ocConvert
     CAsyncCopyParams* asyncPar = NULL;
     if (buffer != NULL)
     {
-        // nacteme retezce dopredu, aby se to nedelalo pro kazdou operaci zvlast (plni se rychle LoadStr buffer + brzdi)
+        // Read strings forward to avoid doing it separately for each operation (the LoadStr buffer fills quickly + slows down)
         char opStrCopying[50];
         lstrcpyn(opStrCopying, LoadStr(IDS_COPYING), 50);
         char opStrCopyingPrep[50];
@@ -7969,9 +7968,9 @@ unsigned ThreadWorkerBody(void* parameter)
                                      alreadyExisted, crAsEncrypted, ignInvalidName);
                 if (!Error)
                 {
-                    if (skip) // skip vytvareni adresare
+                    if (skip) // skip creating directory
                     {
-                        // preskocime vsechny operace skriptu az do znacky uzavreni tohoto adresare
+                        // skip all script operations until the closing tag of this directory
                         CQuadWord skipTotal(0, 0);
                         int createDirIndex = i;
                         while (++i < script->Count)
@@ -7995,9 +7994,9 @@ unsigned ThreadWorkerBody(void* parameter)
                     else
                     {
                         if (alreadyExisted)
-                            op->Attr = 0x10000000 /* dir already existed */;
+                            op->Attr = 0x10000000 /* dir already existed*/;
                         else
-                            op->Attr = 0x01000000 /* dir was created */;
+                            op->Attr = 0x01000000 /* dir was created*/;
                     }
                     totalDone += op->Size;
                     script->SetProgressSize(totalDone);
@@ -8009,9 +8008,9 @@ unsigned ThreadWorkerBody(void* parameter)
             case ocCopyDirTime:
             {
                 BOOL skipSetDirTime = FALSE;
-                // najdeme skip-label, u nej je index create-dir operace a v ni je ulozene, jestli
-                // cilovy adresar uz existoval nebo jestli jsme ho vytvareli (datum&cas se kopiruje
-                // jen pokud jsme adresar vytvareli)
+                // find the skip-label, its index is in the create-dir operation and it stores whether
+                // Check if the target directory already existed or if we were creating it (date&time is being copied)
+                // only if we created the directory)
                 COperation* skipLabel = NULL;
                 if (i + 1 < script->Count && script->At(i + 1).Opcode == ocLabelForSkipOfCreateDir)
                     skipLabel = &script->At(i + 1);
@@ -8027,11 +8026,11 @@ unsigned ThreadWorkerBody(void* parameter)
                         COperation* crDir = &script->At(skipLabel->Attr);
                         if (crDir->Opcode == ocCreateDir && (crDir->OpFlags & OPFL_AS_ENCRYPTED) == 0)
                         {
-                            if (crDir->Attr == 0x10000000 /* dir already existed */)
+                            if (crDir->Attr == 0x10000000 /* dir already existed*/)
                                 skipSetDirTime = TRUE;
                             else
                             {
-                                if (crDir->Attr != 0x01000000 /* dir was created */)
+                                if (crDir->Attr != 0x01000000 /* dir was created*/)
                                     TRACE_E("ThreadWorkerBody(): unexpected value of Attr in create-dir operation (not 'existed' nor 'created')!");
                             }
                         }
@@ -8105,18 +8104,18 @@ unsigned ThreadWorkerBody(void* parameter)
 
             case ocConvert:
             {
-                // vystupni buffer - do nej budu provadet preklad (pro nejnepriznivejsi pripad,
-                // kdy vstupni soubor obsahuje same CR nebo LF a prekladame je na CRLF je tento
-                // buffer dvojnasobne velikosti nez sourceBuffer) a posleze z nej budu zapisovat
-                // do docasneho souboru
-                if (tgtBuffer == NULL) // prvni pruchod ?
+                // output buffer - I will perform translation into it (for the worst case,
+                // when the input file contains only CR or LF and we translate them to CRLF, this
+                // buffer twice the size of sourceBuffer) and then I will be writing to it
+                // to a temporary file
+                if (tgtBuffer == NULL) // first pass?
                 {
                     tgtBuffer = (char*)malloc(OPERATION_BUFFER * 2);
                     if (tgtBuffer == NULL)
                     {
                         TRACE_E(LOW_MEMORY);
                         Error = TRUE;
-                        break; // chyba ...
+                        break; // error ...
                     }
                 }
                 pd.Operation = opStrConverting;
@@ -8153,14 +8152,14 @@ unsigned ThreadWorkerBody(void* parameter)
             }
 
             case ocLabelForSkipOfCreateDir:
-                break; // zadna cinnost
+                break; // no activity
             }
             if (Error)
                 break;
-            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // pokud mame byt v suspend-modu, cekame ...
+            WaitForSingleObject(dlgData.WorkerNotSuspended, INFINITE); // if we are to be in suspend mode, we wait ...
         }
         if (!Error && !*dlgData.CancelWorker && i == script->Count && totalDone != script->TotalSize &&
-            (totalDone != CQuadWord(0, 0) || script->TotalSize != CQuadWord(1, 0))) // umyslna zmena script->TotalSize na jednicku (opatreni proti deleni nulou)
+            (totalDone != CQuadWord(0, 0) || script->TotalSize != CQuadWord(1, 0))) // Intentional change of script->TotalSize to one (precaution against division by zero)
         {
             TRACE_E("ThreadWorkerBody(): operation done: totalDone != script->TotalSize (" << totalDone.Value << " != " << script->TotalSize.Value << ")");
         }
@@ -8169,7 +8168,7 @@ unsigned ThreadWorkerBody(void* parameter)
             script->GetTFSandProgressSize(&transferredFileSize, &progressSize) &&
             (transferredFileSize != script->TotalFileSize ||
              progressSize != script->TotalSize &&
-                 (progressSize != CQuadWord(0, 0) || script->TotalSize != CQuadWord(1, 0)))) // umyslna zmena script->TotalSize na jednicku (opatreni proti deleni nulou)
+                 (progressSize != CQuadWord(0, 0) || script->TotalSize != CQuadWord(1, 0)))) // Intentional change of script->TotalSize to one (precaution against division by zero)
         {
             if (transferredFileSize != script->TotalFileSize)
             {
@@ -8188,11 +8187,11 @@ unsigned ThreadWorkerBody(void* parameter)
         free(tgtBuffer);
     if (bufferIsAllocated)
         free(buffer);
-    *dlgData.CancelWorker = Error;                  // pokud jde o Cancel, dame to najevo ...
-    SendMessage(hProgressDlg, WM_COMMAND, IDOK, 0); // koncime ...
-    WaitForSingleObject(wContinue, INFINITE);       // potrebujeme zastavit hl.thread
+    *dlgData.CancelWorker = Error;                  // when it comes to Cancel, we make it clear...
+    SendMessage(hProgressDlg, WM_COMMAND, IDOK, 0); // we are finishing ...
+    WaitForSingleObject(wContinue, INFINITE);       // we need to stop the hl.thread
 
-    FreeScript(script); // vola delete, hl. thread tedy nemuze bezet
+    FreeScript(script); // calls delete, main thread cannot run without it
 
     TRACE_I("End");
     return 0;
@@ -8211,7 +8210,7 @@ unsigned ThreadWorkerEH(void* param)
     {
         TRACE_I("Thread Worker: calling ExitProcess(1).");
         //    ExitProcess(1);
-        TerminateProcess(GetCurrentProcess(), 1); // tvrdsi exit (tenhle jeste neco vola)
+        TerminateProcess(GetCurrentProcess(), 1); // tvrdší exit (this one still calls something)
         return 1;
     }
 #endif // CALLSTK_DISABLE
@@ -8256,7 +8255,7 @@ HANDLE StartWorker(COperations* script, HWND hDlg, CChangeAttrsData* attrsData,
     ResetEvent(wContinue);
     *cancelWorker = FALSE;
 
-    // if (Worker != NULL) HANDLES(CloseHandle(Worker));  // nejspis bylo zbytecne
+    // if (Worker != NULL) HANDLES(CloseHandle(Worker));  // probably unnecessary
     HANDLE worker = HANDLES(CreateThread(NULL, 0, ThreadWorker, &data, 0, &threadID));
     if (worker == NULL)
     {
@@ -8266,7 +8265,7 @@ HANDLE StartWorker(COperations* script, HWND hDlg, CChangeAttrsData* attrsData,
         return NULL;
     }
     //  SetThreadPriority(Worker, THREAD_PRIORITY_HIGHEST);
-    WaitForSingleObject(wContinue, INFINITE); // pockame az si prekopiruje data (jsou na stacku)
+    WaitForSingleObject(wContinue, INFINITE); // Wait until the data is copied (it's on the stack)
     return worker;
 }
 
@@ -8299,12 +8298,12 @@ BOOL COperationsQueue::AddOperation(HWND dlg, BOOL startOnIdle, BOOL* startPause
     HANDLES(EnterCriticalSection(&QueueCritSect));
 
     int i;
-    for (i = 0; i < OperDlgs.Count; i++) // zajistime unikatnost (operace muze byt pridana jen jednou)
+    for (i = 0; i < OperDlgs.Count; i++) // ensure uniqueness (operation can only be added once)
         if (OperDlgs[i] == dlg)
             break;
 
     BOOL ret = FALSE;
-    if (i == OperDlgs.Count) // operaci je mozne pridat
+    if (i == OperDlgs.Count) // operation can be added
     {
         OperDlgs.Add(dlg);
         if (OperDlgs.IsGood())
@@ -8312,13 +8311,13 @@ BOOL COperationsQueue::AddOperation(HWND dlg, BOOL startOnIdle, BOOL* startPause
             if (startOnIdle)
             {
                 int j;
-                for (j = 0; j < OperPaused.Count && OperPaused[j] == 1 /* auto-paused */; j++)
-                    ; // pokud jiz nejaka operace bezi nebo byla rucne pausnuta, startujeme tuto operaci jako "auto-paused"
+                for (j = 0; j < OperPaused.Count && OperPaused[j] == 1 /* auto-paused*/; j++)
+                    ; // if an operation is already running or has been manually paused, we start this operation as "auto-paused"
                 *startPaused = j < OperPaused.Count;
             }
             else
                 *startPaused = FALSE;
-            OperPaused.Add(*startPaused ? 1 /* auto-paused */ : 0 /* running */);
+            OperPaused.Add(*startPaused ? 1 /* auto-paused*/ : 0 /* running*/);
             if (!OperPaused.IsGood())
             {
                 OperPaused.ResetState();
@@ -8369,8 +8368,8 @@ void COperationsQueue::OperationEnded(HWND dlg, BOOL doNotResume, HWND* foregrou
         if (!doNotResume)
         {
             int j;
-            for (j = 0; j < OperPaused.Count && OperPaused[j] == 1 /* auto-paused */; j++)
-                ; // pokud nebezi zadna operace ani nebyla zadna operace rucne pausnuta, resumneme prvni operaci ve fronte
+            for (j = 0; j < OperPaused.Count && OperPaused[j] == 1 /* auto-paused*/; j++)
+                ; // if no operation is running and no operation has been manually paused, we will resume the first operation in the queue
             if (j == OperPaused.Count && OperDlgs.Count > 0)
             {
                 PostMessage(OperDlgs[0], WM_COMMAND, CM_RESUMEOPER, 0);
@@ -8431,16 +8430,16 @@ void COperationsQueue::AutoPauseOperation(HWND dlg, HWND* foregroundWnd)
             for (j = i; j + 1 < OperPaused.Count; j++)
                 OperPaused[j] = OperPaused[j + 1];
             OperDlgs[j] = dlg;
-            OperPaused[j] = 1 /* auto-paused */;
+            OperPaused[j] = 1 /* auto-paused*/;
             break;
         }
     }
     if (i == OperDlgs.Count)
         TRACE_E("COperationsQueue::AutoPauseOperation(): operation was not found!");
 
-    // pokud nebezi zadna operace ani nebyla zadna operace rucne pausnuta, resumneme prvni operaci ve fronte
+    // if no operation is running and no operation has been manually paused, we will resume the first operation in the queue
     int j;
-    for (j = 0; j < OperPaused.Count && OperPaused[j] == 1 /* auto-paused */; j++)
+    for (j = 0; j < OperPaused.Count && OperPaused[j] == 1 /* auto-paused*/; j++)
         ;
     if (j == OperPaused.Count && OperDlgs.Count > 0)
     {

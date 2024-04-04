@@ -37,7 +37,7 @@ CUnpackerConfig UnpackerConfig;
 
 const char* STR_NONE = "(none)";
 
-CSalamanderDirectory GlobalEmptySalDir(FALSE); // vraci se jako prazdny sal-dir (misto NULL) - jen u archivu
+CSalamanderDirectory GlobalEmptySalDir(FALSE); // returns as an empty sal-dir (instead of NULL) - only for archives
 
 HWND ProgressDialogActivateDrop = NULL;
 
@@ -163,7 +163,7 @@ void CZIPUnpackProgress::SetTaskBarList3(CITaskBarList3* taskBarList3)
 
 void CZIPUnpackProgress::DispatchMessages()
 {
-    // vypumpujeme message queue
+    // we are emptying the message queue
     MSG msg;
     while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
     {
@@ -182,7 +182,7 @@ BOOL CZIPUnpackProgress::HasTwoProgress()
 
 int CZIPUnpackProgress::SetSize(const CQuadWord& size1, const CQuadWord& size2, BOOL delayedPaint)
 {
-    // chce uzivatel nastavit size1?
+    // Does the user want to set size1?
     if (size1 != CQuadWord(-1, -1))
     {
         CQuadWord newSize = max(CQuadWord(0, 0), size1);
@@ -192,7 +192,7 @@ int CZIPUnpackProgress::SetSize(const CQuadWord& size1, const CQuadWord& size2, 
             SizeIsDirty = TRUE;
         }
     }
-    // chce uzivatel nastavit size2?
+    // Does the user want to set size2?
     if (size2 != CQuadWord(-1, -1))
     {
         CQuadWord newSize = max(CQuadWord(0, 0), size2);
@@ -207,7 +207,7 @@ int CZIPUnpackProgress::SetSize(const CQuadWord& size1, const CQuadWord& size2, 
 
 int CZIPUnpackProgress::AddSize(int size, BOOL delayedPaint)
 {
-    // casove kriticka funkce
+    // time-critical function
     //  CALL_STACK_MESSAGE2("CZIPUnpackProgress::AddSize(%d)", size);
 
     ActualSize += CQuadWord(size, 0);
@@ -223,49 +223,49 @@ int CZIPUnpackProgress::AddSize(int size, BOOL delayedPaint)
 
     if (!delayedPaint)
     {
-        // mame texty hned vykreslit
+        // we need to render the texts immediately
         FlushDataToControls();
     }
 
-    // kazdych 100ms prekreslime zmenena data (text + progress bary)
+    // Every 100ms we redraw the changed data (text + progress bars)
     DWORD ticks = GetTickCount();
     if (ticks - LastTickCount > 100)
     {
         LastTickCount = ticks;
-        // pokud uz jsme neprekesli pred chvili, udelame to ted
+        // if we haven't interrupted a moment ago, we'll do it now
         if (delayedPaint)
             FlushDataToControls();
     }
 
-    DispatchMessages(); // chvilku venujeme userovi ...
+    DispatchMessages(); // we will focus on the user for a moment ...
 
     return !Cancel;
 }
 
 void CZIPUnpackProgress::NewLine(const char* txt, BOOL delayedPaint)
 {
-    // casove kriticka funkce
+    // time-critical function
     //  CALL_STACK_MESSAGE2("CZIPUnpackProgress::NewLine(%s)", txt);
     if (txt == NULL)
         return;
 
-    while (1) // vypis i nekolika radku do dialogu
+    while (1) // print several lines to the console
     {
         while (*txt != 0 && (*txt == '\r' || *txt == '\n' || *txt == ' ' || *txt == '\t'))
             txt++;
         if (*txt == 0)
             break;
 
-        // ulozime do cache, kterou zobrazujeme na WM_TIMER
+        // we will save to the cache, which we display on WM_TIMER
 
-        // cache index cykli pres polozky
+        // cycle through items in the cache index
         CacheIndex++;
         if (CacheIndex >= ZIP_UNPACK_NUMLINES)
             CacheIndex = 0;
 
         char* s = LinesCache[CacheIndex];
         char* sEnd = s + 300 - 1;
-        while (*txt != 0 && *txt != '\r' && *txt != '\n') // nacteni jednoho radku + prevod '/' -> '\\'
+        while (*txt != 0 && *txt != '\r' && *txt != '\n') // reading one line + converting '/' to '\\'
         {
             if (*txt == '/')
             {
@@ -278,34 +278,34 @@ void CZIPUnpackProgress::NewLine(const char* txt, BOOL delayedPaint)
                 if (s < sEnd)
                     *s++ = *txt++;
                 else
-                    txt++; // zbytek textu proste vyignorujeme (stejne se nevejde do dialogu)
+                    txt++; // we will simply ignore the rest of the text (it won't fit in the dialogue anyway)
             }
         }
         *s = 0;
         DoRemapNames(LinesCache[CacheIndex], 300);
 
-        // uspinili jsme cache
+        // we have cleared the cache
         CacheIsDirty = TRUE;
     }
 
     if (!delayedPaint)
     {
-        // mame texty hned vykreslit
+        // we need to render the texts immediately
         FlushDataToControls();
     }
 
-    // kazdych 100ms prekreslime zmenena data (text + progress bary)
+    // Every 100ms we redraw the changed data (text + progress bars)
     DWORD ticks = GetTickCount();
     if (ticks - LastTickCount > 100)
     {
         LastTickCount = ticks;
-        // pokud uz jsme neprekesli pred chvili, udelame to ted
+        // if we haven't interrupted a moment ago, we'll do it now
         if (delayedPaint)
             FlushDataToControls();
     }
 
-    // pozor, zde nevolat
-    DispatchMessages(); // chvilku venujeme userovi ...
+    // Attention, do not call here
+    DispatchMessages(); // we will focus on the user for a moment ...
 }
 
 void CZIPUnpackProgress::EnableCancel(BOOL enable)
@@ -320,14 +320,14 @@ void CZIPUnpackProgress::EnableCancel(BOOL enable)
                 SetFocus(cancel);
             PostMessage(cancel, BM_SETSTYLE, enable ? BS_DEFPUSHBUTTON : BS_PUSHBUTTON, TRUE);
 
-            DispatchMessages(); // chvilku venujeme userovi ...
+            DispatchMessages(); // we will focus on the user for a moment ...
         }
     }
 }
 
 void CZIPUnpackProgress::FlushDataToControls()
 {
-    // texty
+    // texts
     if (CacheIsDirty)
     {
         int index = CacheIndex;
@@ -385,11 +385,11 @@ CZIPUnpackProgress::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        if (ResID == IDD_ZIPUNPACKPROG && FileProgress) // nutne nahradit text "Total:" za "File:"
+        if (ResID == IDD_ZIPUNPACKPROG && FileProgress) // Replace the text "Total:" with "File:"
             SetDlgItemText(HWindow, IDT_PROGTITLE, LoadStr(IDS_UNPACKFILEPROGRESS));
 
         SetWindowText(HWindow, Title);
-        // v celem objektu je pocitano s tim, ze se alokace nepovedly
+        // the whole object assumes that the allocation failed
         int i;
         for (i = 0; i < ZIP_UNPACK_NUMLINES; i++)
         {
@@ -415,21 +415,21 @@ CZIPUnpackProgress::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_COMMAND:
     {
-        // pokud uzivatel kliknul na tlacitko Cancel a uz ho nepotvrdil drive, doptame se
+        // if the user clicked on the Cancel button and did not confirm it earlier, we will ask
         if (LOWORD(wParam) == IDCANCEL && !Cancel)
         {
-            // tlacitko Cancel musi byt enabled
+            // Button Cancel must be enabled
             if (IsWindowEnabled(GetDlgItem(HWindow, IDCANCEL)))
             {
                 // aby nedochazelo k prekreslovani pod messageboxem, prekreslime ted explicitne
                 FlushDataToControls();
 
-                // zeptame se uzivatele jestli chce prerusit operaci
+                // Ask the user if they want to interrupt the operation
                 Cancel = (SalMessageBox(HWindow, LoadStr(IDS_CANCELOPERATION), LoadStr(IDS_QUESTION),
                                         MB_YESNO | MB_ICONQUESTION) == IDYES);
             }
         }
-        // nenechame command propadnout, jinak se nam zavre dialog
+        // we will not let the command fail, otherwise the dialog will close on us
         return TRUE;
     }
     }
@@ -467,7 +467,7 @@ void CSalamanderGeneral::Clear()
 
 int CSalamanderGeneral::ShowMessageBox(const char* text, const char* title, int type)
 {
-    if (MainThreadID != GetCurrentThreadId()) // Petr: jen zarveme, nemam silu hledat kde vsude se to blbe vola
+    if (MainThreadID != GetCurrentThreadId()) // Petr: Let's just yell, I don't have the strength to look for where it's ringing stupidly everywhere
         TRACE_E("You can call CSalamanderGeneral::ShowMessageBox() only from main thread!");
     HWND parent = GetMsgBoxParent();
     switch (type)
@@ -527,9 +527,9 @@ int CSalamanderGeneral::SalMessageBoxEx(const MSGBOXEX_PARAMS* params)
 
 HWND CSalamanderGeneral::GetMsgBoxParent()
 {
-    if (MainThreadID != GetCurrentThreadId()) // Petr: jen zarveme, nemam silu hledat kde vsude se to blbe vola
+    if (MainThreadID != GetCurrentThreadId()) // Petr: Let's just yell, I don't have the strength to look for where it's ringing stupidly everywhere
         TRACE_E("You can call CSalamanderGeneral::GetMsgBoxParent() only from main thread!");
-    // pokud by se menil nasledujici kod, je ho nutne zmenit jeste v EnterPlugin - aby fungovala kontrola
+    // if the following code changes, it is necessary to also change it in EnterPlugin - for the validation to work
     return PluginProgressDialog != NULL ? PluginProgressDialog : PluginMsgBoxParent;
 }
 
@@ -544,7 +544,7 @@ int DialogError(HWND parent, DWORD flags, const char* fileName,
     case BUTTONS_OK:
     {
         resID = IDD_ERROR3;
-        noSkip = FALSE; // neuplatni se, nekde o redID==0
+        noSkip = FALSE; // It doesn't apply, somewhere about redID==0
         break;
     }
 
@@ -558,7 +558,7 @@ int DialogError(HWND parent, DWORD flags, const char* fileName,
     case BUTTONS_SKIPCANCEL:
     {
         resID = IDD_ERROR2;
-        noSkip = FALSE; // neuplatni se, nekde o redID==0
+        noSkip = FALSE; // It doesn't apply, somewhere about redID==0
         break;
     }
 
@@ -981,7 +981,7 @@ BOOL CSalamanderGeneral::GetPanelPath(int panel, char* buffer, int bufferSize, i
     if (p != NULL)
     {
         char buf[2 * MAX_PATH];
-        int offset = -1; // offset do buffer pro vypocet archiveOrFS (-1 znaci NULL)
+        int offset = -1; // Offset to buffer for calculating archiveOrFS (-1 means NULL)
         if (p->Is(ptZIPArchive))
         {
             if (type != NULL)
@@ -1006,7 +1006,7 @@ BOOL CSalamanderGeneral::GetPanelPath(int panel, char* buffer, int bufferSize, i
                 buf[offset] = ':';
                 if (!p->GetPluginFS()->NotEmpty() || !p->GetPluginFS()->GetCurrentPath(buf + offset + 1))
                 {
-                    return FALSE; // chyba
+                    return FALSE; // error
                 }
                 if (convertFSPathToExternal)
                 {
@@ -1033,7 +1033,7 @@ BOOL CSalamanderGeneral::GetPanelPath(int panel, char* buffer, int bufferSize, i
 
         int l = (int)strlen(buf) + 1;
         if (l > bufferSize)
-            return bufferSize == 0; // pokud si user nepreje vratit cestu, nepovazujeme to za chybu
+            return bufferSize == 0; // if the user does not want to return the path, we do not consider it an error
         memcpy(buffer, buf, l);
 
         if (archiveOrFS != NULL && offset != -1)
@@ -1078,7 +1078,7 @@ CSalamanderGeneral::GetPanelPluginData(int panel)
     {
         CPluginDataInterfaceAbstract* iface = p->PluginData.GetInterface();
         if (iface != NULL && p->PluginData.GetPluginInterface() != Plugin)
-            iface = NULL; // objekt neni tohoto pluginu -> nic nedostane
+            iface = NULL; // object is not of this plugin -> will receive nothing
         return iface;
     }
     return NULL;
@@ -1098,7 +1098,7 @@ CSalamanderGeneral::GetPanelPluginFS(int panel)
     {
         CPluginFSInterfaceAbstract* iface = p->GetPluginFS()->GetInterface();
         if (iface != NULL && p->GetPluginFS()->GetPluginInterface() != Plugin)
-            iface = NULL; // objekt neni tohoto pluginu -> nic nedostane
+            iface = NULL; // object is not of this plugin -> will receive nothing
         return iface;
     }
     return NULL;
@@ -1141,17 +1141,17 @@ CSalamanderGeneral::GetPanelItem(int panel, int* index, BOOL* isDir)
     {
         int i = *index;
         if (i < 0)
-            return NULL;                          // enumerace jiz skoncila
-        if (i < p->Files->Count + p->Dirs->Count) // enum dalsi polozky
+            return NULL;                          // enumeration has ended
+        if (i < p->Files->Count + p->Dirs->Count) // enum next items
         {
-            *index = i + 1; // priste pujde dalsi
+            *index = i + 1; // next will be another
             if (isDir != NULL)
                 *isDir = i < p->Dirs->Count;
             return (i < p->Dirs->Count) ? &p->Dirs->At(i) : &p->Files->At(i - p->Dirs->Count);
         }
         else
         {
-            *index = -1; // konec enumerace
+            *index = -1; // end of enumeration
             return NULL;
         }
     }
@@ -1174,9 +1174,9 @@ BOOL CSalamanderGeneral::GetPanelSelection(int panel, int* selectedFiles, int* s
         if (count > 0)
         {
             CFilesArray* dirs = p->Dirs;
-            // spocitame kolik adresaru je oznaceno (zbytek oznacenych polozek jsou soubory)
+            // we will count how many directories are marked (the rest of the marked items are files)
             int i;
-            for (i = 0; i < dirs->Count; i++) // ".." nemuzou byt oznaceny, test by byl zbytecny
+            for (i = 0; i < dirs->Count; i++) // ".." cannot be marked, the test would be pointless
             {
                 if (dirs->At(i).Selected)
                     selDirs++;
@@ -1191,9 +1191,9 @@ BOOL CSalamanderGeneral::GetPanelSelection(int panel, int* selectedFiles, int* s
             *selectedFiles = count - selDirs;
 
         int i = p->GetCaretIndex();
-        return p->Dirs->Count + p->Files->Count > 0 && // panel neni prazdny
+        return p->Dirs->Count + p->Files->Count > 0 && // panel is not empty
                (i != 0 || count > 0 || p->Dirs->Count == 0 ||
-                strcmp(p->Dirs->At(0).Name, "..") != 0); // fokus neni na up-diru nebo je aspon neco oznaceneho
+                strcmp(p->Dirs->At(0).Name, "..") != 0); // focus is not on the up-dir or at least something is marked
     }
     return FALSE;
 }
@@ -1212,20 +1212,20 @@ CSalamanderGeneral::GetPanelSelectedItem(int panel, int* index, BOOL* isDir)
     {
         int i = *index;
         if (i < 0)
-            return NULL;                             // enumerace jiz skoncila
-        while (i < p->Files->Count + p->Dirs->Count) // hledani dalsi oznacene polozky
+            return NULL;                             // enumeration has ended
+        while (i < p->Files->Count + p->Dirs->Count) // searching for the next marked item
         {
             CFileData* data = (i < p->Dirs->Count) ? &p->Dirs->At(i) : &p->Files->At(i - p->Dirs->Count);
-            if (data->Selected) // oznacena polozka?
+            if (data->Selected) // marked item?
             {
-                *index = i + 1; // priste zacneme hledat od dalsi polozky
+                *index = i + 1; // We will start searching from the next item next time
                 if (isDir != NULL)
                     *isDir = i < p->Dirs->Count;
-                return data; // vracime nalezenou oznacenou polozku
+                return data; // return the found marked item
             }
             i++;
         }
-        *index = -1; // konec enumerace, uz neni oznacena zadna polozka
+        *index = -1; // end of enumeration, no item is marked anymore
     }
     return NULL;
 }
@@ -1241,23 +1241,23 @@ void CSalamanderGeneral::SelectPanelItem(int panel, const CFileData* file, BOOL 
     CFilesWindow* p = GetPanel(panel);
     if (p != NULL)
     {
-        int index = -1; // index 'file' v panelu
+        int index = -1; // index 'file' in the panel
         if (p->Dirs->Count > 0)
         {
             CFileData* first = &p->Dirs->At(0);
             CFileData* last = &p->Dirs->At(p->Dirs->Count - 1);
             if (first <= file && file <= last)
-                index = (int)(file - first); // jde o adresar
+                index = (int)(file - first); // it's about the directory
         }
         if (index == -1 && p->Files->Count > 0)
         {
             CFileData* first = &p->Files->At(0);
             CFileData* last = &p->Files->At(p->Files->Count - 1);
             if (first <= file && file <= last)
-                index = p->Dirs->Count + (int)(file - first); // jde o adresar
+                index = p->Dirs->Count + (int)(file - first); // it's about the directory
         }
         if (index != -1)
-            p->SetSel(select, index, FALSE); // zmena oznaceni
+            p->SetSel(select, index, FALSE); // change label
         else
             TRACE_E("Invalid parameter 'file' in CSalamanderGeneral::SelectPanelItem().");
     }
@@ -1290,7 +1290,7 @@ void CSalamanderGeneral::SelectAllPanelItems(int panel, BOOL select, BOOL repain
     CFilesWindow* p = GetPanel(panel);
     if (p != NULL)
     {
-        p->SetSel(select, -1, repaint); // zmena oznaceni
+        p->SetSel(select, -1, repaint); // change label
         if (repaint)
             PostMessage(p->HWindow, WM_USER_SELCHANGED, 0, 0); // sel-change notify
     }
@@ -1307,23 +1307,23 @@ void CSalamanderGeneral::SetPanelFocusedItem(int panel, const CFileData* file, B
     CFilesWindow* p = GetPanel(panel);
     if (p != NULL)
     {
-        int index = -1; // index 'file' v panelu
+        int index = -1; // index 'file' in the panel
         if (p->Dirs->Count > 0)
         {
             CFileData* first = &p->Dirs->At(0);
             CFileData* last = &p->Dirs->At(p->Dirs->Count - 1);
             if (first <= file && file <= last)
-                index = (int)(file - first); // jde o adresar
+                index = (int)(file - first); // it's about the directory
         }
         if (index == -1 && p->Files->Count > 0)
         {
             CFileData* first = &p->Files->At(0);
             CFileData* last = &p->Files->At(p->Files->Count - 1);
             if (first <= file && file <= last)
-                index = p->Dirs->Count + (int)(file - first); // jde o adresar
+                index = p->Dirs->Count + (int)(file - first); // it's about the directory
         }
         if (index != -1)
-            p->SetCaretIndex(index, partVis); // zmena fokusu
+            p->SetCaretIndex(index, partVis); // change of focus
         else
             TRACE_E("Invalid parameter 'file' in CSalamanderGeneral::SetPanelFocusedItem().");
     }
@@ -1351,7 +1351,7 @@ BOOL CSalamanderGeneral::GetFilterFromPanel(int panel, char* masks, int masksBuf
     return ret;
 }
 
-// vraci pozici zdrojoveho panelu (je vlevo nebo vpravo?), vraci PANEL_LEFT nebo PANEL_RIGHT
+// returns the position of the source panel (is it on the left or on the right?), returns PANEL_LEFT or PANEL_RIGHT
 int CSalamanderGeneral::GetSourcePanel()
 {
     if (MainThreadID != GetCurrentThreadId())
@@ -1365,8 +1365,8 @@ int CSalamanderGeneral::GetSourcePanel()
         return PANEL_RIGHT;
 }
 
-// aktivuje druhy panel (ala klavesa TAB); panely oznacene pres PANEL_SOURCE a PANEL_TARGET
-// se tim prirozene prohazuji
+// activates the second panel (like the TAB key); panels marked via PANEL_SOURCE and PANEL_TARGET
+// are naturally swapped with it
 void CSalamanderGeneral::ChangePanel()
 {
     if (MainThreadID != GetCurrentThreadId())
@@ -1794,8 +1794,8 @@ void CSalamanderGeneral::PostUnloadThisPlugin()
 {
     CALL_STACK_MESSAGE1("CSalamanderGeneral::PostUnloadThisPlugin()");
     if (MainThreadID == GetCurrentThreadId())
-    { // kvuli volani z entry-pointu, kde je Plugin nastaveno na -1 (jen pro dohledani plugin-data)
-        // nez by dosla WM_USER_POSTCMDORUNLOADPLUGIN, bylo by Plugin prenastaveno (podle navratovky entry-pointu)
+    { // due to a call from the entry-point, where the Plugin is set to -1 (only for retrieving plugin data)
+        // Before WM_USER_POSTCMDORUNLOADPLUGIN is reached, the Plugin would have been reset (according to the return value of the entry point)
         CPluginData* data = Plugins.GetPluginData(Plugin);
         if (data != NULL)
         {
@@ -1807,11 +1807,11 @@ void CSalamanderGeneral::PostUnloadThisPlugin()
             TRACE_E("Unexpected situation in CSalamanderGeneral::PostUnloadThisPlugin().");
         }
     }
-    else // mimo entry-point uz je Plugin jiste nastavena...
+    else // Plugin is certainly set outside the entry-point...
     {
         if (MainWindow != NULL && MainWindow->HWindow != NULL)
         {
-            // test na volani behem spousteni entry-pointu (Plugin je nastaveno na -1)
+            // test for calling during entry-point execution (Plugin is set to -1)
             if ((INT_PTR)Plugin == -1)
             {
                 TRACE_E("You can call CSalamanderGeneral::PostUnloadThisPlugin only from main "
@@ -1833,8 +1833,8 @@ void CSalamanderGeneral::PostPluginMenuChanged()
 {
     CALL_STACK_MESSAGE1("CSalamanderGeneral::PostPluginMenuChanged()");
     if (MainThreadID == GetCurrentThreadId())
-    { // kvuli volani z entry-pointu, kde je Plugin nastaveno na -1 (jen pro dohledani plugin-data)
-        // nez by dosla WM_USER_POSTCMDORUNLOADPLUGIN, bylo by Plugin prenastaveno (podle navratovky entry-pointu)
+    { // due to a call from the entry-point, where the Plugin is set to -1 (only for retrieving plugin data)
+        // Before WM_USER_POSTCMDORUNLOADPLUGIN is reached, the Plugin would have been reset (according to the return value of the entry point)
         CPluginData* data = Plugins.GetPluginData(Plugin);
         if (data != NULL)
         {
@@ -1846,11 +1846,11 @@ void CSalamanderGeneral::PostPluginMenuChanged()
             TRACE_E("Unexpected situation in CSalamanderGeneral::PostPluginMenuChanged().");
         }
     }
-    else // mimo entry-point uz je Plugin jiste nastavena...
+    else // Plugin is certainly set outside the entry-point...
     {
         if (MainWindow != NULL && MainWindow->HWindow != NULL)
         {
-            // test na volani behem spousteni entry-pointu (Plugin je nastaveno na -1)
+            // test for calling during entry-point execution (Plugin is set to -1)
             if ((INT_PTR)Plugin == -1)
             {
                 TRACE_E("You can call CSalamanderGeneral::PostPluginMenuChanged only from main "
@@ -1880,12 +1880,12 @@ void CSalamanderGeneral::PostMenuExtCommand(int id, BOOL waitForSalIdle)
         }
 
         if (MainThreadID == GetCurrentThreadId())
-        { // kvuli volani z entry-pointu, kde je Plugin nastaveno na -1 (jen pro dohledani plugin-data)
-            // nez by dosla WM_USER_POSTCMDORUNLOADPLUGIN, bylo by Plugin prenastaveno (podle navratovky entry-pointu)
+        { // due to a call from the entry-point, where the Plugin is set to -1 (only for retrieving plugin data)
+            // Before WM_USER_POSTCMDORUNLOADPLUGIN is reached, the Plugin would have been reset (according to the return value of the entry point)
             CPluginData* data = Plugins.GetPluginData(Plugin);
             if (data != NULL)
             {
-                data->Commands.Add(500 + id); // salCmd jsou v intervalu <0, 499>, 500 je prvni volne cislo
+                data->Commands.Add(500 + id); // salCmd are in the range <0, 499>, 500 is the first available number
                 ExecCmdsOrUnloadMarkedPlugins = TRUE;
             }
             else
@@ -1893,11 +1893,11 @@ void CSalamanderGeneral::PostMenuExtCommand(int id, BOOL waitForSalIdle)
                 TRACE_E("Unexpected situation in CSalamanderGeneral::PostMenuExtCommand().");
             }
         }
-        else // mimo entry-point uz je Plugin jiste nastavena...
+        else // Plugin is certainly set outside the entry-point...
         {
             if (MainWindow != NULL && MainWindow->HWindow != NULL)
             {
-                // test na volani behem spousteni entry-pointu (Plugin je nastaveno na -1)
+                // test for calling during entry-point execution (Plugin is set to -1)
                 if ((INT_PTR)Plugin == -1)
                 {
                     TRACE_E("You can call CSalamanderGeneral::PostMenuExtCommand only from main "
@@ -1917,7 +1917,7 @@ void CSalamanderGeneral::PostMenuExtCommand(int id, BOOL waitForSalIdle)
     else
     {
         if (MainThreadID == GetCurrentThreadId())
-        { // test na volani z entry-pointu (Plugin je nastaveno na -1)
+        { // test for calling from entry-point (Plugin is set to -1)
             if ((INT_PTR)Plugin == -1)
             {
                 TRACE_E("You may not call CSalamanderGeneral::PostMenuExtCommand from entry-point!");
@@ -1926,7 +1926,7 @@ void CSalamanderGeneral::PostMenuExtCommand(int id, BOOL waitForSalIdle)
         }
         else
         {
-            // test na volani behem spousteni entry-pointu (Plugin je nastaveno na -1)
+            // test for calling during entry-point execution (Plugin is set to -1)
             if ((INT_PTR)Plugin == -1)
             {
                 TRACE_E("You may not call CSalamanderGeneral::PostMenuExtCommand when "
@@ -2120,7 +2120,7 @@ BOOL CSalamanderGeneral::ChangePanelPathToPluginFS(int panel, const char* fsName
     if (p != NULL)
     {
         return p->ChangePathToPluginFS(fsName, fsUserPart, suggestedTopIndex, suggestedFocusName,
-                                       forceUpdate, 2 /*hlasit vsechny chyby*/, NULL, TRUE, failReason,
+                                       forceUpdate, 2 /*Print all errors*/, NULL, TRUE, failReason,
                                        FALSE, FALSE, convertPathToInternal);
     }
     if (failReason != NULL)
@@ -2223,7 +2223,7 @@ void CSalamanderGeneral::RefreshPanelPath(int panel, BOOL forceRefresh, BOOL foc
     if (p != NULL)
     {
         if (forceRefresh && p->Is(ptZIPArchive))
-        { // u archivu zajistime tvrdy refresh tak, ze poskodime znamku archivu
+        { // At the archive, we will ensure a hard refresh by damaging the archive stamp
             p->SetZIPArchiveSize(CQuadWord(-1, -1));
         }
         p->FocusFirstNewItem = focusFirstNewItem;
@@ -2237,11 +2237,11 @@ void CSalamanderGeneral::PostRefreshPanelPath(int panel, BOOL focusFirstNewItem)
     CFilesWindow* p = GetPanel(panel);
     if (p != NULL)
     {
-        // postneme tvrdy refresh
+        // Post a hard refresh
         HANDLES(EnterCriticalSection(&TimeCounterSection));
         int t1 = MyTimeCounter++;
         HANDLES(LeaveCriticalSection(&TimeCounterSection));
-        p->FocusFirstNewItem = focusFirstNewItem; // neni synchronizovane (muze se volat nejen v hl. threadu), ale nemelo by vadit
+        p->FocusFirstNewItem = focusFirstNewItem; // not synchronized (can be called not only in the main thread), but it shouldn't matter
         PostMessage(p->HWindow, WM_USER_REFRESH_DIR, 0, t1);
     }
 }
@@ -2258,8 +2258,8 @@ BOOL CSalamanderGeneral::PostRefreshPanelFS2(CPluginFSInterfaceAbstract* modifie
     CFilesWindow* p = NULL;
     if (MainWindow != NULL)
     {
-        // neni synchronizacni problem, protoze PluginFS se nuluje az po CloseFS, ktere by
-        // melo zrusit thread monitorujici zmeny na FS (po CloseFS by nemelo dojit k volani
+        // There is no synchronization problem because PluginFS is reset only after CloseFS, which would
+        // should cancel the thread monitoring changes to the file system (after CloseFS there should be no call
         // PostRefreshPanelFS2)
         if (MainWindow->LeftPanel != NULL && MainWindow->LeftPanel->Is(ptPluginFS) &&
             MainWindow->LeftPanel->GetPluginFS()->Contains(modifiedFS))
@@ -2274,11 +2274,11 @@ BOOL CSalamanderGeneral::PostRefreshPanelFS2(CPluginFSInterfaceAbstract* modifie
     }
     if (p != NULL)
     {
-        // postneme tvrdy refresh
+        // Post a hard refresh
         HANDLES(EnterCriticalSection(&TimeCounterSection));
         int t1 = MyTimeCounter++;
         HANDLES(LeaveCriticalSection(&TimeCounterSection));
-        p->FocusFirstNewItem = focusFirstNewItem; // neni synchronizovane (muze se volat nejen v hl. threadu), ale nemelo by vadit
+        p->FocusFirstNewItem = focusFirstNewItem; // not synchronized (can be called not only in the main thread), but it shouldn't matter
         PostMessage(p->HWindow, WM_USER_REFRESH_DIR, 0, t1);
         return TRUE;
     }
@@ -2294,7 +2294,7 @@ BOOL CSalamanderGeneral::CloseDetachedFS(HWND parent, CPluginFSInterfaceAbstract
         TRACE_E("You can call CSalamanderGeneral::CloseDetachedFS() only from main thread!");
         return FALSE;
     }
-    if (MainWindow->DetachedFSList->IsGood()) // aby byl zarucen uspech Delete
+    if (MainWindow->DetachedFSList->IsGood()) // to ensure the success of Delete
     {
         CDetachedFSList* list = MainWindow->DetachedFSList;
         int i;
@@ -2304,7 +2304,7 @@ BOOL CSalamanderGeneral::CloseDetachedFS(HWND parent, CPluginFSInterfaceAbstract
             {
                 CPluginFSInterfaceEncapsulation* fs = list->At(i);
                 BOOL dummy;
-                if (fs->TryCloseOrDetach(FALSE, FALSE, dummy, FSTRYCLOSE_PLUGINCLOSEDETACHEDFS)) // FS nema nic proti zavreni
+                if (fs->TryCloseOrDetach(FALSE, FALSE, dummy, FSTRYCLOSE_PLUGINCLOSEDETACHEDFS)) // FS has no objection to closing
                 {
                     CPluginInterfaceForFSEncapsulation plugin(fs->GetPluginInterfaceForFS()->GetInterface(),
                                                               fs->GetPluginInterfaceForFS()->GetBuiltForVersion());
@@ -2385,7 +2385,7 @@ BOOL CSalamanderGeneral::EnumInstalledModules(int* index, char* module, char* ve
 BOOL CSalamanderGeneral::CopyTextToClipboard(const char* text, int textLen, BOOL showEcho, HWND echoParent)
 {
     CALL_STACK_MESSAGE3("CSalamanderGeneral::CopyTextToClipboard(, %d, %d,)", textLen, showEcho);
-    // j.r. vyhozen parametr text, ktery nemusel byt ukoncen nulou
+    // Removed parameter text, which did not have to be null-terminated
     if (text == NULL)
     {
         TRACE_E("Unexpected parameter (NULL) in CSalamanderGeneral::CopyTextToClipboard().");
@@ -2397,7 +2397,7 @@ BOOL CSalamanderGeneral::CopyTextToClipboard(const char* text, int textLen, BOOL
 BOOL CSalamanderGeneral::CopyTextToClipboardW(const wchar_t* text, int textLen, BOOL showEcho, HWND echoParent)
 {
     CALL_STACK_MESSAGE3("CSalamanderGeneral::CopyTextToClipboardW(, %d, %d,)", textLen, showEcho);
-    // j.r. vyhozen parametr text, ktery nemusel byt ukoncen nulou
+    // Removed parameter text, which did not have to be null-terminated
     if (text == NULL)
     {
         TRACE_E("Unexpected parameter (NULL) in CSalamanderGeneral::CopyTextToClipboardW().");
@@ -2444,12 +2444,12 @@ BOOL ViewFileInPluginViewer(const char* pluginSPL,
                         (useCache ? rootTmpPath : "(ignored)"),
                         (useCache ? fileNameInCache : "(ignored)"));
 
-    char viewUniqueName[50]; // potrebujeme unikatni jmeno pro viewovany soubor do cache
+    char viewUniqueName[50]; // We need a unique name for the cached view file
     viewUniqueName[0] = 0;
-    const char* fileName; // jmeno souboru, ktery budeme posilat do vieweru
+    const char* fileName; // name of the file that we will send to the viewer
     if (useCache)
     {
-        // overime jestli nam nezadal spatne 'fileNameInCache' (jmeno bez cesty)
+        // we verify if 'fileNameInCache' (name without path) was not entered incorrectly
         const char* s = NULL;
         if (fileNameInCache != NULL)
         {
@@ -2466,16 +2466,16 @@ BOOL ViewFileInPluginViewer(const char* pluginSPL,
             return FALSE;
         }
 
-        // vlozime soubor 'pluginData->FileName' do diskove cache pod jmenem 'fileNameInCache'
+        // we insert the file 'pluginData->FileName' into the disk cache under the name 'fileNameInCache'
         while (1)
         {
             sprintf(viewUniqueName, "ViewFile %X", GetTickCount());
             BOOL exists;
             fileName = DiskCache.GetName(viewUniqueName, fileNameInCache, &exists, TRUE, rootTmpPath, FALSE, NULL, NULL);
-            if (fileName == NULL) // chyba (je-li 'exists' TRUE -> fatal, jinak "soubor jiz existuje")
+            if (fileName == NULL) // error (if 'exists' is TRUE -> fatal, otherwise "file already exists")
             {
                 if (!exists)
-                    Sleep(100); // soubor existuje -> temer nemozne, stejne osetrime
+                    Sleep(100); // file exists -> almost impossible, but we will handle it anyway
                 else            // fatal error
                 {
                     error = 3;
@@ -2484,7 +2484,7 @@ BOOL ViewFileInPluginViewer(const char* pluginSPL,
                 }
             }
             else
-                break; // mame jmeno v disk cache, vse OK
+                break; // we have the name in the disk cache, everything is OK
         }
         if (!::SalMoveFile(pluginData->FileName, fileName))
         {
@@ -2495,13 +2495,13 @@ BOOL ViewFileInPluginViewer(const char* pluginSPL,
             error = 3;
             return FALSE;
         }
-        else // povedlo se ziskat tmp-soubor, musime zavolat NamePrepared()
+        else // We managed to obtain the temporary file, we need to call NamePrepared()
         {
             CQuadWord size(0, 0);
             HANDLE file = HANDLES_Q(CreateFile(fileName, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
                                                NULL, OPEN_EXISTING, 0, NULL));
             if (file != INVALID_HANDLE_VALUE)
-            { // chybu ignorujeme, velikost souboru neni az tak dulezita
+            { // We ignore the error, the file size is not that important.
                 DWORD err;
                 ::SalGetFileSize(file, size, err);
                 HANDLES(CloseHandle(file));
@@ -2513,32 +2513,32 @@ BOOL ViewFileInPluginViewer(const char* pluginSPL,
     else
         fileName = pluginData->FileName;
 
-    // pozice pro viewery
+    // position for viewery
     WINDOWPLACEMENT place;
     place.length = sizeof(WINDOWPLACEMENT);
     GetWindowPlacement(MainWindow->HWindow, &place);
-    // GetWindowPlacement cti Taskbar, takze pokud je Taskbar nahore nebo vlevo,
-    // jsou hodnoty posunute o jeho rozmery. Provedeme korekci.
+    // GetWindowPlacement reads Taskbar, so if the Taskbar is at the top or on the left,
+    // the values are shifted by its dimensions. We will perform the correction.
     RECT monitorRect;
     RECT workRect;
     MultiMonGetClipRectByRect(&place.rcNormalPosition, &workRect, &monitorRect);
     OffsetRect(&place.rcNormalPosition, workRect.left - monitorRect.left,
                workRect.top - monitorRect.top);
-    // nechceme minimalizovany viewer, ani pokud je hlavni okno minimalizovane
+    // We do not want a minimized viewer, even if the main window is minimized
     if (place.showCmd == SW_MINIMIZE || place.showCmd == SW_SHOWMINIMIZED ||
         place.showCmd == SW_SHOWMINNOACTIVE)
         place.showCmd = SW_SHOWNORMAL;
 
-    // konecne otevreme samotny viewer
+    // finally open the viewer alone
     BOOL diskCacheNameClosed = FALSE;
     error = 0;
-    if (pluginSPL != NULL) // viewer z plug-inu
+    if (pluginSPL != NULL) // viewer from plug-in
     {
         CPluginData* data = Plugins.GetPluginDataFromSuffix(pluginSPL);
         if (data != NULL && data->SupportViewer)
         {
             if (data->InitDLL(MainWindow->HWindow)
-                /*&& PluginIfaceForViewer.NotEmpty()*/) // zbytecne, protoze downgrade neni mozny a InitDLL ifacy kontroluje
+                /*&& PluginIfaceForViewer.NotEmpty()*/) // unnecessary, because downgrade is not possible and InitDLL ifacy checks
             {
                 HANDLE lock = NULL;
                 BOOL lockOwner = FALSE;
@@ -2557,7 +2557,7 @@ BOOL ViewFileInPluginViewer(const char* pluginSPL,
                 {
                     if (useCache && lock != NULL)
                     {
-                        if (lockOwner) // pridame handle na 'lock' do HANDLES (disk-cache ho bude chtit uzavrit - bude ho hledat)
+                        if (lockOwner) // add handle to 'lock' to HANDLES (disk-cache will want to close it - it will be looking for it)
                             HANDLES_ADD(__htEvent, __hoCreateEvent, lock);
                         DiskCache.AssignName(viewUniqueName, lock, lockOwner, crtDirect);
                         diskCacheNameClosed = TRUE;
@@ -2572,14 +2572,14 @@ BOOL ViewFileInPluginViewer(const char* pluginSPL,
         if (error == 1)
             TRACE_E("Unable to load plugin.");
     }
-    else // interni viewer
+    else // internal viewer
     {
         if (Configuration.SavePosition &&
             Configuration.WindowPlacement.length != 0)
         {
             place = Configuration.WindowPlacement;
-            // GetWindowPlacement cti Taskbar, takze pokud je Taskbar nahore nebo vlevo,
-            // jsou hodnoty posunute o jeho rozmery. Provedeme korekci.
+            // GetWindowPlacement reads Taskbar, so if the Taskbar is at the top or on the left,
+            // the values are shifted by its dimensions. We will perform the correction.
             RECT monitorRect2;
             RECT workRect2;
             MultiMonGetClipRectByRect(&place.rcNormalPosition, &workRect2, &monitorRect2);
@@ -2610,13 +2610,13 @@ BOOL ViewFileInPluginViewer(const char* pluginSPL,
         }
     }
 
-    // pokud jsme nepriradili jmeno do disk cache, uvolnime zaznam...
+    // if we have not assigned a name to the disk cache, release the record...
     if (useCache && !diskCacheNameClosed)
     {
         DiskCache.ReleaseName(viewUniqueName, FALSE);
-        //    ::DeleteFile(fileName);   // soubor uz zrusila cache a fileName dealokovala
+        //    ::DeleteFile(fileName);   // the cache has already deleted the file and fileName has been deallocated
     }
-    return error == 0; // vracime uspech?
+    return error == 0; // Returning success?
 }
 
 BOOL CSalamanderGeneral::ViewFileInPluginViewer(const char* pluginSPL,
@@ -2626,10 +2626,10 @@ BOOL CSalamanderGeneral::ViewFileInPluginViewer(const char* pluginSPL,
 {
     error = -1; // unknown
 
-    // osetrime, aby neprosla volani mimo hlavni thread a v entry-pointu
+    // Ensure that the call does not pass outside the main thread and in the entry-point
     if (MainThreadID != GetCurrentThreadId() || (INT_PTR)Plugin == -1)
     {
-        if (MainThreadID == GetCurrentThreadId()) // pokud by nastaly obe chyby (jiny thread + nedobehly entry-point), ma prednost entry-point
+        if (MainThreadID == GetCurrentThreadId()) // If both errors occur (different thread + unfinished entry-point), the entry-point takes precedence
             TRACE_E("You may not call CSalamanderGeneral::ViewFileInPluginViewer from entry-point!");
         else
             TRACE_E("You can call CSalamanderGeneral::ViewFileInPluginViewer only from main thread!");
@@ -2648,7 +2648,7 @@ void CSalamanderGeneral::ExecuteAssociation(HWND parent, const char* path, const
         TRACE_E("You can call CSalamanderGeneral::ExecuteAssociation() only from main thread!");
         return;
     }
-    MainWindow->SetDefaultDirectories(); // aby startujici process zdedil spravne akt. adresare
+    MainWindow->SetDefaultDirectories(); // so that the starting process inherits the correct working directory
     ::ExecuteAssociation(parent, path, name);
 }
 
@@ -2663,7 +2663,7 @@ int CSalamanderGeneral::GetPanelTopIndex(int panel)
     CFilesWindow* p = GetPanel(panel);
     if (p != NULL)
         return p->ListBox->GetTopIndex();
-    return 0; // chyba, nemelo by nastat...
+    return 0; // error, should not occur...
 }
 
 void CSalamanderGeneral::GetPanelEnumFilesParams(int panel, int* enumFilesSourceUID, int* enumFilesCurrentIndex)
@@ -2737,7 +2737,7 @@ CSalamanderGeneral::SalCheckPath(BOOL echo, const char* path, DWORD err, HWND pa
         TRACE_E("You can call CSalamanderGeneral::SalCheckPath() only from main thread!");
         return ERROR_SUCCESS;
     }
-    return ::SalCheckPath(echo, path, err, TRUE, parent); // na hodnote 'postRefresh' nezaleni (StopRefresh jiste > 0)
+    return ::SalCheckPath(echo, path, err, TRUE, parent); // does not depend on the 'postRefresh' value (StopRefresh is certainly > 0)
 }
 
 BOOL CSalamanderGeneral::SalCheckAndRestorePath(HWND parent, const char* path, BOOL tryNet)
@@ -2905,7 +2905,7 @@ BOOL CSalamanderGeneral::GetConfigParameter(int paramID, void* buffer, int buffe
         auxType = SALCFGTYPE_STRING;
         auxDataSize = (int)strlen(Configuration.InfoLineContent) + 1;
         if (auxDataSize > 200)
-            auxDataSize = 200; // omezili jsme potrebny buffer na 200 znaku
+            auxDataSize = 200; // We have limited the required buffer to 200 characters
         memcpy(auxBuf, Configuration.InfoLineContent, auxDataSize);
         auxBuf[auxDataSize - 1] = 0;
         break;
@@ -2924,7 +2924,7 @@ BOOL CSalamanderGeneral::GetConfigParameter(int paramID, void* buffer, int buffe
         auxType = SALCFGTYPE_STRING;
         auxDataSize = (int)strlen(Configuration.RecycleMasks.GetMasksString()) + 1;
         if (auxDataSize > MAX_PATH)
-            auxDataSize = MAX_PATH; // omezili jsme potrebny buffer na MAX_PATH znaku
+            auxDataSize = MAX_PATH; // We have limited the required buffer to MAX_PATH characters
         memcpy(auxBuf, Configuration.RecycleMasks.GetMasksString(), auxDataSize);
         auxBuf[auxDataSize - 1] = 0;
         break;
@@ -3007,7 +3007,7 @@ BOOL CSalamanderGeneral::GetConfigParameter(int paramID, void* buffer, int buffe
         GetIfPathIsInaccessibleGoTo(ifPathIsInaccessibleGoTo);
         auxDataSize = (int)strlen(ifPathIsInaccessibleGoTo) + 1;
         if (auxDataSize > MAX_PATH)
-            auxDataSize = MAX_PATH; // omezili jsme potrebny buffer na MAX_PATH znaku
+            auxDataSize = MAX_PATH; // We have limited the required buffer to MAX_PATH characters
         memcpy(auxBuf, ifPathIsInaccessibleGoTo, auxDataSize);
         auxBuf[auxDataSize - 1] = 0;
         break;
@@ -3081,11 +3081,11 @@ BOOL CSalamanderGeneral::GetConfigParameter(int paramID, void* buffer, int buffe
         memcpy(buffer, auxBuf, auxDataSize);
     else
     {
-        if (bufferSize > 0 && auxDataSize > 0) // zkopirujeme aspon to, co se vejde
+        if (bufferSize > 0 && auxDataSize > 0) // Let's copy at least what fits
         {
             memcpy(buffer, auxBuf, bufferSize);
             if (auxType == SALCFGTYPE_STRING)
-                ((char*)buffer)[bufferSize - 1] = 0; // orez retezce nulou
+                ((char*)buffer)[bufferSize - 1] = 0; // Trim string by zero
         }
         ret = FALSE;
     }
@@ -3144,11 +3144,11 @@ BOOL CSalamanderGeneral::GetFileFromCache(const char* uniqueFileName, const char
 
     BOOL fileExists;
     const char* name = DiskCache.GetName(uniqueFileName, NULL, &fileExists, FALSE, NULL, FALSE, NULL, NULL);
-    if (name != NULL) // soubor nalezen
+    if (name != NULL) // file found
     {
-        if (!fileExists) // nejaky dobrak ho smazal primo z disku
+        if (!fileExists) // some do-gooder deleted it straight from the disk
         {
-            // soubor nelze pripravit, dame vedet disk-cache, ze to vzdavame
+            // unable to prepare file, let disk cache know we are giving up
             DiskCache.ReleaseName(uniqueFileName, FALSE);
         }
         else
@@ -3165,9 +3165,9 @@ void CSalamanderGeneral::UnlockFileInCache(HANDLE fileLock)
 {
     CALL_STACK_MESSAGE2("CSalamanderGeneral::UnlockFileInCache(0x%p)", fileLock);
 
-    SetEvent(fileLock); // spustime uklid souboru
+    SetEvent(fileLock); // start file cleanup
     DiskCache.WaitForIdle();
-    ResetEvent(fileLock); // ukoncime uklid souboru
+    ResetEvent(fileLock); // Finish cleaning up files
 }
 
 BOOL CSalamanderGeneral::MoveFileToCache(const char* uniqueFileName, const char* nameInCache,
@@ -3184,7 +3184,7 @@ BOOL CSalamanderGeneral::MoveFileToCache(const char* uniqueFileName, const char*
         return FALSE;
     }
 
-    // overime jestli nam nezadal spatne 'nameInCache' (jmeno bez cesty)
+    // we verify if 'nameInCache' (name without path) was not entered incorrectly
     const char* s = nameInCache;
     while (*s != 0 && *s != '\\' && *s != '/' && *s != ':' &&
            *s >= 32 && *s != '<' && *s != '>' && *s != '|' && *s != '"')
@@ -3195,10 +3195,10 @@ BOOL CSalamanderGeneral::MoveFileToCache(const char* uniqueFileName, const char*
         return FALSE;
     }
 
-    // pridame soubor 'newFileName' do diskove cache pod jmenem 'uniqueFileName'
+    // Add the file 'newFileName' to the disk cache under the name 'uniqueFileName'
     BOOL exists;
     const char* fileName = DiskCache.GetName(uniqueFileName, nameInCache, &exists, TRUE, rootTmpPath, FALSE, NULL, NULL);
-    if (fileName == NULL) // chyba (je-li 'exists' TRUE -> fatal, jinak "soubor jiz existuje")
+    if (fileName == NULL) // error (if 'exists' is TRUE -> fatal, otherwise "file already exists")
     {
         if (alreadyExists != NULL)
             *alreadyExists = !exists;
@@ -3209,13 +3209,13 @@ BOOL CSalamanderGeneral::MoveFileToCache(const char* uniqueFileName, const char*
     {
         DWORD err = GetLastError();
         TRACE_E("Unable to move file to disk cache! (error " << ::GetErrorText(err) << ")");
-        DiskCache.ReleaseName(uniqueFileName, FALSE); // neni co nechavat v cache
+        DiskCache.ReleaseName(uniqueFileName, FALSE); // nothing to leave in cache
         return FALSE;
     }
-    else // povedlo se ziskat tmp-soubor, musime zavolat NamePrepared()
+    else // We managed to obtain the temporary file, we need to call NamePrepared()
     {
         DiskCache.NamePrepared(uniqueFileName, newFileSize);
-        DiskCache.ReleaseName(uniqueFileName, TRUE); // nech pripraveny soubor v cache (i kdyz neni zamknuty)
+        DiskCache.ReleaseName(uniqueFileName, TRUE); // Keep the file ready in cache (even if it is not locked)
         return TRUE;
     }
 }
@@ -3296,10 +3296,10 @@ BOOL CSalamanderGeneral::IsANSIText(const char* text, int textLen)
     const unsigned char* end = s + textLen;
     while (s < end)
     {
-        if (*s < ' ' && *s != '\a' && *s != '\b' && *s != '\r' && // *s != 0 zde nesmi byt kvuli Unicode souborum ("0A 00" nelze expandnout na "0D 0A 00")
+        if (*s < ' ' && *s != '\a' && *s != '\b' && *s != '\r' && // *s != 0 must not be here because of Unicode files ("0A 00" cannot be expanded to "0D 0A 00")
             *s != '\f' && *s != '\n' && *s != '\t' && *s != '\v' &&
             *s != '\x1a' && *s != '\x04' && *s != '\x06')
-        { // nepovoleny znak
+        { // illegal character
             break;
         }
         s++;
@@ -3358,11 +3358,11 @@ void CSalamanderGeneral::CallPluginOperationFromDisk(int panel, SalPluginOperati
             TRACE_I("CSalamanderGeneral::CallPluginOperationFromDisk(): no items in panel!");
             return;
         }
-        // pripravime data pro enumeraci souboru a adresaru z panelu
+        // prepare data for enumerating files and directories from the panel
         CPanelTmpEnumData data;
         int oneIndex = -1;
         int count = p->GetSelCount();
-        if (count > 0) // nejake soubory jsou oznacene
+        if (count > 0) // some files are marked
         {
             data.IndexesCount = count;
             data.Indexes = new int[count];
@@ -3374,7 +3374,7 @@ void CSalamanderGeneral::CallPluginOperationFromDisk(int panel, SalPluginOperati
             else
                 p->GetSelItems(count, data.Indexes);
         }
-        else // bereme focus
+        else // we take focus
         {
             oneIndex = p->GetCaretIndex();
 
@@ -3390,7 +3390,7 @@ void CSalamanderGeneral::CallPluginOperationFromDisk(int panel, SalPluginOperati
             }
 
             data.IndexesCount = 1;
-            data.Indexes = &oneIndex; // nedealokuje se
+            data.Indexes = &oneIndex; // not deallocated
         }
         data.CurrentIndex = 0;
         data.ZIPPath = p->GetZIPPath();
@@ -3493,7 +3493,7 @@ struct CSalCommandsAux
     int Type;
 };
 
-CSalCommandsAux SalCommandsArray[] = // konci polozkou s 'SalCmd' == -1
+CSalCommandsAux SalCommandsArray[] = // end of item with 'SalCmd' == -1
     {
         {SALCMD_VIEW, CM_VIEW, IDS_MENU_FILES_VIEW, &EnablerViewFile, sctyForFocusedFile},
         {SALCMD_ALTVIEW, CM_ALTVIEW, IDS_MENU_FILES_ALTVIEW, &EnablerViewFile, sctyForFocusedFile},
@@ -3544,9 +3544,9 @@ BOOL CSalamanderGeneral::GetSalamanderCommand(int salCmd, char* nameBuf, int nam
     int index = 0;
     while (SalCommandsArray[index].SalCmd != -1)
     {
-        if (SalCommandsArray[index].SalCmd == salCmd) // nalezeno
+        if (SalCommandsArray[index].SalCmd == salCmd) // found
         {
-            // je treba napocitat stavy prikazu, pole SalCommandsArray stavy pouziva
+            // It is necessary to calculate the states of commands, the SalCommandsArray array uses states
             MainWindow->OnEnterIdle();
 
             if (nameBuf != NULL && nameBufSize > 0)
@@ -3585,7 +3585,7 @@ BOOL CSalamanderGeneral::EnumSalamanderCommands(int* index, int* salCmd, char* n
     {
         if (*index == 0)
         {
-            // je treba napocitat stavy prikazu, pole SalCommandsArray stavy pouziva
+            // It is necessary to calculate the states of commands, the SalCommandsArray array uses states
             MainWindow->OnEnterIdle();
         }
 
@@ -3619,8 +3619,8 @@ void CSalamanderGeneral::PostSalamanderCommand(int salCmd)
     }
 
     if (MainThreadID == GetCurrentThreadId())
-    { // kvuli volani z entry-pointu, kde je Plugin nastaveno na -1 (jen pro dohledani plugin-data)
-        // nez by dosla WM_USER_POSTCMDORUNLOADPLUGIN, bylo by Plugin prenastaveno (podle navratovky entry-pointu)
+    { // due to a call from the entry-point, where the Plugin is set to -1 (only for retrieving plugin data)
+        // Before WM_USER_POSTCMDORUNLOADPLUGIN is reached, the Plugin would have been reset (according to the return value of the entry point)
         CPluginData* data = Plugins.GetPluginData(Plugin);
         if (data != NULL)
         {
@@ -3632,11 +3632,11 @@ void CSalamanderGeneral::PostSalamanderCommand(int salCmd)
             TRACE_E("Unexpected situation in CSalamanderGeneral::PostSalamanderCommand().");
         }
     }
-    else // mimo entry-point uz je Plugin jiste nastavena...
+    else // Plugin is certainly set outside the entry-point...
     {
         if (MainWindow != NULL && MainWindow->HWindow != NULL)
         {
-            // test na volani behem spousteni entry-pointu (Plugin je nastaveno na -1)
+            // test for calling during entry-point execution (Plugin is set to -1)
             if ((INT_PTR)Plugin == -1)
             {
                 TRACE_E("You can call CSalamanderGeneral::PostSalamanderCommand only from main "
@@ -3875,7 +3875,7 @@ void CSalamanderGeneral::GetCommonFSOperSourceDescr(char* sourceDescr, int sourc
         sourceDescr[0] = 0;
         return;
     }
-    if (selectedFiles + selectedDirs <= 1) // jedna oznacena polozka nebo fokus
+    if (selectedFiles + selectedDirs <= 1) // one marked item or focus
     {
         BOOL nameIsDir;
         char* name;
@@ -3908,13 +3908,13 @@ void CSalamanderGeneral::GetCommonFSOperSourceDescr(char* sourceDescr, int sourc
         int fileNameFormat;
         GetConfigParameter(SALCFG_FILENAMEFORMAT, &fileNameFormat,
                            sizeof(fileNameFormat), NULL);
-        char formatedFileName[MAX_PATH]; // CFileData::Name je dlouhy max. MAX_PATH-5 znaku - limit dany Salamanderem
+        char formatedFileName[MAX_PATH]; // CFileData::Name is long max. MAX_PATH-5 characters - limit given by Salamander
         ::AlterFileName(formatedFileName, name, -1, fileNameFormat, 0, nameIsDir);
         _snprintf_s(sourceDescr, sourceDescrSize, _TRUNCATE,
                     ::LoadStr(nameIsDir ? (forDlgCaption ? IDS_DLG_QUESTION_DIRECTORY : IDS_QUESTION_DIRECTORY) : (forDlgCaption ? IDS_DLG_QUESTION_FILE : IDS_QUESTION_FILE)),
                     formatedFileName);
     }
-    else // nekolik adresaru a souboru
+    else // several directories and files
     {
         ExpandPluralFilesDirs(sourceDescr, sourceDescrSize, selectedFiles, selectedDirs,
                               epfdmNormal, forDlgCaption);
@@ -4154,13 +4154,13 @@ HWND CSalamanderGeneral::GetWndToFlash(HWND parent)
 void ActivateDropTarget(HWND dropTarget, HWND progressWnd)
 {
     if (dropTarget != NULL)
-    { // tahle prasecina nas zbavi aktivovaneho stavu bez aktivni aplikace (vizualne neaktivni, ale uz prislo WM_ACTIVATEAPP s "activate")
+    { // this mess will get us out of the activated state without an active application (visually inactive, but WM_ACTIVATEAPP with "activate" has already arrived)
         HWND tgtWnd = dropTarget;
         HWND tmp;
         while ((tmp = ::GetParent(tgtWnd)) != NULL && IsWindowEnabled(tmp))
             tgtWnd = tmp;
         if (MainWindow != NULL && tgtWnd != MainWindow->HWindow)
-        { // provedeme jen pokud nejde o operaci uvnitr naseho Salamandera
+        { // Execute only if it is not an operation inside our Salamander
             SetForegroundWindow(progressWnd);
             SetForegroundWindow(tgtWnd);
             //        TRACE_I("SetForegroundWindow: " << hex << tgtWnd);
@@ -4273,7 +4273,7 @@ void CSalamanderGeneral::FreeSalamanderDirectory(CSalamanderDirectoryAbstract* s
 }
 
 BOOL CSalamanderGeneral::AddPluginFSTimer(int timeout, CPluginFSInterfaceAbstract* timerOwner,
-                                          DWORD timerParam) // FIXME_X64 - projit interface Salamandera, zda nepredavame nejake parametry, co by mely umet drzet x64 ukazatele; napriklad zde 'timerParam'
+                                          DWORD timerParam) // FIXME_X64 - Go through the Salamander interface to check if we are not passing any parameters that should be able to hold x64 pointers; for example, 'timerParam' here
 {
     CALL_STACK_MESSAGE3("CSalamanderGeneral::AddPluginFSTimer(%d, , 0x%X)", timeout, timerParam);
     if (MainThreadID != GetCurrentThreadId())
@@ -4448,7 +4448,7 @@ public:
     virtual HBITMAP WINAPI LoadPNGBitmap(HINSTANCE hInstance, LPCTSTR lpBitmapName, DWORD flags, COLORREF unused)
     {
         HBITMAP hBitmap = ::LoadPNGBitmap(hInstance, lpBitmapName, flags);
-        if (hBitmap != NULL) // handl se podava ven do pluginu, za jeho zruseni je odpovedny plugin, vyradime ho ze Salamanderovskych HANDLES
+        if (hBitmap != NULL) // handle is passed out to the plugin, the plugin is responsible for its deletion, we remove it from the Salamander HANDLES
             HANDLES_REMOVE(hBitmap, __htHandle_comp_with_DeleteObject, "DeleteObject");
         return hBitmap;
     }
@@ -4456,7 +4456,7 @@ public:
     virtual HBITMAP WINAPI LoadRawPNGBitmap(const void* rawPNG, DWORD rawPNGSize, DWORD flags, COLORREF unused)
     {
         HBITMAP hBitmap = ::LoadRawPNGBitmap(rawPNG, rawPNGSize, flags);
-        if (hBitmap != NULL) // handl se podava ven do pluginu, za jeho zruseni je odpovedny plugin, vyradime ho ze Salamanderovskych HANDLES
+        if (hBitmap != NULL) // handle is passed out to the plugin, the plugin is responsible for its deletion, we remove it from the Salamander HANDLES
             HANDLES_REMOVE(hBitmap, __htHandle_comp_with_DeleteObject, "DeleteObject");
         return hBitmap;
     }
@@ -4491,13 +4491,13 @@ CSalamanderGeneral::GetSalamanderPasswordManager()
 class CSalamanderCrypt : public CSalamanderCryptAbstract
 {
 public:
-    /* AES functions */
+    /* AES functions*/
     virtual int WINAPI AESInit(CSalAES* aes,
-                               int mode,       /* Mode (key size) to be used (input) */
-                               LPCSTR pwd,     /* User specified password (input)    */
-                               size_t pwd_len, /* Password length (input)            */
-                               LPBYTE salt,    /* Salt (input)                       */
-                               LPWORD pwd_ver) /* 2 byte password verifier (output)  */
+                               int mode,       /* Mode (key size) to be used (input)*/
+                               LPCSTR pwd,     /* User specified password (input)*/
+                               size_t pwd_len, /* Password length (input)*/
+                               LPBYTE salt,    /* Salt (input)*/
+                               LPWORD pwd_ver) /* 2 byte password verifier (output)*/
     {
         _ASSERT(sizeof(aes->nonce) == sizeof(((fcrypt_ctx*)aes)->nonce));
         _ASSERT(sizeof(aes->encr_bfr) == sizeof(((fcrypt_ctx*)aes)->encr_bfr));
@@ -4525,7 +4525,7 @@ public:
         fcrypt_end(mac, (fcrypt_ctx*)aes);
     }
 
-    /* SHA1 functions */
+    /* SHA1 functions*/
     virtual void WINAPI SHA1Init(CSalSHA1* sha1)
     {
         _ASSERT(sizeof(CSalSHA1) == sizeof(SHA1_Context));
@@ -4545,7 +4545,7 @@ public:
 
 CSalamanderCrypt SalamanderCrypt;
 
-CSalamanderCryptAbstract* GetSalamanderCrypt() // pro interni pouziti ze Salamandera
+CSalamanderCryptAbstract* GetSalamanderCrypt() // for internal use from Salamander
 {
     CALL_STACK_MESSAGE_NONE
     return &SalamanderCrypt;
@@ -4575,7 +4575,7 @@ void CSalamanderGeneral::DisconnectFSFromPanel(HWND parent, int panel)
     char buf[MAX_PATH];
     BOOL rescueOrFixed = TRUE;
     if (GetLastWindowsPanelPath(panel, buf, MAX_PATH))
-    { // zmenime cestu na posledni navstivenou windows cestu
+    { // change the path to the last visited Windows path
         BOOL tryNet = FALSE;
         DWORD err;
         DWORD lastErr;
@@ -4586,7 +4586,7 @@ void CSalamanderGeneral::DisconnectFSFromPanel(HWND parent, int panel)
         {
             int failReason;
             if (ChangePanelPathToDisk(panel, buf, &failReason) ||
-                failReason != CHPPFR_INVALIDPATH) // mimo chyby "spatna cesta" (jde o odmitnuti zavreni FS, atd.)
+                failReason != CHPPFR_INVALIDPATH) // outside errors "wrong path" (refusal to close FS, etc.)
             {
                 rescueOrFixed = FALSE;
             }
@@ -4614,14 +4614,14 @@ BOOL CSalamanderGeneral::IsArchiveHandledByThisPlugin(const char* name)
         return FALSE;
 
     int format = PackerFormatConfig.PackIsArchive(name);
-    if (format != 0) // nasli jsme podporovany archiv
+    if (format != 0) // We found a supported archive
     {
         format--;
         int index = PackerFormatConfig.GetUnpackerIndex(format);
-        if (index < 0) // view: jde o interni zpracovani (plugin)?
+        if (index < 0) // view: is it internal processing (plugin)?
         {
             CPluginData* foundData = Plugins.Get(-index - 1);
-            if (foundData == data) // jsme to my?
+            if (foundData == data) // Is it us?
                 return TRUE;
         }
     }
@@ -4767,7 +4767,7 @@ void CSalamanderGeneral::OpenNetworkContextMenu(HWND parent, int panel, BOOL for
     CFilesWindow* p = GetPanel(panel);
     if (p != NULL)
     {
-        BeginStopRefresh(); // zadne refreshe nepotrebujeme (formalita: volani jde z pluginu, takze refreshe uz jsou zakazane z EnterPlugin)
+        BeginStopRefresh(); // we do not need any refreshes (formality: the call goes from the plugin, so refreshes are already disabled in EnterPlugin)
 
         int* indexes = NULL;
         int index = 0;
@@ -4784,7 +4784,7 @@ void CSalamanderGeneral::OpenNetworkContextMenu(HWND parent, int panel, BOOL for
             if (count != 0)
             {
                 indexes = new int[count];
-                p->GetSelItems(count, indexes, TRUE); // od tohoto jsme ustoupili (viz GetSelItems): pro kontextova menu zaciname od fokusle polozky a koncime polozku pres fokusem (je tam mezilehle vraceni na zacatek seznamu jmen) (system to tak dela taky, viz Add To Windows Media Player List na MP3 souborech)
+                p->GetSelItems(count, indexes, TRUE); // we have backed off from this (see GetSelItems): for the context menu, we start from the focused item and end with the item after the focus (there is an intermediate return to the beginning of the list of names) (the system does it too, see Add To Windows Media Player List on MP3 files)
             }
             else
             {
@@ -4822,7 +4822,7 @@ void CSalamanderGeneral::OpenNetworkContextMenu(HWND parent, int panel, BOOL for
             if (p->ContextMenu != NULL && h != NULL)
             {
                 UINT flags = CMF_NORMAL | CMF_EXPLORE;
-                // osetrime stisknuty shift - rozsirene kontextove menu, pod W2K je tam napriklad Run as...
+                // we will handle the pressed shift - extended context menu, under W2K there is for example Run as...
 #define CMF_EXTENDEDVERBS 0x00000100 // rarely used verbs
                 BOOL shiftPressed = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
                 if (shiftPressed)
@@ -4832,7 +4832,7 @@ void CSalamanderGeneral::OpenNetworkContextMenu(HWND parent, int panel, BOOL for
                 RemoveUselessSeparatorsFromMenu(h);
 
                 int cmd = 0;
-                if (GetMenuItemCount(h) > 0) // ochrana proti zcela vyrezanemu menu
+                if (GetMenuItemCount(h) > 0) // Protection against completely cut menu
                 {
                     CMenuPopup contextPopup;
                     contextPopup.SetTemplateMenu(h);
@@ -4843,11 +4843,11 @@ void CSalamanderGeneral::OpenNetworkContextMenu(HWND parent, int panel, BOOL for
                 {
                     CALL_STACK_MESSAGE1("CSalamanderGeneral::OpenNetworkContextMenu::exec");
 
-                    char cmdName[2000]; // schvalne mame 2000 misto 200, shell-extensiony obcas zapisuji dvojnasobek (uvaha: unicode = 2 * "pocet znaku"), atp.
+                    char cmdName[2000]; // intentionally we have 2000 instead of 200, shell extensions sometimes write double (consideration: unicode = 2 * "number of characters"), etc.
                     if (AuxGetCommandString(p->ContextMenu, cmd, GCS_VERB, NULL, cmdName, 200) != NOERROR)
                         cmdName[0] = 0;
 
-                    // prikaz Map Network Drive je pod XP 40, pod W2K 43 a teprve pod Vistou ma definovane cmdName
+                    // the Map Network Drive command is defined under XP 40, under W2K 43, and only under Vista does it have cmdName defined
                     if ((stricmp(cmdName, "connectNetworkDrive") == 0 ||
                          !WindowsVistaAndLater && cmd == 40) &&
                         forItems && netPath[2] != 0)
@@ -4858,8 +4858,7 @@ void CSalamanderGeneral::OpenNetworkContextMenu(HWND parent, int panel, BOOL for
                         if (SalPathAppend(root, (focus < p->Dirs->Count ? p->Dirs->At(focus) : p->Files->At(focus - p->Dirs->Count)).Name, MAX_PATH))
                         {
                             char newDrive = 0;
-                            p->ConnectNet(TRUE, root, FALSE /* vola se z pluginu, nesmime zmenit cestu v panelu, to bysme
-                                                 se vraceli do dealokovaneho FS objektu */
+                            p->ConnectNet(TRUE, root, FALSE /* It is called from the plugin, we must not change the path in the panel, otherwise we would be returning to a deallocated FS object*/
                                           ,
                                           &newDrive);
                             if (newlyMappedDrive != NULL)
@@ -4884,8 +4883,8 @@ void CSalamanderGeneral::OpenNetworkContextMenu(HWND parent, int panel, BOOL for
 
                         AuxInvokeCommand(p, (CMINVOKECOMMANDINFO*)&ici);
 
-                        IdleRefreshStates = TRUE;  // pri pristim Idle vynutime kontrolu stavovych promennych
-                        IdleCheckClipboard = TRUE; // nechame kontrolovat take clipboard
+                        IdleRefreshStates = TRUE;  // During the next Idle, we will force the check of status variables
+                        IdleCheckClipboard = TRUE; // we will also check the clipboard
                     }
                 }
             }
@@ -5142,7 +5141,7 @@ void CSalamanderGeneral::SetPluginIconOverlays(int iconOverlaysCount, HICON* ico
 {
     CALL_STACK_MESSAGE2("CSalamanderGeneral::SetPluginIconOverlays(%d,)", iconOverlaysCount);
     if (MainThreadID != GetCurrentThreadId())
-    { // jde o chybu volani, ikony neuvolnujeme, nezajem...
+    { // It's a call error, we don't release icons, not interested...
         TRACE_E("You can call CSalamanderGeneral::SetPluginIconOverlays() only from main thread!");
         return;
     }
@@ -5420,7 +5419,7 @@ BOOL CSalamanderForOperations::MoveFiles(const char* source, const char* target,
 
 //
 // ****************************************************************************
-// CSalamanderForViewFileOnFS
+// SalamanerForViewFileOnFS
 //
 
 const char*
@@ -5489,27 +5488,27 @@ void CSalamanderForViewFileOnFS::FreeFileNameInCache(const char* uniqueFileName,
     }
     CallsCounter--;
 
-    if (!fileExists) // nove downloadena kopie souboru
+    if (!fileExists) // newly downloaded copy of the file
     {
-        if (newFileOK) // download se povedl
+        if (newFileOK) // download successful
         {
             DiskCache.NamePrepared(uniqueFileName, newFileSize);
         }
         else
         {
-            DiskCache.ReleaseName(uniqueFileName, FALSE); // download se nepovedl, neni co cachovat
-            return;                                       // uz neni co resit
+            DiskCache.ReleaseName(uniqueFileName, FALSE); // Download failed, there is nothing to cache
+            return;                                       // There is nothing left to solve
         }
     }
 
-    if (fileLock != NULL) // mame "lock" objekt vieweru, provazeme viewer a disk-cache
+    if (fileLock != NULL) // we have a "lock" object of the viewer, we tie the viewer and disk-cache
     {
         DiskCache.AssignName(uniqueFileName, fileLock, fileLockOwner,
-                             (fileExists || removeAsSoonAsPossible) ? crtDirect : crtCache); // u souboru existujicich v disk-cache pouzivame crtDirect, protoze neovlivnuje nastaveni "zivotnosti" (zustane jak si pral tvurce souboru)
+                             (fileExists || removeAsSoonAsPossible) ? crtDirect : crtCache); // For files already existing in the disk cache, we use crtDirect because it does not affect the "lifespan" settings (it remains as the file creator intended).
     }
-    else // neotevrel se viewer nebo jen nema "lock" objekt
+    else // The viewer did not open or just does not have a "lock" object
     {
-        DiskCache.ReleaseName(uniqueFileName, !fileExists && !removeAsSoonAsPossible); // neni-li 'removeAsSoonAsPossible' TRUE, zkusime aspon nechat kopii souboru v disk-cache (neslo-li o existujici soubor, u toho "zivotnost" nemenime)
+        DiskCache.ReleaseName(uniqueFileName, !fileExists && !removeAsSoonAsPossible); // if 'removeAsSoonAsPossible' is not TRUE, we will try to at least keep a copy of the file in the disk cache (if it was not an existing file, we do not change its "lifespan")
     }
 }
 
@@ -5531,7 +5530,7 @@ CSalamanderDirectory::CSalamanderDirectory(BOOL isForFS, DWORD validData, DWORD 
 
 CSalamanderDirectory::~CSalamanderDirectory()
 {
-    Clear(NULL); // data plug-inu se uvolnuji jen v root-sal-diru
+    Clear(NULL); // data plugin is only released in the root-sal-dir
     FreeAddCache();
 }
 
@@ -5542,7 +5541,7 @@ void CSalamanderDirectory::AllocAddCache()
         AddCache = (CSalamanderDirectoryAddCache*)malloc(sizeof(CSalamanderDirectoryAddCache));
         if (AddCache != NULL)
             ZeroMemory(AddCache, sizeof(CSalamanderDirectoryAddCache));
-        // pokud se nepodari cache alokovat, nevadi, jsme plne funcni i bez ni
+        // If the cache allocation fails, it's okay, we are fully functional even without it
     }
 }
 
@@ -5573,7 +5572,7 @@ int CSalamanderDirectory::SalDirStrCmpEx(const char* s1, int l1, const char* s2,
 
 void CSalamanderDirectory::Clear(CPluginDataInterfaceAbstract* pluginData)
 {
-    if (pluginData != NULL) // uvolneni dat specifickych plug-inu
+    if (pluginData != NULL) // Release of data specific to plug-ins
     {
         CPluginDataInterfaceEncapsulation plugin(pluginData, STR_NONE, STR_NONE, NULL, 0);
         BOOL releaseFiles = plugin.CallReleaseForFiles();
@@ -5636,7 +5635,7 @@ void CSalamanderDirectory::SetFlags(DWORD flags)
 CSalamanderDirectory*
 CSalamanderDirectory::AllocSalamDir(int index)
 {
-    CALL_STACK_MESSAGE_NONE // casove kriticka metoda
+    CALL_STACK_MESSAGE_NONE // time-critical method
 
         if (index < 0 || index >= SalamDirs.Count || SalamDirs[index] != NULL)
     {
@@ -5656,17 +5655,17 @@ CSalamanderDirectory::AllocSalamDir(int index)
 // ***************************************************************************
 // FindDir:
 //
-// 'path' - vstup: cesta v archivu (relativni k tomuto adresari)
+// 'path' - input: path in the archive (relative to this directory)
 // 's' - vystup: ukazuje za prvni jmeno v ceste 'path'
-// 'i' - vystup: index najiteho podadresare (ktery ma dale zpracovavat cestu 's')
-// 'file' - vstup: pokud bude potreba adresar zalozit, odkud nakopirovat data
-// 'pluginData' - vstup: iface pro vytvoreni plug-inu specifickych dat noveho adresare (bude-li potreba)
+// 'i' - output: index of the found subdirectory (which will further process the path 's')
+// 'file' - input: if a directory needs to be created from which to copy the data
+// 'pluginData' - input: iface for creating plug-in specific data of a new directory (if needed)
 // 'archivePath' - vstup: kompletni cesta v archivu ('path' i 's' ukazuji do ni)
 
 BOOL CSalamanderDirectory::FindDir(const char* path, const char*& s, int& i, const CFileData& file,
                                    CPluginDataInterfaceAbstract* pluginData, const char* archivePath)
 {
-    CALL_STACK_MESSAGE_NONE // casove kriticka metoda
+    CALL_STACK_MESSAGE_NONE // time-critical method
         //  CALL_STACK_MESSAGE2("CSalamanderDirectory::FindDir(%s, , , ,)", path);
         s = path;
     while (*s != 0 && *s != '\\')
@@ -5677,60 +5676,60 @@ BOOL CSalamanderDirectory::FindDir(const char* path, const char*& s, int& i, con
         if (SalDirStrCmpEx(Dirs[i].Name, Dirs[i].NameLen, path, (int)(s - path)) == 0)
             break;
     }
-    if (i == Dirs.Count) // musime ho zalozit
+    if (i == Dirs.Count) // we need to initialize it
     {
         CFileData data;
-        //--- jmeno
-        data.Name = (char*)malloc((s - path) + 1); // alokace
+        //--- name
+        data.Name = (char*)malloc((s - path) + 1); // allocation
         if (data.Name == NULL)
         {
             TRACE_E(LOW_MEMORY);
             return FALSE;
         }
-        memcpy(data.Name, path, s - path); // kopie textu
+        memcpy(data.Name, path, s - path); // copy of text
         data.Name[s - path] = 0;
         data.NameLen = s - path;
-        //--- pripona
+        //--- extension
         if (!Configuration.SortDirsByExt)
-            data.Ext = data.Name + data.NameLen; // adresare nemaji pripony
+            data.Ext = data.Name + data.NameLen; // directories do not have extensions
         else
         {
             const char* ss = s;
             while (--ss >= path && *ss != '.')
                 ;
             if (ss >= path)
-                data.Ext = data.Name + (ss - path + 1); // ".cvspass" ve Windows je pripona ...
+                data.Ext = data.Name + (ss - path + 1); // ".cvspass" in Windows is an extension ...
                                                         //      if (ss > path) data.Ext = data.Name + (ss - path + 1);
             else
                 data.Ext = data.Name + data.NameLen;
         }
-        //--- ostatni
+        //--- others
         data.Size = CQuadWord(0, 0);
         data.Attr = 0;
-        data.LastWrite = file.LastWrite; // datum vezmeme od prvniho souboru v adresari
+        data.LastWrite = file.LastWrite; // we will take the date from the first file in the directory
         data.DosName = NULL;
         data.PluginData = 0;
         data.Hidden = 0;
         data.IsLink = 0;
         data.IsOffline = 0;
-        // privatni Salamanderovska data
+        // private Salamander data
         data.Association = 0;
         data.Selected = 0;
         data.Shared = 0;
         data.Archive = 0;
         data.SizeValid = 0;
-        data.Dirty = 0; // nepovine, jen tak pro formu
+        data.Dirty = 0; // not mandatory, just for the sake of formality
         data.CutToClip = 0;
         data.IconOverlayIndex = ICONOVERLAYINDEX_NOTUSED;
         data.IconOverlayDone = 0;
 
-        if (pluginData != NULL) // nechame plug-in pridat sva specificka data
+        if (pluginData != NULL) // let the plug-in add its specific data
         {
-            char arcPath[MAX_PATH]; // jmeno pridavaneho adresare uvnitr archivu
+            char arcPath[MAX_PATH]; // Name of the added directory inside the archive
             memcpy(arcPath, archivePath, s - archivePath);
             arcPath[s - archivePath] = 0;
             CPluginDataInterfaceEncapsulation plugin(pluginData, STR_NONE, STR_NONE, NULL, 0);
-            if (!plugin.GetFileDataForNewDir(arcPath, data)) // nejde pridat plug-inova data
+            if (!plugin.GetFileDataForNewDir(arcPath, data)) // Unable to add plug-in data
             {
                 free(data.Name);
                 return FALSE;
@@ -5741,7 +5740,7 @@ BOOL CSalamanderDirectory::FindDir(const char* path, const char*& s, int& i, con
         if (!Dirs.IsGood())
         {
             Dirs.ResetState();
-            if (pluginData != NULL) // uvolneni dat specifickych plug-inu
+            if (pluginData != NULL) // Release of data specific to plug-ins
             {
                 CPluginDataInterfaceEncapsulation plugin(pluginData, STR_NONE, STR_NONE, NULL, 0);
                 if (plugin.CallReleaseForDirs())
@@ -5750,29 +5749,27 @@ BOOL CSalamanderDirectory::FindDir(const char* path, const char*& s, int& i, con
             free(data.Name);
             return FALSE;
         }
-        //--- pridani salamander-adresare odpovidajiciho novemu adresari
-        /*
-    CSalamanderDirectory *dir = new CSalamanderDirectory(IsForFS, ValidData, Flags);
+        //--- adding salamander directory corresponding to the new directory
+        /*      CSalamanderDirectory *dir = new CSalamanderDirectory(IsForFS, ValidData, Flags);
     if (dir != NULL) SalamDirs.Add((DWORD)dir);
     else TRACE_E(LOW_MEMORY);
     if (dir == NULL || !SalamDirs.IsGood())
     {
       if (dir != NULL) delete dir;
       SalamDirs.ResetState();
-      if (pluginData != NULL)   // uvolneni dat specifickych plug-inu
+      if (pluginData != NULL)   // releasing plugin-specific data
       {
         CPluginDataInterfaceEncapsulation plugin(pluginData, STR_NONE, STR_NONE, NULL, 0);
         if (plugin.CallReleaseForDirs()) plugin.ReleasePluginData2(Dirs[Dirs.Count - 1], TRUE);
       }
       Dirs.Delete(Dirs.Count - 1);
       return FALSE;
-    }
-*/
-        SalamDirs.Add(NULL); // pridame NULL (objekt se bude alokovat, az bude poprve potreba)
+    }*/
+        SalamDirs.Add(NULL); // add NULL (the object will be allocated when first needed)
         if (!SalamDirs.IsGood())
         {
             SalamDirs.ResetState();
-            if (pluginData != NULL) // uvolneni dat specifickych plug-inu
+            if (pluginData != NULL) // Release of data specific to plug-ins
             {
                 CPluginDataInterfaceEncapsulation plugin(pluginData, STR_NONE, STR_NONE, NULL, 0);
                 if (plugin.CallReleaseForDirs())
@@ -5789,7 +5786,7 @@ BOOL CSalamanderDirectory::FindDir(const char* path, const char*& s, int& i, con
 
 BOOL CSalamanderDirectory::AddFile(const char* path, CFileData& file, CPluginDataInterfaceAbstract* pluginData)
 {
-    CALL_STACK_MESSAGE_NONE // casove kriticka metoda
+    CALL_STACK_MESSAGE_NONE // time-critical method
 
         int pathLen = 0;
     if (path != NULL && ((pathLen = (int)strlen(path)) > MAX_PATH - 5 || file.NameLen > MAX_PATH - 5))
@@ -5800,7 +5797,7 @@ BOOL CSalamanderDirectory::AddFile(const char* path, CFileData& file, CPluginDat
 
     //  TRACE_I("AddFile path="<<path<<" file="<<file.Name);
 
-    // nulujeme promenne, ktere plugin nedefinuje
+    // we are zeroing variables that the plugin does not define
     if ((ValidData & VALID_DATA_EXTENSION) == 0)
         file.Ext = file.Name + file.NameLen;
     if ((ValidData & VALID_DATA_DOSNAME) == 0)
@@ -5815,14 +5812,14 @@ BOOL CSalamanderDirectory::AddFile(const char* path, CFileData& file, CPluginDat
             FileTimeToLocalFileTime(&file.LastWrite, &ft) &&
                 FileTimeToSystemTime(&ft, &st))
         {
-            if ((ValidData & VALID_DATA_DATE) == 0) // chybi datum
+            if ((ValidData & VALID_DATA_DATE) == 0) // missing date
             {
                 st.wYear = 1602;
                 st.wMonth = 1;
                 st.wDay = 1;
                 st.wDayOfWeek = 2;
             }
-            if ((ValidData & VALID_DATA_TIME) == 0) // chybi cas
+            if ((ValidData & VALID_DATA_TIME) == 0) // missing time
             {
                 st.wHour = 0;
                 st.wMinute = 0;
@@ -5855,15 +5852,15 @@ BOOL CSalamanderDirectory::AddFile(const char* path, CFileData& file, CPluginDat
     file.Shared = 0;
     file.Archive = 0;
     file.SizeValid = 0;
-    file.Dirty = 0; // nepovinne, jen tak pro formu
+    file.Dirty = 0; // optional, just for the sake of form
     file.CutToClip = 0;
     file.IconOverlayDone = 0;
 
-    // pokud mame cestu nacachovanou z minuleho pridavani, muzeme soubor vlozit primo na jeho misto
+    // If we have the path cached from the previous addition, we can insert the file directly in its place
     if (path != NULL && AddCache != NULL && pathLen > 0 &&
         pathLen == AddCache->PathLen && memcmp(path, AddCache->Path, pathLen) == 0)
     {
-        // cache obsahovala nasi cestu, muzeme rovnou pridavat
+        // cache contained our path, we can add it directly
         AddCache->Dir->Files.Add(file);
         if (!AddCache->Dir->Files.IsGood())
         {
@@ -5875,7 +5872,7 @@ BOOL CSalamanderDirectory::AddFile(const char* path, CFileData& file, CPluginDat
 
     CSalamanderDirectory* ret = AddFileInt(path, file, pluginData, path);
 
-    // pokud se pridani povedlo a pouzivame cache, ulozime si cestu
+    // if the addition was successful and we are using cache, we save the path
     if (ret != NULL && AddCache != NULL && pathLen > 0)
     {
         AddCache->PathLen = pathLen;
@@ -5888,7 +5885,7 @@ BOOL CSalamanderDirectory::AddFile(const char* path, CFileData& file, CPluginDat
 
 BOOL CSalamanderDirectory::AddDir(const char* path, CFileData& dir, CPluginDataInterfaceAbstract* pluginData)
 {
-    CALL_STACK_MESSAGE_NONE // casove kriticka metoda
+    CALL_STACK_MESSAGE_NONE // time-critical method
 
         if (path != NULL && (strlen(path) > MAX_PATH - 5 || dir.NameLen > MAX_PATH - 5))
     {
@@ -5898,7 +5895,7 @@ BOOL CSalamanderDirectory::AddDir(const char* path, CFileData& dir, CPluginDataI
 
     //  TRACE_I("AddDir path="<<path<<" dir="<<dir.Name);
 
-    // nulujeme promenne, ktere plugin nedefinuje
+    // we are zeroing variables that the plugin does not define
     if ((ValidData & VALID_DATA_EXTENSION) == 0)
         dir.Ext = dir.Name + dir.NameLen;
     if ((ValidData & VALID_DATA_DOSNAME) == 0)
@@ -5913,14 +5910,14 @@ BOOL CSalamanderDirectory::AddDir(const char* path, CFileData& dir, CPluginDataI
             FileTimeToLocalFileTime(&dir.LastWrite, &ft) &&
                 FileTimeToSystemTime(&ft, &st))
         {
-            if ((ValidData & VALID_DATA_DATE) == 0) // chybi datum
+            if ((ValidData & VALID_DATA_DATE) == 0) // missing date
             {
                 st.wYear = 1602;
                 st.wMonth = 1;
                 st.wDay = 1;
                 st.wDayOfWeek = 2;
             }
-            if ((ValidData & VALID_DATA_TIME) == 0) // chybi cas
+            if ((ValidData & VALID_DATA_TIME) == 0) // missing time
             {
                 st.wHour = 0;
                 st.wMinute = 0;
@@ -5953,7 +5950,7 @@ BOOL CSalamanderDirectory::AddDir(const char* path, CFileData& dir, CPluginDataI
     dir.Shared = 0;
     dir.Archive = 0;
     dir.SizeValid = 0;
-    dir.Dirty = 0; // nepovine, jen tak pro formu
+    dir.Dirty = 0; // not mandatory, just for the sake of formality
     dir.CutToClip = 0;
     dir.IconOverlayDone = 0;
 
@@ -5962,20 +5959,20 @@ BOOL CSalamanderDirectory::AddDir(const char* path, CFileData& dir, CPluginDataI
 
 int CSalamanderDirectory::GetFilesCount() const
 {
-    CALL_STACK_MESSAGE_NONE // casove kriticka metoda
+    CALL_STACK_MESSAGE_NONE // time-critical method
         return Files.Count;
 }
 
 int CSalamanderDirectory::GetDirsCount() const
 {
-    CALL_STACK_MESSAGE_NONE // casove kriticka metoda
+    CALL_STACK_MESSAGE_NONE // time-critical method
         return Dirs.Count;
 }
 
 CFileData const*
 CSalamanderDirectory::GetFile(int i) const
 {
-    CALL_STACK_MESSAGE_NONE // casove kriticka metoda
+    CALL_STACK_MESSAGE_NONE // time-critical method
         if (i >= 0 && i < Files.Count) return &(*((CFilesArray*)&Files))[i];
     else return NULL;
 }
@@ -5983,7 +5980,7 @@ CSalamanderDirectory::GetFile(int i) const
 CFileData const*
 CSalamanderDirectory::GetDir(int i) const
 {
-    CALL_STACK_MESSAGE_NONE // casove kriticka metoda
+    CALL_STACK_MESSAGE_NONE // time-critical method
         if (i >= 0 && i < Dirs.Count) return &(*((CFilesArray*)&Dirs))[i];
     else return NULL;
 }
@@ -5991,12 +5988,12 @@ CSalamanderDirectory::GetDir(int i) const
 CSalamanderDirectoryAbstract const*
 CSalamanderDirectory::GetSalDir(int i) const
 {
-    CALL_STACK_MESSAGE_NONE // casove kriticka metoda
+    CALL_STACK_MESSAGE_NONE // time-critical method
         if (i >= 0 && i < SalamDirs.Count)
     {
         CSalamanderDirectoryAbstract const* salDir = (CSalamanderDirectoryAbstract const*)(*((TDirectArray<CSalamanderDirectory*>*)&SalamDirs))[i];
         if (salDir == NULL)
-            salDir = &GlobalEmptySalDir; // jde o prazdny adresar - vratime globalni prazdny adresar
+            salDir = &GlobalEmptySalDir; // it is an empty directory - we will return the global empty directory
         return salDir;
     }
     else return NULL;
@@ -6006,14 +6003,14 @@ CSalamanderDirectory*
 CSalamanderDirectory::AddFileInt(const char* path, CFileData& file,
                                  CPluginDataInterfaceAbstract* pluginData, const char* archivePath)
 {
-    CALL_STACK_MESSAGE_NONE // casove kriticka metoda; navic path muze byt NULL
+    CALL_STACK_MESSAGE_NONE // time-critical method; additionally, path can be NULL
                             //  CALL_STACK_MESSAGE3("CSalamanderDirectory::AddFileInt(%s, , , %s)", path, archivePath);
 
         if (path != NULL)
     {
         if (*path == '\\')
             path++;
-        if (*path != 0) // nejde o tento adresar, najdeme podadresar
+        if (*path != 0) // It's not about this directory, we will find a subdirectory
         {
             const char* s;
             int i;
@@ -6021,8 +6018,8 @@ CSalamanderDirectory::AddFileInt(const char* path, CFileData& file,
                 return NULL;
 
             CSalamanderDirectory* salDir = SalamDirs[i];
-            if (salDir != NULL ||                    // uz je alokovan
-                (salDir = AllocSalamDir(i)) != NULL) // nebo se povedlo naalokovat novy objekt
+            if (salDir != NULL ||                    // allocated now
+                (salDir = AllocSalamDir(i)) != NULL) // or a new object was successfully allocated
             {
                 return salDir->AddFileInt(s, file, pluginData, archivePath);
             }
@@ -6031,7 +6028,7 @@ CSalamanderDirectory::AddFileInt(const char* path, CFileData& file,
         }
     }
 
-    // pozor, pokud se uplatni AddCache, polozka se prida primo v AddFile
+    // Attention, if AddCache is applied, the item is added directly in AddFile
     Files.Add(file);
     if (!Files.IsGood())
     {
@@ -6045,14 +6042,14 @@ CSalamanderDirectory*
 CSalamanderDirectory::AddDirInt(const char* path, CFileData& dir,
                                 CPluginDataInterfaceAbstract* pluginData, const char* archivePath)
 {
-    CALL_STACK_MESSAGE_NONE // casove kriticka metoda; navic path muze byt NULL
+    CALL_STACK_MESSAGE_NONE // time-critical method; additionally, path can be NULL
                             //  CALL_STACK_MESSAGE3("CSalamanderDirectory::AddDirInt(%s, , , %s)", path, archivePath);
 
         if (path != NULL)
     {
         if (*path == '\\')
             path++;
-        if (*path != 0) // nejde o tento adresar, najdeme podadresar
+        if (*path != 0) // It's not about this directory, we will find a subdirectory
         {
             const char* s;
             int i;
@@ -6060,8 +6057,8 @@ CSalamanderDirectory::AddDirInt(const char* path, CFileData& dir,
                 return NULL;
 
             CSalamanderDirectory* salDir = SalamDirs[i];
-            if (salDir != NULL ||                    // uz je alokovan
-                (salDir = AllocSalamDir(i)) != NULL) // nebo se povedlo naalokovat novy objekt
+            if (salDir != NULL ||                    // allocated now
+                (salDir = AllocSalamDir(i)) != NULL) // or a new object was successfully allocated
             {
                 return salDir->AddDirInt(s, dir, pluginData, archivePath);
             }
@@ -6071,7 +6068,7 @@ CSalamanderDirectory::AddDirInt(const char* path, CFileData& dir,
     }
 
     BOOL newDir = TRUE;
-    if ((Flags & SALDIRFLAG_IGNOREDUPDIRS) == 0) // pokud mame testovat duplicitu adresaru
+    if ((Flags & SALDIRFLAG_IGNOREDUPDIRS) == 0) // if we are testing for duplicate directories
     {
         int i;
         for (i = 0; i < Dirs.Count; i++)
@@ -6079,10 +6076,10 @@ CSalamanderDirectory::AddDirInt(const char* path, CFileData& dir,
             if (SalDirStrCmpEx(Dirs[i].Name, Dirs[i].NameLen, dir.Name, dir.NameLen) == 0)
                 break;
         }
-        newDir = (i == Dirs.Count); // jeste nebyl zalozen
-        if (!newDir)                // zmena existujicich udaju
+        newDir = (i == Dirs.Count); // has not been created yet
+        if (!newDir)                // change existing data
         {
-            if (pluginData != NULL) // uvolneni dat specifickych plug-inu
+            if (pluginData != NULL) // Release of data specific to plug-ins
             {
                 CPluginDataInterfaceEncapsulation plugin(pluginData, STR_NONE, STR_NONE, NULL, 0);
                 if (plugin.CallReleaseForDirs())
@@ -6091,7 +6088,7 @@ CSalamanderDirectory::AddDirInt(const char* path, CFileData& dir,
 
             if (Dirs[i].Name != NULL)
                 free(Dirs[i].Name);
-            Dirs[i].Name = dir.Name; // radsi vezmeme nove jmeno (pro pripadna data za '\0' v retezci)
+            Dirs[i].Name = dir.Name; // we better take a new name (for possible data after '\0' in the string)
             Dirs[i].Ext = dir.Ext;
             Dirs[i].Size = dir.Size;
             Dirs[i].Attr = dir.Attr;
@@ -6100,18 +6097,17 @@ CSalamanderDirectory::AddDirInt(const char* path, CFileData& dir,
                 free(Dirs[i].DosName);
             Dirs[i].DosName = dir.DosName;
             Dirs[i].PluginData = dir.PluginData;
-            // Dirs[i].NameLen by melo byt stejne jako dir.NameLen
+            // Dirs[i].NameLen should be the same as dir.NameLen
             Dirs[i].Hidden = dir.Hidden;
             Dirs[i].IsLink = dir.IsLink;
             Dirs[i].IsOffline = dir.IsOffline;
-            // zbytek Dirs[i] by mel byt nulovany stejne jako zbytek dir
+            // The rest of Dirs[i] should be zeroed out just like the rest of dir
         }
     }
     if (newDir)
     {
-        //--- pridani salamander-adresare odpovidajiciho novemu adresari
-        /*
-    CSalamanderDirectory *SalamDir = new CSalamanderDirectory(IsForFS, ValidData, Flags);
+        //--- adding salamander directory corresponding to the new directory
+        /*      CSalamanderDirectory *SalamDir = new CSalamanderDirectory(IsForFS, ValidData, Flags);
     if (SalamDir != NULL) SalamDirs.Add((DWORD)SalamDir);
     else TRACE_E(LOW_MEMORY);
     if (SalamDir == NULL || !SalamDirs.IsGood())
@@ -6128,18 +6124,17 @@ CSalamanderDirectory::AddDirInt(const char* path, CFileData& dir,
       SalamDirs.Delete(SalamDirs.Count - 1);
       delete SalamDir;
       return FALSE;
-    }
-*/
+    }*/
         if (IsForFS && dir.NameLen == 2 && dir.Name[0] == '.' && dir.Name[1] == '.')
         {
             CFileData* firstDir = Dirs.Count > 0 ? &Dirs[0] : NULL;
             if (firstDir != NULL && firstDir->NameLen == 2 &&
                 firstDir->Name[0] == '.' && firstDir->Name[1] == '.')
-            { // uz mame jeden up-dir
+            { // we have one up-dir already
                 TRACE_E("CSalamanderDirectory::AddFile(): you can add up-dir (\"..\") at most once!");
                 return NULL;
             }
-            SalamDirs.Insert(0, NULL); // pridame NULL (objekt se bude alokovat, az bude poprve potreba)
+            SalamDirs.Insert(0, NULL); // add NULL (the object will be allocated when first needed)
             if (!SalamDirs.IsGood())
             {
                 SalamDirs.ResetState();
@@ -6158,7 +6153,7 @@ CSalamanderDirectory::AddDirInt(const char* path, CFileData& dir,
         }
         else
         {
-            SalamDirs.Add(NULL); // pridame NULL (objekt se bude alokovat, az bude poprve potreba)
+            SalamDirs.Add(NULL); // add NULL (the object will be allocated when first needed)
             if (!SalamDirs.IsGood())
             {
                 SalamDirs.ResetState();
@@ -6226,7 +6221,7 @@ CSalamanderDirectory::GetDirs(const char* path)
     {
         if (*path == '\\')
             path++;
-        if (*path != 0) // nejaky podadresar
+        if (*path != 0) // some subdirectory
         {
             const char* s = path;
             while (*s != 0 && *s != '\\')
@@ -6238,13 +6233,13 @@ CSalamanderDirectory::GetDirs(const char* path)
                 if (SalDirStrCmpEx(Dirs[i].Name, Dirs[i].NameLen, path, (int)(s - path)) == 0)
                 {
                     CSalamanderDirectory* salDir = SalamDirs[i];
-                    if (salDir != NULL ||                    // uz je alokovan
-                        (salDir = AllocSalamDir(i)) != NULL) // nebo se povedlo naalokovat novy objekt
+                    if (salDir != NULL ||                    // allocated now
+                        (salDir = AllocSalamDir(i)) != NULL) // or a new object was successfully allocated
                     {
                         return salDir->GetDirs(s);
                     }
                     else
-                        return NULL; // low memory error (jako by adresar neexistoval)
+                        return NULL; // low memory error (as if the directory did not exist)
                 }
             }
         }
@@ -6262,7 +6257,7 @@ CSalamanderDirectory::GetFiles(const char* path)
     {
         if (*path == '\\')
             path++;
-        if (*path != 0) // nejaky podadresar
+        if (*path != 0) // some subdirectory
         {
             const char* s = path;
             while (*s != 0 && *s != '\\')
@@ -6274,13 +6269,13 @@ CSalamanderDirectory::GetFiles(const char* path)
                 if (SalDirStrCmpEx(Dirs[i].Name, Dirs[i].NameLen, path, (int)(s - path)) == 0)
                 {
                     CSalamanderDirectory* salDir = SalamDirs[i];
-                    if (salDir != NULL ||                    // uz je alokovan
-                        (salDir = AllocSalamDir(i)) != NULL) // nebo se povedlo naalokovat novy objekt
+                    if (salDir != NULL ||                    // allocated now
+                        (salDir = AllocSalamDir(i)) != NULL) // or a new object was successfully allocated
                     {
                         return salDir->GetFiles(s);
                     }
                     else
-                        return NULL; // low memory error (jako by adresar neexistoval)
+                        return NULL; // low memory error (as if the directory did not exist)
                 }
             }
         }
@@ -6298,7 +6293,7 @@ CSalamanderDirectory::GetUpperDir(const char* path)
     {
         if (*path == '\\')
             path++;
-        if (*path != 0) // nejaky podadresar
+        if (*path != 0) // some subdirectory
         {
             const char* s = path;
             while (*s != 0 && *s != '\\')
@@ -6310,25 +6305,25 @@ CSalamanderDirectory::GetUpperDir(const char* path)
                 if (SalDirStrCmpEx(Dirs[i].Name, Dirs[i].NameLen, path, (int)(s - path)) == 0)
                 {
                     if (*s == 0 || *(s + 1) == 0)
-                        return &Dirs[i]; // posledni komponenta cesty = hledany nadrazeny adresar
+                        return &Dirs[i]; // last component of the path = the desired parent directory
                     else
                     {
                         CSalamanderDirectory* salDir = SalamDirs[i];
-                        if (salDir != NULL ||                    // uz je alokovan
-                            (salDir = AllocSalamDir(i)) != NULL) // nebo se povedlo naalokovat novy objekt
+                        if (salDir != NULL ||                    // allocated now
+                            (salDir = AllocSalamDir(i)) != NULL) // or a new object was successfully allocated
                         {
                             return salDir->GetUpperDir(s);
                         }
                         else
-                            return NULL; // low memory error (jako by adresar neexistoval)
+                            return NULL; // low memory error (as if the directory did not exist)
                     }
                 }
             }
         }
         else
-            return NULL; // pro root vracime NULL
+            return NULL; // returning NULL for root
     }
-    return NULL; // pro root a nezname cesty vracime NULL
+    return NULL; // for root and unknown paths we return NULL
 }
 
 CQuadWord
@@ -6341,7 +6336,7 @@ CSalamanderDirectory::GetSize(int* dirsCount, int* filesCount, TDirectArray<CQua
     {
         size += Files[i].Size;
         if (sizes != NULL)
-            sizes->Add(Files[i].Size); // chyba pridani je osetrena az na urovni vystupniho dialogu
+            sizes->Add(Files[i].Size); // error handling is handled up to the output dialog level
     }
     if (filesCount != NULL)
         *filesCount += Files.Count;
@@ -6365,7 +6360,7 @@ CSalamanderDirectory::GetDirSize(const char* path, const char* dirName, int* dir
     {
         if (*path == '\\')
             path++;
-        if (*path != 0) // nejaky podadresar
+        if (*path != 0) // some subdirectory
         {
             const char* s = path;
             while (*s != 0 && *s != '\\')
@@ -6380,7 +6375,7 @@ CSalamanderDirectory::GetDirSize(const char* path, const char* dirName, int* dir
                     if (salDir != NULL)
                         return salDir->GetDirSize(s, dirName, dirsCount, filesCount, sizes);
                     else
-                        return CQuadWord(0, 0); // nic neobsahuje, jinak uz by byl alokovany
+                        return CQuadWord(0, 0); // does not contain anything, otherwise it would have been allocated already
                 }
             }
         }
@@ -6395,11 +6390,11 @@ CSalamanderDirectory::GetDirSize(const char* path, const char* dirName, int* dir
                     if (salDir != NULL)
                         return salDir->GetSize(dirsCount, filesCount, sizes);
                     else
-                        return CQuadWord(0, 0); // nic neobsahuje, jinak uz by byl alokovany
+                        return CQuadWord(0, 0); // does not contain anything, otherwise it would have been allocated already
                 }
             }
             TRACE_E("Incorrect call to CSalamanderDirectory::GetDirSize() - directory does not exist!");
-            return CQuadWord(0, 0); // nenalezen
+            return CQuadWord(0, 0); // not found
         }
     }
     return CQuadWord(0, 0);
@@ -6414,7 +6409,7 @@ CSalamanderDirectory::GetSalamanderDir(const char* path, BOOL readOnly)
     {
         if (*path == '\\')
             path++;
-        if (*path != 0) // nejaky podadresar
+        if (*path != 0) // some subdirectory
         {
             const char* s = path;
             while (*s != 0 && *s != '\\')
@@ -6428,18 +6423,18 @@ CSalamanderDirectory::GetSalamanderDir(const char* path, BOOL readOnly)
                     CSalamanderDirectory* salDir = SalamDirs[i];
                     if (salDir != NULL)
                         return salDir->GetSalamanderDir(s, readOnly);
-                    else // jde o prazdny adresar
+                    else // it is an empty directory
                     {
                         if (readOnly)
-                            return &GlobalEmptySalDir; // jen cteni - vratime globalni prazdny adresar
-                        else                           // pro zapis
+                            return &GlobalEmptySalDir; // only reading - return global empty directory
+                        else                           // for writing
                         {
-                            if ((salDir = AllocSalamDir(i)) != NULL) // musime naalokovat novy objekt
+                            if ((salDir = AllocSalamDir(i)) != NULL) // we need to allocate a new object
                             {
                                 return salDir->GetSalamanderDir(s, readOnly);
                             }
                             else
-                                return NULL; // chyba alokace
+                                return NULL; // allocation error
                         }
                     }
                 }
@@ -6458,7 +6453,7 @@ CSalamanderDirectory::GetSalamanderDir(int i)
     {
         CSalamanderDirectory* salDir = SalamDirs[i];
         if (salDir == NULL)
-            salDir = &GlobalEmptySalDir; // jde o prazdny adresar - vratime globalni prazdny adresar
+            salDir = &GlobalEmptySalDir; // it is an empty directory - we will return the global empty directory
         return salDir;
     }
     else
@@ -6476,7 +6471,7 @@ int CSalamanderDirectory::GetIndex(const char* dir)
                 return i;
         }
     }
-    return -1; // nenalezen
+    return -1; // not found
 }
 
 // ****************************************************************************

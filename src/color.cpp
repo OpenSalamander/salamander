@@ -4,9 +4,9 @@
 #include "precomp.h"
 #include "color.h"
 
-// Konverze barevnych prostoru RGB<->HSL
-// HSL prostor viz http://en.wikipedia.org/wiki/HSL_color_space
-// Rutiny viz "How To Converting Colors Between RGB and HLS (HBS)"
+// Conversion of color spaces RGB<->HSL
+// HSL color space see http://en.wikipedia.org/wiki/HSL_color_space
+// Routines see "How To Converting Colors Between RGB and HLS (HBS)"
 //            http://support.microsoft.com/kb/q29240/
 
 // A point of reference for the algorithms is Foley and Van Dam,
@@ -14,7 +14,7 @@
 // Their algorithm is in floating point. CHART implements a less
 // general (hardwired ranges) integral algorithm.
 
-#define HLSMAX 240 // H,L, and S vary over 0-HLSMAX
+#define HLSMAX 240 // H, L, and S vary over 0-HLSMAX
 #define RGBMAX 255 // R,G, and B vary over 0-RGBMAX \
                    // HLSMAX BEST IF DIVISIBLE BY 6 \
                    // RGBMAX, HLSMAX must each fit in a byte.
@@ -94,7 +94,7 @@ WORD HueToRGB(WORD n1, WORD n2, WORD hue)
     if (hue > HLSMAX)
         hue -= HLSMAX;
 
-    // return r,g, or b value from this tridrant
+    // return r, g, or b value from this tridrant
     if (hue < (HLSMAX / 6))
         return (n1 + (((n2 - n1) * hue + (HLSMAX / 12)) / (HLSMAX / 6)));
     if (hue < (HLSMAX / 2))

@@ -17,7 +17,7 @@
 #include "snooper.h"
 #include "gui.h"
 
-char BugReportReasonBreak[BUG_REPORT_REASON_MAX]; // pokud je neprazdne, zobrazi se pod "Break" hlaskou
+char BugReportReasonBreak[BUG_REPORT_REASON_MAX]; // if not empty, display message under "Break"
 
 static struct CBugReportReasonBreak_Init
 {
@@ -44,7 +44,7 @@ BOOL GetProcessorSpeed(DWORD* mhz)
         if (!QueryPerformanceFrequency(&f))
             return FALSE; // installed hardware doesn't supports a high-resolution performance counter
 
-        // docasne zvedneme prioritu
+        // temporarily increase priority
         t = GetCurrentThread();
         tp = GetThreadPriority(t);
         SetThreadPriority(t, THREAD_PRIORITY_TIME_CRITICAL);
@@ -52,13 +52,13 @@ BOOL GetProcessorSpeed(DWORD* mhz)
         pp = GetPriorityClass(p);
         SetPriorityClass(p, REALTIME_PRIORITY_CLASS);
 
-        // vytahneme countery
+        // pull out the counters
         c1 = __rdtsc();
         QueryPerformanceCounter(&t1);
 
         //    Sleep(50);
         __int64 divider = 20;   // 1 / 20 s = 50 ms
-        if (f.QuadPart == 1000) // pouzivaji se GetTickCount, napocitame delsi vzorek
+        if (f.QuadPart == 1000) // GetTickCount is used to calculate longer intervals
             divider = 2;        // 0.5 s
 
         QueryPerformanceCounter(&t3);
@@ -69,11 +69,11 @@ BOOL GetProcessorSpeed(DWORD* mhz)
         c2 = __rdtsc();
         QueryPerformanceCounter(&t2);
 
-        // vratime puvodni prioritu
+        // return original priority
         SetThreadPriority(t, tp);
         SetPriorityClass(p, pp);
 
-        // vypocitame frekvenci
+        // calculate the frequency
         *mhz = (DWORD)(f.QuadPart * (c2 - c1) / (t2.QuadPart - t1.QuadPart) / 1000000);
 
         return TRUE;
@@ -96,8 +96,8 @@ struct VS_VERSIONINFO_HEADER
     WORD wType;
 };
 
-// VERSIONINFO by bylo mozne tahat ven pomoci GetFileVersionInfo, ale pouzivame tvrdy pristup do pameti,
-// ktery by mohl byt po padu spolehlivejsi
+// VERSIONINFO could be extracted using GetFileVersionInfo, but we are using direct memory access,
+// which could be more reliable after the fall
 BOOL GetModuleVersion(HINSTANCE hModule, char* buffer, int bufferLen)
 {
     HRSRC hRes = FindResource(hModule, MAKEINTRESOURCE(VS_VERSION_INFO), RT_VERSION);
@@ -172,7 +172,7 @@ MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dw
     sprintf(buf, "Monitor %d: (%d,%d)-(%d,%d) %dx%d pixels", data->Index, r.left, r.top, r.right, r.bottom,
             r.right - r.left, r.bottom - r.top);
 
-    // hdcMonitor je NULL, musime vytvorit DC
+    // hdcMonitor is NULL, we need to create a DC
     HDC hdc = NOHANDLES(CreateDC(mi.szDevice, mi.szDevice, NULL, NULL));
     int planes = GetDeviceCaps(hdc, PLANES);
     int bitsPixels = GetDeviceCaps(hdc, BITSPIXEL);
@@ -241,14 +241,14 @@ BOOL FindInGlobalModulesStore(const char* str, int& index)
     {
         m = (l + r) / 2;
         int res = strcmp(str, GlobalModulesStore[m]);
-        if (res == 0) // nalezeno
+        if (res == 0) // found
         {
             index = m;
             return TRUE;
         }
         else if (res < 0)
         {
-            if (l == r || l > m - 1) // nenalezeno
+            if (l == r || l > m - 1) // not found
             {
                 index = m;
                 return FALSE;
@@ -257,7 +257,7 @@ BOOL FindInGlobalModulesStore(const char* str, int& index)
         }
         else
         {
-            if (l == r) // nenalezeno
+            if (l == r) // not found
             {
                 index = m + 1;
                 return FALSE;
@@ -267,13 +267,13 @@ BOOL FindInGlobalModulesStore(const char* str, int& index)
     }
 }
 
-// struktura slouzi k digestum ze stacku jednotlivych threadu
-// struktury generujeme pri enumeraci modulu a
+// structure is used to digest from the stack of individual threads
+// we generate structures during module enumeration and
 struct CModuleInfo
 {
-    char* Name;        // nazev modulu (bez cesty)
-    void* BaseAddress; // base address modulu
-    DWORD Size;        // jeho velikost v pameti
+    char* Name;        // module name (without path)
+    void* BaseAddress; // base address of the module
+    DWORD Size;        // its size in memory
 };
 
 class CModulesInfo
@@ -387,7 +387,7 @@ BOOL PrintSystemVersion(FPrintLine PrintLine, void* param, char* buf, char* avbu
 
     PrintLine(param, "System Version:", FALSE);
 
-    // vyhneme se deprecated warningu (do budoucna zrejme zruseni funkce v SDK)
+    // we avoid the deprecated warning (likely function removal in the SDK in the future)
     typedef BOOL(WINAPI * FDynGetVersionExA)(LPOSVERSIONINFOA lpVersionInformation);
     FDynGetVersionExA DynGetVersionExA = (FDynGetVersionExA)GetProcAddress(GetModuleHandle("kernel32.dll"), "GetVersionExA");
     if (DynGetVersionExA != NULL)
@@ -457,7 +457,7 @@ const char* FindModuleName(char* buf, void* address, BOOL unloadedName = FALSE)
         {
             char* s = GlobalModulesStore[i];
             if (*s == '0' && *(s + 1) == 'x')
-            { // format radku: sprintf(buf, "0x%p (size: 0x%X) (ver: %s): %s", hInstance, iterator->SizeOfImage, ver, szModName);
+            { // Row format: sprintf(buf, "0x%p (size: 0x%X) (ver: %s): %s", hInstance, iterator->SizeOfImage, ver, szModName);
                 char* addr;
                 DWORD size;
                 sscanf(s, "0x%p (size: 0x%X)", &addr, &size);
@@ -472,7 +472,7 @@ const char* FindModuleName(char* buf, void* address, BOOL unloadedName = FALSE)
                             lstrcpyn(buf + 11, s + 3, MAX_PATH - 12);
                             s = strstr(buf + 11, " (");
                             if (s != NULL)
-                                *s = 0; // pokud je modul uvedeny ve formatu: "%s (%s)", name, fullName -- orizneme fullName
+                                *s = 0; // if the module is in the format: "%s (%s)", name, fullName -- trim fullName
                             strcat(buf, ")");
                         }
                         else
@@ -481,7 +481,7 @@ const char* FindModuleName(char* buf, void* address, BOOL unloadedName = FALSE)
                             lstrcpyn(buf + 2, s + 3, MAX_PATH - 3);
                             s = strstr(buf + 2, " (");
                             if (s != NULL)
-                                *s = 0; // pokud je modul uvedeny ve formatu: "%s (%s)", name, fullName -- orizneme fullName
+                                *s = 0; // if the module is in the format: "%s (%s)", name, fullName -- trim fullName
                             if (strlen(buf) < MAX_PATH - 15)
                                 sprintf(buf + strlen(buf), ": 0x%X", (DWORD)((char*)address - addr));
                             strcat(buf, ")");
@@ -574,8 +574,8 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
             PrintLine(param, buf, TRUE);
             if (IsDebuggerPresent())
             {
-                // x64/Debug verze pod W7 spustene z MSVC debuggeru negenerovala validni minidump (funkce selhala, dump nebyl komplet)
-                // mimo MSVC vse slapalo korektne - vlozime si poznamku, ze bezime z debuggeru
+                // x64/Debug version under W7 launched from MSVC debugger did not generate a valid minidump (function failed, dump was incomplete)
+                // outside MSVC everything worked correctly - let's note that we are running from the debugger
                 sprintf(buf, "Debugger is present!");
                 PrintLine(param, buf, TRUE);
             }
@@ -620,7 +620,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
         if (RTCErrorDescription[0] != 0)
         {
             PrintLine(param, "RTC Error", FALSE);
-            PrintLine(param, RTCErrorDescription, FALSE); // odsazeni je primo ve stringu, je multiline
+            PrintLine(param, RTCErrorDescription, FALSE); // indentation is directly in the string, it is multiline
             PrintLine(param, "", FALSE);
         }
     }
@@ -636,7 +636,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
     BOOL threadNotFound = FALSE;
     __try
     {
-        // vypiseme call-stack threadu, ve kterem je exceptiona
+        // print the call stack of the thread where the exception occurred
         PrintLine(param, "Call Stacks:", FALSE);
         int excepThreadIndex = -1;
         if (Exception != NULL)
@@ -690,7 +690,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                 threadNotFound = TRUE;
             }
         }
-        // vypiseme zbyle call-stacky
+        // print remaining call stacks
         int i;
         for (i = 0; i < CCallStack::CallStacks.Count; i++)
         {
@@ -730,7 +730,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
 #ifdef _WIN64
     __try
     {
-        // vypiseme dostupne registry a pokud to nehodi exception, tak take stack
+        // print available registries and if it doesn't throw an exception, also the stack
         if (Exception != NULL && Exception->ContextRecord != NULL)
         {
             static DWORD64 pointersForDump[32 + 64 + 8 + 8]; // stack, eax, ebx, ecx, edx, esi, edi, ebp, eip ;;; esp-32, esp-28, ... esp-4
@@ -766,7 +766,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                 PrintLine(param, buf, TRUE);
             }
             PrintLine(param, "", FALSE);
-#ifndef _DEBUG // aby nam to v debug verzi nezastavovalo debuger
+#ifndef _DEBUG // to prevent the debugger from stopping us in debug version
             if (ctxtRec->ContextFlags & CONTEXT_CONTROL)
             {
                 DWORD64* rsp = (DWORD64*)ctxtRec->Rsp;
@@ -774,7 +774,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                 int validStackCount = 0;
                 while (i < 32 + 64)
                 {
-                    // esp muze ukazovat nekam do haje - pojistime se
+                    // esp can point somewhere to hell - let's secure ourselves
                     __try
                     {
                         pointersForDump[i] = *(rsp + i);
@@ -783,7 +783,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                     }
                     __except (EXCEPTION_EXECUTE_HANDLER)
                     {
-                        i = 32 + 64; // vypadneme
+                        i = 32 + 64; // we will exit
                     }
                 }
 
@@ -792,7 +792,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                 int validStackCount2 = 32 + 64 + 8;
                 while (i < 32 + 64 + 8 + 8)
                 {
-                    // esp muze ukazovat nekam do haje - pojistime se
+                    // esp can point somewhere to hell - let's secure ourselves
                     __try
                     {
                         pointersForDump[i] = *(rsp - 8 + jj);
@@ -802,7 +802,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                     }
                     __except (EXCEPTION_EXECUTE_HANDLER)
                     {
-                        i = 32 + 64 + 8 + 8; // vypadneme
+                        i = 32 + 64 + 8 + 8; // we will exit
                     }
                 }
 
@@ -826,7 +826,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                                 int j = 0;
                                 while (j < 28)
                                 {
-                                    // mezery zerou misto, zakazeme je a radeji pridame hodnoty
+                                    // Spaces eat up space, we will forbid them and rather add values
                                     //                if (j > 0)
                                     //                  lstrcat(buf, " ");
                                     __try
@@ -857,7 +857,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                         __except (EXCEPTION_EXECUTE_HANDLER)
                         {
                             PrintLine(param, "(exception)", TRUE);
-                            i = 32 + 64 + 8 + 8; // vypadneme
+                            i = 32 + 64 + 8 + 8; // we will exit
                         }
                     }
                     else
@@ -865,7 +865,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                 }
                 PrintLine(param, "", FALSE);
             }
-#endif //_DEBUG  // aby nam to v debug verzi nezastavovalo debuger
+#endif //_DEBUG  // to prevent the debugger from stopping us in the debug version
         }
     }
     __except (EXCEPTION_EXECUTE_HANDLER)
@@ -877,7 +877,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
 #else          // _WIN64
     __try
     {
-        // vypiseme dostupne registry a pokud to nehodi exception, tak take stack
+        // print available registries and if it doesn't throw an exception, also the stack
         if (Exception != NULL && Exception->ContextRecord != NULL)
         {
             static DWORD pointersForDump[32 + 64 + 8 + 8]; // stack, eax, ebx, ecx, edx, esi, edi, ebp, eip ;;; esp-32, esp-28, ... esp-4
@@ -913,7 +913,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                 PrintLine(param, buf, TRUE);
             }
             PrintLine(param, "", FALSE);
-#ifndef _DEBUG // aby nam to v debug verzi nezastavovalo debuger
+#ifndef _DEBUG // to prevent the debugger from stopping us in debug version
             if (ctxtRec->ContextFlags & CONTEXT_CONTROL)
             {
                 DWORD* esp = (DWORD*)ctxtRec->Esp;
@@ -921,7 +921,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                 int validStackCount = 0;
                 while (i < 32 + 64)
                 {
-                    // esp muze ukazovat nekam do haje - pojistime se
+                    // esp can point somewhere to hell - let's secure ourselves
                     __try
                     {
                         pointersForDump[i] = *(esp + i);
@@ -930,7 +930,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                     }
                     __except (EXCEPTION_EXECUTE_HANDLER)
                     {
-                        i = 32 + 64; // vypadneme
+                        i = 32 + 64; // we will exit
                     }
                 }
 
@@ -939,7 +939,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                 int validStackCount2 = 32 + 64 + 8;
                 while (i < 32 + 64 + 8 + 8)
                 {
-                    // esp muze ukazovat nekam do haje - pojistime se
+                    // esp can point somewhere to hell - let's secure ourselves
                     __try
                     {
                         pointersForDump[i] = *(esp - 8 + jj);
@@ -949,7 +949,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                     }
                     __except (EXCEPTION_EXECUTE_HANDLER)
                     {
-                        i = 32 + 64 + 8 + 8; // vypadneme
+                        i = 32 + 64 + 8 + 8; // we will exit
                     }
                 }
 
@@ -973,7 +973,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                                 int j = 0;
                                 while (j < 28)
                                 {
-                                    // mezery zerou misto, zakazeme je a radeji pridame hodnoty
+                                    // Spaces eat up space, we will forbid them and rather add values
                                     //                if (j > 0)
                                     //                  lstrcat(buf, " ");
                                     __try
@@ -1004,7 +1004,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                         __except (EXCEPTION_EXECUTE_HANDLER)
                         {
                             PrintLine(param, "(exception)", TRUE);
-                            i = 32 + 64 + 8 + 8; // vypadneme
+                            i = 32 + 64 + 8 + 8; // we will exit
                         }
                     }
                     else
@@ -1012,7 +1012,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                 }
                 PrintLine(param, "", FALSE);
             }
-#endif         //_DEBUG  // aby nam to v debug verzi nezastavovalo debuger
+#endif         //_DEBUG  // to prevent the debugger from stopping us in the debug version
         }
     }
     __except (EXCEPTION_EXECUTE_HANDLER)
@@ -1582,7 +1582,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
     __try
     {
         PrintLine(param, "Modules:", FALSE);
-        globalModulesStoreCount = GlobalModulesStore.Count; // pro pripad zmeny GlobalModulesStore.Count udelame kopii
+        globalModulesStoreCount = GlobalModulesStore.Count; // in case of a change in GlobalModulesStore.Count, we will make a copy
         if (globalModulesStoreCount > 0)
             isModuleLoaded = (BOOL*)malloc(sizeof(BOOL) * globalModulesStoreCount);
         if (isModuleLoaded != NULL)
@@ -1697,7 +1697,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
 
     __try
     {
-        // vypiseme aktualni casy
+        // print current times
         static SYSTEMTIME st;
         GetLocalTime(&st);
         sprintf(buf, "Bug Report Time: %u.%u.%u - %02u:%02u:%02u",
@@ -1830,7 +1830,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
             NOHANDLES(RegCloseKey(hKey));
         }
 
-        // zkusime najit hlavni okno litestepu
+        // try to find the main window of litestep
 #define LM_GETREVID 9265
 #define LS_BUFSIZE 2048
         HWND hLiteStepWnd = FindWindow("TApplication", "LiteStep");
@@ -1844,10 +1844,10 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
             int msgflags = 0;
             msgflags |= (LS_BUFSIZE << 4);
 
-            // zkusime vytahnout verzi
+            // try to pull the version
             if (SendMessage(hLiteStepWnd, LM_GETREVID, msgflags, (LPARAM)buffer))
             {
-                // LiteStepove tam valej hromadu radku - odrizneme si pouze prvni
+                // Roll a bunch of lines there in LiteStep - we'll just cut off the first one
                 char* p = buffer;
                 while (*p != 0 && *p != '\n')
                     p++;
@@ -1858,7 +1858,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
             }
             else
             {
-                // nepovedlo se - tak alespon napiseme, ze bezi
+                // failed - so at least we'll write that it's running
                 lstrcat(buf, " is present");
             }
             PrintLine(param, buf, TRUE);
@@ -1917,7 +1917,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
             DWORD mhz;
 
             if (!GetValueAux(NULL, hKey, "ProcessorNameString", REG_SZ, processorName, 200))
-                if (!GetValueAux(NULL, hKey, "Identifier", REG_SZ, processorName, 200)) // pod W2K+ asi zbytecny
+                if (!GetValueAux(NULL, hKey, "Identifier", REG_SZ, processorName, 200)) // probably unnecessary under W2K+
                     processorName[0] = 0;
             if (!GetValueAux(NULL, hKey, "VendorIdentifier", REG_SZ, vendorName, 200))
                 vendorName[0] = 0;
@@ -1933,7 +1933,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
             {
                 char* ss = processorName;
                 while (*ss == ' ')
-                    ss++; // Intel vklada pred nazev procesoru mezery, aby to lepe vypadalo v System okne z control panelu
+                    ss++; // Intel inserts spaces before the processor name to make it look better in the System window of the control panel
                 sprintf(buf, "Processor Name: %s", ss);
                 PrintLine(param, buf, TRUE);
             }
@@ -1981,7 +1981,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
             DWORD bufferSize = 200;
             bios[0] = 0;
             SalRegQueryValueEx(hKey, "SystemBiosVersion", NULL, NULL, (BYTE*)bios, &bufferSize);
-            bios[_countof(bios) - 1] = 0; // aspon zakoncime buffer nulou
+            bios[_countof(bios) - 1] = 0; // at least terminate the buffer with a null
             if (bios[0] != 0)
             {
                 sprintf(buf, "BIOS Version: %s", bios);
@@ -1991,7 +1991,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
             bufferSize = 200;
             bios[0] = 0;
             SalRegQueryValueEx(hKey, "SystemBiosDate", NULL, NULL, (BYTE*)bios, &bufferSize);
-            bios[_countof(bios) - 1] = 0; // aspon zakoncime buffer nulou
+            bios[_countof(bios) - 1] = 0; // at least terminate the buffer with a null
             if (bios[0] != 0)
             {
                 sprintf(buf, "BIOS Date: %s", bios);
@@ -2018,27 +2018,27 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
     {
         if (Exception != NULL)
         {
-            // vytahneme CONTEXT jednotlivych threadu
-            // a zobrazime EIP + call stack
+            // Retrieve the CONTEXT of individual threads
+            // and display EIP + call stack
             PrintLine(param, "Stack Back Trace:", FALSE);
             BOOL firstTime = TRUE;
             int i;
             for (i = 0; i < CCallStack::CallStacks.Count; i++)
             {
-                // !!! pristupy do pole CCallStack::CallStacks by chtelo ohranici kritickou sekci
-                // takto riskujeme, ze sahneme do neexistujici pameti
+                // !!! Access to the CCallStack::CallStacks array should be limited to a critical section
+                // this way we risk accessing non-existent memory
                 CCallStack* stack;
                 stack = CCallStack::CallStacks[i];
 
                 HANDLE hThread = NULL;
                 if (stack != NULL)
                 {
-                    __try // trochu hloupa pojistka proti zmene CCallStack::CallStacks, zaroven se jistime pred funkci GetThreadHandleFromID
+                    __try // a bit silly insurance against changing CCallStack::CallStacks, while ensuring ourselves before the function GetThreadHandleFromID
                     {
                         hThread = stack->ThreadHandle;
                         if (hThread == NULL)
                         {
-                            // pokud je hThread NULL, zkusime thread priradit pomoci GetThreadHandleFromID
+                            // if hThread is NULL, try to assign the thread using GetThreadHandleFromID
                             hThread = GetThreadHandleFromID(stack->ThreadID, FALSE);
                         }
                     }
@@ -2053,7 +2053,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                     BOOL threadWithException = (Exception != NULL && Exception->ContextRecord != NULL && stack->ThreadID == ThreadID);
                     if (stack->ThreadID != GetCurrentThreadId() || threadWithException)
                     {
-                        // pokud se nejedna o nas thread, uspime ho, abychom mohli vytahnout context
+                        // if this is not our thread, put it to sleep so we can retrieve the context
                         if (threadWithException || SuspendThread(hThread) != -1)
                         {
                             if (!firstTime)
@@ -2079,12 +2079,12 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                             //                            (ebp+0x8 is param0, ebp+0xC is param1 ...)
                             //
                             // __stdcall   Callee         Pushes parameters on the stack, in reverse    prefix: "_"; suffix: "@" followed      _func@12
-                            //                            order (right to left)                         by the number of bytes (in decimal)
-                            //                            (ebp+0x8 is param0, ebp+0xC is param1 ...)    in the argument list.
+                            //                            order (right to left) by the number of bytes (in decimal)
+                            //                            (ebp+0x8 is param0, ebp+0xC is param1 ...) in the argument list.
                             //
-                            // __fastcall  Callee         The first two DWORD or smaller arguments are  prefix: "@"; suffix: "@" followed by   @func@12
+                            // __fastcall Callee The first two DWORD or smaller arguments are prefix: "@"; suffix: "@" followed by @func@12
                             //                            passed in ecx and edx registers; all other    the number of bytes (in decimal) in
-                            //                            arguments are passed on stack,                the argument list.
+                            //                            arguments are passed on stack, the argument list.
                             //                            reverse order / right to left
                             //                            (ebp+0x8 is param2, ebp+0xC is param3 ...)
                             //
@@ -2102,7 +2102,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                             //     local1    local0    ebp       addr      param0    param1
                             // ... 00000000  00000000  00000000  00000000  00000000  00000000 ...
 
-                            // vytahneme context threadu
+                            // pull out the context of the thread
                             CONTEXT ctx;
                             ZeroMemory(&ctx, sizeof(ctx));
                             if (threadWithException)
@@ -2184,18 +2184,18 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                                     name = modInfo->Name;
                                 sprintf(buf, "EIP = 0x%p %s", (void*)ctx.Eip, name);
                                 PrintLine(param, buf, TRUE);
-                                // esp muze ukazovat nekam do haje - pojistime se
+                                // esp can point somewhere to hell - let's secure ourselves
                                 __try
                                 {
-                                    // *(ebp) je 'frame pointer' funkce, ktera nas volala
-                                    // *(ebp + 4) je navratova hodnota (misto ve funkci, ktera nas volala, kde bude
-                                    //            pokracovat beh az se vratime z teto funkce)
+                                    // *(ebp) is the 'frame pointer' of the function that called us
+                                    // *(ebp + 4) is the return value (instead of in the function that called us, where it will be
+                                    //            continue running until we return from this function)
                                     DWORD* ebp = (DWORD*)ctx.Ebp;
 
                                     int j;
                                     for (j = 0; j < 50; j++)
                                     {
-                                        DWORD retAddr = ebp[1]; // navratova hodnota *(ebp + 4)
+                                        DWORD retAddr = ebp[1]; // return value *(ebp + 4)
                                         if (retAddr == 0)
                                             break;
                                         modInfo = ModulesInfo.Find((void*)retAddr);
@@ -2211,7 +2211,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
 
                                         PrintLine(param, buf, TRUE);
 
-                                        // presuneme se na stack frame funkce, ktera nas zavolala (*ebp)
+                                        // move to the stack frame of the function that called us (*ebp)
                                         ebp = (DWORD*)ebp[0];
                                     }
                                 }
@@ -2250,7 +2250,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                     strcat(buf, " (Thread with Exception)");
                     PrintLine(param, buf, TRUE);
 
-                    // vytahneme context threadu
+                    // pull out the context of the thread
                     CONTEXT ctx;
                     ZeroMemory(&ctx, sizeof(ctx));
                     memcpy(&ctx, Exception->ContextRecord, sizeof(ctx));
@@ -2329,18 +2329,18 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                             name = modInfo->Name;
                         sprintf(buf, "EIP = 0x%p %s", (void*)ctx.Eip, name);
                         PrintLine(param, buf, TRUE);
-                        // esp muze ukazovat nekam do haje - pojistime se
+                        // esp can point somewhere to hell - let's secure ourselves
                         __try
                         {
-                            // *(ebp) je 'frame pointer' funkce, ktera nas volala
-                            // *(ebp + 4) je navratova hodnota (misto ve funkci, ktera nas volala, kde bude
-                            //            pokracovat beh az se vratime z teto funkce)
+                            // *(ebp) is the 'frame pointer' of the function that called us
+                            // *(ebp + 4) is the return value (instead of in the function that called us, where it will be
+                            //            continue running until we return from this function)
                             DWORD* ebp = (DWORD*)ctx.Ebp;
 
                             int j;
                             for (j = 0; j < 50; j++)
                             {
-                                DWORD retAddr = ebp[1]; // navratova hodnota *(ebp + 4)
+                                DWORD retAddr = ebp[1]; // return value *(ebp + 4)
                                 if (retAddr == 0)
                                     break;
                                 modInfo = ModulesInfo.Find((void*)retAddr);
@@ -2356,7 +2356,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
 
                                 PrintLine(param, buf, TRUE);
 
-                                // presuneme se na stack frame funkce, ktera nas zavolala (*ebp)
+                                // move to the stack frame of the function that called us (*ebp)
                                 ebp = (DWORD*)ebp[0];
                             }
                         }
@@ -2370,12 +2370,11 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
             }
             PrintLine(param, "", FALSE);
 
-            /*
-  // zatim necham enumeraci threadu nedokoncenou, protoze Petr prisel s napadem zobrazit
-  // back trace pro thread, ve kterem doslo k padu (zname jeho ID)
+            /*    // I will leave the enumeration of threads unfinished for now, because Petr came up with an idea to display
+  // a back trace for the thread that caused the crash (we know its ID)
 
-      // pole knownThreads obsahuje seznam zobrazenych threadu;
-      // nyni se pokusime dohledat ty nezobrazene
+      // the knownThreads array contains a list of displayed threads;
+      // now we will try to find those that are not displayed
       if (knownThreads.IsGood())
       {
         HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
@@ -2395,8 +2394,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
             DWORD err = GetLastError();
           NOHANDLES(CloseHandle(snap));
         }
-      }
-  */
+      }*/
         }
     }
     __except (EXCEPTION_EXECUTE_HANDLER)
@@ -2412,9 +2410,9 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
         if (TRUE)
         {
             PrintLine(param, "Drives:", FALSE);
-            // dostupne disky
-            // nejnizsi bit odpovida 'A', druhy bit 'B', ...
-            DWORD netDrives; // bitove pole network disku
+            // available disks
+            // lowest bit corresponds to 'A', second bit 'B', ...
+            DWORD netDrives; // bit array of disk network
             static char bufForGetNetworkDrives[10000];
             __try
             {
@@ -2431,7 +2429,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
             char root[10] = " :\\";
             while (i != 0)
             {
-                if ((mask & i) || (netDrives & i)) // disk je pristupny
+                if ((mask & i) || (netDrives & i)) // disk is accessible
                 {
                     BOOL accessible = (mask & i) != 0;
                     root[0] = drive;
@@ -2451,13 +2449,13 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                         int drv = drive - 'A' + 1;
                         DWORD medium = GetDriveFormFactor(drv);
                         if (medium == 350 || medium == 525 || medium == 800 || medium == 1)
-                            getMoreInfo = FALSE; // nebudeme cvakat s disketou behem MyGetVolumeInformation()
+                            getMoreInfo = FALSE; // We will not be clicking with the floppy disk during MyGetVolumeInformation()
                     }
 
                     if (getMoreInfo)
                     {
                         //---  GetVolumeInformation
-                        static char volumeName[1000]; // pouzivano dale jako buffer
+                        static char volumeName[1000]; // used further as a buffer
                                                       //        static char buff[300];
                         DWORD volumeSerialNumber;
                         DWORD maximumComponentLength;
@@ -2501,7 +2499,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                             diskFreeBytes = CQuadWord(bytesPerSector, 0) * CQuadWord(sectorsPerCluster, 0) *
                                             CQuadWord(numberOfFreeClusters, 0);
                         }
-                        //---  GetDiskFreeSpace - zobrazeni
+                        //--- GetDiskFreeSpace - display
                         if (!err)
                         {
                             strcpy(buf, "  BytePerSec: ");
@@ -2525,13 +2523,11 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                             PrintLine(param, buf, TRUE);
                         }
                     }
-                    /*
-          int driveType;
+                    /*            int driveType;
           if (mask & i)
             driveType = GetDriveType(root);
           else
-            driveType = DRIVE_REMOTE;
-          */
+            driveType = DRIVE_REMOTE;*/
                     if (MyQueryDosDevice(drive - 'A', nameBuf, MAX_PATH))
                     {
                         sprintf(buf, "  Device: %s", nameBuf);
@@ -2551,10 +2547,10 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
         PrintLine(param, "", FALSE);
     }
 
-    PrintLine(param, "End.", FALSE); // pro detekci uplnosti bug reportu
+    PrintLine(param, "End.", FALSE); // for detecting the completeness of a bug report
 
     if (Exception != NULL)
-        ModulesInfo.Clean(); // neni treba, ale uvolnime pamet
+        ModulesInfo.Clean(); // not necessary, but let's free up memory
 }
 
 void AddUniqueToGlobalModulesStore(const char* str)
@@ -2587,13 +2583,13 @@ void AddUniqueToGlobalModulesStore(const char* str)
     {
         m = (l + r) / 2;
         int res = strcmp(str, GlobalModulesStore[m]);
-        if (res == 0) // nalezeno
+        if (res == 0) // found
         {
             return;
         }
         else if (res < 0)
         {
-            if (l == r || l > m - 1) // nenalezeno
+            if (l == r || l > m - 1) // not found
             {
                 char* s = DupStr(str);
                 if (s != NULL)
@@ -2619,7 +2615,7 @@ void AddUniqueToGlobalModulesStore(const char* str)
         }
         else
         {
-            if (l == r) // nenalezeno
+            if (l == r) // not found
             {
                 char* s = DupStr(str);
                 if (s != NULL)

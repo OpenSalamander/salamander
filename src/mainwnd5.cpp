@@ -16,7 +16,7 @@ void GetFileDateAndTimeFromPanel(DWORD validFileData, CPluginDataInterfaceEncaps
     *validDate = FALSE;
     *validTime = FALSE;
     FILETIME ft;
-    if (validFileData & (VALID_DATA_DATE | VALID_DATA_TIME)) // aspon neco je v LastWrite
+    if (validFileData & (VALID_DATA_DATE | VALID_DATA_TIME)) // at least something is in LastWrite
     {
         if (FileTimeToLocalFileTime(&f->LastWrite, &ft) &&
             FileTimeToSystemTime(&ft, st))
@@ -39,14 +39,14 @@ void GetFileDateAndTimeFromPanel(DWORD validFileData, CPluginDataInterfaceEncaps
     {
         *validTime = TRUE;
     }
-    if (!*validDate) // nemame nastaveny zadny datum, vynulujeme ho...
+    if (!*validDate) // We do not have any date set, we are resetting it...
     {
         st->wYear = 1602;
         st->wMonth = 1;
         st->wDay = 1;
         st->wDayOfWeek = 2;
     }
-    if (!*validTime) // nemame nastaveny zadny cas, vynulujeme ho...
+    if (!*validTime) // We don't have any time set, we are resetting it...
     {
         st->wHour = 0;
         st->wMinute = 0;
@@ -62,7 +62,7 @@ int MyCompareFileTime(FILETIME* lf, FILETIME* rf, int* foundDSTShifts, int* comp
     {
         CQuadWord left(lf->dwLowDateTime, lf->dwHighDateTime);
         CQuadWord right(rf->dwLowDateTime, rf->dwHighDateTime);
-        // vypocet rozdilu mezi casy a jeho zaokrouhleni
+        // calculate the difference between times and round it
         unsigned __int64 diff = (right.Value > left.Value) ? right.Value - left.Value : left.Value - right.Value;
         if (diff == (unsigned __int64)3600 * 10000000 ||
             diff == (unsigned __int64)2 * 3600 * 10000000)
@@ -75,7 +75,7 @@ int MyCompareFileTime(FILETIME* lf, FILETIME* rf, int* foundDSTShifts, int* comp
     return res;
 }
 
-// porovna dva soubory 'l' a 'r' podle datumu/casu
+// compare two files 'l' and 'r' based on date/time
 int CompareFilesByTime(CFilesWindow* leftPanel, const CFileData* l, BOOL lFAT,
                        CFilesWindow* rightPanel, CFileData* r, BOOL rFAT,
                        int* foundDSTShifts, int* compResNoDSTShiftIgn)
@@ -92,16 +92,16 @@ int CompareFilesByTime(CFilesWindow* leftPanel, const CFileData* l, BOOL lFAT,
     GetFileDateAndTimeFromPanel(rightPanel->ValidFileData, &rightPanel->PluginData, r, FALSE, &stRight,
                                 &validDateRight, &validTimeRight);
 
-    if (validDateLeft && validDateRight ||                                    // pokud neni znamy cas, je inicializovan na 0:00:00.000, takze cas neresime...
-        !validDateLeft && !validDateRight && validTimeLeft && validTimeRight) // datum je neznamy (nulovany), casy jsou oba zname, takze porovnani nic nebrani
+    if (validDateLeft && validDateRight ||                                    // if the time is not known, it is initialized to 0:00:00.000, so we don't deal with time...
+        !validDateLeft && !validDateRight && validTimeLeft && validTimeRight) // date is unknown (zeroed), times are both known, so there is no obstacle to comparison
     {
         FILETIME lf, rf;
         if (Configuration.UseTimeResolution)
         {
-            // oriznuti casu s presnosti na sekundy
+            // Time cropping with precision to seconds
             stLeft.wMilliseconds = 0;
             stRight.wMilliseconds = 0;
-            // prevod casu na cisla
+            // convert time to numbers
             if (!SystemTimeToFileTime(&stLeft, &lf))
             {
                 TRACE_E("CompareFilesByTime(): date&time of left file is invalid!");
@@ -120,7 +120,7 @@ int CompareFilesByTime(CFilesWindow* leftPanel, const CFileData* l, BOOL lFAT,
                     CQuadWord right(rf.dwLowDateTime, rf.dwHighDateTime);
                     unsigned __int64 ld = left.Value / 10000000;
                     unsigned __int64 rd = right.Value / 10000000;
-                    // vypocet rozdilu mezi casy a jeho zaokrouhleni
+                    // calculate the difference between times and round it
                     unsigned __int64 diff = (rd > ld) ? rd - ld : ld - rd;
                     *compResNoDSTShiftIgn = res = (left < right) ? -1 : 1;
                     if (diff < 100000)
@@ -160,10 +160,10 @@ int CompareFilesByTime(CFilesWindow* leftPanel, const CFileData* l, BOOL lFAT,
                 else
                 {
                     if (lFAT == rFAT)
-                        res = MyCompareFileTime(&lf, &rf, foundDSTShifts, compResNoDSTShiftIgn); // stejne filesystemy -> o.k.
-                    else                                                                         // FAT + jiny filesystem -> uprava neFAT casu na FAT cas (po 2 sekundach)
+                        res = MyCompareFileTime(&lf, &rf, foundDSTShifts, compResNoDSTShiftIgn); // same filesystems -> o.k.
+                    else                                                                         // FAT + other filesystem -> adjusting non-FAT time to FAT time (every 2 seconds)
                     {
-                        WORD date, time; // FAT hodnoty
+                        WORD date, time; // FAT values
                         FILETIME t;
                         if (lFAT)
                         {
@@ -185,19 +185,19 @@ int CompareFilesByTime(CFilesWindow* leftPanel, const CFileData* l, BOOL lFAT,
     else
     {
         if (validDateLeft)
-            res = 1; // jakykoliv datum je novejsi nez neznamy datum
+            res = 1; // any date is newer than an unknown date
         else
         {
             if (validDateRight)
-                res = -1; // neznamy datum je starsi nez jakykoliv datum
-            else          // ani jeden datum neni znamy
+                res = -1; // unknown date is older than any date
+            else          // neither date is known
             {
                 if (validTimeLeft)
-                    res = 1; // jakykoliv cas je novejsi nez neznamy cas
+                    res = 1; // any time is newer than an unknown time
                 else
                 {
                     if (validTimeRight)
-                        res = -1; // neznamy cas je starsi nez jakykoliv cas
+                        res = -1; // Unknown time is older than any time
                 }
             }
         }
@@ -226,7 +226,7 @@ void GetFileSizeFromPanel(DWORD validFileData, CPluginDataInterfaceEncapsulation
     }
 }
 
-// porovna dva soubory 'l' a 'r' podle velikosti
+// compare two files 'l' and 'r' based on their size
 int CompareFilesBySize(CFilesWindow* leftPanel, CFileData* l, CFilesWindow* rightPanel, CFileData* r)
 {
     CALL_STACK_MESSAGE_NONE
@@ -246,26 +246,26 @@ int CompareFilesBySize(CFilesWindow* leftPanel, CFileData* l, CFilesWindow* righ
     else
     {
         if (leftValidSize)
-            return 1; // cokoliv je vetsi nez neznama velikost
+            return 1; // anything is greater than an unknown size
         else
         {
             if (rightValidSize)
-                return -1; // neznama velikost je mensi nez cokoliv
+                return -1; // unknown size is smaller than anything
         }
     }
     return 0;
 }
 
-// porovna soubory 'file1' a 'file2', urcene plnou cestou, podle obsahu
-// v pripade uspesneho porovnani vraci funkce TRUE a nastavuje promennou
-// 'different' (TRUE v pripade nalezeni rozdilu, jinak FALSE)
-// v pripade chyby nebo preruseni operace vraci FALSE a nastavuje promennou
-// 'canceled' (TRUE pokud uzivatel stornoval operaci, jinak FALSE)
+// compare files 'file1' and 'file2', specified by full path, based on their content
+// if the comparison is successful, the function returns TRUE and sets the variable
+// 'different' (TRUE if a difference is found, otherwise FALSE)
+// in case of an error or operation interruption, it returns FALSE and sets the variable
+// 'canceled' (TRUE if the user canceled the operation, otherwise FALSE)
 
-#define COMPARE_BUFFER_SIZE (2 * 1024 * 1024) // velikost bufferu pro porovnani v bytech (nemusi se nutne pouzivat cely)
-#define COMPARE_BLOCK_SIZE (32 * 1024)        // velikost bloku souvisle cteneho ze souboru; POZOR: COMPARE_BUFFER_SIZE musi byt delitelne COMPARE_BLOCK_SIZE
-#define COMPARE_BLOCK_GROUP 8                 // po kolika blocich najednou se muze cist pri dost rychlem cteni (vic nez 1 MB/s, viz COMPARE_BUF_TIME_LIMIT); POZOR: pocet bloku v bufferu (COMPARE_BUFFER_SIZE / COMPARE_BLOCK_SIZE) musi byt delitelny COMPARE_BLOCK_GROUP
-#define COMPARE_BUF_TIME_LIMIT 2000           // limit v milisekundach pro nacteni celeho bufferu (COMPARE_BUFFER_SIZE) - je-li splneny, cte se po skupinach bloku COMPARE_BLOCK_GROUP, coz na Vista+ 2x az 3x zrychluje cteni ze site; jinak se cte po jednom bloku (COMPARE_BLOCK_SIZE)
+#define COMPARE_BUFFER_SIZE (2 * 1024 * 1024) // size of the buffer for comparison in bytes (may not necessarily be fully used)
+#define COMPARE_BLOCK_SIZE (32 * 1024)        // size of the block continuously read from the file; WARNING: COMPARE_BUFFER_SIZE must be divisible by COMPARE_BLOCK_SIZE
+#define COMPARE_BLOCK_GROUP 8                 // How many blocks can be read at once during fast reading (more than 1 MB/s, see COMPARE_BUF_TIME_LIMIT); WARNING: the number of blocks in the buffer (COMPARE_BUFFER_SIZE / COMPARE_BLOCK_SIZE) must be divisible by COMPARE_BLOCK_GROUP
+#define COMPARE_BUF_TIME_LIMIT 2000           // limit in milliseconds for reading the entire buffer (COMPARE_BUFFER_SIZE) - if met, reading is done in groups of COMPARE_BLOCK_GROUP blocks, which speeds up reading from the network 2x to 3x on Vista+; otherwise, reading is done one block at a time (COMPARE_BLOCK_SIZE)
 
 void AddProgressSizeWithLimit(CCmpDirProgressDialog* progressDlg, DWORD read, CQuadWord* fileProgressTotal, const CQuadWord& sizeLimit)
 {
@@ -282,7 +282,7 @@ BOOL CompareFilesByContent(HWND hWindow, CCmpDirProgressDialog* progressDlg,
                            const char* file1, const char* file2, const CQuadWord& bothFileSize,
                            BOOL* different, BOOL* canceled)
 {
-    char message[2 * MAX_PATH + 200]; // potrebujeme 2*MAX_PATH pro cestu a potom rezervu pro chybovou hlasku
+    char message[2 * MAX_PATH + 200]; // we need 2*MAX_PATH for the path and then reserve for the error message
     BOOL ret = FALSE;
     *canceled = FALSE;
 
@@ -295,14 +295,14 @@ BOOL CompareFilesByContent(HWND hWindow, CCmpDirProgressDialog* progressDlg,
                                                    : INVALID_HANDLE_VALUE;
     DWORD err = GetLastError();
 
-    if (!progressDlg->Continue()) // dame prilezitost dialogu prekreslit se na 100% predchoziho souboru (otevirani souboru je nejdelsi (3ms) pri kopirovani malych souboru (0,1ms))
+    if (!progressDlg->Continue()) // give the opportunity to redraw the dialogue to 100% of the previous file (opening the file is the longest (3ms) when copying small files (0.1ms))
         *canceled = TRUE;
 
-    // nastavime texty v progress dialogu
+    // set texts in the progress dialog
     progressDlg->SetSource(file1);
     progressDlg->SetTarget(file2);
 
-    // nastavime total ('bothFileSize') a actual (0%) file-progress
+    // set total ('bothFileSize') and actual (0%) file-progress
     CQuadWord fileProgressTotal(0, 0);
     progressDlg->SetFileSize(bothFileSize);
     progressDlg->SetActualFileSize(CQuadWord(0, 0));
@@ -323,15 +323,15 @@ BOOL CompareFilesByContent(HWND hWindow, CCmpDirProgressDialog* progressDlg,
                 //        DWORD measureStart = GetTickCount();
                 //        unsigned __int64 measuredSize = 0;
                 BOOL readErr = FALSE;
-                BOOL readingIsFast1 = FALSE; // FALSE = cekame az rychlost dosahne limitu a budeme moct cist po skupinach (COMPARE_BLOCK_GROUP)
+                BOOL readingIsFast1 = FALSE; // FALSE = we are waiting for the speed to reach the limit and then we will be able to read in groups (COMPARE_BLOCK_GROUP)
                 BOOL readingIsFast2 = FALSE;
                 while (TRUE)
                 {
                     DWORD bufSize = COMPARE_BUFFER_SIZE;
-                    int blockCount = bufSize / COMPARE_BLOCK_SIZE; // pocet bloku v bufSize
+                    int blockCount = bufSize / COMPARE_BLOCK_SIZE; // number of blocks in bufSize
 
-                    // nacteme do 'buffer1' dalsi cast ze souboru 'file1'
-                    // cteme po 32KB blocich cely buffer z jednoho souboru (na W2K a XP je to pri obou souborech z jednoho fyzickeho disku nejrychlejsi, na Viste je to jen mirne pomalejsi nez souvisle cteni)
+                    // read another part from file 'file1' into 'buffer1'
+                    // we read the entire buffer in 32KB blocks from one file (on W2K and XP it is fastest for both files from one physical disk, on Vista it is only slightly slower than continuous reading)
                     read1 = 0;
                     DWORD readBegTime = GetTickCount();
                     for (int block = 0; block < blockCount;)
@@ -354,7 +354,7 @@ BOOL CompareFilesByContent(HWND hWindow, CCmpDirProgressDialog* progressDlg,
                         }
 
                         AddProgressSizeWithLimit(progressDlg, locRead, &fileProgressTotal, bothFileSize);
-                        if (!progressDlg->Continue()) // dame prilezitost dialogu prekreslit se
+                        if (!progressDlg->Continue()) // give us the opportunity to redraw ourselves in dialogue
                         {
                             *canceled = TRUE;
                             break;
@@ -364,7 +364,7 @@ BOOL CompareFilesByContent(HWND hWindow, CCmpDirProgressDialog* progressDlg,
                         if (locRead != readBlockSize)
                             break; // EOF
                         if (GetTickCount() - readBegTime > 200)
-                        { // pomale cteni (asi pomaly sitovy disk (VPN) nebo floppy) - zmensime buffer, v nejhorsim se dostaneme na porovnavani po jednom bloku
+                        { // Slow reading (probably slow network disk (VPN) or floppy) - reduce buffer size, worst case scenario we will end up comparing block by block
                             blockCount = block + (canReadGroup ? COMPARE_BLOCK_GROUP : 1);
                             bufSize = blockCount * COMPARE_BLOCK_SIZE;
                             break;
@@ -373,10 +373,9 @@ BOOL CompareFilesByContent(HWND hWindow, CCmpDirProgressDialog* progressDlg,
                     }
                     if (readErr || *canceled)
                         break;
-                    readingIsFast1 = WindowsVistaAndLater &&                                                                                           // na W2K/XP by tohle nemelo vest k urychleni, takze tam nebudeme drazdit hada bosou nohou
-                                     GetTickCount() - readBegTime < (DWORD)(((unsigned __int64)read1 * COMPARE_BUF_TIME_LIMIT) / COMPARE_BUFFER_SIZE); // pomerime rychlost, aby byla vic nez 1 MB/s
-                                                                                                                                                       /*
-          // cteme cely buffer najednou z jednoho souboru (na Viste je to pri obou souborech z jednoho fyzickeho disku a velkem bufferu mirne rychlejsi nez cteni po 32KB blocich)
+                    readingIsFast1 = WindowsVistaAndLater &&                                                                                           // On W2K/XP this should not lead to acceleration, so we won't poke the snake with a bare foot there
+                                     GetTickCount() - readBegTime < (DWORD)(((unsigned __int64)read1 * COMPARE_BUF_TIME_LIMIT) / COMPARE_BUFFER_SIZE); // measure the speed to be more than 1 MB/s
+                                                                                                                                                       /*            // reading the entire buffer at once from one file (on Vista, when reading from both files on one physical disk and with a large buffer, it is slightly faster than reading in 32KB blocks)
           if (!ReadFile(hFile1, buffer1, bufSize, &read1, NULL))
           {
             err = GetLastError();
@@ -388,11 +387,10 @@ BOOL CompareFilesByContent(HWND hWindow, CCmpDirProgressDialog* progressDlg,
               *canceled = TRUE;
             }
             break;
-          }
-*/
+          }*/
 
-                    // nacteme do 'buffer2' dalsi cast ze souboru 'file2'
-                    // cteme po blocich cely buffer z jednoho souboru (na W2K a XP je to pri obou souborech z jednoho fyzickeho disku nejrychlejsi, na Viste je to jen mirne pomalejsi nez souvisle cteni)
+                    // read another part from the file 'file2' into 'buffer2'
+                    // Reading the entire buffer in blocks from one file (on W2K and XP, it is fastest for both files from one physical disk, on Vista it is only slightly slower than continuous reading)
                     read2 = 0;
                     readBegTime = GetTickCount();
                     for (int block = 0; block < blockCount;)
@@ -415,22 +413,22 @@ BOOL CompareFilesByContent(HWND hWindow, CCmpDirProgressDialog* progressDlg,
                         }
 
                         AddProgressSizeWithLimit(progressDlg, locRead, &fileProgressTotal, bothFileSize);
-                        if (!progressDlg->Continue()) // dame prilezitost dialogu prekreslit se
+                        if (!progressDlg->Continue()) // give us the opportunity to redraw ourselves in dialogue
                         {
                             *canceled = TRUE;
                             break;
                         }
 
                         read2 += locRead;
-                        if (read1 < read2 || // soubory jsou ted ruzne dlouhe => obsah je ruzny
+                        if (read1 < read2 || // files are of different lengths now => content is different
                             locRead > 0 && memcmp(buffer1 + block * COMPARE_BLOCK_SIZE, buffer2, locRead) != 0)
-                        { // obsah souboru je ruzny, nema smysl pokracovat ve cteni
+                        { // the content of the file is different, it doesn't make sense to continue reading
                             *different = TRUE;
                             ret = TRUE;
                             break;
                         }
                         if (locRead != readBlockSize)
-                        { // uz se nam nepodarilo nacist cely buffer (EOF), soubory jsou shodne
+                        { // We failed to load the entire buffer (EOF), the files are identical
                             *different = FALSE;
                             ret = TRUE;
                             break;
@@ -439,15 +437,14 @@ BOOL CompareFilesByContent(HWND hWindow, CCmpDirProgressDialog* progressDlg,
                         if (readingIsFast2 &&
                             GetTickCount() - readBegTime > (DWORD)(((unsigned __int64)read2 * COMPARE_BUF_TIME_LIMIT) / COMPARE_BUFFER_SIZE))
                         {
-                            readingIsFast2 = FALSE; // detekce zpomaleni, dale jedeme po jednotlivych blocich (kvuli plynulosti porgresu a moznosti zcancelovani)
+                            readingIsFast2 = FALSE; // slowdown detection, we proceed through individual blocks (for smooth progress and the possibility of cancellation)
                         }
                     }
                     if (readErr || ret || *canceled)
                         break;
-                    readingIsFast2 = WindowsVistaAndLater &&                                                                                           // na W2K/XP by tohle nemelo vest k urychleni, takze tam nebudeme drazdit hada bosou nohou
-                                     GetTickCount() - readBegTime < (DWORD)(((unsigned __int64)read2 * COMPARE_BUF_TIME_LIMIT) / COMPARE_BUFFER_SIZE); // pomerime rychlost, aby byla vic nez 1 MB/s
-                                                                                                                                                       /*
-          // cteme cely buffer najednou z jednoho souboru (na Viste je to pri obou souborech z jednoho fyzickeho disku a velkem bufferu mirne rychlejsi nez cteni po 32KB blocich)
+                    readingIsFast2 = WindowsVistaAndLater &&                                                                                           // On W2K/XP this should not lead to acceleration, so we won't poke the snake with a bare foot there
+                                     GetTickCount() - readBegTime < (DWORD)(((unsigned __int64)read2 * COMPARE_BUF_TIME_LIMIT) / COMPARE_BUFFER_SIZE); // measure the speed to be more than 1 MB/s
+                                                                                                                                                       /*            // reading the entire buffer at once from one file (on Vista, when reading from both files on one physical disk and with a large buffer, it is slightly faster than reading in 32KB blocks)
           if (!ReadFile(hFile2, buffer2, bufSize, &read2, NULL))
           {
             err = GetLastError();
@@ -459,33 +456,29 @@ BOOL CompareFilesByContent(HWND hWindow, CCmpDirProgressDialog* progressDlg,
               *canceled = TRUE;
             }
             break;
-          }
-*/
-                                                                                                                                                       /*
-          // tyto testy se pri blokovem cteni provadi vyse
+          }*/
+                                                                                                                                                       /*            // these tests are performed above during block reading
           AddProgressSizeWithLimit(progressDlg, read1 + read2, &fileProgressTotal, bothFileSize);
-          if (!progressDlg->Continue()) // dame prilezitost dialogu prekreslit se
+          if (!progressDlg->Continue()) // give the dialog a chance to repaint itself
           {
             *canceled = TRUE;
             break;
           }
 
-          if (read1 != read2 ||  // soubory jsou ted ruzne dlouhe => obsah je ruzny
+          if (read1 != read2 ||  // files are now of different lengths => content is different
               read1 > 0 && memcmp(buffer1, buffer2, read1) != 0)
-          {  // obsah souboru je ruzny, nema smysl pokracovat ve cteni
+          {  // file content is different, no point in continuing reading
             *different = TRUE;
             ret = TRUE;
             break;
           }
           if (read1 != bufSize)
-          { // uz se nam nepodarilo nacist cely buffer, soubory jsou shodne
+          { // we failed to load the entire buffer, files are identical
             *different = FALSE;
             ret = TRUE;
             break;
-          }
-*/
-                                                                                                                                                       /*
-          measuredSize += bufSize;
+          }*/
+                                                                                                                                                       /*            measuredSize += bufSize;
           DWORD ti = GetTickCount() - measureStart;
           if (ti >= 500)
           {
@@ -493,8 +486,7 @@ BOOL CompareFilesByContent(HWND hWindow, CCmpDirProgressDialog* progressDlg,
             TRACE_I("speed: " << (DWORD)(speed / 1024));
             measureStart = GetTickCount();
             measuredSize = 0;
-          }
-*/
+          }*/
                 }
                 free(buffer1);
                 //        free(buffer2);
@@ -523,7 +515,7 @@ BOOL CompareFilesByContent(HWND hWindow, CCmpDirProgressDialog* progressDlg,
             *canceled = TRUE;
         }
     }
-    if (!*canceled) // musime dotahnout total progress na konec souboru
+    if (!*canceled) // we need to bring the total progress to the end of the file
         progressDlg->AddSize(bothFileSize - fileProgressTotal);
 
     //  TRACE_I("CompareFilesByContent(): total time (in secs): " << ((GetTickCount() - totalTi) / 1000));
@@ -531,15 +523,15 @@ BOOL CompareFilesByContent(HWND hWindow, CCmpDirProgressDialog* progressDlg,
     return ret;
 }
 
-// nacte adresare a soubory do poli 'dirs' a 'files'
-// zdrojova cesta je urcena souctem cesty v panelu 'panel' a 'subPath'
-// 'hWindow' je okno pro zobrazovani messageboxu
-// 'progressDlg' slouzi k posouvani progresu po nacteni X souboru/adresaru
-// vraci TRUE v pripade uspesneho nacteni obou poli
-// vraci FALSE v pripade chyby nebo stornovani operace uzivatelem
-// (bude pak nastavena promenna 'canceled')
+// Load directories and files into arrays 'dirs' and 'files'
+// Source path is determined by summing the path in the 'panel' and 'subPath' panel
+// 'hWindow' is a window for displaying a messagebox
+// 'progressDlg' is used to move the progress after loading X files/directories
+// returns TRUE in case of successful loading of both arrays
+// returns FALSE in case of an error or cancellation of the operation by the user
+// (the variable 'canceled' will be set later)
 //
-// podporuje ptDisk a ptZIPArchive
+// supports ptDisk and ptZIPArchive
 
 BOOL ReadDirsAndFilesAux(HWND hWindow, DWORD flags, CCmpDirProgressDialog* progressDlg,
                          CFilesWindow* panel, const char* subPath,
@@ -574,7 +566,7 @@ BOOL ReadDirsAndFilesAux(HWND hWindow, DWORD flags, CCmpDirProgressDialog* progr
             if (err != ERROR_FILE_NOT_FOUND && err != ERROR_NO_MORE_FILES)
             {
                 if (getTotal)
-                    *canceled = FALSE; // pouze ziskavame velikost, nema smysl prudit, skipneme chybu
+                    *canceled = FALSE; // we are only getting the size, no need to bother, we will skip the error
                 else
                 {
                     _snprintf_s(message, _TRUNCATE, LoadStr(IDS_CANNOTREADDIR), path, GetErrorText(err));
@@ -592,9 +584,9 @@ BOOL ReadDirsAndFilesAux(HWND hWindow, DWORD flags, CCmpDirProgressDialog* progr
                 (data.cFileName[0] != '.' ||
                  (data.cFileName[1] != 0 && (data.cFileName[1] != '.' || data.cFileName[2] != 0))))
             {
-                if (counter++ > 200) // po nacteni 200 polozek
+                if (counter++ > 200) // after loading 200 items
                 {
-                    if (!progressDlg->Continue()) // dame prilezitost dialogu prekreslit se
+                    if (!progressDlg->Continue()) // give us the opportunity to redraw ourselves in dialogue
                     {
                         HANDLES(FindClose(hFind));
                         *canceled = TRUE;
@@ -604,7 +596,7 @@ BOOL ReadDirsAndFilesAux(HWND hWindow, DWORD flags, CCmpDirProgressDialog* progr
                 }
 
                 CFileData file;
-                // inicializace clenu struktury, ktere uz dale nebudeme menit
+                // Initialization of structure members that we will no longer change
                 file.DosName = NULL;
                 file.PluginData = -1;
                 file.Association = 0;
@@ -622,8 +614,8 @@ BOOL ReadDirsAndFilesAux(HWND hWindow, DWORD flags, CCmpDirProgressDialog* progr
 
                 int nameLen = (int)strlen(data.cFileName);
 
-                //--- jmeno
-                file.Name = (char*)malloc(nameLen + 1); // alokace
+                //--- name
+                file.Name = (char*)malloc(nameLen + 1); // allocation
                 if (file.Name == NULL)
                 {
                     TRACE_E(LOW_MEMORY);
@@ -631,27 +623,27 @@ BOOL ReadDirsAndFilesAux(HWND hWindow, DWORD flags, CCmpDirProgressDialog* progr
                     *canceled = TRUE;
                     return FALSE;
                 }
-                memmove(file.Name, data.cFileName, nameLen + 1); // kopie textu
+                memmove(file.Name, data.cFileName, nameLen + 1); // copy of text
                 file.NameLen = nameLen;
 
-                //--- pripona
-                if (!Configuration.SortDirsByExt && (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) // jde o ptDisk
+                //--- extension
+                if (!Configuration.SortDirsByExt && (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) // it's about ptDisk
                 {
-                    file.Ext = file.Name + file.NameLen; // adresare nemaji pripony
+                    file.Ext = file.Name + file.NameLen; // directories do not have extensions
                 }
                 else
                 {
                     const char* s = data.cFileName + nameLen;
                     while (--s >= data.cFileName && *s != '.')
                         ;
-                    //          if (s > data.cFileName) file.Ext = file.Name + (s - data.cFileName + 1); // ".cvspass" ve Windows je pripona ...
+                    //          if (s > data.cFileName) file.Ext = file.Name + (s - data.cFileName + 1); // ".cvspass" in Windows is the extension ...
                     if (s >= data.cFileName)
                         file.Ext = file.Name + (s - data.cFileName + 1);
                     else
                         file.Ext = file.Name + file.NameLen;
                 }
 
-                //--- ostatni
+                //--- others
                 file.Size = CQuadWord(data.nFileSizeLow, data.nFileSizeHigh);
                 file.Attr = data.dwFileAttributes;
                 file.LastWrite = data.ftLastWriteTime;
@@ -696,7 +688,7 @@ BOOL ReadDirsAndFilesAux(HWND hWindow, DWORD flags, CCmpDirProgressDialog* progr
         if (err != ERROR_NO_MORE_FILES)
         {
             if (getTotal)
-                *canceled = FALSE; // pouze ziskavame velikost, nema smysl prudit, skipneme chybu
+                *canceled = FALSE; // we are only getting the size, no need to bother, we will skip the error
             else
             {
                 _snprintf_s(message, _TRUNCATE, LoadStr(IDS_CANNOTREADDIR), path, GetErrorText(err));
@@ -718,11 +710,11 @@ BOOL ReadDirsAndFilesAux(HWND hWindow, DWORD flags, CCmpDirProgressDialog* progr
         if (zipFiles == NULL || zipDirs == NULL)
         {
             *canceled = TRUE;
-            return FALSE; // low memory. vypadnem
+            return FALSE; // low memory. I'll get out
         }
 
-        files->SetDeleteData(FALSE); // jen melke kopie dat
-        dirs->SetDeleteData(FALSE);  // jen melke kopie dat
+        files->SetDeleteData(FALSE); // just shallow copies of data
+        dirs->SetDeleteData(FALSE);  // just shallow copies of data
 
         int i;
         for (i = 0; i < zipDirs->Count; i++)
@@ -735,7 +727,7 @@ BOOL ReadDirsAndFilesAux(HWND hWindow, DWORD flags, CCmpDirProgressDialog* progr
                 {
                     TRACE_E(LOW_MEMORY);
                     *canceled = TRUE;
-                    return FALSE; // low memory. vypadnem
+                    return FALSE; // low memory. I'll get out
                 }
             }
         }
@@ -750,7 +742,7 @@ BOOL ReadDirsAndFilesAux(HWND hWindow, DWORD flags, CCmpDirProgressDialog* progr
                 {
                     TRACE_E(LOW_MEMORY);
                     *canceled = TRUE;
-                    return FALSE; // low memory. vypadnem
+                    return FALSE; // low memory. I'll get out
                 }
             }
         }
@@ -765,17 +757,17 @@ BOOL ReadDirsAndFilesAux(HWND hWindow, DWORD flags, CCmpDirProgressDialog* progr
     return TRUE;
 }
 
-// rekurzivni funkce hledajici rozdil mezi adresari
-// adresare jsou urcene cestou v levem a pravem panelu a promennou 'leftSubDir' a 'rightSubDir'
-// leftFAT a rightFAT udavaji, zda je prislusny panel na FAT systemu; pokud je otevreny
-// arhiv, bude prislusna xxxFAT nastavena na FALSE
-// 'flags' specifikuje kriteria porovnani a je z rodiny COMPARE_DIRECTORIES_xxx
-// funkce vraci TRUE v pripade uspesneho porovnani a nastavuje promennou 'different' (TRUE
-// pokud se adresare lisi, jinak FALSE).
-// v pripade chyby nebo preruseni operace uzivatelem vraci funkce FALSE a nastavuje
-// promennou 'canceled' (TRUE v pripade preruseni uzivatelem, jinak FALSE)
+// Recursive function searching for the difference between directories
+// Directories are specified by the path in the left and right panel and the variables 'leftSubDir' and 'rightSubDir'
+// leftFAT and rightFAT indicate whether the respective panel is on the FAT system; if it is open
+// archive, the corresponding xxxFAT will be set to FALSE
+// 'flags' specifies the comparison criteria and belongs to the COMPARE_DIRECTORIES_xxx family
+// Function returns TRUE in case of successful comparison and sets the variable 'different' (TRUE
+// if the directories are different, otherwise FALSE).
+// In case of an error or interruption of the operation by the user, the function returns FALSE and sets
+// variable 'canceled' (TRUE in case of user interruption, otherwise FALSE)
 
-// podporuje ptDisk a ptZIPArchive
+// supports ptDisk and ptZIPArchive
 
 BOOL CompareDirsAux(HWND hWindow, CCmpDirProgressDialog* progressDlg,
                     CFilesWindow* leftPanel, const char* leftSubDir, BOOL leftFAT,
@@ -783,21 +775,21 @@ BOOL CompareDirsAux(HWND hWindow, CCmpDirProgressDialog* progressDlg,
                     DWORD flags, BOOL* different, BOOL* canceled,
                     BOOL getTotal, CQuadWord* total, int* foundDSTShifts)
 {
-    // left/rightPanel a left/rightSubDir urcuji cestu,
-    // jejiz adresare a soubory budou ulozeny do nasledujicich poli
+    // left/rightPanel and left/rightSubDir determine the path,
+    // whose directories and files will be stored in the following arrays
     CFilesArray leftDirs;
     CFilesArray rightDirs;
     int foundDSTShiftsInThisDir = 0;
 
-    { // lokalni blok kvuli omezeni platnosti leftFiles & rightFiles (setrime pamet pred zarekurzenim do podadresaru)
+    { // Local block due to the limitation of the validity of leftFiles & rightFiles (saving memory before recursion into a subdirectory)
         CFilesArray leftFiles;
         CFilesArray rightFiles;
 
-        // z predesleho porovnani souboru zustala nastavena hodnota
+        // the value set from the previous file comparison remains
         if ((flags & COMPARE_DIRECTORIES_BYCONTENT) && (!getTotal))
-            progressDlg->SetActualFileSize(CQuadWord(0, 0)); // nastavime 0%
+            progressDlg->SetActualFileSize(CQuadWord(0, 0)); // set to 0%
 
-        // nastavime texty v progress dialogu
+        // set texts in the progress dialog
         BOOL pathAppended = TRUE;
 
         char message[MAX_PATH + 200];
@@ -821,24 +813,24 @@ BOOL CompareDirsAux(HWND hWindow, CCmpDirProgressDialog* progressDlg,
             return FALSE;
         }
 
-        // nacteme adresare a soubory pro levy
+        // read directories and files for the left
         if (!ReadDirsAndFilesAux(hWindow, flags, progressDlg, leftPanel, leftSubDir, &leftDirs, &leftFiles, canceled, getTotal))
             return FALSE;
 
-        // a pravy panel
+        // and right panel
         if (!ReadDirsAndFilesAux(hWindow, flags, progressDlg, rightPanel, rightSubDir, &rightDirs, &rightFiles, canceled, getTotal))
             return FALSE;
 
-        // pokud se nerovnaji pocty v levem a pravem panelu, jsou adresare ruzne
+        // if the numbers of directories in the left and right panel do not match, the directories are different
         if (leftDirs.Count != rightDirs.Count || leftFiles.Count != rightFiles.Count)
         {
             *different = TRUE;
             return TRUE;
         }
 
-        // ted uz plati, ze pocet adresaru soubor je stejny v obou panelech
+        // now it holds that the number of directories in the file is the same in both panels
 
-        // seradime pole podle jmena, abychom je mohli vzajeme porovnat
+        // we will sort the array by name so that we can compare them pairwise
         if (leftDirs.Count > 1)
             SortNameExt(leftDirs, 0, leftDirs.Count - 1, FALSE);
         if (leftFiles.Count > 1)
@@ -848,9 +840,9 @@ BOOL CompareDirsAux(HWND hWindow, CCmpDirProgressDialog* progressDlg,
         if (rightFiles.Count > 1)
             SortNameExt(rightFiles, 0, rightFiles.Count - 1, FALSE);
 
-        // napred porovname soubory podle jmena, casu a atributu
-        // porovnani podle obsahu odlozime, protoze je pomale a pokud
-        // nalezneme rozdil uz na teto urovni, usetrime cas
+        // first we will compare files by name, time, and attributes
+        // We will postpone the comparison by content because it is slow and if
+        // We will find the difference already at this level, saving time
         BOOL timeDiffWithDSTShiftExists = FALSE;
         CFileData *leftFile, *rightFile;
         int i;
@@ -890,7 +882,7 @@ BOOL CompareDirsAux(HWND hWindow, CCmpDirProgressDialog* progressDlg,
                 }
             }
 
-            // porovname soubory podle obsahu -- tady jen porovname velikosti souboru jako trivialni test neshody obsahu souboru
+            // compare files by content -- here we only compare file sizes as a trivial test for content mismatch
             if (flags & COMPARE_DIRECTORIES_BYCONTENT)
             {
                 if (leftFile->Size != rightFile->Size)
@@ -906,16 +898,16 @@ BOOL CompareDirsAux(HWND hWindow, CCmpDirProgressDialog* progressDlg,
                 }
             }
 
-            // By Time -- kvuli DST time shiftu testujeme casy az jako posledni (nebudeme hlasit DST problem, kdyz se soubory lisi treba jeste ve velikosti nebo atributech)
+            // By Time -- we test times as the last resort due to DST time shift (we will not report DST problem if files differ in size or attributes)
             if (flags & COMPARE_DIRECTORIES_BYTIME)
             {
-                int isDSTShift = 0; // 1 = casy prave porovnavane dvojice souboru se lisi presne o jednu nebo dve hodiny, 0 = nelisi
+                int isDSTShift = 0; // 1 = the times of the currently compared pair of files differ by exactly one or two hours, 0 = do not differ
                 int compResNoDSTShiftIgn;
                 if (CompareFilesByTime(leftPanel, leftFile, leftFAT, rightPanel, rightFile, rightFAT,
                                        &isDSTShift, &compResNoDSTShiftIgn) != 0)
                 {
                     if (isDSTShift != 0)
-                        timeDiffWithDSTShiftExists = TRUE; // zkusime najit jeste jinou diferenci (idealne bez DST warningu)
+                        timeDiffWithDSTShiftExists = TRUE; // Let's try to find another difference (ideally without DST warning)
                     else
                     {
                         *different = TRUE;
@@ -927,7 +919,7 @@ BOOL CompareDirsAux(HWND hWindow, CCmpDirProgressDialog* progressDlg,
             }
         }
 
-        // porovname adresare
+        // compare directories
         CFileData *leftDir, *rightDir;
         for (i = 0; i < leftDirs.Count; i++)
         {
@@ -955,17 +947,17 @@ BOOL CompareDirsAux(HWND hWindow, CCmpDirProgressDialog* progressDlg,
                 }
             }
 
-            // adresare podle casu neporovnavame
+            // We do not compare addresses by time
         }
 
-        if (timeDiffWithDSTShiftExists) // nenasli jsme jiny rozdil, tak ohlasime neignorovany DST time shift vcetne warningu
+        if (timeDiffWithDSTShiftExists) // We did not find any other difference, so we will report the unignored DST time shift including a warning
         {
             (*foundDSTShifts)++;
             *different = TRUE;
             return TRUE;
         }
 
-        // porovname soubory podle obsahu
+        // compare files by content
         if (flags & COMPARE_DIRECTORIES_BYCONTENT)
         {
             if (!leftPanel->Is(ptDisk) || !rightPanel->Is(ptDisk))
@@ -986,7 +978,7 @@ BOOL CompareDirsAux(HWND hWindow, CCmpDirProgressDialog* progressDlg,
                     {
                         if (!getTotal)
                         {
-                            // slozime plne cesty k oboum souborum
+                            // construct full paths to both files
                             pathAppended = TRUE;
 
                             char leftFilePath[2 * MAX_PATH];
@@ -1012,7 +1004,7 @@ BOOL CompareDirsAux(HWND hWindow, CCmpDirProgressDialog* progressDlg,
                                 return FALSE;
                             }
 
-                            // nasel jsem dva ruzne soubory, koncime
+                            // I found two different files, we're done
                             if (*different)
                                 return TRUE;
                         }
@@ -1022,20 +1014,20 @@ BOOL CompareDirsAux(HWND hWindow, CCmpDirProgressDialog* progressDlg,
                 }
                 else
                 {
-                    // soubory maji ruznou delku, jsou obsahove ruzne
+                    // files have different lengths, they are different in content
                     *different = TRUE;
                     return TRUE;
                 }
             }
         }
 
-        // nenasli jsme zadny rozdil
-        // soubory uz dale nebudeme potrebovat, muzeme uvolnit pamet
-        // leftFiles.DestroyMembers();  -- Petr: provedeme primo destrukci lokalniho objektu, uvolni toho vic
-        // rightFiles.DestroyMembers(); -- Petr: provedeme primo destrukci lokalniho objektu, uvolni toho vic
+        // We did not find any difference
+        // We won't need the files anymore, we can free up memory
+        // leftFiles.DestroyMembers();  -- Petr: we will directly perform the destruction of the local object, it will release more
+        // rightFiles.DestroyMembers(); -- Petr: we will perform direct destruction of the local object, it will release more
     }
 
-    // nenasli jsme zadny rozdil, rekurzivne volame sami sebe na jednotlive adresare
+    // We did not find any differences, recursively calling ourselves on individual directories
     int i;
     for (i = 0; i < leftDirs.Count; i++)
     {
@@ -1068,19 +1060,19 @@ BOOL CompareDirsAux(HWND hWindow, CCmpDirProgressDialog* progressDlg,
             if (*different)
             {
                 *foundDSTShifts += foundDSTShiftsInSubDir;
-                return TRUE; // nasli jsme rozdil v podadresari, koncime
+                return TRUE; // We found a difference in the subdirectory, we are finishing
             }
             foundDSTShiftsInThisDir += foundDSTShiftsInSubDir;
         }
     }
 
-    // nenasli jsme zadny rozdil
+    // We did not find any difference
     *different = FALSE;
     *foundDSTShifts += foundDSTShiftsInThisDir;
     return TRUE;
 }
 
-// vytvori melkou kopii a nastavi Selected pro vsechny polozky na FALSE
+// Creates a shallow copy and sets Selected to FALSE for all items
 CFilesArray* GetShallowCopy(CFilesArray* items)
 {
     CFilesArray* ret = new CFilesArray();
@@ -1092,7 +1084,7 @@ CFilesArray* GetShallowCopy(CFilesArray* items)
             int i;
             for (i = 0; i < items->Count; i++)
                 ret->At(i).Selected = 0;
-            ret->SetDeleteData(FALSE); // jen melka kopie dat, zamezime destrukci
+            ret->SetDeleteData(FALSE); // only shallow copy of data, prevent destruction
         }
         else
         {
@@ -1114,7 +1106,7 @@ void SkipIgnoredNames(BOOL ignoreNames, CMaskGroup* ignoreNamesMasks, BOOL dirs,
         if (*l < left->Count)
         {
             while (ignoreNamesMasks->AgreeMasks((*leftFile)->Name, dirs ? NULL : (*leftFile)->Ext))
-            { // preskocime ignorovana jmena v levem panelu
+            { // skip ignored names in the left panel
                 if (++(*l) < left->Count)
                     *leftFile = &left->At(*l);
                 else
@@ -1124,7 +1116,7 @@ void SkipIgnoredNames(BOOL ignoreNames, CMaskGroup* ignoreNamesMasks, BOOL dirs,
         if (*r < right->Count)
         {
             while (ignoreNamesMasks->AgreeMasks((*rightFile)->Name, dirs ? NULL : (*rightFile)->Ext))
-            { // preskocime ignorovana jmena v pravem panelu
+            { // skip ignored names in the right panel
                 if (++(*r) < right->Count)
                     *rightFile = &right->At(*r);
                 else
@@ -1159,7 +1151,7 @@ void CMainWindow::CompareDirectories(DWORD flags)
         int errPos;
         if (!Configuration.CompareIgnoreFilesMasks.PrepareMasks(errPos))
         {
-            TRACE_E("CMainWindow::CompareDirectories: CompareIgnoreFilesMasks is invalid."); // hrozi asi jen pri rucni editaci konfigurace v registry
+            TRACE_E("CMainWindow::CompareDirectories: CompareIgnoreFilesMasks is invalid."); // probably only threatens manual editing of the configuration in the registry
             return;
         }
     }
@@ -1169,18 +1161,18 @@ void CMainWindow::CompareDirectories(DWORD flags)
         int errPos;
         if (!Configuration.CompareIgnoreDirsMasks.PrepareMasks(errPos))
         {
-            TRACE_E("CMainWindow::CompareDirectories: CompareIgnoreDirsMasks is invalid."); // hrozi asi jen pri rucni editaci konfigurace v registry
+            TRACE_E("CMainWindow::CompareDirectories: CompareIgnoreDirsMasks is invalid."); // probably only threatens manual editing of the configuration in the registry
             return;
         }
     }
 
-    BeginStopRefresh(); // cmuchal si da pohov
+    BeginStopRefresh(); // He was snoring in his sleep
 
-    // snizime prioritu threadu na "normal" (aby operace prilis nezatezovaly stroj)
+    // Lower the priority of the thread to "normal" (to prevent operations from overloading the machine)
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
-    //--- otevreme progress dialog
-    BOOL displayDialogBox = (flags & COMPARE_DIRECTORIES_BYCONTENT) != 0 || // pro rychle akce nema smysl dialog zobrazovat
+    //--- open progress dialog
+    BOOL displayDialogBox = (flags & COMPARE_DIRECTORIES_BYCONTENT) != 0 || // It doesn't make sense to display a dialog for quick actions
                             (flags & COMPARE_DIRECTORIES_SUBDIRS) != 0;
     BOOL displayProgressBar = (flags & COMPARE_DIRECTORIES_BYCONTENT) != 0;
     CCmpDirProgressDialog progressDlg(HWindow, displayProgressBar, &TaskBarList3);
@@ -1188,7 +1180,7 @@ void CMainWindow::CompareDirectories(DWORD flags)
     HWND hFocusedWnd = NULL;
     if (displayDialogBox)
     {
-        // nastavime texty v progress dialogu
+        // set texts in the progress dialog
         char message[2 * MAX_PATH];
         LeftPanel->GetGeneralPath(message, 2 * MAX_PATH);
         progressDlg.SetSource(message);
@@ -1201,11 +1193,11 @@ void CMainWindow::CompareDirectories(DWORD flags)
     }
 
     BOOL identical = TRUE;
-    BOOL canceled = FALSE;  // uzivatel stornoval operaci
-    int foundDSTShifts = 0; // kolikrat se casy souboru lisily presne o jednu nebo dve hodiny, pricemz to byl jediny rozdil v uzivatelem vybranych kriteriich
+    BOOL canceled = FALSE;  // user canceled the operation
+    int foundDSTShifts = 0; // How many times the file times differed exactly by one or two hours, with this being the only difference in user-selected criteria
 
-    //--- melka kopie poli Files a Dirs; (musime pracovat nad kopii dat, protoze behem zobrazeneho progress dialogu
-    //    by prekresleni casti panelu odhalilo, ze jsme zmenili razeni panelu nebo hejbali se selection)
+    //--- shallow copy of the Files and Dirs arrays; (we need to work on a copy of the data because during the displayed progress dialog
+    //    to redraw part of the panel would reveal that we changed the order of the panels or moved the selection)
 
     CFilesArray* leftFiles = GetShallowCopy(LeftPanel->Files);
     CFilesArray* leftDirs = GetShallowCopy(LeftPanel->Dirs);
@@ -1214,48 +1206,48 @@ void CMainWindow::CompareDirectories(DWORD flags)
 
     if (leftFiles != NULL && leftDirs != NULL && rightFiles != NULL && rightDirs != NULL)
     {
-        // podarilo se vytvorit melke kopie
-        //--- zjisteni FAT systemu kvuli presnosti porovnani lastWrite
+        // managed to create shallow copies
+        //--- detection of the FAT system for accurate comparison of lastWrite
         BOOL leftFAT = FALSE;
         BOOL rightFAT = FALSE;
         if (LeftPanel->Is(ptDisk))
         {
             char fileSystem[20];
             MyGetVolumeInformation(LeftPanel->GetPath(), NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, fileSystem, 20);
-            leftFAT = StrNICmp(fileSystem, "FAT", 3) == 0; // FAT i FAT32 pouzivaji DOS cas (presnost jen 2 sekundy)
+            leftFAT = StrNICmp(fileSystem, "FAT", 3) == 0; // FAT and FAT32 use DOS time (precision only 2 seconds)
         }
         if (RightPanel->Is(ptDisk))
         {
             char fileSystem[20];
             MyGetVolumeInformation(RightPanel->GetPath(), NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, fileSystem, 20);
-            rightFAT = StrNICmp(fileSystem, "FAT", 3) == 0; // FAT i FAT32 pouzivaji DOS cas (presnost jen 2 sekundy)
+            rightFAT = StrNICmp(fileSystem, "FAT", 3) == 0; // FAT and FAT32 use DOS time (precision only 2 seconds)
         }
-        // zastavime nacitani ikon, aby nedochazelo ke konkurenci s porovnanim
+        // Stop loading icons to avoid competition with comparison
         if (LeftPanel->UseSystemIcons || LeftPanel->UseThumbnails)
             LeftPanel->SleepIconCacheThread();
         if (RightPanel->UseSystemIcons || RightPanel->UseThumbnails)
             RightPanel->SleepIconCacheThread();
-        //--- serazeni podle jmena
+        //--- sorting by name
         if (LeftPanel->SortType != stName || LeftPanel->ReverseSort)
             SortFilesAndDirectories(leftFiles, leftDirs, stName, FALSE, Configuration.SortDirsByName);
         if (RightPanel->SortType != stName || RightPanel->ReverseSort)
             SortFilesAndDirectories(rightFiles, rightDirs, stName, FALSE, Configuration.SortDirsByName);
-        //--- komparace + oznaceni
+        //--- comparison + marking
         BOOL getTotal;
         if (flags & COMPARE_DIRECTORIES_BYCONTENT)
-            getTotal = TRUE; // TRUE: neoznacujeme rozdily, do promenne 'total' nascitavame velikost souboru k porovnani
+            getTotal = TRUE; // TRUE: we do not mark differences, we add the file size to the 'total' variable for comparison
         else
-            getTotal = FALSE;  // FALSE: oznacujeme rozdily, porovnavame soubory podle obsahu
-        CQuadWord total(0, 0); // celkovy pocet bajtu, ktery bude (v nejhorsim pripade) treba porovnat
+            getTotal = FALSE;  // FALSE: marking differences, comparing files by content
+        CQuadWord total(0, 0); // total number of bytes that will need to be compared (in the worst case)
 
-        // pole 'dirSubTotal' obsahuje velikosti jednotlivych podadresaru (souboru obsazenych v nich)
-        // pole se plni v prvnim pruchodu (getTotal == TRUE)
-        // pouziva se ve druhem pruchodu (getTotal == FALSE): pokud je podadresar ruzny, vime kolik preskocit na total progressu
+        // array 'dirSubTotal' contains sizes of individual subdirectories (files contained in them)
+        // array is filled in the first pass (getTotal == TRUE)
+        // Used in the second pass (getTotal == FALSE): if the subdirectory is different, we know how much to skip on the total progress
         TDirectArray<CQuadWord> dirSubTotal(max(1, min(leftDirs->Count, rightDirs->Count)), 1);
-        int subTotalIndex; // index do pole dirSubTotal
+        int subTotalIndex; // index into the array dirSubTotal
 
     ONCE_MORE:
-        // napred soubory z leveho a praveho adresare
+        // first files from left and right directory
         CFilesArray *left = leftFiles, *right = rightFiles;
 
         CFileData *leftFile, *rightFile;
@@ -1271,7 +1263,7 @@ void CMainWindow::CompareDirectories(DWORD flags)
                              &l, &leftFile, left, &r, &rightFile, right);
             if (l < left->Count)
             {
-                if (r < right->Count) // oba panely obsahuji soubory
+                if (r < right->Count) // both panels contain files
                 {
                     compRes = CmpNameExtIgnCase(*leftFile, *rightFile);
                     if (compRes == -1) // left < right
@@ -1304,7 +1296,7 @@ void CMainWindow::CompareDirectories(DWORD flags)
                             BOOL rightIsNewer = FALSE;
                             BOOL leftIsNewerNoDSTShiftIgn = FALSE;
                             BOOL rightIsNewerNoDSTShiftIgn = FALSE;
-                            int isDSTShift = 0; // 1 = casy prave porovnavane dvojice souboru se lisi presne o jednu nebo dve hodiny, 0 = nelisi (nebo se casy vubec neporovnavaji)
+                            int isDSTShift = 0; // 1 = the times of the currently compared pair of files differ by exactly one or two hours, 0 = do not differ (or the times are not compared at all)
 
                             // By Size
                             if (flags & COMPARE_DIRECTORIES_BYSIZE)
@@ -1349,11 +1341,11 @@ void CMainWindow::CompareDirectories(DWORD flags)
                             // By Content
                             if (flags & COMPARE_DIRECTORIES_BYCONTENT)
                             {
-                                if (leftFile->Size == rightFile->Size) // test na velikost neni kryty nasledujici optimalizacni podminkou zamerne, aby doslo k oznaceni obou souboru a nevyskakovaly zbytecne DST warningy
+                                if (leftFile->Size == rightFile->Size) // the size test is intentionally not covered by the following optimization condition in order to mark both files and avoid unnecessary DST warnings
                                 {
-                                    if (!selectLeft && !leftIsNewer || !selectRight && !rightIsNewer) // pokud jsou oba soubory spinave, nema smysl porovnavat je podle obsahu
+                                    if (!selectLeft && !leftIsNewer || !selectRight && !rightIsNewer) // If both files are dirty, there is no point in comparing them by content
                                     {
-                                        // pokud maji oba soubory nulovou delku, musi byt obsahove shodne
+                                        // if both files have zero length, they must be content-identical
                                         if (leftFile->Size != CQuadWord(0, 0))
                                         {
                                             if (!getTotal)
@@ -1389,7 +1381,7 @@ void CMainWindow::CompareDirectories(DWORD flags)
                                                 {
                                                     if (canceled)
                                                         goto ABORT_COMPARE;
-                                                    selectLeft = TRUE; // pri chybe cteni souboru radsi dvojici oznacime jako by mela ruzny obsah (muze mit)
+                                                    selectLeft = TRUE; // in case of a file reading error, it is better to mark the pair as having different content (it may have)
                                                     selectRight = TRUE;
                                                 }
                                             }
@@ -1400,7 +1392,7 @@ void CMainWindow::CompareDirectories(DWORD flags)
                                 }
                                 else
                                 {
-                                    // soubory maji ruznou delku, musi se lisit obsahem
+                                    // files have different lengths, their content must differ
                                     selectLeft = TRUE;
                                     selectRight = TRUE;
                                 }
@@ -1409,7 +1401,7 @@ void CMainWindow::CompareDirectories(DWORD flags)
                             if (!getTotal)
                             {
                                 if (leftIsNewerNoDSTShiftIgn && !selectLeft || rightIsNewerNoDSTShiftIgn && !selectRight)
-                                    foundDSTShifts += isDSTShift; // pocitame jen casove rozdily souboru, ktere nejsou jiz oznacene z jineho duvodu (napr. kvuli rozdilu podle jineho kriteria) -- motivace: pokud se nemusi ukazat slozity warning ohledne DST, neukazujeme ho
+                                    foundDSTShifts += isDSTShift; // we only calculate the time differences of files that are not already marked for another reason (e.g. due to a difference according to another criterion) -- motivation: if a complex warning about DST does not need to be shown, we do not show it
 
                                 if (selectLeft || leftIsNewer)
                                 {
@@ -1429,7 +1421,7 @@ void CMainWindow::CompareDirectories(DWORD flags)
                         }
                     }
                 }
-                else // jen left
+                else // just left
                 {
                     if (!getTotal)
                     {
@@ -1440,7 +1432,7 @@ void CMainWindow::CompareDirectories(DWORD flags)
                         leftFile = &left->At(l);
                 }
             }
-            else // jen right
+            else // just right
             {
                 if (r < right->Count)
                 {
@@ -1455,12 +1447,12 @@ void CMainWindow::CompareDirectories(DWORD flags)
             }
         }
 
-        // Sal2.0 a TC porovnavaji bez adresaru tak, ze ignoruji i jejich jmena
-        // lide nam to porad predhazovali, takze se budeme chovat stejne (situace
-        // bez COMPARE_DIRECTORIES_ONEPANELDIRS)
+        // Sal2.0 and TC compare without directories by also ignoring their names
+        // People kept throwing it in our faces, so we will act the same (situation)
+        // without COMPARE_DIRECTORIES_ONEPANELDIRS)
         if ((flags & COMPARE_DIRECTORIES_SUBDIRS) || (flags & COMPARE_DIRECTORIES_ONEPANELDIRS))
         {
-            // nyni porovname podadresare
+            // now we will compare subdirectories
             subTotalIndex = 0;
 
             left = leftDirs;
@@ -1485,7 +1477,7 @@ void CMainWindow::CompareDirectories(DWORD flags)
                                  &l, &leftDir, left, &r, &rightDir, right);
                 if (l < left->Count)
                 {
-                    if (r < right->Count) // oba panely obsahuji adresare
+                    if (r < right->Count) // both panels contain directories
                     {
                         compRes = CmpNameExtIgnCase(*leftDir, *rightDir);
                         if (compRes == -1) // left < right
@@ -1521,13 +1513,13 @@ void CMainWindow::CompareDirectories(DWORD flags)
                                     }
                                 }
 
-                                // stejna jmena, stejne atributy -> budeme zkoumat obsah podadresaru
-                                // pokud je adresar vybran z predchoziho kola, nebudeme ho tupe znovu enumerovat (getTotal)
+                                // same names, same attributes -> we will examine the contents of subdirectories
+                                // if the directory is selected from the previous round, we will not enumerate it again (getTotal)
                                 if ((flags & COMPARE_DIRECTORIES_SUBDIRS) && (!select) && leftDir->Selected == 0)
                                 {
-                                    // do promennych left/rightSubDir vlozime podcestu, ktera je
-                                    // v pripade ptDisk vztazena k ceste v panelu a v pripade
-                                    // ptZIPArchive k ceste k archivu
+                                    // we insert a subdirectory into the left/rightSubDir variables, which is
+                                    // in case of ptDisk related to the path in the panel and in case
+                                    // ptZIPArchive to the path to the archive
                                     char leftSubDir[MAX_PATH];
                                     char rightSubDir[MAX_PATH];
 
@@ -1580,7 +1572,7 @@ void CMainWindow::CompareDirectories(DWORD flags)
                                     }
 
                                     BOOL different;
-                                    CQuadWord lastTotal; // pokud bude podadresar ruzny, preskocime jeho velikost pomoci 'lastTotal' + 'dirSubTotal'
+                                    CQuadWord lastTotal; // if the subdirectory is different, we will skip its size using 'lastTotal' + 'dirSubTotal'
                                     if (!getTotal)
                                         progressDlg.GetActualTotalSize(lastTotal);
                                     CQuadWord subTotal(0, 0);
@@ -1595,7 +1587,7 @@ void CMainWindow::CompareDirectories(DWORD flags)
                                         if (different)
                                         {
                                             foundDSTShifts += foundDSTShiftsInSubDir;
-                                            select = TRUE; // select nastavime i v pripade getTotal; optimalizace, v druhem kole cely strom preskocime
+                                            select = TRUE; // select also in case of getTotal; optimization, in the second round we will skip the entire tree
                                             if (!getTotal && (flags & COMPARE_DIRECTORIES_BYCONTENT))
                                             {
                                                 if (dirSubTotal.IsGood() && dirSubTotal.Count > subTotalIndex)
@@ -1606,7 +1598,7 @@ void CMainWindow::CompareDirectories(DWORD flags)
                                         }
                                         else
                                         {
-                                            // total pricteme pouze pokud budeme cely strom porovnavat podle obsahu
+                                            // We will only add up the total if we compare the entire tree based on its content
                                             if (getTotal)
                                             {
                                                 if (dirSubTotal.IsGood())
@@ -1622,7 +1614,7 @@ void CMainWindow::CompareDirectories(DWORD flags)
                                     {
                                         if (canceled)
                                             goto ABORT_COMPARE;
-                                        else // pokud neni 'canceled', byla zobrazena chybova hlaska a uzivatel chce pokracovat
+                                        else // if 'canceled' is not, an error message was displayed and the user wants to continue
                                         {
                                             if (!getTotal)
                                                 select = TRUE;
@@ -1630,7 +1622,7 @@ void CMainWindow::CompareDirectories(DWORD flags)
                                     }
                                 }
 
-                                if (select) // pozor, uziva se i v pripade getTotal == TRUE (optimalizace)
+                                if (select) // note that it is also used in case getTotal == TRUE (optimization)
                                 {
                                     leftDir->Selected = 1;
                                     rightDir->Selected = 1;
@@ -1644,7 +1636,7 @@ void CMainWindow::CompareDirectories(DWORD flags)
                             }
                         }
                     }
-                    else // jen left
+                    else // just left
                     {
                         leftDir->Selected = 1;
                         identical = FALSE;
@@ -1652,7 +1644,7 @@ void CMainWindow::CompareDirectories(DWORD flags)
                             leftDir = &left->At(l);
                     }
                 }
-                else // jen right
+                else // just right
                 {
                     if (r < right->Count)
                     {
@@ -1674,13 +1666,13 @@ void CMainWindow::CompareDirectories(DWORD flags)
 
     ABORT_COMPARE:
 
-        //--- serazeni podle nastaveni
+        //--- sorting according to settings
         if (LeftPanel->SortType != stName || LeftPanel->ReverseSort)
             SortFilesAndDirectories(leftFiles, leftDirs, LeftPanel->SortType, LeftPanel->ReverseSort, Configuration.SortDirsByName);
         if (RightPanel->SortType != stName || RightPanel->ReverseSort)
             SortFilesAndDirectories(rightFiles, rightDirs, RightPanel->SortType, RightPanel->ReverseSort, Configuration.SortDirsByName);
 
-        //--- zavreme progress dialog
+        //--- close progress dialog
         if (displayDialogBox)
         {
             EnableWindow(HWindow, TRUE);
@@ -1691,20 +1683,20 @@ void CMainWindow::CompareDirectories(DWORD flags)
                 SetFocus(hFocusedWnd);
         }
 
-        // drive se selection shodila na zacatku comparu a prubezne nastavovala behem nej
-        // pokud se v te dobe dorucila od icon readeru zprava o preklesleni ikonky, shodil
-        // se danemu souboru/adresari dirty bit a nasledne na konci uz se neprekreslil
-        // (zustal nevybrany, prestoze mel byt oznaceny)
+        // drive the selection fell at the beginning of the compare and adjusted it continuously during it
+        // if a message about the icon being redrawn was received from the icon reader at that time, drop
+        // set the dirty bit to the given file/directory and then did not redraw at the end
+        // (remained unselected, even though it should have been marked)
 
-        // nyni selection shodime az na konci a mezi zmenou selection stavu a volanim
-        // RepaintListBox nedochazi k distribuci zprav, takze nemuze dojit k doruceni
-        // zadosti o prekresleni ikonky
+        // now we will defer the selection until the end and between changing the selection state and calling
+        // RepaintListBox does not distribute messages, so delivery cannot occur
+        // Request to redraw the icon
 
-        // zrusime selection
+        // remove selection
         LeftPanel->SetSel(FALSE, -1);
         RightPanel->SetSel(FALSE, -1);
 
-        // pokud nedoslo ke cancelu, preneseme oznaceni
+        // if cancellation did not occur, we will transfer the label
         if (!canceled)
         {
             int i;
@@ -1729,7 +1721,7 @@ void CMainWindow::CompareDirectories(DWORD flags)
         canceled = TRUE;
     }
 
-    //--- destrukce pomocnych poli
+    //--- destruction of auxiliary arrays
     if (leftFiles != NULL)
         delete leftFiles;
     if (leftDirs != NULL)
@@ -1739,20 +1731,20 @@ void CMainWindow::CompareDirectories(DWORD flags)
     if (rightDirs != NULL)
         delete rightDirs;
 
-    //--- oznaceni prislusnych souboru
+    //--- marking of relevant files
     LeftPanel->RepaintListBox(DRAWFLAG_DIRTY_ONLY | DRAWFLAG_SKIP_VISTEST);
     RightPanel->RepaintListBox(DRAWFLAG_DIRTY_ONLY | DRAWFLAG_SKIP_VISTEST);
     PostMessage(LeftPanel->HWindow, WM_USER_SELCHANGED, 0, 0);  // sel-change notify
     PostMessage(RightPanel->HWindow, WM_USER_SELCHANGED, 0, 0); // sel-change notify
 
-    //--- povolime nacitani ikonek
+    //--- allow loading icons
     if (LeftPanel->UseSystemIcons || LeftPanel->UseThumbnails)
         LeftPanel->WakeupIconCacheThread();
     if (RightPanel->UseSystemIcons || RightPanel->UseThumbnails)
         RightPanel->WakeupIconCacheThread();
 
-    //--- zobrazime konfirmaci pokud se objevily soubory lisici se presne o hodinu nebo dve (bud varujeme,
-    //    ze vsechny soubory nemaji stejny cas nebo upozornujeme na to, ze se nalezeny rozdil da ignorovat
+    //--- display confirmation if files differing by exactly an hour or two have appeared (either warn,
+    //    not all files have the same time or we warn that the found difference can be ignored
     BOOL resultAlreadyShown = FALSE;
     if (!canceled && foundDSTShifts > 0 &&
         (Configuration.IgnoreDSTShifts ? Configuration.CnfrmDSTShiftsIgnored : Configuration.CnfrmDSTShiftsOccured))
@@ -1791,17 +1783,17 @@ void CMainWindow::CompareDirectories(DWORD flags)
             Configuration.CnfrmDSTShiftsOccured = !dontShow;
     }
 
-    //--- zobrazime rozsudek
+    //--- display the verdict
     if (!resultAlreadyShown && !canceled && identical)
     {
         int messageID = (flags & COMPARE_DIRECTORIES_BYCONTENT) ? IDS_COMPAREDIR_ARE_IDENTICAL : IDS_COMPAREDIR_SEEMS_IDENTICAL;
         SalMessageBox(HWindow, LoadStr(messageID), LoadStr(IDS_COMPAREDIRSTITLE), MB_OK | MB_ICONINFORMATION);
     }
 
-    // opet zvysime prioritu threadu, operace dobehla
+    // increase the thread priority again, operation completed
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
 
-    EndStopRefresh(); // ted uz zase cmuchal nastartuje
+    EndStopRefresh(); // now he's sniffling again, he'll start up
 }
 
 BOOL CMainWindow::GetViewersAssoc(int wantedViewerType, CDynString* strViewerMasks)
@@ -1850,14 +1842,14 @@ BOOL CDynString::Append(const char* str, int len)
         len = (int)strlen(str);
     if (Length + len >= Allocated)
     {
-        int size = Length + len + 1 + 256; // +256 znaku do foroty, at se tak casto nealokuje
+        int size = Length + len + 1 + 256; // Allocate +256 characters for the buffer, so it doesn't have to be reallocated so often
         char* newBuf = (char*)realloc(Buffer, size);
         if (newBuf != NULL)
         {
             Buffer = newBuf;
             Allocated = size;
         }
-        else // nedostatek pameti, smula...
+        else // out of memory, tough luck...
         {
             TRACE_E(LOW_MEMORY);
             return FALSE;

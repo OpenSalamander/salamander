@@ -50,7 +50,7 @@ namespace RegLib
         ~CValue();
 
         // copy-constructor is default (memcpy), after adding object to array, you must call
-        // Invalidate() or object data will be deallocated also for object in array
+        // Invaliduje() nebo data objektu budou uvolněna i pro objekt v poli
 
         BOOL IsOK();
 
@@ -532,7 +532,7 @@ namespace RegLib
                 }
                 else
                 {
-                    _stprintf(buf, _T("hex(%x):"), pValue->Type); // FIXME_X64 - nemuze obsahovat x64 hodnotu?
+                    _stprintf(buf, _T("hex(%x):"), pValue->Type); // FIXME_X64 - can't contain x64 value?
                 }
                 size_t buflen = SizeOf(buf) - _tcslen(buf) - _tcslen(pValue->Name) - 3, srclen = pValue->Size;
                 LPTSTR d = buf + _tcslen(buf);
@@ -587,7 +587,7 @@ namespace RegLib
             }
         }
         return TRUE;
-    } /* CKey::Dump */
+    } /* CKey::Dump*/
 
     BOOL CRootKey::Dump(HANDLE hFile, LPCTSTR fullKeyName, LPTSTR name, size_t maxlen)
     {
@@ -600,7 +600,7 @@ namespace RegLib
             }
         }
         return TRUE;
-    } /* CRootKey::Dump */
+    } /* CRootKey::Dump*/
 
     BOOL CKey::RemoveHiddenKeysAndValues()
     {

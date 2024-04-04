@@ -4,7 +4,7 @@
 #include "precomp.h"
 
 #include <shlwapi.h>
-#undef PathIsPrefix // jinak kolize s CSalamanderGeneral::PathIsPrefix
+#undef PathIsPrefix // otherwise collision with CSalamanderGeneral::PathIsPrefix
 
 #include "toolbar.h"
 #include "stswnd.h"
@@ -23,133 +23,133 @@
 #include "pwdmngr.h"
 
 //
-// ConfigVersion - cislo verze nactene konfigurace
+// ConfigVersion - version number of the loaded configuration
 //
-// 0 = zadna konfigurace nebyla nalezena - pouziji se default hodnoty
-// 1 = v1.52 a starsi
+// 0 = no configuration found - default values will be used
+// 1 = v1.52 and older
 // 2 = 1.6b1
 // 3 = 1.6b1.x
 // 4 = 1.6b3.x
-// 5 = 1.6b3.x          kvuli spravne konverzi konfigurace pakovacu mezi nasima verzema
+// 5 = 1.6b3.x          for correct conversion of packetizer configurations between our versions
 // 6 = 1.6b4.x
-// 7 = 1.6b5.x          kvuli spravne konverzi podporovanych funkci pluginu (viz CPlugins::Load)
-// 8 = 1.6b5.x          radeji prehlednout ;-)
-// 9 = 1.6b5.x          kvuli prechodu ze jmena exe na promennou u custom packers
-// 10 = 1.6b6           kvuli prejmenovani "XXX (Internal)" na "XXX (Plug-in)" v Pack a Unpack dialozich
-//                      a kvuli nastaveni ANSI verze "list of files" souboru i pro (un)packery ACE32 a PKZIP25
-// 11 = 1.6b7           pribyl plugin CheckVer - zajistime jeho automatickou do-instalaci
-// 12 = 2.0             auto-vypnuti salopen.exe + pribyl plugin PEViewer - zajistime jeho automatickou do-instalaci
-// 13 = 2.5b1           dopsana chybejici konverze konfigurace u custom-packeru - promitnuti zmeny u LHA
-// 14 = 2.5b1           Nove Advanced Options ve Find dialogu. Prechod na CFilterCriteria. Konverze inverzni masky u filtru.
-// 15 = 2.5b2           novejsi verze, at se naloadi pluginy (upgradnou zaznamy v registry)
-// 16 = 2.5b2           pridano barveni Encrypted souboru a adresaru (pridava se pri loadu konfigu + je v defaultnim konfigu)
-// 17 = 2.5b2           pridana maska *.xml do nastaveni interniho vieweru - "force text mode"
-// 18 = 2.5b3           zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b2
-// 19 = 2.5b4           zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b3
-// 20 = 2.5b5           zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b4
-// 21 = 2.5b6           zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b5(a)
-// 22 = 2.5b6           filtry v panelech -- sjednoceni na jednu historii
-// 23 = 2.5b6           novy pohled v panelu (Tiles)
-// 24 = 2.5b7           zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b6
-// 25 = 2.5b7           plugins: show in plugin bar -> prenos promenne do CPluginData
-// 26 = 2.5b8           zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b7
-// 27 = 2.5b9           zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b8
-// 28 = 2.5b9           nove barevne schema dle stareho DOS Navigator -> konverze 'scheme'
-// 29 = 2.5b10          zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b9
-// 30 = 2.5b11          zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b10
-// 31 = 2.5b11          zavedli jsme Floppy sekci v konfiguraci Drives a potrebujeme pro Removable forcnout cteni ikon
-// 32 = 2.5b11          Find: "Local Settings\\Temporary Internet Files" je implicitne prohledavane
-// 33 = 2.5b12          zatim jen kvuli prenosu konfigurace pluginu z verze 2.5b11
-// 34 = 2.5b12          uprava externiho packeru/unpackeru PKZIP25 (externi Win32 verze)
-// 35 = 2.5RC1          jen kvuli prenosu konfigurace pluginu z verze 2.5b12 (jen interni, pustili jsme misto ni RC1)
-// 36 = 2.5RC2          jen kvuli prenosu konfigurace pluginu z verze 2.5RC1
-// 37 = 2.5RC3          jen kvuli prenosu konfigurace pluginu z verze 2.5RC2
-// 38 = 2.5RC3          prejmenovani Servant Salamander na Altap Salamander
-// 39 = 2.5             jen kvuli prenosu konfigurace pluginu z verze 2.5RC3
-// 40 = 2.51            jen kvuli prenosu konfigurace pluginu z verze 2.5
-// 41 = 2.51            verze konfigu obsahujici seznam zakazanych icon overlay handleru (viz CONFIG_DISABLEDCUSTICOVRLS_REG)
-// 42 = 2.52b1          jen kvuli prenosu konfigurace pluginu z verze 2.51
-// 43 = 2.52b2          jen kvuli prenosu konfigurace pluginu z verze 2.52 beta 1
-// 44 = 2.52b2          zmena pripon vieweru, editoru a archivatoru na lowercase (uppercase pripony jsou uz ve woknech prezitek)
-// 45 = 2.52b2          zavedeni password manageru, vynuceny load FTP klienta, aby se prihlasil k pouzivani Password Manageru, viz SetPluginUsesPasswordManager
-// 46 = 2.52 (DB30)     jen kvuli prenosu konfigurace pluginu z verze 2.52 beta 2
-// 47 = 2.52 (IB31)     podpora pro Sal/Env promenne jako je $(SalDir) nebo $[USERPROFILE] v hot paths; potrebujeme escapovat stare hot paths
-// 48 = 2.52            jen kvuli prenosu konfigurace pluginu z verze 2.52 (DB30)
-// 49 = 2.53b1 (DB33)   jen kvuli prenosu konfigurace pluginu z verze 2.52
-// 50 = 2.53b1 (DB36)   jen kvuli prenosu konfigurace pluginu z verze 2.53b1 (DB33)
-// 51 = 2.53b1 (PB38)   jen kvuli prenosu konfigurace pluginu z verze 2.53b1 (DB36)
-// 52 = 2.53b1 (DB39)   jen kvuli prenosu konfigurace pluginu z verze 2.53b1 (PB38)
-// 53 = 2.53b1 (DB41)   jen kvuli prenosu konfigurace pluginu z verze 2.53b1 (DB39)
-// 54 = 2.53b1 (PB44)   jen kvuli prenosu konfigurace pluginu z verze 2.53b1 (DB41)
-// 55 = 2.53b1 (DB46)   jen kvuli prenosu konfigurace pluginu z verze 2.53b1 (PB44)
-// 56 = 2.53b1          jen kvuli prenosu konfigurace pluginu z verze 2.53b1 (DB46)
-// 57 = 2.53 (DB52)     jen kvuli prenosu konfigurace pluginu z verze 2.53b1
-// 58 = 2.53b2 (IB55)   jen kvuli prenosu konfigurace pluginu z verze 2.53 (DB52)
-// 59 = 2.53b2          jen kvuli prenosu konfigurace pluginu z verze 2.53b2 (IB55)
-// 60 = 2.53 (DB60)     jen kvuli prenosu konfigurace pluginu z verze 2.53b2
-// 61 = 2.53            jen kvuli prenosu konfigurace pluginu z verze 2.53 (DB60)
-// 62 = 2.54b1 (DB66)   jen kvuli prenosu konfigurace pluginu z verze 2.53
-// 63 = 2.54            jen kvuli prenosu konfigurace pluginu z verze 2.54b1 (DB66)
-// 64 = 2.55b1 (DB72)   jen kvuli prenosu konfigurace pluginu z verze 2.54
-// 65 = 2.55b1 (DB72)   externi archivatory: identifikace podle UID misto podle Title (preklada se dle jazykove verze, tedy nelze pouzit pro identifikaci) - pri prepnuti jazyku se ztracelo nastaveni cest k externim archiverum
-// 66 = 3.00b1 (PB75)   jen kvuli prenosu konfigurace pluginu z verze 2.55b1 (DB72)
-// 67 = 3.00b1 (DB76)   jen kvuli prenosu konfigurace pluginu z verze 3.00b1 (PB75)
-// 68 = 3.00b1 (PB79)   jen kvuli prenosu konfigurace pluginu z verze 3.00b1 (DB76)
-// 69 = 3.00b1 (DB80)   jen kvuli prenosu konfigurace pluginu z verze 3.00b1 (PB79)
-// 70 = 3.00b1 (DB83)   jen kvuli prenosu konfigurace pluginu z verze 3.00b1 (DB80)
-// 71 = 3.00b1 (PB87)   jen kvuli prenosu konfigurace pluginu z verze 3.00b1 (DB83)
-// 72 = 3.00b1 (DB88)   jen kvuli prenosu konfigurace pluginu z verze 3.00b1 (PB87)
-// 73 = 3.00b1          jen kvuli prenosu konfigurace pluginu z verze 3.00b1 (DB88)
-// 74 = 3.00b2 (DB94)   jen kvuli prenosu konfigurace pluginu z verze 3.00b1
-// 75 = 3.00b2          jen kvuli prenosu konfigurace pluginu z verze 3.00b2 (DB94)
-// 76 = 3.00b3 (DB100)  jen kvuli prenosu konfigurace pluginu z verze 3.00b2
-// 77 = 3.00b3 (PB103)  jen kvuli prenosu konfigurace pluginu z verze 3.00b3 (DB100)
-// 78 = 3.00b3 (DB105)  jen kvuli prenosu konfigurace pluginu z verze 3.00b3 (PB103)
-// 79 = 3.00b3          jen kvuli prenosu konfigurace pluginu z verze 3.00b3 (DB105)
-// 80 = 3.00b4 (DB111)  jen kvuli prenosu konfigurace pluginu z verze 3.00b3
-// 81 = 3.00b4 (DB111)  RAR 5.0 potrebuje novy switch na command line kvuli kodovani file list souboru
-// 82 = 3.00b4          jen kvuli prenosu konfigurace pluginu z verze 3.00b4 (DB111)
-// 83 = 3.00b5 (DB117)  jen kvuli prenosu konfigurace pluginu z verze 3.00b4
-// 84 = 3.0             jen kvuli prenosu konfigurace pluginu z verze 3.00b5 (DB117)
-// 85 = 3.10b1 (DB123)  jen kvuli prenosu konfigurace pluginu z verze 3.0
-// 86 = 3.01            jen kvuli prenosu konfigurace pluginu z verze 3.10b1 (DB123)
-// 87 = 3.10b1 (DB129)  jen kvuli prenosu konfigurace pluginu z verze 3.01
-// 88 = 3.02            jen kvuli prenosu konfigurace pluginu z verze 3.10b1 (DB129)
-// 89 = 3.10b1 (DB135)  jen kvuli prenosu konfigurace pluginu z verze 3.02
-// 90 = 3.03            jen kvuli prenosu konfigurace pluginu z verze 3.10b1 (DB135)
-// 91 = 3.10b1 (DB141)  jen kvuli prenosu konfigurace pluginu z verze 3.03
-// 92 = 3.04            jen kvuli prenosu konfigurace pluginu z verze 3.10b1 (DB141)
-// 93 = 3.10b1 (DB147)  jen kvuli prenosu konfigurace pluginu z verze 3.04
-// 94 = 3.05            jen kvuli prenosu konfigurace pluginu z verze 3.10b1 (DB147)
-// 95 = 3.10b1 (DB153)  jen kvuli prenosu konfigurace pluginu z verze 3.05
-// 96 = 3.06            jen kvuli prenosu konfigurace pluginu z verze 3.10b1 (DB153)
-// 97 = 3.10b1 (DB159)  jen kvuli prenosu konfigurace pluginu z verze 3.06
-// 98 = 3.10b1 (DB162)  jen kvuli prenosu konfigurace pluginu z verze 3.10b1 (DB159)
-// 99 = 3.07            jen kvuli prenosu konfigurace pluginu z verze 3.10b1 (DB162)
-// 100 = 4.00b1 (DB168) jen kvuli prenosu konfigurace pluginu z verze 3.07
-// 101 = 3.08           jen kvuli prenosu konfigurace pluginu z verze 4.00b1 (DB168) - omylem maji 3.08 a DB171 stejne cislo verze 101, snad neva, priste si dam vetsi pozor
-// 101 = 4.00b1 (DB171) jen kvuli prenosu konfigurace pluginu z verze 4.00b1 (DB168), ktera je posledni z VC2008, dalsi verze jsou z VC2019
-// 102 = 4.00b1 (DB177) jen kvuli prenosu konfigurace pluginu z verze 4.00b1 (DB171)
-// 103 = 4.00           jen kvuli prenosu konfigurace pluginu z verze 4.00b1 (DB177)
-// 104 = 5.00           jen kvuli prenosu konfigurace pluginu z verze 4.00, first Open Salamander
+// 7 = 1.6b5.x          for correct conversion of supported plugin functions (see CPlugins::Load)
+// 8 = 1.6b5.x          better to check it out ;-)
+// 9 = 1.6b5.x          for transitioning from exe name to variable in custom packers
+// 10 = 1.6b6           for renaming "XXX (Internal)" to "XXX (Plug-in)" in Pack and Unpack dialogs
+//                      and for setting the ANSI version of the "list of files" file for ACE32 and PKZIP25 (un)packers
+// 11 = 1.6b7           CheckVer plugin added - we will ensure its automatic installation
+// 12 = 2.0 auto-shutdown salopen.exe + PEViewer plugin arrived - we will ensure its automatic installation
+// 13 = 2.5b1           added missing configuration conversion for custom packers - reflecting the change in LHA
+// 14 = 2.5b1           New Advanced Options in the Find dialog. Transition to CFilterCriteria. Conversion of inverse mask in filters.
+// 15 = 2.5b2           newer version, so that plugins can be loaded (upgrade records in the registry)
+// 16 = 2.5b2           added coloring of Encrypted files and directories (added during config load + is in the default config)
+// 17 = 2.5b2           added mask *.xml to internal viewer settings - "force text mode"
+// 18 = 2.5b3           only for transferring plugin configuration from version 2.5b2 for now
+// 19 = 2.5b4           only for transferring plugin configuration from version 2.5b3 for now
+// 20 = 2.5b5           for now only for transferring plugin configuration from version 2.5b4
+// 21 = 2.5b6           only for transferring plugin configuration from version 2.5b5(a) for now
+// 22 = 2.5b6           filters in panels -- unified into one history
+// 23 = 2.5b6           new view in panel (Tiles)
+// 24 = 2.5b7           only for transferring plugin configuration from version 2.5b6 for now
+// 25 = 2.5b7           plugins: show in plugin bar -> transfer variable to CPluginData
+// 26 = 2.5b8           only for transferring plugin configuration from version 2.5b7 for now
+// 27 = 2.5b9           only for transferring plugin configuration from version 2.5b8 for now
+// 28 = 2.5b9           new color scheme based on the old DOS Navigator -> conversion 'scheme'
+// 29 = 2.5b10          only for transferring plugin configuration from version 2.5b9 for now
+// 30 = 2.5b11          only for transferring plugin configuration from version 2.5b10 for now
+// 31 = 2.5b11          We have introduced the Floppy section in the Drives configuration and need to forcibly refresh the icon reading for Removable
+// 32 = 2.5b11          Find: "Local Settings\\Temporary Internet Files" is implicitly searched
+// 33 = 2.5b12          only for transferring plugin configuration from version 2.5b11 for now
+// 34 = 2.5b12          modification of external packer/unpacker PKZIP25 (external Win32 version)
+// 35 = 2.5RC1          just for transferring the plugin configuration from version 2.5b12 (just internal, we released RC1 instead of it)
+// 36 = 2.5RC2          just for transferring the plugin configuration from version 2.5RC1
+// 37 = 2.5RC3          just for transferring the plugin configuration from version 2.5RC2
+// 38 = 2.5RC3          renaming Servant Salamander to Altap Salamander
+// 39 = 2.5             just for transferring the plugin configuration from version 2.5RC3
+// 40 = 2.51            just for transferring the plugin configuration from version 2.5
+// 41 = 2.51            version of the configuration containing a list of disabled icon overlay handlers (see CONFIG_DISABLEDCUSTICOVRLS_REG)
+// 42 = 2.52b1          just for transferring the plugin configuration from version 2.51
+// 43 = 2.52b2          just for transferring the plugin configuration from version 2.52 beta 1
+// 44 = 2.52b2          change extension of viewers, editors, and archivators to lowercase (uppercase extensions are already in the windows survivor)
+// 45 = 2.52b2          introduction of password manager, enforced load of FTP client to log in using Password Manager, see SetPluginUsesPasswordManager
+// 46 = 2.52 (DB30) just for transferring the plugin configuration from version 2.52 beta 2
+// 47 = 2.52 (IB31) support for Sal/Env variables such as $(SalDir) or $[USERPROFILE] in hot paths; we need to escape old hot paths
+// 48 = 2.52            just for transferring the plugin configuration from version 2.52 (DB30)
+// 49 = 2.53b1 (DB33) just for transferring plugin configuration from version 2.52
+// 50 = 2.53b1 (DB36) just for transferring the plugin configuration from version 2.53b1 (DB33)
+// 51 = 2.53b1 (PB38) just for transferring plugin configuration from version 2.53b1 (DB36)
+// 52 = 2.53b1 (DB39) just for transferring the plugin configuration from version 2.53b1 (PB38)
+// 53 = 2.53b1 (DB41)   just for transferring the plugin configuration from version 2.53b1 (DB39)
+// 54 = 2.53b1 (PB44) just for transferring the plugin configuration from version 2.53b1 (DB41)
+// 55 = 2.53b1 (DB46) just for transferring the plugin configuration from version 2.53b1 (PB44)
+// 56 = 2.53b1          just for transferring the plugin configuration from version 2.53b1 (DB46)
+// 57 = 2.53 (DB52) just for transferring the plugin configuration from version 2.53b1
+// 58 = 2.53b2 (IB55) just for transferring the plugin configuration from version 2.53 (DB52)
+// 59 = 2.53b2          just for transferring the plugin configuration from version 2.53b2 (IB55)
+// 60 = 2.53 (DB60) just for transferring the plugin configuration from version 2.53b2
+// 61 = 2.53            just for transferring the plugin configuration from version 2.53 (DB60)
+// 62 = 2.54b1 (DB66) just for transferring plugin configuration from version 2.53
+// 63 = 2.54 just for transferring the plugin configuration from version 2.54b1 (DB66)
+// 64 = 2.55b1 (DB72) just for transferring the plugin configuration from version 2.54
+// 65 = 2.55b1 (DB72) external archivers: identification by UID instead of Title (translated according to language version, therefore cannot be used for identification) - when switching languages, the settings for external archivers were lost
+// 66 = 3.00b1 (PB75) just for transferring the plugin configuration from version 2.55b1 (DB72)
+// 67 = 3.00b1 (DB76) just for transferring the plugin configuration from version 3.00b1 (PB75)
+// 68 = 3.00b1 (PB79) just for transferring the plugin configuration from version 3.00b1 (DB76)
+// 69 = 3.00b1 (DB80) just for transferring the plugin configuration from version 3.00b1 (PB79)
+// 70 = 3.00b1 (DB83) just for transferring the plugin configuration from version 3.00b1 (DB80)
+// 71 = 3.00b1 (PB87) just for transferring the plugin configuration from version 3.00b1 (DB83)
+// 72 = 3.00b1 (DB88) just for transferring the plugin configuration from version 3.00b1 (PB87)
+// 73 = 3.00b1          just for transferring the plugin configuration from version 3.00b1 (DB88)
+// 74 = 3.00b2 (DB94) just for transferring the plugin configuration from version 3.00b1
+// 75 = 3.00b2          just for transferring the plugin configuration from version 3.00b2 (DB94)
+// 76 = 3.00b3 (DB100) just for transferring the plugin configuration from version 3.00b2
+// 77 = 3.00b3 (PB103) just for transferring the plugin configuration from version 3.00b3 (DB100)
+// 78 = 3.00b3 (DB105) just for transferring the plugin configuration from version 3.00b3 (PB103)
+// 79 = 3.00b3          just for transferring the plugin configuration from version 3.00b3 (DB105)
+// 80 = 3.00b4 (DB111) just for transferring the plugin configuration from version 3.00b3
+// 81 = 3.00b4 (DB111) RAR 5.0 needs a new switch on the command line for encoding the file list file
+// 82 = 3.00b4          just for transferring the plugin configuration from version 3.00b4 (DB111)
+// 83 = 3.00b5 (DB117) just for transferring the plugin configuration from version 3.00b4
+// 84 = 3.0             just for transferring the plugin configuration from version 3.00b5 (DB117)
+// 85 = 3.10b1 (DB123) just for transferring the plugin configuration from version 3.0
+// 86 = 3.01 just for transferring the plugin configuration from version 3.10b1 (DB123)
+// 87 = 3.10b1 (DB129) just for transferring plugin configuration from version 3.01
+// 88 = 3.02 just for transferring the plugin configuration from version 3.10b1 (DB129)
+// 89 = 3.10b1 (DB135) just for transferring the plugin configuration from version 3.02
+// 90 = 3.03            just for transferring the plugin configuration from version 3.10b1 (DB135)
+// 91 = 3.10b1 (DB141) just for transferring plugin configuration from version 3.03
+// 92 = 3.04 just for transferring the plugin configuration from version 3.10b1 (DB141)
+// 93 = 3.10b1 (DB147) just for transferring the plugin configuration from version 3.04
+// 94 = 3.05            just for transferring the plugin configuration from version 3.10b1 (DB147)
+// 95 = 3.10b1 (DB153) just for transferring the plugin configuration from version 3.05
+// 96 = 3.06 just for transferring the plugin configuration from version 3.10b1 (DB153)
+// 97 = 3.10b1 (DB159) just for transferring the plugin configuration from version 3.06
+// 98 = 3.10b1 (DB162) just for transferring the plugin configuration from version 3.10b1 (DB159)
+// 99 = 3.07 just for transferring the plugin configuration from version 3.10b1 (DB162)
+// 100 = 4.00b1 (DB168) just for transferring the plugin configuration from version 3.07
+// 101 = 3.08 just for the transfer of the plugin configuration from version 4.00b1 (DB168) - by mistake they have 3.08 and DB171 the same version number 101, hopefully it doesn't matter, next time I will be more careful
+// 101 = 4.00b1 (DB171) just for transferring the plugin configuration from version 4.00b1 (DB168), which is the last one from VC2008, the next versions are from VC2019
+// 102 = 4.00b1 (DB177) just for transferring the plugin configuration from version 4.00b1 (DB171)
+// 103 = 4.00           just for transferring the plugin configuration from version 4.00b1 (DB177)
+// 104 = 5.00           just for transferring the plugin configuration from version 4.00, first Open Salamander
 //
-// Pri zvetseni verze konfigurace je potreba pridat jednicku k THIS_CONFIG_VERSION
+// When increasing the configuration version, it is necessary to add one to THIS_CONFIG_VERSION
 //
 // Pri prechodu na novou verzi programu je treba THIS_CONFIG_VERSION zvysit o 1,
-// aby se provedla autoinstalace novych plug-inu a nulovani pocitadla posledni
-// verze plugins.ver.
+// to perform automatic installation of new plug-ins and reset the last counter
+// version plugins.ver.
 //
 
 const DWORD THIS_CONFIG_VERSION = 104;
 
-// Koreny konfiguraci jednotlivych verzi programu Open Salamander.
-// Koren soucasne (nejmladsi) konfigurace je na indexu 0.
-// Potom nasleduji dalsi koreny smerem ke starsim verzim programu.
-// Na poslednim indexu lezi NULL, ktery slouzi jako terminator pri praci s polem.
-// Pri zalozeni nove verze konfigurace (ktera ma byt v registry oddelena od predesle)
-// staci vlozit radek s cestou na index 0.
+// Roots of the configuration of individual versions of the Open Salamander program.
+// The root of the current (youngest) configuration is at index 0.
+// Then follow more roots towards older versions of the program.
+// At the last index lies NULL, which serves as a terminator when working with an array.
+// When creating a new version of the configuration (which is supposed to be separated from the previous one in the registry)
+// just insert a line with the path at index 0.
 
-// !!! Zaroven je treba udrzovat odpovidajici radky v SalamanderConfigurationVersions
+// !!! At the same time, it is necessary to maintain corresponding lines in SalamanderConfigurationVersions
 const char* SalamanderConfigurationRoots[SALCFG_ROOTS_COUNT + 1] =
     {
         "Software\\Open Salamander\\5.0",
@@ -233,8 +233,8 @@ const char* SalamanderConfigurationRoots[SALCFG_ROOTS_COUNT + 1] =
         "Software\\Altap\\Servant Salamander 2.0",
         "Software\\Altap\\Servant Salamander 1.6 beta 7",
         "Software\\Altap\\Servant Salamander 1.6 beta 6",
-        "Software\\Altap\\Servant Salamander", // 1.6 beta 1 az 1.6 beta 5
-        "Software\\Salamander"                 // nejstarsi verze (1.52 a starsi)
+        "Software\\Altap\\Servant Salamander", // 1.6 beta 1 to 1.6 beta 5
+        "Software\\Salamander"                 // oldest version (1.52 and older)
 };
 const char* SalamanderConfigurationVersions[SALCFG_ROOTS_COUNT] =
     {
@@ -322,14 +322,14 @@ const char* SalamanderConfigurationVersions[SALCFG_ROOTS_COUNT] =
         "1.6 beta 1-5",
         "1.52"};
 
-const char* SALAMANDER_ROOT_REG = NULL; // bude nastavena v salamdr1.cpp
+const char* SALAMANDER_ROOT_REG = NULL; // will be set in salamdr1.cpp
 
-const char* SALAMANDER_SAVE_IN_PROGRESS = "Save In Progress"; // hodnota existuje jen behem ukladani konfigurace (pro detekci preruseni ukladani konfigu -> poskozene konfigurace)
-BOOL IsSetSALAMANDER_SAVE_IN_PROGRESS = FALSE;                // TRUE = v registry je vytvorena hodnota SALAMANDER_SAVE_IN_PROGRESS (detekce preruseni ukladani konfigurace)
+const char* SALAMANDER_SAVE_IN_PROGRESS = "Save In Progress"; // the value exists only during the configuration saving (for detecting interruptions during the configuration saving -> damaged configuration)
+BOOL IsSetSALAMANDER_SAVE_IN_PROGRESS = FALSE;                // TRUE = a value SALAMANDER_SAVE_IN_PROGRESS is created in the registry (detection of interruption of saving configuration)
 
-const char* SALAMANDER_COPY_IS_OK = "Copy Is OK"; // jen backup klic: hodnota existuje, jen kdyz se klic podari kompletne nakopirovat
+const char* SALAMANDER_COPY_IS_OK = "Copy Is OK"; // only backup key: value exists only if the key is successfully copied completely
 
-const char* SALAMANDER_AUTO_IMPORT_CONFIG = "AutoImportConfig"; // hodnota existuje jen pri UPGRADE (instalak prevali starou verzi novou verzi + do klice nove verze ulozi tuto hodnotu nasmerovanou na klic konfigurace stare verze, odkud by se mela importovat konfigurace do nove verze)
+const char* SALAMANDER_AUTO_IMPORT_CONFIG = "AutoImportConfig"; // the value only exists during UPGRADE (the installation rolls the old version to the new version + in the key of the new version it saves this value directed to the key of the configuration of the old version, from where the configuration should be imported into the new version)
 
 const char* FINDDIALOG_WINDOW_REG = "Find Dialog Window";
 const char* SALAMANDER_WINDOW_REG = "Window";
@@ -510,7 +510,7 @@ const char* CONFIG_IGNOREDSTSHIFTS = "Ignore DST Shifts";
 const char* CONFIG_USEDRAGDROPMINTIME = "Use DragDrop Min Time";
 const char* CONFIG_DRAGDROPMINTIME = "DragDrop Min Time";
 
-// stranky konfiguracniho dialogu
+// Configuration dialog pages
 const char* CONFIG_LASTFOCUSEDPAGE = "Last Focused Page";
 const char* CONFIG_VIEWANDEDITEXPAND = "Viewers And Editors Expanded";
 const char* CONFIG_PACKEPAND = "Packers And Unpackers Expanded";
@@ -644,7 +644,7 @@ const char* SALAMANDER_VERSIONREG_REG = "Configuration";
 
 const char* SALAMANDER_CUSTOMCOLORS_REG = "Custom Colors";
 
-// barvy
+// colors
 const char* SALAMANDER_COLORS_REG = "Colors";
 const char* SALAMANDER_CLR_FOCUS_ACTIVE_NORMAL_REG = "Focus Active Normal";
 const char* SALAMANDER_CLR_FOCUS_ACTIVE_SELECTED_REG = "Focus Active Selected";
@@ -744,7 +744,7 @@ const char* SALAMANDER_PLUGINS_FSCMDVISIBLE = "FS Cmd Visible";
 const char* SALAMANDER_PLUGINS_ISNETHOOD = "Is Nethood";
 const char* SALAMANDER_PLUGINS_USESPASSWDMAN = "Uses Password Manager";
 
-// Plugins: nasl. 8 retezcu je jen pro konverzi z konfigurace verze 6 a nizsich
+// Plugins: Note that 8 strings are only for converting from configuration version 6 and lower
 const char* SALAMANDER_PLUGINS_PANELVIEW = "Panel List";
 const char* SALAMANDER_PLUGINS_PANELEDIT = "Panel Pack";
 const char* SALAMANDER_PLUGINS_CUSTPACK = "Custom Pack";
@@ -767,7 +767,7 @@ const char* SALAMANDER_CUSTOMPACKERS = "Custom Packers";
 const char* SALAMANDER_CUSTOMUNPACKERS = "Custom Unpackers";
 const char* SALAMANDER_PREDPACKERS = "Predefined Packers";
 const char* SALAMANDER_ARCHIVEASSOC = "Archive Association";
-// pro SALAMANDER_CUSTOMPACKERS i SALAMANDER_CUSTOMUNPACKERS
+// for SALAMANDER_CUSTOMPACKERS and SALAMANDER_CUSTOMUNPACKERS
 const char* SALAMANDER_ANOTHERPANEL = "Use Another Panel";
 const char* SALAMANDER_PREFFERED = "Preffered";
 const char* SALAMANDER_NAMEBYARCHIVE = "Use Subdir Name By Archive";
@@ -779,25 +779,25 @@ const char* SALAMANDER_PWDMNGR_REG = "Password Manager";
 //
 // GetUpgradeInfo
 //
-// Zkusi v konfiguracnim klici teto verze Salama najit "AutoImportConfig". Pokud ho nenajde
-// nebo klic ulozeny v AutoImportConfig neexistuje, ukazuje do klice teto verze (coz je nesmysl)
-// nebo obsahuje poskozenou (nedokoncene ukladani konfigurace) nebo prazdnou konfiguraci, vraci
-// v 'autoImportConfig' FALSE. V opacnem pripade vraci v 'autoImportConfig' TRUE a
-// v 'autoImportConfigFromKey' vraci cestu ke klici, ze ktereho se ma konfigurace importovat.
-// Resi situace, kdy AutoImportConfig ukazuje na klic, ktery obsahuje AutoImportConfig
-// na dalsi klic (jen projdeme na "cilovy" klic a mezilehle klice nechame beze zmen - pokud
-// se import podari, stejne smazneme cilovy klic). Vraci FALSE jen pokud ma dojit k exitu softu.
+// Try to find "AutoImportConfig" in the configuration key of this version of Salama. If it is not found
+// or the key stored in AutoImportConfig does not exist, it points to the key of this version (which is nonsense)
+// or contains a corrupted (incomplete saving of configuration) or empty configuration, returns
+// in 'autoImportConfig' FALSE. Otherwise, it returns TRUE in 'autoImportConfig'.
+// in 'autoImportConfigFromKey' returns the path to the key from which the configuration should be imported.
+// Handles situations where AutoImportConfig points to a key that contains AutoImportConfig
+// to the next key (we will only go through the "target" key and leave intermediate keys unchanged - if
+// if the import is successful, we will still delete the target key). Returns FALSE only if the software is to exit.
 //
-// Pokud konfiguracni klic teto verze Salama obsahuje krome AutoImportConfig jeste taky
-// klic "Configuration" (ocekavame, ze je to ulozena konfigurace), zeptame se usera jestli chce:
-//   -pouzit aktualni konfiguraci a ignorovat konfiguraci stare verze (nemazal bych ji, sice
-//    by to bylo logictejsi, ale zato by chudaci mohli prijit o data a zase tolik to registry
-//    nezasira) - v tomto pripade ihned smaznout AutoImportConfig
-//    (tohle se provede tise, pokud AutoImportConfig vede do konfiguracniho klice teto verze Salama)
-//    (NABIZIME DEFAULTNE, protoze nevede ke ztrate dat, lidi radi odmackavaji msgboxy bez cteni)
-//   -smazat aktualni konfiguraci a importovat konfiguraci stare verze - v tom pripade ihned
-//    smaznout vse az na AutoImportConfig
-//   -exit softu - jen vratit FALSE
+// If the configuration key of this version of Salama contains not only AutoImportConfig but also
+// key "Configuration" (we expect it to be a saved configuration), we will ask the user if they want to:
+//   -use current configuration and ignore configuration of the old version (I wouldn't delete it, although
+//    it would be more logical, but the poor could lose data and again so much those registries
+//    do not clutter) - in this case, immediately delete AutoImportConfig
+//    (this is done quietly if AutoImportConfig leads to the configuration key of this version of Salama)
+//    (We offer defaults by default, as it does not lead to data loss, people tend to dismiss message boxes without reading)
+//   -delete current configuration and import configuration from old version - in that case immediately
+//    delete everything except AutoImportConfig
+//   -exit software - just return FALSE
 
 BOOL GetUpgradeInfo(BOOL* autoImportConfig, char* autoImportConfigFromKey, int autoImportConfigFromKeySize)
 {
@@ -807,7 +807,7 @@ BOOL GetUpgradeInfo(BOOL* autoImportConfig, char* autoImportConfigFromKey, int a
     if (autoImportConfigFromKeySize > 0)
         *autoImportConfigFromKey = 0;
     LoadSaveToRegistryMutex.Enter();
-    int rounds = 0; // prevence zacykleni
+    int rounds = 0; // Prevention of cycling
     *autoImportConfig = FALSE;
     if (HANDLES_Q(RegOpenKeyEx(HKEY_CURRENT_USER, SalamanderConfigurationRoots[0], 0,
                                KEY_READ, &rootKey)) == ERROR_SUCCESS)
@@ -816,16 +816,16 @@ BOOL GetUpgradeInfo(BOOL* autoImportConfig, char* autoImportConfigFromKey, int a
         char oldKeyName[200];
 
         if (GetValue(rootKey, SALAMANDER_AUTO_IMPORT_CONFIG, REG_SZ, oldKeyName, 200))
-        { // nasli jsme "AutoImportConfig"
+        { // We found "AutoImportConfig"
         OPEN_AUTO_IMPORT_CONFIG_KEY:
             lstrcpyn(autoImportConfigFromKey, SalamanderConfigurationRoots[0], autoImportConfigFromKeySize);
             if (CutDirectory(autoImportConfigFromKey) &&
                 SalPathAppend(autoImportConfigFromKey, oldKeyName, autoImportConfigFromKeySize) &&
-                !IsTheSamePath(autoImportConfigFromKey, SalamanderConfigurationRoots[0]) &&     // klic ulozeny v AutoImportConfig neukazuje do klice teto verze
-                HANDLES_Q(RegOpenKeyEx(HKEY_CURRENT_USER, autoImportConfigFromKey, 0, KEY_READ, // klic ulozeny v AutoImportConfig jde otevrit (jinak neexistuje?)
+                !IsTheSamePath(autoImportConfigFromKey, SalamanderConfigurationRoots[0]) &&     // Key stored in AutoImportConfig does not point to the key of this version
+                HANDLES_Q(RegOpenKeyEx(HKEY_CURRENT_USER, autoImportConfigFromKey, 0, KEY_READ, // Key stored in AutoImportConfig can be opened (otherwise it does not exist?)
                                        &oldCfgKey)) == ERROR_SUCCESS)
             {
-                // pokud aktualni "cilovy" klic obsahuje AutoImportConfig, projdeme jim...
+                // if the current "target" key contains AutoImportConfig, we will go through them...
                 if (GetValue(oldCfgKey, SALAMANDER_AUTO_IMPORT_CONFIG, REG_SZ, oldKeyName, 200) && ++rounds <= 50)
                 {
                     HANDLES(RegCloseKey(oldCfgKey));
@@ -837,12 +837,12 @@ BOOL GetUpgradeInfo(BOOL* autoImportConfig, char* autoImportConfigFromKey, int a
                     HANDLES_Q(RegOpenKeyEx(oldCfgKey, SALAMANDER_CONFIG_REG, 0, KEY_READ, &cfgKey)) == ERROR_SUCCESS)
                 {
                     HANDLES(RegCloseKey(cfgKey));
-                    *autoImportConfig = TRUE; // nejde o poskozenou ani prazdnou konfiguraci
+                    *autoImportConfig = TRUE; // It's not about damaged or empty configuration
                 }
                 HANDLES(RegCloseKey(oldCfgKey));
             }
         }
-        if (*autoImportConfig) // zkontrolujeme jestli klic teto verze neobsahuje taky konfiguraci (krome "AutoImportConfig")
+        if (*autoImportConfig) // we will check if the key of this version does not contain the configuration as well (except for "AutoImportConfig")
         {
             HKEY cfgKey;
             lstrcpyn(oldKeyName, SalamanderConfigurationRoots[0], 200);
@@ -852,7 +852,7 @@ BOOL GetUpgradeInfo(BOOL* autoImportConfig, char* autoImportConfigFromKey, int a
                 HANDLES(RegCloseKey(cfgKey));
                 BOOL clearCfg = FALSE;
                 if (!GetValue(rootKey, SALAMANDER_SAVE_IN_PROGRESS, REG_DWORD, &saveInProgress, sizeof(DWORD)))
-                { // klic teto verze obsahuje neposkozenou konfiguraci, zeptame se usera co s tim
+                { // the key of this version contains an intact configuration, we will ask the user what to do with it
                     HANDLES(RegCloseKey(rootKey));
                     rootKey = NULL;
                     LoadSaveToRegistryMutex.Leave();
@@ -865,7 +865,7 @@ BOOL GetUpgradeInfo(BOOL* autoImportConfig, char* autoImportConfigFromKey, int a
                     lstrcpyn(oldKeyName, autoImportConfigFromKey, 200);
                     char* keyName;
                     if (!CutDirectory(oldKeyName, &keyName))
-                        keyName = oldKeyName; // (teoreticky nemuze nastat)
+                        keyName = oldKeyName; // (theoretically cannot occur)
                     char buf[1000];
                     sprintf(buf, "You have upgraded from %s (old version) to %s (new version). The configuration of the old "
                                  "version should be imported to the new version now, but there is already existing "
@@ -900,16 +900,16 @@ BOOL GetUpgradeInfo(BOOL* autoImportConfig, char* autoImportConfigFromKey, int a
                     LoadSaveToRegistryMutex.Enter();
                 }
                 else
-                    clearCfg = TRUE; // obsazena konfigurace je poskozena, smazneme ji
+                    clearCfg = TRUE; // Occupied configuration is damaged, we will delete it
                 if (clearCfg &&
                     HANDLES_Q(RegOpenKeyEx(HKEY_CURRENT_USER, SalamanderConfigurationRoots[0], 0,
                                            KEY_READ | KEY_WRITE, &cfgKey)) == ERROR_SUCCESS)
-                { // smazneme konfiguraci, nechame (respektive znovu vytvorime) tam jen "AutoImportConfig"
+                { // We will delete the configuration, leaving (or rather recreating) only "AutoImportConfig" there
                     ClearKey(cfgKey);
                     lstrcpyn(oldKeyName, autoImportConfigFromKey, 200);
                     char* keyName;
                     if (!CutDirectory(oldKeyName, &keyName))
-                        keyName = oldKeyName; // (teoreticky nemuze nastat)
+                        keyName = oldKeyName; // (theoretically cannot occur)
                     SetValue(cfgKey, SALAMANDER_AUTO_IMPORT_CONFIG, REG_SZ, keyName, -1);
                     HANDLES(RegCloseKey(cfgKey));
                 }
@@ -918,10 +918,10 @@ BOOL GetUpgradeInfo(BOOL* autoImportConfig, char* autoImportConfigFromKey, int a
         if (rootKey != NULL)
             HANDLES(RegCloseKey(rootKey));
     }
-    if (!*autoImportConfig && // klic teto verze neobsahuje "AutoImportConfig" nebo nevede na "platnou" starou konfiguraci
+    if (!*autoImportConfig && // the key of this version does not contain "AutoImportConfig" or does not point to a "valid" old configuration
         HANDLES_Q(RegOpenKeyEx(HKEY_CURRENT_USER, SalamanderConfigurationRoots[0], 0,
                                KEY_READ | KEY_WRITE, &rootKey)) == ERROR_SUCCESS)
-    { // v klici teto verze zrusime hodnotu "AutoImportConfig" (pokud tam vubec je, tak tam nema smysl)
+    { // In the key of this version, we will remove the value "AutoImportConfig" (if it is there at all, it doesn't make sense there).
         RegDeleteValue(rootKey, SALAMANDER_AUTO_IMPORT_CONFIG);
         HANDLES(RegCloseKey(rootKey));
     }
@@ -933,10 +933,10 @@ BOOL GetUpgradeInfo(BOOL* autoImportConfig, char* autoImportConfigFromKey, int a
 //
 // FindLanguageFromPrevVerOfSal
 //
-// Vytahne ze starsi verze Salamandera jazyk (pouzity .slg modul). Nejstarsi verze,
-// ze ktere tuto informaci ziskavame je 2.53 beta 2 (prvni verze dodavana s vice jazyky: CZ+DE+EN).
-// Pokud existuje konfigurace aktualni verze nebo nenajde takovy jazyk, vrati FALSE.
-// Jinak vraci jazyk v 'slgName' (buffer MAX_PATH znaku).
+// Extracts the language from an older version of Salamander (using the .slg module). The oldest version,
+// from which we obtain this information is 2.53 beta 2 (first version delivered with multiple languages: CZ+DE+EN).
+// If there is a configuration of the current version or if such a language is not found, it returns FALSE.
+// Otherwise, the function returns the language in 'slgName' (buffer of MAX_PATH characters).
 
 BOOL FindLanguageFromPrevVerOfSal(char* slgName)
 {
@@ -950,23 +950,23 @@ BOOL FindLanguageFromPrevVerOfSal(char* slgName)
     LoadSaveToRegistryMutex.Enter();
     do
     {
-        // zjistim, jestli klic existuje a je pod nim ulozena konfigurace
+        // check if the key exists and if the configuration is stored under it
         root = SalamanderConfigurationRoots[rootIndex];
         BOOL rootFound = HANDLES_Q(RegOpenKeyEx(HKEY_CURRENT_USER, root, 0, KEY_READ, &hRootKey)) == ERROR_SUCCESS;
         BOOL cfgFound = rootFound && HANDLES_Q(RegOpenKeyEx(hRootKey, SALAMANDER_CONFIG_REG, 0,
                                                             KEY_READ, &hCfgKey)) == ERROR_SUCCESS;
         if (cfgFound && GetValue(hRootKey, SALAMANDER_SAVE_IN_PROGRESS, REG_DWORD, &saveInProgress, sizeof(DWORD)))
-        { // jde o poskozenou konfiguraci
+        { // This is a damaged configuration
             cfgFound = FALSE;
             HANDLES(RegCloseKey(hCfgKey));
         }
-        DWORD configVersion = 1; // toto je konfig od 1.52 a starsi
+        DWORD configVersion = 1; // This is config from 1.52 and older
         if (cfgFound)
         {
             HKEY actKey;
             if (HANDLES_Q(RegOpenKeyEx(hRootKey, SALAMANDER_VERSION_REG, 0, KEY_READ, &actKey) == ERROR_SUCCESS))
             {
-                configVersion = 2; // toto je konfig od 1.6b1
+                configVersion = 2; // This is the config from 1.6b1
                 GetValue(actKey, SALAMANDER_VERSIONREG_REG, REG_DWORD, &configVersion, sizeof(DWORD));
                 HANDLES(RegCloseKey(actKey));
             }
@@ -976,8 +976,8 @@ BOOL FindLanguageFromPrevVerOfSal(char* slgName)
         if (cfgFound)
         {
             BOOL found = FALSE;
-            if (rootIndex != 0 &&                      // jen pokud se jedna o jeden ze starsich klicu
-                configVersion >= 59 /* 2.53 beta 2 */) // pred 2.53 beta 2 byla jen anglictina, tedy cteni nema smysl, nabidneme userovi defaultni jazyk systemu nebo rucni vyber jazyku
+            if (rootIndex != 0 &&                      // only if it is one of the older keys
+                configVersion >= 59 /* 2.53 beta 2*/) // Before 2.53 beta 2, there was only English, so reading doesn't make sense, we will offer the user the default system language or manual language selection
             {
                 GetValue(hCfgKey, CONFIG_LANGUAGE_REG, REG_SZ, slgName, MAX_PATH);
                 found = slgName[0] != 0;
@@ -993,8 +993,8 @@ BOOL FindLanguageFromPrevVerOfSal(char* slgName)
     return FALSE;
 }
 
-// ziska cislo z retezce (decimalni format cisla bez znamenka); vraci TRUE pokud tam bylo cislo;
-// ignoruje white-spaces pred a za cislem
+// extracts a number from a string (decimal number format without a sign); returns TRUE if a number was found;
+// ignores white-spaces before and after the number
 BOOL GetNumFromStr(const char* s, DWORD* retNum)
 {
     DWORD n = 0;
@@ -1011,9 +1011,9 @@ BOOL GetNumFromStr(const char* s, DWORD* retNum)
 
 void CheckShutdownParams()
 {
-    // HKEY_CURRENT_USER\Control Panel\Desktop\WaitToKillAppTimeout=20000,REG_SZ  ... mene nez 20000, rvat!
-    // HKEY_CURRENT_USER\Control Panel\Desktop\AutoEndTasks=0,REG_SZ              ... neni 0, rvat!
-    // W2K a XP to maji, na Viste jsem to nenasel, ale pry je to tam taky (info z internetu)
+    // HKEY_CURRENT_USER\Control Panel\Desktop\WaitToKillAppTimeout=20000,REG_SZ  ... less than 20000, break!
+    // HKEY_CURRENT_USER\Control Panel\Desktop\AutoEndTasks=0,REG_SZ ... not 0, tear it apart!
+    // W2K and XP have it, I didn't find it on Vista, but reportedly it's there too (info from the internet)
 
     BOOL showWarning = FALSE;
     HKEY key;
@@ -1043,18 +1043,18 @@ void CheckShutdownParams()
 BOOL MyRegRenameKey(HKEY key, const char* name, const char* newName)
 {
     BOOL ret = FALSE;
-    // existuje i NtRenameKey, ale nejak jsem ji nerozchodil (vyzaduje UNICODE_STRING
-    // a asi i klic otevreny pres NtOpenKey, kteremu se zadava klic pres OBJECT_ATTRIBUTES
-    // inicializovany pres InitializeObjectAttributes), je to zbytecne komplikovane, nejde
-    // o frekventovany kod, vyresim to pomalou, ale snadnou cestou... klic zkopiruju do
-    // noveho, a pak original smazu
+    // There is also NtRenameKey, but I couldn't get it to work (it requires UNICODE_STRING)
+    // and probably also the key opened via NtOpenKey, to which the key is passed through OBJECT_ATTRIBUTES
+    // initialized via InitializeObjectAttributes), it's unnecessarily complicated, it doesn't work
+    // The frequently used code, I will solve it the slow but easy way... I will copy the key to
+    // new, and then delete the original
     HKEY newKey;
-    if (!OpenKeyAux(NULL, key, newName, newKey)) // test neexistence ciloveho klice
+    if (!OpenKeyAux(NULL, key, newName, newKey)) // test non-existence of the target key
     {
-        if (CreateKeyAux(NULL, key, newName, newKey)) // vytvoreni ciloveho klice
+        if (CreateKeyAux(NULL, key, newName, newKey)) // creating the target key
         {
             // zkousel jsem i RegCopyTree (bez KEY_ALL_ACCESS neslapalo) a rychlost byla stejna jako SHCopyKey
-            if (SHCopyKey(key, name, newKey, 0) == ERROR_SUCCESS) // kopie do ciloveho klice
+            if (SHCopyKey(key, name, newKey, 0) == ERROR_SUCCESS) // copy to the target key
                 ret = TRUE;
             CloseKeyAux(newKey);
             if (ret)
@@ -1075,47 +1075,47 @@ BOOL MyRegRenameKey(HKEY key, const char* name, const char* newName)
 //
 // FindLatestConfiguration
 //
-// Pokusi se najit konfiguraci odpovidajici nasi verzi programu.
-// Pokud se ji podari najit, bude nastavena promenna 'loadConfiguration' a funkce vrati
-// TRUE. Pokud konfigurace jeste nebude existovat, funkce postupne prohleda stare
-// konfigurace z pole 'SalamanderConfigurationRoots' (od nejmladsich k nejstarsim).
-// Pokud nalezne nekterou z konfiguraci, zobrazi dialog a nabidne jeji konverzi do
-// konfigurace soucasne a smazani z registry. Po zobrazeni posledniho dialogu vrati
-// TRUE a nastavi promenne 'deleteConfigurations' a 'loadConfiguration' dle voleb
-// uzivatele. Pokud uzivatel zvoli ukonceni aplikace, vrati funkce FALSE.
+// Attempt to find the configuration corresponding to our version of the program.
+// If it is found, the variable 'loadConfiguration' will be set and the function will return
+// TRUE. If the configuration does not exist yet, the function will gradually search the old ones
+// Configuration from the 'SalamanderConfigurationRoots' array (from the youngest to the oldest).
+// If it finds any of the configurations, it displays a dialog and offers to convert it to
+// configuration current and deletion from the registry. After displaying the last dialog, it returns
+// TRUE sets the variables 'deleteConfigurations' and 'loadConfiguration' according to the options
+// user. If the user chooses to terminate the application, the function returns FALSE.
 //
 
 BOOL FindLatestConfiguration(BOOL* deleteConfigurations, const char*& loadConfiguration)
 {
     HKEY hRootKey;
-    loadConfiguration = NULL; // nechceme nahrat zadnou konfiguraci - pouziji se default hodnoty
+    loadConfiguration = NULL; // We do not want to load any configuration - default values will be used
     int rootIndex = 0;
     const char* root;
     DWORD saveInProgress; // dummy
     HKEY hCfgKey;
 
     CImportConfigDialog dlg;
-    ZeroMemory(dlg.ConfigurationExist, sizeof(dlg.ConfigurationExist)); // zadna z konfiguraci nenalezene
+    ZeroMemory(dlg.ConfigurationExist, sizeof(dlg.ConfigurationExist)); // no configuration found
     dlg.DeleteConfigurations = deleteConfigurations;
     dlg.IndexOfConfigurationToLoad = -1;
 
-    BOOL offerImportDlg = FALSE; // pokud existuje stara konfigurace nebo klice, nabidneme import
+    BOOL offerImportDlg = FALSE; // if there is an old configuration or keys, we offer import
 
     LoadSaveToRegistryMutex.Enter();
 
     char backup[200];
-    sprintf_s(backup, "%s.backup.63A7CD13", SalamanderConfigurationRoots[0]); // "63A7CD13" je prevence shody jmena klice s uzivatelskym
+    sprintf_s(backup, "%s.backup.63A7CD13", SalamanderConfigurationRoots[0]); // "63A7CD13" is a prevention of key name collision with user
     HKEY backupKey;
     BOOL backupFound = OpenKeyAux(NULL, HKEY_CURRENT_USER, backup, backupKey);
     if (backupFound)
     {
         DWORD copyIsOK;
         if (GetValueAux(NULL, backupKey, SALAMANDER_COPY_IS_OK, REG_DWORD, &copyIsOK, sizeof(DWORD)))
-            copyIsOK = 1; // backup je OK
+            copyIsOK = 1; // backup is OK
         else
-            copyIsOK = 0; // backup je vadny
+            copyIsOK = 0; // backup is faulty
         HANDLES(RegCloseKey(backupKey));
-        if (!copyIsOK) // smazneme vadny backup, tvarime se, ze vubec neexistoval (asi se jen nestihl kompletne vytvorit)
+        if (!copyIsOK) // We will delete the faulty backup, pretending that it never existed (probably it just didn't have time to be fully created).
         {
             TRACE_I("Configuration backup is incomplete, removing... " << backup);
             SHDeleteKey(HKEY_CURRENT_USER, backup);
@@ -1128,19 +1128,19 @@ BOOL FindLatestConfiguration(BOOL* deleteConfigurations, const char*& loadConfig
     do
     {
         root = SalamanderConfigurationRoots[rootIndex];
-        // zjistim, jestli klic existuje
+        // check if the key exists
         BOOL rootFound = OpenKeyAux(NULL, HKEY_CURRENT_USER, root, hRootKey);
         if (rootFound &&
             GetValueAux(NULL, hRootKey, SALAMANDER_SAVE_IN_PROGRESS, REG_DWORD, &saveInProgress, sizeof(DWORD)))
-        { // jde o poskozenou konfiguraci
+        { // This is a damaged configuration
             TRACE_E("Configuration is corrupted!");
             rootFound = FALSE;
             CloseKeyAux(hRootKey);
-            if (rootIndex == 0 && backupFound) // pouzijeme backup, kdyz ho mame a nebudeme s tim prudit usera
+            if (rootIndex == 0 && backupFound) // we will use the backup if we have it and we won't bother the user with it
             {
                 char corrupted[200];
-                sprintf_s(corrupted, "%s.corrupted.63A7CD13", root); // "63A7CD13" je prevence shody jmena klice s uzivatelskym
-                SHDeleteKey(HKEY_CURRENT_USER, corrupted);           // pokud uz mame corrupted konfiguraci, odstranime ji, jedna staci
+                sprintf_s(corrupted, "%s.corrupted.63A7CD13", root); // "63A7CD13" is a prevention of key name collision with user
+                SHDeleteKey(HKEY_CURRENT_USER, corrupted);           // if we already have a corrupted configuration, we remove it, just one is enough
                 if (MyRegRenameKey(HKEY_CURRENT_USER, root, corrupted) &&
                     MyRegRenameKey(HKEY_CURRENT_USER, backup, root))
                 {
@@ -1152,13 +1152,13 @@ BOOL FindLatestConfiguration(BOOL* deleteConfigurations, const char*& loadConfig
                     }
                     TRACE_I("Corrupted configuration was moved to: " << corrupted);
                     TRACE_I("Using configuration backup instead ...");
-                    continue; // v druhem kole nacteme konfiguraci ze zalohy vyrobene pri "critical shutdown"
+                    continue; // In the second round, we will load the configuration from the backup created during the "critical shutdown."
                 }
                 else
                     TRACE_E("Unable to move corrupted configuration or configuration backup.");
             }
 
-            if (rootIndex == 0) // u aktivni verze programu informujeme usera o poskozene konfiguraci a nechame ho klic zazalohovat, pak ho zkusime smazat (u starych verzi tuto poskozenou konfiguraci proste ignorujeme)
+            if (rootIndex == 0) // In the active version of the program, we inform the user about the damaged configuration and let them back up the key, then we try to delete it (in older versions, we simply ignore this damaged configuration).
             {
                 char buf[1500];
                 _snprintf_s(buf, _TRUNCATE, LoadStr(IDS_CORRUPTEDCONFIGFOUND), root);
@@ -1171,29 +1171,28 @@ BOOL FindLatestConfiguration(BOOL* deleteConfigurations, const char*& loadConfig
                 params.Caption = SALAMANDER_TEXT_VERSION;
                 params.Text = buf;
                 char aliasBtnNames[200];
-                /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   nechame pro tlacitka msgboxu resit kolize hotkeys tim, ze simulujeme, ze jde o menu
+                /* used for the export_mnu.py script, which generates the salmenu.mnu for the Translator
+we will let the collision of hotkeys for the message box buttons be solved by simulating that it is a menu
 MENU_TEMPLATE_ITEM MsgBoxButtons[] = 
 {
   {MNTT_PB, 0
   {MNTT_IT, IDS_CORRUPTEDCONFIGREMOVEBTN
   {MNTT_IT, IDS_SELLANGEXITBUTTON
   {MNTT_PE, 0
-};
-*/
+};*/
                 sprintf(aliasBtnNames, "%d\t%s\t%d\t%s", DIALOG_OK, LoadStr(IDS_CORRUPTEDCONFIGREMOVEBTN),
                         DIALOG_CANCEL, LoadStr(IDS_SELLANGEXITBUTTON));
                 params.AliasBtnNames = aliasBtnNames;
                 if (SalMessageBoxEx(&params) == IDCANCEL)
                 {
-                    CheckShutdownParams(); // pripadne jeste zobrazime tenhle warning (pokud si prejmenuji klic v registry, nemuseli by tu hlasku vubec potkat)
+                    CheckShutdownParams(); // Alternatively, we could also display this warning (if I rename the key in the registry, you might not encounter this message at all)
                     return FALSE;          // Exit
                 }
 
                 CheckShutdownParams();
                 LoadSaveToRegistryMutex.Enter();
                 if (HANDLES_Q(RegOpenKeyEx(HKEY_CURRENT_USER, root, 0, KEY_READ | KEY_WRITE, &hRootKey)) == ERROR_SUCCESS)
-                { // smazeme poskozenou konfiguraci (pokud tam jeste je - aneb user ji neprejmenoval kvuli zalohovani)
+                { // we will delete the damaged configuration (if it is still there - i.e. the user did not rename it for backup)
                     TRACE_I("Deleting corrupted configuration on user demand: " << root);
                     ClearKeyAux(hRootKey);
                     CloseKeyAux(hRootKey);
@@ -1205,26 +1204,26 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
         if (rootFound)
             CloseKeyAux(hRootKey);
 
-        if (rootIndex == 0 && backupFound) // backup nepotrebujeme, smazneme ho
+        if (rootIndex == 0 && backupFound) // We don't need the backup, we will delete it
         {
             TRACE_I("Removing unnecessary configuration backup: " << backup);
             SHDeleteKey(HKEY_CURRENT_USER, backup);
             backupFound = FALSE;
         }
 
-        if (cfgFound) // klice s konfiguraci rozpoznavame na zaklade existence podklice "Configuration" (pouha existence klice nestaci, protoze pod nim muze byt jen "AutoImportConfig")
+        if (cfgFound) // We recognize keys with configuration based on the existence of the subkey "Configuration" (the mere existence of the key is not enough, because there may be only "AutoImportConfig" under it)
         {
             CloseKeyAux(hCfgKey);
             if (rootIndex == 0)
             {
-                // jedna se o klic k aktivni verzi programu => potvrdime nacteni klice a vypadnem
+                // It is a key to the active version of the program => we confirm loading the key and exit
                 loadConfiguration = root;
                 LoadSaveToRegistryMutex.Leave();
                 return TRUE;
             }
-            // jde o jeden ze starsich klicu
+            // It's one of the older keys
 
-            // konfiguraci budeme nabizet pro import a smazani
+            // we will offer configuration for import and deletion
             dlg.ConfigurationExist[rootIndex] = TRUE;
             offerImportDlg = TRUE;
         }
@@ -1235,7 +1234,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
 
     if (offerImportDlg)
     {
-        HWND hSplash = GetSplashScreenHandle(); // pokud existuje splash, docasne ho zhasneme
+        HWND hSplash = GetSplashScreenHandle(); // if there is a splash, temporarily turn it off
         if (hSplash != NULL)
             ShowWindow(hSplash, SW_HIDE);
 
@@ -1249,7 +1248,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
 
         if (dlgRet == IDCANCEL)
         {
-            return FALSE; // user chce zdrhnout ze Salama
+            return FALSE; // user wants to escape from Salama
         }
         if (dlg.IndexOfConfigurationToLoad != -1)
             loadConfiguration = SalamanderConfigurationRoots[dlg.IndexOfConfigurationToLoad];
@@ -1257,13 +1256,13 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
     return TRUE;
 }
 
-// maze klice dle pole vraceneho funkci FindLatestConfiguration
+// Iterates keys according to the array returned by the FindLatestConfiguration function
 
 void CMainWindow::DeleteOldConfigurations(BOOL* deleteConfigurations, BOOL autoImportConfig,
                                           const char* autoImportConfigFromKey,
                                           BOOL doNotDeleteImportedCfg)
 {
-    // je co mazat?
+    // Is there anything to lubricate?
     BOOL dirty = FALSE;
     if (autoImportConfig)
         dirty = TRUE;
@@ -1281,7 +1280,7 @@ void CMainWindow::DeleteOldConfigurations(BOOL* deleteConfigurations, BOOL autoI
     }
     if (dirty)
     {
-        // podrizneme stare konfigurace
+        // we will cut old configurations
         HCURSOR hOldCursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
         CWaitWindow analysing(HWindow, IDS_DELETINGCONFIGURATION, FALSE, ooStatic);
         analysing.Create();
@@ -1302,22 +1301,22 @@ void CMainWindow::DeleteOldConfigurations(BOOL* deleteConfigurations, BOOL autoI
                 }
             }
         }
-        if (autoImportConfig) // vycistime starou konfiguraci (uz je ulozena do noveho klice) + v novem klici zrusime hodnotu "AutoImportConfig"
+        if (autoImportConfig) // we will clean up the old configuration (it is already saved in a new key) + in the new key we will remove the value "AutoImportConfig"
         {
             BOOL ok = FALSE;
             HKEY cfgKey;
             if (HANDLES_Q(RegOpenKeyEx(HKEY_CURRENT_USER, SalamanderConfigurationRoots[0], 0,
                                        KEY_READ | KEY_WRITE, &cfgKey)) == ERROR_SUCCESS)
-            { // v novem klici zrusime hodnotu "AutoImportConfig"
+            { // In the new key, we will remove the value "AutoImportConfig"
                 if (RegDeleteValue(cfgKey, SALAMANDER_AUTO_IMPORT_CONFIG) == ERROR_SUCCESS)
                     ok = TRUE;
                 HANDLES(RegCloseKey(cfgKey));
             }
-            if (!ok) // pokud k tomu dojde, zrejme neni problem, protoze jsme urcite taky nezapsali konfiguraci Salama (jde do stejneho klice) a cely UPGRADE bude potreba provest znovu
+            if (!ok) // if that happens, it's probably not a problem, because we certainly didn't write the Salama configuration (it goes to the same key) and the whole UPGRADE will need to be done again
             {
                 TRACE_E("CMainWindow::DeleteOldConfigurations(): unable to delete " << SALAMANDER_AUTO_IMPORT_CONFIG << " value from HKCU\\" << SalamanderConfigurationRoots[0]);
             }
-            else // vycistime starou konfiguraci (uz je ulozena do noveho klice)
+            else // we will clean up the old configuration (it is already saved in a new key)
             {
                 if (!doNotDeleteImportedCfg)
                 {
@@ -1379,7 +1378,7 @@ void CMainWindow::SaveConfig(HWND parent)
 
     if (SALAMANDER_ROOT_REG == NULL)
     {
-        TRACE_E("SALAMANDER_ROOT_REG == NULL"); // nemusi byt chyba: pri UPGRADE tak resime ukonceni Salama bez ulozeni konfigurace (pokud user nema nainstalovane vsechny pluginy a zvoli Exit)
+        TRACE_E("SALAMANDER_ROOT_REG == NULL"); // no error needed: when UPGRADE is performed, we handle the termination of Salama without saving the configuration (if the user does not have all plugins installed and chooses Exit)
         return;
     }
 
@@ -1392,11 +1391,11 @@ void CMainWindow::SaveConfig(HWND parent)
     if (GlobalSaveWaitWindow == NULL)
     {
         //TRACE_I("analysing.SetProgressPos() savingProgress="<<savingProgress);
-        analysing.SetProgressMax(7 /* NUTNE SYNCHRONIZOVAT s CMainWindow::WindowProc::WM_USER_CLOSE_MAINWND !!! */); // o jednu min, at si uzijou na pohled na 100%
+        analysing.SetProgressMax(7 /* NEED TO SYNCHRONIZE with CMainWindow::WindowProc::WM_USER_CLOSE_MAINWND !!!*/); // Wait a minute, let them enjoy the view at 100%
         analysing.Create();
         EnableWindow(parent, FALSE);
 
-        // bude se volat i SaveConfiguration plug-inu -> nutne nastaveni parenta pro jejich messageboxy
+        // SaveConfiguration plug-in will also be called -> necessary setting of the parent for their message boxes
         PluginMsgBoxParent = analysing.HWindow;
     }
 
@@ -1413,8 +1412,8 @@ void CMainWindow::SaveConfig(HWND parent)
         {
             DWORD saveInProgress = 1;
             if (GetValueAux(NULL, salamander, SALAMANDER_SAVE_IN_PROGRESS, REG_DWORD, &saveInProgress, sizeof(DWORD)))
-            {                    // GetValueAux, protoze nechci hlasku o Load Configuration
-                cfgIsOK = FALSE; // jde o poskozenou konfiguraci, ulozenim se neopravi (neuklada se komplet)
+            {                    // GetValueAux because I don't want a message about Load Configuration
+                cfgIsOK = FALSE; // It is about a damaged configuration, it is not fixed by saving (it is not saved completely)
                 TRACE_E("CMainWindow::SaveConfig(): unable to save configuration, configuration key in registry is corrupted");
             }
             else
@@ -1436,7 +1435,7 @@ void CMainWindow::SaveConfig(HWND parent)
                 CloseKey(actKey);
             }
 
-            //---  window
+            //--- window
 
             if (CreateKey(salamander, SALAMANDER_WINDOW_REG, actKey))
             {
@@ -1483,12 +1482,12 @@ void CMainWindow::SaveConfig(HWND parent)
                 }
             }
 
-            //---  left and right panel
+            //--- left and right panel
 
             SavePanelConfig(LeftPanel, salamander, SALAMANDER_LEFTP_REG);
             SavePanelConfig(RightPanel, salamander, SALAMANDER_RIGHTP_REG);
 
-            //---  default directories
+            //--- default directories
 
             if (CreateKey(salamander, SALAMANDER_DEFDIRS_REG, actKey))
             {
@@ -1499,7 +1498,7 @@ void CMainWindow::SaveConfig(HWND parent)
                 {
                     name[0] = d;
                     char* path = DefaultDir[d - 'A'];
-                    if (path[1] == ':' && path[2] == '\\' && path[3] != 0) // neni to "C:\"
+                    if (path[1] == ':' && path[2] == '\\' && path[3] != 0) // It is not "C:\"
                         SetValue(actKey, name, REG_SZ, path, -1);
                     else
                         DeleteValue(actKey, name);
@@ -1507,7 +1506,7 @@ void CMainWindow::SaveConfig(HWND parent)
                 CloseKey(actKey);
             }
 
-            //---  password manager
+            //--- password manager
 
             if (CreateKey(salamander, SALAMANDER_PWDMNGR_REG, actKey))
             {
@@ -1515,7 +1514,7 @@ void CMainWindow::SaveConfig(HWND parent)
                 CloseKey(actKey);
             }
 
-            //---  hot paths
+            //--- hot paths
 
             if (CreateKey(salamander, SALAMANDER_HOTPATHS_REG, actKey))
             {
@@ -1531,7 +1530,7 @@ void CMainWindow::SaveConfig(HWND parent)
                 CloseKey(actKey);
             }
 
-            //---  Plugins
+            //--- Plugins
             HKEY configKey;
             HKEY orderKey;
             if (CreateKey(salamander, SALAMANDER_PLUGINS, actKey) &&
@@ -1550,13 +1549,13 @@ void CMainWindow::SaveConfig(HWND parent)
                 GlobalSaveWaitWindow->SetProgressPos(++GlobalSaveWaitWindowProgress); // 1
             //TRACE_I("analysing.SetProgressPos() savingProgress="<<savingProgress);
 
-            //---  Packers & Unpackers
+            //--- Packers & Unpackers
             if (CreateKey(salamander, SALAMANDER_PACKANDUNPACK, actKey))
             {
                 SetValue(actKey, SALAMANDER_SIMPLEICONSINARCHIVES, REG_DWORD,
                          &(Configuration.UseSimpleIconsInArchives), sizeof(DWORD));
 
-                //---  Custom Packers
+                //--- Custom Packers
                 HKEY actSubKey;
                 if (CreateKey(actKey, SALAMANDER_CUSTOMPACKERS, actSubKey))
                 {
@@ -1588,7 +1587,7 @@ void CMainWindow::SaveConfig(HWND parent)
                     GlobalSaveWaitWindow->SetProgressPos(++GlobalSaveWaitWindowProgress); // 2
                 //TRACE_I("analysing.SetProgressPos() savingProgress="<<savingProgress);
 
-                //---  Custom Unpackers
+                //--- Custom Unpackers
                 if (CreateKey(actKey, SALAMANDER_CUSTOMUNPACKERS, actSubKey))
                 {
                     ClearKey(actSubKey);
@@ -1621,7 +1620,7 @@ void CMainWindow::SaveConfig(HWND parent)
                     GlobalSaveWaitWindow->SetProgressPos(++GlobalSaveWaitWindowProgress); // 3
                 //TRACE_I("analysing.SetProgressPos() savingProgress="<<savingProgress);
 
-                //---  Predefined Packers
+                //--- Predefined Packers
                 if (CreateKey(actKey, SALAMANDER_PREDPACKERS, actSubKey))
                 {
                     ClearKey(actSubKey);
@@ -1642,7 +1641,7 @@ void CMainWindow::SaveConfig(HWND parent)
                     CloseKey(actSubKey);
                 }
 
-                //---  Archive Association
+                //--- Archive Association
                 if (CreateKey(actKey, SALAMANDER_ARCHIVEASSOC, actSubKey))
                 {
                     ClearKey(actSubKey);
@@ -1666,11 +1665,11 @@ void CMainWindow::SaveConfig(HWND parent)
                 CloseKey(actKey);
             }
 
-            //---  configuration
+            //--- configuration
 
             if (CreateKey(salamander, SALAMANDER_CONFIG_REG, actKey))
             {
-                //---  top rebar begin
+                //--- top rebar begin
                 SetValue(actKey, CONFIG_MENUINDEX_REG, REG_DWORD,
                          &Configuration.MenuIndex, sizeof(DWORD));
                 SetValue(actKey, CONFIG_MENUBREAK_REG, REG_DWORD,
@@ -1712,7 +1711,7 @@ void CMainWindow::SaveConfig(HWND parent)
                 SetValue(actKey, CONFIG_GRIPSVISIBLE_REG, REG_DWORD,
                          &Configuration.GripsVisible, sizeof(DWORD));
 
-                //---  top rebar end
+                //--- top rebar end
                 SetValue(actKey, CONFIG_FILENAMEFORMAT_REG, REG_DWORD,
                          &Configuration.FileNameFormat, sizeof(DWORD));
                 SetValue(actKey, CONFIG_SIZEFORMAT_REG, REG_DWORD,
@@ -1835,7 +1834,7 @@ void CMainWindow::SaveConfig(HWND parent)
                          &Configuration.UseAsAltSLGInOtherPlugins, sizeof(DWORD));
                 SetValue(actKey, CONFIG_ALTLANGFORPLUGINS_REG, REG_SZ,
                          Configuration.AltPluginSLGName, -1);
-                DWORD langChanged = (StrICmp(Configuration.SLGName, Configuration.LoadedSLGName) != 0); // TRUE pokud user zmenil jazyk Salama
+                DWORD langChanged = (StrICmp(Configuration.SLGName, Configuration.LoadedSLGName) != 0); // TRUE if the user changed the language to Salama
                 SetValue(actKey, CONFIG_LANGUAGECHANGED_REG, REG_DWORD, &langChanged, sizeof(DWORD));
                 SetValue(actKey, CONFIG_SHOWSPLASHSCREEN_REG, REG_DWORD,
                          &Configuration.ShowSplashScreen, sizeof(DWORD));
@@ -1891,8 +1890,8 @@ void CMainWindow::SaveConfig(HWND parent)
                 SetValue(actKey, CONFIG_SHOWSLGINCOMPLETE_REG, REG_DWORD,
                          &Configuration.ShowSLGIncomplete, sizeof(DWORD));
 
-                // POZOR: pri padu v icon overlay handleru se tyto hodnoty zapisuji primo do registry
-                //        (zamezeni "nespustitelnosti" Salama), viz InformAboutIconOvrlsHanCrash()
+                // WARNING: in case of a crash in the icon overlay handler, these values are written directly to the registry
+                //        (prevention of "non-executability" of Salam), see InformAboutIconOvrlsHanCrash()
                 SetValue(actKey, CONFIG_ENABLECUSTICOVRLS_REG, REG_DWORD,
                          &Configuration.EnableCustomIconOverlays, sizeof(DWORD));
                 SetValue(actKey, CONFIG_DISABLEDCUSTICOVRLS_REG, REG_SZ,
@@ -2120,7 +2119,7 @@ void CMainWindow::SaveConfig(HWND parent)
                 CloseKey(actKey);
             }
 
-            //---  viewer
+            //--- viewer
 
             if (CreateKey(salamander, SALAMANDER_VIEWER_REG, actKey))
             {
@@ -2184,7 +2183,7 @@ void CMainWindow::SaveConfig(HWND parent)
                 CloseKey(actKey);
             }
 
-            //---  user menu
+            //--- user menu
 
             if (CreateKey(salamander, SALAMANDER_USERMENU_REG, actKey))
             {
@@ -2223,9 +2222,9 @@ void CMainWindow::SaveConfig(HWND parent)
                 CloseKey(actKey);
             }
 
-            //---  internal ZIP packer
+            //--- internal ZIP packer
 
-            if (Configuration.ConfigVersion < 6 && // jen stary config, jinak klic nevytvarime+necistime
+            if (Configuration.ConfigVersion < 6 && // only old config, otherwise we do not create+clean the key
                 CreateKey(salamander, SALAMANDER_IZIP_REG, actKey))
             {
                 ClearKey(actKey);
@@ -2235,7 +2234,7 @@ void CMainWindow::SaveConfig(HWND parent)
                 DeleteKey(salamander, SALAMANDER_IZIP_REG);
             }
 
-            //---  viewers
+            //--- viewers
 
             SaveViewers(salamander, SALAMANDER_VIEWERS_REG, ViewerMasks);
             SaveViewers(salamander, SALAMANDER_ALTVIEWERS_REG, AltViewerMasks);
@@ -2250,7 +2249,7 @@ void CMainWindow::SaveConfig(HWND parent)
                 GlobalSaveWaitWindow->SetProgressPos(++GlobalSaveWaitWindowProgress); // 7
             //TRACE_I("analysing.SetProgressPos() savingProgress="<<savingProgress);
 
-            //---  colors
+            //--- colors
             if (CreateKey(salamander, SALAMANDER_CUSTOMCOLORS_REG, actKey))
             {
                 char buff[10];
@@ -2324,7 +2323,7 @@ void CMainWindow::SaveConfig(HWND parent)
                 SaveRGBF(actKey, SALAMANDER_CLR_VIEWER_FG_SELECTED_REG, ViewerColors[VIEWER_FG_SELECTED]);
                 SaveRGBF(actKey, SALAMANDER_CLR_VIEWER_BK_SELECTED_REG, ViewerColors[VIEWER_BK_SELECTED]);
 
-                // ulozim barvy pro highlighting souboru
+                // save colors for file highlighting
                 HKEY hHltKey;
                 if (CreateKey(actKey, SALAMANDER_HLT, hHltKey))
                 {
@@ -2399,7 +2398,7 @@ void CMainWindow::LoadPanelConfig(char* panelPath, CFilesWindow* panel, HKEY hSa
                 panel->HeaderLineVisible = value;
             if (GetValue(actKey, PANEL_VIEW_REG, REG_DWORD, &value, sizeof(DWORD)))
             {
-                if (Configuration.ConfigVersion < 13 && !value) // konverze: Detailed byl ulozen jako FALSE
+                if (Configuration.ConfigVersion < 13 && !value) // conversion: Detailed was saved as FALSE
                     value = 2;
                 panel->SelectViewTemplate(value, FALSE, FALSE, VALID_DATA_ALL, FALSE, TRUE);
             }
@@ -2429,10 +2428,10 @@ void CMainWindow::LoadPanelConfig(char* panelPath, CFilesWindow* panel, HKEY hSa
                     char* filterHistory[1];
                     filterHistory[0] = NULL;
                     LoadHistory(actKey, PANEL_FILTERHISTORY_REG, filterHistory, 1);
-                    if (filterHistory[0] != NULL) // at se nacita i pocatecni stav filtru
+                    if (filterHistory[0] != NULL) // Initial state of the filter is also loaded
                     {
                         DWORD filterInverse = FALSE;
-                        if (panel->FilterEnabled && Configuration.ConfigVersion < 14) // konverze: byl zrusen checkbox pro inverzni filtr
+                        if (panel->FilterEnabled && Configuration.ConfigVersion < 14) // conversion: the checkbox for inverse filter was removed
                             GetValue(actKey, PANEL_FILTER_INVERSE, REG_DWORD, &filterInverse, sizeof(DWORD));
                         if (filterInverse)
                             strcpy(filter, "|");
@@ -2467,10 +2466,10 @@ void LoadIconOvrlsInfo(const char* root)
     if (OpenKey(HKEY_CURRENT_USER, root, hSalamander))
     {
         HKEY actKey;
-        DWORD configVersion = 1; // toto je konfig od 1.52 a starsi
+        DWORD configVersion = 1; // This is config from 1.52 and older
         if (OpenKey(hSalamander, SALAMANDER_VERSION_REG, actKey))
         {
-            configVersion = 2; // toto je konfig od 1.6b1
+            configVersion = 2; // This is the config from 1.6b1
             GetValue(actKey, SALAMANDER_VERSIONREG_REG, REG_DWORD,
                      &configVersion, sizeof(DWORD));
             CloseKey(actKey);
@@ -2483,13 +2482,13 @@ void LoadIconOvrlsInfo(const char* root)
                          &Configuration.EnableCustomIconOverlays, sizeof(DWORD)) &&
                 GetSize(actKey, CONFIG_DISABLEDCUSTICOVRLS_REG, REG_SZ, disabledCustomIconOverlaysBufSize))
             {
-                if (disabledCustomIconOverlaysBufSize > 1) // <= 1 znamena prazdny string a na to staci NULL
+                if (disabledCustomIconOverlaysBufSize > 1) // <= 1 means an empty string and NULL is sufficient for that
                 {
                     Configuration.DisabledCustomIconOverlays = (char*)malloc(disabledCustomIconOverlaysBufSize);
                     if (Configuration.DisabledCustomIconOverlays == NULL)
                     {
                         TRACE_E(LOW_MEMORY);
-                        Configuration.EnableCustomIconOverlays = FALSE; // z bezpecnostnich duvodu (icon overlay handlery dost padaji)
+                        Configuration.EnableCustomIconOverlays = FALSE; // for security reasons (icon overlay handlers often crash)
                     }
                     else
                     {
@@ -2498,14 +2497,14 @@ void LoadIconOvrlsInfo(const char* root)
                         {
                             free(Configuration.DisabledCustomIconOverlays);
                             Configuration.DisabledCustomIconOverlays = NULL;
-                            Configuration.EnableCustomIconOverlays = FALSE; // z bezpecnostnich duvodu (icon overlay handlery dost padaji)
+                            Configuration.EnableCustomIconOverlays = FALSE; // for security reasons (icon overlay handlers often crash)
                         }
                     }
                 }
             }
             else
             {
-                if (configVersion >= 41) // pokud v novych konfiguracich chybi tato hodnota, zakazeme overlaye (ve starsich verzich tyto promenne nebyly, tedy nejde o chybu - overlaye nechame zapnute)
+                if (configVersion >= 41) // if this value is missing in the new configurations, we will disable overlays (in older versions these variables were not present, so it is not an error - overlays will remain enabled)
                     Configuration.EnableCustomIconOverlays = FALSE;
             }
 
@@ -2531,17 +2530,17 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
 
         IfExistSetSplashScreenText(LoadStr(IDS_STARTUP_CONFIG));
 
-        Configuration.ConfigVersion = 1; // toto je konfig od 1.52 a starsi
+        Configuration.ConfigVersion = 1; // This is config from 1.52 and older
                                          //--- version
         if (OpenKey(salamander, SALAMANDER_VERSION_REG, actKey))
         {
-            Configuration.ConfigVersion = 2; // toto je konfig od 1.6b1
+            Configuration.ConfigVersion = 2; // This is the config from 1.6b1
             GetValue(actKey, SALAMANDER_VERSIONREG_REG, REG_DWORD,
                      &Configuration.ConfigVersion, sizeof(DWORD));
             CloseKey(actKey);
         }
 
-        //---  viewers
+        //--- viewers
 
         EnterViewerMasksCS();
         LoadViewers(salamander, SALAMANDER_VIEWERS_REG, ViewerMasks);
@@ -2552,7 +2551,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
 
         LoadEditors(salamander, SALAMANDER_EDITORS_REG, EditorMasks);
 
-        //---  colors
+        //--- colors
         if (OpenKey(salamander, SALAMANDER_CUSTOMCOLORS_REG, actKey))
         {
             char buff[10];
@@ -2572,7 +2571,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             CurrentColors = UserColors;
             if (GetValue(actKey, SALAMANDER_CLRSCHEME_REG, REG_DWORD, &scheme, sizeof(DWORD)))
             {
-                // pridali jsme nove schema (DOS Navigator) na pozici 3
+                // we added a new schema (DOS Navigator) at position 3
                 if (Configuration.ConfigVersion < 28 && scheme == 3)
                     scheme = 4;
 
@@ -2603,9 +2602,9 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             LoadRGBF(actKey, SALAMANDER_CLR_FOCUS_INACTIVE_NORMAL_REG, UserColors[FOCUS_FG_INACTIVE_NORMAL]);
             LoadRGBF(actKey, SALAMANDER_CLR_FOCUS_INACTIVE_SELECTED_REG, UserColors[FOCUS_FG_INACTIVE_SELECTED]);
             if (!LoadRGBF(actKey, SALAMANDER_CLR_FOCUS_BK_INACTIVE_NORMAL_REG, UserColors[FOCUS_BK_INACTIVE_NORMAL]))
-                UserColors[FOCUS_BK_INACTIVE_NORMAL] = UserColors[ITEM_BK_NORMAL]; // konverze starsich konfiguraci
+                UserColors[FOCUS_BK_INACTIVE_NORMAL] = UserColors[ITEM_BK_NORMAL]; // conversion of older configurations
             if (!LoadRGBF(actKey, SALAMANDER_CLR_FOCUS_BK_INACTIVE_SELECTED_REG, UserColors[FOCUS_BK_INACTIVE_SELECTED]))
-                UserColors[FOCUS_BK_INACTIVE_SELECTED] = UserColors[ITEM_BK_NORMAL]; // konverze starsich konfiguraci
+                UserColors[FOCUS_BK_INACTIVE_SELECTED] = UserColors[ITEM_BK_NORMAL]; // conversion of older configurations
 
             LoadRGBF(actKey, SALAMANDER_CLR_ICON_BLEND_SELECTED_REG, UserColors[ICON_BLEND_SELECTED]);
             LoadRGBF(actKey, SALAMANDER_CLR_ICON_BLEND_FOCUSED_REG, UserColors[ICON_BLEND_FOCUSED]);
@@ -2635,7 +2634,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             LoadRGBF(actKey, SALAMANDER_CLR_VIEWER_FG_SELECTED_REG, ViewerColors[VIEWER_FG_SELECTED]);
             LoadRGBF(actKey, SALAMANDER_CLR_VIEWER_BK_SELECTED_REG, ViewerColors[VIEWER_BK_SELECTED]);
 
-            // nactu barvy pro highlighting souboru
+            // load colors for file highlighting
             HKEY hHltKey;
             if (OpenKey(actKey, SALAMANDER_HLT, hHltKey))
             {
@@ -2684,7 +2683,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                         CloseKey(hSubKey);
                     }
                 }
-                if (Configuration.ConfigVersion < 16) // pridame barveni Encrypted souboru/adresaru
+                if (Configuration.ConfigVersion < 16) // add coloring to Encrypted file/directory
                 {
                     CHighlightMasksItem* hItem = new CHighlightMasksItem();
                     if (hItem != NULL)
@@ -2693,7 +2692,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                         hItem->Set("*.*");
                         int errPos;
                         hItem->Masks->PrepareMasks(errPos);
-                        hItem->NormalFg = RGBF(19, 143, 13, 0); // barva vzata z Windows XP
+                        hItem->NormalFg = RGBF(19, 143, 13, 0); // color taken from Windows XP
                         hItem->FocusedFg = RGBF(19, 143, 13, 0);
                         hItem->ValidAttr = FILE_ATTRIBUTE_ENCRYPTED;
                         hItem->Attr = FILE_ATTRIBUTE_ENCRYPTED;
@@ -2702,12 +2701,12 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                 CloseKey(hHltKey);
             }
 
-            ColorsChanged(FALSE, TRUE, TRUE); // sporime cas, nechame zmenit jen barvo-zavisle polozky
+            ColorsChanged(FALSE, TRUE, TRUE); // We save time, we only let color-dependent items change
 
             CloseKey(actKey);
         }
 
-        //---  window
+        //--- window
 
         WINDOWPLACEMENT place;
         BOOL useWinPlacement = FALSE;
@@ -2775,7 +2774,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             CloseKey(actKey);
         }
 
-        //---  default directories
+        //--- default directories
 
         if (OpenKey(salamander, SALAMANDER_DEFDIRS_REG, actKey))
         {
@@ -2833,7 +2832,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             CloseKey(actKey);
         }
 
-        //---  password manager
+        //--- password manager
 
         if (OpenKey(salamander, SALAMANDER_PWDMNGR_REG, actKey))
         {
@@ -2841,11 +2840,11 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             CloseKey(actKey);
         }
 
-        //---  hot paths
+        //--- hot paths
 
         if (OpenKey(salamander, SALAMANDER_HOTPATHS_REG, actKey))
         {
-            if (Configuration.ConfigVersion == 1) // je treba nakonvertit HotPaths
+            if (Configuration.ConfigVersion == 1) // HotPaths needs to be converted
                 HotPaths.Load1_52(actKey);
             else
                 HotPaths.Load(actKey);
@@ -2861,15 +2860,15 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             CloseKey(actKey);
         }
 
-        //---  Plugins Order
+        //--- Plugins Order
         if (OpenKey(salamander, SALAMANDER_PLUGINSORDER, actKey))
         {
             Plugins.LoadOrder(HWindow, actKey);
             CloseKey(actKey);
         }
 
-        //---  Plugins
-        if (OpenKey(salamander, SALAMANDER_PLUGINS, actKey)) // jinak default hodnoty
+        //--- Plugins
+        if (OpenKey(salamander, SALAMANDER_PLUGINS, actKey)) // otherwise default values
         {
             Plugins.Load(HWindow, actKey);
             CloseKey(actKey);
@@ -2877,15 +2876,15 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
         else
         {
             if (Configuration.ConfigVersion >= 6)
-                Plugins.Clear(); // nechce ani defaultni archivatory ...
+                Plugins.Clear(); // It doesn't even want default archivers ...
         }
 
-        //---  Packers & Unpackers
+        //--- Packers & Unpackers
         if (OpenKey(salamander, SALAMANDER_PACKANDUNPACK, actKey))
         {
             GetValue(actKey, SALAMANDER_SIMPLEICONSINARCHIVES, REG_DWORD,
                      &(Configuration.UseSimpleIconsInArchives), sizeof(DWORD));
-            //---  Custom Packers
+            //--- Custom Packers
             HKEY actSubKey;
             if (OpenKey(actKey, SALAMANDER_CUSTOMPACKERS, actSubKey))
             {
@@ -2908,10 +2907,10 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                     PackerConfig.SetPreferedPacker(pp);
                 }
                 CloseKey(actSubKey);
-                // pridame novinky od minule verze :-)
+                // add new features from the last version :-)
                 PackerConfig.AddDefault(Configuration.ConfigVersion);
             }
-            //---  Custom Unpackers
+            //--- Custom Unpackers
             if (OpenKey(actKey, SALAMANDER_CUSTOMUNPACKERS, actSubKey))
             {
                 UnpackerConfig.DeleteAllUnpackers();
@@ -2935,17 +2934,17 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                     UnpackerConfig.SetPreferedUnpacker(pp);
                 }
                 CloseKey(actSubKey);
-                // pridame novinky od minule verze :-)
+                // add new features from the last version :-)
                 UnpackerConfig.AddDefault(Configuration.ConfigVersion);
             }
-            //---  Predefined Packers
+            //--- Predefined Packers
             if (OpenKey(actKey, SALAMANDER_PREDPACKERS, actSubKey))
             {
-                // j.r.
-                // External Archivers Locations: default hodnoty se behem loadu konfigurace nemazou
-                // jako doposud, pouze se aktualizuji. Pokud je v registry neuplny nebo neznamy zaznam,
-                // suse se ignoruje. Pouze pokud sedi Title s nekterou z default hodnot, pouziji se
-                // jeji cesty.
+                // Author
+                // External Archivers Locations: default values are not deleted during configuration load
+                // as before, just updating. If there is an incomplete or unknown record in the registry,
+                // Ignore the 'suse'. Only if the Title is set to one of the default values, it will be used
+                // her ways.
                 // ArchiverConfig.DeleteAllArchivers();
                 HKEY itemKey;
                 char buf[30];
@@ -2958,10 +2957,10 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                     itoa(++i, buf, 10);
                 }
                 CloseKey(actSubKey);
-                // pridame novinky od minule verze :-)
-                // ArchiverConfig.AddDefault(Configuration.ConfigVersion); // j.r. nadale netreba volat
+                // add new features from the last version :-)
+                // ArchiverConfig.AddDefault(Configuration.ConfigVersion); // j.r. no longer needs to be called
             }
-            //---  Archive Association
+            //--- Archive Association
             if (OpenKey(actKey, SALAMANDER_ARCHIVEASSOC, actSubKey))
             {
                 PackerFormatConfig.DeleteAllFormats();
@@ -2976,16 +2975,16 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                     itoa(++i, buf, 10);
                 }
                 CloseKey(actSubKey);
-                // pridame novinky od minule verze :-)
+                // add new features from the last version :-)
                 PackerFormatConfig.AddDefault(Configuration.ConfigVersion);
                 PackerFormatConfig.BuildArray();
             }
             CloseKey(actKey);
         }
 
-        Plugins.CheckData(); // uprava nactenych dat
+        Plugins.CheckData(); // processing of loaded data
 
-        //---  user menu
+        //--- user menu
 
         IfExistSetSplashScreenText(LoadStr(IDS_STARTUP_USERMENU));
 
@@ -3019,7 +3018,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                     if (Configuration.ConfigVersion == 1 ||
                         !GetValue(subKey, USERMENU_ARGUMENTS_REG, REG_SZ, arguments, USRMNUARGS_MAXLEN))
                     {
-                        // konvert z user-menu verze 1.52 na stavajici verzi
+                        // Convert from user-menu version 1.52 to the current version
                         char* s = command;
                         while (*s != 0)
                         {
@@ -3028,17 +3027,17 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                             s++;
                         }
                         if (*s == 0)
-                            *arguments = 0; // zadne parametry
+                            *arguments = 0; // no parameters
                         else
                         {
                             s--;
                             while (--s >= command && *s != ' ')
                                 ;
                             if (s < command)
-                                *arguments = 0; // syntakticka chyba
+                                *arguments = 0; // syntactic error
                             else
                             {
-                                *s++ = 0; // zarizneme command, s nastavime na prvni znak argumentu
+                                *s++ = 0; // parse the command, set it to the first character of the argument
                                 char* st = arguments;
                                 char* stEnd = arguments + sizeof(arguments) - 1;
                                 while (*s != 0 && st < stEnd)
@@ -3144,14 +3143,14 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                 CloseKey(subKey);
             }
 
-            UserMenuIconBkgndReader.StartBkgndReadingIcons(bkgndReaderData); // POZOR: uvolni 'bkgndReaderData'
+            UserMenuIconBkgndReader.StartBkgndReadingIcons(bkgndReaderData); // WARNING: release 'bkgndReaderData'
 
             CloseKey(actKey);
         }
 
         IfExistSetSplashScreenText(LoadStr(IDS_STARTUP_CONFIG));
 
-        //---  configuration
+        //--- configuration
 
         DWORD cmdLine = 0, cmdLineFocus = 0;
         DWORD rightPanelFocused = FALSE;
@@ -3162,7 +3161,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                 GetValue(actKey, CONFIG_ONLYONEINSTANCE_REG, REG_DWORD,
                          &Configuration.OnlyOneInstance, sizeof(DWORD));
             }
-            //---  top rebar begin
+            //--- top rebar begin
             GetValue(actKey, CONFIG_MENUINDEX_REG, REG_DWORD,
                      &Configuration.MenuIndex, sizeof(DWORD));
             GetValue(actKey, CONFIG_MENUBREAK_REG, REG_DWORD,
@@ -3203,12 +3202,12 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                      &Configuration.DriveBarWidth, sizeof(DWORD));
             GetValue(actKey, CONFIG_GRIPSVISIBLE_REG, REG_DWORD,
                      &Configuration.GripsVisible, sizeof(DWORD));
-            //---  top rebar end
+            //--- top rebar end
             GetValue(actKey, CONFIG_FILENAMEFORMAT_REG, REG_DWORD,
                      &Configuration.FileNameFormat, sizeof(DWORD));
             GetValue(actKey, CONFIG_SIZEFORMAT_REG, REG_DWORD,
                      &Configuration.SizeFormat, sizeof(DWORD));
-            // automaticka konverze z "mixed-case" na "partially-mixed-case"
+            // automatic conversion from "mixed-case" to "partially-mixed-case"
             if (Configuration.FileNameFormat == 1)
                 Configuration.FileNameFormat = 7;
 
@@ -3224,7 +3223,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                      &Configuration.NotHiddenSystemFiles, sizeof(DWORD));
             GetValue(actKey, CONFIG_RECYCLEBIN_REG, REG_DWORD,
                      &Configuration.UseRecycleBin, sizeof(DWORD));
-            // prasecinka, poskytneme MasksString, je zde kontrola rozsahu, o nic nejde
+            // piglet, we provide MasksString, there is a range check, nothing to worry about
             GetValue(actKey, CONFIG_RECYCLEMASKS_REG, REG_SZ,
                      Configuration.RecycleMasks.GetWritableMasksString(), MAX_PATH);
             GetValue(actKey, CONFIG_SAVEONEXIT_REG, REG_DWORD,
@@ -3234,7 +3233,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             GetValue(actKey, CONFIG_FINDFULLROW_REG, REG_DWORD,
                      &Configuration.FindFullRowSelect, sizeof(DWORD));
             if (Configuration.ConfigVersion <= 6)
-                Configuration.ShowGrepErrors = FALSE; // forcneme FALSE, abychom zbytecne neprudili (ostatni to taky tak delaji)
+                Configuration.ShowGrepErrors = FALSE; // Force FALSE to avoid unnecessary thrashing (others do it too)
             GetValue(actKey, CONFIG_MINBEEPWHENDONE_REG, REG_DWORD,
                      &Configuration.MinBeepWhenDone, sizeof(DWORD));
             GetValue(actKey, CONFIG_CLOSESHELL_REG, REG_DWORD,
@@ -3270,7 +3269,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             if (!GetValue(actKey, CONFIG_FULLROWSELECT_REG, REG_DWORD,
                           &Configuration.FullRowSelect, sizeof(DWORD)))
             {
-                // nechceme konverzi - vnutime TRUE
+                // we do not want conversion - force TRUE
                 //        if (GetValue(actKey, CONFIG_EXPLORERLOOK_REG, REG_DWORD,
                 //                     &Configuration.FullRowSelect, sizeof(DWORD)))
                 //        {
@@ -3301,7 +3300,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             {
                 char path[MAX_PATH];
                 GetIfPathIsInaccessibleGoTo(path, TRUE);
-                if (IsTheSamePath(path, Configuration.IfPathIsInaccessibleGoTo)) // user chce chodit do my-documents
+                if (IsTheSamePath(path, Configuration.IfPathIsInaccessibleGoTo)) // user wants to go to my-documents
                 {
                     Configuration.IfPathIsInaccessibleGoToIsMyDocs = TRUE;
                     Configuration.IfPathIsInaccessibleGoTo[0] = 0;
@@ -3336,13 +3335,13 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             if (!GetValue(actKey, CONFIG_USESALOPEN_REG, REG_DWORD,
                           &Configuration.UseSalOpen, sizeof(DWORD)))
             {
-                Configuration.UseSalOpen = FALSE; // default je nepouzivat
+                Configuration.UseSalOpen = FALSE; // default is not to be used
             }
             else
             {
-                if (Configuration.ConfigVersion == 11) // v 1.6 beta 7 bylo zapnute ... vypneme
+                if (Configuration.ConfigVersion == 11) // in 1.6 beta 7 it was turned on ... we will turn it off
                 {
-                    Configuration.UseSalOpen = FALSE; // default je nepouzivat
+                    Configuration.UseSalOpen = FALSE; // default is not to be used
                 }
             }
             GetValue(actKey, CONFIG_NETWAREFASTDIRMOVE_REG, REG_DWORD,
@@ -3386,7 +3385,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                      &Configuration.CompareByTime, sizeof(DWORD));
             if (!GetValue(actKey, CONFIG_COMPAREBYSIZE_REG, REG_DWORD,
                           &Configuration.CompareBySize, sizeof(DWORD)))
-            { // konverze ze starsi konfigurace - BySize bylo soucasti ByTime, takze proto nastaveni zkopirujeme
+            { // Conversion from the older configuration - BySize was part of ByTime, so we will copy the settings accordingly
                 Configuration.CompareBySize = Configuration.CompareByTime;
             }
             GetValue(actKey, CONFIG_COMPAREBYCONTENT_REG, REG_DWORD,
@@ -3406,7 +3405,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                      &Configuration.CompareIgnoreFiles, sizeof(DWORD));
             GetValue(actKey, CONFIG_COMPAREIGNOREDIRS_REG, REG_DWORD,
                      &Configuration.CompareIgnoreDirs, sizeof(DWORD));
-            // prasecinka, poskytneme MasksString, je zde kontrola rozsahu, o nic nejde
+            // piglet, we provide MasksString, there is a range check, nothing to worry about
             GetValue(actKey, CONFIG_CONFIGTIGNOREFILESMASKS_REG, REG_SZ,
                      Configuration.CompareIgnoreFilesMasks.GetWritableMasksString(), MAX_PATH);
             GetValue(actKey, CONFIG_CONFIGTIGNOREDIRSMASKS_REG, REG_SZ,
@@ -3467,7 +3466,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                 if (Configuration.ConfigVersion != 1)
                     GetValue(actSubKey, CONFIG_CNFRM_DAD, REG_DWORD,
                              &Configuration.CnfrmDragDrop, sizeof(DWORD));
-                else // je-li to stary config, nacitame to o patro vejs
+                else // if it's an old config, we load it one level up
                     GetValue(actKey, "Confirm Drop Operations", REG_DWORD,
                              &Configuration.CnfrmDragDrop, sizeof(DWORD));
                 GetValue(actSubKey, CONFIG_CNFRM_CLOSEARCHIVE, REG_DWORD,
@@ -3527,14 +3526,14 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                 GetValue(actSubKey, CONFIG_DRVSPEC_CDROM_SIMPLE, REG_DWORD,
                          &Configuration.DrvSpecCDROMSimple, sizeof(DWORD));
 
-                // pro stare verze forcneme cteni ikon na removable, protoze jsme zavedli floppy kategorii
+                // For old versions, we force reading icons on removable, because we introduced the floppy category
                 if (Configuration.ConfigVersion < 31)
                     Configuration.DrvSpecRemovableSimple = FALSE;
 
                 CloseKey(actSubKey);
             }
 
-            if (Configuration.ConfigVersion >= 8) // pro stare verze forcneme novou toolbaru
+            if (Configuration.ConfigVersion >= 8) // for old versions, we will provide a new toolbar
                 GetValue(actKey, CONFIG_TOPTOOLBAR_REG, REG_SZ,
                          Configuration.TopToolBar, 400);
             GetValue(actKey, CONFIG_MIDDLETOOLBAR_REG, REG_SZ,
@@ -3543,8 +3542,8 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                      Configuration.LeftToolBar, 100);
             GetValue(actKey, CONFIG_RIGHTTOOLBAR_REG, REG_SZ,
                      Configuration.RightToolBar, 100);
-            // change drive button byl pouze jeden - ted zavadim dve tlacitka
-            // a slucuji vsechny bitmapy do jedne
+            // there was only one change drive button - now I am adding two buttons
+            // and merge all bitmaps into one
 
             if (Configuration.ConfigVersion <= 3 && Configuration.RightToolBar[0] != 0)
             {
@@ -3560,7 +3559,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                 {
                     int i = atoi(p);
 
-                    // stary tbbeChangeDrive zamenim za tbbeChangeDriveR
+                    // replace old tbbeChangeDrive with tbbeChangeDriveR
                     //#define TBBE_CHANGE_DRIVE_R     51
                     if (i == 36)
                         i = 51;
@@ -3595,8 +3594,8 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             GetValue(actKey, CONFIG_HOTPATHSBARVISIBLE_REG, REG_DWORD,
                      &Configuration.HotPathsBarVisible, sizeof(DWORD));
 
-            // pokud jde o starou verzi konfigurace a uzivatel ma naplnene user menu,
-            // zobrazim UserMenuBar
+            // if it concerns an old version of the configuration and the user has filled user menu,
+            // display UserMenuBar
             if (Configuration.ConfigVersion <= 3 && UserMenuItems->Count > 0)
                 Configuration.UserMenuToolBarVisible = TRUE;
 
@@ -3605,14 +3604,14 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             GetValue(actKey, CONFIG_DRIVEBAR2VISIBLE_REG, REG_DWORD,
                      &Configuration.DriveBar2Visible, sizeof(DWORD));
 
-            if (ret) // pokud vracime FALSE, vse bude vlozeno pozdeji
+            if (ret) // if we return FALSE, everything will be inserted later
             {
-                // bandy musime vlozit ve spravnem poradi dle jejich indexu
-                BOOL menuInserted = FALSE; // menu je dulezite, musime jej vlozit za kazdou cenu
-                // zakazujeme ukladani pozic behem nahazovani bandu, protoze by doslo k
-                // prepsani jejich poradi
+                // We need to insert the bands in the correct order according to their index
+                BOOL menuInserted = FALSE; // menu is important, we must insert it at all costs
+                // We prohibit saving positions during gang throws, as it would lead to
+                // rearranging their order
                 int idx;
-                for (idx = 0; idx < 10; idx++) // muzeme s klidem zkusit vic indexu, nez je bandu
+                for (idx = 0; idx < 10; idx++) // We can safely try more indexes than there are bands
                 {
                     if (idx == Configuration.MenuIndex)
                     {
@@ -3638,7 +3637,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                 }
                 if (Configuration.MiddleToolBarVisible)
                     ToggleMiddleToolBar();
-                CreateAndInsertWorkerBand(); // na zaver vlozime workera
+                CreateAndInsertWorkerBand(); // finally, we insert a worker
             }
 
             GetValue(actKey, CONFIG_BOTTOMTOOLBARVISIBLE_REG, REG_DWORD,
@@ -3674,7 +3673,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             GetValue(actKey, CONFIG_USECUSTOMPANELFONT_REG, REG_DWORD, &UseCustomPanelFont, sizeof(DWORD));
             if (LoadLogFont(actKey, CONFIG_PANELFONT_REG, &LogFont) && UseCustomPanelFont)
             {
-                // pokud uzivatel pouziva vlastni font, musime ho nyni napropagovat
+                // if the user is using a custom font, we must now propagate it
                 SetFont();
             }
 
@@ -3682,9 +3681,9 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             LoadHistory(actKey, CONFIG_LOOKINHISTORY_REG, FindLookInHistory, FIND_LOOKIN_HISTORY_SIZE);
             LoadHistory(actKey, CONFIG_GREPHISTORY_REG, FindGrepHistory, FIND_GREP_HISTORY_SIZE);
             LoadHistory(actKey, CONFIG_SELECTHISTORY_REG, Configuration.SelectHistory, SELECT_HISTORY_SIZE);
-            //      Klukum (Honza Patera, Tomas Jelinek) se toto nelibilo, protoze si nahodi novou
-            //      instanci a uz si nepamatuji co bylo minule. Daji (Un)Select a tam na ne ceka
-            //      maska z posledne. FAR, VC, NC pri spusteni nove instance maji *.*. Budeme se chovat take tak.
+            //      The boys (Honza Patera, Tomas Jelinek) didn't like this because they put on a new one
+            //      instance and I don't remember what happened last time. They give (Un)Select and they are waiting for them there
+            //      Mask from the last. FAR, VC, NC when starting a new instance have *.*. We will also behave like this.
             //      if (Configuration.SelectHistory[0] != NULL)  // at se nacita i pocatecni stav num +/- oznacovani
             //        strcpy(SelectionMask, Configuration.SelectHistory[0]);
             LoadHistory(actKey, CONFIG_COPYHISTORY_REG, Configuration.CopyHistory, COPY_HISTORY_SIZE);
@@ -3731,7 +3730,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             CloseKey(actKey);
         }
 
-        //---  viewer
+        //--- viewer
 
         if (OpenKey(salamander, SALAMANDER_VIEWER_REG, actKey))
         {
@@ -3760,7 +3759,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                      &Configuration.TabSize, sizeof(DWORD));
             GetValue(actKey, VIEWER_CONFIGDEFMODE_REG, REG_DWORD,
                      &Configuration.DefViewMode, sizeof(DWORD));
-            // prasecinka, poskytneme MasksString, je zde kontrola rozsahu, o nic nejde
+            // piglet, we provide MasksString, there is a range check, nothing to worry about
             GetValue(actKey, VIEWER_CONFIGTEXTMASK_REG, REG_SZ,
                      Configuration.TextModeMasks.GetWritableMasksString(), MAX_PATH);
             if (Configuration.ConfigVersion < 17 &&
@@ -3770,14 +3769,14 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             }
             int errPos;
             Configuration.TextModeMasks.PrepareMasks(errPos);
-            // prasecinka, poskytneme MasksString, je zde kontrola rozsahu, o nic nejde
+            // piglet, we provide MasksString, there is a range check, nothing to worry about
             GetValue(actKey, VIEWER_CONFIGHEXMASK_REG, REG_SZ,
                      Configuration.HexModeMasks.GetWritableMasksString(), MAX_PATH);
             Configuration.HexModeMasks.PrepareMasks(errPos);
 
             GetValue(actKey, VIEWER_CONFIGUSECUSTOMFONT_REG, REG_DWORD,
                      &UseCustomViewerFont, sizeof(DWORD));
-            LoadLogFont(actKey, VIEWER_CONFIGFONT_REG, &ViewerLogFont); // jeste nemuze byt otevreny zadny viewer, neni nutne volat SetViewerFont()
+            LoadLogFont(actKey, VIEWER_CONFIGFONT_REG, &ViewerLogFont); // No viewer can be open yet, it is not necessary to call SetViewerFont()
             GetValue(actKey, VIEWER_WRAPTEXT_REG, REG_DWORD,
                      &Configuration.WrapText, sizeof(DWORD));
             GetValue(actKey, VIEWER_CPAUTOSELECT_REG, REG_DWORD,
@@ -3807,7 +3806,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             CloseKey(actKey);
         }
 
-        //---  left and right panel
+        //--- left and right panel
 
         char leftPanelPath[MAX_PATH];
         char rightPanelPath[MAX_PATH];
@@ -3823,19 +3822,19 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
 
         LoadSaveToRegistryMutex.Leave();
 
-        //---  END OF LOADING CONFIGURATION
+        //--- END OF LOADING CONFIGURATION
 
         if (cmdLine && !SystemPolicies.GetNoRun())
             PostMessage(HWindow, WM_COMMAND, CM_TOGGLEEDITLINE, TRUE);
 
-        MSG msg; // nechame zpracovat rozeslane zpravy
+        MSG msg; // process the sent messages
         while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
 
-        // provedeme nastaveni aktivniho panelu podle parametru z prikazove radky
+        // we will set the active panel according to the parameter from the command line
         if (ret && cmdLineParams != NULL)
         {
             if (cmdLineParams->ActivatePanel == 1 && rightPanelFocused ||
@@ -3850,9 +3849,9 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
         if (cmdLineFocus)
             SendMessage(HWindow, WM_COMMAND, CM_EDITLINE, 0);
 
-        // tady to nedelalo dobrotu
-        // pokud byl panel nasmerovan na UNC cestu, ktera nebyla dostupna,
-        // zustalo to tu cekat nekolik vterin
+        // It didn't do any good here
+        // if the panel was directed to a UNC path that was not accessible,
+        // It remained here waiting for several seconds
         //    LeftPanel->UpdateDriveIcon(TRUE);
         //    RightPanel->UpdateDriveIcon(TRUE);
         //    RefreshMenuAndTB(TRUE);
@@ -3890,23 +3889,23 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                      Configuration.AlwaysOnTop ? HWND_TOPMOST : HWND_NOTOPMOST,
                      0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
-        // ukazeme okno v plne parade
+        // show the window in full glory
         if (useWinPlacement)
         {
-            // z MSDN:
+            // from MSDN:
             // ShowCmd: 0 = SW_SHOWNORMAL
             //          3 = SW_SHOWMAXIMIZED
             //          7 = SW_SHOWMINNOACTIVE
 
-            // pri startu nechceme minimalizovanou aplikaci - pouze pokud to user definoval
-            // na urovni shortcuty
+            // we do not want the application to start minimized - only if the user defined it
+            // at the shortcut level
             if (!Configuration.StatusArea)
             {
                 switch (CmdShow)
                 {
                 case SW_SHOWNORMAL:
                 {
-                    // pokud je v konfiguraci minimalizovane okno, otevreme ho restored
+                    // if the window is minimized in the configuration, open it restored
                     if (place.showCmd == SW_MINIMIZE)
                         place.showCmd = SW_RESTORE;
                     if (place.showCmd == SW_SHOWMINIMIZED)
@@ -3914,7 +3913,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                     break;
                 }
 
-                // nastaveni v shortcute ma prioritu nad konfiguraci
+                // Setting in shortcut has priority over configuration
                 case SW_SHOWMINNOACTIVE:
                 case SW_SHOWMAXIMIZED:
                 {
@@ -3929,7 +3928,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                 {
                 case SW_SHOWNORMAL:
                 {
-                    // pokud je v konfiguraci minimalizovane okno, otevreme ho restored
+                    // if the window is minimized in the configuration, open it restored
                     if (place.showCmd == SW_MINIMIZE)
                         place.showCmd = SW_RESTORE;
                     if (place.showCmd == SW_SHOWMINIMIZED)
@@ -3937,7 +3936,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                     break;
                 }
 
-                // nastaveni v shortcute ma prioritu nad konfiguraci
+                // Setting in shortcut has priority over configuration
                 case SW_SHOWMINNOACTIVE:
                 {
                     place.showCmd = SW_HIDE;
@@ -3945,7 +3944,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                     break;
                 }
 
-                // nastaveni v shortcute ma prioritu nad konfiguraci
+                // Setting in shortcut has priority over configuration
                 case SW_SHOWMAXIMIZED:
                 {
                     place.showCmd = CmdShow;
@@ -3961,21 +3960,21 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
 
         UpdateWindow(HWindow);
 
-        // provedeme nastaveni cest v panelech podle parametru z prikazove radky (vsechny typy cest, i archivy a FS)
+        // we will set paths in panels according to parameters from the command line (all types of paths, including archives and file systems)
         BOOL leftPanelPathSet = FALSE;
         BOOL rightPanelPathSet = FALSE;
         if (ret && cmdLineParams != NULL)
         {
             if (cmdLineParams->LeftPath[0] == 0 && cmdLineParams->RightPath[0] == 0 && cmdLineParams->ActivePath[0] != 0)
             {
-                if (GetActivePanel()->ChangeDirLite(cmdLineParams->ActivePath)) // nema smysl kombinovat s nastavenim leveho/praveho panelu
+                if (GetActivePanel()->ChangeDirLite(cmdLineParams->ActivePath)) // It doesn't make sense to combine with setting the left/right panel
                 {
                     if (rightPanelFocused)
                         rightPanelPathSet = TRUE;
                     else
                     {
                         leftPanelPathSet = TRUE;
-                        LeftPanel->RefreshVisibleItemsArray(); // komentar nize viz "RefreshVisibleItemsArray"
+                        LeftPanel->RefreshVisibleItemsArray(); // comment below see "RefreshVisibleItemsArray"
                     }
                 }
             }
@@ -3986,7 +3985,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                     if (LeftPanel->ChangeDirLite(cmdLineParams->LeftPath))
                     {
                         leftPanelPathSet = TRUE;
-                        LeftPanel->RefreshVisibleItemsArray(); // komentar nize viz "RefreshVisibleItemsArray"
+                        LeftPanel->RefreshVisibleItemsArray(); // comment below see "RefreshVisibleItemsArray"
                     }
                 }
                 if (cmdLineParams->RightPath[0] != 0)
@@ -3997,14 +3996,14 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             }
         }
 
-        // ulozime pole viditelnych polozek, normalne se to dela v idle, ale jestli to ma
-        // byt pripravene pro priorizaci cteni ikon usermenu pred ikonami mimo viditelnou
-        // cast panelu, musime se o to postarat "rucne" (nacitani ikon uz teda davno bezi,
-        // ale lepsi ted nez jeste pozdeji, tohle minimalni zpozdeni se snad moc neprojevi)
+        // we will save an array of visible items, normally done in idle, but if it has
+        // be prepared for prioritizing reading icons in the user menu before icons outside the visible area
+        // part of the panel, we have to take care of it "manually" (loading icons has been running for a long time,
+        // but better now than later, this minimal delay hopefully won't make much of a difference)
         if (rightPanelPathSet)
             RightPanel->RefreshVisibleItemsArray();
 
-        // leftPanelPath a rightPanelPath jsou jen diskove cesty, ani archivy, ani FS neukladame
+        // leftPanelPath and rightPanelPath are just disk paths, we do not store archives or file systems
         DWORD err, lastErr;
         BOOL pathInvalid, cut;
         BOOL tryNet = TRUE;
@@ -4017,9 +4016,9 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             }
             else
                 LeftPanel->ChangeToRescuePathOrFixedDrive(LeftPanel->HWindow);
-            LeftPanel->RefreshVisibleItemsArray(); // komentar vyse viz "RefreshVisibleItemsArray"
+            LeftPanel->RefreshVisibleItemsArray(); // comment above see "RefreshVisibleItemsArray"
         }
-        UpdateWindow(LeftPanel->HWindow); // zajisti vykresleni dir/info line hned po vykresleni obsahu panelu
+        UpdateWindow(LeftPanel->HWindow); // Ensure rendering the dir/info line immediately after rendering the content of the panel
 
         tryNet = TRUE;
         if (!rightPanelPathSet)
@@ -4031,13 +4030,13 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             }
             else
                 RightPanel->ChangeToRescuePathOrFixedDrive(RightPanel->HWindow);
-            RightPanel->RefreshVisibleItemsArray(); // komentar vyse viz "RefreshVisibleItemsArray"
+            RightPanel->RefreshVisibleItemsArray(); // comment above see "RefreshVisibleItemsArray"
         }
-        UpdateWindow(RightPanel->HWindow); // zajisti vykresleni dir/info line hned po vykresleni obsahu panelu
+        UpdateWindow(RightPanel->HWindow); // Ensure rendering the dir/info line immediately after rendering the content of the panel
 
-        // obnova default-dir na systemovem disku (poskozeno - syst. root byl v obou panelech)
+        // restore default-dir on system disk (corrupted - sys. root was in both panels)
         lstrcpyn(DefaultDir[LowerCase[sysDefDir[0]] - 'a'], sysDefDir, MAX_PATH);
-        // obnova DefaultDir
+        // Restore DefaultDir
         MainWindow->UpdateDefaultDir(TRUE);
 
         return ret;

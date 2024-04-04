@@ -28,12 +28,12 @@
 // boundaries so we can find the real functions
 // that we need to call for initialization.
 
-#pragma warning(disable : 4075) // chceme definovat poradi inicializace modulu
+#pragma warning(disable : 4075) // we want to define the order of module initialization
 
 typedef void(__cdecl* _PVFV)(void);
 
 #pragma section(".i_hea$a", read)
-__declspec(allocate(".i_hea$a")) const _PVFV i_heap = (_PVFV)1; // na zacatek sekce .i_hea si dame promennou i_heap
+__declspec(allocate(".i_hea$a")) const _PVFV i_heap = (_PVFV)1; // at the beginning of the section, we will declare a variable i_heap for ourselves
 
 #pragma section(".i_hea$z", read)
 __declspec(allocate(".i_hea$z")) const _PVFV i_heap_end = (_PVFV)1; // a na konec sekce .i_hea si dame promennou i_heap_end
@@ -79,7 +79,7 @@ class C__GCHeapInit
 public:
     C__GCHeapInit()
     {
-        // uloz stav pameti na zacatku
+        // save the memory state at the beginning
         _CrtMemCheckpoint(&start_state);
         prev_reporting_hook = _CrtSetReportHook(OurReportingFunction);
         InitializeCriticalSection(&CriticalSection);
@@ -87,31 +87,31 @@ public:
     }
     ~C__GCHeapInit()
     {
-        // zjisti aktualni stav pameti
+        // check the current memory status
         _CrtMemState end_state;
         _CrtMemCheckpoint(&end_state);
 
-        // zkontroluj, jestli jsou nejake leaky
+        // Check if there are any memory leaks
         _CrtMemState diff;
         if (_CrtMemDifference(&diff, &start_state, &end_state))
         {
             HMODULE hUsedModules[GCHEAP_MAX_USED_MODULES];
-            // namapuju do pameti vsechny moduly, ve kterych se muzou hlasit memory leaky,
-            // tim se v reportu zobrazi jmena .cpp souboru (jinak by tam bylo jen "#File Error#")
+            // I will map all modules in memory where memory leaks can be reported,
+            // This will display the names of .cpp files in the report (otherwise it would just be "#File Error#").
             for (int i = 0; i < UsedModulesCount; i++)
                 hUsedModules[i] = LoadLibraryEx(UsedModules[i], NULL, DONT_RESOLVE_DLL_REFERENCES);
 
-            // vypise vsechny neuvolnene bloky
+            // prints all allocated blocks
             _CrtMemDumpAllObjectsSince(&start_state);
 
-            // kdyz uz mame diff, tak ho taky vypisem
+            // since we already have the diff, let's also print it
             _CrtMemDumpStatistics(&diff);
 
-            // zase uvolnime namapovane moduly
+            // Let's release the mapped modules again
             for (int i = 0; i < UsedModulesCount; i++)
                 FreeLibrary(hUsedModules[i]);
 
-            // vyhod warning messagebox
+            // Display a warning message box
             MSG msg; // remove possibly buffered ESC key (not to close msgbox immediately)
             while (PeekMessage(&msg, NULL, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
                 ;

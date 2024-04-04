@@ -173,9 +173,9 @@ CVersionInfo::LoadBlock(const BYTE*& ptr, CVersionBlock* parent)
         }
     }
 
-    // preskocime VERSIONINFO a retezec Key
+    // skip VERSIONINFO and the Key string
     ptr += sizeof(VERSIONINFO) + sizeof(WCHAR) * wcslen(block->Key);
-    // preskocime Padding
+    // Skip Padding
     ptr = ALIGN_DWORD(BYTE*, ptr);
 
     switch (block->Type)
@@ -186,7 +186,7 @@ CVersionInfo::LoadBlock(const BYTE*& ptr, CVersionBlock* parent)
     {
         int valSize = info->wValueLength;
 
-        if (block->Type == vbtVersionInfo) // udelame par kontrol konzistence dat
+        if (block->Type == vbtVersionInfo) // let's perform some consistency checks on the data
         {
             if (valSize != sizeof(VS_FIXEDFILEINFO))
             {
@@ -210,20 +210,20 @@ CVersionInfo::LoadBlock(const BYTE*& ptr, CVersionBlock* parent)
             return NULL;
         }
 
-        // preskocime Value
+        // skip Value
         ptr += valSize;
-        // preskocime padding
+        // skip padding
         ptr = ALIGN_DWORD(BYTE*, ptr);
 
         if (block->Type == vbtString || block->Type == vbtVar)
         {
-            // String a Var nemaji childy, takze vypadneme
+            // String and Var do not have children, so we will exit
             return block;
         }
     }
     }
 
-    // pridame child bloky
+    // add child blocks
     while (ptr < terminatorPtr)
     {
         CVersionBlock* child = LoadBlock(ptr, block);
@@ -415,14 +415,14 @@ BOOL CVersionInfo::SaveBlock(CVersionBlock* block, BYTE*& ptr, const BYTE* maxPt
         return FALSE;
     }
 
-    BYTE* oldPtr = ptr; // ulozim si pro nasledny vypocet velikosti nas a nasich childu
+    BYTE* oldPtr = ptr; // save it for subsequent calculation of our size and our children
 
     // wLength
-    WORD* wLength = (WORD*)ptr; // ulozim si pro nasledne nastaveni
+    WORD* wLength = (WORD*)ptr; // save for future settings
     ptr += 2;
 
     // wValueLength
-    WORD* wValueLength = (WORD*)ptr; // ulozim si pro nasledne nastaveni
+    WORD* wValueLength = (WORD*)ptr; // save for future settings
     *wValueLength = 0;
     ptr += 2;
 
@@ -489,7 +489,7 @@ BOOL CVersionInfo::SaveBlock(CVersionBlock* block, BYTE*& ptr, const BYTE* maxPt
     }
     }
 
-    // pokud nemam childy, ulozime velikost bez paddingu
+    // if we don't have children, we save the size without padding
     if (block->Children.Count == 0)
         *wLength = (WORD)(ptr - oldPtr);
 
@@ -505,7 +505,7 @@ BOOL CVersionInfo::SaveBlock(CVersionBlock* block, BYTE*& ptr, const BYTE* maxPt
             return FALSE;
     }
 
-    // v opacnem pripad s paddingem
+    // in the opposite case with padding
     if (block->Children.Count > 0)
         *wLength = (WORD)(ptr - oldPtr);
 
@@ -521,7 +521,7 @@ BOOL CVersionInfo::UpdateResource(HANDLE hUpdateRes, int resID)
         return FALSE;
     }
     memset(buff, 0, 50000);
-    BYTE* ptr = buff; // pozor, hodnota bude zmenena
+    BYTE* ptr = buff; // attention, value will be changed
     if (!SaveBlock(Root, ptr, ptr + 49999))
     {
         free(buff);

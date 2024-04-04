@@ -18,7 +18,7 @@
 // CViewerMasksItem
 //
 
-// toto cislo je stale zvetsovano - slouzi jako zdroj pro unikatni ID
+// this number is continuously increased - it serves as a source for unique ID
 DWORD ViewerHandlerID = 0;
 
 CViewerMasksItem::CViewerMasksItem(const char* masks, const char* command, const char* arguments, const char* initDir,
@@ -139,7 +139,7 @@ BOOL CViewerMasks::Load(CViewerMasks& source)
 // CEditorMasksItem
 //
 
-// toto cislo je stale zvetsovano - slouzi jako zdroj pro unikatni ID
+// this number is continuously increased - it serves as a source for unique ID
 DWORD EditorHandlerID = 0;
 
 CEditorMasksItem::CEditorMasksItem(char* masks, char* command, char* arguments, char* initDir)
@@ -259,16 +259,16 @@ CCommonDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // predejdeme refreshum panelu na pozadi otevrenych modalnich dialogu a messageboxu
+        // Prevent refreshing the background panel of open modal dialogs and message boxes
         if (Modal && MainWindow != NULL && Parent != NULL && Parent == MainWindow->HWindow)
         {
-            BeginStopRefresh(FALSE, TRUE); // cmuchal si da pohov
+            BeginStopRefresh(FALSE, TRUE); // He was snoring in his sleep
             CallEndStopRefresh = TRUE;
         }
         else
             CallEndStopRefresh = FALSE;
 
-        // pri otevirani dialogu nastavime msgbox parenta pro plug-iny na tento dialog (jen hlavni thread)
+        // When opening the dialog, we set the parent msgbox for plugins to this dialog (only the main thread)
         if (Modal && MainThreadID == GetCurrentThreadId())
         {
             HOldPluginMsgBoxParent = PluginMsgBoxParent;
@@ -289,32 +289,31 @@ CCommonDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         break;
     }
 
-        /* j.r.: varianta pres VK_ESCAPE se mi zda lepsi, protoze kliknuti na IDCANCEL nezpusobi nastaveni promenne
+        /* j.r .: I think the option via VK_ESCAPE is better because clicking on IDCANCEL does not set the variable
     case WM_COMMAND:
     {
-      if (LOWORD(wParam) == IDCANCEL) // opatreni, aby se neprerusoval listing v panelu po kazdem ESC
+      if (LOWORD(wParam) == IDCANCEL) // precaution to prevent interrupting the listing in the panel after each ESC
         WaitForESCReleaseBeforeTestingESC = TRUE;
       break;
-    }
-    */
+    }*/
 
     case WM_DESTROY:
     {
-        if (GetKeyState(VK_ESCAPE) & 0x8000) // opatreni, aby se neprerusoval listing v panelu po kazdem ESC
+        if (GetKeyState(VK_ESCAPE) & 0x8000) // measure to prevent interruption of the listing in the panel after each ESC
             WaitForESCReleaseBeforeTestingESC = TRUE;
 
-        // zavira se dialog - user v nem mohl zmenit clipboard
-        // (hodit do nej text v editline,...), overime to ...
-        IdleRefreshStates = TRUE;  // pri pristim Idle vynutime kontrolu stavovych promennych
-        IdleCheckClipboard = TRUE; // nechame kontrolovat take clipboard
+        // dialog is closing - user could not change the clipboard in it
+        // (put text into it in editline,...), we will verify it ...
+        IdleRefreshStates = TRUE;  // During the next Idle, we will force the check of status variables
+        IdleCheckClipboard = TRUE; // we will also check the clipboard
 
-        // pri zavirani dialogu obnovime msgbox parenta pro plug-iny
+        // When closing the dialog, we will refresh the parent's message box for plugins
         if (HOldPluginMsgBoxParent != NULL)
             PluginMsgBoxParent = HOldPluginMsgBoxParent;
 
         if (CallEndStopRefresh)
         {
-            EndStopRefresh(TRUE, FALSE, TRUE); // ted uz zase cmuchal nastartuje
+            EndStopRefresh(TRUE, FALSE, TRUE); // now he's sniffling again, he'll start up
             CallEndStopRefresh = FALSE;
         }
         break;
@@ -403,7 +402,7 @@ CSizeResultsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        GetDlgItemText(HWindow, IDS_OCCUPIED, UnknownText, 100); // vytahnu retezec "unknown" pro pozdejsi pouziti
+        GetDlgItemText(HWindow, IDS_OCCUPIED, UnknownText, 100); // extract the string "unknown" for later use
 
         char buf[100];
 
@@ -418,9 +417,9 @@ CSizeResultsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             else
             {
                 double result = 100 * Size.GetDouble() / Occupied.GetDouble();
-                // patch pro 2GB sparse (ridky) soubor, kde se zobrazovala hodnota 3,052e+006 % misto 3051757,83 %
-                // pro hodnoty vetsi nez 1000 zde zobrazuje lg exponencialni tvar cisla a pouzijeme lf
-                // pro mensi hodnoty je lg vyhodnejsi, protoze zobrazi napriklad 100 misto 100.00
+                // patch for a 2GB sparse file, where the value 3,052e+006 was displayed instead of 3051757.83%
+                // for values greater than 1000 it displays the number in exponential form using %f
+                // For smaller values, lg is more advantageous because it displays, for example, 100 instead of 100.00
                 if (result > 1000)
                     sprintf(buf, "%-1.2lf %%", result);
                 else
@@ -456,9 +455,9 @@ CSizeResultsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             EnableWindow(GetDlgItem(HWindow, IDS_COMPRATIO), FALSE);
         }
 
-        // naplnime combobox
+        // fill combobox
 
-        DWORD clusterSize = 2048; // nejvic se to asi bude pouzivat pro CDcka
+        DWORD clusterSize = 2048; // It will probably be used most for CDs.
         CFilesWindow* panel = MainWindow->GetNonActivePanel();
         if (panel->Is(ptDisk))
         {
@@ -533,7 +532,7 @@ void CSelectDialog::Validate(CTransferInfo& ti)
         if (ti.Type == ttDataFromWindow)
         {
             char buf[MAX_PATH];
-            strcpy(buf, Mask); // zaloha
+            strcpy(buf, Mask); // backup
             SendMessage(hWnd, WM_GETTEXT, MAX_PATH, (LPARAM)Mask);
             CMaskGroup mask(Mask);
             int errorPos;
@@ -545,7 +544,7 @@ void CSelectDialog::Validate(CTransferInfo& ti)
                 SendMessage(hWnd, CB_SETEDITSEL, 0, MAKELPARAM(errorPos, errorPos + 1));
                 ti.ErrorOn(IDE_FILEMASK);
             }
-            strcpy(Mask, buf); // obnova
+            strcpy(Mask, buf); // recovery
         }
     }
 }
@@ -579,7 +578,7 @@ CSelectDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        InstallWordBreakProc(GetDlgItem(HWindow, IDE_FILEMASK)); // instalujeme WordBreakProc do comboboxu
+        InstallWordBreakProc(GetDlgItem(HWindow, IDE_FILEMASK)); // Installing WordBreakProc into the combobox
 
         CHyperLink* hl = new CHyperLink(HWindow, IDC_FILEMASK_HINT, STF_DOTUNDERLINE);
         if (hl != NULL)
@@ -621,13 +620,13 @@ void CImportConfigDialog::Transfer(CTransferInfo& ti)
 
         // COMBOBOX Import Configuration
         SendDlgItemMessage(HWindow, IDC_IMPORTCONFIG, CB_ADDSTRING, 0, (LPARAM)LoadStr(IDS_IMPORTCFG_DEFCFG));
-        int selIndex = 0; // pokud nebude nic lepsiho, bude polozka default
+        int selIndex = 0; // if nothing better is available, the default item will be used
         int i;
         for (i = 0; i < SALCFG_ROOTS_COUNT; i++)
         {
             if (ConfigurationExist[i])
             {
-                // zjistime, zda jde o "Open Salamander", "Altap Salamander" nebo o stary "Servant Salamander"
+                // Let's determine if it's "Open Salamander", "Altap Salamander", or the old "Servant Salamander"
                 BOOL openSalamander = StrIStr(SalamanderConfigurationRoots[i], "Open Salamander") != NULL;
                 BOOL altapSalamander = StrIStr(SalamanderConfigurationRoots[i], "Altap Salamander") != NULL;
                 const char* name = openSalamander    ? "Open Salamander %s"
@@ -636,16 +635,16 @@ void CImportConfigDialog::Transfer(CTransferInfo& ti)
                 sprintf(buff, name, SalamanderConfigurationVersions[i]);
                 SendDlgItemMessage(HWindow, IDC_IMPORTCONFIG, CB_ADDSTRING, 0, (LPARAM)buff);
                 if (selIndex == 0)
-                    selIndex = 1; // posledni konfigurace bude default
+                    selIndex = 1; // the last configuration will be default
             }
         }
-        if (selIndex == 0) // neni z ceho vybirat, disablujeme combobox
+        if (selIndex == 0) // There is nothing to choose from, we are disabling the combobox
         {
             EnableWindow(GetDlgItem(HWindow, IDC_IMPORTCONFIG), FALSE);
         }
         SendDlgItemMessage(HWindow, IDC_IMPORTCONFIG, CB_SETCURSEL, selIndex, NULL);
 
-        // LISTVIEW Remove Configuratuion
+        // LISTVIEW Remove Configuration
         HWND hListView = GetDlgItem(HWindow, IDC_REMOVECONFIG);
         selIndex = -1;
         int index = 0;
@@ -659,7 +658,7 @@ void CImportConfigDialog::Transfer(CTransferInfo& ti)
                 lvi.iSubItem = 0;
                 lvi.state = 0;
 
-                // zjistime, zda jde o "Open Salamander", "Altap Salamander" nebo o stary "Servant Salamander"
+                // Let's determine if it's "Open Salamander", "Altap Salamander", or the old "Servant Salamander"
                 BOOL openSalamander = StrIStr(SalamanderConfigurationRoots[i], "Open Salamander") != NULL;
                 BOOL altapSalamander = StrIStr(SalamanderConfigurationRoots[i], "Altap Salamander") != NULL;
                 const char* name = openSalamander    ? "Open Salamander %s"
@@ -684,7 +683,7 @@ void CImportConfigDialog::Transfer(CTransferInfo& ti)
         int sel = (int)SendDlgItemMessage(HWindow, IDC_IMPORTCONFIG, CB_GETCURSEL, 0, NULL);
         if (sel > 0)
         {
-            sel--; // prvni je Don't import
+            sel--; // First is Don't import
             int index = 0;
             int i;
             for (i = 0; i < SALCFG_ROOTS_COUNT; i++)
@@ -701,7 +700,7 @@ void CImportConfigDialog::Transfer(CTransferInfo& ti)
             }
         }
 
-        // LISTVIEW Remove Configuratuion
+        // LISTVIEW Remove Configuration
         HWND hListView = GetDlgItem(HWindow, IDC_REMOVECONFIG);
         int itemsCount = ListView_GetItemCount(hListView);
         int index = 0;
@@ -726,18 +725,18 @@ CImportConfigDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // pod W2K pri spousteni pres shortcut s MAXIMIZED nastavenim
-        // se dialog zobrazoval maximalizovany; SC_RESTORE na to zabira
+        // under W2K when launched via a shortcut with MAXIMIZED setting
+        // the dialog was displayed maximized; SC_RESTORE takes care of that
         INT_PTR ret = CCommonDialog::DialogProc(uMsg, wParam, lParam);
         SendMessage(HWindow, WM_SYSCOMMAND, SC_RESTORE, 0);
 
-        // Checkboxes pro listview
+        // Checkboxes for listview
         HWND hListView = GetDlgItem(HWindow, IDC_REMOVECONFIG);
         DWORD exFlags = LVS_EX_FULLROWSELECT | LVS_EX_CHECKBOXES;
         DWORD origFlags = ListView_GetExtendedListViewStyle(hListView);
         ListView_SetExtendedListViewStyle(hListView, origFlags | exFlags); // 4.71
 
-        // naleju sloupec Name do listview se sloupci
+        // populate the column Name into the listview with columns
         LVCOLUMN lvc;
         lvc.mask = LVCF_TEXT | LVCF_FMT;
         char buff[] = "aa";
@@ -782,12 +781,12 @@ int CLanguageSelectorDialog::Execute()
     HINSTANCE hTmpLanguage = NULL;
     if (OpenedFromConfiguration || OpenedForPlugin)
     {
-        // template vytahneme z bezici jazykove verze
+        // template will be extracted from the running language version
         Modul = HLanguage;
     }
     else
     {
-        // nacteme template z nejlepsiho dosupneho SLG
+        // Load the template from the best available SLG
         int index = GetPreferredLanguageIndex(SLGName);
         char path[MAX_PATH];
         GetModuleFileName(HInstance, path, MAX_PATH);
@@ -874,14 +873,14 @@ void CLanguageSelectorDialog::LoadListView()
 
 void CLanguageSelectorDialog::Transfer(CTransferInfo& ti)
 {
-    if (PluginName != NULL) // tenhle checkbox ukazeme jedine pri vyberu alternativniho jazyka pro plugin
+    if (PluginName != NULL) // we will show this checkbox only when selecting an alternative language for the plugin
         ti.CheckBox(IDC_USESAMESLGINOTHERPLUGINS, Configuration.UseAsAltSLGInOtherPlugins);
 
     if (ti.Type == ttDataToWindow)
     {
         LoadListView();
 
-        // nechceme vodorovny scrollbar, takze napred plnime polozky a potom teprve nastavujeme sirky sloupcu
+        // We do not want a horizontal scrollbar, so we first fill in the items and then set the column widths.
         RECT r;
         GetClientRect(HListView, &r);
         ListView_SetColumnWidth(HListView, 0, r.right / 1.6);
@@ -893,7 +892,7 @@ void CLanguageSelectorDialog::Transfer(CTransferInfo& ti)
         if (index != -1)
         {
             lstrcpy(SLGName, Items[index].FileName);
-            if (PluginName != NULL) // alternativni jmeno jazyka ukladame jen pri vyberu alternativniho jazyka pro plugin
+            if (PluginName != NULL) // We only store the alternative language name when selecting an alternative language for the plugin
             {
                 if (Configuration.UseAsAltSLGInOtherPlugins)
                     lstrcpy(Configuration.AltPluginSLGName, SLGName);
@@ -922,7 +921,7 @@ BOOL CLanguageSelectorDialog::Initialize(const char* slgSearchPath, HINSTANCE pl
         do
         {
             char* point = strrchr(file.cFileName, '.');
-            if (point != NULL && stricmp(point + 1, "slg") == 0) // vracelo nam to *.slg*
+            if (point != NULL && stricmp(point + 1, "slg") == 0) // it returned us *.slg*
             {
                 CLanguage lang;
                 if (lang.Init(file.cFileName, pluginDLL))
@@ -947,9 +946,9 @@ int CLanguageSelectorDialog::GetPreferredLanguageIndex(const char* selectSLGName
     WORD langID = GetUserDefaultUILanguage();
 
     WORD primaryID = PRIMARYLANGID(langID);
-    int localeIndex = -1;        // index odpovidajici loaklizaci podle uzivatele
-    int primarylocaleIndex = -1; // index odpovidajici loaklizaci podle primarniho jazyka uzivatele
-    int englishIndex = -1;       // index souboru "english.slg"
+    int localeIndex = -1;        // index corresponding to the user's location
+    int primarylocaleIndex = -1; // index corresponding to the location according to the user's primary language
+    int englishIndex = -1;       // index of the file "english.slg"
     int i;
     for (i = 0; i < Items.Count; i++)
     {
@@ -964,10 +963,10 @@ int CLanguageSelectorDialog::GetPreferredLanguageIndex(const char* selectSLGName
     }
     if (localeIndex == -1)
     {
-        // pokud jsme nenasli jazyk presne odovidajici nastaveni usera
+        // if we did not find a language exactly matching the user's settings
         if (primarylocaleIndex != -1)
         {
-            // pokusime se priradit alespon primarni jazyk
+            // we will try to assign at least the primary language
             localeIndex = primarylocaleIndex;
         }
         else
@@ -976,12 +975,12 @@ int CLanguageSelectorDialog::GetPreferredLanguageIndex(const char* selectSLGName
             {
                 if (englishIndex != -1)
                 {
-                    // neni-li ani ten, preferujeme anglickou verzi
+                    // if that is not available, we prefer the English version
                     localeIndex = englishIndex;
                 }
                 else
                 {
-                    // jinak uz berem co nam prijde pod ruku
+                    // otherwise we take whatever comes our way
                     localeIndex = 0;
                 }
             }
@@ -998,33 +997,33 @@ CLanguageSelectorDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_INITDIALOG:
     {
 
-        // JRY: pro AS 2.53, kery jde s cestinou, nemcinou a anglictinou je pro ostatni jazyky posleme na forum do sekce
-        //     "Translations" https://forum.altap.cz/viewforum.php?f=23 - treba to nekoho namotivuje a pujde svuj preklad vytvorit
+        // JRY: for AS 2.53, which comes with Czech, German, and English, for other languages we will send to the forum in the section
+        //     "Translations" https://forum.altap.cz/viewforum.php?f=23 - maybe it will motivate someone and they will create their translation
 
-        // zatim zadna stranka pro download jazyku neexistuje, tak tohle tlacitko zablokujeme
+        // Currently, there is no page for downloading the language, so we will disable this button.
         // EnableWindow(GetDlgItem(HWindow, IDB_GETMORELANGS), FALSE);
 
         if (!OpenedFromConfiguration && !OpenedForPlugin)
         {
-            // do titulku dame nazev programu, protoze je to prvniokno, ktere user spatri
+            // We will put the program name in the title bar, because it is the first window that the user will see
             SetWindowText(HWindow, MAINWINDOW_NAME);
         }
         else
         {
             if (PluginName != NULL)
             {
-                // do titulku dame nazev pluginu, aby user pochopil pro co vybira jazyk
+                // We will put the name of the plugin in the title so that the user understands why they are choosing the language
                 char buf[200];
                 _snprintf_s(buf, _TRUNCATE, "%s: ", PluginName);
-                buf[99] = 0; // vyuzijeme jen 100 znaku pro nazev pluginu, at neco zbyde na puvodni titulek dialogu
+                buf[99] = 0; // We will use only 100 characters for the plugin name, so that something remains for the original title of the dialog
                 int len = (int)strlen(buf);
                 if (GetWindowText(HWindow, buf + len, 200 - len))
                     SetWindowText(HWindow, buf);
             }
         }
-        if (!OpenedFromConfiguration && PluginName == NULL) // tlacitko Cancel predelame na Exit
+        if (!OpenedFromConfiguration && PluginName == NULL) // We will change the Cancel button to Exit
             SetDlgItemText(HWindow, IDCANCEL, ExitButtonLabel);
-        if (PluginName != NULL) // zakazeme close
+        if (PluginName != NULL) // prohibit close
             EnableMenuItem(GetSystemMenu(HWindow, FALSE), SC_CLOSE, MF_BYCOMMAND | MF_GRAYED);
 
         Web = new CHyperLink(HWindow, IDC_SLG_WEB, STF_HYPERLINK_COLOR);
@@ -1035,7 +1034,7 @@ CLanguageSelectorDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         DWORD origFlags = ListView_GetExtendedListViewStyle(HListView);
         ListView_SetExtendedListViewStyle(HListView, origFlags | exFlags); // 4.71
 
-        // naleju do listview sloupce Language a Path
+        // Fill the columns Language and Path in the listview
         char buff[100];
         LVCOLUMN lvc;
         lvc.mask = LVCF_TEXT | LVCF_SUBITEM;
@@ -1050,8 +1049,8 @@ CLanguageSelectorDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         DestroyWindow(GetDlgItem(HWindow, IDC_SLG_PATH));
         ListView_InsertColumn(HListView, 1, &lvc);
 
-        // pod W2K pri spousteni pres shortcut s MAXIMIZED nastavenim
-        // se dialog zobrazoval maximalizovany; SC_RESTORE na to zabira
+        // under W2K when launched via a shortcut with MAXIMIZED setting
+        // the dialog was displayed maximized; SC_RESTORE takes care of that
         INT_PTR ret = CCommonDialog::DialogProc(uMsg, wParam, lParam);
         SendMessage(HWindow, WM_SYSCOMMAND, SC_RESTORE, 0);
         return ret;
@@ -1071,14 +1070,14 @@ CLanguageSelectorDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 Items[i].Free();
             Items.DestroyMembers();
             Initialize();
-            if (GetLanguagesCount() == 0) // nehrozi, protoze tenhle dialog je loadnuty z .slg modulu (toto .slg tedy nejde smazat)
+            if (GetLanguagesCount() == 0) // There is no danger because this dialog is loaded from the .slg module (this .slg cannot be deleted)
             {
                 MessageBox(HWindow, "Unable to find any language file (.SLG) in subdirectory LANG.\n"
                                     "Please reinstall Open Salamander.",
                            SALAMANDER_TEXT_VERSION, MB_OK | MB_ICONERROR);
                 TRACE_E("CLanguageSelectorDialog: unexpected situation (no language file): calling ExitProcess(667).");
                 //          ExitProcess(667);
-                TerminateProcess(GetCurrentProcess(), 667); // tvrdsi exit (tenhle jeste neco vola)
+                TerminateProcess(GetCurrentProcess(), 667); // tvrdší exit (this one still calls something)
             }
             LoadListView();
         }

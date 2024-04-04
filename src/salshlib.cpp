@@ -16,30 +16,30 @@ extern "C"
 }
 #include "salshlib.h"
 
-// mutex pro pristup do sdilene pameti
+// mutex for accessing shared memory
 HANDLE SalShExtSharedMemMutex = NULL;
-// sdilena pamet - viz struktura CSalShExtSharedMem
+// shared memory - see the structure CSalShExtSharedMem
 HANDLE SalShExtSharedMem = NULL;
-// event pro zaslani zadosti o provedeni Paste ve zdrojovem Salamanderovi (pouziva se jen ve Vista+)
+// event for sending a request to perform Paste in the source Salamander (used only in Vista+)
 HANDLE SalShExtDoPasteEvent = NULL;
-// namapovana sdilena pamet - viz struktura CSalShExtSharedMem
+// mapped shared memory - see the structure CSalShExtSharedMem
 CSalShExtSharedMem* SalShExtSharedMemView = NULL;
 
-// TRUE pokud se podarilo registrovat SalShExt/SalamExt/SalExtX86/SalExtX64.DLL nebo uz registrovane
-// bylo (kontroluje i soubor)
+// TRUE if SalShExt/SalamExt/SalExtX86/SalExtX64.DLL was successfully registered or already registered
+// was (also checks the file)
 BOOL SalShExtRegistered = FALSE;
 
-// maximalni prasarna: potrebujeme zjistit do ktereho okna probehne Drop, zjistujeme to
-// v GetData podle pozice mysi, v tyhle promenny je posledni vysledek testu
+// maximum nonsense: we need to find out which window the Drop will run into, we are finding out
+// in GetData according to the mouse position, the last test result is stored in these variables
 HWND LastWndFromGetData = NULL;
 
-// maximalni prasarna: potrebujeme zjistit do ktereho okna probehne Paste, zjistujeme to
-// v GetData podle foreground window, v tyhle promenny je posledni vysledek testu
+// maximum nonsense: we need to find out which window Paste will run into, we are investigating this
+// in GetData according to the foreground window, the last test result is stored in these variables
 HWND LastWndFromPasteGetData = NULL;
 
-BOOL OurDataOnClipboard = FALSE; // TRUE = na clipboardu je nas data-object (copy&paste z archivu)
+BOOL OurDataOnClipboard = FALSE; // TRUE = there is our data-object on the clipboard (copy & paste from the archive)
 
-// data pro Paste z clipboardu ulozena uvnitr "zdrojoveho" Salamandera
+// data for Paste from clipboard saved inside the "source" of Salamander
 CSalShExtPastedData SalShExtPastedData;
 
 //*****************************************************************************
@@ -59,7 +59,7 @@ void InitSalShLib()
     if (SalShExtSharedMemMutex != NULL)
     {
         WaitForSingleObject(SalShExtSharedMemMutex, INFINITE);
-        SalShExtSharedMem = HANDLES_Q(CreateFileMapping(INVALID_HANDLE_VALUE, saPtr, PAGE_READWRITE, // FIXME_X64 nepredavame x86/x64 nekompatibilni data?
+        SalShExtSharedMem = HANDLES_Q(CreateFileMapping(INVALID_HANDLE_VALUE, saPtr, PAGE_READWRITE, // FIXME_X64 are we passing x86/x64 incompatible data?
                                                         0, sizeof(CSalShExtSharedMem),
                                                         SALSHEXT_SHAREDMEMNAME));
         BOOL created;
@@ -75,13 +75,13 @@ void InitSalShLib()
 
         if (SalShExtSharedMem != NULL)
         {
-            SalShExtSharedMemView = (CSalShExtSharedMem*)HANDLES(MapViewOfFile(SalShExtSharedMem, // FIXME_X64 nepredavame x86/x64 nekompatibilni data?
+            SalShExtSharedMemView = (CSalShExtSharedMem*)HANDLES(MapViewOfFile(SalShExtSharedMem, // FIXME_X64 are we passing x86/x64 incompatible data?
                                                                                FILE_MAP_WRITE, 0, 0, 0));
             if (SalShExtSharedMemView != NULL)
             {
                 if (created)
                 {
-                    memset(SalShExtSharedMemView, 0, sizeof(CSalShExtSharedMem)); // sice ma byt nulovana, ale nespolehame na to
+                    memset(SalShExtSharedMemView, 0, sizeof(CSalShExtSharedMem)); // should be zeroed out, but we don't rely on it
                     SalShExtSharedMemView->Size = sizeof(CSalShExtSharedMem);
                 }
             }
@@ -106,8 +106,8 @@ void ReleaseSalShLib()
     CALL_STACK_MESSAGE1("ReleaseSalShLib()");
     if (OurDataOnClipboard)
     {
-        OleSetClipboard(NULL);      // vyhodime nas data-object z clipboardu
-        OurDataOnClipboard = FALSE; // teoreticky zbytecne (melo by se nastavit v Release() fakeDataObjectu)
+        OleSetClipboard(NULL);      // we remove our data-object from the clipboard
+        OurDataOnClipboard = FALSE; // theoretically unnecessary (should be set in the Release() of the fakeDataObject)
     }
     if (SalShExtSharedMemView != NULL)
         HANDLES(UnmapViewOfFile(SalShExtSharedMemView));
@@ -240,7 +240,7 @@ STDMETHODIMP CFakeDragDropDataObject::GetData(FORMATETC* formatEtc, STGMEDIUM* m
 
     if (formatEtc->cfFormat == CFSalFakeRealPath && (formatEtc->tymed & TYMED_HGLOBAL))
     {
-        HGLOBAL dataDup = NULL; // vyrobime kopii RealPath
+        HGLOBAL dataDup = NULL; // create a copy of RealPath
         int size = (int)strlen(RealPath) + 1;
         dataDup = NOHANDLES(GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, size));
         if (dataDup != NULL)
@@ -257,7 +257,7 @@ STDMETHODIMP CFakeDragDropDataObject::GetData(FORMATETC* formatEtc, STGMEDIUM* m
                 dataDup = NULL;
             }
         }
-        if (dataDup != NULL) // mame data, ulozime je na medium a vratime
+        if (dataDup != NULL) // we have the data, we will save it to the medium and return
         {
             medium->tymed = TYMED_HGLOBAL;
             medium->hGlobal = dataDup;
@@ -290,7 +290,7 @@ STDMETHODIMP CFakeDragDropDataObject::GetData(FORMATETC* formatEtc, STGMEDIUM* m
                     dataDup = NULL;
                 }
             }
-            if (dataDup != NULL) // mame data, ulozime je na medium a vratime
+            if (dataDup != NULL) // we have the data, we will save it to the medium and return
             {
                 medium->tymed = TYMED_HGLOBAL;
                 medium->hGlobal = dataDup;
@@ -304,7 +304,7 @@ STDMETHODIMP CFakeDragDropDataObject::GetData(FORMATETC* formatEtc, STGMEDIUM* m
         {
             if (formatEtc->cfFormat == CFSalFakeSrcFSPath && (formatEtc->tymed & TYMED_HGLOBAL))
             {
-                HGLOBAL dataDup = NULL; // vyrobime kopii SrcFSPath
+                HGLOBAL dataDup = NULL; // make a copy of SrcFSPath
                 int size = (int)strlen(SrcFSPath) + 1;
                 dataDup = NOHANDLES(GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, size));
                 if (dataDup != NULL)
@@ -321,7 +321,7 @@ STDMETHODIMP CFakeDragDropDataObject::GetData(FORMATETC* formatEtc, STGMEDIUM* m
                         dataDup = NULL;
                     }
                 }
-                if (dataDup != NULL) // mame data, ulozime je na medium a vratime
+                if (dataDup != NULL) // we have the data, we will save it to the medium and return
                 {
                     medium->tymed = TYMED_HGLOBAL;
                     medium->hGlobal = dataDup;
@@ -367,12 +367,12 @@ CFakeCopyPasteDataObject::Release(void)
     {
         OurDataOnClipboard = FALSE;
 
-        if (CutOrCopyDone) // pokud doslo k chybe behem cut/copy, cekani nema smysl a cisteni provedeme jinde
+        if (CutOrCopyDone) // if an error occurred during cut/copy, waiting is pointless and we will perform the cleanup elsewhere
         {
             //      TRACE_I("CFakeCopyPasteDataObject::Release(): deleting clipfake directory!");
 
-            // ted uz muzeme zrusit "paste" ve sdilene pameti, vycistit fake-dir a zrusit data-object
-            if (SalShExtSharedMemView != NULL) // ulozime cas do sdilene pameti (pro rozliseni mezi paste a jinym copy/move fake-diru)
+            // Now we can remove "paste" from shared memory, clean up the fake-dir, and delete the data-object
+            if (SalShExtSharedMemView != NULL) // store the time in shared memory (to distinguish between paste and other copy/move fake-dirs)
             {
                 //        TRACE_I("CFakeCopyPasteDataObject::Release(): DoPasteFromSalamander = FALSE");
                 WaitForSingleObject(SalShExtSharedMemMutex, INFINITE);
@@ -385,16 +385,16 @@ CFakeCopyPasteDataObject::Release(void)
             //      TRACE_I("CFakeCopyPasteDataObject::Release(): removedir");
             char* cutDir;
             if (CutDirectory(dir, &cutDir) && cutDir != NULL && strcmp(cutDir, "CLIPFAKE") == 0)
-            { // pro jistotu zkontrolujeme, jestli skutecne smazeme jen fake-dir
+            { // to make sure, let's check if we are really deleting only the fake-dir
                 RemoveTemporaryDir(dir);
             }
             //      TRACE_I("CFakeCopyPasteDataObject::Release(): posting WM_USER_SALSHEXT_TRYRELDATA");
             if (MainWindow != NULL)
-                PostMessage(MainWindow->HWindow, WM_USER_SALSHEXT_TRYRELDATA, 0, 0); // zkusime provest uvolneni dat (nejsou-li zamcena ani blokovana)
+                PostMessage(MainWindow->HWindow, WM_USER_SALSHEXT_TRYRELDATA, 0, 0); // Let's try to release the data (if they are neither locked nor blocked)
         }
 
         delete this;
-        return 0; // nesmime sahnout do objektu, uz neexistuje
+        return 0; // We must not access the object, it no longer exists
     }
     return RefCount;
 }
@@ -412,20 +412,20 @@ STDMETHODIMP CFakeCopyPasteDataObject::GetData(FORMATETC* formatEtc, STGMEDIUM* 
         medium->tymed = TYMED_HGLOBAL;
         medium->hGlobal = NULL;
         medium->pUnkForRelease = NULL;
-        return S_OK; // vracime S_OK, abysme vyhoveli testu ve funkci IsFakeDataObject()
+        return S_OK; // we return S_OK to pass the test in the IsFakeDataObject() function
     }
     else
     {
         if (formatEtc->cfFormat == CFIdList)
-        { // Paste do Explorera pouziva tenhle format, ostatni nas nezajimaji (stejne nepouziji copy-hook)
-            // resi problem ve Win98: pri Copy to clipboard z Exploreru se na stavajici objekt na clipboardu
-            // vola GetData, az pak se uvolni a nahradi novym objektem z Exploreru (problem je 2 sekundovy
-            // timeout z duvodu cekani na zavolani copy-hooku - po GetData ho vzdycky ocekavame)
+        { // Explorer uses this format for paste, we are not interested in the others (we will not use the copy-hook anyway)
+            // resolves an issue in Win98: when copying to clipboard from Explorer, the existing object on the clipboard
+            // calls GetData, then releases and replaces it with a new object from Explorer (the problem is 2 seconds
+            // timeout due to waiting for the copy-hook call - we always expect it after GetData
             DWORD ti = GetTickCount();
-            if (ti - LastGetDataCallTime >= 100) // optimalizace: ukladame novy cas jen pri zmene o minimalne 100ms
+            if (ti - LastGetDataCallTime >= 100) // optimization: we only save the new time when it changes by at least 100ms
             {
                 LastGetDataCallTime = ti;
-                if (SalShExtSharedMemView != NULL) // ulozime cas do sdilene pameti (pro rozliseni mezi paste a jinym copy/move fake-diru)
+                if (SalShExtSharedMemView != NULL) // store the time in shared memory (to distinguish between paste and other copy/move fake-dirs)
                 {
                     WaitForSingleObject(SalShExtSharedMemMutex, INFINITE);
                     SalShExtSharedMemView->ClipDataObjLastGetDataTime = ti;
@@ -470,7 +470,7 @@ BOOL CSalShExtPastedData::SetData(const char* archiveFileName, const char* pathI
 
     Clear();
 
-    LastWndFromPasteGetData = NULL; // pro prvni Paste to budeme nulovat zde
+    LastWndFromPasteGetData = NULL; // for the first Paste we will zero out here
 
     lstrcpyn(ArchiveFileName, archiveFileName, MAX_PATH);
     lstrcpyn(PathInArchive, pathInArchive, MAX_PATH);
@@ -479,18 +479,18 @@ BOOL CSalShExtPastedData::SetData(const char* archiveFileName, const char* pathI
     for (i = 0; i < selIndexesCount; i++)
     {
         int index = selIndexes[i];
-        if (index < dirs->Count) // jde o adresar
+        if (index < dirs->Count) // it's about the directory
         {
             if (!SelFilesAndDirs.Add(TRUE, dirs->At(index).Name))
                 break;
         }
-        else // jde o soubor
+        else // it's about the file
         {
             if (!SelFilesAndDirs.Add(FALSE, files->At(index - dirs->Count).Name))
                 break;
         }
     }
-    if (i < selIndexesCount) // chyba nedostatku pameti
+    if (i < selIndexesCount) // out of memory error
     {
         Clear();
         return FALSE;
@@ -518,17 +518,17 @@ void CSalShExtPastedData::ReleaseStoredArchiveData()
     {
         if (StoredPluginData.NotEmpty())
         {
-            // uvolnime data plug-inu pro jednotlive soubory a adresare
+            // Release plugin data for individual files and directories
             BOOL releaseFiles = StoredPluginData.CallReleaseForFiles();
             BOOL releaseDirs = StoredPluginData.CallReleaseForDirs();
             if (releaseFiles || releaseDirs)
                 StoredArchiveDir->ReleasePluginData(StoredPluginData, releaseFiles, releaseDirs);
 
-            // uvolnime interface StoredPluginData
+            // Release the interface StoredPluginData
             CPluginInterfaceEncapsulation plugin(StoredPluginData.GetPluginInterface(), StoredPluginData.GetBuiltForVersion());
             plugin.ReleasePluginDataInterface(StoredPluginData.GetInterface());
         }
-        StoredArchiveDir->Clear(NULL); // uvolnime "standardni" (Salamanderovska) data listingu
+        StoredArchiveDir->Clear(NULL); // let's release the "standard" (Salamander-style) data listing
         delete StoredArchiveDir;
     }
     StoredArchiveDir = NULL;
@@ -541,9 +541,9 @@ BOOL CSalShExtPastedData::WantData(const char* archiveFileName, CSalamanderDirec
 {
     CALL_STACK_MESSAGE1("CSalShExtPastedData::WantData()");
 
-    if (!Lock /* nemelo by nastat, ale sychrujeme se */ &&
+    if (!Lock /* It shouldn't happen, but we are preparing for it*/ &&
         StrICmp(ArchiveFileName, archiveFileName) == 0 &&
-        archiveSize != CQuadWord(-1, -1) && // porusena date&time znamka svedci o archivu, ktery je nutne znovu nacist
+        archiveSize != CQuadWord(-1, -1) && // Corrupted date & time stamp indicates an archive that needs to be reloaded
         (!pluginData.NotEmpty() || pluginData.CanBeCopiedToClipboard()))
     {
         ReleaseStoredArchiveData();
@@ -567,25 +567,25 @@ BOOL CSalShExtPastedData::CanUnloadPlugin(HWND parent, CPluginInterfaceAbstract*
     {
         if (ArchiveFileName[0] != 0)
         {
-            // zjistime, jestli unloadeny plugin ma co docineni s nasim archivem,
-            // plug-in by se klidne mohl unloadnout behem pouziti archivatoru (kazda funkce archivatoru
-            // si plug-in naloadi), ale nic se nema prehanet, takze pripadny listing archivu zrusime
+            // Let's find out if the unloaded plugin has anything to do with our archive,
+            // the plug-in could easily be unloaded while using the archiver (each archiver function
+            // the plug-in does not load), but there is no need to rush, so we will cancel any potential archive listing
             int format = PackerFormatConfig.PackIsArchive(ArchiveFileName);
-            if (format != 0) // nasli jsme podporovany archiv
+            if (format != 0) // We found a supported archive
             {
                 format--;
                 CPluginData* data;
                 int index = PackerFormatConfig.GetUnpackerIndex(format);
-                if (index < 0) // view: jde o interni zpracovani (plug-in)?
+                if (index < 0) // view: is it internal processing (plug-in)?
                 {
                     data = Plugins.Get(-index - 1);
                     if (data != NULL && data->GetPluginInterface()->GetInterface() == plugin)
                         used = TRUE;
                 }
-                if (PackerFormatConfig.GetUsePacker(format)) // ma edit?
+                if (PackerFormatConfig.GetUsePacker(format)) // edit?
                 {
                     index = PackerFormatConfig.GetPackerIndex(format);
-                    if (index < 0) // jde o interni zpracovani (plug-in)?
+                    if (index < 0) // Is it about internal processing (plug-in)?
                     {
                         data = Plugins.Get(-index - 1);
                         if (data != NULL && data->GetPluginInterface()->GetInterface() == plugin)
@@ -597,8 +597,8 @@ BOOL CSalShExtPastedData::CanUnloadPlugin(HWND parent, CPluginInterfaceAbstract*
     }
 
     if (used)
-        ReleaseStoredArchiveData(); // pouzivame data pluginu, musime je (nebo jen bude lepsi je) uvolnit
-    return TRUE;                    // unload pluginu je mozny
+        ReleaseStoredArchiveData(); // we are using data from the plugin, we need to release it (or it will be better to release it)
+    return TRUE;                    // unloading the plugin is possible
 }
 
 void CSalShExtPastedData::DoPasteOperation(BOOL copy, const char* tgtPath)
@@ -615,7 +615,7 @@ void CSalShExtPastedData::DoPasteOperation(BOOL copy, const char* tgtPath)
         return;
     }
 
-    BeginStopRefresh(); // cmuchal si da pohov
+    BeginStopRefresh(); // He was snoring in his sleep
 
     char text[1000];
     CSalamanderDirectory* archiveDir = NULL;
@@ -624,42 +624,42 @@ void CSalShExtPastedData::DoPasteOperation(BOOL copy, const char* tgtPath)
     {
         CFilesWindow* panel = j == 0 ? MainWindow->GetActivePanel() : MainWindow->GetNonActivePanel();
         if (panel->Is(ptZIPArchive) && StrICmp(ArchiveFileName, panel->GetZIPArchive()) == 0)
-        { // panel obsahuje nas archiv
+        { // panel contains our archive
             BOOL archMaybeUpdated;
             panel->OfferArchiveUpdateIfNeeded(MainWindow->HWindow, IDS_ARCHIVECLOSEEDIT2, &archMaybeUpdated);
             if (archMaybeUpdated)
             {
-                EndStopRefresh(); // ted uz zase cmuchal nastartuje
+                EndStopRefresh(); // now he's sniffling again, he'll start up
                 return;
             }
-            // vyuzijeme data z panelu (jsme v hl. threadu, panel se behem operace nemuze zmenit)
+            // we will use data from the panel (we are in the main thread, the panel cannot change during the operation)
             archiveDir = panel->GetArchiveDir();
             pluginData = panel->PluginData.GetInterface();
             break;
         }
     }
 
-    if (StoredArchiveDir != NULL) // pokud mame nejaka data archivu ulozena
+    if (StoredArchiveDir != NULL) // if we have some archive data stored
     {
         if (archiveDir != NULL)
-            ReleaseStoredArchiveData(); // archiv je otevreny v panelu, ulozena data zrusime
-        else                            // zkusime ulozena data vyuzit, zkontrolujeme size&date souboru archivu
+            ReleaseStoredArchiveData(); // archive is open in the panel, saved data will be deleted
+        else                            // Let's try to use the saved data, check the size and date of the archive file
         {
             BOOL canUseData = FALSE;
-            FILETIME archiveDate;  // datum&cas souboru archivu
-            CQuadWord archiveSize; // velikost souboru archivu
+            FILETIME archiveDate;  // date and time of the archive file
+            CQuadWord archiveSize; // size of the archive file
             HANDLE file = HANDLES_Q(CreateFile(ArchiveFileName, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
                                                NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL));
             if (file != INVALID_HANDLE_VALUE)
             {
                 GetFileTime(file, NULL, NULL, &archiveDate);
                 DWORD err = NO_ERROR;
-                SalGetFileSize(file, archiveSize, err); // vraci "uspech?" - ignorujeme, testujeme pozdeji 'err'
+                SalGetFileSize(file, archiveSize, err); // returns "success?" - ignore, test later 'err'
                 HANDLES(CloseHandle(file));
 
-                if (err == NO_ERROR &&                                        // size&date jsme ziskali a
-                    CompareFileTime(&archiveDate, &StoredArchiveDate) == 0 && // date se nelisi a
-                    archiveSize == StoredArchiveSize)                         // size se take nelisi
+                if (err == NO_ERROR &&                                        // size&date we have obtained and
+                    CompareFileTime(&archiveDate, &StoredArchiveDate) == 0 && // dates do not differ and
+                    archiveSize == StoredArchiveSize)                         // the size does not differ either
                 {
                     canUseData = TRUE;
                 }
@@ -670,27 +670,27 @@ void CSalShExtPastedData::DoPasteOperation(BOOL copy, const char* tgtPath)
                 pluginData = StoredPluginData.GetInterface();
             }
             else
-                ReleaseStoredArchiveData(); // soubor archivu se zmenil, ulozena data zrusime
+                ReleaseStoredArchiveData(); // The archive file has changed, saved data will be deleted
         }
     }
 
-    if (archiveDir == NULL) // nemame data, musime archiv znovu vylistovat
+    if (archiveDir == NULL) // We don't have the data, we need to list the archive again.
     {
         CSalamanderDirectory* newArchiveDir = new CSalamanderDirectory(FALSE);
         if (newArchiveDir == NULL)
             TRACE_E(LOW_MEMORY);
         else
         {
-            // zjistime informace o souboru (existuje?, size, date&time)
+            // retrieve information about the file (exists?, size, date&time)
             DWORD err = NO_ERROR;
-            FILETIME archiveDate;  // datum&cas souboru archivu
-            CQuadWord archiveSize; // velikost souboru archivu
+            FILETIME archiveDate;  // date and time of the archive file
+            CQuadWord archiveSize; // size of the archive file
             HANDLE file = HANDLES_Q(CreateFile(ArchiveFileName, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
                                                NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL));
             if (file != INVALID_HANDLE_VALUE)
             {
                 GetFileTime(file, NULL, NULL, &archiveDate);
-                SalGetFileSize(file, archiveSize, err); // vraci "uspech?" - ignorujeme, testujeme pozdeji 'err'
+                SalGetFileSize(file, archiveSize, err); // returns "success?" - ignore, test later 'err'
                 HANDLES(CloseHandle(file));
             }
             else
@@ -703,7 +703,7 @@ void CSalShExtPastedData::DoPasteOperation(BOOL copy, const char* tgtPath)
             }
             else
             {
-                // uplatnime optimalizovane pridavani do 'newArchiveDir'
+                // apply optimized adding to 'newArchiveDir'
                 newArchiveDir->AllocAddCache();
 
                 SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
@@ -716,22 +716,22 @@ void CSalShExtPastedData::DoPasteOperation(BOOL copy, const char* tgtPath)
 
                 if (haveList)
                 {
-                    // uvolnime cache, at v objektu zbytecne nestrasi
+                    // Let's clear the cache so the object doesn't unnecessarily shake
                     newArchiveDir->FreeAddCache();
 
                     StoredArchiveDir = newArchiveDir;
-                    newArchiveDir = NULL; // aby se newArchiveDir neuvolnilo
+                    newArchiveDir = NULL; // so that newArchiveDir is not released
                     if (plugin != NULL)
                     {
                         StoredPluginData.Init(pluginDataAbs, plugin->DLLName, plugin->Version,
                                               plugin->GetPluginInterface()->GetInterface(), plugin->BuiltForVersion);
                     }
                     else
-                        StoredPluginData.Init(NULL, NULL, NULL, NULL, 0); // pouzivaji jen plug-iny, Salamander ne
+                        StoredPluginData.Init(NULL, NULL, NULL, NULL, 0); // only plugins are used, Salamander does not
                     StoredArchiveDate = archiveDate;
                     StoredArchiveSize = archiveSize;
 
-                    archiveDir = StoredArchiveDir; // pro Paste operaci vyuzijeme novy listing
+                    archiveDir = StoredArchiveDir; // For the Paste operation, we will use a new listing
                     pluginData = StoredPluginData.GetInterface();
                 }
             }
@@ -741,7 +741,7 @@ void CSalShExtPastedData::DoPasteOperation(BOOL copy, const char* tgtPath)
         }
     }
 
-    if (archiveDir != NULL) // pokud mame data archivu, provedeme Paste
+    if (archiveDir != NULL) // if we have archive data, we will perform Paste
     {
         CPanelTmpEnumData data;
         SelFilesAndDirs.Sort();
@@ -773,9 +773,9 @@ void CSalShExtPastedData::DoPasteOperation(BOOL copy, const char* tgtPath)
                 {
                     if (SelFilesAndDirs.Contains(TRUE, dirs->At(i).Name, &foundOnIndex) &&
                         foundOnIndex >= 0 && foundOnIndex < SelFilesAndDirs.GetDirsCount() &&
-                        !foundDirs[foundOnIndex]) // oznacujeme jen prvni instanci jmena (je-li vic shodnych jmen v SelFilesAndDirs, nefunguje to, pulenim (v Contains) dojdeme vzdy k tomu samemu)
+                        !foundDirs[foundOnIndex]) // We only mark the first instance of the name (if there are multiple identical names in SelFilesAndDirs, it doesn't work, by pulling (in Contains) we always get to the same one)
                     {
-                        foundDirs[foundOnIndex] = TRUE; // toto jmeno bylo prave nalezeno
+                        foundDirs[foundOnIndex] = TRUE; // This name has just been found
                         data.Indexes[actIndex++] = i;
                     }
                 }
@@ -788,15 +788,15 @@ void CSalShExtPastedData::DoPasteOperation(BOOL copy, const char* tgtPath)
                 {
                     if (SelFilesAndDirs.Contains(FALSE, files->At(i).Name, &foundOnIndex) &&
                         foundOnIndex >= 0 && foundOnIndex < SelFilesAndDirs.GetFilesCount() &&
-                        !foundFiles[foundOnIndex]) // oznacujeme jen prvni instanci jmena (je-li vic shodnych jmen v SelFilesAndDirs, nefunguje to, pulenim (v Contains) dojdeme vzdy k tomu samemu)
+                        !foundFiles[foundOnIndex]) // We only mark the first instance of the name (if there are multiple identical names in SelFilesAndDirs, it doesn't work, by pulling (in Contains) we always get to the same one)
                     {
-                        foundFiles[foundOnIndex] = TRUE;            // toto jmeno bylo prave nalezeno
-                        data.Indexes[actIndex++] = dirs->Count + i; // vsechny soubory maji index posunuty za adresare, zvyk z panelu
+                        foundFiles[foundOnIndex] = TRUE;            // This name has just been found
+                        data.Indexes[actIndex++] = dirs->Count + i; // all files have their index shifted behind the directories, a habit from the panel
                     }
                 }
             }
             data.IndexesCount = actIndex;
-            if (data.IndexesCount == 0) // nas zip-root cely odesel do vecnych lovist
+            if (data.IndexesCount == 0) // Our zip-root has departed to the eternal hunting grounds
             {
                 SalMessageBox(MainWindow->HWindow, LoadStr(IDS_ARCFILESNOTFOUND),
                               LoadStr(IDS_ERRORUNPACK), MB_OK | MB_ICONEXCLAMATION);
@@ -804,7 +804,7 @@ void CSalShExtPastedData::DoPasteOperation(BOOL copy, const char* tgtPath)
             else
             {
                 BOOL unpack = TRUE;
-                if (data.IndexesCount != SelFilesAndDirs.GetCount()) // nenaslo vsechny oznacene polozky z clipboardu (duplicity jmen nebo vymaz souboru z archivu)
+                if (data.IndexesCount != SelFilesAndDirs.GetCount()) // did not find all marked items from the clipboard (duplicate names or delete files from the archive)
                 {
                     unpack = SalMessageBox(MainWindow->HWindow, LoadStr(IDS_ARCFILESNOTFOUND2),
                                            LoadStr(IDS_ERRORUNPACK),
@@ -824,22 +824,22 @@ void CSalShExtPastedData::DoPasteOperation(BOOL copy, const char* tgtPath)
                     lstrcpyn(pathBuf, tgtPath, MAX_PATH);
                     int l = (int)strlen(pathBuf);
                     if (l > 3 && pathBuf[l - 1] == '\\')
-                        pathBuf[l - 1] = 0; // krom "c:\" zrusime koncovy backslash
+                        pathBuf[l - 1] = 0; // Except for "c:\" we will remove the trailing backslash
 
-                    // vlastni rozpakovani
+                    // custom unpacking
                     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
                     PackUncompress(MainWindow->HWindow, MainWindow->GetActivePanel(), ArchiveFileName,
                                    pluginData, pathBuf, PathInArchive, PanelSalEnumSelection, &data);
                     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
 
-                    //if (GetForegroundWindow() == MainWindow->HWindow)  // z nepochopitelnych duvodu mizi fokus z panelu pri drag&dropu do Explorera, vratime ho tam
+                    //if (GetForegroundWindow() == MainWindow->HWindow)  // for incomprehensible reasons, the focus disappears from the panel during drag&drop to Explorer, let's return it there
                     //  RestoreFocusInSourcePanel();
 
-                    // refresh neautomaticky refreshovanych adresaru
-                    // zmena na cilove ceste a jejich podadresarich (vytvareni novych adresaru a vypakovani
-                    // souboru/adresaru)
+                    // refresh non-automatically refreshed directories
+                    // change in the target path and its subdirectories (creating new directories and extracting
+                    // file/directory)
                     MainWindow->PostChangeOnPathNotification(pathBuf, TRUE);
-                    // zmena v adresari, kde je umisteny archiv (pri unpacku by nemelo nastat, ale radsi refreshneme)
+                    // change in the directory where the archive is located (unpacking should not occur, but let's refresh just in case)
                     lstrcpyn(pathBuf, ArchiveFileName, MAX_PATH);
                     CutDirectory(pathBuf);
                     MainWindow->PostChangeOnPathNotification(pathBuf, FALSE);
@@ -856,5 +856,5 @@ void CSalShExtPastedData::DoPasteOperation(BOOL copy, const char* tgtPath)
             free(foundFiles);
     }
 
-    EndStopRefresh(); // ted uz zase cmuchal nastartuje
+    EndStopRefresh(); // now he's sniffling again, he'll start up
 }

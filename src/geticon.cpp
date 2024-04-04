@@ -58,14 +58,14 @@ BOOL ExtIsExe(LPCTSTR szExt)
 #define SHIL_EXTRALARGE 2 // These images are the Shell standard extra-large icon size. This is typically 48x48, but the size can be customized by the user.
 #define SHIL_SYSSMALL 3   // These images are the size specified by GetSystemMetrics called with SM_CXSMICON and GetSystemMetrics called with SM_CYSMICON.
 #define SHIL_JUMBO 4      // Windows Vista and later. The image is normally 256x256 pixels.
-// ohledne rozmeru ikon pod Windows Vista: Creating a DPI-Aware Application ( http://msdn.microsoft.com/en-us/library/ms701681(VS.85).aspx )
+// Regarding the size of icons under Windows Vista: Creating a DPI-Aware Application (http://msdn.microsoft.com/en-us/library/ms701681(VS.85).aspx)
 
 BOOL SalGetIconFromPIDL(IShellFolder* psf, const char* path, LPCITEMIDLIST pidl, HICON* hIcon,
                         CIconSizeEnum iconSize, BOOL fallbackToDefIcon, BOOL defIconIsDir)
 {
     BOOL ret = FALSE;
 
-    IExtractIconA* pxi = NULL; // je-li 'isIExtractIconW' TRUE, je ukazatel typu IExtractIconW
+    IExtractIconA* pxi = NULL; // if 'isIExtractIconW' is TRUE, 'IExtractIconW' is a pointer type
     BOOL isIExtractIconW = FALSE;
     HICON hIconSmall = NULL;
     HICON hIconLarge = NULL;
@@ -73,7 +73,7 @@ BOOL SalGetIconFromPIDL(IShellFolder* psf, const char* path, LPCITEMIDLIST pidl,
     char iconFile[MAX_PATH];
     WCHAR iconFileW[MAX_PATH];
     int iconIndex;
-    UINT wFlags = 0; // nulujeme kvuli shell extension DWGIcon.dll (viz forum), ktera bity pouze oruje
+    UINT wFlags = 0; // We are zeroing due to the shell extension DWGIcon.dll (see forum), which only bites
 
     CIconSizeEnum largeIconSize = ICONSIZE_32;
     if (iconSize == ICONSIZE_48)
@@ -87,7 +87,7 @@ BOOL SalGetIconFromPIDL(IShellFolder* psf, const char* path, LPCITEMIDLIST pidl,
     }
     else
     {
-        // ANSI verze selhala, zkusime jeste UNICODE verzi IID_IExtractIcon
+        // ANSI version failed, let's try the UNICODE version of IID_IExtractIcon
         hres = psf->GetUIObjectOf(NULL, 1, &pidl, IID_IExtractIconW, NULL, (void**)&pxi);
         if (SUCCEEDED(hres))
         {
@@ -105,16 +105,16 @@ BOOL SalGetIconFromPIDL(IShellFolder* psf, const char* path, LPCITEMIDLIST pidl,
     //  TRACE_I("iconFile="<<iconFile<<" iconIndex="<<iconIndex);
     if (SUCCEEDED(hres))
     {
-        // pod XP lze vytahnout system image list 48x48 (Extract() nam blbe vraci 32x32)
-        // druhou moznosti jak ziskat ikonky 48x48 je LoadImage, ale to bychom museli znat cestu k souboru a cislo ikony...
-        // "*" v nazvu souboru znamena, ze iconIndex uz je system icon index
+        // Under XP, it is possible to extract the system image list 48x48 (Extract() incorrectly returns 32x32)
+        // The second option to obtain 48x48 icons is LoadImage, but we would need to know the file path and the icon number...
+        // "*" in the file name means that iconIndex is already a system icon index
         //TRACE_I("  SalGetIconFromPIDL() wFlags="<<wFlags<<" iconFile='"<<iconFile<<"' TryObtainGetImageList="<<TryObtainGetImageList);
         if ((wFlags & GIL_NOTFILENAME) && iconFile[0] == '*' && iconFile[1] == 0)
         {
-            // vicenasobne pokusy sice u JISe zabraly, ale je tu riziko, ze pokud bude ziskavani ikony selhavat
-            // z nejakeho opodstatneho duvodu, budeme se tu mrcasit s 50ms delayem zbytecne pri kazdem ziskani ikony
-            // Petr zavedl Retry nahoru do IconReadera, takze radeji prizname porazku a vratime FALSE, aby se
-            // po 500ms ikony zkusily nacist jeste jednou
+            // Multiple attempts at JISe were successful, but there is a risk that if the icon retrieval fails
+            // for some reason, we will unnecessarily delay by 50ms every time we acquire an icon
+            // Petr moved Retry up into IconReader, so let's admit defeat and return FALSE instead
+            // after 500ms icons tried to load again
             //      int attempt = 1;
             //AGAIN:
             // ***** hIconSmall ******
@@ -130,14 +130,14 @@ BOOL SalGetIconFromPIDL(IShellFolder* psf, const char* path, LPCITEMIDLIST pidl,
             }
             if (hIconSmall == NULL)
             {
-                // U duchodce Billa nam GetImageList selhalo a nasledne i pxi->Extract() vratilo NULL handly ikon
+                // The GetImageList of the retiree Bill failed and subsequently pxi->Extract() returned NULL handles of icons
                 //TRACE_I("  SalGetIconFromPIDL() SHIL_SMALL IID_IImageList was not obtained!");
                 if (path != NULL)
                 {
-                    // zkusime pozadat system, aby nam vratil index do system image listu a jeho handle a ikonu z nej vytahneme
+                    // Let's ask the system to return the index into the system image list and its handle, from which we will extract the icon.
                     SHFILEINFO sfi;
                     ZeroMemory(&sfi, sizeof(sfi));
-                    HIMAGELIST hSysImageList = (HIMAGELIST)SHGetFileInfo(path, 0, &sfi, sizeof(sfi), SHGFI_SYSICONINDEX | SHGFI_SMALLICON); // vraci stale stejny handle, neni treba uvolnovat
+                    HIMAGELIST hSysImageList = (HIMAGELIST)SHGetFileInfo(path, 0, &sfi, sizeof(sfi), SHGFI_SYSICONINDEX | SHGFI_SMALLICON); // returns the same handle, no need to release
                     if (hSysImageList != NULL)
                     {
                         hIconSmall = ImageList_GetIcon(hSysImageList, sfi.iIcon, ILD_NORMAL);
@@ -145,7 +145,7 @@ BOOL SalGetIconFromPIDL(IShellFolder* psf, const char* path, LPCITEMIDLIST pidl,
                     }
                     if (hIconSmall == NULL)
                     {
-                        // zkusime pozadat primo o ikonu
+                        // let's try to directly request the icon
                         ZeroMemory(&sfi, sizeof(sfi));
                         if (SHGetFileInfo(path, 0, &sfi, sizeof(sfi), SHGFI_ICON | SHGFI_SMALLICON) != 0)
                             hIconSmall = sfi.hIcon;
@@ -179,11 +179,11 @@ BOOL SalGetIconFromPIDL(IShellFolder* psf, const char* path, LPCITEMIDLIST pidl,
                 }
                 if (hIconLarge == NULL)
                 {
-                    // U duchodce Billa nam GetImageList selhalo a nasledne i pxi->Extract() vratilo NULL handly ikon
+                    // The GetImageList of the retiree Bill failed and subsequently pxi->Extract() returned NULL handles of icons
                     //TRACE_I("  SalGetIconFromPIDL() SHIL_LARGE IID_IImageList was not obtained!");
                     if (path != NULL)
                     {
-                        // zkusime pozadat system, aby nam vratil index do system image listu a jeho handle a ikonu z nej vytahneme
+                        // Let's ask the system to return the index into the system image list and its handle, from which we will extract the icon.
                         SHFILEINFO sfi;
                         ZeroMemory(&sfi, sizeof(sfi));
                         HIMAGELIST hSysImageList = (HIMAGELIST)SHGetFileInfo(path, 0, &sfi, sizeof(sfi), SHGFI_SYSICONINDEX | SHGFI_ICON);
@@ -194,7 +194,7 @@ BOOL SalGetIconFromPIDL(IShellFolder* psf, const char* path, LPCITEMIDLIST pidl,
                         }
                         if (hIconLarge == NULL)
                         {
-                            // zkusime pozadat primo o ikonu
+                            // let's try to directly request the icon
                             ZeroMemory(&sfi, sizeof(sfi));
                             if (SHGetFileInfo(path, 0, &sfi, sizeof(sfi), SHGFI_ICON | SHGFI_LARGEICON) != 0)
                                 hIconLarge = sfi.hIcon;
@@ -204,10 +204,10 @@ BOOL SalGetIconFromPIDL(IShellFolder* psf, const char* path, LPCITEMIDLIST pidl,
                     //else TRACE_I("  SalGetIconFromPIDL() path == NULL");
                 }
             }
-            //      // pokud se nepodarilo vytahnout ani jednu ikonu
+            //      // if it was not possible to extract any icons
             //      if (hIconSmall == NULL && hIconLarge == NULL && attempt <= 3)
             //      {
-            //        // zkusime to znovu, az 3x za sebou s cekanim 50ms
+            //        // let's try again, up to 3 times in a row with a 50ms delay
             //        //TRACE_I("  SalGetIconFromPIDL() Sleeping and trying again. Attempt="<<attempt);
             //        Sleep(50);
             //        attempt++;
@@ -215,22 +215,22 @@ BOOL SalGetIconFromPIDL(IShellFolder* psf, const char* path, LPCITEMIDLIST pidl,
             //      }
         }
 
-        // pokud jsme ikonu nevytahli ze system image listu, pozadame o ni interface pxi
+        // if we did not extract the icon from the system image list, we ask the pxi interface for it
         if (hIconSmall == NULL && hIconLarge == NULL)
         {
-            // zkusime IExtractIcon::Extract()
-            // pozor, pokud je iconFile == '*', nekdy Exract vrati validni ikony, ale mame pripady, kdy je nevrati
-            // (zalezi na implementaci shellextension) a uzivatelum se potom zobrazovaly default ikony, viz dole
+            // Let's try IExtractIcon::Extract()
+            // be careful, if iconFile == '*', sometimes Extract returns valid icons, but we have cases where it doesn't
+            // (depends on the shell extension implementation) and default icons were then displayed to users, see below
             if (isIExtractIconW)
                 hres = ((IExtractIconW*)pxi)->Extract(iconFileW, iconIndex, &hIconLarge, &hIconSmall, MAKELONG(IconSizes[largeIconSize], IconSizes[ICONSIZE_16]));
             else
                 hres = pxi->Extract(iconFile, iconIndex, &hIconLarge, &hIconSmall, MAKELONG(IconSizes[largeIconSize], IconSizes[ICONSIZE_16]));
             //TRACE_I("  SalGetIconFromPIDL() pxi->Extract() hIconLarge="<<hIconLarge<<" hIconSmall="<<hIconSmall<<" isIExtractIconW="<<isIExtractIconW);
-            // POZOR pro *.ai prichazi iconFile==0 a iconIndex==0 a Extract() presto vrati ikonu (asi zalezitost Adobe Illustrator shell extension)
-            // POZOR D:\Store\Salamand\ICO_SONY\SonyF707_Day_Flash.icc vraci hIconLarge==hIconSmall, obe 32x32
+            // WARNING for *.ai files: iconFile==0 and iconIndex==0 are coming and Extract() still returns an icon (probably an Adobe Illustrator shell extension issue)
+            // WARNING D:\Store\Salamand\ICO_SONY\SonyF707_Day_Flash.icc returns hIconLarge==hIconSmall, both 32x32
         }
 
-        // pokud lezi ikona v souboru, muzeme se ji pokusit ziskat sami pomoci ExtractIcons()
+        // if the icon is embedded in the file, we can try to retrieve it ourselves using ExtractIcons()
         if (hIconSmall == NULL && hIconLarge == NULL && !(wFlags & GIL_NOTFILENAME))
         {
             HICON hIcons[2] = {0, 0};
@@ -251,7 +251,7 @@ BOOL SalGetIconFromPIDL(IShellFolder* psf, const char* path, LPCITEMIDLIST pidl,
             pxi->Release();
     }
 
-    // nezabrala ani jedna metoda; vratime default ikonu
+    // neither method worked; let's return the default icon
     if (fallbackToDefIcon && hIconSmall == NULL && hIconLarge == NULL)
     {
         BOOL fileIsExecutable = FALSE;
@@ -284,10 +284,10 @@ BOOL SalGetIconFromPIDL(IShellFolder* psf, const char* path, LPCITEMIDLIST pidl,
     if (hIconLarge != NULL || hIconSmall != NULL)
     {
         ret = TRUE;
-        // malou ikonu vezmeme z hIconSmall, protoze IExtractIcon::Extract() ignoruje rozmery v pixlech a vraci vzdy 16 a 32
+        // We will take the small icon from hIconSmall because IExtractIcon::Extract() ignores pixel dimensions and always returns 16 and 32
         if (iconSize == ICONSIZE_16)
         {
-            // pokud neexistuje mala verze ikony nebo nam podstrcili handle velke ikonky, vytvorime ji
+            // if there is no small version of the icon or we were given a handle of a large icon, we will create it
             if (hIconSmall == NULL || hIconSmall == hIconLarge)
             {
                 hIconSmall = (HICON)CopyImage(hIconLarge, IMAGE_ICON, IconSizes[ICONSIZE_16], IconSizes[ICONSIZE_16], LR_COPYFROMRESOURCE);
@@ -302,7 +302,7 @@ BOOL SalGetIconFromPIDL(IShellFolder* psf, const char* path, LPCITEMIDLIST pidl,
         }
         else // ICONSIZE_32 || ICONSIZE_48
         {
-            // pokud neexistuje velka verze ikony nebo nam podstrcili handle male ikonky, vytvorime ji
+            // if there is no large version of the icon or we were given a handle to a small icon, we will create it
             if (hIconLarge == NULL || hIconSmall == hIconLarge)
             {
                 hIconLarge = (HICON)CopyImage(hIconSmall, IMAGE_ICON, IconSizes[largeIconSize], IconSizes[largeIconSize], LR_COPYFROMRESOURCE);
@@ -339,7 +339,7 @@ LPITEMIDLIST SHILCreateFromPath(LPCSTR pszPath)
     return pidl;
 }
 
-// komentar viz spl_gen.h/GetFileIcon
+// comment see spl_gen.h/GetFileIcon
 BOOL GetFileIcon(const char* path, BOOL pathIsPIDL, HICON* hIcon, CIconSizeEnum iconSize,
                  BOOL fallbackToDefIcon, BOOL defIconIsDir)
 {
@@ -351,12 +351,10 @@ BOOL GetFileIcon(const char* path, BOOL pathIsPIDL, HICON* hIcon, CIconSizeEnum 
         TRACE_E("hIcon == NULL");
         return FALSE;
     }
-    /*
-  if (!pathIsPIDL)
+    /*    if (!pathIsPIDL)
     TRACE_I("GetFileIcon() path="<<path<<" iconSize="<<iconSize);
   else
-    TRACE_I("GetFileIcon() pathIsPIDL"); // toto v Salamanderu nepouzivame, pouze pro plugin Folders
-*/
+    TRACE_I("GetFileIcon() pathIsPIDL"); // we do not use this in Salamander, only for the Folders plugin*/
     if (!pathIsPIDL)
         pidlFull = SHILCreateFromPath(path);
     else
@@ -369,7 +367,7 @@ BOOL GetFileIcon(const char* path, BOOL pathIsPIDL, HICON* hIcon, CIconSizeEnum 
         HRESULT hres = SHBindToIDListParent(pidlFull, IID_IShellFolder, (void**)&psf, (LPCITEMIDLIST*)&pidlLast);
         if (SUCCEEDED(hres))
         {
-            // pokud zname cestu, posleme ji do SalGetIconFromPIDL
+            // if we know the path, let's send it to SalGetIconFromPIDL
             ret = SalGetIconFromPIDL(psf, pathIsPIDL ? NULL : path, pidlLast, hIcon, iconSize,
                                      fallbackToDefIcon, defIconIsDir);
 

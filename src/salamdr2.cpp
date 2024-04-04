@@ -22,7 +22,7 @@ public:
     ~C__StrCriticalSection() { HANDLES(DeleteCriticalSection(&cs)); }
 };
 
-// zajistime vcasnou konstrukci kriticke sekce
+// Ensure timely construction of critical section
 #pragma warning(disable : 4073)
 #pragma init_seg(lib)
 C__StrCriticalSection __StrCriticalSection;
@@ -32,7 +32,7 @@ C__StrCriticalSection __StrCriticalSection2;
 
 char* LoadStr(int resID, HINSTANCE hInstance)
 {
-    static char buffer[10000]; // buffer pro mnoho stringu
+    static char buffer[10000]; // buffer for multiple strings
     static char* act = buffer;
 
     HANDLES(EnterCriticalSection(&__StrCriticalSection.cs));
@@ -43,23 +43,23 @@ char* LoadStr(int resID, HINSTANCE hInstance)
     if (hInstance == NULL)
         hInstance = HLanguage;
 #ifdef _DEBUG
-    // radeji si pojistime, aby nas nekdo nevolal pred inicializaci handlu s resourcy
+    // Let's make sure that no one calls us before initializing the resource handling
     if (hInstance == NULL)
         TRACE_E("LoadStr: hInstance == NULL");
 #endif // _DEBUG
 
 RELOAD:
     int size = LoadString(hInstance, resID, act, 10000 - (int)(act - buffer));
-    // size obsahuje pocet nakopirovanych znaku bez terminatoru
+    // size contains the number of copied characters without the terminator
     //  DWORD error = GetLastError();
     char* ret;
-    if (size != 0 /* || error == NO_ERROR*/) // error je NO_ERROR, i kdyz string neexistuje - nepouzitelne
+    if (size != 0 /* || error == NO_ERROR*/) // error is NO_ERROR, even if the string does not exist - unusable
     {
         if ((10000 - (act - buffer) == size + 1) && (act > buffer))
         {
-            // pokud byl retezec presne na konci bufferu, mohlo
-            // jit o oriznuti retezce -- pokud muzeme posunout okno
-            // na zacatek bufferu, nacteme string jeste jednou
+            // if the string was exactly at the end of the buffer, it could
+            // go to string trimming -- if we can shift the window
+            // at the beginning of the buffer, let's read the string once again
             act = buffer;
             goto RELOAD;
         }
@@ -83,7 +83,7 @@ RELOAD:
 
 WCHAR* LoadStrW(int resID, HINSTANCE hInstance)
 {
-    static WCHAR buffer[10000]; // buffer pro mnoho stringu
+    static WCHAR buffer[10000]; // buffer for multiple strings
     static WCHAR* act = buffer;
 
     HANDLES(EnterCriticalSection(&__StrCriticalSection.cs));
@@ -94,23 +94,23 @@ WCHAR* LoadStrW(int resID, HINSTANCE hInstance)
     if (hInstance == NULL)
         hInstance = HLanguage;
 #ifdef _DEBUG
-    // radeji si pojistime, aby nas nekdo nevolal pred inicializaci handlu s resourcy
+    // Let's make sure that no one calls us before initializing the resource handling
     if (hInstance == NULL)
         TRACE_E("LoadStrW: hInstance == NULL");
 #endif // _DEBUG
 
 RELOAD:
     int size = LoadStringW(hInstance, resID, act, 10000 - (int)(act - buffer));
-    // size obsahuje pocet nakopirovanych znaku bez terminatoru
+    // size contains the number of copied characters without the terminator
     //  DWORD error = GetLastError();
     WCHAR* ret;
-    if (size != 0 /* || error == NO_ERROR*/) // error je NO_ERROR, i kdyz string neexistuje - nepouzitelne
+    if (size != 0 /* || error == NO_ERROR*/) // error is NO_ERROR, even if the string does not exist - unusable
     {
         if ((10000 - (act - buffer) == size + 1) && (act > buffer))
         {
-            // pokud byl retezec presne na konci bufferu, mohlo
-            // jit o oriznuti retezce -- pokud muzeme posunout okno
-            // na zacatek bufferu, nacteme string jeste jednou
+            // if the string was exactly at the end of the buffer, it could
+            // go to string trimming -- if we can shift the window
+            // at the beginning of the buffer, let's read the string once again
             act = buffer;
             goto RELOAD;
         }
@@ -136,12 +136,12 @@ RELOAD:
 //
 // GetErrorText
 //
-// az do soubehu minimalne 10 vypisovanych chyb naraz by to melo jiste fungovat,
-// vic threadu nez 10 najednou neocekavame ;-)
+// until at least 10 displayed errors occur simultaneously, it should definitely work,
+// we do not expect more than 10 threads at once ;-)
 
 char* GetErrorText(DWORD error)
 {
-    static char buffer[10 * MAX_PATH]; // buffer pro mnoho stringu
+    static char buffer[10 * MAX_PATH]; // buffer for multiple strings
     static char* act = buffer;
 
     HANDLES(EnterCriticalSection(&__StrCriticalSection2.cs));
@@ -150,8 +150,8 @@ char* GetErrorText(DWORD error)
         act = buffer;
 
     char* ret = act;
-    // POZOR: sprintf_s v debug verzi vyplnuje cely buffer, tedy nelze mu podat cely buffer (jsou
-    // v nem i dalsi stringy), resit bud pres _CrtSetDebugFillThreshold nebo zadanim mensi velikosti)
+    // WARNING: sprintf_s fills the entire buffer in debug version, so you cannot pass the entire buffer to it (they are
+    // in the heap (and other strings), either by using _CrtSetDebugFillThreshold or by specifying a smaller size)
     int l = sprintf(act, ((int)error < 0 ? "(%08X) " : "(%d) "), error);
     int fl;
     if ((fl = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,
@@ -178,7 +178,7 @@ char* GetErrorText(DWORD error)
 
 WCHAR* GetErrorTextW(DWORD error)
 {
-    static WCHAR buffer[10 * MAX_PATH]; // buffer pro mnoho stringu
+    static WCHAR buffer[10 * MAX_PATH]; // buffer for multiple strings
     static WCHAR* act = buffer;
 
     HANDLES(EnterCriticalSection(&__StrCriticalSection2.cs));
@@ -187,8 +187,8 @@ WCHAR* GetErrorTextW(DWORD error)
         act = buffer;
 
     WCHAR* ret = act;
-    // POZOR: swprintf_s v debug verzi vyplnuje cely buffer, tedy nelze mu podat cely buffer (jsou
-    // v nem i dalsi stringy), resit bud pres _CrtSetDebugFillThreshold nebo zadanim mensi velikosti)
+    // WARNING: swprintf_s fills the entire buffer in debug version, so you cannot pass the entire buffer to it (they are
+    // in the heap (and other strings), either by using _CrtSetDebugFillThreshold or by specifying a smaller size)
     int l = swprintf(act, _countof(buffer) - (act - buffer), ((int)error < 0 ? L"(%08X) " : L"(%d) "), error);
     int fl;
     if ((fl = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM,
@@ -217,7 +217,7 @@ WCHAR* GetErrorTextW(DWORD error)
 
 void ClearComboboxListbox(HWND hCombo)
 {
-    // zachovame aktualni text; promazeme listbox
+    // keep the current text; clear the listbox
     char buff[3000];
     GetWindowText(hCombo, buff, 3000);
     SendMessage(hCombo, CB_RESETCONTENT, 0, 0);
@@ -230,7 +230,7 @@ BOOL SalamanderActive()
 {
     HWND foreground = GetForegroundWindow();
     if (foreground == NULL)
-        return TRUE; // behem aktivace Salama zablokovaneho wait-okenkem vraci GetForegroundWindow() NULL
+        return TRUE; // During the activation of a blocked wait window by Salam, GetForegroundWindow() returns NULL
     DWORD pid;
     GetWindowThreadProcessId(foreground, &pid);
     return pid == GetCurrentProcessId();
@@ -243,7 +243,7 @@ BOOL SafeWaitMessageThreadStarted = FALSE;
 DWORD SafeWaitMessageThreadID = 0;
 char* SafeWaitMessageText = NULL;
 char* SafeWaitMessageCaption = NULL;
-CRITICAL_SECTION SafeWaitMessageTextSection; // pro synchronizaci pristupu k SafeWaitMessageText
+CRITICAL_SECTION SafeWaitMessageTextSection; // for synchronizing access to SafeWaitMessageText
 BOOL SafeWaitMessageCallerSet = FALSE;
 unsigned SafeWaitMessageCallerID = 0;
 BOOL SafeWaitWindowClosePressed = FALSE;
@@ -276,14 +276,14 @@ void ThreadSafeWaitWindowFBody(BOOL showCloseButton)
         {
         case WM_USER_CREATEWAITWND:
         {
-            hForegroundWnd = (HWND)msg.wParam; // neni-li NULL otevreme okenko jen je-li hForegroundWnd aktivni
-            if ((int)msg.lParam > 0)           // je-li delay > 0
+            hForegroundWnd = (HWND)msg.wParam; // if it is not NULL, we open the window only if hForegroundWnd is active
+            if ((int)msg.lParam > 0)           // if delay > 0
             {
                 if (timer != 0)
                 {
-                    // zabijeme timer
+                    // kill the timer
                     KillTimer(NULL, timer);
-                    // vycistime message-queue od pripadnych WM_TIMER
+                    // clean the message queue from any WM_TIMER messages
                     MSG msg2;
                     while (PeekMessage(&msg2, NULL, WM_TIMER, WM_TIMER, PM_REMOVE))
                         ;
@@ -294,15 +294,15 @@ void ThreadSafeWaitWindowFBody(BOOL showCloseButton)
                     break;
             }
         }
-        case WM_TIMER: // pri delay==0 sem jde i WM_USER_CREATEWAITWND
+        case WM_TIMER: // When delay==0, WM_USER_CREATEWAITWND is also processed here
         {
             if (msg.message == WM_USER_CREATEWAITWND || msg.wParam == timer)
             {
                 if (timer != 0)
                 {
-                    // zabijeme timer
+                    // kill the timer
                     KillTimer(NULL, timer);
-                    // vycistime message-queue od pripadnych WM_TIMER
+                    // clean the message queue from any WM_TIMER messages
                     MSG msg2;
                     while (PeekMessage(&msg2, NULL, WM_TIMER, WM_TIMER, PM_REMOVE))
                         ;
@@ -322,20 +322,20 @@ void ThreadSafeWaitWindowFBody(BOOL showCloseButton)
                 BOOL showWindow;
                 if (hForegroundWnd != NULL)
                 {
-                    // ukazeme okenko jen pri aktivnim hForegroundWnd
+                    // Display the window only when hForegroundWnd is active
                     showWindow = GetForegroundWindow() == hForegroundWnd;
                 }
                 else
                 {
-                    // zjistime, jestli je aktivni nejake okno procesu, jinak okenko nebudeme ukazovat
+                    // Check if there is an active window of the process, otherwise we will not show the window
                     HWND foreground = GetForegroundWindow();
                     DWORD pid;
                     GetWindowThreadProcessId(foreground, &pid);
                     showWindow = pid == GetCurrentProcessId();
                 }
 
-                // zdanlive zbytecne volani 2 x SetWindowPos, ale jinak bohuzel zustane okenko
-                // uplne dole (sice nad desktopem, ale jinak pod vsemi dalsimi okny)
+                // Seemingly unnecessary calls to SetWindowPos 2 times, but otherwise the window will unfortunately remain
+                // at the very bottom (above the desktop, but otherwise below all other windows)
                 SetWindowPos(waitWnd.HWindow, HWND_TOPMOST, 0, 0, 0, 0,
                              SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
                 SetWindowPos(waitWnd.HWindow, HWND_NOTOPMOST, 0, 0, 0, 0,
@@ -346,18 +346,18 @@ void ThreadSafeWaitWindowFBody(BOOL showCloseButton)
 
         case WM_USER_SHOWWAITWND:
         {
-            if (waitWnd.HWindow == NULL) // pokud okenko jeste neexistuje, neni co resit
+            if (waitWnd.HWindow == NULL) // if the window does not exist yet, there is nothing to solve
                 break;
             BOOL show = (BOOL)msg.wParam;
             if (show)
             {
-                // zobrazeni odlozime o malou chvilku; duvodem je pripad, kdy k zobrazeni
+                // we delay the display for a moment; the reason is a case when displaying
                 // dochazi na zaklade aktivace hForegroundWindow po zavreni MessageBoxu;
-                // pokud v nem user operaci prerusil, doslo by pri okamzitem zobrazeni
-                // k kratickemu probliknuti WiatOkna a jeho okamzite nasledne dostrukci;
-                // prodlevou tomu predejdu
+                // if the user interrupted the operation in it, there would be an immediate display
+                // to a brief flash of the WiatOkna window and its immediate destruction;
+                // I will prevent it with a delay
                 if (timer == 0)
-                    timer = SetTimer(NULL, 0, 100, NULL); // po 100ms zobrazime okenko znovu
+                    timer = SetTimer(NULL, 0, 100, NULL); // after 100ms we will display the window again
             }
             else
                 ShowWindow(waitWnd.HWindow, SW_HIDE);
@@ -372,18 +372,17 @@ void ThreadSafeWaitWindowFBody(BOOL showCloseButton)
             HANDLES(LeaveCriticalSection(&SafeWaitMessageTextSection));
             break;
         }
-            /*
-      case WM_USER_ACTIVATEWAITMSG:
+            /*        case WM_USER_ACTIVATEWAITMSG:
       {
-        if (waitWnd.HWindow != NULL)   // jen pokud je okno otevrene
+        if (waitWnd.HWindow != NULL)   // only if the window is open
         {
-          // zdanlive zbytecne volani 2 x SetWindowPos, ale jinak bohuzel zustane okenko
-          // uplne dole (sice nad desktopem, ale jinak pod vsemi dalsimi okny)
+          // seemingly unnecessary call to SetWindowPos twice, but otherwise the window remains
+          // at the very bottom (above the desktop, but below all other windows)
 
-          // Zobrazit okno je nutne az v druhe operaci,
-          // protoze zmena Z-orderu behem zobrazeneho okna znamena, ze okno prijde
-          // o cache bitmapu (ma vastaven CS_SAVEBITS) a vyvola po svem zavreni
-          // repaint okna pod sebou.
+          // Displaying the window is necessary only in the second operation,
+          // because changing the Z-order during a displayed window means that the window loses
+          // its cached bitmap (it has CS_SAVEBITS set) and triggers a repaint of the window below it
+          // after it is closed.
 
           BOOL visible = IsWindowVisible(waitWnd.HWindow);
           SetWindowPos(waitWnd.HWindow, HWND_TOPMOST, 0, 0, 0, 0,
@@ -392,27 +391,26 @@ void ThreadSafeWaitWindowFBody(BOOL showCloseButton)
                        visible ? SWP_SHOWWINDOW : 0 | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
         }
         break;
-      }
-*/
+      }*/
         case WM_USER_DESTROYWAITWND:
         {
             if (timer != 0)
             {
-                // zabijeme timer
+                // kill the timer
                 KillTimer(NULL, timer);
-                // vycistime message-queue od pripadnych WM_TIMER
+                // clean the message queue from any WM_TIMER messages
                 MSG msg2;
                 while (PeekMessage(&msg2, NULL, WM_TIMER, WM_TIMER, PM_REMOVE))
                     ;
                 timer = 0;
             }
-            if (waitWnd.HWindow != NULL) // jen pokud je okno otevrene
+            if (waitWnd.HWindow != NULL) // only if the window is open
             {
                 DestroyWindow(waitWnd.HWindow);
                 waitWnd.HWindow = NULL;
             }
             if (msg.wParam)
-                run = FALSE; // kill threadu
+                run = FALSE; // kill the thread
             hForegroundWnd = NULL;
             break;
         }
@@ -427,7 +425,7 @@ void ThreadSafeWaitWindowFBody(BOOL showCloseButton)
     }
 
     HANDLES(DeleteCriticalSection(&SafeWaitMessageTextSection));
-    SafeWaitMessageThreadStarted = FALSE; // dobehli jsme
+    SafeWaitMessageThreadStarted = FALSE; // we finished
     if (SafeWaitMessageText != NULL)
     {
         free(SafeWaitMessageText);
@@ -454,7 +452,7 @@ void ThreadSafeWaitWindowFEH(BOOL showCloseButton)
     {
         TRACE_I("Thread SafeWaitWindow: calling ExitProcess(1).");
         //    ExitProcess(1);
-        TerminateProcess(GetCurrentProcess(), 1); // tvrdsi exit (tenhle jeste neco vola)
+        TerminateProcess(GetCurrentProcess(), 1); // tvrdší exit (this one still calls something)
     }
 #endif // CALLSTK_DISABLE
 }
@@ -472,13 +470,13 @@ void CreateSafeWaitWindow(const char* message, const char* caption,
                           int delay, BOOL showCloseButton, HWND hForegroundWnd)
 {
     HANDLES(EnterCriticalSection(&SafeWaitMessageCallerSetSection.cs));
-    if (!SafeWaitMessageCallerSet) // jen jedna message (test na "volnost")
+    if (!SafeWaitMessageCallerSet) // only one message (test for "freedom")
     {
         SafeWaitMessageCallerSet = TRUE;
         HANDLES(LeaveCriticalSection(&SafeWaitMessageCallerSetSection.cs));
         SafeWaitWindowClosePressed = FALSE;
         SafeWaitMessageCallerID = GetCurrentThreadId();
-        if (!SafeWaitMessageThreadStarted) // thread neni nastartovany
+        if (!SafeWaitMessageThreadStarted) // thread is not started
         {
             HANDLE thread = HANDLES(CreateThread(NULL, 0, ThreadSafeWaitWindowF,
                                                  (void*)(UINT_PTR)showCloseButton, 0, &SafeWaitMessageThreadID));
@@ -487,7 +485,7 @@ void CreateSafeWaitWindow(const char* message, const char* caption,
                 TRACE_E("Unable to start ThreadSafeWaitWindow thread.");
                 return;
             }
-            SetThreadPriority(thread, THREAD_PRIORITY_ABOVE_NORMAL); // aby se vubec capnul proti hl. threadu
+            SetThreadPriority(thread, THREAD_PRIORITY_ABOVE_NORMAL); // to even catch up with the main thread
             AddAuxThread(thread);
             HANDLES(InitializeCriticalSection(&SafeWaitMessageTextSection));
             SafeWaitMessageThreadStarted = TRUE;
@@ -505,13 +503,13 @@ void CreateSafeWaitWindow(const char* message, const char* caption,
         while (PostThreadMessage(SafeWaitMessageThreadID, WM_USER_CREATEWAITWND, (WPARAM)hForegroundWnd, delay) == 0)
         {
             if (GetLastError() == ERROR_INVALID_THREAD_ID)
-                Sleep(100); // jeste se nenahodil, pockame
+                Sleep(100); // He hasn't arrived yet, let's wait
             else
-                break; // jina chyba
+                break; // other error
         }
     }
     else
-    { // muze se stat - staci aby interni viewer vyhledaval a preplo se do mainwindow, zkusi nahodit dalsi safe-wait-wnd a hlaska je na svete
+    { // It can happen - just have the internal viewer search and switch to the main window, try to bring up another safe-wait-wnd and the message is out there
         HANDLES(LeaveCriticalSection(&SafeWaitMessageCallerSetSection.cs));
         TRACE_I("Incorrect call to CreateSafeWaitWindow() from " << (SafeWaitMessageCallerID == GetCurrentThreadId() ? "owner" : "strange") << " thread");
     }
@@ -520,21 +518,21 @@ void CreateSafeWaitWindow(const char* message, const char* caption,
 void DestroySafeWaitWindow(BOOL killThread)
 {
     HANDLES(EnterCriticalSection(&SafeWaitMessageCallerSetSection.cs));
-    if (killThread ||                                        // kill projde vsem
-        SafeWaitMessageCallerSet &&                          // okno je vytvorene
-            SafeWaitMessageCallerID == GetCurrentThreadId()) // je to thread, ktery ho otevrel
+    if (killThread ||                                        // kill will go through everyone
+        SafeWaitMessageCallerSet &&                          // Window is created
+            SafeWaitMessageCallerID == GetCurrentThreadId()) // it is the thread that opened it
     {
         SafeWaitMessageCallerSet = FALSE;
         HANDLES(LeaveCriticalSection(&SafeWaitMessageCallerSetSection.cs));
         SafeWaitMessageCallerID = 0;
 
-        if (SafeWaitMessageThreadStarted) // thread je nastartovany, schovame okno a prip. ho zrusime
+        if (SafeWaitMessageThreadStarted) // the thread is started, we will hide the window and possibly cancel it
         {
             PostThreadMessage(SafeWaitMessageThreadID, WM_USER_DESTROYWAITWND, killThread, 0);
         }
     }
     else
-    { // muze se stat - staci aby interni viewer vyhledaval a preplo se do mainwindow, zkusi nahodit dalsi safe-wait-wnd a hlaska je na svete
+    { // It can happen - just have the internal viewer search and switch to the main window, try to bring up another safe-wait-wnd and the message is out there
         HANDLES(LeaveCriticalSection(&SafeWaitMessageCallerSetSection.cs));
         TRACE_I("Incorrect call to DestroySafeWaitWindow()");
     }
@@ -543,21 +541,21 @@ void DestroySafeWaitWindow(BOOL killThread)
 BOOL GetSafeWaitWindowClosePressed()
 {
     HANDLES(EnterCriticalSection(&SafeWaitMessageCallerSetSection.cs));
-    if (SafeWaitMessageCallerSet &&                      // okno je vytvorene
-        SafeWaitMessageCallerID == GetCurrentThreadId()) // je to thread, ktery ho otevrel
+    if (SafeWaitMessageCallerSet &&                      // Window is created
+        SafeWaitMessageCallerID == GetCurrentThreadId()) // it is the thread that opened it
     {
         HANDLES(LeaveCriticalSection(&SafeWaitMessageCallerSetSection.cs));
-        if (SafeWaitMessageThreadStarted) // thread je nastartovany
+        if (SafeWaitMessageThreadStarted) // thread is started
         {
             return SafeWaitWindowClosePressed;
         }
     }
     else
         HANDLES(LeaveCriticalSection(&SafeWaitMessageCallerSetSection.cs));
-    // pokud napriklad je wait okno otevrene pro interni viewer a v panelu dojde
-    // (Ctrl+Shift+F10) k pozadavku na zobrazeni dalsiho wait okna, nove okno se neukaze
-    // zaroven vsak nesmime vratit hlavnimu threadu Salamandera TRUE pri kliknuti na Close
-    // tlacitko ve wait okne vieweru
+    // if for example the wait window is open for internal viewer and an event occurs in the panel
+    // (Ctrl+Shift+F10) to request displaying another wait window, the new window will not appear
+    // However, we must not return TRUE to the main thread Salamander when clicking on Close
+    // Button in the wait window of the viewer
     return FALSE;
 }
 
@@ -569,15 +567,15 @@ BOOL UserWantsToCancelSafeWaitWindow()
 void ShowSafeWaitWindow(BOOL show)
 {
     HANDLES(EnterCriticalSection(&SafeWaitMessageCallerSetSection.cs));
-    if (SafeWaitMessageCallerSet &&                      // okno je vytvorene
-        SafeWaitMessageCallerID == GetCurrentThreadId()) // je to thread, ktery ho otevrel
+    if (SafeWaitMessageCallerSet &&                      // Window is created
+        SafeWaitMessageCallerID == GetCurrentThreadId()) // it is the thread that opened it
     {
         HANDLES(LeaveCriticalSection(&SafeWaitMessageCallerSetSection.cs));
-        if (SafeWaitMessageThreadStarted) // thread je nastartovany, posleme prikaz k zobrazeni nebo schovani
+        if (SafeWaitMessageThreadStarted) // thread is started, let's send a command to show or hide
         {
             PostThreadMessage(SafeWaitMessageThreadID, WM_USER_SHOWWAITWND, show, 0);
-            // musime resetnout zamackle tlacitko a zde je dobre prilezitost,
-            // protoze user se zjevne o zamacknuti dozvedel (jinak by nas ted nevolal)
+            // we need to reset the stuck button and this is a good opportunity,
+            // because the user obviously found out about the malfunction (otherwise he wouldn't be calling us now)
             SafeWaitWindowClosePressed = FALSE;
         }
     }
@@ -588,11 +586,11 @@ void ShowSafeWaitWindow(BOOL show)
 void SetSafeWaitWindowText(const char* message)
 {
     HANDLES(EnterCriticalSection(&SafeWaitMessageCallerSetSection.cs));
-    if (SafeWaitMessageCallerSet &&                      // okno je vytvorene
-        SafeWaitMessageCallerID == GetCurrentThreadId()) // je to thread, ktery ho otevrel
+    if (SafeWaitMessageCallerSet &&                      // Window is created
+        SafeWaitMessageCallerID == GetCurrentThreadId()) // it is the thread that opened it
     {
         HANDLES(LeaveCriticalSection(&SafeWaitMessageCallerSetSection.cs));
-        if (SafeWaitMessageThreadStarted) // thread je nastartovany, posleme prikaz k zobrazeni nebo schovani
+        if (SafeWaitMessageThreadStarted) // thread is started, let's send a command to show or hide
         {
             HANDLES(EnterCriticalSection(&SafeWaitMessageTextSection));
             if (SafeWaitMessageText != NULL)
@@ -610,10 +608,9 @@ void SetSafeWaitWindowText(const char* message)
 
 BOOL FileExists(const char* fileName)
 {
-    /*
-  // pozor na GENERIC_READ: vracelo by FALSE pro soubory, ktere maji odejmuta vsechna prava
-  // j.r. pozor: bez GENERIC_READ (s hodnotou 0) vraci NT4 pro soubory na UNC cestach vzdy TRUE
-  // resenim by asi bylo nastavit GENERIC_READ a pres GetLastError() zjistovat, jaka chyba nastala
+    /*    // be careful with GENERIC_READ: it would return FALSE for files that have all rights removed
+  // j.r. caution: without GENERIC_READ (with a value of 0) NT4 always returns TRUE for files on UNC paths
+  // a solution would probably be to set GENERIC_READ and use GetLastError() to determine what error occurred
   HANDLE hFile = HANDLES_Q(CreateFile(fileName, 0, FILE_SHARE_READ | FILE_SHARE_WRITE,
                                       NULL, OPEN_EXISTING, 0, NULL));
   if (hFile == INVALID_HANDLE_VALUE)
@@ -624,20 +621,19 @@ BOOL FileExists(const char* fileName)
   {
     HANDLES(CloseHandle(hFile));
     return TRUE;
-  }
-  */
-    // serem na to, pojedeme pres atributy
+  }*/
+    // Forget it, we'll go through attributes
     //
-    // j.r. FIXME: probrat s Petrem; zkousel jsem odebrat souboru pravo na cteni
-    // atributu, ale SalGetFileAttributes() stejne nevraci chybu. Jak je to mozne?
+    // j.r. FIXME: discuss with Petr; I tried to remove the file read permission
+    // of the attribute, but SalGetFileAttributes() still does not return an error. How is that possible?
     DWORD attr = SalGetFileAttributes(fileName);
     return (attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY) == 0);
 }
 
 BOOL DirExists(const char* dirName)
 {
-    // j.r. FIXME: probrat s Petrem; zkousel jsem odebrat souboru pravo na cteni
-    // atributu, ale SalGetFileAttributes() stejne nevraci chybu. Jak je to mozne?
+    // j.r. FIXME: discuss with Petr; I tried to remove the file read permission
+    // of the attribute, but SalGetFileAttributes() still does not return an error. How is that possible?
     DWORD attr = SalGetFileAttributes(dirName);
     return (attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY) != 0);
 }
@@ -676,7 +672,7 @@ BOOL DoExpandVarString(HWND msgParent, const char* varText, BOOL validateOnly, i
             if (*++s != 0)
             {
                 const char* value;
-                DWORD valueOutLen = 0; // vystupni sirka promenne (0 = normalni sirka)
+                DWORD valueOutLen = 0; // output width of the variable (0 = normal width)
                 BOOL detectMax = FALSE;
                 switch (*s)
                 {
@@ -709,7 +705,7 @@ BOOL DoExpandVarString(HWND msgParent, const char* varText, BOOL validateOnly, i
                     else
                     {
                         int varLen = (int)(s - var);
-                        // podivam se po sirce promenne
+                        // look for the width of the variable
                         const char* s2 = var;
                         int varWidth = 0;
                         while (s2 < s)
@@ -729,7 +725,7 @@ BOOL DoExpandVarString(HWND msgParent, const char* varText, BOOL validateOnly, i
                                             const char* s3 = s2;
                                             while (s3 < s && *s3 >= '0' && *s3 <= '9')
                                                 s3++;
-                                            if (s3 == s) // sama cisla
+                                            if (s3 == s) // only numbers
                                             {
                                                 char widthBuff[5];
                                                 lstrcpyn(widthBuff, s2, tmpLen + 1);
@@ -754,7 +750,7 @@ BOOL DoExpandVarString(HWND msgParent, const char* varText, BOOL validateOnly, i
                                     }
                                     else
                                     {
-                                        if (!validateOnly && validMax && !detectMax) // faze pouzivani predpocitanych hodnot
+                                        if (!validateOnly && validMax && !detectMax) // phase of using precomputed values
                                         {
                                             if (currentMaxVarIndex < maxVarWidthsCount)
                                             {
@@ -766,7 +762,7 @@ BOOL DoExpandVarString(HWND msgParent, const char* varText, BOOL validateOnly, i
                                         }
                                         if (validNum)
                                             valueOutLen = varWidth;
-                                        varLen -= (int)(s - s2) + 1; // dvojtecka a sirka promenne
+                                        varLen -= (int)(s - s2) + 1; // colon and width of variable
                                     }
                                     break;
                                 }
@@ -877,15 +873,14 @@ BOOL DoExpandVarString(HWND msgParent, const char* varText, BOOL validateOnly, i
                                         params.Caption = LoadStr(IDS_ERRORTITLE);
                                         params.Text = text;
                                         char aliasBtnNames[100];
-                                        /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   nechame pro tlacitka msgboxu resit kolize hotkeys tim, ze simulujeme, ze jde o menu
+                                        /* used for the export_mnu.py script, which generates the salmenu.mnu for the Translator
+we will let the collision of hotkeys for the message box buttons be solved by simulating that it is a menu
 MENU_TEMPLATE_ITEM MsgBoxButtons[] = 
 {
   {MNTT_PB, 0
   {MNTT_IT, IDS_BUTTON_IGNORE
   {MNTT_PE, 0
-};
-*/
+};*/
                                         sprintf(aliasBtnNames, "%d\t%s", DIALOG_OK, LoadStr(IDS_BUTTON_IGNORE));
                                         params.AliasBtnNames = aliasBtnNames;
                                         if (SalMessageBoxEx(&params) == DIALOG_CANCEL)
@@ -938,7 +933,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                     if (buffer != NULL)
                     {
                         int totalLen = (valueOutLen > 0) ? valueOutLen : len;
-                        if (out + totalLen + 1 <= outEnd) // musi to jit taky null-terminovat
+                        if (out + totalLen + 1 <= outEnd) // It must also be null-terminated
                         {
                             if (varPlacementIndex < varPlacementIndexCount)
                             {
@@ -992,7 +987,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
             if (!validateOnly && buffer != NULL)
             {
                 if (out + 2 <= outEnd)
-                    *out++ = *s; // musi to jit taky null-terminovat
+                    *out++ = *s; // It must also be null-terminated
                 else
                 {
                     const char* text = LoadStr(IDS_EXP_SMALLBUFFER);
@@ -1070,7 +1065,7 @@ CQuadWord MyGetDiskFreeSpace(const char* path, CQuadWord* total)
     SalPathAddBackslash(ourPath, MAX_PATH + 200);
     if (GetDiskFreeSpaceEx(ourPath, &availBytes, &totalBytes, &freeBytes))
     {
-        ret.Value = (unsigned __int64)availBytes /*freeBytes*/.QuadPart; // availBytes misto freeBytes jsem dal proto, ze Jan Kobr <jan.kobr@pvk.cz> reportil, ze mu hlasime 35GB misto 2GB volneho mista (slo o Novellsky sitovy disk s kvotami pod XP)
+        ret.Value = (unsigned __int64)availBytes /*freeBytes*/.QuadPart; // I used availBytes instead of freeBytes because Jan Kobr <jan.kobr@pvk.cz> reported that we were reporting 35GB instead of 2GB of free space (it was a Novell network disk with quotas under XP)
         if (total != NULL)
             total->Value = (unsigned __int64)totalBytes.QuadPart;
     }
@@ -1084,7 +1079,7 @@ CQuadWord MyGetDiskFreeSpace(const char* path, CQuadWord* total)
                 *total = CQuadWord(a, 0) * CQuadWord(b, 0) * CQuadWord(d, 0);
         }
         else
-            ret = CQuadWord(-1, -1); // error, nezobrazovat
+            ret = CQuadWord(-1, -1); // error, do not display
     }
     return ret;
 }
@@ -1112,7 +1107,7 @@ BOOL IsUNCPath(const char* path)
             if (end == NULL)
                 end = share + strlen(share);
             if (end - path + 1 < MAX_PATH)
-                return TRUE; // nad MAX_PATH uz by to 100% nebyla UNC root cesta (+1 za koncovy backslash)
+                return TRUE; // above MAX_PATH it wouldn't be a UNC root path anymore (+1 for the trailing backslash)
         }
     }
     return FALSE;
@@ -1121,7 +1116,7 @@ BOOL IsUNCPath(const char* path)
 BOOL IsUNCRootPath(const char* path)
 {
     if (path[0] == '\\' && path[1] == '\\' && path[2] != '?' &&
-        (path[2] != '.' || path[3] != '\\' || path[4] == 0 || path[5] != ':')) // nejde o cesty typu "\\.\C:\"
+        (path[2] != '.' || path[3] != '\\' || path[4] == 0 || path[5] != ':')) // It's not about paths like "\\.\C:\"
     {
         const char* s = path + 2;
         while (*s != 0 && *s != '\\')
@@ -1151,7 +1146,7 @@ BOOL ResolveSubsts(char* resPath)
             break;
         }
         char tgt[MAX_PATH];
-        if (GetSubstInformation(LowerCase[resPath[0]] - 'a', tgt, MAX_PATH) && tgt[0] != '\\' /* mapovany sitovy disky resime jinde */)
+        if (GetSubstInformation(LowerCase[resPath[0]] - 'a', tgt, MAX_PATH) && tgt[0] != '\\' /* network mapped drives are handled elsewhere*/)
         {
             if (!SalPathAppend(tgt, resPath + 2, MAX_PATH))
             {
@@ -1194,7 +1189,7 @@ void ResolveLocalPathWithReparsePoints(char* resPath, const char* path, BOOL* cu
                     GetRootPath(resPath, path);
                     ResolveSubsts(resPath);
                     GetRootPath(rootOrCurReparsePoint, path);
-                    if (strlen(resPath) < strlen(repPointPath)) // pokud cesta k aktualnimu reparse pointu je delsi nez cesta vznikla resolvnutim substu, musime tuto cast cesty pridat za root substu
+                    if (strlen(resPath) < strlen(repPointPath)) // if the path to the current reparse point is longer than the path created by resolving the subst, we need to append this part of the path after the root subst
                     {
                         if (_strnicmp(resPath, repPointPath, strlen(resPath)) == 0) // always true
                         {
@@ -1219,7 +1214,7 @@ void ResolveLocalPathWithReparsePoints(char* resPath, const char* path, BOOL* cu
                     TRACE_E("ResolveLocalPathWithReparsePoints(): too long path");
                 int repPointType;
                 BOOL getRepPointDestRes = GetReparsePointDestination(repPointPath, repPointPath, MAX_PATH, &repPointType, TRUE);
-                if (getRepPointDestRes && (repPointType == 2 /* JUNCTION POINT */ || repPointType == 3 /* SYMBOLIC LINK */))
+                if (getRepPointDestRes && (repPointType == 2 /* JUNCTION POINT*/ || repPointType == 3 /* SYMBOLIC LINK*/))
                 {
                     if (firstRepPoint)
                     {
@@ -1232,21 +1227,21 @@ void ResolveLocalPathWithReparsePoints(char* resPath, const char* path, BOOL* cu
                 }
                 firstRepPoint = FALSE;
                 UINT drvType = getRepPointDestRes && repPointPath[0] != 0 && repPointPath[1] == ':' ? GetDriveTypeForDriveLetterPath(repPointPath) : DRIVE_UNKNOWN;
-                if (getRepPointDestRes && (IsUNCPath(repPointPath) || drvType == DRIVE_REMOTE)) // symlink na UNC nebo na mapovanou sitovou cestu (je az ve Viste)
-                {                                                                               // reparse pointy ma smysl hledat jen na fixed discich, takze koncime (sitove cesty jsou problem, protoze jejich reparse pointy budou vracet "lokalni cesty" (C:\...), ktere pokud se pouziji na tomto stroji (misto vzdaleneho, odkud jsou) povedou k nesmyslnym vysledkum)
+                if (getRepPointDestRes && (IsUNCPath(repPointPath) || drvType == DRIVE_REMOTE)) // symlink to a UNC or a mapped network path (available in Vista onwards)
+                {                                                                               // Reparse points make sense to search only on fixed disks, so we are finishing (network paths are a problem because their reparse points will return "local paths" (C:\...), which if used on this machine (instead of the remote one they are from) will lead to nonsensical results)
                     if (netPath != NULL)
                         lstrcpyn(netPath, repPointPath, MAX_PATH);
                     GetRootPath(resPath, repPointPath);
                     break;
                 }
                 if (!getRepPointDestRes || repPointPath[0] == 0 || repPointPath[1] != ':')
-                { // neznamy reparse point nebo volume mount point, kazdopadne ho nebudeme prochazet, at se snazi system + nesmi zkratit cestu, jinak muze jit o jiny svazek
+                { // unknown reparse point or volume mount point, in any case we will not traverse it, let the system try + must not shorten the path, otherwise it may be a different volume
                     *cutResPathIsPossible = FALSE;
                     break;
                 }
-                if (allowedDepth-- == 0) // vypada to na nekonecny cyklus
+                if (allowedDepth-- == 0) // Looks like an infinite loop
                 {
-                    lstrcpyn(resPath, path, MAX_PATH); // nechame system, at si s tim poradi sam
+                    lstrcpyn(resPath, path, MAX_PATH); // Let the system handle it on its own
                     ResolveSubsts(resPath);
                     if (!SalPathAddBackslash(resPath, MAX_PATH))
                         TRACE_E("ResolveLocalPathWithReparsePoints(): too long path");
@@ -1255,7 +1250,7 @@ void ResolveLocalPathWithReparsePoints(char* resPath, const char* path, BOOL* cu
                     if (junctionOrSymlinkTgt != NULL)
                         *junctionOrSymlinkTgt = 0;
                     if (linkType != NULL)
-                        *linkType = 0 /* UNKNOWN */;
+                        *linkType = 0 /* UNKNOWN*/;
                     break;
                 }
                 lstrcpyn(resPath, repPointPath, MAX_PATH);
@@ -1265,7 +1260,7 @@ void ResolveLocalPathWithReparsePoints(char* resPath, const char* path, BOOL* cu
                     break;
                 }
                 if (drvType != DRIVE_FIXED)
-                    break; // reparse pointy ma smysl hledat jen na fixed discich
+                    break; // It makes sense to search for reparse points only on fixed disks
             }
         }
     }
@@ -1281,9 +1276,9 @@ BOOL MyGetDiskFreeSpace(const char* path, LPDWORD lpSectorsPerCluster,
     lstrcpyn(resPath, path, MAX_PATH);
     ResolveSubsts(resPath);
     GetRootPath(ourPath, resPath);
-    if (!IsUNCPath(ourPath) && GetDriveType(ourPath) == DRIVE_FIXED) // reparse pointy ma smysl hledat jen na fixed discich
-    {                                                                // jdeme postupne zkouset zkracovat cestu, na mountenem adresari umi vratit parametry namounteneho disku
-        // pokud nejde o root cestu, zkusime jeste traverzovat po reparse pointech
+    if (!IsUNCPath(ourPath) && GetDriveType(ourPath) == DRIVE_FIXED) // It makes sense to search for reparse points only on fixed disks
+    {                                                                // we are gradually trying to shorten the path, in the mounted directory it can return the parameters of the mounted disk
+        // if it's not the root path, we will try to traverse through reparse points
         BOOL cutPathIsPossible = TRUE;
         ResolveLocalPathWithReparsePoints(ourPath, path, &cutPathIsPossible, NULL, NULL, NULL, NULL, NULL);
 
@@ -1291,7 +1286,7 @@ BOOL MyGetDiskFreeSpace(const char* path, LPDWORD lpSectorsPerCluster,
                                  lpNumberOfFreeClusters, lpTotalNumberOfClusters))
         {
             if (!cutPathIsPossible || !CutDirectory(ourPath))
-                return FALSE; // nesmime rezat nebo ani root nevratil uspech, koncime s chybou
+                return FALSE; // We must not cut or even root did not return success, we end with an error
             SalPathAddBackslash(ourPath, MAX_PATH);
         }
         return TRUE;
@@ -1318,9 +1313,9 @@ BOOL MyGetVolumeInformation(const char* path, char* rootOrCurReparsePoint, char*
     lstrcpyn(resPath, path, MAX_PATH);
     ResolveSubsts(resPath);
     GetRootPath(ourPath, resPath);
-    if (!IsUNCPath(ourPath) && GetDriveType(ourPath) == DRIVE_FIXED) // reparse pointy ma smysl hledat jen na fixed discich
-    {                                                                // jdeme postupne zkouset zkracovat cestu, na mountenem adresari umi vratit parametry namounteneho disku
-        // pokud nejde o root cestu, zkusime jeste traverzovat po reparse pointech
+    if (!IsUNCPath(ourPath) && GetDriveType(ourPath) == DRIVE_FIXED) // It makes sense to search for reparse points only on fixed disks
+    {                                                                // we are gradually trying to shorten the path, in the mounted directory it can return the parameters of the mounted disk
+        // if it's not the root path, we will try to traverse through reparse points
         BOOL rootOrCurReparsePointSet = FALSE;
         BOOL cutPathIsPossible = TRUE;
         ResolveLocalPathWithReparsePoints(ourPath, path, &cutPathIsPossible, &rootOrCurReparsePointSet,
@@ -1333,17 +1328,17 @@ BOOL MyGetVolumeInformation(const char* path, char* rootOrCurReparsePoint, char*
         {
             if (!cutPathIsPossible || !CutDirectory(ourPath))
             {
-                ret = FALSE; // nesmime rezat nebo ani root nevratil uspech, koncime s chybou
+                ret = FALSE; // We must not cut or even root did not return success, we end with an error
                 break;
             }
             SalPathAddBackslash(ourPath, MAX_PATH);
         }
         if (!rootOrCurReparsePointSet && rootOrCurReparsePoint != NULL)
-        { // ourPath je ResolveSubsts(path) nebo zkracena verze ResolveSubsts(path)
+        { // ourPath is ResolveSubsts(path) or a shortened version of ResolveSubsts(path)
             GetRootPath(resPath, path);
             ResolveSubsts(resPath);
             GetRootPath(rootOrCurReparsePoint, path);
-            if (strlen(resPath) < strlen(ourPath)) // pokud cesta, pro kterou vracime volume-info je delsi nez cesta vznikla resolvnutim substu, musime tuto cast cesty pridat za root substu
+            if (strlen(resPath) < strlen(ourPath)) // if the path for which we return volume-info is longer than the path created by resolving the subst, we must add this part of the path after the root subst
             {
                 if (_strnicmp(resPath, ourPath, strlen(resPath)) == 0) // always true
                 {
@@ -1363,7 +1358,7 @@ BOOL MyGetVolumeInformation(const char* path, char* rootOrCurReparsePoint, char*
             }
             int l = (int)strlen(rootOrCurReparsePoint);
             if (l > 3 && rootOrCurReparsePoint[l - 1] == '\\')
-                rootOrCurReparsePoint[l - 1] = 0; // krom "c:\" zrusime koncovy backslash
+                rootOrCurReparsePoint[l - 1] = 0; // Except for "c:\" we will remove the trailing backslash
         }
     }
     else
@@ -1377,7 +1372,7 @@ BOOL MyGetVolumeInformation(const char* path, char* rootOrCurReparsePoint, char*
             GetRootPath(rootOrCurReparsePoint, path);
             int l = (int)strlen(rootOrCurReparsePoint);
             if (l > 3 && rootOrCurReparsePoint[l - 1] == '\\')
-                rootOrCurReparsePoint[l - 1] = 0; // krom "c:\" zrusime koncovy backslash
+                rootOrCurReparsePoint[l - 1] = 0; // Except for "c:\" we will remove the trailing backslash
         }
     }
     return ret;
@@ -1406,10 +1401,10 @@ BOOL GetReparsePointDestination(const char* repPointDir, char* repPointDstBuf, D
                                 int* repPointType, BOOL makeRelPathAbs)
 {
     if (repPointType != NULL)
-        *repPointType = 0 /* UNKNOWN */;
+        *repPointType = 0 /* UNKNOWN*/;
 
-    // pokud cesta konci mezerou/teckou, musime pripojit '\\', jinak GetFileAttributes
-    // i CreateFile mezery/tecky orizne a pracuje tak s jinou cestou
+    // if the path ends with a space/dot, we need to append '\\', otherwise GetFileAttributes
+    // i CreateFile trims spaces/dots and thus works with a different path
     const char* repPointDirCrFile = repPointDir;
     char repPointDirCrFileCopy[3 * MAX_PATH];
     MakeCopyWithBackslashIfNeeded(repPointDirCrFile, repPointDirCrFileCopy);
@@ -1452,17 +1447,17 @@ BOOL GetReparsePointDestination(const char* repPointDir, char* repPointDstBuf, D
                   min(juncData->SubstituteNameLength / sizeof(WCHAR) + 1, 1000));
         lstrcpynW(printName, (WCHAR*)((char*)juncData->PathBuffer + juncData->PrintNameOffset),
                   min(juncData->PrintNameLength / sizeof(WCHAR) + 1, 1000));
-        myType = _wcsnicmp(substName, L"\\??\\Volume", 10) == 0 ? 1 /* MOUNT POINT */ : 2 /* JUNCTION POINT */;
+        myType = _wcsnicmp(substName, L"\\??\\Volume", 10) == 0 ? 1 /* MOUNT POINT*/ : 2 /* JUNCTION POINT*/;
     }
     else
     {
         if (juncData->ReparseTag == IO_REPARSE_TAG_SYMLINK)
         {
-            lstrcpynW(substName, (WCHAR*)((char*)juncData->PathBuffer + 4 /* ULONG Flags */ + juncData->SubstituteNameOffset),
+            lstrcpynW(substName, (WCHAR*)((char*)juncData->PathBuffer + 4 /* ULONG Flags*/ + juncData->SubstituteNameOffset),
                       min(juncData->SubstituteNameLength / sizeof(WCHAR) + 1, 1000));
-            lstrcpynW(printName, (WCHAR*)((char*)juncData->PathBuffer + 4 /* ULONG Flags */ + juncData->PrintNameOffset),
+            lstrcpynW(printName, (WCHAR*)((char*)juncData->PathBuffer + 4 /* ULONG Flags*/ + juncData->PrintNameOffset),
                       min(juncData->PrintNameLength / sizeof(WCHAR) + 1, 1000));
-            myType = 3 /* SYMBOLIC LINK */;
+            myType = 3 /* SYMBOLIC LINK*/;
         }
         else
         {
@@ -1479,23 +1474,23 @@ BOOL GetReparsePointDestination(const char* repPointDir, char* repPointDstBuf, D
         {
             s = substName;
             if (_wcsnicmp(s, L"\\??\\", 4) == 0)
-                s = substName + 4; // preskocime "\\??\\" v substName
+                s = substName + 4; // skip "\\??\\" in substName
         }
-        if (myType == 2 /* JUNCTION POINT */ && (*s == 0 || *(s + 1) != L':' || *(s + 2) != L'\\'))
+        if (myType == 2 /* JUNCTION POINT*/ && (*s == 0 || *(s + 1) != L':' || *(s + 2) != L'\\'))
         {
             TRACE_E("GetReparsePointDestination(): Unexpected format of junction point (relative path): " << repPointDir);
             return FALSE;
         }
         WCHAR symlinkAbsPath[1000];
-        if (makeRelPathAbs && myType == 3 /* SYMBOLIC LINK */ &&
+        if (makeRelPathAbs && myType == 3 /* SYMBOLIC LINK*/ &&
             !(*s != 0 && *(s + 1) == L':' && *(s + 2) == L'\\' || *s == L'\\' && *(s + 1) == L'\\'))
-        { // symlink je relativni, zkusime prevest na absolutni cestu
+        { // symlink is relative, let's try to convert it to an absolute path
             if (repPointDir[0] == 0 || repPointDir[1] != ':')
             {
                 TRACE_E("GetReparsePointDestination(): Unexpected format of symbolic link name (it is not a local path): " << repPointDir);
                 return FALSE;
             }
-            symlinkAbsPath[0] = (WCHAR)(unsigned char)repPointDir[0]; // trochu prasarna (vyuzivame, ze 'a-zA-Z' se prevadi do Unicodu 1:1)
+            symlinkAbsPath[0] = (WCHAR)(unsigned char)repPointDir[0]; // a bit of a hack (taking advantage of the fact that 'a-zA-Z' converts to Unicode 1:1)
             symlinkAbsPath[1] = L':';
             if (*s == L'\\')
                 lstrcpynW(symlinkAbsPath + 2, s, 1000 - 2);
@@ -1521,7 +1516,7 @@ BOOL GetReparsePointDestination(const char* repPointDir, char* repPointDstBuf, D
             }
             s = symlinkAbsPath;
         }
-        if (myType == 3 /* SYMBOLIC LINK */ && *s != 0 && *(s + 1) == L':' && *(s + 2) == L'\\')
+        if (myType == 3 /* SYMBOLIC LINK*/ && *s != 0 && *(s + 1) == L':' && *(s + 2) == L'\\')
             SalRemovePointsFromPath(s + 3);
         if (WideCharToMultiByte(CP_ACP, 0, s, -1, repPointDstBuf, repPointDstBufSize, NULL, NULL) == 0)
         {
@@ -1548,15 +1543,15 @@ BOOL GetCurrentLocalReparsePoint(const char* path, char* currentReparsePoint, BO
     }
     else
     {
-        // projedu reparse pointy od zacatku cesty az do konce nebo do prvniho symlinku vedouciho na sitovou cestu
+        // Iterate through reparse points from the beginning of the path to the end or until the first symlink leading to a network path
         char repPointPath[MAX_PATH];
-        char* end = (char*)SkipRoot(currentReparsePoint) + 1; // currentReparsePoint vzdy konci backslashem
+        char* end = (char*)SkipRoot(currentReparsePoint) + 1; // currentReparsePoint always ends with a backslash
         char* lastRepPointEnd = NULL;
         while (1)
         {
             end = strchr(end, '\\');
             if (end == NULL)
-                break; // to byla posledni komponenta cesty, koncime
+                break; // That was the last component of the path, we are finishing
             end++;
             char backup = *end;
             *end = 0;
@@ -1565,7 +1560,7 @@ BOOL GetCurrentLocalReparsePoint(const char* path, char* currentReparsePoint, BO
                 lastRepPointEnd = end;
                 if (IsUNCPath(repPointPath) ||
                     repPointPath[0] != 0 && repPointPath[1] == ':' &&
-                        GetDriveTypeForDriveLetterPath(repPointPath) == DRIVE_REMOTE) // symlink na UNC nebo na mapovanou sitovou cestu (je az ve Viste)
+                        GetDriveTypeForDriveLetterPath(repPointPath) == DRIVE_REMOTE) // symlink to a UNC or a mapped network path (available in Vista onwards)
                 {
                     break;
                 }
@@ -1575,7 +1570,7 @@ BOOL GetCurrentLocalReparsePoint(const char* path, char* currentReparsePoint, BO
         if (lastRepPointEnd != NULL)
             *lastRepPointEnd = 0;
         else
-            ret = FALSE; // nenasli jsme zadny reparse point
+            ret = FALSE; // We did not find any reparse point
     }
     if (!ret)
         GetRootPath(currentReparsePoint, path);
@@ -1593,16 +1588,16 @@ UINT MyGetDriveType(const char* path)
     if (!IsUNCPath(ourPath))
     {
         UINT drvType = GetDriveType(ourPath);
-        if (drvType == DRIVE_FIXED) // reparse pointy ma smysl hledat jen na fixed discich
-        {                           // jdeme postupne zkouset zkracovat cestu, na mountenem adresari umi vratit parametry namounteneho disku
-            // pokud nejde o root cestu, zkusime jeste traverzovat po reparse pointech
+        if (drvType == DRIVE_FIXED) // It makes sense to search for reparse points only on fixed disks
+        {                           // we are gradually trying to shorten the path, in the mounted directory it can return the parameters of the mounted disk
+            // if it's not the root path, we will try to traverse through reparse points
             BOOL cutPathIsPossible = TRUE;
             ResolveLocalPathWithReparsePoints(ourPath, path, &cutPathIsPossible, NULL, NULL, NULL, NULL, NULL);
 
             while ((ret = GetDriveType(ourPath)) == DRIVE_UNKNOWN)
-            { // POZOR: lisi se od MyGetVolumeInformation tim, ze GetDriveType vraci uspech pro jakoukoliv cestu (nejen root + mounted-volume)
+            { // WARNING: Differs from MyGetVolumeInformation in that GetDriveType returns success for any path (not just root + mounted-volume)
                 if (!cutPathIsPossible || !CutDirectory(ourPath))
-                    break; // nesmime rezat nebo ani root nevratil uspech, koncime s chybou
+                    break; // We must not cut or even root did not return success, we end with an error
                 SalPathAddBackslash(ourPath, MAX_PATH);
             }
         }
@@ -1634,10 +1629,10 @@ BOOL GetSubstInformation(BYTE driveNum, char* path, int pathMax)
     if (MyQueryDosDevice(driveNum, target, MAX_PATH))
     {
         //  A (floppy)                          \Device\Floppy0
-        //  C (pevny disk)                      \Device\HarddiskVolume1
-        //  D (pevny disk)                      \Device\HarddiskVolume2
+        //  C (hard disk)                      \Device\HarddiskVolume1
+        //  D (hard disk)                      \Device\HarddiskVolume2
         //  U -> V:                             \??\V:
-        //  V (mapovany \\drak\share)           \Device\LanmanRedirector\;V:00000000000fdf1\drak\share
+        //  V (mapped \\drak\share)           \Device\LanmanRedirector\;V:00000000000fdf1\drak\share
         //  W -> \\drak\share:                  \??\UNC\drak\share
         //  X -> D:                             \??\D:
         //  Y -> C:\Windows                     \??\C:\Windows
@@ -1676,60 +1671,60 @@ void GetMessagePos(POINT& p)
 //
 // ****************************************************************************
 // AlterFileName
-//  - meni format jmena souboru (velikost pismen)
+//  - changes the file name format (letter case)
 //
-//   tgtName - buffer pro vysledek (min stejne veliky jako filename)
+//   tgtName - buffer for the result (at least the same size as filename)
 //
-//   filename - vstupni jmeno souboru
-//   filenameLen - delka retezce filename; pokud je -1, funkce si ji urci sama
-//                 optimalizace pro CFilesWindow::RefreshListBox(), ktera tuto
-//                 funkci vola masivne; v nahodilich pripadech je -1 postacujici
+//   filename - input file name
+//   filenameLen - length of the filename string; if it is -1, the function will determine it automatically
+//                 optimization for CFilesWindow::RefreshListBox(), which
+//                 the function is called extensively; in random cases, -1 is sufficient
 //
-//   format - 1 - velka pocatecni pismena slov
-//            2 - komplet mala pismena
-//            3 - komplet velka pismena
-//            4 - beze zmen
-//            5 - pokud je DOS jmeno (8.3) -> velka pocatecni pismena slov
-//            6 - soubor malymi, adresar velkymi pismeny
-//            7 - velka pocatecni pismena ve jmene a mala pismena v pripone
+//   format - 1 - capitalize the first letter of each word
+//            2 - all lowercase
+//            3 - all capital letters
+//            4 - without changes
+//            5 - if it is a DOS name (8.3) -> capitalize the initial letters of words
+//            6 - file in lowercase, directory in uppercase letters
+//            7 - capital letters at the beginning of the name and lowercase letters in the extension
 //
-//   change - 0 - meni jmeno i priponu
-//            1 - meni jen jmeno  (mozne jen s format == 1, 2, 3, 4)
-//            2 - meni jen priponu  (mozne jen s format == 1, 2, 3, 4)
+//   change - 0 - changes the name and extension
+//            1 - changes only the name (possible only with format == 1, 2, 3, 4)
+//            2 - changes only the extension (possible only with format == 1, 2, 3, 4)
 //
-//   dir    - jde o adresar?
+//   dir    - is it a directory?
 
 void AlterFileName(char* tgtName, char* filename, int filenameLen, int format, int change, BOOL dir)
 {
-    // j.r. makro jsem zakazal, protoze AlterFileName se masivne vola z RefreshListBox()
+    // Disabled the j.r. macro because AlterFileName is heavily called from RefreshListBox()
     CALL_STACK_MESSAGE_NONE
     //  CALL_STACK_MESSAGE6("AlterFileName(, %s, %d, %d, %d, %d)", filename, filenameLen, format, change, dir);
     if (format == 6)
-        format = dir ? 3 : 2; // VC styl zobrazeni
+        format = dir ? 3 : 2; // Display style in VC
     if (format == 7 && change != 0)
-        format = (change == 1) ? 1 : 2; // prevod na mixed/lower case
+        format = (change == 1) ? 1 : 2; // Convert to mixed/lower case
 
-    char* ext = NULL; // ukazuje za posledni tecku nebo je NULL (nema priponu)
+    char* ext = NULL; // points to the last dot or is NULL (has no extension)
     if (change != 0 && format != 5 && format != 7)
     {
         char* s = filename;
-        while (*s != 0) // hledani posledni tecky (pripony souboru)
+        while (*s != 0) // finding the last dot (file extensions)
             if (*s++ == '.')
                 ext = s;
         //  if (ext != NULL && ext <= filename + 1) ext = NULL;  // ".cvspass" ve Windows je pripona ..
-        if (change == 1) // meni jen jmeno
+        if (change == 1) // only changes the name
         {
             if (ext != NULL)
-                *(ext - 1) = 0; // prepisem '.' koncem stringu (0)
+                *(ext - 1) = 0; // Replace '.' with end of string (0)
         }
-        else // meni jen priponu
+        else // changes only the extension
         {
-            if (ext == NULL || *ext == 0) // zadna pripona
+            if (ext == NULL || *ext == 0) // no suffix
             {
                 strcpy(tgtName, filename);
                 return;
             }
-            memmove(tgtName, filename, ext - filename); // kopie jmena + '.'
+            memmove(tgtName, filename, ext - filename); // copy of name + '.'
             tgtName += ext - filename;
             filename = ext;
         }
@@ -1825,10 +1820,10 @@ void AlterFileName(char* tgtName, char* filename, int filenameLen, int format, i
         break;
     }
 
-    case 7: // jmeno mixed case, pripona lower case
+    case 7: // name mixed case, suffix lower case
     {
         char* s = filename;
-        while (*s != 0) // hledani posledni tecky (pripony souboru)
+        while (*s != 0) // finding the last dot (file extensions)
             if (*s++ == '.')
                 ext = s;
         //    if (ext == NULL || ext <= filename + 1) ext = s;  // ".cvspass" ve Windows je pripona ...
@@ -1838,7 +1833,7 @@ void AlterFileName(char* tgtName, char* filename, int filenameLen, int format, i
         BOOL capital = TRUE;
         char* tgt = tgtName;
         char* name = filename;
-        while (name < ext) // jmeno mixed case
+        while (name < ext) // name mixed case
         {
             if (!capital)
             {
@@ -1854,7 +1849,7 @@ void AlterFileName(char* tgtName, char* filename, int filenameLen, int format, i
             }
         }
         while (*name != 0)
-            *tgt++ = LowerCase[*name++]; // pripona lower case
+            *tgt++ = LowerCase[*name++]; // lower case extension
         *tgt = 0;
         break;
     }
@@ -1869,12 +1864,12 @@ void AlterFileName(char* tgtName, char* filename, int filenameLen, int format, i
     }
     }
 
-    if (change == 1 && format != 5 && format != 7) // meni jen jmeno
+    if (change == 1 && format != 5 && format != 7) // only changes the name
     {
         if (ext != NULL)
         {
-            *--ext = '.';                            // obnova '.' v nazvu
-            strcpy(tgtName + (ext - filename), ext); // pripojime priponu
+            *--ext = '.';                            // Restore '.' in the name
+            strcpy(tgtName + (ext - filename), ext); // attach the extension
         }
     }
 }
@@ -1884,10 +1879,10 @@ void AlterFileName(char* tgtName, char* filename, int filenameLen, int format, i
 void RestoreApp(HWND mainWnd, HWND dlgWnd)
 {
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
-    EnableWindow(mainWnd, FALSE); // kvuli task listu (Alt+TAB)
+    EnableWindow(mainWnd, FALSE); // for the task list (Alt+TAB)
     if (Configuration.StatusArea)
         ShowWindow(mainWnd, SW_SHOW);
-    ShowWindow(mainWnd, SW_RESTORE); // activate minimized wnd
+    ShowWindow(mainWnd, SW_RESTORE); // activate minimized window
     SetActiveWindow(dlgWnd);
     PostMessage(mainWnd, WM_NCACTIVATE, FALSE, 0);
 }
@@ -1899,15 +1894,15 @@ void MinimizeApp(HWND mainWnd)
     ShowWindow(mainWnd, SW_MINIMIZE);
     if (Configuration.StatusArea)
         ShowWindow(mainWnd, SW_HIDE);
-    EnableWindow(mainWnd, TRUE); // kvuli task listu (Alt+TAB)
+    EnableWindow(mainWnd, TRUE); // for the task list (Alt+TAB)
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 }
 
 // ****************************************************************************
 BOOL CheckOnlyOneInstance(const CCommandLineParams* cmdLineParams)
 {
-    // :-) maly darek pro prechod na textovy config :-))))
-    // nacteme i v pripade, ze je ForceOnlyOneInstance == TRUE
+    // :-) small gift for transitioning to text config :-))))
+    // Read even if ForceOnlyOneInstance == TRUE
     LoadSaveToRegistryMutex.Enter();
     HKEY salamander;
     if (SALAMANDER_ROOT_REG != NULL &&
@@ -1930,11 +1925,10 @@ BOOL CheckOnlyOneInstance(const CCommandLineParams* cmdLineParams)
     }
     return FALSE;
 }
-/*
-BOOL CheckOnlyOneInstance(const char *leftPath, const char *rightPath, const char *activePath, BYTE activatePanel)
+/*  BOOL CheckOnlyOneInstance(const char *leftPath, const char *rightPath, const char *activePath, BYTE activatePanel)
 {
-  // :-) maly darek pro prechod na textovy config :-))))
-  // nacteme i v pripade, ze je ForceOnlyOneInstance == TRUE
+  // :-) small gift for transition to text config :-))))
+  // we load even if ForceOnlyOneInstance == TRUE
   LoadSaveToRegistryMutex.Enter();
   HKEY salamander;
   if (SALAMANDER_ROOT_REG != NULL &&
@@ -1954,48 +1948,48 @@ BOOL CheckOnlyOneInstance(const char *leftPath, const char *rightPath, const cha
   if (Configuration.ForceOnlyOneInstance || Configuration.OnlyOneInstance)
   {
     HWND wnd;
-    int c = 100;   // pockame do peti sekund na nalezeni predchudce (jeste nemusel otevrit hlavni okno)
+    int c = 100;   // wait up to five seconds to find a predecessor (main window may not have been opened yet)
     while (c--)
     {
       wnd = FindWindow(CMAINWINDOW_CLASSNAME, NULL);
       if (wnd == NULL && !FirstLocalInstance_252b1_or_later) 
         Sleep(50);
       else 
-        break; // profi optimalizace od 2.52 -- aneb proc krouzit 100x ;-)
+        break; // professional optimization from 2.52 -- why loop 100 times ;-)
     }
-    if (wnd != NULL)  // mame predchudce
+    if (wnd != NULL)  // we have a predecessor
     {
-      // povolime pouziti SetForegroundWindow, jinak se Salamander nebude schopny vytahnout nahoru
+      // allow the use of SetForegroundWindow, otherwise Salamander won't be able to bring itself up
       DWORD otherSalPID;
       GetWindowThreadProcessId(wnd, &otherSalPID);
       AllowSetForegroundWindow(otherSalPID);
 
       PostMessage(wnd, WM_USER_SHOWWINDOW, 0, 0);
 
-      // alokace sdileneho mista v pagefile.sys
-      HANDLE fm = HANDLES(CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, // FIXME_X64 nepredavame x86/x64 nekompatibilni data?
+      // allocation of shared memory in pagefile.sys
+      HANDLE fm = HANDLES(CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, // FIXME_X64 not passing x86/x64 incompatible data?
                                             sizeof(CSetPathsParams), NULL));
       if (fm != NULL)
       {
         int c = -1;
-        CSetPathsParams *params = (CSetPathsParams*)HANDLES(MapViewOfFile(fm, FILE_MAP_WRITE, 0, 0, 0)); // FIXME_X64 nepredavame x86/x64 nekompatibilni data?
+        CSetPathsParams *params = (CSetPathsParams*)HANDLES(MapViewOfFile(fm, FILE_MAP_WRITE, 0, 0, 0)); // FIXME_X64 not passing x86/x64 incompatible data?
         if (params != NULL)
         {
           ZeroMemory(params, sizeof(CSetPathsParams));
           lstrcpyn(params->LeftPath, leftPath, MAX_PATH);
-          lstrcpyn(params->RightPath, rightPath, MAX_PATH - 1); // sal starsi nez 2.52 by mohl spadnout pri ceste dlouhe MAX_PATH - 1
+          lstrcpyn(params->RightPath, rightPath, MAX_PATH - 1); // older Salamanders than 2.52 might crash with a path longer than MAX_PATH - 1
 
-          // bohuzel pri prijmu mapovane pameti nedokazeme na bajt urcit, jak je velika (pouze s granularitou na stranky pameti)
-          // takze pouzijeme "fintu" -- za strukturu pripojime signaturu, pokud ta je, jde s vysokou pravdepodobnosti o nase data
-          // a prijemce muze cist dal
+          // unfortunately, when receiving mapped memory, we cannot determine its size in bytes (only with memory page granularity)
+          // so we use a "trick" -- we append a signature to the structure, if it's there, it's very likely our data
+          // and the recipient can read on
           params->MagicSignature1 = 0x07f2ab13;
           params->MagicSignature2 = 0x471e0901;
           params->StructVersion = 1;
           lstrcpyn(params->ActivePath, activePath, MAX_PATH);
           params->ActivatePanel = activatePanel;
 
-          // nechame stary proces precist pamet a zmenit adresare
-          c = 51;  // dame mu 5 sekund
+          // let the old process read the memory and change directories
+          c = 51;  // give it 5 seconds
           while (--c)
           {
             PostMessage(wnd, WM_USER_SETPATHS, (WPARAM)GetCurrentProcessId(), (LPARAM)fm);
@@ -2007,7 +2001,7 @@ BOOL CheckOnlyOneInstance(const char *leftPath, const char *rightPath, const cha
             }
           }
 
-          // pak to zabalime
+          // then wrap it up
           HANDLES(UnmapViewOfFile(params));
         }
         HANDLES(CloseHandle(fm));
@@ -2022,8 +2016,7 @@ BOOL CheckOnlyOneInstance(const char *leftPath, const char *rightPath, const cha
     }
   }
   return FALSE;
-}
-*/
+}*/
 // ****************************************************************************
 
 void DrawSplitLine(HWND HWindow, int newDragSplitX, int oldDragSplitX, RECT client)
@@ -2045,7 +2038,7 @@ void DrawSplitLine(HWND HWindow, int newDragSplitX, int oldDragSplitX, RECT clie
 
     HBRUSH oldBrush = (HBRUSH)SelectObject(dc, HDitherBrush);
     HPEN oldPen = (HPEN)SelectObject(dc, HANDLES(GetStockObject(NULL_PEN)));
-    int oldROP = SetROP2(dc, R2_XORPEN); // budeme ANDovat
+    int oldROP = SetROP2(dc, R2_XORPEN); // we will be ANDing
 
     int splitThick = MainWindow->GetSplitBarWidth() + 1;
     client.bottom++;
@@ -2053,7 +2046,7 @@ void DrawSplitLine(HWND HWindow, int newDragSplitX, int oldDragSplitX, RECT clie
     int r0 = client.left + newDragSplitX + splitThick;
     if (newDragSplitX == -1)
         r0 = l0 = -1;
-    if (oldDragSplitX != -1) // vypocet pruhu pro invalidate
+    if (oldDragSplitX != -1) // Calculate stripe for invalidate
     {
         int l1 = client.left + oldDragSplitX;
         int r1 = client.left + oldDragSplitX + splitThick;
@@ -2157,8 +2150,8 @@ BOOL LoadRGB(HKEY hKey, const char* name, COLORREF& color)
 {
     char buf[50];
     DWORD returnedType;
-    // pro zpetnou kompatibilitu (do reg:\HKEY_CURRENT_USER\Software\Altap\Altap Salamander 2.53 beta 1 (DB 33) vcetne) umime nacitat jak
-    // reprezentaci ve stringu, tak efektivnejsi binarni
+    // for backward compatibility (to reg:\HKEY_CURRENT_USER\Software\Altap\Altap Salamander 2.53 beta 1 (DB 33) inclusive) we can read both
+    // representation in a string, so more efficient binary
     if (GetValue2(hKey, name, REG_SZ, REG_DWORD, &returnedType, buf, 50))
     {
         if (returnedType == REG_SZ)
@@ -2198,7 +2191,7 @@ BOOL SaveRGB(HKEY hKey, const char* name, COLORREF color)
     //  char buf[50];
     //  sprintf(buf, "%d, %d, %d", GetRValue(color), GetGValue(color), GetBValue(color));
     //  return SetValue(hKey, name, REG_SZ, buf, strlen(buf) + 1);
-    DWORD clr = color & 0x00ffffff; // zahodime "alpha" kanal
+    DWORD clr = color & 0x00ffffff; // discard the "alpha" channel
     return SetValue(hKey, name, REG_DWORD, &clr, 4);
 }
 
@@ -2208,8 +2201,8 @@ BOOL LoadRGBF(HKEY hKey, const char* name, SALCOLOR& color)
 {
     char buf[50];
     DWORD returnedType;
-    // pro zpetnou kompatibilitu (do reg:\HKEY_CURRENT_USER\Software\Altap\Altap Salamander 2.53 beta 1 (DB 33) vcetne) umime nacitat jak
-    // reprezentaci ve stringu, tak efektivnejsi binarni
+    // for backward compatibility (to reg:\HKEY_CURRENT_USER\Software\Altap\Altap Salamander 2.53 beta 1 (DB 33) inclusive) we can read both
+    // representation in a string, so more efficient binary
     if (GetValue2(hKey, name, REG_SZ, REG_DWORD, &returnedType, buf, 50))
     {
         if (returnedType == REG_SZ)
@@ -2436,7 +2429,7 @@ BOOL SaveHistory(HKEY hKey, const char* name, char* history[], int maxCount, BOO
     {
         ClearKey(historyKey);
 
-        if (!onlyClear) // pokud se nema jen vycistit klic, ulozime hodnoty z historie
+        if (!onlyClear) // if the key is not just to be cleaned, we will save the values from the history
         {
             char buf[10];
             int i;
@@ -2487,7 +2480,7 @@ BOOL LoadViewers(HKEY hKey, const char* name, CViewerMasks* viewerMasks)
                 if (!GetValue(subKey, VIEWERS_INITDIR_REG, REG_SZ, initDir, MAX_PATH))
                     *initDir = 0;
 
-                if (Configuration.ConfigVersion < 44) // prevod pripon na lowercase
+                if (Configuration.ConfigVersion < 44) // convert suffixes to lowercase
                 {
                     char masksAux[MAX_PATH];
                     lstrcpyn(masksAux, masks, MAX_PATH);
@@ -2586,7 +2579,7 @@ BOOL LoadEditors(HKEY hKey, const char* name, CEditorMasks* editorMasks)
                 if (!GetValue(subKey, EDITORS_INITDIR_REG, REG_SZ, initDir, MAX_PATH))
                     *initDir = 0;
 
-                if (Configuration.ConfigVersion < 44) // prevod pripon na lowercase
+                if (Configuration.ConfigVersion < 44) // convert suffixes to lowercase
                 {
                     char masksAux[MAX_PATH];
                     lstrcpyn(masksAux, masks, MAX_PATH);
@@ -2680,14 +2673,14 @@ BOOL ExportConfiguration(HWND hParent, const char* fileName, BOOL clearKeyBefore
         LoadSaveToRegistryMutex.Leave();
         if (RPE_OK == regerr)
         {
-            memReg->RemoveHiddenKeysAndValues(); // vyrezeme klice+hodnoty, ktere nemaji byt exportovany
+            memReg->RemoveHiddenKeysAndValues(); // we will cut out keys+values that should not be exported
             if (!memReg->Dump(fileName, clearKeyBeforeImport ? keyName : NULL))
-                ShowFileError(hParent, IDS_EXPORTCFG_FILEERR, fileName, 0 /* not used */);
+                ShowFileError(hParent, IDS_EXPORTCFG_FILEERR, fileName, 0 /* not used*/);
             else
                 ret = TRUE;
         }
         else
-            ShowFileError(hParent, IDS_EXPORTCFG_REGERR, fileName, 0 /* not used */);
+            ShowFileError(hParent, IDS_EXPORTCFG_REGERR, fileName, 0 /* not used*/);
     }
     if (sysReg != NULL)
         sysReg->Release();
@@ -2730,7 +2723,7 @@ BOOL ImportConfiguration(HWND hParent, const char* fileName, BOOL ignoreIfNotExi
     CQuadWord size;
     if (SalGetFileSize(file, size, err))
     {
-        if (size <= CQuadWord(10000000, 0)) // nad 10MB je to 100% nesmysl...
+        if (size <= CQuadWord(10000000, 0)) // It's 100% nonsense above 10MB...
         {
             buf = (LPTSTR)malloc((DWORD)size.Value + sizeof(WCHAR));
             if (buf != NULL) // "always true" (pri chybe jen nespadneme, user odmackl hlasku o nedostatku pameti)
@@ -2753,7 +2746,7 @@ BOOL ImportConfiguration(HWND hParent, const char* fileName, BOOL ignoreIfNotExi
             }
         }
         else
-            ShowFileError(hParent, IDS_IMPORTCFG_TOOBIG, fileName, 0 /* not used */);
+            ShowFileError(hParent, IDS_IMPORTCFG_TOOBIG, fileName, 0 /* not used*/);
     }
     else
         ShowFileError(hParent, IDS_IMPORTCFG_OPENERR, fileName, GetLastError());
@@ -2772,14 +2765,14 @@ BOOL ImportConfiguration(HWND hParent, const char* fileName, BOOL ignoreIfNotExi
 
     if (buf != NULL)
     {
-        // nejdrive ho zkusime parsnout do pameti, pokud obsahuje syntakticky chyby, vubec ho nebudeme cpat do registry
+        // First, we will try to parse it into memory, if it contains syntax errors, we will not put it into the registry at all
         CSalamanderRegistryExAbstract* memReg = REG_MemRegistryFactory();
-        LPTSTR bufMem = _tcsdup(buf); // volani Parse buffer zmeni, tedy pro dalsi Parse musime zachovat original
+        LPTSTR bufMem = _tcsdup(buf); // Calling Parse buffer will change, so for the next Parse we must keep the original
         TRACE_I("ImportConfiguration(): Parse to memory: begin");
-        eRPE_ERROR regerr = bufMem != NULL ? Parse(bufMem, memReg, TRUE) : RPE_OUT_OF_MEMORY; // dirty hack: pri mazani klice s konfiguraci nesmazneme .hidden klice a hodnoty (kvuli trial version + checkveru)
+        eRPE_ERROR regerr = bufMem != NULL ? Parse(bufMem, memReg, TRUE) : RPE_OUT_OF_MEMORY; // dirty hack: when deleting a key with configuration, do not delete .hidden keys and values (due to trial version + checkveru)
         TRACE_I("ImportConfiguration(): Parse to memory: end");
         free(bufMem);
-        BOOL verIsOK = RPE_OK == regerr; // overime jestli soubor vubec obsahuje nasi verzi konfigurace
+        BOOL verIsOK = RPE_OK == regerr; // we will verify if the file actually contains our version of the configuration
         if (verIsOK)
         {
             HKEY key;
@@ -2797,16 +2790,16 @@ BOOL ImportConfiguration(HWND hParent, const char* fileName, BOOL ignoreIfNotExi
             }
         }
         memReg->Release();
-        if (verIsOK && RPE_OK == regerr) // verze configu i soubor samotny vypadaji OK, importneme ho do registry
+        if (verIsOK && RPE_OK == regerr) // the config version and the file itself look OK, let's import it into the registry
         {
             CSalamanderRegistryExAbstract* sysReg = REG_SysRegistryFactory();
 
             LoadSaveToRegistryMutex.Enter();
             TRACE_I("ImportConfiguration(): Parse to registry: begin");
-            regerr = Parse(buf, sysReg, TRUE); // dirty hack: pri mazani klice s konfiguraci nesmazneme .hidden klice a hodnoty (kvuli trial version + checkveru)
+            regerr = Parse(buf, sysReg, TRUE); // dirty hack: when deleting a key with configuration, do not delete .hidden keys and values (due to trial version + checkveru)
             TRACE_I("ImportConfiguration(): Parse to registry: end");
             if (RPE_OK == regerr)
-                ret = TRUE; // uspech
+                ret = TRUE; // success
             LoadSaveToRegistryMutex.Leave();
 
             Configuration.ConfigWasImported = TRUE;
@@ -2819,7 +2812,7 @@ BOOL ImportConfiguration(HWND hParent, const char* fileName, BOOL ignoreIfNotExi
             {
             case RPE_NOT_REG_FILE:
                 errTextID = IDS_IMPORTCFG_NOTREG;
-                break; // neni reg4 ani reg5 file
+                break; // neither reg4 nor reg5 file
 
             case RPE_ROOT_INVALID_KEY:
             case RPE_INVALID_KEY:
@@ -2832,7 +2825,7 @@ BOOL ImportConfiguration(HWND hParent, const char* fileName, BOOL ignoreIfNotExi
             case RPE_INVALID_MBCS:
             case RPE_INVALID_FORMAT:
                 errTextID = IDS_IMPORTCFG_INVALIDFORMAT;
-                break; // chyba syntaxe
+                break; // syntax error
 
                 // case RPE_OUT_OF_MEMORY:
                 // case RPE_KEY_OPEN:
@@ -2841,7 +2834,7 @@ BOOL ImportConfiguration(HWND hParent, const char* fileName, BOOL ignoreIfNotExi
                 // case RPE_VALUE_GET:
                 // case RPE_VALUE_SET: errTextID = IDS_IMPORTCFG_REGERR; break;   // jina chyba (pamet + chyba zapisu do registry)
             }
-            ShowFileError(hParent, errTextID, fileName, 0 /* not used */);
+            ShowFileError(hParent, errTextID, fileName, 0 /* not used*/);
         }
 
         free(buf);
@@ -2916,8 +2909,7 @@ BOOL CLanguage::Init(const char* fileName, WORD languageID, const WCHAR* authorW
     return TRUE;
 }
 
-/*
-// kopie teto rutiny lezi take v programu Translator
+/*  // A copy of this routine is also present in the Translator program
 BOOL LoadSLGData(HINSTANCE hModule, const char *resName, LPVOID buff, int buffSize, BOOL string)
 {
   HRSRC hrsrc = FindResource(hModule, resName, RT_SLGSIGN);
@@ -2950,13 +2942,12 @@ BOOL LoadSLGData(HINSTANCE hModule, const char *resName, LPVOID buff, int buffSi
   }
   ZeroMemory(buff, buffSize);
   return FALSE;
-}
-*/
+}*/
 
 BOOL IsSLGFileValid(HINSTANCE hModule, HINSTANCE hSLG, WORD& slgLangID, char* isIncomplete)
 {
-    // porovna verze VERSIONINFO SLG proti salamanderu a pokud se shoduji vrati TRUE,
-    // jinak FALSE; v pripade shody jeste vytahne \\VarFileInfo\\Translation a nastavi 'langID'
+    // Compare the VERSIONINFO SLG version to the salamander and return TRUE if they match,
+    // otherwise FALSE; in case of a match, it will also extract \\VarFileInfo\\Translation and set 'langID'
     CVersionInfo slgVer;
     CVersionInfo moduleVer;
 
@@ -2977,13 +2968,13 @@ BOOL IsSLGFileValid(HINSTANCE hModule, HINSTANCE hSLG, WORD& slgLangID, char* is
         return FALSE;
     }
 
-    // vytahneme ukazatele na struktury VS_FIXEDFILEINFO
+    // we extract pointers to the VS_FIXEDFILEINFO structures
     if (!slgVer.QueryValue("\\", &slgBuf, &slgSize))
         return FALSE;
     if (!moduleVer.QueryValue("\\", &moduleBuf, &moduleSize))
         return FALSE;
 
-    // verze SLG musi byt totozna s nasi verzi
+    // The version of SLG must be identical to our version
     if (((VS_FIXEDFILEINFO*)slgBuf)->dwFileVersionMS != ((VS_FIXEDFILEINFO*)moduleBuf)->dwFileVersionMS ||
         ((VS_FIXEDFILEINFO*)slgBuf)->dwFileVersionLS != ((VS_FIXEDFILEINFO*)moduleBuf)->dwFileVersionLS)
     {
@@ -3011,7 +3002,7 @@ BOOL IsSLGFileValid(HINSTANCE hModule, HINSTANCE hSLG, WORD& slgLangID, char* is
         }
     }
 
-    // vytahneme jazyk, ve kterem je SLG
+    // extract the language in which the SLG is written
     if (!slgVer.QueryValue("\\VarFileInfo\\Translation", &slgBuf, &slgSize))
     {
         GetModuleFileName(hSLG, path, MAX_PATH);
@@ -3075,16 +3066,16 @@ BOOL CLanguage::Init(const char* fileName, HINSTANCE modul)
             {
                 if (!ver.QueryString("\\StringFileInfo\\040904b0\\SLGHelpDir", slg_helpdir, _countof(slg_helpdir)))
                 {
-                    slg_helpdir[0] = 0; // pluginy nemaji SLGHelpDir definovany (pouziva se jen v .slg Salamandera)
+                    slg_helpdir[0] = 0; // plugins do not have SLGHelpDir defined (used only in .slg of Salamander)
                     if (modul == HInstance)
-                        ok = FALSE; // ovsem v Salamanderovi tahle promenna chybet nemuze
+                        ok = FALSE; // however, this variable cannot be missing in Salamander
                 }
-                // cteme pouze pro test, ze polozka existuje
+                // reading only for testing that the item exists
                 if (!ver.QueryString("\\StringFileInfo\\040904b0\\SLGIncomplete", slg_incomplete, _countof(slg_incomplete)))
                 {
-                    slg_incomplete[0] = 0; // pluginy nemaji SLGIncomplete definovany (pouziva se jen v .slg Salamandera)
+                    slg_incomplete[0] = 0; // plugins do not have SLGIncomplete defined (used only in .slg of Salamander)
                     if (modul == HInstance)
-                        ok = FALSE; // ovsem v Salamanderovi tahle promenna chybet nemuze
+                        ok = FALSE; // however, this variable cannot be missing in Salamander
                 }
             }
             if (ok)

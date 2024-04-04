@@ -22,13 +22,13 @@ extern "C"
 
 //****************************************************************************
 
-// definujeme GUID udalosti "Lock Volume" (napr. "chkdsk /f E:", kde E: je USB stick): {50708874-C9AF-11D1-8FEF-00A0C9A06D32}
+// defining the event GUID "Lock Volume" (e.g. "chkdsk /f E:", where E: is a USB stick): {50708874-C9AF-11D1-8FEF-00A0C9A06D32}
 GUID GUID_IO_LockVolume = {0x50708874, 0xC9AF, 0x11D1, 0x8F, 0xEF, 0x00, 0xA0, 0xC9, 0xA0, 0x6D, 0x32};
 //
-// v Ioevent.h z DDK je definice teto konstanty (a mnoha dalsich):
+// in Ioevent.h from DDK is the definition of this constant (and many others):
 //
-//  Volume lock event.  This event is signalled when an attempt is made to
-//  lock a volume.  There is no additional data.
+//  Volume lock event. This event is signalled when an attempt is made to
+//  Lock a volume. There is no additional data.
 //
 // DEFINE_GUID( GUID_IO_VOLUME_LOCK, 0x50708874L, 0xc9af, 0x11d1, 0x8f, 0xef, 0x00, 0xa0, 0xc9, 0xa0, 0x6d, 0x32 );
 
@@ -68,7 +68,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     HCURSOR oldCur;
     switch (uMsg)
     {
-        //---  roztahovani listboxu po celem okne
+        //--- stretching the listbox across the entire window
     case WM_SIZE:
     {
         if (ListBox != NULL && ListBox->HWindow != NULL && StatusLine != NULL && DirectoryLine != NULL)
@@ -138,21 +138,21 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         switch (wParam)
         {
-        case 0x8006 /* DBT_CUSTOMEVENT */:
+        case 0x8006 /* DBT_CUSTOMEVENT*/:
         {
             //          TRACE_I("WM_DEVICECHANGE: DBT_CUSTOMEVENT");
 
             if (IsCustomEventGUID(lParam, GUID_IO_LockVolume))
-            { // chodi na XPckach, kdyz se spusti "chkdsk /f e:" ("e:" je removable USB stick) a bohuzel taky pri otevirani .ifo a .vob souboru (DVD) a pri spousteni Ashampoo Burning Studio 6 -- zadost "lock volume"
+            { // It occurs on XP machines when running "chkdsk /f e:" (where "e:" is a removable USB stick) and unfortunately also when opening .ifo and .vob files (DVD) and when launching Ashampoo Burning Studio 6 -- it requests "lock volume"
                 if (UseSystemIcons || UseThumbnails)
-                    SleepIconCacheThread();                 // pozastavime cteni ikonek/thumbnailu
-                DetachDirectory((CFilesWindow*)this, TRUE); // zavreme change-notifikace + DeviceNotification
+                    SleepIconCacheThread();                 // pause reading icons/thumbnails
+                DetachDirectory((CFilesWindow*)this, TRUE); // close change notifications + DeviceNotification
 
                 HANDLES(EnterCriticalSection(&TimeCounterSection));
                 int t1 = MyTimeCounter++;
                 HANDLES(LeaveCriticalSection(&TimeCounterSection));
                 BOOL salIsActive = GetForegroundWindow() == MainWindow->HWindow;
-                PostMessage(HWindow, WM_USER_REFRESH_DIR_EX, salIsActive, t1); // refresh obnovi cteni ikon/thumbnailu + otevre opet change-notifikace + DeviceNotification; vime, ze jde pravdepodobne o zbytecny refresh
+                PostMessage(HWindow, WM_USER_REFRESH_DIR_EX, salIsActive, t1); // refresh refreshes reading of icons/thumbnails + reopens change notifications + DeviceNotification; we know that it is probably an unnecessary refresh
             }
             break;
         }
@@ -160,8 +160,8 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case DBT_DEVICEQUERYREMOVE:
         {
             //          TRACE_I("WM_DEVICECHANGE: DBT_DEVICEQUERYREMOVE");
-            DetachDirectory((CFilesWindow*)this, TRUE, FALSE); // bez zavreni DeviceNotification
-            return TRUE;                                       // povolime odstraneni tohoto device
+            DetachDirectory((CFilesWindow*)this, TRUE, FALSE); // without closing DeviceNotification
+            return TRUE;                                       // Allow removal of this device
         }
 
         case DBT_DEVICEQUERYREMOVEFAILED:
@@ -176,7 +176,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             //          if (wParam == DBT_DEVICEREMOVEPENDING) TRACE_I("WM_DEVICECHANGE: DBT_DEVICEREMOVEPENDING");
             //          else TRACE_I("WM_DEVICECHANGE: DBT_DEVICEREMOVECOMPLETE");
-            DetachDirectory((CFilesWindow*)this, TRUE); // zavreme DeviceNotification
+            DetachDirectory((CFilesWindow*)this, TRUE); // Close DeviceNotification
             if (MainWindow->LeftPanel == this)
             {
                 if (!ChangeLeftPanelToFixedWhenIdleInProgress)
@@ -204,7 +204,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             ProgressDialogActivateDrop = LastWndFromGetData;
             UnpackZIPArchive(NULL, FALSE, tgtPath);
-            ProgressDialogActivateDrop = NULL; // pro dalsi pouziti progress dialogu musime globalku vycistit
+            ProgressDialogActivateDrop = NULL; // we need to clean up the global variable for the next use of the progress dialog
             SHChangeNotify(SHCNE_UPDATEDIR, SHCNF_PATH, tgtPath, NULL);
         }
         free(tgtPath);
@@ -223,22 +223,22 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             int count = GetSelCount();
             if (count > 0 || GetCaretIndex() != 0 ||
-                Dirs->Count == 0 || strcmp(Dirs->At(0).Name, "..") != 0) // test jestli se nepracuje jen s ".."
+                Dirs->Count == 0 || strcmp(Dirs->At(0).Name, "..") != 0) // test if only ".." is being worked with
             {
-                BeginSuspendMode(); // cmuchal si da pohov
-                BeginStopRefresh(); // jen aby se nedistribuovaly zpravy o zmenach na cestach
+                BeginSuspendMode(); // He was snoring in his sleep
+                BeginStopRefresh(); // just to avoid distributing news about changes on the roads
 
                 UserWorkedOnThisPath = TRUE;
-                StoreSelection(); // ulozime selection pro prikaz Restore Selection
+                StoreSelection(); // Save the selection for the Restore Selection command
 
                 ProgressDialogActivateDrop = LastWndFromGetData;
 
                 int selectedDirs = 0;
                 if (count > 0)
                 {
-                    // spocitame kolik adresaru je oznaceno (zbytek oznacenych polozek jsou soubory)
+                    // we will count how many directories are marked (the rest of the marked items are files)
                     int i;
-                    for (i = 0; i < Dirs->Count; i++) // ".." nemuzou byt oznaceny, test by byl zbytecny
+                    for (i = 0; i < Dirs->Count; i++) // ".." cannot be marked, the test would be pointless
                     {
                         if (Dirs->At(i).Selected)
                             selectedDirs++;
@@ -253,16 +253,16 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 BOOL cancelOrHandlePath = FALSE;
                 char targetPath[2 * MAX_PATH];
                 lstrcpyn(targetPath, tgtPath, 2 * MAX_PATH - 1);
-                if (tgtPath[0] == '\\' && tgtPath[1] == '\\' || // UNC cesta
-                    tgtPath[0] != 0 && tgtPath[1] == ':')       // klasicka diskova cesta (C:\path)
+                if (tgtPath[0] == '\\' && tgtPath[1] == '\\' || // UNC path
+                    tgtPath[0] != 0 && tgtPath[1] == ':')       // classic disk path (C:\path)
                 {
                     int l = (int)strlen(targetPath);
                     if (l > 3 && targetPath[l - 1] == '\\')
-                        targetPath[l - 1] = 0; // krom "c:\" zrusime koncovy backslash
+                        targetPath[l - 1] = 0; // Except for "c:\" we will remove the trailing backslash
                 }
-                targetPath[strlen(targetPath) + 1] = 0; // zajistime dve nuly na konci retezce
+                targetPath[strlen(targetPath) + 1] = 0; // ensure two zeros at the end of the string
 
-                // snizime prioritu threadu na "normal" (aby operace prilis nezatezovaly stroj)
+                // Lower the priority of the thread to "normal" (to prevent operations from overloading the machine)
                 SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
                 BOOL ret = GetPluginFS()->CopyOrMoveFromFS(copy, 5, GetPluginFS()->GetPluginFSName(),
@@ -272,33 +272,33 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                                            cancelOrHandlePath,
                                                            ProgressDialogActivateDrop);
 
-                // opet zvysime prioritu threadu, operace dobehla
+                // increase the thread priority again, operation completed
                 SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
 
                 if (ret && !cancelOrHandlePath)
                 {
-                    if (targetPath[0] != 0) // zmena fokusu na 'targetPath'
+                    if (targetPath[0] != 0) // change focus to 'targetPath'
                     {
                         lstrcpyn(NextFocusName, targetPath, MAX_PATH);
-                        // RefreshDirectory nemusi probehnout - zdroj se nemusel zmenit - pro sichr postneme message
+                        // RefreshDirectory may not have to run - the source may not have changed - for safety, we will post a message
                         PostMessage(HWindow, WM_USER_DONEXTFOCUS, 0, 0);
                     }
 
-                    // uspesna operace, ale zdroj neodznacime, protoze jde o drag&drop
-                    //            SetSel(FALSE, -1, TRUE);   // explicitni prekresleni
+                    // Successful operation, but we won't deselect the source because it's a drag & drop
+                    //            SetSel(FALSE, -1, TRUE);   // explicit redraw
                     //            PostMessage(HWindow, WM_USER_SELCHANGED, 0, 0);  // sel-change notify
                     UpdateWindow(MainWindow->HWindow);
                 }
 
-                ProgressDialogActivateDrop = NULL;              // pro dalsi pouziti progress dialogu musime globalku vycistit
-                if (tgtPath[0] == '\\' && tgtPath[1] == '\\' || // UNC cesta
-                    tgtPath[0] != 0 && tgtPath[1] == ':')       // klasicka diskova cesta (C:\path)
+                ProgressDialogActivateDrop = NULL;              // we need to clean up the global variable for the next use of the progress dialog
+                if (tgtPath[0] == '\\' && tgtPath[1] == '\\' || // UNC path
+                    tgtPath[0] != 0 && tgtPath[1] == ':')       // classic disk path (C:\path)
                 {
                     SHChangeNotify(SHCNE_UPDATEDIR, SHCNF_PATH, tgtPath, NULL);
                 }
 
                 EndStopRefresh();
-                EndSuspendMode(); // ted uz zase cmuchal nastartuje
+                EndSuspendMode(); // now he's sniffling again, he'll start up
             }
         }
         free(tgtPath);
@@ -307,8 +307,8 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_USER_UPDATEPANEL:
     {
-        // nekdo rozdistribuoval zpravy (otevrel se messagebox) a je treba updatnou
-        // obsah panelu
+        // someone distributed messages (a messagebox opened) and needs to be updated
+        // content of the panel
         RefreshListBox(0, -1, -1, FALSE, FALSE);
         return 0;
     }
@@ -316,20 +316,20 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_USER_ENTERMENULOOP:
     case WM_USER_LEAVEMENULOOP:
     {
-        // pouze predame hlavnimu oknu
+        // only pass to the main window
         return SendMessage(MainWindow->HWindow, uMsg, wParam, lParam);
     }
 
     case WM_USER_CONTEXTMENU:
     {
         CMenuPopup* popup = (CMenuPopup*)(CGUIMenuPopupAbstract*)wParam;
-        // pokud je nad timto panelem otevrene Alt+F1(2) menu a RClick patri jemu,
-        // predame mu notifikaci
+        // if the Alt+F1(2) menu is open above this panel and RClick belongs to it,
+        // we will pass him the notification
         if (OpenedDrivesList != NULL && OpenedDrivesList->GetMenuPopup() == popup)
         {
             return OpenedDrivesList->OnContextMenu((BOOL)lParam, -1, PANEL_SOURCE, NULL);
         }
-        return FALSE; //p.s. nespoustet prikaz, neotevirat submenu
+        return FALSE; //p.s. do not execute the command, do not open the submenu
     }
 
     case WM_TIMER:
@@ -337,7 +337,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (wParam == IDT_SM_END_NOTIFY)
         {
             KillTimer(HWindow, IDT_SM_END_NOTIFY);
-            if (SmEndNotifyTimerSet) // nejde jen o "zatoulany" WM_TIMER
+            if (SmEndNotifyTimerSet) // it's not just about a "stray" WM_TIMER
                 PostMessage(HWindow, WM_USER_SM_END_NOTIFY_DELAYED, 0, 0);
             SmEndNotifyTimerSet = FALSE;
             return 0;
@@ -347,7 +347,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (wParam == IDT_REFRESH_DIR_EX)
             {
                 KillTimer(HWindow, IDT_REFRESH_DIR_EX);
-                if (RefreshDirExTimerSet) // nejde jen o "zatoulany" WM_TIMER
+                if (RefreshDirExTimerSet) // it's not just about a "stray" WM_TIMER
                     PostMessage(HWindow, WM_USER_REFRESH_DIR_EX_DELAYED, FALSE, RefreshDirExLParam);
                 RefreshDirExTimerSet = FALSE;
                 return 0;
@@ -357,7 +357,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if (wParam == IDT_ICONOVRREFRESH)
                 {
                     KillTimer(HWindow, IDT_ICONOVRREFRESH);
-                    if (IconOvrRefreshTimerSet && // nejde jen o "zatoulany" WM_TIMER
+                    if (IconOvrRefreshTimerSet && // it's not just about a "stray" WM_TIMER
                         Configuration.EnableCustomIconOverlays && Is(ptDisk) &&
                         (UseSystemIcons || UseThumbnails) && IconCache != NULL)
                     {
@@ -374,7 +374,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     if (wParam == IDT_INACTIVEREFRESH)
                     {
                         KillTimer(HWindow, IDT_INACTIVEREFRESH);
-                        if (InactiveRefreshTimerSet) // nejde jen o "zatoulany" WM_TIMER
+                        if (InactiveRefreshTimerSet) // it's not just about a "stray" WM_TIMER
                         {
                             //                TRACE_I("Timer IDT_INACTIVEREFRESH: posting refresh!");
                             PostMessage(HWindow, WM_USER_INACTREFRESH_DIR, FALSE, InactRefreshLParam);
@@ -400,12 +400,12 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             else
                 PostMessage(HWindow, WM_USER_REFRESH_DIR_EX_DELAYED, FALSE, lParam);
         }
-        else // cekame na poslani WM_USER_REFRESH_DIR_EX_DELAYED
+        else // waiting for sending WM_USER_REFRESH_DIR_EX_DELAYED
         {
-            if (RefreshDirExLParam < lParam) // vezmeme "novejsi" cas
+            if (RefreshDirExLParam < lParam) // let's take the "newer" time
                 RefreshDirExLParam = lParam;
 
-            KillTimer(HWindow, IDT_REFRESH_DIR_EX); // timer nahodime znovu, aby pomaly byl pomaly (5000ms) a rychly byl rychly (200ms) - zkratka nesmi zalezet na typu predchoziho refreshe
+            KillTimer(HWindow, IDT_REFRESH_DIR_EX); // we set the timer again so that slow is slow (5000ms) and fast is fast (200ms) - the abbreviation must not depend on the type of the previous refresh
             if (!SetTimer(HWindow, IDT_REFRESH_DIR_EX, wParam ? 5000 : 200, NULL))
             {
                 RefreshDirExTimerSet = FALSE;
@@ -429,52 +429,52 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         else
             return 0;
-        // tady break nechybi -- pokud se nepovede zalozit timer, provede se WM_USER_SM_END_NOTIFY_DELAYED hned
+        // here the break is not missing -- if the timer cannot be set up, WM_USER_SM_END_NOTIFY_DELAYED will be executed immediately
     }
-        //--- byl ukoncen suspend mode, podivame se, jestli nepotrebujeme refresh
+        //--- suspend mode was terminated, let's see if we need to refresh
     case WM_USER_SM_END_NOTIFY_DELAYED:
     {
         if (SnooperSuspended || StopRefresh)
-            return 0;                        // pockame na dalsi WM_USER_SM_END_NOTIFY_DELAYED
-        if (PluginFSNeedRefreshAfterEndOfSM) // ma dojit k refreshi plug-in FS?
+            return 0;                        // Wait for the next WM_USER_SM_END_NOTIFY_DELAYED
+        if (PluginFSNeedRefreshAfterEndOfSM) // Does the FS plug-in need to be refreshed?
         {
             PluginFSNeedRefreshAfterEndOfSM = FALSE;
-            PostMessage(HWindow, WM_USER_REFRESH_PLUGINFS, 0, 0); // zkusime ho provest ted
+            PostMessage(HWindow, WM_USER_REFRESH_PLUGINFS, 0, 0); // let's try to execute it now
         }
 
-        if (NeedRefreshAfterEndOfSM) // ma dojit k refreshi?
+        if (NeedRefreshAfterEndOfSM) // Should it be refreshed?
         {
             NeedRefreshAfterEndOfSM = FALSE;
             lParam = RefreshAfterEndOfSMTime;
-            wParam = FALSE; // nebudeme nahazovat RefreshFinishedEvent
+            wParam = FALSE; // We will not throw RefreshFinishedEvent
         }
         else
             return 0;
     }
-        //--- v adresari byla zaznamenana zmena obsahu pri suspend modu
+        //--- a change in content was recorded in the directory during suspend mode
     case WM_USER_S_REFRESH_DIR:
     {
-        if (uMsg == WM_USER_S_REFRESH_DIR && // zmena obsahu zaznamenana behem suspend modu
+        if (uMsg == WM_USER_S_REFRESH_DIR && // change in content recorded during suspend mode
             !IconCacheValid && UseSystemIcons && Is(ptDisk) && GetNetworkDrive())
         {
             // TRACE_I("Delaying refresh from suspend mode until all icons are read.");
             NeedRefreshAfterIconsReading = TRUE;
             RefreshAfterIconsReadingTime = max(RefreshAfterIconsReadingTime, (int)lParam);
             if (wParam)
-                SetEvent(RefreshFinishedEvent); // nejspis zbytecne, ale je to v popisu WM_USER_S_REFRESH_DIR
-            return 0;                           // hlaseni o zmene jsme poznamenali (refresh se postne az se dokonci cteni ikonek), koncime zpracovani
+                SetEvent(RefreshFinishedEvent); // probably unnecessary, but it is in the description of WM_USER_S_REFRESH_DIR
+            return 0;                           // We have noted the change report (refresh will be posted after the reading of icons is completed), we are finishing processing
         }
 
         setWait = FALSE;
         if (lParam >= LastRefreshTime)
-        {                                                          // nejde o zbytecny stary refresh
-            setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // ceka uz ?
+        {                                                          // It's not about an unnecessary old refresh
+            setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // Is it waiting already?
             if (setWait)
                 oldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
             DWORD err = CheckPath(FALSE, NULL, ERROR_SUCCESS, !SnooperSuspended && !StopRefresh);
             if (err == ERROR_SUCCESS)
             {
-                if (GetMonitorChanges()) // snooper ho mozna vykopnul ze seznamu
+                if (GetMonitorChanges()) // the snooper may have kicked him off the list
                     ChangeDirectory(this, GetPath(), MyGetDriveType(GetPath()) == DRIVE_REMOVABLE);
             }
             else
@@ -487,7 +487,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
         }
     }
-        //--- bylo ukonceno cteni ikonek, podivame se, jestli nepotrebujeme refresh
+        //--- reading of icons was completed, let's check if a refresh is needed
     case WM_USER_ICONREADING_END:
     {
         //      TRACE_I("WM_USER_ICONREADING_END");
@@ -496,19 +496,19 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             IconCacheValid = TRUE;
             EndOfIconReadingTime = GetTickCount();
-            if (NeedRefreshAfterIconsReading) // ma dojit k refreshi?
+            if (NeedRefreshAfterIconsReading) // Should it be refreshed?
             {
                 //          TRACE_I("Doing delayed refresh (all icons are read).");
                 NeedRefreshAfterIconsReading = FALSE;
                 lParam = RefreshAfterIconsReadingTime;
-                wParam = FALSE; // nebudeme nahazovat RefreshFinishedEvent
+                wParam = FALSE; // We will not throw RefreshFinishedEvent
                 setWait = FALSE;
-                probablyUselessRefresh = TRUE; // nejspis jen refresh vyvolany chybne systemem po nacitani ikonek ze sitoveho drivu
+                probablyUselessRefresh = TRUE; // probably just a refresh triggered incorrectly by the system after loading icons from a network drive
                                                //          TRACE_I("delayed refresh (after reading of all icons): probablyUselessRefresh=TRUE");
             }
             else
             {
-                if (NeedIconOvrRefreshAfterIconsReading) // refreshneme icon-overlays
+                if (NeedIconOvrRefreshAfterIconsReading) // refresh the icon overlays
                 {
                     NeedIconOvrRefreshAfterIconsReading = FALSE;
 
@@ -525,7 +525,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
         }
     }
-        //--- v adresari byla zaznamenana zmena obsahu
+        //--- a change in the directory content was recorded
     case WM_USER_REFRESH_DIR:
     case WM_USER_REFRESH_DIR_EX_DELAYED:
     case WM_USER_INACTREFRESH_DIR:
@@ -535,30 +535,30 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             if (GetTickCount() - EndOfIconReadingTime < 1000)
             {
-                probablyUselessRefresh = TRUE; // do 1 sekundy po dokonceni cteni ikon jeste ocekavame zbytecny refresh zpusobeny ctenim ikonek
+                probablyUselessRefresh = TRUE; // 1 second after reading the icons, we still expect an unnecessary refresh caused by reading the icons
                                                //          TRACE_I("less than second after reading of icons was finished: probablyUselessRefresh=TRUE");
             }
             else
             {
-                probablyUselessRefresh = (uMsg == WM_USER_REFRESH_DIR_EX_DELAYED || uMsg == WM_USER_INACTREFRESH_DIR); // jde o odlozeny refresh, ktery muze byt take zbytecny (takhle se zamezi nekonecnemu cyklu pri cteni ikon na sitovem disku, ktere vyvolava dalsi refresh)
+                probablyUselessRefresh = (uMsg == WM_USER_REFRESH_DIR_EX_DELAYED || uMsg == WM_USER_INACTREFRESH_DIR); // It is about a delayed refresh, which can also be unnecessary (this prevents an infinite cycle when reading icons on a network drive, which triggers another refresh)
                                                                                                                        //          TRACE_I("WM_USER_REFRESH_DIR_EX_DELAYED or WM_USER_INACTREFRESH_DIR: probablyUselessRefresh=" << probablyUselessRefresh);
             }
         }
-        if ((uMsg == WM_USER_REFRESH_DIR && wParam || // zmena obsahu hlasena snooperem
-             uMsg == WM_USER_ICONREADING_END ||       // nebo hlaseni konce cteni ikonek (muze prijit pozde, uz se zase muzou cist ikonky)
-             uMsg == WM_USER_INACTREFRESH_DIR) &&     // nebo odlozeny refresh v neaktivnim okne (jde o refresh vyzadany snooperem nebo pri ukonceni suspend modu)
+        if ((uMsg == WM_USER_REFRESH_DIR && wParam || // change of content reported by snooper
+             uMsg == WM_USER_ICONREADING_END ||       // or reporting the end of reading icons (may come late, icons can be read again)
+             uMsg == WM_USER_INACTREFRESH_DIR) &&     // or deferred refresh in an inactive window (it is a refresh requested by the snooper or when exiting suspend mode)
             !IconCacheValid &&
             UseSystemIcons && Is(ptDisk) && GetNetworkDrive())
         {
             //        TRACE_I("Delaying refresh until all icons are read.");
             NeedRefreshAfterIconsReading = TRUE;
             RefreshAfterIconsReadingTime = max(RefreshAfterIconsReadingTime, (int)lParam);
-            // hlaseni o zmene jsme poznamenali (refresh se postne az se dokonci cteni ikonek), koncime zpracovani
+            // We have noted the change report (refresh will be posted after the reading of icons is completed), we are finishing processing
         }
         else
         {
             if (SnooperSuspended || StopRefresh)
-            { // uz je zapnuty suspend mode (pracuje se nad vnitrnimi daty -> nelze je refreshnout)
+            { // suspend mode is now turned on (working on internal data -> cannot be refreshed)
                 NeedRefreshAfterEndOfSM = TRUE;
                 RefreshAfterEndOfSMTime = max(RefreshAfterEndOfSMTime, (int)lParam);
                 if ((uMsg == WM_USER_S_REFRESH_DIR || uMsg == WM_USER_SM_END_NOTIFY_DELAYED) && setWait)
@@ -566,20 +566,20 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     SetCursor(oldCur);
                 }
             }
-            else // nejde o refresh v suspend modu
+            else // It's not about refresh in suspend mode
             {
-                if (lParam >= LastRefreshTime) // nejde o zbytecny stary refresh
+                if (lParam >= LastRefreshTime) // It's not about an unnecessary old refresh
                 {
                     BOOL isInactiveRefresh = FALSE;
                     BOOL skipRefresh = FALSE;
-                    if ((uMsg == WM_USER_REFRESH_DIR && wParam ||     // zmena obsahu hlasena snooperem
-                         uMsg == WM_USER_ICONREADING_END ||           // nebo hlaseni konce cteni ikonek (odlozeny refresh vyzadany snooperem + po ukonceni suspend modu)
-                         uMsg == WM_USER_INACTREFRESH_DIR) &&         // nebo odlozeny refresh v neaktivnim okne (jde o refresh vyzadany snooperem nebo pri ukonceni suspend modu)
-                        GetForegroundWindow() != MainWindow->HWindow) // neaktivni hlavni okno Salamandera: pribrzdime refreshe, je-li treba
+                    if ((uMsg == WM_USER_REFRESH_DIR && wParam ||     // change of content reported by snooper
+                         uMsg == WM_USER_ICONREADING_END ||           // or reporting the end of reading icons (delayed refresh requested by snooper + after exiting suspend mode)
+                         uMsg == WM_USER_INACTREFRESH_DIR) &&         // or deferred refresh in an inactive window (it is a refresh requested by the snooper or when exiting suspend mode)
+                        GetForegroundWindow() != MainWindow->HWindow) // inactive main window of Salamander: slow down refresh if necessary
                     {
                         //              TRACE_I("Refresh from snooper in inactive window");
                         isInactiveRefresh = TRUE;
-                        if (LastInactiveRefreshStart != LastInactiveRefreshEnd) // nejaky refresh uz probehl od posledni deaktivace
+                        if (LastInactiveRefreshStart != LastInactiveRefreshEnd) // some refresh has already occurred since the last deactivation
                         {
                             DWORD delay = 20 * (LastInactiveRefreshEnd - LastInactiveRefreshStart);
                             //                TRACE_I("Calculated delay between refreshes is " << delay);
@@ -590,11 +590,11 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             //                TRACE_I("Delay between refreshes is " << delay);
                             DWORD ti = GetTickCount();
                             //                TRACE_I("Last refresh was before " << ti - LastInactiveRefreshEnd);
-                            if (InactiveRefreshTimerSet ||                 // timer uz bezi, jen na nej pockame
-                                ti - LastInactiveRefreshEnd + 100 < delay) // +100 aby se timer nenahazoval "zbytecne" (at je odklad refreshe aspon o 100ms)
+                            if (InactiveRefreshTimerSet ||                 // timer is already running, we just need to wait for it
+                                ti - LastInactiveRefreshEnd + 100 < delay) // +100 to prevent the timer from being "wasted" (so that the delay of the refresh is at least 100ms)
                             {
                                 //                  TRACE_I("Delaying refresh");
-                                if (!InactiveRefreshTimerSet) // timer jeste nebezi, zalozime ho
+                                if (!InactiveRefreshTimerSet) // timer is not running yet, let's start it
                                 {
                                     //                    TRACE_I("Setting timer");
                                     if (SetTimer(HWindow, IDT_INACTIVEREFRESH, max(200, delay - (ti - LastInactiveRefreshEnd)), NULL))
@@ -604,11 +604,11 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                         skipRefresh = TRUE;
                                     }
                                 }
-                                else // timer uz bezi, jen na nej pockame
+                                else // timer is already running, we just need to wait for it
                                 {
                                     //                    TRACE_I("Timer already set");
                                     if (lParam > InactRefreshLParam)
-                                        InactRefreshLParam = lParam; // prevezmeme novejsi cas do InactRefreshLParam
+                                        InactRefreshLParam = lParam; // we will take the newer time into InactRefreshLParam
                                     skipRefresh = TRUE;
                                 }
                             }
@@ -619,7 +619,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         if (uMsg == WM_USER_REFRESH_DIR || uMsg == WM_USER_REFRESH_DIR_EX_DELAYED ||
                             uMsg == WM_USER_ICONREADING_END || uMsg == WM_USER_INACTREFRESH_DIR)
                         {
-                            setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // ceka uz ?
+                            setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // Is it waiting already?
                             if (setWait)
                                 oldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
                         }
@@ -627,7 +627,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         CPanelType typeBackup;
                         if (isInactiveRefresh)
                         {
-                            lstrcpyn(pathBackup, GetPath(), MAX_PATH); // zajimaji nas jen diskove cesty a cesty do archivu (u plugin-FS nas snooper o zmenach neinformuje)
+                            lstrcpyn(pathBackup, GetPath(), MAX_PATH); // We are only interested in disk paths and paths to archives (our snooper does not inform us about changes in plugin-FS)
                             typeBackup = GetPanelType();
                             LastInactiveRefreshStart = GetTickCount();
                         }
@@ -641,21 +641,20 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         if (isInactiveRefresh)
                         {
                             if (typeBackup != GetPanelType() || StrICmp(pathBackup, GetPath()) != 0)
-                            { // pokud doslo ke zmene cesty (nejspis nekdo prave smazal adresar zobrazeny v panelu), provedeme pripadny dalsi refresh bez cekani (da se ocekavat, ze smazou i adresar nove zobrazeny v panelu, tak abysme z nej umeli rychle "vycouvat")
+                            { // if the path has changed (most likely someone just deleted the directory displayed in the panel), we will perform an additional refresh without waiting (it can be expected that they will also delete the directory newly displayed in the panel, so that we can quickly "retreat" from it)
                                 LastInactiveRefreshEnd = LastInactiveRefreshStart;
                             }
                             else
                             {
                                 LastInactiveRefreshEnd = GetTickCount();
                                 if ((int)(LastInactiveRefreshEnd - LastInactiveRefreshStart) <= 0)
-                                    LastInactiveRefreshEnd = LastInactiveRefreshStart + 1; // nesmi byt shodne (to je stav "zatim zadny refresh")
+                                    LastInactiveRefreshEnd = LastInactiveRefreshStart + 1; // must not be the same (this is the "no refresh yet" state)
                             }
                         }
-                        /*  // Petr: nevim proc bylo nastaveni LastRefreshTime az zde - logicky pokud dojde ke zmene behem refreshe, je nutne udelat dalsi refresh - sralo se to v Nethoodu, protoze enumeracni thread stihl postnout refresh jeste pred dokoncenim RefreshDirectory, tedy doslo k jeho vyignorovani (je to refresh behem refreshe)
+                        /*  // Petr: I don't know why the setting of LastRefreshTime was here - logically, if there is a change during refresh, another refresh is necessary - it was a mess in Nethood because the enumeration thread managed to post a refresh before the completion of RefreshDirectory, so it was ignored (it's a refresh during refresh)
               HANDLES(EnterCriticalSection(&TimeCounterSection));
               LastRefreshTime = MyTimeCounter++;
-              HANDLES(LeaveCriticalSection(&TimeCounterSection));
-*/
+              HANDLES(LeaveCriticalSection(&TimeCounterSection));*/
                         if (setWait)
                             SetCursor(oldCur);
                     }
@@ -671,12 +670,12 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_USER_REFRESH_PLUGINFS:
     {
         if (SnooperSuspended || StopRefresh)
-        { // uz je zapnuty suspend mode (pracuje se nad vnitrnimi daty -> nelze je refreshnout)
-            // navic muzeme byt i uvnitr plug-inu -> vicenasobne volani metod plug-inu nepodporujeme
+        { // suspend mode is now turned on (working on internal data -> cannot be refreshed)
+            // we can also be inside the plug-in -> we do not support multiple calls to plug-in methods
             PluginFSNeedRefreshAfterEndOfSM = TRUE;
         }
         else
-        { // nejsme uvnitr plug-inu
+        { // We are not inside the plug-in
             if (Is(ptPluginFS))
             {
                 if (GetPluginFS()->NotEmpty())
@@ -694,20 +693,20 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         if (uMsg == WM_USER_REFRESHINDEX)
         {
-            // pokud slo o nacteni "staticke" ikony asociace, ulozime ji do Associations (pocita
-            // i s thumbnaily - nedopadne podminka na Flag==1 nebo 2)
-            if (file != NULL && !isDir &&                                   // jde o soubor
-                (!Is(ptPluginFS) || GetPluginIconsType() != pitFromPlugin)) // nejde o ikonu z plug-inu
+            // if it was about loading a "static" association icon, we save it to Associations (count
+            // if it's thumbnaily - the condition won't fall on Flag==1 or 2)
+            if (file != NULL && !isDir &&                                   // it's about the file
+                (!Is(ptPluginFS) || GetPluginIconsType() != pitFromPlugin)) // It's not about the icon from the plug-in
             {
-                char buf[MAX_PATH + 4]; // pripona malymi pismeny
+                char buf[MAX_PATH + 4]; // suffix in lowercase letters
                 char *s1 = buf, *s2 = file->Ext;
                 while (*s2 != 0)
                     *s1++ = LowerCase[*s2++];
                 *((DWORD*)s1) = 0;
                 int index;
                 CIconSizeEnum iconSize = IconCache->GetIconSize();
-                if (Associations.GetIndex(buf, index) &&             // pripona ma ikonku (asociaci)
-                    (Associations[index].GetIndex(iconSize) == -1 || // jde o ikonku, ktera se nacita
+                if (Associations.GetIndex(buf, index) &&             // extension has an icon (association)
+                    (Associations[index].GetIndex(iconSize) == -1 || // It's about an icon that is being loaded
                      Associations[index].GetIndex(iconSize) == -3))
                 {
                     int icon;
@@ -715,16 +714,16 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     int srcIconListIndex;
                     memmove(buf, file->Name, file->NameLen);
                     *(DWORD*)(buf + file->NameLen) = 0;
-                    if (IconCache->GetIndex(buf, icon, NULL, NULL) &&                                 // icon-thread ji nacita
-                        (IconCache->At(icon).GetFlag() == 1 || IconCache->At(icon).GetFlag() == 2) && // ikona je nactena nova nebo stara
+                    if (IconCache->GetIndex(buf, icon, NULL, NULL) &&                                 // icon-thread is loading it
+                        (IconCache->At(icon).GetFlag() == 1 || IconCache->At(icon).GetFlag() == 2) && // icon is loaded new or old
                         IconCache->GetIcon(IconCache->At(icon).GetIndex(),
-                                           &srcIconList, &srcIconListIndex)) // povede se ziskat nactenou ikonku
-                    {                                                        // ikonka pro priponu -> icon-thread uz ji nacetl
+                                           &srcIconList, &srcIconListIndex)) // it will be possible to obtain the loaded icon
+                    {                                                        // icon for the extension -> icon-thread has already loaded it
                         CIconList* dstIconList;
                         int dstIconListIndex;
                         int i = Associations.AllocIcon(&dstIconList, &dstIconListIndex, iconSize);
-                        if (i != -1) // ziskali jsme misto pro novou ikonku
-                        {            // nakopirujeme si ji z IconCache do Associations
+                        if (i != -1) // we have obtained a spot for a new icon
+                        {            // we will copy it from IconCache to Associations
                             Associations[index].SetIndex(i, iconSize);
 
                             BOOL leaveSection;
@@ -745,13 +744,13 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                             if (!StopIconRepaint)
                             {
-                                // panely prekreslime pouze pokud odpovidaji velikosti ikon
+                                // Redraw panels only if they match the size of the icons
                                 if (iconSize == GetIconSizeForCurrentViewMode())
-                                    RepaintIconOnly(-1); // u nas vsechny
+                                    RepaintIconOnly(-1); // all of us here
 
                                 CFilesWindow* otherPanel = MainWindow->GetOtherPanel(this);
                                 if (iconSize == otherPanel->GetIconSizeForCurrentViewMode())
-                                    otherPanel->RepaintIconOnly(-1); // a u sousedu vsechny
+                                    otherPanel->RepaintIconOnly(-1); // and all the neighbors
                             }
                             else
                                 PostAllIconsRepaint = TRUE;
@@ -761,10 +760,10 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
         }
 
-        // provedeme prekresleni postizeneho indexu
-        if (file != NULL) // file se zde pouziva jen pro test na NULL
+        // we will perform a redraw of the affected index
+        if (file != NULL) // file is used here only for testing for NULL
         {
-            if (!StopIconRepaint) // pokud je povoleno prekreslovani ikon
+            if (!StopIconRepaint) // if icon refreshing is allowed
                 RepaintIconOnly((int)wParam);
             else
                 PostAllIconsRepaint = TRUE;
@@ -800,7 +799,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_USER_CHANGEDIR:
     {
-        // postprocessing provedeme jen u cest, ktere jsme ziskali jako text (a ne primo dropnutim adresare)
+        // We will perform postprocessing only on paths that we obtained as text (and not directly by dropping the directory)
         char buff[2 * MAX_PATH];
         strcpy_s(buff, (char*)lParam);
         if (!(BOOL)wParam || PostProcessPathFromUser(HWindow, buff))
@@ -810,8 +809,8 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_USER_FOCUSFILE:
     {
-        // Musime okno vytahnout uz tady, protoze behem volani ChangeDir muze dojit
-        // k vyskoceni messageboxu (cesta neexistuje) a ten by zustal pod Findem.
+        // We need to pull the window out here because ChangeDir can be called during the call
+        // to pop up a messagebox (path does not exist) and it would remain under Find.
         SetForegroundWindow(MainWindow->HWindow);
         if (IsIconic(MainWindow->HWindow))
         {
@@ -822,7 +821,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             strcpy(NextFocusName, (char*)wParam);
             SendMessage(HWindow, WM_USER_DONEXTFOCUS, 0, 0);
-            //        SetForegroundWindow(MainWindow->HWindow);  // tady uz je pozde - presunuto nahoru
+            //        SetForegroundWindow(MainWindow->HWindow);  // it's too late here - moved up
             UpdateWindow(MainWindow->HWindow);
         }
         return 0;
@@ -845,14 +844,14 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_USER_VIEWFILEWITH:
     {
         COpenViewerData* data = (COpenViewerData*)wParam;
-        ViewFile(data->FileName, FALSE, (DWORD)lParam, data->EnumFileNamesSourceUID, // FIXME_X64 - overit pretypovani na (DWORD)
+        ViewFile(data->FileName, FALSE, (DWORD)lParam, data->EnumFileNamesSourceUID, // FIXME_X64 - verify typecasting to (DWORD)
                  data->EnumFileNamesLastFileIndex);
         return 0;
     }
 
     case WM_USER_EDITFILEWITH:
     {
-        EditFile((char*)wParam, (DWORD)lParam); // FIXME_X64 - overit pretypovani na (DWORD)
+        EditFile((char*)wParam, (DWORD)lParam); // FIXME_X64 - verify typecasting to (DWORD)
         return 0;
     }
 
@@ -863,10 +862,10 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         //      return 0;
         //    }
 
-    case WM_USER_DONEXTFOCUS: // pokud to jiz nestihl RefreshDirectory, udelame to tady
+    case WM_USER_DONEXTFOCUS: // if RefreshDirectory hasn't done it yet, we'll do it here
     {
         DontClearNextFocusName = FALSE;
-        if (NextFocusName[0] != 0) // je-li co fokusit
+        if (NextFocusName[0] != 0) // if there is something to focus on
         {
             int total = Files->Count + Dirs->Count;
             int found = -1;
@@ -876,14 +875,14 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 CFileData* f = (i < Dirs->Count) ? &Dirs->At(i) : &Files->At(i - Dirs->Count);
                 if (StrICmp(f->Name, NextFocusName) == 0)
                 {
-                    if (strcmp(f->Name, NextFocusName) == 0) // soubor nalezen presne
+                    if (strcmp(f->Name, NextFocusName) == 0) // file found exactly
                     {
                         NextFocusName[0] = 0;
                         SetCaretIndex(i, FALSE);
                         break;
                     }
                     if (found == -1)
-                        found = i; // soubor nalezen (ignore-case)
+                        found = i; // file found (ignore-case)
                 }
             }
             if (i == total && found != -1)
@@ -927,7 +926,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     if (plSizeValid || sizeValid && (!isDir || f->SizeValid))
                         selectedSize += plSizeValid ? plSize : f->Size;
                     else
-                        displaySize = FALSE; // soubor nezname velikosti nebo adresar bez zname/vypocitane velikosti
+                        displaySize = FALSE; // file of unknown size or directory without known/computed size
                 }
             }
             if (files > 0 || dirs > 0)
@@ -950,7 +949,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                 StatusLine->SetSubTexts(varPlacements, varPlacementsCount);
                         }
                         else
-                            varPlacementsCount = 100; // mohlo se poskodit
+                            varPlacementsCount = 100; // could be damaged
                     }
                 }
                 if (!done)
@@ -965,7 +964,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         ExpandPluralFilesDirs(text, 200, files, dirs, epfdmSelected, FALSE);
                     if (StatusLine->SetText(text) && displaySize)
                         StatusLine->SetSubTexts(varPlacements, varPlacementsCount);
-                    varPlacementsCount = 100; // mohlo se poskodit
+                    varPlacementsCount = 100; // could be damaged
                 }
             }
             else
@@ -976,25 +975,25 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             LastFocus = INT_MAX;
             int index = GetCaretIndex();
-            ItemFocused(index); // pri odznaceni
+            ItemFocused(index); // when unchecked
         }
-        IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+        IdleRefreshStates = TRUE; // During the next Idle, we will force the check of status variables
         return 0;
     }
 
     case WM_CREATE:
     {
-        //---  pridani tohoto panelu do pole zdroju pro enumeraci souboru ve viewerech
+        //--- adding this panel to the array of resources for enumerating files in viewers
         EnumFileNamesAddSourceUID(HWindow, &EnumFileNamesSourceUID);
 
-        //---  vytvoreni listboxu se soubory a adresari
+        //--- creating a listbox with files and directories
         ListBox = new CFilesBox(this);
         if (ListBox == NULL)
         {
             TRACE_E(LOW_MEMORY);
             return -1;
         }
-        //---  vytvoreni statusliny s informacemi o akt. souboru
+        //--- creating a status line with information about the current file
         StatusLine = new CStatusWindow(this, blBottom, ooStatic);
         if (StatusLine == NULL)
         {
@@ -1002,7 +1001,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             return -1;
         }
         ToggleStatusLine();
-        //---  vytvoreni statusliny s informacemi o akt. adresari
+        //--- creating a status line with information about the current directory
         DirectoryLine = new CStatusWindow(this, blTop, ooStatic);
         if (DirectoryLine == NULL)
         {
@@ -1011,8 +1010,8 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         DirectoryLine->SetLeftPanel(MainWindow->LeftPanel == this);
         ToggleDirectoryLine();
-        //---  nahozeni typu viewu + nacteni obsahu adresare
-        SetThumbnailSize(Configuration.ThumbnailSize); // musi existovat ListBox
+        //--- setting up the view type + loading the contents of the directory
+        SetThumbnailSize(Configuration.ThumbnailSize); // There must be a ListBox
         if (!ListBox->CreateEx(WS_EX_WINDOWEDGE,
                                CFILESBOX_CLASSNAME,
                                "",
@@ -1045,7 +1044,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         SelectViewTemplate(index, FALSE, FALSE);
         ShowWindow(ListBox->HWindow, SW_SHOW);
 
-        // srovname nastaveni promenne AutomaticRefresh a directory-liny
+        // Compare the settings of the AutomaticRefresh variable and directory-liny
         SetAutomaticRefresh(AutomaticRefresh, TRUE);
 
         return 0;
@@ -1053,18 +1052,18 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_DESTROY:
     {
-        //---  zruseni tohoto panelu z pole zdroju pro enumeraci souboru ve viewerech
+        //--- removing this panel from the list of sources for file enumeration in viewers
         EnumFileNamesRemoveSourceUID(HWindow);
 
         CancelUI(); // cancel QuickSearch and QuickEdit
         LastRefreshTime = INT_MAX;
         BeginStopRefresh();
         DetachDirectory(this);
-        //---  uvolneni child-oken
+        //--- releasing child window
         RevokeDragDrop();
         ListBox->DetachWindow();
         delete ListBox;
-        ListBox = NULL; // pro jistotu, at se chyby ukazou...
+        ListBox = NULL; // just to be sure, let errors show up...
 
         StatusLine->DestroyWindow();
         delete StatusLine;
@@ -1072,16 +1071,16 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         DirectoryLine->DestroyWindow();
         delete DirectoryLine;
-        DirectoryLine = NULL; // oprava padacky
+        DirectoryLine = NULL; // parachute repair
                               //---
         return 0;
     }
 
-    case WM_USER_ENUMFILENAMES: // hledani dalsiho/predchoziho jmena pro viewer
+    case WM_USER_ENUMFILENAMES: // searching for the next/previous name for viewer
     {
         HANDLES(EnterCriticalSection(&FileNamesEnumDataSect));
 
-        if (InactiveRefreshTimerSet) // pokud je zde odlozeny refresh, musime jej provest ihned, jinak budeme enumerovat nad neaktualnim listingem; pokud bude dele trvat nevadi, GetFileNameForViewer si na vysledek pocka...
+        if (InactiveRefreshTimerSet) // if there is a delayed refresh here, we must perform it immediately, otherwise we will be enumerating over an outdated listing; if it takes longer, it doesn't matter, GetFileNameForViewer will wait for the result...
         {
             //        TRACE_I("Refreshing during enumeration (refresh in inactive window was delayed)");
             KillTimer(HWindow, IDT_INACTIVEREFRESH);
@@ -1090,14 +1089,14 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             SendMessage(HWindow, WM_USER_INACTREFRESH_DIR, FALSE, InactRefreshLParam);
         }
 
-        if ((int)wParam /* reqUID */ == FileNamesEnumData.RequestUID && // nedoslo k zadani dalsiho pozadaku (tento by pak byl k nicemu)
-            EnumFileNamesSourceUID == FileNamesEnumData.SrcUID &&       // nedoslo ke zmene zdroje
-            !FileNamesEnumData.TimedOut)                                // na vysledek jeste nekdo ceka
+        if ((int)wParam /* reqUID*/ == FileNamesEnumData.RequestUID && // no further request was made (this one would then be useless)
+            EnumFileNamesSourceUID == FileNamesEnumData.SrcUID &&       // no change in the source
+            !FileNamesEnumData.TimedOut)                                // someone is still waiting for the result
         {
             if (Files != NULL && Is(ptDisk))
             {
                 BOOL selExists = FALSE;
-                if (FileNamesEnumData.PreferSelected) // je-li to treba, zjistime jestli existuje selectiona
+                if (FileNamesEnumData.PreferSelected) // if necessary, we will determine if the selectiona exists
                 {
                     int i;
                     for (i = 0; i < Files->Count; i++)
@@ -1113,19 +1112,19 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 int index = FileNamesEnumData.LastFileIndex;
                 int count = Files->Count;
                 BOOL indexNotFound = TRUE;
-                if (index == -1) // hledame od prvniho nebo od posledniho
+                if (index == -1) // search from the first or from the last
                 {
                     if (FileNamesEnumData.RequestType == fnertFindPrevious)
-                        index = count; // hledame predchozi + mame zacit na poslednim
-                                       // else  // hledame nasledujici + mame zacit na prvnim
+                        index = count; // search for previous + start at the last
+                                       // else  // looking for the next one + starting from the first one
                 }
                 else
                 {
-                    if (FileNamesEnumData.LastFileName[0] != 0) // zname plne jmeno souboru na 'index', zkontrolujeme jestli nedoslo k rozesunuti/sesunuti pole + pripadne dohledame novy index
+                    if (FileNamesEnumData.LastFileName[0] != 0) // we know the full file name as 'index', we will check if the array has not been spread/collapsed + possibly find a new index
                     {
                         int pathLen = (int)strlen(GetPath());
                         if (StrNICmp(GetPath(), FileNamesEnumData.LastFileName, pathLen) == 0)
-                        { // cesta k souboru se musi shodovat s cestou v panelu ("always true")
+                        { // the path to the file must match the path in the panel ("always true")
                             const char* name = FileNamesEnumData.LastFileName + pathLen;
                             if (*name == '\\' || *name == '/')
                                 name++;
@@ -1135,11 +1134,11 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             if (nameIsSame)
                                 indexNotFound = FALSE;
                             if (f == NULL || !nameIsSame)
-                            { // jmeno na indexu 'index' neni FileNamesEnumData.LastFileName, zkusime najit novy index tohoto jmena
+                            { // the name at index 'index' is not FileNamesEnumData.LastFileName, let's try to find a new index for this name
                                 int i;
                                 for (i = 0; i < count && StrICmp(name, Files->At(i).Name) != 0; i++)
                                     ;
-                                if (i != count) // novy index nalezen
+                                if (i != count) // new index found
                                 {
                                     indexNotFound = FALSE;
                                     index = i;
@@ -1162,9 +1161,9 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                 int wantedViewerType = 0;
                 BOOL onlyAssociatedExtensions = FALSE;
-                if (FileNamesEnumData.OnlyAssociatedExtensions) // preje si viewer filtrovani podle asociovanych pripon?
+                if (FileNamesEnumData.OnlyAssociatedExtensions) // Does the viewer want filtering by associated extensions?
                 {
-                    if (FileNamesEnumData.Plugin != NULL) // viewer z pluginu
+                    if (FileNamesEnumData.Plugin != NULL) // viewer from plugin
                     {
                         int pluginIndex = Plugins.GetIndex(FileNamesEnumData.Plugin);
                         if (pluginIndex != -1) // "always true"
@@ -1173,7 +1172,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             onlyAssociatedExtensions = TRUE;
                         }
                     }
-                    else // interni viewer
+                    else // internal viewer
                     {
                         wantedViewerType = VIEWER_INTERNAL;
                         onlyAssociatedExtensions = TRUE;
@@ -1183,7 +1182,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 BOOL preferSelected = selExists && FileNamesEnumData.PreferSelected;
                 switch (FileNamesEnumData.RequestType)
                 {
-                case fnertFindNext: // dalsi
+                case fnertFindNext: // next
                 {
                     CDynString strViewerMasks;
                     if (!onlyAssociatedExtensions || MainWindow->GetViewersAssoc(wantedViewerType, &strViewerMasks))
@@ -1212,7 +1211,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     break;
                 }
 
-                case fnertFindPrevious: // predchozi
+                case fnertFindPrevious: // previous
                 {
                     CDynString strViewerMasks;
                     if (!onlyAssociatedExtensions || MainWindow->GetViewersAssoc(wantedViewerType, &strViewerMasks))
@@ -1241,7 +1240,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     break;
                 }
 
-                case fnertIsSelected: // zjisteni oznaceni
+                case fnertIsSelected: // finding the label
                 {
                     if (!indexNotFound && index >= 0 && index < Files->Count)
                     {
@@ -1251,7 +1250,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     break;
                 }
 
-                case fnertSetSelection: // nastaveni oznaceni
+                case fnertSetSelection: // setting the label
                 {
                     if (!indexNotFound && index >= 0 && index < Files->Count)
                     {
@@ -1324,7 +1323,7 @@ void CFilesWindow::OpenDirHistory()
     if (!MainWindow->DirHistory->HasPaths())
         return;
 
-    BeginStopRefresh(); // cmuchal si da pohov
+    BeginStopRefresh(); // He was snoring in his sleep
 
     CMenuPopup menu;
 
@@ -1347,14 +1346,14 @@ void CFilesWindow::OpenDirHistory()
     if (cmd != 0)
         MainWindow->DirHistory->Execute(cmd, FALSE, this, TRUE, FALSE);
 
-    EndStopRefresh(); // ted uz zase cmuchal nastartuje
+    EndStopRefresh(); // now he's sniffling again, he'll start up
 }
 
 void CFilesWindow::OpenStopFilterMenu()
 {
     CALL_STACK_MESSAGE1("CFilesWindow::OpenStopFilterMenu()");
 
-    BeginStopRefresh(); // cmuchal si da pohov
+    BeginStopRefresh(); // He was snoring in his sleep
 
     CMenuPopup menu;
 
@@ -1371,8 +1370,8 @@ void CFilesWindow::OpenStopFilterMenu()
         }
     }
 
-    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volanim InsertItem() dole...
+    /* used for the export_mnu.py script, which generates the salmenu.mnu for the Translator
+   to keep synchronized with the InsertItem() calls below...
 MENU_TEMPLATE_ITEM StopFilterMenu[] = 
 {
   {MNTT_PB, 0
@@ -1380,8 +1379,7 @@ MENU_TEMPLATE_ITEM StopFilterMenu[] =
   {MNTT_IT, IDS_HIDDEN_FILTER
   {MNTT_IT, IDS_HIDDEN_HIDECMD
   {MNTT_PE, 0
-};
-*/
+};*/
     MENU_ITEM_INFO mii;
     mii.Mask = MENU_MASK_TYPE | MENU_MASK_STRING | MENU_MASK_ID | MENU_MASK_STATE;
     mii.Type = MENU_TYPE_STRING;
@@ -1423,19 +1421,19 @@ MENU_TEMPLATE_ITEM StopFilterMenu[] =
     }
     }
 
-    EndStopRefresh(); // ted uz zase cmuchal nastartuje
+    EndStopRefresh(); // now he's sniffling again, he'll start up
 }
 
-// na zaklade dostupnych sloupcu naplni popup
+// populates the popup based on available columns
 BOOL CFilesWindow::FillSortByMenu(CMenuPopup* popup)
 {
     CALL_STACK_MESSAGE1("CFilesWindow::FillSortByMenu()");
 
-    // sestrelime existujici polozky
+    // Remove existing items
     popup->RemoveAllItems();
 
-    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volanim InsertItem() dole...
+    /* is used for the export_mnu.py script, which generates the salmenu.mnu for the Translator
+   to keep synchronized with the InsertItem() calls below...
 MENU_TEMPLATE_ITEM SortByMenu[] = 
 {
   {MNTT_PB, 0
@@ -1446,12 +1444,11 @@ MENU_TEMPLATE_ITEM SortByMenu[] =
   {MNTT_IT, IDS_COLUMN_MENU_ATTR
   {MNTT_IT, IDS_MENU_LEFT_SORTOPTIONS
   {MNTT_PE, 0
-};
-*/
+};*/
 
-    // docasne reseni pro 1.6 beta 6: naleju vzdy (bez ohledu na ValidFileData)
-    // polozky Name, Ext, Date, Size
-    // poradi musi korespondovat s CSortType enumem
+    // Temporary solution for 1.6 beta 6: always pour (regardless of ValidFileData)
+    // fields Name, Ext, Date, Size
+    // Order must correspond to the CSortType enum
     int textResID[5] = {IDS_COLUMN_MENU_NAME, IDS_COLUMN_MENU_EXT, IDS_COLUMN_MENU_TIME, IDS_COLUMN_MENU_SIZE, IDS_COLUMN_MENU_ATTR};
     int leftCmdID[5] = {CM_LEFTNAME, CM_LEFTEXT, CM_LEFTTIME, CM_LEFTSIZE, CM_LEFTATTR};
     int rightCmdID[5] = {CM_RIGHTNAME, CM_RIGHTEXT, CM_RIGHTTIME, CM_RIGHTSIZE, CM_RIGHTATTR};
@@ -1500,7 +1497,7 @@ void CFilesWindow::SetThumbnailSize(int size)
     {
         if (size != ListBox->ThumbnailWidth || size != ListBox->ThumbnailHeight)
         {
-            // vycisteni icon-cache
+            // Clearing icon cache
             SleepIconCacheThread();
             IconCache->Release();
             EndOfIconReadingTime = GetTickCount() - 10000;
@@ -1530,7 +1527,7 @@ void CFilesWindow::SetFont()
 {
     if (DirectoryLine != NULL)
         DirectoryLine->SetFont();
-    //if (ListBox != NULL)  // toto se nastavi z volani SetFont()
+    //if (ListBox != NULL)  // this is set from calling SetFont()
     //  ListBox->SetFont();
     if (StatusLine != NULL)
         StatusLine->SetFont();

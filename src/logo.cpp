@@ -50,7 +50,7 @@ CSplashScreen::CSplashScreen()
     Width = 0;
     Height = 0;
 
-    // vytvorim font
+    // create font
     LOGFONT lf;
     //  GetSystemGUIFont(&lf);
     //  lf.lfWeight = FW_NORMAL;
@@ -73,14 +73,14 @@ CSplashScreen::CSplashScreen()
     strcpy(lf.lfFaceName, "MS Shell Dlg 2");
 
     HNormalFont = HANDLES(CreateFontIndirect(&lf));
-    // vytvorim tucnou variantu
+    // create a bold version
     lf.lfWeight = FW_BOLD;
     HBoldFont = HANDLES(CreateFontIndirect(&lf));
 }
 
 CSplashScreen::~CSplashScreen()
 {
-    // touto dobou uz by mela byt bitmapa sestrelena, ale pojistime se
+    // By this time, the bitmap should have been shot down, but let's make sure
     DestroyBitmap();
     if (HNormalFont != NULL)
         HANDLES(DeleteObject(HNormalFont));
@@ -141,7 +141,7 @@ BOOL CSplashScreen::PrepareBitmap()
     r.right = Width;
     r.bottom = Height;
 
-    // podmazeme pozadi bilou barvou
+    // Fill the background with white color
     SetBkColor(hDC, RGB(255, 255, 255));
     ExtTextOut(hDC, 0, 0, ETO_OPAQUE, &r, "", 0, NULL);
 
@@ -165,7 +165,7 @@ BOOL CSplashScreen::PrepareBitmap()
     svgGrad.AlphaBlend(hDC, 0, GradientY, gradSize.cx, Height - GradientY, SVGSTATE_ORIGINAL);
     svgHand.AlphaBlend(hDC, Width - handSize.cx, 0, handSize.cx, handSize.cy, SVGSTATE_ORIGINAL);
 
-    // pevne texty
+    // hardcoded strings
     PaintText(SALAMANDER_TEXT_VERSION,
               VersionR.left,
               VersionR.top,
@@ -176,7 +176,7 @@ BOOL CSplashScreen::PrepareBitmap()
               CopyrightR.top,
               TRUE, RGB(255, 255, 255));
 
-    // zaloha bitmapy bez textu
+    // Backup of bitmap without text
     BitBlt(OriginalBitmap->HMemDC, 0, 0, Width, Height, Bitmap->HMemDC, 0, 0, SRCCOPY);
 
     return TRUE;
@@ -186,13 +186,13 @@ void CSplashScreen::SetText(const char* text)
 {
     if (Bitmap != NULL && OriginalBitmap != NULL)
     {
-        // obnovim pozadi
+        // refresh background
         BitBlt(Bitmap->HMemDC, StatusR.left, StatusR.top, StatusR.right - StatusR.left, StatusR.bottom - StatusR.top, OriginalBitmap->HMemDC, StatusR.left, StatusR.top, SRCCOPY);
         PaintText(text,
                   StatusR.left, StatusR.top,
                   FALSE, RGB(255, 255, 255));
 
-        // pokud jsme zobrazeni, promitneme zmenu do obrazovky
+        // if we are visible, we project the change onto the screen
         if (HWindow != NULL)
         {
             HDC hDC = HANDLES(GetDC(HWindow));
@@ -319,7 +319,7 @@ HWND GetSplashScreenHandle()
 CAboutDialog::CAboutDialog(HWND parent)
     : CCommonDialog(HLanguage, IDD_ABOUT, parent)
 {
-    HGradientBkBrush = HANDLES(CreateSolidBrush(RGB(221, 151, 4))); // musi byt zluta z res\logoline.png
+    HGradientBkBrush = HANDLES(CreateSolidBrush(RGB(221, 151, 4))); // must be yellow from res\logoline.png
     BackgroundBitmap = NULL;
 }
 
@@ -367,7 +367,7 @@ AboutAndEvalDlgCreateBkgnd(HWND hWindow)
 
     hDC = bitmap->HMemDC;
 
-    // podmazeme pozadi bilou barvou
+    // Fill the background with white color
     SetBkColor(hDC, RGB(255, 255, 255));
     ExtTextOut(hDC, 0, 0, ETO_OPAQUE, &r, "", 0, NULL);
 
@@ -414,8 +414,8 @@ CAboutDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         new CStaticText(HWindow, IDS_ABOUT_SALAMANDER, STF_BOLD);
         //      new CStaticText(HWindow, IDS_ABOUT_FIRM, STF_BOLD);
 
-        // je-li prostredi v cestine nebo slovenstine, budeme ukazovat automaticky ceskou verzi webu
-        BOOL english = LanguageID != 0x405 /* cesky */ && LanguageID != 0x41B /* slovensky */;
+        // if the environment is in Czech or Slovak, we will automatically display the Czech version of the website
+        BOOL english = LanguageID != 0x405 /* Czech*/ && LanguageID != 0x41B /* Slovak*/;
 
         hl = new CHyperLink(HWindow, IDC_ABOUT_WWW);
         if (hl != NULL)
@@ -452,11 +452,11 @@ CAboutDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (IsAppThemed())
         {
-            // bez tehle obezlicky je kolem OK tlacitka sedivy frame
+            // without this nonsense around the OK button a gray frame
             if (WindowsVistaAndLater)
                 return (BOOL)(UINT_PTR)HGradientBkBrush;
             else
-                return (BOOL)(UINT_PTR)GetStockObject(NULL_BRUSH); // pod XP to jeste chodilo dobre
+                return (BOOL)(UINT_PTR)GetStockObject(NULL_BRUSH); // Under XP it still worked well
         }
         break;
     }

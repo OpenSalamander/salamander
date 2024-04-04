@@ -80,15 +80,15 @@ unsigned ThreadViewerMessageLoopBody(void* parameter)
     {
         //    TRACE_I("MoresStanislav: ThreadViewerMessageLoopBody 4");
         //    CALL_STACK_MESSAGE1("MoresStanislav: ThreadViewerMessageLoopBody 4");
-        view->SetObjectOrigin(ooAllocated); // zmena z ooStatic, okno je uspesne vytvorene
+        view->SetObjectOrigin(ooAllocated); // Change from ooStatic, window successfully created
         data->Success = TRUE;
-        // ukazeme okno, jinak by pozdeji neprijemne "vyskocilo"
+        // we will show the window, otherwise it might "pop up" unexpectedly later
         //    TRACE_I("MoresStanislav: ThreadViewerMessageLoopBody 5");
         //    CALL_STACK_MESSAGE1("MoresStanislav: ThreadViewerMessageLoopBody 5");
         ShowWindow(view->HWindow, showCmd);
         //    TRACE_I("MoresStanislav: ThreadViewerMessageLoopBody 6");
         //    CALL_STACK_MESSAGE1("MoresStanislav: ThreadViewerMessageLoopBody 6");
-        SetForegroundWindow(view->HWindow); // chyba z 1.6 beta 1
+        SetForegroundWindow(view->HWindow); // error from 1.6 beta 1
                                             //    TRACE_I("MoresStanislav: ThreadViewerMessageLoopBody 7");
                                             //    CALL_STACK_MESSAGE1("MoresStanislav: ThreadViewerMessageLoopBody 7");
         UpdateWindow(view->HWindow);
@@ -101,19 +101,19 @@ unsigned ThreadViewerMessageLoopBody(void* parameter)
     //  TRACE_I("MoresStanislav: ThreadViewerMessageLoopBody 9");
     //  CALL_STACK_MESSAGE1("MoresStanislav: ThreadViewerMessageLoopBody 9");
     BOOL ok = data->Success;
-    data = NULL;              // dale jiz neni platne
-    SetEvent(ViewerContinue); // pustime dal hlavni thread
+    data = NULL;              // no longer valid
+    SetEvent(ViewerContinue); // Let's start the main thread
                               //  TRACE_I("MoresStanislav: ThreadViewerMessageLoopBody 10");
                               //  CALL_STACK_MESSAGE1("MoresStanislav: ThreadViewerMessageLoopBody 10");
 
-    if (ok) // pokud se okno vytvorilo, spustime aplikacni smycku
+    if (ok) // if the window has been created, we start the application loop
     {
         CALL_STACK_MESSAGE1("ThreadViewerMessageLoopBody::message_loop");
         if (SalGetFullName(name))
             view->OpenFile(name, caption, wholeCaption);
 
         MSG msg;
-        HWND viewHWindow = view->HWindow; // kvuli wm_quit pri ktere uz okno nebude alokovane
+        HWND viewHWindow = view->HWindow; // due to wm_quit, after which the window will no longer be allocated
         while (GetMessage(&msg, NULL, 0, 0))
         {
             if (!TranslateAccelerator(viewHWindow, ViewerTable, &msg))
@@ -143,7 +143,7 @@ unsigned ThreadViewerMessageLoopEH(void* param)
     {
         TRACE_I("Thread ViewerMessageLoop: calling ExitProcess(1).");
         //    ExitProcess(1);
-        TerminateProcess(GetCurrentProcess(), 1); // tvrdsi exit (tenhle jeste neco vola)
+        TerminateProcess(GetCurrentProcess(), 1); // tvrdší exit (this one still calls something)
         return 1;
     }
 #endif // CALLSTK_DISABLE
@@ -203,8 +203,8 @@ BOOL OpenViewer(const char* name, CViewType mode, int left, int top, int width, 
         {
             //      SetThreadPriority(loop, THREAD_PRIORITY_HIGHEST);
         }
-        AddAuxThread(loop);                            // pridame thread mezi existujici viewry (kill pri exitu)
-        WaitForSingleObject(ViewerContinue, INFINITE); // pockame az se thread nahodi
+        AddAuxThread(loop);                            // add a thread between existing viewers (kill on exit)
+        WaitForSingleObject(ViewerContinue, INFINITE); // Wait until the thread is started
         if (!data.Success)
             goto ERROR_TV_CREATE;
         return TRUE;
@@ -227,7 +227,7 @@ BOOL OpenViewer(const char* name, CViewType mode, int left, int top, int width, 
 //
 // RegExpErrorText
 //
-// error hlasky z regexp.cpp
+// error messages from regexp.cpp
 //
 
 const char* RegExpErrorText(CRegExpErrors err)
@@ -291,11 +291,11 @@ CViewerWindow::Prepare(HANDLE* hFile, __int64 offset, __int64 bytes, BOOL& fatal
             return bytes; // o.k.
         else
         {
-            if (Seek + Loaded == FileSize) // natazeny data az do konce souboru
+            if (Seek + Loaded == FileSize) // read data until the end of the file
                 if (Seek + Loaded > offset)
                     return Seek + Loaded - offset;
                 else
-                    return 0; // konec souboru
+                    return 0; // end of file
 
             if (offset + bytes - (Seek + Loaded) < VIEW_BUFFER_SIZE / 2 &&
                 (Loaded <= VIEW_BUFFER_SIZE / 2 ||
@@ -331,9 +331,9 @@ CViewerWindow::Prepare(HANDLE* hFile, __int64 offset, __int64 bytes, BOOL& fatal
         if (Seek + Loaded >= offset + bytes)
             return bytes; // o.k.
         else
-            return Seek + Loaded > offset ? Seek + Loaded - offset : 0; // zkracene
+            return Seek + Loaded > offset ? Seek + Loaded - offset : 0; // shortened
     else
-        return 0; // nic neni pouzitelny (nenacetl se zacatek)
+        return 0; // nothing is usable (the beginning did not load)
 }
 
 void CViewerWindow::CodeCharacters(unsigned char* start, unsigned char* end)
@@ -368,12 +368,12 @@ BOOL CViewerWindow::LoadBefore(HANDLE* hFile)
         CQuadWord size;
         DWORD err;
         BOOL haveSize = SalGetFileSize(file, size, err);
-        if (!haveSize || size.Value != (unsigned __int64)FileSize) // chyba nebo zmena souboru
+        if (!haveSize || size.Value != (unsigned __int64)FileSize) // error or file change
         {
             TRACE_I("The size of the viewed file has changed or some error occured.");
             // PostMessage(HWindow, WM_COMMAND, CM_REREADFILE, 0);  // prezitek, zbytecne: vznikne "fatal error" a dojde k prekresleni
             Seek = Loaded = 0;
-            if (hFile == NULL) // pokud se o zavirani handlu nestara volajici, je to na nas
+            if (hFile == NULL) // if the caller does not take care of closing the trade, it is up to us
                 HANDLES(CloseHandle(file));
             return FALSE;
         }
@@ -385,7 +385,7 @@ BOOL CViewerWindow::LoadBefore(HANDLE* hFile)
         if (read == 0)
         {
             TRACE_E("Incorrect call to LoadBefore.");
-            if (hFile == NULL) // pokud se o zavirani handlu nestara volajici, je to na nas
+            if (hFile == NULL) // if the caller does not take care of closing the trade, it is up to us
                 HANDLES(CloseHandle(file));
             return FALSE;
         }
@@ -397,28 +397,28 @@ BOOL CViewerWindow::LoadBefore(HANDLE* hFile)
         }
         DWORD readed;
         BOOL ret;
-        BOOL kill = FALSE; // TRUE znamena, ze pri chybe pujde FileName na NULL
+        BOOL kill = FALSE; // TRUE means that in case of an error, FileName will be set to NULL
         CQuadWord resSeek;
-        resSeek.SetUI64(Seek); // pozor, seek pro SetFilePointer je signed hodnota
+        resSeek.SetUI64(Seek); // Attention, the seek for SetFilePointer is a signed value
         resSeek.LoDWord = SetFilePointer(file, resSeek.LoDWord, (PLONG)&resSeek.HiDWord, FILE_BEGIN);
         err = GetLastError();
 
-#define INVALID_SET_FILE_POINTER ((DWORD)-1) // na tuhle konstantu u MS nejak zapomeli ;-)
+#define INVALID_SET_FILE_POINTER ((DWORD)-1) // MS seems to have forgotten about this constant ;-)
 
-        if ((resSeek.LoDWord != INVALID_SET_FILE_POINTER || err == NO_ERROR) && // neni chyba
-            resSeek.Value == (unsigned __int64)Seek)                            // sedi aktualni file-offset
+        if ((resSeek.LoDWord != INVALID_SET_FILE_POINTER || err == NO_ERROR) && // no error
+            resSeek.Value == (unsigned __int64)Seek)                            // current file offset is set
         {
             if (ReadFile(file, Buffer, read, &readed, NULL))
             {
                 if (readed != (DWORD)read)
                 {
                     InvalidateRect(HWindow, NULL, FALSE);
-                    Seek = Loaded = 0; // data v Bufferu muzou byt poskozena, invalidujeme je, aby je neco nepouzilo behem zobrazeni msgboxu
+                    Seek = Loaded = 0; // data in the buffer may be corrupted, we invalidate them so that nothing uses them during the display of the message box
                     kill = SalMessageBoxViewerPaintBlocked(HWindow, LoadStr(IDS_VIEWER_UNKNOWNERR),
                                                            LoadStr(IDS_ERRORREADINGFILE),
                                                            MB_RETRYCANCEL | MB_ICONEXCLAMATION) == IDCANCEL;
                     ret = FALSE;
-                    Seek = Loaded = 0; // behem zobrazeni msgboxu se nejaka data mohla nacist, znovu Buffer invalidujeme
+                    Seek = Loaded = 0; // During the display of the message box, some data could have been loaded, we invalidate the buffer again
                 }
                 else
                 {
@@ -431,26 +431,26 @@ BOOL CViewerWindow::LoadBefore(HANDLE* hFile)
             {
                 DWORD err2 = GetLastError();
                 InvalidateRect(HWindow, NULL, FALSE);
-                Seek = Loaded = 0; // data v Bufferu muzou byt poskozena, invalidujeme je, aby je neco nepouzilo behem zobrazeni msgboxu
+                Seek = Loaded = 0; // data in the buffer may be corrupted, we invalidate them so that nothing uses them during the display of the message box
                 kill = SalMessageBoxViewerPaintBlocked(HWindow, GetErrorText(err2), LoadStr(IDS_ERRORREADINGFILE),
                                                        MB_RETRYCANCEL | MB_ICONEXCLAMATION) == IDCANCEL;
                 ret = FALSE;
-                Seek = Loaded = 0; // behem zobrazeni msgboxu se nejaka data mohla nacist, znovu Buffer invalidujeme
+                Seek = Loaded = 0; // During the display of the message box, some data could have been loaded, we invalidate the buffer again
             }
         }
         else
         {
             InvalidateRect(HWindow, NULL, FALSE);
-            Seek = Loaded = 0; // data v Bufferu muzou byt poskozena, invalidujeme je, aby je neco nepouzilo behem zobrazeni msgboxu
+            Seek = Loaded = 0; // data in the buffer may be corrupted, we invalidate them so that nothing uses them during the display of the message box
             kill = SalMessageBoxViewerPaintBlocked(HWindow, GetErrorText(err), LoadStr(IDS_ERRORREADINGFILE),
                                                    MB_RETRYCANCEL | MB_ICONEXCLAMATION) == IDCANCEL;
             ret = FALSE;
-            Seek = Loaded = 0; // behem zobrazeni msgboxu se nejaka data mohla nacist, znovu Buffer invalidujeme
+            Seek = Loaded = 0; // During the display of the message box, some data could have been loaded, we invalidate the buffer again
         }
-        if (hFile == NULL) // pokud se o zavirani handlu nestara volajici, je to na nas
+        if (hFile == NULL) // if the caller does not take care of closing the trade, it is up to us
             HANDLES(CloseHandle(file));
 
-        if (!ret && kill) // pripadne ukoncime praci s timto souborem
+        if (!ret && kill) // Alternatively, we can terminate working with this file
         {
             free(FileName);
             FileName = NULL;
@@ -462,7 +462,7 @@ BOOL CViewerWindow::LoadBefore(HANDLE* hFile)
             if (Lock != NULL)
             {
                 SetEvent(Lock);
-                Lock = NULL; // ted uz je to jen na disk-cache
+                Lock = NULL; // now it's just on the disk cache
             }
             SetWindowText(HWindow, LoadStr(IDS_VIEWERTITLE));
             InvalidateRect(HWindow, NULL, FALSE);
@@ -484,7 +484,7 @@ BOOL CViewerWindow::LoadBefore(HANDLE* hFile)
         if (Lock != NULL)
         {
             SetEvent(Lock);
-            Lock = NULL; // ted uz je to jen na disk-cache
+            Lock = NULL; // now it's just on the disk cache
         }
         SetWindowText(HWindow, LoadStr(IDS_VIEWERTITLE));
         InvalidateRect(HWindow, NULL, FALSE);
@@ -515,12 +515,12 @@ BOOL CViewerWindow::LoadBehind(HANDLE* hFile)
         CQuadWord size;
         DWORD err;
         BOOL haveSize = SalGetFileSize(file, size, err);
-        if (!haveSize || size.Value != (unsigned __int64)FileSize) // chyba nebo zmena souboru
+        if (!haveSize || size.Value != (unsigned __int64)FileSize) // error or file change
         {
             TRACE_I("The size of the viewed file has changed or some error occured.");
             // PostMessage(HWindow, WM_COMMAND, CM_REREADFILE, 0);  // prezitek, zbytecne: vznikne "fatal error" a dojde k prekresleni
             Seek = Loaded = 0;
-            if (hFile == NULL) // pokud se o zavirani handlu nestara volajici, je to na nas
+            if (hFile == NULL) // if the caller does not take care of closing the trade, it is up to us
                 HANDLES(CloseHandle(file));
             return FALSE;
         }
@@ -531,11 +531,11 @@ BOOL CViewerWindow::LoadBehind(HANDLE* hFile)
             read = (int)(FileSize - (Seek + Loaded));
         if (read == 0)
         {
-            if (hFile == NULL) // pokud se o zavirani handlu nestara volajici, je to na nas
+            if (hFile == NULL) // if the caller does not take care of closing the trade, it is up to us
                 HANDLES(CloseHandle(file));
             return FALSE;
         }
-        DWORD readed; // nejprve offset do Bufferu, pak pocet nactenych bytu
+        DWORD readed; // first offset into the buffer, then the number of bytes read
         __int64 seekEnd = Seek + Loaded;
         if (Loaded > 0)
         {
@@ -552,14 +552,14 @@ BOOL CViewerWindow::LoadBehind(HANDLE* hFile)
         else
             readed = 0;
         BOOL ret;
-        BOOL kill = FALSE; // TRUE znamena, ze pri chybe pujde FileName na NULL
+        BOOL kill = FALSE; // TRUE means that in case of an error, FileName will be set to NULL
 
         CQuadWord resSeek;
-        resSeek.SetUI64(seekEnd); // pozor, seek pro SetFilePointer je signed hodnota
+        resSeek.SetUI64(seekEnd); // Attention, the seek for SetFilePointer is a signed value
         resSeek.LoDWord = SetFilePointer(file, resSeek.LoDWord, (PLONG)&resSeek.HiDWord, FILE_BEGIN);
         err = GetLastError();
-        if ((resSeek.LoDWord != INVALID_SET_FILE_POINTER || err == NO_ERROR) && // neni chyba
-            resSeek.Value == (unsigned __int64)seekEnd)                         // sedi aktualni file-offset
+        if ((resSeek.LoDWord != INVALID_SET_FILE_POINTER || err == NO_ERROR) && // no error
+            resSeek.Value == (unsigned __int64)seekEnd)                         // current file offset is set
         {
             if (ReadFile(file, Buffer + readed, read, &readed, NULL))
             {
@@ -567,11 +567,11 @@ BOOL CViewerWindow::LoadBehind(HANDLE* hFile)
                 {
                     TRACE_I("CViewerWindow::LoadBehind(): ReadFile returned " << (DWORD)readed << " instead of " << (DWORD)read);
                     InvalidateRect(HWindow, NULL, FALSE);
-                    Seek = Loaded = 0; // data v Bufferu muzou byt poskozena, invalidujeme je, aby je neco nepouzilo behem zobrazeni msgboxu
+                    Seek = Loaded = 0; // data in the buffer may be corrupted, we invalidate them so that nothing uses them during the display of the message box
                     kill = SalMessageBoxViewerPaintBlocked(HWindow, LoadStr(IDS_VIEWER_UNKNOWNERR), LoadStr(IDS_ERRORREADINGFILE),
                                                            MB_RETRYCANCEL | MB_ICONEXCLAMATION) == IDCANCEL;
                     ret = FALSE;
-                    Seek = Loaded = 0; // behem zobrazeni msgboxu se nejaka data mohla nacist, znovu Buffer invalidujeme
+                    Seek = Loaded = 0; // During the display of the message box, some data could have been loaded, we invalidate the buffer again
                 }
                 else
                 {
@@ -584,27 +584,27 @@ BOOL CViewerWindow::LoadBehind(HANDLE* hFile)
             {
                 DWORD err2 = GetLastError();
                 InvalidateRect(HWindow, NULL, FALSE);
-                Seek = Loaded = 0; // data v Bufferu muzou byt poskozena, invalidujeme je, aby je neco nepouzilo behem zobrazeni msgboxu
+                Seek = Loaded = 0; // data in the buffer may be corrupted, we invalidate them so that nothing uses them during the display of the message box
                 kill = SalMessageBoxViewerPaintBlocked(HWindow, GetErrorText(err2), LoadStr(IDS_ERRORREADINGFILE),
                                                        MB_RETRYCANCEL | MB_ICONEXCLAMATION) == IDCANCEL;
                 ret = FALSE;
-                Seek = Loaded = 0; // behem zobrazeni msgboxu se nejaka data mohla nacist, znovu Buffer invalidujeme
+                Seek = Loaded = 0; // During the display of the message box, some data could have been loaded, we invalidate the buffer again
             }
         }
         else
         {
             DWORD err2 = GetLastError();
             InvalidateRect(HWindow, NULL, FALSE);
-            Seek = Loaded = 0; // data v Bufferu muzou byt poskozena, invalidujeme je, aby je neco nepouzilo behem zobrazeni msgboxu
+            Seek = Loaded = 0; // data in the buffer may be corrupted, we invalidate them so that nothing uses them during the display of the message box
             kill = SalMessageBoxViewerPaintBlocked(HWindow, GetErrorText(err2), LoadStr(IDS_ERRORREADINGFILE),
                                                    MB_RETRYCANCEL | MB_ICONEXCLAMATION) == IDCANCEL;
             ret = FALSE;
-            Seek = Loaded = 0; // behem zobrazeni msgboxu se nejaka data mohla nacist, znovu Buffer invalidujeme
+            Seek = Loaded = 0; // During the display of the message box, some data could have been loaded, we invalidate the buffer again
         }
-        if (hFile == NULL) // pokud se o zavirani handlu nestara volajici, je to na nas
+        if (hFile == NULL) // if the caller does not take care of closing the trade, it is up to us
             HANDLES(CloseHandle(file));
 
-        if (!ret && kill) // pripadne ukoncime praci s timto souborem
+        if (!ret && kill) // Alternatively, we can terminate working with this file
         {
             free(FileName);
             FileName = NULL;
@@ -616,7 +616,7 @@ BOOL CViewerWindow::LoadBehind(HANDLE* hFile)
             if (Lock != NULL)
             {
                 SetEvent(Lock);
-                Lock = NULL; // ted uz je to jen na disk-cache
+                Lock = NULL; // now it's just on the disk cache
             }
             SetWindowText(HWindow, LoadStr(IDS_VIEWERTITLE));
             InvalidateRect(HWindow, NULL, FALSE);
@@ -638,7 +638,7 @@ BOOL CViewerWindow::LoadBehind(HANDLE* hFile)
         if (Lock != NULL)
         {
             SetEvent(Lock);
-            Lock = NULL; // ted uz je to jen na disk-cache
+            Lock = NULL; // now it's just on the disk cache
         }
         SetWindowText(HWindow, LoadStr(IDS_VIEWERTITLE));
         InvalidateRect(HWindow, NULL, FALSE);
@@ -731,8 +731,8 @@ void CViewerWindow::ReleaseMouseDrag()
 int CViewerWindow::SalMessageBoxViewerPaintBlocked(HWND hParent, LPCTSTR lpText, LPCTSTR lpCaption, UINT uType)
 {
     BOOL oldEnablePaint = EnablePaint;
-    // pri zobrazeni messageboxu dojde k Paintu = cteni souboru = dalsi chyby,
-    // proto zakazeme Paint = bude se jen mazat pozadi vieweru (napr. dosud zobrazene casti souboru)
+    // when displaying a messagebox, it will lead to painting = reading files = more errors,
+    // thus we will disable Paint = it will only erase the background of the viewer (e.g. previously displayed parts of the file)
     EnablePaint = FALSE;
     int res = SalMessageBox(hParent, lpText, lpCaption, uType);
     EnablePaint = oldEnablePaint;
@@ -777,8 +777,8 @@ void CViewerWindow::FileChanged(HANDLE file, BOOL testOnlyFileSize, BOOL& fatalE
         DWORD err;
         BOOL haveSize = SalGetFileSize(file, size, err);
         FileSize = size.Value;
-        if (!haveSize ||                               // chyba pri zjistovani velikosti souboru
-            size >= CQuadWord(0xFFFFFFFF, 0x7FFFFFFF)) // prilis veliky soubor (> 8 EB)
+        if (!haveSize ||                               // Error when determining file size
+            size >= CQuadWord(0xFFFFFFFF, 0x7FFFFFFF)) // too large file (> 8 EB)
         {
             Seek = 0;
             Loaded = 0;
@@ -798,7 +798,7 @@ void CViewerWindow::FileChanged(HANDLE file, BOOL testOnlyFileSize, BOOL& fatalE
             if (Lock != NULL)
             {
                 SetEvent(Lock);
-                Lock = NULL; // ted uz je to jen na disk-cache
+                Lock = NULL; // now it's just on the disk cache
             }
             SetWindowText(HWindow, LoadStr(IDS_VIEWERTITLE));
             InvalidateRect(HWindow, NULL, FALSE);
@@ -824,11 +824,11 @@ void CViewerWindow::FileChanged(HANDLE file, BOOL testOnlyFileSize, BOOL& fatalE
                     int defViewMode = DefViewMode; // (0=Auto-Select)
                     if (defViewMode == 0)
                     {
-                        // pouze pokud je nastaven Auto-Select, uplatni se vyjimky
+                        // only if Auto-Select is set, exceptions will apply
                         if (Configuration.TextModeMasks.AgreeMasks(namePart, NULL))
                         {
                             defViewMode = 1;               // Text
-                            CanSwitchQuietlyToHex = FALSE; // pokud forcujeme Text mode, budeme se ptat na switch do Hexa
+                            CanSwitchQuietlyToHex = FALSE; // if we are forcing Text mode, we will ask for a switch to Hex
                         }
                         else if (Configuration.HexModeMasks.AgreeMasks(namePart, NULL))
                             defViewMode = 2; // Hex
@@ -836,7 +836,7 @@ void CViewerWindow::FileChanged(HANDLE file, BOOL testOnlyFileSize, BOOL& fatalE
                     else
                     {
                         if (defViewMode == 1)
-                            CanSwitchQuietlyToHex = FALSE; // pokud forcujeme Text mode, budeme se ptat na switch do Hexa
+                            CanSwitchQuietlyToHex = FALSE; // if we are forcing Text mode, we will ask for a switch to Hex
                     }
 
                     int len;
@@ -847,20 +847,20 @@ void CViewerWindow::FileChanged(HANDLE file, BOOL testOnlyFileSize, BOOL& fatalE
                         len = 0;
                     if (CodePageAutoSelect && fatalErr2)
                         fatalErr = TRUE;
-                    else // chybu Prepare pri autoselectu ViewMode (defViewMode == 0) tady ignorujeme, trochu divne, duvod neznam ;-) Petr
+                    else // We are ignoring the error in Prepare during autoselect ViewMode (defViewMode == 0) here, a bit strange, reason unknown ;-) Petr
                     {
-                        // pokud je nahozen auto-select a mame z ceho provest heuristiku,
-                        // pokusime se najit vhodnou konverzni tabulku
+                        // if auto-select is enabled and we have something to perform heuristics on,
+                        // we will try to find a suitable conversion table
                         if (len > 0 && (defViewMode == 0 || CodePageAutoSelect))
                         {
                             BOOL isText;
                             char codePage[101];
-                            char recBuf[RECOGNIZE_FILE_TYPE_BUFFER_LEN]; // pro jistotu udelame kopii dat z Buffer do recBuf
+                            char recBuf[RECOGNIZE_FILE_TYPE_BUFFER_LEN]; // for safety, we will make a copy of data from Buffer to recBuf
                             int recLen = min(len, RECOGNIZE_FILE_TYPE_BUFFER_LEN);
                             memcpy(recBuf, (char*)Buffer, recLen);
                             BOOL oldEnablePaint = EnablePaint;
-                            // pri zobrazeni messageboxu dojde k Paintu = cteni souboru = dalsi chyby,
-                            // proto zakazeme Paint = bude se jen mazat pozadi vieweru (napr. dosud zobrazene casti souboru)
+                            // when displaying a messagebox, it will lead to painting = reading files = more errors,
+                            // thus we will disable Paint = it will only erase the background of the viewer (e.g. previously displayed parts of the file)
                             EnablePaint = FALSE;
                             RecognizeFileType(HWindow, recBuf, recLen, FALSE, &isText, codePage);
                             EnablePaint = oldEnablePaint;
@@ -878,7 +878,7 @@ void CViewerWindow::FileChanged(HANDLE file, BOOL testOnlyFileSize, BOOL& fatalE
                                     int c = CodeTables.GetConversionToWinCodePage(codePage);
                                     if (CodeTables.Valid(c))
                                         SetCodeType(c);
-                                    else // konverze "none"
+                                    else // conversion "none"
                                     {
                                         CodeType = 0;
                                         UseCodeTable = FALSE;
@@ -890,7 +890,7 @@ void CViewerWindow::FileChanged(HANDLE file, BOOL testOnlyFileSize, BOOL& fatalE
                             Type = vtText;
                         else if (defViewMode == 2)
                             Type = vtHex;
-                        // pokud neni auto-select, zvolime default konverzi
+                        // if auto-select is not enabled, we will choose the default conversion
                         if (!CodePageAutoSelect)
                         {
                             int defCodeType;
@@ -898,7 +898,7 @@ void CViewerWindow::FileChanged(HANDLE file, BOOL testOnlyFileSize, BOOL& fatalE
                                 defCodeType = 0;
                             if (CodeTables.Valid(defCodeType))
                                 SetCodeType(defCodeType);
-                            else // konverze "none"
+                            else // conversion "none"
                             {
                                 CodeType = 0;
                                 UseCodeTable = FALSE;
@@ -941,11 +941,11 @@ void CViewerWindow::FileChanged(HANDLE file, BOOL testOnlyFileSize, BOOL& fatalE
         if (Lock != NULL)
         {
             SetEvent(Lock);
-            Lock = NULL; // ted uz je to jen na disk-cache
+            Lock = NULL; // now it's just on the disk cache
         }
         SetWindowText(HWindow, LoadStr(IDS_VIEWERTITLE));
         InvalidateRect(HWindow, NULL, FALSE);
-        if (IsWindowVisible(HWindow)) // opatreni proti messageboxu pri zavirani vieweru a podmazani viewovaneho souboru
+        if (IsWindowVisible(HWindow)) // Prevent message box when closing the viewer and wiping the viewed file
             SalMessageBoxViewerPaintBlocked(HWindow, GetErrorText(err), LoadStr(IDS_ERRORREADINGFILE), MB_OK | MB_ICONEXCLAMATION);
         fatalErr = TRUE;
     }
@@ -953,7 +953,7 @@ void CViewerWindow::FileChanged(HANDLE file, BOOL testOnlyFileSize, BOOL& fatalE
 
 void CViewerWindow::FatalFileErrorOccured(DWORD repeatCmd)
 {
-    // pokusime se nastavit vnitrni stav vieweru tak, aby nedoslo k dalsi chybe nez se doruci
+    // We will try to set the internal state of the viewer so that no further error occurs before it is delivered
     // WM_USER_VIEWERREFRESH
     WaitForViewerRefresh = TRUE;
     LastSeekY = SeekY;
@@ -986,10 +986,10 @@ BOOL CViewerWindow::FindNextEOL(HANDLE* hFile, __int64 seek, __int64 maxSeek, __
     CALL_STACK_MESSAGE_NONE
     // CALL_STACK_MESSAGE3("CViewerWindow::FindNextEOL(%g, %g, , ,)", (double)seek, (double)maxSeek);
     unsigned char *s, *end;
-    __int64 cr = -2; // offset posledniho '\r'
+    __int64 cr = -2; // offset of the last '\r'
     __int64 len;
     fatalErr = FALSE;
-    if (seek > 0) // neni to zacatek souboru
+    if (seek > 0) // not the beginning of the file
     {
         len = Prepare(hFile, seek - 1, 1, fatalErr);
         if (fatalErr)
@@ -1006,7 +1006,7 @@ BOOL CViewerWindow::FindNextEOL(HANDLE* hFile, __int64 seek, __int64 maxSeek, __
             break;
         if (len == 0)
         {
-            nextLineBegin = lineEnd; // konec filu
+            nextLineBegin = lineEnd; // end of file
             break;
         }
         s = Buffer + (lineEnd - Seek);
@@ -1028,7 +1028,7 @@ BOOL CViewerWindow::FindNextEOL(HANDLE* hFile, __int64 seek, __int64 maxSeek, __
                         if (cr + 1 == (s - Buffer) + Seek &&
                             Configuration.EOL_CRLF)
                         {
-                            s--; // kvuli tomuhle je podminka '\r\n' nize (*s nemusi byt platny)
+                            s--; // because of this, the condition '\r\n' below (*s may not be valid)
                             break;
                         }
                         if (Configuration.EOL_LF)
@@ -1043,9 +1043,9 @@ BOOL CViewerWindow::FindNextEOL(HANDLE* hFile, __int64 seek, __int64 maxSeek, __
             }
             s++;
         }
-        if (s < end) // nasli jsme EOL
+        if (s < end) // found EOL
         {
-            if (cr == (s - Buffer) + Seek) // '\r\n' jiz detekovano
+            if (cr == (s - Buffer) + Seek) // '\r\n' already detected
             {
                 lineEnd = (s - Buffer) + Seek;
                 if (lineEnd > maxSeek)
@@ -1058,7 +1058,7 @@ BOOL CViewerWindow::FindNextEOL(HANDLE* hFile, __int64 seek, __int64 maxSeek, __
                 if (lineEnd > maxSeek)
                     break;
                 nextLineBegin = lineEnd + 1;
-                if (*s == '\r' && Configuration.EOL_CRLF) // test na '\r\n'
+                if (*s == '\r' && Configuration.EOL_CRLF) // test for '\r\n'
                 {
                     len = Prepare(hFile, lineEnd, 2, fatalErr);
                     if (fatalErr)
@@ -1067,7 +1067,7 @@ BOOL CViewerWindow::FindNextEOL(HANDLE* hFile, __int64 seek, __int64 maxSeek, __
                         nextLineBegin++;
                 }
             }
-            break; // konec hledani
+            break; // end of search
         }
         lineEnd += len;
     }
@@ -1089,9 +1089,9 @@ BOOL CViewerWindow::FindPreviousEOL(HANDLE* hFile, __int64 seek, __int64 minSeek
     BOOL collectTabs = allowWrap && WrapText || firstLineCharLen != NULL;
     unsigned char *s, *end;
     fatalErr = FALSE;
-    __int64 lf = -2; // offset posledniho '\n'
+    __int64 lf = -2; // offset of the last '\n'
     __int64 len;
-    if (seek < FileSize) // neni to konec souboru
+    if (seek < FileSize) // It is not the end of the file
     {
         len = Prepare(NULL, seek, 1, fatalErr);
         if (fatalErr)
@@ -1100,7 +1100,7 @@ BOOL CViewerWindow::FindPreviousEOL(HANDLE* hFile, __int64 seek, __int64 minSeek
             lf = seek;
     }
 
-    TDirectArray<__int64> tabs(1000, 500); // pozice tabelatoru v radce (predpoklad: nebude jich moc ...)
+    TDirectArray<__int64> tabs(1000, 500); // tabulator position in the line (assumption: there won't be many of them...)
     lineBegin = seek;
     previousLineEnd = -1;
     while (lineBegin >= minSeek)
@@ -1129,7 +1129,7 @@ BOOL CViewerWindow::FindPreviousEOL(HANDLE* hFile, __int64 seek, __int64 minSeek
             break;
         if (len == 0)
         {
-            previousLineEnd = lineBegin = 0; // zacatek filu
+            previousLineEnd = lineBegin = 0; // start of the file
             break;
         }
         s = Buffer + (lineBegin - Seek - 1);
@@ -1151,7 +1151,7 @@ BOOL CViewerWindow::FindPreviousEOL(HANDLE* hFile, __int64 seek, __int64 minSeek
                         if (lf - 1 == (s - Buffer) + Seek &&
                             Configuration.EOL_CRLF)
                         {
-                            s++; // kvuli tomuhle je podminka '\r\n' nize (*s nemusi byt platny)
+                            s++; // because of this, the condition '\r\n' below (*s may not be valid)
                             break;
                         }
                         if (Configuration.EOL_CR)
@@ -1171,9 +1171,9 @@ BOOL CViewerWindow::FindPreviousEOL(HANDLE* hFile, __int64 seek, __int64 minSeek
             }
             s--;
         }
-        if (s > end) // nasli jsme EOL
+        if (s > end) // found EOL
         {
-            if (lf == (s - Buffer) + Seek) // '\r\n' jiz detekovano
+            if (lf == (s - Buffer) + Seek) // '\r\n' already detected
             {
                 lineBegin = (s - Buffer) + Seek + 1;
                 if (lineBegin < minSeek)
@@ -1186,7 +1186,7 @@ BOOL CViewerWindow::FindPreviousEOL(HANDLE* hFile, __int64 seek, __int64 minSeek
                 if (lineBegin < minSeek)
                     break;
                 previousLineEnd = lineBegin - 1;
-                if (*s == '\n' && Configuration.EOL_CRLF) // test na '\r\n'
+                if (*s == '\n' && Configuration.EOL_CRLF) // test for '\r\n'
                 {
                     len = min(lineBegin, 2);
                     len = Prepare(NULL, lineBegin - len, len, fatalErr);
@@ -1196,25 +1196,25 @@ BOOL CViewerWindow::FindPreviousEOL(HANDLE* hFile, __int64 seek, __int64 minSeek
                         previousLineEnd--;
                 }
             }
-            break; // konec hledani
+            break; // end of search
         }
         lineBegin -= len;
     }
 
-    // zacatek souboru nebereme jako konec predchozi radky (trochu nesmysl, ale pro ucely
-    // previousLineEnd se tak bere); POZOR: pripadny wrap radku resime az v kodu nize
+    // We do not consider the beginning of the file as the end of the previous line (a bit nonsensical, but for the purposes
+    // previousLineEnd is taken like this); WARNING: any line wrapping is handled in the code below
     if (lineBegin > 0 && firstLineEndOff != NULL)
         *firstLineEndOff = previousLineEnd;
 
     if (!fatalErr && allowWrap && WrapText && Width > 0 && Height > 0) // wrap mode
     {
-        int columns = (Width - BORDER_WIDTH) / CharWidth; // sirka okna ve znacich
-        __int64 lineLen = seek - lineBegin;               // delka radky v bytech
+        int columns = (Width - BORDER_WIDTH) / CharWidth; // width of the window in characters
+        __int64 lineLen = seek - lineBegin;               // length of line in bytes
         int tabsCount = tabs.Count;
         __int64 originalLineBegin = lineBegin;
         while (1)
         {
-            __int64 tabAdd = 0; // kolik mezer pridavaji tabelatory
+            __int64 tabAdd = 0; // how many spaces do tabulators add
             while (tabsCount > 0 && tabs[tabsCount - 1] + tabAdd < lineBegin + columns)
             {
                 int tab = (int)(Configuration.TabSize - ((tabs[tabsCount - 1] + tabAdd - lineBegin) % Configuration.TabSize));
@@ -1225,33 +1225,33 @@ BOOL CViewerWindow::FindPreviousEOL(HANDLE* hFile, __int64 seek, __int64 minSeek
                 tabAdd += tab - 1;
                 tabsCount--;
             }
-            if ((takeLineBegin && lineBegin + columns - tabAdd > seek) || // "seek" bereme jako offset znaku na radku (na rozhrani radek ma vyznam zacatku radky)
-                (!takeLineBegin && lineBegin + columns - tabAdd >= seek)) // "seek" bereme jako offset konce radku (na rozhrani radek ma vyznam konce radky)
+            if ((takeLineBegin && lineBegin + columns - tabAdd > seek) || // "seek" is taken as the character offset on the line (at the interface, the line has the meaning of the beginning of the line)
+                (!takeLineBegin && lineBegin + columns - tabAdd >= seek)) // "seek" is taken as an offset to the end of the line (at the boundary, the line has the meaning of the end of the line)
             {
                 if (takeLineBegin && addLineIfSeekIsWrap && originalLineBegin < lineBegin && lineBegin == seek)
                 {
-                    // zacatek tohoto wrap-radku je zaroven konec predchoziho wrap-radku, 'addLineIfSeekIsWrap' je
-                    // TRUE pokud se ma 'seek' uvazovat jako konec predchoziho (znamena to preskok jednoho "EOL" navic)
+                    // The beginning of this wrap-line is also the end of the previous wrap-line, 'addLineIfSeekIsWrap' is
+                    // TRUE if 'seek' should be considered as the end of the previous (meaning skipping one extra "EOL")
                     if (lines != NULL)
                         (*lines)++;
-                    addLineIfSeekIsWrap = FALSE; // muzeme udelat jen jednou
+                    addLineIfSeekIsWrap = FALSE; // We can do it only once
                 }
-                if (!takeLineBegin && firstLineCharLen != NULL) // "seek" je konec radky, spocitame jeji delku
+                if (!takeLineBegin && firstLineCharLen != NULL) // "seek" is the end of the line, we will calculate its length
                 {
                     *firstLineCharLen = seek - lineBegin + tabAdd;
-                    firstLineCharLen = NULL; // mame co jsme chteli, zadne dalsi upravy (slo by o delky predchozich radek)
+                    firstLineCharLen = NULL; // we have what we wanted, no further adjustments (it would be about the lengths of the previous lines)
                 }
                 if (firstLineEndOff != NULL)
                 {
-                    if (originalLineBegin < lineBegin) // preruseny radek
-                        *firstLineEndOff = lineBegin;  // zacatek tohoto wrap-radku je zaroven konec predchoziho wrap-radku
-                    firstLineEndOff = NULL;            // mame co jsme chteli, zadne dalsi upravy (potencialne by slo o konce predchozich radku az do poctu "lines")
+                    if (originalLineBegin < lineBegin) // interrupted line
+                        *firstLineEndOff = lineBegin;  // The beginning of this wrap-line is also the end of the previous wrap-line
+                    firstLineEndOff = NULL;            // We have what we wanted, no further adjustments (potentially it could be the end of the previous lines up to the count of "lines")
                 }
 
-                if (originalLineBegin < lineBegin) // preruseny radek
+                if (originalLineBegin < lineBegin) // interrupted line
                 {
                     if (lines != NULL && *lines > 0)
-                    { // pokud mame hledat zacatek dalsich radku, udelame to pri jednom (at se vyuziji nactena data)
+                    { // if we need to find the beginning of the next lines, we will do it one by one (to utilize the loaded data)
                         (*lines)--;
                         takeLineBegin = FALSE; // "seek" uz ted bereme jako offset konce radku
                         seek = lineBegin;
@@ -1263,21 +1263,21 @@ BOOL CViewerWindow::FindPreviousEOL(HANDLE* hFile, __int64 seek, __int64 minSeek
                 }
                 break;
             }
-            lineBegin += columns - tabAdd; // zmena offsetu
+            lineBegin += columns - tabAdd; // change offset
         }
     }
     else
     {
         if (!fatalErr && !takeLineBegin && firstLineCharLen != NULL)
         {
-            __int64 tabAdd = 0; // kolik mezer pridavaji tabelatory
+            __int64 tabAdd = 0; // how many spaces do tabulators add
             int tabsCount = tabs.Count;
             while (tabsCount-- > 0)
             {
                 int tab = (int)(Configuration.TabSize - ((tabs[tabsCount] + tabAdd - lineBegin) % Configuration.TabSize));
                 tabAdd += tab - 1;
             }
-            *firstLineCharLen = seek - lineBegin + tabAdd; // delka radky v bytech + pridavek za tabelatory
+            *firstLineCharLen = seek - lineBegin + tabAdd; // line length in bytes + additional for tabs
         }
     }
     return !fatalErr && previousLineEnd != -1;
@@ -1285,7 +1285,7 @@ BOOL CViewerWindow::FindPreviousEOL(HANDLE* hFile, __int64 seek, __int64 minSeek
 
 __int64
 CViewerWindow::FindSeekBefore(__int64 seek, int lines, BOOL& fatalErr, __int64* firstLineEndOff,
-                              __int64* firstLineCharLen, BOOL addLineIfSeekIsWrap) // textove zobrazeni
+                              __int64* firstLineCharLen, BOOL addLineIfSeekIsWrap) // text display
 {
     CALL_STACK_MESSAGE3("CViewerWindow::FindSeekBefore(%g, %d, , ,)", (double)seek, lines);
     fatalErr = FALSE;
@@ -1294,8 +1294,8 @@ CViewerWindow::FindSeekBefore(__int64 seek, int lines, BOOL& fatalErr, __int64* 
     if (firstLineCharLen != NULL)
         *firstLineCharLen = -1;
     __int64 beg = seek, prevEnd;
-    BOOL first = TRUE; // splyva pozice na zacatku a konci radku, pri wrap-konci radku
-                       // prvni seek musi brat pozici na zacatku, ostatni na konci
+    BOOL first = TRUE; // Adjust position at the beginning and end of the line when wrapping at the end of the line
+                       // the first seek must take position at the beginning, the others at the end
     while (lines--)
     {
         FindPreviousEOL(NULL, seek, 0, beg, prevEnd, TRUE, first, fatalErr, &lines, first ? firstLineEndOff : NULL,
@@ -1321,7 +1321,7 @@ CViewerWindow::ZeroLineSize(BOOL& fatalErr, __int64* firstLineEndOff, __int64* f
     switch (Type)
     {
     case vtHex:
-        return 16; // POZOR: 'firstLineEndOff' ani 'firstLineCharLen' se pro Hex rezim nepocita, protoze se zatim nepouziva
+        return 16; // WARNING: 'firstLineEndOff' and 'firstLineCharLen' are not calculated for Hex mode as it is not used yet
     case vtText:
     {
         __int64 offset = FindSeekBefore(SeekY, 2, fatalErr, firstLineEndOff, firstLineCharLen);
@@ -1364,14 +1364,14 @@ void CViewerWindow::ChangeType(CViewType type)
         FatalFileErrorOccured();
     if (fatalErr || ExitTextMode)
         return;
-    if (startSel >= 0 && startSel < FileSize && // byla platna selectiona
+    if (startSel >= 0 && startSel < FileSize && // the selection was valid
         endSel >= 0 && endSel < FileSize)
     {
-        StartSelection = startSel; // obnovime selectionu (dobre pro orientaci pri prepinani modu)
+        StartSelection = startSel; // restore the selection (good for orientation when switching modes)
         EndSelection = endSel;
     }
     InvalidateRect(HWindow, NULL, FALSE);
-    UpdateWindow(HWindow); // aby se napocitalo ViewSize pro dalsi PageDown
+    UpdateWindow(HWindow); // to calculate the ViewSize for the next PageDown
 }
 
 BOOL CViewerWindow::GetOffsetOrXAbs(__int64 x, __int64* offset, __int64* offsetX, __int64 lineBegOff,
@@ -1459,7 +1459,7 @@ BOOL CViewerWindow::GetOffsetOrXAbs(__int64 x, __int64* offset, __int64* offsetX
                     }
                 }
             }
-            else // posledni radka je prazdna, nepovedlo se nic nacist
+            else // the last line is empty, failed to load anything
             {
                 if (offset != NULL)
                     *offset = lineBegOff;
@@ -1470,13 +1470,13 @@ BOOL CViewerWindow::GetOffsetOrXAbs(__int64 x, __int64* offset, __int64* offsetX
                 return TRUE;
             }
         }
-        break; // sem to nikdy nedojde
+        break; // it will never come to this
     }
 
     case vtHex:
     {
         if (getXFromOffset)
-            TRACE_C("CViewerWindow::GetOffsetOrXAbs(): Unsupported function!"); // umime jen textovy rezim
+            TRACE_C("CViewerWindow::GetOffsetOrXAbs(): Unsupported function!"); // we only support text mode
         __int64 foundOff = -1;
         if (x < 62 - 8 + HexOffsetLength)
         {
@@ -1498,7 +1498,7 @@ BOOL CViewerWindow::GetOffsetOrXAbs(__int64 x, __int64* offset, __int64* offsetX
         else
         {
             if (onHexNum != NULL)
-                *onHexNum = TRUE; // sice v text sloupci, ale primo na znaku...
+                *onHexNum = TRUE; // in text column, but directly on the character...
             if (x > 62 + 16 - 8 + HexOffsetLength)
                 x = 62 + 16 - 8 + HexOffsetLength;
             foundOff = lineBegOff + (x - (62 - 8 + HexOffsetLength));
@@ -1550,7 +1550,7 @@ void CViewerWindow::SetScrollBar()
 {
     CALL_STACK_MESSAGE1("CViewerWindow::SetScrollBar()");
     if (EnableSetScroll)
-    { // vertikalni scrollbara
+    { // vertical scrollbar
         SCROLLINFO si;
         si.cbSize = sizeof(si);
         si.fMask = SIF_ALL;
@@ -1559,11 +1559,11 @@ void CViewerWindow::SetScrollBar()
         __int64 max = ViewSize + MaxSeekY;
         ScrollScaleY = ((double)max) / 20000.0;
         if (ScrollScaleY < 0.00001)
-            ScrollScaleY = 0.00001; // proti "divide by zero"
+            ScrollScaleY = 0.00001; // against "divide by zero"
         int page = (int)(ViewSize / ScrollScaleY + 0.5 + 1);
         if (max == 0 || si.nMin != 0 || si.nMax != max / ScrollScaleY + 0.5 + 1 ||
             si.nPage != (DWORD)page ||
-            si.nPos != SeekY / ScrollScaleY + 0.5) // je-li potreba nastavit ...
+            si.nPos != SeekY / ScrollScaleY + 0.5) // if it is necessary to set ...
         {
             si.cbSize = sizeof(si);
             si.fMask = SIF_ALL | SIF_DISABLENOSCROLL;
@@ -1583,7 +1583,7 @@ void CViewerWindow::SetScrollBar()
             SetScrollInfo(HWindow, SB_VERT, &si, TRUE);
         }
 
-        // horizontalni scrollbara
+        // horizontal scrollbar
         si.cbSize = sizeof(si);
         si.fMask = SIF_ALL;
         GetScrollInfo(HWindow, SB_HORZ, &si);
@@ -1595,11 +1595,11 @@ void CViewerWindow::SetScrollBar()
 
         ScrollScaleX = ((double)max) / 20000.0;
         if (ScrollScaleX < 0.00001)
-            ScrollScaleX = 0.00001; // proti "divide by zero"
+            ScrollScaleX = 0.00001; // against "divide by zero"
         page = (int)(((Width - BORDER_WIDTH) / CharWidth) / ScrollScaleX + 0.5 + 2);
         if (max == 0 || si.nMin != 0 || si.nMax != max / ScrollScaleX + 0.5 + 1 ||
             si.nPage != (DWORD)page ||
-            si.nPos != OriginX / ScrollScaleX + 0.5) // je-li potreba nastavit ...
+            si.nPos != OriginX / ScrollScaleX + 0.5) // if it is necessary to set ...
         {
             si.cbSize = sizeof(si);
             si.fMask = SIF_ALL | SIF_DISABLENOSCROLL;
@@ -1629,9 +1629,9 @@ BOOL CViewerWindow::GetFindText(char* buf, int& len)
         return FALSE;
 
     __int64 startSel = min(StartSelection, EndSelection);
-    // if (startSel == -1) startSel = 0; // nemuze nastat (-1 muzou byt jen obe zaroven a to sem nedojde)
+    // if (startSel == -1) startSel = 0; // cannot happen (-1 can only be both at the same time and that won't happen here)
     __int64 endSel = max(StartSelection, EndSelection);
-    // if (endSel == -1) endSel = 0; // nemuze nastat (-1 muzou byt jen obe zaroven a to sem nedojde)
+    // if (endSel == -1) endSel = 0; // cannot happen (-1 can only be both at the same time and that won't happen here)
     BOOL fatalErr = FALSE;
 
     if (endSel - startSel > FIND_TEXT_LEN - 1)
@@ -1676,20 +1676,20 @@ BOOL CViewerWindow::CheckSelectionIsNotTooBig(HWND parent, BOOL* msgBoxDisplayed
         endSel = 0;
     if (endSel - startSel > 100 * 1024 * 1024)
     {
-        if (TooBigSelAction != 0 /* zeptat se */)
-            return TooBigSelAction == 1 /* ANO */;
+        if (TooBigSelAction != 0 /* to ask*/)
+            return TooBigSelAction == 1 /* YES*/;
 
         if (msgBoxDisplayed != NULL)
             *msgBoxDisplayed = TRUE;
         int res = SalMessageBox(parent, LoadStr(IDS_VIEWER_BLOCKTOOBIG), LoadStr(IDS_VIEWERTITLE),
                                 MB_YESNOCANCEL | MB_ICONQUESTION);
         if (res == IDYES)
-            TooBigSelAction = 2 /* NE */; // dotaz je skip? ANO = NEkopirovat/NEdragovat
+            TooBigSelAction = 2 /* NO*/; // Is the query skip? YES = Do not copy/do not drag
         if (res == IDNO)
-            TooBigSelAction = 1 /* ANO */;
+            TooBigSelAction = 1 /* YES*/;
         return res == IDNO;
     }
-    return TRUE; // mensi nez 100MB = ANO
+    return TRUE; // smaller than 100MB = YES
 }
 
 HGLOBAL
@@ -1707,7 +1707,7 @@ CViewerWindow::GetSelectedText(BOOL& fatalErr)
         startSel = endSel = 0;
     BOOL lowMem = FALSE;
 #ifndef _WIN64
-    if (endSel - startSel < (unsigned __int64)0xFFFFFFFF) // muzeme to aspon zkusit (32-bit verze vic nez 4GB fakt neda)
+    if (endSel - startSel < (unsigned __int64)0xFFFFFFFF) // we can at least try it (32-bit version really can't handle more than 4GB)
 #endif                                                    // _WIN64
     {
         HGLOBAL h = NOHANDLES(GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, (DWORD)(endSel - startSel + 1)));

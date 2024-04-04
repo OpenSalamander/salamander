@@ -4,15 +4,13 @@
 #include "precomp.h"
 
 #include "tabwnd.h"
-/*
-#include "toolbar.h"
+/*  #include "toolbar.h"
 #include "cfgdlg.h"
 #include "mainwnd.h"
 #include "stswnd.h"
 #include "plugins.h"
 #include "fileswnd.h"
-#include "shellib.h"
-*/
+#include "shellib.h"*/
 
 //
 // ****************************************************************************
@@ -32,16 +30,14 @@ int CTabWindow::GetNeededHeight()
 {
     CALL_STACK_MESSAGE_NONE
     int height = 2 + EnvFontCharHeight + 2;
-    /*
-  if (Border & blTop)
+    /*    if (Border & blTop)
   {
     height += 2 + 2;
 //    int needed = ToolBar->GetNeededHeight();
     int needed = 3 + 16 + 3;
     if (height < needed) height = needed;
   }
-  if (Border & blBottom) height++;
-  */
+  if (Border & blBottom) height++;*/
     return height;
 }
 

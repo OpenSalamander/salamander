@@ -45,7 +45,7 @@ void SuppressToolTipOnCurrentMousePos()
 void RefreshToolTip()
 {
     if (MainWindow != NULL && MainWindow->ToolTip != NULL)
-        PostMessage(MainWindow->ToolTip->HWindow, WM_USER_REFRESHTOOLTIP, 0, 0); // pozadame okenko, aby nasalo novy text a znovu se vykreslilo
+        PostMessage(MainWindow->ToolTip->HWindow, WM_USER_REFRESHTOOLTIP, 0, 0); // Request the window to fetch new text and redraw itself
 }
 
 //****************************************************************************
@@ -59,7 +59,7 @@ const char* SALAMANDER_HOTPATHS_VISIBLE = "Visible";
 
 BOOL CHotPathItems::SwapItems(int index1, int index2)
 {
-    // CHotPathItem nema destruktor, muzeme takto primo priradit do lokani promenne
+    // CHotPathItem does not have a destructor, so we can assign it directly to a local variable like this
     CHotPathItem item = Items[index1];
     Items[index1] = Items[index2];
     Items[index2] = item;
@@ -85,7 +85,7 @@ void CHotPathItems::FillHotPathsMenu(CMenuPopup* menu, int minCommand, BOOL empt
         if (i >= 10)
         {
             if (emptyItems)
-                emptyItems = FALSE; // od desate hot paths uz zobrazime pole setrepane
+                emptyItems = FALSE; // from the tenth hot paths we will display the array torn
         }
         if (emptyItems || assigned)
         {
@@ -135,7 +135,7 @@ void CHotPathItems::FillHotPathsMenu(CMenuPopup* menu, int minCommand, BOOL empt
 
     if (customize)
     {
-        // pripojime separator a moznost konfigurace
+        // we will add a separator and configuration option
         mii.Mask = MENU_MASK_TYPE;
         mii.Type = MENU_TYPE_SEPARATOR;
         mii.HIcon = NULL;
@@ -197,8 +197,8 @@ BOOL CHotPathItems::Save(HKEY hKey)
 
             if (*name == 0 && *path == 0 && visible == TRUE)
             {
-                // optimalizace, nebudeme spinit registry pokud to neni nutne
-                // neni pripravene na merge konfiguraci, ale to neni ani zbytek nasi konfigurace
+                // optimization, we will not touch the registry unless necessary
+                // is not ready for merge configuration, but neither is the rest of our configuration
                 ClearKey(actKey);
                 CloseKey(actKey);
                 DeleteKey(hKey, keyName);
@@ -225,7 +225,7 @@ BOOL CHotPathItems::Load(HKEY hKey)
         HKEY actKey;
         if (OpenKey(hKey, keyName, actKey))
         {
-            // dokud bylo 10 hot paths, byla desata v registry pod klicem '0', takze ji zkusime nacist
+            // As long as there were 10 hot paths, the tenth one was in the registry under the key '0', so let's try to load it
             int index = (i == 0) ? 9 : i - 1;
             char name[MAX_PATH];
             char path[HOTPATHITEM_MAXPATH];
@@ -237,8 +237,8 @@ BOOL CHotPathItems::Load(HKEY hKey)
             CleanName(name);
             if (GetValue(actKey, SALAMANDER_HOTPATHS_PATH, REG_SZ, path, HOTPATHITEM_MAXPATH))
             {
-                if (Configuration.ConfigVersion < 47)            // stara cesta byla limitovana na MAX_PATH, takze se vejde i s expanzi
-                    DuplicateDollars(path, HOTPATHITEM_MAXPATH); // pokud je cesta dlouha a obsahuje '$', muze dojit k oriznuti konce; neresim
+                if (Configuration.ConfigVersion < 47)            // The old path was limited to MAX_PATH, so it fits even with expansion
+                    DuplicateDollars(path, HOTPATHITEM_MAXPATH); // if the path is long and contains '$', it may be truncated at the end; not handling
             }
             GetValue(actKey, SALAMANDER_HOTPATHS_VISIBLE, REG_DWORD, &visible, sizeof(DWORD));
 
@@ -251,7 +251,7 @@ BOOL CHotPathItems::Load(HKEY hKey)
 
 BOOL CHotPathItems::Load1_52(HKEY hKey)
 {
-    // konvert z verze 1.52 na 1.6
+    // Convert from version 1.52 to 1.6
     char keyName[5];
     int i;
     for (i = 0; i < HOT_PATHS_COUNT; i++)
@@ -261,12 +261,12 @@ BOOL CHotPathItems::Load1_52(HKEY hKey)
         DWORD visible;
         name[0] = 0;
         path[0] = 0;
-        visible = FALSE; // zkonvertovane cesty ukazovat nebudeme - jsou dlouhe
+        visible = FALSE; // We will not show the converted paths - they are long
 
         itoa(i, keyName, 10);
         if (GetValue(hKey, keyName, REG_SZ, path, MAX_PATH))
         {
-            DuplicateDollars(path, MAX_PATH); // pokud je cesta dlouha a obsahuje '$', muze dojit k oriznuti konce; neresim
+            DuplicateDollars(path, MAX_PATH); // if the path is long and contains '$', it may be truncated at the end; not handling
             strcpy(name, path);
         }
 
@@ -318,7 +318,7 @@ CMainWindow::CMainWindow() : ChangeNotifArray(3, 5)
     HTopRebar = NULL;
     MenuBar = NULL;
     WindowWidth = WindowHeight = EditHeight = 0;
-    SplitPosition = 0.5; // split je v pulce
+    SplitPosition = 0.5; // split is in the middle
     BeforeZoomSplitPosition = 0.5;
     DragMode = FALSE;
     ContextMenuNew = new CMenuNew;
@@ -351,25 +351,25 @@ CMainWindow::CMainWindow() : ChangeNotifArray(3, 5)
     item = new CViewerMasksItem();
     if (ViewerMasks != NULL && item != NULL)
     {
-        ViewerMasks->Add(item); // kriticka sekce neni treba, jsme v konstruktoru
+        ViewerMasks->Add(item); // Critical section is not needed, we are in the constructor
         item->Set("*.htm;*.html;*.xml;*.mht", "", "", "");
-        item->ViewerType = -4; // IE viewer (4. plug-in v def. konfiguraci)
+        item->ViewerType = -4; // IE viewer (4th plug-in in default configuration)
     }
 
     item = new CViewerMasksItem();
     if (ViewerMasks != NULL && item != NULL)
     {
-        ViewerMasks->Add(item); // kriticka sekce neni treba, jsme v konstruktoru
+        ViewerMasks->Add(item); // Critical section is not needed, we are in the constructor
         item->Set("*.rpm", "", "", "");
-        item->ViewerType = -2; // TAR (2. plug-in v def. konfiguraci)
+        item->ViewerType = -2; // TAR (2nd plug-in in default configuration)
     }
 
     item = new CViewerMasksItem();
     if (ViewerMasks != NULL && item != NULL)
     {
-        ViewerMasks->Add(item); // kriticka sekce neni treba, jsme v konstruktoru
+        ViewerMasks->Add(item); // Critical section is not needed, we are in the constructor
         item->Set("*.*", "", "", "");
-        item->ViewerType = VIEWER_INTERNAL; // interni viewer
+        item->ViewerType = VIEWER_INTERNAL; // internal viewer
     }
 
     item = new CViewerMasksItem();
@@ -377,7 +377,7 @@ CMainWindow::CMainWindow() : ChangeNotifArray(3, 5)
     {
         AltViewerMasks->Add(item);
         item->Set("*.*", "", "", "");
-        item->ViewerType = VIEWER_INTERNAL; // interni viewer
+        item->ViewerType = VIEWER_INTERNAL; // internal viewer
     }
 
     CEditorMasksItem* eItem;
@@ -410,7 +410,7 @@ CMainWindow::CMainWindow() : ChangeNotifArray(3, 5)
             hItem->Set("*.*");
             int errPos;
             hItem->Masks->PrepareMasks(errPos);
-            hItem->NormalFg = RGBF(19, 143, 13, 0); // barva vzata z Windows XP
+            hItem->NormalFg = RGBF(19, 143, 13, 0); // color taken from Windows XP
             hItem->FocusedFg = RGBF(19, 143, 13, 0);
             hItem->ValidAttr = FILE_ATTRIBUTE_ENCRYPTED;
             hItem->Attr = FILE_ATTRIBUTE_ENCRYPTED;
@@ -464,7 +464,7 @@ void CMainWindow::ClearHistory()
 
     if (DirHistory != NULL)
         DirHistory->ClearHistory();
-    // zmizime sipcicky v DirLine
+    // Remove trailing spaces in DirLine
     if (LeftPanel != NULL)
         LeftPanel->DirectoryLine->SetHistory(FALSE);
     if (RightPanel != NULL)
@@ -521,8 +521,8 @@ BOOL CMainWindow::ToggleTopToolBar(BOOL storePos)
         if (!TopToolBar->CreateWnd(HTopRebar))
             return FALSE;
         TopToolBar->Load(Configuration.TopToolBar);
-        IdleForceRefresh = TRUE;  // forcneme update
-        IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+        IdleForceRefresh = TRUE;  // force update
+        IdleRefreshStates = TRUE; // During the next Idle, we will force the check of status variables
         InsertTopToolbarBand();
         ShowWindow(TopToolBar->HWindow, SW_SHOW);
         Configuration.TopToolBarVisible = TRUE;
@@ -556,7 +556,7 @@ BOOL CMainWindow::TogglePluginsBar(BOOL storePos)
     {
         if (!PluginsBar->CreateWnd(HTopRebar))
             return FALSE;
-        //    IdleForceRefresh = TRUE;   // forcneme update
+        //    IdleForceRefresh = TRUE;   // force update
         //    IdleRefreshStates = TRUE;  // pri pristim Idle vynutime kontrolu stavovych promennych
         PluginsBar->CreatePluginButtons();
         InsertPluginsBarBand();
@@ -590,8 +590,8 @@ BOOL CMainWindow::ToggleMiddleToolBar()
         if (!MiddleToolBar->CreateWnd(HWindow))
             return FALSE;
         MiddleToolBar->Load(Configuration.MiddleToolBar);
-        IdleForceRefresh = TRUE;  // forcneme update
-        IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+        IdleForceRefresh = TRUE;  // force update
+        IdleRefreshStates = TRUE; // During the next Idle, we will force the check of status variables
         ShowWindow(MiddleToolBar->HWindow, SW_SHOW);
         Configuration.MiddleToolBarVisible = TRUE;
     }
@@ -747,7 +747,7 @@ BOOL CMainWindow::ToggleBottomToolBar()
     if (BottomToolBar->HWindow != NULL)
     {
         DestroyWindow(BottomToolBar->HWindow);
-        BottomToolBar->SetState(btbsCount); // pri pristim zobrazeni nalejeme nejaky validni stav
+        BottomToolBar->SetState(btbsCount); // Next time we will pour some valid state during the display
         Configuration.BottomToolBarVisible = FALSE;
         return TRUE;
     }
@@ -811,7 +811,7 @@ void CMainWindow::ToggleToolBarGrips()
     }
 
     // drive bar
-    // pouze pokud je jeden bar; jinak gripy nemaji
+    // only if there is one bar; otherwise the grips do not have
     if (DriveBar->HWindow != NULL && DriveBar2->HWindow == NULL)
     {
         index = (int)SendMessage(HTopRebar, RB_IDTOINDEX, BANDID_DRIVEBAR, 0);
@@ -825,7 +825,7 @@ void CMainWindow::ToggleToolBarGrips()
 void CMainWindow::StoreBandsPos()
 {
     CALL_STACK_MESSAGE1("CMainWindow::StoreBandsPos()");
-    // ulozim rozlozeni v rebaru
+    // Save the layout in the buffer
     REBARBANDINFO rbbi;
 
     rbbi.cbSize = sizeof(rbbi);
@@ -908,7 +908,7 @@ BOOL CMainWindow::InsertMenuBand()
     else
     {
         rbbi.fStyle |= RBBS_NOGRIPPER;
-        // abychom nebyli tak nalepeni na strane
+        // so that we are not so stuck on one side
         rbbi.fMask |= RBBIM_HEADERSIZE;
         rbbi.cxHeader = 2;
     }
@@ -929,8 +929,7 @@ BOOL CMainWindow::InsertMenuBand()
 
 BOOL CMainWindow::CreateAndInsertWorkerBand()
 {
-    /*
-  CALL_STACK_MESSAGE1("CMainWindow::CreateAndInsertWorkerBand()");
+    /*    CALL_STACK_MESSAGE1("CMainWindow::CreateAndInsertWorkerBand()");
 
   REBARBANDINFO  rbbi;
   ZeroMemory(&rbbi, sizeof(rbbi));
@@ -954,8 +953,7 @@ BOOL CMainWindow::CreateAndInsertWorkerBand()
   rbbi.hwndChild    = AnimateBar->HWindow;
   rbbi.wID          = BANDID_WORKER;
 
-//  SendMessage(HTopRebar, RB_INSERTBAND, (WPARAM)1, (LPARAM)&rbbi);
-*/
+//  SendMessage(HTopRebar, RB_INSERTBAND, (WPARAM)1, (LPARAM)&rbbi);*/
     return TRUE;
 }
 
@@ -978,7 +976,7 @@ BOOL CMainWindow::InsertTopToolbarBand()
     else
     {
         rbbi.fStyle |= RBBS_NOGRIPPER;
-        // abychom nebyli tak nalepeni na strane
+        // so that we are not so stuck on one side
         rbbi.fMask |= RBBIM_HEADERSIZE;
         rbbi.cxHeader = 2;
     }
@@ -1014,7 +1012,7 @@ BOOL CMainWindow::InsertPluginsBarBand()
     else
     {
         rbbi.fStyle |= RBBS_NOGRIPPER;
-        // abychom nebyli tak nalepeni na strane
+        // so that we are not so stuck on one side
         rbbi.fMask |= RBBIM_HEADERSIZE;
         rbbi.cxHeader = 2;
     }
@@ -1050,7 +1048,7 @@ BOOL CMainWindow::InsertUMToolbarBand()
     else
     {
         rbbi.fStyle |= RBBS_NOGRIPPER;
-        // abychom nebyli tak nalepeni na strane
+        // so that we are not so stuck on one side
         rbbi.fMask |= RBBIM_HEADERSIZE;
         rbbi.cxHeader = 2;
     }
@@ -1087,7 +1085,7 @@ BOOL CMainWindow::InsertHPToolbarBand()
     else
     {
         rbbi.fStyle |= RBBS_NOGRIPPER;
-        // abychom nebyli tak nalepeni na strane
+        // so that we are not so stuck on one side
         rbbi.fMask |= RBBIM_HEADERSIZE;
         rbbi.cxHeader = 2;
     }
@@ -1120,7 +1118,7 @@ BOOL CMainWindow::InsertDriveBarBand(BOOL twoDriveBars)
     {
         rbbi.fMask |= RBBIM_HEADERSIZE;
         rbbi.fStyle = RBBS_NOGRIPPER | RBBS_BREAK;
-        rbbi.cxHeader = 0; // pozor, tato hodnota se nastavuje jeste na jednom miste
+        rbbi.cxHeader = 0; // attention, this value is set in one more place
         rbbi.cxMinChild = 0;
     }
     else
@@ -1169,7 +1167,7 @@ BOOL CMainWindow::EditWindowKnowHWND(HWND hwnd)
 
 void CMainWindow::EditWindowSetDirectory()
 {
-    SetWindowTitle(); // aktualni adresar do title bar
+    SetWindowTitle(); // current directory to title bar
     CFilesWindow* panel = GetActivePanel();
     if (panel != NULL &&
         (panel->Is(ptDisk) ||
@@ -1183,7 +1181,7 @@ void CMainWindow::EditWindowSetDirectory()
     }
     else // disable/hide edit-line
     {
-        if (EditMode && panel != NULL) // sysvobodime focus z commanline pred jejim disablenim
+        if (EditMode && panel != NULL) // Free the focus from the command line before disabling it
             FocusPanel(panel, TRUE);
         EditWindow->Enable(FALSE); // cached in EditWindow
         EditWindow->SetDirectory("");
@@ -1228,7 +1226,7 @@ void CMainWindow::RefreshDirs()
     RightPanel->ChangePathToDisk(RightPanel->HWindow, RightPanel->GetPath());
 }
 
-// pro predani cesty do konfiguracniho dialogu
+// for passing the path to the configuration dialog
 char HotPathSetBufferName[MAX_PATH];
 char HotPathSetBufferPath[HOTPATHITEM_MAXPATH];
 
@@ -1236,23 +1234,23 @@ void CMainWindow::SetUnescapedHotPath(int index, const char* path)
 {
     if (Configuration.HotPathAutoConfig)
     {
-        // prejdeme na buffer, aby slapal Cancel
+        // Let's move on to the buffer so that Cancel works
         lstrcpyn(HotPathSetBufferName, path, MAX_PATH);
         lstrcpyn(HotPathSetBufferPath, path, HOTPATHITEM_MAXPATH);
         DuplicateDollars(HotPathSetBufferPath, HOTPATHITEM_MAXPATH);
-        // nechame vybalit stranku HotPaths a rozeditovat polozku index
+        // Let's unpack the HotPaths page and edit the index item
         PostMessage(HWindow, WM_USER_CONFIGURATION, 1, index);
     }
     else
     {
-        // napereme hodnotu primo
+        // Assign the value directly
         char buff[HOTPATHITEM_MAXPATH];
         lstrcpyn(buff, path, HOTPATHITEM_MAXPATH);
         char nameBuff[MAX_PATH];
         lstrcpyn(nameBuff, path, MAX_PATH);
         DuplicateDollars(buff, HOTPATHITEM_MAXPATH);
         HotPaths.Set(index, nameBuff, buff);
-        // doslo ke zmene, nechame prestavet Hot Path Bar
+        // There has been a change, we will let the Hot Path Bar be rebuilt
         if (HPToolBar != NULL && HPToolBar->HWindow != NULL)
             HPToolBar->CreateButtons();
         if (Windows7AndLater)
@@ -1262,20 +1260,20 @@ void CMainWindow::SetUnescapedHotPath(int index, const char* path)
 
 BOOL CMainWindow::GetExpandedHotPath(HWND hParent, int index, char* buffer, int bufferSize)
 {
-    // buffer by mel byt 2 * MAX_PATH veliky
+    // buffer should be 2 * MAX_PATH in size
     if (bufferSize != 2 * MAX_PATH)
         TRACE_E("CMainWindow::GetExpandedHotPath: invalid buffer size!");
 
-    // pokud neni cesta definovana, muzeme rovnou vypadnout
+    // if the path is not defined, we can just exit
     int pathLen = HotPaths.GetPathLen(index);
     if (pathLen == 0)
         return FALSE;
 
-    // vytahneme cestu k nam
+    // we will pull the path to us
     char* path = (char*)malloc(pathLen + 1);
     HotPaths.GetPath(index, path, pathLen + 1);
 
-    // provedeme validaci
+    // we will perform validation
     int errorPos1, errorPos2;
     if (!ValidateHotPath(hParent, path, errorPos1, errorPos2))
     {
@@ -1283,7 +1281,7 @@ BOOL CMainWindow::GetExpandedHotPath(HWND hParent, int index, char* buffer, int 
         return FALSE;
     }
 
-    // na zaver provedeme expanzi
+    // finally we will perform expansion
     BOOL ret = ExpandHotPath(hParent, path, buffer, bufferSize, FALSE);
     free(path);
     return ret;
@@ -1294,12 +1292,12 @@ int CMainWindow::GetUnassignedHotPathIndex()
     return HotPaths.GetUnassignedHotPathIndex();
 }
 
-// font pro nase GUI (panel muze mit font definovatelny v konfiguraci)
+// font for our GUI (panel can have a font defined in the configuration)
 BOOL GetSystemGUIFont(LOGFONT* lf)
 {
     if (!SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(LOGFONT), lf, 0))
     {
-        // kdyby nahodou selhalo SystemParametersInfo, pouzijeme nahradni reseni
+        // If SystemParametersInfo fails, we will use a fallback solution
         NONCLIENTMETRICS ncm;
         ncm.cbSize = sizeof(ncm);
         SystemParametersInfo(SPI_GETNONCLIENTMETRICS, ncm.cbSize, &ncm, 0);
@@ -1309,7 +1307,7 @@ BOOL GetSystemGUIFont(LOGFONT* lf)
     return TRUE;
 }
 
-// font pro tooltips
+// font for tooltips
 BOOL GetSystemTooltipFont(LOGFONT* lf)
 {
     NONCLIENTMETRICS ncm;
@@ -1328,9 +1326,9 @@ BOOL CreatePanelFont()
 
     LOGFONT lf;
     if (UseCustomPanelFont)
-        lf = LogFont; // uzivatel nastavil vlastni font
+        lf = LogFont; // user set a custom font
     else
-        GetSystemGUIFont(&lf); // vytahneme font ze systemu
+        GetSystemGUIFont(&lf); // extract font from system
 
     Font = HANDLES(CreateFontIndirect(&lf));
     if (Font == NULL)
@@ -1339,7 +1337,7 @@ BOOL CreatePanelFont()
         return FALSE;
     }
 
-    // vytvorim podtrzenou variantu
+    // create an underscored variant
     BYTE oldUnderline = lf.lfUnderline;
     lf.lfUnderline = TRUE;
     if (FontUL != NULL)
@@ -1379,7 +1377,7 @@ BOOL CreateEnvFonts()
         return FALSE;
     }
 
-    // vytvorim podtrzenou variantu
+    // create an underscored variant
     lf.lfUnderline = TRUE;
     if (EnvFontUL != NULL)
         HANDLES(DeleteObject(EnvFontUL));
@@ -1578,7 +1576,7 @@ void CMainWindow::FillUserMenu2(CMenuPopup* menu, int* iterator, int max)
             mii.String = UserMenuItems->At(*iterator)->ItemName;
             mii.HIcon = UserMenuItems->At(*iterator)->UMIcon;
             menu->InsertItem(0xFFFFFFFF, TRUE, &mii);
-            // rekurze
+            // recursion
             (*iterator)++;
             FillUserMenu2(popup, iterator, max);
             added++;
@@ -1611,7 +1609,7 @@ void CMainWindow::FillUserMenu(CMenuPopup* menu, BOOL customize)
 
     if (customize)
     {
-        // pripojime separator a moznost konfigurace
+        // we will add a separator and configuration option
         MENU_ITEM_INFO mii;
         mii.Mask = MENU_MASK_TYPE;
         mii.Type = MENU_TYPE_SEPARATOR;
@@ -1626,8 +1624,7 @@ void CMainWindow::FillUserMenu(CMenuPopup* menu, BOOL customize)
     }
 }
 
-/*
-void
+/*  void
 CMainWindow::ReleaseMenuNew()
 {
   CALL_STACK_MESSAGE1("CMainWindow::ReleaseMenuNew()");
@@ -1639,8 +1636,7 @@ CMainWindow::ReleaseMenuNew()
   mi.fState = MFS_GRAYED;
   mi.hSubMenu = NULL;
   SetMenuItemInfo(GetSubMenu(Menu->HMenu, FILES_MENU_INDEX), CM_NEWMENU, FALSE, &mi);
-}
-*/
+}*/
 
 void CMainWindow::LayoutWindows()
 {
@@ -1699,7 +1695,7 @@ void CMainWindow::GetFormatedPathForTitle(char* path)
 {
     path[0] = 0;
     int titleBarMode = Configuration.TitleBarMode;
-    // plugin FS bez podpory pro ziskavani cesty do titulku okna umi zobrazit jen Full Path
+    // plugin FS without support for retrieving the path to the window title can only display the Full Path
     CFilesWindow* panel = GetActivePanel();
     if (panel == NULL)
     {
@@ -1719,22 +1715,22 @@ void CMainWindow::GetFormatedPathForTitle(char* path)
             !panel->GetPluginFS()->GetPathForMainWindowTitle(panel->GetPluginFS()->GetPluginFSName(),
                                                              2, path, 2 * MAX_PATH))
         {
-            // mame zobrazit "root\...\aktualni adresar"
+            // we need to display "root\...\current directory"
             panel->GetGeneralPath(path, 2 * MAX_PATH);
             if (path[0] != 0)
             {
-                char* trimStart = NULL; // misto kam vlozim "...", za ktere pripojim 'trimEnd'
+                char* trimStart = NULL; // place where I insert "...", to which I will append 'trimEnd'
                 char* trimEnd = NULL;
                 if (panel->Is(ptDisk) || panel->Is(ptZIPArchive))
                 {
                     char rootPath[MAX_PATH];
                     GetRootPath(rootPath, path);
                     int chars = (int)strlen(rootPath);
-                    // izolovali jsme root
+                    // we isolated the root
                     trimStart = path + chars;
                     while (path[chars] != 0)
                     {
-                        // hledame posledni komponentu, kterou chceme zachovat
+                        // we are looking for the last component that we want to keep
                         if (path[chars] == '\\' && path[chars + 1] != 0)
                             trimEnd = path + chars;
                         chars++;
@@ -1746,26 +1742,26 @@ void CMainWindow::GetFormatedPathForTitle(char* path)
                     {
                         int chars = 0;
                         int pathLen = (int)strlen(path);
-                        // pokud FS nepodporuje FS_SERVICE_GETNEXTDIRLINEHOTPATH, dostaneme FALSE a zobrazime plnou cestu
+                        // if the FS does not support FS_SERVICE_GETNEXTDIRLINEHOTPATH, we will receive FALSE and display the full path
                         if (panel->GetPluginFS()->GetNextDirectoryLineHotPath(path, pathLen, chars) &&
-                            chars < pathLen) // konec cesty neni delici bod, chyba implementace GetNextDirectoryLineHotPath
+                            chars < pathLen) // End of the road is not a breakpoint, error in implementing GetNextDirectoryLineHotPath
                         {
-                            // izolovali jsme root
+                            // we isolated the root
                             trimStart = path + chars;
                             int lastChars = chars;
                             while (panel->GetPluginFS()->GetNextDirectoryLineHotPath(path, pathLen, chars))
                             {
-                                // hledame posledni komponentu, kterou chceme zachovat
+                                // we are looking for the last component that we want to keep
                                 if (chars < pathLen)
                                     lastChars = chars;
                                 else
-                                    break; // konec cesty neni delici bod, chyba implementace GetNextDirectoryLineHotPath
+                                    break; // End of the road is not a breakpoint, error in implementing GetNextDirectoryLineHotPath
                             }
                             trimEnd = path + lastChars;
                         }
                     }
                 }
-                // orezeme cestu
+                // trim the path
                 if (trimStart != NULL && trimEnd != NULL && trimEnd > trimStart)
                 {
                     memmove(trimStart + 3, trimEnd, strlen(trimEnd) + 1);
@@ -1782,7 +1778,7 @@ void CMainWindow::GetFormatedPathForTitle(char* path)
             !panel->GetPluginFS()->GetPathForMainWindowTitle(panel->GetPluginFS()->GetPluginFSName(),
                                                              1, path, MAX_PATH))
         {
-            // mame zobrazit pouze aktualni adresar
+            // We should display only the current directory
             panel->GetGeneralPath(path, 2 * MAX_PATH);
             if (path[0] != 0)
             {
@@ -1806,13 +1802,13 @@ void CMainWindow::GetFormatedPathForTitle(char* path)
                         int chars = 0;
                         int pathLen = (int)strlen(path);
                         int lastChars = 0;
-                        // pokud FS nepodporuje FS_SERVICE_GETNEXTDIRLINEHOTPATH, dostaneme FALSE a zobrazime plnou cestu
+                        // if the FS does not support FS_SERVICE_GETNEXTDIRLINEHOTPATH, we will receive FALSE and display the full path
                         while (panel->GetPluginFS()->GetNextDirectoryLineHotPath(path, pathLen, chars))
                         {
                             if (chars < pathLen)
                                 lastChars = chars;
                             else
-                                break; // konec cesty neni delici bod, chyba implementace GetNextDirectoryLineHotPath
+                                break; // End of the road is not a breakpoint, error in implementing GetNextDirectoryLineHotPath
                         }
                         if (lastChars > 0)
                         {
@@ -1830,7 +1826,7 @@ void CMainWindow::GetFormatedPathForTitle(char* path)
 
     case TITLE_BAR_MODE_FULLPATH:
     {
-        // vracime plnou cestu
+        // returning full path
         panel->GetGeneralPath(path, 2 * MAX_PATH);
         break;
     }
@@ -1852,7 +1848,7 @@ void CMainWindow::SetWindowTitle(const char* text)
     char stdWndName[2 * MAX_PATH + 300];
     if (text == NULL)
     {
-        // dodame implicitni obsah
+        // provide default content
         stdWndName[0] = 0;
 
         // prefix
@@ -1914,7 +1910,7 @@ void CMainWindow::SetWindowTitle(const char* text)
 void CMainWindow::SetWindowIcon()
 {
     int resID = MainWindowIcons[Configuration.GetMainWindowIconIndex()].IconResID;
-    // priradim oknu ikonku
+    // assign an icon to the window
     SendMessage(HWindow, WM_SETICON, ICON_BIG,
                 (LPARAM)HANDLES(LoadIcon(HInstance, MAKEINTRESOURCE(resID))));
 
@@ -1922,7 +1918,7 @@ void CMainWindow::SetWindowIcon()
         AddTrayIcon(TRUE);
 }
 
-// btbsCount == prazdna toolbara
+// btbsCount == empty toolbar
 CBottomTBStateEnum VirtKeyStateTable[2][2][2] =
     {
         {
@@ -1959,7 +1955,7 @@ void CMainWindow::UpdateBottomToolBar()
 }
 
 CMainWindowsHitTestEnum
-CMainWindow::HitTest(int xPos, int yPos) // screen souradnice
+CMainWindow::HitTest(int xPos, int yPos) // screen coordinates
 {
     POINT p;
     p.x = xPos;
@@ -1970,13 +1966,13 @@ CMainWindow::HitTest(int xPos, int yPos) // screen souradnice
     r = clientRect;
     MapWindowPoints(HWindow, NULL, (POINT*)&r, 2);
 
-    // neni-li bod v client area, nezajima nas
+    // if the point is not in the client area, we are not interested
     if (!PtInRect(&r, p))
         return mwhteNone;
 
     CMainWindowsHitTestEnum hit = mwhteNone;
 
-    // najdu komu patri bod
+    // find out who owns the point
     ScreenToClient(HWindow, &p);
 
     // rebar?
@@ -1985,7 +1981,7 @@ CMainWindow::HitTest(int xPos, int yPos) // screen souradnice
         RBHITTESTINFO hti;
         hti.pt = p;
         if (SendMessage(HTopRebar, RB_HITTEST, 0, (LPARAM)&hti) == -1 ||
-            hti.flags == RBHT_NOWHERE || hti.iBand == -1) // lehce pretestovane, ale verte salatum...
+            hti.flags == RBHT_NOWHERE || hti.iBand == -1) // lightly pre-tested, but trust the salads...
         {
             hit = mwhteTopRebar;
         }
@@ -2112,13 +2108,13 @@ void CMainWindow::OnWmContextMenu(HWND hWnd, int xPos, int yPos)
     BOOL panelClass = (leftPanel || hit == mwhteRightDirLine || hit == mwhteRightHeaderLine ||
                        hit == mwhteRightStatusLine);
 
-    // vytvorim menu
+    // create menu
     CMenuPopup menu;
 
     menu.SetImageList(HGrayToolBarImageList, TRUE);
     menu.SetHotImageList(HHotToolBarImageList, TRUE);
 
-    // pripravim si separator
+    // prepare a separator
     MENU_ITEM_INFO miiSep;
     miiSep.Mask = MENU_MASK_TYPE;
     miiSep.Type = MENU_TYPE_SEPARATOR;
@@ -2130,7 +2126,7 @@ void CMainWindow::OnWmContextMenu(HWND hWnd, int xPos, int yPos)
     mii.ImageIndex = -1;
     mii.SubMenu = NULL;
 
-    // naplnim ho
+    // fill it up
     if (hit == mwhteSplitLine)
     {
         char buff[20];
@@ -2147,8 +2143,8 @@ void CMainWindow::OnWmContextMenu(HWND hWnd, int xPos, int yPos)
 
     if (mainClass)
     {
-        /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volanim InsertItem() dole...
+        /* Used for the export_mnu.py script, which generates salmenu.mnu for the Translator
+   to keep synchronized with the InsertItem() calls below...
 MENU_TEMPLATE_ITEM ToolbarsCtxMenu[] = 
 {
   {MNTT_PB, 0
@@ -2165,8 +2161,7 @@ MENU_TEMPLATE_ITEM ToolbarsCtxMenu[] =
   {MNTT_IT, IDS_SHOWLABELS
   {MNTT_IT, IDS_CUSTOMIZE
   {MNTT_PE, 0
-};
-*/
+};*/
 
         mii.String = LoadStr(IDS_TOPTOOLBAR);
         mii.ID = 1;
@@ -2238,14 +2233,14 @@ MENU_TEMPLATE_ITEM ToolbarsCtxMenu[] =
     }
 
     char HotText[2 * MAX_PATH];
-    int HeaderLineItem = -1; // bude naplnena indexem polozky, pokud user na nejakou kliknul
+    int HeaderLineItem = -1; // will be filled with the index of the item if the user clicked on any
 
     if (panelClass)
     {
         CFilesWindow* panel = leftPanel ? LeftPanel : RightPanel;
 
-        /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volanim InsertItem() dole...
+        /* Used for the export_mnu.py script, which generates salmenu.mnu for the Translator
+   to keep synchronized with the InsertItem() calls below...
 MENU_TEMPLATE_ITEM DirLineHeaderLineMenu[] = 
 {
   {MNTT_PB, 0
@@ -2279,15 +2274,14 @@ MENU_TEMPLATE_ITEM InfoLineMenu[] =
   {MNTT_IT, IDS_INFORMATIONLINE
   {MNTT_IT, IDS_CUSTOMIZEPANEL
   {MNTT_PE, 0
-};
-*/
+};*/
 
         if (hit == mwhteLeftHeaderLine || hit == mwhteRightHeaderLine)
         {
             CHeaderLine* hdrLine = panel->GetHeaderLine();
             if (hdrLine != NULL)
             {
-                // zjistim, nad kterou polozkou header line se bod naleza
+                // find out which header line the point is located above
                 POINT hdrP;
                 hdrP.x = xPos;
                 hdrP.y = yPos;
@@ -2305,7 +2299,7 @@ MENU_TEMPLATE_ITEM InfoLineMenu[] =
                     mii.State = column->FixedWidth ? 0 : MENU_STATE_CHECKED;
                     menu.InsertItem(0xffffffff, TRUE, &mii);
 
-                    if (index == 0 /* sloupec Name */)
+                    if (index == 0 /* column Name*/)
                     {
                         mii.String = LoadStr(IDS_HDR_SMARTMODE);
                         mii.ID = 17;
@@ -2322,8 +2316,7 @@ MENU_TEMPLATE_ITEM InfoLineMenu[] =
 
             menu.InsertItem(0xffffffff, TRUE, &miiSep);
 
-            /*
-      char modiBuff[200];
+            /*        char modiBuff[200];
       strcpy(modiBuff, LoadStr(IDS_HDR_ELASTIC));
       mii.String = modiBuff;
       mii.ID = 1;
@@ -2349,11 +2342,10 @@ MENU_TEMPLATE_ITEM InfoLineMenu[] =
       InsertMenu(hMenu, 0xffffffff, MF_BYPOSITION | MF_STRING | 
                  (Configuration.ShowAttr ? MF_CHECKED : 0),
                  7, LoadStr(IDS_HDR_ATTR));
-      InsertMenu(hMenu, 0xffffffff, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
-*/
+      InsertMenu(hMenu, 0xffffffff, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);*/
         }
 
-        // obslouzim hot path
+        // Handle hot path
         if (hit == mwhteLeftDirLine || hit == mwhteRightDirLine)
         {
             mii.String = LoadStr(IDS_CHANGEDIRECTORY);
@@ -2389,7 +2381,7 @@ MENU_TEMPLATE_ITEM InfoLineMenu[] =
             }
         }
 
-        // obslouzim hot text v info line
+        // Handle the hot text in the info line
         if (hit == mwhteLeftStatusLine || hit == mwhteRightStatusLine)
         {
             panel->StatusLine->GetHotText(HotText, _countof(HotText));
@@ -2428,13 +2420,13 @@ MENU_TEMPLATE_ITEM InfoLineMenu[] =
         menu.InsertItem(0xffffffff, TRUE, &mii);
     }
 
-    // vybalim menu
+    // unpack menu
     int cmd = menu.Track(MENU_TRACK_RETURNCMD | MENU_TRACK_RIGHTBUTTON,
                          xPos, yPos, HWindow, NULL);
     if (cmd == 0)
         return;
 
-    // vyhodnotim vysledek
+    // evaluate the result
     if (hit == mwhteSplitLine)
     {
         SplitPosition = (double)cmd / 10;
@@ -2510,14 +2502,14 @@ MENU_TEMPLATE_ITEM InfoLineMenu[] =
 
             case mwhteUMToolbar:
             {
-                // nechame vybalit stranku UserMenu a rozeditovat polozku index
+                // Let's unpack the UserMenu page and edit the index item
                 PostMessage(HWindow, WM_USER_CONFIGURATION, 2, 0);
                 break;
             }
 
             case mwhteHPToolbar:
             {
-                // nechame vybalit stranku HotPaths
+                // let's unpack the HotPaths page
                 PostMessage(HWindow, WM_USER_CONFIGURATION, 1, -1);
                 break;
             }
@@ -2572,7 +2564,7 @@ MENU_TEMPLATE_ITEM InfoLineMenu[] =
                 if (panel->PluginData.NotEmpty()) // "always true"
                     panel->PluginData.ColumnFixedWidthShouldChange(leftPanel, column, column->FixedWidth ? 0 : 1);
             }
-            // user cosi menil v konfiguraci pohledu - nechame znovu sestavit sloupce
+            // user changed something in the view configuration - let's rebuild the columns
             if (leftPanel)
                 LeftPanel->SelectViewTemplate(LeftPanel->GetViewTemplateIndex(), TRUE, FALSE);
             else
@@ -2587,14 +2579,12 @@ MENU_TEMPLATE_ITEM InfoLineMenu[] =
             break;
         }
 
-            /*
-      case 2: Configuration.ShowExtension = !Configuration.ShowExtension; break;
+            /*        case 2: Configuration.ShowExtension = !Configuration.ShowExtension; break;
       case 3: Configuration.ShowDosName = !Configuration.ShowDosName; break;
       case 4: Configuration.ShowSize = !Configuration.ShowSize; break;
       case 5: Configuration.ShowDate = !Configuration.ShowDate; break;
       case 6: Configuration.ShowTime = !Configuration.ShowTime; break;
-      case 7: Configuration.ShowAttr = !Configuration.ShowAttr; break;
-*/
+      case 7: Configuration.ShowAttr = !Configuration.ShowAttr; break;*/
         case 8:
         {
             CopyTextToClipboard(HotText);
@@ -2627,7 +2617,7 @@ MENU_TEMPLATE_ITEM InfoLineMenu[] =
             break;
         }
 
-        // odchytneme hot paths
+        // catch hot paths
         if (cmd >= 20 && cmd < 50)
         {
             SetUnescapedHotPath(cmd - 20, HotText);
@@ -2656,44 +2646,44 @@ static BOOL CheckerRightSmartMode = 0xFFFFFFFF;
 
 void CMainWindow_RefreshCommandStates(CMainWindow* obj)
 {
-    IdleRefreshStates = FALSE; // shodim ridici promennou
+    IdleRefreshStates = FALSE; // drop the control variable
 
-    //---  ziskani stavovych hodnot pro enablovani
-    BOOL file = FALSE;                               // kurzor na souboru
-    BOOL subDir = FALSE;                             // kurzor na podadresari
-    BOOL files = FALSE;                              // kurzor na souboru nebo adresari nebo oznaceni
-    BOOL linkOnDisk = FALSE;                         // jen disky: kurzor na linku (soubor nebo adresar s atributem FILE_ATTRIBUTE_REPARSE_POINT)
-    BOOL containsFile = FALSE;                       // kurzor (nebo oznaceni) obsahuje soubory
-    BOOL containsDir = FALSE;                        // kurzor (nebo oznaceni) pouze na adresarich
-    BOOL compress = FALSE;                           // podporuje file-based-compression?
-    BOOL encrypt = FALSE;                            // podporuje file-based-encryption?
-    BOOL acls = FALSE;                               // podporuje ACL? (NTFS disky)
-    BOOL archive = FALSE;                            // je v panelu archiv?
-    BOOL targetArchive = FALSE;                      // je v druhem panelu archiv?
-    BOOL archiveEdit = FALSE;                        // je v panelu archiv, ktery umime editovat?
-    BOOL upDir = FALSE;                              // pritomnost ".."
-    BOOL leftUpDir = FALSE;                          // pritomnost ".."
-    BOOL rightUpDir = FALSE;                         // pritomnost ".."
-    BOOL rootDir = FALSE;                            // TRUE = nejsme jeste v rootu
-    BOOL leftRootDir = FALSE;                        // TRUE = nejsme jeste v rootu
-    BOOL rightRootDir = FALSE;                       // TRUE = nejsme jeste v rootu
-    BOOL hasForward = FALSE;                         // je mozny forward (historie cest)
-    BOOL hasBackward = FALSE;                        // je mozny backward (historie cest)
-    BOOL leftHasForward = FALSE;                     // je mozny forward v levem panelu (historie cest)
-    BOOL leftHasBackward = FALSE;                    // je mozny backward v levem panelu (historie cest)
-    BOOL rightHasForward = FALSE;                    // je mozny forward v pravem panelu (historie cest)
-    BOOL rightHasBackward = FALSE;                   // je mozny backward v pravem panelu (historie cest)
-    BOOL pasteFiles = EnablerPasteFiles;             // je mozne Edit/Paste? (soubory "cut" i "copy")
-    BOOL pastePath = EnablerPastePath;               // je mozne Edit/Paste? (text cesty)
-    BOOL pasteLinks = EnablerPasteLinks;             // je mozne Edit/Paste Shortcuts? (soubory "copy")
-    BOOL pasteSimpleFiles = EnablerPasteSimpleFiles; // jsou na clipboardu soubory/adresare z jedine cesty? (aneb: je sance na Paste do archivu nebo FS?)
-    DWORD pasteDefEffect = EnablerPasteDefEffect;    // jaky je defaultni paste-effect, muze byt i kombinace DROPEFFECT_COPY+DROPEFFECT_MOVE (aneb: slo o Copy nebo Cut?)
-    BOOL pasteFilesToArcOrFS = FALSE;                // je mozny Paste souboru do archivu/FS v aktualnim panelu?
-    BOOL onDisk = FALSE;                             // je v panelu disk?
-    BOOL customizeLeftView = FALSE;                  // lze konfigurovat sloupce pro levy panel?
-    BOOL customizeRightView = FALSE;                 // lze konfigurovat sloupce pro pravy panel?
-    BOOL validPluginFS = FALSE;                      // je v panelu FS s inicializovanym PluginFS interfacem?
-    DWORD viewMode = 0;                              // rezim zobrazeni panelu (tree/brief/detailed/...)
+    //--- obtaining state values for enabling
+    BOOL file = FALSE;                               // cursor on file
+    BOOL subDir = FALSE;                             // cursor to subdirectory
+    BOOL files = FALSE;                              // cursor on a file or directory or selection
+    BOOL linkOnDisk = FALSE;                         // only disks: cursor on a link (file or directory with the FILE_ATTRIBUTE_REPARSE_POINT attribute)
+    BOOL containsFile = FALSE;                       // cursor (or selection) contains files
+    BOOL containsDir = FALSE;                        // cursor (or selection) only on directories
+    BOOL compress = FALSE;                           // Does it support file-based compression?
+    BOOL encrypt = FALSE;                            // Does it support file-based encryption?
+    BOOL acls = FALSE;                               // Does it support ACL? (NTFS disks)
+    BOOL archive = FALSE;                            // Is the archive panel?
+    BOOL targetArchive = FALSE;                      // Is it in the second panel of the archive?
+    BOOL archiveEdit = FALSE;                        // Is there an archive panel that we can edit?
+    BOOL upDir = FALSE;                              // presence of ".."
+    BOOL leftUpDir = FALSE;                          // presence of ".."
+    BOOL rightUpDir = FALSE;                         // presence of ".."
+    BOOL rootDir = FALSE;                            // TRUE = we are not in root yet
+    BOOL leftRootDir = FALSE;                        // TRUE = we are not in root yet
+    BOOL rightRootDir = FALSE;                       // TRUE = we are not in root yet
+    BOOL hasForward = FALSE;                         // possible to forward (travel history)
+    BOOL hasBackward = FALSE;                        // is it possible to go backward (history of paths)
+    BOOL leftHasForward = FALSE;                     // It is possible to navigate forward in the left panel (path history)
+    BOOL leftHasBackward = FALSE;                    // possible to go backward in the left panel (path history)
+    BOOL rightHasForward = FALSE;                    // possible to forward in the right panel (path history)
+    BOOL rightHasBackward = FALSE;                   // possible to go backward in the right panel (path history)
+    BOOL pasteFiles = EnablerPasteFiles;             // Is it possible to Edit/Paste? (files "cut" and "copy")
+    BOOL pastePath = EnablerPastePath;               // Is it possible to Edit/Paste? (path text)
+    BOOL pasteLinks = EnablerPasteLinks;             // Is it possible to edit/paste shortcuts? (files "copy")
+    BOOL pasteSimpleFiles = EnablerPasteSimpleFiles; // Are there files/directories on the clipboard from a single path? (i.e. is there a chance for Paste into an archive or filesystem?)
+    DWORD pasteDefEffect = EnablerPasteDefEffect;    // What is the default paste effect, can it also be a combination of DROPEFFECT_COPY+DROPEFFECT_MOVE (i.e. was it about Copy or Cut?)
+    BOOL pasteFilesToArcOrFS = FALSE;                // Is it possible to paste a file into the archive/FS in the current panel?
+    BOOL onDisk = FALSE;                             // is in the disk panel?
+    BOOL customizeLeftView = FALSE;                  // Is it possible to configure columns for the left panel?
+    BOOL customizeRightView = FALSE;                 // Is it possible to configure columns for the right panel?
+    BOOL validPluginFS = FALSE;                      // is in the FS panel with initialized PluginFS interface?
+    DWORD viewMode = 0;                              // display mode of the panel (tree/brief/detailed/...)
     DWORD leftViewMode = 0;
     DWORD rightViewMode = 0;
     DWORD sortType = 0;
@@ -2702,7 +2692,7 @@ void CMainWindow_RefreshCommandStates(CMainWindow* obj)
     BOOL existPrevSel = FALSE;
     BOOL existNextSel = FALSE;
 
-    BOOL dirHistory = FALSE; // je v directory historii dostupny adresar?
+    BOOL dirHistory = FALSE; // Is the directory of history available?
     BOOL smartMode = FALSE;
     BOOL leftSmartMode = FALSE;
     BOOL rightSmartMode = FALSE;
@@ -2739,9 +2729,9 @@ void CMainWindow_RefreshCommandStates(CMainWindow* obj)
         if (archive)
         {
             int format = PackerFormatConfig.PackIsArchive(activePanel->GetZIPArchive());
-            if (format != 0) // nasli jsme podporovany archiv
+            if (format != 0) // We found a supported archive
             {
-                archiveEdit = PackerFormatConfig.GetUsePacker(format - 1); // ma edit?
+                archiveEdit = PackerFormatConfig.GetUsePacker(format - 1); // edit?
             }
         }
 
@@ -2752,18 +2742,18 @@ void CMainWindow_RefreshCommandStates(CMainWindow* obj)
         rightUpDir = (obj->RightPanel->Dirs->Count != 0 &&
                       strcmp(obj->RightPanel->Dirs->At(0).Name, "..") == 0);
         if (!leftUpDir)
-            leftRootDir = FALSE; // uz jsme v rootu (neexistuje up-dir)
+            leftRootDir = FALSE; // we are already in the root (up-dir does not exist)
         else
             leftRootDir = TRUE; //!obj->LeftPanel->Is(ptDisk) || !IsUNCRootPath(obj->LeftPanel->GetPath());
         if (!rightUpDir)
-            rightRootDir = FALSE; // uz jsme v rootu (neexistuje up-dir)
+            rightRootDir = FALSE; // we are already in the root (up-dir does not exist)
         else
             rightRootDir = TRUE; //!obj->RightPanel->Is(ptDisk) || !IsUNCRootPath(obj->RightPanel->GetPath());
         rootDir = activePanel == obj->LeftPanel ? leftRootDir : rightRootDir;
 
         unselCount = activePanel->Dirs->Count + activePanel->Files->Count - selCount;
         if (upDir)
-            unselCount--; // up dir nepovazujeme za nevybrany adresar
+            unselCount--; // We do not consider the up dir as an unselected directory
 
         viewMode = activePanel->GetViewTemplateIndex();
         leftViewMode = obj->LeftPanel->GetViewTemplateIndex();
@@ -2813,14 +2803,14 @@ void CMainWindow_RefreshCommandStates(CMainWindow* obj)
 
         if (IdleCheckClipboard)
         {
-            IdleCheckClipboard = FALSE; // shodim ridici promennou
+            IdleCheckClipboard = FALSE; // drop the control variable
             pasteFiles = activePanel->ClipboardPaste(FALSE, TRUE);
             pastePath = activePanel->IsTextOnClipboard();
             pasteLinks = activePanel->ClipboardPasteLinks(TRUE);
             pasteSimpleFiles = activePanel->ClipboardPasteToArcOrFS(TRUE, &pasteDefEffect);
         }
 
-        // napocitame hodnotu pasteFilesToArcOrFS
+        // calculate the value of pasteFilesToArcOrFS
         if (pasteSimpleFiles)
         {
             if (archiveEdit)
@@ -2841,8 +2831,8 @@ void CMainWindow_RefreshCommandStates(CMainWindow* obj)
         }
     }
 
-    // preneseme vysledky do globalnich promennych
-    // pokud v nektere dojde ke zmene, bude nastavena promenna obj->IdleStatesChanged
+    // transfer the results to global variables
+    // if a change occurs in any of them, the variable obj->IdleStatesChanged will be set
     obj->CheckAndSet(&EnablerUpDir, upDir);
     obj->CheckAndSet(&EnablerRootDir, rootDir);
     obj->CheckAndSet(&EnablerForward, hasForward);
@@ -2860,12 +2850,12 @@ void CMainWindow_RefreshCommandStates(CMainWindow* obj)
     obj->CheckAndSet(&EnablerFileDirANDSelected, (file || subDir) && selCount > 0);
     obj->CheckAndSet(&EnablerOnDisk, onDisk);
     obj->CheckAndSet(&EnablerCalcDirSizes, (onDisk || archive && (activePanel->ValidFileData & VALID_DATA_SIZE)));
-    obj->CheckAndSet(&EnablerPasteFiles, pasteFiles);                   // ulozime stav clipboardu pro pristi volani RefreshCommandStates()
-    obj->CheckAndSet(&EnablerPastePath, pastePath);                     // ulozime stav clipboardu pro pristi volani RefreshCommandStates()
-    obj->CheckAndSet(&EnablerPasteLinks, pasteLinks);                   // ulozime stav clipboardu pro pristi volani RefreshCommandStates()
-    obj->CheckAndSet(&EnablerPasteSimpleFiles, pasteSimpleFiles);       // ulozime stav clipboardu pro pristi volani RefreshCommandStates()
-    obj->CheckAndSet(&EnablerPasteDefEffect, pasteDefEffect);           // ulozime stav clipboardu pro pristi volani RefreshCommandStates()
-    obj->CheckAndSet(&EnablerPasteFilesToArcOrFS, pasteFilesToArcOrFS); // ulozime stav pro rozliseni mezi "Paste" a "Paste (Change Directory)"
+    obj->CheckAndSet(&EnablerPasteFiles, pasteFiles);                   // Save the state of the clipboard for the next call to RefreshCommandStates()
+    obj->CheckAndSet(&EnablerPastePath, pastePath);                     // Save the state of the clipboard for the next call to RefreshCommandStates()
+    obj->CheckAndSet(&EnablerPasteLinks, pasteLinks);                   // Save the state of the clipboard for the next call to RefreshCommandStates()
+    obj->CheckAndSet(&EnablerPasteSimpleFiles, pasteSimpleFiles);       // Save the state of the clipboard for the next call to RefreshCommandStates()
+    obj->CheckAndSet(&EnablerPasteDefEffect, pasteDefEffect);           // Save the state of the clipboard for the next call to RefreshCommandStates()
+    obj->CheckAndSet(&EnablerPasteFilesToArcOrFS, pasteFilesToArcOrFS); // Save the state for distinguishing between "Paste" and "Paste (Change Directory)"
     obj->CheckAndSet(&EnablerPaste, (onDisk && pasteFiles || pasteFilesToArcOrFS || pastePath));
     obj->CheckAndSet(&EnablerPasteLinksOnDisk, onDisk && pasteLinks);
     obj->CheckAndSet(&EnablerSelected, selCount > 0);
@@ -2922,8 +2912,8 @@ void CMainWindow_RefreshCommandStates(CMainWindow* obj)
 
     if (obj->IdleStatesChanged || IdleForceRefresh)
     {
-        // pokud doslo k nejake zmene v promennych nebo je vyrazena cache
-        // pomoci IdleForceRefresh, nechame viditelne toolbary vytahnout nova data
+        // if there has been a change in variables or the cache is flushed
+        // By using IdleForceRefresh, we allow the toolbars to pull in new data visibly.
         if (obj->TopToolBar != NULL && obj->TopToolBar->HWindow != NULL)
             obj->TopToolBar->UpdateItemsState();
         if (obj->MiddleToolBar != NULL && obj->MiddleToolBar->HWindow != NULL)
@@ -3052,7 +3042,7 @@ void CMainWindow_RefreshCommandStates(CMainWindow* obj)
 
 void CMainWindow::RefreshCommandStates()
 {
-    CMainWindow_RefreshCommandStates(this); // tahle opicarna je tu jen kvuli tomu, ze neumim zjistit adresu metody objektu (takhle je to obyc. funkce, kde to umim)
+    CMainWindow_RefreshCommandStates(this); // this monkey business is only here because I can't figure out the address of a method of an object (this is a regular function, where I can do it)
 }
 
 void CMainWindow::OnEnterIdle()
@@ -3062,14 +3052,14 @@ void CMainWindow::OnEnterIdle()
     if (DisableIdleProcessing)
         return;
 
-    // hlavni okno uz je jiste plne nastartovane, jinak by nedoslo k idle rezimu
+    // the main window is certainly already fully started, otherwise it would not have entered idle mode
     FirstActivateApp = FALSE;
 
-    // kouknu, jestli si nekdo vyzadal kontrolu stavu
+    // I'll check if someone requested a status check
     if (IdleRefreshStates)
         RefreshCommandStates();
 
-    // update plugin bar a drives bar, je-li treba
+    // update plugin bar and drives bar if necessary
     if (!SalamanderBusy && PluginsStatesChanged)
     {
         if (PluginsBar != NULL && PluginsBar->HWindow != NULL)
@@ -3078,7 +3068,7 @@ void CMainWindow::OnEnterIdle()
         CDriveBar* copyDrivesListFrom = NULL;
         if (DriveBar != NULL && DriveBar->HWindow != NULL)
         {
-            DriveBar->RebuildDrives(DriveBar); // nepotrebujeme pomalou enumeraci disku
+            DriveBar->RebuildDrives(DriveBar); // We do not need slow disk enumeration
             copyDrivesListFrom = DriveBar;
         }
         if (DriveBar2 != NULL && DriveBar2->HWindow != NULL)
@@ -3087,10 +3077,10 @@ void CMainWindow::OnEnterIdle()
         PluginsStatesChanged = FALSE;
     }
 
-    // nechame bottom toolbar uvest do aktualniho stavu (pokud v nem uz neni)
+    // we will bring the bottom toolbar to its current state (if it is not already there)
     UpdateBottomToolBar();
 
-    // pokud doslo k rolovani nebo resize panelu, ulozime nove pole viditelnych polozek
+    // if the panel has been scrolled or resized, we save the new array of visible items
     if (LeftPanel != NULL)
         LeftPanel->RefreshVisibleItemsArray();
     if (RightPanel != NULL)
@@ -3099,8 +3089,8 @@ void CMainWindow::OnEnterIdle()
 
 void CMainWindow::OnColorsChanged(BOOL reloadUMIcons)
 {
-    // doslo ke zmene barev nebo barevne hloubky obrazovky; uz jsou vytvorene nove imagelisty
-    // pro toolbary a je treba je priradit controlum, ktere je pouzivaji
+    // the colors or color depths of the screen have changed; new imagelists have been created
+    // for toolbars and they need to be assigned to controls that use them
 
     // top toolbar
     if (TopToolBar != NULL)
@@ -3127,40 +3117,40 @@ void CMainWindow::OnColorsChanged(BOOL reloadUMIcons)
     // user menu toolbar
     if (UMToolBar != NULL)
     {
-        UMToolBar->OnColorsChanged(); // nova CacheBitmap
+        UMToolBar->OnColorsChanged(); // new CacheBitmap
         if (reloadUMIcons)
         {
             CUserMenuIconDataArr* bkgndReaderData = new CUserMenuIconDataArr();
-            // teoreticky hrozi, ze bude user menu otevrene ve Findu a prijde nam WM_COLORCHANGE (tim bysme sestrelili
-            // ikony menu ve Findu pod nohama), ale prakticky to snad nehrozi, kaslu na to ;-) Petr
-            // pokud bych to casem resil: resit tez situaci, kdy je otevrena cfg a dojde ke zmene barev,
-            // po zavreni cfg pres OK (nova verze user menu) se musi nacist ikony znovu
+            // theoretically, there is a risk that the user menu will be open in Find and we will receive WM_COLORCHANGE (which would crash us
+            // menu icons in Find under your feet), but practically it's not a big deal, I don't care ;-) Petr
+            // if I were to solve it over time: also address the situation when the cfg is open and the colors change,
+            // after closing cfg via OK (new version of user menu), icons must be reloaded
             for (int i = 0; i < UserMenuItems->Count; i++)
                 UserMenuItems->At(i)->GetIconHandle(bkgndReaderData, FALSE);
-            UserMenuIconBkgndReader.StartBkgndReadingIcons(bkgndReaderData); // POZOR: uvolni 'bkgndReaderData'
+            UserMenuIconBkgndReader.StartBkgndReadingIcons(bkgndReaderData); // WARNING: release 'bkgndReaderData'
         }
-        UMToolBar->CreateButtons(); // doslo ke zmene handlu group ikonky
+        UMToolBar->CreateButtons(); // there has been a change in the trading of group icons
     }
 
     // hot path bar
     if (HPToolBar != NULL)
     {
-        HPToolBar->OnColorsChanged(); // nova CacheBitmap
-        HPToolBar->CreateButtons();   // doslo ke zmene handlu ikonky HFavoritIcon
+        HPToolBar->OnColorsChanged(); // new CacheBitmap
+        HPToolBar->CreateButtons();   // HFavoritIcon icon trading has changed
     }
 
     // drive bars
     CDriveBar* copyDrivesListFrom = NULL;
     if (DriveBar != NULL)
     {
-        DriveBar->OnColorsChanged(); // nova CacheBitmap
-        DriveBar->RebuildDrives();   // nechame nacist nove ikonky
+        DriveBar->OnColorsChanged(); // new CacheBitmap
+        DriveBar->RebuildDrives();   // load new icons
         copyDrivesListFrom = DriveBar;
     }
     if (DriveBar2 != NULL)
     {
-        DriveBar2->OnColorsChanged();                 // nova CacheBitmap
-        DriveBar2->RebuildDrives(copyDrivesListFrom); // nechame nacist nove ikonky
+        DriveBar2->OnColorsChanged();                 // new CacheBitmap
+        DriveBar2->RebuildDrives(copyDrivesListFrom); // load new icons
     }
 
     // bottom toolbar

@@ -16,10 +16,10 @@ CSVGSprite SVGArrowMore;
 CSVGSprite SVGArrowLess;
 CSVGSprite SVGArrowDropDown;
 
-// alternativa: http://stackoverflow.com/questions/11376288/fast-computing-of-log2-for-64-bit-integers
-// (asi by se nasla i pro kratsi verze)
+// alternative: http://stackoverflow.com/questions/11376288/fast-computing-of-log2-for-64-bit-integers
+// (a shorter version could probably be found)
 //
-// nasledujici reseni ma vyhodu, ze pro konstanty bude napocitano v ramci precompileru
+// The following solution has the advantage that constants will be calculated within the precompiler.
 // LOG2_k(n) returns floor(log2(n)) and is valid for values 0 <= n < 1 << k
 #define LOG2_2(n) ((n)&0x2 ? 1 : 0)
 #define LOG2_4(n) ((n)&0xC ? 2 + LOG2_2((n) >> 2) : LOG2_2(n))
@@ -85,7 +85,7 @@ char* ReadSVGFile(const char* fileName)
     return buff;
 }
 
-// vykresli ikony pro ktere mame SVG reprezentaci
+// draw icons for which we have an SVG representation
 void RenderSVGImage(NSVGrasterizer* rast, HDC hDC, int x, int y, const char* svgName, int iconSize, COLORREF bkColor, BOOL enabled)
 {
     char svgFile[2 * MAX_PATH];
@@ -124,7 +124,7 @@ void RenderSVGImage(NSVGrasterizer* rast, HDC hDC, int x, int y, const char* svg
 
         if (!enabled)
         {
-            DWORD disabledColor = GetSVGSysColor(COLOR_BTNSHADOW); // JRYFIXME - prvotni nastrel, kde budeme brat disabled barvu?
+            DWORD disabledColor = GetSVGSysColor(COLOR_BTNSHADOW); // JRYFIXME - initial draft, where will we take the disabled color?
             NSVGshape* shape = image->shapes;
             while (shape != NULL)
             {
@@ -141,7 +141,7 @@ void RenderSVGImage(NSVGrasterizer* rast, HDC hDC, int x, int y, const char* svg
         BLENDFUNCTION bf;
         bf.BlendOp = AC_SRC_OVER;
         bf.BlendFlags = 0;
-        bf.SourceConstantAlpha = 0xff; // want to use per-pixel alpha values
+        bf.SourceConstantAlpha = 0xff; // Want to use per-pixel alpha values
         bf.AlphaFormat = AC_SRC_ALPHA;
         AlphaBlend(hDC, x, y, iconSize, iconSize, hMemDC, 0, 0, iconSize, iconSize, bf);
 
@@ -258,8 +258,7 @@ void CSVGSprite::GetScaleAndSize(const NSVGimage* image, const SIZE* sz, float* 
         *height = (int)(image->height * *scale);
     }
 }
-/*
-HBITMAP
+/*  HBITMAP
 CSVGSprite::LoadSVGToBitmap(int resID, SIZE *sz)
 {
   if (sz == NULL)
@@ -304,8 +303,7 @@ CSVGSprite::LoadSVGToBitmap(int resID, SIZE *sz)
     nsvgDelete(image);
   }
   return hMemBmp;
-}
-*/
+}*/
 void CSVGSprite::CreateDIB(int width, int height, HBITMAP* hMemBmp, void** lpMemBits)
 {
     HDC hMemDC = HANDLES(CreateCompatibleDC(NULL));
@@ -423,7 +421,7 @@ void CSVGSprite::AlphaBlend(HDC hDC, int x, int y, int width, int height, DWORD 
     BLENDFUNCTION bf;
     bf.BlendOp = AC_SRC_OVER;
     bf.BlendFlags = 0;
-    bf.SourceConstantAlpha = 0xff; // want to use per-pixel alpha values
+    bf.SourceConstantAlpha = 0xff; // Want to use per-pixel alpha values
     bf.AlphaFormat = AC_SRC_ALPHA;
     ::AlphaBlend(hDC, x, y, width, height, hMemTmpDC, 0, 0, Width, Height, bf);
 
