@@ -92,7 +92,7 @@ PVCODE ImageWebp::Read(HBITMAP& bmp, TProgressProc Progress, void* AppSpecific)
         m_file.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
         if (m_file.bad())
             return PVC_READING_ERROR;
-        const auto bytesRead = m_file.gcount();
+        const auto bytesRead = static_cast<size_t>(m_file.gcount());
         if (bytesRead == 0)
             return PVC_UNEXPECTED_EOF;
         totalBytesRead += bytesRead;
