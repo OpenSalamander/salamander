@@ -17,8 +17,6 @@ public:
     PVCODE Read(HBITMAP& bmp, TProgressProc Progress, void* AppSpecific);
 
 private:
-    void MoveFrom(ImageWebp& other);
-
     // image decoder
     WebPIDecoder* m_idec{nullptr};
     WebPDecoderConfig m_config{};
