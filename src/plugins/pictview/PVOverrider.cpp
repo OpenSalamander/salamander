@@ -39,7 +39,11 @@ namespace
         std::variant<LPPVHandle, ImageHeif, ImageWebp> data;
     };
 
-    PVCODE OpenImageEx(LPPVHandle* Img, LPPVOpenImageExInfo pOpenExInfo, LPPVImageInfo pImgInfo, int Size)
+    // utilities
+    Handle* _ConvertHandle(LPPVHandle hPVImage);
+    LPPVHandle _GetHandleForLocalCall(Handle* handle);
+
+    PVCODE WINAPI OpenImageEx(LPPVHandle* Img, LPPVOpenImageExInfo pOpenExInfo, LPPVImageInfo pImgInfo, int Size)
     {
         PVCODE result;
         assert(Img);
@@ -109,7 +113,7 @@ namespace
         return result;
     }
 
-    PVCODE _ReadImage(Handle* handle, TProgressProc Progress, void* AppSpecific, int ImageIndex)
+    PVCODE WINAPI _ReadImage(Handle* handle, TProgressProc Progress, void* AppSpecific, int ImageIndex)
     {
         assert(handle);
         assert(handle->type != HandleType::PictView);
@@ -176,11 +180,11 @@ namespace
         return result;
     }
 
-    PVCODE ReadImage(LPPVHandle Img, HDC PaintDC, RECT* pDRect, TProgressProc Progress, void* AppSpecific, int ImageIndex)
+    PVCODE WINAPI ReadImage(LPPVHandle Img, HDC PaintDC, RECT* pDRect, TProgressProc Progress, void* AppSpecific, int ImageIndex)
     {
         if (!Img)
             return PVC_INVALID_HANDLE;
-        auto* handle = reinterpret_cast<Handle*>(Img);
+        auto* handle = _ConvertHandle(Img);
         if (handle->type != HandleType::PictView)
         {
             // read the image content
@@ -201,11 +205,11 @@ namespace
         return origPVW32DLL.PVReadImage2(std::get<LPPVHandle>(handle->data), PaintDC, pDRect, Progress, AppSpecific, ImageIndex);
     }
 
-    PVCODE DrawImage(LPPVHandle Img, HDC PaintDC, int X, int Y, LPRECT rect)
+    PVCODE WINAPI DrawImage(LPPVHandle Img, HDC PaintDC, int X, int Y, LPRECT rect)
     {
         if (!Img)
             return PVC_INVALID_HANDLE;
-        auto* handle = reinterpret_cast<Handle*>(Img);
+        auto* handle = _ConvertHandle(Img);
         if (handle->type != HandleType::PictView)
         {
             // TODO: draw background during loading
@@ -215,11 +219,11 @@ namespace
         return origPVW32DLL.PVDrawImage(std::get<LPPVHandle>(handle->data), PaintDC, X, Y, rect);
     }
 
-    PVCODE CloseImage(LPPVHandle Img)
+    PVCODE WINAPI CloseImage(LPPVHandle Img)
     {
         if (!Img)
             return PVC_INVALID_HANDLE;
-        auto* handle = reinterpret_cast<Handle*>(Img);
+        auto* handle = _ConvertHandle(Img);
         if (handle->type != HandleType::PictView)
         {
             delete handle;
@@ -231,11 +235,11 @@ namespace
         return result;
     }
 
-    PVCODE SetBkHandle(LPPVHandle Img, COLORREF BkColor)
+    PVCODE WINAPI SetBkHandle(LPPVHandle Img, COLORREF BkColor)
     {
         if (!Img)
             return PVC_INVALID_HANDLE;
-        auto* handle = reinterpret_cast<Handle*>(Img);
+        auto* handle = _ConvertHandle(Img);
         if (handle->type != HandleType::PictView)
         {
             // cache the background color
@@ -246,33 +250,33 @@ namespace
         return origPVW32DLL.PVSetBkHandle(std::get<LPPVHandle>(handle->data), BkColor);
     }
 
-    PVCODE GetHandles2(LPPVHandle Img, LPPVImageHandles* pHandles)
+    PVCODE WINAPI GetHandles2(LPPVHandle Img, LPPVImageHandles* pHandles)
     {
         if (!Img)
             return PVC_INVALID_HANDLE;
-        auto* handle = reinterpret_cast<Handle*>(Img);
+        auto* handle = _ConvertHandle(Img);
         if (handle->type != HandleType::PictView)
             return PVC_INVALID_HANDLE;
         // call the original function
         return origPVW32DLL.PVGetHandles2(std::get<LPPVHandle>(handle->data), pHandles);
     }
 
-    PVCODE GetImageInfo(LPPVHandle Img, LPPVImageInfo pImgInfo, int cbSize, int ImageIndex)
+    PVCODE WINAPI GetImageInfo(LPPVHandle Img, LPPVImageInfo pImgInfo, int cbSize, int ImageIndex)
     {
         if (!Img)
             return PVC_INVALID_HANDLE;
-        auto* handle = reinterpret_cast<Handle*>(Img);
+        auto* handle = _ConvertHandle(Img);
         if (handle->type != HandleType::PictView)
             return PVC_INVALID_HANDLE;
         // call the original function
         return origPVW32DLL.PVGetImageInfo(std::get<LPPVHandle>(handle->data), pImgInfo, cbSize, ImageIndex);
     }
 
-    PVCODE SetStretchParameters(LPPVHandle Img, DWORD Width, DWORD Height, DWORD Mode)
+    PVCODE WINAPI SetStretchParameters(LPPVHandle Img, DWORD Width, DWORD Height, DWORD Mode)
     {
         if (!Img)
             return PVC_INVALID_HANDLE;
-        auto* handle = reinterpret_cast<Handle*>(Img);
+        auto* handle = _ConvertHandle(Img);
         if (handle->type != HandleType::PictView)
         {
             // cache the parameters
@@ -283,55 +287,69 @@ namespace
         return origPVW32DLL.PVSetStretchParameters(std::get<LPPVHandle>(handle->data), Width, Height, Mode);
     }
 
-    PVCODE LoadFromClipboard(LPPVHandle* Img, LPPVImageInfo pImgInfo, int cbSize)
+    PVCODE WINAPI LoadFromClipboard(LPPVHandle* Img, LPPVImageInfo pImgInfo, int cbSize)
     {
-        if (!Img)
-            return PVC_INVALID_HANDLE;
-        auto* handle = reinterpret_cast<Handle*>(Img);
-        if (handle->type != HandleType::PictView)
-            return PVC_INVALID_HANDLE;
-        // call the original function
-        return origPVW32DLL.PVLoadFromClipboard(Img, pImgInfo, cbSize);
+        assert(Img);
+
+        // initialize the handle
+        *Img = nullptr;
+
+        // call the original function with a temporary handle
+        LPPVHandle tempHandle = nullptr;
+        auto result = origPVW32DLL.PVLoadFromClipboard(&tempHandle, pImgInfo, cbSize);
+        if (result != PVC_OK)
+            return result;
+
+        // create a new handle
+        auto* handle = new Handle{};
+        if (!handle)
+            return PVC_OOM;
+
+        // image loaded successfully
+        handle->type = HandleType::PictView;
+        handle->data = tempHandle;
+        *Img = reinterpret_cast<LPPVHandle>(handle);
+        return result;
     }
 
-    PVCODE SaveImage(LPPVHandle Img, const char* OutFName, LPPVSaveImageInfo pSii, TProgressProc Progress, void* AppSpecific, int ImageIndex)
+    PVCODE WINAPI SaveImage(LPPVHandle Img, const char* OutFName, LPPVSaveImageInfo pSii, TProgressProc Progress, void* AppSpecific, int ImageIndex)
     {
         if (!Img)
             return PVC_INVALID_HANDLE;
-        auto* handle = reinterpret_cast<Handle*>(Img);
+        auto* handle = _ConvertHandle(Img);
         if (handle->type != HandleType::PictView)
             return PVC_INVALID_HANDLE;
         // call the original function
         return origPVW32DLL.PVSaveImage(std::get<LPPVHandle>(handle->data), OutFName, pSii, Progress, AppSpecific, ImageIndex);
     }
 
-    PVCODE ChangeImage(LPPVHandle Img, DWORD Flags)
+    PVCODE WINAPI ChangeImage(LPPVHandle Img, DWORD Flags)
     {
         if (!Img)
             return PVC_INVALID_HANDLE;
-        auto* handle = reinterpret_cast<Handle*>(Img);
+        auto* handle = _ConvertHandle(Img);
         if (handle->type != HandleType::PictView)
             return PVC_INVALID_HANDLE;
         // call the original function
         return origPVW32DLL.PVChangeImage(std::get<LPPVHandle>(handle->data), Flags);
     }
 
-    PVCODE ReadImageSequence(LPPVHandle Img, LPPVImageSequence* ppSeq)
+    PVCODE WINAPI ReadImageSequence(LPPVHandle Img, LPPVImageSequence* ppSeq)
     {
         if (!Img)
             return PVC_INVALID_HANDLE;
-        auto* handle = reinterpret_cast<Handle*>(Img);
+        auto* handle = _ConvertHandle(Img);
         if (handle->type != HandleType::PictView)
             return PVC_INVALID_HANDLE;
         // call the original function
-        return origPVW32DLL.PVReadImageSequence(Img, ppSeq);
+        return origPVW32DLL.PVReadImageSequence(std::get<LPPVHandle>(handle->data), ppSeq);
     }
 
-    PVCODE CropImage(LPPVHandle Img, int Left, int Top, int Width, int Height)
+    PVCODE WINAPI CropImage(LPPVHandle Img, int Left, int Top, int Width, int Height)
     {
         if (!Img)
             return PVC_INVALID_HANDLE;
-        auto* handle = reinterpret_cast<Handle*>(Img);
+        auto* handle = _ConvertHandle(Img);
         if (handle->type != HandleType::PictView)
             return PVC_INVALID_HANDLE;
         // call the original function
@@ -342,11 +360,11 @@ namespace
     {
         if (!Img)
             return false;
-        auto* handle = reinterpret_cast<Handle*>(Img);
+        auto* handle = _ConvertHandle(Img);
         if (handle->type != HandleType::PictView)
             return false;
         // call the original function
-        return origPVW32DLL.GetRGBAtCursor(std::get<LPPVHandle>(handle->data), Colors, x, y, pRGB, pIndex);
+        return origPVW32DLL.GetRGBAtCursor(_GetHandleForLocalCall(handle), Colors, x, y, pRGB, pIndex);
     }
 
     PVCODE _CalculateHistogram(LPPVHandle PVHandle, const LPPVImageInfo pvii, LPDWORD luminosity,
@@ -354,11 +372,11 @@ namespace
     {
         if (!PVHandle)
             return PVC_INVALID_HANDLE;
-        auto* handle = reinterpret_cast<Handle*>(PVHandle);
+        auto* handle = _ConvertHandle(PVHandle);
         if (handle->type != HandleType::PictView)
             return PVC_INVALID_HANDLE;
         // call the original function
-        return origPVW32DLL.CalculateHistogram(std::get<LPPVHandle>(handle->data), pvii, luminosity, red, green, blue, rgb);
+        return origPVW32DLL.CalculateHistogram(_GetHandleForLocalCall(handle), pvii, luminosity, red, green, blue, rgb);
     }
 
     PVCODE _CreateThumbnail(LPPVHandle hPVImage, LPPVSaveImageInfo pSii, int imageIndex, DWORD imgWidth, DWORD imgHeight,
@@ -367,7 +385,7 @@ namespace
     {
         if (!hPVImage)
             return PVC_INVALID_HANDLE;
-        auto* handle = reinterpret_cast<Handle*>(hPVImage);
+        auto* handle = _ConvertHandle(hPVImage);
         if (handle->type != HandleType::PictView)
         {
             // set the thumbnail size
@@ -381,8 +399,9 @@ namespace
             if (progressProc)
                 progressProc(0, progressProcArg);
         }
+
         // call the original function
-        return origPVW32DLL.CreateThumbnail(std::get<LPPVHandle>(handle->data), pSii, imageIndex, imgWidth, imgHeight, thumbWidth,
+        return origPVW32DLL.CreateThumbnail(_GetHandleForLocalCall(handle), pSii, imageIndex, imgWidth, imgHeight, thumbWidth,
                                             thumbHeight, thumbMaker, thumbFlags, progressProc, progressProcArg);
     }
 
@@ -391,11 +410,39 @@ namespace
     {
         if (!hPVImage)
             return PVC_INVALID_HANDLE;
-        auto* handle = reinterpret_cast<Handle*>(hPVImage);
+        auto* handle = _ConvertHandle(hPVImage);
         if (handle->type != HandleType::PictView)
             return PVC_INVALID_HANDLE;
         // call the original function
         return origPVW32DLL.SimplifyImageSequence(std::get<LPPVHandle>(handle->data), dc, ScreenWidth, ScreenHeight, pSeq, bgColor);
+    }
+
+    // utilities
+
+    Handle* _ConvertHandle(LPPVHandle hPVImage)
+    {
+        auto* handle = reinterpret_cast<Handle*>(hPVImage);
+
+        // check that the handle type is valid
+        assert(handle->type == HandleType::PictView ||
+               handle->type == HandleType::Heif ||
+               handle->type == HandleType::Webp);
+
+        return handle;
+    }
+
+    LPPVHandle _GetHandleForLocalCall(Handle* handle)
+    {
+        // HACK: resolve the handle
+#ifdef _WIN64
+        // on x64, the image handle is processed in a separate process, so it has to be
+        // of type compatible with pict-view library
+        return std::get<LPPVHandle>(handle->data);
+#else
+        // on x86, the image handle is just passed into a local function, and later it is passed
+        // as an argument into a PVW32DLL.PVxxx() call, so the handle is converted there
+        return handle;
+#endif
     }
 
 } // namespace
