@@ -20,6 +20,7 @@
 #include "histwnd.h"
 #include "PVEXEWrapper.h"
 #include "PixelAccess.h"
+#include "PVOverrider.h"
 
 // objekt interfacu pluginu, jeho metody se volaji ze Salamandera
 CPluginInterface PluginInterface;
@@ -71,7 +72,7 @@ BOOL SalamanderRegistered = FALSE;
 //               22 - Salamander 2.52 B1: Added *.BLP files used by Blizzard Entertainment in World of Wordcraft
 
 int ConfigVersion = 0;
-#define CURRENT_CONFIG_VERSION 22
+#define CURRENT_CONFIG_VERSION 23
 
 SGlobals G; // inicializovano v InitViewer
 TDirectArray<DWORD> ExifHighlights(20, 10);
@@ -1063,6 +1064,11 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
         salamander->AddViewer("*.blp", TRUE);
     }
 
+    if (ConfigVersion < 23) // Added HEIF and WebP formats
+    {
+        salamander->AddViewer("*.heic;*.heif;*.webp", TRUE);
+    }
+
     /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
    udrzovat synchronizovane s volani salamander->AddMenuItem() dole...
 MENU_TEMPLATE_ITEM PluginMenu[] = 
@@ -1113,7 +1119,7 @@ MENU_TEMPLATE_ITEM PluginMenu[] =
                                    "*.flc;*.fli;*.gem;*.gif;*.ham;*.hmr;*.hrz;*.icn;*.ico;*.iff;*.img;"
                                    "*.cdt;*.cel;*.clp;*.cit;*.cmx;*.cot;*.cpt;*.cur;*.cut;*.dcx;*.dib;"
                                    "*.82i;*.83i;*.85i;*.86i;*.89i;*.92i;*.awd;*.bmi;*.bmp;*.cal;*.cdr;"
-                                   "*.arw;*.blp;*.cr2;*.dng;*.orf;*.pef");
+                                   "*.arw;*.blp;*.cr2;*.dng;*.orf;*.pef;*.heic;*.heif;*.webp");
 }
 
 void CPluginInterface::ClearHistory(HWND parent)
@@ -1411,6 +1417,9 @@ BOOL LoadPictViewDll(HWND hParentWnd)
         return FALSE;
     }
 #endif // PICTVIEW_DLL_IN_SEPARATE_PROCESS
+
+    // inject the new image file formats support into the viewer
+    InitializePvOverrider();
     return TRUE;
 }
 
@@ -1543,6 +1552,8 @@ BOOL InitEXIF(HWND hParent, BOOL bSilent)
 
 void ReleaseViewer()
 {
+    UninitializePvOverrider();
+
 #ifdef PICTVIEW_DLL_IN_SEPARATE_PROCESS
     ReleasePVEXEWrapper();
 #endif
