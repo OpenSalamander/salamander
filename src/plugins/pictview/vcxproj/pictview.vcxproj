@@ -103,6 +103,7 @@
   <PropertyGroup Label="Vcpkg">
     <VcpkgEnabled>true</VcpkgEnabled>
     <VcpkgManifestInstall>true</VcpkgManifestInstall>
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
