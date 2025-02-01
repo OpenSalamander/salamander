@@ -53,7 +53,7 @@ BEGIN
             VALUE "FileVersion", "1.70.0.0"
             VALUE "InternalName", "Open Salamander Installer"
             VALUE "OriginalFilename", "setup.exe"
-            VALUE "LegalCopyright", "Copyright © 1997-2023 Open Salamander Authors"
+            VALUE "LegalCopyright", "Copyright © 1997-2025 Open Salamander Authors"
         END
     END
     BLOCK "VarFileInfo"
@@ -140,7 +140,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_WIZARD_SEPARATOR,"Static",SS_ETCHEDHORZ | WS_GROUP,0,193,333,1
-    LTEXT           "Copyright © 1997-2023 Open Salamander Authors",-1,7,197,141,10,NOT WS_GROUP
+    LTEXT           "Copyright © 1997-2025 Open Salamander Authors",-1,7,197,141,10,NOT WS_GROUP
     LTEXT           "www.altap.cz",IDC_WWW,7,208,67,10,NOT WS_GROUP
     PUSHBUTTON      "",5,165,200,50,14
     PUSHBUTTON      "",IDOK,220,200,50,14
@@ -395,7 +395,7 @@ BEGIN
     IDS_ERRORCREATELOG      "Chyba při vytváření log souboru %s."
     IDS_APPRUNNING          "Instalační program detekoval, že instalovaný program je spuštěný.\nZavřete prosím program a stiskněte OK pro pokračování.\nTitulek programu je %s."
     IDS_MAINWINDOWTITLE     "Instalační program"
-    IDS_SETUPCOPYRIGHT1     "Copyright © 1997-2023 Open Salamander Authors"
+    IDS_SETUPCOPYRIGHT1     "Copyright © 1997-2025 Open Salamander Authors"
     IDS_INSTALL_STOP        "Instalace není kompletní. Pokud ji nyní ukončíte, program nebude nainstalován.\n\nInstalační program můžete spustit později a instalaci dokončit.\n\nUkončit instalaci?"
     IDS_INSTALL_STOP_TITLE  "Ukončit instalační program"
     IDS_WIZ_TITLE           "Instalační program - %s"
@@ -438,7 +438,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_WIZARD_SEPARATOR,"Static",SS_ETCHEDHORZ | WS_GROUP,0,193,363,1
-    LTEXT           "Copyright © 1997-2023 Open Salamander Authors",-1,7,197,141,10,NOT WS_GROUP
+    LTEXT           "Copyright © 1997-2025 Open Salamander Authors",-1,7,197,141,10,NOT WS_GROUP
     LTEXT           "www.altap.cz",IDC_WWW,7,208,62,10,NOT WS_GROUP
     PUSHBUTTON      "",5,195,200,50,14
     PUSHBUTTON      "",IDOK,250,200,50,14
@@ -677,7 +677,7 @@ BEGIN
     IDS_ERRORCREATELOG      "Erstellen der Logdatei %s fehlgeschlagen."
     IDS_APPRUNNING          "Das Setup hat festgestellt, dass die Anwendung bereits läuft.\nSchließen Sie diese bitte und klicken Sie ""OK"" um fortzufahren.\nName der Anwendung lautet %s."
     IDS_MAINWINDOWTITLE     "Setup"
-    IDS_SETUPCOPYRIGHT1     "Copyright © 1997-2023 Open Salamander Authors"
+    IDS_SETUPCOPYRIGHT1     "Copyright © 1997-2025 Open Salamander Authors"
     IDS_INSTALL_STOP        "Das Setup ist noch nicht abgeschlossen. Wenn Sie jetzt beenden, wird das Programm nicht installiert.\n\nSie können das Setup zu einem späteren Zeitpunkt nochmals ausführen, um die Installation zu vervollständigen.\n\nSetup verlassen?"
     IDS_INSTALL_STOP_TITLE  "Setup verlassen"
     IDS_WIZ_TITLE           "Setup - %s"
@@ -720,7 +720,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_WIZARD_SEPARATOR,"Static",SS_ETCHEDHORZ | WS_GROUP,0,193,333,1
-    LTEXT           "Copyright © 1997-2023 Open Salamander Authors",-1,7,197,141,10,NOT WS_GROUP
+    LTEXT           "Copyright © 1997-2025 Open Salamander Authors",-1,7,197,141,10,NOT WS_GROUP
     LTEXT           "www.altap.cz",IDC_WWW,7,208,63,10,NOT WS_GROUP
     PUSHBUTTON      "",5,165,200,50,14
     PUSHBUTTON      "",IDOK,220,200,50,14
@@ -959,7 +959,7 @@ BEGIN
     IDS_ERRORCREATELOG      "Creating log file %s failed."
     IDS_APPRUNNING          "Setup has detected that installed application is running.\nPlease close it and click OK to continue.\nApplication title is %s."
     IDS_MAINWINDOWTITLE     "Setup"
-    IDS_SETUPCOPYRIGHT1     "Copyright © 1997-2023 Open Salamander Authors"
+    IDS_SETUPCOPYRIGHT1     "Copyright © 1997-2025 Open Salamander Authors"
     IDS_INSTALL_STOP        "Setup is not complete. If you quit now, the program will not be installed.\n\nYou may run the Setup program again at another time to complete the installation.\n\nExit Setup?"
     IDS_INSTALL_STOP_TITLE  "Exit Setup"
     IDS_WIZ_TITLE           "Setup - %s"
