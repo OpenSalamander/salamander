@@ -16,7 +16,7 @@
 const char* CFILESBOX_CLASSNAME = "SalamanderItemsBox";
 
 //****************************************************************************
-//
+//ahoj zkouška
 // CFilesBox
 //
 
