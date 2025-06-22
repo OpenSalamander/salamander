@@ -16,7 +16,7 @@
 
 //*****************************************************************************
 //
-// Akce Kulovy Blesk: presuny z FILESBOX.CPP
+// Moves from FILESBOX.CPP
 //
 //
 
@@ -31,7 +31,7 @@ void CFilesWindow::EndQuickSearch()
     DestroyCaret();
 }
 
-// Hleda dalsi/prechozi polozku. Pri skip = TRUE preskoci polozku aktualni
+// Finds the next/previous item. If skip = TRUE, it skips the current item.
 BOOL CFilesWindow::QSFindNext(int currentIndex, BOOL next, BOOL skip, BOOL wholeString, char newChar, int& index)
 {
     CALL_STACK_MESSAGE6("CFilesWindow::QSFindNext(%d, %d, %d, %d, %u)", currentIndex, next, skip, wholeString, newChar);
@@ -59,7 +59,7 @@ BOOL CFilesWindow::QSFindNext(int currentIndex, BOOL next, BOOL skip, BOOL whole
         for (i = currentIndex + delta; i < count; i++)
         {
             char* name = i < dirCount ? Dirs->At(i).Name : Files->At(i - dirCount).Name;
-            BOOL hasExtension = i < dirCount ? strchr(name, '.') != NULL : // Ext u adresare nemusi byt nastavene
+            BOOL hasExtension = i < dirCount ? strchr(name, '.') != NULL : // The extension for a directory may not be set.
                                     *Files->At(i - dirCount).Ext != 0;
             if (i == 0 && i < dirCount && strcmp(name, "..") == 0)
             {
@@ -87,7 +87,7 @@ BOOL CFilesWindow::QSFindNext(int currentIndex, BOOL next, BOOL skip, BOOL whole
         for (i = currentIndex - delta; i >= 0; i--)
         {
             char* name = i < dirCount ? Dirs->At(i).Name : Files->At(i - dirCount).Name;
-            BOOL hasExtension = i < dirCount ? strchr(name, '.') != NULL : // Ext u adresare nemusi byt nastavene
+            BOOL hasExtension = i < dirCount ? strchr(name, '.') != NULL : // The extension for a directory may not be set.
                                     *Files->At(i - dirCount).Ext != 0;
             if (i == 0 && i < dirCount && strcmp(name, "..") == 0)
             {
@@ -118,7 +118,7 @@ BOOL CFilesWindow::QSFindNext(int currentIndex, BOOL next, BOOL skip, BOOL whole
     return FALSE;
 }
 
-// Hleda dalsi/prechozi vybranou polozku. Pri skip = TRUE preskoci polozku aktualni
+// Finds the next/previous selected item. If skip = TRUE, it skips the current item.
 BOOL CFilesWindow::SelectFindNext(int currentIndex, BOOL next, BOOL skip, int& index)
 {
     CALL_STACK_MESSAGE4("CFilesWindow::SelectFindNext(%d, %d, %d)", currentIndex, next, skip);
@@ -180,9 +180,9 @@ void CFilesWindow::CtrlPageDnOrEnter(WPARAM key)
         else
         {
             int index = GetCaretIndex();
-            if (key != VK_NEXT || index >= 0 && index < Dirs->Count || // Enter nebo adresar nebo
+            if (key != VK_NEXT || index >= 0 && index < Dirs->Count || // Enter or directory or
                 index >= Dirs->Count && index < Files->Count + Dirs->Count &&
-                    (Files->At(index - Dirs->Count).Archive || IsNethoodFS())) // soubor archivu nebo soubor ve FS Nethoodu (ma servery vedene jako soubory a Entire Network jako adresar, aby byl panel dobre serazeny -> Ctrl+PageDown musi otvirat i servery a jejich shary, protoze to jsou "adresare")
+                    (Files->At(index - Dirs->Count).Archive || IsNethoodFS())) // an archive file or a file in the Nethood FS (it has servers listed as files and Entire Network as a directory, so the panel is sorted correctly -> Ctrl+PageDown must also open servers and their shares, because they are "directories")
             {
                 Execute(index);
             }
@@ -222,9 +222,9 @@ void CFilesWindow::FocusShortcutTarget(CFilesWindow* panel)
         return;
     }
 
-    //!!! pozor, Resolve muze zobrazit dialog a zacnou se distribuovat zpravy
-    // muze dojit k refreshi panelu, takze od teto chvile neni mozne pristupovat
-    // na ukazatel file
+    //!!! warning, Resolve may display a dialog and messages will start to be dispatched
+    // the panel can be refreshed, so from this moment on it is not possible to access
+    // the file pointer
 
     BOOL invalid = FALSE;
     BOOL wrongPath = FALSE;
@@ -234,7 +234,7 @@ void CFilesWindow::FocusShortcutTarget(CFilesWindow* panel)
     strcpy(junctionOrSymlinkTgt, fullName);
     if (GetReparsePointDestination(junctionOrSymlinkTgt, junctionOrSymlinkTgt, MAX_PATH, &repPointType, FALSE))
     {
-        // MOUNT POINT: tuhle cestu do panelu nedostanu (napr: \??\Volume{98c0ba30-71ff-11e1-9099-005056c00008}\)
+        // MOUNT POINT: this path cannot be displayed in the panel (e.g., \??\Volume{98c0ba30-71ff-11e1-9099-005056c00008}\)
         if (repPointType == 1 /* MOUNT POINT */)
             mountPoint = TRUE;
         else
@@ -259,9 +259,9 @@ void CFilesWindow::FocusShortcutTarget(CFilesWindow* panel)
                     if (fileInt->Load(oleName, STGM_READ) == S_OK)
                     {
                         res = link->Resolve(HWindow, SLR_ANY_MATCH | SLR_UPDATE);
-                        // pokud nalezne objekt, vraci NOERROR (0)
-                        // pokud byl zobrazen dialog a uzivatel dal Cancel, vraci S_FALSE (1)
-                        // pokud se nepovede nacist link, vraci jine chyby (0x80004005)
+                        // if it finds the object, it returns NOERROR (0)
+                        // if a dialog was displayed and the user clicked Cancel, it returns S_FALSE (1)
+                        // if loading the link fails, it returns other errors (0x80004005)
                         if (res == NOERROR)
                         {
                             WIN32_FIND_DATA dummyData;
@@ -271,17 +271,17 @@ void CFilesWindow::FocusShortcutTarget(CFilesWindow* panel)
                                 panel->ChangeDir(fullName);
                             }
                             else
-                            {                           // linky primo na servery muzeme zkusit otevrit v Network pluginu (Nethoodu)
-                                BOOL linkIsNet = FALSE; // TRUE -> short-cut na sit -> ChangePathToPluginFS
+                            {                           // we can try to open links directly to servers in the Network plugin (Nethood)
+                                BOOL linkIsNet = FALSE; // TRUE -> shortcut to network -> ChangePathToPluginFS
                                 char netFSName[MAX_PATH];
                                 if (Plugins.GetFirstNethoodPluginFSName(netFSName))
                                 {
                                     if (link->GetPath(fullName, MAX_PATH, NULL, SLGP_RAWPATH) != NOERROR)
-                                    { // cesta neni v linku ulozena textove, ale jen jako ID-list
+                                    { // the path is not stored in the link as text, but only as an ID-list
                                         fullName[0] = 0;
                                         ITEMIDLIST* pidl;
                                         if (link->GetIDList(&pidl) == S_OK && pidl != NULL)
-                                        { // ziskame ten ID-list a doptame se na jmeno posledniho IDcka v listu, ocekavame "\\\\server"
+                                        { // we get the ID-list and ask for the name of the last ID in the list, we expect "\\\\server"
                                             IMalloc* alloc;
                                             if (SUCCEEDED(CoGetMalloc(1, &alloc)))
                                             {
@@ -294,16 +294,16 @@ void CFilesWindow::FocusShortcutTarget(CFilesWindow* panel)
                                         }
                                     }
                                     if (fullName[0] == '\\' && fullName[1] == '\\' && fullName[2] != '\\')
-                                    { // zkusime jestli nejde o link na server (obsahuje cestu "\\\\server")
+                                    { // we'll check if it's a link to a server (contains the path "\\\\server")
                                         char* backslash = fullName + 2;
                                         while (*backslash != 0 && *backslash != '\\')
                                             backslash++;
                                         if (*backslash == '\\')
                                             backslash++;
-                                        if (*backslash == 0 && // bereme jen cesty "\\\\", "\\\\server", "\\\\server\\"
+                                        if (*backslash == 0 && // we only take paths "\\\\", "\\\\server", "\\\\server\\"
                                             strlen(netFSName) + 1 + strlen(fullName) < MAX_PATH)
                                         {
-                                            linkIsNet = TRUE; // o.k. zkusime change-path-to-FS
+                                            linkIsNet = TRUE; // o.k. we'll try change-path-to-FS
                                             memmove(fullName + strlen(netFSName) + 1, fullName, strlen(fullName) + 1);
                                             memcpy(fullName, netFSName, strlen(netFSName));
                                             fullName[strlen(netFSName)] = ':';
@@ -314,13 +314,13 @@ void CFilesWindow::FocusShortcutTarget(CFilesWindow* panel)
                                 if (linkIsNet)
                                     panel->ChangeDir(fullName);
                                 else
-                                    wrongPath = TRUE; // cestu nelze ziskat nebo neni dostupna
+                                    wrongPath = TRUE; // the path cannot be obtained or is not available
                             }
                         }
                     }
                     fileInt->Release();
                     if (res != NOERROR && res != S_FALSE)
-                        invalid = TRUE; // soubor neni validni shortcut
+                        invalid = TRUE; // the file is not a valid shortcut
                 }
                 link->Release();
             }
