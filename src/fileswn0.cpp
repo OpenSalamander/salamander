@@ -563,7 +563,7 @@ void CFilesWindow::SetSel(BOOL select, int index, BOOL repaintDirtyItems)
         {
             const char* name = Dirs->At(0).Name;
             if (*name == '.' && *(name + 1) == '.' && *(name + 2) == 0)
-                firstIndex = 1; // I skip ".."
+                firstIndex = 1; // we skip ".."
         }
         int i;
         for (i = firstIndex; i < totalCount; i++)
@@ -1367,23 +1367,23 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
             return TRUE;
         }
 
-        case VK_ESCAPE: // ukonceni quick search rezimu pres ESC
+        case VK_ESCAPE: // end quick search mode via ESC
         {
             EndQuickSearch();
             return TRUE;
         }
 
-        case VK_INSERT: // oznaceni / odznaceni polozky listboxu + posun na dalsi
+        case VK_INSERT: // select / deselect listbox item + move to the next one
         {
             EndQuickSearch();
             goto INSERT_KEY;
         }
 
-        case VK_BACK: // backspace - smazeme znak v masce quicksearche
+        case VK_BACK: // backspace - we delete a character in the quicksearch mask
         {
             if (QuickSearchMask[0] != 0)
             {
-                int len = (int)strlen(QuickSearchMask) - 1; // ubereme znak
+                int len = (int)strlen(QuickSearchMask) - 1; // weremove a character
                 QuickSearchMask[len] = 0;
 
                 int index;
@@ -1393,11 +1393,11 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
             return TRUE;
         }
 
-        case VK_LEFT: // sipka vlevo - prevedeme masku na retezec a ubereme znak
+        case VK_LEFT: // left arrow - weconvert the mask to a string and remove a character
         {
             if (QuickSearch[0] != 0)
             {
-                int len = (int)strlen(QuickSearch) - 1; // ubereme znak
+                int len = (int)strlen(QuickSearch) - 1; // we remove a character
                 QuickSearch[len] = 0;
                 int len2 = (int)strlen(QuickSearchMask);
                 if (len2 > 1 && !IsQSWildChar(QuickSearchMask[len2 - 1]) && !IsQSWildChar(QuickSearchMask[len2 - 2]))
@@ -1406,7 +1406,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
                 }
                 else
                 {
-                    // v tomto pripade zahodime "wild" znaky a prejdeme na obycejne hledani, protoze
+                    // in this case, we discard the "wild" characters and switch to normal search, because
                     strcpy(QuickSearchMask, QuickSearch);
                 }
                 SetQuickSearchCaretPos();
@@ -1419,12 +1419,12 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
             if (FocusedIndex >= 0 && FocusedIndex < Dirs->Count + Files->Count)
             {
                 char* name = (FocusedIndex < Dirs->Count) ? Dirs->At(FocusedIndex).Name : Files->At(FocusedIndex - Dirs->Count).Name;
-                int len = (int)strlen(QuickSearch); // pridame znak
+                int len = (int)strlen(QuickSearch); // we add a character
                 if ((FocusedIndex > Dirs->Count || FocusedIndex != 0 ||
                      strcmp(name, "..") != 0) &&
                     name[len] != 0)
                 {
-                    // je-li jeste nejaky
+                    // if there is still another one
                     QuickSearch[len] = name[len];
                     QuickSearch[len + 1] = 0;
                     int len2 = (int)strlen(QuickSearchMask);
@@ -1436,10 +1436,10 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
             return TRUE;
         }
 
-        case VK_UP: // hledane dalsi shodu smerem nahoru
+        case VK_UP: // we search for the next match upwards
         {
             if (controlPressed && !shiftPressed && !altPressed)
-                break; // scroll obsahem panelu v quick-sear rezimu neumime
+                break; // we don't support scrolling panel content in quick-search mode
             int index;
             int lastIndex = GetCaretIndex();
             if (!controlPressed && shiftPressed && !altPressed)
@@ -1463,10 +1463,10 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
             break;
         }
 
-        case VK_DOWN: // hledane dalsi shodu smerem dolu
+        case VK_DOWN: // we search for the next match downwards
         {
             if (controlPressed && !shiftPressed && !altPressed)
-                break; // scroll obsahem panelu v quick-sear rezimu neumime
+                break; // we don't support scrolling panel content in quick-search mode
             int index;
             int lastIndex = GetCaretIndex();
             if (!controlPressed && shiftPressed && !altPressed)
@@ -1490,7 +1490,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
             break;
         }
 
-        case VK_PRIOR: // hledame o stranku dal
+        case VK_PRIOR: // we search a page further
         {
             int limit = GetCaretIndex() - ListBox->GetColumnsCount() * ListBox->GetEntireItemsInColumn() + 2;
             int index;
@@ -1512,7 +1512,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
             break;
         }
 
-        case VK_NEXT: // hledame na predchozi strance
+        case VK_NEXT: // we search on the previous page
         {
             int limit = GetCaretIndex() + ListBox->GetColumnsCount() * ListBox->GetEntireItemsInColumn() - 2;
             int index;
@@ -1534,7 +1534,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
             break;
         }
 
-        case VK_HOME: // hledame prvni
+        case VK_HOME: // we look for the first one
         {
             int index;
             if (!controlPressed && shiftPressed && !altPressed)
@@ -1566,12 +1566,12 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
                 if (found)
                     newIndex = index;
                 else
-                    newIndex = FocusedIndex; // Alt+Home bez oznacene polozky odpovidajici quick-searchy
+                    newIndex = FocusedIndex; // Alt+Home without a selected item corresponding to quick-search
             }
             break;
         }
 
-        case VK_END: // hledame posledni
+        case VK_END: // we look for the last one
         {
             int index;
             if (!controlPressed && shiftPressed && !altPressed)
@@ -1603,7 +1603,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
                 if (found)
                     newIndex = index;
                 else
-                    newIndex = FocusedIndex; // Alt+End bez oznacene polozky odpovidajici quick-searchy
+                    newIndex = FocusedIndex; // Alt+End without a selected item corresponding to quick-search
             }
             break;
         }
