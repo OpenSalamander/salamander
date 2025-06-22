@@ -1620,27 +1620,27 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
                 SetCaretIndex(newIndex, FALSE);
                 SetQuickSearchCaretPos();
                 ShowCaret(ListBox->HWindow);
-                IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+                IdleRefreshStates = TRUE; // on next Idle, we will force a check of state variables
             }
             return TRUE;
         }
     }
-    else // normalni rezim listboxu
+    else // normal listbox mode
     {
         switch (wParam)
         {
         case VK_SPACE:
         {
-            return TRUE; // space nechci
+            return TRUE; // I don't want space
         }
 
-        case VK_INSERT: // oznaceni / odznaceni polozky listboxu + posun na dalsi
+        case VK_INSERT: // selection / deselection of a listbox item + move to the next one
         {
-        INSERT_KEY: // pro skok z rezimu Quick Search
+        INSERT_KEY: // for jumping from Quick Search mode
 
             if (!shiftPressed && !controlPressed && !altPressed)
                 SelectFocusedIndex();
-            IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+            IdleRefreshStates = TRUE; // on next Idle, we will force a check of state variables
             return TRUE;
         }
 
@@ -1663,7 +1663,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
         {
             if (controlPressed && shiftPressed && !altPressed)
             {
-                // focusnuti focusnuteho adresare/souboru ve druhem panelu
+                // focusing the focused directory/file in the second panel
                 BOOL leftPanel = this == MainWindow->LeftPanel;
                 if (wParam == VK_LEFT)
                 {
@@ -1680,8 +1680,8 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
 
             if (controlPressed && !shiftPressed && !altPressed)
             {
-                // rolujeme s obsahem pri zachovani pozice kurzoru,
-                // pripadne rychle posouvame vlevo a vpravo v Detailed modu
+                // we scroll with the content while maintaining the cursor position,
+                // possibly we quickly move left and right in Detailed mode
                 if (wParam == VK_LEFT)
                 {
                     if (GetViewMode() == vmBrief)
@@ -1689,7 +1689,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
                     else if (GetViewMode() == vmDetailed)
                     {
                         int i;
-                        for (i = 0; i < 5; i++) // dame si trochu makro programovani
+                        for (i = 0; i < 5; i++) // let's do some macro programming
                             SendMessage(ListBox->HWindow, WM_HSCROLL, SB_LINEUP, 0);
                     }
                     break;
@@ -1702,7 +1702,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
                     else if (GetViewMode() == vmDetailed)
                     {
                         int i;
-                        for (i = 0; i < 5; i++) // dame si trochu makro programovani
+                        for (i = 0; i < 5; i++) // let's do some macro programming
                             SendMessage(ListBox->HWindow, WM_HSCROLL, SB_LINEDOWN, 0);
                     }
                     break;
@@ -1731,13 +1731,13 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
 
             int newFocusedIndex = FocusedIndex;
 
-            BOOL forceSelect = FALSE; // aby bylo mozne pres Shift+Up/Down vybrat okrajove prvky
+            BOOL forceSelect = FALSE; // to allow selecting edge elements via Shift+Up/Down
 
             if (wParam == VK_UP)
             {
                 if (newFocusedIndex > 0)
                 {
-                    if (altPressed) // Petr: ve vsech rezimech jdeme na predchozi selected polozku (u icons/thumbnails/tiles mozna bude pusobit divne, ale neprijde mi ucelny hledat selectlou polozku jen v aktualnim sloupci)
+                    if (altPressed) // Petr: in all modes, we go to the previous selected item (it might seem strange with icons/thumbnails/tiles, but it doesn't seem useful to me to search for a selected item only in the current column)
                     {
                         int index;
                         BOOL found = SelectFindNext(GetCaretIndex(), FALSE, TRUE, index);
@@ -1746,7 +1746,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
                     }
                     else
                     {
-                        // posuneme kurzor o jeden radek nahoru
+                        // we move the cursor one line up
                         switch (GetViewMode())
                         {
                         case vmDetailed:
@@ -1779,7 +1779,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
             {
                 if (newFocusedIndex < Dirs->Count + Files->Count - 1)
                 {
-                    if (altPressed) // Petr: ve vsech rezimech jdeme na dalsi selected polozku (u icons/thumbnails/tiles mozna bude pusobit divne, ale neprijde mi ucelny hledat selectlou polozku jen v aktualnim sloupci)
+                    if (altPressed) // Petr: in all modes, we go to the next selected item (it might seem strange with icons/thumbnails/tiles, but it doesn't seem useful to me to search for a selected item only in the current column)
                     {
                         int index;
                         BOOL found = SelectFindNext(GetCaretIndex(), TRUE, TRUE, index);
@@ -1790,7 +1790,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
                     {
                         switch (GetViewMode())
                         {
-                        // posuneme kurzor o jeden radek dolu
+                        // we move the cursor one line down
                         case vmDetailed:
                         case vmBrief:
                         {
@@ -1853,7 +1853,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
                     {
                         newFocusedIndex = Files->Count + Dirs->Count - 1;
                         if (!controlPressed && shiftPressed && !altPressed)
-                            forceSelect = TRUE; // Shift+PgDn ma oznacit i posledni polozku, viz FAR a TC
+                            forceSelect = TRUE; // Shift+PgDn should also select the last item, see FAR and TC
                     }
                 }
                 else
@@ -1863,7 +1863,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
                     {
                         newFocusedIndex = 0;
                         if (!controlPressed && shiftPressed && !altPressed)
-                            forceSelect = TRUE; // Shift+PgUp ma oznacit i prvni polozku, viz FAR a TC
+                            forceSelect = TRUE; // Shift+PgUp should also select the first item, see FAR and TC
                     }
                 }
             }
@@ -1878,10 +1878,10 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
                     break;
                 }
 
-                // posuneme kurzor o jeden sloupec vlevo
+                // we move the cursor one column to the left
                 case vmBrief:
                 {
-                    // zajistime skok na nultou polozku, pokud jsme v nultem sloupci
+                    // we ensure a jump to the zeroth item if we are in the zeroth column
                     newFocusedIndex -= ListBox->GetEntireItemsInColumn();
                     if (newFocusedIndex < 0)
                     {
@@ -1915,10 +1915,10 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
                     break;
                 }
 
-                // posuneme kurzor o jeden sloupec vlevo
+                // we move the cursor one column to the left
                 case vmBrief:
                 {
-                    // zajistime skok na posledni polozku, pokud jsme v poslednim sloupci
+                    // we ensure a jump to the last item if we are in the last column
                     newFocusedIndex += ListBox->GetEntireItemsInColumn();
                     if (newFocusedIndex >= Files->Count + Dirs->Count)
                     {
@@ -1945,7 +1945,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
             {
                 if (altPressed)
                 {
-                    // hupneme na prvni oznacenou polozku v panelu
+                    // we jump to the first selected item in the panel
                     int index;
                     BOOL found = SelectFindNext(0, TRUE, FALSE, index);
                     if (found)
@@ -1963,7 +1963,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
                 int tmpLast = max(Files->Count + Dirs->Count - 1, 0);
                 if (altPressed)
                 {
-                    // hupneme na posledni oznacenou polozku v panelu
+                    // we jump to the last selected item in the panel
                     int index;
                     BOOL found = SelectFindNext(tmpLast, FALSE, FALSE, index);
                     if (found)
@@ -1975,9 +1975,9 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
 
             if (newFocusedIndex != FocusedIndex || forceSelect)
             {
-                if (shiftPressed) // shift+pohyb oznacovani
+                if (shiftPressed) // shift+movement selecting
                 {
-                    BOOL select = SelectItems; // vytahneme stav, ktery byl na polozce pri stisku Shift
+                    BOOL select = SelectItems; // we'll get the state that the item had when Shift was pressed
                     int targetIndex = newFocusedIndex;
                     if (wParam != VK_HOME && wParam != VK_END && !forceSelect)
                     {
@@ -1986,13 +1986,13 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
                         else
                             targetIndex++;
                     }
-                    // pokud se nejaka polozka zmenila, posteneme refresh
+                    // if any item has changed, we'll post a refresh
                     if (SetSelRange(select, targetIndex, FocusedIndex))
                         PostMessage(HWindow, WM_USER_SELCHANGED, 0, 0);
                 }
                 int oldIndex = FocusedIndex;
                 SetCaretIndex(newFocusedIndex, FALSE);
-                IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+                IdleRefreshStates = TRUE; // on next Idle, we will force a check of state variables
                 if (shiftPressed && newFocusedIndex != oldIndex + 1 && newFocusedIndex != oldIndex - 1)
                     RepaintListBox(DRAWFLAG_DIRTY_ONLY | DRAWFLAG_SKIP_VISTEST);
             }
@@ -2002,7 +2002,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
         }
     }
 
-    // dame prilezitost pluginum; to same se vola z commandline
+    // we'llgive plugins a chance; the same is called from the command line
     if (Plugins.HandleKeyDown(wParam, lParam, this, MainWindow->HWindow))
     {
         *lResult = 0;
@@ -2259,53 +2259,52 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
     TRACE_I("RefreshDirectory: " << (MainWindow->LeftPanel == this ? "left" : "right") << ": " << t_path);
 #endif // _DEBUG
 
-    // nahozeni hodin
-    BOOL setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // ceka uz ?
+    // start the hourglass
+    BOOL setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // is it already waiting?
     HCURSOR oldCur;
     if (setWait)
         oldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
-    // kvuli rekurzivnimu volani vznikajici na neautomaticky refreshovanych discich
-    // (primo se postuje message WM_USER_REFRESH)
+    // due to the recursive calls emerging on not automatically refreshed discs
+    // (the message WM_USER_REFRESH is posted directly)
     BeginStopRefresh();
 
-    BOOL focusFirstNewItem = FocusFirstNewItem; // prvni ReadDirectory ho resetuje, proto zaloha
-    BOOL cutToClipChanged = CutToClipChanged;   // prvni ReadDirectory ho resetuje, proto zaloha
+    BOOL focusFirstNewItem = FocusFirstNewItem; // the first ReadDirectory resets it, so we make a backup
+    BOOL cutToClipChanged = CutToClipChanged;   // the first ReadDirectory resets it, so we make a backup
 
-    // ulozime top-index a xoffset, aby nedochazelo ke zbytecnym "poskokum" obsahu panelu
+    // we'll save the top-index and xoffset so that there won't be unnecessary "jumps" in the panel content
     int topIndex = ListBox->GetTopIndex();
     int xOffset = ListBox->GetXOffset();
 
-    // zapamatujeme si, jestli stary listing je FS s vlastnimi ikonami (pitFromPlugin)
+    // we'll remember if the old listing is an FS with custom icons (pitFromPlugin)
     BOOL pluginFSIconsFromPlugin = Is(ptPluginFS) && GetPluginIconsType() == pitFromPlugin;
 
-    // ulozeni dat focusle polozky - pozdeji ji budeme hledat (a focusit)
+    // we'll save the focus item data - we'll look for it later (and focus it)
     BOOL ensureFocusIndexVisible = FALSE;
-    BOOL wholeItemVisible = FALSE; // staci nam castecna viditelnost polozky
+    BOOL wholeItemVisible = FALSE; // partial item visibility is enough for us
     int focusIndex = GetCaretIndex();
     BOOL focusIsDir = focusIndex < Dirs->Count;
-    CFileData focusData; // melka kopie dat stareho fokusu (platna do zruseni stareho listingu)
+    CFileData focusData; // shallow copy of the old focus (valid until the old listing is destroyed)
     if (focusIndex >= 0 && focusIndex < Dirs->Count + Files->Count)
     {
         focusData = (focusIndex < Dirs->Count) ? Dirs->At(focusIndex) : Files->At(focusIndex - Dirs->Count);
         ensureFocusIndexVisible = ListBox->IsItemVisible(focusIndex, &wholeItemVisible);
     }
     else
-        focusData.Name = NULL; // focus nebude ...
+        focusData.Name = NULL; // there won't be a focus ...
 
-    // pokud jde o FS, je potreba pripravit objekty pro novy listing zvlast (pripoji se az dodatecne)
+    // if it's an FS, we need to prepare objects for the new listing separately (they'll be attached later)
     OnlyDetachFSListing = Is(ptPluginFS);
 
-    // zazalohujeme icon-cache pro pozdejsi prenos nactenych ikonek do nove icon-cache
-    BOOL oldIconCacheValid = IconCacheValid;
+    // we'll backup the icon-cache for later transfer of loaded icons to the new icon-cache
     BOOL oldInactWinOptimizedReading = InactWinOptimizedReading;
     CIconCache* oldIconCache = NULL;
     if (UseSystemIcons || UseThumbnails)
-        SleepIconCacheThread();    // zastavime icon-readera (muze se menit IconCache/Files/Dirs)
-    if (!TemporarilySimpleIcons && // pokud IconCache nemame pouzivat, nebudeme z ni nic prenaset do nove cache (napr. pri prepinani pohledu na/z Thumbnails)
+        SleepIconCacheThread();    // we'll stop the icon-reader (IconCache/Files/Dirs might change)
+    if (!TemporarilySimpleIcons && // if we shouldn't use the IconCache, we won't transfer anything from it to the new cache (e.g. when switching views to/from Thumbnails)
         (UseSystemIcons || UseThumbnails))
     {
         oldIconCache = IconCache;
-        IconCache = new CIconCache(); // vytvorime novou pro novy listing
+        IconCache = new CIconCache(); // we'll create a new one for the new listing
         if (IconCache == NULL)
         {
             TRACE_E(LOW_MEMORY);
@@ -2318,10 +2317,10 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
             if (oldIconCache != NULL)
             {
                 NewFSIconCache = IconCache;
-                IconCache = oldIconCache; // az do odpojeni listingu budeme pouzivat starou icon-cache
+                IconCache = oldIconCache; // until we detach the listing, we'll use the old icon-cache
             }
             else
-                NewFSIconCache = NULL; // nedostatek pameti - budeme pouzivat jen starou icon-cache
+                NewFSIconCache = NULL; // not enough memory - we'll only use the old icon-cache
         }
     }
 
