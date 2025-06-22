@@ -16,7 +16,7 @@
 
 //*****************************************************************************
 //
-// Moves from FILESBOX.CPP
+// Major refactoring: moving from FILESBOX.CPP
 //
 //
 
@@ -59,7 +59,7 @@ BOOL CFilesWindow::QSFindNext(int currentIndex, BOOL next, BOOL skip, BOOL whole
         for (i = currentIndex + delta; i < count; i++)
         {
             char* name = i < dirCount ? Dirs->At(i).Name : Files->At(i - dirCount).Name;
-            BOOL hasExtension = i < dirCount ? strchr(name, '.') != NULL : // The extension for a directory may not be set.
+            BOOL hasExtension = i < dirCount ? strchr(name, '.') != NULL : // The extension for a directory might not be set.
                                     *Files->At(i - dirCount).Ext != 0;
             if (i == 0 && i < dirCount && strcmp(name, "..") == 0)
             {
@@ -87,7 +87,7 @@ BOOL CFilesWindow::QSFindNext(int currentIndex, BOOL next, BOOL skip, BOOL whole
         for (i = currentIndex - delta; i >= 0; i--)
         {
             char* name = i < dirCount ? Dirs->At(i).Name : Files->At(i - dirCount).Name;
-            BOOL hasExtension = i < dirCount ? strchr(name, '.') != NULL : // The extension for a directory may not be set.
+            BOOL hasExtension = i < dirCount ? strchr(name, '.') != NULL : // The extension for a directory might not be set.
                                     *Files->At(i - dirCount).Ext != 0;
             if (i == 0 && i < dirCount && strcmp(name, "..") == 0)
             {
@@ -234,7 +234,7 @@ void CFilesWindow::FocusShortcutTarget(CFilesWindow* panel)
     strcpy(junctionOrSymlinkTgt, fullName);
     if (GetReparsePointDestination(junctionOrSymlinkTgt, junctionOrSymlinkTgt, MAX_PATH, &repPointType, FALSE))
     {
-        // MOUNT POINT: this path cannot be displayed in the panel (e.g., \??\Volume{98c0ba30-71ff-11e1-9099-005056c00008}\)
+        // MOUNT POINT: I can't get this path in the panel (e.g., \??\Volume{98c0ba30-71ff-11e1-9099-005056c00008}\)
         if (repPointType == 1 /* MOUNT POINT */)
             mountPoint = TRUE;
         else
@@ -271,7 +271,7 @@ void CFilesWindow::FocusShortcutTarget(CFilesWindow* panel)
                                 panel->ChangeDir(fullName);
                             }
                             else
-                            {                           // we can try to open links directly to servers in the Network plugin (Nethood)
+                            {                           // we can try to open direct links to servers in the Network plugin (Nethood)
                                 BOOL linkIsNet = FALSE; // TRUE -> shortcut to network -> ChangePathToPluginFS
                                 char netFSName[MAX_PATH];
                                 if (Plugins.GetFirstNethoodPluginFSName(netFSName))
@@ -349,13 +349,13 @@ void CFilesWindow::SetCaretIndex(int index, int scroll, BOOL forcePaint)
         if (!scroll && GetViewMode() == vmDetailed)
         {
             int newTopIndex = ListBox->PredictTopIndex(index);
-            // optimalizace prijde ke slovu pouze v pripade, ze se meni TopIndex
-            // a kurzor zustava vizualne na stejnem miste
+            // optimization comes into play only when TopIndex changes
+            // and the cursor visually remains in the same place
             if (newTopIndex != ListBox->TopIndex &&
                 index - newTopIndex == FocusedIndex - ListBox->TopIndex)
             {
-                // pouzijeme neblikave rolovani: roluje se pouze s casti bez kurzoru
-                // pak se prekresli zbyle polozky
+                // we use non-flickering scrolling: only the part without the cursor is scrolled
+                // then the remaining items are redrawn
                 FocusedIndex = index;
                 ListBox->EnsureItemVisible2(newTopIndex, FocusedIndex);
                 normalProcessing = FALSE;
@@ -379,7 +379,7 @@ void CFilesWindow::SetCaretIndex(int index, int scroll, BOOL forcePaint)
         GetCursorPos(&p);
         ScreenToClient(GetListBoxHWND(), &p);
         SendMessage(GetListBoxHWND(), WM_MOUSEMOVE, 0, MAKELPARAM(p.x, p.y));
-        KillTimer(GetListBoxHWND(), IDT_SINGLECLICKSELECT); // nechceme, aby se focus presunul sem
+        KillTimer(GetListBoxHWND(), IDT_SINGLECLICKSELECT); // we don't want the focus to move here
     }
 }
 
@@ -402,7 +402,7 @@ void CFilesWindow::SelectFocusedIndex()
     {
         int index = GetCaretIndex();
         SetSel(!GetSel(index), index);
-        if (index + 1 >= 0 && index + 1 < Dirs->Count + Files->Count) // posun
+        if (index + 1 >= 0 && index + 1 < Dirs->Count + Files->Count) // a move
             SetCaretIndex(index + 1, FALSE);
         else
             RedrawIndex(index);
@@ -515,7 +515,7 @@ void CFilesWindow::RegisterDragDrop()
         {
             TRACE_E("RegisterDragDrop error.");
         }
-        dropTarget->Release(); // RegisterDragDrop volala AddRef()
+        dropTarget->Release(); // RegisterDragDrop called AddRef()
     }
 }
 
@@ -563,7 +563,7 @@ void CFilesWindow::SetSel(BOOL select, int index, BOOL repaintDirtyItems)
         {
             const char* name = Dirs->At(0).Name;
             if (*name == '.' && *(name + 1) == '.' && *(name + 2) == 0)
-                firstIndex = 1; // preskocim ".."
+                firstIndex = 1; // we skip ".."
         }
         int i;
         for (i = firstIndex; i < totalCount; i++)
@@ -586,7 +586,7 @@ void CFilesWindow::SetSel(BOOL select, int index, BOOL repaintDirtyItems)
             {
                 const char* name = Dirs->At(0).Name;
                 if (*name == '.' && *(name + 1) == '.' && *(name + 2) == 0)
-                    return; // preskocime ".."
+                    return; // we skip ".."
             }
             item = &Dirs->At(index);
         }
@@ -604,7 +604,7 @@ void CFilesWindow::SetSel(BOOL select, int index, BOOL repaintDirtyItems)
     if (repaintDirtyItems)
     {
         if (index == -1)
-            RepaintListBox(DRAWFLAG_DIRTY_ONLY | DRAWFLAG_SKIP_VISTEST | DRAWFLAG_IGNORE_CLIPBOX); // DRAWFLAG_IGNORE_CLIPBOX: pokud je nad nama dialog, spinave polozky musi byt zmeneny
+            RepaintListBox(DRAWFLAG_DIRTY_ONLY | DRAWFLAG_SKIP_VISTEST | DRAWFLAG_IGNORE_CLIPBOX); // DRAWFLAG_IGNORE_CLIPBOX: if there is a dialog above us, the dirty items must be changed
         else if (repaint)
             RedrawIndex(index);
     }
@@ -642,17 +642,17 @@ int CFilesWindow::GetSelItems(int itemsCountMax, int* items, BOOL /*focusedItemF
         return index;
 
     int firstItem = 0;
-    /* pro znacnou vlnu nevole jsme tohle priblizeni se Exploreru zase vratili zpet (https://forum.altap.cz/viewtopic.php?t=3044)
+    /* Due to a considerable wave of disapproval, we have reverted this approximation to Explorer's behavior (https://forum.altap.cz/viewtopic.php?t=3044)
   if (focusedItemFirst)
   {
-    // fokusla polozka prijde do pole jako prvni: alespon u kontextovych menu pri vice oznacenych sharech v Networku (napr. na \\petr-pc) je to potreba pro spravnou funkci Map Network Drive
+    // the focused item will be the first in the array: this is necessary for the correct functioning of Map Network Drive, at least for context menus with multiple selected shares in Network (e.g., on \\petr-pc)
     int caretIndex = GetCaretIndex();
-    if ((caretIndex < Dirs->Count ? Dirs->At(caretIndex) : Files->At(caretIndex - Dirs->Count)).Selected == 1) // zacneme od ni pouze v pripade, ze patri do seznamu vybranych polozek
+    if ((caretIndex < Dirs->Count ? Dirs->At(caretIndex) : Files->At(caretIndex - Dirs->Count)).Selected == 1) // we start from it only if it belongs to the list of selected items
       firstItem = caretIndex;
   }
 */
     int totalCount = Dirs->Count + Files->Count;
-    // naplnime prvni cast seznamu: od firstItem smerem dolu
+    // we fill the first part of the list: from firstItem downwards
     int i;
     for (i = firstItem; i < totalCount; i++)
     {
@@ -664,8 +664,8 @@ int CFilesWindow::GetSelItems(int itemsCountMax, int* items, BOOL /*focusedItemF
                 return index;
         }
     }
-    // naplnime druhou cast seznamu: od prvni vybrane polozky smerem k firstItem
-    for (i = 0; i < firstItem; i++) // provede se pouze pokud je nastaveno focusedItemFirst==TRUE
+    // we fill the second part of the list: from the first selected item towards firstItem
+    for (i = 0; i < firstItem; i++) // this is executed only if focusedItemFirst==TRUE is set
     {
         CFileData* item = (i < Dirs->Count) ? &Dirs->At(i) : &Files->At(i - Dirs->Count);
         if (item->Selected == 1)
@@ -805,7 +805,7 @@ BOOL CFilesWindow::SetSelRange(BOOL select, int firstIndex, int lastIndex)
     }
     if (lastIndex < firstIndex)
     {
-        // pokud jsou prohozene meze, zajistime jejich spravne poradi
+        // if the boundaries are swapped, we ensure they are in the correct order
         int tmp = lastIndex;
         lastIndex = firstIndex;
         firstIndex = tmp;
@@ -814,7 +814,7 @@ BOOL CFilesWindow::SetSelRange(BOOL select, int firstIndex, int lastIndex)
     {
         const char* name = Dirs->At(0).Name;
         if (*name == '.' && *(name + 1) == '.' && *(name + 2) == 0)
-            firstIndex = 1; // preskocim ".."
+            firstIndex = 1; // I skip ".."
     }
     int i;
     for (i = firstIndex; i <= lastIndex; i++)
