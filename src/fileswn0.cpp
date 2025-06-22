@@ -563,7 +563,7 @@ void CFilesWindow::SetSel(BOOL select, int index, BOOL repaintDirtyItems)
         {
             const char* name = Dirs->At(0).Name;
             if (*name == '.' && *(name + 1) == '.' && *(name + 2) == 0)
-                firstIndex = 1; // we skip ".."
+                firstIndex = 1; // I skip ".."
         }
         int i;
         for (i = firstIndex; i < totalCount; i++)
@@ -836,7 +836,7 @@ int CFilesWindow::GetSelCount()
 {
     CALL_STACK_MESSAGE_NONE
 #ifdef _DEBUG
-    // udelame si testik konzistence
+    // let's do a consistency check
     int totalCount = Dirs->Count + Files->Count;
     int selectedCount = 0;
     int i;
@@ -886,8 +886,8 @@ BOOL CFilesWindow::OnChar(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
     BOOL controlPressed = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
     BOOL altPressed = (GetKeyState(VK_MENU) & 0x8000) != 0;
 
-    // pokud jsme v rezimu QuickSearchEnterAlt, musime nastavit focus do
-    // commandliny a pismeno tam nabufferovat
+    // if we are in QuickSearchEnterAlt mode, we must set the focus to
+    // the command line and buffer the letter there
     if (!controlPressed && !altPressed &&
         !QuickSearchMode &&
         wParam > 32 && wParam < 256 &&
@@ -896,7 +896,7 @@ BOOL CFilesWindow::OnChar(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
         if (MainWindow->EditWindow->IsEnabled())
         {
             SendMessage(MainWindow->HWindow, WM_COMMAND, CM_EDITLINE, 0);
-            // posleme tam znak
+            // we send the character there
             HWND hEditLine = MainWindow->GetEditLineHWND(TRUE);
             if (hEditLine != NULL)
                 PostMessage(hEditLine, WM_CHAR, wParam, lParam);
@@ -904,23 +904,23 @@ BOOL CFilesWindow::OnChar(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
         return FALSE;
     }
 
-    if (wParam > 31 && wParam < 256 &&  // jen normalni znaky
-        Dirs->Count + Files->Count > 0) // alespon 1 polozka
+    if (wParam > 31 && wParam < 256 &&  // only normal characters
+        Dirs->Count + Files->Count > 0) // at least 1 item
     {
         int index = FocusedIndex;
-        // na Nemecke klavesnici je lomitko na Shift+7, takze konfilkti s HotPaths
-        // proto pro * v QS pouzijeme mimo lomitka take backslah a obetujeme tuto
-        // malo frekventovanou funkci
+        // On a German keyboard, the slash is on Shift+7, so it conflicts with HotPaths
+        // therefore, for * in QS, we will use backslash in addition to slash and sacrifice this
+        // infrequently used function
         //
-        // 8/2006: nemecti uzivatele si i nadale stezuji, ze vstup do QS je pro ne
-        // slozity, protoze pri zapnute nemcine museji stisknout AltGr+\
-    // maji vsak volnou klavesu '<', ktera mimochodem pri prepnuti na anglickou
-        // klavesnici znamena zpetne lomitko, takze i znak '<' zacneme chytat vedle '\\' a '/'
-        // znak '<' take neni povoleny v nazvu souboru
+        // 8/2006: German users continue to complain that entering QS is
+        // difficult for them because with German layout enabled they have to press AltGr+\
+    // however, they have the '<' key free, which by the way, when switching to an English
+        // keyboard means a backslash, so we will start catching the '<' character in addition to '\\' and '/'
+        // the '<' character is also not allowed in a file name
         //
         //if (QuickSearchMode && (char)wParam == '\\')
         //{
-        //  // pri stisku znak '\\' behem QS skocima na prvni polozku, ktera vyhovuje QuickSearchMask
+        //  // when the '\\' character is pressed during QS, we jump to the first item that matches QuickSearchMask
         //  if (!QSFindNext(GetCaretIndex(), TRUE, FALSE, TRUE, (char)0, index))
         //    QSFindNext(GetCaretIndex(), FALSE, TRUE, TRUE, (char)0, index);
         //}
@@ -930,7 +930,7 @@ BOOL CFilesWindow::OnChar(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
             QSFindNext(GetCaretIndex(), FALSE, TRUE, FALSE, (char)wParam, index);
         //}
 
-        if (!QuickSearchMode) // inicializace hledani
+        if (!QuickSearchMode) // initialization of search
         {
             if (GetViewMode() == vmDetailed)
                 ListBox->OnHScroll(SB_THUMBPOSITION, 0);
@@ -940,7 +940,7 @@ BOOL CFilesWindow::OnChar(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
                 SetCaretIndex(index, FALSE);
             else
             {
-                // ujistime se, ze je polozka viditelna, protoze muze byt mimo viditelny vysek
+                // we make sure the item is visible, because it may be out of the visible section
                 ListBox->EnsureItemVisible(index, FALSE, FALSE, FALSE);
             }
             SetQuickSearchCaretPos();
@@ -985,14 +985,14 @@ void CFilesWindow::GotoSelectedItem(BOOL next)
     if (newFocusedIndex != FocusedIndex)
     {
         SetCaretIndex(newFocusedIndex, FALSE);
-        IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+        IdleRefreshStates = TRUE; // we'll force a check of state variables on the next Idle
     }
 }
 
 BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT* lResult)
 {
     CALL_STACK_MESSAGE_NONE
-    KillQuickRenameTimer(); // zamezime pripadnemu otevreni QuickRenameWindow
+    KillQuickRenameTimer(); // we prevent the QuickRenameWindow from opening
     *lResult = 0;
     if (MainWindow->HDisabledKeyboard != NULL)
     {
@@ -1003,8 +1003,8 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
 
     BOOL shiftPressed = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
     BOOL firstPress = (lParam & 0x40000000) == 0;
-    // j.r.: Dusek nasel problem, kdy neodrazilo UP do paru k DOWN
-    // proto zavadim test na prvni stisk klavesy SHIFT
+    // j.r.: Dusek found a problem where UP was not reflected in a pair with DOWN
+    // therefore I am introducing a test for the first press of the SHIFT key
     if (wParam == VK_SHIFT && firstPress && Dirs->Count + Files->Count > 0)
     {
         //    ShiftSelect = TRUE;
@@ -1055,8 +1055,8 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
         return TRUE;
 
     if (wParam == VK_SPACE && !shiftPressed && !controlPressed && !altPressed)
-    {                         // mezernikem se bude oznacovat (jmena ' ' obvykle nezacinaji)
-        if (!QuickSearchMode) // uprostred jmena byt muze
+    {                         // spacebar will be used for selection (names usually don't start with ' ')
+        if (!QuickSearchMode) // it can be in the middle of a name
         {
             SkipCharacter = TRUE;
             int index = GetCaretIndex();
@@ -1081,12 +1081,12 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
                         if (Is(ptPluginFS))
                         {
 
-                            // dopsat
+                            // to be implemented
                         }
                     }
                 }
             }
-            if (index + 1 >= 0 && index + 1 < Dirs->Count + Files->Count) // posun
+            if (index + 1 >= 0 && index + 1 < Dirs->Count + Files->Count) // a move
                 SetCaretIndex(index + 1, FALSE);
             else
                 RedrawIndex(index);
@@ -1158,7 +1158,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
     }
 
     if (wParam == VK_NEXT && controlPressed && !altPressed && !shiftPressed ||
-        wParam == VK_RETURN && (!controlPressed || altPressed)) // podporime AltGr+Enter (=Ctrl+Alt+Enter na CZ klavesce) pro Properties dlg. (Explorer to dela a lidi na foru to chteli)
+        wParam == VK_RETURN && (!controlPressed || altPressed)) // we'll support AltGr+Enter (=Ctrl+Alt+Enter on CZ keyboard) for Properties dlg. (Explorer does it and people on the forum wanted it)
     {
         SkipCharacter = TRUE;
         CtrlPageDnOrEnter(wParam);
@@ -1200,7 +1200,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
                 index--;
             if (IsViewTemplateValid(index))
                 SelectViewTemplate(index, TRUE, FALSE);
-            SkipSysCharacter = TRUE; // zamezime pipnuti
+            SkipSysCharacter = TRUE; // we prevent beeping
             return TRUE;
         }
     }
@@ -1208,7 +1208,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
     if (shiftPressed && !controlPressed && !altPressed ||
         !shiftPressed && controlPressed && !altPressed)
     {
-        // chnage disk || hot key
+        // change disk || hot key
         if (wParam >= 'A' && wParam <= 'Z')
         {
             SkipCharacter = TRUE;
@@ -1217,7 +1217,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
         }
     }
 
-    //Pri Ctrl+Shift+= mi chodi wParam == 0xBB, coz je pode SDK:
+    //For Ctrl+Shift+= I get wParam == 0xBB, which according to SDK is:
     //#define VK_OEM_PLUS       0xBB   // '+' any country
     if (wParam == VK_OEM_PLUS)
     {
@@ -1299,7 +1299,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
 
         if (asOtherPanel)
         {
-            TopIndexMem.Clear(); // dlouhy skok
+            TopIndexMem.Clear(); // long jump
             ChangePathToOtherPanelPath();
             return TRUE;
         }
@@ -1308,7 +1308,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
             char path[MAX_PATH];
             if (Plugins.GetFirstNethoodPluginFSName(path))
             {
-                TopIndexMem.Clear(); // dlouhy skok
+                TopIndexMem.Clear(); // long jump
                 ChangePathToPluginFS(path, "");
             }
             else
@@ -1330,7 +1330,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
                 if (GetTargetDirectory(HWindow, HWindow, LoadStr(IDS_CHANGEDRIVE),
                                        LoadStr(IDS_CHANGEDRIVETEXT), path, TRUE))
                 {
-                    TopIndexMem.Clear(); // dlouhy skok
+                    TopIndexMem.Clear(); // long jump
                     UpdateWindow(MainWindow->HWindow);
                     ChangePathToDisk(HWindow, path);
                 }
