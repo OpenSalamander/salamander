@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -222,7 +223,7 @@ void CFilesWindow::FocusShortcutTarget(CFilesWindow* panel)
         return;
     }
 
-    //!!! warning, Resolve may display a dialog and messages will start to be dispatched
+    //!!! ATTENTION, Resolve may display a dialog and messages will start to be dispatched
     // the panel can be refreshed, so from this moment on it is not possible to access
     // the file pointer
 
@@ -914,7 +915,7 @@ BOOL CFilesWindow::OnChar(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
         //
         // 8/2006: German users continue to complain that entering QS is
         // difficult for them because with German layout enabled they have to press AltGr+\
-    // however, they have the '<' key free, which by the way, when switching to an English
+        // however, they have the '<' key free, which by the way, when switching to an English
         // keyboard means a backslash, so we will start catching the '<' character in addition to '\\' and '/'
         // the '<' character is also not allowed in a file name
         //
@@ -2721,7 +2722,7 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
     DontClearNextFocusName = FALSE;
 
     // we transfer the selection, cut-to-clip-flag, icon-overlay-index and directory sizes from the old items to the new ones
-    //  SetSel(FALSE, -1);  // new loaded, so the Selected flag is 0 everywhere; SelectedCount is also 0
+    // SetSel(FALSE, -1);  // new loaded, so the Selected flag is 0 everywhere; SelectedCount is also 0
     int oldCount = oldDirs->Count + oldFiles->Count;
     int count = Dirs->Count + Files->Count;
     if (count != oldCount + 1 && focusFirstNewItem)
