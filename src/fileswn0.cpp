@@ -3206,9 +3206,9 @@ void CFilesWindow::SetQuickSearchCaretPos()
             }
             iconH += 3 + 2 - 1;
 
-            // POZOR: udrzovat v konzistenci s CFilesBox::GetIndex
-            char buff[1024];                           // cilovy buffer pro retezce
-            int maxWidth = ListBox->ItemWidth - 4 - 1; // -1, aby se nedotykaly
+            // ATTENTION: keep in sync with CFilesBox::GetIndex
+            char buff[1024];                           // target buffer for strings
+            int maxWidth = ListBox->ItemWidth - 4 - 1; // -1, so they don't touch
             char* out1 = buff;
             int out1Len = 512;
             int out1Width;
@@ -3229,8 +3229,8 @@ void CFilesWindow::SetQuickSearchCaretPos()
 
         case vmTiles:
         {
-            // POZOR: udrzovat v konzistenci s CFilesBox::GetIndex, viz volani GetTileTexts
-            //        int itemWidth = rect.right - rect.left; // sirka polozky
+            // ATTENTION: keep in sync with CFilesBox::GetIndex, see call to GetTileTexts
+            //        int itemWidth = rect.right - rect.left; // item width
             int maxTextWidth = ListBox->ItemWidth - TILE_LEFT_MARGIN - IconSizes[ICONSIZE_48] - TILE_LEFT_MARGIN - 4;
             int widthNeeded = 0;
 
@@ -3249,7 +3249,7 @@ void CFilesWindow::SetQuickSearchCaretPos()
             SelectObject(hDC2, hOldFont2);
             widthNeeded += 5;
 
-            int visibleLines = 1; // the name is visible for sure
+            int visibleLines = 1; // the name is definitely visible
             if (out1[0] != 0)
                 visibleLines++;
             if (out2[0] != 0)
@@ -3301,8 +3301,8 @@ void CFilesWindow::RefreshForConfig()
     SendMessage(HWindow, WM_USER_REFRESH_DIR, 0, t1);
 }
 
-// doslo ke zmene barev nebo barevne hloubky obrazovky; uz jsou vytvorene nove imagelisty
-// pro tooblary a je treba je priradit controlum, ktere je pozuivaji
+// the colors or color depth of the screen has changed; new imagelists have already been created
+// for toolbars and they need to be assigned to the controls that use them
 void CFilesWindow::OnColorsChanged()
 {
     if (DirectoryLine != NULL && DirectoryLine->ToolBar != NULL)
@@ -3310,7 +3310,7 @@ void CFilesWindow::OnColorsChanged()
         DirectoryLine->ToolBar->SetImageList(HGrayToolBarImageList);
         DirectoryLine->ToolBar->SetHotImageList(HHotToolBarImageList);
         DirectoryLine->OnColorsChanged();
-        // do nove toolbary musime nacpat ikonku disku
+        // we need to put the disk icon into the new toolbar
         UpdateDriveIcon(FALSE);
     }
 
