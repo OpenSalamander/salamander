@@ -1383,7 +1383,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
         {
             if (QuickSearchMask[0] != 0)
             {
-                int len = (int)strlen(QuickSearchMask) - 1; // weremove a character
+                int len = (int)strlen(QuickSearchMask) - 1; // we remove a character
                 QuickSearchMask[len] = 0;
 
                 int index;
@@ -1393,7 +1393,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
             return TRUE;
         }
 
-        case VK_LEFT: // left arrow - weconvert the mask to a string and remove a character
+        case VK_LEFT: // left arrow - we convert the mask to a string and remove a character
         {
             if (QuickSearch[0] != 0)
             {
@@ -2002,7 +2002,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
         }
     }
 
-    // we'llgive plugins a chance; the same is called from the command line
+    // we'll give plugins a chance; the same is called from the command line
     if (Plugins.HandleKeyDown(wParam, lParam, this, MainWindow->HWindow))
     {
         *lResult = 0;
@@ -2026,7 +2026,7 @@ BOOL CFilesWindow::OnSysKeyUp(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
     return FALSE;
 }
 
-// pristi WM_SETFOCUS v panelu bude pouze invalidatnut - neprovede se hned
+// The next WM_SETFOCUS in the panel will only be invalidated - it will not be executed immediately.
 BOOL CacheNextSetFocus = FALSE;
 
 void CFilesWindow::OnSetFocus(BOOL focusVisible)
@@ -2043,10 +2043,10 @@ void CFilesWindow::OnSetFocus(BOOL focusVisible)
     }
     MainWindow->CancelPanelsUI(); // cancel QuickSearch and QuickEdit
     FocusVisible = focusVisible;
-    // zmena: misto okamziteho prekresleni pouze invalidatneme oblast;
-    // focus pak nebude tak agresivni pri prepinani do Salama a pocka,
-    // az se budou kreslit ostatni polozky
-    if (Dirs->Count + Files->Count == 0) // zajistime vykresleni textu o prazdnem panelu
+    // change: instead of immediate redrawing, we only invalidate the area;
+    // the focus will not be so aggressive when switching to Salamander and will wait
+    // until other items are drawn.
+    if (Dirs->Count + Files->Count == 0) // we ensure that the text about an empty panel is drawn
         InvalidateRect(ListBox->HWindow, &ListBox->FilesRect, FALSE);
     else
     {
@@ -2062,8 +2062,8 @@ void CFilesWindow::OnSetFocus(BOOL focusVisible)
     }
     if (hideCommandLine)
     {
-        // command line byla zobrazena pouze docasne - zhasneme ji
-        Parent->HideCommandLine(TRUE, FALSE); // nechame ulozit obsah a zakazeme focuseni panelu
+        // the command line was displayed only temporarily - we will turn it off
+        Parent->HideCommandLine(TRUE, FALSE); // we will save the content and disable focusing the panel
     }
 }
 
@@ -2075,10 +2075,10 @@ void CFilesWindow::OnKillFocus(HWND hwndGetFocus)
     if (QuickSearchMode)
         EndQuickSearch();
     FocusVisible = FALSE;
-    // zmena: misto okamziteho prekresleni pouze invalidatneme oblast;
-    // focus pak nebude tak agresivni pri prepinani do Salama a pocka,
-    // az se budou kreslit ostatni polozky
-    if (Dirs->Count + Files->Count == 0) // zajistime vykresleni textu o prazdnem panelu
+    // change: instead of immediate redrawing, we only invalidate the area;
+    // the focus will not be so aggressive when switching to Salamander and will wait
+    // until other items are drawn.
+    if (Dirs->Count + Files->Count == 0) // we ensure that the text about an empty panel is drawn
         InvalidateRect(ListBox->HWindow, &ListBox->FilesRect, FALSE);
     else
     {
@@ -2112,13 +2112,13 @@ void ReleaseListingBody(CPanelType oldPanelType, CSalamanderDirectory*& oldArchi
     }
     if (oldPluginData.NotEmpty())
     {
-        // uvolnime data plug-inu pro jednotlive soubory a adresare
+        // we release plug-in data for individual files and directories
         BOOL releaseFiles = oldPluginData.CallReleaseForFiles();
         BOOL releaseDirs = oldPluginData.CallReleaseForDirs();
         if (releaseFiles || releaseDirs)
         {
             if (dir != NULL)
-                dir->ReleasePluginData(oldPluginData, releaseFiles, releaseDirs); // archiv nebo FS
+                dir->ReleasePluginData(oldPluginData, releaseFiles, releaseDirs); // archive or FS
             else
             {
                 if (oldPanelType == ptDisk)
@@ -2131,7 +2131,7 @@ void ReleaseListingBody(CPanelType oldPanelType, CSalamanderDirectory*& oldArchi
             }
         }
 
-        // uvolnime interface oldPluginData
+        // we release the oldPluginData interface
         CPluginInterfaceEncapsulation plugin(oldPluginData.GetPluginInterface(), oldPluginData.GetBuiltForVersion());
         plugin.ReleasePluginDataInterface(oldPluginData.GetInterface());
         oldPluginData.Init(NULL, NULL, NULL, NULL, 0);
@@ -2139,18 +2139,18 @@ void ReleaseListingBody(CPanelType oldPanelType, CSalamanderDirectory*& oldArchi
     if (dealloc)
     {
         if (dir != NULL)
-            delete dir; // uvolnime "standardni" (Salamanderovska) data listingu
-        // uvolnime melke kopie (archiv, FS) nebo "standardni" (Salamanderovska) data listingu (disk)
+            delete dir; // we release "standard" (Salamander-like) listing data
+        // we release shallow copies (archive, FS) or "standard" (Salamander-like) listing data (disk)
         delete oldFiles;
         delete oldDirs;
-        oldFiles = NULL; // jen tak, kdyby to jeste chtel nekdo pouzit, aby to spadlo
-        oldDirs = NULL;  // jen tak, kdyby to jeste chtel nekdo pouzit, aby to spadlo
+        oldFiles = NULL; // just in case someone wants to use it again, so it crashes
+        oldDirs = NULL;  // just in case someone wants to use it again, so it crashes
     }
     else
     {
         if (dir != NULL)
-            dir->Clear(NULL); // uvolnime "standardni" (Salamanderovska) data listingu
-        // uvolnime melke kopie (archiv, FS) nebo "standardni" (Salamanderovska) data listingu (disk)
+            dir->Clear(NULL); // we release "standard" (Salamander-like) listing data
+        // we release shallow copies (archive, FS) or "standard" (Salamander-like) listing data (disk)
         oldFiles->DestroyMembers();
         oldDirs->DestroyMembers();
     }
@@ -2169,8 +2169,8 @@ BOOL AreTheSameDirs(DWORD validFileData, CPluginDataInterfaceEncapsulation* plug
                     const CFileData* f1, CPluginDataInterfaceEncapsulation* pluginData2,
                     const CFileData* f2)
 {
-    // pro porovnavana data v podmince neni nutne kontrolovat platnost pres 'validFileData',
-    // protoze data jsou "nulovane" pokud jsou neplatne
+    // For the data being compared in the condition, it is not necessary to check validity via 'validFileData',
+    // because the data is "zeroed" if it is invalid.
     if (strcmp(f1->Name, f2->Name) == 0 &&
         f1->Attr == f2->Attr &&
         (f1->DosName == f2->DosName || f1->DosName != NULL && f2->DosName != NULL &&
@@ -2185,7 +2185,7 @@ BOOL AreTheSameDirs(DWORD validFileData, CPluginDataInterfaceEncapsulation* plug
         SYSTEMTIME st2;
         BOOL validDate2, validTime2;
         GetFileDateAndTimeFromPanel(validFileData, pluginData2, f2, TRUE, &st2, &validDate2, &validTime2);
-        if (validDate1 == validDate2 && validTime1 == validTime2 && // musi byt platne stejne casti struktur
+        if (validDate1 == validDate2 && validTime1 == validTime2 && // The same parts of the structures must be valid.
             (!validDate1 ||
              st1.wYear == st2.wYear &&
                  st1.wMonth == st2.wMonth &&
@@ -2206,8 +2206,8 @@ BOOL AreTheSameFiles(DWORD validFileData, CPluginDataInterfaceEncapsulation* plu
                      const CFileData* f1, CPluginDataInterfaceEncapsulation* pluginData2,
                      const CFileData* f2)
 {
-    // pro porovnavana data v podmince neni nutne kontrolovat platnost pres 'validFileData',
-    // protoze data jsou "nulovane" pokud jsou neplatne
+    // For the data being compared in the condition, it is not necessary to check validity via 'validFileData',
+    // because the data is "zeroed" if it is invalid.
     if (strcmp(f1->Name, f2->Name) == 0 &&
         f1->Attr == f2->Attr &&
         (f1->DosName == f2->DosName || f1->DosName != NULL && f2->DosName != NULL &&
@@ -2222,7 +2222,7 @@ BOOL AreTheSameFiles(DWORD validFileData, CPluginDataInterfaceEncapsulation* plu
         SYSTEMTIME st2;
         BOOL validDate2, validTime2;
         GetFileDateAndTimeFromPanel(validFileData, pluginData2, f2, FALSE, &st2, &validDate2, &validTime2);
-        if (validDate1 == validDate2 && validTime1 == validTime2 && // musi byt platne stejne casti struktur
+        if (validDate1 == validDate2 && validTime1 == validTime2 && // The same parts of the structures must be valid.
             (!validDate1 ||
              st1.wYear == st2.wYear &&
                  st1.wMonth == st2.wMonth &&
@@ -2251,7 +2251,7 @@ BOOL AreTheSameFiles(DWORD validFileData, CPluginDataInterfaceEncapsulation* plu
 void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloadThumbnails, BOOL isInactiveRefresh)
 {
     CALL_STACK_MESSAGE1("CFilesWindow::RefreshDirectory()");
-    //  if (QuickSearchMode) EndQuickSearch();   // budeme se snazit, aby quick search rezim prezil refresh
+    //  if (QuickSearchMode) EndQuickSearch();   // We will try to make the quick search mode survive a refresh.
 
 #ifdef _DEBUG
     char t_path[2 * MAX_PATH];
