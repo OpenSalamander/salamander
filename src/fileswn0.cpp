@@ -2260,7 +2260,7 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
     TRACE_I("RefreshDirectory: " << (MainWindow->LeftPanel == this ? "left" : "right") << ": " << t_path);
 #endif // _DEBUG
 
-    // start the hourglass
+    // show wait cursor
     BOOL setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // is it already waiting?
     HCURSOR oldCur;
     if (setWait)
@@ -3291,7 +3291,7 @@ void CFilesWindow::RefreshForConfig()
 {
     CALL_STACK_MESSAGE1("CFilesWindow::RefreshForConfig()");
     if (Is(ptZIPArchive))
-    { // we ensure a refresh of the archive by corrupting the archive's marker
+    { // we ensure a refresh of the archive by corrupting the archive's size
         SetZIPArchiveSize(CQuadWord(-1, -1));
     }
 
