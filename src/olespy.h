@@ -4,7 +4,7 @@
 #pragma once
 
 // OLESPY is used for detecting COM/OLE leaks.
-// The bodies of the followed functions are empty in the release version
+// The bodies of the following functions are empty in the release version
 // (if _DEBUG is not defined).
 //
 // Details on finding OLE leaks are described in OLESPY.CPP.
