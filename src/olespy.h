@@ -1,29 +1,29 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
-
+// CommentsTranslationProject: TRANSLATED
 #pragma once
 
-// OLESPY slouzi pro detekci COM/OLE leaku
-// tela nasledujicich funkci jsou prazdna, pokud se jedna o release verzi
-// (neni definovano _DEFINE)
+// OLESPY is used for detecting COM/OLE leaks.
+// The bodies of the followed functions are empty in the release version
+// (if _DEBUG is not defined).
 //
-// Podrobnosti k hledani OLE leaku jsou popsany v OLESPY.CPP
+// Details on finding OLE leaks are described in OLESPY.CPP.
 
-// Pripojeni naseho IMallocSpy k OLE; napred je treba inicializova COM
-// Pokud vrati TRUE, je mozne volat nasledujici funkce
+// Attaches our IMallocSpy to OLE; COM must be initialized first.
+// If it returns TRUE, the following functions can be called.
 BOOL OleSpyRegister();
 
-// Odpojeni SPYe od OLE; po teto funkci lze jeste zavolat OleSpyDump
+// Detaches the SpyX from OLE; OleSpyDump can still be called after this function.
 void OleSpyRevoke();
 
-// Slouzi k breknuti aplikace pri dosazeni 'alloc' alokace
-// Zavolat nekdy od OleSpyRegister do OleSpyRevoke
+// Used to break the application upon reaching the 'alloc' allocation.
+// Call anytime between OleSpyRegister and OleSpyRevoke.
 void OleSpySetBreak(int alloc);
 
-// Vypise do Debug okna debuggeru a do TRACE_I statistiky a leaky
-// U leaku zobrazuje v [n] poradi alokaci, ktere lze vyuzit pro OleSpySetBreak
+// Prints statistics and leaks to the debugger's Debug window and to TRACE_I.
+// For leaks, it displays the allocation order in [n], which can be used for OleSpySetBreak.
 void OleSpyDump();
 
-// stress test implementace IMallocSpy
-// urceno pro ladici ucely
+// Stress test of the IMallocSpy implementation.
+// Intended for debugging purposes.
 // void OleSpyStressTest();
