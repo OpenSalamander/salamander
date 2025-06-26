@@ -1,6 +1,7 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
 // CommentsTranslationProject: TRANSLATED
+
 #include "precomp.h"
 
 #include "cfgdlg.h"
@@ -236,7 +237,7 @@ void CFilesWindow::PluginFSFilesAction(CPluginFSActionType type)
 
             if (ret && !cancelOrHandlePath)
             {
-                if (targetPath[0] != 0) // switchfocus to 'targetPath'
+                if (targetPath[0] != 0) // switch focus to 'targetPath'
                 {
                     lstrcpyn(NextFocusName, targetPath, MAX_PATH);
                     // RefreshDirectory may not run - the source might not have changed - just to be safe, post a message
@@ -414,7 +415,7 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
             {
                 if (nameFound[foundIndex] == FALSE)
                     nameFound[foundIndex] = TRUE;
-                else // duplicate = all names are processed(some may not have been selected); if it causes issues, handle it with case-sensitive comparison first
+                else // duplicate = all names are processed (some may not have been selected); if it causes issues, handle it with case-sensitive comparison first
                     TRACE_E("CFilesWindow::DragDropToArcOrFS(): duplicate names found! (names are compared case-insensitive)");
             }
             else
@@ -629,7 +630,7 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
                     if (!data->Copy)
                     {
                         // changes on the source path (when moving files to the archive,
-                        //files/directories should have been deleted)
+                        // files/directories should have been deleted)
                         MainWindow->PostChangeOnPathNotification(data->Data->SrcPath, TRUE);
                     }
                 }
@@ -649,7 +650,7 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
                 // lower thread's priority to "normal" (so that operations don't burden the machine too much)
                 SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
-                // select the FS that performs the operation (priority: active, thennew)
+                // select the FS that performs the operation (priority: active, then new)
                 char targetPath[2 * MAX_PATH];
                 BOOL done = FALSE;
                 CPluginFSInterfaceEncapsulation* fs = NULL;
