@@ -1,6 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
-
+// CommentsTranslationProject: TRANSLATED
 #include "precomp.h"
 
 #include "cfgdlg.h"
@@ -25,16 +25,16 @@ void CFilesWindow::PluginFSFilesAction(CPluginFSActionType type)
     CFilesWindow* target = (MainWindow->LeftPanel == this ? MainWindow->RightPanel : MainWindow->LeftPanel);
     BOOL unselect = FALSE;
 
-    BeginSuspendMode(); // cmuchal si da pohov
-    BeginStopRefresh(); // jen aby se nedistribuovaly zpravy o zmenach na cestach
+    BeginSuspendMode(); // the snooper takes a break
+    BeginStopRefresh(); // to suppress path change messages
 
     int count = GetSelCount();
     int selectedDirs = 0;
     if (count > 0)
     {
-        // spocitame kolik adresaru je oznaceno (zbytek oznacenych polozek jsou soubory)
+        // count how many directories are selected (the remaining selected items are files)
         int i;
-        for (i = 0; i < Dirs->Count; i++) // ".." nemuzou byt oznaceny, test by byl zbytecny
+        for (i = 0; i < Dirs->Count; i++) // ".." cannot be selected, the check would be useless
         {
             if (Dirs->At(i).Selected)
                 selectedDirs++;
@@ -43,10 +43,10 @@ void CFilesWindow::PluginFSFilesAction(CPluginFSActionType type)
     else
         count = 0;
 
-    char subject[MAX_PATH + 100 + 200];    // + 200 je rezerva (Windows delaji cesty delsi nez MAX_PATH)
-    char formatedFileName[MAX_PATH + 200]; // + 200 je rezerva (Windows delaji cesty delsi nez MAX_PATH)
+    char subject[MAX_PATH + 100 + 200];    // +200 is a reserve (Windows creates paths longer than MAX_PATH)
+    char formatedFileName[MAX_PATH + 200]; // +200 is a reserve (Windows creates paths longer than MAX_PATH)
     char expanded[200];
-    if (count <= 1) // jedna oznacena polozka nebo zadny
+    if (count <= 1) // one selected item or none
     {
         int i;
         if (count == 0)
@@ -57,8 +57,8 @@ void CFilesWindow::PluginFSFilesAction(CPluginFSActionType type)
         if (i < 0 || i >= Dirs->Count + Files->Count)
         {
             EndStopRefresh();
-            EndSuspendMode(); // ted uz zase cmuchal nastartuje
-            return;           // spatny index (zadne soubory)
+            EndSuspendMode(); // the snooper resumes now
+            return;           // invalid index (no files)
         }
         BOOL isDir = i < Dirs->Count;
         CFileData* f = isDir ? &Dirs->At(i) : &Files->At(i - Dirs->Count);
@@ -86,7 +86,7 @@ void CFilesWindow::PluginFSFilesAction(CPluginFSActionType type)
     CTruncatedString str;
     if (resID != 0)
     {
-        // IDS_COPY/IDS_MOVE maji ampersany, zrusime ji
+        // IDS_COPY/IDS_MOVE contain ampersands, cancel it
         char templ[200];
         lstrcpyn(templ, LoadStr(resID), 200);
         RemoveAmpersands(templ);
@@ -102,7 +102,7 @@ void CFilesWindow::PluginFSFilesAction(CPluginFSActionType type)
         if (type == fsatMove && GetPluginFS()->IsServiceSupported(FS_SERVICE_MOVEFROMFS) ||
             type == fsatCopy && GetPluginFS()->IsServiceSupported(FS_SERVICE_COPYFROMFS)) // "always true"
         {
-            // snizime prioritu threadu na "normal" (aby operace prilis nezatezovaly stroj)
+            // lower thread's priority to "normal" (so that operations don't burden the machine too much)
             SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
             BOOL copy = (type == fsatCopy);
@@ -121,7 +121,7 @@ void CFilesWindow::PluginFSFilesAction(CPluginFSActionType type)
                                                        cancelOrHandlePath, NULL);
             while (!ret)
             {
-                if (!cancelOrHandlePath) // std. dialog
+                if (!cancelOrHandlePath) // standard dialog
                 {
                     if (CCopyMoveDialog(HWindow, targetPath, 2 * MAX_PATH,
                                         LoadStr(copy ? IDS_COPY : IDS_MOVE), &str,
@@ -143,19 +143,19 @@ void CFilesWindow::PluginFSFilesAction(CPluginFSActionType type)
                     {
                         UpdateWindow(MainWindow->HWindow);
                         ret = TRUE;
-                        cancelOrHandlePath = TRUE; // cancel operace
+                        cancelOrHandlePath = TRUE; // cancel operation
                     }
                 }
-                else // std. zpracovani cesty
+                else // standard path processing
                 {
-                    // obnova DefaultDir
+                    // restore DefaultDir
                     MainWindow->UpdateDefaultDir(MainWindow->GetActivePanel() == this);
 
-                    // u diskovych cest preklopime '/' na '\\' a zahodime zdvojene '\\'
-                    if (targetPath[0] != 0 && targetPath[1] == ':' || // cesty typu X:...
+                    // for disk paths flip '/' to '\\' and drop duplicate '\\'
+                    if (targetPath[0] != 0 && targetPath[1] == ':' || // paths like X:...
                         (targetPath[0] == '/' || targetPath[0] == '\\') &&
-                            (targetPath[1] == '/' || targetPath[1] == '\\')) // UNC cesty
-                    {                                                        // jde o diskovou cestu (absolutni nebo relativni) - otocime vsechny '/' na '\\' a zahodime zdvojene '\\'
+                            (targetPath[1] == '/' || targetPath[1] == '\\')) // UNC paths
+                    {                                                        // this is a disk path (absolute or relative) - turn all '/' into '\\' and remove duplicate '\\'
                         SlashesToBackslashesAndRemoveDups(targetPath);
                     }
 
@@ -164,9 +164,9 @@ void CFilesWindow::PluginFSFilesAction(CPluginFSActionType type)
                     BOOL pathError = FALSE;
 
                     int len = (int)strlen(targetPath);
-                    BOOL backslashAtEnd = (len > 0 && targetPath[len - 1] == '\\'); // cesta konci na backslash -> nutne adresar
+                    BOOL backslashAtEnd = (len > 0 && targetPath[len - 1] == '\\'); // path ends with backslash -> must be a directory
                     BOOL mustBePath = (len == 2 && LowerCase[targetPath[0]] >= 'a' && LowerCase[targetPath[0]] <= 'z' &&
-                                       targetPath[1] == ':'); // cesta typu "c:" musi byt i po expanzi cesta (ne soubor)
+                                       targetPath[1] == ':'); // a path like "c:" must stay a path after expansion (not a file)
 
                     int pathType;
                     BOOL pathIsDir;
@@ -174,8 +174,8 @@ void CFilesWindow::PluginFSFilesAction(CPluginFSActionType type)
                     int error;
                     if (ParsePath(targetPath, pathType, pathIsDir, secondPart, errTitle, NULL, &error, MAX_PATH))
                     {
-                        // misto konstrukce 'switch' pouzijeme 'if', aby fungovali 'break' + 'continue'
-                        if (pathType == PATH_TYPE_WINDOWS) // Windows cesta (disk + UNC)
+                        // instead of using a 'switch' statement, we use 'if' so that 'break' and 'continue' work properly
+                        if (pathType == PATH_TYPE_WINDOWS) // Windows path (disk + UNC)
                         {
                             char* mask;
                             if (SalSplitWindowsPath(HWindow, LoadStr(copy ? IDS_COPY : IDS_MOVE),
@@ -184,24 +184,24 @@ void CFilesWindow::PluginFSFilesAction(CPluginFSActionType type)
                             {
                                 if (!operationMask && mask != NULL &&
                                     (strcmp(mask, "*.*") == 0 || strcmp(mask, "*") == 0))
-                                {              // nepodporuje masky a maska je prazdna, zarizneme ji
+                                {              // masks not supported and mask is empty, cut it off
                                     *mask = 0; // double-null terminated
                                 }
-                                if (!operationMask && mask != NULL && *mask != 0) // maska existuje, ale neni povolena
+                                if (!operationMask && mask != NULL && *mask != 0) // mask exists but isn't allowed
                                 {
-                                    char* e = targetPath + strlen(targetPath); // oprava 'targetPath' (spojeni 'targetPath' a 'mask')
+                                    char* e = targetPath + strlen(targetPath); // fix 'targetPath' (merge 'targetPath' and 'mask')
                                     if (e > targetPath && *(e - 1) != '\\')
                                         *e++ = '\\';
                                     if (e != mask)
-                                        memmove(e, mask, strlen(mask) + 1); // je-li potreba, prisuneme masku
+                                        memmove(e, mask, strlen(mask) + 1); // move the mask if necessary
 
                                     SalMessageBox(HWindow, LoadStr(IDS_FSCOPYMOVE_OPMASKSNOTSUP),
                                                   errTitle, MB_OK | MB_ICONEXCLAMATION);
-                                    pathError = TRUE; // chyba cesty -> mode==4
+                                    pathError = TRUE; // path error -> mode==4
                                 }
                             }
                             else
-                                pathError = TRUE; // chyba cesty -> mode==4
+                                pathError = TRUE; // path error -> mode==4
                         }
                         else
                         {
@@ -212,17 +212,17 @@ void CFilesWindow::PluginFSFilesAction(CPluginFSActionType type)
                             {
                                 SalPathAddBackslash(targetPath, 2 * MAX_PATH);
                             }
-                            pathError = TRUE; // chyba cesty -> mode==4
+                            pathError = TRUE; // path error -> mode==4
                         }
                     }
                     else
                     {
-                        if (error == SPP_INCOMLETEPATH) // dodatecne vypiseme chybu u relativni cesty na FS
+                        if (error == SPP_INCOMLETEPATH) // additionally report an error for a relative path on FS
                         {
                             SalMessageBox(HWindow, LoadStr(IDS_FSCOPYMOVE_INCOMPLETEPATH), errTitle,
                                           MB_OK | MB_ICONEXCLAMATION);
                         }
-                        pathError = TRUE; // chyba cesty -> mode==4
+                        pathError = TRUE; // path error -> mode==4
                     }
 
                     operationMask = FALSE;
@@ -236,17 +236,17 @@ void CFilesWindow::PluginFSFilesAction(CPluginFSActionType type)
 
             if (ret && !cancelOrHandlePath)
             {
-                if (targetPath[0] != 0) // zmena fokusu na 'targetPath'
+                if (targetPath[0] != 0) // switchfocus to 'targetPath'
                 {
                     lstrcpyn(NextFocusName, targetPath, MAX_PATH);
-                    // RefreshDirectory nemusi probehnout - zdroj se nemusel zmenit - pro sichr postneme message
+                    // RefreshDirectory may not run - the source might not have changed - just to be safe, post a message
                     PostMessage(HWindow, WM_USER_DONEXTFOCUS, 0, 0);
                 }
 
-                unselect = TRUE; // uspesna operace, odznacime zdroj
+                unselect = TRUE; // operation successful, deselect the source
             }
 
-            // opet zvysime prioritu threadu, operace dobehla
+            // raise thread's priority again, operation finished
             SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
         }
         break;
@@ -256,20 +256,20 @@ void CFilesWindow::PluginFSFilesAction(CPluginFSActionType type)
     {
         if (GetPluginFS()->IsServiceSupported(FS_SERVICE_DELETE)) // "always true"
         {
-            // snizime prioritu threadu na "normal" (aby operace prilis nezatezovaly stroj)
+            // lower thread's priority to "normal" (so that operations don't burden the machine too much)
             SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
             BOOL cancelOrError = FALSE;
             BOOL ret = GetPluginFS()->Delete(GetPluginFS()->GetPluginFSName(), 1, HWindow,
                                              panel, count - selectedDirs,
                                              selectedDirs, cancelOrError);
-            if (!cancelOrError) // nejde o cancel/chybu operace
+            if (!cancelOrError) // not a cancel/operation error
             {
                 if (!ret)
                 {
                     int res;
                     if (Configuration.CnfrmFileDirDel)
-                    {                                                                                                           // ptame se jen pokud uzivatel chce
+                    {                                                                                                           // ask only if the user wants it
                         HICON hIcon = (HICON)HANDLES(LoadImage(Shell32DLL, MAKEINTRESOURCE(WindowsVistaAndLater ? 16777 : 161), // delete icon
                                                                IMAGE_ICON, 32, 32, IconLRFlags));
                         int myRes = CMessageBox(HWindow, MSGBOXEX_YESNO | MSGBOXEX_ESCAPEENABLED | MSGBOXEX_SILENT,
@@ -292,10 +292,10 @@ void CFilesWindow::PluginFSFilesAction(CPluginFSActionType type)
                 }
 
                 if (ret && !cancelOrError)
-                    unselect = TRUE; // uspesne dokoncena operace
+                    unselect = TRUE; // operation completed successfully
             }
 
-            // opet zvysime prioritu threadu, operace dobehla
+            // raise thread's priority again, operation finished
             SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
         }
         break;
@@ -312,15 +312,15 @@ void CFilesWindow::PluginFSFilesAction(CPluginFSActionType type)
     }
     }
 
-    if (unselect) // ma se provest odznaceni polozek?
+    if (unselect) // should items be deselected?
     {
-        SetSel(FALSE, -1, TRUE);                        // explicitni prekresleni
+        SetSel(FALSE, -1, TRUE);                        // explicit redraw
         PostMessage(HWindow, WM_USER_SELCHANGED, 0, 0); // sel-change notify
         UpdateWindow(MainWindow->HWindow);
     }
 
     EndStopRefresh();
-    EndSuspendMode(); // ted uz zase cmuchal nastartuje
+    EndSuspendMode(); // the snooper resumes now
 }
 
 void CFilesWindow::RefreshVisibleItemsArray()
@@ -337,17 +337,17 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
 {
     CALL_STACK_MESSAGE1("CFilesWindow::DragDropToArcOrFS()");
     if (data->Data->Names.Count == 0)
-        return; // neni co delat
+        return; // nothing to do
     if (data->Data->SrcPath[0] == 0)
     {
         SalMessageBox(HWindow, LoadStr(IDS_SRCPATHUNICODEONLY),
                       LoadStr(IDS_ERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
         return;
     }
-    if (data->Data->Names.Count > 1) // seradime jmena souboru a adresaru pro rychlejsi hledani v poli
+    if (data->Data->Names.Count > 1) // sort file and directory names for faster array searching
         SortNames((char**)data->Data->Names.GetData(), 0, data->Data->Names.Count - 1);
 
-    int* nameFound = NULL; // kazde jmeno v poli data->Data->Names zde ma TRUE/FALSE (nalezeno/nenalezeno na disku)
+    int* nameFound = NULL; // each name in data->Data->Names has TRUE/FALSE here (found/not found on disk)
     nameFound = (int*)malloc(sizeof(int) * data->Data->Names.Count);
     if (nameFound == NULL)
     {
@@ -356,7 +356,7 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
     }
     memset(nameFound, 0, sizeof(int) * data->Data->Names.Count);
 
-    CSalamanderDirectory* baseDir = new CSalamanderDirectory(TRUE); // drzak dat pro soubory a adresare ze zdrojoveho disku
+    CSalamanderDirectory* baseDir = new CSalamanderDirectory(TRUE); // container for files and directories from the source disk
     if (baseDir == NULL)
     {
         TRACE_E(LOW_MEMORY);
@@ -365,7 +365,7 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
         return;
     }
 
-    // nacteme kompletni data o souborech a adresarich, jejich jmena jsou v data->Data
+    // load complete data about files and directories, their names are in data->Data
     char path[MAX_PATH + 10];
     lstrcpyn(path, data->Data->SrcPath, MAX_PATH);
     char* end = path + strlen(path);
@@ -373,7 +373,7 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
     char text[2 * MAX_PATH + 100];
     WIN32_FIND_DATA file;
     HANDLE find = HANDLES_Q(FindFirstFile(path, &file));
-    *end = 0; // opravime cestu
+    *end = 0; // fix the path
     if (find == INVALID_HANDLE_VALUE)
     {
         DWORD err = GetLastError();
@@ -390,14 +390,14 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
     else
     {
         BOOL ok = TRUE;
-        CFileData newF;       // s temito polozkami uz nepracujeme
-        newF.PluginData = -1; // -1 jen tak, ignoruje se
+        CFileData newF;       // we no longer work with these items
+        newF.PluginData = -1; // -1 is arbitrary, thevalue will be ignored
         newF.Association = 0;
         newF.Selected = 0;
         newF.Shared = 0;
         newF.Archive = 0;
         newF.SizeValid = 0;
-        newF.Dirty = 0; // zbytecne, jen pro formu
+        newF.Dirty = 0; // unnecessary, just for formality
         newF.CutToClip = 0;
         newF.IconOverlayIndex = ICONOVERLAYINDEX_NOTUSED;
         newF.IconOverlayDone = 0;
@@ -407,18 +407,18 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
         {
             if (file.cFileName[0] == 0 || file.cFileName[0] == '.' && (file.cFileName[1] == 0 ||
                                                                        (file.cFileName[1] == '.' && file.cFileName[2] == 0)))
-                continue; // "." a ".."
+                continue; // "." and ".."
 
             int foundIndex;
             if (ContainsString(&data->Data->Names, file.cFileName, &foundIndex))
             {
                 if (nameFound[foundIndex] == FALSE)
                     nameFound[foundIndex] = TRUE;
-                else // duplikat = pracuje se se vsemi jmeny (mozna nebyla oznacena), jestli bude vadit, resit prednostne pres case-sensitive porovnavani
+                else // duplicate = all names are processed(some may not have been selected); if it causes issues, handle it with case-sensitive comparison first
                     TRACE_E("CFilesWindow::DragDropToArcOrFS(): duplicate names found! (names are compared case-insensitive)");
             }
             else
-                continue; // o tento soubor/adresar user nestoji (jmeno nebylo v data-objektu)
+                continue; // user is not interested in this file/directory (name wasn't in the data object)
 
             newF.Name = DupStr(file.cFileName);
             newF.DosName = NULL;
@@ -429,15 +429,15 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
                 break;
             }
             newF.NameLen = strlen(newF.Name);
-            if (!Configuration.SortDirsByExt && (file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) // adresar, jde jiste o disk
+            if (!Configuration.SortDirsByExt && (file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) // directory, certainly a disk
             {
-                newF.Ext = newF.Name + newF.NameLen; // adresare nemaji pripony
+                newF.Ext = newF.Name + newF.NameLen; // directories have no extensions
             }
             else
             {
                 newF.Ext = strrchr(newF.Name, '.');
                 if (newF.Ext == NULL)
-                    newF.Ext = newF.Name + newF.NameLen; // ".cvspass" ve Windows je pripona ...
+                    newF.Ext = newF.Name + newF.NameLen; // ".cvspass" in Windows is an extension ...
                                                          //      if (newF.Ext == NULL || newF.Ext == newF.Name) newF.Ext = newF.Name + newF.NameLen;
                 else
                     newF.Ext++;
@@ -461,20 +461,20 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
             newF.Hidden = newF.Attr & FILE_ATTRIBUTE_HIDDEN ? 1 : 0;
             newF.IsOffline = newF.Attr & FILE_ATTRIBUTE_OFFLINE ? 1 : 0;
 
-            if (newF.Attr & FILE_ATTRIBUTE_DIRECTORY) // adresar, jde jiste o disk
+            if (newF.Attr & FILE_ATTRIBUTE_DIRECTORY) // directory, certainly a disk
             {
-                newF.IsLink = (newF.Attr & FILE_ATTRIBUTE_REPARSE_POINT) ? 1 : 0; // volume mount point nebo junction point = zobrazime adresar s link overlayem
+                newF.IsLink = (newF.Attr & FILE_ATTRIBUTE_REPARSE_POINT) ? 1 : 0; // volume mount point or junction point = display directory with link overlay
             }
             else
             {
                 if (newF.Attr & FILE_ATTRIBUTE_REPARSE_POINT)
-                    newF.IsLink = 1; // pokud je soubor reparse-point (mozna vubec neni mozne) = zobrazime ho s link overlayem
+                    newF.IsLink = 1; // if the file is a reparse point (might not be even possible) = display it with a link overlay
                 else
                     newF.IsLink = IsFileLink(newF.Ext);
             }
 
-            if ((newF.Attr & FILE_ATTRIBUTE_DIRECTORY) && !baseDir->AddDir("", newF, NULL) ||     // adresar, jde jiste o disk
-                (newF.Attr & FILE_ATTRIBUTE_DIRECTORY) == 0 && !baseDir->AddFile("", newF, NULL)) // soubor
+            if ((newF.Attr & FILE_ATTRIBUTE_DIRECTORY) && !baseDir->AddDir("", newF, NULL) ||     // directory, certainly a disk
+                (newF.Attr & FILE_ATTRIBUTE_DIRECTORY) == 0 && !baseDir->AddFile("", newF, NULL)) // file
             {
                 free(newF.Name);
                 if (newF.DosName != NULL)
@@ -506,7 +506,7 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
         }
     }
 
-    // kontrola jestli jsme nasli vsechny soubory a adresare (aneb nasli vsechna jmena)
+    // check if we found all files and directories (i.e., found all names)
     BOOL cancel = FALSE;
     int i;
     for (i = 0; i < data->Data->Names.Count; i++)
@@ -524,11 +524,11 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
 
     if (!cancel && !FilesActionInProgress &&
         CheckPath(TRUE, data->Data->SrcPath) == ERROR_SUCCESS)
-    { // provedeme samotnou operaci
+    { // perform the operation itself
         FilesActionInProgress = TRUE;
 
-        BeginSuspendMode(); // cmuchal si da pohov
-        BeginStopRefresh(); // jen aby se nedistribuovaly zpravy o zmenach na cestach
+        BeginSuspendMode(); // the snooper takes a break
+        BeginStopRefresh(); // to suppress path change messages
 
         CPanelTmpEnumData dataEnum;
         dataEnum.Dirs = baseDir->GetDirs("");
@@ -544,7 +544,7 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
         {
             if (data->ToArchive)
             {
-                //---  zjistime jestli je to nulovy soubor
+                //---  check whether it is a zero-length file
                 BOOL nullFile;
                 BOOL haveSize = FALSE;
                 CQuadWord size;
@@ -561,21 +561,21 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
                 {
                     nullFile = (size == CQuadWord(0, 0));
 
-                    //---  je-li to nulovy soubor, musime ho zrusit, archivatory s nimi neumi delat
+                    //---  if it is a zero-length file we must delete it, archivers can't handle them
                     DWORD nullFileAttrs;
                     if (nullFile)
                     {
                         nullFileAttrs = SalGetFileAttributes(data->ArchiveOrFSName);
-                        ClearReadOnlyAttr(data->ArchiveOrFSName, nullFileAttrs); // aby sel smazat i read-only
+                        ClearReadOnlyAttr(data->ArchiveOrFSName, nullFileAttrs); // to allow deletion even if read-only
                         DeleteFile(data->ArchiveOrFSName);
                     }
-                    //---  vlastni pakovani
+                    //---  actual packing
                     SetCurrentDirectory(data->Data->SrcPath);
                     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
                     if (PackCompress(HWindow, this, data->ArchiveOrFSName, data->ArchivePathOrUserPart,
                                      !data->Copy, data->Data->SrcPath, PanelEnumDiskSelection, &dataEnum))
-                    {                   // pakovani se povedlo
-                        if (nullFile && // nulovy soubor mohl mit jiny compressed atribut, nastavime archiv na stejny
+                    {                   // packing succeeded
+                        if (nullFile && // zero-length file might have had a different compressed attribute, set archive accordingly
                             nullFileAttrs != INVALID_FILE_ATTRIBUTES)
                         {
                             HANDLE hFile2 = HANDLES_Q(CreateFile(data->ArchiveOrFSName, GENERIC_READ | GENERIC_WRITE,
@@ -583,7 +583,7 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
                                                                  0, NULL));
                             if (hFile2 != INVALID_HANDLE_VALUE)
                             {
-                                // restorneme "compressed" flag, na FAT a FAT32 se to proste nepovede
+                                // restore the "compressed" flag; on FAT and FAT32 it simply won't succeed
                                 USHORT state = (nullFileAttrs & FILE_ATTRIBUTE_COMPRESSED) ? COMPRESSION_FORMAT_DEFAULT : COMPRESSION_FORMAT_NONE;
                                 ULONG length;
                                 DeviceIoControl(hFile2, FSCTL_SET_COMPRESSION, &state,
@@ -595,7 +595,7 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
                     }
                     else
                     {
-                        if (nullFile) // nepovedlo se, musime ho zase vytvorit
+                        if (nullFile) // operation failed, we must recreate it
                         {
                             HANDLE hFile2 = HANDLES_Q(CreateFile(data->ArchiveOrFSName, GENERIC_READ | GENERIC_WRITE,
                                                                  0, NULL, OPEN_ALWAYS,
@@ -604,7 +604,7 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
                             {
                                 if (nullFileAttrs != INVALID_FILE_ATTRIBUTES)
                                 {
-                                    // restorneme "compressed" flag, na FAT a FAT32 se to proste nepovede
+                                    // restore the "compressed" flag; on FAT and FAT32 it simply won't succeed
                                     USHORT state = (nullFileAttrs & FILE_ATTRIBUTE_COMPRESSED) ? COMPRESSION_FORMAT_DEFAULT : COMPRESSION_FORMAT_NONE;
                                     ULONG length;
                                     DeviceIoControl(hFile2, FSCTL_SET_COMPRESSION, &state,
@@ -621,15 +621,15 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
 
                     UpdateWindow(MainWindow->HWindow);
 
-                    //---  refresh neautomaticky refreshovanych adresaru
-                    // zmena v adresari s cilovym archivem (meni se soubor archivu)
+                    //---  refresh non-automatically refreshed directories
+                    // change in the directory with the target archive (archive file is modified)
                     lstrcpyn(text, data->ArchiveOrFSName, MAX_PATH);
-                    CutDirectory(text); // 'text' je jmeno archivu -> musi vzdy uspet
+                    CutDirectory(text); // 'text' is the archive name -> must always succeed
                     MainWindow->PostChangeOnPathNotification(text, FALSE);
                     if (!data->Copy)
                     {
-                        // zmeny na zdrojove ceste (pri presunu souboru do archivu melo probehnout
-                        // mazani souboru/adresaru)
+                        // changes on the source path (when moving files to the archive,
+                        //files/directories should have been deleted)
                         MainWindow->PostChangeOnPathNotification(data->Data->SrcPath, TRUE);
                     }
                 }
@@ -646,10 +646,10 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
                 int selFiles = dataEnum.Files->Count;
                 int selDirs = dataEnum.Dirs->Count;
 
-                // snizime prioritu threadu na "normal" (aby operace prilis nezatezovaly stroj)
+                // lower thread's priority to "normal" (so that operations don't burden the machine too much)
                 SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
-                // vybereme FS, ktery operaci provede (poradi: aktivni, novy)
+                // select the FS that performs the operation (priority: active, thennew)
                 char targetPath[2 * MAX_PATH];
                 BOOL done = FALSE;
                 CPluginFSInterfaceEncapsulation* fs = NULL;
@@ -657,8 +657,8 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
                     fs = GetPluginFS();
 
                 int fsNameIndex;
-                if (fs != NULL && fs->NotEmpty() &&                                         // iface je platny
-                    fs->IsFSNameFromSamePluginAsThisFS(data->ArchiveOrFSName, fsNameIndex)) // jmeno FS je ze stejneho pluginu (jinak ani nema cenu zkouset)
+                if (fs != NULL && fs->NotEmpty() &&                                         // interface is valid
+                    fs->IsFSNameFromSamePluginAsThisFS(data->ArchiveOrFSName, fsNameIndex)) // FS name is from the same plugin (otherwise it's not worth trying)
                 {
                     BOOL invalidPathOrCancel;
                     _snprintf_s(targetPath, _TRUNCATE, "%s:%s", data->ArchiveOrFSName, data->ArchivePathOrUserPart);
@@ -667,30 +667,30 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
                                                    PanelEnumDiskSelection, &dataEnum,
                                                    selFiles, selDirs, targetPath, &invalidPathOrCancel))
                     {
-                        done = TRUE; // hotovo/cancel/chyba (kazdopadne nema cenu zkouset novy FS)
+                        done = TRUE; // finished/canceled/error (either way,no point in trying a new FS)
                     }
                     else
                     {
-                        // pred dalsim pouzitim musime resetnout (aby enumeroval opet od zacatku)
+                        // reset before next use (so enumeration starts again from the beginning)
                         dataEnum.Reset();
 
                         if (invalidPathOrCancel)
-                            done = TRUE; // invalid path + user cestu opravit nemuze, koncime
-                                         // else ; // mame zkusit novy FS
+                            done = TRUE; // invalid path + user cannot fix it, ending
+                                         // else ; // we should try a new FS
                     }
                 }
-                if (!done) // aktivni FS to nezvladl, vytvorime novy FS
+                if (!done) // active FS failed, create a new FS
                 {
                     int index;
                     int fsNameIndex2;
-                    if (Plugins.IsPluginFS(data->ArchiveOrFSName, index, fsNameIndex2)) // zjistime index pluginu
+                    if (Plugins.IsPluginFS(data->ArchiveOrFSName, index, fsNameIndex2)) // determine plugin index
                     {
-                        // ziskame plug-in s FS
+                        // obtain the plug-in associated with the FS
                         CPluginData* plugin = Plugins.Get(index);
                         if (plugin != NULL)
                         {
-                            // otevreme novy FS
-                            // load plug-inu pred ziskanim DLLName, Version a plug-in ifacu
+                            // open a new FS
+                            // load the plug-in before obtaining DLLName, Version and plugin interfaces
                             CPluginFSInterfaceAbstract* auxFS = plugin->OpenFS(data->ArchiveOrFSName, fsNameIndex2);
                             CPluginFSInterfaceEncapsulation pluginFS(auxFS, plugin->DLLName, plugin->Version,
                                                                      plugin->GetPluginInterfaceForFS()->GetInterface(),
@@ -707,9 +707,9 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
                                                                      PanelEnumDiskSelection, &dataEnum,
                                                                      selFiles, selDirs, targetPath,
                                                                      &invalidPathOrCancel))
-                                { // chyba syntaxe/chyba plug-inu
+                                { // syntax error/plugin error
                                     if (!invalidPathOrCancel)
-                                    { // chyba plug-inu (novy FS, ale vraci chybu "v tomto FS nelze provest pozadovanou operaci")
+                                    { // plugin error (new FS, but returns error 'this FS cannot perform the requested operation')
                                         TRACE_E("CopyOrMoveFromDiskToFS on new (empty) FS may not return error 'unable to process operation'.");
                                     }
                                 }
@@ -730,9 +730,9 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
                     }
                 }
 
-                // opet zvysime prioritu threadu, operace dobehla
+                // raise thread's priority again, operation finished
                 SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
-                SetCurrentDirectoryToSystem(); // pro vsechny pripady obnovime i cur-dir
+                SetCurrentDirectoryToSystem(); // restore current directory in any case
             }
         }
 
@@ -747,7 +747,7 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
             TRACE_E("Unexpected situation in CFilesWindow::DragDropToArcOrFS(): FilesActionInProgress is TRUE!");
     }
 
-    // uvolneni dat
+    // release data
     if (nameFound != NULL)
         free(nameFound);
     delete baseDir;
@@ -919,7 +919,7 @@ BOOL CVisibleItemsArray::ArrContains(const char* name, BOOL* isArrValid, int* ve
         if (res == 0)
         {
             HANDLES(LeaveCriticalSection(&Monitor));
-            return TRUE; // nalezeno
+            return TRUE; // found
         }
         else
         {
@@ -928,7 +928,7 @@ BOOL CVisibleItemsArray::ArrContains(const char* name, BOOL* isArrValid, int* ve
                 if (l == r || l > m - 1)
                 {
                     HANDLES(LeaveCriticalSection(&Monitor));
-                    return FALSE; // nenalezeno
+                    return FALSE; // not found
                 }
                 r = m - 1;
             }
@@ -937,7 +937,7 @@ BOOL CVisibleItemsArray::ArrContains(const char* name, BOOL* isArrValid, int* ve
                 if (l == r)
                 {
                     HANDLES(LeaveCriticalSection(&Monitor));
-                    return FALSE; // nenalezeno
+                    return FALSE; // not found
                 }
                 l = m + 1;
             }
@@ -1062,8 +1062,8 @@ const char* CRITERIADATA_USEADVANCED_REG = "Use Advanced";
 
 BOOL CCriteriaData::Save(HKEY hKey)
 {
-    // optimalizace na velikost v Registry: ukladame pouze "non-default hodnoty";
-    // pred ukladanim je proto treba promazat klic, do ktereho se budeme ukladat
+    // to optimize for registry size, only non-default values are saved.
+    // this requires clearing the destination key before writing.
     CCriteriaData def;
 
     if (OverwriteOlder != def.OverwriteOlder)
@@ -1123,7 +1123,7 @@ BOOL CCriteriaData::Load(HKEY hKey)
 
 void CCopyMoveOptions::Set(const CCriteriaData* item)
 {
-    // zatim drzime jedinou polozku (default) nebo zadnou
+    // for now, only one item (default) or none is held
     if (Items.Count > 0)
         Items.DestroyMembers();
     if (item != NULL)
@@ -1170,7 +1170,7 @@ BOOL CCopyMoveOptions::Load(HKEY hKey)
     int i = 1;
     strcpy(buf, "1");
     Items.DestroyMembers();
-    while (OpenKey(hKey, buf, subKey) && i == 1) // zatim cteme jen prvni polozku
+    while (OpenKey(hKey, buf, subKey) && i == 1) // for now read only the first item
     {
         CCriteriaData* item = new CCriteriaData();
         item->Load(subKey);
