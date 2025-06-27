@@ -5,7 +5,6 @@
 
 #ifdef ENABLE_TWAIN32
 
-#include "lib/pvw32dll.h"
 #include "renderer.h"
 #include "dialogs.h"
 #include "pictview.h"

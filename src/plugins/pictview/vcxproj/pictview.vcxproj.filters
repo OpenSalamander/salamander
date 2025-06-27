@@ -81,6 +81,15 @@
     <ClCompile Include="..\wiawrap.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
+    <ClCompile Include="..\PVOverrider.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\heif.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webp.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\dialogs.h">
@@ -165,6 +174,15 @@
       <Filter>Shared</Filter>
     </ClInclude>
     <ClInclude Include="..\wiawrap.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\PVOverrider.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\heif.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webp.h">
       <Filter>h</Filter>
     </ClInclude>
   </ItemGroup>

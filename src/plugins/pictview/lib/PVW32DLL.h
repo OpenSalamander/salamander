@@ -38,20 +38,20 @@
 #define PV_VERSION_155 0x10037
 #define PV_VERSION_156 0x10038
 #define PV_VERSION_MAJOR(x) ((x) >> 16)
-#define PV_VERSION_MINOR(x) ((x)&0xFFFF)
+#define PV_VERSION_MINOR(x) ((x) & 0xFFFF)
 
 #define PV_MAXIMUM_BITMAP_SIZE 0xFFFFFFFF
 
 /* Error codes: */
 
-#define PVC_EXPIRED ((PVCODE)-8)        /* Demo version has expired */
-#define PVC_GDI_ERROR ((PVCODE)-7)      /* GDI function like SelectObject failed */
-#define PVC_EXCEPTION ((PVCODE)-6)      /* Internal error */
-#define PVC_CANCELED ((PVCODE)-5)       /* Read canceled - not yet used */
-#define PVC_NO_MORE_IMAGES ((PVCODE)-4) /* No more images in the file */
-#define PVC_OOM ((PVCODE)-3)            /* Out of memory */
-#define PVC_SYNC_ERROR ((PVCODE)-2)
-#define PVC_INVALID_HANDLE ((PVCODE)-1)
+#define PVC_EXPIRED ((PVCODE) - 8)        /* Demo version has expired */
+#define PVC_GDI_ERROR ((PVCODE) - 7)      /* GDI function like SelectObject failed */
+#define PVC_EXCEPTION ((PVCODE) - 6)      /* Internal error */
+#define PVC_CANCELED ((PVCODE) - 5)       /* Read canceled - not yet used */
+#define PVC_NO_MORE_IMAGES ((PVCODE) - 4) /* No more images in the file */
+#define PVC_OOM ((PVCODE) - 3)            /* Out of memory */
+#define PVC_SYNC_ERROR ((PVCODE) - 2)
+#define PVC_INVALID_HANDLE ((PVCODE) - 1)
 #define PVC_OK 0
 #define PVC_UNKNOWN_COMPRESSION 6
 #define PVC_OUT_OF_MEMORY 7

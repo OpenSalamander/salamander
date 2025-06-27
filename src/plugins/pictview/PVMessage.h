@@ -5,7 +5,7 @@
 
 #include "lib/pvw32dll.h"
 
-#define PVC_ENVELOPE_NOT_LOADED ((PVCODE)-123)
+#define PVC_ENVELOPE_NOT_LOADED ((PVCODE) - 123)
 
 struct CPVWrapper
 {
@@ -125,7 +125,7 @@ class PVMessage_InitTexts : public PVMessage
 {
 public:
     PVMessage_InitTexts();
-    PVMessage_InitTexts(LPPVMessageHeader pHdr) : PVMessage(pHdr){};
+    PVMessage_InitTexts(LPPVMessageHeader pHdr) : PVMessage(pHdr) {};
     bool HandleRequest();
 
 private:
@@ -140,7 +140,7 @@ class PVMessage_GetErrorText : public PVMessage
 {
 public:
     PVMessage_GetErrorText(DWORD ErrorCode);
-    PVMessage_GetErrorText(LPPVMessageHeader pHdr) : PVMessage(pHdr){};
+    PVMessage_GetErrorText(LPPVMessageHeader pHdr) : PVMessage(pHdr) {};
     bool HandleRequest();
     const char* GetErrorText();
 
@@ -156,7 +156,7 @@ class PVMessage_OpenImageEx : public PVMessage
 {
 public:
     PVMessage_OpenImageEx(LPPVOpenImageExInfo pOpenExInfo);
-    PVMessage_OpenImageEx(LPPVMessageHeader pHdr) : PVMessage(pHdr){};
+    PVMessage_OpenImageEx(LPPVMessageHeader pHdr) : PVMessage(pHdr) {};
     bool IsInited();
     bool Exec(LPPVImageInfo pImgInfo);
     bool HandleRequest();
@@ -177,7 +177,7 @@ class PVMessage_GetImageInfo : public PVMessage
 {
 public:
     PVMessage_GetImageInfo(LPPVHandle pvHandle, int ImageIndex);
-    PVMessage_GetImageInfo(LPPVMessageHeader pHdr) : PVMessage(pHdr){};
+    PVMessage_GetImageInfo(LPPVMessageHeader pHdr) : PVMessage(pHdr) {};
     bool Exec(LPPVImageInfo pImgInfo);
     bool HandleRequest();
 
@@ -193,7 +193,7 @@ class PVMessageWithProgress : public PVMessage
 {
 public:
     PVMessageWithProgress(ePVMSG type, size_t dataSize, LPPVHandle pvHandle = NULL);
-    PVMessageWithProgress(LPPVMessageHeader pHdr, HANDLE Event) : PVMessage(pHdr), hEvent(Event){};
+    PVMessageWithProgress(LPPVMessageHeader pHdr, HANDLE Event) : PVMessage(pHdr), hEvent(Event) {};
     bool Exec(TProgressProc Progress, void* AppSpecific);
     BOOL HandleProgress(int done);
 
@@ -217,7 +217,7 @@ class PVMessage_ReadImage : public PVMessageWithProgress
 {
 public:
     PVMessage_ReadImage(LPPVHandle pvHandle, int ImageIndex, bool bProgress);
-    PVMessage_ReadImage(LPPVMessageHeader pHdr, HANDLE hEvent) : PVMessageWithProgress(pHdr, hEvent){};
+    PVMessage_ReadImage(LPPVMessageHeader pHdr, HANDLE hEvent) : PVMessageWithProgress(pHdr, hEvent) {};
     bool Exec(HDC PaintDC, RECT* pDRect, TProgressProc Progress, void* AppSpecific);
     bool HandleRequest();
 
@@ -232,7 +232,7 @@ class PVMessage_CloseImage : public PVMessage
 {
 public:
     PVMessage_CloseImage(LPPVHandle pvHandle);
-    PVMessage_CloseImage(LPPVMessageHeader pHdr) : PVMessage(pHdr){};
+    PVMessage_CloseImage(LPPVMessageHeader pHdr) : PVMessage(pHdr) {};
     ~PVMessage_CloseImage();
     bool HandleRequest();
 };
@@ -241,7 +241,7 @@ class PVMessage_DrawImage : public PVMessage
 {
 public:
     PVMessage_DrawImage(LPPVHandle pvHandle, HDC PaintDC, int X, int Y, LPRECT pDrawRect);
-    PVMessage_DrawImage(LPPVMessageHeader pHdr) : PVMessage(pHdr){};
+    PVMessage_DrawImage(LPPVMessageHeader pHdr) : PVMessage(pHdr) {};
     bool Exec(HDC PaintDC);
     bool HandleRequest();
 
@@ -260,7 +260,7 @@ class PVMessage_SaveImage : public PVMessageWithProgress
 {
 public:
     PVMessage_SaveImage(LPPVHandle pvHandle, const char* FileName, LPPVSaveImageInfo pSii, int ImageIndex, bool bProgress);
-    PVMessage_SaveImage(LPPVMessageHeader pHdr, HANDLE hEvent) : PVMessageWithProgress(pHdr, hEvent){};
+    PVMessage_SaveImage(LPPVMessageHeader pHdr, HANDLE hEvent) : PVMessageWithProgress(pHdr, hEvent) {};
     bool HandleRequest();
 
 private:
@@ -309,7 +309,7 @@ class PVMessage_LoadFromClipboard : public PVMessage
 {
 public:
     PVMessage_LoadFromClipboard();
-    PVMessage_LoadFromClipboard(LPPVMessageHeader pHdr) : PVMessage(pHdr){};
+    PVMessage_LoadFromClipboard(LPPVMessageHeader pHdr) : PVMessage(pHdr) {};
     bool Exec(LPPVImageInfo pImgInfo);
     bool HandleRequest();
 
@@ -324,7 +324,7 @@ class PVMessage_ReadImageSequence : public PVMessage
 {
 public:
     PVMessage_ReadImageSequence(LPPVHandle pvHandle);
-    PVMessage_ReadImageSequence(LPPVMessageHeader pHdr) : PVMessage(pHdr){};
+    PVMessage_ReadImageSequence(LPPVMessageHeader pHdr) : PVMessage(pHdr) {};
     bool Exec();
     bool HandleRequest();
 
@@ -339,7 +339,7 @@ class PVMessage_SetBkHandle : public PVMessage
 {
 public:
     PVMessage_SetBkHandle(LPPVHandle pvHandle, COLORREF bkColor);
-    PVMessage_SetBkHandle(LPPVMessageHeader pHdr) : PVMessage(pHdr){};
+    PVMessage_SetBkHandle(LPPVMessageHeader pHdr) : PVMessage(pHdr) {};
     bool HandleRequest();
 
 private:
@@ -353,7 +353,7 @@ class PVMessage_GetDLLVersion : public PVMessage
 {
 public:
     PVMessage_GetDLLVersion();
-    PVMessage_GetDLLVersion(LPPVMessageHeader pHdr) : PVMessage(pHdr){};
+    PVMessage_GetDLLVersion(LPPVMessageHeader pHdr) : PVMessage(pHdr) {};
     bool Exec(DWORD& Version);
     bool HandleRequest();
 
@@ -368,7 +368,7 @@ class PVMessage_SetStretchParameters : public PVMessage
 {
 public:
     PVMessage_SetStretchParameters(LPPVHandle pvHandle, DWORD Width, DWORD Height, DWORD Mode);
-    PVMessage_SetStretchParameters(LPPVMessageHeader pHdr) : PVMessage(pHdr){};
+    PVMessage_SetStretchParameters(LPPVMessageHeader pHdr) : PVMessage(pHdr) {};
     bool HandleRequest();
 
 private:
@@ -384,7 +384,7 @@ class PVMessage_ChangeImage : public PVMessage
 {
 public:
     PVMessage_ChangeImage(LPPVHandle pvHandle, DWORD Flags);
-    PVMessage_ChangeImage(LPPVMessageHeader pHdr) : PVMessage(pHdr){};
+    PVMessage_ChangeImage(LPPVMessageHeader pHdr) : PVMessage(pHdr) {};
     bool HandleRequest();
 
 private:
@@ -398,7 +398,7 @@ class PVMessage_IsOutCombSupported : public PVMessage
 {
 public:
     PVMessage_IsOutCombSupported(int Fmt, int Compr, int Colors, int ColorModel);
-    PVMessage_IsOutCombSupported(LPPVMessageHeader pHdr) : PVMessage(pHdr){};
+    PVMessage_IsOutCombSupported(LPPVMessageHeader pHdr) : PVMessage(pHdr) {};
     bool HandleRequest();
 
 private:
@@ -415,7 +415,7 @@ class PVMessage_CropImage : public PVMessage
 {
 public:
     PVMessage_CropImage(LPPVHandle pvHandle, int Left, int Top, int Width, int Height);
-    PVMessage_CropImage(LPPVMessageHeader pHdr) : PVMessage(pHdr){};
+    PVMessage_CropImage(LPPVMessageHeader pHdr) : PVMessage(pHdr) {};
     bool HandleRequest();
 
 private:
@@ -432,7 +432,7 @@ class PVMessage_GetRGBAtCursor : public PVMessage
 {
 public:
     PVMessage_GetRGBAtCursor(LPPVHandle pvHandle, DWORD Colors, int x, int y);
-    PVMessage_GetRGBAtCursor(LPPVMessageHeader pHdr) : PVMessage(pHdr){};
+    PVMessage_GetRGBAtCursor(LPPVMessageHeader pHdr) : PVMessage(pHdr) {};
     bool HandleRequest();
 
     RGBQUAD* GetRGB();
@@ -453,7 +453,7 @@ class PVMessage_CalculateHistogram : public PVMessage
 {
 public:
     PVMessage_CalculateHistogram(LPPVHandle pvHandle, const PVImageInfo* pvii);
-    PVMessage_CalculateHistogram(LPPVMessageHeader pHdr) : PVMessage(pHdr){};
+    PVMessage_CalculateHistogram(LPPVMessageHeader pHdr) : PVMessage(pHdr) {};
     bool HandleRequest();
 
     void GetResults(LPDWORD luminosity, LPDWORD red, LPDWORD green, LPDWORD blue, LPDWORD rgb);
@@ -477,7 +477,7 @@ class PVMessage_CreateThumbnail : public PVMessageWithProgress
 {
 public:
     PVMessage_CreateThumbnail(LPPVHandle pvHandle, LPPVSaveImageInfo pSii, int ImageIndex, DWORD imgWidth, DWORD imgHeight, DWORD thumbWidth, DWORD thumbHeight);
-    PVMessage_CreateThumbnail(LPPVMessageHeader pHdr, HANDLE hEvent) : PVMessageWithProgress(pHdr, hEvent){};
+    PVMessage_CreateThumbnail(LPPVMessageHeader pHdr, HANDLE hEvent) : PVMessageWithProgress(pHdr, hEvent) {};
     bool HandleRequest();
     LPBYTE GetPixelData();
 
@@ -498,7 +498,7 @@ class PVMessage_SimplifyImageSequence : public PVMessage
 {
 public:
     PVMessage_SimplifyImageSequence(LPPVHandle pvHandle, DWORD ScreenWidth, DWORD ScreenHeight, const COLORREF& bgColor);
-    PVMessage_SimplifyImageSequence(LPPVMessageHeader pHdr) : PVMessage(pHdr){};
+    PVMessage_SimplifyImageSequence(LPPVMessageHeader pHdr) : PVMessage(pHdr) {};
     bool Exec();
     bool HandleRequest();
     LPPVImageSequence GetImageSequence();
@@ -521,7 +521,7 @@ class PVMessage_CloseHandle : public PVMessage
 {
 public:
     PVMessage_CloseHandle(DWORD Handle);
-    PVMessage_CloseHandle(LPPVMessageHeader pHdr) : PVMessage(pHdr){};
+    PVMessage_CloseHandle(LPPVMessageHeader pHdr) : PVMessage(pHdr) {};
     bool Exec();
     bool HandleRequest();
 
