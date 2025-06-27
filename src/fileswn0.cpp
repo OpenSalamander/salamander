@@ -2297,7 +2297,7 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
     OnlyDetachFSListing = Is(ptPluginFS);
 
     // we'll backup the icon-cache for later transfer of loaded icons to the new icon-cache
-    BOOL oldIconCacheValid = IconCacheValid; 
+    BOOL oldIconCacheValid = IconCacheValid;  
     BOOL oldInactWinOptimizedReading = InactWinOptimizedReading;
     CIconCache* oldIconCache = NULL;
     if (UseSystemIcons || UseThumbnails)
