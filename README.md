@@ -1,4 +1,11 @@
-# Open Salamander
+<div align="center">
+<img src="https://raw.githubusercontent.com/OpenSalamander/salamander/main/src/res/logo.svg" width="70" height="70"> <img src="https://raw.githubusercontent.com/OpenSalamander/salamander/main/src/res/os.svg" height="70" >
+
+#
+</div>
+
+![GitHub License](https://img.shields.io/github/license/OpenSalamander/salamander)
+[![clang-format Check](https://github.com/OpenSalamander/salamander/actions/workflows/clang-format-check.yml/badge.svg)](https://github.com/OpenSalamander/salamander/actions/workflows/clang-format-check.yml)
 
 Open Salamander is a fast and reliable two-panel file manager for Windows.
 
@@ -74,6 +81,10 @@ All the source code uses UTF-8-BOM encoding and is formatted with ```clang-forma
 - Servant Salamander and Altap Salamander [changelogs](https://www.altap.cz/salamander/changelogs/)
 - [User Community Forum](https://forum.altap.cz/)
 - Altap Salamander on [Wikipedia](https://en.wikipedia.org/wiki/Altap_Salamander)
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=OpenSalamander/salamander&type=Date)](https://star-history.com/#OpenSalamander/salamander&Date)
 
 ## License
 
