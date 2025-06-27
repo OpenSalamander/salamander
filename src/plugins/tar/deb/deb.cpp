@@ -96,15 +96,16 @@ CDEBArchive::CDEBArchive(const char* fileName, CSalamanderForOperationsAbstract*
     pos += sizeof(ARBlock);
 
     // Open the fist subarchive
-    controlArchive = new CArchive(fileName, salamander, pos, CQuadWord(SubArchiveSize, 0));
-    if (!controlArchive->IsOk())
+    CArchive* archive = new CArchive(fileName, salamander, pos, CQuadWord(SubArchiveSize, 0));
+    if (!archive->IsOk())
     {
-        delete controlArchive;
-        controlArchive = NULL;
+        delete archive;
+        archive = NULL;
         return;
     }
     // We are happy if at least one subarchive was recognized
-    bOK = TRUE;
+    if (AssignArchive(ARBlock.FileName, archive))
+        bOK = TRUE;
 
     // Skip the subarchive and read the 3rd and last subarchive
     if (SubArchiveSize & 1)
@@ -127,12 +128,15 @@ CDEBArchive::CDEBArchive(const char* fileName, CSalamanderForOperationsAbstract*
         return;
     }
     sscanf(ARBlock.FileSize, "%u", &SubArchiveSize);
-    dataArchive = new CArchive(fileName, salamander, pos + sizeof(ARBlock), CQuadWord(0, 0));
-    if (!dataArchive->IsOk())
+    pos += sizeof(ARBlock);
+    archive = new CArchive(fileName, salamander, pos, CQuadWord(SubArchiveSize, 0));
+    if (!archive->IsOk())
     {
-        delete dataArchive;
-        dataArchive = NULL;
+        delete archive;
+        archive = NULL;
     }
+    if (AssignArchive(ARBlock.FileName, archive))
+        bOK = TRUE;
     CloseHandle(file);
 }
 
@@ -314,4 +318,22 @@ BOOL CDEBArchive::UnpackWholeArchive(const char* mask, const char* targetPath)
         SalamanderGeneral->ShowMessageBox(LoadStr(IDS_ERR_MEMORY), LoadStr(IDS_GZERR_TITLE), MSGBOX_ERROR);
     }
     return ret;
+}
+
+BOOL CDEBArchive::AssignArchive(const char* archName, CArchive* archive)
+{
+    if (!controlArchive && !strncmp(archName, DEB_STREAM_NAME_CONTROL ".", sizeof(DEB_STREAM_NAME_CONTROL ".") - 1))
+    {
+        controlArchive = archive;
+        return TRUE;
+    }
+    else if (!dataArchive && !strncmp(archName, DEB_STREAM_NAME_DATA ".", sizeof(DEB_STREAM_NAME_DATA ".") - 1))
+    {
+        dataArchive = archive;
+        return TRUE;
+    }
+
+    // archiv se uz nebude pouzivat
+    delete archive;
+    return FALSE;
 }

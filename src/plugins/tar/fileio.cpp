@@ -7,11 +7,12 @@
 #include "fileio.h"
 
 #include "gzip/gzip.h"
-#include "bzip/bzlib.h"
 #include "bzip/bzip.h"
 #include "compress/compress.h"
 #include "rpm/rpm.h"
 #include "lzh/lzh.h"
+#include "lzma/unlzma.h"
+#include "zstd/unzstd.h"
 
 #include "tar.rh"
 #include "tar.rh2"
@@ -97,14 +98,26 @@ CDecompressFile::CreateInstance(LPCTSTR fileName, DWORD inputOffset, CQuadWord i
                 archive = new CBZip(fileName, file, buffer, inputOffset, read, inputSize);
                 if (archive != NULL && !archive->IsOk() && archive->GetErrorCode() == 0)
                 {
-                    // neni to compress, zkusime lzh
+                    // neni to bzip, zkusime lzh
                     delete archive;
                     archive = new CLZH(fileName, file, buffer, read);
                     if (archive != NULL && !archive->IsOk() && archive->GetErrorCode() == 0)
                     {
-                        // neni to kompresene, berem zakladni tridu
+                        // neni to lzh, zkusime lzma
                         delete archive;
-                        archive = new CDecompressFile(fileName, file, buffer, inputOffset, read, inputSize);
+                        archive = new CLZMa(fileName, file, buffer, inputOffset, read, inputSize);
+                        if (archive != NULL && !archive->IsOk() && archive->GetErrorCode() == 0)
+                        {
+                            // neni to lzma, zkusime zstd
+                            delete archive;
+                            archive = new CZStd(fileName, file, buffer, inputOffset, read, inputSize);
+                            if (archive != NULL && !archive->IsOk() && archive->GetErrorCode() == 0)
+                            {
+                                // neni to kompresene, berem zakladni tridu
+                                delete archive;
+                                archive = new CDecompressFile(fileName, file, buffer, inputOffset, read, inputSize);
+                            }
+                        }
                     }
                 }
             }
@@ -130,7 +143,7 @@ CDecompressFile::CreateInstance(LPCTSTR fileName, DWORD inputOffset, CQuadWord i
 
 // class constructor
 CDecompressFile::CDecompressFile(const char* filename, HANDLE file, unsigned char* buffer, unsigned long start, unsigned long read, CQuadWord inputSize) : FileName(filename), File(file), Buffer(buffer), DataStart(buffer), DataEnd(buffer + read),
-                                                                                                                                                           OldName(NULL), Ok(TRUE), StreamPos(start, 0), ErrorCode(0), LastError(0), FreeBufAndFile(TRUE)
+                                                                                                                                                           OldName(NULL), Ok(TRUE), InputPos(0, 0), StreamPos(start, 0), ErrorCode(0), LastError(0), FreeBufAndFile(TRUE)
 {
     CALL_STACK_MESSAGE3("CDecompressFile::CDecompressFile(%s, , %u)", filename, read);
 
@@ -204,9 +217,9 @@ CDecompressFile::FReadBlock(unsigned int number)
     {
         DWORD read = (DWORD)(Buffer + BUFSIZE - DataEnd);
 
-        if (StreamPos.Value + read > InputSize.Value)
+        if (InputPos.Value + read > InputSize.Value)
         {
-            read = (DWORD)(InputSize.Value - StreamPos.Value);
+            read = (DWORD)(InputSize.Value - InputPos.Value);
         }
 
         if (!ReadFile(File, DataEnd, read, &read, NULL))
@@ -230,6 +243,7 @@ CDecompressFile::FReadBlock(unsigned int number)
     // upravime ukazatele
     DataStart += number;
     StreamPos += CQuadWord(number, 0);
+    InputPos = min(InputPos + CQuadWord(number, 0), InputSize);
     // a vratime vysledek
     return ret;
 }
@@ -274,6 +288,7 @@ CDecompressFile::FReadByte()
     }
     // upravime ukazatele
     ++StreamPos;
+    InputPos = min(++InputPos, InputSize);
     return *(DataStart++);
 }
 
@@ -313,6 +328,7 @@ void CDecompressFile::Rewind(unsigned short size)
     {
         DataStart -= size;
         StreamPos.Value -= size;
+        InputPos.Value -= size;
     }
     else
     {
