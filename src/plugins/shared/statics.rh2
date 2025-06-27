@@ -5,6 +5,7 @@
 // This is a part of the Open Salamander SDK library.
 //
 //****************************************************************************
+// CommentsTranslationProject: TRANSLATED
 
 // WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
 #ifndef __SHARED_STATICS_RH2
@@ -14,9 +15,9 @@
 #error this file is not editable by Microsoft Visual C++
 #endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
 
-// modul, ktery includi statics.rh2 musi definovat IDC_STATIC_1 a rezervovat prostor pro 40 hodnot
+// the module that includes statics.rh2 must define IDC_STATIC_1 and reserve space for 40 values
 
-//#define IDC_STATIC_1        (IDC_STATIC_1+0) // definovano v nadrazenem headru
+//#define IDC_STATIC_1        (IDC_STATIC_1+0) // defined in the above module
 #define IDC_STATIC_2        (IDC_STATIC_1+1)
 #define IDC_STATIC_3        (IDC_STATIC_1+2)
 #define IDC_STATIC_4        (IDC_STATIC_1+3)
