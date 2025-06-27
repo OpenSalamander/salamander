@@ -15,7 +15,7 @@
 
 #include "spl_vers.h" // vytahneme cisla verzi + buildu
 
-#define VERSINFO_COPYRIGHT   "Copyright © 1997-2023 Open Salamander Authors"
+#define VERSINFO_COPYRIGHT   "Copyright © 1997-2025 Open Salamander Authors"
 #define VERSINFO_COMPANY     "Open Salamander"
 
 #define VERSINFO_DESCRIPTION "Portable Executable Viewer for Open Salamander"
