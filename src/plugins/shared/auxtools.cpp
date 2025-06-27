@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 //****************************************************************************
 //
@@ -42,11 +43,11 @@ CThreadQueue::CThreadQueue(const char* queueName)
 
 CThreadQueue::~CThreadQueue()
 {
-    ClearFinishedThreads(); // neni treba sekce, uz by mel pouzivat jen jeden thread
+    ClearFinishedThreads(); // no need to use sections, only one thread should use this queue
     if (Continue != NULL)
         CloseHandle(Continue);
     if (Head != NULL)
-        TRACE_E("Some thread is still in " << QueueName << " queue!"); // po terminovani threadu, ktery ceka na (nebo zrovna terminuje) jiny thread z fronty, jinak by nemelo nastat...
+        TRACE_E("Some thread is still in " << QueueName << " queue!"); // after terminating thread which is waiting for another thread (or is terminating it) from this queue, otherwise it should not happen...
 }
 
 void CThreadQueue::ClearFinishedThreads()
@@ -57,7 +58,7 @@ void CThreadQueue::ClearFinishedThreads()
     {
         DWORD ec;
         if (act->Locks == 0 && (!GetExitCodeThread(act->Thread, &ec) || ec != STILL_ACTIVE))
-        { // tento thread neni zamceny + uz skoncil, vyhodime ho ze seznamu
+        { // this thread is not locked and it has finished, remove it from the list
             if (last != NULL)
                 last->Next = act->Next;
             else
@@ -76,10 +77,10 @@ void CThreadQueue::ClearFinishedThreads()
 
 BOOL CThreadQueue::Add(CThreadQueueItem* item)
 {
-    // nejprve vyhodime thready, ktere se jiz ukoncily
+    // first, remove finished threads
     ClearFinishedThreads();
 
-    // pridame novy thread
+    // add new thread
     if (item != NULL)
     {
         item->Next = Head;
@@ -93,7 +94,7 @@ BOOL CThreadQueue::FindAndLockItem(HANDLE thread)
 {
     CS.Enter();
 
-    CThreadQueueItem* act = Head; // zkusime najit otevreny handle threadu
+    CThreadQueueItem* act = Head; // we wil try to find opened handle of the thread
     while (act != NULL)
     {
         if (act->Thread == thread)
@@ -106,7 +107,7 @@ BOOL CThreadQueue::FindAndLockItem(HANDLE thread)
 
     CS.Leave();
 
-    return act != NULL; // NULL = nenalezeno
+    return act != NULL; // NULL = not found
 }
 
 void CThreadQueue::UnlockItem(HANDLE thread, BOOL deleteIfUnlocked)
@@ -114,7 +115,7 @@ void CThreadQueue::UnlockItem(HANDLE thread, BOOL deleteIfUnlocked)
     CS.Enter();
 
     CThreadQueueItem* last = NULL;
-    CThreadQueueItem* act = Head; // zkusime najit otevreny handle threadu
+    CThreadQueueItem* act = Head; // we will try to find opened handle of the thread
     while (act != NULL)
     {
         if (act->Thread == thread)
@@ -122,13 +123,13 @@ void CThreadQueue::UnlockItem(HANDLE thread, BOOL deleteIfUnlocked)
         last = act;
         act = act->Next;
     }
-    if (act != NULL) // always true (bylo zamknute, neslo smazat)
+    if (act != NULL) // always true (was locked, could not be deleted)
     {
         if (act->Locks <= 0)
             TRACE_E("CThreadQueue::UnlockItem(): thread has not locks!");
         else
         {
-            if (--(act->Locks) == 0 && deleteIfUnlocked) // thread uz neni zamceny a mame ho smazat
+            if (--(act->Locks) == 0 && deleteIfUnlocked) // thread is not locked anymore and we should delete it
             {
                 if (last != NULL)
                     last->Next = act->Next;
@@ -140,7 +141,7 @@ void CThreadQueue::UnlockItem(HANDLE thread, BOOL deleteIfUnlocked)
         }
     }
     else
-        TRACE_E("CThreadQueue::UnlockItem(): unable to find thread!"); // to nebyl zamknuty, ze je smazany?
+        TRACE_E("CThreadQueue::UnlockItem(): unable to find thread!"); // wasn't it locked, that it was deleted?
 
     CS.Leave();
 }
@@ -151,7 +152,7 @@ BOOL CThreadQueue::WaitForExit(HANDLE thread, int milliseconds)
     BOOL ret = TRUE;
     if (thread != NULL)
     {
-        if (FindAndLockItem(thread)) // handle threadu nalezen a uzamcen - muzeme na nej cekat, pak ho zrusime
+        if (FindAndLockItem(thread)) // thread handle found and locked - we can wait for it and then delete it
         {
             ret = WaitForSingleObject(thread, milliseconds) != WAIT_TIMEOUT;
 
@@ -168,11 +169,10 @@ void CThreadQueue::KillThread(HANDLE thread, DWORD exitCode)
     CALL_STACK_MESSAGE2("CThreadQueue::KillThread(, %d)", exitCode);
     if (thread != NULL)
     {
-        if (FindAndLockItem(thread)) // handle threadu nalezen a uzamcen - muzeme ho terminovat, pak ho zrusime
+        if (FindAndLockItem(thread)) // thread handle found and locked - we can terminate it and then delete it
         {
             TerminateThread(thread, exitCode);
-            WaitForSingleObject(thread, INFINITE); // pockame az thread skutecne skonci, nekdy mu to dost trva
-
+            WaitForSingleObject(thread, INFINITE); // waiting for thread to finish for sure, sometimes it takes a long time
             UnlockItem(thread, TRUE);
         }
     }
@@ -188,7 +188,7 @@ BOOL CThreadQueue::KillAll(BOOL force, int waitTime, int forceWaitTime, DWORD ex
 
     CS.Enter();
 
-    // vykillujeme vsechny thready, ktere nehodlaji koncit sami
+    // kill all threads which don't want to finish themselves
     CThreadQueueItem* prevItem = NULL;
     CThreadQueueItem* item = Head;
     while (item != NULL)
@@ -196,11 +196,11 @@ BOOL CThreadQueue::KillAll(BOOL force, int waitTime, int forceWaitTime, DWORD ex
         BOOL leaveCS = FALSE;
         DWORD ec;
         if (GetExitCodeThread(item->Thread, &ec) && ec == STILL_ACTIVE)
-        { // thread jeste nejspis bezi
+        { // most probably, thread is still running
             DWORD t = GetTickCount() - ti;
-            if (w == INFINITE || t < w) // mame jeste cekat
+            if (w == INFINITE || t < w) // we should still wait
             {
-                // uvolnime frontu pro dalsi thready (aby se napr. dockaly ukonceni threadu z fronty a pak se sami ukoncily)
+                // release queue for other threads (so they can wait for thread from this queue to finish and then finish themselves)
                 CS.Leave();
 
                 if (w == INFINITE || 50 < w - t)
@@ -208,34 +208,34 @@ BOOL CThreadQueue::KillAll(BOOL force, int waitTime, int forceWaitTime, DWORD ex
                 else
                 {
                     Sleep(w - t);
-                    ti -= w; // pro priste vyradime test na cekani
+                    ti -= w; // for next time, we will exclude the test for waiting
                 }
 
                 CS.Enter();
                 item = Head;
                 prevItem = NULL;
-                continue; // zacneme pekne od zacatku (podminka cyklu se otestuje)
+                continue; // we will start from the beginning (condition of the cycle will be tested)
             }
-            if (force) // zabijeme ho
+            if (force) // we will kill it
             {
                 TRACE_E("Thread has not ended itself, we must terminate it (" << QueueName << " queue).");
                 TerminateThread(item->Thread, exitCode);
-                WaitForSingleObject(item->Thread, INFINITE); // pockame az thread skutecne skonci, nekdy mu to dost trva
-                // pokud nejaky thread ceka na ukonceni prave zabiteho threadu, pustime pro nej na chvilku
-                // frontu, jinak zustane zasekly v UnlockItem()
+                WaitForSingleObject(item->Thread, INFINITE); // we will wait until thread really finishes, sometimes it takes a long time
+                // if some thread is waiting for the end of just killed thread, we will release queue for a while
+                // otherwise, it will be locked in UnlockItem()
                 leaveCS = item->Locks > 0;
             }
-            else // bez 'force' jen ohlasime, ze jeste neco bezi
+            else // without 'force', we will only report that something is still running
             {
                 TRACE_I("KillAll(): At least one thread is still running in " << QueueName << " queue.");
-                ClearFinishedThreads(); // jen tak pro prehlednost pri debugovani
+                ClearFinishedThreads(); // to make this more clear during debugging
                 CS.Leave();
                 return FALSE;
             }
         }
         CThreadQueueItem* delItem = item;
         item = item->Next;
-        if (delItem->Locks == 0) // handle je mozne zavrit, polozku smazat
+        if (delItem->Locks == 0) // handle can be closed, item can be deleted
         {
             if (Head == delItem)
                 Head = item;
@@ -245,19 +245,19 @@ BOOL CThreadQueue::KillAll(BOOL force, int waitTime, int forceWaitTime, DWORD ex
             delete delItem;
         }
         else
-            prevItem = delItem; // handle musime nechat byt, takze i polozku
+            prevItem = delItem; // handle must be kept, so we will keep item too
 
         if (leaveCS)
         {
-            // uvolnime frontu pro dalsi thready (aby se napr. dockaly ukonceni threadu z fronty a pak se sami ukoncily)
+            // release queue for other threads (so they can wait for thread from this queue to finish and then finish themselves)
             CS.Leave();
 
-            Sleep(50); // chvilka na prevzeti fronty a prip. dobeh threadu (nez ho pujdeme zabit jako vsechny ostatni)
+            Sleep(50); // a while for takeover of the queue and possible finishing of the thread (before we kill it as well as all other threads)
 
             CS.Enter();
             item = Head;
             prevItem = NULL;
-            continue; // zacneme pekne od zacatku (podminka cyklu se otestuje)
+            continue; // we will start from the beginning (condition of the cycle will be tested)
         }
     }
 
@@ -277,14 +277,14 @@ CThreadQueue::ThreadBase(void* param)
 {
     CThreadBaseData* d = (CThreadBaseData*)param;
 
-    // zaloha dat na stack ('d' prestane byt platne po 'Continue')
+    // backup data to stack ('d' stops to be valid after 'Continue')
     unsigned(WINAPI * threadBody)(void*) = d->Body;
     void* threadParam = d->Param;
 
-    SetEvent(d->Continue); // pustime dal hl. thread
+    SetEvent(d->Continue); // we let main thread to continue
     d = NULL;
 
-    // spustime nas thread
+    // executing our thread
     return SalamanderDebug->CallWithCallStack(threadBody, threadParam);
 }
 
@@ -310,12 +310,12 @@ CThreadQueue::StartThread(unsigned(WINAPI* body)(void*), void* param, unsigned s
     data.Param = param;
     data.Continue = Continue;
 
-    // spustime thread, nepouzivame _beginthreadex(), protoze ten ma od VC2015 side-effect v podobe
-    // dalsiho loadu tohoto modulu (pluginu), ktery sice pri beznem ukonceni zase uvolni,
-    // ale kdyz pouzijeme TerminateThread(), zustane modul naloadeny az do ukonceni procesu
-    // Salamandera, pak se teprve spusti destruktory globalnich objektu a to muze vest
-    // k necekanym padum, protoze uz jsou vsechny pluginove rozhrani uvolnene (napr.
-    // SalamanderDebug)
+    // execute thread (we don't use _beginthreadex(), because it has side-effect in VC2015
+    // in form of another load of this module (plugin), which is released when thread
+    // finishes normally, but when we use TerminateThread(), module stays loaded until
+    // Salamander process ends, then destructors of global objects are executed and
+    // it can lead to unexpected crashes, because all plugin interfaces are already
+    // released (e.g. SalamanderDebug)
     DWORD tid;
     HANDLE thread = CreateThread(NULL, stack_size, CThreadQueue::ThreadBase, &data, CREATE_SUSPENDED, &tid);
     if (thread == NULL)
@@ -328,12 +328,12 @@ CThreadQueue::StartThread(unsigned(WINAPI* body)(void*), void* param, unsigned s
     }
     else
     {
-        // pridame thread do fronty threadu tohoto pluginu
+        // adding thread to the queue of this plugin
         if (!Add(new CThreadQueueItem(thread, tid)))
         {
             TRACE_E("Unable to add thread to the queue.");
-            TerminateThread(thread, 666);          // je suspended, takze nebude v zadne kriticke sekci, atd.
-            WaitForSingleObject(thread, INFINITE); // pockame az thread skutecne skonci, nekdy mu to dost trva
+            TerminateThread(thread, 666);          // it's suspended, so it will not be in any critical section, etc.
+            WaitForSingleObject(thread, INFINITE); // wait for thread to finish, sometimes it takes a long time
             CloseHandle(thread);
 
             CS.Leave();
@@ -341,7 +341,9 @@ CThreadQueue::StartThread(unsigned(WINAPI* body)(void*), void* param, unsigned s
             return NULL;
         }
 
-        // zapis dokud thread nebezi (zarucuje, ze uz nedobehl a jeho objekt neni dealokovany)
+        // save before thread is not running (it assures that thread is not finished and its object is not deallocated)
+        // Assign thread handle and ID before starting the thread to ensure safe initialization.
+        // This avoids race conditions and ensures thread resources are correctly tracked and not prematurely deallocated.
         if (threadHandle != NULL)
             *threadHandle = thread;
         if (threadID != NULL)
@@ -350,7 +352,7 @@ CThreadQueue::StartThread(unsigned(WINAPI* body)(void*), void* param, unsigned s
         SalamanderDebug->TraceAttachThread(thread, tid);
         ResumeThread(thread);
 
-        WaitForSingleObject(Continue, INFINITE); // pockame na predani dat do CThreadQueue::ThreadBase
+        WaitForSingleObject(Continue, INFINITE); // wait for passing data to CThreadQueue::ThreadBase
 
         CS.Leave();
 
@@ -379,15 +381,15 @@ CThread::UniversalBody(void* param)
     CALL_STACK_MESSAGE2("CThread::UniversalBody(thread name = \"%s\")", thread->Name);
     SalamanderDebug->SetThreadNameInVCAndTrace(thread->Name);
 
-    unsigned ret = thread->Body(); // spusteni tela threadu
+    unsigned ret = thread->Body(); // executing body of the thread
 
-    delete thread; // likvidace objektu threadu
+    delete thread; // destroying object of the thread
     return ret;
 }
 
 HANDLE
 CThread::Create(CThreadQueue& queue, unsigned stack_size, DWORD* threadID)
 {
-    // POZOR: po volani StartThread() muze byt 'this' neplatny (proto je zapis do 'Thread' uvnitr)
+    // CAUTION: after calling StartThread(), 'this' can be invalid (that's why we write to 'Thread' inside)
     return queue.StartThread(UniversalBody, this, stack_size, &Thread, threadID);
 }
