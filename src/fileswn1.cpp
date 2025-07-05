@@ -1250,7 +1250,7 @@ unsigned IconThreadThreadFBody(void* parameter)
             /*    // replaced with goto SECOND_ROUND (reading the entire content again freezes on network drives)
         if (postRefresh)  // moved Sleep(500) out of the critical section — it was freezing unnecessarily...
         {
-          HANDLES(EnterCriticalSection(&TimeCounterSection));  // sejmeme cas, kdy je treba refreshe
+          HANDLES(EnterCriticalSection(&TimeCounterSection));  // we save the time of when a refresh is needed
           int t1 = MyTimeCounter++;
           HANDLES(LeaveCriticalSection(&TimeCounterSection));
           Sleep(500);  // a short breather
@@ -2077,7 +2077,7 @@ void CFilesWindow::ShowHideNames(int mode)
         {
             int totalCount = Files->Count + Dirs->Count;
             int startIndex = 0;
-            if (Dirs->Count > 0 && strcmp(Dirs->At(0).Name, "..") == 0) // ".." v poli nechceme
+            if (Dirs->Count > 0 && strcmp(Dirs->At(0).Name, "..") == 0) // ".." should not appear in the array
                 startIndex = 1;
             int i;
             for (i = 0; i < totalCount; i++)
@@ -2087,7 +2087,7 @@ void CFilesWindow::ShowHideNames(int mode)
                 if (f->Selected)
                 {
                     if (!HiddenNames.Add(isDir, f->Name))
-                        break; // low_memory, nebudeme pokracovat
+                        break; // low memory, we will not continue
                     refreshPanel = TRUE;
                 }
             }
@@ -2099,7 +2099,7 @@ void CFilesWindow::ShowHideNames(int mode)
     {
         int totalCount = Files->Count + Dirs->Count;
         int startIndex = 0;
-        if (Dirs->Count > 0 && strcmp(Dirs->At(0).Name, "..") == 0) // ".." v poli nechceme
+        if (Dirs->Count > 0 && strcmp(Dirs->At(0).Name, "..") == 0) // ".." should not appear in the array
             startIndex = 1;
         int i;
         for (i = startIndex; i < totalCount; i++)
@@ -2109,7 +2109,7 @@ void CFilesWindow::ShowHideNames(int mode)
             if (!f->Selected)
             {
                 if (!HiddenNames.Add(isDir, f->Name))
-                    break; // low_memory, nebudeme pokracovat
+                    break; // low memory, we will not continue
                 refreshPanel = TRUE;
             }
         }
@@ -2140,8 +2140,8 @@ void CFilesWindow::SetAutomaticRefresh(BOOL value, BOOL force)
     if (force || AutomaticRefresh != value)
     {
         AutomaticRefresh = value;
-        /* // "vyhozeni" refresh znacky z dir-liny
-    // tady nam to padalo; volal se zdestroyeny objekt
+        /* // "removing" the refresh flag from the directory line
+    // it crashed here; a destroyed object was called
     if (DirectoryLine != NULL)                       
       DirectoryLine->SetAutomatic(AutomaticRefresh);
 */
@@ -2151,16 +2151,16 @@ void CFilesWindow::SetAutomaticRefresh(BOOL value, BOOL force)
 void CFilesWindow::GotoRoot()
 {
     CALL_STACK_MESSAGE1("CFilesWindow::GotoRoot()");
-    TopIndexMem.Clear(); // dlouhy skok
+    TopIndexMem.Clear(); // long jump
 
     char root[MAX_PATH];
     if (Is(ptDisk) || Is(ptZIPArchive))
     {
-        if (Is(ptZIPArchive) && GetZIPPath()[0] != 0) // nejsme v rootu archivu -> jdeme do nej
+        if (Is(ptZIPArchive) && GetZIPPath()[0] != 0) // we are not in the root of the archive -> let's go there
         {
             ChangePathToArchive(GetZIPArchive(), "");
         }
-        else // jdeme do rootu windows cesty
+        else // we go to the root of the Windows path
         {
             if (IsUNCRootPath(GetPath()) && Plugins.GetFirstNethoodPluginFSName(root))
             {
@@ -2170,7 +2170,7 @@ void CFilesWindow::GotoRoot()
             {
                 GetRootPath(root, GetPath());
                 if (root[0] == '\\')
-                    root[strlen(root) - 1] = 0; // UNC nebude koncit '\\'
+                    root[strlen(root) - 1] = 0; // UNC should not end with '\\'
                 ChangePathToDisk(HWindow, root);
             }
         }
@@ -2182,7 +2182,7 @@ void CFilesWindow::GotoRoot()
             if (GetPluginFS()->GetRootPath(root))
             {
                 char fsname[MAX_PATH];
-                strcpy(fsname, GetPluginFS()->GetPluginFSName()); // pro pripad zmeny, lokalni kopie jmena
+                strcpy(fsname, GetPluginFS()->GetPluginFSName()); // in case of changes, a local copy of the name
                 ChangePathToPluginFS(fsname, root);
             }
         }
@@ -2194,7 +2194,7 @@ void CFilesWindow::GotoHotPath(int index)
     CALL_STACK_MESSAGE2("CFilesWindow::GotoHotPath(%d)", index);
     if (index < 0 || index >= HOT_PATHS_COUNT)
         return;
-    //---  prepnuti na hot-path
+    //---  switch to a hot path
     char path[2 * MAX_PATH];
     if (MainWindow->GetExpandedHotPath(HWindow, index, path, 2 * MAX_PATH))
         ChangeDir(path);
@@ -2243,10 +2243,10 @@ void CFilesWindow::OpenActiveFolder()
         const char* path = GetPath();
 
 #ifndef _WIN64
-        // provedeme zamenu "C:\\Windows\\sysnative\\*" za "C:\\Windows\\system32\\*", 64-bitovy
-        // proces Exploreru o "sysnative" nic nevi, nebudeme s tim otravovat lidi,
-        // zaroven provedeme zamenu "C:\\Windows\\system32\\*" za "C:\\Windows\\SysWOW64\\*"
-        // (az na skupinu adresaru vyjmutych z redirectoru, ktere tim smeruji zpet do System32)
+        // we replace "C:\\Windows\\sysnative\\*" with "C:\\Windows\\system32\\*", 64-bit
+        // the Explorer process knows nothing about "sysnative", so let's not bother users with it,
+        // we also replace "C:\\Windows\\system32\\*" with "C:\\Windows\\SysWOW64\\*"
+        //  (except for a group of directories excluded from the redirector which are pointed back to System32 by this)
         char dirName[MAX_PATH];
         dirName[0] = 0;
         if (Windows64Bit && WindowsDirectory[0] != 0)
@@ -2259,7 +2259,7 @@ void CFilesWindow::OpenActiveFolder()
                 if (StrNICmp(path, dirName, len) == 0 && (path[len] == '\\' || path[len] == 0))
                 {
                     lstrcpyn(dirName, WindowsDirectory, MAX_PATH);
-                    SalPathAppend(dirName, "System32", MAX_PATH); // kdyz se vesel Sysnative, System32 se vejde taky
+                    SalPathAppend(dirName, "System32", MAX_PATH); // if Sysnative fit, System32 will fit as well
                     memmove(dirName + strlen(dirName), path + len, strlen(path + len) + 1);
                     path = dirName;
                     done = TRUE;
@@ -2273,7 +2273,7 @@ void CFilesWindow::OpenActiveFolder()
                     int len = (int)strlen(dirName);
                     if (StrNICmp(path, dirName, len) == 0 && (path[len] == '\\' || path[len] == 0))
                     {
-                        // zjistime jestli nejde o adresare vyjmute z redirectoru
+                        // we check whether it is a directory excluded from the redirector
                         if (path[len] == '\\' &&
                             (AreNextPathComponents(path + len + 1, "catroot") ||
                              AreNextPathComponents(path + len + 1, "catroot2") ||
@@ -2287,7 +2287,7 @@ void CFilesWindow::OpenActiveFolder()
                         if (!done)
                         {
                             lstrcpyn(dirName, WindowsDirectory, MAX_PATH);
-                            SalPathAppend(dirName, "SysWOW64", MAX_PATH); // kdyz se vesel System32, SysWOW64 se vejde taky
+                            SalPathAppend(dirName, "SysWOW64", MAX_PATH); // if System32 fit, SysWOW64 will fit as well
                             memmove(dirName + strlen(dirName), path + len, strlen(path + len) + 1);
                             path = dirName;
                         }
@@ -2302,7 +2302,7 @@ void CFilesWindow::OpenActiveFolder()
         if (FocusedIndex < Dirs->Count + Files->Count)
         {
             CFileData* item = (FocusedIndex < Dirs->Count) ? &Dirs->At(FocusedIndex) : &Files->At(FocusedIndex - Dirs->Count);
-            // hack pro lidi, kteri potrebuji focusnout unicode nazev v Exploreru, zkusime to pres short name
+            // hack for people who need to focus a Unicode name in Explorer; we'll try it via the short name
             AlterFileName(itemName, item->DosName != NULL ? item->DosName : item->Name, -1, Configuration.FileNameFormat, 0, FocusedIndex < Dirs->Count);
             if (FocusedIndex < Dirs->Count && FocusedIndex == 0 && strcmp(itemName, "..") == 0)
                 itemName[0] = 0;
@@ -2326,7 +2326,7 @@ BOOL CFilesWindow::CommonRefresh(HWND parent, int suggestedTopIndex, const char*
                         suggestedFocusName, refreshListBox, readDirectory, isRefresh);
 
     //TRACE_I("common refresh: begin");
-    if (readDirectory) // pokud se ma jen promitnout top-index a focus-name, tohle neni potreba (muze byt jen na skodu, proto nevolame)
+    if (readDirectory) // if only the top index and focus name should be reflected, this is not needed (could even be harmful, so we do not call it)
     {
         DirectoryLineSetText();
         if (Parent->GetActivePanel() == this)
@@ -2342,13 +2342,13 @@ BOOL CFilesWindow::CommonRefresh(HWND parent, int suggestedTopIndex, const char*
     else
     {
         if (Is(ptDisk) || Is(ptZIPArchive))
-            DetachDirectory(this); // cosi se podelalo
+            DetachDirectory(this); // something went wrong
     }
     //TRACE_I("read directory: begin");
 
     if (refreshListBox)
     {
-        // vyhledam polozku, kterou bych mel vybrat
+        // O find the item that should be selected
         int suggestedFocusIndex = -1;
         int suggestedFocusIndexIgnCase = -1;
         if (suggestedFocusName != NULL)
@@ -2363,11 +2363,11 @@ BOOL CFilesWindow::CommonRefresh(HWND parent, int suggestedTopIndex, const char*
                     if (strcmp(Dirs->At(i).Name, suggestedFocusName) == 0)
                     {
                         suggestedFocusIndex = i;
-                        break; // nalezeno presne pozadovane jmeno
+                        break; // found the exact requested name
                     }
                 }
             }
-            if (suggestedFocusIndex == -1) // hledame i mezi soubory (napr. pri navratu ze ZIP archivu)
+            if (suggestedFocusIndex == -1) // we search among files as well (e.g., when returning from a ZIP archive)
             {
                 for (i = 0; i < Files->Count; i++)
                 {
@@ -2378,12 +2378,12 @@ BOOL CFilesWindow::CommonRefresh(HWND parent, int suggestedTopIndex, const char*
                         if (strcmp(Files->At(i).Name, suggestedFocusName) == 0)
                         {
                             suggestedFocusIndex = i + Dirs->Count;
-                            break; // nalezeno presne pozadovane jmeno
+                            break; // found the exact requested name
                         }
                     }
                 }
             }
-            // pokud nebylo nalezeno presne pozadovane jmeno, pouzijeme jmeno shodne az na velikost pismen (je-li)
+            // if the exact requested name was not found, use the name matching aside from case (if there's any)
             if (suggestedFocusIndex == -1)
                 suggestedFocusIndex = suggestedFocusIndexIgnCase;
         }
