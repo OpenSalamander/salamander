@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
+// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "precomp.h"
@@ -66,11 +66,11 @@ void CFilesWindow::Execute(int index)
 
     if (Is(ptDisk))
     {
-        if (index >= Dirs->Count) // soubor
+        if (index >= Dirs->Count) // file
         {
-            if (CheckPath(FALSE) != ERROR_SUCCESS) // aktualni cesta neni pristupna
+            if (CheckPath(FALSE) != ERROR_SUCCESS) // current path is not accessible
             {
-                RefreshDirectory(); // obnovime panel (bud napr. vrati disketu nebo zmenime cestu)
+                RefreshDirectory(); // refresh panel (e.g., asks for disk or changes path)
                 EndStopRefresh();
                 return;
             }
@@ -90,16 +90,16 @@ void CFilesWindow::Execute(int index)
                     lstrcpy(fullPath, GetPath());
                     if (SalPathAppend(fullPath, file->DosName, MAX_PATH) &&
                         SalGetFileAttributes(fullPath) != INVALID_FILE_ATTRIBUTES)
-                    { // kdyz neni dostupne plne jmeno (problem zpetneho prevodu z multibyte na UNICODE), pouzijeme DOS-name
+                    { // when full name is not available (problem converting from multibyte to UNICODE), we'll use DOS name
                         fileName = file->DosName;
                     }
                 }
             }
-            BOOL linkIsDir = FALSE;  // TRUE -> short-cut na adresar -> ChangePathToDisk
-            BOOL linkIsFile = FALSE; // TRUE -> short-cut na soubor -> test archivu
-            BOOL linkIsNet = FALSE;  // TRUE -> short-cut na sit -> ChangePathToPluginFS
+            BOOL linkIsDir = FALSE;  // TRUE -> shortcut to directory -> ChangePathToDisk
+            BOOL linkIsFile = FALSE; // TRUE -> shortcut to file -> test archive
+            BOOL linkIsNet = FALSE;  // TRUE -> shortcut to network -> ChangePathToPluginFS
             DWORD err = ERROR_SUCCESS;
-            if (StrICmp(file->Ext, "lnk") == 0) // neni to short-cut adresare?
+            if (StrICmp(file->Ext, "lnk") == 0) // is it not a directory shortcut?
             {
                 strcpy(fullName, GetPath());
                 if (!SalPathAppend(fullName, fileName, MAX_PATH))
@@ -126,11 +126,11 @@ void CFilesWindow::Execute(int index)
                         if (fileInt->Load(oleName, STGM_READ) == S_OK)
                         {
                             if (link->GetPath(fullName, MAX_PATH, &data, SLGP_UNCPRIORITY) == NOERROR)
-                            {                                     // cvicne vytazena cesta poslouzi pro test pristupnosti, po Resolve ji vytahneme znovu
-                                err = CheckPath(FALSE, fullName); // fullName je plna cesta (linky jine nepodporuji)
-                                if (err != ERROR_USER_TERMINATED) // pokud user nepouzil ESC, prip. chybu ignorujeme
+                            {                                     // the obtained path will be used for accessibility test, after Resolve it may change
+                                err = CheckPath(FALSE, fullName); // fullName is a full path (shortcuts support no other)
+                                if (err != ERROR_USER_TERMINATED) // if user didn't press ESC, ignore the error
                                 {
-                                    err = ERROR_SUCCESS; // Resolve muze cestu zmenit, pak udelame test znovu
+                                    err = ERROR_SUCCESS; // Resolve may change the path, then we check again
                                 }
                             }
                             if (err == ERROR_SUCCESS)
@@ -139,31 +139,31 @@ void CFilesWindow::Execute(int index)
                                 {
                                     if (link->GetPath(fullName, MAX_PATH, &data, SLGP_UNCPRIORITY) == NOERROR)
                                     {
-                                        // finalni podoba fullName - otestujeme jestli je o.k.
-                                        err = CheckPath(TRUE, fullName); // fullName je plna cesta (linky jine nepodporuji)
+                                        // final form of fullName - we verify if it is OK
+                                        err = CheckPath(TRUE, fullName); // fullName is a full path (links support no other)
                                         if (err == ERROR_SUCCESS)
                                         {
-                                            DWORD attr = SalGetFileAttributes(fullName); // ziskavame zde, protoze data.dwFileAttributes se proste neplni, smula
+                                            DWORD attr = SalGetFileAttributes(fullName); // obtained here because data.dwFileAttributes isn't filled
                                             if (attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY))
                                             {
-                                                linkIsDir = TRUE; // o.k. zkusime change-path-to-disk
+                                                linkIsDir = TRUE; // OK we try change-path-to-disk
                                             }
                                             else
                                             {
-                                                linkIsFile = TRUE; // o.k. zkusime jestli to neni archiv
+                                                linkIsFile = TRUE; // OK we check if it's an archive
                                             }
                                         }
                                     }
-                                    else // linky primo na servery muzeme zkusit otevrit v Network pluginu (Nethoodu)
+                                    else // links directly to servers, we can try to open them in Network plugin (Nethood)
                                     {
                                         if (Plugins.GetFirstNethoodPluginFSName(netFSName))
                                         {
                                             if (link->GetPath(fullName, MAX_PATH, NULL, SLGP_RAWPATH) != NOERROR)
-                                            { // cesta neni v linku ulozena textove, ale jen jako ID-list
+                                            { // path is not stored in the link as text, only as an ID list
                                                 fullName[0] = 0;
                                                 ITEMIDLIST* pidl;
                                                 if (link->GetIDList(&pidl) == S_OK && pidl != NULL)
-                                                { // ziskame ten ID-list a doptame se na jmeno posledniho IDcka v listu, ocekavame "\\\\server"
+                                                { // get the ID list and ask for the name of its last item, expect "\\\\server"
                                                     IMalloc* alloc;
                                                     if (SUCCEEDED(CoGetMalloc(1, &alloc)))
                                                     {
@@ -176,20 +176,20 @@ void CFilesWindow::Execute(int index)
                                                 }
                                             }
                                             if (fullName[0] == '\\' && fullName[1] == '\\' && fullName[2] != '\\')
-                                            { // zkusime jestli nejde o link na server (obsahuje cestu "\\\\server")
+                                            { // we check if it's a link to a server (path contains "\\\\server")
                                                 char* backslash = fullName + 2;
                                                 while (*backslash != 0 && *backslash != '\\')
                                                     backslash++;
                                                 if (*backslash == '\\')
                                                     backslash++;
-                                                if (*backslash == 0)  // bereme jen cesty "\\\\", "\\\\server", "\\\\server\\"
-                                                    linkIsNet = TRUE; // o.k. zkusime change-path-to-FS
+                                                if (*backslash == 0)  // we accept only paths "\\\\", "\\\\server", "\\\\server\\"
+                                                    linkIsNet = TRUE; // OK let's try change-path-to-FS
                                             }
                                         }
                                     }
                                 }
                                 else
-                                    err = ERROR_USER_TERMINATED; // ve Windows "Missing Shortcut"
+                                    err = ERROR_USER_TERMINATED; // in Windows "Missing Shortcut"
                             }
                         }
                         fileInt->Release();
@@ -201,11 +201,11 @@ void CFilesWindow::Execute(int index)
             if (err != ERROR_SUCCESS)
             {
                 EndStopRefresh();
-                return; // chyba cesty nebo preruseni
+                return; // path error or aborted
             }
-            if (linkIsDir || linkIsNet) // link vede na sit nebo do adresare, cesta je o.k., prepneme se na ni
+            if (linkIsDir || linkIsNet) // link points to network or directory, path is OK, we switch to it
             {
-                TopIndexMem.Clear(); // dlouhy skok
+                TopIndexMem.Clear(); // long jump
                 if (linkIsDir)
                     ChangePathToDisk(HWindow, fullName);
                 else
@@ -215,15 +215,15 @@ void CFilesWindow::Execute(int index)
                 return;
             }
 
-            if (PackerFormatConfig.PackIsArchive(linkIsFile ? fullName : fileName)) // neni to archiv?
+            if (PackerFormatConfig.PackIsArchive(linkIsFile ? fullName : fileName)) // is it an archive?
             {
-                // zaloha udaju pro TopIndexMem
+                // backup data for TopIndexMem
                 strcpy(path, GetPath());
                 int topIndex = ListBox->GetTopIndex();
 
                 if (!linkIsFile)
                 {
-                    // konstrukce plneho jmena archivu pro ChangePathToArchive
+                    // construction of full archive name for ChangePathToArchive
                     strcpy(fullName, GetPath());
                     if (!SalPathAppend(fullName, fileName, MAX_PATH))
                     {
@@ -235,17 +235,17 @@ void CFilesWindow::Execute(int index)
                     }
                 }
                 BOOL noChange;
-                if (ChangePathToArchive(fullName, "", -1, NULL, FALSE, &noChange)) // podarilo se vlezt do archivu
+                if (ChangePathToArchive(fullName, "", -1, NULL, FALSE, &noChange)) // entering the archive successfully
                 {
                     if (linkIsFile)
-                        TopIndexMem.Clear(); // dlouhy skok
+                        TopIndexMem.Clear(); // long jump
                     else
-                        TopIndexMem.Push(path, topIndex); // zapamatujeme top-index pro navrat
+                        TopIndexMem.Push(path, topIndex); // remember top index for return
                 }
-                else // archiv neni pristupny
+                else // archive is not accessible
                 {
                     if (!noChange)
-                        TopIndexMem.Clear(); // neuspech + nejsme na puvodni ceste -> dlouhy skok
+                        TopIndexMem.Clear(); // failure + not on original path -> long jump
                 }
                 UpdateWindow(HWindow);
                 EndStopRefresh();
@@ -254,24 +254,24 @@ void CFilesWindow::Execute(int index)
 
             UserWorkedOnThisPath = TRUE;
 
-            // nize umistene ExecuteAssociation umi zmenit cestu v panelu pri rekurzivnim
-            // volani (obsahuje message-loopu), proto si ulozime plne jmeno souboru uz tady
+            // the ExecuteAssociation below can change the panel path during recursive
+            // calls (it contains a message loop), so we store the full file name here
             lstrcpy(fullPath, GetPath());
             if (!SalPathAppend(fullPath, fileName, MAX_PATH))
                 fullPath[0] = 0;
 
-            // spusteni default polozky z kontextoveho menu (asociace)
+            // launch of the default context menu item (association)
             HCURSOR oldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
-            MainWindow->SetDefaultDirectories(); // aby startujici process zdedil spravne akt. adresare
+            MainWindow->SetDefaultDirectories(); // to ensure the launching process inherits the correct current directories
             ExecuteAssociation(GetListBoxHWND(), GetPath(), fileName);
 
-            // pridame soubor do historie
+            // we add the file to history
             if (fullPath[0] != 0)
                 MainWindow->FileHistory->AddFile(fhitOpen, 0, fullPath);
 
             SetCursor(oldCur);
         }
-        else // adresar
+        else // directory
         {
             strcpy(path, GetPath());
             CFileData* dir = &Dirs->At(index);
@@ -299,31 +299,31 @@ void CFilesWindow::Execute(int index)
                             ChangePathToPluginFS(doublePath, path, -1, focusName);
                             if (Is(ptPluginFS))
                             {
-                                TopIndexMem.Clear(); // pokud jsme nezustali na diskove ceste (v rootu UNC), jde o dlouhy skok
+                                TopIndexMem.Clear(); // if we didn't remain on a disk path (UNC root), it's a long jump
                                 UpdateWindow(HWindow);
                             }
                         }
                     }
                     EndStopRefresh();
-                    return; // neni kam zkracovat nebo uz jsme na Nethood ceste
+                    return; // nothing to shorten or we're already on Nethood path
                 }
-                int topIndex; // pristi top-index, -1 -> neplatny
+                int topIndex; // next top index, -1 -> invalid
                 if (!TopIndexMem.FindAndPop(path, topIndex))
                     topIndex = -1;
                 if (!ChangePathToDisk(HWindow, path, topIndex, prevDir))
-                { // nepodarilo se zkratit cestu - dlouhy skok
+                { // failed to shorten the path - long jump
                     TopIndexMem.Clear();
                 }
             }
-            else // podadresar
+            else // subdirectory
             {
-                // zaloha udaju pro TopIndexMem (path + topIndex)
+                // backup data for TopIndexMem (path + topIndex)
                 int topIndex = ListBox->GetTopIndex();
 
-                // zaloha caretu pro pripad access-denied adresare
+                // backup of caret if a case of access-denied directory happens
                 int caretIndex = GetCaretIndex();
 
-                // nova cesta
+                // new path
                 strcpy(fullName, path);
                 if (!SalPathAppend(fullName, dir->Name, MAX_PATH))
                 {
