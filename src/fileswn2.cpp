@@ -701,7 +701,7 @@ BOOL CFilesWindow::ChangeToFixedDrive(HWND parent, BOOL* noChange, BOOL refreshL
         }
     }
     DWORD disks = GetLogicalDrives();
-    disks >>= 2; // skip A: and B:, formatting floppies sometimes reports DRIVE_FIXED
+    disks >>= 2; // skip A: and B:, during floppy formatting they sometimes become DRIVE_FIXED
     char d = 'C';
     while (d <= 'Z')
     {
@@ -1772,56 +1772,56 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
                     MainWindow->CanAddToDirHistory = FALSE;
                 }
 
-                CloseCurrentPath(parent, FALSE, detachFS, samePath, isRefresh, !samePath); // uspech, prejdeme na novou cestu
+                CloseCurrentPath(parent, FALSE, detachFS, samePath, isRefresh, !samePath); // success, we switch to the new path
 
                 if (samePath)
                 {
-                    // prechod zpet do puvodniho rezimu pamatovani cest
+                    // return to the original path-history mode
                     MainWindow->CanAddToDirHistory = oldCanAddToDirHistory;
                 }
 
-                // schovame throbbera a ikonu zabezpeceni, na disku o ne nestojime
+                // we hide the throbber and security icon; we don't need them on a disk
                 if (DirectoryLine != NULL)
                     DirectoryLine->HideThrobberAndSecurityIcon();
 
                 closeCalled = TRUE;
             }
-            //--- nastavime panel na "disk" cestu
+            //--- set the panel to a disk path
             SetPanelType(ptDisk);
             SetPath(changedPath);
             if (updateIcon ||
-                !GetNetworkDrive()) // aby zobrazovalo korektne ikony pri prechodu na mounted-volume (na lokale nezpomaluje, takze snad zadny problem)
+                !GetNetworkDrive()) // to ensure icons display correctly when switching to a mounted-volume (doesn't slow on local, so hoppefully no issues)
             {
                 UpdateDriveIcon(FALSE);
             }
             if (noChange != NULL)
-                *noChange = FALSE; // listing se uvolnil
-            forceUpdateInt = TRUE; // tak a ted uz se neco musi povest nacist (jinak: prazdny panel)
+                *noChange = FALSE; // the listing was cleared
+            forceUpdateInt = TRUE; // so now something must be able to load (otherwise the panel will remain empty)
 
-            // nechame nacist obsah nove cesty
+            // we'll let the new path load its contents
             BOOL cannotList;
             cannotList = !CommonRefresh(parent, suggestedTopIndex, suggestedFocusName, refreshListBox, TRUE, isRefresh);
             if (isRefresh && !cannotList && GetMonitorChanges() && !AutomaticRefresh)
-            {                                                                                                                // chyba auto-refreshe, overime jestli to neni kvuli vymazu adresare zobrazeneho v panelu (delalo mi pri mazani po siti z jine masiny) ... neprijemne je, ze pokud tuhle chybu ignorujeme, obsah panelu uz se proste neobnovi (protoze auto-refresh nefunguje)
-                Sleep(400);                                                                                                  // dame si chvilku pauzu, aby mohlo pokrocit mazani adresare (aby uz byl dost smazanej na to, aby nesel listovat, dobrej humus...)
+            {                                                                                                                // auto-refresh failure; we verify whether the directory displayed in the panel is being deleted (happened to me while deleting through the network from another machine) ... If ignored, the panel will never refresh (because auto-refresh is broken)
+                Sleep(400);                                                                                                  // we take a break, so the deletion can proceed (so the directory becomes deleted enough to become unlistable)
                                                                                                                              //        TRACE_I("Calling CommonRefresh again... (unable to receive change notifications, first listing was OK, but maybe current directory is being deleted)");
-                cannotList = !CommonRefresh(parent, suggestedTopIndex, suggestedFocusName, refreshListBox, TRUE, isRefresh); // zopakneme si listovani, tohle uz by melo selhat
+                cannotList = !CommonRefresh(parent, suggestedTopIndex, suggestedFocusName, refreshListBox, TRUE, isRefresh); // repeat the listing; this one should fail
             }
             if (cannotList)
-            { // zvolena cesta nejde vylistovat ("access denied" nebo low_memory) nebo jiz byla smazana
+            { // the selected path can't be listed ("access denied" or low_memory) or it was alreadydeleted
 
             FIXED_DRIVE:
 
                 BOOL change = FALSE;
-                if (fixedDrive || !CutDirectory(changedPath)) // pokusime se cestu zkratit
+                if (fixedDrive || !CutDirectory(changedPath)) // we attempt to shorten the path
                 {
-                    if (canTryUserRescuePath) // nejdrive zkusime "unikovou cestu", kterou si preje user
+                    if (canTryUserRescuePath) // first we try the "rescue path" user wished for
                     {
-                        canTryUserRescuePath = FALSE; // nebudeme ji zkouset vickrat
+                        canTryUserRescuePath = FALSE; // we won't try it more than once
                         openIfPathIsInaccessibleGoToCfg = TRUE;
-                        fixedDrive = FALSE; // umoznime zmenu na fixed-drive (mozna uz se zkouselo, ale prednost dostala cesta usera)
+                        fixedDrive = FALSE; // we'll allow switching to a fixed-drive (perhaps it was tried already but the user path had priority)
                         GetIfPathIsInaccessibleGoTo(changedPath);
-                        shorterPathWarning = TRUE; // chceme videt chyby "rescue" cesty
+                        shorterPathWarning = TRUE; // we want to see errors for the "rescue" path
                         change = TRUE;
                     }
                     else
@@ -1829,7 +1829,7 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
                         if (openIfPathIsInaccessibleGoToCfg)
                             OpenCfgToChangeIfPathIsInaccessibleGoTo = TRUE;
 
-                        // nelze zkratit, najdeme systemovy nebo prvni fixed-drive (nas "unikovy disk")
+                        // cannot shorten, we find the system or first fixed-drive (our "escape drive")
                         char sysDir[MAX_PATH];
                         char root[4] = " :\\";
                         BOOL done = FALSE;
@@ -1842,7 +1842,7 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
                         if (!done)
                         {
                             DWORD disks = GetLogicalDrives();
-                            disks >>= 2; // preskocime A: a B:, pri formatovani disket se nekde stavaji DRIVE_FIXED
+                            disks >>= 2; // skip A: and B:, during floppy formatting they sometimes become DRIVE_FIXED
                             char d = 'C';
                             while (d <= 'Z')
                             {
@@ -1850,35 +1850,35 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
                                 {
                                     root[0] = d;
                                     if (GetDriveType(root) == DRIVE_FIXED)
-                                        break; // mame nas "unikovy disk"
+                                        break; // we have our "escape drive"
                                 }
                                 disks >>= 1;
                                 d++;
                             }
                             if (d <= 'Z')
-                                done = TRUE; // nas "unikovy disk" byl nalezen
+                                done = TRUE; // our "escape drive" was found
                         }
                         if (done)
                         {
-                            if (LowerCase[root[0]] != LowerCase[changedPath[0]]) // opatreni proti nekonecnemu cyklu
-                            {                                                    // UNC nebo jiny disk (typu "c:\")
-                                strcpy(changedPath, root);                       // zkusime nas "unikovy disk"
+                            if (LowerCase[root[0]] != LowerCase[changedPath[0]]) // prevention againts an infinite loop
+                            {                                                    // UNC or another disk (like "c:\")
+                                strcpy(changedPath, root);                       // we'll try our "escape drive"
                                 change = TRUE;
                             }
                         }
                     }
                 }
                 else
-                    change = TRUE; // zkracena cesta
+                    change = TRUE; // shortened path
 
-                if (change) // jen pri nove ceste, jinak nechame panel prazdny (snad nehrozi, fixed-drive to jisti)
+                if (change) // only for a new path; otherwise leave the panel empty (shouldn't happen, fixed drive is our safety net)
                 {
-                    // zneplatnime navrhovane nastaveni listboxu (budeme listovat jinou cestu)
+                    // invalidate proposed listbox settings (we'll list a different path)
                     suggestedTopIndex = -1;
                     suggestedFocusName = NULL;
-                    // dochazi ke zmene "nove" cesty (v CloseCurrentPath mohlo prezit UserWorkedOnThisPath == TRUE)
+                    // the "new" path is changing (UserWorkedOnThisPath==TRUE may have survived in CloseCurrentPath)
                     UserWorkedOnThisPath = FALSE;
-                    // zkusime vylistovat upravenou cestu
+                    // we try listing the adjusted path
                     goto _TRY_AGAIN;
                 }
                 if (failReason != NULL)
@@ -1886,16 +1886,16 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
             }
             else
             {
-                // prave jsme obdrzeli novy listing, pokud jsou hlaseny nejake zmeny v panelu, stornujeme je
+                // we just received a new listing; if there are any reported panel changes, we cancel them
                 InvalidateChangesInPanelWeHaveNewListing();
 
                 if (lastErr != ERROR_SUCCESS && (!isRefresh || openIfPathIsInaccessibleGoToCfg) && shorterPathWarning)
-                {                        // pokud nejde o refresh a maji se vypisovat hlaseni o zkraceni cesty ...
-                    if (!refreshListBox) // budeme vypisovat hlaseni, musime provest refresh-list-box
+                {                        // if it's not a refresh and messages about path-shortening are supposed to be shown ...
+                    if (!refreshListBox) // we'll display a message; we must perform refresh-list-box
                     {
                         RefreshListBox(0, -1, -1, FALSE, FALSE);
                     }
-                    // ohlasime chybu, ktera vedla ke zkraceni cesty
+                    // we report the error that caused the path to be shortened
                     char errBuf[2 * MAX_PATH + 100];
                     sprintf(errBuf, LoadStr(IDS_PATHERRORFORMAT),
                             openIfPathIsInaccessibleGoToCfg ? ifPathIsInaccessibleGoTo : path,
