@@ -1234,54 +1234,54 @@ BOOL CFilesWindow::PrepareCloseCurrentPath(HWND parent, BOOL canForce, BOOL canD
 
                     Configuration.CnfrmCloseArchive = !dontShow;
                 }
-                // zapakujeme zmenene soubory (jen nejde-li o critical shutdown), pripravime pro dalsi pouziti
+                // pack modified files again (only if it's not a critical shutdown) we prepare them for next use
                 UnpackedAssocFiles.CheckAndPackAndClear(parent, &someFilesChanged);
-                // pri critical shutdown se tvarime, ze updatle soubory neexistuji, zabalit zpet do archivu bysme
-                // je nestihly, ale smazat je nesmime, po startu musi zustat uzivateli sance updatle soubory
-                // rucne do archivu zabalit; vyjimka je pokud nebylo nic editovano, to lze vse smazat i pri
-                // critical shutdown (to je rychle a nebudeme pri startu mast usera zbytecnymi dotazy)
+                // during critical shutdown we pretend updated files don't exist because there is no time to pack
+                // them back to the archive. We must not delete them so the user can manually repack them after restart,
+                // exception is when nothing was edited then everything may be deleted even during
+                // critical shutdown (it's fast and not confusing for the user with unnecessary questions)
                 if (!someFilesChanged || !CriticalShutdown)
                 {
-                    SetEvent(ExecuteAssocEvent); // spustime uklid souboru
+                    SetEvent(ExecuteAssocEvent); // start file cleanup
                     DiskCache.WaitForIdle();
-                    ResetEvent(ExecuteAssocEvent); // ukoncime uklid souboru
+                    ResetEvent(ExecuteAssocEvent); // finish file cleanup
                 }
             }
             AssocUsed = FALSE;
-            // pokud muzou byt v diskcache editovane soubory nebo tento archiv neni otevren
-            // i v druhem panelu, vyhodime jeho cachovane soubory, pri dalsim otevreni se bude
-            // znovu vypakovavat (archiv muze byt mezitim editovan)
+            // if edited files might be in the disk cache or this archive isn't open
+            // in the other panel, we'll remove its cached files; it will unpack again next time it's opened
+            // (the archive might be edited in the meantime)
             CFilesWindow* another = (MainWindow->LeftPanel == this) ? MainWindow->RightPanel : MainWindow->LeftPanel;
             if (someFilesChanged || !another->Is(ptZIPArchive) || StrICmp(another->GetZIPArchive(), GetZIPArchive()) != 0)
             {
-                StrICpy(buf, GetZIPArchive()); // v disk-cache je jmeno archivu malymi pismeny (umozni case-insensitive porovnani jmena z Windows file systemu)
+                StrICpy(buf, GetZIPArchive()); // the disk cache stores the archive name in lowercase (allows case-insensitive comparison of the name from Windows file system)
                 DiskCache.FlushCache(buf);
             }
 
-            // zavolame plug-inove CPluginInterfaceAbstract::CanCloseArchive
+            // we call the plugin's CPluginInterfaceAbstract::CanCloseArchive
             BOOL canclose = TRUE;
             int format = PackerFormatConfig.PackIsArchive(GetZIPArchive());
-            if (format != 0) // nasli jsme podporovany archiv
+            if (format != 0) // we found a supported archive
             {
                 format--;
                 BOOL userForce = FALSE;
                 BOOL userAsked = FALSE;
                 CPluginData* plugin = NULL;
                 int index = PackerFormatConfig.GetUnpackerIndex(format);
-                if (index < 0) // view: jde o interni zpracovani (plug-in)?
+                if (index < 0) // view: is it internal processing (plugin)?
                 {
                     plugin = Plugins.Get(-index - 1);
                     if (plugin != NULL)
                     {
-                        if (!plugin->CanCloseArchive(this, GetZIPArchive(), CriticalShutdown)) // nechce se mu zavrit
+                        if (!plugin->CanCloseArchive(this, GetZIPArchive(), CriticalShutdown)) // it refuses to close
                         {
                             canclose = FALSE;
-                            if (canForce) // muzeme se zeptat usera, jestli forcovat?
+                            if (canForce) // we can ask the user whether to force it
                             {
                                 sprintf(buf, LoadStr(IDS_ARCHIVEFORCECLOSE), GetZIPArchive());
                                 userAsked = TRUE;
                                 if (SalMessageBox(parent, buf, LoadStr(IDS_QUESTION),
-                                                  MB_YESNO | MB_ICONQUESTION) == IDYES) // user rika "zavrit"
+                                                  MB_YESNO | MB_ICONQUESTION) == IDYES) // user chooses "Close"
                                 {
                                     userForce = TRUE;
                                     plugin->CanCloseArchive(this, GetZIPArchive(), TRUE); // force==TRUE
@@ -1291,24 +1291,24 @@ BOOL CFilesWindow::PrepareCloseCurrentPath(HWND parent, BOOL canForce, BOOL canD
                         }
                     }
                 }
-                if (PackerFormatConfig.GetUsePacker(format)) // ma edit?
+                if (PackerFormatConfig.GetUsePacker(format)) // supports editing?
                 {
                     index = PackerFormatConfig.GetPackerIndex(format);
-                    if (index < 0) // jde o interni zpracovani (plug-in)?
+                    if (index < 0) // is it internal processing (plugin)?
                     {
-                        if (plugin != Plugins.Get(-index - 1)) // je-li view==edit, nevolat podruhe
+                        if (plugin != Plugins.Get(-index - 1)) // if view==edit, don't call again
                         {
                             plugin = Plugins.Get(-index - 1);
                             if (plugin != NULL)
                             {
-                                if (!plugin->CanCloseArchive(this, GetZIPArchive(), userForce || CriticalShutdown)) // nechce se mu zavrit
+                                if (!plugin->CanCloseArchive(this, GetZIPArchive(), userForce || CriticalShutdown)) // it refuses to close
                                 {
                                     canclose = FALSE;
-                                    if (canForce && !userAsked) // muzeme se zeptat usera, jestli forcovat?
+                                    if (canForce && !userAsked) // we can ask the user whether to force it
                                     {
                                         sprintf(buf, LoadStr(IDS_ARCHIVEFORCECLOSE), GetZIPArchive());
                                         if (SalMessageBox(parent, buf, LoadStr(IDS_QUESTION),
-                                                          MB_YESNO | MB_ICONQUESTION) == IDYES) // user rika "zavrit"
+                                                          MB_YESNO | MB_ICONQUESTION) == IDYES) // user chooses "Close"
                                         {
                                             plugin->CanCloseArchive(this, GetZIPArchive(), TRUE);
                                             canclose = TRUE;
@@ -1321,44 +1321,44 @@ BOOL CFilesWindow::PrepareCloseCurrentPath(HWND parent, BOOL canForce, BOOL canD
                 }
             }
 
-            return canclose; // zatim rozhoduji jen plug-inove CPluginInterfaceAbstract::CanCloseArchive
+            return canclose; // for now only the plugin's CPluginInterfaceAbstract::CanCloseArchive decides
         }
         else
         {
             if (Is(ptPluginFS))
             {
-                if (!canForce && !CriticalShutdown) // nemuzeme se usera ptat na force
+                if (!canForce && !CriticalShutdown) // we can't ask the user about forcing
                 {
-                    detachFS = FALSE; // kdyby na to plug-in nesahl, tak aby tam byla znama hodnota
+                    detachFS = FALSE; // to ensure a known value in case the plugin doesn't modify it
                     BOOL r = GetPluginFS()->TryCloseOrDetach(FALSE, canDetach, detachFS, tryCloseReason);
                     if (!r || !canDetach)
-                        detachFS = FALSE; // kontrola/korekce vystupni hodnoty
+                        detachFS = FALSE; // verification/correction of the output value
                     return r;
                 }
-                else // muzeme forcovat -> musime zavirat, odpojovani neni dovolene
+                else // forcing is allowed -> we must close, detaching isn't permitted
                 {
-                    if (GetPluginFS()->TryCloseOrDetach(CriticalShutdown, FALSE, detachFS, tryCloseReason) || // test zavreni bez forceClose==TRUE (krome critical shutdownu)
+                    if (GetPluginFS()->TryCloseOrDetach(CriticalShutdown, FALSE, detachFS, tryCloseReason) || // try closing without forceClose==TRUE (except during critical shutdown)
                         CriticalShutdown)
                     {
                         detachFS = FALSE;
-                        return TRUE; // zavreni o.k.
+                        return TRUE; // closed successfully
                     }
-                    else // optame se usera, jestli to chce zavrit i proti vuli FS
+                    else // ask the user whether to close it against the FS's will
                     {
                         char path[2 * MAX_PATH];
                         GetGeneralPath(path, 2 * MAX_PATH);
                         sprintf(buf, LoadStr(IDS_FSFORCECLOSE), path);
                         if (SalMessageBox(parent, buf, LoadStr(IDS_QUESTION),
-                                          MB_YESNO | MB_ICONQUESTION) == IDYES) // user rika "zavrit"
+                                          MB_YESNO | MB_ICONQUESTION) == IDYES) // user chooses "Close"
                         {
                             GetPluginFS()->TryCloseOrDetach(TRUE, FALSE, detachFS, tryCloseReason);
                             detachFS = FALSE;
-                            return TRUE; // zavreni o.k.
+                            return TRUE; // closed successfully
                         }
                         else
                         {
                             detachFS = FALSE;
-                            return FALSE; // nelze zavrit
+                            return FALSE; // cannot close
                         }
                     }
                 }
@@ -1385,7 +1385,7 @@ void CFilesWindow::CloseCurrentPath(HWND parent, BOOL cancel, BOOL detachFS, BOO
             if (UserWorkedOnThisPath)
             {
                 const char* path = GetPath();
-                // HICON hIcon = GetFileOrPathIconAux(path, FALSE, TRUE); // vytahneme ikonu
+                // HICON hIcon = GetFileOrPathIconAux(path, FALSE, TRUE); // we retrieve the icon
                 MainWindow->DirHistoryAddPathUnique(0, path, NULL, NULL /*hIcon*/, NULL, NULL);
                 if (!newPathIsTheSame)
                     UserWorkedOnThisPath = FALSE;
@@ -1393,9 +1393,9 @@ void CFilesWindow::CloseCurrentPath(HWND parent, BOOL cancel, BOOL detachFS, BOO
 
             if (!newPathIsTheSame)
             {
-                // opoustime cestu
-                HiddenNames.Clear();  // uvolnime skryte nazvy
-                OldSelection.Clear(); // a starou selection
+                // we're leaving the path
+                HiddenNames.Clear();  // we release hidden names
+                OldSelection.Clear(); // and old selection
             }
 
             if (!isRefresh && canChangeSourceUID)
@@ -1420,15 +1420,15 @@ void CFilesWindow::CloseCurrentPath(HWND parent, BOOL cancel, BOOL detachFS, BOO
 
                 if (!newPathIsTheSame)
                 {
-                    // opoustime cestu
-                    HiddenNames.Clear();  // uvolnime skryte nazvy
-                    OldSelection.Clear(); // a starou selection
+                    // we're leaving the path
+                    HiddenNames.Clear();  // we release hidden names
+                    OldSelection.Clear(); // and old selection
                 }
 
                 if (!isRefresh && canChangeSourceUID)
                     EnumFileNamesChangeSourceUID(HWindow, &EnumFileNamesSourceUID);
 
-                // pokud se data archivu hodi SalShExtPastedData, predame mu je
+                // if the archive data seems useful to SalShExtPastedData, we pass them on
                 if (SalShExtPastedData.WantData(GetZIPArchive(), GetArchiveDir(), PluginData,
                                                 GetZIPArchiveDate(), GetZIPArchiveSize()))
                 {
@@ -1441,11 +1441,11 @@ void CFilesWindow::CloseCurrentPath(HWND parent, BOOL cancel, BOOL detachFS, BOO
                     delete GetArchiveDir();
                 SetArchiveDir(NULL);
                 SetPluginIface(NULL);
-                // jeste par zbytecnych nulovani, jen tak pro vetsi prehlednost
+                // a couple more resets for better clarity
                 SetZIPArchive("");
                 SetZIPPath("");
 
-                SetPanelType(ptDisk); // z bezpecnostnich duvodu (disk nema zadna PluginData, atd.)
+                SetPanelType(ptDisk); // for security reasons (a disk has no PluginData, etc.)
                 SetValidFileData(VALID_DATA_ALL);
             }
         }
@@ -1470,13 +1470,13 @@ void CFilesWindow::CloseCurrentPath(HWND parent, BOOL cancel, BOOL detachFS, BOO
                         }
                         if (!newPathIsTheSame)
                         {
-                            // opoustime cestu
-                            HiddenNames.Clear();  // uvolnime skryte nazvy
-                            OldSelection.Clear(); // a starou selection
+                            // we're leaving the path
+                            HiddenNames.Clear();  // we release hidden names
+                            OldSelection.Clear(); // and old selection
                         }
                     }
 
-                    if (detachFS) // jen odpojujeme -> pridani do MainWindow->DetachedFS
+                    if (detachFS) // detaching only -> add to MainWindow->DetachedFS
                     {
                         detachedFS = new CPluginFSInterfaceEncapsulation(GetPluginFS()->GetInterface(),
                                                                          GetPluginFS()->GetDLLName(),
@@ -1496,10 +1496,10 @@ void CFilesWindow::CloseCurrentPath(HWND parent, BOOL cancel, BOOL detachFS, BOO
                             detachedFS = NULL;
                         }
                         else
-                            sendDetachEvent = TRUE; // volani nesmi byt primo zde, protoze FS jeste neni odpojen (je stale v panelu)
+                            sendDetachEvent = TRUE; // the call mustn't happen here because the FS isn't detached yet (it's still in the panel)
                     }
 
-                    if (!detachFS) // zavirame FS, nechame ho dealokovat + vypsat posledni messageboxy
+                    if (!detachFS) // we're closing the FS; let it deallocate and display final messageboxes
                     {
                         GetPluginFS()->ReleaseObject(parent);
                     }
@@ -1518,7 +1518,7 @@ void CFilesWindow::CloseCurrentPath(HWND parent, BOOL cancel, BOOL detachFS, BOO
                         SimplePluginIcons = NULL;
                     }
 
-                    if (!detachFS) // zavirame FS
+                    if (!detachFS) // we're closing the FS
                     {
                         CPluginInterfaceForFSEncapsulation plugin(GetPluginFS()->GetPluginInterfaceForFS()->GetInterface(),
                                                                   GetPluginFS()->GetPluginInterfaceForFS()->GetBuiltForVersion());
@@ -1530,11 +1530,11 @@ void CFilesWindow::CloseCurrentPath(HWND parent, BOOL cancel, BOOL detachFS, BOO
                     SetPluginFS(NULL, NULL, NULL, NULL, NULL, NULL, -1, 0, 0, 0);
                     SetPluginIface(NULL);
 
-                    SetPanelType(ptDisk); // z bezpecnostnich duvodu (disk nema zadna PluginData, atd.)
+                    SetPanelType(ptDisk); // for security reasons (a disk has no PluginData, etc.)
                     SetValidFileData(VALID_DATA_ALL);
 
                     if (sendDetachEvent && detachedFS != NULL /* always true */)
-                        detachedFS->Event(FSE_DETACHED, GetPanelCode()); // dame zpravu o uspesnem odpojeni plug-inu
+                        detachedFS->Event(FSE_DETACHED, GetPanelCode()); // we send notification about successful plugin detachment
                 }
                 else
                     GetPluginFS()->Event(FSE_CLOSEORDETACHCANCELED, GetPanelCode());
@@ -1550,12 +1550,12 @@ void CFilesWindow::RefreshPathHistoryData()
     CALL_STACK_MESSAGE1("CFilesWindow::RefreshPathHistoryData()");
 
     int index = GetCaretIndex();
-    if (index >= 0 && index < Files->Count + Dirs->Count) // pokud nejsou rozjeta data
+    if (index >= 0 && index < Files->Count + Dirs->Count) // bounds check to prevent data inconsistency
     {
         int topIndex = ListBox->GetTopIndex();
         CFileData* file = index < Dirs->Count ? &Dirs->At(index) : &Files->At(index - Dirs->Count);
 
-        // zkusime zapsat novy top-index a focus-name
+        // we try to record a new top-index and focus-name
         if (Is(ptZIPArchive))
         {
             PathHistory->ChangeActualPathData(1, GetZIPArchive(), GetZIPPath(), NULL, NULL, topIndex, file->Name);
@@ -1655,9 +1655,9 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
         return FALSE;
     }
 
-    // udelame zalozni kopie
+    // we make backup copies
     char backup[MAX_PATH];
-    lstrcpyn(backup, path, MAX_PATH); // nutne udelat pred UpdateDefaultDir (muze byt ukazatel do DefaultDir[])
+    lstrcpyn(backup, path, MAX_PATH); // must be done before UpdateDefaultDir (it may point to DefaultDir[])
     char backup2[MAX_PATH];
     if (suggestedFocusName != NULL)
     {
@@ -1665,7 +1665,7 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
         suggestedFocusName = backup2;
     }
 
-    // obnovime udaje o stavu panelu (top-index + focused-name) pred pripadnym zavrenim teto cesty
+    // restore panel state info (top-index + focused-name) before potentially closing this path
     RefreshPathHistoryData();
 
     if (noChange != NULL)
@@ -1673,14 +1673,14 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
 
     if (!isRefresh)
         MainWindow->CancelPanelsUI(); // cancel QuickSearch and QuickEdit
-    // obnova DefaultDir
+    // restore DefaultDir
     MainWindow->UpdateDefaultDir(TRUE);
 
-    // pokud jde o rel. cestu, prevedeme ji na absolutni
+    // if it's a relative path convert it to absolute
     int errTextID;
     //  if (!SalGetFullName(backup, &errTextID, MainWindow->GetActivePanel()->Is(ptDisk) ?
     //                      MainWindow->GetActivePanel()->GetPath() : NULL))
-    if (!SalGetFullName(backup, &errTextID, Is(ptDisk) ? GetPath() : NULL)) // kvuli FTP pluginu - rel. cesta v "target panel path" pri connectu
+    if (!SalGetFullName(backup, &errTextID, Is(ptDisk) ? GetPath() : NULL)) // for the FTP plugin - relative path in "target panel path" during connect
     {
         SalMessageBox(parent, LoadStr(errTextID), LoadStr(IDS_ERRORCHANGINGDIR),
                       MB_OK | MB_ICONEXCLAMATION);
@@ -1690,16 +1690,16 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
     }
     path = backup;
 
-    // nahozeni hodin
-    BOOL setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // ceka uz ?
+    // start the waiting cursor
+    BOOL setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // is it already waiting?
     HCURSOR oldCur;
     if (setWait)
         oldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
-    BeginStopRefresh(); // neprejeme si zadne refreshe -> znamenaly by rekurzi
+    BeginStopRefresh(); // no refreshes please -> they would cause recursion
 
-    //  BOOL firstRun = TRUE;    // zakomentovane kvuli zakomentovani forceUpdate
+    //  BOOL firstRun = TRUE;    // commented out because forceUpdate is disabled
     BOOL fixedDrive = FALSE;
-    BOOL canTryUserRescuePath = FALSE; // povoluje pouziti Configuration.IfPathIsInaccessibleGoTo tesne pred fixed-drive cestou
+    BOOL canTryUserRescuePath = FALSE; // allows using Configuration.IfPathIsInaccessibleGoTo right before the fixed-drive path
     BOOL openIfPathIsInaccessibleGoToCfg = FALSE;
     char ifPathIsInaccessibleGoTo[MAX_PATH];
     GetIfPathIsInaccessibleGoTo(ifPathIsInaccessibleGoTo);
@@ -1710,12 +1710,12 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
         canTryUserRescuePath = TRUE;
     }
     BOOL closeCalled = FALSE;
-    // pokud jde o zmeny v ramci jednoho disku (vcetne archivu), najdeme platny adresar i za cenu
-    // zmeny na "fixed-drive"
+    // when changing within the same drive (archives included) we'll find a valid directory
+    // even if it means switching to a "fixed-drive"
     BOOL forceUpdateInt = (Is(ptDisk) || Is(ptZIPArchive)) && HasTheSameRootPath(GetPath(), path);
     BOOL detachFS;
     if (PrepareCloseCurrentPath(parent, canForce, TRUE, detachFS, tryCloseReason))
-    { // zmena v ramci "ptDisk" nebo soucasnou cestu pujde zavrit, zkusime otevrit novou cestu
+    { // change within "ptDisk" or we can close the current path, we try to open a new one
         char changedPath[MAX_PATH];
         strcpy(changedPath, path);
         BOOL tryNet = !CriticalShutdown && ((!Is(ptDisk) && !Is(ptZIPArchive)) || !HasTheSameRootPath(path, GetPath()));
@@ -1726,35 +1726,35 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
         BOOL pathInvalid, cut;
         SalCheckAndRestorePathWithCut(parent, changedPath, tryNet, err, lastErr, pathInvalid, cut, FALSE);
         if (cut)
-        { // zneplatnime navrhovane nastaveni listboxu (budeme listovat jinou cestu)
+        { // invalidate proposed listbox settings (we'll list a different path)
             suggestedTopIndex = -1;
             suggestedFocusName = NULL;
         }
 
         if (!pathInvalid && err == ERROR_SUCCESS)
         {
-            /*    // zakomentovana optimalizace pripadu, kdy je nova cesta shodna se starou -> u disku to byl nezvyk...
+            /*    // commented optimization for cases when the new path matches the old one -> unusual for disks...
       if (!forceUpdate && firstRun && Is(ptDisk) && IsTheSamePath(changedPath, GetPath()))
-      {  // neni duvod menit cestu
-        CloseCurrentPath(parent, TRUE, detachFS, FALSE, isRefresh, FALSE);  // "cancel" - na teto ceste zustavame
+      {  // no reason to change the path
+        CloseCurrentPath(parent, TRUE, detachFS, FALSE, isRefresh, FALSE);  // "cancel" - remain on the current path
         EndStopRefresh();
         if (setWait) SetCursor(oldCur);
         if (IsTheSamePath(path, GetPath()))
         {
-          return TRUE; // nova cesta se shoduje se soucasnou cestou, neni co delat
+          return TRUE; // the new path matches the current path, nothing to do
         }
         else
         {
-          // zkracena cesta se shoduje se soucasnou cestou
-          // nastava napr. pri pokusu o vstup do nepristupneho adresare (okamzity navrat zpet)
-          CheckPath(TRUE, path, lastErr, TRUE, parent);  // ohlasime chybu, ktera vedla ke zkraceni cesty
-          return FALSE;  // pozadovana cesta neni dostupna
+          // shortened path matches the current path
+          // occurs for example when attempting to enter an inaccessible directory (immediate return)
+          CheckPath(TRUE, path, lastErr, TRUE, parent);  // report the error that caused path shortening
+          return FALSE;  // the requested path is not accessible
         }
       }
       firstRun = FALSE;
 */
             BOOL updateIcon;
-            updateIcon = !Is(ptDisk) || // jednoduche kvuli zakomentovani forceUpdate
+            updateIcon = !Is(ptDisk) || // simple because forceUpdate is commented out
                          !HasTheSameRootPath(changedPath, GetPath());
             //      updateIcon = forceUpdate || !Is(ptDisk) || !HasTheSameRootPath(changedPath, GetPath());
 
@@ -1762,12 +1762,12 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
                 SleepIconCacheThread();
 
             if (!closeCalled)
-            { // vleze to sem jen pri prvnim pruchodu, proto je mozne pouzit "Is(ptDisk)" a "GetPath()"
+            { // executed only during the first pass, so we can use "Is(ptDisk)" and "GetPath()"
                 BOOL samePath = (Is(ptDisk) && IsTheSamePath(GetPath(), changedPath));
                 BOOL oldCanAddToDirHistory;
                 if (samePath)
                 {
-                    // nebudeme si pamatovat zaviranou cestu (aby cesta nepribyla jen kvuli change-dir na stejnou cestu)
+                    // we won't record the closed path (to avoid adding it just because of a change-dir to the same path)
                     oldCanAddToDirHistory = MainWindow->CanAddToDirHistory;
                     MainWindow->CanAddToDirHistory = FALSE;
                 }
