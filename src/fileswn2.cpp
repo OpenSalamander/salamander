@@ -2309,24 +2309,24 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
         sameArch = TRUE;
     }
 
-    // najdeme cestu v archivu, ktera jeste existuje (puvodni nebo zkracena)
+    // we find a path in the archive that still exists (original or shortened)
     strcpy(path, *archivePath == '\\' ? archivePath + 1 : archivePath);
     char* end = path + strlen(path);
     if (end > path && *(end - 1) == '\\')
         *--end = 0;
 
-    if (sameArch && GetArchiveDir()->SalDirStrCmp(path, GetZIPPath()) == 0) // nova cesta se shoduje se soucasnou cestou
+    if (sameArch && GetArchiveDir()->SalDirStrCmp(path, GetZIPPath()) == 0) // the new path matches the current one
     {
-        // aby se nevyignorovali 'suggestedTopIndex' a 'suggestedFocusName', zavolame CommonRefresh
+        // call CommonRefresh so 'suggestedTopIndex' and 'suggestedFocusName' aren't ignored
         CommonRefresh(HWindow, suggestedTopIndex, suggestedFocusName, refreshListBox, FALSE, isRefresh);
 
         EndStopRefresh();
         if (setWait)
             SetCursor(oldCur);
-        return TRUE; // neni co delat
+        return TRUE; // nothing to do
     }
 
-    // ulozime soucasnou cestu v archivu
+    // save the current path in the archive
     char currentPath[MAX_PATH];
     strcpy(currentPath, GetZIPPath());
 
@@ -2337,7 +2337,7 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
     while (path[0] != 0 && GetArchiveDirFiles() == NULL)
     {
         end = strrchr(path, '\\');
-        useFileName = (canFocusFileName && suggestedFocusName == NULL && fileName == NULL); // fokus souboru je mozny + neni focus zvenci + jen prvni zkraceni
+        useFileName = (canFocusFileName && suggestedFocusName == NULL && fileName == NULL); // allow focusing the file + no external focus + only for the first shortening
         if (end != NULL)
         {
             *end = 0;
@@ -2354,7 +2354,7 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
 
         if (!sameArch)
         {
-            // dochazi ke zmene "nove" cesty (v CloseCurrentPath mohlo prezit UserWorkedOnThisPath == TRUE)
+            // the "new" path is changing (UserWorkedOnThisPath==TRUE may have survived in CloseCurrentPath)
             UserWorkedOnThisPath = FALSE;
         }
     }
