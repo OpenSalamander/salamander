@@ -1908,12 +1908,12 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
                 if (failReason != NULL)
                     *failReason = CHPPFR_SUCCESS;
             }
-            //---  obnova DefaultDir
+            //---  restore DefaultDir
             MainWindow->UpdateDefaultDir(MainWindow->GetActivePanel() == this);
         }
         else
         {
-            if (err == ERROR_NOT_READY) // jde-li o nepripravenou mechaniku (removable medium)
+            if (err == ERROR_NOT_READY) // if the drive isn't ready (removable media)
             {
                 char text[100 + MAX_PATH];
                 char drive[MAX_PATH];
@@ -1922,7 +1922,7 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
                 {
                     drvType = DRIVE_REMOTE;
                     GetRootPath(drive, changedPath);
-                    drive[strlen(drive) - 1] = 0; // nestojime o posledni '\\'
+                    drive[strlen(drive) - 1] = 0; // drop the trailing '\\'
                 }
                 else
                 {
@@ -1944,7 +1944,7 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
                 sprintf(text, LoadStr(IDS_NODISKINDRIVE), drive);
                 int msgboxRes = (int)CDriveSelectErrDlg(parent, text, changedPath).Execute();
                 if (msgboxRes == IDCANCEL && CutDirectory(CheckPathRootWithRetryMsgBox))
-                { // aby se dalo dostat do rootu cesty pri namountenem volume (F:\DRIVE_CD -> F:\)
+                { // to allow entering the root when a volume is mounted (F:\DRIVE_CD -> F:\)
                     lstrcpyn(changedPath, CheckPathRootWithRetryMsgBox, MAX_PATH);
                     msgboxRes = IDRETRY;
                 }
@@ -1955,16 +1955,16 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
             }
             else
             {
-                if (!pathInvalid &&               // o neuspechu pri ozivovani UNC cesty uz user vi
-                    err != ERROR_USER_TERMINATED) // o preruseni (ESC) uz take user vi
+                if (!pathInvalid &&               // the user already knows the UNC path couldn't be revived
+                    err != ERROR_USER_TERMINATED) // the user also knows about the abort (ESC)
                 {
-                    CheckPath(TRUE, changedPath, err, TRUE, parent); // ostatni chyby - pouze vypis chyby
+                    CheckPath(TRUE, changedPath, err, TRUE, parent); // other errors - just display the message
                 }
             }
 
-            if (forceUpdateInt && !fixedDrive) // je-li nutny update, zkusime jeste fixed-drive
+            if (forceUpdateInt && !fixedDrive) // if an update is needed, try also the fixed drive
             {
-                fixedDrive = TRUE; // obrana proti cykleni + zmena na fixed-drive
+                fixedDrive = TRUE; // prevention of looping + switch to the fixed drive
                 goto FIXED_DRIVE;
             }
             if (failReason != NULL)
@@ -1972,7 +1972,7 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
         }
 
         if (!closeCalled)
-            CloseCurrentPath(parent, TRUE, detachFS, FALSE, isRefresh, FALSE); // neuspech, zustaneme na puvodni ceste
+            CloseCurrentPath(parent, TRUE, detachFS, FALSE, isRefresh, FALSE); // failure, stay on the original path
     }
     else
     {
@@ -2002,7 +2002,7 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
                          archive, archivePath, suggestedTopIndex, suggestedFocusName,
                          forceUpdate, refreshListBox, isRefresh, canFocusFileName, isHistory);
 
-    // udelame zalozni kopie
+    // we make backup copies
     char backup1[MAX_PATH];
     lstrcpyn(backup1, archive, MAX_PATH);
     char backup2[MAX_PATH];
@@ -2015,7 +2015,7 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
         suggestedFocusName = backup3;
     }
 
-    // obnovime udaje o stavu panelu (top-index + focused-name) pred pripadnym zavrenim teto cesty
+    // restore panel state info (top-index + focused-name) before potentially closing this path
     RefreshPathHistoryData();
 
     if (noChange != NULL)
@@ -2024,14 +2024,14 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
     if (!isRefresh)
         MainWindow->CancelPanelsUI(); // cancel QuickSearch and QuickEdit
 
-    // obnova DefaultDir
+    // restore DefaultDir
     MainWindow->UpdateDefaultDir(TRUE);
 
-    // pokud je archive rel. cesta, prevedeme ji na absolutni
+    // if the archive path is relative, convert it to absolute
     int errTextID;
     //  if (!SalGetFullName(backup1, &errTextID, MainWindow->GetActivePanel()->Is(ptDisk) ?
     //                      MainWindow->GetActivePanel()->GetPath() : NULL))
-    if (!SalGetFullName(backup1, &errTextID, Is(ptDisk) ? GetPath() : NULL)) // konzistence s ChangePathToDisk()
+    if (!SalGetFullName(backup1, &errTextID, Is(ptDisk) ? GetPath() : NULL)) // consistent with ChangePathToDisk()
     {
         SalMessageBox(HWindow, LoadStr(errTextID), LoadStr(IDS_ERRORCHANGINGDIR),
                       MB_OK | MB_ICONEXCLAMATION);
@@ -2041,24 +2041,24 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
     }
     archive = backup1;
 
-    //---  nahozeni hodin
-    BOOL setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // ceka uz ?
+    //---  start the waiting cursor
+    BOOL setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // is it already waiting?
     HCURSOR oldCur;
     if (setWait)
         oldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
-    BeginStopRefresh(); // neprejeme si zadne refreshe
+    BeginStopRefresh(); // no refreshes, please
 
-    BOOL nullFile;         // TRUE pokud je archive nulovy soubor (size==0)
-    FILETIME archiveDate;  // datum&cas souboru archivu
-    CQuadWord archiveSize; // velikost souboru archivu
+    BOOL nullFile;         // TRUE if the archive is an empty file (size==0)
+    FILETIME archiveDate;  // date and time of the archive file
+    CQuadWord archiveSize; // size of the archive file
 
     char text[MAX_PATH + 500];
     char path[MAX_PATH];
     BOOL sameArch;
     BOOL checkPath = TRUE;
-    BOOL forceUpdateInt = FALSE; // zmena cesty nutna? (prip. i na disk)
+    BOOL forceUpdateInt = FALSE; // is path change required? (possibly even to disk)
     BOOL tryPathWithArchiveOnError = isHistory;
-    if (!Is(ptZIPArchive) || StrICmp(GetZIPArchive(), archive) != 0) // neni archiv nebo jiny archiv
+    if (!Is(ptZIPArchive) || StrICmp(GetZIPArchive(), archive) != 0) // not the archive or a different archive
     {
 
     _REOPEN_ARCHIVE:
@@ -2066,28 +2066,28 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
         sameArch = FALSE;
         BOOL detachFS;
         if (PrepareCloseCurrentPath(HWindow, FALSE, TRUE, detachFS, FSTRYCLOSE_CHANGEPATH))
-        { // soucasnou cestu pujde zavrit, zkusime otevrit novou cestu
-            // test pristupnosti cesty, na ktere archiv lezi
+        { // the current path can be closed, try to open a new one
+            // verify accessibility of the path containing the archive
             strcpy(path, archive);
             if (!CutDirectory(path, NULL))
             {
                 TRACE_E("Unexpected situation in CFilesWindow::ChangePathToArchive.");
                 if (failReason != NULL)
                     *failReason = CHPPFR_INVALIDPATH;
-                tryPathWithArchiveOnError = FALSE; // nesmyslna chyba, neresime
+                tryPathWithArchiveOnError = FALSE; // meaningless error, ignore it
 
             ERROR_1:
 
-                CloseCurrentPath(HWindow, TRUE, detachFS, FALSE, isRefresh, FALSE); // neuspech, zustaneme na puvodni ceste
+                CloseCurrentPath(HWindow, TRUE, detachFS, FALSE, isRefresh, FALSE); // failure, stay on the original path
 
-                if (forceUpdateInt) // nutna zmena cesty; do archivu se to nepovedlo, jdeme na disk
-                {                   // jsme jiste v archivu (jde o "refresh" archivu v panelu)
-                    // pokud to pujde, vystoupime z archivu (pripadne az na "fixed-drive")
+                if (forceUpdateInt) // a path change is required; opening the archive failed, go back to disk
+                {                   // we're certainly in an archive (it's a panel refresh of an archive)
+                    // if possible, exit the archive (possibly all the way to the "fixed-drive")
                     ChangePathToDisk(HWindow, GetPath(), -1, NULL, noChange, refreshListBox, FALSE, isRefresh);
                 }
                 else
                 {
-                    if (tryPathWithArchiveOnError) // zkusime zmenu cesty na cestu co nejblize k archivu
+                    if (tryPathWithArchiveOnError) // try changing to a path as close to the archive as possible
                         ChangePathToDisk(HWindow, path, -1, NULL, noChange, refreshListBox, FALSE, isRefresh);
                 }
 
@@ -2098,18 +2098,18 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
                 return FALSE;
             }
 
-            // sitove cesty nebudeme testovat, pokud jsme na ne zrovna pristupovali
+            // we skip testing network paths if we just accessed them
             BOOL tryNet = (!Is(ptDisk) && !Is(ptZIPArchive)) || !HasTheSameRootPath(path, GetPath());
             DWORD err, lastErr;
             BOOL pathInvalid, cut;
             if (!SalCheckAndRestorePathWithCut(HWindow, path, tryNet, err, lastErr, pathInvalid, cut, FALSE) ||
                 cut)
-            { // cesta neni pristupna nebo je oriznuta (archiv neni mozne otevrit)
+            { // path isn't accessible or it is truncated (the archive cannot be opened)
                 if (failReason != NULL)
                     *failReason = CHPPFR_INVALIDPATH;
                 if (tryPathWithArchiveOnError)
-                    tryPathWithArchiveOnError = (err == ERROR_SUCCESS && !pathInvalid); // kratsi cesta je pristupna, zkusime ji
-                if (!isRefresh)                                                         // pri refreshi se hlasky o zkracovani cesty nevypisuji
+                    tryPathWithArchiveOnError = (err == ERROR_SUCCESS && !pathInvalid); // shorter path is accessible, we'll try it
+                if (!isRefresh)                                                         // during refresh path-shortening messages are not displayed
                 {
                     sprintf(text, LoadStr(IDS_FILEERRORFORMAT), archive, GetErrorText(lastErr));
                     SalMessageBox(HWindow, text, LoadStr(IDS_ERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
@@ -2117,16 +2117,16 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
                 goto ERROR_1;
             }
 
-            if (PackerFormatConfig.PackIsArchive(archive)) // je to archiv?
+            if (PackerFormatConfig.PackIsArchive(archive)) // is it an archive?
             {
-                // zjistime informace o souboru (existuje?, size, date&time)
+                // retrieve file info (does it exist?, size, date & time)
                 DWORD err2 = NO_ERROR;
                 HANDLE file = HANDLES_Q(CreateFile(archive, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
                                                    NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL));
                 if (file != INVALID_HANDLE_VALUE)
                 {
                     GetFileTime(file, NULL, NULL, &archiveDate);
-                    SalGetFileSize(file, archiveSize, err2); // vraci "uspech?" - ignorujeme, testujeme pozdeji 'err2'
+                    SalGetFileSize(file, archiveSize, err2); // does it return "success"? - ignore, 'err2' is checked later
                     nullFile = archiveSize == CQuadWord(0, 0);
                     HANDLES(CloseHandle(file));
                 }
@@ -2135,16 +2135,16 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
 
                 if (err2 != NO_ERROR)
                 {
-                    if (!isRefresh) // pri refreshi se hlasky o neexistenci cesty nevypisuji
+                    if (!isRefresh) // during refresh missing-path messages are not displayed
                         DialogError(HWindow, BUTTONS_OK, archive, GetErrorText(err2), LoadStr(IDS_ERROROPENINGFILE));
                     if (failReason != NULL)
                         *failReason = CHPPFR_INVALIDPATH;
-                    goto ERROR_1; // chyba
+                    goto ERROR_1; // error
                 }
 
                 CSalamanderDirectory* newArchiveDir = new CSalamanderDirectory(FALSE);
 
-                // uplatnime optimalizovane pridavani do 'newArchiveDir'
+                // apply optimized adding to 'newArchiveDir'
                 newArchiveDir->AllocAddCache();
 
                 SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
@@ -2154,7 +2154,7 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
                     CreateSafeWaitWindow(LoadStr(IDS_LISTINGARCHIVE), NULL, 2000, FALSE, MainWindow->HWindow);
                 if (nullFile || PackList(this, archive, *newArchiveDir, pluginData, plugin))
                 {
-                    // uvolnime cache, at v objektu zbytecne nestrasi
+                    // free the cache so it does not linger in the object
                     newArchiveDir->FreeAddCache();
 
                     if (!nullFile)
@@ -2164,7 +2164,7 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
                     if (UseSystemIcons || UseThumbnails)
                         SleepIconCacheThread();
 
-                    BOOL isTheSamePath = FALSE; // TRUE = nedochazi ke zmene cesty
+                    BOOL isTheSamePath = FALSE; // TRUE = the path doesn't change
                     if (Is(ptZIPArchive) && StrICmp(GetZIPArchive(), archive) == 0)
                     {
                         char buf[MAX_PATH];
@@ -2177,15 +2177,15 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
                             isTheSamePath = TRUE;
                     }
 
-                    // uspech, prejdeme na novou cestu - z duvodu mozne casove narocnosti listovani
-                    // archivu dojde ke zmene cesty i pokud cilova cesta neexistuje - tyka se prikazu
-                    // Change Directory (Shift+F7), ktery jinak v teto situaci cestu nemeni
+                    // success, switch to the new path - because listing the archive can be time-consuming
+                    // the path changes even if the target path doesn't exist - applies to
+                    // Change Directory (Shift+F7) which otherwise wouldn't change it
                     CloseCurrentPath(HWindow, FALSE, detachFS, isTheSamePath, isRefresh, !isTheSamePath);
 
-                    // prave jsme obdrzeli novy listing, pokud jsou hlaseny nejake zmeny v panelu, stornujeme je
+                    // we just received a new listing; if there are any reported panel changes, we cancel them
                     InvalidateChangesInPanelWeHaveNewListing();
 
-                    // schovame throbbera a ikonu zabezpeceni, v archivech o ne nestojime
+                    // we hide the throbber and security icon; we don't want them in the archive
                     if (DirectoryLine != NULL)
                         DirectoryLine->HideThrobberAndSecurityIcon();
 
@@ -2203,18 +2203,18 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
                                         plugin->GetPluginInterface()->GetInterface(), plugin->BuiltForVersion);
                     }
                     else
-                        PluginData.Init(NULL, NULL, NULL, NULL, 0); // pouzivaji jen plug-iny, Salamander ne
+                        PluginData.Init(NULL, NULL, NULL, NULL, 0); // used only by plugins, not by Salamander
                     SetValidFileData(nullFile ? VALID_DATA_ALL_FS_ARC : GetArchiveDir()->GetValidData());
                     checkPath = FALSE;
                     if (noChange != NULL)
                         *noChange = FALSE;
-                    // ZIPPath, Files a Dirs se nastavi pozdeji, az se nastavi archivePath ...
+                    // ZIPPath, Files and Dirs are set later once archivePath is set...
                     if (failReason != NULL)
                         *failReason = CHPPFR_SUCCESS;
                 }
                 else
                 {
-                    DestroySafeWaitWindow(); // nullFile musi byt FALSE, proto chybi test...
+                    DestroySafeWaitWindow(); // nullFile must be FALSE, so the check is omitted...
                     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
                     TRACE_I("Unable to open file " << archive << ".");
                     delete newArchiveDir;
@@ -2231,7 +2231,7 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
                 goto ERROR_1;
             }
         }
-        else // soucasna cesta nejde zavrit
+        else // the current path cannot be closed
         {
             EndStopRefresh();
             if (setWait)
@@ -2241,12 +2241,12 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
             return FALSE;
         }
     }
-    else // jiz otevreny archiv
+    else // already opened archive
     {
-        if (forceUpdate) // ma se zkontrolovat jestli se archiv nezmenil?
+        if (forceUpdate) // should we check whether the archive changed?
         {
             DWORD err;
-            if ((err = CheckPath(!isRefresh)) == ERROR_SUCCESS) // zde neni treba obnovovat sitova spojeni ...
+            if ((err = CheckPath(!isRefresh)) == ERROR_SUCCESS) // no need to restore network connections here ...
             {
                 HANDLE file = HANDLES_Q(CreateFile(archive, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
                                                    NULL, OPEN_EXISTING, 0, NULL));
@@ -2255,43 +2255,43 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
                     SalGetFileSize(file, archiveSize, err);
                     nullFile = archiveSize == CQuadWord(0, 0);
                     FILETIME zipArchiveDate = GetZIPArchiveDate();
-                    BOOL change = (err != NO_ERROR ||                                     // nejde ziskat velikost
-                                   !GetFileTime(file, NULL, NULL, &archiveDate) ||        // nejde ziskat datum&cas
-                                   CompareFileTime(&archiveDate, &zipArchiveDate) != 0 || // nebo se lisi datum&cas
-                                   !IsSameZIPArchiveSize(archiveSize));                   // nebo se lisi velikost souboru
+                    BOOL change = (err != NO_ERROR ||                                     // unable to retrieve size
+                                   !GetFileTime(file, NULL, NULL, &archiveDate) ||        // unable to get date & time
+                                   CompareFileTime(&archiveDate, &zipArchiveDate) != 0 || // date & time differ
+                                   !IsSameZIPArchiveSize(archiveSize));                   // file size differs
                     HANDLES(CloseHandle(file));
 
-                    if (change) // soubor se zmenil
+                    if (change) // file changed
                     {
-                        if (AssocUsed) // mame neco z archivu rozeditovaneho?
+                        if (AssocUsed) // Is anything from the archive being edited?
                         {
-                            // oznamime, ze doslo ke zmenam, ze by si mel zavrit editory
+                            // notify that there were changes and that editors should be closed
                             char buf[MAX_PATH + 200];
                             sprintf(buf, LoadStr(IDS_ARCHIVEREFRESHEDIT), GetZIPArchive());
                             SalMessageBox(HWindow, buf, LoadStr(IDS_INFOTITLE), MB_OK | MB_ICONINFORMATION);
                         }
-                        forceUpdateInt = TRUE; // neni kam se vracet, zmena cesty nutna (prip. i na disk)
+                        forceUpdateInt = TRUE; // nowhere to return, path change required (possibly back to disk)
                         goto _REOPEN_ARCHIVE;
                     }
                 }
                 else
                 {
-                    err = GetLastError(); // soubor archivu nelze otevrit
-                    if (!isRefresh)       // pri refreshi se hlasky o neexistenci cesty nevypisuji
+                    err = GetLastError(); // unable to open the archive file
+                    if (!isRefresh)       // during refresh missing-path messages are not displayed
                     {
                         sprintf(text, LoadStr(IDS_FILEERRORFORMAT), archive, GetErrorText(err));
                         SalMessageBox(HWindow, text, LoadStr(IDS_ERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
                     }
                 }
             }
-            if (err != ERROR_SUCCESS) // prejdeme na existujici cestu
+            if (err != ERROR_SUCCESS) // switch to an existing path
             {
                 if (err != ERROR_USER_TERMINATED)
                 {
-                    // pokud to pujde, vystoupime z archivu (pripadne az na "fixed-drive")
+                    // if possible, exit the archive (possibly all the way to the "fixed-drive")
                     ChangePathToDisk(HWindow, GetPath(), -1, NULL, noChange, refreshListBox, FALSE, isRefresh);
                 }
-                else // user dal ESC -> cesta je nejspis nepristupna, jdeme rovnou na "fixed-drive"
+                else // user pressed ESC -> the path is probably inaccessible, we go straight to the "fixed-drive"
                 {
                     ChangeToRescuePathOrFixedDrive(HWindow, noChange, refreshListBox);
                 }
@@ -3104,7 +3104,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                     OldSelection.Clear(); // a starou selection
                 }
 
-                // prave jsme obdrzeli novy listing, pokud jsou hlaseny nejake zmeny v panelu, stornujeme je
+                // we just received a new listing; if there are any reported panel changes, we cancel them
                 InvalidateChangesInPanelWeHaveNewListing();
 
                 // schovame throbbera a ikonu zabezpeceni, jestli o ne FS stoji i nadale, musi si je znovu zapnout (napr. v FSE_PATHCHANGED)
@@ -3158,7 +3158,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                     PeekMessage(&msg2, HWindow, WM_USER_UPDATEPANEL, WM_USER_UPDATEPANEL, PM_REMOVE);
                 }
 
-                // schovame throbbera a ikonu zabezpeceni, protoze FS opoustime...
+                // we hide the throbber and security icon; because we're leaving the FS...
                 if (DirectoryLine != NULL)
                     DirectoryLine->HideThrobberAndSecurityIcon();
 
@@ -3338,7 +3338,7 @@ BOOL CFilesWindow::ChangePathToDetachedFS(int fsIndex, int suggestedTopIndex,
 
             CloseCurrentPath(HWindow, FALSE, detachFS, FALSE, FALSE, TRUE); // uspech, prejdeme na novou cestu
 
-            // prave jsme obdrzeli novy listing, pokud jsou hlaseny nejake zmeny v panelu, stornujeme je
+            // we just received a new listing; if there are any reported panel changes, we cancel them
             InvalidateChangesInPanelWeHaveNewListing();
 
             // schovame throbbera a ikonu zabezpeceni, jestli o ne stoji odpojeny FS, musi si je zapnout (napr. v FSE_ATTACHED nebo FSE_PATHCHANGED)
