@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -1207,11 +1208,11 @@ unsigned IconThreadThreadFBody(void* parameter)
                 }
 
                 if (wait == WAIT_TIMEOUT) // work is done -> notify the main thread
-                    {
-                        if (window->Is(ptDisk) && failed && firstRound)
-                        {                                   // try again (not all icons were loaded)
-                            firstRound = FALSE;             // only one extra round
-                            waitBeforeFirstReadIcon = TRUE; // prevent immediate rereading (low chance of success)
+                {
+                    if (window->Is(ptDisk) && failed && firstRound)
+                    {                                   // try again (not all icons were loaded)
+                        firstRound = FALSE;             // only one extra round
+                        waitBeforeFirstReadIcon = TRUE; // prevent immediate rereading (low chance of success)
                                                         //              TRACE_I("Going to second round of reading (some icons have not been read in the first round).");
                         goto SECOND_ROUND;
                         // postRefresh = TRUE;
