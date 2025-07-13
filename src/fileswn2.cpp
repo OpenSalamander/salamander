@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 Open Salamander Authors
+﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "precomp.h"
@@ -2359,31 +2359,31 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
         }
     }
 
-    if (!useFileName && sameArch && GetArchiveDir()->SalDirStrCmp(currentPath, GetZIPPath()) == 0) // nefokusime soubor a zkracena cesta se shoduje se soucasnou cestou
-    {                                                                                              // nastava napr. pri pokusu o vstup do nepristupneho adresare (okamzity navrat zpet)
+    if (!useFileName && sameArch && GetArchiveDir()->SalDirStrCmp(currentPath, GetZIPPath()) == 0) // we're not focusing a file and the shortened path matches the current one
+    {                                                                                              // occurs for example when attempting to enter an inaccessible directory (immediate return)
         EndStopRefresh();
         if (setWait)
             SetCursor(oldCur);
         if (failReason != NULL)
             *failReason = CHPPFR_SHORTERPATH;
-        return FALSE; // pozadovana cesta neni dostupna
+        return FALSE; // the requested path is not accessible
     }
 
     if (!ok)
     {
-        // zneplatnime navrhovane nastaveni listboxu (budeme listovat jinou cestu)
+        // we invalidate proposed listbox settings (we'll list a different path)
         suggestedTopIndex = -1;
         suggestedFocusName = NULL;
         if (failReason != NULL)
             *failReason = useFileName ? CHPPFR_FILENAMEFOCUSED : CHPPFR_SHORTERPATH;
     }
 
-    // musi se povest (alespon root archivu vzdy existuje)
+    // must succeed (at least the archive root always exists)
     CommonRefresh(HWindow, suggestedTopIndex, useFileName ? fileName : suggestedFocusName,
                   refreshListBox, TRUE, isRefresh);
 
     if (refreshListBox && !ok && useFileName && GetCaretIndex() == 0)
-    { // pokus o vyber jmena souboru selhal -> nebylo to jmeno souboru
+    { // attempt to focus a file name failed -> it wasn't a file name
         if (failReason != NULL)
             *failReason = CHPPFR_SHORTERPATH;
     }
@@ -2392,9 +2392,9 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
     if (setWait)
         SetCursor(oldCur);
 
-    // pridame cestu, kterou jsme prave opustili (uvnitr archivu se cesty nezaviraji,
-    // takze se DirHistoryAddPathUnique jeste nevolalo) + jen kdyz nejde o aktualni
-    // cestu (nastava jen kdyz fokusime soubor)
+    // we add the path we just left (paths inside the archive don't close,
+    // so DirHistoryAddPathUnique wasn't called yet) + only if it's not the current
+    // path (happens only when focusing a file)
     if (sameArch && GetArchiveDir()->SalDirStrCmp(currentPath, GetZIPPath()) != 0)
     {
         if (UserWorkedOnThisPath)
@@ -2403,9 +2403,9 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
             UserWorkedOnThisPath = FALSE;
         }
 
-        // opoustime cestu
-        HiddenNames.Clear();  // uvolnime skryte nazvy
-        OldSelection.Clear(); // a starou selection
+        // we're leaving the path
+        HiddenNames.Clear();  // release hidden names
+        OldSelection.Clear(); // and old selection
     }
 
     return ok;
@@ -2424,9 +2424,9 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
     if (cutFileName != NULL)
         *cutFileName = 0;
     char bufFSUserPart[MAX_PATH];
-    const char* origUserPart; // user-part, na ktery mame zmenit cestu
+    const char* origUserPart; // user-part to which we switch the path to
     int origFSNameIndex;
-    if (fsUserPart == NULL) // jde o odpojeny FS, obnova listingu...
+    if (fsUserPart == NULL) // detached FS, restoration of the listing...
     {
         if (!pluginFS.GetCurrentPath(bufFSUserPart))
         {
@@ -2446,26 +2446,26 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
     if (keepOldListing != NULL && *keepOldListing)
     {
         workDir = new CSalamanderDirectory(TRUE);
-        if (workDir == NULL) // nedostatek pameti -> uvolnime listing (bude prazdny panel)
+        if (workDir == NULL) // out of memory -> release the listing (the panel will be empty)
         {
             *keepOldListing = FALSE;
             workDir = dir;
 
             if (!firstCall)
             {
-                // uvolneni dat listingu v panelu
+                // release listing data in the panel
                 if (UseSystemIcons || UseThumbnails)
                     SleepIconCacheThread();
 
-                ReleaseListing();                 // pocitame s tim, ze 'dir' je PluginFSDir
-                workDir = dir = GetPluginFSDir(); // v ReleaseListing() se muze i jen odpojovat (viz OnlyDetachFSListing)
+                ReleaseListing();                 // assuming 'dir' is PluginFSDir
+                workDir = dir = GetPluginFSDir(); // ReleaseListing() may only detach (see OnlyDetachFSListing)
 
-                // zabezpecime listbox proti chybam vzniklym zadosti o prekresleni (prave jsme podrizli data)
+                // secure the listbox from errors caused by the redraw request (we just cut the data)
                 ListBox->SetItemsCount(0, 0, 0, TRUE);
                 SelectedCount = 0;
-                // Pokud se doruci WM_USER_UPDATEPANEL, dojde k prekreslnei obsahu panelu a nastaveni
-                // scrollbary. Dorucit ji muze message loopa pri vytvoreni message boxu.
-                // Jinak se panel bude tvarit jako nezmeneny a message bude vyjmuta z fronty.
+                // If WM_USER_UPDATEPANEL is delivered the panel content and scrollbars will repaint.
+                // The message loop may deliver it while a message box is created; otherwise the panel
+                // remains unchanged and the message is removed from the queue.
                 PostMessage(HWindow, WM_USER_UPDATEPANEL, 0, 0);
             }
         }
@@ -2474,7 +2474,7 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
     {
         if (!firstCall)
         {
-            workDir->Clear(NULL); // zbytecne (melo by byt prazdne), jen tak pro jistotu
+            workDir->Clear(NULL); // unnecessary (should be empty), just to be safe
         }
     }
 
@@ -2484,8 +2484,8 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
     pluginData = NULL;
     shorterPath = FALSE;
     if (cancel != NULL)
-        *cancel = FALSE; // nova data
-    // budeme se pokouset nacist obsah "adresare" (cesta se muze postupne zkracovat)
+        *cancel = FALSE; // new data
+    // we will try to read the directory contents (the path may shorten progressively)
     BOOL useCutFileName = TRUE;
     char fsNameBuf[MAX_PATH];
     fsNameBuf[0] = 0;
@@ -2501,9 +2501,9 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
                                                  fsNameIndex, user, cutFileName,
                                                  cutFileName != NULL ? &pathWasCut : NULL,
                                                  forceUpdate, mode);
-        if (changePathRet) // ChangePath nevraci error
+        if (changePathRet) // ChangePath doesn't return an error
         {
-            if (StrICmp(newFSName, fsName) != 0) // zmena fs-name, musime nove fs-name overit
+            if (StrICmp(newFSName, fsName) != 0) // fs-name change, verify the new fs-name
             {
                 BOOL ok2 = FALSE;
                 int index;
@@ -2526,62 +2526,59 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
                 else
                     TRACE_E("CFilesWindow::ChangeAndListPathOnFS(): pluginFS.ChangePath() returned unknown fs-name: " << newFSName);
                 if (!ok2)
-                    changePathRet = FALSE; // zmena fs-name se nepovedla, simulujeme fatal error na FS
-                else                       // zacneme pouzivat nove jmeno FS (pro dalsi pruchod cyklem)
+                    changePathRet = FALSE; // fs-name change failed; simulate a fatal error on the FS
+                else                       // start using the new FS name (for the next loop pass)
                 {
                     lstrcpyn(fsNameBuf, newFSName, MAX_PATH);
                     fsName = fsNameBuf;
                     fsNameIndex = newFSNameIndex;
                 }
             }
-            if (changePathRet) // pouzite fs-name ulozime do 'pluginFS'
+            if (changePathRet) // store the used fs-name in 'pluginFS'
                 pluginFS.SetPluginFS(fsName, fsNameIndex);
         }
 
         if (changePathRet)
-        { // cesta vypada o.k.
+        { // the path looks OK
             if (pathWasCut && cutFileName != NULL && *cutFileName == 0)
                 useCutFileName = FALSE;
-            if (firstCall) // zmena cesty v ramci FS, listing puvodni cesty neni uvolneny (stacil by?)
+            if (firstCall) // path change within the FS, original listing is not released (would it suffice?)
             {
                 if (!forceUpdate && currentPath != NULL &&
                     pluginFS.IsCurrentPath(pluginFS.GetPluginFSNameIndex(),
-                                           currentPathFSNameIndex, currentPath)) // cesta zkracena na puvodni cestu
-                {                                                                // neni duvod ke zmene cesty, puvodni listing staci
+                                           currentPathFSNameIndex, currentPath)) // path shortened back to the original path
+                {                                                                // no reason to change the path, the original listing is enough
                     shorterPath = !pluginFS.IsCurrentPath(pluginFS.GetPluginFSNameIndex(), origFSNameIndex, origUserPart);
                     if (cancel != NULL)
-                        *cancel = TRUE;                     // zachovali jsme puvodni data
-                    pluginIconsType = GetPluginIconsType(); // zbytecne (nebude se pouzivat), ale zustava stejny
+                        *cancel = TRUE;                     // the original data was kept
+                    pluginIconsType = GetPluginIconsType(); // unnecessary (won't be used) but remains the same
                     ok = TRUE;
                     break;
                 }
 
-                if (keepOldListing == NULL || !*keepOldListing) // neni dead-code (pouzije se pri chybe alokace workDir)
+                if (keepOldListing == NULL || !*keepOldListing) // not dead-code (used when allocating workDir fails)
                 {
-                    // uvolneni dat listingu v panelu
+                    // release listing data in the panel
                     if (UseSystemIcons || UseThumbnails)
                         SleepIconCacheThread();
 
-                    ReleaseListing();                 // pocitame s tim, ze 'dir' je PluginFSDir
-                    workDir = dir = GetPluginFSDir(); // v ReleaseListing() se muze i jen odpojovat (viz OnlyDetachFSListing)
+                    ReleaseListing();                 // assuming 'dir' is PluginFSDir
+                    workDir = dir = GetPluginFSDir(); // ReleaseListing() may only detach (see OnlyDetachFSListing)
 
-                    // zabezpecime listbox proti chybam vzniklym zadosti o prekresleni (prave jsme podrizli data)
+                    // secure the listbox from errors caused by the redraw request (we just cut the data)
                     ListBox->SetItemsCount(0, 0, 0, TRUE);
                     SelectedCount = 0;
-                    // Pokud se doruci WM_USER_UPDATEPANEL, dojde k prekreslnei obsahu panelu a nastaveni
-                    // scrollbary. Dorucit ji muze message loopa pri vytvoreni message boxu.
-                    // Jinak se panel bude tvarit jako nezmeneny a message bude vyjmuta z fronty.
-                    PostMessage(HWindow, WM_USER_UPDATEPANEL, 0, 0);
-                }
-                firstCall = FALSE;
+                    // If WM_USER_UPDATEPANEL is delivered the panel content and scrollbars will repaint.
+                    // The message loop may deliver it while a message box is created; otherwise the panel
+                    // remains unchanged and the message is removed from the queue.
             }
 
-            // pokusime se vylistovat soubory a adresare z akt. cesty
-            if (pluginFS.ListCurrentPath(workDir, pluginData, pluginIconsType, forceUpdate)) // podarilo se ...
+            // attempt to list files and directories from the current path
+            if (pluginFS.ListCurrentPath(workDir, pluginData, pluginIconsType, forceUpdate)) // succeeded ...
             {
-                if (keepOldListing != NULL && *keepOldListing) // uz mame novy listing, stary zrusime
+                if (keepOldListing != NULL && *keepOldListing) // we already have the new listing; discard the old one
                 {
-                    // uvolneni dat listingu v panelu
+                    // release listing data in the panel
                     if (UseSystemIcons || UseThumbnails)
                         SleepIconCacheThread();
 
