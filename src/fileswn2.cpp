@@ -2571,6 +2571,9 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
                     // If WM_USER_UPDATEPANEL is delivered the panel content and scrollbars will repaint.
                     // The message loop may deliver it while a message box is created; otherwise the panel
                     // remains unchanged and the message is removed from the queue.
+                    PostMessage(HWindow, WM_USER_UPDATEPANEL, 0, 0);
+                }
+                firstCall = FALSE;
             }
 
             // attempt to list files and directories from the current path
