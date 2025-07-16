@@ -2617,27 +2617,27 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
                 ok = TRUE;
                 break;
             }
-            // pripravime dir na dalsi pouziti (pokud po sobe plug-in neco nechal, uvolnime to)
+            // we prepare dir for further use (release leftovers if the plugin left any)
             workDir->Clear(NULL);
-            // cesta neni o.k., pokusime se ji zkratit v pristim pruchodu cyklu
+            // path isn't o.k.; we'll try shortening it in the next cycle pass
             if (!pluginFS.GetCurrentPath(user))
             {
                 TRACE_E("Unexpected situation in CFilesWindow::ChangeAndListPathOnFS()");
                 break;
             }
         }
-        else // fatal error, koncime
+        else // fatal error, abort
         {
             TRACE_I("Unable to open FS path " << fsName << ":" << origUserPart);
 
-            if (firstCall && (keepOldListing == NULL || !*keepOldListing)) // neni dead-code (pouzije se pri chybe alokace workDir)
+            if (firstCall && (keepOldListing == NULL || !*keepOldListing)) // not dead-code (used when allocating workDir fails)
             {
-                // uvolneni dat listingu v panelu
+                // release listing data in the panel
                 if (UseSystemIcons || UseThumbnails)
                     SleepIconCacheThread();
 
-                ReleaseListing();                 // pocitame s tim, ze 'dir' je PluginFSDir
-                workDir = dir = GetPluginFSDir(); // v ReleaseListing() se muze i jen odpojovat (viz OnlyDetachFSListing)
+                ReleaseListing();                 // we're assuming 'dir' is PluginFSDir
+                workDir = dir = GetPluginFSDir(); // ReleaseListing() may only detach (see OnlyDetachFSListing)
 
                 // secure the listbox from errors caused by the redraw request (we just cut the data)
                 ListBox->SetItemsCount(0, 0, 0, TRUE);
@@ -2653,13 +2653,13 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
     }
 
     if (dir != workDir)
-        delete workDir; // 'workDir' se nepouzil, uvolnime ho
+        delete workDir; // 'workDir' wasn't used, free it
 
-    // zkusime najit soubor k fokuseni v listingu z FS - neni dokonale, pokud je soubor skryty
-    // z listingu v panelu (napr. pres "nezobrazovat skryte soubory" nebo pres filtry), pak nemuze
-    // byt v panelu vyfokusen a user se o teto "chybe" nedozvi - nicmene asi to ani chybu hlasit
-    // nemuze, kdyz ten soubor ve skutecnosti existuje, takze na to kasleme (stejne jako u
-    // diskovych cest)...
+    // we try to find a file to focus in the FS listing - not perfect when the file is hidden
+    // from the panel listing (e.g., "don't show hidden files" or filters) because it cannot
+    // be focused and the user won't know about this "error" - but it's probably
+    // not really an error if the file does exist, so we ignore it (same as with
+    // disk paths)...
     if (ok && useCutFileName && cutFileName != NULL && *cutFileName != 0)
     {
         CFilesArray* files = dir->GetFiles("");
@@ -2673,7 +2673,7 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
                 StrICmpEx(f->Name, cutFileNameLen, cutFileName, cutFileNameLen) == 0)
                 break;
         }
-        if (i == count) // vypiseme chybu (soubor pro fokuseni nebyl nalezen)
+        if (i == count) // report error (the file to focus was not found)
         {
             char errText[MAX_PATH + 200];
             sprintf(errText, LoadStr(IDS_UNABLETOFOCUSFILEONFS), cutFileName);
@@ -2683,7 +2683,7 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
     }
 
     if (!useCutFileName && cutFileName != NULL)
-        *cutFileName = 0; // nechceme pouzivat -> vynulujeme
+        *cutFileName = 0; // we do not want to use it -> reset the value
     return ok;
 }
 
@@ -2697,7 +2697,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                          mode, refreshListBox, isRefresh, canFocusFileName, convertPathToInternal);
     //TRACE_I("change-to-fs: begin");
 
-    // pro pripad, ze by fsName ukazovalo do meneneho retezce (GetPluginFS()->PluginFSName()), udelame zalozni kopii
+    // as a precaution if fsName points to an unchangeable string (GetPluginFS()->PluginFSName()), we create a backup copy
     char backup[MAX_PATH];
     lstrcpyn(backup, fsName, MAX_PATH);
     fsName = backup;
@@ -2717,7 +2717,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
         MessageBox(HWindow, LoadStr(IDS_TOOLONGPATH), LoadStr(IDS_ERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
         return FALSE;
     }
-    // udelame zalozni kopie
+    // make backup copies
     char backup2[MAX_PATH];
     lstrcpyn(backup2, fsUserPart, MAX_PATH);
     fsUserPart = backup2;
@@ -2729,39 +2729,39 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
         suggestedFocusName = backup3;
     }
 
-    // obnovime udaje o stavu panelu (top-index + focused-name) pred pripadnym zavrenim teto cesty
+    // restore panel state info (top-index + focused-name) before potentially closing this path
     RefreshPathHistoryData();
 
     if (!isRefresh)
         MainWindow->CancelPanelsUI(); // cancel QuickSearch and QuickEdit
 
-    //---  nahozeni hodin
-    BOOL setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // ceka uz ?
+    //---  start the waiting cursor
+    BOOL setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // is it already waiting?
     HCURSOR oldCur;
     if (setWait)
         oldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
-    BeginStopRefresh(); // neprejeme si zadne refreshe
+    BeginStopRefresh(); // no refreshes, please
 
     BOOL ok = FALSE;
     BOOL shorterPath;
     char cutFileNameBuf[MAX_PATH];
     int fsNameIndex;
     if (!Is(ptPluginFS) || !IsPathFromActiveFS(fsName, fsUserPart2, fsNameIndex, convertPathToInternal))
-    { // neni FS nebo cesta je z jineho FS (i v ramci jednoho plug-inu - jednoho jmena FS)
+    { // is not FS or the path is from a different FS (even within a single plug-in - one FS name)
         BOOL detachFS;
         if (PrepareCloseCurrentPath(HWindow, FALSE, TRUE, detachFS, FSTRYCLOSE_CHANGEPATH))
-        { // soucasnou cestu pujde zavrit, zkusime otevrit novou cestu
+        { // the current path can be closed, attempt to open the new path
             int index;
             if (failReason != NULL)
                 *failReason = CHPPFR_INVALIDPATH;
-            if (Plugins.IsPluginFS(fsName, index, fsNameIndex)) // zjistime index pluginu
+            if (Plugins.IsPluginFS(fsName, index, fsNameIndex)) // find the plugin index
             {
-                // ziskame plug-in s FS
+                // obtain the plug-in containing the FS
                 CPluginData* plugin = Plugins.Get(index);
                 if (plugin != NULL)
                 {
-                    // otevreme novy FS
-                    // load plug-inu pred ziskanim DLLName, Version a plug-in ifacu
+                    // open the new FS
+                    // load the plug-in before obtaining DLLName, Version, and plugin interfaces
                     CPluginFSInterfaceAbstract* auxFS = plugin->OpenFS(fsName, fsNameIndex);
                     CPluginFSInterfaceEncapsulation pluginFS(auxFS, plugin->DLLName, plugin->Version,
                                                              plugin->GetPluginInterfaceForFS()->GetInterface(),
@@ -2770,24 +2770,24 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                     if (pluginFS.NotEmpty())
                     {
                         Plugins.SetWorkingPluginFS(&pluginFS);
-                        if (convertPathToInternal) // prevedeme cestu na interni format
+                        if (convertPathToInternal) // convert the path to internal format
                             pluginFS.GetPluginInterfaceForFS()->ConvertPathToInternal(fsName, fsNameIndex, fsUserPart2);
-                        // vytvorime si novy objekt pro obsah akt. cesty file systemu
+                        // create a new object for the contents of the current file system path
                         CSalamanderDirectory* newFSDir = new CSalamanderDirectory(TRUE);
                         SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
                         CPluginDataInterfaceAbstract* pluginData;
                         int pluginIconsType;
-                        char* cutFileName = canFocusFileName && suggestedFocusName == NULL ? cutFileNameBuf : NULL; // fokus souboru jen pokud neni navrzeny zadny jiny fokus
+                        char* cutFileName = canFocusFileName && suggestedFocusName == NULL ? cutFileNameBuf : NULL; // focus the file only if no other focus is proposed
                         if (ChangeAndListPathOnFS(fsName, fsNameIndex, fsUserPart2, pluginFS, newFSDir, pluginData,
                                                   shorterPath, pluginIconsType, mode, FALSE, NULL, NULL, -1,
                                                   FALSE, cutFileName, NULL))
-                        {                    // uspech, cesta (nebo podcesta) byla vylistovana
-                            if (shorterPath) // podcesta?
+                        {                    // success, the path (or subpath) was listed
+                            if (shorterPath) // subpath?
                             {
-                                // zneplatnime navrhovane nastaveni listboxu (budeme listovat jinou cestu)
+                                // invalidate proposed listbox settings (we'll list a different path)
                                 suggestedTopIndex = -1;
                                 if (cutFileName != NULL && *cutFileName != 0)
-                                    suggestedFocusName = cutFileName; // fokus souboru
+                                    suggestedFocusName = cutFileName; // the file focus
                                 else
                                     suggestedFocusName = NULL;
                                 if (failReason != NULL)
@@ -2804,17 +2804,17 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                             if (UseSystemIcons || UseThumbnails)
                                 SleepIconCacheThread();
 
-                            CloseCurrentPath(HWindow, FALSE, detachFS, FALSE, isRefresh, TRUE); // uspech, prejdeme na novou cestu
+                            CloseCurrentPath(HWindow, FALSE, detachFS, FALSE, isRefresh, TRUE); // success, switch to the new path
 
-                            // prave jsme obdrzeli novy listing, pokud jsou hlaseny nejake zmeny v panelu, stornujeme je
+                            // we just received a new listing; if there are any reported panel changes, we cancel them
                             InvalidateChangesInPanelWeHaveNewListing();
 
-                            // schovame throbbera a ikonu zabezpeceni, jestli o ne stoji novy FS, musi si je zapnout (napr. v FSE_OPENED nebo FSE_PATHCHANGED)
+                            // we hide the throbber and security icon; if the new filesystem wants them it must re-enable them (e.g., in FSE_OPENED or FSE_PATHCHANGED)
                             if (DirectoryLine != NULL)
                                 DirectoryLine->HideThrobberAndSecurityIcon();
 
                             SetPanelType(ptPluginFS);
-                            SetPath(GetPath()); // odpojeni cesty od Snoopera (konec sledovani zmen na Path)
+                            SetPath(GetPath()); // detach the path from Snooper (stop monitoring changes on Path)
                             SetPluginFS(pluginFS.GetInterface(), plugin->DLLName, plugin->Version,
                                         plugin->GetPluginInterfaceForFS()->GetInterface(),
                                         plugin->GetPluginInterface()->GetInterface(),
@@ -2939,7 +2939,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                                   pluginData, shorterPath, pluginIconsType, mode, TRUE, &cancel,
                                   currentPathOK ? currentPath : NULL, currentPathFSNameIndex, forceUpdate,
                                   cutFileName, &keepOldListing))
-        { // uspech, cesta (nebo podcesta) byla vylistovana
+        { // success, the path (or subpath) was listed
             if (failReason != NULL)
             {
                 *failReason = shorterPath ? (cutFileName != NULL && *cutFileName != 0 ? CHPPFR_FILENAMEFOCUSED : CHPPFR_SHORTERPATH) : CHPPFR_SUCCESS;
@@ -2947,7 +2947,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
 
             if (!cancel) // jen pokud byl nacten novy obsah (nezustal nacteny puvodni obsah)
             {
-                // prave jsme obdrzeli novy listing, pokud jsou hlaseny nejake zmeny v panelu, stornujeme je
+                // we just received a new listing; if there are any reported panel changes, we cancel them
                 InvalidateChangesInPanelWeHaveNewListing();
 
                 // schovame throbbera a ikonu zabezpeceni, jestli o ne FS stoji i nadale, musi si je znovu zapnout (napr. v FSE_PATHCHANGED)
@@ -2969,7 +2969,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                     OldSelection.Clear(); // a starou selection
                 }
 
-                if (shorterPath) // podcesta?
+                if (shorterPath) // subpath?
                 {
                     // zneplatnime navrhovane nastaveni listboxu (budeme listovat jinou cestu)
                     suggestedTopIndex = -1;
@@ -3229,7 +3229,7 @@ BOOL CFilesWindow::ChangePathToDetachedFS(int fsIndex, int suggestedTopIndex,
         newFSName = backup3;
     }
 
-    // obnovime udaje o stavu panelu (top-index + focused-name) pred pripadnym zavrenim teto cesty
+    // restore panel state info (top-index + focused-name) before potentially closing this path
     RefreshPathHistoryData();
 
     MainWindow->CancelPanelsUI(); // cancel QuickSearch and QuickEdit
@@ -3288,8 +3288,8 @@ BOOL CFilesWindow::ChangePathToDetachedFS(int fsIndex, int suggestedTopIndex,
         return FALSE;
     }
 
-    //---  nahozeni hodin
-    BOOL setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // ceka uz ?
+    //---  start the waiting cursor
+    BOOL setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // is it already waiting?
     HCURSOR oldCur;
     if (setWait)
         oldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
