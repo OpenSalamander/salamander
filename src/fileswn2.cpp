@@ -2582,30 +2582,30 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
                     if (UseSystemIcons || UseThumbnails)
                         SleepIconCacheThread();
 
-                    ReleaseListing();       // pocitame s tim, ze 'dir' je PluginFSDir
-                    dir = GetPluginFSDir(); // v ReleaseListing() se muze i jen odpojovat (viz OnlyDetachFSListing)
+                    ReleaseListing();       // we're assuming 'dir' is PluginFSDir
+                    dir = GetPluginFSDir(); // in ReleaseListing() we may only detach (see OnlyDetachFSListing)
 
-                    // zabezpecime listbox proti chybam vzniklym zadosti o prekresleni (prave jsme podrizli data)
+                    // secure the listbox from errors caused by the redraw request (we just cut the data)
                     ListBox->SetItemsCount(0, 0, 0, TRUE);
                     SelectedCount = 0;
-                    // Pokud se doruci WM_USER_UPDATEPANEL, dojde k prekreslnei obsahu panelu a nastaveni
-                    // scrollbary. Dorucit ji muze message loopa pri vytvoreni message boxu.
-                    // Jinak se panel bude tvarit jako nezmeneny a message bude vyjmuta z fronty.
+                    // If WM_USER_UPDATEPANEL is delivered the panel content and scrollbars will repaint.
+                    // The message loop may deliver it while a message box is created; otherwise the panel
+                    // remains unchanged and the message is removed from the queue.
                     PostMessage(HWindow, WM_USER_UPDATEPANEL, 0, 0);
 
-                    SetPluginFSDir(workDir); // nastavime novy listing
+                    SetPluginFSDir(workDir); // we set the new listing
                     delete dir;
                     dir = workDir;
                 }
 
                 if (pluginIconsType != pitSimple &&
                     pluginIconsType != pitFromRegistry &&
-                    pluginIconsType != pitFromPlugin) // overime jestli se trefil do povolene hodnoty
+                    pluginIconsType != pitFromPlugin) // verify it matches an allowed value
                 {
                     TRACE_E("Invalid plugin-icons-type!");
                     pluginIconsType = pitSimple;
                 }
-                if (pluginIconsType == pitFromPlugin && pluginData == NULL) // to by neslo, degradujeme typ
+                if (pluginIconsType == pitFromPlugin && pluginData == NULL) // not allowed, degrade the type
                 {
                     TRACE_E("Plugin-icons-type is pitFromPlugin and plugin-data is NULL!");
                     pluginIconsType = pitSimple;
@@ -2636,12 +2636,12 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
                 ReleaseListing();                 // pocitame s tim, ze 'dir' je PluginFSDir
                 workDir = dir = GetPluginFSDir(); // v ReleaseListing() se muze i jen odpojovat (viz OnlyDetachFSListing)
 
-                // zabezpecime listbox proti chybam vzniklym zadosti o prekresleni (prave jsme podrizli data)
+                // secure the listbox from errors caused by the redraw request (we just cut the data)
                 ListBox->SetItemsCount(0, 0, 0, TRUE);
                 SelectedCount = 0;
-                // Pokud se doruci WM_USER_UPDATEPANEL, dojde k prekreslnei obsahu panelu a nastaveni
-                // scrollbary. Dorucit ji muze message loopa pri vytvoreni message boxu.
-                // Jinak se panel bude tvarit jako nezmeneny a message bude vyjmuta z fronty.
+                // If WM_USER_UPDATEPANEL is delivered the panel content and scrollbars will repaint.
+                // The message loop may deliver it while a message box is created; otherwise the panel
+                // remains unchanged and the message is removed from the queue.
                 PostMessage(HWindow, WM_USER_UPDATEPANEL, 0, 0);
             }
             useCutFileName = FALSE;
@@ -3144,7 +3144,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                     if (UseSystemIcons || UseThumbnails)
                         SleepIconCacheThread();
                     ReleaseListing();
-                    // zabezpecime listbox proti chybam vzniklym zadosti o prekresleni (prave jsme podrizli data)
+                    // secure the listbox from errors caused by the redraw request (we just cut the data)
                     ListBox->SetItemsCount(0, 0, 0, TRUE);
                     SelectedCount = 0;
                 }
