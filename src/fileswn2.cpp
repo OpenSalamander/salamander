@@ -2787,7 +2787,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                                 // invalidate proposed listbox settings (we'll list a different path)
                                 suggestedTopIndex = -1;
                                 if (cutFileName != NULL && *cutFileName != 0)
-                                    suggestedFocusName = cutFileName; // the file focus
+                                    suggestedFocusName = cutFileName; // focus the file
                                 else
                                     suggestedFocusName = NULL;
                                 if (failReason != NULL)
@@ -2831,11 +2831,11 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                             if (noChange != NULL)
                                 *noChange = FALSE;
 
-                            // obnovime panel
-                            UpdateDriveIcon(FALSE); // ziskame z plug-inu ikonku pro aktualni cestu
+                            // refresh the panel
+                            UpdateDriveIcon(FALSE); // get the icon for the current path from the plugin
                             CommonRefresh(HWindow, suggestedTopIndex, suggestedFocusName, refreshListBox, TRUE, isRefresh);
 
-                            // oznamime FS, ze je konecne otevreny
+                            // notify the FS that it is finally opened
                             GetPluginFS()->Event(FSE_OPENED, GetPanelCode());
                             GetPluginFS()->Event(FSE_PATHCHANGED, GetPanelCode());
 
@@ -2860,7 +2860,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                 TRACE_I("Plugin containing file-system name " << fsName << " is no longer available.");
 
             if (!ok)
-                CloseCurrentPath(HWindow, TRUE, detachFS, FALSE, isRefresh, FALSE); // neuspech, zustaneme na puvodni ceste
+                CloseCurrentPath(HWindow, TRUE, detachFS, FALSE, isRefresh, FALSE); // failure, stay on the original path
 
             EndStopRefresh();
             if (setWait)
@@ -2869,7 +2869,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
             //TRACE_I("change-to-fs: end");
             return ok ? !shorterPath : FALSE;
         }
-        else // soucasna cesta nejde zavrit
+        else // the current path cannot be closed
         {
             EndStopRefresh();
             if (setWait)
@@ -2882,13 +2882,13 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
     }
     else
     {
-        // poznamka: convertPathToInternal uz musi byt FALSE (cesta se prevedla v IsPathFromActiveFS())
+        // note: convertPathToInternal must already be FALSE (the path was converted in IsPathFromActiveFS())
 
-        // PluginFS odpovida fsName a cesta fsUserPart2 se na nem da overit
+        // PluginFS matches fsName and the path fsUserPart2 can be verified on it
         BOOL samePath = GetPluginFS()->IsCurrentPath(GetPluginFS()->GetPluginFSNameIndex(), fsNameIndex, fsUserPart2);
-        if (!forceUpdate && samePath) // cesta je identicka se soucasnou cestou
+        if (!forceUpdate && samePath) // the path is identical to the current path
         {
-            // aby se nevyignorovali 'suggestedTopIndex' a 'suggestedFocusName', zavolame CommonRefresh
+            // call CommonRefresh so 'suggestedTopIndex' and 'suggestedFocusName' aren't ignored
             CommonRefresh(HWindow, suggestedTopIndex, suggestedFocusName, refreshListBox, FALSE, isRefresh);
 
             EndStopRefresh();
@@ -2898,10 +2898,10 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
             if (failReason != NULL)
                 *failReason = CHPPFR_SUCCESS;
             //TRACE_I("change-to-fs: end");
-            return TRUE; // neni co delat
+            return TRUE; // nothing to do
         }
 
-        // zazalohujeme si soucasnou cestu na FS (v pripade chyby ji zkusime znovu zvolit)
+        // back up the current FS path (we'll try to select it again if an error occurs)
         BOOL currentPathOK = TRUE;
         char currentPath[MAX_PATH];
         if (!GetPluginFS()->GetCurrentPath(currentPath))
@@ -2927,14 +2927,14 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                 lstrcpyn(originalFocusName, file->Name, MAX_PATH);
         }
 
-        // zkusime zmenit cestu na soucasnem FS
+        // attempt to change the path on the current FS
         SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
         CPluginDataInterfaceAbstract* pluginData;
         int pluginIconsType;
         BOOL cancel;
         BOOL keepOldListing = TRUE;
-        char* cutFileName = canFocusFileName && suggestedFocusName == NULL ? cutFileNameBuf : NULL; // fokus souboru jen pokud neni navrzeny zadny jiny fokus
+        char* cutFileName = canFocusFileName && suggestedFocusName == NULL ? cutFileNameBuf : NULL; // focus the file only if no other focus is proposed
         if (ChangeAndListPathOnFS(fsName, fsNameIndex, fsUserPart2, *GetPluginFS(), GetPluginFSDir(),
                                   pluginData, shorterPath, pluginIconsType, mode, TRUE, &cancel,
                                   currentPathOK ? currentPath : NULL, currentPathFSNameIndex, forceUpdate,
@@ -2945,18 +2945,18 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                 *failReason = shorterPath ? (cutFileName != NULL && *cutFileName != 0 ? CHPPFR_FILENAMEFOCUSED : CHPPFR_SHORTERPATH) : CHPPFR_SUCCESS;
             }
 
-            if (!cancel) // jen pokud byl nacten novy obsah (nezustal nacteny puvodni obsah)
+            if (!cancel) // only if new content was loaded (original content wasn't kept)
             {
                 // we just received a new listing; if there are any reported panel changes, we cancel them
                 InvalidateChangesInPanelWeHaveNewListing();
 
-                // schovame throbbera a ikonu zabezpeceni, jestli o ne FS stoji i nadale, musi si je znovu zapnout (napr. v FSE_PATHCHANGED)
+                // we hide the throbber and security icon; if the FS still wants them it must enable them again (e.g., in FSE_PATHCHANGED)
                 if (DirectoryLine != NULL)
                     DirectoryLine->HideThrobberAndSecurityIcon();
 
-                // pridame cestu, kterou jsme prave opustili (uvnitr FS se cesty nezaviraji,
-                // takze se DirHistoryAddPathUnique jeste nevolalo)
-                if (currentPathOK && (!samePath || samePath && shorterPath)) // doslo ke zmene cesty
+                // add the path we just left (paths inside the FS remain open,
+                // so DirHistoryAddPathUnique hasn't been called yet)
+                if (currentPathOK && (!samePath || samePath && shorterPath)) // the path has changed
                 {
                     if (UserWorkedOnThisPath)
                     {
@@ -2964,23 +2964,23 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                                                             GetPluginFS()->GetInterface(), GetPluginFS());
                         UserWorkedOnThisPath = FALSE;
                     }
-                    // opoustime cestu
-                    HiddenNames.Clear();  // uvolnime skryte nazvy
-                    OldSelection.Clear(); // a starou selection
+                    // leaving the path
+                    HiddenNames.Clear();  // release hidden names
+                    OldSelection.Clear(); // and old selection
                 }
 
                 if (shorterPath) // subpath?
                 {
-                    // zneplatnime navrhovane nastaveni listboxu (budeme listovat jinou cestu)
+                    // invalidate proposed listbox settings (we'll list a different path)
                     suggestedTopIndex = -1;
                     if (cutFileName != NULL && *cutFileName != 0)
-                        suggestedFocusName = cutFileName; // fokus souboru
+                        suggestedFocusName = cutFileName; // focus the file
                     else
                     {
                         suggestedFocusName = NULL;
 
-                        // nova cesta se zkratila na puvodni cestu ("nelistovatelny podadresar"), zachovame
-                        // topIndex a focusName pred zahajenim operace (at se userovi neztrati fokus)
+                        // the new path shortened back to the original ("unlistable subdirectory"),
+                        // keep topIndex and focusName from before the operation starts (so the user doesn't lose focus)
                         if (currentPathOK &&
                             GetPluginFS()->IsCurrentPath(GetPluginFS()->GetPluginFSNameIndex(),
                                                          currentPathFSNameIndex, currentPath))
@@ -2993,7 +2993,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
 
                 //        if (UseSystemIcons || UseThumbnails) SleepIconCacheThread();   // vola se v ChangeAndListPathOnFS
 
-                // ke stavajicimu (nove naplnenemu) PluginFSDir pridame nove pluginData
+                // add new pluginData to the current (newly filled) PluginFSDir
                 PluginData.Init(pluginData, GetPluginFS()->GetDLLName(),
                                 GetPluginFS()->GetVersion(), GetPluginFS()->GetPluginInterface(),
                                 GetPluginFS()->GetBuiltForVersion());
@@ -3008,27 +3008,27 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                 if (noChange != NULL)
                     *noChange = FALSE;
 
-                // vycistime message-queue od nabufferovane WM_USER_UPDATEPANEL
+                // clean the message queue from buffered WM_USER_UPDATEPANEL
                 MSG msg2;
                 PeekMessage(&msg2, HWindow, WM_USER_UPDATEPANEL, WM_USER_UPDATEPANEL, PM_REMOVE);
 
-                // obnovime panel
-                UpdateDriveIcon(FALSE); // ziskame z plug-inu ikonku pro aktualni cestu
+                // refresh the panel
+                UpdateDriveIcon(FALSE); // get the icon for the current path from the plugin
                 CommonRefresh(HWindow, suggestedTopIndex, suggestedFocusName, refreshListBox, TRUE, isRefresh);
 
-                // oznamime FS, ze se zmenila cesta
+                // notify the FS that the path changed
                 GetPluginFS()->Event(FSE_PATHCHANGED, GetPanelCode());
             }
             else
             {
-                if (shorterPath && cutFileName != NULL && *cutFileName != 0 && refreshListBox) // je treba fokusnout soubor
+                if (shorterPath && cutFileName != NULL && *cutFileName != 0 && refreshListBox) // the file needs to be focused
                 {
                     int focusIndexCase = -1;
                     int focusIndexIgnCase = -1;
                     int i;
                     for (i = 0; i < Dirs->Count; i++)
-                    { // pro konzistenci s CommonRefresh hledame nejdrive v adresarich,
-                        // pak v souborech (aby se to chovalo stejne v obou pripadech)
+                    { // for consistency with CommonRefresh we search directories first,
+                        // then files (so it behaves the same in both cases)
                         if (StrICmp(Dirs->At(i).Name, cutFileName) == 0)
                         {
                             if (focusIndexIgnCase == -1)
@@ -3057,7 +3057,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                         }
                     }
 
-                    if (focusIndexIgnCase != -1) // byl nalezen aspon soubor s moznym rozdilem ve velikosti pismen
+                    if (focusIndexIgnCase != -1) // at least one file was found with potencial case difference
                     {
                         SetCaretIndex(focusIndexCase != -1 ? focusIndexCase : focusIndexIgnCase, FALSE);
                     }
@@ -3066,32 +3066,32 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
 
             ok = TRUE;
         }
-        else // pozadovana cesta neni dostupna, zkusime se vratit na puvodni cestu
+        else // requested path is not accessible, try returning to the original path
         {
             if (noChange != NULL)
-                *noChange = FALSE; // listing bude vycisteny nebo zmeneny
-            if (!samePath &&       // pokud nejde o refresh (zmena na stejnou cestu)
-                currentPathOK &&   // pokud se puvodni cestu podarilo ziskat
+                *noChange = FALSE; // the listing will be cleared or changed
+            if (!samePath &&       // if this isn't a refresh (changing to the same path)
+                currentPathOK &&   // if the original path was retrieved successfully
                 ChangeAndListPathOnFS(currentPathFSName, currentPathFSNameIndex, currentPath,
                                       *GetPluginFS(), GetPluginFSDir(),
                                       pluginData, shorterPath, pluginIconsType, mode,
                                       FALSE, NULL, NULL, -1, FALSE, NULL, &keepOldListing))
-            { // uspech, puvodni cesta (nebo jeji podcesta) byla vylistovana
-                // zneplatnime navrhovane nastaveni listboxu (budeme listovat jinou cestu)
+            { // success, the original path (or its subpath) was listed
+                // invalidate proposed listbox settings (we'll list a different path)
                 suggestedTopIndex = -1;
                 suggestedFocusName = NULL;
 
-                // puvodni cesta je pristupna (nemuseli jsme zkracovat), zachovame topIndex
-                // a focusName pred zahajenim operace (at se userovi neztrati fokus)
+                // the original path is accessible (no shortening was needed); keep the topIndex
+                // and focusName from before the operation (so the user doesn't lose focus)
                 if (!shorterPath)
                 {
                     suggestedTopIndex = originalTopIndex;
                     suggestedFocusName = originalFocusName[0] == 0 ? NULL : originalFocusName;
                 }
 
-                // pridame cestu, kterou jsme prave opustili (uvnitr FS se cesty nezaviraji,
-                // takze se DirHistoryAddPathUnique jeste nevolalo)
-                if (currentPathOK && shorterPath) // pokud neni shorterPath, cesta se nezmenila...
+                // add the path we just left (paths inside the FS remain open,
+                // so DirHistoryAddPathUnique hasn't been called yet)
+                if (currentPathOK && shorterPath) // if shorterPath is FALSE, the path didn't change...
                 {
                     if (UserWorkedOnThisPath)
                     {
@@ -3099,22 +3099,22 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                                                             GetPluginFS()->GetInterface(), GetPluginFS());
                         UserWorkedOnThisPath = FALSE;
                     }
-                    // opoustime cestu
-                    HiddenNames.Clear();  // uvolnime skryte nazvy
-                    OldSelection.Clear(); // a starou selection
+                    // leaving the path
+                    HiddenNames.Clear();  // release hidden names
+                    OldSelection.Clear(); // and old selection
                 }
 
                 // we just received a new listing; if there are any reported panel changes, we cancel them
                 InvalidateChangesInPanelWeHaveNewListing();
 
-                // schovame throbbera a ikonu zabezpeceni, jestli o ne FS stoji i nadale, musi si je znovu zapnout (napr. v FSE_PATHCHANGED)
+                // we hide the throbber and security icon; if the FS still wants them it must enable them again (e.g., in FSE_PATHCHANGED)
                 if (DirectoryLine != NULL)
                     DirectoryLine->HideThrobberAndSecurityIcon();
 
                 if (UseSystemIcons || UseThumbnails)
                     SleepIconCacheThread();
 
-                // ke stavajicimu (nove naplnenemu) PluginFSDir pridame nove pluginData
+                // add new pluginData to the current (newly filled) PluginFSDir
                 PluginData.Init(pluginData, GetPluginFS()->GetDLLName(),
                                 GetPluginFS()->GetVersion(), GetPluginFS()->GetPluginInterface(),
                                 GetPluginFS()->GetBuiltForVersion());
@@ -3126,24 +3126,24 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                 }
                 SetValidFileData(GetPluginFSDir()->GetValidData());
 
-                // vycistime message-queue od nabufferovane WM_USER_UPDATEPANEL
+                // clean the message queue from buffered WM_USER_UPDATEPANEL
                 MSG msg2;
                 PeekMessage(&msg2, HWindow, WM_USER_UPDATEPANEL, WM_USER_UPDATEPANEL, PM_REMOVE);
 
-                // obnovime panel
-                UpdateDriveIcon(FALSE); // ziskame z plug-inu ikonku pro aktualni cestu
+                // refresh the panel
+                UpdateDriveIcon(FALSE); // get the icon for the current path from the plugin
                 CommonRefresh(HWindow, suggestedTopIndex, suggestedFocusName, refreshListBox, TRUE, isRefresh);
                 if (failReason != NULL)
-                    *failReason = mode == 3 ? CHPPFR_INVALIDPATH : CHPPFR_SHORTERPATH; // bylo tu jen CHPPFR_SHORTERPATH, ale Shift+F7 z dfs:x:\zumpa na dfs:x:\zumpa\aaa jen ohlasilo chybu cesty a nevracelo se do Shift+F7 dialogu
+                    *failReason = mode == 3 ? CHPPFR_INVALIDPATH : CHPPFR_SHORTERPATH; // previously CHPPFR_SHORTERPATH only; but Shift+F7 from dfs:x:\zumpa to dfs:x:\zumpa\aaa just reported a path error and didn't return to the Shift+F7 dialog
 
-                // oznamime FS, ze se zmenila cesta
+                // notify the FS that the path changed
                 GetPluginFS()->Event(FSE_PATHCHANGED, GetPanelCode());
             }
-            else // zobrazime prazdny panel, z FS nejde nic nacist, prepneme na fixed-drive
+            else // show an empty panel, nothing can be read from the FS, switch to the fixed drive
             {
                 if (keepOldListing)
                 {
-                    // uvolnime stary listing
+                    // release the old listing
                     if (UseSystemIcons || UseThumbnails)
                         SleepIconCacheThread();
                     ReleaseListing();
@@ -3151,9 +3151,9 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                     ListBox->SetItemsCount(0, 0, 0, TRUE);
                     SelectedCount = 0;
                 }
-                else // neni dead-code, viz chyba alokace 'workDir' v ChangeAndListPathOnFS()
+                else // not dead-code, see 'workDir' allocation error in ChangeAndListPathOnFS()
                 {
-                    // vycistime message-queue od nabufferovane WM_USER_UPDATEPANEL
+                    // clean the message queue from buffered WM_USER_UPDATEPANEL
                     MSG msg2;
                     PeekMessage(&msg2, HWindow, WM_USER_UPDATEPANEL, WM_USER_UPDATEPANEL, PM_REMOVE);
                 }
@@ -3162,14 +3162,14 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                 if (DirectoryLine != NULL)
                     DirectoryLine->HideThrobberAndSecurityIcon();
 
-                // nutne, nepouzivat 'refreshListBox' - panel bude prazdny "delsi" dobu (+ hrozi message-boxy)
-                SetPluginIconsType(pitSimple); // PluginData==NULL, pitFromPlugin nelze ani s prazdnym panelem
+                // necessary, cannot use "refreshListBox" - the panel would remain empty longer (message boxes may appear)
+                SetPluginIconsType(pitSimple); // PluginData==NULL, pitFromPlugin isn't allowed even with an empty panel
                 if (SimplePluginIcons != NULL)
                 {
                     delete SimplePluginIcons;
                     SimplePluginIcons = NULL;
                 }
-                // SetValidFileData(VALID_DATA_ALL_FS_ARC);   // nechame soucasnou hodnotu, neni duvod menit
+                // SetValidFileData(VALID_DATA_ALL_FS_ARC);   // keep the current value, no reason to change it
                 CommonRefresh(HWindow, -1, NULL, TRUE, TRUE, isRefresh);
 
                 SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
@@ -3234,9 +3234,9 @@ BOOL CFilesWindow::ChangePathToDetachedFS(int fsIndex, int suggestedTopIndex,
 
     MainWindow->CancelPanelsUI(); // cancel QuickSearch and QuickEdit
 
-    // ziskame z DetachedFSList zapouzdreni FS-ifacu
+    // obtain FS interface encapsulation from DetachedFSList
     if (!MainWindow->DetachedFSList->IsGood())
-    { // aby vysel pozdejsi Delete, musi byt pole o.k.
+    { // the array must be valid so the later Delete call succeeds
         TRACE_E("DetachedFSList array returns error, unable to finish operation.");
         if (failReason != NULL)
             *failReason = CHPPFR_INVALIDPATH;
@@ -3251,14 +3251,14 @@ BOOL CFilesWindow::ChangePathToDetachedFS(int fsIndex, int suggestedTopIndex,
     }
     CPluginFSInterfaceEncapsulation* pluginFS = MainWindow->DetachedFSList->At(fsIndex);
 
-    // ziskame fs-name odpojeneho FS
+    // retrieve fs-name of the detached FS
     char fsName[MAX_PATH];
     int fsNameIndex;
-    if (newFSName != NULL) // pokud se mame prepnout na nove fs-name, musime zjistit jestli existuje a jaky ma fs-name-index
+    if (newFSName != NULL) // if we must switch to a new fs-name, find out whether it exists and obtain its fs-name-index
     {
         strcpy(fsName, newFSName);
         int i;
-        if (!Plugins.IsPluginFS(fsName, i, fsNameIndex)) // "always false" (plugin se neunloadnul, fs-name nemohlo zmizet)
+        if (!Plugins.IsPluginFS(fsName, i, fsNameIndex)) // "always false" (the plugin was not unloaded; fs-name could not disappear)
         {
             TRACE_E("CFilesWindow::ChangePathToDetachedFS(): unexpected situation: requested FS was not found! fs-name=" << newFSName);
             newUserPart = NULL;
@@ -3293,33 +3293,33 @@ BOOL CFilesWindow::ChangePathToDetachedFS(int fsIndex, int suggestedTopIndex,
     HCURSOR oldCur;
     if (setWait)
         oldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
-    BeginStopRefresh(); // neprejeme si zadne refreshe
+    BeginStopRefresh(); // no refreshes, please
 
     BOOL ok = FALSE;
     BOOL shorterPath;
     char cutFileNameBuf[MAX_PATH];
 
-    // neni FS nebo cesta je z jineho FS (i v ramci jednoho plug-inu - jednoho jmena FS)
+    // not a FS path or the path is from another FS (even within the same plugin - one FS name)
     BOOL detachFS;
     if (PrepareCloseCurrentPath(HWindow, FALSE, TRUE, detachFS, FSTRYCLOSE_CHANGEPATH))
-    { // soucasnou cestu pujde zavrit, zkusime otevrit novou cestu
-        // vytvorime si novy objekt pro obsah akt. cesty file systemu
+    { // the current path can be closed, attempt to open the new path
+        // create a new object for the file system contents of the current path
         CSalamanderDirectory* newFSDir = new CSalamanderDirectory(TRUE);
         BOOL closeDetachedFS = FALSE;
         SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
         CPluginDataInterfaceAbstract* pluginData;
         int pluginIconsType;
-        char* cutFileName = canFocusFileName && suggestedFocusName == NULL ? cutFileNameBuf : NULL; // fokus souboru jen pokud neni navrzeny zadny jiny fokus
+        char* cutFileName = canFocusFileName && suggestedFocusName == NULL ? cutFileNameBuf : NULL; // focus the file only if no other focus is proposed
         if (ChangeAndListPathOnFS(fsName, fsNameIndex, newUserPart, *pluginFS, newFSDir, pluginData,
                                   shorterPath, pluginIconsType, mode,
                                   FALSE, NULL, NULL, -1, FALSE, cutFileName, NULL))
-        {                    // uspech, cesta (nebo podcesta) byla vylistovana
-            if (shorterPath) // podcesta?
+        {                    // success, the path (or subpath) was listed
+            if (shorterPath) // subpath?
             {
-                // zneplatnime navrhovane nastaveni listboxu (budeme listovat jinou cestu)
+                // invalidate proposed listbox settings (we'll list a different path)
                 suggestedTopIndex = -1;
                 if (cutFileName != NULL && *cutFileName != 0)
-                    suggestedFocusName = cutFileName; // fokus souboru
+                    suggestedFocusName = cutFileName; // focus the file
                 else
                     suggestedFocusName = NULL;
                 if (failReason != NULL)
@@ -3336,17 +3336,17 @@ BOOL CFilesWindow::ChangePathToDetachedFS(int fsIndex, int suggestedTopIndex,
             if (UseSystemIcons || UseThumbnails)
                 SleepIconCacheThread();
 
-            CloseCurrentPath(HWindow, FALSE, detachFS, FALSE, FALSE, TRUE); // uspech, prejdeme na novou cestu
+            CloseCurrentPath(HWindow, FALSE, detachFS, FALSE, FALSE, TRUE); // success, switch to the new path
 
             // we just received a new listing; if there are any reported panel changes, we cancel them
             InvalidateChangesInPanelWeHaveNewListing();
 
-            // schovame throbbera a ikonu zabezpeceni, jestli o ne stoji odpojeny FS, musi si je zapnout (napr. v FSE_ATTACHED nebo FSE_PATHCHANGED)
+            // we hide the throbber and security icon; if the detached FS wants them it must enable them (e.g., in FSE_ATTACHED or FSE_PATHCHANGED)
             if (DirectoryLine != NULL)
                 DirectoryLine->HideThrobberAndSecurityIcon();
 
             SetPanelType(ptPluginFS);
-            SetPath(GetPath()); // odpojeni cesty od Snoopera (konec sledovani zmen na Path)
+            SetPath(GetPath()); // detach the path from Snooper (stop monitoring changes on Path)
             SetPluginFS(pluginFS->GetInterface(), plugin->DLLName, plugin->Version,
                         plugin->GetPluginInterfaceForFS()->GetInterface(),
                         plugin->GetPluginInterface()->GetInterface(),
@@ -3360,11 +3360,11 @@ BOOL CFilesWindow::ChangePathToDetachedFS(int fsIndex, int suggestedTopIndex,
             SetPluginIconsType(pluginIconsType);
             SetValidFileData(GetPluginFSDir()->GetValidData());
 
-            // obnovime panel
-            UpdateDriveIcon(FALSE); // ziskame z plug-inu ikonku pro aktualni cestu
+            // refresh the panel
+            UpdateDriveIcon(FALSE); // get the icon for the current path from the plugin
             CommonRefresh(HWindow, suggestedTopIndex, suggestedFocusName, refreshListBox);
 
-            // oznamime FS, ze uz je zase pripojeny
+            // notify the FS that it is attached again
             GetPluginFS()->Event(FSE_ATTACHED, GetPanelCode());
             GetPluginFS()->Event(FSE_PATHCHANGED, GetPanelCode());
 
@@ -3380,7 +3380,7 @@ BOOL CFilesWindow::ChangePathToDetachedFS(int fsIndex, int suggestedTopIndex,
         if (!ok)
         {
             delete newFSDir;
-            CloseCurrentPath(HWindow, TRUE, detachFS, FALSE, FALSE, FALSE); // neuspech, zustaneme na puvodni ceste
+            CloseCurrentPath(HWindow, TRUE, detachFS, FALSE, FALSE, FALSE); // failure, stay on the original path
         }
 
         EndStopRefresh();
@@ -3389,21 +3389,21 @@ BOOL CFilesWindow::ChangePathToDetachedFS(int fsIndex, int suggestedTopIndex,
 
         if (ok)
         {
-            // uspesne pripojeni, vyradime FS ze seznamu odpojenych (uspech Delete je jisty)
+            // successful attachment, remove the FS from the detached list (Delete cannot fail)
             MainWindow->DetachedFSList->Delete(fsIndex);
             if (!MainWindow->DetachedFSList->IsGood())
                 MainWindow->DetachedFSList->ResetState();
         }
         else
         {
-            if (closeDetachedFS) // na FS uz nelze otevrit zadnou cestu, zavreme ho
+            if (closeDetachedFS) // no path can be opened on the FS anymore, close it
             {
                 BOOL dummy;
                 if (pluginFS->TryCloseOrDetach(FALSE, FALSE, dummy, FSTRYCLOSE_ATTACHFAILURE))
-                { // optame se usera jestli ho chce zavrit nebo nechat (ve stavu po fatalni chybe ChangePath())
+                { // ask the user whether to close it or keep it (after a fatal ChangePath() error)
                     pluginFS->ReleaseObject(HWindow);
                     plugin->GetPluginInterfaceForFS()->CloseFS(pluginFS->GetInterface());
-                    // vyradime FS ze seznamu odpojenych (uspech Delete je jisty)
+                    // remove the FS from the detached list (Delete cannot fail)
                     MainWindow->DetachedFSList->Delete(fsIndex);
                     if (!MainWindow->DetachedFSList->IsGood())
                         MainWindow->DetachedFSList->ResetState();
@@ -3413,7 +3413,7 @@ BOOL CFilesWindow::ChangePathToDetachedFS(int fsIndex, int suggestedTopIndex,
 
         return ok ? !shorterPath : FALSE;
     }
-    else // soucasna cesta nejde zavrit
+    else // the current path cannot be closed
     {
         EndStopRefresh();
         if (setWait)
@@ -3431,19 +3431,19 @@ void CFilesWindow::RefreshDiskFreeSpace(BOOL check, BOOL doNotRefreshOtherPanel)
     if (Is(ptDisk))
     {
         if (!check || CheckPath(FALSE) == ERROR_SUCCESS)
-        { // jen je-li cesta pristupna
+        { // only if the path is accessible
             CQuadWord r = MyGetDiskFreeSpace(GetPath());
             DirectoryLine->SetSize(r);
 
             if (!doNotRefreshOtherPanel)
             {
-                // pokud je ve vedlejsim panelu cesta se stejnym rootem, provedeme refresh
-                // disk-free-space i ve vedlejsim panelu (neni dokonale - idealni by bylo
-                // testovat, jestli jsou cesty na stejnem svazku, ale to by bylo moc pomale,
-                // toto zjednoduseni bude pro obycejne pouziti bohate stacit)
+                // if the other panel uses a path with the same root, we refresh 
+                // disk-free-space there as well (it is not perfect - ideally we would 
+                // test whether both paths are on the same volume, but that would be too slow;
+                // this simplification should be more than enough for normal use)
                 CFilesWindow* otherPanel = (MainWindow->LeftPanel == this) ? MainWindow->RightPanel : MainWindow->LeftPanel;
                 if (otherPanel->Is(ptDisk) && HasTheSameRootPath(GetPath(), otherPanel->GetPath()))
-                    otherPanel->RefreshDiskFreeSpace(TRUE, TRUE /* jinak nekonecna rekurze */);
+                    otherPanel->RefreshDiskFreeSpace(TRUE, TRUE /* otherwise we'd recurse endlessly */);
             }
         }
     }
@@ -3451,14 +3451,14 @@ void CFilesWindow::RefreshDiskFreeSpace(BOOL check, BOOL doNotRefreshOtherPanel)
     {
         if (Is(ptZIPArchive))
         {
-            DirectoryLine->SetSize(CQuadWord(-1, -1)); // u archivu nema volne misto valny smysl, schovame udaj
+            DirectoryLine->SetSize(CQuadWord(-1, -1)); // for archives free space is meaningless, hide the value
         }
         else
         {
             if (Is(ptPluginFS))
             {
                 CQuadWord r;
-                GetPluginFS()->GetFSFreeSpace(&r); // ziskame od plug-inu volne misto na FS
+                GetPluginFS()->GetFSFreeSpace(&r); // get the FS free space information from the plugin
                 DirectoryLine->SetSize(r);
             }
         }
@@ -3490,10 +3490,10 @@ void GetCommonFileTypeStr(char* buf, int* resLen, const char* ext)
         *d++ = UpperCase[*ext++];
     *d = 0;
     if (*ext == 0 && uppercaseExt[0] != 0)
-    { // mame upper-case celou priponu (neobsahuje mezery a neni delsi nez MAX_PATH) + neni prazdna
+    { // we have the entire extension in uppercase (no spaces and shorter than MAX_PATH) + it is not empty
         *resLen = _snprintf_s(buf, TRANSFER_BUFFER_MAX, _TRUNCATE, CommonFileTypeName2, uppercaseExt);
         if (*resLen < 0)
-            *resLen = TRANSFER_BUFFER_MAX - 1; // _snprintf_s hlasi orez na velikost bufferu
+            *resLen = TRANSFER_BUFFER_MAX - 1; // _snprintf_s reports truncation to the buffer size
     }
     else
     {
@@ -3511,7 +3511,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
 
     //TRACE_I("refreshlist: begin");
 
-    KillQuickRenameTimer(); // zamezime pripadnemu otevreni QuickRenameWindow
+    KillQuickRenameTimer(); // prevent a potential QuickRenameWindow opening
 
     NarrowedNameColumn = FALSE;
     FullWidthOfNameCol = 0;
@@ -3552,10 +3552,10 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
         CaretHeight = (short)act.cy;
 
         max.cx += 2 * IconSizes[ICONSIZE_16];
-        // minimalni sirka (napriklad pro prazdny panel) aby user dokazal trefit UpDir
+        // minimal width (e.g., for an empty panel) so the user can hit UpDir
         if (max.cx < 4 * IconSizes[ICONSIZE_16])
             max.cx = 4 * IconSizes[ICONSIZE_16];
-        Columns[0].Width = max.cx; // sirka sloupce 'Name'
+        Columns[0].Width = max.cx; // width of the 'Name' column
         max.cy += 4;
         if (max.cy < IconSizes[ICONSIZE_16] + 1)
             max.cy = IconSizes[ICONSIZE_16] + 1;
@@ -3588,7 +3588,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
         int w = IconSizes[ICONSIZE_48];
         int h = IconSizes[ICONSIZE_48];
         if (w < 48)
-            w = 48; // pro 32x32 sirka nedostacovala
+            w = 48; // for 32x32 the width was insufficient
         w += (int)(2.5 * (double)w);
         h += Configuration.TileSpacingVert;
         int textH = 3 * FontCharHeight + 4;
@@ -3609,7 +3609,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
         int columnWidthAttr = 0;
         int columnWidthDesc = 0;
 
-        // zjistime, ktere sloupce jsou skutecne zobrazene (plugin mohl sloupce zmodifikovat)
+        // determine which columns are really visible (the plugin may have modified them)
         BOOL extColumnIsVisible = FALSE;
         DWORD autoWidthColumns = 0;
         int i;
@@ -3667,7 +3667,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
 
         char text[50];
 
-        DWORD attrSkipCache[10]; // optimaliace ziskavani sirky atributu
+        DWORD attrSkipCache[10]; // optimization of attribute-width measurement
         int attrSkipCacheCount = 0;
         ZeroMemory(&attrSkipCache, sizeof(attrSkipCache));
 
@@ -3676,11 +3676,11 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
         BOOL computeDate = autoWidthColumns & VIEW_SHOW_DATE;
         if (computeDate && (totalCount > 20))
         {
-            // zjistim, jestli jsme schopni predvidat sirky
+            // determine whether we can estimate the widths
             if (GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SSHORTDATE, text, 50) != 0)
             {
-                // zjistim, jestli format datumu neobsahuje svazky (dddd || MMMM),
-                // ktere jsou v dusledku textove: (pondeli || kveten)
+                // check if the date format contains words (dddd || MMMM),
+                // which would be rendered as text: (Monday || May)
                 if (strstr(text, "dddd") == NULL && strstr(text, "MMMM") == NULL)
                 {
                     SYSTEMTIME st;
@@ -3691,7 +3691,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                     st.wYear = 2000;
                     st.wMonth = 12;
                     st.wDay = 24;
-                    st.wDayOfWeek = 0; // nedele
+                    st.wDayOfWeek = 0; // Sunday
                     if (GetDateFormat(LOCALE_USER_DEFAULT, DATE_SHORTDATE, &st, NULL, text, 50) == 0)
                         sprintf(text, "%u.%u.%u", st.wDay, st.wMonth, st.wYear);
                     GetTextExtentPoint32(dc, text, (int)strlen(text), &act);
@@ -3715,10 +3715,10 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
             CFileData* f = isDir ? &Dirs->At(i) : &Files->At(i - dirsCount);
             //--- name
             BOOL extIsInExtColumn = extColumnIsVisible && (!isDir || Configuration.SortDirsByExt) &&
-                                    f->Ext[0] != 0 && f->Ext > f->Name + 1; // vyjimka pro jmena jako ".htaccess", ukazuji se ve sloupci Name i kdyz jde o pripony
+                                    f->Ext[0] != 0 && f->Ext > f->Name + 1; // exception for names like ".htaccess"; they appear in Name even though they are extensions
             if (Columns[0].FixedWidth == 0 || (autoWidthColumns & VIEW_SHOW_EXTENSION) && extIsInExtColumn)
             {
-                AlterFileName(formatedFileName, f->Name, f->NameLen, // priprava formatovaneho jmena i pro vypocet sire oddeleneho sloupce Ext
+                AlterFileName(formatedFileName, f->Name, f->NameLen, // preparation of the formatted name to also compute the width of the separate Ext column
                               Configuration.FileNameFormat, 0, isDir);
                 if (Columns[0].FixedWidth == 0)
                 {
@@ -3750,7 +3750,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
             }
             //--- size
             if ((autoWidthColumns & VIEW_SHOW_SIZE) &&
-                (!isDir || f->SizeValid)) // soubory a adresare s platnou napocitanou velikosti
+                (!isDir || f->SizeValid)) // files and directories with a valid calculated size
             {
                 if (f->Size > maxSize)
                     maxSize = f->Size;
@@ -3781,7 +3781,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
             if (autoWidthColumns & VIEW_SHOW_ATTRIBUTES)
             {
                 //--- attr
-                // pripravim data pro cache !!! zde je treba naorovat pripadne dalsi merene atributy
+                // prepare data for the cache !!! additional measured attributes may need hooking here
                 DWORD mask = f->Attr & (FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_HIDDEN |
                                         FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_ARCHIVE |
                                         FILE_ATTRIBUTE_TEMPORARY | FILE_ATTRIBUTE_COMPRESSED |
@@ -3795,19 +3795,19 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                         mask != attrSkipCache[8] && mask != attrSkipCache[9])
                     {
                         GetAttrsString(text, f->Attr);
-                        // tuhle kombinaci jsme jeste nemerili
+                        // this combination has not been measured yet
                         GetTextExtentPoint32(dc, text, (int)strlen(text), &act);
                         act.cx += SPACE_WIDTH;
                         if (columnWidthAttr < act.cx)
                             columnWidthAttr = act.cx;
                         if (attrSkipCacheCount < 10)
                         {
-                            // jeste je misto, zaradim polozku da cache
+                            // still space left, add the item to the cache
                             attrSkipCache[attrSkipCacheCount] = mask;
                             attrSkipCacheCount++;
                         }
                         else
-                            attrSkipCache[0] = mask; // dam ji na prvni misto
+                            attrSkipCache[0] = mask; // put it in the first position
                     }
                 }
             }
@@ -3815,11 +3815,11 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
             if (autoWidthColumns & VIEW_SHOW_TYPE)
             {
                 //--- file-type
-                if (!isDir) // je to soubor
+                if (!isDir) // it is a file
                 {
                     char buf[TRANSFER_BUFFER_MAX];
                     BOOL commonFileType = TRUE;
-                    if (f->Ext[0] != 0) // existuje pripona
+                    if (f->Ext[0] != 0) // extension exists
                     {
                         char* dst = buf;
                         char* src = f->Ext;
@@ -3830,7 +3830,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                         if (Associations.GetIndex(buf, index))
                         {
                             src = Associations[index].Type;
-                            if (src != NULL) // pokud nejde o prazdny retezec
+                            if (src != NULL) // if it is not an empty string
                             {
                                 commonFileType = FALSE;
                                 GetTextExtentPoint32(dc, src, (int)strlen(src), &act);
@@ -3850,9 +3850,9 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                             columnWidthType = act.cx;
                     }
                 }
-                else // je to adresar
+                else // it is a directory
                 {
-                    if (!dirTypeDone) // jen pokud uz jsme ho nepocitali
+                    if (!dirTypeDone) // only if we have not computed it yet
                     {
                         if (i == 0 && isDir && strcmp(f->Name, "..") == 0)
                         {
@@ -3883,7 +3883,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                 break;
             }
 
-            case SIZE_FORMAT_KB: // pozor, stejny kod je na dalsim miste, hledat tuto konstantu
+            case SIZE_FORMAT_KB: // note: the same code appears elsewhere, search for this constant
             {
                 PrintDiskSize(text, maxSize, 3);
                 numLen = (int)strlen(text);
@@ -3892,7 +3892,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
 
             case SIZE_FORMAT_MIXED:
             {
-                sprintf(text, "1023 GB"); // nejhorsi mozny pripad
+                sprintf(text, "1023 GB"); // worst case scenario
                 numLen = (int)strlen(text);
                 break;
             }
@@ -3913,14 +3913,14 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
             st.wMilliseconds = 0;
             st.wMinute = 59;
             st.wSecond = 59;
-            st.wHour = 10; // dopoledne
+            st.wHour = 10; // morning (AM)
             if (GetTimeFormat(LOCALE_USER_DEFAULT, 0, &st, NULL, text, 50) == 0)
                 sprintf(text, "%u:%02u:%02u", st.wHour, st.wMinute, st.wSecond);
             GetTextExtentPoint32(dc, text, (int)strlen(text), &act);
             act.cx += SPACE_WIDTH;
             if (columnWidthTime < act.cx)
                 columnWidthTime = act.cx;
-            st.wHour = 23; // odpoledne
+            st.wHour = 23; // afternoon (PM)
             if (GetTimeFormat(LOCALE_USER_DEFAULT, 0, &st, NULL, text, 50) == 0)
                 sprintf(text, "%u:%02u:%02u", st.wHour, st.wMinute, st.wSecond);
             GetTextExtentPoint32(dc, text, (int)strlen(text), &act);
@@ -3937,9 +3937,9 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
         {
             if (totalCount > 1)
                 IntSort(nameColWidths, 0, totalCount - 1);
-            WidthOfMostOfNames = (DWORD)(1.2 * nameColWidths[(DWORD)(totalCount * 0.85)]); // dame 20% sirky navic, jednak budou lip videt extra dlouha jmena a jednak se ukazi cela jmena blizka zvolene hranici
+            WidthOfMostOfNames = (DWORD)(1.2 * nameColWidths[(DWORD)(totalCount * 0.85)]); // add 20% extra width so very long names are more visible and names near the threshold show fully
             if (WidthOfMostOfNames * 1.2 >= FullWidthOfNameCol)
-                WidthOfMostOfNames = FullWidthOfNameCol; // pokud staci rozsirit o 44% (1.2*1.2), aby se vesly vsechny jmena, udelame to
+                WidthOfMostOfNames = FullWidthOfNameCol; // if expanding by 44% (1.2*1.2) is enough to show all names, do it
         }
         if (nameColWidths != NULL)
             free(nameColWidths);
@@ -3985,7 +3985,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                 {
                     TransferActCustomData = column->CustomData;
                     int columnMaxWidth = column->MinWidth;
-                    // doptame se pluginu
+                    // ask the plugin
                     int j;
                     for (j = 0; j < totalCount; j++)
                     {
@@ -4000,7 +4000,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                             TransferIsDir = 0;
                         }
                         TransferRowData = 0;
-                        TransferAssocIndex = -2; // mozna zbytecne - pokud se nemuze volat InternalGetType()
+                        TransferAssocIndex = -2; // maybe unnecessary if InternalGetType() cannot be called
                         column->GetText();
                         if (TransferLen > 0)
                         {
@@ -4021,18 +4021,18 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                     break;
                 }
             }
-            // osetrime meze, aby sirka nesla pod minimalni hodnoty header line
+            // keep boundaries so the width never drops below header-line minimum
             if (column->Width < column->MinWidth)
                 column->Width = column->MinWidth;
 
             totalWidth += column->Width;
         }
 
-        // osetrime Smart Mode sloupce Name
+        // handle Smart Mode for the Name column
         BOOL leftPanel = (MainWindow->LeftPanel == this);
         if (Columns[0].FixedWidth == 0 &&
             (leftPanel && ViewTemplate->LeftSmartMode || !leftPanel && ViewTemplate->RightSmartMode) &&
-            ListBox->FilesRect.right - ListBox->FilesRect.left > 0) // jen pokud uz je files-box inicializovany
+            ListBox->FilesRect.right - ListBox->FilesRect.left > 0) // only if the files-box has already been initialized
         {
             CColumn* column = &Columns[0];
             int narrow = totalWidth - (ListBox->FilesRect.right - ListBox->FilesRect.left);
@@ -4068,26 +4068,26 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
     if (suggestedFocusIndex != -1)
     {
         FocusedIndex = suggestedFocusIndex;
-        // pokud neni doporucen TopIndex nebo je vyzadovana
-        // viditelnost focusIndex, napocitam novy TopIndex
-        // -- prehlednejsi verze s podporou pro vmIcons a vmThumbnails
-        // -- zmena pro castecne viditelne polozky: drive se prepocital TopIndex
-        //    a doslo ke zbytecnemu cuknuti; ted TopIndex nechavame nezmeneny
+        // if no TopIndex is suggested or focus visibility 
+        // is required, compute a new TopIndex
+        // -- clearer version with support for vmIcons and vmThumbnails
+        // -- change for partially visible items: previously TopIndex was recalculated
+        //    and causing unnecessary jumps; now we keep TopIndex unchanged
 
-        BOOL findTopIndex = TRUE; // TRUE - budeme hledat TopIndex; FALSE - nechame soucasny
+        BOOL findTopIndex = TRUE; // TRUE - search for TopIndex; FALSE - keep the current one
         if (suggestedTopIndex != -1)
         {
-            // nechame napocitat EntireItemsInColumn
+            // let EntireItemsInColumn be computed
             ListBox->SetItemsCount2(Files->Count + Dirs->Count);
             if (ensureFocusIndexVisible)
             {
-                // musime zajistit viditelnost focusu
+                // we must ensure the focus is visible
                 switch (ListBox->ViewMode)
                 {
                 case vmBrief:
                 {
                     if (suggestedFocusIndex < suggestedTopIndex)
-                        break; // focus lezi pred panelem, musime najit lepsi TopIndex
+                        break; // focus lies before the panel, we must find a better TopIndex
 
                     int cols = (ListBox->FilesRect.right - ListBox->FilesRect.left +
                                 ListBox->ItemWidth - 1) /
@@ -4099,16 +4099,16 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                     {
                         if (suggestedTopIndex + cols * ListBox->EntireItemsInColumn <=
                             suggestedFocusIndex + ListBox->EntireItemsInColumn)
-                            break; // focus lezi za panelem, musime najit lepsi TopIndex
+                            break; // focus lies past the panel, we must find a better TopIndex
                     }
                     else
                     {
                         if (suggestedTopIndex + cols * ListBox->EntireItemsInColumn <=
                             suggestedFocusIndex)
-                            break; // focus lezi za panelem, musime najit lepsi TopIndex
+                            break; // focus lies past the panel, must find a better TopIndex
                     }
 
-                    // focus je alespon castecne viditelny, potlacime hledani TopIndex
+                    // focus is at least partially visible, skip TopIndex search
                     findTopIndex = FALSE;
                     break;
                 }
@@ -4116,7 +4116,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                 case vmDetailed:
                 {
                     if (suggestedFocusIndex < suggestedTopIndex)
-                        break; // focus lezi nad panelem, musime najit lepsi TopIndex
+                        break; // focus lies above the panel, we must find a better TopIndex
 
                     int rows = (ListBox->FilesRect.bottom - ListBox->FilesRect.top +
                                 ListBox->ItemHeight - 1) /
@@ -4126,16 +4126,16 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
 
                     if (wholeItemVisible)
                     {
-                        if (suggestedTopIndex + rows <= suggestedFocusIndex + 1) // nechceme castecnou viditelnost, proto ta +1
-                            break;                                               // focus lezi pod panelem, musime najit lepsi TopIndex
+                        if (suggestedTopIndex + rows <= suggestedFocusIndex + 1) // avoid partial visibility, hence the +1
+                            break;                                               // focus lies below the panel, we must find a better TopIndex
                     }
                     else
                     {
                         if (suggestedTopIndex + rows <= suggestedFocusIndex)
-                            break; // focus lezi pod panelem, musime najit lepsi TopIndex
+                            break; // focus lies below the panel, we must find a better TopIndex
                     }
 
-                    // focus je cely viditelny, potlacime hledani TopIndex
+                    // focus is fully visible, skip TopIndex search
                     findTopIndex = FALSE;
                     break;
                 }
@@ -4152,23 +4152,23 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                     if (wholeItemVisible)
                     {
                         if (suggestedTop < suggestedTopIndex)
-                            break; // focus lezi nad panelem, musime najit lepsi TopIndex
+                            break; // focus is above the panel; we must find a better TopIndex
 
                         if (suggestedBottom > suggestedTopIndex +
                                                   ListBox->FilesRect.bottom - ListBox->FilesRect.top)
-                            break; // focus lezi pod panelem, musime najit lepsi TopIndex
+                            break; // focus is below the panel; we must find a better TopIndex
                     }
                     else
                     {
                         if (suggestedBottom <= suggestedTopIndex)
-                            break; // focus lezi nad panelem, musime najit lepsi TopIndex
+                            break; // focus is above the panel; we must find a better TopIndex
 
                         if (suggestedTop >= suggestedTopIndex +
                                                 ListBox->FilesRect.bottom - ListBox->FilesRect.top)
-                            break; // focus lezi pod panelem, musime najit lepsi TopIndex
+                            break; // focus is below the panel; we must find a better TopIndex
                     }
 
-                    // focus je alespon castecne viditelny, potlacime hledani TopIndex
+                    // focus is at least partially visible, skip TopIndex search
                     findTopIndex = FALSE;
                     break;
                 }
@@ -4183,8 +4183,8 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
             suggestedTopIndex = ListBox->PredictTopIndex(suggestedFocusIndex);
         }
         /*
-    // pokud neni doporucen TopIndex nebo je vyzadovana
-    // viditelnost focusIndex, napocitam novy TopIndex
+    // if no TopIndex is suggested or focusIndex visibility 
+    // is required, compute a new TopIndex
     if (suggestedTopIndex == -1 || (ensureFocusIndexVisible &&
                                     (suggestedFocusIndex < suggestedTopIndex ||
                                      ListBox->Mode == vmDetailed &&
@@ -4203,11 +4203,11 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
     }
     else
     {
-        // p.s. patch situace, kdy suggestedTopIndex != -1 a suggestedFocusIndex == -1 (napr. Back v historii
-        // panelu do mista, kde puvodne fokusenej soubor v panelu uz neexistuje)
-        if (ensureFocusIndexVisible && suggestedTopIndex != -1) // focus ma byt videt
+        // note: patch situation when suggestedTopIndex != -1 and suggestedFocusIndex == -1
+        // (e.g., Back in history to a place where the previously focused file no longer exists)
+        if (ensureFocusIndexVisible && suggestedTopIndex != -1) // focus must be visible
         {
-            suggestedTopIndex = -1; // top-index nemuzeme nastavovat (focus by nebyl videt)
+            suggestedTopIndex = -1; // cannot set top-index (the focus wouldn't be visible)
         }
     }
 
@@ -4230,7 +4230,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
         UpdateWindow(ListBox->BottomBar.HWindow);
     ListBox->PaintAllItems(NULL, 0);
 
-    IdleRefreshStates = TRUE;                       // pri pristim Idle vynutime kontrolu stavovych promennych
+    IdleRefreshStates = TRUE;                       // force state-variable check on next idle
     PostMessage(HWindow, WM_USER_SELCHANGED, 0, 0); // sel-change notify
                                                     //TRACE_I("refreshlist: end");
 }
@@ -4243,7 +4243,7 @@ int CFilesWindow::GetResidualColumnWidth(int nameColWidth)
 
     int colsWidth = 0;
     int colNameWidth = nameColWidth;
-    // nascitam sirku zobrazenych sloupcu (mimo sloupce NAME)
+    // sum the width of visible columns (excluding the NAME column)
     int i;
     for (i = 0; i < Columns.Count; i++)
     {
