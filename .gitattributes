@@ -2,6 +2,8 @@
 # on checkout, configure your Git client to do it (e.g. don't change anything:
 # default values: core.autocrlf=false and core.eol=native; or set core.autocrlf=true).
 
+* text=auto
+
 # Explicitly declare text files you want to always be normalized and converted
 # to LF endings on checkout.
 *.sh         text eol=lf
