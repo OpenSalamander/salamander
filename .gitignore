@@ -1,4 +1,7 @@
-
+# OS files
+.DS_Store
+.cache
+Thumbs.db
 # Visual Studio cache/options directory
 .vs/
 *.aps
