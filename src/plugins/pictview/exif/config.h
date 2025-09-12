@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
+// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 /* config.h.in.  Generated from configure.in by autoheader.  */
@@ -76,6 +76,9 @@
 
 // dummy object to make compiler happy
 #define GETTEXT_PACKAGE "Patera"
+
+// disable some warnings
+#pragma warning(disable : 5287)
 
 //#define strdup _strdup
 #define strnicmp _strnicmp
