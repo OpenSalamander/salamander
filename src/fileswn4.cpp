@@ -534,7 +534,7 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
         rect.right -= itemRect->left;
     }
     else
-        hDC = hTgtDC; // jedna se o veliky paint - peceme na cache a pujdem rovnou do videa
+        hDC = hTgtDC; // this is a large paint; skip the cache and draw directly to the screen
 
     // if not prohibited, clear the flag
     if (!(drawFlags & DRAWFLAG_KEEP_DIRTY))
@@ -744,7 +744,7 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
                     goto SKIP1;
                 }
             }
-            // DRAWFLAG_MASK: hack, pod XP se do masky pri kresleni kratkych textu pridavala pred text nejaka blitka, pokud text nekreslimne, nedela to
+            // DRAWFLAG_MASK: hack, under XP some stuff is added in font of the text in the mask while drawing short texts; not an issue if text is not drawn
             ExtTextOut(hDC, r.left + 2, y, ETO_OPAQUE, &adjR, TransferBuffer, (drawFlags & DRAWFLAG_MASK) ? 0 : nameLen, NULL);
         SKIP1:
             if (!Configuration.FullRowSelect || GetViewMode() == vmBrief)
@@ -757,14 +757,14 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
                 }
                 if (r.right < x + nameWidth)
                 {
-                    // domazu zbytek nazvu
+                    // clear the remainder of the name
                     adjR.left = r.left = r.right;
                     adjR.right = r.right = x + nameWidth;
                     SALCOLOR* bkColor = (highlightMasksItem == NULL) ? &CurrentColors[ITEM_BK_NORMAL] : &highlightMasksItem->NormalBk;
                     if (fullRowHighlight && isItemFocusedOrEditMode)
                         bkColor = (highlightMasksItem == NULL) ? &CurrentColors[ITEM_BK_HIGHLIGHT] : &highlightMasksItem->HighlightBk;
                     SetBkColor(hDC, GetCOLORREF(*bkColor));
-                    if (drawFlags & DRAWFLAG_MASK) // maska je b&w, nesmime do ni kreslit barevne pozadi
+                    if (drawFlags & DRAWFLAG_MASK) // mask is b&w; we must not paint a colored background into it
                         SetBkColor(hDC, RGB(255, 255, 255));
                     ExtTextOut(hDC, 0, 0, ETO_OPAQUE, &r, "", 0, NULL);
                 }
@@ -773,22 +773,22 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
         x += nameWidth;
         if (drawFlags & DRAWFLAG_SELFOC_CHANGE)
             cacheValidWidth = nameWidth;
-        // neni-li FullRowSelect a kreslim pouze dirty polozky nebo doslo jen ke zmene
-        // focusu/selectu, nebudu se zatezovat kreslenim dalsich sloupcu - nic se tam nezmenilo
+        // if FullRowSelect is off and we draw only dirty items or only focus/select changed,
+        // skip drawing the remaining columns - nothing changed there
         if (GetViewMode() == vmDetailed && (fullRowHighlight || Configuration.FullRowSelect ||
                                             !(drawFlags & DRAWFLAG_DIRTY_ONLY) && !(drawFlags & DRAWFLAG_SELFOC_CHANGE)))
         {
             if (!Configuration.FullRowSelect)
             {
                 if (TrackingSingleClick && SingleClickIndex == itemIndex)
-                    SelectObject(hDC, Font); // navrat ke klasickemu fontu
+                    SelectObject(hDC, Font); // return to the normal font
                 if (forFrameAdjusted)
                 {
                     adjR.top--;
                     adjR.bottom++;
                     forFrameAdjusted = FALSE;
                 }
-                // nastavim barvy pro zbyle sloupce
+                // set colors for the remaining columns
                 SALCOLOR* fgColor = (highlightMasksItem == NULL) ? &CurrentColors[ITEM_FG_NORMAL] : &highlightMasksItem->NormalFg;
                 SALCOLOR* bkColor = (highlightMasksItem == NULL) ? &CurrentColors[ITEM_BK_NORMAL] : &highlightMasksItem->NormalBk;
                 if (fullRowHighlight && isItemFocusedOrEditMode)
@@ -798,21 +798,21 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
                 }
                 SetTextColor(hDC, GetCOLORREF(*fgColor));
                 SetBkColor(hDC, GetCOLORREF(*bkColor));
-                if (drawFlags & DRAWFLAG_MASK) // maska je b&w, nesmime do ni kreslit barevne pozadi
+                if (drawFlags & DRAWFLAG_MASK) // mask is b&w; we must not paint a colored background into it
                     SetBkColor(hDC, RGB(255, 255, 255));
             }
 
-            // poradi dalsich sloupcu je volitelne => jejich obsah budeme ziskavat pomoci
-            // callbacku, ktere nam naplni buffer textem a my uz sloupec vykreslime
+            // the order of additional columns is optional => their content will be obtained using
+            // callback that fill the buffer with text and then we draw the column
             TransferPluginDataIface = PluginData.GetInterface();
             TransferFileData = f;
             TransferIsDir = isDir ? (isItemUpDir ? 2 : 1) : 0;
-            TransferRowData = 0; // pro kazdy radek musi byt tato promenna nulovana;
-                                 // je vyuzivana k optimalizacim v ramci kresleni sloupcu
-                                 // v jednom radku
+            TransferRowData = 0; // this variable must be zero for each row;
+                                 // it is used for column drawing optimizations
+                                 // within a single row
 
             int deltaX;
-            // preskocim sloupec Name (i==0) - ten uz je vykresleny
+            // skip column Name (i==0) - it is already drawn
             int i;
             for (i = 1; i < Columns.Count; i++)
             {
@@ -821,10 +821,10 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
                 adjR.left = r.left = x;
                 adjR.right = r.right = x + column->Width;
 
-                // overime, jestli je plocha pro sloupec alepson castecne viditelna
+                // check whether the column area is at least partially visible
                 if (drawFlags & DRAWFLAG_SKIP_VISTEST || RectVisible(hDC, &r))
                 {
-                    // vytahneme text
+                    // retrieve the text
                     if (column->ID != COLUMN_ID_EXTENSION)
                     {
                         TransferActCustomData = column->CustomData;
@@ -832,8 +832,8 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
                     }
                     else
                     {
-                        // extension je vyjimka - vzdy nasleduje za Name a resime ji explicitne
-                        if (isDir && !Configuration.SortDirsByExt || f->Ext[0] == 0 || f->Ext <= f->Name + 1) // prazdna hodnota v Ext sloupci (vyjimka pro jmena jako ".htaccess", ukazuji se ve sloupci Name i kdyz jde o pripony)
+                        // extension is an exception - it always follows Name and we handle it explicitly
+                        if (isDir && !Configuration.SortDirsByExt || f->Ext[0] == 0 || f->Ext <= f->Name + 1) // empty value in the Ext column (exception for names like ".htaccess", they appear in the Name column even though they are extensions)
                             TransferLen = 0;
                         else
                         {
@@ -841,32 +841,32 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
                                 AlterFileName(TransferBuffer, f->Name, -1, Configuration.FileNameFormat, 0, isDir);
                             TransferLen = (int)(f->NameLen - (f->Ext - f->Name));
                             if (TransferLen > 0)
-                                MoveMemory(TransferBuffer, TransferBuffer + (f->Ext - f->Name), TransferLen); // muze dojit k prekryti bufferu
+                                MoveMemory(TransferBuffer, TransferBuffer + (f->Ext - f->Name), TransferLen); // buffer overlap may occur
                         }
                     }
 
                     if (TransferLen == 0)
-                        ExtTextOut(hDC, r.left, y, ETO_OPAQUE, &adjR, "", 0, NULL); // pouze mazeme
+                        ExtTextOut(hDC, r.left, y, ETO_OPAQUE, &adjR, "", 0, NULL); // just clearing
                     else
                     {
-                        if (column->FixedWidth == 1) // tady se NarrowedNameColumn neuplatni (nejde o sloupec Name)
+                        if (column->FixedWidth == 1) // NarrowedNameColumn does not apply here (not Name column)
                         {
                             int fitChars;
-                            // pokud jde o sloupce s pevnou sirkou, musim zkontrolovat jestli se cely vejde
+                            // for fixed-width columns we must check whether the entire text fits
                             int textWidth = r.right - r.left - SPACE_WIDTH;
                             GetTextExtentExPoint(hDC, TransferBuffer, TransferLen, textWidth,
                                                  &fitChars, DrawItemAlpDx, &textSize);
                             if (fitChars < TransferLen)
                             {
-                                // vyhledam od konce znak, za ktery muzu nakopirovat "..." a vejdou se do sloupce
+                                // search from the end for the character after which we can copy "..." and it fits in the column
                                 while (fitChars > 0 && DrawItemAlpDx[fitChars - 1] + TextEllipsisWidth > textWidth)
                                     fitChars--;
-                                // do jineho bufferu nakopcim cast puvodniho retezce
+                                // copy part of the original string to another buffer
                                 int totalCount;
                                 if (fitChars > 0)
                                 {
                                     memmove(DrawItemBuff, TransferBuffer, fitChars);
-                                    // a pripojim "..."
+                                    // and append "..."
                                     memmove(DrawItemBuff + fitChars, "...", 3);
                                     totalCount = fitChars + 3;
                                 }
@@ -893,10 +893,10 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
                         }
                         else
                         {
-                            // jde o elasticky sloupec a obsah se vejde urcite
+                            // it's a flexible column and the contents definitely fit
                             if (column->LeftAlignment == 0)
                             {
-                                // je-li sloupec zarovnan vpravo, musim zmerit sirku textu
+                                // if the column is right-aligned, measure the text width
                                 GetTextExtentPoint32(hDC, TransferBuffer, TransferLen, &textSize);
                                 deltaX = r.right - r.left - SPACE_WIDTH / 2 - textSize.cx;
                                 if (deltaX < SPACE_WIDTH / 2)
@@ -916,7 +916,7 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
         }
         if (forFrameAdjusted)
         {
-            adjR.top--; // vratime se ke spravnym rozmerum
+            adjR.top--; // restore the correct dimensions
             adjR.bottom++;
             forFrameAdjusted = FALSE;
         }
@@ -925,11 +925,11 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
         {
             if (r.right < rect.right)
             {
-                // domazu pozadi
+                // clear the background
                 adjR.left = r.left = r.right;
                 adjR.right = r.right = rect.right;
                 SetBkColor(hDC, GetCOLORREF(CurrentColors[ITEM_BK_NORMAL]));
-                if (drawFlags & DRAWFLAG_MASK) // maska je b&w, nesmime do ni kreslit barevne pozadi
+                if (drawFlags & DRAWFLAG_MASK) // mask is b&w; we must not paint a colored background into it
                     SetBkColor(hDC, RGB(255, 255, 255));
                 ExtTextOut(hDC, r.left, r.top, ETO_OPAQUE, &adjR, "", 0, NULL);
             }
@@ -937,10 +937,10 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
 
         //*****************************************
         //
-        // vykresleni focus ramecku
+        // drawing the focus frame
         //
-        // pokud neni FullRowSelect a nevykresloval se nazev, ani se s rameckem nebudeme
-        // obtezovat
+        // if FullRowSelect is off and the name wasn't drawn, we won't even bother with 
+        // the frame
 
         if ((itemIndex == DropTargetIndex || isItemFocusedOrEditMode) &&
             (Configuration.FullRowSelect || focusFrameRightValid))
@@ -953,7 +953,7 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
 
             DrawFocusRect(hDC, &r, (f->Selected == 1), Parent->EditMode);
             /*
-      // pro odladeni chyby dvou kurzoru potrebujeme rozlisit normalni focus a drop target
+      // for debugging the dual cursor issue we need to distinguish normal focus and drop target
       if (itemIndex == DropTargetIndex)
       {
         MoveToEx(hDC, r.left, r.top + 3, NULL);
@@ -965,7 +965,7 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
 
     if (drawFlags & DRAWFLAG_SELFOC_CHANGE)
     {
-        // jeli jsme pres cache - praskneme ji do obrazovky
+        // we used the cache - blit it to the screen
         int width = cacheValidWidth - xOffset;
         if (width > 0)
             BitBlt(hTgtDC, itemRect->left, itemRect->top,
@@ -981,17 +981,17 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
 //
 // SplitText
 //
-// Vyuziva pole 'DrawItemAlpDx'
+// Uses the 'DrawItemAlpDx' array
 //
-// text      [IN]  vstupni retezec, ktery budeme delit
-// textLen   [IN]  pocet znaku v retezci 'text' (bez terminatoru)
-// maxWidth  [IN]  maximalni pocet bodu, kolik delsi radek na sirku muze mit
-//           [OUT] skutecna maximalni sirka sirka
-// out1      [OUT] do tohoto retezce bude nakopirovan prvni radek vystupu bez terminatoru
-// out1Len   [IN]  maximalni mozny pocet znaku, ktere lze zapsat do 'out1'
-//           [OUT] pocet znaku nakopirovanych do 'out1'
-// out1Width [OUT] sirka 'out1' v bodech
-// out2            stejne jako out1, ale pro druhy radek
+// text      [IN]  input string which we'll split
+// textLen   [IN]  number of characters in string 'text' (without terminator)
+// maxWidth  [IN]  maximum width in pixels which a longer line may have
+//           [OUT] actual maximum width
+// out1      [OUT] first output line without terminator will copy here
+// out1Len   [IN]  maximum number of characters that can be written to 'out1'
+//           [OUT] number of characters copied to 'out1'
+// out1Width [OUT] width of 'out1' in pixels
+// out2            same as out1 but for the second line
 // out2Len
 // out2Width
 //
@@ -1001,22 +1001,22 @@ void SplitText(HDC hDC, const char* text, int textLen, int* maxWidth,
                char* out2, int* out2Len, int* out2Width)
 {
     SIZE sz;
-    // namerime delky vsech znaku
+    // measure the width of every character
     GetTextExtentExPoint(hDC, text, textLen, 0, NULL, DrawItemAlpDx, &sz);
 
     if (sz.cx > *maxWidth)
     {
-        // pokud delka textu presahuje maximalni sirku,
-        // pokusime se jej rozdelit do dvou radku v miste mezery
-        // co bude presahovat, nahradime trema teckama
+        // if the text length exceeds the maximum width,
+        // try to split it into two lines at a space
+        // anything that still exceeds is replaced with "..."
 
-        // hledame posledni znak, ktery se jeste vejde na prvni radek
-        // zaroven hledame index posledni mezery
+        // find the last character that still fits on the first line
+        // while also tracking the index of the last space
         int lastSpaceIndex = -1;
         int maxW = *maxWidth;
         int w = 0;
         int index = 0;
-        while (index < maxW) // tato podminka by se nemela uplatnit
+        while (index < maxW) // this condition should not be applied
         {
             if (text[index] == ' ')
                 lastSpaceIndex = index;
@@ -1028,8 +1028,8 @@ void SplitText(HDC hDC, const char* text, int textLen, int* maxWidth,
 
         if (lastSpaceIndex != -1)
         {
-            // pokud jsme nasli nejakou mezeru, zalomime prvni radek na ni
-            // (mezeru usporne vypoustime)
+            // if we found a space, break the first line there
+            // (the space is omitted to save room)
             if (lastSpaceIndex > 0)
             {
                 *out1Len = min(*out1Len, lastSpaceIndex);
@@ -1042,14 +1042,14 @@ void SplitText(HDC hDC, const char* text, int textLen, int* maxWidth,
                 *out1Width = 0;
             }
 
-            // posuneme ukazovatko za mezeru
+            // move the pointer past the space
             index = lastSpaceIndex + 1;
         }
         else
         {
-            // zatim nebyla zadna mezera, musime zalomit vypustkou
+            // no space encountered yet, so we must break with an ellipsis
 
-            // na konec retezce soupnem vypustku "..."
+            // append "..." at the end of the string
             int backTrackIndex = index - 1;
             while (DrawItemAlpDx[backTrackIndex] + TextEllipsisWidth > maxW && backTrackIndex > 0)
                 backTrackIndex--;
@@ -1060,7 +1060,7 @@ void SplitText(HDC hDC, const char* text, int textLen, int* maxWidth,
             if (*out1Len >= 3)
                 memmove(out1 + *out1Len - 3, "...", 3);
 
-            // hledame mezeru, kde bychom mohli prejit na dalsi radek
+            // look for a space where we can continue to the next line
             while (index < textLen)
             {
                 if (text[index++] == ' ')
@@ -1070,12 +1070,12 @@ void SplitText(HDC hDC, const char* text, int textLen, int* maxWidth,
 
         if (index < textLen)
         {
-            // zpracujeme druhy radek
+            // process the second line
             int oldIndex = index;
             int offsetX;
 
             if (index > 0)
-                offsetX = DrawItemAlpDx[index - 1]; // sirka prvniho radku vcetne delici mezery
+                offsetX = DrawItemAlpDx[index - 1]; // width of the first line including the separating space
             else
                 offsetX = 0;
 
@@ -1089,7 +1089,7 @@ void SplitText(HDC hDC, const char* text, int textLen, int* maxWidth,
 
             if (index < textLen)
             {
-                // druhy radek se nevesel cely; pripojime vypustku
+                // the second line didn't fit completely; append an ellipsis
                 int backTrackIndex = index - 1;
                 while (DrawItemAlpDx[backTrackIndex] - offsetX + TextEllipsisWidth > maxW &&
                        backTrackIndex > oldIndex)
@@ -1103,7 +1103,7 @@ void SplitText(HDC hDC, const char* text, int textLen, int* maxWidth,
             }
             else
             {
-                // druhy radek se vesel cely
+                // the second line fit completely
                 memmove(out2, text + oldIndex, index - oldIndex);
                 *out2Len = index - oldIndex;
                 *out2Width = DrawItemAlpDx[index - 1] - offsetX;
@@ -1111,23 +1111,23 @@ void SplitText(HDC hDC, const char* text, int textLen, int* maxWidth,
         }
         else
         {
-            // neni co dat na druhy radek
+            // nothing to put on the second line
             *out2Len = 0;
             *out2Width = 0;
         }
     }
     else
     {
-        // prvni radek bude obsahovat vse
+        // the first line will contain everything
         *out1Len = min(*out1Len, textLen);
         *out1Width = sz.cx;
         memmove(out1, text, *out1Len);
 
-        // druhy radek bude prazdny
+        // the second line will be empty
         *out2Len = 0;
         *out2Width = 0;
     }
-    // maximalni sirka
+    // maximum width
     *maxWidth = max(*out1Width, *out2Width);
 }
 
@@ -1135,7 +1135,7 @@ void SplitText(HDC hDC, const char* text, int textLen, int* maxWidth,
 //
 // DrawIconThumbnailItem
 //
-// Kresli polozku v rezimech Icons a Thumbnails
+// Draws an item in Icons and Thumbnails modes
 //
 
 void CFilesWindow::DrawIconThumbnailItem(HDC hTgtDC, int itemIndex, RECT* itemRect,
@@ -1164,10 +1164,10 @@ void CFilesWindow::DrawIconThumbnailItem(HDC hTgtDC, int itemIndex, RECT* itemRe
     if ((drawFlags & DRAWFLAG_DIRTY_ONLY) && f->Dirty == 0)
         return;
 
-    BOOL isItemUpDir = FALSE; // je vykreslovana polozka adresar ".."?
+    BOOL isItemUpDir = FALSE; // is the item the ".." directory?
 
     if (itemIndex == 0 && isDir && *f->Name == '.' && *(f->Name + 1) == '.' &&
-        *(f->Name + 2) == 0) // "up-dir" muze byt jen prvni
+        *(f->Name + 2) == 0) // "up-dir" can only be first
     {
         if (drawFlags & DRAWFLAG_DIRTY_ONLY)
             return;
@@ -1177,33 +1177,33 @@ void CFilesWindow::DrawIconThumbnailItem(HDC hTgtDC, int itemIndex, RECT* itemRe
     //  TRACE_I("DrawingLarge itemIndex="<<dec<<itemIndex<<" y="<<itemRect->top);
 
     BOOL isItemFocusedOrEditMode = FALSE;
-    if (FocusedIndex == itemIndex) // kreslime kurzor
+    if (FocusedIndex == itemIndex) // drawing the cursor
     {
-        if (FocusVisible || Parent->EditMode && Parent->GetActivePanel() == this) // prepnuto v command-line
+        if (FocusVisible || Parent->EditMode && Parent->GetActivePanel() == this) // switched in the command-line
             isItemFocusedOrEditMode = TRUE;
     }
 
-    RECT rect = *itemRect; // pozice polozky posunuta o xOffset
+    RECT rect = *itemRect; // item position shifted by xOffset
                            //  rect.left -= xOffset;
                            //  rect.right -= xOffset;
 
     HDC hDC;
     /*
-  int cacheValidWidth; // ma vyznam pouze pokud jedeme pres cache a udava pocet bodu (sirku),
-                       // ktere jsou v bitmape vykresleny a je treba je prenest do obrazovky
+  int cacheValidWidth; // meaningful only when using the cache and specifies the number of pixels (the width),
+                       // which are rendered in the bitmap and must be transferred to the screen
   if (drawFlags & DRAWFLAG_SELFOC_CHANGE)
   {
 //    TRACE_I("drawing index="<<itemIndex);
-    // pokud jde o zmenu pozice kurzoru, nebudeme provadet zadne testy viditelnosti
+    // if it is only the cursor position change, skip visibility tests
     drawFlags |= DRAWFLAG_SKIP_VISTEST;
 
-    // jedna se pouze o kresleni male plochy a casu je dost - pojedeme pres cache
+    // we are drawing only a small area and have plenty of time, so using the cache is fine
     hDC = ItemMemDC;
 
-    // zatim mame bitmapu prazdnou
+    // the bitmap is empty for now
     cacheValidWidth = 0;
 
-    // musime provest korekci promenne rect
+    // we must adjust the rect variable
     rect.top -= itemRect->top;
     rect.bottom -= itemRect->top;
     rect.left -= itemRect->left;
@@ -1211,29 +1211,29 @@ void CFilesWindow::DrawIconThumbnailItem(HDC hTgtDC, int itemIndex, RECT* itemRe
   }
   else
 */
-    hDC = hTgtDC; // jedna se o veliky paint - peceme na cache a pujdem rovnou do videa
+    hDC = hTgtDC; // this is a large paint; skip the cache and draw directly to the screen
 
-    // pokud mi to nezatrhli, shodim flag
+    // if not prohibited, clear the flag
     if (!(drawFlags & DRAWFLAG_KEEP_DIRTY))
         f->Dirty = 0;
 
-    TransferAssocIndex = -2; // zatim jsme priponu pro vykreslovanou polozku v Associations nehledali
+    TransferAssocIndex = -2; // we haven't looked up the extension for this item in Associations yet
 
     //*****************************************
     //
-    // vykresleni ikony
+    // drawing the icon
     //
 
     if (drawFlags & DRAWFLAG_SKIP_VISTEST || RectVisible(hDC, &rect))
     {
-        // velikost ikony/thumbnailu
+        // icon/thumbnail size
         int iconW = IconSizes[iconSize];
         int iconH = IconSizes[iconSize];
 
-        HBITMAP hScaled = NULL; // pokud je ruzny od NULL, vykresli se thumbnail; jinak ikonka
+        HBITMAP hScaled = NULL; // if not NULL, draw the thumbnail; otherwise draw the icon
         if (GetViewMode() == vmThumbnails)
         {
-            // umime thumbnaily pouze na disku
+            // thumbnails are supported only on disk
             if (Is(ptDisk) && !isDir)
             {
                 int icon;
@@ -1244,7 +1244,7 @@ void CFilesWindow::DrawIconThumbnailItem(HDC hTgtDC, int itemIndex, RECT* itemRe
                 if (IconCache->GetIndex(fileName, icon, NULL, NULL))
                 {
                     DWORD flag = IconCache->At(icon).GetFlag();
-                    if (flag == 5 || flag == 6) // o.k. || stara verze
+                    if (flag == 5 || flag == 6) // o.k. || old version
                     {
 
                         BOOL leaveSection;
@@ -1259,7 +1259,7 @@ void CFilesWindow::DrawIconThumbnailItem(HDC hTgtDC, int itemIndex, RECT* itemRe
                         CThumbnailData* thumbnailData;
                         if (IconCache->GetThumbnail(IconCache->At(icon).GetIndex(), &thumbnailData))
                         {
-                            // rekonstrukce bitmapy
+                            // reconstruction of the bitmap
                             hScaled = HANDLES(CreateBitmap(thumbnailData->Width,
                                                            thumbnailData->Height,
                                                            thumbnailData->Planes,
@@ -1291,22 +1291,22 @@ void CFilesWindow::DrawIconThumbnailItem(HDC hTgtDC, int itemIndex, RECT* itemRe
         else
             iconY = rect.top + 2;
 
-        // vnejsi obedlnik, od ktereho mazu smerem k vnitrnimu
+        // outer rectangle from which we clear towards the inner one
         RECT outerRect = rect;
 
-        // obdelnik, ke kteremu budeme mazat
+        // rectangle we will clear to
         RECT innerRect;
-        BOOL thickFrame = FALSE; // pouze pro Thumbnails -- ma byt ramecek dvojnasobny?
+        BOOL thickFrame = FALSE; // for Thumbnails only -- should the frame be doubled?
         if (GetViewMode() == vmThumbnails)
         {
-            // pro Thumbnail saha k ramecku kolem thumbnailu
+            // for Thumbnails it reaches the frame around the thumbnail
             innerRect = rect;
             innerRect.left += (rect.right - rect.left - (ListBox->ThumbnailWidth + 2)) / 2;
             innerRect.right = innerRect.left + ListBox->ThumbnailWidth + 2;
             innerRect.top += 3;
             innerRect.bottom = innerRect.top + ListBox->ThumbnailHeight + 2;
 
-            // pero pro ramecek
+            // pen for the frame
             HPEN hPen;
             if (!f->Selected == 1 && !isItemFocusedOrEditMode)
                 hPen = HThumbnailNormalPen;
@@ -1327,7 +1327,7 @@ void CFilesWindow::DrawIconThumbnailItem(HDC hTgtDC, int itemIndex, RECT* itemRe
         }
         else
         {
-            // pro Icons saha az k ikone
+            // for Icons it extends to the icon
             innerRect.left = iconX;
             innerRect.top = iconY;
             innerRect.right = iconX + iconW;
@@ -1335,8 +1335,8 @@ void CFilesWindow::DrawIconThumbnailItem(HDC hTgtDC, int itemIndex, RECT* itemRe
             outerRect.bottom = innerRect.bottom;
         }
 
-        // podmazu pozadi k ikone nebo ramecku (pro Thumbnail)
-        if ((drawFlags & DRAWFLAG_MASK) == 0) // pokud kreslime masku (b&w), nesmi kreslit podkadovou barvu
+        // clear the background around the icon or frame (for Thumbnails)
+        if ((drawFlags & DRAWFLAG_MASK) == 0) // when drawing the mask (b&w), the background color must not be painted
             FillIntersectionRegion(hDC, &outerRect, &innerRect);
 
         RECT overlayRect;
@@ -1349,7 +1349,7 @@ void CFilesWindow::DrawIconThumbnailItem(HDC hTgtDC, int itemIndex, RECT* itemRe
         {
             if ((drawFlags & DRAWFLAG_SKIP_FRAME) == 0)
             {
-                // vykreslim ramecek kolem thumbnailu
+                // draw the frame around the thumbnail
                 Rectangle(hDC, innerRect.left, innerRect.top, innerRect.right, innerRect.bottom);
                 if (thickFrame)
                 {
@@ -1358,13 +1358,13 @@ void CFilesWindow::DrawIconThumbnailItem(HDC hTgtDC, int itemIndex, RECT* itemRe
                 }
                 InflateRect(&innerRect, -1, -1);
 
-                // podmazu prostor mezi rameckem a ikonou
+                // clear the area between the frame and the icon
                 RECT iiRect;
                 iiRect.left = iconX;
                 iiRect.top = iconY;
                 iiRect.right = iiRect.left + iconW;
                 iiRect.bottom = iiRect.top + iconH;
-                if ((drawFlags & DRAWFLAG_MASK) == 0) // pokud kreslime masku (b&w), nesmi kreslit podkladovou barvu
+                if ((drawFlags & DRAWFLAG_MASK) == 0) // when drawing the mask (b&w), the background color must not be painted
                     FillIntersectionRegion(hDC, &innerRect, &iiRect);
             }
         }
@@ -1374,32 +1374,32 @@ void CFilesWindow::DrawIconThumbnailItem(HDC hTgtDC, int itemIndex, RECT* itemRe
 
         if (hScaled == NULL)
         {
-            // nemame zmenseninu -> vykreslime ikonu
+            // no thumbnail available -> draw the icon
             DrawIcon(hDC, f, isDir, isItemUpDir, isItemFocusedOrEditMode,
                      iconX, iconY, iconSize, (GetViewMode() == vmThumbnails ? &overlayRect : NULL),
                      drawFlags);
         }
         else
         {
-            // vykreslime zmenseninu
+            // draw the thumbnail
             HDC hTmpDC = HANDLES(CreateCompatibleDC(hDC));
             HBITMAP hOldBitmap = (HBITMAP)SelectObject(hTmpDC, hScaled);
 
             if ((drawFlags & DRAWFLAG_MASK) != 0)
             {
-                // vykreslime masku pro overlay (pri kresleni masky je potreba napred nakreslit overlay, protoze ten neumime kreslit transparentne)
+                // draw the mask for the overlay (the overlay must be drawn first because we cannot draw it transparently)
                 DrawIcon(hDC, f, isDir, isItemUpDir, isItemFocusedOrEditMode,
                          iconX, iconY, iconSize, (GetViewMode() == vmThumbnails ? &overlayRect : NULL),
                          drawFlags | DRAWFLAG_OVERLAY_ONLY);
             }
 
-            // vykreslime vlastni bitmapu
+            // draw the bitmap itself
             BitBlt(hDC, iconX, iconY, iconW, iconH, hTmpDC, 0, 0,
                    (drawFlags & DRAWFLAG_MASK) == 0 ? SRCCOPY : SRCERASE);
 
             if ((drawFlags & DRAWFLAG_MASK) == 0)
             {
-                // vykreslime overlay (pri normalnim kresleni musime overlay vykreslit az po bitmape)
+                // draw the overlay (during normal drawing it must be drawn after the bitmap)
                 DrawIcon(hDC, f, isDir, isItemUpDir, isItemFocusedOrEditMode,
                          iconX, iconY, iconSize, (GetViewMode() == vmThumbnails ? &overlayRect : NULL),
                          drawFlags | DRAWFLAG_OVERLAY_ONLY);
@@ -1413,22 +1413,22 @@ void CFilesWindow::DrawIconThumbnailItem(HDC hTgtDC, int itemIndex, RECT* itemRe
 
     //*****************************************
     //
-    // vykresleni textu
+    // text drawing
     //
 
     if (!(drawFlags & DRAWFLAG_ICON_ONLY))
     {
-        // zvolime patricny font
+        // select the appropriate font
         SelectObject(hDC, Font);
 
-        // budeme pozdeji zobrazovat ramecek kolem polozky?
+        // will we later draw a frame around the item?
         BOOL drawFocusFrame = (itemIndex == DropTargetIndex || isItemFocusedOrEditMode) &&
                               (drawFlags & DRAWFLAG_NO_FRAME) == 0;
 
-        // detekce barev
+        // color detection
         CHighlightMasksItem* highlightMasksItem = MainWindow->HighlightMasks->AgreeMasks(f->Name, isDir ? NULL : f->Ext, f->Attr);
 
-        // nastavim pouzity font, barvu pozadi a barvu textu
+        // set the applied font, background color and text color
         SetFontAndColors(hDC, highlightMasksItem, f, isItemFocusedOrEditMode, itemIndex);
 
         if (drawFlags & DRAWFLAG_MASK)
