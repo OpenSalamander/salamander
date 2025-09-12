@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
+// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
@@ -60,7 +60,7 @@ public:
     BOOL MakeFilesList(TDirectArray<int>& offsets, SalEnumSelection next, void* nextParam, const char* targetDir);
     BOOL ConstructMaskArray(TIndirectArray<char>& maskArray, const char* masks);
 
-    friend static BOOL ProgressCallback(int);
+    friend BOOL ProgressCallback(int);
 };
 
 class CPluginInterface : public CPluginInterfaceAbstract

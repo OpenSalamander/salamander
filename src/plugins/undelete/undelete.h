@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
+// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
@@ -235,7 +235,7 @@ class CFileList;
 class CPluginFSInterface : public CPluginFSInterfaceAbstract
 {
 protected:
-    friend static BOOL WINAPI EncryptedProgress(int inc, void* ctx);
+    friend BOOL WINAPI EncryptedProgress(int inc, void* ctx);
     friend void WINAPI CPluginInterfaceForFS::ExecuteOnFS(int panel, CPluginFSInterfaceAbstract* pluginFS,
                                                           const char* pluginFSName, int pluginFSNameIndex,
                                                           CFileData& file, int isDir);
