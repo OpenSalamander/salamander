@@ -540,7 +540,7 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
     if (!(drawFlags & DRAWFLAG_KEEP_DIRTY))
         f->Dirty = 0;
 
-    TransferAssocIndex = -2; // we haven't looked up the extension for this item in Associations yet
+    TransferAssocIndex = -2; // we haven't looked up the extension for the drawn item in Associations yet
 
     //*****************************************
     //
@@ -641,7 +641,7 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
 
         if (drawFlags & DRAWFLAG_MASK)
         {
-            SetTextColor(hDC, RGB(0, 0, 0)); // we want black text on black background to handle aliased fonts
+            SetTextColor(hDC, RGB(0, 0, 0)); // we want black text on black background because of aliased fonts
             SetBkColor(hDC, RGB(0, 0, 0));
         }
         if (drawFlags & DRAWFLAG_DRAGDROP)
@@ -1164,7 +1164,7 @@ void CFilesWindow::DrawIconThumbnailItem(HDC hTgtDC, int itemIndex, RECT* itemRe
     if ((drawFlags & DRAWFLAG_DIRTY_ONLY) && f->Dirty == 0)
         return;
 
-    BOOL isItemUpDir = FALSE; // is the item the ".." directory?
+    BOOL isItemUpDir = FALSE; // is the drawn item the ".." directory?
 
     if (itemIndex == 0 && isDir && *f->Name == '.' && *(f->Name + 1) == '.' &&
         *(f->Name + 2) == 0) // "up-dir" can only be first
@@ -1217,7 +1217,7 @@ void CFilesWindow::DrawIconThumbnailItem(HDC hTgtDC, int itemIndex, RECT* itemRe
     if (!(drawFlags & DRAWFLAG_KEEP_DIRTY))
         f->Dirty = 0;
 
-    TransferAssocIndex = -2; // we haven't looked up the extension for this item in Associations yet
+    TransferAssocIndex = -2; // we haven't looked up the extension for the drawn item in Associations yet
 
     //*****************************************
     //
@@ -1433,23 +1433,23 @@ void CFilesWindow::DrawIconThumbnailItem(HDC hTgtDC, int itemIndex, RECT* itemRe
 
         if (drawFlags & DRAWFLAG_MASK)
         {
-            SetTextColor(hDC, RGB(0, 0, 0)); //chceme cerny text na cernem pozadi, kvuli aliasovanym fontum
+            SetTextColor(hDC, RGB(0, 0, 0)); // we want black text on black background because of aliased fonts
             SetBkColor(hDC, RGB(0, 0, 0));
         }
         if (drawFlags & DRAWFLAG_DRAGDROP)
         {
-            SetTextColor(hDC, GetCOLORREF(CurrentColors[ITEM_FG_FOCUSED])); // focused text i pozadi
+            SetTextColor(hDC, GetCOLORREF(CurrentColors[ITEM_FG_FOCUSED])); // focused text and background
             SetBkColor(hDC, GetCOLORREF(CurrentColors[ITEM_BK_FOCUSED]));
         }
 
         int nameLen = f->NameLen;
-        int itemWidth = rect.right - rect.left; // sirka polozka
+        int itemWidth = rect.right - rect.left; // item width
 
-        // uhladime nazev do userem definovaneho tvaru
+        // format the name to the user-defined form
         AlterFileName(TransferBuffer, f->Name, -1, Configuration.FileNameFormat, 0, isDir);
 
-        // maximalni sirka, kterou dame textu k dispozici
-        int maxWidth = itemWidth - 4 - 1; // -1, aby se nedotykaly
+        // maximum width available for the text
+        int maxWidth = itemWidth - 4 - 1; // -1 so they don't touch
         char* out1 = DrawItemBuff;
         int out1Len = 512;
         int out1Width;
@@ -1468,8 +1468,8 @@ void CFilesWindow::DrawIconThumbnailItem(HDC hTgtDC, int itemIndex, RECT* itemRe
             out2Len = 0;
         }
 
-        // vnejsi obdelnik, od ktereho mazu smerem k vnitrnimu
-        int y; // pozice textu
+        // outer rectangle from which we clear towards the inner one
+        int y; // text position
         RECT outerRect = rect;
         if (GetViewMode() == vmThumbnails)
         {
@@ -1484,7 +1484,7 @@ void CFilesWindow::DrawIconThumbnailItem(HDC hTgtDC, int itemIndex, RECT* itemRe
             y = outerRect.top + 4;
         }
 
-        // vnitrni obdelnik, ke kterememu mazu
+        // inner rectangle we clear towards
         RECT r;
         r.left = rect.left + (itemWidth - maxWidth) / 2 - 2;
         r.top = y - 2;
@@ -1493,31 +1493,31 @@ void CFilesWindow::DrawIconThumbnailItem(HDC hTgtDC, int itemIndex, RECT* itemRe
         if (out2Len > 0)
             r.bottom += FontCharHeight;
 
-        // podmazu prostor kolem textu
-        if ((drawFlags & DRAWFLAG_MASK) == 0) // pokud kreslime masku (b&w), nesmi kreslit podkadovou barvu
+        // clear the background around the text
+        if ((drawFlags & DRAWFLAG_MASK) == 0) // when drawing the mask (b&w), the background color must not be painted
             FillIntersectionRegion(hDC, &outerRect, &r);
 
-        if (drawFocusFrame) // pokud nebude frame, zmensime se o nej
+        if (drawFocusFrame) // if there won't be a frame displayed, reduce the area by it
             InflateRect(&r, -1, -1);
 
         int oldRTop = r.top;
 
-        // zobrazime centrovany prvni radek; podmazeme zaroven i pro druhy radek
-        // DRAWFLAG_MASK: hack, pod XP se do masky pri kresleni kratkych textu pridavala pred text nejaka blitka, pokud text nekreslimne, nedela to
+        // display the centered first line; also clear background of the second line
+        // DRAWFLAG_MASK: hack, under XP some stuff is added in font of the text in the mask while drawing short texts; not an issue if text is not drawn
         ExtTextOut(hDC, rect.left + (itemWidth - out1Width) / 2, y,
                    ETO_OPAQUE, &r, out1, (drawFlags & DRAWFLAG_MASK) ? 0 : out1Len, NULL);
 
-        // zobrazime centrovany druhy radek
+        // display the centered second line
         if (out2Len > 0)
         {
-            // DRAWFLAG_MASK: hack, pod XP se do masky pri kresleni kratkych textu pridavala pred text nejaka blitka, pokud text nekreslimne, nedela to
+            // DRAWFLAG_MASK: hack, under XP some stuff is added in font of the text in the mask while drawing short texts; not an issue if text is not drawn
             ExtTextOut(hDC, rect.left + (itemWidth - out2Width) / 2, y += FontCharHeight,
                        0, NULL, out2, (drawFlags & DRAWFLAG_MASK) ? 0 : out2Len, NULL);
         }
 
         //*****************************************
         //
-        // vykresleni focus ramecku
+        // drawing the focus frame
         //
         if (drawFocusFrame)
         {
@@ -1536,7 +1536,7 @@ void CFilesWindow::DrawIconThumbnailItem(HDC hTgtDC, int itemIndex, RECT* itemRe
 //
 // DrawTileItem
 //
-// Kresli polozku v rezimu Tiles
+// Draws an item in Tiles mode
 //
 
 void TruncateSringToFitWidth(HDC hDC, char* buffer, int* bufferLen, int maxTextWidth, int* widthNeeded)
@@ -1552,13 +1552,13 @@ void TruncateSringToFitWidth(HDC hDC, char* buffer, int* bufferLen, int maxTextW
     {
         if (*widthNeeded < maxTextWidth)
             *widthNeeded = maxTextWidth;
-        // vyhledam od konce znak, za ktery muzu nakopirovat "..." a vejdou se do sloupce
+        // search from the end for the character after which we can copy "..." and it fits in the column
         while (fitChars > 0 && DrawItemAlpDx[fitChars - 1] + TextEllipsisWidth > maxTextWidth)
             fitChars--;
-        // do jineho bufferu nakopcim cast puvodniho retezce
+        // copy part of the original string to another buffer
         if (fitChars > 0)
         {
-            // a pripojim "..."
+            // and append "..."
             memmove(buffer + fitChars, "...", 3);
             *bufferLen = fitChars + 3;
         }
@@ -1583,15 +1583,15 @@ void GetTileTexts(CFileData* f, int isDir,
                   CPluginDataInterfaceEncapsulation* pluginData,
                   BOOL isDisk)
 {
-    // uhladime nazev do userem definovaneho tvaru
+    // format the name to the user-defined form
     AlterFileName(out0, f->Name, -1, Configuration.FileNameFormat, 0, isDir != 0);
-    // 1. radek: NAME
+    // 1st line: NAME
     *out0Len = f->NameLen;
-    // retezec muze byt delsi nez dostupne misto a bude treba zkratit ho vypustkou ...
+    // the string may be longer than available space and may need to be shortened with "..."
     *widthNeeded = 0;
     TruncateSringToFitWidth(hDC, out0, out0Len, maxTextWidth, widthNeeded);
 
-    // 2. radek: SIZE (pokud zname)
+    // 2nd line: SIZE (if known)
     CQuadWord plSize;
     BOOL plSizeValid = FALSE;
     if ((validFileData & VALID_DATA_PL_SIZE) &&
@@ -1605,17 +1605,17 @@ void GetTileTexts(CFileData* f, int isDir,
     else
         PrintDiskSize(out1, plSizeValid ? plSize : f->Size, 0);
     *out1Len = (int)strlen(out1);
-    // retezec muze byt delsi nez dostupne misto a bude treba zkratit ho vypustkou ...
+    // the string may be longer than available space and may need to be shortened with "..."
     TruncateSringToFitWidth(hDC, out1, out1Len, maxTextWidth, widthNeeded);
 
-    // 3. radek DATE TIME (pokud zname)
+    // 3rd line DATE TIME (if known)
     SYSTEMTIME st;
     FILETIME ft;
     BOOL validDate = FALSE;
     BOOL validTime = FALSE;
     BOOL invalidDate = FALSE;
     BOOL invalidTime = FALSE;
-    if (validFileData & (VALID_DATA_DATE | VALID_DATA_TIME)) // aspon neco je v LastWrite
+    if (validFileData & (VALID_DATA_DATE | VALID_DATA_TIME)) // at least something is in LastWrite
     {
         if (!FileTimeToLocalFileTime(&f->LastWrite, &ft) ||
             !FileTimeToSystemTime(&ft, &st))
@@ -1649,14 +1649,14 @@ void GetTileTexts(CFileData* f, int isDir,
     {
         validTime = TRUE;
     }
-    if (!validDate) // nemame nastaveny zadny datum, nejaky nastavime...
+    if (!validDate) // no date set, so we set one...
     {
         st.wYear = 2000;
         st.wMonth = 12;
         st.wDay = 24;
-        st.wDayOfWeek = 0; // nedele
+        st.wDayOfWeek = 0; // Sunday
     }
-    if (!validTime) // nemame nastaveny zadny cas, nejaky nastavime...
+    if (!validTime) // no time set, so we set one...
     {
         st.wHour = 0;
         st.wMinute = 0;
@@ -1695,7 +1695,7 @@ void GetTileTexts(CFileData* f, int isDir,
             out2LenB = sprintf(out2 + out2LenA, LoadStr(IDS_INVALID_DATEORTIME));
     }
     *out2Len = out2LenA + out2LenB;
-    // retezec muze byt delsi nez dostupne misto a bude treba zkratit ho vypustkou ...
+    // the string may be longer than available space and may need to be shortened with "..."
     TruncateSringToFitWidth(hDC, out2, out2Len, maxTextWidth, widthNeeded);
 }
 
@@ -1725,10 +1725,10 @@ void CFilesWindow::DrawTileItem(HDC hTgtDC, int itemIndex, RECT* itemRect, DWORD
     if ((drawFlags & DRAWFLAG_DIRTY_ONLY) && f->Dirty == 0)
         return;
 
-    BOOL isItemUpDir = FALSE; // je vykreslovana polozka adresar ".."?
+    BOOL isItemUpDir = FALSE; // is the drawn item the ".." directory?
 
     if (itemIndex == 0 && isDir && *f->Name == '.' && *(f->Name + 1) == '.' &&
-        *(f->Name + 2) == 0) // "up-dir" muze byt jen prvni
+        *(f->Name + 2) == 0) // "up-dir" can only be first
     {
         if (drawFlags & DRAWFLAG_DIRTY_ONLY)
             return;
@@ -1738,94 +1738,93 @@ void CFilesWindow::DrawTileItem(HDC hTgtDC, int itemIndex, RECT* itemRect, DWORD
     //  TRACE_I("DrawTileItem itemIndex="<<dec<<itemIndex<<" y="<<itemRect->top);
 
     BOOL isItemFocusedOrEditMode = FALSE;
-    if (FocusedIndex == itemIndex) // kreslime kurzor
+    if (FocusedIndex == itemIndex) // drawing the cursor
     {
-        if (FocusVisible || Parent->EditMode && Parent->GetActivePanel() == this) // prepnuto v command-line
+        if (FocusVisible || Parent->EditMode && Parent->GetActivePanel() == this) // switched in the command-line
             isItemFocusedOrEditMode = TRUE;
     }
 
-    RECT rect = *itemRect; // pozice polozky posunuta o xOffset
+    RECT rect = *itemRect; // item position shifted by xOffset
 
-    HDC hDC = hTgtDC; // jedna se o veliky paint - peceme na cache a pujdem rovnou do videa
+    HDC hDC = hTgtDC; // this is a large paint; skip the cache and draw directly to the screen
 
-    // pokud mi to nezatrhli, shodim flag
+    // if not prohibited, clear the flag
     if (!(drawFlags & DRAWFLAG_KEEP_DIRTY))
         f->Dirty = 0;
 
-    TransferAssocIndex = -2; // zatim jsme priponu pro vykreslovanou polozku v Associations nehledali
+    TransferAssocIndex = -2; // we haven't looked up the extension for the drawn item in Associations yet
 
     //*****************************************
     //
-    // vykresleni ikony
+    // drawing the icon
     //
 
     if (drawFlags & DRAWFLAG_SKIP_VISTEST || RectVisible(hDC, &rect))
     {
-        // velikost ikony
+        // icon size
         int iconW = IconSizes[iconSize];
         int iconH = IconSizes[iconSize];
 
-        // umisteni ikonky
+        // icon position
         int iconX = rect.left + TILE_LEFT_MARGIN;
-        int iconY = rect.top + (rect.bottom - rect.top - iconH) / 2; // centrujeme
+        int iconY = rect.top + (rect.bottom - rect.top - iconH) / 2; // center it
 
-        // vnejsi obdelnik, od ktereho mazu smerem k vnitrnimu
+        // outer rectangle from which we clear towards the inner one
         RECT outerRect = rect;
         outerRect.right = iconX + iconW;
 
-        // obdelnik, ke kteremu budeme mazat
+        // rectangle we will clear towards
         RECT innerRect;
-        BOOL thickFrame = FALSE; // pouze pro Thumbnails -- ma byt ramecek dvojnasobny?
+        BOOL thickFrame = FALSE; // for Thumbnails only -- should the frame be doubled?
 
         innerRect.left = iconX;
         innerRect.top = iconY;
         innerRect.right = iconX + iconW;
         innerRect.bottom = iconY + iconH;
 
-        // podmazu pozadi k ikone nebo ramecku (pro Thumbnail)
-        if ((drawFlags & DRAWFLAG_MASK) == 0) // pokud kreslime masku (b&w), nesmi kreslit podkadovou barvu
+        // clear the background around the icon or frame (for Thumbnails)
+        if ((drawFlags & DRAWFLAG_MASK) == 0) // when drawing the mask (b&w), the background color must not be painted
             FillIntersectionRegion(hDC, &outerRect, &innerRect);
-
-        // nemame zmenseninu -> vykreslime ikonu
+        // no thumbnail available -> draw the icon
         DrawIcon(hDC, f, isDir, isItemUpDir, isItemFocusedOrEditMode,
                  iconX, iconY, iconSize, NULL, drawFlags);
     }
 
     //*****************************************
     //
-    // vykresleni textu
+    // text drawing
     //
 
     if (!(drawFlags & DRAWFLAG_ICON_ONLY))
     {
-        // zvolime patricny font
+        // select the appropriate font
         SelectObject(hDC, Font);
 
-        // budeme pozdeji zobrazovat ramecek kolem polozky?
+        // will we later draw a frame around the item?
         BOOL drawFocusFrame = (itemIndex == DropTargetIndex || isItemFocusedOrEditMode) &&
                               (drawFlags & DRAWFLAG_NO_FRAME) == 0;
 
-        // detekce barev
+        // colors detection
         CHighlightMasksItem* highlightMasksItem = MainWindow->HighlightMasks->AgreeMasks(f->Name, isDir ? NULL : f->Ext, f->Attr);
 
-        // nastavim pouzity font, barvu pozadi a barvu textu
+        // set the applied font, background color and text color
         SetFontAndColors(hDC, highlightMasksItem, f, isItemFocusedOrEditMode, itemIndex);
 
         if (drawFlags & DRAWFLAG_MASK)
         {
-            SetTextColor(hDC, RGB(0, 0, 0)); //chceme cerny text na cernem pozadi, kvuli aliasovanym fontum
+            SetTextColor(hDC, RGB(0, 0, 0)); // we want black text on black background because of aliased fonts
             SetBkColor(hDC, RGB(0, 0, 0));
         }
         if (drawFlags & DRAWFLAG_DRAGDROP)
         {
-            SetTextColor(hDC, GetCOLORREF(CurrentColors[ITEM_FG_FOCUSED])); // focused text i pozadi
+            SetTextColor(hDC, GetCOLORREF(CurrentColors[ITEM_FG_FOCUSED])); // focused text and background
             SetBkColor(hDC, GetCOLORREF(CurrentColors[ITEM_BK_FOCUSED]));
         }
 
         int nameLen = f->NameLen;
-        int itemWidth = rect.right - rect.left; // sirka polozka
+        int itemWidth = rect.right - rect.left; // item width
 
-        // texty nesmi prekrocit tuto delku v bodech
+        // texts must not exceed this length in pixels
         int maxTextWidth = itemWidth - TILE_LEFT_MARGIN - IconSizes[iconSize] - TILE_LEFT_MARGIN - 4;
         int widthNeeded = 0;
 
@@ -1877,40 +1876,40 @@ void CFilesWindow::DrawTileItem(HDC hTgtDC, int itemIndex, RECT* itemRect, DWORD
 
         textY += 2;
 
-        // podmazu prostor kolem textu
-        if ((drawFlags & DRAWFLAG_MASK) == 0) // pokud kreslime masku (b&w), nesmi kreslit podkadovou barvu
+        // clear the background around the text
+        if ((drawFlags & DRAWFLAG_MASK) == 0) // when drawing the mask (b&w), the background color must not be painted
             FillIntersectionRegion(hDC, &outerRect, &r);
 
-        //    if (drawFocusFrame) // pokud nebude frame, zmensime se o nej
+        //    if (drawFocusFrame) // if there won't be a frame displayed, reduce the area by it
         //      InflateRect(&r, -1, -1);
 
-        // zobrazime prvni radek; podmazeme take prostor nad nim
+        // display the first line and also clear the background of the area above it
         r.bottom = textY + FontCharHeight;
-        if (out1[0] == 0 && out2[0] == 0) // pokud je to posleni radek, podmazeme prostor pod nim
+        if (out1[0] == 0 && out2[0] == 0) // if this is the last line, clear the background of the area below it
         {
             r.bottom += 2;
             if (drawFocusFrame)
                 r.bottom--;
         }
-        // DRAWFLAG_MASK: hack, pod XP se do masky pri kresleni kratkych textu pridavala pred text nejaka blitka, pokud text nekreslimne, nedela to
+        // DRAWFLAG_MASK: hack, under XP some stuff is added in font of the text in the mask while drawing short texts; not an issue if text is not drawn
         ExtTextOut(hDC, textX, textY, ETO_OPAQUE, &r, out0, (drawFlags & DRAWFLAG_MASK) ? 0 : out0Len, NULL);
 
-        // zobrazime druhy radek
+        // display the second line
         if (out1[0] != 0)
         {
             textY += FontCharHeight;
             r.top = r.bottom;
             r.bottom = r.top + FontCharHeight;
-            if (out2[0] == 0) // pokud je to posleni radek, podmazeme prostor pod nim
+            if (out2[0] == 0) // if this is the last line, clear the background of the area below it
             {
                 r.bottom += 2;
                 if (drawFocusFrame)
                     r.bottom--;
             }
-            // DRAWFLAG_MASK: hack, pod XP se do masky pri kresleni kratkych textu pridavala pred text nejaka blitka, pokud text nekreslimne, nedela to
+            // DRAWFLAG_MASK: hack, under XP some stuff is added in font of the text in the mask while drawing short texts; not an issue if text is not drawn
             ExtTextOut(hDC, textX, textY, ETO_OPAQUE, &r, out1, (drawFlags & DRAWFLAG_MASK) ? 0 : out1Len, NULL);
         }
-        // zobrazime treti radek; podmazeme take prostor pod nim
+        // display the third line and clear the background of the area below it
         if (out2[0] != 0)
         {
             r.top = r.bottom;
@@ -1918,13 +1917,13 @@ void CFilesWindow::DrawTileItem(HDC hTgtDC, int itemIndex, RECT* itemRect, DWORD
             if (drawFocusFrame)
                 r.bottom--;
             textY += FontCharHeight;
-            // DRAWFLAG_MASK: hack, pod XP se do masky pri kresleni kratkych textu pridavala pred text nejaka blitka, pokud text nekreslimne, nedela to
+            // DRAWFLAG_MASK: hack, under XP some stuff is added in font of the text in the mask while drawing short texts; not an issue if text is not drawn
             ExtTextOut(hDC, textX, textY, ETO_OPAQUE, &r, out2, (drawFlags & DRAWFLAG_MASK) ? 0 : out2Len, NULL);
         }
 
         //*****************************************
         //
-        // vykresleni focus ramecku
+        // drawing the focus frame
         //
         if (drawFocusFrame)
         {
@@ -1970,11 +1969,11 @@ BOOL StateImageList_Draw(CIconList* iconList, int imageIndex, HDC hDC, int xDst,
         flags = ILD_NORMAL;
     }
 
-    // overlay muze (v pripade thumbnailu) lezet mimo ikonku (v levem dolnim rohu thubnailu)
+    // the overlay may (in case of a thumbnail) lie outside the icon (in the thumbnail's lower left corner)
     int xOverlayDst = xDst;
     int yOverlayDst = yDst;
 
-    // na Viste se pouziva pro ikony 48x48 overlay ICONSIZE_32 a pro thumbnaily overlay ICONSIZE_48
+    // on Vista a 48x48 icon uses overlay ICONSIZE_32 and thumbnails use overlay ICONSIZE_48
     if (iconSize == ICONSIZE_48 && overlayRect == NULL)
     {
         iconSize = ICONSIZE_32;
@@ -1984,7 +1983,7 @@ BOOL StateImageList_Draw(CIconList* iconList, int imageIndex, HDC hDC, int xDst,
     int iconW = IconSizes[iconSize];
     int iconH = IconSizes[iconSize];
 
-    // v pripade thumbnailu dostaneme overlayRect != NULL a posuneme overlay do jeho leveho dolniho rohu
+    // for a thumbnail overlayRect != NULL and we move the overlay to its lower left corner
     if (overlayRect != NULL)
     {
         xOverlayDst = overlayRect->left;
@@ -1993,8 +1992,8 @@ BOOL StateImageList_Draw(CIconList* iconList, int imageIndex, HDC hDC, int xDst,
 
     if (state & IMAGE_STATE_MASK)
     {
-        // musim prohodit poradi, protoze funkce DrawIconEx nekresli masku transparentne
-        if (iconOverlayIndex != ICONOVERLAYINDEX_NOTUSED) // pokud je nacteny tento overlay, znamena to, ze je prioritnejsi nez nize uvedene overlaye
+        // we must swap the order because DrawIconEx doesn't draw the mask transparently
+        if (iconOverlayIndex != ICONOVERLAYINDEX_NOTUSED) // if this overlay is loaded it has higher priority than the overlays below
         {
             if (iconOverlayFromPlugin)
             {
@@ -2037,7 +2036,7 @@ BOOL StateImageList_Draw(CIconList* iconList, int imageIndex, HDC hDC, int xDst,
     {
         if (!overlayOnly)
             iconList->Draw(imageIndex, hDC, xDst, yDst, rgbFg, blend ? IL_DRAW_BLEND : 0);
-        if (iconOverlayIndex != ICONOVERLAYINDEX_NOTUSED) // pokud je nacteny tento overlay, znamena to, ze je prioritnejsi nez nize uvedene overlaye
+        if (iconOverlayIndex != ICONOVERLAYINDEX_NOTUSED) // if this overlay is loaded it has higher priority than the overlays below
         {
             if (iconOverlayFromPlugin)
             {
