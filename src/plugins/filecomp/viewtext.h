@@ -54,5 +54,3 @@ public:
     virtual void Paint();
 };
 
-template class TTextFileViewWindow<char>;
-template class TTextFileViewWindow<wchar_t>;

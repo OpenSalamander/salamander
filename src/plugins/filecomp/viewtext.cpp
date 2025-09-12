@@ -1041,3 +1041,7 @@ void TTextFileViewWindow<CChar>::Paint()
         SelectPalette(dc, oldPalette, FALSE);
     EndPaint(HWindow, &ps);
 }
+
+// Explicit template instantiations
+template class TTextFileViewWindow<char>;
+template class TTextFileViewWindow<wchar_t>;
