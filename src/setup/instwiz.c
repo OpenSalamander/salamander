@@ -1203,8 +1203,10 @@ void MyCreateProcess(const char* fileName, BOOL parseCurDir, BOOL addQuotes)
 
     if (addQuotes)
         wsprintf(buf2, "\"%s\"", fileName);
+    else
+        lstrcpy(buf2, fileName);
     si.cb = sizeof(STARTUPINFO);
-    CreateProcess(NULL, addQuotes ? buf2 : fileName, NULL, NULL, TRUE, CREATE_DEFAULT_ERROR_MODE | NORMAL_PRIORITY_CLASS, NULL, parseCurDir ? buf : NULL, &si, &pi);
+    CreateProcess(NULL, buf2, NULL, NULL, TRUE, CREATE_DEFAULT_ERROR_MODE | NORMAL_PRIORITY_CLASS, NULL, parseCurDir ? buf : NULL, &si, &pi);
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
 }
