@@ -16,10 +16,10 @@
 
 #define UTF8_DETECT_BUF_SIZE 65536
 
-#define LongSwap(x) ((UINT32)((((UINT32)((x)&0x000000FFL)) << 24) | \
-                              (((UINT32)((x)&0x0000FF00L)) << 8) | \
-                              (((UINT32)((x)&0x00FF0000L)) >> 8) | \
-                              (((UINT32)((x)&0xFF000000L)) >> 24)))
+#define LongSwap(x) ((UINT32)((((UINT32)((x) & 0x000000FFL)) << 24) | \
+                              (((UINT32)((x) & 0x0000FF00L)) << 8) | \
+                              (((UINT32)((x) & 0x00FF0000L)) >> 8) | \
+                              (((UINT32)((x) & 0xFF000000L)) >> 24)))
 
 bool IsUTF8Encoded(const char* s, int cnt)
 {

@@ -53,4 +53,3 @@ public:
                              typename std::vector<POLYTEXT>::iterator end);
     virtual void Paint();
 };
-

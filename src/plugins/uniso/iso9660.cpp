@@ -21,10 +21,10 @@
 #define ISO_SEPARATOR2 ';'
 
 #define SWAPDWORD(d) \
-    ((((d)&0x000000FF) << 24) | \
-     (((d)&0x0000FF00) << 8) | \
-     (((d)&0x00FF0000) >> 8) | \
-     (((d)&0xFF000000) >> 24))
+    ((((d) & 0x000000FF) << 24) | \
+     (((d) & 0x0000FF00) << 8) | \
+     (((d) & 0x00FF0000) >> 8) | \
+     (((d) & 0xFF000000) >> 24))
 
 // ****************************************************************************
 //
@@ -100,7 +100,7 @@ BOOL CISO9660::Open(BOOL quiet)
                 terminate = TRUE;
                 break;
             } // switch
-        }     // if
+        } // if
 
         block++;
 
@@ -154,7 +154,7 @@ void CISO9660::FillPathTableRecord(CPathTableRecord& record, BYTE bytes[])
 #undef CpyN
 }
 
-#define ROTATE(a) ((((a)&0xffff) >> 8) | (((a)&0xff) << 8))
+#define ROTATE(a) ((((a) & 0xffff) >> 8) | (((a) & 0xff) << 8))
 
 //
 void CISO9660::ExtractExtFileName(char* fileName, const char* src, CDirectoryRecord& dr)
@@ -539,7 +539,7 @@ int CISO9660::ListDirectoryRe(char* path, CDirectoryRecord* root,
                     else
                         ret = ERR_TERMINATE;
                 } // if
-            }     // if
+            } // if
         }
         else
         {

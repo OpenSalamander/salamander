@@ -18,7 +18,7 @@ private:
     FILE* f;
 
 public:
-    CParserMPG() : f(NULL){};
+    CParserMPG() : f(NULL) {};
     ~CParserMPG() { CloseFile(); }
 
     virtual CParserResultEnum OpenFile(const char* fileName);

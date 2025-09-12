@@ -375,7 +375,7 @@ public:
 #ifndef TRACE_ENABLE
 
 // aby nedochazelo k problemum se stredniky v nize nadefinovanych makrech
-inline void __TraceEmptyFunction() {}
+inline void __TraceEmptyFunction(){}
 
 #define TRACE_MI(file, line, str) __TraceEmptyFunction()
 #define TRACE_MIW(file, line, str) __TraceEmptyFunction()

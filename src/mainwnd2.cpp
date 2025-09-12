@@ -780,7 +780,7 @@ const char* SALAMANDER_PWDMNGR_REG = "Password Manager";
 // GetUpgradeInfo
 //
 // Tries to find "AutoImportConfig" in the configuration key of this version of Salamander.
-// If it is not found or if the key stored in AutoImportConfig does not exist 
+// If it is not found or if the key stored in AutoImportConfig does not exist
 // (points to the key of this version, which makes no sense)
 // or if it contains a corrupted (incomplete save) or empty configuration, it returns
 // FALSE in 'autoImportConfig'. Otherwise it returns TRUE in 'autoImportConfig' and
@@ -789,10 +789,10 @@ const char* SALAMANDER_PWDMNGR_REG = "Password Manager";
 // for another key. We simply follow the "target" key and leave intermediate keys untouched-
 // if the import succeeds, the target key will be removed anyway. Returns FALSE only if the application should exit.
 //
-// If the configuration key of this version contains, besides AutoImportConfig, also the "Configuration" 
+// If the configuration key of this version contains, besides AutoImportConfig, also the "Configuration"
 // key (expected to be a saved configuration),
 // we ask the user whether to:
-//   - Use the current configuration and ignore the old one (we do not delete it so the user does not lose data, 
+//   - Use the current configuration and ignore the old one (we do not delete it so the user does not lose data,
 //     and it does not require that much space anyway). In this case delete AutoImportConfig immediately.
 //     This is done silently, if AutoImportConfig points to this version of Salamander`s key
 //     (DEFAULT OFFER because it does not cause data loss and users may dismiss the message box without reading).
@@ -3986,7 +3986,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                     if (LeftPanel->ChangeDirLite(cmdLineParams->LeftPath))
                     {
                         leftPanelPathSet = TRUE;
-                          LeftPanel->RefreshVisibleItemsArray(); // see "RefreshVisibleItemsArray" comment below
+                        LeftPanel->RefreshVisibleItemsArray(); // see "RefreshVisibleItemsArray" comment below
                     }
                 }
                 if (cmdLineParams->RightPath[0] != 0)

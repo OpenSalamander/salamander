@@ -2654,9 +2654,9 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
     }
 
     // we have a new version of the listing for the same path; now we'll enrich it with parts from the old listing
-    // !!! ATTENTION: refresh in an archive that hasn't changed — oldFiles and oldDirs point to 
+    // !!! ATTENTION: refresh in an archive that hasn't changed — oldFiles and oldDirs point to
     // ArchiveDir+PluginData (see above in ChangePathToArchive), oldArchiveDir+oldPluginData
-    // are empty. 
+    // are empty.
 
     // the main window is inactive, only icons/thumbnails/overlays from the visible part of the panel are loaded, we save CPU time
     if (isInactiveRefresh)

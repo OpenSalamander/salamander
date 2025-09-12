@@ -18,7 +18,7 @@ private:
     FILE* f;
 
 public:
-    CParserMP4() : f(NULL){};
+    CParserMP4() : f(NULL) {};
     ~CParserMP4() { CloseFile(); }
 
     virtual CParserResultEnum OpenFile(const char* fileName);

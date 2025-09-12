@@ -12,7 +12,7 @@ class CAboutDialog : public CDialog
 {
 public:
     CAboutDialog(HINSTANCE modul, int resID, HWND parent)
-        : CDialog(modul, resID, parent){};
+        : CDialog(modul, resID, parent) {};
 
     virtual void Transfer(CTransferInfo& ti);
 };
@@ -26,7 +26,7 @@ class CCenterDialog : public CDialog
 {
 public:
     CCenterDialog(HINSTANCE modul, int resID, HWND parent)
-        : CDialog(modul, resID, parent){};
+        : CDialog(modul, resID, parent) {};
 
 protected:
     virtual BOOL DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);

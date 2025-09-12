@@ -43,7 +43,7 @@ struct CFieldInfo
 class CParserInterfaceAbstract
 {
 public:
-    CParserInterfaceAbstract() : bShowingError(false){};
+    CParserInterfaceAbstract() : bShowingError(false) {};
 
     // identifikuje parser ("dbf", "csv", ...)
     virtual const char* GetParserName() = 0;

@@ -618,9 +618,9 @@ protected:
     DWORD BytesAllocatedForWriteToPipe; // kolik mista pro zapis je prave naalokovano v pipe
 
 #ifdef TRACE_TO_FILE
-    HANDLE HTraceFile;                  // soubor otevreny pro zapis v TEMPu, ukladaji se do nej vsechny message
+    HANDLE HTraceFile; // soubor otevreny pro zapis v TEMPu, ukladaji se do nej vsechny message
 #ifdef __TRACESERVER
-    WCHAR TraceFileName[MAX_PATH];      // jmeno souboru HTraceFile
+    WCHAR TraceFileName[MAX_PATH]; // jmeno souboru HTraceFile
 #endif // __TRACESERVER
 #endif // TRACE_TO_FILE
 

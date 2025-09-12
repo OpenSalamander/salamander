@@ -1434,7 +1434,7 @@ BOOL ParseMailFile(LPCTSTR pszFileName, CParserOutput* pOutput, BOOL bAppendChar
                             {
                                 PushBoundary(cBoundary);
                                 pMultipartStart = pOutput->pCurrentBlock; // oznacime si, kde jsme
-                            }                                             // s multipartem zacali
+                            } // s multipartem zacali
                         }
                         else if (!iNameOrigin)
                             SetDefaultMIMEFileName(cType, cSubType, bAppendCharset);

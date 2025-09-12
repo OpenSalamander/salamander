@@ -152,7 +152,7 @@ public:
     {
         Path[0] = 0;
         TopIndexesCount = 0;
-    }                                                 // clear memory
+    } // clear memory
     void Push(const char* path, int topIndex);        // store top-index for given path
     BOOL FindAndPop(const char* path, int& topIndex); // search top-index for given path, FALSE->not found
 };
