@@ -8,6 +8,7 @@
 
 #include "gzip/gzip.h"
 #include "bzip/bzip.h"
+#include "bzip/bzip3.h"
 #include "compress/compress.h"
 #include "rpm/rpm.h"
 #include "lzh/lzh.h"
@@ -113,9 +114,15 @@ CDecompressFile::CreateInstance(LPCTSTR fileName, DWORD inputOffset, CQuadWord i
                             archive = new CZStd(fileName, file, buffer, inputOffset, read, inputSize);
                             if (archive != NULL && !archive->IsOk() && archive->GetErrorCode() == 0)
                             {
-                                // neni to kompresene, berem zakladni tridu
+                                // neni to lzma, zkusime bzip3
                                 delete archive;
-                                archive = new CDecompressFile(fileName, file, buffer, inputOffset, read, inputSize);
+                                archive = new CBZip3(fileName, file, buffer, inputOffset, read, inputSize);
+                                if (archive != NULL && !archive->IsOk() && archive->GetErrorCode() == 0)
+                                {
+                                    // neni to kompresene, berem zakladni tridu
+                                    delete archive;
+                                    archive = new CDecompressFile(fileName, file, buffer, inputOffset, read, inputSize);
+                                }
                             }
                         }
                     }

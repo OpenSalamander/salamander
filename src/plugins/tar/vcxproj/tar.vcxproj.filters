@@ -87,6 +87,9 @@
     <ClCompile Include="..\lzma\unlzma.cpp">
       <Filter>lzma</Filter>
     </ClCompile>
+    <ClCompile Include="..\bzip\bunzip3.cpp">
+      <Filter>bzip</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\dbg.h">
@@ -163,6 +166,12 @@
     </ClInclude>
     <ClInclude Include="..\lzma\unlzma.h">
       <Filter>lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bzip\bzip3.h">
+      <Filter>bzip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bzip\bzip3format.h">
+      <Filter>bzip</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -15,6 +15,7 @@
 
 // just to get versions of the 3rd party libs
 #include <bzlib.h>
+#include <libbz3.h>
 #include <lzma.h>
 #include <zstd.h>
 
@@ -45,9 +46,10 @@
 //                3 - pracovni verze pred Servant Salamander 2.5 beta 1, vyhozeni vieweru *.CPIO
 //                4 - pracovni verze pred Servant Salamander 2.5 beta 1, pridani .z archivu
 //                5 - pracovni verze pred Servant Salamander 2.52 beta 2, pridani .DEB archivu
+//                6 - pridani .bzip3, .xz a .zst archivu
 
 int ConfigVersion = 0;
-#define CURRENT_CONFIG_VERSION 5
+#define CURRENT_CONFIG_VERSION 6
 const char* CONFIG_VERSION = "Version";
 
 // objekt interfacu pluginu, jeho metody se volaji ze Salamandera
@@ -163,7 +165,7 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
                                    VERSINFO_VERSION_NO_PLATFORM,
                                    VERSINFO_COPYRIGHT,
                                    LoadStr(IDS_PLUGIN_DESCRIPTION),
-                                   "TAR" /* neprekladat! */, "tar;tgz;taz;tbz;gz;bz;bz2;xz;zst;z;rpm;cpio;deb;ipk");
+                                   "TAR" /* neprekladat! */, "tar;tgz;taz;tbz;gz;bz;bz2;bz3;xz;zst;z;rpm;cpio;deb;ipk");
 
     salamander->SetPluginHomePageURL("www.altap.cz");
 
@@ -181,12 +183,14 @@ void CPluginInterface::About(HWND parent)
     char buf[3000];
     _snprintf_s(buf, _TRUNCATE,
                 "%s " VERSINFO_VERSION "\n" VERSINFO_COPYRIGHT "\n\n"
-                "bzip2 library Copyright © 1996-2023 Julian R Seward (version %.*s)\n"
+                "bzip2 library Copyright © 1996-2025 Julian R Seward (version %.*s)\n"
+                "bzip3 library Copyright © by Kamila Szewczyk, 2022-2025 (version %s)\n"
                 "lzma library (version %s)\n"
-                "Zstandard library Copyright © 2016-2023 Facebook, Inc. (version %s)\n\n"
+                "Zstandard library Copyright © 2016-2025 Facebook, Inc. (version %s)\n\n"
                 "%s",
                 LoadStr(IDS_PLUGINNAME),
                 static_cast<int>(bzip_ver_len), bzip_ver,
+                bz3_version(),
                 lzma_version_string(),
                 ZSTD_versionString(),
                 LoadStr(IDS_PLUGIN_DESCRIPTION));
@@ -222,17 +226,18 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
     CALL_STACK_MESSAGE1("CPluginInterface::Connect()");
 
     // pri upgradech se ignoruje, az na pripad, kdy se upgraduje na verzi 4 - nutny update kvuli "*.z" a dalsim
-    bool upgrade = ConfigVersion < 5;
+    bool upgrade = ConfigVersion < CURRENT_CONFIG_VERSION;
 
     // zakladni cast:
     salamander->AddCustomUnpacker("TAR-z (Plugin)", "*.z;*.tz;*taz;*.tar.z;*_tar.z;*_tar_z;*.tar_z", upgrade);
     salamander->AddCustomUnpacker("TAR-zst (Plugin)", "*.zst;*.tzs;*.tar.zst;*_tar.zst;*_tar_zst;*.tar_zst", upgrade);
     salamander->AddCustomUnpacker("TAR-xz (Plugin)", "*.xz;*.txz;*.tar.xz;*_tar.xz;*_tar_xz;*.tar_xz", upgrade);
+    salamander->AddCustomUnpacker("TAR-bz3 (Plugin)", "*.bz3;*.tbz3;*.tar.bz3;*_tar.bz3;*_tar_bz3;*.tar_bz3", upgrade);
     salamander->AddCustomUnpacker("TAR-bz2 (Plugin)", "*.bz2;*.tbz2;*.tar.bz2;*_tar.bz2;*_tar_bz2;*.tar_bz2", upgrade);
     salamander->AddCustomUnpacker("TAR-bz (Plugin)", "*.bz;*.tbz;*.tar.bz;*_tar.bz;*_tar_bz;*.tar_bz;", upgrade);
     salamander->AddCustomUnpacker("TAR-gz (Plugin)", "*.gz;*.tgz;*.tar.gz;*_tar.gz;*_tar_gz;*.tar_gz", upgrade);
     salamander->AddCustomUnpacker("TAR (Plugin)", "*.tar;*.rpm;*.cpio;*.deb;*.ipk", upgrade);
-    salamander->AddPanelArchiver("tgz;tbz;taz;tar;gz;bz;bz2;xz;zst;z;rpm;cpio;deb;ipk", FALSE, FALSE); // pri upgradech pluginu se ignoruje
+    salamander->AddPanelArchiver("tgz;tbz;taz;tar;gz;bz;bz2;bz3;xz;zst;z;rpm;cpio;deb;ipk", FALSE, FALSE); // pri upgradech pluginu se ignoruje
     salamander->AddViewer("*.rpm", FALSE);                                                             // pri upgradech pluginu se ignoruje, az na pripad, kdy se upgraduje z verze, ktera jeste viewer nemela (verze pustena s SS 2.0)
 
     // cast pro upgrady:
@@ -263,6 +268,11 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
     if (ConfigVersion < 5) // 5 - pracovni verze pred Servant Salamander 2.52 beta 2, pridani .deb archivu
     {
         salamander->AddPanelArchiver("deb;ipk", FALSE, TRUE);
+    }
+
+    if (ConfigVersion < 6) // 6 - pridani xz, zst a bz3 archivu
+    {
+        salamander->AddPanelArchiver("xz;zst;bz3", FALSE, TRUE);
     }
 }
 

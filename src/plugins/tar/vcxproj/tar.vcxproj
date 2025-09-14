@@ -131,6 +131,7 @@
     </ClCompile>
     <ClCompile Include="..\bzip\bunzip.cpp">
     </ClCompile>
+    <ClCompile Include="..\bzip\bunzip3.cpp" />
     <ClCompile Include="..\compress\uncompress.cpp">
     </ClCompile>
     <ClCompile Include="..\deb\deb.cpp">
@@ -187,6 +188,8 @@
     </ClInclude>
     <ClInclude Include="..\bzip\bzip.h">
     </ClInclude>
+    <ClInclude Include="..\bzip\bzip3.h" />
+    <ClInclude Include="..\bzip\bzip3format.h" />
     <ClInclude Include="..\compress\compress.h">
     </ClInclude>
     <ClInclude Include="..\deb\deb.h">
