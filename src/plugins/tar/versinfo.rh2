@@ -10,12 +10,12 @@
 // look at shared\versinfo.rc
 
 #define VERSINFO_MAJOR       3
-#define VERSINFO_MINORA      4
+#define VERSINFO_MINORA      5
 #define VERSINFO_MINORB      0
 
 #include "spl_vers.h" // vytahneme cisla verzi + buildu
 
-#define VERSINFO_COPYRIGHT   "Copyright © 1999-2023 Open Salamander Authors"
+#define VERSINFO_COPYRIGHT   "Copyright © 1999-2025 Open Salamander Authors"
 #define VERSINFO_COMPANY     "Open Salamander"
 
 #define VERSINFO_DESCRIPTION "TAR plugin for Open Salamander"
