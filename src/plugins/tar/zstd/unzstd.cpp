@@ -93,7 +93,7 @@ BOOL CZStd::DecompressBlock(unsigned short needed)
                 default:
                     ErrorCode = IDS_ERR_INTERNAL;
                     break;
-                };
+                }
                 return FALSE;
             }
 

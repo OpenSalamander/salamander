@@ -17,7 +17,6 @@ public:
     virtual ~CDecompressFile();
 
     virtual BOOL IsCompressed() const { return FALSE; }
-    virtual BOOL BuggySize() const { return FALSE; }
 
     // vraci, v jakem jsme stavu
     BOOL IsOk() const { return Ok; }
