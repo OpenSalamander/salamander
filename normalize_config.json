@@ -1,0 +1,81 @@
+{
+  "clangformat": {
+    "includes": [
+      "*.cpp",
+      "*.h",
+      "*.c"
+    ],
+    "excludes": [
+      "./.git/*"
+    ]
+  },
+  "textfiles": {
+    "includes": [
+      "*.c",
+      "*.cc",
+      "*.cxx",
+      "*.cpp",
+      "*.c++",
+      "*.cs",
+      "*.hpp",
+      "*.h",
+      "*.h++",
+      "*.hh",
+      "*.tlh",
+      "*.tli",
+      "*.inl",
+      "*.pas",
+      "*.dpr",
+      "*.dproj",
+      "*.rh",
+      "*.rc",
+      "*.rc2",
+      "*.htm",
+      "*.sln",
+      "*.csproj",
+      "*.vbproj",
+      "*.vcxproj",
+      "*.vcproj",
+      "*.dbproj",
+      "*.fsproj",
+      "*.lsproj",
+      "*.wixproj",
+      "*.modelproj",
+      "*.sqlproj",
+      "*.wmaproj",
+      "*.xproj",
+      "*.props",
+      "*.filters",
+      "*.vcxitems",
+      "*.user",
+      "*.config",
+      "*.ps1"
+    ],
+    "excludes": [
+      "./.git/*",
+      "./src/common/dep/*",
+      "./src/sfx7zip/7zip/*",
+      "./src/sfx7zip/branch/*",
+      "./src/sfx7zip/lzma/*",
+      "./src/plugins/7zip/7za/c/*",
+      "./src/plugins/7zip/7za/cpp/*",
+      "./src/plugins/automation/generated/*",
+      "./src/plugins/checksum/tomcrypt/*",
+      "./src/plugins/ftp/openssl/*",
+      "./src/plugins/ieviewer/cmark-gfm/*",
+      "./src/plugins/mmviewer/ogg/vorbis/*",
+      "./src/plugins/mmviewer/wma/wmsdk/*",
+      "./src/plugins/pictview/exif/libexif/*",
+      "./src/plugins/pictview/exif/libjpeg/*",
+      "./src/plugins/pictview/twain/*",
+      "./src/plugins/portables/wtl/*",
+      "./src/plugins/unchm/chmlib/*",
+      "./src/plugins/winscp/core/*",
+      "./src/plugins/winscp/forms/*",
+      "./src/plugins/winscp/packages/*",
+      "./src/plugins/winscp/putty/*",
+      "./src/plugins/winscp/resource/*",
+      "./src/plugins/winscp/windows/*"
+    ]
+  }
+}
