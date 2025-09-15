@@ -6,11 +6,13 @@
     - Formats C/C++ files via clang-format.
     - Normalizes text files to UTF-8 with BOM and platform EOLs
       (CRLF on Windows, LF elsewhere).
+    - Use -DryRun to preview changes without modifying files.
 #>
 
 [CmdletBinding()]
 param(
     [switch]$DebugMode,
+    [switch]$DryRun,
     [ValidateRange(1, [int]::MaxValue)]
     [int]$ThrottleLimit = [Math]::Max(1, [Math]::Floor([System.Environment]::ProcessorCount / 2)),
     [string]$ClangFormatPath
@@ -156,7 +158,8 @@ function Invoke-ClangFormat {
         [string[]]$Excludes,
         [string]$ClangFormatPath,
         [int]$ThrottleLimit,
-        [System.Collections.Concurrent.ConcurrentQueue[string]]$ErrorsQueue
+        [System.Collections.Concurrent.ConcurrentQueue[string]]$ErrorsQueue,
+        [bool]$DryRun
     )
 
     Write-Host -ForegroundColor Yellow 'Formatting with clang-format...'
@@ -172,6 +175,7 @@ function Invoke-ClangFormat {
         # Create or open a named mutex once per runspace to serialize console output
         $consoleMutex = [System.Threading.Mutex]::new($false, $using:ConsoleMutexName)
         $errors = $using:ErrorsQueue
+        $DryRun = $using:DryRun
         $fileBatch = $_
 
         try {
@@ -183,7 +187,14 @@ function Invoke-ClangFormat {
             $pinfo.UseShellExecute = $false
 
             $quotedFiles = $fileBatch | ForEach-Object { '"' + $_ + '"' }
-            $pinfo.Arguments = "--verbose -i " + ($quotedFiles -join ' ')
+            if ($DryRun) {
+                # Dry-run mode: show what would be changed, treat warnings as errors
+                $pinfo.Arguments = "--dry-run --Werror"
+            } else {
+                # In-place edit
+                $pinfo.Arguments = "-i"
+            }
+            $pinfo.Arguments = "--verbose " + $pinfo.Arguments + " " + ($quotedFiles -join ' ')
 
             $p = New-Object System.Diagnostics.Process
             $p.StartInfo = $pinfo
@@ -227,7 +238,8 @@ function Invoke-Utf8BomEolNormalization {
         [string[]]$Includes,
         [string[]]$Excludes,
         [int]$ThrottleLimit,
-        [System.Collections.Concurrent.ConcurrentQueue[string]]$ErrorsQueue
+        [System.Collections.Concurrent.ConcurrentQueue[string]]$ErrorsQueue,
+        [bool]$DryRun
     )
 
     Write-Host -ForegroundColor Yellow 'Checking utf-8-bom + EOL style...'
@@ -250,6 +262,7 @@ function Invoke-Utf8BomEolNormalization {
         $PSScriptRoot = $using:PSScriptRoot
         $desiredNewline = $using:desiredNewline
         $newlineLabel = $using:newlineLabel
+        $DryRun = $using:DryRun
 
         foreach ($file in $fileBatch) {
             try {
@@ -287,9 +300,6 @@ function Invoke-Utf8BomEolNormalization {
                 $eofChanged = ($eolNormalized -ne $normalized)
 
                 if ($shouldAddBom -or $eolChanged -or $eofChanged) {
-                    $encoding = New-Object System.Text.UTF8Encoding($true, $true)
-                    [System.IO.File]::WriteAllText($fullname, $normalized, $encoding)
-
                     [void]$consoleMutex.WaitOne()
                     try {
                         $changes = @()
@@ -299,7 +309,13 @@ function Invoke-Utf8BomEolNormalization {
 
                         if ($changes.Count -gt 0) {
                             $changeString = $changes -join ', '
-                            Write-Host -ForegroundColor White "Normalized ($changeString): $file"
+                            if ($DryRun) {
+                                Write-Host -ForegroundColor Cyan "[DRY RUN] Would normalize ($changeString): $file"
+                            } else {
+                                $encoding = New-Object System.Text.UTF8Encoding($true, $true)
+                                [System.IO.File]::WriteAllText($fullname, $normalized, $encoding)
+                                Write-Host -ForegroundColor White "Normalized ($changeString): $file"
+                            }
                         }
                     }
                     finally { [void]$consoleMutex.ReleaseMutex() }
@@ -333,7 +349,11 @@ $ClangFormatPath = Resolve-ClangFormatPath -Candidate $ClangFormatPath
 
 # --- Main ---
 
-Write-Host -ForegroundColor White 'Normalize Source Code'
+if ($DryRun) {
+    Write-Host -ForegroundColor White 'Normalize Source Code [DRY RUN MODE]'
+} else {
+    Write-Host -ForegroundColor White 'Normalize Source Code'
+}
 
 $errorsQueue = [System.Collections.Concurrent.ConcurrentQueue[string]]::new()
 
@@ -341,9 +361,9 @@ if (-not ($ClangFormatPath -and (Test-Path -LiteralPath $ClangFormatPath))) {
     throw 'clang-format not found. Please install it or specify the path via -ClangFormatPath.'
 }
 
-Invoke-ClangFormat -Includes $config.clangformat.includes -Excludes $config.clangformat.excludes -ClangFormatPath $ClangFormatPath -ThrottleLimit $ThrottleLimit -ErrorsQueue $errorsQueue
+Invoke-ClangFormat -Includes $config.clangformat.includes -Excludes $config.clangformat.excludes -ClangFormatPath $ClangFormatPath -ThrottleLimit $ThrottleLimit -ErrorsQueue $errorsQueue -DryRun $DryRun
 
-Invoke-Utf8BomEolNormalization -Includes $config.textfiles.includes -Excludes $config.textfiles.excludes -ThrottleLimit $ThrottleLimit -ErrorsQueue $errorsQueue
+Invoke-Utf8BomEolNormalization -Includes $config.textfiles.includes -Excludes $config.textfiles.excludes -ThrottleLimit $ThrottleLimit -ErrorsQueue $errorsQueue -DryRun $DryRun
 
 # --- Finalization ---
 
@@ -351,16 +371,27 @@ $stopWatch.Stop()
 Write-Host
 
 if ($errorsQueue.Count -gt 0) {
-    Write-Host -ForegroundColor Red "Normalization finished with $($errorsQueue.Count) ERRORS."
-    Write-Host -ForegroundColor Red ('-' * 60)
-    $item = $null
-    while ($errorsQueue.TryDequeue([ref]$item)) {
-        if ($null -ne $item) { Write-Host -ForegroundColor Red $item }
+    if ($DryRun) {
+        Write-Host -ForegroundColor Red "Dry run finished with $($errorsQueue.Count) ERRORS."
+    } else {
+        Write-Host -ForegroundColor Red "Normalization finished with $($errorsQueue.Count) ERRORS."
     }
-    Write-Host -ForegroundColor Red ('-' * 60)
+
+    if (-not $DryRun) {
+        Write-Host -ForegroundColor Red ('-' * 60)
+        $item = $null
+        while ($errorsQueue.TryDequeue([ref]$item)) {
+            if ($null -ne $item) { Write-Host -ForegroundColor Red $item }
+        }
+        Write-Host -ForegroundColor Red ('-' * 60)
+    }
     Write-Host -ForegroundColor White "Total execution time: $($stopWatch.Elapsed)"
     exit 1
 } else {
-    Write-Host -ForegroundColor Green '✓ Normalization finished successfully.'
+    if ($DryRun) {
+        Write-Host -ForegroundColor Green '✓ Dry run finished successfully.'
+    } else {
+        Write-Host -ForegroundColor Green '✓ Normalization finished successfully.'
+    }
     Write-Host -ForegroundColor White "Total execution time: $($stopWatch.Elapsed)"
 }
