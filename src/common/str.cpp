@@ -164,7 +164,7 @@ int StrICmp(const char* s1, const char* s2)
 
     align   4
 
-            // compare
+        // compare
 chk_null:
     or      al,al // not that if al == 0, then eax == 0!
     jz      short done
@@ -182,9 +182,9 @@ chk_null:
 
     cmp     bl,al
     je      chk_null
-                // s1 < s2       s1 > s2
+                         // s1 < s2       s1 > s2
     sbb     eax,eax // AL=-1, CY=1   AL=0, CY=0
-    sbb     eax,-1          // AL=-1         AL=1
+    sbb     eax,-1        // AL=-1         AL=1
 
 done:
 

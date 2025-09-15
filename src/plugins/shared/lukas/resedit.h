@@ -183,7 +183,7 @@ public:
 class CResTreeNode : public CResEditRoot
 {
 public:
-    virtual ~CResTreeNode(){};
+    virtual ~CResTreeNode() {};
     virtual CResTreeNode* GetCopy() = 0;
     virtual BOOL Load(int level, DWORD offset, COffsets* offsets) = 0;
     virtual DWORD Save(CSaveRes* save) = 0;

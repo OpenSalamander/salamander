@@ -36,7 +36,7 @@ class CMarker
 public:
     eMarkerType iMarkerType; // typ znacky, viz MARKER_XXX
     int iLine;               // radka, pro StartMarker tato radka do bloku patri,
-};                           // pro EndMarker uz radka do bloku nepatri
+}; // pro EndMarker uz radka do bloku nepatri
 
 class CStartMarker : public CMarker
 {
@@ -58,7 +58,7 @@ typedef CMarker CEndMarker;
 class CParserOutput
 {
 public:
-    CParserOutput() : Markers(100, 100, dtDelete){};
+    CParserOutput() : Markers(100, 100, dtDelete) {};
     void SelectBlock(LPCTSTR pszFileName);
     void UnselectAll();
     void StartBlock(int iType, int iLine);

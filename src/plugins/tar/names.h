@@ -38,8 +38,8 @@ private:
     CNameTree NameTree;
 
 public:
-    CNames(){};
-    ~CNames(){};
+    CNames() {};
+    ~CNames() {};
     void AddName(const char* name, const BOOL isDir, const char* path, const CFileData* fileData)
     {
         if (name == NULL || *name == '\0')

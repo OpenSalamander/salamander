@@ -242,7 +242,7 @@ Uint32 CUDF::LogSector(Uint32 lbNum, Uint16 part)
             }
         }
     } // switch
-      /*
+    /*
   char u[1024];
   sprintf(u, "CUDF::LogSector(): 0x%X -> 0x%X", lbNum, physBlock);
   TRACE_I(u);
@@ -975,7 +975,7 @@ int CUDF::ScanDir(CUDF::CAD dirICB, char* path,
             Error(IDS_UDF_INVALID_TAG_ID);
             return ERR_CONTINUE;
         } // if
-    }     // while
+    } // while
 
     return ret;
 }
@@ -1188,7 +1188,7 @@ int CUDF::UnpackFile(CSalamanderForOperationsAbstract* salamander, const char* s
                 remain -= nbytes;
                 block++;
             } // while (remain > 0)
-        }     // while over all ICB's
+        } // while over all ICB's
 
         //    sprintf(u, "CISOImage::UnpackFile(): ret: %d, bFileComplete: %d", ret, bFileComplete);
         //    TRACE_I(u);
@@ -1459,7 +1459,7 @@ BOOL CUDF::ReadSupportingTables(BOOL quiet)
         case mapMetadata:
             break;
         } // switch
-    }     // loop over all partitions
+    } // loop over all partitions
 
     return ret;
 }

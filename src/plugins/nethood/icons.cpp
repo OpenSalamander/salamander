@@ -379,7 +379,7 @@ bool CNethoodIcons::LoadSystemIcons()
                     }
                     else
                     {
-                                                --nRetries;
+                        --nRetries;
                     }
                 }
                 else if (hkeyShellIcons != NULL)
@@ -399,12 +399,12 @@ bool CNethoodIcons::LoadSystemIcons()
 
                     if (err == NO_ERROR)
                     {
-                                                iIcon = PathParseIconLocation(szIconLocation);
-                                                pszFileName = szIconLocation;
+                        iIcon = PathParseIconLocation(szIconLocation);
+                        pszFileName = szIconLocation;
                     }
                     else
                     {
-                                                --nRetries;
+                        --nRetries;
                     }
                 }
             }

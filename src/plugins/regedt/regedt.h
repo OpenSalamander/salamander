@@ -254,7 +254,7 @@ public:
     {
         Path[0] = L'\0';
         TopIndexesCount = 0;
-    }                                             // vycisti pamet
+    } // vycisti pamet
     void Push(LPCWSTR path, int topIndex);        // uklada top-index pro danou cestu
     BOOL FindAndPop(LPCWSTR path, int& topIndex); // hleda top-index pro danou cestu, FALSE->nenalezeno
 };

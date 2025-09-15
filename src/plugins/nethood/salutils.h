@@ -20,7 +20,7 @@
 // Petr: pokud se sem bude pridavat novejsi verze Windows (posledni detekovana je Windows 8.1),
 //       je nutne pridat tez jeji detekci do DllMain
 
-#define OSSPECIFIC(major, minor, platform) ((DWORD)(((minor)&0xFF) | (((major)&0xFF) << 8) | platform))
+#define OSSPECIFIC(major, minor, platform) ((DWORD)(((minor) & 0xFF) | (((major) & 0xFF) << 8) | platform))
 #define OSSPECIFIC_7 OSSPECIFIC(6, 1, OSSPECIFIC_PLATFORM_NT)
 #define OSSPECIFIC_SERVER2008 OSSPECIFIC(6, 0, OSSPECIFIC_PLATFORM_NT)
 #define OSSPECIFIC_VISTA OSSPECIFIC(6, 0, OSSPECIFIC_PLATFORM_NT)

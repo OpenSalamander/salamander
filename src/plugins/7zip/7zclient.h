@@ -30,7 +30,7 @@
 
 #ifndef S_ISLNK
 // Transfered from sys/stat.h on Mac (and other Unix systems)
-#define S_ISLNK(m) (((m)&0170000) == 0120000) /* symbolic link */
+#define S_ISLNK(m) (((m) & 0170000) == 0120000) /* symbolic link */
 #endif
 
 // tri stavy pro chyby.

@@ -77,6 +77,9 @@
 // dummy object to make compiler happy
 #define GETTEXT_PACKAGE "Patera"
 
+// disable some warnings
+#pragma warning(disable : 5287)
+
 //#define strdup _strdup
 #define strnicmp _strnicmp
 #if _MSC_VER <= 1800

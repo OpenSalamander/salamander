@@ -570,7 +570,7 @@ BOOL C__Trace::Connect(BOOL onUserRequest)
 #ifdef TRACE_IGNORE_AUTOCLEAR
                                                     ret = SendIgnoreAutoClear(TRUE); // ignorovat, pri chybe provedeme disconnect
 #else                                                                                // TRACE_IGNORE_AUTOCLEAR
-                                                    ret = SendIgnoreAutoClear(FALSE);         // neignorovat, pri chybe provedeme disconnect
+                                                    ret = SendIgnoreAutoClear(FALSE); // neignorovat, pri chybe provedeme disconnect
 #endif                                                                               // TRACE_IGNORE_AUTOCLEAR
                                                 }
                                                 else

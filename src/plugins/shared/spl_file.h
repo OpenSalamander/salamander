@@ -76,7 +76,7 @@ struct SAFE_FILE
     BOOL WholeFileAllocated;     // TRUE pokud fce SafeFileCreate predalokovala cely soubor
 };
 
-#define HWND_STORED ((HWND)-1)
+#define HWND_STORED ((HWND) - 1)
 
 #define SAFE_FILE_CHECK_SIZE 0x00010000 // FIXME: overit, ze nekonflikti s BUTTONS_xxx
 

@@ -19,10 +19,10 @@ private:
     const BYTE* m_pMax;
 
 #define READER_ALIGN_DOWN_POINTER(address, alignment) \
-    ((void*)((DWORD_PTR)(address) & ~((DWORD_PTR)(alignment)-1)))
+    ((void*)((DWORD_PTR)(address) & ~((DWORD_PTR)(alignment) - 1)))
 
 #define READER_ALIGN_UP_POINTER(address, alignment) \
-    (READER_ALIGN_DOWN_POINTER(((DWORD_PTR)(address) + (alignment)-1), alignment))
+    (READER_ALIGN_DOWN_POINTER(((DWORD_PTR)(address) + (alignment) - 1), alignment))
 
     bool TryAlign(DWORD alignment)
     {

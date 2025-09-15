@@ -1111,7 +1111,7 @@ CWaitWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (!Visible && wParam == FALSE && HasTimer)
             Show(TRUE); // je nutne okno ukazat, aby se dalo do Salama vratit pres Alt+Tab
         break;          // WM_ACTIVATEAPP chodi, i kdyz neni wait-okenko ani jeho parent aktivni (aktivni
-    }                   // jakykoliv nemodalni dialog bez parenta - drive Logs dialog) - nelze aktivovat wait-okenko
+    } // jakykoliv nemodalni dialog bez parenta - drive Logs dialog) - nelze aktivovat wait-okenko
 
     case WM_ACTIVATE:
     {

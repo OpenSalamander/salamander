@@ -715,7 +715,7 @@ int GetHexOffsetMode(unsigned __int64 fileSize, int& hexOffsetLength)
     }
 }
 
-#define LOWORD64(qw) ((WORD)((qw)&0xffff))
+#define LOWORD64(qw) ((WORD)((qw) & 0xffff))
 
 void PrintHexOffset(char* s, unsigned __int64 offset, int mode)
 {

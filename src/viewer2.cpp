@@ -403,7 +403,7 @@ BOOL CViewerWindow::LoadBefore(HANDLE* hFile)
         resSeek.LoDWord = SetFilePointer(file, resSeek.LoDWord, (PLONG)&resSeek.HiDWord, FILE_BEGIN);
         err = GetLastError();
 
-#define INVALID_SET_FILE_POINTER ((DWORD)-1) // na tuhle konstantu u MS nejak zapomeli ;-)
+#define INVALID_SET_FILE_POINTER ((DWORD) - 1) // na tuhle konstantu u MS nejak zapomeli ;-)
 
         if ((resSeek.LoDWord != INVALID_SET_FILE_POINTER || err == NO_ERROR) && // neni chyba
             resSeek.Value == (unsigned __int64)Seek)                            // sedi aktualni file-offset

@@ -528,7 +528,7 @@ BOOL CMFTSnapshot<CHAR>::ParseRecord(BYTE* data, QWORD index)
 }
 
 #define BUFSIZE 16 // how much MFT clusters we read in one time
-#define DIVROUNDUP(a, b) (((a) + (b)-1) / (b))
+#define DIVROUNDUP(a, b) (((a) + (b) - 1) / (b))
 
 template <typename CHAR>
 BOOL CMFTSnapshot<CHAR>::Update(CSnapshotProgressDlg* progress, DWORD udFlags, CLUSTER_MAP_I** clusterMap)

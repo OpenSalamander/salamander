@@ -937,7 +937,7 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
 
     case fpfWord: // slovo (do nejblizsiho white-space nebo konce radky)
     {
-        while (s<listingEnd&& * s> ' ')
+        while (s < listingEnd && *s > ' ')
             s++;
         if (s == *listing)
             ret = FALSE; // uspech jen pri posunu "ukazovatka"
@@ -1079,7 +1079,7 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
     case fpfMonth_txt: // mesic kodovany do textu ("Jan.", "Feb.", "März", "Apr.", "Mai", atd.)
     {
         const char* wordEnd = s;
-        while (wordEnd<listingEnd&& * wordEnd> ' ')
+        while (wordEnd < listingEnd && *wordEnd > ' ')
             wordEnd++;
         if (s < wordEnd)
         {
@@ -1382,7 +1382,7 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
             BOOL firstChar = FALSE;
             const char* nameEnd = NULL;
             const char* linkBeg = NULL;
-            if (s<listingEnd&& * s> ' ') // prvni znak nesmi byt white-space (ani konec radky)
+            if (s < listingEnd && *s > ' ') // prvni znak nesmi byt white-space (ani konec radky)
             {
                 while (s < listingEnd && *s != '\r' && *s != '\n')
                 {

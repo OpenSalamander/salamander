@@ -265,7 +265,7 @@ struct SCommonHeader
 class CArchiveAbstract
 {
 public:
-    virtual ~CArchiveAbstract(){};
+    virtual ~CArchiveAbstract() {};
 
     virtual BOOL ListArchive(const char* prefix, CSalamanderDirectoryAbstract* dir) = 0;
     virtual BOOL UnpackOneFile(const char* nameInArchive, const CFileData* fileData,

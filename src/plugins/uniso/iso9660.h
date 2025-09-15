@@ -141,7 +141,7 @@ protected:
         BYTE ApplicationUse[512];                    // This field is reserved for application use.
                                                      // Its content is not specified by ISO-9660.
         BYTE ReservedForFutureStandardization2[653]; // 0
-    };                                               // sizeof(PrimaryVolumeDescriptor) must be 2048
+    }; // sizeof(PrimaryVolumeDescriptor) must be 2048
 
     struct CSuplementaryVolumeDescriptor
     {
@@ -206,7 +206,7 @@ protected:
         BYTE ApplicationUse[512];                    // This field is reserved for application use.
                                                      // Its content is not specified by ISO-9660.
         BYTE ReservedForFutureStandardization2[653]; // 0
-    };                                               // sizeof(PrimaryVolumeDescriptor) must be 2048
+    }; // sizeof(PrimaryVolumeDescriptor) must be 2048
 
     struct CBootRecordVolumeDescriptor
     {

@@ -5269,7 +5269,7 @@ typedef unsigned long long int sqlite_uint64;
 */
     typedef void (*sqlite3_destructor_type)(void*);
 #define SQLITE_STATIC ((sqlite3_destructor_type)0)
-#define SQLITE_TRANSIENT ((sqlite3_destructor_type)-1)
+#define SQLITE_TRANSIENT ((sqlite3_destructor_type) - 1)
 
     /*
 ** CAPI3REF: Setting The Result Of An SQL Function

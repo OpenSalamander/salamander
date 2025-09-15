@@ -594,7 +594,7 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
 #ifndef CHARBITS
 #define UCHARAT(p) ((int)*(unsigned char*)(p))
 #else
-#define UCHARAT(p) ((int)*(p)&CHARBITS)
+#define UCHARAT(p) ((int)*(p) & CHARBITS)
 #endif
 
 #define FAIL(m) \

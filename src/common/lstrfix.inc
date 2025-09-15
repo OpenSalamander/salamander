@@ -70,6 +70,11 @@ LPWSTR _sal_lstrcatW(LPWSTR lpString1, LPCWSTR lpString2)
 
 #ifdef LSTRFIX_WITHOUT_RTL
 
+// When building small utils with default CRT libs ignored, provide
+// our own implementations and disable intrinsic expansion so MSVC
+// allows us to define these names.
+#pragma function(strlen, wcslen, strcpy, wcscpy, strcat, wcscat)
+
 // musel jsem si od MS pujcit implementace strlen, wcslen, strcpy, wcscpy, strcat a wcscat
 // protoze se zde ignoruji default-liby, kde jsou tyto funkce umistene
 size_t __cdecl strlen (
