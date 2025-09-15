@@ -136,7 +136,7 @@ BOOL ConvertDIBToCOLORREF(WORD bitCount, int width, int rows, int srcLineSize,
                 *out++ = *((DWORD*)(palette->palPalEntry + ((palIndex >> 3) & 0x01)));
                 *out++ = *((DWORD*)(palette->palPalEntry + ((palIndex >> 2) & 0x01)));
                 *out++ = *((DWORD*)(palette->palPalEntry + ((palIndex >> 1) & 0x01)));
-                *out++ = *((DWORD*)(palette->palPalEntry + ((palIndex)&0x01)));
+                *out++ = *((DWORD*)(palette->palPalEntry + ((palIndex) & 0x01)));
             }
             j *= 8;
             if (j < width)

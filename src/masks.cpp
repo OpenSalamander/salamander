@@ -103,7 +103,7 @@ char* MaskName(char* buffer, int bufSize, const char* name, const char* mask)
             ignPoints--;
             break;
         } // v masce je smysluplna jen jedna tecka (name.ext), cast masky za druhou teckou budeme expandovat na konci jmena
-          //  while (*s != 0) if (*s++ == '.') {ignPoints--;}  // v teto variante si budou odpovidat useky ve jmene a masce mezi teckami odzadu ("a.b.c.d" + "*.*.old": "a.b" + "*"; "c" + "*"; "d" + "old" -> 'a.b.c.old')
+    //  while (*s != 0) if (*s++ == '.') {ignPoints--;}  // v teto variante si budou odpovidat useky ve jmene a masce mezi teckami odzadu ("a.b.c.d" + "*.*.old": "a.b" + "*"; "c" + "*"; "d" + "old" -> 'a.b.c.old')
     if (ignPoints < 0)
         ignPoints = 0;
     //  if (ignPoints == 0 && *name == '.') ignPoints++;   // tecka na zacatku jmena se ma ignorovat (neni pripona); oprava: ".cvspass" ve Windows je pripona ...

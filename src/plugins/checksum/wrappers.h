@@ -6,8 +6,8 @@
 class CHashAlgo
 {
 public:
-    CHashAlgo(){};
-    virtual ~CHashAlgo(){};
+    CHashAlgo() {};
+    virtual ~CHashAlgo() {};
 
     virtual bool IsOK() = 0; // Was constructed successfully?
     virtual bool Init() = 0; // Init for a new file. true on success

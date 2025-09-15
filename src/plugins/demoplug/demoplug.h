@@ -520,7 +520,7 @@ public:
     {
         Path[0] = 0;
         TopIndexesCount = 0;
-    }                                                 // vycisti pamet
+    } // vycisti pamet
     void Push(const char* path, int topIndex);        // uklada top-index pro danou cestu
     BOOL FindAndPop(const char* path, int& topIndex); // hleda top-index pro danou cestu, FALSE->nenalezeno
 };

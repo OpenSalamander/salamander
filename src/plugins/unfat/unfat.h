@@ -69,7 +69,7 @@ public:
 
     virtual void WINAPI LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRegistryAbstract* registry);
     virtual void WINAPI SaveConfiguration(HWND parent, HKEY regKey, CSalamanderRegistryAbstract* registry);
-    virtual void WINAPI Configuration(HWND parent){};
+    virtual void WINAPI Configuration(HWND parent) {};
 
     virtual void WINAPI Connect(HWND parent, CSalamanderConnectAbstract* salamander);
 

@@ -6,7 +6,7 @@
 //#define ENABLE_TRACE_X
 // TRACE_X is used for listing of found files, could be enabled with custom define
 #if !defined(ENABLE_TRACE_X) || !defined(TRACE_ENABLE)
-inline void __TraceXEmptyFunction(){};
+inline void __TraceXEmptyFunction() {};
 #define TRACE_X(x) __TraceXEmptyFunction()
 #define TRACE_XW(x) __TraceXEmptyFunction()
 #else

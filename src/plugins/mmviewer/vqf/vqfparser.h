@@ -20,7 +20,7 @@ private:
     FILE* f;
 
 public:
-    CParserVQF() : f(NULL){};
+    CParserVQF() : f(NULL) {};
     ~CParserVQF() { CloseFile(); }
 
     virtual CParserResultEnum OpenFile(const char* fileName);

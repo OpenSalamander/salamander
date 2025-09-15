@@ -1117,7 +1117,7 @@ int CISOImage::DetectTrackFS(int track)
             case 0xff: // terminator
                 break;
             } // switch
-        }     // if
+        } // if
 
         if (sector[0] == 0x00 && strncmp(sector + 1, "BEA01", 5) == 0)
         {
@@ -1394,7 +1394,7 @@ BOOL CISOImage::ListImage(CSalamanderDirectoryAbstract* dir, CPluginDataInterfac
                         ret = FALSE;
                     break;
                 } // switch
-            }     // for
+            } // for
             firstSessionTrack += trackCount;
         }
 

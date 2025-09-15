@@ -1594,7 +1594,7 @@ char* GetStringStateVariable(CFTPParserStateVariables stateVar, const char* list
         {
             if (stateVar == psvNextWord)
             {
-                while (s<listingEnd&& * s> ' ')
+                while (s < listingEnd && *s > ' ')
                     s++;
             }
             else // psvRestOfLine
@@ -1990,7 +1990,7 @@ void CFTPParserParameter::GetStringOperand(const char** beg, const char** end, C
             {
                 if (StateVar == psvNextWord)
                 {
-                    while (s<listingEnd&& * s> ' ')
+                    while (s < listingEnd && *s > ' ')
                         s++;
                 }
                 else // psvRestOfLine

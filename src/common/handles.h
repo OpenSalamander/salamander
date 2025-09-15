@@ -257,9 +257,9 @@ protected:
 class C__Handles
 {
 protected:
-    C_HandlesDataArray Handles;       // vsechny kontrolovane handly
-    C__HandlesData TemporaryHandle;   // pri vkladani nastaven z SetInfo()
-    C__HandlesOutputType OutputType;  // typ vystupu hlasek
+    C_HandlesDataArray Handles;      // vsechny kontrolovane handly
+    C__HandlesData TemporaryHandle;  // pri vkladani nastaven z SetInfo()
+    C__HandlesOutputType OutputType; // typ vystupu hlasek
 #ifdef MULTITHREADED_HANDLES_ENABLE
     CRITICAL_SECTION CriticalSection; // pro synchronizaci multi-threadu
 #endif // MULTITHREADED_HANDLES_ENABLE

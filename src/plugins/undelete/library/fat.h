@@ -180,7 +180,7 @@ private:
 #define FAT_ATTR_LONG_NAME_MASK (FAT_ATTR_READ_ONLY | FAT_ATTR_HIDDEN | FAT_ATTR_SYSTEM | FAT_ATTR_VOLUME_ID | FAT_ATTR_DIRECTORY | FAT_ATTR_ARCHIVE)
 #define LAST_LONG_ENTRY 0x40
 #define LONG_ENTRY_ORD_MASK 0x3F
-#define islong(attr) (((attr)&FAT_ATTR_LONG_NAME_MASK) == FAT_ATTR_LONG_NAME)
+#define islong(attr) (((attr) & FAT_ATTR_LONG_NAME_MASK) == FAT_ATTR_LONG_NAME)
 
 // maximum cluster count on FAT32 is 2^28, so we can use highest 4 bits in FAT record for
 // marks and file damage estimation
@@ -612,7 +612,7 @@ BOOL CFATSnapshot<CHAR>::DecodeDirectoryClusters(BYTE* buffer, DWORD len, DIR_IT
                 // pointer to FileSize doesn't fit on x64, so we store only index into FILE_RECORD_Pointers array
                 record = FILE_RECORD_Pointers[entry->FileSize];
 #else  // _WIN64
-                record = (FILE_RECORD_I<CHAR>*)entry->FileSize;     // on x86 pointer fits directly into FileSize
+                record = (FILE_RECORD_I<CHAR>*)entry->FileSize; // on x86 pointer fits directly into FileSize
 #endif // _WIN64
             }
             else
@@ -805,7 +805,7 @@ BOOL CFATSnapshot<CHAR>::ScanDirectoryCluster(BYTE* buffer, DWORD len, BOOL forc
             }
             entry->FileSize = ptrIndex;
 #else  // _WIN64
-            entry->FileSize = (DWORD)dir;                           // store pointer to directory (it is possible in x86)
+            entry->FileSize = (DWORD)dir; // store pointer to directory (it is possible in x86)
 #endif // _WIN64
 
             int cluster = GetCluster(entry);
@@ -1441,7 +1441,7 @@ BOOL CFATSnapshot<CHAR>::DecodeScannedCluster(FILE_RECORD_I<CHAR>* record, CLUST
             }
             entry->FileSize = ptrIndex;
 #else  // _WIN64
-            entry->FileSize = (DWORD)dir;                           // store pointer to directory (it is possible in x86)
+            entry->FileSize = (DWORD)dir; // store pointer to directory (it is possible in x86)
 #endif // _WIN64
             if ((c = GetScannedCluster(GetCluster(entry))) != NULL)
             {

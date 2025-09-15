@@ -6,7 +6,7 @@
 class CFile
 {
 public:
-    virtual ~CFile(){};
+    virtual ~CFile() {};
     virtual BOOL Read(LPVOID lpBuffer, DWORD nBytesToRead, DWORD* pnBytesRead, const char* fileName, HWND parent) = 0;
     virtual BOOL Write(LPCVOID lpBuffer, DWORD nBytesToWrite, DWORD* pnBytesWritten, char* fileName, HWND parent) = 0;
     virtual BOOL Close(LPCTSTR fileName, HWND parent) = 0;

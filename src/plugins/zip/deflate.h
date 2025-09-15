@@ -72,7 +72,7 @@ typedef int (*FReadData)(char*, unsigned, int*, void*);
     { \
         if (out_offset < out_size - 1) \
         { \
-            out_buf[out_offset++] = (char)((w)&0xff); \
+            out_buf[out_offset++] = (char)((w) & 0xff); \
             out_buf[out_offset++] = (char)((ush)(w) >> 8); \
         } \
         else \
@@ -345,7 +345,7 @@ typedef struct config
  */
 #define INSERT_STRING(s, match_head) \
     (UPDATE_HASH(ins_h, window[(s) + (MIN_MATCH - 1)]), \
-     prev[(s)&WMASK] = match_head = head[ins_h], \
+     prev[(s) & WMASK] = match_head = head[ins_h], \
      head[ins_h] = (s))
 
 /* ===========================================================================

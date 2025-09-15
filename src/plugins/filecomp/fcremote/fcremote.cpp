@@ -169,7 +169,7 @@ BOOL PathRemoveFileSpec(LPTSTR pszPath)
 }
 
 #ifndef ASFW_ANY
-#define ASFW_ANY ((DWORD)-1)
+#define ASFW_ANY ((DWORD) - 1)
 #endif
 
 int RemoteCompareFiles(HINSTANCE hInstance, LPTSTR lpCmdLine)

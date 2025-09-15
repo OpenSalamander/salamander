@@ -208,7 +208,7 @@ const char* RegExpErrorText(CRegExpErrors err)
 #ifndef CHARBITS
 #define UCHARAT(p) ((int)*(unsigned char*)(p))
 #else
-#define UCHARAT(p) ((int)*(p)&CHARBITS)
+#define UCHARAT(p) ((int)*(p) & CHARBITS)
 #endif
 
 #define FAIL(e) \

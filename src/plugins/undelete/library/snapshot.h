@@ -151,7 +151,7 @@ public:
         Root = NULL;
     }
 
-    virtual ~CSnapshot(){};
+    virtual ~CSnapshot() {};
     virtual BOOL Update(CSnapshotProgressDlg* progress, DWORD flags, CLUSTER_MAP_I** clusterMap) = 0;
     virtual void Free() = 0;
 

@@ -152,7 +152,7 @@ public:
     {
         Path[0] = 0;
         TopIndexesCount = 0;
-    }                                                 // clear memory
+    } // clear memory
     void Push(const char* path, int topIndex);        // store top-index for given path
     BOOL FindAndPop(const char* path, int& topIndex); // search top-index for given path, FALSE->not found
 };
@@ -235,7 +235,7 @@ class CFileList;
 class CPluginFSInterface : public CPluginFSInterfaceAbstract
 {
 protected:
-    friend static BOOL WINAPI EncryptedProgress(int inc, void* ctx);
+    friend BOOL WINAPI EncryptedProgress(int inc, void* ctx);
     friend void WINAPI CPluginInterfaceForFS::ExecuteOnFS(int panel, CPluginFSInterfaceAbstract* pluginFS,
                                                           const char* pluginFSName, int pluginFSNameIndex,
                                                           CFileData& file, int isDir);

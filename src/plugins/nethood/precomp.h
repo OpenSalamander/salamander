@@ -131,7 +131,7 @@ extern unsigned int _winminor;
 
 #ifndef HWND_MESSAGE
 // Not defined in old headers.
-#define HWND_MESSAGE ((HWND)-3)
+#define HWND_MESSAGE ((HWND) - 3)
 #endif
 
 #ifndef SM_REMOTESESSION

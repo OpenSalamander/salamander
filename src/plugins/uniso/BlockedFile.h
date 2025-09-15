@@ -34,7 +34,7 @@ public:
         size_t PosInBuf; // must remain unsigned!
 
         CCachedBlock();
-        virtual ~CCachedBlock(){};
+        virtual ~CCachedBlock() {};
         virtual DWORD Read(char* buf, DWORD BytesToRead) = 0;
     };
 

@@ -291,7 +291,7 @@ void i64toa(__int64 val, char* buf)
         *p = *firstdig;
         *firstdig = temp; /* swap *p and *firstdig */
         --p;
-        ++firstdig;         /* advance to next two digits */
+        ++firstdig; /* advance to next two digits */
     } while (firstdig < p); /* repeat until halfway */
 }
 #pragma optimize("", on)
