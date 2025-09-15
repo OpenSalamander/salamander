@@ -13,10 +13,14 @@
 param(
     [switch]$DebugMode,
     [switch]$DryRun,
+    [switch]$Staged,
     [ValidateRange(1, [int]::MaxValue)]
     [int]$ThrottleLimit = [Math]::Max(1, [Math]::Floor([System.Environment]::ProcessorCount / 2)),
     [string]$ClangFormatPath
 )
+
+# --- Constants ---
+$StagedFileInfix = 'git_staged'
 
 # --- Functions ---
 
@@ -291,21 +295,17 @@ function Invoke-Utf8BomEolNormalization {
                     $eolNormalized = $eolNormalized -replace "`n", "`r`n"
                 }
 
-                # Enforce exactly one newline at EOF
-                #$normalized = ($eolNormalized -replace "(`r`n|`r|`n)+$", "") + $desiredNewline
                 $normalized = $eolNormalized
 
                 $shouldAddBom = (-not $hasBom)
                 $eolChanged = ($text -ne $eolNormalized)
-                $eofChanged = ($eolNormalized -ne $normalized)
 
-                if ($shouldAddBom -or $eolChanged -or $eofChanged) {
+                if ($shouldAddBom -or $eolChanged) {
                     [void]$consoleMutex.WaitOne()
                     try {
                         $changes = @()
                         if ($shouldAddBom) { $changes += 'BOM' }
                         if ($eolChanged) { $changes += "EOL to $newlineLabel" }
-                        if ($eofChanged) { $changes += 'EOF' }
 
                         if ($changes.Count -gt 0) {
                             $changeString = $changes -join ', '
@@ -329,6 +329,95 @@ function Invoke-Utf8BomEolNormalization {
     }
 }
 
+function Enter-StagedMode {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [psobject]$Config,
+        [Parameter(Mandatory)]
+        [string]$StagedFileInfix,
+        [Parameter(Mandatory)]
+        [string]$PSScriptRoot
+    )
+
+    Write-Host "Running in -Staged mode (implies -DryRun)"
+
+    # Check for pre-existing temp files which would indicate a problem
+    $existingTempFiles = Get-ChildItem -Path $PSScriptRoot -Recurse -File -Filter "*$StagedFileInfix*"
+    if ($existingTempFiles) {
+        $fileList = ($existingTempFiles.FullName | ForEach-Object { "  - $_" }) -join [Environment]::NewLine
+        throw "Found existing files with staged infix ('$StagedFileInfix'), indicating a prior script run failed to clean up. Please remove them before running with -Staged:`n$fileList"
+    }
+
+    $stagedGitFiles = git diff --name-only --cached --diff-filter=ACMR
+
+    $tempFiles = @()
+    $tempDirs = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+
+    foreach ($fileRelPath in $stagedGitFiles) {
+        $extension = [System.IO.Path]::GetExtension($fileRelPath)
+        $fileNameWithoutExt = $fileRelPath.Substring(0, $fileRelPath.Length - $extension.Length)
+        $tempFileRelPath = "$fileNameWithoutExt.$StagedFileInfix$extension"
+        $tempFileAbsPath = Join-Path $PSScriptRoot $tempFileRelPath
+        $tempDir = Split-Path $tempFileAbsPath -Parent
+        if (-not (Test-Path $tempDir)) {
+            New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+            [void]$tempDirs.Add($tempDir)
+        }
+        git cat-file --filters ":0:$fileRelPath" > $tempFileAbsPath
+        $tempFiles += $tempFileAbsPath
+    }
+
+    # Modify config to use .staged files
+    $newClangIncludes = $Config.clangformat.includes | ForEach-Object {
+        $ext = [System.IO.Path]::GetExtension($_)
+        if ($ext) { [System.IO.Path]::ChangeExtension($_, ".$StagedFileInfix$ext") } else { "$_.$StagedFileInfix" }
+    }
+    $Config.clangformat.includes = $newClangIncludes
+
+    $newTextIncludes = $Config.textfiles.includes | ForEach-Object {
+        $ext = [System.IO.Path]::GetExtension($_)
+        if ($ext) { [System.IO.Path]::ChangeExtension($_, ".$StagedFileInfix$ext") } else { "$_.$StagedFileInfix" }
+    }
+    $Config.textfiles.includes = $newTextIncludes
+
+    return [pscustomobject]@{
+        Config    = $Config
+        TempFiles = $tempFiles
+        TempDirs  = $tempDirs
+    }
+}
+
+function Exit-StagedMode {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string[]]$TempFiles,
+        [System.Collections.Generic.HashSet[string]]$TempDirs
+    )
+
+    if ($TempFiles.Count -eq 0) { return }
+
+    Write-Host "Cleaning up temporary staged files..."
+    foreach ($tempFile in $TempFiles) {
+        if (Test-Path $tempFile) {
+            Remove-Item $tempFile -Force
+        }
+    }
+
+    if ($null -ne $TempDirs) {
+        # Clean up directories we created, starting from the deepest, if they are empty
+        $dirsToRemove = $TempDirs.GetEnumerator() | Sort-Object -Descending
+        foreach ($dir in $dirsToRemove) {
+            if (Test-Path $dir) {
+                if ((Get-ChildItem -Path $dir -Force).Count -eq 0) {
+                    Remove-Item -LiteralPath $dir -Force -Recurse
+                }
+            }
+        }
+    }
+}
+
 # --- Initialization ---
 
 $stopWatch = [Diagnostics.Stopwatch]::StartNew()
@@ -347,6 +436,17 @@ $config = Read-NormalizeConfig -Path $configPath
 # Resolve clang-format path
 $ClangFormatPath = Resolve-ClangFormatPath -Candidate $ClangFormatPath
 
+$stagedFiles = @()
+$stagedDirs = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+
+if ($Staged) {
+    $DryRun = $true # Force dry run
+    $stagedSession = Enter-StagedMode -Config $config -StagedFileInfix $StagedFileInfix -PSScriptRoot $PSScriptRoot
+    $config = $stagedSession.Config
+    $stagedFiles = $stagedSession.TempFiles
+    $stagedDirs = $stagedSession.TempDirs
+}
+
 # --- Main ---
 
 if ($DryRun) {
@@ -364,6 +464,10 @@ if (-not ($ClangFormatPath -and (Test-Path -LiteralPath $ClangFormatPath))) {
 Invoke-ClangFormat -Includes $config.clangformat.includes -Excludes $config.clangformat.excludes -ClangFormatPath $ClangFormatPath -ThrottleLimit $ThrottleLimit -ErrorsQueue $errorsQueue -DryRun $DryRun
 
 Invoke-Utf8BomEolNormalization -Includes $config.textfiles.includes -Excludes $config.textfiles.excludes -ThrottleLimit $ThrottleLimit -ErrorsQueue $errorsQueue -DryRun $DryRun
+
+if ($Staged) {
+    Exit-StagedMode -TempFiles $stagedFiles -TempDirs $stagedDirs
+}
 
 # --- Finalization ---
 
