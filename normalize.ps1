@@ -610,7 +610,7 @@ function Get-MatchingFiles {
         if (-not $isExcluded) { [void]$resultFiles.Add($relativePath) }
     }
 
-    return $resultFiles | Sort-Object
+    return $resultFiles | Sort-Object -Culture "en-US"
 }
 
 function Get-FileBatches {
