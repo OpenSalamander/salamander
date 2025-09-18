@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include "mainwnd.h"
@@ -50,7 +51,7 @@ CSplashScreen::CSplashScreen()
     Width = 0;
     Height = 0;
 
-    // vytvorim font
+    // create a font
     LOGFONT lf;
     //  GetSystemGUIFont(&lf);
     //  lf.lfWeight = FW_NORMAL;
@@ -73,14 +74,14 @@ CSplashScreen::CSplashScreen()
     strcpy(lf.lfFaceName, "MS Shell Dlg 2");
 
     HNormalFont = HANDLES(CreateFontIndirect(&lf));
-    // vytvorim tucnou variantu
+    // create the bold variant
     lf.lfWeight = FW_BOLD;
     HBoldFont = HANDLES(CreateFontIndirect(&lf));
 }
 
 CSplashScreen::~CSplashScreen()
 {
-    // touto dobou uz by mela byt bitmapa sestrelena, ale pojistime se
+    // by this time the bitmap should be destroyed, but do it again just in case
     DestroyBitmap();
     if (HNormalFont != NULL)
         HANDLES(DeleteObject(HNormalFont));
@@ -141,7 +142,7 @@ BOOL CSplashScreen::PrepareBitmap()
     r.right = Width;
     r.bottom = Height;
 
-    // podmazeme pozadi bilou barvou
+    // paint the background white
     SetBkColor(hDC, RGB(255, 255, 255));
     ExtTextOut(hDC, 0, 0, ETO_OPAQUE, &r, "", 0, NULL);
 
@@ -165,7 +166,7 @@ BOOL CSplashScreen::PrepareBitmap()
     svgGrad.AlphaBlend(hDC, 0, GradientY, gradSize.cx, Height - GradientY, SVGSTATE_ORIGINAL);
     svgHand.AlphaBlend(hDC, Width - handSize.cx, 0, handSize.cx, handSize.cy, SVGSTATE_ORIGINAL);
 
-    // pevne texty
+    // fixed texts
     PaintText(SALAMANDER_TEXT_VERSION,
               VersionR.left,
               VersionR.top,
@@ -176,7 +177,7 @@ BOOL CSplashScreen::PrepareBitmap()
               CopyrightR.top,
               TRUE, RGB(255, 255, 255));
 
-    // zaloha bitmapy bez textu
+    // backup of the bitmap without text
     BitBlt(OriginalBitmap->HMemDC, 0, 0, Width, Height, Bitmap->HMemDC, 0, 0, SRCCOPY);
 
     return TRUE;
@@ -186,13 +187,13 @@ void CSplashScreen::SetText(const char* text)
 {
     if (Bitmap != NULL && OriginalBitmap != NULL)
     {
-        // obnovim pozadi
+        // restore the background
         BitBlt(Bitmap->HMemDC, StatusR.left, StatusR.top, StatusR.right - StatusR.left, StatusR.bottom - StatusR.top, OriginalBitmap->HMemDC, StatusR.left, StatusR.top, SRCCOPY);
         PaintText(text,
                   StatusR.left, StatusR.top,
                   FALSE, RGB(255, 255, 255));
 
-        // pokud jsme zobrazeni, promitneme zmenu do obrazovky
+        // if visible, update the display with the change
         if (HWindow != NULL)
         {
             HDC hDC = HANDLES(GetDC(HWindow));
@@ -319,7 +320,7 @@ HWND GetSplashScreenHandle()
 CAboutDialog::CAboutDialog(HWND parent)
     : CCommonDialog(HLanguage, IDD_ABOUT, parent)
 {
-    HGradientBkBrush = HANDLES(CreateSolidBrush(RGB(221, 151, 4))); // musi byt zluta z res\logoline.png
+    HGradientBkBrush = HANDLES(CreateSolidBrush(RGB(221, 151, 4))); // must be the yellow from res\logoline.png
     BackgroundBitmap = NULL;
 }
 
@@ -367,7 +368,7 @@ AboutAndEvalDlgCreateBkgnd(HWND hWindow)
 
     hDC = bitmap->HMemDC;
 
-    // podmazeme pozadi bilou barvou
+    // paint the background white
     SetBkColor(hDC, RGB(255, 255, 255));
     ExtTextOut(hDC, 0, 0, ETO_OPAQUE, &r, "", 0, NULL);
 
@@ -414,8 +415,8 @@ CAboutDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         new CStaticText(HWindow, IDS_ABOUT_SALAMANDER, STF_BOLD);
         //      new CStaticText(HWindow, IDS_ABOUT_FIRM, STF_BOLD);
 
-        // je-li prostredi v cestine nebo slovenstine, budeme ukazovat automaticky ceskou verzi webu
-        BOOL english = LanguageID != 0x405 /* cesky */ && LanguageID != 0x41B /* slovensky */;
+        // if the environment is in Czech or in Slovak, show the Czech website automatically
+        BOOL english = LanguageID != 0x405 /* Czech */ && LanguageID != 0x41B /* Slovak */;
 
         hl = new CHyperLink(HWindow, IDC_ABOUT_WWW);
         if (hl != NULL)
@@ -452,11 +453,11 @@ CAboutDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (IsAppThemed())
         {
-            // bez tehle obezlicky je kolem OK tlacitka sedivy frame
+            // without this workaround there's a gray frame around the OK button
             if (WindowsVistaAndLater)
                 return (BOOL)(UINT_PTR)HGradientBkBrush;
             else
-                return (BOOL)(UINT_PTR)GetStockObject(NULL_BRUSH); // pod XP to jeste chodilo dobre
+                return (BOOL)(UINT_PTR)GetStockObject(NULL_BRUSH); // under XP this still worked fine
         }
         break;
     }

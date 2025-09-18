@@ -1,0 +1,124 @@
+name: PR MSBuild (VS2022, Debug Win32 + x64, Warnings=Errors)
+
+on:
+  # Run on every PR update
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: ["**"]
+  # Allow manual runs for bring-up / debugging
+  workflow_dispatch:
+  # (Optional during bring-up) enable push trigger for a CI branch
+  # push:
+  #   branches: ["ci"]
+  #   paths:
+  #     - "src/**"
+  #     - ".github/workflows/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-msbuild-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build ${{ matrix.platform }} Debug (fail on warnings)
+    runs-on: windows-2022
+
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: ["Win32", "x64"]  # Win32 == x86
+
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Checkout to a short path (avoid MAX_PATH issues)
+        uses: actions/checkout@v4
+        with:
+          path: s
+
+      - name: Setup MSBuild in PATH (VS2022)
+        # Adds msbuild.exe to PATH. It does not prepare CL/LINK environment.
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup MSVC Developer Command Prompt (x64 toolchain)
+        # Initializes INCLUDE/LIB/PATH for cl.exe, link.exe, rc.exe, midl.exe, etc.
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Enforce "warnings as errors" for MSVC tools
+        # /WX turns warnings into errors for CL and LINK. Also pass /WX to MIDL.
+        run: |
+          echo "CL=/WX"   >> $env:GITHUB_ENV
+          echo "LINK=/WX" >> $env:GITHUB_ENV
+          echo "MIDL_FLAGS=/WX" >> $env:GITHUB_ENV
+
+      - name: Build solution via MSBuild (Debug | ${{ matrix.platform }})
+        working-directory: s
+        run: |
+          New-Item -ItemType Directory -Force -Path build_logs | Out-Null
+
+          # Get absolute path of the log directory (this exists)
+          $buildDir = (Resolve-Path .\build_logs).Path
+
+          # Compose absolute file paths without requiring files to exist
+          $txtLog = Join-Path $buildDir "msbuild-Debug-${{ matrix.platform }}-run$(${env:GITHUB_RUN_NUMBER}).log"
+          $binLog = Join-Path $buildDir "msbuild-Debug-${{ matrix.platform }}-run$(${env:GITHUB_RUN_NUMBER}).binlog"
+
+          # Export log paths early so they're available even if the build fails
+          echo "LOG_PATH=$txtLog"  >> $env:GITHUB_ENV
+          echo "BINLOG_PATH=$binLog" >> $env:GITHUB_ENV
+
+          # MSBuild notes:
+          # - /m, /t:Rebuild, /nr:false, /v:m
+          # - /p:PreferredToolArchitecture=x64 : use 64-bit host tools
+          # - /bl:<file>                       : binary log for deep diagnostics
+          & msbuild ".\src\vcxproj\salamand.sln" `
+              /m `
+              /t:Rebuild `
+              /p:Configuration=Debug `
+              /p:Platform="${{ matrix.platform }}" `
+              /p:PreferredToolArchitecture=x64 `
+              /nr:false `
+              /v:m `
+              /bl:$binLog *>> $txtLog
+
+          $code = $LASTEXITCODE
+          if ($code -ne 0) {
+            Write-Host "MSBuild failed with exit code $code"
+            Write-Host "Last 200 lines of the text log:"
+            Get-Content $txtLog -Tail 200
+            exit $code
+          }
+
+      - name: Fail if any warnings slipped through (defensive check)
+        # Primary failure comes from /WX; this is a belt-and-suspenders grep.
+        run: |
+          $log = "$env:LOG_PATH"
+          if (!(Test-Path $log)) { throw "Build log not found: $log" }
+
+          # Match typical warning forms from CL/LINK/MIDL/RC/MSBuild:
+          #  - warning Cxxxx, LNKxxxx, MIDLxxxx, RCxxxx, MSBxxxx
+          #  - Some tools print " : warning <code>"
+          $pattern = '(?im)(?:\bwarning\s+(?:C|LNK|MIDL|RC|MSB)\d{3,5}\b)|(?:\:\s*warning\s+(?:C|LNK|MIDL|RC|MSB)\d{3,5}\b)'
+          $content = Get-Content -Raw $log
+          if ($content -match $pattern) {
+            Write-Host "----- Build log excerpt with warnings -----"
+            ($content -split "`r?`n") | Select-String -Pattern $pattern | Select-Object -First 200
+            throw "Warnings detected in build log (warnings are treated as errors)."
+          }
+
+      - name: Upload build logs (text + binlog)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: msbuild-${{ matrix.platform }}-debug-logs
+          path: |
+            ${{ env.LOG_PATH }}
+            ${{ env.BINLOG_PATH }}
+          if-no-files-found: warn
