@@ -654,8 +654,9 @@ function Invoke-ClangFormat {
             -Message ("Matched {0} file(s) for clang-format." -f $files.Count) `
             -Details $debugDetails `
             -Source 'clang-format')
+    } else {
+        Write-LogEntry (New-LogEntry -Level 'Info' -Message ("Files queued: {0}" -f $files.Count) -Source 'clang-format')
     }
-    Write-LogEntry (New-LogEntry -Level 'Info' -Message ("Files queued: {0}" -f $files.Count) -Source 'clang-format')
     if ($files.Count -eq 0) { return @() }
 
     $rootPath = $PSScriptRoot
@@ -969,7 +970,9 @@ function Invoke-TextNormalization {
             -Details $debugDetails `
             -Source 'text-normalization')
     }
-    Write-LogEntry (New-LogEntry -Level 'Info' -Message ("Files queued: {0}" -f $files.Count) -Source 'text-normalization')
+    else {
+        Write-LogEntry (New-LogEntry -Level 'Info' -Message ("Files queued: {0}" -f $files.Count) -Source 'text-normalization')
+    }
     if ($files.Count -eq 0) { return @() }
 
     $platform = Get-HostPlatform
