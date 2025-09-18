@@ -1,0 +1,112 @@
+name: PR MSBuild (VS2022, Debug Win32 + x64, Warnings=Errors)
+
+on:
+  # Run on every PR update
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: ["**"]
+  # (Optional) allow manual runs for bring-up / debugging
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-msbuild-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build ${{ matrix.platform }} Debug (fail on warnings)
+    runs-on: windows-2022
+
+    # Build both Win32 and x64 Debug
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: ["Win32", "x64"]
+
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Checkout to a short path (avoid MAX_PATH issues)
+        uses: actions/checkout@v4
+        with:
+          path: s
+
+      - name: Setup MSBuild in PATH (VS2022)
+        # Adds msbuild.exe to PATH. It does not prepare CL/LINK environment.
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup MSVC Developer Command Prompt (x64 toolchain)
+        # Initializes INCLUDE/LIB/PATH for cl.exe, link.exe, rc.exe, midl.exe, etc.
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Enforce "warnings as errors" for MSVC tools
+        # /WX switches warnings to errors for CL and LINK. Also pass /WX to MIDL.
+        run: |
+          echo "CL=/WX"   >> $env:GITHUB_ENV
+          echo "LINK=/WX" >> $env:GITHUB_ENV
+          echo "MIDL_FLAGS=/WX" >> $env:GITHUB_ENV
+
+      - name: Build solution via MSBuild (Debug | ${{ matrix.platform }})
+        working-directory: s
+        run: |
+          New-Item -ItemType Directory -Force -Path build_logs | Out-Null
+          $log = ".\build_logs\msbuild-Debug-${{ matrix.platform }}-run$(${env:GITHUB_RUN_NUMBER}).log"
+
+          # Build notes:
+          # - /m                : parallel build
+          # - /t:Rebuild        : clean + build
+          # - /p:PreferredToolArchitecture=x64 : use 64-bit host tools for stability/speed
+          # - /p:Configuration=Debug /p:Platform=<Win32|x64>
+          # - /nr:false         : disable node reuse (more deterministic logs)
+          # - /v:m              : concise verbosity; change to /v:n for diagnostics while bringing-up
+          & msbuild ".\src\vcxproj\salamand.sln" `
+              /m `
+              /t:Rebuild `
+              /p:Configuration=Debug `
+              /p:Platform="${{ matrix.platform }}" `
+              /p:PreferredToolArchitecture=x64 `
+              /nr:false `
+              /v:m *>> $log
+
+          $code = $LASTEXITCODE
+          if ($code -ne 0) {
+            Write-Host "MSBuild failed with exit code $code"
+            Write-Host "Last 200 lines of the log:"
+            Get-Content $log -Tail 200
+            exit $code
+          }
+
+          echo "LOG_PATH=$log" >> $env:GITHUB_ENV
+
+      - name: Fail if any warnings slipped through (defensive check)
+        # Primary failure comes from /WX; this is a belt-and-suspenders grep.
+        working-directory: s
+        run: |
+          $log = "$env:LOG_PATH"
+          if (!(Test-Path $log)) { throw "Build log not found: $log" }
+
+          # Match typical warning forms from CL/LINK/MIDL/RC and MSBuild/MSVC toolchain:
+          #  - warning Cxxxx, LNKxxxx, MIDLxxxx, RCxxxx, MSBxxxx
+          #  - Some tools print " : warning <code>"
+          $pattern = '(?im)(?:\bwarning\s+(?:C|LNK|MIDL|RC|MSB)\d{3,5}\b)|(?:\:\s*warning\s+(?:C|LNK|MIDL|RC|MSB)\d{3,5}\b)'
+          $content = Get-Content -Raw $log
+          if ($content -match $pattern) {
+            Write-Host "----- Build log excerpt with warnings -----"
+            ($content -split "`r?`n") | Select-String -Pattern $pattern | Select-Object -First 200
+            throw "Warnings detected in build log (warnings are treated as errors)."
+          }
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: msbuild-${{ matrix.platform }}-debug-log
+          path: ${{ env.LOG_PATH }}
+          if-no-files-found: warn
