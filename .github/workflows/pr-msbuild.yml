@@ -63,21 +63,21 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force -Path build_logs | Out-Null
 
-          # Create absolute paths for text log and binlog; export immediately so they exist even if build fails.
-          $relTxt = ".\build_logs\msbuild-Debug-${{ matrix.platform }}-run$(${env:GITHUB_RUN_NUMBER}).log"
-          $relBin = ".\build_logs\msbuild-Debug-${{ matrix.platform }}-run$(${env:GITHUB_RUN_NUMBER}).binlog"
-          $txtLog = (Resolve-Path $relTxt).Path
-          $binLog = (Resolve-Path $relBin).Path
-          echo "LOG_PATH=$txtLog" >> $env:GITHUB_ENV
+          # Get absolute path of the log directory (this exists)
+          $buildDir = (Resolve-Path .\build_logs).Path
+
+          # Compose absolute file paths without requiring files to exist
+          $txtLog = Join-Path $buildDir "msbuild-Debug-${{ matrix.platform }}-run$(${env:GITHUB_RUN_NUMBER}).log"
+          $binLog = Join-Path $buildDir "msbuild-Debug-${{ matrix.platform }}-run$(${env:GITHUB_RUN_NUMBER}).binlog"
+
+          # Export log paths early so they're available even if the build fails
+          echo "LOG_PATH=$txtLog"  >> $env:GITHUB_ENV
           echo "BINLOG_PATH=$binLog" >> $env:GITHUB_ENV
 
           # MSBuild notes:
-          # - /m                           : parallel build
-          # - /t:Rebuild                   : clean + build
+          # - /m, /t:Rebuild, /nr:false, /v:m
           # - /p:PreferredToolArchitecture=x64 : use 64-bit host tools
-          # - /nr:false                    : disable node reuse (more deterministic logs)
-          # - /v:m                         : medium verbosity; change to /v:n for diagnostics during bring-up
-          # - /bl:<file>                   : produce a binary log for deep diagnostics
+          # - /bl:<file>                       : binary log for deep diagnostics
           & msbuild ".\src\vcxproj\salamand.sln" `
               /m `
               /t:Rebuild `
