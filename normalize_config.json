@@ -6,7 +6,8 @@
       "*.c"
     ],
     "excludes": [
-      "./.git/*"
+      "./.git/*",
+	  "*/src/plugins/automation/generated/*"
     ]
   },
   "textfiles": {
@@ -47,7 +48,6 @@
       "*.props",
       "*.filters",
       "*.vcxitems",
-      "*.user",
       "*.config",
       "*.ps1"
     ],
