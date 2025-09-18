@@ -17,7 +17,7 @@ param(
     [switch]$Help,
     [switch]$Sequential,
     [ValidateRange(1, [int]::MaxValue)]
-    [int]$ThrottleLimit = [Math]::Max(1, [Math]::Floor([System.Environment]::ProcessorCount / 2)),
+    [int]$ThrottleLimit = 1,
     [string]$ClangFormatPath,
     # Optional path where the script mirrors console output; invaluable for CI logs.
     [string]$LogPath
@@ -58,7 +58,7 @@ param(
     creates temporary copies to avoid mutating the Git index.
 .PARAMETER ThrottleLimit
     Maximum number of concurrent workers spawned for both clang-format and text
-    normalization. Defaults to half the logical CPU count.
+    normalization. Defaults to the detected physical core count.
 .PARAMETER ClangFormatPath
     Optional override for the clang-format executable. When omitted the script
     searches common install locations including Visual Studio and PATH.
@@ -102,7 +102,7 @@ function Show-NormalizeHelp {
         '  -Staged            Evaluates only staged files using temporary copies (implies -DryRun).',
         '  -DebugMode         Emits verbose diagnostic logging, including matched file lists.',
         '  -Sequential        Executes all work sequentially to simplify debugging and tracing.',
-        '  -ThrottleLimit     Overrides the number of parallel workers (default: half the logical CPUs; ignored with -Sequential).',
+        '  -ThrottleLimit     Overrides the number of parallel workers (default: physical CPU cores; ignored with -Sequential).',
         '  -ClangFormatPath   Explicit path or command name for clang-format if auto-detection fails.',
         '  -LogPath           Writes a UTF-8 transcript of console output to the specified file or directory.',
         '  -Help              Shows this help overview and exits without performing any normalization.',
@@ -296,6 +296,44 @@ function Get-HostPlatform {
     return 'Unknown'
 }
 
+function Get-PhysicalProcessorCount {
+<#
+.SYNOPSIS
+    Detects the number of physical CPU cores, falling back to logical count when detection is unavailable.
+#>
+    # Keep the logic compact: default to physical counts when available, otherwise return logical cores.
+    if ($IsWindows) {
+        try {
+            $coreTotal = (
+                Get-CimInstance -ClassName Win32_Processor -ErrorAction Stop |
+                    Measure-Object -Property NumberOfCores -Sum
+            ).Sum
+            if ($coreTotal -ge 1) { return [int]$coreTotal }
+        } catch {}
+    } elseif ($IsMacOS) {
+        try {
+            $output = & sysctl -n hw.physicalcpu 2>$null
+            if ($output) {
+                $coreCount = 0
+                if ([int]::TryParse(($output | Select-Object -First 1), [ref]$coreCount) -and $coreCount -ge 1) {
+                    return $coreCount
+                }
+            }
+        } catch {}
+    } elseif ($IsLinux) {
+        try {
+            $pairs = & lscpu '--parse=Core,Socket' 2>$null
+            if ($pairs) {
+                $corePairs = $pairs | Where-Object { $_ -and -not $_.StartsWith('#') }
+                $uniquePairCount = ($corePairs | Sort-Object -Unique).Count
+                if ($uniquePairCount -ge 1) { return [int]$uniquePairCount }
+            }
+        } catch {}
+    }
+
+    return [System.Environment]::ProcessorCount
+}
+
 function New-IncludePatternSet {
     [CmdletBinding()]
     param(
@@ -444,6 +482,8 @@ function Resolve-ClangFormatPath {
         # Mirror the documented install paths to minimise surprises for contributors.
         $candidatePaths.Add('C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\Llvm\bin\clang-format.exe')
         $candidatePaths.Add('C:\Program Files\LLVM\bin\clang-format.exe')
+    } elseif ($platform -eq 'macOS') {
+        $candidatePaths.Add('/opt/homebrew/opt/llvm@19/bin/clang-format')
     } elseif ($platform -eq 'WSL') {
         $candidatePaths.Add('/mnt/c/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/Llvm/bin/clang-format.exe')
         $candidatePaths.Add('/mnt/c/Program Files/LLVM/bin/clang-format.exe')
@@ -1170,6 +1210,16 @@ function Exit-StagedMode {
 }
 
 # Respond to explicit help requests before performing any expensive work.
+if (-not $PSBoundParameters.ContainsKey('ThrottleLimit')) {
+    try {
+        $physicalCoreCount = [int](Get-PhysicalProcessorCount)
+        $ThrottleLimit = [Math]::Max(1, $physicalCoreCount)
+    }
+    catch {
+        $ThrottleLimit = [Math]::Max(1, [System.Environment]::ProcessorCount)
+    }
+}
+
 if ($Help) {
     Show-NormalizeHelp
     exit $SuccessExitCode
