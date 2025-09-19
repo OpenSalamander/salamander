@@ -47,6 +47,9 @@ jobs:
         with:
           arch: x64
 
+      - name: Register MSVC problem matcher
+        uses: ammaraskar/msvc-problem-matcher@master
+
       - name: Build via MSBuild (Debug | ${{ matrix.platform }})
         run: |
           $logDir = Join-Path (Get-Location) $env:LOG_DIRECTORY
