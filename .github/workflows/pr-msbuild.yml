@@ -81,7 +81,7 @@ jobs:
               /p:TreatLinkerWarningsAsErrors=true `
               /nr:false `
               /v:m `
-              /bl:$binLog *>> $txtLog
+              /bl:$binLog 2>&1 | Tee-Object -FilePath $txtLog -Encoding UTF8
 
           $code = $LASTEXITCODE
           if ($code -ne 0) {
