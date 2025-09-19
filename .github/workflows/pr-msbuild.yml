@@ -67,8 +67,7 @@ jobs:
             "/p:Configuration=$($env:BUILD_CONFIGURATION)"
             "/p:Platform=${{ matrix.platform }}"
             '/p:PreferredToolArchitecture=x64'
-            '/p:TreatWarningAsError=true'
-            '/p:TreatLinkerWarningsAsErrors=true'
+            '/warnaserror'
             '/nr:false'
             '/v:m'
           )
