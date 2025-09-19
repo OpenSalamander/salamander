@@ -51,13 +51,6 @@ jobs:
         with:
           arch: x64
 
-      - name: Enforce "warnings as errors" for MSVC tools
-        # /WX turns warnings into errors for CL and LINK. Also pass /WX to MIDL.
-        run: |
-          echo "CL=/WX"   >> $env:GITHUB_ENV
-          echo "LINK=/WX" >> $env:GITHUB_ENV
-          echo "MIDL_FLAGS=/WX" >> $env:GITHUB_ENV
-
       - name: Build solution via MSBuild (Debug | ${{ matrix.platform }})
         working-directory: s
         run: |
@@ -84,6 +77,8 @@ jobs:
               /p:Configuration=Debug `
               /p:Platform="${{ matrix.platform }}" `
               /p:PreferredToolArchitecture=x64 `
+              /p:TreatWarningAsError=true `
+              /p:TreatLinkerWarningsAsErrors=true `
               /nr:false `
               /v:m `
               /bl:$binLog *>> $txtLog
