@@ -1,4 +1,4 @@
-name: PR Build (x64/x86 Debug, fail on warnings)
+name: PR Build
 
 on:
   pull_request:
@@ -34,7 +34,7 @@ jobs:
       LOG_DIRECTORY: build_logs
 
     steps:
-      - name: Checkout to a short path (avoid MAX_PATH issues)
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           path: s
@@ -79,7 +79,7 @@ jobs:
             exit $LASTEXITCODE
           }
 
-      - name: Upload build logs (text)
+      - name: Upload build logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
