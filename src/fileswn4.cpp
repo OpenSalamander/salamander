@@ -940,7 +940,7 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
         //
         // drawing the focus frame
         //
-        // if FullRowSelect is off and the name wasn't drawn, we won't even bother with 
+        // if FullRowSelect is off and the name wasn't drawn, we won't even bother with
         // the frame
 
         if ((itemIndex == DropTargetIndex || isItemFocusedOrEditMode) &&

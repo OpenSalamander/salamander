@@ -1521,8 +1521,8 @@ void CFilesWindow::EditNewFile()
             UpdateWindow(MainWindow->HWindow);
 
             // clean the name from undesirable characters at the beginning and end
-            // we do this only for the last component; the previous ones already exist and it doesn't matter 
-            // (the system handles it) or they are checked during creation and an error is shown 
+            // we do this only for the last component; the previous ones already exist and it doesn't matter
+            // (the system handles it) or they are checked during creation and an error is shown
             // (we don't clean them, we let the user do some work, it's easy enough)
             char* lastCompName = strrchr(path, '\\');
             MakeValidFileName(lastCompName != NULL ? lastCompName + 1 : path);
@@ -1975,8 +1975,8 @@ void CFilesWindow::CreateDir(CFilesWindow* target)
             SlashesToBackslashesAndRemoveDups(path);
 
             // clean the name from undesirable characters at the beginning and end
-            // we do this only for the last component; the previous ones already exist and it doesn't matter 
-            // (the system handles it) or they are checked during creation and an error is shown 
+            // we do this only for the last component; the previous ones already exist and it doesn't matter
+            // (the system handles it) or they are checked during creation and an error is shown
             // (we don't clean them, we let the user do some work, it's easy enough)
             char* lastCompName = strrchr(path, '\\');
             MakeValidFileName(lastCompName != NULL ? lastCompName + 1 : path);
@@ -2501,7 +2501,7 @@ void CFilesWindow::RenameFile(int specialIndex)
                     }
                 }
 
-                if (ret && !cancel) // operation completed successfully 
+                if (ret && !cancel) // operation completed successfully
                 {
                     strcpy(NextFocusName, newName); // ensure focus of the new name after refresh
                 }
@@ -2772,7 +2772,7 @@ BOOL CFilesWindow::HandeQuickRenameWindowKey(WPARAM wParam)
         // If this is an in-place rename and the user didn't change the name, we shouldn't
         // attempt to rename it because the user might be on a CD-ROM or other read-only disk
         // and we would display the "Access is denied" error. The user has no mouse option
-        // to cancel the operation, so they would have to press Escape. 
+        // to cancel the operation, so they would have to press Escape.
         // Explorer behaves this way now.
         if (strcmp(f->Name, newName) != 0)
             RenameFileInternal(f, newName, &mayChange, &tryAgain);
