@@ -1,4 +1,4 @@
-name: PR MSBuild (VS2022, Debug Win32 + x64, Warnings=Errors)
+name: PR Build (x64/x86 Debug, fail on warnings)
 
 on:
   pull_request:
