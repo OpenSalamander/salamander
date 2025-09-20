@@ -835,7 +835,7 @@ BOOL GetNextItemFromFind(int index, char* path, char* name, void* param)
         if (data->Count == 0)
             return FALSE;
         data->Index = new int[data->Count];
-            if (data->Index == NULL)
+        if (data->Index == NULL)
             return FALSE; // error
         int i = 0;
         int findItem = -1;

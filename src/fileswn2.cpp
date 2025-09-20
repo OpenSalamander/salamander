@@ -481,7 +481,7 @@ void CFilesWindow::Execute(int index)
                         BOOL noChange;
                         if (ChangePathToArchive(GetZIPArchive(), fullName, -1, NULL, FALSE, &noChange)) // "always true"
                         {
-                        TopIndexMem.Push(doublePath, topIndex); // we remember top index for return
+                            TopIndexMem.Push(doublePath, topIndex); // we remember top index for return
                         }
                         else
                         {
@@ -3438,8 +3438,8 @@ void CFilesWindow::RefreshDiskFreeSpace(BOOL check, BOOL doNotRefreshOtherPanel)
 
             if (!doNotRefreshOtherPanel)
             {
-                // if the other panel uses a path with the same root, we refresh 
-                // disk-free-space there as well (it is not perfect - ideally we would 
+                // if the other panel uses a path with the same root, we refresh
+                // disk-free-space there as well (it is not perfect - ideally we would
                 // test whether both paths are on the same volume, but that would be too slow;
                 // this simplification should be more than enough for normal use)
                 CFilesWindow* otherPanel = (MainWindow->LeftPanel == this) ? MainWindow->RightPanel : MainWindow->LeftPanel;
@@ -4069,7 +4069,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
     if (suggestedFocusIndex != -1)
     {
         FocusedIndex = suggestedFocusIndex;
-        // if no TopIndex is suggested or focus visibility 
+        // if no TopIndex is suggested or focus visibility
         // is required, compute a new TopIndex
         // -- clearer version with support for vmIcons and vmThumbnails
         // -- change for partially visible items: previously TopIndex was recalculated

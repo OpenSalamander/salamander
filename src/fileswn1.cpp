@@ -249,7 +249,7 @@ void CFilesWindowAncestor::SetPath(const char* path)
         {
         case DRIVE_REMOVABLE:
         {
-        BOOL isDriveFloppy = FALSE; // floppies have their own configuration beside other removable drives
+            BOOL isDriveFloppy = FALSE; // floppies have their own configuration beside other removable drives
             int drv = UpperCase[Path[0]] - 'A' + 1;
             if (drv >= 1 && drv <= 26) // we perform a range check just to be sure
             {
