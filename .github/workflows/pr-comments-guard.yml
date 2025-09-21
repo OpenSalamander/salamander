@@ -1,0 +1,133 @@
+name: PR Comment Guard
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+jobs:
+  comment-only:
+    name: Ensure Only Comments Change
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify comment-only changes
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+
+          $baseSha = '${{ github.event.pull_request.base.sha }}'
+          $baseRef = '${{ github.event.pull_request.base.ref }}'
+          if ([string]::IsNullOrWhiteSpace($baseSha)) {
+            Write-Error 'Cannot resolve base commit SHA for the pull request.'
+          }
+
+          if (-not (Get-Command clang.exe -ErrorAction SilentlyContinue)) {
+            Write-Error 'clang.exe not found on PATH (expected on windows-2022 runner).'
+          }
+
+          if (-not [string]::IsNullOrWhiteSpace($baseRef)) {
+            git fetch --no-tags origin $baseRef --depth=1 | Out-Null
+          } else {
+            git fetch --no-tags origin $baseSha --depth=1 | Out-Null
+          }
+
+          git rev-parse --verify $baseSha | Out-Null
+
+          $worktreeRoot = Join-Path $env:RUNNER_TEMP "pr-comment-guard"
+          if (Test-Path $worktreeRoot) {
+            Remove-Item $worktreeRoot -Recurse -Force
+          }
+          New-Item -ItemType Directory -Path $worktreeRoot | Out-Null
+
+          $baseWorktree = Join-Path $worktreeRoot 'base'
+          git worktree add --detach $baseWorktree $baseSha | Out-Null
+
+          try {
+            $files = git diff --name-only --diff-filter=ACMR $baseSha...HEAD | Where-Object { $_ -ne '' }
+            if (-not $files) {
+              Write-Host 'No tracked changes detected.'
+              exit 0
+            }
+
+            $includeRoots = @('.', 'src', 'include', 'plugins', 'plugins/shared', 'tools')
+            $includeArgs = @()
+            foreach ($rel in $includeRoots) {
+              $candidate = Join-Path (Get-Location) $rel
+              if (Test-Path $candidate) {
+                $includeArgs += "-I$candidate"
+              }
+            }
+
+            $violations = @()
+
+            foreach ($file in $files) {
+              $basePath = Join-Path $baseWorktree $file
+              $headPath = Join-Path (Get-Location) $file
+
+              if (-not (Test-Path $basePath)) {
+                $violations += [pscustomobject]@{ File = $file; Message = "File '$file' is new or deleted; only comment edits are allowed."; Diff = $null }
+                continue
+              }
+
+              if (-not (Test-Path $headPath)) {
+                $violations += [pscustomobject]@{ File = $file; Message = "File '$file' is missing in PR head; deletions are not allowed."; Diff = $null }
+                continue
+              }
+
+              $baseTmp = [System.IO.Path]::GetTempFileName()
+              $headTmp = [System.IO.Path]::GetTempFileName()
+
+              try {
+                $clangArgsBase = @('-E', '-P', '-w', '-x', 'c++') + $includeArgs + @('-o', $baseTmp, $basePath)
+                $clangArgsHead = @('-E', '-P', '-w', '-x', 'c++') + $includeArgs + @('-o', $headTmp, $headPath)
+
+                $clangBaseOutput = & clang.exe @clangArgsBase 2>&1
+                if ($LASTEXITCODE -ne 0) {
+                  $violations += [pscustomobject]@{ File = $file; Message = "clang failed to preprocess base version."; Diff = $clangBaseOutput }
+                  continue
+                }
+
+                $clangHeadOutput = & clang.exe @clangArgsHead 2>&1
+                if ($LASTEXITCODE -ne 0) {
+                  $violations += [pscustomobject]@{ File = $file; Message = "clang failed to preprocess head version."; Diff = $clangHeadOutput }
+                  continue
+                }
+
+                $diffResult = git diff --no-index --unified=3 --exit-code -- $baseTmp $headTmp 2>&1
+                if ($LASTEXITCODE -eq 1) {
+                  $violations += [pscustomobject]@{ File = $file; Message = "Non-comment changes detected."; Diff = $diffResult }
+                } elseif ($LASTEXITCODE -ne 0) {
+                  $violations += [pscustomobject]@{ File = $file; Message = "Diff command failed."; Diff = $diffResult }
+                }
+              } finally {
+                Remove-Item -Path $baseTmp, $headTmp -ErrorAction SilentlyContinue
+              }
+            }
+
+            if ($violations.Count -gt 0) {
+              foreach ($violation in $violations) {
+                $annotation = "::error file=$($violation.File)::${($violation.Message)}"
+                Write-Host $annotation
+                if ($violation.Diff) {
+                  Write-Host $violation.Diff
+                }
+              }
+              exit 1
+            }
+
+            Write-Host 'All checked files differ only in comments.'
+          } finally {
+            git worktree remove --force $baseWorktree | Out-Null
+            Remove-Item $worktreeRoot -Recurse -Force -ErrorAction SilentlyContinue
+          }
