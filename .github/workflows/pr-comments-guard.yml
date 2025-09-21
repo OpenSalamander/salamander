@@ -140,7 +140,7 @@ jobs:
                   continue
                 }
 
-                $diffResult = git -c core.autocrlf=false -c core.safecrlf=false diff --no-index --unified=6 --exit-code -- $baseTmp $headTmp 2>&1
+                $diffResult = git -c core.autocrlf=false -c core.safecrlf=false diff --no-index --unified=6 --exit-code --label "a/$file" --label "b/$file" -- $baseTmp $headTmp 2>&1
                 if ($LASTEXITCODE -eq 1) {
                   $violations += [pscustomobject]@{ File = $file; Message = "Non-comment changes detected."; Diff = $diffResult }
                 } elseif ($LASTEXITCODE -ne 0) {
@@ -169,6 +169,7 @@ jobs:
 
                 Write-Host $annotation
                 if ($diffText) {
+                  Write-Host "Diff for $file:"
                   $joinedDiff = ($diffText -join [Environment]::NewLine)
                   Write-Host $joinedDiff
                 }
