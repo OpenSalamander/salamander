@@ -60,7 +60,7 @@ jobs:
           git worktree add --detach $baseWorktree $baseSha | Out-Null
 
           try {
-            $files = git diff --name-only --diff-filter=ACMR $baseSha...HEAD | Where-Object { $_ -ne '' }
+            $files = git diff --name-only --diff-filter=ACMR $baseSha HEAD | Where-Object { $_ -ne '' }
             if (-not $files) {
               Write-Host 'No tracked changes detected.'
               exit 0
