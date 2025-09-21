@@ -169,7 +169,7 @@ jobs:
 
                 Write-Host $annotation
                 if ($diffText) {
-                  Write-Host "Diff for $file:"
+                  Write-Host ("Diff for {0}:" -f $file)
                   $joinedDiff = ($diffText -join [Environment]::NewLine)
                   Write-Host $joinedDiff
                 }
