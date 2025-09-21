@@ -245,7 +245,6 @@ BOOL CBitmap::Enlarge(int width, int height)
         }
         HANDLES(DeleteObject(HBmp));
         HBmp = hTmpBmp;
-        Width = width;
         Height = height;
         if (HMemDC != NULL)
         {
