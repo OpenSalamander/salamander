@@ -123,10 +123,23 @@ jobs:
 
             if ($violations.Count -gt 0) {
               foreach ($violation in $violations) {
-                $annotation = "::error file=$($violation.File)::${($violation.Message)}"
+                $file = $violation.File
+                $message = $violation.Message
+                $diffText = $violation.Diff
+
+                if ([string]::IsNullOrEmpty($message)) {
+                  $message = 'Unknown error'
+                }
+
+                $annotation = "::error"
+                if (-not [string]::IsNullOrEmpty($file)) {
+                  $annotation += " file=$file"
+                }
+                $annotation += "::$message"
+
                 Write-Host $annotation
-                if ($violation.Diff) {
-                  Write-Host $violation.Diff
+                if (-not [string]::IsNullOrEmpty($diffText)) {
+                  Write-Host $diffText
                 }
               }
               exit 1
