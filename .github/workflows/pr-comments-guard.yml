@@ -32,6 +32,42 @@ jobs:
           Set-StrictMode -Version Latest
           $ErrorActionPreference = 'Stop'
 
+          function Format-DiffLines {
+            param(
+              [string[]] $Lines,
+              [string] $File
+            )
+
+            $output = @()
+            $seenHeader = $false
+            $seenMinus = $false
+            $seenPlus = $false
+
+            foreach ($line in $Lines) {
+              if (-not $seenHeader -and $line -like 'diff --git*') {
+                $output += "diff --git a/$File b/$File"
+                $seenHeader = $true
+                continue
+              }
+
+              if (-not $seenMinus -and $line -like '--- *') {
+                $output += "--- a/$File"
+                $seenMinus = $true
+                continue
+              }
+
+              if (-not $seenPlus -and $line -like '+++ *') {
+                $output += "+++ b/$File"
+                $seenPlus = $true
+                continue
+              }
+
+              $output += $line
+            }
+
+            return $output
+          }
+
           $baseSha = '${{ github.event.pull_request.base.sha }}'
           $baseRef = '${{ github.event.pull_request.base.ref }}'
           if ([string]::IsNullOrWhiteSpace($baseSha)) {
@@ -140,9 +176,11 @@ jobs:
                   continue
                 }
 
-                $diffResult = git -c core.autocrlf=false -c core.safecrlf=false diff --no-index --unified=6 --exit-code --label "a/$file" --label "b/$file" -- $baseTmp $headTmp 2>&1
+                $diffResult = git -c core.autocrlf=false -c core.safecrlf=false diff --no-index --unified=6 --exit-code -- $baseTmp $headTmp 2>&1
                 if ($LASTEXITCODE -eq 1) {
-                  $violations += [pscustomobject]@{ File = $file; Message = "Non-comment changes detected."; Diff = $diffResult }
+                  $diffLines = $diffResult -split [Environment]::NewLine
+                  $formattedLines = Format-DiffLines -Lines $diffLines -File $file
+                  $violations += [pscustomobject]@{ File = $file; Message = "Non-comment changes detected."; Diff = $formattedLines }
                 } elseif ($LASTEXITCODE -ne 0) {
                   $violations += [pscustomobject]@{ File = $file; Message = "Diff command failed."; Diff = $diffResult }
                 }
@@ -170,8 +208,12 @@ jobs:
                 Write-Host $annotation
                 if ($diffText) {
                   Write-Host ("Diff for {0}:" -f $file)
-                  $joinedDiff = ($diffText -join [Environment]::NewLine)
-                  Write-Host $joinedDiff
+                  if ($diffText -is [System.Array]) {
+                    $joinedDiff = [string]::Join([Environment]::NewLine, $diffText)
+                    Write-Host $joinedDiff
+                  } else {
+                    Write-Host $diffText
+                  }
                 }
               }
               exit 1
