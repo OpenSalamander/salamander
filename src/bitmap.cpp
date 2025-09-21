@@ -19,7 +19,6 @@ CBitmap::CBitmap()
 void CBitmap::Cleanup()
 {
     HBmp = NULL;
-    Width = 0;
     Height = 0;
     Planes = 0;
     BitsPerPel = 0;
