@@ -66,18 +66,35 @@ jobs:
               exit 0
             }
 
-            $includeRoots = @('.', 'src', 'include', 'plugins', 'plugins/shared', 'tools')
-            $includeArgs = @()
+            $includeRoots = @('.', 'src', 'src/common', 'include', 'common', 'plugins', 'plugins/shared', 'tools')
+            $headIncludeArgs = @()
             foreach ($rel in $includeRoots) {
               $candidate = Join-Path (Get-Location) $rel
               if (Test-Path $candidate) {
-                $includeArgs += "-I$candidate"
+                $headIncludeArgs += "-isystem$candidate"
+              }
+            }
+
+            $baseIncludeArgs = @()
+            foreach ($rel in $includeRoots) {
+              $candidate = Join-Path $baseWorktree $rel
+              if (Test-Path $candidate) {
+                $baseIncludeArgs += "-isystem$candidate"
               }
             }
 
             $violations = @()
 
             foreach ($file in $files) {
+              $extension = [System.IO.Path]::GetExtension($file)
+              $normalizedExt = $extension.ToLowerInvariant()
+              $trackedExtensions = @('.c', '.cc', '.cpp', '.cxx', '.h', '.hh', '.hpp', '.hxx', '.ipp', '.inl')
+
+              if ($trackedExtensions -notcontains $normalizedExt) {
+                Write-Host "Skipping file '$file' (extension '$extension') for comment diff guard."
+                continue
+              }
+
               $basePath = Join-Path $baseWorktree $file
               $headPath = Join-Path (Get-Location) $file
 
@@ -95,8 +112,8 @@ jobs:
               $headTmp = [System.IO.Path]::GetTempFileName()
 
               try {
-                $clangArgsBase = @('-E', '-P', '-w', '-x', 'c++') + $includeArgs + @('-o', $baseTmp, $basePath)
-                $clangArgsHead = @('-E', '-P', '-w', '-x', 'c++') + $includeArgs + @('-o', $headTmp, $headPath)
+                $clangArgsBase = @('-E', '-P', '-w', '-x', 'c++') + $baseIncludeArgs + @('-o', $baseTmp, $basePath)
+                $clangArgsHead = @('-E', '-P', '-w', '-x', 'c++') + $headIncludeArgs + @('-o', $headTmp, $headPath)
 
                 $clangBaseOutput = & clang.exe @clangArgsBase 2>&1
                 if ($LASTEXITCODE -ne 0) {
