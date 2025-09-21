@@ -66,12 +66,24 @@ jobs:
               exit 0
             }
 
-            $includeRoots = @('.', 'src', 'src/common', 'include', 'common', 'plugins', 'plugins/shared', 'tools')
+            $includeRoots = @(
+              '.',
+              'src',
+              'src/common',
+              'src/plugins',
+              'src/plugins/shared',
+              'include',
+              'common',
+              'plugins',
+              'plugins/shared',
+              'tools'
+            )
             $headIncludeArgs = @()
             foreach ($rel in $includeRoots) {
               $candidate = Join-Path (Get-Location) $rel
               if (Test-Path $candidate) {
-                $headIncludeArgs += "-isystem$candidate"
+                $headIncludeArgs += '-isystem'
+                $headIncludeArgs += $candidate
               }
             }
 
@@ -79,7 +91,8 @@ jobs:
             foreach ($rel in $includeRoots) {
               $candidate = Join-Path $baseWorktree $rel
               if (Test-Path $candidate) {
-                $baseIncludeArgs += "-isystem$candidate"
+                $baseIncludeArgs += '-isystem'
+                $baseIncludeArgs += $candidate
               }
             }
 
