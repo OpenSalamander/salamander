@@ -748,7 +748,6 @@ protected:
 
     BOOL FlashIconsOnActivation; // flash the status icons when we get activated
 
-
     char FindNowText[100];
 
 public:

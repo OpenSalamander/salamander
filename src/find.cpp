@@ -665,8 +665,8 @@ BOOL CFindIgnore::Set(int index, BOOL enabled, const char* path)
 //    to the CDuplicateCandidates object using the Add method.
 // 2) Then the Examine() method is called which sorts the array using data->FindDupFlags criteria. If file contents
 //    are compared, MD5 digests are calculated for potentially identical files.
-//    Then, the array is sorted again and single files are removed so 
-//    Only files that appear at least twice remain in the array. 
+//    Then, the array is sorted again and single files are removed so
+//    Only files that appear at least twice remain in the array.
 //    These get a Group variable so that sets can be distinguished in the result window.
 //
 
@@ -1513,7 +1513,7 @@ BOOL AddFoundItem(const char* path, const char* name, DWORD sizeLow, DWORD sizeH
     return TRUE;
 }
 
-// 'dirStack' stores directories for late grepping. Otherwise, 
+// 'dirStack' stores directories for late grepping. Otherwise,
 // during searching in the current directory, recursive searching in subdirectories would occur. With this
 // trick all files and directories matching the criteria are found first and
 // then this function is called for all discovered directories.
@@ -1935,7 +1935,7 @@ unsigned GrepThreadFBody(void* ptr)
                 {
                     dirStack = new TDirectArray<char*>(1000, 1000);
                     if (dirStack == NULL)
-                    TRACE_E(LOW_MEMORY); // the algorithm will run even without the stack
+                        TRACE_E(LOW_MEMORY); // the algorithm will run even without the stack
                 }
 
                 // create a local copy of the ignore list since it has to be processed anyway
