@@ -3,6 +3,8 @@ name: PR Comment Guard
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
 
 permissions:
   contents: read
@@ -11,6 +13,9 @@ jobs:
   comment-only:
     name: Ensure Only Comments Change
     runs-on: windows-2022
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false) ||
+      (github.event_name == 'pull_request_target' && github.event.pull_request.draft)
     defaults:
       run:
         shell: pwsh
@@ -19,6 +24,7 @@ jobs:
       - name: Checkout PR
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: Verify comment-only changes
