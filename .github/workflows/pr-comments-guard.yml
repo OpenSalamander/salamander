@@ -2,9 +2,7 @@ name: PR Comment Guard
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
-  pull_request_target:
-    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: read
@@ -13,9 +11,6 @@ jobs:
   comment-only:
     name: Ensure Only Comments Change
     runs-on: windows-2022
-    if: |
-      (github.event_name == 'pull_request' && github.event.pull_request.draft == false) ||
-      (github.event_name == 'pull_request_target' && github.event.pull_request.draft)
     defaults:
       run:
         shell: pwsh
@@ -106,6 +101,7 @@ jobs:
               '.',
               'src',
               'src/common',
+              'src/common/dep',
               'src/plugins',
               'src/plugins/shared',
               'include',
