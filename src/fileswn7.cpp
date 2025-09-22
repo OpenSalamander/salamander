@@ -306,7 +306,7 @@ ENUM_NEXT:
                             if (data->DiskDirectoryTree != NULL)
                                 subDirDos = data->EnumLastDosPath;
                         }
-                       // check whether we have already exited the tree
+                        // check whether we have already exited the tree
                         if (strlen(dir) == strlen(curZIPPath))
                         {
                             if (fileData != NULL) // find CFileData for the subdirectory that we are exiting
@@ -333,7 +333,7 @@ ENUM_NEXT:
                             }
                             return subDir; // return the directory when exiting
                         }
-                          // finish exiting and move forward
+                        // finish exiting and move forward
                         if (data->DiskDirectoryTree == NULL)
                             data->EnumLastDir = data->ArchiveDir;
                         else
@@ -508,7 +508,7 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
                 (path[0] != 0 && path[1] == ':' ||                                             // paths like X:...
                  (path[0] == '/' || path[0] == '\\') && (path[1] == '/' || path[1] == '\\') || // UNC paths
                  Is(ptDisk) || Is(ptZIPArchive)))                                              // disk+archive relative paths
-            {                                                                                  // this is a disk path (absolute or relative) - convert all / to \\ and remove duplicate \\
+            {                                                                                  // this is a disk path (absolute or relative) - convert all '/' to '\\' and remove duplicate '\\'
                 SlashesToBackslashesAndRemoveDups(path);
             }
             //---  adjust the entered path -> convert to absolute, without '.' and '..'
@@ -527,7 +527,7 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
                 // instead of a 'switch', use 'if' so that 'break' and 'continue' work correctly
                 if (pathType == PATH_TYPE_WINDOWS) // Windows path (disk + UNC)
                 {
-                            char newDirs[MAX_PATH]; // if a directory is being created for the operation, remember its name (so we can delete it in case of an error)
+                    char newDirs[MAX_PATH]; // if a directory is being created for the operation, remember its name (so we can delete it in case of an error)
                     newDirs[0] = 0;
 
                     if (pathIsDir) // the existing part of the path is a directory
@@ -618,7 +618,7 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
                                 st = slash + 1;
                             }
 
-                                // determine the original path (from which new directories were created)
+                            // determine the original path (from which new directories were created)
                             memcpy(changesRoot, path, secondPart - path);
                             changesRoot[secondPart - path] = 0;
 
@@ -640,10 +640,10 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
                                 goto _DLG_AGAIN;
                             }
                             if (firstSlash != NULL)
-                                  *firstSlash = 0; // put the name of the first created directory into newDirs
+                                *firstSlash = 0; // put the name of the first created directory into newDirs
                         }
                     }
-                      else // overwrite file - 'secondPart' points to the filename in 'path'
+                    else // overwrite file - 'secondPart' points to the filename in 'path'
                     {
                         SalMessageBox(HWindow, LoadStr(IDS_UNPACK_OPMASKSNOTSUP), LoadStr(IDS_ERRORCOPY),
                                       MB_OK | MB_ICONEXCLAMATION);
@@ -667,7 +667,7 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
                     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
                     if (PackUncompress(MainWindow->HWindow, this, GetZIPArchive(), PluginData.GetInterface(),
                                        path, GetZIPPath(), PanelSalEnumSelection, &data))
-{                        // unpacking succeeded
+                    {                        // unpacking succeeded
                         if (tgtPath == NULL) // if it is not drag&drop (selection is not cleared there)
                         {
                             SetSel(FALSE, -1, TRUE);                        // explicit redraw
@@ -1552,12 +1552,11 @@ _PACK_AGAIN:
                 // and deleting everything except one file after traversing the link is also wrong,
                 // because it alters the original directory content, which users report as a bug since it's unexpected.
                 if (containsDirLinks == 1)
-{
-    _snprintf_s(text, _TRUNCATE, LoadStr(IDS_DELFILESAFTERPACKINGNOLINKS), linkName);
-    SalMessageBox(HWindow, text, LoadStr(IDS_PACKTITLE), MB_OK | MB_ICONEXCLAMATION);
-}
-                PackerConfig.Move = FALSE;
-                                    goto _PACK_AGAIN;
+                {
+                    _snprintf_s(text, _TRUNCATE, LoadStr(IDS_DELFILESAFTERPACKINGNOLINKS), linkName);
+                    SalMessageBox(HWindow, text, LoadStr(IDS_PACKTITLE), MB_OK | MB_ICONEXCLAMATION);
+                    PackerConfig.Move = FALSE;
+                    goto _PACK_AGAIN;
                 }
                 if (containsDirLinks == 2) // user canceled loading (ESC pressed or closed the wait window)
                     performPack = FALSE;
