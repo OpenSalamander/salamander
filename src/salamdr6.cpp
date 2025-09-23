@@ -2324,7 +2324,7 @@ DWORD SalGetProcessId(HANDLE hProcess)
             ULONG_PTR UniqueProcessId;
             PVOID Reserved3;
         } PROCESS_BASIC_INFORMATION;
-#endif;
+#endif
         typedef NTSTATUS(WINAPI * PFN_ZWQUERYINFORMATIONPROCESS)(HANDLE, PROCESSINFOCLASS, PVOID, ULONG, PULONG);
 
         HINSTANCE hDLL = NOHANDLES(LoadLibrary("ntdll.dll"));
