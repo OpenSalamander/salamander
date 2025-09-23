@@ -17,7 +17,7 @@ class CStaticText;
 
 class CZIPUnpackProgress : public CCommonDialog
 
-{
+  {
 protected:
     const char* RemapNameFrom; // TESTGUARD
     const char* RemapNameTo;   // na jmeno archivu, ze ktereho vybalujeme
