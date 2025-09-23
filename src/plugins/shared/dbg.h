@@ -375,7 +375,11 @@ public:
 #ifndef TRACE_ENABLE
 
 // aby nedochazelo k problemum se stredniky v nize nadefinovanych makrech
+
+// Bypasses a clang-format bug in version 19.1.5 (part of Visual Studio 2022 17.14).
+// clang-format off
 inline void __TraceEmptyFunction() {}
+// clang-format on
 
 #define TRACE_MI(file, line, str) __TraceEmptyFunction()
 #define TRACE_MIW(file, line, str) __TraceEmptyFunction()
