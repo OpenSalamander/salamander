@@ -9,7 +9,10 @@ permissions:
 
 jobs:
   comment-only:
-    name: Ensure Only Comments Change
+    name: Ensure Only Comments Change (${{ matrix.mode }}) # Include active mode in job name for clearer logs.
+    strategy: # Expand the job to cover both evaluation modes.
+      matrix:
+        mode: [strict, ignore-whitespace] # Run the guard in strict mode and with whitespace ignored.
     runs-on: windows-2022
     defaults:
       run:
@@ -23,9 +26,16 @@ jobs:
           fetch-depth: 0
 
       - name: Verify comment-only changes
+        env:
+          COMMENT_GUARD_MODE: ${{ matrix.mode }} # Pass the selected mode down to the PowerShell script.
         run: |
           Set-StrictMode -Version Latest
           $ErrorActionPreference = 'Stop'
+
+          $commentGuardMode = $env:COMMENT_GUARD_MODE # Read the chosen mode from the matrix.
+          if ([string]::IsNullOrWhiteSpace($commentGuardMode)) {
+            $commentGuardMode = 'strict' # Default to the historical strict behaviour when the env var is missing.
+          }
 
           function Format-DiffLines {
             param(
@@ -172,7 +182,12 @@ jobs:
                   continue
                 }
 
-                $diffResult = git -c core.autocrlf=false -c core.safecrlf=false diff --no-index --unified=6 --exit-code -- $baseTmp $headTmp 2>&1
+                $diffFlags = @('--no-index', '--unified=6', '--exit-code') # Baseline diff arguments shared by both modes.
+                if ($commentGuardMode -eq 'ignore-whitespace') {
+                  $diffFlags = @('--ignore-all-space') + $diffFlags # Ignore whitespace-only changes in the relaxed mode.
+                }
+
+                $diffResult = git -c core.autocrlf=false -c core.safecrlf=false diff @diffFlags -- $baseTmp $headTmp 2>&1
                 if ($LASTEXITCODE -eq 1) {
                   $diffLines = $diffResult -split [Environment]::NewLine
                   $formattedLines = Format-DiffLines -Lines $diffLines -File $file
@@ -220,3 +235,4 @@ jobs:
             git worktree remove --force $baseWorktree | Out-Null
             Remove-Item $worktreeRoot -Recurse -Force -ErrorAction SilentlyContinue
           }
+
