@@ -16,10 +16,9 @@ class CProgressBar;
 class CStaticText;
 
 class CZIPUnpackProgress : public CCommonDialog
-
-  {
+{
 protected:
-    const char* RemapNameFrom; // TESTGUARD
+    const char* RemapNameFrom; // mapovani jmen z tmp-adresare
     const char* RemapNameTo;   // na jmeno archivu, ze ktereho vybalujeme
     BOOL FileProgress;         // pro variantu s jednim progressem: TRUE="File:", FALSE="Total:"
 
