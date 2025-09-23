@@ -16,6 +16,7 @@ class CProgressBar;
 class CStaticText;
 
 class CZIPUnpackProgress : public CCommonDialog
+
 {
 protected:
     const char* RemapNameFrom; // TESTGUARD
