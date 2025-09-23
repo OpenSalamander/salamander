@@ -416,7 +416,7 @@ CWindow::CWindowProcInt(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
             WNDPROC currentWndProc = (WNDPROC)GetWindowLongPtr(wnd->HWindow, GWLP_WNDPROC);
             if (currentWndProc == CWindow::CWindowProc)
                 SetWindowLongPtr(wnd->HWindow, GWLP_WNDPROC, (LONG_PTR)wnd->DefWndProc);
-#else _UNICODE
+#else // _UNICODE
             if (wnd->UnicodeWnd) // je-li nase window procedura unicodova, musime pouzit "W" varianty API funkci
             {
                 WNDPROC currentWndProc = (WNDPROC)GetWindowLongPtrW(wnd->HWindow, GWLP_WNDPROC);

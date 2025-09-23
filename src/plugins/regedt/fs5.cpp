@@ -82,7 +82,7 @@ BOOL SafeQueryInfoKey(HKEY hKey, int root, LPWSTR key, LPWSTR className,
                     classNameA[0] = 0;
                 TRACE_I("registry klic " << keyNameA << " ma nastaveny class name: " << classNameA);
             }
-#endif _DEBUG
+#endif // _DEBUG
             break;
         }
     }

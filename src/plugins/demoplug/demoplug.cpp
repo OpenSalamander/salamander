@@ -205,7 +205,7 @@ int WINAPI SalamanderPluginGetReqVer()
     return 103; // plugin works in Open Salamander 5.0 or later
 #else           // DEMOPLUG_COMPATIBLE_WITH_500
     return LAST_VERSION_OF_SALAMANDER;
-#endif DEMOPLUG_COMPATIBLE_WITH_500
+#endif // DEMOPLUG_COMPATIBLE_WITH_500
 }
 
 int WINAPI SalamanderPluginGetSDKVer()

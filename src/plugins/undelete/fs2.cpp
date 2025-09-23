@@ -1595,7 +1595,7 @@ void CPluginFSInterface::ContextMenu(const char* fsName, HWND parent, int menuX,
             }
         }
     }
-#endif _DEBUG
+#endif // _DEBUG
 }
 
 #if defined(_DEBUG) && _WIN32_WINNT >= 0x0501
@@ -2216,4 +2216,4 @@ exit:
         CloseHandle(hFile);
 }
 
-#endif _DEBUG
+#endif // _DEBUG
