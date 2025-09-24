@@ -16,6 +16,7 @@ dependencies = [
 comment-translation-status = "comments.translation_status:main"
 comment-find-czech-words = "comments.find_czech_words:main"
 comment-word-counter = "comments.word_counter:main"
+comment-code-guard = "comments.code_guard:main"
 
 [tool.setuptools]
 packages = ["comments"]
