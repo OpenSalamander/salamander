@@ -791,8 +791,7 @@ static bool ListDirectory(const std::wstring& directoryArg)
             return false;
         }
 
-        std::printf("  [%s]\n", isDir ? "DIR" : "FILE");
-        std::printf("    utf-16 preview: %s\n", printableUtf8.c_str());
+        std::printf("  [%s] %s\n", isDir ? "DIR" : "FILE", printableUtf8.c_str());
         std::printf("    code points: %s\n", codepointsUtf8.c_str());
         std::printf("    utf-16 encoding: %s\n", unitsUtf8.c_str());
 
