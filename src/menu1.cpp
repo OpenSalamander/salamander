@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -118,7 +119,7 @@ MenuMessageHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     if (hOldHookProc != NULL)
         return CallNextHookEx(hOldHookProc, nCode, wParam, lParam);
     else
-        return 0; // muzeme byt zavolani z uplne jineho threadu (podle MSDN)
+        return 0; // we might be called from a completely different thread (according to MSDN)
 }
 
 COldMenuHookTlsAllocator::COldMenuHookTlsAllocator()
@@ -147,15 +148,15 @@ COldMenuHookTlsAllocator::HookThread()
     CALL_STACK_MESSAGE1("COldMenuHookTlsAllocator::HookThread()");
     if (OldMenuHookTlsIndexHOldHook == 0xFFFFFFFF)
         return NULL;
-    // kazdy thread, ktery sem vleze, si zahookuje proceduru (pokud ji uz nema zahookovanou)
+    // every thread entering here hooks the procedure (if it has not already hooked it)
     HHOOK hOldHookProc = (HHOOK)TlsGetValue(OldMenuHookTlsIndexHOldHook);
     if (hOldHookProc == NULL)
     {
         DWORD threadID = GetCurrentThreadId();
-        hOldHookProc = SetWindowsHookEx(WH_CALLWNDPROC, // HANDLES neumi!
+        hOldHookProc = SetWindowsHookEx(WH_CALLWNDPROC, // HANDLES can't do this!
                                         MenuMessageHookProc,
                                         NULL, threadID);
-        // do TLS ulozi handle na proceduru, aby mohl byt volany CallNextHookEx
+        // it stores th handle to the procedure in TLS so that CallNextHookEx can be called
         TlsSetValue(OldMenuHookTlsIndexHOldHook, (LPVOID)hOldHookProc);
         return hOldHookProc;
     }
@@ -166,7 +167,7 @@ COldMenuHookTlsAllocator::HookThread()
 void COldMenuHookTlsAllocator::UnhookThread(HHOOK hOldHookProc)
 {
     CALL_STACK_MESSAGE_NONE
-    UnhookWindowsHookEx(hOldHookProc); // HANDLES neumi!
+    UnhookWindowsHookEx(hOldHookProc); // HANDLES can't do this!
     if (OldMenuHookTlsIndexHOldHook != 0xFFFFFFFF)
         TlsSetValue(OldMenuHookTlsIndexHOldHook, NULL);
 }
@@ -187,7 +188,7 @@ BOOL InitializeMenu()
         return FALSE;
     return TRUE;
 }
-/* neni volano
+/* not called
 void ReleaseMenu()
 {
 }
@@ -283,7 +284,7 @@ void CMenuItem::DecodeSubTextLenghtsAndWidths(CMenuSharedResources* sharedRes, B
     ColumnL2 = NULL;
     ColumnR = NULL;
 
-    // nastavim ukazatele a pocty znaku jednotlivych sloupcu
+    // set column pointers and character counts
     while (inifiniteLoop)
     {
         if (*iterator == '\t' || *iterator == 0)
@@ -317,7 +318,7 @@ void CMenuItem::DecodeSubTextLenghtsAndWidths(CMenuSharedResources* sharedRes, B
         iterator++;
     }
 
-    // napocitam sirky textu
+    // calculate text widths
     HFONT hOldFont;
     if (State & MENU_STATE_DEFAULT)
         hOldFont = (HFONT)SelectObject(sharedRes->HTempMemDC, sharedRes->HBoldFont);
