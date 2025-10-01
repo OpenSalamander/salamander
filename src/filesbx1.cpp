@@ -395,7 +395,7 @@ void CFilesBox::PaintAllItems(HRGN hUpdateRgn, DWORD drawFlags)
     }
     }
 
-    // je-li panel prazdny, zduraznime to
+    // highlight the fact that the panel is empty
     if (ItemsCount == 0 && (drawFlags & DRAWFLAG_ICON_ONLY) == 0)
     {
         char textBuf[300];
@@ -422,7 +422,7 @@ void CFilesBox::PaintAllItems(HRGN hUpdateRgn, DWORD drawFlags)
         int oldBkMode = SetBkMode(HPrivateDC, TRANSPARENT);
         int oldTextColor = SetTextColor(HPrivateDC, newColor);
         HFONT hOldFont = (HFONT)SelectObject(HPrivateDC, Font);
-        // kdyby mrkalo, muzeme volat omereni textu + ExtTextOut
+        // if it flickers we can measure the text and use ExtTextOut
         DrawText(HPrivateDC, textBuf, -1,
                  &textR, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
         SelectObject(HPrivateDC, hOldFont);
@@ -433,10 +433,10 @@ void CFilesBox::PaintAllItems(HRGN hUpdateRgn, DWORD drawFlags)
     if (ImageDragging)
         ImageDragShow(TRUE);
     if (showDragBox)
-        Parent->DrawDragBox(Parent->OldBoxPoint); // zase ho nahodime
+        Parent->DrawDragBox(Parent->OldBoxPoint); // show it again
 
     if (hUpdateRgn != NULL)
-        SelectClipRgn(HPrivateDC, NULL); // vykopneme clip region, pokud jsme ho nastavili
+        SelectClipRgn(HPrivateDC, NULL); // remove the clipping region if we set it
 }
 
 void CFilesBox::PaintItem(int index, DWORD drawFlags)
@@ -447,10 +447,10 @@ void CFilesBox::PaintItem(int index, DWORD drawFlags)
         BOOL showDragBox = FALSE;
         if (Parent->DragBox && Parent->DragBoxVisible)
         {
-            Parent->DrawDragBox(Parent->OldBoxPoint); // zhasneme box
+            Parent->DrawDragBox(Parent->OldBoxPoint); // hide the box
             showDragBox = TRUE;
         }
-        // pokud je treba, zhasneme drag image
+        // hide the drag image if necessary
         BOOL showImage = FALSE;
         if (ImageDragging)
         {
@@ -474,7 +474,7 @@ void CFilesBox::PaintItem(int index, DWORD drawFlags)
         case vmBrief:
         case vmDetailed:
         {
-            // nebudeme testovat viditelnost - jde nam o rychlost
+            // skip visibility test - we want the best performance
             Parent->DrawBriefDetailedItem(HPrivateDC, index, &r, drawFlags | DRAWFLAG_SKIP_VISTEST);
             break;
         }
@@ -482,7 +482,7 @@ void CFilesBox::PaintItem(int index, DWORD drawFlags)
         case vmIcons:
         case vmThumbnails:
         {
-            // nebudeme testovat viditelnost - jde nam o rychlost
+            // skip visibility test - we want the best performance
             CIconSizeEnum iconSize = (ViewMode == vmIcons) ? ICONSIZE_32 : ICONSIZE_48;
             Parent->DrawIconThumbnailItem(HPrivateDC, index, &r, drawFlags | DRAWFLAG_SKIP_VISTEST, iconSize);
             break;
@@ -490,7 +490,7 @@ void CFilesBox::PaintItem(int index, DWORD drawFlags)
 
         case vmTiles:
         {
-            // nebudeme testovat viditelnost - jde nam o rychlost
+            // skip visibility test - we want the best performance
             CIconSizeEnum iconSize = ICONSIZE_48;
             Parent->DrawTileItem(HPrivateDC, index, &r, drawFlags | DRAWFLAG_SKIP_VISTEST, iconSize);
             break;
@@ -499,7 +499,7 @@ void CFilesBox::PaintItem(int index, DWORD drawFlags)
         if (showImage)
             ImageDragShow(TRUE);
         if (showDragBox)
-            Parent->DrawDragBox(Parent->OldBoxPoint); // zase ho nahodime
+            Parent->DrawDragBox(Parent->OldBoxPoint); // show it again
     }
 }
 
@@ -578,7 +578,7 @@ void CFilesBox::EnsureItemVisible(int index, BOOL forcePaint, BOOL scroll, BOOL 
             ScrollWindowEx(HWindow, 0, ItemHeight * (TopIndex - newTopIndex),
                            &FilesRect, &FilesRect, hUpdateRgn, NULL, 0);
             TopIndex = newTopIndex;
-            // napocitam region nove polozky a prictu ho k regionu vzniklemu pri odrolovani
+            // compute the region of the new item and add it to the region created during scrolling
             HRGN hItemRgn = HANDLES(CreateRectRgn(FilesRect.left,
                                                   FilesRect.top + ItemHeight * (index - TopIndex),
                                                   FilesRect.right,
@@ -586,9 +586,9 @@ void CFilesBox::EnsureItemVisible(int index, BOOL forcePaint, BOOL scroll, BOOL 
             CombineRgn(hUpdateRgn, hUpdateRgn, hItemRgn, RGN_OR);
             HANDLES(DeleteObject(hItemRgn));
             SetupScrollBars(UPDATE_VERT_SCROLL);
-            // pri zmene bitu Selection doslo k nastaveni Diry flagu a my ho pri
-            // rolovani nesmime shodit, protoze castecne viditelne polozky neprekreslime
-            // kompletne a bude potreba po nasem rolovani kreslit jeste jednou
+            // when the Selection bit changes the Dirty flag is set and we must
+            // not clear it while scrolling because partially visible items are
+            // not redrawn completely and will need to be repainted once again
             PaintAllItems(hUpdateRgn, DRAWFLAG_KEEP_DIRTY);
             if (ImageDragging)
                 ImageDragShow(TRUE);
@@ -632,7 +632,7 @@ void CFilesBox::EnsureItemVisible(int index, BOOL forcePaint, BOOL scroll, BOOL 
             ScrollWindowEx(HWindow, ItemWidth * (leftCol - newLeftCol), 0,
                            &FilesRect, &FilesRect, hUpdateRgn, NULL, 0);
             TopIndex = newLeftCol * EntireItemsInColumn;
-            // napocitam region nove polozky a prictu ho k regionu vzniklemu pri odrolovani
+            // compute the region of the new item and add it to the region created during scrolling
             HRGN hItemRgn = HANDLES(CreateRectRgn(FilesRect.left + ItemWidth * (col - newLeftCol),
                                                   FilesRect.top,
                                                   FilesRect.left + ItemWidth * (col - newLeftCol + 1),
@@ -640,9 +640,9 @@ void CFilesBox::EnsureItemVisible(int index, BOOL forcePaint, BOOL scroll, BOOL 
             CombineRgn(hUpdateRgn, hUpdateRgn, hItemRgn, RGN_OR);
             HANDLES(DeleteObject(hItemRgn));
             SetupScrollBars(UPDATE_HORZ_SCROLL);
-            // pri zmene bitu Selection doslo k nastaveni Diry flagu a my ho pri
-            // rolovani nesmime shodit, protoze castecne viditelne polozky neprekreslime
-            // kompletne a bude potreba po nasem rolovani kreslit jeste jednou
+            // when the Selection bit changes the Dirty flag is set and we must
+            // not clear it while scrolling because partially visible items are
+            // not redrawn completely and will need to be repainted once again
             PaintAllItems(hUpdateRgn, DRAWFLAG_KEEP_DIRTY);
             if (ImageDragging)
                 ImageDragShow(TRUE);
@@ -662,7 +662,7 @@ void CFilesBox::EnsureItemVisible(int index, BOOL forcePaint, BOOL scroll, BOOL 
         // Icons || Thumbnails
         int newTopIndex = TopIndex;
 
-        // napocitam pozici polozky
+        // compute the item position
         int itemTop = FilesRect.top + (index / ColumnsCount) * ItemHeight;
         int itemBottom = itemTop + ItemHeight;
 
@@ -689,16 +689,16 @@ void CFilesBox::EnsureItemVisible(int index, BOOL forcePaint, BOOL scroll, BOOL 
             ScrollWindowEx(HWindow, 0, TopIndex - newTopIndex,
                            &FilesRect, &FilesRect, hUpdateRgn, NULL, 0);
             TopIndex = newTopIndex;
-            // napocitam region nove polozky a prictu ho k regionu vzniklemu pri odrolovani
+            // compute the region of the new item and add it to the region created during scrolling
             int itemLeft = FilesRect.left + (index % ColumnsCount) * ItemWidth;
             HRGN hItemRgn = HANDLES(CreateRectRgn(itemLeft, itemTop - TopIndex,
                                                   itemLeft + ItemWidth, itemBottom - TopIndex));
             CombineRgn(hUpdateRgn, hUpdateRgn, hItemRgn, RGN_OR);
             HANDLES(DeleteObject(hItemRgn));
             SetupScrollBars(UPDATE_VERT_SCROLL);
-            // pri zmene bitu Selection doslo k nastaveni Diry flagu a my ho pri
-            // rolovani nesmime shodit, protoze castecne viditelne polozky neprekreslime
-            // kompletne a bude potreba po nasem rolovani kreslit jeste jednou
+            // when the Selection bit changes the Dirty flag is set and we must
+            // not clear it while scrolling because partially visible items are
+            // not redrawn completely and will need to be repainted once again
             PaintAllItems(hUpdateRgn, DRAWFLAG_KEEP_DIRTY);
             if (ImageDragging)
                 ImageDragShow(TRUE);
@@ -758,7 +758,7 @@ void CFilesBox::GetVisibleItems(int* firstIndex, int* count)
         *count = 0;
 }
 
-// uvazuje scroll == TRUE - i castecne viditelna polozka je oznacena jako viditelna
+// assumes scroll == TRUE - even a partially visible item counts as visible
 BOOL CFilesBox::IsItemVisible(int index, BOOL* isFullyVisible)
 {
     if (isFullyVisible != NULL)
@@ -769,13 +769,13 @@ BOOL CFilesBox::IsItemVisible(int index, BOOL* isFullyVisible)
     {
         // vmDetailed
         if (index < TopIndex)
-            return FALSE; // moc nahore
+            return FALSE; // too far up
         else
         {
             if (index > TopIndex + EntireItemsInColumn - 1)
             {
                 if (ItemHeight * (index - TopIndex) >= FilesRect.bottom - FilesRect.top)
-                    return FALSE; // moc dole
+                    return FALSE; // too far down
             }
             else
             {
@@ -792,13 +792,13 @@ BOOL CFilesBox::IsItemVisible(int index, BOOL* isFullyVisible)
         int leftCol = TopIndex / EntireItemsInColumn;
         int col = index / EntireItemsInColumn;
         if (col < leftCol)
-            return FALSE; // moc vlevo
+            return FALSE; // too far left
         else
         {
             if (col >= leftCol + EntireColumnsCount)
             {
                 if (ItemWidth * (col - leftCol) >= FilesRect.right - FilesRect.left)
-                    return FALSE; // moc vpravo
+                    return FALSE; // too far right
             }
             else
             {
@@ -817,18 +817,18 @@ BOOL CFilesBox::IsItemVisible(int index, BOOL* isFullyVisible)
         int itemTop = FilesRect.top + (index / ColumnsCount) * ItemHeight;
         int itemBottom = itemTop + ItemHeight;
         if (itemBottom <= TopIndex)
-            return FALSE; // polozka je cela nad viditelnou plochou
+            return FALSE; // item is completely above the visible area
         if (itemTop >= TopIndex + FilesRect.bottom - FilesRect.top)
-            return FALSE; // polozka je cela pod viditelnou plochou
+            return FALSE; // item is completely below the visible area
         if (isFullyVisible != NULL)
             *isFullyVisible = (itemTop >= TopIndex && itemBottom <= TopIndex + FilesRect.bottom - FilesRect.top);
         break;
     }
     }
-    return TRUE; // je videt
+    return TRUE; // it is visible
 }
 
-// uvazuje scroll == FALSE - cela polozka bude viditelna
+// assumes scroll == FALSE - the whole item will be visible
 int CFilesBox::PredictTopIndex(int index)
 {
     int newTopIndex = TopIndex;
@@ -876,7 +876,7 @@ int CFilesBox::PredictTopIndex(int index)
     {
         // Icons || Thumbnails
 
-        // napocitam pozici polozky
+        // compute the item position
         int itemTop = FilesRect.top + (index / ColumnsCount) * ItemHeight;
         int itemBottom = itemTop + ItemHeight;
 
@@ -901,7 +901,7 @@ void CFilesBox::EnsureItemVisible2(int newTopIndex, int index)
     if (newTopIndex == TopIndex)
         return;
 
-    // upravim rolovaci plochu tak, aby neobsahovala vybranou polozku
+    // adjust the scrolling area so that it does not contain the selected item
     RECT sRect = FilesRect;
     if (index == newTopIndex)
         sRect.top += ItemHeight;
@@ -914,7 +914,7 @@ void CFilesBox::EnsureItemVisible2(int newTopIndex, int index)
     ScrollWindowEx(HWindow, 0, ItemHeight * (TopIndex - newTopIndex),
                    &sRect, &sRect, hUpdateRgn, NULL, 0);
 
-    // napocitam region nove polozky a prictu ho k regionu vzniklemu pri odrolovani
+    // compute the region of the new item and add it to the region created during scrolling
     RECT uRect = FilesRect;
     if (index == newTopIndex)
     {
@@ -931,9 +931,9 @@ void CFilesBox::EnsureItemVisible2(int newTopIndex, int index)
 
     TopIndex = newTopIndex;
     SetupScrollBars(UPDATE_VERT_SCROLL);
-    // pri zmene bitu Selection doslo k nastaveni Diry flagu a my ho pri
-    // rolovani nesmime shodit, protoze castecne viditelne polozky neprekreslime
-    // kompletne a bude potreba po nasem rolovani kreslit jeste jednou
+    // when the Selection bit changes the Dirty flag is set and we must
+    // not clear it while scrolling because partially visible items are
+    // not redrawn completely and will need to be repainted once again
     PaintAllItems(hUpdateRgn, DRAWFLAG_KEEP_DIRTY);
     HANDLES(DeleteObject(hUpdateRgn));
     if (ImageDragging)
@@ -944,7 +944,7 @@ void CFilesBox::EnsureItemVisible2(int newTopIndex, int index)
 
 void CFilesBox::OnHScroll(int scrollCode, int pos)
 {
-    if (Parent->DragBox && !Parent->ScrollingWindow) // tahneme klec - zatluceme rolovani od mousewheel
+    if (Parent->DragBox && !Parent->ScrollingWindow) // dragging the cage - block mouse wheel scrolling
         return;
     if (ViewMode == vmDetailed)
     {
@@ -1080,8 +1080,8 @@ void CFilesBox::OnHScroll(int scrollCode, int pos)
             Parent->VisibleItemsArraySurround.InvalidateArr();
             if (scrollCode == SB_THUMBTRACK)
             {
-                Parent->VisibleItemsArray.RefreshArr(Parent);         // tady provedeme refresh natvrdo
-                Parent->VisibleItemsArraySurround.RefreshArr(Parent); // tady provedeme refresh natvrdo
+                Parent->VisibleItemsArray.RefreshArr(Parent);         // do a hard refresh here
+                Parent->VisibleItemsArraySurround.RefreshArr(Parent); // do a hard refresh here
             }
         }
         if (scrollCode != SB_THUMBTRACK)
@@ -1091,7 +1091,7 @@ void CFilesBox::OnHScroll(int scrollCode, int pos)
 
 void CFilesBox::OnVScroll(int scrollCode, int pos)
 {
-    if (Parent->DragBox && !Parent->ScrollingWindow) // tahneme klec - zatluceme rolovani od mousewheel
+    if (Parent->DragBox && !Parent->ScrollingWindow) // dragging the cage - block mouse wheel scrolling
         return;
     int newTopIndex = TopIndex;
     if (ViewMode == vmDetailed)
@@ -1161,8 +1161,8 @@ void CFilesBox::OnVScroll(int scrollCode, int pos)
             Parent->VisibleItemsArraySurround.InvalidateArr();
             if (scrollCode == SB_THUMBTRACK)
             {
-                Parent->VisibleItemsArray.RefreshArr(Parent);         // tady provedeme refresh natvrdo
-                Parent->VisibleItemsArraySurround.RefreshArr(Parent); // tady provedeme refresh natvrdo
+                Parent->VisibleItemsArray.RefreshArr(Parent);         // do a hard refresh here
+                Parent->VisibleItemsArraySurround.RefreshArr(Parent); // do a hard refresh here
             }
         }
         if (scrollCode != SB_THUMBTRACK)
@@ -1172,12 +1172,12 @@ void CFilesBox::OnVScroll(int scrollCode, int pos)
     {
         // Icons || Thumbnails
 
-        // na co byl tenhle test? prekazi pri rolovani pri panelu nizsim nez thumbnail/ikona
+        // what was this test for? It interferes with scrolling when the panel height is smaller than the thumbnail/icon
         //    if (EntireItemsInColumn * ItemHeight >= FilesRect.bottom - FilesRect.top)
         //      return;
         int lineDelta = ItemHeight;
         if (ItemHeight >= FilesRect.bottom - FilesRect.top)
-            lineDelta = max(1, FilesRect.bottom - FilesRect.top); // ochrana pred zapornou nebo nulovou deltou
+            lineDelta = max(1, FilesRect.bottom - FilesRect.top); // guard against negative or zero delta
         switch (scrollCode)
         {
         case SB_LINEUP:
@@ -1235,8 +1235,8 @@ void CFilesBox::OnVScroll(int scrollCode, int pos)
             Parent->VisibleItemsArraySurround.InvalidateArr();
             if (scrollCode == SB_THUMBTRACK)
             {
-                Parent->VisibleItemsArray.RefreshArr(Parent);         // tady provedeme refresh natvrdo
-                Parent->VisibleItemsArraySurround.RefreshArr(Parent); // tady provedeme refresh natvrdo
+                Parent->VisibleItemsArray.RefreshArr(Parent);         // do a hard refresh here
+                Parent->VisibleItemsArraySurround.RefreshArr(Parent); // do a hard refresh here
             }
         }
         if (scrollCode != SB_THUMBTRACK)
@@ -1280,7 +1280,7 @@ CFilesBox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             (GetKeyState(VK_CONTROL) & 0x8000) == 0 && (GetKeyState(VK_SHIFT) & 0x8000) == 0 &&
             (GetKeyState(VK_MENU) & 0x8000) == 0)
         {
-            PostMessage(MainWindow->HWindow, WM_COMMAND, CM_HELP_CONTENTS, 0); // jen F1 (zadne modifikatory)
+            PostMessage(MainWindow->HWindow, WM_COMMAND, CM_HELP_CONTENTS, 0); // plain F1 (no modifiers)
             return TRUE;
         }
         break;
@@ -1324,7 +1324,7 @@ CFilesBox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (MainWindow->HasLockedUI())
             break;
         BOOL firstPress = (lParam & 0x40000000) == 0;
-        if (firstPress) // pokud je SHIFT stisteny, chodi autorepeat, ale nas zajima jen ten prvni stisk
+        if (firstPress) // if SHIFT is held, autorepeat occurs, but we care only about the first press
             ResetMouseWheelAccumulator();
         LRESULT lResult;
         if (Parent->OnSysKeyDown(uMsg, wParam, lParam, &lResult))
@@ -1351,12 +1351,12 @@ CFilesBox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         HDC hdc = HANDLES(GetWindowDC(HWindow));
         if (wParam != 1)
         {
-            // region je ve screen souradnicich, posuneme ho
+            // the region is in screen coordinates, offset it
             RECT wR;
             GetWindowRect(HWindow, &wR);
             OffsetRgn((HRGN)wParam, -wR.left, -wR.top);
 
-            // oklipujeme dc
+            // clip the DC
             SelectClipRgn(hdc, (HRGN)wParam);
         }
         RECT r;
@@ -1386,7 +1386,7 @@ CFilesBox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         break;
     }
 
-    // chytneme kliknuti na scrollbary a vytahneme Salama nahoru
+    // catch a click on the scroll bars and bring Salamander to front
     case WM_PARENTNOTIFY:
     {
         WORD fwEvent = LOWORD(wParam);
@@ -1430,7 +1430,7 @@ CFilesBox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_MOUSEACTIVATE:
     {
         if (MainWindow->HasLockedUI())
-            break; // behem zamceneho stavu chceme, aby kliknuti do panelu vytahlo Salamandera nahoru
+            break; // when the UI is locked we want a click on the panel to bring Salamander to front
         if (LOWORD(lParam) == HTCLIENT)
         {
             if (!IsIconic(MainWindow->HWindow) &&
@@ -1540,7 +1540,7 @@ CFilesBox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         break;
     }
 
-    case WM_INITMENUPOPUP: // pozor, obdobny kod je jeste v CMainWindow
+    case WM_INITMENUPOPUP: // warning: similar code exists also in CMainWindow
     case WM_DRAWITEM:
     case WM_MEASUREITEM:
     case WM_MENUCHAR:
@@ -1569,7 +1569,7 @@ CFilesBox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             Parent->ContextMenu->HandleMenuMsg(uMsg, wParam, lParam);
         }
-        // aby fungovalo New submenu, je potreba jeste preposlat zpravu tam
+        // to make the New submenu work we must also forward the message there
         if (Parent->ContextSubmenuNew != NULL && Parent->ContextSubmenuNew->MenuIsAssigned())
         {
             CALL_STACK_MESSAGE1("CFilesBox::WindowProc::SafeHandleMenuNewMsg2");
@@ -1582,7 +1582,7 @@ CFilesBox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         break;
     }
 
-    case WM_USER_MOUSEHWHEEL: // horizontalni rolovani, chodi od Windows Vista
+    case WM_USER_MOUSEHWHEEL: // horizontal scrolling, available s Windows Vista
     {
         if (MainWindow->HasLockedUI())
             break;
@@ -1590,7 +1590,7 @@ CFilesBox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             short zDelta = (short)HIWORD(wParam);
             if ((zDelta < 0 && MouseHWheelAccumulator > 0) || (zDelta > 0 && MouseHWheelAccumulator < 0))
-                ResetMouseWheelAccumulator(); // pri zmene smeru naklapeni kolecka je potreba nulovat akumulator
+                ResetMouseWheelAccumulator(); // when the tilt direction changes reset the accumulator
 
             SCROLLINFO si;
             si.cbSize = sizeof(si);
@@ -1601,7 +1601,7 @@ CFilesBox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (ViewMode == vmDetailed)
             {
                 wheelScroll = ItemHeight * GetMouseWheelScrollChars();
-                wheelScroll = max(1, min(wheelScroll, si.nPage - 1)); // omezime maximalne na delku stranky
+                wheelScroll = max(1, min(wheelScroll, si.nPage - 1)); // limit at most to page size
             }
 
             MouseHWheelAccumulator += 1000 * zDelta;
@@ -1621,17 +1621,17 @@ CFilesBox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (MainWindow->HasLockedUI())
             return 0;
-        // 7.10.2009 - AS253_B1_IB34: Manison nam hlasil, ze mu pod Windows Vista nefunguje horizontalni scroll.
-        // Me fungoval (touto cestou). Po nainstalovani Intellipoint ovladacu v7 (predtime jsem na Vista x64
-        // nemel zadne spesl ovladace) prestaly WM_MOUSEHWHEEL zpravy prochazet skraz hooka a natejkaly primo
-        // do focused okna; zakazal jsem hook a nyni musime chytat zpravy v oknech, ktere mohou mit focus, aby
-        // doslo k forwardu.
-        // 30.11.2012 - na foru se objevil clovek, kteremu WM_MOUSEHWEEL nechodi skrz message hook (stejna jako drive
-        // u Manisona v pripade WM_MOUSEHWHEEL): https://forum.altap.cz/viewtopic.php?f=24&t=6039
-        // takze nove budeme zpravu chytat take v jednotlivych oknech, kam muze potencialne chodit (dle focusu)
-        // a nasledne ji routit tak, aby se dorucila do okna pod kurzorem, jak jsme to vzdy delali
+        // 7.10.2009 - AS253_B1_IB34: Manison reported that horizontal scrolling did not work for him on Windows Vista.
+        // It worked for me (through this approach). After installing IntelliPoint drivers v7 (previously I had none on Vista x64)
+        // WM_MOUSEHWHEEL messages stopped passing through the hook and went directly to the focused window; 
+        // I disabled the hook and now we must capture messages in windows that can have focus 
+        // so they can be forwarded.
+        // 30.11.2012 - on our forum a user reported WM_MOUSEHWHEEL not passing through the message hook (same as before
+        // in Manison's case): https://forum.altap.cz/viewtopic.php?f=24&t=6039
+        // therefore we will now also catch the message in individual windows where it can potentially appear (depending on focus)
+        // and then route it so that it is delivered to the window under the cursor, as we always did
 
-        // pokud zprava prisla "nedavno" druhym kanalem, budeme tento kanal ignorovat
+        // if the message arrived "recently" through the other channel, ignore this one
         if (MouseWheelMSGThroughHook && MouseWheelMSGTime != 0 && (GetTickCount() - MouseWheelMSGTime < MOUSEWHEELMSG_VALID))
             return 0;
         MouseWheelMSGThroughHook = FALSE;
@@ -1653,12 +1653,12 @@ CFilesBox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (MainWindow->HasLockedUI())
             break;
-        // spravna podpora pro kolecko viz http://msdn.microsoft.com/en-us/library/ms997498.aspx "Best Practices for Supporting Microsoft Mouse and Keyboard Devices"
+        // proper wheel support see http://msdn.microsoft.com/en-us/library/ms997498.aspx "Best Practices for Supporting Microsoft Mouse and Keyboard Devices"
 
-        if (Parent->DragBox) // zamezi chybam v kresleni
+        if (Parent->DragBox) // prevent drawing errors
             return 0;
 
-        Parent->KillQuickRenameTimer(); // zamezime pripadnemu otevreni QuickRenameWindow
+        Parent->KillQuickRenameTimer(); // avoid opening QuickRenameWindow
 
         short zDelta = (short)HIWORD(wParam);
         if ((zDelta < 0 && MouseWheelAccumulator > 0) || (zDelta > 0 && MouseWheelAccumulator < 0))
