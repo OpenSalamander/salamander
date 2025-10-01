@@ -105,7 +105,7 @@ void CFilesBox::SetItemWidthHeight(int width, int height)
         ItemWidth = width;
         ItemHeight = height;
         UpdateInternalData();
-        ItemBitmap.Enlarge(ItemWidth, ItemHeight); // pro header line
+        ItemBitmap.Enlarge(ItemWidth, ItemHeight); // for the header line
                                                    //    OldVertSI.cbSize = 0;
                                                    //    OldHorzSI.cbSize = 0;
                                                    //    SetupScrollBars();
@@ -181,16 +181,16 @@ void CFilesBox::PaintAllItems(HRGN hUpdateRgn, DWORD drawFlags)
          clipRect.left <= FilesRect.left && clipRect.top <= FilesRect.top &&
          clipRect.right >= FilesRect.right && clipRect.bottom >= FilesRect.bottom))
     {
-        // pokud neni nastavena clipovaci oblast nebo je to prosty obdelnik,
-        // jehoz clipovani zajistime v nasledujicim testu, nebudeme se zdrzovat
-        // s testovanim viditelnosti jednotlivych polozek
+        // if no clipping region is set or it is a simple rectangle,
+        // whose clipping is provided in the following test, we will not waste
+        // time testing the visibility of individual items
         drawFlags |= DRAWFLAG_SKIP_VISTEST;
     }
 
     BOOL showDragBox = FALSE;
     if (Parent->DragBox && Parent->DragBoxVisible)
     {
-        Parent->DrawDragBox(Parent->OldBoxPoint); // zhasneme box
+        Parent->DrawDragBox(Parent->OldBoxPoint); // hide the box
         showDragBox = TRUE;
     }
     if (ImageDragging)
@@ -207,7 +207,7 @@ void CFilesBox::PaintAllItems(HRGN hUpdateRgn, DWORD drawFlags)
         r.left = FilesRect.left;
         r.right = FilesRect.right;
 
-        // posunutim mezi kresleni zajistime nekresleni polozek mimo orezany obdelnik
+        // by offsetting between drawing operations we avoid drawing items outside the clipping rectangle
         if (clipRectType == SIMPLEREGION || clipRectType == COMPLEXREGION)
         {
             RECT tmpRect = clipRect;
@@ -216,11 +216,11 @@ void CFilesBox::PaintAllItems(HRGN hUpdateRgn, DWORD drawFlags)
             if (tmpRect.bottom > FilesRect.bottom)
                 tmpRect.bottom = FilesRect.bottom;
 
-            // posuneme horni hranici
+            // shift the top boundary
             int indexOffset = (tmpRect.top - FilesRect.top) / ItemHeight;
             index += indexOffset;
             y += indexOffset * ItemHeight;
-            // posuneme spodni hranici
+            // shift the bottom boundary
             yMax -= FilesRect.bottom - tmpRect.bottom;
         }
 
@@ -235,7 +235,7 @@ void CFilesBox::PaintAllItems(HRGN hUpdateRgn, DWORD drawFlags)
 
         if (!(drawFlags & DRAWFLAG_DIRTY_ONLY) && !(drawFlags & DRAWFLAG_ICON_ONLY) && y < yMax)
         {
-            // domazu spodek
+            // erase the bottom area
             r.top = y;
             r.bottom = yMax;
             FillRect(HPrivateDC, &r, HNormalBkBrush);
@@ -257,7 +257,7 @@ void CFilesBox::PaintAllItems(HRGN hUpdateRgn, DWORD drawFlags)
         int firstCol = index / EntireItemsInColumn;
         //      int lastCol = firstCol + (FilesRect.right - FilesRect.left + ItemWidth - 1) / ItemWidth - 1;
 
-        // posunutim mezi kresleni zajistime nekresleni polozek mimo orezany obdelnik
+        // by offsetting between drawing operations we avoid drawing items outside the clipping rectangle
         if (clipRectType == SIMPLEREGION || clipRectType == COMPLEXREGION)
         {
             RECT tmpRect = clipRect;
@@ -266,11 +266,11 @@ void CFilesBox::PaintAllItems(HRGN hUpdateRgn, DWORD drawFlags)
             if (tmpRect.right > FilesRect.right)
                 tmpRect.right = FilesRect.right;
 
-            // posuneme levou hranici
+            // shift the left boundary
             int colOffset = (tmpRect.left - FilesRect.left) / ItemWidth;
             firstCol += colOffset;
             r.left += colOffset * ItemWidth;
-            // posuneme pravou hranici
+            // shift the right boundary
             xMax -= FilesRect.right - tmpRect.right;
         }
 
@@ -288,7 +288,7 @@ void CFilesBox::PaintAllItems(HRGN hUpdateRgn, DWORD drawFlags)
             {
                 if (!(drawFlags & DRAWFLAG_DIRTY_ONLY) && y < yMax)
                 {
-                    // domazu spodek pod plnym sloupcem
+                    // erase the bottom below a full column
                     r.top = y;
                     r.bottom = yMax;
                     FillRect(HPrivateDC, &r, HNormalBkBrush);
@@ -302,7 +302,7 @@ void CFilesBox::PaintAllItems(HRGN hUpdateRgn, DWORD drawFlags)
 
         if (!(drawFlags & DRAWFLAG_DIRTY_ONLY) && painted && y > r.top && y < FilesRect.bottom)
         {
-            // domazu prostor pod nedokreslenym poslednim sloupcem
+            // erase the area below an incomplete last column
             r.top = y;
             r.bottom = FilesRect.bottom;
             FillRect(HPrivateDC, &r, HNormalBkBrush);
@@ -310,7 +310,7 @@ void CFilesBox::PaintAllItems(HRGN hUpdateRgn, DWORD drawFlags)
         }
         if (!(drawFlags & DRAWFLAG_DIRTY_ONLY) && r.left <= FilesRect.right)
         {
-            // domazu prostor vpravo za poslednim sloupcem
+            // erase the area to the right of the last column
             r.top = FilesRect.top;
             r.right = FilesRect.right;
             r.bottom = FilesRect.bottom;
@@ -326,12 +326,12 @@ void CFilesBox::PaintAllItems(HRGN hUpdateRgn, DWORD drawFlags)
         // vmIcons || vmThumbnails mode
         RECT r;
 
-        // napocitame hranice kresleni
+        // compute the drawing boundaries
         int firstRow = TopIndex / ItemHeight;
         int xMax = FilesRect.right;
         int yMax = FilesRect.bottom;
 
-        // omezime kresleni pouze na oblast zadajici si prekresleni
+        // limit drawing only to the area requesting a repaint
         if (clipRectType == SIMPLEREGION || clipRectType == COMPLEXREGION)
         {
             RECT tmpRect = clipRect;
@@ -340,18 +340,18 @@ void CFilesBox::PaintAllItems(HRGN hUpdateRgn, DWORD drawFlags)
             if (tmpRect.bottom > FilesRect.bottom)
                 tmpRect.bottom = FilesRect.bottom;
 
-            // posuneme horni hranici
+            // shift the top boundary
             firstRow = (TopIndex + tmpRect.top) / ItemHeight;
-            // posuneme pravou hranici
+            // shift the right boundary
             yMax -= FilesRect.bottom - tmpRect.bottom;
         }
 
-        // ridici promenne pro umisteni jednotlivych polozek
+        // control variables for positioning individual items
         int x = FilesRect.left;
         int y = FilesRect.top - TopIndex + firstRow * ItemHeight;
 
-        // budeme kreslit zprava doleva a kdyz narazime na hranici oblasti,
-        // prejdeme dolu na dalsi radek
+        // draw from right to left and when we hit the area boundary,
+        // move down to the next row
         int index2 = firstRow * ColumnsCount;
         while (index2 < ItemsCount && y < yMax)
         {
@@ -359,15 +359,15 @@ void CFilesBox::PaintAllItems(HRGN hUpdateRgn, DWORD drawFlags)
             r.bottom = y + ItemHeight;
             r.left = x;
             r.right = x + ItemWidth;
-            // nakreslim vlastni polozku
+            // draw the actual item
             CIconSizeEnum iconSize = (ViewMode == vmIcons) ? ICONSIZE_32 : ICONSIZE_48;
             if (ViewMode == vmTiles)
                 Parent->DrawTileItem(HPrivateDC, index2, &r, drawFlags, iconSize);
             else
                 Parent->DrawIconThumbnailItem(HPrivateDC, index2, &r, drawFlags, iconSize);
-            // posunem se na dalsi
+            // move to the next one
             x += ItemWidth;
-            // pokud se jedna o posledni polozku na radku, domazu prostor za ni
+            // if this is the last item on the row, clear the space after it
             if (x + ItemWidth > xMax || index2 == ItemsCount - 1)
             {
                 if (!(drawFlags & DRAWFLAG_DIRTY_ONLY) && x < xMax)
@@ -384,7 +384,7 @@ void CFilesBox::PaintAllItems(HRGN hUpdateRgn, DWORD drawFlags)
 
         if (!(drawFlags & DRAWFLAG_DIRTY_ONLY) && !(drawFlags & DRAWFLAG_ICON_ONLY) && y < yMax)
         {
-            // domazu spodek
+            // erase the bottom area
             r.left = FilesRect.left;
             r.right = FilesRect.right;
             r.top = y;
