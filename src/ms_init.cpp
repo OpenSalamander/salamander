@@ -1,17 +1,18 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
 DWORD SalamanderStartTime = 0;
 DWORD SalamanderExceptionTime = 0;
 
-// modul MS_INIT zajistuje volani konstruktoru statickych objektu ve spravnem poradi
-// a na urovni "lib" (pred "user")
+// The MS_INIT module ensures static object constructors are called in the proper order
+// and at the "lib" level (before "user")
 
-// POZOR: sekce jsou zarovnane na 4096 bajtu, coz je velikost o kterou se zvetsi
-// salamande.exe pridanim modulu obsahujici treba jen jedinou promennou DWORD
-// Viz PEViewer na salamand.exe, cas "Section Table".
+// NOTE: sections are aligned to 4096 bytes, which is the amount by which
+// salamande.exe grows when adding a module containing only a single DWORD variable.
+// See PEViewer on salamand.exe, "Section Table" time.
 
 #pragma warning(disable : 4073)
 #pragma init_seg(lib)
