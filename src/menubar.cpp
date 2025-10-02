@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -11,8 +12,8 @@
 // CMenuBar
 //
 
-#define MENUBAR_LR_MARGIN 8 // pocet bodu pred a za textem, vcetne svisle cary
-#define MENUBAR_TB_MARGIN 4 // pocet bodu nad a pod textem, vcetne vodorovne cary
+#define MENUBAR_LR_MARGIN 8 // number of points before and after the text, including the vertical line
+#define MENUBAR_TB_MARGIN 4 // number of points above and below the text, including the horizontal line
 
 CMenuBar::CMenuBar(CMenuPopup* menu, HWND hNotifyWindow, CObjectOrigin origin)
     : CWindow(origin)
@@ -48,7 +49,7 @@ CMenuBar::CMenuBar(CMenuPopup* menu, HWND hNotifyWindow, CObjectOrigin origin)
         UIState = UISF_HIDEACCEL | UISF_HIDEFOCUS;
     ForceAccelVisible = FALSE;
 
-    HCloseEvent = HANDLES(CreateEvent(NULL, TRUE, FALSE, NULL)); // "non-signaled" state, manual
+    HCloseEvent = HANDLES(CreateEvent(NULL, TRUE, FALSE, NULL)); // manual-reset event in the non-signaled state
     SetFont();
 }
 
@@ -163,11 +164,11 @@ void CMenuBar::DrawItem(HDC hDC, int index, int x)
     r.top = 1;
     r.bottom = Height - 1;
 
-    // vypisu text
+    // output the text
     const char* string = item->String;
     int stringLen = item->ColumnL1Len;
 
-    // podmazneme pruh nahore a dole (pro Windows Vista rebar)
+    // fill the stripe above and below (for Windows Vista rebar)
     RECT r2 = r;
     r2.top = 0;
     r2.bottom = 1;
@@ -184,10 +185,10 @@ void CMenuBar::DrawItem(HDC hDC, int index, int x)
     r.left += MENUBAR_LR_MARGIN;
     SetTextColor(hDC, GetSysColor(textColor));
 
-    // POZNAMKA: od Windows Vista MS neco vyprasili v rebar, takze resize okna vede k prekresleni vsech
-    // bandu, v dusledku se prekresluje cele menu a obcas zamrka (na starsich OS se to nedelo, prekreslovalo
-    // se jen to, co bylo potreba); problem by se dal potlacit cachovanim, ale lepsi reseni bude prepsat
-    // rebar a zdrhnout z nefunkcni MS implementace
+    // NOTE: Since Windows Vista Microsoft broke something in the rebar. Resizing
+    // the window leads to redrawing all bands, as a result, the entire menu is redrawn and sometimes flickers
+    // (older OSes only redrew what was needed). The problem could be mitigated by caching, but
+    // a better solution is rewriting the rebar and avoiding the broken MS implementation.
     DWORD dtFlags = DT_LEFT | DT_SINGLELINE | DT_NOCLIP;
     if ((UIState & UISF_HIDEACCEL) && !ForceAccelVisible)
         dtFlags |= DT_HIDEPREFIX;
@@ -233,7 +234,7 @@ void CMenuBar::DrawAllItems(HDC hDC)
     SetBkMode(hDC, oldBkMode);
     SelectObject(hDC, hOldFont);
 
-    // domazu zbytek
+    // erase the remaining area
     RECT r;
     GetClientRect(HWindow, &r);
     r.left = x;
@@ -287,10 +288,10 @@ BOOL CMenuBar::HitTest(int xPos, int yPos, int& index)
 void CMenuBar::EnterMenu()
 {
     CALL_STACK_MESSAGE1("CMenuBar::EnterMenu()");
-    //  testovaci padacka, lze ji vyvolat stiskem klavesy Alt
+    //  test crash, it can be triggered by pressing the Alt key
     //  int a = 0;
     //  printf("%d", 5 / a);
-    EnterMenuInternal(-1, FALSE, FALSE); // user stisknul VK_MENU
+    EnterMenuInternal(-1, FALSE, FALSE); // user pressed VK_MENU
 }
 
 void CMenuBar::EnterMenuInternal(int index, BOOL openWidthSelect, BOOL byMouse)
@@ -308,12 +309,12 @@ void CMenuBar::EnterMenuInternal(int index, BOOL openWidthSelect, BOOL byMouse)
     ResetEvent(HCloseEvent);
     RetValue = 0;
     BOOL leaveLoop = FALSE;
-    ExitMenuLoop = FALSE; // bude nastaven externe z TrackPopup
+    ExitMenuLoop = FALSE; // will be set externally from TrackPopup
     DispatchDelayedMsg = FALSE;
 
-    // zahakujeme tento thread
+    // hook this thread
     HHOOK hOldHookProc = OldMenuHookTlsAllocator.HookThread();
-    // pridame se do monitoringu zaviracich zprav
+    // add ourselves to the monitoring of closing messages
     MenuWindowQueue.Add(HWindow);
 
     if (GetCapture() != NULL)
@@ -342,7 +343,7 @@ void CMenuBar::EnterMenuInternal(int index, BOOL openWidthSelect, BOOL byMouse)
             DrawItem(HotIndex);
         }
         //    TRACE_I("XXX TrackHotIndex();");
-        TrackHotIndex(); // vybalene menu si veme capture
+        TrackHotIndex(); // the expanded menu will take capture
         if (ExitMenuLoop)
             leaveLoop = TRUE;
     }
@@ -375,7 +376,7 @@ void CMenuBar::EnterMenuInternal(int index, BOOL openWidthSelect, BOOL byMouse)
                     {
                         if (index != HotIndex)
                         {
-                            // smazu aktualni polozku
+                            // remove the current item
                             int oldHotIndex = HotIndex;
                             HotIndex = index;
                             DrawItem(oldHotIndex);
@@ -395,11 +396,11 @@ void CMenuBar::EnterMenuInternal(int index, BOOL openWidthSelect, BOOL byMouse)
             case WM_KEYDOWN:
             {
                 BOOL shiftPressed = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
-                if (msg.wParam == VK_MENU && (msg.lParam & 0x40000000) == 0 || // Alt down, ale ne autorepeat
+                if (msg.wParam == VK_MENU && (msg.lParam & 0x40000000) == 0 || // Alt down, but not an autorepeat
                     (!shiftPressed && msg.wParam == VK_F10))
                 {
                     leaveLoop = TRUE;
-                    break; // nechame zpravu dorucit, aby po prichodu Up nedoslo ke vstupu do systmoveho menu
+                    break; // let the message be delivered, so that on receiving Up, we don’t enter the system menu
                 }
 
                 switch (msg.wParam)
@@ -413,7 +414,7 @@ void CMenuBar::EnterMenuInternal(int index, BOOL openWidthSelect, BOOL byMouse)
                 case VK_LEFT:
                 case VK_RIGHT:
                 {
-                    // cyklicke posuvani HotIndex polozky
+                    // cyclically move the HotIndex item
                     int newHotIndex = HotIndex;
                     if (newHotIndex == -1)
                         newHotIndex = 0;
@@ -443,10 +444,10 @@ void CMenuBar::EnterMenuInternal(int index, BOOL openWidthSelect, BOOL byMouse)
                 case VK_DOWN:
                 case VK_RETURN:
                 {
-                    // vybalime menu
+                    // expand the menu
                     if (HotIndex != -1)
                     {
-                        OpenWithSelect = TRUE; // chceme vybrat polozku
+                        OpenWithSelect = TRUE; // we want to select the item
                         OpenByMouse = FALSE;
                         TrackHotIndex();
                         if (ExitMenuLoop)
@@ -454,9 +455,9 @@ void CMenuBar::EnterMenuInternal(int index, BOOL openWidthSelect, BOOL byMouse)
                     }
                 }
                 }
-                msg.hwnd = HWindow; // presmerujeme na nas (aby nedoslo k uniku klaves ven)
-                // patch: nesmime nechat neagenerovat WM_CHAR, ktery by propadnul do majitele
-                // menu a zpusobil pipnuti (Find dialog)
+                msg.hwnd = HWindow; // redirect to us (so keystrokes do not leak out)
+                // patch: we must not let WM_CHAR to be generated which would reach the menu owner
+                // and cause a beep (Find dialog)
                 if (msg.message != WM_KEYDOWN || msg.wParam != VK_ESCAPE)
                     TranslateMessage(&msg);
                 continue;
@@ -484,12 +485,12 @@ void CMenuBar::EnterMenuInternal(int index, BOOL openWidthSelect, BOOL byMouse)
                     {
                         if (index2 != HotIndex)
                         {
-                            // smazu aktualni polozku
+                            // remove the current item
                             int oldHotIndex = HotIndex;
                             HotIndex = index2;
                             DrawItem(oldHotIndex);
                         }
-                        OpenWithSelect = FALSE; // jsem vyvolani z kliknuti mysi - nevybereme prvni polozku
+                        OpenWithSelect = FALSE; // invoked by mouse click - do not select the first item
                         OpenByMouse = TRUE;
                         TrackHotIndex();
                         if (ExitMenuLoop)
@@ -523,7 +524,7 @@ void CMenuBar::EnterMenuInternal(int index, BOOL openWidthSelect, BOOL byMouse)
         }
         else
         {
-            // zadna zprava neni v queue - budeme cekat, dokud nejaka nedorazi
+            // no message is in the queue - wait until one arrives
             DWORD ret = MsgWaitForMultipleObjects(1, &HCloseEvent, FALSE, INFINITE, QS_ALLINPUT);
             if (ret == 0xFFFFFFFF)
                 TRACE_E("MsgWaitForMultipleObjects failed");
@@ -545,7 +546,7 @@ void CMenuBar::EnterMenuInternal(int index, BOOL openWidthSelect, BOOL byMouse)
         DrawItem(oldHotIndex);
     }
 
-    // mame skryt akceleratory?
+    // should we hide accelerators?
     if (ForceAccelVisible)
     {
         ForceAccelVisible = FALSE;
@@ -553,9 +554,9 @@ void CMenuBar::EnterMenuInternal(int index, BOOL openWidthSelect, BOOL byMouse)
         UpdateWindow(HWindow);
     }
 
-    // vyhodime se z monitoringu zaviracich zprav
+    // remove ourselves from monitoring closing messages
     MenuWindowQueue.Remove(HWindow);
-    // pokud jsme hookovali, budeme take uvolnovat
+    // if we hooked, we will also unhook
     if (hOldHookProc != NULL)
         OldMenuHookTlsAllocator.UnhookThread(hOldHookProc);
 
@@ -566,31 +567,31 @@ void CMenuBar::EnterMenuInternal(int index, BOOL openWidthSelect, BOOL byMouse)
 
     SendMessage(HNotifyWindow, WM_USER_LEAVEMENULOOP, 0, 0);
 
-    // prichazi dorucovani vysledku - stejna vec se resi v CMenuPopup::Track
+    // result delivery is incoming - the same thing is handled in CMenuPopup::Track
 
-    // simulujeme pohyb mysi, aby si ji ostatni mohli zachytit
+    // simulate mouse movement so other windows can capture it
     POINT cursorPos;
     GetCursorPos(&cursorPos);
     HWND hWndUnderCursor = WindowFromPoint(cursorPos);
     if (hWndUnderCursor != NULL)
     {
         ScreenToClient(hWndUnderCursor, &cursorPos);
-        // j.r. do RC1 zde bylo SendMessage, ale zlobilo to s EroiicaViewer
-        // pokud uzivatel zobrazil PDF, postavil kurzor nad okno vieweru/salamandera
-        // a pomoci Alt+Tab, Alt+Tab prepinal mezi oknama EV/SS, okno EV se obcas na 2s
-        // odmlcelo nez se vykreslil jeho obsah.
-        // Zkusime prejit na PostMessage, zda se, ze funkcionalita je stejna.
+        // j.r. until RC1 SendMessage was used here but it misbehaved with EroiicaViewer
+        // if the user displayed a PDF and placed the cursor over the viewer/salamander window
+        // and switched between EV/SS windows using Alt+Tab, the EV window sometimes paused for 2s
+        // before its content was drawn.
+        // Let's try switching to PostMessage; the functionality seems the same.
         PostMessage(hWndUnderCursor, WM_MOUSEMOVE, 0, MAKELPARAM(cursorPos.x, cursorPos.y));
     }
 
-    // dorucime opozdenou message
+    // we willdeliver the delayed message
     if (DispatchDelayedMsg)
     {
         TranslateMessage(&DelayedMsg);
         PostMessage(DelayedMsg.hwnd, DelayedMsg.message, DelayedMsg.wParam, DelayedMsg.lParam);
     }
 
-    // vratime command
+    // return the command
     if (RetValue != 0)
         PostMessage(HNotifyWindow, WM_COMMAND, RetValue, 0);
 
@@ -613,7 +614,7 @@ void CMenuBar::TrackHotIndex()
 
         //    DrawItem(HotIndex);
 
-        IndexToOpen = -1; // bude nastavena v TrackInternal
+        IndexToOpen = -1; // will be set in TrackInternal
         DWORD trackFlags = MENU_TRACK_VERTICAL;
         if (OpenWithSelect)
         {
@@ -631,7 +632,7 @@ void CMenuBar::TrackHotIndex()
         RetValue = popup->TrackInternal(trackFlags, itemRect.left, itemRect.bottom, HNotifyWindow,
                                         &itemRect, this, DelayedMsg, DispatchDelayedMsg);
 
-        // ulozime si pozici mysi (pokud je nad nama)
+        // store the mouse position (if it is over us)
         POINT cursorPos;
         GetCursorPos(&cursorPos);
         HWND hWndUnderCursor = WindowFromPoint(cursorPos);
@@ -652,7 +653,7 @@ void CMenuBar::TrackHotIndex()
     } while (IndexToOpen != -1);
     int oldHotIndex = HotIndex;
     if (!MenuLoop)
-        HotIndex = -1; // uplne rusime hot item
+        HotIndex = -1; // completely clear the hot item
     //  DrawItem(oldHotIndex);
     //  TRACE_I("CMenuBar::TrackHotIndex end");
 }
@@ -700,10 +701,10 @@ BOOL CMenuBar::IsMenuBarMessage(CONST MSG* lpMsg)
         LPARAM wParam = lpMsg->wParam;
         if (wParam == VK_MENU)
         {
-            if ((lpMsg->lParam & 0x40000000) == 0) // pokud nejde o auto repeat
+            if ((lpMsg->lParam & 0x40000000) == 0) // if this is not an auto repeat
             {
                 HandlingVK_MENU = TRUE;
-                // zjistime, zda nemame zobrazit akceleratory
+                // check whether to show accelerators
                 if (UIState & UISF_HIDEACCEL)
                 {
                     ForceAccelVisible = TRUE;
@@ -714,7 +715,7 @@ BOOL CMenuBar::IsMenuBarMessage(CONST MSG* lpMsg)
         }
         else
         {
-            WheelDuringMenu = FALSE; // pokud user zatocil koleckem a nasledne napsal cislo (Alt+numXXX), budeme toceni ignorovat
+            WheelDuringMenu = FALSE; // if the user scrolled the wheel and then typed a number (Alt+numXXX), we will ignore the scrolling
             HandlingVK_MENU = FALSE;
         }
         if (wParam == VK_F10)
@@ -724,7 +725,7 @@ BOOL CMenuBar::IsMenuBarMessage(CONST MSG* lpMsg)
             BOOL ctrlPressed = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
             if (!shiftPressed && !altPressed && !ctrlPressed)
             {
-                // zjistime, zda nemame zobrazit akceleratory
+                // check whether to show accelerators
                 if (UIState & UISF_HIDEACCEL)
                 {
                     ForceAccelVisible = TRUE;
@@ -753,10 +754,10 @@ BOOL CMenuBar::IsMenuBarMessage(CONST MSG* lpMsg)
             if (WheelDuringMenu)
             {
                 WheelDuringMenu = FALSE;
-                return TRUE; // pusteni altu po Alt+Wheel zatlucu, jinak dojde do vstupu do windowmenu (bez jeho zobrazeni)
+                return TRUE; // suppress releasing Alt after Alt+Wheel, otherwise the window menu opens (without being shown)
             }
-            // pokud uzivatel netocil koleckem, nesmime zpravu zpracovat, protoze prestane fungovat
-            // Alt+num064 (atd) pro vkladani znaku
+            // if the user did not use the wheel, we must not process the message
+            // Alt+num064 (etc.) is used for inserting characters
         }
         else
         {
@@ -774,8 +775,8 @@ BOOL CMenuBar::IsMenuBarMessage(CONST MSG* lpMsg)
         {
             if ((UIState & UISF_HIDEACCEL) && !ForceAccelVisible)
             {
-                // pokud byl menubar aktivovan mysi, nyni je cas nastavit ForceAccelVisible, aby se
-                // podtrzeni napropagovalo do oteviranych submenu
+                // if the menu bar was activated by the mouse, now is the time to set ForceAccelVisible so
+                // the underline propagates to opened submenus
                 ForceAccelVisible = TRUE;
                 InvalidateRect(HWindow, NULL, FALSE);
                 UpdateWindow(HWindow);
@@ -818,14 +819,14 @@ CMenuBar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         //      TRACE_I("WM_USER_CLOSEMENU");
         Closing = TRUE;
         if (HotIndex != -1)
-            DrawItem(HotIndex); // odmacknu HotIndex (Closing == TRUE)
-        SetEvent(HCloseEvent);  // nechame rozjet message queue
+            DrawItem(HotIndex); // remove HotIndex highlight (Closing == TRUE)
+        SetEvent(HCloseEvent);  // let the message queue run
         return 0;
     }
 
     case WM_ERASEBKGND:
     {
-        if (WindowsVistaAndLater) // pod vistou blika rebar
+        if (WindowsVistaAndLater) // under Vista the rebar flickers
             return TRUE;
         RECT r;
         GetClientRect(HWindow, &r);
@@ -844,13 +845,13 @@ CMenuBar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_UPDATEUISTATE:
     {
-        // posilame si same z mainwindow
+        // we send it to ourselves from the main window
         if (LOWORD(wParam) == UIS_CLEAR)
             UIState &= ~HIWORD(wParam);
         else if (LOWORD(wParam) == UIS_SET)
             UIState |= HIWORD(wParam);
 
-        InvalidateRect(HWindow, NULL, FALSE); // jedeme pres cache bitmap, takze neblikneme
+        InvalidateRect(HWindow, NULL, FALSE); // using cached bitmap so it does not flicker
         UpdateWindow(HWindow);
         return 0;
     }
@@ -894,7 +895,7 @@ CMenuBar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         int yPos = (short)HIWORD(lParam);
         if (MenuLoop)
         {
-            // zamezuje konfliktum pohybu kurzoru a stisku Left/Right
+            // prevents conflicts between cursor movement and Left/Right clicks
             if (LastMouseMove.x == xPos && LastMouseMove.y == yPos)
                 break;
         }
@@ -907,7 +908,7 @@ CMenuBar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             int newHotIndex = HotIndex;
             if (hitItem)
             {
-                if (!HelpMode2 && !MenuLoop && !MouseIsTracked) // pouze v track-mode potrebujeme capture
+                if (!HelpMode2 && !MenuLoop && !MouseIsTracked) // capture is needed only in the track mode
                 {
                     TRACKMOUSEEVENT tme;
                     tme.cbSize = sizeof(tme);
@@ -920,7 +921,7 @@ CMenuBar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             else
             {
-                if (!MenuLoop) // pokud jsme v MenuLoop, nechame svitit posledni vybranou polozku
+                if (!MenuLoop) // if we are in MenuLoop, keep the last selected item highlighted
                 {
                     newHotIndex = -1;
                     if (MouseIsTracked)
@@ -951,8 +952,8 @@ CMenuBar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         int yPos = (short)HIWORD(lParam);
         int index;
         BOOL hitItem = HitTest(xPos, yPos, index);
-        // Pokud je otevrene windows popup menu a klikneme do toolbary, prijde rovnou
-        // WM_LBUTTONDOWN takze HotIndex == -1, proto vyrazuji podminku index == HotIndex.
+        // If a Windows popup menu is open and we click the toolbar, WM_LBUTTONDOWN arrives immediately
+        // so HotIndex == -1, therefore the condition index == HotIndex is removed.
         if (hitItem && /*index == HotIndex && */ !HotIndexIsTracked)
             EnterMenuInternal(index, FALSE, TRUE);
         break;
