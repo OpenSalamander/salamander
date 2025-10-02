@@ -13,11 +13,11 @@ class CFilesBox;
 
 enum CViewModeEnum
 {
-    vmBrief,      // nekolik sloupcu dat; pouze vodorovne rolovatko; spodni polozky jsou vzdy cele viditelne
-    vmDetailed,   // jeden sloupec dat; zobrzene obe rolovatka; posledni radek nemusi byt cely viditelny
-    vmIcons,      // velke ikony zleva doprava a pak shora dolu; pouze svisle rolovatko
-    vmThumbnails, // nahledy zleva doprava a pak shora dolu; pouze svisle rolovatko
-    vmTiles       // velke (48x48) ikony zleva doprava a pak shora dolu; pouze svisle rolovatko
+    vmBrief,      // several columns of data; horizontal scrollbar only; bottom items are always fully visible
+    vmDetailed,   // single column of data; both scrollbars shown; last row may be partially visible
+    vmIcons,      // large icons left-to-right then top-to-bottom; vertical scrollbar only
+    vmThumbnails, // thumbnails left-to-right then top-to-bottom; vertical scrollbar only
+    vmTiles       // large (48x48) icons left-to-right then top-to-bottom; vertical scrollbar only
 };
 
 //****************************************************************************
@@ -25,13 +25,13 @@ enum CViewModeEnum
 // CBottomBar
 //
 
-// drzi scrollbaru a obdelnicek za ni
+// holds the scrollbar and the rectangle behind it
 class CBottomBar : public CWindow
 {
 protected:
     HWND HScrollBar;
-    BOOL VertScrollSpace;   // drzet prostor pro svisle roovatko
-    CFilesBox* RelayWindow; // pro predavani messages
+    BOOL VertScrollSpace;   // reserve space for the vertical scrollbar
+    CFilesBox* RelayWindow; // used to relay messages
 
 public:
     CBottomBar();
@@ -40,7 +40,7 @@ public:
 protected:
     virtual LRESULT WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-    void LayoutChilds(); // napocita rozmery obdelniku a rozmisti child okna
+    void LayoutChilds(); // computes rectangles and positions child windows
 
     friend class CFilesBox;
 };
