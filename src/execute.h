@@ -125,98 +125,98 @@ struct CUserMenuAdvancedData // additional data used only for the User Menu: arr
 // Custom functions
 //
 
-// vybali Popupmenu s prislusnym seznamem a po zvoleni polozy vlozi text do editlajny
-// hParent:          dialog, ve kterem je editlajna/combobx a browse tlacitko
-// buttonResID:      id browse tlacitka
-// editlineResID:    id editlajny/comboboxu
-// combobox:         pokud je TRUE, editlineResID identifikuje editlajnu; jinak combobox
-//                   pokud je TRUE, k editlineResID by mel byt pripojeny control CComboboxEdit
-// executeItems:     pole, ze ktereho je naplneno menu
-// filterResID:      text do browse okna otevreneho ve specialnim pripade z menu
-// replaceWholeText: pokud je TRUE, cely obsah editlineResID bude zmenen; jinak
-//                   se nahradi pouze selection
+// Displays a popup menu with the supplied list and after selecting an item inserts text into the edit line.
+// hParent:          dialog containing the edit line or combobox and the Browse button
+// buttonResID:      ID of the Browse button
+// editlineResID:    ID of the edit line or combobox
+// combobox:         when TRUE, editlineResID identifies an edit line; otherwise it identifies a combobox
+//                   when TRUE, attaches the CComboboxEdit control to the editlineResID
+// executeItems:     array used to fill the menu
+// filterResID:      text for the browse window opened in a special case from the menu
+// replaceWholeText: when TRUE, replace the entire contents of the edit line; otherwise
+//                   replace only the selection
 const CExecuteItem* TrackExecuteMenu(HWND hParent, int buttonResID, int editlineResID,
                                      BOOL combobox, CExecuteItem* executeItems, int filterResID = 0);
 
-// vybali FileOpen dialog pro *.exe
-// vybrany soubor vlozi do editliny
-// vraci TRUE, pokud user vybral soubor; jinak vraci FALSE
+// Opens a FileOpen dialog for *.exe
+// Inserts the selected file into the edit line
+// Returns TRUE if the user chose a file; otherwise FALSE
 BOOL BrowseCommand(HWND hParent, int editlineResID, int filterResID);
 
-// kontroluje varText obsahujici promenne z pole UserMenuArgsExecutes
-// msgParent - parent message-boxu s chybou, je-li NULL, chyby se nevypisuji
+// validates varText containing variables from the UserMenuArgsExecutes array
+// msgParent - parent message box for errors; if NULL, errors are not shown
 BOOL ValidateUserMenuArguments(HWND msgParent, const char* varText, int& errorPos1, int& errorPos2,
                                CUserMenuValidationData* userMenuValidationData);
 
-// expanduje varText obsahujici promenne z pole UserMenuArgsExecutes, vysledek ulozi do bufferu
-// msgParent - parent message-boxu s chybou, je-li NULL, chyby se nevypisuji; neni-li
-// 'fileNameUsed' NULL, prirazuje se do nej TRUE pokud se pouzije cesta nebo jmeno souboru
+// Expands varText containing variables from UserMenuArgsExecutes and stores the result in buffer
+// msgParent - parent message box for errors; if NULL, errors are not shown
+// if 'fileNameUsed' is not NULL it is set to TRUE when a path or file name is used
 BOOL ExpandUserMenuArguments(HWND msgParent, const char* name, const char* dosName, const char* varText,
                              char* buffer, int bufferLen, BOOL* fileNameUsed,
                              CUserMenuAdvancedData* userMenuAdvancedData,
                              BOOL ignoreEnvVarNotFoundOrTooLong);
 
-// kontroluje varText obsahujici promenne z pole Command
-// msgParent - parent message-boxu s chybou, je-li NULL, chyby se nevypisuji
+// validates varText containing variables from the Command array
+// msgParent - parent of the message box for errors; if NULL, errors are not shown
 BOOL ValidateCommandFile(HWND msgParent, const char* varText, int& errorPos1, int& errorPos2);
 
-// kontroluje varText obsahujici promenne z pole HotPath
-// msgParent - parent message-boxu s chybou, je-li NULL, chyby se nevypisuji
+// validates varText containing variables from the HotPath array
+// msgParent - parent of the message box for errors; if NULL, errors are not shown
 BOOL ValidateHotPath(HWND msgParent, const char* varText, int& errorPos1, int& errorPos2);
 
-// kontroluje varText obsahujici promenne z pole ArgumentsExecutes
-// msgParent - parent message-boxu s chybou, je-li NULL, chyby se nevypisuji
+// validates varText containing variables from the ArgumentsExecutes array
+// msgParent - parent of the message box for errors; if NULL, errors are not shown
 BOOL ValidateArguments(HWND msgParent, const char* varText, int& errorPos1, int& errorPos2);
 
-// expanduje varText obsahujici promenne z pole ArgumentsExecutes, vysledek ulozi do bufferu
-// msgParent - parent message-boxu s chybou, je-li NULL, chyby se nevypisuji; neni-li
-// 'fileNameUsed' NULL, prirazuje se do nej TRUE pokud se pouzije cesta nebo jmeno souboru
+// expands varText containing variables from the ArgumentsExecutes array and stores the result in buffer
+// msgParent - parent of the message box for errors; if NULL, errors are not shown
+// if 'fileNameUsed' is not NULL it is set to TRUE when a path or file name is used
 BOOL ExpandArguments(HWND msgParent, const char* name, const char* dosName, const char* varText,
                      char* buffer, int bufferLen, BOOL* fileNameUsed);
 
-// kontroluje varText obsahujici promenne z pole InfoLineContentItems
-// msgParent - parent message-boxu s chybou, je-li NULL, chyby se nevypisuji
+// validates varText containing variables from the InfoLineContentItems array
+// msgParent - parent of the message box for errors; if NULL, errors are not shown
 BOOL ValidateInfoLineItems(HWND msgParent, const char* varText, int& errorPos1, int& errorPos2);
 
-// expanduje varText obsahujici promenne z pole InfoLineContentItems, vysledek ulozi do bufferu
-// msgParent - parent message-boxu s chybou, je-li NULL, chyby se nevypisuji
-// varPlacements: pole o [varPlacementsCount] polozkach, bude naplneno pozicema promennych
-//                ve vystupnim bufferu (LOWORD) a jejim poctu znaku (HIWORD)
+// expands varText containing variables from the InfoLineContentItems array and stores the result in buffer
+// msgParent - parent of the message box for errors; if NULL, errors are not shown
+// varPlacements: array with [varPlacementsCount] items; filled with positions of variables
+//                in the output buffer (LOWORD) and their lengths (HIWORD)
 
 BOOL ExpandInfoLineItems(HWND msgParent, const char* varText, CPluginDataInterfaceEncapsulation* pluginData,
                          CFileData* fData, BOOL isDir, char* buffer, int bufferLen, DWORD* varPlacements,
                          int* varPlacementsCount, DWORD validFileData, BOOL isDisk);
 
-// kontroluje varText obsahujici promenne z pole MakeFileListItems
-// msgParent - parent message-boxu s chybou, je-li NULL, chyby se nevypisuji
+// validates varText containing variables from the MakeFileListItems array
+// msgParent - parent of themessage box for errors; if NULL, errors are not shown
 BOOL ValidateMakeFileList(HWND msgParent, const char* varText, int& errorPos1, int& errorPos2);
 
-// expanduje varText obsahujici promenne z pole MakeFileListItems, vysledek ulozi do bufferu
-// msgParent - parent message-boxu s chybou, je-li NULL, chyby se nevypisuji
-// maxVarSizes: pole o [maxVarSizesCount] polozkach, pokud odpovidajici pormenna bude mit
-//              modifikator ":max" a zaroven jeji delka bude vetsi nez polozka v poli,
-//              bude do pole prirazena delka;
-//              pokud bude detectMaxVarSizes==TRUE, pouzije se maximalni delka pro format sloupce
+// expands varText containing variables from MakeFileListItems and stores the result in buffer
+// msgParent - parent of the message box for errors; if NULL, errors are not shown
+// maxVarSizes: array with [maxVarSizesCount] items. If the corresponding variable
+//              uses the ":max" modifier and its length exceeds the array item,
+//              the array is updated with that length.
+//              When detectMaxVarSizes == TRUE, the maximum length is used for column formatting
 BOOL ExpandMakeFileList(HWND msgParent, const char* varText, CPluginDataInterfaceEncapsulation* pluginData,
                         CFileData* fData, BOOL isDir, char* buffer, int bufferLen, BOOL detectMaxVarSizes,
                         int* maxVarSizes, int maxVarSizesCount, DWORD validFileData, const char* path,
                         BOOL ignoreEnvVarNotFoundOrTooLong);
 
-// kontroluje varText obsahujici promenne z pole InitDirExecutes
-// msgParent - parent message-boxu s chybou, je-li NULL, chyby se nevypisuji
+// validates varText containing variables from the InitDirExecutes array
+// msgParent - parent message box for errors; if NULL, errors are not shown
 BOOL ValidateInitDir(HWND msgParent, const char* varText, int& errorPos1, int& errorPos2);
 
-// expanduje varText obsahujici promenne z pole InitDirExecutes, vysledek ulozi do bufferu
-// msgParent - parent message-boxu s chybou, je-li NULL, chyby se nevypisuji
+// expands varText containing variables from the InitDirExecutes array and stores the result in buffer
+// msgParent - parent of the message box for errors; if NULL, errors are not shown
 BOOL ExpandInitDir(HWND msgParent, const char* name, const char* dosName, const char* varText,
                    char* buffer, int bufferLen, BOOL ignoreEnvVarNotFoundOrTooLong);
 
-// expanduje varText obsahujici environment promenne , vysledek ulozi do bufferu
-// msgParent - parent message-boxu s chybou, je-li NULL, chyby se nevypisuji
+// Expands varText containing environment variables and stores the result in buffer
+// msgParent - parent of the message box for errors; if NULL, errors are not shown
 BOOL ExpandCommand(HWND msgParent, const char* varText, char* buffer, int bufferLen,
                    BOOL ignoreEnvVarNotFoundOrTooLong);
 
-// expanduje varText obsahujici environment promenne, vysledek ulozi do bufferu
-// msgParent - parent message-boxu s chybou, je-li NULL, chyby se nevypisuji
+// Expands varText containing environment variables and stores the result in buffer
+// msgParent - parent of the message box for errors; if NULL, errors are not shown
 BOOL ExpandHotPath(HWND msgParent, const char* varText, char* buffer, int bufferLen,
                    BOOL ignoreEnvVarNotFoundOrTooLong);
