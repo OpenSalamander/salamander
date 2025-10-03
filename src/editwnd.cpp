@@ -717,10 +717,10 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             if (wParam == VK_UP || wParam == VK_DOWN)
             {
-                // Alt - necham vybalit listbox
+                // Alt - let the listbox pop up
                 if (!controlPressed && altPressed && !shiftPressed)
                     break;
-                // Control - necham rolovat bez vybaleni listboxu
+                // Control - scroll without popping up the listbox
                 if (controlPressed && !altPressed && !shiftPressed)
                     break;
             }
@@ -738,20 +738,20 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     index--;
                 if (MainWindow->GetActivePanel()->IsViewTemplateValid(index))
                     MainWindow->GetActivePanel()->SelectViewTemplate(index, TRUE, FALSE);
-                SkipNextSysCharacter = TRUE; // zamezime pipnuti
+                SkipNextSysCharacter = TRUE; // prevent a beep
                 return TRUE;
             }
         }
 
         if (controlPressed && !shiftPressed && !altPressed)
         {
-            // od Windows Vista uz SelectAll standardne funguje, takze tam nechame select all na nich
+            // starting with Windows Vista, SelectAll works natively, so we leave it to them
             if (!WindowsVistaAndLater)
             {
                 if (wParam == 'A')
                 {
                     SendMessage(HWindow, EM_SETSEL, 0, -1);
-                    SkipCharacter = TRUE; // zamezime pipnuti
+                    SkipCharacter = TRUE; // prevent a beep
                     return TRUE;
                 }
             }
@@ -790,8 +790,8 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             // panel". I am not interested in this special Alt-Ctrl-functionality in
             // Salamander, I am definitely more interested in being able to type the
             // mentioned characters on the command line.
-            if ((controlPressed && !shiftPressed && !altPressed) /* || // Shift+cisla z edit-line nepujde (je potreba psat '*' a dalsi)
-            (Configuration.ShiftForHotPaths && !controlPressed && shiftPressed)*/
+            if ((controlPressed && !shiftPressed && !altPressed) /* || // Shift+number from the edit line won't work (you need to type '*' and others)
+            (Configuration.ShiftForHotPaths && !controlPressed && shiftPressed) */
             )
             {
                 MainWindow->GetActivePanel()->GotoHotPath((char)wParam == '0' ? 9 : (char)wParam - '1');
@@ -856,7 +856,7 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
         case VK_RETURN:
         {
-            if (controlPressed && !altPressed) // filename vybranyho souboru do cmd-liny
+            if (controlPressed && !altPressed) // filename of the selected file to the command line
             {
                 SkipCharacter = TRUE;
                 char path[MAX_PATH + 1];
@@ -867,7 +867,7 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     p->FocusedIndex < p->Files->Count + p->Dirs->Count)
                 {
                     CFileData* file = (p->FocusedIndex < p->Dirs->Count) ? &p->Dirs->At(p->FocusedIndex) : &p->Files->At(p->FocusedIndex - p->Dirs->Count);
-                    if (shiftPressed) // dos-jmeno
+                    if (shiftPressed) // DOS name
                     {
                         s = (file->DosName == NULL) ? file->Name : file->DosName;
                     }
@@ -942,7 +942,7 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 if (wParam == VK_ESCAPE)
                 {
-                    // lide chteji kompatibilitu s WinCmd, NC, FAR -- mazani obsahu na Escape
+                    // people want compatibility with WinCmd, NC, FAR -- delete the contents on Escape
                     SetWindowText(HWindow, "");
                 }
                 SkipCharacter = TRUE;
@@ -975,7 +975,7 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 if (s != NULL)
                 {
-                    if (shiftPressed) // dos-cesta
+                    if (shiftPressed) // DOS path
                     {
                         if (!GetShortPathName(s, path, MAX_PATH))
                         {
@@ -1006,7 +1006,7 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         }
 
-        // dame prilezitost pluginum (to same delame v panelech)
+        // give plugins a chance (we do the same in the panels)
         if (Plugins.HandleKeyDown(wParam, lParam, MainWindow->GetActivePanel(), MainWindow->HWindow))
         {
             return 0;
@@ -1021,11 +1021,11 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 class CEditDropTarget : public IDropTarget
 {
 private:
-    long RefCount;                    // zivotnost objektu
-    IDataObject* DataObject;          // IDataObject, ktery vstoupil do dragu
-    IDataObject* ForbiddenDataObject; // IDataObject, ktery nebereme (jsme jeho zdrojem)
-    BOOL UseUnicode;                  // je v DataObject unicode text? (jinak zkusime ANSI text)
-    CEditLine* EditLine;              // editlajna, nad kterou fachame
+    long RefCount;                    // object lifetime
+    IDataObject* DataObject;          // IDataObject that entered the drag
+    IDataObject* ForbiddenDataObject; // IDataObject we ignore (we are its source)
+    BOOL UseUnicode;                  // is Unicode text in DataObject? (otherwise we try ANSI text)
+    CEditLine* EditLine;              // edit line we operate on
     int EditWidth;
     int EditHeight;
     char* TextBuff;
@@ -1077,9 +1077,9 @@ public:
             if (ImageDragging)
                 ImageDragShow(FALSE);
             if (OldIsertMarkX != -1)
-                DrawInsertMark(OldIsertMarkX); // zhasnu
+                DrawInsertMark(OldIsertMarkX); // erase
             if (x != -1)
-                DrawInsertMark(x); // rozsvitim
+                DrawInsertMark(x); // draw
             OldIsertMarkX = x;
             if (ImageDragging)
                 ImageDragShow(TRUE);
