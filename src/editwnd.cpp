@@ -1094,7 +1094,7 @@ public:
         ScreenToClient(EditLine->HWindow, &p);
         if (TextBuff != NULL && p.x >= 0 && p.x <= EditWidth && p.y >= 0 && p.y <= EditHeight)
         {
-            // vyprasene message EM_POSFROMCHAR - musim ji obejit
+            // the EM_POSFROMCHAR message is unreliable - work around it
             LRESULT pos = SendMessage(EditLine->HWindow, EM_CHARFROMPOS, 0, MAKELPARAM(p.x, p.y));
             int myPos = *xPos = LOWORD(pos);
             BOOL byPass = FALSE;
@@ -1138,7 +1138,7 @@ public:
             char* start = buff;
             if ((GetKeyState(VK_MENU) & 0x8000) != 0)
             {
-                // nechceme celou cestu - ocesu to
+                // we do not want the whole path - trim it
                 int len = lstrlen(buff);
                 if (len > 2)
                 {
@@ -1171,7 +1171,7 @@ public:
         ForbiddenDataObject = forbiddenDataObject;
     }
 
-    // vrati adresar / soubor (musi byt prave jeden)
+    // returns a directory or a file (there must be exactly one)
     BOOL GetNameFromDataObject(IDataObject* pDataObject, char* path)
     {
         FORMATETC formatEtc;
@@ -1255,7 +1255,7 @@ public:
             }
             ReleaseStgMedium(&stgMedium);
         }
-        /* vyrazena zbytecne prisna kontrola - neslo dropnout pagefile.sys
+        /* removed overly strict check - dropping pagefile.sys failed
       if (ret && path != NULL)
       {
         DWORD attrs = SalGetFileAttributes(path);
@@ -1290,7 +1290,7 @@ public:
         if (--RefCount == 0)
         {
             delete this;
-            return 0; // nesmime sahnout do objektu, uz neexistuje
+            return 0; // must not touch the object, it no longer exists
         }
         return RefCount;
     }
@@ -1308,7 +1308,7 @@ public:
 
         SetInsertMark(-1);
 
-        // pokud je nas panel zaroven zdrojem, zakazu paste
+        // if our panel is also the source, disable paste
         if (DataObject == ForbiddenDataObject)
         {
             *pdwEffect = DROPEFFECT_NONE;
@@ -1332,7 +1332,7 @@ public:
         else
             TextLen = 0;
 
-        // zjistime jestli je na clipboardu text
+        // check whether there is text on the clipboard
         FORMATETC formatEtc;
         ZeroMemory(&formatEtc, sizeof(formatEtc));
         formatEtc.cfFormat = CF_UNICODETEXT;
@@ -1363,13 +1363,13 @@ public:
             ImageDragMove(pt.x, pt.y);
         if (DataObject != NULL)
         {
-            // pokud je nas panel zaroven zdrojem, zakazu paste
+            // if our panel is also the source, disable paste
             if (DataObject == ForbiddenDataObject)
             {
                 *pdwEffect = DROPEFFECT_NONE;
                 return S_OK;
             }
-            // zjistime jestli je na clipboardu text
+            // check whether there is text on the clipboard
             FORMATETC formatEtc;
             ZeroMemory(&formatEtc, sizeof(formatEtc));
             formatEtc.cfFormat = UseUnicode ? CF_UNICODETEXT : CF_TEXT;
@@ -1413,7 +1413,7 @@ public:
     (IDataObject* pDataObject, DWORD grfKeyState, POINTL pt,
      DWORD* pdwEffect)
     {
-        // pokusim se vytahnout z DataObjectu text
+        // attempt to extract text from the DataObject
         FORMATETC formatEtc;
         ZeroMemory(&formatEtc, sizeof(formatEtc));
         formatEtc.cfFormat = UseUnicode ? CF_UNICODETEXT : CF_TEXT;
@@ -1434,7 +1434,7 @@ public:
             char* path = (char*)HANDLES(GlobalLock(stgMedium.hGlobal));
             if (path != NULL)
             {
-                // zmenim cestu
+                // change the path
                 if (UseUnicode)
                     path = ConvertAllocU2A((const WCHAR*)path, -1);
                 if (path != NULL)
@@ -1449,22 +1449,22 @@ public:
         else
         {
             char path[2 * MAX_PATH];
-            if (GetNameFromDataObject(pDataObject, path)) // tady se do 'path' dava max. MAX_PATH znaku
+            if (GetNameFromDataObject(pDataObject, path)) // at most MAX_PATH characters are placed into 'path'
             {
-                // zmenim cestu
+                // change the path
                 if (!IsPluginFSPath(path))
                 {
                     int l = (int)strlen(path);
                     if (l > 0 && path[l - 1] == '\\')
-                        path[--l] = 0;             // '\\' na konci neni vitan
-                    if (l == 2 && path[0] != '\\') // za neUNC root cestou musi byt '\\'
+                        path[--l] = 0;             // trailing '\\' is not welcomed
+                    if (l == 2 && path[0] != '\\') // a non-UNC root path must end with '\\'
                     {
                         path[l++] = '\\';
                         path[l] = 0;
                     }
                 }
                 else
-                    PluginFSConvertPathToExternal(path); // tady je potreba, aby bylo v 'path' za fs-name jeste MAX_PATH znaku (proto je velky 2 * MAX_PATH)
+                    PluginFSConvertPathToExternal(path); // here 'path' must have MAX_PATH characters after the fs name (hence it is 2 * MAX_PATH long)
 
                 InsertText(pt, path);
             }
@@ -1497,7 +1497,7 @@ void CEditLine::RegisterDragDrop()
         }
         //    else
         //      IDropTargetPtr = dropTarget;
-        dropTarget->Release(); // RegisterDragDrop volala AddRef()
+        dropTarget->Release(); // RegisterDragDrop called AddRef()
     }
 }
 
@@ -1537,7 +1537,7 @@ CInnerText::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         Width = LOWORD(lParam);
         Height = HIWORD(lParam);
-        ItemBitmap.Enlarge(Width, Height); // alokace bitmapy v ItemBitmap.HMemDC
+        ItemBitmap.Enlarge(Width, Height); // allocation of bitmap in ItemBitmap.HMemDC
         return 0;
     }
 
@@ -1558,9 +1558,9 @@ CInnerText::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             GetClientRect(HWindow, &r);
             FillRect(dc, &r, (HBRUSH)(UINT_PTR)(sysBkColor + 1));
             int oldBkMode = SetBkMode(dc, TRANSPARENT);
-            r.right -= TXEL_SPACE - 1; // pokud je font bold, nevesel se vysledny text - proto tato korekce
+            r.right -= TXEL_SPACE - 1; // bold fonts make the text overflow - hence this correction
 
-            // PathCompactPath() chodi lepe nez kombinace DT_PATH_ELLIPSIS s DT_END_ELLIPSIS (kvuli zlobicimu poslednimu znaku)
+            // PathCompactPath() works better than combining DT_PATH_ELLIPSIS with DT_END_ELLIPSIS (because the last character misbehaves)
             char buff[2 * MAX_PATH];
             strncpy_s(buff, _countof(buff), Message, _TRUNCATE);
             PathCompactPath(dc, buff, r.right - r.left);
@@ -1827,7 +1827,7 @@ CEditWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         RECT cr;
         GetClientRect(HWindow, &cr);
-        // zajistime, aby dvoubodovy ramecek kolem comba nebyl smeten behem paintu
+        // ensure the 2-pixel frame around the combo is not cleared during painting
         RECT r;
         r.left = 0;
         r.top = 0;
@@ -1850,7 +1850,7 @@ CEditWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         r.bottom = cr.bottom - 2;
         ValidateRect(HWindow, &r);
 
-        // nakreslime si vlastni (jeden vnejsi sedivy a vnitrni promackly)
+        // we will draw our own (the outer gray and the inner sunken)
         HDC hDC = HANDLES(GetDC(HWindow));
         HPEN hOldPen = (HPEN)SelectObject(hDC, BtnFacePen);
         SelectObject(hDC, HANDLES(GetStockObject(NULL_BRUSH)));
@@ -1866,15 +1866,15 @@ CEditWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         if (WindowsVistaAndLater)
         {
-            // ve Viste konecne opravili cobobox, aby neblikal behem resize
-            // musime si tedy "rucne" domazat prostor mezi child okny a okrajem
-            // comboboxu, jinak tam zustava smeti
+            // Vista finally fixed the combobox flickering during resize
+            // so we must manually clear the area between child windows and the
+            // combobox edge, otherwise garbage remains there
             (HPEN) SelectObject(hDC, WndPen);
             Rectangle(hDC, cr.left + EL_XBORDER - 1, cr.top + 4 - 1,
                       cr.right - GetSystemMetrics(SM_CXVSCROLL) - 1, cr.bottom - 4 + 1);
         }
 
-        // pokud je aktivni nejaky visual style, nebudeme opecovavat tlacitko
+        // if a visual style is active, we won't decorate the button
         if (IsAppThemed())
         {
             SelectObject(hDC, hOldPen);
@@ -1882,7 +1882,7 @@ CEditWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             break;
         }
 
-        // zajistime, aby dvoubodovy ramecek kolem tlacitka nebyl smeten behem paintu
+        // ensure the 2-pixel frame around the button is not cleared during painting
         int sbWidth = GetSystemMetrics(SM_CXVSCROLL);
         r.left = cr.right - 2 - sbWidth;
         r.top = 2;
@@ -1905,7 +1905,7 @@ CEditWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         r.bottom = cr.bottom - 2;
         ValidateRect(HWindow, &r);
 
-        // nakreslime vlastni ramecek kolem tlacitka
+        // draw a custom frame around the button
         HPEN leftTopPen;
         HPEN bottomRightPen;
         POINT pos;
@@ -1916,14 +1916,14 @@ CEditWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             pos.y > cr.top + 1 &&
             pos.y < cr.bottom - 2)
         {
-            // nakreslime promackly ramecek
+            // draw a sunken frame
             leftTopPen = BtnShadowPen;
             //bottomRightPen = BtnHilightPen;
             bottomRightPen = BtnShadowPen;
         }
         else
         {
-            // nakreslime normalni ramecek
+            // draw a normal frame
             leftTopPen = BtnHilightPen;
             bottomRightPen = BtnShadowPen;
         }
@@ -1992,7 +1992,7 @@ void CEditWindow::RestoreContent()
 {
     if (Enabled && LastText != NULL)
     {
-        // pokud mame ulozeny stary stav okna (obsah a selection), obnovime ho
+        // if the old window state (contents and selection) was saved, we restore it
         SetWindowText(HWindow, LastText);
         SendMessage(EditLine->HWindow, EM_SETSEL, (WPARAM)LastSelStart, (LPARAM)LastSelEnd);
     }
