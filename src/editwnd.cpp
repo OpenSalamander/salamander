@@ -17,10 +17,10 @@
 //
 // InstallWordBreakProc
 //
-// zajisti zastavovani kurzoru na zpetnych lomitkach v cestach
+// ensures the cursor stops at backslashes in paths
 //
-// Implementacne prasarna, obchazejici debilni chovani windows.
-// Vytazene a prelozene do C z IE 5.5 / BROWSEUI.DLL.
+// Implementation hack to work around stupid Windows behavior.
+// Extracted and rewritten in C from IE 5.5 / BROWSEUI.DLL.
 //
 
 BOOL IsCharacterDelimiter(char ch)
@@ -185,14 +185,14 @@ BSHandlerSubclassProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
     case WM_CHAR:
     {
-        if (wParam == 127) // zahodime znak "Ctrl+Backspace"
-            return 0;      // zpracovali jsme
+        if (wParam == 127) // discard the "Ctrl+Backspace" character
+            return 0;      // we handled it
         break;
     }
 
     case WM_KEYDOWN:
     {
-        // zpracuje Ctrl+Backspace pro smazani slova
+        // handles Ctrl+Backspace for deleting a word
         if (wParam == VK_BACK)
         {
             BOOL controlPressed = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
@@ -203,13 +203,13 @@ BSHandlerSubclassProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                 int iStart, iEnd;
                 SendMessage(hwnd, EM_GETSEL, (WPARAM)&iStart, (LPARAM)&iEnd);
 
-                // pokud existuje selection, zrusime ji a kurzot umistime na konec
+                // if a selection exists, cancel it and move the cursor to the end
                 if (iStart != iEnd)
                 {
                     SendMessage(hwnd, EM_SETSEL, iEnd, iEnd);
                     iStart = iEnd;
                 }
-                //          if (iStart == iEnd) // nesmi byt nic vybrano
+                //          if (iStart == iEnd) // nothing can't be selected
                 //          {
                 char buff[10000];
                 int len = GetWindowTextLength(hwnd);
@@ -217,12 +217,12 @@ BSHandlerSubclassProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                     break;
                 SendMessage(hwnd, WM_GETTEXT, 10000, (LPARAM)buff);
 
-                // smazeme slovo
+                // delete the word
                 iStart = EditWordBreakProc(buff, iStart, iStart + 1, WB_LEFT);
                 SendMessage(hwnd, EM_SETSEL, iStart, iEnd);
                 SendMessage(hwnd, EM_REPLACESEL, TRUE, (LPARAM) "");
                 //          }
-                return 0; // zpracovali jsme
+                return 0; // we handled it
             }
         }
         break;
@@ -230,7 +230,7 @@ BSHandlerSubclassProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     case WM_DESTROY:
     {
-        // zameteme po sobe ulozenou OldWndProc
+        // clean up the stored OldWndProc
         WNDPROC currentWndProc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_WNDPROC);
         SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)OldWndProc);
 
@@ -241,8 +241,8 @@ BSHandlerSubclassProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     return CallWindowProc(OldWndProc, hwnd, message, wParam, lParam);
 }
 
-// nevyuzijeme pro subclass WinLib, abychom ji nelezli do zeli
-// (nektera okna, na ktera se mame pripojit, jiz jsou nebo budou pod WinLib)
+// we don't use WinLib's subclass so we don't step on its toes
+// (some windows we need to attach may already be or will be under WinLib)
 BOOL AttachBackspaceHandler(HWND hwndEdit)
 {
     WNDPROC oldWndProc = (WNDPROC)GetWindowLongPtr(hwndEdit, GWLP_WNDPROC);
@@ -268,7 +268,7 @@ BOOL InstallWordBreakProc(HWND hWindow)
     className[0] = 0;
     if (GetClassName(hWindow, className, 30) == 0 || StrICmp(className, "edit") != 0)
     {
-        // mohlo by jit o combobox, zkusime sahnout pro vnitrni edit
+        // might be a combobox, so try grabbing its internal edit control
         hWindow = GetWindow(hWindow, GW_CHILD);
         if (hWindow == NULL || GetClassName(hWindow, className, 30) == 0 || StrICmp(className, "edit") != 0)
         {
@@ -276,20 +276,20 @@ BOOL InstallWordBreakProc(HWND hWindow)
             return FALSE;
         }
     }
-    // Pod Windows XP a .NET s common controls 6 chodi do EditWordBreakProc UNICODE text
+    // Under Windows XP and .NET with common controls 6, EditWordBreakProc receives UNICODE text
     if (CCVerMajor >= 6)
         SendMessage(hWindow, EM_SETWORDBREAKPROC, NULL, (LPARAM)EditWordBreakProcUNICODE);
     else
         SendMessage(hWindow, EM_SETWORDBREAKPROC, NULL, (LPARAM)EditWordBreakProc);
 
-    // Ctrl+Backspace pro mazani po slovech
+    // enable Ctrl+Backspace deletion by words
     if (!AttachBackspaceHandler(hWindow))
         TRACE_E("AttachBackspaceHandler on hWnd=0x" << hWindow);
 
     return TRUE;
 }
 
-// vraci TRUE, pokud se jedna o prikaz "cd *"
+// returns TRUE if this is the "cd *" command
 BOOL IsChangeDirAttempt(const char* text)
 {
     while (*text == ' ')
@@ -300,13 +300,13 @@ BOOL IsChangeDirAttempt(const char* text)
 int GetCmdLineLimit()
 {
     /*
-  Namerene limity pri spousteni pres COMSPEC:
-    (4094 + delka stringu exace)  W2K (na delce COMSPEC nezavisi)
-    (8190 + delka stringu exace)  XP (na delce COMSPEC nezavisi)
-    8156                          Vista + Win7 pri COMSPEC=C:\Windows\system32\cmd.exe (zalezi na delce COMSPEC: delsi COMSPEC = mensi limit)
+  Measured limits when launching via COMSPEC:
+    (4094 + length of the exe string)  W2K (not dependent on COMSPEC length)
+    (8190 + length of the exe string)  XP (not dependent on COMSPEC length)
+    8156                             Vista + Win7 with COMSPEC=C:\Windows\system32\cmd.exe (depends on COMSPEC lenght: longer COMSPEC = smaller limit)
 */
 
-#if SALCMDLINE_MAXLEN != 8192 // maximalni hodnota, kterou muze vratit GetCmdLineLimit()
+#if SALCMDLINE_MAXLEN != 8192 // maximum value that GetCmdLineLimit() can return
 #pragma message(__FILE__ " ERROR: SALCMDLINE_MAXLEN != 8192. SALCMDLINE_MAXLEN and GetCmdLineLimit() must contain the same maximal value!")
 #endif
 
@@ -315,8 +315,8 @@ int GetCmdLineLimit()
         char cmd[MAX_PATH];
         if (!GetEnvironmentVariable("COMSPEC", cmd, MAX_PATH))
             cmd[0] = 0;
-        AddDoubleQuotesIfNeeded(cmd, MAX_PATH); // CreateProcess chce mit jmeno s mezerama v uvozovkach (jinak zkousi ruzny varianty, viz help)
-        return 8191 - lstrlen(cmd) - 6;         // 6 = strlen(" /K ") + 2 (dvoje uvozovky kolem samotneho prikazu)
+        AddDoubleQuotesIfNeeded(cmd, MAX_PATH); // CreateProcess expects names with spaces quoted (otherwise it tries various variants; see help)
+        return 8191 - lstrlen(cmd) - 6;         // 6 = strlen(" /K ") + 2 (two quotation marks around the command itself)
     }
     else
         return 8192; // XP
@@ -382,10 +382,10 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                 BOOL executed = FALSE;
                 CFilesWindow* panel = MainWindow->GetActivePanel();
-                if (panel->Is(ptDisk)) // spousteni prikazu na disku -> spusteni v DOS Promptu
+                if (panel->Is(ptDisk)) // running commands on disk -> executed in DOS Prompt
                 {
-                    // lide jsou z TC a ostatnich file manageru navykli menit cestu v panelu pomoci command line
-                    // pokusime se je to odnaucit
+                    // users coming from TC and other file managers tend to change the panel path via the command line
+                    // we'll try to break this habit
                     if (IsChangeDirAttempt(cmdLine))
                     {
                         if (Configuration.CnfrmChangeDirTC)
@@ -403,13 +403,13 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             SalMessageBoxEx(&params);
                             Configuration.CnfrmChangeDirTC = !dontShow;
                         }
-                        // nechame prikaz propadnout do shellu, at nekomplikujeme text msgboxu
+                        // let the command fall through to the shell so the message box text stays simple
                     }
 
-                    char cmd[SALCMDLINE_MAXLEN + MAX_PATH]; // COMSPEC bude nejspis jen par znaku dlouha, MAX_PATH je velka rezerva (dalsi pro parametry /K, atd. uz nepridavame)
+                    char cmd[SALCMDLINE_MAXLEN + MAX_PATH]; // COMSPEC is likely only a few characters long; MAX_PATH is plenty (no extra needed for parameters /K, etc.)
                     if (!GetEnvironmentVariable("COMSPEC", cmd, SALCMDLINE_MAXLEN + MAX_PATH))
                         cmd[0] = 0;
-                    AddDoubleQuotesIfNeeded(cmd, SALCMDLINE_MAXLEN + MAX_PATH); // CreateProcess chce mit jmeno s mezerama v uvozovkach (jinak zkousi ruzny varianty, viz help)
+                    AddDoubleQuotesIfNeeded(cmd, SALCMDLINE_MAXLEN + MAX_PATH); // CreateProcess wants names with spaces quoted (or it tries alternatives, see help)
 
                     if (SystemPolicies.GetMyRunRestricted() &&
                         (!SystemPolicies.GetMyCanRun(cmd) || !SystemPolicies.GetMyCanRun(cmdLine)))
@@ -428,7 +428,7 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                     panel->UserWorkedOnThisPath = TRUE;
 
-                    BOOL setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // ceka uz ?
+                    BOOL setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // is it already waiting?
                     HCURSOR oldCur;
                     if (setWait)
                         oldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
@@ -437,16 +437,16 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     if (strlen(cmd) + 4 < SALCMDLINE_MAXLEN + MAX_PATH)
                     {
                         if ((Configuration.CloseShell != 0) ^ ((GetKeyState(VK_MENU) & 0x8000) != 0))
-                            strcat(cmd, " /C "); // aby se shell zavrel
+                            strcat(cmd, " /C "); // so that the shell closes
                         else
-                            strcat(cmd, " /K "); // aby zustal aktivni shell
+                            strcat(cmd, " /K "); // so that the shell stays active
                     }
                     else
                         cmdTooLong = TRUE;
                     if (strlen(cmd) + strlen(cmdLine) + 2 < SALCMDLINE_MAXLEN + MAX_PATH)
                     {
                         strcat(cmd, "\"");
-                        strcat(cmd, cmdLine); // prikazovou radku od uzivatele musime obklopit uvozovkama, jinak nefunguji prikazy obsahujici uvozovky (napr. >>"C:\APPS\WinRAR\UnRAR.exe" e "test.rar"<< napise >>'C:\APPS\WinRAR\UnRAR.exe" e "test.rar' is not recognized<<)
+                        strcat(cmd, cmdLine); // the user's command line must be quoted, otherwise commands containing quotes fail (e.g. >>"C:\APPS\WinRAR\UnRAR.exe" e "test.rar"<< prints >>'C:\APPS\WinRAR\UnRAR.exe" e "test.rar' is not recognized<<)
                         strcat(cmd, "\"");
                     }
                     else
@@ -460,8 +460,8 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     POINT p;
                     if (MultiMonGetDefaultWindowPos(MainWindow->HWindow, &p))
                     {
-                        // pokud je hlavni okno na jinem monitoru, meli bychom tam take otevrit
-                        // okno vznikajici a nejlepe na default pozici (stejne jako na primaru)
+                        // if the main window is on another monitor, we should open
+                        // the created window there as well, ideally at the default position (same as on the primary)
                         si.dwFlags |= STARTF_USEPOSITION;
                         si.dwX = p.x;
                         si.dwY = p.y;
@@ -500,12 +500,12 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     if (panel->Is(ptPluginFS) && panel->GetPluginFS()->NotEmpty() &&
                         panel->GetPluginFS()->IsServiceSupported(FS_SERVICE_COMMANDLINE))
-                    { // spousteni prikazu z FS
+                    { // executing commands from FS
                         lstrcpyn(command, cmdLine, SALCMDLINE_MAXLEN + 1);
 
                         panel->UserWorkedOnThisPath = TRUE;
 
-                        // snizime prioritu threadu na "normal" (aby operace prilis nezatezovaly stroj)
+                        // lower the thread priority to "normal" (so the operations do not burden the machine too much)
                         SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
                         if (panel->GetPluginFS()->ExecuteCommandLine(HWindow, command, selFrom, selTo))
@@ -513,12 +513,12 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             executed = TRUE;
                         }
 
-                        // opet zvysime prioritu threadu, operace dobehla
+                        // increase the thread priority again once the operation has finished
                         SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
                     }
                 }
 
-                // jeste pridame prikaz do historie
+                // also add the command to history
                 if (executed)
                 {
                     if (Configuration.EnableCmdLineHistory)
@@ -571,9 +571,9 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_CUT:
     case WM_DESTROYCLIPBOARD:
     {
-        // zmena clipboardu -> spustime vypocet enableru clipboard-funkci
-        IdleRefreshStates = TRUE;  // pri pristim Idle vynutime kontrolu stavovych promennych
-        IdleCheckClipboard = TRUE; // nechame kontrolovat take clipboard
+        // clipboard changed -> trigger recalculation of clipboard function enablers
+        IdleRefreshStates = TRUE;  // force a status variable check on the next Idle
+        IdleCheckClipboard = TRUE; // request clipboard check as well
         break;
     }
 
@@ -619,17 +619,17 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (MainWindow->HasLockedUI())
             return 0;
-        // 7.10.2009 - AS253_B1_IB34: Manison nam hlasil, ze mu pod Windows Vista nefunguje horizontalni scroll.
-        // Me fungoval (touto cestou). Po nainstalovani Intellipoint ovladacu v7 (predtime jsem na Vista x64
-        // nemel zadne spesl ovladace) prestaly WM_MOUSEHWHEEL zpravy prochazet skraz hooka a natejkaly primo
-        // do focused okna; zakazal jsem hook a nyni musime chytat zpravy v oknech, ktere mohou mit focus, aby
-        // doslo k forwardu.
-        // 30.11.2012 - na foru se objevil clovek, kteremu WM_MOUSEHWEEL nechodi skrz message hook (stejna jako drive
-        // u Manisona v pripade WM_MOUSEHWHEEL): https://forum.altap.cz/viewtopic.php?f=24&t=6039
-        // takze nove budeme zpravu chytat take v jednotlivych oknech, kam muze potencialne chodit (dle focusu)
-        // a nasledne ji routit tak, aby se dorucila do okna pod kurzorem, jak jsme to vzdy delali
+        // 7.10.2009 - AS253_B1_IB34: Manison reported that horizontal scrolling didn't work under Windows Vista.
+        // It worked for me (via this method). After installing IntelliPoint drivers v7 (previously I had no special drivers 
+        // on Vista x64) WM_MOUSEHWHEEL messages stopped passing through the hook and flowed directly
+        // to the focused window; I disabled the hook and now we must catch the messages in windows that may get focus
+        // so the forwarding continues.
+        // 30.11.2012 - someone on the forum reported that WM_MOUSEHWHEEL no longer flows through the message hook (the same as
+        // Manison previously had with WM_MOUSEHWHEEL): https://forum.altap.cz/viewtopic.php?f=24&t=6039
+        // so now we also catch the message in each window where it can flow to (depends on focus) 
+        // and then route it so it reaches the window under the cursor as we've always done
 
-        // pokud zprava prisla "nedavno" druhym kanalem, budeme tento kanal ignorovat
+        // if the message arrived "recently" through the other channel, ignore this one
         if (MouseWheelMSGThroughHook && MouseWheelMSGTime != 0 && (GetTickCount() - MouseWheelMSGTime < MOUSEWHEELMSG_VALID))
             return 0;
         MouseWheelMSGThroughHook = FALSE;
@@ -649,7 +649,7 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_USER_MOUSEWHEEL:
     {
-        // zatlucu default processing
+        // suppress default processing
         return 0;
     }
 
@@ -700,12 +700,12 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (!IsWindowEnabled(MainWindow->HWindow))
             return 0;
 
-        // nastavime panelu promennou SelectedItems, aby chodilo oznacovani
-        // pres Shift+sipky je-li focus zde v edit line
+        // set the panel variable SelectedItems so that selection via Shift+arrows works
+        // when the focus is here in the edit line
         CFilesWindow* panel = MainWindow->GetActivePanel();
         BOOL firstPress = (lParam & 0x40000000) == 0;
-        // j.r.: Dusek nasel problem, kdy neodrazilo UP do paru k DOWN
-        // proto zavadim test na prvni stisk klavesy SHIFT
+        // j.r.: Dusek found an issue where UP wasn't paired with DOWN
+        // therefore I introduce a check for the first press of the SHIFT key
         if (wParam == VK_SHIFT && firstPress && panel->Dirs->Count + panel->Files->Count > 0)
         {
             panel->SelectItems = !panel->GetSel(panel->FocusedIndex);
