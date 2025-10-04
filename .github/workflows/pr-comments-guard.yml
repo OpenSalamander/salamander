@@ -108,18 +108,53 @@ jobs:
               exit 0
             }
 
+            $baseArgs = @(
+              '-E',
+              '-P',
+              '-DSAFE_ALLOC',
+              '-DFILE_ATTRIBUTE_ENCRYPTED=0x00004000',
+              '-Wno-deprecated',
+              '-Wno-comment',
+              '-Wno-nonportable-include-path',
+              '-Wno-extra-tokens',
+              '-Wno-macro-redefined',
+              '-Wno-microsoft-include',
+              '-Wno-#pragma-messages',
+              '-fkeep-system-includes',
+              '-fdiagnostics-color',
+              '-fansi-escape-codes',
+              '-w',
+              '-x',
+              'c++'
+            )
+            
             $includeRoots = @(
               '.',
               'src',
               'src/common',
-              'src/common/dep',
-              'src/plugins',
               'src/plugins/shared',
-              'include',
-              'common',
-              'plugins',
-              'plugins/shared',
-              'tools'
+              'src/common/dep',
+              'src/plugins/automation',
+              'src/plugins/7zip/7za/cpp/Common',
+              'src/plugins/7zip/7za/cpp',
+              'src/plugins/automation/generated',
+              'src/plugins/shared/lukas',
+              'src/plugins/ftp',
+              'src/plugins/ftp/openssl',
+              'src/plugins/ieviewer/cmark-gfm/build/src',
+              'src/plugins/ieviewer/cmark-gfm/build/extensions',
+              'src/plugins/ieviewer/cmark-gfm/extensions',
+              'src/plugins/ieviewer/cmark-gfm/src',
+              'src/plugins/pictview/exif',
+              'src/plugins/tar',
+              'src/plugins/undelete/library',
+              'src/plugins/zip',
+              'src/plugins/winscp/core',
+              'src/plugins/winscp/windows',
+              'src/plugins/winscp/resource',
+              'src/plugins/winscp/forms',
+              'src/plugins/wmobile/rapi',
+              'tools/comments/code_guard_stubs'
             )
             $headIncludeArgs = @()
             foreach ($rel in $includeRoots) {
@@ -168,8 +203,17 @@ jobs:
               $headTmp = [System.IO.Path]::GetTempFileName()
 
               try {
-                $clangArgsBase = @('-E', '-P', '-w', '-x', 'c++') + $baseIncludeArgs + @('-o', $baseTmp, $basePath)
-                $clangArgsHead = @('-E', '-P', '-w', '-x', 'c++') + $headIncludeArgs + @('-o', $headTmp, $headPath)
+                $extraArgs = @()
+                # Apply plugin-specific preprocessor defines that clang needs to parse these sources.
+                if ($file -like 'src/plugins/renamer/*') {
+                  $extraArgs += '-D_CHAR_UNSIGNED'
+                }
+                if ($file -like 'src/plugins/zip/selfextr/*') {
+                  $extraArgs += '-DLANG_DEFINED'
+                }
+
+                $clangArgsBase = $baseArgs + $baseIncludeArgs + $extraArgs + @('-o', $baseTmp, $basePath)
+                $clangArgsHead = $baseArgs + $headIncludeArgs + $extraArgs + @('-o', $headTmp, $headPath)
 
                 $clangBaseOutput = & clang.exe @clangArgsBase 2>&1
                 if ($LASTEXITCODE -ne 0) {
