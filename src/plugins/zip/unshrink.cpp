@@ -323,7 +323,7 @@ void partial_clear(short* parent)
         }
     }
 
-    return;
+     return;
 }
 
 #undef READBITS
