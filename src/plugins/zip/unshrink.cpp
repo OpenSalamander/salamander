@@ -323,7 +323,6 @@ void partial_clear(short* parent)
         }
     }
 
-
     return;
 }
 
