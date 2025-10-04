@@ -45,7 +45,7 @@ END
 BEGIN
     "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)\r\n"
     "LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL\r\n"
-    "#include ""ftp.rc2""   // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""ftp.rc2""   // Resources edited outside Microsoft Visual C++\r\n"
     "#endif\r\n"
     "\0"
 END
@@ -64,7 +64,7 @@ END
 //
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
 LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL
-#include "ftp.rc2"   // non-Microsoft Visual C++ edited resources
+#include "ftp.rc2"   // Resources edited outside Microsoft Visual C++
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
