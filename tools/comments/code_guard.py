@@ -222,6 +222,12 @@ def main():
         default=False,
         help="Enable debug mode to print clang command lines before execution."
     )
+    parser.add_argument(
+        "--sub-path",
+        type=str,
+        default=".",
+        help="Relative path inside both repositories where scanning should start. Default is '.'."
+    )
     args = parser.parse_args()
 
     clang_exe_path = find_clang_executable(CLANG_EXE)
@@ -229,9 +235,23 @@ def main():
     current_repo_path = Path(__file__).resolve().parent.parent.parent
     base_repo_path = args.base_repo_path
 
+    sub_path = Path(args.sub_path)
+    if sub_path.is_absolute():
+        parser.error("--sub-path must be a relative path.")
+
+    current_search_root = (current_repo_path / sub_path).resolve()
+    base_search_root = (base_repo_path / sub_path).resolve()
+
+    if not current_search_root.exists() or not current_search_root.is_dir():
+        parser.error(f"Sub-path '{sub_path}' does not exist in the current repository.")
+
+    if not base_search_root.exists() or not base_search_root.is_dir():
+        parser.error(f"Sub-path '{sub_path}' does not exist in the base repository.")
+
     print("Searching for C/C++ code changes (ignoring comments)...")
     print(f"Repository 1 (Base):    {base_repo_path}")
     print(f"Repository 2 (Current): {current_repo_path}")
+    print(f"Scanning Sub-path:      {sub_path}")
     print("-----------------------------------------------------------------")
 
     # Create OS-agnostic regex for excluding directories
@@ -239,7 +259,7 @@ def main():
     exclude_regex = re.compile('|'.join(re.escape(p) for p in exclude_paths))
 
     files_to_process = get_files_to_process(
-        current_repo_path / 'src',
+        current_search_root,
         ['*.cpp', '*.h'],
         exclude_regex,
         args.file_name_filter
@@ -273,6 +293,7 @@ def main():
                     clang_args.append('-D_CHAR_UNSIGNED')
                 if 'src/plugins/zip/selfextr' in relative_path_str:
                     clang_args.append('-DLANG_DEFINED')
+                    clang_args.append('-DEXT_VER')
 
                 cmd1 = [clang_exe_path, *clang_args, str(file_path)]
                 if args.debug:

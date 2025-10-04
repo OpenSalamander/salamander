@@ -20,6 +20,7 @@
   - `uv run comment-find-czech-words --project-root ..\src --output czech_words.txt`
   - `uv run comment-word-counter --project-root ..\src --output word_counts.txt`
   - `uv run comment-code-guard --base-repo-path \salamander_code_guard`  
+  - `uv run comment-code-guard --base-repo-path \salamander_code_guard --sub-path src\plugins\zip`  
 - `uv run` ensures the command uses the environment defined by `uv sync`.
 
 ## Managing Dependencies
