@@ -258,9 +258,9 @@ int CompareFilesBySize(CFilesWindow* leftPanel, CFileData* l, CFilesWindow* righ
 }
 
 // compares files 'file1' and 'file2' specified by full path by their content
-// on successful comparison, it returns TRUE and sets 'different' 
+// on successful comparison, it returns TRUE and sets 'different'
 // variable (TRUE if a difference was found, otherwise FALSE)
-// on error or user abort, returns FALSE and sets 'canceled' variable 
+// on error or user abort, returns FALSE and sets 'canceled' variable
 // (TRUE if the user canceled the operation, otherwise FALSE)
 
 #define COMPARE_BUFFER_SIZE (2 * 1024 * 1024) // buffer size for comparison in bytes (does not necessarily need to be fully used)

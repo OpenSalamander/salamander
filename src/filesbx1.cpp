@@ -1624,8 +1624,8 @@ CFilesBox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             return 0;
         // 7.10.2009 - AS253_B1_IB34: Manison reported that horizontal scrolling did not work for him on Windows Vista.
         // It worked for me (through this approach). After installing IntelliPoint drivers v7 (previously I had none on Vista x64)
-        // WM_MOUSEHWHEEL messages stopped passing through the hook and went directly to the focused window; 
-        // I disabled the hook and now we must capture messages in windows that can have focus 
+        // WM_MOUSEHWHEEL messages stopped passing through the hook and went directly to the focused window;
+        // I disabled the hook and now we must capture messages in windows that can have focus
         // so they can be forwarded.
         // 30.11.2012 - on our forum a user reported WM_MOUSEHWHEEL not passing through the message hook (same as before
         // in Manison's case): https://forum.altap.cz/viewtopic.php?f=24&t=6039

@@ -621,13 +621,13 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (MainWindow->HasLockedUI())
             return 0;
         // 7.10.2009 - AS253_B1_IB34: Manison reported that horizontal scrolling didn't work under Windows Vista.
-        // It worked for me (via this method). After installing IntelliPoint drivers v7 (previously I had no special drivers 
+        // It worked for me (via this method). After installing IntelliPoint drivers v7 (previously I had no special drivers
         // on Vista x64) WM_MOUSEHWHEEL messages stopped passing through the hook and flowed directly
         // to the focused window; I disabled the hook and now we must catch the messages in windows that may get focus
         // so the forwarding continues.
         // 30.11.2012 - someone on the forum reported that WM_MOUSEHWHEEL no longer flows through the message hook (the same as
         // Manison previously had with WM_MOUSEHWHEEL): https://forum.altap.cz/viewtopic.php?f=24&t=6039
-        // so now we also catch the message in each window where it can flow to (depends on focus) 
+        // so now we also catch the message in each window where it can flow to (depends on focus)
         // and then route it so it reaches the window under the cursor as we've always done
 
         // if the message arrived "recently" through the other channel, ignore this one

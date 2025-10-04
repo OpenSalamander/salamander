@@ -83,9 +83,9 @@ public:
     void SetMinWidths();
 
     // Determines which part contains point [xPos, yPos] (in client coordinates).
-    // If it returns hhtItem or hhtDivider, it sets the variable 'index' 
+    // If it returns hhtItem or hhtDivider, it sets the variable 'index'
     // to index of the column from Columns array.
-    // If "Name" was clicked, it sets the variable 'extInName' 
+    // If "Name" was clicked, it sets the variable 'extInName'
     // When "Ext" is clicked it becomes TRUE, otherwise FALSE.
     CHeaderHitTestEnum HitTest(int xPos, int yPos, int& index, BOOL& extInName);
 
@@ -202,7 +202,7 @@ public:
     BOOL IsItemVisible(int index, BOOL* isFullyVisible);
 
     // returns the index of the first at least partially visible item and the
-    // number of partially visible items (determines all at least partially visible 
+    // number of partially visible items (determines all at least partially visible
     // items - used when prioritizing icon and thumbnail loading)
     void GetVisibleItems(int* firstIndex, int* count);
 
