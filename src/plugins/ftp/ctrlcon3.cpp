@@ -1088,176 +1088,225 @@ BOOL CControlConnectionSocket::ChangeWorkingPath(BOOL notInPanel, BOOL leftPanel
                                 }
                             }
                         }
-                        else
-                        {
-                            if (pathType == ftpsptOpenVMS && mode == 3 && !fileNameAlreadyCut &&
-                                cutFileName != NULL && !cutDirectory)
-                            { // try whether it is a file name (with VMS it is distinguished by syntax)
-                                lstrcpyn(prevUsedPath, path, FTP_MAX_PATH);
-                                BOOL fileNameCouldBeCut;
-                                if (FTPCutDirectory(pathType, prevUsedPath, FTP_MAX_PATH, newPath,
-                                                    FTP_MAX_PATH, &fileNameCouldBeCut) &&
-                                    fileNameCouldBeCut) // with VMS, 'fileNameCouldBeCut' == TRUE means it is definitely a file
-                                {
-                                    lstrcpyn(cutFileName, newPath, MAX_PATH);
-                                    lstrcpyn(path, prevUsedPath, pathBufSize);
-                                    fileNameAlreadyCut = TRUE;
-                                    if (pathWasCut != NULL)
-                                        *pathWasCut = TRUE;
-                                }
+                    }
+                    else
+                    {
+                        if (pathType == ftpsptOpenVMS && mode == 3 && !fileNameAlreadyCut &&
+                            cutFileName != NULL && !cutDirectory)
+                        { // try whether it is a file name (with VMS it is distinguished by syntax)
+                            lstrcpyn(prevUsedPath, path, FTP_MAX_PATH);
+                            BOOL fileNameCouldBeCut;
+                            if (FTPCutDirectory(pathType, prevUsedPath, FTP_MAX_PATH, newPath,
+                                                FTP_MAX_PATH, &fileNameCouldBeCut) &&
+                                fileNameCouldBeCut) // with VMS, 'fileNameCouldBeCut' == TRUE means it is definitely a file
+                            {
+                                lstrcpyn(cutFileName, newPath, MAX_PATH);
+                                lstrcpyn(path, prevUsedPath, pathBufSize);
+                                fileNameAlreadyCut = TRUE;
+                                if (pathWasCut != NULL)
+                                    *pathWasCut = TRUE;
                             }
                         }
                     }
-                    else
-                        pathType = GetFTPServerPathType(path);
                 }
                 else
                     pathType = GetFTPServerPathType(path);
             }
-        }
-
-        char replyBuf[700];
-        char errBuf[900 + FTP_MAX_PATH];
-        if (ret && showChangeInLog && // if it should be shown in the log
-            !cutDirectory)            // only on the first pass (do not report shortening due to a faulty listing)
-        {
-            _snprintf_s(errBuf, _TRUNCATE, LoadStr(forceRefresh ? IDS_LOGMSGREFRESHINGPATH : IDS_LOGMSGCHANGINGPATH), path);
-            LogMessage(errBuf, -1, TRUE);
-        }
-
-        prevUsedPath[0] = 0;
-        if (ret && cutDirectory) // still OK + the path should be shortened before use (if the path could not be listed)
-        {
-            if (donotTestPath)
-                donotTestPath = FALSE;                  // path change - we must test the modified one
-            lstrcpyn(prevUsedPath, path, FTP_MAX_PATH); // remember the previous path on the server (returned by the server)
-            if (!FTPCutDirectory(pathType, path, pathBufSize, NULL, 0, NULL))
-            {
-                if (rescuePath[0] != 0) // try the rescue path as well
-                {
-                    lstrcpyn(path, rescuePath, pathBufSize);
-                    pathType = GetFTPServerPathType(path);
-                    rescuePath[0] = 0; // do not try it next time (avoid loops)
-                }
-                else // no need to report any error (listing already reported an error); we quietly tried
-                {    // to find an accessible path (which did not work)
-                    ret = FALSE;
-                }
-            }
-            if (ret) // either shortened or another path, in any case it is not the requested path
-            {
-                fileNameAlreadyCut = TRUE;
-                if (pathWasCut != NULL)
-                    *pathWasCut = TRUE;
-            }
-        }
-
-        // second phase: find on the server the requested or the closest matching path that
-        //               is either cached or accessible
-        if (ret)
-        {
-            HANDLES(EnterCriticalSection(&SocketCritSect));
-            char hostTmp[HOST_MAX_SIZE];
-            lstrcpyn(hostTmp, Host, HOST_MAX_SIZE);
-            unsigned short portTmp = Port;
-            char listCmd[FTPCOMMAND_MAX_SIZE + 2];
-            lstrcpyn(listCmd, UseLIST_aCommand ? LIST_a_CMD_TEXT : (ListCommand != NULL && *ListCommand != 0 ? ListCommand : LIST_CMD_TEXT),
-                     FTPCOMMAND_MAX_SIZE);
-            strcat(listCmd, "\r\n");
-            BOOL isFTPS = EncryptControlConnection == 1;
-            int useListingsCacheAux = UseListingsCache;
-            BOOL resuscitateKeepAlive = (IsConnected() && KeepAliveEnabled && KeepAliveMode == kamNone); // if keep-alive has already turned off (revival time expired), we must restart it
-            KeepAliveStart = GetTickCount();                                                             // beware, it is not enough to do it simply; 'resuscitateKeepAlive' must be used
-            HANDLES(LeaveCriticalSection(&SocketCritSect));
-
-            if (donotTestPath)
-            {
-                if (useListingsCacheAux && !forceRefresh && // the user wants to use the cache and this is not a hard refresh
-                    ListingCache.GetPathListing(hostTmp, portTmp, userBuf, pathType, path, pathBufSize,
-                                                listCmd, isFTPS, cachedListing, cachedListingLen,
-                                                cachedListingDate, cachedListingStartTime) &&
-                    *cachedListing == NULL)
-                {
-                    ret = FALSE; // the listing is in the cache, but there is not enough memory to allocate it -> fatal error
-                }
-            }
             else
+                pathType = GetFTPServerPathType(path);
+        }
+    }
+
+    char replyBuf[700];
+    char errBuf[900 + FTP_MAX_PATH];
+    if (ret && showChangeInLog && // if it should be shown in the log
+        !cutDirectory)            // only on the first pass (do not report shortening due to a faulty listing)
+    {
+        _snprintf_s(errBuf, _TRUNCATE, LoadStr(forceRefresh ? IDS_LOGMSGREFRESHINGPATH : IDS_LOGMSGCHANGINGPATH), path);
+        LogMessage(errBuf, -1, TRUE);
+    }
+
+    prevUsedPath[0] = 0;
+    if (ret && cutDirectory) // still OK + the path should be shortened before use (if the path could not be listed)
+    {
+        if (donotTestPath)
+            donotTestPath = FALSE;                  // path change - we must test the modified one
+        lstrcpyn(prevUsedPath, path, FTP_MAX_PATH); // remember the previous path on the server (returned by the server)
+        if (!FTPCutDirectory(pathType, path, pathBufSize, NULL, 0, NULL))
+        {
+            if (rescuePath[0] != 0) // try the rescue path as well
             {
-                errBuf[0] = 0;
+                lstrcpyn(path, rescuePath, pathBufSize);
+                pathType = GetFTPServerPathType(path);
+                rescuePath[0] = 0; // do not try it next time (avoid loops)
+            }
+            else // no need to report any error (listing already reported an error); we quietly tried
+            {    // to find an accessible path (which did not work)
+                ret = FALSE;
+            }
+        }
+        if (ret) // either shortened or another path, in any case it is not the requested path
+        {
+            fileNameAlreadyCut = TRUE;
+            if (pathWasCut != NULL)
+                *pathWasCut = TRUE;
+        }
+    }
 
-                int attemptNum = 1;
-                if (totalAttemptNum != NULL)
-                    attemptNum = *totalAttemptNum;
-                const char* retryMsgAux = NULL;
-                BOOL canRetry = FALSE;
-                char retryMsgBuf[300];
-                BOOL firstRound = TRUE;
+    // second phase: find on the server the requested or the closest matching path that
+    //               is either cached or accessible
+    if (ret)
+    {
+        HANDLES(EnterCriticalSection(&SocketCritSect));
+        char hostTmp[HOST_MAX_SIZE];
+        lstrcpyn(hostTmp, Host, HOST_MAX_SIZE);
+        unsigned short portTmp = Port;
+        char listCmd[FTPCOMMAND_MAX_SIZE + 2];
+        lstrcpyn(listCmd, UseLIST_aCommand ? LIST_a_CMD_TEXT : (ListCommand != NULL && *ListCommand != 0 ? ListCommand : LIST_CMD_TEXT),
+                 FTPCOMMAND_MAX_SIZE);
+        strcat(listCmd, "\r\n");
+        BOOL isFTPS = EncryptControlConnection == 1;
+        int useListingsCacheAux = UseListingsCache;
+        BOOL resuscitateKeepAlive = (IsConnected() && KeepAliveEnabled && KeepAliveMode == kamNone); // if keep-alive has already turned off (revival time expired), we must restart it
+        KeepAliveStart = GetTickCount();                                                             // beware, it is not enough to do it simply; 'resuscitateKeepAlive' must be used
+        HANDLES(LeaveCriticalSection(&SocketCritSect));
 
-                while (1)
+        if (donotTestPath)
+        {
+            if (useListingsCacheAux && !forceRefresh && // the user wants to use the cache and this is not a hard refresh
+                ListingCache.GetPathListing(hostTmp, portTmp, userBuf, pathType, path, pathBufSize,
+                                            listCmd, isFTPS, cachedListing, cachedListingLen,
+                                            cachedListingDate, cachedListingStartTime) &&
+                *cachedListing == NULL)
+            {
+                ret = FALSE; // the listing is in the cache, but there is not enough memory to allocate it -> fatal error
+            }
+        }
+        else
+        {
+            errBuf[0] = 0;
+
+            int attemptNum = 1;
+            if (totalAttemptNum != NULL)
+                attemptNum = *totalAttemptNum;
+            const char* retryMsgAux = NULL;
+            BOOL canRetry = FALSE;
+            char retryMsgBuf[300];
+            BOOL firstRound = TRUE;
+
+            while (1)
+            {
+                BOOL inCache = useListingsCacheAux && !forceRefresh && // the user wants to use the cache and this is not a hard refresh
+                               ListingCache.GetPathListing(hostTmp, portTmp, userBuf, pathType,
+                                                           path, pathBufSize, listCmd, isFTPS,
+                                                           cachedListing, cachedListingLen,
+                                                           cachedListingDate,
+                                                           cachedListingStartTime);
+                char pathSearchedInCache[FTP_MAX_PATH];
+                if (useListingsCacheAux && !forceRefresh)
+                    lstrcpyn(pathSearchedInCache, path, FTP_MAX_PATH);
+                else
+                    pathSearchedInCache[0] = 0;
+
+                if (inCache && *cachedListing == NULL)
                 {
-                    BOOL inCache = useListingsCacheAux && !forceRefresh && // the user wants to use the cache and this is not a hard refresh
-                                   ListingCache.GetPathListing(hostTmp, portTmp, userBuf, pathType,
-                                                               path, pathBufSize, listCmd, isFTPS,
-                                                               cachedListing, cachedListingLen,
-                                                               cachedListingDate,
-                                                               cachedListingStartTime);
-                    char pathSearchedInCache[FTP_MAX_PATH];
-                    if (useListingsCacheAux && !forceRefresh)
-                        lstrcpyn(pathSearchedInCache, path, FTP_MAX_PATH);
-                    else
-                        pathSearchedInCache[0] = 0;
+                    ret = FALSE;   // the listing is in the cache, but there is not enough memory to allocate it
+                    errBuf[0] = 0; // any possible message is unnecessary; the printed error would only be confusing
+                    break;         // fatal error
+                }
+                if (!inCache) // the listing is not in the cache (or we must not use it)
+                {
+                    resuscitateKeepAlive = FALSE; // the connection will be touched, keep-alive will revive automatically
 
-                    if (inCache && *cachedListing == NULL)
+                    BOOL success;
+                    BOOL userRejectsReconnect;
+
+                TRY_CHANGE_AGAIN:
+
+                    if (SendChangeWorkingPath(notInPanel, leftPanel, parent, path, userBuf,
+                                              userBufSize, &success, replyBuf, 700, NULL,
+                                              &attemptNum, retryMsgAux, skipFirstReconnectIfNeeded,
+                                              &userRejectsReconnect))
                     {
-                        ret = FALSE;   // the listing is in the cache, but there is not enough memory to allocate it
-                        errBuf[0] = 0; // any possible message is unnecessary; the printed error would only be confusing
-                        break;         // fatal error
-                    }
-                    if (!inCache) // the listing is not in the cache (or we must not use it)
-                    {
-                        resuscitateKeepAlive = FALSE; // the connection will be touched, keep-alive will revive automatically
-
-                        BOOL success;
-                        BOOL userRejectsReconnect;
-
-                    TRY_CHANGE_AGAIN:
-
-                        if (SendChangeWorkingPath(notInPanel, leftPanel, parent, path, userBuf,
-                                                  userBufSize, &success, replyBuf, 700, NULL,
-                                                  &attemptNum, retryMsgAux, skipFirstReconnectIfNeeded,
-                                                  &userRejectsReconnect))
+                        firstRound = FALSE;
+                        skipFirstReconnectIfNeeded = FALSE;
+                        retryMsgAux = NULL;
+                        if (success) // the server reports success - retrieve the new path
                         {
-                            firstRound = FALSE;
-                            skipFirstReconnectIfNeeded = FALSE;
-                            retryMsgAux = NULL;
-                            if (success) // the server reports success - retrieve the new path
+                            if (GetCurrentWorkingPath(parent, newPath, FTP_MAX_PATH, forceRefresh,
+                                                      &canRetry, retryMsgBuf, 300))
                             {
-                                if (GetCurrentWorkingPath(parent, newPath, FTP_MAX_PATH, forceRefresh,
+                                if (cutDirectory && strcmp(newPath, prevUsedPath) == 0)
+                                { // the server is making fools of us (does not change the path but claims it did)
+                                    _snprintf_s(errBuf, _TRUNCATE, LoadStr(IDS_CHANGEWORKPATHERROR), path, replyBuf);
+                                }
+                                else
+                                {
+                                    lstrcpyn(path, newPath, pathBufSize);       // take over the new path from the server
+                                    if (useListingsCacheAux && !forceRefresh && // the user wants to use the cache and this is not a hard refresh
+                                        strcmp(path, pathSearchedInCache) != 0) // if we have not searched for this path in the cache yet, try it
+                                    {
+                                        pathType = GetFTPServerPathType(path);
+                                        if (ListingCache.GetPathListing(hostTmp, portTmp, userBuf, pathType,
+                                                                        path, pathBufSize, listCmd, isFTPS,
+                                                                        cachedListing, cachedListingLen,
+                                                                        cachedListingDate,
+                                                                        cachedListingStartTime) &&
+                                            *cachedListing == NULL)
+                                        {                  // fatal error
+                                            ret = FALSE;   // the listing is in the cache, but there is not enough memory to allocate it
+                                            errBuf[0] = 0; // any possible message is unnecessary; the printed error would only be confusing
+                                        }
+                                    }
+                                    break; // fatal error or success (path changed) + possibly: the path is cached, take the listing from the cache
+                                }
+                            }
+                            else
+                            {
+                                if (canRetry) // "retry" is allowed
+                                {
+                                    retryMsgAux = retryMsgBuf;
+
+                                    goto TRY_CHANGE_AGAIN;
+                                }
+
+                                ret = FALSE;
+                                errBuf[0] = 0; // the user has already received the fatal error message; another message is unnecessary
+                                break;         // fatal error - the connection is already closed
+                            }
+                        }
+                        else // error, generate a message
+                        {
+                            _snprintf_s(errBuf, _TRUNCATE, LoadStr(IDS_CHANGEWORKPATHERROR), path, replyBuf);
+                        }
+
+                        if (strcmp(rescuePath, path) == 0)
+                            rescuePath[0] = 0; // path error identical to 'rescuePath' -> 'rescuePath' is no longer meaningful
+
+                        // try to shorten the path (a successful path change would not reach this point)
+                        BOOL fileNameCouldBeCut;
+                        if (!FTPCutDirectory(pathType, path, pathBufSize, newPath, FTP_MAX_PATH, &fileNameCouldBeCut))
+                        {
+                            if (rescuePath[0] != 0) // try the rescue path as well
+                            {
+                                lstrcpyn(path, rescuePath, pathBufSize);
+                                fileNameAlreadyCut = TRUE;
+                                pathType = GetFTPServerPathType(path);
+                                rescuePath[0] = 0; // do not try it next time (avoid loops)
+                            }
+                            else
+                            {
+                                // even if we did not find any accessible path, we do not want a disconnect, therefore do the following:
+                                if (GetCurrentWorkingPath(parent, newPath, FTP_MAX_PATH, TRUE,
                                                           &canRetry, retryMsgBuf, 300))
                                 {
-                                    if (cutDirectory && strcmp(newPath, prevUsedPath) == 0)
-                                    { // the server is making fools of us (does not change the path but claims it did)
-                                        _snprintf_s(errBuf, _TRUNCATE, LoadStr(IDS_CHANGEWORKPATHERROR), path, replyBuf);
-                                    }
-                                    else
+                                    if (newPath[0] == 0) // we care only about the case when there is no current path on the server (otherwise we should not get here - rescuePath would be used)
                                     {
-                                        lstrcpyn(path, newPath, pathBufSize);       // take over the new path from the server
-                                        if (useListingsCacheAux && !forceRefresh && // the user wants to use the cache and this is not a hard refresh
-                                            strcmp(path, pathSearchedInCache) != 0) // if we have not searched for this path in the cache yet, try it
-                                        {
-                                            pathType = GetFTPServerPathType(path);
-                                            if (ListingCache.GetPathListing(hostTmp, portTmp, userBuf, pathType,
-                                                                            path, pathBufSize, listCmd, isFTPS,
-                                                                            cachedListing, cachedListingLen,
-                                                                            cachedListingDate,
-                                                                            cachedListingStartTime) &&
-                                                *cachedListing == NULL)
-                                            {                  // fatal error
-                                                ret = FALSE;   // the listing is in the cache, but there is not enough memory to allocate it
-                                                errBuf[0] = 0; // any possible message is unnecessary; the printed error would only be confusing
-                                            }
-                                        }
-                                        break; // fatal error or success (path changed) + possibly: the path is cached, take the listing from the cache
+                                        if (pathWasCut != NULL)
+                                            *pathWasCut = TRUE; // we are on a path other than the requested one
+                                        if (pathBufSize > 0)
+                                            path[0] = 0; // there is no current path on the server
+                                        break;           // go try listing...
                                     }
                                 }
                                 else
@@ -1273,330 +1322,282 @@ BOOL CControlConnectionSocket::ChangeWorkingPath(BOOL notInPanel, BOOL leftPanel
                                     errBuf[0] = 0; // the user has already received the fatal error message; another message is unnecessary
                                     break;         // fatal error - the connection is already closed
                                 }
-                            }
-                            else // error, generate a message
-                            {
-                                _snprintf_s(errBuf, _TRUNCATE, LoadStr(IDS_CHANGEWORKPATHERROR), path, replyBuf);
-                            }
 
-                            if (strcmp(rescuePath, path) == 0)
-                                rescuePath[0] = 0; // path error identical to 'rescuePath' -> 'rescuePath' is no longer meaningful
-
-                            // try to shorten the path (a successful path change would not reach this point)
-                            BOOL fileNameCouldBeCut;
-                            if (!FTPCutDirectory(pathType, path, pathBufSize, newPath, FTP_MAX_PATH, &fileNameCouldBeCut))
-                            {
-                                if (rescuePath[0] != 0) // try the rescue path as well
-                                {
-                                    lstrcpyn(path, rescuePath, pathBufSize);
-                                    fileNameAlreadyCut = TRUE;
-                                    pathType = GetFTPServerPathType(path);
-                                    rescuePath[0] = 0; // do not try it next time (avoid loops)
-                                }
-                                else
-                                {
-                                    // even if we did not find any accessible path, we do not want a disconnect, therefore do the following:
-                                    if (GetCurrentWorkingPath(parent, newPath, FTP_MAX_PATH, TRUE,
-                                                              &canRetry, retryMsgBuf, 300))
-                                    {
-                                        if (newPath[0] == 0) // we care only about the case when there is no current path on the server (otherwise we should not get here - rescuePath would be used)
-                                        {
-                                            if (pathWasCut != NULL)
-                                                *pathWasCut = TRUE; // we are on a path other than the requested one
-                                            if (pathBufSize > 0)
-                                                path[0] = 0; // there is no current path on the server
-                                            break;           // go try listing...
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (canRetry) // "retry" is allowed
-                                        {
-                                            retryMsgAux = retryMsgBuf;
-
-                                            goto TRY_CHANGE_AGAIN;
-                                        }
-
-                                        ret = FALSE;
-                                        errBuf[0] = 0; // the user has already received the fatal error message; another message is unnecessary
-                                        break;         // fatal error - the connection is already closed
-                                    }
-
-                                    ret = FALSE; // report the last error (in all types of 'mode')
-                                    break;       // fatal error (no accessible path exists on the FS) - leave the connection open
-                                }
+                                ret = FALSE; // report the last error (in all types of 'mode')
+                                break;       // fatal error (no accessible path exists on the FS) - leave the connection open
                             }
-                            if (fileNameCouldBeCut && !fileNameAlreadyCut && mode == 3) // first shortening -> it may be a file name
-                            {
-                                errBuf[0] = 0; // in 'mode' 3 this is not reported as an error (we are trying to focus on the file)
-                                if (cutFileName != NULL)
-                                    lstrcpyn(cutFileName, newPath, MAX_PATH);
-                            }
-                            else
-                            {
-                                if (cutFileName != NULL)
-                                    *cutFileName = 0; // it can no longer be a file name
-                            }
-                            fileNameAlreadyCut = TRUE;
-                            if (pathWasCut != NULL)
-                                *pathWasCut = TRUE;
-                            if (mode == 1)
-                                errBuf[0] = 0; // in 'mode' 1 only root errors are reported
+                        }
+                        if (fileNameCouldBeCut && !fileNameAlreadyCut && mode == 3) // first shortening -> it may be a file name
+                        {
+                            errBuf[0] = 0; // in 'mode' 3 this is not reported as an error (we are trying to focus on the file)
+                            if (cutFileName != NULL)
+                                lstrcpyn(cutFileName, newPath, MAX_PATH);
                         }
                         else
                         {
-                            // if this is a hard refresh and the user refused reconnect and the path has a cached listing,
-                            // use the cached listing (the user knows they answered "NO" to reconnect, so they will not expect
-                            // a refreshed listing)
-                            if (firstRound && userRejectsReconnect && useListingsCacheAux && forceRefresh)
-                            {
-                                inCache = ListingCache.GetPathListing(hostTmp, portTmp, userBuf, pathType,
-                                                                      path, pathBufSize, listCmd, isFTPS,
-                                                                      cachedListing, cachedListingLen,
-                                                                      cachedListingDate,
-                                                                      cachedListingStartTime);
-                                if (inCache && *cachedListing == NULL)
-                                {
-                                    ret = FALSE;   // the listing is in the cache, but there is not enough memory to allocate it
-                                    errBuf[0] = 0; // any possible message is unnecessary; the printed error would only be confusing
-                                    break;         // fatal error
-                                }
-                                if (inCache)
-                                    break; // the path is cached - do not check whether it still exists, take the listing from the cache
-                            }
-
-                            ret = FALSE;
-                            errBuf[0] = 0; // the user has already received the fatal error message; another message is unnecessary
-                            break;         // fatal error - the connection is already closed
+                            if (cutFileName != NULL)
+                                *cutFileName = 0; // it can no longer be a file name
                         }
-                        skipFirstReconnectIfNeeded = TRUE; // the next SendChangeWorkingPath() call follows the previous successful SendChangeWorkingPath() call
+                        fileNameAlreadyCut = TRUE;
+                        if (pathWasCut != NULL)
+                            *pathWasCut = TRUE;
+                        if (mode == 1)
+                            errBuf[0] = 0; // in 'mode' 1 only root errors are reported
                     }
                     else
-                        break; // the path is cached - do not check whether it still exists, take the listing from the cache
-                }
-                if (totalAttemptNum != NULL)
-                    *totalAttemptNum = attemptNum;
-                if (errBuf[0] != 0) // if we have an error message, display it here
-                {
-                    SalamanderGeneral->SalMessageBox(parent, errBuf, LoadStr(IDS_FTPERRORTITLE),
-                                                     MB_OK | MB_ICONEXCLAMATION);
-                }
-            }
-            // it should be revived and the listing is from the cache (otherwise it must be revived on the first sent command)
-            if (resuscitateKeepAlive && *cachedListing != NULL)
-            {
-                WaitForEndOfKeepAlive(parent, 0); // the wait window cannot be shown
-                SetupKeepAliveTimer(TRUE);
-            }
-        }
-
-        if (ret && strcmp(rescuePath, path) == 0)
-            rescuePath[0] = 0; // trying a path identical to 'rescuePath' -> 'rescuePath' is no longer meaningful
-        return ret;
-    }
-
-    void CControlConnectionSocket::GiveConnectionToWorker(CFTPWorker * newWorker, HWND parent)
-    {
-        CALL_STACK_MESSAGE1("CControlConnectionSocket::GiveConnectionToWorker(,)");
-
-        parent = FindPopupParent(parent);
-
-        if (IsConnected()) // only if the connection is open
-        {
-            // first stop keep-alive:
-            // store the focus from 'parent' (if the focus is not from 'parent', store NULL)
-            HWND focusedWnd = GetFocus();
-            HWND hwnd = focusedWnd;
-            while (hwnd != NULL && hwnd != parent)
-                hwnd = GetParent(hwnd);
-            if (hwnd != parent)
-                focusedWnd = NULL;
-            // disable the 'parent'; when enabling it restore the focus as well
-            EnableWindow(parent, FALSE);
-
-            // set the wait cursor over the parent, unfortunately we do not know another way
-            CSetWaitCursorWindow* winParent = new CSetWaitCursorWindow;
-            if (winParent != NULL)
-                winParent->AttachToWindow(parent);
-
-            // wait for the keep-alive command to finish (if it is currently running) + set
-            // keep-alive to 'kamForbidden' (normal commands will run)
-            WaitForEndOfKeepAlive(parent, WAITWND_CONTOOPER);
-
-            // remove the wait cursor over the parent
-            if (winParent != NULL)
-            {
-                winParent->DetachWindow();
-                delete winParent;
-            }
-
-            // enable the 'parent'
-            EnableWindow(parent, TRUE);
-            // if the 'parent' is active, restore the focus as well
-            if (GetForegroundWindow() == parent)
-            {
-                if (parent == SalamanderGeneral->GetMainWindowHWND())
-                    SalamanderGeneral->RestoreFocusInSourcePanel();
-                else
-                {
-                    if (focusedWnd != NULL)
-                        SetFocus(focusedWnd);
-                }
-            }
-
-            // after stopping keep-alive we can hand over the active "control connection" to the worker
-            // (the timer and post-socket message associated with keep-alive have been cleared/delivered)
-            if (IsConnected()) // only if the connection is open even after the keep-alive command finishes
-            {
-                // swap sockets and the object's internal data related to the socket (read/write buffers, etc.)
-                SocketsThread->BeginSocketsSwap(this, newWorker);
-                // This check is rather complicated for sanity purposes: pCertificate is always NULL
-                if (pCertificate)
-                    pCertificate->Release();
-                pCertificate = newWorker->GetCertificate(); // Keep the certificate
-                newWorker->RefreshCopiesOfUIDAndMsg();      // refresh copies of UID+Msg (they changed)
-                BOOL ok = newWorker->IsConnected();
-                if (ok) // paranoid check: the connection might still drop between IsConnected() and SocketsThread->BeginSocketsSwap(), swapping would make no sense then
-                {
-                    HANDLES(EnterCriticalSection(&newWorker->WorkerCritSect));
-                    newWorker->SocketClosed = FALSE;      // the socket is no longer closed; we are taking over the socket from the panel
-                    newWorker->ConnectAttemptNumber = 1;  // the connection is established, so this must be one
-                    int workerLogUID = newWorker->LogUID; // log UID of this worker
-                    newWorker->ErrorDescr[0] = 0;         // start collecting error messages
-                    HANDLES(LeaveCriticalSection(&newWorker->WorkerCritSect));
-
-                    HANDLES(EnterCriticalSection(&SocketCritSect));
-                    HANDLES(EnterCriticalSection(&newWorker->SocketCritSect));
-
-                    // pass the worker information about the connection and the socket data
-                    newWorker->ControlConnectionUID = UID;
-                    if (HaveWorkingPath)
                     {
-                        newWorker->HaveWorkingPath = TRUE;
-                        lstrcpyn(newWorker->WorkingPath, WorkingPath, FTP_MAX_PATH);
+                        // if this is a hard refresh and the user refused reconnect and the path has a cached listing,
+                        // use the cached listing (the user knows they answered "NO" to reconnect, so they will not expect
+                        // a refreshed listing)
+                        if (firstRound && userRejectsReconnect && useListingsCacheAux && forceRefresh)
+                        {
+                            inCache = ListingCache.GetPathListing(hostTmp, portTmp, userBuf, pathType,
+                                                                  path, pathBufSize, listCmd, isFTPS,
+                                                                  cachedListing, cachedListingLen,
+                                                                  cachedListingDate,
+                                                                  cachedListingStartTime);
+                            if (inCache && *cachedListing == NULL)
+                            {
+                                ret = FALSE;   // the listing is in the cache, but there is not enough memory to allocate it
+                                errBuf[0] = 0; // any possible message is unnecessary; the printed error would only be confusing
+                                break;         // fatal error
+                            }
+                            if (inCache)
+                                break; // the path is cached - do not check whether it still exists, take the listing from the cache
+                        }
+
+                        ret = FALSE;
+                        errBuf[0] = 0; // the user has already received the fatal error message; another message is unnecessary
+                        break;         // fatal error - the connection is already closed
                     }
-                    newWorker->CurrentTransferMode = CurrentTransferMode;
-                    newWorker->ResetBuffersAndEvents();
-                    newWorker->EventConnectSent = EventConnectSent;
-                    newWorker->ReadBytes = ReadBytes;
-                    newWorker->ReadBytesCount = ReadBytesCount;
-                    newWorker->ReadBytesOffset = ReadBytesOffset;
-                    newWorker->ReadBytesAllocatedSize = ReadBytesAllocatedSize;
-                    ReadBytes = NULL;
-                    ReadBytesCount = 0;
-                    ReadBytesOffset = 0;
-                    ReadBytesAllocatedSize = 0;
-                    int logUID = LogUID; // log UID of this connection
-
-                    HANDLES(LeaveCriticalSection(&newWorker->SocketCritSect));
-                    HANDLES(LeaveCriticalSection(&SocketCritSect));
-
-                    ResetBuffersAndEvents(); // clear the event queue (it should contain only ccsevNewBytesRead)
-
-                    // inform the log that the "control connection" has been handed to the worker (and is thus "inactive")
-                    Logs.LogMessage(logUID, LoadStr(IDS_LOGMSGCONINWORKER), -1, TRUE);
-                    Logs.SetIsConnected(logUID, IsConnected());
-                    Logs.LogMessage(workerLogUID, LoadStr(IDS_LOGMSGWORKERUSECON), -1, TRUE);
-                    Logs.SetIsConnected(workerLogUID, newWorker->IsConnected());
-                    Logs.RefreshListOfLogsInLogsDlg();
+                    skipFirstReconnectIfNeeded = TRUE; // the next SendChangeWorkingPath() call follows the previous successful SendChangeWorkingPath() call
                 }
-                else // if swapping makes no sense, restore the objects to their original state
-                {
-                    SocketsThread->BeginSocketsSwap(this, newWorker);
-                    newWorker->RefreshCopiesOfUIDAndMsg(); // refresh copies of UID+Msg (they changed)
-                    SocketsThread->EndSocketsSwap();
-                }
-                SocketsThread->EndSocketsSwap();
+                else
+                    break; // the path is cached - do not check whether it still exists, take the listing from the cache
             }
-
-            // release keep-alive, it is no longer needed (the connection is no longer established)
-            ReleaseKeepAlive();
+            if (totalAttemptNum != NULL)
+                *totalAttemptNum = attemptNum;
+            if (errBuf[0] != 0) // if we have an error message, display it here
+            {
+                SalamanderGeneral->SalMessageBox(parent, errBuf, LoadStr(IDS_FTPERRORTITLE),
+                                                 MB_OK | MB_ICONEXCLAMATION);
+            }
+        }
+        // it should be revived and the listing is from the cache (otherwise it must be revived on the first sent command)
+        if (resuscitateKeepAlive && *cachedListing != NULL)
+        {
+            WaitForEndOfKeepAlive(parent, 0); // the wait window cannot be shown
+            SetupKeepAliveTimer(TRUE);
         }
     }
 
-    void CControlConnectionSocket::GetConnectionFromWorker(CFTPWorker * workerWithCon)
-    {
-        CALL_STACK_MESSAGE1("CControlConnectionSocket::GetConnectionFromWorker()");
+    if (ret && strcmp(rescuePath, path) == 0)
+        rescuePath[0] = 0; // trying a path identical to 'rescuePath' -> 'rescuePath' is no longer meaningful
+    return ret;
+}
 
-        if (!IsConnected() && workerWithCon->IsConnected()) // only if the connection is not open and the worker has an open connection
+void CControlConnectionSocket::GiveConnectionToWorker(CFTPWorker* newWorker, HWND parent)
+{
+    CALL_STACK_MESSAGE1("CControlConnectionSocket::GiveConnectionToWorker(,)");
+
+    parent = FindPopupParent(parent);
+
+    if (IsConnected()) // only if the connection is open
+    {
+        // first stop keep-alive:
+        // store the focus from 'parent' (if the focus is not from 'parent', store NULL)
+        HWND focusedWnd = GetFocus();
+        HWND hwnd = focusedWnd;
+        while (hwnd != NULL && hwnd != parent)
+            hwnd = GetParent(hwnd);
+        if (hwnd != parent)
+            focusedWnd = NULL;
+        // disable the 'parent'; when enabling it restore the focus as well
+        EnableWindow(parent, FALSE);
+
+        // set the wait cursor over the parent, unfortunately we do not know another way
+        CSetWaitCursorWindow* winParent = new CSetWaitCursorWindow;
+        if (winParent != NULL)
+            winParent->AttachToWindow(parent);
+
+        // wait for the keep-alive command to finish (if it is currently running) + set
+        // keep-alive to 'kamForbidden' (normal commands will run)
+        WaitForEndOfKeepAlive(parent, WAITWND_CONTOOPER);
+
+        // remove the wait cursor over the parent
+        if (winParent != NULL)
+        {
+            winParent->DetachWindow();
+            delete winParent;
+        }
+
+        // enable the 'parent'
+        EnableWindow(parent, TRUE);
+        // if the 'parent' is active, restore the focus as well
+        if (GetForegroundWindow() == parent)
+        {
+            if (parent == SalamanderGeneral->GetMainWindowHWND())
+                SalamanderGeneral->RestoreFocusInSourcePanel();
+            else
+            {
+                if (focusedWnd != NULL)
+                    SetFocus(focusedWnd);
+            }
+        }
+
+        // after stopping keep-alive we can hand over the active "control connection" to the worker
+        // (the timer and post-socket message associated with keep-alive have been cleared/delivered)
+        if (IsConnected()) // only if the connection is open even after the keep-alive command finishes
         {
             // swap sockets and the object's internal data related to the socket (read/write buffers, etc.)
-            SocketsThread->BeginSocketsSwap(this, workerWithCon);
-            workerWithCon->RefreshCopiesOfUIDAndMsg(); // refresh copies of UID+Msg (they changed)
-            BOOL ok = IsConnected();
-            if (ok) // paranoid check: the connection might still drop between workerWithCon->IsConnected() and SocketsThread->BeginSocketsSwap(); swapping would make no sense then
+            SocketsThread->BeginSocketsSwap(this, newWorker);
+            // This check is rather complicated for sanity purposes: pCertificate is always NULL
+            if (pCertificate)
+                pCertificate->Release();
+            pCertificate = newWorker->GetCertificate(); // Keep the certificate
+            newWorker->RefreshCopiesOfUIDAndMsg();      // refresh copies of UID+Msg (they changed)
+            BOOL ok = newWorker->IsConnected();
+            if (ok) // paranoid check: the connection might still drop between IsConnected() and SocketsThread->BeginSocketsSwap(), swapping would make no sense then
             {
-                HANDLES(EnterCriticalSection(&workerWithCon->WorkerCritSect));
-                workerWithCon->SocketClosed = TRUE;       // the socket is no longer open; we are taking over the closed socket from the panel
-                int workerLogUID = workerWithCon->LogUID; // log UID of this worker
-                workerWithCon->ErrorDescr[0] = 0;         // handing over the connection is not an error
-                HANDLES(LeaveCriticalSection(&workerWithCon->WorkerCritSect));
+                HANDLES(EnterCriticalSection(&newWorker->WorkerCritSect));
+                newWorker->SocketClosed = FALSE;      // the socket is no longer closed; we are taking over the socket from the panel
+                newWorker->ConnectAttemptNumber = 1;  // the connection is established, so this must be one
+                int workerLogUID = newWorker->LogUID; // log UID of this worker
+                newWorker->ErrorDescr[0] = 0;         // start collecting error messages
+                HANDLES(LeaveCriticalSection(&newWorker->WorkerCritSect));
 
                 HANDLES(EnterCriticalSection(&SocketCritSect));
-                HANDLES(EnterCriticalSection(&workerWithCon->SocketCritSect));
+                HANDLES(EnterCriticalSection(&newWorker->SocketCritSect));
 
-                // take over from the worker the information about the connection and the socket data
-                workerWithCon->ControlConnectionUID = -1;
-                if (workerWithCon->HaveWorkingPath)
+                // pass the worker information about the connection and the socket data
+                newWorker->ControlConnectionUID = UID;
+                if (HaveWorkingPath)
                 {
-                    HaveWorkingPath = TRUE;
-                    lstrcpyn(WorkingPath, workerWithCon->WorkingPath, FTP_MAX_PATH);
+                    newWorker->HaveWorkingPath = TRUE;
+                    lstrcpyn(newWorker->WorkingPath, WorkingPath, FTP_MAX_PATH);
                 }
-                CurrentTransferMode = workerWithCon->CurrentTransferMode;
-                ResetBuffersAndEvents();
-                EventConnectSent = workerWithCon->EventConnectSent;
-                if (ReadBytes != NULL)
-                    free(ReadBytes);
-                ReadBytes = workerWithCon->ReadBytes;
-                ReadBytesCount = workerWithCon->ReadBytesCount;
-                ReadBytesOffset = workerWithCon->ReadBytesOffset;
-                ReadBytesAllocatedSize = workerWithCon->ReadBytesAllocatedSize;
-                workerWithCon->EventConnectSent = FALSE;
-                workerWithCon->ReadBytes = NULL;
-                workerWithCon->ReadBytesCount = 0;
-                workerWithCon->ReadBytesOffset = 0;
-                workerWithCon->ReadBytesAllocatedSize = 0;
-                if (ConnectionLostMsg != NULL)
-                    SalamanderGeneral->Free(ConnectionLostMsg);
-                ConnectionLostMsg = NULL;
+                newWorker->CurrentTransferMode = CurrentTransferMode;
+                newWorker->ResetBuffersAndEvents();
+                newWorker->EventConnectSent = EventConnectSent;
+                newWorker->ReadBytes = ReadBytes;
+                newWorker->ReadBytesCount = ReadBytesCount;
+                newWorker->ReadBytesOffset = ReadBytesOffset;
+                newWorker->ReadBytesAllocatedSize = ReadBytesAllocatedSize;
+                ReadBytes = NULL;
+                ReadBytesCount = 0;
+                ReadBytesOffset = 0;
+                ReadBytesAllocatedSize = 0;
                 int logUID = LogUID; // log UID of this connection
 
-                HANDLES(LeaveCriticalSection(&workerWithCon->SocketCritSect));
+                HANDLES(LeaveCriticalSection(&newWorker->SocketCritSect));
                 HANDLES(LeaveCriticalSection(&SocketCritSect));
 
-                workerWithCon->ResetBuffersAndEvents(); // clear the event queue (it should contain only ccsevNewBytesRead)
+                ResetBuffersAndEvents(); // clear the event queue (it should contain only ccsevNewBytesRead)
 
-                // inform the log that the "control connection" has been taken from the worker (and is therefore "active" again)
-                Logs.LogMessage(logUID, LoadStr(IDS_LOGMSGCONFROMWORKER), -1, TRUE);
+                // inform the log that the "control connection" has been handed to the worker (and is thus "inactive")
+                Logs.LogMessage(logUID, LoadStr(IDS_LOGMSGCONINWORKER), -1, TRUE);
                 Logs.SetIsConnected(logUID, IsConnected());
-                Logs.LogMessage(workerLogUID, LoadStr(IDS_LOGMSGWORKERRETCON), -1, TRUE);
-                Logs.SetIsConnected(workerLogUID, workerWithCon->IsConnected());
-                Logs.RefreshListOfLogsInLogsDlg(); // "connection active" notification
+                Logs.LogMessage(workerLogUID, LoadStr(IDS_LOGMSGWORKERUSECON), -1, TRUE);
+                Logs.SetIsConnected(workerLogUID, newWorker->IsConnected());
+                Logs.RefreshListOfLogsInLogsDlg();
             }
             else // if swapping makes no sense, restore the objects to their original state
             {
-                SocketsThread->BeginSocketsSwap(this, workerWithCon);
-                workerWithCon->RefreshCopiesOfUIDAndMsg(); // refresh copies of UID+Msg (they changed)
+                SocketsThread->BeginSocketsSwap(this, newWorker);
+                newWorker->RefreshCopiesOfUIDAndMsg(); // refresh copies of UID+Msg (they changed)
                 SocketsThread->EndSocketsSwap();
             }
             SocketsThread->EndSocketsSwap();
+        }
 
-            if (ok)
+        // release keep-alive, it is no longer needed (the connection is no longer established)
+        ReleaseKeepAlive();
+    }
+}
+
+void CControlConnectionSocket::GetConnectionFromWorker(CFTPWorker* workerWithCon)
+{
+    CALL_STACK_MESSAGE1("CControlConnectionSocket::GetConnectionFromWorker()");
+
+    if (!IsConnected() && workerWithCon->IsConnected()) // only if the connection is not open and the worker has an open connection
+    {
+        // swap sockets and the object's internal data related to the socket (read/write buffers, etc.)
+        SocketsThread->BeginSocketsSwap(this, workerWithCon);
+        workerWithCon->RefreshCopiesOfUIDAndMsg(); // refresh copies of UID+Msg (they changed)
+        BOOL ok = IsConnected();
+        if (ok) // paranoid check: the connection might still drop between workerWithCon->IsConnected() and SocketsThread->BeginSocketsSwap(); swapping would make no sense then
+        {
+            HANDLES(EnterCriticalSection(&workerWithCon->WorkerCritSect));
+            workerWithCon->SocketClosed = TRUE;       // the socket is no longer open; we are taking over the closed socket from the panel
+            int workerLogUID = workerWithCon->LogUID; // log UID of this worker
+            workerWithCon->ErrorDescr[0] = 0;         // handing over the connection is not an error
+            HANDLES(LeaveCriticalSection(&workerWithCon->WorkerCritSect));
+
+            HANDLES(EnterCriticalSection(&SocketCritSect));
+            HANDLES(EnterCriticalSection(&workerWithCon->SocketCritSect));
+
+            // take over from the worker the information about the connection and the socket data
+            workerWithCon->ControlConnectionUID = -1;
+            if (workerWithCon->HaveWorkingPath)
             {
-                // restart keep-alive
-                ReleaseKeepAlive();
-                WaitForEndOfKeepAlive(SalamanderGeneral->GetMsgBoxParent(), 0); // cannot open the wait window (it is in state 'kamNone')
-                SetupKeepAliveTimer(TRUE);                                      // set up the keep-alive timer; trigger the keep-alive command right away (we do not know how long the connection was inactive, so let us avoid losing it)
+                HaveWorkingPath = TRUE;
+                lstrcpyn(WorkingPath, workerWithCon->WorkingPath, FTP_MAX_PATH);
             }
+            CurrentTransferMode = workerWithCon->CurrentTransferMode;
+            ResetBuffersAndEvents();
+            EventConnectSent = workerWithCon->EventConnectSent;
+            if (ReadBytes != NULL)
+                free(ReadBytes);
+            ReadBytes = workerWithCon->ReadBytes;
+            ReadBytesCount = workerWithCon->ReadBytesCount;
+            ReadBytesOffset = workerWithCon->ReadBytesOffset;
+            ReadBytesAllocatedSize = workerWithCon->ReadBytesAllocatedSize;
+            workerWithCon->EventConnectSent = FALSE;
+            workerWithCon->ReadBytes = NULL;
+            workerWithCon->ReadBytesCount = 0;
+            workerWithCon->ReadBytesOffset = 0;
+            workerWithCon->ReadBytesAllocatedSize = 0;
+            if (ConnectionLostMsg != NULL)
+                SalamanderGeneral->Free(ConnectionLostMsg);
+            ConnectionLostMsg = NULL;
+            int logUID = LogUID; // log UID of this connection
+
+            HANDLES(LeaveCriticalSection(&workerWithCon->SocketCritSect));
+            HANDLES(LeaveCriticalSection(&SocketCritSect));
+
+            workerWithCon->ResetBuffersAndEvents(); // clear the event queue (it should contain only ccsevNewBytesRead)
+
+            // inform the log that the "control connection" has been taken from the worker (and is therefore "active" again)
+            Logs.LogMessage(logUID, LoadStr(IDS_LOGMSGCONFROMWORKER), -1, TRUE);
+            Logs.SetIsConnected(logUID, IsConnected());
+            Logs.LogMessage(workerLogUID, LoadStr(IDS_LOGMSGWORKERRETCON), -1, TRUE);
+            Logs.SetIsConnected(workerLogUID, workerWithCon->IsConnected());
+            Logs.RefreshListOfLogsInLogsDlg(); // "connection active" notification
+        }
+        else // if swapping makes no sense, restore the objects to their original state
+        {
+            SocketsThread->BeginSocketsSwap(this, workerWithCon);
+            workerWithCon->RefreshCopiesOfUIDAndMsg(); // refresh copies of UID+Msg (they changed)
+            SocketsThread->EndSocketsSwap();
+        }
+        SocketsThread->EndSocketsSwap();
+
+        if (ok)
+        {
+            // restart keep-alive
+            ReleaseKeepAlive();
+            WaitForEndOfKeepAlive(SalamanderGeneral->GetMsgBoxParent(), 0); // cannot open the wait window (it is in state 'kamNone')
+            SetupKeepAliveTimer(TRUE);                                      // set up the keep-alive timer; trigger the keep-alive command right away (we do not know how long the connection was inactive, so let us avoid losing it)
         }
     }
+}
 
-    BOOL CControlConnectionSocket::GetUseListingsCache()
-    {
-        CALL_STACK_MESSAGE1("CControlConnectionSocket::GetConnectionFromWorker()");
+BOOL CControlConnectionSocket::GetUseListingsCache()
+{
+    CALL_STACK_MESSAGE1("CControlConnectionSocket::GetConnectionFromWorker()");
 
-        HANDLES(EnterCriticalSection(&SocketCritSect));
-        BOOL ret = UseListingsCache;
-        HANDLES(LeaveCriticalSection(&SocketCritSect));
-        return ret;
-    }
+    HANDLES(EnterCriticalSection(&SocketCritSect));
+    BOOL ret = UseListingsCache;
+    HANDLES(LeaveCriticalSection(&SocketCritSect));
+    return ret;
+}
