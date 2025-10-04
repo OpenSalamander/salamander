@@ -362,6 +362,13 @@ def _aggregate_stats(file_stats: dict[str, dict[str, int]]) -> dict[str, dict[st
     return aggregated
 
 
+def _format_directory_label(raw_label: str, stats: dict[str, int]) -> str:
+    """Return *raw_label* suffixed with the aggregated English translation percentage."""
+    total_size = stats["cs"] + stats["en"]
+    translated_pct = (stats["en"] / total_size * 100) if total_size > 0 else 0.0
+    return f"{raw_label} ({translated_pct:.1f}%)"
+
+
 def generate_treemap(
     file_stats: dict[str, dict[str, int]],
     output_dir: Path,
@@ -413,7 +420,7 @@ def generate_treemap(
             continue
 
         if path == project_key:
-            label = project_key
+            label = _format_directory_label(project_key, stats)
             parent = ""
         else:
             label = Path(path).name or path
@@ -424,6 +431,10 @@ def generate_treemap(
                 parent = parent_path
             else:
                 parent = project_key
+
+            if path not in scoped_stats:
+                # Only directories are missing from scoped_stats because it stores file entries.
+                label = _format_directory_label(label, stats)
 
         ids.append(path)
         labels.append(label)

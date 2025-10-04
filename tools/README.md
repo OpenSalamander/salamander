@@ -16,7 +16,7 @@
 - Execute any script via `uv run`. Examples:
   - `uv run comment-translation-status --help`
   - `uv run comment-translation-status --project-root ..\src --no-recursion --name-filter dialogs*.cpp`
-  - `uv run python -m comments.translation_status --project-root ..\src`
+  - `uv run comment-translation-status --project-root ..\src`
   - `uv run comment-find-czech-words --project-root ..\src --output czech_words.txt`
   - `uv run comment-word-counter --project-root ..\src --output word_counts.txt`
   - `uv run comment-code-guard --base-repo-path \salamander_code_guard`  
