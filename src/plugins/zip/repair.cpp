@@ -199,8 +199,8 @@ CZipRepair::ProcessLocalHeader2(CLocalFileHeader * header, CFileInfo * info)
   //outFileHeader->ExtraLen = header.ExtraLen;     //extra field length
   //info->CommentLen = header.CommentLen; //file comment length
   
-  // tyhle bohuzel nevime, zkusime se pozdeji podivat do centralniho adresare
-  // jestli nejaky najdeme
+  // we do not know these values; we will try to read them from the central directory later
+  // assuming we can find one
   info->StartDisk = 0;   //disk number start
   info->InterAttr = 0;   //internal file attributes
   info->FileAttr = FILE_ATTRIBUTE_NORMAL;
@@ -208,7 +208,7 @@ CZipRepair::ProcessLocalHeader2(CLocalFileHeader * header, CFileInfo * info)
 
   info->DataOffset = info->LocHeaderOffs + sizeof(CLocalFileHeader) +  header->NameLen + header->ExtraLen;
 
-  // nacteme jmeno
+  // load the name
   char * sour;
   char * dest;
   //*(nameBuf + readLen) = 0;
@@ -227,7 +227,7 @@ CZipRepair::ProcessLocalHeader2(CLocalFileHeader * header, CFileInfo * info)
   if (*(dest - 1) == '\\')//skip last slash if name specifies a directory
   {
     dest--;
-    info->IsDir = 1;//predpokladam, ze je to adresar
+    info->IsDir = 1;//assume it is a directory
   }
   *dest = 0;
   ValidateFileName(info->Name);

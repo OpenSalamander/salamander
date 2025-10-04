@@ -18,7 +18,7 @@ extern CSalamanderSafeFileAbstract* SalamanderSafeFile;
 extern CSalamanderCryptAbstract* SalamanderCrypt;
 extern CSalamanderBZIP2Abstract* SalamanderBZIP2;
 
-// rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+// interface providing customized Windows controls used in Salamander
 extern CSalamanderGUIAbstract* SalamanderGUI;
 
 #define SizeOf(x) (sizeof(x) / sizeof(x[0]))
@@ -151,7 +151,7 @@ struct CFile
     unsigned BufferPosition;
     char* InputBuffer;
     // unsigned  InputPosition;
-    unsigned BigFile : 1; // soubor muze byt vetsi nez 4GB
+    unsigned BigFile : 1; // the file can be larger than 4GB
 };
 
 class CZipCommon
@@ -190,11 +190,11 @@ public:
     unsigned CHDiskFlags;
     CConfiguration Config;
 
-    BOOL Unix; // alespon jeden soubor ma HS_UNIX flag
+    BOOL Unix; // at least one file has the HS_UNIX flag
 
     // AES Encryption
     CSalAES AESContext;
-    BOOL AESContextValid; // je potreba zavolat fcrypt_end?
+    BOOL AESContextValid; // is it necessary to call fcrypt_end?
 
     TIndirectArray2<char>* ArchiveVolumes;
 
@@ -211,7 +211,7 @@ public:
              unsigned* bytesRead, bool* skipAll);
     int Write(CFile* file, const void* buffer, unsigned bytesToWrite, bool* skipAll);
     int Flush(CFile* file, const void* buffer, unsigned bytesToWrite, bool* skipAll);
-    // pokud je 'useReadCache' TRUE, alokuje se ve 'file' InputBuffer
+    // if 'useReadCache' is TRUE, InputBuffer is allocated inside 'file'
     int CreateCFile(CFile** file, LPCTSTR fileName, unsigned int access,
                     unsigned int share, unsigned int creation, unsigned int attributes,
                     int flags, bool* skipAll, bool bigFile, bool useReadCache);
@@ -283,8 +283,8 @@ struct CSfxLang
 
 extern const CExtendedOptions DefOptions;
 
-extern HINSTANCE DLLInstance; // handle k SPL-ku - jazykove nezavisle resourcy
-extern HINSTANCE HLanguage;   // handle k SLG-cku - jazykove zavisle resourcy
+extern HINSTANCE DLLInstance; // handle of the SPL - language-independent resources
+extern HINSTANCE HLanguage;   // handle of the SLG - language-dependent resources
 
 extern const CConfiguration DefConfig;
 extern CConfiguration Config;
@@ -312,7 +312,7 @@ LPTSTR StrRChr(LPCTSTR lpStart, LPCTSTR lpEnd, char wMatch);
 LPTSTR TrimTralingSpaces(LPTSTR lpString);
 //***********************************************************************************
 //
-// Rutiny ze SHLWAPI.DLL
+// Routines from SHLWAPI.DLL
 //
 
 //BOOL PathAppend(LPTSTR pPath, LPCTSTR pMore);

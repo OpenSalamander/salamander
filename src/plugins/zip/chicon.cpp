@@ -396,7 +396,7 @@ void QuickSortIDsArray(int left, int right, TIndirectArray2<TCHAR>& IDsArray)
             i++;
             j--;
         }
-    } while (i <= j); //musej bejt shodny?
+    } while (i <= j); // do they have to match?
     if (left < j)
         QuickSortIDsArray(left, j, IDsArray);
     if (i < right)

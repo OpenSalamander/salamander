@@ -408,7 +408,7 @@ int explode_lit(CDecompressionObject* decompress,
         TRACE_E("flush returned error");
         return 5;
     }
-    // tohle odhali CRC
+    // this exposes the CRC
     //
     // if (G.csize + G.incnt + (k >> 3))   /* should have read csize bytes, but */
     // {                        /* sometimes read one too many:  k>>3 compensates */
@@ -545,7 +545,7 @@ int explode_nolit(CDecompressionObject* decompress,
         TRACE_E("flush returned error");
         return 5;
     }
-    // tohle odchyti CRC
+    // this catches the CRC
     // if (G.csize + G.incnt + (k >> 3))   /* should have read csize bytes, but */
     // {                        /* sometimes read one too many:  k>>3 compensates */
     //   G.used_csize = G.lrec.csize - G.csize - G.incnt - (k >> 3);

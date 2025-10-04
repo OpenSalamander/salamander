@@ -5,15 +5,15 @@ setlocal
 set MSB=C:\Program Files\Microsoft Visual Studio\2022\Community\Msbuild\Current\Bin\MSBuild.exe
 
 REM 
-REM Verzi vysledneho balicku, je nutne nastavit na shodnou s verzi
-REM podporovanou ZIP pluginem a Zip2Sfx
+REM Set the resulting package version to match the version
+REM supported by the ZIP plugin and Zip2Sfx
 REM
 
 set package_compatible_version=5
 set package_version=5
 
 REM
-REM Tuto promennou je nutno nastavit na aktualni umisteni sfxmake.exe
+REM Set this variable to the current location of sfxmake.exe
 REM
 set sfxmake_exe="..\sfxmake\release\sfxmake.exe"
 
@@ -33,7 +33,7 @@ if "%2"=="" goto INVALID_LANGUAGE1
 
 set output_directory=%~2
 
-REM Vytvorime cilovy adresar
+REM Create the target directory
 if not exist "%output_directory%" mkdir "%output_directory%"
 
 if %1==ENGLISH_VERSION goto ENGLISH

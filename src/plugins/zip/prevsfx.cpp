@@ -136,7 +136,7 @@ INT_PTR WINAPI SfxPreviewDlgProc(HWND dlg, UINT uMsg, WPARAM wParam, LPARAM lPar
             SetWindowLong(GetDlgItem(dlg, IDC_WEBLINK), GWL_STYLE, style);
         }
         SetDlgItemText(dlg, IDC_ABOUTTEXT, data->About);
-        SalamanderGeneral->MultiMonCenterWindow(dlg, NULL, FALSE); // centrujeme k desktopu
+        SalamanderGeneral->MultiMonCenterWindow(dlg, NULL, FALSE); // center it relative to the desktop
         SetFocus(GetDlgItem(dlg, IDOK));
 
         RECT r;
@@ -145,18 +145,18 @@ INT_PTR WINAPI SfxPreviewDlgProc(HWND dlg, UINT uMsg, WPARAM wParam, LPARAM lPar
         dlgWinAboutHeigth = r.bottom - r.top;
         RECT r2;
         GetWindowRect(GetDlgItem(dlg, IDC_SEPARATOR), &r2);
-        // aplikace prelozena s novejsim platform toolset pracuje jinak s velikosti oken, vice viz
+        // an application built with a newer platform toolset handles dialog sizes differently; see
         // https://social.msdn.microsoft.com/Forums/vstudio/en-US/7ca548b5-8931-41dc-ac1d-ed9aed223d7a/different-dialog-box-position-and-size-with-visual-c-2012
         // https://connect.microsoft.com/VisualStudio/feedback/details/768135/different-dialog-box-size-and-position-when-compiled-in-visual-c-2012-vs-2010-2008
-        // proto nefunguje puvodni reseni (ve vc2012+ je okno nizsi nez ve vc2010-): dlgWinHeigth = r2.top - r.top + 1;
-        // reseni: dlgWinHeigth = plna vyska okna minus rozdil vysky client-area dialogu a umisteni separatoru
-        //         v ramci client-area dialogu
+        // therefore the original logic no longer works (in VC2012+ the window is shorter than in VC2010-): dlgWinHeigth = r2.top - r.top + 1;
+        // fix: dlgWinHeigth = full window height minus the difference between the client area height and the separator position
+        //         within the dialog's client area
         POINT p;
         p.x = r2.left;
         p.y = r2.top;
         ScreenToClient(dlg, &p);
         GetClientRect(dlg, &r2);
-        dlgWinHeigth = dlgWinAboutHeigth - (r2.bottom - p.y) - 2; // -2 pro dosazeni puvodni vysky z vc2010-
+        dlgWinHeigth = dlgWinAboutHeigth - (r2.bottom - p.y) - 2; // subtract 2 to match the original VC2010- height
 
         SetWindowPos(dlg, 0, 0, 0, dlgWinWidth, dlgWinHeigth, SWP_NOMOVE | SWP_NOZORDER);
         return TRUE;

@@ -58,9 +58,9 @@ int RenumberName(int number, const char* oldName, char* newName,
 
     if (numberEnd && !winzip)
     {
-        if (lastFile && ext && ext < numberStart) // ".cvspass" ve Windows je pripona
+        if (lastFile && ext && ext < numberStart) // in Windows ".cvspass" is treated as an extension
         {
-            // zrejme posledni soubor podle winzip formatu
+            // probably the last file according to the WinZip format
             int i = (int)(ext - oldName);
             memmove(buf, oldName, i);
             strcpy(buf + i, ".zip");
@@ -75,9 +75,9 @@ int RenumberName(int number, const char* oldName, char* newName,
     }
     else
     {
-        if (ext) // ".cvspass" ve Windows je pripona
+        if (ext) // in Windows ".cvspass" is treated as an extension
         {
-            // zrejme winzip format
+            // probably a WinZip format
             int i = (int)(ext - oldName);
             memmove(buf, oldName, i);
             sprintf(buf + i, lastFile ? ".zip" : ".z%02d", number);
@@ -146,7 +146,7 @@ int CZipCommon::ChangeDisk()
     int ret;
     bool retry = false;
 
-    // maly test na detekci win-zip jmen
+    // small test to detect WinZip names
     if (CHDiskFlags & (CHD_FIRST | CHD_SEQNAMES))
     {
         char buf[MAX_PATH];
@@ -154,7 +154,7 @@ int CZipCommon::ChangeDisk()
                      DiskNum == EOCentrDir.DiskNum, CHDiskFlags & CHD_WINZIP);
         if (SalamanderGeneral->SalGetFileAttributes(buf) == 0xFFFFFFFF)
         {
-            // soubor s nasledujicim cislem neni na disku, zkusime, jestli tam nebude
+            // the file with the next number is not on the disk; try whether it might appear there
             // s invertovanym winzip flagem
             RenumberName(DiskNum + 1, ZipName, buf,
                          DiskNum == EOCentrDir.DiskNum, !(CHDiskFlags & CHD_WINZIP));

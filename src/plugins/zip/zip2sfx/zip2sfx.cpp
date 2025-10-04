@@ -100,7 +100,7 @@ BOOL PathRenameExtension(LPTSTR pszPath, LPCTSTR pszExt)
 {
     char* ext = strrchr(pszPath, '.');
     if (ext != NULL)
-        *ext = 0; // ".cvspass" ve Windows je pripona
+        *ext = 0; // ".cvspass" is treated as an extension in Windows
     lstrcat(pszPath, pszExt);
     return TRUE;
 }
@@ -188,10 +188,10 @@ DWORD SalGetFileAttributes(const char* fileName)
 {
     int fileNameLen = (int)strlen(fileName);
     char fileNameCopy[3 * MAX_PATH];
-    // pokud cesta konci mezerou/teckou, musime pripojit '\\', jinak GetFileAttributes
-    // mezery/tecky orizne a pracuje tak s jinou cestou + u souboru to sice nefunguje,
-    // ale porad lepsi nez ziskat atributy jineho souboru/adresare (pro "c:\\file.txt   "
-    // pracuje se jmenem "c:\\file.txt")
+    // if the path ends with a trailing space or dot we must append '\\'; otherwise
+    // GetFileAttributes trims that character and works with a different path.
+    // The workaround still beats returning attributes of another file or directory
+    // (for "c:\\file.txt   " it ends up working with "c:\\file.txt").
     if (fileNameLen > 0 && (fileName[fileNameLen - 1] <= ' ' || fileName[fileNameLen - 1] == '.') &&
         fileNameLen + 1 < _countof(fileNameCopy))
     {
@@ -200,7 +200,7 @@ DWORD SalGetFileAttributes(const char* fileName)
         fileNameCopy[fileNameLen + 1] = 0;
         return GetFileAttributes(fileNameCopy);
     }
-    else // obycejna cesta, neni co resit, jen zavolame windowsovou GetFileAttributes
+    else // ordinary path, nothing special here, just call the Windows GetFileAttributes
     {
         return GetFileAttributes(fileName);
     }
@@ -355,7 +355,7 @@ BOOL LoadDefaults()
     size = min(sfxHead.TextLen[ABOUTLICENCEDLEN], SE_MAX_ABOUT - 1);
     memcpy(About, ptr, size);
     About[size] = 0;
-    lstrcpy(DefAbout, About); // pro pozdejsi pouziti
+    lstrcpy(DefAbout, About); // keep for later use
     ptr += sfxHead.TextLen[ABOUTLICENCEDLEN];
 
     size = min(sfxHead.TextLen[BUTTONTEXTLEN], SE_MAX_EXTRBTN - 1);
@@ -366,13 +366,13 @@ BOOL LoadDefaults()
     size = min(sfxHead.TextLen[VENDORLEN], SE_MAX_VENDOR - 1);
     memcpy(Settings.Vendor, ptr, size);
     Settings.Vendor[size] = 0;
-    lstrcpy(DefVendor, Settings.Vendor); // pro pozdejsi pouziti
+    lstrcpy(DefVendor, Settings.Vendor); // keep for later use
     ptr += sfxHead.TextLen[VENDORLEN];
 
     size = min(sfxHead.TextLen[WWWLEN], SE_MAX_WWW - 1);
     memcpy(Settings.WWW, ptr, size);
     Settings.WWW[size] = 0;
-    lstrcpy(DefWWW, Settings.WWW); // pro pozdejsi pouziti
+    lstrcpy(DefWWW, Settings.WWW); // keep for later use
     ptr += sfxHead.TextLen[WWWLEN];
 
     GetModuleFileName(NULL, Settings.IconFile, MAX_PATH);
@@ -463,7 +463,7 @@ BOOL main2()
     return TRUE;
 }
 
-// Chceme se dozvedet o SEH Exceptions i na x64 Windows 7 SP1 a dal
+// We want to catch SEH exceptions even on x64 Windows 7 SP1 and newer
 // http://blog.paulbetts.org/index.php/2010/07/20/the-case-of-the-disappearing-onload-exception-user-mode-callback-exceptions-in-x64/
 // http://connect.microsoft.com/VisualStudio/feedback/details/550944/hardware-exceptions-on-x64-machines-are-silently-caught-in-wndproc-messages
 // http://support.microsoft.com/kb/976038

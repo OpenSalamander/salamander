@@ -139,7 +139,7 @@ __forceinline int NextByte2(CDecompressionObject* decompress)
 
 int Unshrink(CDecompressionObject* decompress)
 {
-    /* !!tady mnely nekde chybu!! (asi HSIZE+1)
+    /* !!there used to be a bug here!! (probably HSIZE+1)
     G.area.shrink.Parent = (shrint *)G.area.Slide;
     G.area.shrink.value = G.area.Slide + (sizeof(shrint)*(HSIZE+1));
     G.area.shrink.Stack = G.area.Slide +
