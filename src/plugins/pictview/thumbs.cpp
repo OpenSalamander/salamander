@@ -805,9 +805,9 @@ int ExtractWinThumbnail(LPCTSTR filename, unsigned char** pptr)
     return ret;
 } /* ExtractWinThumbnail */
 
-// otevre specifikovany soubor a prevede jej na sekvenci DWORDu
-// tedy 24 bitu pro barvu (R, G, B) a 8 bitu smeti
-// velikost jednoho radku v bajtech je: sirka_obrazku * sizeof(DWORD)
+// open the specified file and convert it into a sequence of DWORDs
+// i.e. 24 bits for color (R, G, B) and 8 bits of padding
+// the size of one row in bytes is: image_width * sizeof(DWORD)
 
 BOOL CPluginInterfaceForThumbLoader::LoadThumbnail(LPCTSTR filename, int thumbWidth, int thumbHeight,
                                                    CSalamanderThumbnailMakerAbstract* thumbMaker,
@@ -852,12 +852,12 @@ BOOL CPluginInterfaceForThumbLoader::LoadThumbnail(LPCTSTR filename, int thumbWi
             rmfd.Pos = 0;
             rmfd.Buffer = thumbData;
         }
-        // otevreme obrazek
+        // open the image
         code = PVW32DLL.PVOpenImageEx(&hPVImage, &pvoi, &pvii, sizeof(pvii));
         if (code != PVC_OK)
         {
             free(thumbData);
-            return FALSE; // asi to neni bitmapa
+            return FALSE; // probably not a bitmap
         }
         if (pvii.Height * pvii.Width > G.MaxThumbImgSize * 1024 * 1024)
         {
@@ -994,7 +994,7 @@ BOOL CPluginInterfaceForThumbLoader::LoadThumbnail(LPCTSTR filename, int thumbWi
         code = PVW32DLL.CreateThumbnail(hPVImage, &sii, pvii.CurrentImage, pvii.Width, pvii.Height,
                                         thumbWidth, thumbHeight, thumbMaker, pictureFlags, ThumbProgressProc, &wfd);
 
-        // zavreme obrazek
+        // close the image
         CALL_STACK_MESSAGE1("PVW32DLL.PVCloseImage");
         free(thumbData);
         PVW32DLL.PVCloseImage(hPVImage);

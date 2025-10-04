@@ -37,7 +37,7 @@ CStatusBar::~CStatusBar()
     }
 }
 
-#define ICON_MARGIN 32 // prostor pro ionku a hranice
+#define ICON_MARGIN 32 // space for the icon and margins
 
 void CViewerWindow::SetupStatusBarItems()
 {
@@ -47,7 +47,7 @@ void CViewerWindow::SetupStatusBarItems()
 
     HFONT hFont = (HFONT)SendMessage(hStatusBar, WM_GETFONT, 0, 0);
 
-    // omerime sirky polozek
+    // measure the widths of the items
     int whSize, rgbSize;
     SIZE sz;
     HDC hDC = GetDC(hStatusBar);
@@ -58,7 +58,7 @@ void CViewerWindow::SetupStatusBarItems()
     whSize = sz.cx + ICON_MARGIN;
     _stprintf(buff, LoadStr(IDS_SB_RGB), 255, 255, 255);
     GetTextExtentPoint32(hDC, buff, (int)_tcslen(buff), &sz);
-    rgbSize = max(whSize, sz.cx) + ICON_MARGIN + 10; // pravy dolni roh nas premazava
+    rgbSize = max(whSize, sz.cx) + ICON_MARGIN + 10; // the bottom-right corner overwrites us
     SelectObject(hDC, hOldFont);
     ReleaseDC(hStatusBar, hDC);
 
@@ -80,7 +80,7 @@ void CViewerWindow::SetupStatusBarItems()
 
 void SafeSetStatusBarText(HWND hStatusBar, int part, LPCTSTR text)
 {
-    // pokud uz ve status bar text je, nebudeme zbytecne blikat
+    // if there is already text in the status bar, do not blink unnecessarily
     TCHAR buff[500];
     LRESULT ret = SendMessage(hStatusBar, SB_GETTEXT, part & 0xff, (LPARAM)buff);
     if (_tcscmp(buff, text) != NULL || HIWORD(ret) != (part & 0xffffff00))
@@ -92,7 +92,7 @@ void SafeSetStatusBarText(HWND hStatusBar, int part, LPCTSTR text)
 
 void SafeSetStatusBarIcon(HWND hStatusBar, int part, HICON hIcon)
 {
-    // pokud uz ve status bar ikona, nebudeme zbytecne blikat
+    // if there is already an icon in the status bar, do not blink unnecessarily
     HICON hOldIcon = (HICON)SendMessage(hStatusBar, SB_GETICON, part, 0);
     if (hOldIcon != hIcon)
         SendMessage(hStatusBar, SB_SETICON, part, (LPARAM)hIcon);
@@ -138,7 +138,7 @@ void CViewerWindow::SetStatusBarTexts(int ID)
 
     if (Renderer.ImageLoaded)
     {
-        Renderer.ClientToPicture(&pt); // pt bude v souradnicich obrazku
+        Renderer.ClientToPicture(&pt); // convert pt into image coordinates
         if (pt.x >= 0 && pt.x < imageWidth && pt.y >= 0 && pt.y < imageHeight)
             validCursor = TRUE;
         if (validCursor)
@@ -153,19 +153,19 @@ void CViewerWindow::SetStatusBarTexts(int ID)
     int sizeWidth, sizeHeight;
     if (IsCageValid(&Renderer.TmpCageRect))
     {
-        // prioritu ma tazena klec
+        // the dragged cage has priority
         sizeWidth = abs(Renderer.TmpCageRect.right - Renderer.TmpCageRect.left) + 1;
         sizeHeight = abs(Renderer.TmpCageRect.bottom - Renderer.TmpCageRect.top) + 1;
     }
     else if (IsCageValid(&Renderer.SelectRect))
     {
-        // jinak existujici selection
+        // otherwise an existing selection
         sizeWidth = abs(Renderer.SelectRect.right - Renderer.SelectRect.left) + 1;
         sizeHeight = abs(Renderer.SelectRect.bottom - Renderer.SelectRect.top) + 1;
     }
     else
     {
-        // jinak velikost obrazku
+        // otherwise the image size
         sizeWidth = imageWidth;
         sizeHeight = imageHeight;
     }

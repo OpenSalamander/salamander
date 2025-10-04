@@ -22,7 +22,7 @@ protected:
     BOOL WiaWrapUsed;                     // object was used = COM is already initialized
     BOOL WiaWrapOK;                       // FALSE = COM was not initialized, object cannot be used
     BOOL AcquiringImage;                  // TRUE = just acquiring image (AcquireImage() is in progress)
-    BOOL ShouldCloseParentAfterAcquiring; // TRUE = zavrit parenta po dokonceni AcquireImage()
+    BOOL ShouldCloseParentAfterAcquiring; // TRUE = close the parent window after AcquireImage() finishes
 
 public:
     CWiaWrap();

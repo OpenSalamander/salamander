@@ -9,7 +9,7 @@ void CleanNonNumericChars(HWND hWnd, BOOL bComboBox, BOOL bKeepSeparator, BOOL b
 //
 // CCommonDialog
 //
-// Dialog centrovany k parentu
+// Dialog centered to the parent
 //
 
 class CCommonDialog : public CDialog
@@ -120,7 +120,7 @@ protected:
     LPARAM GetFocusedItemLParam();
     void OnContextMenu(int x, int y);
 
-    // vraci -1, pokud neni tag nalezen v poli ExifHighlights, jinak vraci jeho index
+    // returns -1 if the tag is not found in the ExifHighlights array, otherwise returns its index
     int GetHighlightIndex(DWORD tag);
     void ToggleHighlight(DWORD tag);
 
@@ -154,7 +154,7 @@ public:
     CGUIColorArrowButtonAbstract* ButtonFSBackground;
     CGUIColorArrowButtonAbstract* ButtonFSTransparent;
 
-    // lokalni kopie z G.* pro pripade, ze uzivatel dal na zaver Cancel
+    // local copy from G.* in case the user ends with Cancel
     SALCOLOR Colors[vceCount];
 
 public:
@@ -339,9 +339,9 @@ protected:
     LPTSTR DstName;
 
 public:
-    // dstName musi byt ukazatel do bufferu o minimalni velikosti MAX_PATH
-    // pokud Execute() vrati IDOK, obsahuje tento buffer plnou cestu k souboru,
-    // do ktereho mame zapsat (zaroven uzivatel potvrdil prepsani, pokud jiz existuje)
+    // dstName must point to a buffer of at least MAX_PATH in size
+    // if Execute() returns IDOK, this buffer contains the full path to the file
+    // we should write to (the user also confirmed overwriting if it already exists)
     CCopyToDlg(HWND parent, LPCTSTR srcName, LPTSTR dstName);
 
     virtual void Validate(CTransferInfo& ti);
@@ -361,14 +361,14 @@ protected:
 class CPreviewWnd : public CWindow
 {
 public:
-    // hDlg je parent window (dialog nebo okno)
-    // ctrlID je ID child okna
+    // hDlg is the parent window (dialog or window)
+    // ctrlID is the ID of the child window
     CPreviewWnd(HWND hDlg, int ctrlID, CPrintDlg* printDlg);
     ~CPreviewWnd();
 
-    CPrintDlg* pPrintDlg; // ukazatel na vlastnika, abychom se mohli dotazovat pres GetPrinterInfo()
+    CPrintDlg* pPrintDlg; // pointer to the owner so we can query through GetPrinterInfo()
 
-    void Paint(HDC hDC); // hDC muze byt NULL pro explicitni prekresleni
+    void Paint(HDC hDC); // hDC can be NULL for explicit repainting
 
 protected:
     HBITMAP hPreview;
@@ -391,23 +391,23 @@ class CPrintDlg;
 class CPrintParams
 {
 public:
-    //CAST1: za jeji plneni je zodpovedny volajici CPrintDlg
+    // CAST1: the caller of CPrintDlg is responsible for filling it
     LPPVImageInfo pPVII;
     LPPVHandle PVHandle;
-    // vybrana oblast v souradnicich obrazku
-    const RECT* ImageCage; // pokud je NULL, neexistuje selection
+    // selected area in image coordinates
+    const RECT* ImageCage; // if NULL, no selection exists
 
-    //CAST2: umi si nastavit default hodnoty pomoci metody Clear()
-    // parametry zvolene v tiskovem dialogu
-    BOOL bCenter;      // obrazek bude centrovan vuci papiru
-    double Left;       // pozadovane umisteni obrazku vuci pocatku papiru (X)
-    double Top;        // pozadovane umisteni obrazku vuci pocatku papiru (Y)
-    double Width;      // pozadovane rezmery obrazku
-    double Height;     // pozadovane rezmery obrazku
+    // CAST2: can set default values via the Clear() method
+    // parameters chosen in the print dialog
+    BOOL bCenter;      // image will be centered relative to the paper
+    double Left;       // desired image position relative to the paper origin (X)
+    double Top;        // desired image position relative to the paper origin (Y)
+    double Width;      // desired image dimensions
+    double Height;     // desired image dimensions
     double Scale;      // scaling in percentage of original dimension
-    BOOL bBoundingBox; // zobrazit ramecek kolem obrazku (just in preview)
-    BOOL bSelection;   // tisknou pouze vyber
-    BOOL bFit;         // roztahnout obrazek pres dostupnou plochu
+    BOOL bBoundingBox; // show a frame around the image (preview only)
+    BOOL bSelection;   // print selection only
+    BOOL bFit;         // stretch the image across the available area
     BOOL bKeepAspect;  // used only when bFit is TRUE
     CUnitsEnum Units;  // units used by all editboxes
     BOOL bMirrorHor, bMirrorVert;
@@ -418,19 +418,19 @@ public:
         Clear();
     }
 
-    void Clear(); // nastavi default hodnoty
+    void Clear(); // sets default values
 };
 
-#define PRNINFO_ORIENTATION 1 // DMORIENT_PORTRAIT nebo DMORIENT_LANDSCAPE
-//#define PRNINFO_PAGE_SIZE    2 // index do pole stranek
-#define PRNINFO_PAPER_WIDTH 3       // fyzicka sirka papiru v milimetrech
-#define PRNINFO_PAPER_HEIGHT 4      // fyzicka vyska papiru v milimetrech
+#define PRNINFO_ORIENTATION 1 // DMORIENT_PORTRAIT or DMORIENT_LANDSCAPE
+//#define PRNINFO_PAGE_SIZE    2 // index into the page array
+#define PRNINFO_PAPER_WIDTH 3       // physical paper width in millimeters
+#define PRNINFO_PAPER_HEIGHT 4      // physical paper height in millimeters
 #define PRNINFO_PAGE_LEFTMARGIN 5   //
 #define PRNINFO_PAGE_TOPMARGIN 6    //
 #define PRNINFO_PAGE_RIGHTMARGIN 7  //
 #define PRNINFO_PAGE_BOTTOMMARGIN 8 //
 
-// konstanta pro prevod palcu na mm (pocet mm v jednom palci)
+// constant for converting inches to millimeters (number of mm in one inch)
 #define INCH_TO_MM ((double)25.4)
 
 //#define PRNINFO_PAGE_MINLEFTMARGIN
@@ -441,11 +441,11 @@ public:
 class CPrintDlg : public CCommonDialog
 {
 protected:
-    //    CPrintParams *PrintParams;    // pro komunikaci s vnejskem
-    CPrintParams Params; // pro docasne vnitrni pouziti
+    //    CPrintParams *PrintParams;    // for communication with the outside world
+    CPrintParams Params; // for temporary internal use
     CPreviewWnd* Preview;
 
-    // nastaveni tiskarny
+    // printer settings
     HANDLE HDevMode;
     HANDLE HDevNames;
     HDC HPrinterDC;
@@ -459,9 +459,9 @@ public:
     virtual void Validate(CTransferInfo& ti);
     virtual void Transfer(CTransferInfo& ti);
 
-    // volame pred volanim Execute()
-    BOOL MyGetDefaultPrinter(); // vytahne informace o default tiskarne a v pripade uspechu vrati TRUE
-                                // pokud vrati FALSE, zobrazi chybu; v tom pripade uz nevolame Execute() pro dialog
+    // called before calling Execute()
+    BOOL MyGetDefaultPrinter(); // retrieves information about the default printer and returns TRUE on success
+                                // if it returns FALSE, it shows an error; in that case Execute() for the dialog is not called
 
     BOOL GetPrinterInfo(DWORD index, void* value, DWORD& size);
 
@@ -473,7 +473,7 @@ protected:
     void EnableControls();
     void OnPrintSetup();
 
-    void ReleasePrinterHandles(); // uvolni a vynuluje handly informaci o tiskarne
+    void ReleasePrinterHandles(); // releases and clears printer information handles
 
     void FillUnits();
     double GetNumber(HWND hCombo);

@@ -21,9 +21,9 @@
 #include "PVEXEWrapper.h"
 #include "PixelAccess.h"
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object; its methods are called from Salamander
 CPluginInterface PluginInterface;
-// cast interfacu CPluginInterface pro viewer
+// part of the CPluginInterface for the viewer
 CPluginInterfaceForViewer InterfaceForViewer;
 CPluginInterfaceForMenuExt InterfaceForMenuExt;
 CPluginInterfaceForThumbLoader InterfaceForThumbLoader;
@@ -38,31 +38,31 @@ LPCTSTR SCAN_SOURCE = _T("<<ScanSource>>");
 LPCTSTR SCANEXTRA = _T("<<ScanExtra>>");
 LPCTSTR DELETED = _T("<<Deleted>>");
 
-LPCTSTR PLUGIN_NAME_EN = _T("PICTVIEW"); // neprekladane jmeno pluginu, pouziti pred loadem jazykoveho modulu + pro debug veci
+LPCTSTR PLUGIN_NAME_EN = _T("PICTVIEW"); // non-translated plugin name, used before loading the language module + for debug stuff
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to SPL - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to SLG - language-dependent resources
 HACCEL HAccel = NULL;
 
 BOOL SalamanderRegistered = FALSE;
 
 // ConfigVersion: 0 - default,
-//                1 - pustena se Salamander 1.6 beta 3
-//                2 - se Salamander 1.6 beta 4/5
+//                1 - released with Salamander 1.6 beta 3
+//                2 - with Salamander 1.6 beta 4/5
 //                3 - 1.04 beta 1
 //                4 - 1.04 Beta 2
-//                5 - 1.05 Beta 1 (se Salamander 1.6 beta 6)
-//                6 - 1.06 Beta 1 (se Salamander 1.6 beta 7)
+//                5 - 1.05 Beta 1 (with Salamander 1.6 beta 6)
+//                6 - 1.06 Beta 1 (with Salamander 1.6 beta 7)
 //                7 - 1.06 Beta 2
-//                8 - se Salamander 2.5
-//                9 - se Salamander 2.5 beta 2
-//               10 - se Salamander 2.5 beta 3
-//               11 - se Salamander 2.5 beta 4; MNG
+//                8 - with Salamander 2.5
+//                9 - with Salamander 2.5 beta 2
+//               10 - with Salamander 2.5 beta 3
+//               11 - with Salamander 2.5 beta 4; MNG
 //               12 - PSP* instead of PSP; DTX
-//               13 - se Salamander 2.5 beta 5; DDS
-//               14 - se Salamander 2.5 beta 7 (zmena defaultni konfigurace)
-//               15 - pridan NEF format (zatim umime D70 a D100, doufame ze lidi poslou dalsi)
-//               16 - pridan CRW format
+//               13 - with Salamander 2.5 beta 5; DDS
+//               14 - with Salamander 2.5 beta 7 (change of default configuration)
+//               15 - added NEF format (currently support D70 and D100, hopefully people will send more)
+//               16 - added CRW format
 //               17 - Added EPS/EPT/AI fformat (Only encapsulated EPS w/ TIFF thumbnail)
 //               18 - Added FUJI raw; QuickTime MJPEG PICT video from digital cameras
 //               19 - Salamander 2.5 Beta 11: Added HPI format - Hemera Photo Objects
@@ -73,7 +73,7 @@ BOOL SalamanderRegistered = FALSE;
 int ConfigVersion = 0;
 #define CURRENT_CONFIG_VERSION 22
 
-SGlobals G; // inicializovano v InitViewer
+SGlobals G; // initialized in InitViewer
 TDirectArray<DWORD> ExifHighlights(20, 10);
 BOOL ExifGroupHighlights = FALSE;
 
@@ -115,7 +115,7 @@ LPCTSTR CONFIG_SAVE_REMEMBER_PATH = _T("RememberPath");
 LPCTSTR CONFIG_SAVE_FILTER_MONO = _T("FilterMono");
 LPCTSTR CONFIG_SAVE_FILTER_COLOR = _T("FilterColor");
 
-// preddefinovane hodnoty pro zoom ve stovkach procent, zakoncene terminatorem
+// predefined zoom values in hundreds of percent, terminated by the sentinel
 int PredefinedZooms[] = {/*625, 1250*/ 600, 1200, 2500, 5000, 7500, 10000, 12500, 15000, 20000, 40000, 60000, 80000, 100000, 160000, -1};
 
 CPVW32DLL PVW32DLL;
@@ -124,22 +124,22 @@ HINSTANCE EXIFLibrary = NULL;
 
 LRESULT CALLBACK ToolTipWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from startup until the plugin is closed
 CSalamanderGeneralAbstract* SalamanderGeneral = NULL;
 
-// definice promenne pro "dbg.h"
+// variable definition for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
-// definice promenne pro "spl_com.h"
+// variable definition for "spl_com.h"
 int SalamanderVersion = 0;
 
-// rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+// interface providing customized Windows controls used in Salamander
 CSalamanderGUIAbstract* SalamanderGUI = NULL;
 
-CWindowQueue ViewerWindowQueue("PictView Viewers"); // seznam vsech oken viewru
-CThreadQueue ThreadQueue("PictView Viewers");       // seznam vsech threadu oken
+CWindowQueue ViewerWindowQueue("PictView Viewers"); // list of all viewer windows
+CThreadQueue ThreadQueue("PictView Viewers");       // list of all window threads
 
-CExtraScanImagesToOpen ExtraScanImagesToOpen; // seznam vsech obrazku ze skeneru, ktere se maji otevrit v oknech
+CExtraScanImagesToOpen ExtraScanImagesToOpen; // list of all images from the scanner to open in windows
 
 #define IDX_TB_ZOOMNUMBER -3
 #define IDX_TB_TERMINATOR -2
@@ -172,12 +172,12 @@ CExtraScanImagesToOpen ExtraScanImagesToOpen; // seznam vsech obrazku ze skeneru
 #define IDX_TB_ZOOMWIDTH 25
 #define IDX_TB_PREV 26
 #define IDX_TB_NEXT 27
-#define IDX_TB_OTHERCHANNELS 28 // pouzito v histogramu
-#define IDX_TB_LUMINOSITY 29    // pouzito v histogramu
-#define IDX_TB_RED 30           // pouzito v histogramu
-#define IDX_TB_GREEN 31         // pouzito v histogramu
-#define IDX_TB_BLUE 32          // pouzito v histogramu
-#define IDX_TB_RGBSUM 33        // pouzito v histogramu
+#define IDX_TB_OTHERCHANNELS 28 // used in the histogram
+#define IDX_TB_LUMINOSITY 29    // used in the histogram
+#define IDX_TB_RED 30           // used in the histogram
+#define IDX_TB_GREEN 31         // used in the histogram
+#define IDX_TB_BLUE 32          // used in the histogram
+#define IDX_TB_RGBSUM 33        // used in the histogram
 #define IDX_TB_SELSRCFILE 34
 #define IDX_TB_CROP 35
 #define IDX_TB_PREVSELFILE 36
@@ -335,9 +335,9 @@ MENU_TEMPLATE_ITEM PopupMenuTemplate[] =
 struct CButtonData
 {
     int ImageIndex;                   // zero base index
-    WORD ToolTipResID;                // resID se stringem pro tooltip
-    WORD ID;                          // univerzalni Command
-    CViewerWindowEnablerEnum Enabler; // ridici promenna pro enablovani tlacitka
+    WORD ToolTipResID;                // resID with the string for the tooltip
+    WORD ID;                          // universal command
+    CViewerWindowEnablerEnum Enabler; // control variable for enabling the button
 };
 
 CButtonData ToolBarButtons[] =
@@ -377,7 +377,7 @@ CButtonData ToolBarButtons[] =
         {IDX_TB_FULLSCREEN, IDS_TT_FULL_SCREEN, CMD_FULLSCREEN, vweFileOpened /*vweNotLoading*/},
         {IDX_TB_TERMINATOR}};
 
-// nastavi barvy v poctu vceCount
+// sets colors for the entries defined by vceCount
 void RebuildColors(SALCOLOR* colors)
 {
     if (GetFValue(colors[vceBackground]) & SCF_DEFAULT)
@@ -449,15 +449,15 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
         DLLInstance = hinstDLL;
     }
 
-    if (fdwReason == DLL_PROCESS_DETACH) // ukonceni (unload) PVW32.SPL
+    if (fdwReason == DLL_PROCESS_DETACH) // shutdown (unload) PVW32.SPL
     {
         if (EXIFLibrary != NULL)
         {
-            FreeLibrary(EXIFLibrary); // uvolnime i EXIF.DLL
+            FreeLibrary(EXIFLibrary); // release EXIF.DLL as well
             EXIFLibrary = NULL;
         }
         if (PVW32DLL.Handle != NULL)
-            FreeLibrary(PVW32DLL.Handle); // uvolnime i PVW32.DLL
+            FreeLibrary(PVW32DLL.Handle); // release PVW32.DLL as well
         if (G.HAccel != NULL)
             DestroyAcceleratorTable(G.HAccel);
         if (G.CaptureAtomID != 0)
@@ -486,52 +486,52 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
 {
     HWND hParentWnd = salamander->GetParentWindow();
 
-    // nastavime SalamanderDebug pro "dbg.h"
+    // set SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
-    // nastavime SalamanderVersion pro "spl_com.h"
+    // set SalamanderVersion for "spl_com.h"
     SalamanderVersion = salamander->GetVersion();
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plugin is made for the current Salamander version and higher - perform the check
     if (SalamanderVersion < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // reject older versions
         MessageBox(hParentWnd,
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
                    PLUGIN_NAME_EN, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
+    // let it load the language module (.slg)
     HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), PLUGIN_NAME_EN);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain the general Salamander interface
     SalamanderGeneral = salamander->GetSalamanderGeneral();
 
-    // nastavime jmeno souboru s helpem
+    // set the help file name
     SalamanderGeneral->SetHelpFileName("pictview.chm");
 
-    // ziskame rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+    // obtain the interface providing customized Windows controls used in Salamander
     SalamanderGUI = salamander->GetSalamanderGUI();
 
     if (!InitViewer(hParentWnd))
-        return NULL; // chyba
+        return NULL; // error
 
-    // nastavime zakladni informace o pluginu
+    // set the basic plugin information
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME), FUNCTION_CONFIGURATION | FUNCTION_LOADSAVECONFIGURATION | FUNCTION_VIEWER,
                                    VERSINFO_VERSION_NO_PLATFORM,
                                    VERSINFO_COPYRIGHT,
                                    LoadStr(IDS_PLUGIN_DESCRIPTION),
-                                   _T("PictView") /* neprekladat! */);
+                                   _T("PictView") /* do not translate! */);
 
-    // nastavime URL home-page pluginu
+    // set the plugin home page URL
     salamander->SetPluginHomePageURL("www.pictview.com/salamander");
 
-    // Pokud se slozime uvnitr pictview.spl, bude zobrazen tento messagebox
-    // a stastnym prijemcem obrazku bude Honza Patera.
-    // Honza na webu vystupuje v mnoznem cisle (autori, opravili jsme, ....)
+    // If we crash inside pictview.spl, this message box will be displayed
+    // and the happy recipient of the images will be Honza Patera.
+    // Honza appears on the web in the plural (authors, we fixed, ....)
     TCHAR exceptInfo[512];
     lstrcpyn(exceptInfo, LoadStr(IDS_EXCEPT_INFO1), SizeOf(exceptInfo));
     _tcsncat(exceptInfo, LoadStr(IDS_EXCEPT_INFO2), SizeOf(exceptInfo) - _tcslen(exceptInfo));
@@ -643,19 +643,19 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     HKEY hSaveKey;
 
     CALL_STACK_MESSAGE1("CPluginInterface::LoadConfiguration(, ,)");
-    if (regKey != NULL) // load z registry
+    if (regKey != NULL) // load from the registry
     {
         if (!registry->GetValue(regKey, CONFIG_VERSION, REG_DWORD, &ConfigVersion, sizeof(DWORD)))
         {
-            ConfigVersion = CURRENT_CONFIG_VERSION; // asi nejakej nenechavec... ;-)
+            ConfigVersion = CURRENT_CONFIG_VERSION; // probably some prankster... ;-)
         }
         if (!registry->GetValue(regKey, CONFIG_SHRINK, REG_DWORD, &G.ZoomType, sizeof(DWORD)))
         {
             G.ZoomType = eShrinkToFit;
         }
 
-        // pro verze pred 14 (Salamander 2.5 beta 7) forcneme pouziti jednoho ze zobrazovacich rezimu,
-        // kdy je videt cely obrazek (nejvic se prohlizi fotky a useri je chteji videt komplet)
+        // for versions prior to 14 (Salamander 2.5 beta 7) force the use of one of the viewing modes
+        // where the entire image is visible (most people view photos and want to see them complete)
         if (ConfigVersion < 14 && G.ZoomType != eShrinkToFit && G.ZoomType != eZoomFullScreen)
             G.ZoomType = eShrinkToFit;
 
@@ -740,7 +740,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
             G.DontShowAnymore = 0;
         }
 
-        if (ConfigVersion >= 10) // nekompatibilni format, starou konfiguraci zahodime
+        if (ConfigVersion >= 10) // incompatible format, discard the old configuration
         {
             registry->GetValue(regKey, CONFIG_RGBRENDWSCOLOR, REG_DWORD, &G.Colors[vceBackground], sizeof(DWORD));
             registry->GetValue(regKey, CONFIG_RGBRENDBGCOLOR, REG_DWORD, &G.Colors[vceTransparent], sizeof(DWORD));
@@ -906,7 +906,7 @@ void CPluginInterface::SaveConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     HKEY hCopyToKey;
     if (registry->CreateKey(regKey, CONFIG_COPYTO, hCopyToKey))
     {
-        registry->ClearKey(hCopyToKey); // ulozime pouze promenne != NULL
+        registry->ClearKey(hCopyToKey); // store only variables that are not NULL
         TCHAR buf2[10];
         int j;
         for (j = 0; j < COPYTO_LINES; j++)
@@ -943,7 +943,7 @@ void OnConfiguration(HWND hParent)
     {
         ViewerWindowQueue.BroadcastMessage(WM_USER_VIEWERCFGCHNG, 0, 0);
         if (ignoreThumbnails != G.IgnoreThumbnails || maxThumbImgSize != G.MaxThumbImgSize)
-        { // pokud jsou v panelu thumbnaily, je potreba udelat refresh
+        { // if the panel contains thumbnails, a refresh is needed
             SalamanderGeneral->PostMenuExtCommand(CMD_INTERNAL_REREADTHUMBS, TRUE);
         }
     }
@@ -959,10 +959,10 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
 {
     CALL_STACK_MESSAGE1("CPluginInterface::Connect(,)");
 
-    // v teto casti by mely byt vsechny pripony, ktere viewer umi zpracovat,
-    // pridani pripon probehne jen pri pridavani pluginu do Salamandera (pri
-    // instalaci pluginu nebo autoinstalaci pri prvnim spusteni Salamandera),
-    // pokud jde o upgrade pluginu, je cela tato cast ignorovana
+    // this section should contain all suffixes the viewer can process,
+    // the suffixes are added only when inserting the plugin into Salamander (during
+    // plugin installation or auto-installation at the first Salamander launch),
+    // this entire section is ignored for plugin upgrades
     salamander->AddViewer("*.psp*;*.dtx;*.dds;*.nef;*.crw;*.eps;*.ept;*.ai;*.raf;*.mov;*.hpi", FALSE);
     salamander->AddViewer("*.pntg;*.thumb;*.tiff;*.wbmp;*.ani;*.clk;*.mbm;*.thm;*.zno;*.mng", FALSE);
     salamander->AddViewer("*.st;*.cals;*.itiff;*.jfif;*.jpeg;*.macp;*.mpnt;*.paint;*.pict;*.2bp", FALSE);
@@ -975,60 +975,60 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
     salamander->AddViewer("*.82i;*.83i;*.85i;*.86i;*.89i;*.92i;*.awd;*.bmi;*.bmp;*.cal;*.cdr", FALSE);
     salamander->AddViewer("*.arw;*.blp;*.cr2;*.dng;*.orf;*.pef", FALSE);
 
-    // v teto casti by mely byt vsechny pripony pridane do (vyhozene z) verze X
-    if (ConfigVersion < 3) // pripony pridane do verze 3
+    // this section contains all suffixes added in (removed from) version X
+    if (ConfigVersion < 3) // suffixes added in version 3
     {
         salamander->AddViewer("*.cal;*.cals;*.cit;*.mil;*.st;*.stw;*.zmf", TRUE);
     }
-    if (ConfigVersion < 4) // pripony pridane do verze 4
+    if (ConfigVersion < 4) // suffixes added in version 4
     {
         salamander->AddViewer("*.macp;*.mpnt;*.paint;*.pntg", TRUE);
     }
-    if (ConfigVersion < 5) // pripony pridane do verze 5
+    if (ConfigVersion < 5) // suffixes added in version 5
     {
         salamander->AddViewer("*.cot", TRUE);
     }
-    if (ConfigVersion < 6) // pripony pridane do (vyhozene z) verze 6
+    if (ConfigVersion < 6) // suffixes added in (removed from) version 6
     {
         salamander->AddViewer("*.hmr;*.itiff", TRUE);
     }
-    if (ConfigVersion < 7) // pripony pridane do (vyhozene z) verze 7
+    if (ConfigVersion < 7) // suffixes added in (removed from) version 7
     {
         salamander->AddViewer("*.gem;*.awd", TRUE);
     }
-    if (ConfigVersion < 8) // pripony pridane do (vyhozene z) verze 8; SS 2.5 Beta 1
+    if (ConfigVersion < 8) // suffixes added in (removed from) version 8; SS 2.5 Beta 1
     {
-        // THUMB: PCTV Vision patrici k televiznimu tuneru Pinnacle Systems Studio PCTV PRO
+        // THUMB: PCTV Vision belonging to the Pinnacle Systems Studio PCTV PRO TV tuner
         salamander->AddViewer("*.82i;*.83i;*.85i;*.86i;*.89i;*.92i;*.ska;*.sun;*.thumb;*.web;*.xar;*.wbmp;*.mbm", TRUE);
     }
-    if (ConfigVersion < 9) // pripony pridane do (vyhozene z) verze 9; SS 2.5 Beta 2
+    if (ConfigVersion < 9) // suffixes added in (removed from) version 9; SS 2.5 Beta 2
     {
         salamander->AddViewer("*.ani;*.psp", TRUE);
     }
-    if (ConfigVersion < 10) // pripony pridane do (vyhozene z) verze 10; SS 2.5 Beta 3
+    if (ConfigVersion < 10) // suffixes added in (removed from) version 10; SS 2.5 Beta 3
     {
-        // pridana pripona .2bp (BMP pod Pocket PC, sikne se pro POCKETPC plugin)
+        // added the .2bp suffix (BMP under Pocket PC, comes in handy for the POCKETPC plugin)
         salamander->AddViewer("*.clk;*.thm;*.zno;*.2bp", TRUE);
     }
-    if (ConfigVersion < 11) // pripony pridane do (vyhozene z) verze 11; SS 2.5 Beta 4
+    if (ConfigVersion < 11) // suffixes added in (removed from) version 11; SS 2.5 Beta 4
     {
         salamander->AddViewer("*.mng", TRUE);
     }
-    if (ConfigVersion < 12) // pripony pridane do (vyhozene z) verze 12;
+    if (ConfigVersion < 12) // suffixes added in (removed from) version 12
     {
         // PSP8 uses ugly suffixes like pspimage
         salamander->ForceRemoveViewer("*.psp");
         salamander->AddViewer("*.dtx;*.psp*", TRUE);
     }
-    if (ConfigVersion < 13) // pripony pridane do (vyhozene z) verze 13; SS 2.5 Beta 5
+    if (ConfigVersion < 13) // suffixes added in (removed from) version 13; SS 2.5 Beta 5
     {
         salamander->AddViewer("*.dds", TRUE);
     }
-    if (ConfigVersion < 15) // uvodni podpora pro NEF (zatim umime D70 a D100, lidi snad poslou dalsi)
+    if (ConfigVersion < 15) // initial support for NEF (so far we handle D70 and D100, hopefully people will send more)
     {
         salamander->AddViewer("*.nef", TRUE);
     }
-    if (ConfigVersion < 16) // pridan CRW format
+    if (ConfigVersion < 16) // added the CRW format
     {
         salamander->AddViewer("*.crw", TRUE);
     }
@@ -1063,8 +1063,8 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
         salamander->AddViewer("*.blp", TRUE);
     }
 
-    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volani salamander->AddMenuItem() dole...
+    /* used by the export_mnu.py script that generates salmenu.mnu for Translator
+   keep synchronized with the salamander->AddMenuItem() calls below...
 MENU_TEMPLATE_ITEM PluginMenu[] = 
 {
 	{MNTT_PB, 0
@@ -1102,7 +1102,7 @@ MENU_TEMPLATE_ITEM PluginMenu[] =
     salamander->SetPluginIcon(0);
     salamander->SetPluginMenuAndToolbarIcon(0);
 
-    // pro thumbnaily umime dodat tyto formaty:
+    // we can provide thumbnails for these formats:
     salamander->SetThumbnailLoader("*.mng;*.dtx;*.dds;*.nef;*.crw;*.eps;*.ept;*.ai;*.raf;*.mov;*.hpi;"
                                    "*.pntg;*.thumb;*.tiff;*.wbmp;*.mbm;*.ani;*.psp*;*.clk;*.thm;*.zno;"
                                    "*.st;*.cals;*.itiff;*.jfif;*.jpeg;*.macp;*.mpnt;*.paint;*.pict;*.2bp;"
@@ -1178,7 +1178,7 @@ CPluginInterface::GetInterfaceForThumbLoader()
 }
 
 // ****************************************************************************
-// SEKCE MENU
+// MENU SECTION
 // ****************************************************************************
 
 DWORD
@@ -1229,12 +1229,12 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
         TCHAR focusPath[MAX_PATH];
         lstrcpyn(focusPath, Focus_Path, SizeOf(focusPath));
         Focus_Path[0] = 0;
-        if (focusPath[0] != 0) // jen pokud jsme nemeli smulu (netrefili jsme zacatek BUSY rezimu Salamandera)
+        if (focusPath[0] != 0) // only if we were lucky (we did not hit the start of Salamander's BUSY mode)
         {
             LPTSTR fname;
             if (SalamanderGeneral->CutDirectory(focusPath, &fname))
             {
-                SalamanderGeneral->SkipOneActivateRefresh(); // hlavni okno pri prepnuti z viewru nebude delat refresh
+                SalamanderGeneral->SkipOneActivateRefresh(); // the main window will not refresh when switching from the viewer
                 SalamanderGeneral->FocusNameInPanel(PANEL_SOURCE, focusPath, fname);
             }
         }
@@ -1264,7 +1264,7 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
         UpdateThumbnails(salamander);
         break;
 
-        /*  // Petr: zakomentoval jsem, uz snad nebude nikdy potreba...
+        /*  // Petr: I commented this out; hopefully it will never be needed again...
     case CMD_INTERNAL_REFRESHLPANEL:
     case CMD_INTERNAL_REFRESHRPANEL:
     {
@@ -1279,9 +1279,9 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
         SalamanderGeneral->GetPanelPath(PANEL_LEFT, NULL, 0, &leftType, NULL);
         SalamanderGeneral->GetPanelPath(PANEL_RIGHT, NULL, 0, &rightType, NULL);
         if (leftType == PATH_TYPE_WINDOWS)
-            SalamanderGeneral->RefreshPanelPath(PANEL_LEFT, TRUE /* chceme nacist znovu thumbnaily */);
+            SalamanderGeneral->RefreshPanelPath(PANEL_LEFT, TRUE /* we want to reload thumbnails */);
         if (rightType == PATH_TYPE_WINDOWS)
-            SalamanderGeneral->RefreshPanelPath(PANEL_RIGHT, TRUE /* chceme nacist znovu thumbnaily */);
+            SalamanderGeneral->RefreshPanelPath(PANEL_RIGHT, TRUE /* we want to reload thumbnails */);
         break;
     }
 
@@ -1299,7 +1299,7 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
                 InterfaceForViewer.ViewFile(SCANEXTRA, r.left, r.top, r.right - r.left, r.bottom - r.top,
                                             nCmdShow, alwaysOnTop, FALSE /*returnLock*/, NULL /* *lock*/,
                                             NULL /*BOOL *lockOwner*/, NULL /* *viewerData*/, -1, -1);
-                Sleep(200); // dame prave otevrenemu vieweru nejaky cas na nacteni obrazku
+                Sleep(200); // give the newly opened viewer some time to load the image
             }
 
             ExtraScanImagesToOpen.UnlockImages();
@@ -1348,7 +1348,7 @@ BOOL CPluginInterfaceForMenuExt::HelpForMenuItem(HWND parent, int id)
 }
 
 // ****************************************************************************
-// SEKCE VIEWERU
+// VIEWER SECTION
 // ****************************************************************************
 
 void WINAPI HTMLHelpCallback(HWND hWindow, UINT helpID)
@@ -1418,7 +1418,7 @@ BOOL InitViewer(HWND hParentWnd)
 {
     int i;
 
-    // inicializace globalnich promennych
+    // initialize global variables
     memset(&G, sizeof(G), 0);
     G.ZoomType = eShrinkToFit;
     G.PageDnUpScrolls = TRUE;
@@ -1600,13 +1600,13 @@ protected:
     BOOL AlwaysOnTop;
     BOOL ReturnLock;
 
-    HANDLE Continue; // po naplneni nasledujicich navratovych hodnot se tento event prepne do "signaled"
+    HANDLE Continue; // once the following return values are filled, this event switches to "signaled"
     HANDLE* Lock;
     BOOL* LockOwner;
     BOOL* Success;
 
-    int EnumFilesSourceUID;    // UID zdroje pro enumeraci souboru ve vieweru
-    int EnumFilesCurrentIndex; // index prvniho souboru ve vieweru ve zdroji
+    int EnumFilesSourceUID;    // source UID for enumerating files in the viewer
+    int EnumFilesCurrentIndex; // index of the first file in the viewer within the source
 
 public:
     CViewerThread(LPCTSTR name, int left, int top, int width, int height,
@@ -1670,7 +1670,7 @@ unsigned WINAPI ViewerThreadBody(void *param)
                          DLLInstance,
                          window) != NULL)
     {
-      // !POZOR! ziskane ikony je treba ve WM_DESTROY destruovat
+      // WARNING! icons obtained here must be destroyed in WM_DESTROY
       SendMessage(window->HWindow, WM_SETICON, ICON_BIG,
                   (LPARAM)LoadIcon(DLLInstance, MAKEINTRESOURCE(IDI_WINDOW_ICON)));
       SendMessage(window->HWindow, WM_SETICON, ICON_SMALL,
@@ -1696,10 +1696,10 @@ unsigned WINAPI ViewerThreadBody(void *param)
   int  ShowCmd = data->ShowCmd;
 
   strcpy(name, data->Name);
-  SetEvent(data->Continue);    // pustime dale hl. thread, od tohoto bodu nejsou data platna (=NULL)
+  SetEvent(data->Continue);    // let the main thread continue; from this point the data are invalid (=NULL)
   data = NULL;
 
-  // pokud probehlo vse bez potizi, otevreme v okne pozadovany soubor
+  // if everything succeeded, open the requested file in the window
   if (openFile)
   {
     CALL_STACK_MESSAGE1("ViewerThreadBody::ShowWindow");
@@ -1726,7 +1726,7 @@ unsigned WINAPI ViewerThreadBody(void *param)
     }
 
     CALL_STACK_MESSAGE1("ViewerThreadBody::message-loop");
-    // message loopa
+    // message loop
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0))
     {
@@ -1773,7 +1773,7 @@ CViewerThread::Body()
         CALL_STACK_MESSAGE1("ViewerThreadBody::CreateWindowEx");
         if (!ReturnLock || *Lock != NULL)
         {
-            // POZNAMKA: na existujicim okne/dialogu je da top-most zaridit jednoduse:
+            // NOTE: on an existing window/dialog the top-most state can be set easily:
             //   SetWindowPos(HWindow, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
             if (window->CreateEx(AlwaysOnTop ? WS_EX_TOPMOST : 0,
@@ -1791,7 +1791,7 @@ CViewerThread::Body()
             {
                 CALL_STACK_MESSAGE1("ViewerThreadBody::ShowWindow");
 
-                // !POZOR! ziskane ikony je treba ve WM_DESTROY destruovat
+                // WARNING! icons obtained here must be destroyed in WM_DESTROY
                 SendMessage(window->HWindow, WM_SETICON, ICON_BIG,
                             (LPARAM)LoadIcon(DLLInstance, MAKEINTRESOURCE(IDI_WINDOW_ICON)));
                 SendMessage(window->HWindow, WM_SETICON, ICON_SMALL,
@@ -1813,15 +1813,15 @@ CViewerThread::Body()
 
     CALL_STACK_MESSAGE1("ViewerThreadBody::SetEvent");
     BOOL openFile = *Success;
-    // nez pustime dal hl. thread, pripadne jeste prevezmeme obrazek ze skeneru pro otevreni ve vieweru
+    // before letting the main thread continue, optionally take over an image from the scanner to open in the viewer
     HBITMAP scanExtraImg = _tcscmp(Name, SCANEXTRA) == 0 ? ExtraScanImagesToOpen.GiveNextImage() : NULL;
-    SetEvent(Continue); // pustime dale hl. thread, od tohoto bodu nejsou platne nasl. promenne:
-    Continue = NULL;    // vymaz je zbytecny, jen pro prehlednost
-    Lock = NULL;        // vymaz je zbytecny, jen pro prehlednost
-    LockOwner = NULL;   // vymaz je zbytecny, jen pro prehlednost
-    Success = NULL;     // vymaz je zbytecny, jen pro prehlednost
+    SetEvent(Continue); // let the main thread continue; from this point the following variables are no longer valid:
+    Continue = NULL;    // clearing is unnecessary, just for clarity
+    Lock = NULL;        // clearing is unnecessary, just for clarity
+    LockOwner = NULL;   // clearing is unnecessary, just for clarity
+    Success = NULL;     // clearing is unnecessary, just for clarity
 
-    // pokud probehlo vse bez potizi, otevreme v okne pozadovany soubor
+    // if everything succeeded, open the requested file in the window
     if (openFile)
     {
         CALL_STACK_MESSAGE1("ViewerThreadBody::ShowWindow");
@@ -1875,7 +1875,7 @@ CViewerThread::Body()
         }
 
         CALL_STACK_MESSAGE1("ViewerThreadBody::message-loop");
-        // message loopa
+        // message loop
         MSG msg;
         while (GetMessage(&msg, NULL, 0, 0))
         {
@@ -1883,7 +1883,7 @@ CViewerThread::Body()
 #ifdef ENABLE_TWAIN32
                 (window->Twain == NULL || !window->Twain->IsTwainMessage(&msg)) &&
 #endif                                                                       // ENABLE_TWAIN32
-                (GetCapture() != NULL || !window->IsMenuBarMessage(&msg)) && // zakazeme Alt-vstup do menu, pokud tahneme klec (captured kurzor)
+                (GetCapture() != NULL || !window->IsMenuBarMessage(&msg)) && // disable Alt menu access when dragging the cage (captured cursor)
                 (!TranslateAccelerator(window->HWindow, G.HAccel, &msg)))
             {
                 TranslateMessage(&msg);
@@ -1915,8 +1915,8 @@ BOOL CPluginInterfaceForViewer::ViewFile(LPCTSTR name, int left, int top, int wi
         return FALSE;
     }
 
-    // viewerData se v PictView nepouzivaji, jinak by bylo potreba predat hodnoty (ne odkazem)
-    // do threadu vieweru...
+    // viewerData are not used in PictView; otherwise values would need to be passed (not by reference)
+    // to the viewer thread...
     BOOL success = FALSE;
     CViewerThread* t = new CViewerThread(name, left, top, width, height,
                                          showCmd, alwaysOnTop, returnLock, lock,
@@ -1925,19 +1925,19 @@ BOOL CPluginInterfaceForViewer::ViewFile(LPCTSTR name, int left, int top, int wi
     BOOL failed = TRUE;
     if (t != NULL)
     {
-        if (t->Create(ThreadQueue) != NULL) // thread se spustil
+        if (t->Create(ThreadQueue) != NULL) // the thread started
         {
-            t = NULL;                                 // zbytecne nulovani, jen pro poradek (ukazatel uz muze byt dealokovany)
-            WaitForSingleObject(contEvent, INFINITE); // pockame, az thread zpracuje predana data a vrati vysledky
+            t = NULL;                                 // unnecessary nulling, just for order (the pointer may already be deallocated)
+            WaitForSingleObject(contEvent, INFINITE); // wait until the thread processes the data and returns the results
             failed = FALSE;
         }
         else
-            delete t; // pri chybe je potreba dealokovat objekt threadu
+            delete t; // on failure the thread object must be deallocated
     }
     if (failed)
     {
-        // nez pustime dal hl. thread, jeste zlikvidujeme obrazek ze skeneru pro otevreni
-        // ve vieweru (prevence nekonecneho cyklu)
+        // before letting the main thread continue, dispose of the scanner image queued for opening
+        // in the viewer (prevents an infinite loop)
         HBITMAP scanExtraImg = _tcscmp(name, SCANEXTRA) == 0 ? ExtraScanImagesToOpen.GiveNextImage() : NULL;
         if (scanExtraImg != NULL)
             DeleteObject(scanExtraImg);
@@ -1953,14 +1953,14 @@ BOOL CPluginInterfaceForViewer::CanViewFile(LPCTSTR name)
     LPCTSTR ext = _tcsrchr(name, '.'); // ".cvspass" is extension in Windows
     BOOL bTest = FALSE;
 
-    // JR: co dela PVW32DLL.PVOpenImageEx nacte to komplet obrazek nebo jen nejake headry?
-    // JP: jen headery
-    // JR: je nejaky duvod proce nezkusit kazdy soubor (nezavisle na pripone) a pokud
-    //     by se nezdal, tak ho pustit do dalsiho vieweru? kdyz tam zadny nebude, tak
-    //     to skonci v internim vieweru
-    // JP: to se mi moc nechce, protoze kdyz to primarni format nepozna, tak to jede
-    //     detekci pres radu formatu. Navic treba u TIFFu, CDR, CMXu se projizdi cely
-    //     file, u JPEGu opakovane, aby zjistil presenci nahledu....
+    // JR: what does PVW32DLL.PVOpenImageEx do? Does it load the entire image or just some headers?
+    // JP: only headers
+    // JR: is there any reason not to try every file (regardless of the suffix) and if
+    //     it does not look right, pass it to another viewer? If there is no other,
+    //     it ends up in the internal viewer
+    // JP: I would rather not; when the primary format is not recognized it goes
+    //     through detection for a number of formats. Moreover with TIFF, CDR, CMX it scans the entire
+    //     file, with JPEG repeatedly to detect a preview....
     if (ext && (!_tcsicmp(ext, _T(".SCR")) || !_tcsicmp(ext, _T(".PCT")) || !_tcsicmp(ext, _T(".PIC")) ||
                 !_tcsicmp(ext, _T(".PICT")) || !_tcsicmp(ext, _T(".IMG")) ||
                 !_tcsicmp(ext, _T(".EPS")) || !_tcsicmp(ext, _T(".EPT")) || !_tcsicmp(ext, _T(".AI")) ||
@@ -2218,7 +2218,7 @@ BOOL CViewerWindow::FillToolBar()
         ToolBar->InsertItem2(0xFFFFFFFF, TRUE, &tii);
     }
 
-    // obehne enablery
+    // update the enablers
     ToolBar->UpdateItemsState();
     return TRUE;
 }
@@ -2278,7 +2278,7 @@ void CViewerWindow::UpdateEnablers()
     Enablers[vweNotLoading] = !Renderer.Loading;
     Enablers[vweSelection] = Renderer.ImageLoaded && IsCageValid(&Renderer.SelectRect);
 
-    if (HWindow != NULL && // pri zavreni z jineho threadu (shutdown / zavreni hl. okna Salama) uz okno neexistuje
+    if (HWindow != NULL && // when closed from another thread (shutdown / closing Salamander's main window) the window may no longer exist
         IsWindowVisible(HWindow) && (Renderer.FileName == NULL || *Renderer.FileName != '<' || _tcscmp(Renderer.FileName, pDeletedTitle) == 0))
     {
         BOOL srcBusy, noMoreFiles;
@@ -2293,12 +2293,12 @@ void CViewerWindow::UpdateEnablers()
                                                                   openedFileName, FALSE,
                                                                   TRUE, fileName, &noMoreFiles,
                                                                   &srcBusy);
-        Enablers[vwePrevFile] = ok || srcBusy;                 // jen pokud existuje nejaky predchazejici soubor (nebo je Salam busy, to nezbyva nez to usera nechat zkusit pozdeji)
-        Enablers[vweFirstFile] = ok || srcBusy || noMoreFiles; // skok na prvni nebo posledni soubor jde jen pokud neni prerusena vazba se zdrojem (nebo je Salam busy, to nezbyva nez to usera nechat zkusit pozdeji)
+        Enablers[vwePrevFile] = ok || srcBusy;                 // only if there is a previous file (or Salamander is busy, the user has to try later)
+        Enablers[vweFirstFile] = ok || srcBusy || noMoreFiles; // jumping to the first or last file works only if the source link is intact (or Salamander is busy, the user has to try later)
 
-        if (Enablers[vweFirstFile]) // pokud neni spojeni se zdrojem, nema smysl zjistovat dalsi informace
+        if (Enablers[vweFirstFile]) // if there is no connection to the source, further queries make no sense
         {
-            // zjistime jestli existuje nejaky predchozi selected soubor
+            // find out whether a previous selected file exists
             enumFilesCurrentIndex = Renderer.EnumFilesCurrentIndex;
             ok = SalamanderGeneral->GetPreviousFileNameForViewer(Renderer.EnumFilesSourceUID,
                                                                  &enumFilesCurrentIndex,
@@ -2314,7 +2314,7 @@ void CViewerWindow::UpdateEnablers()
                                                                     fileName, &isSrcFileSel,
                                                                     &srcBusy);
             }
-            Enablers[vwePrevSelFile] = ok && isSrcFileSel || srcBusy; // jen pokud je predchazejici soubor opravdu selected (nebo je Salam busy, to nezbyva nez to usera nechat zkusit pozdeji)
+            Enablers[vwePrevSelFile] = ok && isSrcFileSel || srcBusy; // only if the previous file is actually selected (or Salamander is busy, the user has to try later)
 
             if (Renderer.FileName != NULL && *Renderer.FileName != '<')
             {
@@ -2322,7 +2322,7 @@ void CViewerWindow::UpdateEnablers()
                                                                     Renderer.EnumFilesCurrentIndex,
                                                                     Renderer.FileName, &IsSrcFileSelected,
                                                                     &srcBusy);
-                Enablers[vweSelSrcFile] = ok || srcBusy; // jen pokud zdrojovy soubor existuje (nebo je Salam busy, to nezbyva nez to usera nechat zkusit pozdeji)
+                Enablers[vweSelSrcFile] = ok || srcBusy; // only if the source file exists (or Salamander is busy, the user has to try later)
             }
             else
             {
@@ -2334,19 +2334,19 @@ void CViewerWindow::UpdateEnablers()
             fileName[0] = 0;
             enumFilesCurrentIndex = Renderer.EnumFilesCurrentIndex;
             if (deletedFile && enumFilesCurrentIndex >= 0)
-                enumFilesCurrentIndex--; // aby pri smazanem souboru na Space (next-file) nedoslo k preskoceni dalsiho souboru vlivem sesunuti souboru v panelu
+                enumFilesCurrentIndex--; // prevent skipping the next file after deleting with Space due to files shifting in the panel
             ok = SalamanderGeneral->GetNextFileNameForViewer(Renderer.EnumFilesSourceUID,
                                                              &enumFilesCurrentIndex,
                                                              openedFileName, FALSE,
                                                              TRUE, fileName, &noMoreFiles,
                                                              &srcBusy);
-            Enablers[vweNextFile] = ok || srcBusy; // jen pokud existuje nejaky dalsi soubor (nebo je Salam busy, to nezbyva nez to usera nechat zkusit pozdeji)
+            Enablers[vweNextFile] = ok || srcBusy; // only if there is another file (or Salamander is busy, the user has to try later)
 
-            // zjistime jestli je dalsi soubor selected nebo jestli uz zadny selected neni na sklade
+            // find out whether the next file is selected or whether no selected file remains
             fileName[0] = 0;
             enumFilesCurrentIndex = Renderer.EnumFilesCurrentIndex;
             if (deletedFile && enumFilesCurrentIndex >= 0)
-                enumFilesCurrentIndex--; // aby pri smazanem souboru na Space (next-file) nedoslo k preskoceni dalsiho souboru vlivem sesunuti souboru v panelu
+                enumFilesCurrentIndex--; // prevent skipping the next file after deleting with Space due to files shifting in the panel
             ok = SalamanderGeneral->GetNextFileNameForViewer(Renderer.EnumFilesSourceUID,
                                                              &enumFilesCurrentIndex,
                                                              openedFileName,
@@ -2361,7 +2361,7 @@ void CViewerWindow::UpdateEnablers()
                                                                     fileName, &isSrcFileSel,
                                                                     &srcBusy);
             }
-            Enablers[vweNextSelFile] = ok && isSrcFileSel || srcBusy; // jen pokud je dalsi soubor opravdu selected (nebo je Salam busy, to nezbyva nez to usera nechat zkusit pozdeji)
+            Enablers[vweNextSelFile] = ok && isSrcFileSel || srcBusy; // only if the next file is actually selected (or Salamander is busy, the user has to try later)
         }
         else
         {
@@ -2391,10 +2391,10 @@ void CViewerWindow::UpdateToolBar()
     if (ToolBar == NULL)
         return;
 
-    // nastavime selected/unselected zdrojovy soubor (v panelu nebo Find okne)
+    // set the selected/unselected state of the source file (in the panel or Find window)
     ToolBar->CheckItem(CMD_FILE_TOGGLESELECT, FALSE, IsSrcFileSelected);
 
-    // nastavime zoom hodnotu v toolbare
+    // update the zoom value shown on the toolbar
     TCHAR buff[100];
     TLBI_ITEM_INFO2 tii;
     tii.Mask = TLBI_MASK_TEXT;
@@ -2402,7 +2402,7 @@ void CViewerWindow::UpdateToolBar()
     _stprintf(buff, _T("%d %%"), (int)(Renderer.ZoomFactor / (ZOOM_SCALE_FACTOR / 100)));
     ToolBar->SetItemInfo2(CMD_ZOOM_TO, FALSE, &tii);
 
-    // zamackneme tlacitka podle promenne Tool
+    // press the buttons according to the Tool variable
     ToolBar->CheckItem(CMD_TOOLS_HAND, FALSE, Renderer.CurrTool == RT_HAND);
     ToolBar->CheckItem(CMD_TOOLS_ZOOM, FALSE, Renderer.CurrTool == RT_ZOOM);
     ToolBar->CheckItem(CMD_TOOLS_PIPETTE, FALSE, Renderer.CurrTool == RT_PIPETTE);
@@ -2661,7 +2661,7 @@ void CViewerWindow::ToggleFullScreen()
 
     if (!FullScreen)
     {
-        // pokud se vracime z full-screen rezimu zpet, nastavime puvodni parametry pohledu na obrazek
+        // when returning from full-screen mode, restore the original image view parameters
         if (Renderer.SavedZoomParams)
         {
             Renderer.ZoomType = Renderer.SavedZoomType;
@@ -2683,7 +2683,7 @@ void CViewerWindow::ToggleFullScreen()
 
         SetWindowPlacement(HWindow, &WindowPlacement);
 
-        // pokud se vracime z full-screen rezimu zpet, nastavime puvodni parametry pohledu na obrazek
+        // when returning from full-screen mode, restore the original image view parameters
         if (Renderer.SavedZoomParams)
         {
             Renderer.SavedZoomParams = FALSE;
@@ -2699,14 +2699,14 @@ void CViewerWindow::ToggleFullScreen()
         RECT dummy, maxRect;
         DWORD style;
 
-        // ulozime parametry soucasneho pohledu na obrazek pro prepnuti zpet z full-screen rezimu
+        // save the current image view parameters for switching back from full-screen mode
         Renderer.SavedZoomParams = TRUE;
         Renderer.SavedZoomType = Renderer.ZoomType;
         Renderer.SavedZoomFactor = Renderer.ZoomFactor;
         Renderer.SavedXScrollPos = GetScrollPos(Renderer.HWindow, SB_HORZ);
         Renderer.SavedYScrollPos = GetScrollPos(Renderer.HWindow, SB_VERT);
 
-        Renderer.ZoomType = eShrinkToFit; // ve full-screenu bude vzdy shrink-to-fit
+        Renderer.ZoomType = eShrinkToFit; // full-screen always uses shrink-to-fit
 
         WindowPlacement.length = sizeof(WindowPlacement);
         GetWindowPlacement(HWindow, &WindowPlacement);
@@ -2790,10 +2790,10 @@ void CViewerWindow::OnSize(void)
         HDWP hdwp = BeginDeferWindowPos(wndCount);
         if (hdwp != NULL)
         {
-            // + 4: pri zvetsovani sirky okna mi nechodilo prekreslovani poslednich 4 bodu
-            // v rebaru; ani po nekolika hodinach jsem nenasel pricinu; v Salamu to slape;
-            // zatim to resim takto; treba si casem vzpomenu, kde je problem
-            // Patera 2003.03.11: Kupodivu to nesouvisi s viditelnosti gripperu
+            // +4: when widening the window the last 4 pixels of the rebar were not redrawn;
+            // after several hours I still could not find the cause; it works fine in Salamander.
+            // For now I'm handling it like this; maybe I'll remember the issue later.
+            // Patera 2003.03.11: Surprisingly it is not related to the gripper visibility.
             if (rebarVisible)
             {
                 hdwp = DeferWindowPos(hdwp, HRebar, NULL,
@@ -2823,7 +2823,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 #ifdef ENABLE_TWAIN32
     if (Twain != NULL && Twain->GetModalUI())
     {
-        // pokud je aktivni UI scanneru, zatluceme nasi funkcionalitu
+        // if the scanner UI is active, suppress our functionality
         if (uMsg != WM_CLOSE && uMsg != WM_SIZE && uMsg != WM_PAINT &&
             (uMsg != WM_TIMER || wParam != CLOSEWND_TIMER_ID))
         {
@@ -2832,7 +2832,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
 #endif // ENABLE_TWAIN32
 
-    // WM_MOUSEWHEEL nam nekdy chodi sem, provedeme forward
+    // WM_MOUSEWHEEL sometimes arrives here; forward it
     if (uMsg == WM_MOUSEWHEEL && Renderer.HWindow != NULL)
         return SendMessage(Renderer.HWindow, uMsg, wParam, lParam);
 
@@ -2860,7 +2860,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                 0, 0, r.right, r.bottom, // dummy
                                 HWindow, (HMENU)0, DLLInstance, NULL);
 
-        // nechceme vizualni styly pro rebar
+        // we do not want visual styles for the rebar
         SalamanderGUI->DisableWindowVisualStyles(HRebar);
 
         Renderer.CreateEx(/*WS_EX_STATICEDGE*/ WS_EX_CLIENTEDGE,
@@ -2910,12 +2910,12 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (!LOWORD(wParam))
         {
-            // hlavni okno pri prepnuti z viewru nebude delat refresh
+            // the main window will not refresh when switching from the viewer
             SalamanderGeneral->SkipOneActivateRefresh();
         }
         if (LOWORD(wParam) == WA_ACTIVE || LOWORD(wParam) == WA_CLICKACTIVE)
         {
-            // j.r.: tohle u me nefunguje, pokud dam kurzor na toolbaru a prepinam mezi Salamem a PV, dochazi ke kousani
+            // j.r.: this does not work for me; if I put the cursor on the toolbar and switch between Salamander and PV, things freeze
             // PostMessage(HWindow, WM_APP + 1, 0, 0);
             SetTimer(HWindow, ENABLERS_TIMER_ID, 100, NULL);
         }
@@ -2931,7 +2931,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             UpdateEnablers();
             UpdateToolBar();
         }
-        if (wParam == CLOSEWND_TIMER_ID) // mame si poslat WM_CLOSE, blokujici dialog uz je snad sestreleny
+        if (wParam == CLOSEWND_TIMER_ID) // we should send ourselves WM_CLOSE; the blocking dialog is hopefully gone
         {
             KillTimer(HWindow, CLOSEWND_TIMER_ID);
             PostMessage(HWindow, WM_CLOSE, 0, 0);
@@ -2962,26 +2962,26 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_CLOSE:
     {
 #ifdef ENABLE_WIA
-        if (WiaWrap != NULL && WiaWrap->IsAcquiringImage()) // probiha WIA rutina = nelze zavrit okno a dealokovat WIA
+        if (WiaWrap != NULL && WiaWrap->IsAcquiringImage()) // a WIA routine is running = cannot close the window and free WIA
 #endif                                                      // ENABLE_WIA
 #ifdef ENABLE_TWAIN32
-            if (Twain != NULL && Twain->IsSourceManagerOpened()) // probiha Twain rutina = nelze zavrit okno a dealokovat Twain
+            if (Twain != NULL && Twain->IsSourceManagerOpened()) // a Twain routine is running = cannot close the window and free Twain
 #endif                                                           // ENABLE_TWAIN32
             {
 #ifdef ENABLE_WIA
-                WiaWrap->CloseParentAfterAcquiring(); // chceme zavrit okno vieweru hned po dokonceni WIA rutiny + v tomto pripade se nebudou pocitat enablery, zbytecne zdrzuji
+                WiaWrap->CloseParentAfterAcquiring(); // close the viewer window right after the WIA routine finishes; recalculating enablers would only slow things down
 #endif                                                // ENABLE_WIA
 #ifdef ENABLE_TWAIN32
-                Twain->CloseViewerAfterClosingSM(); // chceme zavrit okno vieweru hned po dokonceni Twain rutiny + v tomto pripade se nebudou pocitat enablery, zbytecne zdrzuji
+                Twain->CloseViewerAfterClosingSM(); // close the viewer window right after the Twain routine finishes; recalculating enablers would only slow things down
 #endif                                              // ENABLE_TWAIN32
                 if (!IsWindowEnabled(HWindow))
-                { // zavreme postupne vsechny dialogy nad timto dialogem (posleme jim WM_CLOSE a pak ho posleme znovu sem),
-                    // doufame, ze tim ukoncime Twain / WIA rutinu
+                { // close all dialogs above this dialog one by one (send them WM_CLOSE and then send it here again),
+                    // hoping to terminate the Twain / WIA routine
                     SalamanderGeneral->CloseAllOwnedEnabledDialogs(HWindow);
-                    // Petr: okno meho Twain scanneru pres tohle nechytam, no nic, aspon to nepada (cekame na rucni zavreni okna userem)
-                    // Petr: WIA pres Twain nam sem neposle ani WM_CLOSE, zavre se to teprve po zavreni WIA okna
+                    // Petr: the window of my Twain scanner is not caught by this; never mind, at least it does not crash (we wait for the user to close the window manually)
+                    // Petr: WIA through Twain will not send WM_CLOSE here either; it closes only after the WIA window is closed
                 }
-                SetTimer(HWindow, CLOSEWND_TIMER_ID, 100, NULL); // nechame si WM_CLOSE poslat znovu, cekame na dokonceni Twain / WIA rutiny
+                SetTimer(HWindow, CLOSEWND_TIMER_ID, 100, NULL); // request WM_CLOSE again, waiting for the Twain / WIA routine to finish
                 return 0;
             }
         break;
@@ -3022,8 +3022,8 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 #endif // ENABLE_TWAIN32
         ReleaseGraphics();
 
-        // ikony ziskane bez flagu LR_SHARED je treba destruovat (ICON_SMALL)
-        // a sdilenym (ICON_BIG) destrukce neublizi (nic se nestane)
+        // icons obtained without the LR_SHARED flag must be destroyed (ICON_SMALL)
+        // destroying shared ones (ICON_BIG) does no harm (nothing happens)
         HICON hIcon = (HICON)SendMessage(HWindow, WM_SETICON, ICON_BIG, NULL);
         if (hIcon != NULL)
             DestroyIcon(hIcon);
@@ -3067,9 +3067,9 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_KEYDOWN:
     case WM_KEYUP:
     {
-        // Misto Post je treba volat Send, protoze dojde-li k aktivaci tohoto
-        // okna, chodi sem WM_CONTEXTMENU pri Shift+F10, misto aby bylo zachyceno
-        // v Renderer okne. Dochazi pak k aktivaci system menu tohoto okna.
+        // Use Send instead of Post, because if this window gets activated,
+        // WM_CONTEXTMENU arrives here on Shift+F10 instead of being caught
+        // in the Renderer window, which would activate this window's system menu.
         if (Renderer.HWindow != NULL)
             SendMessage(Renderer.HWindow, uMsg, wParam, lParam);
         break;

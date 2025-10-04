@@ -53,10 +53,10 @@ CCommonDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // horizontalni i vertikalni vycentrovani dialogu k parentu
+        // horizontal and vertical centering of the dialog to the parent
         if (Parent != NULL)
             SalamanderGeneral->MultiMonCenterWindow(HWindow, Parent, TRUE);
-        break; // chci focus od DefDlgProc
+        break; // want the focus from DefDlgProc
     }
     }
     return CDialog::DialogProc(uMsg, wParam, lParam);
@@ -95,7 +95,7 @@ CAboutDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // dosadime aktualni verzi
+        // insert the current version
         TCHAR buff[1000];
         TCHAR buff2[1000];
 
@@ -105,13 +105,13 @@ CAboutDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         SetDlgItemText(HWindow, IDC_ABOUT_TITLE, buff2);
         SetDlgItemText(HWindow, IDC_ABOUT_COPYRIGHT, VERSINFO_COPYRIGHT);
 
-        // jmeno pluginu a verze budou tucne
+        // plugin name and version will be bold
         SalamanderGUI->AttachStaticText(HWindow, IDC_ABOUT_TITLE, STF_BOLD);
 
-        // hyperlinky
+        // hyperlinks
         CGUIHyperLinkAbstract* hl;
 
-        // zaridime promacknuti ramecku (nas stary resource workshop si neporadi s novejma stylama)
+        // ensure the frame is sunken (our old resource workshop cannot cope with newer styles)
         HWND hChild = GetDlgItem(HWindow, IDC_ABOUT_FRAME);
         DWORD style = GetWindowLong(hChild, GWL_EXSTYLE);
         style |= WS_EX_CLIENTEDGE;
@@ -124,7 +124,7 @@ CAboutDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         GetDlgItemText(HWindow, IDC_ABOUT_PVW32, buff, 1000);
         wsprintf(buff2, buff, PVW32DLL.Version);
         SetDlgItemText(HWindow, IDC_ABOUT_PVW32, buff2);
-        // PVW32 bude tucne
+        // PVW32 will be bold
         SalamanderGUI->AttachStaticText(HWindow, IDC_ABOUT_PVW32, STF_BOLD);
 
         hl = SalamanderGUI->AttachHyperLink(HWindow, IDC_ABOUT_EMAIL, STF_UNDERLINE | STF_HYPERLINK_COLOR);
@@ -387,9 +387,9 @@ CConfigPageColors::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 mii.Mask = MENU_MASK_TYPE | MENU_MASK_STRING | MENU_MASK_ID | MENU_MASK_STATE;
                 mii.Type = MENU_TYPE_STRING | MENU_TYPE_RADIOCHECK;
 
-                /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volanim InsertItem() dole...
-MENU_TEMPLATE_ITEM ConfigPageColorsMenu[] = 
+                /* used by the export_mnu.py script, which generates salmenu.mnu for Translator
+   keep synchronized with the InsertItem() calls below...
+MENU_TEMPLATE_ITEM ConfigPageColorsMenu[] =
 {
   {MNTT_PB, 0
   {MNTT_IT, IDS_CUSTOM_COLOR
@@ -439,7 +439,7 @@ MENU_TEMPLATE_ITEM ConfigPageColorsMenu[] =
                     }
                     else
                         *clr = RGBF(0, 0, 0, SCF_DEFAULT);
-                    if (HWindow != NULL) // pri zavreni z jineho threadu (shutdown / zavreni hl. okna Salama) uz dialog neexistuje
+                    if (HWindow != NULL) // when closing from another thread (shutdown / closing Salamander main window) the dialog may no longer exist
                     {
                         RebuildColors(Colors);
                         button->SetColor(GetCOLORREF(*clr), GetCOLORREF(*clr));
@@ -632,7 +632,7 @@ void CConfigPageAdvanced::Transfer(CTransferInfo& ti)
 // CConfigDialog
 //
 
-// pomocny objekt pro centrovani konfiguracniho dialogu k parentovi
+// helper object for centering the configuration dialog to the parent
 class CCenteredPropertyWindow : public CWindow
 {
 protected:
@@ -652,10 +652,10 @@ protected:
             break;
         }
 
-        case WM_USER_CFGDLGDETACH: // mame se odpojit od dialogu (uz je vycentrovano)
+        case WM_USER_CFGDLGDETACH: // we should detach from the dialog (already centered)
         {
             DetachWindow();
-            delete this; // trochu prasarna, ale uz se 'this' nikdo ani nedotkne, takze pohoda
+            delete this; // a bit hacky, but nobody touches 'this' anymore so it's fine
             return 0;
         }
         }
@@ -681,24 +681,24 @@ typedef struct DLGTEMPLATEEX
 #include <poppack.h>
 #endif // LPDLGTEMPLATEEX
 
-// pomocny call-back pro centrovani konfiguracniho dialogu k parentovi a vyhozeni '?' buttonku z captionu
+// helper callback for centering the configuration dialog to the parent and removing the '?' button from the caption
 int CALLBACK CenterCallback(HWND HWindow, UINT uMsg, LPARAM lParam)
 {
-    if (uMsg == PSCB_INITIALIZED) // pripojime se na dialog
+    if (uMsg == PSCB_INITIALIZED) // attach to the dialog
     {
         CCenteredPropertyWindow* wnd = new CCenteredPropertyWindow;
         if (wnd != NULL)
         {
             wnd->AttachToWindow(HWindow);
             if (wnd->HWindow == NULL)
-                delete wnd; // okno neni pripojeny, zrusime ho uz tady
+                delete wnd; // the window is not attached, destroy it right here
             else
             {
-                PostMessage(wnd->HWindow, WM_USER_CFGDLGDETACH, 0, 0); // pro odpojeni CCenteredPropertyWindow od dialogu
+                PostMessage(wnd->HWindow, WM_USER_CFGDLGDETACH, 0, 0); // to detach CCenteredPropertyWindow from the dialog
             }
         }
     }
-    if (uMsg == PSCB_PRECREATE) // odstraneni '?' buttonku z headeru property sheetu
+    if (uMsg == PSCB_PRECREATE) // removing the '?' button from the property sheet header
     {
         // Remove the DS_CONTEXTHELP style from the dialog box template
         if (((LPDLGTEMPLATEEX)lParam)->signature == 0xFFFF)
@@ -937,8 +937,8 @@ void CCaptureDialog::Validate(CTransferInfo& ti)
 
     if (hotKeyChecked)
     {
-        // zkusime hotkey registrovat pro nase okno; pokud to vyjde, pozdeji
-        // by nemel byt problem ji registrovat pro okno vieweru
+        // try to register the hotkey for our window; if it succeeds,
+        // registering it later for the viewer window should not be a problem
         WORD hotKey = (WORD)SendDlgItemMessage(HWindow, IDC_CAPTURE_HOTKEY_VAL, HKM_GETHOTKEY, 0, 0);
         if (hotKey != 0)
         {
@@ -982,7 +982,7 @@ void CCaptureDialog::Transfer(CTransferInfo& ti)
 {
     if (ti.Type == ttDataToWindow)
     {
-        // pokud uzivatel nejede s vice monitory, zakazeme virtual screen a osetrime hodnotu
+        // if the user is not running multiple monitors, disable the virtual screen and sanitize the value
         if (!MultipleMonitors(NULL))
         {
             EnableWindow(GetDlgItem(HWindow, IDC_CAPTURE_VIRTUAL), FALSE);
@@ -1316,7 +1316,7 @@ void CExifDialog::RecalcLayout(int cx, int cy, int id[], int n, int m)
 
 void CExifDialog::InitListView()
 {
-    // naleju do listview sloupce Language a Path
+    // fill the listview with the Language and Path columns
     TCHAR buff[100];
     LVCOLUMN lvc;
     lvc.mask = LVCF_TEXT | LVCF_SUBITEM;
@@ -1389,8 +1389,8 @@ void CExifDialog::FillListView()
             int hghIndex = GetHighlightIndex(item->Tag);
             if (!grouped || (j == 0 && hghIndex != -1) || (j == 1 && hghIndex == -1))
             {
-                // v prvni fazi (j==0) pridame highlighted polozky
-                // v druhe fazi (j==1) pridame non-highlighted polozky
+                // in the first phase (j==0) add highlighted items
+                // in the second phase (j==1) add non-highlighted items
                 LVITEM lvi;
                 lvi.mask = LVIF_PARAM;
                 lvi.iItem = index;
@@ -1499,7 +1499,7 @@ void CExifDialog::OnContextMenu(int x, int y)
     if (selCount < 1)
         return;
 
-    // vytahame texty z tlacitek a naplnime context menu
+    // pull the texts from buttons and populate the context menu
     int ids[] = {-2, IDC_IMGEXIF_HIGHLIGHT, // -2 -> next item will be default
                  IDC_IMGEXIF_COPY,
                  -1, // -1 -> separator
@@ -1725,7 +1725,7 @@ CExifDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                 if (cd->nmcd.dwDrawStage == CDDS_ITEMPREPAINT)
                 {
-                    // pozadame si o zaslani notifikace CDDS_ITEMPREPAINT | CDDS_SUBITEM
+                    // request the CDDS_ITEMPREPAINT | CDDS_SUBITEM notification
                     SetWindowLongPtr(HWindow, DWLP_MSGRESULT, CDRF_NOTIFYSUBITEMDRAW);
                     return TRUE;
                 }
@@ -1835,7 +1835,7 @@ void CCopyToDlg::Validate(CTransferInfo& ti)
     TCHAR path[MAX_PATH];
     _tcscpy(path, buff);
 
-    // do srcDir vlozime plnou cestu k prohlizenemu souboru a odrizneme nazev
+    // put the full path of the viewed file into srcDir and trim off the name
     TCHAR srcDir[MAX_PATH];
     lstrcpyn(srcDir, SrcName, SizeOf(srcDir));
     LPTSTR namePart = (LPTSTR)_tcsrchr(srcDir, '\\');
@@ -1853,7 +1853,7 @@ void CCopyToDlg::Validate(CTransferInfo& ti)
     {
         TCHAR errBuf[MAX_PATH] = _T("");
         if (errTextID == GFN_EMPTYNAMENOTALLOWED)
-            _tcscpy(errBuf, LoadStr(IDS_SPECIFYPATH)); // pro prazdny string dosadime intuitivnejsi hlasku
+            _tcscpy(errBuf, LoadStr(IDS_SPECIFYPATH)); // provide a more intuitive message for an empty string
         else
             SalamanderGeneral->GetGFNErrorText(errTextID, errBuf, MAX_PATH);
         SalamanderGeneral->SalMessageBox(HWindow, errBuf, LoadStr(IDS_ERRORTITLE),
@@ -1861,7 +1861,7 @@ void CCopyToDlg::Validate(CTransferInfo& ti)
         ti.ErrorOn(COPYTO_EL_ID[line]);
     }
 
-    // pripravime navratovku
+    // prepare the return buffer
     if (ti.IsGood())
     {
         SalamanderGeneral->SalPathAppend(path, namePart, MAX_PATH);

@@ -207,7 +207,7 @@ PVCODE CalculateHistogram(LPPVHandle PVHandle, const LPPVImageInfo pvii, LPDWORD
             blue[b]++;
             k = (299 * r + 587 * g + 114 * b) / 1000;
             luminosity[k]++;
-            rgb[r]++; // "RGB" levels z Photoshopu
+            rgb[r]++; // "RGB" levels from Photoshop
             rgb[g]++;
             rgb[b]++;
         }
