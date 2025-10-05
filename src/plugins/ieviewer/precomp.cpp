@@ -3,9 +3,9 @@
 
 #include "precomp.h"
 
-// projekt FOLDERS obsahuje tri skupiny modulu
+// The FOLDERS project contains three groups of modules
 //
-// 1) modul precomp.cpp, ktery postavi folders.pch (/Yc"precomp.h")
-// 2) moduly vyuzivajici folders.pch (/Yu"precomp.h")
-// 3) commony maji vlastni, automaticky generovany WINDOWS.PCH
+// 1) the precomp.cpp module, which builds folders.pch (/Yc"precomp.h")
+// 2) modules using folders.pch (/Yu"precomp.h")
+// 3) common files have their own automatically generated WINDOWS.PCH
 //    (/YX"windows.h" /Fp"$(OutDir)\WINDOWS.PCH")

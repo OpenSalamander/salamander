@@ -323,8 +323,8 @@ protected:
     BOOL m_fInitialized; //Something here?
     BOOL m_fCreated;
 
-    BOOL m_fCanClose; //obrana pred padanim s XML soubory
-    BOOL m_fOpening;  //nedovilime je zavrit behem nacitani
+    BOOL m_fCanClose; // protection against crashes with XML files
+    BOOL m_fOpening;  // do not allow closing during loading
 
     DWORD m_dwCookie; //connection point identifier for m_pConnectionPoint
 
@@ -333,7 +333,7 @@ protected:
     //Object interfaces
     IUnknown* m_pIUnknown;
     IWebBrowser* m_pIWebBrowser;
-    IWebBrowser2* m_pIWebBrowser2; // pokud neni podporovano, bude rovno NULL
+    IWebBrowser2* m_pIWebBrowser2; // if unsupported, it will be equal to NULL
     IOleObject* m_pIOleObject;
     IOleInPlaceObject* m_pIOleInPlaceObject;
     IOleInPlaceActiveObject* m_pIOleInPlaceActiveObject;
@@ -376,7 +376,7 @@ public:
 //
 // CIEWindow
 //
-// slouzi k zabaleni Interner Exoloreru
+// wraps Internet Explorer
 //
 
 class CIEWindow
@@ -390,13 +390,13 @@ protected:
 public:
     CIEWindow() { HWindow = NULL; }
 
-    // vytvori a pripoji se na IE
+    // create and connect to IE
     BOOL CreateSite(HWND hParent);
-    // provede uklid IE !! je treba volat pred destrukci okna
+    // perform IE cleanup !! must be called before destroying the window
     void CloseSite();
-    // hupne na pozadovane URL
+    // jump to the requested URL
     void Navigate(LPCTSTR lpszURL, IStream* contentStream);
-    // tak tohle musime bohuzel volat z message-loopy
+    // unfortunately we have to call this from the message loop
     HRESULT TranslateAccelerator(LPMSG lpmsg);
     BOOL CanClose();
 };
@@ -423,7 +423,7 @@ class CIEMainWindowQueue
 protected:
     CIEMainWindowQueueItem* Head;
 
-    struct CCS // pristup z vice threadu -> nutna synchronizace
+    struct CCS // access from multiple threads -> synchronization required
     {
         CRITICAL_SECTION cs;
 
@@ -438,24 +438,24 @@ public:
     CIEMainWindowQueue() { Head = NULL; }
     ~CIEMainWindowQueue();
 
-    BOOL Add(CIEMainWindowQueueItem* item); // prida polozku do fronty, vraci uspech
-    void Remove(HWND hWindow);              // odstrani polozku z fronty
-    BOOL Empty();                           // vraci TRUE pokud je fronta prazdna
+    BOOL Add(CIEMainWindowQueueItem* item); // add an item to the queue, returns success
+    void Remove(HWND hWindow);              // remove an item from the queue
+    BOOL Empty();                           // returns TRUE if the queue is empty
 
-    // broadcastne WM_CLOSE, pak ceka na prazdnou frontu (max. cas dle 'force' bud 'forceWaitTime'
-    // nebo 'waitTime'); vraci TRUE pokud je fronta prazdna (vsechna okna se zavrela)
-    // nebo je 'force' TRUE; cas INFINITE = neomezene dlouhe cekani
-    // Poznamka: pri 'force' TRUE vraci vzdy TRUE, nema smysl na nic cekat, proto forceWaitTime = 0
+    // broadcast WM_CLOSE, then wait for an empty queue (max time according to 'force', either 'forceWaitTime'
+    // or 'waitTime'); returns TRUE if the queue is empty (all windows closed)
+    // or 'force' is TRUE; time INFINITE = unlimited wait
+    // Note: with 'force' TRUE it always returns TRUE, no point in waiting, so forceWaitTime = 0
     BOOL CloseAllWindows(BOOL force, int waitTime = 1000, int forceWaitTime = 0);
 };
 
 class CIEMainWindow
 {
 public:
-    HWND HWindow;                                // handle okna viewru
-    HANDLE Lock;                                 // 'lock' objekt nebo NULL (do signaled stavu az zavreme soubor)
-    static CIEMainWindowQueue ViewerWindowQueue; // seznam vsech oken viewru
-    static CThreadQueue ThreadQueue;             // seznam vsech threadu oken
+    HWND HWindow;                                // viewer window handle
+    HANDLE Lock;                                 // 'lock' object or NULL (becomes signaled after we close the file)
+    static CIEMainWindowQueue ViewerWindowQueue; // list of all viewer windows
+    static CThreadQueue ThreadQueue;             // list of all window threads
 
     CIEWindow m_IEViewer;
 
