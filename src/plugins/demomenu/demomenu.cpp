@@ -11,28 +11,28 @@
 
 #include "precomp.h"
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object, its methods are called by Salamander
 CPluginInterface PluginInterface;
-// dalsi casti interfacu CPluginInterface
+// additional parts of the CPluginInterface interface
 CPluginInterfaceForMenuExt InterfaceForMenuExt;
 
-// globalni data
-const char* PluginNameEN = "DemoMenu";    // neprekladane jmeno pluginu, pouziti pred loadem jazykoveho modulu + pro debug veci
-const char* PluginNameShort = "DEMOMENU"; // jmeno pluginu (kratce, bez mezer)
+// global data
+const char* PluginNameEN = "DemoMenu";    // non-translated plugin name, used before loading the language module + for debugging
+const char* PluginNameShort = "DEMOMENU"; // plugin name (short, without spaces)
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to SPL - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to SLG - language-dependent resources
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// Salamander general interface - valid from Salamander launch until the plugin terminates
 CSalamanderGeneralAbstract* SalamanderGeneral = NULL;
 
-// definice promenne pro "dbg.h"
+// variable definition for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
-// definice promenne pro "spl_com.h"
+// variable definition for "spl_com.h"
 int SalamanderVersion = 0;
 
-// rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+// interface providing customized Windows controls used in Salamander
 //CSalamanderGUIAbstract *SalamanderGUI = NULL;
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
@@ -97,41 +97,41 @@ int WINAPI SalamanderPluginGetReqVer()
 
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
-    // nastavime SalamanderDebug pro "dbg.h"
+    // set SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
-    // nastavime SalamanderVersion pro "spl_com.h"
+    // set SalamanderVersion for "spl_com.h"
     SalamanderVersion = salamander->GetVersion();
     HANDLES_CAN_USE_TRACE();
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plugin is made for the current version of Salamander and higher - perform a check
     if (SalamanderVersion < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
                    PluginNameEN, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
+    // let it load the language module (.slg)
     HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), PluginNameEN);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain Salamander's general interface
     SalamanderGeneral = salamander->GetSalamanderGeneral();
-    // ziskame rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+    // obtain the interface providing customized Windows controls used in Salamander
     //  SalamanderGUI = salamander->GetSalamanderGUI();
 
-    // nastavime jmeno souboru s helpem
+    // set the name of the help file
     SalamanderGeneral->SetHelpFileName("demomenu.chm");
 
-    // nastavime zakladni informace o pluginu
+    // set the basic information about the plugin
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME), 0, VERSINFO_VERSION_NO_PLATFORM, VERSINFO_COPYRIGHT,
                                    LoadStr(IDS_PLUGIN_DESCRIPTION), PluginNameShort,
                                    NULL, NULL);
 
-    // nastavime URL home-page pluginu
+    // set the plugin home-page URL
     salamander->SetPluginHomePageURL(LoadStr(IDS_PLUGIN_HOME));
 
     return &PluginInterface;
@@ -153,7 +153,7 @@ CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamander)
 {
     CALL_STACK_MESSAGE1("CPluginInterface::Connect(,)");
 
-    // zakladni cast:
+    // basic part:
     salamander->AddMenuItem(-1, LoadStr(IDS_TESTCMD), SALHOTKEY('M', HOTKEYF_CONTROL | HOTKEYF_SHIFT),
                             MENUCMD_TESTCMD, FALSE, MENU_EVENT_TRUE, MENU_EVENT_TRUE, MENU_SKILLLEVEL_ALL);
 
@@ -163,7 +163,7 @@ CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamander)
   HICON hIcon = (HICON)LoadImage(DLLInstance, MAKEINTRESOURCE(IDI_PLUGINICON), IMAGE_ICON, 16, 16, SalamanderGeneral->GetIconLRFlags());
   iconList->ReplaceIcon(0, hIcon);
   DestroyIcon(hIcon);
-  salamander->SetIconListForGUI(iconList); // o destrukci iconlistu se postara Salamander
+  salamander->SetIconListForGUI(iconList); // Salamander takes care of destroying the icon list
 
   salamander->SetPluginIcon(0);
   salamander->SetPluginMenuAndToolbarIcon(0);
