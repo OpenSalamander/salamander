@@ -14,7 +14,7 @@ CTextFileViewWindowBase::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     SLOW_CALL_STACK_MESSAGE4("CTextFileViewWindowBase::WindowProc(0x%X, 0x%IX, 0x%IX)", uMsg,
                              wParam, lParam);
 
-    // dame prilezitost k resetu akumulatoru pro mouse wheel
+    // give the mouse-wheel accumulator a chance to reset
     ResetMouseWheelAccumulatorHandler(uMsg, wParam, lParam);
 
     switch (uMsg)
@@ -23,13 +23,13 @@ CTextFileViewWindowBase::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (Siblink)
         {
-            // zrusime vyber textu v druhem okne
+            // clear the text selection in the other window
             if (DisplayCaret)
                 Siblink->RemoveSelection(TRUE);
         }
         ShowCaret();
 
-        // informujeme parenta, ze jsme prevzali fokus
+        // notify the parent window that we received focus
         //      CMainWindow * parent = (CMainWindow *) WindowsManager.GetWindowPtr(GetParent(HWindow));
         if (MainWindow /*parent*/)
             MainWindow /*parent*/->SetActiveFileView(ID);
@@ -48,7 +48,7 @@ CTextFileViewWindowBase::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (GetFocus() != HWindow)
             SetFocus(HWindow);
-        // zrusime vyber textu v druhem okne
+        // clear the text selection in the other window
         if (!DisplayCaret)
             Siblink->RemoveSelection(TRUE);
         if (DataValid)
@@ -56,14 +56,14 @@ CTextFileViewWindowBase::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             int line = FirstVisibleLine + HIWORD(lParam) / FontHeight;
             if (line < int(Script[ViewMode].size()))
             {
-                // pri nasledujicim WM_LBUTTONUP fokusujeme differenci
-                // tento flag se shodi v UpdateSelection, kdyz user vybere nejaky text
+                // on the next WM_LBUTTONUP we focus the difference
+                // this flag is cleared in UpdateSelection when the user selects some text
                 SelectDifferenceOnButtonUp = TRUE;
 
                 TrackingLineBegin = line;
                 if (LOWORD(lParam) >= LineNumWidth)
                 {
-                    // nastavime novy vyber textu
+                    // set a new text selection
                     if (Script[ViewMode][line].IsBlank())
                         TrackingCharBegin = 0;
                     else
@@ -96,28 +96,28 @@ CTextFileViewWindowBase::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 //          CMainWindow * parent = (CMainWindow *) WindowsManager.GetWindowPtr(GetParent(HWindow));
                 if (LOWORD(lParam) < LineNumWidth)
                 {
-                    // zkusime vybrat celou differenci do bloku
+                    // try to select the entire difference block
                     if (!MainWindow /*parent*/ || !MainWindow /*parent*/->GetDifferenceRange(line, &start, &end))
                         return 0;
                 }
                 else
                 {
                     if ((GetKeyState(VK_CONTROL) & 0x8000) == 0)
-                        wholeLines = FALSE; // vyber celeho slova
+                        wholeLines = FALSE; // select the entire word
                     else
-                        start = end = line; //vyber celeho radku
+                        start = end = line; // select the entire line
                 }
 
-                // ulozime stary vyber textu
+                // save the previous text selection
                 int oldLineBegin = SelectionLineBegin;
                 int oldLineEnd = SelectionLineEnd;
                 int oldCharBegin = SelectionCharBegin;
                 int oldCharEnd = SelectionCharEnd;
 
-                // nastavime novy vyber textu
+                // apply the new text selection
                 if (wholeLines)
                 {
-                    //vybirame cele radky
+                    // select full lines
                     SelectionLineBegin = start;
                     SelectionCharBegin = 0;
                     if (end + 1 < int(Script[ViewMode].size()))
@@ -139,16 +139,16 @@ CTextFileViewWindowBase::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 else
                 {
-                    //vyber slova
+                    // select a word
                     if (Script[ViewMode][line].IsBlank())
-                        return 0; // neni co vybirat
+                        return 0; // nothing to select
 
                     int l = Script[ViewMode][line].GetLine();
                     start = end = TransformXOrg(LOWORD(lParam), line);
                     SelectWord(l, start, end);
 
                     if (start == end)
-                        return 0; // neni co vybirat
+                        return 0; // nothing to select
 
                     SelectionLineBegin = SelectionLineEnd = line;
                     SelectionCharBegin = start;
@@ -184,7 +184,7 @@ CTextFileViewWindowBase::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         if (DataValid && TrackingLineBegin < int(Script[ViewMode].size()) && SelectDifferenceOnButtonUp)
         {
-            // zkusime vybrat differenci
+            // try to select the difference
             //        CMainWindow * parent = (CMainWindow *) WindowsManager.GetWindowPtr(GetParent(HWindow));
             if (MainWindow /*parent*/)
                 MainWindow /*parent*/->SelectDifferenceByLine(TrackingLineBegin, FALSE);
@@ -228,16 +228,16 @@ CTextFileViewWindowBase::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             switch (wParam)
             {
-            // vertikalni scrollovani
+            // vertical scrolling
             case 'K':
             case VK_UP:
                 if (!ctrlPressed && !altPressed)
                 {
                     if (!shiftPressed && IsSelected())
                     {
-                        SetCaretPos(SelectionCharBegin, SelectionLineBegin); // presuneme se na zacatek vyberu
+                        SetCaretPos(SelectionCharBegin, SelectionLineBegin); // move to the start of the selection
                     }
-                    // ohlidame aby slo vybirat jen v ramci jedne difference
+                    // ensure the selection stays within a single difference
                     // NOTE: Script[fvmOnlyDifferences] is empty when showing identical files
                     if (!Script[ViewMode].empty() && (ViewMode != fvmOnlyDifferences || !shiftPressed ||
                                                       CaretYPos == 0 || Script[ViewMode][CaretYPos - 1].GetClass() != CLineSpec::lcSeparator))
@@ -258,7 +258,7 @@ CTextFileViewWindowBase::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     if (ViewMode == fvmOnlyDifferences && shiftPressed)
                     {
-                        // ohlidame, aby slo vybirat jen v ramci jedne difference
+                        // ensure the selection stays within a single difference
                         int i;
                         for (i = CaretYPos; i > CaretYPos - Height / FontHeight + 1 && i > 0; i--)
                         {
@@ -285,7 +285,7 @@ CTextFileViewWindowBase::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     if (ViewMode == fvmOnlyDifferences && shiftPressed)
                     {
-                        // ohlidame, aby slo vybirat jen v ramci jedne difference
+                        // ensure the selection stays within a single difference
                         int i;
                         for (i = CaretYPos; i < CaretYPos + Height / FontHeight + 1 && i < int(Script[ViewMode].size()) - 1; i++)
                         {
@@ -312,9 +312,9 @@ CTextFileViewWindowBase::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     if (!shiftPressed && IsSelected())
                     {
-                        SetCaretPos(SelectionCharEnd, SelectionLineEnd); // presuneme se na konec vyberu
+                        SetCaretPos(SelectionCharEnd, SelectionLineEnd); // move to the end of the selection
                     }
-                    // ohlidame aby slo vybirat jen v ramci jedne difference
+                    // ensure the selection stays within a single difference
                     // NOTE: Script[fvmOnlyDifferences] is empty when showing identical files
                     if (!Script[ViewMode].empty() && (ViewMode != fvmOnlyDifferences || !shiftPressed ||
                                                       Script[ViewMode][CaretYPos].GetClass() != CLineSpec::lcSeparator))
@@ -349,7 +349,7 @@ CTextFileViewWindowBase::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                 LHOME:
 
-                    // ohlidame aby slo vybirat jen v ramci jedne difference
+                    // ensure the selection stays within a single difference
                     int i = 0;
                     if (ViewMode == fvmOnlyDifferences && shiftPressed)
                     {
@@ -371,7 +371,7 @@ CTextFileViewWindowBase::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                 LEND:
 
-                    // ohlidame aby slo vybirat jen v ramci jedne difference
+                    // ensure the selection stays within a single difference
                     int i = int(Script[ViewMode].size()) - 1;
                     if (ViewMode == fvmOnlyDifferences && shiftPressed)
                     {
@@ -386,7 +386,7 @@ CTextFileViewWindowBase::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 break;
 
-            // horizontalni scrollovani
+            // horizontal scrolling
             case 'L':
             case VK_RIGHT:
             {
@@ -395,7 +395,7 @@ CTextFileViewWindowBase::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                 if (!ctrlPressed && !shiftPressed && IsSelected())
                 {
-                    SetCaretPos(SelectionCharEnd, SelectionLineEnd); // presuneme se na konec vyberu
+                    SetCaretPos(SelectionCharEnd, SelectionLineEnd); // move to the end of the selection
                     break;
                 }
 
@@ -412,8 +412,8 @@ CTextFileViewWindowBase::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                 if (CaretXPos == len)
                 {
-                    // presuneme se na nasledujici radek
-                    // ohlidame aby slo vybirat jen v ramci jedne difference
+                    // move to the next line
+                    // ensure the selection stays within a single difference
                     if (ViewMode != fvmOnlyDifferences || !shiftPressed ||
                         Script[ViewMode][CaretYPos].GetClass() != CLineSpec::lcSeparator)
                     {
@@ -424,10 +424,10 @@ CTextFileViewWindowBase::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
 
                 if (!ctrlPressed)
-                    SetCaretPos(CaretXPos + 1, CaretYPos); // presuneme se na nasledujici znak
+                    SetCaretPos(CaretXPos + 1, CaretYPos); // move to the next character
                 else
                 {
-                    // presuneme se na konec slova/mezery/bloku jinych znaku
+                    // move to the end of the current word/space/other character block
                     int xpos = CaretXPos;
                     NextCharBlock(l, xpos);
 
@@ -444,14 +444,14 @@ CTextFileViewWindowBase::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                 if (!ctrlPressed && !shiftPressed && IsSelected())
                 {
-                    SetCaretPos(SelectionCharBegin, SelectionLineBegin); // presuneme se na zacatek vyberu
+                    SetCaretPos(SelectionCharBegin, SelectionLineBegin); // move to the start of the selection
                     break;
                 }
 
                 if (CaretXPos == 0)
                 {
-                    // posuneme se na predchozi radek
-                    // ohlidame aby slo vybirat jen v ramci jedne difference
+                    // move to the previous line
+                    // ensure the selection stays within a single difference
                     if (ViewMode != fvmOnlyDifferences || !shiftPressed ||
                         CaretYPos == 0 || Script[ViewMode][CaretYPos - 1].GetClass() != CLineSpec::lcSeparator)
                     {
@@ -462,10 +462,10 @@ CTextFileViewWindowBase::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
 
                 if (!ctrlPressed)
-                    SetCaretPos(CaretXPos - 1, CaretYPos); // posuneme se na predchozi znak
+                    SetCaretPos(CaretXPos - 1, CaretYPos); // move to the previous character
                 else
                 {
-                    // presuneme se na konec slova/mezery/bloku jinych znaku
+                    // move to the end of the current word/space/other character block
                     int l = Script[ViewMode][CaretYPos].GetLine();
                     int xpos = CaretXPos;
                     PrevCharBlock(l, xpos);
@@ -482,17 +482,17 @@ CTextFileViewWindowBase::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     MainWindow /*parent*/->SelectDifferenceByLine(CaretYPos, TRUE);
                 if (shiftPressed)
                 {
-                    // zkusime vybrat celou differenci do bloku
+                    // try to select the entire difference block
                     int start, end;
                     if (MainWindow /*parent*/ && MainWindow /*parent*/->GetDifferenceRange(CaretYPos, &start, &end))
                     {
-                        // ulozime stary vyber textu
+                        // save the previous text selection
                         int oldLineBegin = SelectionLineBegin;
                         int oldLineEnd = SelectionLineEnd;
                         int oldCharBegin = SelectionCharBegin;
                         int oldCharEnd = SelectionCharEnd;
 
-                        // nastavime novy vyber textu, vybirame cele radky
+                        // apply the new selection, selecting whole lines
                         SelectionLineBegin = start;
                         SelectionCharBegin = 0;
                         if (end + 1 < int(Script[ViewMode].size()))
@@ -578,13 +578,13 @@ CTextFileViewWindowBase::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     SelectionLineEnd = y1;
                     SelectionCharEnd = x1;
                 }
-                // zajistime prekresleni postizenych casti
+                // ensure the affected regions are repainted
                 RepaintSelection(oldLineBegin, oldLineEnd, oldCharBegin, oldCharEnd);
                 //            CMainWindow * parent = (CMainWindow *) WindowsManager.GetWindowPtr(GetParent(HWindow));
                 if (MainWindow /*parent*/)
                     MainWindow /*parent*/->UpdateToolbarButtons(UTB_TEXTSELECTION);
             }
-            case USF_NOCHANGE:; // nic nedelame
+            case USF_NOCHANGE:; // do nothing
             }
 
             if (wScrollNotify != -1)
@@ -673,7 +673,7 @@ CTextFileViewWindowBase::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                 if (Siblink)
                 {
-                    // zrusime stary vyber textu
+                    // clear the previous text selection
                     Siblink->RemoveSelection(TRUE);
                 }
 
@@ -765,7 +765,7 @@ CTextFileViewWindowBase::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         SendMessage(Siblink->HWindow, WM_USER_VSCROLL, SB_THUMBTRACK, pos);
         lParam = pos;
     }
-        // pokracujem dal ...
+        // continue processing ...
 
     case WM_USER_VSCROLL:
     {
@@ -788,8 +788,8 @@ CTextFileViewWindowBase::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
 
     case WM_HSCROLL:
-        // aby nedochazelo ke konfliktu SB_FASTLEFT a SB_FASTRIGHT
-        // se standardnimi parametry
+        // prevent SB_FASTLEFT and SB_FASTRIGHT from conflicting
+        // with the standard parameters
         if (!TestHScrollWParam(wParam))
             return 0;
         if (LOWORD(wParam) == SB_THUMBTRACK)
@@ -802,7 +802,7 @@ CTextFileViewWindowBase::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         wParam &= 0xFFFF;
         SendMessage(Siblink->HWindow, WM_USER_HSCROLL, wParam, lParam);
-        // pokracujem dal ...
+        // continue processing ...
 
     case WM_USER_HSCROLL:
     {

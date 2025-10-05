@@ -7,10 +7,10 @@
 
 #include <Shlwapi.h>
 
-//#pragma comment(lib, "Shlwapi.lib")  // Petr: ve VC2008 mi neslape, davam to do projektu
+//#pragma comment(lib, "Shlwapi.lib")  // Petr: this does not work for me in VC2008, so I add it to the project
 
-HFONT EnvFont;     // font prostredi (edit, toolbar, header, status)
-int EnvFontHeight; // vyska fontu
+HFONT EnvFont;     // environment font (edit, toolbar, header, status)
+int EnvFontHeight; // font height
 HBRUSH HDitheredBrush = NULL;
 
 // ****************************************************************************
@@ -63,7 +63,7 @@ CFileHeaderWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         HDC dc = BeginPaint(HWindow, &ps);
         HFONT oldFont = (HFONT)SelectObject(dc, EnvFont);
 
-        // zajistime aby jsme meli vzdy aktualni barvu brushe
+        // make sure we always have the current brush color
         COLORREF oldBk = BkColor;
         BkColor = SG->GetCurrentColor(SALCOL_INACTIVE_CAPTION_BK);
         if (BkColor != oldBk)
@@ -83,8 +83,8 @@ CFileHeaderWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         r.left++;
         r.right--;
 
-        // DT_PATH_ELLIPSIS nefunguje na nekterych retezcich, dochazi pak vytisteni oclipovaneho textu
-        // PathCompactPath() sice potrebuje kopii do lokalniho bufferu, ale neclipuje texty
+        // DT_PATH_ELLIPSIS does not work on some strings, which prints clipped text
+        // PathCompactPath() needs a copy in a local buffer, but it does not clip the text
         char buff[2 * MAX_PATH];
         strncpy_s(buff, _countof(buff), Text, _TRUNCATE);
         PathCompactPath(dc, buff, r.right - r.left);
@@ -184,7 +184,7 @@ CSplitBarWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_CAPTURECHANGED:
         if (!Tracking)
             return 0;
-        // pokracujem dal ...
+        // keep going ...
 
     case WM_LBUTTONUP:
     {
@@ -371,7 +371,7 @@ CToolTipWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         GetWindowText(HWindow, Text, 10);
 
-        // zmerime delku stringu
+        // measure the string length
         HDC hdc = GetDC(NULL);
         HFONT oldFont = (HFONT)SelectObject(hdc, EnvFont);
         SIZE s;
@@ -387,7 +387,7 @@ CToolTipWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_ERASEBKGND:
     {
-        // podmazeme a soucasne vykreslime text
+        // fill the background and draw the text at the same time
         HDC hDC = (HDC)wParam;
         RECT r;
         GetClientRect(HWindow, &r);
@@ -404,7 +404,7 @@ CToolTipWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_PAINT:
     {
-        // nedelame nic - vse je zarizeno v WM_ERASEBKGND
+        // do nothing - WM_ERASEBKGND already handles everything
         PAINTSTRUCT ps;
         BeginPaint(HWindow, &ps);
         EndPaint(HWindow, &ps);
@@ -416,7 +416,7 @@ CToolTipWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         lstrcpyn(Text, (char*)lParam, 10);
         TextLen = int(strlen(Text));
 
-        // zjistime delku textu
+        // find out the text length
         HDC hdc = GetDC(NULL);
         HFONT oldFont = (HFONT)SelectObject(hdc, EnvFont);
         SIZE s;
@@ -424,7 +424,7 @@ CToolTipWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         SelectObject(hdc, oldFont);
         ReleaseDC(NULL, hdc);
 
-        // nastavime rozmery okna
+        // set the window size
         SetWindowPos(HWindow, 0, 0, 0, s.cx + 6, EnvFontHeight + 4,
                      SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER |
                          SWP_NOREPOSITION | SWP_NOZORDER);
@@ -581,7 +581,7 @@ CComboBox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         RECT cr;
         GetClientRect(HWindow, &cr);
-        // zajistime, aby dvoubodovy ramecek kolem comba nebyl smeten behem paintu
+        // ensure the double-line frame around the combo box is not wiped during painting
         RECT r;
         r.left = 0;
         r.top = 0;
@@ -604,7 +604,7 @@ CComboBox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         r.bottom = cr.bottom - 2;
         ValidateRect(HWindow, &r);
 
-        // nakreslime si vlastni (jeden vnejsi sedivy a vnitrni promackly)
+        // draw our own frame (one outer gray and the inner sunken)
         HDC hDC = GetDC(HWindow);
         HPEN hOldPen = (HPEN)SelectObject(hDC, BtnFacePen);
         SelectObject(hDC, GetStockObject(NULL_BRUSH));
@@ -625,7 +625,7 @@ CComboBox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             break;
         }
 
-        // zajistime, aby dvoubodovy ramecek kolem tlacitka nebyl smeten behem paintu
+        // ensure the double-line frame around the button is not wiped during painting
         int sbWidth = GetSystemMetrics(SM_CXVSCROLL);
         r.left = cr.right - 2 - sbWidth;
         r.top = 2;
@@ -648,7 +648,7 @@ CComboBox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         r.bottom = cr.bottom - 2;
         ValidateRect(HWindow, &r);
 
-        // nakreslime vlastni ramecek kolem tlacitka
+        // draw our own frame around the button
         HPEN leftTopPen;
         HPEN bottomRightPen;
         POINT pos;
@@ -659,14 +659,14 @@ CComboBox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             pos.y > cr.top + 1 &&
             pos.y < cr.bottom - 2)
         {
-            // nakreslime promackly ramecek
+            // draw a sunken frame
             leftTopPen = BtnShadowPen;
             //bottomRightPen = BtnHilightPen;
             bottomRightPen = BtnShadowPen;
         }
         else
         {
-            // nakreslime normalni ramecek
+            // draw a normal frame
             leftTopPen = BtnHilightPen;
             bottomRightPen = BtnShadowPen;
         }
@@ -703,14 +703,14 @@ BOOL CRebar::InsertBand(UINT uIndex, LPREBARBANDINFO lprbbi)
 
     if (lprbbi->fMask & RBBIM_TEXT)
     {
-        // vyhodime prefix
+        // drop the prefix
         char buffer[512];
         strcpy(buffer, lprbbi->lpText);
         char* prefix = strchr(buffer, '&');
         if (prefix)
             strcpy(prefix, prefix + 1);
 
-        // zmerime delku stringu
+        // measure the string length
         HDC hdc = GetDC(NULL);
         HFONT oldFont = (HFONT)SelectObject(hdc, EnvFont);
         SIZE s;
@@ -794,7 +794,7 @@ CRebar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_PAINT:
     {
         int bandCount = int(SendMessage(HWindow, RB_GETBANDCOUNT, 0, 0));
-        // zajistime vykresleni podtrzitek u textu s prefixem (napr &Differences)
+        // make sure the underline is drawn for text with a prefix (e.g. &Differences)
         int i;
         for (i = 0; i < bandCount; i++)
         {
@@ -818,22 +818,22 @@ CRebar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 r.top = r.top + (r.bottom - r.top - EnvFontHeight) / 2 - 1;
                 r.bottom = r.top + EnvFontHeight + 1;
 
-                // zajistime, aby nas text nebyl smeten behem paintu
+                // make sure our text is not wiped during painting
                 ValidateRect(HWindow, &r);
                 r.right -= 13;
 
-                // nakreslime vlastni text
+                // draw our own text
                 HDC hdc = GetDC(HWindow);
                 HFONT oldFont = (HFONT)SelectObject(hdc, (HFONT)EnvFont);
                 SetBkColor(hdc, GetSysColor(COLOR_BTNFACE));
                 DrawText(hdc, text, -1, &r, DT_SINGLELINE | DT_TOP);
 
-                // linka pod textem
+                // line under the text
                 r.top += EnvFontHeight;
                 FillRect(hdc, &r, (HBRUSH)(COLOR_BTNFACE + 1));
                 r.top -= EnvFontHeight;
 
-                // plocha za textem
+                // area behind the text
                 r.left = r.right;
                 r.right += 13;
                 FillRect(hdc, &r, (HBRUSH)(COLOR_BTNFACE + 1));

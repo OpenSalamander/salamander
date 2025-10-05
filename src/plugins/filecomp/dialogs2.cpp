@@ -188,20 +188,20 @@ void CPropPageColors::ChooseColor(int item, int colorFG, int colorBK, const RECT
     HMENU hMenu, hSubMenu;
     if (colorFG == -1)
     {
-        // vybirame jen jednu barvu
+        // pick only one color
         hMenu = LoadMenu(HLanguage, MAKEINTRESOURCE(IDM_CTX_1COLOR_MENU));
         hSubMenu = GetSubMenu(hMenu, 0);
     }
     else
     {
-        // vybirame dve barvy
+        // pick two colors
         hMenu = LoadMenu(HLanguage, MAKEINTRESOURCE(IDM_CTX_2COLOR_MENU));
         hSubMenu = GetSubMenu(hMenu, 0);
         automatic = GetFValue(TempColors[colorFG]) & SCF_DEFAULT;
         CheckMenuItem(hSubMenu, CM_CUSTOMTEXT, MF_BYCOMMAND | (automatic ? MF_UNCHECKED : MF_CHECKED));
         CheckMenuItem(hSubMenu, CM_AUTOTEXT, MF_BYCOMMAND | (automatic ? MF_CHECKED : MF_UNCHECKED));
 
-        // podivame se, zda existuje defaultni hodnota k teto barve
+        // check whether there is a default value for this color
         automatic = GetFValue(DefaultColors[colorFG]) & SCF_DEFAULT;
         EnableMenuItem(hSubMenu, CM_AUTOTEXT, MF_BYCOMMAND | (automatic ? MF_ENABLED : MF_GRAYED));
     }
@@ -209,7 +209,7 @@ void CPropPageColors::ChooseColor(int item, int colorFG, int colorBK, const RECT
     CheckMenuItem(hSubMenu, CM_CUSTOMBACKGROUND, MF_BYCOMMAND | (automatic ? MF_UNCHECKED : MF_CHECKED));
     CheckMenuItem(hSubMenu, CM_AUTOBACKGROUND, MF_BYCOMMAND | (automatic ? MF_CHECKED : MF_UNCHECKED));
 
-    // podivame se, zda existuje defaultni hodnota k teto barve
+    // check whether there is a default value for this color
     automatic = GetFValue(DefaultColors[colorBK]) & SCF_DEFAULT;
     EnableMenuItem(hSubMenu, CM_AUTOBACKGROUND, MF_BYCOMMAND | (automatic ? MF_ENABLED : MF_GRAYED));
 
@@ -221,7 +221,7 @@ void CPropPageColors::ChooseColor(int item, int colorFG, int colorBK, const RECT
                              btnRect->right, btnRect->top, HWindow, &tpmPar))
     {
     case CM_CUSTOMTEXT:
-        color = colorFG; // jedeme dal...
+        color = colorFG; // keep going...
     case CM_CUSTOMBACKGROUND:
     {
         CHOOSECOLOR cc;
@@ -276,10 +276,10 @@ CPropPageColors::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             ColorButtons[i][LINENUM_COLOR_BTN] = SalGUI->AttachColorArrowButton(HWindow, LineNumIDs[i], TRUE);
             ColorButtons[i][TEXT_COLOR_BTN] = SalGUI->AttachColorArrowButton(HWindow, TextIDs[i], TRUE);
-            // #pragma message(__FILE__ "(280) : Honzo, az tohle implementujes, tak nasledujici kod odkomentuj. Dik, Lukas.")
-            // j.r. FIXME: zatim jsem na to nemel cas, hazim pragmu do komentare, at nestrasi v buildu
-            // l.c., 13.2.2011 jen jsem na zkousku tu pragmu zas odkomentoval, estli jsi to nahodou mezitim nenakodil:)
-            // j.r., 23.3.2011 nizka priorita, zatim nebudeme resit
+            // #pragma message(__FILE__ "(280) : Honzo, once you implement this, uncomment the code below. Thanks, Lukas.")
+            // j.r. FIXME: I have not had time yet, so I am putting the pragma into a comment so it does not haunt the build
+            // l.c., 13.2.2011 I only uncommented the pragma as a test in case you coded it in the meantime :)
+            // j.r., 23.3.2011 low priority, we will not deal with it for now
             // ColorButtons[i][LINENUM_COLOR_BTN]->SetPalette(&HPalette, &UsePalette);
             // ColorButtons[i][TEXT_COLOR_BTN]->SetPalette(&HPalette, &UsePalette);
         }
@@ -359,9 +359,9 @@ CPropPageColors::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_NOTIFY:
     {
-        if (((NMHDR*)lParam)->code == PSN_SETACTIVE) // aktivace stranky
+        if (((NMHDR*)lParam)->code == PSN_SETACTIVE) // page activation
         {
-            // nastavime font pro preview
+            // set the font for the preview
             Preview1->SetFont(PageGeneral->GetCurrentFont());
             Preview2->SetFont(PageGeneral->GetCurrentFont());
             break;
@@ -372,10 +372,10 @@ CPropPageColors::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         LRESULT i = SendMessage(GetDlgItem(HWindow, IDC_ITEMS), CB_GETCURSEL, 0, 0);
         UpdateColors(int(i));
-        // #pragma message(__FILE__ "(375) : Honzo, az overis, ze se v CGUIColorArrowButton obnovuji pera automaticky, tak nasleduji komentar vymaz (nezamenovat s odkomentuj:). Dik Lukas")
-        // j.r. FIXME: zatim jsem na to nemel cas, hazim pragmu do komentare, at nestrasi v buildu
-        // l.c., 13.2.2011 jen jsem na zkousku tu pragmu zas odkomentoval, estli jsi to nahodou mezitim nenakodil:)
-        // j.r., 23.3.2011 nizka priorita, zatim nebudeme resit
+        // #pragma message(__FILE__ "(375) : Honzo, once you verify that CGUIColorArrowButton refreshes pens automatically, delete the following comment (do not confuse with uncomment :). Thanks, Lukas")
+        // j.r. FIXME: I have not had time yet, so I am putting the pragma into a comment so it does not haunt the build
+        // l.c., 13.2.2011 I only uncommented the pragma as a test in case you coded it in the meantime :)
+        // j.r., 23.3.2011 low priority, we will not deal with it for now
         // for (i = 0; i < 3; i++)
         // {
         //   ColorButtons[i][LINENUM_COLOR_BTN]->ColorsChanged();
@@ -522,7 +522,7 @@ void CPreviewWindow::RePaint()
 void CPreviewWindow::SetFont(LOGFONT* font)
 {
     CALL_STACK_MESSAGE1("CPreviewWindow::SetFont()");
-    // nacteme font
+    // load the font
     if (HFont)
         DeleteObject(HFont);
     HDC hdc = GetDC(NULL);
@@ -560,11 +560,11 @@ CPreviewWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         IntersectClipRect(dc, cr.left, cr.top, cr.right, cr.bottom);
 
-        RECT r1; // cislo radky
+        RECT r1; // line number
         r1.left = 0;
         r1.right = (2 + 1) * FontWidth + BORDER_WIDTH;
-        r1.bottom = 0; // abychom meli pozdeji platna data, kdyby kreslici smycka vubec neprobehla
-        RECT r2;       // vlastni radek textu
+        r1.bottom = 0; // have valid data later if the drawing loop never runs
+        RECT r2;       // the actual text line
         r2.left = r1.right;
         r2.right = cr.right;
         int text_y;
@@ -582,12 +582,12 @@ CPreviewWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (PreviewScript[i].TextColor == TEXT_FG_LEFT_CHANGE_FOCUSED ||
                 i > 0 && PreviewScript[i - 1].TextColor == TEXT_FG_LEFT_FOCUSED)
             {
-                // vykreslime cast ohraniceni aktivni difference na hornim okraji radku
-                // hrana ve sloupci s cisly radek
+                // draw part of the active difference border on the top edge of the line
+                // edge in the column with the line numbers
                 hOldPen = (HPEN)SelectObject(dc, HLineNumBorderPen);
                 MoveToEx(dc, r1.left, r1.top, NULL);
                 LineTo(dc, r1.right, r1.top);
-                // hrana ve casti s textem souboru
+                // edge in the file text area
                 (HPEN) SelectObject(dc, HBorderPen);
                 LineTo(dc, r2.right, r1.top);
                 SelectObject(dc, hOldPen);
@@ -595,14 +595,14 @@ CPreviewWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 r2.top++;
             }
 
-            // nakreslime cislo radky
+            // draw the line number
             char num[2 + 1];
             sprintf(num, "%*d", 2, lineNum);
             SetTextColor(dc, GetPALETTERGB(Colors[PreviewScript[i].LineNumFGColor + side]));
             SetBkColor(dc, GetPALETTERGB(Colors[PreviewScript[i].LineNumBKColor + side]));
             ExtTextOut(dc, BORDER_WIDTH, text_y, ETO_OPAQUE | ETO_CLIPPED, &r1, num, 2, NULL);
 
-            // nakreslime text
+            // draw the text
             SetTextColor(dc, GetPALETTERGB(Colors[PreviewScript[i].TextColor + side]));
             SetBkColor(dc, GetPALETTERGB(Colors[PreviewScript[i].BkgndColor + side]));
             char* text = LoadStr(PreviewScript[i].TextID);
@@ -886,22 +886,22 @@ CPreviewWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 //       {
 //         clR.right--;
 //         clR.bottom--;
-//         // svetla vlevo a nahore
+//         // light on the left and top
 //         HPEN hOldPen = (HPEN)SelectObject(dc, BtnHilightPen);
 //         MoveToEx(dc, clR.left, clR.bottom - 1, NULL);
 //         LineTo(dc, clR.left, clR.top);
 //         LineTo(dc, clR.right, clR.top);
-//         // trochu tmavsi uvnitr
+//         // slightly darker inside
 //         SelectObject(dc, Btn3DLightPen);
 //         MoveToEx(dc, clR.left + 1, clR.bottom - 2, NULL);
 //         LineTo(dc, clR.left + 1, clR.top + 1);
 //         LineTo(dc, clR.right - 1, clR.top + 1);
-//         // tmava vpravo a dole
+//         // dark on the right and bottom
 //         SelectObject(dc, BtnShadowPen);
 //         MoveToEx(dc, clR.right - 1, clR.top + 1, NULL);
 //         LineTo(dc, clR.right - 1, clR.bottom - 1);
 //         LineTo(dc, clR.left, clR.bottom - 1);
-//         // nejtmavsi uplne venku
+//         // the darkest completely on the outside
 //         SelectObject(dc, WndFramePen);
 //         MoveToEx(dc, clR.left, clR.bottom, NULL);
 //         LineTo(dc, clR.right, clR.bottom);
@@ -1081,7 +1081,7 @@ CPreviewWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 //
 // CTextArrowButton
 //
-// klasicky text, za kterym je jeste sipka - slouzi pro rozbaleni menu
+// plain text followed by an arrow - used to expand a menu
 //
 
 // CTextArrowButton::CTextArrowButton(HWND hDlg, int ctrlID, CObjectOrigin origin)
@@ -1095,11 +1095,11 @@ CPreviewWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 //   CALL_STACK_MESSAGE_NONE
 //   RECT r = *rect;
 //
-//   // vytahnu text tlacitka
+//   // fetch the button text
 //   char buff[200];
 //   GetWindowText(HWindow, buff, 199);
 //
-//   // vytahnu aktualni font
+//   // fetch the current font
 //   HFONT hFont = (HFONT)SendMessage(HWindow, WM_GETFONT, 0, 0);
 //
 //   r.right -= 8;
@@ -1122,7 +1122,7 @@ CPreviewWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 //
 // CColorArrowButton
 //
-// pozadi s textem, za kterym je jeste sipka - slouzi pro rozbaleni menu
+// background with text followed by an arrow - used to expand a menu
 //
 
 // CColorArrowButton::CColorArrowButton(HWND hDlg, int ctrlID, HPALETTE &hPalette, CObjectOrigin origin)
@@ -1174,11 +1174,11 @@ CPreviewWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 //
 //   RECT r = *rect;
 //
-//   // vytahnu text tlacitka
+//   // fetch the button text
 //   char buff[200];
 //   GetWindowText(HWindow, buff, 199);
 //
-//   // vytahnu aktualni font
+//   // fetch the current font
 //   HFONT hFont = (HFONT)SendMessage(HWindow, WM_GETFONT, 0, 0);
 //
 //   r.right -= 8;

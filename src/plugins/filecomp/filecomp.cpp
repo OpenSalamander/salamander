@@ -5,15 +5,15 @@
 
 #pragma comment(lib, "UxTheme.lib")
 
-// zapina vypis bloku ktere zustaly alokovane na heapu po skonceni pluginu
+// enables dumping blocks that remain allocated on the heap after the plugin finishes
 // #define DUMP_MEM
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object whose methods are invoked by Salamander
 CPluginInterface PluginInterface;
-// cast interfacu CPluginInterface pro menu
+// portion of CPluginInterface dedicated to menus
 CPluginInterfaceForMenu InterfaceForMenu;
 
-CWindowQueue MainWindowQueue("FileComp Windows"); // seznam vsech oken pluginu
+CWindowQueue MainWindowQueue("FileComp Windows"); // list of all plugin windows
 CThreadQueue ThreadQueue("FileComp Windows, Workers, and Remote Control");
 CMappedFontFactory MappedFontFactory;
 HINSTANCE hNormalizDll = NULL;
@@ -91,7 +91,7 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
         PNormalizeString = (TNormalizeString)GetProcAddress(hNormalizDll, "NormalizeString"); // Min: Vista
     }
 
-    // nastavime zakladni informace o pluginu
+    // set basic metadata about the plugin
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_LOADSAVECONFIGURATION | FUNCTION_CONFIGURATION,
                                    VERSINFO_VERSION_NO_PLATFORM,
@@ -101,9 +101,10 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
 
     salamander->SetPluginHomePageURL("www.altap.cz");
 
-    // musi byt az za salamander->SetBasicPluginData, protoze pri startu threadu se pouziva
-    // verze pluginu a tu salamander->SetBasicPluginData meni (padalo to obcas prave diky
-    // tomu, ze se verze realokovala, a pak se pouzival dealokovany retezec)
+    // must be after salamander->SetBasicPluginData because worker threads use the plugin
+    // version at startup and salamander->SetBasicPluginData updates that value (it used to
+    // crash occasionally when the version string was reallocated and the freed buffer was
+    // still referenced)
     CRemoteComparator::CreateRemoteComparator();
 
     return &PluginInterface;
@@ -173,7 +174,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
 {
     CALL_STACK_MESSAGE1("CPluginInterface::LoadConfiguration(, , )");
 
-    // nastavime defaultni hodnoty
+    // initialize default values
 
     // configuration
     ::Configuration.ConfirmSelection = TRUE;
@@ -191,7 +192,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     SG->GetConfigParameter(SALCFG_AUTOCOPYSELTOCLIPBOARD, &::Configuration.AutoCopy,
                            sizeof(::Configuration.AutoCopy), NULL);
 
-    // barvy
+    // colors
     memcpy(Colors, DefaultColors, sizeof(SALCOLOR) * NUMBER_OF_COLORS);
     BandsParams[0].Width = -1;
     memset(CustomColors, 0, 16 * sizeof(COLORREF));
@@ -199,20 +200,20 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     // default compare options
     DefCompareOptions = DefaultCompareOptions;
 
-    // historie
+    // history
     CBHistoryEntries = 0;
 
-    // posledni navstivena stranka v konfiguraci
+    // last configuration page that was opened
     LastCfgPage = 0;
 
-    if (regKey != NULL) // load z registry
+    if (regKey != NULL) // load from the registry
     {
         DWORD configVersion = 0;
         registry->GetValue(regKey, CONFIG_VERSION, REG_DWORD, &configVersion, sizeof(DWORD));
         if ((configVersion == CURRENT_CONFIG_VERSION) || (configVersion == CURRENT_CONFIG_VERSION_NORECOMPAREBUTTON) || (configVersion == CURRENT_CONFIG_VERSION_PRESEPARATEOPTIONS))
         {
             CRegBLOBConfiguration blob;
-            // nacteme konfiguraci z registru
+            // load configuration from the registry
             if (registry->GetValue(regKey, CONFIG_CONFIGURATION, REG_BINARY, &blob, sizeof(blob)))
             { // Configuration as stored in binary form in registry
                 ::Configuration.ConfirmSelection = blob.ConfirmSelection;
@@ -226,7 +227,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
                 ::Configuration.DetailedDifferences = blob.DetailedDifferences;
             }
 
-            // nacteme barvy
+            // load colors
             registry->GetValue(regKey, CONFIG_COLORS, REG_BINARY, Colors, sizeof(SALCOLOR) * NUMBER_OF_COLORS);
             registry->GetValue(regKey, CONFIG_CUSTOMCOLORS, REG_BINARY, CustomColors, 16 * sizeof(COLORREF));
             // default compare options
@@ -281,7 +282,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
                 if (registry->GetValue(regKey, CONFIG_NORMALIZATION_FORM, REG_DWORD, &dw, sizeof(DWORD)))
                     DefCompareOptions.NormalizationForm = dw ? TRUE : FALSE;
             }
-            // historie pouzitych souboru
+            // history of recently used files
             TCHAR buf[32];
             for (; CBHistoryEntries < MAX_HISTORY_ENTRIES; CBHistoryEntries++)
             {
@@ -325,11 +326,11 @@ void CPluginInterface::SaveConfiguration(HWND parent, HKEY regKey, CSalamanderRe
 {
     CALL_STACK_MESSAGE1("CPluginInterface::SaveConfiguration(, , )");
 
-    // verze
+    // version information
     DWORD dw = CURRENT_CONFIG_VERSION;
     registry->SetValue(regKey, CONFIG_VERSION, REG_DWORD, &dw, sizeof(DWORD));
 
-    // konfigurace
+    // configuration block
     CRegBLOBConfiguration blob;
     // Configuration is stored in binary form in registry
     blob.ConfirmSelection = ::Configuration.ConfirmSelection;
@@ -343,7 +344,7 @@ void CPluginInterface::SaveConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     blob.DetailedDifferences = ::Configuration.DetailedDifferences;
     registry->SetValue(regKey, CONFIG_CONFIGURATION, REG_BINARY, &blob, sizeof(blob));
 
-    // barvy
+    // colors
     registry->SetValue(regKey, CONFIG_COLORS, REG_BINARY, Colors, sizeof(SALCOLOR) * NUMBER_OF_COLORS);
     registry->SetValue(regKey, CONFIG_CUSTOMCOLORS, REG_BINARY, CustomColors, 16 * sizeof(COLORREF));
     // default compare options
@@ -365,7 +366,7 @@ void CPluginInterface::SaveConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     registry->SetValue(regKey, CONFIG_INPUTENCTABLE1, REG_SZ, DefCompareOptions.ASCII8InputEncTableName[1], int(strlen(DefCompareOptions.ASCII8InputEncTableName[1])));
     dw = DefCompareOptions.NormalizationForm;
     registry->SetValue(regKey, CONFIG_NORMALIZATION_FORM, REG_DWORD, &dw, sizeof(DWORD));
-    // historie pouzitych souboru
+    // history of recently used files
     BOOL b;
     if (SG->GetConfigParameter(SALCFG_SAVEHISTORY, &b, sizeof(BOOL), NULL) && b)
     {
@@ -379,7 +380,7 @@ void CPluginInterface::SaveConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     }
     else
     {
-        //podrizneme historii
+        // trim the history list
         char buf[32];
         int i;
         for (i = 0; i < MAX_HISTORY_ENTRIES; i++)
@@ -388,9 +389,9 @@ void CPluginInterface::SaveConfiguration(HWND parent, HKEY regKey, CSalamanderRe
             registry->DeleteValue(regKey, buf);
         }
     }
-    // layout rebary
+    // rebar layout
     registry->SetValue(regKey, CONFIG_REBARBANDSLAYOUT, REG_BINARY, BandsParams, sizeof(CBandParams) * 2);
-    // posledni navstivena stranka v konfiguraci
+    // last configuration page that was opened
     registry->SetValue(regKey, CONFIG_LASTCFGPAGE, REG_DWORD, &LastCfgPage, sizeof(DWORD));
     dw = LoadOnStart;
     registry->SetValue(regKey, CONFIG_LOADONSTART, REG_DWORD, &dw, sizeof(DWORD));
@@ -416,9 +417,9 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
 {
     CALL_STACK_MESSAGE1("CPluginInterface::Connect(,)");
 
-    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volani salamander->AddMenuItem() dole...
-MENU_TEMPLATE_ITEM PluginMenu[] = 
+    /* used by the export_mnu.py script that generates salmenu.mnu for the Translator
+   keep synchronized with the salamander->AddMenuItem() calls below...
+MENU_TEMPLATE_ITEM PluginMenu[] =
 {
   {MNTT_PB, 0
   {MNTT_IT, IDS_COMPAREFILES
@@ -427,7 +428,7 @@ MENU_TEMPLATE_ITEM PluginMenu[] =
 */
     salamander->AddMenuItem(-1, LoadStr(IDS_COMPAREFILES), SALHOTKEY('C', HOTKEYF_CONTROL | HOTKEYF_SHIFT), MID_COMPAREFILES, FALSE,
                             MENU_EVENT_DISK, 0, MENU_SKILLLEVEL_ALL);
-    // nastavime ikonku pluginu
+    // assign the plugin icon
     HBITMAP hBmp = (HBITMAP)LoadImage(DLLInstance, MAKEINTRESOURCE(IDB_FILECOMP),
                                       IMAGE_BITMAP, 16, 16, LR_DEFAULTCOLOR);
     salamander->SetBitmapWithIcons(hBmp);
@@ -450,7 +451,7 @@ void CPluginInterface::Event(int event, DWORD param) // FIXME_X64 - staci zde je
     {
     case PLUGINEVENT_COLORSCHANGED:
     {
-        // mohla se zmenit barva textu
+        // the text color may have changed
         MainWindowQueue.BroadcastMessage(WM_USER_CFGCHNG, CC_COLORS, 0);
         break;
     }
@@ -459,7 +460,7 @@ void CPluginInterface::Event(int event, DWORD param) // FIXME_X64 - staci zde je
     {
         // Cache the value for use in Config dialog
         SG->GetConfigParameter(SALCFG_VIEWERFONT, &::Configuration.InternalViewerFont, sizeof(LOGFONT), NULL);
-        // mohl se zmenit font vieweru
+        // the viewer font may have changed
         if (::Configuration.UseViewerFont)
         {
             ::Configuration.FileViewLogFont = ::Configuration.InternalViewerFont;
@@ -509,26 +510,26 @@ BOOL CPluginInterfaceForMenu::ExecuteMenuItem(CSalamanderForOperationsAbstract* 
         fd1 = SG->GetPanelSelectedItem(PANEL_SOURCE, &index, &isDir);
 
         if (fd1 && isDir)
-            goto SELECTION_FINISHED; // adresare neberem
+            goto SELECTION_FINISHED; // ignore directories
 
         if (fd1)
         {
-            // mame prvni soubor ze selektu zkusime najit druhy ze source panelu
+            // we have the first selected file; try to find a second one in the source panel
             fd2 = SG->GetPanelSelectedItem(PANEL_SOURCE, &index, &isDir);
 
             if (fd2 && isDir)
-                goto SELECTION_FINISHED; // adresare neberem
+                goto SELECTION_FINISHED; // ignore directories
 
             if (!fd2)
             {
-                // jeden je selektly a druhy berem z fokusu nebo ze
-                // selection v target panelu
+                // one item is selected and we take the other either from focus
+                // or from the selection in the target panel
                 index = 0;
                 fd2 = SG->GetPanelSelectedItem(PANEL_TARGET, &index, &isDir);
                 if (!tgtPanelIsDisk || !fd2 || SG->GetPanelSelectedItem(PANEL_TARGET, &index, &isDir))
                 {
-                    // v target panelu je 0 nebo vice nez 1 selektlych souboru
-                    // berem fokus v source panelu
+                    // the target panel contains zero or more than one selected file
+                    // so fall back to the focused item in the source panel
                     fd2 = SG->GetPanelFocusedItem(PANEL_SOURCE, &isDir);
                 }
                 else
@@ -536,33 +537,33 @@ BOOL CPluginInterfaceForMenu::ExecuteMenuItem(CSalamanderForOperationsAbstract* 
             }
             else
             {
-                // mame dva selektle soubory jeste se podivame, zda neni vybrany treti
-                // tri vybrane soubory neberem
+                // we have two selected files; ensure a third one is not selected
+                // three selected files are ignored
                 if (SG->GetPanelSelectedItem(PANEL_SOURCE, &index, &isDir))
                     goto SELECTION_FINISHED;
             }
         }
         else
         {
-            // zadny vybrany soubor, berem tedy fokus
+            // no file was selected; use the focused item instead
             fd1 = SG->GetPanelFocusedItem(PANEL_SOURCE, &isDir);
 
             if (fd1 && isDir)
-                goto SELECTION_FINISHED; // adresare neberem
+                goto SELECTION_FINISHED; // ignore directories
         }
 
         if (fd1 == NULL)
-            goto SELECTION_FINISHED; // prazdny panel
+            goto SELECTION_FINISHED; // empty panel
 
-        // ulozime si jmeno prvniho souboru
+        // store the name of the first file
         if (!SG->GetPanelPath(PANEL_SOURCE, file1, MAX_PATH, NULL, NULL))
             return NULL;
         SG->SalPathAppend(file1, fd1->Name, MAX_PATH);
 
         if (fd2 &&
-            !isDir && fd2 != fd1) // pro pripad, ze berem soubor z fokusu
+            !isDir && fd2 != fd1) // in case we take the file from the focus
         {
-            // ulozime jmeno druheho souboru
+            // store the name of the second file
             SG->GetPanelPath(PANEL_SOURCE, file2, MAX_PATH, NULL, NULL);
             SG->SalPathAppend(file2, fd2->Name, MAX_PATH);
             secondFromSource = TRUE;
@@ -577,7 +578,7 @@ BOOL CPluginInterfaceForMenu::ExecuteMenuItem(CSalamanderForOperationsAbstract* 
 
                 if (!fd2 || isDir || SG->GetPanelSelectedItem(PANEL_TARGET, &index, &isDir))
                 {
-                    // najdeme soubor se stejnym jmenem jako prvni
+                    // find the file with the same name as the first one
                     index = 0;
                     while ((fd2 = SG->GetPanelItem(PANEL_TARGET, &index, &isDir)) != 0)
                     {
@@ -588,7 +589,7 @@ BOOL CPluginInterfaceForMenu::ExecuteMenuItem(CSalamanderForOperationsAbstract* 
 
                 if (fd2)
                 {
-                    // ulozime jmeno druheho souboru
+                    // store the name of the second file
                     if (!SG->GetPanelPath(PANEL_TARGET, file2, MAX_PATH, NULL, NULL))
                         return NULL;
                     SG->SalPathAppend(file2, fd2->Name, MAX_PATH);
@@ -605,9 +606,9 @@ BOOL CPluginInterfaceForMenu::ExecuteMenuItem(CSalamanderForOperationsAbstract* 
             return Error((HWND)-1, IDS_LOWMEM);
         if (!d->Create(ThreadQueue))
             delete d;
-        SG->SetUserWorkedOnPanelPath(PANEL_SOURCE); // tento prikaz povazujeme za praci s cestou (objevi se v Alt+F12)
+        SG->SetUserWorkedOnPanelPath(PANEL_SOURCE); // treat this command as working with the path (appears in Alt+F12)
         if (!secondFromSource && file2[0])
-            SG->SetUserWorkedOnPanelPath(PANEL_TARGET); // pridame jeste target
+            SG->SetUserWorkedOnPanelPath(PANEL_TARGET); // also record the target panel
 
         return FALSE;
     }
@@ -688,22 +689,22 @@ CFilecompThread::Body()
         }
 
         if (!dialogBox || !succes)
-            break; // ukoncime message loopu
+            break; // leave the message loop
 
     LLAUNCHFC:
 
         WINDOWPLACEMENT wp;
         wp.length = sizeof(wp);
         GetWindowPlacement(SG->GetMainWindowHWND(), &wp);
-        // GetWindowPlacement cti Taskbar, takze pokud je Taskbar nahore nebo vlevo,
-        // jsou hodnoty posunute o jeho rozmery. Provedeme korekci.
+        // GetWindowPlacement respects the taskbar, so if the taskbar is at the top or left
+        // the coordinates are offset by its size. Apply a correction.
         RECT monitorRect;
         RECT workRect;
         SG->MultiMonGetClipRectByRect(&wp.rcNormalPosition, &workRect, &monitorRect);
         OffsetRect(&wp.rcNormalPosition, workRect.left - monitorRect.left,
                    workRect.top - monitorRect.top);
 
-        // pokud je hlavni okno je minimalizovane, nechceme minimalizovany File Comparator
+        // if the main window is minimized, keep the File Comparator restored instead
         CMainWindow* win = new CMainWindow(Path1, Path2, &options,
                                            wp.showCmd == SW_SHOWMAXIMIZED ? SW_SHOWMAXIMIZED : SW_SHOW);
         if (!win)
@@ -733,7 +734,7 @@ CFilecompThread::Body()
 LBODYFINAL:
     if (*ReleaseEvent)
     {
-        // pustime dal filecomp.exe
+        // allow filecomp.exe to continue
         HANDLE event = OpenEvent(EVENT_MODIFY_STATE, FALSE, ReleaseEvent);
         SetEvent(event);
         CloseHandle(event);

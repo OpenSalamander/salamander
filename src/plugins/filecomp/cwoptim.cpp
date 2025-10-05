@@ -7,7 +7,8 @@
 
 using namespace std;
 
-#if (_MSC_VER < 1910) // MSVC 2017 rve kvuli nestandardnimu namespace std::tr1 (deprecated), jde zrejme jen o unordered_map, ktere drive bylo jen v std::tr1 a ted je primo v std
+#if (_MSC_VER < 1910) // MSVC 2017 complains about the non-standard namespace std::tr1 (deprecated);
+                      // it is apparently just unordered_map, which used to live in std::tr1 and is now directly in std
 using namespace std::tr1;
 #endif
 
@@ -147,7 +148,7 @@ void CFilecompCoWorkerOptimized<CChar>::IdentifyLines(CFilecompCoWorkerBase<CCha
     int i;
     for (i = 0; i < 2; ++i)
     {
-        // rezerve space
+        // reserve space
         compareData[i].resize(files[i].Lines.size() - 1);
         // indentify each line
         typename CLineBuffer::iterator line = files[i].Lines.begin();
@@ -237,7 +238,7 @@ void CFilecompCoWorkerOptimized<CChar>::Compare(CTextFileReader (&reader)[2])
       }
     }*/
 
-        // shift-boundaries, volat pred RemoveSingleCharMatches
+        // shift-boundaries, call before RemoveSingleCharMatches
         this->ShiftBoundaries(editScript, compareData);
     }
 
@@ -267,19 +268,19 @@ void CFilecompCoWorkerOptimized<CChar>::Compare(CTextFileReader (&reader)[2])
 
     for (CEditScript::iterator esi = editScript.begin();; ++esi)
     {
-        // zpracujeme spolecnou cast
+        // process the shared part
         mend = esi >= editScript.end() ? this->Files[0].Lines.size() - 1 : esi->DeletePos;
         for (; li[0] < mend; li[0]++, li[1]++)
         {
             script[0].push_back(CLineSpec(CLineSpec::lcCommon, int(li[0])));
             script[1].push_back(CLineSpec(CLineSpec::lcCommon, int(li[1])));
         }
-        // konec?
+        // the end?
         if (esi >= editScript.end())
             break;
         if (this->CancelFlag)
             throw CFilecompWorker::CAbortByUserException();
-        // zpracujeme rozdilnou cast
+        // process the differing part
         if ((this->Options.IgnoreSpaceChange || this->Options.IgnoreAllSpace) &&
             IsChangeIgnorable(*esi))
         {
@@ -295,7 +296,7 @@ void CFilecompCoWorkerOptimized<CChar>::Compare(CTextFileReader (&reader)[2])
         else
         {
             changes.push_back(*esi);
-            changesToLines.push_back((int)script[0].size()); // oba by tu meli byt stejne dlouhe
+            changesToLines.push_back((int)script[0].size()); // both should have the same length here
             if (esi->Length[0] && esi->Length[1] && this->Options.DetailedDifferences)
             {
                 this->ScrictCompare(esi->Position, esi->Length, script, CLineSpec::lcChange);
@@ -315,7 +316,7 @@ void CFilecompCoWorkerOptimized<CChar>::Compare(CTextFileReader (&reader)[2])
             changesLengths.push_back(
                 (int)max(script[0].size(), script[1].size()) - changesToLines.back());
         }
-        // dorovname kratsi script
+        // align the shorter script
         int s = script[0].size() < script[1].size() ? 0 : 1;
         fill_n(back_inserter(script[s]),
                script[1 - s].size() - script[s].size(),

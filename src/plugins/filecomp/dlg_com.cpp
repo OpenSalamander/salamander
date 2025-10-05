@@ -3,12 +3,12 @@
 
 #include "precomp.h"
 
-SALCOLOR Colors[NUMBER_OF_COLORS]; // aktualni barvy
+SALCOLOR Colors[NUMBER_OF_COLORS]; // current colors
 
-// standartni barvy
+// standard colors
 SALCOLOR DefaultColors[NUMBER_OF_COLORS] =
     {
-        // barvy textu ve sloupci s cisly radek
+        // text colors in the column with line numbers
         RGBF(0, 0, 0, SCF_DEFAULT), // LINENUM_FG_NORMAL
         RGBF(0, 0, 0, SCF_DEFAULT), // LINENUM_FG_LEFT_CHANGE
         RGBF(0, 0, 0, SCF_DEFAULT), // LINENUM_FG_RIGHT_CHANGE
@@ -20,11 +20,11 @@ SALCOLOR DefaultColors[NUMBER_OF_COLORS] =
         RGBF(0, 0, 0, SCF_DEFAULT), // LINENUM_BK_LEFT_CHANGE_FOCUSED
         RGBF(0, 0, 0, SCF_DEFAULT), // LINENUM_BK_RIGHT_CHANGE_FOCUSED
 
-        // ramecek kolem aktualni zmeny ve sloupci s cisly radek
+        // frame around the current change in the column with line numbers
         RGBF(0, 0, 0, SCF_DEFAULT), // LINENUM_LEFT_BORDER
         RGBF(0, 0, 0, SCF_DEFAULT), // LINENUM_RIGHT_BORDER
 
-        // barvy zobrazeneho obsahu souboru
+        // colors of the displayed file contents
         RGBF(0, 0, 0, SCF_DEFAULT), // TEXT_FG_NORMAL
         RGBF(0, 0, 0, SCF_DEFAULT), // TEXT_FG_LEFT_FOCUSED
         RGBF(0, 0, 0, SCF_DEFAULT), // TEXT_FG_RIGHT_FOCUSED
@@ -40,11 +40,11 @@ SALCOLOR DefaultColors[NUMBER_OF_COLORS] =
         RGBF(10, 128, 240, 0),      // TEXT_BK_LEFT_CHANGE_FOCUSED
         RGBF(255, 120, 120, 0),     // TEXT_BK_RIGHT_CHANGE_FOCUSED
 
-        // ramecek kolem aktualni zmeny v zobrazenem obsahu souboru
+        // frame around the current change in the displayed file contents
         RGBF(0, 0, 0, SCF_DEFAULT), // TEXT_LEFT_BORDER
         RGBF(0, 0, 0, SCF_DEFAULT), // TEXT_RIGHT_BORDER
 
-        // barva vybraneho bloku textu
+        // color of the selected text block
         RGBF(0, 0, 0, SCF_DEFAULT), // TEXT_FG_SELECTION
         RGBF(0, 0, 0, SCF_DEFAULT), // TEXT_BK_SELECTION
 };
@@ -86,9 +86,9 @@ CCommonDialog::CCommonDialog(int resID, HWND hParent, CObjectOrigin origin)
     {
     case WM_INITDIALOG:
     {
-        // horizontalni i vertikalni vycentrovani dialogu k parentu
+        // horizontal and vertical centering of the dialog over the parent
         CenterWindow(HWindow);
-        break; // chci focus od DefDlgProc
+        break; // I want focus from DefDlgProc
     }
     }
     return CDialog::DialogProc(uMsg, wParam, lParam);
@@ -199,7 +199,7 @@ CreateColorPallete()
 void UpdateDefaultColors(SALCOLOR* colors, HPALETTE& palette)
 {
     CALL_STACK_MESSAGE1("UpdateDefaultColors(, )");
-    // barvy textu ve sloupci s cisly radek
+    // text colors in the column with line numbers
     if (GetFValue(colors[LINENUM_FG_NORMAL]) & SCF_DEFAULT)
         SetRGBPart(&colors[LINENUM_FG_NORMAL], GetSysColor(COLOR_WINDOWTEXT));
     //if (GetFValue(colors[LINENUM_FG_FOCUSED]) & SCF_DEFAULT)
@@ -214,7 +214,7 @@ void UpdateDefaultColors(SALCOLOR* colors, HPALETTE& palette)
     if (GetFValue(colors[LINENUM_FG_RIGHT_CHANGE_FOCUSED]) & SCF_DEFAULT)
         SetRGBPart(&colors[LINENUM_FG_RIGHT_CHANGE_FOCUSED], GetCOLORREF(colors[LINENUM_FG_RIGHT_CHANGE]));
 
-    // barvy pozadi ve sloupci s cisly radek
+    // background colors in the column with line numbers
     if (GetFValue(colors[LINENUM_BK_NORMAL]) & SCF_DEFAULT)
         SetRGBPart(&colors[LINENUM_BK_NORMAL], GetScrollbarColor());
     //if (GetFValue(colors[LINENUM_BK_FOCUSED]) & SCF_DEFAULT)
@@ -232,13 +232,13 @@ void UpdateDefaultColors(SALCOLOR* colors, HPALETTE& palette)
     //GetAverageColor(GetCOLORREF(colors[LINENUM_BK_RIGHT_CHANGE]), 9,
     //                GetCOLORREF(colors[LINENUM_FG_RIGHT_CHANGE]), 1));
 
-    // barva ramecku kolem vybrane zmeny ve sloupci s cisly radek
+    // frame color around the selected change in the column with line numbers
     if (GetFValue(colors[LINENUM_LEFT_BORDER]) & SCF_DEFAULT)
         SetRGBPart(&colors[LINENUM_LEFT_BORDER], GetSysColor(COLOR_BTNSHADOW));
     if (GetFValue(colors[LINENUM_RIGHT_BORDER]) & SCF_DEFAULT)
         SetRGBPart(&colors[LINENUM_RIGHT_BORDER], GetSysColor(COLOR_BTNSHADOW));
 
-    // barvy textu zobrazeneho obsahu souboru
+    // text colors of the displayed file contents
     if (GetFValue(colors[TEXT_FG_NORMAL]) & SCF_DEFAULT)
         SetRGBPart(&colors[TEXT_FG_NORMAL], SG->GetCurrentColor(SALCOL_VIEWER_FG_NORMAL));
     if (GetFValue(colors[TEXT_FG_LEFT_FOCUSED]) & SCF_DEFAULT)
@@ -254,7 +254,7 @@ void UpdateDefaultColors(SALCOLOR* colors, HPALETTE& palette)
     //if (GetFValue(colors[TEXT_FG_RIGHT_CHANGE_FOCUSED]) & SCF_DEFAULT)
     //  SetRGBPart(&colors[TEXT_FG_RIGHT_CHANGE_FOCUSED], GetCOLORREF(colors[TEXT_FG_RIGHT_CHANGE]));
 
-    // barvy pozadi zobrazeneho obsahu souboru
+    // background colors of the displayed file contents
     if (GetFValue(colors[TEXT_BK_NORMAL]) & SCF_DEFAULT)
         SetRGBPart(&colors[TEXT_BK_NORMAL], SG->GetCurrentColor(SALCOL_VIEWER_BK_NORMAL));
     if (GetFValue(colors[TEXT_BK_LEFT_FOCUSED]) & SCF_DEFAULT)
@@ -338,13 +338,13 @@ void UpdateDefaultColors(SALCOLOR* colors, HPALETTE& palette)
   }
   */
 
-    // barva ramecku kolem vybrane zmeny
+    // frame color around the selected change
     if (GetFValue(colors[TEXT_LEFT_BORDER]) & SCF_DEFAULT)
         SetRGBPart(&colors[TEXT_LEFT_BORDER], GetSysColor(COLOR_BTNSHADOW));
     if (GetFValue(colors[TEXT_RIGHT_BORDER]) & SCF_DEFAULT)
         SetRGBPart(&colors[TEXT_RIGHT_BORDER], GetSysColor(COLOR_BTNSHADOW));
 
-    // barva vybraneho bloku textu
+    // color of the selected text block
     if (GetFValue(colors[TEXT_FG_SELECTION]) & SCF_DEFAULT)
     {
         if (GetFValue(colors[TEXT_FG_NORMAL]) & SCF_DEFAULT)
@@ -404,7 +404,7 @@ BOOL CreateEnvFont()
         return FALSE;
     }
 
-    // zjistime si vysku
+    // determine the height
     HDC dc = GetDC(NULL);
     HFONT oldFont = (HFONT)SelectObject(dc, EnvFont);
     TEXTMETRIC tm;

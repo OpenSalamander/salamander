@@ -8,8 +8,8 @@
 // CMainWindow
 //
 
-#define BI_TOOLBAR 0  // band s toollbarou
-#define BI_DIFFLIST 1 // band s combacem
+#define BI_TOOLBAR 0  // band with the toolbar
+#define BI_DIFFLIST 1 // band with the combo box
 
 #define IDC_REBAR 100
 #define IDC_TOOLBAR 101
@@ -17,7 +17,7 @@
 #define IDC_LEFTFILEVIEW 103
 #define IDC_RIGHTFILEVIEW 104
 
-// indexy bitmap pro toolbaru
+// bitmap indices for the toolbar
 #define BI_COPY 0
 #define BI_SELECTALL 1
 #define BI_FIRSTDIFF 2
@@ -25,19 +25,19 @@
 #define BI_NEXTDIFF 4
 #define BI_LASTDIFF 5
 
-#define REBAR_BORDER 2 // vyska mezery pod rebarou
+#define REBAR_BORDER 2 // height of the gap below the rebar
 
-// flagy pro CMainWindow::UpdateToolbarButtons()
+// flags for CMainWindow::UpdateToolbarButtons()
 #define UTB_DIFFSSELECTION 0x01
 #define UTB_TEXTSELECTION 0x02
 #define UTB_MENU 0x04
 #define UTB_FORCEDISABLE 0x08
 #define UTB_ALL (UTB_DIFFSSELECTION | UTB_TEXTSELECTION | UTB_MENU)
 
-#define CW_CONTINUE 0 // jedeme dal
-#define CW_CANCEL 1   // storno operace
-#define CW_EXIT 2     // storno a exit file comparatoru
-#define CW_SILENT 3   // ukonceni threadu bez message boxu pro usera
+#define CW_CONTINUE 0 // keep going
+#define CW_CANCEL 1   // cancel the operation
+#define CW_EXIT 2     // cancel and exit the file comparator
+#define CW_SILENT 3   // end the thread without a message box for the user
 
 extern HCURSOR HWaitCursor;
 
@@ -62,7 +62,7 @@ protected:
     int Active;
     CSplitBarWindow* SplitBar;
     CRebar* Rebar;
-    LONG RebarHeight; // vyska rebary + vyska mezery pod rebarou
+    LONG RebarHeight; // height of the rebar plus the gap below it
     CComboBox* ComboBox;
     HWND HToolbar;
     CIntIndexes LinesToChanges;
@@ -92,7 +92,7 @@ protected:
     BOOL Recompare;
     BOOL bOptionsChangedBeingHandled; // Simple semaphore
 
-    // pro binarni compare
+    // for the binary comparator
     CBinaryChanges Changes;
     BOOL OutOfRange;
     UINT ShowCmd;

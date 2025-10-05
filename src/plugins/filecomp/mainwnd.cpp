@@ -12,8 +12,8 @@ using namespace std;
 
 HCURSOR HWaitCursor;
 
-HPALETTE Palette = NULL; // paleta pro 256-ti barevny display
-BOOL UsePalette = FALSE; // TRUE pokud mame jen 256 barev
+HPALETTE Palette = NULL; // palette for a 256-color display
+BOOL UsePalette = FALSE; // TRUE when we only have 256 colors available
 
 CBandParams BandsParams[2];
 
@@ -169,10 +169,10 @@ BOOL CMainWindow::Init()
         return FALSE;
     }
 
-    // nechceme vizualni styly pro rebar
+    // we do not want visual styles for the rebar
     if (SalGUI->DisableWindowVisualStyles(Rebar->HWindow))
     {
-        // vynutime si WS_BORDER, ktery se nekam "ztratil"
+    // force WS_BORDER back in case it "disappeared"
         DWORD style = GetWindowLong(Rebar->HWindow, GWL_STYLE);
         style |= WS_BORDER;
         SetWindowLong(Rebar->HWindow, GWL_STYLE, style);
@@ -219,7 +219,7 @@ BOOL CMainWindow::Init()
 
     RebarHeight = LONG(SendMessage(Rebar->HWindow, RB_GETBARHEIGHT, 0, 0)) + 4 + REBAR_BORDER;
 
-    // vytvorime caption okna
+    // create the window caption
     LeftHeader = new CFileHeaderWindow("");
     if (!LeftHeader)
         return Error(HWND(NULL), IDS_LOWMEM);
@@ -254,7 +254,7 @@ BOOL CMainWindow::Init()
         return FALSE;
     }
 
-    // vytvorime file view okna
+    // create the file view windows
     LeftFileViewHWnd = CreateWindowEx(WS_EX_STATICEDGE,
                                       FILEVIEWWINDOW_CLASSNAME,
                                       "",
@@ -285,11 +285,11 @@ BOOL CMainWindow::Init()
         return FALSE;
     }
 
-    // disablujem scrollbary
+    // disable the scrollbars
     EnableScrollBar(LeftFileViewHWnd, SB_BOTH, ESB_DISABLE_BOTH);
     EnableScrollBar(RightFileViewHWnd, SB_BOTH, ESB_DISABLE_BOTH);
 
-    // vytvorime splitbaru
+    // create the split bar
     SplitBar = new CSplitBarWindow(Configuration.HorizontalView ? sbHorizontal : sbVertical);
     if (!SplitBar)
         return Error(HWND(NULL), IDS_LOWMEM);
@@ -313,10 +313,10 @@ BOOL CMainWindow::Init()
 
     Initialized = TRUE;
 
-    // zajistime spusteni workeru
+    // ensure the worker thread gets started
     PostMessage(HWindow, WM_COMMAND, CM_RECOMPARE, 0);
 
-    // aktivujeme hlavni okno
+    // activate the main window
     PostMessage(HWindow, WM_USER_ACTIVATEWINDOW, 0, 0);
 
     return TRUE;
@@ -332,7 +332,7 @@ void CMainWindow::EnableInput(BOOL enable)
     UpdateToolbarButtons(UTB_ALL | (enable ? 0 : UTB_FORCEDISABLE));
     if (enable)
         SetFocus(LeftFileViewHWnd);
-    // disablovane okno nebude akceptovat drag&drop pozadavky
+    // a disabled window must not accept drag&drop requests
     DragAcceptFiles(HWindow, enable);
 }
 
@@ -528,7 +528,7 @@ int CMainWindow::FindDifference(QWORD offset)
     int r = int(Changes.size()) - 1;
     int mid;
 
-    // vime ze tam je, hledame dokud nenajdem
+    // we know it is there; keep searching until we find it
     while (1)
     {
         mid = ((l + r) / 2);
@@ -696,7 +696,7 @@ BOOL CMainWindow::RebuildFileViewScripts(BOOL& cancel)
         if (SelectedDifference != -1)
             SelectDifference(SelectedDifference);
 
-        // zajistime prekresleni vsech oken
+        // ensure all windows get repainted
         InvalidateRect(LeftFileViewHWnd, NULL, FALSE);
         UpdateWindow(LeftFileViewHWnd);
         InvalidateRect(RightFileViewHWnd, NULL, FALSE);
@@ -708,8 +708,8 @@ BOOL CMainWindow::RebuildFileViewScripts(BOOL& cancel)
         return TRUE; // ok
     }
 
-    // nekde se stala chyba
-    FileView[fviLeft]->InvalidateData(); // zajistime prekresleni oken
+    // something went wrong
+    FileView[fviLeft]->InvalidateData(); // ensure the windows are repainted
     FileView[fviRight]->InvalidateData();
     LeftHeader->SetText("");
     RightHeader->SetText("");
@@ -780,7 +780,7 @@ void CMainWindow::ResetComboBox(BOOL* cancel)
 
             if ((GetAsyncKeyState(VK_ESCAPE) & 0x8001) && GetForegroundWindow() == HWindow)
             {
-                MSG msg; // vyhodime nabufferovany ESC
+                MSG msg; // discard the queued ESC
                 while (PeekMessage(&msg, NULL, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
                     ;
                 if (cancel)
@@ -797,9 +797,9 @@ void CMainWindow::ResetComboBox(BOOL* cancel)
 void CMainWindow::SaveRebarLayout()
 {
     CALL_STACK_MESSAGE1("CMainWindow::SaveRebarLayout()");
-    // ulozime informace o bandu s toolbarou
+    // save the band information for the toolbar
     Rebar->GetBandParams(IDC_TOOLBAR, BandsParams + BI_TOOLBAR);
-    // ulozime informace o bandu s combacem
+    // save the band information for the combo box
     Rebar->GetBandParams(IDC_DIFFLIST, BandsParams + BI_DIFFLIST);
 }
 
@@ -808,8 +808,8 @@ void CMainWindow::RestoreRebarLayout()
     CALL_STACK_MESSAGE1("CMainWindow::RestoreRebarLayout()");
     if (BandsParams[0].Width == -1)
     {
-        // rozmery nejsou ulozene v konfiguraci
-        // nastavime defaultni layout a rozmery napocitame
+        // the dimensions are not stored in the configuration
+        // apply the default layout and compute the dimensions
         SIZE size;
         RECT r, r2;
         LRESULT index = SendMessage(Rebar->HWindow, RB_IDTOINDEX, IDC_TOOLBAR, 0);
@@ -817,7 +817,7 @@ void CMainWindow::RestoreRebarLayout()
         SendMessage(Rebar->HWindow, RB_GETBANDBORDERS, (WPARAM)index, (LPARAM)&r);
         GetClientRect(HWindow, &r2);
         r2.right -= r2.left;
-        // Petr: upraveno, aby pri default konfiguraci zabiral Differences band co nejvetsi casy rebaru (az na toolbaru a jeji spacer)
+        // Petr: tweaked so that in the default configuration the Differences band uses as much of the rebar as possible (except for the toolbar and its spacer)
         BandsParams[BI_TOOLBAR].Width = size.cx + r.left + 50 /* spacer */;
         BandsParams[BI_TOOLBAR].Style = 0;
         BandsParams[BI_TOOLBAR].Index = 0;
@@ -846,7 +846,7 @@ void CMainWindow::SpawnWorker(const char* path1, const char* path2,
 
     Recompare = recompare;
 
-    // v pripade, ze jeste bezi worker, ukoncime ho
+    // if a worker is still running, terminate it
     CancelWorker = CW_SILENT;
     TRACE_I("SpawnWorker: waiting 'til worker finished");
     while (1)
@@ -880,7 +880,7 @@ void CMainWindow::SpawnWorker(const char* path1, const char* path2,
         if (!worker->Create(ThreadQueue))
         {
             delete worker;
-            SetEvent(WorkerEvent); // aby jsme na nej marne necekali
+            SetEvent(WorkerEvent); // so we do not wait for it in vain
             TRACE_I("Nepovedlo se spustit diff worker thread.");
         }
         else
@@ -904,7 +904,7 @@ void CMainWindow::SetWait(BOOL wait)
         POINT pt;
         GetCursorPos(&pt);
 
-        // zajistime spravne prekresli kursoru
+        // ensure the cursor is redrawn correctly
         if (Wait)
             SetCursor(HWaitCursor);
         else
@@ -917,7 +917,7 @@ bool CMainWindow::TextFilesDiffer(CTextCompareResults<CChar>* res, char* message
 {
     DataValid = FALSE;
 
-    // ulozime vysledky
+    // store the results
     LinesToChanges.clear();
     ChangesToLines[0].clear();
     ChangesToLines[1].clear();
@@ -925,7 +925,7 @@ bool CMainWindow::TextFilesDiffer(CTextCompareResults<CChar>* res, char* message
     res->ChangesLengths.swap(ChangesLengths);
     res->Changes.swap(TextChanges);
 
-    // zajistime spravny typ file view controlu
+    // ensure the file view control uses the correct type
     if (FileView[fviLeft])
     {
         FileView[fviLeft]->DetachWindow();
@@ -935,10 +935,10 @@ bool CMainWindow::TextFilesDiffer(CTextCompareResults<CChar>* res, char* message
     if (!FileView[fviLeft])
     {
         strcpy(message, LoadStr(IDS_LOWMEM));
-        return FALSE; // nebudeme deallokovat buffery predane v CTextCompareResults
+        return FALSE; // do not deallocate buffers provided by CTextCompareResults
     }
     FileView[fviLeft]->AttachToWindow(LeftFileViewHWnd);
-    // zajistime incializaci okna
+    // ensure the window gets initialized
     SendMessage(LeftFileViewHWnd, WM_USER_CREATE, 0, 0);
 
     if (FileView[fviRight])
@@ -950,10 +950,10 @@ bool CMainWindow::TextFilesDiffer(CTextCompareResults<CChar>* res, char* message
     if (!FileView[fviRight])
     {
         strcpy(message, LoadStr(IDS_LOWMEM));
-        return FALSE; // nebudeme deallokovat buffery predane v CTextCompareResults
+        return FALSE; // do not deallocate buffers provided by CTextCompareResults
     }
     FileView[fviRight]->AttachToWindow(RightFileViewHWnd);
-    // zajistime incializaci okna
+    // ensure the window gets initialized
     SendMessage(RightFileViewHWnd, WM_USER_CREATE, 0, 0);
 
     FileView[fviLeft]->SetSiblink(FileView[fviRight]);
@@ -962,7 +962,7 @@ bool CMainWindow::TextFilesDiffer(CTextCompareResults<CChar>* res, char* message
     TTextFileViewWindow<CChar>* leftFileView = (TTextFileViewWindow<CChar>*)FileView[fviLeft];
     TTextFileViewWindow<CChar>* rightFileView = (TTextFileViewWindow<CChar>*)FileView[fviRight];
 
-    // prebiram data, odted uz jsem zodpovedny za dealokaci dat
+    // taking ownership of the data; from now on I must release it
     // predanych v CTextCompareResults
     leftFileView->SetData(res->Files[0].Text, res->Files[0].Lines, res->Files[0].LineScript);
     rightFileView->SetData(res->Files[1].Text, res->Files[1].Lines, res->Files[1].LineScript);
@@ -1003,7 +1003,7 @@ bool CMainWindow::TextFilesDiffer(CTextCompareResults<CChar>* res, char* message
         DataValid = FALSE;
         LeftHeader->SetText("");
         RightHeader->SetText("");
-        leftFileView->InvalidateData(); // zajistime prekresleni oken
+        leftFileView->InvalidateData(); // ensure the windows are repainted
         rightFileView->InvalidateData();
     }
 
@@ -1041,13 +1041,13 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         RECT r1, r2, r3;
         GetClientRect(HWindow, &r1);
         GetClientRect(LeftHeader->HWindow, &r2);
-        // vykreslime mezeru mezi rebarou a headerem
+        // draw the gap between the rebar and the header
         r3.top = RebarHeight - REBAR_BORDER;
         r3.bottom = RebarHeight;
         r3.left = 0;
         r3.right = r1.right;
         FillRect(dc, &r3, (HBRUSH)(COLOR_BTNFACE + 1));
-        // vykreslime mezeru mezi headerem a textovym oknem
+        // draw the gap between the header and the text window
         r3.top = RebarHeight + r2.bottom + 2;
         r3.bottom = r3.top + 2;
         FillRect(dc, &r3, (HBRUSH)(COLOR_BTNFACE + 1));
@@ -1076,7 +1076,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_TIMER:
     {
-        if (wParam == 666) // mame si poslat CM_EXIT, blokujici dialog uz je snad sestreleny
+        if (wParam == 666) // we should post CM_EXIT; the modal dialog should be gone by now
         {
             KillTimer(HWindow, 666);
             PostMessage(HWindow, WM_COMMAND, CM_EXIT, 0);
@@ -1135,7 +1135,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             // jedeme dal ...
         case CM_EXIT:
             if (!IsWindowEnabled(HWindow))
-            { // zavreme postupne vsechny dialogy nad timto dialogem (posleme jim WM_CLOSE, a pak sem posleme znovu CM_EXIT)
+            { // close all dialogs above this one (send them WM_CLOSE, then repost CM_EXIT here)
                 SG->CloseAllOwnedEnabledDialogs(HWindow);
                 SetTimer(HWindow, 666, 100, NULL);
                 return 0;
@@ -1167,7 +1167,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             UINT state = GetMenuState(GetMenu(HWindow), CM_PREVDIFF, MF_BYCOMMAND);
             if (state & (MF_DISABLED | MF_GRAYED))
             {
-                if (DifferencesCount > 0) // Petr: kdyz odroluju view kamsi pryc, chci na Alt+sipku focus difference (hledat ji rucne je oser), kdyz je jen jedna neslo to vubec, jinak to slo pres prepnuti dalsi/predchozi
+                if (DifferencesCount > 0) // Petr: when I scroll the view somewhere else I want Alt+Arrow to focus the difference (hunting it manually is a pain); with just one diff it did not work at all, otherwise only by jumping to next/previous
                     SelectDifference(SelectedDifference, CM_PREVDIFF);
                 return 0;
             }
@@ -1198,7 +1198,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             UINT state = GetMenuState(GetMenu(HWindow), CM_NEXTDIFF, MF_BYCOMMAND);
             if (state & (MF_DISABLED | MF_GRAYED))
             {
-                if (DifferencesCount > 0) // Petr: kdyz odroluju view kamsi pryc, chci na Alt+sipku focus difference (hledat ji rucne je oser), kdyz je jen jedna neslo to vubec, jinak to slo pres prepnuti predchozi/dalsi
+                if (DifferencesCount > 0) // Petr: when I scroll the view somewhere else I want Alt+Arrow to focus the difference (hunting it manually is a pain); with just one diff it did not work at all, otherwise only by jumping previous/next
                     SelectDifference(SelectedDifference, CM_NEXTDIFF);
                 return 0;
             }
@@ -1207,7 +1207,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         case CM_NEXTDIFF:
             if (DataValid)
-                SelectDifference(SelectedDifference + 1, CM_NEXTDIFF); // test na DifferencesCount ohlidame pozdeji
+                SelectDifference(SelectedDifference + 1, CM_NEXTDIFF); // guard the DifferencesCount test later
             return 0;
 
         case CM_LASTDIFF:
@@ -1244,7 +1244,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 if (OptionsChanged)
                 {
-                    // zeptame, zda chce pouzit nove volby
+                    // ask whether the user wants to apply the new options
                     int ret = SG->SalMessageBox(HWindow, LoadStr(IDS_OPTIONSCHANGED), LoadStr(IDS_PLUGINNAME),
                                                 MB_YESNOCANCEL | MB_ICONQUESTION | MB_DEFBUTTON2);
                     switch (ret)
@@ -1263,7 +1263,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     }
                 }
 
-                // pustime workera
+                // start the worker
                 SpawnWorker(Path1, Path2, TRUE, Options);
             }
             return 0;
@@ -1280,7 +1280,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 ::Configuration.ViewMode = ViewMode;
                 CheckMenuItem(GetMenu(HWindow), CM_ONLYDIFFERENCES, MF_BYCOMMAND | (ViewMode == fvmStandard ? MF_UNCHECKED : MF_CHECKED));
 
-                // postavime znova skripty
+                // rebuild the scripts
                 SetWait(TRUE);
                 BOOL cancel;
                 if (!RebuildFileViewScripts(cancel))
@@ -1446,7 +1446,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case CM_HELP:
         {
             SG->OpenHtmlHelp(HWindow, HHCDisplayContext, IDH_INTRODUCTION, TRUE);
-            SG->OpenHtmlHelp(HWindow, HHCDisplayTOC, 0, FALSE); // nechceme dva messageboxy za sebou
+            SG->OpenHtmlHelp(HWindow, HHCDisplayTOC, 0, FALSE); // avoid showing two message boxes in a row
             return 0;
         }
 
@@ -1573,7 +1573,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     view = 1;
             }
 
-            // kolik souboru nam hodili
+            // how many files were dropped on us
             count = DragQueryFile(drop, 0xFFFFFFFF, NULL, 0);
             if (count < 1)
                 goto LDROPERROR;
@@ -1606,10 +1606,9 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         strcpy(path2, path1);
                         strcpy(path1, Path1);
                     }
-                    // operace je podobna recompare tak pouzijeme aktuali nastaveni,
-                    // pokud ovsem uzivatem mezitim nezmenil defaultni nastaveni v
-                    // konfiguraci, aby ho nematlo, ze neporovnava podle
-                    // nokonfigurovanych hodnot
+                    // the operation resembles a recompare, so reuse the current settings
+                    // unless the user changed the defaults in the configuration in the meantime;
+                    // that would be confusing if we compared using stale values
                     if (!OptionsChanged)
                         options = Options;
                 }
@@ -1620,7 +1619,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             BOOL succes = FALSE;
             if (count > 2 || *path2 == 0)
             {
-                // nechame potvrdit uzivatelem
+                // let the user confirm it
                 CCompareFilesDialog dlg(HWindow, path1, path2, succes, &options);
                 dlg.Execute();
             }
@@ -1640,7 +1639,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_HELP:
     {
         SG->OpenHtmlHelp(HWindow, HHCDisplayContext, IDH_INTRODUCTION, FALSE);
-        SG->OpenHtmlHelp(HWindow, HHCDisplayTOC, 0, TRUE); // nechceme dva messageboxy za sebou
+        SG->OpenHtmlHelp(HWindow, HHCDisplayTOC, 0, TRUE); // avoid showing two message boxes in a row
         return TRUE;
     }
 
@@ -1711,7 +1710,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_SYSCHAR:
     {
-        // aby nam system nepipal, kdyz se prepina na kombac
+        // prevent the system from beeping when switching to the combo box
         if ((wParam == 'd' || wParam == 'D') && InputEnabled)
             return 0;
         break;
@@ -1742,8 +1741,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_SETTINGCHANGE:
     {
-        // mohli se zmenit rozmery scrollbar, zajistime, aby si kombac
-        // napocital nove rozmery tlacitka
+        // the scrollbar size may have changed; ensure the combo box recalculates the button size
         RECT r;
         GetWindowRect(ComboBox->HWindow, &r);
         SetWindowPos(ComboBox->HWindow, 0, 0, 0,
@@ -1888,7 +1886,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             DataValid = FALSE;
 
-            // file view data musi byt zrusena drive
+            // file view data must be released first
             if (FileView[fviLeft])
                 FileView[fviLeft]->DestroyData();
             if (FileView[fviRight])
@@ -1901,7 +1899,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             TextChanges.clear();
             Changes.clear();
 
-            // zajistime spravny typ file view controlu
+            // ensure the file view control uses the correct type
             if (FileView[fviLeft] && !FileView[fviLeft]->Is(fvtHex))
             {
                 FileView[fviLeft]->DetachWindow();
@@ -1913,12 +1911,12 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 FileView[fviLeft] = new CHexFileViewWindow(fviLeft);
                 if (!FileView[fviLeft])
                 {
-                    ret = FALSE; // nebudeme deallokovat buffery predane v CDiffResults
+                    ret = FALSE; // do not deallocate buffers provided by CDiffResults
                     _tcscpy(message, LoadStr(IDS_LOWMEM));
                     break;
                 }
                 FileView[fviLeft]->AttachToWindow(LeftFileViewHWnd);
-                // zajistime incializaci okna
+                // ensure the window gets initialized
                 SendMessage(LeftFileViewHWnd, WM_USER_CREATE, 0, 0);
             }
 
@@ -1933,12 +1931,12 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 FileView[fviRight] = new CHexFileViewWindow(fviRight);
                 if (!FileView[fviRight])
                 {
-                    ret = FALSE; // nebudeme deallokovat buffery predane v CDiffResults
+                    ret = FALSE; // do not deallocate buffers provided by CDiffResults
                     _tcscpy(message, LoadStr(IDS_LOWMEM));
                     break;
                 }
                 FileView[fviRight]->AttachToWindow(RightFileViewHWnd);
-                // zajistime incializaci okna
+                // ensure the window gets initialized
                 SendMessage(RightFileViewHWnd, WM_USER_CREATE, 0, 0);
             }
 
@@ -1959,7 +1957,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                 ResetComboBox();
 
-                // zajistime prekresleni vsech oken
+                // ensure all windows get repainted
                 InvalidateRect(LeftFileViewHWnd, NULL, FALSE);
                 UpdateWindow(LeftFileViewHWnd);
                 InvalidateRect(RightFileViewHWnd, NULL, FALSE);
@@ -1979,7 +1977,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 LeftHeader->SetText("");
                 RightHeader->SetText("");
-                FileView[fviLeft]->InvalidateData(); // zajistime prekresleni oken
+                FileView[fviLeft]->InvalidateData(); // ensure the windows are repainted
                 FileView[fviRight]->InvalidateData();
                 ret = FALSE; // nebudeme hledat difference
             }
@@ -1989,7 +1987,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         case WN_SETCHANGES:
         {
-            // tady to schvalne kopirujem, nevolame swap
+            // intentionally copy here instead of calling swap
             Changes = *(CBinaryChanges*)lParam;
             if (Changes.size() < MaxBinChanges)
                 DifferencesCount = int(Changes.size());
@@ -2100,7 +2098,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (DataValid)
         {
             //        if (DifferencesCount || (WN_NO_DIFFERENCE == wParam))
-            //        { // je-li 0, nastavime caption pozdeji, az najdeme vsechny binarni difference
+            //        { // if it is 0, set the caption later once we find all binary differences
             TCHAR fmt[128];
             if (DifferencesCount)
             {
@@ -2182,7 +2180,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 else
                 {
-                    OptionsChanged = TRUE; // aby pri nasledujicim recompare, zeptal na naloadeni novych options
+                    OptionsChanged = TRUE; // so the next recompare asks to load the new options
                 }
             }
 
@@ -2190,7 +2188,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 if ((wParam & CC_CONTEXT) | (wParam & CC_TABSIZE))
                 {
-                    // postavime znova skripty
+                    // rebuild the scripts
                     if (FileView[fviLeft]->Is(fvtText))
                     {
                         SetWait(TRUE);
@@ -2230,11 +2228,10 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_USER_ACTIVATEWINDOW:
     {
-        // pokud je okno disabled, pravdepodobne je nad nim zobrazen msgbox a vytazeni
-        // okna nahoru by zpusobilo jeho aktivaci (to byl problem v jedne starsi verzi SS,
-        // kdyz uzivatel nechal porovnat dva shodne soubory -- zobrazilo se toto okno,
-        // nasledne vyskocil msgbox s informaci o shode a nasledne se dorucila tato
-        // zprava, ktera msgboxu ukradla focus a ktivovala okno pod nim)
+        // if the window is disabled, a message box is likely sitting on top of it;
+        // bringing this window to the front would activate it (an issue in an older SS version
+        // where comparing identical files showed this window, then a message box about the match,
+        // and finally this message arrived, stealing focus from the box and activating the window underneath)
         if (IsWindowEnabled(HWindow))
         {
             ShowWindow(HWindow, ShowCmd /*SW_SHOW*/);
@@ -2252,15 +2249,15 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         DragAcceptFiles(HWindow, FALSE);
 
-        // zrusime pole drive nez okno, kdyz je pole velike, okno se zavre, ale thread zije dal
-        // (probiha v nem destrukce prvku pole), to vede k tomu, ze je thread zakillovan pri
-        // releasu pluginu drive nez sam zkonci
+        // destroy the array before the window; if the array is large the window may close while the thread keeps running
+        // (array element destruction runs inside it), which causes the thread to be killed while releasing the plugin early
+        // release the plugin before it shuts down on its own
         if (FileView[fviLeft])
             FileView[fviLeft]->DestroyData();
         if (FileView[fviRight])
             FileView[fviRight]->DestroyData();
 
-        // uvolnime velike struktury nyni, viz poznamka vyse
+        // release the large structures now; see the note above
         LinesToChanges.clear();
         ChangesToLines[0].clear();
         ChangesToLines[1].clear();
@@ -2269,7 +2266,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         SaveRebarLayout();
 
-        // v pripade, ze jeste bezi worker, ukoncime ho
+        // if a worker is still running, terminate it
         CancelWorker = CW_SILENT;
         TRACE_I("Waiting 'til worker finished");
         while (1)
