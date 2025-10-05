@@ -86,7 +86,7 @@ INT_PTR WINAPI NextVolumeDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
     switch (uMsg)
     {
     case WM_INITDIALOG:
-        // SalamanderGUI->ArrangeHorizontalLines(hDlg); // melo by se volat, tady na to kasleme, nejsou tu horizontalni cary
+        // SalamanderGUI->ArrangeHorizontalLines(hDlg); // it should be called, but we ignore it here, there are no horizontal lines
         dlg = (CNextVolumeDialog*)lParam;
         dlg->Dlg = hDlg;
         return dlg->DialogProc(uMsg, wParam, lParam);
@@ -159,7 +159,7 @@ int CALLBACK DirectoryBrowse(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
         SalamanderGeneral->GetRootPath(buf, (char*)lpData);
         SalamanderGeneral->SalPathRemoveBackslash(buf);
         SalamanderGeneral->SalPathRemoveBackslash((char*)lpData);
-        if (lstrlen(buf) == lstrlen((char*)lpData)) // je to root-dir
+        if (lstrlen(buf) == lstrlen((char*)lpData)) // this is the root directory
             SalamanderGeneral->SalPathAddBackslash((char*)lpData, MAX_PATH);
         SendMessage(hwnd, BFFM_SETSELECTION, TRUE, lpData);
     }
@@ -190,7 +190,7 @@ BOOL CNextVolumeDialog::OnBrowse(WORD wNotifyCode, WORD wID, HWND hwndCtl)
         SHGetPathFromIDList(res, VolumePath);
         SetDlgItemText(Dlg, IDC_FILENAME, VolumePath);
     }
-    // uvolneni item-id-listu
+    // release the item ID list
     IMalloc* alloc;
     if (SUCCEEDED(CoGetMalloc(1, &alloc)))
     {
@@ -259,7 +259,7 @@ INT_PTR WINAPI ContinuedFileDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
     switch (uMsg)
     {
     case WM_INITDIALOG:
-        // SalamanderGUI->ArrangeHorizontalLines(hDlg); // melo by se volat, tady na to kasleme, nejsou tu horizontalni cary
+        // SalamanderGUI->ArrangeHorizontalLines(hDlg); // it should be called, but we ignore it here, there are no horizontal lines
         dlg = (CContinuedFileDialog*)lParam;
         dlg->Dlg = hDlg;
         return dlg->DialogProc(uMsg, wParam, lParam);
@@ -362,7 +362,7 @@ INT_PTR WINAPI ConfigDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
     switch (uMsg)
     {
     case WM_INITDIALOG:
-        // SalamanderGUI->ArrangeHorizontalLines(hDlg); // melo by se volat, tady na to kasleme, nejsou tu horizontalni cary
+        // SalamanderGUI->ArrangeHorizontalLines(hDlg); // it should be called, but we ignore it here, there are no horizontal lines
         dlg = (CConfigDialog*)lParam;
         dlg->Dlg = hDlg;
         return dlg->DialogProc(uMsg, wParam, lParam);
@@ -453,7 +453,7 @@ INT_PTR WINAPI AttentionDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
     switch (uMsg)
     {
     case WM_INITDIALOG:
-        // SalamanderGUI->ArrangeHorizontalLines(hDlg); // melo by se volat, tady na to kasleme, nejsou tu horizontalni cary
+        // SalamanderGUI->ArrangeHorizontalLines(hDlg); // it should be called, but we ignore it here, there are no horizontal lines
         dlg = (CAttentionDialog*)lParam;
         dlg->Dlg = hDlg;
         return dlg->DialogProc(uMsg, wParam, lParam);
