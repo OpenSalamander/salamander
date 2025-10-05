@@ -8,13 +8,13 @@
 #include "checkver.rh2"
 #include "lang\lang.rh"
 
-SYSTEMTIME LastCheckTime;       // kdy byla naposledy provedena kontrola
-SYSTEMTIME NextOpenOrCheckTime; // kdy nejdrive se ma automaticky otevrit okno pluginu a prip. provest kontrola
-int ErrorsSinceLastCheck = 0;   // kolikrat jsme se uz neuspesne pokouseli automaticky provest kontrolu
+SYSTEMTIME LastCheckTime;       // when the check was last performed
+SYSTEMTIME NextOpenOrCheckTime; // the earliest time the plugin window should open automatically and optionally perform a check
+int ErrorsSinceLastCheck = 0;   // how many times we have already failed to perform the automatic check
 
 //****************************************************************************
 //
-// Deklarace / Definice
+// Declarations / Definitions
 //
 
 // CModuleInfo
@@ -27,14 +27,14 @@ DWORD LoadedScriptSize = 0;
 
 class CModules;
 
-class CSalModuleInfo // moduly vracene z CSalamanderGeneral::EnumInstalledModules
+class CSalModuleInfo // modules returned by CSalamanderGeneral::EnumInstalledModules
 {
 public:
     CSalModuleInfo();
     ~CSalModuleInfo();
 
-    BOOL SetModule(const char* module);   // pres DupStr si vytvori kopii
-    BOOL SetVersion(const char* version); // pres DupStr si vytvori kopii
+    BOOL SetModule(const char* module);   // creates a copy via DupStr
+    BOOL SetVersion(const char* version); // creates a copy via DupStr
 
     DWORD GetResVer() { return ResolvedVersion; }
     BOOL GetResBeta() { return ResolvedBeta; }
@@ -45,10 +45,10 @@ protected:
     char* Version; // 2.0 beta 1
 
 private:
-    // nastaveno v metode SetVersion()
-    DWORD ResolvedVersion; // celociselna verze slozena z "2.00" nebo "2.00 beta 2" nebo "2.00 beta 2c"
+    // set in SetVersion()
+    DWORD ResolvedVersion; // integer version composed of "2.00" or "2.00 beta 2" or "2.00 beta 2c"
     BOOL ResolvedBeta;
-    DWORD ResolvedSpecialBuild; // 0 = nejde o IB/PB/DB/CB verzi; jinak je zde jeji cislo (vzdy > 0)
+    DWORD ResolvedSpecialBuild; // 0 = not an IB/PB/DB/CB version; otherwise this stores its number (always > 0)
 
     friend class CModules;
 };
@@ -72,38 +72,38 @@ public:
 
 protected:
     BOOL Beta; // FALSE = release version; TRUE = beta version
-    // alokovane retezce
+    // allocated strings
     char* Name;                // Open Salamander
     char* Url;                 // www.altap.cz
-    TDirectArray<char*> Infos; // urcity pocet radku popisujicich modul
+    TDirectArray<char*> Infos; // a certain number of lines describing the module
 
-    // pouze vnitrni flag pro CompareWithInstalledModulesAndLogIt
+    // internal flag for CompareWithInstalledModulesAndLogIt
     CModuleTypeEnum Type;
 
-    BOOL ShowDetails; // jsou zobrazeny detaily k tomuto modulu?
+    BOOL ShowDetails; // are the details for this module displayed?
 
     friend class CModules;
 };
 
 enum CModulesSate
 {
-    msEmpty,         // cerstve inicializovano
-    msCorruptedData, // data jsou porusena nebo maji chybny format
-    msCorrectData    // data jsou OK
+    msEmpty,         // freshly initialized
+    msCorruptedData, // data are corrupted or have an invalid format
+    msCorrectData    // data are OK
 };
 
-// drzak CModuleInfo, ktery dokaze nacist script
+// holder for CModuleInfo that can load the script
 class CModules
 {
 public:
     CModules();
     ~CModules();
 
-    void Cleanup(); // provede destrukci a inicializaci drzenych dat
+    void Cleanup(); // destroy and initialize the stored data
 
-    BOOL BuildDataFromScript();             // sestavi data z LoadedScript
-    void FillLogWindow(BOOL rereadModules); // vysmazi do logu soucasny stav
-    void EnumSalModules();                  // omezeni - musi byt volana z hlavniho threadu Salamandera
+    BOOL BuildDataFromScript();             // construct data from LoadedScript
+    void FillLogWindow(BOOL rereadModules); // dump the current state into the log
+    void EnumSalModules();                  // limitation - must be called from Salamander's main thread
 
     void ClearModuleWasFound() { ModuleWasFound = FALSE; }
     BOOL GetModuleWasFound() { return ModuleWasFound; }
@@ -114,13 +114,13 @@ public:
 
 protected:
     BOOL LoadDataFromScript(TDirectArray<char*>* lines);
-    void CompareWithInstalledModulesAndLogIt(BOOL rereadModules); // provna pole Modules s tim, co nam vraci Salamander
+    void CompareWithInstalledModulesAndLogIt(BOOL rereadModules); // compare the Modules array with what Salamander reports
 
 protected:
     TIndirectArray<CModuleInfo> Modules;
     TIndirectArray<CSalModuleInfo> SalModules;
     CModulesSate State;
-    BOOL ModuleWasFound; // alespon jeden novy modul byl nalezen
+    BOOL ModuleWasFound; // at least one new module was found
 };
 
 //****************************************************************************
@@ -130,15 +130,15 @@ protected:
 
 CDataDefaults DataDefaults[inetCount] =
     {
-        {achmMonth, FALSE, FALSE, TRUE, FALSE /* v PB verzich je sem dosazeno TRUE, viz LoadConfig */, TRUE},
-        {achmWeek, TRUE, TRUE, TRUE, FALSE /* v PB verzich je sem dosazeno TRUE, viz LoadConfig */, TRUE},
-        {achmNever, FALSE, FALSE, TRUE, FALSE /* v PB verzich je sem dosazeno TRUE, viz LoadConfig */, TRUE},
+        {achmMonth, FALSE, FALSE, TRUE, FALSE /* PB builds set this to TRUE, see LoadConfig */, TRUE},
+        {achmWeek, TRUE, TRUE, TRUE, FALSE /* PB builds set this to TRUE, see LoadConfig */, TRUE},
+        {achmNever, FALSE, FALSE, TRUE, FALSE /* PB builds set this to TRUE, see LoadConfig */, TRUE},
 };
 
 CInternetConnection InternetConnection = inetLAN;
 CInternetProtocol InternetProtocol = inetpHTTP;
 CDataDefaults Data = DataDefaults[InternetConnection];
-TDirectArray<char*> Filters(10, 10); // citelna forma nazvu polozek (vcetne verze nebo bez verze (v tom pripade jde o vsechny verze)), ktere se nemaji checkovat
+TDirectArray<char*> Filters(10, 10); // readable form of item names (including the version or without it, in which case all versions) that should not be checked
 CModules Modules;
 
 const char* CONFIG_AUTOCHECKMODE = "AutoCheckMode";
@@ -156,15 +156,15 @@ const char* CONFIG_LASTCHECK = "LastOpen";
 const char* CONFIG_NEXTOPEN = "NextOpen";
 const char* CONFIG_NUMOFERRORS = "NumOfErrors";
 
-// ConfigVersion: 0 - zadna konfigurace se z Registry nenacetla (jde o instalaci pluginu),
-//                1 - konfigurace pred zavedenim promenne 'Version' do registry
-//                2 - Salamander 2.52: forcujeme nove default hodnoty (vsem nastavime defaulty pro inetLAN)
-//                3 - Salamander 3.0: forcujeme nove default hodnoty (ukazeme vsechny nove verze, pridany link "ignore this version", snad uz nebudou frontalne vypinat CheckVer)
-//                4 - Salamander 4.0: forcujeme nove default hodnoty
+// ConfigVersion: 0 - no configuration was loaded from the Registry (plugin installation),
+//                1 - configuration before the 'Version' value was added to the registry
+//                2 - Salamander 2.52: enforce new default values (set inetLAN defaults for everyone)
+//                3 - Salamander 3.0: enforce new default values (show all new versions, add the "ignore this version" link, hopefully CheckVer will no longer be disabled manually)
+//                4 - Salamander 4.0: enforce new default values
 
-int ConfigVersion = 0;             // verze nactene konfigurace z registry (popis verzi viz vyse)
-#define CURRENT_CONFIG_VERSION 4   // aktualni verze konfigurace (uklada se do registry pri unloadu pluginu)
-#define LOAD_ONLY_CONFIG_VERSION 4 // starsi verze konfigurace se neloadi, bereme defaulty (FORCE DEFAULTS)
+int ConfigVersion = 0;             // version of the configuration loaded from the registry (see above for description)
+#define CURRENT_CONFIG_VERSION 4   // current configuration version (stored in the registry when the plugin unloads)
+#define LOAD_ONLY_CONFIG_VERSION 4 // older configuration versions are not loaded; defaults are used instead (FORCE DEFAULTS)
 const char* CONFIG_VERSION = "Version";
 
 //****************************************************************************
@@ -187,7 +187,7 @@ BOOL AddUniqueFilter(const char* itemName)
     {
         const char* item = Filters[i];
         if (SalGeneral->StrICmp(item, itemName) == 0)
-            return TRUE; // polozka uz je v seznamu
+            return TRUE; // item is already in the list
     }
     char* newItem = SalGeneral->DupStr(itemName);
     if (newItem == NULL)
@@ -309,7 +309,7 @@ GetWaitDays()
 
 BOOL IsTimeExpired(const SYSTEMTIME* time)
 {
-    if (GetWaitDays() == 0) // teoreticky hrozi jen pro achmNever
+    if (GetWaitDays() == 0) // theoretically only possible for achmNever
         return FALSE;
     SYSTEMTIME currentTime;
     GetLocalTime(&currentTime);
@@ -330,7 +330,7 @@ void GetFutureTime(SYSTEMTIME* tgtTime, const SYSTEMTIME* time, DWORD days)
         if (FileTimeToSystemTime(&ft, tgtTime))
             return;
     }
-    GetLocalTime(tgtTime); // pokud 'time' obsahuje nesmysl, bereme aktualni cas (provedeme otevreni prip. s kontrolou co nejdrive)
+    GetLocalTime(tgtTime); // if 'time' contains nonsense, take the current time (open as soon as possible, optionally with a check)
 }
 
 void GetFutureTime(SYSTEMTIME* tgtTime, DWORD days)
@@ -341,7 +341,7 @@ void GetFutureTime(SYSTEMTIME* tgtTime, DWORD days)
 }
 
 BOOL IsPBVersion(const char* ver)
-{ // zjistujeme jestli je bezici verze Salamandera preview build (napr. "2.53 beta 1 (PB 38)" nebo "3.0 beta 1 (PB75 x86)")
+{ // determine whether the running Salamander version is a preview build (for example, "2.53 beta 1 (PB 38)" or "3.0 beta 1 (PB75 x86)")
     while (*ver != 0)
     {
         if (SalGeneral->StrNICmp(ver, " (PB", 4) == 0)
@@ -355,15 +355,15 @@ void LoadConfig(HKEY regKey, CSalamanderRegistryAbstract* registry)
 {
     CALL_STACK_MESSAGE1("LoadConfig(, ,)");
     if (regKey != NULL && !registry->GetValue(regKey, CONFIG_VERSION, REG_DWORD, &ConfigVersion, sizeof(DWORD)))
-        ConfigVersion = 1; // konfigurace pred zavedenim promenne 'Version' do registry
+        ConfigVersion = 1; // configuration before the 'Version' value was added to the registry
     BOOL curVerIsPB = IsPBVersion(SalamanderTextVersion);
-    if (curVerIsPB) // v PB verzi je defaultni testovani PB verzi
+    if (curVerIsPB) // the PB build tests PB versions by default
     {
         int i;
         for (i = 0; i < inetCount; i++)
             DataDefaults[i].CheckPBVersion = TRUE;
     }
-    if (regKey != NULL && ConfigVersion >= LOAD_ONLY_CONFIG_VERSION) // load z registry, jinak "force defaults"...
+    if (regKey != NULL && ConfigVersion >= LOAD_ONLY_CONFIG_VERSION) // load from the registry, otherwise "force defaults"...
     {
         registry->GetValue(regKey, CONFIG_AUTOCHECKMODE, REG_DWORD, &Data.AutoCheckMode, sizeof(DWORD));
         registry->GetValue(regKey, CONFIG_AUTOCONNECT, REG_DWORD, &Data.AutoConnect, sizeof(DWORD));
@@ -374,7 +374,7 @@ void LoadConfig(HKEY regKey, CSalamanderRegistryAbstract* registry)
         if (curVerIsPB &&
             (!registry->GetValue(regKey, CONFIG_ISCFGOFPB, REG_DWORD, &cfgIsOfPB, sizeof(DWORD)) || !cfgIsOfPB))
         {
-            Data.CheckPBVersion = TRUE; // automaticky zapiname overovani PB verzi pri prechodu na PB verzi
+            Data.CheckPBVersion = TRUE; // automatically enable PB version verification when switching to a PB version
         }
         registry->GetValue(regKey, CONFIG_CHECKRELEASE, REG_DWORD, &Data.CheckReleaseVersion, sizeof(DWORD));
         registry->GetValue(regKey, CONFIG_CONNECTION, REG_DWORD, &InternetConnection, sizeof(DWORD));
@@ -414,11 +414,11 @@ void LoadConfig(HKEY regKey, CSalamanderRegistryAbstract* registry)
 
         if (LoadedOnSalamanderStart && timeStampLoaded)
         {
-            // porovname cas v registry s casem aktualnim
+            // compare the time stored in the registry with the current time
             if (IsTimeExpired(&NextOpenOrCheckTime))
-                SalGeneral->PostMenuExtCommand(CM_AUTOCHECK_VERSION, TRUE); // a pokud cas vyprsel, vyvola automaticke otevreni hlavniho okna CheckVer
+                SalGeneral->PostMenuExtCommand(CM_AUTOCHECK_VERSION, TRUE); // if the time expired, trigger automatic opening of the CheckVer main window
             else
-                SalGeneral->PostUnloadThisPlugin(); // nechame plugin unloadnout - uz nebude potreba
+                SalGeneral->PostUnloadThisPlugin(); // request the plugin to unload - it is no longer needed
         }
     }
     else
@@ -430,7 +430,7 @@ void LoadConfig(HKEY regKey, CSalamanderRegistryAbstract* registry)
 
         if (LoadedOnSalInstall)
         {
-            SalGeneral->PostMenuExtCommand(CM_FIRSTCHECK_VERSION, TRUE); // vyvolame automaticke otevreni hlavniho okna CheckVer
+            SalGeneral->PostMenuExtCommand(CM_FIRSTCHECK_VERSION, TRUE); // trigger automatic opening of the CheckVer main window
             LoadedOnSalInstall = FALSE;
         }
     }
@@ -554,7 +554,7 @@ BOOL CSalModuleInfo::SetVersion(const char* version)
     }
     if (Version != NULL)
     {
-        // napocitame promenne ResolvedVersion, ResolvedBeta a ResolvedSpecialBuild
+        // calculate the ResolvedVersion, ResolvedBeta and ResolvedSpecialBuild variables
         char buff[100];
         lstrcpyn(buff, Version, 100);
         _strlwr(buff);
@@ -573,13 +573,13 @@ BOOL CSalModuleInfo::SetVersion(const char* version)
             while (*num >= '0' && *num <= '9')
                 ResolvedSpecialBuild = 10 * ResolvedSpecialBuild + (*num++ - '0');
             if (ResolvedSpecialBuild == 0)
-                ResolvedSpecialBuild = 1; // nula to proste byt nemuze (tohle by nemelo byt nikdy potreba, ciste paranoidni test)
+                ResolvedSpecialBuild = 1; // it simply cannot be zero (this should never be needed, purely a paranoid check)
         }
         p = strstr(buff, "beta");
         BOOL beta = p != NULL;
         ResolvedBeta = beta;
-        char partL[100]; // cast verze pred "beta"
-        char partR[100]; // cast verze za "beta"
+        char partL[100]; // part of the version before "beta"
+        char partR[100]; // part of the version after "beta"
         if (!beta)
         {
             lstrcpyn(partL, buff, 100);
@@ -596,7 +596,7 @@ BOOL CSalModuleInfo::SetVersion(const char* version)
             while (*p != 0 && *p == ' ')
                 p++;
             lstrcpyn(partR, p, 100);
-            // pokud jde o tvar "6b", prevedeme ho na "6.1"
+            // if it has the shape "6b", convert it to "6.1"
 
             int len = lstrlen(partR);
             if (len > 0)
@@ -606,9 +606,9 @@ BOOL CSalModuleInfo::SetVersion(const char* version)
                     sprintf(partR + len - 1, ".%d", ch - 'a' + 1);
             }
         }
-        // slozime verzi
-        // chyba jeste v AS2.51, bez pricteni 0.5 vychazely "nahodne" hodnoty, protoze
-        // WinSCP pri nacteni do procesu prenastavi zaokrouhlovani CPU (plati pro vlakno)
+        // compose the version
+        // bug still present in AS2.51: without adding 0.5 the values were "random", because
+        // when WinSCP is loaded into the process it changes CPU rounding (applies per thread)
         ResolvedVersion = ((WORD)(atof(partL) * 1000 + 0.5)) << 16;
         if (partR[0] != 0)
             ResolvedVersion |= ((WORD)(atof(partR) * 100 + 0.5));
@@ -627,7 +627,7 @@ CModuleInfo::CModuleInfo()
     Beta = FALSE;
     Name = NULL;
     Url = NULL;
-    Type = mteNewRelease; // jen predchazim neinicializovane promenne
+    Type = mteNewRelease; // prevent an uninitialized variable
     ShowDetails = FALSE;
 }
 
@@ -703,7 +703,7 @@ BOOL CModules::LoadDataFromScript(TDirectArray<char*>* lines)
         return FALSE;
     }
 
-    // obe signatury musi byt pritomne
+    // both signatures must be present
     if (lstrcmp(lines->At(0), SCRIPT_SIGNATURE_BEGIN) != 0)
     {
         TRACE_E("SCRIPT_SIGNATURE_BEGIN not found");
@@ -718,7 +718,7 @@ BOOL CModules::LoadDataFromScript(TDirectArray<char*>* lines)
 
     Modules.DestroyMembers();
 
-    // dekodujeme jednotlive radky
+    // decode individual lines
     const char* module = NULL;
     const char* name = NULL;
     const char* version = NULL;
@@ -805,13 +805,13 @@ BOOL CModules::LoadDataFromScript(TDirectArray<char*>* lines)
                 {
                     if (moduleType == 0)
                     {
-                        // pokud nebyla ani release ani demo sekce naplnena, zarveme
+                        // if neither the release nor the demo section was filled, complain
                         TRACE_E("Release and Demo sections are not assigned on line " << index + 1);
                         return FALSE;
                     }
                     rm = rmModule;
                 }
-                counter++; // jsme v releasu - pouze prejdeme do dema
+                counter++; // we are in the release section - just move on to the demo
             }
             break;
         }
@@ -839,7 +839,7 @@ BOOL CModules::LoadDataFromScript(TDirectArray<char*>* lines)
             if (info->Module == NULL || info->Name == NULL ||
                 info->Version == NULL || info->Url == NULL)
             {
-                // zanedbam dealokace
+                // ignore deallocation
                 TRACE_E("Low memory");
                 return FALSE;
             }
@@ -892,7 +892,7 @@ BOOL CModules::BuildDataFromScript()
 
     State = msCorruptedData;
 
-    TDirectArray<char*> lines(500, 500); // sem naleju obsah scripu
+    TDirectArray<char*> lines(500, 500); // the script contents will be poured in here
 
     BYTE* lineStart = LoadedScript;
     DWORD count = 0;
@@ -904,7 +904,7 @@ BOOL CModules::BuildDataFromScript()
             lineEnd++;
             count++;
         }
-        // upajcneme zprava mezery
+        // trim spaces on the right
         BYTE* tmpLineEnd = lineEnd - 1;
         while (tmpLineEnd > lineStart && *tmpLineEnd == ' ')
             tmpLineEnd--;
@@ -938,12 +938,12 @@ BOOL CModules::BuildDataFromScript()
         *(line + lineLen) = 0;
 
         if (lstrcmp(line, SCRIPT_SIGNATURE_EOF) == 0)
-            break; // mame nacteno...
+            break; // everything loaded...
 
         if (count >= LoadedScriptSize - 2)
-            break; // je cas vypadnout
+            break; // time to bail out
         if (*lineEnd == '\r' && *(lineEnd + 1) == '\r' && *(lineEnd + 2) == '\n')
-        { // '\r\r\n' - pres ftp predelane '\r\n'
+        { // '\r\r\n' - '\r\n' converted via FTP
             lineEnd += 3;
             count += 3;
         }
@@ -966,7 +966,7 @@ BOOL CModules::BuildDataFromScript()
 
     BOOL ret = LoadDataFromScript(&lines);
     if (ret)
-        State = msCorrectData; // data jsou OK
+        State = msCorrectData; // data are OK
 
     int i;
     for (i = 0; i < lines.Count; i++)
@@ -1047,7 +1047,7 @@ void CModules::ChangeShowDetails(int index)
 
 void CModules::EnumSalModules()
 {
-    // omezeni - musi byt volana z hlavniho threadu Salamandera
+    // limitation - must be called from Salamander's main thread
     SalModules.DestroyMembers();
     int index = 0;
     char module[MAX_PATH];
@@ -1113,16 +1113,16 @@ void CModules::FillLogWindow(BOOL rereadModules)
 
 void CModules::CompareWithInstalledModulesAndLogIt(BOOL rereadModules)
 {
-    // porovname proti sobe pole Modules a moduly, ktere nam vrati v iteraci Salamander
+    // compare the Modules array with the modules returned by Salamander's enumeration
 
     if (rereadModules || SalModules.Count == 0)
     {
-        // shodime event
+        // reset the event
         ResetEvent(HModulesEnumDone);
-        // posteneme si command, aby k nam prijel hlavni thread Salamandera, ze ktereho
-        // mzeme enumeraci provest
+        // post a command so the main Salamander thread reaches us,
+        // from which we can perform the enumeration
         SalGeneral->PostMenuExtCommand(CM_ENUMMODULES, FALSE);
-        // pockame, az bude naenumerovano
+        // wait until the enumeration is finished
         WaitForSingleObject(HModulesEnumDone, INFINITE);
     }
 
@@ -1132,13 +1132,13 @@ void CModules::CompareWithInstalledModulesAndLogIt(BOOL rereadModules)
     int FilteredCount = 0;
     int InstalledCount = 0;
 
-    // vsem modulum ze sciptu priradime Type
+    // assign Type to all modules from the script
     int i;
     for (i = 0; i < Modules.Count; i++)
     {
         CModuleInfo* mdl = Modules[i];
-        // patri do kategorieje filtovanych? bude user nechce videt informace o betach
-        // a je to beta, nebo je v seznamu filrovanych pluginu
+        // does it belong to the filtered category? either the user does not want to see beta information
+        // and it is a beta, or it is in the list of filtered plugins
         BOOL filtered = FALSE;
         if (!Data.CheckReleaseVersion && !mdl->GetResBeta() && mdl->GetSpecBld() == 0 ||
             !Data.CheckPBVersion && mdl->GetSpecBld() != 0 ||
@@ -1161,7 +1161,7 @@ void CModules::CompareWithInstalledModulesAndLogIt(BOOL rereadModules)
             int j;
             for (j = 0; j < SalModules.Count; j++)
             {
-                // zjistime, jestli je modul instalovan
+                // determine whether the module is installed
                 salMdl = SalModules[j];
                 if (SalGeneral->StrICmp(salMdl->Module, mdl->Module) == 0)
                 {
@@ -1172,37 +1172,37 @@ void CModules::CompareWithInstalledModulesAndLogIt(BOOL rereadModules)
             BOOL newModule = FALSE;
             if (installed && salMdl->GetResBeta() == mdl->GetResBeta())
             {
-                // pokud je modul instalovany a zaroven je/neni beta stejne jako modul ze scriptu
-                // porovnam jejich verze (pri shode verzi jeste muze rozhodnout jestli jde o IB/DB/PB/CB,
-                // specialni build vzdy predchazi verzi bez specialniho buildu + mezi specialnimi buildy
-                // rozhodne jejich cislo)
+                // if the module is installed and it matches the beta/non-beta state of the scripted module,
+                // compare their versions (when versions match, decide by checking whether it is an IB/DB/PB/CB,
+                // a special build always takes precedence over a non-special build and among special builds
+                // the build number decides)
                 if (salMdl->GetResVer() < mdl->GetResVer() ||
-                    salMdl->GetResVer() == mdl->GetResVer() && salMdl->GetSpecBld() > 0 && mdl->GetSpecBld() == 0 || // shoda verzi + instalovany modul je special build a modul ze scriptu ne
-                    salMdl->GetResVer() == mdl->GetResVer() && salMdl->GetSpecBld() > 0 && mdl->GetSpecBld() > 0 &&  // shoda verzi + oba moduly jsou special build + modul ze scriptu je vyssi special build
+                    salMdl->GetResVer() == mdl->GetResVer() && salMdl->GetSpecBld() > 0 && mdl->GetSpecBld() == 0 || // same version + installed module is a special build and the scripted module is not
+                    salMdl->GetResVer() == mdl->GetResVer() && salMdl->GetSpecBld() > 0 && mdl->GetSpecBld() > 0 &&  // same version + both modules are special builds + the scripted module has a higher special build number
                         salMdl->GetSpecBld() < mdl->GetSpecBld())
                 {
-                    // mame instalovany modul s nizssi verzi nez je ve scriptu
+                    // the installed module has a lower version than the scripted one
                     newModule = TRUE;
                 }
                 else
                 {
-                    // mame instalovany novejsi nebo stejny
+                    // the installed module is newer or the same
                     mdl->Type = mteInstalled;
                     InstalledCount++;
                 }
             }
             else
             {
-                // modul neni instalovany nebo je instalovany ale lisi se beta/nebeta (v tomto pripade special build porovnavani neovlivni)
+                // the module is not installed or it is installed but the beta/non-beta state differs (in this case the special build does not affect the comparison)
                 if (!installed ||
-                    salMdl->GetResBeta() && (salMdl->GetResVer() & 0xffff0000) <= mdl->GetResVer() || // Salamander je beta, tedy zajimaji nas verze stejne nebo vyssi (2.52 beta 2 se upgradne na 2.52, 2.53, atd.)
-                    !salMdl->GetResBeta() && salMdl->GetResVer() < (mdl->GetResVer() & 0xffff0000))   // Salamander neni beta, tedy zajimaji nas jen verze (orizle o cislo beta verze) vyssi (2.52 se upgradne na 2.53 beta 1, 2.54 beta 1, atd.)
+                    salMdl->GetResBeta() && (salMdl->GetResVer() & 0xffff0000) <= mdl->GetResVer() || // Salamander is a beta, so we care about versions that are the same or higher (2.52 beta 2 upgrades to 2.52, 2.53, etc.)
+                    !salMdl->GetResBeta() && salMdl->GetResVer() < (mdl->GetResVer() & 0xffff0000))   // Salamander is not a beta, so we only care about versions (trimmed of the beta number) that are higher (2.52 upgrades to 2.53 beta 1, 2.54 beta 1, etc.)
                 {
                     newModule = TRUE;
                 }
                 else
                 {
-                    // mame instalovany novejsi nebo stejny
+                    // the installed module is newer or the same
                     mdl->Type = mteInstalled;
                     InstalledCount++;
                 }
@@ -1235,7 +1235,7 @@ void CModules::CompareWithInstalledModulesAndLogIt(BOOL rereadModules)
         TRACE_E("CModules::CompareWithInstalledModulesAndLogIt(): unexpected situation");
 
     char buff[1024];
-    // posleme to do logu
+    // send it to the log
     if (NewReleaseCount != 0)
     {
         AddLogLine(LoadStr(IDS_NEWREL_MODULES), FALSE);

@@ -10,7 +10,7 @@
 
 void CenterWindow(HWND hWindow, HWND hParent)
 {
-    // horizontalni i vertikalni vycentrovani dialogu k parentu
+    // horizontally and vertically center the dialog relative to its parent
     if (hParent != NULL)
         SalGeneral->MultiMonCenterWindow(hWindow, hParent, TRUE);
 }
@@ -33,14 +33,14 @@ INT_PTR CALLBACK InternetProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPARAM lPa
     {
     case WM_INITDIALOG:
     {
-        // SalamanderGUI->ArrangeHorizontalLines(hWindow); // melo by se volat, tady na to kasleme, nejsou tu horizontalni cary
+        // SalamanderGUI->ArrangeHorizontalLines(hWindow); // should be called, but we skip it here, there are no horizontal lines
 
         SendDlgItemMessage(hWindow, IDC_INTERNET_ICON, STM_SETIMAGE, IMAGE_ICON,
                            (LPARAM)LoadIcon(DLLInstance, MAKEINTRESOURCE(IDI_INTERNET)));
 
         InetConnectionType = (WORD*)lParam;
         InetProtocolType = ((WORD*)lParam) + 1;
-        // horizontalni i vertikalni vycentrovani dialogu k parentu
+        // horizontally and vertically center the dialog relative to its parent
         CenterWindow(hWindow, GetParent(hWindow));
 
         int i;
@@ -48,7 +48,7 @@ INT_PTR CALLBACK InternetProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPARAM lPa
             CheckDlgButton(hWindow, InetConectionResID[i], *InetConnectionType == i ? BST_CHECKED : BST_UNCHECKED);
         for (i = 0; i < inetpCount; i++)
             CheckDlgButton(hWindow, InetProtocolResID[i], *InetProtocolType == i ? BST_CHECKED : BST_UNCHECKED);
-        PostMessage(hWindow, WM_COMMAND, MAKELPARAM(0, BN_CLICKED), 0); // enablery
+        PostMessage(hWindow, WM_COMMAND, MAKELPARAM(0, BN_CLICKED), 0); // enable/disable controls
         break;
     }
 
@@ -56,7 +56,7 @@ INT_PTR CALLBACK InternetProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPARAM lPa
     {
         if ((GetKeyState(VK_CONTROL) & 0x8000) == 0 && (GetKeyState(VK_SHIFT) & 0x8000) == 0)
             SalGeneral->OpenHtmlHelp(hWindow, HHCDisplayContext, IDD_INTERNET, FALSE);
-        return TRUE; // F1 nenechame propadnout do parenta v zadnem pripade
+        return TRUE; // never let F1 reach the parent
     }
 
     case WM_APP + 55:
@@ -87,7 +87,7 @@ INT_PTR CALLBACK InternetProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPARAM lPa
                 EnableWindow(GetDlgItem(hWindow, InetProtocolResID[i]), enableProtocol);
 
             if (LOWORD(wParam) == IDC_INET_FTP || LOWORD(wParam) == IDC_INET_FTP_PASSIVE)
-            { // pri kliknuti na FTP zarveme, ze updaty pluginu hlasime jen pres HTTP a jestli jim vazne HTTP nefunguje, jinak at ho koukaji pouzivat
+            { // clicking FTP triggers a warning that plugin updates are delivered only over HTTP; if HTTP really fails, otherwise use it
                 PostMessage(hWindow, WM_APP + 55, 0, 0);
             }
         }
@@ -102,7 +102,7 @@ INT_PTR CALLBACK InternetProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPARAM lPa
 
         case IDOK:
         {
-            // ziskani dat z dialogu
+            // retrieve data from the dialog
             int i;
             for (i = 0; i < inetCount; i++)
                 if (IsDlgButtonChecked(hWindow, InetConectionResID[i]) == BST_CHECKED)
@@ -147,7 +147,7 @@ void OnConfiguration(HWND hParent)
 {
     CALL_STACK_MESSAGE1("OnConfiguration()");
 
-    // nesim byt otevreny konfiguracni dialog
+    // the configuration dialog must not already be open
     if (HConfigurationDialog != NULL)
     {
         SalGeneral->SalMessageBox(hParent,
@@ -156,10 +156,10 @@ void OnConfiguration(HWND hParent)
         return;
     }
 
-    // nesmi bezet connectici thread
+    // the connection thread must not be running
     if (HDownloadThread != NULL)
     {
-        ShowMinNA_IfNotShownYet(HMainDialog, TRUE, FALSE); // okno flashneme, aby si ho user vsimnul
+        ShowMinNA_IfNotShownYet(HMainDialog, TRUE, FALSE); // flash the window so the user notices it
         SalGeneral->SalMessageBox(hParent, LoadStr(IDS_CFG_CONFLICT3),
                                   LoadStr(IDS_PLUGINNAME),
                                   MB_ICONINFORMATION | MB_OK);
@@ -180,7 +180,7 @@ CDataDefaults CfgData;
 
 void EnableControls(HWND hWindow)
 {
-    // enabler pro checkboxy
+    // helper that toggles the checkbox states
     CAutoCheckModeEnum mode = achmNever;
     int i;
     for (i = 0; i < achmCount; i++)
@@ -194,17 +194,17 @@ void EnableControls(HWND hWindow)
     EnableWindow(GetDlgItem(hWindow, IDC_CFG_AUTOCONNECT), mode != achmNever);
     if (!(mode != achmNever))
         CheckDlgButton(hWindow, IDC_CFG_AUTOCONNECT, BST_UNCHECKED);
-    if (mode != achmNever && !autoConnectWasEnabled) // defaultne zapiname "tichy" rezim
+    if (mode != achmNever && !autoConnectWasEnabled) // enable the "silent" mode by default
         CheckDlgButton(hWindow, IDC_CFG_AUTOCONNECT, BST_CHECKED);
     BOOL autoCloseWasEnabled = IsWindowEnabled(GetDlgItem(hWindow, IDC_CFG_AUTOCLOSE));
     BOOL closeEnabled = IsDlgButtonChecked(hWindow, IDC_CFG_AUTOCONNECT) == BST_CHECKED;
     EnableWindow(GetDlgItem(hWindow, IDC_CFG_AUTOCLOSE), mode != achmNever && closeEnabled);
     if (!(mode != achmNever && closeEnabled))
         CheckDlgButton(hWindow, IDC_CFG_AUTOCLOSE, BST_UNCHECKED);
-    if (mode != achmNever && (!autoConnectWasEnabled || !autoCloseWasEnabled && closeEnabled)) // defaultne zapiname "tichy" rezim
+    if (mode != achmNever && (!autoConnectWasEnabled || !autoCloseWasEnabled && closeEnabled)) // enable the "silent" mode by default
         CheckDlgButton(hWindow, IDC_CFG_AUTOCLOSE, BST_CHECKED);
 
-    // enabler pro listbox
+    // enable/disable logic for the list box
     HWND hListBox = GetDlgItem(hWindow, IDC_CFG_FILTER);
     int index = (int)SendMessage(hListBox, LB_GETCURSEL, 0, 0);
     if (index == LB_ERR)
@@ -224,7 +224,7 @@ void EnableControls(HWND hWindow)
 
 void LoadCfgDlgControls(HWND hWindow)
 {
-    // vlozeni dat do dialogu
+    // populate the dialog with data
     int resID = 0;
     switch (CfgInternetConnection)
     {
@@ -253,7 +253,7 @@ void LoadCfgDlgControls(HWND hWindow)
     CheckDlgButton(hWindow, IDC_CFG_PB, CfgData.CheckPBVersion ? BST_CHECKED : BST_UNCHECKED);
     CheckDlgButton(hWindow, IDC_CFG_RELEASE, CfgData.CheckReleaseVersion ? BST_CHECKED : BST_UNCHECKED);
 
-    // nalejeme polozky filtru
+    // fill in the filter items
     FiltersFillListBox(GetDlgItem(hWindow, IDC_CFG_FILTER));
     EnableControls(hWindow);
 }
@@ -267,10 +267,10 @@ INT_PTR CALLBACK CfgDlgProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPARAM lPara
     {
     case WM_INITDIALOG:
     {
-        // SalamanderGUI->ArrangeHorizontalLines(hWindow); // melo by se volat, tady na to kasleme, nejsou tu horizontalni cary
+        // SalamanderGUI->ArrangeHorizontalLines(hWindow); // should be called, but we skip it here, there are no horizontal lines
 
         HConfigurationDialog = hWindow;
-        // horizontalni i vertikalni vycentrovani dialogu k parentu
+        // horizontally and vertically center the dialog relative to its parent
         CenterWindow(hWindow, GetParent(hWindow));
 
         CfgInternetConnection = InternetConnection;
@@ -278,14 +278,14 @@ INT_PTR CALLBACK CfgDlgProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPARAM lPara
         CfgData = Data;
         LoadCfgDlgControls(hWindow);
 
-        return TRUE; // focus od std. dialogproc
+        return TRUE; // focus handled by the standard dialog proc
     }
 
     case WM_HELP:
     {
         if ((GetKeyState(VK_CONTROL) & 0x8000) == 0 && (GetKeyState(VK_SHIFT) & 0x8000) == 0)
             SalGeneral->OpenHtmlHelp(hWindow, HHCDisplayContext, IDD_CONFIGURATION, FALSE);
-        return TRUE; // F1 nenechame propadnout do parenta v zadnem pripade
+        return TRUE; // never let F1 reach the parent
     }
 
     case WM_COMMAND:
@@ -362,7 +362,7 @@ INT_PTR CALLBACK CfgDlgProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPARAM lPara
 
         case IDOK:
         {
-            // ziskani dat z dialogu
+            // retrieve data from the dialog
             BOOL updateNextOpenOrCheckTime = FALSE;
             int i;
             for (i = 0; i < achmCount; i++)
@@ -372,11 +372,11 @@ INT_PTR CALLBACK CfgDlgProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPARAM lPara
                 {
                     Data.AutoCheckMode = AutoCheckModeEval[i];
                     updateNextOpenOrCheckTime = TRUE;
-                    break; // jde o radioboxy, muze byt "checked" jen jeden
+                    break; // radio buttons: only one can be checked
                 }
             }
             BOOL autoConnect = IsDlgButtonChecked(hWindow, IDC_CFG_AUTOCONNECT) == BST_CHECKED;
-            if (Data.AutoConnect != autoConnect) // zmena vyznamu NextOpenOrCheckTime: jen otevreni dialogu / otevreni s automatickou kontrolou verze
+            if (Data.AutoConnect != autoConnect) // meaning of NextOpenOrCheckTime changed: just open the dialog / open it with an automatic version check
             {
                 Data.AutoConnect = autoConnect;
                 updateNextOpenOrCheckTime = TRUE;
@@ -385,12 +385,12 @@ INT_PTR CALLBACK CfgDlgProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPARAM lPara
             }
             if (updateNextOpenOrCheckTime)
             {
-                if (!autoConnect || LastCheckTime.wYear == 0)                      // nejde o automatickou kontrolu nebo jsme kontrolu jeste nedelali
-                    ZeroMemory(&NextOpenOrCheckTime, sizeof(NextOpenOrCheckTime)); // otevreni okna a prip. kontrola se provede pri prvnim load-on-startu (ASAP)
+                if (!autoConnect || LastCheckTime.wYear == 0)                      // no automatic check or we have not performed one yet
+                    ZeroMemory(&NextOpenOrCheckTime, sizeof(NextOpenOrCheckTime)); // opening the window and optionally performing a check on the first load-on-start (ASAP)
                 else
-                    GetFutureTime(&NextOpenOrCheckTime, &LastCheckTime, GetWaitDays()); // dalsi kontrolu vztahneme k datu posledni kontroly
+                    GetFutureTime(&NextOpenOrCheckTime, &LastCheckTime, GetWaitDays()); // base the next check on the date of the last check
                                                                                         //            TRACE_I("New NextOpenOrCheckTime: " << NextOpenOrCheckTime.wDay << "." << NextOpenOrCheckTime.wMonth << "." << NextOpenOrCheckTime.wYear);
-                // zabranime prip. nastaveni NextOpenOrCheckTime na zitrek v MainDlgProc::IDCANCEL
+                // prevent MainDlgProc::IDCANCEL from possibly setting NextOpenOrCheckTime to tomorrow
                 MainDlgAutoOpen2 = FALSE;
             }
             Data.AutoClose = IsDlgButtonChecked(hWindow, IDC_CFG_AUTOCLOSE) == BST_CHECKED;
@@ -423,12 +423,12 @@ void MainEnableControls(BOOL downloading)
 {
     if (downloading)
     {
-        // nalejeme text do tlacitka
+        // set the button text
         SetDlgItemText(HMainDialog, IDC_MAIN_CHECK, LoadStr(IDS_BTN_STOP));
     }
     else
     {
-        // nalejeme text do tlacitka
+        // set the button text
         SetDlgItemText(HMainDialog, IDC_MAIN_CHECK, LoadStr(IDS_BTN_CHECK));
     }
     HWND hCfgButton = GetDlgItem(HMainDialog, IDC_MAIN_CFG);
@@ -477,22 +477,22 @@ INT_PTR CALLBACK MainDlgProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPARAM lPar
     {
     case WM_INITDIALOG:
     {
-        // SalamanderGUI->ArrangeHorizontalLines(hWindow); // melo by se volat, tady na to kasleme, nejsou tu horizontalni cary
+        // SalamanderGUI->ArrangeHorizontalLines(hWindow); // should be called, but we skip it here, there are no horizontal lines
 
         HWND hMainWindow = SalGeneral->GetMainWindowHWND();
         if (!IsIconic(hMainWindow))
         {
-            // horizontalni i vertikalni vycentrovani dialogu k parentu
+            // horizontally and vertically center the dialog relative to its parent
             CenterWindow(hWindow, hMainWindow);
         }
 
-        // pokud jde o debug verzi, vlozime do systemoveho menu moznost otevrit
-        // vlastni soubor - umoznime tak otestovat script jeste pred uploadem na weba
+        // in debug builds, add an option to the system menu to open
+        // a custom file - allows testing the script before uploading it to the web
         HMENU hMenu = GetSystemMenu(hWindow, FALSE);
         if (hMenu != NULL)
         {
-            /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volani AppendMenu() dole...
+            /* used by the export_mnu.py script, which generates salmenu.mnu for the Translator
+   keep synchronized with the AppendMenu() call below...
 MENU_TEMPLATE_ITEM AppendToSystemMenu[] = 
 {
 	{MNTT_PB, 0
@@ -513,10 +513,10 @@ MENU_TEMPLATE_ITEM AppendToSystemMenu[] =
         SetWindowPos(hWindow, tvData->AlwaysOnTop ? HWND_TOPMOST : HWND_NOTOPMOST,
                      0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
-        // pripojime nas control ke staticu
+        // attach our control to the static control
         HWND hLogWnd = GetDlgItem(hWindow, IDC_MAIN_LOG);
         InitializeLogWindow(hLogWnd);
-        // nastavime mu tenky ramecek
+        // give it a thin border
         LONG exStyle = GetWindowLong(hLogWnd, GWL_EXSTYLE);
         exStyle = (exStyle & ~WS_EX_CLIENTEDGE) | WS_EX_STATICEDGE;
         SetWindowLong(hLogWnd, GWL_EXSTYLE, exStyle);
@@ -540,11 +540,11 @@ MENU_TEMPLATE_ITEM AppendToSystemMenu[] =
         if (MainDlgAutoOpen2)
             AddLogLine(LoadStr(IDS_SKIP_CHECK), FALSE);
 
-        // priradim oknu ikonku
+        // assign the window icon
         SendMessage(hWindow, WM_SETICON, ICON_BIG,
                     (LPARAM)LoadIcon(DLLInstance, MAKEINTRESOURCE(IDI_CHECKVER)));
 
-        // nalejeme text do tlacitka
+        // set the button text
         SetDlgItemText(hWindow, IDC_MAIN_CHECK, LoadStr(IDS_BTN_CHECK));
 
         MainDlgAutoOpen = tvData->AutoOpen;
@@ -554,42 +554,42 @@ MENU_TEMPLATE_ITEM AppendToSystemMenu[] =
             {
                 if (tvData->FirstLoadAfterInstall)
                 {
-                    // pri prvnim loadu po instalaci (bez loadu konfigu, proste instalace na komp bez Salama) se okno
-                    // zobrazi po dvou vterinach, aby uzivatel v pripade, ze pouziva osobni firewall, videl, proc se
-                    // Salamander cpe na internet (bez FW by prace checkveru mela trvat kratsi dobu = uzivatel
-                    // vubec neuvidi okno CheckVeru)
+                    // on the first load after installation (without loading a configuration, i.e. installation on a machine without Salamander) the window
+                    // is shown after two seconds so that the user, if using a personal firewall, sees why
+                    // Salamander is accessing the internet (without a firewall, checkver should finish faster and the user
+                    // would not see the CheckVer window at all)
                     if (!SetTimer(hWindow, 665, 2000, NULL))
-                        ShowMinNA_IfNotShownYet(hWindow, TRUE, TRUE); // pokud nejde zalozit timer, radsi okno ukazeme hned
+                        ShowMinNA_IfNotShownYet(hWindow, TRUE, TRUE); // if the timer cannot be created, show the window immediately
                 }
                 else
                 {
-                    // pri auto-open a auto-connect se okno zobrazi minimalizovane az po minute (do te doby by mela probehnout kontrola nebo se ohlasit chyba, kdyby se to nestihlo, ukazeme userovi okenko, at to muze jit resit rucne)
+                    // during auto-open and auto-connect the window is shown minimized only after one minute (by then the check should succeed or report an error; if it does not finish in time, show the window so the user can resolve it manually)
                     if (!SetTimer(hWindow, 666, 60000, NULL))
-                        ShowWindow(hWindow, SW_SHOWMINNOACTIVE); // pokud nejde zalozit timer, radsi okno ukazeme hned
+                        ShowWindow(hWindow, SW_SHOWMINNOACTIVE); // if the timer cannot be created, show the window immediately
                 }
                 PostMessage(hWindow, WM_COMMAND,
                             tvData->FirstLoadAfterInstall ? CM_CHECK_FIRSTLOAD : IDC_MAIN_CHECK, 0);
-                return FALSE; // dialog jeste neni videt
+                return FALSE; // the dialog is not visible yet
             }
             else
             {
-                GetFutureTime(&NextOpenOrCheckTime, GetWaitDays()); // datum dalsiho otevreni dialogu zalezi na nastaveni
+                GetFutureTime(&NextOpenOrCheckTime, GetWaitDays()); // the date of the next dialog opening depends on the settings
                                                                     //          TRACE_I("New NextOpenOrCheckTime: " << NextOpenOrCheckTime.wDay << "." << NextOpenOrCheckTime.wMonth << "." << NextOpenOrCheckTime.wYear);
             }
         }
-        return TRUE; // focus od std. dialogproc
+        return TRUE; // focus handled by the standard dialog proc
     }
 
     case WM_TIMER:
     {
         if (wParam == 665)
         {
-            ShowMinNA_IfNotShownYet(hWindow, TRUE, TRUE); // ukazeme okno, asi nas blokuje osobni firewall, tak at uzivatle vi, proc se cpeme na internet
+            ShowMinNA_IfNotShownYet(hWindow, TRUE, TRUE); // show the window; we are probably blocked by a personal firewall, so let the user know why we are accessing the internet
             KillTimer(hWindow, 665);
         }
         if (wParam == 666)
         {
-            ShowMinNA_IfNotShownYet(hWindow, TRUE, FALSE); // okno flashneme, aby si ho user vsimnul (ma do nej jit resit proc je to uz minutu zakousle)
+            ShowMinNA_IfNotShownYet(hWindow, TRUE, FALSE); // flash the window so the user notices it (they should resolve why it has been stuck for a minute)
             KillTimer(hWindow, 666);
         }
         break;
@@ -599,7 +599,7 @@ MENU_TEMPLATE_ITEM AppendToSystemMenu[] =
     {
         if ((GetKeyState(VK_CONTROL) & 0x8000) == 0 && (GetKeyState(VK_SHIFT) & 0x8000) == 0)
             SalGeneral->OpenHtmlHelp(hWindow, HHCDisplayContext, IDD_MAIN, FALSE);
-        return TRUE; // F1 nenechame propadnout do parenta v zadnem pripade
+        return TRUE; // never let F1 reach the parent
     }
 
     case WM_SIZE:
@@ -668,7 +668,7 @@ MENU_TEMPLATE_ITEM AppendToSystemMenu[] =
         {
             if (PluginIsReleased)
             {
-                // prave jsme v obsluze zavirani pluginu - nenechame se do niceho dalsiho uvrtat
+                // currently handling plugin shutdown - do not let ourselves get dragged into anything else
                 SalGeneral->SalMessageBox(hWindow, LoadStr(IDS_PLUGIN_BUSY),
                                           LoadStr(IDS_PLUGINNAME),
                                           MB_ICONINFORMATION | MB_OK);
@@ -677,7 +677,7 @@ MENU_TEMPLATE_ITEM AppendToSystemMenu[] =
             OnConfiguration(hWindow);
             if (ModulesHasCorrectData())
             {
-                ClearLogWindow(); // vycisteni logu pred vypisem novych modulu
+                ClearLogWindow(); // clear the log before printing new modules
                 ModulesCreateLog(NULL, FALSE);
             }
             return 0;
@@ -686,7 +686,7 @@ MENU_TEMPLATE_ITEM AppendToSystemMenu[] =
         case IDC_MAIN_CHECK:
         case CM_CHECK_FIRSTLOAD:
         {
-            // nesmi byt otevreny konfiguracni dialog
+            // the configuration dialog must not already be open
             if (HConfigurationDialog != NULL)
             {
                 ShowMinNA_IfNotShownYet(hWindow, FALSE, TRUE);
@@ -698,7 +698,7 @@ MENU_TEMPLATE_ITEM AppendToSystemMenu[] =
 
             if (PluginIsReleased)
             {
-                // prave jsme v obsluze zavirani pluginu - nenechame se do niceho dalsiho uvrtat
+                // currently handling plugin shutdown - do not let ourselves get dragged into anything else
                 ShowMinNA_IfNotShownYet(hWindow, FALSE, TRUE);
                 SalGeneral->SalMessageBox(hWindow, LoadStr(IDS_PLUGIN_BUSY),
                                           LoadStr(IDS_PLUGINNAME),
@@ -708,15 +708,15 @@ MENU_TEMPLATE_ITEM AppendToSystemMenu[] =
 
             if (HDownloadThread != NULL)
             {
-                // prave jede download thread - mame ho nechat vyhnit?
+                // the download thread is running right now - should we let it finish on its own?
                 ShowMinNA_IfNotShownYet(hWindow, FALSE, TRUE);
                 DWORD ret = SalGeneral->SalMessageBox(hWindow, LoadStr(IDS_ABORT_DOWNLOAD),
                                                       LoadStr(IDS_PLUGINNAME),
                                                       MB_ICONQUESTION | MB_YESNO);
                 if (ret != IDNO && HDownloadThread != NULL)
                 {
-                    IncMainDialogID(); // odpojime bezici session - uz nam nic neposle a
-                                       // hned jak to bude mozne, skonci
+                    IncMainDialogID(); // detach the running session - it will not send anything else and
+                                       // will finish as soon as possible
 
                     CloseHandle(HDownloadThread);
                     HDownloadThread = NULL;
@@ -728,15 +728,15 @@ MENU_TEMPLATE_ITEM AppendToSystemMenu[] =
                 return 0;
             }
 
-            if (lParam != 0) // pokud message neni posted z autorunu, smazneme log
+            if (lParam != 0) // if the message was not posted from autorun, clear the log
                 ClearLogWindow();
             ModulesCleanup();
             HDownloadThread = StartDownloadThread(LOWORD(wParam) == CM_CHECK_FIRSTLOAD);
             if (HDownloadThread != NULL)
             {
-                // podarilo se rozjet nacitaci thread - ted uz budeme cekat
-                // na prichod zpravy WM_USER_DOWNLOADTHREAD_EXIT s vysledkem
-                // a zakazeme tlacitka
+                // the loading thread started successfully - now wait
+                // for the WM_USER_DOWNLOADTHREAD_EXIT message with the result
+                // and disable the buttons
                 MainEnableControls(TRUE);
             }
             return 0;
@@ -746,7 +746,7 @@ MENU_TEMPLATE_ITEM AppendToSystemMenu[] =
         {
             if (HDownloadThread != NULL)
             {
-                // prave jede download thread - mame ho nechat vyhnit?
+                // the download thread is running right now - should we let it finish on its own?
                 ShowMinNA_IfNotShownYet(hWindow, FALSE, TRUE);
                 DWORD ret = SalGeneral->SalMessageBox(hWindow, LoadStr(IDS_ABORT_DOWNLOAD),
                                                       LoadStr(IDS_PLUGINNAME),
@@ -756,8 +756,8 @@ MENU_TEMPLATE_ITEM AppendToSystemMenu[] =
 
                 if (HDownloadThread != NULL)
                 {
-                    IncMainDialogID(); // odpojime bezici session - uz nam nic neposle a
-                                       // hned jak to bude mozne, skonci
+                    IncMainDialogID(); // detach the running session - it will not send anything else and
+                                       // will finish as soon as possible
                     CloseHandle(HDownloadThread);
                     HDownloadThread = NULL;
                     ModulesCleanup();
@@ -769,7 +769,7 @@ MENU_TEMPLATE_ITEM AppendToSystemMenu[] =
 
             if (MainDlgAutoOpen2 && IsTimeExpired(&NextOpenOrCheckTime) && Data.AutoCheckMode != achmNever)
             {
-                GetFutureTime(&NextOpenOrCheckTime, 1); // pokud otevreni dialogu a prip. kontrola uspesne neprobehla (a tedy nenastavilo se NextOpenOrCheckTime), stanovime dalsi pokus na zitrek
+                GetFutureTime(&NextOpenOrCheckTime, 1); // if opening the dialog and the check did not finish successfully (and therefore did not set NextOpenOrCheckTime), schedule another attempt for tomorrow
                                                         //            TRACE_I("New on Close: NextOpenOrCheckTime: " << NextOpenOrCheckTime.wDay << "." << NextOpenOrCheckTime.wMonth << "." << NextOpenOrCheckTime.wYear);
             }
 
@@ -789,13 +789,13 @@ MENU_TEMPLATE_ITEM AppendToSystemMenu[] =
         ModulesCleanup();
         if (success)
         {
-            ClearLogWindow(); // vycisteni logu pred vypisem novych modulu
+            ClearLogWindow(); // clear the log before printing new modules
             ModulesCreateLog(&someNewModuleWasFound, TRUE);
             if (autoClose && someNewModuleWasFound)
                 autoClose = FALSE;
 
-            GetLocalTime(&LastCheckTime);                       // kontrola prave probehla, ulozime jeji datum
-            GetFutureTime(&NextOpenOrCheckTime, GetWaitDays()); // datum dalsi kontroly zalezi na nastaveni
+            GetLocalTime(&LastCheckTime);                       // the check just took place; store its date
+            GetFutureTime(&NextOpenOrCheckTime, GetWaitDays()); // the date of the next check depends on the settings
             ErrorsSinceLastCheck = 0;
             //        TRACE_I("After check: LastCheckTime: " << LastCheckTime.wDay << "." << LastCheckTime.wMonth << "." << LastCheckTime.wYear);
             //        TRACE_I("After check: NextOpenOrCheckTime: " << NextOpenOrCheckTime.wDay << "." << NextOpenOrCheckTime.wMonth << "." << NextOpenOrCheckTime.wYear);
@@ -803,7 +803,7 @@ MENU_TEMPLATE_ITEM AppendToSystemMenu[] =
         }
         else
         {
-            if (autoClose && ++ErrorsSinceLastCheck >= 4) // hlasime az ctvrtou chybu (prvni tri ignorujeme, snazime se usera co nejmene prudit)
+            if (autoClose && ++ErrorsSinceLastCheck >= 4) // report only the fourth error (ignore the first three to bother the user as little as possible)
             {
                 autoClose = FALSE;
                 ErrorsSinceLastCheck = 0;
@@ -811,12 +811,12 @@ MENU_TEMPLATE_ITEM AppendToSystemMenu[] =
         }
         if (HDownloadThread != NULL)
         {
-            // pockame, az thread dobehne
+            // wait until the thread finishes
             WaitForSingleObject(HDownloadThread, INFINITE);
             CloseHandle(HDownloadThread);
             HDownloadThread = NULL;
         }
-        // povolime tlacitka
+        // enable the buttons
         MainEnableControls(FALSE);
         if (autoClose)
             PostMessage(hWindow, WM_COMMAND, IDCANCEL, 0);
@@ -826,9 +826,9 @@ MENU_TEMPLATE_ITEM AppendToSystemMenu[] =
             {
                 ShowMinNA_IfNotShownYet(hWindow, FALSE, FALSE);
                 if (someNewModuleWasFound && IsIconic(hWindow))
-                    ShowWindow(hWindow, SW_RESTORE); // Petr: aktivuje dialog, proto jsem to krome nejdulezitejsi udalosti "nova verze nalezena" odstavit (user dialog restorne po kliknuti na taskbar)
+                    ShowWindow(hWindow, SW_RESTORE); // Petr: restores the dialog; therefore use it only for the most important event "new version found" (the user can restore the dialog from the taskbar)
                 if (someNewModuleWasFound)
-                    SetForegroundWindow(hWindow); // takove vynucovani pozornosti je ospravedlnitelne jen pri nejdulezitejsi udalosti "nova verze nalezena", jinak uz se dneska okno jen flashuje...
+                    SetForegroundWindow(hWindow); // forcing attention is justified only for the most important event "new version found"; otherwise the window is merely flashed today...
                 else
                     FlashWindow(hWindow, TRUE);
             }

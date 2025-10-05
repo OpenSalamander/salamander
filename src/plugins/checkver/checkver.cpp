@@ -8,44 +8,44 @@
 #include "checkver.rh2"
 #include "lang\lang.rh"
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object, its methods are called from Salamander
 CPluginInterface PluginInterface;
-// dalsi casti interfacu CPluginInterface
+// other parts of the CPluginInterface interface
 CPluginInterfaceForMenuExt InterfaceForMenuExt;
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to the SPL - language independent resources
+HINSTANCE HLanguage = NULL;   // handle to the SLG - language dependent resources
 
 HWND HMainDialog = NULL;
 
 HWND HConfigurationDialog = NULL;
-BOOL ConfigurationChanged = FALSE; // TRUE = user dal OK v konfiguracnim dialogu (jestli neco skutecne zmenil uz nepitvame)
+BOOL ConfigurationChanged = FALSE; // TRUE = the user clicked OK in the configuration dialog (we do not check whether anything actually changed)
 
-BOOL PluginIsReleased = FALSE; // jsme v metode CPluginInterface::Release?
+BOOL PluginIsReleased = FALSE; // are we inside CPluginInterface::Release?
 
 BOOL LoadedOnSalamanderStart = FALSE;
 BOOL LoadedOnSalInstall = FALSE;
 
 BOOL SalSaveCfgOnExit = FALSE;
 
-HANDLE HMessageLoopThread = NULL; // slouzi pro kontrolu, ze thread uz dobehnul
-HANDLE HDownloadThread = NULL;    // slouzi pro kontrolu, ze thread uz dobehnul
+HANDLE HMessageLoopThread = NULL; // used to verify that the thread has already finished
+HANDLE HDownloadThread = NULL;    // used to verify that the thread has already finished
 
 CRITICAL_SECTION MainDialogIDSection;
 DWORD MainDialogID = 1;
 
 HANDLE HModulesEnumDone = NULL;
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// Salamander's general interface - valid from startup until the plugin is terminated
 CSalamanderGeneralAbstract* SalGeneral = NULL;
 
-// definice promenne pro "dbg.h"
+// variable definition for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
-// definice promenne pro "spl_com.h"
+// variable definition for "spl_com.h"
 int SalamanderVersion = 0;
 
-// text cisla verze beziciho Salamandera (napr. "2.52 beta 3 (PB 32)")
+// running Salamander version text (for example, "2.52 beta 3 (PB 32)")
 char SalamanderTextVersion[MAX_PATH];
 
 // ****************************************************************************
@@ -63,8 +63,8 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
         InitializeCriticalSection(&MainDialogIDSection);
         HModulesEnumDone = CreateEvent(NULL, TRUE, FALSE, NULL); // "non-signaled" state, manual
         LoadedScriptSize = 0;
-        ZeroMemory(&LastCheckTime, sizeof(LastCheckTime));             // jeste jsme neudelali zadnou kontrolu
-        ZeroMemory(&NextOpenOrCheckTime, sizeof(NextOpenOrCheckTime)); // otevreni dialogu prip. s kontrolou se ma udelat pri prvnim load-on-startu (ASAP)
+        ZeroMemory(&LastCheckTime, sizeof(LastCheckTime));             // we have not run any checks yet
+        ZeroMemory(&NextOpenOrCheckTime, sizeof(NextOpenOrCheckTime)); // opening the dialog (optionally with a check) should happen at the first load-on-start (ASAP)
         SalamanderTextVersion[0] = 0;
 
         if (HModulesEnumDone == NULL)
@@ -72,9 +72,9 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
     }
     if (fdwReason == DLL_PROCESS_DETACH)
     {
-        // pokud nepustim skrz firewall AS na net a zavru Salama za behu checkver,
-        // dojde k destrukci TRACE pred volanim teto funkce - a naslednemu padu v TRACE_I
-        // proto zde TRACE jiz nesmime volat
+        // if Altap Salamander is blocked from accessing the internet by the firewall and Salamander is closed while checkver is running,
+        // TRACE is destroyed before this function is called, which leads to a crash in TRACE_I,
+        // therefore TRACE must not be called here
         //TRACE_I("CheckVer DLL_PROCESS_DETACH");
         DeleteCriticalSection(&MainDialogIDSection);
         if (HModulesEnumDone != NULL)
@@ -109,34 +109,34 @@ LoadOrSaveConfigurationCallback(BOOL load, HKEY regKey, CSalamanderRegistryAbstr
 
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
-    // nastavime SalamanderDebug pro "dbg.h"
+    // set SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
-    // nastavime SalamanderVersion pro "spl_com.h"
+    // set SalamanderVersion for "spl_com.h"
     SalamanderVersion = salamander->GetVersion();
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plugin is intended for the current version of Salamander and newer - perform a check
     if (SalamanderVersion < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
-                   "Check Version" /* neprekladat! */, MB_OK | MB_ICONERROR);
+                   "Check Version" /* do not translate! */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
-    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "Check Version" /* neprekladat! */);
+    // load the language module (.slg)
+    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "Check Version" /* do not translate! */);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // get Salamander's general interface
     SalGeneral = salamander->GetSalamanderGeneral();
 
-    // nastavime jmeno souboru s helpem
+    // set the help file name
     SalGeneral->SetHelpFileName("checkver.chm");
 
-    // nastavime zakladni informace o pluginu
+    // set the basic plugin information
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_CONFIGURATION | FUNCTION_LOADSAVECONFIGURATION,
                                    VERSINFO_VERSION_NO_PLATFORM,
@@ -151,23 +151,23 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
 
     DWORD loadInfo = salamander->GetLoadInformation();
 
-    // tesne po instaci Salamandera provedeme kontrolu verze s otevrenym oknem, aby
-    // bylo videt, co se deje a user pochopil, proc ma otevrit pristup na internet
-    // v personalnim firewallu
+    // immediately after Salamander is installed, perform the version check with an open window so that
+    // it is visible what is happening and the user understands why internet access must be allowed
+    // in the personal firewall
     if (loadInfo & LOADINFO_NEWSALAMANDERVER)
         LoadedOnSalInstall = TRUE;
 
-    // pokud byl plugin nacten na nasi zadost (LOADINFO_LOADONSTART),
+    // if the plugin was loaded on our request (LOADINFO_LOADONSTART),
     if (loadInfo & LOADINFO_LOADONSTART)
         LoadedOnSalamanderStart = TRUE;
 
-    // ziskame verzi Salamandera
+    // obtain the Salamander version
     int index = 0;
     char salModule[MAX_PATH];
     SalGeneral->EnumInstalledModules(&index, salModule, SalamanderTextVersion);
 
-    // zjistime, jestli nema uzivatel vyple ukladani konfigurace pri exitu, v tom pripade
-    // je totiz potreba se chovat na nekolika mistech odlisne
+    // find out whether the user disabled saving the configuration on exit, in that case
+    // the behaviour must differ in several places
     SalGeneral->GetConfigParameter(SALCFG_SAVEONEXIT, &SalSaveCfgOnExit, sizeof(BOOL), NULL);
 
     return &PluginInterface;
@@ -192,20 +192,20 @@ void CPluginInterface::About(HWND parent)
 BOOL CPluginInterface::Release(HWND parent, BOOL force)
 {
     CALL_STACK_MESSAGE2("CPluginInterface::Release(, %d)", force);
-    BOOL ret = TRUE; // muzeme se zavrit
+    BOOL ret = TRUE; // we can close
 
     PluginIsReleased = TRUE;
 
     ShowMinNA_IfNotShownYet(HMainDialog, TRUE, FALSE);
 
-    // potrebujeme zapsat do registry nezavisle na tom, jestli si to user preje nebo ne...
+        // we need to write to the registry regardless of whether the user wants it or not...
     SalGeneral->CallLoadOrSaveConfiguration(FALSE, LoadOrSaveConfigurationCallback, NULL);
 
     if (!force)
     {
         if (HDownloadThread == NULL && (HMainDialog != NULL || HConfigurationDialog != NULL))
         {
-            // pokud jsou otevrena nejaka okna, zeptame se uzivatele, jestli je mame zavrit
+            // if any windows are open, ask the user whether we should close them
             ret = SalGeneral->SalMessageBox(parent, LoadStr(IDS_OPENED_WINDOWS),
                                             LoadStr(IDS_PLUGINNAME),
                                             MB_YESNO | MB_ICONQUESTION) == IDYES;
@@ -214,19 +214,19 @@ BOOL CPluginInterface::Release(HWND parent, BOOL force)
 
     if (HDownloadThread != NULL)
     {
-        // prave jede download thread - mame ho nechat vyhnit?
+        // the download thread is running right now - should we let it finish on its own?
         if (!force && SalGeneral->SalMessageBox(parent, LoadStr(IDS_ABORT_DOWNLOAD),
                                                 LoadStr(IDS_PLUGINNAME),
                                                 MB_ICONQUESTION | MB_YESNO) == IDNO)
         {
-            ret = FALSE; // user to nechce zabalit
+            ret = FALSE; // the user does not want to shut it down
         }
         else
         {
             if (HDownloadThread != NULL)
             {
-                IncMainDialogID(); // odpojime bezici session - uz nam nic neposle a
-                                   // hned jak to bude mozne, skonci
+                IncMainDialogID(); // detach the running session - it will not send anything else and
+                                   // will finish as soon as possible
                 CloseHandle(HDownloadThread);
                 HDownloadThread = NULL;
                 ModulesCleanup();
@@ -239,20 +239,20 @@ BOOL CPluginInterface::Release(HWND parent, BOOL force)
 
     if (ret)
     {
-        // uzivatel po nas chce, abychom zavreli okna
+        // the user wants us to close the windows
         if (HConfigurationDialog != NULL)
             SendMessage(HConfigurationDialog, WM_COMMAND, IDCANCEL, 0);
         if (HMainDialog != NULL)
             SendMessage(HMainDialog, WM_COMMAND, IDCANCEL, 0);
 
-        // pockame az se ukonci thread naseho hlavniho okna
+        // wait until the thread of our main window terminates
         while (HMainDialog != NULL)
             Sleep(100);
 
-        // zajistime dobehnuti threadu
+        // ensure the thread finishes
         if (HMessageLoopThread != NULL)
         {
-            WaitForSingleObject(HMessageLoopThread, INFINITE); // Petr: nejak nevidim duvod proc nepockat, nemelo by se hlodat
+            WaitForSingleObject(HMessageLoopThread, INFINITE); // Petr: I do not see any reason not to wait; it should not cause issues
             CloseHandle(HMessageLoopThread);
             HMessageLoopThread = NULL;
         }
@@ -286,19 +286,19 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
 {
     CALL_STACK_MESSAGE1("CPluginInterface::Connect(,)");
 
-    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volani salamander->AddMenuItem() dole...
-MENU_TEMPLATE_ITEM PluginMenu[] = 
+    /* used by the export_mnu.py script, which generates salmenu.mnu for the Translator
+   keep synchronized with the salamander->AddMenuItem() call below...
+MENU_TEMPLATE_ITEM PluginMenu[] =
 {
-	{MNTT_PB, 0
-	{MNTT_IT, IDS_CHECK_FOR_NEW_VER
-	{MNTT_PE, 0
+        {MNTT_PB, 0
+        {MNTT_IT, IDS_CHECK_FOR_NEW_VER
+        {MNTT_PE, 0
 };
 */
     salamander->AddMenuItem(-1, LoadStr(IDS_CHECK_FOR_NEW_VER), 0, CM_CHECK_VERSION, FALSE,
                             MENU_EVENT_TRUE, MENU_EVENT_TRUE, MENU_SKILLLEVEL_ALL);
 
-    // nastavime ikonku pluginu
+    // set the plugin icon
     HBITMAP hBmp = (HBITMAP)LoadImage(DLLInstance, MAKEINTRESOURCE(IDB_CHECKVER),
                                       IMAGE_BITMAP, 16, 16, LR_DEFAULTCOLOR);
     salamander->SetBitmapWithIcons(hBmp);
@@ -354,13 +354,13 @@ unsigned WINAPI ThreadMessageLoopBody(void* param)
     CTVData* data = (CTVData*)param;
 
     BOOL dataAutoOpen = data->AutoOpen;
-    RegisterLogClass(); // trida log okna bude pouzita v dialogu;
+    RegisterLogClass(); // the log window class will be used in the dialog
     HWND foregroundWnd = GetForegroundWindow();
     HMainDialog = CreateDialogParam(HLanguage, MAKEINTRESOURCE(IDD_MAIN), NULL, MainDlgProc, (LPARAM)data);
     if (HMainDialog != NULL)
     {
         if (data->AutoOpen && Data.AutoConnect)
-            SetForegroundWindow(foregroundWnd); // puvodni foreground okno deaktivuje zrejme uz jen samotny CreateDialogParam, takze aktivujeme zpet puvodne foregroundove okno zde rucne
+            SetForegroundWindow(foregroundWnd); // the original foreground window is apparently deactivated by CreateDialogParam itself, so reactivate the original foreground window here manually
         else
         {
             ShowWindow(HMainDialog, SW_SHOW);
@@ -369,7 +369,7 @@ unsigned WINAPI ThreadMessageLoopBody(void* param)
     }
 
     data->Success = HMainDialog != NULL;
-    SetEvent(data->Continue); // pustime dale hl. thread, od tohoto bodu nejsou data platna (=NULL)
+    SetEvent(data->Continue); // let the main thread continue; from this point on the data are invalid (=NULL)
     data = NULL;
 
     MSG msg;
@@ -396,14 +396,14 @@ unsigned WINAPI ThreadMessageLoopBody(void* param)
         }
     }
 
-    IncMainDialogID(); // toto okna prestane existovat pro download thread
+    IncMainDialogID(); // this window will cease to exist for the download thread
     DestroyWindow(HMainDialog);
     HMainDialog = NULL;
 
-    // nechame plugin unloadnout - uz nebude potreba; vyjimka: po zmene konfigurace pri vyplem
-    // ukladani konfigurace (dame userovi moznost si konfiguraci ulozit rucne, pokud totiz plugin
-    // unloadneme, zmeny konfigurace se okamzite zahodi a uzivatel nepochopi, proc po rucnim
-    // "save configuration" nejsou jeho data ulozena)
+    // request the plugin to unload - it is no longer needed; exception: after a configuration change when saving the configuration is disabled
+    // we allow the user to save the configuration manually, because if we unloaded the plugin,
+    // the configuration changes would be discarded immediately and the user would not understand why their data are not saved after manual
+    // "save configuration"
     if (dataAutoOpen && (!ConfigurationChanged || SalSaveCfgOnExit))
         SalGeneral->PostUnloadThisPlugin();
 
@@ -418,7 +418,7 @@ DWORD WINAPI ThreadMessageLoop(void* param)
 
 BOOL OnOpenCheckVersionDialog(HWND hParent, BOOL autoOpen, BOOL firstLoadAfterInstall)
 {
-    // pokud uz okno existuje, pouze ho vytahneme na povrch
+    // if the window already exists, simply bring it to the front
     if (HMainDialog != NULL)
     {
         ShowMinNA_IfNotShownYet(HMainDialog, FALSE, FALSE);
@@ -447,7 +447,7 @@ BOOL OnOpenCheckVersionDialog(HWND hParent, BOOL autoOpen, BOOL firstLoadAfterIn
 
     if (HMessageLoopThread != NULL)
     {
-        WaitForSingleObject(HMessageLoopThread, INFINITE); // Petr: nejak nevidim duvod proc nepockat, nemelo by se hlodat
+        WaitForSingleObject(HMessageLoopThread, INFINITE); // Petr: I do not see any reason not to wait; it should not cause issues
         CloseHandle(HMessageLoopThread);
         HMessageLoopThread = NULL;
     }
@@ -465,7 +465,7 @@ BOOL OnOpenCheckVersionDialog(HWND hParent, BOOL autoOpen, BOOL firstLoadAfterIn
         SalamanderDebug->TraceAttachThread(HMessageLoopThread, threadID);
         ResumeThread(HMessageLoopThread);
 
-        // pockame, az thread zpracuje predana data a vrati vysledky
+        // wait until the thread processes the provided data and returns the results
         WaitForSingleObject(data.Continue, INFINITE);
         CloseHandle(data.Continue);
 
@@ -492,30 +492,30 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
     {
     case CM_CHECK_VERSION:
     {
-        // vyvolano z menu Salamandera
+        // triggered from Salamander's menu
         OnOpenCheckVersionDialog(parent, FALSE, FALSE);
         break;
     }
 
     case CM_AUTOCHECK_VERSION:
     {
-        // vyvolano pluginem pri automatickem loadu pluginu
+        // triggered by the plugin during its automatic load
         OnOpenCheckVersionDialog(parent, TRUE, FALSE);
         break;
     }
 
     case CM_FIRSTCHECK_VERSION:
     {
-        // vyvolano pluginem pri prvnim loadu pluginu po instalaci Salamandera
+        // triggered by the plugin during the first load after Salamander installation
         OnOpenCheckVersionDialog(parent, TRUE, TRUE);
         break;
     }
 
     case CM_ENUMMODULES:
     {
-        // enumeraci muzeme provest pouze z hlavniho threadu - jdem na vec
+        // enumeration can only be done from the main thread - get to it
         EnumSalModules();
-        // ceka na nas thread dialogu - nechame ho rozjet
+        // the dialog thread is waiting for us - let it continue
         SetEvent(HModulesEnumDone);
         break;
     }

@@ -16,7 +16,7 @@ const char* SCRIPT_URL_HTTP_AFTERINSTALL = "https://www.altap.cz/salupdatenew40/
 
 const char* AGENT_NAME = "Open Salamander CheckVer Plugin";
 
-// omezeni - lze volat pouze z jednoho threadu - jinak neni osetrene prepsani bufferu
+// limitation - may be called from only one thread; otherwise buffer overwrites are not handled
 const char* GetInetErrorText(DWORD dError)
 {
     static char tempErrorText[1024];
@@ -27,7 +27,7 @@ const char* GetInetErrorText(DWORD dError)
 
     if (count > 0)
     {
-        // orezeme smeti zprava
+        // trim garbage on the right
         char* p = tempErrorText + count - 1;
         while (p > tempErrorText && (*p == '\n' || *p == '\r' || *p == ' '))
         {
@@ -39,7 +39,7 @@ const char* GetInetErrorText(DWORD dError)
         lstrcpy(tempErrorText, "Unable to get error message");
     return tempErrorText;
     /*
-  // tohle snad nebudeme (vzhledem k trivialnimu pouziti internetu) potrebovat
+  // hopefully we will not need this (considering the trivial internet usage)
   sprintf(szTemp, "%s error code: %d\nMessage: %s\n", szCallFunc, dError, strName);
   int response;
 
@@ -94,8 +94,8 @@ const char* GetInetErrorText(DWORD dError)
 
 void IncMainDialogID()
 {
-    // sem nesmi prijit callback a trace - je volana z threadu, kterymuze bezet
-    // v dobe, kdy uz je Salamandera davno ve vecnych lovistich
+    // neither callbacks nor trace must end up here - called from a thread which may run
+    // when Salamander has long since exited
     EnterCriticalSection(&MainDialogIDSection);
     MainDialogID++;
     LeaveCriticalSection(&MainDialogIDSection);
@@ -104,8 +104,8 @@ void IncMainDialogID()
 DWORD
 GetMainDialogID()
 {
-    // sem nesmi prijit callback a trace - je volana z threadu, kterymuze bezet
-    // v dobe, kdy uz je Salamandera davno ve vecnych lovistich
+    // neither callbacks nor trace must end up here - called from a thread which may run
+    // when Salamander has long since exited
     EnterCriticalSection(&MainDialogIDSection);
     DWORD id = MainDialogID;
     LeaveCriticalSection(&MainDialogIDSection);
@@ -124,10 +124,10 @@ DWORD WINAPI ThreadDownload(void* param)
     CTDData* data = (CTDData*)param;
     DWORD dialogID = data->MainDialogID;
     BOOL firstLoadAfterInstall = data->FirstLoadAfterInstall;
-    SetEvent(data->Continue); // pustime dale hl. thread, od tohoto bodu nejsou data platna (=NULL)
+    SetEvent(data->Continue); // let the main thread continue; from this point on the data are invalid (=NULL)
     data = NULL;
 
-    // zamkneme DLLko, aby nedoslo k jeho uvolneni po dobu behu teto funkce
+    // lock the DLL to prevent it from being unloaded while this function runs
     char buff[MAX_PATH];
     GetModuleFileName(DLLInstance, buff, MAX_PATH);
     HINSTANCE hLock = LoadLibrary(buff);
@@ -140,7 +140,7 @@ DWORD WINAPI ThreadDownload(void* param)
     BOOL bResult = FALSE;
     DWORD dwBytesRead = 0;
 
-    // existuje jeste hlavni dialog a je to porad ten, ktery nas oteviral?
+    // is the main dialog still present and is it the one that opened us?
     if (dialogID == GetMainDialogID() && !exit)
     {
         AddLogLine(LoadStr(IDS_INET_PROTOCOL), FALSE);
@@ -188,7 +188,7 @@ DWORD WINAPI ThreadDownload(void* param)
         {
         case inetpFTPPassive:
         {
-            // FTP - passive mode (projde spis firewally nez standardni FTP, ale pomale)
+            // FTP - passive mode (gets through firewalls more often than standard FTP, but slower)
             hUrl = InternetOpenUrl(hSession, scriptURL_FTP, NULL, 0,
                                    INTERNET_FLAG_DONT_CACHE | INTERNET_FLAG_RELOAD | INTERNET_FLAG_PASSIVE, 0);
             break;
@@ -196,7 +196,7 @@ DWORD WINAPI ThreadDownload(void* param)
 
         case inetpFTP:
         {
-            // FTP - standard
+            // FTP - standard mode
             hUrl = InternetOpenUrl(hSession, scriptURL_FTP, NULL, 0,
                                    INTERNET_FLAG_DONT_CACHE | INTERNET_FLAG_RELOAD, 0);
             break;
@@ -204,9 +204,9 @@ DWORD WINAPI ThreadDownload(void* param)
 
         default:
         {
-            //p.s. upraveno tak, aby se dalo checkovat verzi i za firewallem (ozkouseno na SPS)
-            // HTTP (na SPS experimantalne vyrazne rychlejsi nez FTP-passive (asi HTTP cache),
-            //       vetsinou projde firewally)
+            // p.s. adjusted to allow version checking behind a firewall (tested at SPS)
+            // HTTP (experimentally much faster than FTP-passive at SPS, probably due to HTTP caching,
+            //       usually passes through firewalls)
             char scriptURL[200];
             _snprintf_s(scriptURL, _TRUNCATE, "%s?version=%s&lang=%s",
                         firstLoadAfterInstall ? SCRIPT_URL_HTTP_AFTERINSTALL : SCRIPT_URL_HTTP,
@@ -267,19 +267,19 @@ DWORD WINAPI ThreadDownload(void* param)
         }
         else
             LoadedScriptSize = 0;
-        PostMessage(HMainDialog, WM_USER_DOWNLOADTHREAD_EXIT, !exit, 0); // thread konci; mame nactena data
-        FreeLibrary(hLock);                                              // uvolnime zamek
+        PostMessage(HMainDialog, WM_USER_DOWNLOADTHREAD_EXIT, !exit, 0); // thread ends; data are loaded
+        FreeLibrary(hLock);                                              // release the lock
         LeaveCriticalSection(&MainDialogIDSection);
-        return 0; // a nechame thread zhebnou prirozenou cestou
+        return 0; // let the thread die naturally
     }
     else
     {
         LeaveCriticalSection(&MainDialogIDSection);
-        // sestrelili nas z venku - po FreeLibrary muze dojit k odstraneni posledniho zamku
-        // na spl (Salamander uz nemusi vubec bezet) a uz bychom se nemeli kam vratit -
-        // proto volame tuto funkci:
+        // we were killed from the outside - after FreeLibrary the last lock on the SPL may be removed
+        // (Salamander may no longer be running) and there would be nowhere to return to,
+        // therefore call this function:
         FreeLibraryAndExitThread(hLock, 3666);
-        return 0; // sem uz se to nevrati, ale to prekladac nemuze vedet, ze :-)
+        return 0; // we never return here, but the compiler cannot know that :-)
     }
 }
 
@@ -301,7 +301,7 @@ StartDownloadThread(BOOL firstLoadAfterInstall)
     HANDLE hThread = CreateThread(NULL, 0, ThreadDownload, &data, 0, &threadID);
     if (hThread == NULL)
         TRACE_E("Unable to create Check Version Download thread.");
-    else // pockame, az thread prevezme data
+    else // wait until the thread takes the data
         WaitForSingleObject(data.Continue, INFINITE);
 
     CloseHandle(data.Continue);

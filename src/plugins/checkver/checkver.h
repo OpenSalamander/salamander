@@ -3,15 +3,15 @@
 
 #pragma once
 
-// tuto zpravu posti download thread hlavnimu oknu pluginu pro svem zavreni
-// pokud se podarilo data nacist korektne, bude wParam == TRUE; jinak bude FALSE
+// the download thread sends this message to the plugin main window when it closes
+// if the data were loaded correctly, wParam == TRUE; otherwise it is FALSE
 #define WM_USER_DOWNLOADTHREAD_EXIT WM_APP + 666
 
-// user stisknul jedno z tlacitek pro rolovani seznamem
+// the user pressed one of the buttons for scrolling through the list
 #define WM_USER_KEYDOWN WM_APP + 667
 
-// data konfigurace
-enum CAutoCheckModeEnum // jak casto se aktivuje okno pluginu
+// configuration data
+enum CAutoCheckModeEnum // how often the plugin window is activated
 {
     achmNever,
     achmDay,
@@ -22,7 +22,7 @@ enum CAutoCheckModeEnum // jak casto se aktivuje okno pluginu
     achmCount // terminator
 };
 
-enum CInternetConnection // jak je user pripojenej na net
+enum CInternetConnection // how the user is connected to the internet
 {
     inetPhone,
     inetLAN,
@@ -30,7 +30,7 @@ enum CInternetConnection // jak je user pripojenej na net
     inetCount // terminator
 };
 
-enum CInternetProtocol // jaky protokol se ma pouzit
+enum CInternetProtocol // which protocol should be used
 {
     inetpHTTP,
     inetpFTP,
@@ -59,42 +59,42 @@ struct CTVData
 
 extern CDataDefaults Data;
 extern CDataDefaults DataDefaults[inetCount];
-extern CInternetConnection InternetConnection; // jak je user pripojenej na net?
-extern CInternetProtocol InternetProtocol;     // jak je user pripojenej na net?
+extern CInternetConnection InternetConnection; // how is the user connected to the internet?
+extern CInternetProtocol InternetProtocol;     // how is the user connected to the internet?
 
-extern HINSTANCE DLLInstance; // handle k SPL-ku - jazykove nezavisle resourcy
-extern HINSTANCE HLanguage;   // handle k SLG-cku - jazykove zavisle resourcy
+extern HINSTANCE DLLInstance; // handle to the SPL - language independent resources
+extern HINSTANCE HLanguage;   // handle to the SLG - language dependent resources
 
-extern HWND HMainDialog; // handle hlavniho dialog (NULL, pokud je zavreny)
+extern HWND HMainDialog; // handle of the main dialog (NULL if it is closed)
 
 extern HWND HConfigurationDialog;
-extern BOOL ConfigurationChanged; // TRUE = user dal OK v konfiguracnim dialogu (jestli neco skutecne zmenil uz nepitvame)
+extern BOOL ConfigurationChanged; // TRUE = the user clicked OK in the configuration dialog (we do not check whether anything actually changed)
 
-extern BOOL PluginIsReleased; // jsme v metode CPluginInterface::Release?
+extern BOOL PluginIsReleased; // are we inside CPluginInterface::Release?
 
-extern BOOL LoadedOnSalamanderStart; // byl plugin nacten s flagem LOADINFO_LOADONSTART
-extern BOOL LoadedOnSalInstall;      // byl plugin nalouden tesne po instalaci Salamandera?
+extern BOOL LoadedOnSalamanderStart; // was the plugin loaded with the LOADINFO_LOADONSTART flag
+extern BOOL LoadedOnSalInstall;      // was the plugin loaded right after Salamander installation?
 
-extern HANDLE HDownloadThread; // slouzi pro kontrolu, ze thread uz dobehnul
+extern HANDLE HDownloadThread; // used to verify that the thread has already finished
 
-extern SYSTEMTIME LastCheckTime;       // kdy byla naposledy provedena kontrola (nulovane pokud jsme kontrolu jeste nedelali)
-extern SYSTEMTIME NextOpenOrCheckTime; // kdy nejdrive se ma automaticky otevrit okno pluginu a prip. provest kontrola (nulovane pokud se ma udelat pri prvnim load-on-startu (ASAP))
-extern int ErrorsSinceLastCheck;       // kolikrat jsme se uz neuspesne pokouseli automaticky provest kontrolu
+extern SYSTEMTIME LastCheckTime;       // when the check was last performed (zeroed out if no check was executed yet)
+extern SYSTEMTIME NextOpenOrCheckTime; // the earliest time the plugin window should open automatically and optionally perform a check (zeroed out if it should happen at the first load-on-start (ASAP))
+extern int ErrorsSinceLastCheck;       // how many times we have already failed to perform the automatic check
 
-extern char SalamanderTextVersion[MAX_PATH]; // text cisla verze beziciho Salamandera (napr. "2.52 beta 3 (PB 32)")
+extern char SalamanderTextVersion[MAX_PATH]; // running Salamander version text (for example, "2.52 beta 3 (PB 32)")
 
-extern DWORD MainDialogID;                   // unikatni counter dialogu
-extern CRITICAL_SECTION MainDialogIDSection; // a jeho zamek
-DWORD GetMainDialogID();                     // a jeho obsluha
+extern DWORD MainDialogID;                   // unique dialog counter
+extern CRITICAL_SECTION MainDialogIDSection; // and its lock
+DWORD GetMainDialogID();                     // and its handling
 void IncMainDialogID();
 
-extern HANDLE HModulesEnumDone; // synchronizace hlavniho threadu salamandera a threadu hlavniho dialogu
+extern HANDLE HModulesEnumDone; // synchronization of Salamander's main thread and the main dialog thread
 
-#define LOADED_SCRIPT_MAX 100000             // doufam, ze k takovehlemu scriptu se nikdy nedopracujeme :-))
-extern BYTE LoadedScript[LOADED_SCRIPT_MAX]; // sem nalejeme script - at pres inet nebo ze souboru v debug verzi
-extern DWORD LoadedScriptSize;               // pocet obsazenych (validnich) bajtu
+#define LOADED_SCRIPT_MAX 100000             // hopefully we will never end up with a script that large :-))
+extern BYTE LoadedScript[LOADED_SCRIPT_MAX]; // script is poured in here - either from the internet or from a file in the debug build
+extern DWORD LoadedScriptSize;               // number of occupied (valid) bytes
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// Salamander's general interface - valid from startup until the plugin is terminated
 extern CSalamanderGeneralAbstract* SalGeneral;
 
 char* LoadStr(int resID);
@@ -102,7 +102,7 @@ char* LoadStr(int resID);
 BOOL AddUniqueFilter(const char* itemName);
 void FiltersFillListBox(HWND hListBox);
 void FiltersLoadFromListBox(HWND hListBox);
-void DestroyFilters(); // sestreli pole fitru
+void DestroyFilters(); // tear down the filter array
 void LoadConfig(HKEY regKey, CSalamanderRegistryAbstract* registry);
 void SaveConfig(HKEY regKey, CSalamanderRegistryAbstract* registry);
 void OnSaveTimeStamp(HKEY regKey, CSalamanderRegistryAbstract* registry);
@@ -110,7 +110,7 @@ void OnSaveTimeStamp(HKEY regKey, CSalamanderRegistryAbstract* registry);
 // dialog window procs
 INT_PTR CALLBACK CfgDlgProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK MainDlgProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPARAM lParam);
-void OnConfiguration(HWND hParent); // oteve konfiguracni okno
+void OnConfiguration(HWND hParent); // open the configuration window
 
 BOOL RegisterLogClass();
 void UnregisterLogClass();
@@ -130,17 +130,17 @@ BOOL IsTimeExpired(const SYSTEMTIME* time);
 void GetFutureTime(SYSTEMTIME* tgtTime, const SYSTEMTIME* time, DWORD days);
 void GetFutureTime(SYSTEMTIME* tgtTime, DWORD days);
 
-// nacteni scriptu
+// script loading
 BOOL LoadScripDataFromFile(const char* fileName);
-HANDLE StartDownloadThread(BOOL firstLoadAfterInstall); // vraci handle threadu nebo NULL
+HANDLE StartDownloadThread(BOOL firstLoadAfterInstall); // returns the thread handle or NULL
 
-// vypsani logu
+// log output
 void ModulesCreateLog(BOOL* moduleWasFound, BOOL rereadModules);
 
-// vraci TRUE jen pokud mame nactene nejake moduly (ze serveru nebo ze souboru)
+// returns TRUE only if some modules are loaded (from the server or from a file)
 BOOL ModulesHasCorrectData();
 
-// vycisteni Modules
+// cleanup of Modules
 void ModulesCleanup();
 
 void ModulesChangeShowDetails(int index);
