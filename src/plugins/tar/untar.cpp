@@ -906,7 +906,7 @@ int CArchive::ReadArchiveHeader(SCommonHeader& header, BOOL probe)
                 // Not able to read anything: try some heuristics
                 if ((Stream->GetStreamSize() == Stream->GetStreamPos()) && (Stream->GetStreamSize() > CQuadWord(0, 0)))
                 {
-                // TAR: parsed everything; looks like the terminating empty block is missing
+                    // TAR: parsed everything; looks like the terminating empty block is missing
                     header.Finished = TRUE;
                     return TAR_OK;
                 }
