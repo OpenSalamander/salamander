@@ -45,17 +45,17 @@ BOOL CFATImage::Open(const char* fileName, BOOL quiet, HWND hParent)
 {
     VolumeStart.Set(0, 0);
 
-    // otevreme image, v pripade problemu nabidneme pouze tlacitko OK
+    // open the image; if there is a problem offer only the OK button
     if (!SalamanderSafeFile->SafeFileOpen(&File, fileName, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING,
                                           FILE_FLAG_RANDOM_ACCESS, hParent, BUTTONS_OK, NULL, NULL))
     {
         return FALSE;
     }
 
-    DWORD read; // pocet nactenych bajtu
+    DWORD read; // number of bytes read
 
 restart:
-    // naciteme boot sector
+    // read the boot sector
     SalamanderSafeFile->SafeFileSeek(&File, &VolumeStart, FILE_BEGIN, NULL);
     if (!SalamanderSafeFile->SafeFileRead(&File, &BS, sizeof(BS), &read,
                                           hParent, BUTTONS_RETRYCANCEL, NULL, NULL))
@@ -64,7 +64,7 @@ restart:
         return FALSE;
     }
 
-    // overime konzistenci dat
+    // verify the consistency of the data
     if (read != sizeof(BS) ||
         (BS.JmpBoot[0] != 0xEB && BS.JmpBoot[0] != 0xE9) ||
         BS.BytsPerSec == 0 ||
@@ -175,7 +175,7 @@ BOOL CFATImage::ListImage(CSalamanderDirectoryAbstract* dir, HWND hParent)
     TDirectArray<DWORD> rootDirFAT(50, 100);
     if (FATType != fteFAT32)
     {
-        // FAT12 a FAT16 maji root dir v jednom kuse
+        // FAT12 and FAT16 have the root directory stored contiguously
         rootDirFAT.Add(FAT1216_ROOT_DIR);
         if (!rootDirFAT.IsGood())
         {
@@ -185,19 +185,19 @@ BOOL CFATImage::ListImage(CSalamanderDirectoryAbstract* dir, HWND hParent)
     }
     else
     {
-        // FAT32 ma root dir roztrhany jako kazdy jiny soubor nebo adresar
+        // FAT32 keeps the root directory fragmented like any other file or directory
         if (!LoadFAT(FAT32.RootClus, &rootDirFAT, hParent, BUTTONS_RETRYCANCEL, NULL, NULL))
             return FALSE;
     }
 
-    // rekurzivni funkce AddDirectory nacte adresar a vsechny podadresare
+    // the recursive AddDirectory function loads a directory and all of its subdirectories
     char root[2 * MAX_PATH];
     root[0] = 0;
     return AddDirectory(root, &rootDirFAT, dir, FirstRootDirSecNum, hParent);
 }
 
 #pragma runtime_checks("c", off)
-// Microsofti funkce pro vypocet checksumu 8.3 nazvu
+// Microsoft function for calculating the checksum of an 8.3 name
 BYTE ChkSum(BYTE* pFcpName)
 {
     BYTE sum = 0;
@@ -208,7 +208,7 @@ BYTE ChkSum(BYTE* pFcpName)
 }
 #pragma runtime_checks("", restore)
 
-// konverze jmena ve formatu 83 na 8.3
+// convert a name in the 83 format to 8.3
 BOOL ConvertFATName(const char* fatName, char* name)
 {
     char* p = name;
@@ -217,16 +217,16 @@ BOOL ConvertFATName(const char* fatName, char* name)
     {
         if (i == 8)
         {
-            // pokud za existuje pripona, vlozime tecku
+            // if an extension follows, insert a dot
             if (fatName[i] != ' ')
             {
-                if (p == name) // chybny nazev souboru
+                if (p == name) // invalid file name
                     return FALSE;
                 *p = '.';
                 p++;
             }
             else
-                break; // jinak muzeme vypadnout
+                break; // otherwise we can exit
         }
         if (fatName[i] != ' ')
         {
@@ -237,12 +237,12 @@ BOOL ConvertFATName(const char* fatName, char* name)
         }
     }
     if (p == name)
-        return FALSE; // chybny nazev souboru
+        return FALSE; // invalid file name
     *p = 0;
     return TRUE;
 }
 
-// docasne uloziste jmen adresaru; slouzi k optimalizovanemu volani AddFile/AddDir
+// temporary storage for directory names; used to optimize AddFile/AddDir calls
 struct CDirStore
 {
     char* Name;
@@ -263,18 +263,18 @@ BOOL CFATImage::AddDirectory(char* root, TDirectArray<DWORD>* fat,
         return FALSE;
     }
 
-    int fatIndex = 0; // nulty zaznam z pole 'fat' ignorujeme, dostali jsme 'sector'
+    int fatIndex = 0; // ignore the zeroth entry from the 'fat' array; we already received 'sector'
 
     CDirEntry dirEnt;
     wchar_t longName[63 * 13 + 1];
-    DWORD longNameOrd = 0; // 0=nenacita se long name; vetsi nez 0=naposledy jsme nacetli tento Ord
+    DWORD longNameOrd = 0; // 0=long name not being read; greater than 0=we last read this Ord value
     BYTE longNameChksum;
     TDirectArray<CDirStore> dirStore(10, 50);
 
 #ifdef TRACE_ENABLE
     char seekStr[50];
 #endif                                             //TRACE_ENABLE
-    DWORD remains = BS.BytsPerSec * BS.SecPerClus; // kolik zbyva do konce clusteru
+    DWORD remains = BS.BytsPerSec * BS.SecPerClus; // how much remains to the end of the cluster
     if (fat->Count > 0 && fat->At(0) == FAT1216_ROOT_DIR)
         remains = BS.BytsPerSec * RootDirSectors;
 
@@ -286,7 +286,7 @@ BOOL CFATImage::AddDirectory(char* root, TDirectArray<DWORD>* fat,
         {
             fatIndex++;
             if (fatIndex >= fat->Count)
-                break; // nacetli jsme vsechny clustery adresare, koncime
+                break; // we have read all directory clusters; stop
             seek.Value = VolumeStart.Value + (FirstDataSec + (fat->At(fatIndex) - 2) * BS.SecPerClus) * BS.BytsPerSec;
             if (!SalamanderSafeFile->SafeFileSeekMsg(&File, &seek, FILE_BEGIN, hParent,
                                                      BUTTONS_RETRYCANCEL, NULL, NULL, TRUE))
@@ -306,41 +306,41 @@ BOOL CFATImage::AddDirectory(char* root, TDirectArray<DWORD>* fat,
         seek.Value += read;
         remains -= read;
 
-        // terminator -- koncime
+        // terminator -- stop processing
         if (dirEnt.Short.Name[0] == 0)
             break;
 
-        // free directory entry preskakujeme
+        // skip free directory entries
         if (dirEnt.Short.Name[0] == 0xE5)
         {
-            longNameOrd = 0; // nenacitame long_name
+            longNameOrd = 0; // do not read long_name
             continue;
         }
 
-        // label preskakujeme
+        // skip the label
         if ((dirEnt.Short.Attr == ATTR_VOLUME_ID) || (dirEnt.Short.Attr == (ATTR_ARCHIVE | ATTR_VOLUME_ID)))
         {
-            longNameOrd = 0; // nenacitame long_name
+            longNameOrd = 0; // do not read long_name
             continue;
         }
 
         if ((dirEnt.Short.Attr & ATTR_LONG_NAME_MASK) == ATTR_LONG_NAME)
         {
-            // jde o long name
+            // this is a long name entry
             BOOL lastEntry = ((dirEnt.Long.Ord & LAST_LONG_ENTRY) != 0);
             DWORD ord = dirEnt.Long.Ord & LONG_ENTRY_ORD_MASK;
 
             if (longNameOrd == 0 && !lastEntry)
             {
-                // nejsme uprostred long_name a prisla cast, ktera neni zaverecna
+                // we are not in the middle of a long_name and a non-terminal part arrived
                 TRACE_E("CFATImage::AddDirectory: Long name terminator was expected. offset=0x" << _i64toa(seek.Value, seekStr, 16));
-                continue; // skipneme ji
+                continue; // skip it
             }
 
             if (ord == 0)
             {
-                // zmetek, prerusime nacitani
-                longNameOrd = 0; // nenacitame long_name
+                // invalid data; abort reading
+                longNameOrd = 0; // do not read long_name
                 TRACE_E("CFATImage::AddDirectory: Invalid Ord. offset=0x" << _i64toa(seek.Value, seekStr, 16));
                 continue;
             }
@@ -349,22 +349,22 @@ BOOL CFATImage::AddDirectory(char* root, TDirectArray<DWORD>* fat,
             {
                 if (ord != longNameOrd - 1)
                 {
-                    // zmetek, prerusime nacitani
-                    longNameOrd = 0; // nenacitame long_name
+                    // invalid data; abort reading
+                    longNameOrd = 0; // do not read long_name
                     TRACE_E("CFATImage::AddDirectory: Non continuous ord. offset=0x" << _i64toa(seek.Value, seekStr, 16));
                     continue;
                 }
             }
 
-            // vsechny checksumy musi byt rovny
+            // all checksums must be equal
             if (lastEntry)
-                longNameChksum = dirEnt.Long.Chksum; // ulozime pro overovani
+                longNameChksum = dirEnt.Long.Chksum; // store it for verification
             else
             {
                 if (dirEnt.Long.Chksum != longNameChksum)
                 {
-                    // zmetek, prerusime nacitani
-                    longNameOrd = 0; // nenacitame long_name
+                    // invalid data; abort reading
+                    longNameOrd = 0; // do not read long_name
                     TRACE_E("CFATImage::AddDirectory: Different checksum in the long name. offset=0x" << _i64toa(seek.Value, seekStr, 16));
                     continue;
                 }
@@ -376,12 +376,12 @@ BOOL CFATImage::AddDirectory(char* root, TDirectArray<DWORD>* fat,
             memcpy(longName + ord * 13 + 5, dirEnt.Long.Name2, 12);
             memcpy(longName + ord * 13 + 11, dirEnt.Long.Name3, 4);
             if (lastEntry)
-                longName[ord * 13 + 13] = 0; // pokud je nazev presne na 13 znaku, je bez terminatoru -> vyrobime si ho
-            continue;                        // sahneme pro dalsi cast long_name nebo pro short_name
+                longName[ord * 13 + 13] = 0; // if the name is exactly 13 characters it lacks a terminator -> create one
+            continue;                        // move on to the next part of the long_name or to the short_name
         }
 
-        if (longNameOrd > 1) // nejsme nekde uprostred (jine nez 0 a jine nez 1)?
-            longNameOrd = 0; // nenacetli jsme cely long_name -> zahodime ho
+        if (longNameOrd > 1) // are we stuck in the middle (neither 0 nor 1)?
+            longNameOrd = 0; // the long_name was not fully read -> discard it
 
         CFileData file;
         char name8_3[13];
@@ -389,19 +389,19 @@ BOOL CFATImage::AddDirectory(char* root, TDirectArray<DWORD>* fat,
         {
             longNameOrd = 0;
             TRACE_E("CFATImage::AddDirectory: Error converting to 8.3 name. offset=0x" << _i64toa(seek.Value, seekStr, 16));
-            continue; // nesmyslny nazev preskocime
+            continue; // skip the nonsensical name
         }
 
-        // preskocime . a ..
+        // skip . and ..
         if (name8_3[0] == '.' && (name8_3[1] == 0 || (name8_3[1] == '.' && name8_3[2] == 0)))
         {
             longNameOrd = 0;
             if (*root == 0)
-                TRACE_E("CFATImage::AddDirectory: . and .. in the root directory. offset=0x" << _i64toa(seek.Value, seekStr, 16)); // root dir nema obsahovat . a ..
+                TRACE_E("CFATImage::AddDirectory: . and .. in the root directory. offset=0x" << _i64toa(seek.Value, seekStr, 16)); // the root directory must not contain . and ..
             continue;
         }
 
-        // overim checksum long name casti
+        // verify the checksum of the long name part
         if (longNameOrd == 1)
         {
             BYTE sum = ChkSum((BYTE*)dirEnt.Short.Name);
@@ -412,7 +412,7 @@ BOOL CFATImage::AddDirectory(char* root, TDirectArray<DWORD>* fat,
             }
         }
 
-        // napocitam delku long name (UNICODE)
+        // determine the length of the long name (UNICODE)
         int longNameLen = 0;
         if (longNameOrd == 1)
         {
@@ -460,15 +460,15 @@ BOOL CFATImage::AddDirectory(char* root, TDirectArray<DWORD>* fat,
         file.NameLen = strlen(file.Name);
         if (!SortByExtDirsAsFiles && (dirEnt.Short.Attr & ATTR_DIRECTORY))
         {
-            // adresar nema priponu
+            // directories have no extension
             file.Ext = file.Name + file.NameLen;
         }
         else
         {
-            // u souboru je pripona za posledni teckou
+            // for files the extension is behind the last dot
             char* s = strrchr(file.Name, '.');
             if (s != NULL)
-                file.Ext = s + 1; // ".cvspass" ve Windows je pripona
+                file.Ext = s + 1; // ".cvspass" is an extension in Windows
             else
                 file.Ext = file.Name + file.NameLen;
         }
@@ -493,9 +493,9 @@ BOOL CFATImage::AddDirectory(char* root, TDirectArray<DWORD>* fat,
 
         if (dirEnt.Short.Attr & ATTR_DIRECTORY)
         {
-            // adresar
+            // directory
 
-            // pridame do listingu
+            // add to the listing
             file.IsLink = 0;
             if (!dir->AddDir(root, file, NULL))
             {
@@ -506,7 +506,7 @@ BOOL CFATImage::AddDirectory(char* root, TDirectArray<DWORD>* fat,
                 break;
             }
 
-            // ulozime abychom mohli na zaver traverzovat pres vsechny adresare
+            // store so that we can traverse all directories at the end
             CDirStore ds;
             ds.Name = SalamanderGeneral->DupStr(file.Name);
             ds.Cluster = (DWORD)file.PluginData;
@@ -521,14 +521,14 @@ BOOL CFATImage::AddDirectory(char* root, TDirectArray<DWORD>* fat,
             {
                 TRACE_E(LOW_MEMORY);
                 SalamanderGeneral->Free(ds.Name);
-                dirStore.ResetState(); // aby probehla destrukce pole
+                dirStore.ResetState(); // ensure the array's destructor runs
                 ok = FALSE;
                 break;
             }
         }
         else
         {
-            // soubor pridame do listingu
+            // add the file to the listing
             file.IsLink = SalamanderGeneral->IsFileLink(file.Ext);
             if (!dir->AddFile(root, file, NULL))
             {
@@ -541,7 +541,7 @@ BOOL CFATImage::AddDirectory(char* root, TDirectArray<DWORD>* fat,
         }
     }
 
-    // na zaver zavolame sami sebe pro vsechny ulozene adresare
+    // finally call ourselves for all stored directories
     if (ok && dirStore.Count > 0)
     {
         char* rootEnd = root + strlen(root);
@@ -552,7 +552,7 @@ BOOL CFATImage::AddDirectory(char* root, TDirectArray<DWORD>* fat,
 
             if (rootEnd - root + strlen(ds->Name) + 2 >= MAX_PATH)
             {
-                // nesmime povolit prekroceni MAX_PATH
+                // we must not allow exceeding MAX_PATH
                 TRACE_E("The path len exceeds MAX_PATH. Skipping directory: " << ds->Name);
                 continue;
             }
@@ -561,7 +561,7 @@ BOOL CFATImage::AddDirectory(char* root, TDirectArray<DWORD>* fat,
 
             // firstSectorOfCluster = FirstDataSec + (N - 2) * SecPerClus
             DWORD newSector = FirstDataSec + (ds->Cluster - 2) * BS.SecPerClus;
-            // fat polozky uz nebudeme potrebovat, muzeme pouzit nase pole
+            // we no longer need the FAT entries; we can use our own array
             if (!LoadFAT(ds->Cluster, fat, hParent, BUTTONS_RETRYCANCEL, NULL, NULL))
             {
                 ok = FALSE;
@@ -575,7 +575,7 @@ BOOL CFATImage::AddDirectory(char* root, TDirectArray<DWORD>* fat,
         }
     }
 
-    // pri odchodu uvolnime store
+    // release the store on exit
     int j;
     for (j = 0; j < dirStore.Count; j++)
         SalamanderGeneral->Free(dirStore[j].Name);
@@ -586,8 +586,8 @@ BOOL CFATImage::AddDirectory(char* root, TDirectArray<DWORD>* fat,
 BOOL CFATImage::LoadFAT(DWORD cluster, TDirectArray<DWORD>* fat, HWND hParent,
                         DWORD buttons, DWORD* pressedButton, DWORD* silentMask)
 {
-    if (pressedButton != NULL)          // pokud vratime FALSE a nezmenime tuto hodnotu
-        *pressedButton = DIALOG_CANCEL; // meli jsme na mysli preruseni cele operace
+    if (pressedButton != NULL)          // if we return FALSE and do not change this value
+        *pressedButton = DIALOG_CANCEL; // we meant cancellation of the entire operation
 
     fat->DetachMembers();
 
@@ -626,14 +626,14 @@ BOOL CFATImage::LoadFAT(DWORD cluster, TDirectArray<DWORD>* fat, HWND hParent,
             break;
         }
 
-        // pokusime se nacist polozku z FAT
+        // attempt to read the entry from the FAT
         if (!SalamanderSafeFile->SafeFileSeekMsg(&File, &seek, FILE_BEGIN, hParent,
                                                  buttons, pressedButton, silentMask, TRUE))
         {
             return FALSE;
         }
 
-        DWORD read; // pocet nactenych bajtu
+        DWORD read; // number of bytes read
         if (!SalamanderSafeFile->SafeFileRead(&File, &entry, sizeof(entry), &read, hParent,
                                               SAFE_FILE_CHECK_SIZE | buttons, pressedButton, silentMask))
         {
@@ -686,7 +686,7 @@ BOOL CFATImage::LoadFAT(DWORD cluster, TDirectArray<DWORD>* fat, HWND hParent,
     return TRUE;
 }
 
-// pripravi string pro chybove hlasky; obsahuje velikost, datum, cas
+// prepare a string for error messages; it contains the size, date, and time
 void GetFileInfo(char* buffer, int bufferLen, const CFileData* fileData)
 {
     CALL_STACK_MESSAGE2("GetFileInfo(, %d, , )", bufferLen);
@@ -705,7 +705,7 @@ void GetFileInfo(char* buffer, int bufferLen, const CFileData* fileData)
         TRACE_E("GetFileInfo: small buffer. bufferLen=" << bufferLen);
 }
 
-#define COPY_MIN_FILE_SIZE CQuadWord(1024, 0) // nesmi byt mensi nez 1 (duvod: jinak nebude slapat test alokace potrebneho mista pro soubor pred zahajenim kopirovani v DoCopyFile)
+#define COPY_MIN_FILE_SIZE CQuadWord(1024, 0) // must not be less than 1 (otherwise the allocation test for required file space before copying in DoCopyFile would fail)
 
 BOOL CFATImage::UnpackFile(CSalamanderForOperationsAbstract* salamander, const char* archiveName,
                            const char* nameInArchive, const CFileData* fileData,
@@ -717,10 +717,10 @@ BOOL CFATImage::UnpackFile(CSalamanderForOperationsAbstract* salamander, const c
     {
         *skipped = FALSE;
         if (!allowSkip)
-            skipped = NULL; // pro zkraceni podminek v teto metode
+            skipped = NULL; // to shorten condition checks in this method
     }
 
-    // nacteme cluster chain pro soubor 'fileData'
+    // read the cluster chain for the 'fileData' file
     TDirectArray<DWORD> fat(50, 100);
     DWORD pressedButton;
     if (!LoadFAT((DWORD)fileData->PluginData, &fat, hParent,
@@ -742,7 +742,7 @@ BOOL CFATImage::UnpackFile(CSalamanderForOperationsAbstract* salamander, const c
         return FALSE;
     }
 
-    // pro kopirovani budeme potrebovat buffer o velikosti clusteru
+    // for copying we will need a buffer the size of a cluster
     DWORD clusterSize = 1 * BS.SecPerClus * BS.BytsPerSec;
     BYTE* clusterBuffer = (BYTE*)malloc(clusterSize);
     if (clusterBuffer == NULL)
@@ -770,16 +770,16 @@ BOOL CFATImage::UnpackFile(CSalamanderForOperationsAbstract* salamander, const c
         return FALSE;
     }
 
-    // podpora pro minimalizaci fragmentace disku
-    CQuadWord minAllocFileSize = max(COPY_MIN_FILE_SIZE, CQuadWord(clusterSize, 0)); // soubory pod touto velokosti nebudeme predalokovavat
+    // support for minimizing disk fragmentation
+    CQuadWord minAllocFileSize = max(COPY_MIN_FILE_SIZE, CQuadWord(clusterSize, 0)); // files below this size will not be preallocated
     CQuadWord allocFileSize = fileData->Size;
     BOOL allocateWholeFile = FALSE;
-    if (*allocWholeFileOnStart != awfDisabled &&  // alokovani celeho souboru neni zakazano
-        allocFileSize > minAllocFileSize &&       // podminka platnosti fileSize + pod velikost kopirovaciho bufferu nema alokace souboru smysl (mensi soubory maji vsechny COPY_MIN_FILE_SIZE) (navic nema smysl na souborech pod 1 byte)
-        allocFileSize < CQuadWord(0, 0x80000000)) // velikost souboru je kladne cislo (jinak nelze seekovat - jde o cisla nad 8EB, takze zrejme nikdy nenastane)
+    if (*allocWholeFileOnStart != awfDisabled &&  // preallocating the whole file is not disabled
+        allocFileSize > minAllocFileSize &&       // fileSize validity condition + below the copy buffer size preallocation makes no sense (smaller files all use COPY_MIN_FILE_SIZE) (and there is no point below 1 byte)
+        allocFileSize < CQuadWord(0, 0x80000000)) // the file size must be a positive number (otherwise seeking is impossible - these are numbers above 8EB, so this likely never happens)
     {
         allocateWholeFile = TRUE;
-        if (*allocWholeFileOnStart == awfNeededTest) // na prvnim souboru provedeme test
+        if (*allocWholeFileOnStart == awfNeededTest) // perform a test on the first file
             allocFileSize = fileData->Size + CQuadWord(0, 0x80000000);
     }
 
@@ -796,13 +796,13 @@ BOOL CFATImage::UnpackFile(CSalamanderForOperationsAbstract* salamander, const c
         return FALSE;
     }
 
-    // podpora pro minimalizaci fragmentace disku
+    // support for minimizing disk fragmentation
     if (allocateWholeFile && allocFileSize == CQuadWord(-1, 0))
-        *allocWholeFileOnStart = awfDisabled; // predalokace se nezdarila a nemame se o ni v teto davce ani pokouset
+        *allocWholeFileOnStart = awfDisabled; // preallocation failed and we should not attempt it again in this batch
 
     BOOL ok = TRUE;
 
-    // cluster po clusteru ulozime cilovy soubor
+    // store the target file cluster by cluster
     CQuadWord remains = fileData->Size;
     int i;
     for (i = 0; i < fat.Count; i++)
@@ -821,7 +821,7 @@ BOOL CFATImage::UnpackFile(CSalamanderForOperationsAbstract* salamander, const c
 
         DWORD toRead = (remains.Value < (unsigned __int64)clusterSize) ? remains.LoDWord : clusterSize;
 
-        // nactemem cluster
+        // read the cluster
         DWORD read;
         if (!SalamanderSafeFile->SafeFileRead(&File, clusterBuffer, toRead, &read, hParent,
                                               allowSkip ? BUTTONS_RETRYSKIPCANCEL : BUTTONS_RETRYCANCEL,
@@ -833,7 +833,7 @@ BOOL CFATImage::UnpackFile(CSalamanderForOperationsAbstract* salamander, const c
             goto EXIT;
         }
 
-        // ulozime ho do vystupniho souboru
+        // write it to the output file
         DWORD written;
         if (!SalamanderSafeFile->SafeFileWrite(&outFile, clusterBuffer, read, &written, hParent,
                                                allowSkip ? BUTTONS_RETRYSKIPCANCEL : BUTTONS_RETRYCANCEL,
@@ -845,28 +845,28 @@ BOOL CFATImage::UnpackFile(CSalamanderForOperationsAbstract* salamander, const c
             goto EXIT;
         }
 
-        // posuneme progress
-        if (!salamander->ProgressAddSize(read, TRUE)) // delayedPaint==TRUE, abychom nebrzdili
+        // advance the progress
+        if (!salamander->ProgressAddSize(read, TRUE)) // delayedPaint==TRUE so we do not slow things down
         {
             salamander->ProgressEnableCancel(FALSE);
             ok = FALSE;
-            goto EXIT; // preruseni akce
+            goto EXIT; // the operation was cancelled
         }
 
         remains.Value -= read;
     }
 
-    if (fileData->Size < COPY_MIN_FILE_SIZE) // maly soubor -- pro progress zvetsime
+    if (fileData->Size < COPY_MIN_FILE_SIZE) // small file -- enlarge it for progress reporting
     {
         remains = COPY_MIN_FILE_SIZE - fileData->Size;
         if (!salamander->ProgressAddSize((int)remains.Value, TRUE))
         {
             ok = FALSE;
-            goto EXIT; // preruseni akce
+            goto EXIT; // the operation was cancelled
         }
     }
 
-    // casove razitko nastavime na zaver
+    // set the timestamp at the end
     if (!SetFileTime(outFile.HFile, &fileData->LastWrite, &fileData->LastWrite, &fileData->LastWrite))
         TRACE_E("SetFileTime failed");
 
@@ -874,17 +874,17 @@ EXIT:
     SalamanderSafeFile->SafeFileClose(&outFile);
     if (!ok)
     {
-        // soubor mohl dostat read-only atribut a DeleteFile by ho nedokazal smazat
+        // the file may have received a read-only attribute and DeleteFile would not be able to remove it
         SalamanderGeneral->ClearReadOnlyAttr(targetName);
         if (!DeleteFile(targetName))
             TRACE_E("DeleteFile failed");
     }
     else
     {
-        // FIXME: (konzultovat s Petrem) tady si nejsem jisty
-        // pokud zdroj nema zadny atribut, SafeCreateFile mu nastavilo 'A'
-        // timto zarucuji exaktni kopii, ale neni to kompatibilni s prikazem Copy Salamandera
-        // kazdy plugin se chova jinak, meme v tom hokej
+        // FIXME: (consult with Petr) I am not sure here
+        // if the source has no attribute, SafeCreateFile assigned it 'A'
+        // this guarantees an exact copy, but it is not compatible with Salamander's Copy command
+        // every plugin behaves differently; it is a mess
 
         if (!SetFileAttributes(targetName, fileData->Attr))
             TRACE_E("SetFileAttributes failed");
