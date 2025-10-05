@@ -7,7 +7,7 @@ BOOL ExportStringsForViewerInASCII = TRUE;
 
 // ****************************************************************************
 //
-// CPluginFSInterface - druha cast
+// CPluginFSInterface - second part
 //
 //
 
@@ -92,11 +92,11 @@ BOOL CPluginFSInterface::QuickRename(const char* fsName, int mode, HWND parent, 
     cancel = TRUE;
 
     if (CurrentKeyRoot == -1)
-        return FALSE; //HKEY_XXX nejde prejmenovat :-)
+        return FALSE; // HKEY_XXX keys cannot be renamed :-)
 
     CPluginData* pluginData = (CPluginData*)file.PluginData;
 
-    // nebudeme zpracovavat defaultni hodnotu pokud neni nastavena
+    // skip the default value if it is not set
     if (pluginData->Name == NULL && pluginData->Type == REG_NONE)
     {
         Error(IDS_CANNOTRENAMEDEFVAL);
@@ -131,7 +131,7 @@ BOOL CPluginFSInterface::QuickRename(const char* fsName, int mode, HWND parent, 
     BOOL overwriteAll = FALSE;
     if (isDir)
     {
-        // zajistime aby cesta neobsahovala znaky, ktere nema
+        // ensure the path does not contain disallowed characters
         if (keyName[wcscspn(keyName, L"\\")] != L'\0')
         {
             SG->SalMessageBox(GetParent(), LoadStr(IDS_SYNTAX), LoadStr(IDS_RENAMEKEY), MB_OK);
@@ -143,16 +143,16 @@ BOOL CPluginFSInterface::QuickRename(const char* fsName, int mode, HWND parent, 
         PathAppend(wcscpy(sourceKey, CurrentKeyName), pluginData->Name, MAX_KEYNAME);
         PathAppend(wcscpy(targetKey, CurrentKeyName), keyName, MAX_KEYNAME);
 
-        // zajistime, ze cilove jmeno nebude existovat
+        // ensure that the target name does not exist
         if (!TestKey(CurrentKeyRoot, targetKey))
             return FALSE;
 
-        GetAsyncKeyState(VK_ESCAPE); // init GetAsyncKeyState - viz help
+        GetAsyncKeyState(VK_ESCAPE); // initialize GetAsyncKeyState - see the help
         SG->CreateSafeWaitWindow(LoadStr(IDS_MOVEPROGRESS), LoadStr(IDS_PLUGINNAME), 500, TRUE, SG->GetMainWindowHWND());
 
-        // zasobnik na enumerovana jmena podklicu
-        // (podklice se musi nejpreve vsechny najednou naenumerovat
-        // a potom se mohou mazat (pri presunu)
+        // stack for enumerated subkey names
+        // (subkeys must be enumerated all at once
+        // before they can be deleted during a move)
         TIndirectArray<WCHAR> stack(100, 100);
         WCHAR nameBuffer[MAX_KEYNAME];
         success = CopyOrMoveKey(CurrentKeyRoot, sourceKey, CurrentKeyRoot, targetKey, TRUE,
@@ -187,9 +187,9 @@ void CPluginFSInterface::AcceptChangeOnPathNotification(const char* fsName, cons
                         fsName, path, includingSubdirs);
     if (CurrentKeyRoot != -1)
     {
-        // otestujeme shodnost cest nebo aspon jejich prefixu (sanci maji jen cesty
-        // na nas FS, diskove cesty a cesty na jine FS v 'path' se vylouci automaticky,
-        // protoze se nemuzou nikdy shodovat s 'fsName'+':' na zacatku 'path2' nize)
+        // compare paths or at least their prefixes (only paths on our FS have a chance;
+        // disk paths and paths on other FS types in 'path' are filtered out automatically
+        // because they can never match 'fsName'+':' at the beginning of 'path2' below)
         char path1[MAX_PATH * 2];
         char path2[MAX_FULL_KEYNAME + MAX_PATH];
         char root[MAX_PREDEF_KEYNAME];
@@ -205,7 +205,7 @@ void CPluginFSInterface::AcceptChangeOnPathNotification(const char* fsName, cons
                        (path2[len1] == 0 || includingSubdirs && path2[len1] == '\\');
         if (refresh)
         {
-            SG->PostRefreshPanelFS(this, FocusFirstNewItem); // pokud je FS v panelu, provedeme jeho refresh
+            SG->PostRefreshPanelFS(this, FocusFirstNewItem); // refresh if this FS is displayed in a panel
         }
     }
 }
@@ -237,7 +237,7 @@ BOOL CPluginFSInterface::CreateDir(const char* fsName, int mode, HWND parent, ch
 
         wcscpy(keyName, enteredKeyName);
 
-        // vyseparujeme z FS path user part
+        // extract the user portion from the FS path
         if (!direct)
         {
             if (!RemoveFSNameFromPath(keyName))
@@ -306,7 +306,7 @@ BOOL ExportValueData(int root, LPCWSTR key, LPCWSTR value, const char* tmpFileNa
     LPBYTE data, translated;
     DWORD size;
 
-    // zjistime velikost dat
+    // determine the data size
     ret = RegQueryValueExW(hKey, value, 0, &type, NULL, &size);
     if (ret != ERROR_SUCCESS)
     {
@@ -314,7 +314,7 @@ BOOL ExportValueData(int root, LPCWSTR key, LPCWSTR value, const char* tmpFileNa
         return ErrorL(ret, IDS_QUERYVAL);
     }
 
-    // allokujeme buffer na data
+    // allocate a buffer for the data
     int extra = 0;
     if (ExportStringsForViewerInASCII &&
         (type == REG_SZ || type == REG_EXPAND_SZ || type == REG_MULTI_SZ))
@@ -326,7 +326,7 @@ BOOL ExportValueData(int root, LPCWSTR key, LPCWSTR value, const char* tmpFileNa
         return Error(IDS_LOWMEM);
     }
 
-    // nacteme data
+    // read the data
     ret = RegQueryValueExW(hKey, value, 0, &type, data, &size);
     if (ret != ERROR_SUCCESS)
     {
@@ -335,7 +335,7 @@ BOOL ExportValueData(int root, LPCWSTR key, LPCWSTR value, const char* tmpFileNa
         return ErrorL(ret, IDS_QUERYVAL);
     }
 
-    // je-li potreba, zkonvertime data do ascii
+    // if needed, convert the data to ASCII
     if (extra)
     {
         WStrToStr((char*)data + size, size / 2, (LPWSTR)data, size / 2);
@@ -343,7 +343,7 @@ BOOL ExportValueData(int root, LPCWSTR key, LPCWSTR value, const char* tmpFileNa
         size /= 2;
     }
 
-    // vytvorime/otevreme tmp soubor
+    // create or open the temporary file
     HANDLE file = CreateFile(tmpFileName, GENERIC_WRITE, FILE_SHARE_READ, NULL,
                              CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (file == INVALID_HANDLE_VALUE)
@@ -357,7 +357,7 @@ BOOL ExportValueData(int root, LPCWSTR key, LPCWSTR value, const char* tmpFileNa
     BOOL b = WriteFile(file, translated, size, &written, NULL) || written != size;
 
     DWORD err;
-    SG->SalGetFileSize(file, *newFileSize, err); // chyby ignorujeme
+    SG->SalGetFileSize(file, *newFileSize, err); // ignore errors
     CloseHandle(file);
     RegCloseKey(hKey);
     free(data);
@@ -374,27 +374,27 @@ void CPluginFSInterface::ViewFile(const char* fsName, HWND parent,
 
     CPluginData* pluginData = (CPluginData*)file.PluginData;
 
-    // nebudeme zpracovavat defaultni hodnotu pokud neni nastavena
-    // v rootu registry take nic nedleame
+    // skip the default value if it is not set
+    // and do nothing at the registry root either
     if (pluginData->Name == NULL && pluginData->Type == REG_NONE || CurrentKeyRoot == -1)
         return;
 
-    // sestavime unikatni jmeno souboru pro disk-cache (standardni salamanderovsky format cesty)
+    // build a unique file name for the disk cache (standard Salamander path format)
     char uniqueFileName[MAX_FULL_KEYNAME + MAX_PATH];
     SalPrintf(uniqueFileName, MAX_FULL_KEYNAME + MAX_PATH, "%s:\\%ls\\%ls", fsName,
               PredefinedHKeys[CurrentKeyRoot].KeyName, CurrentKeyName);
     SG->SalPathAppend(uniqueFileName, file.Name, MAX_FULL_KEYNAME + MAX_PATH);
 
-    // jmena na disku jsou "case-insensitive", disk-cache je "case-sensitive", prevod
-    // na mala pismena zpusobi, ze se disk-cache bude chovat take "case-insensitive"
+    // disk names are case-insensitive, the disk cache is case-sensitive; converting
+    // to lowercase makes the cache behave case-insensitively as well
     SG->ToLowerCase(uniqueFileName);
 
-    // vytvorime nazev souboru stravitelny pro wokna
+    // create a file name that Windows can handle
     char fileName[MAX_PATH];
     fileName[0] = '_';
     lstrcpyn(fileName + 1, file.Name, MAX_PATH - 1);
 
-    // ziskame jmeno kopie souboru v disk-cache
+    // obtain the copy name in the disk cache
     BOOL fileExists;
     const char* tmpFileName = salamander->AllocFileNameInCache(parent, uniqueFileName,
                                                                ReplaceUnsafeCharacters(fileName),
@@ -402,28 +402,27 @@ void CPluginFSInterface::ViewFile(const char* fsName, HWND parent,
     if (tmpFileName == NULL)
         return; // fatal error
 
-    // pripravime/aktualizujeme kopii dat z klice v disk-cache
+    // prepare or refresh the key data copy in the disk cache
     BOOL newFileOK = FALSE;
     CQuadWord newFileSize(0, 0);
     if (ExportValueData(CurrentKeyRoot, CurrentKeyName,
                         pluginData->Name ? pluginData->Name : L"",
-                        tmpFileName, &newFileSize)) // kopie se povedla
+                        tmpFileName, &newFileSize)) // the copy succeeded
     {
-        newFileOK = TRUE; // pokud nevyjde zjistovani velikosti souboru, zustane newFileSize nula (neni az tak dulezite)
+        newFileOK = TRUE; // if getting the file size fails, newFileSize stays zero (not critical)
     }
 
-    // otevreme viewer
+    // open the viewer
     HANDLE fileLock;
     BOOL fileLockOwner;
-    if (!newFileOK || // viewer otevreme jen pokud je kopie souboru v poradku
+    if (!newFileOK || // open the viewer only if the copy is valid
         !salamander->OpenViewer(parent, tmpFileName, &fileLock, &fileLockOwner))
-    { // pri chybe nulujeme "lock"
+    { // on error reset the "lock"
         fileLock = NULL;
         fileLockOwner = FALSE;
     }
 
-    // jeste musime zavolat FreeFileNameInCache do paru k AllocFileNameInCache (propojime
-    // viewer a disk-cache)
+    // call FreeFileNameInCache to pair with AllocFileNameInCache (linking the viewer and disk cache)
     salamander->FreeFileNameInCache(uniqueFileName, fileExists, newFileOK,
                                     newFileSize, fileLock, fileLockOwner, TRUE);
 }
@@ -433,7 +432,7 @@ BOOL CPluginFSInterface::DeleteKey(WCHAR* keyName, BOOL& skip,
 {
     CALL_STACK_MESSAGE3("CPluginFSInterface::DeleteKey(, %d, %d, )", skip,
                         skipAllErrors);
-    // test na preruseni uzivatelem
+    // check whether the user requested cancellation
     if (TestForCancel())
         return skip = FALSE;
 
@@ -491,7 +490,7 @@ BOOL CPluginFSInterface::DeleteKey(WCHAR* keyName, BOOL& skip,
             wcscpy(subKey, keyName);
             if (!PathAppend(subKey, stack[j], MAX_KEYNAME))
             {
-                TRACE_E("prilis dlouhe jmeno");
+                TRACE_E("name is too long");
                 skip = TRUE;
                 success = FALSE;
             }
@@ -512,7 +511,7 @@ BOOL CPluginFSInterface::DeleteKey(WCHAR* keyName, BOOL& skip,
     if (!success)
         return FALSE;
 
-    // zadny podklic jsme nevynechali
+    // no subkey was skipped
     if (!skip)
     {
         while (success)
@@ -523,7 +522,7 @@ BOOL CPluginFSInterface::DeleteKey(WCHAR* keyName, BOOL& skip,
                 success = RegOperationError(ret, IDS_DELETE, IDS_DELKEY, CurrentKeyRoot, keyName, &skip, &skipAllErrors);
             }
             else
-                break; // uspesny delete
+                break; // delete succeeded
         }
     }
 
@@ -546,17 +545,17 @@ BOOL CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int p
 
     cancelOrError = FALSE;
     if (mode == 1)
-        return FALSE; // zadost o standardni dotaz (je-li SALCFG_CNFRMFILEDIRDEL TRUE)
+        return FALSE; // request the standard prompt (if SALCFG_CNFRMFILEDIRDEL is TRUE)
 
     BOOL ConfirmOnNotEmptyDirDelete;
     if (!SG->GetConfigParameter(SALCFG_CNFRMNEDIRDEL, &ConfirmOnNotEmptyDirDelete, sizeof(BOOL), NULL))
         ConfirmOnNotEmptyDirDelete = TRUE;
 
-    char buf[MAX_KEYNAME * 2]; // buffer pro texty chyb
+    char buf[MAX_KEYNAME * 2]; // buffer for error texts
 
-    WCHAR keyName[MAX_KEYNAME]; // buffer pro plne jmeno
+    WCHAR keyName[MAX_KEYNAME]; // buffer for the full name
     wcscpy(keyName, CurrentKeyName);
-    WCHAR* end = keyName + wcslen(keyName); // misto pro jmena z panelu
+    WCHAR* end = keyName + wcslen(keyName); // space for names from the panel
     WCHAR* backslash = NULL;
     if (end > keyName && *(end - 1) != L'\\')
     {
@@ -564,27 +563,27 @@ BOOL CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int p
         *end++ = L'\\';
         *end = L'\0';
     }
-    int endSize = MAX_KEYNAME - (int)(end - keyName); // max. pocet znaku pro jmeno z panelu
+    int endSize = MAX_KEYNAME - (int)(end - keyName); // maximum number of characters for a panel name
 
-    const CFileData* f = NULL; // ukazatel na soubor/adresar v panelu, ktery se ma zpracovat
-    BOOL isDir = FALSE;        // TRUE pokud 'f' je adresar
+    const CFileData* f = NULL; // pointer to the panel file/directory being processed
+    BOOL isDir = FALSE;        // TRUE if 'f' is a directory
     BOOL focused = (selectedFiles == 0 && selectedDirs == 0);
     int index = 0;
-    BOOL success = TRUE;        // FALSE v pripade chyby nebo preruseni uzivatelem
+    BOOL success = TRUE;        // FALSE if an error occurs or the user cancels
     BOOL skipAllErrors = FALSE; // skip all errors
 
-    GetAsyncKeyState(VK_ESCAPE); // init GetAsyncKeyState - viz help
+    GetAsyncKeyState(VK_ESCAPE); // initialize GetAsyncKeyState - see the help
     SG->CreateSafeWaitWindow(LoadStr(IDS_DELETEPROGRESS), LoadStr(IDS_PLUGINNAME), 500, TRUE, SG->GetMainWindowHWND());
 
     while (1)
     {
-        // vyzvedneme data o zpracovavanem souboru
+        // fetch data about the item being processed
         if (focused)
             f = SG->GetPanelFocusedItem(panel, &isDir);
         else
             f = SG->GetPanelSelectedItem(panel, &index, &isDir);
 
-        // smazeme soubor/adresar
+        // delete the file or directory
         if (f != NULL)
         {
             BOOL skip = FALSE;
@@ -647,7 +646,7 @@ BOOL CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int p
             }
             else
             {
-                // nebudeme mazat defaultni hodnotu pokud neni nastavena
+                // skip deleting the default value if it is not set
                 if (pd->Name != NULL || pd->Type != REG_NONE)
                 {
                     while (1)
@@ -664,7 +663,7 @@ BOOL CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int p
                         {
                             if (!skipAllErrors)
                             {
-                                char fullName[MAX_FULL_KEYNAME + 30]; // buffer pro plne jmeno na REG pro chybovy dialog
+                                char fullName[MAX_FULL_KEYNAME + 30]; // buffer for the full REG name shown in an error dialog
                                 int l = sprintf(fullName, "%s:\\", fsName);
                                 GetCurrentPath(fullName + l);
                                 SG->SalPathAppend(fullName, f->Name, MAX_FULL_KEYNAME + 30);
@@ -690,7 +689,7 @@ BOOL CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int p
                                 skip = TRUE;
                         }
                         else
-                            break; // uspesny delete
+                            break; // delete succeeded
 
                         if (!success || skip)
                             break;
@@ -699,7 +698,7 @@ BOOL CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int p
             }
         }
 
-        // zjistime jestli ma cenu pokracovat (pokud neni chyba a existuje jeste nejaka dalsi oznacena polozka)
+        // decide whether it makes sense to continue (if no error and another marked item exists)
         if (!success || focused || f == NULL)
             break;
     }
@@ -716,7 +715,7 @@ void CPluginFSInterface::ContextMenu(const char* fsName, HWND parent, int menuX,
                         fsName, menuX, menuY, panel, selectedFiles, selectedDirs);
     PARENT(parent);
 
-    // vytvorime menu
+    // create the menu
     CGUIMenuPopupAbstract* menu = SalGUI->CreateMenuPopup();
     if (!menu)
         return;
@@ -750,7 +749,7 @@ void CPluginFSInterface::ContextMenu(const char* fsName, HWND parent, int menuX,
         SG->GetSalamanderCommand(SALCMD_OPEN, name, 256, NULL, NULL);
         if (!focusIsDir)
         {
-            // pridame za prikaz klavesovou zkratku ze salama
+            // append Salamander's shortcut to the command name
             const char* str = LoadStr(IDS_EDIT);
             int len = (int)strlen(str);
             char* tab = strrchr(name, '\t');
@@ -765,8 +764,8 @@ void CPluginFSInterface::ContextMenu(const char* fsName, HWND parent, int menuX,
         mi.String = name;
         menu->InsertItem(i++, TRUE, &mi);
 
-        /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volanim InsertItem() dole...
+        /* used by the export_mnu.py script that generates salmenu.mnu for Translator
+   keep synchronized with the InsertItem() calls below...
 MENU_TEMPLATE_ITEM ItemsInPanelMenu[] = 
 {
   {MNTT_PB, 0
@@ -787,7 +786,7 @@ MENU_TEMPLATE_ITEM ItemsInPanelMenu[] =
             mi.State |= MENU_STATE_DEFAULT;
             SG->GetSalamanderCommand(SALCMD_OPEN, name, 256, NULL, NULL);
 
-            // pridame za prikaz klavesovou zkratku ze salama
+            // append Salamander's shortcut to the command name
             const char* str = LoadStr(IDS_RAWEDIT);
             int len = (int)strlen(str);
             char* tab = strrchr(name, '\t');
@@ -881,8 +880,8 @@ MENU_TEMPLATE_ITEM ItemsInPanelMenu[] =
     }
     if (type == fscmPathInPanel || type == fscmPanel)
     {
-        /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volanim InsertItem() dole...
+        /* used by the export_mnu.py script that generates salmenu.mnu for Translator
+   keep synchronized with the InsertItem() calls below...
 MENU_TEMPLATE_ITEM PanelMenu[] = 
 {
   {MNTT_PB, 0
@@ -901,7 +900,7 @@ MENU_TEMPLATE_ITEM PanelMenu[] =
         mi.Type = MENU_TYPE_STRING;
         mi.State = CurrentKeyRoot == -1 ? MENU_STATE_GRAYED : 0;
         mi.ID = SALCMD_CREATEDIRECTORY + 1;
-        // pridame za prikaz klavesovou zkratku ze salama
+        // append Salamander's shortcut to the command name
         SG->GetSalamanderCommand(SALCMD_CREATEDIRECTORY, name, 256, NULL, NULL);
         const char* str = LoadStr(IDS_MENUNEWKEY);
         int len = (int)strlen(str);
@@ -1065,7 +1064,7 @@ BOOL CPluginFSInterface::EditNewFile()
 
         wcscpy(relativePathName, enteredPathName);
 
-        // vyseparujeme z FS path user part
+        // extract the user portion from the FS path
         if (!direct)
         {
             if (!RemoveFSNameFromPath(relativePathName))
@@ -1107,7 +1106,7 @@ BOOL CPluginFSInterface::EditNewFile()
         if (WStrToStr(fullNameA, MAX_KEYNAME, fullName) <= 0)
             *fullNameA = 0;
 
-        // podivame se zda existuje
+        // check whether it exists
         DWORD existType;
         ret = RegQueryValueExW(hKey, valName, 0, &existType, NULL, 0);
         if (ret == ERROR_SUCCESS)
@@ -1157,7 +1156,7 @@ BOOL CPluginFSInterface::EditNewFile()
         if (ret != ERROR_SUCCESS)
             return ErrorL(ret, IDS_NEWVAL);
 
-        // zajistime fokus nove polozky
+        // ensure the new item receives focus
         FocusFirstNewItem = TRUE;
 
         break;

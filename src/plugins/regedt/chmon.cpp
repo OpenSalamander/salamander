@@ -41,7 +41,7 @@ CChangeMonitorThread::Body()
     {
         HANDLE handles[2] = {ActionEvent, RegistryEvent};
         DWORD res = WaitForMultipleObjects(2, handles, FALSE, timeout);
-        // nechame thready, ktere delsi dobu nedostali zadny ukol zkoncit
+        // let threads that haven't received any task for a longer time finish
         timeout = 1000;
         State = cmtIdle;
         Monitor.CS.Enter();
@@ -95,7 +95,7 @@ CChangeMonitorThread::Body()
             TRACE_I("chmon: aeFinish, hKey = " << hKey);
             if (hKey)
                 RegCloseKey(hKey);
-            // odpojime thread od monitoru
+            // disconnect the thread from the monitor
             int i;
             for (i = 0; i < Monitor.Threads.Count; i++)
                 if (Monitor.Threads[i] == this)
@@ -103,7 +103,7 @@ CChangeMonitorThread::Body()
                     Monitor.Threads.Detach(i);
                     break;
                 }
-            loop = FALSE; // koncime
+            loop = FALSE; // we're done
             break;
         }
 
@@ -111,7 +111,7 @@ CChangeMonitorThread::Body()
         {
             TRACE_I("chmod: aeNoAction, hKey = " << hKey);
             if (res == WAIT_TIMEOUT)
-                goto LFINISH; // koncime
+                goto LFINISH; // we're done
             if (res - WAIT_OBJECT_0 == 1)
             {
                 if (IgnoreChanges)
@@ -154,13 +154,13 @@ void CChangeMonitor::AddPath(int root, LPWSTR key, CPluginFSInterface* fs)
     CALL_STACK_MESSAGE2("CChangeMonitor::AddPath(%d, , )", root);
     CS.Enter();
     int idle = -1;
-    // podivame se zda uz neni tato cesta monitorovana
+    // check whether this path is already monitored
     int i;
     for (i = 0; i < Threads.Count; i++)
     {
         if (Threads[i]->State == cmtIdle)
         {
-            idle = i; // pamatujeme si posledni idle thread
+            idle = i; // remember the last idle thread
             continue;
         }
         if (Threads[i]->Root == root &&
@@ -169,7 +169,7 @@ void CChangeMonitor::AddPath(int root, LPWSTR key, CPluginFSInterface* fs)
                            key, -1) == CSTR_EQUAL)
             break;
     }
-    // pokud neni monitorovana, vytvorime novy monitor, nebo pouzijeme idle monitor
+    // if it is not monitored, create a new monitor or use an idle one
     if (i == Threads.Count)
     {
         if (idle != -1)
@@ -187,15 +187,15 @@ void CChangeMonitor::AddPath(int root, LPWSTR key, CPluginFSInterface* fs)
             {
                 Threads.Detach(i);
                 delete thread;
-                TRACE_E("nepodarilo se spustit novy change monitor thread");
+                TRACE_E("Failed to start a new change monitor thread");
                 CS.Leave();
                 return;
             }
         }
     }
-    // pridame fs do seznamu monitorovanych FS
+    // add the FS to the list of monitored file systems
     Threads[i]->ConnectedFS.Add(fs);
-    // jde-li o prvni polozku aktivujeme monitorovaci thread
+    // if this is the first item, activate the monitoring thread
     if (Threads[i]->ConnectedFS.Count == 1)
     {
         Threads[i]->IgnoreChanges = 0;
@@ -212,7 +212,7 @@ void CChangeMonitor::Cancel(CPluginFSInterface* fs)
     CALL_STACK_MESSAGE1("CChangeMonitor::Cancel()");
     CS.Enter();
     int idle = -1;
-    // najdeme vsechny thready monitorujici toto FS
+    // find all threads monitoring this FS
     int i;
     for (i = 0; i < Threads.Count; i++)
     {
@@ -241,12 +241,12 @@ void CChangeMonitor::Cancel(CPluginFSInterface* fs)
 void CChangeMonitor::Stop()
 {
     CALL_STACK_MESSAGE1("CChangeMonitor::Stop()");
-    // postupne ukoncime vsechny bezici thready
+    // gradually shut down all running threads
     while (1)
     {
         CS.Enter();
 
-        // uz zadny thread nemame, tak koncime
+        // we have no threads left, so we're done
         if (Threads.Count == 0)
         {
             CS.Leave();
@@ -267,7 +267,7 @@ void CChangeMonitor::IgnoreNextRootChange(int root)
 {
     CALL_STACK_MESSAGE2("CChangeMonitor::IgnoreNextRootChange(%d)", root);
     CS.Enter();
-    // podivame se zda uz neni tato cesta monitorovana
+    // check whether this path is already monitored
     int i;
     for (i = 0; i < Threads.Count; i++)
     {

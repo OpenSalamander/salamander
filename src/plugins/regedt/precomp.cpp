@@ -3,9 +3,9 @@
 
 #include "precomp.h"
 
-// projekt Regedit obsahuje ctyri skupiny modulu
+// the Regedit project contains four groups of modules
 //
-// 1) modul precomp.cpp, ktery postavi regedit.pch (/Yc"precomp.h")
-// 2) moduly vyuzivajici regedit.pch (/Yu"precomp.h")
-// 3) commony maji vlastni, automaticky generovany
+// 1) the precomp.cpp module that builds regedit.pch (/Yc"precomp.h")
+// 2) modules that use regedit.pch (/Yu"precomp.h")
+// 3) common files have their own automatically generated
 //    WINDOWS.PCH (/YX"windows.h" /Fp"$(OutDir)\WINDOWS.PCH")

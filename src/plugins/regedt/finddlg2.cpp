@@ -146,43 +146,43 @@ void CFindDialog::LayoutControls(BOOL showOrHideControls)
     HDWP hdwp = BeginDeferWindowPos(8);
     if (hdwp != NULL)
     {
-        // umistim Status Bar
+        // place the status bar
         hdwp = DeferWindowPos(hdwp, StatusBar->HWindow, NULL,
                               0, clientRect.bottom, clientRect.right, StatusHeight,
                               SWP_NOZORDER);
 
-        // natahnu combobox Search For
+        // stretch the Search For combo box
         hdwp = DeferWindowPos(hdwp, GetDlgItem(HWindow, IDC_PATTERN), NULL,
                               0, 0, clientRect.right - CombosX - HMargin - FindNowW - HMargin, CombosH,
                               SWP_NOZORDER | SWP_NOMOVE);
 
-        // umistim tlacitko Find Now
+        // place the Find Now button
         hdwp = DeferWindowPos(hdwp, GetDlgItem(HWindow, IDOK), NULL, //IDC_FIND_FINDNOW
                               clientRect.right - HMargin - FindNowW, FindNowY, 0, 0,
                               SWP_NOZORDER | SWP_NOSIZE);
 
-        // natahnu combobox Look In
+        // stretch the Look In combo box
         hdwp = DeferWindowPos(hdwp, GetDlgItem(HWindow, IDC_LOOKIN), NULL,
                               0, 0, clientRect.right - CombosX - HMargin - FindNowW - HMargin, CombosH,
                               SWP_NOZORDER | SWP_NOMOVE);
 
-        // umistim tlacitko Add
+        // place the Add button
         hdwp = DeferWindowPos(hdwp, GetDlgItem(HWindow, IDHELP), NULL, //IDC_FIND_FINDNOW
                               clientRect.right - HMargin - FindNowW, AddY, 0, 0,
                               SWP_NOZORDER | SWP_NOSIZE);
 
-        // umistim a natahnu list view
+        // place and stretch the list view
         hdwp = DeferWindowPos(hdwp, GetDlgItem(HWindow, IDC_RESULTS), NULL,
                               HMargin, resultsY, clientRect.right - 2 * HMargin,
                               clientRect.bottom - resultsY - VMargin,
                               SWP_NOZORDER);
 
-        // umistim a titulek nad list view
+        // place the label above the list view
         hdwp = DeferWindowPos(hdwp, GetDlgItem(HWindow, IDC_FOUND_FILES), NULL,
                               HMargin, resultsY - FoundItemsH - 2, 0, 0,
                               SWP_NOZORDER | SWP_NOSIZE);
 
-        // umistim checkbox Options
+        // place the Options checkbox
         hdwp = DeferWindowPos(hdwp, GetDlgItem(HWindow, IDC_OPTIONS), NULL,
                               clientRect.right - HMargin - OptionsW, OptionsY, 0, 0,
                               SWP_NOZORDER | SWP_NOSIZE);
@@ -224,10 +224,10 @@ void CFindDialog::UpdateListViewItems()
     {
         int count = List->GetCount();
 
-        // reknu listview novy pocet polozek
+        // tell the list view the new item count
         ListView_SetItemCountEx(List->HWindow, count, LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
-        // pokud jde o prvni pridana data, vyberem nultou polozku vyberu
-        // a nastavime fokus do listview
+        // if this is the first added data, select the first item in the selection
+        // and set the focus to the list view
         if (FoundVisibleCount == 0 && count > 0)
         {
             ListView_SetItemState(List->HWindow, 0,
@@ -235,13 +235,13 @@ void CFindDialog::UpdateListViewItems()
                 SendMessage(HWindow, WM_NEXTDLGCTL, (WPARAM)List->HWindow, TRUE);
         }
 
-        // napisu pocet polozek nad listview
+        // write the item count above the list view
         char buff[50];
         SalPrintf(buff, 50, LoadStr(IDS_FOUNDITEMS2), count);
         SetWindowText(GetDlgItem(HWindow, IDC_FOUND_FILES), buff);
 
         /*
-    // pokud jsme minimalizovany, zobrazim pocet polozek do hlavicky
+    // if we are minimized, display the item count in the caption
     if (IsIconic(HWindow))
     {
       char buf[MAX_PATH+100];
@@ -256,7 +256,7 @@ void CFindDialog::UpdateListViewItems()
     }
     */
 
-        // slouzi pro hledaci thread - aby vedel, kdy nas ma priste upozornit
+        // used by the search thread so it knows when to notify us next
         FoundVisibleCount = count;
         NextUpdate = GetTickCount() + 500;
     }
@@ -319,7 +319,7 @@ void CFindDialog::StartSearch()
     FoundVisibleCount = 0;
     NextUpdate = GetTickCount();
 
-    // pripravime vzorek pro hledani
+    // prepare the pattern for searching
     char patternA[MAX_KEYNAME];
     char patternW[MAX_KEYNAME * 2];
     int patternALen, patternWLen;
@@ -410,14 +410,14 @@ BOOL ValidateTimeString(char* time)
     CALL_STACK_MESSAGE1("ValidateTimeString()");
     char* s = time + strlen(time);
 
-    // orezeme mezery z konce
+    // trim spaces from the end
     while (isspace(s[-1]))
         s--;
     *s = 0;
 
     s = time;
 
-    // nacteme cteme cas
+    // read the time
     if (s[1] == ':' || s[2] == ':')
     {
         // hh
@@ -440,7 +440,7 @@ BOOL ValidateTimeString(char* time)
         s++;
     }
 
-    // nacteme datum
+    // read the date
 
     // dd
     if (!isdigit(*s++))
@@ -485,7 +485,7 @@ BOOL ParseTimeString(const char* timeString, SYSTEMTIME& st, BOOL maxTime)
 
     memset(&st, 0, sizeof(st));
 
-    // nacteme cteme cas
+    // read the time
     if (s[1] == ':' || s[2] == ':')
     {
         // hh
@@ -514,7 +514,7 @@ BOOL ParseTimeString(const char* timeString, SYSTEMTIME& st, BOOL maxTime)
         }
     }
 
-    // nacteme datum
+    // read the date
 
     // dd
     st.wDay = st.wDay + *s++ - '0';
@@ -538,7 +538,7 @@ BOOL ParseTimeString(const char* timeString, SYSTEMTIME& st, BOOL maxTime)
     TRACE_I("ParseTimeString: " << st.wHour << " " << st.wMinute << " " << st.wSecond
                                 << " " << st.wDay << " " << st.wMonth << " " << st.wYear);
 
-    // overime spravnost zadaneho casu
+    // verify the correctness of the entered time
     FILETIME ft;
     if (SystemTimeToFileTime(&st, &ft))
         return TRUE;
@@ -620,7 +620,7 @@ void CFindDialog::Transfer(CTransferInfoEx& ti)
     }
     else
     {
-        // nacteme z LookIn jednotlive polozky
+        // read individual items from LookIn
         LookInList.DestroyMembers();
         BOOL more = TRUE;
         LPWSTR end = lookIn;
@@ -646,8 +646,8 @@ void CFindDialog::Transfer(CTransferInfoEx& ti)
             end++;
         }
 
-        // nacteme casy
-        UseMinTime = UseMaxTime = FALSE; // def hodnoty
+        // read the times
+        UseMinTime = UseMaxTime = FALSE; // default values
         char buffer[20];
         ti.EditLine(IDC_MINTIME, buffer, MAX_KEYNAME);
         if (strlen(buffer))
@@ -686,9 +686,9 @@ CFindDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         //DialogStackPush(HWindow);
 
-        //InstallWordBreakProc(GetDlgItem(HWindow, IDC_PATTERN), TRUE); // instalujeme WordBreakProc do comboboxu
+        //InstallWordBreakProc(GetDlgItem(HWindow, IDC_PATTERN), TRUE); // install WordBreakProc into the combo box
 
-        // priradim oknu ikonku
+        // assign an icon to the window
         HICON findIcon = NULL;
         HINSTANCE iconsDLL = NULL;
         if (WindowsVistaAndLater)
@@ -708,7 +708,7 @@ CFindDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (iconsDLL != NULL)
             FreeLibrary(iconsDLL);
 
-        // konstrukce listview
+        // construct the list view
         List = new CFoundFilesListView(this);
         if (List == NULL)
         {
@@ -719,7 +719,7 @@ CFindDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         List->AttachToControl(HWindow, IDC_RESULTS);
 
-        // vytvorim status bar
+        // create the status bar
         //StatusBar = CStatusBar::Create(HWindow, IDC_STATUS);
         StatusBar = new CStatusBar();
         if (StatusBar == NULL)
@@ -738,7 +738,7 @@ CFindDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             DLLInstance,
                             StatusBar);
 
-        // nactu paramatry pro layoutovani okna
+        // load the parameters for laying out the window
         GetLayoutParams();
 
         if (DialogWidth != -1 && DialogHeight != -1)
@@ -755,7 +755,7 @@ CFindDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         //CenterWindow(HWindow, SG->GetMainWindowHWND(), TRUE);
 
-        // zmenou pozice okna dojde k distribuci zprav, takze uz musi existovat objekty konstruovane vejs, jinak to hazelo exception
+        // changing the window position triggers message dispatching, so objects constructed earlier must already exist, otherwise it threw an exception
         if (AlwaysOnTop)
             SetWindowPos(HWindow, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
@@ -782,7 +782,7 @@ CFindDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
         case IDOK:
         {
-            if (SearchInProgress) // jde o Stop?
+            if (SearchInProgress) // is this Stop?
             {
                 if (IsIconic(HWindow))
                 {
@@ -792,7 +792,7 @@ CFindDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 StopSearch();
                 return TRUE;
             }
-            else // ne, jde o start
+            else // no, this is Start
             {
                 if (!ValidateData() || !TransferData(ttDataFromWindow))
                     return TRUE;
@@ -858,7 +858,7 @@ CFindDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 CFoundFilesData* data = List->At(index);
 
-                // podivame se zda existuje
+                // check whether it exists
                 WCHAR pathW[MAX_FULL_KEYNAME + 1] = L"\\";
                 wcscpy(pathW + 1, data->Path);
                 if (data->IsDir)
@@ -1072,10 +1072,10 @@ CFindDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_USER_SEARCH_FINISHED:
     {
-        // hledani zkoncilo
+        // the search has finished
         SearchInProgress = FALSE;
         SetWindowText(GetDlgItem(HWindow, IDOK), LoadStr(IDS_START));
-        CloseHandle(CancelEvent); // uz ho nebudeme potrebovat
+        CloseHandle(CancelEvent); // we will not need it anymore
         UpdateListViewItems();
         //UpdateStatusText();
         EnableControls(TRUE);
@@ -1122,9 +1122,9 @@ CFindDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_DESTROY:
     {
         if (SearchInProgress)
-            TRACE_E("to se nemelo stat");
+            TRACE_E("This should not have happened");
 
-        // ulozime si rozmery okna
+        // save the window dimensions
         WINDOWPLACEMENT wndpl;
         wndpl.length = sizeof(WINDOWPLACEMENT);
         if (GetWindowPlacement(HWindow, &wndpl))
@@ -1134,11 +1134,11 @@ CFindDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             Maximized = wndpl.showCmd == SW_SHOWMAXIMIZED;
         }
 
-        // uvolnime handle, jinak by ho ListView vzalo s sebou do pekel
+        // release the handle; otherwise the ListView would take it to hell with it
         ListView_SetImageList(List->HWindow, NULL, LVSIL_SMALL);
 
-        // uvolnime data nez se zavre okno, jinak by se mohlo stat, ze by nas
-        // thread salamander sestrelil driv nez zkonci
+        // free the data before the window closes, otherwise the Salamander thread
+        // could take us down before it finishes
         List->DestroyMembers();
         ListView_SetItemCountEx(List->HWindow, 0, 0);
 
@@ -1165,13 +1165,13 @@ CFindDialogThread::Body()
     HWND wnd = dlg->Create();
     if (!wnd)
     {
-        TRACE_E("Nepodarilo se vytvorit CFindDialog");
+        TRACE_E("Failed to create CFindDialog");
         delete dlg;
         return 0;
     }
-    dlg->SetZeroOnDestroy(&dlg); // pri WM_DESTROY bude ukazatel vynulovan
-                                 // obrana pred pristupem na neplatny ukazatel
-                                 // z message loopy po destrukci okna
+    dlg->SetZeroOnDestroy(&dlg); // the pointer will be cleared during WM_DESTROY
+                                 // protection against accessing an invalid pointer
+                                 // from the message loop after the window is destroyed
 
     SetForegroundWindow(wnd);
 
@@ -1182,7 +1182,7 @@ CFindDialogThread::Body()
     }
 
     MSG msg;
-    BOOL haveMSG = FALSE; // FALSE pokud se ma volat GetMessage() v podmince cyklu
+    BOOL haveMSG = FALSE; // FALSE means GetMessage() should be called in the loop condition
     while (haveMSG || IsWindow(wnd) && GetMessage(&msg, NULL, 0, 0))
     {
         haveMSG = FALSE;
@@ -1196,10 +1196,10 @@ CFindDialogThread::Body()
         if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
             if (msg.message == WM_QUIT)
-                break;      // ekvivalent situace, kdy GetMessage() vraci FALSE
-            haveMSG = TRUE; // mame zpravu, jdeme ji zpracovat (bez volani GetMessage())
+                break;      // equivalent to GetMessage() returning FALSE
+            haveMSG = TRUE; // we have a message; process it without calling GetMessage()
         }
-        else // pokud ve fronte neni zadna message, provedeme Idle processing
+        else // if there is no message in the queue, perform idle processing
         {
             if (dlg != NULL)
                 dlg->OnEnterIdle();
