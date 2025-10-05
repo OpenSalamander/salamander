@@ -6,7 +6,7 @@
 TDirectArray<DWORD_PTR> DialogStack(4, 4);
 CCS DialogStackCS;
 
-// TODO: pouzivat!
+// TODO: use it!
 BOOL MinBeepWhenDone;
 
 HICON
@@ -51,7 +51,7 @@ BOOL InitDialogs()
         CommandHistory[i] = NULL;
     }
 
-    if (!InitializeWinLib("Renamer" /* neprekladat! */, DLLInstance))
+    if (!InitializeWinLib("Renamer" /* do not translate! */, DLLInstance))
         return FALSE;
     SetupWinLibHelp(HTMLHelpCallback);
 
@@ -59,9 +59,9 @@ BOOL InitDialogs()
     SG->GetConfigParameter(SALCFG_MINBEEPWHENDONE, &MinBeepWhenDone, sizeof(BOOL), NULL);
 
     HINSTANCE shell32DLL = LoadLibraryEx("shell32.dll", NULL, LOAD_LIBRARY_AS_DATAFILE);
-    if (shell32DLL == NULL) // to se snad vubec nemuze stat (zaklad win 4.0)
+    if (shell32DLL == NULL) // this really should not happen (core Win 4.0)
     {
-        TRACE_E("Nelze otevrit shell32.dll");
+        TRACE_E("Cannot open shell32.dll");
         ReleaseDialogs();
         return FALSE;
     }
@@ -73,10 +73,10 @@ BOOL InitDialogs()
         ReleaseDialogs();
         return FALSE;
     }
-    ImageList_SetImageCount(HSymbolsImageList, 3);                      // inicializace
-    ImageList_SetBkColor(HSymbolsImageList, GetSysColor(COLOR_WINDOW)); // aby pod XP chodily pruhledne ikonky
+    ImageList_SetImageCount(HSymbolsImageList, 3);                      // initialization
+    ImageList_SetBkColor(HSymbolsImageList, GetSysColor(COLOR_WINDOW)); // so transparent icons work under XP
 
-    // vytahnu z shell 32 ikony:
+    // pull icons from shell32:
     int indexes[] = {ILS_DIRECTORY, ILS_FILE, -1};
     int resID[] = {4, 1, -1};
     HICON hIcon;
@@ -93,11 +93,11 @@ BOOL InitDialogs()
         }
     }
 
-    // nacteni ikonky adresare "system32"
+    // load the "system32" directory icon
     HICON sh32DirIcon = GetSH32DirIcon();
 
-    // vykreslime ikonku adresare "system32" jako simple-iconku vsech adresaru
-    if (sh32DirIcon != NULL) // pokud ikonku neziskame, je tam porad jeste 4-rka z shell32.dll
+    // draw the "system32" directory icon as the simple icon for all directories
+    if (sh32DirIcon != NULL) // if we do not obtain the icon, the #4 one from shell32.dll remains
     {
         ImageList_ReplaceIcon(HSymbolsImageList, ILS_DIRECTORY, sh32DirIcon);
         DestroyIcon(sh32DirIcon);
@@ -106,7 +106,7 @@ BOOL InitDialogs()
     FreeLibrary(shell32DLL);
     shell32DLL = NULL;
 
-    // nacteme ikonku s vykricnikem
+    // load the exclamation icon
     hIcon = (HICON)LoadImage(DLLInstance, IDI_WARNING,
                              IMAGE_ICON, 16, 16,
                              SG->GetIconLRFlags());
@@ -224,7 +224,7 @@ ComDlgHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam)
                         lParam);
     if (uiMsg == WM_INITDIALOG)
     {
-        // SalamanderGUI->ArrangeHorizontalLines(hdlg);  // pro Windows common dialogy tohle nedelame
+        // SalamanderGUI->ArrangeHorizontalLines(hdlg);  // we do not do this for Windows common dialogs
         SG->MultiMonCenterWindow(hdlg, GetParent(hdlg), FALSE);
         return 1;
     }
@@ -247,7 +247,7 @@ void HistoryComboBox(CTransferInfo& ti, int id, char* text, int textMax,
 
         int toMove = historySize - 1;
 
-        // podivame jestli uz stejna polozka neni v historii
+        // check whether the same item is already in the history
         int j;
         for (j = 0; j < historySize; j++)
         {
@@ -259,18 +259,18 @@ void HistoryComboBox(CTransferInfo& ti, int id, char* text, int textMax,
                 break;
             }
         }
-        // alokujeme si pamet pro novou polozku
+        // allocate memory for the new item
         LPTSTR ptr = _tcsdup(text);
         if (ptr)
         {
-            // uvolnime pamet vymazavane polozky
+            // free the memory of the item being removed
             if (history[toMove])
                 free(history[toMove]);
-            // vytvorime misto pro cestu kterou budeme ukladat
+            // make room for the path we are about to store
             int i;
             for (i = toMove; i > 0; i--)
                 history[i] = history[i - 1];
-            // ulozime cestu
+            // store the path
             history[0] = ptr;
         }
     }
@@ -365,7 +365,7 @@ CComboboxEdit::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (next != NULL)
             {
                 char className[30];
-                WORD wl = LOWORD(GetWindowLong(next, GWL_STYLE)); // jen BS_...
+                WORD wl = LOWORD(GetWindowLong(next, GWL_STYLE)); // only BS_...
                 nextIsButton = GetClassName(next, className, 30) != 0 &&
                                SG->StrICmp(className, "BUTTON") == 0; // &&
                                                                       // (wl == BS_PUSHBUTTON || wl == BS_DEFPUSHBUTTON ||
@@ -384,11 +384,11 @@ CComboboxEdit::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         if (ctrlPressed && !shiftPressed && !altPressed && wParam == 'A')
         {
-            // od Windows Vista uz SelectAll standardne funguje, takze tam nechame select all na nich
+            // starting with Windows Vista SelectAll already works by default, so let it handle select all there
             if (!SalIsWindowsVersionOrGreater(6, 0, 0))
             {
                 SendMessage(HWindow, EM_SETSEL, 0, -1);
-                SkipCharacter = TRUE; // zamezime pipnuti
+                SkipCharacter = TRUE; // suppress the beep
                 return TRUE;
             }
         }
@@ -459,7 +459,7 @@ void CComboboxEdit::SetSel(DWORD start, DWORD end)
 void CComboboxEdit::ReplaceText(const char* text)
 {
     CALL_STACK_MESSAGE_NONE
-    // musime ozivit selection, protoze dementni combobox ji zapomel
+    // we must refresh the selection because the dumb combobox forgot it
     SendMessage(HWindow, EM_SETSEL, SelStart, SelEnd);
     SendMessage(HWindow, EM_REPLACESEL, TRUE, (LPARAM)text);
 }
@@ -489,9 +489,9 @@ CNotifyEdit::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         BOOL altPressed = (GetKeyState(VK_MENU) & 0x8000) != 0;
         if (ctrlPressed && !shiftPressed && !altPressed && wParam == 'A')
         {
-            // ani pod Windows Vista nefunguje v tomto pripade Ctrl+A, takze resime ve vsech pripadech
+            // even in Windows Vista Ctrl+A does not work in this case, so handle it in all cases
             SendMessage(HWindow, EM_SETSEL, 0, -1);
-            SkipCharacter = TRUE; // zamezime pipnuti
+            SkipCharacter = TRUE; // suppress the beep
             return TRUE;
         }
 
@@ -828,7 +828,7 @@ BOOL CProgressDialog::Update(DWORD current, BOOL force)
         Current = current;
         NextUpdate = GetTickCount() + 100;
     }
-    // vyprazdnime message loopu
+    // drain the message loop
     EmptyMessageLoop();
     return Cancel;
 }
@@ -843,7 +843,7 @@ void CProgressDialog::CancelOperation()
         if (Cancel)
         {
             SetDlgItemText(HWindow, IDS_MESSAGE, LoadStr(IDS_CANCELING));
-            // zrusime close button
+            // disable the close button
             LONG l = GetWindowLong(HWindow, GWL_STYLE);
             l &= ~WS_SYSMENU;
             SetWindowLong(HWindow, GWL_STYLE, l);
@@ -863,7 +863,7 @@ void CProgressDialog::SetText(const char* text)
 void CProgressDialog::EmptyMessageLoop()
 {
     CALL_STACK_MESSAGE_NONE
-    // vyprazdnime message loopu
+    // drain the message loop
     MSG msg;
     while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
     {
@@ -992,7 +992,7 @@ CConfigDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             RECT r;
             GetWindowRect((HWND)lParam, &r);
 
-            // vytvorime menu
+            // create the menu
             MENU_TEMPLATE_ITEM templ[] =
                 {
                     {MNTT_PB, 0, 0, 0, -1, 0, NULL},
@@ -1037,7 +1037,7 @@ CConfigDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 else
                 {
-                    // jeste pro jistotu overime
+                    // double-check just to be sure
                     if (cmd < 30)
                     {
                         char var[100];
@@ -1056,7 +1056,7 @@ CConfigDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             RECT r;
             GetWindowRect((HWND)lParam, &r);
 
-            // vytvorime menu
+            // create the menu
             MENU_TEMPLATE_ITEM templ[] =
                 {
                     {MNTT_PB, 0, 0, 0, -1, 0, NULL},
@@ -1114,7 +1114,7 @@ CConfigDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 else
                 {
-                    // jeste pro jistotu overime
+                    // double-check just to be sure
                     if (cmd < 19)
                     {
                         char var[100];
@@ -1133,7 +1133,7 @@ CConfigDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             RECT r;
             GetWindowRect((HWND)lParam, &r);
 
-            // vytvorime menu
+            // create the menu
             MENU_TEMPLATE_ITEM templ[] =
                 {
                     {MNTT_PB, 0, 0, 0, -1, 0, NULL},
@@ -1166,7 +1166,7 @@ CConfigDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 else
                 {
-                    // jeste pro jistotu overime
+                    // double-check just to be sure
                     if (cmd < 6)
                     {
                         char var[100];
@@ -1185,7 +1185,7 @@ CConfigDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             RECT r;
             GetWindowRect((HWND)lParam, &r);
 
-            // vytvorime menu
+            // create the menu
             MENU_TEMPLATE_ITEM templ[] =
                 {
                     {MNTT_PB, 0, 0, 0, -1, 0, NULL},

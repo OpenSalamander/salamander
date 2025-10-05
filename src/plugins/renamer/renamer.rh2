@@ -7,7 +7,7 @@
 #endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
 
 #define IDC_STATIC_1 300
-#include "statics.rh2"   // 300 az 339 jsou timto zabrane !!!
+#include "statics.rh2"   // 300 to 339 are occupied by this include!!!
 
 #define IDI_RENAMER 500
 #define IDB_RENAMER 510
