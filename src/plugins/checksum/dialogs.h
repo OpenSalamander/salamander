@@ -35,13 +35,13 @@ public:
     }
 
 public:
-    int IconIndex;  // synchronizace neni potreba, viz CSFVMD5Dialog::SetItemTextAndIcon()
-    char* Name;     // po pridani do pole uz se nemeni = pristup k ni nesynchronizujeme
-    CQuadWord Size; // po pridani do pole uz se nemeni = pristup k ni nesynchronizujeme
-    BOOL FileExist; // po pridani do pole uz se nemeni = pristup k ni nesynchronizujeme
+    int IconIndex;  // no synchronization needed, see CSFVMD5Dialog::SetItemTextAndIcon()
+    char* Name;     // unchanged after adding to the array = no synchronized access needed
+    CQuadWord Size; // unchanged after adding to the array = no synchronized access needed
+    BOOL FileExist; // unchanged after adding to the array = no synchronized access needed
 
-    // poradi v tomto poli odpovida sloupcum v listview (zavisle na konfiguraci)
-    // synchronizace neni potreba, viz CSFVMD5Dialog::SetItemTextAndIcon()
+    // the order in this array matches the listview columns (depends on configuration)
+    // no synchronization needed, see CSFVMD5Dialog::SetItemTextAndIcon()
     char* Hashes[HT_COUNT];
 };
 
@@ -77,21 +77,21 @@ protected:
     int ctrlX[7], ctrlY[7];
     int minX, minY;
 
-    CRITICAL_SECTION DataCS;  // kriticka sekce pro pristup k sdilenym datum dialogu a vypocetniho threadu
-    int ScheduledScrollIndex; // synchronizujeme pres DataCS
+    CRITICAL_SECTION DataCS;  // critical section guarding data shared by the dialog and worker thread
+    int ScheduledScrollIndex; // synchronized via DataCS
     int ScrollIndex;
     int DirtyRowMin;
     int DirtyRowMax;
     CQuadWord totalSize;
     CQuadWord CurrentSize;
-    CQuadWord ScheduledCurrentSize; // synchronizujeme pres DataCS
+    CQuadWord ScheduledCurrentSize; // synchronized via DataCS
     BOOL bScrollToItem;
     BOOL bAlwaysOnTop;
-    HANDLE hThread;  // handle lze pouzit jen v thread-queue (zavira se automaticky po dokonceni threadu)
-    DWORD iThreadID; // TID threadu 'hThread'
+    HANDLE hThread;  // handle can be used only in the thread queue (closed automatically when the thread ends)
+    DWORD iThreadID; // thread ID of 'hThread'
     BOOL bThreadRunning;
     BOOL bTerminateThread;
-    BOOL ReadingDirectories; // probiha enumerace adresaru
+    BOOL ReadingDirectories; // directory enumeration is in progress
     BOOL StopReadingDirectories;
     BOOL bDisableNotification;
     TIndirectArray<FILELISTITEM> FileList;
@@ -110,7 +110,7 @@ protected:
     virtual LRESULT WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (uMsg == WM_VSCROLL)
-            Parent->bScrollToItem = FALSE; // uzivatel rucne roluje obsahem -> zakazeme autoscroll
+            Parent->bScrollToItem = FALSE; // user is scrolling manually -> disable autoscroll
         return CWindow::WindowProc(uMsg, wParam, lParam);
     }
 
@@ -125,7 +125,7 @@ public:
         Terminate = terminate;
     };
     virtual unsigned Body() = 0;
-    BOOL* Terminate; // samotny BOOL lezi v dialogu, aby sel z dialogu nahodit (objekt threadu se automaticky dealokuje)
+    BOOL* Terminate; // the BOOL itself lives in the dialog so it can be toggled from there (thread object auto-deallocates)
 };
 
 typedef struct _SEEDFILEINFO
@@ -168,7 +168,7 @@ protected:
 
 struct FILEINFO
 {
-    // nic z teto struktury se po pridani do pole uz se nemeni = pristup k datum nesynchronizujeme
+    // nothing in this structure changes after it is added to the array = no synchronized access needed
     char fileName[MAX_PATH];
     char digest[DIGEST_MAX_SIZE];
     CQuadWord size;
@@ -202,8 +202,8 @@ protected:
 BOOL OpenCalculateDialog(HWND parent);
 BOOL OpenVerifyDialog(HWND parent);
 
-extern CWindowQueue ModelessQueue; // seznam vsech nemodalnich oken
-extern CThreadQueue ThreadQueue;   // seznam vsech threadu oken a vypoctu
+extern CWindowQueue ModelessQueue; // list of all modeless windows
+extern CThreadQueue ThreadQueue;   // list of all dialog and worker threads
 
 //****************************************************************************
 //
