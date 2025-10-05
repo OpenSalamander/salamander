@@ -24,7 +24,7 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
     case MENUCMD_TESTCMD:
     {
         SalamanderGeneral->ShowMessageBox("You are trying Test Command.", LoadStr(IDS_PLUGINNAME), MSGBOX_INFO);
-        //      SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_SOURCE);  // we consider this command to work with the path (it appears in Alt+F12)
+        //      SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_SOURCE);  // Treat this command as operating on the path (it appears in Alt+F12)
         break;
     }
 

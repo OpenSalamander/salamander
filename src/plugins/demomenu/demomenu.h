@@ -11,16 +11,16 @@
 
 #pragma once
 
-// global data
-extern HINSTANCE DLLInstance; // handle to SPL - language-independent resources
-extern HINSTANCE HLanguage;   // handle to SLG - language-dependent resources
+// Global data
+extern HINSTANCE DLLInstance; // Handle to SPL - language-independent resources
+extern HINSTANCE HLanguage;   // Handle to SLG - language-dependent resources
 
-// Salamander general interface - valid from Salamander launch until the plugin terminates
+// Salamander general interface - available from Salamander launch until the plugin shuts down
 extern CSalamanderGeneralAbstract* SalamanderGeneral;
 
 char* LoadStr(int resID);
 
-// plugin menu commands
+// Plugin menu commands
 #define MENUCMD_TESTCMD 1
 
 //
@@ -66,8 +66,8 @@ public:
     virtual void WINAPI PasswordManagerEvent(HWND parent, int event) {}
 };
 
-// plugin interface provided to Salamander
+// Plugin interface provided to Salamander
 extern CPluginInterface PluginInterface;
 
-// opens the About window
+// Opens the About window
 void OnAbout(HWND hParent);
