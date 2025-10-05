@@ -636,7 +636,7 @@ BOOL CFileList::RenameDuplicateFiles()
 BOOL CPluginFSInterface::AppendPath(char* buffer, char* path, char* name, BOOL* ret)
 {
     CALL_STACK_MESSAGE1("CPluginFSInterface::AppendPath(, , , )");
-    // spojeni cesty a jmena a kontrola delky
+    // join the path and name and check the length
     lstrcpyn(buffer, path, MAX_PATH);
     if (!SalamanderGeneral->SalPathAppend(buffer, name, MAX_PATH))
     {
@@ -1498,12 +1498,12 @@ void CPluginFSInterface::ContextMenu(const char* fsName, HWND parent, int menuX,
     const CFileData* fd = SalamanderGeneral->GetPanelFocusedItem(panel, &focusIsDir);
     DIR_ITEM_I<char>* di = (DIR_ITEM_I<char>*)fd->PluginData;
 
-    // vytvorime menu
+    // create the menu
     CGUIMenuPopupAbstract* ctxMenu = SalamanderGUI->CreateMenuPopup();
     if (ctxMenu == NULL)
         return;
 
-    // vlozeni prikazu Salamandera
+    // insert Salamander commands
     char cmdName[300];
     int salIndex = 0;
     int index = 0;

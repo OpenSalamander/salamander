@@ -162,13 +162,13 @@ BOOL CTopIndexMem::FindAndPop(const char* path, int& topIndex)
 
 void InitIconOverlays()
 {
-    // 48x48 az od XP (brzy bude obsolete, pobezime jen na XP+, pak zahodit)
-    // ve skutecnosti jsou velke ikonky podporeny uz davno, lze je nahodit
-    // Desktop/Properties/???/Large Icons; pozor, nebude pak existovat system image list
-    // pro ikonky 32x32; navic bychom meli ze systemu vytahnout realne velikosti ikonek
-    // zatim na to kasleme a 48x48 povolime az od XP, kde jsou bezne dostupne
+    // 48x48 only from XP onward (will soon be obsolete; we'll run on XP+ only, then drop this)
+    // in fact large icons have been supported for a long time, they can be enabled
+    // Desktop/Properties/???/Large Icons; beware, the system image list will not exist then
+    // for 32x32 icons; additionally we should pull the actual icon sizes from the system
+    // for now we ignore it and enable 48x48 only from XP where they are commonly available
     int iconSizes[3] = {16, 32, 48};
-    if (!SalIsWindowsVersionOrGreater(5, 1, 0)) // neni WindowsXPAndLater: neni XP and later
+    if (!SalIsWindowsVersionOrGreater(5, 1, 0)) // not WindowsXPAndLater: this is not XP or later
         iconSizes[2] = 32;
 
     HICON iconOverlays[3];
@@ -179,7 +179,7 @@ void InitIconOverlays()
                                            SalamanderGeneral->GetIconLRFlags());
     }
 
-    // POZN.: pri chybe loadu ikon SetPluginIconOverlays() selze, ale platne ikony z iconOverlays[] uvolni
+    // NOTE: if loading icons fails, SetPluginIconOverlays() returns failure but releases the valid icons from iconOverlays[]
     SalamanderGeneral->SetPluginIconOverlays(1, iconOverlays);
 }
 
@@ -328,8 +328,8 @@ void WINAPI CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* s
     salamander->SetPluginIcon(0);
     salamander->SetPluginMenuAndToolbarIcon(0);
 
-    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volani salamander->AddMenuItem() dole...
+    /* used by the export_mnu.py script, which generates salmenu.mnu for Translator
+   keep synchronized with the salamander->AddMenuItem() calls below...
 MENU_TEMPLATE_ITEM PluginMenu[] = 
 {
 	{MNTT_PB, 0
