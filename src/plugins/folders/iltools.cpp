@@ -8,28 +8,28 @@
 BOOL CheckPIDL(LPCITEMIDLIST pidl)
 {
     if (IsBadReadPtr(pidl, sizeof(USHORT /* pidl->mkid.cb */)) ||
-        IsBadReadPtr(pidl, pidl->mkid.cb + sizeof(USHORT /* terminujici pidl->mkid.cb, ktery se rovna 0 */)))
+        IsBadReadPtr(pidl, pidl->mkid.cb + sizeof(USHORT /* terminating pidl->mkid.cb, which equals 0 */)))
     {
         TRACE_E("Unable to read PIDL 0x" << pidl);
         return FALSE;
     }
     LPCITEMIDLIST nextItem = GetNextItemFromIL(pidl);
     if (nextItem->mkid.cb == 0)
-        return TRUE; // uz jsme na terminatoru, uspech
+        return TRUE; // already at the terminator, success
     else
         return CheckPIDL(nextItem);
 }
 
 BOOL CutLastItemFromIL(LPCITEMIDLIST pidl, IShellFolder** cutFolder, LPITEMIDLIST* cutPIDL)
 {
-    if (!ILIsEmpty(pidl)) // Desktop -- nelze zkracovat
+    if (!ILIsEmpty(pidl)) // Desktop -- cannot be shortened
     {
         LPITEMIDLIST cutPIDLAux = ILClone(pidl);
         if (cutPIDLAux != NULL)
         {
             if (!ILIsEmpty(cutPIDLAux) && ILRemoveLastID(cutPIDLAux))
             {
-                // vytahneme Desktop folder
+                // obtain the Desktop folder
                 HRESULT hr;
                 IShellFolder* desktopFolder;
                 if (SUCCEEDED(hr = SHGetDesktopFolder(&desktopFolder)))
@@ -69,11 +69,11 @@ BOOL AddItemToIL(LPCITEMIDLIST pidl, LPCITEMIDLIST addPIDL, IShellFolder** newFo
     LPITEMIDLIST newPIDLAux = ILCombine(pidl, addPIDL);
     if (newPIDLAux != NULL)
     {
-        // vytahneme Desktop folder
+        // obtain the Desktop folder
         IShellFolder* desktopFolder;
         if (SUCCEEDED(SHGetDesktopFolder(&desktopFolder)))
         {
-            // ziskame IShellFolder pro novy pidl
+            // obtain IShellFolder for the new PIDL
             IShellFolder* newFolderAux;
             HRESULT hr = desktopFolder->BindToObject(newPIDLAux, NULL, IID_IShellFolder, (void**)&newFolderAux);
             desktopFolder->Release();

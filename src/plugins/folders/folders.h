@@ -3,13 +3,13 @@
 
 #pragma once
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from plugin start until it is unloaded
 extern CSalamanderGeneralAbstract* SalamanderGeneral;
 
-// rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+// interface providing customized Windows controls used in Salamander
 extern CSalamanderGUIAbstract* SalamanderGUI;
 
-// FS-name pridelene Salamanderem po loadu pluginu
+// FS name assigned by Salamander after the plugin is loaded
 extern char AssignedFSName[MAX_PATH];
 
 BOOL InitFS();
@@ -23,7 +23,7 @@ void ReleaseFS();
 class CPluginInterfaceForFS : public CPluginInterfaceForFSAbstract
 {
 protected:
-    int ActiveFSCount; // pocet aktivnich FS interfacu (jen pro kontrolu dealokace)
+    int ActiveFSCount; // number of active FS interfaces (only to verify deallocation)
 
 public:
     CPluginInterfaceForFS() { ActiveFSCount = 0; }
@@ -91,7 +91,7 @@ public:
 // CPluginDataInterface
 //
 
-// sloupec ziskany od aktualniho folderu; nemusi byt realne zobrazen
+// column retrieved from the current folder; it may not actually be shown
 struct CShellColumn
 {
     char Name[COLUMN_NAME_MAX];
@@ -103,16 +103,16 @@ struct CShellColumn
 class CPluginDataInterface : public CPluginDataInterfaceAbstract
 {
 protected:
-    TDirectArray<CShellColumn> ShellColumns; // sloupce panelu dle shellu
-    TDirectArray<DWORD> VisibleColumns;      // indexy do pole ShellColumn
+    TDirectArray<CShellColumn> ShellColumns; // panel columns according to the shell
+    TDirectArray<DWORD> VisibleColumns;      // indices into the ShellColumn array
 
-    // specifikace cesty
-    IShellFolder* Folder;    // interface folderu pro ziskavani ikon jeho sub-souboru/sub-folderu
-    LPITEMIDLIST FolderPIDL; // absolutni (vztazeny k DesktopFolder) PIDL folderu (lokalni kopie)
+    // path specification
+    IShellFolder* Folder;    // folder interface for retrieving icons of its sub-files/sub-folders
+    LPITEMIDLIST FolderPIDL; // absolute (relative to DesktopFolder) PIDL of the folder (local copy)
 
-    // pomocne promenne
-    IShellFolder2* ShellFolder2; // IID_IShellFolder2: ziskano z Folder; muze byt NULL pokud neni implementovan
-    IShellDetails* ShellDetails; // IID_IShellDeatils: muze byt NULL, pokud neni implementovan
+    // auxiliary variables
+    IShellFolder2* ShellFolder2; // IID_IShellFolder2: obtained from Folder; can be NULL if not implemented
+    IShellDetails* ShellDetails; // IID_IShellDeatils: can be NULL if not implemented
 
 public:
     CPluginDataInterface(IShellFolder* folder, LPCITEMIDLIST folderPIDL);
@@ -121,7 +121,7 @@ public:
     BOOL IsGood();
 
     //************************************************
-    // Implementace metod CPluginDataInterfaceAbstract
+    // Implementation of CPluginDataInterfaceAbstract methods
     //************************************************
 
     virtual BOOL WINAPI CallReleaseForFiles() { return TRUE; }
@@ -153,14 +153,14 @@ public:
     virtual BOOL WINAPI GetLastWriteTime(const CFileData* file, BOOL isDir, SYSTEMTIME* time) { return FALSE; }
 
     //************************************************
-    // Nase metody
+    // Our methods
     //************************************************
 
-    BOOL GetShellColumns(); // vytahne z shelu seznam sloupcu a naplni pole ShellColumns
+    BOOL GetShellColumns(); // pulls the column list from the shell and fills the ShellColumns array
 
-    HRESULT GetDetailsHelper(int i, DETAILSINFO* di); // zastresuje vytazeni informace o sloupci pres ShellFolder2 nebo ShellDetails
+    HRESULT GetDetailsHelper(int i, DETAILSINFO* di); // wraps retrieving column information via ShellFolder2 or ShellDetails
 
-    // zpristupnime nase private data callbackum ze Salamandera
+    // expose our private data to callbacks from Salamander
     friend void WINAPI GetRowText();
 };
 
@@ -168,23 +168,23 @@ public:
 // ****************************************************************************
 // CPluginFSInterface
 //
-// sada metod pluginu, ktere potrebuje Salamander pro praci s file systemem
+// set of plugin methods required by Salamander to work with the file system
 
-// kody chyb pri komunikaci mezi ListCurrentPath a ChangePath:
+// error codes for the communication between ListCurrentPath and ChangePath:
 enum CFSErrorState
 {
-    fesOK,               // zadna chyba
-    fesFatal,            // fatalni chyba pri listovani (ChangePath ma jen vratit FALSE)
-    fesInaccessiblePath, // cesta nejde vylistovat, nutne zkratit cestu
+    fesOK,               // no error
+    fesFatal,            // fatal error while listing (ChangePath should only return FALSE)
+    fesInaccessiblePath, // the path cannot be listed; it is necessary to shorten the path
 };
 
 class CPluginFSInterface : public CPluginFSInterfaceAbstract
 {
 public:
-    LPITEMIDLIST CurrentPIDL;    // absolutni (vztazeny k DesktopFolder) PIDL aktualniho folderu
-    IShellFolder* CurrentFolder; // IShellFolder pro PIDL
-    IShellFolder* DesktopFolder; // Desktop folder, konstantni po celou existenci objektu
-    IContextMenu2* ContextMenu2; // Context menu, pokud neni otevrenem, je NULL
+    LPITEMIDLIST CurrentPIDL;    // absolute (relative to DesktopFolder) PIDL of the current folder
+    IShellFolder* CurrentFolder; // IShellFolder for the PIDL
+    IShellFolder* DesktopFolder; // Desktop folder, constant for the entire lifetime of the object
+    IContextMenu2* ContextMenu2; // context menu, NULL if it is not open
 
     CFSErrorState ErrorState;
 
@@ -192,12 +192,12 @@ public:
     CPluginFSInterface();
     ~CPluginFSInterface();
 
-    BOOL IsGood(); // vraci TRUE, pokud konstruktor probehl korektne
+    BOOL IsGood(); // returns TRUE if the constructor finished successfully
 
-    // vytvori pole LPCITEMIDLIST pro oznacene/focused polozek
-    // v pripade uspechu vraci TRUE a nastavuje promenne 'pidlArray' a 'itemsInArray'
-    // 'pidlArray' je pak treba destruovat pomoci LocalFree (neuvolnovat vlastni polozky pole!)
-    // v pripade nedostatku pameti vraci FALSE
+    // creates an array of LPCITEMIDLIST for selected/focused items
+    // on success returns TRUE and sets the 'pidlArray' and 'itemsInArray' variables
+    // 'pidlArray' must then be destroyed with LocalFree (do not free the individual array items!)
+    // returns FALSE if memory is insufficient
     BOOL CreateIDListFromSelection(int panel, int selectedFiles, int selectedDirs,
                                    LPCITEMIDLIST** pidlArray, int* itemsInArray);
 
@@ -268,8 +268,8 @@ public:
     virtual void WINAPI ShowSecurityInfo(HWND parent) {}
 };
 
-extern HINSTANCE DLLInstance; // handle k SPL-ku - jazykove nezavisle resourcy
-extern HINSTANCE HLanguage;   // handle k SLG-cku - jazykove zavisle resourcy
+extern HINSTANCE DLLInstance; // handle to the SPL - language-independent resources
+extern HINSTANCE HLanguage;   // handle to the SLG - language-dependent resources
 
 char* LoadStr(int resID);
 
