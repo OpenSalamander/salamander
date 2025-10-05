@@ -12,38 +12,38 @@
 #include "dbviewer.h"
 #include "auxtools.h"
 
-// neprelozeny nazev pluginu (pouziva se nez naloadime language modul + pro debug veci, kde by preklad byl naskodu)
+// untranslated plugin name (used before the language module is loaded + for debug cases where translation would be harmful)
 const char* READABLE_EN_PLUGIN_NAME = "Database Viewer";
 
 /*
-TODO: rozepsany enablery; je treba implementovat offsetovou metodu (enablersOffset) na strane Salamander
-      take doplnit komentar k teto promenne v SPL_GUI.H
-      zavest v DBVIEWER.CPP a DEMOPLUG.CPP, kde jsou enablery globalni pro okna z vice threadu -> konflikt
+TODO: enabler sketch; Salamander needs to implement the offset method (enablersOffset)
+      also add a comment for this variable in SPL_GUI.H
+      introduce it in DBVIEWER.CPP and DEMOPLUG.CPP, where enablers are global for windows from multiple threads -> conflict
 */
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object, its methods are called by Salamander
 CPluginInterface PluginInterface;
-// cast interfacu CPluginInterface pro viewer
+// viewer-specific portion of CPluginInterface
 CPluginInterfaceForViewer InterfaceForViewer;
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to SPL - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to SLG - language-dependent resources
 HACCEL HAccel = NULL;
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// generic Salamander interface - valid from plugin start until shutdown
 CSalamanderGeneralAbstract* SalGeneral = NULL;
 
-// definice promenne pro "dbg.h"
+// variable definition for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
-// definice promenne pro "spl_com.h"
+// variable definition for "spl_com.h"
 int SalamanderVersion = 0;
 
-// rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+// interface providing customized Windows controls used in Salamander
 CSalamanderGUIAbstract* SalamanderGUI = NULL;
 
-CWindowQueue ViewerWindowQueue("DBViewer Viewers"); // seznam vsech oken viewru
-CThreadQueue ThreadQueue("DBViewer Viewers");       // seznam vsech threadu oken
+CWindowQueue ViewerWindowQueue("DBViewer Viewers"); // list of all viewer windows
+CThreadQueue ThreadQueue("DBViewer Viewers");       // list of all window threads
 
 #define CURRENT_CONFIG_VERSION 0
 const char* CONFIG_VERSION = "Version";
@@ -59,12 +59,12 @@ const char* CONFIG_CSV_VALUESEPARATORCHAR = "CSV Value Separator Char";
 const char* CONFIG_CSV_FIRSTROW = "CSV First Row As Name";
 const char* CONFIG_FINDHISTORY = "Find History";
 
-const char* PLUGIN_NAME = "DBVIEWER"; // jmeno pluginu potrebne pro WinLib
+const char* PLUGIN_NAME = "DBVIEWER"; // plugin name required by WinLib
 
 // Configuration variables
 
 int ConfigVersion = 0;         // ConfigVersion: 0 - default,
-BOOL CfgUseCustomFont = FALSE; // TRUE - pouziva se font na zaklade CfgLogFont, FALSE - default font
+BOOL CfgUseCustomFont = FALSE; // TRUE - use the font defined by CfgLogFont, FALSE - default font
 LOGFONT CfgLogFont;
 BOOL CfgSavePosition = FALSE;
 WINDOWPLACEMENT CfgWindowPlacement;
@@ -198,9 +198,9 @@ MENU_TEMPLATE_ITEM PopupMenuTemplate[] =
 struct CButtonData
 {
     int ImageIndex;                   // zero base index
-    WORD ToolTipResID;                // resID se stringem pro tooltip
-    WORD ID;                          // univerzalni Command
-    CViewerWindowEnablerEnum Enabler; // ridici promenna pro enablovani tlacitka
+    WORD ToolTipResID;                // resource ID with the tooltip string
+    WORD ID;                          // universal command
+    CViewerWindowEnablerEnum Enabler; // control variable used to enable the button
 };
 
 CButtonData ToolBarButtons[] =
@@ -257,7 +257,7 @@ void GetDefaultLogFont(LOGFONT* lf)
 {
     if (!SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(LOGFONT), lf, 0))
     {
-        // kdyby nahodou selhalo SystemParametersInfo, pouzijeme nahradni reseni
+        // if SystemParametersInfo happens to fail, use a fallback solution
         NONCLIENTMETRICS ncm;
         ncm.cbSize = sizeof(ncm);
         SystemParametersInfo(SPI_GETNONCLIENTMETRICS, ncm.cbSize, &ncm, 0);
@@ -326,40 +326,40 @@ int WINAPI SalamanderPluginGetReqVer()
 
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
-    // nastavime SalamanderDebug pro "dbg.h"
+    // configure SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
-    // nastavime SalamanderVersion pro "spl_com.h"
+    // configure SalamanderVersion for "spl_com.h"
     SalamanderVersion = salamander->GetVersion();
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plugin targets the current Salamander version and newer - perform a check
     if (SalamanderVersion < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
                    READABLE_EN_PLUGIN_NAME, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
+    // let Salamander load the language module (.slg)
     HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), READABLE_EN_PLUGIN_NAME);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain the generic Salamander interface
     SalGeneral = salamander->GetSalamanderGeneral();
 
-    // nastavime jmeno souboru s helpem
+    // set the help file name
     SalGeneral->SetHelpFileName("dbviewer.chm");
 
-    // ziskame rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+    // obtain the interface that provides customized Windows controls used in Salamander
     SalamanderGUI = salamander->GetSalamanderGUI();
 
     if (!InitViewer())
-        return NULL; // chyba
+        return NULL; // error
 
-    // nastavime zakladni informace o pluginu
+    // set the basic plugin information
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_LOADSAVECONFIGURATION | FUNCTION_VIEWER |
                                        FUNCTION_CONFIGURATION,
@@ -507,11 +507,11 @@ BOOL SaveHistory(CSalamanderRegistryAbstract* registry, HKEY hKey, const char* n
 void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRegistryAbstract* registry)
 {
     CALL_STACK_MESSAGE1("CPluginInterface::LoadConfiguration(, ,)");
-    if (regKey != NULL) // load z registry
+    if (regKey != NULL) // load from the registry
     {
         if (!registry->GetValue(regKey, CONFIG_VERSION, REG_DWORD, &ConfigVersion, sizeof(DWORD)))
         {
-            ConfigVersion = CURRENT_CONFIG_VERSION; // asi nejakej nenechavec... ;-)
+            ConfigVersion = CURRENT_CONFIG_VERSION; // probably some rascal... ;-)
         }
         registry->GetValue(regKey, CONFIG_USECUSTOMFONT, REG_DWORD, &CfgUseCustomFont, sizeof(DWORD));
         registry->GetValue(regKey, CONFIG_LOGFONT, REG_BINARY, &CfgLogFont, sizeof(LOGFONT));
@@ -578,7 +578,7 @@ void CPluginInterface::Configuration(HWND parent)
 void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamander)
 {
     CALL_STACK_MESSAGE1("CPluginInterface::Connect(,)");
-    salamander->AddViewer("*.csv;*.dbf", FALSE); // default (install pluginu), jinak Salam ignoruje
+    salamander->AddViewer("*.csv;*.dbf", FALSE); // default (plugin installation), otherwise Salamander ignores it
 }
 
 CPluginInterfaceForViewerAbstract*
@@ -629,8 +629,8 @@ unsigned WINAPI ViewerThreadBody(void* param)
             if (CfgSavePosition && CfgWindowPlacement.length != 0)
             {
                 WINDOWPLACEMENT place = CfgWindowPlacement;
-                // GetWindowPlacement cti Taskbar, takze pokud je Taskbar nahore nebo vlevo,
-                // jsou hodnoty posunute o jeho rozmery. Provedeme korekci.
+                // GetWindowPlacement respects the taskbar, so if the taskbar is at the top or left
+                // the values are shifted by its dimensions. Apply a correction.
                 RECT monitorRect;
                 RECT workRect;
                 SalGeneral->MultiMonGetClipRectByRect(&place.rcNormalPosition, &workRect, &monitorRect);
@@ -657,7 +657,7 @@ unsigned WINAPI ViewerThreadBody(void* param)
                                  window) != NULL)
             {
                 CALL_STACK_MESSAGE1("ViewerThreadBody::ShowWindow");
-                // !POZOR! ziskane ikony je treba ve WM_DESTROY destruovat
+                // NOTE! icons obtained without the LR_SHARED flag must be destroyed in WM_DESTROY
                 SendMessage(window->HWindow, WM_SETICON, ICON_BIG,
                             (LPARAM)LoadIcon(DLLInstance, MAKEINTRESOURCE(IDI_MAIN)));
                 SendMessage(window->HWindow, WM_SETICON, ICON_SMALL,
@@ -680,17 +680,17 @@ unsigned WINAPI ViewerThreadBody(void* param)
     char name[MAX_PATH];
     strcpy(name, data->Name);
     BOOL openFile = data->Success;
-    SetEvent(data->Continue); // pustime dale hl. thread, od tohoto bodu nejsou data platna (=NULL)
+    SetEvent(data->Continue); // let the main thread continue; data is invalid from this point (=NULL)
     data = NULL;
 
-    // pokud probehlo vse bez potizi, otevreme v okne pozadovany soubor
+    // if everything succeeded, open the requested file in the window
     if (openFile)
     {
         CALL_STACK_MESSAGE1("ViewerThreadBody::OpenFile");
         window->Renderer.OpenFile(name, TRUE);
 
         CALL_STACK_MESSAGE1("ViewerThreadBody::message-loop");
-        // message loopa
+        // message loop
         MSG msg;
         while (GetMessage(&msg, NULL, 0, 0))
         {
@@ -731,13 +731,13 @@ BOOL CPluginInterfaceForViewer::ViewFile(const char* name, int left, int top, in
     data.Continue = CreateEvent(NULL, FALSE, FALSE, NULL);
     if (data.Continue == NULL)
     {
-        TRACE_E("Nepodarilo se vytvorit Continue event.");
+        TRACE_E("Failed to create the Continue event.");
         return FALSE;
     }
 
     if (ThreadQueue.StartThread(ViewerThreadBody, &data))
     {
-        // pockame, az thread zpracuje predana data a vrati vysledky
+        // wait until the thread processes the provided data and returns the results
         WaitForSingleObject(data.Continue, INFINITE);
     }
     else
@@ -844,7 +844,7 @@ BOOL CViewerWindow::FillToolBar()
         ToolBar->InsertItem2(0xFFFFFFFF, TRUE, &tii);
     }
 
-    // obehne enablery
+    // iterate through enablers
     ToolBar->UpdateItemsState();
     return TRUE;
 }
@@ -959,7 +959,7 @@ void CViewerWindow::OnFind(WORD command)
             return;
 
     BOOL forward = (command != CM_FIND_PREV) ^ (!FindDialog.Forward);
-    WORD flags = SASF_FORWARD; // hledame vzdy dopredu, protoze hledame prez jendnotlive bunky
+    WORD flags = SASF_FORWARD; // always search forward because we look across individual cells
     if (FindDialog.CaseSensitive)
         flags |= SASF_CASESENSITIVE;
 
@@ -972,7 +972,7 @@ void CViewerWindow::OnFind(WORD command)
             {
                 Renderer.Find(forward, FindDialog.WholeWords, NULL, regexp);
             }
-            else // chyba - regularniho vyrazu (nesedi zavorky, atd.) nebo nedostatek pameti
+            else // error - invalid regular expression (mismatched parentheses, etc.) or out of memory
             {
                 SalGeneral->SalMessageBox(HWindow, regexp->GetLastErrorText(),
                                           LoadStr(IDS_REGEXP_ERROR), MB_ICONEXCLAMATION);
@@ -1030,12 +1030,12 @@ void CViewerWindow::UpdateEnablers()
                                                            openedFileName, FALSE,
                                                            TRUE, fileName, &noMoreFiles,
                                                            &srcBusy);
-        Enablers[vwePrevFile] = ok || srcBusy;                 // jen pokud existuje nejaky predchazejici soubor (nebo je Salam busy, to nezbyva nez to usera nechat zkusit pozdeji)
-        Enablers[vweFirstFile] = ok || srcBusy || noMoreFiles; // skok na prvni nebo posledni soubor jde jen pokud neni prerusena vazba se zdrojem (nebo je Salam busy, to nezbyva nez to usera nechat zkusit pozdeji)
+        Enablers[vwePrevFile] = ok || srcBusy;                 // only if there is a previous file (or Salamander is busy, so the user must try later)
+        Enablers[vweFirstFile] = ok || srcBusy || noMoreFiles; // jumping to the first or last file works only if the source connection persists (or Salamander is busy, so the user must try later)
 
         if (Enablers[vweFirstFile])
-        { // pokud neni spojeni se zdrojem, nema smysl zjistovat dalsi informace
-            // zjistime jestli existuje nejaky predchozi selected soubor
+        { // if the source connection is missing, there is no point in asking for more details
+            // check whether a previous selected file exists
             enumFilesCurrentIndex = Renderer.EnumFilesCurrentIndex;
             ok = SalGeneral->GetPreviousFileNameForViewer(Renderer.EnumFilesSourceUID,
                                                           &enumFilesCurrentIndex,
@@ -1051,7 +1051,7 @@ void CViewerWindow::UpdateEnablers()
                                                              fileName, &isSrcFileSel,
                                                              &srcBusy);
             }
-            Enablers[vwePrevSelFile] = ok && isSrcFileSel || srcBusy; // jen pokud je predchazejici soubor opravdu selected (nebo je Salam busy, to nezbyva nez to usera nechat zkusit pozdeji)
+            Enablers[vwePrevSelFile] = ok && isSrcFileSel || srcBusy; // only if the previous file is actually selected (or Salamander is busy, so the user must try later)
 
             if (FileName && (*FileName != '<'))
             {
@@ -1059,7 +1059,7 @@ void CViewerWindow::UpdateEnablers()
                 //                                                            Renderer.EnumFilesCurrentIndex,
                 //                                                            Renderer.FileName, &IsSrcFileSelected,
                 //                                                            &srcBusy);
-                //           Enablers[vweSelSrcFile] = ok || srcBusy;  // jen pokud zdrojovy soubor existuje (nebo je Salam busy, to nezbyva nez to usera nechat zkusit pozdeji)
+                //           Enablers[vweSelSrcFile] = ok || srcBusy;  // only if the source file exists (or Salamander is busy, so the user must try later)
             }
             else
             {
@@ -1074,9 +1074,9 @@ void CViewerWindow::UpdateEnablers()
                                                       openedFileName, FALSE,
                                                       TRUE, fileName, &noMoreFiles,
                                                       &srcBusy);
-            Enablers[vweNextFile] = ok || srcBusy; // jen pokud existuje nejaky dalsi soubor (nebo je Salam busy, to nezbyva nez to usera nechat zkusit pozdeji)
+            Enablers[vweNextFile] = ok || srcBusy; // only if there is another file (or Salamander is busy, so the user must try later)
 
-            // zjistime jestli je dalsi soubor selected nebo jestli uz zadny selected neni na sklade
+            // check whether the next file is selected or no selected files remain
             enumFilesCurrentIndex = Renderer.EnumFilesCurrentIndex;
             ok = SalGeneral->GetNextFileNameForViewer(Renderer.EnumFilesSourceUID,
                                                       &enumFilesCurrentIndex,
@@ -1092,7 +1092,7 @@ void CViewerWindow::UpdateEnablers()
                                                              fileName, &isSrcFileSel,
                                                              &srcBusy);
             }
-            Enablers[vweNextSelFile] = ok && isSrcFileSel || srcBusy; // jen pokud je dalsi soubor opravdu selected (nebo je Salam busy, to nezbyva nez to usera nechat zkusit pozdeji)
+            Enablers[vweNextSelFile] = ok && isSrcFileSel || srcBusy; // only if the next file is actually selected (or Salamander is busy, so the user must try later)
         }
         else
         {
@@ -1160,7 +1160,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                 0, 0, r.right, r.bottom, // dummy
                                 HWindow, (HMENU)0, DLLInstance, NULL);
 
-        // nechceme vizualni styly pro rebar
+        // we do not want visual styles for the rebar
         SalamanderGUI->DisableWindowVisualStyles(HRebar);
 
         Renderer.CreateEx(WS_EX_CLIENTEDGE,
@@ -1220,9 +1220,9 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             HDWP hdwp = BeginDeferWindowPos(2);
             if (hdwp != NULL)
             {
-                // + 4: pri zvetsovani sirky okna mi nechodilo prekreslovani poslednich 4 bodu
-                // v rebaru; ani po nekolika hodinach jsem nenasel pricinu; v Salamu to slape;
-                // zatim to resim takto; treba si casem vzpomenu, kde je problem
+                // +4: when increasing the window width the last 4 pixels of the rebar were not redrawn
+                // in the rebar; even after hours I could not find the reason; it works in Salamander;
+                // for now this workaround will do; maybe I'll remember the problem later
                 hdwp = DeferWindowPos(hdwp, HRebar, NULL,
                                       0, 0, r.right + 4, rebarHeight,
                                       SWP_NOACTIVATE | SWP_NOZORDER);
@@ -1245,14 +1245,14 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_SYSCOLORCHANGE:
     {
-        // tady by se mely premapovat barvy
+        // colors should be remapped here
         TRACE_I("CViewerWindow::WindowProc - WM_SYSCOLORCHANGE");
         break;
     }
 
     case WM_USER_VIEWERCFGCHNG:
     {
-        // tady by se mely projevit zmeny v konfiguraci pluginu
+        // configuration changes should be reflected here
         TRACE_I("CViewerWindow::WindowProc - config has changed");
         Renderer.RebuildGraphics();
         Renderer.SetupScrollBars();
@@ -1271,7 +1271,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (!LOWORD(wParam))
         {
-            // hlavni okno pri prepnuti z viewru nebude delat refresh
+            // the main window should not refresh when switching away from the viewer
             SalGeneral->SkipOneActivateRefresh();
         }
         break;
@@ -1321,8 +1321,8 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         ReleaseGraphics();
 
-        // ikony ziskane bez flagu LR_SHARED je treba destruovat (ICON_SMALL)
-        // a sdilenym (ICON_BIG) destrukce neublizi (nic se nestane)
+        // icons obtained without the LR_SHARED flag must be destroyed (ICON_SMALL)
+        // destroying shared ones (ICON_BIG) does not cause any harm
         HICON hIcon = (HICON)SendMessage(HWindow, WM_SETICON, ICON_BIG, NULL);
         if (hIcon != NULL)
             DestroyIcon(hIcon);
@@ -1468,7 +1468,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                                                   TRUE, fileName,
                                                                   &noMoreFiles, &srcBusy);
                     if (ok && (command == CM_FILE_PREVSELFILE))
-                    { // bereme jen selected soubory
+                    { // take only selected files
                         BOOL isSrcFileSel = FALSE;
 
                         ok = SalGeneral->IsFileNameForViewerSelected(Renderer.EnumFilesSourceUID,
@@ -1492,7 +1492,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                                               TRUE, fileName,
                                                               &noMoreFiles, &srcBusy);
                     if (ok && (command == CM_FILE_NEXTSELFILE))
-                    { // bereme jen selected soubory
+                    { // take only selected files
                         BOOL isSrcFileSel = FALSE;
 
                         ok = SalGeneral->IsFileNameForViewerSelected(Renderer.EnumFilesSourceUID,
@@ -1512,11 +1512,11 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         if (Lock != NULL)
                         {
                             SetEvent(Lock);
-                            Lock = NULL; // ted uz je to jen na disk-cache
+                            Lock = NULL; // from now on it's up to the disk cache
                         }
                         Renderer.OpenFile(fileName, TRUE);
                     }
-                    // index nastavime i v pripade neuspechu, aby user mohl prejit na dalsi/predchozi obrazek
+                    // update the index even on failure so the user can move to the next/previous item
                     Renderer.EnumFilesCurrentIndex = enumFilesCurrentIndex;
                 }
             }
@@ -1554,7 +1554,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 if (memcmp(&oldCfg, &CfgCSV, sizeof(CCSVConfig)) != 0)
                 {
-                    // pokud uzivatel neco zmenil, otevreme soubor znovu
+                    // if the user changed something, reopen the file
                     Renderer.OnFileReOpen();
                 }
             }
@@ -1701,7 +1701,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
             case CM_HELP_CONTENTS:
             {
-                SalGeneral->OpenHtmlHelp(HWindow, HHCDisplayContext, IDH_INTRODUCTION, TRUE); // nechceme dva messageboxy za sebou
+                SalGeneral->OpenHtmlHelp(HWindow, HHCDisplayContext, IDH_INTRODUCTION, TRUE); // avoid showing two message boxes in a row
                 command2 = HHCDisplayTOC;
                 break;
             }

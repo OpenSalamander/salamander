@@ -24,9 +24,9 @@ enum CCSVParserTextQualifier
 
 struct CCSVColumn
 {
-    DWORD MaxLength; // maximalni pocet znaku ve sloupci
-    char* Name;      // alokovany nazev sloupce nebo NULL, pokud neexistuje
-    // pouze docasne promenne plnene pri FetchRecord
+    DWORD MaxLength; // maximum number of characters in the column
+    char* Name;      // allocated column name or NULL if it does not exist
+    // temporary variables filled during FetchRecord
     DWORD First;
     DWORD Length;
 };
@@ -41,7 +41,7 @@ public:
     virtual ~CCSVParserBase();
     virtual CCSVParserStatus GetStatus() = 0;
     virtual DWORD GetColumnMaxLen(int index) = 0;
-    // vrati NULL, pokud neni prirazen; jinak vrati ukazatel na nazev terminovany nulou
+    // returns NULL if not assigned; otherwise returns a pointer to a null-terminated name
     virtual const char* GetColumnName(DWORD index) = 0;
     virtual DWORD GetRecordsCnt(void) = 0;
     virtual DWORD GetColumnsCnt(void) = 0;
@@ -67,7 +67,7 @@ public:
     // GetStatus should be called after constructing the object to verify success
     virtual CCSVParserStatus GetStatus() { return Status; };
     virtual DWORD GetColumnMaxLen(int index) { return Columns[index].MaxLength; };
-    // vrati NULL, pokud neni prirazen; jinak vrati ukazatel na nazev terminovany nulou
+    // returns NULL if not assigned; otherwise returns a pointer to a null-terminated name
     virtual const char* GetColumnName(DWORD index) { return Columns[index].Name; };
     virtual DWORD GetRecordsCnt(void) { return Rows.Count; };
     virtual DWORD GetColumnsCnt(void) { return Columns.Count; };
@@ -75,11 +75,11 @@ public:
     virtual CCSVParserStatus FetchRecord(DWORD index) = 0;
 
 protected:
-    // pokud na columnIndex jeste neexistuje sloupec, prida novy s hodnotou MaxLength = columnLen
-    // vrati FALSE, pokud se nepodarilo pridat sloupec do pole
-    // pokud sloupec uz existuje, pripradi columnLen pouze v pripade, ze je vetsi nez hodnota
-    // MaxLength ve sloupci stavajicim
-    // vraci TRUE, pokud se pridani/nastaveni slupce zdarilo
+    // if the column does not exist at columnIndex, add a new one with MaxLength = columnLen
+    // returns FALSE if the column could not be added to the array
+    // if the column already exists, extend columnLen only when it is larger than
+    // the current MaxLength value in that column
+    // returns TRUE if the addition/update of the column succeeded
     BOOL SetLongerColumn(int columnIndex, DWORD columnLen);
 
     struct CLineRating
@@ -100,14 +100,14 @@ private:
     bool bIsBigEndian; // Actually used only when CChar is wchar_t
 
 public:
-    // fileName: nazev souboru,ktery bude zobrazen
-    // autoSeparator: detekovat separator
-    // separator: oddelovac hodnot (ma vyznam pokud je autoSeparator==FALSE nebo se nepodari detekce)
-    // autoQualifier: detekovat textQualifier
-    // textQualifier: znak oznacujici zacatek a konec retezce (ma vyznam pokud je autoQualifier==FALSE nebo se nepodari detekce)
-    // autoFirstRowAsName: detekovat firstRowAsColumnNames
-    // firstRowAsColumnNames: pokud je TRUE, obsah prvniho radku bude pouzit pro nazvy sloupcu
-    //                        (ma vyznam pokud je autoFirstRowAsName==FALSE nebo se nepodari detekce)
+    // fileName: name of the file to display
+    // autoSeparator: detect the separator
+    // separator: value separator (used when autoSeparator == FALSE or detection fails)
+    // autoQualifier: detect the text qualifier
+    // textQualifier: character marking the start and end of the string (used when autoQualifier == FALSE or detection fails)
+    // autoFirstRowAsName: detect firstRowAsColumnNames
+    // firstRowAsColumnNames: when TRUE, contents of the first row are used as column names
+    //                        (used when autoFirstRowAsName == FALSE or detection fails)
     CCSVParser(const char* filename,
                BOOL autoSeparator, CChar separator,
                BOOL autoQualifier, CCSVParserTextQualifier textQualifier,
@@ -118,22 +118,22 @@ public:
     virtual void* GetCellText(DWORD index, size_t* textLen);
 
 private:
-    // automaticka detekce vybranych hodnot
-    // predpoklada otevreny soubor File; nastavi ukazovatko na jeho zacatek
+    // automatic detection of selected values
+    // assumes that File is open; rewinds its pointer to the beginning
     void AnalyseFile(BOOL autoSeparator, CChar* separator,
                      BOOL autoQualifier, CCSVParserTextQualifier* textQualifier,
                      BOOL autoFirstRowAsName, BOOL* firstRowAsColumnNames);
 
-    // automaticka detekce kvalifikatoru textu
+    // automatic detection of the text qualifier
     CCSVParserTextQualifier AnalyseTextQualifier(const CChar* buffer, TDirectArray<WORD>* rows);
 
     double AnalyseTextQualifierAux(const CChar* buffer, TDirectArray<WORD>* rows, CChar qualifier);
 
-    // automaticka detekce separatoru hodnot
+    // automatic detection of the value separator
     CChar AnalyseValueSeparator(const CChar* buffer, TDirectArray<WORD>* rows,
                                 CChar defaultSeparator, CCSVParserTextQualifier qualifier);
 
-    // automaticka detekce "prvnih radek jako nazvy sloupcu"
+    // automatic detection of "first row contains column names"
     BOOL AnalyseFirstRowAsColumnName(const CChar* buffer, TDirectArray<WORD>* rows,
                                      CChar defaultFirstRowAsColumnNames, CCSVParserTextQualifier qualifier);
 };

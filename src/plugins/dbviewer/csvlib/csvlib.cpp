@@ -20,8 +20,8 @@
 
 #include "csvlib.h"
 
-// pouze optimalizacni zalezitost
-extern BOOL IsAlphaNumeric[256]; // pole TRUE/FALSE pro znaky (FALSE = neni pismeno ani cislice)
+// only an optimization detail
+extern BOOL IsAlphaNumeric[256]; // TRUE/FALSE array for characters (FALSE = not a letter nor a digit)
 extern BOOL IsAlpha[256];
 
 #define SizeOf(x) (sizeof(x) / sizeof(x[0]))
@@ -42,7 +42,7 @@ extern BOOL IsAlpha[256];
   return FALSE;
 }*/
 
-// bloky, po kterych nacitame soubor
+// block size used when reading the file
 #define READ_BUFFER_SIZE 60 * 1024
 
 enum CReadingStateEnum
@@ -99,7 +99,7 @@ BOOL CCSVParserCore::SetLongerColumn(int columnIndex, DWORD columnLen)
 
 int CCSVParserCore::AnalyseSeparatorRatings(int rowsCount, bool charUsed[], CLineRating* lines)
 {
-    // ohodnotime pouzite znaky a hledame znak s maximalni hodnocenim
+    // score the characters used and search for the one with the highest rating
     int maxRating = 100;
     int maxIndex = -1;
     int i;
@@ -113,8 +113,8 @@ int CCSVParserCore::AnalyseSeparatorRatings(int rowsCount, bool charUsed[], CLin
             {
                 if (row < rowsCount - 1)
                 {
-                    // pokud je pocet znaku v nasi a nasledujici radce stejny a vyssi nez nula,
-                    // hodnotime to kladne
+                    // if the number of characters in the current and next row is the same and greater than zero,
+                    // reward it
                     if (lines[row].CharCount[i] > 0 &&
                         (lines[row].CharCount[i] == lines[row + 1].CharCount[i]))
                         rating++;
@@ -168,7 +168,7 @@ CCSVParser<CChar>::CCSVParser(const char* filename,
                               BOOL autoQualifier, CCSVParserTextQualifier textQualifier,
                               BOOL autoFirstRowAsName, BOOL firstRowAsColumnNames)
 {
-    __int64 rowSeek = 0; // pozice radku v souboru
+    __int64 rowSeek = 0; // row position within the file
 
     Buffer = NULL;
 
@@ -180,7 +180,7 @@ CCSVParser<CChar>::CCSVParser(const char* filename,
         return;
     }
 
-    // vytahnu velikost souboru
+    // retrieve the file size
     fseek(File, 0, SEEK_END);
     fgetpos(File, &FileSize);
     fseek(File, 0, SEEK_SET);
@@ -209,7 +209,7 @@ CCSVParser<CChar>::CCSVParser(const char* filename,
 
     if (autoSeparator || autoQualifier || autoFirstRowAsName)
     {
-        // user chece detekovat nektere z parametru
+        // the user wants to detect some of the parameters
         AnalyseFile(autoSeparator, &separator,
                     autoQualifier, &textQualifier,
                     autoFirstRowAsName, &firstRowAsColumnNames);
@@ -220,21 +220,21 @@ CCSVParser<CChar>::CCSVParser(const char* filename,
 
     CChar buffer[READ_BUFFER_SIZE];
 
-    size_t bytesRead; // pocet skutecne nactenych znaku do bufferu
+    size_t bytesRead; // number of characters actually read into the buffer
 
-    // kde na prave stoji iterator
+    // where the iterator is currently positioned
     CReadingStateEnum rs = rsData;
 
-    int rowLen = 0;      // delka prave cteneho radku
-    int maxRowLen = 0;   // delka nejdelsiho radku
-    DWORD columnLen = 0; // pocet znaku v aktualnim sloupci
-    int columnIndex = 0; // aktualni slupec
+    int rowLen = 0;      // length of the row currently being read
+    int maxRowLen = 0;   // length of the longest row
+    DWORD columnLen = 0; // number of characters in the current column
+    int columnIndex = 0; // current column index
 
     fseek(File, (long)rowSeek * sizeof(CChar), SEEK_SET);
 
     do
     {
-        // cteme oknem o velikosti READ_BUFFER_SIZE
+        // read in windows of READ_BUFFER_SIZE
         bytesRead = fread(buffer, sizeof(CChar), SizeOf(buffer), File);
         if (bytesRead > 0)
         {
@@ -247,17 +247,17 @@ CCSVParser<CChar>::CCSVParser(const char* filename,
                 // Enable CR/LF inside quoted text
                 if (c == 0 || ((c == '\r' || c == '\n') && (rs != rsQualifiedData)))
                 {
-                    // pokud jde o konec radku
+                    // if this is the end of a row
                     if ((rs == rsNewLineR && c == '\n') ||
                         (rs == rsNewLineN && c == '\r'))
                     {
-                        // a jde uz o druhy znak, pouze se pres nej prekleneme
+                        // if it's the second character, just skip over it
                         rowSeek++;
                         rs = rsNewLine;
                     }
                     else
                     {
-                        // a jde o prvni znak, zalozime radek
+                        // if it's the first character, add the row
                         Rows.Add(rowSeek);
                         if (!Rows.IsGood())
                         {
@@ -265,7 +265,7 @@ CCSVParser<CChar>::CCSVParser(const char* filename,
                             Status = CSVE_OOM;
                             return;
                         }
-                        // pokud je tu novy sloupec, ulozime ho
+                        // if there is a new column, store it
                         if (!SetLongerColumn(columnIndex, columnLen))
                         {
                             Status = CSVE_OOM;
@@ -276,7 +276,7 @@ CCSVParser<CChar>::CCSVParser(const char* filename,
                         rowLen = 0;
                         columnLen = 0;
                         columnIndex = 0;
-                        // pripravime se na prijmuti druheho znaku z konce radku
+                        // prepare to receive the second character of the line ending
                         switch (c)
                         {
                         case 0:
@@ -293,7 +293,7 @@ CCSVParser<CChar>::CCSVParser(const char* filename,
                     continue;
                 }
 
-                // druhy znak z konce radku nemusel prijit -> shodime stav
+                // the second character of the line ending might not arrive -> reset the state
                 if (rs == rsNewLine || rs == rsNewLineR || rs == rsNewLineN)
                     rs = rsData;
 
@@ -330,7 +330,7 @@ CCSVParser<CChar>::CCSVParser(const char* filename,
 
                 if (rs != rsQualifiedData && c == separator)
                 {
-                    // pokud je tu novy sloupec, ulozime ho
+                    // if there is a new column, store it
                     if (!SetLongerColumn(columnIndex, columnLen))
                     {
                         Status = CSVE_OOM;
@@ -365,7 +365,7 @@ CCSVParser<CChar>::CCSVParser(const char* filename,
             Status = CSVE_OOM;
             return;
         }
-        // pokud je tu novy sloupec, ulozime ho
+        // if there is a new column, store it
         if (!SetLongerColumn(columnIndex, columnLen))
         {
             Status = CSVE_OOM;
@@ -401,18 +401,18 @@ CCSVParser<CChar>::~CCSVParser()
         free(Buffer);
 }
 
-// Snazi se detekovat kvalifikator textu.
-//   buffer: kompletni buffer
-//   rows:   offsetu od pocatku 'buffer' pro jednotlive radky
+// Attempts to detect the text qualifier.
+//   buffer: complete buffer
+//   rows:   offsets from the beginning of 'buffer' for individual rows
 //
-// Postup hledani:
-//   kvalifikator muze nabyvat tri hodnot: CSVTQ_QUOTE, CSVTQ_SINGLEQUOTE, CSVTQ_NONE
-//   radky se zkusi prohledat pro znaky ' a " a obe varianty se ohodnoti
-//     + kvalifikatoru je v kazdem radku sudy pocet
-//     - kvalifikatoru je v kazdem radku lichy pocet
-//     pokud stoji kvalifikator osamocen (nejedna se o dvojici)
-//     + pred oteviracim a za zaviracim kvalifikatorem neni alfanumericky znak
-//     - pred oteviracim a za zaviracim kvalifikatorem je alfanumericky znak
+// Search procedure:
+//   the qualifier can take three values: CSVTQ_QUOTE, CSVTQ_SINGLEQUOTE, CSVTQ_NONE
+//   the rows are scanned for the characters ' and " and both variants are scored
+//     + even number of qualifiers in every row
+//     - odd number of qualifiers in every row
+//     if a qualifier stands alone (it is not a pair)
+//     + no alphanumeric character before the opening and after the closing qualifier
+//     - an alphanumeric character before the opening or after the closing qualifier
 
 template <class CChar>
 CCSVParserTextQualifier
@@ -420,14 +420,14 @@ CCSVParser<CChar>::AnalyseTextQualifier(const CChar* buffer, TDirectArray<WORD>*
 {
     if (rows->Count == 0)
         return CSVTQ_NONE;
-    // zkusime varinatu "
+    // try the double-quote variant
     double quoteRating = AnalyseTextQualifierAux(buffer, rows, '\"');
-    // zkusime varinatu '
+    // try the single-quote variant
     double singleQuoteRating = AnalyseTextQualifierAux(buffer, rows, '\'');
-    // pokud jsou obe pod prahem, vratime prazdny kvalifikator
+    // if both are below the threshold, return an empty qualifier
     if (quoteRating <= 100 && singleQuoteRating <= 100)
         return CSVTQ_NONE;
-    // vybereme kvalifikator s vetsi vahou
+    // choose the qualifier with the higher weight
     if (quoteRating >= singleQuoteRating)
         return CSVTQ_QUOTE;
     return CSVTQ_SINGLEQUOTE;
@@ -443,16 +443,16 @@ CCSVParser<CChar>::AnalyseTextQualifierAux(const CChar* buffer, TDirectArray<WOR
     {
         const CChar* p = buffer + rows->At(row);
         WORD qualifierCount = 0;
-        BOOL qualifiledValue = FALSE; // jsme mezi kvalifikatory?
+        BOOL qualifiledValue = FALSE; // are we inside a qualified value?
         while (*p != 0)
         {
             if (*p == qualifier)
             {
                 qualifierCount++;
 
-                // pokud stoji kvalifikator osamocen (nejedna se o dvojici)
-                // + pred oteviracim a za zaviracim kvalifikatorem neni alfanumericky znak
-                // - pred oteviracim a za zaviracim kvalifikatorem je alfanumericky znak
+                // if a qualifier stands alone (not forming a pair)
+                // + no alphanumeric character before the opening and after the closing qualifier
+                // - an alphanumeric character before the opening or after the closing qualifier
                 if (!qualifiledValue)
                 {
                     if (p > buffer + rows->At(row))
@@ -472,7 +472,7 @@ CCSVParser<CChar>::AnalyseTextQualifierAux(const CChar* buffer, TDirectArray<WOR
                     {
                         if (*(p + 1) == qualifier)
                         {
-                            // dvojice kvalifikatoru
+                            // a pair of qualifiers
                             qualifierCount++;
                             p++;
                         }
@@ -491,8 +491,8 @@ CCSVParser<CChar>::AnalyseTextQualifierAux(const CChar* buffer, TDirectArray<WOR
         }
         if (qualifierCount > 0)
         {
-            // + sudy pocet kvalifikatoru v radku
-            // - lichy pocet kvalifikatoru v radku
+            // + even number of qualifiers in the row
+            // - odd number of qualifiers in the row
             if (qualifierCount & 0x00000001)
                 rating--;
             else
@@ -502,10 +502,10 @@ CCSVParser<CChar>::AnalyseTextQualifierAux(const CChar* buffer, TDirectArray<WOR
     return rating / rows->Count;
 }
 
-// hledame nealfanumericky znak, ktery neni roven kvalifikatoru a zaroven
-// se vyskytuje na radcich v stejnem poctu
-// pokud je kvalifikator nenulovy, je mel by zaroven separator lezet pred
-// oteviracim a za zaviracim kvalifikatorem
+// Look for a non-alphanumeric character that is not equal to the qualifier and
+// that appears on the rows in the same count.
+// If the qualifier is non-zero, the separator should also appear before the
+// opening qualifier and after the closing qualifier.
 
 template <class CChar>
 CChar CCSVParser<CChar>::AnalyseValueSeparator(const CChar* buffer, TDirectArray<WORD>* rows,
@@ -521,29 +521,29 @@ CChar CCSVParser<CChar>::AnalyseValueSeparator(const CChar* buffer, TDirectArray
     else if (qualifier == CSVTQ_SINGLEQUOTE)
         qualifierChar = '\'';
 
-    // omezime pocet radku, abychom nealokovali prilis pameti
+    // limit the number of rows to avoid allocating too much memory
     int rowsCount = min(100, rows->Count);
 
     CLineRating* lines = (CLineRating*)calloc(rowsCount, sizeof(CLineRating));
     if (lines == NULL)
         return defaultSeparator;
 
-    // je tento znak pouziva nekde v poli ratings?
+    // is this character used anywhere in the ratings array?
     bool charUsed[256];
     ZeroMemory(charUsed, sizeof(charUsed));
 
-    // naplnime pole ratings a charUsed
-    // zajimaji nas pouze nealfanumericke znaky a jeste jen ty mimo kvalifikovany text
-    // a mimo kvalifikatoru
-    // pole charUsed bude obsahovat TRUE na pozici znaku, ktere jsou v nektere radce zastoupeny
-    // pole lines pak obsahuje jejich pocet pro jednotlive radky
+    // fill the ratings and charUsed arrays
+    // we care only about non-alphanumeric characters and only those outside qualified text
+    // and outside the qualifiers themselves
+    // the charUsed array will contain TRUE at positions of characters present in any row
+    // the lines array then contains their counts for individual rows
     for (row = 0; row < rowsCount; row++)
     {
         CLineRating* line = &lines[row];
         const CChar* p = buffer + rows->At(row);
         while (*p != 0)
         {
-            // preskocim kvalifikovany text
+            // skip the qualified text
             if (*p == qualifierChar)
             {
                 do
@@ -551,7 +551,7 @@ CChar CCSVParser<CChar>::AnalyseValueSeparator(const CChar* buffer, TDirectArray
                     p++;
                     if (*p == qualifierChar && *(p + 1) == qualifierChar)
                     {
-                        // dvojice kvalifikatoru
+                        // pair of qualifiers
                         p += 2;
                         continue;
                     }
@@ -567,13 +567,13 @@ CChar CCSVParser<CChar>::AnalyseValueSeparator(const CChar* buffer, TDirectArray
                     line->CharCount[*p]++;
                     if (p > buffer + rows->At(row) && *(p + 1) != 0)
                     {
-                        // pokud pred a za znakem je kvalifikator textu, ohodnotime to kladne
+                        // if a text qualifier is before and after the character, reward it
                         if (*(p - 1) == qualifierChar && *(p + 1) == qualifierChar)
                             line->CharRating[*p]++;
-                        // pokud pred znakem je kvalifikator textu, ohodnotime to kladne
+                        // if a text qualifier is before the character, reward it
                         if (*(p - 1) == qualifierChar)
                             line->CharRating[*p]++;
-                        // pokud za znakem je kvalifikator textu, ohodnotime to kladne
+                        // if a text qualifier is after the character, reward it
                         if (*(p + 1) == qualifierChar)
                             line->CharRating[*p]++;
                     }
@@ -599,7 +599,7 @@ BOOL CCSVParser<CChar>::AnalyseFirstRowAsColumnName(const CChar* buffer, TDirect
     if (rows->Count < 2)
         return defaultFirstRowAsColumnNames;
 
-    // pokud ma prvni radek mene cislic nez radek druhy, povazujeme ho za popisovy
+    // if the first row has fewer digits than the second row, treat it as descriptive
 
     double num0 = 0;
     double num1 = 0;
@@ -630,14 +630,14 @@ void CCSVParser<CChar>::AnalyseFile(BOOL autoSeparator, CChar* separator,
                                     BOOL autoFirstRowAsName, BOOL* firstRowAsColumnNames)
 {
     if (!autoSeparator && !autoQualifier && !autoFirstRowAsName)
-        return; // neni co analysovat
+        return; // nothing to analyze
 
-    const WORD SAMPLE_BUFFER_SIZE = 60000; // velikost bufferu, ve kterem budeme analyzovat
-    // !!! nesmi prekrocit 2^32, protoze na to neni staveny zbytek algoritmu
+    const WORD SAMPLE_BUFFER_SIZE = 60000; // buffer size used for the analysis
+    // must not exceed 2^32, because the rest of the algorithm is not built for it
 
     CChar buffer[SAMPLE_BUFFER_SIZE + 1];
 
-    size_t bytesRead; // pocet skutecne nactenych znaku do bufferu
+    size_t bytesRead; // number of characters actually read into the buffer
 
     bytesRead = fread(buffer, sizeof(CChar), SAMPLE_BUFFER_SIZE, File);
     fseek(File, 0, SEEK_SET);
@@ -649,7 +649,7 @@ void CCSVParser<CChar>::AnalyseFile(BOOL autoSeparator, CChar* separator,
         buffer[bytesRead] = 0; // dummy
 
         TDirectArray<WORD> rows(100, 100);
-        // vyhledam zacatky uplnych radku a jejich offsety naleju do pole rows
+        // find the beginnings of complete rows and store their offsets in the rows array
         size_t index = 0;
         size_t rowSeek = 0;
         CChar c;
@@ -658,7 +658,7 @@ void CCSVParser<CChar>::AnalyseFile(BOOL autoSeparator, CChar* separator,
             c = buffer[index];
             if (c == 0 || c == '\r' || c == '\n')
             {
-                if (row == 0 || index - rowSeek > 0) // prazdne radky neberem, pokud to neni nulty radek
+                if (row == 0 || index - rowSeek > 0) // skip empty rows unless it is the first row
                 {
                     rows.Add((WORD)rowSeek);
                     if (!rows.IsGood())
@@ -675,7 +675,7 @@ void CCSVParser<CChar>::AnalyseFile(BOOL autoSeparator, CChar* separator,
                 }
                 buffer[index] = 0;
                 index++;
-                // zacatek pristiho radku
+                // start of the next row
                 rowSeek = index;
                 row++;
             }
@@ -687,15 +687,15 @@ void CCSVParser<CChar>::AnalyseFile(BOOL autoSeparator, CChar* separator,
 
         if (rows.IsGood() && rows.Count > 0)
         {
-            // detekce kvalifikatoru hodnot
+            // detect the text qualifier
             if (autoQualifier)
                 *textQualifier = AnalyseTextQualifier(buffer, &rows);
 
-            // detekce separatoru hodnot
+            // detect the value separator
             if (autoSeparator)
                 *separator = AnalyseValueSeparator(buffer, &rows, *separator, *textQualifier);
 
-            // detekce prvniho radku: nazev sloupcu/hodnoty
+            // detect whether the first row contains column names or values
             if (autoFirstRowAsName)
                 *firstRowAsColumnNames = AnalyseFirstRowAsColumnName(buffer, &rows,
                                                                      *firstRowAsColumnNames,
@@ -719,7 +719,7 @@ CCSVParser<CChar>::FetchRecord(DWORD index)
     }
     if (Buffer == NULL)
     {
-        Buffer = (CChar*)malloc((BufferSize + 1) * sizeof(CChar)); // prostor pro dva terminatory
+        Buffer = (CChar*)malloc((BufferSize + 1) * sizeof(CChar)); // space for two terminators
         if (Buffer == NULL)
         {
             Status = CSVE_OOM;
@@ -734,8 +734,8 @@ CCSVParser<CChar>::FetchRecord(DWORD index)
     size_t bytesRead = fread(Buffer, sizeof(CChar), lineLen, File);
     if (bIsBigEndian && (sizeof(CChar) == 2))
         SwapWords((char*)Buffer, bytesRead);
-    lineLen = min(lineLen, bytesRead); // mohlo dojit ke zmene souboru a radka uz nemusi existovat
-    // vzadu vlozim null terminatory
+    lineLen = min(lineLen, bytesRead); // the file might have changed and the row may no longer exist
+    // append null terminators at the end
     CChar* p = Buffer + lineLen;
     *p = 0;
     p--;
@@ -789,7 +789,7 @@ CCSVParser<CChar>::FetchRecord(DWORD index)
         }
         if ((*p == Separator && rs != rsQualifiedData) || *p == 0)
         {
-            if (colIndex < Columns.Count) // Petr: hrozi pokud se zmeni soubor behem cteni (napr. Samba na linuxu a do souboru zapisuje root)
+            if (colIndex < Columns.Count) // Petr: may happen if the file changes while reading (e.g. Samba on Linux with root writing to the file)
             {
                 Columns[colIndex].First = (DWORD)(begin - Buffer);
                 Columns[colIndex].Length = colLen;
@@ -807,7 +807,7 @@ CCSVParser<CChar>::FetchRecord(DWORD index)
         p2++;
         p++;
     }
-    // neexistujici sloupce nastavime jako prazdne
+    // mark non-existent columns as empty
     int i;
     for (i = colIndex; i < Columns.Count; i++)
     {
