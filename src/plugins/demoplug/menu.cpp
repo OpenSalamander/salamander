@@ -12,7 +12,7 @@
 #include "precomp.h"
 
 // ****************************************************************************
-// SEKCE MENU
+// MENU SECTION
 // ****************************************************************************
 
 DWORD WINAPI
@@ -20,18 +20,18 @@ CPluginInterfaceForMenuExt::GetMenuItemState(int id, DWORD eventMask)
 {
     if (id == MENUCMD_DOPFILES)
     {
-        // musi byt na disku nebo v nasem pluginu
+        // must be on disk or in our plugin
         if ((eventMask & (MENU_EVENT_DISK | MENU_EVENT_THIS_PLUGIN_ARCH)) == 0)
             return 0;
 
-        // vezmeme bud oznacene soubory nebo soubor pod fokusem
+        // use either the selected files or the file under focus
         const CFileData* file = NULL;
         BOOL isDir;
         if ((eventMask & MENU_EVENT_FILES_SELECTED) == 0)
         {
             if ((eventMask & MENU_EVENT_FILE_FOCUSED) == 0)
                 return 0;
-            file = SalamanderGeneral->GetPanelFocusedItem(PANEL_SOURCE, &isDir); // selected neni nic -> enumerace failne
+            file = SalamanderGeneral->GetPanelFocusedItem(PANEL_SOURCE, &isDir); // when nothing is selected the enumeration fails
         }
 
         BOOL ret = TRUE;
@@ -55,11 +55,11 @@ CPluginInterfaceForMenuExt::GetMenuItemState(int id, DWORD eventMask)
             file = SalamanderGeneral->GetPanelSelectedItem(PANEL_SOURCE, &index, &isDir);
         }
 
-        return (count != 0 && ret) ? MENU_ITEM_STATE_ENABLED : 0; // vsechny oznacene soubory jsou *.dop
+        return (count != 0 && ret) ? MENU_ITEM_STATE_ENABLED : 0; // all selected files are *.dop
     }
     else
     {
-        if (id == MENUCMD_SEP || id == MENUCMD_HIDDENITEM) // osetrime separator a polozku schovavajici se na stisk Shiftu
+        if (id == MENUCMD_SEP || id == MENUCMD_HIDDENITEM) // handle the separator and the item hidden when Shift is held
         {
             return MENU_ITEM_STATE_ENABLED |
                    ((GetKeyState(VK_SHIFT) & 0x8000) ? MENU_ITEM_STATE_HIDDEN : 0);
@@ -98,7 +98,7 @@ void WINAPI DEMOPLUGOperationFromDisk(const char* sourcePath, SalEnumSelection2 
     CDEMOPLUGOperFromDiskData* data = (CDEMOPLUGOperFromDiskData*)param;
     CQuadWord* retSize = data->RetSize;
 
-    data->Success = TRUE; // zatim hlasime uspech operace
+    data->Success = TRUE; // report the operation as successful for now
 
     BOOL isDir;
     const char* name;
@@ -111,7 +111,7 @@ void WINAPI DEMOPLUGOperationFromDisk(const char* sourcePath, SalEnumSelection2 
     while ((name = next(data->Parent, 3, &dosName, &isDir, &size, &attr, &lastWrite,
                         nextParam, &errorOccured)) != NULL)
     {
-        if (errorOccured == SALENUM_ERROR) // sem SALENUM_CANCEL prijit nemuze
+        if (errorOccured == SALENUM_ERROR) // SALENUM_CANCEL cannot arrive here
             data->Success = FALSE;
         if (!isDir)
             totalSize += size;
@@ -119,7 +119,7 @@ void WINAPI DEMOPLUGOperationFromDisk(const char* sourcePath, SalEnumSelection2 
     if (errorOccured != SALENUM_SUCCESS)
     {
         data->Success = FALSE;
-        // nastala chyba pri enumeraci a uzivatel si preje ukonceni operace (cancel)
+        // an enumeration error occurred and the user requested to cancel the operation
         // if (errorOccured == SALENUM_CANCEL);
     }
 
@@ -154,7 +154,7 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
       }
 
       // test arraylt.h - TIndirectArray
-      TIndirectArray<CTestItem> arr2(10, 5);   // automaticky dtDelete (na prvky se ma volat delete)
+      TIndirectArray<CTestItem> arr2(10, 5);   // automatically uses dtDelete (individual elements should be deleted)
       for (i = 0; i < 20; i++)
         arr2.Add(new CTestItem(i));
       arr2.Delete(5);
@@ -169,13 +169,13 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
           TRACE_I("last item in array2");
         }
       }
-//      arr2.DestroyMembers();   // pokud nezavolame, destrukce probehne automaticky v destruktoru arr2
+//      arr2.DestroyMembers();   // if not called the destruction is performed automatically in arr2's destructor
 */
         /*      // select-all
       SalamanderGeneral->SelectAllPanelItems(PANEL_SOURCE, TRUE, TRUE);
 */
         /*
-      // fokus prvni selectly polozky nebo prvni polozky
+      // focus the first selected item or the first item
       int index = 0;
       BOOL isDir;
       const CFileData *file = SalamanderGeneral->GetPanelSelectedItem(PANEL_SOURCE, &index, &isDir);
@@ -190,7 +190,7 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
       }
 */
         /*
-      // invert oznaceni
+      // invert the selection
       const CFileData *file;
       int index = 0;
       while (1)
@@ -275,9 +275,9 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
 //          BOOL ok = SalamanderGeneral->ViewFileInPluginViewer(NULL, &viewerData, FALSE, NULL, NULL, err);
           viewerData.Mode = 1;  // hex mode
           viewerData.Caption = "My file test.txt";
-          viewerData.WholeCaption = FALSE; // nechame pripojit standardni nazev vieweru
+          viewerData.WholeCaption = FALSE; // let Salamander append the standard viewer title
           BOOL ok = SalamanderGeneral->ViewFileInPluginViewer(NULL, &viewerData, TRUE, NULL, "test.txt", err);
-//          DeleteFile(viewerData.FileName);   // pokud se nepouziva disk-cache, je potreba soubor mazat
+//          DeleteFile(viewerData.FileName);   // if disk cache is not used the file has to be deleted manually
         }
       }
 */
@@ -298,33 +298,33 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
         /*
       char codePage[101];
       SalamanderGeneral->GetWindowsCodePage(NULL, codePage);
-      if (codePage[0] != 0)  // jen pokud je WindowsCodePage znama
+      if (codePage[0] != 0)  // only if WindowsCodePage is known
       {
         char conversion[200];
-        strcpy(conversion, "ISO-8859-2");  // puvodni kodovani (zde treba iso-2)
-        strcat(conversion, codePage);  // pripojime cilove kodovani
+        strcpy(conversion, "ISO-8859-2");  // original encoding (iso-2 in this example)
+        strcat(conversion, codePage);  // append the destination encoding
         char table[256];
         if (SalamanderGeneral->GetConversionTable(NULL, table, conversion))
         {
-          char buf[20] = "ľlu»oučký kůň";   // zde je text pro konverzi
+          char buf[20] = "ľlu»oučký kůň";   // text to convert
 
-          // test RecognizeFileType: ozkousime jestli se 'buf' rozpozna jako text s kodovou strankou iso-2
+          // RecognizeFileType test: verify whether 'buf' is detected as text with the ISO-2 code page
           BOOL isText;
           char recCodePage[101];
           SalamanderGeneral->RecognizeFileType(NULL, buf, strlen(buf), FALSE, &isText, recCodePage);
 
           char *s = buf;
-          while (*s != 0)   // provedeme konverzi
+          while (*s != 0)   // perform the conversion
           {
             *s = table[(unsigned char)*s];
             s++;
           }
-          TRACE_I("After conversion: " << buf);   // vypiseme vysledek
+          TRACE_I("After conversion: " << buf);   // print the result
         }
       }
 */
         /*
-      // pro jednoduchost neosetrujeme jestli je neco oznacene nebo aspon fokus neni na up-dir symbolu
+      // for simplicity we do not check whether something is selected or whether the focus is on the up-dir symbol
       CQuadWord size = CQuadWord(-1, -1);  // error
       CDEMOPLUGOperFromDiskData data;
       data.RetSize = &size;
@@ -361,12 +361,12 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
       TRACE_I("Disk type: " << SalamanderGeneral->SalGetDriveType(path));
 */
         /*
-      const char *text = "Tento text je text, ve kterem se bude vyhledavat vzorek. Text muze byt libovolne dlouhy.";
+      const char *text = "This text is an example in which we will search for a pattern. The text can be arbitrarily long.";
       int textLen = strlen(text);
       CSalamanderBMSearchData *bm = SalamanderGeneral->AllocSalamanderBMSearchData();
       if (bm != NULL)
       {
-        bm->Set("text", SASF_CASESENSITIVE | SASF_FORWARD);   // vzorek 'text' (case-sensitive), hledame dopredu
+        bm->Set("text", SASF_CASESENSITIVE | SASF_FORWARD);   // sample 'text' (case-sensitive), search forward
         if (bm->IsGood())
         {
           int found = -2;
@@ -381,8 +381,8 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
       CSalamanderREGEXPSearchData *regexp = SalamanderGeneral->AllocSalamanderREGEXPSearchData();
       if (regexp != NULL)
       {
-        if (regexp->Set("(^| )t[^ ]*", 0))  // slova (predchazi mezera nebo zacatek radky) zacinajici
-        {                                   // na 't'/'T' (neni case-sensitive)), hledame odzadu
+        if (regexp->Set("(^| )t[^ ]*", 0))  // words (preceded by a space or line start) beginning
+        {                                   // with 't'/'T' (case-insensitive), search backward
           regexp->SetLine(text, text + textLen);
           int found = textLen;
           while (found != -1)
@@ -392,7 +392,7 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
             if (found != -1) TRACE_I("regexp - found: " << found << ", len = " << foundLen);
           }
         }
-        else   // chyba - regularniho vyrazu (nesedi zavorky, atd.) nebo nedostatek pameti
+        else   // error - malformed regular expression (mismatched brackets, etc.) or out of memory
         {
           SalamanderGeneral->ShowMessageBox(regexp->GetLastErrorText(), "Regular Expression Error",
                                             MSGBOX_ERROR);
@@ -416,14 +416,14 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
       }
 */
         /*
-      char *buf = "Chceme spocitat CRC32 tohoto strasne dlouheho textu.";
+      char *buf = "We want to compute the CRC32 of this terribly long text.";
       char *end = buf + strlen(buf);
       char *s = buf;
-      DWORD crc32 = 0;  // init na nulu
+      DWORD crc32 = 0;  // initialize to zero
       while (s < end)
       {
-        // volani po 10 bytech je zde jen pro priklad pouziti - davkove zpracovani se hodi napr.
-        // pri cteni souboru - jinak cim vetsi buffer se preda, tim je celkova doba vypoctu kratsi
+        // processing 10 bytes per call is only an example - chunked processing is handy e.g. when reading files
+        // with file reads; otherwise the larger the buffer, the shorter the total computation time
         int size = min(end - s, 10);
         crc32 = SalamanderGeneral->UpdateCrc32(s, size, crc32);
         s += size;
@@ -434,8 +434,8 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
       BOOL work = SalamanderGeneral->GetPanelSelection(PANEL_SOURCE, &selectedFiles, &selectedDirs);
 */
         /*
-      const char *s1 = "Chleba";
-      const char *s2 = "cihla";
+      const char *s1 = "Bread";
+      const char *s2 = "brick";
       //const char *s2 = "cHlEbA";
       int l1 = strlen(s1);
       int l2 = strlen(s2);
@@ -470,18 +470,18 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
                                                            firstCreatedDir);
 */
         /*
-      GetAsyncKeyState(VK_ESCAPE);  // init GetAsyncKeyState - viz help
+      GetAsyncKeyState(VK_ESCAPE);  // initialize GetAsyncKeyState - see the help
       HWND waitWndParent = SalamanderGeneral->GetMsgBoxParent();
       SalamanderGeneral->CreateSafeWaitWindow("Waiting for ESC key, press ESC key...", LoadStr(IDS_PLUGINNAME),
                                               1000, TRUE, waitWndParent);
       while (1)
       {
-        Sleep(100);  // simulace nejakeho cekani (treba na ukonceni threadu)
+        Sleep(100);  // simulate some waiting (for example for a thread to finish)
 
         if ((GetAsyncKeyState(VK_ESCAPE) & 0x8001) && GetForegroundWindow() == waitWndParent ||
             SalamanderGeneral->GetSafeWaitWindowClosePressed())
         {
-          MSG msg;   // vyhodime nabufferovany ESC
+          MSG msg;   // discard the buffered ESC
           while (PeekMessage(&msg, NULL, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE));
 
           SalamanderGeneral->ShowSafeWaitWindow(FALSE);
@@ -493,7 +493,7 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
           {
             break;
           }
-          else UpdateWindow(waitWndParent);  // at nekoukame na zbytky messageboxu
+          else UpdateWindow(waitWndParent);  // avoid staring at leftover message box contents
           SalamanderGeneral->ShowSafeWaitWindow(TRUE);
         }
       }
@@ -598,7 +598,7 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
         //      SalamanderGeneral->PostOpenUnpackDlgForThisPlugin(NULL);
 
         SalamanderGeneral->ShowMessageBox("Always", LoadStr(IDS_PLUGINNAME), MSGBOX_INFO);
-        SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_SOURCE); // tento prikaz povazujeme za praci s cestou (objevi se v Alt+F12)
+        SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_SOURCE); // treat this command as working with the path (it appears in Alt+F12)
         break;
     }
 
@@ -617,7 +617,7 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
 
     case MENUCMD_DOPFILES:
     {
-        // zjistime jestli jde o select nebo fokus
+        // determine whether we work on the selection or the focused item
         BOOL focus = FALSE;
         if ((eventMask & MENU_EVENT_FILES_SELECTED) == 0)
         {
@@ -626,13 +626,13 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
             focus = TRUE;
         }
 
-        // akce bude dvoufazova - priprava + provadeni
+        // perform the action in two phases - preparation + execution
         int count = 0;
         BOOL ret = TRUE;
         int stage;
         for (stage = 0; stage < 2; stage++)
         {
-            if (stage == 1) // faze provadeni
+            if (stage == 1) // execution phase
             {
                 salamander->OpenProgressDialog("Command \"*.D&OP File(s)\"", FALSE, NULL, FALSE);
                 salamander->ProgressSetTotalSize(CQuadWord(count, 0), CQuadWord(-1, -1));
@@ -647,20 +647,20 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
                 file = SalamanderGeneral->GetPanelFocusedItem(PANEL_SOURCE, &isDir);
             while (file != NULL)
             {
-                // akce nad souborem 'file'
+                // action on the 'file' entry
                 if (stage == 0)
-                    count++; // priprava - napocteme pocet souboru
-                else         // provadeni - zahybeme progressem
+                    count++; // preparation - count the files
+                else         // execution - advance the progress
                 {
                     salamander->ProgressDialogAddText(file->Name, FALSE);
-                    Sleep(500); // simulace cinosti
+                    Sleep(500); // simulate some work
                     if (!salamander->ProgressAddSize(1, FALSE))
                     {
                         salamander->ProgressDialogAddText("canceling operation, please wait...", FALSE);
                         salamander->ProgressEnableCancel(FALSE);
-                        Sleep(1000); // simulace uklizeci cinosti
-                        ret = FALSE; // Cancel -> nebudeme odznacovat
-                        break;       // preruseni akce
+                        Sleep(1000); // simulate the cleanup work
+                        ret = FALSE; // Cancel -> keep the items selected
+                        break;       // abort the action
                     }
                 }
                 if (!focus)
@@ -669,13 +669,13 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
                     break;
             }
 
-            if (stage == 1) // faze provadeni
+            if (stage == 1) // execution phase
             {
-                Sleep(500); // simulace cinosti
+                Sleep(500); // simulate some work
                 salamander->CloseProgressDialog();
             }
         }
-        SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_SOURCE); // tento prikaz povazujeme za praci s cestou (objevi se v Alt+F12)
+        SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_SOURCE); // treat this command as working with the path (it appears in Alt+F12)
         return ret;
     }
 
@@ -683,44 +683,44 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
         SalamanderGeneral->ShowMessageBox("File(s) and/or Directory(ies) in Archive", LoadStr(IDS_PLUGINNAME), MSGBOX_INFO);
         break;
 
-    case MENUCMD_ENTERDISKPATH: // ukazka postupu, jak se osetruje vstup cesty k adresari/souboru
+    case MENUCMD_ENTERDISKPATH: // example of validating a path entered by the user
     {
-        // navrh retezce - zde jen windowsova cesta v cilovem panelu (jinak prazdny retezec)
+        // proposed initial string - here just the Windows path from the target panel (otherwise empty)
         char path[MAX_PATH];
         path[0] = 0;
         int type;
         if (SalamanderGeneral->GetPanelPath(PANEL_TARGET, path, MAX_PATH, &type, NULL))
         {
             if (type != PATH_TYPE_WINDOWS)
-                path[0] = 0; // bereme jen diskove cesty
+                path[0] = 0; // accept only disk paths
         }
 
-        // aktualni cesta je potreba pro prevody relativnich cest na absolutni
+        // we need the current path to convert relative paths to absolute ones
         BOOL curPathIsDisk = FALSE;
         char curPath[MAX_PATH];
         curPath[0] = 0;
         if (SalamanderGeneral->GetPanelPath(PANEL_SOURCE, curPath, MAX_PATH, &type, NULL))
         {
             if (type != PATH_TYPE_WINDOWS)
-                curPath[0] = 0; // bereme jen diskove cesty
+                curPath[0] = 0; // accept only disk paths
             else
                 curPathIsDisk = TRUE;
         }
 
-        SalamanderGeneral->SalUpdateDefaultDir(TRUE); // update pred pouzitim SalParsePath
+        SalamanderGeneral->SalUpdateDefaultDir(TRUE); // refresh defaults before using SalParsePath
 
-        BOOL filePath = FALSE; // TRUE/FALSE = cesta k souboru/adresari
-        BOOL success = FALSE;  // TRUE = 'path' obsahuje cestu k souboru/adresari (nenastala zadna chyba)
-        while (1)              // budeme se ptat dokud nebude cesta o.k. nebo user neda cancel
+        BOOL filePath = FALSE; // TRUE/FALSE = path to a file/directory
+        BOOL success = FALSE;  // TRUE = 'path' contains a valid file/directory path (no error occurred)
+        while (1)              // keep asking until the path is valid or the user cancels
         {
             CPathDialog dlg(parent, path, &filePath);
             if (dlg.Execute() == IDOK)
             {
-                // rozpoznani zadane cesty
+                // interpret the entered path
                 int len = (int)strlen(path);
-                BOOL backslashAtEnd = (len > 0 && path[len - 1] == '\\'); // cesta konci na backslash -> nutne adresar
+                BOOL backslashAtEnd = (len > 0 && path[len - 1] == '\\'); // a trailing backslash implies a directory
                 BOOL mustBePath = (len == 2 && LowerCase[path[0]] >= 'a' && LowerCase[path[0]] <= 'z' &&
-                                   path[1] == ':'); // cesta typu "c:" musi byt i po expanzi cesta (ne soubor)
+                                   path[1] == ':'); // a path such as "c:" must stay a path even after expansion (not a file)
                 int pathType;
                 BOOL pathIsDir;
                 char* secondPart;
@@ -728,73 +728,73 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
                                                     "Path Error", NULL, curPathIsDisk, curPath,
                                                     NULL, NULL, MAX_PATH))
                 {
-                    if (pathType == PATH_TYPE_WINDOWS) // Windows cesta (disk + UNC)
+                    if (pathType == PATH_TYPE_WINDOWS) // Windows path (disk + UNC)
                     {
-                        if (pathIsDir) // existujici cast cesty je adresar
+                        if (pathIsDir) // the existing portion of the path is a directory
                         {
-                            if (*secondPart != 0) // je zde i neexistujici cast cesty
+                            if (*secondPart != 0) // contains a non-existing path segment
                             {
-                                if (filePath) // cesta k souboru, zkontrolujeme jestli v neexistujici ceste nejsou i podadresare
+                                if (filePath) // for a file path, ensure the missing part does not contain additional subdirectories
                                 {
                                     char* s = secondPart;
                                     while (*s != 0 && *s != '\\')
                                         s++;
-                                    if (*s == '\\') // obsahuje i podadresare, neumime, ohlasime chybu
+                                    if (*s == '\\') // contains subdirectories which we cannot create, report an error
                                     {
                                         SalamanderGeneral->SalMessageBox(parent, "Unable to create the file specified, because its path doesn't exist.",
                                                                          "Path Error", MB_OK | MB_ICONEXCLAMATION);
-                                        continue; // dame si dalsi kolo
+                                        continue; // ask again
                                     }
                                 }
                                 else
                                 {
-                                    // error - cesta musi existovat
+                                    // error - the path must already exist
                                     SalamanderGeneral->SalMessageBox(parent, "The path specified doesn't exist.",
                                                                      "Path Error", MB_OK | MB_ICONEXCLAMATION);
-                                    continue; // dame si dalsi kolo
+                                    continue; // ask again
                                 }
                             }
                         }
-                        else // prepis souboru - 'secondPart' ukazuje na jmeno souboru v ceste 'path'
+                        else // overwriting a file - 'secondPart' points to the file name within 'path'
                         {
                             if (!filePath)
                             {
-                                // error - cesta k souboru a ne k adresari
+                                // error - expected a file path, not a directory
                                 SalamanderGeneral->SalMessageBox(parent, "Unable to create the path specified, name has already been used for a file.",
                                                                  "Path Error", MB_OK | MB_ICONEXCLAMATION);
-                                continue; // dame si dalsi kolo
+                                continue; // ask again
                             }
                         }
 
-                        success = TRUE; // 'path' je pouzitelna
+                        success = TRUE; // 'path' is usable
                         break;
                     }
-                    else // FS/archivova cesta
+                    else // FS/archive path
                     {
-                        if (pathType == PATH_TYPE_ARCHIVE && (backslashAtEnd || mustBePath)) // pridame odstraneny backslash
+                        if (pathType == PATH_TYPE_ARCHIVE && (backslashAtEnd || mustBePath)) // restore the removed backslash
                         {
                             SalamanderGeneral->SalPathAddBackslash(path, MAX_PATH);
                         }
-                        // error - cesty na FS a do archivu nejsou podporovany; dame si druhe kolo
+                        // error - FS/archive paths are not supported; ask again
                         SalamanderGeneral->SalMessageBox(parent, "File-system and archive paths are not supported here.",
                                                          "Path Error", MB_OK | MB_ICONEXCLAMATION);
                     }
                 }
                 else
                 {
-                    // uz byl vypsany error z SalParsePath; dame si druhe kolo
+                    // SalParsePath already reported the error; ask again
                 }
             }
             else
                 break; // cancel
         }
 
-        if (success) // 'path' je cesta k souboru/adresari, provedeme s ni pozadovanou akci
+        if (success) // 'path' points to a file/directory, perform the requested action
         {
-            // v DemoPluginu se nic neprovadi
+            // the DemoPlugin does not perform anything here
         }
 
-        return FALSE; // neodznacujeme polozky v panelu
+        return FALSE; // do not deselect panel items
     }
 
     case MENUCMD_ALLUSERS:
@@ -816,7 +816,7 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
     case MENUCMD_CHECKDEMOPLUGTMPDIR:
     {
         ClearTEMPIfNeeded(SalamanderGeneral->GetMsgBoxParent());
-        return FALSE; // neodznacovat
+        return FALSE; // keep the selection
     }
 
     case MENUCMD_DISCONNECT_LEFT:
@@ -837,14 +837,14 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
             break;
         }
         SalamanderGeneral->DisconnectFSFromPanel(parent, panel);
-        return FALSE; // neodznacovat
+        return FALSE; // keep the selection
     }
 
     default:
         SalamanderGeneral->ShowMessageBox("Unknown command.", LoadStr(IDS_PLUGINNAME), MSGBOX_ERROR);
         break;
     }
-    return FALSE; // neodznacovat polozky v panelu
+    return FALSE; // keep the selection polozky v panelu
 }
 
 BOOL WINAPI
@@ -919,6 +919,6 @@ CPluginInterfaceForMenuExt::BuildMenu(HWND parent, CSalamanderBuildMenuAbstract*
     HICON hIcon = (HICON)LoadImage(DLLInstance, MAKEINTRESOURCE(IDI_FS), IMAGE_ICON, 16, 16, SalamanderGeneral->GetIconLRFlags());
     iconList->ReplaceIcon(0, hIcon);
     DestroyIcon(hIcon);
-    salamander->SetIconListForMenu(iconList); // o destrukci iconlistu se postara Salamander
+    salamander->SetIconListForMenu(iconList); // Salamander takes care of destroying the icon list
 #endif                                        // ENABLE_DYNAMICMENUEXT
 }

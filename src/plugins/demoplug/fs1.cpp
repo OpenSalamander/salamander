@@ -84,7 +84,7 @@ CPluginInterfaceForFS::OpenFS(const char* fsName, int fsNameIndex)
 void WINAPI
 CPluginInterfaceForFS::CloseFS(CPluginFSInterfaceAbstract* fs)
 {
-    CPluginFSInterface* dfsFS = (CPluginFSInterface*)fs; // aby se volal spravny destruktor
+    CPluginFSInterface* dfsFS = (CPluginFSInterface*)fs; // to ensure the correct destructor is invoked
 
     if (dfsFS == LastDetachedFS)
         LastDetachedFS = NULL;
@@ -119,7 +119,7 @@ INT_PTR CALLBACK ConnectDlgProc(HWND HWindow, UINT uMsg, WPARAM wParam, LPARAM l
 
         SalamanderGeneral->InstallWordBreakProc(GetDlgItem(HWindow, IDC_PATH)); // install WordBreakProc into the combo box
 
-        return TRUE; // focus od std. dialogproc
+        return TRUE; // focus handled by the standard dialog proc
     }
 
     case WM_COMMAND:
@@ -162,28 +162,28 @@ CPluginInterfaceForFS::ExecuteChangeDriveMenuItem(int panel)
             lstrcpyn(ConnectData.UserPart, ConnectPath, MAX_PATH);
             int failReason;
             BOOL changeRes = SalamanderGeneral->ChangePanelPathToPluginFS(panel, AssignedFSName, "", &failReason);
-            // POZNAMKA: pri uspechu vraci failReason==CHPPFR_SHORTERPATH (user-part cesty neni "")
+            // NOTE: on success it returns failReason==CHPPFR_SHORTERPATH (the user-part of the path is not empty)
             ConnectData.UseConnectData = FALSE;
             if (!changeRes && failReason == CHPPFR_INVALIDPATH)
-                continue; // zopakujeme si zadani
+                continue; // repeat the prompt
 
             /*
       if (!SalamanderGeneral->ChangePanelPathToDisk(panel, ConnectPath, &failReason))
       {
-        if (failReason == CHPPFR_INVALIDPATH) continue;  // zopakujeme si zadani
+        if (failReason == CHPPFR_INVALIDPATH) continue;  // repeat the prompt
       }
 */
             /*
       if (!SalamanderGeneral->ChangePanelPathToArchive(panel, ConnectPath, "", &failReason))
       {
-        if (failReason == CHPPFR_INVALIDPATH || failReason == CHPPFR_INVALIDARCHIVE) continue;  // zopakujeme si zadani
+        if (failReason == CHPPFR_INVALIDPATH || failReason == CHPPFR_INVALIDARCHIVE) continue;  // repeat the prompt
       }
 */
             /*
       if (LastDetachedFS != NULL &&
           !SalamanderGeneral->ChangePanelPathToDetachedFS(panel, LastDetachedFS, &failReason))
       {
-        // opakovat zadani nema smysl
+        // repeating the prompt makes no sense
       }
 */
             /*
@@ -192,14 +192,14 @@ CPluginInterfaceForFS::ExecuteChangeDriveMenuItem(int panel)
       {
         if (!SalamanderGeneral->ChangePanelPathToDisk(panel, buf, &failReason))
         {
-          // opakovat zadani nema smysl
+          // repeating the prompt makes no sense
         }
       }
 */
             /*
       if (!SalamanderGeneral->ChangePanelPathToRescuePathOrFixedDrive(panel, &failReason))
       {
-        // opakovat zadani nema smysl
+        // repeating the prompt makes no sense
       }
 */
             //      SalamanderGeneral->RefreshPanelPath(panel);
@@ -225,15 +225,15 @@ CPluginInterfaceForFS::ChangeDriveMenuItemContextMenu(HWND parent, int panel, in
     CALL_STACK_MESSAGE7("CPluginInterfaceForFS::ChangeDriveMenuItemContextMenu(, %d, %d, %d, , %s, %d, %d, , , ,)",
                         panel, x, y, pluginFSName, pluginFSNameIndex, isDetachedFS);
 
-    // vytvorime menu
+    // create the menu
     char** strings;
     static char buffShowInPanel[] = "&Show in Panel";
     static char buffDisconnect[] = "&Disconnect";
-    char* strings1[] = {buffShowInPanel, buffDisconnect, NULL}; // polozky pro odpojeny plugin FS
+    char* strings1[] = {buffShowInPanel, buffDisconnect, NULL}; // entries for a detached plugin FS
     static char buffRefresh[] = "&Refresh";
-    char* strings2[] = {buffRefresh, buffDisconnect, NULL}; // polozky pro aktivni plugin FS
+    char* strings2[] = {buffRefresh, buffDisconnect, NULL}; // entries for an active plugin FS
     static char buffConnect[] = "Connect To...";
-    char* strings3[] = {buffConnect, NULL}; // polozky pro FS
+    char* strings3[] = {buffConnect, NULL}; // entries for the FS
     if (pluginFS != NULL)
     {
         if (isDetachedFS)
@@ -262,7 +262,7 @@ CPluginInterfaceForFS::ChangeDriveMenuItemContextMenu(HWND parent, int panel, in
     DWORD cmd = TrackPopupMenuEx(menu, TPM_RETURNCMD | TPM_LEFTALIGN | TPM_RIGHTBUTTON,
                                  x, y, parent, NULL);
     DestroyMenu(menu);
-    if (cmd != 0) // user vybral z menu prikaz
+    if (cmd != 0) // the user selected a command from the menu
     {
         refreshMenu = FALSE;
         closeMenu = FALSE;
@@ -271,7 +271,7 @@ CPluginInterfaceForFS::ChangeDriveMenuItemContextMenu(HWND parent, int panel, in
 
         if (pluginFS != NULL)
         {
-            if (isDetachedFS) // polozka pro odpojeny plugin FS
+            if (isDetachedFS) // entry for a detached plugin FS
             {
                 switch (cmd)
                 {
@@ -285,15 +285,15 @@ CPluginInterfaceForFS::ChangeDriveMenuItemContextMenu(HWND parent, int panel, in
 
                 case 2: // disconnect
                 {
-                    // pokud FS v metode ReleaseObject otevira okna (zde se to nedeje), mel by se
-                    // CloseDetachedFS volat az po zavreni change-drive menu
+                    // if the FS opens windows in the ReleaseObject method (not the case here),
+                    // CloseDetachedFS should be called only after the change-drive menu closes
                     SalamanderGeneral->CloseDetachedFS(parent, pluginFS);
-                    refreshMenu = TRUE; // pokud se uzavrel, je treba refreshnout Change Drive menu
+                    refreshMenu = TRUE; // if it closed, refresh the Change Drive menu
                     break;
                 }
                 }
             }
-            else // polozka pro aktivni plugin FS
+            else // entry for an active plugin FS
             {
                 switch (cmd)
                 {
@@ -313,7 +313,7 @@ CPluginInterfaceForFS::ChangeDriveMenuItemContextMenu(HWND parent, int panel, in
                 }
             }
         }
-        else // polozka pro FS
+        else // entry for the FS
         {
             switch (cmd)
             {
@@ -328,7 +328,7 @@ CPluginInterfaceForFS::ChangeDriveMenuItemContextMenu(HWND parent, int panel, in
         return TRUE;
     }
     else
-        return FALSE; // cancel nebo chyba menu
+        return FALSE; // cancel or menu error
 }
 
 void WINAPI
@@ -336,30 +336,30 @@ CPluginInterfaceForFS::ExecuteChangeDrivePostCommand(int panel, int postCmd, voi
 {
     CALL_STACK_MESSAGE3("CPluginInterfaceForFS::ExecuteChangeDrivePostCommand(%d, %d,)", panel, postCmd);
 
-    if (postCmd == 1) // polozka pro odpojeny FS: show in panel
+    if (postCmd == 1) // entry for a detached FS: show in panel
     {
         SalamanderGeneral->ChangePanelPathToDetachedFS(panel,
                                                        (CPluginFSInterfaceAbstract*)postCmdParam,
                                                        NULL);
     }
 
-    if (postCmd == 2) // polozka pro aktivni FS: refresh
+    if (postCmd == 2) // entry for an active FS: refresh
     {
         SalamanderGeneral->RefreshPanelPath(panel);
     }
 
-    if (postCmd == 3) // polozka pro FS: connect to...
+    if (postCmd == 3) // entry for the FS: connect to...
     {
         ExecuteChangeDriveMenuItem(panel);
     }
 
-    if (postCmd == 4) // polozka pro aktivni FS: disconnect
-    {                 // pouzijeme PostMenuExtCommand, aby se disconnect spustil az v "sal-idle"
+    if (postCmd == 4) // entry for an active FS: disconnect
+    {                 // use PostMenuExtCommand so the disconnect runs later in "sal-idle"
         int leftOrRightPanel = panel == PANEL_SOURCE ? SalamanderGeneral->GetSourcePanel() : panel;
         SalamanderGeneral->PostMenuExtCommand(leftOrRightPanel == PANEL_LEFT ? MENUCMD_DISCONNECT_LEFT : MENUCMD_DISCONNECT_RIGHT,
-                                              TRUE); // ukazka prace s panelem 'panel' (pokud prijde prikaz z Drive bary)
+                                              TRUE); // example of working with the 'panel' panel (if the command comes from the Drive bar)
 
-        //    SalamanderGeneral->PostMenuExtCommand(MENUCMD_DISCONNECT_ACTIVE, TRUE);  // tento prikaz z Drive bary nehrozi, tedy staci tato implementace
+        //    SalamanderGeneral->PostMenuExtCommand(MENUCMD_DISCONNECT_ACTIVE, TRUE);  // this command cannot be triggered from the Drive bar, so this implementation is sufficient
     }
 }
 
@@ -370,7 +370,7 @@ CPluginInterfaceForFS::DisconnectFS(HWND parent, BOOL isInPanel, int panel,
 {
     CALL_STACK_MESSAGE5("CPluginInterfaceForFS::DisconnectFS(, %d, %d, , %s, %d)",
                         isInPanel, panel, pluginFSName, pluginFSNameIndex);
-    ((CPluginFSInterface*)pluginFS)->CalledFromDisconnectDialog = TRUE; // potlacime zbytecne dotazy (user dal prikaz pro disconnect, jen ho provedeme)
+    ((CPluginFSInterface*)pluginFS)->CalledFromDisconnectDialog = TRUE; // suppress unnecessary prompts (the user requested a disconnect, just perform it)
     BOOL ret = FALSE;
     if (isInPanel)
     {
@@ -382,7 +382,7 @@ CPluginInterfaceForFS::DisconnectFS(HWND parent, BOOL isInPanel, int panel,
         ret = SalamanderGeneral->CloseDetachedFS(parent, pluginFS);
     }
     if (!ret)
-        ((CPluginFSInterface*)pluginFS)->CalledFromDisconnectDialog = FALSE; // vypneme potlaceni zbytecnych dotazu
+        ((CPluginFSInterface*)pluginFS)->CalledFromDisconnectDialog = FALSE; // disable the suppression of unnecessary prompts
     return ret;
 }
 
@@ -399,45 +399,45 @@ CPluginInterfaceForFS::ExecuteOnFS(int panel, CPluginFSInterfaceAbstract* plugin
 #endif // DEMOPLUG_QUIET
 
     CPluginFSInterface* fs = (CPluginFSInterface*)pluginFS;
-    if (isDir) // podadresar nebo up-dir
+    if (isDir) // subdirectory or up-dir
     {
         char newPath[MAX_PATH];
         strcpy(newPath, fs->Path);
-        if (isDir == 2) // up-dir
+        if (isDir == 2) // parent directory
         {
             char* cutDir = NULL;
-            if (SalamanderGeneral->CutDirectory(newPath, &cutDir)) // zkratime cestu o posl. komponentu
+            if (SalamanderGeneral->CutDirectory(newPath, &cutDir)) // shorten the path by the last component
             {
-                int topIndex; // pristi top-index, -1 -> neplatny
+                int topIndex; // next top index, -1 -> invalid
                 if (!fs->TopIndexMem.FindAndPop(newPath, topIndex))
                     topIndex = -1;
-                // zmenime cestu v panelu
-                fs = NULL; // po ChangePanelPathToXXX uz ukazatel nemusi byt platny
+                // change the path in the panel
+                fs = NULL; // after ChangePanelPathToXXX the pointer may no longer be valid
                 SalamanderGeneral->ChangePanelPathToPluginFS(panel, pluginFSName, newPath, NULL,
                                                              topIndex, cutDir);
             }
         }
-        else // podadresar
+        else // subdirectory
         {
-            // zaloha udaju pro TopIndexMem (backupPath + topIndex)
+            // backup data for TopIndexMem (backupPath + topIndex)
             char backupPath[MAX_PATH];
             strcpy(backupPath, newPath);
             int topIndex = SalamanderGeneral->GetPanelTopIndex(panel);
 
-            if (SalamanderGeneral->SalPathAppend(newPath, file.Name, MAX_PATH)) // nastavime cestu
+            if (SalamanderGeneral->SalPathAppend(newPath, file.Name, MAX_PATH)) // set the path
             {
-                // zmenime cestu v panelu
-                fs = NULL; // po ChangePanelPathToXXX uz ukazatel nemusi byt platny
+                // change the path in the panel
+                fs = NULL; // after ChangePanelPathToXXX the pointer may no longer be valid
                 if (SalamanderGeneral->ChangePanelPathToPluginFS(panel, pluginFSName, newPath))
                 {
-                    fs = (CPluginFSInterface*)SalamanderGeneral->GetPanelPluginFS(panel); // pro pripad zmeny FS v panelu musime vytahnout aktualni objekt
-                    if (fs != NULL && fs == pluginFS)                                     // pokud jde o puvodni FS
-                        fs->TopIndexMem.Push(backupPath, topIndex);                       // zapamatujeme top-index pro navrat
+                    fs = (CPluginFSInterface*)SalamanderGeneral->GetPanelPluginFS(panel); // in case the FS in the panel changes we must fetch the current object
+                    if (fs != NULL && fs == pluginFS)                                     // if it is the original FS
+                        fs->TopIndexMem.Push(backupPath, topIndex);                       // remember the top index for returning
                 }
             }
         }
     }
-    else // soubor
+    else // file
     {
         SalamanderGeneral->SetUserWorkedOnPanelPath(panel);
         SalamanderGeneral->ExecuteAssociation(SalamanderGeneral->GetMainWindowHWND(), fs->Path, file.Name);
@@ -451,7 +451,7 @@ CPluginInterfaceForFS::ExecuteOnFS(int panel, CPluginFSInterfaceAbstract* plugin
 
 void CTopIndexMem::Push(const char* path, int topIndex)
 {
-    // zjistime, jestli path navazuje na Path (path==Path+"\\jmeno")
+    // determine whether path follows Path (path == Path+"\\name")
     const char* s = path + strlen(path);
     if (s > path && *(s - 1) == '\\')
         s--;
@@ -471,9 +471,9 @@ void CTopIndexMem::Push(const char* path, int topIndex)
         ok = s - path == l && SalamanderGeneral->StrNICmp(path, Path, l) == 0;
     }
 
-    if (ok) // navazuje -> zapamatujeme si dalsi top-index
+    if (ok) // it follows -> remember the next top index
     {
-        if (TopIndexesCount == TOP_INDEX_MEM_SIZE) // je potreba vyhodit z pameti prvni top-index
+        if (TopIndexesCount == TOP_INDEX_MEM_SIZE) // need to remove the first top index from memory
         {
             int i;
             for (i = 0; i < TOP_INDEX_MEM_SIZE - 1; i++)
@@ -483,7 +483,7 @@ void CTopIndexMem::Push(const char* path, int topIndex)
         strcpy(Path, path);
         TopIndexes[TopIndexesCount++] = topIndex;
     }
-    else // nenavazuje -> prvni top-index v rade
+    else // does not follow -> first top index in the sequence
     {
         strcpy(Path, path);
         TopIndexesCount = 1;
@@ -493,7 +493,7 @@ void CTopIndexMem::Push(const char* path, int topIndex)
 
 BOOL CTopIndexMem::FindAndPop(const char* path, int& topIndex)
 {
-    // zjistime, jestli path odpovida Path (path==Path)
+    // determine whether path matches Path (path == Path)
     int l1 = (int)strlen(path);
     if (l1 > 0 && path[l1 - 1] == '\\')
         l1--;
@@ -515,13 +515,13 @@ BOOL CTopIndexMem::FindAndPop(const char* path, int& topIndex)
             topIndex = TopIndexes[--TopIndexesCount];
             return TRUE;
         }
-        else // tuto hodnotu jiz nemame (nebyla ulozena nebo mala pamet->byla vyhozena)
+        else // we no longer have this value (it was not stored or low memory discarded it)
         {
             Clear();
             return FALSE;
         }
     }
-    else // dotaz na jinou cestu -> vycistime pamet, doslo k dlouhemu skoku
+    else // request for another path -> clear the memory, a long jump occurred
     {
         Clear();
         return FALSE;
@@ -557,14 +557,14 @@ CPluginFSDataInterface::GetPluginIcon(const CFileData* file, int iconSize, BOOL&
     return icon; // icon or NULL (failure)
 }
 
-// globalni promenne pro nasledujici tri "get text" funkce
+// global variables for the next three "get text" functions
 CFSData* FSdata;
 SYSTEMTIME FSst;
 FILETIME FSft;
 int FSlen, FSlen2;
 
-// callback volany ze Salamandera pro ziskani textu
-// popis viz. spl_com.h / FColumnGetText
+// callback invoked by Salamander to obtain text
+// see spl_com.h / FColumnGetText for details
 void WINAPI GetTypeText()
 {
     FSdata = (CFSData*)((*TransferFileData)->PluginData);
@@ -627,7 +627,7 @@ void AddTypeColumn(BOOL leftPanel, CSalamanderViewAbstract* view, int& i, const 
     column.ID = COLUMN_ID_CUSTOM;
     column.Width = leftPanel ? LOWORD(DFSTypeWidth) : HIWORD(DFSTypeWidth);
     column.FixedWidth = leftPanel ? LOWORD(DFSTypeFixedWidth) : HIWORD(DFSTypeFixedWidth);
-    view->InsertColumn(++i, &column); // vlozime nas sloupec Type za originalni sloupec Type
+    view->InsertColumn(++i, &column); // insert our Type column after the original Type column
 }
 
 void AddTimeColumns(BOOL leftPanel, CSalamanderViewAbstract* view, int& i)
@@ -670,10 +670,10 @@ CPluginFSDataInterface::SetupView(BOOL leftPanel, CSalamanderViewAbstract* view,
 
     view->SetPluginSimpleIconCallback(PluginSimpleIconCallback);
 
-    if (view->GetViewMode() == VIEW_MODE_DETAILED) // upravime sloupce
+    if (view->GetViewMode() == VIEW_MODE_DETAILED) // adjust the columns
     {
-        // vyhodime sloupce Date + Time a na jejich pozici vlozime Created/Modified/Accessed
-        // a najdeme sloupec Type a nahradime ho nasim sloupcem Type
+        // remove the Date + Time columns and insert Created/Modified/Accessed in their place
+        // and find the Type column and replace it with our Type column
         int count = view->GetColumnsCount();
         BOOL timeColumnsDone = FALSE;
         //    BOOL typeColumnDone = FALSE;
@@ -682,39 +682,39 @@ CPluginFSDataInterface::SetupView(BOOL leftPanel, CSalamanderViewAbstract* view,
         {
             const CColumn* c = view->GetColumn(i);
             if (c->ID == COLUMN_ID_TYPE)
-            { // provedeme zamenu sloupce Type za nas
+            { // replace the Type column with ours
                 //        typeColumnDone = TRUE;
                 AddTypeColumn(leftPanel, view, i, c);
-                count = view->GetColumnsCount(); // pocet sloupcu se zmenil
-                continue;                        // pokracujeme s hledanim na dalsim 'i'
+                count = view->GetColumnsCount(); // the number of columns has changed
+                continue;                        // continue searching at the next 'i'
             }
             if (c->ID == COLUMN_ID_DATE || c->ID == COLUMN_ID_TIME)
-            { // vyhodime Date a Time, vlozime Created/Modified/Accessed
+            { // remove Date and Time, insert Created/Modified/Accessed
                 view->DeleteColumn(i);
                 if (!timeColumnsDone)
                 {
                     timeColumnsDone = TRUE;
-                    AddTimeColumns(leftPanel, view, i); // 'i' se zvetsi o pocet pridanych sloupcu
+                    AddTimeColumns(leftPanel, view, i); // 'i' increases by the number of added columns
                 }
-                i--;                             // jeden jsme smazali, vracime se na stejne 'i'
-                count = view->GetColumnsCount(); // pocet sloupcu se zmenil
+                i--;                             // we removed one, go back to the same 'i'
+                count = view->GetColumnsCount(); // the number of columns has changed
                 continue;
             }
         }
 
         /*
-    if (!typeColumnDone)  // sloupec Type zobrazime v kazdem pripade
+    if (!typeColumnDone)  // always display the Type column
     {
-      view->InsertStandardColumn(count, COLUMN_ID_TYPE);  // vytahneme standardni sloupec Type
+      view->InsertStandardColumn(count, COLUMN_ID_TYPE);  // pull in the standard Type column
       const CColumn *c = view->GetColumn(count);
       if (c != NULL && c->ID == COLUMN_ID_TYPE)
-      {   // provedeme zamenu sloupce Type za nas
+      {   // replace the Type column with ours
         AddTypeColumn(leftPanel, view, count, c);
         count = view->GetColumnsCount();
       }
     }
 */
-        if (!timeColumnsDone) // sloupce casu zobrazime v kazdem pripade
+        if (!timeColumnsDone) // always display the time columns
         {
             AddTimeColumns(leftPanel, view, count);
             count = view->GetColumnsCount();
@@ -853,18 +853,18 @@ CPluginFSDataInterface::GetInfoLineContent(int panel, const CFileData* file, BOO
     }
     else
     {
-        if (selectedFiles == 0 && selectedDirs == 0) // Information Line pro prazdny panel
+        if (selectedFiles == 0 && selectedDirs == 0) // Information Line for an empty panel
         {
-            // return FALSE;  // text at vypise Salamander
+            // return FALSE;  // let Salamander print the text
             strcpy(buffer, "No items found");
             hotTextsCount = 0;
             return TRUE;
         }
-        // return FALSE;  // pocty oznacenych souboru a adresaru at vypise Salamander
+        // return FALSE;  // let Salamander print the counts of selected files and directories
         if (displaySize)
         {
             /*
-      // testneme soucet jeste jednou
+      // double-check the sum
       CQuadWord mySize(0, 0);
       int index = 0;
       const CFileData *file = NULL;
@@ -877,10 +877,10 @@ CPluginFSDataInterface::GetInfoLineContent(int panel, const CFileData* file, BOO
 
             char num[100];
             SalamanderGeneral->PrintDiskSize(num, selectedSize, 0);
-            // pro jednoduchost nepouzivame "plural" stringy (viz SalamanderGeneral->ExpandPluralString())
+            // for simplicity we do not use "plural" strings (see SalamanderGeneral->ExpandPluralString())
             sprintf(buffer, "Selected (<%s>): <%d> files and <%d> directories", num, selectedFiles, selectedDirs);
 
-            /*    // ukazka pouziti standardniho retezce
+            /*    // example of using a standard string
       SalamanderGeneral->ExpandPluralBytesFilesDirs(buffer, 1000, selectedSize, selectedFiles,
                                                     selectedDirs, TRUE);
 */
