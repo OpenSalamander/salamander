@@ -528,7 +528,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_CREATE:
     {
         InitializeGraphics();
-        DragAcceptFiles(HWindow, TRUE); // drag&drop open file
+        DragAcceptFiles(HWindow, TRUE); // allow opening files via drag and drop
         MainMenu = SalamanderGUI->CreateMenuPopup();
         if (MainMenu == NULL)
             return -1;
@@ -583,7 +583,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_DESTROY:
     {
-        DragAcceptFiles(HWindow, FALSE); // drag&drop open file
+        DragAcceptFiles(HWindow, FALSE); // allow opening files via drag and drop
         if (CfgSavePosition)
         {
             CfgWindowPlacement.length = sizeof(WINDOWPLACEMENT);
@@ -620,12 +620,12 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         break;
     }
 
-    case WM_DROPFILES: // drag&drop open file
+    case WM_DROPFILES: // allow opening files via drag and drop
     {
         UINT drag;
         char path[MAX_PATH];
 
-        drag = DragQueryFile((HDROP)wParam, 0xFFFFFFFF, NULL, 0); // how many files were dropped on us
+        drag = DragQueryFile((HDROP)wParam, 0xFFFFFFFF, NULL, 0); // determine how many files were dropped onto the window
         if (drag > 0)
         {
             DragQueryFile((HDROP)wParam, 0, path, MAX_PATH);
@@ -660,9 +660,9 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             HDWP hdwp = HANDLES(BeginDeferWindowPos(2));
             if (hdwp != NULL)
             {
-                // +4: when increasing the window width I was missing a repaint of the last 4 points
-                // in the rebar; even after several hours I did not find the cause; in Salamander it works;
-                // for now I'm handling it like this; maybe I'll remember later where the issue is
+                // +4: without this offset the last four pixels of the rebar failed to repaint while resizing the window.
+                // I could not track down the cause even after spending several hours on it (Salamander itself works fine).
+                // Leave the workaround in place for now and revisit once we rediscover the root cause.
                 hdwp = HANDLES(DeferWindowPos(hdwp, HRebar, NULL,
                                               0, 0, r.right + 4, rebarHeight,
                                               SWP_NOACTIVATE | SWP_NOZORDER));
@@ -807,7 +807,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     FillMenuFilter(popup, CM_FILTER_FIRST, FILTER_COUNT);
 
-                    // using windows popup menu
+                    // use the Windows popup menu
                     HMENU hMenu = CreatePopupMenu();
                     popup->FillMenuHandle(hMenu);
                     TPMPARAMS tpm;
@@ -817,7 +817,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     TrackPopupMenuEx(hMenu, flags, r.left, r.bottom, HWindow, &tpm);
                     DestroyMenu(hMenu);
 
-                    // using Salamander popup menu
+                    // use the Salamander popup menu
                     //               popup->Track(0, r.left, r.bottom, HWindow, &r);
 
                     SalamanderGUI->DestroyMenuPopup(popup);
