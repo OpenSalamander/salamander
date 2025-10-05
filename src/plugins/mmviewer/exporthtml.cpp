@@ -418,7 +418,7 @@ int ExportToHTML(const char* fname, COutput& Output)
             }
             else
             {
-                //je to header
+                // it's a header
                 if (tableOpen)
                 {
                     WriteHTMLTableEnd(text);
@@ -431,7 +431,7 @@ int ExportToHTML(const char* fname, COutput& Output)
         }
         else
         {
-            //je to separator - ignoruji
+            // it's a separator - ignore it
         }
     }
 
@@ -441,7 +441,7 @@ int ExportToHTML(const char* fname, COutput& Output)
     WriteHTMLSignature(text);
     WriteHTMLBodyEnd(text);
 
-    //zapis do souboru
+    // write to file
     BOOL r = FALSE;
 
     FILE* f = fopen(fname, "wt");

@@ -74,7 +74,7 @@ CParserOGG::OpenFile(const char* fileName)
 CParserResultEnum
 CParserOGG::CloseFile()
 {
-    // pokud neproslo ov_open, f je vzdy NULL
+    // if ov_open failed, f is always NULL
     if (f)
     {
         ov_clear(&vf);
@@ -90,7 +90,7 @@ CParserOGG::GetFileInfo(COutputInterface* output)
 {
     if (f)
     {
-        // v tomto poradi budou tagy vypisovany. prehazujte poradi dle libosti
+        // tags will be printed in this order. reorder them as you like
         // musi byt upcase
         OGG_COMMENT comments[] = {
             {"TRACKNUMBER", IDS_OGG_TRACK, NULL},

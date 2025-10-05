@@ -62,7 +62,7 @@ BOOL CParserMOD::ReadScreamTrackerModule()
         if (fread(&type, 1, 1, f) != 1)
             return FALSE;
 
-        if (type == 16) //jde o S3M
+        if (type == 16) // this indicates an S3M module
         {
             if (fseek(f, 0x2C, SEEK_SET) != 0)
                 return FALSE;
@@ -217,10 +217,10 @@ BOOL CParserMOD::ReadMultiTrackerModule()
 
 BOOL CParserMOD::ReadProTrackerModule()
 {
-    //u tohodle stupidniho formatu nejde kloudne zjistit, zda se opravdu
-    //jedna o mod soubor, tak se zkusim chytit aspon nuloveho terminatoru
-    //za nazvem songu. Pokud tam je, beru to jako ze je to MOD.
-    //Take zkontroluji, zda tech 19 znaku jsou norm. znaky
+    // with this stupid format it is hard to tell whether it really
+    // is a MOD file, so I'll try to catch at least the null terminator
+    // after the song name. If it is there, I assume it is a MOD.
+    // I also check that those 19 characters are normal characters
 
     memset(modulename, '\0', sizeof(modulename));
 
@@ -266,7 +266,7 @@ BOOL CParserMOD::Read669Module()
             return FALSE;
         modulename[108] = '\0';
 
-        //zjistim kde text zacina
+        // find where the text starts
         int i;
         for (i = 0; i < 108; i++)
         {
@@ -282,7 +282,7 @@ BOOL CParserMOD::Read669Module()
             i++;
         }
 
-        //smazu koncove mezery
+        // remove trailing spaces
         for (i = 107; i >= 0; i--)
         {
             if (modulename[i] == 0x20)

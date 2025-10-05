@@ -29,10 +29,10 @@ CCommonDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // horizontalni i vertikalni vycentrovani dialogu k parentu
+        // horizontal and vertical centering of the dialog to the parent
         if (Parent != NULL)
             SalGeneral->MultiMonCenterWindow(HWindow, Parent, TRUE);
-        break; // chci focus od DefDlgProc
+        break; // want focus from DefDlgProc
     }
     }
     return CDialog::DialogProc(uMsg, wParam, lParam);
@@ -61,14 +61,14 @@ CAboutDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // dosadime aktualni verzi
+        // insert the current version
         char buff[1000];
         char buff2[1000];
         GetDlgItemText(HWindow, IDC_ABOUT_TITLE, buff, 1000);
         wsprintf(buff2, buff, VERSINFO_VERSION);
         SetDlgItemText(HWindow, IDC_ABOUT_TITLE, buff2);
         SetDlgItemText(HWindow, IDC_ABOUT_COPYRIGHT, VERSINFO_COPYRIGHT);
-        // jmeno pluginu a verze budou tucne
+        // the plugin name and version will be bold
         SalamanderGUI->AttachStaticText(HWindow, IDC_ABOUT_TITLE, STF_BOLD);
         SalamanderGUI->AttachStaticText(HWindow, IDC_ABOUT_DEPRO, STF_BOLD);
 

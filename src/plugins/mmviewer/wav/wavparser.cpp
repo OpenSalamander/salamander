@@ -221,7 +221,7 @@ HRESULT CMMIO::ResetFile()
 CParserResultEnum
 CParserWAV::OpenFile(const char* fileName)
 {
-    //mmioOpen chce nekonstantni char ;-0
+    // mmioOpen wants a non-const char ;-0
     char fnamecpy[MAX_PATH];
     strcpy(fnamecpy, fileName);
 

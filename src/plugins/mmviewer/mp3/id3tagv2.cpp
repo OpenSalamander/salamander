@@ -113,7 +113,7 @@ ID3TAGV2_FRAME_HANDLE id3v2_frames[] =
         {'W', 'P', 'B', 'W', 'P', 'U', 'B', ReadLinkFrm, 19},
         {'W', 'X', 'X', 'W', 'X', 'X', 'X', ReadUserURLFrm, 20},
 
-        //nove framy od verze 2.4
+        // new frames since version 2.4
         {'-', '-', '-', 'A', 'S', 'P', 'I', NULL, -1},            //Audio seek point index [F:4.30]
         {'-', '-', '-', 'E', 'Q', 'U', '2', NULL, -1},            //Equalisation (2) [F:4.12]
         {'-', '-', '-', 'R', 'V', 'A', '2', NULL, -1},            //Relative volume adjustment (2) [F:4.11]
@@ -121,7 +121,7 @@ ID3TAGV2_FRAME_HANDLE id3v2_frames[] =
         {'-', '-', '-', 'S', 'I', 'G', 'N', NULL, -1},            //Signature frame [F:4.28]
         {'-', '-', '-', 'T', 'D', 'E', 'N', ReadTextInfoFrm, -1}, //Encoding time [F:4.2.5]
         {'-', '-', '-', 'T', 'D', 'O', 'R', ReadTextInfoFrm, -1}, //Original release time [F:4.2.5]
-        {'-', '-', '-', 'T', 'D', 'R', 'C', ReadTextInfoFrm, 3},  //Recording time [F:4.2.5] <-- nahrazka TYER !!
+        {'-', '-', '-', 'T', 'D', 'R', 'C', ReadTextInfoFrm, 3},  //Recording time [F:4.2.5] <-- replacement for TYER !!
         {'-', '-', '-', 'T', 'D', 'R', 'L', ReadTextInfoFrm, -1}, //Release time [F:4.2.5]
         {'-', '-', '-', 'T', 'D', 'T', 'G', ReadTextInfoFrm, -1}, //Tagging time [F:4.2.5]
         {'-', '-', '-', 'T', 'I', 'P', 'L', ReadTextInfoFrm, -1}, //Involved people list [F:4.2.2]
@@ -230,7 +230,7 @@ static void WipeOutNewLines(char* str, int len)
     int idx = 0;
     while (idx < len)
     {
-        if (str[idx + 1]) //kontrola windows/dos newline
+        if (str[idx + 1]) // check for Windows/DOS newline
         {
             if ((str[idx] == 13) && (str[idx + 1] == 10))
             {
@@ -239,7 +239,7 @@ static void WipeOutNewLines(char* str, int len)
             }
         }
 
-        if (str[idx] == 10) //kontrola unix newline
+        if (str[idx] == 10) // check for Unix newline
         {
             str[idx] = 32;
         }
@@ -280,14 +280,14 @@ BOOL SwitchUnicodeString(LPWSTR wstr, int len)
     return TRUE;
 }
 
-//precte retezec a vzdy vytvori NULL/NULLNULL
+// reads a string and always creates NULL/NULLNULL
 BOOL ReadStr(FILE* f, char** out_str, long& size, int encoding = 0)
 {
     if (*out_str)
         free(*out_str);
 
     if (size == 0)
-        return TRUE; //vycistil jsem retezec a konec
+        return TRUE; // the string has been cleaned and that's it
 
     int nullterm = (encoding == 0) ? 1 : 2;
 
@@ -302,10 +302,10 @@ BOOL ReadStr(FILE* f, char** out_str, long& size, int encoding = 0)
             return FALSE;
         }
 
-        //pridal jsem NULL terminator retezce (i pro unicode)
+        // appended the string's NULL terminator (even for Unicode)
         (*out_str)[size] = 0;
 
-        if (encoding == 1) //a dalsi pro unicode
+        if (encoding == 1) // and another one for Unicode
             (*out_str)[size + 1] = 0;
 
         size += nullterm;
@@ -319,9 +319,9 @@ BOOL ConvertStr(char** out_str, long& size, int encoding = 0)
 {
     assert(size > 0);
     /*encoding:
-    0 - ISO-8859-1 .....na konci NULL terminator
-    1 - 16bit Unicode ..na zacatku Unicode BOM ($FF FE or $FE FF) - definuje byte order
-                        na konci Unicode NULL ($FF FE 00 00 nebo $FE FF 00 00).
+    0 - ISO-8859-1 ..... NULL terminator at the end
+    1 - 16bit Unicode .. Unicode BOM at the beginning ($FF FE or $FE FF) - defines byte order
+                        Unicode NULL at the end ($FF FE 00 00 or $FE FF 00 00).
     2 - UTF16 BE with BOM
     3 - UTF8 without BOM
   */
@@ -336,15 +336,15 @@ BOOL ConvertStr(char** out_str, long& size, int encoding = 0)
             if (size < 4)
                 return FALSE;
 
-            if (((*out_str)[0] == 0xFE) && ((*out_str)[1] == 0xFF)) //obraceny BOM, prohodit
+            if (((*out_str)[0] == 0xFE) && ((*out_str)[1] == 0xFF)) // reversed BOM, swap it
                 SwitchUnicodeString(((WCHAR*)(*out_str)) + 1, size - 2);
 
             assert((size % 2) == 0);
 
-            if ((size % 2) != 0) //to je nakej kix, zkus to takhle
+            if ((size % 2) != 0) // that's some glitch, try it like this
                 size++;
 
-            //a tady uz mame ansi size
+            // and now we have the ANSI size
             size = (size - 2 /*-BOM*/) / 2;
 
             int new_size = Unicode16ToAnsi(NULL, ((WCHAR*)(*out_str)) + 1, size, 0);
@@ -358,7 +358,7 @@ BOOL ConvertStr(char** out_str, long& size, int encoding = 0)
                 return FALSE;
             }
 
-            Unicode16ToAnsi(new_out_str, ((WCHAR*)(*out_str)) + 1, size, new_size); //zkonvertuj (preskocime BOM)
+            Unicode16ToAnsi(new_out_str, ((WCHAR*)(*out_str)) + 1, size, new_size); // convert (skip the BOM)
             size = new_size;
 
             //free(*out_str);
@@ -371,7 +371,7 @@ BOOL ConvertStr(char** out_str, long& size, int encoding = 0)
             return FALSE;
 
         (*out_str)[size - 1] = '\0';
-        WipeOutBlanks(size - 1, *out_str); //smaz pripadne prebytecne mezery (u tagu1 byvaly, tady asi ne, ale sichr je sichr)
+        WipeOutBlanks(size - 1, *out_str); // remove any extra spaces (they were in tag1, probably not here, but better safe)
         WipeOutNewLines(*out_str, size - 1);
 
         return TRUE;
@@ -380,7 +380,7 @@ BOOL ConvertStr(char** out_str, long& size, int encoding = 0)
     return FALSE;
 }
 
-//rozdeli retezec na dva v miste, kde je NULL term.
+// splits the string into two at the point where the NULL terminator is
 BOOL BreakStr(char** out_str, int size, int encoding, char** pp1, int& sizep1, char** pp2, int& sizep2, BOOL second_is_ansi = FALSE)
 {
     char* part1;
@@ -402,7 +402,7 @@ BOOL BreakStr(char** out_str, int size, int encoding, char** pp1, int& sizep1, c
         while (*part2 != '\0')
             part2++;
 
-        part2++; //ted preskocim i ten null terminator
+        part2++; // now skip the null terminator as well
 
         size1 = (long)(part2 - part1);
         size2 = size - size1;
@@ -423,7 +423,7 @@ BOOL BreakStr(char** out_str, int size, int encoding, char** pp1, int& sizep1, c
         while (*ws != 0x0000)
             ws++;
 
-        ws++; //ted preskocim i ten null terminator
+        ws++; // now skip the null terminator as well
 
         size1 = (long)(((char*)(ws)) - part1);
         size2 = size - size1;
@@ -478,7 +478,7 @@ BOOL ReadTextInfoFrm(FILE* f, const ID3TagV2FrameHeaderAbstract* pfh, char** out
         {
             if ((*out_str) && pfh->CompareID(id3v2_frames[26]))
             {
-                //specialni prefiltrovani GENRE (zavorky s cislem jakozto index v tag1 genre-listu...)
+                // special filtering of GENRE (parentheses with a number as an index in the tag1 genre list...)
                 char* tmp;
                 char* string = *out_str;
                 char* new_out_str = NULL;
@@ -487,7 +487,7 @@ BOOL ReadTextInfoFrm(FILE* f, const ID3TagV2FrameHeaderAbstract* pfh, char** out
                 {
                     if (strlen(tmp) > 1)
                     {
-                        //Zkonvertuj genre zapsane jako '(3)Dance' --> 'Dance'
+                        // Convert genre written as '(3)Dance' --> 'Dance'
                         new_out_str = _strdup /*SalGeneral->DupStr*/ (tmp + 1);
                     }
                     else
@@ -526,11 +526,11 @@ void ReadBreakStr(FILE* f, char** out_str, long size, int encoding)
         int p1size;
         int p2size;
 
-        //komentar se sklada ze 2 casti. Mezi nimi je NULL terminator. Rozdelim je
+        // a comment consists of two parts. Between them is a NULL terminator. Split them
         if (BreakStr(out_str, size, encoding, &p1, p1size, &p2, p2size))
         {
             char separator[] = " - ";
-            char* new_out_str = (char*)malloc(p1size + p2size + sizeof(separator)); //to bude par znaku navic, to je OK
+            char* new_out_str = (char*)malloc(p1size + p2size + sizeof(separator)); // a few extra characters, that's OK
 
             if (new_out_str)
             {
@@ -551,7 +551,7 @@ void ReadBreakStr(FILE* f, char** out_str, long size, int encoding)
             if (*out_str && (p1 != *out_str /*sometimes!*/))
                 free(*out_str);
 
-            *out_str = new_out_str; //v pripade chyby alokace vrati null
+            *out_str = new_out_str; // returns null if allocation fails
         }
     }
 }
@@ -644,13 +644,13 @@ BOOL ID3TAGV2_Read(FILE* f, const ID3TAGV2_HEADER* pmh, ID3TAGV2_DECODED* phd)
     if (f && pmh && phd)
     {
         if (pmh->ver > 4)
-            return FALSE; //zatim nepodporuji verze > id3v2.4
+            return FALSE; // currently do not support versions > id3v2.4
 
         memset(phd, 0, sizeof(ID3TAGV2_DECODED));
 
         phd->version = MAKEWORD(pmh->ver, 2);
         phd->tagsize = ConvertInt28(pmh->size);
-        //projedu vsechny framy, ktere tag obsahuje
+        // iterate over all frames the tag contains
 
         ID3TagV2FrameHeaderAbstract* frm = NULL;
         switch (pmh->ver)
@@ -662,9 +662,9 @@ BOOL ID3TAGV2_Read(FILE* f, const ID3TAGV2_HEADER* pmh, ID3TAGV2_DECODED* phd)
         case 3:
         case 4:
 #ifdef PROCESS_ALSO_FUTURE_VERSIONS_OF_ID3V2TAG
-        default: //zkusim parsnout i tag budouci (vyssi) verze
+        default: // try to parse a future (higher) tag version as well
 #endif
-            frm = new ID3TagV23FrameHeader; //2.4 je stejny jako 2.3
+            frm = new ID3TagV23FrameHeader; // 2.4 is the same as 2.3
             break;
         }
 
@@ -708,7 +708,7 @@ BOOL ID3TAGV2_Read(FILE* f, const ID3TAGV2_HEADER* pmh, ID3TAGV2_DECODED* phd)
                     }
                 }
 
-                fseek(f, p + size, SEEK_SET); //nastav se na konec frame
+                fseek(f, p + size, SEEK_SET); // seek to the end of the frame
             }
         }
 
@@ -760,16 +760,16 @@ BOOL ID3TAGV2_ReadMainHead(FILE* f, ID3TAGV2_HEADER* pmh)
         {
             if (pmh->flags & ID3V2H_EXTENDED)
             {
-                //zpracuj extended header
+                // process the extended header
                 switch (pmh->ver)
                 {
-                case 2:           //v2.2
-                    return FALSE; //v teto verzi znamena 6 bit compressed. Komprimovane neberu. Extended zde neni
+                case 2:           // v2.2
+                    return FALSE; // in this version the 6th bit means compressed. We don't take compressed ones. Extended is not here
 
-                case 3: //v2.3
-                case 4: //v2.4
+                case 3: // v2.3
+                case 4: // v2.4
 #ifdef PROCESS_ALSO_FUTURE_VERSIONS_OF_ID3V2TAG
-                default: //zkusim parsnout i tag budouci (vyssi) verze
+                default: // try to parse a future (higher) tag version as well
 #endif
                 {
                     BYTE exthead_size[4];
@@ -782,7 +782,7 @@ BOOL ID3TAGV2_ReadMainHead(FILE* f, ID3TAGV2_HEADER* pmh)
                 break;
 
 #ifndef PROCESS_ALSO_FUTURE_VERSIONS_OF_ID3V2TAG
-                default: //zkusim parsnout i tag budouci (vyssi) verze
+                default: // try to parse a future (higher) tag version as well
                     return FALSE;
 #endif
                 }

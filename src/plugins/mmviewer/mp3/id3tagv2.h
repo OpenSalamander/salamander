@@ -59,7 +59,7 @@ DWORD ConvertInt28(const BYTE size[4]);
 DWORD ConvertBENumber(const BYTE size[4]);
 
 #define CONVERT_C2DW(b4) ConvertInt28(b4)
-#define CONVERT_C2DW4(b4) (DWORD(b4[0]) * 0x1000000 + DWORD(b4[1]) * 0x10000 + DWORD(b4[2]) * 0x100 + DWORD(b4[3])) //je mozne pouzit take convert BE number
+#define CONVERT_C2DW4(b4) (DWORD(b4[0]) * 0x1000000 + DWORD(b4[1]) * 0x10000 + DWORD(b4[2]) * 0x100 + DWORD(b4[3])) // you can also use convert BE number
 #define CONVERT_C2DW3(b3) (DWORD(b3[0]) * 0x10000 + DWORD(b3[1]) * 0x100 + DWORD(b3[2]))
 
 BOOL ID3TAGV2_ReadMainHead(FILE* f, ID3TAGV2_HEADER* pmh);
