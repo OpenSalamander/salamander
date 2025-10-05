@@ -388,7 +388,7 @@ CViewerThread::Body()
 
     CALL_STACK_MESSAGE1("ViewerThreadBody::SetEvent");
     BOOL openFile = *Success;
-    SetEvent(Continue); // pustime dale hl. thread, od tohoto bodu nejsou platne nasl. promenne:
+    SetEvent(Continue); // allow the main thread to continue; from here on the following variables are invalid:
     Continue = NULL;    // clearing is unnecessary, kept only for readability
     Lock = NULL;        // clearing is unnecessary, kept only for readability
     LockOwner = NULL;   // clearing is unnecessary, kept only for readability
@@ -434,7 +434,7 @@ CPluginInterfaceForViewer::ViewFile(const char* name, int left, int top, int wid
     }
 
     // DemoPlug does not use 'viewerData'; otherwise we would pass the values (not references)
-    // do threadu vieweru...
+    // to the viewer thread...
     BOOL success = FALSE;
     CViewerThread* t = new CViewerThread(name, left, top, width, height,
                                          showCmd, alwaysOnTop, returnLock, lock,

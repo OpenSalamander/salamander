@@ -237,7 +237,7 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
       int errTextID;
       char nextFocus[MAX_PATH];
       SalamanderGeneral->SalUpdateDefaultDir(TRUE);
-      if (!SalamanderGeneral->SalGetFullName(path, &errTextID, "c:\\zumpa", nextFocus))
+      if (!SalamanderGeneral->SalGetFullName(path, &errTextID, "c:\\junk", nextFocus))
       {
         char buf[200];
         SalamanderGeneral->GetGFNErrorText(errTextID, buf, 200);
@@ -452,7 +452,7 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
       strcpy(fileComp, "prn");
       ok = SalamanderGeneral->SalIsValidFileNameComponent(fileComp);
       SalamanderGeneral->SalMakeValidFileNameComponent(fileComp);
-      strcpy(fileComp, "ahoj:");
+      strcpy(fileComp, "hello:");
       ok = SalamanderGeneral->SalIsValidFileNameComponent(fileComp);
       SalamanderGeneral->SalMakeValidFileNameComponent(fileComp);
 */
@@ -844,7 +844,7 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
         SalamanderGeneral->ShowMessageBox("Unknown command.", LoadStr(IDS_PLUGINNAME), MSGBOX_ERROR);
         break;
     }
-    return FALSE; // keep the selection polozky v panelu
+    return FALSE; // keep the selection in the panel
 }
 
 BOOL WINAPI
