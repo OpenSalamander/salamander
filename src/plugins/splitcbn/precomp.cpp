@@ -3,8 +3,8 @@
 
 #include "precomp.h"
 
-// projekt SPLITCBN obsahuje tri skupiny modulu
+// the SPLITCBN project contains three groups of modules
 //
-// 1) modul precomp.cpp, ktery postavi splitcbn.pch (/Yc"precomp.h")
-// 2) moduly vyuzivajici splitcbn.pch (/Yu"precomp.h")
-// 3) commony nepouzivaji precompiled headers
+// 1) module precomp.cpp, which builds splitcbn.pch (/Yc"precomp.h")
+// 2) modules using splitcbn.pch (/Yu"precomp.h")
+// 3) commons that do not use precompiled headers

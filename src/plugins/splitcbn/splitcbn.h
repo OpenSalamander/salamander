@@ -51,8 +51,8 @@ extern BOOL configSplitToOther;
 extern BOOL configCombineToOther;
 extern BOOL configSplitToSubdir;
 
-extern HINSTANCE DLLInstance; // handle k SPL-ku - jazykove nezavisle resourcy
-extern HINSTANCE HLanguage;   // handle k SLG-cku - jazykove zavisle resourcy
+extern HINSTANCE DLLInstance; // handle to SPL - language-independent resources
+extern HINSTANCE HLanguage;   // handle to SLG - language-dependent resources
 char* LoadStr(int resID);
 void CenterWindow(HWND hWnd);
 void GetInfo(char* buffer, CQuadWord& size);
