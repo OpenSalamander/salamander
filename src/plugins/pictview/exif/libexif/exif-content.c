@@ -28,7 +28,7 @@
 #include <string.h>
 
 #pragma warning(push)
-#pragma warning(disable: 4267) // FIXME_X64 - docasne potlacen warning, vyresit
+#pragma warning(disable: 4267) // FIXME_X64 - warning temporarily suppressed, fix it
 
 /* unused constant
  * static const unsigned char ExifHeader[] = {0x45, 0x78, 0x69, 0x66, 0x00, 0x00};
@@ -329,4 +329,4 @@ exif_content_fix (ExifContent *c)
 	}
 }
 
-#pragma warning(pop) // FIXME_X64 - docasne potlacen warning, vyresit
+#pragma warning(pop) // FIXME_X64 - warning temporarily suppressed, fix it
