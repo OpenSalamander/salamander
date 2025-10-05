@@ -11,15 +11,15 @@
 
 #include "precomp.h"
 
-// FS-name pridelene Salamanderem po loadu pluginu
+// FS name assigned by Salamander after the plugin loads
 char AssignedFSName[MAX_PATH] = "";
 extern int AssignedFSNameLen = 0;
 
-// image-list pro jednoduche ikony FS
+// image list for simple FS icons
 HIMAGELIST DFSImageList = NULL;
 
-// globalni promenne, do ktery si ulozim ukazatele na globalni promenne v Salamanderovi
-// pro archiv i pro FS - promenne se sdileji
+// global variables used to cache pointers to Salamander-wide variables
+// shared between the archiver and the FS
 const CFileData** TransferFileData = NULL;
 int* TransferIsDir = NULL;
 char* TransferBuffer = NULL;
@@ -28,14 +28,14 @@ DWORD* TransferRowData = NULL;
 CPluginDataInterfaceAbstract** TransferPluginDataIface = NULL;
 DWORD* TransferActCustomData = NULL;
 
-// pomocna promenna pro testy
+// helper variable for tests
 CPluginFSInterfaceAbstract* LastDetachedFS = NULL;
 
-// struktura pro predani dat z "Connect" dialogu do nove vytvoreneho FS
+// structure used to hand over data from the "Connect" dialog to a newly created FS
 CConnectData ConnectData;
 
 // ****************************************************************************
-// SEKCE FILE SYSTEMU
+// FILE SYSTEM SECTION
 // ****************************************************************************
 
 BOOL InitFS()
@@ -46,11 +46,12 @@ BOOL InitFS()
         TRACE_E("Unable to create image list.");
         return FALSE;
     }
-    ImageList_SetImageCount(DFSImageList, 2); // inicializace
+    ImageList_SetImageCount(DFSImageList, 2); // initialize
     ImageList_SetBkColor(DFSImageList, SalamanderGeneral->GetCurrentColor(SALCOL_ITEM_BK_NORMAL));
 
-    // ikony jsou na ruznych Windows ruzne, nejlepsi je ziskat je dynamicky (napr. ikonu adresare
-    // ze systemoveho adresare); zde jednoduse pouzijeme jednu verzi ikony (napr. na W2K nesedi)
+    // icons differ across Windows versions, ideally we would load them dynamically (e.g. the
+    // directory icon from the system directory); here we simply use a single icon variant
+    // (which does not match Windows 2000 for example)
     ImageList_ReplaceIcon(DFSImageList, 0, HANDLES(LoadIcon(DLLInstance, MAKEINTRESOURCE(IDI_DIR))));
     ImageList_ReplaceIcon(DFSImageList, 1, HANDLES(LoadIcon(DLLInstance, MAKEINTRESOURCE(IDI_FILE))));
 
@@ -71,10 +72,10 @@ CPluginFSInterfaceAbstract* WINAPI
 CPluginInterfaceForFS::OpenFS(const char* fsName, int fsNameIndex)
 {
 
-    // tady by se mel podle 'fsNameIndex' vytvaret pokazde jiny objekt FS...
+    // this is where a dedicated FS object should be created for each fsNameIndex...
 
-    // v 'fsName' je videt, jak uzivatel napsal jmeno FS ("Ftp", "ftp", "FTP",
-    // atd. - porad jde o jedno jmeno FS)
+    // 'fsName' shows how the user typed the FS name ("Ftp", "ftp", "FTP",
+    // etc. - it is still the same FS name)
 
     ActiveFSCount++;
     return new CPluginFSInterface;
@@ -105,18 +106,18 @@ INT_PTR CALLBACK ConnectDlgProc(HWND HWindow, UINT uMsg, WPARAM wParam, LPARAM l
     {
         SalamanderGUI->ArrangeHorizontalLines(HWindow);
 
-        // horizontalni i vertikalni vycentrovani dialogu k parentu
+        // horizontally and vertically center the dialog relative to the parent
         HWND hParent = GetParent(HWindow);
         if (hParent != NULL)
             SalamanderGeneral->MultiMonCenterWindow(HWindow, hParent, TRUE);
 
-        // vlozeni dat do dialogu
+        // populate the dialog with data
         SalamanderGeneral->LoadComboFromStdHistoryValues(GetDlgItem(HWindow, IDC_PATH),
                                                          History, HistoryCount);
         SendDlgItemMessage(HWindow, IDC_PATH, CB_LIMITTEXT, MAX_PATH - 1, 0);
         SendDlgItemMessage(HWindow, IDC_PATH, WM_SETTEXT, 0, (LPARAM)ConnectPath);
 
-        SalamanderGeneral->InstallWordBreakProc(GetDlgItem(HWindow, IDC_PATH)); // instalujeme WordBreakProc do comboboxu
+        SalamanderGeneral->InstallWordBreakProc(GetDlgItem(HWindow, IDC_PATH)); // install WordBreakProc into the combo box
 
         return TRUE; // focus od std. dialogproc
     }
@@ -127,7 +128,7 @@ INT_PTR CALLBACK ConnectDlgProc(HWND HWindow, UINT uMsg, WPARAM wParam, LPARAM l
         {
         case IDOK:
         {
-            // ziskani dat z dialogu
+            // read data from the dialog
             SendDlgItemMessage(HWindow, IDC_PATH, WM_GETTEXT, MAX_PATH, (LPARAM)ConnectPath);
             SalamanderGeneral->AddValueToStdHistoryValues(History, HistoryCount, ConnectPath, FALSE);
         }
@@ -153,10 +154,10 @@ CPluginInterfaceForFS::ExecuteChangeDriveMenuItem(int panel)
         if (DialogBoxParam(HLanguage, MAKEINTRESOURCE(IDD_CONNECT),
                            SalamanderGeneral->GetMsgBoxParent(), ConnectDlgProc, NULL) == IDOK)
         {
-            // nechame prekreslit hlavni okno (aby user cely connect nekoukal na zbytek po connect dialogu)
+            // repaint the main window so the user does not keep staring at stale content after the dialog
             UpdateWindow(SalamanderGeneral->GetMainWindowHWND());
 
-            // zmenime cestu v aktualnim panelu na AssignedFSName:ConnectPath
+            // change the active panel path to AssignedFSName:ConnectPath
             ConnectData.UseConnectData = TRUE;
             lstrcpyn(ConnectData.UserPart, ConnectPath, MAX_PATH);
             int failReason;
