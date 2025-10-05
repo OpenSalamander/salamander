@@ -14,7 +14,7 @@
 // CXDVDFS
 //
 
-/* typy */
+/* types */
 #define Uint8 BYTE
 #define Uint16 WORD
 #define Uint32 DWORD
@@ -44,7 +44,7 @@ protected:
 public:
     CXDVDFS(CISOImage* image, DWORD extent);
     virtual ~CXDVDFS();
-    // metody
+    // methods
 
     virtual BOOL Open(BOOL quiet);
     virtual BOOL DumpInfo(FILE* outStream);

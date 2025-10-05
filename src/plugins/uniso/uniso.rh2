@@ -7,18 +7,18 @@
 #endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
 
 #define IDC_STATIC_1 3000
-#include "statics.rh2"   // 3000 az 3039 jsou timto zabrane !!!
+#include "statics.rh2"   // 3000 to 3039 are taken by this!!!
 
 //***********************************************************************************
 //
-// ikony, bitmapy, kurzory
+// icons, bitmaps, cursors
 //
 
 #define IDB_UNISO                    900
 
 //***********************************************************************************
 //
-// texty
+// strings
 //
 
 #define IDS_PLUGINNAME              1000

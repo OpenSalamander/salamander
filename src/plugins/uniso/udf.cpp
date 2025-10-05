@@ -22,7 +22,7 @@ typedef wchar_t unicode_t;
 // Maximum length of filenames allowed in UDF.
 #define MAX_UDF_FILE_NAME_LEN 2048
 
-// Flagy pro testovani File Identifier Descriptoru
+// Flags for testing the File Identifier Descriptor
 #define UDF_HIDDEN 0x01
 #define UDF_DIRECTORY 0x02
 #define UDF_DELETED 0x04
@@ -711,7 +711,7 @@ void CUDF::ReadFileEntry(BYTE sector[], bool bEFE, CFileEntry* fe)
 }
 
 //
-// vrati delku precteneho alloc descriptoru
+// returns the length of the allocation descriptor read
 int CUDF::ReadAllocDesc(BYTE data[], CFileEntry* fe, BYTE* vat, DWORD* o)
 {
     CAD ad;
@@ -792,7 +792,7 @@ BOOL CUDF::AddFileDir(const char* path, char* fileName, BYTE fileChar, CAD* icb,
 
         fd.DosName = NULL;
 
-        fd.Attr = FILE_ATTRIBUTE_READONLY; // vse je defaultne read-only
+        fd.Attr = FILE_ATTRIBUTE_READONLY; // everything is read-only by default
         fd.Hidden = 0;
         fd.IsOffline = 0;
 
@@ -811,7 +811,7 @@ BOOL CUDF::AddFileDir(const char* path, char* fileName, BYTE fileChar, CAD* icb,
             UDFTimeStampToFileTime(PVD.RecordingDateandTime, &fd.LastWrite);
 
             if (!SortByExtDirsAsFiles)
-                fd.Ext = fd.Name + fd.NameLen; // adresare nemaji priponu
+                fd.Ext = fd.Name + fd.NameLen; // directories do not have an extension
 
             if (dir && !dir->AddDir(path, fd, pluginData))
             {
@@ -831,7 +831,7 @@ BOOL CUDF::AddFileDir(const char* path, char* fileName, BYTE fileChar, CAD* icb,
             fd.Size.Value = fe.InformationLength;
             UDFTimeStampToFileTime(fe.mtime, &fd.LastWrite);
 
-            // soubor
+            // file
             fd.IsLink = SalamanderGeneral->IsFileLink(fd.Ext);
             if (dir && !dir->AddFile(path, fd, pluginData))
             {
@@ -914,9 +914,9 @@ int CUDF::ScanDir(CUDF::CAD dirICB, char* path,
     if (!ReadBlockPhys(lbNum, 2, directory))
     {
         Error(IDS_ERROR_LISTING_IMAGE, FALSE, lbNum);
-        // cteme-li z root (lbNum == 2), vratime ERR_CONTINUE, abychom se mohli vnorit do prazdneho image
-        // snazime se chovat konzistentne z pohledu uzivatele
-        // TODO: lepsi detekce toho, zda je cteny sector korenovy
+        // if we are reading from the root (lbNum == 2), return ERR_CONTINUE so we can descend into an empty image
+        // we try to behave consistently from the user's point of view
+        // TODO: better detection of whether the sector being read is the root
         return lbNum == 2 ? ERR_CONTINUE : ERR_TERMINATE;
     }
 
@@ -959,11 +959,11 @@ int CUDF::ScanDir(CUDF::CAD dirICB, char* path,
 
                     CAD fileICB;
                     CICBTag icbTag;
-                    // zanorit, kdyz je vse OK
+                    // descend when everything is OK
                     if (MapICB(icb, &icbTag, &fileICB) && ret == ERR_OK)
                     {
                         ret = ScanDir(fileICB, newPath, dir, pluginData);
-                        // kdyz se vynorime s ukoncovaci chybou, pokracovat ve zpracovani, co to pujde
+                        // if we surface with a termination error, keep processing as much as possible
                         if (ret == ERR_TERMINATE)
                             ret = ERR_CONTINUE;
                     }
@@ -985,10 +985,10 @@ int CUDF::UnpackFile(CSalamanderForOperationsAbstract* salamander, const char* s
 {
     CALL_STACK_MESSAGE7("CUDF::UnpackFile( , %s, %s, %s, %p, %u, %d)", srcPath, path, nameInArc, fileData, silent, toSkip);
 
-    // TODO: vybalovani podle alokacni strategie 4096
-    // pokud je soubor sekvence allocation descriptoru, pak ho nedokazeme vybalit, protoze se musi sledovat,
-    // kam odkazuji alloc. descriptory a pouzit ty spravne bloky (nemame image na otestovani,
-    // neimplementujeme, snad casem)
+    // TODO: extraction according to allocation strategy 4096
+    // if the file is a sequence of allocation descriptors, we cannot extract it because we would need to track
+    // where the allocation descriptors point and use the correct blocks (we have no image to test on,
+    // so it is not implemented, maybe someday)
 
     if (fileData == NULL)
         return UNPACK_ERROR;
@@ -1096,11 +1096,11 @@ int CUDF::UnpackFile(CSalamanderForOperationsAbstract* salamander, const char* s
         // set file time
         file.SetFileTime(&ft, &ft, &ft);
 
-        // celkova operace muze pokracovat dal. pouze skip
+        // the overall operation can continue further: skip only
         if (toSkip)
             throw UNPACK_ERROR;
 
-        // celkova operace nemuze pokracovat dal. cancel
+        // the overall operation cannot continue any further: cancel
         if (hFile == INVALID_HANDLE_VALUE)
             throw UNPACK_CANCEL;
 
@@ -1117,14 +1117,14 @@ int CUDF::UnpackFile(CSalamanderForOperationsAbstract* salamander, const char* s
             BYTE track = Image->GetTrackFromExtent(picb->Location);
             DWORD extentOfs = Image->GetTrack(track)->ExtentOffset;
 
-            // je treba otevrit track, ze ktereho budeme cist (nastaveni parametru tracku)
+            // it is necessary to open the track we will read from (setting the track parameters)
             if (!Image->OpenTrack(track))
             {
                 Error(IDS_CANT_OPEN_TRACK, silent == 1, track);
                 throw UNPACK_ERROR;
             }
 
-            DWORD block = picb->Location - extentOfs; // pouzit extent z tracku, kde je soubor ulozen
+            DWORD block = picb->Location - extentOfs; // use the extent from the track where the file is stored
             DWORD remain = picb->Length;
 
             /*
@@ -1173,7 +1173,7 @@ int CUDF::UnpackFile(CSalamanderForOperationsAbstract* salamander, const char* s
 
                     ret = UNPACK_CANCEL;
                     bFileComplete = FALSE;
-                    break; // preruseni akce
+                    break; // action interrupted
                 }
 
                 ULONG written;
@@ -1202,14 +1202,14 @@ int CUDF::UnpackFile(CSalamanderForOperationsAbstract* salamander, const char* s
 
         if (!bFileComplete)
         {
-            // protoze je vytvoren s read-only atributem, musime R attribut
-            // shodit, aby sel soubor smazat
+            // because it was created with the read-only attribute, we must clear
+            // the R attribute so the file can be deleted
             attrs &= ~FILE_ATTRIBUTE_READONLY;
             if (!SetFileAttributes(name, attrs))
                 Error(LoadStr(IDS_CANT_SET_ATTRS), GetLastError(), silent == 1);
 
-            // user zrusil operaci
-            // smazat po sobe neuplny soubor
+            // the user cancelled the operation
+            // delete the incomplete file afterwards
             if (!DeleteFile(name))
                 Error(LoadStr(IDS_CANT_DELETE_TEMP_FILE), GetLastError(), silent == 1);
         }
@@ -1232,7 +1232,7 @@ BOOL CUDF::DumpInfo(FILE* outStream)
 
     char buffer[256], *s;
 
-    // zobrazit info z PVD
+    // display info from the PVD
     DecodeOSTACompressed((BYTE*)PVD.VolumeIdentifier, 32, buffer);
     fprintf(outStream, "    Volume:             %s\n", buffer);
     DecodeOSTACompressed((BYTE*)PVD.VolumeSetIdentifier, 128, buffer);

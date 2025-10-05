@@ -13,7 +13,7 @@
 //
 //
 
-#define DMG_FOOTER_MAGIC 0x796c6f6b         // 'koly', 512 bytes from EOF
+#define DMG_FOOTER_MAGIC 0x796c6f6b         // literal 'koly' signature stored 512 bytes from EOF
 #define DMG_FOOTER_ENCR 0x72636e65          // 'encr', 4 bytes from EOF
 #define DMG_PARTITION_INFO_MAGIC 0x6873696d /* 'mish' */
 
@@ -33,7 +33,7 @@ private:
 #pragma pack(push, 1)
     struct DMGFooter
     {
-        UInt32 magic; // DMG_FOOTER_MAGIC='koly'
+        UInt32 magic; // DMG_FOOTER_MAGIC = 'koly'
         UInt32 unknown[7];
         UInt64 ofsPLIST;
         UInt64 sizePLIST; // Sometimes 0

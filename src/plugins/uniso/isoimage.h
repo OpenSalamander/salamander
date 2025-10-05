@@ -13,10 +13,10 @@ class CUnISOFSAbstract;
 #define UNPACK_CANCEL 2
 #define UNPACK_AUDIO_UNSUP 3
 
-// tri stavy pro chyby, jsou situace, kdy nestaci TRUE/FALSE.
-// mame cinnost, pri ktere muze nastat chyba. nekdy muzeme a chceme v cinnosti pokracovat, jindy to nejde.
-// pokud muzeme pokracovat, vracime ERR_CONTINUE, pokud to dal nejde (dosla pamet, aj.) ERR_TERMINATE.
-// pokud vse ok, ERR_OK
+// three states for errors; there are situations where TRUE/FALSE is not enough.
+// we have an activity during which an error can occur. Sometimes we can and want to continue, sometimes we cannot.
+// if we can continue, we return ERR_CONTINUE; if it cannot go on (out of memory, etc.) we return ERR_TERMINATE.
+// if everything is OK, ERR_OK
 #define ERR_OK 0
 #define ERR_CONTINUE 1
 #define ERR_TERMINATE 2
@@ -65,7 +65,7 @@ public:
         mMode2
     };
 
-    // struktury
+    // structures
     struct Track
     {
         WORD SectorSize;
@@ -117,40 +117,40 @@ protected:
     LONGLONG DataOffset; // Start of current track
     LONGLONG DataEnd;    // End of current track
 
-    // parametery image
+    // image parameters
     DWORD SectorHeaderSize;
     DWORD SectorRawSize;
     DWORD SectorUserSize;
 
-    DWORD ExtentOffset; // pro multisession
-    int LastTrack;      // posledni track, ktery umime precist
-    int OpenedTrack;    // otevreny track
+    DWORD ExtentOffset; // for multisession images
+    int LastTrack;      // the last track we can read
+    int OpenedTrack;    // the opened track
 
     FILETIME LastWrite;
 
     char* Label;
 
     //
-    TIndirectArray<Track> Tracks; // tracky
-    TDirectArray<int> Session;    // pocet tracku v session
+    TIndirectArray<Track> Tracks; // tracks
+    TDirectArray<int> Session;    // number of tracks in the session
 
 public:
     DWORD ReadBlock(DWORD block, DWORD size, void* data);
 
-    // Otevre ISO image s nazev 'fileName'. Parametr 'quiet' urcuje, zda
-    // budou vyskakovat MessageBoxy s chybama
+    // Opens the ISO image named 'fileName'. The 'quiet' parameter determines whether
+    // message boxes with errors will pop up
     BOOL Open(const char* fileName, BOOL quiet = FALSE);
     BOOL OpenTrack(int track, BOOL quiet = FALSE);
     BOOL DetectTrackFS(int track);
 
     BOOL ListImage(CSalamanderDirectoryAbstract* dir, CPluginDataInterfaceAbstract*& pluginData);
-    // vracit jednu z konstant UNPACK_XXX
+    // returns one of the UNPACK_XXX constants
     int UnpackFile(CSalamanderForOperationsAbstract* salamander, const char* srcPath, const char* name, const CFileData* fileData,
                    DWORD& silent, BOOL& toSkip);
-    // vracit jednu z konstant UNPACK_XXX
+    // returns one of the UNPACK_XXX constants
     int UnpackDir(const char* dirName, const CFileData* fileData);
 
-    // vracit jednu z konstant UNPACK_XXX
+    // returns one of the UNPACK_XXX constants
     int ExtractAllItems(CSalamanderForOperationsAbstract* salamander, char* srcPath, CSalamanderDirectoryAbstract const* dir,
                         const char* mask, char* path, int pathBufSize, DWORD& silent, BOOL& toSkip);
 
