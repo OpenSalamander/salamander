@@ -3,7 +3,7 @@
 
 #pragma once
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// Salamander's general interface - valid from startup until the plugin shuts down
 extern CSalamanderGeneralAbstract* SalamanderGeneral;
 
 #define STATUS_OK 1
@@ -150,33 +150,33 @@ public:
 
     CPakCallbacks(CPluginInterfaceForArchiver* plugin);
 
-    //vraci TRUE v pripade ze se ma pokracovat dal, nebo FALSE
-    //ma-li oprace skoncit
+    //returns TRUE if the processing should continue, or FALSE
+    //if the operation should finish
     virtual BOOL HandleError(DWORD flags, int errorID, va_list arglist);
 
-    //precte data z vystupniho souboru
-    //volano behem baleni souboru
-    //vraci TRUE kdyz ma operace pokracovat
+    //reads data from the output file
+    //called while packing files
+    //returns TRUE when the operation should continue
     virtual BOOL Read(void* buffer, DWORD size);
 
-    //zapise data do vystupniho souboru
-    //volano behem vybalovani souboru
-    //vraci TRUE kdyz ma operace pokracovat
+    //writes data to the output file
+    //called while extracting files
+    //returns TRUE when the operation should continue
     virtual BOOL Write(void* buffer, DWORD size);
 
-    //informuje o prubehu zpracovani dat
-    //prida velikost 'size'
-    //vraci kdyz ma oprace pokracovat
+    //reports on the progress of data processing
+    //adds the 'size' amount
+    //returns TRUE when the operation should continue
     virtual BOOL AddProgress(unsigned size);
 
-    //informuje o probihajicim mazani
+    //reports on ongoing deletion
     virtual BOOL DelNotify(const char* fileName, unsigned fileProgressTotal);
 
     BOOL SafeSeek(DWORD position);
 };
 
-extern HINSTANCE DLLInstance; // handle k SPL-ku - jazykove nezavisle resourcy
-extern HINSTANCE HLanguage;   // handle k SLG-cku - jazykove zavisle resourcy
+extern HINSTANCE DLLInstance; // handle to the SPL - language-independent resources
+extern HINSTANCE HLanguage;   // handle to the SLG - language-dependent resources
 /*
 extern FPAKGetIFace PAKGetIFace;
 extern FPAKReleaseIFace PAKReleaseIFace;

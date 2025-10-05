@@ -61,67 +61,67 @@ public:
 
     //~CPakObject();
 
-    //inicializije interface, muze byt volana kdykoliv, ale nesmi byt otevreny
-    //zadny pak soubor
-    //vraci TRUE v pripade uspechu
+    //initializes the interface, can be called at any time, but no PAK file may be open
+    //no PAK file
+    //returns TRUE on success
     virtual BOOL Init(CPakCallbacksAbstract* callbacks);
 
-    //otevre pak soubor pro dalsi zpracovani
-    //vraci TRUE v pripade uspechu
+    //opens a PAK file for further processing
+    //returns TRUE on success
     virtual BOOL OpenPak(const char* fileName, DWORD mode);
 
-    //zavre pak soubor
+    //closes the PAK file
     virtual BOOL ClosePak();
 
     virtual BOOL GetPakTime(FILETIME* lastWrite);
 
-    //nastavi se na prvni soubor v pak adresari
-    //je-li archive prazdny vrati NULL
-    //vraci jmeno souboru
+    //positions to the first file in the PAK directory
+    //returns NULL if the archive is empty
+    //returns the file name
     virtual BOOL GetFirstFile(char* fileName, DWORD* size);
 
-    //nastavi se nasledujici prvni soubor v pak adresari
-    //na konci archivu vrati NULL
-    //vraci jmeno souboru
+    //moves to the next file in the PAK directory
+    //returns NULL at the end of the archive
+    //returns the file name
     virtual BOOL GetNextFile(char* fileName, DWORD* size);
 
-    //najde soubor v archivu a nastavi se na nej
+    //finds a file in the archive and positions to it
     virtual BOOL FindFile(const char* fileName, DWORD* size);
 
-    //vybali soubor z archivu
+    //extracts a file from the archive
     virtual BOOL ExtractFile();
 
-    //oznaci soubor pro smazani
+    //marks a file for deletion
     virtual BOOL MarkForDelete();
 
-    //vrati celkovou velikost progresy pro operaci mazani
+    //returns the total progress size for the delete operation
     virtual BOOL GetDelProgressTotal(unsigned* progressSize);
 
-    //smaze oznacene soubory
+    //deletes the marked files
     virtual BOOL DeleteFiles(BOOL* needOptim);
 
-    //inicializuje pridavani souboru
+    //initializes adding files
     virtual BOOL StartAdding(unsigned count);
 
-    //prida soubor do archivu
-    //'fileName' je jmeno pod kterym ma byt soubor ulozen v archivu
-    //'size' je jeho velikost
+    //adds a file to the archive
+    //'fileName' is the name under which the file should be stored in the archive
+    //'size' is its size
     virtual BOOL AddFile(const char* fileName, DWORD size);
 
-    //zapise novy pak adresar do souboru
-    //!!nutne volat po po pridani novych souboru do paku
+    //writes the new PAK directory to the file
+    //must be called after adding new files to the PAK
     virtual BOOL FinalizeAdding();
 
-    //zjisti informace o vyuziti mista v paku
+    //retrieves information about space usage in the PAK
     virtual void GetOptimizedState(DWORD* pakSize, DWORD* validData);
 
-    //inicializuje optimalizaci
+    //initializes optimization
     virtual BOOL InitOptimalization(unsigned* progressTotal);
 
-    //optimalizuje pak
+    //optimizes the PAK
     virtual BOOL OptimizePak();
 
-    //vytvori zpravu z parametru predanych do 'HandleError()'
+    //creates a message from the parameters passed to 'HandleError()'
     virtual char* FormatMessage(char* buffer, int errorID, va_list arglist);
 
 protected:
