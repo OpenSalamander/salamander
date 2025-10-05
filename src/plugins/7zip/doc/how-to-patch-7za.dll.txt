@@ -1,86 +1,82 @@
 ==================================================================================================
-Stav k roku 2016, 7-Zip 16.02
-==================================================================================================
 
-Ve verzi AS 3.07 jsme po monha letech aktualizovali 7za.dll na posledni verzi 16.02.
-Uzivatele reklamovali security diry ve stare verzi: https://forum.altap.cz/viewtopic.php?t=32446
-Patchovani provadime pomoci E:\Source\7zip repository, kde mame dve
-vetve: default a ALTAP. Postup:
-1. stahneme aktualni 7-Zip zdrojaky (napr. 7z1602-src.7z)
-2. v E:\Source\7zip updatneme na default vetev
-3. smazeme vse mimo .hg
-4. vybalime stazene zdrojaky
-5. commit (s pridanim novych a smazanim starych souboru)
-6. provedeme merge do ALTAP vetve, cimz dostaneme novou verzi 7-Zip s ALTAP patchema
-7. projit vsechny adresare v E:\Source\salamand\plugins\7zip\7za a zasynchronizovat
-   tam nove vznikle adresare z kroku 6
-8. pokud Igor pridal nebo smazal cpp, mozna je bude potreba doplnit do projektu - projevi se
-   pri pokusu o preklad projektu
- 
+In Salamander 3.07 we finally updated 7za.dll to the latest 16.02 after many years.
+Users reported security holes in the old build: https://forum.altap.cz/viewtopic.php?t=32446
+We maintain two branches in the E:\Source\7zip repository: default and ALTAP. Procedure:
+1. download the current 7-Zip sources (for example 7z1602-src.7z)
+2. update the working copy in E:\Source\7zip to the default branch
+3. remove everything except the .hg directory
+4. extract the downloaded sources
+5. commit (adding new files and deleting the removed ones)
+6. merge into the ALTAP branch, producing a new 7-Zip version with the ALTAP patches
+7. walk through every directory in E:\Source\salamand\plugins\7zip\7za and
+   synchronize any directories that appeared in step 6
+8. if Igor added or removed a cpp file, you might need to add it to the project –
+   the compiler will complain otherwise
+
 
 ==================================================================================================
-Puvodni navod od Davida Andrse
+Original guide by David Andrs
 ==================================================================================================
 
-Jak patchnout 7za.dll
----------------------
+How to patch 7za.dll
+--------------------
 David Andrs
 
 
-I. uprava zdrojaku, aby sla prelozit ve starsich MS SDK (to je napr. muj pripad)
+I. Adjust the sources so they build with older MS SDKs (that was my case)
 
    -- v3.xx ---------------------------------------------------------------------------------------
 
-   7za pouziva COM, kde se musi definovat GUID pro jednotlive interfacy a buhvico jeste.
-   K tomu pouziva makro DEFINE_GUID, ktery koliduje s makrem stejneho jmena z MS SDK. Takze
-   treba rozepiseme tato makra rucne:
+   7za uses COM, so GUIDs must be defined for individual interfaces and who knows what else.
+   It relies on the DEFINE_GUID macro, which clashes with the macro of the same name in MS SDKs.
+   Therefore we expand the macro manually:
 
-      DEFINE_GUID(CLSID_CCrypto7zAESEncoder, 
+      DEFINE_GUID(CLSID_CCrypto7zAESEncoder,
       0x23170F69, 0x40C1, 0x278B, 0x06, 0xF1, 0x07, 0x01, 0x00, 0x00, 0x01, 0x00);
 
-   na:
+   into:
 
       const GUID CLSID_CCrypto7zAESEncoder = {
       0x23170F69, 0x40C1, 0x278B, {0x06, 0xF1, 0x07, 0x01, 0x00, 0x00, 0x01, 0x00}};
 
-   TODO: udelat na to skript v PERLu :)
-   
-   Muzeme klidne nahradit DEFINE_GUID za MY_DEFINE_GUID a makro dodefinovat, to by taky mohlo jit.
-   Nezkousel jsem.
+   TODO: write a Perl script for this :)
 
-   !!! 
-   Souboru DllExports jsem dodefinovali prekladovou direktivu INITGUID a nemusime prepisovat vsechny 
+   We could also replace DEFINE_GUID with MY_DEFINE_GUID and supply the macro; that might work too.
+   I have not tried it.
+
+   !!!
+   We defined INITGUID in the DllExports files so we do not have to rewrite every
    CLSID_
    !!!
 
-   Moje stary SDKcko nema #definovanou konstantu MEM_LARGE_PAGES.
-   Pridan radek: 
+   My old SDK does not #define MEM_LARGE_PAGES.
+   Added line:
        #define MEM_LARGE_PAGES              0x20000000
 
-   Soubor: 7za\Common\Alloc.cpp
+   File: 7za\Common\Alloc.cpp
 
    -- v4.XX -----------------------------------------------------------------------------------------
 
-   - pridan soubor main.cpp, kde se definuje INITGUID
-   - pridan soubor 7za.def, kde se difinuje exporty pro DLLko.
-     k nalezeni v tomto adresari
+   - added main.cpp where INITGUID is defined
+   - added 7za.def where the DLL exports are listed.
+     Available in this directory
 
 
-II. Pridani callstack objektu
+II. Adding the call-stack object
 
    -- v3.XX -----------------------------------------------------------------------------------------
 
-   7za je multithreadovy a bez synchronizace! V pristich verzich by mela byt volba pro kompilaci
-   bez multithreadingu (verze 3.13 nema).
-   
-   Pridan soubor patch.cpp do adresare patch\
+   7za is multithreaded and unsynchronized! Newer versions should offer a flag to
+   build without multithreading (version 3.13 does not).
 
-   Princip:
+   Added patch.cpp to the patch\ directory
 
-   - Pro kazdou funkci, ktera se vykonava ve vlakne, je treba vyrobit wrapper. Pro funkci
-     CoderThread to vypada takto:
+   Principle:
 
-      // prototyp funkce (definovana v souboru patch.cpp)
+   - For every function executed in a thread we need a wrapper. For CoderThread the code looks like:
+
+      // function prototype (defined in patch.cpp)
       DWORD RunThreadWithCallStackObject(LPTHREAD_START_ROUTINE startAddress, LPVOID parameter);
 
       static DWORD WINAPI CoderThreadWraper(void *aThreadCoderInfo)
@@ -88,59 +84,60 @@ II. Pridani callstack objektu
         return ::RunThreadWithCallStackObject(CoderThread, aThreadCoderInfo);
       }
 
-   - zamenit ::CreateThread(..., CoderThread, ...) za ::CreateThread(..., CoderThreadWraper, ...)
+   - replace ::CreateThread(..., CoderThread, ...) with ::CreateThread(..., CoderThreadWraper, ...)
 
 
-   Soubor  : 7zip\Archive\Common\CoderMixer2MT.cpp
-   Funkce  : CoderThread, MainCoderThread
-   Poznamka: zde pozor na namespace, prototyp RunThreadWithCallStackObject dat na zacatek
-             souboru mimo definovany namespace
+   File   : 7zip\Archive\Common\CoderMixer2MT.cpp
+   Function: CoderThread, MainCoderThread
+   Note   : mind the namespace; place the RunThreadWithCallStackObject prototype at the top of the
+             file, outside of the namespace
 
    -- v4.XX -----------------------------------------------------------------------------------------
 
-   - Soubor: MatchFinderMt.c
-     Vlakna:
+   - File: MatchFinderMt.c
+     Threads:
        static unsigned StdCall HashThreadFunc2(void *p);
        static unsigned StdCall BtThreadFunc2(void *p);
 
-   - Soubor: InMemStream.cpp
+   - File: InMemStream.cpp
        static THREAD_FUNC_DECL CoderThread(void *threadCoderInfo);
 
-   - Soubor: VirtThread.cpp
+   - File: VirtThread.cpp
        static THREAD_FUNC_DECL CoderThread(void *p);
 
-   - princip obalovani je stejny jako vyse
-   !!! RunThreadWithCallStackObject je nutne mit v .C souboru, aby sel slinkovat s MatchFinderMt.c,
-   !!! proto je pak nutne obalit funkcni prototyp v InMemSTarem.cpp a VirtThread.cpp konstrukci
+   - the wrapping principle is the same as above
+   !!! RunThreadWithCallStackObject must live in a .C file so it links with MatchFinderMt.c,
+   !!! therefore the prototypes in InMemSTarem.cpp and VirtThread.cpp must be wrapped in
    !!! extern "C" { }
-  
 
-III. zavedeni funkcnosti Keep/Delete corrupted file
 
-   Bez tohoto patche by nebyla mozna funkcnost pro Keep/Delete corrupted file. Duvod patche je ten,
-   ze 7za pracuje se vystupnim streamem timto zpusobem:
-      - Otevre stream
-      - provede na nem nejakou operaci
-      - zavola callback->SetOperationResult
-      - zavre stream
+III. Enabling the Keep/Delete corrupted file feature
 
-   Tento patch zameni posledni dva kroky, aby pri volani callback->SetOperationResult byl stream
-   jiz zavreny a sel tedy prip. smazat.
+   Without this patch the Keep/Delete corrupted file option would not work. 7za uses
+   the output stream like this:
+      - open the stream
+      - perform an operation on it
+      - call callback->SetOperationResult
+      - close the stream
 
-   Soubor : 7zip\Archive\7z\7zFolderOutStream.cpp
-   Grep na: SetOperationResult
-   Plati  : pro vsechny vyskyty
+   This patch swaps the last two steps so that the stream is already closed when
+   callback->SetOperationResult is invoked and can therefore be deleted.
 
-IV. Fix pro SFX archivy
+   File  : 7zip\Archive\7z\7zFolderOutStream.cpp
+   Grep for: SetOperationResult
+   Applies to: every occurrence
 
-   7za hleda zacatek 7zip archivu tim, ze prohledava soubor od zacatku a hleda 7zip signaturu. To
-   je pochopitelne blbe, protoze kdyz se objevi nekde uvnitr STUBu (jako v pripade distribuce salama),
-   tak pak archiv nejde otevrit, protoze pocita se spatnym offsetem zacatku archivu.
+IV. Fix for SFX archives
 
-   Soubor : 7zip\Archive\7z\7zIn.cpp
-   Patch  : sfx.patch
+   7za searches for the start of a 7zip archive by scanning the file from the beginning
+   and looking for the 7zip signature. That is obviously wrong, because if the signature
+   appears inside the stub (as in the Salamander distribution), the archive cannot be
+   opened – the offset is calculated incorrectly.
 
-Poznamky:
+   File : 7zip\Archive\7z\7zIn.cpp
+   Patch: sfx.patch
 
-- Debug verze 7za.dll ma 1,1 MB!, Release ma 417 KB. Nemam optimalizujici kompiler. Originalni verze
-  ma 290 KB (ovsem je to verze 3.12).
+Notes:
+
+- The debug build of 7za.dll is 1.1 MB, release is 417 KB. I do not have an optimizing compiler.
+  The original build is 290 KB (from version 3.12).

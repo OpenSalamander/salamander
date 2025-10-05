@@ -84,9 +84,9 @@ private:
 
     bool PasswordIsDefined;
     UString& Password;
-    //  bool Silent;  // Silent je pro skip, kt. neni v 7za.dll implementovany
+    //  bool Silent;  // Silent is for skip, which is not implemented in 7za.dll
 
-    // synchronizace pro volani
+    // synchronization for calls
     CRITICAL_SECTION CSExtract;
 
     enum EOperationMode
@@ -98,14 +98,14 @@ private:
         Skip,
         Cancel
     };
-    // zpusob chovani callbacku pri data error
-    BOOL DataErrorSilent; // ptat se, zda Keep nebo Delete
+    // behavior of the callback when a data error occurs
+    BOOL DataErrorSilent; // whether to ask about Keep or Delete
     EOperationMode DataErrorMode;
-    BOOL DataErrorDeleteSilent; // hlasit chybu pri vymazavani
+    BOOL DataErrorDeleteSilent; // report an error when deleting
     BOOL SilentDelete;
 
     //  EOperationMode OverwriteMode;
-    //  BOOL OverwriteSilent;   // ptat se, zda Overwrite nebo Skip
+    //  BOOL OverwriteSilent;   // whether to ask about Overwrite or Skip
     DWORD OverwriteSilent;
     BOOL OverwriteSkip;
     BOOL OverwriteCancel;

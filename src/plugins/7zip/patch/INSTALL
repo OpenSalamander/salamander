@@ -1,8 +1,3 @@
-Jan Patera 2012.02.26 - START
-
-The 7za folder contains a subset of the 7zip package version 9.22 Beta from 2011.04.18.
-The following comments still apply unmodified.
-
 Jan Patera 2012.02.26 - END
 
 Jan Patera 2010.09.23 - START
@@ -48,13 +43,13 @@ Jan Patera 2009.06.07 - START
 The 7za folder contains a subset of the 7zip package version 4.65 from 2009.02.03.
 We cannot use the original (official) 7za.dll, several modifications are needed.
 They are located in 4 files, plus few files are added to the dll (located
-in 7za\spl). The reasons for the changes are described below and in ..\notes.
+in 7za\\spl). The reasons for the changes are described below and in ..\\notes.
 
 The custom-modified files are:
   7za/C/LzFindMt.c
-  7za/CPP/7zip/Archive/7z/7zFolderOutStream.cpp 
+  7za/CPP/7zip/Archive/7z/7zFolderOutStream.cpp
   7za/CPP/7zip/Common/InMemStream.cpp
-  7za/CPP/7zip/Common/VirtThread.cpp 
+  7za/CPP/7zip/Common/VirtThread.cpp
 The changes:
 1) the way threads are created (using Salamander's call stacks)
 2) the order of SetOperationResult and closing files
@@ -70,32 +65,33 @@ The original text written probably by David Andrs and timestamped 2007.07.28 fol
 
 Jan Patera 2009.06.07 - END
 
-Vytvoreni 7ZA.DLL
------------------
+Building 7ZA.DLL
+----------------
 
-Tento dokument popisuje, jak vyrobit opatchovanou knihovnu 7za.dll, aby pracovala se 7zip.spl
-(plugin do Open Salamandera).
+This document describes how to build the patched 7za.dll so it works with 7zip.spl
+(the Open Salamander plugin).
 
-Pouzivam unixove prikazy. Bud pouzijeme cygwin nebo unxutils (http://unxutils.sourceforge.org/). Ja
-pouzivam to druhe.
+I use Unix commands. Either use Cygwin or UnxUtils (http://unxutils.sourceforge.org/).
+I use the latter.
 
 *****************
 *** 7zip 4.XX ***
 
-Aktualni verze 4.51 (26.7.2007) je od 3.XX dost odlisna. Zasadnim zpusobem se zmenila adresarova
-struktura, takze na vytvareni 7za.dll nelze pouzit 7za-patch-1.0 a leave-7zadll.cmd
+Current version 4.51 (26.7.2007) differs greatly from 3.XX. The directory structure
+changed significantly, so 7za-patch-1.0 and leave-7zadll.cmd cannot be used to create
+7za.dll.
 
-- soubor s patchem pouzit pro kontrolu toho, zda to uz Igor nezmenil.
-- je treba ohlidat:
+- use the patch file to check whether Igor has changed anything yet.
+- keep an eye on:
 
-  * zavirani souboru pred SetOperationResult (abychom s nimi v pluginu mohli pracovat)
-  * udelat wrapper na vlakna, aby bezela s CallStackObject
+  * closing files before SetOperationResult (so we can work with them in the plugin)
+  * creating wrappers around threads so they run with a CallStackObject
 
 
 *****************
 *** 7zip 3.XX ***
 
-Jaky patch pouzit pro jakou verzi SPLka:
+Which patch to use for a given SPL version:
 
  SPL   7za.dll   patch
 -----------------------
@@ -103,33 +99,32 @@ Jaky patch pouzit pro jakou verzi SPLka:
 
 
 
-Postup aplikace patche:
------------------------
+Patch application procedure:
+---------------------------
 
-Zamenit cisla verzi podle tabulky vyse.
+Replace the version numbers according to the table above.
 
 
-I. Vytvorit adresar 7za\
+I. Create the 7za\\ directory
 
 # mkdir 7za
 
 
-II. Rozbalit 7z313.tar.bz2 do adresare 7za\
+II. Extract 7z313.tar.bz2 into the 7za\\ directory
 
 # cd 7za
-# tar -xvjz path\to\7za313.tar.bz2
+# tar -xvjz path\\to\\7za313.tar.bz2
 
 
-III. Zredukovat zdrojaky tak, aby zustaly jen ty, co jsou potreba pro 7za.dll
+III. Reduce the sources so that only the files needed for 7za.dll remain
 
 # leave-7zadll.cmd
 
 
-IV. Aplikovat patch
+IV. Apply the patch
 
-# unzip path\to\7za.dll-patch-1.0.zip
-# patch -p1 -E < path\to\7za.dll-patch-1.0
+# unzip path\\to\\7za.dll-patch-1.0.zip
+# patch -p1 -E < path\\to\\7za.dll-patch-1.0
 
-Pozn. #1: pri aplikaci patche bychom meli byt v adresari 7za.
-Pozn. #2: soubor projektu 7za.dll.dsp je vytvoren aplikaci patche.
-
+Note #1: when applying the patch we should be in the 7za directory.
+Note #2: the 7za.dll.dsp project file is created by applying the patch.

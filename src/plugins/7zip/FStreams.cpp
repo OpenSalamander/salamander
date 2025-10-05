@@ -31,8 +31,8 @@ BOOL ShowRetryAbortBox(HWND hParentWnd, int resID, DWORD err, ...)
     _stprintf(buf, _T("%s\n\n%s"), msg, SalamanderGeneral->GetErrorText(err));
 
     TCHAR btnBuffer[128];
-    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   nechame pro tlacitka msgboxu resit kolize hotkeys tim, ze simulujeme, ze jde o menu
+    /* used by the export_mnu.py script, which generates salmenu.mnu for the Translator
+   let the message box buttons handle hotkey collisions by simulating a menu
 MENU_TEMPLATE_ITEM MsgBoxButtons[] = 
 {
   {MNTT_PB, 0
