@@ -5,24 +5,24 @@
 
 //**************************************************************************
 //
-//  Struktura LHA archivu:
+//  Structure of an LHA archive:
 //
 //   +--------+------------+--------+------------+ . . . +--------+------------+
-//   |hlavicka| zapakovany |hlavicka| zapakovany |       |hlavicka| zapakovany |
-//   |souboru1|  soubor1   |souboru2|  soubor2   |       |souboruN|  souborN   |
+//   | header | compressed | header | compressed |       | header | compressed |
+//   | file1  |  file1     | file2  |  file2     |       | fileN  |  fileN     |
 //   +--------+------------+--------+------------+ . . . +--------+------------+
 //
-//  LHA archiv nema globalni hlavicku ani seznam souboru (adresaru). Nejsou
-//  podporovany solid archivy ani kryptovani. Kazdy soubor je nezavisly.
-//  Listovani spociva v precteni hlavicky, preskoceni o hdr.packed_size
-//  bajtu dopredu, precteni hlavicky.. atd. Pri rozbalovani celeho archivu
-//  staci stridave volat LHAGetHeader a LHAUnpackFile (popr. misto LHAUnpackFile
-//  preskocit pomoci fseek)
+//  An LHA archive has no global header or file (directory) listing. Solid
+//  archives and encryption are not supported. Each file is independent.
+//  Listing consists of reading a header, skipping forward by hdr.packed_size
+//  bytes, reading the next header, and so on. When extracting the whole
+//  archive it is enough to alternate LHAGetHeader and LHAUnpackFile (or skip
+//  with fseek instead of LHAUnpackFile).
 //
 
 //**************************************************************************
 //
-//  LHA_HEADER - informace o souboru v archivu
+//  LHA_HEADER - information about a file in the archive
 //
 
 struct LHA_TIMESTAMP
@@ -38,11 +38,11 @@ struct LHA_TIMESTAMP
 struct LHA_HEADER
 {
     unsigned char header_size;
-    int method;         // metoda, pokud je LHA_UNKNOWNMETHOD, soubor se musi preskocit
-    long packed_size;   // velikost komprimovanych dat nasledujicich primo za hlavickou
-    long original_size; // velikost puvodniho (nekomprimovaneho) souboru
+    int method;         // method; if LHA_UNKNOWNMETHOD the file must be skipped
+    long packed_size;   // size of compressed data immediately following the header
+    long original_size; // size of the original (uncompressed) file
     LHA_TIMESTAMP last_modified_stamp;
-    FILETIME last_modified_filetime; // last_modified_stamp prevedeny na FILETIME
+    FILETIME last_modified_filetime; // last_modified_stamp converted to FILETIME
     unsigned char attribute;
     unsigned char header_level;
     char name[MAX_PATH];
@@ -50,7 +50,7 @@ struct LHA_HEADER
     BOOL has_crc;
     unsigned char extend_type;
     unsigned char minor_version;
-    unsigned short unix_mode; // muze byt UNIX_FILE_REGULAR, UNIX_FILE_DIRECTORY nebo UNIX_FILE_SYMLINK
+    unsigned short unix_mode; // can be UNIX_FILE_REGULAR, UNIX_FILE_DIRECTORY, or UNIX_FILE_SYMLINK
 };
 
 #define LHA_UNKNOWNMETHOD -1
@@ -74,63 +74,62 @@ struct LHA_HEADER
 
 //**************************************************************************
 //
-//  LHAInit - nutno zavolat na zacatku
+//  LHAInit - must be called during initialization
 //
 
 void LHAInit();
 
 //**************************************************************************
 //
-//  LHAOpenArchive - otevre soubor a eventualne preskoci SFX kod.
-//                   Vraci TRUE je-li vse v poradku, jinak FALSE.
+//  LHAOpenArchive - opens a file and optionally skips the SFX code.
+//                   Returns TRUE if everything is fine, otherwise FALSE.
 //
 
 BOOL LHAOpenArchive(FILE*& f, LPCTSTR lpName);
 
 //**************************************************************************
 //
-//  LHAGetHeader - z aktualniho mista v souboru nacte hlavicku a ulozi ji do
-//                 lpHeader. Vraci GH_ERROR, GH_SUCCESS nebo GH_EOF
+//  LHAGetHeader - reads a header from the current position in the file and stores it
+//                 in lpHeader. Returns GH_ERROR, GH_SUCCESS, or GH_EOF
 //
 
 int LHAGetHeader(FILE* hFile, LHA_HEADER* lpHeader);
 
-#define GH_ERROR 0   // chyba
-#define GH_SUCCESS 1 // uspech
-#define GH_EOF 2     // konec souboru
+#define GH_ERROR 0   // error
+#define GH_SUCCESS 1 // success
+#define GH_EOF 2     // end of file
 
 //**************************************************************************
 //
-//  LHAUnpackFile - vypakuje soubor zacinajici na aktualni pozici v otevrenem
-//                  archivu 'infile' do otevreneho souboru 'outfile'. Je treba
-//                  predat hlavicku ziskanou pomoci LHAGetHeader.
-//                  Vraci TRUE pri uspechu, jinak FALSE. Promenna CRC je naplnena
-//                  kontrolnim kodem vypocitanym pri rozbalovani, je mozne
-//                  jej porovnat s udajem v hlavicce. Behem rozbalovani se
-//                  vola funkce ulozena v pointru pfLHAProgress (pokud neni NULL)
+//  LHAUnpackFile - extracts the file that starts at the current position in the open
+//                  archive 'infile' into the open file 'outfile'. Pass the header
+//                  obtained via LHAGetHeader.
+//                  Returns TRUE on success, otherwise FALSE. The CRC variable is
+//                  filled with the checksum computed during extraction; it can be
+//                  compared with the value stored in the header. During extraction
+//                  the function stored in pfLHAProgress (if not NULL) is invoked
 //
 
 BOOL LHAUnpackFile(FILE* infile, HANDLE outfile, LHA_HEADER* lpHeader, int* CRC,
-                   char* fileName /* jmeno vystup. souboru kvuli SafeWriteFile */);
+                   char* fileName /* output file name for SafeWriteFile */);
 
 /*
-    Poznamka: Proc 'infile' pouziva IO funkce z CRT a 'outfile' funkce API?
-              Funkce z API nejsou bufferovane (a vlastni buffery se mi psat 
-              nechtelo, protoze u 'infile' by to bylo celkem slozity), 
-              proto jsem se rozhodl nechat v kodu LHA volani funkci z CRT. 
-              Pak jsem ale zjistil, ze pro vytvareni souboru se pouziva fce
-              Salamandera SafeCreateFile, ktera vraci HANDLE. Aby se soubory
-              nevytvarely pres SafeCreateFile a pak se znovu neotviraly
-              pres fopen(), prepsal jsem vystupni cast LHA do API a take
-              napsal vlastni buffer (ktery je vsak jednoduchy - zadny seek,
-              cteni hlavicek...). Takze vzniknul takovy hybrid :(
+    Note: Why does 'infile' use CRT I/O functions and 'outfile' use API functions?
+          API functions are unbuffered (and I did not want to write custom buffers,
+          because that would be quite complicated for 'infile'), so I decided to
+          keep the CRT calls in the LHA code. Then I realized that files are
+          created via Salamander's SafeCreateFile, which returns a HANDLE. To avoid
+          creating files through SafeCreateFile and then reopening them with
+          fopen(), I rewrote the output part of LHA to use the API and also wrote a
+          simple buffer (which is basic—no seek, header reading, ...). The result
+          is a bit of a hybrid :(
 */
 
 //**************************************************************************
 //
-//  exportovane globalni promenne
+//  exported global variables
 //
 
-extern int iLHAErrorStrId;              // pri chybe obsahuje ID stringu popisu chyby
-extern BOOL (*pfLHAProgress)(int size); // pointer na fci ktere se behem rozbalovani
-                                        // predava hodnota v rozsahu 0 .. hdr.original_size
+extern int iLHAErrorStrId;              // contains the ID of the error description string when a failure occurs
+extern BOOL (*pfLHAProgress)(int size); // pointer to the function that, during extraction,
+                                        // receives a value in the range 0 .. hdr.original_size

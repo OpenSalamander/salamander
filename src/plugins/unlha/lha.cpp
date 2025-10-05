@@ -5,9 +5,9 @@
 **                                                                                       **
 **   LHA.CPP - LHA unpacker                                                              **
 **                                                                                       **
-**   Popis funkci viz LHA.H                                                              **
+**   See LHA.H for function descriptions                                                 **
 **                                                                                       **
-**   Sestaveno ze zdrojovych kodu 'LHA for UNIX, v.1.14'                                 **
+**   Assembled from source code 'LHA for UNIX, v.1.14'                                   **
 **                                                                                       **
 \*****************************************************************************************/
 
@@ -335,8 +335,8 @@ int LHAGetHeader(FILE* fp, LHA_HEADER* lpHeader)
         st.wYear = tajm->tm_year + 1900;
     }
     if (st.wDay == 0 && st.wHour == 0 && st.wMinute == 0 && st.wMonth == 0 &&
-        st.wSecond == 0 && st.wYear == 1980) // nezobrazitelne datum LHA ulozi jako
-    {                                        // same nuly -> nastavime minimum = 1.1.1980
+        st.wSecond == 0 && st.wYear == 1980) // LHA stores an unrepresentable date as all zeros
+    {                                        // set the minimum to 1 January 1980
         st.wDay = 1;
         st.wMonth = 1;
     }
@@ -474,7 +474,7 @@ int LHAGetHeader(FILE* fp, LHA_HEADER* lpHeader)
 BOOL(*pfLHAProgress)
 (int size) = NULL;
 static int iProgress;
-#define PROGRESS_MASK 0xffff8000 // pozice progress-meteru se updatuje kazdych 32KB
+#define PROGRESS_MASK 0xffff8000 // progress meter position updates every 32 KB
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // BUFFERED OUTPUT /////////////////////////////////////////////////////////////////////
@@ -496,7 +496,7 @@ BOOL SafeWriteFile(HANDLE hFile, LPVOID lpBuffer, DWORD nBytesToWrite, DWORD* pn
     return TRUE;
 }
 
-#define BUFSIZE (256 * 1024) // velikost bufferu pro zapis
+#define BUFSIZE (256 * 1024) // buffer size for writing
 
 static char* buffer;
 static int bufpos;
@@ -1819,12 +1819,12 @@ int LHAOpenArchive(FILE*& f, LPCTSTR lpName)
 
     LHA_HEADER hdr;
     if (LHAGetHeader(f, &hdr) != GH_ERROR)
-    { // zkusime precist jednu hlavicku
+    { // try to read one header
         fseek(f, 0, SEEK_SET);
-        return TRUE; // vse OK, archiv je LHZ
+        return TRUE; // everything is OK, the archive is LHZ
     }
 
-    // nepovedlo se precist prvni hlavicku, zkusime, jestli archiv neni SFX
+    // failed to read the first header, check whether the archive is an SFX
     unsigned char* buffer2;
     unsigned char *p, *q;
     int n;
@@ -1833,7 +1833,7 @@ int LHAOpenArchive(FILE*& f, LPCTSTR lpName)
     if (buffer2 == NULL)
     {
         fclose(f);
-        iLHAErrorStrId = IDS_LOWMEM; // nelze naalokovat buffer2, tak to zabalime
+        iLHAErrorStrId = IDS_LOWMEM; // cannot allocate buffer2, so bail out
         return FALSE;
     }
 
@@ -1865,14 +1865,14 @@ int LHAOpenArchive(FILE*& f, LPCTSTR lpName)
     fclose(f);
     if (iLHAErrorStrId == IDS_CHECKSUMERROR)
         iLHAErrorStrId = IDS_FILECORRUPT;
-    return FALSE; // archiv neni LHZ ani SFX LHZ
+    return FALSE; // archive is neither LHZ nor SFX LHZ
 }
 
-// TestLHAOpenArchive - otestuje LHAOpenArchive tim, ze ji pusti na vsechny
-// soubory na ceste "path" (prochazi i podadresare). Kdyz to nespadne, je
-// vse OK :-)
+// TestLHAOpenArchive - verifies LHAOpenArchive by running it on every
+// file on the "path" (recursively walks subdirectories). If it does not crash,
+// everything is fine :-)
 //
-// Volat takto:
+// Call it like this:
 // char path[MAX_PATH] = "c:";
 // TestLHAOpenArchive(path);
 
