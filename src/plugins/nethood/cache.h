@@ -865,7 +865,7 @@ public:
     ///        node. If this parameter is non-NULL, the method will
     ///        atomically associate the consumer with the node to be
     ///        returned.
-    /// \param node This parametr will receive the cache node that
+    /// \param node This parameter will receive the cache node that
     ///        identifies the network path in the cache.
     /// \param uFlags This parameter controls additional parameters that
     ///        may affect the query. This parameter can be combination of

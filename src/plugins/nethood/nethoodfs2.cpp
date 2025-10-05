@@ -66,8 +66,7 @@ CNethoodFSInterface::GetCurrentPath(__out_ecount(MAX_PATH) char* userPart)
     if (m_state == FSStateImmediateRefresh)
     {
         // The panel is about to be refreshed immediately.
-        // That means that the cache node has been updated
-        // and the path could changed.
+        // That means the cache node was updated and the path may have changed.
         g_oNethoodCache.LockCache();
         g_oNethoodCache.GetFullPath(m_pathNode, m_szCurrentPath,
                                     COUNTOF(m_szCurrentPath));
@@ -182,21 +181,23 @@ CNethoodFSInterface::ChangePath(
     const TCHAR* pSrc;
     TCHAR* pDst;
 
-    //   1 (refresh path) - zkracuje cestu, je-li treba; nehlasit neexistenci cesty (bez hlaseni
-    //                      zkratit), hlasit soubor misto cesty, nepristupnost cesty a dalsi chyby
-    //   2 (volani ChangePanelPathToPluginFS, back/forward in history, etc.) - zkracuje cestu,
-    //                      je-li treba; hlasit vsechny chyby cesty (soubor
-    //                      misto cesty, neexistenci, nepristupnost a dalsi)
-    //   3 (change-dir command) - zkracuje cestu jen jde-li o soubor nebo cestu nelze listovat
-    //                      (ListCurrentPath pro ni vraci FALSE); nehlasit soubor misto cesty
-    //                      (bez hlaseni zkratit a vratit jmeno souboru), hlasit vsechny ostatni
-    //                      chyby cesty (neexistenci, nepristupnost a dalsi)
-    // je-li 'mode' 1 nebo 2, vraci FALSE jen pokud na tomto FS zadna cesta neni pristupna
-    // (napr. pri vypadku spojeni); je-li 'mode' 3, vraci FALSE pokud neni pristupna
-    // pozadovana cesta nebo soubor (ke zkracovani cesty dojde jen v pripade, ze jde o soubor);
-    // v pripade, ze je otevreni FS casove narocne (napr. pripojeni na FTP server) a 'mode'
-    // je 3, je mozne upravit chovani jako u archivu - zkracovat cestu, je-li treba a vracet FALSE
-    // jen pokud na FS neni zadna cesta pristupna, hlaseni chyb se nemeni
+    // mode parameter semantics:
+    //   1 (refresh path) - shorten the path when necessary without reporting that it disappeared.
+    //                      Still report other issues such as getting a file instead of a directory
+    //                      or an inaccessible path.
+    //   2 (ChangePanelPathToPluginFS call, history navigation, and similar) - shorten the path when
+    //                      necessary and report every path-related error (file instead of directory,
+    //                      a missing path, inaccessibility, and so on).
+    //   3 (change-dir command) - shorten the path only when it points to a file or when the path cannot
+    //                      be listed (ListCurrentPath returned FALSE). Suppress only the "file instead of
+    //                      directory" warning by shortening silently and returning the file name; report
+    //                      all other path errors (missing, inaccessible, and so on).
+    // If mode is 1 or 2, return FALSE only when no path on this file system is accessible (for example,
+    // when the connection is down). If mode is 3, return FALSE when the requested path or file is not
+    // accessible (the path is shortened only when it points to a file).
+    // When opening the file system is time-consuming (for example, connecting to an FTP server) and mode
+    // is 3, treat it like an archive: shorten the path when necessary and return FALSE only when no path
+    // on the file system is accessible; error reporting stays the same.
 
     CALL_STACK_MESSAGE4("CNethoodFSInterface::ChangePath(, , , %s, , , %d, %d)", userPart, forceRefresh, mode);
 
@@ -258,8 +259,8 @@ CNethoodFSInterface::ChangePath(
     {
         if (!PostRedirectPathToSalamander(m_szAccessiblePath))
         {
-            // Asynchronous redirect to the accessible path found
-            // from the enumeration thread failed. Try to shorten
+            // The asynchronous redirect to the accessible path found by
+            // the enumeration thread failed. Try to shorten
             // the path. Note that we cannot use FindAccessiblePath()
             // because the cache node is NULL!
 
@@ -384,8 +385,8 @@ bool CNethoodFSInterface::NethoodNodeToFileData(
     assert(file.PluginData != 0);
     if (nodeData.IsContainer() && nodeData.GetType() != CNethoodCacheNode::TypeServer)
     {
-        // We treat servers as "files" because of limited
-        // Salamander's sorting options.
+        // We treat servers as "files" because Salamander offers limited
+        // sorting options.
         file.Attr |= FILE_ATTRIBUTE_DIRECTORY;
     }
 
@@ -1274,7 +1275,7 @@ void CNethoodFSInterface::NotifyPathUpdated(__in CNethoodCache::Node node)
 
         if (!SalamanderGeneral->PostRefreshPanelFS2(this))
         {
-            // Petr: Give some time to main thread to attach this FS to panel.
+            // Petr: Give the main thread some time to attach this FS to the panel.
             // FIXME: Milan: Not a good idea to sleep while holding the cache lock!
             Sleep(200);
             SalamanderGeneral->PostRefreshPanelFS2(this);
@@ -1301,7 +1302,7 @@ void CNethoodFSInterface::DisplayError(DWORD dwError)
     if (dwError == ERROR_CANCELLED)
     {
         // User cancelled something (the logon dialog most probably).
-        // Do dot inform her/him about something she is already aware of.
+        // Do not report something the user already acknowledged.
         return;
     }
 

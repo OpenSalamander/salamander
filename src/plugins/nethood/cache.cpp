@@ -271,9 +271,8 @@ void CNethoodCacheNode::NotifyNodeUpdated()
     pConsumerEntry = m_consumers.pNext;
     while (pConsumerEntry != &m_consumers)
     {
-        // Fetch the next entry in the list for the case,
-        // when the consumer removes itself from the list
-        // during the callback.
+        // Fetch the next entry before invoking the callback in case the
+        // consumer removes itself from the list during the notification.
         pNextEntry = pConsumerEntry->pNext;
 
         // Invoke the consumer's callback.
@@ -414,8 +413,8 @@ bool CNethoodCacheNode::CanKill() const
     else
     {
         // assert(*pszName != TEXT('\\'));
-        // proc to tady bylo?
-        // nemelo to byt spis assert(strcmp(pszName, "\\")) => nesmi se zabit root node
+        // why was this here?
+        // should it rather be assert(strcmp(pszName, "\\")) => the root node must not be killed
         TRACE_I(m_cRef << " outstanding references to dead node " << pszName << ", can kill=no");
     }
 #endif
@@ -883,7 +882,7 @@ UINT CNethoodCache::GetPathStatus(
             {
                 if (uError == -1)
                 {
-                    // There is really no data yet.
+                    // The node currently holds no data yet.
                     uError = ERROR_IO_PENDING;
                 }
             }
@@ -1122,8 +1121,8 @@ bool CNethoodCache::ScheduleEnumeration(
 
             if (PutNodeOnStandbyList(node))
             {
-                // TODO: Move the mgmt. thread wake up
-                //       after the cache is unlocked.
+                // TODO: Move the management-thread wake-up after the
+                //       cache is unlocked.
                 assert(m_hWakeMgmtEvent != NULL);
                 SetEvent(m_hWakeMgmtEvent);
             }
@@ -1294,7 +1293,7 @@ bool CNethoodCache::PutNodeOnStandbyList(__in Node node)
     CNethoodCacheListEntry::InsertAtTail(&m_standbyNodes, &nodeData.m_standbyListEntry);
     if (m_cStandbyNodes++ == 0 && m_hWakeMgmtEvent == NULL)
     {
-        // First node to be put on the stand-by list.
+        // First node placed on the stand-by list.
         // Create the management thread.
 
         res = CreateMgmtThread();
@@ -1368,11 +1367,11 @@ CNethoodCache::Node CNethoodCache::FindValidItem(
 
     LockCache();
 
-    // The returned node should be ancestor of the node passed as the
-    // parameter. We should never return the same node, otherwise we
-    // can cause infinite loop. We only violate this rule for root node,
-    // but the root node should be always valid and noone should question
-    // this.
+    // The returned node should be an ancestor of the node passed as the
+    // parameter. We must never return the same node; otherwise we can
+    // cause an infinite loop. We only violate this rule for the root node,
+    // but the root node should always be valid and no one should question
+    // that.
     nodeParent = m_oTree.GetParent(node);
     assert(nodeParent != NULL);
     if (nodeParent != NULL)
@@ -1626,10 +1625,10 @@ void CNethoodCache::RemoveItem(__in Node node)
 #if 0
 	Node nodeChild, nodeNext;
 	
-	// Manualy go thru all the children and notify them and release them.
-	// If we just call the TTree::Remove, the child nodes would not be
-	// notified and they would be forcibly removed without taking the
-	// ref-count into the account.
+        // Walk every child manually to dispatch notifications and release
+        // them. Simply calling TTree::Remove would skip notifications and
+        // would forcibly remove the child nodes without respecting the
+        // reference counts.
 
 	nodeChild = m_oTree.GetFirstChild(node);
 	while (nodeChild != NULL)
@@ -2049,7 +2048,7 @@ void CNethoodCacheEnumerationThread::ProcessEnumeration(
                 pNetResource->lpRemoteName &&
                 _tcsicmp(pNetResource->lpRemoteName, TEXT("\\\\tsclient")) == 0)
             {
-                // Hide \\tsclient from root.
+                // Hide \\tsclient from the root view.
                 --cElements;
                 ++pNetResource;
                 continue;
@@ -2175,8 +2174,7 @@ void CNethoodCacheEnumerationThread::EndEnumeration(__in DWORD dwResult)
         // Windows insists on keeping those items online. As a result
         // the items are hiding and showing again and again as the
         // paths are being reenumerated which is very distracting.
-        // So simply give Windows time to accept the fact the item is
-        // gone.
+        // So just give Windows some time to accept that the item is gone.
 #if 0		
 		// If the node failed to enumerate and it was not an access
 		// control related problem then remove the node and notify the
@@ -2311,18 +2309,18 @@ DWORD CNethoodCacheEnumerationThread::OpenEnum(
     dwError = WNetOpenEnum(dwScope, dwType, dwUsage, pNetResource, phEnum);
     if (IsLogonFailure(dwError))
     {
-        // Access to the network resource was denied. Try to
+        // Access to the network resource was denied; try to
         // authenticate the user.
 
         dwError = SalamanderGeneral->SalWNetAddConnection2Interactive(pNetResource);
         /*
-		// It seems that the CONNECT_TEMPORARY flag vanished from
-		// the recent versions of MSDN, so let's look at what an old
-		// SDK says about this flag:
-		// "CONNECT_TEMPORARY: The connection is being established
-		// for browsing purposes and can be released quickly."
-		// Since the flag is still declared in the header file,
-		// it can't hurt.
+                // It seems that the CONNECT_TEMPORARY flag vanished from
+                // recent MSDN documentation, so let's see what an older SDK
+                // says about this flag:
+                // "CONNECT_TEMPORARY: The connection is being established
+                // for browsing purposes and can be released quickly."
+                // Since the flag is still declared in the header file,
+                // it still does no harm.
 		dwError = WNetAddConnection2(
 			pNetResource,
 			NULL,
@@ -2440,7 +2438,7 @@ BOOL CNethoodCacheEnumerationThread::ResolveNetShortcut(
     __inout_ecount(MAX_PATH) PTSTR path)
 {
     if (path[0] == '\\')
-        return FALSE; // UNC cesta -> nemuze byt NetHood
+        return FALSE; // UNC path -> not a NetHood location
 
     char name[MAX_PATH];
     name[0] = path[0];
@@ -2448,9 +2446,9 @@ BOOL CNethoodCacheEnumerationThread::ResolveNetShortcut(
     name[2] = TEXT('\\');
     name[3] = TEXT('\0');
     if (GetDriveType(name) != DRIVE_FIXED)
-        return FALSE; // neni lokalni fixed cesta -> nemuze byt NetHood
+        return FALSE; // not a local fixed path -> not a NetHood location
 
-    BOOL tryTarget = FALSE; // je-li TRUE, ma cenu zkouset najit soubor "target.lnk"
+    BOOL tryTarget = FALSE; // if TRUE, it is worth trying to find the "target.lnk" file
     lstrcpyn(name, path, MAX_PATH);
     if (SalamanderGeneral->SalPathAppend(name, "desktop.ini", MAX_PATH))
     {
@@ -2461,15 +2459,15 @@ BOOL CNethoodCacheEnumerationThread::ResolveNetShortcut(
                                             NULL));
         if (hFile != INVALID_HANDLE_VALUE)
         {
-            if (GetFileSize(hFile, NULL) <= 1000) // zatim vsechny meli 92 bytu, takze 1000 bytu by melo bohate stacit
+            if (GetFileSize(hFile, NULL) <= 1000) // so far all had 92 bytes, so 1000 bytes should be more than enough
             {
                 char buf[1000];
                 DWORD read;
-                if (ReadFile(hFile, buf, 1000, &read, NULL) && read != 0) // nacteme soubor do pameti
+                if (ReadFile(hFile, buf, 1000, &read, NULL) && read != 0) // Load the file into memory.
                 {
                     char* s = buf;
                     char* end = buf + read;
-                    while (s < end) // hledame v souboru CLSID "folder shortcut"
+                    while (s < end) // Look for the "folder shortcut" CLSID in the file.
                     {
                         if (*s == '{')
                         {
@@ -2505,7 +2503,7 @@ BOOL CNethoodCacheEnumerationThread::ResolveNetShortcut(
         {
             WIN32_FIND_DATA data;
             HANDLE find = HANDLES_Q(FindFirstFile(name, &data));
-            if (find != INVALID_HANDLE_VALUE) // soubor existuje a mame jeho 'data'
+            if (find != INVALID_HANDLE_VALUE) // The file exists and we already retrieved its metadata.
             {
                 HANDLES(FindClose(find));
 
@@ -2523,8 +2521,8 @@ BOOL CNethoodCacheEnumerationThread::ResolveNetShortcut(
                         if (fileInt->Load(oleName, STGM_READ) == S_OK)
                         {
                             if (link->GetPath(name, MAX_PATH, &data, SLGP_UNCPRIORITY) == NOERROR)
-                            {                                        // nepouzijeme Resolve, protoze zde to neni az tak kriticke a dost by to zpomalovalo
-                                StringCchCopy(path, MAX_PATH, name); // heureka, konecne vime kam ten link vede
+                            {                                        // Skip Resolve; it's not critical here and would slow things down.
+                                StringCchCopy(path, MAX_PATH, name); // Finally we know where the shortcut points.
                                 ok = TRUE;
                             }
                         }
@@ -2575,7 +2573,7 @@ DWORD CNethoodCacheEnumerationThread::EnumNetworkShortcuts()
                 wfd.cFileName[0] != 0 &&
                 (wfd.cFileName[0] != TEXT('.') || wfd.cFileName[1] != 0 &&
                                                       (wfd.cFileName[1] != TEXT('.') || wfd.cFileName[2] != 0)))
-            { // adresare krome prazdnych jmen, "." a ".."
+            { // directories except empty names, "." and ".."
                 StringCchCopy(szShortcut, COUNTOF(szShortcut),
                               szShortcutsPath);
                 if (SalamanderGeneral->SalPathAppend(szShortcut,
@@ -2837,10 +2835,10 @@ unsigned CNethoodCacheManagementThread::Body()
     for (;;)
     {
         /*
-			Try to avoid creating the message loop if possible, since
-			once we have it both the kernel and user stack for the
-			thread grows and lot of other overhead is involved.
-		*/
+                        Try to avoid creating the message loop if possible, because
+                        once we do, both the kernel and user stacks for the
+                        thread grow and plenty of additional overhead appears.
+                */
 
         if (m_hwndWtsNotify)
         {
@@ -2942,7 +2940,7 @@ DWORD CNethoodCacheManagementThread::WalkStandbyList()
     if (m_pCache->m_cStandbyNodes == 0)
     {
         // There is nothing on the stand-by list,
-        // the management thread can sleep forever.
+        // the management thread can sleep indefinitely.
         dwTimeout = INFINITE;
     }
 
@@ -2967,7 +2965,7 @@ void CNethoodCacheManagementThread::DrainMsgQueue(bool bQuitting)
             res = PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
         }
 
-        if (res <= 0) /* GetMessage may return -1 in case of error */
+        if (res <= 0) /* GetMessage may return -1 on error */
         {
             break;
         }
@@ -3060,7 +3058,7 @@ LRESULT WINAPI CNethoodCacheManagementThread::WtsNotifyWndProc(
         that = GetInstanceFromHwnd(hwnd);
         assert(that);
 
-        that->m_pCache->WTSSessionChange((DWORD)lParam, (int)wParam); // FIXME_X64 - overit pretypovani na (DWORD)
+        that->m_pCache->WTSSessionChange((DWORD)lParam, (int)wParam); // FIXME_X64 - verify the cast to (DWORD)
 
         break;
     }
@@ -3091,7 +3089,7 @@ CTsClientName::CTsClientName(CNethoodCache* pCache)
     }
     else
     {
-        // either error ocurred or not a remote session
+        // Either an error occurred or this is not a remote session.
         TRACE_E("Failed to retrieve client name, error " << GetLastError());
 
         m_pszClientName = NULL;
