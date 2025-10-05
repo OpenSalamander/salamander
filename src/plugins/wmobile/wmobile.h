@@ -3,30 +3,30 @@
 
 #pragma once
 
-// globalni data
+// global data
 extern char Str[MAX_PATH];
 extern DWORD DWord;
-extern HINSTANCE DLLInstance; // handle k SPL-ku - jazykove nezavisle resourcy
-extern HINSTANCE HLanguage;   // handle k SLG-cku - jazykove zavisle resourcy
+extern HINSTANCE DLLInstance; // handle to SPL - language-independent resources
+extern HINSTANCE HLanguage;   // handle to SLG - language-dependent resources
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// Salamander general interface - valid from startup until the plugin terminates
 extern CSalamanderGeneralAbstract* SalamanderGeneral;
 
-// rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+// interface providing customized Windows controls used in Salamander
 extern CSalamanderGUIAbstract* SalamanderGUI;
 
 BOOL InitFS();
 void ReleaseFS();
 
-// FS-name pridelene Salamanderem po loadu pluginu
+// FS name assigned by Salamander after the plugin loads
 extern char AssignedFSName[MAX_PATH];
 
-// ukazatele na tabulky mapovani na mala/velka pismena
+// pointers to lower/upper case mapping tables
 extern unsigned char* LowerCase;
 extern unsigned char* UpperCase;
 
-// globalni promenne, do ktery si ulozim ukazatele na globalni promenne v Salamanderovi
-// pro archiv i pro FS - promenne se sdileji
+// global variables storing pointers to Salamander's global variables
+// shared by both the archiver and FS
 extern const CFileData** TransferFileData;
 extern int* TransferIsDir;
 extern char* TransferBuffer;
@@ -35,16 +35,16 @@ extern DWORD* TransferRowData;
 extern CPluginDataInterfaceAbstract** TransferPluginDataIface;
 extern DWORD* TransferActCustomData;
 
-// globalni data
+// global data
 extern char Str[MAX_PATH];
 extern int Number;
 extern int Selection; // "second" in configuration dialog
 extern BOOL CheckBox;
 extern int RadioBox;                       // radio 2 in configuration dialog
-extern BOOL CfgSavePosition;               // ukladat pozici okna/umistit dle hlavniho okna
-extern WINDOWPLACEMENT CfgWindowPlacement; // neplatne, pokud CfgSavePosition != TRUE
+extern BOOL CfgSavePosition;               // save window position/align with the main window
+extern WINDOWPLACEMENT CfgWindowPlacement; // invalid when CfgSavePosition != TRUE
 
-extern DWORD LastCfgPage; // start page (sheet) in configuration dialog
+extern DWORD LastCfgPage; // start page (sheet) in the configuration dialog
 
 char* LoadStr(int resID);
 
@@ -60,7 +60,7 @@ extern char TitleWMobileQuestion[];
 class CPluginInterfaceForFS : public CPluginInterfaceForFSAbstract
 {
 protected:
-    int ActiveFSCount; // pocet aktivnich FS interfacu (jen pro kontrolu dealokace)
+    int ActiveFSCount; // number of active FS interfaces (for deallocation checks only)
 
 public:
     CPluginInterfaceForFS() { ActiveFSCount = 0; }
@@ -129,18 +129,18 @@ public:
 //
 // CTopIndexMem
 //
-// pamet top-indexu listboxu v panelu - pouziva CPluginFSInterface pro korektni
-// chovani ExecuteOnFS (zachovani top-indexu po vstupu a vystupu z podadresare)
+// top-index memory for the panel list box - used by CPluginFSInterface to keep
+// ExecuteOnFS behavior consistent (preserves the top index when entering and leaving a subdirectory)
 
-#define TOP_INDEX_MEM_SIZE 50 // pocet pamatovanych top-indexu (urovni), minimalne 1
+#define TOP_INDEX_MEM_SIZE 50 // number of remembered top indexes (levels), at least 1
 
 class CTopIndexMem
 {
 protected:
-    // cesta pro posledni zapamatovany top-index
+    // path for the last remembered top index
     char Path[MAX_PATH];
-    int TopIndexes[TOP_INDEX_MEM_SIZE]; // zapamatovane top-indexy
-    int TopIndexesCount;                // pocet zapamatovanych top-indexu
+    int TopIndexes[TOP_INDEX_MEM_SIZE]; // stored top indexes
+    int TopIndexesCount;                // number of stored top indexes
 
 public:
     CTopIndexMem() { Clear(); }
@@ -148,24 +148,24 @@ public:
     {
         Path[0] = 0;
         TopIndexesCount = 0;
-    } // vycisti pamet
-    void Push(const char* path, int topIndex);        // uklada top-index pro danou cestu
-    BOOL FindAndPop(const char* path, int& topIndex); // hleda top-index pro danou cestu, FALSE->nenalezeno
+    } // clear the memory
+    void Push(const char* path, int topIndex);        // store the top index for the given path
+    BOOL FindAndPop(const char* path, int& topIndex); // find the top index for the given path, FALSE -> not found
 };
 
 //
 // ****************************************************************************
 // CPluginFSInterface
 //
-// sada metod pluginu, ktere potrebuje Salamander pro praci s file systemem
+// set of plugin methods that Salamander needs to work with the file system
 
 class CPluginFSInterface : public CPluginFSInterfaceAbstract
 {
 public:
-    char Path[MAX_PATH];      // aktualni cesta
-    BOOL PathError;           // TRUE pokud se nepovedla ListCurrentPath (path error), bude se volat ChangePath
-    BOOL FatalError;          // TRUE pokud se nepovedla ListCurrentPath (fatal error), bude se volat ChangePath
-    CTopIndexMem TopIndexMem; // pamet top-indexu pro ExecuteOnFS()
+    char Path[MAX_PATH];      // current path
+    BOOL PathError;           // TRUE if ListCurrentPath failed (path error); triggers ChangePath
+    BOOL FatalError;          // TRUE if ListCurrentPath failed (fatal error); triggers ChangePath
+    CTopIndexMem TopIndexMem; // stored top indexes for ExecuteOnFS()
 
 public:
     CPluginFSInterface();
@@ -238,17 +238,17 @@ public:
     static void EmptyCache();
 };
 
-// rozhrani pluginu poskytnute Salamanderovi
+// plugin interface provided to Salamander
 extern CPluginInterface PluginInterface;
 
-// otevre konfiguracni dialog; pokud jiz existuje, zobrazi hlasku a vrati se
+// opens the configuration dialog; if it already exists, shows a message and returns
 void OnConfiguration(HWND hParent);
 
-// otevre About okno
+// opens the About window
 void OnAbout(HWND hParent);
 
 /////////////////////////////////////////////////////////////////////////////
-// pomocne funkce pro RAPI
+// helper functions for RAPI
 
 struct CFileInfo
 {

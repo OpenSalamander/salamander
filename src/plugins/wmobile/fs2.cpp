@@ -20,7 +20,7 @@ CPluginFSInterface::CPluginFSInterface()
 void WINAPI
 CPluginFSInterface::ReleaseObject(HWND parent)
 {
-    // pokud je FS inicializovan, zrusime pri zavirani nase kopie souboru v disk-cache
+    // if the FS is initialized, remove our copies of files in the disk cache when closing
     if (Path[0] != 0)
         EmptyCache();
 }
@@ -43,7 +43,7 @@ CPluginFSInterface::GetCurrentPath(char* userPart)
 BOOL WINAPI
 CPluginFSInterface::GetFullName(CFileData& file, int isDir, char* buf, int bufSize)
 {
-    lstrcpyn(buf, Path, bufSize); // pokud se nevejde cesta, jmeno se urcite take nevejde (ohlasi chybu)
+    lstrcpyn(buf, Path, bufSize); // if the path does not fit, the name certainly will not either (an error will be reported)
     if (isDir == 2)
         return SalamanderGeneral->CutDirectory(buf, NULL); // up-dir
     else
@@ -54,20 +54,20 @@ BOOL WINAPI
 CPluginFSInterface::GetFullFSPath(HWND parent, const char* fsName, char* path, int pathSize, BOOL& success)
 {
     if (Path[0] == 0)
-        return FALSE; // preklad neni mozny, at si chybu ohlasi sam Salamander
+        return FALSE; // translation is not possible, let Salamander report the error itself
 
-    char root[MAX_PATH] = "\\"; //JR ve Windows Mobile je root vzdy "\\"
+    char root[MAX_PATH] = "\\"; //JR in Windows Mobile the root is always "\\"
 
     if (*path != '\\')
-        strcpy(root, Path); // cesty typu "path" prebiraji akt. cestu na FS
+        strcpy(root, Path); // paths such as "path" inherit the current FS path
 
     success = CRAPI::PathAppend(root, path, MAX_PATH);
-    if (success && (int)strlen(root) < 1) // kratsi nez root neni mozne (to by byla opet rel. cesta)
+    if (success && (int)strlen(root) < 1) // shorter than the root is impossible (it would become a relative path again)
     {
         success = SalamanderGeneral->SalPathAddBackslash(root, MAX_PATH);
     }
     if (success)
-        success = (int)(strlen(root) + strlen(fsName) + 1) < pathSize; // vejde se?
+        success = (int)(strlen(root) + strlen(fsName) + 1) < pathSize; // does it fit?
     if (success)
         sprintf(path, "%s:%s", fsName, root);
     else
@@ -87,7 +87,7 @@ CPluginFSInterface::IsCurrentPath(int currentFSNameIndex, int fsNameIndex, const
 BOOL WINAPI
 CPluginFSInterface::IsOurPath(int currentFSNameIndex, int fsNameIndex, const char* userPart)
 {
-    return TRUE; //JR REVIEW: Koho jineho by byla?
+    return TRUE; //JR REVIEW: Who else would it belong to?
 }
 
 BOOL WINAPI
@@ -107,7 +107,7 @@ CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fsNameI
     if (FatalError)
     {
         FatalError = FALSE;
-        return FALSE; // ListCurrentPath selhala kvuli pameti, fatal error
+        return FALSE; // ListCurrentPath failed due to memory, fatal error
     }
 
     if (forceRefresh)
@@ -122,11 +122,11 @@ CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fsNameI
     lstrcpyn(path, userPart, MAX_PATH);
 
     BOOL fileNameAlreadyCut = FALSE;
-    if (PathError) // chyba pri listovani cesty (chyba vypsana uzivateli uz v ListCurrentPath)
-    {              // zkusime cestu oriznout
+    if (PathError) // error while listing the path (the user already saw the error in ListCurrentPath)
+    {              // try to trim the path
         PathError = FALSE;
         if (!SalamanderGeneral->CutDirectory(path, NULL))
-            return FALSE; // neni kam zkracovat, fatal error
+            return FALSE; // nowhere to shorten, fatal error
         fileNameAlreadyCut = TRUE;
         if (pathWasCut != NULL)
             *pathWasCut = TRUE;
@@ -134,9 +134,9 @@ CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fsNameI
     while (1)
     {
         DWORD attr = CRAPI::GetFileAttributes(path, TRUE);
-        if (attr != 0xFFFFFFFF && (attr & FILE_ATTRIBUTE_DIRECTORY) != 0) // uspech, vybereme cestu jako aktualni
+        if (attr != 0xFFFFFFFF && (attr & FILE_ATTRIBUTE_DIRECTORY) != 0) // success, use the path as current
         {
-            if (errBuf[0] != 0) // pokud mame hlaseni, vypiseme ho zde (vzniklo behem zkracovani)
+            if (errBuf[0] != 0) // if we have a message, print it here (it arose during trimming)
             {
                 sprintf(buf, LoadStr(IDS_PATH_ERROR), userPart, errBuf);
                 SalamanderGeneral->ShowMessageBox(buf, TitleWMobileError, MSGBOX_ERROR);
@@ -144,12 +144,12 @@ CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fsNameI
             strcpy(Path, path);
             return TRUE;
         }
-        else // neuspech, zkusime cestu zkratit
+        else // failure, try to shorten the path
         {
             err = CRAPI::GetLastError();
 
-            if (mode != 3 && attr != 0xFFFFFFFF || // soubor misto cesty -> ohlasime jako chybu
-                mode != 1 && attr == 0xFFFFFFFF)   // neexistence cesty -> ohlasime jako chybu
+            if (mode != 3 && attr != 0xFFFFFFFF || // a file instead of a path -> report as an error
+                mode != 1 && attr == 0xFFFFFFFF)   // non-existent path -> report as an error
             {
                 if (attr != 0xFFFFFFFF)
                 {
@@ -158,16 +158,16 @@ CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fsNameI
                 else
                     SalamanderGeneral->GetErrorText(err, errBuf, MAX_PATH);
 
-                // pokud je otevreni FS casove narocne a chceme upravit chovani Change Directory (Shift+F7)
-                // jako u archivu, staci zakomentovat nasledujici radek s prikazem "break" pro 'mode' 3
+                // if opening the FS is time-consuming and we want to adjust Change Directory (Shift+F7)
+                // to behave like archives, comment out the following line with "break" for mode 3
 
-                //JR o orezavani se pokusim pouze pokud RAPI hlasi ze cesta neexistuje
+                //JR try trimming only if RAPI reports that the path does not exist
                 if (mode == 3 || err != ERROR_FILE_NOT_FOUND)
                     break;
             }
 
             char* cut;
-            if (!SalamanderGeneral->CutDirectory(path, &cut)) // neni kam zkracovat, fatal error
+            if (!SalamanderGeneral->CutDirectory(path, &cut)) // nowhere to shorten, fatal error
             {
                 SalamanderGeneral->GetErrorText(err, errBuf, MAX_PATH);
                 break;
@@ -176,16 +176,16 @@ CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fsNameI
             {
                 if (pathWasCut != NULL)
                     *pathWasCut = TRUE;
-                if (!fileNameAlreadyCut) // jmeno souboru to muze byt jen pri prvnim oriznuti
+                if (!fileNameAlreadyCut) // it can be a file name only during the first trim
                 {
                     fileNameAlreadyCut = TRUE;
-                    if (cutFileName != NULL && attr != 0xFFFFFFFF) // jde o soubor
+                    if (cutFileName != NULL && attr != 0xFFFFFFFF) // it is a file
                         lstrcpyn(cutFileName, cut, MAX_PATH);
                 }
                 else
                 {
                     if (cutFileName != NULL)
-                        *cutFileName = 0; // to uz byt jmeno souboru nemuze
+                        *cutFileName = 0; // it can no longer be a file name
                 }
             }
         }
@@ -229,7 +229,7 @@ CPluginFSInterface::ListCurrentPath(CSalamanderDirectoryAbstract* dir,
 
     DWORD i = 0;
 
-    if (strcmp(Path, "\\") != 0) ///JR Nejsme v rootu, tak pridame .. radek
+    if (strcmp(Path, "\\") != 0) //JR If we are not at the root, add the ".." entry
     {
         file.Name = SalamanderGeneral->DupStr("..");
         if (file.Name == NULL)
@@ -241,7 +241,7 @@ CPluginFSInterface::ListCurrentPath(CSalamanderDirectoryAbstract* dir,
         file.LastWrite.dwLowDateTime = 0;
         file.LastWrite.dwHighDateTime = 0;
         file.Hidden = 0;
-        file.DosName = NULL; //Windows Mobile nema 8.3 nazvy soboru
+        file.DosName = NULL; // Windows Mobile has no 8.3 file names
         file.IsLink = 0;
         file.IsOffline = 0;
 
@@ -258,7 +258,7 @@ CPluginFSInterface::ListCurrentPath(CSalamanderDirectoryAbstract* dir,
         RapiNS::CE_FIND_DATA& data = pFindDataArray[i];
 
         if (data.cFileName[0] != 0 &&
-            (data.cFileName[0] != '.' || //JR Windows Mobile nevraci "." a ".." cesty, ale pro jistotu to osetrim
+            (data.cFileName[0] != '.' || //JR Windows Mobile does not return "." or ".." paths, but handle it just in case
              (data.cFileName[1] != 0 && (data.cFileName[1] != '.' || data.cFileName[2] != 0))))
         {
             char cFileName[MAX_PATH];
@@ -271,14 +271,14 @@ CPluginFSInterface::ListCurrentPath(CSalamanderDirectoryAbstract* dir,
             file.NameLen = strlen(file.Name);
             if (!sortByExtDirsAsFiles && (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
             {
-                file.Ext = file.Name + file.NameLen; // adresare nemaji pripony
+                file.Ext = file.Name + file.NameLen; // directories have no extensions
             }
             else
             {
                 char* s;
                 s = strrchr(file.Name, '.');
                 if (s != NULL)
-                    file.Ext = s + 1; // ".cvspass" ve Windows je pripona
+                    file.Ext = s + 1; // ".cvspass" is treated as an extension in Windows
                 else
                     file.Ext = file.Name + file.NameLen;
             }
@@ -288,7 +288,7 @@ CPluginFSInterface::ListCurrentPath(CSalamanderDirectoryAbstract* dir,
 
             file.LastWrite = data.ftLastWriteTime;
             file.Hidden = (file.Attr & FILE_ATTRIBUTE_HIDDEN) != 0;
-            file.DosName = NULL; //Windows Mobile nema 8.3 nazvy soboru
+            file.DosName = NULL; // Windows Mobile has no 8.3 file names
             file.IsOffline = 0;
             if (file.Attr & FILE_ATTRIBUTE_DIRECTORY)
                 file.IsLink = 0;
@@ -319,7 +319,7 @@ ONERROR:
 BOOL WINAPI
 CPluginFSInterface::TryCloseOrDetach(BOOL forceClose, BOOL canDetach, BOOL& detach, int reason)
 {
-    //JR Windows Mobile plugin se vzdy odpoji
+    //JR The Windows Mobile plugin always disconnects
     detach = FALSE;
     return TRUE;
 }
@@ -329,7 +329,7 @@ CPluginFSInterface::Event(int event, DWORD param)
 {
     switch (event)
     {
-    case FSE_ACTIVATEREFRESH: // uzivatel aktivoval Salamandera (prepnuti z jine aplikace)
+    case FSE_ACTIVATEREFRESH: // user activated Salamander (switched from another application)
         if (!CRAPI::CheckConnection())
         {
             int panel1 = param;
@@ -354,7 +354,7 @@ CPluginFSInterface::Event(int event, DWORD param)
     case FSE_OPENED:
     case FSE_ATTACHED:
     case FSE_DETACHED:
-        //noop
+        // no operation
         break;
     }
 }
@@ -364,7 +364,7 @@ CPluginFSInterface::GetSupportedServices()
 {
     return 0 |
            FS_SERVICE_CONTEXTMENU |
-           //JR TODO FS_SERVICE_SHOWPROPERTIES |
+           //JR TODO: add FS_SERVICE_SHOWPROPERTIES |
            FS_SERVICE_CHANGEATTRS |
            FS_SERVICE_COPYFROMDISKTOFS |
            FS_SERVICE_MOVEFROMDISKTOFS |
@@ -372,13 +372,13 @@ CPluginFSInterface::GetSupportedServices()
            FS_SERVICE_COPYFROMFS |
            FS_SERVICE_DELETE |
            FS_SERVICE_VIEWFILE |
-           //JR TODO: jeste neni podporovano v Salamandru         FS_SERVICE_EDITFILE |
+           //JR TODO: FS_SERVICE_EDITFILE (not yet supported in Salamander) |
            FS_SERVICE_CREATEDIR |
            FS_SERVICE_ACCEPTSCHANGENOTIF |
            FS_SERVICE_QUICKRENAME |
-           //JR TODO: jeste neni podporovano v Salamandru         FS_SERVICE_CALCULATEOCCUPIEDSPACE |
+           //JR TODO: FS_SERVICE_CALCULATEOCCUPIEDSPACE (not yet supported in Salamander) |
            FS_SERVICE_COMMANDLINE |
-           //JR TODO: FS_SERVICE_SHOWINFO |
+           //JR TODO: add FS_SERVICE_SHOWINFO |
            FS_SERVICE_GETFREESPACE |
            FS_SERVICE_GETFSICON |
            FS_SERVICE_GETNEXTDIRLINEHOTPATH;
@@ -390,20 +390,20 @@ BOOL WINAPI
 CPluginFSInterface::GetChangeDriveOrDisconnectItem(const char *fsName, char *&title, HICON &icon, BOOL &destroyIcon)
 {
   char txt[2 * MAX_PATH + 102];
-  // text bude cesta na FS (v Salamanderovskem formatu)
+  // the text will be the FS path (Salamander format)
   txt[0] = '\t';
   strcpy(txt + 1, fsName);
   sprintf(txt + strlen(txt), ":%s\t", Path);
-  // zdvojime pripadne '&', aby se tisk cesty provedl korektne
+  // duplicate '&' characters so the path prints correctly
   SalamanderGeneral->DuplicateAmpersands(txt, 2 * MAX_PATH + 102);
 
-  // pripojime informaci o volnem miste
+  // append the free-space information
   CQuadWord space;
   GetFSFreeSpace(&space);
   if (space != CQuadWord(-1, -1)) SalamanderGeneral->PrintDiskSize(txt + strlen(txt), space, 0);
 
   title = SalamanderGeneral->DupStr(txt);
-  if (title == NULL) return FALSE;  // low-memory, zadna polozka nebude
+  if (title == NULL) return FALSE;  // low memory: no item will be added
 
   icon = GetFSIcon(destroyIcon);
   return TRUE;
@@ -415,7 +415,7 @@ HICON WINAPI
 CPluginFSInterface::GetFSIcon(BOOL& destroyIcon)
 {
     destroyIcon = TRUE;
-    // return LoadIcon(DLLInstance, MAKEINTRESOURCE(IDI_FS)); // zlobi barvy v Alt+F1/2: As Other Panel
+    // return LoadIcon(DLLInstance, MAKEINTRESOURCE(IDI_FS)); // colors glitch in Alt+F1/F2: As Other Panel
     return (HICON)LoadImage(DLLInstance, MAKEINTRESOURCE(IDI_FS),
                             IMAGE_ICON, 16, 16, SalamanderGeneral->GetIconLRFlags());
 }
@@ -437,14 +437,14 @@ CPluginFSInterface::GetFSFreeSpace(CQuadWord* retValue)
 BOOL WINAPI
 CPluginFSInterface::GetNextDirectoryLineHotPath(const char* text, int pathLen, int& offset)
 {
-    const char* root = text; // ukazatel za root cestu
+    const char* root = text; // pointer to the position after the root path
 
     while (*root != 0 && *root != ':')
-        root++; //JR Preskocim 'FSNAME'
+        root++; //JR Skip 'FSNAME'
     if (*root == ':')
-        root++; //JR Preskocim ':'
+        root++; //JR Skip ':'
     if (*root == '\\')
-        root++; //JR Preskocim '\\'
+        root++; //JR Skip '\\'
 
     const char* s = text + offset;
     const char* end = text + pathLen;
@@ -471,8 +471,8 @@ CPluginFSInterface::ShowInfoDialog(const char* fsName, HWND parent)
 BOOL WINAPI
 CPluginFSInterface::ExecuteCommandLine(HWND parent, char* command, int& selFrom, int& selTo)
 {
-    //JR Nejdrive vyzkousim command na aktualni ceste pokud neni zadana abs. cesta
-    char commandLine[MAX_PATH]; // CRAPI::CreateProcess neumi delsi nez MAX_PATH
+    //JR First try the command in the current path if an absolute path is not provided
+    char commandLine[MAX_PATH]; // CRAPI::CreateProcess cannot handle paths longer than MAX_PATH
 
     if (*command != '\\')
     {
@@ -487,7 +487,7 @@ CPluginFSInterface::ExecuteCommandLine(HWND parent, char* command, int& selFrom,
 
     if (*command == '\\' || !CRAPI::CreateProcess(commandLine, NULL))
     {
-        // Neuspech, tak jeste bez cesty, jen to, co zadal uzivatel
+        // On failure, retry without the path, using only the user input
         if (lstrlen(command) >= MAX_PATH)
         {
             SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_ERR_NAMETOOLONG),
@@ -514,9 +514,9 @@ CPluginFSInterface::QuickRename(const char* fsName, int mode, HWND parent, CFile
 {
     cancel = FALSE;
     if (mode == 1)
-        return FALSE; // zadost o standardni dialog
+        return FALSE; // request for the standard dialog
 
-    // zkontrolujeme zadane jmeno (syntakticky)
+    // Verify the provided name syntactically
     char* s = newName;
     char buf[2 * MAX_PATH];
     while (*s != 0 && *s != '\\' && *s != '/' && *s != ':' &&
@@ -526,14 +526,14 @@ CPluginFSInterface::QuickRename(const char* fsName, int mode, HWND parent, CFile
     {
         SalamanderGeneral->SalMessageBox(parent, SalamanderGeneral->GetErrorText(ERROR_INVALID_NAME),
                                          TitleWMobileError, MB_OK | MB_ICONEXCLAMATION);
-        return FALSE; // chybne jmeno, nechame opravit
+        return FALSE; // invalid name; let the user correct it
     }
 
-    // zpracovani masky v newName
+    // process the mask in newName
     SalamanderGeneral->MaskName(buf, 2 * MAX_PATH, file.Name, newName);
     lstrcpyn(newName, buf, MAX_PATH);
 
-    // provedeni operace prejmenovani
+    // perform the rename operation
     char nameFrom[MAX_PATH];
     char nameTo[MAX_PATH];
     strcpy(nameFrom, Path);
@@ -543,36 +543,36 @@ CPluginFSInterface::QuickRename(const char* fsName, int mode, HWND parent, CFile
     {
         SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_ERR_NAMETOOLONG),
                                          TitleWMobileError, MB_OK | MB_ICONEXCLAMATION);
-        // 'newName' uz se vraci po uprave (maskovani)
-        return FALSE; // chyba -> std. dialog znovu
+        // 'newName' is already returned after the mask adjustment
+        return FALSE; // error -> show the standard dialog again
     }
 
     //JR TODO: ConfirmOverwrite + Delete
 
     if (!CRAPI::MoveFile(nameFrom, nameTo))
     {
-        // (pripadny prepis souboru tady neresime, oznacime ho taky za chybu...)
+        // potential overwrites are not handled here; treat them as errors as well
         DWORD err = CRAPI::GetLastError();
         SalamanderGeneral->SalMessageBox(parent, SalamanderGeneral->GetErrorText(err),
                                          TitleWMobileError, MB_OK | MB_ICONEXCLAMATION);
-        // 'newName' uz se vraci po uprave (maskovani)
-        return FALSE; // chyba -> std. dialog znovu
+        // 'newName' is already returned after the mask adjustment
+        return FALSE; // error -> show the standard dialog again
     }
-    else // operace probehla dobre - hlaseni zmeny na ceste (vyvola refresh) + vracime uspech
+    else // operation succeeded - report the change on the path (triggers refresh) and return success
     {
         char cefsFileName[2 * MAX_PATH];
         if (SalamanderGeneral->StrICmp(nameFrom, nameTo) != 0)
-        { // pokud nejde jen o zmenu velikosti pismen (CEFS neni case-sensitive)
-            // odstranime z disk-cache zdroj operace (puvodni jmeno jiz neni platne)
+        { // if it is more than just a case change (CEFS is case-insensitive)
+            // remove the source file from the disk cache (the original name is no longer valid)
             sprintf(cefsFileName, "%s:%s", fsName, nameFrom);
-            // jmena na disku jsou "case-insensitive", disk-cache je "case-sensitive", prevod
-            // na mala pismena zpusobi, ze se disk-cache bude chovat take "case-insensitive"
+            // disk names are case-insensitive while the disk cache is case-sensitive; converting
+            // to lowercase makes the disk cache behave case-insensitively as well
             SalamanderGeneral->ToLowerCase(cefsFileName);
             SalamanderGeneral->RemoveOneFileFromCache(cefsFileName);
-            // pokud je mozny i prepis souboru, mel by se z disk-cache odstranit i cil operace (nastala "zmena souboru")
+            // if overwriting is possible, the target should be removed from the disk cache as well ("file changed")
         }
 
-        // zmena na ceste Path (bez podadresaru jen u prejmenovani souboru)
+        // change notification on Path (without subdirectories when renaming files)
         sprintf(cefsFileName, "%s:%s", fsName, Path);
         SalamanderGeneral->PostChangeOnPathNotification(cefsFileName, isDir);
 
@@ -584,9 +584,9 @@ void WINAPI
 CPluginFSInterface::AcceptChangeOnPathNotification(const char* fsName, const char* path, BOOL includingSubdirs)
 {
 
-    // otestujeme shodnost cest nebo aspon jejich prefixu (sanci maji jen cesty
-    // na nas FS, diskove cesty a cesty na jine FS v 'path' se vylouci automaticky,
-    // protoze se nemuzou nikdy shodovat s 'fsName'+':' na zacatku 'path2' nize)
+    // test whether the paths or at least their prefixes match (only paths on our FS have a chance;
+    // disk paths and other FS paths in 'path' are excluded automatically because they can never
+    // match 'fsName'+':' at the start of 'path2' below)
     char path1[2 * MAX_PATH];
     char path2[2 * MAX_PATH];
     lstrcpyn(path1, path, 2 * MAX_PATH);
@@ -597,7 +597,7 @@ CPluginFSInterface::AcceptChangeOnPathNotification(const char* fsName, const cha
     BOOL refresh = SalamanderGeneral->StrNICmp(path1, path2, len1) == 0 &&
                    (path2[len1] == 0 || includingSubdirs && path2[len1] == '\\');
     if (refresh)
-        SalamanderGeneral->PostRefreshPanelFS(this); // pokud je FS v panelu, provedeme jeho refresh
+        SalamanderGeneral->PostRefreshPanelFS(this); // refresh the panel if the FS is visible there
 }
 
 BOOL WINAPI
@@ -605,7 +605,7 @@ CPluginFSInterface::CreateDir(const char* fsName, int mode, HWND parent, char* n
 {
     cancel = FALSE;
     if (mode == 1)
-        return FALSE; // zadost o standardni dialog
+        return FALSE; // request for the standard dialog
 
     int type;
     BOOL isDir;
@@ -618,13 +618,13 @@ CPluginFSInterface::CreateDir(const char* fsName, int mode, HWND parent, char* n
                                          TitleWMobileError, nextFocus,
                                          FALSE, NULL, NULL, &error, 2 * MAX_PATH))
     {
-        if (error == SPP_EMPTYPATHNOTALLOWED) // prazdny retezec -> koncime bez provedeni operace
+        if (error == SPP_EMPTYPATHNOTALLOWED) // empty string -> stop without performing the operation
         {
             cancel = TRUE;
-            return TRUE; // na navratove hodnote uz nezalezi
+            return TRUE; // return value no longer matters
         }
 
-        if (error == SPP_INCOMLETEPATH) // relativni cesta na FS, postavime absolutni cestu vlastnimi silami
+        if (error == SPP_INCOMLETEPATH) // relative FS path; build the absolute path manually
         {
             int errTextID;
             if (!SalamanderGeneral->SalGetFullName(newName, &errTextID, Path, nextFocus))
@@ -643,8 +643,8 @@ CPluginFSInterface::CreateDir(const char* fsName, int mode, HWND parent, char* n
             {
                 SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_ERR_NAMETOOLONG),
                                                  TitleWMobile, MB_OK | MB_ICONEXCLAMATION);
-                // 'newName' se vraci v puvodni verzi
-                return FALSE; // chyba -> std. dialog znovu
+                // 'newName' is returned in its original form
+                return FALSE; // error -> show the standard dialog again
             }
             else
                 strcat(path, newName);
@@ -654,63 +654,63 @@ CPluginFSInterface::CreateDir(const char* fsName, int mode, HWND parent, char* n
             type = PATH_TYPE_FS;
         }
         else
-            return FALSE; // chyba -> std. dialog znovu
+            return FALSE; // error -> show the standard dialog again
     }
 
     if (type != PATH_TYPE_FS)
     {
         SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_SORRY_CREATEDIR1),
                                          TitleWMobile, MB_OK | MB_ICONEXCLAMATION);
-        // 'newName' uz se vraci po uprave (expanzi cesty)
-        return FALSE; // chyba -> std. dialog znovu
+        // 'newName' is already returned after the path expansion
+        return FALSE; // error -> show the standard dialog again
     }
 
     if ((secondPart - newName) - 1 != (int)strlen(fsName) ||
         SalamanderGeneral->StrNICmp(newName, fsName, (int)(secondPart - newName) - 1) != 0)
-    { // to neni CEFS
+    { // not a CEFS path
         SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_SORRY_CREATEDIR2),
                                          TitleWMobile, MB_OK | MB_ICONEXCLAMATION);
-        // 'newName' uz se vraci po uprave (expanzi cesty)
-        return FALSE; // chyba -> std. dialog znovu
+        // 'newName' is already returned after the path expansion
+        return FALSE; // error -> show the standard dialog again
     }
 
     if (secondPart[0] != '\\')
     {
         SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_SORRY_CREATEDIR3),
                                          TitleWMobile, MB_OK | MB_ICONEXCLAMATION);
-        // 'newName' uz se vraci po uprave (expanzi cesty)
-        return FALSE; // chyba -> std. dialog znovu
+        // 'newName' is already returned after the path expansion
+        return FALSE; // error -> show the standard dialog again
     }
 
-    // v plne ceste na toto FS mohl uzivatel take pouzit "." a ".." - odstranime je
+    // remove any "." and ".." segments from the full path to this FS
     if (!SalamanderGeneral->SalRemovePointsFromPath(secondPart + 1))
     {
         SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_ERR_INVALIDPATH),
                                          TitleWMobile, MB_OK | MB_ICONEXCLAMATION);
-        // 'newName' se vraci po uprave (expanzi cesty) + mozne uprave nekterych ".." a "."
-        return FALSE; // chyba -> std. dialog znovu
+        // 'newName' is returned after expanding the path and possibly adjusting ".." and "."
+        return FALSE; // error -> show the standard dialog again
     }
 
-    // orizneme zbytecny backslash
+    // trim any redundant trailing backslash
     SalamanderGeneral->SalPathRemoveBackslash(secondPart);
 
-    // konecne vytvorime adresar
+    // finally create the directory
 
     if (!CRAPI::CreateDirectory(secondPart, NULL))
     {
         DWORD err = CRAPI::GetLastError();
         SalamanderGeneral->SalMessageBox(parent, SalamanderGeneral->GetErrorText(err),
                                          TitleWMobileError, MB_OK | MB_ICONEXCLAMATION);
-        // 'newName' uz se vraci po uprave (expanzi cesty)
-        return FALSE; // chyba -> std. dialog znovu
+        // 'newName' is already returned after the path expansion
+        return FALSE; // error -> show the standard dialog again
     }
 
-    // operace probehla dobre - hlaseni zmeny na ceste (vyvola refresh) + vracime uspech
-    // zmena na ceste (bez podadresaru)
-    SalamanderGeneral->CutDirectory(secondPart); // musi jit (nemuze byt root)
+    // operation succeeded - report the change on the path (triggers refresh)
+    // notify about the change on the path (without subdirectories)
+    SalamanderGeneral->CutDirectory(secondPart); // must succeed (cannot be the root)
     sprintf(path, "%s:%s", fsName, secondPart);
     SalamanderGeneral->PostChangeOnPathNotification(path, FALSE);
-    strcpy(newName, nextFocus); // pokud byl zadan primo jen nazev adresare, vyfokusime ho v panelu
+    strcpy(newName, nextFocus); // if only the directory name was provided, focus it in the panel
 
     return TRUE;
 }
@@ -723,26 +723,26 @@ CPluginFSInterface::ViewFile(const char* fsName, HWND parent,
     if (!CRAPI::CheckConnection())
         CRAPI::ReInit();
 
-    // sestavime unikatni jmeno souboru pro disk-cache (standardni salamanderovsky format cesty)
+    // build a unique file name for the disk cache (standard Salamander path format)
     char uniqueFileName[2 * MAX_PATH];
     strcpy(uniqueFileName, AssignedFSName);
     strcat(uniqueFileName, ":");
     strcat(uniqueFileName, Path);
     CRAPI::PathAppend(uniqueFileName + strlen(AssignedFSName) + 1, file.Name, MAX_PATH);
-    // jmena na disku jsou "case-insensitive", disk-cache je "case-sensitive", prevod
-    // na mala pismena zpusobi, ze se disk-cache bude chovat take "case-insensitive"
+    // disk names are case-insensitive while the disk cache is case-sensitive; converting
+    // to lowercase makes the disk cache behave case-insensitively as well
     SalamanderGeneral->ToLowerCase(uniqueFileName);
 
-    // ziskame jmeno kopie souboru v disk-cache
+    // obtain the disk-cache copy name
     BOOL fileExists;
     const char* tmpFileName = salamander->AllocFileNameInCache(parent, uniqueFileName, file.Name, NULL, fileExists);
     if (tmpFileName == NULL)
         return; // fatal error
 
-    // zjistime jestli je treba pripravit kopii souboru do disk-cache (download)
+    // determine whether a disk-cache copy of the file needs to be prepared (download)
     BOOL newFileOK = FALSE;
     CQuadWord newFileSize(0, 0);
-    if (!fileExists) // priprava kopie souboru (download) je nutna
+    if (!fileExists) // preparing a copy (download) is necessary
     {
         const char* name = uniqueFileName + strlen(AssignedFSName) + 1;
 
@@ -750,9 +750,9 @@ CPluginFSInterface::ViewFile(const char* fsName, HWND parent,
         HWND parentWin;
         while ((parentWin = GetParent(mainWnd)) != NULL && IsWindowEnabled(parentWin))
             mainWnd = parentWin;
-        // disablujeme 'mainWnd'
+        // disable 'mainWnd'
 
-        CProgressDlg dlg(mainWnd, LoadStr(IDS_READ), LoadStr(IDS_READING), ooStatic); // aby nemodalni dialog mohl byt na stacku, dame 'ooStatic'
+        CProgressDlg dlg(mainWnd, LoadStr(IDS_READ), LoadStr(IDS_READING), ooStatic); // use 'ooStatic' so the modeless dialog can live on the stack
 
         dlg.Create();
         EnableWindow(mainWnd, FALSE);
@@ -764,17 +764,17 @@ CPluginFSInterface::ViewFile(const char* fsName, HWND parent,
         DWORD err = CRAPI::CopyFileToPC(name, tmpFileName, TRUE, &dlg, 0, 0, &errFileName);
 
         EnableWindow(mainWnd, TRUE);
-        DestroyWindow(dlg.HWindow); // zavreme progress dialog
+        DestroyWindow(dlg.HWindow); // close the progress dialog
 
-        if (err == 0) // kopie se povedla
+        if (err == 0) // the copy succeeded
         {
-            newFileOK = TRUE; // pokud nevyjde zjistovani velikosti souboru, zustane newFileSize nula (neni az tak dulezite)
+            newFileOK = TRUE; // if the size query fails, newFileSize stays zero (not critical)
             HANDLE hFile = HANDLES_Q(CreateFile(tmpFileName, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
                                                 NULL, OPEN_EXISTING, 0, NULL));
             if (hFile != INVALID_HANDLE_VALUE)
-            { // chybu ignorujeme, velikost souboru neni az tak dulezita
+            { // ignore errors; the exact file size is not essential
                 DWORD err2;
-                SalamanderGeneral->SalGetFileSize(hFile, newFileSize, err2); // chyby ignorujeme
+                SalamanderGeneral->SalGetFileSize(hFile, newFileSize, err2); // ignore errors
                 HANDLES(CloseHandle(hFile));
             }
         }
@@ -787,18 +787,17 @@ CPluginFSInterface::ViewFile(const char* fsName, HWND parent,
         }
     }
 
-    // otevreme viewer
+    // open the viewer
     HANDLE fileLock;
     BOOL fileLockOwner;
-    if (!fileExists && !newFileOK || // viewer otevreme jen pokud je kopie souboru v poradku
+    if (!fileExists && !newFileOK || // open the viewer only if the file copy is ready
         !salamander->OpenViewer(parent, tmpFileName, &fileLock, &fileLockOwner))
-    { // pri chybe nulujeme "lock"
+    { // on error, reset "lock"
         fileLock = NULL;
         fileLockOwner = FALSE;
     }
 
-    // jeste musime zavolat FreeFileNameInCache do paru k AllocFileNameInCache (propojime
-    // viewer a disk-cache)
+    // call FreeFileNameInCache to pair with AllocFileNameInCache (link the viewer and the disk cache)
     salamander->FreeFileNameInCache(uniqueFileName, fileExists, newFileOK,
                                     newFileSize, fileLock, fileLockOwner, FALSE);
 }
@@ -809,15 +808,15 @@ CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int panel,
 {
     cancelOrError = FALSE;
     if (mode == 1)
-        return FALSE; // zadost o standardni dotaz
+        return FALSE; // request for the standard prompt
 
-    char buf[2 * MAX_PATH]; // buffer pro texty chyb
+    char buf[2 * MAX_PATH]; // buffer for error messages
 
     char rootPath[MAX_PATH], fileName[MAX_PATH], dfsFileName[2 * MAX_PATH];
 
     strcpy(rootPath, Path);
 
-    // vyzvedneme hodnoty "Confirm on" z konfigurace
+    // retrieve the "Confirm on" settings from the configuration
     BOOL ConfirmOnNotEmptyDirDelete, ConfirmOnSystemHiddenFileDelete, ConfirmOnSystemHiddenDirDelete;
     SalamanderGeneral->GetConfigParameter(SALCFG_CNFRMNEDIRDEL, &ConfirmOnNotEmptyDirDelete, 4, NULL);
     SalamanderGeneral->GetConfigParameter(SALCFG_CNFRMSHFILEDEL, &ConfirmOnSystemHiddenFileDelete, 4, NULL);
@@ -829,11 +828,11 @@ CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int panel,
     BOOL yesAllSHDD = FALSE;    // delete all system or hidden dirs
     BOOL skipAllErrors = FALSE; // skip all errors
 
-    BOOL success = TRUE; // FALSE v pripade chyby nebo preruseni uzivatelem
+    BOOL success = TRUE; // becomes FALSE on error or user interruption
     BOOL changeInSubdirs = FALSE;
 
-    const CFileData* f = NULL; // ukazatel na soubor/adresar v panelu, ktery se ma zpracovat
-    BOOL isDir = FALSE;        // TRUE pokud 'f' je adresar
+    const CFileData* f = NULL; // pointer to the file/directory in the panel to process
+    BOOL isDir = FALSE;        // TRUE if 'f' is a directory
     BOOL focused = (selectedFiles == 0 && selectedDirs == 0);
     int index = 0;
 
@@ -841,22 +840,22 @@ CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int panel,
                                             500, FALSE, SalamanderGeneral->GetMainWindowHWND());
     CFileInfoArray array(10, 10);
 
-    //JR nacteme vsechny soubory, ktere budeme mazat
+    //JR load all files that will be deleted
     for (int block1 = 1;; block1++)
     {
-        // vyzvedneme data o zpracovavanem souboru
+        // retrieve data about the file being processed
         if (focused)
             f = SalamanderGeneral->GetPanelFocusedItem(panel, &isDir);
         else
             f = SalamanderGeneral->GetPanelSelectedItem(panel, &index, &isDir);
 
-        // smazeme soubor/adresar
-        //JR FindAllFilesInTree volam i pro jednotlive soubory.
-        //JR Zjisti se tim, jestli stale jeste existuji a jake maji aktualni atributy
+        // delete the file/directory
+        //JR call FindAllFilesInTree even for individual files
+        //JR this verifies the file still exists and gets its current attributes
         if (f != NULL)
             success = CRAPI::FindAllFilesInTree(rootPath, f->Name, array, block1, FALSE);
 
-        // zjistime jestli ma cenu pokracovat (pokud neni chyba a existuje jeste nejaka dalsi oznacena polozka)
+        // decide whether to continue (stop if there is an error or no additional selected item)
         if (!success || focused || f == NULL)
             break;
     }
@@ -870,11 +869,11 @@ CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int panel,
     HWND parentWin;
     while ((parentWin = GetParent(mainWnd)) != NULL && IsWindowEnabled(parentWin))
         mainWnd = parentWin;
-    // disablujeme 'mainWnd'
+    // disable 'mainWnd'
 
     BOOL showProgressDialog = array.Count > 1;
     BOOL enableMainWnd = TRUE;
-    CProgressDlg delDlg(mainWnd, LoadStr(IDS_DELETE), LoadStr(IDS_DELETING), ooStatic); // aby nemodalni dialog mohl byt na stacku, dame 'ooStatic'
+    CProgressDlg delDlg(mainWnd, LoadStr(IDS_DELETE), LoadStr(IDS_DELETING), ooStatic); // use 'ooStatic' so the modeless dialog can live on the stack
 
     if (showProgressDialog)
     {
@@ -882,7 +881,7 @@ CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int panel,
         delDlg.Create();
     }
 
-    if (!showProgressDialog || delDlg.HWindow != NULL) // dialog se podarilo otevrit
+    if (!showProgressDialog || delDlg.HWindow != NULL) // dialog opened successfully
     {
         if (showProgressDialog)
             SetForegroundWindow(delDlg.HWindow);
@@ -905,7 +904,7 @@ CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int panel,
             if (showProgressDialog)
             {
                 float progress = ((float)i / (float)array.Count);
-                delDlg.Set(fileName, (DWORD)(progress * 1000), TRUE); // delayedPaint == TRUE, abychom nebrzdili
+                delDlg.Set(fileName, (DWORD)(progress * 1000), TRUE); // delayedPaint == TRUE so we don't slow things down
             }
 
             if (showProgressDialog && delDlg.GetWantCancel())
@@ -916,10 +915,10 @@ CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int panel,
 
             if (ConfirmOnNotEmptyDirDelete && i < array.Count - 1)
             {
-                //JR block obsahuje vic nez jeden prvek => je to neprazdny top level adresar
+                //JR if a block contains more than one item, it represents a non-empty top-level directory
                 if (fi.block != block && fi.block == array[i + 1].block)
                 {
-                    //JR Posledni cesta v blocku je vlastni adresar
+                    //JR the last path in the block is the directory itself
                     int j;
                     for (j = i + 1; j < array.Count && array[j].block == fi.block; j++)
                     {
@@ -930,7 +929,7 @@ CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int panel,
                     int res = SalamanderGeneral->ShowMessageBox(buf, TitleWMobileQuestion, MSGBOX_EX_QUESTION);
                     if (res == IDNO)
                     {
-                        i = j; //JR preskocim zbytek blocku
+                        i = j; //JR skip the rest of the block
                         continue;
                     }
                     else if (res != IDYES)
@@ -978,7 +977,7 @@ CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int panel,
                     }
                 }
 
-                if (success && !skip) // neni cancel ani skip
+                if (success && !skip) // neither canceled nor skipped
                 {
                     skip = FALSE;
                     while (1)
@@ -1015,13 +1014,13 @@ CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int panel,
                         else
                         {
                             sprintf(dfsFileName, "%s:%s", fsName, fileName);
-                            // jmena na disku jsou "case-insensitive", disk-cache je "case-sensitive", prevod
-                            // na mala pismena zpusobi, ze se disk-cache bude chovat take "case-insensitive"
+                            // disk names are case-insensitive while the disk cache is case-sensitive; converting
+                            // to lowercase makes the disk cache behave case-insensitively as well
                             SalamanderGeneral->ToLowerCase(dfsFileName);
-                            // odstranime z disk-cache kopii smazaneho souboru (je-li cachovany)
+                            // remove the deleted file's cache copy if it exists
                             SalamanderGeneral->RemoveOneFileFromCache(dfsFileName);
-                            changeInSubdirs = TRUE; // zmeny mohly nastat i v podadresarich
-                            break;                  // uspesny delete
+                            changeInSubdirs = TRUE; // changes may also have occurred in subdirectories
+                            break;                  // successful delete
                         }
                         if (!success || skip)
                             break;
@@ -1063,7 +1062,7 @@ CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int panel,
                     }
                 }
 
-                if (success && !skip) // neni cancel ani skip
+                if (success && !skip) // neither canceled nor skipped
                 {
                     skip = FALSE;
                     while (1)
@@ -1100,12 +1099,12 @@ CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int panel,
                         else
                         {
                             sprintf(dfsFileName, "%s:%s", fsName, fileName);
-                            // jmena na disku jsou "case-insensitive", disk-cache je "case-sensitive", prevod
-                            // na mala pismena zpusobi, ze se disk-cache bude chovat take "case-insensitive"
+                            // disk names are case-insensitive while the disk cache is case-sensitive; converting
+                            // to lowercase makes the disk cache behave case-insensitively as well
                             SalamanderGeneral->ToLowerCase(dfsFileName);
-                            // odstranime z disk-cache kopii smazaneho souboru (je-li cachovany)
+                            // remove the deleted file's cache copy if it exists
                             SalamanderGeneral->RemoveOneFileFromCache(dfsFileName);
-                            break; // uspesny delete
+                            break; // successful delete
                         }
                         if (!success || skip)
                             break;
@@ -1116,21 +1115,21 @@ CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int panel,
 
         if (showProgressDialog)
         {
-            // enablujeme 'mainWnd' (jinak ho nemuze Windows vybrat jako foreground/aktivni okno)
+            // enable 'mainWnd' (otherwise Windows cannot make it the foreground/active window)
             EnableWindow(mainWnd, TRUE);
             enableMainWnd = FALSE;
 
-            DestroyWindow(delDlg.HWindow); // zavreme progress dialog
+            DestroyWindow(delDlg.HWindow); // close the progress dialog
         }
     }
 
-    // enablujeme 'mainWnd' (nenastala zmena foreground okna - progress se vubec neotevrel)
+    // enable 'mainWnd' if the foreground window never changed (the progress dialog never opened)
     if (showProgressDialog && enableMainWnd)
         EnableWindow(mainWnd, TRUE);
 
     SalamanderGeneral->RestoreFocusInSourcePanel();
 
-    // zmena na ceste Path (bez podadresaru jen pokud se mazaly jen soubory)
+    // report the change on Path (no subdirectories when only files were deleted)
     sprintf(dfsFileName, "%s:%s", fsName, Path);
     SalamanderGeneral->PostChangeOnPathNotification(dfsFileName, changeInSubdirs);
 
@@ -1195,7 +1194,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
     char path[2 * MAX_PATH];
     operationMask = FALSE;
     cancelOrHandlePath = FALSE;
-    if (mode == 1) // prvni volani CopyOrMoveFromFS
+    if (mode == 1) // first call to CopyOrMoveFromFS
     {
         if (*targetPath == 0)
         {
@@ -1211,44 +1210,44 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                 }
             }
         }
-        // pokud je nejaka cesta navrzena, pridame k ni masku *.* (budeme zpracovavat operacni masky)
+        // If a path was suggested, append the *.* mask (we will process operation masks)
         if (*targetPath != 0)
         {
             SalamanderGeneral->SalPathAppend(targetPath, "*.*", 2 * MAX_PATH);
-            SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_TARGET); // default akce = prace s cestou v cilovem panelu
+            SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_TARGET); // default action = work with the path in the target panel
         }
-        return FALSE; // zadost o standardni dialog
+        return FALSE; // request for the standard dialog
     }
 
-    if (mode == 4) // chyba pri std. Salamanderovskem zpracovani cilove cesty
+    if (mode == 4) // error during the standard Salamander processing of the target path
     {
-        // 'targetPath' obsahuje chybnou cestu, uzivatelovi byla chyba ohlasena, zbyva jen
-        // ho nechat provest editaci cilove cesty
-        return FALSE; // zadost o standardni dialog
+        // 'targetPath' contains an invalid path, the user has already been informed, so we just
+        // let them edit the destination path again
+        return FALSE; // request for the standard dialog
     }
 
     char buf[3 * MAX_PATH + 100];
     char nextFocus[MAX_PATH];
     nextFocus[0] = 0;
 
-    BOOL diskPath = TRUE;  // pri 'mode'==3 je v 'targetPath' windowsova cesta (FALSE = cesta na toto FS)
-    char* userPart = NULL; // ukazatel do 'targetPath' na user-part FS cesty (pri 'diskPath' FALSE)
-    BOOL rename = FALSE;   // je-li TRUE, jde o prejmenovani/kopirovani adresare do sebe sama
+    BOOL diskPath = TRUE;  // when 'mode'==3 'targetPath' holds a Windows path (FALSE = path on this FS)
+    char* userPart = NULL; // pointer into 'targetPath' to the user portion of the FS path (when 'diskPath' is FALSE)
+    BOOL rename = FALSE;   // TRUE means renaming/copying a directory into itself
 
-    if (mode == 2) // prisel retezec ze std. dialogu od usera
+    if (mode == 2) // a string arrived from the standard dialog entered by the user
     {
-        // sami zpracujeme relativni cesty (to Salamander nemuze udelat)
-        if ((targetPath[0] != '\\' || targetPath[1] != '\\') && // neni UNC cesta
-            (targetPath[0] == 0 || targetPath[1] != ':'))       // neni normalni diskova cesta
-        {                                                       // neni windowsova cesta, ani archivova cesta
+        // Handle relative paths ourselves (Salamander cannot do that)
+        if ((targetPath[0] != '\\' || targetPath[1] != '\\') && // not a UNC path
+            (targetPath[0] == 0 || targetPath[1] != ':'))       // not a normal disk path
+        {                                                       // neither a Windows path, nor an archive path
             userPart = strchr(targetPath, ':');
-            if (userPart == NULL) // cesta nema fs-name, je tedy relativni
-            {                     // relativni cesta s ':' zde neni mozna (nelze rozlisit od plne cesty na nejaky FS)
+            if (userPart == NULL) // path does not contain an FS name, so it is relative
+            {                     // a relative path with ':' is not allowed here (cannot be distinguished from an absolute path to some FS)
 
-                // pro diskove cesty by bylo vyhodne pouzit SalGetFullName:
-                // SalamanderGeneral->SalGetFullName(targetPath, &errTextID, Path, nextFocus) + osetrit chyby
-                // pak uz by stacilo jen vlozit fs-name pred ziskanou cestu
-                // tady si ale radsi predvedeme vlastni implementaci (pouziti SalRemovePointsFromPath a dalsich):
+                // For disk paths we could use SalGetFullName:
+                // SalamanderGeneral->SalGetFullName(targetPath, &errTextID, Path, nextFocus) + handle the errors
+                // After that it would be enough to prepend the FS name to the obtained path
+                // but instead we demonstrate our own implementation (using SalRemovePointsFromPath and others):
 
                 char* s = strchr(targetPath, '\\');
                 if (s == NULL || *(s + 1) == 0)
@@ -1271,10 +1270,10 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                 BOOL tooLong = FALSE;
                 int rootLen = 1;
                 *s = '\\';
-                if (targetPath[0] == '\\') // "\\path" -> skladame root + newName
+                if (targetPath[0] == '\\') // "\\path" -> compose root + newName
                 {
                     s += rootLen;
-                    int len = (int)strlen(targetPath + 1); // bez uvodniho '\\'
+                    int len = (int)strlen(targetPath + 1); // without the leading '\\'
                     if (len + rootLen >= MAX_PATH)
                         tooLong = TRUE;
                     else
@@ -1283,12 +1282,12 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                         *(s + len) = 0;
                     }
                 }
-                else // "path" -> skladame Path + newName
+                else // "path" -> compose Path + newName
                 {
                     int pathLen = (int)strlen(Path);
                     if (pathLen < rootLen)
                         rootLen = pathLen;
-                    strcpy(s + rootLen, Path + rootLen); // root uz je tam nakopirovany
+                    strcpy(s + rootLen, Path + rootLen); // root was already copied there
                     tooLong = !CRAPI::PathAppend(s, targetPath, MAX_PATH);
                 }
 
@@ -1296,8 +1295,8 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                 {
                     SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_ERR_NAMETOOLONG),
                                                      TitleWMobileError, MB_OK | MB_ICONEXCLAMATION);
-                    // 'targetPath' se vraci v nezmenene podobe (co uzivatel zadal)
-                    return FALSE; // chyba -> std. dialog znovu
+                    // 'targetPath' is returned unchanged (as entered by the user)
+                    return FALSE; // error -> reopen the standard dialog
                 }
 
                 strcpy(targetPath, path);
@@ -1306,15 +1305,15 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
             else
                 userPart++;
 
-            // FS cilova cesta ('targetPath' - plna cesta, 'userPart' - ukazatel do plne cesty na user-part)
-            // na tomto miste muze plugin zpracovat FS cesty (jak sve vlastni, tak cizi)
-            // Salamander zatim neumi tyto cesty zpracovat, casem mozna umozni sled zakladnich
-            // operaci pres TEMP (napr. download z FTP do TEMPu, pak upload z TEMPu na FTP - pokud
-            // lze udelat efektivneji (u FTP to lze), mel by to plugin zvladnout zde)
+            // FS destination path ('targetPath' - full path, 'userPart' - pointer inside the full path to the user part)
+            // At this point the plugin can handle FS paths (both its own and foreign ones)
+            // Salamander cannot process these paths yet; in the future it might support a basic
+            // sequence of operations via TEMP (for example download from FTP to TEMP, then upload
+            // from TEMP back to FTP - if it can be done more efficiently, as with FTP, the plugin should handle it here)
 
             if ((userPart - targetPath) - 1 == (int)strlen(fsName) &&
                 SalamanderGeneral->StrNICmp(targetPath, fsName, (int)(userPart - targetPath) - 1) == 0)
-            { // je to CEFS (jinak nechame zpracovat standardne Salamanderem)
+            { // it is CEFS (otherwise let Salamander process it normally)
                 BOOL invPath = (userPart[0] != '\\');
 
                 int rootLen = 0;
@@ -1326,54 +1325,55 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                         rootLen = userPartLen;
                 }
 
-                // v plne ceste na toto FS mohl uzivatel take pouzit "." a ".." - odstranime je
+                // The full path to this FS may also contain "." and ".." entered by the user - remove them
                 if (invPath || !SalamanderGeneral->SalRemovePointsFromPath(userPart + rootLen))
                 {
-                    // navic by se dalo vypsat 'err' (pri 'invPath' TRUE), zde pro jednoduchost ignorujeme
+                    // Additionally we could display 'err' (when 'invPath' is TRUE); ignored here for simplicity
                     SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_ERR_INVALIDPATH),
                                                      TitleWMobileError, MB_OK | MB_ICONEXCLAMATION);
-                    // 'targetPath' se vraci po uprave (expanzi cesty) + mozne uprave nekterych ".." a "."
-                    return FALSE; // chyba -> std. dialog znovu
+                    // 'targetPath' is returned after the modification (path expansion) + possible adjustment of some ".." and "."
+                    return FALSE; // error -> reopen the standard dialog
                 }
 
-                // orizneme zbytecny backslash
+                // Trim the unnecessary backslash
                 int l = (int)strlen(userPart);
                 BOOL backslashAtEnd = l > 0 && userPart[l - 1] == '\\';
-                if (l > 1 && userPart[l - 1] == '\\') // typ cesty "\path\"
-                    userPart[l - 1] = 0;              // orez backslashe
+                if (l > 1 && userPart[l - 1] == '\\') // path of the form "\path\"
+                    userPart[l - 1] = 0;              // remove the trailing backslash
 
-                // rozanalyzovani cesty - nalezeni existujici casti, neexistujici casti a operacni masky
+                // Analyse the path - locate the existing part, the missing part, and the operation mask
                 //
-                // - zjistit jaka cast cesty existuje a jestli je to soubor nebo adresar,
-                //   podle vysledku vybrat o co jde:
-                //   - zapis na cestu (prip. s neexistujici casti) s maskou - maska je posledni neexistujici cast cesty,
-                //     za kterou jiz neni backslash (overit jestli u vice zdrojovych souboru/adresaru je
-                //     v masce '*' nebo aspon '?', jinak nesmysl -> jen jedno cilove jmeno)
-                //   - rucni "change-case" jmena podadresare pres Move (zapis na cestu, ktera je zaroven zdroj
-                //     operace (je focusena/oznacena-jako-jedina v panelu); jmena se muzou lisit ve velikosti pismen)
-                //   - zapis do archivu (v ceste je soubor archivu nebo to ani nemusi byt archiv, pak jde o
-                //     chybu "Salamander nevi jak tento soubor otevrit")
-                //   - prepis souboru (cela cesta je jen jmeno ciloveho souboru; nesmi koncit na backslash)
+                // - Determine which portion exists and whether it is a file or a directory,
+                //   then choose what action applies:
+                //   - write to the path (possibly with a missing portion) with a mask - the mask is the last missing part
+                //     after which there is no backslash (verify that when there are multiple source files/directories the mask
+                //     contains '*' or at least '?'; otherwise it is nonsense -> there would be only one target name)
+                //   - manual "change-case" of a subdirectory name via Move (writing to a path that is simultaneously the
+                //     source of the operation because it is focused/selected as the only item in the panel); the names can
+                //     differ only by letter case)
+                //   - writing into an archive (the path contains an archive file, or it might not even be an archive, resulting
+                //     in the "Salamander does not know how to open this file" error)
+                //   - overwriting a file (the entire path is just the target file name; must not end with a backslash)
 
-                // zjisteni kam az cesta existuje (rozdeleni na existujici a neexistujici cast)
+                // Determine how far the path exists (split into existing and missing parts)
                 HCURSOR oldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
                 char* end = targetPath + strlen(targetPath);
-                char* afterRoot = userPart + 1; //JR root = '\'
+                char* afterRoot = userPart + 1; // JR root = '\\'
                 char lastChar = 0;
                 BOOL pathIsDir = TRUE;
                 BOOL pathError = FALSE;
 
-                // pokud je v ceste maska, odrizneme ji bez volani GetFileAttributes
-                if (end > afterRoot) // jeste neni jen root
+                // If the path contains a mask, cut it off without calling GetFileAttributes
+                if (end > afterRoot) // still more than just the root
                 {
                     char* end2 = end;
                     BOOL cut = FALSE;
-                    while (*--end2 != '\\') // je jiste, ze aspon za root-cestou je jeden '\\'
+                    while (*--end2 != '\\') // there is guaranteed to be at least one '\\' after the root path
                     {
                         if (*end2 == '*' || *end2 == '?')
                             cut = TRUE;
                     }
-                    if (cut) // ve jmene je maska -> orizneme
+                    if (cut) // the name contains a mask -> trim it
                     {
                         end = end2;
                         lastChar = *end;
@@ -1381,19 +1381,19 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                     }
                 }
 
-                while (end > afterRoot) // jeste neni jen root
+                while (end > afterRoot) // still more than just the root
                 {
                     DWORD attrs = CRAPI::GetFileAttributes(userPart);
-                    if (attrs != 0xFFFFFFFF) // tato cast cesty existuje
+                    if (attrs != 0xFFFFFFFF) // this portion of the path exists
                     {
-                        if ((attrs & FILE_ATTRIBUTE_DIRECTORY) == 0) // je to soubor
+                        if ((attrs & FILE_ATTRIBUTE_DIRECTORY) == 0) // it is a file
                         {
-                            // existujici cesta nema obsahovat jmeno souboru (viz SalSplitGeneralPath), orizneme...
-                            *end = lastChar;   // opravime 'targetPath'
-                            pathIsDir = FALSE; // existujici cast cesty je soubor
+                            // An existing path must not include a file name (see SalSplitGeneralPath); trim it...
+                            *end = lastChar;   // restore 'targetPath'
+                            pathIsDir = FALSE; // the existing part of the path is a file
                             while (*--end != '\\')
-                                ;            // je jiste, ze aspon za root-cestou je jeden '\\'
-                            lastChar = *end; // aby se nezrusila cesta
+                                ;            // there is guaranteed to be at least one '\\' beyond the root path
+                            lastChar = *end; // so the path remains valid
                             break;
                         }
                         else
@@ -1404,25 +1404,25 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                         DWORD err = CRAPI::GetLastError();
                         if (err != ERROR_FILE_NOT_FOUND && err != ERROR_INVALID_NAME &&
                             err != ERROR_PATH_NOT_FOUND && err != ERROR_BAD_PATHNAME &&
-                            err != ERROR_DIRECTORY) // divna chyba - jen vypiseme
+                            err != ERROR_DIRECTORY) // unexpected error - just report it
                         {
                             sprintf(buf, LoadStr(IDS_PATH_ERROR), targetPath, SalamanderGeneral->GetErrorText(err));
                             SalamanderGeneral->SalMessageBox(parent, buf, TitleWMobileError, MB_OK | MB_ICONEXCLAMATION);
                             pathError = TRUE;
-                            break; // ohlasime chybu
+                            break; // report the error
                         }
                     }
 
-                    *end = lastChar; // obnova 'targetPath'
+                    *end = lastChar; // restore 'targetPath'
                     while (*--end != '\\')
-                        ; // je jiste, ze aspon za root-cestou je jeden '\\'
+                        ; // there is guaranteed to be at least one '\\' after the root path
                     lastChar = *end;
                     *end = 0;
                 }
-                *end = lastChar; // opravime 'targetPath'
+                *end = lastChar; // restore 'targetPath'
                 SetCursor(oldCur);
 
-                if (!pathError) // rozdeleni probehlo bez chyby
+                if (!pathError) // the split finished without errors
                 {
                     if (*end == '\\')
                         end++;
@@ -1451,24 +1451,24 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                                                                backslashAtEnd, dirName, curPath, mask, newDirs,
                                                                CEFS_IsTheSamePath))
                     {
-                        if (newDirs[0] != 0) // na cilove ceste je potreba vytvorit nejake podadresare
+                        if (newDirs[0] != 0) // need to create some subdirectories on the target path
                         {
                             if (!CRAPI::CheckAndCreateDirectory(userPart, parent, true, NULL, 0, NULL))
                             {
-                                char* e = targetPath + strlen(targetPath); // oprava 'targetPath' (spojeni 'targetPath' a 'mask')
+                                char* e = targetPath + strlen(targetPath); // restore 'targetPath' (join 'targetPath' and 'mask')
                                 if (e > targetPath && *(e - 1) != '\\')
                                     *e++ = '\\';
                                 if (e != mask)
-                                    memmove(e, mask, strlen(mask) + 1); // je-li potreba, prisuneme masku
+                                    memmove(e, mask, strlen(mask) + 1); // move the mask if needed
                                 pathError = TRUE;
                             }
                         }
                         else if (dirName != NULL && curPath != NULL && SalamanderGeneral->StrICmp(dirName, mask) == 0 &&
                                  CEFS_IsTheSamePath(targetPath, curPath))
                         {
-                            // prejmenovani/kopirovani adresare do sebe sama (az na velikost pismen v nazvu) - "change-case"
-                            // nelze povazovat za operacni masku (zadana cilova cesta existuje, rozdeleni na masku je
-                            // vysledkem analyzy)
+                            // Renaming/copying a directory into itself (differing only by letter case) - "change-case"
+                            // cannot be treated as an operation mask (the specified target path exists; splitting it into a mask is
+                            // the result of the analysis)
 
                             rename = TRUE;
                         }
@@ -1479,38 +1479,38 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
 
                 if (pathError)
                 {
-                    // 'targetPath' se vraci po uprave (expanzi cesty) + uprave ".." a "." + mozna pridane masky
-                    return FALSE; // chyba -> std. dialog znovu
+                    // 'targetPath' is returned after the modification (path expansion) + the ".." and "." cleanup + the mask that may have been added
+                    return FALSE; // error -> reopen the standard dialog
                 }
-                diskPath = FALSE; // cestu na toto FS se podarilo rozanalyzovat
+                diskPath = FALSE; // path on this FS successfully analysed
             }
         }
 
         if (diskPath)
         {
-            // windowsova cesta, cesta do archivu nebo na neznamy FS - pustime std. zpracovani
-            operationMask = TRUE; // operacni masky podporujeme
+            // Windows path, path into an archive, or to an unknown FS - let the standard processing handle it
+            operationMask = TRUE; // operation masks are supported
             cancelOrHandlePath = TRUE;
-            return FALSE; // nechame cestu zpracovat v Salamanderovi
+            return FALSE; // let Salamander process the path
         }
     }
 
-    const char* opMask = NULL; // maska operace
-    if (mode == 5)             // cil operace byl zadan pres drag&drop
+    const char* opMask = NULL; // operation mask
+    if (mode == 5)             // operation target specified via drag&drop
     {
-        // pokud jde o diskovou cestu, pak jen nastavime masku operace a pokracujeme (stejne s 'mode'==3);
-        // pokud jde o cestu do archivu, vyhodime error "not supported"; pokud jde o cestu do CEFS, dame
-        // 'diskPath'=FALSE a napocitame 'userPart' (ukazuje na user-part CEFS cesty); pokud jde o cestu
-        // do jineho FS, vyhodime error "not supported"
+        // If it is a disk path, just set the operation mask and continue (same as with 'mode'==3);
+        // if it is a path into an archive, throw a "not supported" error; for a CEFS path set
+        // 'diskPath'=FALSE and compute 'userPart' (points to the user portion of the CEFS path); for
+        // a path to another FS, throw a "not supported" error
 
         BOOL ok = FALSE;
         opMask = "*.*";
         int type;
         char* secondPart;
         BOOL isDir;
-        if (targetPath[0] != 0 && targetPath[1] == ':' ||   // diskova cesta (C:\path)
-            targetPath[0] == '\\' && targetPath[1] == '\\') // UNC cesta (\\server\share\path)
-        {                                                   // pridame na konec backslash, aby slo k kazdem pripade o cestu (pri 'mode'==5 jde vzdy o cestu)
+        if (targetPath[0] != 0 && targetPath[1] == ':' ||   // disk path (C:\path)
+            targetPath[0] == '\\' && targetPath[1] == '\\') // UNC path (\\server\share\path)
+        {                                                   // append a trailing backslash so it is always treated as a path (for 'mode'==5 it is always a path)
             SalamanderGeneral->SalPathAddBackslash(targetPath, MAX_PATH);
         }
         if (SalamanderGeneral->SalParsePath(parent, targetPath, type, isDir, secondPart,
@@ -1540,7 +1540,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                     diskPath = FALSE;
                     ok = TRUE;
                 }
-                else // jine FS, jen ohlasime "not supported"
+                else // different FS, just report "not supported"
                 {
                     SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_ERR_COPYTOOTHERFS), TitleWMobileError,
                                                      MB_OK | MB_ICONEXCLAMATION);
@@ -1549,7 +1549,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
             }
 
             //case PATH_TYPE_ARCHIVE:
-            default: // archiv, jen ohlasime "not supported"
+            default: // archive, just report "not supported"
             {
                 SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_ERR_COPYTOARCHIVES),
                                                  TitleWMobileError, MB_OK | MB_ICONEXCLAMATION);
@@ -1564,9 +1564,9 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
         }
     }
 
-    // 'mode' je 2, 3 nebo 5
+    // 'mode' is 2, 3 or 5
 
-    // najdeme si masku operace (cilova cesta je v 'targetPath')
+    // Determine the operation mask (the target path is in 'targetPath')
     if (opMask == NULL)
     {
         opMask = targetPath;
@@ -1575,59 +1575,59 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
         opMask++;
     }
 
-    // priprava bufferu pro jmena
-    char sourceName[MAX_PATH]; // buffer pro plne jmeno na disku (zdroj operace lezi u CEFS na disku)
+    // Prepare buffers for names
+    char sourceName[MAX_PATH]; // buffer for the full disk name (the source resides on disk for CEFS)
     strcpy(sourceName, Path);
-    char* endSource = sourceName + strlen(sourceName); // misto pro jmena z panelu
+    char* endSource = sourceName + strlen(sourceName); // space for names from the panel
     if (endSource > sourceName && *(endSource - 1) != '\\')
     {
         *endSource++ = '\\';
         *endSource = 0;
     }
-    int endSourceSize = MAX_PATH - (int)(endSource - sourceName); // max. pocet znaku pro jmeno z panelu
+    int endSourceSize = MAX_PATH - (int)(endSource - sourceName); // maximum number of characters for a panel name
 
-    char cefsSourceName[2 * MAX_PATH]; // buffer pro plne jmeno na CEFS (pro hledani zdroje operace v disk-cache)
+    char cefsSourceName[2 * MAX_PATH]; // buffer for the full CEFS name (for locating the operation source in the disk cache)
     sprintf(cefsSourceName, "%s:%s", fsName, sourceName);
-    // jmena na disku jsou "case-insensitive", disk-cache je "case-sensitive", prevod
-    // na mala pismena zpusobi, ze se disk-cache bude chovat take "case-insensitive"
+    // Disk names are case-insensitive, the disk cache is case-sensitive; converting
+    // to lowercase makes the disk cache behave case-insensitively as well
     SalamanderGeneral->ToLowerCase(cefsSourceName);
-    char* endCEFSSource = cefsSourceName + strlen(cefsSourceName);                // misto pro jmena z panelu
-    int endCEFSSourceSize = 2 * MAX_PATH - (int)(endCEFSSource - cefsSourceName); // max. pocet znaku pro jmeno z panelu
+    char* endCEFSSource = cefsSourceName + strlen(cefsSourceName);                // space for names from the panel
+    int endCEFSSourceSize = 2 * MAX_PATH - (int)(endCEFSSource - cefsSourceName); // maximum number of characters for a panel name
 
-    char targetName[MAX_PATH]; // buffer pro plne jmeno na disku (pokud cil operace lezi na disku)
+    char targetName[MAX_PATH]; // buffer for the full disk name (if the target resides on disk)
     targetName[0] = 0;
     char* endTarget = targetName;
     int endTargetSize = MAX_PATH;
 
-    if (diskPath) // windowsova cilova cesta
+    if (diskPath) // Windows target path
         strcpy(targetName, targetPath);
     else
         strcpy(targetName, userPart);
 
-    endTarget = targetName + strlen(targetName); // misto pro cilove jmeno
+    endTarget = targetName + strlen(targetName); // space for the destination name
     if (endTarget > targetName && *(endTarget - 1) != '\\')
     {
         *endTarget++ = '\\';
         *endTarget = 0;
     }
-    endTargetSize = MAX_PATH - (int)(endTarget - targetName); // max. pocet znaku pro jmeno z panelu
+    endTargetSize = MAX_PATH - (int)(endTarget - targetName); // maximum number of characters for a panel name
 
-    const CFileData* f = NULL; // ukazatel na soubor/adresar v panelu, ktery se ma zpracovat
-    BOOL isDir = FALSE;        // TRUE pokud 'f' je adresar
+    const CFileData* f = NULL; // pointer to the file/directory in the panel to process
+    BOOL isDir = FALSE;        // TRUE if 'f' is a directory
     BOOL focused = (selectedFiles == 0 && selectedDirs == 0);
     int index = 0;
-    BOOL success = TRUE;                     // FALSE v pripade chyby nebo preruseni uzivatelem
+    BOOL success = TRUE;                     // FALSE in case of an error or user cancellation
     BOOL skipAllErrors = FALSE;              // skip all errors
-    BOOL sourcePathChanged = FALSE;          // TRUE, pokud doslo ke zmenam na zdrojove ceste (operace move)
-    BOOL subdirsOfSourcePathChanged = FALSE; // TRUE, pokud doslo i ke zmenam v podadresarich zdrojove cesty
-    BOOL targetPathChanged = FALSE;          // TRUE, pokud doslo ke zmenam na cilove ceste
-    BOOL subdirsOfTargetPathChanged = FALSE; // TRUE, pokud doslo i ke zmenam v podadresarich cilove cesty
+    BOOL sourcePathChanged = FALSE;          // TRUE if the source path changed (move operation)
+    BOOL subdirsOfSourcePathChanged = FALSE; // TRUE if subdirectories of the source path changed
+    BOOL targetPathChanged = FALSE;          // TRUE if the target path changed
+    BOOL subdirsOfTargetPathChanged = FALSE; // TRUE if subdirectories of the target path changed
     BOOL skipAllOverwrite = FALSE;
     BOOL skipAllOverwriteSystemHidden = FALSE;
 
     rename = !copy && CEFS_IsTheSamePath(sourceName, targetName);
 
-    // vyzvedneme hodnoty "Confirm on" z konfigurace
+    // Retrieve the "Confirm on" values from the configuration
     BOOL ConfirmOnFileOverwrite, ConfirmOnSystemHiddenFileOverwrite;
     SalamanderGeneral->GetConfigParameter(SALCFG_CNFRMFILEOVER, &ConfirmOnFileOverwrite, 4, NULL);
     SalamanderGeneral->GetConfigParameter(SALCFG_CNFRMSHFILEOVER, &ConfirmOnSystemHiddenFileOverwrite, 4, NULL);
@@ -1638,13 +1638,13 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
 
     while (1)
     {
-        // vyzvedneme data o zpracovavanem souboru
+        // Retrieve data about the file being processed
         if (focused)
             f = SalamanderGeneral->GetPanelFocusedItem(panel, &isDir);
         else
             f = SalamanderGeneral->GetPanelSelectedItem(panel, &index, &isDir);
 
-        // provedeme copy/move na souboru/adresari
+        // Perform copy/move on the file/directory
         if (f != NULL)
         {
             if (rename)
@@ -1652,7 +1652,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                 CFileInfo fi;
                 strcpy(fi.cFileName, f->Name);
                 fi.dwFileAttributes = f->Attr;
-                fi.size = 100; //JR Operace prejmenovani trva priblizne stejne dlouho bez ohledu na velikost
+                fi.size = 100; // JR Renaming takes roughly the same time regardless of size
                 fi.block = 0;
 
                 array.Add(fi);
@@ -1667,7 +1667,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                 success = CRAPI::FindAllFilesInTree(Path, f->Name, array, 0, TRUE);
         }
 
-        // zjistime jestli ma cenu pokracovat (pokud neni cancel a existuje jeste nejaka dalsi oznacena polozka)
+        // Determine whether it makes sense to continue (when not cancelled and another selected item exists)
         if (!success || focused || f == NULL)
             break;
     }
@@ -1680,7 +1680,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
         mainWnd = parentWin;
     // disablujeme 'mainWnd'
 
-    CProgress2Dlg dlg(mainWnd, LoadStr(copy ? IDS_COPY : IDS_MOVE), LoadStr(copy ? IDS_COPYING : IDS_MOVING), LoadStr(IDS_TO), ooStatic); // aby nemodalni dialog mohl byt na stacku, dame 'ooStatic'
+    CProgress2Dlg dlg(mainWnd, LoadStr(copy ? IDS_COPY : IDS_MOVE), LoadStr(copy ? IDS_COPYING : IDS_MOVING), LoadStr(IDS_TO), ooStatic); // use 'ooStatic' so the modeless dialog can live on the stack
 
     dlg.Create();
     EnableWindow(mainWnd, FALSE);
@@ -1707,11 +1707,11 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
 
         lstrcpyn(endSource, fi.cFileName, endSourceSize);
         lstrcpyn(endCEFSSource, fi.cFileName, endCEFSSourceSize);
-        // jmena na disku jsou "case-insensitive", disk-cache je "case-sensitive", prevod
-        // na mala pismena zpusobi, ze se disk-cache bude chovat take "case-insensitive"
+        // Disk names are case-insensitive, the disk cache is case-sensitive; converting
+        // to lowercase makes the disk cache behave case-insensitively as well
         SalamanderGeneral->ToLowerCase(endCEFSSource);
 
-        // slozime cilove jmeno - zjednodusene o test chyby LoadStr(IDS_ERR_NAMETOOLONG)
+        // Compose the target name - simplified without the LoadStr(IDS_ERR_NAMETOOLONG) error check
         lstrcpyn(endTarget, targetFile, endTargetSize);
 
         isDir = (fi.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
@@ -1763,7 +1763,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                     {
                         targetPathChanged = TRUE;
                         subdirsOfTargetPathChanged = TRUE;
-                        break; // uspesne vytvoreny adresar
+                        break; // successfully created directory
                     }
                 } // end of while(1)
             }
@@ -1772,7 +1772,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
         {
             DWORD attr = 0xFFFFFFFF;
 
-            if (!rename || SalamanderGeneral->StrICmp(sourceName, targetName) != 0) //Neni to prosta zmena velikosti
+            if (!rename || SalamanderGeneral->StrICmp(sourceName, targetName) != 0) // Not a simple change in letter case
             {
                 if (diskPath)
                     attr = SalamanderGeneral->SalGetFileAttributes(targetName);
@@ -1852,7 +1852,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                 {
                     DWORD err = 0;
                     LPCTSTR errFileName = "";
-                    if (diskPath) // windowsova cilova cesta //JR
+                    if (diskPath) // JR Windows destination path
                     {
                         if (attr != 0xFFFFFFFF &&
                             (attr & (FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_READONLY)))
@@ -1886,7 +1886,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
 
                     if (err != 0)
                     {
-                        if (err == -1) //JR preruseno uzivatelem
+                        if (err == -1) // JR cancelled by the user
                             success = FALSE;
                         else if (!skipAllErrors)
                         {
@@ -1916,7 +1916,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                         targetPathChanged = TRUE;
                         if (fileMoved)
                             sourcePathChanged = TRUE;
-                        break; // uspesne nakopirovano
+                        break; // copied successfully
                     }
 
                     if (!success || skip)
@@ -1925,7 +1925,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
             }
         }
 
-        if (success && !copy && !skip && !fileMoved) // jde o "move" a soubor nebyl skipnuty -> smazeme zdrojovy soubor
+        if (success && !copy && !skip && !fileMoved) // it is a "move" and the file was not skipped -> delete the source file
         {
             while (1)
             {
@@ -1964,12 +1964,12 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                         }
                         else
                         {
-                            // odstranime z disk-cache kopii smazaneho souboru (je-li cachovany)
+                    // remove the deleted file's copy from the disk cache (if it is cached)
                             SalamanderGeneral->RemoveFilesFromCache(cefsSourceName);
 
                             sourcePathChanged = TRUE;
                             subdirsOfSourcePathChanged = TRUE;
-                            break; // uspesny RemoveDirectory
+                            break; // successful RemoveDirectory
                         }
                     }
                     else
@@ -1977,7 +1977,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                 }
                 else
                 {
-                    // zrusime soubor na CEFS
+                    // remove the file on CEFS
                     if (fi.dwFileAttributes & (FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_READONLY))
                         CRAPI::SetFileAttributes(sourceName, FILE_ATTRIBUTE_ARCHIVE);
 
@@ -2009,11 +2009,11 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                     }
                     else
                     {
-                        // odstranime z disk-cache kopii smazaneho souboru (je-li cachovany)
+                        // remove the deleted file's copy from the disk cache (if it is cached)
                         SalamanderGeneral->RemoveOneFileFromCache(cefsSourceName);
 
                         sourcePathChanged = TRUE;
-                        break; // uspesny delete
+                        break; // successful delete
                     }
                 }
                 if (!success || skip)
@@ -2029,30 +2029,30 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
             dlg.SetProgress((DWORD)progress, 0, FALSE);
         }
         else
-            break; // zjistime jestli ma cenu pokracovat (pokud neni cancel)
+            break; // Determine whether it makes sense to continue (when not cancelled)
     }
 
     EnableWindow(mainWnd, TRUE);
-    DestroyWindow(dlg.HWindow); // zavreme progress dialog
+    DestroyWindow(dlg.HWindow); // close the progress dialog
 
-    // zmena na zdrojove ceste Path (hlavne operace move)
+    // Change on the source path Path (primarily move operations)
     if (sourcePathChanged)
     {
         sprintf(path, "%s:%s", fsName, Path);
         SalamanderGeneral->PostChangeOnPathNotification(path, subdirsOfSourcePathChanged);
     }
 
-    // zmena na cilove ceste targetPath
+    // Change on the target path 'targetPath'
     if (targetPathChanged)
         SalamanderGeneral->PostChangeOnPathNotification(targetPath, subdirsOfTargetPathChanged);
 
     SalamanderGeneral->RestoreFocusInSourcePanel();
 
     if (success)
-        strcpy(targetPath, nextFocus); // uspech
+        strcpy(targetPath, nextFocus); // success
     else
         cancelOrHandlePath = TRUE; // error/cancel
-    return TRUE;                   // uspech nebo error/cancel
+    return TRUE;                   // success or error/cancel handled
 }
 
 static BOOL FindAllFilesInTree(LPCTSTR rootPath, char (&path)[MAX_PATH], LPCTSTR fileName, CFileInfoArray& array, BOOL dirFirst, int block)
@@ -2072,7 +2072,7 @@ static BOOL FindAllFilesInTree(LPCTSTR rootPath, char (&path)[MAX_PATH], LPCTSTR
     {
         DWORD err = GetLastError();
         if (err == ERROR_NO_MORE_FILES || err == ERROR_FILE_NOT_FOUND)
-            return TRUE; //JR prazdny adresar, koncim
+            return TRUE; // JR empty directory, stop
 
         char buf[2 * MAX_PATH + 100];
         sprintf(buf, LoadStr(IDS_PATH_ERROR), fullPath, SalamanderGeneral->GetErrorText(err));
@@ -2082,7 +2082,7 @@ static BOOL FindAllFilesInTree(LPCTSTR rootPath, char (&path)[MAX_PATH], LPCTSTR
 
     for (;;)
     {
-        //JR TODO: Toto nefunguje!
+        // JR TODO: This does not work!
         if (SalamanderGeneral->GetSafeWaitWindowClosePressed())
         {
             if (SalamanderGeneral->ShowMessageBox(LoadStr(IDS_YESNO_CANCEL), TitleWMobileQuestion,
@@ -2091,7 +2091,7 @@ static BOOL FindAllFilesInTree(LPCTSTR rootPath, char (&path)[MAX_PATH], LPCTSTR
         }
 
         if (data.cFileName[0] != 0 &&
-            (data.cFileName[0] != '.' || //JR Windows Mobile nevraci "." a ".." cesty, ale pro jistotu to osetrim
+            (data.cFileName[0] != '.' || // JR Windows Mobile does not return "." and ".." paths, but handle it just in case
              (data.cFileName[1] != 0 && (data.cFileName[1] != '.' || data.cFileName[2] != 0))))
         {
             CFileInfo fi;
@@ -2122,7 +2122,7 @@ static BOOL FindAllFilesInTree(LPCTSTR rootPath, char (&path)[MAX_PATH], LPCTSTR
                     goto ONERROR_TOOLONG;
 
                 if (!FindAllFilesInTree(rootPath, path, "*.*", array, dirFirst, block))
-                    goto ONERROR; //JR Chyba uz byla hlasena
+                    goto ONERROR; // JR The error has already been reported
 
                 path[len] = 0;
             }
@@ -2142,7 +2142,7 @@ static BOOL FindAllFilesInTree(LPCTSTR rootPath, char (&path)[MAX_PATH], LPCTSTR
         if (!FindNextFile(find, &data))
         {
             if (GetLastError() == ERROR_NO_MORE_FILES)
-                break; //JR Vse v poradku, koncim
+                break; // JR Everything is fine, stop
 
             DWORD err = GetLastError();
             SalamanderGeneral->ShowMessageBox(SalamanderGeneral->GetErrorText(err), TitleWMobileError, MSGBOX_ERROR);
@@ -2182,7 +2182,7 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
 
     if (mode == 1)
     {
-        // pridame k cil. ceste masku *.* (budeme zpracovavat operacni masky)
+        // Add the *.* mask to the target path (we will process operation masks)
         SalamanderGeneral->SalPathAppend(targetPath, "*.*", 2 * MAX_PATH);
         return TRUE;
     }
@@ -2191,16 +2191,16 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
     char buf[3 * MAX_PATH + 100];
 
     if (mode != 2 && mode != 3)
-        return FALSE; // neznamy 'mode'
+        return FALSE; // unknown 'mode'
 
-    // v 'targetPath' je neupravena cesta zadana uzivatelem (jedine co o ni vime je, ze je
-    // z tohoto FS, jinak by tuto metodu Salamander nevolal)
-    char* userPart = strchr(targetPath, ':') + 1; // v 'targetPath' musi byt fs-name + ':'
+    // 'targetPath' contains the raw path entered by the user (all we know is that it belongs
+    // to this FS, otherwise Salamander would not call this method)
+    char* userPart = strchr(targetPath, ':') + 1; // 'targetPath' must contain the FS name + ':'
 
     BOOL invPath = (userPart[0] != '\\');
 
-    // provedeme kontrolu, jestli je mozne provest operaci v tomto FS; zaroven v plne ceste
-    // na toto FS mohl uzivatel pouzit "." a ".." - odstranime je
+    // Check whether the operation can be executed on this FS; the user might also have used
+    // "." and ".." in the full path to this FS - remove them
     int rootLen = 0;
     if (!invPath)
     {
@@ -2212,33 +2212,33 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
 
     if (invPath || !SalamanderGeneral->SalRemovePointsFromPath(userPart + rootLen))
     {
-        // navic by se dalo vypsat 'err' (pri 'invPath' TRUE), zde pro jednoduchost ignorujeme
+        // Additionally we could display 'err' (when 'invPath' is TRUE); ignored here for simplicity
         SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_ERR_INVALIDPATH),
                                          TitleWMobileError, MB_OK | MB_ICONEXCLAMATION);
-        // 'targetPath' se vraci po mozne uprave nekterych ".." a "."
+        // 'targetPath' is returned after possibly adjusting some ".." and "."
         if (invalidPathOrCancel != NULL)
             *invalidPathOrCancel = TRUE;
-        return FALSE; // nechame uzivatele cestu opravit
+        return FALSE; // let the user correct the path
     }
 
-    // orizneme zbytecny backslash
+    // Trim the unnecessary backslash
     int l = (int)strlen(userPart);
     BOOL backslashAtEnd = l > 0 && userPart[l - 1] == '\\';
-    if (l > 1 && userPart[l - 1] == '\\') // typ cesty "\path\"
-        userPart[l - 1] = 0;              // orez backslashe
+    if (l > 1 && userPart[l - 1] == '\\') // path of the form "\path\"
+        userPart[l - 1] = 0;              // remove the trailing backslash
 
-    // rozanalyzovani cesty - nalezeni existujici casti, neexistujici casti a operacni masky
+    // Analyse the path - locate the existing part, the missing part, and the operation mask
     //
-    // - zjistit jaka cast cesty existuje a jestli je to soubor nebo adresar,
-    //   podle vysledku vybrat o co jde:
-    //   - zapis na cestu (prip. s neexistujici casti) s maskou - maska je posledni neexistujici cast cesty,
-    //     za kterou jiz neni backslash (overit jestli u vice zdrojovych souboru/adresaru je
-    //     v masce '*' nebo aspon '?', jinak nesmysl -> jen jedno cilove jmeno)
-    //   - zapis do archivu (v ceste je soubor archivu nebo to ani nemusi byt archiv, pak jde o
-    //     chybu "Salamander nevi jak tento soubor otevrit")
-    //   - prepis souboru (cela cesta je jen jmeno ciloveho souboru; nesmi koncit na backslash)
+    // - Determine which portion exists and whether it is a file or a directory,
+    //   then select what applies:
+    //   - write to the path (possibly with a missing portion) with a mask - the mask is the last missing part
+    //     after which there is no backslash (verify that when multiple source files/directories are involved the mask
+    //     contains '*' or at least '?'; otherwise it is nonsense -> only one target name is possible)
+    //   - write into an archive (the path contains an archive file, or it may not even be an archive, resulting in
+    //     the "Salamander does not know how to open this file" error)
+    //   - overwrite a file (the entire path is just the target file name; must not end with a backslash)
 
-    // zjisteni kam az cesta existuje (rozdeleni na existujici a neexistujici cast)
+    // Determine how far the path exists (split into existing and missing parts)
     HCURSOR oldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
     char* end = targetPath + strlen(targetPath);
     char* afterRoot = userPart + rootLen;
@@ -2246,17 +2246,17 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
     BOOL pathIsDir = TRUE;
     BOOL pathError = FALSE;
 
-    // pokud je v ceste maska, odrizneme ji bez volani GetFileAttributes
-    if (end > afterRoot) // jeste neni jen root
+    // If the path contains a mask, cut it off without calling GetFileAttributes
+    if (end > afterRoot) // still more than just the root
     {
         char* end2 = end;
         BOOL cut = FALSE;
-        while (*--end2 != '\\') // je jiste, ze aspon za root-cestou je jeden '\\'
+        while (*--end2 != '\\') // there is guaranteed to be at least one '\\' after the root path
         {
             if (*end2 == '*' || *end2 == '?')
                 cut = TRUE;
         }
-        if (cut) // ve jmene je maska -> orizneme
+        if (cut) // the name contains a mask -> trim it
         {
             end = end2;
             lastChar = *end;
@@ -2264,19 +2264,19 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
         }
     }
 
-    while (end > afterRoot) // jeste neni jen root
+    while (end > afterRoot) // still more than just the root
     {
         DWORD attrs = CRAPI::GetFileAttributes(userPart);
-        if (attrs != 0xFFFFFFFF) // tato cast cesty existuje
+        if (attrs != 0xFFFFFFFF) // this portion of the path exists
         {
-            if ((attrs & FILE_ATTRIBUTE_DIRECTORY) == 0) // je to soubor
+            if ((attrs & FILE_ATTRIBUTE_DIRECTORY) == 0) // it is a file
             {
-                // existujici cesta nema obsahovat jmeno souboru (viz SalSplitGeneralPath), orizneme...
-                *end = lastChar;   // opravime 'targetPath'
-                pathIsDir = FALSE; // existujici cast cesty je soubor
+                // An existing path must not include a file name (see SalSplitGeneralPath); trim it...
+                *end = lastChar;   // restore 'targetPath'
+                pathIsDir = FALSE; // the existing part of the path is a file
                 while (*--end != '\\')
-                    ;            // je jiste, ze aspon za root-cestou je jeden '\\'
-                lastChar = *end; // aby se nezrusila cesta
+                    ;            // there is guaranteed to be at least one '\\' beyond the root path
+                lastChar = *end; // so the path remains valid
                 break;
             }
             else
@@ -2287,26 +2287,26 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
             DWORD err = CRAPI::GetLastError();
             if (err != ERROR_FILE_NOT_FOUND && err != ERROR_INVALID_NAME &&
                 err != ERROR_PATH_NOT_FOUND && err != ERROR_BAD_PATHNAME &&
-                err != ERROR_DIRECTORY) // divna chyba - jen vypiseme
+                err != ERROR_DIRECTORY) // unexpected error - just report it
             {
                 sprintf(buf, LoadStr(IDS_PATH_ERROR), targetPath, SalamanderGeneral->GetErrorText(err));
                 SalamanderGeneral->SalMessageBox(parent, buf, TitleWMobile, MB_OK | MB_ICONEXCLAMATION);
                 pathError = TRUE;
-                break; // ohlasime chybu
+                break; // report the error
             }
         }
 
-        *end = lastChar; // obnova 'targetPath'
+        *end = lastChar; // restore 'targetPath'
         while (*--end != '\\')
-            ; // je jiste, ze aspon za root-cestou je jeden '\\'
+            ; // there is guaranteed to be at least one '\\' after the root path
         lastChar = *end;
         *end = 0;
     }
-    *end = lastChar; // opravime 'targetPath'
+    *end = lastChar; // restore 'targetPath'
     SetCursor(oldCur);
 
     char* opMask = NULL;
-    if (!pathError) // rozdeleni probehlo bez chyby
+    if (!pathError) // the split finished without errors
     {
         if (*end == '\\')
             end++;
@@ -2315,17 +2315,17 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
         if (SalamanderGeneral->SalSplitGeneralPath(parent, TitleWMobile, TitleWMobileError, sourceFiles + sourceDirs,
                                                    targetPath, afterRoot, end, pathIsDir,
                                                    backslashAtEnd, NULL, NULL, opMask, newDirs,
-                                                   NULL /* 'isTheSamePathF' neni potreba*/))
+                                                   NULL /* 'isTheSamePathF' not needed */))
         {
-            if (newDirs[0] != 0) // na cilove ceste je potreba vytvorit nejake podadresare
+            if (newDirs[0] != 0) // need to create some subdirectories on the target path
             {
                 if (!CRAPI::CheckAndCreateDirectory(userPart, parent, true, NULL, 0, NULL))
                 {
-                    char* e = targetPath + strlen(targetPath); // oprava 'targetPath' (spojeni 'targetPath' a 'opMask')
+                    char* e = targetPath + strlen(targetPath); // restore 'targetPath' (join 'targetPath' and 'opMask')
                     if (e > targetPath && *(e - 1) != '\\')
                         *e++ = '\\';
                     if (e != opMask)
-                        memmove(e, opMask, strlen(opMask) + 1); // je-li potreba, prisuneme masku
+                        memmove(e, opMask, strlen(opMask) + 1); // move the mask if needed
                     pathError = TRUE;
                 }
             }
@@ -2336,41 +2336,41 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
 
     if (pathError)
     {
-        // 'targetPath' se vraci po uprave ".." a "." + mozna pridane masky
+        // 'targetPath' is returned after cleaning up ".." and "." + any mask that was added
         if (invalidPathOrCancel != NULL)
             *invalidPathOrCancel = TRUE;
-        return FALSE; // chyba v ceste - nechame usera opravit
+        return FALSE; // path error - let the user fix it
     }
 
-    // popis cile operace ziskaneho predchazejici casti kodu:
-    // 'targetPath' je cesta na toto FS ('userPart' ukazuje na user-part FS cesty), 'opMask' je operacni maska
+    // Description of the operation target obtained in the preceding code:
+    // 'targetPath' is a path on this FS ('userPart' points to the user part of the FS path), 'opMask' is the operation mask
 
-    // priprava bufferu pro jmena
-    char sourceName[MAX_PATH]; // buffer pro plne jmeno na disku
+    // Prepare buffers for names
+    char sourceName[MAX_PATH]; // buffer for the full disk name
     strcpy(sourceName, sourcePath);
-    char* endSource = sourceName + strlen(sourceName); // misto pro jmena z enumerace 'next'
+    char* endSource = sourceName + strlen(sourceName); // space for names from the 'next' enumeration
     if (endSource > sourceName && *(endSource - 1) != '\\')
     {
         *endSource++ = '\\';
         *endSource = 0;
     }
-    int endSourceSize = MAX_PATH - (int)(endSource - sourceName); // max. pocet znaku pro jmeno z enumerace 'next'
+    int endSourceSize = MAX_PATH - (int)(endSource - sourceName); // maximum number of characters for a 'next' name
 
-    char targetName[MAX_PATH]; // buffer pro plne cilove jmeno na disku (cil operace lezi u CEFS na disku)
+    char targetName[MAX_PATH]; // buffer for the full target disk name (the operation target resides on disk for CEFS)
     strcpy(targetName, userPart);
-    char* endTarget = targetName + strlen(targetName); // misto pro cilove jmeno
+    char* endTarget = targetName + strlen(targetName); // space for the destination name
     if (endTarget > targetName && *(endTarget - 1) != '\\')
     {
         *endTarget++ = '\\';
         *endTarget = 0;
     }
-    int endTargetSize = MAX_PATH - (int)(endTarget - targetName); // max. pocet znaku pro cilove jmeno
+    int endTargetSize = MAX_PATH - (int)(endTarget - targetName); // maximum number of characters for the destination name
 
     SalamanderGeneral->CreateSafeWaitWindow(LoadStr(IDS_WAIT_READINGDIRTREE), TitleWMobile,
                                             500, FALSE, SalamanderGeneral->GetMainWindowHWND());
     CFileInfoArray array(10, 10);
 
-    BOOL success = TRUE; // FALSE v pripade chyby nebo preruseni uzivatelem
+    BOOL success = TRUE; // FALSE in case of an error or user cancellation
 
     BOOL isDir;
     const char* name;
@@ -2381,10 +2381,10 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
     int errorOccured;
 
     while ((name = next(parent, 0, &dosName, &isDir, &size, &attr1, &lastWrite, nextParam, &errorOccured)) != NULL)
-    { // provedeme copy/move na souboru/adresari
+    { // perform copy/move on a file/directory
         success = FindAllFilesInTree(sourcePath, name, array, TRUE, 0);
 
-        // zjistime jestli ma cenu pokracovat (pokud neni cancel)
+        // Determine whether it makes sense to continue (when not cancelled)
         if (!success)
             break;
     }
@@ -2392,14 +2392,14 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
     SalamanderGeneral->DestroySafeWaitWindow();
 
     BOOL skipAllErrors = FALSE;              // skip all errors
-    BOOL sourcePathChanged = FALSE;          // TRUE, pokud doslo ke zmenam na zdrojove ceste (operace move)
-    BOOL subdirsOfSourcePathChanged = FALSE; // TRUE, pokud doslo i ke zmenam v podadresarich zdrojove cesty
-    BOOL targetPathChanged = FALSE;          // TRUE, pokud doslo ke zmenam na cilove ceste
-    BOOL subdirsOfTargetPathChanged = FALSE; // TRUE, pokud doslo i ke zmenam v podadresarich cilove cesty
+    BOOL sourcePathChanged = FALSE;          // TRUE if the source path changed (move operation)
+    BOOL subdirsOfSourcePathChanged = FALSE; // TRUE if subdirectories of the source path changed
+    BOOL targetPathChanged = FALSE;          // TRUE if the target path changed
+    BOOL subdirsOfTargetPathChanged = FALSE; // TRUE if subdirectories of the target path changed
     BOOL skipAllOverwrite = FALSE;
     BOOL skipAllOverwriteSystemHidden = FALSE;
 
-    // vyzvedneme hodnoty "Confirm on" z konfigurace
+    // Retrieve the "Confirm on" values from the configuration
     BOOL ConfirmOnFileOverwrite, ConfirmOnSystemHiddenFileOverwrite;
     SalamanderGeneral->GetConfigParameter(SALCFG_CNFRMFILEOVER, &ConfirmOnFileOverwrite, 4, NULL);
     SalamanderGeneral->GetConfigParameter(SALCFG_CNFRMSHFILEOVER, &ConfirmOnSystemHiddenFileOverwrite, 4, NULL);
@@ -2408,9 +2408,9 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
     HWND parentWin;
     while ((parentWin = GetParent(mainWnd)) != NULL && IsWindowEnabled(parentWin))
         mainWnd = parentWin;
-    // disablujeme 'mainWnd'
+    // Disable 'mainWnd'
 
-    CProgress2Dlg dlg(mainWnd, LoadStr(copy ? IDS_COPY : IDS_MOVE), LoadStr(copy ? IDS_COPYING : IDS_MOVING), LoadStr(IDS_TO), ooStatic); // aby nemodalni dialog mohl byt na stacku, dame 'ooStatic'
+    CProgress2Dlg dlg(mainWnd, LoadStr(copy ? IDS_COPY : IDS_MOVE), LoadStr(copy ? IDS_COPYING : IDS_MOVING), LoadStr(IDS_TO), ooStatic); // use 'ooStatic' so the modeless dialog can live on the stack
 
     dlg.Create();
     EnableWindow(mainWnd, FALSE);
@@ -2435,11 +2435,11 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
             break;
         }
 
-        // sestaveni plneho jmena, orez na MAX_PATH je teoreticky zbytecny, prakticky bohuzel ne
+        // Construct the full name; trimming to MAX_PATH is theoretically redundant, but unfortunately needed in practice
         lstrcpyn(endSource, fi.cFileName, endSourceSize);
 
-        // slozime cilove jmeno - zjednodusene o test chyby LoadStr(IDS_ERR_NAMETOOLONG)
-        // ('name' je jen z rootu zdrojove cesty - zadne podadresare - maskou upravime cele 'name')
+        // Compose the target name - simplified without the LoadStr(IDS_ERR_NAMETOOLONG) error check
+        // ('name' covers only the root of the source path - no subdirectories - adjust the entire 'name' with the mask)
         lstrcpyn(endTarget, targetFile, endTargetSize);
 
         isDir = (fi.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
@@ -2492,14 +2492,14 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
                     {
                         targetPathChanged = TRUE;
                         subdirsOfTargetPathChanged = TRUE;
-                        break; // uspesne vytvoreny adresar
+                        break; // successfully created directory
                     }
                 } // end of while(1)
             }
         }
         else
         {
-            // nakopirujeme soubor primo na CEFS
+            // copy the file directly to CEFS
 
             DWORD attr = CRAPI::GetFileAttributes(targetName);
 
@@ -2575,7 +2575,7 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
                     DWORD err = CRAPI::CopyFileToCE(sourceName, targetName, FALSE, &dlg, copied, totalsize, &errFileName);
                     if (err != 0)
                     {
-                        if (err == -1) //JR preruseno uzivatelem
+                        if (err == -1) // JR cancelled by the user
                             success = FALSE;
                         else if (!skipAllErrors)
                         {
@@ -2608,7 +2608,7 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
                         SalamanderGeneral->ToLowerCase(cefsFileName);
                         SalamanderGeneral->RemoveOneFileFromCache(cefsFileName);
 
-                        break; // uspesne nakopirovano
+                        break; // copied successfully
                     }
                     if (!success || skip)
                         break;
@@ -2616,10 +2616,10 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
             }
         }
 
-        if (success && !copy && !skip) // jde o "move" a soubor nebyl skipnuty -> smazeme zdrojovy soubor
+        if (success && !copy && !skip) // it is a "move" and the file was not skipped -> delete the source file
         {
 
-            // zrusime soubor na disku
+            // remove the file on disk
             while (1)
             {
                 if (isDir)
@@ -2658,7 +2658,7 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
                         {
                             sourcePathChanged = TRUE;
                             subdirsOfSourcePathChanged = TRUE;
-                            break; // uspesny RemoveDirectory
+                            break; // successful RemoveDirectory
                         }
                     }
                     else
@@ -2697,7 +2697,7 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
                     else
                     {
                         sourcePathChanged = TRUE;
-                        break; // uspesny delete
+                        break; // successful delete
                     }
                 }
                 if (!success || skip)
@@ -2713,17 +2713,17 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
             dlg.SetProgress((DWORD)progress, 0, FALSE);
         }
         else
-            break; // zjistime jestli ma cenu pokracovat (pokud neni cancel)
+            break; // Determine whether it makes sense to continue (when not cancelled)
     }
 
     EnableWindow(mainWnd, TRUE);
-    DestroyWindow(dlg.HWindow); // zavreme progress dialog
+    DestroyWindow(dlg.HWindow); // close the progress dialog
 
-    // zmena na zdrojove ceste (hlavne operace move), muze byt jen diskova cesta
+    // Change on the source path (primarily move operations), can only be a disk path
     if (sourcePathChanged)
         SalamanderGeneral->PostChangeOnPathNotification(sourcePath, subdirsOfSourcePathChanged);
 
-    // zmena na cilove ceste (mela by byt FS - 'targetPath', u CEFS je to ale diskova cesta 'userPart')
+    // Change on the target path (should be FS - 'targetPath', but for CEFS it is the disk path 'userPart')
     if (targetPathChanged)
     {
         sprintf(cefsFileName, "%s:%s", fsName, userPart);
@@ -2733,7 +2733,7 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
     SalamanderGeneral->RestoreFocusInSourcePanel();
 
     if (success)
-        return TRUE; // operace uspesne dokoncena
+        return TRUE; // operation finished successfully
     else
     {
         if (invalidPathOrCancel != NULL)
@@ -2746,22 +2746,22 @@ BOOL WINAPI
 CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int panel,
                                      int selectedFiles, int selectedDirs)
 {
-    // priprava bufferu pro jmena
-    char fileName[MAX_PATH]; // buffer pro plne jmeno na disku (zdroj operace lezi u DFS na disku)
+    // Prepare buffers for names
+    char fileName[MAX_PATH]; // buffer for the full disk name (the source resides on disk for DFS)
     strcpy(fileName, Path);
-    char* end = fileName + strlen(fileName); // misto pro jmena z panelu
+    char* end = fileName + strlen(fileName); // space for names from the panel
     if (end > fileName && *(end - 1) != '\\')
     {
         *end++ = '\\';
         *end = 0;
     }
-    int endSize = MAX_PATH - (int)(end - fileName); // max. pocet znaku pro jmeno z panelu
+    int endSize = MAX_PATH - (int)(end - fileName); // maximum number of characters for a panel name
 
-    const CFileData* f = NULL; // ukazatel na soubor/adresar v panelu, ktery se ma zpracovat
-    BOOL isDir = FALSE;        // TRUE pokud 'f' je adresar
+    const CFileData* f = NULL; // pointer to the file/directory in the panel to process
+    BOOL isDir = FALSE;        // TRUE if 'f' is a directory
     BOOL focused = (selectedFiles == 0 && selectedDirs == 0);
     int index = 0, count = 0;
-    BOOL success = TRUE;        // FALSE v pripade chyby nebo preruseni uzivatelem
+    BOOL success = TRUE;        // FALSE in case of an error or user cancellation
     BOOL skipAllErrors = FALSE; // skip all errors
 
     RapiNS::CE_FIND_DATA findData;
@@ -2769,16 +2769,16 @@ CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int panel,
     SYSTEMTIME timeModified, timeCreated, timeAccessed;
     BOOL selectedDirectory = FALSE;
 
-    //JR 1. faze - zjistim aktualni atributy
+    // JR phase 1 - determine the current attributes
     while (1)
     {
-        // vyzvedneme data o zpracovavanem souboru
+        // Retrieve data about the file being processed
         if (focused)
             f = SalamanderGeneral->GetPanelFocusedItem(panel, &isDir);
         else
             f = SalamanderGeneral->GetPanelSelectedItem(panel, &index, &isDir);
 
-        // provedeme operaci na souboru/adresari
+        // Perform the operation on the file/directory
         if (f != NULL)
         {
 
@@ -2897,7 +2897,7 @@ CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int panel,
             }
         }
 
-        // zjistime jestli ma cenu pokracovat (pokud neni cancel a existuje jeste nejaka dalsi oznacena polozka)
+        // Determine whether it makes sense to continue (when not cancelled and another selected item exists)
         if (!success || focused || f == NULL)
             break;
     }
@@ -2905,7 +2905,7 @@ CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int panel,
     char path[2 * MAX_PATH];
     if (!success || count == 0)
     {
-        //JR pravdepodobne jiz doslo k vymazani souboru / adresare
+        // JR The file/directory was probably deleted already
         if (count == 0)
         {
             sprintf(path, "%s:%s", fsName, Path);
@@ -2930,26 +2930,26 @@ CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int panel,
 
     CFileInfoArray array(count, 10);
 
-    //JR 2.fáze - nactu vsechny soubory, u kterych budeme menit atributy
+    // JR phase 2 - load all files whose attributes will be modified
 
     index = 0;
     for (;;)
     {
-        // vyzvedneme data o zpracovavanem souboru
+        // Retrieve data about the file being processed
         if (focused)
             f = SalamanderGeneral->GetPanelFocusedItem(panel, &isDir);
         else
             f = SalamanderGeneral->GetPanelSelectedItem(panel, &index, &isDir);
 
-        // smazeme soubor/adresar
-        //JR FindAllFilesInTree volam i pro jednotlive soubory.
-        //JR Zjisti se tim, jestli stale jeste existuji
+        // Delete the file/directory
+        // JR Call FindAllFilesInTree even for individual files
+        // JR This verifies that they still exist
         if (f != NULL)
         {
 
             if (dlgAttr.RecurseSubDirs)
             {
-                *end = 0; //JR => ve fileName je rootPath
+                *end = 0; // JR => fileName contains rootPath
                 success = CRAPI::FindAllFilesInTree(fileName, f->Name, array, 0, FALSE);
             }
             else
@@ -2968,7 +2968,7 @@ CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int panel,
             }
         }
 
-        // zjistime jestli ma cenu pokracovat (pokud neni chyba a existuje jeste nejaka dalsi oznacena polozka)
+        // Determine whether it makes sense to continue (when no error occurred and another selected item exists)
         if (!success || focused || f == NULL)
             break;
     }
@@ -2977,7 +2977,7 @@ CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int panel,
 
     if (!success || array.Count == 0)
     {
-        //JR pravdepodobne jiz doslo k vymazani souboru / adresare
+        // JR The file/directory was probably deleted already
         if (array.Count == 0)
         {
             sprintf(path, "%s:%s", fsName, Path);
@@ -2986,21 +2986,21 @@ CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int panel,
         return FALSE;
     }
 
-    BOOL pathChanged = FALSE;                      // TRUE, pokud doslo ke zmenam na ceste
-    BOOL changeInSubdirs = dlgAttr.RecurseSubDirs; // TRUE, pokud doslo i ke zmenam v podadresarich cesty
+    BOOL pathChanged = FALSE;                      // TRUE if the path changed
+    BOOL changeInSubdirs = dlgAttr.RecurseSubDirs; // TRUE if changes occurred in subdirectories as well
     skipAllErrors = FALSE;                         // skip all errors
 
-    //JR 3.fáze - nastavim atributy
+    // JR phase 3 - apply attributes
 
     HWND mainWnd = parent;
     HWND parentWin;
     while ((parentWin = GetParent(mainWnd)) != NULL && IsWindowEnabled(parentWin))
         mainWnd = parentWin;
-    // disablujeme 'mainWnd'
+    // Disable 'mainWnd'
 
     BOOL showProgressDialog = array.Count > 1;
     BOOL enableMainWnd = TRUE;
-    CProgressDlg delDlg(mainWnd, LoadStr(IDS_ATTRIBUTES), LoadStr(IDS_CHANGING), ooStatic); // aby nemodalni dialog mohl byt na stacku, dame 'ooStatic'
+    CProgressDlg delDlg(mainWnd, LoadStr(IDS_ATTRIBUTES), LoadStr(IDS_CHANGING), ooStatic); // use 'ooStatic' so the modeless dialog can live on the stack
 
     if (showProgressDialog)
     {
@@ -3008,7 +3008,7 @@ CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int panel,
         delDlg.Create();
     }
 
-    if (!showProgressDialog || delDlg.HWindow != NULL) // dialog se podarilo otevrit
+    if (!showProgressDialog || delDlg.HWindow != NULL) // dialog opened successfully
     {
         if (showProgressDialog)
             SetForegroundWindow(delDlg.HWindow);
@@ -3031,7 +3031,7 @@ CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int panel,
             if (showProgressDialog)
             {
                 float progress = ((float)i / (float)array.Count);
-                delDlg.Set(fileName, (DWORD)(progress * 1000), TRUE); // delayedPaint == TRUE, abychom nebrzdili
+                delDlg.Set(fileName, (DWORD)(progress * 1000), TRUE); // delayedPaint == TRUE so we do not slow things down
             }
 
             if (showProgressDialog && delDlg.GetWantCancel())
@@ -3069,7 +3069,7 @@ CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int panel,
                         err = CRAPI::GetLastError();
                 }
 
-                if (err == 0 && (attr2 & FILE_ATTRIBUTE_DIRECTORY) == 0) //JR Zda se, ze u adresaru nelze menit casy
+                if (err == 0 && (attr2 & FILE_ATTRIBUTE_DIRECTORY) == 0) // JR Apparently timestamps cannot be changed for directories
                 {
                     err = CRAPI::SetFileTime(fileName,
                                              dlgAttr.ChangeTimeCreated ? &dlgAttr.TimeCreated : NULL,
@@ -3080,7 +3080,7 @@ CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int panel,
                 if (err == 0)
                 {
                     pathChanged = TRUE;
-                    break; //JR povedlo se, jdeme dal
+                    break; // JR succeeded, continue
                 }
                 else
                 {
@@ -3115,21 +3115,21 @@ CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int panel,
 
         if (showProgressDialog)
         {
-            // enablujeme 'mainWnd' (jinak ho nemuze Windows vybrat jako foreground/aktivni okno)
+            // Enable 'mainWnd' (otherwise Windows cannot select it as the foreground/active window)
             EnableWindow(mainWnd, TRUE);
             enableMainWnd = FALSE;
 
-            DestroyWindow(delDlg.HWindow); // zavreme progress dialog
+            DestroyWindow(delDlg.HWindow); // close the progress dialog
         }
     }
 
-    // enablujeme 'mainWnd' (nenastala zmena foreground okna - progress se vubec neotevrel)
+    // Enable 'mainWnd' (no foreground change occurred - the progress dialog never opened)
     if (showProgressDialog && enableMainWnd)
         EnableWindow(mainWnd, TRUE);
 
     SalamanderGeneral->RestoreFocusInSourcePanel();
 
-    // zmena na zdrojove ceste Path
+    // Change on the source path Path
     if (pathChanged)
     {
         sprintf(path, "%s:%s", fsName, Path);
@@ -3153,7 +3153,7 @@ CPluginFSInterface::ContextMenu(const char* fsName, HWND parent, int menuX, int 
     HMENU menu = CreatePopupMenu();
     if (menu == NULL)
     {
-        TRACE_E("CPluginFSInterface::ContextMenu: Nelze vytvorit menu.");
+        TRACE_E("CPluginFSInterface::ContextMenu: Unable to create menu.");
         return;
     }
     MENUITEMINFO mi;
@@ -3161,11 +3161,11 @@ CPluginFSInterface::ContextMenu(const char* fsName, HWND parent, int menuX, int 
 
     switch (menutype)
     {
-    case fscmPathInPanel:  // kontextove menu pro aktualni cestu v panelu
-    case fscmPanel:        // kontextove menu pro panel
-    case fscmItemsInPanel: // kontextove menu pro polozky v panelu (oznacene/fokusle soubory a adresare)
+    case fscmPathInPanel:  // context menu for the current path in the panel
+    case fscmPanel:        // context menu for the panel
+    case fscmItemsInPanel: // context menu for panel items (selected/focused files and directories)
     {
-        // vlozeni prikazu Salamandera
+        // insert Salamander commands
         int i = 0;
         int index = 0;
         int salCmd;
@@ -3178,7 +3178,7 @@ CPluginFSInterface::ContextMenu(const char* fsName, HWND parent, int menuX, int 
                 salCmd != SALCMD_CHANGECASE &&
                 salCmd != SALCMD_EMAIL && salCmd != SALCMD_EDITNEWFILE)
             {
-                if (type != lastType && lastType != sctyUnknown) // vlozeni separatoru
+                if (type != lastType && lastType != sctyUnknown) // insert a separator
                 {
                     memset(&mi, 0, sizeof(mi));
                     mi.cbSize = sizeof(mi);
@@ -3188,7 +3188,7 @@ CPluginFSInterface::ContextMenu(const char* fsName, HWND parent, int menuX, int 
                 }
                 lastType = type;
 
-                // vlozeni prikazu Salamandera
+                // insert Salamander commands
                 memset(&mi, 0, sizeof(mi));
                 mi.cbSize = sizeof(mi);
                 mi.fMask = MIIM_TYPE | MIIM_ID | MIIM_STATE;
@@ -3214,12 +3214,12 @@ CPluginFSInterface::ContextMenu(const char* fsName, HWND parent, int menuX, int 
 
 void CPluginFSInterface::EmptyCache()
 {
-    // sestavime unikatni jmeno rootu tohoto FS v disk-cache (zasahneme vsechny kopie souboru z tohoto FS)
+    // Build a unique name for this FS root in the disk cache (touch all cached copies of files from this FS)
     char uniqueFileName[2 * MAX_PATH];
     strcpy(uniqueFileName, AssignedFSName);
     strcat(uniqueFileName, ":\\");
-    // jmena na disku jsou "case-insensitive", disk-cache je "case-sensitive", prevod
-    // na mala pismena zpusobi, ze se disk-cache bude chovat take "case-insensitive"
+    // Disk names are case-insensitive, the disk cache is case-sensitive; converting
+    // to lowercase makes the disk cache behave case-insensitively as well
     SalamanderGeneral->ToLowerCase(uniqueFileName);
     SalamanderGeneral->RemoveFilesFromCache(uniqueFileName);
 }

@@ -7,7 +7,7 @@
 //
 // CCommonDialog
 //
-// Dialog centrovany k parentu
+// Dialog centered relative to the parent
 //
 
 class CCommonDialog : public CDialog
@@ -30,11 +30,11 @@ class CProgressDlg : public CCommonDialog
 {
 protected:
     CGUIProgressBarAbstract* ProgressBar;
-    BOOL WantCancel; // TRUE pokud uzivatel chce Cancel
+    BOOL WantCancel; // TRUE if the user wants to cancel
 
-    // protoze dialog nebezi ve vlastnim threadu, je zbytecne pouzivat WM_TIMER
-    // metodu; stejna nas musi zavolat pro vypumpovani message queue
-    DWORD LastTickCount; // pro detekci ze uz je treba prekreslit zmenena data
+    // because the dialog does not run in its own thread, there is no point in using the WM_TIMER
+    // method; the same code has to be called to pump the message queue
+    DWORD LastTickCount; // detects when it is time to repaint changed data
 
     char TextCache[MAX_PATH];
     BOOL TextCacheIsDirty;
@@ -51,8 +51,8 @@ public:
     void Set(const char* fileName, DWORD progressTotal, BOOL dalayedPaint);
     void SetProgress(DWORD progressTotal, DWORD progress, BOOL dalayedPaint);
 
-    // vyprazdni message queue (volat dostatecne casto) a umozni prekreslit, stisknout Cancel...
-    // vraci TRUE, pokud uzivatel chce prerusit operaci
+    // empties the message queue (call often enough) and allows repainting, pressing Cancel...
+    // returns TRUE if the user wants to interrupt the operation
     BOOL GetWantCancel();
 
 protected:
@@ -91,7 +91,7 @@ protected:
 class CChangeAttrDialog : public CCommonDialog
 {
 private:
-    // handly pro TimeDate controly
+    // handles for the TimeDate controls
     HWND HModifiedDate;
     HWND HModifiedTime;
     HWND HCreatedDate;
@@ -99,10 +99,10 @@ private:
     HWND HAccessedDate;
     HWND HAccessedTime;
 
-    // stavove promenne pro disableni checkboxu
+    // state variables used to disable the check boxes
     BOOL SelectionContainsDirectory;
 
-    // pokud user kliknul na prislusny checkbox, bude promenna nastavena na TRUE
+    // if the user clicked the respective check box, the variable is set to TRUE
     BOOL ArchiveDirty;
     BOOL ReadOnlyDirty;
     BOOL HiddenDirty;
