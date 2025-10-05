@@ -796,7 +796,7 @@ void __fastcall TSCPFileSystem::ClearAlias(AnsiString Alias)
   if (!Alias.IsEmpty())
   {
     // this command usually fails, because there will never be
-    // aliases on all commands -> see last False parametr
+    // aliases on all commands -> see the last False parameter
     ExecCommand(fsUnalias, ARRAYOFCONST((Alias)), false);
   }
 }
@@ -2149,7 +2149,7 @@ void __fastcall TSCPFileSystem::SCPSink(const AnsiString TargetDir,
       if (IsLastLine(Line))
       {
         // Remote side finished copying, so remote SCP was closed
-        // and we don't need to terminate it manualy, see CopyToLocal()
+        // and we don't need to terminate it manually, see CopyToLocal()
         OperationProgress->Cancel = csRemoteAbort;
         /* TODO 1 : Show stderror to user? */
         FSecureShell->ClearStdError();

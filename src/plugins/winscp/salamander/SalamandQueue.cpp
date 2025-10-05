@@ -239,7 +239,7 @@ bool TSalamandProgressForm::InitDialog()
     SalamanderGeneral()->MultiMonCenterWindow(HWindow, FParent, TRUE);
     if (FAlwaysOnTop)
     {
-        // always-on-top osetrime aspon "staticky" (neni v system menu)
+        // handle always-on-top at least "statically" (it is not in the system menu)
         SetWindowPos(HWindow, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
     }
 
