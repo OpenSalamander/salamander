@@ -77,7 +77,7 @@ protected:
     int SelectedDifference;
     BOOL DataValid;
     BOOL InputEnabled;
-    int CancelWorker; // viz. konstanty CW_xxx
+    int CancelWorker; // see the CW_xxx constants
     BOOL FirstCompare;
     CCompareOptions Options;
     //int DifferencesCount;

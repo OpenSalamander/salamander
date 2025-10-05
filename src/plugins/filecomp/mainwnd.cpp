@@ -508,7 +508,7 @@ void CMainWindow::SelectDifferenceByOffset(QWORD offset, BOOL center)
         {
             OutOfRange = FALSE;
             SelectDifference(mid, 0, TRUE, center);
-            return; // nasli jsme
+            return; // found it
         }
         if (Changes[mid].Offset < offset)
             l = mid + 1;
@@ -833,9 +833,9 @@ void CMainWindow::RestoreRebarLayout()
         BandsParams[BI_DIFFLIST].Style = 0;
         BandsParams[BI_DIFFLIST].Index = 1;
     }
-    // band s toolbarou
+    // band with the toolbar
     Rebar->SetBandParams(IDC_TOOLBAR, BandsParams + BI_TOOLBAR);
-    // band s combacem
+    // band with the combo box
     Rebar->SetBandParams(IDC_DIFFLIST, BandsParams + BI_DIFFLIST);
 }
 
@@ -963,7 +963,7 @@ bool CMainWindow::TextFilesDiffer(CTextCompareResults<CChar>* res, char* message
     TTextFileViewWindow<CChar>* rightFileView = (TTextFileViewWindow<CChar>*)FileView[fviRight];
 
     // taking ownership of the data; from now on I must release it
-    // predanych v CTextCompareResults
+    // passed in CTextCompareResults
     leftFileView->SetData(res->Files[0].Text, res->Files[0].Lines, res->Files[0].LineScript);
     rightFileView->SetData(res->Files[1].Text, res->Files[1].Lines, res->Files[1].LineScript);
 
@@ -1132,7 +1132,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 return 0;
             }
         }
-            // jedeme dal ...
+            // keep going ...
         case CM_EXIT:
             if (!IsWindowEnabled(HWindow))
             { // close all dialogs above this one (send them WM_CLOSE, then repost CM_EXIT here)
@@ -1172,7 +1172,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 return 0;
             }
         }
-            // jedeme dal
+            // keep going
 
         case CM_PREVDIFF:
             if (DataValid)
@@ -1203,7 +1203,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 return 0;
             }
         }
-            // jedeme dal
+            // keep going
 
         case CM_NEXTDIFF:
             if (DataValid)
@@ -1309,7 +1309,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 ((CTextFileViewWindowBase*)FileView[fviRight])->SetShowWhiteSpace(ShowWhiteSpace);
             }
 
-            // prekreslime obrazovku
+            // redraw the screen
             InvalidateRect(LeftFileViewHWnd, NULL, FALSE);
             UpdateWindow(LeftFileViewHWnd);
             InvalidateRect(RightFileViewHWnd, NULL, FALSE);
@@ -1357,7 +1357,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                 CheckMenuItem(GetMenu(HWindow), CM_DETAILDIFF, MF_BYCOMMAND | (DetailedDifferences ? MF_CHECKED : MF_UNCHECKED));
 
-                // prekreslime obrazovku
+                // redraw the screen
                 InvalidateRect(LeftFileViewHWnd, NULL, FALSE);
                 UpdateWindow(LeftFileViewHWnd);
                 InvalidateRect(RightFileViewHWnd, NULL, FALSE);
@@ -1979,7 +1979,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 RightHeader->SetText("");
                 FileView[fviLeft]->InvalidateData(); // ensure the windows are repainted
                 FileView[fviRight]->InvalidateData();
-                ret = FALSE; // nebudeme hledat difference
+                ret = FALSE; // we will not search for the difference
             }
 
             break;

@@ -567,10 +567,10 @@ void CTextFileReader::Get(char*& buffer, size_t& size, const int& cancel)
 
     size = ConvertEols(Buffer, size_t(Size));
     // add virtual line at the end of the file
-    Buffer[size++] = '\n'; // text vzdy konci na '\n'
+    Buffer[size++] = '\n'; // the text always ends with '\n'
 
     buffer = Buffer;
-    Buffer = NULL; // uze je prirazeny volajicimu
+    Buffer = NULL; // the buffer is already assigned to the caller
     BufferedCharacters = 0;
 }
 
@@ -587,7 +587,7 @@ void CTextFileReader::Get(wchar_t*& buffer, size_t& size, const int& cancel)
     buffer = NULL;
     try
     {
-        // TODO nezapominat skipnout BOM mark
+        // TODO do not forget to skip the BOM mark
         switch (Encoding)
         {
         case encASCII8:
@@ -610,7 +610,7 @@ void CTextFileReader::Get(wchar_t*& buffer, size_t& size, const int& cancel)
 
         size = ConvertEols(buffer, size);
         // add virtual line at the end of the file
-        buffer[size++] = '\n'; // text vzdy konci na '\n'
+        buffer[size++] = '\n'; // the text always ends with '\n'
         if (NormalizationForm)
         {
             int len = PNormalizeString(NormalizationC, buffer, (int)size, NULL, 0);
@@ -653,7 +653,7 @@ void CTextFileReader::Get(wchar_t*& buffer, size_t& size, const int& cancel)
     //   http://www.cl.cam.ac.uk/~mgk25/unicode.html
     //   http://www.unicode.org/unicode/reports/tr15/
     //
-    // see WINAPI FoldString
+    // see the FoldString function in the Windows API
     //
     // this has to be optional 'Ignore difference caused by unicode encoding
     // ambiguilties', test for surrogates afterwards
@@ -773,7 +773,7 @@ void CTextFileReader::ReadUTF8(wchar_t*& buffer, size_t& size, const int& cancel
 {
     CByteReader input(Name, File, Size, Buffer, BufferSize, BufferedCharacters, cancel, MD5);
 
-    Buffer = NULL; // o uvolneni se stara input
+    Buffer = NULL; // input takes care of freeing it
     BufferedCharacters = 0;
 
     size_t allocated = Size; // worst case estimate (each UTF-8 byte codes one UCS-4 char)
@@ -945,7 +945,7 @@ void CTextFileReader::ReadUTF16(wchar_t*& buffer, size_t& size, const int& cance
     buffer = (wchar_t*)Buffer;
     size = Size / 2; // TODO warn if byte is missing
 
-    Buffer = NULL; // buffer byl predan volajicimu
+    Buffer = NULL; // the buffer was passed to the caller
     BufferedCharacters = 0;
 
     // convert to little endian
@@ -960,7 +960,7 @@ void CTextFileReader::ReadUTF32(wchar_t*& buffer, size_t& size, const int& cance
 {
     CByteReader input(Name, File, Size, Buffer, BufferSize, BufferedCharacters, cancel, MD5);
 
-    Buffer = NULL; // o uvolneni se stara input
+    Buffer = NULL; // input takes care of freeing it
     BufferedCharacters = 0;
 
     // optimistic estimate (each UTF-32 byte codes one UTF-16 char, no surrogate

@@ -25,8 +25,8 @@
 #define new new (_NORMAL_BLOCK, __FILE__, __LINE__)
 #endif
 
-// opatreni proti runtime check failure v debug verzi: puvodni verze makra pretypovava rgb na WORD,
-// takze hlasi ztratu dat (RED slozky)
+// workaround for runtime check failures in the debug build: the original macro casts rgb to WORD,
+// so it reports data loss (the RED component)
 #undef GetGValue
 #define GetGValue(rgb) ((BYTE)(((rgb) >> 8) & 0xFF))
 
@@ -49,7 +49,7 @@
 
 // ****************************************************************************
 //
-// Uklid po includovani MS headeru
+// Cleanup after including the MS headers
 //
 #undef min
 #undef max

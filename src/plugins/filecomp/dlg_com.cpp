@@ -127,14 +127,14 @@ HBRUSH CreateDitheredBrush()
     HBITMAP hbm = CreateBitmap(8, 8, 1, 1, (LPBYTE)bmb);
     if (!hbm)
     {
-        TRACE_E("Nepodarilo se vytvorit bitmapu pro rastrovany brush.");
+        TRACE_E("Failed to create a bitmap for the pattern brush.");
         return NULL;
     }
     HBRUSH ret = CreatePatternBrush(hbm);
     DeleteObject(hbm);
     if (!ret)
     {
-        TRACE_E("Nepodarilo se vytvorit rastrovany brush.");
+        TRACE_E("Failed to create the pattern brush.");
         return NULL;
     }
     return ret;
@@ -400,7 +400,7 @@ BOOL CreateEnvFont()
     EnvFont = CreateFontIndirect(lf);
     if (EnvFont == NULL)
     {
-        TRACE_E("Font se nepovedl vytvorit.");
+        TRACE_E("Failed to create the font.");
         return FALSE;
     }
 

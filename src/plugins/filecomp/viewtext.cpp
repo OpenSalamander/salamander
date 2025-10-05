@@ -624,11 +624,11 @@ void TTextFileViewWindow<CChar>::Paint()
                 r2.top++;
             }
 
-            // vykreslime jen pozadi u cisla radky
+            // draw only the background behind the line number
             SetBkColor(dc, LineColors[colorScheme].LineNumBkColor);
             ExtTextOut(dc, 0, 0, ETO_OPAQUE /*| ETO_CLIPPED*/, &r1, NULL, 0, NULL);
 
-            // vykreslime prazdnou radku
+            // draw an empty line
             if (line >= SelectionLineBegin && line < SelectionLineEnd)
                 SetBkColor(dc, GetPALETTERGB(Colors[TEXT_BK_SELECTION]));
             else
@@ -676,7 +676,7 @@ void TTextFileViewWindow<CChar>::Paint()
                 r2.top++;
             }
 
-            // vykreslime cislo radky najednou s pozadim
+            // draw the line number together with its background
             int l = Script[ViewMode][line].GetLine();
             char num[numeric_limits<size_t>::digits10 + 1];
             sprintf(num, "%*d", LineNumDigits, l + 1);

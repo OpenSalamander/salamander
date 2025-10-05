@@ -276,7 +276,7 @@ CPropPageColors::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             ColorButtons[i][LINENUM_COLOR_BTN] = SalGUI->AttachColorArrowButton(HWindow, LineNumIDs[i], TRUE);
             ColorButtons[i][TEXT_COLOR_BTN] = SalGUI->AttachColorArrowButton(HWindow, TextIDs[i], TRUE);
-            // #pragma message(__FILE__ "(280) : Honzo, once you implement this, uncomment the code below. Thanks, Lukas.")
+            // #pragma message(__FILE__ "(280) : Once you implement this, uncomment the code below. Thanks, Lukas.")
             // j.r. FIXME: I have not had time yet, so I am putting the pragma into a comment so it does not haunt the build
             // l.c., 13.2.2011 I only uncommented the pragma as a test in case you coded it in the meantime :)
             // j.r., 23.3.2011 low priority, we will not deal with it for now
@@ -372,7 +372,7 @@ CPropPageColors::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         LRESULT i = SendMessage(GetDlgItem(HWindow, IDC_ITEMS), CB_GETCURSEL, 0, 0);
         UpdateColors(int(i));
-        // #pragma message(__FILE__ "(375) : Honzo, once you verify that CGUIColorArrowButton refreshes pens automatically, delete the following comment (do not confuse with uncomment :). Thanks, Lukas")
+        // #pragma message(__FILE__ "(375) : Once you verify that CGUIColorArrowButton refreshes pens automatically, delete the following comment (do not confuse with uncomment :). Thanks, Lukas")
         // j.r. FIXME: I have not had time yet, so I am putting the pragma into a comment so it does not haunt the build
         // l.c., 13.2.2011 I only uncommented the pragma as a test in case you coded it in the meantime :)
         // j.r., 23.3.2011 low priority, we will not deal with it for now
