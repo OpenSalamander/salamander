@@ -135,7 +135,7 @@ INT64 CZDirectory::PopulateDir(CWorkerThread* mythread, TCHAR* path, int pos, si
 
     int sortorder = this->_root->GetSortOrder();
 
-    //prilepit aktualni nazev
+    //append the current name
     if ((pos + this->_namelen + 1) < pathsize)
     {
         if (pos && path[pos - 1] != TEXT('\\'))
@@ -149,7 +149,7 @@ INT64 CZDirectory::PopulateDir(CWorkerThread* mythread, TCHAR* path, int pos, si
     if (!pos || path[pos - 1] != TEXT('\\'))
         path[pos++] = TEXT('\\');
 
-    //zkontrolovat delku
+    //check the length
     if (pos >= MAX_PATH)
     {
         //ERROR
@@ -157,7 +157,7 @@ INT64 CZDirectory::PopulateDir(CWorkerThread* mythread, TCHAR* path, int pos, si
         return -1;
     }
 
-    TCHAR* filepart = &path[pos]; //ukazatel na zacatek mista pro prilepeni nazvu souboru
+    TCHAR* filepart = &path[pos]; //pointer to the start of the area for appending the file name
 
     path[pos] = TEXT('*');
     path[pos + 1] = TEXT('\0');
@@ -195,7 +195,7 @@ INT64 CZDirectory::PopulateDir(CWorkerThread* mythread, TCHAR* path, int pos, si
                 {
                     f = new CZDirectory(this, FindFileData.cFileName, &FindFileData.ftCreationTime, &FindFileData.ftLastWriteTime);
                     datasize = ((CZDirectory*)f)->PopulateDir(mythread, path, pos, pathsize);
-                    if (datasize < 0) //chyba!
+                    if (datasize < 0) //error!
                     {
                         //this->_root->Log(LOG_ERROR, TEXT("Negative size of directory contents."), f);
                         delete f;
@@ -204,11 +204,11 @@ INT64 CZDirectory::PopulateDir(CWorkerThread* mythread, TCHAR* path, int pos, si
                         realsize = 0;
                         disksize = 0;
                     }
-                    else if (datasize == 0) //vse ok, ale prazdne
+                    else if (datasize == 0) //everything ok, but empty
                     {
                         this->_dircount++;
                         dircount++;
-                        this->_dircount += ((CZDirectory*)f)->GetSubDirsCount(); //zapocitame prazdne, abychom meli stejne vysledky jako Explorer
+                        this->_dircount += ((CZDirectory*)f)->GetSubDirsCount(); //count empty ones so we match Explorer's results
                         this->_filecount += ((CZDirectory*)f)->GetSubFileCount();
 
                         delete f;
@@ -258,7 +258,7 @@ INT64 CZDirectory::PopulateDir(CWorkerThread* mythread, TCHAR* path, int pos, si
                 {
                     realsize = datasize;
                 }
-                //zapocitame vzdy, abychom meli stejna cisla jako Explorer
+                //always count them so we match Explorer's numbers
                 this->_filecount++;
                 filecount++;
                 if (datasize > 0)
@@ -281,7 +281,7 @@ INT64 CZDirectory::PopulateDir(CWorkerThread* mythread, TCHAR* path, int pos, si
                 while (fre > 0)
                 {
                     int parent = (fre - 1) / 2;
-                    if (this->_files->At(parent)->GetSizeEx(sortorder) > sortsize) //pokud nadrazeny je vetsi, tak nesplnuje MIN-HEAP
+                    if (this->_files->At(parent)->GetSizeEx(sortorder) > sortsize) //if the parent is larger, it violates the MIN-HEAP
                     {
                         this->_files->Copy(fre, parent);
                         fre = parent;
@@ -293,8 +293,8 @@ INT64 CZDirectory::PopulateDir(CWorkerThread* mythread, TCHAR* path, int pos, si
                 }
                 this->_files->At(fre) = f;
             }
-            //if (((filecount + dircount) > MAXREPORTEDFILES) || (GetTickCount() - lastTime > 500)) //bud mnoho souboru nebo ubehlo 0.5sec
-            if ((GetTickCount() - lastTime > 250) && (filecount + dircount) > 0) //pokud ubehlo 0.25sec a naslo se alespon neco noveho
+            //if (((filecount + dircount) > MAXREPORTEDFILES) || (GetTickCount() - lastTime > 500)) //either many files or 0.5 sec elapsed
+            if ((GetTickCount() - lastTime > 250) && (filecount + dircount) > 0) //if 0.25 sec elapsed and at least something new was found
             {
                 this->_root->IncStats(filecount, dircount, tsize);
                 lastTime = GetTickCount();
@@ -319,10 +319,10 @@ INT64 CZDirectory::PopulateDir(CWorkerThread* mythread, TCHAR* path, int pos, si
             end--;
             while (fre * 2 + 1 <= end)
             {
-                int child = fre * 2 + 1; //leva
+                int child = fre * 2 + 1; //left
                 if ((child < end) && (this->_files->At(child)->GetSizeEx(sortorder) > this->_files->At(child + 1)->GetSizeEx(sortorder)))
                     child++;
-                if (this->_files->At(child)->GetSizeEx(sortorder) < f->GetSizeEx(sortorder)) //pokud podrazeny je mensi, tak nesplnuje MIN-HEAP
+                if (this->_files->At(child)->GetSizeEx(sortorder) < f->GetSizeEx(sortorder)) //if the child is smaller, it violates the MIN-HEAP
                 {
                     this->_files->Copy(fre, child);
                     fre = child;

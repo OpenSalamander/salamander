@@ -3,8 +3,8 @@
 
 #pragma once
 
-// opatreni proti runtime check failure v debug verzi: puvodni verze makra pretypovava rgb na WORD,
-// takze hlasi ztratu dat (RED slozky)
+// precaution against runtime check failure in the debug version: the original macro casted RGB to WORD,
+// so it reported data loss (RED component)
 #undef GetGValue
 #define GetGValue(rgb) ((BYTE)(((rgb) >> 8) & 0xFF))
 

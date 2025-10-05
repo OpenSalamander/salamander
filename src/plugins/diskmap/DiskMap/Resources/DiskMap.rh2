@@ -12,20 +12,20 @@
 
 // statics
 #define IDC_STATIC_1 3000
-#include "statics.rh2"   // 3000 az 3039 jsou timto zabrane !!!
+#include "statics.rh2"   // 3000 to 3039 are occupied by this!!!
 
 
 //Dialog:
 #define IDD_ABOUTBOX                    103
 //Dialog Control:
-#define IDC_MYICON                      2  //ID ikony na About Dialogu
+#define IDC_MYICON                      2  //ID of the icon on the About dialog
 
 
 //Icon:
 #define IDI_ZAREVAKDISKMAP         107
 
 
-#define IDC_ZAREVAKDISKMAP         109 //ID hlavniho menu
+#define IDC_ZAREVAKDISKMAP         109 //ID of the main menu
 
 
 //Menu:
@@ -63,7 +63,7 @@
 #define IDM_PATHFORMAT_FILENAME         303
 #define IDM_PATHFORMAT_LAST             303
 
-//Retezce pluginu - nacitane pomoci LoadStr() v DiskMapPlugin.cpp
+//Plugin strings - loaded via LoadStr() in DiskMapPlugin.cpp
 #define IDS_PLUGIN_NAME                 32
 #define IDS_PLUGIN_DESCRIPTION          33
 #define IDS_PLUGIN_ABOUT                34
@@ -71,7 +71,7 @@
 #define IDS_CLOSE_CONFIRMATION          40
 #define IDS_CLOSE_CONFIRMATION_CHECKBOX 41
 
-//Retezce DiskMapy - nacitane pomoci CZLocalizer a CZResourceString
+//DiskMap strings - loaded via CZLocalizer and CZResourceString
 #define IDS_DISKMAP_FIRST               48
 
 //Main Window
@@ -113,9 +113,9 @@
 #define IDS_DISKMAP_TTIP_COUNTDIRS      76
 
 //General
-#define IDS_DISKMAP_FORMAT_BYTE0        77 //pro "0 bajtu"
-#define IDS_DISKMAP_FORMAT_BYTE1        78 //pro "1 bajt"
-#define IDS_DISKMAP_FORMAT_BYTEN        79 //pro "n bajtu
+#define IDS_DISKMAP_FORMAT_BYTE0        77 //for "0 bytes"
+#define IDS_DISKMAP_FORMAT_BYTE1        78 //for "1 byte"
+#define IDS_DISKMAP_FORMAT_BYTEN        79 //for "n bytes"
 
 #define IDS_DISKMAP_LAST                79
 

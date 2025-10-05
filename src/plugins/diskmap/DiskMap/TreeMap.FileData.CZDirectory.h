@@ -52,7 +52,7 @@ public:
     int GetFileCount() { return this->_files->GetCount(); }
     CZFile* GetFile(int i) { return this->_files->At(i); }
 
-    virtual TCHAR* CalcExt() { return this->_ext = NULL; } //slozky nemaji pripony
+    virtual TCHAR* CalcExt() { return this->_ext = NULL; } //directories do not have extensions
 
     int GetSubFileCount() const { return this->_filecount; }
     int GetSubDirsCount() const { return this->_dircount; }
