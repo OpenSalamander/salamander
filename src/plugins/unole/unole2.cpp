@@ -14,24 +14,24 @@
 
 // ****************************************************************************
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to SPL - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to SLG - language-dependent resources
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object; its methods are called from Salamander
 CPluginInterface PluginInterface;
-// cast interfacu CPluginInterface pro archivator
+// part of the CPluginInterface interface for the archiver
 CPluginInterfaceForArchiver InterfaceForArchiver;
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// Salamander general interface - valid from plugin startup until shutdown
 CSalamanderGeneralAbstract* SalamanderGeneral = NULL;
 
-// interface pro komfortni praci se soubory
+// interface for convenient work with files
 CSalamanderSafeFileAbstract* SalamanderSafeFile = NULL;
 
-// definice promenne pro "dbg.h"
+// variable definition for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
-// definice promenne pro "spl_com.h"
+// variable definition for "spl_com.h"
 int SalamanderVersion = 0;
 
 const SYSTEMTIME MinTime = {1980, 01, 2, 01, 00, 00, 00, 000};
@@ -71,33 +71,33 @@ int WINAPI SalamanderPluginGetReqVer()
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
     CALL_STACK_MESSAGE_NONE
-    // nastavime SalamanderDebug pro "dbg.h"
+    // set SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
-    // nastavime SalamanderVersion pro "spl_com.h"
+    // set SalamanderVersion for "spl_com.h"
     SalamanderVersion = salamander->GetVersion();
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plugin is built for the current Salamander version and newer - perform a check
     if (SalamanderVersion < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
-                   "UnOLE2" /* neprekladat! */, MB_OK | MB_ICONERROR);
+                   "UnOLE2" /* do not translate! */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
-    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "UnOLE2" /* neprekladat! */);
+    // let the language module (.slg) load
+    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "UnOLE2" /* do not translate! */);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain the general Salamander interface
     SalamanderGeneral = salamander->GetSalamanderGeneral();
     SalamanderSafeFile = salamander->GetSalamanderSafeFile();
 
     /*
-  //beta plati do konce unora 2001
+  // beta valid until the end of February 2001
   SYSTEMTIME st;
   GetLocalTime(&st);
   if (st.wYear == 2001 && st.wMonth > 2 || st.wYear > 2001)
@@ -110,14 +110,14 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
     if (!InterfaceForArchiver.Init())
         return NULL;
 
-    // nastavime zakladni informace o pluginu
+    // set the basic plugin information
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_PANELARCHIVERVIEW | FUNCTION_CUSTOMARCHIVERUNPACK |
                                        FUNCTION_CONFIGURATION | FUNCTION_LOADSAVECONFIGURATION,
                                    VERSINFO_VERSION_NO_PLATFORM,
                                    VERSINFO_COPYRIGHT,
                                    LoadStr(IDS_PLUGIN_DESCRIPTION),
-                                   "UnOLE2" /* neprekladat! */, "ole"); // "UnOLE2", "doc;xls");
+                                   "UnOLE2" /* do not translate! */, "ole"); // "UnOLE2", "doc;xls");
 
     salamander->SetPluginHomePageURL("www.altap.cz");
 
@@ -150,7 +150,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     CALL_STACK_MESSAGE1("CPluginInterface::LoadConfiguration(, ,)");
 
     /*  Options = 0;
-  if (regKey != NULL)   // load z registry
+  if (regKey != NULL)   // load from the registry
   {
     registry->GetValue(regKey, CONFIG_OPTIONS, REG_DWORD, &Options, sizeof(DWORD));
   }*/
@@ -184,7 +184,7 @@ CPluginInterface::GetInterfaceForArchiver()
     return &InterfaceForArchiver;
 }
 
-int SortByExtDirsAsFiles = FALSE; // globalka, kterou je potreba obnovit pred volanim ParseStorage
+int SortByExtDirsAsFiles = FALSE; // global variable that must be restored before calling ParseStorage
 
 BOOL ParseStorage(CSalamanderDirectoryAbstract* Dir, LPSTORAGE CF, LPMALLOC pIMalloc, char* path)
 {
@@ -219,7 +219,7 @@ BOOL ParseStorage(CSalamanderDirectoryAbstract* Dir, LPSTORAGE CF, LPMALLOC pIMa
         }
         fileData.Ext = strrchr(fileData.Name, '.');
         if (fileData.Ext != NULL)
-            fileData.Ext++; // ".cvspass" ve Windows je pripona
+            fileData.Ext++; // ".cvspass" is an extension on Windows
         else
             fileData.Ext = fileData.Name + lstrlen(fileData.Name);
         fileData.Size = CQuadWord(element.cbSize.u.LowPart, element.cbSize.u.HighPart);
@@ -229,7 +229,7 @@ BOOL ParseStorage(CSalamanderDirectoryAbstract* Dir, LPSTORAGE CF, LPMALLOC pIMa
             fileData.Attr |= FILE_ATTRIBUTE_DIRECTORY;
         }
         fileData.Hidden = 0;
-        fileData.PluginData = -1; // zbytecne, jen tak pro formu
+        fileData.PluginData = -1; // unnecessary, just for formality
         if (element.mtime.dwLowDateTime && element.mtime.dwHighDateTime)
         {
             pFT = &element.mtime;
@@ -251,7 +251,7 @@ BOOL ParseStorage(CSalamanderDirectoryAbstract* Dir, LPSTORAGE CF, LPMALLOC pIMa
         {
             fileData.IsLink = 0;
             if (!SortByExtDirsAsFiles)
-                fileData.Ext = fileData.Name + fileData.NameLen; // adresare nemaji pripony
+                fileData.Ext = fileData.Name + fileData.NameLen; // directories do not have extensions
             tmp = Dir->AddDir(path, fileData, NULL);
         }
         else
@@ -511,7 +511,7 @@ BOOL CPluginInterfaceForArchiver::UnpackWholeArchive(CSalamanderForOperationsAbs
     }
 
     if (delArchiveWhenDone)
-        archiveVolumes->Add(fileName, -2); // FIXME: az plugin doucime multi-volume archivy, musime sem napridavat vsechny svazky archivu (aby se smazal kompletni archiv)
+        archiveVolumes->Add(fileName, -2); // FIXME: once the plugin supports multi-volume archives, we must add all archive volumes here (so the entire archive is deleted)
 
     salamander->OpenProgressDialog(LoadStr(IDS_EXTRPROGTITLE), FALSE, NULL, TRUE);
 
