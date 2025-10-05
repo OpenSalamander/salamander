@@ -11,29 +11,29 @@
 #include "dump_dbg.h"
 #include "cfg.h"
 
-extern HINSTANCE DLLInstance; // handle k SPL-ku - jazykove nezavisle resourcy
-extern HINSTANCE HLanguage;   // handle k SLG-cku - jazykove zavisle resourcy
+extern HINSTANCE DLLInstance; // handle to the SPL - language-independent resources
+extern HINSTANCE HLanguage;   // handle to the SLG - language-dependent resources
 
 // ****************************************************************************
 
 int HandleFileException(EXCEPTION_POINTERS* e, LPVOID fileMem, DWORD fileMemSize)
 {
-    if (e->ExceptionRecord->ExceptionCode == EXCEPTION_IN_PAGE_ERROR) // in-page-error znamena urcite chybu souboru
+    if (e->ExceptionRecord->ExceptionCode == EXCEPTION_IN_PAGE_ERROR) // in-page error definitely means a file error
     {
-        return EXCEPTION_EXECUTE_HANDLER; // spustime __except blok
+        return EXCEPTION_EXECUTE_HANDLER; // run the __except block
     }
     else
     {
-        if (e->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION &&    // access violation znamena chybu souboru jen pokud adresa chyby odpovida souboru
-            (e->ExceptionRecord->NumberParameters >= 2 &&                         // mame co testovat
-             e->ExceptionRecord->ExceptionInformation[1] >= (ULONG_PTR)fileMem && // ptr chyby ve view souboru
+        if (e->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION &&    // access violation indicates a file error only if the fault address belongs to the file
+            (e->ExceptionRecord->NumberParameters >= 2 &&                         // we have something to test
+             e->ExceptionRecord->ExceptionInformation[1] >= (ULONG_PTR)fileMem && // pointer to the fault within the mapped file
              e->ExceptionRecord->ExceptionInformation[1] < ((ULONG_PTR)fileMem) + fileMemSize))
         {
-            return EXCEPTION_EXECUTE_HANDLER; // spustime __except blok
+            return EXCEPTION_EXECUTE_HANDLER; // run the __except block
         }
         else
         {
-            return EXCEPTION_CONTINUE_SEARCH; // hodime vyjimku dale ... call-stacku
+            return EXCEPTION_CONTINUE_SEARCH; // pass the exception further up the call stack
         }
     }
 }
@@ -66,7 +66,7 @@ DWORD CPEFile::ImageFileType(int* exceptionCount)
     }
     __except (HandleFileException(GetExceptionInformation(), lpFile, fileSize))
     {
-        // chyba v souboru
+        // file error
         if (exceptionCount != NULL)
             *exceptionCount += 1;
         return 0; /* unknown file type */
@@ -555,7 +555,7 @@ void COptionalFileHeaderDumper::DumpCore(CFileStream* outStream)
         }
         if (dllCharacteristics != 0)
         {
-            // Zustaly nejake flagy, ktere nezname.
+            // Some flags remained that we do not recognize.
             outStream->fprintf("    0x%04X\n", dllCharacteristics);
         }
 
@@ -682,17 +682,17 @@ void CExportTableDumper::DumpCore(CFileStream* outStream)
         outStream->fprintf("  %-*s%u\n", width, "Number of Functions:", ped->NumberOfFunctions);
         outStream->fprintf("  %-*s%u\n", width, "Number of Names:", ped->NumberOfNames);
 
-        // existuji funkce, ktere jsou exportovany podle ordinal hodnoty
+        // There are functions exported by ordinal value.
         if (ped->NumberOfFunctions > ped->NumberOfNames)
         {
-            // vytvorim pole BOOLu pro kazdou funkci
+            // Create an array of BOOLs for each function.
             eaIndexDone = (BOOL*)malloc(ped->NumberOfFunctions * sizeof(BOOL));
             if (eaIndexDone == NULL)
             {
                 outStream->fprintf("OUT OF MEMORY!\n");
                 return;
             }
-            // a oznacim je jako nezpracovane
+            // And mark them as unprocessed.
             ZeroMemory(eaIndexDone, ped->NumberOfFunctions * sizeof(BOOL));
         }
         else
@@ -706,8 +706,8 @@ void CExportTableDumper::DumpCore(CFileStream* outStream)
             char* name;
             WORD ordinal;
             DWORD entryPoint;
-            //      if (pEntryPoints[i] == 0)  //j.r. s touhle podminkou to neslapalo pro cabinet.dll
-            //        continue;                // podle specifikace nechapu, proc jsem ji sem puvodne dal (mozna copy&paste)
+            //      if (pEntryPoints[i] == 0)  // j.r.: with this condition it did not work for cabinet.dll
+            //        continue;                // according to the specification I do not understand why I originally put it here (maybe copy & paste)
             name = (char*)(pNames[i] + pBase);
             ordinal = (WORD)ped->Base + pNameOrdinals[i];
             entryPoint = pEntryPoints[pNameOrdinals[i]];
@@ -1103,10 +1103,10 @@ void CDebugDirectoryDumper::DumpMisc(CFileStream* outStream, const void* data, D
             }
             else
             {
-                // Petr: VC2013 pise pro nasledujici radek chybu: error C2070: 'unknown': illegal sizeof operand
+                // Petr: VC2013 reports an error for the next line: error C2070: 'unknown': illegal sizeof operand
                 //static_assert(sizeof(IMAGE_DEBUG_MISC::Data) == 1, "Invalid definition of the IMAGE_DEBUG_MISC structure");
-                // proto jsem ho zmenil na:
-                IMAGE_DEBUG_MISC* ptr_IMAGE_DEBUG_MISC = NULL; // dal by se pouzit i 'pdm', ale takhle je to cistci
+                // therefore I changed it to:
+                IMAGE_DEBUG_MISC* ptr_IMAGE_DEBUG_MISC = NULL; // 'pdm' could also be used, but this is cleaner.
                 static_assert(sizeof(ptr_IMAGE_DEBUG_MISC->Data) == 1, "Invalid definition of the IMAGE_DEBUG_MISC structure");
                 DWORD maxCch = size - sizeof(IMAGE_DEBUG_MISC) + 1; // IMAGE_DEBUG_MISC includes one character.
                 _ASSERTE(maxCch >= 1);
@@ -1178,14 +1178,14 @@ BOOL DumpFileInfo(LPVOID lpFile, DWORD fileSize, FILE* outStream)
     }
     __except (HandleFileException(GetExceptionInformation(), lpFile, fileSize))
     {
-        // chyba v souboru
+        // file error
         stream.fprintf("\n---- EXCEPTION: Error reading file.\n\n");
         exceptionCount++;
     }
 
     FreePEDumperChain(peDumperChain, peDumperChainLength);
 
-    //  return exceptionCount == 0; // viewer se zda odladeny, uz si nenechame posilat bug reporty
+    //  return exceptionCount == 0; // the viewer seems stable; we will no longer ask for bug reports
     return TRUE;
 }
 
@@ -1378,7 +1378,7 @@ bool CBaseResourceDumper::FindResourceDirectoryEntryByIdCallback(PIMAGE_RESOURCE
     {
         byId->pEntry = pResourceDirEntry;
 
-        // Neni potreba pokracovat v enumeraci.
+        // No need to continue enumerating.
         return false;
     }
     return true;
@@ -1406,7 +1406,7 @@ void* CBaseResourceDumper::FindResource(int* paIds, DWORD caIds, PIMAGE_RESOURCE
         {
             if (pEntry->DataIsDirectory)
             {
-                // Posledni musi byt uz data.
+                // The last item must already be data.
                 break;
             }
 
@@ -1417,7 +1417,7 @@ void* CBaseResourceDumper::FindResource(int* paIds, DWORD caIds, PIMAGE_RESOURCE
         {
             if (!pEntry->DataIsDirectory)
             {
-                // Vsechny pred tim musi byt adresare.
+                // All preceding ones must be directories.
                 break;
             }
             pDir = (PIMAGE_RESOURCE_DIRECTORY)OffsetToPtr(pEntry->OffsetToDirectory);
@@ -1586,7 +1586,7 @@ bool CFileVersionResourceDumper::ReadXxxFileInfo(CFileStream* outStream, BinaryR
         }
         else
         {
-            // Neznamy typ XxxFileInfo.
+            // Unknown XxxFileInfo type.
             _ASSERTE(0);
         }
 
@@ -1642,7 +1642,7 @@ bool CFileVersionResourceDumper::ReadStringTable(CFileStream* outStream, BinaryR
             break;
         }
 
-        // 8 hexa znaku.
+        // 8 hex characters.
         readOk = (cchKey == 8);
         if (!readOk)
         {
@@ -2094,7 +2094,7 @@ static BOOL IsManagedAssembly(CPEFile& peFile)
     return IsManagedAssembly(peFile, dwCorHeaderSize) && dwCorHeaderSize > 0U;
 }
 
-#ifndef COMIMAGE_FLAGS_32BITPREFERRED // v SDK 7.1 (VC2008) jeste neni COMIMAGE_FLAGS_32BITPREFERRED
+#ifndef COMIMAGE_FLAGS_32BITPREFERRED // COMIMAGE_FLAGS_32BITPREFERRED is not present in SDK 7.1 (VC2008).
 #define COMIMAGE_FLAGS_32BITPREFERRED 0x00020000
 #endif // COMIMAGE_FLAGS_32BITPREFERRED
 
@@ -2193,7 +2193,7 @@ void CCorHeaderDumper::DumpCore(CFileStream* outStream)
 
     if (dwFlags != 0U)
     {
-        // Zustaly nejake flagy, ktere nezname.
+        // Some flags remained that we do not recognize.
         outStream->fprintf("    0x%08X\n", dwFlags);
     }
 
@@ -2716,17 +2716,17 @@ int CCorMetadataDumper::GetAssemblyNameSortBoost(const CStringList::XCHAR* pszAs
 
     if (StrStrIW(pszAssemblyName, L"mscorlib") == pszAssemblyName)
     {
-        // mscorlib vzdy na prvnim miste...
+        // mscorlib always goes first...
         boost = 100;
     }
     else if (StrStrIW(pszAssemblyName, L"System") == pszAssemblyName)
     {
-        // ...pak systemove assemblies...
+        // ...then the system assemblies...
         boost = 50;
     }
     else
     {
-        // ...a vsechny dalsi podle abecedy nakonec.
+        // ...and all others sorted alphabetically afterwards.
     }
 
     return boost;

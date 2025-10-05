@@ -7,7 +7,7 @@
 #endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
 
 #define IDC_STATIC_1 1300
-#include "statics.rh2"   // 1300 az 1339 jsou timto zabrane !!!
+#include "statics.rh2"   // IDs 1300 through 1339 are reserved by this include!!!
 
 // Strings
 #define IDS_PLUGIN_NAME                 10100
@@ -17,7 +17,7 @@
 #define IDS_PLUGIN_DESCRIPTION          10104
 #define IDS_ABOUT                       1016
 
-// hlavicky sekci nejsou v resourcech, protoze je neprekladame (generovany report se tez nepreklada)
+// Section headers are not in the resources because we do not translate them (the generated report is not translated either)
 #define IDS_DUMPER_FILETYPE             10105
 #define IDS_DUMPER_FILEVERSIONRESOURCE  10106
 #define IDS_DUMPER_FILEHEADER           10107
@@ -31,7 +31,7 @@
 #define IDS_DUMPER_MANIFEST             10115
 #define IDS_DUMPER_CORHEADER            10116
 #define IDS_DUMPER_CORMETADATA          10117
-// konec sekci, dal uz jsou zase normalni stringy, co se prekladaji
+// End of sections; after this the strings are translated again
 
 #define IDS_HIDDEN_SECTIONS             10118
 
