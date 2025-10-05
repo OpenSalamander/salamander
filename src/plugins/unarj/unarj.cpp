@@ -60,7 +60,7 @@ extern LPTSTR PathFindExtension(LPTSTR pszPath);
 
 //***********************************************************************************
 //
-// globalky
+// global variables
 //
 
 HANDLE ArcFile = INVALID_HANDLE_VALUE;
@@ -451,7 +451,7 @@ int ReadHeader(BOOL first, CARJHeaderData* headerData)
 
     char* hdr_filename = (char*)&header[first_hdr_size];
     lstrcpyn(headerData->FileName, hdr_filename, ARJ_MAX_PATH);
-    if (host_os != OS && host_os != 11) // ani DOS, ani Win32
+    if (host_os != OS && host_os != 11) // neither DOS nor Win32
         FixParity((uchar*)headerData->FileName, lstrlen(headerData->FileName));
     if ((arj_flags & PATHSYM_FLAG) != 0)
         DecodePath(headerData->FileName);
@@ -557,7 +557,7 @@ void OpenArcFile()
     {
         ArcFileSize = GetFileSize(ArcFile, NULL);
         if (ArcFileSize != 0xFFFFFFFF)
-            break; // ok   //zde byl test na 0xFFFFFFF, coz neni -1
+            break; // ok   // there used to be a test for 0xFFFFFFF here, which is not -1
         if (!ErrorProc(AE_ACCESS, EF_RETRY))
         {
             CloseHandle(ArcFile);
@@ -726,7 +726,7 @@ void NextVolume(BOOL forceQuestion)
                 throw 0;
             attr = SalamanderGeneral->SalGetFileAttributes(ArcName);
             if (attr != -1 && !(attr & FILE_ATTRIBUTE_DIRECTORY))
-                break; // ok mame ho, jedeme dal
+                break; // ok we have it, moving on
         }
     }
     OpenArcFile();
