@@ -8,10 +8,10 @@ typedef unsigned short uint16_t;
 typedef signed int int32_t;
 typedef signed short int16_t;
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from plugin start until its termination
 extern CSalamanderGeneralAbstract* SalamanderGeneral;
 
-// interface pro komfortni praci se soubory
+// interface for convenient work with files
 extern CSalamanderSafeFileAbstract* SalamanderSafeFile;
 
 char* LoadStr(int resID);

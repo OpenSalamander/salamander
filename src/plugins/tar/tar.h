@@ -31,24 +31,24 @@
 #define DIRTYPE '5'   // directory
 #define FIFOTYPE '6'  // FIFO special
 #define CONTTYPE '7'  // TODO // reserved or GNU contiguous files
-#define CHRSPEC '8'   // character special (zkontrolovat nazev konstanty)
+#define CHRSPEC '8'   // character special (verify the constant name)
 #define XHDTYPE 'x'   // Extended header referring to the next file in the archive
 #define XGLTYPE 'g'   // Global extended header
 
 // GNU extended types
-#define GNUTYPE_DUMPDIR 'D'  // TODO // adresar hlavniho archivu v inkrementalnim
-#define GNUTYPE_LONGLINK 'K' // TODO // link s dlouhym jmenem
-#define GNUTYPE_LONGNAME 'L' // TODO // soubor s dlouhym jmenem
+#define GNUTYPE_DUMPDIR 'D'  // TODO // main archive directory in incremental mode
+#define GNUTYPE_LONGLINK 'K' // TODO // link with a long name
+#define GNUTYPE_LONGNAME 'L' // TODO // file with a long name
 #define GNUTYPE_MULTIVOL 'M' // TODO
 #define GNUTYPE_NAMES 'N'    // TODO
-#define GNUTYPE_SPARSE 'S'   // TODO // ridky soubor
+#define GNUTYPE_SPARSE 'S'   // TODO // sparse file
 #define GNUTYPE_VOLHDR 'V'   // TODO
 
 #define EXTRA_H_SPARSES 16
 #define SPARSE_H_SPARSES 21
 #define OLDGNU_H_SPARSES 4
 
-// identifikace archivu
+// archive identification
 #define TMAGIC "ustar" // ustar and a null
 #define TMAGLEN 6
 #define OLDGNU_MAGIC "ustar  " // 7 chars and a null
@@ -77,7 +77,7 @@
 // TAR structures
 //
 
-// popis pro ulozeni jednoho zaznamu z ridkeho souboru
+// description for storing a single record from a sparse file
 struct TSparse
 {                      // byte offset
     char offset[12];   //   0
@@ -85,7 +85,7 @@ struct TSparse
                        //  24
 };
 
-// header podle specifikace POSIX 1003.1-1990
+// header according to the POSIX 1003.1-1990 specification
 struct TPosixHeader
 {                       // byte offset
     char name[100];     //   0
@@ -107,8 +107,8 @@ struct TPosixHeader
                         // 500
 };
 
-// GNU extra header s daty, ktere nejsou v POSIX headeru. Je ulozen hned
-// po POSIX headeru vzdy, kdyz typeflag je pismeno.
+// GNU extra header with data that is not in the POSIX header. Stored right
+// after the POSIX header whenever typeflag is a letter.
 struct TExtraHeader
 {                                // byte offset
     char atime[12];              //   0
@@ -122,8 +122,8 @@ struct TExtraHeader
                                  // 505
 };
 
-// pokud nestaci zaznamy ridkeho souboru v GNU extra headeru, pripojuje se
-// jeden nebo vice techto extra headeru s dalsimi zaznamy
+// if the sparse file entries in the GNU extra header are insufficient,
+// one or more of these extra headers with additional entries are attached
 struct TSparseHeader
 {                                 // byte offset
     TSparse sp[SPARSE_H_SPARSES]; //   0
@@ -131,7 +131,7 @@ struct TSparseHeader
                                   // 505
 };
 
-// old GNU header vyuziva POSIX prefix zaznamu pro extra data
+// the old GNU header uses the POSIX prefix field for extra data
 struct TOldGnuHeader
 {                                 // byte offset
     char unused_pad1[345];        //   0
@@ -146,7 +146,7 @@ struct TOldGnuHeader
                                   // 495
 };
 
-// blok tar archivu (obsahujici bud data nebo header nektereho z typu)
+// TAR archive block (containing either data or a header of one of the types)
 union TTarBlock
 {
     unsigned char RawBlock[BLOCKSIZE];
@@ -247,7 +247,7 @@ struct SCommonHeader
     ~SCommonHeader();
     void Initialize();
 
-    // trvale polozky
+    // persistent fields
     CFileData FileInfo;
     char* Path;
     CQuadWord Checksum;
@@ -256,7 +256,7 @@ struct SCommonHeader
     BOOL IsExtendedTar;
     BOOL Finished;
     BOOL Ignored;
-    // docasne polozky, ktere se budou konvertovat do trvalych
+    // temporary fields that will be converted to persistent ones
     char* Name;
     CQuadWord Mode;
     CQuadWord MTime;

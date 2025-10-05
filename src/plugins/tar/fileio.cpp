@@ -26,7 +26,7 @@ CDecompressFile*
 CDecompressFile::CreateInstance(LPCTSTR fileName, DWORD inputOffset, CQuadWord inputSize)
 {
     CALL_STACK_MESSAGE2("CDecompressFile::CreateInstance(%s)", fileName);
-    // otevreme vstupni soubor
+    // open the input file
     HANDLE file = CreateFile(fileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
                              FILE_FLAG_SEQUENTIAL_SCAN, NULL);
     if (file == INVALID_HANDLE_VALUE)
@@ -51,7 +51,7 @@ CDecompressFile::CreateInstance(LPCTSTR fileName, DWORD inputOffset, CQuadWord i
             return NULL;
         }
     }
-    // naalokujeme buffer pro cteni souboru
+    // allocate a buffer for reading the file
     unsigned char* buffer = (unsigned char*)malloc(BUFSIZE);
     if (buffer == NULL)
     {
@@ -60,11 +60,11 @@ CDecompressFile::CreateInstance(LPCTSTR fileName, DWORD inputOffset, CQuadWord i
         CloseHandle(file);
         return NULL;
     }
-    // precteme prvni blok dat
+    // read the first block of data
     DWORD read;
     if (!ReadFile(file, buffer, BUFSIZE, &read, NULL))
     {
-        // chyba cteni
+        // read error
         char txtbuf[1000];
         int err = GetLastError();
         strcpy(txtbuf, LoadStr(IDS_ERR_FREAD));
@@ -75,34 +75,34 @@ CDecompressFile::CreateInstance(LPCTSTR fileName, DWORD inputOffset, CQuadWord i
         return NULL;
     }
     //
-    // detekujeme kompresni algoritmus
+    // detect the compression algorithm
     //
 
-    // zkusime RPM
+    // try RPM
     CDecompressFile* archive = new CRPM(fileName, file, buffer, read);
     if (archive != NULL && !archive->IsOk() && archive->GetErrorCode() == 0)
     {
         delete archive;
-        // pak gzip
+        // then gzip
         archive = new CGZip(fileName, file, buffer, inputOffset, read, inputSize);
         if (archive != NULL && !archive->IsOk() && archive->GetErrorCode() == 0)
         {
-            // neni to gzip, zkusime compress
+            // not gzip, try compress
             delete archive;
             archive = new CCompress(fileName, file, buffer, read, inputSize);
             if (archive != NULL && !archive->IsOk() && archive->GetErrorCode() == 0)
             {
-                // neni to compress, zkusime bzip
+                // not compress, try bzip
                 delete archive;
                 archive = new CBZip(fileName, file, buffer, inputOffset, read, inputSize);
                 if (archive != NULL && !archive->IsOk() && archive->GetErrorCode() == 0)
                 {
-                    // neni to compress, zkusime lzh
+                    // not compress, try lzh
                     delete archive;
                     archive = new CLZH(fileName, file, buffer, read);
                     if (archive != NULL && !archive->IsOk() && archive->GetErrorCode() == 0)
                     {
-                        // neni to kompresene, berem zakladni tridu
+                        // not compressed, fall back to the base class
                         delete archive;
                         archive = new CDecompressFile(fileName, file, buffer, inputOffset, read, inputSize);
                     }
@@ -136,7 +136,7 @@ CDecompressFile::CDecompressFile(const char* filename, HANDLE file, unsigned cha
 
     if (CQuadWord(0, 0) == inputSize)
     {
-        // zjistime velikost fajlu
+        // determine the file size
         DWORD SizeLow, SizeHigh;
         SizeLow = GetFileSize(File, &SizeHigh);
         InputSize.Set(SizeLow, SizeHigh);
@@ -168,38 +168,38 @@ void CDecompressFile::SetOldName(char* oldName)
     OldName = _strdup(oldName);
 }
 
-// nacte ze vstupniho souboru blok
+// reads a block from the input file
 const unsigned char*
 CDecompressFile::FReadBlock(unsigned int number)
 {
     if (!Ok)
     {
-        TRACE_E("Volani ReadBlock na vadnem streamu.");
+        TRACE_E("ReadBlock called on a broken stream.");
         return NULL;
     }
 
-    // mame dost velky buffer ?
+    // do we have a large enough buffer?
     if (number > BUFSIZE)
     {
-        TRACE_E("Pozadovan prilis velky blok.");
+        TRACE_E("Requested block is too large.");
         Ok = FALSE;
         ErrorCode = IDS_ERR_INTERNAL;
         return NULL;
     }
-    // jestlize jsme na konci bufferu, musime ho reinicializovat
+    // if we are at the end of the buffer, reinitialize it
     if (DataEnd == DataStart && DataStart == Buffer + BUFSIZE)
     {
         DataEnd = Buffer;
         DataStart = Buffer;
     }
-    // jestlize nemame dost kontinualniho mista, srazime buffer
+    // if there is not enough contiguous space, compact the buffer
     if (BUFSIZE - (DataStart - Buffer) < (int)number)
     {
         memmove(Buffer, DataStart, DataEnd - DataStart);
         DataEnd = Buffer + (DataEnd - DataStart);
         DataStart = Buffer;
     }
-    // jestlize nemame dostatek dat k dispozici, doplnime buffer
+    // if there is not enough data available, refill the buffer
     if (DataEnd == DataStart || (unsigned int)(DataEnd - DataStart) < number)
     {
         DWORD read = (DWORD)(Buffer + BUFSIZE - DataEnd);
@@ -211,14 +211,14 @@ CDecompressFile::FReadBlock(unsigned int number)
 
         if (!ReadFile(File, DataEnd, read, &read, NULL))
         {
-            // chyba cteni
+            // read error
             Ok = FALSE;
             ErrorCode = IDS_ERR_FREAD;
             LastError = GetLastError();
             return NULL;
         }
         DataEnd += read;
-        // nacetli jsme dostatek dat ?
+        // did we read enough data?
         if ((unsigned int)(DataEnd - DataStart) < number)
         {
             ErrorCode = IDS_ERR_EOF;
@@ -227,23 +227,23 @@ CDecompressFile::FReadBlock(unsigned int number)
         }
     }
     unsigned char* ret = DataStart;
-    // upravime ukazatele
+    // adjust the pointers
     DataStart += number;
     StreamPos += CQuadWord(number, 0);
-    // a vratime vysledek
+    // and return the result
     return ret;
 }
 
-// nacte ze vstupniho souboru 1 byte
+// reads one byte from the input file
 unsigned char
 CDecompressFile::FReadByte()
 {
     if (!Ok)
     {
-        TRACE_E("Volani ReadByte na vadnem streamu.");
+        TRACE_E("ReadByte called on a broken stream.");
         return 0;
     }
-    // jestlize je buffer prazdny, naplnime ho
+    // if the buffer is empty, fill it
     if (DataEnd - DataStart < 1)
     {
         DataStart = Buffer;
@@ -256,23 +256,23 @@ CDecompressFile::FReadByte()
         }
         if (!ReadFile(File, DataStart, BUFSIZE, &read, NULL))
         {
-            // chyba cteni
+            // read error
             Ok = FALSE;
             ErrorCode = IDS_ERR_FREAD;
             LastError = GetLastError();
             return 0;
         }
         DataEnd = Buffer + read;
-        // nacetli jsme dostatek dat ?
+        // did we read enough data?
         if (read < 1)
         {
-            // mame stale mene, nez je treba - chyba
+            // we still have less than required - error
             Ok = FALSE;
             ErrorCode = IDS_ERR_EOF;
             return 0;
         }
     }
-    // upravime ukazatele
+    // adjust the pointers
     ++StreamPos;
     return *(DataStart++);
 }
@@ -282,14 +282,14 @@ CDecompressFile::GetOldName()
 {
     if (OldName == NULL)
     {
-        // vytvorime jmeno puvodniho souboru - pouzijeme jen jmeno, bez cesty
+        // create the original file name - use only the name without the path
         const char* begin = FileName + strlen(FileName);
         while (begin >= FileName && *begin != '\\' && *begin != '/')
             begin--;
         begin++;
-        // odrizneme priponu
+        // cut off the extension
         const char* end = strrchr(begin, '.');
-        if (end == NULL) // ".cvspass" ve Windows je pripona
+        if (end == NULL) // ".cvspass" counts as an extension in Windows
             end = begin + strlen(begin);
         OldName = (char*)malloc(end - begin + 1);
         if (OldName == NULL)
@@ -304,9 +304,9 @@ CDecompressFile::GetOldName()
     return OldName;
 }
 
-// slouzi k vraceni prave prectenych dat k novemu pouziti u kompreseneho streamu
-// nedokaze vratit vic, nez posledni nacteny blok (drivejsi data uz nemusi
-// byt vubec v pameti)
+// returns the last read data for reuse with the compressed stream
+// it cannot return more than the last loaded block (earlier data may
+// no longer be in memory)
 void CDecompressFile::Rewind(unsigned short size)
 {
     if (DataStart - size >= Buffer)
@@ -316,7 +316,7 @@ void CDecompressFile::Rewind(unsigned short size)
     }
     else
     {
-        TRACE_E("Rewind - pozadovan navrat o prilis velky kus.");
+        TRACE_E("Rewind - requested rewind by too large a portion.");
         SalamanderGeneral->ShowMessageBox(LoadStr(IDS_ERR_INTERNAL), LoadStr(IDS_GZERR_TITLE),
                                           MSGBOX_ERROR);
         Ok = FALSE;
@@ -324,7 +324,7 @@ void CDecompressFile::Rewind(unsigned short size)
     }
 }
 
-// public funkce pro cteni ze vstupu (s pripadnou dekompresi)
+// public function for reading from the input (with optional decompression)
 const unsigned char*
 CDecompressFile::GetBlock(unsigned short size, unsigned short* read /* = NULL*/)
 {
@@ -336,7 +336,7 @@ CDecompressFile::GetBlock(unsigned short size, unsigned short* read /* = NULL*/)
 
 void CDecompressFile::GetFileInfo(FILETIME& lastWrite, CQuadWord& fileSize, DWORD& fileAttr)
 {
-    TRACE_E("Volani GetFileInfo na necompresenem streamu.");
+    TRACE_E("GetFileInfo called on an uncompressed stream.");
     memset(&lastWrite, 0, sizeof(FILETIME));
     fileSize.Set(0, 0);
     fileAttr = 0;
@@ -349,11 +349,11 @@ void CDecompressFile::GetFileInfo(FILETIME& lastWrite, CQuadWord& fileSize, DWOR
 
 CZippedFile::CZippedFile(const char* filename, HANDLE file, unsigned char* buffer, unsigned long start, unsigned long read, CQuadWord inputSize) : CDecompressFile(filename, file, buffer, start, read, inputSize), Window(NULL), ExtrStart(NULL), ExtrEnd(NULL)
 {
-    // pokud neprosel konstruktor parenta, balime to rovnou
+    // if the parent constructor failed, bail out immediately
     if (!Ok)
         return;
 
-    // alokujeme circular buffer
+    // allocate a circular buffer
     Window = (unsigned char*)malloc(BUFSIZE);
     if (Window == NULL)
     {
@@ -373,16 +373,16 @@ CZippedFile::~CZippedFile()
         free(Window);
 }
 
-// slouzi k vraceni prave prectenych dat k novemu pouziti u kompreseneho streamu
-// nedokaze vratit vic, nez posledni nacteny blok (drivejsi data uz nemusi
-// byt vubec v pameti)
+// returns the last read data for reuse with the compressed stream
+// it cannot return more than the last loaded block (earlier data may
+// no longer be in memory)
 void CZippedFile::Rewind(unsigned short size)
 {
     if (ExtrStart - size >= Window)
         ExtrStart -= size;
     else
     {
-        TRACE_E("Rewind - pozadovan navrat o prilis velky kus.");
+        TRACE_E("Rewind - requested rewind by too large a portion.");
         Ok = FALSE;
         ErrorCode = IDS_ERR_INTERNAL;
     }
@@ -392,15 +392,15 @@ BOOL CZippedFile::CompactBuffer()
 {
     CALL_STACK_MESSAGE1("CZippedFile::CompactBuffer()");
     unsigned int old = (unsigned int)(ExtrStart - Window);
-    // musime soupnout datama tak, abychom meli dost mista
+    // we have to shift the data so that we have enough space
     memmove(Window, ExtrStart, BUFSIZE - old);
-    // a updatni ukazatele
+    // and update the pointers
     ExtrEnd -= old;
     ExtrStart = Window;
     return TRUE;
 }
 
-// public funkce pro cteni ze vstupu (s pripadnou dekompresi)
+// public function for reading from the input (with optional decompression)
 const unsigned char*
 CZippedFile::GetBlock(unsigned short size, unsigned short* read /* = NULL*/)
 {
@@ -411,20 +411,20 @@ CZippedFile::GetBlock(unsigned short size, unsigned short* read /* = NULL*/)
         Ok = FALSE;
         return NULL;
     }
-    // mame v bufferu potrebny pocet bajtu ?
+    // do we have the required number of bytes in the buffer?
     if (ExtrStart == ExtrEnd || ExtrEnd - ExtrStart < size)
     {
-        // vycistili jsme cely buffer...
+        // we emptied the entire buffer...
         if (ExtrStart == ExtrEnd && ExtrStart == Window + BUFSIZE)
         {
             ExtrStart = Window;
             ExtrEnd = Window;
         }
-        // mame dost kontinualniho mista ?
+        // do we have enough contiguous space?
         if (Window + BUFSIZE - ExtrStart < size)
             if (!CompactBuffer())
                 return NULL;
-        // decompress block do bufferu
+        // decompress the block into the buffer
         if (!DecompressBlock(size) || ExtrEnd - ExtrStart < size)
         {
             if (read != NULL)
@@ -435,7 +435,7 @@ CZippedFile::GetBlock(unsigned short size, unsigned short* read /* = NULL*/)
     if (read != NULL)
         *read = (unsigned short)(ExtrEnd - ExtrStart);
     unsigned char* ret = ExtrStart;
-    // size bajtu bude pouzito...
+    // size bytes will be consumed...
     ExtrStart += size;
     return ret;
 }
@@ -444,9 +444,9 @@ void CZippedFile::GetFileInfo(FILETIME& lastWrite, CQuadWord& fileSize, DWORD& f
 {
     CALL_STACK_MESSAGE1("CZippedFile::GetFileInfo(,,)");
 
-    // neni, jak zjistit velikost souboru v archivu krome dekomprese - dame nulu
+    // there is no way to determine the file size in the archive without decompression - return zero
     fileSize.Set(0, 0);
-    // ostatni prevezmeme ze souboru s archivem
+    // take the rest from the archive file
     BY_HANDLE_FILE_INFORMATION fileinfo;
     if (GetFileInformationByHandle(File, &fileinfo))
     {

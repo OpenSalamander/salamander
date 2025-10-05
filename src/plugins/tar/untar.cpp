@@ -15,7 +15,7 @@
 //
 // ****************************************************************************
 //
-// Pomocne funkce
+// Helper functions
 //
 // ****************************************************************************
 //
@@ -95,7 +95,7 @@ int TxtToQuad(const unsigned char* txt, CQuadWord& result)
     return TAR_OK;
 }
 
-// prevod z oktalove soustavy
+// conversion from the octal numeral system
 BOOL FromOctalQ(const unsigned char* ptr, const int length, CQuadWord& result)
 {
     CALL_STACK_MESSAGE_NONE
@@ -162,7 +162,7 @@ void SCommonHeader::Initialize()
 //
 // ****************************************************************************
 //
-// Public funkce
+// Public functions
 //
 // ****************************************************************************
 //
@@ -171,7 +171,7 @@ CArchive::CArchive(const char* fileName, CSalamanderForOperationsAbstract* salam
 {
     CALL_STACK_MESSAGE2("CArchive::CArchive(%s, )", fileName);
 
-    // inicializace
+    // initialization
     Offset.Set(0, 0);
     Silent = 0;
     Ok = TRUE;
@@ -182,9 +182,9 @@ CArchive::CArchive(const char* fileName, CSalamanderForOperationsAbstract* salam
         Ok = FALSE;
         return;
     }
-    // otevreme vstupni soubor a zjistime, je-li kompresenej
+    // open the input file and determine whether it is compressed
     Stream = CDecompressFile::CreateInstance(fileName, offset, inputSize);
-    // zkontrolujem stream
+    // verify the stream
     if (Stream == NULL || !Stream->IsOk())
     {
         Ok = FALSE;
@@ -195,7 +195,7 @@ CArchive::CArchive(const char* fileName, CSalamanderForOperationsAbstract* salam
 CArchive::~CArchive()
 {
     CALL_STACK_MESSAGE1("CArchive::~CArchive()");
-    // uz muzeme zavrit archiv
+    // we can now close the archive
     if (Stream != NULL)
         delete Stream;
 }
@@ -207,13 +207,13 @@ BOOL CArchive::ListArchive(const char* prefix, CSalamanderDirectoryAbstract* dir
     if (!IsOk())
         return FALSE;
 
-    // nejprve se pokusime detekovat archiv a nacist prvni header
+    // first try to detect the archive and read the first header
     Silent = 0;
     Offset.Set(0, 0);
     SCommonHeader header;
     int ret = ReadArchiveHeader(header, TRUE);
 
-    // pokud to neni podporovany format, vybalime jen vnejsi kompresi, pokud je
+    // if this is not a supported format, unpack only the outer compression when present
     if (ret == TAR_NOTAR)
         if (Stream->IsCompressed())
             return ListStream(dir);
@@ -232,10 +232,10 @@ BOOL CArchive::ListArchive(const char* prefix, CSalamanderDirectoryAbstract* dir
         return FALSE;
     }
 
-    // mame archiv, muzeme pokracovat - dekodujeme vsechny soubory z archivu
+    // we have an archive, so proceed - decode all files from the archive
     for (;;)
     {
-        // pokud to, co jsme nasli, neumime interpretovat, tak to ignorujeme
+        // ignore entries we cannot interpret
         if (!header.Ignored)
         {
             char path[2 * MAX_PATH];
@@ -246,11 +246,11 @@ BOOL CArchive::ListArchive(const char* prefix, CSalamanderDirectoryAbstract* dir
                 if (header.Path)
                     strcat(path, header.Path);
             }
-            // a pridame bud novy soubor, nebo adresar
+            // add either a new file or a directory
             if (!header.IsDir)
             {
-                // TODO: pridat i user data s pozici souboru v archivu pro oddeleni stejne pojmenovanych souboru
-                // je to soubor, pridame soubor
+                // TODO: also add user data with the file position inside the archive to separate identically named files
+                // this is a file, add the file
                 if (!dir->AddFile(prefix ? path : header.Path, header.FileInfo, NULL))
                 {
                     SalamanderGeneral->ShowMessageBox(LoadStr(IDS_TARERR_FDATA), LoadStr(IDS_TARERR_TITLE),
@@ -260,8 +260,8 @@ BOOL CArchive::ListArchive(const char* prefix, CSalamanderDirectoryAbstract* dir
             }
             else
             {
-                // TODO: pridat i user data s pozici souboru v archivu pro oddeleni stejne pojmenovanych souboru
-                // je to adresar, pridame adresar
+                // TODO: also add user data with the file position inside the archive to separate identically named files
+                // this is a directory, add the directory
                 if (!dir->AddDir(prefix ? path : header.Path, header.FileInfo, NULL))
                 {
                     SalamanderGeneral->ShowMessageBox(LoadStr(IDS_TARERR_FDATA), LoadStr(IDS_TARERR_TITLE),
@@ -269,11 +269,11 @@ BOOL CArchive::ListArchive(const char* prefix, CSalamanderDirectoryAbstract* dir
                     return FALSE;
                 }
             }
-            // nastavime na null, abychom nahodou nedealokovali predanou pamet
+            // set to null so we do not accidentally free the passed memory
             header.FileInfo.Name = NULL;
         }
 
-        // precteme data, abychom byli na dalsim souboru
+        // read the data so that we advance to the next file
         ret = WriteOutData(header, NULL, NULL, TRUE, FALSE);
 
         if (ret != TAR_OK)
@@ -283,11 +283,11 @@ BOOL CArchive::ListArchive(const char* prefix, CSalamanderDirectoryAbstract* dir
             return (ret == TAR_EOF) ? TRUE : FALSE;
         }
 
-        // pripravime novy header pro dalsi kolo
+        // prepare a new header for the next iteration
         if (ReadArchiveHeader(header, FALSE) != TAR_OK)
             return FALSE;
 
-        // mame konec archivu, koncime, jde jen o to jak
+        // reached the end of the archive; finish appropriately
         if (header.Finished)
             return TRUE;
     }
@@ -301,12 +301,12 @@ BOOL CArchive::UnpackOneFile(const char* nameInArchive, const CFileData* fileDat
     if (!IsOk())
         return FALSE;
 
-    // nejprve se pokusime detekovat archiv a nacist prvni header
+    // first try to detect the archive and read the first header
     Silent = 0;
     Offset.Set(0, 0);
     SCommonHeader header;
     int ret = ReadArchiveHeader(header, TRUE);
-    // pokud to neni podporovany format, vybalime jen vnejsi kompresi, pokud je
+    // if this is not a supported format, unpack only the outer compression when present
     if (ret == TAR_NOTAR && Stream->IsCompressed())
         return UnpackStream(targetPath, FALSE, nameInArchive, NULL, newFileName);
     if (ret != TAR_OK)
@@ -317,11 +317,11 @@ BOOL CArchive::UnpackOneFile(const char* nameInArchive, const CFileData* fileDat
         return FALSE;
     }
     BOOL found = FALSE;
-    // mame archiv, muzeme pokracovat - dekodujeme vsechny soubory z archivu
+    // we have an archive, so proceed - decode all files from the archive
     for (;;)
     {
         found = !strcmp(header.Name, nameInArchive);
-        // pokud, to co jsme nasli, neumime interpretovat, tak to ignorujeme, jinak vybalime soubor
+        // if we cannot interpret what we found, skip it; otherwise extract the file
         // What we don't support (everything except files & dirs) has zero size and Ignored set.
         // This new condition unlike the old one also extracts empty files.
         ret = WriteOutData(header, targetPath, newFileName ? newFileName : header.FileInfo.Name,
@@ -338,19 +338,19 @@ BOOL CArchive::UnpackOneFile(const char* nameInArchive, const CFileData* fileDat
             }
             return FALSE;
         }
-        // pokud jsme nasli, muzem koncit
+        // if we found it, we can finish
         if (found)
             return TRUE;
-        // pripravime novy header pro dalsi kolo
+        // prepare a new header for the next iteration
         if (ReadArchiveHeader(header, FALSE) != TAR_OK)
             return FALSE;
-        // mame konec archivu, koncime, jde jen o to jak
+        // reached the end of the archive; finish appropriately
         if (header.Finished)
             return FALSE;
     }
 }
 
-// extrakce vybranych souboru
+// extraction of selected files
 BOOL CArchive::UnpackArchive(const char* targetPath, const char* archiveRoot,
                              SalEnumSelection next, void* param)
 {
@@ -359,7 +359,7 @@ BOOL CArchive::UnpackArchive(const char* targetPath, const char* archiveRoot,
     if (!IsOk())
         return FALSE;
 
-    // inicializace vybalovanych jmen
+    // initialize the names to extract
     const char* curName;
     BOOL isDir;
     CQuadWord size;
@@ -387,12 +387,12 @@ BOOL CArchive::UnpackArchive(const char* targetPath, const char* archiveRoot,
             names.AddName(curName, isDir, NULL, NULL);
         totalSize = totalSize + size;
     }
-    // kontrola volneho mista, predpokladam, ze TestFreeSpace vyhodi patricnou hlasku
+    // check free space; assume TestFreeSpace displays an appropriate message
     if (!SalamanderGeneral->TestFreeSpace(SalamanderGeneral->GetMsgBoxParent(),
                                           targetPath, totalSize, LoadStr(IDS_TARERR_HEADER)))
         return FALSE;
 
-    // a vlastni vybaleni podle jmen
+    // perform the actual extraction by the collected names
     return DoUnpackArchive(targetPath, archiveRoot, names);
 }
 
@@ -403,7 +403,7 @@ BOOL CArchive::UnpackWholeArchive(const char* mask, const char* targetPath)
     if (!IsOk())
         return FALSE;
 
-    // inicializace seznamu jmen k vybaleni podle zadaneho seznamu masek
+    // initialize the list of names to extract according to the provided mask list
     CNames names;
     char* tmp = (char*)malloc(strlen(mask) + 1);
     if (tmp == NULL)
@@ -432,14 +432,14 @@ BOOL CArchive::UnpackWholeArchive(const char* mask, const char* targetPath)
     }
     free(tmp);
 
-    // a ted vlastni vybaleni
+    // and now perform the actual extraction
     return DoUnpackArchive(targetPath, NULL, names);
 }
 
 //
 // ****************************************************************************
 //
-// Interni funkce
+// Internal functions
 //
 // ****************************************************************************
 //
@@ -453,12 +453,12 @@ BOOL CArchive::DoUnpackArchive(const char* targetPath, const char* archiveRoot, 
 
     CQuadWord filePos, sizeDelta;
     filePos = Stream->GetStreamPos();
-    // nejprve se pokusime detekovat archiv a nacist prvni header
+    // first try to detect the archive and read the first header
     Silent = 0;
     Offset.Set(0, 0);
     SCommonHeader header;
     int ret = ReadArchiveHeader(header, TRUE);
-    // pokud to neni podporovany format, vybalime jen vnejsi kompresi, pokud je
+    // if this is not a supported format, unpack only the outer compression when present
     if (ret == TAR_NOTAR && Stream->IsCompressed())
         return UnpackStream(targetPath, TRUE, NULL, &names, NULL);
     if (ret != TAR_OK)
@@ -468,30 +468,30 @@ BOOL CArchive::DoUnpackArchive(const char* targetPath, const char* archiveRoot, 
         SalamanderGeneral->ShowMessageBox(LoadStr(IDS_TARERR_NOTFOUND), LoadStr(IDS_TARERR_TITLE), MSGBOX_ERROR);
         return FALSE;
     }
-    // otevreme progress bar
+    // open the progress dialog
     SalamanderIf->OpenProgressDialog(LoadStr(IDS_UNPACKPROGRESS_TITLE), FALSE, NULL, FALSE);
     SalamanderIf->ProgressSetTotalSize(Stream->GetStreamSize(), CQuadWord(-1, -1));
-    // updatneme progress po precteni headeru
+    // update the progress after reading the header
     sizeDelta = filePos;
     filePos = Stream->GetStreamPos();
     sizeDelta = filePos - sizeDelta;
     if (!SalamanderIf->ProgressAddSize((int)sizeDelta.Value, TRUE))
     {
-        // osetrime cancel
+        // handle cancel
         SalamanderIf->CloseProgressDialog();
         return FALSE;
     }
-    // mame archiv, muzeme pokracovat - dekodujeme vsechny soubory z archivu
+    // we have an archive, so proceed - decode all files from the archive
     for (;;)
     {
-        // zjistime, je-li to "nas" soubor
+        // determine whether this is "our" file
         BOOL found = names.IsNamePresent(header.Name);
-        // jak se ma jmenovat vytvareny soubor? (relativni cesta)
+        // what should be the name of the created file? (relative path)
         char* ptr = header.Name;
         if (found && !header.Ignored && archiveRoot != NULL)
             ptr += strlen(archiveRoot);
 
-        // pokud to, co jsme nasli neumime interpretovat, tak to ignorujeme, jinak vybalime soubor
+        // if we cannot interpret what we found, skip it; otherwise extract the file
         // What we don't support (everything except files & dirs) has zero size and Ignored set.
         // This new condition unlike the old one also extracts empty files.
         ret = WriteOutData(header, targetPath, ptr, (header.Ignored || !found), TRUE);
@@ -501,25 +501,25 @@ BOOL CArchive::DoUnpackArchive(const char* targetPath, const char* archiveRoot, 
             return (ret == TAR_EOF) ? TRUE : FALSE;
         }
 
-        // progress jsme posouvali pri rozbalovani, ted to jen vzit na vedomi
+        // progress was advanced during extraction, just acknowledge it here
         filePos = Stream->GetStreamPos();
-        // pripravime novy header pro dalsi kolo
+        // prepare a new header for the next iteration
         if (ReadArchiveHeader(header, FALSE) != TAR_OK)
         {
             SalamanderIf->CloseProgressDialog();
             return FALSE;
         }
-        // posuneme progress o precteny header
+        // advance the progress by the size of the read header
         sizeDelta = filePos;
         filePos = Stream->GetStreamPos();
         sizeDelta = filePos - sizeDelta;
         if (!SalamanderIf->ProgressAddSize((int)sizeDelta.Value, TRUE))
         {
-            // osetrime cancel
+            // handle cancel
             SalamanderIf->CloseProgressDialog();
             return FALSE;
         }
-        // mame konec archivu, koncime
+        // reached the end of the archive, stop
         if (header.Finished)
         {
             SalamanderIf->CloseProgressDialog();
@@ -534,7 +534,7 @@ void CArchive::MakeFileInfo(const SCommonHeader& header, char* arcfiledata, char
 
     if (header.IsDir)
     {
-        // u adresare nas tohle nezajima
+        // this does not matter for directories
         arcfiledata[0] = '\0';
         arcfilename[0] = '\0';
     }
@@ -567,7 +567,7 @@ int CArchive::WriteOutData(const SCommonHeader& header, const char* targetPath,
     HANDLE file;
     if (!simulate || doProgress)
     {
-        // zkonstruujeme jmeno
+        // construct the name of the extracted item
         extractedName = (char*)malloc(strlen(targetPath) + 1 + strlen(targetName) + 1);
         if (extractedName == NULL)
         {
@@ -579,7 +579,7 @@ int CArchive::WriteOutData(const SCommonHeader& header, const char* targetPath,
         if (extractedName[strlen(extractedName) - 1] != '\\')
             strcat(extractedName, "\\");
         strcat(extractedName, (targetName[0] == '\\' ? 1 : 0) + targetName);
-        // vytvorime novy soubor
+        // create the new file
         char arcfiledata[500];
         char arcfilename[500];
         MakeFileInfo(header, arcfiledata, arcfilename);
@@ -588,7 +588,7 @@ int CArchive::WriteOutData(const SCommonHeader& header, const char* targetPath,
             file = SalamanderSafeFile->SafeFileCreate(extractedName, GENERIC_WRITE, 0, FILE_ATTRIBUTE_NORMAL,
                                                       header.IsDir, SalamanderGeneral->GetMainWindowHWND(),
                                                       arcfilename, arcfiledata, &Silent, TRUE, &toSkip, NULL, 0, NULL, NULL);
-            // pri jakemkoli problemu koncime
+            // abort on any problem
             if (file == INVALID_HANDLE_VALUE)
             {
                 if (toSkip)
@@ -600,7 +600,7 @@ int CArchive::WriteOutData(const SCommonHeader& header, const char* targetPath,
                 }
             }
         }
-        // updatneme nazev souboru v progressu
+        // update the file name in the progress dialog
         if (doProgress)
         {
             char progresstxt[1000];
@@ -616,17 +616,17 @@ int CArchive::WriteOutData(const SCommonHeader& header, const char* targetPath,
     CQuadWord size(0, 0);
     CQuadWord filePos, sizeDelta;
     filePos = Stream->GetStreamPos();
-    // pokud jde o tar a header je extended, musime zpracovat extenze
-    // TODO: pokud extended header obsabuje dlouhe jmeno, musime ho zpracovat
-    //   u pri cteni headeru, tady uz jen ridke fajly
-    // TODO: a vubec to bude chtit rozsirit zjistovani typu u taru
+    // if this is a tar archive with an extended header, process the extensions
+    // TODO: if the extended header contains a long name we must handle it
+    //   while reading the header; only sparse files should remain here
+    // TODO: in general extend tar type detection too
     if (header.IsExtendedTar)
     {
-        // TODO: tohle bude chtit protestovat
+        // TODO: this still needs more thorough handling
         const TTarBlock* tarHeader;
         do
         {
-            // nacteme dalsi blok
+            // read the next block
             tarHeader = (const TTarBlock*)Stream->GetBlock(BLOCKSIZE);
             if (tarHeader == NULL)
             {
@@ -655,7 +655,7 @@ int CArchive::WriteOutData(const SCommonHeader& header, const char* targetPath,
             }
             if (!simulate)
             {
-                // TODO: Tady je potreba zpracovat extended headery podle jejich typu
+                // TODO: process extended headers according to their specific type here
                 /*
         DWORD written;
         if (!WriteFile(file, buffer, toRead, &written, NULL) || written != toRead)
@@ -675,16 +675,16 @@ int CArchive::WriteOutData(const SCommonHeader& header, const char* targetPath,
         }
         */
             }
-            // updatneme progress, pokud je to treba
+            // update the progress if necessary
             if (doProgress)
             {
                 sizeDelta = filePos;
                 filePos = Stream->GetStreamPos();
                 sizeDelta = filePos - sizeDelta;
-                // posuneme progress a osetrime cancel
+                // advance the progress and handle cancellation
                 if (!SalamanderIf->ProgressAddSize((int)sizeDelta.Value, TRUE))
                 {
-                    // osetrime cancel
+                    // handle cancellation
                     if (!simulate)
                     {
                         CloseHandle(file);
@@ -698,7 +698,7 @@ int CArchive::WriteOutData(const SCommonHeader& header, const char* targetPath,
             Offset += CQuadWord(BLOCKSIZE, 0);
         } while (tarHeader->SparseHeader.isextended);
     }
-    // TODO: tady to bude chtit jeste zkontrolovat, jak je to s tou velikosti
+    // TODO: verify once more how the size should be processed here
     size.Set(0, 0);
     while (size < header.FileInfo.Size)
     {
@@ -738,16 +738,16 @@ int CArchive::WriteOutData(const SCommonHeader& header, const char* targetPath,
                 return TAR_ERROR;
             }
         }
-        // updatneme progress, pokud je to treba
+        // update the progress if necessary
         if (doProgress)
         {
             sizeDelta = filePos;
             filePos = Stream->GetStreamPos();
             sizeDelta = filePos - sizeDelta;
-            // posuneme progress a osetrime cancel
+            // advance the progress and handle cancellation
             if (!SalamanderIf->ProgressAddSize((int)sizeDelta.Value, TRUE))
             {
-                // osetrime cancel
+                // handle cancellation
                 if (!simulate)
                 {
                     CloseHandle(file);
@@ -757,7 +757,7 @@ int CArchive::WriteOutData(const SCommonHeader& header, const char* targetPath,
                 return TAR_ERROR;
             }
         }
-        // pokud je to treba, pocitame checksum
+        // compute the checksum when needed
         if (header.Format == e_CRCASCII)
         {
             unsigned long k;
@@ -767,7 +767,7 @@ int CArchive::WriteOutData(const SCommonHeader& header, const char* targetPath,
         size += CQuadWord(toRead, 0);
         Offset += CQuadWord(toRead, 0);
     }
-    // mame-li co, zkontrolujeme checksumy
+    // if possible, verify the checksums
     if (header.Format == e_CRCASCII && !header.Ignored &&
         CQuadWord(checksum, 0) != header.Checksum)
     {
@@ -780,7 +780,7 @@ int CArchive::WriteOutData(const SCommonHeader& header, const char* targetPath,
         }
         return TAR_ERROR;
     }
-    // nastavime vlastnosti u vytvoreneho souboru
+    // set the properties of the created file
     if (!simulate)
     {
         if (!header.IsDir)
@@ -800,20 +800,20 @@ int CArchive::WriteOutData(const SCommonHeader& header, const char* targetPath,
         }
         SetFileAttributes(extractedName, header.FileInfo.Attr);
     }
-    // jmeno uz neni potreba
+    // the name is no longer needed
     if (!simulate || doProgress)
         free(extractedName);
 
-    // a zarovname vstup na cele bloky
+    // align the input to whole blocks
     int ret = SkipBlockPadding(header);
 
-    // updatneme progress, pokud je to treba
+    // update the progress if necessary
     if (doProgress)
     {
         sizeDelta = filePos;
         filePos = Stream->GetStreamPos();
         sizeDelta = filePos - sizeDelta;
-        // posuneme progress a osetrime cancel
+        // advance the progress and handle cancel
         if (!SalamanderIf->ProgressAddSize((int)sizeDelta.Value, TRUE))
             return TAR_ERROR;
     }
@@ -837,7 +837,7 @@ int CArchive::WriteOutData(const SCommonHeader& header, const char* targetPath,
     return ret;
 } /* CArchive::WriteOutData */
 
-// preskoci nepouzity zbytek bloku na zacatek dalsiho, platneho
+// skip the unused remainder of the block to reach the next valid one
 int CArchive::SkipBlockPadding(const SCommonHeader& header)
 {
     CALL_STACK_MESSAGE_NONE
@@ -871,20 +871,20 @@ int CArchive::SkipBlockPadding(const SCommonHeader& header)
     return TAR_OK;
 } /* CArchive::SkipBlockPadding */
 
-// nacte header bloku v archivu (s autodetekci typu)
+// reads a block header in the archive (with type auto-detection)
 int CArchive::ReadArchiveHeader(SCommonHeader& header, BOOL probe)
 {
     SLOW_CALL_STACK_MESSAGE2("CArchive::ReadArchiveHeader(, %d)", probe);
 
-    // radeji hned vycistime strukturu
+    // clear the structure right away
     header.Initialize();
-    // pokusime se nacist maximalni velikost - header taru
+    // try to read the maximum size - the tar header
     unsigned short preRead = BLOCKSIZE;
     const unsigned char* buffer = Stream->GetBlock(preRead);
 
     if (buffer == NULL)
     {
-        // asi nemame tolik dat, vezmem zavdek velikosti "magic" cisla cpio
+        // apparently we do not have enough data; settle for the size of the cpio "magic" number
         if (Stream->IsOk())
         {
             unsigned short available = 0;
@@ -906,7 +906,7 @@ int CArchive::ReadArchiveHeader(SCommonHeader& header, BOOL probe)
                 // Not able to read anything: try some heuristics
                 if ((Stream->GetStreamSize() == Stream->GetStreamPos()) && (Stream->GetStreamSize() > CQuadWord(0, 0)))
                 {
-                    // TAR: parsed everything; Looks like there is missing terminating empty block
+                // TAR: parsed everything; looks like the terminating empty block is missing
                     header.Finished = TRUE;
                     return TAR_OK;
                 }
@@ -916,13 +916,13 @@ int CArchive::ReadArchiveHeader(SCommonHeader& header, BOOL probe)
                 Stream->GetFileInfo(lastWrite, fileSize, fileAttr);
                 if (fileSize == Offset)
                 {
-                    // TAR+GZIP: decompressed as many data as it is stated at the end
+                    // TAR+GZIP: decompressed as much data as stated at the end
                     header.Finished = TRUE;
                     return TAR_OK;
                 }
             }
         }
-        // kdyz neprectem ani to, muzem se jit klouzat...
+        // if we cannot read even that, it is time to give up
         if (buffer == NULL)
         {
             if (!Stream->IsOk())
@@ -935,7 +935,7 @@ int CArchive::ReadArchiveHeader(SCommonHeader& header, BOOL probe)
         }
     }
 
-    // a zkontrolujem typ archivu (po tomto kroku jsou v header strukture platne polozky Format a pro tar i Finished)
+    // determine the archive type (after this step the header structure contains a valid Format and, for tar, Finished)
     GetArchiveType(buffer, preRead, header);
 
     // File starting with 512 zeros is automatically recognized by IsTarHeader as finished e_TarPosix.
@@ -943,10 +943,10 @@ int CArchive::ReadArchiveHeader(SCommonHeader& header, BOOL probe)
     if (probe && (header.Format == e_TarPosix) && header.Finished)
         header.Format = e_Unknown;
 
-    // neznamy archiv - balime to
+    // unknown archive - abort processing
     if (header.Format == e_Unknown)
     {
-        // vratime, co nam nepatri
+        // return the data we should not consume
         Stream->Rewind(preRead);
         if (!Stream->IsOk())
         {
@@ -954,21 +954,21 @@ int CArchive::ReadArchiveHeader(SCommonHeader& header, BOOL probe)
                                               LoadStr(IDS_GZERR_TITLE), MSGBOX_ERROR);
             return TAR_ERROR;
         }
-        // a odchod
+        // and exit
         if (!probe)
             SalamanderGeneral->ShowMessageBox(LoadStr(IDS_TARERR_UNKNOWN), LoadStr(IDS_TARERR_TITLE), MSGBOX_ERROR);
         return TAR_NOTAR;
     }
-    // pokud tar skoncil, balime...
+    // if the tar archive has ended, stop processing
     if (header.Finished)
         return TAR_OK;
-    // pokud nepracujeme s tarem, musime vratit zbytek hlavicky
+    // for non-tar formats we must return the rest of the header
     if (header.Format != e_TarPosix &&
         header.Format != e_TarOldGnu &&
         header.Format != e_TarV7)
         Stream->Rewind(preRead - 6);
 
-    // a nacteme header
+    // and read the header
     int ret;
     switch (header.Format)
     {
@@ -992,10 +992,10 @@ int CArchive::ReadArchiveHeader(SCommonHeader& header, BOOL probe)
         SalamanderGeneral->ShowMessageBox(LoadStr(IDS_CPIOERR_FORMAT), LoadStr(IDS_TARERR_TITLE), MSGBOX_ERROR);
         ret = TAR_ERROR;
     }
-    // pri chybe balime
+    // abort when an error occurs
     if (ret != TAR_OK)
         return ret;
-    // zarovnej blok
+    // align the block
     ret = SkipBlockPadding(header);
     if (ret != TAR_OK)
     {
@@ -1008,7 +1008,7 @@ int CArchive::ReadArchiveHeader(SCommonHeader& header, BOOL probe)
         return ret;
     }
 
-    // pro tar uz jsme detekci konce udelali, ted cpio ukonceni, se kterym jsme museli cekat az na nazev
+    // tar already handled end-of-archive detection; for cpio wait until the name is known
     if (header.Format != e_TarPosix && header.Format != e_TarOldGnu &&
         header.Format != e_TarV7 && header.Name != NULL &&
         !strcmp((char*)header.Name, "TRAILER!!!"))
@@ -1016,7 +1016,7 @@ int CArchive::ReadArchiveHeader(SCommonHeader& header, BOOL probe)
         header.Finished = TRUE;
         return TAR_OK;
     }
-    // preparsujeme cestu: odstranime "." a ".." a prevedeme vse na backslashe
+    // normalize the path: remove "." and ".." and convert everything to backslashes
     char* tmpName = (char*)malloc(strlen(header.Name) + 1);
     if (tmpName == NULL)
     {
@@ -1032,7 +1032,7 @@ int CArchive::ReadArchiveHeader(SCommonHeader& header, BOOL probe)
         {
         case '\\':
         case '/':
-            // pokud narazime na slash, kopirujeme pokud to neni prvni znak cesty a pokud uz nejake nemame
+            // when we encounter a slash, copy it if it is not the first path character and we do not have one already
             if (dst > tmpName && *(dst - 1) != '\\')
                 *dst++ = '\\';
             src++;
@@ -1042,7 +1042,7 @@ int CArchive::ReadArchiveHeader(SCommonHeader& header, BOOL probe)
             {
                 char* dstOld = dst;
 
-                // dve tecky - zrusime jednu uroven adresare, pokud je co rusit
+                // two dots - drop one directory level when possible
                 if (dst > tmpName)
                     dst -= 2;
                 while ((dst > tmpName) && (*dst != '\\'))
@@ -1057,28 +1057,28 @@ int CArchive::ReadArchiveHeader(SCommonHeader& header, BOOL probe)
             }
             else if (*(src + 1) == '\\' || *(src + 1) == '/' || *(src + 1) == '\0')
             {
-                // jedna tecka - proste ignorujeme
+                // a single dot - simply ignore it
                 src++;
                 break;
             }
-            // jinak je to zacatek nazvu a nechame to propadnout do kopirovani
+            // otherwise it is the start of the name; fall through to copying
         default:
-            // pokud narazime na pismeno, proste kopirujem az do slashe
+            // copy characters until the next slash
             while (*src != '\0' && *src != '\\' && *src != '/')
                 *dst++ = *src++;
             break;
         }
     }
-    // a zakoncime cilovy retezec
+    // terminate the destination string
     *dst = '\0';
-    // vynechame invalidni nazvy
+    // skip invalid names
     if (tmpName[0] == '\0')
     {
         free(tmpName);
         header.Ignored = TRUE;
         return TAR_OK;
     }
-    // vynechame zaverecne lomitko, ale zapamatujeme si ze tam bylo
+    // skip the trailing slash but remember it was there
     if (dst > tmpName && *(dst - 1) == '\\')
     {
         header.IsDir = TRUE;
@@ -1086,7 +1086,7 @@ int CArchive::ReadArchiveHeader(SCommonHeader& header, BOOL probe)
         *dst = '\0';
     }
 
-    // ulozime nazev misto stareho
+    // store the new name instead of the old one
     free(header.Name);
     header.Name = (char*)malloc(strlen(tmpName) + 1);
     if (header.Name == NULL)
@@ -1098,14 +1098,14 @@ int CArchive::ReadArchiveHeader(SCommonHeader& header, BOOL probe)
     }
     strcpy(header.Name, tmpName);
     free(tmpName);
-    // ted provedeme analyzu nazvu
+    // now analyze the name
     const char* ptr = header.Name + strlen(header.Name) - 1;
-    // najdeme dalsi - oddelime nazev a cestu
+    // find the next separator - split name and path
     while (ptr > header.Name && *ptr != '\\')
         ptr--;
     if (ptr == header.Name)
     {
-        // nenasli jsme, mame jen nazev
+        // nothing found, we only have the name
         header.Path = NULL;
         header.FileInfo.NameLen = strlen(header.Name);
         header.FileInfo.Name = SalamanderGeneral->DupStr(header.Name);
@@ -1118,7 +1118,7 @@ int CArchive::ReadArchiveHeader(SCommonHeader& header, BOOL probe)
     }
     else
     {
-        // nasli jsme, nakopirujeme nazev i cestu
+        // separator found; copy both the name and the path
         header.Path = (char*)malloc(ptr - header.Name + 1);
         if (header.Path == NULL)
         {
@@ -1137,7 +1137,7 @@ int CArchive::ReadArchiveHeader(SCommonHeader& header, BOOL probe)
             return TAR_ERROR;
         }
     }
-    // nastavime priponu
+    // determine the extension
     int sortByExtDirsAsFiles;
     SalamanderGeneral->GetConfigParameter(SALCFG_SORTBYEXTDIRSASFILES, &sortByExtDirsAsFiles,
                                           sizeof(sortByExtDirsAsFiles), NULL);
@@ -1146,34 +1146,34 @@ int CArchive::ReadArchiveHeader(SCommonHeader& header, BOOL probe)
         char* s = header.FileInfo.Name + header.FileInfo.NameLen - 1;
         while (s >= header.FileInfo.Name && *s != '.')
             s--;
-        //    if (s > header.FileInfo.Name)   // ".cvspass" ve Windows je pripona ...
+        //    if (s > header.FileInfo.Name)   // ".cvspass" in Windows counts as an extension...
         if (s >= header.FileInfo.Name)
             header.FileInfo.Ext = s + 1;
         else
             header.FileInfo.Ext = header.FileInfo.Name + header.FileInfo.NameLen;
     }
     else
-        header.FileInfo.Ext = header.FileInfo.Name + header.FileInfo.NameLen; // adresare nemaji pripony
-    // provedeme konverzi informaci o souboru z UNIX do WIN formatu
-    // datum a cas
-    header.MTime.Value += 11644473600;      // 0 je 1.1.1601
-    header.MTime.Value *= 1000 * 1000 * 10; // a prevedeme na desetiny mikrosekund
+        header.FileInfo.Ext = header.FileInfo.Name + header.FileInfo.NameLen; // directories have no extension
+    // convert file information from UNIX to Windows format
+    // date and time
+    header.MTime.Value += 11644473600;      // zero corresponds to 1 Jan 1601
+    header.MTime.Value *= 1000 * 1000 * 10; // and convert to 100-nanosecond units
     header.FileInfo.LastWrite.dwLowDateTime = header.MTime.LoDWord;
     header.FileInfo.LastWrite.dwHighDateTime = header.MTime.HiDWord;
-    // typ souboru od taru uz mame, ted jen cpio
+    // we already have the type from tar, now handle cpio
     if (header.Format != e_TarPosix && header.Format != e_TarOldGnu &&
         header.Format != e_TarV7)
         if ((header.Mode.LoDWord & CP_IFMT) == CP_IFDIR)
             header.IsDir = TRUE;
         else if ((header.Mode.LoDWord & CP_IFMT) != CP_IFREG)
             header.Ignored = TRUE;
-    // atributy
+    // attributes
     header.FileInfo.Attr = FILE_ATTRIBUTE_ARCHIVE;
     if ((header.Mode.LoDWord & 0200) == 0)
         header.FileInfo.Attr |= FILE_ATTRIBUTE_READONLY;
     if (header.IsDir)
         header.FileInfo.Attr |= FILE_ATTRIBUTE_DIRECTORY;
-    // a zbytek
+    // and the rest
     header.FileInfo.DosName = NULL;
     header.FileInfo.Hidden = header.FileInfo.Attr & FILE_ATTRIBUTE_HIDDEN ? 1 : 0;
     if (header.IsDir)
@@ -1181,19 +1181,19 @@ int CArchive::ReadArchiveHeader(SCommonHeader& header, BOOL probe)
     else
         header.FileInfo.IsLink = SalamanderGeneral->IsFileLink(header.FileInfo.Ext);
     header.FileInfo.IsOffline = 0;
-    // TODO: do PluginData nejak musime dostat jednoznacne urceni souboru, treba offset...
-    header.FileInfo.PluginData = -1; // zbytecne, jen tak pro formu
+    // TODO: store an unambiguous file identifier in PluginData, e.g. the offset...
+    header.FileInfo.PluginData = -1; // unnecessary, just for formality
     return TAR_OK;
 } /* CArchive::ReadArchiveHeader */
 
-// provede autodetekci typu bloku v archivu podle obsahu headeru
+// auto-detect the block type in the archive based on the header contents
 void CArchive::GetArchiveType(const unsigned char* buffer, const unsigned short preRead, SCommonHeader& header)
 {
     CALL_STACK_MESSAGE_NONE
     // CALL_STACK_MESSAGE2("CArchive::GetArchiveType(, %hu, )", preRead);
 
     header.Finished = FALSE;
-    // porovname signaturu v bufferu se znamymi vzorky
+    // compare the signature in the buffer with known patterns
     if (!strncmp((const char*)buffer, "070701", 6))
         header.Format = e_NewASCII;
     else if (!strncmp((const char*)buffer, "070702", 6))
@@ -1211,25 +1211,25 @@ void CArchive::GetArchiveType(const unsigned char* buffer, const unsigned short 
         header.Format = e_Unknown;
 }
 
-// precte jmeno souboru z headeru cpio archivu
+// read the file name from the cpio header
 int CArchive::ReadCpioName(unsigned long namesize, SCommonHeader& header)
 {
     CALL_STACK_MESSAGE_NONE
     // CALL_STACK_MESSAGE2("CArchive::ReadCpioName(%lu, )", namesize);
-    // kontrola "rozumnosti" delky nazvu
+    // sanity-check the name length
     if (namesize > 10000)
     {
         SalamanderGeneral->ShowMessageBox(LoadStr(IDS_CPIOERR_HEADER), LoadStr(IDS_TARERR_TITLE), MSGBOX_ERROR);
         return TAR_ERROR;
     }
-    // pripravime misto na nazev
+    // allocate space for the name
     header.Name = (char*)malloc(namesize);
     if (header.Name == NULL)
     {
         SalamanderGeneral->ShowMessageBox(LoadStr(IDS_TARERR_MEMORY), LoadStr(IDS_TARERR_TITLE), MSGBOX_ERROR);
         return TAR_ERROR;
     }
-    // nacteme nazev
+    // read the name
     const unsigned char* buffer = Stream->GetBlock((unsigned short)namesize);
     if (buffer == NULL)
     {
@@ -1237,17 +1237,17 @@ int CArchive::ReadCpioName(unsigned long namesize, SCommonHeader& header)
                                           LoadStr(IDS_TARERR_TITLE), MSGBOX_ERROR);
         return TAR_ERROR;
     }
-    // zkontrolujem, ze delka sedi
+    // ensure the length matches
     if (buffer[namesize - 1] != '\0')
     {
         SalamanderGeneral->ShowMessageBox(LoadStr(IDS_CPIOERR_HEADER), LoadStr(IDS_TARERR_TITLE), MSGBOX_ERROR);
         return TAR_ERROR;
     }
-    // napocitame ofset pro zarovnani
+    // update the offset for alignment
     Offset += CQuadWord(namesize, 0);
-    // kopie nazvu do struktury
+    // copy the name into the structure
     strcpy(header.Name, (const char*)buffer);
-    // a konec
+    // and finish
     return TAR_OK;
 }
 
@@ -1255,7 +1255,7 @@ int CArchive::ReadNewASCIIHeader(SCommonHeader& header)
 {
     CALL_STACK_MESSAGE1("CArchive::ReadNewASCIIHeader( )");
 
-    // nacti zbytek headeru
+    // read the remainder of the header
     const unsigned char* buffer = Stream->GetBlock(13 * 8);
     if (buffer == NULL)
     {
@@ -1264,13 +1264,13 @@ int CArchive::ReadNewASCIIHeader(SCommonHeader& header)
         return TAR_ERROR;
     }
 
-    // napocitame ofset pro zarovnani
+    // update the offset for alignment
     Offset += CQuadWord(6 + 13 * 8, 0);
-    // vytahneme velikost nazvu
+    // extract the name length
     unsigned long namesize;
     if (TxtToLong(buffer + 11 * 8, namesize) != TAR_OK)
         return TAR_ERROR;
-    // a vytahneme podrobnosti o souboru, ktere nas zajimaji
+    // and extract the file details we care about
     if (TxtToQuad(buffer + 1 * 8, header.Mode) != TAR_OK)
         return TAR_ERROR;
     if (TxtToQuad(buffer + 5 * 8, header.MTime) != TAR_OK)
@@ -1279,7 +1279,7 @@ int CArchive::ReadNewASCIIHeader(SCommonHeader& header)
         return TAR_ERROR;
     if (TxtToQuad(buffer + 12 * 8, header.Checksum) != TAR_OK)
         return TAR_ERROR;
-    // nacteme nazev
+    // read the name
     return ReadCpioName(namesize, header);
 }
 
@@ -1287,7 +1287,7 @@ int CArchive::ReadOldASCIIHeader(SCommonHeader& header)
 {
     CALL_STACK_MESSAGE_NONE
     // CALL_STACK_MESSAGE1("CArchive::ReadOldASCIIHeader( )");
-    // nacti zbytek headeru
+    // read the remainder of the header
     const unsigned char* buffer = Stream->GetBlock(70);
     if (buffer == NULL)
     {
@@ -1296,9 +1296,9 @@ int CArchive::ReadOldASCIIHeader(SCommonHeader& header)
         return TAR_ERROR;
     }
 
-    // napocitame ofset pro zarovnani
+    // update the offset for alignment
     Offset += CQuadWord(6 + 70, 0);
-    // vytahneme velikost nazvu
+    // extract the name length
     CQuadWord qnamesize;
     if (!FromOctalQ(buffer + 6 * 7 + 11, 6, qnamesize))
     {
@@ -1307,7 +1307,7 @@ int CArchive::ReadOldASCIIHeader(SCommonHeader& header)
     }
     unsigned long namesize;
     namesize = qnamesize.LoDWord;
-    // a vytahneme podrobnosti o souboru, ktere nas zajimaji
+    // and extract the file details we care about
     if (!FromOctalQ(buffer + 6 * 2, 6, header.Mode))
     {
         SalamanderGeneral->ShowMessageBox(LoadStr(IDS_CPIOERR_HEADER), LoadStr(IDS_TARERR_TITLE), MSGBOX_ERROR);
@@ -1325,14 +1325,14 @@ int CArchive::ReadOldASCIIHeader(SCommonHeader& header)
     }
     header.Checksum.Set(0, 0);
 
-    // nacteme nazev
+    // read the name
     return ReadCpioName(namesize, header);
 }
 
 int CArchive::ReadBinaryHeader(SCommonHeader& header)
 {
     CALL_STACK_MESSAGE1("CArchive::ReadBinaryHeader( )");
-    // nacti zbytek headeru
+    // read the remainder of the header
     const unsigned char* buffer = Stream->GetBlock(20);
     if (buffer == NULL)
     {
@@ -1341,12 +1341,12 @@ int CArchive::ReadBinaryHeader(SCommonHeader& header)
         return TAR_ERROR;
     }
 
-    // napocitame ofset pro zarovnani
+    // update the offset for alignment
     Offset += CQuadWord(6 + 20, 0);
     unsigned long namesize;
     if (header.Format == e_Binary)
     {
-        // vytahneme velikost nazvu
+        // extract the name length
         namesize = *(unsigned short*)(buffer + 2 * 7);
         header.Mode.Set(*(unsigned short*)(buffer + 2 * 0), 0);
         header.MTime.Set((*(unsigned short*)(buffer + 2 * 5) << 16) + *(unsigned short*)(buffer + 2 * 6), 0);
@@ -1354,13 +1354,13 @@ int CArchive::ReadBinaryHeader(SCommonHeader& header)
     }
     else
     {
-        // vytahneme velikost nazvu
+        // extract the name length
         if (!TxtToShort(buffer + 2 * 7, namesize))
         {
             SalamanderGeneral->ShowMessageBox(LoadStr(IDS_CPIOERR_HEADER), LoadStr(IDS_TARERR_TITLE), MSGBOX_ERROR);
             return TAR_ERROR;
         }
-        // a vytahneme podrobnosti o souboru, ktere nas zajimaji
+        // and extract the file details we care about
         unsigned long mode;
         if (!TxtToShort(buffer + 2 * 0, mode))
         {
@@ -1381,18 +1381,18 @@ int CArchive::ReadBinaryHeader(SCommonHeader& header)
     }
     header.Checksum.Set(0, 0);
 
-    // nacteme nazev
+    // read the name
     return ReadCpioName(namesize, header);
 }
 
-// detekuje platny TAR header
+// detect a valid TAR header
 BOOL CArchive::IsTarHeader(const unsigned char* buffer, BOOL& finished, EArchiveFormat& format)
 {
     SLOW_CALL_STACK_MESSAGE1("CArchive::IsTarHeader(, )");
     const TTarBlock* header = (const TTarBlock*)buffer;
     finished = FALSE;
 
-    // zkontrolujeme checksum (signed i unsigned, je v tom bordel)
+    // check the checksum (both signed and unsigned; the format is messy)
     long int signed_checksum = 0;
     long int unsigned_checksum = 0;
     int i;
@@ -1401,15 +1401,15 @@ BOOL CArchive::IsTarHeader(const unsigned char* buffer, BOOL& finished, EArchive
         signed_checksum += (signed char)(header->RawBlock[i]);
         unsigned_checksum += (unsigned char)(header->RawBlock[i]);
     }
-    // pokud je blok plny nul, je to konec archivu
+    // if the block is filled with zeros it marks the end of the archive
     if (unsigned_checksum == 0)
     {
-        // musime priradit aspon nejaky format, abychom meli platny vystup
+        // assign at least some format so the output stays valid
         format = e_TarPosix;
         finished = TRUE;
         return TRUE;
     }
-    // polozky checksumu musime zapocitavat jako mezery
+    // checksum fields must be treated as spaces
     for (i = 0; i < 8; i++)
     {
         signed_checksum -= (signed char)(header->Header.chksum[i]);
@@ -1419,14 +1419,14 @@ BOOL CArchive::IsTarHeader(const unsigned char* buffer, BOOL& finished, EArchive
     signed_checksum += ' ' * s;
     unsigned_checksum += ' ' * s;
 
-    // kontrola, jestli je ok
+    // verify that it matches
     CQuadWord recorded_checksum;
     if (!FromOctalQ((const unsigned char*)header->Header.chksum, s, recorded_checksum))
         return FALSE;
     if (CQuadWord(signed_checksum, 0) != recorded_checksum &&
         CQuadWord(unsigned_checksum, 0) != recorded_checksum)
         return FALSE;
-    // zjisti format archivu
+    // determine the archive format
     if (!strncmp(header->Header.magic, TMAGIC, TMAGLEN))
         format = e_TarPosix;
     else if (!strncmp(header->Header.magic, OLDGNU_MAGIC, OLDGNU_MAGLEN))
@@ -1440,14 +1440,14 @@ int CArchive::ReadTarHeader(const unsigned char* buffer, SCommonHeader& header)
 {
     CALL_STACK_MESSAGE1("CArchive::ReadTarHeader(, )");
 
-    // prvni blok s headerem uz mame nacteny a validovany
+    // the first header block is already read and validated
     const TTarBlock* tarHeader = (const TTarBlock*)buffer;
     Offset += CQuadWord(BLOCKSIZE, 0);
 
     for (;;)
     {
-        // vytahneme velikost dat (TODO: v orig. taru je nula jen LNKTYPE, ostatni
-        // se ctou. Zkontroluj ty ostatni, jestli je to koser)
+        // extract the data size (TODO: in the original tar only LNKTYPE uses zero while the rest are read; check the others for correctness
+        // verify the remaining cases to ensure they are correct)
         if (tarHeader->Header.typeflag == LNKTYPE ||
             tarHeader->Header.typeflag == SYMTYPE ||
             tarHeader->Header.typeflag == DIRTYPE)
@@ -1459,7 +1459,7 @@ int CArchive::ReadTarHeader(const unsigned char* buffer, SCommonHeader& header)
             return TAR_ERROR;
         }
 
-        // zpracujeme dlouha GNU jmena
+        // handle long GNU names
         if (tarHeader->Header.typeflag == GNUTYPE_LONGNAME ||
             tarHeader->Header.typeflag == GNUTYPE_LONGLINK)
         {
@@ -1469,7 +1469,7 @@ int CArchive::ReadTarHeader(const unsigned char* buffer, SCommonHeader& header)
                 SalamanderGeneral->ShowMessageBox(LoadStr(IDS_TARERR_HEADER), LoadStr(IDS_TARERR_TITLE), MSGBOX_ERROR);
                 return TAR_ERROR;
             }
-            // linky ignorujem, bereme jen jmena skutecnych souboru
+            // ignore link entries and keep only actual file names
             if (tarHeader->Header.typeflag == GNUTYPE_LONGNAME)
             {
                 if (header.Name != NULL)
@@ -1497,16 +1497,16 @@ int CArchive::ReadTarHeader(const unsigned char* buffer, SCommonHeader& header)
                 }
                 Offset += CQuadWord(BLOCKSIZE, 0);
                 DWORD rest = BLOCKSIZE < toread ? BLOCKSIZE : toread;
-                // linky ignorujem
+                // ignore long-name link entries
                 if (typeFlag == GNUTYPE_LONGNAME)
                     memcpy(header.Name + offs, ptr, rest);
                 offs += rest;
                 toread -= rest;
             }
-            // a zakoncime nulou...
+            // terminate with a null character...
             if (typeFlag == GNUTYPE_LONGNAME)
                 *(header.Name + offs) = '\0';
-            // a nacteme dalsi blok pro dalsi zpracovani
+            // and read the next block for further processing
             tarHeader = (const TTarBlock*)Stream->GetBlock(BLOCKSIZE);
             if (tarHeader == NULL)
             {
@@ -1520,17 +1520,17 @@ int CArchive::ReadTarHeader(const unsigned char* buffer, SCommonHeader& header)
                 SalamanderGeneral->ShowMessageBox(LoadStr(IDS_TARERR_HEADER), LoadStr(IDS_TARERR_TITLE), MSGBOX_ERROR);
                 return TAR_ERROR;
             }
-            // a jedem znova dokola
+            // and loop again
             continue;
         }
-        // pokud jsme nenacetli nejaky dlouhy nazev, vezmem ten z headeru
+        // if no long name was read, use the name from the header
         if (header.Name == NULL)
         {
-            // TODO: matchovani jmen v orig. TARu je bez prefixu. Nam by to asi vadit
-            // nemelo, ale zkontrolovat by se to asi melo :-)
+            // TODO: name matching in the original TAR ignores the prefix. That probably should not hurt us
+            // but it should probably be verified :-)
             char tmpName[101], tmpPrefix[156];
             strncpy_s(tmpName, tarHeader->Header.name, _TRUNCATE);
-            // Old GNU header vyuzival polozku prefix jinak, tak ji nesmime cist
+            // the old GNU header used the prefix field differently, so we must not read it
             if (header.Format != e_TarOldGnu)
                 strncpy_s(tmpPrefix, tarHeader->Header.prefix, _TRUNCATE);
             else
@@ -1554,46 +1554,46 @@ int CArchive::ReadTarHeader(const unsigned char* buffer, SCommonHeader& header)
                 header.Name[0] = '\0';
             strcat(header.Name, tmpName);
         }
-        // predpokladame soubor
+        // assume a regular file
         header.IsDir = FALSE;
-        // koukneme se na typ souboru
+        // inspect the file type
         switch (tarHeader->Header.typeflag)
         {
         case LNKTYPE:
         case SYMTYPE:
-            // TODO: tar pro dos extrakti symlinky jako hardlinky a hardlinky
-            //       jako kopie. Nebo muzem zkusit shortcuty...
+            // TODO: tar for DOS extracts symlinks as hard links and hard links
+            //       as copies. Or perhaps we could try shortcuts...
         case CHRTYPE:
         case BLKTYPE:
         case FIFOTYPE:
         case CHRSPEC:
         case XHDTYPE:
         case XGLTYPE:
-            // typy, se kterymi se nevime rady
+            // types we cannot handle
             header.Ignored = TRUE;
             break;
         case AREGTYPE:
         case REGTYPE:
-        case CONTTYPE: // podle zdrojaku taru je tohle brano jako fajl, buhvi proc...
-            // soubory k rozbaleni
+        case CONTTYPE: // according to the tar sources this counts as a file for some reason...
+            // files to extract
             header.IsDir = FALSE;
             header.Ignored = FALSE;
             break;
         case DIRTYPE:
-            // adresare
+            // directories
             header.IsDir = TRUE;
             header.Ignored = FALSE;
             break;
         case GNUTYPE_VOLHDR:
-        case GNUTYPE_MULTIVOL: // TODO: pokracovani souboru z predchoziho archivu...
-        case GNUTYPE_NAMES:    // TODO: v originale se extrakti pres extract_mangle. Uz se to pry nepouziva, ale podivat se na to muzem...
-            // informace nedulezite pro extrakci
+        case GNUTYPE_MULTIVOL: // TODO: continuation of a file from a previous archive...
+        case GNUTYPE_NAMES:    // TODO: the original extracts this through extract_mangle. It is reportedly unused now, but we could review it...
+            // information irrelevant for extraction
             header.Ignored = TRUE;
             break;
         case GNUTYPE_DUMPDIR:
-            // dump adresare v inkrementalnim archivu
-            //   tar projede dump v archivu a odmazava fajly, co v nem
-            //   nejsou. To asi pro nas nema smysl, takze nedelame nic.
+            // directory dump in an incremental archive
+            //   tar iterates the dump in the archive and removes files that are not present
+            //   which probably is not meaningful for us, so we do nothing.
             header.Ignored = TRUE;
             break;
         default:
@@ -1603,7 +1603,7 @@ int CArchive::ReadTarHeader(const unsigned char* buffer, SCommonHeader& header)
             header.Ignored = TRUE;
             break;
         }
-        // nacteme informace o souboru
+        // load the file information
         if (!FromOctalQ((const unsigned char*)tarHeader->Header.mtime, sizeof(tarHeader->Header.mtime) + 1, header.MTime))
         {
             SalamanderGeneral->ShowMessageBox(LoadStr(IDS_TARERR_HEADER), LoadStr(IDS_TARERR_TITLE),
@@ -1619,8 +1619,8 @@ int CArchive::ReadTarHeader(const unsigned char* buffer, SCommonHeader& header)
         if (header.Format == e_TarOldGnu &&
             tarHeader->OldGnuHeader.isextended)
             header.IsExtendedTar = TRUE;
-        // TODO: pokud je header extended necim jinym, nez sparse bloky,
-        //   ale treba dlouhym jmenem, je to potreba zpracovat tady
+        // TODO: if the header contains an extension other than sparse blocks,
+        //   such as a long name, it needs to be handled here
         return TAR_OK;
     }
 }
@@ -1629,7 +1629,7 @@ BOOL CArchive::GetStreamHeader(SCommonHeader& header)
 {
     CALL_STACK_MESSAGE1("CArchive::GetStreamHeader( )");
 
-    // vytvorime "fake" hlavicku streamu
+    // create a "fake" stream header
     header.FileInfo.NameLen = strlen(Stream->GetOldName());
     header.FileInfo.Name = SalamanderGeneral->DupStr(Stream->GetOldName());
     header.Name = (char*)malloc(header.FileInfo.NameLen + 1);
@@ -1640,16 +1640,16 @@ BOOL CArchive::GetStreamHeader(SCommonHeader& header)
     }
     strcpy(header.FileInfo.Name, Stream->GetOldName());
     strcpy(header.Name, Stream->GetOldName());
-    // nastavime priponu
+    // determine the extension
     char* s = header.FileInfo.Name + header.FileInfo.NameLen - 1;
     while (s >= header.FileInfo.Name && *s != '.')
         s--;
-    //  if (s > header.FileInfo.Name)   // ".cvspass" ve Windows je pripona ...
+    //  if (s > header.FileInfo.Name)   // ".cvspass" is considered an extension in Windows...
     if (s >= header.FileInfo.Name)
         header.FileInfo.Ext = s + 1;
     else
         header.FileInfo.Ext = header.FileInfo.Name + header.FileInfo.NameLen;
-    // nastavime parametry shodne s nasim souborem
+    // copy the parameters from the current file
     Stream->GetFileInfo(header.FileInfo.LastWrite, header.FileInfo.Size,
                         header.FileInfo.Attr);
     if (!Stream->IsOk())
@@ -1658,11 +1658,11 @@ BOOL CArchive::GetStreamHeader(SCommonHeader& header)
                                           LoadStr(IDS_GZERR_TITLE), MSGBOX_ERROR);
         return FALSE;
     }
-    // a zbytek
+    // and the remaining attributes
     header.FileInfo.Hidden = header.FileInfo.Attr & FILE_ATTRIBUTE_HIDDEN ? 1 : 0;
     header.FileInfo.IsLink = SalamanderGeneral->IsFileLink(header.FileInfo.Ext);
     header.FileInfo.IsOffline = 0;
-    header.FileInfo.PluginData = -1; // zbytecne, jen tak pro formu
+    header.FileInfo.PluginData = -1; // unnecessary, merely for completeness
     return TRUE;
 } /* CArchive::GetStreamHeader */
 
@@ -1670,18 +1670,18 @@ BOOL CArchive::ListStream(CSalamanderDirectoryAbstract* dir)
 {
     CALL_STACK_MESSAGE1("CArchive::ListStream( )");
 
-    // pripravime strukturu s informacemi o fajlu
+    // prepare a structure with file information
     SCommonHeader header;
     if (!GetStreamHeader(header))
         return FALSE;
-    // u cisteho zipu je to vzdycky soubor, pridame soubor
+    // an unpacked raw stream is always a file, so add it as one
     if (!dir->AddFile(NULL, header.FileInfo, NULL))
     {
         SalamanderGeneral->ShowMessageBox(LoadStr(IDS_TARERR_FDATA), LoadStr(IDS_TARERR_TITLE),
                                           MSGBOX_ERROR);
         return FALSE;
     }
-    // zabranime destruktoru v dealokaci
+    // prevent the destructor from deallocating it
     header.FileInfo.Name = NULL;
     return TRUE;
 }
@@ -1695,7 +1695,7 @@ BOOL CArchive::UnpackStream(const char* targetPath, BOOL doProgress,
     if (doProgress)
     {
         filePos = Stream->GetStreamPos();
-        // otevreme progress bar
+        // open the progress dialog
         SalamanderIf->OpenProgressDialog(LoadStr(IDS_UNPACKPROGRESS_TITLE), FALSE, NULL, FALSE);
         SalamanderIf->ProgressSetTotalSize(Stream->GetStreamSize(), CQuadWord(-1, -1));
     }
@@ -1716,7 +1716,7 @@ BOOL CArchive::UnpackStream(const char* targetPath, BOOL doProgress,
     char* extractedName;
     HANDLE file;
 
-    // zkostruujeme jmeno
+    // construct the target name
     if (!newName)
         newName = header.Name;
     extractedName = (char*)malloc(strlen(targetPath) + 1 +
@@ -1732,24 +1732,24 @@ BOOL CArchive::UnpackStream(const char* targetPath, BOOL doProgress,
     if (extractedName[strlen(extractedName) - 1] != '\\')
         strcat(extractedName, "\\");
     strcat(extractedName, (newName[0] == '\\' ? 1 : 0) + newName);
-    // vytvorime novy soubor
+    // create the new file
     char arcfiledata[500];
     char arcfilename[500];
     MakeFileInfo(header, arcfiledata, arcfilename);
     file = SalamanderSafeFile->SafeFileCreate(extractedName, GENERIC_WRITE, 0, FILE_ATTRIBUTE_NORMAL,
                                               header.IsDir, SalamanderGeneral->GetMainWindowHWND(),
                                               arcfilename, arcfiledata, &Silent, TRUE, &toSkip, NULL, 0, NULL, NULL);
-    // pri jakemkoli problemu koncime
+    // abort on any problem
     if (file == INVALID_HANDLE_VALUE)
     {
         SalamanderIf->CloseProgressDialog();
         free(extractedName);
-        // pokud si uzivatel preje skip, nemame tu co delat
+        // if the user wishes to skip, our work here is done
         if (toSkip)
             return TRUE;
         return FALSE;
     }
-    // updatneme nazev souboru v progressu
+    // update the file name in the progress dialog
     if (doProgress)
     {
         char progresstxt[1000];
@@ -1757,13 +1757,13 @@ BOOL CArchive::UnpackStream(const char* targetPath, BOOL doProgress,
         strcat(progresstxt, header.Name);
         SalamanderIf->ProgressDialogAddText(progresstxt, TRUE);
     }
-    // polozka size v headeru nemusi byt platna, budem rozbalovat, dokud je co
+    // the size field in the header may not be reliable; keep unpacking while data remains
     for (;;)
     {
-        // precteme cely blok
+        // read an entire block
         unsigned short read;
         const unsigned char* buffer = Stream->GetBlock(BUFSIZE, &read);
-        // neni-li blok, vezmem co je
+        // if a full block is not available, read whatever remains
         if (buffer == NULL && read > 0)
             buffer = Stream->GetBlock(read);
         if (!Stream->IsOk())
@@ -1776,10 +1776,10 @@ BOOL CArchive::UnpackStream(const char* targetPath, BOOL doProgress,
             SalamanderIf->CloseProgressDialog();
             return FALSE;
         }
-        // pokud je stream v poradku a presto nic neda, jsme na konci
+        // if the stream is fine yet returns nothing, we are at the end
         if (buffer == NULL)
             break;
-        // a zapisem to
+        // and write it out
         DWORD written;
         if (!WriteFile(file, buffer, read, &written, NULL) || written != read)
         {
@@ -1797,16 +1797,16 @@ BOOL CArchive::UnpackStream(const char* targetPath, BOOL doProgress,
             SalamanderIf->CloseProgressDialog();
             return FALSE;
         }
-        // updatneme progress, pokud je to treba
+        // update the progress if necessary
         if (doProgress)
         {
             sizeDelta = filePos;
             filePos = Stream->GetStreamPos();
             sizeDelta = filePos - sizeDelta;
-            // posuneme progress a osetrime cancel
+            // advance the progress and handle cancellation
             if (!SalamanderIf->ProgressAddSize((int)sizeDelta.Value, TRUE))
             {
-                // osetrime cancel
+                // handle cancellation
                 CloseHandle(file);
                 DeleteFile(extractedName);
                 free(extractedName);
@@ -1815,7 +1815,7 @@ BOOL CArchive::UnpackStream(const char* targetPath, BOOL doProgress,
             }
         }
     }
-    // nastavime vlastnosti u vytvoreneho souboru
+    // set the properties of the created file
     SetFileTime(file, &header.FileInfo.LastWrite, &header.FileInfo.LastWrite, &header.FileInfo.LastWrite);
     if (!CloseHandle(file))
     {
@@ -1830,7 +1830,7 @@ BOOL CArchive::UnpackStream(const char* targetPath, BOOL doProgress,
         return FALSE;
     }
     SetFileAttributes(extractedName, header.FileInfo.Attr);
-    // jmeno uz neni potreba
+    // the name is no longer needed
     free(extractedName);
     SalamanderIf->CloseProgressDialog();
     return TRUE;

@@ -14,18 +14,18 @@ CBZip::CBZip(const char *filename, HANDLE file, unsigned char *buffer, unsigned 
 {
   CALL_STACK_MESSAGE2("CBZip::CBZip(%s, , , )", filename);
   
-  // pokud neprosel konstruktor parenta, balime to rovnou
+  // if the parent constructor failed, bail out immediately
   if (!Ok)
     return;
 
-  // nemuze to byt bzip, pokud mame min nez hlavicku...
+  // this cannot be bzip if we have less than a header...
   if (DataEnd - DataStart < 4)
   {
     Ok = FALSE;
     FreeBufAndFile = FALSE;
     return;
   }
-  // pokud neni "magicke cislo" na zacatku, nejde o bzip
+  // if the "magic number" is not at the start, it is not a bzip stream
   if (DataStart[0] != 'B' || DataStart[1] != 'Z' ||
       DataStart[2] != 'h' || DataStart[3] < '0' || DataStart[3] > '9')
   {
@@ -33,9 +33,9 @@ CBZip::CBZip(const char *filename, HANDLE file, unsigned char *buffer, unsigned 
     FreeBufAndFile = FALSE;
     return;
   }
-  // mame bzip, ale precteny header nepotvrzujeme, knihovna ho bude overovat znovu...
+  // we have bzip, but do not confirm the header yet; the library will verify it again...
 
-  // pripravime extractor
+  // prepare the extractor
   BZStream = (bz_stream *)malloc(sizeof(bz_stream));
   if (BZStream == NULL)
   {
@@ -66,7 +66,7 @@ CBZip::CBZip(const char *filename, HANDLE file, unsigned char *buffer, unsigned 
     }
     return;
   }
-  // hotovo
+  // done
 }
 
 CBZip::~CBZip()
@@ -91,7 +91,7 @@ CBZip::DecompressBlock(unsigned short needed)
   while (ret != BZ_STREAM_END && ExtrEnd < Window + BUFSIZE)
   {
     unsigned char *src = DataStart;
-    // aspon jeden byte musi byt v bufferu
+    // at least one byte must already be buffered
     if (DataEnd == DataStart)
       src = (unsigned char *)FReadBlock(0);
     if (src == NULL)
@@ -126,7 +126,7 @@ CBZip::DecompressBlock(unsigned short needed)
       }
       return FALSE;
     }
-    // commitnu prectena data ze vstupu
+    // commit the consumed input bytes
     FReadBlock((unsigned int)(BZStream->next_in - (char *)DataStart));
     unsigned short extracted = (unsigned short)((unsigned char *)BZStream->next_out - ExtrEnd);
     ExtrEnd = (unsigned char *)BZStream->next_out;
