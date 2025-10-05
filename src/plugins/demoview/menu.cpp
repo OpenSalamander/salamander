@@ -12,7 +12,7 @@
 #include "precomp.h"
 
 // ****************************************************************************
-// SEKCE MENU
+// MENU SECTION
 // ****************************************************************************
 
 BOOL WINAPI
@@ -24,7 +24,7 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
     case MENUCMD_VIEWBMPFROMCLIP:
     {
         SalamanderGeneral->ShowMessageBox("TODO: Implement View Bitmap from Clipboard.", LoadStr(IDS_PLUGINNAME), MSGBOX_INFO);
-        //      SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_SOURCE);  // tento prikaz povazujeme za praci s cestou (objevi se v Alt+F12)
+        //      SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_SOURCE);  // we consider this command as working with the path (appears in Alt+F12)
         break;
     }
 
@@ -32,7 +32,7 @@ CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* sa
         SalamanderGeneral->ShowMessageBox("Unknown command.", LoadStr(IDS_PLUGINNAME), MSGBOX_ERROR);
         break;
     }
-    return FALSE; // neodznacovat polozky v panelu
+    return FALSE; // do not unselect items in the panel
 }
 
 BOOL WINAPI

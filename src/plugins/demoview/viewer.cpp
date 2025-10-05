@@ -69,9 +69,9 @@ MENU_TEMPLATE_ITEM PopupMenuTemplate[] =
 struct CButtonData
 {
     int ImageIndex;                   // zero base index
-    WORD ToolTipResID;                // resID se stringem pro tooltip
-    WORD ID;                          // univerzalni Command
-    CViewerWindowEnablerEnum Enabler; // ridici promenna pro enablovani tlacitka
+    WORD ToolTipResID;                // resource ID with the tooltip string
+    WORD ID;                          // universal command
+    CViewerWindowEnablerEnum Enabler; // control variable for enabling the button
 };
 
 CButtonData ToolBarButtons[] =
@@ -85,10 +85,10 @@ CButtonData ToolBarButtons[] =
         {IDX_TB_FILTER, IDS_TBTT_FILTER, CM_VIEWER_FILTER, vweAlwaysEnabled},
         {IDX_TB_TERMINATOR}};
 
-CWindowQueue ViewerWindowQueue("DemoView Viewers"); // seznam vsech oken viewru
-CThreadQueue ThreadQueue("DemoView Viewers");       // seznam vsech threadu oken
+CWindowQueue ViewerWindowQueue("DemoView Viewers"); // list of all viewer windows
+CThreadQueue ThreadQueue("DemoView Viewers");       // list of all window threads
 
-HACCEL ViewerAccels = NULL; // akceleratory pro viewer
+HACCEL ViewerAccels = NULL; // accelerators for the viewer
 
 void WINAPI HTMLHelpCallback(HWND hWindow, UINT helpID)
 {
@@ -121,13 +121,13 @@ protected:
     BOOL AlwaysOnTop;
     BOOL ReturnLock;
 
-    HANDLE Continue; // po naplneni nasledujicich navratovych hodnot se tento event prepne do "signaled"
+    HANDLE Continue; // once the following return values are filled, this event switches to "signaled"
     HANDLE* Lock;
     BOOL* LockOwner;
     BOOL* Success;
 
-    int EnumFilesSourceUID;    // UID zdroje pro enumeraci souboru ve vieweru
-    int EnumFilesCurrentIndex; // index prvniho souboru ve vieweru ve zdroji
+    int EnumFilesSourceUID;    // source UID for enumerating files in the viewer
+    int EnumFilesCurrentIndex; // index of the first viewer file within the source
 
 public:
     CViewerThread(const char* name, int left, int top, int width, int height,
@@ -177,8 +177,8 @@ CViewerThread::Body()
             if (CfgSavePosition && CfgWindowPlacement.length != 0)
             {
                 WINDOWPLACEMENT place = CfgWindowPlacement;
-                // GetWindowPlacement cti Taskbar, takze pokud je Taskbar nahore nebo vlevo,
-                // jsou hodnoty posunute o jeho rozmery. Provedeme korekci.
+                // GetWindowPlacement respects the Taskbar, so if the Taskbar is at the top or on the left,
+                // the values are shifted by its dimensions. Apply a correction.
                 RECT monitorRect;
                 RECT workRect;
                 SalamanderGeneral->MultiMonGetClipRectByRect(&place.rcNormalPosition, &workRect, &monitorRect);
@@ -221,20 +221,20 @@ CViewerThread::Body()
 
     CALL_STACK_MESSAGE1("ViewerThreadBody::SetEvent");
     BOOL openFile = *Success;
-    SetEvent(Continue); // pustime dale hl. thread, od tohoto bodu nejsou platne nasl. promenne:
-    Continue = NULL;    // vymaz je zbytecny, jen pro prehlednost
-    Lock = NULL;        // vymaz je zbytecny, jen pro prehlednost
-    LockOwner = NULL;   // vymaz je zbytecny, jen pro prehlednost
-    Success = NULL;     // vymaz je zbytecny, jen pro prehlednost
+    SetEvent(Continue); // let the main thread continue; the following variables are invalid from now on:
+    Continue = NULL;    // clearing is unnecessary, just for clarity
+    Lock = NULL;        // clearing is unnecessary, just for clarity
+    LockOwner = NULL;   // clearing is unnecessary, just for clarity
+    Success = NULL;     // clearing is unnecessary, just for clarity
 
-    // pokud probehlo vse bez potizi, otevreme v okne pozadovany soubor
+    // if everything succeeded, open the requested file in the window
     if (openFile)
     {
         CALL_STACK_MESSAGE1("ViewerThreadBody::OpenFile");
         window->OpenFile(Name, FALSE);
 
         CALL_STACK_MESSAGE1("ViewerThreadBody::message-loop");
-        // message loopa
+        // message loop
         MSG msg;
         while (GetMessage(&msg, NULL, 0, 0))
         {
@@ -266,8 +266,8 @@ CPluginInterfaceForViewer::ViewFile(const char* name, int left, int top, int wid
         return FALSE;
     }
 
-    // 'viewerData' se v DemoView nepouzivaji, jinak by bylo potreba predat hodnoty (ne odkazem)
-    // do threadu vieweru...
+    // 'viewerData' is not used in DemoView; otherwise we would need to pass the values (not by reference)
+    // to the viewer thread...
     BOOL success = FALSE;
     CViewerThread* t = new CViewerThread(name, left, top, width, height,
                                          showCmd, alwaysOnTop, returnLock, lock,
@@ -275,13 +275,13 @@ CPluginInterfaceForViewer::ViewFile(const char* name, int left, int top, int wid
                                          enumFilesSourceUID, enumFilesCurrentIndex);
     if (t != NULL)
     {
-        if (t->Create(ThreadQueue) != NULL) // thread se spustil
+        if (t->Create(ThreadQueue) != NULL) // the thread has started
         {
-            t = NULL;                                 // zbytecne nulovani, jen pro poradek (ukazatel uz muze byt dealokovany)
-            WaitForSingleObject(contEvent, INFINITE); // pockame, az thread zpracuje predana data a vrati vysledky
+            t = NULL;                                 // redundant nulling, just for order (the pointer may already be deallocated)
+            WaitForSingleObject(contEvent, INFINITE); // wait until the thread processes the passed data and returns results
         }
         else
-            delete t; // pri chybe je potreba dealokovat objekt threadu
+            delete t; // on failure we need to deallocate the thread object
     }
     HANDLES(CloseHandle(contEvent));
     return success;
@@ -389,8 +389,8 @@ BOOL CViewerWindow::InitializeGraphics()
     hTmpColorBitmap = HANDLES(LoadBitmap(DLLInstance, MAKEINTRESOURCE(SalamanderGeneral->CanUse256ColorsBitmap() ? IDB_TOOLBAR256 : IDB_TOOLBAR16)));
     BOOL ok = SalamanderGUI->CreateGrayscaleAndMaskBitmaps(hTmpColorBitmap, RGB(255, 0, 255),
                                                            hTmpGrayBitmap, hTmpMaskBitmap);
-    if (ok) // ziskane handly bitmap vlozime do HANDLES (ukazka rucniho vkladani; jednodussi
-    {       // v teto situaci (DeleteObject okamzite nasleduje) je pouzit u DeleteObject makro NOHANDLES)
+    if (ok) // insert the acquired bitmap handles into HANDLES (example of manual insertion; simpler
+    {       // in this situation (DeleteObject immediately follows) to use the NOHANDLES macro for DeleteObject)
         HANDLES_ADD(__htBitmap, __hoCreateDIBitmap, hTmpGrayBitmap);
         HANDLES_ADD(__htBitmap, __hoCreateDIBitmap, hTmpMaskBitmap);
     }
@@ -452,7 +452,7 @@ BOOL CViewerWindow::FillToolBar()
         ToolBar->InsertItem2(0xFFFFFFFF, TRUE, &tii);
     }
 
-    // obehne enablery
+    // iterate the enablers
     ToolBar->UpdateItemsState();
     return TRUE;
 }
@@ -551,7 +551,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                 0, 0, r.right, r.bottom, // dummy
                                 HWindow, (HMENU)0, DLLInstance, NULL);
 
-        // nechceme vizualni styly pro rebar
+        // we do not want visual styles for the rebar
         SalamanderGUI->DisableWindowVisualStyles(HRebar);
 
         Renderer.CreateEx(WS_EX_STATICEDGE /*WS_EX_CLIENTEDGE*/,
@@ -625,7 +625,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         UINT drag;
         char path[MAX_PATH];
 
-        drag = DragQueryFile((HDROP)wParam, 0xFFFFFFFF, NULL, 0); // kolik souboru nam hodili
+        drag = DragQueryFile((HDROP)wParam, 0xFFFFFFFF, NULL, 0); // how many files were dropped on us
         if (drag > 0)
         {
             DragQueryFile((HDROP)wParam, 0, path, MAX_PATH);
@@ -660,9 +660,9 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             HDWP hdwp = HANDLES(BeginDeferWindowPos(2));
             if (hdwp != NULL)
             {
-                // + 4: pri zvetsovani sirky okna mi nechodilo prekreslovani poslednich 4 bodu
-                // v rebaru; ani po nekolika hodinach jsem nenasel pricinu; v Salamu to slape;
-                // zatim to resim takto; treba si casem vzpomenu, kde je problem
+                // +4: when increasing the window width I was missing a repaint of the last 4 points
+                // in the rebar; even after several hours I did not find the cause; in Salamander it works;
+                // for now I'm handling it like this; maybe I'll remember later where the issue is
                 hdwp = HANDLES(DeferWindowPos(hdwp, HRebar, NULL,
                                               0, 0, r.right + 4, rebarHeight,
                                               SWP_NOACTIVATE | SWP_NOZORDER));
@@ -678,14 +678,14 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_SYSCOLORCHANGE:
     {
-        // tady by se mely premapovat barvy
+        // colors should be remapped here
         TRACE_I("CViewerWindow::WindowProc - WM_SYSCOLORCHANGE");
         break;
     }
 
     case WM_USER_VIEWERCFGCHNG:
     {
-        // tady by se mely projevit zmeny v konfiguraci pluginu
+        // plugin configuration changes should take effect here
         TRACE_I("CViewerWindow::WindowProc - config has changed");
         InvalidateRect(HWindow, NULL, TRUE);
         return 0;
@@ -695,7 +695,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (!LOWORD(wParam))
         {
-            // hlavni okno pri prepnuti z viewru nebude delat refresh
+            // prevent the main window from refreshing when switching away from the viewer
             SalamanderGeneral->SkipOneActivateRefresh();
         }
         break;
@@ -729,7 +729,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 BOOL noMoreFiles = FALSE;
                 char fileName[MAX_PATH];
                 fileName[0] = 0;
-                if (shiftPressed) // zastarala hot-key: pouzivat Backspace (klavesy + prikazy v menu viz PictView, menu File/Other Files)
+                if (shiftPressed) // legacy hot-key: use Backspace (keys + commands in the menu see PictView, menu File/Other Files)
                 {
                     ok = SalamanderGeneral->GetPreviousFileNameForViewer(EnumFilesSourceUID,
                                                                          &EnumFilesCurrentIndex,
@@ -746,7 +746,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
 
                 if (ok)
-                    OpenFile(fileName); // mame nove jmeno
+                    OpenFile(fileName); // we have a new name
                 else
                 {
                     if (noMoreFiles)
@@ -862,7 +862,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             lstrcpyn(filterBuf, LoadStr(IDS_DMV_FILES_FILTER), 100);
             char* s = filterBuf;
             ofn.lpstrFilter = s;
-            while (*s != 0) // vytvoreni double-null terminated listu
+            while (*s != 0) // create a double-null-terminated list
             {
                 if (*s == '|')
                     *s = 0;
@@ -955,7 +955,7 @@ void CViewerWindow::OpenFile(const char* name, BOOL setLock)
     if (setLock && Lock != NULL)
     {
         SetEvent(Lock);
-        Lock = NULL; // ted uz je to jen na disk-cache
+        Lock = NULL; // from now on it's up to the disk cache
     }
     lstrcpyn(Name, name, MAX_PATH);
     InvalidateRect(HWindow, NULL, TRUE);
