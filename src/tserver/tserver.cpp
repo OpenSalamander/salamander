@@ -50,40 +50,40 @@ int MaxMessagesCount = 10000;
 
 BOOL WindowsVistaAndLater = FALSE;
 
-// texty v about dialogu
+// texts for the About dialog
 WCHAR AboutText1[] = L"Version 2.03";
 
 CMainWindow* MainWindow = NULL;
 
-// nazev aplikace
+// application name
 const WCHAR* MAINWINDOW_NAME = L"Trace Server";
 
-// nazvy souboru
+// file names
 //WCHAR *TRACE_FILENAME = L"tserver.trs";
 
 CGlobalData Data;
 
-// mutex - vlastni ho client proces, ktery zapisuje do sdilene pameti
+// mutex owned by the client process that writes into shared memory
 HANDLE OpenConnectionMutex = NULL;
-// event - signaled -> sdilena pamet obsahuje pozadovana data
+// event - signaled -> shared memory contains the requested data
 HANDLE ConnectDataReadyEvent = NULL;
-// event - signaled -> server prijal data ze sdilene pameti
+// event - signaled -> the server has accepted data from shared memory
 HANDLE ConnectDataAcceptedEvent = NULL;
 BOOL ConnectDataAcceptedEventMayBeSignaled = FALSE;
 
-// event - manual reset - signaled -> server konci -> vsechny thready by meli koncit
+// event - manual reset - signaled -> the server is shutting down -> all threads should finish
 HANDLE TerminateEvent = NULL;
-// event - pouzity pri startu ReadPipeThreadu pro nacteni vstupnich dat
+// event used when starting ReadPipeThread to load input data
 HANDLE ContinueEvent = NULL;
-// event - manual reset - nahodit po flushnuti message cache
+// event - manual reset - set after flushing the message cache
 HANDLE MessagesFlushDoneEvent = NULL;
 
-// thread, ktery zajistuje pripojeni k serveru
+// thread that handles connecting to the server
 HANDLE ConnectingThread = NULL;
 
 BOOL IconControlEnable = TRUE;
 
-// pole aktivnich pipe threadu
+// array of active pipe threads
 struct CReadPipeThreadInfo
 {
     HANDLE Thread;
@@ -91,7 +91,7 @@ struct CReadPipeThreadInfo
 };
 TSynchronizedDirectArray<CReadPipeThreadInfo> ActiveReadPipeThreads(10, 5);
 
-// funkce connecting threadu
+// function executed by the connecting thread
 unsigned __stdcall ConnectingThreadF(void* mainWndPtr);
 
 //****************************************************************************
@@ -101,9 +101,9 @@ unsigned __stdcall ConnectingThreadF(void* mainWndPtr);
 
 BOOL InitializeServer(HWND mainWnd)
 {
-    // pripravime "NULL PACL", tedy z hlediska prav naprosto otevreny deskriptor
-    // cizi proces tak muze naprilad nastavovat prava takto vytvorenych objektu
-    // v nasem pripade (TraceServer) nam to ale nevadi a zaroven je to jednodussi
+    // prepare a "NULL PACL", i.e. a descriptor completely open from the permissions point of view
+    // a foreign process can, for example, adjust the rights of objects created this way
+    // in the case of TraceServer we do not mind and it keeps things simple
     char secDesc[SECURITY_DESCRIPTOR_MIN_LENGTH];
     SECURITY_ATTRIBUTES sa;
     sa.nLength = sizeof(sa);
@@ -141,7 +141,7 @@ BOOL InitializeServer(HWND mainWnd)
         MESSAGE_EW(NULL, L"Unable to create connecting thread.", MB_OK);
         return FALSE;
     }
-    return TRUE; // je-li ConnectingThread != NULL musi vratit TRUE !!!
+    return TRUE; // when ConnectingThread != NULL it must return TRUE!!!
 }
 
 //****************************************************************************
@@ -204,7 +204,7 @@ BOOL ReadPipe(HANDLE pipeSemaphore, DWORD& readBytesFromPipe, HANDLE hFile,
             }
             else
             {
-                if (showSemaphoreErr) // ma smysl zorazit jen poprve pro kazdou pajpu
+                if (showSemaphoreErr) // it makes sense to display it only once for each pipe
                 {
                     MESSAGE_TEW(L"Invalid state of pipe semaphore.", MB_OK);
                     showSemaphoreErr = FALSE;
@@ -232,7 +232,7 @@ struct CReadPipeData
     DWORD ProcessID;
     DWORD UniqueProcessID;
     BOOL SendProcessConnected;
-    BOOL ShowSemaphoreErr; // diky chybe ve starych klientech se semafor jen snizuje az vznikne chyba, zname, nehlasime
+    BOOL ShowSemaphoreErr; // because of a bug in old clients the semaphore only decreases until an error occurs; known issue, not reported
 };
 
 DWORD CReadPipeData::StaticUniqueProcessID = 0;
@@ -240,7 +240,7 @@ DWORD CReadPipeData::StaticUniqueProcessID = 0;
 unsigned __stdcall ReadPipeThreadF(void* dataPtr)
 {
     CReadPipeData* data = (CReadPipeData*)dataPtr;
-    //---  nacteni vstupnich dat
+    // Load the input data
     HWND mainWnd = data->MainWnd;
     HANDLE readPipe = data->ReadPipe;
     HANDLE pipeSemaphore = data->PipeSemaphore;
@@ -250,9 +250,9 @@ unsigned __stdcall ReadPipeThreadF(void* dataPtr)
     BOOL sendProcessConnected = data->SendProcessConnected;
     BOOL showSemaphoreErr = data->ShowSemaphoreErr;
     SetEvent(ContinueEvent);
-    //---  od teto chvile je pointer na data neplatny
+    // From this point on the data pointer is invalid
     data = NULL;
-    //---  nacitani zprav z pipy
+    // Read messages from the pipe
     DWORD readBytesFromPipe = 0;
     CGlobalDataMessage message;
     message.ProcessID = processID;
@@ -287,7 +287,7 @@ unsigned __stdcall ReadPipeThreadF(void* dataPtr)
                         {
                             if (pipeData.Type == __mtSetProcessName || pipeData.Type == __mtSetProcessNameW)
                             {
-                                // v pipeData.Line prisel ProcessID - viz komentar v hlavickaci
+                                // ProcessID arrived in pipeData.Line - see the comment in the header
                                 Data.Processes.BlockArray();
                                 int index = Data.FindProcessNameIndex(uniqueProcessID);
                                 if (index != -1)
@@ -300,7 +300,7 @@ unsigned __stdcall ReadPipeThreadF(void* dataPtr)
                                     CProcessInformation processInformation;
                                     processInformation.UniqueProcessID = uniqueProcessID;
                                     processInformation.Name = nameW;
-                                    // pridam do pole
+                                    // add to the array
                                     Data.Processes.Add(processInformation);
                                 }
                                 Data.Processes.UnBlockArray();
@@ -323,7 +323,7 @@ unsigned __stdcall ReadPipeThreadF(void* dataPtr)
                                     threadInformation.UniqueThreadID = pipeData.UniqueThreadID;
                                     threadInformation.Name = nameW;
 
-                                    // pridam do pole
+                                    // add to the array
                                     Data.Threads.Add(threadInformation);
                                 }
                                 Data.Threads.UnBlockArray();
@@ -334,7 +334,7 @@ unsigned __stdcall ReadPipeThreadF(void* dataPtr)
                         {
                             PostMessage(mainWnd, WM_USER_SHOWERROR, EC_LOW_MEMORY, 0);
                             error = TRUE;
-                            SetLastError(ERROR_BROKEN_PIPE); // kvuli podmince nize
+                            SetLastError(ERROR_BROKEN_PIPE); // because of the condition below
                         }
                     }
                     else
@@ -343,14 +343,14 @@ unsigned __stdcall ReadPipeThreadF(void* dataPtr)
                         free(name);
                         error = TRUE;
                         if (err == ERROR_SUCCESS)
-                            SetLastError(ERROR_BROKEN_PIPE); // kvuli podmince nize
+                            SetLastError(ERROR_BROKEN_PIPE); // because of the condition below
                     }
                 }
                 else
                 {
                     PostMessage(mainWnd, WM_USER_SHOWERROR, EC_LOW_MEMORY, 0);
                     error = TRUE;
-                    SetLastError(ERROR_BROKEN_PIPE); // kvuli podmince nize
+                    SetLastError(ERROR_BROKEN_PIPE); // because of the condition below
                 }
                 break;
             }
@@ -409,13 +409,13 @@ unsigned __stdcall ReadPipeThreadF(void* dataPtr)
                                     break;
                                 else
                                     WaitForSingleObject(MessagesFlushDoneEvent, INFINITE);
-                            } // neni to dokonale, ale bude to muset stacit (nepresahne maximum tak na 99%)
+                            } // not perfect, but it should be enough (it keeps below the maximum roughly 99%)
                         }
                         else
                         {
                             PostMessage(mainWnd, WM_USER_SHOWERROR, EC_LOW_MEMORY, 0);
                             error = TRUE;
-                            SetLastError(ERROR_BROKEN_PIPE); // kvuli podmince nize
+                            SetLastError(ERROR_BROKEN_PIPE); // because of the condition below
                         }
                     }
                     else
@@ -424,21 +424,21 @@ unsigned __stdcall ReadPipeThreadF(void* dataPtr)
                         free(file);
                         error = TRUE;
                         if (err == ERROR_SUCCESS)
-                            SetLastError(ERROR_BROKEN_PIPE); // kvuli podmince nize
+                            SetLastError(ERROR_BROKEN_PIPE); // because of the condition below
                     }
                 }
                 else
                 {
                     PostMessage(mainWnd, WM_USER_SHOWERROR, EC_LOW_MEMORY, 0);
                     error = TRUE;
-                    SetLastError(ERROR_BROKEN_PIPE); // kvuli podmince nize
+                    SetLastError(ERROR_BROKEN_PIPE); // because of the condition below
                 }
                 break;
             }
 
             case __mtIgnoreAutoClear:
             {
-                if (sendProcessConnected && pipeData.ThreadID == 0) // 0 = neignorovat, 1 = ignorovat auto-clear na Trace Serveru
+                if (sendProcessConnected && pipeData.ThreadID == 0) // 0 = do not ignore, 1 = ignore the auto-clear on Trace Server
                     SendMessage(mainWnd, WM_USER_PROCESS_CONNECTED, 0, 0);
                 break;
             }
@@ -447,7 +447,7 @@ unsigned __stdcall ReadPipeThreadF(void* dataPtr)
             {
                 PostMessage(mainWnd, WM_USER_SHOWERROR, EC_UNKNOWN_MESSAGE_TYPE, 0);
                 error = TRUE;
-                SetLastError(ERROR_BROKEN_PIPE); // kvuli podmince nize
+                SetLastError(ERROR_BROKEN_PIPE); // because of the condition below
                 break;
             }
             }
@@ -462,7 +462,7 @@ unsigned __stdcall ReadPipeThreadF(void* dataPtr)
             break;
         }
     }
-    //---  doslo k odpojeni processu
+    // The process disconnected
     PostMessage(mainWnd, WM_USER_PROCESS_DISCONNECTED, processID, 0);
     HANDLES(CloseHandle(readPipe));
     HANDLES(CloseHandle(pipeSemaphore));
@@ -518,11 +518,11 @@ BOOL IsReadPipeThreadForNewProcess(DWORD clientPID)
 unsigned __stdcall ConnectingThreadF(void* mainWndPtr)
 {
     HWND mainWnd = (HWND)mainWndPtr;
-    //---  vytvoreni sdilene pameti
+    // Create the shared memory block
 
-    // pripravime "NULL PACL", tedy z hlediska prav naprosto otevreny deskriptor
-    // cizi proces tak muze naprilad nastavovat prava takto vytvorenych objektu
-    // v nasem pripade (TraceServer) nam to ale nevadi a zaroven je to jednodussi
+    // prepare a "NULL PACL", i.e. a descriptor completely open from the permissions point of view
+    // a foreign process can, for example, adjust the rights of objects created this way
+    // in the case of TraceServer we do not mind and it keeps things simple
     char secDesc[SECURITY_DESCRIPTOR_MIN_LENGTH];
     SECURITY_ATTRIBUTES sa;
     sa.nLength = sizeof(sa);
@@ -557,7 +557,7 @@ unsigned __stdcall ConnectingThreadF(void* mainWndPtr)
         _endthreadex(CT_UNABLE_TO_MAP_VIEW_OF_FILE);
         return CT_UNABLE_TO_MAP_VIEW_OF_FILE;
     }
-    //---  vykona cast
+    // Run the main execution loop
     PostMessage(mainWnd, WM_USER_CT_OPENCONNECTION, 0, 0);
 
     HANDLE handles[2];
@@ -578,15 +578,15 @@ unsigned __stdcall ConnectingThreadF(void* mainWndPtr)
         case WAIT_OBJECT_0 + 1: // data ready
         {
             C__ClientServerInitData data = *((C__ClientServerInitData*)mapAddress);
-            if (data.Version == TRACE_SERVER_VERSION - 1 || // klient vytvoril pipu a semafor, mame je prevzit
-                data.Version == TRACE_SERVER_VERSION - 3)   // stary klient, nechame ho pripojit (ale bez __mtIgnoreAutoClear)
+            if (data.Version == TRACE_SERVER_VERSION - 1 || // the client created the pipe and semaphore, we have to adopt them
+                data.Version == TRACE_SERVER_VERSION - 3)   // old client, let it connect (but without __mtIgnoreAutoClear)
             {
                 HANDLE readPipe = NULL;
                 HANDLE pipeSemaphore = NULL;
-                // ziskani handlu client procesu
+                // obtain the handle of the client process
                 DWORD clientPID = data.ClientOrServerProcessId;
                 HANDLE clientProcess = HANDLES_Q(OpenProcess(PROCESS_DUP_HANDLE, FALSE, clientPID));
-                // ziskani handlu pipy a semaforu
+                // obtain the handles of the pipe and semaphore
                 if (clientProcess != NULL &&
                     HANDLES(DuplicateHandle(clientProcess, data.HReadOrWritePipe, // client
                                             GetCurrentProcess(), &readPipe,       // server
@@ -603,10 +603,10 @@ unsigned __stdcall ConnectingThreadF(void* mainWndPtr)
                     readPipeData.PipeSemaphore = pipeSemaphore;
                     readPipeData.ProcessID = clientPID;
                     readPipeData.SendProcessConnected = newProcess && data.Version == TRACE_SERVER_VERSION - 1;
-                    readPipeData.ShowSemaphoreErr = data.Version == TRACE_SERVER_VERSION - 1; // hlasime jen jednou a jen u novych klientu
-                    // pokud dojde ke dvema connectum z jednoho procesu (napr. u POBu: Test a POB.dll),
-                    // umyslne pridelime dva unikatni PIDy, aby fungovalo pojmenovani procesu
-                    // v Trace Serveru, proste aby bylo videt, kdo tu hlasku poslal (napr. Test nebo POB.dll)
+                    readPipeData.ShowSemaphoreErr = data.Version == TRACE_SERVER_VERSION - 1; // report only once and only for new clients
+                    // if two connections are made from one process (e.g. in POB: Test and POB.dll),
+                    // we intentionally assign two unique PIDs to make process naming work
+                    // in Trace Server, simply so it is visible who sent the message (e.g. Test or POB.dll)
                     readPipeData.UniqueProcessID = readPipeData.StaticUniqueProcessID++;
                     ResetEvent(ContinueEvent);
                     HANDLE thread = (HANDLE)HANDLES(_beginthreadex(NULL, 1000,
@@ -616,20 +616,20 @@ unsigned __stdcall ConnectingThreadF(void* mainWndPtr)
                                                                    &threadID));
                     if (thread != NULL)
                     {
-                        readPipeData.Thread = thread; // dodame threadu jeho HANDLE
+                        readPipeData.Thread = thread; // provide the thread with its HANDLE
                         CReadPipeThreadInfo rpti;
                         rpti.ClientPID = clientPID;
                         rpti.Thread = thread;
                         ActiveReadPipeThreads.BlockArray();
-                        ActiveReadPipeThreads.Add(rpti); // zaradime ho mezi aktivni
+                        ActiveReadPipeThreads.Add(rpti); // add it among the active ones
                         ActiveReadPipeThreads.UnBlockArray();
-                        if (newProcess && data.Version == TRACE_SERVER_VERSION - 3) // stary server, jedeme bez __mtIgnoreAutoClear
+                        if (newProcess && data.Version == TRACE_SERVER_VERSION - 3) // old server, run without __mtIgnoreAutoClear
                             SendMessage(mainWnd, WM_USER_PROCESS_CONNECTED, 0, 0);
-                        ResumeThread(thread); // spustime readPipeThread
+                        ResumeThread(thread); // start readPipeThread
 
                         WaitForSingleObject(ContinueEvent, INFINITE);
 
-                        *((BOOL*)mapAddress) = TRUE; // zapis vysledku
+                        *((BOOL*)mapAddress) = TRUE; // write the result
                     }
                     else
                     {
@@ -637,7 +637,7 @@ unsigned __stdcall ConnectingThreadF(void* mainWndPtr)
                         HANDLES(CloseHandle(pipeSemaphore));
                         PostMessage(mainWnd, WM_USER_SHOWERROR,
                                     EC_CANNOT_CREATE_READ_PIPE_THREAD, 0);
-                        *((BOOL*)mapAddress) = FALSE; // zapis vysledku
+                        *((BOOL*)mapAddress) = FALSE; // write the result
                     }
                 }
                 else
@@ -646,19 +646,19 @@ unsigned __stdcall ConnectingThreadF(void* mainWndPtr)
                         HANDLES(CloseHandle(readPipe));
                     if (pipeSemaphore != NULL)
                         HANDLES(CloseHandle(pipeSemaphore));
-                    *((BOOL*)mapAddress) = FALSE; // zapis vysledku -> nepovedlo se
+                    *((BOOL*)mapAddress) = FALSE; // write the result -> it failed
                 }
                 if (clientProcess != NULL)
                     HANDLES(CloseHandle(clientProcess));
             }
             else
             {
-                if (data.Version == TRACE_SERVER_VERSION ||   // mame vytvorit pipu a semafor a poslat je klientovi
-                    data.Version == TRACE_SERVER_VERSION - 2) // stary klient, nechame ho pripojit (ale bez __mtIgnoreAutoClear)
+                if (data.Version == TRACE_SERVER_VERSION ||   // we should create the pipe and semaphore and send them to the client
+                    data.Version == TRACE_SERVER_VERSION - 2) // old client, let it connect (but without __mtIgnoreAutoClear)
                 {
-                    // pripravime "NULL PACL", tedy z hlediska prav naprosto otevreny deskriptor
-                    // cizi proces tak muze naprilad nastavovat prava takto vytvorenych objektu
-                    // v nasem pripade (TraceServer) nam to ale nevadi a zaroven je to jednodussi
+                    // prepare a "NULL PACL", i.e. a descriptor completely open from the permissions point of view
+                    // a foreign process can, for example, adjust the rights of objects created this way
+                    // in the case of TraceServer we do not mind and it keeps things simple
                     char sd[SECURITY_DESCRIPTOR_MIN_LENGTH];
                     SECURITY_ATTRIBUTES sa;
                     sa.nLength = sizeof(sa);
@@ -675,20 +675,20 @@ unsigned __stdcall ConnectingThreadF(void* mainWndPtr)
                     HANDLE writePipe = NULL;
                     if (pipeSemaphore != NULL && HANDLES(CreatePipe(&readPipe, &writePipe, saPtr, __PIPE_SIZE * 1024)))
                     {
-                        // zapisu do sdilene pameti handle pro zapis do pipy (pro klienta)
-                        dataWr->Version = TRUE;                                  // BOOL hodnota: TRUE = mame pipu
-                        dataWr->ClientOrServerProcessId = GetCurrentProcessId(); // tady jde o PID serveru
+                        // write into shared memory the handle for writing to the pipe (for the client)
+                        dataWr->Version = TRUE;                                  // BOOL value: TRUE = we have a pipe
+                        dataWr->ClientOrServerProcessId = GetCurrentProcessId(); // here it is the server PID
                         dataWr->HReadOrWritePipe = writePipe;
                         dataWr->HPipeSemaphore = pipeSemaphore;
 
-                        SetEvent(ConnectDataAcceptedEvent); // predani dat klientovi, vysledky jsou ulozeny
+                        SetEvent(ConnectDataAcceptedEvent); // hand data to the client, the results are stored
                         ConnectDataAcceptedEventMayBeSignaled = TRUE;
 
-                        // pockam, az server data zpracuje
+                        // wait until the server processes the data
                         DWORD waitRet = WaitForSingleObject(ConnectDataReadyEvent, __COMMUNICATION_WAIT_TIMEOUT);
-                        if (waitRet == WAIT_OBJECT_0 && dataWr->Version == 3 /* 3 = uspech, klient prevzal handly */) // podivam se na vysledek od klienta
+                        if (waitRet == WAIT_OBJECT_0 && dataWr->Version == 3 /* 3 = success, the client took the handles */) // look at the result from the client
                         {
-                            DWORD clientPID = dataWr->ClientOrServerProcessId; /* PID klienta */
+                            DWORD clientPID = dataWr->ClientOrServerProcessId; /* client PID */
                             BOOL newProcess = IsReadPipeThreadForNewProcess(clientPID);
                             unsigned threadID;
                             CReadPipeData readPipeData;
@@ -697,10 +697,10 @@ unsigned __stdcall ConnectingThreadF(void* mainWndPtr)
                             readPipeData.PipeSemaphore = pipeSemaphore;
                             readPipeData.ProcessID = clientPID;
                             readPipeData.SendProcessConnected = newProcess && data.Version == TRACE_SERVER_VERSION;
-                            readPipeData.ShowSemaphoreErr = data.Version == TRACE_SERVER_VERSION; // hlasime jen jednou a jen u novych klientu
-                            // pokud dojde ke dvema connectum z jednoho procesu (napr. u POBu: Test a POB.dll),
-                            // umyslne pridelime dva unikatni PIDy, aby fungovalo pojmenovani procesu
-                            // v Trace Serveru, proste aby bylo videt, kdo tu hlasku poslal (napr. Test nebo POB.dll)
+                            readPipeData.ShowSemaphoreErr = data.Version == TRACE_SERVER_VERSION; // report only once and only for new clients
+                            // if two connections are made from one process (e.g. in POB: Test and POB.dll),
+                            // we intentionally assign two unique PIDs to make process naming work
+                            // in Trace Server, simply so it is visible who sent the message (e.g. Test or POB.dll)
                             readPipeData.UniqueProcessID = readPipeData.StaticUniqueProcessID++;
                             ResetEvent(ContinueEvent);
                             HANDLE thread = (HANDLE)HANDLES(_beginthreadex(NULL, 1000,
@@ -710,32 +710,32 @@ unsigned __stdcall ConnectingThreadF(void* mainWndPtr)
                                                                            &threadID));
                             if (thread != NULL)
                             {
-                                readPipeData.Thread = thread; // dodame threadu jeho HANDLE
+                                readPipeData.Thread = thread; // provide the thread with its HANDLE
                                 CReadPipeThreadInfo rpti;
                                 rpti.ClientPID = clientPID;
                                 rpti.Thread = thread;
                                 ActiveReadPipeThreads.BlockArray();
-                                ActiveReadPipeThreads.Add(rpti); // zaradime ho mezi aktivni
+                                ActiveReadPipeThreads.Add(rpti); // add it among the active ones
                                 ActiveReadPipeThreads.UnBlockArray();
-                                if (newProcess && data.Version == TRACE_SERVER_VERSION - 2) // stary server, jedeme bez __mtIgnoreAutoClear
+                                if (newProcess && data.Version == TRACE_SERVER_VERSION - 2) // old server, run without __mtIgnoreAutoClear
                                     SendMessage(mainWnd, WM_USER_PROCESS_CONNECTED, 0, 0);
-                                ResumeThread(thread); // spustime readPipeThread
+                                ResumeThread(thread); // start readPipeThread
 
                                 WaitForSingleObject(ContinueEvent, INFINITE);
-                                dataWr->Version = 2; // 2 = uspesne nastartovany thread, komunikace navazana!
+                                dataWr->Version = 2; // 2 = thread started successfully, communication established!
 
-                                readPipe = NULL; // vynulujeme tyto promenne, aby se nam handly nezavrely (uz se pouzivaji v threadu)
+                                readPipe = NULL; // clear these variables so the handles do not get closed (already used in the thread)
                                 pipeSemaphore = NULL;
                             }
                             else
                             {
                                 PostMessage(mainWnd, WM_USER_SHOWERROR, EC_CANNOT_CREATE_READ_PIPE_THREAD, 0);
-                                dataWr->Version = FALSE; // BOOL hodnota: FALSE = hlasime neuspech, konec komunikace
+                                dataWr->Version = FALSE; // BOOL value: FALSE = report failure, end of communication
                             }
                         }
                     }
                     else
-                        dataWr->Version = FALSE; // BOOL hodnota: FALSE = hlasime neuspech, konec komunikace
+                        dataWr->Version = FALSE; // BOOL value: FALSE = report failure, end of communication
                     if (readPipe != NULL)
                         HANDLES(CloseHandle(readPipe));
                     if (writePipe != NULL)
@@ -745,18 +745,18 @@ unsigned __stdcall ConnectingThreadF(void* mainWndPtr)
                 }
                 else
                 {
-                    *((BOOL*)mapAddress) = FALSE; // zapis vysledku -> nepovedlo se
+                    *((BOOL*)mapAddress) = FALSE; // write the result -> it failed
                     PostMessage(mainWnd, WM_USER_INCORRECT_VERSION,
                                 data.Version, data.ClientOrServerProcessId);
                 }
             }
-            SetEvent(ConnectDataAcceptedEvent); // konec akce, vysledek je ulozen
+            SetEvent(ConnectDataAcceptedEvent); // action finished, the result is stored
             ConnectDataAcceptedEventMayBeSignaled = TRUE;
             break;
         }
         }
     }
-    //---  uvolneni sdilene pameti
+    // Release the shared memory block
     HANDLES(UnmapViewOfFile(mapAddress));
     HANDLES(CloseHandle(hFileMapping));
     _endthreadex(CT_SUCCESS);
@@ -792,7 +792,7 @@ CGlobalData::~CGlobalData()
     MessagesCache.BlockArray();
     count = MessagesCache.GetCount();
     for (int i = 0; i < count; i++)
-    { // Message je jen offset -> nedealokovat
+    { // Message is only an offset -> do not deallocate
         if (MessagesCache[i].File != NULL)
         {
             free(MessagesCache[i].File);
@@ -809,7 +809,7 @@ CGlobalData::~CGlobalData()
             Messages[i].File = NULL;
         }
     }
-    /* jr - prechod na MSVC
+    /* jr - migration to MSVC
   if (EditorConnected) EDITDisconnect();
 */
 }
@@ -936,11 +936,11 @@ wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /*cmdLine*/, i
 
     SetMessagesTitleW(MAINWINDOW_NAME);
 
-    // u Trace Serveru nema smysl, loguje se jen do souboru...
+    // not useful for Trace Server; it logs only into files...
     //SetTraceProcessNameW(MAINWINDOW_NAME);
     //SetTraceThreadNameW(L"Main");
 
-    // nastavime lokalizovane hlasky do modulu ALLOCHAN (zajistuje pri nedostatku pameti hlaseni uzivateli + Retry button + kdyz vse selze tak i Cancel pro terminate softu)
+    // configure localized messages for the ALLOCHAN module (handles out-of-memory reporting to the user + Retry button + Cancel when everything fails to terminate the software)
     SetAllocHandlerMessage(NULL, MAINWINDOW_NAME, NULL, NULL);
 
     HWND hPrevWindow = FindWindow(WC_MAINWINDOW, MAINWINDOW_NAME);
@@ -960,17 +960,17 @@ wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /*cmdLine*/, i
 
     WindowsVistaAndLater = TServerIsWindowsVersionOrGreater(6, 0, 0);
 
-    // aby bylo mozne pod Vistou pristupovat na TServer z procesu beziciho pod jinym uzivatelem
-    // (runas), bylo potreba povolit otevreni handlu procesu; povoluji zde tedy vse
+    // to allow a process running under another user to access TServer on Vista
+    // (runas), it was necessary to allow opening the process handle; everything is enabled here
     HANDLE hProcess = GetCurrentProcess();
     DWORD err = SetSecurityInfo(hProcess, SE_KERNEL_OBJECT,
                                 DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION,
                                 NULL, NULL, NULL, NULL);
 
-    // pokud bezi na Viste TServer AsAdmin a snazime se na proces napojit z jineho uctu (Salamander spustenej
-    // pomoci runas /user:test salamand.exe), nechtel se Salamander pripojit; kod jsem nasel tady:
+    // when TServer runs as Admin on Vista and we try to attach from another account (Salamander started
+    // using runas /user:test salamand.exe), Salamander refused to connect; the code was found here:
     // http://www.vistax64.com/vista-security/72588-openprocess-process_set_information-protected-processes.html#post357171
-    // Manik odkazuje na knizku http://www.amazon.com/gp/product/0470101555?ie=UTF8&tag=protectyourwi-20
+    // Manik points to the book http://www.amazon.com/gp/product/0470101555?ie=UTF8&tag=protectyourwi-20
     // (Windows Vista Security: Securing Vista Against Malicious Attacks )
     if (WindowsVistaAndLater)
     {
@@ -1000,7 +1000,7 @@ wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /*cmdLine*/, i
     ConfigData.Register(Registry);
     Registry.Load();
 
-    //--- inicializace knihovny
+    // Initialize the library
     InitializeWinLib();
 
     if (CWindow::RegisterUniversalClass(CS_DBLCLKS,
@@ -1049,7 +1049,7 @@ wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /*cmdLine*/, i
                             }
                             else
                             {
-                                // konfigurace v Registry neexistuje, pouzijeme defaulty
+                                // configuration does not exist in the Registry, use defaults
                                 ShowWindow(MainWindow->HWindow, ConfigData.MainWindowHidden ? SW_HIDE : SW_SHOW);
                             }
                             /*
@@ -1067,7 +1067,7 @@ wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /*cmdLine*/, i
 
                             if (InitializeServer(MainWindow->HWindow))
                             {
-                                //--- aplikacni smycka
+                                // Application loop
                                 MSG msg;
                                 while (GetMessage(&msg, NULL, 0, 0))
                                 {
@@ -1079,7 +1079,7 @@ wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /*cmdLine*/, i
                                     }
                                 }
 
-                                // ulozim config
+                                // save the configuration
                                 Registry.Save();
 
                                 ReleaseServer();

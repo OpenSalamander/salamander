@@ -7,7 +7,7 @@
 #include <ostream>
 #include <stdio.h>
 #include <limits.h>
-#include <commctrl.h> // potrebuju LPCOLORMAP
+#include <commctrl.h> // need LPCOLORMAP
 
 #include "lstrfix.h"
 #include "trace.h"
