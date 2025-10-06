@@ -46,12 +46,12 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
 
 IDD_PROGRESS DIALOGEX 61, 48, 194, 53
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION
-CAPTION "Rozbalování souborů"
+CAPTION "Extracting files"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    PUSHBUTTON      "Storno",IDCANCEL,72,33,50,14
-    LTEXT           "Rozbaluje se:",-1,8,66,50,9
-    LTEXT           "Do adresáře:",-1,8,80,50,9
+    PUSHBUTTON      "Cancel",IDCANCEL,72,33,50,14
+    LTEXT           "Extracting file:",-1,8,66,50,9
+    LTEXT           "To directory:",-1,8,80,50,9
     LTEXT           "",IDC_FILE,62,66,130,9
     LTEXT           "",IDC_DIR,62,80,130,9
     CONTROL         "",IDC_PROGRESS,"msctls_progress32",WS_BORDER,5,8,184,15
@@ -96,60 +96,60 @@ END
 
 STRINGTABLE 
 BEGIN
-    ARC_TITLE               "Samočinně rozbalovací archiv"
-    ARC_HELP                "Použití: install [/?] [/t tmp_path] [/x parametry]\n\n[x] znamená, že parametr x není povinný.\n\n/? -- Zobrazí tuto zprávu.\n/t -- Určí cestu pro tento samorozbalitelný archiv.\n/x -- Zbylé paramtery budou předány programu Setup.exe."
-    ERROR_TITLE             "Chyba při rozbalování archivu"
+    ARC_TITLE               "Self-Extracting Archive"
+    ARC_HELP                "Usage: install [/?] [/t tmp_path] [/x parameters]\n\n[x] means that parameter x is optional.\n\n/? -- Shows this help text.\n/t -- Specifies a temporary directory for this self-extractor.\n/x -- Remaining parameters will be passed to Setup.exe."
+    ERROR_TITLE             "Error extracting archive"
 END
 
 STRINGTABLE 
 BEGIN
-    ERROR_INFOPEN           "Chyba při otevírání archivního souboru: "
-    ERROR_INFREAD           "Chyba při čtení archivního souboru: "
-    ERROR_INFSEEK           "Chyba při pohybu po archivním souboru: "
-    ERROR_OUTFOPEN          "Chyba při otevírání souboru: "
-    ERROR_OUTFWRITE         "Chyba při zápisu do souboru: "
-    ERROR_OUTFCLOSE         "Chyba při zavírání souboru: "
-    ERROR_OUTMKDIR          "Chyba při vytváření adresáře: "
-    ERROR_OUTTIME           "Chyba při nastavování času souboru:"
-    ERROR_MEMORY            "Nedostatek paměti."
-    ERROR_TEMPPATH          "Nelze získat cestu k dočasným souborům: "
-    ERROR_TEMPNAME          "Nelze získat název dočasného soubotu: "
-    ERROR_DELFILE           "Nelze odstranit dočasný soubor: "
+    ERROR_INFOPEN           "Error opening archive file: "
+    ERROR_INFREAD           "Error reading archive file: "
+    ERROR_INFSEEK           "Error seeking archive file: "
+    ERROR_OUTFOPEN          "Error opening file: "
+    ERROR_OUTFWRITE         "Error writing file: "
+    ERROR_OUTFCLOSE         "Error closing file: "
+    ERROR_OUTMKDIR          "Error creating directory: "
+    ERROR_OUTTIME           "Error setting file time:"
+    ERROR_MEMORY            "Not enough memory."
+    ERROR_TEMPPATH          "Unable to get path to temporary files: "
+    ERROR_TEMPNAME          "Unable to get temporary file name: "
+    ERROR_DELFILE           "Unable to delete temporary file: "
 END
 
 STRINGTABLE 
 BEGIN
-    ERROR_MKDIR             "Nelze vytvořit dočasný adresář: "
-    ERROR_TCREATE           "Nelze vytvořit nové vlákno: "
-    ERROR_DLGCREATE         "Nelze vytvořit dialog: "
-    ERROR_ERRWAIT           "Nelze čekat na ukončení vlákna: "
-    ERROR_EXITCODE          "Nelze získat návratový kód vlákna: "
-    ERROR_CREATEPROC        "Nelze spustit externí program: "
-    ERROR_X64               "64-bitovou verzi programu Open Salamander nelze nainstalovat na 32-bitovou verzi Windows.\n\nStáhněte si prosím 32-bitovou verzi programu Open Salamander."
-    ARC_INEOF               "Archiv je porušen, předčasné ukončení souboru."
-    ARC_FORMAT              "Neznámý formát archivu."
-    ARC_NUMFOLDERS          "V archivu je nepodporovaný počet složek."
-    ARC_NOFILES             "V archivu nejsou žádné soubory."
-    ARC_VERSION             "Nepodporovaná verze archivu."
-    ARC_UNSUPP              "Archiv obsahuje nepodporované vlastnosti."
-    ARC_METHOD              "Použita nepodporovaná kompresní metoda."
-    ARC_BADDATA             "Chyba v kompresených datech, archiv je porušen."
+    ERROR_MKDIR             "Unable to create temporary directory: "
+    ERROR_TCREATE           "Unable to create new thread: "
+    ERROR_DLGCREATE         "Unable to create dialog window: "
+    ERROR_ERRWAIT           "Unable to wait for thread termination: "
+    ERROR_EXITCODE          "Unable to get thread exit code: "
+    ERROR_CREATEPROC        "Unable to launch external program: "
+    ERROR_X64               "You cannot install the 64-bit version of Open Salamander on a 32-bit version of Windows.\n\nPlease download the 32-bit version of Open Salamander."
+    ARC_INEOF               "Archive corrupted, premature end of file."
+    ARC_FORMAT              "Unknown archive format."
+    ARC_NUMFOLDERS          "This number of folders in the archive is not supported."
+    ARC_NOFILES             "There are no files in the archive."
+    ARC_VERSION             "Unsupported version of the archive."
+    ARC_UNSUPP              "Unsupported features present in the archive."
+    ARC_METHOD              "Unsupported compression method used."
+    ARC_BADDATA             "Error in compressed data; archive is corrupted."
 END
 
 STRINGTABLE 
 BEGIN
-    ARC_DISKFULL            "Cílový disk je plný. Uvolněte prosím další místo nebo přesměrujte rozbalování\nna jiný disk použitím paramteru (použijte ""/?"" pro nápovědu)."
-    ARC_NOEXESIG            "Nebyla nalezena EXE signatura."
-    ARC_NOPESIG             "Nebyla nalezena PE signatura."
+    ARC_DISKFULL            "Target disk is full. Free additional space or redirect extraction\nto another disk using a parameter (use ""/?"" for help)."
+    ARC_NOEXESIG            "No EXE signature found."
+    ARC_NOPESIG             "No PE signature found."
 END
 
 STRINGTABLE 
 BEGIN
-    ARC_BADPARAMS           "Chybné parametry příkazové řádky, použijte paramter ""/?"" pro nápovědu."
-    IDS_CREATEDIRFAILED     "Nelze vytvořit nový adresář:\n%s"
-    IDS_STATUS_STARTSETUP   "Spouští se instalace..."
-    IDS_STATUS_STARTNOTEPAD "Spouští se Notepad s ctime souborem..."
-    IDS_STATUS_STARTSALAM   "Spouští se Open Salamander..."
+    ARC_BADPARAMS           "Invalid command-line parameters; use ""/?"" for help."
+    IDS_CREATEDIRFAILED     "Unable to create new directory:\n%s"
+    IDS_STATUS_STARTSETUP   "Starting installation..."
+    IDS_STATUS_STARTNOTEPAD "Starting Notepad with the ctime file..."
+    IDS_STATUS_STARTSALAM   "Starting Open Salamander..."
 END
 
 #endif    // Czech resources

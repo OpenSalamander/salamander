@@ -59,9 +59,9 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "PROTECH"
-            VALUE "FileDescription", "Instalace programů PROTECH"
+            VALUE "FileDescription", "PROTECH Application Installer"
             VALUE "FileVersion", "2.0.0.0"
-            VALUE "InternalName", "Instalace programů PROTECH"
+            VALUE "InternalName", "PROTECH Application Installer"
             VALUE "OriginalFilename", "sfx7zip.exe"
             VALUE "LegalCopyright", "Copyright © 1997-2013 PROTECH"
         END
