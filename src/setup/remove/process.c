@@ -17,7 +17,7 @@ char* ProcessCache = NULL;
 int PCAllocated = 0;
 int PCUsed = 0;
 
-#define PC_DELTA 10 // for realocation
+#define PC_DELTA 10 // growth step used when reallocating the cached process list
 
 //************************************************************************************
 //

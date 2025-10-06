@@ -26,37 +26,37 @@ WORD GetCurDispLangID();
 //
 typedef struct tagINSTALLINFO
 {
-    char ApplicationName[MAX_PATH];             // vytahneme z INF souboru
-    char ApplicationNameVer[MAX_PATH];          // vcetne verze
-    char DefaultDirectory[MAX_PATH];            // vytahneme z INF souboru
-                                                //  char UseLastDirectory[MAX_PATH];   // vytahneme z INF souboru
-    char LastDirectories[3000];                 // vytahneme z INF souboru
-    char License[100000];                       // vytahnem z LICENSE.TXT
-    char ViewReadmePath[MAX_PATH];              // vytahneme z INF souboru
-    char CheckRunningApps[MAX_PATH];            // vytahneme z INF souboru
-    char RunProgramPath[MAX_PATH];              // vytahneme z INF souboru
-    char RunProgramQuietPath[MAX_PATH];         // vytahneme z INF souboru
-    char IncrementFileContentSrc[5000];         // vytahneme z INF souboru
-    char IncrementFileContentDst[5000];         // vytahneme z INF souboru
-    char EnsureSalamander25Dir[5000];           // vytahneme z INF souboru
-    char UnistallRunProgramQuietPath[MAX_PATH]; // vytahneme z INF souboru
-    char SaveRemoveLog[MAX_PATH];               // vytahneme z INF souboru
-    char LicenseFilePath[MAX_PATH];             // vytahneme z INF souboru
-    char FirstReadme[100000];                   // vytahnem z FirstReadmeFilePath
-    char FirstReadmeFilePath[MAX_PATH];         // vytahneme z INF souboru
+    char ApplicationName[MAX_PATH];             // extracted from the INF file
+    char ApplicationNameVer[MAX_PATH];          // including the version
+    char DefaultDirectory[MAX_PATH];            // extracted from the INF file
+                                                //  char UseLastDirectory[MAX_PATH];   // extracted from the INF file
+    char LastDirectories[3000];                 // extracted from the INF file
+    char License[100000];                       // loaded from LICENSE.TXT
+    char ViewReadmePath[MAX_PATH];              // extracted from the INF file
+    char CheckRunningApps[MAX_PATH];            // extracted from the INF file
+    char RunProgramPath[MAX_PATH];              // extracted from the INF file
+    char RunProgramQuietPath[MAX_PATH];         // extracted from the INF file
+    char IncrementFileContentSrc[5000];         // extracted from the INF file
+    char IncrementFileContentDst[5000];         // extracted from the INF file
+    char EnsureSalamander25Dir[5000];           // extracted from the INF file
+    char UnistallRunProgramQuietPath[MAX_PATH]; // extracted from the INF file
+    char SaveRemoveLog[MAX_PATH];               // extracted from the INF file
+    char LicenseFilePath[MAX_PATH];             // extracted from the INF file
+    char FirstReadme[100000];                   // loaded using FirstReadmeFilePath
+    char FirstReadmeFilePath[MAX_PATH];         // extracted from the INF file
     BOOL UseFirstReadme;
-    char AutoImportConfig[MAX_PATH]; // vytahneme z INF souboru
-    char SLGLanguages[5000];         // vytahneme z INF souboru
-    char WERLocalDumps[5000];        // vytahneme z INF souboru
+    char AutoImportConfig[MAX_PATH]; // extracted from the INF file
+    char SLGLanguages[5000];         // extracted from the INF file
+    char WERLocalDumps[5000];        // extracted from the INF file
 
     char RegPathVal['Z' - 'A' + 1][MAX_PATH];
 
-    BOOL UseLicenseFile; // existuje license soubor - mame instalak hnat pres tohle okno?
+    BOOL UseLicenseFile; // does a license file exist - should the installer go through this window?
 
-    char CreateDirectory[MAX_PATH]; // user potvrdil vytvoreni tohoto adresare
+    char CreateDirectory[MAX_PATH]; // user confirmed creating this directory
 
-    BOOL UninstallExistingVersion; // mame odinstaloval existuji verzi aplikace?
-    BOOL TheExistingVersionIsSame; // je prepisovana verze stejna jako ta co instalujeme?
+    BOOL UninstallExistingVersion; // should we uninstall the existing version of the application?
+    BOOL TheExistingVersionIsSame; // is the version being overwritten the same as the one we install?
 
     char CopySection[400000];
     char CopyFrom[200000];
@@ -64,23 +64,23 @@ typedef struct tagINSTALLINFO
     BYTE CopyFlags[10000];
     int CopyCount;
 
-    // doslo mi, ze celkovou velikost muzeme napocitat az u uzivatele z vybalenych souboreu
-    // a zjednodusit tak pripravu setup.inf
+    // it occurred to me that we can calculate the total size on the user's machine from the unpacked files
+    // and thus simplify preparing setup.inf
     //  DWORD SpaceRequired;
 
-    BOOL RebootNeeded; // po ukonceni instalace bude doporucen reboot
+    BOOL RebootNeeded; // after the installation finishes a reboot will be recommended
 
     char ShortcutSection[100000];
     BOOL DesktopPresent;
     BOOL StartMenuPresent;
-    BOOL Silent; // TRUE=ticha instalace; FALSE=klasika s okenkama
+    BOOL Silent; // TRUE = silent installation; FALSE = the classic UI with windows
 
     char CreateDirsSection[100000];
     int CreateDirsCount;
 
-    char TmpSection[500000]; // pro registry
+    char TmpSection[500000]; // buffer used for registry data
 
-    char InfFile[100000]; // protoze salati neumi cist inf soubor
+    char InfFile[100000]; // because the installer cannot read the INF file directly
 
     // uninstall
     char UnpinFromTaskbar[100000];
@@ -104,7 +104,7 @@ typedef struct tagINSTALLINFO
     BOOL LoadOldRemoveLog;
     char OldRemoveOptions[100000];
 
-    int DisplayWelcomeWarning; // 0 - zadny warning
+    int DisplayWelcomeWarning; // 0 - no warning
 
 } INSTALLINFO;
 
@@ -129,8 +129,8 @@ extern char QuickLaunchDirectory[MAX_PATH];
 extern BOOL SfxDirectoriesValid;
 extern char SfxDirectories[7][MAX_PATH];
 
-extern HWND SfxDlg;   // okno SFX7ZIP, ktere spustilo tento setup.exe (pred ukoncenim setup.exe toto okno nechame ukazat a aktivovat, aby se z nej mohly spoustet instalovane readme a Salam)
-extern BOOL RunBySfx; // TRUE = setup.exe byl spusten s parametrem /runbysfx
+extern HWND SfxDlg;   // SFX7ZIP window that launched this setup.exe (before setup.exe exits we show and activate it so the installed readme and Salam can be launched from it)
+extern BOOL RunBySfx; // TRUE if setup.exe was started with the /runbysfx parameter
 
 extern char MAINWINDOW_TITLE[100];
 
@@ -147,10 +147,10 @@ extern DWORD CCMinorVer;
 extern DWORD CCMajorVerNeed;
 extern DWORD CCMinorVerNeed;
 
-// options z command line
-extern char CmdLineDestination[MAX_PATH]; // pokud je retezec nenulovy, urcuje cilovy adresar (jinak se pouzije dafault)
+// options from the command line
+extern char CmdLineDestination[MAX_PATH]; // if the string is not empty, it specifies the target directory (otherwise the default is used)
 
-extern char PreviousVerOfFileToIncrementContent[10000]; // obsah prave odinstalovaneho plugins.ver
+extern char PreviousVerOfFileToIncrementContent[10000]; // contents of the just-uninstalled plugins.ver
 
 //
 //functions
@@ -158,10 +158,10 @@ extern char PreviousVerOfFileToIncrementContent[10000]; // obsah prave odinstalo
 BOOL CreateWizard();
 BOOL StopInstalling();
 void InstallDone();
-void CenterWindow(HWND hWindow); // centruje k hlavnimu oknu
+void CenterWindow(HWND hWindow); // centers to the main window
 
-char* LoadStr(int resID);                        // taha string z resourcu
-void InsertProgramName(char* str, BOOL version); // do str nacpe jmeno instalovaneho programu
+char* LoadStr(int resID);                        // fetches a string from resources
+void InsertProgramName(char* str, BOOL version); // inserts the installed program name into str
 void InsertAppName(HWND hDlg, int resID, BOOL version);
 BOOL QueryFreeSpace(char* driveSpec, LONGLONG* spaceRequired);
 BOOL GetSpecialFolderPath(int folder, char* path);
@@ -200,7 +200,7 @@ BOOL LoadRemoveLog();
 BOOL LoadTextFile(const char* fileName, char* buff, int buffMax);
 void GetFoldersPaths();
 
-#define WM_USER_STARTINSTALL (WM_APP + 100)   // spusti instalaci
-#define WM_USER_STARTUNINSTALL (WM_APP + 101) // spusti instalaci
-#define WM_USER_SHOWACTSFX7ZIP (WM_APP + 666) // nechame ukazat a aktivovat dialog SFX7ZIP (cislo je sdilene se SFX7ZIP)
-#define WM_USER_CLOSEWIZARDDLG (WM_APP + 667) // zpozdene zavreni wizardu (cekame, az se spusti Readme a Salamander, pokud se dialog zavre hned, neaktivuji se vzdy spoustene softy, zustavaji na pozadi a aktivovane jsou okna pod nimi, proste des bes)
+#define WM_USER_STARTINSTALL (WM_APP + 100)   // start the installation
+#define WM_USER_STARTUNINSTALL (WM_APP + 101) // start the uninstallation
+#define WM_USER_SHOWACTSFX7ZIP (WM_APP + 666) // show and activate the SFX7ZIP dialog (the number is shared with SFX7ZIP)
+#define WM_USER_CLOSEWIZARDDLG (WM_APP + 667) // delayed closing of the wizard (wait until Readme and Salamander start; if the dialog closes immediately, the launched apps are not activated and remain in the background while other windows stay on top)
