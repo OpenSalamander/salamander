@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -18,7 +19,7 @@
 /*
 //****************************************************************************
 //
-// CTipOfTheDayWindow a CTipOfTheDayDialog
+// CTipOfTheDayWindow and CTipOfTheDayDialog
 //
 //
 
@@ -124,7 +125,7 @@ CTipOfTheDayWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       RECT r;
       int leftWidth = clientR.right / 7;
       int topWidth = clientR.right / 8;
-      // obvod
+      // border
       HPEN hOldPen = (HPEN)SelectObject(hDC, BtnShadowPen);
       MoveToEx(hDC, 0, clientR.bottom - 1, NULL);
       LineTo(hDC, 0, 0);
@@ -134,19 +135,19 @@ CTipOfTheDayWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       LineTo(hDC, clientR.right - 1, clientR.bottom - 1);
       LineTo(hDC, -1, clientR.bottom - 1);
 
-      // sedivy pruh vlevo
+      // gray stripe on the left
       r = clientR;
       r.left++;
       r.right = leftWidth;
       r.top++;
       r.bottom--;
       FillRect(hDC, &r, (HBRUSH)(COLOR_BTNSHADOW + 1));
-      // na nej ikonku ukradenou od Microsoftu - proc si na ne
-      // vsichni tak stezujou, kdyz maj tak pekne ikonky ? ;-)
+      // place the icon stolen from Microsoft here - why does
+      // everyone complain when they have such nice icons? ;-)
       DrawIcon(hDC, r.left + (r.right - r.left - 32) / 2, 16,
                HANDLES(LoadIcon(HInstance, MAKEINTRESOURCE(IDI_TIPOFTHEDAY))));
 
-      // bily pruh nahore
+      // white stripe at the top
       r = clientR;
       r.top++;
       r.left = leftWidth;
@@ -159,11 +160,11 @@ CTipOfTheDayWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       int oldBkMode = SetBkMode(hDC, TRANSPARENT);
       DrawText(hDC, LoadStr(IDS_TOD_DIDYOUKNOW), -1, &r, DT_LEFT | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
 
-      // oddelovaci sediva line
+      // separating gray line
       SelectObject(hDC, BtnShadowPen);
       MoveToEx(hDC, leftWidth, topWidth, NULL);
       LineTo(hDC, clientR.right - 1, topWidth);
-      // bily pruh dole
+      // white stripe at the bottom
       r = clientR;
       r.top = topWidth + 1;
       r.left = leftWidth;
@@ -339,7 +340,7 @@ CTipOfTheDayDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
       TipWindow.AttachToWindow(GetDlgItem(HWindow, IDC_TOD_TIP));
 
-      // priradim oknu ikonku
+      // assign an icon to the window
       SendMessage(HWindow, WM_SETICON, ICON_BIG,
                   (LPARAM)HANDLES(LoadIcon(HInstance, MAKEINTRESOURCE(IDI_TIPOFTHEDAY))));
 
@@ -382,10 +383,10 @@ CTipOfTheDayDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 CSharesDialog::CSharesDialog(HWND hParent)
     : CCommonDialog(HLanguage, IDD_SHARES, IDD_SHARES, hParent),
-      SharedDirs(FALSE) // chceme kompletni shary
+      SharedDirs(FALSE) // we want full shares
 {
     HListView = NULL;
-    SortBy = 0; // radime podle sharu
+    SortBy = 0; // sorted by share
     FocusedIndex = -1;
 }
 
@@ -393,7 +394,7 @@ HIMAGELIST
 CSharesDialog::CreateImageList()
 {
     HIMAGELIST himl = ImageList_Create(16, 16, GetImageListColorFlags() | ILC_MASK, 2, 0);
-    //  ImageList_SetBkColor(himl, GetSysColor(COLOR_WINDOW)); // aby pod XP chodily pruhledne ikonky
+    //  ImageList_SetBkColor(himl, GetSysColor(COLOR_WINDOW)); // make transparent icons work under XP
 
     HICON hIcon = SalLoadImage(4, 4, IconSizes[ICONSIZE_16], IconSizes[ICONSIZE_16], IconLRFlags); // symbolsDirectory
     if (hIcon != NULL)
@@ -418,7 +419,7 @@ void CSharesDialog::InitColumns()
     lvc.mask = LVCF_FMT | LVCF_TEXT | LVCF_SUBITEM;
     lvc.fmt = LVCFMT_LEFT;
     int i;
-    for (i = 0; i < 3; i++) // vytvorim sloupce
+    for (i = 0; i < 3; i++) // create columns
     {
         lvc.pszText = LoadStr(header[i]);
         lvc.iSubItem = i;
@@ -429,8 +430,8 @@ void CSharesDialog::InitColumns()
     int scrollW = GetSystemMetrics(SM_CXHSCROLL);
     ListView_SetColumnWidth(HListView, 0, width + 15 + scrollW);
     ListView_SetColumnWidth(HListView, 1, width * 3);
-    ListView_SetColumnWidth(HListView, 2, LVSCW_AUTOSIZE_USEHEADER); // zbytek
-    ListView_SetColumnWidth(HListView, 0, width + 15);               // prostor pro scrollbar
+    ListView_SetColumnWidth(HListView, 2, LVSCW_AUTOSIZE_USEHEADER); // the rest
+    ListView_SetColumnWidth(HListView, 0, width + 15);               // space for the scrollbar
 }
 
 int CALLBACK
@@ -503,7 +504,7 @@ void CSharesDialog::Refresh()
             lvi.iImage = 0;
             lvi.state = INDEXTOOVERLAYMASK(1);
             lvi.pszText = (char*)remoteName;
-            lvi.lParam = i; // pro pozdejsi sort
+            lvi.lParam = i; // for later sorting
             int index = ListView_InsertItem(HListView, &lvi);
             ListView_SetItemText(HListView, index, 1, (char*)localPath);
             ListView_SetItemText(HListView, index, 2, (char*)comment);
@@ -561,7 +562,7 @@ void CSharesDialog::OnContextMenu(int x, int y)
     if (selCount < 1)
         return;
 
-    // vytahame texty z tlacitek a naplnime context menu
+    // pull button texts and populate the context menu
     int ids[] = {-2, IDOK, // -2 -> next item will be default
                  IDC_SHARES_STOP,
                  -1, // -1 -> separator
@@ -592,8 +593,8 @@ CSharesDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         ListView_SetImageList(HListView, himl, LVSIL_SMALL);
 
         /*
-      // do praveho spodniho ruzku vlozime znacek pro resize okna
-      // nevlozime, bylo by to zbytecne moc kodu
+      // insert a resize grip into the bottom-right corner
+      // not inserted, it would be too much code
       RECT r;
       GetClientRect(HWindow, &r);
       CreateWindowEx(0,
@@ -756,8 +757,8 @@ BOOL CDisconnectDialog::OnDisconnect()
     {
         iStart = index;
 
-        // polozky pouze odpojime, ale nechame je v poli Connections, ktere se zamete
-        // v destruktoru tohoto dialogu nebo v pripade Refresh() pred vracenim FALSE z teto metody
+        // just disconnect items but leave them in Connections array, which will be cleaned
+        // in this dialog's destructor or during Refresh() before this method returns FALSE
 
         if (Connections[index].Type == citNetwork)
         {
@@ -778,10 +779,10 @@ BOOL CDisconnectDialog::OnDisconnect()
             conn.dwFlags = DISC_UPDATE_PROFILE;
             if (WNetDisconnectDialog1(&conn) != NO_ERROR)
             {
-                Refresh(); // musime rebuildnout pole+listview, abychom zametli jiz odpojene polozky
-                // bez invalidate+update hlavniho okna nedojde po zavreni Disconnect dialogu k prekresleni mista
-                // pod dialogem (dialog ma save-bits a zrejme nedojde k poruseni jeho zapamatovaneho pozadi,
-                // asi optimalizace paintu)
+                Refresh(); // we must rebuild the array and list view to remove already disconnected items
+                // without invalidating and updating the main window, the area under the Disconnect dialog isn't redrawn after closing
+                // (the dialog uses save-bits and its remembered background probably won't be invalidated,
+                // likely a paint optimization)
                 InvalidateRect(MainWindow->HWindow, NULL, FALSE);
                 UpdateWindow(MainWindow->HWindow);
                 return FALSE;
@@ -797,7 +798,7 @@ BOOL CDisconnectDialog::OnDisconnect()
                 {
                     BOOL isInPanel = FALSE;
                     int panel = 0;
-                    CPluginFSInterfaceEncapsulation* fs = NULL; // najdeme zapouzdreni FS-objektu
+                    CPluginFSInterfaceEncapsulation* fs = NULL; // find the encapsulation of the FS-object
                     if (MainWindow->LeftPanel->Is(ptPluginFS) &&
                         MainWindow->LeftPanel->GetPluginFS()->Contains(pluginFS))
                     {
@@ -831,11 +832,11 @@ BOOL CDisconnectDialog::OnDisconnect()
                         CPluginInterfaceForFSEncapsulation* ifaceForFS = fs->GetPluginInterfaceForFS();
                         if (!ifaceForFS->DisconnectFS(HWindow, isInPanel, panel, pluginFS,
                                                       fs->GetPluginFSName(), fs->GetPluginFSNameIndex()))
-                        {              // disconnect byl zamitnuty (nejspis userem)
-                            Refresh(); // musime rebuildnout pole+listview, abychom zametli jiz odpojene polozky
-                            // bez invalidate+update hlavniho okna nedojde po zavreni Disconnect dialogu k prekresleni mista
-                            // pod dialogem (dialog ma save-bits a zrejme nedojde k poruseni jeho zapamatovaneho pozadi,
-                            // asi optimalizace paintu)
+                        {              // disconnect was rejected (probably by the user)
+                            Refresh(); // we must rebuild the array and list view to remove already disconnected items
+                            // without invalidating and updating the main window, the area under the Disconnect dialog isn't redrawn after closing
+                            // (the dialog uses save-bits and its remembered background probably won't be invalidated,
+                            // likely a paint optimization)
                             InvalidateRect(MainWindow->HWindow, NULL, FALSE);
                             UpdateWindow(MainWindow->HWindow);
                             return FALSE;
@@ -849,9 +850,9 @@ BOOL CDisconnectDialog::OnDisconnect()
             }
         }
     }
-    // bez invalidate+update hlavniho okna nedojde po zavreni Disconnect dialogu k prekresleni mista
-    // pod dialogem (dialog ma save-bits a zrejme nedojde k poruseni jeho zapamatovaneho pozadi,
-    // asi optimalizace paintu)
+    // without invalidating and updating the main window, the area under the Disconnect dialog isn't redrawn after closing
+    // (the dialog uses save-bits and its remembered background probably won't be invalidated,
+    // likely a paint optimization)
     InvalidateRect(MainWindow->HWindow, NULL, FALSE);
     UpdateWindow(MainWindow->HWindow);
     return TRUE;
@@ -868,7 +869,7 @@ HIMAGELIST
 CDisconnectDialog::CreateImageList()
 {
     HIMAGELIST himl = ImageList_Create(16, 16, GetImageListColorFlags() | ILC_MASK, 4, 10);
-    //  ImageList_SetBkColor(himl, GetSysColor(COLOR_WINDOW)); // aby pod XP chodily pruhledne ikonky
+    //  ImageList_SetBkColor(himl, GetSysColor(COLOR_WINDOW)); // make transparent icons work under XP
 
     // CONNECTION_ICON_NETWORK
     HICON hIcon = SalLoadImage(33, 10, IconSizes[ICONSIZE_16], IconSizes[ICONSIZE_16], IconLRFlags); // accessible network drive
@@ -917,7 +918,7 @@ void CDisconnectDialog::InitColumns()
     lvc.mask = LVCF_FMT | LVCF_TEXT | LVCF_SUBITEM;
     lvc.fmt = LVCFMT_LEFT;
     int i;
-    for (i = 0; i < 2; i++) // vytvorim sloupce
+    for (i = 0; i < 2; i++) // create columns
     {
         lvc.pszText = LoadStr(header[i]);
         lvc.iSubItem = i;
@@ -927,13 +928,13 @@ void CDisconnectDialog::InitColumns()
     int width = ListView_GetColumnWidth(HListView, 0);
     int scrollW = GetSystemMetrics(SM_CXHSCROLL);
     ListView_SetColumnWidth(HListView, 0, width + 15 + scrollW);
-    ListView_SetColumnWidth(HListView, 1, LVSCW_AUTOSIZE_USEHEADER); // zbytek
-    ListView_SetColumnWidth(HListView, 0, width + 15);               // prostor pro scrollbar
+    ListView_SetColumnWidth(HListView, 1, LVSCW_AUTOSIZE_USEHEADER); // the rest
+    ListView_SetColumnWidth(HListView, 0, width + 15);               // space for the scrollbar
 }
 
 char* CreateIndexedPluginPathText(const char* pathText, int index)
 {
-    char* newText = (char*)malloc(strlen(pathText) + 15); // nechame si rezervu 14 znaku (" [-1234567890]")
+    char* newText = (char*)malloc(strlen(pathText) + 15); // leave room for 14 characters (" [-1234567890]")
     if (newText != NULL)
         sprintf(newText, "%s [%d]", pathText, index);
     return newText;
@@ -963,7 +964,7 @@ void CDisconnectDialog::EnumConnections()
             if (err == ERROR_SUCCESS && e > 0)
             {
                 int i;
-                for (i = 0; i < (int)e; i++) // zpracujem nove data
+                for (i = 0; i < (int)e; i++) // process new data
                 {
                     const char* name = netSources[i].lpLocalName;
                     if (name == NULL)
@@ -973,7 +974,7 @@ void CDisconnectDialog::EnumConnections()
                         path = "";
 
                     BOOL defaultItem = Panel->Is(ptDisk) && HasTheSameRootPath(Panel->GetPath(), name == noneText ? path : name);
-                    InsertItem(-2, FALSE, citNetwork, CONNECTION_ICON_ACCESSIBLE, name, path, defaultItem, NULL); // -2 -> abecedne zaradit
+                    InsertItem(-2, FALSE, citNetwork, CONNECTION_ICON_ACCESSIBLE, name, path, defaultItem, NULL); // -2 -> insert alphabetically
                 }
                 entries += e;
             }
@@ -990,7 +991,7 @@ void CDisconnectDialog::EnumConnections()
 
     // Network: REMEMBERED resources
 
-    // dostupne disky
+    // available drives
     DWORD mask = GetLogicalDrives();
 
     err = WNetOpenEnum(RESOURCE_REMEMBERED, RESOURCETYPE_DISK, 0, NULL, &hEnumNet);
@@ -1008,7 +1009,7 @@ void CDisconnectDialog::EnumConnections()
             if (err == ERROR_SUCCESS && e > 0)
             {
                 int i;
-                for (i = 0; i < (int)e; i++) // zpracujem nove data
+                for (i = 0; i < (int)e; i++) // process new data
                 {
                     const char* name = netSources[i].lpLocalName;
                     if (name != NULL)
@@ -1023,7 +1024,7 @@ void CDisconnectDialog::EnumConnections()
                             path = "";
 
                         BOOL defaultItem = Panel->Is(ptDisk) && HasTheSameRootPath(Panel->GetPath(), *name == 0 ? path : name);
-                        InsertItem(-2, TRUE, citNetwork, iconIndex, name, path, defaultItem, NULL); // -2 -> abecedne zaradit
+                        InsertItem(-2, TRUE, citNetwork, iconIndex, name, path, defaultItem, NULL); // -2 -> insert alphabetically
                     }
                 }
                 entries += e;
@@ -1039,7 +1040,7 @@ void CDisconnectDialog::EnumConnections()
             SalMessageBox(Parent, GetErrorText(err), LoadStr(IDS_NETWORKERROR), MB_OK | MB_ICONEXCLAMATION);
     }
 
-    // pokud jsme vlozili alespon jeden sitovy disk, vlozime pred prvni sitovou skupinu
+    // if at least one network drive was inserted, add it in front of the first network group
     if (Connections.Count > 0)
         InsertItem(0, FALSE, citGroup, CONNECTION_ICON_NETWORK, LoadStr(IDS_NETWORK_NETWORK), "", FALSE, NULL);
 
@@ -1105,7 +1106,7 @@ void CDisconnectDialog::EnumConnections()
                                "", text, fs == activePanelFS, fs->GetInterface());
                     free(txt);
                 }
-                else // FS nechce zadnou polozku pridat
+                else // FS does not want to add any item
                 {
                     if (fs == activePanelFS)
                         addFSItemForActivePanelFS = TRUE;
@@ -1114,7 +1115,7 @@ void CDisconnectDialog::EnumConnections()
                 }
             }
 
-            // zkontrolujeme unikatnost textu polozek, pripadne duplicitni polozky oindexujeme
+            // check items text uniqueness and index duplicate items
             for (i = pluginGroupIndex; i < Connections.Count; i++)
             {
                 BOOL freePluginPath = FALSE;
@@ -1124,9 +1125,9 @@ void CDisconnectDialog::EnumConnections()
                 for (x = i + 1; x < Connections.Count; x++)
                 {
                     char* testedPath = Connections[x].Path;
-                    if (StrICmp(pluginPath, testedPath) == 0) // shoda -> musime polozku oindexovat
+                    if (StrICmp(pluginPath, testedPath) == 0) // match -> the item must be indexed
                     {
-                        if (!freePluginPath) // nalezena prvni shoda, musime oindexovat i prvni vyskyt duplicitni polozky
+                        if (!freePluginPath) // the first match found, index also the first duplicate item
                         {
                             currentIndex = GetIndexForDrvText(fsList, count, Connections[i].PluginFS, currentIndex);
                             Connections[i].Path = CreateIndexedPluginPathText(pluginPath, currentIndex++);
@@ -1147,8 +1148,8 @@ void CDisconnectDialog::EnumConnections()
                     free(pluginPath);
             }
 
-            // zajistime pridani pro "unarni" FS (RegEdit, WMobile a dalsi) - nemaji polozky pro otevrena FS,
-            // umoznuji jen jeden otevreny FS
+            // ensure addition for "unary" FS (RegEdit, WMobile, etc.) - they have no entries for open FS
+            // and allow only one opened FS
             if (addFSItemForActivePanelFS || addFSItemForNonactivePanelFS)
             {
                 int i2;
@@ -1182,7 +1183,7 @@ void CDisconnectDialog::EnumConnections()
         free(fsList);
     }
 
-    // pokud jsme vlozili alespon jeden file system, vlozime pred prvni plugin skupinu
+    // if at least one file system was inserted, add in front of the the first plugin group
     if (pluginGroupIndex < Connections.Count)
         InsertItem(pluginGroupIndex, FALSE, citGroup, CONNECTION_ICON_PLUGIN, LoadStr(IDS_NETWORK_PLUGINS), "", FALSE, NULL);
 }
@@ -1228,8 +1229,8 @@ BOOL CDisconnectDialog::InsertItem(int index, BOOL ignoreDuplicate, CConnectionI
 
     if (index == -2)
     {
-        // polozku mame abecedne zaradit (tche@thlsofts.be poslal screenshot, kde je videt, ze mu
-        // enumeratory vraceji abecedne rozhazeny seznam)
+        // the item should be inserted alphabetically (tche@thlsofts.be sent a screenshot showing
+        // that enumerators return the list in random order)
         int i;
         for (i = 0; i < Connections.Count; i++)
         {
@@ -1291,7 +1292,7 @@ void CDisconnectDialog::Refresh()
         lvi.iSubItem = 0;
         lvi.iImage = Connections[i].IconIndex;
         lvi.pszText = Connections[i].Name;
-        lvi.lParam = i; // pro pozdejsi sort
+        lvi.lParam = i; // for later sorting
         lvi.iIndent = (Connections[i].Type == citGroup) ? 0 : 1;
         int index = ListView_InsertItem(HListView, &lvi);
         ListView_SetItemText(HListView, index, 1, Connections[i].Path);
@@ -1368,10 +1369,10 @@ CDisconnectDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     lvi.mask = LVIF_PARAM;
                     ListView_GetItem(HListView, &lvi);
                     int index = (int)lvi.lParam;
-                    if (index < 0 || index >= Connections.Count || // pro jistotu
+                    if (index < 0 || index >= Connections.Count || // just in case
                         Connections[index].Type == citGroup)
                     {
-                        // sestrelime SELECTION
+                        // clear the selection
                         ListView_SetItemState(HListView, i, 0, LVIS_SELECTED);
                     }
                 }
@@ -1522,9 +1523,9 @@ void CCompareDirsDialog::Transfer(CTransferInfo& ti)
     if (ti.Type == ttDataToWindow || EnableSubdirs || Configuration.CompareOnePanelDirs)
         ti.CheckBox(IDC_COMPARE_IGNORE_DIRS, Configuration.CompareIgnoreDirs);
 
-    // poskytneme MasksString, je zde kontrola rozsahu, o nic nejde
+    // provide MasksString; there's range validation, nothing serious
     ti.EditLine(IDE_COMPARE_IGNORE_FILES, (char*)Configuration.CompareIgnoreFilesMasks.GetWritableMasksString(), MAX_PATH);
-    // poskytneme MasksString, je zde kontrola rozsahu, o nic nejde
+    // provide MasksString; there's range validation, nothing serious
     ti.EditLine(IDE_COMPARE_IGNORE_DIRS, (char*)Configuration.CompareIgnoreDirsMasks.GetWritableMasksString(), MAX_PATH);
 
     if (ti.Type == ttDataToWindow)
@@ -1578,7 +1579,7 @@ HDWP CCompareDirsDialog::OffsetControl(HDWP hdwp, int id, int yOffset)
 
 void CCompareDirsDialog::DisplayMore(BOOL more)
 {
-    // ukryvane controly musime HIDEnou, abychom je vyradili z tab orderu
+    // hidden controls must be hidden to remove them from the tab order
     int controls[] = {IDC_COMPARE_SUBDIRS_ATTR, IDC_COMPARE_SUBDIRS_ATTR_DESCR,
                       IDC_COMPARE_ONE_PANEL_DIRS, IDC_COMPARE_MORE_OPTIONS, IDC_COMPARE_MORE_OPTIONS_SEP,
                       IDC_COMPARE_IGNORE_FILES, IDE_COMPARE_IGNORE_FILES, IDC_COMPARE_IGNORE_DIRS,
@@ -1637,16 +1638,16 @@ CCompareDirsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         new CButton(HWindow, IDC_MORE, BTF_MORE | BTF_CHECKBOX);
         CheckDlgButton(HWindow, IDC_MORE, BST_CHECKED);
 
-        // nyni jsme v plne velikosti => omerime dialog
+        // now we're at full size => measure the dialog
         RECT r;
         GetWindowRect(HWindow, &r);
         OriginalWidth = r.right - r.left;
         OriginalHeight = r.bottom - r.top;
-        // originalni pozice tlacitek
+        // original button positions
         GetWindowRect(GetDlgItem(HWindow, IDOK), &r);
         ScreenToClient(HWindow, (LPPOINT)&r);
         OriginalButtonsY = r.top;
-        // vyska vymezovace
+        // height of the spacer
         GetWindowRect(GetDlgItem(HWindow, IDC_CM_SPACER), &r);
         SpacerHeight = r.bottom - r.top;
 
@@ -1684,16 +1685,16 @@ CCompareDirsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             EnableControls();
 
-            // pokud uzivatel kliknuch na checkbox pro povoleni masky, asi ji chce editovat
+            // if the user clicks the checkbox to enable the mask, he probably wants to edit it
             if (LOWORD(wParam) == IDC_COMPARE_IGNORE_FILES)
             {
                 if (IsDlgButtonChecked(HWindow, IDC_COMPARE_IGNORE_FILES))
-                    SendMessage(HWindow, WM_NEXTDLGCTL, FALSE, FALSE); // focus do masky
+                    SendMessage(HWindow, WM_NEXTDLGCTL, FALSE, FALSE); // focus to the mask
             }
             if (LOWORD(wParam) == IDC_COMPARE_IGNORE_DIRS)
             {
                 if (IsDlgButtonChecked(HWindow, IDC_COMPARE_IGNORE_DIRS))
-                    SendMessage(HWindow, WM_NEXTDLGCTL, FALSE, FALSE); // focus do masky
+                    SendMessage(HWindow, WM_NEXTDLGCTL, FALSE, FALSE); // focus to the mask
             }
         }
         break;
@@ -1719,9 +1720,9 @@ CCmpDirProgressDialog::CCmpDirProgressDialog(HWND hParent, BOOL hasProgress, CIT
     Target = NULL;
     Progress = NULL;
     TotalProgress = NULL;
-    FileSize = CQuadWord(1, 0); // ochrana pred delenim nulou
+    FileSize = CQuadWord(1, 0); // protection against division by zero
     ActualFileSize = CQuadWord(0, 0);
-    TotalSize = CQuadWord(1, 0); // ochrana pred delenim nulou
+    TotalSize = CQuadWord(1, 0); // protection against division by zero
     ActualTotalSize = CQuadWord(0, 0);
     Cancel = FALSE;
     LastTickCount = 0;
@@ -1742,7 +1743,7 @@ void CCmpDirProgressDialog::SetTarget(const char* text)
 
 void CCmpDirProgressDialog::SetFileSize(const CQuadWord& size)
 {
-    FileSize = max(CQuadWord(1, 0), size); // ochrana pred delenim nulou
+    FileSize = max(CQuadWord(1, 0), size); // protection against division by zero
 }
 
 void CCmpDirProgressDialog::SetActualFileSize(const CQuadWord& size)
@@ -1753,7 +1754,7 @@ void CCmpDirProgressDialog::SetActualFileSize(const CQuadWord& size)
 
 void CCmpDirProgressDialog::SetTotalSize(const CQuadWord& size)
 {
-    TotalSize = max(CQuadWord(1, 0), size); // ochrana pred delenim nulou
+    TotalSize = max(CQuadWord(1, 0), size); // protection against division by zero
 }
 
 void CCmpDirProgressDialog::SetActualTotalSize(const CQuadWord& size)
@@ -1781,7 +1782,7 @@ void CCmpDirProgressDialog::AddSize(const CQuadWord& size)
 BOOL CCmpDirProgressDialog::Continue()
 {
     MSG msg;
-    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) // chvilku venujeme userovi ...
+    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) // give the user a moment ...
     {
         if (!IsWindow(HWindow) || !IsDialogMessage(HWindow, &msg))
         {
@@ -1790,7 +1791,7 @@ BOOL CCmpDirProgressDialog::Continue()
         }
     }
 
-    // kazdych 100ms prekreslime zmenena data (text + progress bary)
+    // redraw modified data every 100 ms (text + progress bars)
     DWORD ticks = GetTickCount();
     if (ticks - LastTickCount > 100)
     {
@@ -1849,8 +1850,8 @@ CCmpDirProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if ((Target = new CStaticText(HWindow, IDS_TARGET, STF_PATH_ELLIPSIS | STF_CACHED_PAINT)) == NULL)
             TRACE_E(LOW_MEMORY);
 
-        // pri otevirani dialogu nastavime msgbox parenta pro plug-iny na tento dialog (jen hlavni thread)
-        // obnova PluginMsgBoxParent je v CCommonDialog::DialogProc na WM_DESTROY
+        // when opening the dialog set msgbox parent for plug-ins to this dialog (main thread only)
+        // PluginMsgBoxParent is restored in CCommonDialog::DialogProc on WM_DESTROY
         if (MainThreadID == GetCurrentThreadId())
         {
             HOldPluginMsgBoxParent = PluginMsgBoxParent;
@@ -1869,21 +1870,21 @@ CCmpDirProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_COMMAND:
     {
-        // pokud uzivatel kliknul na tlacitko Cancel a uz ho nepotvrdil drive, doptame se
+        // if the user clicked Cancel and it hasn't been confirmed yet, ask again
         if (LOWORD(wParam) == IDCANCEL && !Cancel)
         {
-            // tlacitko Cancel musi byt enabled
+            // the Cancel button must be enabled
             if (IsWindowEnabled(GetDlgItem(HWindow, IDCANCEL)))
             {
-                // prekreslime explicitne pred zobrazenim messageboxu
+                // redraw explicitly before showing the messagebox
                 FlushDataToControls();
 
-                // zeptame se uzivatele jestli chce prerusit operaci
+                // ask the user if he wants to interrupt the operation
                 Cancel = (SalMessageBox(HWindow, LoadStr(IDS_CANCELOPERATION), LoadStr(IDS_QUESTION),
                                         MB_YESNO | MB_ICONQUESTION) == IDYES);
             }
         }
-        // nenechame command propadnout, jinak se nam zavre dialog
+        // do not let the command fall through, or the dialog will close
         return TRUE;
     }
     }
@@ -1919,7 +1920,7 @@ CExitingOpenSal::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             int c = ProgressDlgArray.RemoveFinishedDlgs();
             if (c == 0)
-                EndDialog(HWindow, IDOK); // konec Salamandera je mozny
+                EndDialog(HWindow, IDOK); // ending Salamander is possible
             else
             {
                 char num[50];
@@ -2148,7 +2149,7 @@ CErrorReadingADSDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (Title != NULL)
         {
             SetWindowText(HWindow, Title);
-            Title = NULL; // je to z LoadStr, brzy tomu dojde zivotnost (premaze se), radsi vyNULLujeme
+            Title = NULL; // comes from LoadStr; its lifetime ends soon (it will be overwritten), so we null it out
         }
 
         CStaticText* name;
@@ -2195,8 +2196,8 @@ CErrorSettingAttrsDlg::CErrorSettingAttrsDlg(HWND parent, const char* file, DWOR
 
 void GetAttrsString(char* text, DWORD attrs)
 {
-    // pokud podporime zobrazovani dalsiho atributu,
-    // je treba rozsirit InternalGetAttr() a masku DISPLAYED_ATTRIBUTES
+    // if we support showing another attribute,
+    // InternalGetAttr() and DISPLAYED_ATTRIBUTES mask need to be extended
     int l = 0;
     if (attrs & FILE_ATTRIBUTE_READONLY)
         text[l++] = 'R';
@@ -2366,7 +2367,7 @@ CDriveSelectErrDlg::CDriveSelectErrDlg(HWND parent, const char* errText, const c
 {
     ErrText = errText;
     lstrcpyn(DrvPath, drvPath, MAX_PATH);
-    CounterForAllowedUseOfTimer = 5 * 60; // budeme to zkouset maximalne 5 minut, pak at si zmackne Retry sam (opatreni proti "uklepani" drivu)
+    CounterForAllowedUseOfTimer = 5 * 60; // try for at most 5 minutes, then let the user press Retry (prevents drive hammering)
 }
 
 INT_PTR
@@ -2383,21 +2384,21 @@ CDriveSelectErrDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         SetDlgItemText(HWindow, IDT_ERRTEXT, ErrText);
         MessageBeep(MB_ICONEXCLAMATION);
 
-        // zjistime jestli ma smysl periodicky testovat pripravenost drivu (vyjma floppy (hlucne) a site (hrozi dlouhe vypadky))
+        // check whether periodic drive readiness tests make sense (except for noisy floppies and network drives which may be slow)
         BOOL setTimer = TRUE;
         UINT drvType = MyGetDriveType(DrvPath);
-        // POZOR: bohuzel mountpointy vraci drive-type DRIVE_NO_ROOT_DIR pokud neni vlozene medium, neskutecny ... takze
-        // jsem to musel oprasit (periodicke testy i pri drvType == DRIVE_NO_ROOT_DIR)
+        // WARNING: unfortunately mountpoints return DRIVE_NO_ROOT_DIR when no media is inserted, unbelievable ... so
+        // I had to keep periodic tests even when drvType == DRIVE_NO_ROOT_DIR
         if (drvType == DRIVE_REMOVABLE || drvType == DRIVE_CDROM || drvType == DRIVE_NO_ROOT_DIR)
         {
             char root[MAX_PATH];
             GetRootPath(root, DrvPath);
             switch (GetDriveType(root))
             {
-            case DRIVE_REMOVABLE: // testneme jestli nejde o floppy-disky (zrejme nejdou dat do mount-pointu, takze takhle to staci)
+            case DRIVE_REMOVABLE: // check whether it's a floppy disk (probably can't be in a mount point, so this is enough)
             {
                 int drv = UpperCase[root[0]] - 'A' + 1;
-                if (drv >= 1 && drv <= 26) // pro jistotu provedeme "range-check"
+                if (drv >= 1 && drv <= 26) // perform a range check just to be sure
                 {
                     DWORD medium = GetDriveFormFactor(drv);
                     switch (medium)
@@ -2407,27 +2408,27 @@ CDriveSelectErrDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     case 525:
                     case 800:
                         setTimer = FALSE;
-                        break; // jde o floppy
+                        break; // it's a floppy
                     }
                 }
                 break;
             }
 
-            case DRIVE_FIXED: // mount-point, zjistime root removable drivu
+            case DRIVE_FIXED: // mount-point, determine the root of removable drive
             {
                 if (!GetCurrentLocalReparsePoint(DrvPath, root))
-                    setTimer = FALSE; // nemuze byt mount-point, zadne periodicke testy
+                    setTimer = FALSE; // can't be a mount-point, no periodic tests
                 break;
             }
 
             case DRIVE_NO_ROOT_DIR:
                 setTimer = FALSE;
-                break; // netusim oc jde, radsi to nechame bez periodickych testu
+                break; // no idea what's going on, we better skip periodic tests
             }
             lstrcpyn(DrvPath, root, MAX_PATH);
         }
         else
-            setTimer = FALSE; // nejspis jde o sitove pripojeni
+            setTimer = FALSE; // most likely a network connection
 
         if (setTimer)
             SetTimer(HWindow, 3725, 1000, NULL);
@@ -2437,12 +2438,12 @@ CDriveSelectErrDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_TIMER:
     {
-        if (wParam == 3725 && GetForegroundWindow() == HWindow) // otestujeme jestli uz nahodou neni drive pristupny
+        if (wParam == 3725 && GetForegroundWindow() == HWindow) // check if the drive isn't accessible already
         {
             KillTimer(HWindow, 3725);
 
-            // test pristupnosti drivu delame pres FindFirstFile, protoze pres SalGetFileAttributes
-            // se vraci pro junction-pointy vzdycky uspech (atributy "adresare" nesouvisi s obsahem)
+            // drive accessibility is tested using FindFirstFile because SalGetFileAttributes
+            // always succeeds on junction-points (directory attributes are unrelated to content)
             BOOL ok = FALSE;
             char fileName[MAX_PATH + 10];
             lstrcpyn(fileName, DrvPath, MAX_PATH + 10);
@@ -2531,7 +2532,7 @@ void CCfgPageIconOvrls::Transfer(CTransferInfo& ti)
             UINT state = INDEXTOSTATEIMAGEMASK((!IsNameInListOfDisabledCustomIconOverlays(item->IconOverlayName) ? 2 : 1));
             ListView_SetItemState(HListView, i, state, LVIS_STATEIMAGEMASK);
         }
-        // nastavim sirky sloupcu
+        // set column widths
         ListView_SetColumnWidth(HListView, 0, LVSCW_AUTOSIZE_USEHEADER);
         ListView_SetColumnWidth(HListView, 1, LVSCW_AUTOSIZE_USEHEADER);
 
@@ -2548,14 +2549,14 @@ void CCfgPageIconOvrls::Transfer(CTransferInfo& ti)
         for (i = 0; i < ListOfShellIconOverlays.Count; i++)
         {
             if (ListView_GetItemState(HListView, i, LVIS_STATEIMAGEMASK) == INDEXTOSTATEIMAGEMASK(1))
-            { // vypnuty checkbox -> pridame jmeno do seznamu disablenych icon overlay handleru
+            { // unchecked checkbox -> add the name to the list of disabled icon overlay handlers
                 AddToListOfDisabledCustomIconOverlays(ListOfShellIconOverlays[i]->IconOverlayName);
             }
         }
         if (oldEnableCustomIconOverlays != Configuration.EnableCustomIconOverlays ||
             strcmp(oldDisabledCustomIconOverlays != NULL ? oldDisabledCustomIconOverlays : "",
                    Configuration.DisabledCustomIconOverlays != NULL ? Configuration.DisabledCustomIconOverlays : "") != 0)
-        { // zmena konfigu -> musime nahlasit, ze se to projevi az pri pristim startu Salama
+        { // configuration change -> notify that it takes effect after Salamander restarts
             SalMessageBox(HWindow, LoadStr(IDS_ICONOVRLS_CHANGE), LoadStr(IDS_INFOTITLE),
                           MB_OK | MB_ICONINFORMATION);
         }
@@ -2586,7 +2587,7 @@ CCfgPageIconOvrls::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         DWORD origFlags = ListView_GetExtendedListViewStyle(HListView);
         ListView_SetExtendedListViewStyle(HListView, origFlags | exFlags); // 4.71
 
-        // naleju do listview sloupce Name a Description
+        // fill listview with Name and Description columns
         LVCOLUMN lvc;
         lvc.mask = LVCF_TEXT | LVCF_FMT;
         lvc.pszText = LoadStr(IDS_ICONOVRLS_NAME);
@@ -2598,7 +2599,7 @@ CCfgPageIconOvrls::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         lvc.iSubItem = 1;
         ListView_InsertColumn(HListView, 1, &lvc);
 
-        // prvky dialogu se maji natahovat podle jeho velikosti, nastavime delici controly
+        // dialog elements should stretch depending on its size, set split controls
         ElasticVerticalLayout(1, IDC_ICONOVRLS_LIST);
 
         break;
