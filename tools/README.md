@@ -18,6 +18,7 @@
   - `uv run comment-translation-status --project-root ..\src --no-recursion --name-filter dialogs*.cpp`
   - `uv run comment-translation-status --project-root ..\src`
   - `uv run comment-find-czech-words --project-root ..\src --output czech_words.txt`
+  - `uv run comment-find-czech-words --project-root ..\src\plugins\ --exclude shared\ --output plugins_czech_words.txt`
   - `uv run comment-word-counter --project-root ..\src --output word_counts.txt`
   - `uv run comment-code-guard --base-repo-path \salamander_code_guard`  
   - `uv run comment-code-guard --base-repo-path \salamander_code_guard --sub-path src\plugins\zip`  
