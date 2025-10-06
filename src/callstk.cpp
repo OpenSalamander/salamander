@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -23,15 +24,15 @@
 // boundaries so we can find the real functions
 // that we need to call for initialization.
 
-#pragma warning(disable : 4075) // chceme definovat poradi inicializace modulu
+#pragma warning(disable : 4075) // we want to define the module initialization order
 
 typedef void(__cdecl* _PVFV)(void);
 
 #pragma section(".i_cst$a", read)
-__declspec(allocate(".i_cst$a")) const _PVFV i_callstk = (_PVFV)1; // na zacatek sekce .i_cst si dame promennou i_callstk
+__declspec(allocate(".i_cst$a")) const _PVFV i_callstk = (_PVFV)1; // place i_callstk variable at the start of the .i_cst section
 
 #pragma section(".i_cst$z", read)
-__declspec(allocate(".i_cst$z")) const _PVFV i_callstk_end = (_PVFV)1; // a na konec sekce .i_cst si dame promennou i_callstk_end
+__declspec(allocate(".i_cst$z")) const _PVFV i_callstk_end = (_PVFV)1; // place i_callstk_end variable at the end of the .i_cst section
 
 void Initialize__CallStk()
 {
@@ -54,7 +55,7 @@ DWORD CCallStack::SpeedBenchmark = 0;
 BOOL __CallStk_T = TRUE;
 #endif // (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
 
-CCallStack MainThreadStack; // aby call-stack objekt vznikl pred volanim konstruktoru v hl. threadu
+CCallStack MainThreadStack; // ensure the call-stack object is created before constructors run in the main thread
 
 //
 // ****************************************************************************
@@ -120,7 +121,7 @@ BOOL PreventSetUnhandledExceptionFilterAux()
     {
         DWORD dwBuf;
         VirtualProtect(pOrgEntry, jmpSize, dwOldProtect, &dwBuf);
-        // ma smysl? http://chadaustin.me/2009/03/disabling-functions/
+        // Does it make sense? http://chadaustin.me/2009/03/disabling-functions/
         //FlushInstructionCache(GetCurrentProcess(), pOrgEntry, 20);
     }
     return bRet;
@@ -154,7 +155,7 @@ struct CTBRData
     BOOL ExitProcess;
     BOOL EventProcessedRet;
     DWORD CurrentThreadID;
-    DWORD ShellExtCrashID; // pokud je ruzne od -1, jedna se o exception pri shell execute
+    DWORD ShellExtCrashID; // if not equal to -1, it indicates an exception during shell execute
     const char* IconOvrlsHanName;
     const char* BugReportPath;
 };
@@ -171,11 +172,11 @@ void BenchmarkCallStkTestFunction(int counter, const char* string)
 LONG WINAPI TopLevelExceptionFilter(LPEXCEPTION_POINTERS exception)
 {
     int ret = CCallStack::HandleException(exception);
-    if (ret == EXCEPTION_EXECUTE_HANDLER) // user kliknul na Terminate
+    if (ret == EXCEPTION_EXECUTE_HANDLER) // user clicked Terminate
     {
         TRACE_I("TopLevelExceptionFilter: calling ExitProcess(1).");
         //    ExitProcess(1);
-        TerminateProcess(GetCurrentProcess(), 1); // tvrdsi exit (tenhle jeste neco vola)
+        TerminateProcess(GetCurrentProcess(), 1); // stronger exit (this still calls something)
     }
     return ret;
 }
@@ -230,14 +231,15 @@ CCallStack::CCallStack(BOOL dontSuspend)
 
     if (FirstCallstack)
     {
-        // vytvorime vlakno pro generovani bug reportu; ve PROTECH/VKO jsem pri nekonecne rekurzi videl stav,
-        // kdy se bugreport generoval pouze v pripade, ze byl vytvaren v pomocnem vlakne
+        // Create a thread for bug report generation; in PROTECH/VKO, I observed
+        // during infinite recursion that the bug report was generated only if it
+        // was created in the helper thread
         TBRData.TerminateEvent = NOHANDLES(CreateEvent(NULL, TRUE, FALSE, NULL));
         TBRData.Event = NOHANDLES(CreateEvent(NULL, TRUE, FALSE, NULL));
         TBRData.EventProcessed = NOHANDLES(CreateEvent(NULL, TRUE, FALSE, NULL));
         if (TBRData.TerminateEvent == NULL || TBRData.Event == NULL || TBRData.EventProcessed == NULL)
             TRACE_E("Error during creating events.");
-        else // vlakno nastartujeme pouze pokud se podarilo vytvorit eventy
+        else // start the thread only if the events were created successfully
         {
             BugReportThread = NOHANDLES(CreateThread(NULL, 0, ThreadBugReportF, &TBRData, 0, &BugReportThreadID));
             if (BugReportThread == NULL)
@@ -254,25 +256,27 @@ CCallStack::CCallStack(BOOL dontSuspend)
     else
     {
       showInfo = FALSE;
-      WaitForSingleObject(BugReport, INFINITE);  // pockame na konec threadu
+      WaitForSingleObject(BugReport, INFINITE);  // wait for the thread to finish
       NOHANDLES(CloseHandle(BugReport));
     }
     */
 
         OldUnhandledExceptionFilter = SetUnhandledExceptionFilter(TopLevelExceptionFilter);
 
-        // Pokusime se vyradit unhandled exception filter pro dalsi volani.
-        // Pokud se do procesu Salamandera nacte DLL knihovna (plugin, shell extension), ktera
-        // pouziva jine nez nase RTL, behem jeho inicializace si toto RTL prevezme tento filter.
-        // Navic od MSVC2005 se pro ruzne sanity checky jiz nehazeji exceptions, ale primo se
-        // vypise hlaska a vola se UnhandledExceptionFilter(), coz otevre okno Watsona.
-        // Takto nam napriklad padal Salam bez bug reportu s TortoiseSVN shell extension.
-        // Diky nasledujicimu volani bychom meli obdrzet veskere unhandled pady vcetne
-        // sanity kontrol z MSVC2005.
+        // Try to disable the unhandled exception filter for subsequent calls.
+        // When a DLL library (plugin, shell extension) that uses a different RTL is
+        // loaded into Salamander process, that RTL installs this filter during its
+        // initialization. Additionally, starting with MSVC 2005, various sanity checks no
+        // longer throw exceptions but instead print a message and directly call
+        // UnhandledExceptionFilter(), which opens the Watson dialog.
+        // For example, Salamander used to crash without a bug report
+        // from TortoiseSVN shell extension. The call below should
+        // ensure we catch all unhandled crashes including MSVC 2005 sanity
+        // checks.
         //
-        // Vice na toto tema viz "A proposal to make Dr.Watson invocation configurable":
+        // More on this topic in "A proposal to make Dr.Watson invocation configurable":
         // http://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=101337
-        // a dale dve hard-core reseni:
+        // and two hardcore solutions:
         // http://www.debuginfo.com/articles/debugfilters.html
         // http://blog.kalmbachnet.de/?postid=75
         // 3/2012 - update pro x64: http://blog.kalmbach-software.de/2008/04/02/unhandled-exceptions-in-vc8-and-above-for-x86-and-x64/
@@ -285,13 +289,13 @@ CCallStack::CCallStack(BOOL dontSuspend)
         if (!QueryPerformanceFrequency(&CCallStack::SavedPerfFreq))
             CCallStack::SavedPerfFreq.QuadPart = 1;
         if (CCallStack::SavedPerfFreq.QuadPart == 0)
-            CCallStack::SavedPerfFreq.QuadPart = 1; // zrejme nemozne, ale radsi zkontrolujeme (delime touto hodnotou)
+            CCallStack::SavedPerfFreq.QuadPart = 1; // unlikely, but check just in case (we divide by this value)
     }
     static BOOL doBenchmark = TRUE;
     if (doBenchmark)
     {
         doBenchmark = FALSE;
-        SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL); // zkusime pritahnout pozornost systemu (abysme nemerili napr. swapovani jineho procesu)
+        SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL); // try to catch system attention (avoid measuring e.g. another process's swapping)
         LARGE_INTEGER startTime, ti, endTime;
         if (QueryPerformanceCounter(&startTime))
         {
@@ -321,7 +325,7 @@ CCallStack::CCallStack(BOOL dontSuspend)
     if (doBenchmark)
     {
         doBenchmark = FALSE;
-        SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL); // zkusime pritahnout pozornost systemu (abysme nemerili napr. swapovani jineho procesu)
+        SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL); // try to catch system attention (avoid measuring e.g. another process's swapping)
         LARGE_INTEGER startTime, ti, endTime, freq;
         if (QueryPerformanceCounter(&startTime) && QueryPerformanceFrequency(&freq))
         {
@@ -355,15 +359,15 @@ CCallStack::~CCallStack()
         //    TRACE_I("CCallStack::~CCallStack(): MonitoredItemsSize=" << MonitoredItemsSize);
         if (OldestItemIndex != -1)
         {
-            while (1) // projdeme jeste frontu a vypiseme konecne stavy kritickych volani call-stacku
+            while (1) // go through the queue again and print final states of critical call-stack invocations
             {
-                if (!MonitoredItems[OldestItemIndex].NotAlreadyReported) // pokud bylo reporteno, hlasime konecne hodnoty
+                if (!MonitoredItems[OldestItemIndex].NotAlreadyReported) // if it was already reported, print final values
                 {
                     TRACE_I("Info for Too Frequently Used Call Stack Message: call address: 0x" << std::hex << MonitoredItems[OldestItemIndex].CallerAddress << std::dec << ", total push-time: " << (DWORD)(MonitoredItems[OldestItemIndex].PushesPerfTime * 1000 / CCallStack::SavedPerfFreq.QuadPart) << "ms, total number of calls in monitored period: " << MonitoredItems[OldestItemIndex].NumberOfCalls);
                 }
                 if (OldestItemIndex == NewestItemIndex)
                 {
-                    OldestItemIndex = NewestItemIndex = -1; // fronta se vyprazdnila
+                    OldestItemIndex = NewestItemIndex = -1; // the queue emptied
                     break;
                 }
                 OldestItemIndex++;
@@ -400,9 +404,9 @@ CCallStack::~CCallStack()
 
         if (BugReportThread != NULL)
         {
-            // ukoncenim tohoto vlakna sem kod vleze jeste jednou, protoze pro nej exitoval take CCallStack...
-            SetEvent(TBRData.TerminateEvent);           // ukoncime bug report vlakno
-            WaitForSingleObject(BugReportThread, 1000); // pockame max vterinu nez se thread dokonci
+            // by ending this thread, the code enters here one more time because CCallStack exited for it as well
+            SetEvent(TBRData.TerminateEvent);           // terminate the bug report thread
+            WaitForSingleObject(BugReportThread, 1000); // wait at most one second for the thread to finish
             NOHANDLES(CloseHandle(BugReportThread));
             BugReportThread = NULL;
             NOHANDLES(CloseHandle(TBRData.TerminateEvent));
@@ -421,7 +425,7 @@ void CCallStack::ReleaseBeforeExitThread()
 {
     CCallStack* stack = CCallStack::GetThis();
     if (stack != NULL)
-        stack->ReleaseBeforeExitThreadBody(); // nepodchyceny thready maji TLS na NULL
+        stack->ReleaseBeforeExitThreadBody(); // unhandled threads have TLS set to NULL
     else
     {
         TRACE_E("Incorrect call to CCallStack::ReleaseBeforeExitThread(): call-stack object was not defined in this thread.");
@@ -431,22 +435,22 @@ void CCallStack::ReleaseBeforeExitThread()
 void CCallStack::ReleaseBeforeExitThreadBody()
 {
     while (!DontSuspend && CCallStack::ExceptionExists)
-        Sleep(1000); // misto suspend-thread v exception-handleru
+        Sleep(1000); // instead of suspend-thread in the exception handler
 #if (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
     if (MonitoredItems != NULL)
     {
         //    TRACE_I("CCallStack::~CCallStack(): MonitoredItemsSize=" << MonitoredItemsSize);
         if (OldestItemIndex != -1)
         {
-            while (1) // projdeme jeste frontu a vypiseme konecne stavy kritickych volani call-stacku
+            while (1) // go through the queue again and print final states of critical call-stack invocations
             {
-                if (!MonitoredItems[OldestItemIndex].NotAlreadyReported) // pokud bylo reporteno, hlasime konecne hodnoty
+                if (!MonitoredItems[OldestItemIndex].NotAlreadyReported) // if it was already reported, print final values
                 {
                     TRACE_I("Info for Too Frequently Used Call Stack Message: call address: 0x" << std::hex << MonitoredItems[OldestItemIndex].CallerAddress << std::dec << ", total push-time: " << (DWORD)(MonitoredItems[OldestItemIndex].PushesPerfTime * 1000 / CCallStack::SavedPerfFreq.QuadPart) << "ms, total number of calls in monitored period: " << MonitoredItems[OldestItemIndex].NumberOfCalls);
                 }
                 if (OldestItemIndex == NewestItemIndex)
                 {
-                    OldestItemIndex = NewestItemIndex = -1; // fronta se vyprazdnila
+                    OldestItemIndex = NewestItemIndex = -1; // the queue emptied
                     break;
                 }
                 OldestItemIndex++;
@@ -485,7 +489,7 @@ void CCallStack::Push(const char* format, va_list args)
     PushesCounter++;
 #endif // (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
     while (!DontSuspend && CCallStack::ExceptionExists)
-        Sleep(1000); // misto suspend-thread v exception-handleru
+        Sleep(1000); // instead of SuspendThread in the exception handler
     if (STACK_CALLS_BUF_SIZE - (End - Text) >= STACK_CALLS_MAX_MESSAGE_LEN + 4)
     {
         char* backup = End;
@@ -530,7 +534,7 @@ CCallStack::Pop()
 #endif // (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
 {
     while (!DontSuspend && CCallStack::ExceptionExists)
-        Sleep(1000); // misto suspend-thread v exception-handleru
+        Sleep(1000); // instead of SuspendThread in the exception handler
     if (Skipped == 0)
     {
         if (End > Text)
@@ -583,8 +587,8 @@ void InformAboutIconOvrlsHanCrash(const char* iconOvrlsHanName)
         params.Caption = SALAMANDER_TEXT_VERSION;
         params.Text = buf;
         static char aliasBtnNames[200];
-        /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   nechame pro tlacitka msgboxu resit kolize hotkeys tim, ze simulujeme, ze jde o menu
+        /* used by the export_mnu.py script which generates salmenu.mnu for the Translator
+   we let message box buttons handle hotkey collisions by simulating that they belong to a menu
 MENU_TEMPLATE_ITEM MsgBoxButtons[] = 
 {
   {MNTT_PB, 0
@@ -616,15 +620,15 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
         if (res != DIALOG_IGNORE)
         {
             HKEY hSalamander;
-            if (OpenKey(HKEY_CURRENT_USER, SalamanderConfigurationRoots[0], hSalamander)) // udaje zapiseme jen pokud existuje konfigurace v registry (coz je snad vzdy)
+            if (OpenKey(HKEY_CURRENT_USER, SalamanderConfigurationRoots[0], hSalamander)) // write data only if a configuration exists in the registry (hich should almost always be the cas)
             {
                 HKEY actKey;
-                if (OpenKey(hSalamander, SALAMANDER_CONFIG_REG, actKey)) // udaje zapiseme jen pokud existuje konfigurace v registry (coz je snad vzdy)
+                if (OpenKey(hSalamander, SALAMANDER_CONFIG_REG, actKey)) // write data only if a configuration exists in the registry (hich should almost always be the cas)
                 {
                     CloseKey(actKey);
                     if (CreateKey(hSalamander, SALAMANDER_CONFIG_REG, actKey))
                     {
-                        // POZOR: normalne se tyto hodnoty zapisuji v CMainWindow::SaveConfig()
+                        // NOTE: normally, these values are written in CMainWindow::SaveConfig()
                         SetValue(actKey, CONFIG_ENABLECUSTICOVRLS_REG, REG_DWORD,
                                  &Configuration.EnableCustomIconOverlays, sizeof(DWORD));
                         SetValue(actKey, CONFIG_DISABLEDCUSTICOVRLS_REG, REG_SZ,
@@ -645,7 +649,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
 DWORD WINAPI
 CCallStack::ThreadBugReportF(void* param)
 {
-    CCallStack stack(TRUE); // aby bylo kam davat texty z volanych funkci
+    CCallStack stack(TRUE); // so there is somewhere to store texts from called functions
     CALL_STACK_MESSAGE1("ThreadBugReportF()");
 
     SetThreadNameInVC("ThreadBugReport");
@@ -670,13 +674,13 @@ CCallStack::ThreadBugReportF(void* param)
 
         case WAIT_OBJECT_0 + 1: // tasklist->Event
         {
-            // po dobehnuti musi vlakno zase cekat na prikaz
+            // after finishing the thread must wait for another command
             ResetEvent(data->Event);
 
-            // ulozime na disk zaznamy o chybe
+            // save the error records to disk
             BOOL ret = CreateBugReportFile(data->Exception, data->CurrentThreadID, data->ShellExtCrashID, data->BugReportPath);
 
-            if (HLanguage != NULL) // pro zobrazeni msgboxu potrebujeme jiz naloadeny SLG modul
+            if (HLanguage != NULL) // we need the SLG module already loaded to display the message box
             {
                 if (data->IconOvrlsHanName != NULL)
                     InformAboutIconOvrlsHanCrash(data->IconOvrlsHanName);
@@ -693,17 +697,17 @@ CCallStack::ThreadBugReportF(void* param)
                     SalMessageBoxEx(&params);
                 }
             }
-            data->ExitProcess = TRUE; // ukoncime thread
+            data->ExitProcess = TRUE; // terminate the thread
 
             data->EventProcessedRet = ret;
             SetEvent(data->EventProcessed);
             break;
         }
 
-        default: // toto by nemelo nastat
+        default: // this should not happen
         {
             TRACE_E("Wrong event!");
-            Sleep(50); // abychom nezrali CPU
+            Sleep(50); // to avoid consuming CPU
             break;
         }
         }
@@ -725,15 +729,15 @@ void PrintBugReportLine(void* param, const char* txt, BOOL tab)
 
 BOOL CCallStack::CreateBugReportFile(EXCEPTION_POINTERS* Exception, DWORD threadID, DWORD ShellExtCrashID, const char* bugReportFileName)
 {
-    // pokusime se vytvorit soubor s informacemi o chybe, cim mene funkci z knihoven budeme
-    // volat, tim mensi je pravdepodobnost, ze to behem teto funkce spadne (knihovny muzou
-    // byt nakopnute -> Salamander preci kvuli necemu pada)
+    // try to create the bug report file; the fewer library functions we call,
+    // the lower the chance this routine crashes (the libraries might be corrupted
+    // -> Salamander is crashing for some reason anyway)
     BOOL ret = TRUE;
 
     __try
     {
         {
-            // vytvoreni souboru
+            // create the file
             static HANDLE file;
             file = NOHANDLES(CreateFile(bugReportFileName, GENERIC_WRITE, 0, NULL, CREATE_NEW,
                                         FILE_ATTRIBUTE_NORMAL, NULL));
@@ -751,7 +755,7 @@ BOOL CCallStack::CreateBugReportFile(EXCEPTION_POINTERS* Exception, DWORD thread
                     if (stack != NULL)
                     {
                         oldDontSuspend = stack->DontSuspend;
-                        stack->DontSuspend = TRUE; // aby se daly volat i call-stackovane funkce
+                        stack->DontSuspend = TRUE; // so call-stacked functions can be called as well
                     }
 #endif // CALLSTK_DISABLE
                     CCallStack::PrintBugReport(Exception, threadID, ShellExtCrashID, PrintBugReportLine, (void*)file);
@@ -780,34 +784,35 @@ BOOL CCallStack::CreateBugReportFile(EXCEPTION_POINTERS* Exception, DWORD thread
 
 int CCallStack::HandleException(EXCEPTION_POINTERS* e, DWORD shellExtCrashID, const char* iconOvrlsHanName)
 {
-    // POZOR - doslo k vyjimce a my bychom pred signalizaci do salmon.exe (pro nagenerovani minidumpu)
-    // meli volat jen naproste minimum API (system muze byt v kritickych sekcich, plati omezeni jeste vetsi nez na DllMain)
+    // WARNING - an exception occurred and before signaling salmon.exe (to generate
+    // the minidump), we should call only the absolute minimum API (the system may be
+    // in critical sections, with even more restrictions than inside DllMain)
 
-    // v DEBUG verzi si ohlidame debugger, v SDK/RELEASE verzi tento test radeji nedelame
+    // in the DEBUG version we check for a debugger; in SDK/RELEASE version we rather skip this test
 #if defined(_DEBUG) && !defined(ENABLE_BUGREPORT_DEBUGGING)
-    if (IsDebuggerPresent())              // je-li soft prave debugovany, nema smysl ukazovat Bug Report okenko, atd.
-        return EXCEPTION_CONTINUE_SEARCH; // hodime vyjimku dale ... chyti ji debugger
+    if (IsDebuggerPresent())              // if the software is currently being debugged, showing the Bug Report dialog makes no sense
+        return EXCEPTION_CONTINUE_SEARCH; // pass the exception on ... the debugger will catch it
 #endif
 
     static char bugReportPath[MAX_PATH];
 
-    // pozadame salmon o nagenerovani minidumpu
+    // request salmon to generate the minidump
     SalmonFireAndWait(e, bugReportPath);
 
-    // sice zpozdene za minidumpem, ale zase jistejsi, zese vetsi sance pro minidump
+    // Although delayed after the minidump, it is more reliable, it increases the chance of having a valid dump
     SalamanderExceptionTime = GetTickCount();
 
     static DWORD curThreadID;
     curThreadID = GetCurrentThreadId();
     TRACE_I("Exception 0x" << std::hex << e->ExceptionRecord->ExceptionCode << " in address " << e->ExceptionRecord->ExceptionAddress << ", thread ID = " << std::dec << curThreadID);
 
-    // pockame, az se bude moct zpracovat nase exceptiona
+    // Wait until our exception can be processed
     while (CCallStack::ExceptionExists)
         Sleep(1000);
-    CCallStack::ExceptionExists = TRUE; // ted se zpracovava nase exceptiona
+    CCallStack::ExceptionExists = TRUE; // our exception is being handled now
 
-    /*  // kouse se otevirani dialogovych oken, proto nelze pouzit
-  // nejprve zastavime ostatni thready, aby jim zustal call-stack v pouzitelnem stavu
+    /*  // Opening dialog windows freezes, so this cannot be used.
+  // First we suspend the other threads so their call-stacks remain usable
   int i;
   for (i = 0; i < CCallStack::CallStacks.Count; i++)
   {
@@ -820,13 +825,13 @@ int CCallStack::HandleException(EXCEPTION_POINTERS* e, DWORD shellExtCrashID, co
 */
 
     TBRData.Exception = e;
-    TBRData.ExitProcess = FALSE; // zbytecne, vystupni parametr, ale ...
+    TBRData.ExitProcess = FALSE; // unnecessary, output parameter, but ...
     TBRData.CurrentThreadID = curThreadID;
     TBRData.ShellExtCrashID = shellExtCrashID;
     TBRData.IconOvrlsHanName = iconOvrlsHanName;
     TBRData.BugReportPath = bugReportPath;
 
-    // pokud bezi bugreport vlakno, nagenerujeme report v nem
+    // if the bug-report thread is running, attempt generation there
     BOOL reportInThisThread = TRUE;
 
     if (BugReportThread != NULL)
@@ -835,33 +840,34 @@ int CCallStack::HandleException(EXCEPTION_POINTERS* e, DWORD shellExtCrashID, co
         SetEvent(TBRData.Event);
         DWORD waitRet = WaitForSingleObject(TBRData.EventProcessed,
 #if defined(_DEBUG) && defined(ENABLE_BUGREPORT_DEBUGGING)
-                                            INFINITE); // pockame, jinak se pri krokovani v debuggeru ukoncuje soft
+                                            INFINITE); // wait, otherwise the software terminates during debugging step-by-step
 #else
-                                            6000); // dame vlaknu na pozadi 6s pro nagenerovani reportu
+                                            6000); // give the background thread 6 seconds to generate the report
 #endif
         if (waitRet != WAIT_OBJECT_0)
-            reportInThisThread = TRUE; // pri chybe nebo timeoutu se pokusime nagenerovat report jeste zde
+            reportInThisThread = TRUE; // on error or timeout, we will try to generate the report here as well
         else
-            reportInThisThread = TBRData.EventProcessedRet == FALSE; // pokud ve vlakne generovani selhalo, zkusime jeste zde
+            reportInThisThread = TBRData.EventProcessedRet == FALSE; // if generation failed in the thread, try here too
     }
 
-    // pokud bugreport vlakno nebezelo nebo se v nem nepodari report nagenerovat, pokusime se jeste v tomto vlakne
+    // if the bug-report thread didn't run or failed to generate the report, we will try again in this thread
     if (reportInThisThread)
     {
-        // konkurencni generovani dvou reportu mi zlobilo (pri timeoutu 200ms byly .BUG i .DMP neuplne) - zastavim vlakno na pozadi
+        // Concurrent generation of two reports caused issues (with a 200 ms
+        // timeout both .BUG and .DMP were incomplete) - suspend the background thread
         if (BugReportThread)
             SuspendThread(BugReportThread);
 
-        // pokusime se report nagenerovat v tomto vlakne
-        CreateBugReportFile(e, curThreadID, shellExtCrashID, bugReportPath); // vytvorime zaznam o chybe na disku
+        // Try to generate the report in this thread
+        CreateBugReportFile(e, curThreadID, shellExtCrashID, bugReportPath); // create an on-disk record of the error
 
         if (BugReportThread)
             ResumeThread(BugReportThread);
     }
 
-    TerminateProcess(GetCurrentProcess(), 1); // tvrdsi exit (tenhle jeste neco vola)
-    // sem uz se nedostaname
-    return EXCEPTION_CONTINUE_SEARCH; // hodime vyjimku dale ... pad nebo debuger
+    TerminateProcess(GetCurrentProcess(), 1); // stronger exit (this still performs some calls)
+    // execution never reaches this point
+    return EXCEPTION_CONTINUE_SEARCH; // pass the exception on ... crash or debugger
 }
 
 #if (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
@@ -869,25 +875,25 @@ void CCallStack::CheckCallFrequency(DWORD_PTR callerAddress, LARGE_INTEGER* push
 {
     __int64 monitoringPeriod = CALLSTACK_MONITORINGPERIOD * CCallStack::SavedPerfFreq.QuadPart / 1000;
     __int64 oldestPerfTime = pushTime->QuadPart - monitoringPeriod;
-    if (NewestItemIndex != -1) // zkusime najit zaznam o predchozim volani stejneho call-stack makra
+    if (NewestItemIndex != -1) // try to find a record of a previous call of the same call-stack macro
     {
         int act = NewestItemIndex;
         while (1)
         {
-            if (MonitoredItems[act].CallerAddress == callerAddress) // nalezen
+            if (MonitoredItems[act].CallerAddress == callerAddress) // found
             {
                 CCallStackMonitoredItem* item = &MonitoredItems[act];
-                if (item->MonitoringStartPerfTime >= oldestPerfTime) // jeste ho mame sledovat
+                if (item->MonitoringStartPerfTime >= oldestPerfTime) // we still monitor it
                 {
                     item->NumberOfCalls++;
                     item->PushesPerfTime += afterPushTime->QuadPart - pushTime->QuadPart;
                     __int64 totalTime = pushTime->QuadPart - item->MonitoringStartPerfTime;
                     if (item->NotAlreadyReported &&
                         totalTime > monitoringPeriod / 2 && item->PushesPerfTime > totalTime / CALLSTK_MONITOR_SHOWINFORATIO)
-                    {                                                                                                                                                                                 // tento trace vypisujeme jen jednou (pri prekroceni kritickeho casu, pozdeji vypiseme konecny stav)
-                        DWORD aproxMinCallsCount = (DWORD)((SpeedBenchmark * totalTime / (CALLSTK_BENCHMARKTIME * CCallStack::SavedPerfFreq.QuadPart / 1000)) / (3 * CALLSTK_MONITOR_SHOWINFORATIO)); // pocitame 3x pomalejsi nez omerovane call-stack makro
+                    {                                                                                                                                                                                 // this trace is printed only once (after exceeding the critical time, the final state is printed later)
+                        DWORD aproxMinCallsCount = (DWORD)((SpeedBenchmark * totalTime / (CALLSTK_BENCHMARKTIME * CCallStack::SavedPerfFreq.QuadPart / 1000)) / (3 * CALLSTK_MONITOR_SHOWINFORATIO)); // counting 3x slower than the measured call-stack macro
                         if (SpeedBenchmark != 0 && item->NumberOfCalls > aproxMinCallsCount)
-                        { // potlaceni pripadu navyseni casu pri preplanovani procesu/threadu (dokaze namerit 9ms pro 4 volani call-stacku)
+                        { // suppress the case of increased time when the process/thread is rescheduled (it can measure 9ms for 4 call-stack invocations)
                             item->NotAlreadyReported = FALSE;
                             if (item->PushesPerfTime > totalTime / CALLSTK_MONITOR_SHOWERRORRATIO)
                             {
@@ -897,7 +903,7 @@ void CCallStack::CheckCallFrequency(DWORD_PTR callerAddress, LARGE_INTEGER* push
                             {
                                 TRACE_I("Maybe Too Frequently Used Call Stack Message: time ratio callstack/total: " << (totalTime > 0 ? (DWORD)(100 * item->PushesPerfTime / totalTime) : 0) << "%, call address: 0x" << std::hex << item->CallerAddress << std::dec << " (see next line in trace-server for text), current push-time: " << (DWORD)(item->PushesPerfTime * 1000 / CCallStack::SavedPerfFreq.QuadPart) << "ms, current total time: " << (DWORD)(totalTime * 1000 / CCallStack::SavedPerfFreq.QuadPart) << "ms, current number of calls in monitored period: " << item->NumberOfCalls);
                             }
-                            if (Skipped == 0 && End > Text) // vypiseme text posledniho pushe
+                            if (Skipped == 0 && End > Text) // print the text of the last push
                             {
                                 char* end = End;
                                 end -= 2;
@@ -906,34 +912,34 @@ void CCallStack::CheckCallFrequency(DWORD_PTR callerAddress, LARGE_INTEGER* push
                             }
                         }
                     }
-                    return; // hotovo
+                    return; // done
                 }
                 else
-                    break; // jdeme volani znovu pridat do fronty
+                    break; // add this call back to the queue
             }
             if (act == OldestItemIndex)
-                break; // nenalezeno
+                break; // not found
             act--;
             if (act < 0)
                 act = MonitoredItemsSize - 1;
         }
     }
-    if (OldestItemIndex != -1) // nejprve vyhodime prestarle polozky (udelame misto pro novou polozku)
+    if (OldestItemIndex != -1) // first remove outdated items (make space for a new one)
     {
         while (1)
         {
-            if (MonitoredItems[OldestItemIndex].MonitoringStartPerfTime >= oldestPerfTime) // jeste ho mame sledovat
+            if (MonitoredItems[OldestItemIndex].MonitoringStartPerfTime >= oldestPerfTime) // still within monitoring period
                 break;
             else
             {
-                if (!MonitoredItems[OldestItemIndex].NotAlreadyReported) // pokud bylo reporteno, hlasime konecne hodnoty
+                if (!MonitoredItems[OldestItemIndex].NotAlreadyReported) // if it was reported, print final values
                 {
                     TRACE_I("Info for Too Frequently Used Call Stack Message: call address: 0x" << std::hex << MonitoredItems[OldestItemIndex].CallerAddress << std::dec << ", total push-time: " << (DWORD)(MonitoredItems[OldestItemIndex].PushesPerfTime * 1000 / CCallStack::SavedPerfFreq.QuadPart) << "ms, total number of calls in monitored period: " << MonitoredItems[OldestItemIndex].NumberOfCalls);
                 }
             }
             if (OldestItemIndex == NewestItemIndex)
             {
-                OldestItemIndex = NewestItemIndex = -1; // fronta se vyprazdnila
+                OldestItemIndex = NewestItemIndex = -1; // the queue emptied
                 break;
             }
             OldestItemIndex++;
@@ -941,7 +947,7 @@ void CCallStack::CheckCallFrequency(DWORD_PTR callerAddress, LARGE_INTEGER* push
                 OldestItemIndex = 0;
         }
     }
-    if (MonitoredItemsSize == 0) // fronta jeste nebyla alokovana, alokujeme ji ted
+    if (MonitoredItemsSize == 0) // the queue is not allocated yet; allocate it now
     {
         MonitoredItems = (CCallStackMonitoredItem*)malloc(CALLSTACK_MONITOREDITEMS_BASE * sizeof(CCallStackMonitoredItem));
         if (MonitoredItems == NULL)
@@ -954,7 +960,7 @@ void CCallStack::CheckCallFrequency(DWORD_PTR callerAddress, LARGE_INTEGER* push
     if (NewestItemIndex != -1 &&
         (NewestItemIndex < MonitoredItemsSize - 1 && NewestItemIndex + 1 == OldestItemIndex ||
          NewestItemIndex == MonitoredItemsSize - 1 && OldestItemIndex == 0))
-    { // fronta je plna, je nutne ji zvetsit
+    { // the queue is full; it needs to be enlarged
         CCallStackMonitoredItem* newMonitoredItems = (CCallStackMonitoredItem*)malloc((MonitoredItemsSize +
                                                                                        CALLSTACK_MONITOREDITEMS_DELTA) *
                                                                                       sizeof(CCallStackMonitoredItem));
@@ -997,7 +1003,7 @@ void CCallStack::CheckCallFrequency(DWORD_PTR callerAddress, LARGE_INTEGER* push
 // CCallStackMessage
 //
 
-// abych neincludil cely intrin.h
+// so I do not include the entire intrin.h
 extern "C"
 {
     void* _AddressOfReturnAddress(void);
@@ -1018,7 +1024,7 @@ CCallStackMessage::CCallStackMessage(const char* format, ...)
         LARGE_INTEGER pushTime;
         QueryPerformanceCounter(&pushTime);
 #endif                             // (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
-        stack->Push(format, args); // nepodchyceny thready maji TLS na NULL
+        stack->Push(format, args); // unhandled threads have TLS set to NULL
 #if (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
         QueryPerformanceCounter(&StartTime);
         PushesCounterStart = stack->PushesCounter;
@@ -1064,28 +1070,28 @@ CCallStackMessage::~CCallStackMessage()
 #if (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
         BOOL printCallStackTop = FALSE;
         __int64 internalPushPerfTime = stack->PushPerfTimeCounter.QuadPart - PushPerfTimeCounterStart.QuadPart;
-        if (internalPushPerfTime > 0) // jen pokud byly nejake vnorene volani Pushe
+        if (internalPushPerfTime > 0) // only if Push was called recursively
         {
             LARGE_INTEGER endTime;
             QueryPerformanceCounter(&endTime);
             __int64 realPerfTime = (endTime.QuadPart - StartTime.QuadPart) -
-                                   (stack->IgnoredPushPerfTimeCounter.QuadPart - IgnoredPushPerfTimeCounterStart.QuadPart); // odecteme casy ignorovanych (nemerenych) Pushu, jinak by jen nesmyslne zlepsovaly pomer
+                                   (stack->IgnoredPushPerfTimeCounter.QuadPart - IgnoredPushPerfTimeCounterStart.QuadPart); // subtract the time of ignored (unmeasured) Pushes, otherwise they would artificially improve the ratio
             if (realPerfTime / internalPushPerfTime < CALLSTK_MINRATIO && realPerfTime > 0 &&
                 ((realPerfTime * 1000) / CCallStack::SavedPerfFreq.QuadPart) > CALLSTK_MINWARNTIME)
             {
                 DWORD aproxMinCallsCount = (DWORD)(((CCallStack::SpeedBenchmark * (internalPushPerfTime + stack->IgnoredPushPerfTimeCounter.QuadPart - IgnoredPushPerfTimeCounterStart.QuadPart) * 1000) /
                                                     (CALLSTK_BENCHMARKTIME * CCallStack::SavedPerfFreq.QuadPart)) /
-                                                   3); // pocitame 3x pomalejsi nez omerovane call-stack makro
+                                                   3); // counting 3x slower than the measured call-stack macro
                 if (CCallStack::SpeedBenchmark != 0 && aproxMinCallsCount < stack->PushesCounter - PushesCounterStart)
-                { // potlaceni pripadu navyseni casu pri preplanovani procesu/threadu (dokaze namerit 50ms pro 280 volani call-stacku)
+                { // suppress the case of increased time when the process/thread is rescheduled (it can measure 50ms for 280 call-stack invocations)
                     TRACE_E("Call Stack Messages Slowdown Detected: time ratio callstack/total: " << (DWORD)(100 * internalPushPerfTime / realPerfTime) << "%, total time: " << (DWORD)((realPerfTime * 1000) / CCallStack::SavedPerfFreq.QuadPart) << "ms, push time: " << (DWORD)(internalPushPerfTime * 1000 / CCallStack::SavedPerfFreq.QuadPart) << "ms, ignored pushes: " << (DWORD)((stack->IgnoredPushPerfTimeCounter.QuadPart - IgnoredPushPerfTimeCounterStart.QuadPart) * 1000 / CCallStack::SavedPerfFreq.QuadPart) << "ms, call address: 0x" << std::hex << PushCallerAddress << std::dec << " (see next line in trace-server for text), count: " << (stack->PushesCounter - PushesCounterStart));
                     printCallStackTop = TRUE;
                 }
             }
         }
-        stack->Pop(printCallStackTop); // nepodchyceny thready maji TLS na NULL
+        stack->Pop(printCallStackTop); // unhandled threads have TLS set to NULL
 #else                                  // (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
-        stack->Pop(); // nepodchyceny thready maji TLS na NULL
+        stack->Pop(); // unhandled threads have TLS set to NULL
 #endif                                 // (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
     }
     else
