@@ -16,7 +16,7 @@ class CConfiguration
 public:
     char Description[DESCRIPTION_SIZE];
     char Email[EMAIL_SIZE];
-    BOOL Restart; // neukladame
+    BOOL Restart; // not stored
 
 public:
     CConfiguration();
