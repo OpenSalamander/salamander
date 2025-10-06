@@ -43,8 +43,9 @@ public: // Methods added by Jan Patera
     // Remove keys and values with ".hidden" in name
     virtual void WINAPI RemoveHiddenKeysAndValues() = 0;
 
-    // vycisti klic 'key' od vsech podklicu a hodnot; je-li 'doNotDeleteHiddenKeysAndValues' TRUE,
-    // nesmazne klice a hodnoty, kterych jmena konci na ".hidden"; vraci uspech
+    // clears the key 'key' of all subkeys and values; if
+    // 'doNotDeleteHiddenKeysAndValues' is TRUE, it does not delete keys and
+    // values whose names end with ".hidden"; returns success
     virtual BOOL WINAPI ClearKeyEx(HKEY key, BOOL doNotDeleteHiddenKeysAndValues, BOOL* keyIsNotEmpty) = 0;
 
     virtual void WINAPI Release() = 0;
