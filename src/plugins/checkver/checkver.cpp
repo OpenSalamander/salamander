@@ -198,7 +198,7 @@ BOOL CPluginInterface::Release(HWND parent, BOOL force)
 
     ShowMinNA_IfNotShownYet(HMainDialog, TRUE, FALSE);
 
-        // we need to write to the registry regardless of whether the user wants it or not...
+    // we need to write to the registry regardless of whether the user wants it or not...
     SalGeneral->CallLoadOrSaveConfiguration(FALSE, LoadOrSaveConfigurationCallback, NULL);
 
     if (!force)

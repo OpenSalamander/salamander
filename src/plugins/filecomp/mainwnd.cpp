@@ -172,7 +172,7 @@ BOOL CMainWindow::Init()
     // we do not want visual styles for the rebar
     if (SalGUI->DisableWindowVisualStyles(Rebar->HWindow))
     {
-    // force WS_BORDER back in case it "disappeared"
+        // force WS_BORDER back in case it "disappeared"
         DWORD style = GetWindowLong(Rebar->HWindow, GWL_STYLE);
         style |= WS_BORDER;
         SetWindowLong(Rebar->HWindow, GWL_STYLE, style);

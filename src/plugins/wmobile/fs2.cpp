@@ -1964,7 +1964,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                         }
                         else
                         {
-                    // remove the deleted file's copy from the disk cache (if it is cached)
+                            // remove the deleted file's copy from the disk cache (if it is cached)
                             SalamanderGeneral->RemoveFilesFromCache(cefsSourceName);
 
                             sourcePathChanged = TRUE;
