@@ -1,5 +1,5 @@
-# Testovaci skript ze zaslaneho bugreportu.
-# Puvodni nazev souboru: 38621A4D913D1E3B-AS30B3PB103X86-130701-161739.INF
+# Test script from the submitted bug report.
+# Original file name: 38621A4D913D1E3B-AS30B3PB103X86-130701-161739.INF
 
 def fileRename( item )
   if ( !( item.Name =~ /^\[/ ) and ( item.Name =~ /\.(avi|mkv|mp4)$/ ) )

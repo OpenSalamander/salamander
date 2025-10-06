@@ -138,13 +138,13 @@ int CAutomationMenuExtInterface::ExecuteScriptMenu()
 
     SalamanderGeneral->GetFocusedItemMenuPos(&pt);
 
-    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volanim InsertItem() dole...
+    /* used for the export_mnu.py script, which generates salmenu.mnu for Translator
+   keep synchronized with the InsertItem() call below...
 MENU_TEMPLATE_ITEM ExecuteScriptMenu[] =
 {
-	{MNTT_PB, 0
-	{MNTT_IT, IDS_RUNFOCUSED
-	{MNTT_PE, 0
+        {MNTT_PB, 0
+        {MNTT_IT, IDS_RUNFOCUSED
+        {MNTT_PE, 0
 };
 */
     // run focused script menu item
@@ -263,13 +263,13 @@ void WINAPI CAutomationMenuExtInterface::BuildMenu(
     // refresh script list
     g_oScriptLookup.Refresh();
 
-    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volani salamander->AddMenuItem() dole...
-MENU_TEMPLATE_ITEM PluginMenu[] = 
+    /* used for the export_mnu.py script, which generates salmenu.mnu for Translator
+   keep synchronized with the salamander->AddMenuItem() call below...
+MENU_TEMPLATE_ITEM PluginMenu[] =
 {
-	{MNTT_PB, 0
-	{MNTT_IT, IDS_RUNFOCUSED
-	{MNTT_IT, IDS_SCRIPTPOPUPMENU
+        {MNTT_PB, 0
+        {MNTT_IT, IDS_RUNFOCUSED
+        {MNTT_IT, IDS_SCRIPTPOPUPMENU
 	{MNTT_PE, 0
 };
 */
@@ -406,7 +406,7 @@ bool CAutomationMenuExtInterface::CanExecuteFocusedItem()
 {
     // check if we have script engine for the file extension
     const CFileData* pFocusedFile = SalamanderGeneral->GetPanelFocusedItem(PANEL_SOURCE, NULL);
-    // _ASSERTE(pFocusedFile);  // Petr: je-li panel prazdny (napr. kdyz jsme v rootu prazdneho disku)
+    // _ASSERTE(pFocusedFile);  // Petr: if the panel is empty (e.g. when we are in the root of an empty disk)
     if (pFocusedFile == NULL || pFocusedFile->Ext == NULL || *pFocusedFile->Ext == _T('\0'))
     {
         return false;
