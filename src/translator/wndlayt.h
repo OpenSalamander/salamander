@@ -14,19 +14,19 @@ class CBitmap;
 
 enum CDraggingModeEnum
 {
-    edmNone,    // netahneme nic
-    edmCage,    // tahneme klec
-    edmPreMove, // cekame na utrzeni pro tazeni prvku
-    edmMove,    // tahneme prvky
-    edmResize   // zmena rozmeru prvku
+    edmNone,    // nothing is being dragged
+    edmCage,    // dragging the selection cage
+    edmPreMove, // waiting for the drag threshold before moving controls
+    edmMove,    // dragging controls
+    edmResize   // resizing a control
 };
 
 class CLayoutEditor : public CWindow
 {
 public:
-    CBitmap* CacheBitmap; // obsahuje predrenderovany dialog; zobrazuje se z ni okno
-    CBitmap* TempBitmap;  // pomocna bitmapa napriklada pro offscreen rendering pri tazeni klece
-    CBitmap* CageBitmap;  // pomocna bitmapa do ktere se renderuje klec
+    CBitmap* CacheBitmap; // holds the pre-rendered dialog; the window draws from it
+    CBitmap* TempBitmap;  // helper bitmap used for off-screen rendering when dragging the cage
+    CBitmap* CageBitmap;  // helper bitmap that stores the cage rendering
 
     HWND HDialogHolder;
 
@@ -37,30 +37,30 @@ public:
     RECT DialogRect;
 
     TIndirectArray<CDialogData> TransformStack;
-    int CurrentDialog; // index prave editovaneho dialogu v TransformStack
-    BOOL PreviewMode;  // pokud je TRUE, je na vrsku TransformStack preview (english nebo unchanged); pri ukonceni preview rezimu bude z TransformStack odstraneno
+    int CurrentDialog; // index of the dialog currently edited in the TransformStack
+    BOOL PreviewMode;  // when TRUE the top of TransformStack holds a preview (English or unchanged); it is removed once preview mode ends
     BOOL PreviewModeShowExitHint;
 
-    POINT MouseDownPoint; // souradnice kde doslo ke stisku tlacitka mysi
-    int MouseMovedDeltaX; // o kolik jsme jiz controly posunuli (v Dialog Units)
+    POINT MouseDownPoint; // coordinates where the mouse button was pressed
+    int MouseMovedDeltaX; // how far the controls have been moved (in dialog units)
     int MouseMovedDeltaY;
-    BOOL ShiftPressedOnMouseDown; // byl pri zacatku tazeni stisknuty shift?
-    CEdgeEnum ResizeEdge;         // kterou hranu behem tazeni mysi posouvame
-    RECT OriginalResizeRect;      // puvodni rozmery prvku na zacatku resize
+    BOOL ShiftPressedOnMouseDown; // was Shift held when the drag started?
+    CEdgeEnum ResizeEdge;         // which edge is being moved during the mouse drag
+    RECT OriginalResizeRect;      // original control rectangle at the start of resizing
     int OldResizeDelta;
 
-    int DialogOffsetX; // o kolik je (v bodech) na obrazovce posunuty pocatek client area dialogu
-    int DialogOffsetY; // proti client area layout editoru
+    int DialogOffsetX; // offset (in pixels) of the dialog client origin on screen
+    int DialogOffsetY; // relative to the layout editor client area
 
-    CDraggingModeEnum DraggingMode; // v jakem rezimu tazeni jsme?
+    CDraggingModeEnum DraggingMode; // which dragging mode is active
 
     int PostponedControlSelect;
 
-    int RepeatArrow;     // kolikrat se ma opakovat nasledujici pohyb sipkou (ala unixove "vi", nastavuje se pred stiskem sipky napsanim cisla na klavesce)
-    int LastRepeatArrow; // pamet posledni hodnoty RepeatArrow
+    int RepeatArrow;     // repeat count for the next arrow-key move (vi-style: set by typing a number before the arrow)
+    int LastRepeatArrow; // remembers the previous RepeatArrow value
 
-    BOOL AlignToMode;     // je TRUE pokud uzivatel zadal prikaz Align To a nyni vybira prvek, ke kteremu se ma align provest
-    BOOL KeepAlignToMode; // nastavuje se pred otevreni Align To dialogu, aby vznikle WM_CANCELMODE nezrusilo AlignToMode (zrusime po dialogu)
+    BOOL AlignToMode;     // TRUE when Align To is active and the user is selecting the reference control
+    BOOL KeepAlignToMode; // set before opening the Align To dialog so WM_CANCELMODE does not cancel AlignToMode (cleared afterwards)
 
 private:
     CDialogData* OriginalDialogData;
@@ -118,11 +118,11 @@ protected:
     CDialogData* NewTransformation(CTransformation* transformation);
     void NewTransformationExecuteRebuildDlg(CTransformation* transformation, HWND hDlg = NULL, CStringList* errors = NULL);
 
-    // vrati pocet bajtu potrebych pro ulozeni TransformStack streamu, ktery predavame do dalsich instanci translatoru
+    // return the byte size needed to store the TransformStack stream shared with other Translator instances
     DWORD GetTransformStackStreamSize();
-    // do bufferu 'stream' ulozi binarni reprezentaci pole TransformStack
+    // write the binary representation of TransformStack into 'stream'
     void WriteTransformStackStream(BYTE* stream);
-    // z bufferu 'stream' nacte TransformStack a krok za krokem pomoci nej vytvori pole TransformStack
+    // load TransformStack from 'stream' and rebuild it step by step
     void LoadTransformStackStream(const BYTE* stream);
 
     BOOL HitTest(const POINT* p, CEdgeEnum* edge);
@@ -145,7 +145,7 @@ public:
 //
 // CLayoutInfo
 //
-// Zobrazuje info o vybranych prvcich
+// Shows information about the selected controls
 //
 
 class CLayoutInfo : public CWindow
@@ -153,14 +153,14 @@ class CLayoutInfo : public CWindow
 private:
     HFONT HFont;
     int FontHeight;
-    BOOL DataChanged; // je potreba prekreslit?
+    BOOL DataChanged; // requires repainting?
     CDialogData* DialogData;
     POINT MouseCurrent;
     BOOL ShowMouseDelta;
     int MouseDeltaX;
     int MouseDeltaY;
 
-    CBitmap* InfoBitmap; // obsahuje predrenderovany info, abychom neblikali
+    CBitmap* InfoBitmap; // holds pre-rendered info to avoid flicker
 
 public:
     CLayoutInfo();
@@ -170,7 +170,7 @@ public:
     void SetMouseCurrent(POINT* pt);
     void SetMouseDelta(BOOL showDelta, int deltaX = 0, int deltaY = 0);
 
-    // vyhleda ve skupine, ktere rozmery (X/Y/W/H) jsou shodne a nastavi podle toho odpovidajici promenne
+    // examine the selection and report which dimensions (X/Y/W/H) match across controls
     BOOL GetSameProperties(BOOL* sameTX, BOOL* sameTY, BOOL* sameTCX, BOOL* sameTCY, BOOL* sameRight, BOOL* sameBottom);
 
     BOOL GetOuterSpace(RECT* outerSpace);

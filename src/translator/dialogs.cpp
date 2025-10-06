@@ -14,7 +14,7 @@ const char* ERROR_TITLE = "Error";
 
 void CenterWindowToWindow(HWND hWnd, HWND hBaseWnd)
 {
-    // centrujeme k hlavnimu oknu
+    // Center relative to the main window
     RECT r1;
     GetWindowRect(hWnd, &r1);
     int w = r1.right - r1.left;
@@ -26,7 +26,7 @@ void CenterWindowToWindow(HWND hWnd, HWND hBaseWnd)
     SystemParametersInfo(SPI_GETWORKAREA, 0, &workArea, FALSE);
 
     RECT r2;
-    // pri minimalizovanem okne se centrujeme k obrazovce
+    // If the base window is minimized, center relative to the screen
     if (hBaseWnd != NULL && !IsIconic(hBaseWnd))
     {
         GetWindowRect(hBaseWnd, &r2);
@@ -63,7 +63,7 @@ BOOL CCommonDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (CenterToWindow && !IsIconic(HWindow) && !IsZoomed(HWindow))
         {
-            // centrujeme k hlavnimu oknu
+            // Center relative to the main window
             RECT r1;
             GetWindowRect(HWindow, &r1);
             int w = r1.right - r1.left;
@@ -77,7 +77,7 @@ BOOL CCommonDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             HWND hFrame = GetMsgParent();
 
             RECT r2;
-            // pri minimalizovanem okne se centrujeme k obrazovce
+            // If the frame window is minimized, center relative to the screen
             if (hFrame != NULL && !IsIconic(hFrame))
             {
                 GetWindowRect(hFrame, &r2);
@@ -102,7 +102,7 @@ BOOL CCommonDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         else
         {
-            // centrujeme k obrazovce
+            // Center relative to the screen
             RECT r;
             GetWindowRect(HWindow, &r);
             RECT workArea;
@@ -132,7 +132,7 @@ void BrowseFileName(HWND hParent, int editlineResID, const char* filter)
     strcpy_s(buf, filter);
     char* s = buf;
     ofn.lpstrFilter = s;
-    while (*s != 0) // vytvoreni double-null terminated listu
+    while (*s != 0) // build the double-null-terminated filter list
     {
         if (*s == '|')
             *s = 0;
@@ -218,19 +218,19 @@ CNewDialog::Validate(CTransferInfo &ti)
   ti.EditLine(IDC_NEW_DESTINATION, target, MAX_PATH);
   ti.EditLine(IDC_NEW_INCLUDE, include, MAX_PATH);
 
-  // oba soubory musi existovat a nesmi se jednat o stejny soubor
+  // Both files must exist and they cannot refer to the same path
 
-  // zkusim source otevrit pro cteni
+  // Try opening the source for reading
   HANDLE hSource = CreateFile(source, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
   if (hSource != INVALID_HANDLE_VALUE)
   {
-    // zkusim target otevrit pro zapis
+    // Try opening the destination for writing
     HANDLE hTarget = CreateFile(target, GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
     if (hTarget != INVALID_HANDLE_VALUE)
     {
       CloseHandle(hTarget);
 
-      // include musi jit cist
+      // The include file must be readable
       HANDLE hInclude = CreateFile(include, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
       if (hInclude != INVALID_HANDLE_VALUE)
       {
@@ -603,7 +603,7 @@ void CImportDialog ::Validate(CTransferInfo& ti)
     char project[MAX_PATH];
     ti.EditLine(IDC_IMPORT_PROJECT, project, MAX_PATH);
 
-    // zkusim project otevrit pro cteni
+    // Try opening the project file for reading
     HANDLE hProject = CreateFile(project, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
     if (hProject != INVALID_HANDLE_VALUE)
     {
@@ -618,12 +618,12 @@ void CImportDialog ::Validate(CTransferInfo& ti)
     }
 
     /*
-  // oba soubory musi existovat a nesmi se jednat o stejny soubor
-  // zkusim source otevrit pro cteni
+  // Both files must exist and they cannot refer to the same path
+  // Try opening the source for reading
   HANDLE hSource = CreateFile(original, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
   if (hSource != INVALID_HANDLE_VALUE)
   {
-    // zkusim target otevrit pro zapis
+    // Try opening the destination for writing
     HANDLE hTarget = CreateFile(translated, GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
     if (hTarget != INVALID_HANDLE_VALUE)
     {
@@ -861,7 +861,7 @@ BOOL CAgreementDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void SetSmallDialogPosition(HWND hDlg, HWND hEditedDlg)
 {
-    // dialog umistime pod editovany dialog a pokud jsme mimo obrazovku, tak vpravo od nej
+    // Place the dialog below the edited dialog, and if that would leave the screen, move it to its right side instead.
     RECT r;
     GetWindowRect(hDlg, &r);
     RECT editedR;

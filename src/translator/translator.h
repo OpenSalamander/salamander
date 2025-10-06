@@ -3,22 +3,22 @@
 
 #pragma once
 
-extern int QuietValidate;                       // 0 = nebyl pouzit switch "-quiet-validate-???" prikazove radky, 1 = all, 2 = layout
-extern int QuietTranslate;                      // 0 = nebyl pouzit switch "-quiet-translate", 1 = byl pouzit
-extern int QuietMarkChAsTrl;                    // 0 = nebyl pouzit switch "-quiet-mark-changed-as-translated", 1 = byl pouzit
-extern char QuietImport[MAX_PATH];              // prazdny retezec = nic neimportovat; jinak cesta k adresari, ze ktereho mame provest import stareho prekladu, dalsi info viz QuietImportOnlyDlgLayout (na dalsim radku)
-extern int QuietImportOnlyDlgLayout;            // jen pri neprazdnem QuietImport: 0 = byl pouzit switch "-quiet-import", 1 = "-quiet-import-only-dialog-layout"
-extern char QuietImportTrlProp[MAX_PATH];       // prazdny retezec = nic neimportovat; jinak nazev projektu, ze ktereho mame provest import translation properties
-extern char QuietExportSLT[MAX_PATH];           // prazdny retezec = nic neexportovat; jinak adresar, do ktereho mame provest export SLT
-extern char QuietExportSDC[MAX_PATH];           // prazdny retezec = nic neexportovat; jinak adresar, do ktereho mame provest export SDC
-extern BOOL QuietExportSLTForDiff;              // TRUE = export do SLT bez version infa (pro porovnani dat mezi verzemi)
-extern char QuietImportSLT[MAX_PATH];           // prazdny retezec = nic neimportovat; jinak adresar, ze ktereho mame provest import SLT
-extern char QuietExportSpellChecker[MAX_PATH];  // prazdny retezec = nic neexportovat; jinak adresar, do ktereho mame provest export textu pro spell checker
-extern char OpenLayoutEditorDialogID[MAX_PATH]; // prazdny retezec = LE neotevirat; jinak ID dialogu, pro ktery mame otevrit LE
-extern BYTE* SharedMemoryCopy;                  // NULL = nedrzime kopii sdilene pameti
+extern int QuietValidate;                       // 0 = the "-quiet-validate-???" command-line switch was not used; 1 = all, 2 = layout only
+extern int QuietTranslate;                      // 0 = the "-quiet-translate" switch was not used, 1 = it was supplied
+extern int QuietMarkChAsTrl;                    // 0 = the "-quiet-mark-changed-as-translated" switch was not used, 1 = it was supplied
+extern char QuietImport[MAX_PATH];              // empty string = do not import anything; otherwise the directory with the legacy translation to import (see QuietImportOnlyDlgLayout below)
+extern int QuietImportOnlyDlgLayout;            // applies only when QuietImport is non-empty: 0 = "-quiet-import", 1 = "-quiet-import-only-dialog-layout"
+extern char QuietImportTrlProp[MAX_PATH];       // empty string = do not import; otherwise the project name whose translation properties should be imported
+extern char QuietExportSLT[MAX_PATH];           // empty string = do not export; otherwise the directory where the SLT should be exported
+extern char QuietExportSDC[MAX_PATH];           // empty string = do not export; otherwise the directory where the SDC should be exported
+extern BOOL QuietExportSLTForDiff;              // TRUE = export the SLT without version info (for comparing data between builds)
+extern char QuietImportSLT[MAX_PATH];           // empty string = do not import; otherwise the directory from which the SLT should be imported
+extern char QuietExportSpellChecker[MAX_PATH];  // empty string = do not export; otherwise the directory for exporting spell-checker text
+extern char OpenLayoutEditorDialogID[MAX_PATH]; // empty string = do not open the layout editor; otherwise ID of the dialog to open
+extern BYTE* SharedMemoryCopy;                  // NULL = we do not keep a copy of the shared memory block
 
-char* GetErrorText(DWORD error); // prevadi cislo chyby na string
-char* LoadStr(int resID);        // taha string z resourcu
+char* GetErrorText(DWORD error); // converts an error code to a human-readable string
+char* LoadStr(int resID);        // retrieves a string from resources
 
 BOOL GetTargetDirectory(HWND parent, const char* title, const char* comment,
                         char* path, const char* initDir);
@@ -49,7 +49,7 @@ inline BOOL SalIsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion,
                                                                                VER_MINORVERSION, VER_GREATER_EQUAL),
                                                            VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL);
 
-    SecureZeroMemory(&osvi, sizeof(osvi)); // nahrada za memset (nevyzaduje RTLko)
+    SecureZeroMemory(&osvi, sizeof(osvi)); // replacement for memset (does not require the CRT)
     osvi.dwOSVersionInfoSize = sizeof(osvi);
     osvi.dwMajorVersion = wMajorVersion;
     osvi.dwMinorVersion = wMinorVersion;

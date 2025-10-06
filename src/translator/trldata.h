@@ -8,7 +8,7 @@
 
 #define COMBOBOX_BASE_HEIGHT 13 // dialog units
 
-// z editwindow vytahne text a prealokuje string
+// Extract text from an edit window and preallocate the resulting string.
 BOOL GetStringFromWindow(HWND hWindow, wchar_t** string);
 
 wchar_t* dupstr(const wchar_t* s);
@@ -20,14 +20,14 @@ void FillControlsWithDummyValues(HWND hDlg);
 
 void RemoveAmpersands(wchar_t* buff);
 
-// orizne white-spaces z obou stran primo v 'str' a vraci 'str'
+// Trim whitespace on both ends of 'str' and return the same pointer.
 char* StripWS(char* str);
 
 BOOL DecodeString(const wchar_t* iter, int len, wchar_t** string);
 void EncodeString(wchar_t* iter, wchar_t** string);
 
-// vraci TRUE, pokud retezec obsahuje nejake prekladatelne znaky
-// (a neobsahuje text "_dummy_" -- tohle jsem zatim vyradil)
+// Return TRUE if the string contains translatable characters
+// (and does not contain the text "_dummy_"—currently not used).
 BOOL IsTranslatableControl(const wchar_t* text);
 
 COLORREF GetSelectionColor(BOOL clipped);
@@ -41,7 +41,7 @@ BOOL __GetNextChar(wchar_t& charValue, wchar_t*& start, wchar_t* end);
 
 enum CSearchDirection
 {
-    esdRight, // POZOR, zalezi na poradi prvku, vyuziva se v SelectControlsGroup()
+    esdRight, // The order matters; used by SelectControlsGroup().
     esdLeft,
     esdDown,
     esdUp
@@ -67,11 +67,11 @@ enum CAlignToPartEnum
 #pragma pack(4)
 struct CAlignToParams
 {
-    CAlignToOperationEnum Operation; // jaka operace se ma provest (move / resize)
-    BOOL MoveAsGroup;                // TRUE: zvolene polozky budou posouvany jako skupina, jinak individualne
-    CAlignToPartEnum SelPart;        // ke ktere casti oznacenych prvku se operace vztahuje
-    CAlignToPartEnum RefPart;        // vztazna cast na referencnim prvku
-    int HighlightIndex;              // kopie pro predani do jine instance translatoru
+    CAlignToOperationEnum Operation; // Operation to execute (move or resize).
+    BOOL MoveAsGroup;                // TRUE moves the selected items as a group, otherwise individually.
+    CAlignToPartEnum SelPart;        // Which part of the selected elements the operation references.
+    CAlignToPartEnum RefPart;        // Reference part on the anchor element.
+    int HighlightIndex;              // Copy used when passing to another translator instance.
 };
 #pragma pack(pop)
 
@@ -120,7 +120,7 @@ public:
     CStrData();
     ~CStrData();
 
-    // nacist 16 retezcu
+    // Load 16 strings for the specified table.
     BOOL LoadStrings(WORD group, const wchar_t* original, const wchar_t* translated, CData* data);
 
     //    BOOL GetTString(HWND hWindow, int index);
@@ -133,15 +133,15 @@ public:
 
 struct CMenuItem
 {
-    wchar_t* OString; // alokovany retezec
-    wchar_t* TString; // alokovany retezec
-    WORD ID;          // pokud se nejdena o POPUP, command polozky
+    wchar_t* OString; // Allocated original string.
+    wchar_t* TString; // Allocated translated string.
+    WORD ID;          // Menu ID (command items only; POPUP entries use zero).
 
-    WORD Flags; // zacatek/konec popupu nebo polozka
+    WORD Flags; // Start/end of a popup or a regular item.
 
     WORD State;        // translated/untranslated/...
-    int Level;         // stupen zanoreni
-    int ConflictGroup; // polozky se stejnym ConflictGroup budou posuzovany z hlediska konfliktu horkych klaves; 0 odpovida top-level, 1 prvnimu zanorenemu, atd
+    int Level;         // Nesting depth.
+    int ConflictGroup; // Items with the same ConflictGroup are compared for hotkey conflicts; 0 is top level, 1 is the first nested level, etc.
 };
 
 class CMenuData
@@ -150,19 +150,19 @@ public:
     WORD ID;
     WORD TLangID;
     TDirectArray<CMenuItem> Items;
-    int ConflictGroupsCount; // celkovy pocet unikatnich ConflictGroup
+    int ConflictGroupsCount; // Total number of unique ConflictGroup values.
 
-    BOOL IsEX; // MENUEX umime pouze "vyprasene" nacist v MUIMode, v Salamanderu ho nepouzivame, takze ukladani jsem nepsal
+    BOOL IsEX; // MENUEX is only partially supported in MUI mode; Salamander does not use it so saving is not implemented.
 
 public:
     CMenuData();
     ~CMenuData();
 
-    // parsuje resource
+    // Parse menu resources.
     BOOL LoadMenu(LPCSTR original, LPCSTR translated, CData* data);
     BOOL LoadMenuEx(LPCSTR original, LPCSTR translated, CData* data);
 
-    // vrati index polozky s odpovidajicim id nebo -1, pokud neexistuje
+    // Return the index of the item with the given ID or -1 if it is missing.
     int FindItemIndex(WORD id);
 };
 
@@ -192,10 +192,10 @@ public:
 
 enum CModifySelectionMode
 {
-    emsmSelectDialog,     // odvybere controly, vybere dialog
-    emsmSelectControl,    // odvybere dialog, vybere prvek; pokud je hControll NULL, pouze zrusi vyber
-    emsmToggleControl,    // odvybere dialog, zmeni vyber pro prvek
-    emsmSelectAllControls // odvybere dialog, vybere vsechny controly; hControl musi byt NULL
+    emsmSelectDialog,     // deselect controls and select the dialog itself
+    emsmSelectControl,    // deselect the dialog and select a control; if hControl is NULL the selection is cleared
+    emsmToggleControl,    // deselect the dialog and toggle the control selection state
+    emsmSelectAllControls // deselect the dialog and select every control; hControl must be NULL
 };
 
 enum CResizeControlsEnum
@@ -234,16 +234,16 @@ public:
     short TCX;
     short TCY;
 
-    wchar_t* ClassName;   // alokovany retezec
-    wchar_t* OWindowName; // alokovany retezec
-    wchar_t* TWindowName; // alokovany retezec
+    wchar_t* ClassName;   // Allocated string.
+    wchar_t* OWindowName; // Allocated string.
+    wchar_t* TWindowName; // Allocated string.
 
     // DLGITEMTEMPLATEEX support
     DWORD ExHelpID;
 
     WORD State; // translated/untranslated/...
 
-    BOOL Selected; // TRUE pokud je prvek vybrany v layout editoru, jinak FALSE
+    BOOL Selected; // TRUE when the control is selected in the layout editor.
 
 public:
     CControl();
@@ -251,7 +251,7 @@ public:
 
     void Clean();
 
-    // hluboka kopie
+    // Deep copy.
     void LoadFrom(CControl* src);
 
     BOOL ShowInLVWithControls(int i);
@@ -270,46 +270,47 @@ public:
     BOOL IsTContainedIn(CControl const* c) const;
     BOOL IsTVertContainedIn(CControl const* c) const;
 
-    // vraci obdelnik prvku v dlg units; pro combobox vraci zabalenou velikost
+    // Return the control rectangle in dialog units; for combo boxes return the collapsed size.
     void GetTRect(RECT* r, BOOL adjustZeroSize);
 
-    // vraci vzdalenost od obdelniku 'r' (v dlg units) ve smeru 'direction'
-    // pokud prvek nelezi v danem smeru, vraci -1
-    // pokud se zkouma smer vpravo, porovnavaji se vzdalenosti pravych stran obdelniku, atd.
+    // Return the distance from rectangle 'r' (dialog units) in the given direction.
+    // Returns -1 when the control is not located in that direction.
+    // When scanning to the right we compare the right edges, etc.
     int GetDistanceFromRect(const RECT* r, CSearchDirection direction);
 };
 
-// pridani nove transformace:
-// 1. doplnit novou polozku do 'CTransformationEnum'
-// 2. doplnit do CTransformation::TryMergeWith() - metoda se stara o slouceni stejnych operaci
-// 3. doplnit do CTransformation::SetTransformationWithNoParam() nebo SetTransformationWithIntParam() nebo SetTransformationWith2IntParams() - dle poctu parametru
-// 4. doplnit do CDialogData::ExecuteTransformation() - stara se o provedeni transformace
+// Adding a new transformation requires the following steps:
+// 1. Add a value to CTransformationEnum.
+// 2. Extend CTransformation::TryMergeWith(), which merges identical operations.
+// 3. Update CTransformation::SetTransformationWithNoParam(), SetTransformationWithIntParam(),
+//    or SetTransformationWith2IntParams() depending on the number of parameters.
+// 4. Update CDialogData::ExecuteTransformation(), which performs the transformation.
 enum CTransformationEnum
 {
     eloInit,
-    eloSelect,              // [] zmena Selection
-    eloMove,                // [deltaX, deltaY] posun controlu o 'deltaX' a 'deltaY'
-    eloResize,              // [edge, delta] zmena rozmeru controlu; 'edge' urcuje kterou hranou hybeme, 'delta' o kolik dlg units
-    eloResizeDlg,           // [horizontal, delta] zmena rozmeru dialogu; pokud je 'horizontal' TRUE, meni se sirka, jinak vyska dialogu o 'delta' dlg units
-    eloResizeControls,      // [resize] prikaz Resize upravi sirku nebo vysku prvku dle 'resize'
-    eloSizeToContent,       // [] prikaz Size to Content
-    eloSetSize,             // [width, height] zmena rozmeru controlu; 'width' a 'height' urcuji rozmery, pokud je hodnota -1, dany rozmer se nemeni
-    eloAlignTo,             // [] prikaz Align To
-    eloAlignControls,       // [edge] prikaz Align zarovna prvky na hranu 'edge'
-    eloCenterControls,      // [horizontal] prikaz Center centruje prvky navzajem vodorovne nebo svisle dle 'horizontal'
-    eloCenterControlsToDlg, // [horizontal] prikaz Center Controls To Dialog centruje prvky vuci dialogu vodorovne nebo svisle dle 'horizontal'
-    eloEqualSpacing,        // [horizontal, delta] prikaz Equal Spacing usporada prvky vodorovne nebo svisle dle 'horizontal' tak, aby byly oddeleny konstantni vzdalenosti 'delta'
-    eloNormalizeLayout,     // [wide] normalizuje layout standard dialogu; pokud je 'wide' TRUE, normalizuje na sirokouhly dialog, jinak na standardni
-    eloTemplateReset,       // [] vraceni se k originalnimu template
-    eloPreviewLayout,       // [] preview jine verze layoutu
+    eloSelect,              // [] Modify the current selection.
+    eloMove,                // [deltaX, deltaY] Move the control by the given offsets.
+    eloResize,              // [edge, delta] Resize the control; 'edge' selects the side, 'delta' is the amount in dialog units.
+    eloResizeDlg,           // [horizontal, delta] Resize the dialog; when 'horizontal' is TRUE adjust the width, otherwise the height.
+    eloResizeControls,      // [resize] Resize command adjusts control width or height according to 'resize'.
+    eloSizeToContent,       // [] Size to Content command.
+    eloSetSize,             // [width, height] Set explicit control size; -1 keeps the current dimension.
+    eloAlignTo,             // [] Align To command.
+    eloAlignControls,       // [edge] Align command snaps controls to the specified edge.
+    eloCenterControls,      // [horizontal] Center controls relative to each other horizontally or vertically.
+    eloCenterControlsToDlg, // [horizontal] Center controls relative to the dialog horizontally or vertically.
+    eloEqualSpacing,        // [horizontal, delta] Evenly distribute controls horizontally or vertically with spacing 'delta'.
+    eloNormalizeLayout,     // [wide] Normalize layout; 'wide' TRUE switches to wide dialogs, otherwise standard layout.
+    eloTemplateReset,       // [] Revert to the original template.
+    eloPreviewLayout,       // [] Preview a different layout version.
 };
 
 class CTransformation
 {
 public:
-    CTransformationEnum Transformation; // urcuje tranformaci
-    void* Params;                       // alokovane parametry transformace (lisi se dle 'Transformation')
-    int ParamsSize;                     // pocet alokovanych bajtu pro 'Params'
+    CTransformationEnum Transformation; // Type of transformation.
+    void* Params;                       // Allocated parameters (shape depends on 'Transformation').
+    int ParamsSize;                     // Number of bytes allocated for 'Params'.
 
 public:
     CTransformation();
@@ -358,11 +359,11 @@ public:
     short TCX;
     short TCY;
 
-    wchar_t* MenuName;  // alokovany retezec
-    wchar_t* ClassName; // alokovany retezec
+    wchar_t* MenuName;  // Allocated string.
+    wchar_t* ClassName; // Allocated string.
 
     WORD FontSize;
-    wchar_t* FontName; // alokovany retezec
+    wchar_t* FontName; // Allocated string.
 
     // DLGTEMPLATEEX support
     BOOL IsEX;
@@ -373,15 +374,15 @@ public:
     BYTE ExItalic;
     BYTE ExCharset;
 
-    // polozka na indexu 0 obsahuje nazev dialogu a Selected stav pro dialog
-    // polozky od indexu 1 jsou jiz vlastni controly dialogu
+    // Entry at index 0 contains the dialog caption and selection state.
+    // Entries starting at index 1 describe the dialog controls.
     TIndirectArray<CControl> Controls;
 
-    // index referencniho prvku pro prikaz AlignTo
-    int HighlightIndex; // -1: nic, 0: dlg, >0: controly
+    // Index of the reference element for the Align To command.
+    int HighlightIndex; // -1: nothing, 0: dialog, >0: control index.
 
-    // transformace provedena nad dialogem (a controly), aby bylo dosazeno aktualniho stavu
-    // slouzi k predani provedenych uprav do dalsi instance Translatoru
+    // Transformations applied to the dialog (and its controls) to reach the current layout.
+    // Used to pass edits to another Translator instance.
     CTransformation Transformation;
 
 public:
@@ -390,90 +391,86 @@ public:
 
     void Clean();
 
-    // parsuje resource
+    // Parse dialog resources.
     BOOL LoadDialog(WORD* oBuff, WORD* tBuff, BOOL* showStyleWarning,
                     BOOL* showExStyleWarning, BOOL* showDlgEXWarning,
                     CData* data);
 
-    // vytvori v bufferu sablonu pro Save nebo pro preview
-    // pokud je addProgress == TRUE, ukladaji se stavy prelozeni
-    // vraci puzitou velikost v bajtech
-    // pro preview nastavit 'forPreview' na TRUE, aby se custom classy nahradily za neco registrovaneho
-    // pokud ma natahnout dialog pres vsechny controly, nastavit 'extendDailog' na TRUE
+    // Build a template in the buffer for saving or previewing.
+    // When addProgress == TRUE the translation states are stored as well.
+    // Returns the number of bytes used.
+    // Set 'forPreview' to TRUE when generating preview data so custom classes are replaced with registered ones.
+    // Set 'extendDailog' to TRUE to stretch the dialog so it spans every control.
     DWORD PrepareTemplate(WORD* buff, BOOL addProgress, BOOL forPreview, BOOL extendDailog);
 
-    // v bufferu sablony prida a odebira styly nastavene na logickou 1
+    // Add or remove styles set to logical 1 within the template buffer.
     void TemplateAddRemoveStyles(WORD* buff, DWORD addStyles, DWORD removeStyles);
-    // v bufferu sablony nastavi souradnice
+    // Set coordinates in the template buffer.
     void TemplateSetPos(WORD* buff, short x, short y);
 
-    // vrati index okna s odpovidajicim id nebo -1, pokud neexistuje
+    // Return the index of the window with the requested ID, or -1 when missing.
     int FindControlIndex(WORD id, BOOL isDlgTitle);
 
-    // vraci index controlu Controls[controlIndex] v listview s texty pro dialog
-    // pokud v tom listview control neni, vraci FALSE
+    // Return the list-view index for Controls[controlIndex] that stores the dialog texts.
+    // Return FALSE when the control is not present in that list view.
     BOOL GetControlIndexInLV(int controlIndex, int* indexLV);
 
-    // hluboka kopie
+    // Deep copy.
     void LoadFrom(CDialogData* src, BOOL keepLangID = FALSE);
 
-    // nacte selection
+    // Load the selection state.
     void LoadSelectionFrom(CDialogData* src);
 
-    // vtati TRUE, pokud se layout zmenil proti originalu; urceno pro layout editor, kde muze dojit skutecne pouze k zmene layoutu
+    // Return TRUE when the layout differs from the original; used by the layout editor where only layout changes are possible.
     BOOL DoesLayoutChanged(CDialogData* orgDialogData);
-    BOOL DoesLayoutChanged2(CDialogData* orgDialogData); // robustnejsi verze slouzici pro import starych prekladu
+    BOOL DoesLayoutChanged2(CDialogData* orgDialogData); // more robust version for importing older translations
 
-    // vrati index sousedniho prvku (vuci prvku 'fromIndex') ve smeru 'dir' nebo -1 pokud zadny prvek nenalezne
-    // za sousedni prvek se povazuje nejblizsi prvek zasahujici do prumetu prvku 'fromIndex' danym smerem
-    // pokud je 'wideScan' TRUE, bude hledaci pruh rozsiren pres celou sirku/vysku dialogu
+    // Return the index of the neighbouring item relative to 'fromIndex' in direction 'dir'; return -1 when no such item exists.
+    // A neighbouring item is the closest control intersecting the projection of 'fromIndex' in the requested direction.
+    // When 'wideScan' is TRUE the scan band covers the full width/height of the dialog.
     int GetNearestControlInDirection(int fromIndex, CSearchDirection direction, BOOL wideScan);
 
-    // vraci TRUE, pokud prvek 'testIndex' patri do stejne skupiny jako prvej 'fromIndex'; jinak vraci FALSE
-    // stejnou skupinou se mysli vyber pomoc doubleclicku, napriklad tlacitek v rade
+    // Return TRUE when 'testIndex' belongs to the same group as 'fromIndex'; otherwise return FALSE.
+    // A group corresponds to double-click selection (for example a row of buttons).
     BOOL BelongsToSameSelectionGroup(int fromIndex, int testIndex);
 
-    // vraci TRUE, pokud oba prvky maji stejny horni nebo levy okraj (dle 'direction')
-    // jinak vraci FALSE
+    // Return TRUE when both controls share the same top or left edge (depending on 'direction'); otherwise return FALSE.
     BOOL ControlsHasSameGroupEdge(int fromIndex, int testIndex, CSearchDirection direction);
 
-    // vrati TRUE pokud dialog obsahuje control (nebo vice) za hranici dialogu
+    // Return TRUE when the dialog contains controls placed outside its bounds.
     BOOL HasOuterControls();
 
-    // vrati rozmery obdelniku opsaneho kolem prvku dialogu
-    // ignoruje vodorovne separatory a prvky lezici za hranici dialogu
-    // vraci TRUE v pripade uspechu, jinek FALSE
+    // Return the bounding rectangle encompassing dialog controls.
+    // Horizontal separators and controls outside the dialog bounds are ignored.
+    // Return TRUE on success; otherwise return FALSE.
     BOOL GetControlsRect(BOOL ignoreSeparators, BOOL ignoreOuterControls, RECT* r);
 
-    // vraci TRUE, pokud lze layout normalizovat, jinak vraci FALSE
-    // normalizace neni podporovana, pokud existuji vnejsi prvky lezici mimo pravou
-    // stranu dialogu - takove dialogy jsem u nas nenasel, takze nebyla potreba
-    // tuto situaci resit (i kdyz by to urcite slo vymyslet)
+    // Return TRUE when the layout can be normalized; otherwise return FALSE.
+    // Normalization is not supported when outer controls protrude beyond the right edge of the dialog.
+    // We have not encountered such dialogs, so the case was never implemented (even though it could be).
     BOOL CanNormalizeLayout();
 
-    // ucese layout do standardnich rozmeru
+    // Trim the layout to standard dimensions.
     void AdjustSeparatorsWidth(CStringList* errors);
     void NormalizeLayout(BOOL wide, CStringList* errors);
 
-    // naplni pole 'footer' indexem separatoru (pokud existuje, bude prvni polozkou pole) a indexama
-    // tlacitek umistenych na spodni hrande dialogu (casto jde o OK/Cancel/Yes/No/Skip/Overwrite/Help/...)
-    // na zacatku vycisti pole 'footer'
-    // vraci TRUE v pripade, ze stejnomerne rozmistena tlacitka (a pripadne separator) byla nalezena a vlozena do pole
-    // pripadne pokud zadna tlacitka nalezena nebyla; vraci FALSE pokud tlacitka nalezena byla, ale nejsou stejnomerne
-    // rozmistena - bude zobrazeno varovnai
+    // Populate 'footer' with the separator index (if present, it becomes the first entry) and with the indices
+    // of buttons located on the bottom edge of the dialog (typically OK/Cancel/Yes/No/Skip/Overwrite/Help/...).
+    // The method clears 'footer' before populating it.
+    // Return TRUE when evenly spaced buttons (and the optional separator) were found and stored, or when no buttons were found.
+    // Return FALSE when buttons were found but are not evenly spaced— a warning is displayed in that case.
     BOOL GetFooterSeparatorAndButtons(TDirectArray<DWORD>* footer);
 
-    // funkce prepoklada, ze indexy v poli 'footer' jsou serazeny podle x-ovych pozic prvku zleva doprava
+    // The function assumes the indices in 'footer' are sorted by the controls' X positions from left to right.
     void AdjustFooter(BOOL wide, TDirectArray<DWORD>* footer);
 
-    // prenese rozmery dialogu a controlu z Original do Translated
+    // Copy dialog and control dimensions from the Original set to the Translated one.
     void LoadOriginalLayout();
 
-    // selection related methods
-    // TODO: nasledujici skupina metod patrila puvodni objektu CSelectedControls pro spravu vybranych polozek
-    // postupne se ukazalo, ze jde o spatnou koncepci, protoze vyber by napriklad mel byt soucasti undo, takze
-    // jsme metody prenesli sem
-    // bylo by dobre je lepe/vice logicky pojmenovat misto prefixu SelCtrls
+    // Selection-related methods.
+    // TODO: the following methods originally belonged to CSelectedControls, which handled selection management.
+    // That concept proved impractical—selection should participate in undo—so the methods moved here.
+    // Renaming them to something more descriptive than the SelCtrls prefix would still be helpful.
 
     int GetSelectedControlsCount();
 
@@ -514,7 +511,7 @@ public:
     void PaintHighlight(HWND hDialog, HDC hDC);
 
     void GetChildRectPx(HWND hParent, HWND hChild, RECT* r);
-    // vrati opsany obdelnik kolem vybranych polozek
+    // Return the bounding rectangle around selected controls.
     BOOL SelCtrlsGetOuterRectPx(HWND hDialog, RECT* r);
     BOOL SelCtrlsGetOuterRect(RECT* r);
 
@@ -551,18 +548,18 @@ public:
     wchar_t Author[500];        // name of translation author
     wchar_t Web[500];           // web of translation author
     wchar_t Comment[500];       // comment for translation author
-    wchar_t HelpDir[100];       // nazev adresare s help soubory (slovensky preklad Salamandera muze pouzivat ceske helpy)
-    BOOL HelpDirExist;          // je v SLG obsazena polozka HelpDir? (jen u Salamanderiho .slg)
-    wchar_t SLGIncomplete[200]; // prazdne = preklad Salama i pluginu je kompletni, jinak link, kam smerovat uzivatele pri prvnim spusteni Salama v teto jazykove verzi (rekrutujeme nove prekladatele)
-    BOOL SLGIncompleteExist;    // je v SLG obsazena polozka SLGIncomplete? (jen u Salamanderiho .slg)
+    wchar_t HelpDir[100];       // Name of the directory with help files (the Slovak translation may reuse the Czech help).
+    BOOL HelpDirExist;          // Does the SLG contain the HelpDir entry? (Salamander .slg only.)
+    wchar_t SLGIncomplete[200]; // Empty = Salamander and plugins are fully translated; otherwise link shown on first launch of this language (recruiting translators).
+    BOOL SLGIncompleteExist;    // Does the SLG contain the SLGIncomplete entry? (Salamander .slg only.)
 
-    // CRC SLT souboru, ze ktereho se naposledy importilo nebo do ktereho se naposledy exportilo
-    // z tohoto SLG souboru, hodnoty:
-    // "not found" - promenna v SLG vubec neni,
-    // "none" - EN verze,
-    // "" - zmenena verze, ktera nebyla importena/exportena do SLT,
-    // "00000000 SLT" - tesne po exportu do SLT nebo importu z SLT,
-    // "00000000" - zmenena verze, ktera byla importena/exportena do SLT
+    // CRC of the SLT file last imported from or exported to by this SLG file
+    // Possible values:
+    // "not found" - the variable does not exist in the SLG,
+    // "none" - official English version,
+    // "" - modified version that has not been imported/exported to SLT,
+    // "00000000 SLT" - immediately after exporting to or importing from SLT,
+    // "00000000" - modified version that has been imported/exported to SLT
     wchar_t CRCofImpSLT[100];
 
 public:
@@ -586,12 +583,12 @@ public:
 
     void SLTDataChanged()
     {
-        if (wcscmp(CRCofImpSLT, L"none") == 0) // z "EN verze" udelame "zmenenou verzi, ktera nebyla importena/exportena do SLT"
+        if (wcscmp(CRCofImpSLT, L"none") == 0) // convert "official EN version" to "modified version that has not gone through SLT"
             lstrcpyW(CRCofImpSLT, L"");
         else
         {
             int len = wcslen(CRCofImpSLT);
-            if (len > 4 && wcscmp(CRCofImpSLT + len - 4, L" SLT") == 0) // z "tesne po exportu do SLT nebo importu z SLT" udelame "zmenenou verzi, ktera byla importena/exportena do SLT"
+            if (len > 4 && wcscmp(CRCofImpSLT + len - 4, L" SLT") == 0) // convert "just after export/import to SLT" to "modified version processed via SLT"
                 CRCofImpSLT[len - 4] = 0;
         }
     }
@@ -599,23 +596,23 @@ public:
     BOOL IsSLTDataAfterImportOrExport()
     {
         int len = wcslen(CRCofImpSLT);
-        return len > 4 && wcscmp(CRCofImpSLT + len - 4, L" SLT") == 0; // je "tesne po exportu do SLT nebo importu z SLT"?
+        return len > 4 && wcscmp(CRCofImpSLT + len - 4, L" SLT") == 0; // is it "just after export/import to SLT"?
     }
 
     void SetCRCofImpSLTIfFound(wchar_t* crc)
     {
-        if (wcscmp(CRCofImpSLT, L"not found") != 0) // pokud promenna v SLG je, nastavime ji novou hodnotu
+        if (wcscmp(CRCofImpSLT, L"not found") != 0) // update the stored value when the variable exists in the SLG
             lstrcpynW(CRCofImpSLT, crc, _countof(CRCofImpSLT));
     }
 
     BOOL IsSLTDataChanged()
     {
-        if (wcscmp(CRCofImpSLT, L"") == 0) // zmenena verze, ktera nebyla importena/exportena do SLT
+        if (wcscmp(CRCofImpSLT, L"") == 0) // modified version that has not been imported/exported to SLT
             return TRUE;
         wchar_t* s = CRCofImpSLT;
         while (*s >= L'0' && *s <= L'9' || *s >= L'a' && *s <= L'f' || *s >= L'A' && *s <= L'F')
             s++;
-        if (*s == 0 && (s - CRCofImpSLT) == 8) // CRC bez koncovky " SLT": zmenena verze, ktera byla importena/exportena do SLT
+        if (*s == 0 && (s - CRCofImpSLT) == 8) // CRC without the " SLT" suffix: modified version that was imported/exported to SLT
             return TRUE;
         return FALSE;
     }
@@ -629,23 +626,23 @@ struct CProgressItem
 
 enum CCheckLstItemType
 {
-    cltPropPgSameSize,       // kontrola, ze jsou vsechny property pages stejne velike
-    cltMultiTextControl,     // kontrola, jestli se do daneho controlu v dialogu vejdou vsechny uvedene texty (text primo v dialogu se kontroluje take)
-    cltMultiTextControlBold, // cltMultiTextControl, ale omeruje se BOLD fontem
-    cltDropDownButton,       // kontrola, jestli je tlacitko dost velke, aby se vesel symbol drop-down menu (sipka dolu vpravo na tlacitku)
-    cltMoreButton,           // kontrola, jestli je tlacitko dost velke, aby se vesel symbol more menu (dve sipky dolu vpravo na tlacitku)
-    cltComboBox,             // kontrola, jestli je combo box dost velky pro vsechny uvedene texty
-    cltAboutDialogTitle,     // specialitka pro About dialogy
-    cltProgressDialogStatus, // specialitka pro Progress dialog
-    cltStringsWithCSV,       // kontrola, ze sedi pocet carek v originalnim a prelozenem textu
+    cltPropPgSameSize,       // verify that every property page has the same size
+    cltMultiTextControl,     // verify that all listed strings fit into the dialog control (including the inline dialog text)
+    cltMultiTextControlBold, // same as cltMultiTextControl but measured with the bold font
+    cltDropDownButton,       // verify that the button is wide enough to display the drop-down glyph (down arrow on the right)
+    cltMoreButton,           // verify that the button is wide enough to display the more-menu glyph (double down arrows on the right)
+    cltComboBox,             // verify that the combo box fits all specified strings
+    cltAboutDialogTitle,     // special handling for About dialogs
+    cltProgressDialogStatus, // special handling for the Progress dialog
+    cltStringsWithCSV,       // verify that the number of commas matches in the original and translated text
 };
 
 struct CCheckLstItem
 {
     CCheckLstItemType Type;
-    WORD DialogID;             // cltPropPgSameSize+cltStringsWithCSV nepouziva
-    WORD ControlID;            // cltPropPgSameSize+cltStringsWithCSV nepouziva
-    TDirectArray<WORD> IDList; // cltDropDownButton+cltMoreButton+cltAboutDialogTitle+cltProgressDialogStatus nepouzivaji
+    WORD DialogID;             // unused by cltPropPgSameSize and cltStringsWithCSV
+    WORD ControlID;            // unused by cltPropPgSameSize and cltStringsWithCSV
+    TDirectArray<WORD> IDList; // unused by cltDropDownButton, cltMoreButton, cltAboutDialogTitle, and cltProgressDialogStatus
 
     CCheckLstItem() : IDList(5, 5)
     {
@@ -658,33 +655,33 @@ struct CCheckLstItem
 
 enum CIgnoreLstItemType
 {
-    iltOverlap,            // kolize dvou controlu v dialogu
-    iltClip,               // text controlu v dialogu je oriznuty, control je pro nej kratky
-    iltSmIcon,             // velikost ikony: ikona je mala, tedy pouzit velikost 10x10 dlg-units, misto std. 20x20
-    iltHotkeysInDlg,       // kolize dvou hotkeys controlu v dialogu
-    iltTooClose,           // prilis blizko okraji dialogu
-    iltMisaligned,         // dva controly v dialogu nejsou zarovnane
-    iltDiffSized,          // dva controly v dialogu se mirne lisi velikosti
-    iltDiffSpacing,        // control v dialogu je nepravidelne umisteny mezi ostatnimi controly
-    iltNotStdSize,         // control v dialogu je nestandardne veliky
-    iltIncorPlLbl,         // nespravne zarovnany label a jeho control
-    iltMisColAtEnd,        // chybejici ':' na konci stringu
-    iltInconTxtEnds,       // control v dialogu jehoz zakonceni textu se nema kontrolovat
-    iltInconStrEnds,       // zakonceni stringu se nema kontrolovat
-    iltInconStrBegs,       // zacatek stringu se nema kontrolovat
-    iltInconCtrlChars,     // nekonzistentni control-chars (\r, \n, \t)
-    iltInconHotKeys,       // nekonzistentni hotkeys ('&')
-    iltProgressBar,        // jde o progress bar (nejde o static text)
-    iltInconFmtSpecif,     // nekonzistentni format-specifiers (%d, %f, atd.)
-    iltInconFmtSpecifCtrl, // control v dialogu muze mit nekonzistentni format-specifiers (%d, %f, atd.)
+    iltOverlap,            // two dialog controls overlap
+    iltClip,               // dialog control text is clipped because the control is too short
+    iltSmIcon,             // icon size: icon is small; use 10x10 dialog units instead of the default 20x20
+    iltHotkeysInDlg,       // conflicting hotkeys for controls in a dialog
+    iltTooClose,           // too close to the dialog edge
+    iltMisaligned,         // two dialog controls are misaligned
+    iltDiffSized,          // two dialog controls differ slightly in size
+    iltDiffSpacing,        // dialog control spacing is irregular among neighbouring controls
+    iltNotStdSize,         // dialog control has a non-standard size
+    iltIncorPlLbl,         // misaligned label and its control
+    iltMisColAtEnd,        // missing ':' at the end of the string
+    iltInconTxtEnds,       // dialog control whose text ending should not be validated
+    iltInconStrEnds,       // string ending should not be validated
+    iltInconStrBegs,       // string beginning should not be validated
+    iltInconCtrlChars,     // inconsistent control characters (\r, \n, \t)
+    iltInconHotKeys,       // inconsistent hotkeys ('&')
+    iltProgressBar,        // indicates a progress bar (not static text)
+    iltInconFmtSpecif,     // inconsistent format specifiers (%d, %f, etc.)
+    iltInconFmtSpecifCtrl, // dialog control may contain inconsistent format specifiers (%d, %f, etc.)
 };
 
 struct CIgnoreLstItem
 {
     CIgnoreLstItemType Type;
     WORD DialogID;
-    WORD ControlID1; // pouziva vse krome: iltMisColAtEnd, iltInconStrEnds, iltInconStrBegs, iltInconCtrlChars, iltInconHotKeys,iltInconFmtSpecif
-    WORD ControlID2; // pouziva jen Type iltOverlap, iltHotkeysInDlg, iltMisaligned, iltDiffSized a iltIncorPlLbl
+    WORD ControlID1; // used for all types except iltMisColAtEnd, iltInconStrEnds, iltInconStrBegs, iltInconCtrlChars, iltInconHotKeys, iltInconFmtSpecif
+    WORD ControlID2; // used only for iltOverlap, iltHotkeysInDlg, iltMisaligned, iltDiffSized, and iltIncorPlLbl
 
     CIgnoreLstItem(CIgnoreLstItemType type, WORD dialogID, WORD controlID1, WORD controlID2)
     {
@@ -698,13 +695,13 @@ struct CIgnoreLstItem
 class CSalMenuSection
 {
 private:
-    char* TemplateName; // alokovany nazev sablony
+    char* TemplateName; // allocated template name
 
 public:
-    WORD SectionDialogID;         // dialog, se kterym je sekce svazana (0 pokud neni)
-    WORD SectionControlDialogID;  // control, se kterym je sekce svazana: ID dialogu s controlem (0 pokud neni)
-    WORD SectionControlControlID; // control, se kterym je sekce svazana: ID controlu (0 pokud neni)
-    TDirectArray<WORD> StringsID; // ID stringu sekce
+    WORD SectionDialogID;         // dialog associated with the section (0 if none)
+    WORD SectionControlDialogID;  // dialog that owns the associated control (0 if none)
+    WORD SectionControlControlID; // control ID linked with the section (0 if none)
+    TDirectArray<WORD> StringsID; // string IDs belonging to the section
 
 public:
     CSalMenuSection() : StringsID(20, 20)
@@ -750,7 +747,7 @@ enum CProjectSectionEnum
     pseNone,
     pseFiles,
     pseSettings,
-    pseDummy, // sekci ignorujeme
+    pseDummy, // ignore this section
     pseDialogsTranslation,
     pseMenusTranslation,
     pseStringsTranslation,
@@ -773,7 +770,7 @@ struct CBookmark
 class CMenuPreview
 {
 public:
-    TDirectArray<DWORD> Lines; // pro ktere radky output okna se ma seznam zobrazit
+    TDirectArray<DWORD> Lines; // output window lines for which the list should be shown
     TDirectArray<wchar_t*> Texts;
 
 public:
@@ -823,7 +820,7 @@ private:
     TDirectArray<CProgressItem> MenusTranslationStates;
     TDirectArray<CProgressItem> StringsTranslationStates;
 
-    TDirectArray<CBookmark> Bookmarks; // ID dialugu, ktere je treba znovu layoutovat (po importu stare konfigurace)
+    TDirectArray<CBookmark> Bookmarks; // dialog IDs that need to be relayouted (after importing an old configuration)
 
 public:
     TIndirectArray<CStrData> StrData;
@@ -833,19 +830,19 @@ public:
     TIndirectArray<CIgnoreLstItem> IgnoreLstItems;
     TIndirectArray<CCheckLstItem> CheckLstItems;
 
-    TDirectArray<WORD> Relayout; // ID dialugu, ktere je treba znovu layoutovat (po importu stare konfigurace)
+    TDirectArray<WORD> Relayout; // dialog IDs that need to be relayouted (after importing an old configuration)
 
-    TIndirectArray<CMenuPreview> MenuPreview; // slouzi k reseni kolizi v menu
+    TIndirectArray<CMenuPreview> MenuPreview; // used to resolve menu conflicts
 
-    // promenne pro enumaraci
+    // variables used during enumeration
     BOOL EnumReturn;
     HINSTANCE HTranModule;
     BOOL Importing;
     BOOL ShowStyleWarning;
     BOOL ShowExStyleWarning;
     BOOL ShowDlgEXWarning;
-    BOOL MUIMode;      // importujeme (nebo to jiz probehlo) MUI baliky pro lokalizaci W7
-    DWORD MUIDialogID; // unikatni ID, maji vyznam pouze pokud je 'MUIMode' TRUE
+    BOOL MUIMode;      // importing (or already imported) MUI packages for the Windows 7 localization
+    DWORD MUIDialogID; // unique ID that matters only when 'MUIMode' is TRUE
     DWORD MUIMenuID;
     DWORD MUIStringID;
 
@@ -853,20 +850,20 @@ public:
 
     CVersionInfo VersionInfo;
 
-    // cesta k souborum
+    // file paths
     char ProjectFile[MAX_PATH];
     char SourceFile[MAX_PATH];
     char TargetFile[MAX_PATH];
-    char IncludeFile[MAX_PATH]; // vsechna RH sloucena do jednoho souboru
+    char IncludeFile[MAX_PATH]; // all resource headers merged into a single file
     char SalMenuFile[MAX_PATH];
     char IgnoreLstFile[MAX_PATH];
     char CheckLstFile[MAX_PATH];
     char SalamanderExeFile[MAX_PATH];
-    char ExportFile[MAX_PATH]; // export as text: pro spellchecker
+    char ExportFile[MAX_PATH]; // export as text: consumed by the spellchecker
     char ExportAsTextArchiveFile[MAX_PATH];
     char FullSourceFile[MAX_PATH];
     char FullTargetFile[MAX_PATH];
-    char FullIncludeFile[MAX_PATH]; // vsechna RH sloucena do jednoho souboru
+    char FullIncludeFile[MAX_PATH]; // all resource headers merged into a single file
     char FullSalMenuFile[MAX_PATH];
     char FullIgnoreLstFile[MAX_PATH];
     char FullCheckLstFile[MAX_PATH];
@@ -874,7 +871,7 @@ public:
     char FullExportFile[MAX_PATH];
     char FullExportAsTextArchiveFile[MAX_PATH];
 
-    // stav stromu
+    // tree state
     BOOL OpenStringTables;
     BOOL OpenMenuTables;
     BOOL OpenDialogTables;
@@ -894,57 +891,57 @@ public:
     BOOL Load(const char* original, const char* translated, BOOL import);
     BOOL Save();
 
-    // nacte salmenu.mnu, ktere Petr generuje perl skriptem ze zdrojaku
-    // soubor obsahuje struktury nasich internich menu definovanych pomoci MENU_TEMPLATE_ITEM
+    // Load salmenu.mnu generated from the sources by Petr's Perl script
+    // the file stores our internal menu structures defined with MENU_TEMPLATE_ITEM
     BOOL LoadSalMenu(const char* fileName);
     BOOL ProcessSalMenuLine(const char* line, const char* lineEnd, int row, CSalMenuDataParserState* parserState);
 
-    // nacte ignore.lst: obsahuje prekryvy a orezy, ktere se maji ignorovat
+    // Load ignore.lst: describes overlaps and clipping issues that should be ignored
     BOOL LoadIgnoreLst(const char* fileName);
     BOOL ProcessIgnoreLstLine(const char* line, const char* lineEnd, int row);
 
-    // nacte check.lst: obsahuje veci, ktere se maji zkontrolovat (napr. shoda velikosti property-pages)
+    // Load check.lst: items that must be validated (for example matching property-page sizes)
     BOOL LoadCheckLst(const char* fileName);
     BOOL ProcessCheckLstLine(const char* line, const char* lineEnd, int row);
 
-    // natahne starou verzi prekladu a aplikuje ji na soucasna data
-    // pokud je 'trlPropOnly' TRUE, nactou se pouze translation propoerties
+    // Load an older translation and apply it to the current data
+    // When 'trlPropOnly' is TRUE only translation properties are loaded
     BOOL Import(const char* project, BOOL trlPropOnly, BOOL onlyDlgLayouts);
 
-    // naleje prelozenou cast dat do textoveho souboru,
-    // aby bylo mozne provest kontrolu gramatiky
+    // Dump the translated portion of data into a text file
+    // so that the proofreader can check the grammar
     BOOL Export(const char* fileName);
 
-    // export prelozenych textu do unicode souboru, ktery jsme schopny drzet/mergovat na CVSku
-    // nasledne ho muzeme zase importovat zpet
+    // Export translated strings to a Unicode file that we can store/merge in CVS
+    // the same file can be imported back later
     BOOL ExportAsTextArchive(const char* fileName, BOOL withoutVerInfo);
-    BOOL ImportTextArchive(const char* fileName, BOOL testOnly); // pokud je 'testOnly' TRUE, pouze se provede kontrola zda data v souboru lze 1:1 premapovat na nase data
+    BOOL ImportTextArchive(const char* fileName, BOOL testOnly); // if 'testOnly' is TRUE, only verify that the file content maps 1:1 to our data
 
-    // export velikosti dialogu a controlu, pouziva se pro zmenu .rc modulu obsahujicich
-    // zdrojaky resourcu pro anglickou jazykovou verzi, ktera se z .rc kompiluje
+    // Export dialog/control sizes; used when modifying .rc modules containing
+    // resource sources for the English language version compiled from the .rc
     BOOL ExportDialogsAndControlsSizes(const char* fileName);
 
-    // nasosne MS MUI jazykova balicky pro Win7 (CABy)
+    // Fetch Microsoft MUI language packages for Windows 7 (CAB files)
     BOOL LoadMUIPackages(const char* originalMUI, const char* translatedMUI);
 
-    // zkontroluje data; pokud je bude mozne ulozit, vrati TRUE; jinak vrati FALSE
+    // Validate data; return TRUE when it is safe to save, otherwise FALSE
     //    BOOL Validate();
 
-    // naplni strom pro volbu editovaneho resourcu
+    // Populate the tree used to pick the edited resource
     void FillTree();
 
     void UpdateNode(HTREEITEM hItem);
     void UpdateSelectedNode();
-    void UpdateAllNodes(); // nastavime translated stavy na treeview
-    void UpdateTexts();    // update list view v okne Texts
+    void UpdateAllNodes(); // update translated states in the tree view
+    void UpdateTexts();    // update the list view in the Texts window
 
-    // naplni okno texts
+    // populate the Texts window
     void FillTexts(DWORD lParam);
 
     void SetDirty(BOOL dirty = TRUE);
     BOOL IsDirty() { return Dirty; }
 
-    // vrati stav pro dane ID
+    // return the state for the specified ID
     TDirectArray<CProgressItem>* GetTranslationStates(CTranslationTypeEnum type);
     void CleanTranslationStates();
     BOOL AddTranslationState(CTranslationTypeEnum type, WORD id1, WORD id2, WORD state);
@@ -955,29 +952,29 @@ public:
     void AddRelayout(WORD id);
     BOOL RemoveRelayout(WORD id);
 
-    // prohleda data na zaklade kriterii v Config
+    // search data using criteria from Config
     void Find();
 
-    // hleda neprelozene retezce
+    // find untranslated strings
     void FindUntranslated(BOOL* completelyUntranslated = NULL);
 
-    // hleda dialogy, ktere je potreba po importu puvodniho prekladu znovu layoutovat
+    // find dialogs that require relayout after importing the original translation
     void FindDialogsForRelayout();
 
-    // hleda dialogy obsahujici controly lezici za hranici dialogu
+    // find dialogs with controls positioned outside the dialog bounds
     void FindDialogsWithOuterControls();
 
-    // hleda konflikty horkych klaves; vysledek laduje do okna Output
+    // find conflicting hotkeys; results are written to the Output window
     void ValidateTranslation(HWND hParent);
 
-    // hleda kolize IDecek v dialogu, vola se po nacteni projektu
-    // vysledky naleje do output window
+    // look for control-ID collisions within a dialog; called after loading the project
+    // dump results into the Output window
     void LookForIdConflicts();
 
-    // vsechny zmenene texty oznaci jako Translated
+    // mark all modified strings as Translated
     void MarkChangedTextsAsTranslated();
 
-    // vsechny dialogy nastavi na layout originalu
+    // reset every dialog to the original layout
     void ResetDialogsLayoutsToOriginal();
 
     int FindStrData(WORD id);
@@ -987,59 +984,59 @@ public:
     BOOL FindStringWithID(WORD id, int* index = NULL, int* subIndex = NULL, int* lvIndex = NULL);
     BOOL GetStringWithID(WORD id, wchar_t* buf, int bufSize);
 
-    // najde v CheckLstItems polozky pro zadany dialogID a controlID (anyControl==TRUE = libovolny control z dialogu)
+    // find CheckLstItems entries for the specified dialogID/controlID (anyControl==TRUE = any control in the dialog)
     BOOL GetItemFromCheckLst(WORD dialogID, WORD controlID, CCheckLstItem** multiTextOrComboItem,
                              CCheckLstItem** checkLstItem, BOOL anyControl = FALSE);
 
-    // najde v CheckLstItems polozky cltStringsWithCSV a overi, jestli 'strID' neni v jejich seznamu IDcek
+    // find cltStringsWithCSV entries in CheckLstItems and ensure 'strID' is not listed
     BOOL IsStringWithCSV(WORD strID);
 
-    // hleda problem v poli IgnoreLstItems, vraci TRUE pokud se ma problem ignorovat
-    // (byl nalezen)
+    // search IgnoreLstItems for the issue and return TRUE when it should be ignored
+    // (was found)
     BOOL IgnoreProblem(CIgnoreLstItemType type, WORD dialogID, WORD controlID1, WORD controlID2);
 
-    // zjisti, jestli se ma ignorovat velikost ikony a ma se pouzit rozmer male ikony (16x16)
+    // determine whether the icon size should be ignored and the small 16x16 size used
     BOOL IgnoreIconSizeIconIsSmall(WORD dialogID, WORD controlID);
 
-    // zjisti, jestli se ma ignorovat konflikt hotkeys mezi controly 'controlID1' a 'controlID2'
-    // v dialogu 'dialogID'
+    // determine whether the hotkey conflict between controlID1 and controlID2 should be ignored
+    // within dialog 'dialogID'
     BOOL IgnoreDlgHotkeysConflict(WORD dialogID, WORD controlID1, WORD controlID2);
 
-    // zjisti, jestli ma ignorovat, ze je control prilis blizko okraji dialogu
+    // determine whether a control being too close to the dialog edge should be ignored
     BOOL IgnoreTooCloseToDlgFrame(WORD dialogID, WORD controlID);
 
-    // zjisti, jestli jde o progress bar (je potreba ignorovat, ze jde o static)
+    // determine whether the control is a progress bar (ignore it being a static)
     BOOL IgnoreStaticItIsProgressBar(WORD dialogID, WORD controlID);
 
-    // zjisti, jestli ma ignorovat, ze je control nepravidelne umisten mezi ostatnimi controly v dialogu
+    // determine whether irregular placement among other controls should be ignored
     BOOL IgnoreDifferentSpacing(WORD dialogID, WORD controlID);
 
-    // zjisti, jestli ma ignorovat, ze je control nestandardne veliky
+    // determine whether a control with a non-standard size should be ignored
     BOOL IgnoreNotStdSize(WORD dialogID, WORD controlID);
 
-    // zjisti, jestli ma ignorovat, ze stringu chybi dvojtecka na konci
+    // determine whether a missing colon at the end of the string should be ignored
     BOOL IgnoreMissingColonAtEnd(WORD stringID);
 
-    // zjisti, jestli se nema kontrolovat zakonceni textu controlu v dialogu
-    // (napr. viceradkovy text rozdeleny do jednotlivych staticu po radcich)
+    // determine whether the ending of a control text in a dialog should be skipped
+    // (e.g., multi-line text split across multiple static controls)
     BOOL IgnoreInconTxtEnds(WORD dialogID, WORD controlID);
 
-    // zjisti, jestli se u stringu ma kontrolovat zakonceni
+    // determine whether a string ending should be validated
     BOOL IgnoreInconStringEnds(WORD stringID);
 
-    // zjisti, jestli se u stringu ma kontrolovat zacatek
+    // determine whether a string beginning should be validated
     BOOL IgnoreInconStringBegs(WORD stringID);
 
-    // zjisti, jestli se u stringu maji kontrolovat control-chars (\r, \n, \t)
+    // determine whether control characters (\r, \n, \t) should be validated
     BOOL IgnoreInconCtrlChars(WORD stringID);
 
-    // zjisti, jestli se u stringu maji kontrolovat hotkeys ('&')
+    // determine whether hotkeys ('&') should be validated
     BOOL IgnoreInconHotKeys(WORD stringID);
 
-    // zjisti, jestli se u stringu maji kontrolovat format-specifiers (%d, %f, atd.)
+    // determine whether format specifiers (%d, %f, etc.) should be validated
     BOOL IgnoreInconFmtSpecif(WORD stringID);
 
-    // zjisti, jestli ma ignorovat format-specifiers (%d, %f, atd.) u controlu
+    // determine whether format specifiers (%d, %f, etc.) should be ignored for a control
     BOOL IgnoreInconFmtSpecifCtrl(WORD dialogID, WORD controlID);
 
     void ToggleBookmark(DWORD treeItem, WORD textItem);
@@ -1048,7 +1045,7 @@ public:
     int GetBookmarksCount();
     BOOL FindBookmark(DWORD treeItem, WORD textItem);
 
-    // vraci TRUE, pokud ma nacteny projekt jako jazyk English
+    // return TRUE when the loaded project language is English
     BOOL IsEnglishProject();
 
 protected:
@@ -1070,7 +1067,7 @@ protected:
 
     BOOL CompareStrings(const wchar_t* _string, const wchar_t* _pattern);
 
-    // nacitani / ukladani projektu
+    // project loading/saving
     BOOL ProcessProjectLine(CProjectSectionEnum* section, const char* line, int row);
     BOOL WriteProjectLine(HANDLE hFile, const char* line);
 
@@ -1089,6 +1086,6 @@ BOOL IsControlClipped(const CDialogData* dialog, const CControl* control, HWND h
 
 void BufferKey(WORD vk, BOOL bExtended = FALSE, BOOL down = TRUE, BOOL up = TRUE);
 
-// p je bod v screen souradnich, pro ktery je vracen index child window
-// pokud neni nalezeno zadne okno, vraci se NULL
+// 'p' is a point in screen coordinates; return the index of the child window at that position
+// return NULL when no window is found
 HWND GetChildWindow(POINT p, HWND hDialog, int* index = NULL);

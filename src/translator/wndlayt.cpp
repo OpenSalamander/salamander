@@ -86,14 +86,14 @@ void CLayoutEditor::Open(CDialogData* dialogData, int selectedControlID)
     if (SharedMemoryCopy != NULL)
     {
         //DebugBreak();
-        RebuildDialog(); // inicializuje HDialog, ktery potrebujeme pro LoadTransformStackStream
+        RebuildDialog(); // initialize HDialog required by LoadTransformStackStream
         LoadTransformStackStream(((BYTE*)SharedMemoryCopy) + sizeof(CSharedMemory));
     }
 }
 
 BOOL CLayoutEditor::Close()
 {
-    // zjistime, zda se template zmenil
+    // check whether the template changed
     if (TransformStack.Count > 0)
     {
         CDialogData* data = TransformStack[CurrentDialog];
@@ -173,7 +173,7 @@ void CLayoutEditor::UpdateBuffer()
         TextOut(hDC, p.x, p.y, text, strlen(text));
     }
 
-    // zobrazeni changedRect -- pro ladici ucely
+    // display changedRect for debugging purposes
     //  if (changedRect != NULL)
     //  {
     //      HDC hDC = HANDLES(GetDC(HWindow));
@@ -193,8 +193,8 @@ void CLayoutEditor::OnUndo()
 {
     if (HasUndo())
     {
-        // pokud se mezi Undo/Redo stavy menil pouze vyber (rozmery zustaly stejne),
-        // tento krok preskocime, viz Undo/Redo v Adobe Illustrator
+        // if the Undo/Redo states changed only by selection (dimensions stayed the same),
+        // skip this step; follows Undo/Redo behavior in Adobe Illustrator
         while (CurrentDialog > 1)
         {
             if (TransformStack[CurrentDialog]->DoesLayoutChanged(TransformStack[CurrentDialog - 1]))
@@ -215,8 +215,8 @@ void CLayoutEditor::OnRedo()
 {
     if (HasRedo())
     {
-        // pokud se mezi Undo/Redo stavy menil pouze vyber (rozmery zustaly stejne),
-        // tento krok preskocime, viz Undo/Redo v Adobe Illustrator
+        // if the Undo/Redo states changed only by selection (dimensions stayed the same),
+        // skip this step; follows Undo/Redo behavior in Adobe Illustrator
         while (CurrentDialog < TransformStack.Count - 2)
         {
             if (TransformStack[CurrentDialog]->DoesLayoutChanged(TransformStack[CurrentDialog + 1]))
@@ -239,7 +239,7 @@ CLayoutEditor::NewTransformation(CTransformation* transformation)
     {
         if (CurrentDialog < TransformStack.Count - 1)
         {
-            // pokud nejsme na konci Undo stacku, zahodime vsechny polozky za aktualnim indexem
+            // if we are not at the end of the undo stack, discard all entries beyond the current index
             for (int i = TransformStack.Count - 1; i > CurrentDialog; i--)
                 TransformStack.Delete(i);
         }
@@ -267,7 +267,7 @@ void CLayoutEditor::NewTransformationExecuteRebuildDlg(CTransformation* transfor
 DWORD
 CLayoutEditor::GetTransformStackStreamSize()
 {
-    DWORD ret = 4; // DWORD s poctem polozkek v nasledujicim poli
+    DWORD ret = 4; // DWORD storing the number of items in the following array
     for (int i = 0; i < TransformStack.Count; i++)
     {
         CDialogData* dialogData = TransformStack[i];
@@ -344,7 +344,7 @@ void RemoveDialogAmpersands(HWND hDialog)
                 {
                     LONG style = GetWindowLong(hChild, GWL_STYLE);
                     if (style & SS_NOPREFIX)
-                        continue; // statiky s SS_NOPREFIX nebudeme zbavovat ampersandu, to by menilo jejich text
+                        continue; // Do not strip ampersands from SS_NOPREFIX statics; it would change their text
                 }
                 RemoveAmpersands(buff);
                 SetWindowTextW(hChild, buff);
@@ -382,9 +382,9 @@ BOOL CLayoutEditor::RebuildDialog()
     WORD buff[200000];
     dialogData->PrepareTemplate(buff, FALSE, TRUE, FALSE);
 
-    // dialog umistime do pocatku okna a shodime mu napriklad DS_CENTER, aby se nepokousel centrovat
-    // styly DS_CONTROL | WS_CHILD zakazujeme, protoze jinak dochazelo k orezavani presahujicich prvku v layout editoru
-    // styly WS_BORDER | WS_DLGFRAME pridavame kvuli dialogu v PictView (2300), ktery jinak clipoval controly
+    // position the dialog at the window origin and drop DS_CENTER so it does not attempt to center itself
+    // remove DS_CONTROL | WS_CHILD to avoid clipping controls that extend beyond the layout editor
+    // add WS_BORDER | WS_DLGFRAME because the PictView dialog (2300) otherwise clipped its controls
     DWORD addStyles = WS_CHILDWINDOW | WS_DISABLED | WS_OVERLAPPED | DS_MODALFRAME | WS_BORDER | WS_DLGFRAME;
     DWORD removeStyles = WS_VISIBLE | WS_POPUP | DS_CENTER | DS_SETFOREGROUND | DS_CONTROL;
     dialogData->TemplateAddRemoveStyles(buff, addStyles, removeStyles);
@@ -405,7 +405,7 @@ BOOL CLayoutEditor::RebuildDialog()
     DialogRect.right = DialogRect.left + dlgW;
     DialogRect.bottom = DialogRect.top + dlgH;
 
-    // urcime o kolik je v bodech dialog posunut
+    // calculate how much the dialog is offset in pixels
     POINT ptOur;
     ptOur.x = 0;
     ptOur.y = 0;
@@ -417,10 +417,10 @@ BOOL CLayoutEditor::RebuildDialog()
     DialogOffsetX = ptDlg.x - ptOur.x;
     DialogOffsetY = ptDlg.y - ptOur.y;
 
-    // nedokazal jsem nas zbavit problikavani horkych klaves, takze je proste vyhodime
+    // hotkey hints flicker badly; simply disable them
     RemoveDialogAmpersands(hDlg);
 
-    // static text staticum s prazdnym textem
+    // static text control with an empty label
     // DescribeEmptyControls(hDlg);
 
     if (HDialog != NULL)
@@ -572,7 +572,7 @@ void CLayoutEditor::BeginPreviewLayout(BOOL original, BOOL showExitHint)
     PreviewMode = TRUE;
     PreviewModeShowExitHint = showExitHint;
     SetCapture(HWindow);
-    // behem preview chceme zachovat aktualni selection, aby se clovek mohl soustredit na zmeny layoutu
+    // during preview keep the current selection so the user can focus on layout changes
     if (original)
     {
         dialogData->LoadOriginalLayout();
@@ -741,7 +741,7 @@ int CLayoutEditor::GetOurChildWindowIndex(POINT pt)
     int y = ((pt.y /*- DialogOffsetY*/) * 8) / BaseDlgUnitY;
 
     CDialogData* dialogData = TransformStack[CurrentDialog];
-    for (int i = 1; i < dialogData->Controls.Count; i++) // 0 - title dialogu
+    for (int i = 1; i < dialogData->Controls.Count; i++) // index 0 holds the dialog title
     {
         const CControl* control = dialogData->Controls[i];
         if (control->TCX <= 3 || control->TCY <= 3)
@@ -750,7 +750,7 @@ int CLayoutEditor::GetOurChildWindowIndex(POINT pt)
             int ctrlW = control->TCX + 4;
             int ctrlY = control->TY - 2;
             int ctrlH = control->TCY + 4;
-            if (control->IsComboBox()) // u comboboxu chceme jejich "zabaleny" rozmer
+            if (control->IsComboBox()) // for combo boxes use their collapsed size
                 ctrlH = COMBOBOX_BASE_HEIGHT;
 
             if (x >= ctrlX && x < ctrlX + ctrlW && y >= ctrlY && y < ctrlY + ctrlH)
@@ -800,7 +800,7 @@ BOOL CLayoutEditor::HitTest(const POINT* p, CEdgeEnum* edge)
     int controlW = r.right - r.left;
     int controlH = r.bottom - r.top;
 
-    // usnadnime u uzkych prvku jejich uchyt v rohu
+    // make it easier to grab narrow controls by their corners
     int cageVertical = 0;
     int cageHorizontal = 0;
     if (controlW <= CAGE_WIDTH)
@@ -822,7 +822,7 @@ BOOL CLayoutEditor::HitTest(const POINT* p, CEdgeEnum* edge)
         }
     }
 
-    // pro horizontalni oddelovac zakazeme up/down resize, uzivatel chce spis posouvat
+    // prevent vertical resizing for horizontal separators; users typically move them
     int itemIndex = dialogData->SelCtrlsGetFirstControlIndex();
     if (!dialogData->IsDialogSelected() && (itemIndex == -1 || dialogData->Controls[itemIndex]->IsHorizLine()))
         return FALSE;
@@ -906,7 +906,7 @@ void CLayoutEditor::TestDialogBox()
     WORD buff[200000];
     dialogData->PrepareTemplate(buff, FALSE, FALSE, FALSE);
 
-    // pridame flagy, diky kterym budou videt i property pages
+    // add flags so property pages become visible
     DWORD addStyles = WS_CAPTION | WS_VISIBLE | WS_POPUP | WS_CLIPSIBLINGS | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK;
     DWORD removeStyles = 0;
     dialogData->TemplateAddRemoveStyles(buff, addStyles, removeStyles);
@@ -951,7 +951,7 @@ CLayoutEditor::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             firstPress = (lParam & 0x40000000) == 0;
         else
             firstPress = (lParam & 0x40000000) != 0;
-        // VK_SHIFT zamkne tazeni v jedne ose; vnutime mousemove, aby se hned zmena vizualiozvala
+        // VK_SHIFT locks movement to a single axis; trigger a mouse move to refresh immediately
         if (firstPress && DraggingMode == edmMove)
             PostMouseMove();
     }
@@ -966,7 +966,7 @@ CLayoutEditor::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_ERASEBKGND:
     {
-        return TRUE; // pozadi smazano
+        return TRUE; // background cleared
     }
 
     case WM_PAINT:
@@ -1035,7 +1035,7 @@ CLayoutEditor::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         ptClient.x = GET_X_LPARAM(lParam);
         ptClient.y = GET_Y_LPARAM(lParam);
 
-        //RECT changedRect; // optimalizace paintu, budeme kreslit jen zmenenou oblast
+        //RECT changedRect; // paint optimization: draw only the changed area
         //ZeroMemory(&changedRect, sizeof(changedRect));
         //SelectedControls.EnlargeSelectionBox(&changedRect);
 
@@ -1054,7 +1054,7 @@ CLayoutEditor::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         // TRACE_I("WM_LBUTTONDOWN x="<<pt.x<<" y="<<pt.y<<" hitTest="<<hitTest);
         if (uMsg == WM_LBUTTONDOWN && HitTest(&p, &hitEdge))
         {
-            // double click nechceme, mohlo by jit o oznaceni groupy
+            // Ignore double-clicks here; the user might simply be selecting a group
             if (dialogData->SelCtrlsGetCurrentControlRect(&OriginalResizeRect))
             {
                 DraggingMode = edmResize;
@@ -1066,10 +1066,10 @@ CLayoutEditor::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             HWND hChild = GetChildWindow(pt, HDialog);
             if (hChild == NULL)
-                hChild = GetOurChildWindow(pt); // dame sanci uzkym controlum
+                hChild = GetOurChildWindow(pt); // give narrow controls a chance to be hit
             if (hChild == NULL || altPressed)
             {
-                // Alt umoznuje nastartovat klec nad prvkem (misto jeho tazeni)
+                // Alt allows starting a cage over a control instead of dragging it
                 if (!shiftPressed)
                 {
                     CTransformation transformation;
@@ -1094,9 +1094,9 @@ CLayoutEditor::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     if (dialogData->SelCtrlsContains(HDialog, hChild))
                     {
-                        // je vybrano vice prvku, jeden z nich je ten, na ktery uzivatel kliknul bez SHIFT
-                        // nemuzeme v tuto chvili ostatni odvybrat, protoze muze jit o zacatek tazeni -- proto pripadne odvybrani
-                        // musime odlozit na LBUTTONUP
+                        // multiple controls selected; user clicked one without holding SHIFT
+                        // cannot deselect others yet because this might start a drag—handle deselection later
+                        // defer this until WM_LBUTTONUP
                         PostponedControlSelect = dialogData->GetControlIndex(HDialog, hChild);
                         DraggingMode = edmPreMove;
                     }
@@ -1125,7 +1125,7 @@ CLayoutEditor::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         ShiftPressedOnMouseDown = shiftPressed;
 
-        //LastOperation = eloNone; FIXME - smazat?
+        //LastOperation = eloNone; FIXME - remove this?
         RebuildDialog();
         SetFocus(HWindow);
         SetCapture(HWindow);
@@ -1177,7 +1177,7 @@ CLayoutEditor::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 RebuildDialog();
             }
         }
-        // propadneme do WM_CANCELMODE
+        // fall through to WM_CANCELMODE
     }
     case WM_CANCELMODE:
     {
@@ -1220,7 +1220,7 @@ CLayoutEditor::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 pt.y = MouseDownPoint.y;
         }
 
-        // info o mysi
+        // mouse information
         POINT infoCurrent;
         infoCurrent.x = ((pt.x - DialogOffsetX) * 4) / BaseDlgUnitX; // pixelX = (dialogunitX * baseunitX) / 4
         infoCurrent.y = ((pt.y - DialogOffsetY) * 8) / BaseDlgUnitY; // pixelY = (dialogunitY * baseunitY) / 8
@@ -1254,7 +1254,7 @@ CLayoutEditor::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 HWND hChild = GetChildWindow(pt, HDialog, &index);
                 if (hChild == NULL)
                 {
-                    index = GetOurChildWindowIndex(pt); // dame sanci uzkym controlum
+                    index = GetOurChildWindowIndex(pt); // give narrow controls a chance to be hit
                     if (index == -1)
                         index = 0;
                 }
@@ -1402,7 +1402,7 @@ CLayoutEditor::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (GetCapture() == HWindow)
                 PostMessage(HWindow, WM_CANCELMODE, 0, 0);
             else
-                PostMessage(FrameWindow.HWindow, WM_COMMAND, CM_EXIT, 0); // bezpecny close-window
+                PostMessage(FrameWindow.HWindow, WM_COMMAND, CM_EXIT, 0); // safe window close
             return 0;
         }
 
@@ -1559,10 +1559,10 @@ BOOL CLayoutInfo::GetSameProperties(BOOL* sameTX, BOOL* sameTY, BOOL* sameTCX, B
     *sameTY = TRUE;
     *sameTCX = TRUE;
     *sameTCY = TRUE;
-    *sameRight = TRUE;  // stejna prava hrana
-    *sameBottom = TRUE; // stejna spodni hrana
+    *sameRight = TRUE;  // identical right edge
+    *sameBottom = TRUE; // identical bottom edge
     const CControl* controlFirst = NULL;
-    for (int i = 1; i < DialogData->Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < DialogData->Controls.Count; i++) // skip index 0; it stores the dialog title
     {
         const CControl* control = DialogData->Controls[i];
         if (!control->Selected)
@@ -1596,33 +1596,33 @@ BOOL CLayoutInfo::GetOuterSpace(RECT* outerSpace)
     RECT outline = {0};
     DialogData->SelCtrlsGetOuterRect(&outline);
 
-    // budeme hledat vzdalenost k prvkum (ve 4 smerech), ktere do vybranych controlu nepatri, pripadne k hranam dialogu
+    // find distances to controls outside the selection in all four directions, or to dialog edges
 
-    // napred vzdalenost od hran dialogu
+    // first measure distance to the dialog edges
     outerSpace->left = outline.left;
     outerSpace->top = outline.top;
     outerSpace->right = DialogData->TCX - outline.right;
     outerSpace->bottom = DialogData->TCY - outline.bottom;
 
-    // v druhe fazi od controlu v kazdem ze smeru
-    for (int i = 1; i < DialogData->Controls.Count; i++) // 0 - title dialogu
+    // then measure distance to controls in each direction
+    for (int i = 1; i < DialogData->Controls.Count; i++) // index 0 holds the dialog title
     {
         const CControl* control = DialogData->Controls[i];
-        if (!DialogData->SelCtrlsContainsControlWithIndex(i)) // -1 abychom preskocili title dialogu
+        if (!DialogData->SelCtrlsContainsControlWithIndex(i)) // skip the title entry
         {
             int ctrlX = control->TX;
             int ctrlW = control->TCX;
             int ctrlY = control->TY;
             int ctrlH = control->TCY;
-            if (control->IsComboBox()) // u comboboxu chceme jejich "zabaleny" rozmer
+            if (control->IsComboBox()) // for combo boxes use their collapsed size
                 ctrlH = COMBOBOX_BASE_HEIGHT;
 
-            // POZOR, obdobny kod je jeste v HasDifferentSpacing()
+            // NOTE: similar logic exists in HasDifferentSpacing()
 
-            // control lezi vejskove v pasmu nasi skupiny
-            if ((ctrlY >= outline.top && ctrlY < outline.bottom) ||                  // horni hrana controly lezi uprostred skupiny
-                (ctrlY + ctrlH >= outline.top && ctrlY + ctrlH <= outline.bottom) || // dolni hrana controlu lezi uprostred skupiny
-                (ctrlY < outline.top && ctrlY + ctrlH > outline.bottom))             // horni hrana lezi nad skupinou, dolni pod skupinou (control je vyssi nez cela skupina)
+            // check whether the control vertically overlaps our group
+            if ((ctrlY >= outline.top && ctrlY < outline.bottom) ||                  // top edge lies inside the group
+                (ctrlY + ctrlH >= outline.top && ctrlY + ctrlH <= outline.bottom) || // bottom edge lies inside the group
+                (ctrlY < outline.top && ctrlY + ctrlH > outline.bottom))             // spans above and below the group (control taller than the selection)
             {
                 if ((ctrlX + ctrlW <= outline.left) && (outline.left - (ctrlX + ctrlW) < outerSpace->left))
                 {
@@ -1633,7 +1633,7 @@ BOOL CLayoutInfo::GetOuterSpace(RECT* outerSpace)
                     outerSpace->right = ctrlX - outline.right;
                 }
             }
-            // control lezi sirkove v pasmu nasi skupiny
+            // check whether the control horizontally overlaps our group
             if ((ctrlX >= outline.left && ctrlX < outline.right) ||
                 (ctrlX + ctrlW >= outline.left && ctrlX + ctrlW <= outline.right) ||
                 (ctrlX < outline.left && ctrlX + ctrlW > outline.right))
@@ -1811,7 +1811,7 @@ CLayoutInfo::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_ERASEBKGND:
     {
-        return TRUE; // pozadi smazano
+        return TRUE; // background cleared
     }
 
     case WM_PAINT:
@@ -1974,7 +1974,7 @@ CLayoutWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         LayoutEditor.Create(CWINDOW_CLASSNAME,
                             "",
-                            WS_CHILDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, // okno si zobrazime a zhasneme az bude potreba
+                            WS_CHILDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, // show the window now and hide it later when needed
                             CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
                             HWindow,
                             NULL,
@@ -2002,7 +2002,7 @@ CLayoutWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_CLOSE:
     {
-        PostMessage(FrameWindow.HWindow, WM_COMMAND, CM_EXIT, 0); // bezpecny close-window
+        PostMessage(FrameWindow.HWindow, WM_COMMAND, CM_EXIT, 0); // safe window close
         return 0;
     }
 
@@ -2064,7 +2064,7 @@ CLayoutWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         case ID_LAYOUT_TOOLS_PREVIEWORIGINAL:
         {
-            LayoutEditor.BeginPreviewLayout(TRUE, (GetKeyState('P') & 0x8000) == 0); // musi odpovidat akceleratorum
+            LayoutEditor.BeginPreviewLayout(TRUE, (GetKeyState('P') & 0x8000) == 0); // must match the keyboard accelerators
             return 0;
         }
 
@@ -2076,7 +2076,7 @@ CLayoutWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         case ID_LAYOUT_TOOLS_PREVIEWUNCHANGED:
         {
-            LayoutEditor.BeginPreviewLayout(FALSE, (GetKeyState('U') & 0x8000) == 0); // musi odpovidat akceleratorum
+            LayoutEditor.BeginPreviewLayout(FALSE, (GetKeyState('U') & 0x8000) == 0); // must match the keyboard accelerators
             return 0;
         }
 

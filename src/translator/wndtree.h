@@ -43,10 +43,10 @@ public:
 
     void Navigate(BOOL down);
 
-    // vyhleda handle listu a vrati ho; pokud neexistuje, vrati NULL
+    // Find the tree item handle; returns NULL when the item does not exist.
     HTREEITEM GetItem(DWORD lParam);
 
-    // vrati LPARAM, ktery je pri pristim spustni mozno predat do GetItem, abychom dostali stejnou polozku
+    // Return the LPARAM that can be supplied to GetItem next time to obtain the same entry.
     DWORD GetCurrentItem();
 
     void SelectItem(HTREEITEM hItem);

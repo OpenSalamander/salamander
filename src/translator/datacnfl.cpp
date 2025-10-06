@@ -50,14 +50,14 @@ CButtonType GetButtonType(DWORD style)
     return btOther;
 }
 
-// detektor kolizi horkych klaves
+// Hotkey collision detector
 
 struct CKey
 {
     wchar_t Key;
     WORD Index;
     WORD LVIndex;
-    WORD ControlID; // je-li 0, pouziva se LVIndex, jinak se pouziva ControlID a LVIndex je 0
+    WORD ControlID; // If it is 0, LVIndex is used; otherwise ControlID is used and LVIndex is 0
     DWORD Param1;
     DWORD Param2;
     DWORD Param3;
@@ -74,25 +74,25 @@ protected:
 public:
     CKeyConflict();
 
-    // odstrani vsechny pridane klavesty z pole
+    // Remove all added keys from the array
     void Cleanup();
 
-    // prida klavesu do pole; vrati TRUE v pripade uspesneho zarazeni
-    // FALSE v pripade nedostatku pameti
+    // Add a key to the array; returns TRUE if the insertion succeeds
+    // FALSE if memory is insufficient
     BOOL AddKey(wchar_t key, WORD index, WORD lvIndex, WORD controlID, DWORD param1 = 0, DWORD param2 = 0,
                 DWORD param3 = 0, DWORD param4 = 0);
     BOOL AddString(const wchar_t* string, WORD index, WORD lvIndex, WORD controlID, DWORD param1 = 0,
                    DWORD param2 = 0, DWORD param3 = 0, DWORD param4 = 0);
 
-    // je treba zavolat pred prvnim volanim GetNextConflict
+    // Must be called before the first GetNextConflict invocation
     void PrepareConflictIteration(CDialogData* dialog = NULL);
 
-    // vraci TRUE, pokud byl nalezen konflikt; naplni ukazatele
-    // pokud jiz neni zadny dalsi konflikt, vrati FALSE
+    // Returns TRUE if a conflict was found and fills the pointers
+    // Returns FALSE when there are no more conflicts
     BOOL GetNextConflict(WORD* index, WORD* lvIndex, WORD* controlID, DWORD* param1 = NULL,
                          DWORD* param2 = NULL, DWORD* param3 = NULL, DWORD* param4 = NULL);
 
-    // projede 'string', vyhazi z nej obsazene klavesy, zbytek vrati v 'availableKeys'
+    // Walk through 'string', remove the hotkeys already used, and return the rest in 'availableKeys'
     void GetAvailableKeys(const wchar_t* string, wchar_t* availableKeys, int availableKeysSize);
 
 protected:
@@ -254,13 +254,13 @@ void CKeyConflict::GetAvailableKeys(const wchar_t* string, wchar_t* availableKey
 {
     int index = 0;
     const wchar_t* p = string;
-    BOOL allowAllHotkeys = FALSE; // TRUE = hledame hotkeys mezi vsemi pismeny a cisly, FALSE = jen mezi a-z a cisly
+    BOOL allowAllHotkeys = FALSE; // TRUE = search for hotkeys among all letters and digits, FALSE = only among a-z and digits
 
     for (int x = 0; x < 2; x++)
     {
         while (*p != 0 && index < availableKeysSize - 1)
         {
-            if (*p == L'\\' && *(p + 1) == L't') // horke klavesy nechceme do hintu
+            if (*p == L'\\' && *(p + 1) == L't') // do not include hotkeys in the hint
                 break;
             wchar_t ch = (wchar_t)(UINT_PTR)CharLowerW((LPWSTR)*p);
             if (allowAllHotkeys && IsAlphaW(ch) || ch >= L'a' && ch <= L'z')
@@ -294,7 +294,7 @@ void CKeyConflict::GetAvailableKeys(const wchar_t* string, wchar_t* availableKey
     availableKeys[index] = 0;
 }
 
-// vrati TRUE, pokud text ukazuje na jeden z ridicich znaku \n, \r, \t
+// Return TRUE if the text points to one of the control characters \n, \r, \t
 
 BOOL IsControlCharacter(const wchar_t* text)
 {
@@ -307,32 +307,32 @@ BOOL IsControlCharacter(const wchar_t* text)
     return FALSE;
 }
 
-// stringy v TRANSLATOR jsou ulozene ve zdrojakove podobe, tedy napr. CR jako dva znaky: '\\' a 'r'
-// proto delame escape sekvence vlastne dvojnasobne
+// Strings in TRANSLATOR are stored in source form, e.g. CR as two characters: '\\' and 'r'
+// therefore we effectively handle escape sequences twice
 BOOL SkipEscapeSeqInPlurStr(const wchar_t*& s, BOOL* error)
 {
     if (*s == L'\\')
     {
         if (*(s + 1) == L'r' || *(s + 1) == L'n' || *(s + 1) == L't')
-        { // v .res je jediny znak CR, LF nebo TAB
+        { // in the .res there is a single character CR, LF, or TAB
             s += 2;
         }
         else
         {
             if (*(s + 1) == L'\\' && (*(s + 2) == L'|' || *(s + 2) == L'{' || *(s + 2) == L'}' || *(s + 2) == L':'))
-            { // v .res jsou dva znaky: \|, \{, \: nebo \} (escape sekvence pro |, { a } v plural stringu)
+            { // in the .res there are two characters: \|, \{, \: or \} (escape sequences for |, {, and } in a plural string)
                 s += 3;
             }
             else
             {
                 if (*(s + 1) == L'\\' && *(s + 2) == L'\\' && *(s + 3) == L'\\')
-                { // v .res jsou dva znaky: \\ (escape sekvence pro \ v plural stringu)
+                { // in the .res there are two characters: \\ (escape sequence for \ in a plural string)
                     s += 4;
                 }
                 else
                 {
                     if (*(s + 1) == L'\\')
-                    { // v .res je jediny znak backslash
+                    { // in the .res there is a single backslash character
                         s += 2;
                     }
                     else
@@ -356,16 +356,16 @@ const wchar_t* FindPluralStrPar(const wchar_t* s, BOOL* error)
         if (SkipEscapeSeqInPlurStr(s, error))
         {
             if (*error)
-                return s; // chybna escape sekvence
+                return s; // invalid escape sequence
         }
         else
         {
             if (*s == L'{')
-                return s; // nasli jsme zacatek parametru
+                return s; // found the start of a parameter
             s++;
         }
     }
-    return s; // nenalezeno, vracime konec retezce
+    return s; // not found, return the end of the string
 }
 
 BOOL IsPrintfCharacter(const wchar_t* text, int* length);
@@ -376,13 +376,13 @@ const wchar_t* FindPluralStrParEnd(const wchar_t* s, BOOL* error, BOOL calcNumOf
 {
     wchar_t buff[300];
 
-    s++; // preskok L'{'
+    s++; // skip L'{'
 
     const wchar_t* parInd = s;
     int parIndVal = 0;
     while (*parInd >= L'0' && *parInd <= L'9')
         parIndVal = 10 * parIndVal + *parInd++ - L'0';
-    if (*parInd == L':' && parInd > s) // mame prirazeny index, pouzijeme ho
+    if (*parInd == L':' && parInd > s) // an explicit index is present, use it
     {
         if (parIndVal >= 1 && (calcNumOfParams || parIndVal <= *numOfParams))
         {
@@ -397,7 +397,7 @@ const wchar_t* FindPluralStrParEnd(const wchar_t* s, BOOL* error, BOOL calcNumOf
                     swprintf_s(buff, L"Unexpected number of parameters used in plural string (over %d).", parUsedArrCount);
                     OutWindow.AddLine(buff, mteError);
                     *error = TRUE;
-                    return s; // chyba, index je od jedne
+                    return s; // error, indexes start from one
                 }
             }
             s = parInd + 1;
@@ -413,7 +413,7 @@ const wchar_t* FindPluralStrParEnd(const wchar_t* s, BOOL* error, BOOL calcNumOf
                 OutWindow.AddLine(buff, mteError);
             }
             *error = TRUE;
-            return s; // chyba, index je od jedne
+            return s; // error, indexes start from one
         }
     }
     else
@@ -428,7 +428,7 @@ const wchar_t* FindPluralStrParEnd(const wchar_t* s, BOOL* error, BOOL calcNumOf
                        *numOfParams);
             OutWindow.AddLine(buff, mteError);
             *error = TRUE;
-            return s; // chyba, automaticky index vyjel mimo pocet parametru v originale
+            return s; // error, the implicit index exceeded the number of parameters in the original
         }
         if (!calcNumOfParams)
         {
@@ -439,26 +439,26 @@ const wchar_t* FindPluralStrParEnd(const wchar_t* s, BOOL* error, BOOL calcNumOf
                 swprintf_s(buff, L"Unexpected number of parameters used in plural string (over %d).", parUsedArrCount);
                 OutWindow.AddLine(buff, mteError);
                 *error = TRUE;
-                return s; // chyba, index je od jedne
+                return s; // error, indexes start from one
             }
         }
     }
 
     while (*s != 0 && *s != L'}')
     {
-        // preskok textu
+        // Skip text
         while (*s != L'}' && *s != 0 && *s != '|')
         {
             if (IsControlCharacter(s))
             {
                 OutWindow.AddLine(L"Plural string cannot contain control chars in its variable part.", mteError);
                 *error = TRUE;
-                return s; // tyto sekvence se daji kontrolovat jedina nad expandovanym stringem, doufejme ze to nikde nebude nutny pouzit, byl by to trochu ojeb ovalidovat vsechny varianty expandovaneho textu
+                return s; // these sequences can only be verified on the expanded string; hopefully we never need to do that, because validating every variant would be painful
             }
             if (SkipEscapeSeqInPlurStr(s, error))
             {
                 if (*error)
-                    return s; // chybna escape sekvence
+                    return s; // invalid escape sequence
             }
             else
             {
@@ -467,7 +467,7 @@ const wchar_t* FindPluralStrParEnd(const wchar_t* s, BOOL* error, BOOL calcNumOf
                 {
                     OutWindow.AddLine(L"Plural string cannot contain format specifiers in its variable part.", mteError);
                     *error = TRUE;
-                    return s; // tyto sekvence se daji kontrolovat jedina nad expandovanym stringem, doufejme ze to nikde nebude nutny pouzit, byl by to trochu ojeb ovalidovat vsechny varianty expandovaneho textu
+                    return s; // these sequences can only be verified on the expanded string; hopefully we never need to do that, because validating every variant would be painful
                 }
                 s++;
             }
@@ -476,7 +476,7 @@ const wchar_t* FindPluralStrParEnd(const wchar_t* s, BOOL* error, BOOL calcNumOf
         {
             s++;
 
-            // preskok ciselne meze
+            // Skip the numeric bound
             const wchar_t* numBeg = s;
             while (*s != L'}' && *s != 0 && *s != L'|')
             {
@@ -484,12 +484,12 @@ const wchar_t* FindPluralStrParEnd(const wchar_t* s, BOOL* error, BOOL calcNumOf
                 {
                     OutWindow.AddLine(L"Plural string contains interval bound which is not a decimal number.", mteError);
                     *error = TRUE;
-                    return s; // chyba, tady se ocekava jen dekadicke cislo
+                    return s; // error, only a decimal number is expected here
                 }
                 s++;
             }
             if (s > numBeg && *s == L'|')
-                s++; // mez nesmi byt prazdna + musi koncit L'|'
+                s++; // the bound must not be empty and has to end with L'|'
             else
             {
                 if (s == numBeg)
@@ -497,16 +497,16 @@ const wchar_t* FindPluralStrParEnd(const wchar_t* s, BOOL* error, BOOL calcNumOf
                 else
                     OutWindow.AddLine(L"Plural string's variable part cannot end with interval bound (text variant must follow).", mteError);
                 *error = TRUE;
-                return s; // chyba, bud chybi cislo meze nebo chybi dalsi text za L'|'
+                return s; // error: either the bound number is missing or there is no text after L'|'
             }
         }
     }
     return s;
 }
 
-// zkontroluje proti sobe retezce a vrati TRUE, pokud oba nejsou plural stringy
-// nebo oba jsou plural stringy a zaroven maji stejny pocet parametru a jsou
-// syntakticky v poradku
+// Compare the strings and return TRUE if neither is a plural string
+// or if both are plural strings with the same number of parameters
+// and are syntactically correct
 BOOL ValidatePluralStrings(const wchar_t* original, const wchar_t* translated)
 {
     wchar_t buff[300];
@@ -514,7 +514,7 @@ BOOL ValidatePluralStrings(const wchar_t* original, const wchar_t* translated)
     BOOL isOrigPlural = *original == L'{' && *(original + 1) == L'!' && *(original + 2) == L'}';
     BOOL isTranPlural = *translated == L'{' && *(translated + 1) == L'!' && *(translated + 2) == L'}';
     if (isOrigPlural != isTranPlural)
-        return FALSE; // jeden je, druhy neni plural, to je urcite spatne
+        return FALSE; // one is plural and the other is not—that is definitely wrong
     if (isOrigPlural)
     {
         // skip signature
@@ -528,15 +528,15 @@ BOOL ValidatePluralStrings(const wchar_t* original, const wchar_t* translated)
         {
             original = FindPluralStrPar(original, &error);
             if (error)
-                return FALSE; // chybna escape sekvence
+                return FALSE; // invalid escape sequence
             if (*original == 0)
-                break; // hotovo
+                break; // done
             original = FindPluralStrParEnd(original, &error, TRUE, &actParIndex, &numOfParams, NULL, 0);
             if (error || *original != L'}')
             {
                 if (!error)
                     OutWindow.AddLine(L"Original plural string contains variable part which is not closed by '}'.", mteError);
-                return FALSE; // chybna escape sekvence nebo parametry nejsou ukoncene '}'
+                return FALSE; // invalid escape sequence or parameters are not closed by '}'
             }
             original++;
         }
@@ -547,15 +547,15 @@ BOOL ValidatePluralStrings(const wchar_t* original, const wchar_t* translated)
         {
             translated = FindPluralStrPar(translated, &error);
             if (error)
-                return FALSE; // chybna escape sekvence
+                return FALSE; // invalid escape sequence
             if (*translated == 0)
-                break; // hotovo
+                break; // done
             translated = FindPluralStrParEnd(translated, &error, FALSE, &actParIndex, &numOfParams, parUsedArr, 100);
             if (error || *translated != L'}')
             {
                 if (!error)
                     OutWindow.AddLine(L"Plural string contains variable part which is not closed by '}'.", mteError);
-                return FALSE; // chybna escape sekvence nebo parametry nejsou ukoncene '}'
+                return FALSE; // invalid escape sequence or parameters are not closed by '}'
             }
             translated++;
         }
@@ -565,15 +565,15 @@ BOOL ValidatePluralStrings(const wchar_t* original, const wchar_t* translated)
             {
                 swprintf_s(buff, L"Plural string does not use all parameters, first unused parameter index is %d.", i + 1);
                 OutWindow.AddLine(buff, mteError);
-                return FALSE; // nepouzity parametr, nejspis chyba
+                return FALSE; // unused parameter—most likely an error
             }
         }
     }
     return TRUE;
 }
 
-// zkontroluje proti sobe retezce a vrati TRUE, pokud obsahuji stejny pocet a poradi
-// ridicich znaku \r \n \t
+// Compare the strings and return TRUE if they contain the same number and order
+// of control characters \r \n \t
 BOOL ValidateControlCharacters(const wchar_t* original, const wchar_t* translated)
 {
     const wchar_t* oIter = original;
@@ -608,7 +608,7 @@ BOOL ValidateControlCharacters(const wchar_t* original, const wchar_t* translate
     return TRUE;
 }
 
-// zkontroluje, jestli se shoduje pocet carek v originale a prekladu (jde o pocet hodnot ve stringu s CSV)
+// Check whether the number of commas matches in the original and translation (the number of values in a CSV string)
 BOOL ValidateStringWithCSV(const wchar_t* original, const wchar_t* translated)
 {
     const wchar_t* oIter = original;
@@ -624,8 +624,8 @@ BOOL ValidateStringWithCSV(const wchar_t* original, const wchar_t* translated)
     return oCount == tCount;
 }
 
-// vrati TRUE, pokud ukazatel text ukazuje na ridici znak pro printf
-// zaroven naplni promennou length
+// Return TRUE if the text pointer references a printf control specifier
+// and fill the length variable
 
 BOOL IsPrintfCharacter(const wchar_t* text, int* length)
 {
@@ -633,7 +633,7 @@ BOOL IsPrintfCharacter(const wchar_t* text, int* length)
     if (*p == L'%')
     {
         p++;
-        if (*p == L'%') // escape sekvence pro '%'
+        if (*p == L'%') // escape sequence for '%'
         {
             *length = p - text + 1;
             return TRUE;
@@ -680,8 +680,8 @@ BOOL IsPrintfCharacter(const wchar_t* text, int* length)
     return FALSE;
 }
 
-// zkontroluje proti sobe retezce a vrati TRUE, pokud obsahuji stejny pocet a poradi
-// ridicich retezcu pro printf
+// Compare the strings and return TRUE if they contain the same number and order
+// of printf format specifiers
 BOOL ValidatePrintfSpecifier(const wchar_t* original, const wchar_t* translated)
 {
     const wchar_t* oIter = original;
@@ -719,14 +719,14 @@ BOOL ValidatePrintfSpecifier(const wchar_t* original, const wchar_t* translated)
     return TRUE;
 }
 
-// pokud jeden retezec obsahuje horkou klavesu a druhy ne, vrati FALSE
-// jinak vrati TRUE
+// Return FALSE if exactly one string contains a hotkey
+// otherwise return TRUE
 BOOL ValidateHotKeys(const wchar_t* original, const wchar_t* translated)
 {
     const wchar_t* oIter = original;
     const wchar_t* tIter = translated;
 
-    // pocet horkych klaves
+    // Number of hotkeys
     int oCount = 0;
     int tCount = 0;
 
@@ -760,8 +760,8 @@ BOOL ValidateHotKeys(const wchar_t* original, const wchar_t* translated)
     return TRUE;
 }
 
-// vraci FALSE, pokud maji retezce na zacatku ruzny pocet mezer
-// jinak vraci TRUE
+// Return FALSE if the strings start with a different number of spaces
+// otherwise return TRUE
 BOOL ValidateTextBeginning(const wchar_t* original, const wchar_t* translated)
 {
     const wchar_t* oIter = original;
@@ -782,14 +782,14 @@ BOOL ValidateTextBeginning(const wchar_t* original, const wchar_t* translated)
     return oCount == tCount;
 }
 
-#define IDEOGRAPHIC_PERIOD L'\x3002' // tecka za vetou v simplified chinese (a zrejme i v dalsich obrazkovych pismech)
+#define IDEOGRAPHIC_PERIOD L'\x3002' // sentence period in Simplified Chinese (and likely other logographic scripts)
 
-// otestuje konce retezcu, zda oba maji stejne zaviraci sekvence (mezery, tecky, dvojtecky)
-// pokud jsou konce retezcu shodne, vraci TRUE, jinak vraci FALSE
+// Check whether both string endings use the same trailing sequence (spaces, dots, colons)
+// Return TRUE if the endings match; otherwise return FALSE
 BOOL ValidateTextEnding(const wchar_t* original, const wchar_t* translated, WORD strID)
 {
-    // Petr: pridame sem i test na to, jestli neni jeden text prazdny a druhy ne, to
-    // by byla tez chyba a da se rict, ze to spada pod ruzne zacatky/konce textu
+    // Petr: also add a test that one text is not empty while the other is not;
+    // that would also be an error and falls under mismatching beginnings/endings
     const wchar_t* oWS = original;
     while (*oWS != 0 && (*oWS == ' ' || *oWS == '\t'))
         oWS++;
@@ -816,7 +816,7 @@ BOOL ValidateTextEnding(const wchar_t* original, const wchar_t* translated, WORD
         tCont = (tIter >= translated && (*tIter == L'.' || *tIter == L':' || *tIter == L' ' || *tIter == IDEOGRAPHIC_PERIOD));
         if (ignoreMissingColonAtEnd && oCont && *oIter == L':' && (!tCont || *tIter != L':'))
         {
-            ignoreMissingColonAtEnd = FALSE; // ignorujeme jen jednu chybejici dvojtecku
+            ignoreMissingColonAtEnd = FALSE; // ignore only a single missing colon
             oIter--;
             oCont = (oIter >= original && (*oIter == L'.' || *oIter == L':' || *oIter == L' ' || *oIter == IDEOGRAPHIC_PERIOD));
         }
@@ -825,7 +825,7 @@ BOOL ValidateTextEnding(const wchar_t* original, const wchar_t* translated, WORD
             wchar_t oCh = *oIter;
             wchar_t tCh = *tIter;
             if (oCh == IDEOGRAPHIC_PERIOD)
-                oCh = L'.'; // IDEOGRAPHIC_PERIOD a L'.' jsou pro nase ucely ekvivalentni znaky
+                oCh = L'.'; // IDEOGRAPHIC_PERIOD and L'.' are equivalent for our purposes
             if (tCh == IDEOGRAPHIC_PERIOD)
                 tCh = L'.';
             if (oCh != tCh)
@@ -864,7 +864,7 @@ BOOL DoesControlsOverlap(WORD dialogID, const CControl* ctrl1, const CControl* c
 {
     RECT r1;
     int r1Height = ctrl1->TCY;
-    if (ctrl1->IsComboBox()) // u comboboxu chceme jejich "zabaleny" rozmer
+    if (ctrl1->IsComboBox()) // For combo boxes we want their "collapsed" size
         r1Height = COMBOBOX_BASE_HEIGHT;
     r1.left = ctrl1->TX;
     r1.top = ctrl1->TY;
@@ -874,7 +874,7 @@ BOOL DoesControlsOverlap(WORD dialogID, const CControl* ctrl1, const CControl* c
 
     RECT r2;
     int r2Height = ctrl2->TCY;
-    if (ctrl2->IsComboBox()) // u comboboxu chceme jejich "zabaleny" rozmer
+    if (ctrl2->IsComboBox()) // For combo boxes we want their "collapsed" size
         r2Height = COMBOBOX_BASE_HEIGHT;
     r2.left = ctrl2->TX;
     r2.top = ctrl2->TY;
@@ -888,19 +888,19 @@ BOOL DoesControlsOverlap(WORD dialogID, const CControl* ctrl1, const CControl* c
 
 BOOL DoesGroupBoxLabelOverlap(BOOL control1IsCheckOrRadioBox, const CControl* control1, const CControl* control2)
 {
-    return control1IsCheckOrRadioBox && control2->IsGroupBox() &&                                  // poresime, jestli nepresahuje label z checkboxu/radioboxu groupbox
-           control1->TY <= control2->TY + 4 && control1->TY + control1->TCY >= control2->TY + 5 && // +4 a +5 experimentalne zjisteno (checkbox/radiobox vertikalne prekryva horni caru groupboxu)
-           control1->TX > control2->TX && control1->TX < control2->TX + control2->TCX &&           // checkbox/radiobox horizontalne prekryva groupbox
-           control1->TX + control1->TCX > control2->TX + control2->TCX - 3;                        // checkbox/radiobox konci moc daleko, nici horni pravy roh groupboxu
+    return control1IsCheckOrRadioBox && control2->IsGroupBox() &&                                  // solve whether the checkbox/radio label overlaps the group box
+           control1->TY <= control2->TY + 4 && control1->TY + control1->TCY >= control2->TY + 5 && // +4 and +5 determined experimentally (checkbox/radio overlaps the top edge vertically)
+           control1->TX > control2->TX && control1->TX < control2->TX + control2->TCX &&           // checkbox/radio overlaps the group box horizontally
+           control1->TX + control1->TCX > control2->TX + control2->TCX - 3;                        // checkbox/radio ends too far and damages the upper-right corner of the group box
 }
 
 BOOL ShouldValidateLayoutFor(const CControl* control)
 {
-    // groupboxy ignorujeme
+    // Ignore group boxes
     if (control->IsGroupBox())
         return FALSE;
 
-    // nizky static bez texty bude horizontalni separator
+    // A short static control without text represents a horizontal separator
     if ((DWORD)control->ClassName == 0x0082ffff && (control->TCY < 2) && (control->TWindowName[0] == 0))
         return FALSE;
 
@@ -947,14 +947,14 @@ BOOL ShouldValidateAlignment(CDialogData* dialog, const CControl* control1,
 
     if ((DWORD)control1->ClassName == 0x0082ffff &&
         (DWORD)control2->ClassName == 0x0082ffff &&
-        control1->TCY == 1 && control2->TCY == 1) // vodorovne cary zkontrolujeme na obou stranach
+        control1->TCY == 1 && control2->TCY == 1) // check horizontal lines on both sides
     {
-        *checkLeft = control1->TY < 20 && control2->TY < 20; // jen pokud jdou od kraje dialogu, jinak nejspis pokracuji od konec static textu pred nima a to nema smysl validovat
+        *checkLeft = control1->TY < 20 && control2->TY < 20; // only if they start at the dialog edge; otherwise they likely continue after a static text and validating makes no sense
         *checkRight = TRUE;
         return TRUE;
     }
 
-    // statiky "levy text" a radiaky s checkboxama budeme vsechny rovnat na levou stranu
+    // Align "left text" statics and radio/check boxes to the left edge
     if (((DWORD)control1->ClassName == 0x0080ffff && IsRadioOrCheckBox(control1->Style) ||
          (DWORD)control1->ClassName == 0x0082ffff && IsStaticLeftText(control1->Style) &&
              control1->TCY > 1 && !Data.IgnoreStaticItIsProgressBar(dialog->ID, control1->ID)) &&
@@ -975,41 +975,41 @@ BOOL ShouldValidateAlignment(CDialogData* dialog, const CControl* control1,
     {
         CButtonType b1 = GetButtonType(control1->Style);
         CButtonType b2 = GetButtonType(control2->Style);
-        *checkLeft = TRUE; // u tlacitek testujeme vzdy levou stranu (snad nemame checkboxy/radiaky s right align?)
+        *checkLeft = TRUE; // always test the left side for buttons (hopefully no right-aligned checkboxes/radios)
         *checkRight = b1 == btPush && b2 == btPush ||
-                      b1 == btGroup && b2 == btGroup; // pokud jde o "push" tlacitko nebo groupbox, overime i pravou hranu
+                      b1 == btGroup && b2 == btGroup; // if it is a push button or group box, verify the right edge as well
         *checkVertical = *checkRight;
         return *checkRight || (control1->Style & BS_TYPEMASK) == (control2->Style & BS_TYPEMASK);
     }
 
-    if ((DWORD)control1->ClassName == 0x0082ffff) // STATIC nebo progress bar
+    if ((DWORD)control1->ClassName == 0x0082ffff) // STATIC or progress bar
     {
         if (Data.IgnoreStaticItIsProgressBar(dialog->ID, control1->ID)) // progress bar
         {
             *checkLeft = TRUE;
             *checkRight = TRUE;
             *checkVertical = TRUE;
-            return Data.IgnoreStaticItIsProgressBar(dialog->ID, control2->ID); // jen je-li druhy tez progress bar
+            return Data.IgnoreStaticItIsProgressBar(dialog->ID, control2->ID); // only if the other one is also a progress bar
         }
         DWORD ssStyle = (control1->Style & SS_TYPEMASK);
-        *checkLeft = IsStaticLeftText(control1->Style); // levou hranu chceme testovat pouze pokud je zarovnan vlevo
-        *checkRight = (ssStyle == SS_RIGHT);            // pravou hranu chceme testovat pouze pokud je zarovnan vpravo
+        *checkLeft = IsStaticLeftText(control1->Style); // test the left edge only if it is left-aligned
+        *checkRight = (ssStyle == SS_RIGHT);            // test the right edge only if it is right-aligned
         return ((control1->Style & SS_TYPEMASK) == (control2->Style & SS_TYPEMASK) ||
                 IsStaticLeftText(control1->Style) && IsStaticLeftText(control2->Style)) &&
-               control1->TCY > 1 && control2->TCY > 1 &&                    // vylouceni vodorovnych car
-               !Data.IgnoreStaticItIsProgressBar(dialog->ID, control2->ID); // vylouceni progress baru
+               control1->TCY > 1 && control2->TCY > 1 &&                    // exclude horizontal lines
+               !Data.IgnoreStaticItIsProgressBar(dialog->ID, control2->ID); // exclude progress bars
     }
 
     if ((DWORD)control1->ClassName == 0x0081ffff) // EDIT
     {
         if ((control1->Style & WS_BORDER) != (control2->Style & WS_BORDER))
-            return FALSE; // editbox s a bez ramecku nezarovnavame, to nema smysl
+            return FALSE; // aligning edits with and without borders makes no sense
         *checkLeft = TRUE;
-        *checkRight = (control1->Style & WS_BORDER) != 0; // pravou hranu chceme testovat pouze pokud ma ramecek (jinak prava hrana neni patrna)
+        *checkRight = (control1->Style & WS_BORDER) != 0; // test the right edge only if it has a border (otherwise the edge is not visible)
         return TRUE;
     }
 
-    // vsechny ostatni prvky nechame validovat "tvrde", postupne muzeme pridavat vyjimky, viz dva bloky BUTTON a STATIC
+    // Validate all remaining controls strictly; we can add exceptions later, see the BUTTON and STATIC blocks
     *checkLeft = TRUE;
     *checkRight = TRUE;
     return TRUE;
@@ -1025,13 +1025,13 @@ BOOL ShouldValidateSize(const CControl* control1, const CControl* control2)
         CButtonType b1 = GetButtonType(control1->Style);
         CButtonType b2 = GetButtonType(control2->Style);
         return b1 == btPush && b2 == btPush ||
-               b1 == btGroup && b2 == btGroup; // pokud jde o "push" tlacitko nebo groupbox
+               b1 == btGroup && b2 == btGroup; // if it is a push button or group box
     }
 
     if ((DWORD)control1->ClassName == 0x0081ffff) // EDIT
     {
         if ((control1->Style & WS_BORDER) != (control2->Style & WS_BORDER))
-            return FALSE; // editbox s a bez ramecku nezarovnavame, to nema smysl
+            return FALSE; // Do not align edit boxes with and without borders—it makes no sense
         return TRUE;
     }
 
@@ -1048,7 +1048,7 @@ enum EnumSpacingControlType
     esctPushButton,
     esctCheckBox,
     esctRadioButton,
-    //  esctStatic, kdybysme chteli uchylacit
+    //  esctStatic, if we ever wanted to go overboard
     esctEditBox,
     esctComboBox,
     esctNone
@@ -1090,18 +1090,18 @@ EnumSpacingControlType GetSpacingControlType(const CControl* control)
 BOOL HasDifferentSpacing(CDialogData* dialogData, int controlIndex)
 {
     const CControl* control = dialogData->Controls[controlIndex];
-    // zjistime, zda jde o control, ktery mame na mezery testovat
+    // Determine whether this control should be checked for spacing
     EnumSpacingControlType ctrlType = GetSpacingControlType(control);
     if (ctrlType != esctNone)
     {
-        BOOL checkHoriz = ctrlType != esctRadioButton && ctrlType != esctCheckBox; // co nema ram okolo nema smysl rovnat ve vodorovnem smeru
+        BOOL checkHoriz = ctrlType != esctRadioButton && ctrlType != esctCheckBox; // elements without a frame should not be aligned horizontally
 
         RECT outline;
         outline.left = control->TX;
         outline.top = control->TY;
         outline.right = control->TX + control->TCX;
         int ctrlH = control->TCY;
-        if (control->IsComboBox()) // u comboboxu chceme jejich "zabaleny" rozmer
+        if (control->IsComboBox()) // for combo boxes we want their "collapsed" size
             ctrlH = COMBOBOX_BASE_HEIGHT;
         outline.bottom = control->TY + ctrlH;
 
@@ -1112,27 +1112,27 @@ BOOL HasDifferentSpacing(CDialogData* dialogData, int controlIndex)
         outerSpace.right = OUTERSPACEMAX;
         outerSpace.bottom = OUTERSPACEMAX;
 
-        // budeme hledat vzdalenost ke stejnym prvkum (ve 4 smerech)
+        // Look for distances to the same control types (in four directions)
 
-        // v druhe fazi od controlu v kazdem ze smeru
-        for (int i = 1; i < dialogData->Controls.Count; i++) // 0 - title dialogu
+        // Second phase: from the control in each direction
+        for (int i = 1; i < dialogData->Controls.Count; i++) // 0 = dialog title
         {
             const CControl* control2 = dialogData->Controls[i];
-            if (control != control2 && ctrlType == GetSpacingControlType(control2)) // hledame stejny typ + nechceme sami sebe
+            if (control != control2 && ctrlType == GetSpacingControlType(control2)) // find the same type and avoid ourselves
             {
                 int ctrlX = control2->TX;
                 int ctrlW = control2->TCX;
                 int ctrlY = control2->TY;
                 ctrlH = control2->TCY;
-                if (control2->IsComboBox()) // u comboboxu chceme jejich "zabaleny" rozmer
+                if (control2->IsComboBox()) // for combo boxes we want their "collapsed" size
                     ctrlH = COMBOBOX_BASE_HEIGHT;
 
-                // POZOR, obdobny kod je jeste v GetOuterSpace() a GetMutualControlsPosition()
+                // WARNING: similar code lives in GetOuterSpace() and GetMutualControlsPosition()
 
-                // control lezi vejskove v pasmu nasi skupiny
-                if ((ctrlY >= outline.top && ctrlY < outline.bottom) ||                  // horni hrana controly lezi uprostred skupiny
-                    (ctrlY + ctrlH >= outline.top && ctrlY + ctrlH <= outline.bottom) || // dolni hrana controlu lezi uprostred skupiny
-                    (ctrlY < outline.top && ctrlY + ctrlH > outline.bottom))             // horni hrana lezi nad skupinou, dolni pod skupinou (control je vyssi nez cela skupina)
+                // The control is vertically within the band's range
+                if ((ctrlY >= outline.top && ctrlY < outline.bottom) ||                  // top edge lies inside the group
+                    (ctrlY + ctrlH >= outline.top && ctrlY + ctrlH <= outline.bottom) || // bottom edge lies inside the group
+                    (ctrlY < outline.top && ctrlY + ctrlH > outline.bottom))             // spans above and below the group (taller than the band)
                 {
                     if ((ctrlX + ctrlW <= outline.left) && (outline.left - (ctrlX + ctrlW) < outerSpace.left))
                     {
@@ -1143,7 +1143,7 @@ BOOL HasDifferentSpacing(CDialogData* dialogData, int controlIndex)
                         outerSpace.right = ctrlX - outline.right;
                     }
                 }
-                // control lezi sirkove v pasmu nasi skupiny
+                // The control is horizontally within the band's range
                 if ((ctrlX >= outline.left && ctrlX < outline.right) ||
                     (ctrlX + ctrlW >= outline.left && ctrlX + ctrlW <= outline.right) ||
                     (ctrlX < outline.left && ctrlX + ctrlW > outline.right))
@@ -1175,21 +1175,21 @@ void GetMutualControlsPosition(const CControl* control1, const CControl* control
     int ctrl1W = control1->TCX;
     int ctrl1Y = control1->TY;
     int ctrl1H = control1->TCY;
-    if (control1->IsComboBox()) // u comboboxu chceme jejich "zabaleny" rozmer
+    if (control1->IsComboBox()) // for combo boxes we want their "collapsed" size
         ctrl1H = COMBOBOX_BASE_HEIGHT;
 
     int ctrl2X = control2->TX;
     int ctrl2W = control2->TCX;
     int ctrl2Y = control2->TY;
     int ctrl2H = control2->TCY;
-    if (control2->IsComboBox()) // u comboboxu chceme jejich "zabaleny" rozmer
+    if (control2->IsComboBox()) // for combo boxes we want their "collapsed" size
         ctrl2H = COMBOBOX_BASE_HEIGHT;
 
-    // control lezi vejskove v pasmu nasi outline
-    *inRow = ((ctrl2Y >= ctrl1Y && ctrl2Y < ctrl1Y + ctrl1H) ||                   // horni hrana druheho lezi uprostred prvniho
-              (ctrl2Y + ctrl2H > ctrl1Y && ctrl2Y + ctrl2H <= ctrl1Y + ctrl1H) || // dolni hrana druheho lezi uprostred prvniho
-              (ctrl1Y < ctrl2Y && ctrl1Y + ctrl1H > ctrl2Y + ctrl2H) ||           // horni hrana prvniho lezi nad druhym, dolni hrana prvniho pod druhym (druhy lezi vyskove v prvnim)
-              (ctrl2Y < ctrl1Y && ctrl2Y + ctrl2H > ctrl1Y + ctrl1H));            // horni hrana druheho lezi nad prvnim, dolni hrana druheho pod prvnim (prvni lezi vyskove v druhem)
+    // The control is vertically within the outline band
+    *inRow = ((ctrl2Y >= ctrl1Y && ctrl2Y < ctrl1Y + ctrl1H) ||                   // second control's top edge lies inside the first
+              (ctrl2Y + ctrl2H > ctrl1Y && ctrl2Y + ctrl2H <= ctrl1Y + ctrl1H) || // second control's bottom edge lies inside the first
+              (ctrl1Y < ctrl2Y && ctrl1Y + ctrl1H > ctrl2Y + ctrl2H) ||           // first control spans above and below the second
+              (ctrl2Y < ctrl1Y && ctrl2Y + ctrl2H > ctrl1Y + ctrl1H));            // second control spans above and below the first
     *inCol = ((ctrl2X >= ctrl1X && ctrl2X < ctrl1X + ctrl1W) ||
               (ctrl2X + ctrl2W > ctrl1X && ctrl2X + ctrl2W <= ctrl1X + ctrl1W) ||
               (ctrl1X < ctrl2X && ctrl1X + ctrl1W > ctrl2X + ctrl2W) ||
@@ -1209,7 +1209,7 @@ BOOL IsControlForLabelPlacingTest(const CDialogData* dialog, const CControl* con
                 if ((DWORD)firstControl->ClassName == 0x0080ffff) // BUTTON
                 {
                     CButtonType b = GetButtonType(firstControl->Style);
-                    if (b == btCheck || b == btRadio) // checkbox nebo radiobutton pred tlacitkem
+                    if (b == btCheck || b == btRadio) // Checkbox or radio button before the button
                     {
                         *deltaY = (control->TCY - 12) / 2;
                         return TRUE;
@@ -1220,23 +1220,23 @@ BOOL IsControlForLabelPlacingTest(const CDialogData* dialog, const CControl* con
                 {
                     DWORD ss = (firstControl->Style & SS_TYPEMASK);
                     if (ss == SS_LEFT || ss == SS_RIGHT || ss == SS_CENTER || ss == SS_SIMPLE || ss == SS_LEFTNOWORDWRAP)
-                    { // static pred tlacitkem
+                    { // Static before the button
                         *deltaY = (control->TCY - 12) / 2;
                         return TRUE;
                     }
                 }
 
                 if ((DWORD)firstControl->ClassName == 0x0081ffff && // EDIT
-                    (firstControl->Style & WS_BORDER) != 0)         // s rameckem
+                    (firstControl->Style & WS_BORDER) != 0)         // With a border
                 {
-                    *deltaY = (control->TCY - firstControl->TCY) / 2; // button za editboxem (nejspis Browse tlacitko) - srovname vrsky (edit ma vzdy *deltaY == 0)
+                    *deltaY = (control->TCY - firstControl->TCY) / 2; // Button after an edit box (likely a Browse button) — align the tops (edits always have *deltaY == 0)
                     return TRUE;
                 }
 
                 *deltaY = 2;
                 return TRUE;
             }
-            return FALSE; // jako label button nekontrolujeme (je treba u zmeny fontu, ale kasleme na to)
+            return FALSE; // We do not check buttons used as labels (needed for font changes, but we'll ignore it)
         }
 
         case btCheck:
@@ -1301,7 +1301,7 @@ BOOL IsControlForLabelPlacingTest(const CDialogData* dialog, const CControl* con
 
 BOOL IsNotLeftStaticFollowedByLine(const CControl* control, CDialogData* dialogData, int controlIndex)
 {
-    if (control->IsStaticText(TRUE) && control->TCY < 16) // label musi byt static zarovnany vlevo, bereme jen jednoradkove labely
+    if (control->IsStaticText(TRUE) && control->TCY < 16) // Labels must be left-aligned statics; only single-line labels are considered
     {
         for (int i = 0; i < 2; i++)
         {
@@ -1311,11 +1311,11 @@ BOOL IsNotLeftStaticFollowedByLine(const CControl* control, CDialogData* dialogD
             if (i == 1 && controlIndex > 0)
                 control2 = dialogData->Controls[controlIndex - 1];
             if (control2 != NULL && control2->TCY == 1 &&
-                control2->ClassName == (wchar_t*)0x0082FFFF &&                                   // STATIC: vodorovna cara
-                control2->TY >= control->TY && control2->TY < control->TY + control->TCY &&      // cara je vyskove v controlu
-                control2->TX >= control->TX && control2->TX - (control->TX + control->TCX) < 20) // cara zacina za controlem a to nejvyse 20 dlg-units
+                control2->ClassName == (wchar_t*)0x0082FFFF &&                                   // STATIC: horizontal line
+                control2->TY >= control->TY && control2->TY < control->TY + control->TCY &&      // The line sits vertically within the control
+                control2->TX >= control->TX && control2->TX - (control->TX + control->TCX) < 20) // The line starts after the control, at most 20 dialog units away
             {
-                return FALSE; // tohle je levy static nasledovany carou
+                return FALSE; // This is a left static followed by a line
             }
         }
     }
@@ -1331,11 +1331,11 @@ BOOL IsLabelCorrectlyPlaced(CDialogData* dialogData, int controlIndex, int* cont
 
     int ctrl1YOffset;
     if (IsControlForLabelPlacingTest(dialogData, control1, NULL, &ctrl1YOffset) &&
-        IsNotLeftStaticFollowedByLine(control1, dialogData, controlIndex)) // levy static s nalepenou carou vpravo nemuze byt label
+        IsNotLeftStaticFollowedByLine(control1, dialogData, controlIndex)) // A left static with a bar glued to its right cannot be a label
     {
         const CControl* control2 = NULL;
         BOOL tryingNextCtrl = FALSE;
-        if (controlIndex < dialogData->Controls.Count - 1) // jako prvni control k labelu zkusime ten nasledujici po labelu
+        if (controlIndex < dialogData->Controls.Count - 1) // Try the control immediately after the label first
         {
             control2 = dialogData->Controls[controlIndex + 1];
             *controlIndexOut = controlIndex + 1;
@@ -1349,14 +1349,14 @@ BOOL IsLabelCorrectlyPlaced(CDialogData* dialogData, int controlIndex, int* cont
         int ctrl1W = control1->TCX;
         int ctrl1Y = control1->TY;
         int ctrl1H = control1->TCY;
-        if (control1->IsComboBox()) // u comboboxu chceme jejich "zabaleny" rozmer
+        if (control1->IsComboBox()) // For combo boxes we want their "collapsed" size
             ctrl1H = COMBOBOX_BASE_HEIGHT;
         if (control1->IsIcon() && Data.IgnoreIconSizeIconIsSmall(dialogData->ID, control1->ID))
             ctrl1W = ctrl1H = 10;
 
         while (1)
         {
-            if (control2 == NULL) // pokusime se najit control k labelu jen podle souradnic
+            if (control2 == NULL) // Try to find the control for the label solely by coordinates
             {
                 if (tryNeighborAtRight)
                 {
@@ -1365,21 +1365,21 @@ BOOL IsLabelCorrectlyPlaced(CDialogData* dialogData, int controlIndex, int* cont
                     int found = -1;
                     for (int i = 0; i < dialogData->Controls.Count; i++)
                     {
-                        if (i != controlIndex) // sami sobe byt control za labelem nemuzeme
+                        if (i != controlIndex) // The control itself cannot be behind the label
                         {
                             const CControl* c = dialogData->Controls[i];
                             int x = c->TX;
                             int w = c->TCX;
                             int y = c->TY;
                             int h = c->TCY;
-                            if (c->IsComboBox()) // u comboboxu chceme jejich "zabaleny" rozmer
+                            if (c->IsComboBox()) // For combo boxes we want their "collapsed" size
                                 h = COMBOBOX_BASE_HEIGHT;
                             if (c->IsIcon() && Data.IgnoreIconSizeIconIsSmall(dialogData->ID, c->ID))
                                 w = h = 10;
 
-                            if (x >= ctrl1X + ctrl1W && y + h > ctrl1Y && y < ctrl1Y + ctrl1H) // je vpravo a ma prunik s vyskou labelu
+                            if (x >= ctrl1X + ctrl1W && y + h > ctrl1Y && y < ctrl1Y + ctrl1H) // It is to the right and overlaps the label height
                             {
-                                if (minDist == -1 || minDist > x - (ctrl1X + ctrl1W)) // prvni nalezeny nebo je k labelu blize
+                                if (minDist == -1 || minDist > x - (ctrl1X + ctrl1W)) // Use the first found control or the one closer to the label
                                 {
                                     found = i;
                                     minDist = x - (ctrl1X + ctrl1W);
@@ -1401,21 +1401,21 @@ BOOL IsLabelCorrectlyPlaced(CDialogData* dialogData, int controlIndex, int* cont
                     int found = -1;
                     for (int i = 0; i < dialogData->Controls.Count; i++)
                     {
-                        if (i != controlIndex) // sami sobe byt control za labelem nemuzeme
+                        if (i != controlIndex) // The control itself cannot be behind the label
                         {
                             const CControl* c = dialogData->Controls[i];
                             int x = c->TX;
                             int w = c->TCX;
                             int y = c->TY;
                             int h = c->TCY;
-                            if (c->IsComboBox()) // u comboboxu chceme jejich "zabaleny" rozmer
+                            if (c->IsComboBox()) // For combo boxes we want their "collapsed" size
                                 h = COMBOBOX_BASE_HEIGHT;
                             if (c->IsIcon() && Data.IgnoreIconSizeIconIsSmall(dialogData->ID, c->ID))
                                 w = h = 10;
 
-                            if (y >= ctrl1Y + ctrl1H && x + w > ctrl1X && x < ctrl1X + ctrl1W) // je dole a ma prunik s sirkou labelu
+                            if (y >= ctrl1Y + ctrl1H && x + w > ctrl1X && x < ctrl1X + ctrl1W) // It is below and overlaps the label width
                             {
-                                if (minDist == -1 || minDist > y - (ctrl1Y + ctrl1H)) // prvni nalezeny nebo je k labelu blize
+                                if (minDist == -1 || minDist > y - (ctrl1Y + ctrl1H)) // Use the first found control or the one closer to the label
                                 {
                                     found = i;
                                     minDist = y - (ctrl1Y + ctrl1H);
@@ -1444,9 +1444,9 @@ BOOL IsLabelCorrectlyPlaced(CDialogData* dialogData, int controlIndex, int* cont
 #define TOPLABELDISTANCE_MAX_X2 20
 #define TOPLABELDISTANCE_MAX_Y 10
             if (!inRow && inCol && deltaY < 0 &&
-                control1->IsStaticText(TRUE) && control1->TCY < 16 &&                                // label musi byt static zarovnany vlevo, bereme jen jednoradkove labely
-                control2->TY - (control1->TY + 8) <= TOPLABELDISTANCE_MAX_Y &&                       // control nesmi mit prilis velky Y-ovy odstup od labelu
-                abs(deltaX) <= (tryingNextCtrl ? TOPLABELDISTANCE_MAX_X2 : TOPLABELDISTANCE_MAX_X1)) // control nesmi mit prilis velky X-ovy odstup od labelu
+                control1->IsStaticText(TRUE) && control1->TCY < 16 &&                                // Labels must be left-aligned statics; only single-line labels are considered
+                control2->TY - (control1->TY + 8) <= TOPLABELDISTANCE_MAX_Y &&                       // The control must not be too far in Y from the label
+                abs(deltaX) <= (tryingNextCtrl ? TOPLABELDISTANCE_MAX_X2 : TOPLABELDISTANCE_MAX_X1)) // The control must not be too far in X from the label
             {
                 CButtonType bt;
                 if ((DWORD)control2->ClassName == 0x0081ffff ||                                                    // EDIT
@@ -1456,12 +1456,12 @@ BOOL IsLabelCorrectlyPlaced(CDialogData* dialogData, int controlIndex, int* cont
                     (DWORD)control2->ClassName == 0x0080ffff &&                                                    // BUTTON: push-button + checkbox + radiobutton
                         ((bt = GetButtonType(control2->Style)) == btPush || bt == btCheck || bt == btRadio))
                 {
-                    // label lezi nad controlem
+                    // Label is above the control
 #define LABEL2CONTROL_SPACING_V -2 // 2 pro space
                     int labelDY = LABEL2CONTROL_SPACING_V - 8 * (control1->TCY / 8);
                     BOOL control2IsCheckOrRadio = (DWORD)control2->ClassName == 0x0080ffff && (bt == btCheck || bt == btRadio);
                     if (control2IsCheckOrRadio)
-                        labelDY += (control2->TCY - 10) / 2; // BUTTON: checkbox + radiobutton: Y-ovy odstup se lisi podle vysky buttonu (bezne jsou 10 a 12)
+                        labelDY += (control2->TCY - 10) / 2; // BUTTON: checkbox + radiobutton: the Y offset depends on button height (typically 10 or 12)
                     if (deltaY != labelDY &&
                         !Data.IgnoreProblem(iltIncorPlLbl, dialogData->ID, control1->ID, control2->ID))
                     {
@@ -1469,14 +1469,14 @@ BOOL IsLabelCorrectlyPlaced(CDialogData* dialogData, int controlIndex, int* cont
                         *deltaAxis = "vertically";
                         return FALSE;
                     }
-#define LABEL2CHECKBOX_H_ALIGN -7 // labelum sloupce pushbuttonu/checkboxu/radiaku dovolime odsazeni o presne 7 dlg-units (pouziva PictView a bez odsazeni je to hnusny)
+#define LABEL2CHECKBOX_H_ALIGN -7 // Allow labels of push-button/checkbox/radio columns to be offset by exactly 7 dialog units (used by PictView; without the offset it looks ugly)
                     BOOL control2IsPushOrCheckOrRadio = (DWORD)control2->ClassName == 0x0080ffff && (bt == btPush || bt == btCheck || bt == btRadio);
                     BOOL control2IsEditWithoutBorder = (DWORD)control2->ClassName == 0x0081ffff && (control2->Style & WS_BORDER) == 0;
                     if (deltaX != (control2IsEditWithoutBorder ? 2 : 0) &&
                         (!control2IsPushOrCheckOrRadio || deltaX != LABEL2CHECKBOX_H_ALIGN) &&
                         !Data.IgnoreProblem(iltIncorPlLbl, dialogData->ID, control1->ID, control2->ID))
                     {
-                        if (control2IsEditWithoutBorder) // edit bez ramecku ma byt proste -2 dlg. unity vlevo od labelu, jinak je spatne
+                        if (control2IsEditWithoutBorder) // An edit without a border should simply be -2 dialog units to the left of the label; otherwise it is wrong
                             *delta = deltaX - 2;
                         else
                         {
@@ -1510,7 +1510,7 @@ BOOL IsLabelCorrectlyPlaced(CDialogData* dialogData, int controlIndex, int* cont
                     if (tryingNextCtrl && !control2->IsStaticText(TRUE) && offsetY == 0 &&
                         distanceX >= 0 && distanceX <= LABELDISTANCE_CLOSE)
                     {
-                        return TRUE; // zjevna kombinace label+control, nema smysl hledat, jestli to neni label pro dole umisteny control (nachazi to akorat nesmysly)
+                        return TRUE; // Obvious label+control combination; no point searching for a label of a lower control (would only find nonsense)
                     }
                 }
             }
@@ -1538,7 +1538,7 @@ BOOL ControlHasStandardSize(const CDialogData* dialog, const CControl* control)
         {
         case btPush:
             return control->TCY == PUSHBUTTON_STANDARD_H && control->TCX >= PUSHBUTTON_STANDARD_W ||
-                   wcscmp(control->OWindowName, L"") == 0 || wcscmp(control->OWindowName, L"...") == 0 // specialni "kratka" browse tlacitka budeme ignorovat
+                   wcscmp(control->OWindowName, L"") == 0 || wcscmp(control->OWindowName, L"...") == 0 // Ignore special "short" browse buttons
                    || wcscmp(control->OWindowName, L"&...") == 0;
 
         case btCheck:
@@ -1555,11 +1555,11 @@ BOOL ControlHasStandardSize(const CDialogData* dialog, const CControl* control)
             return control->TCY == PROGRESSBAR_STANDARD_H;
 
         DWORD ss = (control->Style & SS_TYPEMASK);
-        if (ss == SS_ETCHEDHORZ && control->TCY != ETCHEDHORZ_STANDARD_H) // etched-horizontal musi mit vysku 1
+        if (ss == SS_ETCHEDHORZ && control->TCY != ETCHEDHORZ_STANDARD_H) // An etched horizontal line must have height 1
             return FALSE;
 
         if (ss == SS_LEFT || ss == SS_RIGHT || ss == SS_CENTER || ss == SS_SIMPLE || ss == SS_LEFTNOWORDWRAP)
-            return control->TCY == 1 /* vodorovne cary */ || control->TCY % STATIC_STANDARD_H == 0;
+            return control->TCY == 1 /* horizontal lines */ || control->TCY % STATIC_STANDARD_H == 0;
         else
             return TRUE;
     }
@@ -1618,12 +1618,12 @@ BOOL IsControlClippedAux(const CDialogData* dialog, const CControl* control, HDC
     if (dlgFont == NULL)
     {
         TRACE_E("IsControlClippedAux(): unable to create dialog font, height: " << fontHeight);
-        return TRUE; // chyba = radsi ohlasime, ze je orizly
+        return TRUE; // Treat as an error—report it as clipped
     }
 
     HFONT hOldFont = (HFONT)SelectObject(hDC, dlgFont);
 
-    // vypocet "dialog box units based on the current font" prevzaty od MS:
+    // Calculation of "dialog box units based on the current font" taken from Microsoft:
     // http://support.microsoft.com/kb/145994
     TEXTMETRIC tm;
     GetTextMetrics(hDC, &tm);
@@ -1639,7 +1639,7 @@ BOOL IsControlClippedAux(const CDialogData* dialog, const CControl* control, HDC
     RECT wndRBackup = wndR;
 
     BOOL ret = FALSE;
-    BOOL progressDlgCheckRound = 1; // 1 = Copy + hr+min, 2 = Move + hr+min, 3 = Copy + min+secs, 4 = Move + min+secs, 5 uz neni potreba
+    BOOL progressDlgCheckRound = 1; // 1 = Copy + hr+min, 2 = Move + hr+min, 3 = Copy + min+secs, 4 = Move + min+secs, 5 is no longer needed
     BOOL setBoldFont = FALSE;
     while (1)
     {
@@ -1667,7 +1667,7 @@ BOOL IsControlClippedAux(const CDialogData* dialog, const CControl* control, HDC
                                  L"dialog %hs, control %hs",
                            DataRH.GetIdentifier(dialog->ID), DataRH.GetIdentifier(control->ID));
                 OutWindow.AddLine(buff, mteError);
-                ret = TRUE; // chyba = radsi ohlasime, ze je orizly
+                ret = TRUE; // Treat as an error—report it as clipped
                 break;
             }
         }
@@ -1681,7 +1681,7 @@ BOOL IsControlClippedAux(const CDialogData* dialog, const CControl* control, HDC
                 swprintf_s(buff, L"IsControlClippedAux(): string ID for progress-dlg-status-check was not found: string ID %hs, dialog %hs, control %hs",
                            DataRH.GetIdentifier(txtID), DataRH.GetIdentifier(dialog->ID), DataRH.GetIdentifier(control->ID));
                 OutWindow.AddLine(buff, mteError);
-                ret = TRUE; // chyba = radsi ohlasime, ze je orizly
+                ret = TRUE; // Treat as an error—report it as clipped
                 break;
             }
             const wchar_t* formatTxt = L"%s%s";
@@ -1707,7 +1707,7 @@ BOOL IsControlClippedAux(const CDialogData* dialog, const CControl* control, HDC
                         goto STRING_NOT_FOUND;
                     if (!ValidatePrintfSpecifier(buff, formatTxt))
                         goto STRING_FORMAT_ERROR;
-                    swprintf_s(buff2, buff, 8); // u 9 hodin uz se zaokrouhluje na hodiny (minuty se neukazou)
+                    swprintf_s(buff2, buff, 8); // At 9 hours we round to hours (minutes are not shown)
                     wcscat_s(buff2, L" ");
                 }
                 else
@@ -1718,7 +1718,7 @@ BOOL IsControlClippedAux(const CDialogData* dialog, const CControl* control, HDC
                 if (!ValidatePrintfSpecifier(buff, formatTxt))
                     goto STRING_FORMAT_ERROR;
                 swprintf_s(buff2 + wcslen(buff2), _countof(buff2) - wcslen(buff2), buff,
-                           progressDlgCheckRound < 3 ? 59 : 8); // u spojeni s hodinama merime dve cifry, u spojeni se sekundama jen 8 minut (9 minut uz se zaokrouhluje na minuty, sekundy se neukazou, tedy mista dost)
+                           progressDlgCheckRound < 3 ? 59 : 8); // When hours are shown we measure two digits; with seconds we measure only 8 minutes (9 minutes already round to minutes, so seconds are hidden and space is sufficient)
                 if (progressDlgCheckRound >= 3)
                 {
                     wcscat_s(buff2, L" ");
@@ -1746,7 +1746,7 @@ BOOL IsControlClippedAux(const CDialogData* dialog, const CControl* control, HDC
                                  L"dialog %hs, control %hs",
                            formatTxt, DataRH.GetIdentifier(dialog->ID), DataRH.GetIdentifier(control->ID));
                 OutWindow.AddLine(buff, mteError);
-                ret = TRUE; // chyba = radsi ohlasime, ze je orizly
+                ret = TRUE; // Treat as an error—report it as clipped
                 break;
             }
             controlText = changedControlText;
@@ -1763,45 +1763,45 @@ BOOL IsControlClippedAux(const CDialogData* dialog, const CControl* control, HDC
                 if (dlgFontBold == NULL)
                 {
                     TRACE_E("IsControlClippedAux(): unable to create BOLD dialog font, height: " << fontHeight);
-                    ret = TRUE; // chyba = radsi ohlasime, ze je orizly
+                    ret = TRUE; // Treat as an error—report it as clipped
                     break;
                 }
             }
             SelectObject(hDC, dlgFontBold);
         }
         DrawTextW(hDC, controlText, -1, &txtR, dtFlags);
-        int cxReserveUsed = controlType != ectStatic || control->TCY < 16 ? cxReserve : 0; // viceradkove statiky nebudeme zbytecne zvetsovat
+        int cxReserveUsed = controlType != ectStatic || control->TCY < 16 ? cxReserve : 0; // Do not enlarge multi-line statics unnecessarily
         txtR.right += cxReserveUsed;
         if (controlType == ectPushButton)
         {
             int len = wcslen(controlText);
             bool isAlpha = len > 0 && (IsCharAlphaNumericW(controlText[0] == L'&' && len > 1 ? controlText[1] : controlText[0]) || IsCharAlphaNumericW(controlText[len - 1]));
-            wndR.right -= isAlpha ? buttonMarginsAlphaCX : buttonMarginsSymbolCX; // okraje tlacitka -- nevim jak to programove zjistit, takze hardcoded (Petr: u tlacitek s texty zvetseno z 6 na 12, abysme nasli osklive mala tlacitka)
-            wndR.bottom -= buttonMarginsCY;                                       // okraje tlacitka -- nevim jak to programove zjistit, takze hardcoded
+            wndR.right -= isAlpha ? buttonMarginsAlphaCX : buttonMarginsSymbolCX; // Button margins—no idea how to get them programmatically, so they are hard-coded (Petr: increased from 6 to 12 for text buttons to catch ugly small buttons)
+            wndR.bottom -= buttonMarginsCY;                                       // Button margins—no idea how to get them programmatically, so they are hard-coded
             if (checkLstItem != NULL)
                 wndR.right -= checkLstItem->Type == cltDropDownButton ? buttonDropDownSymbolCX : buttonMoreSymbolCX;
-            // idealSizeXAdd = 6; // okraje tlacitka -- nevim jak to programove zjistit, takze hardcoded
+            // idealSizeXAdd = 6; // Button margins—no idea how to get them programmatically, so they are hard-coded
         }
         if (controlType == ectCheckBox)
         {
-            // Petr: u radiaku bylo potreba 16, tady to ocekavam tez, maximalne budou zbytecne o bod sirsi, no problem
-            wndR.right -= boxWidth;   // checkbox ctverecek
-            idealSizeXAdd = boxWidth; // checkbox ctverecek
+            // Petr: radios needed 16, expect the same here; at worst they end up one unit wider, which is fine
+            wndR.right -= boxWidth;   // Checkbox square
+            idealSizeXAdd = boxWidth; // Checkbox square
         }
         if (controlType == ectRadioButton)
         {
-            // jry: v protech vetvi jsem zjistil, ze pri hodnote 15 jeste prolezly clipnute texty
-            wndR.right -= boxWidth;   // radiobutton kolecko
-            idealSizeXAdd = boxWidth; // radiobutton kolecko
+            // jry: in other branches I found that value 15 still let clipped texts slip through
+            wndR.right -= boxWidth;   // Radio button circle
+            idealSizeXAdd = boxWidth; // Radio button circle
         }
         if (idealSizeX != NULL && idealSizeY != NULL &&
-            !IsEmptyString(controlText) &&                   // controly (mozna jen statiky) s prazdnymi texty nebudeme zmensovat, predpoklada se dynamicke plneni za behu softu
-            controlType != ectPushButton &&                  // zmensovani tlacitek je spis jen na obtiz (predpoklad je: Ctrl+A a S v Layout Editoru, coz ovsem tlacitka rozhodi)
-            controlType != ectGroupBox &&                    // zmensovani groupboxu je spis jen na obtiz (predpoklad je: Ctrl+A a S v Layout Editoru, coz ovsem groupboxy rozhodi)
-            controlType != ectComboBox &&                    // zmensovani comboboxu je spis jen na obtiz (predpoklad je: Ctrl+A a S v Layout Editoru, coz ovsem comboboxy rozhodi)
-            (controlType != ectStatic || control->TCY < 16)) // viceradkove statiky nepodporujeme
+            !IsEmptyString(controlText) &&                   // Controls (likely statics) with empty text are not shrunk—the software is expected to fill them dynamically at runtime
+            controlType != ectPushButton &&                  // Shrinking buttons is more trouble than it is worth (assumption: Ctrl+A and S in the Layout Editor, which would break buttons)
+            controlType != ectGroupBox &&                    // Shrinking group boxes is more trouble than it is worth (assumption: Ctrl+A and S in the Layout Editor, which would break group boxes)
+            controlType != ectComboBox &&                    // Shrinking combo boxes is more trouble than it is worth (assumption: Ctrl+A and S in the Layout Editor, which would break combos)
+            (controlType != ectStatic || control->TCY < 16)) // Multi-line statics are not supported
         {
-            // tady budeme pocitat presne, bez cxReserve, rezervu pridava volajici, tak at nejsou rezervy dve
+            // Perform exact calculations here without cxReserve; the caller adds reserve so we avoid duplicating it
             if (controlType == ectStatic)
                 DrawTextW(hDC, controlText, -1, &txtR2, DT_CALCRECT | DT_LEFT | DT_SINGLELINE | ((control->Style & SS_NOPREFIX) ? DT_NOPREFIX : 0));
             else
@@ -1839,10 +1839,10 @@ BOOL IsControlClippedAux(const CDialogData* dialog, const CControl* control, HDC
                 *idealSizeY = curIdealSizeY;
         }
         if (controlType == ectComboBox)
-            wndR.right -= (control->Style & CBS_DROPDOWNLIST) == CBS_DROPDOWNLIST ? comboBoxListMarginsCX : comboBoxMarginsCX; // okraje comboboxu
+            wndR.right -= (control->Style & CBS_DROPDOWNLIST) == CBS_DROPDOWNLIST ? comboBoxListMarginsCX : comboBoxMarginsCX; // Combo-box margins
 
-        // pro static s nulovou sirkou DrawTextW vrati TRUE a zaroven nezvetsi obdelnik
-        // pro prazdny text DrawTextW zvetsi txtR na vysku
+        // For a static with zero width DrawTextW returns TRUE without enlarging the rectangle
+        // For empty text DrawTextW grows txtR vertically
         ret |= txtR.right > wndR.right ||
                txtR.bottom > wndR.bottom && controlText[0] != 0 ||
                wndR.left == wndR.right && controlText[0] != 0;
@@ -1850,8 +1850,8 @@ BOOL IsControlClippedAux(const CDialogData* dialog, const CControl* control, HDC
         if (checkLstItem != NULL && checkLstItem->Type == cltProgressDialogStatus)
         {
             if (progressDlgCheckRound >= 4)
-                break;               // 5. kolo neni potreba
-            progressDlgCheckRound++; // jdeme do dalsiho kola
+                break;               // The fifth round is unnecessary
+            progressDlgCheckRound++; // Move on to the next round
         }
         else
             break;
@@ -1866,7 +1866,7 @@ BOOL IsControlClippedAux(const CDialogData* dialog, const CControl* control, HDC
     return ret;
 }
 /*
-// Zobrazi mereny text do hlavniho okna -- pro ladeni problemu
+// Show the measured text in the main window—used for debugging issues
     static int iii = 0;
     if (iii == 0)
     {
@@ -1883,56 +1883,56 @@ BOOL IsControlClippedAux(const CDialogData* dialog, const CControl* control, HDC
     }
 */
 
-// rezerva ve smeru osy X, i kdyz v jine situaci text bude o toto cislo delsi (v bodech),
-// jeste nedojde k jeho orezu
+// X-axis reserve; even if the text grows by this many points in another situation,
+// Still does not cause clipping
 #define CX_RESERVE_DPI_100 2
 #define CX_RESERVE_DPI_125 2
 #define CX_RESERVE_DPI_150 3
 #define CX_RESERVE_DPI_200 4
 
-// natvrdo namerene "nutne" X-ove okraje tlacitka s textem
+// Hard-measured required button X margins for text buttons
 #define CX_BUTTON_MARGINS_ALPHA_DPI_100 12
 #define CX_BUTTON_MARGINS_ALPHA_DPI_125 15
 #define CX_BUTTON_MARGINS_ALPHA_DPI_150 18
 #define CX_BUTTON_MARGINS_ALPHA_DPI_200 24
 
-// natvrdo namerene "nutne" X-ove okraje tlacitka se symbolem (napr. "...")
+// Hard-measured required button X margins for symbol buttons (e.g., "...")
 #define CX_BUTTON_MARGINS_SYMBOL_DPI_100 6
 #define CX_BUTTON_MARGINS_SYMBOL_DPI_125 7
 #define CX_BUTTON_MARGINS_SYMBOL_DPI_150 9
 #define CX_BUTTON_MARGINS_SYMBOL_DPI_200 12
 
-// natvrdo namerene "nutne" X-ove rozsireni drop-down tlacitka (aby se vesel symbol "drop-down" vpravo na tlacitko)
+// Hard-measured required drop-down button X extension (to fit the drop-down symbol on the right)
 #define CX_BUTTON_DROP_DOWN_DPI_100 8
 #define CX_BUTTON_DROP_DOWN_DPI_125 10
 #define CX_BUTTON_DROP_DOWN_DPI_150 12
 #define CX_BUTTON_DROP_DOWN_DPI_200 16
 
-// natvrdo namerene "nutne" X-ove rozsireni more tlacitka (aby se vesel symbol "more" vpravo na tlacitko)
+// Hard-measured required More-button X extension (to fit the "more" symbol on the right)
 #define CX_BUTTON_MORE_DPI_100 14
 #define CX_BUTTON_MORE_DPI_125 17
 #define CX_BUTTON_MORE_DPI_150 21
 #define CX_BUTTON_MORE_DPI_200 28
 
-// natvrdo namerene "nutne" Y-ove okraje tlacitka
+// Hard-measured required button Y margins
 #define CY_BUTTON_MARGINS_DPI_100 4
 #define CY_BUTTON_MARGINS_DPI_125 6
 #define CY_BUTTON_MARGINS_DPI_150 7
 #define CY_BUTTON_MARGINS_DPI_200 11
 
-// natvrdo namerena sirka boxu u radioboxu a checkboxu
+// Hard-measured required width of radio/checkbox boxes
 #define CX_BOX_WIDTH_DPI_100 16
 #define CX_BOX_WIDTH_DPI_125 20
 #define CX_BOX_WIDTH_DPI_150 25
 #define CX_BOX_WIDTH_DPI_200 27
 
-// natvrdo namerene "nutne" X-ove okraje combo boxu, ve kterem se da editovat (editline + drop down list)
+// Hard-measured required combo-box X margins for editable combos (edit line + drop-down list)
 #define CX_COMBOBOX_MARGINS_DPI_100 25
 #define CX_COMBOBOX_MARGINS_DPI_125 30
 #define CX_COMBOBOX_MARGINS_DPI_150 36
 #define CX_COMBOBOX_MARGINS_DPI_200 46
 
-// natvrdo namerene "nutne" X-ove okraje combo boxu, ve kterem se neda editovat (static + drop down list)
+// Hard-measured required combo-box X margins for non-editable combos (static + drop-down list)
 #define CX_COMBOBOX_LIST_MARGINS_DPI_100 24
 #define CX_COMBOBOX_LIST_MARGINS_DPI_125 28
 #define CX_COMBOBOX_LIST_MARGINS_DPI_150 33
@@ -1943,13 +1943,13 @@ BOOL IsControlClipped(const CDialogData* dialog, const CControl* control, HWND h
                       CCheckLstItem* checkLstItem)
 {
     if (idealSizeX != NULL)
-        *idealSizeX = -1; // pokud idealni velikost nevime, vratime -1
+        *idealSizeX = -1; // If we do not know the ideal size, return -1
     if (idealSizeY != NULL)
-        *idealSizeY = -1; // pokud idealni velikost nevime, vratime -1
+        *idealSizeY = -1; // If we do not know the ideal size, return -1
     HWND hControl = GetDlgItem(hDlg, control->ID);
 
-    // control->TWindowName je zakodovany pomoci __GetCharacterString
-    // pouzijeme primo text vytazeny z controlu
+    // control->TWindowName is encoded via __GetCharacterString
+    // Use the text extracted directly from the control
     wchar_t controlText[100000];
     GetWindowTextW(hControl, controlText, 100000);
     controlText[99999] = 0;
@@ -2050,10 +2050,10 @@ BOOL IsControlClipped(const CDialogData* dialog, const CControl* control, HWND h
                 continue;
         }
 
-        // na Win7 jsem zjistil, ze velikosti symbolu (napr. radio/check box) se meni
-        // jen pro 100%, 125%, 150% a 200% DPI, mezilehla DPI pouzivaji vzdy symboly
-        // z nizsiho "celeho" DPI, pro ne omerime vsechny mezilehle velikosti fontu,
-        // tim bysme meli postihnout vsechna mozna DPI
+        // On Win7 I noticed symbol sizes (e.g., radio/check boxes) change
+        // Only for 100%, 125%, 150%, and 200% DPI; intermediate DPIs reuse symbols from the lower whole DPI
+        // For lower "whole" DPIs we measure all intermediate font sizes for them,
+        // That should cover every possible DPI
         for (int i = 0; i < 2; i++)
             ret |= IsControlClippedAux(dialog, control, hDC, &lf, -11 - i, controlType, controlText,
                                        multiTextIsBold, checkLstItem, idealSizeX, idealSizeY, CX_RESERVE_DPI_100,
@@ -2061,7 +2061,7 @@ BOOL IsControlClipped(const CDialogData* dialog, const CControl* control, HWND h
                                        CX_BUTTON_DROP_DOWN_DPI_100, CX_BUTTON_MORE_DPI_100,
                                        CY_BUTTON_MARGINS_DPI_100, CX_BOX_WIDTH_DPI_100,
                                        CX_COMBOBOX_MARGINS_DPI_100, CX_COMBOBOX_LIST_MARGINS_DPI_100);
-        // if (ret) break; // kvuli size-to-content prochazime vsechny varianty, aby se omerila maximalni sire multi-textu
+        // if (ret) break; // Because of size-to-content we traverse all variants to measure the maximum multi-text width
         for (int i = 0; i < 3; i++)
             ret |= IsControlClippedAux(dialog, control, hDC, &lf, -13 - i, controlType, controlText,
                                        multiTextIsBold, checkLstItem, idealSizeX, idealSizeY, CX_RESERVE_DPI_125,
@@ -2069,7 +2069,7 @@ BOOL IsControlClipped(const CDialogData* dialog, const CControl* control, HWND h
                                        CX_BUTTON_DROP_DOWN_DPI_125, CX_BUTTON_MORE_DPI_125,
                                        CY_BUTTON_MARGINS_DPI_125, CX_BOX_WIDTH_DPI_125,
                                        CX_COMBOBOX_MARGINS_DPI_125, CX_COMBOBOX_LIST_MARGINS_DPI_125);
-        // if (ret) break; // kvuli size-to-content prochazime vsechny varianty, aby se omerila maximalni sire multi-textu
+        // if (ret) break; // Because of size-to-content we traverse all variants to measure the maximum multi-text width
         for (int i = 0; i < 5; i++)
             ret |= IsControlClippedAux(dialog, control, hDC, &lf, -16 - i, controlType, controlText,
                                        multiTextIsBold, checkLstItem, idealSizeX, idealSizeY, CX_RESERVE_DPI_150,
@@ -2077,14 +2077,14 @@ BOOL IsControlClipped(const CDialogData* dialog, const CControl* control, HWND h
                                        CX_BUTTON_DROP_DOWN_DPI_150, CX_BUTTON_MORE_DPI_150,
                                        CY_BUTTON_MARGINS_DPI_150, CX_BOX_WIDTH_DPI_150,
                                        CX_COMBOBOX_MARGINS_DPI_150, CX_COMBOBOX_LIST_MARGINS_DPI_150);
-        // if (ret) break; // kvuli size-to-content prochazime vsechny varianty, aby se omerila maximalni sire multi-textu
+        // if (ret) break; // Because of size-to-content we traverse all variants to measure the maximum multi-text width
         ret |= IsControlClippedAux(dialog, control, hDC, &lf, -21, controlType, controlText,
                                    multiTextIsBold, checkLstItem, idealSizeX, idealSizeY, CX_RESERVE_DPI_200,
                                    CX_BUTTON_MARGINS_ALPHA_DPI_200, CX_BUTTON_MARGINS_SYMBOL_DPI_200,
                                    CX_BUTTON_DROP_DOWN_DPI_200, CX_BUTTON_MORE_DPI_200,
                                    CY_BUTTON_MARGINS_DPI_200, CX_BOX_WIDTH_DPI_200,
                                    CX_COMBOBOX_MARGINS_DPI_200, CX_COMBOBOX_LIST_MARGINS_DPI_200);
-        // if (ret) break; // kvuli size-to-content prochazime vsechny varianty, aby se omerila maximalni sire multi-textu
+        // if (ret) break; // Because of size-to-content we traverse all variants to measure the maximum multi-text width
     }
 
     HANDLES(ReleaseDC(hControl, hDC));
@@ -2108,7 +2108,7 @@ void CData::MarkChangedTextsAsTranslated()
     swprintf_s(buff, L"Searching for changed texts marked as Untranslated to mark them as Translated...");
     OutWindow.AddLine(buff, mteInfo);
 
-    // prohledame dialogy
+    // Scan dialogs
     for (i = 0; i < DlgData.Count; i++)
     {
         CDialogData* dialog = DlgData[i];
@@ -2127,7 +2127,7 @@ void CData::MarkChangedTextsAsTranslated()
         }
     }
 
-    // prohledame strings
+    // Scan strings
     for (i = 0; i < StrData.Count; i++)
     {
         CStrData* strData = StrData[i];
@@ -2147,7 +2147,7 @@ void CData::MarkChangedTextsAsTranslated()
         }
     }
 
-    // prohledame windows MENU
+    // Scan Windows menus
     for (i = 0; i < MenuData.Count; i++)
     {
         CMenuData* menu = MenuData[i];
@@ -2169,13 +2169,13 @@ void CData::MarkChangedTextsAsTranslated()
     // display outro
     swprintf_s(buff, L"%d text(s) have been marked as Translated.", changes);
     OutWindow.AddLine(buff, mteSummary);
-    PostMessage(FrameWindow.HWindow, WM_FOCLASTINOUTPUTWND, 0, 0); // Output okno jeste nemusi existovat
+    PostMessage(FrameWindow.HWindow, WM_FOCLASTINOUTPUTWND, 0, 0); // The Output window might not exist yet
 
     if (changes > 0)
     {
         Data.SetDirty();
-        Data.UpdateAllNodes(); // nastavime translated stavy na treeview
-        Data.UpdateTexts();    // update list view v okne Texts
+        Data.UpdateAllNodes(); // Update translated states in the tree view
+        Data.UpdateTexts();    // Update the list view in the Texts window
     }
 
     OutWindow.EnablePaint(TRUE);
@@ -2198,7 +2198,7 @@ void CData::ResetDialogsLayoutsToOriginal()
     swprintf_s(buff, L"Changing all dialogs to original layout...");
     OutWindow.AddLine(buff, mteInfo);
 
-    // prohledame dialogy
+    // Scan dialogs
     for (i = 0; i < DlgData.Count; i++)
     {
         CDialogData* dialog = DlgData[i];
@@ -2219,11 +2219,11 @@ void CData::ResetDialogsLayoutsToOriginal()
     // display outro
     swprintf_s(buff, L"DONE");
     OutWindow.AddLine(buff, mteSummary);
-    PostMessage(FrameWindow.HWindow, WM_FOCLASTINOUTPUTWND, 0, 0); // Output okno jeste nemusi existovat
+    PostMessage(FrameWindow.HWindow, WM_FOCLASTINOUTPUTWND, 0, 0); // The Output window might not exist yet
 
     Data.SetDirty();
-    Data.UpdateAllNodes(); // nastavime translated stavy na treeview
-    Data.UpdateTexts();    // update list view v okne Texts
+    Data.UpdateAllNodes(); // Update translated states in the tree view
+    Data.UpdateTexts();    // Update the list view in the Texts window
 
     OutWindow.EnablePaint(TRUE);
 
@@ -2253,7 +2253,7 @@ BOOL CData::GetItemFromCheckLst(WORD dialogID, WORD controlID, CCheckLstItem** m
                     *multiTextOrComboItem = item;
                 }
             }
-            else // tyto "ostatni" testy se resi jen uvnitr IsControlClippedAux (nejde o seznam textu, ktere se maji postupne omerit)
+            else // These "other" tests are handled only inside IsControlClippedAux (it is not a list of texts to measure sequentially)
             {
                 if (checkLstItem != NULL)
                 {
@@ -2301,12 +2301,12 @@ void CData::ValidateTranslation(HWND hParent)
 
         CKeyConflict conflict;
 
-        // prohledame dialogy
+        // Scan dialogs
         for (i = 0; i < DlgData.Count; i++)
         {
             CDialogData* dialog = DlgData[i];
 
-            CCheckLstItem* multiTextOrComboItem; // zkusime, jestli vubec k dialogu nejakou mame
+            CCheckLstItem* multiTextOrComboItem; // Check whether we even have one assigned to the dialog
             BOOL findMultiTextOrComboItems = GetItemFromCheckLst(dialog->ID, 0, &multiTextOrComboItem, NULL, TRUE);
 
             lvIndex = 0;
@@ -2326,7 +2326,7 @@ void CData::ValidateTranslation(HWND hParent)
                 if (multiTextOrComboItem == NULL || control->TWindowName != NULL && control->TWindowName[0] != 0)
                     conflict.AddString(control->TWindowName, j, showInLV ? lvIndex : 0, showInLV ? 0 : control->ID);
                 else
-                { // prozatim udelame kontrolu aspon prvniho textu (pokud control nema svuj vlastni text primo v dialogu)
+                { // For now check at least the first text (if the control has no text directly in the dialog)
                     if (!Data.GetStringWithID(multiTextOrComboItem->IDList[0], buff, _countof(buff)))
                     {
                         swprintf_s(buff, L"ValidateTranslation(): string ID for multi-text control was not found, string ID %hs, dialog %hs, control %hs",
@@ -2356,7 +2356,7 @@ void CData::ValidateTranslation(HWND hParent)
                 if (multiTextOrComboItem == NULL || control->TWindowName != NULL && control->TWindowName[0] != 0)
                     conflict.GetAvailableKeys(control->TWindowName, availableKeys, 100);
                 else
-                { // vytahneme kontrolovany prvni text (pokud control nema svuj vlastni text primo v dialogu)
+                { // Pull the first text to validate (if the control has no text directly in the dialog)
                     if (Data.GetStringWithID(multiTextOrComboItem->IDList[0], buff2, _countof(buff2)) && buff2[0] != 0)
                     {
                         conflict.GetAvailableKeys(buff2, availableKeys, 100);
@@ -2383,7 +2383,7 @@ void CData::ValidateTranslation(HWND hParent)
 
         CKeyConflict conflict;
 
-        // prohledame SalMenu
+        // Scan SalMenu
         for (i = 0; i < SalMenuSections.Count; i++)
         {
             CMenuPreview* menuPreview = new CMenuPreview();
@@ -2392,7 +2392,7 @@ void CData::ValidateTranslation(HWND hParent)
 
             if (section->SectionControlDialogID != 0)
             {
-                // k sekci je pripojen control z dialogu, budeme kontrolovat konflikty vuci nemu
+                // The section is linked to a dialog control; check conflicts against it
                 BOOL found = FALSE;
                 for (int dlgIndex = 0; dlgIndex < DlgData.Count; dlgIndex++)
                 {
@@ -2419,7 +2419,7 @@ void CData::ValidateTranslation(HWND hParent)
                             swprintf_s(buff, L"Control <%d> not found in dialog %hs!", section->SectionControlControlID,
                                        DataRH.GetIdentifier(dialog->ID));
                             OutWindow.AddLine(buff, mteError, rteDialog, dialog->ID);
-                            found = TRUE; // dalsi chybu uz neukazeme
+                            found = TRUE; // Do not show the same error again
                         }
                         break;
                     }
@@ -2454,7 +2454,7 @@ void CData::ValidateTranslation(HWND hParent)
             }
             if (section->SectionDialogID != 0)
             {
-                // k sekci je pripojen dialog, budeme kontrolovat konflikty vuci dialogu
+                // The section is linked to a dialog; check conflicts against the dialog
                 CDialogData* dialog = NULL;
                 for (int dlgIndex = 0; dlgIndex < DlgData.Count; dlgIndex++)
                 {
@@ -2471,7 +2471,7 @@ void CData::ValidateTranslation(HWND hParent)
                 }
                 else
                 {
-                    CCheckLstItem* multiTextOrComboItem; // zkusime, jestli vubec k dialogu nejakou mame
+                    CCheckLstItem* multiTextOrComboItem; // Check whether we even have one assigned to the dialog
                     BOOL findMultiTextOrComboItems = GetItemFromCheckLst(dialog->ID, 0, &multiTextOrComboItem, NULL, TRUE);
 
                     lvIndex = 0;
@@ -2494,7 +2494,7 @@ void CData::ValidateTranslation(HWND hParent)
                             menuPreview->AddText(control->TWindowName);
                         }
                         else
-                        { // prozatim udelame kontrolu aspon prvniho textu (pokud control nema svuj vlastni text primo v dialogu)
+                        { // For now check at least the first text (if the control has no text directly in the dialog)
                             if (!Data.GetStringWithID(multiTextOrComboItem->IDList[0], buff, _countof(buff)))
                             {
                                 swprintf_s(buff, L"ValidateTranslation(): string ID for multi-text control was not found, string ID %hs, dialog %hs, control %hs",
@@ -2554,7 +2554,7 @@ void CData::ValidateTranslation(HWND hParent)
                         if (multiTextOrComboItem == NULL || control->TWindowName != NULL && control->TWindowName[0] != 0)
                             conflict.GetAvailableKeys(control->TWindowName, availableKeys, 100);
                         else
-                        { // vytahneme kontrolovany prvni text (pokud control nema svuj vlastni text primo v dialogu)
+                        { // Pull the first text to validate (if the control has no text directly in the dialog)
                             if (Data.GetStringWithID(multiTextOrComboItem->IDList[0], buff2, _countof(buff2)) && buff2[0] != 0)
                             {
                                 conflict.GetAvailableKeys(buff2, availableKeys, 100);
@@ -2592,7 +2592,7 @@ void CData::ValidateTranslation(HWND hParent)
                 delete menuPreview;
         }
 
-        // prohledame windows MENU
+        // Scan Windows menus
         for (i = 0; i < MenuData.Count; i++)
         {
             CMenuData* menu = MenuData[i];
@@ -2646,7 +2646,7 @@ void CData::ValidateTranslation(HWND hParent)
         swprintf_s(buff, L"Searching for inconsistent format specifier...");
         OutWindow.AddLine(buff, mteInfo);
 
-        // prohledame dialogy
+        // Scan dialogs
         for (i = 0; i < DlgData.Count; i++)
         {
             CDialogData* dialog = DlgData[i];
@@ -2667,7 +2667,7 @@ void CData::ValidateTranslation(HWND hParent)
             }
         }
 
-        // prohledame strings
+        // Scan strings
         for (i = 0; i < StrData.Count; i++)
         {
             CStrData* strData = StrData[i];
@@ -2691,7 +2691,7 @@ void CData::ValidateTranslation(HWND hParent)
             }
         }
 
-        // prohledame windows MENU
+        // Scan Windows menus
         for (i = 0; i < MenuData.Count; i++)
         {
             CMenuData* menu = MenuData[i];
@@ -2718,7 +2718,7 @@ void CData::ValidateTranslation(HWND hParent)
         swprintf_s(buff, L"Searching for inconsistent control characters...");
         OutWindow.AddLine(buff, mteInfo);
 
-        // prohledame dialogy
+        // Scan dialogs
         for (i = 0; i < DlgData.Count; i++)
         {
             CDialogData* dialog = DlgData[i];
@@ -2738,7 +2738,7 @@ void CData::ValidateTranslation(HWND hParent)
             }
         }
 
-        // prohledame strings
+        // Scan strings
         for (i = 0; i < StrData.Count; i++)
         {
             CStrData* strData = StrData[i];
@@ -2762,7 +2762,7 @@ void CData::ValidateTranslation(HWND hParent)
             }
         }
 
-        // prohledame windows MENU
+        // Scan Windows menus
         for (i = 0; i < MenuData.Count; i++)
         {
             CMenuData* menu = MenuData[i];
@@ -2789,7 +2789,7 @@ void CData::ValidateTranslation(HWND hParent)
         swprintf_s(buff, L"Searching for inconsistent strings with CSV...");
         OutWindow.AddLine(buff, mteInfo);
 
-        // prohledame strings
+        // Scan strings
         for (i = 0; i < StrData.Count; i++)
         {
             CStrData* strData = StrData[i];
@@ -2820,7 +2820,7 @@ void CData::ValidateTranslation(HWND hParent)
         swprintf_s(buff, L"Searching for inconsistent plural strings...");
         OutWindow.AddLine(buff, mteInfo);
 
-        // prohledame dialogy
+        // Scan dialogs
         for (i = 0; i < DlgData.Count; i++)
         {
             CDialogData* dialog = DlgData[i];
@@ -2840,7 +2840,7 @@ void CData::ValidateTranslation(HWND hParent)
             }
         }
 
-        // prohledame strings
+        // Scan strings
         for (i = 0; i < StrData.Count; i++)
         {
             CStrData* strData = StrData[i];
@@ -2863,7 +2863,7 @@ void CData::ValidateTranslation(HWND hParent)
             }
         }
 
-        // prohledame windows MENU
+        // Scan Windows menus
         for (i = 0; i < MenuData.Count; i++)
         {
             CMenuData* menu = MenuData[i];
@@ -2890,7 +2890,7 @@ void CData::ValidateTranslation(HWND hParent)
         swprintf_s(buff, L"Searching for inconsistent text beginnings and endings...");
         OutWindow.AddLine(buff, mteInfo);
 
-        // prohledame dialogy
+        // Scan dialogs
         for (i = 0; i < DlgData.Count; i++)
         {
             CDialogData* dialog = DlgData[i];
@@ -2922,7 +2922,7 @@ void CData::ValidateTranslation(HWND hParent)
             }
         }
 
-        // prohledame strings
+        // Scan strings
         for (i = 0; i < StrData.Count; i++)
         {
             CStrData* strData = StrData[i];
@@ -2948,7 +2948,7 @@ void CData::ValidateTranslation(HWND hParent)
             }
         }
 
-        // prohledame windows MENU
+        // Scan Windows menus
         for (i = 0; i < MenuData.Count; i++)
         {
             CMenuData* menu = MenuData[i];
@@ -2976,7 +2976,7 @@ void CData::ValidateTranslation(HWND hParent)
         swprintf_s(buff, L"Searching for inconsistent hot keys...");
         OutWindow.AddLine(buff, mteInfo);
 
-        // prohledame dialogy
+        // Scan dialogs
         for (i = 0; i < DlgData.Count; i++)
         {
             CDialogData* dialog = DlgData[i];
@@ -2987,7 +2987,7 @@ void CData::ValidateTranslation(HWND hParent)
                 if (!control->ShowInLVWithControls(j))
                     continue;
 
-                if (j != 0 && // nulty control je nazev dialogu a v nem hotkeys nejsou, neni co kontrolovat
+                if (j != 0 && // Control 0 is the dialog name and has no hotkeys to check
                     !ValidateHotKeys(control->OWindowName, control->TWindowName))
                 {
                     swprintf_s(buff, L"Dialog %hs: %ls", DataRH.GetIdentifier(dialog->ID), control->TWindowName);
@@ -2997,7 +2997,7 @@ void CData::ValidateTranslation(HWND hParent)
             }
         }
 
-        // prohledame strings
+        // Scan strings
         for (i = 0; i < StrData.Count; i++)
         {
             CStrData* strData = StrData[i];
@@ -3021,7 +3021,7 @@ void CData::ValidateTranslation(HWND hParent)
             }
         }
 
-        // prohledame windows MENU
+        // Scan Windows menus
         for (i = 0; i < MenuData.Count; i++)
         {
             CMenuData* menu = MenuData[i];
@@ -3048,27 +3048,27 @@ void CData::ValidateTranslation(HWND hParent)
         swprintf_s(buff, L"Searching dialogs for overlapping controls...");
         OutWindow.AddLine(buff, mteInfo);
 
-        // prohledame dialogy
+        // Scan dialogs
         for (i = 0; i < DlgData.Count; i++)
         {
             CDialogData* dialog = DlgData[i];
             lvIndex = 1;
-            if (dialog->Controls.Count > 0 && (dialog->Controls[0]->OWindowName == NULL || dialog->Controls[0]->OWindowName[0] == 0)) // prazdny nazev dialogu
+            if (dialog->Controls.Count > 0 && (dialog->Controls[0]->OWindowName == NULL || dialog->Controls[0]->OWindowName[0] == 0)) // Empty dialog title
                 lvIndex = 0;
-            for (j = 1; j < dialog->Controls.Count; j++) // 0 je nazev dialogu, zacneme tedy od 1
+            for (j = 1; j < dialog->Controls.Count; j++) // 0 is the dialog title, so start from 1
             {
                 CControl* control = dialog->Controls[j];
                 if (!control->ShowInLVWithControls(j))
                     continue;
 
-                if (ShouldValidateLayoutFor(control)) // jde o control ktery mame validovat (groupboxy ignorujeme)
+                if (ShouldValidateLayoutFor(control)) // Control we are supposed to validate (ignore group boxes)
                 {
                     BOOL isCheckOrRadioBox = control->IsRadioOrCheckBox();
                     for (int k = 1; k < dialog->Controls.Count; k++)
                     {
                         CControl* control2 = dialog->Controls[k];
-                        if (k > j ||                                     // bereme vsechny controly za 'j'
-                            k < j && !control2->ShowInLVWithControls(k)) // pred 'j' jen pokud uz jsme je netestovali (vypadly z testu protoze se neprekladaji, napr. ikony)
+                        if (k > j ||                                     // Take all controls after 'j'
+                            k < j && !control2->ShowInLVWithControls(k)) // Before 'j' only if we have not tested them yet (skipped because they are not translated, e.g., icons)
                         {
                             BOOL shouldValidate = ShouldValidateLayoutFor(control2);
                             if ((shouldValidate && DoesControlsOverlap(dialog->ID, control, control2) ||
@@ -3100,15 +3100,15 @@ void CData::ValidateTranslation(HWND hParent)
         swprintf_s(buff, L"Searching dialogs for clipped texts...");
         OutWindow.AddLine(buff, mteInfo);
 
-        // prohledame dialogy
+        // Scan dialogs
         for (i = 0; i < DlgData.Count; i++)
         {
             CDialogData* dialog = DlgData[i];
 
-            // budeme omerovat nad realnym dialogem, takze potrebujeme jeho template
+            // We will measure the real dialog, so we need its template
             WORD dialogTemplate[200000];
             DWORD dialogTemplateSize = dialog->PrepareTemplate(dialogTemplate, FALSE, TRUE, FALSE);
-            // dialog nechceme nechat zobrazit
+            // Do not let the dialog be displayed
             dialog->TemplateAddRemoveStyles(dialogTemplate, 0, WS_VISIBLE);
 
             HWND hDlg = CreateDialogIndirectW(HInstance, (LPDLGTEMPLATE)dialogTemplate, hParent, NULL);
@@ -3120,7 +3120,7 @@ void CData::ValidateTranslation(HWND hParent)
                 continue;
             }
 
-            CCheckLstItem *multiTextOrComboItem, *checkLstItem; // zkusime, jestli vubec k dialogu nejakou mame
+            CCheckLstItem *multiTextOrComboItem, *checkLstItem; // Check whether we even have one assigned to the dialog
             BOOL findMulTextAndDropDownItems = GetItemFromCheckLst(dialog->ID, 0, &multiTextOrComboItem, &checkLstItem, TRUE);
 
             lvIndex = 0;
@@ -3142,7 +3142,7 @@ void CData::ValidateTranslation(HWND hParent)
                      checkLstItem != NULL && checkLstItem->Type == cltProgressDialogStatus ||
                      control->TWindowName[0] != 0) &&
                     IsControlClipped(dialog, control, hDlg, NULL, NULL, multiTextOrComboItem, checkLstItem) &&
-                    !IgnoreProblem(iltClip, dialog->ID, control->ID, 0 /* nepouziva se */))
+                    !IgnoreProblem(iltClip, dialog->ID, control->ID, 0 /* not used */))
                 {
                     swprintf_s(buff, L"Dialog %hs: %hs (%ls)", DataRH.GetIdentifier(dialog->ID),
                                DataRH.GetIdentifier(control->ID),
@@ -3165,14 +3165,14 @@ void CData::ValidateTranslation(HWND hParent)
 
 #define CONTROL_TO_DIALOG_MIN_V_SPACING 4    // (vertical) dlg units
 #define CONTROL_TO_DIALOG_MIN_H_SPACING 5    // (horizontal) dlg units
-#define CONTROL_TO_DIALOG_MIN_H_SPACING_RT 3 // (horizontal pro vpravo zarovnane texty) dlg units
+#define CONTROL_TO_DIALOG_MIN_H_SPACING_RT 3 // (horizontal for right-aligned texts) dlg units
 
-        // prohledame dialogy
+        // Scan dialogs
         for (i = 0; i < DlgData.Count; i++)
         {
             CDialogData* dialog = DlgData[i];
 
-            for (j = 1; j < dialog->Controls.Count; j++) // 0 je nazev dialogu, zacneme tedy od 1
+            for (j = 1; j < dialog->Controls.Count; j++) // 0 is the dialog title, so start from 1
             {
                 CControl* control = dialog->Controls[j];
 
@@ -3180,16 +3180,16 @@ void CData::ValidateTranslation(HWND hParent)
                 int minHSpacing = 0;
                 if (!Data.IgnoreTooCloseToDlgFrame(dialog->ID, control->ID))
                 {
-                    if ((dialog->Style & (DS_CONTROL | WS_CHILD)) == 0 && // vlozene dialogy at maji controly klidne az ke kraji
-                        control->TCY > 1 && control->TCX > 1)             // vodorovne a svisle cary muzou byt az k okraji dialogu
+                    if ((dialog->Style & (DS_CONTROL | WS_CHILD)) == 0 && // Allow embedded dialogs to have controls right at the edge
+                        control->TCY > 1 && control->TCX > 1)             // Horizontal and vertical lines may extend to the dialog edges
                     {
                         minVSpacing = CONTROL_TO_DIALOG_MIN_V_SPACING;
                         minHSpacing = CONTROL_TO_DIALOG_MIN_H_SPACING;
                     }
 
                     if ((DWORD)control->ClassName == 0x0082ffff &&    // STATIC
-                        (control->Style & SS_TYPEMASK) == SS_RIGHT && // pravy text - muze jit vic k okraji (leva strana se vetsinou nepouziva)
-                        control->TCY > 1 && control->TCX > 1)         // vodorovne a svisle cary muzou byt az k okraji dialogu
+                        (control->Style & SS_TYPEMASK) == SS_RIGHT && // Right-aligned text may go closer to the edge (the left side is rarely used)
+                        control->TCY > 1 && control->TCX > 1)         // Horizontal and vertical lines may extend to the dialog edges
                     {
                         minHSpacing = CONTROL_TO_DIALOG_MIN_H_SPACING_RT;
                     }
@@ -3199,7 +3199,7 @@ void CData::ValidateTranslation(HWND hParent)
                 int y = control->TY;
                 int cx = control->TCX;
                 int cy = control->TCY;
-                if (control->IsComboBox()) // u comboboxu chceme jejich "zabaleny" rozmer
+                if (control->IsComboBox()) // For combo boxes we want their "collapsed" size
                     cy = COMBOBOX_BASE_HEIGHT;
                 if (control->IsIcon() && Data.IgnoreIconSizeIconIsSmall(dialog->ID, control->ID))
                     cx = cy = 10;
@@ -3207,7 +3207,7 @@ void CData::ValidateTranslation(HWND hParent)
                 if (x < minHSpacing || dialog->TCX - (x + cx) < minHSpacing ||
                     y < minVSpacing || dialog->TCY - (y + cy) < minVSpacing)
                 {
-                    if (x + cx > 0 && x < dialog->TCX && // controly cele mimo dialog neresime
+                    if (x + cx > 0 && x < dialog->TCX && // Ignore controls that are completely outside the dialog
                         y + cy > 0 && y < dialog->TCY)
                     {
                         swprintf_s(buff, L"Dialog %hs: %hs", DataRH.GetIdentifier(dialog->ID),
@@ -3229,12 +3229,12 @@ void CData::ValidateTranslation(HWND hParent)
         swprintf_s(buff, L"Searching for slightly misaligned controls...");
         OutWindow.AddLine(buff, mteInfo);
 
-        // prohledame dialogy
+        // Scan dialogs
         for (i = 0; i < DlgData.Count; i++)
         {
             CDialogData* dialog = DlgData[i];
 
-            for (j = 1; j < dialog->Controls.Count; j++) // 0 je nazev dialogu, zacneme tedy od 1
+            for (j = 1; j < dialog->Controls.Count; j++) // 0 is the dialog title, so start from 1
             {
                 CControl* control = dialog->Controls[j];
 
@@ -3256,9 +3256,9 @@ void CData::ValidateTranslation(HWND hParent)
                         int y2 = control2->TY;
                         int cx2 = control2->TCX;
                         int cy2 = control2->TCY;
-                        if (control->IsComboBox()) // u comboboxu chceme jejich "zabaleny" rozmer
+                        if (control->IsComboBox()) // For combo boxes we want their "collapsed" size
                             cy1 = COMBOBOX_BASE_HEIGHT;
-                        if (control2->IsComboBox()) // u comboboxu chceme jejich "zabaleny" rozmer
+                        if (control2->IsComboBox()) // For combo boxes we want their "collapsed" size
                             cy2 = COMBOBOX_BASE_HEIGHT;
                         if (control->IsIcon() && Data.IgnoreIconSizeIconIsSmall(dialog->ID, control->ID))
                             cx1 = cy1 = 10;
@@ -3298,12 +3298,12 @@ void CData::ValidateTranslation(HWND hParent)
         swprintf_s(buff, L"Searching for slightly different sized controls...");
         OutWindow.AddLine(buff, mteInfo);
 
-        // prohledame dialogy
+        // Scan dialogs
         for (i = 0; i < DlgData.Count; i++)
         {
             CDialogData* dialog = DlgData[i];
 
-            for (j = 1; j < dialog->Controls.Count; j++) // 0 je nazev dialogu, zacneme tedy od 1
+            for (j = 1; j < dialog->Controls.Count; j++) // 0 is the dialog title, so start from 1
             {
                 CControl* control = dialog->Controls[j];
 
@@ -3318,9 +3318,9 @@ void CData::ValidateTranslation(HWND hParent)
                         int cy1 = control->TCY;
                         int cx2 = control2->TCX;
                         int cy2 = control2->TCY;
-                        if (control->IsComboBox()) // u comboboxu chceme jejich "zabaleny" rozmer
+                        if (control->IsComboBox()) // For combo boxes we want their "collapsed" size
                             cy1 = COMBOBOX_BASE_HEIGHT;
-                        if (control2->IsComboBox()) // u comboboxu chceme jejich "zabaleny" rozmer
+                        if (control2->IsComboBox()) // For combo boxes we want their "collapsed" size
                             cy2 = COMBOBOX_BASE_HEIGHT;
                         if (control->IsIcon() && Data.IgnoreIconSizeIconIsSmall(dialog->ID, control->ID))
                             cx1 = cy1 = 10;
@@ -3354,12 +3354,12 @@ void CData::ValidateTranslation(HWND hParent)
         swprintf_s(buff, L"Searching for slightly different spacing between controls...");
         OutWindow.AddLine(buff, mteInfo);
 
-        // prohledame dialogy
+        // Scan dialogs
         for (i = 0; i < DlgData.Count; i++)
         {
             CDialogData* dialog = DlgData[i];
 
-            for (j = 1; j < dialog->Controls.Count; j++) // 0 je nazev dialogu, zacneme tedy od 1
+            for (j = 1; j < dialog->Controls.Count; j++) // 0 is the dialog title, so start from 1
             {
                 CControl* control = dialog->Controls[j];
                 if (!Data.IgnoreDifferentSpacing(dialog->ID, control->ID) &&
@@ -3380,12 +3380,12 @@ void CData::ValidateTranslation(HWND hParent)
         swprintf_s(buff, L"Searching for controls with nonstandard size...");
         OutWindow.AddLine(buff, mteInfo);
 
-        // prohledame dialogy
+        // Scan dialogs
         for (i = 0; i < DlgData.Count; i++)
         {
             CDialogData* dialog = DlgData[i];
 
-            for (j = 1; j < dialog->Controls.Count; j++) // 0 je nazev dialogu, zacneme tedy od 1
+            for (j = 1; j < dialog->Controls.Count; j++) // 0 is the dialog title, so start from 1
             {
                 CControl* control = dialog->Controls[j];
                 if (!Data.IgnoreNotStdSize(dialog->ID, control->ID) &&
@@ -3406,12 +3406,12 @@ void CData::ValidateTranslation(HWND hParent)
         swprintf_s(buff, L"Searching for labels placed incorrectly to associated controls...");
         OutWindow.AddLine(buff, mteInfo);
 
-        // prohledame dialogy
+        // Scan dialogs
         for (i = 0; i < DlgData.Count; i++)
         {
             CDialogData* dialog = DlgData[i];
 
-            for (j = 1; j < dialog->Controls.Count; j++) // 0 je nazev dialogu, zacneme tedy od 1
+            for (j = 1; j < dialog->Controls.Count; j++) // 0 is the dialog title, so start from 1
             {
                 CControl* control = dialog->Controls[j];
                 int foundIndex;
@@ -3444,7 +3444,7 @@ void CData::ValidateTranslation(HWND hParent)
             CCheckLstItem* check = Data.CheckLstItems[j];
             if (check->Type == cltPropPgSameSize)
             {
-                // prohledame dialogy
+                // Scan dialogs
                 int maxCX = 0;
                 int maxCY = 0;
                 for (i = 0; i < DlgData.Count; i++)
@@ -3478,7 +3478,7 @@ void CData::ValidateTranslation(HWND hParent)
         OutWindow.AddLine(buff, mteInfo);
 
         //TRACE_E("TODO: ValidateHButtonSpacing");
-        // prohledame dialogy
+        // Scan dialogs
         //for (i = 0; i < DlgData.Count; i++)
         //{
         //  CDialogData *dialog = DlgData[i];
@@ -3493,12 +3493,12 @@ void CData::ValidateTranslation(HWND hParent)
         swprintf_s(buff, L"Searching dialog boxes for ID conflicts...");
         OutWindow.AddLine(buff, mteInfo);
 
-        // prohledame dialogy
+        // Scan dialogs
         for (i = 0; i < DlgData.Count; i++)
         {
             CDialogData* dialog = DlgData[i];
 
-            for (j = 1; j < dialog->Controls.Count; j++) // 0 je nazev dialogu, zacneme tedy od 1
+            for (j = 1; j < dialog->Controls.Count; j++) // 0 is the dialog title, so start from 1
             {
                 CControl* control = dialog->Controls[j];
                 if (!control->ShowInLVWithControls(j))
@@ -3532,7 +3532,7 @@ void CData::ValidateTranslation(HWND hParent)
         }
     }
 
-    // najdeme IDcka bez textovych identifikatoru (detekce chybejicich symbolu v .inc souboru)
+    // Find IDs without text identifiers (detect missing symbols in the .inc file)
     OutWindow.AddLine(L"Searching for unknown identifiers...", mteInfo);
     CheckIdentifiers(TRUE);
 
@@ -3555,9 +3555,9 @@ void CData::ValidateTranslation(HWND hParent)
         swprintf_s(buff, L"%d problem(s) have been found.", count);
     OutWindow.AddLine(buff, mteSummary);
     if (count == 0)
-        PostMessage(FrameWindow.HWindow, WM_FOCLASTINOUTPUTWND, 0, 0); // Output okno jeste nemusi existovat
+        PostMessage(FrameWindow.HWindow, WM_FOCLASTINOUTPUTWND, 0, 0); // The Output window might not exist yet
     else
-        PostMessage(FrameWindow.HWindow, WM_COMMAND, CM_WND_OUTPUT, 0); // aktivace Output okna
+        PostMessage(FrameWindow.HWindow, WM_COMMAND, CM_WND_OUTPUT, 0); // Activate the Output window
 
     OutWindow.EnablePaint(TRUE);
 
@@ -3577,7 +3577,7 @@ void CData::LookForIdConflicts()
     wchar_t buff[1000];
     OutWindow.EnablePaint(FALSE);
 
-    // prohledame dialogy
+    // Scan dialogs
     for (int i = 0; i < DlgData.Count; i++)
     {
         TDirectArray<DWORD> ids(20, 10);
@@ -3590,7 +3590,7 @@ void CData::LookForIdConflicts()
             if (!control->ShowInLVWithControls(j))
                 continue;
 
-            if (j > 0) // j==0 znamena jmeno a ID dialogu
+            if (j > 0) // j == 0 means the dialog name and ID
             {
                 BOOL displayed = FALSE;
                 for (int k = 0; k < ids.Count; k++)

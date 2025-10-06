@@ -85,7 +85,7 @@ public:
     void RemoveRecentProject(int index);
     int FindRecentProject(const char* fileName);
 
-    // 1 = vse TRUE, 2 = layout TRUE, zbytek FALSE
+    // 1 = everything TRUE, 2 = layout TRUE, the rest FALSE
     void SetValidateAll(int mode = 1);
 };
 

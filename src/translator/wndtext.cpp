@@ -63,7 +63,7 @@ EditWindowProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (SkipNextCharacter)
         {
-            SkipNextCharacter = FALSE; // zamezime pipnuti
+            SkipNextCharacter = FALSE; // Prevent the audible beep
             return FALSE;
         }
 
@@ -74,7 +74,7 @@ EditWindowProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 TextWindow.ChangeCurrentState(TRUE /*!controlPressed*/);
                 if (controlPressed)
-                    PostMessage(FrameWindow.HWindow, WM_COMMAND, CM_GOTO_NEXT, 0); // dalsi polozka z Find
+                    PostMessage(FrameWindow.HWindow, WM_COMMAND, CM_GOTO_NEXT, 0); // Advance to the next Find result
                 else
                     TextWindow.Navigate(TRUE);
             }
@@ -95,7 +95,7 @@ EditWindowProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (wParam == 'A' && controlPressed && !shiftPressed && !altPressed)
         {
             SendMessage(hWnd, EM_SETSEL, 0, -1);
-            SkipNextCharacter = TRUE; // zamezime pipnuti
+            SkipNextCharacter = TRUE; // Prevent the audible beep
             return 0;
         }
 
@@ -188,7 +188,7 @@ CListView::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             TextWindow.ChangeCurrentState(/*!controlPressed*/ TRUE);
             if (controlPressed)
-                PostMessage(FrameWindow.HWindow, WM_COMMAND, CM_GOTO_NEXT, 0); // dalsi polozka z Find
+                PostMessage(FrameWindow.HWindow, WM_COMMAND, CM_GOTO_NEXT, 0); // Advance to the next Find result
             else
                 TextWindow.Navigate(TRUE);
             return 0;
@@ -226,7 +226,7 @@ void CTextWindow::InitListView()
 
     lvc.mask = LVCF_FMT | LVCF_TEXT | LVCF_SUBITEM;
     lvc.fmt = LVCFMT_LEFT;
-    for (int i = 0; i < 3; i++) // vytvorim sloupce
+    for (int i = 0; i < 3; i++) // Create the columns
     {
         lvc.pszText = (char*)header[i];
         lvc.iSubItem = i;
@@ -340,7 +340,7 @@ void CTextWindow::SelectItem(WORD id)
         int groupIndex = LOWORD(lvi.lParam);
         int ctrlIndex = HIWORD(lvi.lParam);
 
-        if (ctrlIndex > 0) // na indexu 0 je titulek dialogu, ten nehledame
+        if (ctrlIndex > 0) // index 0 stores the dialog caption; skip it
         {
             CControl* control = Data.DlgData[groupIndex]->Controls[ctrlIndex];
             if (control->ID == id)
@@ -393,7 +393,7 @@ BOOL CTextWindow::CanLeaveText()
     }
     }
 
-    if (wcslen(str) == 0 && // prazdne texty nejsou povolene krome statickych textu v dialozich
+    if (wcslen(str) == 0 && // Empty strings are forbidden except for static dialog texts
         (Mode != TREE_TYPE_DIALOG || strIndex == 0 ||
          !Data.DlgData[groupIndex]->Controls[strIndex]->IsStaticText()))
     {
@@ -620,7 +620,7 @@ CTextWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_CREATE:
     {
 
-        // priradim oknu ikonku
+        // Assign an icon to the window
         //      SendMessage(HWindow, WM_SETICON, ICON_BIG,
         //                  (LPARAM)LoadIcon(HInstance, MAKEINTRESOURCE(IDI_MAIN)));
 
@@ -648,10 +648,10 @@ CTextWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                           HInstance,
                                           NULL);
 
-        // Stara particka common controls (listbox, editline, ...) funguji jinak nez nove controls
-        // jako je listview. U novych controlu se data drzi v unicode a prevadi pri setovani/ziskavani
-        // do/z controlu. U starych controlu zalezi na tom, jak control vytvorime (zda ansi pres
-        // CreateWindowEx() nebo UNICODE pres CreateWindowExW()
+        // Older common controls (list boxes, edit lines, etc.) behave differently from newer controls
+        // such as the list view. New controls keep their data in Unicode and convert it while values
+        // are set or read. For the old controls the encoding depends on whether we created the control
+        // via the ANSI CreateWindowEx() or the Unicode CreateWindowExW().
         DWORD otherFlags = 0;
         if (Data.MUIMode)
             otherFlags = ES_READONLY;
@@ -666,7 +666,7 @@ CTextWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         DefEditWndProc = (WNDPROC)GetWindowLongW(HTranslated, GWL_WNDPROC);
         SetWindowLongW(HTranslated, GWL_WNDPROC, (LONG)EditWindowProcW);
 
-        SendMessage(HTranslated, EM_LIMITTEXT, 5000, 0); // omezim velikost pro buffery
+        SendMessage(HTranslated, EM_LIMITTEXT, 5000, 0); // Limit the buffer size
 
         HOriginalLabel = CreateWindowEx(0, "static", "&Original text:",
                                         WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS,
@@ -800,9 +800,9 @@ CTextWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                     GetStringFromWindow(HTranslated, &Data.MenuData[groupIndex]->Items[strIndex].TString);
 
-                    // vnorena submenu odhodime o level vpravo
+                    // Indent nested submenus one level to the right
                     int j = 0;
-                    while (j < Data.MenuData[groupIndex]->Items[strIndex].Level * 5) // pet mezer je jeste na dalsim miste
+                    while (j < Data.MenuData[groupIndex]->Items[strIndex].Level * 5) // Five spaces per level still leave room for the caption
                     {
                         buff[j] = ' ';
                         j++;
@@ -832,7 +832,7 @@ CTextWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     lvi.iSubItem = 1;
                     SendMessageW(ListView.HWindow, LVM_SETITEMW, 0, (LPARAM)&lvi);
 
-                    // na nultem indexu je nazev dialog; potom jsou controly
+                    // Index zero stores the dialog caption; the controls follow afterwards
                     HWND hWnd = PreviewWindow.HDialog;
                     if (strIndex > 0)
                         hWnd = GetDlgItem(hWnd, control->ID);

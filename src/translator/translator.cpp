@@ -45,7 +45,7 @@ public:
     ~C__StrCriticalSection() { DeleteCriticalSection(&cs); }
 };
 
-// zajistime vcasnou konstrukci kriticke sekce
+// ensure the critical section is constructed as early as possible
 #pragma warning(disable : 4073)
 #pragma init_seg(lib)
 C__StrCriticalSection __StrCriticalSection;
@@ -54,7 +54,7 @@ C__StrCriticalSection __StrCriticalSection;
 
 char* LoadStr(int resID)
 {
-    static char buffer[10000]; // buffer pro mnoho stringu
+    static char buffer[10000]; // shared buffer used to return multiple strings
     static char* act = buffer;
 
     HANDLES(EnterCriticalSection(&__StrCriticalSection.cs));
@@ -66,16 +66,16 @@ char* LoadStr(int resID)
 
 RELOAD:
     int size = LoadString(hInstance, resID, act, 10000 - (act - buffer));
-    // size obsahuje pocet nakopirovanych znaku bez terminatoru
+    // 'size' counts copied characters excluding the terminator
     //  DWORD error = GetLastError();
     char* ret;
-    if (size != 0 /* || error == NO_ERROR*/) // error je NO_ERROR, i kdyz string neexistuje - nepouzitelne
+    if (size != 0 /* || error == NO_ERROR*/) // GetLastError also returns NO_ERROR when the string is missing
     {
         if ((10000 - (act - buffer) == size + 1) && (act > buffer))
         {
-            // pokud byl retezec presne na konci bufferu, mohlo
-            // jit o oriznuti retezce -- pokud muzeme posunout okno
-            // na zacatek bufferu, nacteme string jeste jednou
+            // when the string ended exactly at the buffer boundary it might
+            // have been truncated—if we can move the window
+            // back to the beginning of the buffer, reload the string
             act = buffer;
             goto RELOAD;
         }
@@ -100,9 +100,9 @@ RELOAD:
 //
 // GetErrorText
 //
-// ma problemy se synchronizaci, zatim to necham byt, protoze jde "jen" o vypis
-// chyby, problem muze nastat, jakmile se dva thready rozhodnou soucasne vypsat
-// chybu, jeden z nich vypise spatnou chybu
+// this helper is not fully thread-safe; because it is used only for diagnostic output
+// the race is tolerated—if two threads print simultaneously one of them may show
+// an incorrect error text
 
 char* GetErrorText(DWORD error)
 {
@@ -164,7 +164,7 @@ DWORD AddUnicodeToClipboard(const char* str, int textLen)
         {
             if (textLen > 0 && MultiByteToWideChar(CP_ACP, 0, str, textLen, unicodeStr, textLen + 1) == 0)
                 err = GetLastError();
-            unicodeStr[textLen] = 0; // koncova nula
+            unicodeStr[textLen] = 0; // terminating null character
             HANDLES(GlobalUnlock(unicode));
             if (err == ERROR_SUCCESS && SetClipboardData(CF_UNICODETEXT, unicode) == NULL)
                 err = GetLastError();
@@ -195,21 +195,21 @@ BOOL CopyHTextToClipboard(HGLOBAL hGlobalText, int textLen)
     {
         if (EmptyClipboard())
         {
-            //if (WindowsNTAndLater) -- fungujeme pouze pod NT
+            //if (WindowsNTAndLater) -- runs only on NT systems
             {
                 char* text = (char*)HANDLES(GlobalLock(hGlobalText));
                 if (text != NULL)
                 {
                     if (textLen == -1)
                         textLen = lstrlen(text);
-                    err = AddUnicodeToClipboard(text, textLen); // ulozime text nejprve v Unicode (jen NT)
+                    err = AddUnicodeToClipboard(text, textLen); // store the text in Unicode first (NT only)
                     HANDLES(GlobalUnlock(hGlobalText));
                 }
                 else
                     err = GetLastError();
             }
 
-            if (SetClipboardData(CF_TEXT, hGlobalText) == NULL) // pak ulozime text multibyte
+            if (SetClipboardData(CF_TEXT, hGlobalText) == NULL) // then store the multi-byte variant
                 err = GetLastError();
         }
         else
@@ -260,12 +260,12 @@ BOOL CopyTextToClipboard(const char* text, int textLen)
 //
 // GetTargetDirectory
 //
-//  parent  - okno vlastnika dialogu
-//  title   - titul dialogu
-//  comment - text zobrazeny nad tree-view
-//  path    - buffer pro vybranou cestu (delka minimalne MAX_PATH)
+//  parent  - owner window of the dialog
+//  title   - dialog title
+//  comment - text displayed above the tree view
+//  path    - buffer for the selected path (at least MAX_PATH)
 //
-//  vraci TRUE pokud je path platna nova cesta
+//  returns TRUE when 'path' contains a valid new location
 
 struct CBrowseData
 {
@@ -278,7 +278,7 @@ int CALLBACK DirectoryBrowse(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
 {
     if (uMsg == BFFM_INITIALIZED)
     {
-        // pokusim se vycentrovat dialog k centrovacimu oknu
+        // try to center the dialog relative to the reference window
         RECT centerRect;
         GetWindowRect(((CBrowseData*)lpData)->HCenterWindow, &centerRect);
         int centerW = centerRect.right - centerRect.left;
@@ -295,7 +295,7 @@ int CALLBACK DirectoryBrowse(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
 
         RECT workArea;
         SystemParametersInfo(SPI_GETWORKAREA, 0, &workArea, FALSE);
-        // osetrim uplnou viditelnost dialogu
+        // ensure the dialog remains fully visible
         if (x < workArea.left)
             x = workArea.left;
         if (y < workArea.top)
@@ -305,16 +305,16 @@ int CALLBACK DirectoryBrowse(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
         if (y + h > workArea.bottom)
             y = workArea.bottom - h;
 
-        // umistim ho
+        // position the dialog
         SetWindowPos(hwnd, HWND_TOP, x, y, 0, 0, SWP_NOSIZE);
 
-        // nastavim header
+        // set the caption
         SetWindowText(hwnd, ((CBrowseData*)lpData)->Title);
         if (((CBrowseData*)lpData)->InitDir != NULL)
         {
             char path[MAX_PATH];
             GetRootPath(path, ((CBrowseData*)lpData)->InitDir);
-            if (strlen(path) < strlen(((CBrowseData*)lpData)->InitDir)) // neni to root-dir
+            if (strlen(path) < strlen(((CBrowseData*)lpData)->InitDir)) // not a root directory
             {
                 strcpy_s(path, ((CBrowseData*)lpData)->InitDir);
                 char& ch = path[strlen(path) - 1];
@@ -342,13 +342,13 @@ BOOL GetTargetDirectoryAux(HWND parent, HWND hCenterWindow,
 {
     __try
     {
-        ITEMIDLIST* pidl; // vyber root-folderu
+        ITEMIDLIST* pidl; // select the root folder
         if (onlyNet)
             SHGetSpecialFolderLocation(parent, CSIDL_NETWORK, &pidl);
         else
             pidl = NULL;
 
-        // otevreni dialogu
+        // open the dialog
         char display[MAX_PATH];
         BROWSEINFO bi;
         bi.hwndOwner = parent;
@@ -363,13 +363,13 @@ BOOL GetTargetDirectoryAux(HWND parent, HWND hCenterWindow,
         bd.HCenterWindow = hCenterWindow;
         bi.lParam = (LPARAM)&bd;
         ITEMIDLIST* res = SHBrowseForFolder(&bi);
-        BOOL ret = FALSE; // navratova hodnota
+        BOOL ret = FALSE; // return value
         if (res != NULL)
         {
             SHGetPathFromIDList(res, path);
             ret = TRUE;
         }
-        // uvolneni item-id-listu
+        // release the item-id lists
         IMalloc* alloc;
         if (SUCCEEDED(CoGetMalloc(1, &alloc)))
         {
@@ -383,7 +383,7 @@ BOOL GetTargetDirectoryAux(HWND parent, HWND hCenterWindow,
     }
     __except (EXCEPTION_EXECUTE_HANDLER)
     {
-        return FALSE; // chyba
+        return FALSE; // propagate the error
     }
 }
 
@@ -400,12 +400,12 @@ HWND GetMsgParent()
 
 // ****************************************************************************
 //
-// GetCmdLine - ziskani parametru z prikazove radky
+// GetCmdLine - parse command-line parameters
 //
-// buf + size - buffer pro parametry
-// argv - pole ukazatelu, ktere se naplni parametry
-// argCount - na vstupu je to pocet prvku v argv, na vystupu obsahuje pocet parametru
-// cmdLine - parametry prikazove radky (bez jmena .exe souboru - z WinMain)
+// buf + size - buffer for storing all parameter strings
+// argv - array of pointers that will point into the buffer
+// argCount - input: number of elements available in argv; output: number of parsed parameters
+// cmdLine - command-line parameters (without the .exe name supplied by WinMain)
 
 BOOL GetCmdLine(char* buf, int size, char* argv[], int& argCount, char* cmdLine)
 {
@@ -418,7 +418,7 @@ BOOL GetCmdLine(char* buf, int size, char* argv[], int& argCount, char* cmdLine)
     char term;
     while (*s != 0)
     {
-        if (*s == '"') // pocatecni '"'
+        if (*s == '"') // opening '"'
         {
             if (*++s == 0)
                 break;
@@ -430,13 +430,13 @@ BOOL GetCmdLine(char* buf, int size, char* argv[], int& argCount, char* cmdLine)
         if (argCount < space && c < end)
             argv[argCount++] = c;
         else
-            return c < end; // chyba jen pokud je maly buffer
+            return c < end; // only an error if the buffer is too small
 
         while (1)
         {
             if (*s == term || *s == 0)
             {
-                if (*s == 0 || term != '"' || *++s != '"') // neni-li to nahrada "" -> "
+                if (*s == 0 || term != '"' || *++s != '"') // not a doubled quote "" -> "
                 {
                     if (*s != 0)
                         s++;
@@ -562,8 +562,8 @@ WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR cmdLine, int cmd
     TRACE_I("Begin.");
     HInstance = hInstance;
 
-    // nastavime lokalizovane hlasky do modulu ALLOCHAN (zajistuje pri nedostatku pameti hlaseni
-    // uzivateli + Retry button + kdyz vse selze tak i Cancel pro terminate softu)
+    // configure localized messages for the ALLOCHAN module (used to report out-of-memory issues
+    // to the user, offer Retry, and fall back to Cancel if termination is required)
     SetAllocHandlerMessage(NULL, FRAMEWINDOW_NAME, NULL, NULL);
 
     SetWinLibStrings("Invalid number!", FRAMEWINDOW_NAME);
@@ -589,7 +589,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR cmdLine, int cmd
     }
 
     if (!InitializeWinLib())
-        return 1; // musime inicializovat WinLib pred prvnim zobrazenim
+        return 1; // WinLib must be initialized before showing the first window
 
     CFrameWindow::RegisterUniversalClass(CS_DBLCLKS | CS_SAVEBITS,
                                          0,
@@ -628,7 +628,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR cmdLine, int cmd
 
         char buf[MAX_PATH];
         char* argv[20];
-        int p = 20; // pocet prvku pole argv
+        int p = 20; // number of available elements in argv
         BOOL cmdLineParamsUsed = FALSE;
         if (GetCmdLine(buf, MAX_PATH, argv, p, cmdLine))
         {
@@ -694,12 +694,12 @@ WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR cmdLine, int cmd
             }
         }
 
-        if (Config.FrameWindowPlacement.length == 0) // pri prvnim spusteni okno maximalizujeme a rozvrhneme child okna
+        if (Config.FrameWindowPlacement.length == 0) // on first launch maximize and arrange child windows
         {
             ShowWindow(FrameWindow.HWindow, SW_SHOWMAXIMIZED);
             RECT r;
             GetClientRect(FrameWindow.HWindow, &r);
-            // odecteme experimentalne zjistenou sirku/vysku vnitrnich ramecku
+            // subtract the empirically determined size of the internal borders
             r.right -= 4;
             r.bottom -= 4;
             int width = r.right - r.left;

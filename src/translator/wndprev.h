@@ -13,7 +13,7 @@ extern const char* PREVIEWWINDOW_NAME;
 class CPreviewWindow : public CWindow
 {
 public:
-    HWND HDialog; // prave zobrazeny dialog
+    HWND HDialog; // Currently displayed dialog window.
     CDialogData* CurrentDialog;
     int CurrentDialogIndex;
     int HighlightedControlID;
@@ -26,21 +26,21 @@ public:
     CPreviewWindow();
     ~CPreviewWindow();
 
-    // zobrazi napis, ze nemuze zobrazit dialog
+    // Show a message stating that the dialog cannot be previewed.
     void SetInvalidPreview();
 
-    // zobrazi nahled na dialog urceny indexem
-    // pokud je index == -1, zhasne soucasny nahled
+    // Display a preview for the dialog identified by 'index'.
+    // Passing -1 clears the current preview.
     void PreviewDialog(int index);
 
-    // prekresli preview prave zobrazeneho dialogu
+    // Repaint the preview of the currently displayed dialog.
     void RefreshDialog();
 
-    // 'index' je do pole Data.MenuPreview
+    // 'index' addresses an entry in Data.MenuPreview.
     void PreviewMenu(int index);
 
-    // zobrazi dany prvek jako aktivni
-    // pokud je id == 0, zhasne se aktivni control
+    // Mark the specified control as active.
+    // Passing 0 clears the highlighted control.
     void HighlightControl(WORD id);
     BOOL GetHighlightControl() { return HighlightedControlID; }
 
@@ -49,7 +49,7 @@ public:
 protected:
     virtual LRESULT WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-    // zobrazi pod dialog info o vybranem controlu
+    // Show information about the selected control below the dialog preview.
     void DisplayControlInfo();
 
     void DisplayMenuPreview();
