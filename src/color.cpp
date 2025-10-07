@@ -1,12 +1,13 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include "color.h"
 
-// Konverze barevnych prostoru RGB<->HSL
-// HSL prostor viz http://en.wikipedia.org/wiki/HSL_color_space
-// Rutiny viz "How To Converting Colors Between RGB and HLS (HBS)"
+// RGB<->HSL color space conversion
+// HSL space see http://en.wikipedia.org/wiki/HSL_color_space
+// Routines taken from "How To Converting Colors Between RGB and HLS (HBS)"
 //            http://support.microsoft.com/kb/q29240/
 
 // A point of reference for the algorithms is Foley and Van Dam,
