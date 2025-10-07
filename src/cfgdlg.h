@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -14,9 +15,9 @@ struct CHighlightMasksItem
 {
     CMaskGroup* Masks;
     DWORD Attr;      // 1:include; 0:exclude
-    DWORD ValidAttr; // bity v Attr, ktere jsou platne = 1; pokud na nich nezalezi = 0
+    DWORD ValidAttr; // bits in Attr that are valid =1; set to 0 when they are ignored
 
-    SALCOLOR NormalFg; // barvy v jednotlivych rezimech
+    SALCOLOR NormalFg; // colors in individual modes
     SALCOLOR NormalBk;
     SALCOLOR FocusedFg;
     SALCOLOR FocusedBk;
@@ -48,8 +49,8 @@ public:
 
     BOOL Load(CHighlightMasks& source);
 
-    // prohleda vsechny masky, pokud najde odpovidajici polozku, vrati na ni ukazatel
-    // jinak vrati NULL; 'fileExt' je u adresaru NULL (pripona se musi dohledat)
+    // searches all masks and if it finds a matching item, it returns a pointer to it
+    // otherwise returns NULL; 'fileExt' is NULL for directories (the extension must be resolved)
     inline CHighlightMasksItem* AgreeMasks(const char* fileName, const char* fileExt, DWORD fileAttr)
     {
         int i;
@@ -81,10 +82,10 @@ struct CViewerMasksItem
 
     int ViewerType;
 
-    DWORD HandlerID; // unikatni ID (v ramci spusteni Salamandera)
-                     // slouzi pro identifikaci editoru pri vyberu z historie souboru CFileHistory
+    DWORD HandlerID; // unique ID (valid during the Salamander session)
+                     // used to identify the editor when selecting from the history of the file - CFileHistory
 
-    // pomocna promenna pro zjisteni typu udaju - TRUE = stare -> 'Type' (0 viewer, 1 IE viewer, 2 external)
+    // helper variable for determining the type of data - TRUE = old -> 'Type' (0 viewer, 1 IE viewer, 2 external)
     BOOL OldType;
 
     CViewerMasksItem(const char* masks, const char* command, const char* arguments, const char* initDir,
@@ -124,8 +125,8 @@ struct CEditorMasksItem
         *Arguments,
         *InitDir;
 
-    DWORD HandlerID; // unikatni ID (v ramci spusteni Salamandera)
-                     // slouzi pro identifikaci editoru pri vyberu z historie souboru CFileHistory
+    DWORD HandlerID; // unique ID (valid during the Salamander session)
+                     // used to identify the editor when selecting from the history of the file - CFileHistory
 
     CEditorMasksItem(char* masks, char* command, char* arguments, char* initDir);
     CEditorMasksItem();
@@ -153,16 +154,16 @@ public:
 //
 // ****************************************************************************
 
-extern const char* DefTopToolBar; // default hodnoty
+extern const char* DefTopToolBar; // default values
 extern const char* DefMiddleToolBar;
 extern const char* DefLeftToolBar;
 extern const char* DefRightToolBar;
 
-#define TITLE_BAR_MODE_DIRECTORY 0 // musi korespondovat s polem {IDS_TITLEBAR_DIRECTORY, IDS_TITLEBAR_COMPOSITE, IDS_TITLEBAR_FULLPATH}
+#define TITLE_BAR_MODE_DIRECTORY 0 // must correspond to the array {IDS_TITLEBAR_DIRECTORY, IDS_TITLEBAR_COMPOSITE, IDS_TITLEBAR_FULLPATH}
 #define TITLE_BAR_MODE_COMPOSITE 1
 #define TITLE_BAR_MODE_FULLPATH 2
 
-#define TITLE_PREFIX_MAX 100 // velikost bufferu pro title prefix
+#define TITLE_PREFIX_MAX 100 // size of the buffer for the title prefix
 
 typedef struct
 {
@@ -174,57 +175,57 @@ extern CMainWindowIconItem MainWindowIcons[MAINWINDOWICONS_COUNT];
 
 struct CConfiguration
 {
-    // ConfigVersion cislo verze nactene konfigurace - viz. komentar v mainwnd2.cpp
+    // ConfigVersion - version number of the loaded configuration (see comment in mainwnd2.cpp)
     DWORD ConfigVersion;
 
-    int IncludeDirs,            // select/deselect (*, +, -) i adresaru
+    int IncludeDirs,            // select/deselect (*, +, -) directories as well
         AutoSave,               // save on exit
-        CloseShell,             // zavirat shell po spusteni command-liny
-        ShowGrepErrors,         // maji se ve Find Files dialogu ukazovat chybove hlasky
-        FindFullRowSelect,      // full row select ve Find dialogu
-        MinBeepWhenDone,        // ma beepnout po ukonceni prace v neaktivnim okne
-        ClearReadOnly,          // odstranuje read-only flag pri operacich s CD-ROM
-        PrimaryContextMenu,     // je na pravem tlacitku contexove menu ?
-        NotHiddenSystemFiles,   // zobrazovat skryte a systemove soubory ?
-        AlwaysOnTop,            // je hlavni okno Always On Top?
-                                //      FastDirectoryMove,     // presun adresare prejmenovanim povolen?
-        SortUsesLocale,         // radit podle lokalniho nastaveni (regional settings)
-        SortDetectNumbers,      // detekovat pri razeni cisla v retezcich? (viz StrCmpLogicalW)
-        SortNewerOnTop,         // novejsi polozky nahore -- chovani Sal 2.0
-        SortDirsByName,         // radit adresare podle jmena
-        SortDirsByExt,          // emulovat pripony u adresaru (sort by extension + show in separated Ext column)
-        SaveHistory,            // ukladat historie do konfigurace?
-        SaveWorkDirs,           // ukladat List of Working Directories?
-        EnableCmdLineHistory,   // drzet historii prikazove radky?
-        SaveCmdLineHistory,     // ukaladat  historii prikazove radky?
-                                //      LantasticCheck,        // Lantastic 7.0 paranoid-check (porovnani velikosti po Copy)
-        OnlyOneInstance,        // povolit jen jednu instanci
-        ForceOnlyOneInstance,   // nastaveno z cmdline, Salamander se ma tvarit, ze je zapnuta volba OnlyOneInstance
-        StatusArea,             // Salam bde v Trayi a v pripade minimalizace nebude v taskbare
-        SingleClick,            // staci jeden klik pro vyber polozky
-        TopToolBarVisible,      // viditelnost toolbary
-        PluginsBarVisible,      // viditelnost toolbary
-        MiddleToolBarVisible,   // viditelnost toolbary
-        BottomToolBarVisible,   // viditelnost toolbary
-        UserMenuToolBarVisible, // viditelnost toolbary
-        HotPathsBarVisible,     // viditelnost toolbary
-        DriveBarVisible,        // viditelnost drive bar
-        DriveBar2Visible,       // viditelnost drive bar 2
-        UseSalOpen,             // ma se pouzivat salopen.exe (jinak spousteni asociaci naprimo)
-        NetwareFastDirMove,     // ma se na Novell Netware pouzivat fast-dir-move (rename adresaru)? (jinak prejmenovavame jen soubory, adresare se vytvari + stare prazdne mazou) (DUVOD: nekomu proste fast-dir-move na Novellu funguje a tak proste nechce cekat)
-        UseAsyncCopyAlg,        // jen Win7+ (starsi OS: vzdy FALSE): ma se pouzivat asynchronni algoritmus kopirovani souboru na sitove disky?
-        ReloadEnvVariables,     // mame pri zmene env promennych provadet regeneraci?
-        QuickRenameSelectAll,   // Quick Rename/Pack ma vybrat vse (ne pouze jmeno) -- lide nadavali na foru po zavedeni noveho oznacovani
-        EditNewSelectAll,       // EditNew ma vybrat vse (ne pouze jmeno) -- lide si vyzadali samostnou volbu, protoze nekdo zaklada vzdy .TXT (a vyhovuje mu ze prepise jen jmeno) a nekdo ruzne pripony a chce prepsat cely nazev
-        ShiftForHotPaths,       // ma se pouzivat Shift+1..0 pro go to hot path?
-        IconSpacingVert,        // vertikalni roztec v bodech mezi Icons/Thumbnails v panelu
-        IconSpacingHorz,        // horizontalni roztec v bodech mezi Icons v panelu
-        TileSpacingVert,        // vertikalni roztec v bodech mezi Tiles v panelu
-        ThumbnailSpacingHorz,   // horizontalni roztec v bodech mezi Thumbnails v panelu
-        ThumbnailSize,          // ctvercove rozmery thumbnailu v bodech
-                                //      PanelTooltip,         // v panelu jsou tooltipovany zkracene texty
-        KeepPluginsSorted,      // pluginy budou abecedne razeny (plugins manager, menu)
-        ShowSLGIncomplete,      // TRUE = je-li IsSLGIncomplete neprazdne, ukazat hlasku o nekompletnim prekladu (ze shanime prekladatele)
+        CloseShell,             // close the shell after launching the command line
+        ShowGrepErrors,         // should the Find Files dialog show error messages?
+        FindFullRowSelect,      // enable full row select in the Find dialog
+        MinBeepWhenDone,        // beep when processing ends in an inactive window
+        ClearReadOnly,          // remove the read-only flag during CD-ROM operations
+        PrimaryContextMenu,     // is a context menu displayed on the right mouse button?
+        NotHiddenSystemFiles,   // show hidden and system files?
+        AlwaysOnTop,            // should the main window stay Always On Top?
+                                //      FastDirectoryMove,     // is moving directories by renaming allowed?
+        SortUsesLocale,         // sort according to regional settings
+        SortDetectNumbers,      // detect numbers during sorting strings? (see StrCmpLogicalW)
+        SortNewerOnTop,         // show newer items first -- Salamander 2.0 behavior
+        SortDirsByName,         // sort directories by name
+        SortDirsByExt,          // emulate extensions for directories (sort by extension + show in separated Ext column)
+        SaveHistory,            // store histories into the configuration?
+        SaveWorkDirs,           // store the List of Working Directories?
+        EnableCmdLineHistory,   // keep history of the command line?
+        SaveCmdLineHistory,     // store the command line history?
+                                //      LantasticCheck,        // Lantastic 7.0 paranoid check (compare sizes after Copy)
+        OnlyOneInstance,        // allow just a single instance
+        ForceOnlyOneInstance,   // set from cmdline: Salamander should behave as if the OnlyOneInstance option is enabled
+        StatusArea,             // Salamander lives in the tray and won't appear in the taskbar when minimized
+        SingleClick,            // single click selects an item
+        TopToolBarVisible,      // toolbar visibility
+        PluginsBarVisible,      // toolbar visibility
+        MiddleToolBarVisible,   // toolbar visibility
+        BottomToolBarVisible,   // toolbar visibility
+        UserMenuToolBarVisible, // toolbar visibility
+        HotPathsBarVisible,     // toolbar visibility
+        DriveBarVisible,        // drive bar visibility
+        DriveBar2Visible,       // second drive bar visibility
+        UseSalOpen,             // should salopen.exe be used (otherwise association runs directly)
+        NetwareFastDirMove,     // should fast-dir-move (rename directories) be used on the Novell Netware? (otherwise rename files only, directories are created + old empty ones deleted) (REASON: for some users, fast-dir-move works on Novell and they don’t want to wait)
+        UseAsyncCopyAlg,        // Win7+ only (older OS: always FALSE): should asynchronous file copy algorithm be used on network drives?
+        ReloadEnvVariables,     // should we perform regeneration when environment variables change??
+        QuickRenameSelectAll,   // Quick Rename/Pack selects everything (not just the name) (users disliked the new selection)
+        EditNewSelectAll,       // EditNew should select everything (not just the name). users requested a separate option because some always create .TXT (and are fine with overwriting just the name) while others use different extensions and want to overwrite the entire filename
+        ShiftForHotPaths,       // use Shift+1..0 for go to hot path?
+        IconSpacingVert,        // vertical spacing in points between Icons/Thumbnails in the panel
+        IconSpacingHorz,        // horizontal spacing in points between Icons in the panel
+        TileSpacingVert,        // vertical spacing in points between Tiles in the panel
+        ThumbnailSpacingHorz,   // horizontal spacing in points between Thumbnails in the panel
+        ThumbnailSize,          // square dimensions of thumbnails in points
+                                //      PanelTooltip,         // shortened texts in panels get tooltips
+        KeepPluginsSorted,      // plugins will be sorted alphabetically (plugins manager, menu)
+        ShowSLGIncomplete,      // TRUE = if IsSLGIncomplete is not empty, show message about incomplete translation (we are looking for a translator)
 
         // Confirmation
         CnfrmFileDirDel,         // files or directory delete
@@ -246,11 +247,11 @@ struct CConfiguration
         CnfrmSendEmail,          // Show "Do you want to Email selected files?"
         CnfrmAddToArchive,       // Show "Do you want to update existing archive?"
         CnfrmCreateDir,          // Show "The directory doesn't exist. Do you want to create it?"
-        CnfrmChangeDirTC,        // uzivatel se pokousi menit cestu pomoci command line
-        CnfrmShowNamesToCompare, // User Menu: zobrazovat dialog se zadanim jmen pro Compare i v pripade, ze jsou obe jmena zadana
-        CnfrmDSTShiftsIgnored,   // Compare Directories: byly nalezeny pary souboru, kterych casy se lisi presne o jednu nebo dve hodiny, ukazat warning, ze tyto rozdily byly ignorovany?
-        CnfrmDSTShiftsOccured,   // Compare Directories: byly nalezeny pary souboru, kterych casy se lisi presne o jednu nebo dve hodiny, ukazat hint, ze se tyto rozdily daji ignorovat?
-        CnfrmCopyMoveOptionsNS,  // Copy/Move: jsou nastavene nejake "Options" a cil jsou FS/archiv; (options are NotSupported)
+        CnfrmChangeDirTC,        // user is trying to change path via the command line
+        CnfrmShowNamesToCompare, // User Menu: show the  dialog to enter names for Compare even if both names are already provided
+        CnfrmDSTShiftsIgnored,   // Compare Directories: file pairs were found with timestamps differing by exactly one or two hours; show warning that these differences were ignored?
+        CnfrmDSTShiftsOccured,   // Compare Directories: file pairs were found with timestamps differing by exactly one or two hours; show hint that these differences can be ignored?
+        CnfrmCopyMoveOptionsNS,  // Copy/Move: some Options are set but the target is FS/archive (options are NotSupported)
 
         // Drive specific
         DrvSpecFloppyMon,    // Use automatic refresh
@@ -272,56 +273,56 @@ struct CConfiguration
     int CompareByAttr;
     int CompareSubdirs;
     int CompareSubdirsAttr;
-    int CompareOnePanelDirs; // oznaci jmena adresaru existujici pouze v jednom panelu
-    int CompareMoreOptions;  // je dialog zobrazen v rozsirenem stavu?
-    int CompareIgnoreFiles;  // maji se ignorovat specifikovane nazvy souboru?
-    int CompareIgnoreDirs;   // maji se ignorovat specifikovane nazvy adresaru?
+    int CompareOnePanelDirs; // mark names of directories that exist only in one panel
+    int CompareMoreOptions;  // is the dialog displayed in extended mode?
+    int CompareIgnoreFiles;  // should specified filenames be ignored?
+    int CompareIgnoreDirs;   // should specified names of directories be ignored?
     CMaskGroup CompareIgnoreFilesMasks;
     CMaskGroup CompareIgnoreDirsMasks;
 
-    BOOL IfPathIsInaccessibleGoToIsMyDocs;   // TRUE = nepouzivat IfPathIsInaccessibleGoTo, tahat ze systemu rovnou Documents
-    char IfPathIsInaccessibleGoTo[MAX_PATH]; // cesta na kterou jdeme pokud nelze zustat na aktualni ceste v panelu (vypadek sitove cesty, vyndani media z removable drivu, atd.)
+    BOOL IfPathIsInaccessibleGoToIsMyDocs;   // TRUE = ignore IfPathIsInaccessibleGoTo and fetch Documents from the system directly
+    char IfPathIsInaccessibleGoTo[MAX_PATH]; // path used when the current one becomes inaccessible (network outage, media removed from the removable drive, ...)
 
-    DWORD LastUsedSpeedLimit; // pamet na posledni pouzity speed-limit (useri obvykle zadavaji kolem dokola jedno cislo)
+    DWORD LastUsedSpeedLimit; // remembers the last used speed limit (users often repeat one number)
 
-    BOOL QuickSearchEnterAlt; // je-li TRUE, bude vstup do QS pres Alt+pismeno
+    BOOL QuickSearchEnterAlt; // if it is TRUE, Quick Search is activated via Alt+letter
 
-    // pro zobrazeni polozek v panelu
-    int FullRowSelect;    // v detailed/brief view lze klikat kamkoliv
-    int FullRowHighlight; // v detailed view je za focusem jeste podbarven zbytek radku
-    int UseIconTincture;  // pro hidden/system/selected/focused polozky
-    int ShowPanelCaption; // bude v directory line zobrazen barevne panel caption?
-    int ShowPanelZoom;    // bude v directory line zobrazeno tlacitko Zoom?
+    // for displaying the items in the panel
+    int FullRowSelect;    // in detailed/brief view clicking anywhere selects the item
+    int FullRowHighlight; // in detailed view highlight continues past the focused column
+    int UseIconTincture;  // for hidden/system/selected/focused items
+    int ShowPanelCaption; // should the panel caption be shown in color in the directory line?
+    int ShowPanelZoom;    // should the Zoom button be shown in the directory line?
 
     char InfoLineContent[200];
 
-    int FileNameFormat; // jak upravit filename po nacteni z disku
+    int FileNameFormat; // how to adjust filename after reading from disk
 
-    int SizeFormat; // jak zobrazovat hodnoty ve sloupci Size: SIZE_FORMAT_xxx
+    int SizeFormat; // how to display values in the Size column: SIZE_FORMAT_xxx
 
-    int SpaceSelCalcSpace; // selecting with Space calculate occupied space
+    int SpaceSelCalcSpace; // when selecting with Space, calculate occupied space
 
     int UseTimeResolution; // compare directories: use time resolution
     int TimeResolution;    // compare directories: time resolution <0..3600>s
-    int IgnoreDSTShifts;   // compare directories: ignorovat casove rozdily presne jednu nebo dve hodiny? (reseni casovych posunu zpusobenych daylight-saving-time posuny a NTFS/FAT32/FTP/atd.)
+    int IgnoreDSTShifts;   // compare directories: ignore time differences of exactly one or two hours? (handles daylight-saving shifts and NTFS/FAT32/FTP etc.)
 
     int UseDragDropMinTime;
-    int DragDropMinTime; // minimalni doba v ms mezi mouse down a up (jinak nejde o drag&drop)
+    int DragDropMinTime; // minimum delay in ms between mouse down and up (otherwise it's not a drag&drop)
 
-    int HotPathAutoConfig; // automaticky otevre konfig po prirazeni z panelu
+    int HotPathAutoConfig; // automatically open configuration after assigning from a panel
 
-    char TopToolBar[400]; // obsah ToolBar
+    char TopToolBar[400]; // ToolBar contents
     char MiddleToolBar[400];
     char LeftToolBar[200];
     char RightToolBar[200];
 
-    int UseRecycleBin;       // 0 - do not use, 1 - for all, 2 - pro RecycleMasks
-    CMaskGroup RecycleMasks; // pole masek pro rozliseni toho, co posilat do kose
+    int UseRecycleBin;       // 0 - do not use, 1 - for all, 2 - for RecycleMasks
+    CMaskGroup RecycleMasks; // mask array determining what is sent to the Recycle Bin
 
-    // na co se citi chudak uzivatel -- budeme redukovat menu
+    // how experienced the user feels -- menus will be reduced accordingly
     BOOL SkillLevel; // SKILL_LEVEL_BEGINNER, SKILL_LEVEL_INTERMEDIATE, SKILL_LEVEL_ADVANCED
 
-    // destrukce historii je zajistena v metode ClearHistory()
+    // the history arrays are destroyed in the ClearHistory() method
     char* SelectHistory[SELECT_HISTORY_SIZE];
     char* CopyHistory[COPY_HISTORY_SIZE];
     char* EditHistory[EDIT_HISTORY_SIZE];
@@ -338,35 +339,35 @@ struct CConfiguration
     int FileListDestination; // 0=Clipboard 1=Viewer 2=File
 
     // Internal Viewer:
-    int CopyFindText; // po F3 z find files dialogu: kopirovat find text do viewru ?
+    int CopyFindText; // after F3 from Find Files dialog: copy find text to viewer?
 
-    int EOL_CRLF, // ruzne konce radku (zapnuto/vypnuto)
+    int EOL_CRLF, // various line endings (on/off)
         EOL_CR,
         EOL_LF,
         EOL_NULL;
 
     int DefViewMode,  // 0 = Auto-Select, 1 = Text, 2 = Hex
-        TabSize,      // velikost (pocet mezer) tabelatoru
-        SavePosition; // ukladat pozici okna/umistit dle hlavniho okna
+        TabSize,      // tab size (number of spaces per tab)
+        SavePosition; // store window position / place relative to the main window
 
-    CMaskGroup TextModeMasks; // pole masek pro soubory zobrazovane vzdy v textovem rezimu
-    CMaskGroup HexModeMasks;  // pole masek pro soubory zobrazovane vzdy v hexa rezimu
+    CMaskGroup TextModeMasks; // mask array for files always shown in text mode
+    CMaskGroup HexModeMasks;  // mask array for files always shown in hex mode
 
-    WINDOWPLACEMENT WindowPlacement; // neplatne, pokud SavePosition != TRUE
+    WINDOWPLACEMENT WindowPlacement; // invalid unless SavePosition != TRUE
 
-    BOOL WrapText; // wrapovani textu, nastavuje se z menu (zde jen kvuli ukladani)
+    BOOL WrapText; // text wrapping set via menu (here only for saving)
 
-    BOOL CodePageAutoSelect;  // automaticky rozpoznat kodovou stranku
-    char DefaultConvert[200]; // nazev kodovani, ktery chce user defaultne pouzivat
+    BOOL CodePageAutoSelect;  // automatically detect the code page
+    char DefaultConvert[200]; // encoding name the user wants to use by default
 
-    BOOL AutoCopySelection; // automaticky kopirovat selection na clipboard
+    BOOL AutoCopySelection; // automatically copy selection to the clipboard
 
-    BOOL GoToOffsetIsHex; // TRUE = offset se zadava hexa, jinak desitkove
+    BOOL GoToOffsetIsHex; // TRUE = offset entered as hex, otherwise decimal
 
     // rebar
-    int MenuIndex; // poradi bandu v rebaru, cislovano od nuly
-    int MenuBreak; // je band na novem radku?
-    int MenuWidth; // delka bandu
+    int MenuIndex; // zero-based order of the band in the rebar
+    int MenuBreak; // is the band on a new line?
+    int MenuWidth; // band width
     int TopToolbarIndex;
     int TopToolbarBreak;
     int TopToolbarWidth;
@@ -386,10 +387,10 @@ struct CConfiguration
     int GripsVisible;
 
     // Change drive
-    int ChangeDriveShowMyDoc;    // zobrazovat polozky Documents
-    int ChangeDriveShowAnother;  // zobrazovat polozku Another panel path
-    int ChangeDriveShowNet;      // zobrazovat polozku Network
-    int ChangeDriveCloudStorage; // zobrazovat polozky pro cloud storage (Google Drive, atd.)
+    int ChangeDriveShowMyDoc;    // display Documents items
+    int ChangeDriveShowAnother;  // display the Another panel path item
+    int ChangeDriveShowNet;      // display the Network item
+    int ChangeDriveCloudStorage; // display items for cloud storage (Google Drive, etc.)
 
     // Packers / Unpackers
     int UseAnotherPanelForPack;
@@ -397,77 +398,78 @@ struct CConfiguration
     int UseSubdirNameByArchiveForUnpack;
     int UseSimpleIconsInArchives;
 
-    BOOL UseEditNewFileDefault;        // ma se pouzivat EditNewFileDefault? (pokud ne, nacita se z resourcu, takze chodi prepinani jazyku)
-    char EditNewFileDefault[MAX_PATH]; // pouziva se v EditNewFile prikazu jako default, pokud je zapnuto UseEditNewFileDefault
+    BOOL UseEditNewFileDefault;        // should the EditNewFileDefault value be used? (if not, it is loaded from resources, thus language switching works)
+    char EditNewFileDefault[MAX_PATH]; // used as the default for the EditNewFile command when UseEditNewFileDefault is enabled
 
     // Tip of the Day
-    //  int  ShowTipOfTheDay;         // zobrazovat pri spusteni programu Tip dne
-    //  int  LastTipOfTheDay;         // index posledniho zobrazeneho tipu
+    //  int  ShowTipOfTheDay;         // display Tip of the Day at program startup
+    //  int  LastTipOfTheDay;         // index of the last displayed tip
 
-    // plug-iny
-    int LastPluginVer;   // ACTUAL_VERSION z plugins.ver (pro detekci doinstalovani plug-inu)
-    int LastPluginVerOP; // ACTUAL_VERSION z plugins.ver pro druhou platformu (x86/x64) - musime ukladat, jinak se nedozvime o premazani konfigurace druhou verzi, priklad: start x64, auto-save x64 s pridanym pictview, start x86, auto-save x86 s pridanym winscp (x86 pictview nepridala, uz byl v konfigu od x64), exit/save x86, a POZOR: exit/save x64 zrusi zaznam o winscp (x64 o winscp nic nevi a zustala bezet)
-
-    // globalky
-    BOOL ConfigWasImported; // ze souboru config.reg
+    // plug-ins
+    int LastPluginVer;   // ACTUAL_VERSION from plugins.ver (detect newly installed plugins)
+    int LastPluginVerOP; // ACTUAL_VERSION from plugins.ver for the other platform (x86/x64); must be saved, otherwise we won't know if the configuration was overwritten by the other version. 
+                         // Example: start x64, auto-save x64 with added pictview, start x86, auto-save x86 with added winscp (x86 pictview not added because it was already in the x64 config), exit/save x86, WARNING: exit/save x64 would remove the record of winscp (x64 knows nothing about winscp and continues running)
+    
+    // globals
+    BOOL ConfigWasImported; // from config.reg file
 
     // custom icon overlays
-    BOOL EnableCustomIconOverlays;    // TRUE = pouzivame icon overlays (viz ShellIconOverlays)
-    char* DisabledCustomIconOverlays; // alokovany seznam zakazanych icon overlay handleru (oddelovac je ';', escape-sekvence pro ';' je ";;")
+    BOOL EnableCustomIconOverlays;    // TRUE = icon overlays are used (see ShellIconOverlays)
+    char* DisabledCustomIconOverlays; // allocated list of disabled icon overlay handlers (separator is ';', escape - sequence for ';' is ';;')
 
 #ifndef _WIN64
-    // FIXME_X64_WINSCP - tohle reseni neni OK, vykoumat lepsi (oddelit x86 a x64 verze + udelat shared data)
-    BOOL AddX86OnlyPlugins; // TRUE = jeste jsme nestartovali x86 verzi Salama aktualni verze (poprve se musi pridat pluginy, ktere v x64 verzi chybi)
+    // FIXME_X64_WINSCP - this approach is not ideal. Find a better one (split x86 and x64 versions and share data)
+    BOOL AddX86OnlyPlugins; // TRUE = the x86 version of Salamander has not yet been started; on first run add plugins missing in the x64 build
 #endif                      // _WIN64
 
     CConfiguration();
     ~CConfiguration();
 
-    void ClearHistory(); // promazne drzene vsechny historie
+    void ClearHistory(); // clears all stored histories
 
-    int GetMainWindowIconIndex(); // vrati validni index do pole MainWindowIcons
+    int GetMainWindowIconIndex(); // returns a valid index in the MainWindowIcons array
 
-    BOOL PrepareRecycleMasks(int& errorPos); // pripravi pro pouziti recycle-bin masky
+    BOOL PrepareRecycleMasks(int& errorPos); // prepare recycle-bin masks for use
     BOOL AgreeRecycleMasks(const char* fileName, const char* fileExt);
 
-    DWORD LastFocusedPage;          // posledni navstivena stranka v dlg
-    DWORD ConfigurationHeight;      // vyska konfiguracniho dialogu v bodech
-    BOOL ViewersAndEditorsExpanded; // rozbaleni polozek ve strome
+    DWORD LastFocusedPage;          // last visited page in the dialog
+    DWORD ConfigurationHeight;      // height of the configuration dialog in points
+    BOOL ViewersAndEditorsExpanded; // expanded items in the tree
     BOOL PackersAndUnpackersExpanded;
 
     // Find dialog
     BOOL SearchFileContent;
     WINDOWPLACEMENT FindDialogWindowPlacement;
-    int FindColNameWidth; // sirka sloupcu Name ve Find dialogu
+    int FindColNameWidth; // width of the Name column in the Find dialog
 
     // Language
-    char LoadedSLGName[MAX_PATH];    // xxxxx.slg, ktere se naloadilo pri startu Salamandera
-    char SLGName[MAX_PATH];          // xxxxx.slg, ktere se priste pouzije pri startu Salamandera
-    int DoNotDispCantLoadPluginSLG;  // TRUE = nezobrazovat warning o tom, ze neni mozne loadnout stejne pojmenovane SLG do pluginu jako do Salama
-    int DoNotDispCantLoadPluginSLG2; // TRUE = nezobrazovat warning o tom, ze neni mozne loadnout SLG pluginu, ktere se pouzivalo posledne (user si ho vybral nebo bylo vybrano automaticky)
-    int UseAsAltSLGInOtherPlugins;   // TRUE = zkusit pouzit AltSLGName pro pluginy
-    char AltPluginSLGName[MAX_PATH]; // jen pokud je AltPluginSLGName TRUE: nahradni SLG modul pro pluginy (pro pripad, ze LoadedSLGName pro plugin neexistuje)
+    char LoadedSLGName[MAX_PATH];    // xxxxx.slg that was loaded at Salamander start
+    char SLGName[MAX_PATH];          // xxxxx.slg to use next time Salamander starts
+    int DoNotDispCantLoadPluginSLG;  // TRUE = suppress warning that an SLG with the same name cannot be loaded into the plugin as in Salamander
+    int DoNotDispCantLoadPluginSLG2; // TRUE = suppress warning that the SLG plugin used last time (either user-selected or auto-selected) cannot be loaded
+    int UseAsAltSLGInOtherPlugins;   // TRUE = try to use AltSLGName for plugins
+    char AltPluginSLGName[MAX_PATH]; // only if UseAsAltSLGInOtherPlugins is TRUE: fallback SLG module for plugins (if LoadedSLGName for plugin does not exist)
 
-    // Nazev adresare convert\\XXX\\convert.cfg, ze ktereho se nacita convert.cfg
+    // Directory name convert\\XXX\\convert.cfg from which convert.cfg is loaded
     char ConversionTable[MAX_PATH];
 
-    int TitleBarShowPath;                        // budeme v titulku zobrazovat cestu?
-    int TitleBarMode;                            // rezim zobrazeni title bar (TITLE_BAR_MODE_xxx)
-    int UseTitleBarPrefix;                       // zobrazovat prefix v title bar?
-    char TitleBarPrefix[TITLE_PREFIX_MAX];       // prefix pro title bar
-    int UseTitleBarPrefixForced;                 // cmdline varianta, ma prednost a neuklada se
-    char TitleBarPrefixForced[TITLE_PREFIX_MAX]; // cmdline varianta, ma prednost a neuklada se
-    int MainWindowIconIndex;                     // index ikonky v poli MainWindowIcons[], 0=default
-    int MainWindowIconIndexForced;               // cmdline varianta, ma prednost a neuklada se; -1 -- nenastaveno
+    int TitleBarShowPath;                        // will we display the path in the title bar?
+    int TitleBarMode;                            // title bar display mode (TITLE_BAR_MODE_xxx)
+    int UseTitleBarPrefix;                       // should prefix be shown in the title bar?
+    char TitleBarPrefix[TITLE_PREFIX_MAX];       // prefix for the title bar
+    int UseTitleBarPrefixForced;                 // command-line variant has priority and is not saved
+    char TitleBarPrefixForced[TITLE_PREFIX_MAX]; // command-line variant has priority and is not saved
+    int MainWindowIconIndex;                     // index of the icon in MainWindowIcons[], 0=default
+    int MainWindowIconIndexForced;               // command-line variant, has priority and is not saved; -1 -- unset
 
-    int ClickQuickRename; // kliknuti na focused polozku vyvola Quick Rename
+    int ClickQuickRename; // clicking the focused item triggers Quick Rename
 
-    // bitova pole, jednotlive bity reprezentuji disky a..z
-    // povolene hodnoty jsou 0 az 0x03FFFFFF (DRIVES_MASK)
-    DWORD VisibleDrives;   // disky zobrazovany Salamanderem (nesouvisi s NoDrives polocii)
-    DWORD SeparatedDrives; // disky, za ktere zobrazime v Alt+F1/2 menu separatory (zprehledneni)
+    // bit fields where individual bits represent drives A..Z
+    // allowed values are 0 to 0x03FFFFFF (DRIVES_MASK)
+    DWORD VisibleDrives;   // drives displayed by Salamander (independent from the NoDrives policy)
+    DWORD SeparatedDrives; // drives after which separators are shown in the Alt+F1/F2 menu (for clarity)
 
-    BOOL ShowSplashScreen; // ukazat splash screen behem startu
+    BOOL ShowSplashScreen; // show the splash screen during startup
 };
 
 //
@@ -489,7 +491,7 @@ public:
     void Leave();
 };
 
-extern CLoadSaveToRegistryMutex LoadSaveToRegistryMutex; // mutex pro synchronizaci load/save do Registry (dva procesy najednou nemuzou, ma to neblahe vysledky)
+extern CLoadSaveToRegistryMutex LoadSaveToRegistryMutex; // mutex for synchronizing load/save to the Registry (two processes at once cause problems)
 
 //
 // ****************************************************************************
@@ -669,9 +671,9 @@ protected:
     void EnableButtons();
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-    void DeleteSubmenuEnd(int index); // k vybranemu otevreni submenu ('index') smaze konec
+    void DeleteSubmenuEnd(int index); // for opening the selected submenu ('index') remove the closing item
 
-    void RefreshGroupIconInUMItems(); // po zmene barev se zmeni HGroupIcon, musime ho zmenit i v UserMenuItems
+    void RefreshGroupIconInUMItems(); // after changing colors, HGroupIcon changes; we must update it in UserMenuItems as well
 
     CUserMenuItems* UserMenuItems;
     CUserMenuItems* SourceUserMenuItems;
@@ -695,7 +697,7 @@ protected:
     BOOL DisableNotification;
     BOOL EditMode;
     int EditIndex;
-    BOOL LabelEdit; // editujem label
+    BOOL LabelEdit; // we are editing a label
 
 public:
     CCfgPageHotPath(BOOL editMode, int editIndex);
@@ -813,8 +815,8 @@ protected:
 class CCfgPageDrives : public CCommonPropSheetPage
 {
 protected:
-    BOOL IfPathIsInaccessibleGoToChanged; // TRUE = user editoval cestu IfPathIsInaccessibleGoTo
-    BOOL FocusIfPathIsInaccessibleGoTo;   // TRUE = provest focus editboxu "If Path Is Inaccessible Go To"
+    BOOL IfPathIsInaccessibleGoToChanged; // TRUE = the user edited the IfPathIsInaccessibleGoTo path
+    BOOL FocusIfPathIsInaccessibleGoTo;   // TRUE = to set focus to the "If Path Is Inaccessible Go To" edit box
 
 public:
     CCfgPageDrives(BOOL focusIfPathIsInaccessibleGoTo);
@@ -1150,7 +1152,7 @@ protected:
 
     void EnableControls();
 
-    // uzivatel chce promazat historie
+    // the user wants to clear histories
     void OnClearHistory();
 };
 
@@ -1160,7 +1162,7 @@ protected:
 class CConfigurationDlg : public CTreePropDialog
 {
 public:
-    // mode: 0 - normalni
+    // mode: 0 - normal
     //       1 - hot paths
     CConfigurationDlg(HWND parent, CUserMenuItems* userMenuItems, int mode = 0, int param = 0);
 
