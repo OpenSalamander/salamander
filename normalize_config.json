@@ -76,7 +76,7 @@
       "./src/plugins/winscp/putty/*",
       "./src/plugins/winscp/resource/*",
       "./src/plugins/winscp/windows/*",
-      "./tools/.venv/*"
+      "./tools/.venv/*",
       "./tools/comments/code_guard_stubs/*"
     ]
   }
