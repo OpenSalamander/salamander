@@ -407,9 +407,9 @@ struct CConfiguration
 
     // plug-ins
     int LastPluginVer;   // ACTUAL_VERSION from plugins.ver (detect newly installed plugins)
-    int LastPluginVerOP; // ACTUAL_VERSION from plugins.ver for the other platform (x86/x64); must be saved, otherwise we won't know if the configuration was overwritten by the other version. 
+    int LastPluginVerOP; // ACTUAL_VERSION from plugins.ver for the other platform (x86/x64); must be saved, otherwise we won't know if the configuration was overwritten by the other version.
                          // Example: start x64, auto-save x64 with added pictview, start x86, auto-save x86 with added winscp (x86 pictview not added because it was already in the x64 config), exit/save x86, WARNING: exit/save x64 would remove the record of winscp (x64 knows nothing about winscp and continues running)
-    
+
     // globals
     BOOL ConfigWasImported; // from config.reg file
 

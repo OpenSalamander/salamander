@@ -2,6 +2,8 @@
 .DS_Store
 .cache
 Thumbs.db
+# Python artifacts
+/tools/salamander_tools.egg-info/
 # Visual Studio cache/options directory
 .vs/
 *.aps

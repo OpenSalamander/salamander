@@ -109,7 +109,7 @@ public:
     // 'errorPos' contains the index of the character (in the provided mask group) that caused the error.
     // If memory is low, 'errorPos' is set to 0.
     // If masksString == NULL, CMaskGroup::MasksString is used; otherwise the
-    // provided 'masksString' is used (in that case, AgreeMasks can be called — 
+    // provided 'masksString' is used (in that case, AgreeMasks can be called —
     // CMaskGroup::MasksString is ignored).
     BOOL PrepareMasks(int& errorPos, const char* masksString = NULL);
 
