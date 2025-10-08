@@ -10,10 +10,10 @@ BOOL MinBeepWhenDone;
 
 LPWSTR CopyOrMoveHistory[MAX_HISTORY_ENTRIES];
 
-HFONT EnvFont = NULL; // font prostredi (edit, toolbar, header, status)
-int EnvFontHeight;    // vyska fontu
+HFONT EnvFont = NULL; // environment font (edit, toolbar, header, status)
+int EnvFontHeight;    // font height
 
-//BOOL HaveForMicrosoftSanfSerif; // v systemu je nainstalovany font Microsoft Sans Serif
+//BOOL HaveForMicrosoftSanfSerif; // the system has the Microsoft Sans Serif font installed
 
 BOOL CreateEnvFont()
 {
@@ -28,11 +28,11 @@ BOOL CreateEnvFont()
     EnvFont = CreateFontIndirect(lf);
     if (EnvFont == NULL)
     {
-        TRACE_E("Font se nepovedl vytvorit.");
+        TRACE_E("Failed to create the font.");
         return FALSE;
     }
 
-    // zjistime si vysku
+    // determine the height
     HDC dc = GetDC(NULL);
     HFONT oldFont = (HFONT)SelectObject(dc, EnvFont);
     TEXTMETRIC tm;
@@ -181,7 +181,7 @@ void HistoryComboBox(CTransferInfoEx& ti, int id, LPWSTR text, int textMax,
 
         int toMove = historySize - 1;
 
-        // podivame jestli uz stejna polozka neni v historii
+        // check whether the same item is already in the history
         int i;
         for (i = 0; i < historySize; i++)
         {
@@ -195,17 +195,17 @@ void HistoryComboBox(CTransferInfoEx& ti, int id, LPWSTR text, int textMax,
                 break;
             }
         }
-        // alokujeme si pamet pro novou polozku
+        // allocate memory for the new entry
         LPWSTR ptr = new WCHAR[wcslen(text) + 1];
         if (ptr)
         {
-            // uvolnime pamet vymazavane polozky
+            // free the memory of the entry being deleted
             if (history[toMove])
                 delete[] history[toMove];
-            // vytvorime misto pro cestu kterou budeme ukladat
+            // make room for the path we are going to store
             for (i = toMove; i > 0; i--)
                 history[i] = history[i - 1];
-            // ulozime cestu
+            // store the path
             wcscpy(ptr, text);
             history[0] = ptr;
         }
@@ -280,8 +280,8 @@ BOOL CDialogEx::ValidateData()
             HWND wnd = GetFocus();
             while (wnd != NULL && wnd != ctrl)
                 wnd = GetParent(wnd);
-            if (wnd == NULL) // fokusime jen pokud neni ctrl predek GetFocusu
-            {                // jako napr. edit-line v combo-boxu
+            if (wnd == NULL) // focus only if the control is not an ancestor of GetFocus
+            {                // such as the edit line in a combo box
                 SendMessage(HWindow, WM_NEXTDLGCTL, (WPARAM)ctrl, TRUE);
             }
         }
@@ -304,8 +304,8 @@ BOOL CDialogEx::TransferData(CTransferType type)
             HWND wnd = GetFocus();
             while (wnd != NULL && wnd != ctrl)
                 wnd = GetParent(wnd);
-            if (wnd == NULL) // fokusime jen pokud neni ctrl predek GetFocusu
-            {                // jako napr. edit-line v combo-boxu
+            if (wnd == NULL) // focus only if the control is not an ancestor of GetFocus
+            {                // such as the edit line in a combo box
                 SendMessage(HWindow, WM_NEXTDLGCTL, (WPARAM)ctrl, TRUE);
             }
         }
@@ -327,8 +327,8 @@ CDialogEx::Execute()
                            (DLGPROC)CDialog::CDialogProc, (LPARAM)this);
     //  }
 
-    // nemame Microsoft Sans Serif musime ho v template vymenit
-    // za MS Shell Dlg
+    // if we don't have Microsoft Sans Serif we must replace it in the template
+    // with MS Shell Dlg
     /*
   DWORD size;
   LPDLGTEMPLATE templ = LoadDlgTemplate(ResID, size);
@@ -355,8 +355,8 @@ HWND CDialogEx::Create()
                               (DLGPROC)CDialog::CDialogProc, (LPARAM)this);
     //  }
 
-    // nemame Microsoft Sans Serif musime ho v template vymenit
-    // za MS Shell Dlg
+    // if we don't have Microsoft Sans Serif we must replace it in the template
+    // with MS Shell Dlg
     /*
   DWORD size;
   LPDLGTEMPLATE templ = LoadDlgTemplate(ResID, size);
@@ -478,7 +478,7 @@ void CNewValDialog::Transfer(CTransferInfoEx& ti)
             ti.ErrorOn(IDC_TYPE);
             return;
         }
-        *Type = (DWORD)SendMessage(combo, CB_GETITEMDATA, ret, 0); // x64 - Type je DWORD
+        *Type = (DWORD)SendMessage(combo, CB_GETITEMDATA, ret, 0); // x64 - Type is DWORD
     }
     CNewKeyDialog::Transfer(ti);
 }
@@ -503,7 +503,7 @@ void CEditValDialog::Validate(CTransferInfoEx& ti)
         ti.ErrorOn(IDC_TYPE);
         return;
     }
-    *Type = (DWORD)SendMessage(combo, CB_GETITEMDATA, ret, 0); // x64 - Type je DWORD
+    *Type = (DWORD)SendMessage(combo, CB_GETITEMDATA, ret, 0); // x64 - Type is DWORD
 
     if (*Type == REG_DWORD || *Type == REG_DWORD_BIG_ENDIAN || *Type == REG_QWORD)
     {
@@ -589,7 +589,7 @@ void CEditValDialog::Transfer(CTransferInfoEx& ti)
                 HexStringToNumber(buffer, d);
             else
                 DecStringToNumber(buffer, d);
-            if (*Type == REG_DWORD_BIG_ENDIAN) // otocime endiany
+            if (*Type == REG_DWORD_BIG_ENDIAN) // reverse the endianness
             {
                 d = d >> 24 | (d & 0x00FF0000) >> 8 | (d & 0x0000FF00) << 8 | (d & 0x000000FF) << 24;
             }
@@ -640,7 +640,7 @@ CEditValDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         wParam, lParam);
     switch (uMsg)
     {
-        /* j.r. pokud nastavime spravne tab-order, neni toto treba a navic bude edit selected
+        /* j.r. if we set the tab order correctly, this is not needed and the edit will be selected too
     case WM_INITDIALOG:
     {
       CNewValDialog::DialogProc(uMsg, wParam, lParam);
@@ -661,7 +661,7 @@ CEditValDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 int ret = (int)SendMessage(combo, CB_GETCURSEL, 0, 0);
                 if (ret == CB_ERR)
                     break;
-                *Type = (DWORD)SendMessage(combo, CB_GETITEMDATA, ret, 0); // x64 - Type je DWORD
+                *Type = (DWORD)SendMessage(combo, CB_GETITEMDATA, ret, 0); // x64 - Type is DWORD
 
                 DWORD show = *Type == REG_DWORD || *Type == REG_DWORD_BIG_ENDIAN || *Type == REG_QWORD ? SW_SHOW : SW_HIDE;
                 ShowWindow(GetDlgItem(HWindow, IDR_HEX), show);
@@ -698,7 +698,7 @@ CEditValDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 int ret = (int)SendMessage(combo, CB_GETCURSEL, 0, 0);
                 if (ret == CB_ERR)
                     break;
-                *Type = (DWORD)SendMessage(combo, CB_GETITEMDATA, ret, 0); // x64 - Type je DWORD
+                *Type = (DWORD)SendMessage(combo, CB_GETITEMDATA, ret, 0); // x64 - Type is DWORD
 
                 char buffer[21];
                 HWND dataHWnd = GetDlgItem(HWindow, IDE_DATA);
@@ -761,11 +761,11 @@ CEditValDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 BOOL CRawEditValDialog::ExportToTempFile()
 {
     CALL_STACK_MESSAGE1("CRawEditValDialog::ExportToTempFile()");
-    // uz je vyexportovany
+    // already exported
     if (*TempFile)
         return TRUE;
 
-    // vytvorime jmeno tmp soubor
+    // create a temp file name
     if (!SG->SalGetTempFileName(NULL, "SAL", TempDir, FALSE, NULL))
         return Error(IDS_CREATETEMP);
 
@@ -777,7 +777,7 @@ BOOL CRawEditValDialog::ExportToTempFile()
     TempFile[len + tlen] = 0;
     ReplaceUnsafeCharacters(TempFile + tlen);
 
-    // vytvorime/otevreme tmp soubor
+    // create/open the temp file
     HANDLE file = CreateFile(TempFile, GENERIC_WRITE, FILE_SHARE_READ, NULL,
                              CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (file == INVALID_HANDLE_VALUE)
@@ -805,7 +805,7 @@ BOOL CRawEditValDialog::ExportToTempFile()
 BOOL CRawEditValDialog::ImportFromTempFile()
 {
     CALL_STACK_MESSAGE1("CRawEditValDialog::ImportFromTempFile()");
-    // vytvorime/otevreme tmp soubor
+    // create/open the temp file
     HANDLE file = CreateFile(TempFile, GENERIC_READ, FILE_SHARE_READ, NULL,
                              OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (file == INVALID_HANDLE_VALUE)
@@ -857,7 +857,7 @@ void CRawEditValDialog::Transfer(CTransferInfoEx& ti)
     if (!ti.IsGood())
         return;
 
-    // nacteme nova data z tempu
+    // load the new data from the temp file
     if (Edit && !ImportFromTempFile())
     {
         ti.ErrorOn(IDB_EDIT);
@@ -872,7 +872,7 @@ CRawEditValDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         wParam, lParam);
     switch (uMsg)
     {
-        /* j.r. pokud nastavime spravne tab-order, neni toto treba a navic bude edit selected
+        /* j.r. if we set the tab order correctly, this is not needed and the edit will be selected too
     case WM_INITDIALOG:
     {
       CNewValDialog::DialogProc(uMsg, wParam, lParam);
@@ -1001,7 +1001,7 @@ CConfigDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             RECT r;
             GetWindowRect((HWND)lParam, &r);
 
-            // vytvorime menu
+            // create the menu
             MENU_TEMPLATE_ITEM templ[] =
                 {
                     {MNTT_PB, 0, 0, 0, -1, 0, NULL},
@@ -1046,7 +1046,7 @@ CConfigDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 else
                 {
-                    // jeste pro jistotu overime
+                    // double-check just to be sure
                     if (cmd < 30)
                     {
                         char var[100];
@@ -1065,7 +1065,7 @@ CConfigDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             RECT r;
             GetWindowRect((HWND)lParam, &r);
 
-            // vytvorime menu
+            // create the menu
             MENU_TEMPLATE_ITEM templ[] =
                 {
                     {MNTT_PB, 0, 0, 0, -1, 0, NULL},
@@ -1123,7 +1123,7 @@ CConfigDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 else
                 {
-                    // jeste pro jistotu overime
+                    // double-check just to be sure
                     if (cmd < 19)
                     {
                         char var[100];
@@ -1142,7 +1142,7 @@ CConfigDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             RECT r;
             GetWindowRect((HWND)lParam, &r);
 
-            // vytvorime menu
+            // create the menu
             MENU_TEMPLATE_ITEM templ[] =
                 {
                     {MNTT_PB, 0, 0, 0, -1, 0, NULL},
@@ -1175,7 +1175,7 @@ CConfigDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 else
                 {
-                    // jeste pro jistotu overime
+                    // double-check just to be sure
                     if (cmd < 6)
                     {
                         char var[100];

@@ -65,7 +65,7 @@ void SetComboCurSelData(HWND hWnd, DWORD data)
 {
     //  TRACE_I("SetComboCurSelData");
 
-    // pocet polozek
+    // number of items
     int itemCount = (int)SendMessage(hWnd, CB_GETCOUNT, (WPARAM)0, (LPARAM)0);
     int i;
     for (i = 0; i < itemCount; i++)
@@ -99,7 +99,7 @@ void CCompressParamsDlg::Transfer(CTransferInfo& ti)
     // compression level combo-box
     if (ti.Type == ttDataToWindow)
     {
-        // pocet polozek
+        // number of items
         int itemCount = (int)SendMessage(GetDlgItem(HWindow, IDCfgCompressLevel), CB_GETCOUNT, (WPARAM)0, (LPARAM)0);
         for (i = 0; i < itemCount; i++)
         {
@@ -123,7 +123,7 @@ void CCompressParamsDlg::Transfer(CTransferInfo& ti)
     // set compression method
     if (ti.Type == ttDataToWindow)
     {
-        // pocet polozek
+        // number of items
         int itemCount = (int)SendMessage(GetDlgItem(HWindow, IDCfgCompressMethod), CB_GETCOUNT, (WPARAM)0, (LPARAM)0);
         for (i = 0; i < itemCount; i++)
         {
@@ -131,7 +131,7 @@ void CCompressParamsDlg::Transfer(CTransferInfo& ti)
             if (data == (DWORD)CompressParams->Method)
             {
                 SendMessage(GetDlgItem(HWindow, IDCfgCompressMethod), CB_SETCURSEL, (WPARAM)i, (LPARAM)0);
-                // poslat si notifikaci :)
+                // send ourselves a notification :)
                 SendMessage(HWindow, WM_COMMAND, MAKEWPARAM(IDCfgCompressMethod, CBN_SELENDOK), (LPARAM)GetDlgItem(HWindow, IDCfgCompressMethod));
             }
         }
@@ -149,7 +149,7 @@ void CCompressParamsDlg::Transfer(CTransferInfo& ti)
     // set dictionary size
     if (ti.Type == ttDataToWindow)
     {
-        // pocet polozek
+        // number of items
         int itemCount = (int)SendMessage(GetDlgItem(HWindow, IDCfgDictSize), CB_GETCOUNT, (WPARAM)0, (LPARAM)0);
         for (i = 0; i < itemCount; i++)
         {
@@ -171,7 +171,7 @@ void CCompressParamsDlg::Transfer(CTransferInfo& ti)
     // set word size
     if (ti.Type == ttDataToWindow)
     {
-        // pocet polozek
+        // number of items
         int itemCount = (int)SendMessage(GetDlgItem(HWindow, IDCfgWordSize), CB_GETCOUNT, (WPARAM)0, (LPARAM)0);
         for (i = 0; i < itemCount; i++)
         {
@@ -201,10 +201,10 @@ void CCompressParamsDlg::FillCompressLevelCombo()
     int i;
     for (i = 0; i < sizeof(CompressLevel) / sizeof(CResDataPair); i++)
     {
-        // vlozit polozku
+        // insert an item
         int res = (int)SendMessage(GetDlgItem(HWindow, IDCfgCompressLevel), CB_ADDSTRING, 0, (LPARAM)LoadStr(CompressLevel[i].ResId));
         if (res != CB_ERR)
-            // nastavit data
+            // set the data
             SendMessage(GetDlgItem(HWindow, IDCfgCompressLevel), CB_SETITEMDATA, (WPARAM)res, (LPARAM)CompressLevel[i].Data);
     }
 }
@@ -216,10 +216,10 @@ void CCompressParamsDlg::FillCompressMethodCombo()
     int i;
     for (i = 0; i < sizeof(CompressMethod) / sizeof(CResDataPair); i++)
     {
-        // vlozit polozku
+        // insert an item
         int res = (int)SendMessage(GetDlgItem(HWindow, IDCfgCompressMethod), CB_ADDSTRING, 0, (LPARAM)LoadStr(CompressMethod[i].ResId));
         if (res != CB_ERR)
-            // nastavit data
+            // set the data
             SendMessage(GetDlgItem(HWindow, IDCfgCompressMethod), CB_SETITEMDATA, (WPARAM)res, (LPARAM)CompressMethod[i].Data);
     }
 }
@@ -231,12 +231,12 @@ void CCompressParamsDlg::FillDictSizeCombo(int values[], int size)
     int i;
     for (i = 0; i < size; i++)
     {
-        // vlozit polozku
+        // insert an item
         TCHAR buffer[64];
         FormatBytes(buffer, values[i]);
         int res = (int)SendMessage(GetDlgItem(HWindow, IDCfgDictSize), CB_ADDSTRING, 0, (LPARAM)buffer);
         if (res != CB_ERR)
-            // nastavit data
+            // set the data
             SendMessage(GetDlgItem(HWindow, IDCfgDictSize), CB_SETITEMDATA, (WPARAM)res, (LPARAM)values[i]);
     }
 }
@@ -248,12 +248,12 @@ void CCompressParamsDlg::FillWordSizeCombo(int values[], int size)
     int i;
     for (i = 0; i < size; i++)
     {
-        // vlozit polozku
+        // insert an item
         TCHAR buffer[64];
         _stprintf(buffer, _T("%d"), values[i]);
         int res = (int)SendMessage(GetDlgItem(HWindow, IDCfgWordSize), CB_ADDSTRING, 0, (LPARAM)buffer);
         if (res != CB_ERR)
-            // nastavit data
+            // set the data
             SendMessage(GetDlgItem(HWindow, IDCfgWordSize), CB_SETITEMDATA, (WPARAM)res, (LPARAM)values[i]);
     }
 }
@@ -293,7 +293,7 @@ void CCompressParamsDlg::OnChangeMethod()
 
 void CCompressParamsDlg::OnChangeLevel()
 {
-    // kdyz se meni compression level, tak se meni i default hodnota pro dict size podle compression level, ale jen u LZMA
+    // when the compression level changes, adjust the default dict size according to the level, but only for LZMA
     int curSel = (int)SendMessage(GetDlgItem(HWindow, IDCfgCompressMethod), CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
     if (curSel != CB_ERR)
     {
@@ -389,7 +389,7 @@ CCompressParamsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         SetComboCurSelData(GetDlgItem(HWindow, IDCfgDictSize), CompressParams->DictSize);
         SetComboCurSelData(GetDlgItem(HWindow, IDCfgWordSize), CompressParams->WordSize);
 
-        break; // chci focus od DefDlgProc
+        break; // request focus from DefDlgProc
     }
 
     case WM_COMMAND:
@@ -431,10 +431,10 @@ CCommonDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     switch (uMsg)
     {
     case WM_INITDIALOG:
-        // horizontalni i vertikalni vycentrovani dialogu k parentu
+        // horizontally and vertically center the dialog relative to the parent
         if (Parent != NULL)
             SalamanderGeneral->MultiMonCenterWindow(HWindow, Parent, TRUE);
-        break; // chci focus od DefDlgProc
+        break; // request focus from DefDlgProc
 
     case WM_COMMAND:
         break;
@@ -483,7 +483,7 @@ CConfigurationDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         EnableWindow(GetDlgItem(HWindow, IDC_CFG_LISTINFOMETHOD), Cfg.ExtendedListInfo);
 
         CompressParamsDlg.HWindow = HWindow;
-        break; // chci focus od DefDlgProc
+        break; // request focus from DefDlgProc
     }
 
     case WM_COMMAND:
@@ -565,14 +565,14 @@ CExtOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         if (!CreateChilds())
         {
-            DestroyWindow(HWindow); // chyba -> neotevreme dialog
-            return FALSE;           // konec zpracovani
+            DestroyWindow(HWindow); // error -> do not open the dialog
+            return FALSE;           // stop processing
         }
 
         // set archive name
         SetWindowText(GetDlgItem(HWindow, IDC_NA_ARCHIVE), Archive);
 
-        // defaultne soubory nekryptujeme
+        // do not encrypt files by default
         EnableWindow(GetDlgItem(HWindow, IDC_NA_PASSWORD), FALSE);
         EnableWindow(GetDlgItem(HWindow, IDC_NA_PASSWORD_TXT), FALSE);
         EnableWindow(GetDlgItem(HWindow, IDC_NA_CONFIRMPASSWORD), FALSE);
@@ -580,14 +580,14 @@ CExtOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         CompressParamsDlg.HWindow = HWindow;
 
-        break; // chci focus od DefDlgProc
+        break; // request focus from DefDlgProc
     }
 
     case WM_COMMAND:
     {
         if (LOWORD(wParam) == IDOK)
         {
-            // zkontrolovat hesla
+            // validate passwords
             if (TransferData(ttDataFromWindow))
                 if (Encrypt)
                 {
@@ -666,7 +666,7 @@ CEnterPasswordDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_COMMAND:
     {
         /*
-      // priprava pro skip a skip_all
+      // preparation for skip and skip_all
       switch (LOWORD(wParam))
       {
         case IDC_SKIP: return EndDialog(HWindow, DIALOG_SKIP);

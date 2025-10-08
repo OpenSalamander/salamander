@@ -29,4 +29,4 @@ typedef struct
 const char* ID3TAGV1_GetGenreStr(BYTE genre);
 
 BOOL ID3TAGV1_Read(FILE* f, ID3TAGV1* ph);
-BOOL ID3TAGV1_Decode(ID3TAGV1* ph, ID3TAGV1_DECODED* phd); //pozor, modifikuje (kvuli uspore) i vstupni 'ph'
+BOOL ID3TAGV1_Decode(ID3TAGV1* ph, ID3TAGV1_DECODED* phd); // beware, it also modifies the input 'ph' (to save work)

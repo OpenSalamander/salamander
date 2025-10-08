@@ -14,8 +14,8 @@ BOOL GenerateMiniDump(CMinidumpParams* minidumpParams, CSalmonSharedMemory* mem,
     *overSize = FALSE;
     char szPath[MAX_PATH];
     ::GetModuleFileName(NULL, szPath, MAX_PATH);
-    *(strrchr(szPath, '\\')) = 0;      // bezime z utils\salmon.exe
-    strcat_s(szPath, "\\dbghelp.dll"); // chceme novou verzi, nejmene 6.1 a ta na starsich W2K/XP neni
+    *(strrchr(szPath, '\\')) = 0;      // we are running from utils\\salmon.exe
+    strcat_s(szPath, "\\dbghelp.dll"); // we want a newer version, at least 6.1, which older W2K/XP do not have
     static HMODULE hDbgHelp;
     hDbgHelp = LoadLibrary(szPath);
     if (hDbgHelp != NULL)
@@ -30,15 +30,15 @@ BOOL GenerateMiniDump(CMinidumpParams* minidumpParams, CSalmonSharedMemory* mem,
         if (funcMiniDumpWriteDump != NULL && funcMakeSureDirectoryPathExists != NULL)
         {
             char szFileName[MAX_PATH];
-            strcpy(szFileName, mem->BugPath); // cesta je zakoncena zpetnym lomitkem
+            strcpy(szFileName, mem->BugPath); // the path ends with a trailing backslash
             int bugPathLen = (int)strlen(mem->BugPath);
             if (bugPathLen > 0 && mem->BugPath[bugPathLen - 1] != '\\')
                 strcat(szFileName, "\\");
             strcat(szFileName, mem->BaseName);
             strcat(szFileName, ".DMP");
 
-            // cesta jeste nemusi existovat - vytvorime ji
-            funcMakeSureDirectoryPathExists(szFileName); // nazev souboru je ignorovan
+            // the path may not exist yet - create it
+            funcMakeSureDirectoryPathExists(szFileName); // the file name is ignored
 
             HANDLE hDumpFile;
             hDumpFile = CreateFile(szFileName, GENERIC_READ | GENERIC_WRITE,
@@ -53,9 +53,9 @@ BOOL GenerateMiniDump(CMinidumpParams* minidumpParams, CSalmonSharedMemory* mem,
                 expParam.ExceptionPointers = &ePtrs;
                 expParam.ClientPointers = FALSE;
 
-                // skvele vysvetleni flagu (lepsi nez na MSDN): http://www.debuginfo.com/articles/effminidumps.html#minidumptypes
+                // great explanation of the flags (better than on MSDN): http://www.debuginfo.com/articles/effminidumps.html#minidumptypes
                 static MINIDUMP_TYPE dumpType;
-                // nektere z flagu vyzaduji dbghelp.dll 6.1 - proto mame u Salamandera vlastni
+                // some of the flags require dbghelp.dll 6.1 - that is why Salamander ships its own copy
                 if (smallMinidump)
                 {
                     dumpType = (MINIDUMP_TYPE)(MiniDumpWithProcessThreadData |
@@ -63,7 +63,7 @@ BOOL GenerateMiniDump(CMinidumpParams* minidumpParams, CSalmonSharedMemory* mem,
                                                MiniDumpWithFullMemoryInfo |
                                                MiniDumpWithThreadInfo |
                                                MiniDumpWithUnloadedModules |
-                                               MiniDumpIgnoreInaccessibleMemory); // v zadnem pripade si neprejeme selhani funkce
+                                               MiniDumpIgnoreInaccessibleMemory); // under no circumstances do we want the function to fail
                 }
                 else
                 {
@@ -73,7 +73,7 @@ BOOL GenerateMiniDump(CMinidumpParams* minidumpParams, CSalmonSharedMemory* mem,
                                                MiniDumpWithFullMemoryInfo |
                                                MiniDumpWithThreadInfo |
                                                MiniDumpWithUnloadedModules |
-                                               MiniDumpIgnoreInaccessibleMemory); // v zadnem pripade si neprejeme selhani funkce
+                                               MiniDumpIgnoreInaccessibleMemory); // under no circumstances do we want the function to fail
                 }
 
                 BOOL bMiniDumpSuccessful;
@@ -87,15 +87,15 @@ BOOL GenerateMiniDump(CMinidumpParams* minidumpParams, CSalmonSharedMemory* mem,
                 }
                 else
                 {
-                    // generovani selhava pod W7 pri x64/Debug verzi spustene z MSVC; pokud ji spustim mimo MSVC, vse slape
+                    // generation fails on W7 with the x64/Debug build launched from MSVC; if I run it outside MSVC, everything works fine
                     DWORD err = GetLastError();
                     sprintf(minidumpParams->ErrorMessage, LoadStr(IDS_SALMON_MINIDUMP_CALL, HLanguage), err);
                 }
-                // at uz vratilo generovani minidumpu TRUE nebo FALSE, omrknem velikost vyprodukovaneho dumpu
+                // regardless of whether minidump generation returned TRUE or FALSE, check the size of the produced dump
                 DWORD sizeHigh = 0;
                 DWORD sizeLow = GetFileSize(hDumpFile, &sizeHigh);
                 if (sizeLow != INVALID_FILE_SIZE && (sizeHigh > 0 || sizeLow > 50 * 1000 * 1024))
-                    *overSize = TRUE; // pokud je vysledek vetsi nez 50MB, dame to vedet ven, aby se zkusila jeste mensi verze
+                    *overSize = TRUE; // if the result exceeds 50 MB, report it so a smaller version can be tried
                 CloseHandle(hDumpFile);
             }
             else
@@ -119,8 +119,8 @@ BOOL GenerateMiniDump(CMinidumpParams* minidumpParams, CSalmonSharedMemory* mem,
 
 extern BOOL DirExists(const char* dirName);
 
-// na zaklade aktualniho casu a kratke verze Salamandera nageneruje nazev (bez pripony)
-// ze ktereho se nasledne odvodi nazev pro textovy bug reportu a pro minidump
+// based on the current time and the short Salamander version, generate a name (without an extension)
+// from which the names for the text bug report and for the minidump are derived
 void GetReportBaseName(char* name, int nameSize, const char* targetPath, const char* shortName, DWORD64 uid, SYSTEMTIME lt)
 {
     static char year[10];
@@ -134,15 +134,15 @@ void GetReportBaseName(char* name, int nameSize, const char* targetPath, const c
 
     sprintf_s(name, nameSize, "%I64X-%s-%s%02u%02u-%02u%02u%02u",
               uid, shortName, year, lt.wMonth, lt.wDay, lt.wHour, lt.wMinute, lt.wSecond);
-    CharUpperBuff(name, nameSize); // x64/x86 je lowercase, chceme vse upcase
+    CharUpperBuff(name, nameSize); // x64/x86 is lowercase, we want everything uppercased
 
-    // pokud cilova cesta existuje, mohlo by dojit ke kolizi (nepravdepodobne diky casu v nazvu)
+    // if the target path exists, there could be a collision (unlikely thanks to the timestamp in the name)
     if (targetPath != NULL && DirExists(targetPath))
     {
         static char findPath[MAX_PATH];
         static char findMask[MAX_PATH];
         int i;
-        for (i = 0; i < 100; i++) // resime 1 - 99, pak to vzdavame
+        for (i = 0; i < 100; i++) // cover 1 - 99, then give up
         {
             strcpy(findMask, name);
             if (i > 0)
@@ -158,7 +158,7 @@ void GetReportBaseName(char* name, int nameSize, const char* targetPath, const c
             if (hFind != INVALID_HANDLE_VALUE)
                 NOHANDLES(FindClose(hFind));
             else
-                break; // konflikt nenalezen
+                break; // no conflict found
         }
         if (i > 0)
             sprintf(name + strlen(name), "-%d", i);
@@ -172,12 +172,12 @@ DWORD WINAPI MinidumpThreadF(void* param)
     SYSTEMTIME lt;
     GetLocalTime(&lt);
 
-    //char baseName[MAX_PATH];
+    // char baseName[MAX_PATH];
     GetReportBaseName(SalmonSharedMemory->BaseName, sizeof(SalmonSharedMemory->BaseName),
                       SalmonSharedMemory->BugPath, SalmonSharedMemory->BugName,
                       SalmonSharedMemory->UID, lt);
 
-    // nagenerujeme minidump
+    // generate the minidump
     BOOL overSize;
     BOOL ret = GenerateMiniDump(minidumpParams, SalmonSharedMemory, FALSE, &overSize);
 
@@ -187,15 +187,15 @@ DWORD WINAPI MinidumpThreadF(void* param)
                           SalmonSharedMemory->BugPath, SalmonSharedMemory->BugName,
                           SalmonSharedMemory->UID, lt);
 
-        // nagenerujeme minidump
+        // generate the minidump
         ret = GenerateMiniDump(minidumpParams, SalmonSharedMemory, TRUE, &overSize);
     }
 
-    // dame do Salamandera vedet, ze je minidump vytvoreny
-    // v tutu chvili se Salamander pokusi ulozit na disk textovy bug report a ukonci se
+    // let Salamander know that the minidump has been created
+    // at this moment Salamander attempts to write the text bug report to disk and then exits
     SetEvent(SalmonSharedMemory->Done);
 
-    // pockame az Salamander report ulozi nebo prestane existovat; muze byt ve spatnem stavu, takze cekame jen omezenou dobu
+    // wait until Salamander saves the report or terminates; it may be in a bad state, so wait only for a limited time
     DWORD res = WaitForSingleObject(SalmonSharedMemory->Process, 10000);
 
     minidumpParams->Result = ret;

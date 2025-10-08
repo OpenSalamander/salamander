@@ -5,7 +5,7 @@
 
 // ****************************************************************************
 //
-// CPluginFSInterface - treti cast
+// CPluginFSInterface - third part
 //
 //
 
@@ -16,7 +16,7 @@ BOOL SafeOpenKey(int root, LPWSTR key, DWORD sam, HKEY& hKey,
                  int errorTitle, LPBOOL skip, LPBOOL skipAll)
 {
     CALL_STACK_MESSAGE_NONE
-    //  CALL_STACK_MESSAGE4("SafeOpenKey(%d, , 0x%X, , %d, , )", root, sam, errorTitle); // Petr: prilis pomaly call-stack
+    //  CALL_STACK_MESSAGE4("SafeOpenKey(%d, , 0x%X, , %d, , )", root, sam, errorTitle); // Petr: call-stack too slow
     while (1)
     {
         int res = RegOpenKeyExW(PredefinedHKeys[root].HKey, key, 0, sam, &hKey);
@@ -56,12 +56,12 @@ BOOL SafeQueryInfoKey(HKEY hKey, int root, LPWSTR key, LPWSTR className,
 {
     CALL_STACK_MESSAGE_NONE
     //  CALL_STACK_MESSAGE5("SafeQueryInfoKey(, %d, , , , , %d, %d, %d)", root,
-    //                      errorTitle, skip, skipAll);  // Petr: prilis pomaly call-stack
+    //                      errorTitle, skip, skipAll);  // Petr: call-stack too slow
     while (1)
     {
         DWORD classSize = MAX_PATH;
         if (className)
-            *className = L'\0'; // preventivne ho zakoncime
+            *className = L'\0'; // terminate it proactively
         int res = RegQueryInfoKeyW(hKey, className, &classSize, NULL, NULL, NULL, NULL, NULL, NULL, maxData, NULL, time);
         if (res != ERROR_SUCCESS)
         {
@@ -80,7 +80,7 @@ BOOL SafeQueryInfoKey(HKEY hKey, int root, LPWSTR key, LPWSTR className,
                     WStrToStr(classNameA, MAX_PATH, className);
                 else
                     classNameA[0] = 0;
-                TRACE_I("registry klic " << keyNameA << " ma nastaveny class name: " << classNameA);
+                TRACE_I("registry key " << keyNameA << " has the class name set to: " << classNameA);
             }
 #endif // _DEBUG
             break;
@@ -95,7 +95,7 @@ BOOL SafeEnumValue(HKEY hKey, int root, LPWSTR key, DWORD& index,
 {
     //  CALL_STACK_MESSAGE9("SafeEnumValue(, %d, , 0x%X, , 0x%X, , 0x%X, %d, %d, %d, "
     //                      "%d)", root, index, type, size, errorTitle, skip,
-    //                      skipAll, noMoreItems);  // Petr: prilis pomaly call-stack, zjednoduseny kvuli rychlosti + ignorujeme ze je pomaly (stvou me TRACE_E, ktery to generuje)
+    //                      skipAll, noMoreItems);  // Petr: call-stack too slow, simplified for performance + ignoring that it is slow (TRACE_E that generates it annoys me)
     SLOW_CALL_STACK_MESSAGE1("SafeEnumValue()");
     while (1)
     {
@@ -130,7 +130,7 @@ BOOL TestValue(HKEY hKey, int root, LPWSTR key, LPWSTR name,
                LPBOOL overwriteAll, LPBOOL skipAllOvewrites)
 {
     //  CALL_STACK_MESSAGE4("TestValue(, %d, , , %d, , , %d, , , , )", root,
-    //                      sourceRoot, errorTitle);  // Petr: prilis pomaly call-stack, zjednoduseny kvuli rychlosti + ignorujeme ze je pomaly (stvou me TRACE_E, ktery to generuje)
+    //                      sourceRoot, errorTitle);  // Petr: call-stack too slow, simplified for performance + ignoring that it is slow (TRACE_E that generates it annoys me)
     SLOW_CALL_STACK_MESSAGE1("TestValue()");
     while (1)
     {
@@ -156,7 +156,7 @@ BOOL TestValue(HKEY hKey, int root, LPWSTR key, LPWSTR name,
                 return FALSE;
             }
 
-            // dotaz na prepis
+            // prompt to overwrite
             char fullFSPath[MAX_FULL_KEYNAME];
             char rootName[MAX_PREDEF_KEYNAME];
             char path[MAX_KEYNAME];
@@ -209,7 +209,7 @@ BOOL SafeSetValue(HKEY hKey, int root, LPWSTR key,
                   int errorTitle, LPBOOL skip, LPBOOL skipAll)
 {
     //  CALL_STACK_MESSAGE5("SafeSetValue(, %d, , , 0x%X, , 0x%X, %d, , )", root,
-    //                      type, size, errorTitle); // Petr: prilis pomaly call-stack, zjednoduseny kvuli rychlosti + ignorujeme ze je pomaly (stvou me TRACE_E, ktery to generuje)
+    //                      type, size, errorTitle); // Petr: call-stack too slow, simplified for performance + ignoring that it is slow (TRACE_E that generates it annoys me)
     SLOW_CALL_STACK_MESSAGE1("SafeSetValue()");
     while (1)
     {
@@ -230,7 +230,7 @@ BOOL SafeEnumKey(HKEY hKey, int root, LPWSTR key, DWORD& index,
                  int errorTitle, BOOL& skip, BOOL& skipAll, BOOL& noMoreItems)
 {
     //  CALL_STACK_MESSAGE7("SafeEnumKey(, %d, , 0x%X, , , %d, %d, %d, %d)", root,
-    //                      index, errorTitle, skip, skipAll, noMoreItems); // Petr: prilis pomaly call-stack, zjednoduseny kvuli rychlosti + ignorujeme ze je pomaly (stvou me TRACE_E, ktery to generuje)
+    //                      index, errorTitle, skip, skipAll, noMoreItems); // Petr: call-stack too slow, simplified for performance + ignoring that it is slow (TRACE_E that generates it annoys me)
     SLOW_CALL_STACK_MESSAGE1("SafeEnumKey()");
     while (1)
     {
@@ -287,21 +287,21 @@ BOOL CopyOrMoveKey(int sourceRoot, LPWSTR source, int targetRoot, LPWSTR target,
     //  CALL_STACK_MESSAGE10("CopyOrMoveKey(%d, , %d, , %d, %d, %d, %d, %d, %d, %d, , )",
     //                       sourceRoot, targetRoot, move, skip, skipAllErrors,
     //                       skipAllLongNames, skipAllOverwrites, overwriteAll,
-    //                       skipAllClassNames); // Petr: prilis pomaly call-stack, zjednoduseny kvuli rychlosti
+    //                       skipAllClassNames); // Petr: call-stack too slow, simplified for performance
     CALL_STACK_MESSAGE1("CopyOrMoveKey()");
-    // test na preruseni uzivatelem
+    // check for user cancellation
     if (TestForCancel())
         return skip = FALSE;
 
     HKEY sourceHKey, targetHKey;
     int errorTitle = move ? IDS_MOVEKEY : IDS_COPYKEY;
 
-    // otevreme zdrojovy klic
+    // open the source key
     if (!SafeOpenKey(sourceRoot, source, KEY_READ, sourceHKey,
                      errorTitle, &skip, &skipAllErrors))
         return FALSE;
 
-    // nacteme jmeno tridy a max data
+    // load the class name and maximum data size
     DWORD maxData;
     WCHAR sourceClassName[MAX_PATH];
     if (!SafeQueryInfoKey(sourceHKey, sourceRoot, source, sourceClassName,
@@ -311,11 +311,11 @@ BOOL CopyOrMoveKey(int sourceRoot, LPWSTR source, int targetRoot, LPWSTR target,
         return FALSE;
     }
 
-    // MS nekdy vraci polovicni velikost (pozorovano na MULTI_SZ v
-    // klici HKEY_LOCAL_MACHINE\SYSTEM\ControlSet002\Services\NetBT\Linkage
+    // Microsoft sometimes returns half the size (observed on MULTI_SZ in
+    // key HKEY_LOCAL_MACHINE\SYSTEM\ControlSet002\Services\NetBT\Linkage
     maxData *= 2;
 
-    // vytvorime cilovy klic
+    // create the target key
     if (!SafeCreateKey(targetRoot, target, sourceClassName, KEY_WRITE | KEY_READ, targetHKey,
                        errorTitle, skip, skipAllErrors))
     {
@@ -323,7 +323,7 @@ BOOL CopyOrMoveKey(int sourceRoot, LPWSTR source, int targetRoot, LPWSTR target,
         return FALSE;
     }
 
-    // overime, ze novy klic ma stejne jmeno tridy
+    // verify that the new key has the same class name
     if (!skipAllClassNames)
     {
         WCHAR targetClassName[MAX_PATH];
@@ -356,7 +356,7 @@ BOOL CopyOrMoveKey(int sourceRoot, LPWSTR source, int targetRoot, LPWSTR target,
         }
     }
 
-    // zkopirujeme obsah klice - nejprve hodnoty
+    // copy the key contents - values first
     void* data = malloc(maxData);
     if (!data)
     {
@@ -397,7 +397,7 @@ BOOL CopyOrMoveKey(int sourceRoot, LPWSTR source, int targetRoot, LPWSTR target,
                 break;
         }
 
-        // test na preruseni uzivatelem
+        // check for user cancellation
         if (TestForCancel())
             break;
     }
@@ -411,16 +411,16 @@ BOOL CopyOrMoveKey(int sourceRoot, LPWSTR source, int targetRoot, LPWSTR target,
         return skip = FALSE;
     }
 
-    // jeste zkopirujeme rekurzivne podklice
+    // copy the subkeys recursively as well
 
-    // nejprve naenumerujeme vsechny klice na stack
+    // first enumerate all keys onto the stack
     int sourceLen = (int)wcslen(source), targetLen = (int)wcslen(target);
     LPWSTR sourceSubkey = source + sourceLen, targetSubkey = target + targetLen;
     *sourceSubkey++ = L'\\';
     *targetSubkey++ = L'\\';
     int maxSubkey = min(MAX_KEYNAME - sourceLen - 2, MAX_KEYNAME - targetLen - 2);
     index = 0;
-    int top = stack.Count; // ulozime si ukazatel na vrsek zasobniku
+    int top = stack.Count; // store a pointer to the top of the stack
     while (1)
     {
         if (SafeEnumKey(sourceHKey, sourceRoot, source, index, name, NULL,
@@ -478,7 +478,7 @@ BOOL CopyOrMoveKey(int sourceRoot, LPWSTR source, int targetRoot, LPWSTR target,
                 break;
         }
 
-        // test na preruseni uzivatelem
+        // check for user cancellation
         if (TestForCancel())
             break;
     }
@@ -490,7 +490,7 @@ BOOL CopyOrMoveKey(int sourceRoot, LPWSTR source, int targetRoot, LPWSTR target,
         return skip = FALSE;
     }
 
-    // zkopirujeme klice ulozene na stacku
+    // copy the keys stored on the stack
     int i;
     for (i = stack.Count - 1; i >= top; i--)
     {
@@ -580,12 +580,12 @@ BOOL CopyOrMoveValue(int sourceRoot, LPWSTR sourcePath, LPWSTR sourceName,
     HKEY sourceHKey, targetHKey;
     int errorTitle = move ? IDS_MOVEVALUE : IDS_COPYVALUE;
 
-    // otevreme zdrojovy klic
+    // open the source key
     if (!SafeOpenKey(sourceRoot, sourcePath, KEY_READ | (move ? KEY_WRITE : 0), sourceHKey,
                      errorTitle, skip, skipAllErrors))
         return FALSE;
 
-    // otevreme cilovy klic
+    // open the target key
     if (!SafeOpenKey(targetRoot, targetPath, KEY_READ | KEY_WRITE, targetHKey,
                      errorTitle, skip, skipAllErrors))
     {
@@ -593,7 +593,7 @@ BOOL CopyOrMoveValue(int sourceRoot, LPWSTR sourcePath, LPWSTR sourceName,
         return FALSE;
     }
 
-    // otestujeme moznost prepisu
+    // test whether overwriting is possible
     if (!TestValue(targetHKey, targetRoot, targetPath, targetName,
                    sourceRoot, sourcePath, sourceName,
                    errorTitle, skip, skipAllErrors, overwriteAll, skipAllOverwrites))
@@ -603,7 +603,7 @@ BOOL CopyOrMoveValue(int sourceRoot, LPWSTR sourcePath, LPWSTR sourceName,
         return FALSE;
     }
 
-    // nacteme velikost hodnoty
+    // read the value size
     DWORD size = 0, type;
     if (!SafeQueryValue(sourceHKey, sourceRoot, sourcePath, sourceName, type, NULL, size,
                         errorTitle, skip, skipAllErrors))
@@ -613,7 +613,7 @@ BOOL CopyOrMoveValue(int sourceRoot, LPWSTR sourcePath, LPWSTR sourceName,
         return FALSE;
     }
 
-    // nacteme hodnotu
+    // read the value
     void* data = malloc(size);
     if (!data)
     {
@@ -632,7 +632,7 @@ BOOL CopyOrMoveValue(int sourceRoot, LPWSTR sourcePath, LPWSTR sourceName,
         return FALSE;
     }
 
-    // nastavime hodnotu
+    // set the value
     if (!SafeSetValue(targetHKey, targetRoot, targetPath, targetName, type, data, size,
                       errorTitle, skip, skipAllErrors))
     {
@@ -645,7 +645,7 @@ BOOL CopyOrMoveValue(int sourceRoot, LPWSTR sourcePath, LPWSTR sourceName,
     free(data);
     RegCloseKey(targetHKey);
 
-    // jde-li o move hodnotu smazeme ve zdrojovem klici
+    // for a move delete the value in the source key
     BOOL ret = move ? SafeDeleteValue(sourceHKey, sourceRoot, sourcePath, sourceName,
                                       errorTitle, skip, skipAllErrors)
                     : TRUE;
@@ -734,21 +734,21 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
     cancelOrHandlePath = TRUE;
 
     WCHAR targetPathW[MAX_FULL_KEYNAME];
-    // cilova cesta zadana pres drag&drop
+    // target path specified via drag&drop
     if (mode == 5 && MultiByteToWideChar(CP_ACP, 0, targetPath, -1, targetPathW, MAX_FULL_KEYNAME) <= 0)
         return TRUE;
 
-    // pro jistotu
+    // just to be sure
     if (mode != 1 && mode != 5)
         return TRUE;
 
     if (CurrentKeyRoot == -1)
-        return TRUE; //HKEY_XXX nejde kopirovat
+        return TRUE; //HKEY_XXX cannot be copied
 
     WCHAR enteredTargetPathW[MAX_FULL_KEYNAME];
     int targetPanel = (panel == PANEL_LEFT ? PANEL_RIGHT : PANEL_LEFT);
 
-    // podivame se jestli jsou v druhem panelu otevrene registry
+    // check whether the second panel shows the registry
     CPluginFSInterface* targetFS = (CPluginFSInterface*)SG->GetPanelPluginFS(targetPanel);
     if (mode != 5 && targetFS && targetFS->CurrentKeyRoot != -1)
     {
@@ -757,7 +757,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
         else
             swprintf_s(enteredTargetPathW, L"%hs:\\%s\\", fsName, PredefinedHKeys[targetFS->CurrentKeyRoot].KeyName);
 
-        SG->SetUserWorkedOnPanelPath(PANEL_TARGET); // default akce = prace s cestou v cilovem panelu
+        SG->SetUserWorkedOnPanelPath(PANEL_TARGET); // default action = work with the path in the target panel
     }
     else
         *enteredTargetPathW = L'\0';
@@ -766,10 +766,10 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
     while (1)
     {
         if (!firstRound && mode == 5)
-            return TRUE; // chyba na ceste zadane drag&dropem, koncime
+            return TRUE; // error on the drag&drop path, abort
         firstRound = FALSE;
 
-        // zjistime od uzivatele cestu
+        // ask the user for the path
         BOOL direct = FALSE;
         WCHAR text[MAX_KEYNAME + 200];
         ExpandPluralFilesDirs(text, MAX_KEYNAME + 200, selectedFiles, selectedDirs, panel, focused, copy);
@@ -780,7 +780,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
         if (mode != 5)
             wcscpy(targetPathW, enteredTargetPathW);
 
-        // vyseparujeme z FS path user part
+        // separate the user part from the FS path
         if (!direct)
         {
             if (!RemoveFSNameFromPath(targetPathW))
@@ -795,8 +795,8 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
             }
         }
 
-        // relativni cestu prevedeme na uplnou
-        BOOL success; // FALSE v pripade chyby nebo preruseni uzivatelem
+        // convert the relative path to an absolute one
+        BOOL success; // FALSE in case of an error or user cancellation
         GetFullFSPathW(targetPathW, MAX_FULL_KEYNAME, success);
         if (!success)
             continue;
@@ -815,12 +815,12 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
             continue;
         }
 
-        WCHAR targetName[MAX_KEYNAME]; // jmeno ciloveho souboru (pokud je vybran pouze jeden soubor)
+        WCHAR targetName[MAX_KEYNAME]; // name of the target file (when exactly one file is selected)
         BOOL useTargetName = FALSE;
         int len = (int)wcslen(key), err;
         HKEY hKey;
 
-        // zjistime o jaky typ operace jde
+        // determine what type of operation it is
         if (len > 0)
         {
             len--;
@@ -828,9 +828,9 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
             {
                 if ((err = RegOpenKeyExW(PredefinedHKeys[root].HKey, key, 0, KEY_READ, &hKey)) != ERROR_SUCCESS)
                 {
-                    // pokud cesta nezakoncena lomitkem neexistuje, povazujeme posledni cast cesty, za
-                    // jmeno ciloveho souboru (masky neumime), dava smysl pouze pokud je vybran jen
-                    // jeden soubor
+                    // if a path without a trailing slash does not exist, treat the last part of the path as
+                    // the name of the target file (wildcards unsupported), makes sense only when just
+                    // one file
                     if (err != ERROR_FILE_NOT_FOUND)
                     {
                         ErrorL(err, IDS_ACCESS, PredefinedHKeys[root].KeyName, key);
@@ -852,10 +852,10 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
                     RegCloseKey(hKey);
             }
             else
-                key[len] = L'\0'; // ostranime lomitko z konce cesty
+                key[len] = L'\0'; // remove the slash from the end of the path
         }
 
-        // overime, zda cilova cesta existuje
+        // verify whether the target path exists
         if ((err = RegOpenKeyExW(PredefinedHKeys[root].HKey, key, 0, KEY_READ, &hKey)) != ERROR_SUCCESS)
         {
             if (err != ERROR_FILE_NOT_FOUND)
@@ -864,28 +864,28 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
                 continue;
             }
 
-            // cesta neexistuje, zeptame se, zda ji mame vytvorit
+            // path does not exist, ask whether to create it
             char message[MAX_KEYNAME + 200];
             SalPrintf(message, MAX_KEYNAME, LoadStr(IDS_CREATETARGET), PredefinedHKeys[root].KeyName, key);
             if (SG->SalMessageBox(GetParent(), message, LoadStr(title), MB_YESNO) != IDYES)
                 continue;
 
-            // vytvorime ji
+            // create it
             if (!CreateTargetPath(root, key, errorTitle))
                 continue;
         }
         else
             RegCloseKey(hKey);
 
-        // vyzvedneme hodnoty "Confirm on" z konfigurace
+        // retrieve the "Confirm on" values from the configuration
         SG->GetConfigParameter(SALCFG_CNFRMFILEOVER, &ConfirmOnFileOverwrite, 4, NULL);
         SG->GetConfigParameter(SALCFG_CNFRMSHFILEOVER, &ConfirmOnSystemHiddenFileOverwrite, 4, NULL);
         SG->GetConfigParameter(SALCFG_CNFRMCREATEPATH, &ConfirmOnCreateTargetPath, 4, NULL);
         //ConfirmOnOverwrite = ConfirmOnFileOverwrite || ConfirmOnSystemHiddenFileOverwrite;
         ConfirmOnOverwrite = TRUE;
 
-        const CFileData* f = NULL; // ukazatel na soubor/adresar v panelu, ktery se ma zpracovat
-        BOOL isDir = FALSE;        // TRUE pokud 'f' je adresar
+        const CFileData* f = NULL; // pointer to the file/directory in the panel to process
+        BOOL isDir = FALSE;        // TRUE when 'f' is a directory
         int index = 0;
         BOOL skipAllErrors = FALSE; // skip all errors
         BOOL skipAllOverwrites = FALSE;
@@ -896,13 +896,13 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
         nextFocus[0] = 0;
         BOOL sourceEqualsTarget = FALSE;
 
-        // overime, ze nekopirujeme soubor do sebe sameho
+        // ensure we are not copying the file onto itself
         if (root == CurrentKeyRoot &&
             CompareStringW(LOCALE_USER_DEFAULT, NORM_IGNORECASE,
                            key, -1,
                            CurrentKeyName, -1) == CSTR_EQUAL)
         {
-            // vyzvedneme data o prvnim zpracovavanem souboru
+            // fetch data about the first processed file
             int index2 = 0;
             if (focused)
                 f = SG->GetPanelFocusedItem(panel, &isDir);
@@ -919,7 +919,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
                 continue;
             }
 
-            // jde o rename
+            // this is a rename
             if (!copy)
                 WStrToStr(nextFocus, 2 * MAX_PATH, targetName);
             sourceEqualsTarget = TRUE;
@@ -931,24 +931,24 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
         int sourceLen = (int)wcslen(sourceKey), targetLen = (int)wcslen(key);
         LPWSTR sourceSubkey = sourceKey + sourceLen, targetSubkey = key + targetLen;
         int maxSubkey = min(MAX_KEYNAME - sourceLen - 2, MAX_KEYNAME - targetLen - 2);
-        // zasobnik na enumerovana jmena podklicu
-        // (podklice se musi nejpreve vsechny najednou naenumerovat
-        // a potom se mohou mazat (pri presunu)
+        // stack for enumerated subkey names
+        // (subkeys must all be enumerated at once
+        // and then they can be deleted (during a move)
         TIndirectArray<WCHAR> stack(100, 100);
 
-        GetAsyncKeyState(VK_ESCAPE); // init GetAsyncKeyState - viz help
+        GetAsyncKeyState(VK_ESCAPE); // init GetAsyncKeyState - see help
         SG->CreateSafeWaitWindow(LoadStr(copy ? IDS_COPYPROGRESS : IDS_MOVEPROGRESS),
                                  LoadStr(IDS_PLUGINNAME), 500, TRUE, SG->GetMainWindowHWND());
 
         while (1)
         {
-            // vyzvedneme data o zpracovavanem souboru
+            // fetch data about the processed file
             if (focused)
                 f = SG->GetPanelFocusedItem(panel, &isDir);
             else
                 f = SG->GetPanelSelectedItem(panel, &index, &isDir);
 
-            // provedeme copy/move na souboru/adresari
+            // perform copy/move on the file/directory
             if (f != NULL)
             {
                 CPluginData* pd = (CPluginData*)f->PluginData;
@@ -1001,7 +1001,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
                         else
                             wcscpy(targetSubkey, useTargetName ? targetName : pd->Name);
 
-                        // jeste overime, ze sourceKey neni prefixem targetKey
+                        // also verify that sourceKey is not a prefix of targetKey
                         unsigned sourceLen2 = (int)wcslen(sourceKey);
                         if (root == sourceRoot &&
                             sourceLen2 <= wcslen(key) &&
@@ -1039,7 +1039,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
                 }
                 else
                 {
-                    // nebudeme zpracovavat defaultni hodnotu pokud neni nastavena
+                    // do not process the default value if it is not set
                     if (pd->Name != NULL || pd->Type != REG_NONE)
                     {
                         success = CopyOrMoveValue(sourceRoot, sourceKey, pd->Name,
@@ -1050,7 +1050,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
                 }
             }
 
-            // zjistime jestli ma cenu pokracovat (pokud neni cancel a existuje jeste nejaka dalsi oznacena polozka)
+            // determine whether it makes sense to continue (if not cancelled and another selected item exists)
             if (!success || focused || f == NULL)
                 break;
         }
@@ -1059,7 +1059,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
 
         if (success)
         {
-            strcpy(targetPath, nextFocus); // uspech
+            strcpy(targetPath, nextFocus); // success
             cancelOrHandlePath = FALSE;
         }
         else
@@ -1096,13 +1096,13 @@ BOOL CPluginFSInterface::OpenFindDialog(const char* fsName, int panel)
 
 void CPluginFSInterface::OpenActiveFolder(const char* fsName, HWND parent)
 {
-    // regedit nema parametr, kterym by bylo mozne nastavit cestu v Registry, ktera by se mela zobrazit
-    // lze mu ale nastavit HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Applets\Regedit\LastKey
-    // ve tvaru (napr) "Computer\HKEY_CURRENT_USER\AppEvents\Schemes\Apps"
-    // POZOR: slovo "Computer" je na českých Win7 lokalizováno jako "Počítač", nastesti ale regedit.exe
-    // toto slovo nevyzaduje a cesta muze zacinat az rootem HKEY_*
+    // regedit has no parameter to set which Registry path should be displayed
+    // but we can set HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Applets\Regedit\LastKey
+    // in the form (e.g.) "Computer\HKEY_CURRENT_USER\AppEvents\Schemes\Apps"
+    // NOTE: the word "Computer" is localized as "Počítač" on Czech Win7, fortunately regedit.exe
+    // does not require the word and the path may start directly at the HKEY_* root
 
-    // aktualni cestu v panelu vlozime do LastKey hodnoty pro RegEdit
+    // store the current panel path into the LastKey value for RegEdit
     HKEY hKey;
     DWORD disp;
     RegCreateKeyEx(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Applets\\Regedit", 0, NULL,
@@ -1115,7 +1115,7 @@ void CPluginFSInterface::OpenActiveFolder(const char* fsName, HWND parent)
     RegSetValueEx(hKey, "LastKey", 0, REG_SZ, (LPBYTE)path2, lstrlen(path2) + 1);
     RegCloseKey(hKey);
 
-    // spustime regedit s moznosti eskalace (vista/7)
+    // launch regedit with optional elevation (Vista/7)
     char regEditPath[MAX_PATH];
     if (!GetWindowsDirectory(regEditPath, MAX_PATH))
         *regEditPath = 0;

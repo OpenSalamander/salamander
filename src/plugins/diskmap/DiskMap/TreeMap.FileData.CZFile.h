@@ -68,7 +68,7 @@ public:
     virtual TCHAR* CalcExt()
     {
         //this->_ext = _tcsrchr(this->_name, '.');
-        this->_ext = this->_name + this->_namelen; //ukazuje na NULL
+        this->_ext = this->_name + this->_namelen; //points to the null terminator
         while (--this->_ext != this->_name && *this->_ext != '.')
             ;
         if (*this->_ext != '.')

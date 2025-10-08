@@ -36,10 +36,10 @@ CCommonDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // horizontalni i vertikalni vycentrovani dialogu k parentu
+        // horizontally and vertically center the dialog relative to the parent
         if (Parent != NULL)
             SalamanderGeneral->MultiMonCenterWindow(HWindow, Parent, TRUE);
-        break; // chci focus od DefDlgProc
+        break; // ask DefDlgProc to handle focus
     }
     }
     return CDialog::DialogProc(uMsg, wParam, lParam);
@@ -72,14 +72,14 @@ CConfigPageFirst::CConfigPageFirst()
 
 void CConfigPageFirst::Validate(CTransferInfo& ti)
 {
-    int dummy;                          // jen testovaci hodnota (Validate se vola jen pri odchodu s okna pres OK)
-    ti.EditLine(IDC_TESTNUMBER, dummy); // test jde-li o cislo
-    if (ti.IsGood() && dummy >= 10)     // test neni-li cislo >= nez 10 (jen jde-li o cislo)
+    int dummy;                          // test value only (Validate is called when leaving the window via OK)
+    ti.EditLine(IDC_TESTNUMBER, dummy); // check whether it is a number
+    if (ti.IsGood() && dummy >= 10)     // ensure the number is not greater than or equal to 10
     {
         SalamanderGeneral->SalMessageBox(HWindow, "Number must be less then 10.", "Error",
                                          MB_OK | MB_ICONEXCLAMATION);
         ti.ErrorOn(IDC_TESTNUMBER);
-        // PostMessage(GetDlgItem(HWindow, IDC_TESTNUMBER), EM_SETSEL, errorPos1, errorPos2);  // oznaceni pozice chyby
+        // PostMessage(GetDlgItem(HWindow, IDC_TESTNUMBER), EM_SETSEL, errorPos1, errorPos2);  // highlight the error position
     }
 }
 
@@ -91,7 +91,7 @@ void CConfigPageFirst::Transfer(CTransferInfo& ti)
     HWND hWnd;
     if (ti.GetControl(hWnd, IDC_COMBO))
     {
-        if (ti.Type == ttDataToWindow) // Transfer() volany pri otevirani okna (data -> okno)
+        if (ti.Type == ttDataToWindow) // Transfer() called when opening the window (data -> window)
         {
             SendMessage(hWnd, CB_RESETCONTENT, 0, 0);
             SendMessage(hWnd, CB_ADDSTRING, 0, (LPARAM) "first");
@@ -99,7 +99,7 @@ void CConfigPageFirst::Transfer(CTransferInfo& ti)
             SendMessage(hWnd, CB_ADDSTRING, 0, (LPARAM) "third");
             SendMessage(hWnd, CB_SETCURSEL, Selection, 0);
         }
-        else // ttDataFromWindow; Transfer() volany pri stisku OK (okno -> data)
+        else // ttDataFromWindow; Transfer() called when OK is pressed (window -> data)
         {
             Selection = (int)SendMessage(hWnd, CB_GETCURSEL, 0, 0);
         }
@@ -146,7 +146,7 @@ void CConfigPageViewer::Transfer(CTransferInfo& ti)
 // CConfigDialog
 //
 
-// pomocny objekt pro centrovani konfiguracniho dialogu k parentovi
+// helper object for centering the configuration dialog relative to the parent
 class CCenteredPropertyWindow : public CWindow
 {
 protected:
@@ -166,10 +166,10 @@ protected:
             break;
         }
 
-        case WM_APP + 1000: // mame se odpojit od dialogu (uz je vycentrovano)
+        case WM_APP + 1000: // detach from the dialog (it is already centered)
         {
             DetachWindow();
-            delete this; // trochu prasarna, ale uz se 'this' nikdo ani nedotkne, takze pohoda
+            delete this; // a bit ugly, but nothing will touch 'this' anymore, so it is fine
             return 0;
         }
         }
@@ -195,24 +195,24 @@ typedef struct DLGTEMPLATEEX
 #include <poppack.h>
 #endif // LPDLGTEMPLATEEX
 
-// pomocny call-back pro centrovani konfiguracniho dialogu k parentovi a vyhozeni '?' buttonku z captionu
+// helper callback for centering the configuration dialog relative to the parent and removing the '?' button from the caption
 int CALLBACK CenterCallback(HWND HWindow, UINT uMsg, LPARAM lParam)
 {
-    if (uMsg == PSCB_INITIALIZED) // pripojime se na dialog
+    if (uMsg == PSCB_INITIALIZED) // attach to the dialog
     {
         CCenteredPropertyWindow* wnd = new CCenteredPropertyWindow;
         if (wnd != NULL)
         {
             wnd->AttachToWindow(HWindow);
             if (wnd->HWindow == NULL)
-                delete wnd; // okno neni pripojeny, zrusime ho uz tady
+                delete wnd; // window is not attached, dispose of it right away
             else
             {
-                PostMessage(wnd->HWindow, WM_APP + 1000, 0, 0); // pro odpojeni CCenteredPropertyWindow od dialogu
+                PostMessage(wnd->HWindow, WM_APP + 1000, 0, 0); // to detach CCenteredPropertyWindow from the dialog
             }
         }
     }
-    if (uMsg == PSCB_PRECREATE) // odstraneni '?' buttonku z headeru property sheetu
+    if (uMsg == PSCB_PRECREATE) // remove the '?' button from the property sheet header
     {
         // Remove the DS_CONTEXTHELP style from the dialog box template
         if (((LPDLGTEMPLATEEX)lParam)->signature == 0xFFFF)
@@ -260,11 +260,11 @@ CPathDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_INITDIALOG:
     {
         /*
-      SetFocus(GetDlgItem(HWindow, IDOK));  // chceme svuj vlastni fokus
+      SetFocus(GetDlgItem(HWindow, IDOK));  // we want our own focus handling
       CDialog::DialogProc(uMsg, wParam, lParam);
       return FALSE;
 */
-        break; // chci focus od DefDlgProc
+        break; // ask DefDlgProc to handle focus
     }
     }
     return CCommonDialog::DialogProc(uMsg, wParam, lParam);
@@ -382,7 +382,7 @@ BOOL CCtrlExampleDialog::CreateChilds()
 
     CGUIHyperLinkAbstract* hl;
 
-    // HyperLink lze v dialogu navstivit z klavesnice, pokud mu priradime v .RC styl WS_TABSTOP.
+    // A hyperlink can be reached in the dialog via the keyboard if the .RC assigns it the WS_TABSTOP style.
     hl = SalamanderGUI->AttachHyperLink(HWindow, IDC_CE_HLOPEN, STF_UNDERLINE | STF_HYPERLINK_COLOR);
     if (hl == NULL)
         return FALSE;
@@ -448,8 +448,8 @@ CCtrlExampleDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (!CreateChilds())
         {
-            DestroyWindow(HWindow); // chyba -> neotevreme dialog
-            return FALSE;           // konec zpracovani
+            DestroyWindow(HWindow); // error -> do not open the dialog
+            return FALSE;           // stop processing
         }
         GetDlgItemText(HWindow, IDC_CE_ST, StringTemplate, 300);
         TimerStarted = SetTimer(HWindow, 1, 20, NULL) != 0;
@@ -459,9 +459,9 @@ CCtrlExampleDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         CQuadWord total(543267, 0);
         Progress2->SetProgress2(current, total, NULL);
 
-        //Progress2->SetSelfMoveTime(0); // progress se posune pri kazdem WM_TIMER
-        Progress2->SetSelfMoveTime(1000); // samovolne posouvani po jednu vterinu
-        Progress2->SetSelfMoveSpeed(100); // rychlost: 10 pohybu za vterinu
+        //Progress2->SetSelfMoveTime(0); // progress moves on every WM_TIMER
+        Progress2->SetSelfMoveTime(1000); // automatic movement for one second
+        Progress2->SetSelfMoveSpeed(100); // speed: 10 moves per second
         break;
     }
 
@@ -472,7 +472,7 @@ CCtrlExampleDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         DWORD ticks = GetTickCount();
         wsprintf(buff, StringTemplate, ticks);
         int i;
-        for (i = 0; i < 50; i++) // zduraznime blikaci efekt
+        for (i = 0; i < 50; i++) // emphasize the blinking effect
         {
             SetDlgItemText(HWindow, IDC_CE_ST, buff);
             Text->SetText(buff);
@@ -481,18 +481,18 @@ CCtrlExampleDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         ProgressNumber += 1;
 
-        // progress bar aktualizujeme kazdych 100ms
+        // update the progress bar every 100 ms
         if (ticks - LastTickCount > 100)
         {
             LastTickCount = ticks;
 
-            if (ProgressNumber > 1200) // 0..1000 se zvetsuje; 1001 - 1200 ceka na 100%
+            if (ProgressNumber > 1200) // grows 0..1000; 1001-1200 waits for 100%
             {
                 ProgressNumber = 0;
             }
             Progress->SetProgress(ProgressNumber, NULL);
 
-            // unknown progress, posouvame obdelnik zleva doprava a zpet
+            // unknown progress, move the rectangle from left to right and back
             //        Progress2->SetProgress(-1);
         }
 
@@ -630,7 +630,7 @@ CCtrlExampleDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 DWORD cmd;
                 if (LOWORD(wParam) == IDC_CE_PB || LOWORD(wParam) == IDC_CE_PBTEXT)
                 {
-                    // pouzijeme standardni menu
+                    // use the standard menu
                     HMENU hMenu = CreatePopupMenu();
                     popup->FillMenuHandle(hMenu);
                     TPMPARAMS tpm;
@@ -646,7 +646,7 @@ CCtrlExampleDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 else
                 {
-                    // pouzijeme nase menu
+                    // use our custom menu
                     DWORD flags = MENU_TRACK_RETURNCMD | MENU_TRACK_RIGHTBUTTON /*| MENU_TRACK_LEFTALIGN*/;
                     if (LOWORD(wParam) == IDC_CE_PBCOLOR)
                         flags |= /*MENU_TRACK_HORIZONTAL*/ 0;

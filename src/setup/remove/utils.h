@@ -8,5 +8,5 @@ void InitUtils();
 int StrICmp(const char* s1, const char* s2);
 void* mini_memcpy(void* out, const void* in, int len);
 char* mystrstr(char* a, char* b);
-BOOL GetFolderPath(int nFolder, LPTSTR pszPath); //pszPath musi byt minimalne MAX_PATH znaku!
+BOOL GetFolderPath(int nFolder, LPTSTR pszPath); // pszPath must be at least MAX_PATH characters!
 //BOOL Is64BitWindows();

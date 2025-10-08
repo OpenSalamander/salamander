@@ -11,36 +11,36 @@
 
 #include "precomp.h"
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object whose methods are invoked by Salamander
 CPluginInterface PluginInterface;
-// dalsi casti interfacu CPluginInterface
+// additional parts of the CPluginInterface implementation
 CPluginInterfaceForArchiver InterfaceForArchiver;
 CPluginInterfaceForViewer InterfaceForViewer;
 CPluginInterfaceForMenuExt InterfaceForMenuExt;
 CPluginInterfaceForFS InterfaceForFS;
 CPluginInterfaceForThumbLoader InterfaceForThumbLoader;
 
-// globalni data
-const char* PluginNameEN = "DemoPlug";    // neprekladane jmeno pluginu, pouziti pred loadem jazykoveho modulu + pro debug veci
-const char* PluginNameShort = "DEMOPLUG"; // jmeno pluginu (kratce, bez mezer)
+// global data
+const char* PluginNameEN = "DemoPlug";    // untranslated plugin name, used before the language module loads and for debugging
+const char* PluginNameShort = "DEMOPLUG"; // plugin name (short form, without spaces)
 
 char Str[MAX_PATH] = "default";
 int Number = 0;
 int Selection = 1; // "second" in configuration dialog
 BOOL CheckBox = FALSE;
 int RadioBox = 13;                        // radio 2 in configuration dialog
-BOOL CfgSavePosition = FALSE;             // ukladat pozici okna/umistit dle hlavniho okna
-WINDOWPLACEMENT CfgWindowPlacement = {0}; // neplatne, pokud CfgSavePosition != TRUE
-int Size2FixedWidth = 0;                  // sloupec Size2 (archiver): LO/HI-WORD: levy/pravy panel: FixedWidth
-int Size2Width = 0;                       // sloupec Size2 (archiver): LO/HI-WORD: levy/pravy panel: Width
-int CreatedFixedWidth = 0;                // sloupec Created (FS): LO/HI-WORD: levy/pravy panel: FixedWidth
-int CreatedWidth = 0;                     // sloupec Created (FS): LO/HI-WORD: levy/pravy panel: Width
-int ModifiedFixedWidth = 0;               // sloupec Modified (FS): LO/HI-WORD: levy/pravy panel: FixedWidth
-int ModifiedWidth = 0;                    // sloupec Modified (FS): LO/HI-WORD: levy/pravy panel: Width
-int AccessedFixedWidth = 0;               // sloupec Accessed (FS): LO/HI-WORD: levy/pravy panel: FixedWidth
-int AccessedWidth = 0;                    // sloupec Accessed (FS): LO/HI-WORD: levy/pravy panel: Width
-int DFSTypeFixedWidth = 0;                // sloupec DFS Type (FS): LO/HI-WORD: levy/pravy panel: FixedWidth
-int DFSTypeWidth = 0;                     // sloupec DFS Type (FS): LO/HI-WORD: levy/pravy panel: Width
+BOOL CfgSavePosition = FALSE;             // store the window position / align to the main window
+WINDOWPLACEMENT CfgWindowPlacement = {0}; // invalid unless CfgSavePosition == TRUE
+int Size2FixedWidth = 0;                  // Size2 column (archiver): low/high word -> left/right panel: FixedWidth
+int Size2Width = 0;                       // Size2 column (archiver): low/high word -> left/right panel: Width
+int CreatedFixedWidth = 0;                // Created column (FS): low/high word -> left/right panel: FixedWidth
+int CreatedWidth = 0;                     // Created column (FS): low/high word -> left/right panel: Width
+int ModifiedFixedWidth = 0;               // Modified column (FS): low/high word -> left/right panel: FixedWidth
+int ModifiedWidth = 0;                    // Modified column (FS): low/high word -> left/right panel: Width
+int AccessedFixedWidth = 0;               // Accessed column (FS): low/high word -> left/right panel: FixedWidth
+int AccessedWidth = 0;                    // Accessed column (FS): low/high word -> left/right panel: Width
+int DFSTypeFixedWidth = 0;                // DFS Type column (FS): low/high word -> left/right panel: FixedWidth
+int DFSTypeWidth = 0;                     // DFS Type column (FS): low/high word -> left/right panel: Width
 
 DWORD LastCfgPage = 0; // start page (sheet) in configuration dialog
 
@@ -60,33 +60,33 @@ const char* CONFIG_ACCESSEDWIDTH = "AccessedWidth";
 const char* CONFIG_DFSTYPEFIXEDWIDTH = "DFSTypeFixedWidth";
 const char* CONFIG_DFSTYPEWIDTH = "DFSTypeWidth";
 
-// ConfigVersion: 0 - zadna konfigurace se z Registry nenacetla (jde o instalaci pluginu),
-//                1 - prvni verze konfigurace
-//                2 - druha verze konfigurace (pridane nejake hodnoty do konfigurace)
-//                3 - treti verze konfigurace (pridani pripony "dmp2")
-//                4 - ctvrta verze konfigurace (zmena pripony "dmp" (kolize s minidumpy) na "dop" a "dmp2" na "dop2")
+// ConfigVersion: 0 - no configuration was loaded from the registry (fresh plugin installation),
+//                1 - first configuration version
+//                2 - second configuration version (some configuration values were added)
+//                3 - third configuration version (extension "dmp2" added)
+//                4 - fourth configuration version (changed extension "dmp" (collides with minidumps) to "dop" and "dmp2" to "dop2")
 
-int ConfigVersion = 0;           // verze nactene konfigurace z registry (popis verzi viz vyse)
-#define CURRENT_CONFIG_VERSION 4 // aktualni verze konfigurace (uklada se do registry pri unloadu pluginu)
+int ConfigVersion = 0;           // version of the configuration loaded from the registry (see the descriptions above)
+#define CURRENT_CONFIG_VERSION 4 // current configuration version (stored in the registry when the plugin unloads)
 const char* CONFIG_VERSION = "Version";
 
-// ukazatele na tabulky mapovani na mala/velka pismena
+// pointers to lowercase/uppercase mapping tables
 unsigned char* LowerCase = NULL;
 unsigned char* UpperCase = NULL;
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to the SPL - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to the SLG - language-dependent resources
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// Salamander general interface - valid from startup until the plugin shuts down
 CSalamanderGeneralAbstract* SalamanderGeneral = NULL;
 
-// definice promenne pro "dbg.h"
+// variable declaration for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
-// definice promenne pro "spl_com.h"
+// variable declaration for "spl_com.h"
 int SalamanderVersion = 0;
 
-// rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+// interface that provides customized Windows controls used in Salamander
 CSalamanderGUIAbstract* SalamanderGUI = NULL;
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
@@ -143,19 +143,19 @@ void OnAbout(HWND hParent)
 
 void InitIconOverlays()
 {
-    // zrusime aktualni icon-overlays, pro pripad chyby, at mame vycisteno
+    // clear the currently registered icon overlays so we stay clean even if an error occurs
     SalamanderGeneral->SetPluginIconOverlays(0, NULL);
 
     HINSTANCE imageResDLL = HANDLES(LoadLibraryEx("imageres.dll", NULL, LOAD_LIBRARY_AS_DATAFILE));
-    // Salamander bez imageres.dll nebezi, takze tady nacteni nemuze selhat
+    // Salamander does not run without imageres.dll, so loading it here cannot fail
 
-    // 48x48 az od XP (brzy bude obsolete, pobezime jen na XP+, pak zahodit)
-    // ve skutecnosti jsou velke ikonky podporeny uz davno, lze je nahodit
-    // Desktop/Properties/???/Large Icons; pozor, nebude pak existovat system image list
-    // pro ikonky 32x32; navic bychom meli ze systemu vytahnout realne velikosti ikonek
-    // zatim na to kasleme a 48x48 povolime az od XP, kde jsou bezne dostupne
+    // 48x48 only from XP onward (soon obsolete, we will run only on XP+, then drop it)
+    // in reality large icons have been supported for a long time and can be enabled via
+    // Desktop/Properties/???/Large Icons; note that there will be no system image list
+    // for 32x32 icons in that case, and we should fetch the actual icon sizes from the system
+    // for now we ignore it and enable 48x48 only from XP where they are normally available
     int iconSizes[3] = {16, 32, 48};
-    if (!SalIsWindowsVersionOrGreater(5, 1, 0)) // neni WindowsXPAndLater: neni XP and later
+    if (!SalIsWindowsVersionOrGreater(5, 1, 0)) // not WindowsXPAndLater: not XP or later
         iconSizes[2] = 32;
 
     HINSTANCE iconDLL = imageResDLL;
@@ -177,8 +177,8 @@ void InitIconOverlays()
                                                              SalamanderGeneral->GetIconLRFlags());
     }
 
-    // nastavime dva overlayes: shared + slow file
-    // POZN.: pri chybe loadu ikon SetPluginIconOverlays() selze, ale platne ikony z iconOverlays[] uvolni
+    // register two overlays: shared + slow file
+    // NOTE: if icon loading fails, SetPluginIconOverlays() fails but releases the valid icons in iconOverlays[]
     SalamanderGeneral->SetPluginIconOverlays(iconOverlaysCount / 3, iconOverlays);
 
     if (imageResDLL != NULL)
@@ -229,7 +229,7 @@ void WINAPI TestLoadOrSaveConfiguration(BOOL load, HKEY regKey,
     // load default configuration
     buf[0] = 0;
 
-    if (regKey != NULL)   // load z registry
+    if (regKey != NULL)   // load from the registry
     {
       HKEY actKey;
       if (registry->OpenKey(regKey, "test-key", actKey))
@@ -363,9 +363,9 @@ NastyGoto:
 */
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
-    // nastavime SalamanderDebug pro "dbg.h"
+    // set SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
-    // nastavime SalamanderVersion pro "spl_com.h"
+    // set SalamanderVersion for "spl_com.h"
     SalamanderVersion = salamander->GetVersion();
 
     HANDLES_CAN_USE_TRACE();
@@ -375,13 +375,13 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
     //  GetModuleFileName(DLLInstance, path, MAX_PATH);
     //  GetVerInfo(path, path, MAX_PATH);
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plugin targets the current Salamander version and newer - perform a check
 #ifdef DEMOPLUG_COMPATIBLE_WITH_500
     if (SalamanderVersion < 103) // plugin works in Open Salamander 5.0 or later
 #else                            // DEMOPLUG_COMPATIBLE_WITH_500
     if (SalamanderVersion < LAST_VERSION_OF_SALAMANDER)
 #endif                           // DEMOPLUG_COMPATIBLE_WITH_500
-    {                            // starsi verze odmitneme
+    {                            // reject older versions
         MessageBox(salamander->GetParentWindow(),
 #ifdef DEMOPLUG_COMPATIBLE_WITH_500
                    "This plugin requires Open Salamander 5.0 or later.",
@@ -392,49 +392,49 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
+    // load the language module (.slg)
     HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), PluginNameEN);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain the general Salamander interface
     SalamanderGeneral = salamander->GetSalamanderGeneral();
     SalamanderGeneral->GetLowerAndUpperCase(&LowerCase, &UpperCase);
-    // ziskame rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+    // obtain the interface providing customized Windows controls used in Salamander
     SalamanderGUI = salamander->GetSalamanderGUI();
 
-    // nastavime jmeno souboru s helpem
+    // configure the help file name
     SalamanderGeneral->SetHelpFileName("demoplug.chm");
 
     //  BYTE c = SalamanderGeneral->GetUserDefaultCharset();
 
     if (!InitViewer())
-        return NULL; // chyba
+        return NULL; // error
 
     if (!InitFS())
     {
         ReleaseViewer();
-        return NULL; // chyba
+        return NULL; // error
     }
 
     InitIconOverlays();
 
     /*
-  // ukazka padu aplikace
+  // demonstration of an application crash
   int *p = 0;
   *p = 0;       // ACCESS VIOLATION !
 */
 
 #ifndef DEMOPLUG_QUIET
-    // vypis testovaciho hlaseni
+    // display a test notification
     char buf[100];
     sprintf(buf, "SalamanderPluginEntry called, Salamander version %d", salamander->GetVersion());
-    TRACE_I(buf); // do TRACE SERVERU
+    TRACE_I(buf); // into TRACE SERVER
     SalamanderGeneral->SalMessageBox(salamander->GetParentWindow(), buf, LoadStr(IDS_PLUGINNAME),
-                                     MB_OK | MB_ICONINFORMATION); // do okna
+                                     MB_OK | MB_ICONINFORMATION); // into a window
 #endif                                                            // DEMOPLUG_QUIET
 
-    // nastavime zakladni informace o pluginu
+    // provide basic information about the plugin
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_PANELARCHIVERVIEW | FUNCTION_PANELARCHIVEREDIT |
                                        FUNCTION_CUSTOMARCHIVERPACK | FUNCTION_CUSTOMARCHIVERUNPACK |
@@ -447,29 +447,29 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
                                    VERSINFO_VERSION_NO_PLATFORM, VERSINFO_COPYRIGHT, LoadStr(IDS_PLUGIN_DESCRIPTION),
                                    PluginNameShort, "dop;dop2", "dfs");
 
-    // chceme dostavat zpravy o zavedeni/zmene/zruseni master passwordu
+    // request notifications about master password creation, changes, and removal
     SalamanderGeneral->SetPluginUsesPasswordManager();
 
-    // nastavime URL home-page pluginu
+    // set the plugin home page URL
     salamander->SetPluginHomePageURL(LoadStr(IDS_PLUGIN_HOME));
 
-    // ziskame nase FS-name (nemusi byt "dfs", Salamander ho muze upravit)
+    // obtain our FS name (it might not stay "dfs" because Salamander can adjust it)
     SalamanderGeneral->GetPluginFSName(AssignedFSName, 0);
     AssignedFSNameLen = (int)strlen(AssignedFSName);
 
-    // test pridani vice jmen file systemu
-    char demoFSAssignedFSName[MAX_PATH]; // melo by byt v globalni promenne (aby se dalo pouzivat po celem pluginu)
+    // test adding multiple filesystem names
+    char demoFSAssignedFSName[MAX_PATH]; // should live in a global variable (so it can be used throughout the plugin)
     demoFSAssignedFSName[0] = 0;
-    int demoFSFSNameIndex; // melo by byt v globalni promenne (aby se dalo pouzivat po celem pluginu)
+    int demoFSFSNameIndex; // should live in a global variable (so it can be used throughout the plugin)
     if (salamander->AddFSName("demofs", &demoFSFSNameIndex))
         SalamanderGeneral->GetPluginFSName(demoFSAssignedFSName, demoFSFSNameIndex);
-    char demoAssignedFSName[MAX_PATH]; // melo by byt v globalni promenne (aby se dalo pouzivat po celem pluginu)
+    char demoAssignedFSName[MAX_PATH]; // should live in a global variable (so it can be used throughout the plugin)
     demoAssignedFSName[0] = 0;
-    int demoFSNameIndex; // melo by byt v globalni promenne (aby se dalo pouzivat po celem pluginu)
+    int demoFSNameIndex; // should live in a global variable (so it can be used throughout the plugin)
     if (salamander->AddFSName("demo", &demoFSNameIndex))
         SalamanderGeneral->GetPluginFSName(demoAssignedFSName, demoFSNameIndex);
 
-    // test enumerace modulu
+    // test module enumeration
     /*
   int index = 0;
   char module[MAX_PATH];
@@ -511,21 +511,21 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
 */
     /*
   BOOL fsItemVisible = SalamanderGeneral->GetChangeDriveMenuItemVisibility();
-  if (salamander->GetLoadInformation() & LOADINFO_INSTALL) // spis testovat podle verze vlastniho konfigu
+  if (salamander->GetLoadInformation() & LOADINFO_INSTALL) // probably better to check according to the plugin configuration version
     SalamanderGeneral->SetChangeDriveMenuItemVisibility(FALSE);
 */
 
-    // nastavime pluginu, aby se loadil pri startu Salamandera, potrebujeme pravidelne cistit
-    // tmp-dir od predchozich instanci DEMOPLUGu
+    // configure the plugin to load with Salamander startup so we can clean up regularly
+    // the temporary directory left by previous DemoPlug instances
     SalamanderGeneral->SetFlagLoadOnSalamanderStart(TRUE);
 
-    // pokud doslo k loadu pluginu na zaklade flagu "load on start", zkontrolujeme jestli
-    // je nas proces Salamandera prvni spusteny a pripadne zavolame cisteni tmp-diru
+    // if the plugin was loaded because of the "load on start" flag, verify whether
+    // this Salamander process is the first instance and trigger the temp-directory cleanup if so
     if (salamander->GetLoadInformation() & LOADINFO_LOADONSTART)
     {
         if (SalamanderGeneral->IsFirstInstance3OrLater())
-            SalamanderGeneral->PostMenuExtCommand(MENUCMD_CHECKDEMOPLUGTMPDIR, TRUE); // doruci se az "sal-idle" (jinak by nesmelo byt v entry-pointu)
-        SalamanderGeneral->PostUnloadThisPlugin();                                    // az se zpracuji vsechny prikazy, provede se unload pluginu (je zbytecne aby zustaval naloadeny)
+            SalamanderGeneral->PostMenuExtCommand(MENUCMD_CHECKDEMOPLUGTMPDIR, TRUE); // delivered when Salamander becomes idle (otherwise it could not be triggered from the entry point)
+        SalamanderGeneral->PostUnloadThisPlugin();                                    // after all commands are processed the plugin unloads (keeping it loaded would be pointless)
     }
 
     return &PluginInterface;
@@ -565,12 +565,12 @@ CPluginInterface::Release(HWND parent, BOOL force)
             ReleaseViewer();
             ReleaseFS();
 
-            // zrusime vsechny kopie souboru z FS v disk-cache (teoreticky zbytecne, kazdy FS po sobe kopie rusi)
+            // remove all filesystem file copies from the disk cache (theoretically redundant, each FS should clean its copies)
             char uniqueFileName[MAX_PATH];
             strcpy(uniqueFileName, AssignedFSName);
             strcat(uniqueFileName, ":");
-            // jmena na disku jsou "case-insensitive", disk-cache je "case-sensitive", prevod
-            // na mala pismena zpusobi, ze se disk-cache bude chovat take "case-insensitive"
+            // disk names are case-insensitive while the disk cache is case-sensitive, converting
+            // to lowercase makes the disk cache behave as case-insensitive as well
             SalamanderGeneral->ToLowerCase(uniqueFileName);
             SalamanderGeneral->RemoveFilesFromCache(uniqueFileName);
         }
@@ -587,10 +587,10 @@ CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRegistr
 {
     CALL_STACK_MESSAGE1("CPluginInterface::LoadConfiguration(, ,)");
 
-    if (regKey != NULL) // load z registry
+    if (regKey != NULL) // load from the registry
     {
         if (!registry->GetValue(regKey, CONFIG_VERSION, REG_DWORD, &ConfigVersion, sizeof(DWORD)))
-            ConfigVersion = 1; // verze s konfiguraci v registry (uz byla pouzivana, jen bez cisla konfigurace)
+            ConfigVersion = 1; // configuration version stored in the registry (used previously, just without a version number)
 
         HKEY actKey;
         if (registry->OpenKey(regKey, CONFIG_KEY, actKey))
@@ -660,11 +660,11 @@ CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamander)
 {
     CALL_STACK_MESSAGE1("CPluginInterface::Connect(,)");
 
-    // zakladni cast:
-    // salamander->AddCustomPacker("DemoPlug (Plugin)", "dop", FALSE);      // prvni verze: 'update==FALSE' (proste nejde o upgrade)
-    // salamander->AddCustomUnpacker("DemoPlug (Plugin)", "*.dop", FALSE);  // prvni verze: 'update==FALSE' (proste nejde o upgrade)
-    salamander->AddCustomPacker("DemoPlug (Plugin)", "dop", ConfigVersion < 4);            // ve verzi 4 jsme zmenili priponu na "dop", proto je 'update==ConfigVersion < 4' (u starsich verzi nez 4 je treba updatnout priponu na "dop")
-    salamander->AddCustomUnpacker("DemoPlug (Plugin)", "*.dop;*.dop2", ConfigVersion < 4); // ve verzi 4 jsme zmenili pripony na *.dop a *.dop2, proto je 'update==ConfigVersion < 4' (u starsich verzi nez 4 je treba updatnout pripony na "*.dop;*.dop2")
+    // basic section:
+    // salamander->AddCustomPacker("DemoPlug (Plugin)", "dop", FALSE);      // first version: 'update==FALSE' (there is no upgrade involved)
+    // salamander->AddCustomUnpacker("DemoPlug (Plugin)", "*.dop", FALSE);  // first version: 'update==FALSE' (there is no upgrade involved)
+    salamander->AddCustomPacker("DemoPlug (Plugin)", "dop", ConfigVersion < 4);            // in version 4 we changed the extension to "dop", hence 'update==ConfigVersion < 4' (older versions must update the extension to "dop")
+    salamander->AddCustomUnpacker("DemoPlug (Plugin)", "*.dop;*.dop2", ConfigVersion < 4); // in version 4 we changed the extensions to *.dop and *.dop2, hence 'update==ConfigVersion < 4' (older versions must update the extensions to "*.dop;*.dop2")
     salamander->AddPanelArchiver("dop;dop2", TRUE, FALSE);
     salamander->AddViewer("*.dop;*.dop2", FALSE);
 
@@ -712,28 +712,28 @@ CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamander)
     HICON hIcon = (HICON)LoadImage(DLLInstance, MAKEINTRESOURCE(IDI_FS), IMAGE_ICON, 16, 16, SalamanderGeneral->GetIconLRFlags());
     iconList->ReplaceIcon(0, hIcon);
     DestroyIcon(hIcon);
-    salamander->SetIconListForGUI(iconList); // o destrukci iconlistu se postara Salamander
+    salamander->SetIconListForGUI(iconList); // Salamander handles destroying the icon list
 
     salamander->SetChangeDriveMenuItem("\tDemoPlug FS", 0);
     salamander->SetPluginIcon(0);
     salamander->SetPluginMenuAndToolbarIcon(0);
 
-    salamander->SetThumbnailLoader("*.bmp"); // poskytujeme thumbnaily pro .BMP soubory
+    salamander->SetThumbnailLoader("*.bmp"); // we provide thumbnails for .BMP files
 
-    // cast pro upgrady:
+    // section for upgrades:
     /*
-  if (ConfigVersion < 3)   // verze 3: pridani pripony "dmp2" (ve verzi 4 uz nema smysl, proto je v komentari)
+  if (ConfigVersion < 3)   // version 3: added the "dmp2" extension (no longer relevant in version 4, so it stays commented)
   {
     salamander->AddPanelArchiver("dmp2", TRUE, TRUE);
     salamander->AddViewer("*.dmp2", TRUE);
   }
 */
-    if (ConfigVersion < 4) // verze 4: zmena pripon "dmp/dmp2" na "dop/dop2"
+    if (ConfigVersion < 4) // version 4: changed the extensions from "dmp/dmp2" to "dop/dop2"
     {
-        // pridani novych pripon
+        // add new extensions
         salamander->AddPanelArchiver("dop;dop2", TRUE, TRUE);
         salamander->AddViewer("*.dop;*.dop2", TRUE);
-        // vyhozeni starych pripon
+        // remove the old extensions
         salamander->ForceRemovePanelArchiver("dmp");
         salamander->ForceRemovePanelArchiver("dmp2");
         salamander->ForceRemoveViewer("*.dmp");
@@ -744,7 +744,7 @@ CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamander)
 void WINAPI
 CPluginInterface::ReleasePluginDataInterface(CPluginDataInterfaceAbstract* pluginData)
 {
-    if (pluginData != &ArcPluginDataInterface) // jde-li o alokovany objekt FS dat, uvolnime ho
+    if (pluginData != &ArcPluginDataInterface) // release an allocated FS data object if necessary
     {
         delete ((CPluginFSDataInterface*)pluginData);
     }
@@ -812,7 +812,7 @@ CPluginInterface::Event(int event, DWORD param)
     {
         InitIconOverlays();
 
-        // nutne DFSImageList != NULL, jinak by entry-point vratil chybu
+        // DFSImageList must be non-null, otherwise the entry point would report an error
         COLORREF bkColor = SalamanderGeneral->GetCurrentColor(SALCOL_ITEM_BK_NORMAL);
         if (ImageList_GetBkColor(DFSImageList) != bkColor)
             ImageList_SetBkColor(DFSImageList, bkColor);

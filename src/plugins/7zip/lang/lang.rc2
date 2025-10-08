@@ -25,7 +25,7 @@ BEGIN
     LTEXT           "Password:",IDC_STATIC_3,48,40,37,8
     EDITTEXT        IDC_PASSWORD,88,38,151,12,ES_PASSWORD | ES_AUTOHSCROLL
 /*
- // priprava pro skip a skip all
+ // preparation for skip and skip all
     DEFPUSHBUTTON   "OK",IDOK,12,63,50,14
     PUSHBUTTON      "Skip",IDC_SKIP,72,63,50,14
     PUSHBUTTON      "Skip all",IDC_SKIPALL,132,63,50,14

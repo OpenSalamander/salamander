@@ -80,7 +80,7 @@ diff -urN 7z313\7zip\Archive\Common\CoderMixer2.cpp 7za\7zip\Archive\Common\Code
  #include "CrossThreadProgress.h"
  
 +// patch
-+// musi byt mimo jeho namespace
++// must be outside his namespace
 +DWORD RunThreadWithCallStackObject(LPTHREAD_START_ROUTINE startAddress, LPVOID parameter);
 +// end of patch
 +
@@ -1434,7 +1434,7 @@ diff -urN 7z313\spl\splthread.cpp 7za\spl\splthread.cpp
 +++ 7za\spl\splthread.cpp	Thu Aug 12 18:50:05 2004
 @@ -0,0 +1,43 @@
 +//
-+// Tohle je uprava pro Salamander 7zip plugin
++// This is a modification for the Salamander 7-Zip plugin
 +//
 +
 +#include "StdAfx.h"
@@ -1462,7 +1462,7 @@ diff -urN 7z313\spl\splthread.cpp 7za\spl\splthread.cpp
 +  if ((module = ::GetModuleHandle("7zip.spl")) != NULL &&
 +      (addCallStackObject = (FThreadBody)::GetProcAddress(module, "AddCallStackObject")) != NULL)
 +  {
-+    // podarilo se nam ziskat AddCallStackObject ze 7zip.spl
++    // successfully obtained AddCallStackObject from 7zip.spl
 +    AddCallStackObjectParam p;
 +    p.StartAddress = startAddress;
 +    p.Parameter = parameter;
@@ -1471,7 +1471,7 @@ diff -urN 7z313\spl\splthread.cpp 7za\spl\splthread.cpp
 +  }
 +  else
 +  {
-+    // smula, musime jet po stary koleji
++    // unlucky; we have to fall back to the old approach
 +    return startAddress(parameter);
 +  }
 +}

@@ -28,7 +28,7 @@ public:
         if (this->_hWnd)
             return this->_hWnd;
 
-        return /*this->_hWnd = */ this->DoCreate(left, top, width, height, isTopmost); // vytvori hned WM_NCCREATE, ktery naplni _hWnd
+        return /*this->_hWnd = */ this->DoCreate(left, top, width, height, isTopmost); // immediately creates WM_NCCREATE, which populates _hWnd
     }
 
     virtual BOOL IsTopmost()

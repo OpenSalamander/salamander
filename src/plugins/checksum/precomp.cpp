@@ -3,9 +3,9 @@
 
 #include "precomp.h"
 
-// projekt CHECKSUM obsahuje tri skupiny modulu
+// The CHECKSUM project contains three groups of modules
 //
-// 1) modul precomp.cpp, ktery postavi ftp.pch (/Yc"precomp.h")
-// 2) moduly vyuzivajici checksum.pch (/Yu"precomp.h")
-// 3) commony maji vlastni, automaticky generovany WINDOWS.PCH
+// 1) the precomp.cpp module, which builds ftp.pch (/Yc"precomp.h")
+// 2) modules that use checksum.pch (/Yu"precomp.h")
+// 3) the common modules have their own automatically generated WINDOWS.PCH
 //    (/YX"windows.h" /Fp"$(OutDir)\WINDOWS.PCH")

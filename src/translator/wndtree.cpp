@@ -31,7 +31,7 @@ CTreeView::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (SkipNextCharacter)
         {
-            SkipNextCharacter = FALSE; // zamezime pipnuti
+            SkipNextCharacter = FALSE; // Prevent the audible beep
             return FALSE;
         }
         break;
@@ -44,7 +44,7 @@ CTreeView::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case VK_RETURN:
         {
             TreeWindow.OnEditLayout();
-            SkipNextCharacter = TRUE; // zamezime pipnuti
+            SkipNextCharacter = TRUE; // Prevent the audible beep
             return 0;
         }
         }
@@ -203,7 +203,7 @@ void CTreeWindow::OnEditLayout()
     HTREEITEM hHit = TreeView_GetNextItem(GetTreeView(), NULL, TVGN_NEXTSELECTED);
     if (hHit != NULL)
     {
-        // vytahneme lParam z nechame rozbalit menu
+        // Retrieve the item's lParam so the context menu can react accordingly
         TVITEM tvi;
         tvi.mask = TVIF_HANDLE | TVIF_PARAM;
         tvi.hItem = hHit;
@@ -222,7 +222,7 @@ CTreeWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_CREATE:
     {
-        //      // priradim oknu ikonku
+        //      // Assign an icon to the window
         //      SendMessage(HWindow, WM_SETICON, ICON_BIG,
         //                  (LPARAM)LoadIcon(HInstance, MAKEINTRESOURCE(IDI_MAIN)));
 
@@ -303,7 +303,7 @@ CTreeWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 HTREEITEM hHit = TreeView_HitTest(GetTreeView(), &hti);
                 if (hHit != NULL && (hti.flags & TVHT_ONITEM) != 0)
                 {
-                    // vytahneme lParam z nechame rozbalit menu
+                    // Retrieve the item's lParam so the context menu can react accordingly
                     TVITEM tvi;
                     tvi.mask = TVIF_HANDLE | TVIF_PARAM;
                     tvi.hItem = hHit;

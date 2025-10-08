@@ -4,11 +4,11 @@
 #pragma once
 
 #ifdef SHEXT_LOG_ENABLED
-#define SHEXT_LOG_FILENAME "C:\\zumpa\\shext-log.txt"
-// funkce pro zapis do log-file (pevna cesta, viz SHEXT_LOG_FILENAME)
+#define SHEXT_LOG_FILENAME "C:\\temp\\shext-log.txt"
+// function for writing to the log file (fixed path, see SHEXT_LOG_FILENAME)
 void WriteToLog(const char* str);
 #else                 // SHEXT_LOG_ENABLED
-#define WriteToLog(a) // ignorujeme zpravy posilane do logu
+#define WriteToLog(a) // ignore messages sent to the log
 #endif                // SHEXT_LOG_ENABLED
 
 #define MyIsEqualIID(rguid1, rguid2) \
@@ -277,12 +277,12 @@ struct ShellExt
     IShellExtVtbl* lpVtbl;
     DWORD m_cRef;
 
-    // zakladni rozhrani objektu je IContextMenu, dalsi rozhrani jsou zde:
+    // the primary interface of the object is IContextMenu; additional interfaces are here:
     ShellExtInit* m_pSEI; // IShellExtInit
     CopyHook* m_pCH;      // ICopyHookA
     CopyHookW* m_pCHW;    // ICopyHookW
 
-    // obdrzim pri IShellExtInit::Initialize
+    // received during IShellExtInit::Initialize
     //  LPITEMIDLIST  m_pIDFolder; // specifies the folder that contains the selected file objects
     LPDATAOBJECT m_pDataObj; // identifies the selected file objects
     //  HKEY          m_hRegKey;   // specifies the file class of the file object that has the focus

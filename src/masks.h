@@ -1,88 +1,87 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
-// funkce pro quick-search vyhledavani
+// functions used by the quick-search feature
 BOOL IsQSWildChar(char ch);
 void PrepareQSMask(char* mask, const char* src);
 BOOL AgreeQSMask(const char* filename, BOOL hasExtension, const char* mask, BOOL wholeString, int& offset);
 
-// wildcards '*' (lib. retezec) + '?' (lib. znak) <+ '#' (cislice) je-li extendedMode==TRUE>
-void PrepareMask(char* mask, const char* src);                                                // provede prevod do zvoleneho formatu
-BOOL AgreeMask(const char* filename, const char* mask, BOOL hasExtension, BOOL extendedMode); // odpovida masce ?
+// wildcards '*' (any string) + '?' (any character) <+ '#' (a digit) if extendedMode==TRUE>
+void PrepareMask(char* mask, const char* src);                                                // converts the mask into the chosen format
+BOOL AgreeMask(const char* filename, const char* mask, BOOL hasExtension, BOOL extendedMode); // does it match the mask ??
 
-// upravi jmeno dle masky; vysledek ulozi do bufferu 'buffer' o velikosti 'bufSize';
-// 'name' je upravovane jmeno; 'mask' je maska (neupravena - nevolat pro ni PrepareMask);
-// pri uspechu vraci 'buffer' (i pokud doslo k oriznuti jmena z duvodu maleho bufferu),
-// jinak NULL; POZNAMKA: chova se podle prikazu "copy" ve Win2K
+// adjusts the name according to the mask and stores the result in buffer 'buffer' of size 'bufSize'
+// 'name' is the name to adjust; 'mask' is the mask (unmodified - do not call PrepareMask on it)
+// returns 'buffer' on success (even if the name was truncated because the buffer was too small),
+// otherwise NULL; NOTE: behaves like the "copy" command in Win2K
 char* MaskName(char* buffer, int bufSize, const char* name, const char* mask);
 
 //*****************************************************************************
 //
 // CMaskGroup
 //
-// Zivotni cyklus:
-//   1) V konstruktoru nebo metode SetMasksString predame skupinu masek.
-//   2) Zavolame PrepareMasks pro stavbu vnitrnich dat; v pripade neuspechu
-//      zobrazime chybne misto a po oprave masky se vracime do bodu (2)
-//   3) Libovolne volame AgreeMasks pro zjisteni, zda jmeno odpovida skupine masek.
-//   4) Po pripadnem zavolani SetMasksString pokracujeme od (2)
+// Life cycle:
+//   1) In the constructor or SetMasksString method, provide a group of masks.
+//   2) Call PrepareMasks to build internal data; if it fails, display the error
+//      location and after fixing the mask, return to step (2).
+//   3) Call AgreeMasks at any time to check whether a name matches the mask group.
+//   4) If SetMasksString is called again, continue from step (2).
 //
-// Maska:
-//   '?' - libovolny znak
-//   '*' - libovolny retezec (i prazdny)
-//   '#' - libovolna cislice (pouze je-li 'extendedMode'==TRUE)
+// Mask:
+//   '?' - any character
+//   '*' - any string (including empty)
+//   '#' - any digit (only if 'extendedMode'==TRUE)
 //
-//   Priklady:
-//     *     - vsechna jmena
-//     *.*   - vsechna jmena
-//     *.exe - jmena s priponou "exe"
-//     *.t?? - jmena s priponou zacinajici znakem 't' a obsahujici jeste dva libovolne znaky
-//     *.r## - jmena s priponou zacinajici znakem 'r' a obsahujici jeste dve libovolne cislice
+//   Examples:
+//     *     - all names
+//     *.*   - all names
+//     *.exe - names with the "exe" extension
+//     *.t?? - names with an extension starting with 't' and having two additional characters
+//     *.r## - names with an extension starting with 'r' and two additional digits
 //
-// Skupina masek:
-//   Pro oddeleni masek pouzivame znak ';'. Jako oddelovac lze pouzit znak '|', ktery
-//   ma vsak specialni vyznam. Vsechny nasledujici masky budou zpracovavany inverzne,
-//   tedy pokud jim bude odpovidat jmeno, metoda AgreeMasks vrati FALSE.
-//   Oddelovac '|' muze byt ve skupine masek obsazen pouze jednou a musi za nim nasledovat
-//   alespon jedna maska. Pokud pred '|' neni zadna maska, bude automaticky vlozena
-//   maska "*".
+// Mask group:
+//   Masks are separated by ';' character. The '|' character can also be used as a separator
+//   that has a special meaning. All masks following '|' are treated inversely,
+//   meaning AgreeMasks returns FALSE if a name matches them.
+//   The '|' separator may appear only once in the mask group and must be followed by at least one mask.
+//   If nothing precedes '|', a "*" mask is automatically inserted.
 //
-//   Priklady:
-//     *.txt;*.cpp - vsechna jmena s priponou txt nebo cpp
-//     *.h*|*.html - vsechna jmena s priponou zacinajici znakem 'h', ale ne jmena s priponou "html"
-//     |*.txt      - vsechna jmena s jinou priponou nez "txt"
+//   Examples:
+//     *.txt;*.cpp - all names with the txt or cpp extension
+//     *.h*|*.html - all names whose extension starts with 'h' but not names with the extension "html"
+//     |*.txt      - all names with an extension other than "txt"
 //
 
-#define MASK_OPTIMIZE_NONE 0      // zadna optimalizace
-#define MASK_OPTIMIZE_ALL 1       // maska vyhovuje vsem pozadavkum (*.* nebo *)
-#define MASK_OPTIMIZE_EXTENSION 2 // maska je ve tvaru (*.xxxx), kde xxxx je pripona
+#define MASK_OPTIMIZE_NONE 0      // no optimization
+#define MASK_OPTIMIZE_ALL 1       // mask satisfies all requests (*.* or *)
+#define MASK_OPTIMIZE_EXTENSION 2 // mask is in form (*.xxxx) where xxxx is the extension
 
 struct CMaskItemFlags
 {
     unsigned Optimize : 7; // MASK_OPTIMIZE_xxx
-    unsigned Exclude : 1;  // pokud je 1, jde o exlude masku, jinak o include masku
-                           // exlude masky jsou v poli PreparedMasks zarazene pred
-                           // include masky
+    unsigned Exclude : 1;  // if 1, this is an exclude mask; otherwise, it is an include mask
+                           // exclude masks are stored before include masks in PreparedMasks array
 };
 
 struct CMasksHashEntry
 {
-    CMaskItemFlags* Mask;  // interni reprezentace masky, format viz CMaskItemFlags
-    CMasksHashEntry* Next; // dalsi polozka se stejnym hashem
+    CMaskItemFlags* Mask;  // internal mask representation, see CMaskItemFlags for the format
+    CMasksHashEntry* Next; // next entry with the same hash
 };
 
 class CMaskGroup
 {
 protected:
-    char MasksString[MAX_GROUPMASK];   // skupinka masek predana v konstruktoru nebo v PrepareMasks
-    TDirectArray<char*> PreparedMasks; // interni reprezentace masek, format viz CMaskItemFlags - nemusi obsahovat vsechny masky, nektere muzou byt v MasksHashArray
-    BOOL NeedPrepare;                  // je treba volat metodu PrepareMasks pred pouzitim 'PreparedMasks'?
+    char MasksString[MAX_GROUPMASK];   // mask group passed in the constructor or in PrepareMasks
+    TDirectArray<char*> PreparedMasks; // internal mask representation; for the format see CMaskItemFlags - may not contain all masks, some may be in MasksHashArray
+    BOOL NeedPrepare;                  // is it necessary to call the PrepareMasks method before using 'PreparedMasks'?
     BOOL ExtendedMode;
 
-    CMasksHashEntry* MasksHashArray; // neni-li NULL, jde o hashovaci pole obsahujici vsechny masky s formatem MASK_OPTIMIZE_EXTENSION (jen s CMaskItemFlags::Exclude==0)
-    int MasksHashArraySize;          // velikost MasksHashArray (dvojnasobek poctu ulozenych masek)
+    CMasksHashEntry* MasksHashArray; // if not NULL, it is a hash array containing all masks with MASK_OPTIMIZE_EXTENSION format (only those with CMaskItemFlags::Exclude==0)
+    int MasksHashArraySize;          // size of MasksHashArray (twice the number of stored masks)
 
 public:
     CMaskGroup();
@@ -92,35 +91,35 @@ public:
 
     CMaskGroup& operator=(const CMaskGroup& s);
 
-    // nastavi retezec masek 'masks'; (max. delka vcetne nuly na konci je MAX_GROUPMASK)
+    // sets the mask string 'masks'; (maximum length including the terminating null is MAX_GROUPMASK)
     void SetMasksString(const char* masks, BOOL extendedMode = FALSE);
 
-    // vraci retezec masek; 'buffer' je buffer o delce alespon MAX_GROUPMASK
+    // returns the string of masks; 'buffer' is a buffer that is at least MAX_GROUPMASK long
     const char* GetMasksString();
 
-    // vraci retezec masek uvolneny pro zapis; 'buffer' je buffer o delce alespon MAX_GROUPMASK
+    // returns the mask string released for writing; 'buffer' is a buffer that is at least MAX_GROUPMASK long
     char* GetWritableMasksString();
 
     BOOL GetExtendedMode();
 
-    // Prevede skupinu masek predanych konstruktoru nebo metodou SetMasksString
-    // na vnitrni reprezentaci, ktera umozni volani AgreeMasks. Pokud je 'extendedMode'==TRUE,
-    // bude syntaxe masky rozsirena o znak '#' reprezentujici libovolnou cislici.
-    // Vraci TRUE v pripade uspechu nebo FALSE v pripade chyby. V pripade chyby
-    // obsahuje 'errorPos' index znaku (z predane skupiny masek), ktery chybu zpusobil.
-    // Pri nedostatku pameti se vraci 'errorPos' 0.
-    // pokud je masksString == NULL, pouzije se CMaskGroup::MasksString, jinak se
-    // pouzije 'masksString' (nasledne je mozne volat AgreeMasks - CMaskGroup::MasksString
-    // se v tomto pripade ignoruje)
+    // Converts the mask group passed to the constructor or by the SetMasksString method
+    // into an internal representation that allows calling AgreeMasks. If 'extendedMode' is TRUE, the
+    // mask syntax is extended with '#' representing any digit.
+    // Returns TRUE on success or FALSE on error. In case of an error,
+    // 'errorPos' contains the index of the character (in the provided mask group) that caused the error.
+    // If memory is low, 'errorPos' is set to 0.
+    // If masksString == NULL, CMaskGroup::MasksString is used; otherwise the
+    // provided 'masksString' is used (in that case, AgreeMasks can be called — 
+    // CMaskGroup::MasksString is ignored).
     BOOL PrepareMasks(int& errorPos, const char* masksString = NULL);
 
-    // Zjisti, zda 'fileName' odpovida skupine masek.
-    // POZOR: 'fileName' nesmi byt full path, ale pouze ve tvaru name.ext
-    // fileExt musi ukazovat bud na terminator od fileName nebo na priponu (pokud existuje)
-    // pokud je fileExt == NULL, bude pripona dohledana - pozor - pomalejsi
+    // Determines whether 'fileName' matches the mask group.
+    // NOTE: 'fileName' must not be a full path, only in the form name.ext
+    // fileExt must point either to the terminator of fileName or to the extension (if it exists)
+    // if fileExt == NULL, the extension will be searched for - this is slower
     BOOL AgreeMasks(const char* fileName, const char* fileExt);
 
 protected:
-    // uvolni hashovaci pole MasksHashArray
+    // releases the hash array MasksHashArray
     void ReleaseMasksHashArray();
 };

@@ -21,8 +21,8 @@
 //#define SELECTED_COLOR RGB(255, 192, 0)
 #define SELECTED_COLOR RGB(128, 192, 255) //TODO: COLOR_HIGHLIGHTED + some effect
 
-// opatreni proti runtime check failure v debug verzi: puvodni verze makra pretypovava rgb na WORD,
-// takze hlasi ztratu dat (RED slozky)
+// precaution against runtime check failure in the debug version: the original macro casted RGB to WORD,
+// so it reported data loss (RED component)
 #undef GetGValue
 #define GetGValue(rgb) ((BYTE)(((rgb) >> 8) & 0xFF))
 
@@ -44,7 +44,7 @@ protected:
 
     CPixMap* _mapPix;
 
-    CZBitmap* _outBmp; //pro to co je videt... to se zoomuje pri ReSize/Animace
+    CZBitmap* _outBmp; //for what is visible... zoomed during ReSize/Animation
 
     BOOL _mapReady;
     BOOL _viewValid;
@@ -329,7 +329,7 @@ public:
         //PostMessage(this->_hWnd, WM_APP_DIRPOPULATED, 0, (LPARAM)this->_rootdir);
         this->_populateworker = this->_rootdir->BeginAsyncPopulate(this->_hWnd, WM_APP_DIRPOPULATED);
     }
-    void OnDirPopulated(WPARAM wParam, LPARAM lParam) //vzdy ve hlavnim vlaknu
+    void OnDirPopulated(WPARAM wParam, LPARAM lParam) //always in the main thread
     {
         CZRoot* czdir = (CZRoot*)lParam;
         if (czdir == this->_rootdir && wParam == TRUE)
@@ -515,7 +515,7 @@ public:
             level--;
             res = res->GetParent();
         }
-        //if (res == NULL) return this->_rootdir; //oprava mozneho nedostatku?
+        //if (res == NULL) return this->_rootdir; //fix for a possible deficiency?
         return res;
     }
     CZDirectory* GetRootDir() { return this->_rootdir; }
@@ -551,7 +551,7 @@ public:
     BOOL ZoomOut()
     {
         if (this->_viewdir == NULL)
-            return FALSE; //pokud neni null, pak by nemel byt null ani root
+            return FALSE; //if it is not null, the root should not be null either
         if (this->_viewdir != this->_rootdir)
         {
             this->_viewdir = this->_viewdir->GetParent();
@@ -585,7 +585,7 @@ public:
         this->_rootdir = NULL;
         this->_populateworker = NULL;
         wrk->SetSelfDelete(TRUE);
-        wrk->Abort(TRUE); //TODO: opravdu chci cekat?
+        wrk->Abort(TRUE); //TODO: do I really want to wait?
         return TRUE;
     }
 

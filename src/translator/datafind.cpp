@@ -83,7 +83,7 @@ BOOL CData::CompareStrings(const wchar_t* _string, const wchar_t* _pattern)
             {
                 break; // found
             }
-            iterator = str + patternLen; // zkusime dalsi vyskyt
+            iterator = str + patternLen; // try the next occurrence
             str = NULL;
         }
     } while (str == NULL);
@@ -108,11 +108,11 @@ void CData::Find()
     OutWindow.AddLine(buff, mteInfo);
 
     int i, j;
-    WORD lvIndex; // index v ListView
+    WORD lvIndex; // index in the ListView
 
     if (Config.FindTexts || Config.FindOriginal)
     {
-        // prohledame dialogy
+        // scan the dialogs
         for (i = 0; i < DlgData.Count; i++)
         {
             CDialogData* dialog = DlgData[i];
@@ -123,7 +123,7 @@ void CData::Find()
                 if (!control->ShowInLVWithControls(j))
                     continue;
 
-                BOOL found = FALSE; // nechceme duplicity
+                BOOL found = FALSE; // avoid duplicates
                 if (Config.FindTexts)
                 {
                     const wchar_t* text = control->TWindowName;
@@ -147,7 +147,7 @@ void CData::Find()
             }
         }
 
-        // prohledame menu
+        // scan the menus
         for (i = 0; i < MenuData.Count; i++)
         {
             CMenuData* menu = MenuData[i];
@@ -158,7 +158,7 @@ void CData::Find()
                 if (wcslen(item->TString) == 0)
                     continue;
 
-                BOOL found = FALSE; // nechceme duplicity
+                BOOL found = FALSE; // avoid duplicates
                 if (Config.FindTexts)
                 {
                     const wchar_t* text = item->TString;
@@ -183,14 +183,14 @@ void CData::Find()
             }
         }
 
-        // prohledame strings
+        // scan the string resources
         for (i = 0; i < StrData.Count; i++)
         {
             CStrData* strData = StrData[i];
             lvIndex = 0;
             for (j = 0; j < 16; j++)
             {
-                BOOL found = FALSE; // nechceme duplicity
+                BOOL found = FALSE; // avoid duplicates
                 if (Config.FindTexts)
                 {
                     wchar_t* str = strData->TStrings[j];
@@ -235,7 +235,7 @@ void CData::Find()
             {
                 WORD id = item->ID;
 
-                // prohledame dialogy
+                // scan the dialogs
                 for (i = 0; i < DlgData.Count; i++)
                 {
                     CDialogData* dialog = DlgData[i];
@@ -260,7 +260,7 @@ void CData::Find()
                     }
                 }
 
-                // prohledame menu
+                // scan the menus
                 for (i = 0; i < MenuData.Count; i++)
                 {
                     CMenuData* menu = MenuData[i];
@@ -286,7 +286,7 @@ void CData::Find()
                     }
                 }
 
-                // prohledame strings
+                // scan the string resources
                 for (i = 0; i < StrData.Count; i++)
                 {
                     CStrData* strData = StrData[i];
@@ -323,7 +323,7 @@ void CData::Find()
     if (count == 0)
         OutWindow.FocusLastItem();
     else
-        PostMessage(FrameWindow.HWindow, WM_COMMAND, CM_WND_OUTPUT, 0); // aktivace Output okna
+        PostMessage(FrameWindow.HWindow, WM_COMMAND, CM_WND_OUTPUT, 0); // activate the Output window
 
     OutWindow.EnablePaint(TRUE);
 
@@ -344,11 +344,11 @@ void CData::FindUntranslated(BOOL* completelyUntranslated)
     OutWindow.AddLine(buff, mteInfo);
 
     int i, j;
-    WORD lvIndex; // index v ListView
+    WORD lvIndex; // index in the ListView
 
     BOOL complUntrl = TRUE;
 
-    // prohledame dialogy
+    // scan the dialogs
     for (i = 0; i < DlgData.Count; i++)
     {
         CDialogData* dialog = DlgData[i];
@@ -377,7 +377,7 @@ void CData::FindUntranslated(BOOL* completelyUntranslated)
         }
     }
 
-    // prohledame menu
+    // scan the menus
     for (i = 0; i < MenuData.Count; i++)
     {
         CMenuData* menu = MenuData[i];
@@ -399,7 +399,7 @@ void CData::FindUntranslated(BOOL* completelyUntranslated)
         }
     }
 
-    // prohledame strings
+    // scan the string resources
     for (i = 0; i < StrData.Count; i++)
     {
         CStrData* strData = StrData[i];
@@ -430,9 +430,9 @@ void CData::FindUntranslated(BOOL* completelyUntranslated)
         swprintf_s(buff, L"%d occurrence(s) have been found.", count - 1);
     OutWindow.AddLine(buff, mteSummary);
     if (count <= 1)
-        PostMessage(FrameWindow.HWindow, WM_FOCLASTINOUTPUTWND, 0, 0); // Output okno jeste nemusi existovat
+        PostMessage(FrameWindow.HWindow, WM_FOCLASTINOUTPUTWND, 0, 0); // the Output window might not exist yet
     else
-        PostMessage(FrameWindow.HWindow, WM_COMMAND, CM_WND_OUTPUT, 0); // aktivace Output okna
+        PostMessage(FrameWindow.HWindow, WM_COMMAND, CM_WND_OUTPUT, 0); // activate the Output window
 
     OutWindow.EnablePaint(TRUE);
 

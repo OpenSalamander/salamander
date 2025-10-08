@@ -7,7 +7,7 @@
 //
 // CCommonDialog
 //
-// Dialog centrovany k parentu
+// Dialog centered to the parent window
 //
 
 class CCommonDialog : public CDialog

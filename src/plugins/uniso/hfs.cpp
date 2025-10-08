@@ -365,11 +365,11 @@ BOOL CHFS::ListDirectory(char* rootPath, int session,
             ConvertHFSDate(fd.LastWrite, rec.dir->contentModDate ? rec.dir->contentModDate : rec.dir->createDate);
 
             size_t strElements = strlen(path) + 1 + strlen(fileName) + 1;
-            FolderInfo* fi = (FolderInfo*)malloc(sizeof(FolderInfo) + strElements - 1); // 1 znak je jiz soucasti struktury FolderInfo
+            FolderInfo* fi = (FolderInfo*)malloc(sizeof(FolderInfo) + strElements - 1); // one character is already part of the FolderInfo structure
             if (fi)
             {
                 fi->id = rec.dir->folderID;
-                strcpy_s(fi->name, strElements, path); // diky strukture FolderInfo selhlava hlidani velikosti ciloveho bufferu pomoci sablon pro strcpy_s
+                strcpy_s(fi->name, strElements, path); // due to the FolderInfo structure, the destination buffer size checking via the strcpy_s templates fails
                 strcat_s(fi->name, strElements, "\\");
                 strcat_s(fi->name, strElements, fileName);
 
@@ -388,7 +388,7 @@ BOOL CHFS::ListDirectory(char* rootPath, int session,
                     nAllocedFolders += 32;
                 }
                 if (!SortByExtDirsAsFiles)
-                    fd.Ext = fd.Name + fd.NameLen; // adresare nemaji priponu
+                    fd.Ext = fd.Name + fd.NameLen; // directories do not have an extension
                 if (dir->AddDir(path, fd, pluginData))
                 {
                     pFolders[nFolders++] = fi;
@@ -565,14 +565,14 @@ int CHFS::UnpackFile(CSalamanderForOperationsAbstract* salamander, const char* s
         }
         if (!bFileComplete)
         {
-            // protoze je vytvoren s read-only atributem, musime R attribut
-            // shodit, aby sel soubor smazat
+            // because it was created with the read-only attribute, we must clear
+            // the R attribute so the file can be deleted
             attrs &= ~FILE_ATTRIBUTE_READONLY;
             if (!SetFileAttributes(name, attrs))
                 Error(LoadStr(IDS_CANT_SET_ATTRS), GetLastError());
 
-            // user zrusil operaci
-            // smazat po sobe neuplny soubor
+            // the user cancelled the operation
+            // delete the incomplete file afterwards
             if (!DeleteFile(name))
                 Error(LoadStr(IDS_CANT_DELETE_TEMP_FILE), GetLastError());
         }

@@ -4,68 +4,68 @@
 #pragma once
 
 // size of file read buffer
-#define BUFSIZE 0x8000 // buffer bude 32KB
+#define BUFSIZE 0x8000 // buffer will be 32 KB
 
 class CDecompressFile
 {
 public:
-    // detekuje typ archivu a vrati spravne zinicializovany objekt
+    // detects the archive type and returns a properly initialized object
     static CDecompressFile* CreateInstance(LPCTSTR filename, DWORD offset, CQuadWord inputSize);
 
-    // konstruktor a destruktor
+    // constructor and destructor
     CDecompressFile(const char* filename, HANDLE file, unsigned char* buffer, unsigned long start, unsigned long read, CQuadWord size);
     virtual ~CDecompressFile();
 
     virtual BOOL IsCompressed() { return FALSE; }
     virtual BOOL BuggySize() { return FALSE; }
 
-    // vraci, v jakem jsme stavu
+    // returns our current state
     BOOL IsOk() { return Ok; }
-    // pokud nastala chyba, vraci jeji kod
+    // if an error occurred, returns its code
     const unsigned int GetErrorCode() { return ErrorCode; }
-    // pokud nastala systemova chyba (I/O etc.) vraci blizsi urceni (::GetLastError())
+    // if a system error occurred (I/O etc.) returns more detail (::GetLastError())
     const DWORD GetLastErr() { return LastError; }
-    // vraci velikost archivu na disku
+    // returns the size of the archive on disk
     CQuadWord GetStreamSize() { return InputSize; }
-    // vraci soucasnou pozici v archivu na disku
+    // returns the current position in the archive on disk
     CQuadWord GetStreamPos() { return StreamPos; }
-    // vrati puvodni nazev souboru, ktery byl v archivu (nazev taru v gzipu apod.)
+    // returns the original file name stored in the archive (the tar name in gzip, etc.)
     const char* GetOldName();
-    // vrati nazev souboru, se kterym pracuje (jmeno archivu)
+    // returns the name of the file it works with (the archive name)
     const char* GetArchiveName() { return FileName; }
 
-    // vrati cast nebo cely posledni precteny blok k dalsimu pouziti
+    // returns part or all of the last read block for further use
     virtual void Rewind(unsigned short size);
 
     virtual const unsigned char* GetBlock(unsigned short size, unsigned short* read = NULL);
     virtual void GetFileInfo(FILETIME& lastWrite, CQuadWord& fileSize, DWORD& fileAttr);
 
 protected:
-    // cte blok ze souboru
+    // reads a block from the file
     const unsigned char* FReadBlock(unsigned int number);
-    // cte byte ze souboru
+    // reads a byte from the file
     unsigned char FReadByte();
-    // nastavi puvodni jmeno souboru (pokud bylo v archivu ulozeno)
+    // sets the original file name (if it was stored in the archive)
     void SetOldName(char* oldName);
 
-    BOOL FreeBufAndFile;      // TRUE = prevzali jsme soubor a buffer, uvolnime je v destruktoru
-    BOOL Ok;                  // stav
-    unsigned int ErrorCode;   // pokud nastala chyba, tady je uvedeno, jaka
-    const char* FileName;     // nazev archivu, nad kterym pracujem
-    char* OldName;            // puvodni nazev souboru pred zapakovanim
-    CQuadWord InputSize;      // velikost archivu
-    CQuadWord StreamPos;      // pozice v archivu (pro progress)
-    HANDLE File;              // otevreny archiv
-    DWORD LastError;          // pokud byla chyba systemu (I/O...), tady je blizsi urceni
-    unsigned char* Buffer;    // vyrovnavaci buffer pro cteni ze souboru
-    unsigned char* DataStart; // zacatek nepouzitych dat v bufferu
-    unsigned char* DataEnd;   // konec nepouzitych dat
+    BOOL FreeBufAndFile;      // TRUE = we took over the file and buffer, release them in the destructor
+    BOOL Ok;                  // state flag
+    unsigned int ErrorCode;   // if an error occurred, it is specified here
+    const char* FileName;     // archive name we are working with
+    char* OldName;            // original file name before packing
+    CQuadWord InputSize;      // archive size
+    CQuadWord StreamPos;      // position in the archive (for progress)
+    HANDLE File;              // opened archive
+    DWORD LastError;          // if there was a system error (I/O...), the details are here
+    unsigned char* Buffer;    // read buffer for the file
+    unsigned char* DataStart; // start of unused data in the buffer
+    unsigned char* DataEnd;   // end of unused data
 };
 
 class CZippedFile : public CDecompressFile
 {
 public:
-    // konstruktor a destruktor
+    // constructor and destructor
     CZippedFile(const char* filename, HANDLE file, unsigned char* buffer, unsigned long start, unsigned long read, CQuadWord inputSize);
     virtual ~CZippedFile();
 

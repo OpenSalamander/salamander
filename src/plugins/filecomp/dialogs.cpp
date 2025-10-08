@@ -10,7 +10,7 @@ ComDlgHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam)
                         lParam);
     if (uiMsg == WM_INITDIALOG)
     {
-        // SalamanderGUI->ArrangeHorizontalLines(hdlg);  // pro Windows common dialogy tohle nedelame
+        // SalamanderGUI->ArrangeHorizontalLines(hdlg);  // we do not do this for Windows common dialogs
         CenterWindow(hdlg);
         return 1;
     }
@@ -22,7 +22,7 @@ ComDlgHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 // CCompareFilesDialog
 //
 
-// historie pro kombace
+// history for combo boxes
 
 TCHAR CBHistory[MAX_HISTORY_ENTRIES][MAX_PATH];
 int CBHistoryEntries;
@@ -32,7 +32,7 @@ void AddToHistory(LPCTSTR path)
     CALL_STACK_MESSAGE2(_T("AddToHistory(%s)"), path);
     int toMove = __min(CBHistoryEntries, MAX_HISTORY_ENTRIES - 1);
     int enlarge = 1;
-    // podivame jestli uz stejna cesta neni v historii
+    // check whether the same path is already in the history
     int i;
     for (i = 0; i < CBHistoryEntries; i++)
     {
@@ -43,7 +43,7 @@ void AddToHistory(LPCTSTR path)
             break;
         }
     }
-    // vytvorime misto pro cestu kterou budeme ukladat
+    // create space for the path we are going to store
     int j;
     for (j = toMove; j > 0; j--)
         _tcscpy(CBHistory[j], CBHistory[j - 1]);
@@ -119,7 +119,7 @@ OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam)
   CALL_STACK_MESSAGE4("OFNHookProc(, 0x%X, 0x%IX, 0x%IX)", uiMsg, wParam, lParam);
   if (uiMsg == WM_INITDIALOG)
   {
-    // SalamanderGUI->ArrangeHorizontalLines(hdlg);  // pro Windows common dialogy tohle nedelame
+    // SalamanderGUI->ArrangeHorizontalLines(hdlg);  // we do not do this for Windows common dialogs
     HWND hwnd = GetParent(hdlg);
     CenterWindow(hdlg);
     return 1;
@@ -167,8 +167,8 @@ CCompareFilesDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         HWND hWnd1 = GetDlgItem(HWindow, IDE_PATH1), hWnd2 = GetDlgItem(HWindow, IDE_PATH2);
 
-        SG->InstallWordBreakProc(hWnd1); // instalujeme WordBreakProc do comboboxu
-        SG->InstallWordBreakProc(hWnd2); // instalujeme WordBreakProc do comboboxu
+        SG->InstallWordBreakProc(hWnd1); // install WordBreakProc into the combo box
+        SG->InstallWordBreakProc(hWnd2); // install WordBreakProc into the combo box
 
         // I believe OldEditProc1 and OldEditProc2 are equal. But I am rather paranoic...
         OldEditProc1 = (WNDPROC)GetWindowLongPtr(hWnd1, GWLP_WNDPROC);
@@ -180,11 +180,11 @@ CCompareFilesDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         SetWindowPos(HWindow, AlwaysOnTop ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
-        // incializujeme historii
+        // initialize the history
         int i = 0;
         if (CBHistoryEntries > 1)
         {
-            // v druhem kombaci ulozime prvni dve cesty v obracenem poradi
+            // store the first two paths in the second combo box in reverse order
             for (; i < 2; i++)
             {
                 SendMessage(GetDlgItem(HWindow, IDE_PATH1), CB_ADDSTRING, 0, (LPARAM)CBHistory[i]);

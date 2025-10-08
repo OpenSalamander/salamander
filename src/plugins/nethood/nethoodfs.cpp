@@ -211,7 +211,7 @@ CNethoodPluginInterfaceForFS::DisconnectFS(
     CALL_STACK_MESSAGE5("CNethoodPluginInterfaceForFS::DisconnectFS(, %d, %d, , %s, %d)",
                         isInPanel, panel, pluginFSName, pluginFSNameIndex);
 
-    //((CPluginFSInterface *)pluginFS)->CalledFromDisconnectDialog = TRUE; // potlacime zbytecne dotazy (user dal prikaz pro disconnect, jen ho provedeme)
+    //((CPluginFSInterface *)pluginFS)->CalledFromDisconnectDialog = TRUE; // suppress unnecessary prompts (the user issued a disconnect command, we just perform it)
 
     if (isInPanel)
     {
@@ -225,7 +225,7 @@ CNethoodPluginInterfaceForFS::DisconnectFS(
 
     if (!ret)
     {
-        //((CPluginFSInterface *)pluginFS)->CalledFromDisconnectDialog = FALSE; // vypneme potlaceni zbytecnych dotazu
+        //((CPluginFSInterface *)pluginFS)->CalledFromDisconnectDialog = FALSE; // stop suppressing unnecessary prompts
     }
 
     return ret;

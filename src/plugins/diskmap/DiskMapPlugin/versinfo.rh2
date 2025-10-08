@@ -13,7 +13,7 @@
 #define VERSINFO_MINORA      1
 #define VERSINFO_MINORB      2
 
-#include "spl_vers.h" // vytahneme cisla verzi + buildu
+#include "spl_vers.h" // pull version numbers + build
 
 //#define VERSINFO_COPYRIGHT   "Copyright © 2009-2023 Ondřej Zarevúcky"
 #define VERSINFO_COPYRIGHT   "Copyright © 2009-2023 Ondrej Zarevucky"

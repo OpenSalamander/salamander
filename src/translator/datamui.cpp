@@ -33,9 +33,9 @@ BOOL TrimOnSecondUnderscore(char* masked)
     return FALSE;
 }
 
-// pokusi se v prelozenem strome zacinajicim na 'translatedMUIRoot' dohledat soubor 'fileName' na podceste 'originalMUIDir'
-// pokud takovy soubor nalezne, ulozi jeho cestu do 'translatedFileName' a vrati TRUE
-// jinak vrati FALSE
+// try to locate 'fileName' in the translated tree rooted at 'translatedMUIRoot' under the subpath 'originalMUIDir'
+// if found, store its path in 'translatedFileName' and return TRUE
+// otherwise return FALSE
 BOOL LookupForTranslatedFile(const char* originalMUIRoot, const char* originalMUISubDir, const char* fileName,
                              const char* translatedMUIRoot, char* translatedFileName)
 {
@@ -43,7 +43,7 @@ BOOL LookupForTranslatedFile(const char* originalMUIRoot, const char* originalMU
     char buff[MAX_PATH];
     lstrcpy(buff, translatedMUIRoot);
 
-    // nazev adesare obsahuje na konci za druhym podtrzitkem nejake cisla, ktera musime "zariznout", potoze jsou ruzna pro kazdou lokalizaci
+    // the directory name ends with numbers after the second underscore that we must trim because they differ for each localization
     char trim[MAX_PATH];
     lstrcpy(trim, originalMUISubDir);
     TrimOnSecondUnderscore(trim);
@@ -54,7 +54,7 @@ BOOL LookupForTranslatedFile(const char* originalMUIRoot, const char* originalMU
     if (hFind != INVALID_HANDLE_VALUE)
     {
         do
-        { // hledame prvni level podadresaru
+        { // look for the first level of subdirectories
             if (find.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
             {
                 if (find.cFileName[0] != 0 && strcmp(find.cFileName, ".") != 0 && strcmp(find.cFileName, "..") != 0)
@@ -89,7 +89,7 @@ BOOL EnumMUIFiles(CData* data, const char* originalMUIRoot, const char* original
     if (hFind != INVALID_HANDLE_VALUE)
     {
         do
-        { // hledame soubory
+        { // look for files
             if ((find.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
             {
                 if (find.cFileName[0] != 0)
@@ -102,7 +102,7 @@ BOOL EnumMUIFiles(CData* data, const char* originalMUIRoot, const char* original
                     char translatedFileName[MAX_PATH];
                     if (LookupForTranslatedFile(originalMUIRoot, originalMUISubPath, find.cFileName, translatedMUIRoot, translatedFileName))
                     {
-                        // nacte resourcy z original a translated DLL
+                        // load resources from the original and translated DLL
                         data->Load(originalFileName, translatedFileName, FALSE);
                     }
                     else
@@ -129,13 +129,13 @@ BOOL EnumMUIDirectories(CData* data, const char* originalMUIRoot, const char* tr
     if (hFind != INVALID_HANDLE_VALUE)
     {
         do
-        { // hledame prvni level podadresaru
+        { // look for the first level of subdirectories
             if (find.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
             {
                 if (find.cFileName[0] != 0 && strcmp(find.cFileName, ".") != 0 && strcmp(find.cFileName, "..") != 0)
                 {
-                    // nasli jsou adresar, ktery jiz muze obsahovat vlastni *.dll.mui DLLka
-                    // jdeme se po nich podivat
+                    // found a directory that may already contain its own *.dll.mui files
+                    // inspect them
                     EnumMUIFiles(data, originalMUIRoot, find.cFileName, translatedMUIRoot);
                 }
             }
@@ -147,7 +147,7 @@ BOOL EnumMUIDirectories(CData* data, const char* originalMUIRoot, const char* tr
 
 BOOL CData::LoadMUIPackages(const char* originalMUI, const char* translatedMUI)
 {
-    // sestrelime existujici data
+    // clear the existing data
     StrData.DestroyMembers();
     MenuData.DestroyMembers();
     DlgData.DestroyMembers();
@@ -158,7 +158,7 @@ BOOL CData::LoadMUIPackages(const char* originalMUI, const char* translatedMUI)
     DataRH.Clean();
 
     MUIMode = TRUE;
-    MUIDialogID = 1; // reset counteru pro unikatni ID
+    MUIDialogID = 1; // reset the counter for unique IDs
     MUIMenuID = 1;
     MUIStringID = 1;
 

@@ -1,7 +1,3 @@
-Jan Patera 2008.12.16 - START
-
-Further comments to 7za.dll are located in patch\install.
-
 As of v4.62, 7za.dll can't really be built as truly single-threaded.
 It still launches new threads, when a new type of encoder is needed
 (namely brancher for executables). As a result, the callback to 7zip.spl
@@ -28,94 +24,110 @@ The original text written probably by David Andrs and timestamped 2004.08.30 fol
 
 Jan Patera 2008.12.16 - END
 
-Poznamky k implementaci 7zip
-----------------------------
+Notes on the 7zip implementation
+-------------------------------
 
-- Progress pri vybalovani
-  Volaji se metody SetTotal a SetCompleted, kde se predavaji parametry toho, jak proces pokracuje
-  atd. Zde tedy volam metody salamandera ProgressSetTotalSize, ProgressAddSize. Z me
-  nepochopitelnych duvodu vsak total progress vubec nefachci. Ackoliv spocitana celkova velikost
-  je spravne.
+- Progress during extraction
+  The SetTotal and SetCompleted methods get called with parameters describing
+  how the process is progressing, and so on. In those places I call Salamander's
+  ProgressSetTotalSize and ProgressAddSize. For reasons I do not understand, the
+  total progress does not work at all even though the calculated total size is
+  correct.
 
-  Je mozne vyresit tim, ze bude jen jeden progress (nebude total proges, coz by byla skoda)
+  It might be possible to solve this by having only a single progress bar (no
+  total progress, which would be a shame).
 
   [SOLVED]
-  Progress je resen velmi divne. Abychom to pochopili musime to vzit ponekud zesiroka. Autor
-  vybaluje tak, ze sestavi pole indexu (index jednoznacne identifikuje polozku v archivu) to
-  predhodi metode Extract. Ja to delam tak, ze pro kazdy soubor zavolam Extract (s jednoprvkovym
-  polem - index je soubor, ktery chci vybalit).
+  Progress is implemented in a very strange way. To understand it we have to take
+  a broader look. The original author extracts by creating an array of indices
+  (an index uniquely identifies an item in the archive) and passes it to Extract.
+  I call Extract for each file (with a single-element array where the index is the
+  file I want to extract).
 
-  Autoruv zpusob progressbaru. Podhodi pole metode Extract. Metoda SetTotal se zavola jednou. Pak se
-  v prubehu vybalovani vola metoda SetCompleted. Progress odpovida tomu co se deje.
+  Author's approach to the progress bar: pass the array to Extract. SetTotal is
+  called once. During extraction SetCompleted gets called and the progress matches
+  what is happening.
 
-  Muj zpusob. Vola se SetTotal pro kazdy soubor, jenze hodnote, ktera do metody vstupuje vubec
-  nerozumim - rozhodne to neni velikost souboru, ani zapackovaneho, ani rozpakovaneho, co to je to
-  nevim. Takze dokazu pro kazdy soubor updatnou progress pred vybalenim souboru a po vybaleni. Proto
-  pouzivam jen jeden progress. Nedokazu predem (a hlavne jednoduse) ziskat tu celkovou velikost, 
-  ktera bude vstupovat do SetTotal, abych mohl prubezne updatovat file progress.
+  My approach: SetTotal is called for every file, but I have no idea what the
+  value passed into the method represents—it is definitely not the file size,
+  either packed or unpacked. So I can update the progress before and after
+  extracting every file. Therefore I use only one progress bar. I cannot (and
+  mainly not easily) obtain the total size that should be passed to SetTotal to
+  update the file progress continuously.
 
-  Muj zpusob je pomalejsi, protoze pri kazdem zavolani se vytvari nejaky ten objekt (ale neni jich
-  vic jak 5) a pak se provadeji v archivu nejake skipy nez se dojde na soubor, ktery ma byt vybalen.
-  Tyto skipy nejsou tak caste, pokud se predhodi cele pole (autoruv zpusob). Ovsem pak je zde "drobny"
-  problem s vybalovanim prazdnych adresaru.
+  My approach is slower because each call creates some object (no more than five)
+  and then skips through the archive until it reaches the file that should be
+  extracted. These skips are less frequent if you pass the entire array (the
+  author's method). However, then there is the "minor" problem of extracting empty
+  directories.
 
   [EDITED]
-  Uz to delam jako autor, predhodim pole a volam progressbarovy metody, takze progress odpovida,
-  melo by to by i rychlejsi, mene skipu v archivu. Jen nefunguje ProgressAddText a jine, viz nize
-  sekce Progress a Osetreni chybovych stavu.
+  I now do it like the author: pass the array and call the progress-bar methods,
+  so the progress matches and it should be faster with fewer skips in the archive.
+  ProgressAddText and others still do not work, see the sections below on
+  Progress and Handling error states.
 
-- Osetreni chybovych stavu
-  Nechapu jak dokaze osetrit, ze pri vybalovani souboru, pokud tento jiz existuje, tak jak predat
-  aktivitu uzivateli, aby rozhodl co s tim. Zkousel jsem pred jeho vytvoreni souboru zavolat
-  salamanderovsky SalamanderSafeFile->SafeFileCreate, ale sehlalo to s tim, ze v TRACE SERVERU se
-  objevila hlaska: Spatne volani, tento thread nema definovany call-stack object.
-  Co s tim?
+- Handling error states
+  I do not understand how to handle the case where a file already exists while
+  extracting and we need to ask the user what to do. I tried calling Salamander's
+  SalamanderSafeFile->SafeFileCreate before creating the file, but it failed with
+  the TRACE SERVER message: Wrong call, this thread does not have a defined
+  call-stack object.
+  What now?
 
   EDITED:
-  Testovani existence souboru a predani aktivity uzivateli se provadi v metode GetStream
-  (callbackimp), ale SafeFileCreate porad nejde.
-  
-- Prechod na verzi, kdy se bude jeho zdrojak prikompilovavat k nasemu spl nevidim jako dobry, protoze
-  si asi moc nepomuzeme. Budeme mit stale stejne problemy, ne-li vetsi (chybi dokumnetace,
-  komentare). Budeme sice moci zasahovat vice do toho, co se deje, ale pri vydani nove verze to
-  budeme muset vzdy preprogramovat.
+  Checking if a file exists and passing control to the user happens in the
+  GetStream method (callbackimp), but SafeFileCreate still does not work.
 
-  Mozne reseni, vykuchat z jeho zdrojaku kompresi a dekompresni rutiny a zabalit je do naseho spl.
-  Ovsem bylo by nutne napsat ten kod okolo jako vytvoreni archivu, otevreni archivu, listovani
-  archivem a ja nevim co jeste...
+- Switching to a version where his sources are linked into our SPL does not look
+  useful because it probably would not help much. We would keep having the same
+  problems, maybe even bigger ones (no documentation, no comments). We could
+  interfere more with what is going on, but we would have to redo everything for
+  every new release.
+
+  A possible solution is to rip out the compression and decompression routines
+  from his sources and wrap them in our SPL. We would have to write the surrounding
+  code though: creating archives, opening archives, listing the archive contents,
+  and who knows what else...
 
 
 Progress
 --------
 
-- nejde volat ProgressAddText(...., TRUE) - (delayedPaint == TRUE) => zatuhne to, s FALSE to jde.
+- Calling ProgressAddText(...., TRUE) does not work (delayedPaint == TRUE) ⇒ it
+  freezes. It works with FALSE.
 
 
-Hesla
------
+Passwords
+---------
 
-- CExtractCallbackImp::GetPassword - v dobe zadani o heslo nevime na jaky soubor :(
+- CExtractCallbackImp::GetPassword — when asking for a password we do not know
+  which file it applies to :(
 
 
 OperationResults
 ----------------
 
-- Jsou 4 vysledky operaci (kOK, kUnSupportedMethod, kCRCError, kDataError) (pak je jeste unknown error,
-  to, kdyz to neni ani jedna z techto).
-  
-  Pokud se zada spatne heslo, tak se soubor vypakuje, ale pochopitelne blbe, a jako vysledek
-  operace se hodi kDataError. Takze muzu dat do konfigu, mazani blbe vybalenych souboru, nebo
-  zareagovat nejakym messageboxem, kde bude 'File blbe vybalen' smazat/nechat.
-  Problem bude, kdyz nebude zadano heslo, tak jestli to taky muze hodit dataerror (jelikoz jsem
-  nikde nevidel neco jako bad pwd, tak zadani spatneho heslo asi nejde rozpoznat...)
-  
-  Na CRC error, asi reagovat taky hlaskou Smazat/nechat.
+- There are four operation results (kOK, kUnSupportedMethod, kCRCError,
+  kDataError), plus an unknown error if it is none of the above.
+
+  If the password is wrong, the file is extracted but obviously corrupted and
+  the result of the operation is kDataError. So I can either add "delete badly
+  extracted files" to the configuration or react with a message box saying
+  "File extracted incorrectly" offering delete/keep.
+  The problem is what happens if no password is provided—will that also throw a
+  data error? Since I have not seen anything like "bad pwd" anywhere, it probably
+  is not possible to recognize a wrong password...
+
+  We should probably react to a CRC error with the same delete/keep dialog.
 
 
-NEJDE (vubec)
--------------
+DOES NOT WORK (at all)
+----------------------
 
-- vymazat zaheslovany soubor z archivu (neni implementovano v 7za.dll - mozna ze vubec v celym 7zip)
-- skip/skip all pri zadavani hesla
-- zjistit ze bylo zadano spatne heslo
-- nektere soubory nejdou z archivu vymazat (asi zavisle na pakovaci metode)
+- deleting a password-protected file from an archive (not implemented in
+  7za.dll—maybe in 7zip overall)
+- skip/skip all while entering a password
+- detecting that a wrong password was entered
+- some files cannot be deleted from an archive (probably depends on the
+  compression method)

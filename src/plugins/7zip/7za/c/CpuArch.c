@@ -195,7 +195,7 @@ BOOL SalIsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD w
     VER_MINORVERSION, VER_GREATER_EQUAL),
     VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL);
 
-  SecureZeroMemory(&osvi, sizeof(osvi));     // nahrada za memset (nevyzaduje RTLko)
+  SecureZeroMemory(&osvi, sizeof(osvi));     // replacement for memset (does not require the RTL)
   osvi.dwOSVersionInfoSize = sizeof(osvi);
   osvi.dwMajorVersion = wMajorVersion;
   osvi.dwMinorVersion = wMinorVersion;
@@ -209,7 +209,7 @@ static Bool CPU_Sys_Is_SSE_Supported()
 //  if (!GetVersionEx(&vi))
 //    return False;
 //  return (vi.dwMajorVersion >= 5);
-  return SalIsWindowsVersionOrGreater(5, 0, 0) ? True : False;   // Petr: jsou to aspon W2K?
+  return SalIsWindowsVersionOrGreater(5, 0, 0) ? True : False;   // Petr: is this at least Windows 2000?
 }
 // OPENSAL_7ZIP_PATCH END
 

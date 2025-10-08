@@ -41,7 +41,7 @@ BOOL CPreviewWindow::InitColumns()
     lvc.mask = LVCF_FMT | LVCF_TEXT | LVCF_SUBITEM;
     lvc.fmt = LVCFMT_LEFT;
     int i;
-    for (i = 0; header[i] != -1; i++) // vytvorim sloupce
+    for (i = 0; header[i] != -1; i++) // create the columns
     {
         lvc.pszText = (LPSTR)LoadStr(header[i]);
         lvc.iSubItem = i;
@@ -103,7 +103,7 @@ void CPreviewWindow::Update(BOOL force)
     {
         cl.left = ListView_GetColumnWidth(HWindow, 0);
         cl.right = cl.left + ListView_GetColumnWidth(HWindow, 1);
-        cl.left = 0; // aby se prekreslila i ikona
+        cl.left = 0; // so the icon is redrawn as well
     }
 
     InvalidateRect(HWindow, &cl, FALSE);
@@ -173,7 +173,7 @@ char* CPreviewWindow::GetItemText(int index, int subItem)
             NewNameValid = FALSE;
             if (RenamerDialog->ManualMode)
             {
-                // optimalizace
+                // optimization
                 // int pos = SendDlgItemMessage(RenamerDialog->HWindow, IDE_MANUAL, EM_LINEINDEX, index, 0);
                 // if (pos < 0)
                 // {
@@ -192,7 +192,7 @@ char* CPreviewWindow::GetItemText(int index, int subItem)
                 *LPWORD(NewNameCache) = MAX_PATH;
                 int l = (int)SendMessage(RenamerDialog->ManualEdit->HWindow, EM_GETLINE,
                                          index, (LPARAM)NewNameCache);
-                NewNameCache[l] = 0; // pro jistotu
+                NewNameCache[l] = 0; // just to be sure
 
                 NewNameValid = ValidateFileName(NewNameCache, l, RenamerOptions.Spec, NULL, NULL);
                 //  }
@@ -287,7 +287,7 @@ char* CPreviewWindow::GetItemText(int index, int subItem)
 
     case CI_DATE:
     {
-        // TODO: jaky cas dostanu ze salamandera? jaky cas dostanu z FindXXFile?
+        // TODO: what time do we get from Salamander? what time do we get from FindXXFile?
         SYSTEMTIME st;
         FileTimeToSystemTime(&item->LastWrite, &st);
         if (!GetDateFormat(LOCALE_USER_DEFAULT, DATE_SHORTDATE, &st, NULL, TextBuffer, 100))
@@ -326,7 +326,7 @@ BOOL CPreviewWindow::CustomDraw(LPNMLVCUSTOMDRAW cd, LRESULT& result)
 
     case CDDS_ITEMPREPAINT:
     {
-        // pozadame si o zaslani notifikace CDDS_ITEMPREPAINT | CDDS_SUBITEM
+        // request sending the CDDS_ITEMPREPAINT | CDDS_SUBITEM notification
         result = CDRF_NOTIFYSUBITEMDRAW;
         return TRUE;
     }
@@ -335,11 +335,11 @@ BOOL CPreviewWindow::CustomDraw(LPNMLVCUSTOMDRAW cd, LRESULT& result)
     {
         if (item >= SourceFiles.Count)
         {
-            // dostali jsme dve padacky, kdy byl pocet prvku v poli SourceFiles rovno 1 a zaroven se mela kreslit polozka s indexem 1
-            // komentar od jedne z padacek je:
+            // we encountered two crashes when the number of elements in the SourceFiles array equaled 1 and item 1 was about to be drawn
+            // the comment from one of the crashes is:
             // 5ADF745CD736D5EC-AS30B1PB87X64-120909-215934-A8CF45D9.7Z / mkolka@gmail.com
-            // Hromadne premenovanie suborov, s najdenymi duplictnymi subormi.
-            // problem se mi bohuzel nepodarilo dohledat ani reprodukovat, takze pouze osetrim tuto situaci, abychom nepadali
+            // Mass renaming of files with detected duplicate files.
+            // unfortunately I could not track down or reproduce the problem, so I simply handle this situation to avoid crashes
             TRACE_E("CPreviewWindow::CustomDraw() item=" << item << " Count=" << SourceFiles.Count);
             break;
         }
@@ -512,7 +512,7 @@ LABEL_QuickSort:
         }
     } while (i <= j);
 
-    // nasledujici "hezky" kod jsme nahradili kodem podstatne setricim stack (max. log(N) zanoreni rekurze)
+    // we replaced the following "nice" code with code that is much more stack friendly (maximum log(N) recursion depth)
     //  if (left < j) QuickSort(left, j, sortBy);
     //  if (i < right) QuickSort(i, right, sortBy);
 
@@ -520,7 +520,7 @@ LABEL_QuickSort:
     {
         if (i < right)
         {
-            if (j - left < right - i) // je potreba seradit obe "poloviny", tedy do rekurze posleme tu mensi, tu druhou zpracujeme pres "goto"
+            if (j - left < right - i) // we need to sort both "halves", so we recurse into the smaller one and handle the other via "goto"
             {
                 QuickSort(left, j, sortBy);
                 left = i;
@@ -557,13 +557,13 @@ void CPreviewWindow::SortItems(int sortBy)
 
     if (SourceFiles.Count > 0)
     {
-        // ulozime si pozici vybrane polozky
+        // store the position of the selected item
         // int focusIndex = ListView_GetNextItem(HWindow, -1, LVNI_FOCUSED);
 
-        // seradim pole podle pozadovaneho kriteria
+        // sort the array by the requested criterion
         QuickSort(0, SourceFiles.Count - 1, sortBy);
 
-        // obnovime vyber
+        // restore the selection
         // if (focusIndex != -1) ListView_EnsureVisible(HWindow, focusIndex, FALSE);
         Update(TRUE);
     }
@@ -605,7 +605,7 @@ void CPreviewWindow::SetItemCount(int count, DWORD flags, int state)
     CachedItem = -1;
 
     int oldCount = ListView_GetItemCount(HWindow);
-    if (oldCount == count) // aby to zbytecne neblikalo
+    if (oldCount == count) // to avoid unnecessary flicker
     {
         InvalidateRect(HWindow, NULL, FALSE);
         UpdateWindow(HWindow);

@@ -16,10 +16,10 @@ extern const char* MDICHILD_CLASSNAME;
 #define TREE_TYPE_NONE_DIALOGS 0x00000002
 #define TREE_TYPE_NONE_MENUS 0x00000003
 
-// vrati hande okna,ktery se pouzije jako parent pro messagebox
+// Return the window handle that is used as the parent for a message box
 HWND GetMsgParent();
 
-// nakopiruje retezec na clipboard; textLen muze byt -1 pro omereni delky retezce
+// Copy a string to the clipboard; textLen can be -1 to measure the string length
 BOOL CopyTextToClipboard(const char* text, int textLen);
 
 #define WM_AUTORELOAD WM_APP + 100

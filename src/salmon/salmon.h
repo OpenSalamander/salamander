@@ -4,7 +4,7 @@
 #pragma once
 
 extern HINSTANCE HLanguage;
-extern char BugReportPath[MAX_PATH]; // cesta bude koncit zpetnym lomitkem
+extern char BugReportPath[MAX_PATH]; // the path will end with a trailing backslash
 struct CBugReport
 {
     char Name[MAX_PATH];
@@ -24,8 +24,8 @@ BOOL RestartSalamander(HWND hParent);
 
 BOOL CleanBugReportsDirectory(BOOL keep7ZipArchives);
 
-// vraci TRUE, pokud existuje bug report
-// nastavuje globalku LatestBugReport na casove posledni nazev
+// returns TRUE if a bug report exists
+// sets the LatestBugReport global to the most recent name
 BOOL GetBugReportNames();
 
 int GetUniqueBugReportCount();
@@ -38,4 +38,4 @@ BOOL CompresBugReports();
 
 extern BOOL AppIsBusy;
 
-//#define WM_USER_THREAD_EXIT WM_APP + 100 // upload thread dobehnul
+//#define WM_USER_THREAD_EXIT WM_APP + 100 // upload thread has finished

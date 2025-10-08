@@ -93,6 +93,6 @@ public:
         if (this->_hWnd)
             return this->_hWnd;
 
-        return /*this->_hWnd = */ this->DoCreate(left, top, width, height); // vytvori hned WM_NCCREATE, ktery naplni _hWnd
+        return /*this->_hWnd = */ this->DoCreate(left, top, width, height); // immediately creates WM_NCCREATE, which populates _hWnd
     }
 };

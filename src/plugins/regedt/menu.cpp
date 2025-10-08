@@ -21,12 +21,12 @@ BOOL CPluginInterfaceForMenuExt::PostFocusCommand(const char* path,
 
     SG->PostMenuExtCommand(MID_FOCUS, TRUE);
 
-    // dojde k prepnuti do jineho okna, takze teoreticky tenhle Sleep
-    // nicemu nebude vadit
+    // switching to another window happens, so theoretically this Sleep
+    // should not cause any harm
     Sleep(500);
 
-    // po 0.5 sekunde uz o fokus nestojime (resi pripad, kdy jsme trefili
-    // zacatek BUSY rezimu Salamandera)
+    // after 0.5 seconds we are no longer interested in the focus (handles
+    // the case when we hit the start of Salamander's BUSY mode)
     Path[0] = 0;
     Name[0] = 0;
 
@@ -112,7 +112,7 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
 
     case MID_FOCUS:
     {
-        // jen pokud jsme nemeli smulu (netrefili jsme zacatek BUSY rezimu Salamandera)
+        // only if we were lucky enough not to hit the start of Salamander's BUSY mode
         if (Path[0] != 0)
         {
             SetForegroundWindow(SG->GetMainWindowHWND());

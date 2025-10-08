@@ -19,7 +19,7 @@ public:
         ftText
     };
     // text encoding
-    // TODO pridat ruzne verze unicode formatu
+    // TODO add support for additional Unicode formats
     enum eEncoding
     {
         encUnknown,
@@ -46,7 +46,7 @@ public:
     CTextFileReader();
     ~CTextFileReader();
 
-    // 'size' nesmi byt vetsi nez numeric_limits<size_t>::max - 1
+    // 'size' must not exceed numeric_limits<size_t>::max - 1
     void Set(const char* name, HANDLE file, size_t size, int eolConversions,
              eEncoding encoding, eEndian endians, int performASCII8InputEnc,
              const char* parASCII8InputEncTableName, BOOL normalizationForm, bool needMD5);
@@ -64,13 +64,13 @@ public:
     void ForceEncoding(eEncoding encoding, eEndian endian) { Encoding = encoding; }
     bool HasSurrogates()
     {
-        // TODO nekdy to treba budem podporovat, zatim umime jen BMP
+        // TODO we might support this in the future; for now we handle only BMP
         return false;
     }
 
     const char* GetName() { return Name; }
-    void Get(char*& buffer, size_t& size, const int& cancel);    // allokuje pres malloc
-    void Get(wchar_t*& buffer, size_t& size, const int& cancel); // allokuje pres malloc
+    void Get(char*& buffer, size_t& size, const int& cancel);    // allocates via malloc
+    void Get(wchar_t*& buffer, size_t& size, const int& cancel); // allocates via malloc
     bool HasMD5() { return MD5 != NULL; }
     void GetMD5(BYTE md5[16])
     {

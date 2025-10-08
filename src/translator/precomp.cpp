@@ -3,9 +3,9 @@
 
 #include "precomp.h"
 
-// projekt ALTAPDB obsahuje tri skupiny modulu
+// the ALTAPDB project contains three groups of modules
 //
-// 1) modul precomp.cpp, ktery postavi altapdb.pch (/Yc"precomp.h")
-// 2) moduly vyuzivajici altapdb.pch (/Yu"precomp.h")
-// 3) commony a tasklist.cpp maji vlastni, automaticky generovany
+// 1) precomp.cpp builds altapdb.pch (/Yc"precomp.h")
+// 2) modules that use altapdb.pch (/Yu"precomp.h")
+// 3) commons and tasklist.cpp have their own automatically generated
 //    WINDOWS.PCH (/YX"windows.h" /Fp"$(OutDir)\WINDOWS.PCH")

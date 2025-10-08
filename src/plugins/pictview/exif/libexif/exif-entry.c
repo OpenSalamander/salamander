@@ -33,7 +33,7 @@
 #include <math.h>
 
 #pragma warning(push)
-#pragma warning(disable: 4267) // FIXME_X64 - docasne potlacen warning, vyresit
+#pragma warning(disable: 4267) // FIXME_X64 - warning temporarily suppressed, fix it
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -1714,4 +1714,4 @@ exif_entry_initialize (ExifEntry *e, ExifTag tag)
 	}
 }
 
-#pragma warning(pop) // FIXME_X64 - docasne potlacen warning, vyresit
+#pragma warning(pop) // FIXME_X64 - warning temporarily suppressed, fix it

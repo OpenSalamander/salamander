@@ -6,12 +6,12 @@
 extern HIMAGELIST HSymbolsImageList;
 extern char DirText[100];
 
-// indexy ikon v image listu
+// icon indexes in the image list
 #define ILS_DIRECTORY 0
 #define ILS_FILE 1
 #define ILS_WARNING 2
 
-// indexy sloupcu
+// column indexes
 #define CI_OLDNAME 0
 #define CI_NEWNAME 1
 #define CI_SIZE 2

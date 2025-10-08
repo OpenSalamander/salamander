@@ -7,11 +7,11 @@
 #endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
 
 #define IDC_STATIC_1 300
-#include "statics.rh2"   // 300 az 339 jsou timto zabrane !!!
+#include "statics.rh2"   // 300 to 339 are reserved by this include
 
 //***********************************************************************************
 //
-// texty
+// strings
 //
 
 #define IDS_PLUGINNAME   1000

@@ -27,7 +27,7 @@
 #include <string.h>
 
 #pragma warning(push)
-#pragma warning(disable: 4244) // FIXME_X64 - docasne potlacen warning, vyresit
+#pragma warning(disable: 4244) // FIXME_X64 - warning temporarily suppressed, fix it
 
 #define ESL_NNNN { EXIF_SUPPORT_LEVEL_NOT_RECORDED, EXIF_SUPPORT_LEVEL_NOT_RECORDED, EXIF_SUPPORT_LEVEL_NOT_RECORDED, EXIF_SUPPORT_LEVEL_NOT_RECORDED }
 #define ESL_OOOO { EXIF_SUPPORT_LEVEL_OPTIONAL, EXIF_SUPPORT_LEVEL_OPTIONAL, EXIF_SUPPORT_LEVEL_OPTIONAL, EXIF_SUPPORT_LEVEL_OPTIONAL }
@@ -1182,4 +1182,4 @@ exif_tag_get_support_level_in_ifd (ExifTag tag, ExifIfd ifd, ExifDataType t)
 	return get_support_level_in_ifd (tag, ifd, t);
 }
 
-#pragma warning(pop) // FIXME_X64 - docasne potlacen warning, vyresit
+#pragma warning(pop) // FIXME_X64 - warning temporarily suppressed, fix it

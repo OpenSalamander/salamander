@@ -3,11 +3,11 @@
 
 #pragma once
 
-// struktura predavana do compress vlakna, slouzi pro presun vstupne/vystupnich parametru
+// structure passed to the minidump thread, used to transfer input/output parameters
 struct CMinidumpParams
 {
-    BOOL Result;                     // TRUE, pokud operace dobehla uspesne, jinak FALSE
-    char ErrorMessage[2 * MAX_PATH]; // pokud je Result FALSE, obsahuje popis chyby
+    BOOL Result;                     // TRUE if the operation completed successfully, otherwise FALSE
+    char ErrorMessage[2 * MAX_PATH]; // if Result is FALSE, contains the error description
 };
 
 BOOL StartMinidumpThread(CMinidumpParams* params);

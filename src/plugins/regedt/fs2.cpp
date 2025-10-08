@@ -30,7 +30,7 @@ CPluginFSInterface::CPluginFSInterface()
 CPluginFSInterface::~CPluginFSInterface()
 {
     CALL_STACK_MESSAGE1("CPluginFSInterface::~CPluginFSInterface()");
-    // zastavime monitorovani pro toto FS
+    // stop monitoring for this FS instance
     ChangeMonitor.Cancel(this);
 }
 
@@ -47,7 +47,7 @@ BOOL CPluginFSInterface::SetNewPath(WCHAR* newPath)
 BOOL CPluginFSInterface::GetCurrentPathW(WCHAR* userPart, int size)
 {
     CALL_STACK_MESSAGE2("CPluginFSInterface::GetCurrentPathW(, %d)", size);
-    // !!! hlasit chybu pokud je buffer maly
+    // !!! report an error if the buffer is too small
     if (CurrentKeyRoot == -1)
     {
         lstrcpynW(userPart, L"\\", size);
@@ -101,7 +101,7 @@ BOOL CPluginFSInterface::GetFullName(CFileData& file, int isDir, char* buf, int 
 }
 
 // type:
-// 0 - konec cesty
+// 0 - end of path
 // 1 - '.'
 // 2 - '..'
 
@@ -154,7 +154,7 @@ BOOL CPluginFSInterface::GetFullFSPathW(WCHAR* path, int pathSize, BOOL& success
         if (!PathAppend(row, path, 2 * MAX_FULL_KEYNAME))
             return Error(IDS_LONGNAME), TRUE;
     }
-    // odstranime '..' a '.'
+    // remove ".." and "."
     int s = 0, d = 0;
     WCHAR* ptr;
     int len;
@@ -197,7 +197,7 @@ BOOL CPluginFSInterface::GetFullFSPath(HWND parent, const char* fsName, char* pa
 
     if (path[0] == '?')
     {
-        TRACE_E("volan CPluginFSInterface::GetFullFSPath s cestou '?'");
+        TRACE_E("CPluginFSInterface::GetFullFSPath called with path '?'");
         success = FALSE;
         return TRUE;
     }
@@ -275,7 +275,7 @@ BOOL CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fs
     if (cutFileName != NULL)
         *cutFileName = 0;
 
-    // vytvorime plnou cestu
+    // build the full path
     WCHAR path[MAX_FULL_KEYNAME];
     if (userPart[0] == '?' && NewPathValid)
     {
@@ -303,16 +303,16 @@ BOOL CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fs
     BOOL fileNameAlreadyCut = FALSE;
     BOOL errorReported = FALSE;
     LONG err = ERROR_SUCCESS;
-    if (PathError) // chyba pri listovani cesty, zkusime listing na oriznute ceste
+    if (PathError) // listing failed, try enumerating the trimmed path
     {
         PathError = FALSE;
         if (!CutDirectory(keyName, cutFileNameW, MAX_PATH))
         {
-            keyRoot = -1; // pujdeme tedy do rootu
+            keyRoot = -1; // fall back to the root
             if (pathWasCut != NULL)
                 *pathWasCut = TRUE;
             fileNameAlreadyCut = TRUE;
-            *cutFileNameW = L'\0'; // to uz byt jmeno souboru nemuze
+            *cutFileNameW = L'\0'; // it can no longer be a file name
         }
         else
         {
@@ -323,11 +323,11 @@ BOOL CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fs
     }
     while (1)
     {
-        int prevErr = err; // pro mode 3 si zapamatujeme predposledni chybu (na neoriznute ceste)
+        int prevErr = err; // for mode 3 remember the previous error (on the untrimmed path)
         if (keyRoot == -1 ||
             (err = RegOpenKeyExW(PredefinedHKeys[keyRoot].HKey, keyName, 0, KEY_READ, &openHKey)) == ERROR_SUCCESS)
         {
-            // uspech, vybereme cestu jako aktualni
+            // success, use the path as the current one
             if (keyRoot != -1)
             {
                 if (cutFileName != NULL && *cutFileNameW != L'\0')
@@ -336,7 +336,7 @@ BOOL CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fs
                     {
                         if (mode == 3)
                         {
-                            // ohlasime chybu a zkoncime
+                            // report the error and abort
                             RegCloseKey(openHKey);
                             PathAppend(keyName, cutFileNameW, MAX_PATH);
                             return ReportPathError(prevErr, keyRoot, keyName);
@@ -365,12 +365,12 @@ BOOL CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fs
             ChangeMonitor.Cancel(this);
             return TRUE;
         }
-        else // neuspech, zkusime cestu zkratit
+        else // failure, try to shorten the path
         {
             if (mode == 1 && err != ERROR_FILE_NOT_FOUND ||
                 mode == 2)
             {
-                // hlasime chybu a pokracujem ve zkracovani
+                // report the error and keep shortening
                 if (!errorReported)
                 {
                     if (!firstChangePath)
@@ -380,30 +380,30 @@ BOOL CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fs
             }
             else
             {
-                // hlasime chybu a koncime
+                // report the error and stop
                 if (mode == 3 && (fileNameAlreadyCut || *keyName == L'\0'))
                     return ReportPathError(err, keyRoot, keyName);
             }
 
-            if (!CutDirectory(keyName, cutFileNameW, MAX_PATH)) // neni kam zkracovat
+            if (!CutDirectory(keyName, cutFileNameW, MAX_PATH)) // nothing left to shorten
             {
-                keyRoot = -1; // pujdeme tedy do rootu
+                keyRoot = -1; // fall back to the root
                 if (pathWasCut != NULL)
                     *pathWasCut = TRUE;
                 fileNameAlreadyCut = TRUE;
-                *cutFileNameW = L'\0'; // to uz byt jmeno souboru nemuze
+                *cutFileNameW = L'\0'; // it can no longer be a file name
             }
             else
             {
                 if (pathWasCut != NULL)
                     *pathWasCut = TRUE;
-                if (!fileNameAlreadyCut) // jmeno souboru to muze byt jen pri prvnim oriznuti
+                if (!fileNameAlreadyCut) // it can be a file name only during the first trimming
                 {
                     fileNameAlreadyCut = TRUE;
                 }
                 else
                 {
-                    *cutFileNameW = L'\0'; // to uz byt jmeno souboru nemuze
+                    *cutFileNameW = L'\0'; // it can no longer be a file name
                 }
             }
         }
@@ -427,7 +427,7 @@ void PrintHexValue(unsigned char* data, int size, char* buffer, int bufSize)
     }
     if (i != size)
     {
-        // neveslo se, doplnime elipsou
+        // doesn't fit, append an ellipsis
         memcpy(buffer + bufSize - 3, "...", 3);
     }
 }
@@ -482,17 +482,17 @@ BOOL CPluginFSInterface::ListCurrentPath(CSalamanderDirectoryAbstract* dir,
         if ((err = RegQueryInfoKeyW(openHKey, NULL, NULL, NULL, &subKeys, NULL, NULL,
                                     &values, NULL, &maxValueLen, NULL, &time)) == ERROR_SUCCESS)
         {
-            // MS nekdy vraci polovicni velikost (pozorovano na MULTI_SZ v
-            // klici HKEY_LOCAL_MACHINE\SYSTEM\ControlSet002\Services\NetBT\Linkage
+            // MS sometimes returns half the size (observed on MULTI_SZ in
+            // key HKEY_LOCAL_MACHINE\SYSTEM\ControlSet002\Services\NetBT\Linkage
             maxValueLen *= 2;
-            // pridame uppdir
+            // add the parent directory entry
             file.Name = SG->DupStr("..");
             file.NameLen = strlen(file.Name);
             FileTimeToLocalFileTime(&time, &file.LastWrite);
             file.PluginData = (DWORD_PTR) new CPluginData(DupStr(L".."), 0);
             dir->AddDir(NULL, file, pluginData);
 
-            // enumerace podklicu
+            // enumerate subkeys
             WCHAR name[MAX_KEYNAME];
             DWORD nameLen;
             DWORD i;
@@ -530,7 +530,7 @@ BOOL CPluginFSInterface::ListCurrentPath(CSalamanderDirectoryAbstract* dir,
                 }
             }
 
-            // enumerace hodnot, jen pokud enumerace klicu probehla uspesne
+            // enumerate values only if enumerating subkeys succeeded
             if (i >= subKeys)
             {
                 time.dwLowDateTime = 0;
@@ -563,7 +563,7 @@ BOOL CPluginFSInterface::ListCurrentPath(CSalamanderDirectoryAbstract* dir,
                         {
                         case REG_MULTI_SZ:
                         {
-                            // nahradime separacni NULL charactery mezerama
+                            // replace separator NULL characters with spaces
                             WCHAR* ptr = (WCHAR*)data;
                             while (ptr < (WCHAR*)data + min(size / 2, MAX_DATASIZE))
                             {
@@ -571,7 +571,7 @@ BOOL CPluginFSInterface::ListCurrentPath(CSalamanderDirectoryAbstract* dir,
                                 {
                                     if (ptr + 2 == (WCHAR*)data + size / 2)
                                     {
-                                        size -= 2; // nepozitame posledni '\0', jsou tam dva
+                                        size -= 2; // ignore the last '\0'; there are two of them
                                         break;
                                     }
                                     else
@@ -581,7 +581,7 @@ BOOL CPluginFSInterface::ListCurrentPath(CSalamanderDirectoryAbstract* dir,
                                 }
                                 ptr++;
                             }
-                            // pokracujem dal
+                            // continue processing
                         }
                         case REG_EXPAND_SZ:
                         case REG_SZ:
@@ -656,7 +656,7 @@ BOOL CPluginFSInterface::ListCurrentPath(CSalamanderDirectoryAbstract* dir,
                         file.PluginData = (DWORD_PTR) new CPluginData(NULL, REG_NONE);
                         dir->AddFile(NULL, file, pluginData);
                     }
-                    PathError = FALSE; // uspech
+                    PathError = FALSE; // success
                 }
             }
         }
@@ -674,7 +674,7 @@ BOOL CPluginFSInterface::ListCurrentPath(CSalamanderDirectoryAbstract* dir,
 
     iconsType = pitFromPlugin;
 
-    // nastavime novou cestu do change monitoru
+    // register the new path with the change monitor
     ChangeMonitor.AddPath(CurrentKeyRoot, CurrentKeyName, this);
 
     return TRUE;

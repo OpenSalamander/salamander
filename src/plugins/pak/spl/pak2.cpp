@@ -117,7 +117,7 @@ BOOL CPluginInterfaceForArchiver::MakeFileList3(TIndirectArray2<CFileInfo>& file
                 GetFileTime(file, NULL, NULL, &ft);
                 CloseHandle(file);
                 GetInfo(data2, &ft, (unsigned)nextSize.Value);
-                // CONFIRM FILE OVERWRITE: filename1+filedata1+filename2+filedata2, tlacitka yes/all/skip/skip all/cancel
+                // CONFIRM FILE OVERWRITE: filename1+filedata1+filename2+filedata2, buttons yes/all/skip/skip all/cancel
                 switch (SalamanderGeneral->DialogOverwrite(SalamanderGeneral->GetMsgBoxParent(), BUTTONS_YESALLSKIPCANCEL, name1, data1, sourName, data2))
                 {
                 case DIALOG_ALL:
@@ -175,7 +175,7 @@ BOOL CPluginInterfaceForArchiver::MakeFileList3(TIndirectArray2<CFileInfo>& file
         }
         ProgressTotal += nextSize;
     }
-    return errorOccured != SALENUM_CANCEL; // pri cancelu rusime operaci
+    return errorOccured != SALENUM_CANCEL; // cancel aborts the operation
 }
 
 BOOL CPluginInterfaceForArchiver::DelFilesToBeOverwritten(unsigned* deleted)
@@ -289,7 +289,7 @@ void SortByDirDepth(int left, int right, TIndirectArray2<CFileInfo>& files)
             i++;
             j--;
         }
-    } while (i <= j); //musej bejt shodny?
+    } while (i <= j); //do they have to match?
     if (left < j)
         SortByDirDepth(left, j, files);
     if (i < right)
@@ -585,7 +585,7 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
     if (id != OPTIMIZE_MENUID)
         return FALSE;
 
-    SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_SOURCE); // tento prikaz povazujeme za praci s cestou (objevi se v Alt+F12)
+    SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_SOURCE); // we treat this command as working with the path (it appears in Alt+F12)
 
     char pakFile[MAX_PATH];
     char* fileName;
@@ -613,7 +613,7 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
     CPakCallbacks pakCalls(&InterfaceForArchiver);
     InterfaceForArchiver.PakIFace->Init(&pakCalls);
 
-    BOOL changesReported = FALSE; // pomocna promenna - TRUE pokud uz byly hlaseny zmeny na ceste
+    BOOL changesReported = FALSE; // helper variable - TRUE if path changes have already been reported
     do
     {
         if (arch)
@@ -628,7 +628,7 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
             else
                 fileData = SalamanderGeneral->GetPanelFocusedItem(PANEL_SOURCE, NULL);
             if (!fileData)
-                break; // konec enumerace, nebo chyba (v pripade GetFocusedItem)
+                break; // end of enumeration, or an error (in the case of GetFocusedItem)
             lstrcpy(fileName, fileData->Name);
             DWORD attr = SalamanderGeneral->SalGetFileAttributes(pakFile);
             if (attr != 0xFFFFFFFF && attr & FILE_ATTRIBUTE_DIRECTORY)
@@ -656,21 +656,21 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
                     InterfaceForArchiver.Salamander->CloseProgressDialog();
                 }
 
-                if (!changesReported) // zmena na ceste + jeste nebyla hlasena -> ohlasime
+                if (!changesReported) // path change and it has not been reported yet -> report it
                 {
                     changesReported = TRUE;
-                    // ohlasime zmenu na ceste, kde lezi menene PAK soubory (hlaseni se provede az po opusteni
-                    // kodu pluginu - po navratu z teto metody)
+                    // announce the change on the path where the modified PAK files reside (the notification happens after leaving
+                    // the plugin code - after returning from this method)
                     char pakFileDir[MAX_PATH];
                     strcpy(pakFileDir, pakFile);
-                    SalamanderGeneral->CutDirectory(pakFileDir); // musi jit, protoze jde o existujici soubor
+                    SalamanderGeneral->CutDirectory(pakFileDir); // must work, because it is an existing file
                     SalamanderGeneral->PostChangeOnPathNotification(pakFileDir, FALSE);
                 }
             }
             InterfaceForArchiver.PakIFace->ClosePak();
         }
 
-    } while (selFiles); // cyklime dokud metoda GetSelectedItem nevrati NULL
+    } while (selFiles); // loop until the GetSelectedItem method returns NULL
 
     PAKReleaseIFace(InterfaceForArchiver.PakIFace);
 
@@ -716,7 +716,7 @@ INT_PTR WINAPI OptimizeDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
     {
     case WM_INITDIALOG:
     {
-        // SalamanderGUI->ArrangeHorizontalLines(hDlg); // melo by se volat, tady na to kasleme, nejsou tu horizontalni cary
+        // SalamanderGUI->ArrangeHorizontalLines(hDlg); // should be called, but we skip it here; there are no horizontal lines
         if (((COptDlgData*)lParam)->PakSize <= ((COptDlgData*)lParam)->ValData)
         {
             EnableWindow(GetDlgItem(hDlg, IDOK), FALSE);

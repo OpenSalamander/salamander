@@ -3,8 +3,8 @@
 
 #include "precomp.h"
 
-// modul MS_INIT zajistuje volani konstruktoru statickych objektu ve spravnem poradi
-// a na urovni "lib" (pred "user")
+// the MS_INIT module ensures constructors of static objects are called in the correct order
+// and at the "lib" level (before "user")
 
 #pragma warning(disable : 4073)
 #pragma init_seg(lib)
@@ -39,7 +39,7 @@ void Initialize__Heap();
 // EnableExceptionsOn64
 //
 
-// Chceme se dozvedet o SEH Exceptions i na x64 Windows 7 SP1 a dal
+// We want to learn about SEH exceptions even on x64 Windows 7 SP1 and later
 // http://blog.paulbetts.org/index.php/2010/07/20/the-case-of-the-disappearing-onload-exception-user-mode-callback-exceptions-in-x64/
 // http://connect.microsoft.com/VisualStudio/feedback/details/550944/hardware-exceptions-on-x64-machines-are-silently-caught-in-wndproc-messages
 // http://support.microsoft.com/kb/976038

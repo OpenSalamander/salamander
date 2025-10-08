@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -7,113 +8,113 @@
 
 struct CCodeTablesData
 {
-    char* Name;      // jmeno v menu, NULL = separator
-    char Table[256]; // kodovaci tabulka
+    char* Name;      // name shown in menu, NULL means a separator
+    char Table[256]; // encoding table
 };
 
 enum CCodeTableStateEnum
 {
-    ctsSuccessfullyLoaded, // convert.cfg byla uspene nacten z adresare dirName
-    ctsDefaultValues       // convert.cfg se nepodarilo nacist a byly pouzity implicitni hodnoty
+    ctsSuccessfullyLoaded, // convert.cfg was successfully loaded from directory dirName
+    ctsDefaultValues       // convert.cfg could not be loaded and default values were used
 };
 
-// pomocna trida, slouzici k nacteni dat z convert\XXX\convert.cfg
+// helper class used to load data from convert\XXX\convert.cfg
 class CCodeTable
 {
 protected:
     TIndirectArray<CCodeTablesData> Data;
-    char WinCodePage[101];            // jmeno windows code page (pro Cechy CP1250 - regionalni kodovani)
+    char WinCodePage[101];            // Windows code page name (for Czech CP1250 - regional encoding)
     DWORD WinCodePageIdentifier;      // 1250, 1251, 1252, ...
-    char WinCodePageDescription[101]; // lidsky citelny popis (Central Europe, West Europe & U.S.)
-    char DirectoryName[MAX_PATH];     // nazev adresare XXX: convert\XXX\convert.cfg
+    char WinCodePageDescription[101]; // human - readable description (Central Europe, West Europe & U.S.)
+    char DirectoryName[MAX_PATH];     // directory name XXX: convert\XXX\convert.cfg
     CCodeTableStateEnum State;
 
 public:
-    // hWindow je parent pro messageboxy;
-    // dirName je adresar, kde se ma nacist convert.cfg (napriklad "centeuro")
+    // hWindow is the parent for message boxes;
+    // dirName is the directory where convert.cfg is loaded (for example "centeuro")
     CCodeTable(HWND hWindow, const char* dirName);
     ~CCodeTable();
 
     CCodeTableStateEnum GetState() { return State; }
 
-    // nebudeme tahat vsechny metory do tohoto objektu, radeji k datum pristoupime zvenku
+    // we will not pull all methods into this object; data will be accessed from the outside
     friend class CCodeTables;
 };
 
 class CCodeTables
 {
 protected:
-    CRITICAL_SECTION LoadCS;    // kriticka sekce pro Load dat z convert.cfg (dale uz se jen cte)
-    CRITICAL_SECTION PreloadCS; // kriticka sekce pro Preload dat
+    CRITICAL_SECTION LoadCS;    // critical section for loading data from convert.cfg (read only afterwards)
+    CRITICAL_SECTION PreloadCS; // critical section for preloading data
     BOOL Loaded;
-    CCodeTable* Table; // nactenda tabulka, nad kterou pracujeme
+    CCodeTable* Table; // loaded table currently in use
 
-    // slouzi pro enumeraci konverzi
+    // used for conversion enumeration
     TIndirectArray<CCodeTable> Preloaded;
 
 public:
     CCodeTables();
     ~CCodeTables();
 
-    // prohleda adresare 'convert' a naplni pole Preloaded
+    // scans the "convert" directories and fills the Preloaded array
     void PreloadAllConversions();
-    // uvolni pole Preloaded
+    // frees the Preloaded array
     void FreePreloadedConversions();
-    // vraci postupne vsechny polozky z pole Preloaded
+    // returns all items from the Preloaded array one by one
     BOOL EnumPreloadedConversions(int* index, const char** winCodePage,
                                   DWORD* winCodePageIdentifier,
                                   const char** winCodePageDescription,
                                   const char** dirName);
 
-    // pokud nalezne polozku s cestou dirName, nastavi index a vrati TRUE
-    // jinak vrati FALSE
+    // if an item with path dirName is found, it sets index and returns TRUE
+    // otherwise it returns FALSE
     BOOL GetPreloadedIndex(const char* dirName, int* index);
 
-    // z pole Preloaded vyhleda nejlepe vyhovujici polozku
-    // cfgDirName ukazuje na doporuceny nazev adresare (z konfigurace)
-    // dirName musi ukazovat do bufferu o velikosti MAX_PATH, kam bude
-    // vracen nazev adresare; mpokud zadny neexistuje, bude vracen prazdny retezec
-    // kriteria:
+    // selects the best matching item from the Preloaded array
+    // cfgDirName points to the recommended directory name (from the configuration)
+    // dirName must point to a buffer of MAX_PATH characters where the directory name is returned;
+    // if none exists, an empty string is returned
+    // criteria:
     //  1. cfgDirName
-    //  2. Polozka odpovidajici kodove strance operacniho systemu
+    //  2. item matching the OS code page
     //  3. westeuro
-    //  4. prvni v seznam
-    //  5. pokud neni zadna polozka v seznamu, vratime prazdny retezec
+    //  4. first in the list
+    //  5. if there is no item in the list, we will return an empty string
     void GetBestPreloadedConversion(const char* cfgDirName, char* dirName);
 
-    // pripravi objekt na pouziti (nacte skript 'convert.cfg'), hWindow je parent pro messageboxy
-    // vrati TRUE, pokud lze volat ostatni metody
+    // prepares the object for use (loads 'convert.cfg' script), hWindow is the parent window for message boxes
+    // returns TRUE, only if other methods can be called
     BOOL Init(HWND hWindow);
-    // vrati TRUE, pokud jsou inicializovany
+    // returns TRUE if they are initialized
     BOOL IsLoaded() { return Loaded; }
-    // naplni menu dostupnymi kody a oznaci aktivni
-    // kodovani - 'codeType' (pamet typu kodovani okna viewru)
+    // fills the menu with available encodings and marks the active ones
+    // encoding - 'codeType' (memory of the viewer window's encoding type)
     void InitMenu(HMENU menu, int& codeType);
-    // prepne kodovani na dalsi na seznamu
+    // switch to the next encoding in the list
     void Next(int& codeType);
-    // prepne kodovani na predchozi na seznamu
+    // switch to the previous encoding in the list
     void Previous(int& codeType);
-    // naplni kodovaci tabulku podle 'codeType' (pamet typu kodovani okna viewru)
-    // vraci TRUE pokud byla 'table' nainicializovana (jinak 'table' nepouzivat a 'codeType' je nastavena na 0)
+    // fills the encoding table according to 'codeType' (memory of the viewer window's encoding type)
+    // returns TRUE if 'table' was initialized (otherwise do not use 'table' and 'codeType' is set to 0)
     BOOL GetCode(char* table, int& codeType);
-    // naplni codeType podle 'coding' (jmeno kodovani, ignoruji se '-' a ' ' a '&')
-    // vraci TRUE pokud byla tabulka nalezena a 'codeType' je inicializovana
-    // jinak 'codeType' obsahuje 0 a je vraceno FALSE
+    // sets codeType using the 'coding' (the coding name, '-' and ' ' and '&' are ignored)
+    // returns TRUE if the table was found and codeType initialized
+    // otherwise 'codeType' is set to 0 and FALSE is returned
     BOOL GetCodeType(const char* coding, int& codeType);
-    // overi platnost 'codeType' (kontrola rozsahu)
+    // checks validity of 'codeType' (range check)
     BOOL Valid(int codeType);
-    // vrati nazev odpovidajiciho kodovani (muze obsahovat '&' - hotkey v menu)
+    // returns the name of the corresponding encoding (may contain '&' for a menu hotkey)
     BOOL GetCodeName(int codeType, char* buffer, int bufferLen);
-    // vraci postupne vsechny kodovani ('name' muze obsahovat '&' - hotkey v menu)
+    // returns all encodings one by one ('name' may contain '&' – menu hotkey)
     BOOL EnumCodeTables(HWND parent, int* index, const char** name, const char** table);
-    // vraci WinCodePage
+    // returns WinCodePage
     void GetWinCodePage(char* buf);
-    // zjisti z bufferu 'pattern' o delce 'patternLen' jestli jde o text (existuje kodova stranka,
-    // ve ktere obsahuje jen povolene znaky - zobrazitelne a ridici) a pokud jde o text, zjisti take
-    // jeho kodovou stranku (nejpravdepodobnejsi)
+    // checks from the 'pattern' buffer of length 'patternLen' whether it is text (a code page exists,
+    // containing only allowed characters – displayable and control) and if it is text, also determines
+    // its code page (most probable)
     void RecognizeFileType(const char* pattern, int patternLen, BOOL forceText,
                            BOOL* isText, char* codePage);
-    // vraci index konverzni tabulky z 'codePage' do WinCodePage; pokud nenajde, vraci -1
+    // returns the index of the conversion table from 'codePage' into WinCodePage; if not found, returns -1
     int GetConversionToWinCodePage(const char* codePage);
 };
 

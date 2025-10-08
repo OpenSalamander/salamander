@@ -3,8 +3,8 @@
 
 #include "precomp.h"
 
-// globalni promenne, do ktery si ulozim ukazatele na globalni promenne v Salamanderovi
-// pro archiv i pro FS - promenne se sdileji
+// global variables that store pointers to Salamander's global variables
+// used by both the archive and FS plug-ins - the variables are shared
 const CFileData** TransferFileData = NULL;
 int* TransferIsDir = NULL;
 char* TransferBuffer = NULL;
@@ -13,12 +13,12 @@ DWORD* TransferRowData = NULL;
 CPluginDataInterfaceAbstract** TransferPluginDataIface = NULL;
 DWORD* TransferActCustomData = NULL;
 
-int TypeDateColFW = 0; // LO/HI-WORD: levy/pravy panel: sloupec Type/Date: FixedWidth
-int TypeDateColW = 0;  // LO/HI-WORD: levy/pravy panel: sloupec Type/Date: Width
-int DataTimeColFW = 0; // LO/HI-WORD: levy/pravy panel: sloupec Data/Time: FixedWidth
-int DataTimeColW = 0;  // LO/HI-WORD: levy/pravy panel: sloupec Data/Time: Width
-int SizeColFW = 0;     // LO/HI-WORD: levy/pravy panel: sloupec Size: FixedWidth
-int SizeColW = 0;      // LO/HI-WORD: levy/pravy panel: sloupec Size: Width
+int TypeDateColFW = 0; // LO/HI-WORD: left/right panel: Type/Date column: FixedWidth
+int TypeDateColW = 0;  // LO/HI-WORD: left/right panel: Type/Date column: Width
+int DataTimeColFW = 0; // LO/HI-WORD: left/right panel: Data/Time column: FixedWidth
+int DataTimeColW = 0;  // LO/HI-WORD: left/right panel: Data/Time column: Width
+int SizeColFW = 0;     // LO/HI-WORD: left/right panel: Size column: FixedWidth
+int SizeColW = 0;      // LO/HI-WORD: left/right panel: Size column: Width
 
 // ****************************************************************************
 //
@@ -31,7 +31,7 @@ void WINAPI GetTypeText()
     CALL_STACK_MESSAGE_NONE
     if (*TransferIsDir > 0)
     {
-        // je to klic, vypiseme datum
+        // it's a key, print the date
         static SYSTEMTIME st;
         static int len;
         if ((*TransferFileData)->LastWrite.dwHighDateTime != 0 &&
@@ -50,7 +50,7 @@ void WINAPI GetTypeText()
     }
     else
     {
-        // jeto hodnota vypiseme typ
+        // otherwise it's a value, print its type
         switch (((CPluginData*)(*TransferFileData)->PluginData)->Type)
         {
         case REG_BINARY:
@@ -117,7 +117,7 @@ void WINAPI GetDataText()
     CALL_STACK_MESSAGE_NONE
     if (*TransferIsDir > 0)
     {
-        // je to klic, vypiseme cas
+        // it's a key, print the time
         static SYSTEMTIME st;
         static int len;
         if ((*TransferFileData)->LastWrite.dwHighDateTime != 0 &&
@@ -136,7 +136,7 @@ void WINAPI GetDataText()
     }
     else
     {
-        // je to hodnota vypiseme ji
+        // it's a value, print it
         static CPluginData* pluginData;
         pluginData = ((CPluginData*)(*TransferFileData)->PluginData);
 
@@ -159,7 +159,7 @@ void WINAPI GetDataText()
             case REG_DWORD_BIG_ENDIAN:
             case REG_DWORD:
                 if ((*TransferFileData)->Size == CQuadWord(4, 0))
-                    *TransferLen = sprintf(TransferBuffer, "0x%08x (%u)", (DWORD)pluginData->Data, (DWORD)pluginData->Data); // FIXME_X64 - overity pretypovani na (DWORD)
+                    *TransferLen = sprintf(TransferBuffer, "0x%08x (%u)", (DWORD)pluginData->Data, (DWORD)pluginData->Data); // FIXME_X64 - verify the cast to (DWORD)
                 else
                     *TransferLen = 0;
                 break;
@@ -192,13 +192,13 @@ void WINAPI GetSizeText()
     CALL_STACK_MESSAGE_NONE
     if (*TransferIsDir > 0)
     {
-        // je to klic, vypiseme "KEY"
+        // it's a key, print "KEY"
         memcpy(TransferBuffer, KeyText, KeyTextLen);
         *TransferLen = KeyTextLen;
     }
     else
     {
-        // je to hodnota vypiseme jeji velikost
+        // it's a value, print its size
         SG->NumberToStr(TransferBuffer, (*TransferFileData)->Size);
         *TransferLen = (int)strlen(TransferBuffer);
     }
@@ -254,14 +254,14 @@ void CPluginDataInterface::SetupView(BOOL leftPanel, CSalamanderViewAbstract* vi
 
     view->SetPluginSimpleIconCallback(PluginSimpleIconCallback);
 
-    if (view->GetViewMode() == VIEW_MODE_DETAILED) // upravime sloupce
+    if (view->GetViewMode() == VIEW_MODE_DETAILED) // adjust the columns
     {
-        view->SetViewMode(VIEW_MODE_DETAILED, VALID_DATA_NONE); // odstranime vsechny sloupce
+        view->SetViewMode(VIEW_MODE_DETAILED, VALID_DATA_NONE); // remove all columns
 
         int i = 1;
         CColumn column;
 
-        // pridame sloupec Type/Date
+        // add the Type/Date column
         strcpy(column.Name, LoadStr(IDS_TYPE));
         strcpy(column.Description, LoadStr(IDS_TYPE));
         column.GetText = GetTypeText;
@@ -273,7 +273,7 @@ void CPluginDataInterface::SetupView(BOOL leftPanel, CSalamanderViewAbstract* vi
         column.CustomData = 1;
         view->InsertColumn(i++, &column);
 
-        // pridame sloupec Data/Time
+        // add the Data/Time column
         strcpy(column.Name, LoadStr(IDS_DATA));
         strcpy(column.Description, LoadStr(IDS_DATA));
         column.GetText = GetDataText;
@@ -285,7 +285,7 @@ void CPluginDataInterface::SetupView(BOOL leftPanel, CSalamanderViewAbstract* vi
         column.CustomData = 2;
         view->InsertColumn(i++, &column);
 
-        // pridame sloupec Size
+        // add the Size column
         strcpy(column.Name, LoadStr(IDS_SIZE));
         strcpy(column.Description, LoadStr(IDS_SIZE));
         column.GetText = GetSizeText;
@@ -468,18 +468,18 @@ BOOL CPluginDataInterface::GetInfoLineContent(
     }
     else
     {
-        if (selectedFiles == 0 && selectedDirs == 0) // Information Line pro prazdny panel
-            return FALSE;                            // text at vypise Salamander
+        if (selectedFiles == 0 && selectedDirs == 0) // information line for an empty panel
+            return FALSE;                            // let Salamander print the text
 
         int prefix = 0;
         if (displaySize)
         {
-            // pro jednoduchost nepouzivame "plural" stringy (viz SalamanderGeneral->ExpandPluralString())
+            // for simplicity we do not use "plural" strings (see SalamanderGeneral->ExpandPluralString())
             char formatA[200];
             SG->ExpandPluralString(formatA, 200, LoadStr(IDS_SELECTEDSIZE), 1, (CQuadWord*)&selectedSize);
             prefix = SalPrintf(buffer, 1000, formatA, selectedSize);
 
-            /*    // ukazka pouziti standardniho retezce
+            /*    // example of using the standard string
       SalamanderGeneral->ExpandPluralBytesFilesDirs(buffer, 1000, selectedSize, selectedFiles,
                                                     selectedDirs, TRUE);
 */

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#ifndef OPENSAL_VERSION // verze kopilovana pro distribuci se Salamanderem nebude zpetne kompatibilni s verzi 5.0 (zbytecna komplikace)
+#ifndef OPENSAL_VERSION // version built for Salamander distribution will not be backward compatible with version 5.0 (unnecessary complication)
 #define SALSDK_COMPATIBLE_WITH_VER 103
 #define REQUIRE_COMPATIBLE_SAL_VERSION "This plugin requires Open Salamander 5.0 or later."
 #endif // OPENSAL_VERSION
@@ -27,13 +27,13 @@
 #include <CommDlg.h>
 #include <ShellAPI.h>
 #include <shlobj.h>
-#include <Windowsx.h> //pomocna makra
+#include <Windowsx.h> // helper macros
 
 // C RunTime Header Files
 #include <malloc.h>
 #include <tchar.h>
 
-// ???
+// CRT diagnostics and utility headers
 #include <crtdbg.h>
 #include <limits.h>
 #include <process.h>

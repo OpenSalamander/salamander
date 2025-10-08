@@ -44,7 +44,7 @@ DllMain(
         g_hInstance = hModule;
         g_hLangInstance = hModule;
         DisableThreadLibraryCalls(hModule);
-//		_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);  // Petr: tohle resi Salamander, sem to nepatri
+//		_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);  // Petr: Salamander handles this, it does not belong here
 #if (_MSC_VER >= 1500)
         //		OSVERSIONINFO osver = {sizeof(OSVERSIONINFO), };
         //		if (GetVersionEx(&osver))
@@ -54,9 +54,9 @@ DllMain(
         //			_osplatform = osver.dwPlatformId;
         //		}
 
-        // Petr: potrebuji se obejit bez volani GetVersionEx (obsolete) + potrebuji _winmajor,
-        // _winminor a _osplatform (pouziva je GetOsSpecificData), takze je pro ucely Nethoodu
-        // ziskam zcela primitivne, viz nasledujici kod
+        // Petr: I need to avoid calling GetVersionEx (obsolete) + I need _winmajor,
+        // _winminor and _osplatform (GetOsSpecificData uses them), so for the purposes of Nethood
+        // I will obtain them in a completely primitive way, see the following code
 
         // Windows Versions supported by Open Salamander
         //

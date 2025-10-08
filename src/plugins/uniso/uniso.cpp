@@ -14,17 +14,17 @@
 
 // ****************************************************************************
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to the SPL - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to the SLG - language-dependent resources
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// interface object whose methods are called from Salamander
 CPluginInterface PluginInterface;
-// cast interfacu CPluginInterface pro archivator
+// portion of the CPluginInterface for the archiver
 CPluginInterfaceForArchiver InterfaceForArchiver;
-// cast interfacu CPluginInterface pro viewer
+// portion of the CPluginInterface for the viewer
 CPluginInterfaceForViewer InterfaceForViewer;
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// Salamander's general interface - valid from startup until the plugin is closed
 CSalamanderGeneralAbstract* SalamanderGeneral = NULL;
 
 // ZLIB compression/decompression interface;
@@ -33,23 +33,23 @@ CSalamanderZLIBAbstract* SalZLIB = NULL;
 // BZIP2 compression/decompression interface;
 CSalamanderBZIP2Abstract* SalBZIP2 = NULL;
 
-// interface pro komfortni praci se soubory
+// interface for comfortable work with files
 CSalamanderSafeFileAbstract* SalamanderSafeFile = NULL;
 
-// definice promenne pro "dbg.h"
+// variable definition for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
-// rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+// interface providing customized Windows controls used in Salamander
 CSalamanderGUIAbstract* SalamanderGUI = NULL;
 
-// definice promenne pro "spl_com.h"
+// variable definition for "spl_com.h"
 int SalamanderVersion = 0;
 
 int ConfigVersion = 0;
 #define CURRENT_CONFIG_VERSION 6
 const char* CONFIG_VERSION = "Version";
 
-// zatim staci tohleto misto konfigurace
+// for now this configuration slot is sufficient
 //DWORD Options;
 COptions Options;
 
@@ -57,7 +57,7 @@ CSalamanderBZIP2Abstract* GetSalamanderBZIP2();
 
 const SYSTEMTIME MinTime = {1980, 01, 2, 01, 00, 00, 00, 000};
 
-int SortByExtDirsAsFiles = FALSE; // aktualni hodnota konfiguracni promenne Salamandera SALCFG_SORTBYEXTDIRSASFILES
+int SortByExtDirsAsFiles = FALSE; // current value of Salamander's configuration variable SALCFG_SORTBYEXTDIRSASFILES
 
 //const char *CONFIG_OPTIONS = "Options";
 const char* CONFIG_CLEAR_READONLY = "Clear Read Only";
@@ -94,32 +94,32 @@ int WINAPI SalamanderPluginGetReqVer()
 
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
-    // nastavime SalamanderDebug pro "dbg.h"
+    // set SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
-    // nastavime SalamanderVersion pro "spl_com.h"
+    // set SalamanderVersion for "spl_com.h"
     SalamanderVersion = salamander->GetVersion();
     HANDLES_CAN_USE_TRACE();
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plugin is built for the current version of Salamander and newer - perform a check
     if (SalamanderVersion < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // we reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
-                   "UnISO" /* neprekladat! */, MB_OK | MB_ICONERROR);
+                   "UnISO" /* do not translate! */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
-    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "UnISO" /* neprekladat! */);
+    // load the language module (.slg)
+    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "UnISO" /* do not translate! */);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain Salamander's general interface
     SalamanderGeneral = salamander->GetSalamanderGeneral();
     SalZLIB = SalamanderGeneral->GetSalamanderZLIB();
-    // ziskame rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+    // obtain the interface providing customized Windows controls used in Salamander
     SalamanderGUI = salamander->GetSalamanderGUI();
 
 #if LAST_VERSION_OF_SALAMANDER >= 33
@@ -130,7 +130,7 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
 
     SalamanderSafeFile = salamander->GetSalamanderSafeFile();
 
-    // nastavime jmeno souboru s helpem
+    // set the name of the help file
     SalamanderGeneral->SetHelpFileName("uniso.chm");
 
     SalamanderGeneral->GetConfigParameter(SALCFG_SORTBYEXTDIRSASFILES, &SortByExtDirsAsFiles,
@@ -139,11 +139,11 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
     if (!InterfaceForArchiver.Init())
         return NULL;
 
-    if (!InitializeWinLib("UnISO" /* neprekladat! */, DLLInstance))
+    if (!InitializeWinLib("UnISO" /* do not translate! */, DLLInstance))
         return NULL;
     SetWinLibStrings("Invalid number!", LoadStr(IDS_PLUGINNAME));
 
-    // nastavime zakladni informace o pluginu
+    // set up the basic plugin information
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_PANELARCHIVERVIEW | FUNCTION_CUSTOMARCHIVERUNPACK |
                                        FUNCTION_CONFIGURATION | FUNCTION_LOADSAVECONFIGURATION |
@@ -151,7 +151,7 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
                                    VERSINFO_VERSION_NO_PLATFORM,
                                    VERSINFO_COPYRIGHT,
                                    LoadStr(IDS_PLUGIN_DESCRIPTION),
-                                   "UnISO" /* neprekladat! */, "iso;isz;nrg;bin;img;pdi;cdi;cif;ncd;c2d;dmg");
+                                   "UnISO" /* do not translate! */, "iso;isz;nrg;bin;img;pdi;cdi;cif;ncd;c2d;dmg");
 
     salamander->SetPluginHomePageURL("www.altap.cz");
 
@@ -193,7 +193,7 @@ BOOL Error(int resID, BOOL quiet, ...)
 BOOL Error(char* msg, DWORD err, BOOL quiet)
 {
     if (!quiet)
-        if (err != ERROR_FILE_NOT_FOUND && err != ERROR_NO_MORE_FILES) // jde o chybu
+        if (err != ERROR_FILE_NOT_FOUND && err != ERROR_NO_MORE_FILES) // it is an error
         {
             char buf[1024];
             sprintf(buf, "%s\n\n%s", msg, SalamanderGeneral->GetErrorText(err));
@@ -253,7 +253,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
 {
     CALL_STACK_MESSAGE1("CPluginInterface::LoadConfiguration(, ,)");
 
-    if (regKey != NULL) // load z registry
+    if (regKey != NULL) // load from the registry
     {
         if (!registry->GetValue(regKey, CONFIG_VERSION, REG_DWORD, &ConfigVersion, sizeof(DWORD)))
             ConfigVersion = 0; // default configuration
@@ -265,10 +265,10 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
 
     // set defaults
     Options.ClearReadOnly = TRUE;
-    Options.SessionAsDirectory = TRUE; // implicitne ukazeme, jak jsme dobry (muzou si to pripadne vypnout)
-    Options.BootImageAsFile = TRUE;    // implicitne ukazujeme boot image (muzou si to pripadne vypnout)
+    Options.SessionAsDirectory = TRUE; // by default we show how good we are (they can turn it off if they want)
+    Options.BootImageAsFile = TRUE;    // by default we show the boot image (they can turn it off if they want)
 
-    if (regKey != NULL) // load z registry
+    if (regKey != NULL) // load from the registry
     {
         registry->GetValue(regKey, CONFIG_CLEAR_READONLY, REG_DWORD, &Options.ClearReadOnly, sizeof(DWORD));
         registry->GetValue(regKey, CONFIG_SESSION_AS_DIR, REG_DWORD, &Options.SessionAsDirectory, sizeof(DWORD));
@@ -298,48 +298,47 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
 {
     CALL_STACK_MESSAGE1("CPluginInterface::Connect(,)");
 
-    /*  OBECNA PRAVIDLA PRO IMPLEMENTACI CONNECT (pro slozitejsi pluginy s verzi konfigurace - promenna
-                                                ConfigVersion a konstanta CURRENT_CONFIG_VERSION):
-    -s kazdou zmenou je potreba zvysit cislo verze CURRENT_CONFIG_VERSION
-     (v prvni verzi je CURRENT_CONFIG_VERSION=1, neni 0, aby se dal odlisit upgrade
-      od instalace)
-    -do zakladni casti (pred podminky "if (ConfigVersion < YYY)"):
-      -se napise kod pro prvni instalaci pluginu (stav, kdy plugin jeste nema zaznam
-       v Salamanderovi)
-      -u volani AddCustomPacker resp. AddCustomUnpacker dame do parametru 'update'
-       podminku "ConfigVersion < XXX", kde XXX je cislo posledni verze, kde se
-       menily pripony pro custom packery resp. unpackery (XXX pro packery muze byt jine
-       nez pro unpackery)
-      -AddMenuItem, SetChangeDriveMenuItem a SetThumbnailLoader funguje pri kazdem loadu
-       pluginu stejne (instalace/upgrady se nelisi - vzdy se zacina na zelene louce)
-    -do casti pro upgrady (za zakladni casti):
-      -pridame podminku "if (ConfigVersion < XXX)", kde XXX je nova hodnota
-       konstanty CURRENT_CONFIG_VERSION + pridame komentar od teto verze;
-       v tele teto podminky zavolame:
-        -pokud pribyly pripony pro "panel archiver", zavolame
-         "AddPanelArchiver(PPP, EEE, TRUE)", kde PPP jsou jen nove pripony oddelene
-         strednikem a EEE je TRUE/FALSE ("panel view+edit"/"jen panel view")
-        -pokud pribyly pripony pro "viewer", zavolame "AddViewer(PPP, TRUE)",
-         kde PPP jsou jen nove pripony oddelene strednikem
-        -pokud se maji smazat nejake stare pripony pro "viewer", zavolame
-         pro kazdou takovou priponu PPP "ForceRemoveViewer(PPP)"
-        -pokud se maji smazat nejake pripony pro "panel archiver", dejte vedet
-         Petrovi, zatim to nikdo nepotreboval, takze to neni implementovane
+    /*  GENERAL RULES FOR IMPLEMENTING CONNECT (for more complex plugins with a configuration version - the
+                                                ConfigVersion variable and the CURRENT_CONFIG_VERSION constant):
+    - with each change you need to increase the CURRENT_CONFIG_VERSION number
+      (in the first version CURRENT_CONFIG_VERSION = 1, not 0, so an upgrade can be distinguished from
+       an installation)
+    - in the base part (before the "if (ConfigVersion < YYY)" conditions):
+      - write the code for the first installation of the plugin (the state where the plugin does not yet have a record
+        in Salamander)
+      - for AddCustomPacker and AddCustomUnpacker calls provide the condition "ConfigVersion < XXX" in the 'update'
+        parameter, where XXX is the number of the last version in which the extensions for custom packers or
+        unpackers changed (XXX for packers may differ from unpackers)
+      - AddMenuItem, SetChangeDriveMenuItem, and SetThumbnailLoader work the same every time the plugin is loaded
+        (installation/upgrades make no difference - we always start on a clean slate)
+    - in the upgrade section (after the base part):
+      - add a condition "if (ConfigVersion < XXX)", where XXX is the new value of the
+        CURRENT_CONFIG_VERSION constant + add a comment from that version;
+        in the body of that condition call:
+        - if extensions were added for the "panel archiver", call
+          "AddPanelArchiver(PPP, EEE, TRUE)", where PPP are only the new extensions separated
+          by a semicolon and EEE is TRUE/FALSE ("panel view+edit"/"panel view only")
+        - if extensions were added for the "viewer", call "AddViewer(PPP, TRUE)",
+          where PPP are only the new extensions separated by a semicolon
+        - if some old extensions for the "viewer" need to be removed, call
+          "ForceRemoveViewer(PPP)" for each such extension PPP
+        - if extensions for the "panel archiver" need to be removed, let Petr know; nobody has
+          needed it yet, so it is not implemented
   */
 
-    // Davide, az budes pridavat dalsi pripony, je treba zvedat CURRENT_CONFIG_VERSION, viz ^^^
+    // Davide, when you add more extensions you need to increase CURRENT_CONFIG_VERSION, see ^^^
 
-    // ZAKLADNI CAST
-    // AddViewer a AddPanelArchiver budou podlehat CASTI PRO UPGRADY
-    salamander->AddViewer("*.bin;*.img;*.iso;*.isz;*.nrg;*.pdi;*.cdi;*.cif;*.ncd;*.c2d;*.mdf", FALSE); // default (install pluginu), jinak Salam ignoruje
+    // BASE PART
+    // AddViewer and AddPanelArchiver are subject to the UPGRADE SECTION
+    salamander->AddViewer("*.bin;*.img;*.iso;*.isz;*.nrg;*.pdi;*.cdi;*.cif;*.ncd;*.c2d;*.mdf", FALSE); // default (plugin installation), otherwise Salamander ignores it
     salamander->AddPanelArchiver("iso;isz;nrg;bin;img;pdi;cdi;cif;ncd;c2d;mdf;dmg", FALSE, FALSE);
 
-    // ve verzi 3 jsme pridali C2D
-    // ve verzi 4 jsme pridali MDF
+    // in version 3 we added C2D
+    // in version 4 we added MDF
     salamander->AddCustomUnpacker("UnISO (Plugin)",
                                   "*.iso;*.isz;*.nrg;*.bin;*.img;*.pdi;*.cdi;*.cif;*.ncd;*.c2d;*.mdf;*.dmg", ConfigVersion < 6);
 
-    // nastavime ikonku pluginu
+    // set the plugin icon
     HBITMAP hBmp = (HBITMAP)LoadImage(DLLInstance, MAKEINTRESOURCE(IDB_UNISO),
                                       IMAGE_BITMAP, 16, 16, LR_DEFAULTCOLOR);
     salamander->SetBitmapWithIcons(hBmp);
@@ -347,32 +346,32 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
     salamander->SetPluginIcon(0);
     salamander->SetPluginMenuAndToolbarIcon(0);
 
-    // CAST PRO UPGRADY
-    if (ConfigVersion < 2) // pridani nrg, pdi, cdi, cif, ncd
+    // UPGRADE SECTION
+    if (ConfigVersion < 2) // addition of NRG, PDI, CDI, CIF, NCD
     {
         salamander->AddViewer("*.nrg;*.pdi;*.cdi;*.cif;*.ncd", TRUE);
         salamander->AddPanelArchiver("nrg;pdi;cdi;cif;ncd", FALSE, TRUE);
     }
 
-    if (ConfigVersion < 3) // pridani c2d
+    if (ConfigVersion < 3) // addition of C2D
     {
         salamander->AddViewer("*.c2d", TRUE);
         salamander->AddPanelArchiver("c2d", FALSE, TRUE);
     }
 
-    if (ConfigVersion < 4) // pridani mdf/mds
+    if (ConfigVersion < 4) // addition of MDF/MDS
     {
         salamander->AddViewer("*.mdf", TRUE);
         salamander->AddPanelArchiver("mdf", FALSE, TRUE);
     }
 
-    if (ConfigVersion < 5) // pridani dmg
+    if (ConfigVersion < 5) // addition of DMG
     {
         salamander->AddViewer("*.dmg", TRUE);
         salamander->AddPanelArchiver("dmg", FALSE, TRUE);
     }
 
-    if (ConfigVersion < 6) // pridani isz
+    if (ConfigVersion < 6) // addition of ISZ
     {
         salamander->AddViewer("*.isz", TRUE);
         salamander->AddPanelArchiver("isz", FALSE, TRUE);
@@ -437,14 +436,14 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
 
     CPluginDataInterface* pd = (CPluginDataInterface*)pluginData;
 
-    // pokusime se otevrit ISO image
+    // try to open the ISO image
     BOOL ret = FALSE;
     HWND hParent = SalamanderGeneral->GetMsgBoxParent();
-    CISOImage isoImage; // destruktor zavola Close
+    CISOImage isoImage; // the destructor calls Close
     isoImage.DisplayMissingCCDWarning = pd->DisplayMissingCCDWarning;
     if (isoImage.Open(fileName, FALSE))
     {
-        // predame kompletni listing jadru Salamandera
+        // hand over the complete listing to Salamander's core
         if (isoImage.ListImage(dir, pluginData))
         {
             ret = TRUE;
@@ -481,14 +480,14 @@ BOOL CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract
 
     CPluginDataInterface* pd = (CPluginDataInterface*)pluginData;
 
-    // pokusime se otevrit ISO image
-    CISOImage isoImage; // destruktor zavola Close
+    // try to open the ISO image
+    CISOImage isoImage; // the destructor calls Close
     isoImage.DisplayMissingCCDWarning = pd->DisplayMissingCCDWarning;
     if (!isoImage.Open(fileName, FALSE))
         return FALSE;
 
     BOOL ret = FALSE;
-    // spocitat 'totalSize' pro progress dialog
+    // compute 'totalSize' for the progress dialog
     BOOL isDir;
     CQuadWord size;
     CQuadWord totalSize(0, 0);
@@ -507,9 +506,9 @@ BOOL CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract
         totalSize += CQuadWord(1, 0);
     }
 
-    // vybalit
+    // unpack
     BOOL delTempDir = TRUE;
-    if (errorOccured != SALENUM_CANCEL && // test, jestli nenastala chyba a uzivatel si nepral prerusit operaci (tlacitko Cancel)
+    if (errorOccured != SALENUM_CANCEL && // test to see whether an error occurred and the user did not request to cancel the operation (Cancel button)
         SalamanderGeneral->TestFreeSpace(SalamanderGeneral->GetMsgBoxParent(),
                                          targetDir, totalSize, LoadStr(IDS_UNPACKING_ARCHIVE)))
     {
@@ -524,9 +523,9 @@ BOOL CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract
 
         ret = TRUE;
         next(NULL, -1, NULL, NULL, NULL, nextParam, NULL);
-        while ((name = next(NULL /* podruhe uz chyby nepiseme */, 1, &isDir, &size, &fileData, nextParam, NULL)) != NULL)
+        while ((name = next(NULL /* we do not print the errors a second time */, 1, &isDir, &size, &fileData, nextParam, NULL)) != NULL)
         {
-            // adresare nas nezajimaji, jejich vytvareni se dela pri vybalovani souboru
+            // directories do not interest us; they are created while unpacking files
             char destPath[MAX_PATH];
             strncpy_s(destPath, targetDir, _TRUNCATE);
 
@@ -543,9 +542,9 @@ BOOL CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract
                 }
                 else
                 {
-                    salamander->ProgressDialogAddText(name, TRUE); // delayedPaint==TRUE, abychom nebrzdili
+                    salamander->ProgressDialogAddText(name, TRUE); // delayedPaint==TRUE, so we do not slow things down
 
-                    //  pokud neexistuje cesta kam rozbalujeme -> vytvorit ji
+                    //  if the destination path does not exist -> create it
                     char* lastComp = strrchr(destPath, '\\');
                     if (lastComp != NULL)
                     {
@@ -610,8 +609,8 @@ BOOL CPluginInterfaceForArchiver::UnpackOneFile(CSalamanderForOperationsAbstract
 
     CPluginDataInterface* pd = (CPluginDataInterface*)pluginData;
 
-    // pokusime se otevrit ISO image
-    CISOImage isoImage; // destruktor zavola Close
+    // try to open the ISO image
+    CISOImage isoImage; // the destructor calls Close
     isoImage.DisplayMissingCCDWarning = pd->DisplayMissingCCDWarning;
     if (!isoImage.Open(fileName, FALSE))
         return FALSE;
@@ -635,7 +634,7 @@ BOOL CPluginInterfaceForArchiver::UnpackOneFile(CSalamanderForOperationsAbstract
         BOOL toSkip = FALSE;
         int err;
 
-        salamander->ProgressDialogAddText(name, TRUE); // delayedPaint==TRUE, abychom nebrzdili
+        salamander->ProgressDialogAddText(name, TRUE); // delayedPaint==TRUE, so we do not slow things down
 
         char srcPath[MAX_PATH];
         strcpy(srcPath, nameInArchive);
@@ -724,8 +723,8 @@ BOOL CPluginInterfaceForArchiver::UnpackWholeArchive(CSalamanderForOperationsAbs
             char modmask[256];
             SalamanderGeneral->PrepareMask(modmask, mask);
 
-            // pokusime se otevrit ISO image
-            CISOImage isoImage; // destruktor zavola Close
+            // try to open the ISO image
+            CISOImage isoImage; // the destructor calls Close
             if (isoImage.Open(fileName, FALSE))
             {
                 if (delArchiveWhenDone)
@@ -783,8 +782,8 @@ BOOL CPluginInterfaceForViewer::ViewFile(const char* name, int left, int top, in
                          name, left, top, width, height,
                          showCmd, alwaysOnTop, returnLock, enumFilesSourceUID, enumFilesCurrentIndex);
 
-    // 'lock' ani 'lockOwner' nenastavujeme, staci nam platnost souboru 'name' jen
-    // v ramci teto metody
+    // we do not set 'lock' or 'lockOwner'; we only need the validity of the file 'name'
+    // within this method
 
     HCURSOR hOldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
@@ -819,17 +818,17 @@ BOOL CPluginInterfaceForViewer::ViewFile(const char* name, int left, int top, in
         int err;
         CSalamanderPluginInternalViewerData vData;
 
-        // vytvorim docasny soubor a naleju do nej dump modulu
+        // create a temporary file and pour the module dump into it
         FILE* outStream = fopen(tempFileName, "w");
         if (!image->DumpInfo(outStream))
         {
-            // ?muze vubec nastat?
+            // can this even happen?
         }
         fclose(outStream);
         delete image;
 
-        // soubor predam Salamanderovi - ten si jej presune do cache a az ho prestane
-        // pouzivat, smaze ho
+        // hand the file over to Salamander - it will move it into the cache and once it stops
+        // using it, it will delete it
         vData.Size = sizeof(vData);
         vData.FileName = tempFileName;
         vData.Mode = 0; // text mode
@@ -838,7 +837,7 @@ BOOL CPluginInterfaceForViewer::ViewFile(const char* name, int left, int top, in
         vData.WholeCaption = TRUE;
         if (!SalamanderGeneral->ViewFileInPluginViewer(NULL, &vData, TRUE, NULL, "iso_dump.txt", err))
         {
-            // soubor je smazan i v pripade neuspechu
+            // the file is deleted even in case of failure
         }
     }
     else

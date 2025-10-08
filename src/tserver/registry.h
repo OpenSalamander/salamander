@@ -7,15 +7,15 @@
 //
 // CRegArrayItem
 //
-// Toto musi byt predek vsech trid, ktere jsou drzeny v ukladanem / ctenem poli
+// This must be the base of every class stored in the saved/loaded array
 //
 
 class CRegArrayItem
 {
 public:
-    // necha tridu nalejt do bufferu data; bufferLen rika tride maximalni velikost bufferu
+    // lets the class write data into the buffer; bufferLen tells the class the maximum buffer size
     virtual BOOL TransferToRegistry(WCHAR* buffer, int bufferLen) = 0;
-    // necha tridu nacist se z bufferu
+    // lets the class load itself from the buffer
     virtual BOOL TransferFromRegistry(const WCHAR* buffer) = 0;
 };
 
@@ -169,9 +169,9 @@ class CRegIndirectArray : public CReg
 class CRegistryPath
 {
 protected:
-    HKEY HRootKey; // handle klice, od ktereho se bude rozvijet cesta
-    WCHAR* Path;   // cesta oddelena backslahema
-    HKEY HKey;     // handle klice k ceste
+    HKEY HRootKey; // handle of the key from which the path expands
+    WCHAR* Path;   // path separated by backslashes
+    HKEY HKey;     // handle of the key for the path
 
 public:
     CRegistryPath(HKEY hRootKey, WCHAR* path);
@@ -181,9 +181,9 @@ public:
     HKEY GetHKey() { return HKey; }
     const WCHAR* GetPath() { return Path; }
 
-    BOOL CreateKey();                    // vytvori klic a naplni HKey
-    BOOL OpenKey(BOOL* notFound = NULL); // otevre klic a naplni HKey
-    BOOL CloseKey();                     // zavre klic a nuluje HKey
+    BOOL CreateKey();                    // creates the key and fills HKey
+    BOOL OpenKey(BOOL* notFound = NULL); // opens the key and fills HKey
+    BOOL CloseKey();                     // closes the key and clears HKey
 };
 
 //*****************************************************************************
@@ -194,17 +194,17 @@ public:
 class CRegistryClass
 {
 protected:
-    CReg* IOClass;               // ukazatel na objekt zajistujici Load/Save dat
-    const WCHAR* DataName;       // nazev polozky
-    void* Data;                  // ukazatel na ctena/ukladana data
-    CRegistryPath* RegistryPath; // ukazatel na cestu k datum
+    CReg* IOClass;               // pointer to the object handling data load/save
+    const WCHAR* DataName;       // item name
+    void* Data;                  // pointer to the data being read/stored
+    CRegistryPath* RegistryPath; // pointer to the path for the data
 
 public:
     CRegistryClass(CRegistryPath* registryPath, const WCHAR* dataName,
                    void* data, CReg* ioClass);
 
-    BOOL SaveValue();               // ulozi data pomoci IOClass
-    BOOL LoadValue(BOOL& notFound); // nacte data pomoci IOClass
+    BOOL SaveValue();               // saves data through IOClass
+    BOOL LoadValue(BOOL& notFound); // loads data through IOClass
 };
 
 //*****************************************************************************
@@ -220,22 +220,22 @@ protected:
     TIndirectArray<CRegistryPath> RegistryPaths;
     TIndirectArray<CRegistryClass> RegistryClasses;
 
-    BOOL CreateKeys(); // vytvori klice
-    BOOL OpenKeys();   // otevre existujici klice
-    BOOL CloseKeys();  // zavre klice
+    BOOL CreateKeys(); // creates keys
+    BOOL OpenKeys();   // opens existing keys
+    BOOL CloseKeys();  // closes the keys
 
 public:
     CRegistry();
 
-    // registuje cestu; naplni handle HRegistryPath
-    // cesta se zadava ukazatele na jednotlive dily cesty; posledni ukazatel musi byt NULL
+    // registers a path; fills the HRegistryPath handle
+    // the path is provided as pointers to individual segments; the last pointer must be NULL
     BOOL RegisterPath(HRegistryPath& hRegistryPath, HKEY hRootKey, const WCHAR* path, ...);
-    // registruje pro urcitou cestu data a jejich Save/Load objekt
+    // registers data and their Save/Load object for a particular path
     BOOL RegisterClass(HRegistryPath hRegistryPath, const WCHAR* dataName,
                        void* dataClass, CReg* ioClass);
 
-    BOOL Save(); // ulozi data
-    BOOL Load(); // nacte data
+    BOOL Save(); // saves data
+    BOOL Load(); // loads data
 };
 
 //*****************************************************************************
@@ -255,13 +255,13 @@ CRegIndirectArray<DATA_TYPE>::Save(HKEY hKey, const WCHAR *name, void *data)
   for (i = 0; i < count; i++)
   {
     swprintf_s(realName, L"%s%d", name, i);
-//    DATA_TYPE *item = ((TIndirectArray<DATA_TYPE>*)data)->At(i);  // nekdo to generuje pro int*
+//    DATA_TYPE *item = ((TIndirectArray<DATA_TYPE>*)data)->At(i);  // someone generates this for int*
     CRegArrayItem *item = (CRegArrayItem *)((TIndirectArray<DATA_TYPE>*)data)->At(i);
     item->TransferToRegistry(buff, 1024);
     SaveVoid(hKey, realName, REG_SZ, buff, sizeof(WCHAR) * (wcslen(buff) + 1));
   }
   swprintf_s(realName, L"%s%d", name, i);
-  RegDeleteValue(hKey, realName);      // odmazu dalsi prvek, pokud existuje
+  RegDeleteValue(hKey, realName);      // remove the next element if it exists
   return TRUE;
 }
 
@@ -281,7 +281,7 @@ CRegIndirectArray<DATA_TYPE>::Load(HKEY hKey, const WCHAR *name, void *data, BOO
     if (!LoadVoid(hKey, realName, REG_SZ, buff, sizeof(buff), &myNotFound))
     {
       if (myNotFound)
-        return TRUE;  // neni dalsi prvek
+        return TRUE;  // no more items
       else
         return FALSE;
     }

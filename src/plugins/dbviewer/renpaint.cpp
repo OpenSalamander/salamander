@@ -38,13 +38,13 @@ void CRendererWindow::PaintTopMargin(HDC hDC, HRGN hUpdateRgn, const RECT* clipR
     {
         if (!selChangeOnly)
         {
-            // nakreslime nulty sloupec
+            // draw the zeroth column
             SelectClipRgn(hDC, hUpdateRgn);
             r.left = x;
             r.right = x + RowHeight - 1;
             ExtTextOut(hDC, x + LeftTextMargin, TopTextMargin, ETO_OPAQUE,
                        &r, "", 0, NULL);
-            // nakreslime oddelovaci cary
+            // draw separator lines
             MoveToEx(hDC, r.left, r.bottom, NULL);
             LineTo(hDC, r.right, r.bottom);
             LineTo(hDC, r.right, r.top - 1);
@@ -74,7 +74,7 @@ void CRendererWindow::PaintTopMargin(HDC hDC, HRGN hUpdateRgn, const RECT* clipR
                         inSelection = TRUE;
                     }
 
-                    // zobrazime text
+                    // display the text
 
                     if (selChangeOnly && x < RowHeight && !leftExcluded)
                     {
@@ -106,7 +106,7 @@ void CRendererWindow::PaintTopMargin(HDC hDC, HRGN hUpdateRgn, const RECT* clipR
                                     &r, colName, (UINT)wcslen(colName), NULL);
                     }
 
-                    // nakreslime oddelovaci cary
+                    // draw separator lines
                     MoveToEx(hDC, r.left, r.bottom, NULL);
                     LineTo(hDC, r.right, r.bottom);
                     LineTo(hDC, r.right, r.top - 1);
@@ -125,7 +125,7 @@ void CRendererWindow::PaintTopMargin(HDC hDC, HRGN hUpdateRgn, const RECT* clipR
 
     if (x < Width)
     {
-        // dokreslime prazdne misto za hlavickou
+        // fill the empty space behind the header
         r.left = x;
         r.right = Width;
         r.bottom++;
@@ -168,7 +168,7 @@ void CRendererWindow::PaintBody(HDC hDC, HRGN hUpdateRgn, const RECT* clipRect, 
             {
                 if (!selChangeOnly || Selection.ChangedRow(&OldSelection, i))
                 {
-                    // nakreslim levy sloupec
+                    // draw the left column
                     COLORREF oldBkColor2;
                     if (Selection.ContainsRow(i))
                     {
@@ -200,7 +200,7 @@ void CRendererWindow::PaintBody(HDC hDC, HRGN hUpdateRgn, const RECT* clipRect, 
                         DrawIconEx(hDC, (RowHeight - 16) / 2 + 1, r.top + (RowHeight - 16) / 2 + 1,
                                    HDeleteIcon, 0, 0, 0, NULL, DI_NORMAL);
                     }
-                    // nakreslime oddelovaci cary
+                    // draw separator lines
                     MoveToEx(hDC, r.left, r.bottom, NULL);
                     LineTo(hDC, r.right, r.bottom);
                     LineTo(hDC, r.right, r.top - 1);
@@ -213,7 +213,7 @@ void CRendererWindow::PaintBody(HDC hDC, HRGN hUpdateRgn, const RECT* clipRect, 
             SelectObject(hDC, HLtGrayPen);
             x = RowHeight - XOffset;
 
-            // nakreslim viditelne sloupce
+            // draw visible columns
             int visibleIndex = 0;
             int j;
             for (j = 0; j < Database.GetColumnCount(); j++)
@@ -227,7 +227,7 @@ void CRendererWindow::PaintBody(HDC hDC, HRGN hUpdateRgn, const RECT* clipRect, 
                         if (!selChangeOnly || Selection.Changed(&OldSelection, visibleIndex, i))
                         {
                             //              TRACE_I("Paint row="<<i<<" col="<<j);
-                            // vytahneme text
+                            // retrieve the text
                             if (fetchedIndex != i)
                             {
                                 if (!Database.FetchRecord(HWindow, i))
@@ -263,7 +263,7 @@ void CRendererWindow::PaintBody(HDC hDC, HRGN hUpdateRgn, const RECT* clipRect, 
                                     CodeCharacters(textBuffer, textLen);
                                 }
 
-                                // namerime sirku textu
+                                // measure the text width
                                 GetTextExtentPoint32A(hDC, textBuffer, (int)textLen, &sz);
                             }
                             else
@@ -272,7 +272,7 @@ void CRendererWindow::PaintBody(HDC hDC, HRGN hUpdateRgn, const RECT* clipRect, 
                                 GetTextExtentPoint32W(hDC, textW, (int)textLen, &sz);
                             }
 
-                            // nakreslime text
+                            // draw the text
                             int xOffset = 0;
                             if (!column->LeftAlign)
                                 xOffset = r.right - r.left - 2 * LeftTextMargin - sz.cx;
@@ -313,7 +313,7 @@ void CRendererWindow::PaintBody(HDC hDC, HRGN hUpdateRgn, const RECT* clipRect, 
                                 }
                             }
 
-                            // nakreslime oddelovaci cary
+                            // draw separator lines
                             MoveToEx(hDC, r.left, r.bottom, NULL);
                             LineTo(hDC, r.right, r.bottom);
                             LineTo(hDC, r.right, r.top - 1);
@@ -326,7 +326,7 @@ void CRendererWindow::PaintBody(HDC hDC, HRGN hUpdateRgn, const RECT* clipRect, 
 
             if (x < Width)
             {
-                // dokreslime zbytek prazdneho radku
+                // fill the remainder of the empty row
                 RECT r2;
                 r2 = r;
                 r2.left = x;
@@ -345,7 +345,7 @@ void CRendererWindow::PaintBody(HDC hDC, HRGN hUpdateRgn, const RECT* clipRect, 
 
     if (r.top < Height)
     {
-        // dokreslime prazdny prostor pod tabulkou
+        // fill the empty space below the table
         SelectClipRgn(hDC, hUpdateRgn);
         r.left = 0;
         r.right = Width;
@@ -388,7 +388,7 @@ void CRendererWindow::Paint(HDC hDC, HRGN hUpdateRgn, BOOL selChangeOnly)
         SelectObject(hDC, hOldFont);
 
         if (hUpdateRgn != NULL)
-            SelectClipRgn(hDC, NULL); // vykopneme clip region, pokud jsme ho nastavili
+            SelectClipRgn(hDC, NULL); // remove the clip region if it was set
 
         if (releaseDC)
             ReleaseDC(HWindow, hDC);

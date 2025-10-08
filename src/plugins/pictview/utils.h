@@ -3,7 +3,7 @@
 
 #pragma once
 
-// popis viz shared/spl_gen.h
-// proti funkci v Salamanderu ma tato vykuchan parametr nextFocus
-// a podporu pro DefaultDir (cesty typu "c:path...")
+// see shared/spl_gen.h for the description
+// compared to the function in Salamander this stripped-down variant omits the nextFocus parameter
+// and support for DefaultDir (paths such as "c:path...")
 BOOL SalGetFullName(LPTSTR name, int* errTextID, LPCTSTR curDir);

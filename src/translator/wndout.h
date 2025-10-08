@@ -30,10 +30,10 @@ struct COutLine
 {
     CMessageTypeEnum MsgType; // info, warning, error
     CResTypeEnum Type;        // dialog, menu, string
-    WORD OwnerID;             // ID dialogu, menu, skupiny stringu
-    WORD LVIndex;             // na ktere pozici je prezentovan v listview
-    WORD ControlID;           // jen dialogy: 0 = pouzit LVIndex, jinak je to ID controlu v dialogu
-    wchar_t* Text;            // drzeny text
+    WORD OwnerID;             // ID of the dialog, menu, or string group
+    WORD LVIndex;             // position where it is presented in the list view
+    WORD ControlID;           // dialogs only: 0 = use LVIndex; otherwise control ID in the dialog
+    wchar_t* Text;            // stored text
 };
 
 class COutWindow : public CWindow
@@ -50,11 +50,11 @@ public:
 
     void Clear();
 
-    void EnablePaint(BOOL enable); // pro optimalizaci plneni
+    void EnablePaint(BOOL enable); // optimize population
     void AddLine(const wchar_t* text, CMessageTypeEnum msgType, CResTypeEnum type = rteNone, WORD ownerID = 0, WORD lvIndex = 0, WORD controlID = 0);
 
     int GetLinesCount() { return OutLines.Count; }
-    // vrati pocet radek, ktere odkazuji na nejake objekty
+    // return the number of lines referencing actual objects
     int GetSelectableLinesCount() { return SelectableCount; }
 
     int GetErrorLines();

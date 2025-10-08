@@ -116,8 +116,8 @@ BOOL GetMixedCaseCutParam(HWND parent, char* buffer);
 BOOL GetStripDiaCutParam(HWND parent, char* buffer);
 BOOL GetCutParam(HWND parent, char* buffer);
 
-/* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s polem dole...
+/* used by the export_mnu.py script, which generates salmenu.mnu for the Translator
+   keep synchronized with the array below...
 MENU_TEMPLATE_ITEM NewNameLowerHelpMenu[] = 
 {
   {MNTT_PB, 0
@@ -144,8 +144,8 @@ CVarStrHelpMenuItem NewNameLowerHelpMenu[] =
         {IDS_VAR_CUT, NULL, GetLowerCaseCutParam, NULL},
         {0, NULL, NULL, NULL}};
 
-/* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s polem dole...
+/* used by the export_mnu.py script, which generates salmenu.mnu for the Translator
+   keep synchronized with the array below...
 MENU_TEMPLATE_ITEM NewNameUpperHelpMenu[] = 
 {
   {MNTT_PB, 0
@@ -172,8 +172,8 @@ CVarStrHelpMenuItem NewNameUpperHelpMenu[] =
         {IDS_VAR_CUT, NULL, GetUpperCaseCutParam, NULL},
         {0, NULL, NULL, NULL}};
 
-/* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s polem dole...
+/* used by the export_mnu.py script, which generates salmenu.mnu for the Translator
+   keep synchronized with the array below...
 MENU_TEMPLATE_ITEM NewNameMixedHelpMenu[] = 
 {
   {MNTT_PB, 0
@@ -200,8 +200,8 @@ CVarStrHelpMenuItem NewNameMixedHelpMenu[] =
         {IDS_VAR_CUT, NULL, GetMixedCaseCutParam, NULL},
         {0, NULL, NULL, NULL}};
 
-/* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s polem dole...
+/* used by the export_mnu.py script, which generates salmenu.mnu for the Translator
+   keep synchronized with the array below...
 MENU_TEMPLATE_ITEM NewNameStripDiaHelpMenu[] = 
 {
   {MNTT_PB, 0
@@ -228,8 +228,8 @@ CVarStrHelpMenuItem NewNameStripDiaHelpMenu[] =
         {IDS_VAR_CUT, NULL, GetStripDiaCutParam, NULL},
         {0, NULL, NULL, NULL}};
 
-/* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s polem dole...
+/* used by the export_mnu.py script, which generates salmenu.mnu for the Translator
+   keep synchronized with the array below...
 MENU_TEMPLATE_ITEM NewNameHelpMenu[] = 
 {
   {MNTT_PB, 0
@@ -277,8 +277,8 @@ CVarStrHelpMenuItem NewNameHelpMenu[] =
 BOOL GetREPositiveSet(HWND parent, char* buffer);
 BOOL GetRENegativeSet(HWND parent, char* buffer);
 
-/* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s polem dole...
+/* used by the export_mnu.py script, which generates salmenu.mnu for the Translator
+   keep synchronized with the array below...
 MENU_TEMPLATE_ITEM LiteralsHelpMenu[] = 
 {
   {MNTT_PB, 0
@@ -311,8 +311,8 @@ CVarStrHelpMenuItem LiteralsHelpMenu[] =
         {IDS_RE_BACKSLASH, "\\\\", NULL, NULL},
         {0, NULL, NULL, NULL}};
 
-/* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s polem dole...
+/* used by the export_mnu.py script, which generates salmenu.mnu for the Translator
+   keep synchronized with the array below...
 MENU_TEMPLATE_ITEM AnyFromHelpMenu[] = 
 {
   {MNTT_PB, 0
@@ -351,8 +351,8 @@ CVarStrHelpMenuItem AnyFromHelpMenu[] =
         {IDS_RE_DEFINESET, NULL, GetREPositiveSet, NULL},
         {0, NULL, NULL, NULL}};
 
-/* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s polem dole...
+/* used by the export_mnu.py script, which generates salmenu.mnu for the Translator
+   keep synchronized with the array below...
 MENU_TEMPLATE_ITEM AnyButHelpMenu[] = 
 {
   {MNTT_PB, 0
@@ -391,8 +391,8 @@ CVarStrHelpMenuItem AnyButHelpMenu[] =
         {IDS_RE_DEFINESET, NULL, GetRENegativeSet, NULL},
         {0, NULL, NULL, NULL}};
 
-/* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s polem dole...
+/* used by the export_mnu.py script, which generates salmenu.mnu for the Translator
+   keep synchronized with the array below...
 MENU_TEMPLATE_ITEM ZeroWidthAssertions[] = 
 {
   {MNTT_PB, 0
@@ -419,8 +419,8 @@ CVarStrHelpMenuItem ZeroWidthAssertions[] =
         {IDS_RE_NLOOKB, "(?<!)", NULL, NULL},
         {0, NULL, NULL, NULL}};
 
-/* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s polem dole...
+/* used by the export_mnu.py script, which generates salmenu.mnu for the Translator
+   keep synchronized with the array below...
 MENU_TEMPLATE_ITEM IterationHelpMenu[] = 
 {
   {MNTT_PB, 0
@@ -435,8 +435,8 @@ CVarStrHelpMenuItem IterationHelpMenu[] =
         {IDS_RE_ITERATION_UNGREEDY, "*?", NULL, NULL},
         {0, NULL, NULL, NULL}};
 
-/* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s polem dole...
+/* used by the export_mnu.py script, which generates salmenu.mnu for the Translator
+   keep synchronized with the array below...
 MENU_TEMPLATE_ITEM PositiveIterationHelpMenu[] = 
 {
   {MNTT_PB, 0
@@ -451,8 +451,8 @@ CVarStrHelpMenuItem PositiveIterationHelpMenu[] =
         {IDS_RE_ITERATION_UNGREEDY, "+?", NULL, NULL},
         {0, NULL, NULL, NULL}};
 
-/* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s polem dole...
+/* used by the export_mnu.py script, which generates salmenu.mnu for the Translator
+   keep synchronized with the array below...
 MENU_TEMPLATE_ITEM RegExpHelpMenu[] = 
 {
   {MNTT_PB, 0
@@ -513,8 +513,8 @@ CVarStrHelpMenuItem RegExpHelpMenu[] =
 
 BOOL GetRESubExp(HWND parent, char* buffer);
 
-/* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s polem dole...
+/* used by the export_mnu.py script, which generates salmenu.mnu for the Translator
+   keep synchronized with the array below...
 MENU_TEMPLATE_ITEM ReplaceHelpMenu[] = 
 {
   {MNTT_PB, 0
@@ -714,7 +714,7 @@ CRenamerDialog::CRenamerDialog(HWND parent)
 
     Undoing = FALSE;
 
-    // nacteme selection z panelu
+    // load the selection from the panel
     LoadSelection();
 }
 
@@ -727,11 +727,11 @@ CRenamerDialog::~CRenamerDialog()
 BOOL CRenamerDialog::Init()
 {
     CALL_STACK_MESSAGE1("CRenamerDialog::Init()");
-    // priradim oknu ikonku
+    // assign the icon to the window
     SendMessage(HWindow, WM_SETICON, ICON_BIG,
                 (LPARAM)LoadIcon(DLLInstance, MAKEINTRESOURCE(IDI_RENAMER)));
 
-    // pripojime nasi tridu na kombace
+    // attach our class to the combo boxes
     MaskEdit = new CComboboxEdit();
     NewName = new CComboboxEdit(TRUE);
     SearchFor = new CComboboxEdit(TRUE);
@@ -745,7 +745,7 @@ BOOL CRenamerDialog::Init()
     ReplaceWith->AttachToWindow(GetWindow(GetDlgItem(HWindow, IDC_REPLACE), GW_CHILD));
     ManualEdit->AttachToWindow(GetDlgItem(HWindow, IDE_MANUAL));
 
-    // konstrukce listview
+    // list view construction
     Preview = new CPreviewWindow(this);
     if (Preview == NULL)
     {
@@ -756,7 +756,7 @@ BOOL CRenamerDialog::Init()
     Preview->AttachToControl(HWindow, IDL_PREVIEW);
     ListView_SetExtendedListViewStyle(Preview->HWindow, LVS_EX_FULLROWSELECT);
 
-    // vytvorime menu
+    // create the menu
     MainMenu = SalGUI->CreateMenuPopup();
     if (MainMenu == NULL)
         return FALSE;
@@ -768,7 +768,7 @@ BOOL CRenamerDialog::Init()
     MenuBar->CreateWnd(HWindow);
     SetWindowPos(MenuBar->GetHWND(), NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_SHOWWINDOW);
 
-    // nactu paramatry pro layoutovani okna
+    // read the parameters for laying out the window
     GetLayoutParams();
 
     if (DialogWidth != -1 && DialogHeight != -1)
@@ -783,7 +783,7 @@ BOOL CRenamerDialog::Init()
     Preview->InitColumns();
     Preview->SetItemCount(0, 0, 0);
 
-    // attachnu SalGUI kontroly na buttony
+    // attach the SalGUI controls to the buttons
     SalGUI->AttachButton(HWindow, IDOK, BTF_DROPDOWN);
     SalGUI->ChangeToArrowButton(HWindow, IDB_NEWNAME);
     SalGUI->ChangeToArrowButton(HWindow, IDB_SEARCH);
@@ -804,7 +804,7 @@ BOOL CRenamerDialog::Init()
 void CRenamerDialog::Destroy()
 {
     CALL_STACK_MESSAGE1("CRenamerDialog::Destroy()");
-    // ulozime si rozmery okna
+    // store the window dimensions
     WINDOWPLACEMENT wndpl;
     wndpl.length = sizeof(WINDOWPLACEMENT);
     if (GetWindowPlacement(HWindow, &wndpl))
@@ -824,12 +824,12 @@ void CRenamerDialog::Destroy()
         MainMenu = NULL;
     }
 
-    // uvolnime handle, jinak by ho ListView vzalo s sebou do pekel
+    // release the handle; otherwise the ListView would drag it to hell with it
     if (Preview)
         ListView_SetImageList(Preview->HWindow, NULL, LVSIL_SMALL);
 
-    // uvolnime data nez se zavre okno, jinak by se mohlo stat, ze by nas
-    // thread salamander sestrelil driv nez zkonci
+    // release the data before the window closes; otherwise the Salamander thread
+    // could take us down before it finishes
     RenamedFiles.DestroyMembers();
     NotRenamedFiles.DestroyMembers();
     SourceFiles.DestroyMembers();
@@ -889,7 +889,7 @@ void CRenamerDialog::GetLayoutParams()
     RECT cr;
     GetClientRect(HWindow, &cr);
 
-    // posuneme vsechny kontroly v okne o vysku menu
+    // move all controls in the window by the menu height
     EnumChildWindows(HWindow, MoveControls, (LPARAM)this);
 
     RECT r;
@@ -900,7 +900,7 @@ void CRenamerDialog::GetLayoutParams()
     GetDlgItemWindowRect(IDC_NEWNAME, &r);
     CombosLX = r.left;
     CombosRX = cr.right - r.right - 1;
-    CombosDY = 0; // napocitame pozdeji, tady je zapocitana i velikost dropdown
+    CombosDY = 0; // calculated later; the dropdown size is included here
 
     GetDlgItemWindowRect(IDB_NEWNAME, &r);
     ArrowRX = cr.right - r.left;
@@ -951,75 +951,75 @@ void CRenamerDialog::LayoutControls()
     HDWP hdwp = BeginDeferWindowPos(15);
     if (hdwp != NULL)
     {
-        // natahnu menu
+        // size the menu
         hdwp = DeferWindowPos(hdwp, MenuBar->GetHWND(), NULL, 0, 0, cr.right, MenuDY,
                               SWP_NOZORDER | SWP_NOMOVE);
 
-        // natahnu menu
+        // size the menu
         hdwp = DeferWindowPos(hdwp, GetDlgItem(HWindow, IDS_MENUSEP), NULL, 0, 0, cr.right, RuleDY,
                               SWP_NOZORDER | SWP_NOMOVE);
 
-        // umistim tlacitko Rename
+        // position the Rename button
         hdwp = DeferWindowPos(hdwp, GetDlgItem(HWindow, IDOK), NULL,
                               cr.right - RenameRX, RenameY, 0, 0,
                               SWP_NOZORDER | SWP_NOSIZE);
 
-        // natahnu rule Manual Mode
+        // size the Manual Mode rule
         hdwp = DeferWindowPos(hdwp, GetDlgItem(HWindow, IDS_MANSEP), NULL,
                               0, 0, cr.right - NameRuleLX - RuleRX, RuleDY,
                               SWP_NOZORDER | SWP_NOMOVE);
 
-        // natahnu combobox New Name
+        // size the New Name combo box
         hdwp = DeferWindowPos(hdwp, GetDlgItem(HWindow, IDC_NEWNAME), NULL,
                               0, 0, cr.right - CombosLX - CombosRX, CombosDY,
                               SWP_NOZORDER | SWP_NOMOVE);
 
-        // umistim arrow button New Name
+        // position the New Name arrow button
         hdwp = DeferWindowPos(hdwp, GetDlgItem(HWindow, IDB_NEWNAME), NULL,
                               cr.right - ArrowRX, NameArrowY, 0, 0,
                               SWP_NOZORDER | SWP_NOSIZE);
 
-        // natahnu rule Replace
+        // size the Replace rule
         hdwp = DeferWindowPos(hdwp, GetDlgItem(HWindow, IDS_REPLACESEP), NULL,
                               0, 0, cr.right - ReplaceRuleLX - RuleRX, RuleDY,
                               SWP_NOZORDER | SWP_NOMOVE);
 
-        // natahnu combobox Search For
+        // size the Search For combo box
         hdwp = DeferWindowPos(hdwp, GetDlgItem(HWindow, IDC_SEARCH), NULL,
                               0, 0, cr.right - CombosLX - CombosRX, CombosDY,
                               SWP_NOZORDER | SWP_NOMOVE);
 
-        // umistim arrow button Search For
+        // position the Search For arrow button
         hdwp = DeferWindowPos(hdwp, GetDlgItem(HWindow, IDB_SEARCH), NULL,
                               cr.right - ArrowRX, SearchArrowY, 0, 0,
                               SWP_NOZORDER | SWP_NOSIZE);
 
-        // natahnu combobox Reaplace
+        // size the Replace combo box
         hdwp = DeferWindowPos(hdwp, GetDlgItem(HWindow, IDC_REPLACE), NULL,
                               0, 0, cr.right - CombosLX - CombosRX, CombosDY,
                               SWP_NOZORDER | SWP_NOMOVE);
 
-        // umistim arrow button Replace
+        // position the Replace arrow button
         hdwp = DeferWindowPos(hdwp, GetDlgItem(HWindow, IDB_REPLACE), NULL,
                               cr.right - ArrowRX, ReplaceArrowY, 0, 0,
                               SWP_NOZORDER | SWP_NOSIZE);
 
-        // natahnu rule Case
+        // size the Case rule
         hdwp = DeferWindowPos(hdwp, GetDlgItem(HWindow, IDS_CHANGECASESEP), NULL,
                               0, 0, cr.right - CaseRuleLX - RuleRX, RuleDY,
                               SWP_NOZORDER | SWP_NOMOVE);
 
-        // umistim text Count
+        // position the Count text
         hdwp = DeferWindowPos(hdwp, GetDlgItem(HWindow, IDS_COUNT), NULL,
                               cr.right - CountRX, CountY, 0, 0,
                               SWP_NOZORDER | SWP_NOSIZE);
 
-        // natahnu manual edit control
+        // size the manual edit control
         hdwp = DeferWindowPos(hdwp, ManualEdit->HWindow, NULL,
                               0, 0, cr.right - ManualLX - RuleRX, ManualDY,
                               SWP_NOZORDER | SWP_NOMOVE);
 
-        // natahnu list view
+        // size the list view
         hdwp = DeferWindowPos(hdwp, GetDlgItem(HWindow, IDL_PREVIEW), NULL,
                               0, 0, cr.right, cr.bottom - PreviewY,
                               SWP_NOZORDER | SWP_NOMOVE);
@@ -1143,7 +1143,7 @@ void CRenamerDialog::LoadSelection()
     SG->GetPanelPath(PANEL_SOURCE, Root, MAX_PATH, NULL, NULL);
     RootLen = (int)strlen(Root);
 
-    // nacteme si selection z panelu
+    // load the selection from the panel
     const CFileData* fd;
     BOOL isDir = FALSE;
     if (files + dirs == 0)
@@ -1166,7 +1166,7 @@ void CRenamerDialog::ReloadSourceFiles()
     SourceFilesValid = FALSE;
     SourceFiles.DestroyMembers();
 
-    // reknu listview novy pocet polozek
+    // tell the list view the new item count
     // Preview->SetItemCount(0, 0, 3);
 
     char mask[MAX_GROUPMASK];
@@ -1250,7 +1250,7 @@ void CRenamerDialog::ReloadSourceFiles()
     {
         SourceFilesValid = TRUE;
 
-        // reknu listview novy pocet polozek
+        // tell the list view the new item count
         Preview->SetItemCount(SourceFiles.Count, LVSICF_NOSCROLL, 1);
 
         if (SourceFiles.Count > 0)
@@ -1280,7 +1280,7 @@ void CRenamerDialog::ReloadSourceFiles()
         {
             if (!SourceFilesNeedUpdate)
             {
-                // shodime subdirs flag a nacteme SourceFiles bez rekurze
+                // drop the subdirs flag and load SourceFiles without recursion
                 SendDlgItemMessage(HWindow, IDC_SUBDIRS, BM_SETCHECK, BST_UNCHECKED, 0);
                 ReloadSourceFiles();
             }
@@ -1311,7 +1311,7 @@ BOOL CRenamerDialog::LoadSubdir(char* path, const char* subdir)
     if (!b || !SG->SalPathAppend(path, "*.*", MAX_PATH))
     {
         if (b)
-            SG->CutDirectory(path); // orizneme subdir
+            SG->CutDirectory(path); // trim the subdirectory portion
         BOOL skip;
         FileError(HWindow, subdir, IDS_TOOLONGPATH, FALSE,
                   &skip, &SkipAllLongNames, IDS_ERROR);
@@ -1327,23 +1327,23 @@ BOOL CRenamerDialog::LoadSubdir(char* path, const char* subdir)
         if (!FileError(HWindow, path, IDS_ERRREADDIR, TRUE,
                        &skip, &SkipAllBadDirs, IDS_ERROR))
         {
-            SG->CutDirectory(path); // orizneme *.*
-            SG->CutDirectory(path); // orizneme subdir
+            SG->CutDirectory(path); // trim the *.* wildcard
+            SG->CutDirectory(path); // trim the subdirectory portion
             return skip;
         }
     }
 
-    SG->CutDirectory(path); // orizneme *.*
+    SG->CutDirectory(path); // trim the *.* wildcard
 
     int pathLen = (int)strlen(path);
     BOOL more = TRUE, ret = TRUE;
     do
     {
-        // test na ESC
+        // check for ESC
         if ((GetAsyncKeyState(VK_ESCAPE) & 0x8001) &&
             GetForegroundWindow() == HWindow)
         {
-            MSG msg; // vyhodime nabufferovany ESC
+            MSG msg; // discard the buffered ESC key
             while (PeekMessage(&msg, NULL, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
                 ;
             if (SG->SalMessageBox(HWindow, LoadStr(IDS_CANCELCNFRM),
@@ -1391,7 +1391,7 @@ BOOL CRenamerDialog::LoadSubdir(char* path, const char* subdir)
             {
                 char* ext = _tcsrchr(fd.cFileName, '.');
                 if (!ext)
-                    ext = fd.cFileName + strlen(fd.cFileName); // ".cvspass" ve Windows je pripona
+                    ext = fd.cFileName + strlen(fd.cFileName); // ".cvspass" is an extension in Windows
                 else
                     ext++;
 
@@ -1429,7 +1429,7 @@ BOOL CRenamerDialog::LoadSubdir(char* path, const char* subdir)
     } while (more);
 
     FindClose(hFind);
-    SG->CutDirectory(path); // orizneme subdir
+    SG->CutDirectory(path); // trim the subdirectory portion
 
     return ret;
 }
@@ -1558,7 +1558,7 @@ void CRenamerDialog::Validate(CTransferInfo& ti)
 
     if (ManualMode)
     {
-        // ignorujeme prazdne radky na konci
+        // ignore empty lines at the end
         int lines = (int)SendMessage(ManualEdit->HWindow, EM_GETLINECOUNT, 0, 0);
         while (lines > 0)
         {
@@ -1601,9 +1601,9 @@ void CRenamerDialog::Transfer(CTransferInfo& ti)
     ti.CheckBox(IDC_SUBDIRS, Subdirs);
     ti.CheckBox(IDC_CASESENSITIVE, RenamerOptions.CaseSensitive);
     ti.CheckBox(IDC_WHOLEWORDS, RenamerOptions.WholeWords);
-    RenamerOptions.Global = !RenamerOptions.Global; // invertujem hodnotu pro checkbox ti.CheckBox(IDC_GLOBAL, RenamerOptions.Global);
+    RenamerOptions.Global = !RenamerOptions.Global; // invert the value for the checkbox ti.CheckBox(IDC_GLOBAL, RenamerOptions.Global);
     ti.CheckBox(IDC_GLOBAL, RenamerOptions.Global);
-    RenamerOptions.Global = !RenamerOptions.Global; // invertujem hodnotu z check boxu
+    RenamerOptions.Global = !RenamerOptions.Global; // invert the value from the check box
     ti.CheckBox(IDC_REGEXP, RenamerOptions.RegExp);
     ti.CheckBox(IDC_EXCLUDEEXT, RenamerOptions.ExcludeExt);
     int caseCombos[] =
@@ -1672,7 +1672,7 @@ CRenamerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             if (!ValidateData() || !TransferData(ttDataFromWindow))
                 return TRUE;
-            // ulozime si options
+            // store the options
             LastOptions = RenamerOptions;
             strcpy(LastMask, Mask);
             LastSubdirs = Subdirs;
@@ -2192,7 +2192,7 @@ CRenamerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (i >= count)
         {
             i = count - 1;
-            // jsme za poctem polozek v listview, zrusime selection
+            // beyond the number of items in the list view, clear the selection
             ListView_SetItemState(Preview->HWindow, -1, 0,
                                   LVIS_FOCUSED | LVIS_SELECTED);
         }
@@ -2219,7 +2219,7 @@ CRenamerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_TIMER:
     {
-        if (wParam == 666) // mame si poslat WM_CLOSE, blokujici dialog uz je snad sestreleny
+        if (wParam == 666) // we should post WM_CLOSE; the blocking dialog is hopefully shot down already
         {
             KillTimer(HWindow, 666);
             PostMessage(HWindow, WM_CLOSE, 0, 0);
@@ -2231,7 +2231,7 @@ CRenamerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_CLOSE:
     {
         if (SG->IsCriticalShutdown() && !IsWindowEnabled(HWindow))
-        { // zavreme postupne vsechny dialogy nad timto dialogem (posleme jim WM_CLOSE a pak ho posleme znovu sem)
+        { // close all dialogs above this dialog in order (send them WM_CLOSE and then send it here again)
             SG->CloseAllOwnedEnabledDialogs(HWindow);
             SetTimer(HWindow, 666, 100, NULL);
             return TRUE;
@@ -2290,20 +2290,20 @@ CRenamerDialogThread::Body()
     CALL_STACK_MESSAGE1("CRenamerDialogThread::Body()");
     // SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
 
-    // uz nechcem, aby se Dialog deallokoval v destructoru
+    // we no longer want the Dialog to be deallocated in the destructor
     CRenamerDialog* dlg = Dialog;
     Dialog = NULL;
 
     HWND wnd = dlg->Create();
     if (!wnd)
     {
-        TRACE_E("Nepodarilo se vytvorit CRenamerDialog");
+        TRACE_E("Failed to create CRenamerDialog");
         delete dlg;
         return 0;
     }
-    dlg->SetZeroOnDestroy(&dlg); // pri WM_DESTROY bude ukazatel vynulovan
-                                 // obrana pred pristupem na neplatny ukazatel
-                                 // z message loopy po destrukci okna
+    dlg->SetZeroOnDestroy(&dlg); // the pointer will be cleared during WM_DESTROY
+                                 // protection against accessing an invalid pointer
+                                 // from the message loop after the window is destroyed
 
     SetForegroundWindow(wnd);
 
@@ -2319,7 +2319,7 @@ CRenamerDialogThread::Body()
         if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
             if (msg.message == WM_QUIT)
-                break; // ekvivalent situace, kdy GetMessage() vraci FALSE
+                break; // equivalent to the situation where GetMessage() returns FALSE
 
             if (!dlg->IsMenuBarMessage(&msg) &&
                 !TranslateAccelerator(wnd, HAccels, &msg) &&

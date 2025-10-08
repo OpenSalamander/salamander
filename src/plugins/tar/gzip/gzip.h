@@ -19,9 +19,9 @@
 #define ENCRYPTED 0x20    // bit 5 set: file is encrypted
 #define RESERVED 0xC0     // bit 6,7:   reserved
 
-// tyto struktury odpovidaji datum v souboru, nesmi se proto menit velikost
+// these structures map directly to on-disk data; do not change their size
 #pragma pack(push, 1)
-// struktury hlavicky gzipu
+// gzip header structures
 struct SGZipHeader
 {
     unsigned short Magic;
@@ -40,7 +40,7 @@ struct SGzipContinuationHeader
 struct SGzipExtraHeader
 {
     unsigned short FieldLen;
-    // zbytek struktury ma nezname delky
+    // the remainder of the structure has variable length
     //  ? bytes  optional extra field
     //  ? bytes  optional original file name, zero terminated
     //  ? bytes  optional file comment, zero terminated
@@ -49,7 +49,7 @@ struct SGzipExtraHeader
     //  4 bytes  crc32
     //  4 bytes  uncompressed input size modulo 2^32
 };
-// dale muzeme mit opet alignment libovolny
+// alignment may once again be arbitrary after this point
 #pragma pack(pop)
 
 // forward declaration

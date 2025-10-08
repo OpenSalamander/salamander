@@ -11,36 +11,36 @@
 
 #pragma once
 
-// globalni data
-extern const char* PluginNameEN; // neprekladane jmeno pluginu, pouziti pred loadem jazykoveho modulu + pro debug veci
-extern HINSTANCE DLLInstance;    // handle k SPL-ku - jazykove nezavisle resourcy
-extern HINSTANCE HLanguage;      // handle k SLG-cku - jazykove zavisle resourcy
+// global data
+extern const char* PluginNameEN; // untranslated plugin name, used before loading the language module and for debugging
+extern HINSTANCE DLLInstance;    // handle to the SPL - language-independent resources
+extern HINSTANCE HLanguage;      // handle to the SLG - language-dependent resources
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from startup until the plugin is unloaded
 extern CSalamanderGeneralAbstract* SalamanderGeneral;
 
-// rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+// interface providing customized Windows controls used in Salamander
 extern CSalamanderGUIAbstract* SalamanderGUI;
 
 BOOL InitViewer();
 void ReleaseViewer();
 
-// globalni data
-extern BOOL CfgSavePosition;               // ukladat pozici okna/umistit dle hlavniho okna
-extern WINDOWPLACEMENT CfgWindowPlacement; // neplatne, pokud CfgSavePosition != TRUE
+// global data
+extern BOOL CfgSavePosition;               // whether to store the window position / align with the main window
+extern WINDOWPLACEMENT CfgWindowPlacement; // invalid if CfgSavePosition != TRUE
 
 extern DWORD LastCfgPage; // start page (sheet) in configuration dialog
 
-// [0, 0] - pro otevrena okna viewru: konfigurace pluginu se zmenila
+// [0, 0] - for open viewer windows: the plugin configuration changed
 #define WM_USER_VIEWERCFGCHNG WM_APP + 3346
-// [0, 0] - pro otevrena okna viewru: je treba podriznou historie
+// [0, 0] - for open viewer windows: the history needs to be trimmed
 #define WM_USER_CLEARHISTORY WM_APP + 3347
-// [0, 0] - pro otevrena okna vieweru: Salamander pregeneroval fonty, mame zavolat SetFont() listam
+// [0, 0] - for open viewer windows: Salamander regenerated fonts, call SetFont() on the lists
 #define WM_USER_SETTINGCHANGE WM_APP + 3248
 
 char* LoadStr(int resID);
 
-// prikazy pluginoveho menu
+// plugin menu commands
 #define MENUCMD_VIEWBMPFROMCLIP 1
 
 //
@@ -140,29 +140,28 @@ protected:
 class CViewerWindow : public CWindow
 {
 public:
-    HANDLE Lock;                      // 'lock' objekt nebo NULL (do signaled stavu az zavreme soubor)
-    char Name[MAX_PATH];              // jmeno souboru nebo ""
-    CRendererWindow Renderer;         // vnitrni okno vieweru
-    HIMAGELIST HGrayToolBarImageList; // toolbar a menu v sedivem provedeni (pocitano z barevneho)
-    HIMAGELIST HHotToolBarImageList;  // toolbar a menu v barevnem provedeni
+    HANDLE Lock;                      // 'lock' object or NULL (set to the signaled state once we close the file)
+    char Name[MAX_PATH];              // file name or ""
+    CRendererWindow Renderer;         // viewer inner window
+    HIMAGELIST HGrayToolBarImageList; // toolbar and menu in the gray variant (computed from the colored one)
+    HIMAGELIST HHotToolBarImageList;  // toolbar and menu in the colored variant
 
     DWORD Enablers[vweCount];
 
-    HWND HRebar; // drzi MenuBar a ToolBar
+    HWND HRebar; // holds the MenuBar and ToolBar
     CGUIMenuPopupAbstract* MainMenu;
     CGUIMenuBarAbstract* MenuBar;
     CGUIToolBarAbstract* ToolBar;
 
-    int EnumFilesSourceUID;    // UID zdroje pro enumeraci souboru ve vieweru
-    int EnumFilesCurrentIndex; // index aktualniho souboru ve vieweru ve zdroji
+    int EnumFilesSourceUID;    // source UID for enumerating files in the viewer
+    int EnumFilesCurrentIndex; // index of the current viewer file within the source
 
 public:
     CViewerWindow(int enumFilesSourceUID, int enumFilesCurrentIndex);
 
     HANDLE GetLock();
 
-    // je-li 'setLock' TRUE, dojde k nastaveni 'Lock' do signaled stavu (je
-    // potreba po zavreni souboru)
+    // if 'setLock' is TRUE, set 'Lock' to the signaled state (needed after closing the file)
     void OpenFile(const char* name, BOOL setLock = TRUE);
 
     BOOL IsMenuBarMessage(CONST MSG* lpMsg);
@@ -183,14 +182,14 @@ protected:
     void UpdateEnablers();
 };
 
-extern CWindowQueue ViewerWindowQueue; // seznam vsech oken viewru
-extern CThreadQueue ThreadQueue;       // seznam vsech threadu oken
+extern CWindowQueue ViewerWindowQueue; // list of all viewer windows
+extern CThreadQueue ThreadQueue;       // list of all window threads
 
-// rozhrani pluginu poskytnute Salamanderovi
+// plugin interface provided to Salamander
 extern CPluginInterface PluginInterface;
 
-// otevre konfiguracni dialog; pokud jiz existuje, zobrazi hlasku a vrati se
+// open the configuration dialog; if it already exists, display a message and return
 void OnConfiguration(HWND hParent);
 
-// otevre About okno
+// open the About window
 void OnAbout(HWND hParent);

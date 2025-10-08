@@ -14,7 +14,7 @@
 #pragma warning(disable : 4996)
 
 const char* SETUP_NAME = "setup.exe";
-const char* X64MARK_NAME = "x64"; // existence souboru rika, ze se jedna o x64 verzi, kterou nelze spustit pod x86
+const char* X64MARK_NAME = "x64"; // the presence of the file marks an x64 build that cannot run on x86
 
 int terminate;
 unsigned long ProgressPos;
@@ -105,7 +105,7 @@ void RemoveTemporaryDir(const char* dir)
 
     _RemoveTemporaryDir(dir);
     GetSystemDirectory(buf, MAX_PATH);
-    SetCurrentDirectory(buf); // musime z adresare odejit, jinak nepujde smazat
+    SetCurrentDirectory(buf); // leave the directory or it cannot be deleted
 
     if (GetFileAttributes(dir) & (FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_HIDDEN |
                                   FILE_ATTRIBUTE_SYSTEM))
@@ -122,7 +122,7 @@ BOOL CALLBACK DlgProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPARAM lParam)
         RECT dlg;
         long x, y;
         SetDlgItemText(hWindow, IDC_DIR, tmpName);
-        SendDlgItemMessage(hWindow, IDC_PROGRESS, PBM_SETRANGE, 0, MAKELPARAM(0, 200)); // 0..100 pro SzDecode(), ktery napred vse vybali do pameti, 100..200 pro nakopirovani na disk
+        SendDlgItemMessage(hWindow, IDC_PROGRESS, PBM_SETRANGE, 0, MAKELPARAM(0, 200)); // 0..100 for SzDecode(), which first extracts everything to memory, 100..200 for copying to disk
         GetWindowRect(hWindow, &dlg);
         x = (GetSystemMetrics(SM_CXSCREEN) - (dlg.right - dlg.left)) / 2;
         y = (GetSystemMetrics(SM_CYSCREEN) - (dlg.bottom - dlg.top)) / 2;
@@ -130,14 +130,14 @@ BOOL CALLBACK DlgProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPARAM lParam)
         return TRUE;
     }
 #ifdef FOR_SALAMANDER_SETUP
-#define WM_USER_SHOWACTSFX7ZIP (WM_APP + 666) // aktivace zaslana z instalaku (cislo je sdilene se SETUP.EXE)
-    case WM_USER_SHOWACTSFX7ZIP:              // aktivace zaslana z instalaku
+#define WM_USER_SHOWACTSFX7ZIP (WM_APP + 666) // activation sent from the installer (number shared with SETUP.EXE)
+    case WM_USER_SHOWACTSFX7ZIP:              // activation sent from the installer
         ShowWindow(DlgWin, SW_SHOW);
         SetForegroundWindow(DlgWin);
         WaitingForExit = TRUE;
         return TRUE;
     case WM_ACTIVATE:
-        if (LOWORD(wParam) == WA_INACTIVE && WaitingForExit) // dialog se deaktivuje, konecne se spustila aplikace a aktivuje se (nas tedy deaktivuje)
+        if (LOWORD(wParam) == WA_INACTIVE && WaitingForExit) // the dialog is deactivated because the application finally launched and became active (deactivating us)
         {
             DestroyWindow(DlgWin);
             DlgWin = NULL;
@@ -167,7 +167,7 @@ BOOL CALLBACK DlgProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPARAM lParam)
 }
 
 // for VS2008
-#pragma intrinsic(memset) // abych mohli prekladat s optimalizaci na rychlost a prekladac nerval
+#pragma intrinsic(memset) // allows compiling with speed optimizations without the compiler complaining
 #pragma function(memset)  // "error C2169: 'memset' : intrinsic function, cannot be defined"
 void* memset(void* dest, int val, size_t len)
 {
@@ -181,7 +181,7 @@ void* memset(void* dest, int val, size_t len)
 
 BOOL GetSpecialFolderPath(int folder, char* path)
 {
-    ITEMIDLIST* pidl; // vyber root-folderu
+    ITEMIDLIST* pidl; // select the root folder
     *path = 0;
     if (SUCCEEDED(SHGetSpecialFolderLocation(NULL, folder, &pidl)))
     {
@@ -198,7 +198,7 @@ BOOL GetSpecialFolderPath(int folder, char* path)
     return FALSE;
 }
 
-/* dle http://vcfaq.mvps.org/sdk/21.htm */
+/* according to http://vcfaq.mvps.org/sdk/21.htm */
 #define BUFF_SIZE 1024
 BOOL IsUserAdmin()
 {
@@ -313,7 +313,7 @@ void MyCreateProcess(const char* fileName, BOOL parseCurDir, BOOL addQuotes, con
             *p = 0;
     }
     else
-        GetSystemDirectory(buf, MAX_PATH); // dame mu systemovy adresar, at neblokuje mazani soucasneho pracovniho adresare
+        GetSystemDirectory(buf, MAX_PATH); // use the system directory so deleting the current working directory is not blocked
 
     if (addQuotes)
     {
@@ -355,8 +355,8 @@ void ProcessResultsInParamsFile(const char* name, BOOL* waitForExec)
                 char* line;
                 char* s;
 
-                state = 0; // 0 = pred "end-of-params"; 1 = cteme cmd-line pro viewer; 2 = cteme cmd-line pro Salama;
-                           // 3 = cteme exec-viewer a/nebo exec-Salam
+                state = 0; // 0 = before "end-of-params"; 1 = reading the viewer command line; 2 = reading the Salamander command line;
+                           // 3 = reading the exec-viewer and/or exec-Salamander command lines
                 execViewer = FALSE;
                 execSalam = FALSE;
                 end = buf + read;
@@ -366,7 +366,7 @@ void ProcessResultsInParamsFile(const char* name, BOOL* waitForExec)
                 {
                     while (s < end && *s != '\r' && *s != '\n')
                         s++;
-                    *s++ = 0; // s == end je jeste platny znak
+                    *s++ = 0; // s == end is still a valid character
 
                     switch (state)
                     {
@@ -405,11 +405,9 @@ void ProcessResultsInParamsFile(const char* name, BOOL* waitForExec)
                         s++;
                     line = s;
                 }
-                // pod Vistou (a Win7) mame problem se spustenim dvou softu najednou (notepad a Salamander): oba po
-                // spusteni vypadaji aktivovane (cerveny krizek + blikajici kurzor), ale fokus ma prirozene jen jeden;
-                // tento problem obchazime tak, ze pokud se maji pustit najednou oba, pusti se jen Salamander, ktery
-                // az nabehne spusti teprve notepad (Salamander bude aktivni, tedy zadne problemy se spustenim
-                // notepadu nebudou)
+                // On Vista (and Windows 7) we have trouble starting two apps at once (Notepad and Salamander): both appear active (red close button + blinking cursor),
+                // but naturally only one has focus; we work around this by launching only Salamander when both should start, and once it is ready it launches Notepad
+                // (Salamander will be active, so Notepad starts without issues).
                 if (execSalam)
                 {
                     LoadString(GetModuleHandle(NULL), IDS_STATUS_STARTSALAM, buf, 200);
@@ -430,7 +428,7 @@ void ProcessResultsInParamsFile(const char* name, BOOL* waitForExec)
                     {
                         MyCreateProcess(salamExeFile, TRUE, TRUE, readmeFile);
                     }
-                    else // spoustime jen notepad
+                    else // launching only Notepad
                     {
                         wsprintf(buf, "notepad.exe \"%s\"", readmeFile);
                         MyCreateProcess(buf, FALSE, FALSE, NULL);
@@ -438,7 +436,7 @@ void ProcessResultsInParamsFile(const char* name, BOOL* waitForExec)
                 }
                 else
                 {
-                    if (execSalam) // spoustime jen Salamandera
+                    if (execSalam) // launching only Salamander
                         MyCreateProcess(salamExeFile, TRUE, TRUE, NULL);
                 }
             }
@@ -657,7 +655,7 @@ int MyWinMain(struct SCabinet* cabinet)
             SetDlgItemText(DlgWin, IDC_STATUS, text);
             ShowWindow(GetDlgItem(DlgWin, IDC_STATUS), SW_SHOW);
 
-            // jdeme zpracovat zpravy (aby se i pod XP ukazal text IDS_STATUS_STARTSETUP)
+            // process messages (so the IDS_STATUS_STARTSETUP text appears even on XP)
             while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
             {
                 if (DlgWin == NULL || !IsWindow(DlgWin) || !IsDialogMessage(DlgWin, &msg))
@@ -672,7 +670,7 @@ int MyWinMain(struct SCabinet* cabinet)
             if (ptr >= tmpPath && *ptr != '\\')
                 *++ptr = '\\';
 
-            // pokud najdeme znacku pro x64 instalaci a nebezime na x64 systemu, nepustime instalaci dal
+            // if we find the marker for an x64 installation and we are not on an x64 system, stop the installation here
             lstrcpy(ptr + 1, X64MARK_NAME);
             if (FileExists(tmpPath) && !Is64BitWindows())
             {
@@ -695,7 +693,7 @@ int MyWinMain(struct SCabinet* cabinet)
 #ifdef FOR_SALAMANDER_SETUP
             paramsFileName[0] = 0;
             {
-                // pod Vistou a novejsimi: setup.exe je eskalovany, musime mu predat cesty usera, ktery instalaci spustil (pokud nejde o admina, cesty ziskane po eskalaci budou admina a ne obyc. usera)
+                // on Vista and later: setup.exe runs elevated, so we must pass the paths of the user who launched the installation (otherwise elevation would give us admin paths instead of the regular user)
                 // W2K and XP: when started on limited/restricted account, system offers to run setup.exe as Admin, so params.txt file is needed too
                 if (CreateParamsFileIfNeeded(tmpName, paramsFileName))
                 {
@@ -737,7 +735,7 @@ int MyWinMain(struct SCabinet* cabinet)
                     res = MsgWaitForMultipleObjects(1, &sei.hProcess, FALSE, INFINITE, QS_ALLINPUT);
                     if (res != WAIT_OBJECT_0 + 1)
                         break;
-                    // jdeme zpracovat zpravy
+                    // process messages
                     while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
                     {
                         if (DlgWin == NULL || !IsWindow(DlgWin) || !IsDialogMessage(DlgWin, &msg))
@@ -761,16 +759,16 @@ int MyWinMain(struct SCabinet* cabinet)
             if (sei.hProcess != NULL)
                 CloseHandle(sei.hProcess);
 #ifdef FOR_SALAMANDER_SETUP
-            if (paramsFileName[0] != 0) // jen W2K/XP pokud user neni admin nebo Vista nebo novejsi + povedl se vytvorit soubor params.txt
+            if (paramsFileName[0] != 0) // only W2K/XP when the user is not an admin or Vista and newer + params.txt was created successfully
             {
                 BOOL waitForExec;
                 ProcessResultsInParamsFile(paramsFileName, &waitForExec);
-                if (waitForExec) // pokud se vubec neco spousti, jinak hned koncime
+                if (waitForExec) // only wait when something will actually be launched; otherwise exit immediately
                 {
-                    // jdeme zpracovat zpravy az do doby, kdy se aktivuje spoustena aplikace, pak teprve koncime (jinak blbne aktivace spoustenych softu)
+                    // process messages until the launched application becomes active, then exit (otherwise activation of the launched apps misbehaves)
                     DWORD ti = GetTickCount();
                     if (!IsWindowVisible(DlgWin))
-                        ShowWindow(DlgWin, SW_SHOW); // jen tak pro sychr
+                        ShowWindow(DlgWin, SW_SHOW); // just to be safe
                     do
                     {
                         while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
@@ -806,7 +804,7 @@ int MyWinMain(struct SCabinet* cabinet)
 // EnableExceptionsOn64
 //
 
-// Chceme se dozvedet o SEH Exceptions i na x64 Windows 7 SP1 a dal
+// We want to be notified about SEH exceptions even on x64 Windows 7 SP1 and later
 // http://blog.paulbetts.org/index.php/2010/07/20/the-case-of-the-disappearing-onload-exception-user-mode-callback-exceptions-in-x64/
 // http://connect.microsoft.com/VisualStudio/feedback/details/550944/hardware-exceptions-on-x64-machines-are-silently-caught-in-wndproc-messages
 // http://support.microsoft.com/kb/976038

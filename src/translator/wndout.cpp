@@ -30,7 +30,7 @@ void OnGoto(HWND hWnd)
         COutLine* outLine = &OutWindow.OutLines[lineIndex];
         if (outLine->Type != rteNone)
         {
-            // vyhledame spravny list v tree okne a zvolime ho
+            // find the appropriate entry in the tree window and select it
             LPARAM lParam = outLine->OwnerID;
             switch (outLine->Type)
             {
@@ -159,7 +159,7 @@ ListViewWindowProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_TIMER:
     {
-        return 0; // pod W7 chodi nejakej cizi timer, ktery nam zpusobi ensure visible
+        return 0; // Windows 7 delivers a foreign timer that triggers EnsureVisible
     }
     }
     return DefListViewWndProc(hWnd, uMsg, wParam, lParam);
@@ -328,7 +328,7 @@ void COutWindow::Navigate(BOOL next)
             }
         }
     }
-    // -1 -> zadna selection
+    // -1 -> no selection
     ListView_SetItemState(HListView, newIndex, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
     ListView_EnsureVisible(HListView, newIndex, FALSE);
     if (newIndex != -1)
@@ -342,7 +342,7 @@ COutWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_CREATE:
     {
-        // priradim oknu ikonku
+        // assign an icon to the window
         //      SendMessage(HWindow, WM_SETICON, ICON_BIG,
         //                  (LPARAM)LoadIcon(HInstance, MAKEINTRESOURCE(IDI_MAIN)));
 
@@ -414,7 +414,7 @@ COutWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_CLOSE:
     {
-        PostMessage(FrameWindow.HWindow, WM_COMMAND, CM_CLOSE, 0); // bezpecny close-window
+        PostMessage(FrameWindow.HWindow, WM_COMMAND, CM_CLOSE, 0); // safe window close
         return 0;
     }
 
@@ -458,7 +458,7 @@ COutWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     return CDRF_NOTIFYITEMDRAW;
 
                 if (cd->nmcd.dwDrawStage == CDDS_ITEMPREPAINT)
-                    return CDRF_NOTIFYSUBITEMDRAW; // pozadame si o zaslani notifikace CDDS_ITEMPREPAINT | CDDS_SUBITEM
+                    return CDRF_NOTIFYSUBITEMDRAW; // request a CDDS_ITEMPREPAINT | CDDS_SUBITEM notification
 
                 if (cd->nmcd.dwDrawStage == (CDDS_ITEMPREPAINT | CDDS_SUBITEM))
                 {

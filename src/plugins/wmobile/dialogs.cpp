@@ -25,10 +25,10 @@ CCommonDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // horizontalni i vertikalni vycentrovani dialogu k parentu
+        // horizontal and vertical centering of the dialog relative to the parent
         if (Parent != NULL)
             SalamanderGeneral->MultiMonCenterWindow(HWindow, Parent, TRUE);
-        break; // chci focus od DefDlgProc
+        break; // request focus from DefDlgProc
     }
     }
     return CDialog::DialogProc(uMsg, wParam, lParam);
@@ -106,7 +106,7 @@ void CProgressDlg::EnableCancel(BOOL enable)
             PostMessage(cancel, BM_SETSTYLE, enable ? BS_DEFPUSHBUTTON : BS_PUSHBUTTON, TRUE);
 
             MSG msg;
-            while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) // chvilku venujeme userovi ...
+            while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) // give the user a moment ...
             {
                 if (!IsWindow(HWindow) || !IsDialogMessage(HWindow, &msg))
                 {
@@ -120,7 +120,7 @@ void CProgressDlg::EnableCancel(BOOL enable)
 
 BOOL CProgressDlg::GetWantCancel()
 {
-    // kazdych 100ms prekreslime zmenena data (text + progress bary)
+    // every 100 ms repaint the changed data (text + progress bars)
     DWORD ticks = GetTickCount();
     if (ticks - LastTickCount > 100)
     {
@@ -129,7 +129,7 @@ BOOL CProgressDlg::GetWantCancel()
     }
 
     MSG msg;
-    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) // chvilku venujeme userovi ...
+    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) // give the user a moment ...
     {
         if (!IsWindow(HWindow) || !IsDialogMessage(HWindow, &msg))
         {
@@ -159,7 +159,7 @@ void CProgressDlg::FlushDataToControls()
             ::SetWindowText(HWindow, Title);
         else
         {
-            sprintf(buf, "(%d %%) %s", (int)((ProgressTotalCache /*+ 5*/) / 10), Title); // nezaokrouhlujeme (100% musi byt az pri 100% a ne pri 99.5%)
+            sprintf(buf, "(%d %%) %s", (int)((ProgressTotalCache /*+ 5*/) / 10), Title); // do not round (100% must appear only at 100% and not at 99.5%)
             ::SetWindowText(HWindow, buf);
         }
 
@@ -178,18 +178,18 @@ CProgressDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // pouzijeme Salamanderovsky progress bar
+        // use the Salamander progress bar
         ProgressBar = SalamanderGUI->AttachProgressBar(HWindow, IDP_PROGRESSBAR);
         if (ProgressBar == NULL)
         {
-            DestroyWindow(HWindow); // chyba -> neotevreme dialog
-            return FALSE;           // konec zpracovani
+            DestroyWindow(HWindow); // error -> do not open the dialog
+            return FALSE;           // end of processing
         }
 
         ::SetWindowText(HWindow, Title);
         SetDlgItemText(HWindow, IDT_OPERATION, Operation);
 
-        break; // chci focus od DefDlgProc
+        break; // request focus from DefDlgProc
     }
 
     case WM_COMMAND:
@@ -269,17 +269,17 @@ CProgress2Dlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // pouzijeme Salamanderovsky progress bar
+        // use the Salamander progress bar
         ProgressBar2 = SalamanderGUI->AttachProgressBar(HWindow, IDP_PROGRESSBAR2);
         if (ProgressBar2 == NULL)
         {
-            DestroyWindow(HWindow); // chyba -> neotevreme dialog
-            return FALSE;           // konec zpracovani
+            DestroyWindow(HWindow); // error -> do not open the dialog
+            return FALSE;           // end of processing
         }
 
         SetDlgItemText(HWindow, IDT_OPERATION2, Operation2);
 
-        break; // chci focus od DefDlgProc
+        break; // request focus from DefDlgProc
     }
     }
     return CProgressDlg::DialogProc(uMsg, wParam, lParam);
@@ -368,20 +368,20 @@ void CChangeAttrDialog::Transfer(CTransferInfo& ti)
     {
         EnableWindow(GetDlgItem(HWindow, IDC_RECURSESUBDIRS), SelectionContainsDirectory);
 
-        // napred naleju datumy
+        // first populate the dates
         DateTime_SetSystemtime(HModifiedDate, GDT_VALID, &TimeModified);
         DateTime_SetSystemtime(HCreatedDate, GDT_VALID, &TimeCreated);
         DateTime_SetSystemtime(HAccessedDate, GDT_VALID, &TimeAccessed);
-        // potom nastavim stav na disabled (nelze provest v jedne operaci)
+        // then set the state to disabled (cannot be done in a single operation)
         DateTime_SetSystemtime(HModifiedDate, GDT_NONE, &TimeModified);
         DateTime_SetSystemtime(HCreatedDate, GDT_NONE, &TimeCreated);
         DateTime_SetSystemtime(HAccessedDate, GDT_NONE, &TimeAccessed);
-        // naleju casy
+        // populate the times
         DateTime_SetSystemtime(HModifiedTime, GDT_VALID, &TimeModified);
         DateTime_SetSystemtime(HCreatedTime, GDT_VALID, &TimeCreated);
         DateTime_SetSystemtime(HAccessedTime, GDT_VALID, &TimeAccessed);
-        // obejdeme chybu v common controls -- pokud nezavolam SetFocus,
-        // tvarej se vsechny tri controly jako focused
+        // work around a common controls bug -- if SetFocus is not called,
+        // all three controls appear focused
         SetFocus(HModifiedDate);
         SetFocus(HCreatedDate);
         SetFocus(HAccessedDate);
@@ -453,9 +453,9 @@ CChangeAttrDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             case IDC_RECURSESUBDIRS:
             {
-                // pokud user zapne Include Subdirs, nastavime neuspinene checkboxy na grayed,
-                // protoze nevime, co vybrane adresare obsahuji
-                // pokud user voblu vypne, vratime neuspinene checkboxy do puvodniho stavu
+                // if the user enables Include Subdirs, set the untouched check boxes to grayed,
+                // because we do not know what the selected directories contain
+                // if the user turns it off again, restore the untouched check boxes to their original state
                 BOOL checked = IsDlgButtonChecked(HWindow, IDC_RECURSESUBDIRS) == BST_CHECKED;
                 if (!ArchiveDirty)
                     CheckDlgButton(HWindow, IDC_ARCHIVE, checked ? 2 : Archive);
@@ -470,7 +470,7 @@ CChangeAttrDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             case IDC_ATTR_CURRENT:
             {
                 SYSTEMTIME st;
-                GetLocalTime(&st); // vytahneme aktualni case
+                GetLocalTime(&st); // fetch the current time
 
                 SYSTEMTIME dummy;
                 if (DateTime_GetSystemtime(HModifiedDate, &dummy) == GDT_VALID)

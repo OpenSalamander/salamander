@@ -40,7 +40,7 @@ void CRemoteComparator::CreateRemoteComparator()
         TerminateEvent = NULL;
         return;
     }
-    // TODO nastavit mensi zasobnik
+    // TODO set a smaller stack size
     RemoteComparatorThread = rc->Create(ThreadQueue);
     if (!RemoteComparatorThread)
     {
@@ -134,7 +134,7 @@ void CRemoteComparator::RecieveMessage(const CMessage* message)
 
     if (!ok && *msg->ReleaseEvent)
     {
-        // pustime dal filecomp.exe
+        // allow filecomp.exe to continue
         HANDLE event = OpenEvent(EVENT_MODIFY_STATE, FALSE, msg->ReleaseEvent);
         SetEvent(event);
         CloseHandle(event);

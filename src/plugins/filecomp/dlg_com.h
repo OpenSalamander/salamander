@@ -3,24 +3,24 @@
 
 #pragma once
 
-// pro okno filecompu; WM_USER_WORKERNOTIFIES informuje o ukonceni porovnavani
-// a predava vysledky pokud window proc vrati TRUE je okno zodpovedne za
-// deallokaci predanych bufferu
+// for the filecomp window; WM_USER_WORKERNOTIFIES reports that comparison has finished
+// and passes the results. If the window proc returns TRUE the window is responsible for
+// deallocating the provided buffers
 #define WM_USER_WORKERNOTIFIES (WM_APP + 1)
 
 // wParam:
 enum
 {
-    WN_ERROR,                // (const char *)lParam obsahuje text chyby
-    WN_NO_DIFFERENCE,        // lParam je ignorovan
-    WN_NO_ALL_DIFFS_IGNORED, // lParam je ignorovan
-    WN_BINARY_FILES_DIFFER,  // (CBinaryCompareResults *)lParam obsahuje vysledky diffovani
-    WN_TEXT_FILES_DIFFER,    // (CTextCompareResults<char> *)lParam obsahuje vysledky diffovani
-    WN_UNICODE_FILES_DIFFER, // (CCTextCompareesults<wchar_t> *)lParam obsahuje vysledky diffovani
-    WN_WORKER_CANCELED,      // lParam je ignorovan
-    WN_SETCHANGES,           // (CBinaryChanges *) lParam je pole zmen
-    WN_CBINIT_FINISHED,      // combo box byl upsesne inicializovan
-    WN_CALCULATING_DETAILS,  // pocitaji se podrobne difference
+    WN_ERROR,                // (const char*)lParam contains the error text
+    WN_NO_DIFFERENCE,        // lParam is ignored
+    WN_NO_ALL_DIFFS_IGNORED, // lParam is ignored
+    WN_BINARY_FILES_DIFFER,  // (CBinaryCompareResults*)lParam contains the diff results
+    WN_TEXT_FILES_DIFFER,    // (CTextCompareResults<char>*)lParam contains the diff results
+    WN_UNICODE_FILES_DIFFER, // (CTextCompareResults<wchar_t>*)lParam contains the diff results
+    WN_WORKER_CANCELED,      // lParam is ignored
+    WN_SETCHANGES,           // (CBinaryChanges*)lParam is an array of changes
+    WN_CBINIT_FINISHED,      // the combo box was initialized successfully
+    WN_CALCULATING_DETAILS,  // detailed differences are being computed
     WN_COMPARE_FINISHED,     // comparison finishes
     WN_GET_CHANGESCOMBO,     // queries HWND of the Change combobox
     WN_SET_PROGRESS,         // sets progress MAKELPARAM(percent, changesCnt)
@@ -30,20 +30,20 @@ enum
 #define WM_USER_VSCROLL (WM_APP + 2)
 #define WM_USER_HSCROLL (WM_APP + 3)
 #define WM_USER_SLITPOSCHANGED (WM_APP + 4)
-#define WM_USER_MOUSEWHEEL (WM_APP + 5)     // [wParam, lParam] z WM_MOUSEWHEEL
-#define WM_USER_ACTIVATEWINDOW (WM_APP + 6) // [wParam, lParam] z WM_MOUSEWHEEL
+#define WM_USER_MOUSEWHEEL (WM_APP + 5)     // [wParam, lParam] from WM_MOUSEWHEEL
+#define WM_USER_ACTIVATEWINDOW (WM_APP + 6) // [wParam, lParam] from WM_MOUSEWHEEL
 #define WM_USER_CREATE (WM_APP + 7)
 #define WM_USER_HANDLEFILEERROR (WM_APP + 8)
-#define WM_USER_SETCURSOR (WM_APP + 9) //jako WM_SETCURSOR
+#define WM_USER_SETCURSOR (WM_APP + 9) // same as WM_SETCURSOR
 #define WM_USER_CLEARHISTORY (WM_APP + 10)
 #define WM_USER_GETREBARHEIGHT (WM_APP + 11)
 #define WM_USER_GETHEADERHEIGHT (WM_APP + 12)
 #define WM_USER_AUTOCOPY_CHANGED (WM_APP + 13)
 
-// [wParam, (HWND) lParam] - pro otevrena okna pluginu: konfigurace pluginu se zmenila
+// [wParam, (HWND)lParam] - for open plugin windows: plugin configuration has changed
 #define WM_USER_CFGCHNG (WM_APP + 3246)
 
-// wParam: kombinace nasledujicich hodnot
+// wParam: combination of the following values
 #define CC_FONT 0x01
 #define CC_COLORS 0x02
 #define CC_DEFOPTIONS 0x04
@@ -53,9 +53,9 @@ enum
 #define CC_HAVEHWND 0x40
 #define CC_ALL (CC_FONT | CC_COLORS | CC_DEFOPTIONS | CC_CONTEXT | CC_TABSIZE | CC_CHAR)
 
-// barvy
+// colors
 
-#define LINENUM_FG_NORMAL 0 // barvy textu ve sloupci s cisly radek
+#define LINENUM_FG_NORMAL 0 // text colors in the column with line numbers
 #define LINENUM_FG_LEFT_CHANGE 1
 #define LINENUM_FG_RIGHT_CHANGE 2
 #define LINENUM_FG_LEFT_CHANGE_FOCUSED 3
@@ -66,10 +66,10 @@ enum
 #define LINENUM_BK_LEFT_CHANGE_FOCUSED 8
 #define LINENUM_BK_RIGHT_CHANGE_FOCUSED 9
 
-#define LINENUM_LEFT_BORDER 10 // ramecek kolem aktualni zmeny
+#define LINENUM_LEFT_BORDER 10 // frame around the current change
 #define LINENUM_RIGHT_BORDER 11
 
-#define TEXT_FG_NORMAL 12 // barvy zobrazeneho obsahu souboru
+#define TEXT_FG_NORMAL 12 // colors of the displayed file contents
 #define TEXT_FG_LEFT_FOCUSED 13
 #define TEXT_FG_RIGHT_FOCUSED 14
 #define TEXT_FG_LEFT_CHANGE 15
@@ -84,22 +84,22 @@ enum
 #define TEXT_BK_LEFT_CHANGE_FOCUSED 24
 #define TEXT_BK_RIGHT_CHANGE_FOCUSED 25
 
-#define TEXT_LEFT_BORDER 26 // ramecek kolem aktualni zmeny
+#define TEXT_LEFT_BORDER 26 // frame around the current change
 #define TEXT_RIGHT_BORDER 27
 
-#define TEXT_FG_SELECTION 28 // barva vybraneho bloku textu
+#define TEXT_FG_SELECTION 28 // color of the selected text block
 #define TEXT_BK_SELECTION 29
 
-#define NUMBER_OF_COLORS 30 // pocet barev ve schematu
+#define NUMBER_OF_COLORS 30 // number of colors in the scheme
 
-// interni drzak barvy, ktery navic obsahuje flag
+// internal color holder that additionally carries a flag
 typedef DWORD SALCOLOR;
 
 // SALCOLOR flags
-#define SCF_DEFAULT 0x01 // barevna slozka se ignoruje a pouzije se default hodnota
+#define SCF_DEFAULT 0x01 // ignore the color component and use the default value
 
 #define GetCOLORREF(rgbf) ((COLORREF)rgbf & 0x00ffffff)
-#define GetPALETTERGB(rgbf) (0x02000000 | (COLORREF)rgbf & 0x00ffffff) // viz PALETTERGB ve wingdi.h
+#define GetPALETTERGB(rgbf) (0x02000000 | (COLORREF)rgbf & 0x00ffffff) // see PALETTERGB in wingdi.h
 #define RGBF(r, g, b, f) ((COLORREF)(((BYTE)(r) | ((WORD)((BYTE)(g)) << 8)) | (((DWORD)(BYTE)(b)) << 16) | (((DWORD)(BYTE)(f)) << 24)))
 #define GetFValue(rgbf) ((BYTE)((rgbf) >> 24))
 #define SetFValue(rgbf, f) ((rgbf) |= ((BYTE)f << 24))
@@ -116,9 +116,9 @@ inline void SetRGBPart(SALCOLOR* salColor, COLORREF rgb)
     *salColor = rgb & 0x00ffffff | (((DWORD)(BYTE)((BYTE)((*salColor) >> 24))) << 24);
 }
 
-extern SALCOLOR Colors[NUMBER_OF_COLORS];        // aktualni barvy
-extern SALCOLOR DefaultColors[NUMBER_OF_COLORS]; // standardni barvy
-extern COLORREF CustomColors[16];                // custom colors pro ChooseColor dialog
+extern SALCOLOR Colors[NUMBER_OF_COLORS];        // current colors
+extern SALCOLOR DefaultColors[NUMBER_OF_COLORS]; // standard colors
+extern COLORREF CustomColors[16];                // custom colors for the ChooseColor dialog
 
 #if (WINVER < 0x0600)
 typedef enum _NORM_FORM
@@ -142,7 +142,7 @@ extern TNormalizeString PNormalizeString;
 
 enum CFileViewMode
 {
-    fvmStandard = 0, // nemenit hodnoty
+    fvmStandard = 0, // do not change the values
     fvmOnlyDifferences = 1
 };
 
@@ -196,7 +196,7 @@ extern int CaretWidth;
 //
 // CCommonDialog
 //
-// Dialog centrovany k parentu
+// Dialog centered over the parent
 //
 
 class CCommonDialog : public CDialog

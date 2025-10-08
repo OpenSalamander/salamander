@@ -1,4 +1,4 @@
-// test case pro tiket #25 - pozdni nastaveni textu
+// Test case for ticket #25 - setting the text late
 var fm = Salamander.Forms.Form();
 fm.dst = Salamander.Forms.TextBox();
 fm.Text = "aaa"; // put_Text

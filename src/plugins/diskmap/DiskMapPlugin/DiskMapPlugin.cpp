@@ -9,9 +9,9 @@
 
 #include "../DiskMap/GUI.MainWindow.h"
 
-//pro registraci pluginu... neprekladatelne?
-#define PLUGIN_NAME_EN "DiskMap" //neprekladane jmeno pluginu, pouziti pred loadem jazykoveho modulu + pro debug veci
-#define PLUGIN_FILE "DISKMAP"    //klic v registry
+//for plugin registration... not translatable?
+#define PLUGIN_NAME_EN "DiskMap" //non-translated plugin name, used before loading the language module + for debug purposes
+#define PLUGIN_FILE "DISKMAP"    //registry key
 
 int SalamanderVersion;
 
@@ -31,20 +31,20 @@ const char* CONFIG_PATHFORMAT = "Tooltip Path Format";
 
 char* LoadStr(int resID);
 
-TCHAR szPluginWebsite[] = TEXT("www.altap.cz"); // puvodni domena nebezi: http://salamander.diskmap.net
+TCHAR szPluginWebsite[] = TEXT("www.altap.cz"); // original domain not running: http://salamander.diskmap.net
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to SPL - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to SLG - language-dependent resources
 
 HACCEL hAccelTable = NULL;
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from the moment the plugin starts until it shuts down
 CSalamanderGeneralAbstract* SalamanderGeneral = NULL;
 
-// definice promenne pro "dbg.h"
+// variable definition for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
-// rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+// interface providing custom Windows controls used in Salamander
 CSalamanderGUIAbstract* SalamanderGUI = NULL;
 
 BOOL APIENTRY DllMain(HMODULE hModule,
@@ -75,8 +75,8 @@ public:
         {
             lstrcpyn(FocusPathBuf, fileName, MAX_PATH);
             SalamanderGeneral->PostMenuExtCommand(MENUCMD_FAKE_FOCUS, TRUE);
-            Sleep(500);          // dojde k prepnuti do panelu, takze toto cekani bude v neaktivnim okne vieweru, tedy nicemu nevadi
-            FocusPathBuf[0] = 0; // po 0.5 sekunde uz o fokus nestojime (resi pripad, kdy jsme trefili zacatek BUSY rezimu Salamandera)
+            Sleep(500);          // the switch to the panel happens, so this wait occurs in the viewer's inactive window and therefore does not matter
+            FocusPathBuf[0] = 0; // after 0.5 second we no longer care about the focus (handles the case where we hit the beginning of Salamander's BUSY mode)
             return TRUE;
         }
         //TODO Error reporting
@@ -87,12 +87,12 @@ public:
         char focusPath[MAX_PATH];
         lstrcpyn(focusPath, FocusPathBuf, MAX_PATH);
         FocusPathBuf[0] = 0;
-        if (focusPath[0] != 0) // jen pokud jsme nemeli smulu (netrefili jsme zacatek BUSY rezimu Salamandera)
+        if (focusPath[0] != 0) // only if we were not unlucky (we did not hit the beginning of Salamander's BUSY mode)
         {
             LPTSTR name;
             if (SalamanderGeneral->CutDirectory(focusPath, &name))
             {
-                SalamanderGeneral->SkipOneActivateRefresh(); // hlavni okno pri prepnuti z viewru nebude delat refresh
+                SalamanderGeneral->SkipOneActivateRefresh(); // the main window will not refresh when switching from the viewer
                 SalamanderGeneral->FocusNameInPanel(PANEL_SOURCE, focusPath, name);
                 return TRUE;
             }
@@ -104,9 +104,9 @@ public:
         char focusPath[MAX_PATH];
         lstrcpyn(focusPath, FocusPathBuf, MAX_PATH);
         FocusPathBuf[0] = 0;
-        if (focusPath[0] != 0) // jen pokud jsme nemeli smulu (netrefili jsme zacatek BUSY rezimu Salamandera)
+        if (focusPath[0] != 0) // only if we were not unlucky (we did not hit the beginning of Salamander's BUSY mode)
         {
-            SalamanderGeneral->SkipOneActivateRefresh(); // hlavni okno pri prepnuti z viewru nebude delat refresh
+            SalamanderGeneral->SkipOneActivateRefresh(); // the main window will not refresh when switching from the viewer
             //SalamanderGeneral->ChangePanelPath(PANEL_SOURCE, focusPath);
             SalamanderGeneral->FocusNameInPanel(PANEL_SOURCE, focusPath, "");
             return TRUE;
@@ -119,8 +119,8 @@ public:
         {
             lstrcpyn(FocusPathBuf, path, MAX_PATH);
             SalamanderGeneral->PostMenuExtCommand(MENUCMD_FAKE_OPEN, TRUE);
-            Sleep(500);          // dojde k prepnuti do panelu, takze toto cekani bude v neaktivnim okne vieweru, tedy nicemu nevadi
-            FocusPathBuf[0] = 0; // po 0.5 sekunde uz o fokus nestojime (resi pripad, kdy jsme trefili zacatek BUSY rezimu Salamandera)
+            Sleep(500);          // the switch to the panel happens, so this wait occurs in the viewer's inactive window and therefore does not matter
+            FocusPathBuf[0] = 0; // after 0.5 second we no longer care about the focus (handles the case where we hit the beginning of Salamander's BUSY mode)
             return TRUE;
         }
         return FALSE;
@@ -194,7 +194,7 @@ CSalamanderCallback SalamanderCallback;
 
 char* LoadStr(int resID)
 {
-    static char buffer[5000]; // buffer pro mnoho stringu
+    static char buffer[5000]; // buffer for many strings
     static char* act = buffer;
 
     //HANDLES(EnterCriticalSection(&__StrCriticalSection.cs));
@@ -204,16 +204,16 @@ char* LoadStr(int resID)
 
 RELOAD:
     int size = LoadString(HLanguage, resID, act, 5000 - (int)(act - buffer));
-    // size obsahuje pocet nakopirovanych znaku bez terminatoru
+    // size contains the number of copied characters without the terminator
     //  DWORD error = GetLastError();
     char* ret;
-    if (size != 0 /* || error == NO_ERROR*/) // error je NO_ERROR, i kdyz string neexistuje - nepouzitelne
+    if (size != 0 /* || error == NO_ERROR*/) // error is NO_ERROR even when the string does not exist - unusable
     {
         if ((5000 - (act - buffer) == size + 1) && (act > buffer))
         {
-            // pokud byl retezec presne na konci bufferu, mohlo
-            // jit o oriznuti retezce -- pokud muzeme posunout okno
-            // na zacatek bufferu, nacteme string jeste jednou
+            // if the string was exactly at the end of the buffer, it could
+            // be a truncated string -- if we can move the window
+            // to the beginning of the buffer, load the string once again
             act = buffer;
             goto RELOAD;
         }
@@ -237,7 +237,7 @@ RELOAD:
 
 int WINAPI SalamanderPluginGetReqVer()
 {
-#ifdef OPENSAL_VERSION // verze kopilovana pro distribuci se Salamanderem nebude zpetne kompatibilni s verzi 4.0 (zbytecna komplikace)
+#ifdef OPENSAL_VERSION // version built for Salamander distribution will not be backward compatible with version 4.0 (unnecessary complication)
     return LAST_VERSION_OF_SALAMANDER;
 #else  // OPENSAL_VERSION
     return SALSDK_COMPATIBLE_WITH_VER;
@@ -251,30 +251,30 @@ int WINAPI SalamanderPluginGetSDKVer()
 
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
-    // nastavime SalamanderDebug pro "dbg.h"
+    // set SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
-    // nastavime SalamanderVersion pro "spl_com.h"
+    // set SalamanderVersion for "spl_com.h"
     SalamanderVersion = salamander->GetVersion();
     //HANDLES_CAN_USE_TRACE();
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-#ifdef OPENSAL_VERSION // verze kopilovana pro distribuci se Salamanderem nebude zpetne kompatibilni s verzi 4.0 (zbytecna komplikace)
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+#ifdef OPENSAL_VERSION // version built for Salamander distribution will not be backward compatible with version 4.0 (unnecessary complication)
+    // this plugin is made for the current Salamander version and higher - perform a check
     if (SalamanderVersion < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // reject older versions
         MessageBox(salamander->GetParentWindow(), REQUIRE_LAST_VERSION_OF_SALAMANDER, PLUGIN_NAME_EN, MB_OK | MB_ICONERROR);
         return NULL;
     }
 #else  // OPENSAL_VERSION
-       // tento plugin je delany pro Salamandera 4.0 a vyssi - provedeme kontrolu
+       // this plugin is made for Salamander 4.0 and higher - perform a check
     if (SalamanderVersion < SALSDK_COMPATIBLE_WITH_VER)
-    { // starsi verze odmitneme
+    { // reject older versions
         MessageBox(salamander->GetParentWindow(), REQUIRE_COMPATIBLE_SAL_VERSION, PLUGIN_NAME_EN, MB_OK | MB_ICONERROR);
         return NULL;
     }
 #endif // OPENSAL_VERSION
 
-    //TODO: nechame nacist jazykovy modul (.slg)
+    //TODO: let the language module (.slg) load
     HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), PLUGIN_NAME_EN);
     if (HLanguage == NULL)
     {
@@ -282,12 +282,12 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
         return NULL;
     }
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain the general Salamander interface
     SalamanderGeneral = salamander->GetSalamanderGeneral();
-    // ziskame rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+    // obtain the interface providing customized Windows controls used in Salamander
     SalamanderGUI = salamander->GetSalamanderGUI();
 
-    // nastavime jmeno souboru s helpem
+    // set the name of the help file
     SalamanderGeneral->SetHelpFileName("diskmap.chm");
 
     CWindow::SetHInstance(DLLInstance, HLanguage);
@@ -302,10 +302,10 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
 
     CMainWindow::LoadResourceStrings();
 
-    // nastavime zakladni informace o pluginu
+    // set basic information about the plugin
     salamander->SetBasicPluginData(
         LoadStr(IDS_PLUGIN_NAME),
-        FUNCTION_LOADSAVECONFIGURATION, //zadne funkce :-P
+        FUNCTION_LOADSAVECONFIGURATION, //no functions :-P
         VERSINFO_VERSION_NO_PLATFORM, VERSINFO_COPYRIGHT,
         LoadStr(IDS_PLUGIN_DESCRIPTION),
         PLUGIN_FILE, //regKeyName
@@ -313,10 +313,10 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
         NULL         //fsName
     );
 
-    // nastavime URL home-page pluginu
+    // set the plugin home page URL
     salamander->SetPluginHomePageURL(szPluginWebsite);
 
-    //jen pro potreby message loop v pluginu - okna nepotrebuji
+    // only needed for the message loop in the plugin - windows do not need it
     hAccelTable = LoadAccelerators(HLanguage, MAKEINTRESOURCE(IDC_ZAREVAKDISKMAP));
 
     return &PluginInterface;
@@ -338,7 +338,7 @@ void WINAPI CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* s
 {
     //CALL_STACK_MESSAGE1("CPluginInterface::Connect(,)");
 
-    /* TODO */ //Petr: ted uz je to vzdy Windows 2000, XP, Vista (byla tu podminka na W2K+)
+    /* TODO */ //Petr: now it is always Windows 2000, XP, Vista (there used to be a condition for W2K+)
 
     HICON icon = LoadIcon(DLLInstance, MAKEINTRESOURCE(IDI_ZAREVAKDISKMAP));
     if (icon != NULL)
@@ -354,8 +354,8 @@ void WINAPI CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* s
         }
         DestroyIcon(icon);
     }
-    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volani salamander->AddMenuItem() dole...
+    /* used by the export_mnu.py script, which generates salmenu.mnu for Translator
+   keep synchronized with the salamander->AddMenuItem() calls below...
 MENU_TEMPLATE_ITEM PluginMenu[] = 
 {
 	{MNTT_PB, 0
@@ -386,7 +386,7 @@ CPluginInterfaceForMenuExtAbstract* WINAPI CPluginInterface::GetInterfaceForMenu
 
 void WINAPI CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRegistryAbstract* registry)
 {
-    if (regKey != NULL) //nacteni z registry
+    if (regKey != NULL) //loading from the registry
     {
         registry->GetValue(regKey, CONFIG_CLOSECONFIRMATION, REG_DWORD, &Config_CloseConfirmation, sizeof(Config_CloseConfirmation));
         registry->GetValue(regKey, CONFIG_SHOWFOLDERS, REG_DWORD, &Config_ShowFolders, sizeof(Config_ShowFolders));
@@ -420,7 +420,7 @@ struct TThreadInfoItem
 TThreadInfoItem BaseThreadItem;
 TThreadInfoItem* FirstThreadItem = &BaseThreadItem;
 
-// varianta spusteni threadu vieweru bez pouziti objektu CThread
+// variant of starting the viewer thread without using the CThread object
 struct CTVData
 {
     BOOL AlwaysOnTop;
@@ -442,7 +442,7 @@ unsigned int WINAPI WindowThreadBody(void* param)
     SetThreadNameInVCAndTrace(PLUGIN_NAME_EN);
     TRACE_I("Begin");
 
-    // ukazka padu aplikace
+    // example of an application crash
     //  int *p = 0;
     //  *p = 0;       // ACCESS VIOLATION !
 
@@ -451,7 +451,7 @@ unsigned int WINAPI WindowThreadBody(void* param)
     CMainWindow* window = new CMainWindow(NULL);
     if (window == NULL)
     {
-        SetEvent(data->Continue); // pustime dale hl. thread, od tohoto bodu nejsou data platna (=NULL)
+        SetEvent(data->Continue); // let the main thread continue, from this point the data are no longer valid (=NULL)
         data = NULL;
 
         TRACE_I("CMainWindow Failed");
@@ -465,7 +465,7 @@ unsigned int WINAPI WindowThreadBody(void* param)
         //TRACE_I("Notcreated");
         MessageBoxA(NULL, "DiskMap window could not be created", PLUGIN_NAME_EN, 0);
 
-        //zrusit pamet okna
+        // free the window memory
         delete window;
 
         CoUninitialize();
@@ -488,16 +488,16 @@ unsigned int WINAPI WindowThreadBody(void* param)
     }
 
     //CALL_STACK_MESSAGE1("ViewerThreadBody::SetEvent");
-    SetEvent(data->Continue); // pustime dale hl. thread, od tohoto bodu nejsou data platna (=NULL)
+    SetEvent(data->Continue); // let the main thread continue, from this point the data are no longer valid (=NULL)
     data = NULL;
 
-    // pokud probehlo vse bez potizi, zacneme hledat soubory
+    // if everything succeeded, start searching for files
     //CALL_STACK_MESSAGE1("ViewerThreadBody::OpenFile");
     window->PopulateStart();
 
     //CALL_STACK_MESSAGE1("ViewerThreadBody::message-loop");
     //TRACE_I("MsgLoop");
-    // message loopa
+    // message loop
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0))
     {
@@ -511,11 +511,11 @@ unsigned int WINAPI WindowThreadBody(void* param)
 
     if (MyThreadInfo != NULL)
     {
-        //hlasit zpet zrusene okno
+        // report the closed window back
         MyThreadInfo->MainWindow = 0;
     }
 
-    //zrusit pamet okna
+    // free the window memory
     delete window;
 
     CoUninitialize();
@@ -533,13 +533,13 @@ BOOL OpenDiskMapWindow(HWND parent, char* name)
     TThreadInfoItem* NewThreadInfo = NULL;
     TThreadInfoItem* tmpThreadInfo = FirstThreadItem;
 
-    //najit prvni nevyuzity
+    // find the first unused one
     while (true) //tmpThreadInfo->Next != NULL)
     {
-        //jen pro ty, co zrovna nemaji zobrazene okno
+        // only for those that do not currently have a window displayed
         if (tmpThreadInfo->MainWindow == 0)
         {
-            //thread nikdy neexistoval
+            // the thread has never existed
             if (tmpThreadInfo->Thread == 0)
             {
                 NewThreadInfo = tmpThreadInfo;
@@ -549,14 +549,14 @@ BOOL OpenDiskMapWindow(HWND parent, char* name)
             {
                 if (ThreadQueue.WaitForExit(tmpThreadInfo->Thread, 0))
                 {
-                    //lze pouzit, pokud thread jiz nebezi...
+                    // can be used if the thread is no longer running...
                     NewThreadInfo = tmpThreadInfo;
                     break;
                 }
             }
         }
 
-        //posledni prvek taky pouzit, takze pridat novy
+        // the last element is also used, so add a new one
         if (tmpThreadInfo->Next == NULL)
         {
             NewThreadInfo = new TThreadInfoItem();
@@ -627,7 +627,7 @@ BOOL OpenDiskMapWindow(HWND parent, char* name)
         ThreadQueue.Add(hThread, threadId);
         NewThreadInfo->Thread = hThread;
         //TRACE_I("hThread created");
-        // pockame, az thread zpracuje predana data a vrati vysledky
+        // wait until the thread processes the provided data and returns the results
         WaitForSingleObject(data.Continue, INFINITE);
         CloseHandle(data.Continue);
 
@@ -635,7 +635,7 @@ BOOL OpenDiskMapWindow(HWND parent, char* name)
     }
     else
     {
-        NewThreadInfo->Thread = 0; //signalizace nevytvoreneho vlakna
+        NewThreadInfo->Thread = 0; // signals that the thread was not created
         //TRACE_I("hThread problem");
         CloseHandle(data.Continue);
         return FALSE;
@@ -648,15 +648,15 @@ BOOL WINAPI CPluginInterface::Release(HWND parent, BOOL force)
     TThreadInfoItem* curThreadInfo = FirstThreadItem;
     while (curThreadInfo != NULL)
     {
-        if (curThreadInfo->Thread != 0) //patri k existujicimu threadu
+        if (curThreadInfo->Thread != 0) // belongs to an existing thread
         {
-            HWND threadWindow = curThreadInfo->MainWindow; //musime okopirovat, protoze je mozne, ze se muze kdykoliv zmenit
-            if (threadWindow != 0)                         //okno jeste existuje
+            HWND threadWindow = curThreadInfo->MainWindow; // we must copy it because it can change at any time
+            if (threadWindow != 0)                         // the window still exists
             {
                 PostMessage(threadWindow, WM_CLOSE, 0, 0);
             }
         }
-        if (curThreadInfo != &BaseThreadItem) //prvni polozku nelze rusit, protoze neni dynamicka
+        if (curThreadInfo != &BaseThreadItem) // the first item cannot be deleted because it is not dynamic
         {
             TThreadInfoItem* tmpThreadInfo = curThreadInfo;
             curThreadInfo = curThreadInfo->Next;
@@ -670,7 +670,7 @@ BOOL WINAPI CPluginInterface::Release(HWND parent, BOOL force)
     }
 
     if (!ThreadQueue.KillAll(force) && !force)
-        return FALSE; // jeste nemuzeme koncit, thready stale bezi
+        return FALSE; // we cannot finish yet, threads are still running
 
     DestroyAcceleratorTable(hAccelTable);
     CMainWindow::UnloadResourceStrings();
@@ -695,26 +695,26 @@ BOOL WINAPI CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperations
         SalamanderCallback.DoOpenFolder();
         return TRUE;
     }
-    case MENUCMD_OPEN: // ukazka postupu, jak se osetruje vstup cesty k adresari/souboru
+    case MENUCMD_OPEN: // example of how to process the input path to a directory/file
     {
         //TRACE_I("MENUCMD_OPEN");
-        // navrh retezce - zde jen windowsova cesta v cilovem panelu (jinak prazdny retezec)
+        // path suggestion - here only the Windows path in the target panel (otherwise an empty string)
 
-        // aktualni cesta je potreba pro prevody relativnich cest na absolutni
+        // the current path is needed to convert relative paths to absolute ones
         int type;
         BOOL curPathIsDisk = FALSE;
         char curPath[MAX_PATH] = "";
         if (SalamanderGeneral->GetPanelPath(PANEL_SOURCE, curPath, MAX_PATH, &type, NULL))
         {
             if (type != PATH_TYPE_WINDOWS)
-                curPath[0] = 0; // bereme jen diskove cesty
+                curPath[0] = 0; // we take only disk paths
             else
                 curPathIsDisk = TRUE;
         }
 
-        //TODO: tady by mel byt dotaz uzivateli na cestu a potvrzeni cesty...
+        //TODO: there should be a prompt asking the user for the path and confirming it...
 
-        if (curPathIsDisk) // 'path' je cesta k souboru/adresari, provedeme s ni pozadovanou akci
+        if (curPathIsDisk) // 'path' is the path to a file/directory, perform the requested action with it
         {
             //TRACE_I("Opening(" << curPath << ")." /*"): " << GetErrorText(error)*/);
             OpenDiskMapWindow(parent, curPath);
@@ -724,7 +724,7 @@ BOOL WINAPI CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperations
             //TRACE_I("Not disk.");
         }
 
-        return FALSE; // neodznacujeme polozky v panelu
+        return FALSE; // do not unselect items in the panel
     }
     default:
         SalamanderGeneral->ShowMessageBox("Unknown command.", "DEMOPLUG", MSGBOX_ERROR);

@@ -185,8 +185,8 @@ protected:
 
 #define WITH_COR_METADATA_DUMPER 1
 
-// Pocet dostupnych dumperu.
-// Pri implementaci noveho potomka tridy CPEDumper zvys tuto hodnotu!
+// Number of available dumpers.
+// When implementing a new CPEDumper derived class, increase this value!
 #define AVAILABLE_PE_DUMPERS (12 + WITH_COR_METADATA_DUMPER)
 
 class CFileTypeDumper : public CPEDumper
@@ -425,7 +425,7 @@ private:
     struct FindResourceDirectoryEntryById
     {
         PIMAGE_RESOURCE_DIRECTORY_ENTRY pEntry;
-        int nId; // -1 je prvni dostupny zaznam
+        int nId; // -1 is the first available entry
     };
 
     static bool FindResourceDirectoryEntryByIdCallback(PIMAGE_RESOURCE_DIRECTORY_ENTRY pResourceDirEntry, void* pUserData);
@@ -497,7 +497,7 @@ protected:
 
 #pragma warning(push)
 #pragma warning(disable : 4091)
-#include <cor.h> // pokud chybi, je potreba nainstalovat .NET Framework SDK (21.1.2019 to byla verze 4.7.2), viz Visual Studio Installer / Modify / Individual components
+#include <cor.h> // if it is missing, install the .NET Framework SDK (as of 2019-01-21 it was version 4.7.2); see Visual Studio Installer / Modify / Individual components
 #pragma warning(pop)
 
 #include <fusion.h>

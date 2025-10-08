@@ -43,16 +43,16 @@ BOOL FindAndInvokeCommand(IContextMenu* ctxMenu, HMENU hMenu, const char* cmdNam
     int i;
     for (i = 0; i < itemsCount; i++)
     {
-        memset(&mi, 0, sizeof(mi)); // nutne zde
+        memset(&mi, 0, sizeof(mi)); // necessary here
         mi.cbSize = sizeof(mi);
         mi.fMask = MIIM_STATE | MIIM_TYPE | MIIM_ID | MIIM_SUBMENU;
         mi.dwTypeData = itemName;
         mi.cch = 500;
         if (GetMenuItemInfo(hMenu, i, TRUE, &mi))
         {
-            if (mi.hSubMenu == NULL && (mi.fType & MFT_SEPARATOR) == 0) // neni submenu ani separator
+            if (mi.hSubMenu == NULL && (mi.fType & MFT_SEPARATOR) == 0) // not a submenu and not a separator
             {
-                char name[2000]; // schvalne mame 2000 misto 200, shell-extensiony obcas zapisuji dvojnasobek (uvaha: unicode = 2 * "pocet znaku"), atp.
+                char name[2000]; // deliberately use 2000 instead of 200; shell extensions sometimes write double the amount (idea: Unicode = 2 * "number of characters"), etc.
                 name[0] = 0;
                 if (ctxMenu->lpVtbl->GetCommandString(ctxMenu, mi.wID, GCS_VERB, NULL, name, 200) == NOERROR)
                 {
@@ -121,7 +121,7 @@ BOOL InvokeCmdFromContextMenu(HWND hWnd, const char* fileName, const char* cmdNa
     BOOL ret;
     __try
     {
-        // nechceme aby nam padal setup/remove kvuli shell extensions
+        // we do not want setup/remove to crash because of shell extensions
         ret = InvokeCmdFromContextMenuAux(hWnd, fileName, cmdName);
     }
     __except (EXCEPTION_EXECUTE_HANDLER)

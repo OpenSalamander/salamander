@@ -3,9 +3,9 @@
 
 #include "precomp.h"
 
-// projekt Renamer obsahuje ctyri skupiny modulu
+// the Renamer project contains four groups of modules
 //
-// 1) modul precomp.cpp, ktery postavi renamer.pch (/Yc"precomp.h")
-// 2) moduly vyuzivajici renamer.pch (/Yu"precomp.h")
-// 3) commony maji vlastni, automaticky generovany
+// 1) the precomp.cpp module, which builds renamer.pch (/Yc"precomp.h")
+// 2) modules that use renamer.pch (/Yu"precomp.h")
+// 3) the common files have their own automatically generated
 //    WINDOWS.PCH (/YX"windows.h" /Fp"$(OutDir)\WINDOWS.PCH")

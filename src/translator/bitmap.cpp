@@ -91,7 +91,7 @@ BOOL CBitmap::CreateBmpBW(int width, int height)
     return TRUE;
 }
 
-// vytvori bitmapu kompatibilni s DC
+// Creates a bitmap compatible with the DC
 BOOL CBitmap::CreateBmp(HDC hDC, int width, int height)
 {
     if (HBmp != NULL)
@@ -128,7 +128,7 @@ BOOL CBitmap::CreateBmp(HDC hDC, int width, int height)
     if (releaseDC)
         HANDLES(ReleaseDC(NULL, hDC));
 
-    // vytahnu informace pro pozdejsi upravy
+    // Grab information for later adjustments
     BITMAP bmp;
     GetObject(HBmp, sizeof(bmp), &bmp);
     Planes = bmp.bmPlanes;
@@ -149,7 +149,7 @@ BOOL CBitmap::CreateBmp(HDC hDC, int width, int height)
     return TRUE;
 }
 
-// vytvori bitmapu kompatibilni s DC
+// Creates a bitmap compatible with the DC
 BOOL CBitmap::CreateBmpFrom(HINSTANCE hInstance, int resID)
 {
     if (HBmp != NULL)
@@ -164,7 +164,7 @@ BOOL CBitmap::CreateBmpFrom(HINSTANCE hInstance, int resID)
         return FALSE;
     }
 
-    // vytahnu informace pro pozdejsi upravy
+    // Grab information for later adjustments
     BITMAP bmp;
     GetObject(HBmp, sizeof(bmp), &bmp);
     Planes = bmp.bmPlanes;
@@ -208,7 +208,7 @@ BOOL CBitmap::ReCreateForScreenDC()
     HANDLES(DeleteObject(HBmp));
     HBmp = hTmpBmp;
 
-    // vytahnu informace pro pozdejsi upravy
+    // Grab information for later adjustments
     BITMAP bmp;
     GetObject(HBmp, sizeof(bmp), &bmp);
     Planes = bmp.bmPlanes;
@@ -246,10 +246,10 @@ BOOL CBitmap::Enlarge(int width, int height)
             width = Width;
         if (Height > height)
             height = Height;
-        // pousim se vytvorit vetsi bitmapu
-        // !POZOR! Sal 2.5b6 byla pomala pri paintu do Vieweru (PgDn) proti 2.0
-        // Bylo to tim, ze jsme vytvareli cache pres CreateBitmap() misto pres CreateCompatibleBitmap()
-        // Podle MSDN se ma pouzivat CreateBitmap() pouze pro vyvareni B&W bitmap.
+        // Trying to create a larger bitmap
+        // WARNING! Sal 2.5b6 was slower when painting into the Viewer (PgDn) compared to 2.0
+        // That was because we created the cache with CreateBitmap() instead of CreateCompatibleBitmap()
+        // According to MSDN, CreateBitmap() should only be used for creating B&W bitmaps.
         HBITMAP hTmpBmp;
         if (HMemDC == NULL || BlackAndWhite)
         {

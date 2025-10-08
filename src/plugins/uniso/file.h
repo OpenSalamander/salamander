@@ -27,7 +27,7 @@ protected:
 //
 // BufferedFile
 //
-// pro bufferovane cteni/zapis ze/do souboru
+// for buffered reading/writing from/to a file
 //
 
 class CBufferedFile : public CFile

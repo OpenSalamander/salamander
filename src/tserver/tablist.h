@@ -3,7 +3,7 @@
 
 #pragma once
 
-/// Nazev tridy okna CTabList.
+/// Name of the CTabList window class.
 #define WC_TABLIST L"TabList32"
 
 #define HEADER_ITEMS 13
@@ -60,7 +60,7 @@ public:
 
     void GetText(int iItem, int iSubItem, WCHAR* buff, int buffMax, BOOL preferEndOfText = FALSE);
 
-    int GetSelectedIndex(); // vraci -1 pokud neni zadna polozka vybrana; jinak zero-based index polozky
+    int GetSelectedIndex(); // returns -1 if no item is selected; otherwise the zero-based index of the item
 
     void SwitchDeltaMode();
     BOOL GetDeltaMode() { return DeltaMode; }

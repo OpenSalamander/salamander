@@ -11,9 +11,9 @@
 
 #include "precomp.h"
 
-// projekt DemoMenu obsahuje tri skupiny modulu
+// The DemoMenu project contains three groups of modules:
 //
-// 1) modul precomp.cpp, ktery postavi demomenu.pch (/Yc"precomp.h")
-// 2) moduly vyuzivajici demomenu.pch (/Yu"precomp.h")
-// 3) commony maji vlastni, automaticky generovany WINDOWS.PCH
+// 1) The precomp.cpp module, which builds demomenu.pch (/Yc"precomp.h")
+// 2) Modules using demomenu.pch (/Yu"precomp.h")
+// 3) Shared code with its own automatically generated WINDOWS.PCH
 //    (/YX"windows.h" /Fp"$(OutDir)\WINDOWS.PCH")

@@ -7,7 +7,7 @@
 #endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
 
 #define IDC_STATIC_1 400
-#include "statics.rh2"   // 400 az 439 jsou timto zabrane !!!
+#include "statics.rh2"   // this reserves IDs 400 through 439!!!
 
 // icons, cursors, bitmaps
 #define IDI_CHECKVER            80
@@ -19,9 +19,9 @@
 #define CM_AUTOCHECK_VERSION    91
 #define CM_ENUMMODULES          92
 #define CM_FIRSTCHECK_VERSION   93
-#define CM_OPENFILE             94  // pouze v debug verzi - v systemovem menu
-#define CM_ABOUT                95  // vyvola about dialog
-#define CM_CHECK_FIRSTLOAD      96  // pousti se pokud jde o prvni check z prave nainstalovaneho Salamandera (okno checkveru je zobrazene kvuli firewallu, aby user pochopil proc jdeme na internet)
+#define CM_OPENFILE             94  // debug build only - appears in the system menu
+#define CM_ABOUT                95  // opens the About dialog
+#define CM_CHECK_FIRSTLOAD      96  // runs the very first check after installing Salamander (the CheckVer window stays open so the user understands why we access the internet when a firewall is present)
 
 // texts
 #define IDS_PLUGIN_DESCRIPTION  190

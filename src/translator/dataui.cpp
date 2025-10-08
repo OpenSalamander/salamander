@@ -12,7 +12,7 @@ void CData::FillTree()
 {
     HWND hTree = TreeWindow.GetTreeView();
 
-    SendMessage(hTree, WM_SETREDRAW, FALSE, 0); // zakazeme zbytecne kresleni behem pridavani polozek
+    SendMessage(hTree, WM_SETREDRAW, FALSE, 0); // disable unnecessary redraws while populating items
 
     TreeView_DeleteAllItems(hTree);
 
@@ -32,7 +32,7 @@ void CData::FillTree()
 
     if (DlgData.Count > 0)
     {
-        tvis.item.lParam = TREE_TYPE_NONE | TREE_TYPE_NONE_DIALOGS; // nadpis
+        tvis.item.lParam = TREE_TYPE_NONE | TREE_TYPE_NONE_DIALOGS; // section header
         tvis.item.pszText = (char*)"Dialog";
         tvis.item.cChildren = 1;
         tvis.item.state = 0;
@@ -72,7 +72,7 @@ void CData::FillTree()
 
     if (MenuData.Count > 0)
     {
-        tvis.item.lParam = TREE_TYPE_NONE | TREE_TYPE_NONE_MENUS; // nadpis
+        tvis.item.lParam = TREE_TYPE_NONE | TREE_TYPE_NONE_MENUS; // section header
         tvis.item.pszText = (char*)"Menu";
         tvis.item.cChildren = 1;
         tvis.item.state = 0;
@@ -113,7 +113,7 @@ void CData::FillTree()
 
     if (StrData.Count > 0)
     {
-        tvis.item.lParam = TREE_TYPE_NONE | TREE_TYPE_NONE_STRINGS; // nadpis
+        tvis.item.lParam = TREE_TYPE_NONE | TREE_TYPE_NONE_STRINGS; // section header
         tvis.item.pszText = (char*)"String Table";
         tvis.item.cChildren = 1;
         tvis.item.state = 0;
@@ -156,7 +156,7 @@ void CData::FillTree()
     TreeWindow.HMenuTreeItem = hMenu;
     TreeWindow.HStrTreeItem = hStr;
 
-    SendMessage(hTree, WM_SETREDRAW, TRUE, 0); // povolime prekreslovani
+    SendMessage(hTree, WM_SETREDRAW, TRUE, 0); // re-enable redraw
 }
 
 void CData::FillTexts(DWORD lParam)
@@ -189,7 +189,7 @@ void CData::FillTexts(DWORD lParam)
             swprintf_s(buffW, L"Texts for strings <%d>", (block - 1) << 4);
             SetWindowTextW(TextWindow.HWindow, buffW);
 
-            SendMessage(hListView, WM_SETREDRAW, FALSE, 0); // zakazeme zbytecne kresleni behem pridavani polozek
+            SendMessage(hListView, WM_SETREDRAW, FALSE, 0); // disable unnecessary redraws while inserting items
 
             CStrData* data = StrData[index];
             int pos = 0;
@@ -225,7 +225,7 @@ void CData::FillTexts(DWORD lParam)
             }
             if (pos > 0)
                 ListView_SetItemState(hListView, 0, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
-            SendMessage(hListView, WM_SETREDRAW, TRUE, 0); // povolime prekreslovani
+            SendMessage(hListView, WM_SETREDRAW, TRUE, 0); // re-enable redraw
         }
         break;
     }
@@ -244,7 +244,7 @@ void CData::FillTexts(DWORD lParam)
             sprintf_s(buffA, "Preview for dialog %s", DataRH.GetIdentifier(id));
             SetWindowText(PreviewWindow.HWindow, buffA);
 
-            SendMessage(hListView, WM_SETREDRAW, FALSE, 0); // zakazeme zbytecne kresleni behem pridavani polozek
+            SendMessage(hListView, WM_SETREDRAW, FALSE, 0); // disable unnecessary redraws while inserting items
 
             CDialogData* data = DlgData[index];
             PreviewWindow.PreviewDialog(index);
@@ -289,7 +289,7 @@ void CData::FillTexts(DWORD lParam)
             }
             if (pos > 0)
                 ListView_SetItemState(hListView, 0, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
-            SendMessage(hListView, WM_SETREDRAW, TRUE, 0); // povolime prekreslovani
+            SendMessage(hListView, WM_SETREDRAW, TRUE, 0); // re-enable redraw
         }
         break;
     }
@@ -309,7 +309,7 @@ void CData::FillTexts(DWORD lParam)
             sprintf_s(buffA, "Preview: click in this window to display menu %s", DataRH.GetIdentifier(id));
             SetWindowText(PreviewWindow.HWindow, buffA);
 
-            SendMessage(hListView, WM_SETREDRAW, FALSE, 0); // zakazeme zbytecne kresleni behem pridavani polozek
+            SendMessage(hListView, WM_SETREDRAW, FALSE, 0); // disable unnecessary redraws while inserting items
 
             CMenuData* data = MenuData[index];
             int pos = 0;
@@ -339,9 +339,9 @@ void CData::FillTexts(DWORD lParam)
                 lvi.mask = LVIF_TEXT;
                 lvi.pszText = buffW;
 
-                // vnorena submenu odhodime o level vpravo
+                // indent nested submenu entries
                 int j = 0;
-                while (j < data->Items[i].Level * 5) // pet mezer je jeste na dalsim miste
+                while (j < data->Items[i].Level * 5) // keep five spaces reserved for each indentation level
                 {
                     buffW[j] = ' ';
                     j++;
@@ -359,7 +359,7 @@ void CData::FillTexts(DWORD lParam)
             }
             if (pos > 0)
                 ListView_SetItemState(hListView, 0, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
-            SendMessage(hListView, WM_SETREDRAW, TRUE, 0); // povolime prekreslovani
+            SendMessage(hListView, WM_SETREDRAW, TRUE, 0); // re-enable redraw
         }
         break;
     }

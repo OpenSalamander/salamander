@@ -38,7 +38,7 @@ BOOL CompresBugReports(CCompressParams* compressParams)
                 char archive[MAX_PATH];
                 strcpy(archive, BugReports[i].Name);
                 strcat(archive, ".7Z");
-                DeleteFile(archive); // aby neselhala nasledna komprese
+                DeleteFile(archive); // so the subsequent compression does not fail
 
                 error[0] = 0;
                 BOOL res = CompressFiles(archive, BugReportPath, mask, error, 10000);

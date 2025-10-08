@@ -7,18 +7,18 @@
 #endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
 
 #define IDC_STATIC_1 3000
-#include "statics.rh2"   // 3000 az 3039 jsou timto zabrane !!!
+#include "statics.rh2"   // 3000 to 3039 are reserved by this include !!!
 
-// IDcka pro propojeni s helpem
+// IDs for linking the help
 #define IDH_COMBINE                     2500
 #define IDH_SPLIT                       2501
-#define IDH_SPLIT2                      2502  // obchazime chybu Resource Workshopu (jinak nejde .rc otevrit, tragedie)
-#define IDH_SPLIT3                      2503  // obchazime chybu Resource Workshopu (jinak nejde .rc otevrit, tragedie)
-#define IDH_SPLIT4                      2504  // obchazime chybu Resource Workshopu (jinak nejde .rc otevrit, tragedie)
+#define IDH_SPLIT2                      2502  // work around a Resource Workshop bug (otherwise the .rc cannot be opened, disaster)
+#define IDH_SPLIT3                      2503  // work around a Resource Workshop bug (otherwise the .rc cannot be opened, disaster)
+#define IDH_SPLIT4                      2504  // work around a Resource Workshop bug (otherwise the .rc cannot be opened, disaster)
 
 // ********************************************************************************
 //
-//  TEXTY
+//  STRINGS
 //
 
 #define IDS_PLUGINNAME                  1
@@ -84,7 +84,7 @@
 
 // ********************************************************************************
 //
-//  IKONY
+//  ICONS
 //
 
 #define IDI_SPLIT                       2000

@@ -10,12 +10,12 @@ BOOL SalGetFullName(LPTSTR name, int* errTextID, LPCTSTR curDir)
     CALL_STACK_MESSAGE3(_T("SalGetFullName(%s, , %s)"), name, curDir);
     int err = 0;
 
-    int rootOffset = 3; // offset zacatku adresarove casti cesty (3 pro "c:\path")
+    int rootOffset = 3; // offset of the start of the directory part of the path (3 for "c:\path")
     LPTSTR s = name;
     while (*s == ' ')
         s++;
     if (*s == '\\' && *(s + 1) == '\\') // UNC (\\server\share\...)
-    {                                   // eliminace mezer na zacatku cesty
+    {                                   // remove leading spaces from the path
         if (s != name)
             memmove(name, s, (_tcslen(s) + 1) * sizeof(TCHAR));
         s = name + 2;
@@ -24,7 +24,7 @@ BOOL SalGetFullName(LPTSTR name, int* errTextID, LPCTSTR curDir)
         else
         {
             while (*s != 0 && *s != '\\')
-                s++; // prejeti servername
+                s++; // skip the server name
             if (*s == '\\')
                 s++;
             if (*s == 0 || *s == '\\')
@@ -32,36 +32,36 @@ BOOL SalGetFullName(LPTSTR name, int* errTextID, LPCTSTR curDir)
             else
             {
                 while (*s != 0 && *s != '\\')
-                    s++; // prejeti sharename
+                    s++; // skip the share name
                 if (*s == '\\')
                     s++;
             }
         }
     }
-    else // cesta zadana pomoci disku (c:\...)
+    else // path specified using a drive (c:\...)
     {
         if (*s != 0)
         {
             if (*(s + 1) == ':') // "c:..."
             {
                 if (*(s + 2) == '\\') // "c:\..."
-                {                     // eliminace mezer na zacatku cesty
+                {                     // remove leading spaces from the path
                     if (s != name)
                         memmove(name, s, (_tcslen(s) + 1) * sizeof(TCHAR));
                 }
                 else // "c:path..."
                 {
                     /*
-          size_t l1 = _tcslen(s + 2);  // delka zbytku ("path...")
+          size_t l1 = _tcslen(s + 2);  // length of the remainder ("path...")
           if (SalamanderGeneral->CharToLowerCase(*s) >= 'a' && SalamanderGeneral->CharToLowerCase(*s) <= 'z')
           {
             const char *head;
             if (curDir != NULL && SalamanderGeneral->CharToLowerCase(curDir[0]) == SalamanderGeneral->CharToLowerCase(*s)) head = curDir;
             else head = DefaultDir[LowerCase[*s] - 'a'];
             int l2 = _tcslen(head);
-            if (head[l2 - 1] != '\\') l2++;  // misto pro '\\'
+            if (head[l2 - 1] != '\\') l2++;  // space for '\\'
             if (l1 + l2 >= MAX_PATH) err = GFN_TOOLONGPATH;
-            else  // sestaveni full path
+            else  // build the full path
             {
               memmove(name + l2, s + 2, (l1 + 1)*sizeof(TCHAR));
               *(name + l2 - 1) = '\\';
@@ -90,7 +90,7 @@ BOOL SalGetFullName(LPTSTR name, int* errTextID, LPCTSTR curDir)
                                 root++;
                             if (l1 + (root - curDir) >= MAX_PATH)
                                 err = GFN_TOOLONGPATH;
-                            else // sestaveni cesty z rootu akt. disku
+                            else // build the path from the root of the current drive
                             {
                                 memmove(name + (root - curDir), s, (l1 + 1) * sizeof(TCHAR));
                                 memmove(name, curDir, (root - curDir) * sizeof(TCHAR));
@@ -145,32 +145,32 @@ BOOL SalGetFullName(LPTSTR name, int* errTextID, LPCTSTR curDir)
         }
     }
 
-    if (err == 0) // eliminace '.' a '..' v ceste
+    if (err == 0) // remove '.' and '..' from the path
     {
         if (!SalamanderGeneral->SalRemovePointsFromPath(s))
             err = GFN_PATHISINVALID;
     }
 
-    if (err == 0) // vyhozeni pripadneho nezadouciho backslashe z konce retezce
+    if (err == 0) // remove any undesired trailing backslash from the end of the string
     {
         size_t l = _tcslen(name);
-        if (l > 1 && name[1] == ':') // typ cesty "c:\path"
+        if (l > 1 && name[1] == ':') // path type "c:\path"
         {
-            if (l > 3) // neni root cesta
+            if (l > 3) // not a root path
             {
                 if (name[l - 1] == '\\')
-                    name[l - 1] = 0; // orez backslashe
+                    name[l - 1] = 0; // trim the trailing backslash
             }
             else
             {
-                name[2] = '\\'; // root cesta, backslash nutny ("c:\")
+                name[2] = '\\'; // root path, backslash is required ("c:\")
                 name[3] = 0;
             }
         }
-        else // UNC cesta
+        else // UNC path
         {
             if (l > 0 && name[l - 1] == '\\')
-                name[l - 1] = 0; // orez backslashe
+                name[l - 1] = 0; // trim the trailing backslash
         }
     }
 

@@ -10,7 +10,7 @@
 
 #pragma comment(lib, "Shlwapi.lib")
 
-// z windowsx.h
+// from windowsx.h
 #define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
 #define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))
 
@@ -41,18 +41,18 @@ struct CWizardPage WizardPages[NUM_PAGES] = {0};
 #define _TPD_IDC_NEXT IDOK
 #define _TPD_IDC_EXIT IDCANCEL
 
-#define _TPD_LEFTMARGIN 4    //
-#define _TPD_BOTTOMMARGIN 26 // vyska spodniho pruhu pod dialogy
-#define _TPD_BUTTON_W 50     // sirka tlacitek
-#define _TPD_BUTTON_H 14     // vyska tlacitek
+#define _TPD_LEFTMARGIN 4    // left margin padding for the wizard button bar
+#define _TPD_BOTTOMMARGIN 26 // height of the bottom strip beneath the dialogs
+#define _TPD_BUTTON_W 50     // width of the buttons
+#define _TPD_BUTTON_H 14     // height of the buttons
 
-RECT ChildDialogRect;      // umisteni child dialog ve wizardu
-HWND HChildDialog = NULL;  // aktualni child dialog
-int CurrentPageIndex = -1; // aktualni cislo stranky
+RECT ChildDialogRect;      // position of the child dialog within the wizard
+HWND HChildDialog = NULL;  // current child dialog
+int CurrentPageIndex = -1; // current page number
 HFONT HBoldFont = NULL;
 HFONT HULFont = NULL;
 
-BOOL RunningInLowColors = FALSE; // jedeme v 256 barvach a mene?
+BOOL RunningInLowColors = FALSE; // are we running in 256 colors or fewer?
 
 BOOL CloseWizardDlgOnDeact = FALSE;
 
@@ -67,7 +67,7 @@ void NextIsDefault()
 
 void RemoveIconIfNoColors(HWND hDlg)
 {
-    // chybi high-dpi verze ikony, bez ni to stejne vypada lip - zahodime ji vzdy
+    // the high-DPI version of the icon is missing; without it the UI looks better anyway - always drop it
     DestroyWindow(GetDlgItem(hDlg, IDC_INSTALL_ICON));
     return;
     //if (RunningInLowColors)
@@ -374,7 +374,7 @@ int CALLBACK DirectoryBrowse(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
     {
         CenterWindow(hwnd);
 
-        // nastavim header
+        // set the header
         SetWindowText(hwnd, ((struct CBrowseData*)lpData)->Title);
         if (((struct CBrowseData*)lpData)->InitDir != NULL)
         {
@@ -404,13 +404,13 @@ BOOL GetTargetDirectory(HWND parent, const char* title, const char* comment,
     struct CBrowseData bd;
     BROWSEINFO bi;
     char display[MAX_PATH];
-    ITEMIDLIST* pidl; // vyber root-folderu
+    ITEMIDLIST* pidl; // select the root folder
     if (onlyNet)
         SHGetSpecialFolderLocation(parent, CSIDL_NETWORK, &pidl);
     else
         pidl = NULL;
 
-    // otevreni dialogu
+    // open the dialog
     bi.hwndOwner = parent;
     bi.pidlRoot = pidl;
     bi.pszDisplayName = display;
@@ -421,13 +421,13 @@ BOOL GetTargetDirectory(HWND parent, const char* title, const char* comment,
     bd.InitDir = initDir;
     bi.lParam = (LPARAM)&bd;
     res = SHBrowseForFolder(&bi);
-    ret = FALSE; // navratova hodnota
+    ret = FALSE; // return value
     if (res != NULL)
     {
         SHGetPathFromIDList(res, path);
         ret = TRUE;
     }
-    // uvolneni item-id-listu
+    // release the item ID lists
     if (SUCCEEDED(CoGetMalloc(1, &alloc)))
     {
         if (alloc->lpVtbl->DidAlloc(alloc, pidl) == 1)
@@ -517,13 +517,13 @@ BOOL FindOutIfThisIsUpgrade(HWND hDlg)
     SetupInfo.UninstallExistingVersion = FALSE;
     SetupInfo.TheExistingVersionIsSame = FALSE;
 
-    // overim, zda v cili je EXE se stejnym nazvem
+    // verify whether the target contains an EXE with the same name
     if (FindConflictWithAnotherVersion(&sameOrOlderVersion, &sameVersion, &foundRemoveLog))
     {
-        // pokud jde o novejsi verzi Salamandera, nevime jak by se mela odinstalovat a nema smysl
-        // posuzovat pritomnost removelogu, protoze muze jit o jinout technologii odinstalace -- zobrazime IDS_CONFLICTWITHNEWER
+        // if it is a newer version of Salamander, we do not know how it should be uninstalled and it makes no sense
+        // to consider the presence of a remove log, because it might be a different uninstall technology -- show IDS_CONFLICTWITHNEWER
 
-        // pokud jde o stejnou nebo starsi verzi Salamandera a nenajdu k ni removelog, suse ji bez ptani prevalim
+        // if it is the same or an older version of Salamander and no remove log is found, overwrite it without asking
         if (!(sameOrOlderVersion && !foundRemoveLog))
         {
             int cnfrmRet = IDOK;
@@ -631,7 +631,7 @@ DestinationDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 unsigned __int64 freeSpace;
                 unsigned __int64 requiredSpace;
 
-                // sejmu cestu z editlajny
+                // grab the path from the edit box
                 SendDlgItemMessage(hDlg, IDC_CDL_PATH, WM_GETTEXT, MAX_PATH, (LPARAM)buff);
 
                 if (SetupInfo.EnsureSalamander25Dir[0] != 0)
@@ -666,7 +666,7 @@ DestinationDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     SetCurrentDirectory(curDir);
 
                     ret = IDOK;
-                    // JRY - zrusil jsem konfirmaci vytvareni neexistujiciho adresare, ostatni instalaky se neptaji
+                    // JRY - removed the confirmation for creating a non-existent directory; other installers do not ask
                     /*
               if (!exist)
               {
@@ -687,22 +687,22 @@ DestinationDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 //              return 1;
                 //            }
 
-                // zaloha pro pripad neuspechu
+                // backup in case of failure
                 lstrcpy(backupDefaultDirectory, SetupInfo.DefaultDirectory);
                 lstrcpy(backupCreateDirectory, SetupInfo.CreateDirectory);
 
-                // globalky musim nastavi, aby se pri kontrole konfliktu sprave expandovaly cesty
+                // need to set the globals so that paths expand correctly during the conflict check
                 lstrcpy(SetupInfo.DefaultDirectory, buff);
                 lstrcpy(SetupInfo.CreateDirectory, buff);
 
-                if (!FindOutIfThisIsUpgrade(hDlg)) // vraci FALSE jen pokud si uzivatel nepreje pokracovat nebo to neni mozne (upgradovani novejsi verze neumime)
+                if (!FindOutIfThisIsUpgrade(hDlg)) // returns FALSE only if the user does not wish to continue or it is impossible (we cannot upgrade a newer version)
                 {
-                    // vyberem cestu v editline, abychom zvyraznili, ze maji zmenit cestu
+                    // select the path in the edit line to highlight that it should be changed
                     SetFocus(GetDlgItem(hDlg, IDC_CDL_PATH));
 
-                    // pokud mame prepsat novejsi verzi nebo uzivatel nechce upgradnou existujici, nedovolime pokracovat
+                    // if we would overwrite a newer version or the user does not want to upgrade the existing one, do not allow proceeding
                     SetWindowLongPtr(hDlg, DWLP_MSGRESULT, TRUE);
-                    // radeji obnovim
+                    // restore the previous values instead
                     lstrcpy(SetupInfo.DefaultDirectory, backupDefaultDirectory);
                     lstrcpy(SetupInfo.CreateDirectory, backupCreateDirectory);
                     return 1;
@@ -724,7 +724,7 @@ DestinationDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                             (unsigned __int64)numberOfFreeClusters;
 
                 requiredSpace = GetRequiredSpace();
-                requiredSpace += 100000; // 100KB pro uninstall log (melo by stacit s prehledem)
+                requiredSpace += 100000; // 100KB for the uninstall log (should be more than enough)
 
                 if (freeSpace < requiredSpace)
                 {
@@ -733,7 +733,7 @@ DestinationDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     // MS explorer reports 2.64 GB used, 16.0 GB free.
                     // My system is new, running Win Pro 2000. Do you know what the problem is? Fix?
                     //
-                    // John: na zaklade tohoto dopisu zavadim moznost ignorovat nedostatek mista na disku
+                    // John: based on this email I am adding the option to ignore a lack of disk space
                     wsprintf(text, LoadStr(IDS_NOSPACE), driveSpec, (DWORD)requiredSpace, (DWORD)freeSpace);
                     ret = MessageBox(hDlg, text, MAINWINDOW_TITLE, MB_OKCANCEL | MB_ICONINFORMATION);
                     if (ret == IDOK)
@@ -767,7 +767,7 @@ DestinationDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void GetFoldersPaths()
 {
-    if (SfxDirectoriesValid) // Vista or later: bereme cesty ulozene v procesu bez eskalace (SFX), pri eskalaci muze dojit ke zmene usera na admina a cesty jsou pak jine nez potrebujeme
+    if (SfxDirectoriesValid) // Vista or later: take the paths stored in the non-elevated process (SFX); when elevating we might switch to the admin user and the paths would differ from what we need
     {
         lstrcpyn(DesktopDirectory, SetupInfo.CommonFolders ? SfxDirectories[0] : SfxDirectories[1], MAX_PATH);
         lstrcpyn(StartMenuDirectory, SetupInfo.CommonFolders ? SfxDirectories[2] : SfxDirectories[3], MAX_PATH);
@@ -779,8 +779,8 @@ void GetFoldersPaths()
         GetSpecialFolderPath(SetupInfo.CommonFolders ? CSIDL_COMMON_DESKTOPDIRECTORY : CSIDL_DESKTOPDIRECTORY, DesktopDirectory);
         GetSpecialFolderPath(SetupInfo.CommonFolders ? CSIDL_COMMON_STARTMENU : CSIDL_STARTMENU, StartMenuDirectory);
         GetSpecialFolderPath(SetupInfo.CommonFolders ? CSIDL_COMMON_PROGRAMS : CSIDL_PROGRAMS, StartMenuProgramDirectory);
-        // CSIDL_COMMON_APPDATA sice ziskam, ale pridani zastupce do Quick Launch nema zadny efekt, vis NEWSy
-        GetSpecialFolderPath(CSIDL_APPDATA, QuickLaunchDirectory); // pojedeme vzdy do userova ql toolbaru
+        // we can obtain CSIDL_COMMON_APPDATA, but adding a shortcut to Quick Launch has no effect, see the NEWS
+        GetSpecialFolderPath(CSIDL_APPDATA, QuickLaunchDirectory); // always use the user's Quick Launch toolbar
     }
     if (lstrlen(QuickLaunchDirectory) > 0)
     {
@@ -870,7 +870,7 @@ FolderDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             SendMessage(hDlg, WM_COMMAND, MAKEWPARAM(0, BN_CLICKED), 0);
 
-            GetFoldersPaths(); // na zaklade SetupInfo.CommonFolders vytahneme foldery
+            GetFoldersPaths(); // extract the folders according to SetupInfo.CommonFolders
             break;
         }
         }
@@ -997,7 +997,7 @@ UninstallDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // ulozime hned po spusteni instalce, protoze pokud bude vyzadovan restart, chceme se priste tlacit na spravne misto
+        // save immediately after starting the installation, because if a restart is required we want to push to the correct location next time
         SaveLastDirectory();
 
         RemoveIconIfNoColors(hDlg);
@@ -1167,8 +1167,8 @@ void SetFromTo(const char* from, const char* to)
     if (SetupInfo.Silent)
         return;
 
-    // From umi byt diky ceste z TEMP dlouhe a clipoval se konec cesty.
-    // Prechazime na chytrejsi funkce, ktere umeji spravne zakratit cestu.
+    // "From" can be long because of the TEMP path and its end used to be clipped.
+    // Switch to smarter functions that can shorten the path correctly.
     PathSetDlgItemPath(HProgressDialog, IDC_PGS_FROM, from);
     PathSetDlgItemPath(HProgressDialog, IDC_PGS_TO, to);
     //SendDlgItemMessage(HProgressDialog, IDC_PGS_FROM, WM_SETTEXT, 0, (LPARAM)from);
@@ -1229,7 +1229,7 @@ DoneDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
         BOOL runVisible;
         RECT r;
 
-        // podojime INF soubor
+        // pull the data out of the INF file
         GetPrivateProfileString(INF_PRIVATE_SECTION, INF_VIEWREADME, "",
                                 SetupInfo.ViewReadmePath, MAX_PATH, InfFileName);
         GetPrivateProfileString(INF_PRIVATE_SECTION, INF_RUNPROGRAM, "",
@@ -1316,13 +1316,13 @@ DoneDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
         case IDOK:
         {
-            // aby pod nama sel smaznout temp adresar
+            // so the temp directory underneath us can be deleted
             char buf[MAX_PATH];
             GetFolderPath(CSIDL_SYSTEM, buf);
-            SetCurrentDirectory(buf); // musime z adresare odejit, jinak nepujde smazat
+            SetCurrentDirectory(buf); // we must leave the directory; otherwise it cannot be deleted
 
             wsprintf(buf, "notepad.exe \"%s\"", SetupInfo.ViewReadmePath);
-            // Vista+: spoustet bude SFX, ktere neni eskalovane; pri eskalaci muze dojit i ke zmene usera na admina a softy by se spustily na jinem uctu
+            // Vista+: the SFX process runs unelevated; when elevating we may switch to the admin account and the programs would start under a different user
             if (SfxDirectoriesValid)
             {
                 StoreExecuteInfo(SetupInfo.ViewReadmePath, SetupInfo.RunProgramPath,
@@ -1333,11 +1333,11 @@ DoneDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     FAllowSetForegroundWindow allowSetForegroundWindow;
 
                     GetWindowThreadProcessId(SfxDlg, &sfxPID);
-                    // povolime aktivovanemu procesu volani SetForegroundWindow, jinak se nebude schopny vytahnout nahoru
+                    // allow the activated process to call SetForegroundWindow; otherwise it would not be able to bring itself to the front
                     allowSetForegroundWindow = (FAllowSetForegroundWindow)GetProcAddress(GetModuleHandle("user32.dll"), "AllowSetForegroundWindow");
                     if (allowSetForegroundWindow != NULL)
                         allowSetForegroundWindow(sfxPID);
-                    // nechame ukazat a aktivovat dialog SFX7ZIP
+                    // show and activate the SFX7ZIP dialog
                     SendMessage(SfxDlg, WM_USER_SHOWACTSFX7ZIP, 0, 0);
                 }
             }
@@ -1353,7 +1353,7 @@ DoneDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_TIMER:
     {
         if (wParam == WM_USER_CLOSEWIZARDDLG)
-            PostQuitMessage(0); // dale se zavrenim wizard dialogu otalet nemuzeme, koncime
+            PostQuitMessage(0); // we can no longer delay closing the wizard dialog, so exit
         break;
     }
     }
@@ -1390,11 +1390,11 @@ WizardDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
         ScreenToClient(HWizardDialog, &p);
         ChildDialogRect.bottom = p.y;
 
-        // priradim oknu ikonku
+        // assign an icon to the window
         SendMessage(hDlg, WM_SETICON, ICON_BIG,
                     (LPARAM)LoadIcon(HInstance, MAKEINTRESOURCE(EXE_ICON)));
 
-        // pozakazuju polozky v sytemovem menu
+        // disable items in the system menu
         hMenu = GetSystemMenu(hDlg, FALSE);
         if (hMenu != NULL)
         {
@@ -1403,11 +1403,11 @@ WizardDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
             EnableMenuItem(hMenu, SC_SIZE, MF_BYCOMMAND | MF_GRAYED);
         }
 
-        // priradim oknu text
+        // assign text to the window
         wsprintf(buff, LoadStr(IDS_WIZ_TITLE), SetupInfo.ApplicationName);
         SetWindowText(hDlg, buff);
 
-        // vytvorim tucny font
+        // create a bold font
         hFont = (HFONT)SendMessage(hDlg, WM_GETFONT, 0, 0);
         GetObject(hFont, sizeof(lf), &lf);
         lf.lfWeight = FW_BOLD;
@@ -1417,7 +1417,7 @@ WizardDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
         lf.lfUnderline = TRUE;
         HULFont = CreateFontIndirect(&lf);
 
-        // pokud jedeme v 256 barvach a mene, nebudeme zobrazovat symbol vpravo nahore
+        // if we run in 256 colors or fewer, do not show the symbol in the top-right corner
         hdc = GetDC(hDlg);
         RunningInLowColors = GetDeviceCaps(hdc, BITSPIXEL) <= 8;
         ReleaseDC(hDlg, hdc);
@@ -1468,7 +1468,7 @@ WizardDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_ACTIVATE:
     {
         if (LOWORD(wParam) == WA_INACTIVE && CloseWizardDlgOnDeact)
-            PostQuitMessage(0); // uz nas deaktivuji, dale neni wizard dialog potreba, koncime
+            PostQuitMessage(0); // they are already deactivating us; the wizard dialog is no longer needed, so exit
         break;
     }
 
@@ -1490,7 +1490,7 @@ WizardDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_SYSCOMMAND:
     {
         if (wParam == SC_CLOSE && !IsWindowVisible(GetDlgItem(HWizardDialog, _TPD_IDC_EXIT)))
-        { // kliknuti na close button okna nebo Alt+F4 na posledni strance (Installation Finished): nechce spoustet Salama ani otevirat readme, koncime
+        { // clicking the window's close button or pressing Alt+F4 on the last page (Installation Finished): the user does not want to launch Salamander or open the readme, so exit
             PostQuitMessage(0);
             return TRUE;
         }
@@ -1669,7 +1669,7 @@ WORD GetCurDispLangID()
 
     langID = GetUserDefaultLangID();
 
-    // zkorigujeme langID na novejsich woknech
+    // adjust the langID on newer Windows versions
     KERNEL32DLL = LoadLibrary("kernel32.dll");
     if (KERNEL32DLL != NULL)
     {
@@ -1703,7 +1703,7 @@ BOOL CreateWizard()
     AddWizardPage(PagesCount++, IDD_UNINSTALL, UninstallDlgProc);
     AddWizardPage(PagesCount++, IDD_PROGRESS, ProgressDlgProc);
     AddWizardPage(PagesCount++, IDD_DONE, DoneDlgProc);
-    // !!!POZOR!!!, pokud pridavame stranku, zvetsit NUM_PAGES
+    // !!!WARNING!!! increase NUM_PAGES if we add a page
 
     HWizardDialog = CreateDialog(HInstance, MAKEINTRESOURCE(IDD_WIZARD), NULL, WizardDlgProc);
     if (HWizardDialog == NULL)
@@ -1783,11 +1783,11 @@ void ReadPreviousVerOfFileToIncrementContent()
     while (*end != 0 && *end != ',')
         end++;
     lstrcpyn(fileName, SetupInfo.IncrementFileContentDst, (int)(end - SetupInfo.IncrementFileContentDst + 1));
-    ExpandPath(fileName); // cestu nechame expandovat
+    ExpandPath(fileName); // let the path expand
     if (fileName[0] == 0)
-        return; // nepovedlo se vytahnout ani nazev souboru
+        return; // failed to obtain even the file name
 
-    // pokud soubor existuje, bude otevren; jinak bude vytvoren
+    // if the file exists, it will be opened; otherwise it will be created
     hFile = CreateFile(fileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
                        FILE_FLAG_SEQUENTIAL_SCAN, NULL);
     if (hFile == INVALID_HANDLE_VALUE)
@@ -1810,18 +1810,18 @@ BOOL IncrementFileContent()
     int index, i;
     DWORD cfgVersion;
     int ifcLinesCount = 0;
-    char ifcLines[100][MAX_PATH]; // sem rozbalime polozku IncrementFileContent;
-                                  // nulty radek bude nazev souboru; seznam bude ukonceny
-                                  // radkem obshujicim pouze znak 0
+    char ifcLines[100][MAX_PATH]; // unpack the IncrementFileContent entries here;
+                                  // the zeroth line will be the file name; the list ends
+                                  // with a line containing only the character 0
     int fileLinesCount = 0;
-    char fileLines[100][MAX_PATH]; // sem rozbalime radky z existujiciho souboru
+    char fileLines[100][MAX_PATH]; // unpack lines from the existing file here
     char fileBuff[10000];
 
     DWORD registryVal;
 
-    // napred vytahneme z Registry aktualni cislo
+    // first fetch the current number from the registry
     if (!GetRegistryDWORDValue(SetupInfo.IncrementFileContentSrc, &registryVal))
-    { // instalovana verze nema zaznam v registry (na tomto konte jeste nebezela)
+    { // the installed version has no registry entry (it has not run on this account yet)
         if (!SetupInfo.UninstallExistingVersion || !SetupInfo.TheExistingVersionIsSame)
             return FALSE;
         registryVal = 0;
@@ -1835,7 +1835,7 @@ BOOL IncrementFileContent()
         while (*end != 0 && *end != ',')
             end++;
         lstrcpyn(ifcLines[index], begin, (int)(end - begin + 1));
-        ExpandPath(ifcLines[index]); // vsechny cesty nechame expandovat
+        ExpandPath(ifcLines[index]); // expand all paths
         if (*end == ',')
             end++;
         begin = end;
@@ -1845,17 +1845,17 @@ BOOL IncrementFileContent()
     ifcLines[index][0] = 0;
 
     if (index == 0)
-        return FALSE; // nepovedlo se vytahnout ani nazev souboru
+        return FALSE; // failed to obtain even the file name
 
-    // pokud soubor existuje, bude otevren; jinak bude vytvoren
+    // if the file exists, it will be opened; otherwise it will be created
     hFile = CreateFile(ifcLines[0], GENERIC_READ | GENERIC_WRITE,
                        FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
     if (hFile == INVALID_HANDLE_VALUE)
         return FALSE;
 
-    // pokud soubor existuje, bude nacten a rozanalysovan jeho obsah
+    // if the file exists, read and analyze its contents
     fileLines[0][0] = 0;
-    if (PreviousVerOfFileToIncrementContent[0] != 0) // pri reinstalaci stejne verze Salama zde pouzijeme obsah prave odinstalovaneho plugins.ver (napr. nove instalovane pluginy musime prevzit do nove verze plugins.ver, jinak se pri spusteni Salama z jineho konta automaticky nepridaji, protoze se nezvysuje verze konfigu Salama (pri zvyseni dojde k autoinstallu vsech pluginu))
+    if (PreviousVerOfFileToIncrementContent[0] != 0) // when reinstalling the same version of Salamander, reuse the contents of the recently uninstalled plugins.ver (e.g. newly installed plugins must be carried over into the new plugins.ver; otherwise launching Salamander from another account would not add them automatically because the config version is not increased—only increasing it triggers auto-installation of all plugins)
         MyGetMultilineText(PreviousVerOfFileToIncrementContent, fileLines, &fileLinesCount);
     else
     {
@@ -1866,20 +1866,20 @@ BOOL IncrementFileContent()
         }
     }
 
-    // pokud zakladame novy soubor, dame mu hodnotu jedna
+    // if we are creating a new file, start it with value one
     cfgVersion = 1;
 
-    // pokud v souboru bylo cislo, zvedneme ho o jednicku (instalace pluginu z jineho konta a nespusteni Salama na tomto konte vede k tomu, ze je v souboru vyssi cislo verze plugins.ver nez v registry)
+    // if the file contained a number, increment it by one (installing plugins from another account and not running Salamander on this account leads to plugins.ver having a higher version number than the registry)
     if (fileLinesCount > 0)
         cfgVersion = MyStrToDWORD(fileLines[0]) + 1;
 
-    // pripadne pouzijeme o jednicku zvyseny udaj z registry (jde nam o to, aby se do Salama pri dalsim spusteni nasla a nacetla nova verze plugins.ver)
+    // optionally use the registry value increased by one (we want Salamander to find and load the new version of plugins.ver on the next start)
     if (registryVal + 1 > cfgVersion)
         cfgVersion = registryVal + 1;
 
     wsprintf(fileBuff, "%d\r\n", cfgVersion);
 
-    // zapiseme do souboru nova data na zklade promenne IncrementFileContent
+    // write the new data into the file based on IncrementFileContent
     SetFilePointer(hFile, 0, 0, FILE_BEGIN);
     if (!WriteFile(hFile, fileBuff, lstrlen(fileBuff), &read, NULL) || read != (DWORD)lstrlen(fileBuff))
     {
@@ -1905,8 +1905,8 @@ BOOL IncrementFileContent()
         }
     }
 
-    // prohledam puvodni obsah souboru a pridam pluginy, ktere jsem nepridal ted
-    for (i = 1; i < fileLinesCount; i++) // prvni je celkove cislo - preskocim ho
+    // scan the original file contents and add plugins that were not added now
+    for (i = 1; i < fileLinesCount; i++) // the first line is the overall number - skip it
     {
         char* p = fileLines[i];
         while (*p != ':' && *p != 0)

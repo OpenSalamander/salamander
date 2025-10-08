@@ -13,7 +13,7 @@
 #include "lang\lang.rh"
 
 // Nero Header
-// pro cteni informace o session/tracks v .NRG
+// for reading information about sessions/tracks in .NRG
 struct NRGHeader
 {
     char ID[4];

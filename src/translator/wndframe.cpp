@@ -33,7 +33,7 @@ BOOL PathAppend(char* path, const char* name, int pathSize)
     if (*name != 0)
     {
         int n = strlen(name);
-        if (l + 1 + n < pathSize) // vejdeme se i s nulou na konci?
+        if (l + 1 + n < pathSize) // do we still fit including the terminating null?
         {
             if (l != 0)
                 path[l] = '\\';
@@ -153,7 +153,7 @@ BOOL CFrameWindow::OpenChildWindows()
 
     TreeWindow.EnableTreeNotifications = TRUE;
 
-    // vybereme posledne vybranou polozku
+    // restore the most recently selected tree item
     if (Data.SelectedTreeItem != 0)
     {
         HTREEITEM hItem = TreeWindow.GetItem(Data.SelectedTreeItem);
@@ -268,7 +268,7 @@ BOOL CFrameWindow::CloseLayoutEditor()
     SendMessage(HMDIClient, WM_MDIACTIVATE, (WPARAM)HPredLayoutActiveWnd, 0);
     HPredLayoutActiveWnd = NULL;
 
-    // vnutime refresh do preview okna
+    // force the preview window to refresh
     WORD id = PreviewWindow.GetHighlightControl();
     PreviewWindow.PreviewDialog(PreviewWindow.CurrentDialogIndex);
     PreviewWindow.HighlightControl(id);
@@ -336,7 +336,7 @@ BOOL CFrameWindow::QueryClose()
 
 BOOL CFrameWindow::OpenProject(const char* importSubPath)
 {
-    // info do Output okna
+    // Information for the Output window
     OutWindow.Clear();
 
     BOOL ret = FALSE;
@@ -351,35 +351,35 @@ BOOL CFrameWindow::OpenProject(const char* importSubPath)
 
         if ((QuietTranslate || QuietValidate && !DataRH.ContainsUnknownIdentifier) &&
             OutWindow.GetErrorLines() == 0)
-        { // load probehl bez nalezeni chyb, pokracujeme validaci nebo prekladem
+        { // loading finished without errors; continue with validation or translation
             showOutro = FALSE;
             BOOL completelyUntranslated = FALSE;
             if (QuietValidate)
                 Data.ValidateTranslation(HWindow);
             else
                 Data.FindUntranslated(&completelyUntranslated);
-            if (QuietValidate && OutWindow.GetErrorLines() == 0 ||                           // validace probehla komplet OK, zavirame soft...
-                QuietTranslate && (OutWindow.GetInfoLines() == 1 || completelyUntranslated)) // neni co prekladat (1. info radek je hlavicka hledani) nebo neni prelozene nic (to hlasime jen exit-codem)
+            if (QuietValidate && OutWindow.GetErrorLines() == 0 ||                           // validation completed successfully—exit quietly
+                QuietTranslate && (OutWindow.GetInfoLines() == 1 || completelyUntranslated)) // nothing to translate (the only info line is the header) or no text translated at all—report via exit code
             {
                 DestroyWindow(HWindow);
-                ExitProcess(QuietTranslate && completelyUntranslated ? 0 : 1); // ukoncime soft, jinak se jeste ukaze hlavni okno a dalsi nechtene veci + exit code = 1 znamena uspesnou validaci
+                ExitProcess(QuietTranslate && completelyUntranslated ? 0 : 1); // terminate immediately to avoid showing the main window; exit code 1 means validation succeeded
             }
         }
 
         if (QuietMarkChAsTrl && OutWindow.GetErrorLines() == 0)
-        { // load probehl bez nalezeni chyb, muzeme jit oznacit vsechny zmenene texty jako Translated
+        { // loading finished without errors; mark all changed texts as translated
             showOutro = FALSE;
             Data.MarkChangedTextsAsTranslated();
             BOOL dirty = Data.IsDirty();
             if (!dirty || Data.Save() && Data.SaveProject())
             {
                 DestroyWindow(HWindow);
-                ExitProcess(dirty ? 0 : 1); // ukoncime soft, jinak se jeste ukaze hlavni okno a dalsi nechtene veci + exit code = 0 znamena ze doslo ke zmenam, 1 = nedoslo ke zmenam
+                ExitProcess(dirty ? 0 : 1); // terminate immediately; exit code 0 = changes saved, 1 = no changes detected
             }
         }
 
         if (QuietImportTrlProp[0] != 0 && OutWindow.GetErrorLines() == 0)
-        { // load probehl bez nalezeni chyb, muzeme importovat translation properties
+        { // loading finished without errors; import translation properties
             showOutro = FALSE;
             char importPath[MAX_PATH];
             lstrcpy(importPath, Data.ProjectFile);
@@ -400,18 +400,18 @@ BOOL CFrameWindow::OpenProject(const char* importSubPath)
             PathAppend(project, importSubPath, MAX_PATH);
             Data.Import(project, TRUE, FALSE);
 
-            if (OutWindow.GetErrorLines() == 0) // import probehl komplet OK, ulozime data a zavirame soft...
+            if (OutWindow.GetErrorLines() == 0) // import completed successfully; save data and exit
             {
                 if (Data.Save() && Data.SaveProject())
                 {
                     DestroyWindow(HWindow);
-                    ExitProcess(1); // ukoncime soft, jinak se jeste ukaze hlavni okno a dalsi nechtene veci + exit code = 1 znamena uspesnou validaci
+                    ExitProcess(1); // terminate immediately to avoid flashing the main window; exit code 1 indicates success
                 }
             }
         }
 
         if (QuietImport[0] != 0 && OutWindow.GetErrorLines() == 0)
-        { // load probehl bez nalezeni chyb, pokracujeme importem stareho prekladu
+        { // loading finished without errors; continue with importing the legacy translation
             showOutro = FALSE;
             char importPath[MAX_PATH];
             lstrcpy(importPath, Data.ProjectFile);
@@ -454,12 +454,12 @@ BOOL CFrameWindow::OpenProject(const char* importSubPath)
                 PathAppend(project, p, MAX_PATH);
                 Data.Import(project, FALSE, QuietImportOnlyDlgLayout != 0);
 
-                if (OutWindow.GetErrorLines() == 0) // import probehl komplet OK, ulozime data a zavirame soft...
+                if (OutWindow.GetErrorLines() == 0) // import finished without issues, so save the data and close the app
                 {
                     if (Data.Save() && Data.SaveProject())
                     {
                         DestroyWindow(HWindow);
-                        ExitProcess(1); // ukoncime soft, jinak se jeste ukaze hlavni okno a dalsi nechtene veci + exit code = 1 znamena uspesnou validaci
+                        ExitProcess(1); // exit immediately to avoid showing the main window; exit code 1 means validation succeeded
                     }
                 }
             }
@@ -470,7 +470,7 @@ BOOL CFrameWindow::OpenProject(const char* importSubPath)
              QuietExportSLT[0] != 0 ||
              QuietExportSDC[0] != 0) &&
             OutWindow.GetErrorLines() == 0)
-        { // load probehl bez nalezeni chyb, muzeme exportovat/importovat SLT nebo exportovat texty pro spell checker
+        { // load completed without errors, so we can import/export SLT or export spell-checker texts
             showOutro = FALSE;
 
             const char* sltPath = QuietExportSpellChecker[0] != 0 ? QuietExportSpellChecker : QuietImportSLT[0] != 0 ? QuietImportSLT
@@ -508,7 +508,7 @@ BOOL CFrameWindow::OpenProject(const char* importSubPath)
                     if (QuietImportSLT[0] == 0)
                     {
                         Data.ExportAsTextArchive(fullSLTPath, QuietExportSLTForDiff);
-                        doNotSaveData = FALSE; // zmena SLGCRCofImpSLT na CRC exportleho SLT
+                        doNotSaveData = FALSE; // update SLGCRCofImpSLT to the CRC of the exported SLT
                         Data.SetDirty();
                     }
                     else
@@ -518,19 +518,19 @@ BOOL CFrameWindow::OpenProject(const char* importSubPath)
                             Data.ImportTextArchive(fullSLTPath, FALSE);
                             doNotSaveData = FALSE;
                             Data.SetDirty();
-                            Data.UpdateAllNodes(); // nastavime translated stavy na treeview
-                            Data.UpdateTexts();    // update list view v okne Texts
+                            Data.UpdateAllNodes(); // refresh translated states in the tree view
+                            Data.UpdateTexts();    // refresh the Texts window list view
                         }
                     }
                 }
             }
 
-            if (OutWindow.GetErrorLines() == 0) // quiet-operace probehla komplet OK, zavirame soft...
+            if (OutWindow.GetErrorLines() == 0) // quiet operation finished successfully; exit the application
             {
                 if (doNotSaveData || Data.Save() && Data.SaveProject())
                 {
                     DestroyWindow(HWindow);
-                    ExitProcess(1); // ukoncime soft, jinak se jeste ukaze hlavni okno a dalsi nechtene veci + exit code = 1 znamena uspesnou validaci
+                    ExitProcess(1); // terminate immediately to avoid flashing the main window; exit code 1 indicates success
                 }
             }
         }
@@ -552,9 +552,9 @@ BOOL CFrameWindow::OpenProject(const char* importSubPath)
             swprintf_s(buff, L"No errors have been found.");
         OutWindow.AddLine(buff, mteSummary);
         if (errors == 0)
-            PostMessage(HWindow, WM_FOCLASTINOUTPUTWND, 0, 0); // Output okno jeste nemusi existovat
+            PostMessage(HWindow, WM_FOCLASTINOUTPUTWND, 0, 0); // the Output window may not exist yet—focus it lazily
         else
-            PostMessage(HWindow, WM_COMMAND, CM_WND_OUTPUT, 0); // aktivace Output okna
+            PostMessage(HWindow, WM_COMMAND, CM_WND_OUTPUT, 0); // activate the Output window immediately
     }
     return ret;
 }
@@ -660,7 +660,7 @@ void CFrameWindow::ProcessCmdLineParams(char* argv[], int p)
         }
     }
 
-    QuietValidate = 0; // ted uz se budeme chovat normalne, zadny dalsi automaticky kontroly a zavirani softu
+    QuietValidate = 0; // Resume normal behavior—no more automatic checks or forced shutdowns
     QuietTranslate = 0;
     QuietMarkChAsTrl = 0;
     QuietImport[0] = 0;
@@ -775,7 +775,7 @@ CFrameWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         UINT drag;
         char path[MAX_PATH];
 
-        drag = DragQueryFile((HDROP)wParam, 0xFFFFFFFF, NULL, 0); // kolik souboru nam hodili
+        drag = DragQueryFile((HDROP)wParam, 0xFFFFFFFF, NULL, 0); // how many files were dropped on us
         if (drag > 0)
         {
             DragQueryFile((HDROP)wParam, 0, path, MAX_PATH);
@@ -1012,7 +1012,7 @@ CFrameWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             project[0] = 0;
 
 #ifdef _DEBUG
-            // FIXME - pro ladeni
+            // FIXME - for debugging
             strcpy_s(project, "C:\\TRANSLATOR\\Salamand 2.53 beta 1\\projects\\czech\\salamand.atp");
 #endif
 
@@ -1072,9 +1072,9 @@ CFrameWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             ofn.nMaxFile = MAX_PATH;
             ofn.nFilterIndex = 1;
             ofn.lpstrTitle = "Export Translation as Text Archive";
-            ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_NOCHANGEDIR /* | 
+            ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_NOCHANGEDIR /* |
                       OFN_OVERWRITEPROMPT*/
-                ;                                                                              // overwrite prompt je az v Data.ExportAsTextArchive
+                ;                                                                              // The overwrite prompt is handled later in Data.ExportAsTextArchive
 
             if (GetSaveFileName(&ofn))
             {
@@ -1109,8 +1109,8 @@ CFrameWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     Data.ImportTextArchive(fileName, FALSE);
                     Data.SetDirty();
-                    Data.UpdateAllNodes(); // nastavime translated stavy na treeview
-                    Data.UpdateTexts();    // update list view v okne Texts
+                    Data.UpdateAllNodes(); // Refresh translated states within the tree view
+                    Data.UpdateTexts();    // Refresh the list view in the Texts window
                 }
             }
             return 0;
@@ -1154,7 +1154,7 @@ CFrameWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             if (LayoutWindow != NULL)
             {
-                // jsme v layout editoru
+                // The layout editor is currently open
                 PostMessage(HWindow, WM_COMMAND, ID_LAYOUT_FILE_EXIT, 0);
                 return 0;
             }

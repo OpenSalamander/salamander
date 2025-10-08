@@ -34,7 +34,7 @@ void CNameTree::Add(const char* name, const BOOL isDir, const char* path, const 
     CALL_STACK_MESSAGE4("CNameTree::Add(%s, %d, %s, )", name, isDir, path);
     if (*name == '\0' || *name == '*' || *name == '?')
     {
-        // nazev zde konci (alespon exaktni, bezmaskova cast)
+        // the name ends here (at least the exact, mask-free part)
         if (EndingNames == NULL)
             EndingNames = new TDirectArray<SEndingFile>(1, 1);
 
@@ -59,7 +59,7 @@ void CNameTree::Add(const char* name, const BOOL isDir, const char* path, const 
     }
     else
     {
-        // jen prochazime - najdeme (binarnim pulenim) v branches objekt odpovidajici *name
+        // just walk the tree - find (by binary search) in branches the object matching *name
         int left = 0;
         int right = Branches.Count - 1;
         while (left < right)
@@ -72,10 +72,10 @@ void CNameTree::Add(const char* name, const BOOL isDir, const char* path, const 
             else
                 left = index + 1;
         }
-        // nasli moji radcove ? (ted se left == right == index)
+        // did we find my ancestor? (now left == right == index)
         if (Branches.Count == 0 || Branches.At(left).ch != *name)
         {
-            // jeste neexistuje - musime ho vytvorit a pridat
+            // not present yet - we must create it and add it
             SBranch tmpBranch;
             tmpBranch.ch = *name;
             tmpBranch.next = new CNameTree;
@@ -105,7 +105,7 @@ BOOL CNameTree::IsNamePresent(const char* name, const BOOL hasExtension)
                  SalamanderGeneral->AgreeMask(name, EndingNames->At(i).mask, hasExtension)))
                 return TRUE;
     }
-    // ted najdeme kam dal - opet binarni puleni
+    // now find where to go next - again using binary search
     int left = 0;
     int right = Branches.Count - 1;
     while (left < right)
@@ -118,8 +118,8 @@ BOOL CNameTree::IsNamePresent(const char* name, const BOOL hasExtension)
         else
             left = index + 1;
     }
-    // nasli moji radcove ? (ted se left == right == index)
-    // pokud ano, hledame rekurzivne dal
+    // did we find my ancestor? (now left == right == index)
+    // if so, search recursively further
     if (Branches.Count == 0 || Branches.At(left).ch != *name)
         return FALSE;
     else

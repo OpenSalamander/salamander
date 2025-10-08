@@ -34,7 +34,7 @@ void COutput::DestroyItems()
     {
         COutputItem* item = &Items[i];
 
-        //vsechna okna smaze parent okno pri destrukci takze tohle je zbytecne
+        // the parent window deletes all windows during destruction, so this is unnecessary
         if (IsWindow(item->hwnd))
             DestroyWindow(item->hwnd);
 
@@ -182,7 +182,7 @@ BOOL COutput::PrepareForRender(HWND parentWnd)
 
             if (oi.hwnd)
             {
-                //do GWL_USERDATA schovej orig wnd proc ptr
+                // store the original window proc pointer in GWL_USERDATA
                 SetWindowLongPtr(oi.hwnd, GWLP_USERDATA, SetWindowLongPtr(oi.hwnd, GWLP_WNDPROC, (LONG_PTR)EditSubclassProc));
 
                 SendMessage(oi.hwnd, WM_SETFONT, (WPARAM)HBoldFont, 0);

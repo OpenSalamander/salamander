@@ -13,7 +13,7 @@
 #define VERSINFO_MINORA      0
 #define VERSINFO_MINORB      8
 
-#include "spl_vers.h" // vytahneme cisla verzi + buildu
+#include "spl_vers.h" // fetch the version and build numbers
 
 #define VERSINFO_COPYRIGHT   "Copyright © 2003-2023 Juraj Rojko"
 #define VERSINFO_COMPANY     "Juraj Rojko"

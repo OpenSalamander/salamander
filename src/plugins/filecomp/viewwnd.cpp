@@ -50,7 +50,7 @@ CFileViewWindow::CFileViewWindow(CFileViewID id, CFileViewType type)
     LineNumDigits = 0;
     LineNumWidth = (LineNumDigits + 1) * FontWidth + BORDER_WIDTH;
 
-    // nastavime barevna schemata
+    // set up the color schemes
     memset(LineColors, 0, sizeof(LineColors));
 
     Siblink = NULL;
@@ -91,7 +91,7 @@ void CFileViewWindow::ReloadConfiguration(DWORD flags, BOOL updateWindow)
                         updateWindow);
     if (flags & CC_COLORS)
     {
-        // nastavime barevna schemata
+        // set up the color schemes
         int j;
         for (j = 0; j < 3; j++)
         {
@@ -128,7 +128,7 @@ void CFileViewWindow::ReloadConfiguration(DWORD flags, BOOL updateWindow)
 
     if (flags & CC_FONT)
     {
-        // nacteme font
+        // load the font
         HDC hdc = GetDC(NULL);
         if (HFont)
             DeleteObject(HFont);
@@ -163,7 +163,7 @@ void CFileViewWindow::ResetMouseWheelAccumulatorHandler(UINT uMsg, WPARAM wParam
     case WM_SYSKEYDOWN:
     case WM_KEYDOWN:
     {
-        // pokud je SHIFT stisteny, chodi autorepeat, ale nas zajima jen ten prvni stisk
+        // if SHIFT stays pressed, Windows keeps sending repeats, but we only care about the first press
         BOOL firstPress = (lParam & 0x40000000) == 0;
         if (!firstPress)
             break;
@@ -248,7 +248,7 @@ CFileViewWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         switch (wParam)
         {
-        // vertikalni scrollovani
+        // vertical scrolling
         case 'K':
         case VK_UP:
             if (!shiftPressed && !altPressed)
@@ -298,7 +298,7 @@ CFileViewWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 wScrollNotify = SB_BOTTOM;
             break;
 
-        // horizontalni scrollovani
+        // horizontal scrolling
         case 'L':
         case VK_RIGHT:
             if (!ctrlPressed && !shiftPressed && !altPressed)
@@ -350,13 +350,13 @@ CFileViewWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         short zDelta = (short)HIWORD(wParam);
         if ((zDelta < 0 && MouseWheelAccumulator > 0) || (zDelta > 0 && MouseWheelAccumulator < 0))
-            ResetMouseWheelAccumulator(); // pri zmene smeru otaceni kolecka je potreba nulovat akumulator
+            ResetMouseWheelAccumulator(); // reset accumulator when the wheel direction changes
 
         BOOL controlPressed = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
         BOOL altPressed = (GetKeyState(VK_MENU) & 0x8000) != 0;
         BOOL shiftPressed = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
 
-        // ctrl+wheel -- skakani po diferencich
+        // Ctrl + wheel — jump between differences
         if (controlPressed && !altPressed && !shiftPressed)
         {
             MouseWheelAccumulator += 1000 * zDelta;
@@ -369,12 +369,12 @@ CFileViewWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
         }
 
-        // wheel bez modifikatoru: standardni scroll
+        // wheel without modifiers: standard scrolling
         if (!controlPressed && !altPressed && !shiftPressed)
         {
-            DWORD wheelScroll = SG->GetMouseWheelScrollLines(); // muze byt az WHEEL_PAGESCROLL(0xffffffff)
+            DWORD wheelScroll = SG->GetMouseWheelScrollLines(); // can be up to WHEEL_PAGESCROLL (0xffffffff)
             DWORD pageHeight = (DWORD)(Height / FontHeight);
-            wheelScroll = max(1, (int)min(wheelScroll, pageHeight - 1)); // omezime maximalne na delku stranky
+            wheelScroll = max(1, (int)min(wheelScroll, pageHeight - 1)); // cap at the page length
 
             MouseWheelAccumulator += 1000 * zDelta;
             int stepsPerLine = max(1, (int)((1000 * WHEEL_DELTA) / wheelScroll));
@@ -396,12 +396,12 @@ CFileViewWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
         }
 
-        // shift+wheel: horizontalni scroll
+        // shift+wheel: horizontal scrolling
         if (!controlPressed && !altPressed && shiftPressed)
         {
-            DWORD wheelScroll = SG->GetMouseWheelScrollLines(); // muze byt az WHEEL_PAGESCROLL(0xffffffff)
+            DWORD wheelScroll = SG->GetMouseWheelScrollLines(); // can be up to WHEEL_PAGESCROLL (0xffffffff)
             DWORD pageWidth = max(1, int(Width / FontWidth));
-            wheelScroll = max(1, (int)min((int)wheelScroll, (int)(pageWidth - 1))); // omezime maximalne na delku stranky
+            wheelScroll = max(1, (int)min((int)wheelScroll, (int)(pageWidth - 1))); // cap at the page length
 
             MouseWheelAccumulator += 1000 * zDelta;
             int stepsPerChar = max(1, (int)((1000 * WHEEL_DELTA) / wheelScroll));
@@ -430,11 +430,11 @@ CFileViewWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         short zDelta = (short)HIWORD(wParam);
 
         if ((zDelta < 0 && MouseHWheelAccumulator > 0) || (zDelta > 0 && MouseHWheelAccumulator < 0))
-            ResetMouseWheelAccumulator(); // pri zmene smeru naklapeni kolecka je potreba nulovat akumulator
+            ResetMouseWheelAccumulator(); // reset the accumulator when the wheel tilt direction changes
 
-        DWORD wheelScroll = SG->GetMouseWheelScrollChars(); // muze byt az WHEEL_PAGESCROLL(0xffffffff)
+        DWORD wheelScroll = SG->GetMouseWheelScrollChars(); // can be up to WHEEL_PAGESCROLL (0xffffffff)
         DWORD pageWidth = max(1, int(Width / FontWidth));
-        wheelScroll = max(1, (int)min((int)wheelScroll, (int)(pageWidth - 1))); // omezime maximalne na delku stranky
+        wheelScroll = max(1, (int)min((int)wheelScroll, (int)(pageWidth - 1))); // cap at the page length
 
         MouseHWheelAccumulator += 1000 * zDelta;
         int stepsPerChar = max(1, (int)((1000 * WHEEL_DELTA) / wheelScroll));
@@ -454,7 +454,7 @@ CFileViewWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     SendMessage(HWindow, WM_HSCROLL, charsToScroll < 0 ? SB_LINEUP : SB_LINEDOWN, 0);
             }
         }
-        return TRUE; // udalost jsme zpracovali a nemame zajem o emulaci pomoci klikani na scrollbar (stane se v pripade vraceni FALSE)
+        return TRUE; // the event is handled; do not emulate scrollbar clicking (happens when FALSE is returned)
     }
 
     case WM_RBUTTONUP:
@@ -693,7 +693,7 @@ BOOL CTextFileViewWindowBase::RebuildScript(
 
             if ((GetAsyncKeyState(VK_ESCAPE) & 0x8001) && GetForegroundWindow() == GetParent(HWindow))
             {
-                MSG msg; // vyhodime nabufferovany ESC
+                MSG msg; // discard the queued ESC
                 while (PeekMessage(&msg, NULL, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
                     ;
                 cancel = TRUE;
@@ -703,8 +703,8 @@ BOOL CTextFileViewWindowBase::RebuildScript(
         }
     }
 
-    // urcime maxWidth
-    int counter = 1000; // testujeme na cancel kazdy tisicy pruchod
+    // determine maxWidth
+    int counter = 1000; // check for cancel every thousand iterations
     for (CLineScript::iterator i = Script[ViewMode].begin(); i < Script[ViewMode].end();
          ++i)
     {
@@ -718,7 +718,7 @@ BOOL CTextFileViewWindowBase::RebuildScript(
         {
             if ((GetAsyncKeyState(VK_ESCAPE) & 0x8001) && GetForegroundWindow() == GetParent(HWindow))
             {
-                MSG msg; // vyhodime nabufferovany ESC
+                MSG msg; // discard the queued ESC
                 while (PeekMessage(&msg, NULL, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
                     ;
                 cancel = TRUE;
@@ -729,14 +729,14 @@ BOOL CTextFileViewWindowBase::RebuildScript(
         }
     }
 
-    // zjistime velikost mista pro cisla radku
+    // determine the space required for the line numbers
     LineNumDigits = 1;
     int j = max(GetLines(), ((CTextFileViewWindowBase*)Siblink)->GetLines());
     while (j /= 10)
         LineNumDigits++;
     LineNumWidth = (LineNumDigits + 1) * FontWidth + BORDER_WIDTH;
 
-    // nastavime scrollbaru
+    // configure the scrollbars
     SCROLLINFO si;
     si.cbSize = sizeof(SCROLLINFO);
     si.fMask = SIF_DISABLENOSCROLL | SIF_POS | SIF_PAGE | SIF_RANGE;
@@ -775,7 +775,7 @@ BOOL CTextFileViewWindowBase::SetMaxWidth(int maxWidth)
     if (!ReallocLineBuffer())
         return FALSE;
 
-    // nastavime scrollbaru
+    // configure the scrollbars
     SCROLLINFO si;
     si.cbSize = sizeof(SCROLLINFO);
     si.fMask = SIF_DISABLENOSCROLL | SIF_PAGE | SIF_POS | SIF_RANGE;
@@ -932,13 +932,13 @@ void CTextFileViewWindowBase::SelectDifference(int line, int count, BOOL center)
         (count >= page && (line + count - 1 < FirstVisibleLine || line >= FirstVisibleLine + page) ||
          count < page && (line < FirstVisibleLine || line + count - 1 >= FirstVisibleLine + page)))
     {
-        // difference neni viditelna na obrazovce
+        // the difference is not visible on screen
         int pos = FirstVisibleLine;
         if (count > page)
-            pos = line; // zobrazime differenci u hornoho okraje okna
+            pos = line; // show the difference at the top edge of the window
         else
         {
-            pos = line - (page - count) / 2; // vycentrujeme differenci k oknu
+            pos = line - (page - count) / 2; // center the difference within the window
             if (pos < 0)
                 pos = 0;
         }
@@ -960,7 +960,7 @@ void CTextFileViewWindowBase::SelectDifference(int line, int count, BOOL center)
         {
             if (SelectDiffEnd >= FirstVisibleLine && SelectDiffBegin <= FirstVisibleLine + page)
             {
-                // zajistime prekresleni drive vybrane difference
+                // ensure the previously selected difference gets repainted
                 r.top = (SelectDiffBegin - FirstVisibleLine) * FontHeight;
                 if (r.top < 0)
                     r.top = 0;
@@ -969,7 +969,7 @@ void CTextFileViewWindowBase::SelectDifference(int line, int count, BOOL center)
                     r.bottom = Height;
                 InvalidateRect(HWindow, &r, FALSE);
             }
-            // zajistime vykresleni nyni vybrane difference
+            // ensure the currently selected difference gets drawn
             r.top = (line - FirstVisibleLine) * FontHeight;
             if (r.top < 0)
                 r.top = 0;
@@ -999,7 +999,7 @@ void CTextFileViewWindowBase::UpdateSelection(int x, int y)
 {
     CALL_STACK_MESSAGE3("CTextFileViewWindowBase::UpdateSelection(%d, %d)", x, y);
     if (!DataValid || !Tracking)
-        return; // jen tak pro jistotu
+        return; // just to be safe
     if (x < LineNumWidth)
         x = LineNumWidth;
     if (y < 0)
@@ -1030,7 +1030,7 @@ void CTextFileViewWindowBase::UpdateSelection(int x, int y)
 
     if (TrackingLineBegin != line || TrackingCharBegin != end)
     {
-        // aby se nam na WM_LBUTTONUP nevyfokusovala difference
+        // prevent the difference from receiving focus on WM_LBUTTONUP
         SelectDifferenceOnButtonUp = FALSE;
     }
 
@@ -1039,7 +1039,7 @@ void CTextFileViewWindowBase::UpdateSelection(int x, int y)
     int oldCharBegin = SelectionCharBegin;
     int oldCharEnd = SelectionCharEnd;
 
-    // nastavime aktualni vyber
+    // set the current selection
     BOOL reverse;
     if (TrackingLineBegin < line ||
         TrackingLineBegin == line && TrackingCharBegin < end)
@@ -1062,7 +1062,7 @@ void CTextFileViewWindowBase::UpdateSelection(int x, int y)
     if ((SelectionLineBegin != SelectionLineEnd || SelectionCharBegin != SelectionCharEnd) &&
         (GetKeyState(VK_CONTROL) & 0x8000) != 0) //ctrlPressed
     {
-        // vybirame cele radky
+        // select whole lines
         SelectionCharBegin = 0;
         if (ViewMode != fvmOnlyDifferences || Script[ViewMode][SelectionLineEnd].GetClass() != CLineSpec::lcSeparator)
         {
@@ -1078,7 +1078,7 @@ void CTextFileViewWindowBase::UpdateSelection(int x, int y)
 
     if (ViewMode == fvmOnlyDifferences)
     {
-        // ohlidame aby slo vybirat jen v ramci jedne difference
+        // ensure the selection stays within a single difference
         if (TrackingLineBegin < line)
         {
             if (Script[ViewMode][SelectionLineBegin].GetClass() == CLineSpec::lcSeparator)
@@ -1112,16 +1112,16 @@ void CTextFileViewWindowBase::UpdateSelection(int x, int y)
         }
     }
 
-    // posuneme kurzor na konec vyberu
+    // move the caret to the end of the selection
     if (reverse)
         SetCaretPos(SelectionCharBegin, SelectionLineBegin);
     else
         SetCaretPos(SelectionCharEnd, SelectionLineEnd);
 
-    // zajistime prekresleni postizenych casti
+    // ensure the affected areas are repainted
     RepaintSelection(oldLineBegin, oldLineEnd, oldCharBegin, oldCharEnd);
 
-    // enablujem/disablujem tlacitko pro COPY v toolbare
+    // enable or disable the COPY button in the toolbar
     //  CMainWindow * parent = (CMainWindow *) WindowsManager.GetWindowPtr(GetParent(HWindow));
     if (MainWindow /*parent*/)
         MainWindow /*parent*/->UpdateToolbarButtons(UTB_TEXTSELECTION);
@@ -1132,7 +1132,7 @@ void CTextFileViewWindowBase::RepaintSelection(int oldLineBegin, int oldLineEnd,
 {
     CALL_STACK_MESSAGE5("CTextFileViewWindowBase::RepaintSelection(%d, %d, %d, %d)",
                         oldLineBegin, oldLineEnd, oldCharBegin, oldCharEnd);
-    // zajistime prekresleni jen postizenych casti
+    // ensure only the affected areas are repainted
     RECT r;
     r.left = LineNumWidth;
     r.right = Width;
@@ -1285,7 +1285,7 @@ void CTextFileViewWindowBase::SetCaretPos(int xPos, int yPos)
             x = LineNumWidth + (MeasureLine(l, CaretXPos) - FirstVisibleChar) * FontWidth;
         }
         if (x < LineNumWidth)
-            x = -1; // mensi finta, aby caret zmizel za roh
+            x = -1; // small trick to hide the caret just past the corner
         ::SetCaretPos(x, y);
     }
 }

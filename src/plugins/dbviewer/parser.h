@@ -26,13 +26,13 @@ bool IsUTF8Encoded(const char* s, int cnt);
 
 struct CFieldInfo
 {
-    char* Name;     // pokud je rovno NULL, bude nastavena pozadovana delka do NameMax
-    int NameMax;    // pokud je Name != NULL, urcuje velikost bufferu (NameMax je rovno poctu znaku plus terminator)
-    BOOL LeftAlign; // kam ma byt pri zobrazovani zarovnan text
-    int TextMax;    // maximalni pocet znak, ktere v tomto sloupci budou zobrazeny; pokud jej parser nezna, nastavi -1
+    char* Name;     // if NULL, the required length is stored into NameMax
+    int NameMax;    // if Name != NULL, specifies the buffer size (NameMax equals the number of characters plus the terminator)
+    BOOL LeftAlign; // where the text should be aligned when displayed
+    int TextMax;    // maximum number of characters shown in this column; -1 if unknown to the parser
     int FieldLen;   // # of bytes in the file used by this field
-    char* Type;     // musi ukazovat do char[100] pole, kam bude vepsan typ sloupce
-    int Decimals;   // urcuje pocet cislic za desetinnou teckou; -1, pokud je neznamy
+    char* Type;     // must point to a char[100] buffer where the column type will be written
+    int Decimals;   // number of digits after the decimal point; -1 if unknown
 };
 
 //****************************************************************************
@@ -45,40 +45,40 @@ class CParserInterfaceAbstract
 public:
     CParserInterfaceAbstract() : bShowingError(false) {};
 
-    // identifikuje parser ("dbf", "csv", ...)
+    // identify the parser ("dbf", "csv", ...)
     virtual const char* GetParserName() = 0;
 
-    // vola se pro otevreni pozadovaneho souboru
+    // called to open the requested file
     virtual CParserStatusEnum OpenFile(const char* fileName) = 0;
 
-    // vola se pro zavreni prave otevreneho souboru; paruje s OpenFile
-    // po zavolani CloseFile je interface povazovany za neplatny
+    // called to close the currently opened file; pairs with OpenFile
+    // after CloseFile is called, the interface is considered invalid
     virtual void CloseFile() = 0;
 
     //
-    // nasledujici metody maji vyznam pouze je-li otevren soubor
+    // the following methods are meaningful only when a file is open
     //
 
-    // naplni predhozeny edit control informacema o databazi
+    // fill the provided edit control with database information
     virtual BOOL GetFileInfo(HWND hEdit) = 0;
 
-    // vrati pocet radku
+    // return the number of rows
     virtual DWORD GetRecordCount() = 0;
 
-    // vrati pocet sloupce
+    // return the number of columns
     virtual DWORD GetFieldCount() = 0;
 
-    // vytahne informaci o sloupci
+    // retrieve column information
     virtual BOOL GetFieldInfo(DWORD index, CFieldInfo* info) = 0;
 
-    // pripravi do bufferu patricny radek; tato funkce je volana pred volanim GetCellText
+    // prepare the relevant row in the buffer; this function is called before GetCellText
     virtual CParserStatusEnum FetchRecord(DWORD index) = 0;
 
-    // vola se po FetchRecord a vrati text a jeho delku z patricneho sloupce
+    // called after FetchRecord and returns the text and its length from the corresponding column
     virtual const char* GetCellText(DWORD index, size_t* textLen) = 0;
     virtual const wchar_t* GetCellTextW(DWORD index, size_t* textLen) = 0;
 
-    // vola se po FetchRecord a vrati TRUE, pokud je radek oznacen jako Deleted
+    // called after FetchRecord and returns TRUE if the row is marked as deleted
     virtual BOOL IsRecordDeleted() = 0;
 
     void ShowParserError(HWND hParent, CParserStatusEnum status);
@@ -100,14 +100,14 @@ enum tagDBFStatus;
 class CParserInterfaceDBF : public CParserInterfaceAbstract
 {
 private:
-    cDBF* Dbf; // rozhrani k DBF knihovne
+    cDBF* Dbf; // interface to the DBF library
 
-    // nasledujici promenne jsou platne, pokud je Dbf != NULL
+    // the following variables are valid if Dbf != NULL
 
-    _dbf_header* DbfHdr;     // vytazena data z otevrene databaze
-    _dbf_field* DbfFields;   // ukazatel na seznam sloupcu
-    char* Record;            // buffer pro tahani zaznamu z databaze
-    char FileName[MAX_PATH]; // cesta otevreneho souboru
+    _dbf_header* DbfHdr;     // data extracted from the opened database
+    _dbf_field* DbfFields;   // pointer to the list of columns
+    char* Record;            // buffer used for retrieving records from the database
+    char FileName[MAX_PATH]; // path to the opened file
 
 public:
     // constructor
@@ -144,8 +144,8 @@ struct CCSVConfig;
 class CParserInterfaceCSV : public CParserInterfaceAbstract
 {
 private:
-    CCSVParserBase* Csv;     // rozhrani k CSV knihovne
-    char FileName[MAX_PATH]; // cesta otevreneho souboru
+    CCSVParserBase* Csv;     // interface to the CSV library
+    char FileName[MAX_PATH]; // path to the opened file
     const CCSVConfig* Config;
     BOOL IsUnicode;
     BOOL IsUTF8;

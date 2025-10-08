@@ -11,9 +11,9 @@
 
 #include "precomp.h"
 
-// otevre specifikovany soubor a prevede jej na sekvecni DWORDu
-// tedy 24 bitu pro barvu (R, G, B) a 8 bitu smeti
-// velikost jednoho radku v bajtech je: sirka_obrazku * sizeof(DWORD)
+// opens the specified file and converts it into a sequence of DWORDs
+// that is, 24 bits for color (R, G, B) and 8 bits of padding
+// the size of a single row in bytes is: image_width * sizeof(DWORD)
 
 DWORD GetClrUsed(const BITMAPINFOHEADER* bih, BOOL max)
 {
@@ -245,7 +245,7 @@ CPluginInterfaceForThumbLoader::LoadThumbnail(const char* filename,
 
                                     int bufferLines = min(max(1, 50000 / rowSize), bih.biHeight);
                                     DWORD bufferSize = bufferLines * rowSize;
-                                    void* srcBuffer = malloc(bufferSize + 1); // +1 pro presah v ConvertDIBToCOLORREF/24 bitu
+                                    void* srcBuffer = malloc(bufferSize + 1); // +1 for the overlap in ConvertDIBToCOLORREF/24 bits
                                     void* dstBuffer;
                                     if (srcBuffer != NULL)
                                     {

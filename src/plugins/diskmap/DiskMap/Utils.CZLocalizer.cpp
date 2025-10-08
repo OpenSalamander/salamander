@@ -8,16 +8,16 @@ CZLocalizer* CZResourceString::s_localizer = NULL;
 
 CZLocalizer::CZLocalizer(HINSTANCE HModule)
 {
-    //nejdriv vyplnit chybovou hlasku
+    //first populate the error message
     //this->_errlen = ARRAYSIZE(szStrLoadError);
     //_tcscpy(_buffer, szStrLoadError);
-    //nacist vsechny retezce - nemuzeme odkladat, protoze by se musela resit synchronizace mezi vlakny
+    //load all strings - we cannot delay it because thread synchronization would be required
     this->_freepos = this->_buffer;
     this->_bufferend = this->_buffer + sizeof(_buffer);
     for (int i = IDS_DISKMAP_FIRST; i <= IDS_DISKMAP_LAST; i++)
     {
         int size = LoadString(HModule, i, this->_freepos, (int)(this->_bufferend - this->_freepos));
-        if (size == 0) //nenalezeno
+        if (size == 0) //not found
         {
             this->_start[i - IDS_DISKMAP_FIRST] = szStrLoadError;
             this->_length[i - IDS_DISKMAP_FIRST] = ARRAYSIZE(szStrLoadError);

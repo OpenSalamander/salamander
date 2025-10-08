@@ -17,7 +17,7 @@ class CAudio : public CUnISOFSAbstract
 public:
     CAudio(CISOImage* image, int track);
     virtual ~CAudio();
-    // metody
+    // methods
 
     virtual BOOL Open(BOOL quiet);
     virtual BOOL DumpInfo(FILE* outStream);

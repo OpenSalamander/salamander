@@ -7,7 +7,7 @@
 
 #define SF_LONGNAMES 0x00020000
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from startup until the plugin ends
 extern CSalamanderGeneralAbstract* SalamanderGeneral;
 
 // ****************************************************************************

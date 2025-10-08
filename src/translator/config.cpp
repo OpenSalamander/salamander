@@ -80,7 +80,7 @@ CConfiguration Config;
 
 BOOL CreateKey(HKEY hKey, const char* name, HKEY& createdKey)
 {
-    DWORD createType; // info jestli byl klic vytvoren nebo jen otevren
+    DWORD createType; // Information whether the key was created or just opened
     LONG res = HANDLES(RegCreateKeyEx(hKey, name, 0, NULL, REG_OPTION_NON_VOLATILE,
                                       KEY_READ | KEY_WRITE, NULL, &createdKey,
                                       &createType));

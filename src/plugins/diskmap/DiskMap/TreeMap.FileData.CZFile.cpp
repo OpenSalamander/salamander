@@ -10,7 +10,7 @@ size_t CZFile::GetFullName(TCHAR* buff, size_t size)
     size_t pos = 0;
     if (this->_parent)
         pos = this->_parent->GetFullName(buff, size);
-    if ((pos + this->_namelen + 1) < size) //pos = cesta + NULL; celkem = cesta + ( '\' + namelen ) + NULL < size
+    if ((pos + this->_namelen + 1) < size) //pos = path + null terminator; total = path + ( '\\' + name length ) + null < size
     {
         if (pos && buff[pos - 1] != TEXT('\\'))
         {

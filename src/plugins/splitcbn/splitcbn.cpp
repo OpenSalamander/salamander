@@ -13,20 +13,20 @@
 
 // ****************************************************************************
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to SPL - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to SLG - language-dependent resources
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface instance invoked directly by Salamander
 CPluginInterface PluginInterface;
-// cast interfacu CPluginInterface pro menu extensions
+// portion of CPluginInterface that drives the extensions menu
 CPluginInterfaceForMenuExt InterfaceForMenuExt;
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface, valid from startup until the plugin shuts down
 CSalamanderGeneralAbstract* SalamanderGeneral = NULL;
-// interface pro komfortni praci se soubory
+// interface offering convenient file-handling helpers
 CSalamanderSafeFileAbstract* SalamanderSafeFile = NULL;
-// rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+// interface providing Salamander-specific custom Windows controls
 CSalamanderGUIAbstract* SalamanderGUI = NULL;
-// definice promenne pro "dbg.h"
+// SalamanderDebug instance shared with "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
 BOOL configIncludeFileExt;
@@ -69,35 +69,35 @@ int WINAPI SalamanderPluginGetReqVer()
 
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
-    // nastavime SalamanderDebug pro "dbg.h"
+    // set SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plugin is built for the current version of Salamander and newer - perform a check
     if (salamander->GetVersion() < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
-                   "Split & Combine" /* neprekladat! */, MB_OK | MB_ICONERROR);
+                   "Split & Combine" /* do not translate! */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
-    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "Split & Combine" /* neprekladat! */);
+    // ask Salamander to load the language module (.slg)
+    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "Split & Combine" /* do not translate! */);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain the general Salamander interface
     SalamanderGeneral = salamander->GetSalamanderGeneral();
     SalamanderSafeFile = salamander->GetSalamanderSafeFile();
-    // ziskame rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+    // obtain the interface providing customized Windows controls used in Salamander
     SalamanderGUI = salamander->GetSalamanderGUI();
 
-    // nastavime jmeno souboru s helpem
+    // set the help file name
     SalamanderGeneral->SetHelpFileName("splitcbn.chm");
 
-    // nastavime zakladni informace o pluginu
+    // set the basic information about the plugin
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_CONFIGURATION | FUNCTION_LOADSAVECONFIGURATION,
                                    VERSINFO_VERSION_NO_PLATFORM,
@@ -165,8 +165,8 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
 {
     CALL_STACK_MESSAGE1("CPluginInterface::Connect(,)");
 
-    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volani salamander->AddMenuItem() dole...
+    /* used by the script export_mnu.py, which generates salmenu.mnu for Translator
+   keep synchronized with the salamander->AddMenuItem() calls below...
 MENU_TEMPLATE_ITEM PluginMenu[] = 
 {
 	{MNTT_PB, 0
@@ -180,7 +180,7 @@ MENU_TEMPLATE_ITEM PluginMenu[] =
                             MENU_EVENT_FILE_FOCUSED | MENU_EVENT_DISK, MENU_SKILLLEVEL_ALL);
     salamander->AddMenuItem(-1, LoadStr(IDS_MENU2), 0, 2, FALSE, MENU_EVENT_FILES_SELECTED | MENU_EVENT_FILE_FOCUSED, MENU_EVENT_DISK, MENU_SKILLLEVEL_ALL);
 
-    // nastavime ikonku pluginu
+    // set the plugin icon
     HBITMAP hBmp = (HBITMAP)LoadImage(DLLInstance, MAKEINTRESOURCE(IDB_SPLIT),
                                       IMAGE_BITMAP, 16, 16, LR_DEFAULTCOLOR);
     salamander->SetBitmapWithIcons(hBmp);
@@ -205,7 +205,7 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
 {
     CALL_STACK_MESSAGE3("CPluginInterfaceForMenuExt::ExecuteMenuItem( , , %ld, %X)", id, eventMask);
 
-    SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_SOURCE); // vsechny prikazy povazujeme za praci s cestou (objevi se v Alt+F12)
+    SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_SOURCE); // treat all commands as working with the path (shown in Alt+F12)
 
     switch (id)
     {
@@ -241,7 +241,7 @@ BOOL CPluginInterfaceForMenuExt::HelpForMenuItem(HWND parent, int id)
 
 // ****************************************************************************
 //
-//  Pomocne funkce
+//  Helper functions
 //
 
 void CenterWindow(HWND hWnd)
@@ -271,7 +271,7 @@ void StripExtension(LPTSTR fileName)
     CALL_STACK_MESSAGE2("StripExtension(%s)", fileName);
     LPTSTR dot = _tcsrchr(fileName, '.');
     if (dot != NULL)
-        *dot = 0; // ".cvspass" ve Windows je pripona
+        *dot = 0; // ".cvspass" is treated as an extension in Windows
 }
 
 BOOL Error(int title, int error, ...)
@@ -320,10 +320,10 @@ BOOL Error2(HWND hParent, int title, int error, ...)
 
 void GetTargetDir(LPTSTR targetDir, LPTSTR subdirName, BOOL bSplit)
 {
-    // Tato fce vrati cilovy adresar pro split nebo combine, bere v uvahu konfiguraci
-    // configSplitToOther/configCombineToOther. Pokud by cilova cesta vedla do archivu
-    // nebo do FS, bez ohledu na konfiguraci bude nabidnuta cesta do zdrojoveho panelu,
-    // ktera je vzdy zarucene PATH_TYPE_WINDOWS (diky menu enablerum).
+    // This function returns the target directory for split or combine, respecting the configuration
+    // configSplitToOther/configCombineToOther. If the target path would lead into an archive
+    // or to a file system plugin, regardless of the configuration the source panel path is offered,
+    // which is always guaranteed to be PATH_TYPE_WINDOWS (thanks to the menu enablers).
 
     int type;
     SalamanderGeneral->GetPanelPath(
@@ -351,7 +351,7 @@ BOOL MakePathAbsolute(char* path, BOOL pathIsDir, char* absRoot, BOOL activePref
                                          LoadStr(IDS_PATHERROR), NULL, TRUE, absRoot, NULL, NULL, MAX_PATH))
         return FALSE;
 
-    if (type != PATH_TYPE_WINDOWS) // podporujeme jen windowsove cesty
+    if (type != PATH_TYPE_WINDOWS) // only Windows paths are supported
         return Error(errorTitle, IDS_WINPATH);
 
     if (isDir)
@@ -360,7 +360,7 @@ BOOL MakePathAbsolute(char* path, BOOL pathIsDir, char* absRoot, BOOL activePref
         if (!pathIsDir)
             while (*s != 0 && *s != '\\')
                 s++;
-        if (*s != 0) // obsahuje i podadresare, dotazeme se na vytvoreni
+        if (*s != 0) // contains subdirectories, ask whether to create them
             if (SalamanderGeneral->SalMessageBox(SalamanderGeneral->GetMsgBoxParent(),
                                                  LoadStr(IDS_TARGETPATHEXIST), LoadStr(errorTitle), MB_YESNO | MB_ICONQUESTION) == IDNO)
                 return FALSE;

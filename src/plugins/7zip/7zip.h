@@ -5,17 +5,17 @@
 
 #include "7za/CPP/Common/MyString.h"
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// Salamander general interface - valid from startup until the plugin is unloaded
 extern CSalamanderGeneralAbstract* SalamanderGeneral;
-// interface pro komfortni praci se soubory
+// interface for convenient work with files
 extern CSalamanderSafeFileAbstract* SalamanderSafeFile;
-// rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+// interface providing customized Windows controls used in Salamander
 extern CSalamanderGUIAbstract* SalamanderGUI;
-// aktualni hodnota konfiguracni promenne Salamandera SALCFG_SORTBYEXTDIRSASFILES
+// current value of the Salamander configuration variable SALCFG_SORTBYEXTDIRSASFILES
 extern int SortByExtDirsAsFiles;
 
-// globalni promenne, do kterych se ulozi ukazatele na globalni promenne v Salamanderovi
-// pro archiv - promenne se sdileji
+// global variables used to store pointers to Salamander's global variables
+// for the archiver - variables are shared
 extern const CFileData** TransferFileData;
 extern int* TransferIsDir;
 extern char* TransferBuffer;
@@ -74,7 +74,7 @@ public:
     virtual void WINAPI DeleteTmpCopy(const char* fileName, BOOL firstFile) {}
     virtual BOOL WINAPI PrematureDeleteTmpCopy(HWND parent, int copiesCount) { return FALSE; }
 
-    // vlastni metody pluginu
+    // plugin-specific methods
 public:
     BOOL Init();
 };
@@ -160,8 +160,8 @@ public:
     C7zClient* Get7zClient() { return Client; }
 };
 
-extern HINSTANCE DLLInstance; // handle k SPL-ku - jazykove nezavisle resourcy
-extern HINSTANCE HLanguage;   // handle k SLG-cku - jazykove zavisle resourcy
+extern HINSTANCE DLLInstance; // handle to the SPL module - language-independent resources
+extern HINSTANCE HLanguage;   // handle to the SLG module - language-dependent resources
 
 struct CCompressParams
 {
@@ -178,7 +178,7 @@ struct CCompressParams
     BOOL SolidArchive; // create solid archive
 };
 
-// konfigurace
+// configuration
 struct CConfig
 {
     BOOL ShowExtendedOptions;
@@ -186,16 +186,16 @@ struct CConfig
     BOOL ListInfoPackedSize;
     BOOL ListInfoMethod;
 
-    int ColumnPackedSizeFixedWidth; // LO/HI-WORD: levy/pravy panel: FixedWidth pro sloupec PackedSize
-    int ColumnPackedSizeWidth;      // LO/HI-WORD: levy/pravy panel: Width pro sloupec PackedSize
-    int ColumnMethodFixedWidth;     // LO/HI-WORD: levy/pravy panel: FixedWidth pro sloupec Method
-    int ColumnMethodWidth;          // LO/HI-WORD: levy/pravy panel: Width pro sloupec Method
+    int ColumnPackedSizeFixedWidth; // LO/HI-WORD: left/right panel: FixedWidth for the PackedSize column
+    int ColumnPackedSizeWidth;      // LO/HI-WORD: left/right panel: Width for the PackedSize column
+    int ColumnMethodFixedWidth;     // LO/HI-WORD: left/right panel: FixedWidth for the Method column
+    int ColumnMethodWidth;          // LO/HI-WORD: left/right panel: Width for the Method column
 
     // version 2
     CCompressParams CompressParams;
 };
 
-// konfigurace
+// configuration
 extern CConfig Config;
 
 char* LoadStr(int resID);

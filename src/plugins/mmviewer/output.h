@@ -7,9 +7,9 @@
 //
 // COutputInterface
 //
-// Protoze je treba iface pro output predavat do objektu parseru, volim
-// tuto reprezentaci s abstraktnim rozhranim pro pripad, ze by parsery
-// lezely v externi DLL knihovne.
+// Because the output interface needs to be passed to parser objects, I choose
+// this representation with an abstract interface in case the parsers
+// live in an external DLL library.
 //
 
 class COutputInterface
@@ -27,9 +27,9 @@ public:
 // COutputInterface
 //
 
-#define OIF_SEPARATOR 0x00000001 // prazdna polozka
-#define OIF_HEADER 0x00000002    // hlavicka
-#define OIF_EMPHASIZE 0x00000004 // zesileni vlastnosti (zatim pouze pro OIF_HEADER)
+#define OIF_SEPARATOR 0x00000001 // empty item
+#define OIF_HEADER 0x00000002    // header
+#define OIF_EMPHASIZE 0x00000004 // emphasize the property (for now only for OIF_HEADER)
 #define OIF_UTF8 0x00000008      // The Value is encoded in UTF-8
 
 struct COutputItem
@@ -49,16 +49,16 @@ public:
     COutput();
     ~COutput();
 
-    // vrati pocet drzenych polozek
+    // returns the number of held items
     int GetCount();
 
-    // vrati polozku
+    // returns an item
     const COutputItem* GetItem(int i);
 
-    // uvolni vsechny drzene polozky, zustane v prazdnem stavu
+    // releases all held items, leaving it in an empty state
     void DestroyItems();
 
-    // metody z COutputInterface
+    // methods from COutputInterface
     virtual BOOL AddItem(const char* name, const char* value);
     virtual BOOL AddHeader(const char* name, BOOL superHeader = FALSE);
     virtual BOOL AddSeparator();

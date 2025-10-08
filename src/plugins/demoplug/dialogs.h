@@ -15,7 +15,7 @@
 //
 // CCommonDialog
 //
-// Dialog centrovany k parentu
+// Dialog centered relative to the parent
 //
 
 class CCommonDialog : public CDialog
@@ -61,7 +61,7 @@ class CConfigPageFirst : public CCommonPropSheetPage
 public:
     CConfigPageFirst();
 
-    virtual void Validate(CTransferInfo& ti); // aby v pripade chyby neprobehla ani cast transferu dat
+    virtual void Validate(CTransferInfo& ti); // prevent any portion of the data transfer when an error occurs
     virtual void Transfer(CTransferInfo& ti);
 };
 
@@ -115,8 +115,8 @@ public:
 class CPathDialog : public CCommonDialog
 {
 public:
-    char* Path;     // odkaz na vnejsi buffer s cestou (in/out), min. MAX_PATH znaku
-    BOOL* FilePath; // odkaz na vnejsi BOOL hodnotu (in/out) - TRUE/FALSE - cesta k souboru/adresari
+    char* Path;     // pointer to an external path buffer (in/out), at least MAX_PATH characters
+    BOOL* FilePath; // pointer to an external BOOL value (in/out) - TRUE/FALSE - path to a file/directory
 
 public:
     CPathDialog(HWND parent, char* path, BOOL* filePath);

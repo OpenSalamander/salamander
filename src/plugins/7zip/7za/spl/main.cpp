@@ -23,8 +23,8 @@ extern "C"
 #include "../CPP/7zip/IPassword.h"
 #include "../CPP/7zip/MyVersion.h"
 
-// JRYFIXME - overit jestli mame nejak nastavit?
-// pokud je hodnota -1, pouziva se CP_OEMCP
+// JRYFIXME - verify whether we need to set this somehow
+// if the value is -1, CP_OEMCP is used
 int g_CodePage = -1;
 
 struct version_string
@@ -58,7 +58,7 @@ BOOL SalIsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD w
                                                                                VER_MINORVERSION, VER_GREATER_EQUAL),
                                                            VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL);
 
-    SecureZeroMemory(&osvi, sizeof(osvi)); // nahrada za memset (nevyzaduje RTLko)
+    SecureZeroMemory(&osvi, sizeof(osvi)); // replacement for memset (does not require the RTL)
     osvi.dwOSVersionInfoSize = sizeof(osvi);
     osvi.dwMajorVersion = wMajorVersion;
     osvi.dwMinorVersion = wMinorVersion;
@@ -74,7 +74,7 @@ bool IsItWindowsNT()
     //  if (!::GetVersionEx(&versionInfo))
     //    return false;
     //  return (versionInfo.dwPlatformId == VER_PLATFORM_WIN32_NT);
-    return SalIsWindowsVersionOrGreater(5, 0, 0) ? true : false; // Petr: jsou to aspon W2K?
+    return SalIsWindowsVersionOrGreater(5, 0, 0) ? true : false; // Petr: is this at least Windows 2000?
 }
 #endif
 #endif

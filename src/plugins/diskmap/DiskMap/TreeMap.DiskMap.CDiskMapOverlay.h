@@ -40,7 +40,7 @@ public:
     BOOL Paint(CZBitmap* pix, HDC refDC)
     {
         if (this->_selected == FALSE)
-            return TRUE; //ok, ale nic nekreslim
+            return TRUE; //ok, but nothing to draw
 
         int width = pix->GetWidth();
         int height = pix->GetHeight();

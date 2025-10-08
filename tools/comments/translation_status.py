@@ -23,6 +23,33 @@ from tree_sitter import Language, Parser
 WORD_RE = re.compile(r"[A-Za-z]+")
 
 
+MANUAL_ENGLISH_WORDS = frozenset(
+    {
+        "arton",
+        "bzip",
+        "cvut",
+        "dpb",
+        "filezilla",
+        "ftps",
+        "hlist",
+        "isel",
+        "mkdir",
+        "msie",
+        "ocsp",
+        "partl",
+        "pecl",
+        "ramdisk",
+        "regedit",
+        "srand",
+        "tgz",
+        "ubyte",
+        "ulong",
+        "winapi",
+        "winscp",
+    }
+)
+
+
 def _build_word_set(lang: str, count: int) -> set[str]:
     """Return a set with the *count* most common words for *lang* without diacritics."""
     # Normalize the most frequent words so tokens compare consistently even when the source comment uses punctuation or diacritics.
@@ -40,7 +67,15 @@ def _load_word_sets() -> tuple[frozenset[str], frozenset[str]]:
     # Limit the number of entries to keep the cached sets lightweight but representative for each language.
     cs_words = _build_word_set("cs", 500_000)
     en_words = _build_word_set("en", 200_000)
+
+    # Remove any overlap between the automatically generated vocabularies.
     cs_words -= en_words
+
+    # Manual overrides capture technical identifiers frequently used in the codebase that
+    # would otherwise be classified as Czech due to their absence in the English frequency list.
+    cs_words -= MANUAL_ENGLISH_WORDS
+    en_words |= MANUAL_ENGLISH_WORDS
+
     return frozenset(cs_words), frozenset(en_words)
 
 

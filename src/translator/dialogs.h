@@ -9,11 +9,11 @@ class CLayoutEditor;
 
 //*****************************************************************************
 //
-// horizontalne i vertikalne centrovany dialog k hlavnimu oknu
-// predek vsech dialogu
+// Dialog centered horizontally and vertically relative to the main window.
+// Serves as the base class for all translator dialogs.
 //
-// pokud je 'centerToWindow' rovno TRUE, je centrovany k hlavnimu oknu
-// jinak je centrovany k obrazovce
+// If 'centerToWindow' is TRUE the dialog is centered to the main window,
+// otherwise it is centered to the screen.
 //
 
 class CCommonDialog : public CDialog

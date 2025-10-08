@@ -71,17 +71,17 @@ int InitExtraction(const char* name, struct SCabinet* cabinet)
     DWORD read;
 
     //
-    // otevreme soubor s archivem (exe) a namapujeme do pameti
+    // open the archive file (exe) and map it into memory
     //
     cabinet->file = CreateFile(name, GENERIC_READ, FILE_SHARE_READ, NULL,
                                OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (cabinet->file == INVALID_HANDLE_VALUE)
         return HandleError(ERROR_TITLE, ERROR_INFOPEN, GetLastError(), name);
     //
-    // mame soubor, ted zanalyzujeme header exe fajlu
+    // we have the file, now analyze the exe header
     //
 
-    // zkontroluj ze je tam MZ signatura
+    // make sure the MZ signature is present
     if (!ReadFile(cabinet->file, data, sizeof(IMAGE_DOS_HEADER), &read, NULL) ||
         read != sizeof(IMAGE_DOS_HEADER))
         if (read != sizeof(IMAGE_DOS_HEADER))
@@ -92,7 +92,7 @@ int InitExtraction(const char* name, struct SCabinet* cabinet)
         return HandleError(ERROR_TITLE, ARC_NOEXESIG, 0, name);
     if (SetFilePointer(cabinet->file, ((IMAGE_DOS_HEADER*)data)->e_lfanew, NULL, FILE_BEGIN) == 0xFFFFFFFF)
         return HandleError(ERROR_TITLE, ERROR_INFSEEK, GetLastError(), name);
-    // precti headery
+    // read the headers
     if (!ReadFile(cabinet->file, data, sizeof(unsigned long) + sizeof(IMAGE_FILE_HEADER) + 24 * 4, &read, NULL) ||
         read != sizeof(unsigned long) + sizeof(IMAGE_FILE_HEADER) + 24 * 4)
         if (read != sizeof(unsigned long) + sizeof(IMAGE_FILE_HEADER) + 24 * 4)
@@ -105,12 +105,12 @@ int InitExtraction(const char* name, struct SCabinet* cabinet)
     sections = ((IMAGE_FILE_HEADER*)(data + sizeof(unsigned long)))->NumberOfSections;
     // number of directory entries
     direntries = ((IMAGE_OPTIONAL_HEADER*)(data + sizeof(unsigned long) + sizeof(IMAGE_FILE_HEADER)))->NumberOfRvaAndSizes;
-    // preskoc dir entries
+    // skip the directory entries
     if (SetFilePointer(cabinet->file, direntries * sizeof(IMAGE_DATA_DIRECTORY), NULL, FILE_CURRENT) == 0xFFFFFFFF)
         return HandleError(ERROR_TITLE, ERROR_INFSEEK, GetLastError(), name);
     sectionOffset = 0;
     sectionSize = 0;
-    // precti hlavicky vsech sekci
+    // read the headers of all sections
     for (; sections > 0; sections--)
     {
         if (!ReadFile(cabinet->file, data, sizeof(IMAGE_SECTION_HEADER), &read, NULL) || read != sizeof(IMAGE_SECTION_HEADER))
@@ -125,11 +125,11 @@ int InitExtraction(const char* name, struct SCabinet* cabinet)
             sectionSize = ((IMAGE_SECTION_HEADER*)data)->SizeOfRawData;
         }
     }
-    // skoc na zacatek archivu
+    // jump to the start of the archive
     if (SetFilePointer(cabinet->file, sectionOffset + sectionSize, NULL, FILE_BEGIN) == 0xFFFFFFFF)
         return HandleError(ERROR_TITLE, ERROR_INFSEEK, GetLastError(), name);
     //
-    // Pripravime dekompresi
+    // Prepare decompression
     //
     if (!DecompressInit(cabinet))
         return HandleError(ERROR_TITLE, ARC_INEOF, 0, name);
@@ -148,14 +148,14 @@ void FinalWait()
             DispatchMessage(&msg);
         }
     }
-    Sleep(500); // dame prilezitost k zobrazeni 100%
+    Sleep(500); // give the UI a chance to show 100%
 }
 
 DWORD WINAPI ExtractArchive(LPVOID cabinet)
 {
     int ret;
     //
-    // Provedeme dekompresi
+    // Perform decompression
     //
 
     while (DlgWin == NULL)
@@ -169,8 +169,8 @@ DWORD WINAPI ExtractArchive(LPVOID cabinet)
         SendMessage(DlgWin, WM_USER_UPDATEPROGRESS, 0, 0);
         UpdateWindow(DlgWin);
 
-        // na 500ms pribrzdime, aby se zobrazilo 100%
-        // nebude to zadna ztrata, stejne srotuje hard jak jsme se na vyvalili do TEMPu
+        // pause for 500 ms so the UI can display 100%
+        // it is no loss; the drive is still thrashing after we dumped everything into TEMP
         FinalWait();
     }
 

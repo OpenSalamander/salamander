@@ -5,18 +5,18 @@
 
 // ****************************************************************************
 // TDirectArray2:
-//  -pole, ktere dynamicky roste/zmensuje se po blocich (neni nutne realokovat
-//   jiz obsazenou pamnet, pouze se prida dalsi blok)
-//  -pri mazani prvku z pole se vola metoda Destructor(index_prvku),
-//   ktera v zakladnim objektu nic neprovadi
+//  -array that dynamically grows/shrinks by blocks (no need to reallocate
+//   already occupied memory, just add another block)
+//  -when removing items from the array, the method Destructor(index_of_item)
+//   is called, which in the base object does nothing
 
 template <class DATA_TYPE>
 class TAutoDirectArray
 {
 protected:
-    DATA_TYPE** Blocks; // ukazatel na pole bloku
+    DATA_TYPE** Blocks; // pointer to the block array
     int BlockSize;
-    int _count; // pocet prvku v poli
+    int _count; // number of elements in the array
 
 public:
     TAutoDirectArray<DATA_TYPE>(int blocksize)
@@ -38,8 +38,8 @@ public:
             for (int i = 0; i < _count; i++)
                 this->Delete(i);
 
-            //byl-li Count == BlockSize delalo to problemy
-            //proto je zde Count - 1
+            //if Count == BlockSize it caused problems
+            //therefore Count - 1 is used here
             //DATA_TYPE ** block = Blocks;
             for (DATA_TYPE** block = Blocks; block <= Blocks + (_count - 1) / BlockSize; block++)
             //int i;
@@ -55,7 +55,7 @@ public:
     }
     int Add(const DATA_TYPE& member)
     {
-        if (_count % BlockSize == 0) //vypotreboval jsem vsechny pozice posledniho bloku
+        if (_count % BlockSize == 0) //all positions of the last block are used up
         {
             DATA_TYPE** newArrayBlocks;
 
@@ -64,7 +64,7 @@ public:
             {
                 Blocks = newArrayBlocks;
                 Blocks[_count / BlockSize] = (DATA_TYPE*)malloc(BlockSize * sizeof(DATA_TYPE));
-                if (!Blocks[_count / BlockSize]) //nepodarilo se alokovat...
+                if (!Blocks[_count / BlockSize]) //allocation failed...
                 {
                     if (!_count)
                     {
@@ -75,36 +75,36 @@ public:
                 }
             }
             else
-                return -1; //nepodarilo se zvetsit pole ukazatelu na bloky
+                return -1; //failed to grow the array of block pointers
         }
         Blocks[_count / BlockSize][_count % BlockSize] = member;
         return _count++;
     }
 
-    BOOL Remove(int index) // zrusi prvek na dane pozici, na jeho misto
+    BOOL Remove(int index) // removes the element at the given position, in its place
     {
         if (index >= _count)
             return FALSE;
         Delete(index);
         _count--;
         Blocks[index / BlockSize][index % BlockSize] = Blocks[_count / BlockSize][_count % BlockSize];
-        if (!(_count % BlockSize)) //vypotreboval jsem posledni z aktualniho bloku
+        if (!(_count % BlockSize)) //used up the last one from the current block
         {
             free(Blocks[_count / BlockSize]);
         }
-        if (!_count) //vypotreboval jsem vsechny
+        if (!_count) //used them all
         {
             free(Blocks);
             Blocks = NULL;
         }
         return TRUE;
     }
-    // soupne prvek z posledniho mista a zmensi pole
+    // move the element from the last position and shrink the array
     /*
-	CDynamicArray * const &operator[](float index); // funkce se nikdy nevola, ale kdyz tu neni
-	// tak dela MSVC strasny veci
+        CDynamicArray * const &operator[](float index); // function is never called, but if it is missing
+        // MSVC does terrible things
 	*/
-    DATA_TYPE& operator[](int index) //vraci prvek na pozici
+    DATA_TYPE& operator[](int index) //returns the element at the position
     {
         return Blocks[index / BlockSize][index % BlockSize];
     }
@@ -112,8 +112,8 @@ public:
 
 // ****************************************************************************
 // CArray2:
-//  -predek vsech indirect poli
-//  -drzi typ (void *) v DWORD poli (kvuli uspore mista v .exe)
+//  -base of all indirect arrays
+//  -stores the type (void*) in a DWORD array (to save space in the .exe)
 
 class CAutoIndirectArrayBase : public TAutoDirectArray<ULONG_PTR>
 {
@@ -143,8 +143,8 @@ protected:
 
 // ****************************************************************************
 // TIndirectArray2:
-//  -vhodne pro ulozeni ukazatelu na objekty
-//  -ostatni vlastnosti viz CArray
+//  -suitable for storing pointers to objects
+//  -for other properties see CArray
 
 template <class DATA_TYPE>
 class TAutoIndirectArray : public CAutoIndirectArrayBase

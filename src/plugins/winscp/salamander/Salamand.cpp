@@ -409,9 +409,9 @@ bool CPluginInterface::Init(CSalamanderPluginEntryAbstract* Salamander)
             Salamander->SetBasicPluginData(SalLoadStr(SAL_PLUGIN_NAME),
                                            FUNCTION_CONFIGURATION | FUNCTION_FILESYSTEM,
                                            ProductVersion.c_str(), Copyright.c_str(), Description.c_str(),
-                                           "WinSCP" /* neprekladat! */, "", "winscp");
+                                           "WinSCP" /* do not translate! */, "", "winscp");
 
-            // chceme dostavat zpravy o zavedeni/zmene/zruseni master passwordu
+            // we want to receive notifications about the creation/change/removal of the master password
             SalamanderGeneral()->SetPluginUsesPasswordManager();
 
             Salamander->SetPluginHomePageURL(SalLoadStr(SAL_HOMEPAGE));

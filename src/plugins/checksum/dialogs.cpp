@@ -9,19 +9,19 @@
 #include "dialogs.h"
 #include "misc.h"
 
-CWindowQueue ModelessQueue("CheckSum Modeless Windows");  // seznam vsech nemodalnich oken
-CThreadQueue ThreadQueue("CheckSum Dialogs and Workers"); // seznam vsech threadu oken a vypoctu
+CWindowQueue ModelessQueue("CheckSum Modeless Windows");  // list of all modeless windows
+CThreadQueue ThreadQueue("CheckSum Dialogs and Workers"); // list of all dialog and worker threads
 
-#define BUFSIZE (4 * 65536) // velikost bufferu pro cteni
+#define BUFSIZE (4 * 65536) // buffer size for reading
 
 #define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
 #define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))
 
 #define CM_REMOVEITEM 100
 
-// i pro soubory male velikosti chceme posun progress bar
-// puvodne mela konstanta hodnotu 1, ale progress se choval hodne nelinearne pokud se pocitaly tisice
-// malych souboru namixovane se soubory 1MB+, experimentalne jsem dosel k teto hodnote
+// even for small files we want to move the progress bar
+// originally this constant was 1, but the progress behaved very non-linearly when processing thousands
+// of small files mixed with 1MB+ files; experimentation led to this value
 #define FILE_SIZE_FIX 10000
 
 #define IDT_UPDATEUI 10
@@ -79,7 +79,7 @@ void CSFVMD5Dialog::InitList(int columns[], int widths[], int numcols, SHashInfo
     ListView_SetExtendedListViewStyleEx(hList, LVS_EX_FULLROWSELECT, LVS_EX_FULLROWSELECT);
     if (SalIsWindowsVersionOrGreater(6, 0, 0)) // WindowsVistaAndLater: Vista and later (CommonControls 6.0+)
         ListView_SetExtendedListViewStyleEx(hList, LVS_EX_DOUBLEBUFFER, LVS_EX_DOUBLEBUFFER);
-    ListView_SetImageList(hList, hImg, LVSIL_SMALL); // o destrukci se postara imagelist
+    ListView_SetImageList(hList, hImg, LVSIL_SMALL); // the imagelist takes care of destruction
 
     int j;
     for (j = 0; j < numcols; j++)
@@ -179,8 +179,8 @@ void CSFVMD5Dialog::OnThreadEnd()
     ShowWindow(GetDlgItem(HWindow, IDC_LABEL), SW_HIDE);
     ShowWindow(GetDlgItem(HWindow, IDC_PROGRESS), SW_HIDE);
     bThreadRunning = FALSE;
-    if (ScrollIndex < FileList.Count) // thread uz nepocita (bezet jeste muze), netreba synchronizace
-    {                                 // zajistime update posledni "pocitane" polozky, aby nezustala calculating / verifying ...
+    if (ScrollIndex < FileList.Count) // the worker already stopped counting (it may still be running), no sync needed
+    {                                 // update the last "calculated" item so it does not remain calculating / verifying ...
         SetRowsDirty(ScrollIndex, ScrollIndex);
     }
 }
@@ -198,11 +198,11 @@ void CSFVMD5Dialog::SetRowsDirty(int firstRow, int lastRow)
 void CSFVMD5Dialog::SetItemTextAndIcon(int row, int col, const char* text, int icon)
 {
     // CALL_STACK_MESSAGE4("CSFVMD5Dialog::SetItemTextAndIcon(%d, %d, , %d)", row, col, icon);
-    FILELISTITEM* item = FileList[row]; // kdyz bezi pracovni thread, neprovadi se zadne upravy pole (index je OK)
+    FILELISTITEM* item = FileList[row]; // while the worker thread runs, the array is not modified (index is OK)
 
-    // hashe a ikona synchronizaci nevyzaduji, kdyz bezi pracovni thread, cte thread dialogu jen z indexu
-    // pred ScrollIndex (ten je maximalne ScheduledScrollIndex), a pracovni thread zapisuje jen do indexu
-    // rovneho ScheduledScrollIndex, tedy nemuze se to potkat
+    // hashes and icon do not need synchronization; while the worker thread is running, the dialog thread
+    // only reads items before ScrollIndex (which is at most ScheduledScrollIndex) and the worker writes
+    // only to the ScheduledScrollIndex item, so there is no conflict
     if (text != NULL)
     {
         if (col < 2 || col - 2 >= HT_COUNT)
@@ -220,7 +220,7 @@ void CSFVMD5Dialog::SetItemTextAndIcon(int row, int col, const char* text, int i
 
 void CSFVMD5Dialog::GetItemText(int row, int col, char* text, int textMax)
 {
-    CALL_STACK_MESSAGE_NONE // frekventovana funkce
+    CALL_STACK_MESSAGE_NONE // frequently called function
         // CALL_STACK_MESSAGE4("CSFVMD5Dialog::GetItemText(%d, %d, , %d)", row, col, textMax);
         LVITEM lvi;
     lvi.mask = LVIF_TEXT;
@@ -233,17 +233,17 @@ void CSFVMD5Dialog::GetItemText(int row, int col, char* text, int textMax)
 
 void CSFVMD5Dialog::IncreaseProgress(const CQuadWord& delta)
 {
-    CALL_STACK_MESSAGE_NONE // frekventovana funkce
+    CALL_STACK_MESSAGE_NONE // frequently called function
     // CALL_STACK_MESSAGE1("CSFVMD5Dialog::IncreaseProgress()");
     EnterDataCS();
-    ScheduledCurrentSize += delta; // je 64-bit hodnota, proto nutna synchronizace v 32-bit kodu
+    ScheduledCurrentSize += delta; // 64-bit value -> synchronization required in 32-bit code
     LeaveDataCS();
 }
 
 void CSFVMD5Dialog::DeleteItem(int index)
 {
     CALL_STACK_MESSAGE2("CSFVMD5Dialog::DeleteItem(%d)", index);
-    // kdyz bezi pracovni thread, neprovadi se zadne upravy pole (nesmi se volat ani tato funkce)
+    // while the worker thread runs, the array is not modified (this function must not be called either)
     if (bThreadRunning)
         TRACE_E("CSFVMD5Dialog::DeleteItem(): unexpected situation: worker thread should not be running!");
     if (FileList.Count > 0 && index < FileList.Count)
@@ -267,7 +267,7 @@ void CSFVMD5Dialog::ScrollToItem(int i)
 
 void CSFVMD5Dialog::AddFileListItem(const char* name, CQuadWord size, BOOL fileExist)
 {
-    // kdyz bezi pracovni thread, neprovadi se zadne upravy pole (nesmi se volat ani tato funkce)
+    // while the worker thread runs, the array is not modified (this function must not be called either)
     if (bThreadRunning)
         TRACE_E("CSFVMD5Dialog::AddFileListItem(): unexpected situation: worker thread should not be running!");
     FILELISTITEM* item = new FILELISTITEM();
@@ -279,7 +279,7 @@ void CSFVMD5Dialog::AddFileListItem(const char* name, CQuadWord size, BOOL fileE
 
 INT_PTR CSFVMD5Dialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    CALL_STACK_MESSAGE_NONE // frekventovana funkce
+    CALL_STACK_MESSAGE_NONE // frequently called function
         //CALL_STACK_MESSAGE4("CSFVMD5Dialog::DialogProc(0x%X, 0x%IX, 0x%IX)", uMsg, wParam, lParam);
 
         switch (uMsg)
@@ -289,7 +289,7 @@ INT_PTR CSFVMD5Dialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         bScrollToItem = TRUE;
         bDisableNotification = FALSE;
 
-        if (bAlwaysOnTop) // always-on-top osetrime aspon "staticky" (neni v system menu)
+        if (bAlwaysOnTop) // handle always-on-top at least "statically" (it is not in the system menu)
             SetWindowPos(HWindow, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
         CSFVMD5ListView* lv = new CSFVMD5ListView(this);
@@ -297,7 +297,7 @@ INT_PTR CSFVMD5Dialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             lv->AttachToWindow(GetDlgItem(HWindow, IDC_LIST_FILES));
             if (lv->HWindow == NULL)
-                delete lv; // nepripojeno = neprobehne automaticka dealokace
+                delete lv; // not attached = automatic deallocation will not happen
         }
 
         SetForegroundWindow(HWindow);
@@ -312,7 +312,7 @@ INT_PTR CSFVMD5Dialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_TIMER:
     {
-        if (wParam == IDT_RESENDCLOSE) // mame si poslat WM_CLOSE, blokujici dialog uz je snad sestreleny
+        if (wParam == IDT_RESENDCLOSE) // we should send ourselves WM_CLOSE; the blocking dialog should now be gone
         {
             KillTimer(HWindow, IDT_RESENDCLOSE);
             PostMessage(HWindow, WM_CLOSE, 0, 0);
@@ -321,21 +321,20 @@ INT_PTR CSFVMD5Dialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (wParam == IDT_UPDATEUI)
         {
             EnterDataCS();
-            int progress = -1; // -1 = nenastavovat progress
+            int progress = -1; // -1 = do not adjust the progress bar
             if (totalSize.Value != 0 && ScheduledCurrentSize != CurrentSize)
             {
                 CurrentSize = ScheduledCurrentSize;
                 progress = CurrentSize < totalSize ? (int)((CurrentSize * CQuadWord(1024, 0)) / totalSize).Value : 1024;
             }
-            int i = -1; // -1 = nevolat ensure visible
+            int i = -1; // -1 = do not call ensure visible
             if (ScheduledScrollIndex != ScrollIndex)
             {
-                // v tento okamzik se priznaji napocitana data az do indexu ScrollIndex,
-                // primo ScrollIndex je calculating / verifying, za nim je nevypocteno
-                // (i kdyz realne uz to muze byt napocitane, ukaze se to proste az
-                // v dalsim kole)
-                // ukazeme nove priznana napocitana data + novy ScrollIndex se musi prekreslit
-                // (vypsat calculating / verifying)
+                // at this moment items up to ScrollIndex are acknowledged as computed,
+                // ScrollIndex itself is calculating / verifying and the items after it remain unprocessed
+                // (even if they are already computed, they will surface in the next cycle)
+                // show the newly acknowledged computed data + the new ScrollIndex must be repainted
+                // (to print calculating / verifying)
                 SetRowsDirty(ScrollIndex, ScheduledScrollIndex);
                 ScrollIndex = ScheduledScrollIndex;
                 if (bScrollToItem)
@@ -381,7 +380,7 @@ INT_PTR CSFVMD5Dialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 LPNMLISTVIEW nmhi = (LPNMLISTVIEW)nmh;
                 if (!(nmhi->uOldState & LVIS_SELECTED) && nmhi->uNewState & LVIS_SELECTED)
-                    bScrollToItem = FALSE; // uzivatel zmenil selection -> zakazeme autoscroll
+                    bScrollToItem = FALSE; // user changed the selection -> disable autoscroll
             }
             }
         }
@@ -412,10 +411,10 @@ INT_PTR CSFVMD5Dialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_CLOSE:
     {
         if (!IsWindowEnabled(HWindow))
-        { // zavreme postupne vsechny dialogy nad timto dialogem (posleme jim WM_CLOSE a pak ho posleme znovu sem)
+        { // close all dialogs stacked above this one (send them WM_CLOSE and then send it here again)
             SalamanderGeneral->CloseAllOwnedEnabledDialogs(HWindow);
-            if (iThreadID != 0) // pokud bezi thread, zavreme i jeho okna + nechame ho ukoncit,
-            {                   // aby se hned neotevrelo dalsi okno s dalsi chybou
+            if (iThreadID != 0) // if a thread is running, close its windows too and let it finish
+            {                   // to avoid immediately opening another window with a new error
                 bTerminateThread = TRUE;
                 SalamanderGeneral->CloseAllOwnedEnabledDialogs(HWindow, iThreadID);
             }
@@ -429,7 +428,7 @@ INT_PTR CSFVMD5Dialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_DESTROY:
     {
-        if (hThread != NULL) // pokud jsme thread nastartovali, zajistime jeho zavreni a pockame na nej
+        if (hThread != NULL) // if we started the thread, close it and wait for it
         {
             bTerminateThread = TRUE;
             ThreadQueue.WaitForExit(hThread, INFINITE);
@@ -483,7 +482,7 @@ BOOL CCalculateDialog::AddDir(char (&path)[MAX_PATH + 50], size_t root, BOOL* ig
     strcat(path, "\\*");
     BOOL ret = TRUE, again;
 
-    // tohle se dela pred spustenim pracovniho threadu (jen overime), synchronizace neni potreba
+    // this happens before the worker thread starts (just validation), no synchronization needed
     if (bThreadRunning)
         TRACE_E("CCalculateDialog::AddDir(): unexpected situation: worker thread should not be running!");
 
@@ -503,11 +502,11 @@ BOOL CCalculateDialog::AddDir(char (&path)[MAX_PATH + 50], size_t root, BOOL* ig
                             ret = AddDir(path, root, ignoreAll);
                         else
                         {
-                            // linky: size == 0, velikost souboru se musi ziskat pres GetLinkTgtFileSize() dodatecne
+                            // links: size == 0, the file size must be obtained via GetLinkTgtFileSize()
                             BOOL cancel = FALSE;
                             CQuadWord size(fd.nFileSizeLow, fd.nFileSizeHigh);
                             if ((fd.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0)
-                            { // jde o link na soubor
+                            { // this is a link to a file
                                 CQuadWord linkSize;
                                 if (SalamanderGeneral->GetLinkTgtFileSize(HWindow, path, &linkSize, &cancel, ignoreAll))
                                 {
@@ -525,7 +524,7 @@ BOOL CCalculateDialog::AddDir(char (&path)[MAX_PATH + 50], size_t root, BOOL* ig
                             }
                         }
                         if (RefreshCounter++ > REFRESH_LIMIT)
-                        { // synchronizace neni potreba viz vyse
+                        { // no synchronization needed, see above
                             ListView_SetItemCountEx(hList, FileList.Count, LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
                             RefreshUI();
                             RefreshCounter = 0;
@@ -561,7 +560,7 @@ BOOL CCalculateDialog::GetFileList()
 {
     CALL_STACK_MESSAGE1("CCalculateDialog::GetFileList()");
 
-    // tohle se dela pred spustenim pracovniho threadu (jen overime), synchronizace neni potreba
+    // this happens before the worker thread starts (we only validate), no synchronization needed
     if (bThreadRunning)
         TRACE_E("CCalculateDialog::GetFileList(): unexpected situation: worker thread should not be running!");
 
@@ -576,7 +575,7 @@ BOOL CCalculateDialog::GetFileList()
     RefreshCounter = 0;
 
     strcpy(path, SourcePath);
-    SalamanderGeneral->SalPathAddBackslash(path, MAX_PATH); // pokud selze, selze urcite i prilepeni cehokoliv pozdeji (neni nutne osetrovat zde)
+    SalamanderGeneral->SalPathAddBackslash(path, MAX_PATH); // if this fails, appending anything later would fail too (no need to handle here)
     char* pathEnd = path + strlen(path);
 
     BOOL ignoreAll = FALSE;
@@ -589,10 +588,10 @@ BOOL CCalculateDialog::GetFileList()
             strcpy(pathEnd, cfi->Name);
             if (!cfi->bDir)
             {
-                // linky: cfi->Size == 0, velikost souboru se musi ziskat pres GetLinkTgtFileSize() dodatecne
+                // links: cfi->Size == 0, the file size must be obtained via GetLinkTgtFileSize()
                 BOOL cancel = FALSE;
                 if ((cfi->Attr & FILE_ATTRIBUTE_REPARSE_POINT) != 0)
-                { // jde o link na soubor
+                { // this is a link to a file
                     CQuadWord linkSize;
                     if (SalamanderGeneral->GetLinkTgtFileSize(HWindow, path, &linkSize, &cancel, &ignoreAll))
                     {
@@ -626,7 +625,7 @@ BOOL CCalculateDialog::GetFileList()
     }
 
     if (ret)
-    { // synchronizace neni potreba viz vyse
+    { // no synchronization needed, see above
         ListView_SetItemCountEx(hList, FileList.Count, LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
         if (FileList.Count > 0)
         {
@@ -681,20 +680,20 @@ unsigned CCalculateThread::Body()
         }
     }
 
-    // kdyz bezi pracovni thread, neprovadi se zadne upravy pole (pocet prvku + indexy se
-    // nemeni = neni potreba pristup k nim synchronizovat)
+    // while the worker thread runs, the array is not modified (the number of items + indices do
+    // not change = no need to synchronize access to them)
     int silent = 0;
     for (int i = 0; i < dialog->FileList.Count && !*Terminate; i++)
     {
-        // nascrollovani na aktualni polozku (pouze pokud je predchozi viditelna, tj. uzivatel treba neodjel na zacatek)
+        // scroll to the current item (only if the previous one is visible, i.e. the user did not jump to the top)
         dialog->ScrollToItem(i);
 
-        // otevreni souboru
+        // open the file
         HANDLE hFile;
         char path[MAX_PATH];
         strcpy(path, dialog->SourcePath);
-        // nemelo by se stat - uz je overena delka jmena z CCalculateDialog::GetFileList()
-        // FILELISTITEM::Name se po pridani do pole uz nemeni = netreba synchronizovat pristup k ni
+        // should not happen - the name length was already verified in CCalculateDialog::GetFileList()
+        // FILELISTITEM::Name does not change after being added to the array = no need for synchronized access
         if (!SalamanderGeneral->SalPathAppend(path, dialog->FileList[i]->Name, MAX_PATH))
         {
             TRACE_E("CCalculateThread::Body(): unexpected situation: SalPathAppend() has failed");
@@ -706,7 +705,7 @@ unsigned CCalculateThread::Body()
         if (skip)
         {
             dialog->SetItemTextAndIcon(i, 2, LoadStr(IDS_SKIPPED));
-            // posunuti progressu o velikost preskoceneho souboru
+            // advance progress by the size of the skipped file
             WIN32_FIND_DATA fd;
             memset(&fd, 0, sizeof(fd));
             HANDLE find = HANDLES_Q(FindFirstFile(path, &fd));
@@ -737,11 +736,11 @@ unsigned CCalculateThread::Body()
             char buffer[BUFSIZE];
             if (!SafeReadFile(hFile, buffer, BUFSIZE, &nr, path, dialog->HWindow, &skippedReadError, &skipAllReadErrors))
             {
-                nr = 0; // chyba cteni
+                nr = 0; // read error
                 if (skippedReadError)
                 {
                     dialog->SetItemTextAndIcon(i, 2, LoadStr(IDS_SKIPPED));
-                    // posunuti progressu o velikost preskoceneho souboru
+                    // advance progress by the size of the skipped file
                     WIN32_FIND_DATA fd;
                     memset(&fd, 0, sizeof(fd));
                     HANDLE find = HANDLES_Q(FindFirstFile(path, &fd));
@@ -777,7 +776,7 @@ unsigned CCalculateThread::Body()
             dialog->IncreaseProgress(CQuadWord(FILE_SIZE_FIX, 0));
         CloseHandle(hFile);
 
-        // dosazeni vysledku do listu
+        // store the results in the list
         if (!*Terminate && !skippedReadError)
         {
             for (int k = 0; k < nCalculators; k++)
@@ -849,7 +848,7 @@ BOOL CCalculateDialog::GetSaveFileName(LPTSTR buffer, LPCTSTR title)
 {
     CALL_STACK_MESSAGE2("CCalculateDialog::GetSaveFileName(, %s)", title);
 
-    // ziskani defaultniho jmena; jsou vsechna jmena stejna?
+    // obtain the default name; are all names identical?
     char file1[MAX_PATH], file2[MAX_PATH], filter[MAX_PATH], *s;
     GetItemText(0, 0, file1, MAX_PATH);
     SalamanderGeneral->SalPathRemoveExtension(file1);
@@ -866,7 +865,7 @@ BOOL CCalculateDialog::GetSaveFileName(LPTSTR buffer, LPCTSTR title)
         }
     }
 
-    // kdyz ne, zkusime posledni cast cesty
+    // if not, try the last part of the path
     if (!allSame)
     {
         const char* slash = _tcsrchr(SourcePath, '\\');
@@ -875,7 +874,7 @@ BOOL CCalculateDialog::GetSaveFileName(LPTSTR buffer, LPCTSTR title)
             lstrcpyn(buffer, slash + 1, MAX_PATH);
         }
         else
-            buffer[0] = 0; // zadne defaultni jmeno
+            buffer[0] = 0; // no default name
     }
     else
     {
@@ -968,7 +967,7 @@ void CCalculateDialog::SaveHashes()
             return;
         }
 
-        /*if (sfv)*/ fprintf(f, "; Generated by Open Salamander, https://www.altap.cz\n;\n"); // proc si neudelat reklamu...
+        /*if (sfv)*/ fprintf(f, "; Generated by Open Salamander, https://www.altap.cz\n;\n"); // why not promote ourselves...
         BOOL warn = FALSE;
         int colInd = 2;
         // Determine column index
@@ -1004,7 +1003,7 @@ void CCalculateDialog::SaveHashes()
 
         fclose(f);
 
-        // ohlasime zmenu na ceste (pribyl nas soubor)
+        // notify a change on the path (our file was added)
         SalamanderGeneral->CutDirectory(filename);
         SalamanderGeneral->PostChangeOnPathNotification(filename, FALSE);
 
@@ -1041,8 +1040,8 @@ void CCalculateDialog::OnContextMenu(int x, int y, eHASH_TYPE forceCopyHash)
 
     int forcedHashIndex = -1;
 
-    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volanim InsertItem() dole...
+    /* used by the export_mnu.py script, which generates salmenu.mnu for Translator
+   keep in sync with the InsertItem() calls below...
 MENU_TEMPLATE_ITEM CalculateDialogMenu[] = 
 {
   {MNTT_PB, 0
@@ -1138,7 +1137,7 @@ void GetListViewContextMenuPos(HWND hListView, POINT* p)
 
 INT_PTR CCalculateDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    CALL_STACK_MESSAGE_NONE // frekventovana funkce
+    CALL_STACK_MESSAGE_NONE // frequently called function
         //CALL_STACK_MESSAGE4("CCalculateDialog::DialogProc(0x%X, 0x%IX, 0x%IX)", uMsg, wParam, lParam);
         static int id[] = {IDC_BUTTON_CONFIGURE, IDC_BUTTON_SAVE, IDC_BUTTON_CLOSE, IDC_LABEL, IDC_PROGRESS, IDC_LABEL_HINT};
     static int columns[] = {IDS_COLUMN_FILE, IDS_COLUMN_SIZE};
@@ -1211,7 +1210,7 @@ INT_PTR CCalculateDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
         }
 
-        if (startThread) // pokud neni co pocitat, thread ani nebudeme spoustet
+        if (startThread) // if there is nothing to compute, skip starting the thread
         {
             bTerminateThread = FALSE;
             hThread = NULL;
@@ -1220,9 +1219,9 @@ INT_PTR CCalculateDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             CCalculateThread* pThread = new CCalculateThread(this, &bTerminateThread);
             if (pThread == NULL || (hThread = pThread->Create(ThreadQueue, 0, &iThreadID)) == NULL)
             {
-                TRACE_E("CCalculateDialog::DialogProc(): Nelze vytvorit worker thread.");
+                TRACE_E("CCalculateDialog::DialogProc(): Failed to create worker thread.");
                 if (pThread != NULL)
-                    delete pThread; // pri chybe je potreba dealokovat objekt threadu
+                    delete pThread; // on failure the thread object needs to be deallocated
                 bThreadRunning = FALSE;
             }
         }
@@ -1251,7 +1250,7 @@ INT_PTR CCalculateDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 else
                     EndDialog(HWindow, 0);
             }
-            return TRUE; // dlgproc predku nechceme
+            return TRUE; // we do not want the base dialog proc
         }
 
         case IDC_BUTTON_SAVE:
@@ -1278,11 +1277,11 @@ INT_PTR CCalculateDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 NMLVDISPINFO* plvdi = (NMLVDISPINFO*)nmh;
                 int index = plvdi->item.iItem;
-                if (index < 0 || index >= FileList.Count) // kdyz bezi pracovni thread, neprovadi se zadne upravy
-                    break;                                // pole (pocet prvku se nemeni = nesynchronizujeme)
+                if (index < 0 || index >= FileList.Count) // while the worker thread runs, the array is not modified
+                    break;                                // array size does not change = no synchronization
                 if (plvdi->item.mask & LVIF_IMAGE)
                 {
-                    // ScrollIndex ani ikony pred ScrollIndex se z threadu nemeni, nemusime synchronizovat
+                    // ScrollIndex nor the icons before it are modified by the thread, no synchronization needed
                     if (bThreadRunning && index >= ScrollIndex)
                         plvdi->item.iImage = 0;
                     else
@@ -1294,24 +1293,24 @@ INT_PTR CCalculateDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     switch (col)
                     {
                     case 0:
-                    { // Name: po pridani do pole uz se nemeni = pristup nesynchronizujeme
+                    { // Name: once added to the array it never changes = access is not synchronized
                         strcpy(plvdi->item.pszText, FileList[index]->Name);
                         break;
                     }
 
                     case 1:
-                    { // Size: po pridani do pole uz se nemeni = pristup nesynchronizujeme
+                    { // Size: once added to the array it never changes = access is not synchronized
                         SalamanderGeneral->NumberToStr(plvdi->item.pszText, FileList[index]->Size);
                         break;
                     }
 
                     default:
                     {
-                        // ScrollIndex ani hashe pred ScrollIndex se z threadu nemeni, nemusime synchronizovat
+                        // ScrollIndex nor hashes before it are modified by the thread, no synchronization needed
                         if (bThreadRunning && index >= ScrollIndex)
                         {
-                            // dokud bezi vypocetni thread: napocitana data se priznaji jen do indexu ScrollIndex,
-                            // primo ScrollIndex je calculating / verifying, za nim je nevypocteno (byt realne uz muze byt)
+                            // while the worker thread runs: calculated data are acknowledged only up to ScrollIndex,
+                            // ScrollIndex itself is calculating / verifying, items after it remain unprocessed (even if they might already be done)
                             if (index == ScrollIndex && col == 2)
                                 strcpy(plvdi->item.pszText, LoadStr(IDS_CALCULATING));
                             else
@@ -1412,7 +1411,7 @@ CVerifyDialog::CVerifyDialog(HWND parent, BOOL alwaysOnTop, char* path, char* fi
 
 void CVerifyDialog::LTrimStr(char* str)
 {
-    CALL_STACK_MESSAGE_NONE // frekventovana funkce
+    CALL_STACK_MESSAGE_NONE // frequently called function
         // CALL_STACK_MESSAGE1("CVerifyDialog::LTrimStr()");
         int i = 0;
     while (str[i] && ((BYTE)str[i] <= ' '))
@@ -1441,7 +1440,7 @@ char* CVerifyDialog::LoadFile(char* name)
     }
     CQuadWord fsize;
     DWORD err;
-    if (SalamanderGeneral->SalGetFileSize(file, fsize, err) && fsize.Value < 500 * 1024 * 1024) // 500 MB je snad uz fakt dost
+    if (SalamanderGeneral->SalGetFileSize(file, fsize, err) && fsize.Value < 500 * 1024 * 1024) // 500 MB should really be enough
     {
         char* text = new char[fsize.LoDWord + 1];
         if (text == NULL)
@@ -1485,8 +1484,8 @@ BOOL CVerifyDialog::AnalyzeSourceFile()
         // Patera 2006.08.17: # used by MD5summer (http://www.md5summer.org) for comment lines
         if (line[0] && (line[0] != ';') && (line[0] != '#'))
         {
-            // POZOR: nasledujici kod musi byt v souladu s CCRCAlgo::ParseDigest() !!!
-            // checksum na konci (za ' ')
+            // WARNING: the following code must match CCRCAlgo::ParseDigest() !!!
+            // checksum at the end (after ' ')
 
             int posLast, lenLast;
             GetLastWord(line, posLast, lenLast);
@@ -1494,45 +1493,45 @@ BOOL CVerifyDialog::AnalyzeSourceFile()
 
             if (isSFV &&
                 (lenLast != 8 || !lastIsHex))
-            {                  // nekonci checksumem
-                isSFV = FALSE; // nejde o SFV
+            {                  // does not end with a checksum
+                isSFV = FALSE; // not an SFV
             }
 
-            // POZOR: nasledujici kod musi byt v souladu s CGenericHashAlgo::ParseDigest() !!!
-            // checksum na zacatku (pred ' ') nebo checksum na konci (za ' ' nebo '=') a zaroven
-            // jmeno hashe na zacatku (pred '(' nebo ' ')
+            // WARNING: the following code must match CGenericHashAlgo::ParseDigest() !!!
+            // checksum at the beginning (before ' ') or checksum at the end (after ' ' or '=') and at the same time
+            // the hash name at the beginning (before '(' or ' ')
 
             int posFirst, lenFirst;
             GetFirstWord(line, posFirst, lenFirst);
             BOOL firstIsHex = IsHex(line + posFirst, lenFirst);
             int posFirstHashName, lenFirstHashName;
             GetFirstWord(line, posFirstHashName, lenFirstHashName, '(');
-            GetLastWord(line, posLast, lenLast, '='); // pro zbytek hashu je '=' oddelovac
+            GetLastWord(line, posLast, lenLast, '='); // '=' is the delimiter for the rest of the hash
             lastIsHex = IsHex(line + posLast, lenLast);
 
             if (isMD5 &&
                 (lenFirst != 32 || !firstIsHex) &&
                 (lenLast != 32 || !lastIsHex || lenFirstHashName != 3 || memcmp(line + posFirstHashName, "MD5", 3) != 0))
-            {                  // nezacina checksumem, ani neni: MD5 (apache_2.0.46-win32-x86-symbols.zip) = eb5ba72b4164d765a79a7e06cee4eead
-                isMD5 = FALSE; // nejde o MD5
+            {                  // does not start with a checksum, nor is it: MD5 (apache_2.0.46-win32-x86-symbols.zip) = eb5ba72b4164d765a79a7e06cee4eead
+                isMD5 = FALSE; // not an MD5
             }
             if (isSHA1 &&
                 (lenFirst != 40 || !firstIsHex) &&
                 (lenLast != 40 || !lastIsHex || lenFirstHashName != 4 || memcmp(line + posFirstHashName, "SHA1", 4) != 0))
-            {                   // nezacina checksumem, ani neni: SHA1 (openldap-2.2.25.tgz) = a983e039486b8495819e69260a8fad1fb9c77520
-                isSHA1 = FALSE; // nejde o SHA1
+            {                   // does not start with a checksum, nor is it: SHA1 (openldap-2.2.25.tgz) = a983e039486b8495819e69260a8fad1fb9c77520
+                isSHA1 = FALSE; // not a SHA1
             }
             if (isSHA256 &&
                 (lenFirst != 64 || !firstIsHex) &&
                 (lenLast != 64 || !lastIsHex || lenFirstHashName != 6 || memcmp(line + posFirstHashName, "SHA256", 6) != 0))
-            {                     // nezacina checksumem, ani neni: SHA256 (README) = baaa5da257f848a4eece4fcf7653a7a58930124ef244bda374a6e906207d8a73
-                isSHA256 = FALSE; // nejde o SHA256
+            {                     // does not start with a checksum, nor is it: SHA256 (README) = baaa5da257f848a4eece4fcf7653a7a58930124ef244bda374a6e906207d8a73
+                isSHA256 = FALSE; // not a SHA256
             }
             if (isSHA512 &&
                 (lenFirst != 128 || !firstIsHex) &&
                 (lenLast != 128 || !lastIsHex || lenFirstHashName != 6 || memcmp(line + posFirstHashName, "SHA512", 6) != 0))
-            {                     // nezacina checksumem, ani neni: SHA512 (README) = baaa5da257f848a4eece4fcf7653a7a58930124ef244bda374a6e906207d8a73baaa5da257f848a4eece4fcf7653a7a58930124ef244bda374a6e906207d8a73
-                isSHA512 = FALSE; // nejde o SHA512
+            {                     // does not start with a checksum, nor is it: SHA512 (README) = baaa5da257f848a4eece4fcf7653a7a58930124ef244bda374a6e906207d8a73baaa5da257f848a4eece4fcf7653a7a58930124ef244bda374a6e906207d8a73
+                isSHA512 = FALSE; // not a SHA512
             }
         }
         line = strtok(NULL, "\r\n");
@@ -1557,7 +1556,7 @@ BOOL CVerifyDialog::LoadSourceFile()
 {
     CALL_STACK_MESSAGE1("CVerifyDialog::LoadSourceFile()");
 
-    // tohle se dela pred spustenim pracovniho threadu (jen overime), synchronizace neni potreba
+    // this happens before the worker thread starts (just validation), no synchronization needed
     if (bThreadRunning)
         TRACE_E("CVerifyDialog::LoadSourceFile(): unexpected situation: worker thread should not be running!");
 
@@ -1576,7 +1575,7 @@ BOOL CVerifyDialog::LoadSourceFile()
 
     totalSize.Value = 0;
 
-    // zpracovani radek
+    // process the lines
     BOOL ret = TRUE;
     BOOL ignoreAll = FALSE;
     while (ret && line != NULL)
@@ -1621,7 +1620,7 @@ BOOL CVerifyDialog::LoadSourceFile()
 
             if (info->fileName[0] != 0)
             {
-                // zjisteni informaci o souboru a vlozeni do listu
+                // fetch file information and insert into the list
                 char path[MAX_PATH];
                 strcpy(path, sourcePath);
                 if (SalamanderGeneral->SalPathAppend(path, info->fileName, MAX_PATH))
@@ -1631,12 +1630,12 @@ BOOL CVerifyDialog::LoadSourceFile()
                     info->bFileExist = (hFind != INVALID_HANDLE_VALUE);
                     if (info->bFileExist)
                     {
-                        // linky: info->size == 0, velikost souboru se musi ziskat pres GetLinkTgtFileSize() dodatecne
+                        // links: info->size == 0, the file size must be obtained via GetLinkTgtFileSize()
                         BOOL cancel = FALSE;
                         info->size = CQuadWord(fd.nFileSizeLow, fd.nFileSizeHigh);
                         if ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0 &&
                             (fd.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0)
-                        { // jde o link na soubor
+                        { // this is a link to a file
                             CQuadWord linkSize;
                             if (SalamanderGeneral->GetLinkTgtFileSize(HWindow, path, &linkSize, &cancel, &ignoreAll))
                                 info->size = linkSize;
@@ -1652,7 +1651,7 @@ BOOL CVerifyDialog::LoadSourceFile()
                     }
 
                     strcpy(info->fileName, path);
-                    fileList.Add(info); // synchronizace neni potreba, pracovni thread nebezi, viz vyse
+                    fileList.Add(info); // no synchronization needed, worker thread is not running, see above
                 }
                 else
                 {
@@ -1662,7 +1661,7 @@ BOOL CVerifyDialog::LoadSourceFile()
                     break;
                 }
             }
-            else // prazdne jmeno souboru = necekany format
+            else // empty file name = unexpected format
             {
                 Error(HWindow, 0, IDS_VERIFYTITLE, IDS_BADFILE);
                 ret = FALSE;
@@ -1674,8 +1673,8 @@ BOOL CVerifyDialog::LoadSourceFile()
         line = strtok(NULL, "\r\n");
     }
 
-    // nacteni souboru je rychle, takze celkovy pocet polozek nastavime az po nem
-    // synchronizace neni potreba, pracovni thread nebezi, viz vyse
+    // loading the file is quick, so set the total item count only afterwards
+    // no synchronization needed, worker thread is not running, see above
     ListView_SetItemCountEx(hList, FileList.Count, LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
 
     delete[] text;
@@ -1721,23 +1720,23 @@ unsigned CVerifyThread::Body()
 
     BOOL skip;
 
-    // kdyz bezi pracovni thread, neprovadi se zadne upravy pole (pocet prvku + indexy se
-    // nemeni = neni potreba pristup k nim synchronizovat)
+    // while the worker thread runs, the array is not modified (item count + indices
+    // do not change = no need to synchronize access)
     for (int i = 0, silent = 0; i < dialog->fileList.Count && !*Terminate; i++)
     {
         FILEINFO* info = dialog->fileList[i];
 
-        // nascrollovani na aktualni polozku
+        // scroll to the current item
         dialog->ScrollToItem(i);
 
         if (!info->bFileExist)
         {
             dialog->SetItemTextAndIcon(i, 0, NULL, 1);
-            dialog->nMissing++; // pouziva se jen z threadu + z main-threadu jen kdyz thread nebezi, nesynchronizujeme
+            dialog->nMissing++; // used only from the thread + from the main thread when it is not running -> no sync
             continue;
         }
 
-        // otevreni souboru
+        // open the file
         HANDLE hFile;
         if (!SafeOpenCreateFile(info->fileName, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN,
                                 &hFile, &skip, &silent, dialog->HWindow))
@@ -1749,13 +1748,13 @@ unsigned CVerifyThread::Body()
         if (skip)
         {
             dialog->SetItemTextAndIcon(i, 2, LoadStr(IDS_SKIPPED));
-            // posunuti progressu o velikost preskoceneho souboru
+            // advance progress by the size of the skipped file
             dialog->IncreaseProgress(info->size + CQuadWord(FILE_SIZE_FIX, 0));
-            dialog->nSkipped++; // pouziva se jen z threadu + z main-threadu jen kdyz thread nebezi, nesynchronizujeme
+            dialog->nSkipped++; // used only from the thread + from the main thread when it is not running -> no sync
             continue;
         }
 
-        // napocitani CRC nebo MD5
+        // compute CRC or MD5
         pCalculator->Init();
         DWORD nr;
         do
@@ -1779,7 +1778,7 @@ unsigned CVerifyThread::Body()
         }
         CloseHandle(hFile);
 
-        // dosazeni vysledku do listu
+        // store the results into the list
         if (!*Terminate)
         {
             char digest[DIGEST_MAX_SIZE];
@@ -1788,7 +1787,7 @@ unsigned CVerifyThread::Body()
 
             dialog->SetItemTextAndIcon(i, 2, LoadStr(ok ? IDS_OK : IDS_CORRUPT), ok ? 3 : 2);
             if (!ok)
-                dialog->nCorrupt++; // pouziva se jen z threadu + z main-threadu jen kdyz thread nebezi, nesynchronizujeme
+                dialog->nCorrupt++; // used only from the thread + from the main thread when it is not running -> no sync
         }
         else
             dialog->SetItemTextAndIcon(i, 2, LoadStr(IDS_CANCELED));
@@ -1811,8 +1810,8 @@ void CVerifyDialog::OnThreadEnd()
     {
         if (!nMissing && !nSkipped && !nCorrupt)
         {
-            if (fileList.Count)                   // kdyz bezi pracovni thread, neprovadi se zadne upravy pole (pocet
-                strcpy(text, LoadStr(IDS_ALLOK)); // prvku se nemeni = neni potreba pristup k nim synchronizovat)
+            if (fileList.Count)                   // while the worker thread runs, the array is not modified
+                strcpy(text, LoadStr(IDS_ALLOK)); // number of items does not change = no synchronization needed
             else
                 strcpy(text, LoadStr(IDS_NOFILES));
         }
@@ -1845,7 +1844,7 @@ INT_PTR CVerifyDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         nMissing = nCorrupt = nSkipped = 0;
         bCanceled = FALSE;
         ModelessQueue.Add(new CWindowQueueItem(HWindow));
-        SetWindowText(HWindow, LoadStr(IDS_VERIFYTITLE)); // provizorni titulek (pokud se ukaze chyba, at neni prazdny)
+        SetWindowText(HWindow, LoadStr(IDS_VERIFYTITLE)); // provisional title (avoid empty caption if an error pops up)
 
         PostMessage(HWindow, WM_USER_STARTWORK, 0, 0);
         break;
@@ -1867,9 +1866,9 @@ INT_PTR CVerifyDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             CVerifyThread* pThread = new CVerifyThread(this, &bTerminateThread);
             if (pThread == NULL || (hThread = pThread->Create(ThreadQueue, 0, &iThreadID)) == NULL)
             {
-                TRACE_E("CVerifyDialog::DialogProc(): Nelze vytvorit worker thread.");
+                TRACE_E("CVerifyDialog::DialogProc(): Failed to create worker thread.");
                 if (pThread)
-                    delete pThread; // pri chybe je potreba dealokovat objekt threadu
+                    delete pThread; // on failure the thread object needs to be deallocated
                 pThread = NULL;
                 bThreadRunning = FALSE;
             }
@@ -1889,15 +1888,15 @@ INT_PTR CVerifyDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 bTerminateThread = TRUE;
             else
                 EndDialog(HWindow, 0);
-            return TRUE; // dlgproc predku nechceme
+            return TRUE; // we do not want the base dialog proc
         }
 
         case IDC_BUTTON_FOCUS:
         {
             int i = -1;
             i = ListView_GetNextItem(hList, i, LVNI_SELECTED);
-            // kdyz bezi pracovni thread, neprovadi se zadne upravy pole (pocet prvku + indexy se
-            // nemeni = neni potreba pristup k nim synchronizovat)
+            // while the worker thread runs, the array is not modified (item count + indices
+            // do not change = no need to synchronize access)
             if (i < 0 || i >= fileList.Count || !fileList[i]->bFileExist)
                 break;
 
@@ -1905,8 +1904,8 @@ INT_PTR CVerifyDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 lstrcpyn(Focus_Path, fileList[i]->fileName, MAX_PATH);
                 SalamanderGeneral->PostMenuExtCommand(CMD_FOCUSFILE, TRUE);
-                Sleep(500);        // dojde k prepnuti do jineho okna, takze teoreticky tenhle Sleep nicemu nebude vadit
-                Focus_Path[0] = 0; // po 0.5 sekunde uz o fokus nestojime (resi pripad, kdy jsme trefili zacatek BUSY rezimu Salamandera)
+                Sleep(500);        // switching to another window happens, so this Sleep should not hurt anything
+                Focus_Path[0] = 0; // after 0.5 seconds we no longer want the focus (handles hitting the start of Salamander's BUSY mode)
             }
             else
                 SalamanderGeneral->SalMessageBox(HWindow, LoadStr(IDS_BUSY), LoadStr(IDS_VERIFYTITLE), MB_ICONINFORMATION);
@@ -1928,13 +1927,13 @@ INT_PTR CVerifyDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 NMLVDISPINFO* plvdi = (NMLVDISPINFO*)nmh;
                 int index = plvdi->item.iItem;
-                // kdyz bezi pracovni thread, neprovadi se zadne upravy pole (pocet prvku + indexy se
-                // nemeni = neni potreba pristup k nim synchronizovat)
+                // while the worker thread runs, the array is not modified (item count + indices
+                // do not change = no need to synchronize access)
                 if (index < 0 || index >= FileList.Count)
                     break;
                 if (plvdi->item.mask & LVIF_IMAGE)
                 {
-                    // ScrollIndex ani ikony pred ScrollIndex se z threadu nemeni, nemusime synchronizovat
+                    // ScrollIndex nor the icons before it are modified by the thread, no synchronization needed
                     if (bThreadRunning && index >= ScrollIndex)
                         plvdi->item.iImage = 0;
                     else
@@ -1945,13 +1944,13 @@ INT_PTR CVerifyDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     int col = plvdi->item.iSubItem;
                     switch (col)
                     {
-                    case 0: // Name: po pridani do pole uz se nemeni = pristup nesynchronizujeme
+                    case 0: // Name: once added to the array it never changes = no synchronization needed
                     {
                         strcpy(plvdi->item.pszText, FileList[index]->Name);
                         break;
                     }
 
-                    case 1: // FileExist+Size: po pridani do pole uz se nemeni = pristup nesynchronizujeme
+                    case 1: // FileExist+Size: once added to the array it never changes = no synchronization needed
                     {
                         if (FileList[index]->FileExist)
                             SalamanderGeneral->NumberToStr(plvdi->item.pszText, FileList[index]->Size);
@@ -1964,11 +1963,11 @@ INT_PTR CVerifyDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     {
                         if (FileList[index]->FileExist)
                         {
-                            // ScrollIndex ani hashe pred ScrollIndex se z threadu nemeni, nemusime synchronizovat
+                            // ScrollIndex nor hashes before it are modified by the thread, no synchronization needed
                             if (bThreadRunning && index >= ScrollIndex)
                             {
-                                // dokud bezi vypocetni thread: napocitana data se priznaji jen do indexu ScrollIndex,
-                                // primo ScrollIndex je calculating / verifying, za nim je nevypocteno (byt realne uz muze byt)
+                                // while the worker thread runs: calculated data are acknowledged only up to ScrollIndex,
+                                // ScrollIndex itself is calculating / verifying, items after it remain unprocessed (even if they might already be done)
                                 if (index == ScrollIndex)
                                     strcpy(plvdi->item.pszText, LoadStr(IDS_VERIFYING));
                                 else
@@ -1997,8 +1996,8 @@ INT_PTR CVerifyDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 int i = -1;
                 i = ListView_GetNextItem(hList, i, LVNI_SELECTED);
-                // kdyz bezi pracovni thread, neprovadi se zadne upravy pole (pocet prvku + indexy se
-                // nemeni = neni potreba pristup k nim synchronizovat)
+                // while the worker thread runs, the array is not modified (item count + indices
+                // do not change = no need to synchronize access)
                 if (i >= 0 && i < fileList.Count)
                 {
                     EnableWindow(GetDlgItem(HWindow, IDC_BUTTON_FOCUS), fileList[i]->bFileExist);
@@ -2087,7 +2086,7 @@ BOOL OpenCalculateDialog(HWND parent)
     int nFiles, nDirs;
     char sourcePath[MAX_PATH];
 
-    // Check if neni nic vybrano ani fokus
+    // Check if nothing is selected and no focus is set
     if (SalamanderGeneral->GetPanelSelection(PANEL_SOURCE, &nFiles, &nDirs))
     {
         int index = 0;
@@ -2120,11 +2119,11 @@ BOOL OpenCalculateDialog(HWND parent)
     CCalculateDialogThread* t = new CCalculateDialogThread(parent, bAlwaysOnTop, pFileList, _strdup(sourcePath));
     if (t != NULL)
     {
-        // spusteni threadu
+        // start the thread
         if (t->Create(ThreadQueue) != NULL)
             return TRUE;
 
-        delete t; // pri chybe je potreba dealokovat objekt threadu
+        delete t; // on failure the thread object needs to be deallocated
     }
     return FALSE;
 }
@@ -2194,12 +2193,12 @@ BOOL OpenVerifyDialog(HWND parent)
     CVerifyDialogThread* t = new CVerifyDialogThread(parent, bAlwaysOnTop);
     if (t != NULL)
     {
-        // predani dat do threadu
+        // hand over data to the thread
         SalamanderGeneral->GetPanelPath(PANEL_SOURCE, t->sourcePath, MAX_PATH, NULL, NULL);
         strcpy(t->sourceFile, t->sourcePath);
         if (SalamanderGeneral->SalPathAppend(t->sourceFile, fd->Name, MAX_PATH))
         {
-            // spusteni threadu
+            // start the thread
             if (t->Create(ThreadQueue) != NULL)
                 return TRUE;
         }
@@ -2209,7 +2208,7 @@ BOOL OpenVerifyDialog(HWND parent)
                                              MB_OK | MB_ICONEXCLAMATION);
         }
 
-        delete t; // pri chybe je potreba dealokovat objekt threadu
+        delete t; // on failure the thread object needs to be deallocated
     }
     return FALSE;
 }

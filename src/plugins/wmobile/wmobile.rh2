@@ -7,7 +7,7 @@
 #endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
 
 #define IDC_STATIC_1 900
-#include "statics.rh2"   // 900 az 939 jsou timto zabrane !!!
+#include "statics.rh2"   // this reserves identifiers 900 through 939!!!
 
 #define IDI_FS            1002
 

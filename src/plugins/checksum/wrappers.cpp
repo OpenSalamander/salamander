@@ -50,7 +50,7 @@ public:
 protected:
     virtual const char* GetID() { return "MD5"; };
     virtual int GetIDLen() { return 3; };      // strlen(GetID())
-    virtual int GetDigestLen() { return 16; }; // ohlidat zda neni treba zvetsit DIGEST_MAX_SIZE!
+    virtual int GetDigestLen() { return 16; }; // ensure DIGEST_MAX_SIZE remains large enough!
 
 private:
     CSalamanderMD5* md5;
@@ -71,7 +71,7 @@ public:
 protected:
     virtual const char* GetID() { return "SHA1"; };
     virtual int GetIDLen() { return 4; };
-    virtual int GetDigestLen() { return 20; }; // ohlidat zda neni treba zvetsit DIGEST_MAX_SIZE!
+    virtual int GetDigestLen() { return 20; }; // ensure DIGEST_MAX_SIZE remains large enough!
 
 private:
     CSalSHA1 sha1;
@@ -92,7 +92,7 @@ public:
 protected:
     virtual const char* GetID() { return "SHA256"; };
     virtual int GetIDLen() { return 6; };
-    virtual int GetDigestLen() { return 32; }; // ohlidat zda neni treba zvetsit DIGEST_MAX_SIZE!
+    virtual int GetDigestLen() { return 32; }; // ensure DIGEST_MAX_SIZE remains large enough!
 
 private:
     hash_state sha256;
@@ -113,7 +113,7 @@ public:
 protected:
     virtual const char* GetID() { return "SHA512"; };
     virtual int GetIDLen() { return 6; };
-    virtual int GetDigestLen() { return 64; }; // ohlidat zda neni treba zvetsit DIGEST_MAX_SIZE!
+    virtual int GetDigestLen() { return 64; }; // ensure DIGEST_MAX_SIZE remains large enough!
 
 private:
     hash_state sha512;
@@ -238,11 +238,11 @@ bool CCRCAlgo::ParseDigest(char* buf, char* fileName, int fileNameLen, char* dig
 {
     int pos, len;
 
-    // POZOR: nasledujici kod musi byt v souladu s CVerifyDialog::AnalyzeSourceFile() !!!
-    // checksum na konci (za ' ')
+    // WARNING: the following code must match CVerifyDialog::AnalyzeSourceFile() !!!
+    // checksum at the end (after ' ')
 
     GetLastWord(buf, pos, len);
-    for (int i = 0; i < 4; i++) // delka digestu a hex znaky se kontroluji ve CVerifyDialog::AnalyzeSourceFile()
+    for (int i = 0; i < 4; i++) // digest length and hex characters are checked in CVerifyDialog::AnalyzeSourceFile()
         digest[i] = (hex(buf[pos + 2 * i]) << 4) + hex(buf[pos + 2 * i + 1]);
     while (pos > 0 && (buf[pos - 1] == ' ' || buf[pos - 1] == '\t'))
         pos--;
@@ -259,18 +259,18 @@ bool CGenericHashAlgo::ParseDigest(char* buf, char* fileName, int fileNameLen, c
 {
     int pos, len;
 
-    // POZOR: nasledujici kod musi byt v souladu s CVerifyDialog::AnalyzeSourceFile() !!!
-    // checksum na zacatku (pred ' ') nebo checksum na konci (za ' ' nebo '=') a zaroven
-    // jmeno hashe na zacatku (pred '(' nebo ' ')
+    // WARNING: the following code must match CVerifyDialog::AnalyzeSourceFile() !!!
+    // checksum at the beginning (before ' ') or checksum at the end (after ' ' or '=') and at the same time
+    // the hash name at the beginning (before '(' or ' ')
 
     GetFirstWord(buf, pos, len, '(');
     if (len == GetIDLen())
     {
         // MD5 (apache_2.0.46-win32-x86-symbols.zip) = eb5ba72b4164d765a79a7e06cee4eead
         GetLastWord(buf, pos, len, '=');
-        for (int i = 0; i < GetDigestLen(); i++) // delka digestu a hex znaky se kontroluji ve CVerifyDialog::AnalyzeSourceFile()
+        for (int i = 0; i < GetDigestLen(); i++) // digest length and hex characters are checked in CVerifyDialog::AnalyzeSourceFile()
             digest[i] = (hex(buf[pos + 2 * i]) << 4) + hex(buf[pos + 2 * i + 1]);
-        // oriznu rovnitko a checksum pro snazsi vytazeni jmena souboru
+        // trim the equals sign and checksum to simplify extracting the file name
         while (pos > 0 && (buf[pos - 1] == ' ' || buf[pos - 1] == '\t'))
             pos--;
         if (pos > 0 && buf[pos - 1] == '=')
@@ -278,7 +278,7 @@ bool CGenericHashAlgo::ParseDigest(char* buf, char* fileName, int fileNameLen, c
         while (pos > 0 && (buf[pos - 1] == ' ' || buf[pos - 1] == '\t'))
             pos--;
         buf[pos] = 0;
-        // vytazeni jmena souboru
+        // extract the file name
         pos = GetIDLen();
         while ((buf[pos] == ' ') || (buf[pos] == '\t'))
             pos++;
@@ -289,21 +289,21 @@ bool CGenericHashAlgo::ParseDigest(char* buf, char* fileName, int fileNameLen, c
             // "openssl md5 file().txt" produces: "MD5(file().txt)= 636e5618c32f05ac9f2623169527cd3c"
             len = (int)strlen(buf);
             if (len > 0 && buf[len - 1] == ')')
-                buf[len - 1] = 0; // orizneme parujici ')'
+                buf[len - 1] = 0; // cut off the matching ')'
             else
-                pos--; // zavorka neparuje, takze uvodni zavorka je jen nahoda, vratime ji zpet do jmena souboru
+                pos--; // parentheses do not match, so the opening parenthesis was accidental; put it back into the file name
         }
     }
     else
     {
         // aa8b248510531ff91a48e04c5d7ca939 *apache_2.0.44-win9x-x86-apr-patch.zip
-        for (int i = 0; i < GetDigestLen(); i++) // delka digestu a hex znaky se kontroluji ve CVerifyDialog::AnalyzeSourceFile()
+        for (int i = 0; i < GetDigestLen(); i++) // digest length and hex characters are checked in CVerifyDialog::AnalyzeSourceFile()
             digest[i] = (hex(buf[pos + 2 * i]) << 4) + hex(buf[pos + 2 * i + 1]);
         pos += len;
         while (buf[pos] && (buf[pos] == ' ' || buf[pos] == '\t'))
             pos++;
         if (buf[pos] == '*')
-            pos++; // preskoceni hvezdicky oznacujici binarni soubor
+            pos++; // skip the asterisk indicating a binary file
     }
     if ((int)strlen(buf + pos) >= fileNameLen)
         return false; // too long name

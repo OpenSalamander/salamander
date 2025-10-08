@@ -51,7 +51,7 @@ char* ViewerStrNcpy(char data[], int count)
     static char buffer[129]; // 128 chars + ending '\0'
 
     if (count > sizeof(buffer) - 1)
-        count = sizeof(buffer) - 1; // nechceme si prepsat pamet za 'buffer'em
+        count = sizeof(buffer) - 1; // we do not want to overwrite memory beyond the buffer
     strncpy_s(buffer, count + 1, data, _TRUNCATE);
 
     // kill trailing spaces
@@ -144,7 +144,7 @@ BOOL CISOImage::DumpInfo(FILE* outStream)
 {
     CALL_STACK_MESSAGE1("CISOImage::DumpInfo( )");
 
-    // zobrazit info o sessions
+    // display information about sessions
     fprintf(outStream, LoadStr(*GetLabel() ? IDS_INFO_LABEL_LABEL : IDS_INFO_LABEL), GetLabel());
     fprintf(outStream, LoadStr(IDS_INFO_CNT_SESSIONS), Session.Count);
 

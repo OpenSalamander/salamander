@@ -47,7 +47,7 @@ public:
 
     void Navigate(BOOL down);
 
-    // provede kontrolu textu, zda je mozne prejit na jinou polozku
+    // Validate the current text before allowing the selection to move elsewhere
     BOOL CanLeaveText();
 
     void ChangeCurrentState(BOOL forceTranslated = FALSE);
@@ -63,7 +63,7 @@ public:
 protected:
     virtual LRESULT WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-    // naplni sloupce do ListView
+    // Populate the columns in the list view
     void InitListView();
     void OnContextMenu(int x, int y);
 };

@@ -13,24 +13,24 @@
 #include "cfgdlg.h"
 #include "cfg.h"
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// Plugin interface object; its methods are called from Salamander.
 CPluginInterface PluginInterface;
-// cast interfacu CPluginInterface pro viewer
+// Viewer-specific part of the CPluginInterface interface.
 CPluginInterfaceForViewer InterfaceForViewer;
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to the SPL - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to the SLG - language-dependent resources
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// Salamander general interface - valid from launch until the plugin shuts down.
 CSalamanderGeneralAbstract* SalGeneral = NULL;
 
-// definice promenne pro "dbg.h"
+// Variable definition for "dbg.h".
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
 // ConfigVersion: 0 - default
-//                1 - pracovni verze SS 2.1 beta 1
-//                2 - verze SS 2.5 beta 1
-//                3 - AS 3.07: lze nastavit viditelnost jednotlivych casti dumpu
+//                1 - development version SS 2.1 beta 1
+//                2 - version SS 2.5 beta 1
+//                3 - AS 3.07: allows configuring the visibility of individual dump sections
 int ConfigVersion = 0;
 #define CURRENT_CONFIG_VERSION 3
 LPCTSTR CONFIG_VERSION = _T("Version");
@@ -81,34 +81,34 @@ int WINAPI SalamanderPluginGetReqVer()
 
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
-    // nastavime SalamanderDebug pro "dbg.h"
+    // Set SalamanderDebug for "dbg.h".
     SalamanderDebug = salamander->GetSalamanderDebug();
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // This plugin is built for the current Salamander version and newer - perform a check.
     if (salamander->GetVersion() < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
-                   _T("Portable Executable Viewer") /* neprekladat! */, MB_OK | MB_ICONERROR);
+                   _T("Portable Executable Viewer") /* do not translate! */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
-    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), _T("Portable Executable Viewer") /* neprekladat! */);
+    // Load the language module (.slg).
+    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), _T("Portable Executable Viewer") /* do not translate! */);
     if (HLanguage == NULL)
         return NULL;
 
-    if (!InitializeWinLib(_T("PEVIEWER") /* neprekladat! */, DLLInstance))
+    if (!InitializeWinLib(_T("PEVIEWER") /* do not translate! */, DLLInstance))
     {
         return NULL;
     }
 
-    // ziskame obecne rozhrani Salamandera
+    // Obtain Salamander's general interface.
     SalGeneral = salamander->GetSalamanderGeneral();
 
-    // nastavime zakladni informace o pluginu
+    // Set the basic plugin information.
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGIN_NAME),
                                    FUNCTION_CONFIGURATION | FUNCTION_LOADSAVECONFIGURATION | FUNCTION_VIEWER,
                                    VERSINFO_VERSION_NO_PLATFORM,
@@ -118,7 +118,7 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
 
     salamander->SetPluginHomePageURL("www.altap.cz");
 
-    // Defaulni konfigurace.
+    // Default configuration.
     BuildDefaultDumperChain();
 
     return &PluginInterface;
@@ -176,20 +176,20 @@ static int CmpCfgLoadItems(void* context, const void* x, const void* y)
 void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRegistryAbstract* registry)
 {
     CALL_STACK_MESSAGE1("CPluginInterface::LoadConfiguration(, ,)");
-    if (regKey != NULL) // load z registry
+    if (regKey != NULL) // load from the registry
     {
         if (!registry->GetValue(regKey, CONFIG_VERSION, REG_DWORD, &ConfigVersion, sizeof(DWORD)))
         {
-            ConfigVersion = CURRENT_CONFIG_VERSION; // asi nejakej nenechavec... ;-)
+            ConfigVersion = CURRENT_CONFIG_VERSION; // apparently some mischief-maker... ;-)
         }
 
         HKEY subKey;
         if (registry->OpenKey(regKey, CONFIG_DUMPERS, subKey))
         {
-            // Poradi dumperu nacitam z registru do tohoto pole. Polozky pak seradim
-            // podle hodnot nactenych z registru. Nepouzivam hodnotu z registru primo
-            // pro indexovani pole, protoze nejaky stroura to muze zmenit, konfigurace
-            // muze byt poskozena apod.
+            // Load the dumper order from the registry into this array. The items are then sorted
+            // by the values read from the registry. We do not use the registry value directly for
+            // indexing the array, because someone might tamper with it, the configuration could be
+            // corrupted, etc.
             CFG_LOAD_ITEM dumpersInRegistry[AVAILABLE_PE_DUMPERS] = {
                 0,
             };
@@ -199,7 +199,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
                 DWORD dwOrder;
                 if (!registry->GetValue(subKey, g_cfgDumpers[i].pszKey, REG_DWORD, &dwOrder, sizeof(DWORD)))
                 {
-                    // Pokud neni dumper nastaven v registru, defaultne ho zapnu, ale az nakonec stavajiciho vystupu.
+                    // If a dumper is not configured in the registry, enable it by default, but place it at the end of the current output.
                     dwOrder = 1000 + i;
                 }
                 dumpersInRegistry[i].pDumperCfg = &g_cfgDumpers[i];
@@ -215,8 +215,8 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
             {
                 if (dumpersInRegistry[i].dwOrder == 0)
                 {
-                    // Disablovane dumpery byly prerazeny na konec pole, jakmile narazim
-                    // na prvni disablovany, tak koncim.
+                    // Disabled dumpers were moved to the end of the array; as soon as I encounter
+                    // the first disabled one, I stop.
                     break;
                 }
 
@@ -259,11 +259,11 @@ void CPluginInterface::Configuration(HWND parent)
 void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamander)
 {
     CALL_STACK_MESSAGE1("CPluginInterface::Connect(,)");
-    salamander->AddViewer("*.cpl;*.dll;*.drv;*.exe;*.ocx;*.spl;*.sys;*.scr", FALSE); // default (install pluginu), jinak Salam ignoruje
+    salamander->AddViewer("*.cpl;*.dll;*.drv;*.exe;*.ocx;*.spl;*.sys;*.scr", FALSE); // default (plugin installation); otherwise Salamander ignores it
 
-    if (ConfigVersion == 1) // v teto pracovni verzi pred SS 2.5 beta 1 jsme *.SCR odstranili (toto je oprava)
+    if (ConfigVersion == 1) // in this development version before SS 2.5 beta 1 we removed *.SCR (this is a fix)
     {
-        salamander->AddViewer("*.scr", TRUE); // opetovne pridani pripony "*.scr" (uz mame CPluginInterfaceForViewerAbstract::CanViewFile)
+        salamander->AddViewer("*.scr", TRUE); // re-add the "*.scr" extension (we already have CPluginInterfaceForViewerAbstract::CanViewFile)
     }
 }
 
@@ -359,8 +359,8 @@ BOOL CPluginInterfaceForViewer::ViewFile(LPCTSTR name, int left, int top, int wi
                          name, left, top, width, height,
                          showCmd, alwaysOnTop, returnLock, enumFilesSourceUID, enumFilesCurrentIndex);
 
-    // 'lock' ani 'lockOwner' nenastavujeme, staci nam platnost souboru 'name' jen
-    // v ramci teto metody
+    // 'lock' and 'lockOwner' are not set; the lifetime of the file 'name' only needs to
+    // cover this method.
 
     HANDLE hFile;
     HANDLE hFileMapping;
@@ -369,7 +369,7 @@ BOOL CPluginInterfaceForViewer::ViewFile(LPCTSTR name, int left, int top, int wi
 
     HCURSOR hOldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
-    // pokusim se soubor namapovat do pameti
+    // Try to map the file into memory.
     if (!MapFileToMemory(name, hFile, hFileMapping, lpFileBase, fileSize, FALSE))
     {
         SetCursor(hOldCur);
@@ -383,7 +383,7 @@ BOOL CPluginInterfaceForViewer::ViewFile(LPCTSTR name, int left, int top, int wi
         int err;
         CSalamanderPluginInternalViewerData vData;
 
-        // vytvorim docasny soubor a naleju do nej dump modulu
+        // Create a temporary file and pour the module dump into it.
         FILE* outStream = _tfopen(tempFileName, _T("w"));
         if (!DumpFileInfo(lpFileBase, fileSize, outStream))
         {
@@ -396,8 +396,8 @@ BOOL CPluginInterfaceForViewer::ViewFile(LPCTSTR name, int left, int top, int wi
         }
         fclose(outStream);
 
-        // soubor predam Salamanderovi - ten si jej presune do cache a az ho prestane
-        // pouzivat, smaze ho
+        // Hand the file over to Salamander - it moves it into the cache and deletes it once
+        // it is no longer needed.
         vData.Size = sizeof(vData);
         vData.FileName = tempFileName;
         vData.Mode = 0; // text mode
@@ -406,7 +406,7 @@ BOOL CPluginInterfaceForViewer::ViewFile(LPCTSTR name, int left, int top, int wi
         vData.WholeCaption = TRUE;
         if (!SalGeneral->ViewFileInPluginViewer(NULL, &vData, TRUE, NULL, _T("pe_dump.txt"), err))
         {
-            // soubor je smazan i v pripade neuspechu
+            // The file is deleted even in case of failure.
         }
     }
     else
@@ -416,7 +416,7 @@ BOOL CPluginInterfaceForViewer::ViewFile(LPCTSTR name, int left, int top, int wi
                                   LoadStr(IDS_PLUGIN_NAME), MB_OK | MB_ICONEXCLAMATION);
     }
 
-    // odmapuju soubor z pameti
+    // Unmap the file from memory.
     UnmapFileFromMemory(hFile, hFileMapping, lpFileBase);
 
     SetCursor(hOldCur);
@@ -430,18 +430,18 @@ BOOL CPluginInterfaceForViewer::CanViewFile(LPCTSTR name)
     LPVOID lpFileBase;
     DWORD fileSize;
 
-    // pokusim se soubor namapovat do pameti (tise -- zadne chybove hlasky)
+    // Try to map the file into memory (silently -- no error messages).
     if (!MapFileToMemory(name, hFile, hFileMapping, lpFileBase, fileSize, TRUE))
         return FALSE;
 
-    // vytahnu typ havicky
+    // Extract the header type.
     CPEFile PEFile(lpFileBase, fileSize);
     DWORD imageType = PEFile.ImageFileType(NULL);
 
-    // odmapuju soubor z pameti
+    // Unmap the file from memory.
     UnmapFileFromMemory(hFile, hFileMapping, lpFileBase);
 
-    // pokud jde o znamou hlavicku, povolim nase otevreni
+    // Allow our viewer if it is a known header.
     return imageType == IMAGE_DOS_SIGNATURE || imageType == IMAGE_OS2_SIGNATURE ||
            imageType == IMAGE_VXD_SIGNATURE || imageType == IMAGE_NT_SIGNATURE;
 }

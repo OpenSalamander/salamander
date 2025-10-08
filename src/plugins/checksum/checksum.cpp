@@ -11,22 +11,22 @@
 
 // ****************************************************************************
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to the SPL - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to the SLG - language-dependent resources
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object, its methods are called from Salamander
 CPluginInterface PluginInterface;
-// cast interfacu CPluginInterface pro menu extensions
+// the CPluginInterface part used for menu extensions
 CPluginInterfaceForMenuExt InterfaceForMenuExt;
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// Salamander general interface - valid from startup until the plugin shuts down
 CSalamanderGeneralAbstract* SalamanderGeneral = NULL;
 // SHA1 interface from Salamander
 CSalamanderCryptAbstract* SalamanderCrypt = NULL;
-// interface pro komfortni praci se soubory
+// interface for convenient file work
 CSalamanderSafeFileAbstract* SalamanderSafeFile = NULL;
-// definice promenne pro "dbg.h"
+// variable definition for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
-// definice promenne pro "spl_com.h"
+// variable definition for "spl_com.h"
 int SalamanderVersion = 0;
 // Salamander GUI interface
 CSalamanderGUIAbstract* SalamanderGUI;
@@ -84,49 +84,49 @@ void WINAPI HTMLHelpCallback(HWND hWindow, UINT helpID)
 
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
-    // nastavime SalamanderDebug pro "dbg.h"
+    // configure SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
-    // nastavime SalamanderVersion pro "spl_com.h"
+    // configure SalamanderVersion for "spl_com.h"
     SalamanderVersion = salamander->GetVersion();
 
     HANDLES_CAN_USE_TRACE();
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plugin is designed for the current Salamander version and newer - verify that
     if (SalamanderVersion < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
-                   "Checksum" /* neprekladat! */, MB_OK | MB_ICONERROR);
+                   "Checksum" /* do not translate! */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
-    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "Checksum" /* neprekladat! */);
+    // load the language module (.slg)
+    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "Checksum" /* do not translate! */);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain the general Salamander interface
     SalamanderGeneral = salamander->GetSalamanderGeneral();
     SalamanderSafeFile = salamander->GetSalamanderSafeFile();
     SalamanderGUI = salamander->GetSalamanderGUI();
     SalamanderCrypt = SalamanderGeneral->GetSalamanderCrypt();
 
-    // nastavime jmeno souboru s helpem
+    // set the help file name
     SalamanderGeneral->SetHelpFileName("checksum.chm");
 
-    InitializeWinLib("Checksum" /* neprekladat! */, DLLInstance);
+    InitializeWinLib("Checksum" /* do not translate! */, DLLInstance);
 
     SetupWinLibHelp(HTMLHelpCallback);
 
-    // nastavime zakladni informace o pluginu
+    // set the basic information about the plugin
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_CONFIGURATION | FUNCTION_LOADSAVECONFIGURATION,
                                    VERSINFO_VERSION_NO_PLATFORM,
                                    VERSINFO_COPYRIGHT,
                                    LoadStr(IDS_PLUGIN_DESCRIPTION),
-                                   "Checksum" /* neprekladat! */);
+                                   "Checksum" /* do not translate! */);
 
     salamander->SetPluginHomePageURL("www.altap.cz");
 
@@ -240,14 +240,14 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
 {
     CALL_STACK_MESSAGE1("CPluginInterface::Connect(,)");
 
-    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volani salamander->AddMenuItem() dole...
-MENU_TEMPLATE_ITEM PluginMenu[] = 
+    /* used by the export_mnu.py script, which generates salmenu.mnu for Translator
+   keep it in sync with the salamander->AddMenuItem() calls below...
+MENU_TEMPLATE_ITEM PluginMenu[] =
 {
-	{MNTT_PB, 0
-	{MNTT_IT, IDS_MENU_VERIFY
-	{MNTT_IT, IDS_MENU_CALCULATE
-	{MNTT_PE, 0
+        {MNTT_PB, 0
+        {MNTT_IT, IDS_MENU_VERIFY
+        {MNTT_IT, IDS_MENU_CALCULATE
+        {MNTT_PE, 0
 };
 */
 
@@ -255,7 +255,7 @@ MENU_TEMPLATE_ITEM PluginMenu[] =
                             MENU_EVENT_FILE_FOCUSED | MENU_EVENT_DISK, MENU_SKILLLEVEL_ALL);
     salamander->AddMenuItem(-1, LoadStr(IDS_MENU_CALCULATE), 0, CMD_CALCULATE, FALSE, MENU_EVENT_FILE_FOCUSED | MENU_EVENT_FILES_SELECTED | MENU_EVENT_DIR_FOCUSED | MENU_EVENT_DIRS_SELECTED, MENU_EVENT_DISK, MENU_SKILLLEVEL_ALL);
 
-    // nastavime ikonku pluginu
+    // set the plugin icon
     HBITMAP hBmp = (HBITMAP)LoadImage(DLLInstance, MAKEINTRESOURCE(IDB_CHECKSUM),
                                       IMAGE_BITMAP, 16, 16, SalamanderGeneral->GetIconLRFlags());
     salamander->SetBitmapWithIcons(hBmp);
@@ -282,14 +282,14 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
 {
     CALL_STACK_MESSAGE3("CPluginInterfaceForMenuExt::ExecuteMenuItem( , , %ld, %X)", id, eventMask);
 
-    SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_SOURCE); // vsechny prikazy povazujeme za praci s cestou (objevi se v Alt+F12)
+    SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_SOURCE); // treat all commands as path work (shows up in Alt+F12)
 
     switch (id)
     {
     case CMD_VERIFY:
     {
         OpenVerifyDialog(parent);
-        return FALSE; // pracujeme s fokusem, takze neodznacujeme v panelu
+        return FALSE; // we manipulate the focus, so do not clear the panel selection
     }
 
     case CMD_CALCULATE:
@@ -300,12 +300,12 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
 
     case CMD_FOCUSFILE:
     {
-        if (Focus_Path[0] != 0) // jen pokud jsme nemeli smulu (netrefili jsme zacatek BUSY rezimu Salamandera)
+        if (Focus_Path[0] != 0) // only if we were lucky enough not to hit the start of Salamander's BUSY mode
         {
             char* fname;
             if (SalamanderGeneral->CutDirectory(Focus_Path, &fname))
             {
-                SalamanderGeneral->SkipOneActivateRefresh(); // hlavni okno pri prepnuti z dialogu Verify nebude delat refresh
+                SalamanderGeneral->SkipOneActivateRefresh(); // prevent the main window from refreshing when switching from the Verify dialog
                 SalamanderGeneral->FocusNameInPanel(PANEL_SOURCE, Focus_Path, fname);
                 Focus_Path[0] = 0;
             }

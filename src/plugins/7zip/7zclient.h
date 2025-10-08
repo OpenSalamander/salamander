@@ -7,7 +7,7 @@
 //
 // C7zClient
 //
-// Sandbox knihovny 7za.dll
+// 7za.dll library sandbox
 //
 
 #include "7za/CPP/Common/StringConvert.h"
@@ -33,10 +33,10 @@
 #define S_ISLNK(m) (((m) & 0170000) == 0120000) /* symbolic link */
 #endif
 
-// tri stavy pro chyby.
-// jsou situace, kdy nestaci TRUE/FALSE. mame cinnost, pri ktere muze nastat chyba. nekdy muzeme
-// a chceme v cinnosti pokracovat, jindy to nejde. pokud muzeme pokracovat vracime OPER_CONTINUE,
-// pokud to dal nejde (dosla pamet, aj.) -> OPER_CANCEL. pokud vse ok -> OPER_OK
+// three states for errors.
+// there are situations where TRUE/FALSE is not enough. we have an activity that can run into an error. sometimes we can
+// and want to continue the activity, other times we cannot. if we can continue we return OPER_CONTINUE,
+// if it cannot go on (out of memory, etc.) -> OPER_CANCEL. if everything is fine -> OPER_OK
 #define OPER_OK 0
 #define OPER_CONTINUE 1
 #define OPER_CANCEL 2
@@ -47,10 +47,10 @@
 
 typedef UINT32(WINAPI* TCreateObjectFunc)(const GUID* clsID, const GUID* interfaceID, void** outObject);
 
-// slouzi k predani polozek, ktere se budou vybalovat
+// used to pass the items that will be extracted
 struct CArchiveItemInfo
 {
-    CSysString NameInArchive; // v archivu (tedy i s cestou)
+    CSysString NameInArchive; // in the archive (i.e. including the path)
     const CFileData* FileData;
     bool IsDir;
 

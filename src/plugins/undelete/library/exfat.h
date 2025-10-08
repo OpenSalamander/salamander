@@ -1449,7 +1449,7 @@ DWORD CExFATSnapshot<CHAR>::GetFATItem(DWORD index)
     // for simplicity we can read over on end of FAT
     if (!this->Volume->ReadSectors(FATCache, this->Volume->ExFATBoot.FATOffset + firstSector, cacheSectors))
     {
-        // JRYFIXME - projit ostatni volani ReadSectors(), resime navratove hodnoty?? Pokud ano, meli bychom zde vracet BOOL
+        // JRYFIXME - review the other ReadSectors() calls, are we handling the return values? If so, we should return BOOL here.
         String<CHAR>::Error(IDS_UNDELETE, IDS_ERRORREADINGFAT);
         return 0;
     }

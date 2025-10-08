@@ -53,7 +53,7 @@ private:
         /// Request to redirect from an enumeration thread.
         FSStateAsyncRedirect,
 
-        /// The path was a symbolink link and now is being
+        /// The path was a symbolic link and now is being
         /// redirected to the target path.
         FSStateSymLink,
     };

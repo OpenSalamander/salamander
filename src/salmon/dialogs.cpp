@@ -10,7 +10,7 @@
 
 HWND GetTopVisibleParent(HWND hParent)
 {
-    // hledame parenta, ktery uz neni child window (jde o POPUP/OVERLAPPED window)
+    // look for a parent that is no longer a child window (it is a POPUP/OVERLAPPED window)
     HWND hIterator = hParent;
     while ((GetWindowLongPtr(hIterator, GWL_STYLE) & WS_CHILD) &&
            (hIterator = ::GetParent(hIterator)) != NULL &&
@@ -32,20 +32,20 @@ void MultiMonGetClipRectByRect(const RECT* rect, RECT* workClipRect, RECT* monit
 
 void MultiMonGetClipRectByWindow(HWND hByWnd, RECT* workClipRect, RECT* monitorClipRect)
 {
-    HMONITOR hMonitor; // na tento monitor okno umistime
+    HMONITOR hMonitor; // we will place the window on this monitor
     MONITORINFO mi;
     mi.cbSize = sizeof(mi);
 
-    if (hByWnd != NULL && IsWindowVisible(hByWnd) && !IsIconic(hByWnd)) // pozor, tato podminka je take v MultiMonCenterWindow
+    if (hByWnd != NULL && IsWindowVisible(hByWnd) && !IsIconic(hByWnd)) // note this condition is also in MultiMonCenterWindow
     {
         hMonitor = MonitorFromWindow(hByWnd, MONITOR_DEFAULTTONEAREST);
-        // vytahneme working area desktopu
+        // retrieve the desktop working area
         GetMonitorInfo(hMonitor, &mi);
     }
     else
     {
-        // pokud nalezneme foreground okno patrici nasi aplikaci,
-        // centrujeme okno na stejny desktop
+        // if we find a foreground window belonging to our application,
+        // center the window on the same desktop
         HWND hForegroundWnd = GetForegroundWindow();
         DWORD processID;
         GetWindowThreadProcessId(hForegroundWnd, &processID);
@@ -55,14 +55,14 @@ void MultiMonGetClipRectByWindow(HWND hByWnd, RECT* workClipRect, RECT* monitorC
         }
         else
         {
-            // jinak okno centrujeme k primarnimu desktopu
+            // otherwise center the window on the primary desktop
             POINT pt;
-            pt.x = 0; // primarni monitor
+            pt.x = 0; // primary monitor
             pt.y = 0;
             hMonitor = MonitorFromPoint(pt, MONITOR_DEFAULTTOPRIMARY);
         }
 
-        // vytahneme working area desktopu
+        // retrieve the desktop working area
         GetMonitorInfo(hMonitor, &mi);
     }
     *workClipRect = mi.rcWork;
@@ -74,14 +74,14 @@ void MultiMonCenterWindowByRect(HWND hWindow, const RECT& clipR, const RECT& byR
 {
     if (hWindow == NULL)
     {
-        // pri praci s NULL hwnd dochazi k nechtenemu blikani oken
+        // working with a NULL hwnd causes unwanted window flicker
         TRACE_E("MultiMonCenterWindowByRect: hWindow == NULL");
         return;
     }
 
     if (IsZoomed(hWindow))
     {
-        // s maximalizovany oknem nebudeme hybat
+        // do not move a maximized window
         return;
     }
 
@@ -90,20 +90,20 @@ void MultiMonCenterWindowByRect(HWND hWindow, const RECT& clipR, const RECT& byR
     int wndWidth = wndRect.right - wndRect.left;
     int wndHeight = wndRect.bottom - wndRect.top;
 
-    // vycentrujeme
+    // center it
     wndRect.left = byR.left + (byR.right - byR.left - wndWidth) / 2;
     wndRect.top = byR.top + (byR.bottom - byR.top - wndHeight) / 2;
     wndRect.right = wndRect.left + wndWidth;
     wndRect.bottom = wndRect.top + wndHeight;
 
-    // ohlidame hranice
-    if (wndRect.left < clipR.left) // pokud je okno vetsi nez clipR, nechame zobrazit jeho levou cast
+    // keep the window within the clipping bounds
+    if (wndRect.left < clipR.left) // when the window is wider than clipR, leave its left edge visible
     {
         wndRect.left = clipR.left;
         wndRect.right = wndRect.left + wndWidth;
     }
 
-    if (wndRect.top < clipR.top) // pokud je okno vetsi nez clipR, nechame zobrazit jeho hotni cast
+    if (wndRect.top < clipR.top) // when the window is taller than clipR, leave its top edge visible
     {
         wndRect.top = clipR.top;
         wndRect.bottom = wndRect.top + wndHeight;
@@ -111,7 +111,7 @@ void MultiMonCenterWindowByRect(HWND hWindow, const RECT& clipR, const RECT& byR
 
     if (wndWidth <= clipR.right - clipR.left)
     {
-        // pokud je okno mensi nez clipR, osetrime aby nelezlo vpravo za hranici clipR
+        // when the window fits inside clipR, prevent it from spilling past the right edge
         if (wndRect.right >= clipR.right)
         {
             wndRect.left = clipR.right - wndWidth;
@@ -120,14 +120,14 @@ void MultiMonCenterWindowByRect(HWND hWindow, const RECT& clipR, const RECT& byR
     }
     else
     {
-        // pokud je okno vetsi nez clipR
+        // otherwise anchor the window to the left edge so the visible area is maximized
         if (wndRect.left > clipR.left)
-            wndRect.left = clipR.left; // vyuzijeme maximalne prostor
+            wndRect.left = clipR.left; // make maximum use of the space
     }
 
     if (wndHeight <= clipR.bottom - clipR.top)
     {
-        // pokud je okno mensi nez clipR, osetrime aby nelezlo dole za hranici clipR
+        // when the window fits inside clipR, keep it from extending past the bottom edge
         if (wndRect.bottom >= clipR.bottom)
         {
             wndRect.top = clipR.bottom - wndHeight;
@@ -136,9 +136,9 @@ void MultiMonCenterWindowByRect(HWND hWindow, const RECT& clipR, const RECT& byR
     }
     else
     {
-        // pokud je okno vetsi nez clipR
+        // otherwise anchor the window to the top edge so the visible area is maximized
         if (wndRect.top > clipR.top)
-            wndRect.top = clipR.top; // vyuzijeme maximalne prostor
+            wndRect.top = clipR.top; // make maximum use of the space
     }
 
     SetWindowPos(hWindow, NULL, wndRect.left, wndRect.top, 0, 0,
@@ -149,18 +149,18 @@ void MultiMonCenterWindow(HWND hWindow, HWND hByWnd, BOOL findTopWindow)
 {
     if (hWindow == NULL)
     {
-        // pri praci s NULL hwnd dochazi k nechtenemu blikani oken
+        // working with a NULL hwnd causes unwanted window flicker
         TRACE_E("MultiMonCenterWindow: hWindow == NULL");
         return;
     }
 
     if (IsZoomed(hWindow))
     {
-        // s maximalizovany oknem nebudeme hybat
+        // do not move a maximized window
         return;
     }
 
-    // mame dohledat top-level window
+    // we need to find the top-level window
     if (findTopWindow)
     {
         if (hByWnd != NULL)
@@ -172,7 +172,7 @@ void MultiMonCenterWindow(HWND hWindow, HWND hByWnd, BOOL findTopWindow)
     RECT clipR;
     MultiMonGetClipRectByWindow(hByWnd, &clipR, NULL);
     RECT byR;
-    if (hByWnd != NULL && IsWindowVisible(hByWnd) && !IsIconic(hByWnd)) // pozor, tato podminka je take v MultiMonGetClipRectByWindow
+    if (hByWnd != NULL && IsWindowVisible(hByWnd) && !IsIconic(hByWnd)) // note this condition is also in MultiMonGetClipRectByWindow
         GetWindowRect(hByWnd, &byR);
     else
         byR = clipR;
@@ -226,7 +226,7 @@ void CMainDialog::ShowChilds(CDialogTaskEnum task, BOOL show)
         ShowWindow(GetDlgItem(HWindow, ids[i]), show ? SW_SHOW : SW_HIDE);
     if (!show)
     {
-        // nastavim rozmer child okna podle obsahu
+        // set the size of the child window according to the content
         HWND hChild = GetDlgItem(HWindow, IDC_SALMON_UPLOADING);
         char buff[200];
         int resID = 0;
@@ -260,7 +260,7 @@ void CMainDialog::ShowChilds(CDialogTaskEnum task, BOOL show)
         SelectObject(hDC, hOldFont);
         HANDLES(ReleaseDC(HWindow, hDC));
         SIZE sz = {tR.right - tR.left, tR.bottom - tR.top};
-        sz.cx += 3; // pro jistotu
+        sz.cx += 3; // just to be sure
         sz.cy += 1;
         SetWindowPos(hChild, NULL, 0, 0, sz.cx, sz.cy, SWP_NOZORDER | SWP_NOMOVE);
         CenterControl(IDC_SALMON_UPLOADING);
@@ -292,27 +292,27 @@ void StripWhiteSpaces(char* buff)
     *s = 0;
 }
 
-BOOL ValidateEmail(const char* buff) // primitivni kontrola syntakticke validity emailu
+BOOL ValidateEmail(const char* buff) // primitive check of the email's syntactic validity
 {
-    // predpoklada, ze jsou orezany white spacy na zacatku/konci
+    // assumes leading/trailing whitespace is trimmed
     const char* s = buff;
-    // string nesmi byt prazdny
+    // the string must not be empty
     if (*s == 0)
         return FALSE;
-    // nejaky znak jiny nez zavinac musi byt pred zacinacem
+    // some character other than the at sign must precede it
     if (*s == '@')
         return FALSE;
-    // hledame zacinac
+    // search for the at sign
     while (*s != '@' && *s != 0)
         s++;
-    // pokud jsme ho nenasli, neni email validni
+    // if we did not find it, the email is not valid
     if (*s != '@')
         return FALSE;
     s++;
-    // email nemuze koncit zavinacem
+    // the email cannot end with the at sign
     if (*s == 0)
         return FALSE;
-    // dalsi zavinac uz nesmi byt
+    // there must not be another at sign
     while (*s != '@' && *s != 0)
         s++;
     if (*s == '@')
@@ -356,10 +356,12 @@ CMainDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // od monitorovaneho procesu mame pridelene povoleni pro zavolani SetForegroundWindow
-        // podstatne je, ze jiz bezi nase message loop, jinak to osklive zlobilo (dokud jsme SetForegroundWindow
-        // volali z OpenMainDialog) - pri spusteni monitorovaneho softu pres StartMenu a padu jsme zustavali dole,
-        // ProtMon okno nebylo aktivni, nedostalo focus, dokud monitorovany soft nezavrel sve okno
+        // the monitored process grants us permission to call SetForegroundWindow.
+        // The crucial detail is to invoke it only once our message loop is already running;
+        // otherwise Windows behaves poorly (until we call SetForegroundWindow from OpenMainDialog).
+        // When the monitored application was launched from the Start Menu and crashed, we stayed in the background,
+        // the ProtMon window remained inactive, and it did not receive focus until the monitored application
+        // closed its window.
         SetForegroundWindow(HWindow);
 
         MultiMonCenterWindow(HWindow, NULL, FALSE);
@@ -388,7 +390,7 @@ CMainDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             ShowChilds(dteMinidump, FALSE);
         }
 
-        // focus do pole s popisem padu
+        // focus the field with the crash description
         SetFocus(GetDlgItem(HWindow, IDC_SALMON_ACTION));
         SendMessage(HWindow, DM_SETDEFID, IDC_SALMON_ACTION, 0);
 
@@ -409,7 +411,7 @@ CMainDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_TIMER:
     {
-        if (!AppIsBusy && wParam == 666) // chranime se pred stavem, kdy uz mame zobrazeny msgbox; nechceme dalsi
+        if (!AppIsBusy && wParam == 666) // skip updates while a message box is up; we do not want another one
         {
             if (Compressing || Uploading || Minidumping)
             {
@@ -427,7 +429,7 @@ CMainDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 Minidumping = FALSE;
 
-                // pokud selhalo generovani minidumpu, pouze vyhlasime chybu, ale pokracujeme dale (neco se mohlo povest ulozit)
+                // if minidump generation failed, just report the error but continue (some data may have been saved)
                 if (!MinidumpParams.Result)
                 {
                     char msg[2 * MAX_PATH];
@@ -437,11 +439,11 @@ CMainDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                 if (GetBugReportNames() && GetUniqueBugReportCount() > 1)
                 {
-                    // reportu je vic, doptame se zda je mame poslat vsechny
+                    // if multiple reports exist, ask whether to send them all
                     int res = MessageBox(HWindow, LoadStr(IDS_SALMON_MORE_REPORTS, HLanguage), LoadStr(IDS_SALMON_TITLE, HLanguage), MB_YESNO | MB_ICONQUESTION | MB_SETFOREGROUND);
                     ReportOldBugs = (res == IDYES);
                 }
-                // zobrazime hlavni dialog s dotazem
+                // bring back the main dialog along with the question prompt
                 ShowChilds(dteDialog, TRUE);
             }
 
@@ -451,7 +453,7 @@ CMainDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                 if (CompressParams.Result)
                 {
-                    // spustime upload vlakno
+                    // start the upload thread
                     UploadingIndex = 0;
                     Uploading = StartUploadIndex(UploadingIndex);
                 }
@@ -474,14 +476,14 @@ CMainDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     if (UploadingIndex + 1 < BugReports.Count && ReportOldBugs)
                     {
-                        // zacneme uploadit dalsi soubor
+                        // start uploading the next file
                         UploadingIndex++;
                         Uploading = StartUploadIndex(UploadingIndex);
                     }
                     else
                     {
                         MessageBox(HWindow, LoadStr(IDS_SALMON_UPLOADSUCCESS, HLanguage), LoadStr(IDS_SALMON_TITLE, HLanguage), MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND);
-                        CleanBugReportsDirectory(FALSE); // napred promazneme, jinak bude Salam pri startu nadavat
+                        CleanBugReportsDirectory(FALSE); // clean first so Salamander does not complain when it starts
                         if (IsDlgButtonChecked(HWindow, IDC_SALMON_RESTART) == BST_CHECKED)
                             RestartSalamander(HWindow);
                         PostQuitMessage(0);
@@ -492,7 +494,7 @@ CMainDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     char msg[2 * MAX_PATH];
                     sprintf(msg, LoadStr(IDS_SALMON_UPLOADFAILED, HLanguage), UploadParams.ErrorMessage);
                     MessageBox(HWindow, msg, LoadStr(IDS_SALMON_TITLE, HLanguage), MB_OK | MB_ICONEXCLAMATION | MB_SETFOREGROUND);
-                    CleanBugReportsDirectory(TRUE); // promazeme reporty, nechame jen archivy
+                    CleanBugReportsDirectory(TRUE); // delete the reports, keep only the archives
                     OpenFolder(NULL, BugReportPath);
                     PostQuitMessage(0);
                 }

@@ -84,7 +84,7 @@ CreateAppropriateParser(const char* fileName, CParserInterface** parser)
 {
     CParserInterface* iface = NULL;
 
-    const char* ext = strrchr(fileName, '.'); // ".cvspass" ve Windows je pripona
+    const char* ext = strrchr(fileName, '.'); // ".cvspass" is an extension in Windows
 
     if (!ext)
         return preUnknownFile;
@@ -140,5 +140,5 @@ CreateAppropriateParser(const char* fileName, CParserInterface** parser)
         return preOK;
     }
     else
-        return preUnknownFile; // nenasli jsme zadny parser schopny otevrit dany soubor
+        return preUnknownFile; // we did not find any parser capable of opening the given file
 }

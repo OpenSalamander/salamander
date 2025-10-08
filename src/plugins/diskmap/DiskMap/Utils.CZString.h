@@ -45,8 +45,8 @@ class CZStringBuffer
 
 protected:
     TCHAR* _s;
-    size_t _l; //delka retezce
-    size_t _c; //velikost buff v TCHARech
+    size_t _l; //length of the string
+    size_t _c; //buffer size in TCHARs
 public:
     explicit CZStringBuffer(TCHAR const* s)
     {
