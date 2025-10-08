@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -13,27 +14,27 @@
 
 //
 // ****************************************************************************
-// Konstanty a globalni promenne
+// Constants and global variables
 // ****************************************************************************
 //
 
-// Ukazatel na funkci zpracovavajici chybu
+// Pointer to the error handling function
 BOOL(*PackErrorHandlerPtr)
 (HWND parent, const WORD errNum, ...) = EmptyErrorHandler;
 
 const char* SPAWN_EXE_NAME = "salspawn.exe";
 const char* SPAWN_EXE_PARAMS = "-c10000";
 
-// Cesta k programu salspawn
+// Path to the salspawn program
 char SpawnExe[MAX_PATH * 2] = {0};
 BOOL SpawnExeInitialised = FALSE;
 
-// aby to hlasilo chybu datumu jen jednou
+// so that the date error is reported only once
 BOOL FirstError;
 
-// Tabulka definic archivu a zachazeni s nimi - nemodifikujici operace
-// !!! POZOR: pri zmenach poradi externich archivatoru je treba zmenit i poradi v poli
-// externalArchivers v metode CPlugins::FindViewEdit
+// Table of archive definitions and handling - non-modifying operations
+// !!! WARNING: when changing the order of external archivers you must also change
+// the order in the externalArchivers array inside CPlugins::FindViewEdit method
 const SPackBrowseTable PackBrowseTable[] =
     {
         // JAR 1.02 Win32
@@ -47,8 +48,8 @@ const SPackBrowseTable PackBrowseTable[] =
         {
             (TPackErrorTable*)&RARErrors, TRUE,
             "$(ArchivePath)", "$(Rar32bitExecutable) v -c- \"$(ArchiveFileName)\"",
-            NULL, "--------", 0, 0, 2, "--------", ' ', 1, 2, 6, 5, 7, 3, 2,                              // po RAR 5.0 patchujeme indexy runtime, viz promenna 'RAR5AndLater'
-            "$(TargetPath)", "$(Rar32bitExecutable) x -scol \"$(ArchiveFullName)\" @\"$(ListFullName)\"", // od verze 5.0 musime vnutit -scol switch, verzi 4.20 nevadi; vyskytuje se na dalsich mistech a v registry
+            NULL, "--------", 0, 0, 2, "--------", ' ', 1, 2, 6, 5, 7, 3, 2,                              // after RAR 5.0 we patch the indices at runtime; see variable 'RAR5AndLater'
+            "$(TargetPath)", "$(Rar32bitExecutable) x -scol \"$(ArchiveFullName)\" @\"$(ListFullName)\"", // since version 5.0 we must enforce the -scol switch; version 4.20 is fine; appears elsewhere and in the registry
             "$(TargetPath)", "$(Rar32bitExecutable) e \"$(ArchiveFullName)\" \"$(ExtractFullName)\"", FALSE},
         // ARJ 2.60 MS-DOS
         {
@@ -123,70 +124,69 @@ const SPackBrowseTable PackBrowseTable[] =
 
 //
 // ****************************************************************************
-// Funkce
+// Functions
 // ****************************************************************************
 //
 
 //
 // ****************************************************************************
-// Funkce pro listing archivu
+// Functions for listing archives
 //
 
 //
 // ****************************************************************************
 // char *PackGetField(char *buffer, const int index, const int nameidx)
 //
-//   V retezci buffer najde polozku index-tou v poradi. Polozky mohou byt
-//   oddeleny libovolnym poctem mezer, tabelatoru nebo prechodu na novy radek.
-//   (pridan znak svisle cary (ASCII 0xB3) kvuli ACE)
-//   Pokud prechazime pres polozku s indexem nameidx (vetsinou nazev souboru),
-//   bere se jako oddelovac polozek pouze prechod na novy radek (nazev muze
-//   obsahovat mezery nebo tabelatory). Je volana z PackScanLine().
+//   In the string, buffer finds the item at the given index. Items can be
+//   separated by any number of spaces, tabs or newlines.
+//   (the vertical bar character (ASCII 0xB3) was added because of ACE)
+//   When passing over the item at index nameidx (usually the file name),
+//   the only item separator is a newline (as the name can contain spaces or tabs).
+//   This function is called from PackScanLine().
 //
-//   RET: vraci ukazatel na zadanou polozku v retezci buffer nebo NULL, pokud
-//        nemuze byt nalezena
-//   IN:  buffer je radka textu urcena k analyze
-//        index je poradove cislo polozky, ktera ma byt nalezena
-//        nameidx je index polozky "jmeno souboru"
+//   RET: returns a pointer to the given item in buffer string or NULL if it cannot be found
+//   IN:  buffer is a line of text for analysis
+//        index is the ordinal number of the item to be found
+//        nameidx is the index of the "file name" item
 
 char* PackGetField(char* buffer, const int index, const int nameidx, const char separator)
 {
     CALL_STACK_MESSAGE5("PackGetField(%s, %d, %d, %u)", buffer, index, nameidx, separator);
-    // hledana polozka pro dany archivacni program neexistuje
+    // the requested item does not exist for the given archiver program
     if (index == 0)
         return NULL;
 
-    // indikuje prave aktualni polozku, na ktere jsme
+    // indicates the current item we are at
     int i = 1;
 
-    // preskocime uvodni mezery a tabelatory (jsou-li)
+    // skip leading spaces and tabs (if there are any)
     while (*buffer != '\0' && (*buffer == ' ' || *buffer == '\t' ||
-                               *buffer == 0x10 || *buffer == 0x11 || // sipky pro ACE
+                               *buffer == 0x10 || *buffer == 0x11 || // arrow characters for ACE
                                *buffer == separator))
         buffer++;
 
-    // najdeme zadanou polozku
+    // find the specified item
     while (index != i)
     {
-        // prejedeme polozku
+        // skip the item
         if (i == nameidx)
-            // pokud jsme na jmene, oddelovacem je pouze prechod na novy radek
+            // if we are on the name, only a newline is a separator
             while (*buffer != '\0' && *buffer != '\n')
                 buffer++;
         else
-            // jinak je to mezera, tabelator, pomlcka, nebo prechod na novy radek
+            // otherwise it is a space, tab, dash or newline
             while (*buffer != '\0' && *buffer != ' ' && *buffer != '\n' &&
                    *buffer != '\t' && *buffer != 0x10 && *buffer != 0x11 &&
                    *buffer != separator)
                 buffer++;
 
-        // prejedeme mezery za ni
+        // skip the spaces behind it
         while (*buffer != '\0' && (*buffer == ' ' || *buffer == '\t' ||
                                    *buffer == '\n' || *buffer == 0x10 ||
                                    *buffer == 0x11 || *buffer == separator))
             buffer++;
 
-        // jsme na dalsi polozce
+        // we are on the next item
         i++;
     }
     return buffer;
@@ -196,43 +196,42 @@ char* PackGetField(char* buffer, const int index, const int nameidx, const char 
 // ****************************************************************************
 // BOOL PackScanLine(char *buffer, CSalamanderDirectory &dir, const int index)
 //
-//   Analyzuje jednu polozku seznamu souboru z vypisu archivacniho
-//   programu. Vetsinou jde o jednu radku, muze vsak jit i o vice
-//   spojenych - musi obsahovat vsechny informace k jedinenu
-//   souboru ulozenemu v archivu
-//   Je volana z funkce PackList()
+//   Analyzes one item from the file list output of the archiver program.
+//   Usually, it is a single line but it can span multiple connected lines -
+//   it must contain all information about a single file stored
+//   in the archive. Called from the PackList() function.
 //
-//   RET: vraci TRUE pri uspechu, FALSE pri chybe
-//        pri chybe vola callback funkci *PackErrorHandlerPtr
-//   IN:  buffer je radka textu urcena k analyze - pri analyze je zmenen !
-//        index je index v tabulce PackTable k prislusnemu radku
-//   OUT: CSalamanderDirectory je vytoreno a naplneno udaji o archivu
+//   RET: returns TRUE on success, FALSE on error
+//        on error the callback function *PackErrorHandlerPtr is called
+//   IN:  buffer is the line of text to be analyzed - it is modified during analysis !
+//        index is the index in PackTable table corresponding to the given line
+//   OUT: CSalamanderDirectory is created and filled with archive data
 
 BOOL PackScanLine(char* buffer, CSalamanderDirectory& dir, const int index,
                   const SPackBrowseTable* configTable, BOOL ARJHack)
 {
     CALL_STACK_MESSAGE3("PackScanLine(%s, , %d,)", buffer, index);
-    // pridavany soubor nebo adresar
+    // the file or directory being added
     CFileData newfile;
     int idx;
 
-    // buffer pro nazev souboru
+    // buffer for the file name
     char filename[MAX_PATH];
     char* tmpfname = filename;
 
-    // najdeme nazev v radku
+    // locate the name in the line
     char* tmpbuf = PackGetField(buffer, configTable->NameIdx,
                                 configTable->NameIdx,
                                 configTable->Separator);
-    // je blbost, aby neexistoval nazev, ale pokud do konfigurace nechame
-    // stourat uzivatele, melo by ho to servat
+    // it makes no sense for the name to be missing, but if we let the user
+    // tamper with the configuration, it should shout at him
     if (tmpbuf == NULL)
         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_ARCCFG);
 
-    // zlikvidujeme pripadny backslash nebo lomitko na zacatku
+    // remove a leading backslash or slash if present
     if (*tmpbuf == '\\' || *tmpbuf == '/')
         tmpbuf++;
-    // prekopirujeme jen nazev, lomitka nahrazujeme backslashema
+    // copy only the name, replacing slashes with backslashes
     while (*tmpbuf != '\0' && *tmpbuf != '\n')
     {
         if (*tmpbuf == '/')
@@ -244,14 +243,14 @@ BOOL PackScanLine(char* buffer, CSalamanderDirectory& dir, const int index,
             *tmpfname++ = *tmpbuf++;
     }
 
-    // zrusime pripadne separatory na konci nazvu
+    // remove any trailing separators from the name
     while (*(tmpfname - 1) == ' ' || *(tmpfname - 1) == '\t' ||
            *(tmpfname - 1) == configTable->Separator)
         tmpfname--;
 
-    // pokud zpracovavany objekt neni adresar podle lomitka na konci nazvu,
-    // najdeme atributy v radku, a pokud je nektery z nich D nebo d,
-    // jde take o adresar, takze pridame backslash na konec
+    // if the processed object is not a directory according to the trailing slash,
+    // find the attributes in the line and if any of them is D or d,
+    // it is also a directory so append a backslash at the end
     if (*(tmpfname - 1) != '\\')
     {
         idx = configTable->AttrIdx;
@@ -269,55 +268,55 @@ BOOL PackScanLine(char* buffer, CSalamanderDirectory& dir, const int index,
                 *tmpfname++ = '\\';
         }
     }
-    // zakoncime, a pripravime ukazatel na posledni znak (ne-backslashovy)
+    // terminate and prepare a pointer to the last non-backslash character
     *tmpfname-- = '\0';
     if (*tmpfname == '\\')
         tmpfname--;
 
-    char* pomptr = tmpfname; // ukazuje na konec nazvu
-    // oddelime ho od cesty
+    char* pomptr = tmpfname; // points to the end of the name
+    // separate it from the path
     while (pomptr > filename && *pomptr != '\\')
         pomptr--;
 
     char* pomptr2;
     if (*pomptr == '\\')
     {
-        // je tu i nazev i cesta
+        // there is both a name and a path
         *pomptr++ = '\0';
         pomptr2 = filename;
     }
     else
     {
-        // je tu jen nazev
+        // only the name is present
         pomptr2 = NULL;
     }
 
-    // ted mame v pomptr nazev pridavaneho adresare nebo souboru
-    // a v pomptr2 pripadnou cestu k nemu
+    // pomptr now holds the name of the added directory or file
+    // and pomptr2 possibly holds the path to it
     newfile.NameLen = tmpfname - pomptr + 1;
 
-    // nastavime jmeno noveho souboru nebo adresare
+    // set the name of the new file or directory
     newfile.Name = (char*)malloc(newfile.NameLen + 1);
     if (!newfile.Name)
         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_NOMEM);
-    OemToCharBuff(pomptr, newfile.Name, newfile.NameLen); // kopie s prevodem z OEM na ANSI
+    OemToCharBuff(pomptr, newfile.Name, newfile.NameLen); // copy with conversion from OEM to ANSI
     newfile.Name[newfile.NameLen] = '\0';
 
-    // prevedeme jeste cestu z OEM na ANSI
+    // convert the path from OEM to ANSI as well
     if (pomptr2 != NULL)
         OemToChar(pomptr2, pomptr2);
 
-    // nastavime priponu
+    // set the extension
     char* s = tmpfname - 1;
     while (s >= pomptr && *s != '.')
         s--;
     if (s >= pomptr)
-        //  if (s > pomptr)  // ".cvspass" ve Windows je pripona ...
+        //  if (s > pomptr)  // ".cvspass" is an extension in Windows...
         newfile.Ext = newfile.Name + (s - pomptr) + 1;
     else
         newfile.Ext = newfile.Name + newfile.NameLen;
 
-    // nyni nacteme datum a cas
+    // now load the date and time
     SYSTEMTIME t;
     idx = abs(configTable->DateIdx);
     if (ARJHack)
@@ -325,7 +324,7 @@ BOOL PackScanLine(char* buffer, CSalamanderDirectory& dir, const int index,
     tmpbuf = PackGetField(buffer, idx,
                           configTable->NameIdx,
                           configTable->Separator);
-    // nenasli jsme polozku ve vypisu, dame default
+    // the item was not found in the listing, use defaults
     if (tmpbuf == NULL)
     {
         t.wYear = 1980;
@@ -334,18 +333,18 @@ BOOL PackScanLine(char* buffer, CSalamanderDirectory& dir, const int index,
     }
     else
     {
-        // jinak nacteme vsechny tri casti data
+        // otherwise read all three parts of the date
         int i;
         for (i = 1; i < 4; i++)
         {
             WORD tmpnum = 0;
-            // nacteme cislo
+            // read a number
             while (*tmpbuf >= '0' && *tmpbuf <= '9')
             {
                 tmpnum = tmpnum * 10 + (*tmpbuf - '0');
                 tmpbuf++;
             }
-            // a priradime do spravne promenne
+            // and assign it to the correct variable
             if (configTable->DateYIdx == i)
                 t.wYear = tmpnum;
             else if (configTable->DateMIdx == i)
@@ -372,28 +371,28 @@ BOOL PackScanLine(char* buffer, CSalamanderDirectory& dir, const int index,
     tmpbuf = PackGetField(buffer, idx,
                           configTable->NameIdx,
                           configTable->Separator);
-    // vynulujem pro pripad, ze bychom polozku neprecetli (default cas)
+    // set to zero, in case we did not read the item (default time)
     t.wHour = 0;
     t.wMinute = 0;
     t.wSecond = 0;
     t.wMilliseconds = 0;
     if (tmpbuf != NULL)
     {
-        // polozka existuje, tak nacteme hodiny
+        // item exists, read hours
         while (*tmpbuf >= '0' && *tmpbuf <= '9')
         {
             t.wHour = t.wHour * 10 + (*tmpbuf - '0');
             tmpbuf++;
         }
-        // preskocime jeden znak oddelovace
+        // skip one separator character
         tmpbuf++;
-        // dalsi cislice musi byt minuty
+        // next digits must be minutes
         while (*tmpbuf >= '0' && *tmpbuf <= '9')
         {
             t.wMinute = t.wMinute * 10 + (*tmpbuf - '0');
             tmpbuf++;
         }
-        // nenasleduje am/pm ?
+        // is am/pm following?
         if (*tmpbuf == 'a' || *tmpbuf == 'p' || *tmpbuf == 'A' || *tmpbuf == 'P')
         {
             if (*tmpbuf == 'p' || *tmpbuf == 'P')
@@ -404,20 +403,20 @@ BOOL PackScanLine(char* buffer, CSalamanderDirectory& dir, const int index,
             if (*tmpbuf == 'm' || *tmpbuf == 'M')
                 tmpbuf++;
         }
-        // a jestli nenasleduje oddelovac polozek, muzeme nacist jeste sekundy
+        // if no item separator follows, we can read only seconds
         if (*tmpbuf != '\0' && *tmpbuf != '\n' && *tmpbuf != '\t' &&
             *tmpbuf != ' ')
         {
-            // preskocime oddelovac
+            // skip the separator
             tmpbuf++;
-            // a nacteme sekundy
+            // and read seconds
             while (*tmpbuf >= '0' && *tmpbuf <= '9')
             {
                 t.wSecond = t.wSecond * 10 + (*tmpbuf - '0');
                 tmpbuf++;
             }
         }
-        // nenasleduje am/pm ?
+        // is am/pm following?
         if (*tmpbuf == 'a' || *tmpbuf == 'p' || *tmpbuf == 'A' || *tmpbuf == 'P')
         {
             if (*tmpbuf == 'p' || *tmpbuf == 'P')
@@ -430,7 +429,7 @@ BOOL PackScanLine(char* buffer, CSalamanderDirectory& dir, const int index,
         }
     }
 
-    // a ulozime do struktury
+    // and store it in the structure
     FILETIME lt;
     if (!SystemTimeToFileTime(&t, &lt))
     {
@@ -470,34 +469,34 @@ BOOL PackScanLine(char* buffer, CSalamanderDirectory& dir, const int index,
         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_GENERAL, buff);
     }
 
-    // ted nacteme velikost souboru
+    // now read the file size
     idx = configTable->SizeIdx;
     if (ARJHack)
         idx--;
     tmpbuf = PackGetField(buffer, idx,
                           configTable->NameIdx,
                           configTable->Separator);
-    // default je nula
+    // default is zero
     unsigned __int64 tmpvalue = 0;
-    // pokud polozka existuje
+    // if the item exists
     if (tmpbuf != NULL)
-        // nacteme ji
+        // read it
         while (*tmpbuf >= '0' && *tmpbuf <= '9')
         {
             tmpvalue = tmpvalue * 10 + (*tmpbuf - '0');
             tmpbuf++;
         }
-    // a nastavime ve strukture
+    // and set it in the structure
     newfile.Size.Set((DWORD)(tmpvalue & 0xFFFFFFFF), (DWORD)(tmpvalue >> 32));
 
-    // nasleduji atributy
+    // attributes follow
     idx = configTable->AttrIdx;
     if (ARJHack)
         idx--;
     tmpbuf = PackGetField(buffer, idx,
                           configTable->NameIdx,
                           configTable->Separator);
-    // default je zadne nenastavene
+    // default is none set
     newfile.Attr = 0;
     newfile.Hidden = 0;
     newfile.IsOffline = 0;
@@ -507,22 +506,22 @@ BOOL PackScanLine(char* buffer, CSalamanderDirectory& dir, const int index,
         {
             switch (*tmpbuf)
             {
-            // read-only atribut
+            // read-only attribute
             case 'R':
             case 'r':
                 newfile.Attr |= FILE_ATTRIBUTE_READONLY;
                 break;
-            // archive atribut
+            // archive attribute
             case 'A':
             case 'a':
                 newfile.Attr |= FILE_ATTRIBUTE_ARCHIVE;
                 break;
-            // system atribut
+            // system attribute
             case 'S':
             case 's':
                 newfile.Attr |= FILE_ATTRIBUTE_SYSTEM;
                 break;
-            // hidden atribut
+            // hidden attribute
             case 'H':
             case 'h':
                 newfile.Attr |= FILE_ATTRIBUTE_HIDDEN;
@@ -532,16 +531,16 @@ BOOL PackScanLine(char* buffer, CSalamanderDirectory& dir, const int index,
             tmpbuf++;
         }
 
-    // nastavime ostatni polozky struktury (ty co nejsou nulovane v AddFile/Dir)
+    // set the remaining structure items (those not zeroed in AddFile/Dir)
     newfile.DosName = NULL;
-    newfile.PluginData = -1; // -1 jen tak, ignoruje se
+    newfile.PluginData = -1; // -1 just for now, ignored
 
-    // a pridame bud novy soubor, nebo adresar
+    // and add either a new file or a directory
     if (*(tmpfname + 1) != '\\')
     {
         newfile.IsLink = IsFileLink(newfile.Ext);
 
-        // je to soubor, pridame soubor
+        // it is a file, add a file
         if (!dir.AddFile(pomptr2, newfile, NULL))
         {
             free(newfile.Name);
@@ -550,11 +549,11 @@ BOOL PackScanLine(char* buffer, CSalamanderDirectory& dir, const int index,
     }
     else
     {
-        // je to adresar, pridame adresar
+        // it is a directory, add a directory
         newfile.Attr |= FILE_ATTRIBUTE_DIRECTORY;
         newfile.IsLink = 0;
         if (!Configuration.SortDirsByExt)
-            newfile.Ext = newfile.Name + newfile.NameLen; // adresare nemaji pripony
+            newfile.Ext = newfile.Name + newfile.NameLen; // directories have no extension
         if (!dir.AddDir(pomptr2, newfile, NULL))
         {
             free(newfile.Name);
@@ -569,37 +568,37 @@ BOOL PackScanLine(char* buffer, CSalamanderDirectory& dir, const int index,
 // BOOL PackList(CFilesWindow *panel, const char *archiveFileName, CSalamanderDirectory &dir,
 //               CPluginDataInterfaceAbstract *&pluginData, CPluginData *&plugin)
 //
-//   Funkce pro zjisteni obsahu archivu.
+//   Function to obtain the contents of an archive.
 //
-//   RET: vraci TRUE pri uspechu, FALSE pri chybe
-//        pri chybe vola callback funkci *PackErrorHandlerPtr
-//   IN:  panel je souborovy panel Salamandera
-//        archiveFileName je nazev souboru archivu k vylistovani
-//   OUT: dir je naplneno udaji o archivu
-//        pluginData je interface k datum o sloupcich definovanych plug-inem archivatoru
-//        plugin je zaznam plug-inu, ktery provedl ListArchive
+//   RET: returns TRUE on success, FALSE on failure
+//        on failure the callback function *PackErrorHandlerPtr is called
+//   IN:  panel is Salamander's file panel
+//        archiveFileName is the name of the archive file to be listed
+//   OUT: dir is filled with archive data
+//        pluginData is the interface to column data defined by the archiver plug-in
+//        plugin is the plug-in record that performed ListArchive
 
 BOOL PackList(CFilesWindow* panel, const char* archiveFileName, CSalamanderDirectory& dir,
               CPluginDataInterfaceAbstract*& pluginData, CPluginData*& plugin)
 {
     CALL_STACK_MESSAGE2("PackList(, %s, , ,)", archiveFileName);
-    // pro jistotu uklidime
+    // clean up just in case
     dir.Clear(NULL);
     pluginData = NULL;
     plugin = NULL;
 
     FirstError = TRUE;
 
-    // najdeme ten pravy podle tabulky
+    // find the correct one according to the table
     int format = PackerFormatConfig.PackIsArchive(archiveFileName);
-    // Nenasli jsme podporovany archiv - chyba
+    // Supported archive not found - error
     if (format == 0)
         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_ARCNAME_UNSUP);
 
     format--;
     int index = PackerFormatConfig.GetUnpackerIndex(format);
 
-    // Nejde o interni zpracovani (DLL) ?
+    // Is this not internal processing (DLL)?
     if (index < 0)
     {
         plugin = Plugins.Get(-index - 1);
@@ -610,22 +609,22 @@ BOOL PackList(CFilesWindow* panel, const char* archiveFileName, CSalamanderDirec
         return plugin->ListArchive(panel, archiveFileName, dir, pluginData);
     }
 
-    // pokud jsme jeste nezjistili cestu ke spawnu, udelame to ted
+    // if we have not determined the spawn path yet, do it now
     if (!InitSpawnName(NULL))
         return FALSE;
 
     //
-    // Budeme spoustet externi program s presmerovanim vystupu
+    // We will run an external program with redirected output
     //
     const SPackBrowseTable* browseTable = ArchiverConfig.GetUnpackerConfigTable(index);
 
-    // vykonstruujeme aktualni adresar
+    // build the current directory
     char currentDir[MAX_PATH];
     if (!PackExpandInitDir(archiveFileName, NULL, NULL, browseTable->ListInitDir,
                            currentDir, MAX_PATH))
         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_IDIRERR);
 
-    // vykonstruujeme prikazovou radku
+    // build the command line
     char cmdLine[PACK_CMDLINE_MAXLEN];
     sprintf(cmdLine, "\"%s\" %s ", SpawnExe, SPAWN_EXE_PARAMS);
     int cmdIndex = (int)strlen(cmdLine);
@@ -633,7 +632,7 @@ BOOL PackList(CFilesWindow* panel, const char* archiveFileName, CSalamanderDirec
                            cmdLine + cmdIndex, PACK_CMDLINE_MAXLEN - cmdIndex, NULL))
         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_CMDLNERR);
 
-    char cmdForErrors[MAX_PATH]; // cesta+nazev spusteneho exe pro pripad chyby
+    char cmdForErrors[MAX_PATH]; // path and name of executed exe if an error occurs
     if (PackExpandCmdLine(archiveFileName, NULL, NULL, NULL, browseTable->ListCommand,
                           cmdForErrors, MAX_PATH, NULL))
     {
@@ -661,7 +660,7 @@ BOOL PackList(CFilesWindow* panel, const char* archiveFileName, CSalamanderDirec
     else
         cmdForErrors[0] = 0;
 
-    // zjistime, zda neni komandlajna moc dlouha
+    // check whether the command line is too long
     if (!browseTable->SupportLongNames && strlen(cmdLine) >= 128)
     {
         char buffer[1000];
@@ -669,13 +668,13 @@ BOOL PackList(CFilesWindow* panel, const char* archiveFileName, CSalamanderDirec
         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_CMDLNLEN, buffer);
     }
 
-    // musime dedit handly
+    // we must inherit handles
     SECURITY_ATTRIBUTES sa;
     sa.nLength = sizeof(SECURITY_ATTRIBUTES);
     sa.lpSecurityDescriptor = NULL;
     sa.bInheritHandle = TRUE;
 
-    // vytvorime pipu na komunikaci s procesem
+    // create a pipe for communication with the process
     HANDLE StdOutRd, StdOutWr, StdErrWr;
     if (!HANDLES(CreatePipe(&StdOutRd, &StdOutWr, &sa, 0)))
     {
@@ -684,7 +683,7 @@ BOOL PackList(CFilesWindow* panel, const char* archiveFileName, CSalamanderDirec
         strcat(buffer, GetErrorText(GetLastError()));
         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_GENERAL, buffer);
     }
-    // abychom ji mohli pouzit i jako stderr
+    // so that we can use it as stderr as well
     if (!HANDLES(DuplicateHandle(GetCurrentProcess(), StdOutWr, GetCurrentProcess(), &StdErrWr,
                                  0, TRUE, DUPLICATE_SAME_ACCESS)))
     {
@@ -696,7 +695,7 @@ BOOL PackList(CFilesWindow* panel, const char* archiveFileName, CSalamanderDirec
         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_GENERAL, buffer);
     }
 
-    // vytvorime struktury pro novy proces
+    // create structures for the new process
     PROCESS_INFORMATION pi;
     STARTUPINFO si;
     memset(&si, 0, sizeof(STARTUPINFO));
@@ -706,11 +705,11 @@ BOOL PackList(CFilesWindow* panel, const char* archiveFileName, CSalamanderDirec
     si.hStdInput = NULL;
     si.hStdOutput = StdOutWr;
     si.hStdError = StdErrWr;
-    // a spoustime ...
+    // and start it ...
     if (!HANDLES(CreateProcess(NULL, cmdLine, NULL, NULL, TRUE, CREATE_NEW_CONSOLE | CREATE_DEFAULT_ERROR_MODE | NORMAL_PRIORITY_CLASS,
                                NULL, currentDir, &si, &pi)))
     {
-        // pokud se to nepovedlo, mame spatne cestu k salspawn
+        // if this failed, we have a bad path to salspawn
         DWORD err = GetLastError();
         HANDLES(CloseHandle(StdOutRd));
         HANDLES(CloseHandle(StdOutWr));
@@ -718,50 +717,50 @@ BOOL PackList(CFilesWindow* panel, const char* archiveFileName, CSalamanderDirec
         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_PROCESS, SpawnExe, GetErrorText(err));
     }
 
-    // My uz tyhle handly nepotrebujeme, duplikaty si zavre child, nechame si jen StdOutRd
+    // We no longer need these handles; the child will close the duplicates, we keep only StdOutRd
     HANDLES(CloseHandle(StdOutWr));
     HANDLES(CloseHandle(StdErrWr));
 
-    // Vytahneme z pajpy vsechna data do pole radek
+    // Pull all data from the pipe into an array of lines
     char tmpbuff[1000];
     DWORD read;
     CPackLineArray lineArray(1000, 500);
     int buffOffset = 0;
     while (1)
     {
-        // nacteme plny buffer od konce nezpracovanych dat
+        // read a full buffer from the end of the unprocessed data
         if (!ReadFile(StdOutRd, tmpbuff + buffOffset, 1000 - buffOffset, &read, NULL))
             break;
-        // zaciname od zacatku
+        // start at the beginning
         char* start = tmpbuff;
-        // a po celem bufferu hledame konce radek
+        // search the entire buffer for line ends
         unsigned int i;
         for (i = 0; i < read + buffOffset; i++)
         {
             if (tmpbuff[i] == '\n')
             {
-                // delka radku
+                // length of the line
                 int lineLen = (int)(tmpbuff + i - start);
-                // zrusime \r, pokud tam je
+                // remove \r, if it is present
                 if (lineLen > 0 && tmpbuff[i - 1] == '\r')
                     lineLen--;
-                // naalokujeme novy radek
+                // allocate a new line
                 char* newLine = new char[lineLen + 2];
-                // naplnime daty a ukoncime
+                // fill it with data and terminate it
                 strncpy(newLine, start, lineLen);
                 newLine[lineLen] = '\n';
                 newLine[lineLen + 1] = '\0';
-                // pridame ho do pole
+                // add it to the array
                 lineArray.Add(newLine);
-                // a posunem se za nej
+                // and move past it
                 start = tmpbuff + i + 1;
             }
         }
-        // mame buffer zpracovany, ted zjistime, kolik nam tam toho zbylo a setreseme to na zacatek bufferu
+        // buffer processed; now find out how much is left and move it to the start of the buffer
         buffOffset = (int)(tmpbuff + read + buffOffset - start);
         if (buffOffset > 0)
             memmove(tmpbuff, start, buffOffset);
-        // maximalni delka radku je 990, snad to bude stacit :-)
+        // maximum line length is 990, hopefully that is enough :-)
         if (buffOffset >= 990)
         {
             HANDLES(CloseHandle(StdOutRd));
@@ -771,10 +770,10 @@ BOOL PackList(CFilesWindow* panel, const char* archiveFileName, CSalamanderDirec
         }
     }
 
-    // mame docteno, uz ho nepotrebujeme
+    // done reading, we no longer need it
     HANDLES(CloseHandle(StdOutRd));
 
-    // Pockame na dokonceni externiho programu (uz by mel byt davno ukoncenej, ale jistota je jistota)
+    // Wait for the external program to finish (it should be done already but better be sure)
     if (WaitForSingleObject(pi.hProcess, INFINITE) == WAIT_FAILED)
     {
         char buffer[1000];
@@ -785,10 +784,10 @@ BOOL PackList(CFilesWindow* panel, const char* archiveFileName, CSalamanderDirec
         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_GENERAL, buffer);
     }
 
-    // Nastavime fokus zase na nas
+    // Restore focus back to us
     SetForegroundWindow(MainWindow->HWindow);
 
-    // a zjistime jak to dopadlo - snad vsechny vraci 0 jako success
+    // find out how it ended - hopefully all return 0 as success
     DWORD exitCode;
     if (!GetExitCodeProcess(pi.hProcess, &exitCode))
     {
@@ -800,24 +799,24 @@ BOOL PackList(CFilesWindow* panel, const char* archiveFileName, CSalamanderDirec
         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_GENERAL, buffer);
     }
 
-    // uvolnime handly procesu
+    // release the process handles
     HANDLES(CloseHandle(pi.hProcess));
     HANDLES(CloseHandle(pi.hThread));
 
     if (exitCode != 0)
     {
         //
-        // Nejprve chyby salspawn.exe
+        // First handle salspawn.exe errors
         //
         if (exitCode >= SPAWN_ERR_BASE)
         {
-            // chyba salspawn.exe - spatne parametry nebo tak...
+            // salspawn.exe error - wrong parameters or such
             if (exitCode >= SPAWN_ERR_BASE && exitCode < SPAWN_ERR_BASE * 2)
                 return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_RETURN, SPAWN_EXE_NAME, LoadStr(IDS_PACKRET_SPAWN));
-            // chyba CreateProcess
+            // CreateProcess error
             if (exitCode >= SPAWN_ERR_BASE * 2 && exitCode < SPAWN_ERR_BASE * 3)
                 return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_PROCESS, cmdForErrors, GetErrorText(exitCode - SPAWN_ERR_BASE * 2));
-            // chyba WaitForSingleObject
+            // WaitForSingleObject error
             if (exitCode >= SPAWN_ERR_BASE * 3 && exitCode < SPAWN_ERR_BASE * 4)
             {
                 char buffer[1000];
@@ -825,7 +824,7 @@ BOOL PackList(CFilesWindow* panel, const char* archiveFileName, CSalamanderDirec
                 strcat(buffer, GetErrorText(exitCode - SPAWN_ERR_BASE * 3));
                 return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_GENERAL, buffer);
             }
-            // chyba GetExitCodeProcess
+            // GetExitCodeProcess error
             if (exitCode >= SPAWN_ERR_BASE * 4)
             {
                 char buffer[1000];
@@ -835,22 +834,22 @@ BOOL PackList(CFilesWindow* panel, const char* archiveFileName, CSalamanderDirec
             }
         }
         //
-        // ted budou chyby externiho programu
+        // now handle errors of the external program
         //
-        // pokud je errorTable == NULL, pak nedelame preklad (neexistuje tabulka)
+        // if errorTable == NULL, do not translate (no table exists)
         if (!browseTable->ErrorTable)
         {
             char buffer[1000];
             sprintf(buffer, LoadStr(IDS_PACKRET_GENERAL), exitCode);
             return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_RETURN, cmdForErrors, buffer);
         }
-        // najdeme v tabulce patricny text
+        // find the appropriate text in the table
         int i;
         for (i = 0; (*browseTable->ErrorTable)[i][0] != -1 &&
                     (*browseTable->ErrorTable)[i][0] != (int)exitCode;
              i++)
             ;
-        // nasli jsme ho ?
+        // did we find it?
         if ((*browseTable->ErrorTable)[i][0] == -1)
             return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_RETURN, cmdForErrors, LoadStr(IDS_PACKRET_UNKNOWN));
         else
@@ -859,49 +858,49 @@ BOOL PackList(CFilesWindow* panel, const char* archiveFileName, CSalamanderDirec
     }
 
     //
-    // ted to hlavni - parsovani vystupu pakovace do nasich struktur
+    // now the main part - parsing the packer`s output into our structures
     //
     if (lineArray.Count == 0)
         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_NOOUTPUT);
 
-    // pokud musime pouzit specialni parsovaci funkci, jdeme na to prave ted
+    // if we must use a special parsing function, do it right now
     if (browseTable->SpecialList)
         return (*(browseTable->SpecialList))(archiveFileName, lineArray, dir);
 
-    // ted parsujeme univerzalnim parserem
+    // now we parse with the universal parser
 
-    // nejake ty lokalni promenne
-    char* line = NULL; // buffer pro sestaveni "viceradkove radky"
-    int lines = 0;     // kolik radku z viceradkove polozky jsme nacetli
-    int validData = 0; // jestli cteme header/footer nebo platna data
+    // a few local variables
+    char* line = NULL; // buffer for building a "multi-line line"
+    int lines = 0;     // how many lines of the multi-line item we have read
+    int validData = 0; // whether we read header/footer or valid data
     int toSkip = browseTable->LinesToSkip;
     int alwaysSkip = browseTable->AlwaysSkip;
     int linesPerFile = browseTable->LinesPerFile;
     BOOL ARJHack;
-    BOOL RAR5AndLater = FALSE; // od RAR 5.0 je novy format listingu (prikazy 'v' a 'l'), nazev je v poslednim sloupci
+    BOOL RAR5AndLater = FALSE; // starting with RAR 5.0 the listing format is new (commands 'v' and 'l'), the name is in the last column
 
     int i;
     for (i = 0; i < lineArray.Count; i++)
     {
-        // zjistime, co s temi daty vlastne delat
+        // determine what to do with this data
         switch (validData)
         {
-        case 0: // jsme v hlavicce
-            // zjistime, jestli v ni zustavame
+        case 0: // we are in the header
+            // determine whether we stay in it
             if (!strncmp(lineArray[i], browseTable->StartString,
                          strlen(browseTable->StartString)))
                 validData++;
             if (i == 1 && strncmp(lineArray[i], "RAR ", 4) == 0 && lineArray[i][4] >= '5' && lineArray[i][4] <= '9')
             {
-                RAR5AndLater = TRUE; // test selze od RAR 10, coz se bude hodit ;-)
+                RAR5AndLater = TRUE; // the test fails starting with RAR 10, which will be useful ;-)
                 linesPerFile = 1;
             }
-            // kazdopadne nas tenhle radek nezajima
+            // in any case this line does not interest us
             continue;
-        case 2: // jsme v paticce a na tu sere pes
+        case 2: // we are in the footer and we do not care about it
             continue;
-        case 1: // jsme v datech - jen zjistime jestli nekonci a pak do prace
-            // jestli mame jeste neco preskocit, udelame to ted
+        case 1: // we are in the data - just check if it ends and then work
+            // if we still need to skip something, do it now
             if (alwaysSkip > 0)
             {
                 alwaysSkip--;
@@ -911,61 +910,61 @@ BOOL PackList(CFilesWindow* panel, const char* archiveFileName, CSalamanderDirec
                          strlen(browseTable->StopString)))
             {
                 validData++;
-                // mozna nam zustaly nejake zbytky predchozi radky
+                // maybe some leftovers from the previous line remain
                 if (line)
                     free(line);
                 continue;
             }
         }
 
-        // jestli mame jeste neco preskocit, udelame to ted
+        // if we still have something to skip, do it now
         if (toSkip > 0)
         {
             toSkip--;
             continue;
         }
 
-        // mame dalsi radku
+        // we have another line
         lines++;
-        // pokud je to prvni, musime alokovat buffer
+        // if this is the first line, we must allocate a buffer
         if (lines == 1)
         {
-            // zjistime, jestli jsme dvou ci ctyrradkovi (ARJ32 hack)
+            // determine whether we are dealing with two or four lines (ARJ32 hack)
             if (browseTable->LinesPerFile == 0)
                 if (i + 3 < lineArray.Count && lineArray[i + 2][3] == ' ')
                     linesPerFile = 4;
                 else
                     linesPerFile = 2;
-            // zjistime, jestli nechybi typ OS (ARJ16 hack)
+            // determine whether the OS type is missing (ARJ16 hack)
             ARJHack = FALSE;
             if (browseTable->DateIdx < 0)
                 if (lineArray[i + 1][5] == ' ')
                     ARJHack = TRUE;
-            // mame vubec tolik radku ?
+            // do we even have that many lines?
             if (i + linesPerFile - 1 >= lineArray.Count)
                 return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_PARSE);
-            // zjistime vyslednou delku
+            // determine the resulting length
             int len = 0;
             int j;
             for (j = 0; j < linesPerFile; j++)
                 len = len + (int)strlen(lineArray[i + j]);
-            // naalokujeme pro ni buffer
+            // allocate a buffer for it
             line = (char*)malloc(len + 1);
             if (!line)
                 return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_NOMEM);
-            // a nainicializujeme ho
+            // and initialize it
             line[0] = '\0';
         }
-        // pokud to neni posledni radek, jen ho pridame do bufferu
+        // if this is not the last line just append it to the buffer
         if (lines < linesPerFile)
         {
             strcat(line, lineArray[i]);
             continue;
         }
-        // je-li to posledni radek, pridame ho do bufferu
+        // if it is the last line, append it to the buffer
         strcat(line, lineArray[i]);
 
-        // a mame vse k jedne polozce - zpracujem ji
+        // and we have everything for one item - process it
         SPackBrowseTable browseTableRAR5;
         if (RAR5AndLater)
         {
@@ -974,17 +973,17 @@ BOOL PackList(CFilesWindow* panel, const char* archiveFileName, CSalamanderDirec
             browseTableRAR5.AttrIdx = 1;
         }
         BOOL ret = PackScanLine(line, dir, index, RAR5AndLater ? &browseTableRAR5 : browseTable, ARJHack);
-        // buffer uz nepotrebujeme
+        // we no longer need the buffer
         free(line);
         line = NULL;
         if (!ret)
-            return FALSE; // nemusime uz volat error funkci, uz byla zavolana z PackScanLine
+            return FALSE; // no need to call the error function, PackScanLine already did the call
 
-        // nainicializujeme promenne
+        // initialize variables
         lines = 0;
     }
 
-    // pokud jsme skoncili jinde nez v paticce, mame problem
+    // if we ended somewhere else than in the footer, we have a problem
     if (validData < 2)
         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_PARSE);
 
@@ -996,19 +995,19 @@ BOOL PackList(CFilesWindow* panel, const char* archiveFileName, CSalamanderDirec
 // BOOL PackUC2List(const char *archiveFileName, CPackLineArray &lineArray,
 //                  CSalamanderDirectory &dir)
 //
-//   Funkce pro zjisteni obsahu archivu pro format UC2 (pouze parser)
+//   Function for retrieving archive contents for the UC2 format (parser only)
 //
-//   RET: vraci TRUE pri uspechu, FALSE pri chybe
-//        pri chybe vola callback funkci *PackErrorHandlerPtr
-//   IN:  archiveFileName je nazev archivu, se kterym pracujeme
-//        lineArray je pole radek vystupu archivatoru
-//   OUT: dir je vytoreno a naplneno udaji o archivu
+//   RET: returns TRUE on success, FALSE on error
+//        on error the callback function *PackErrorHandlerPtr is called
+//   IN:  archiveFileName is the archive name we work with
+//        lineArray is the array of lines from the archiver output
+//   OUT: dir is created and filled with archive data
 
 BOOL PackUC2List(const char* archiveFileName, CPackLineArray& lineArray,
                  CSalamanderDirectory& dir)
 {
     CALL_STACK_MESSAGE2("PackUC2List(%s, ,)", archiveFileName);
-    // Nejprve smazeme pomocny fajl, ktery UC2 vytvari pri pouziti flagu ~D
+    // First delete the helper file that UC2 creates when using the ~D flag
     char arcPath[MAX_PATH];
     const char* arcName = strrchr(archiveFileName, '\\') + 1;
     strncpy(arcPath, archiveFileName, arcName - archiveFileName);
@@ -1016,67 +1015,67 @@ BOOL PackUC2List(const char* archiveFileName, CPackLineArray& lineArray,
     strcat(arcPath, "U$~RESLT.OK");
     DeleteFile(arcPath);
 
-    char* txtPtr;         // pointer na aktualni pozici ve ctenem radku
-    char currentDir[256]; // aktualni adresar, ktery prozkoumavame
-    int line = 0;         // index do pole radku
-    // trochu zbytecna kontrola, ale jistota je jistota
+    char* txtPtr;         // pointer to the current position in the read line
+    char currentDir[256]; // current directory we are exploring
+    int line = 0;         // index into the line array
+    // a bit redundant check but better be safe
     if (lineArray.Count < 1)
         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_PARSE);
 
-    // hlavni parsovaci smycka
+    // main parsing loop
     while (1)
     {
-        // pridavany soubor nebo adresar
+        // added file or directory
         CFileData newfile;
 
-        // prebehneme pocatecni mezery
+        // skip leading spaces
         for (txtPtr = lineArray[line]; *txtPtr == ' '; txtPtr++)
             ;
 
-        // pokud je polozka END, jsme hotovi
+        // if the item is END, we are done
         if (!strncmp(txtPtr, "END", 3))
             break;
 
-        // pokud je polozka LIST, pak zjistime, v jakem jsme adresari
+        // if the item is LIST, we determine which directory we are in
         if (!strncmp(txtPtr, "LIST", 4))
         {
-            // dobehneme na zacatek nazvu
+            // run to the start of the name
             while (*txtPtr != '\0' && *txtPtr != '[')
                 txtPtr++;
-            // osetreni chyb - nemelo by nastat
+            // error check - should not happen
             if (*txtPtr == '\0')
                 return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_PARSE);
-            // a na prvni pismeno nazvu
+            // and to the first letter of the name
             txtPtr++;
             int i = 0;
-            // preskocime uvodni backslashe
+            // skip leading backslashes
             while (*txtPtr == '\\')
                 txtPtr++;
-            // zkopirujeme nazev do promenne
+            // copy the name into the variable
             while (*txtPtr != '\0' && *txtPtr != ']')
                 currentDir[i++] = *txtPtr++;
-            // zakoncime retezec
+            // terminate the string
             currentDir[i] = '\0';
             OemToChar(currentDir, currentDir);
-            // a zase kontrola
+            // one more check
             if (*txtPtr == '\0')
                 return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_PARSE);
-            // pripravime dalsi radek
+            // prepare the next line
             if (++line > lineArray.Count - 1)
                 return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_PARSE);
-            // a jedeme dalsi rundu
+            // and go for another round
             continue;
         }
 
-        // pokud je polozka FILE/DIR, pak vytvarime subor/adresar
+        // if the item is FILE/DIR, we create a file/directory
         if (!strncmp(txtPtr, "DIR", 3) || !strncmp(txtPtr, "FILE", 4))
         {
-            // o co tu jde ? o soubor, nebo o adresar
+            // what is it, a file or a directory?
             BOOL isDir = TRUE;
             if (!strncmp(txtPtr, "FILE", 4))
                 isDir = FALSE;
 
-            // pripravime nejake ty defaultni hodnoty
+            // prepare some default values
             SYSTEMTIME t;
             t.wYear = 1980;
             t.wMonth = 1;
@@ -1089,80 +1088,80 @@ BOOL PackUC2List(const char* archiveFileName, CPackLineArray& lineArray,
 
             newfile.Size = CQuadWord(0, 0);
             newfile.DosName = NULL;
-            newfile.PluginData = -1; // -1 jen tak, ignoruje se
+            newfile.PluginData = -1; // just -1, ignored
 
-            // hlavni smycka parsovani souboru/adresare
-            // konci, jakmile narazime na klicove slovo, ktere nezname
+            // main parsing loop of a file/directory
+            // ends once we hit an unknown keyword
             while (1)
             {
-                // pripravime dalsi radek
+                // prepare the next line
                 if (++line > lineArray.Count - 1)
                     return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_PARSE);
 
-                // prebehneme pocatecni mezery
+                // skip leading spaces
                 for (txtPtr = lineArray[line]; *txtPtr == ' '; txtPtr++)
                     ;
 
-                // jde o nazev ?
+                // is it a name?
                 if (!strncmp(txtPtr, "NAME=", 5))
                 {
-                    // jdeme na zacatek nazvu
+                    // move to the start of the name
                     while (*txtPtr != '\0' && *txtPtr != '[')
                         txtPtr++;
                     if (*txtPtr == '\0')
                         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_PARSE);
                     txtPtr++;
                     int i = 0;
-                    // okopirujeme nazev do promenne newName
+                    // copy the name to the newName variable
                     char newName[15];
                     while (*txtPtr != '\0' && *txtPtr != ']')
                         newName[i++] = *txtPtr++;
                     newName[i] = '\0';
                     if (*txtPtr == '\0')
                         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_PARSE);
-                    // a sup s nim do struktury
+                    // and store it in the structure
                     newfile.NameLen = strlen(newName);
                     newfile.Name = (char*)malloc(newfile.NameLen + 1);
                     if (!newfile.Name)
                         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_PARSE);
                     OemToChar(newName, newfile.Name);
                     newfile.Ext = strrchr(newfile.Name, '.');
-                    if (newfile.Ext != NULL) // ".cvspass" ve Windows je pripona ...
+                    if (newfile.Ext != NULL) // ".cvspass" is an extension in Windows ...
                                              //          if (newfile.Ext != NULL && newfile.Name != newfile.Ext)
                         newfile.Ext++;
                     else
                         newfile.Ext = newfile.Name + newfile.NameLen;
-                    // a dalsi runda ...
+                    // and go another round
                     continue;
                 }
-                // nebo se snad jedna o datum ?
+                // or is it a date?
                 if (!strncmp(txtPtr, "DATE(MDY)=", 10))
                 {
-                    // vynulujeme
+                    // reset it
                     t.wYear = 0;
                     t.wMonth = 0;
                     t.wDay = 0;
-                    // prejdeme na zacatek udaju
+                    // go to the start of the data
                     while (*txtPtr != '\0' && *txtPtr != '=')
                         txtPtr++;
                     if (*txtPtr == '\0')
                         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_PARSE);
                     txtPtr++;
-                    // nacteme mesic
+                    // read the month
                     while (*txtPtr >= '0' && *txtPtr <= '9')
                         t.wMonth = t.wMonth * 10 + *txtPtr++ - '0';
                     while (*txtPtr == ' ')
                         txtPtr++;
-                    // nacteme den
+                    // read the day
                     while (*txtPtr >= '0' && *txtPtr <= '9')
                         t.wDay = t.wDay * 10 + *txtPtr++ - '0';
                     while (*txtPtr == ' ')
                         txtPtr++;
-                    // nacteme rok
+                    // read the year
                     while (*txtPtr >= '0' && *txtPtr <= '9')
                         t.wYear = t.wYear * 10 + *txtPtr++ - '0';
 
-                    // konverze, kdyby nahodou (nemelo by byt potreba)
+                    // conversion just in case (should not be needed)
                     if (t.wYear < 100)
                     {
                         if (t.wYear >= 80)
@@ -1175,109 +1174,109 @@ BOOL PackUC2List(const char* archiveFileName, CPackLineArray& lineArray,
                     if (t.wDay == 0)
                         t.wDay = 1;
 
-                    // a znovu dokola ...
+                    // and again ...
                     continue;
                 }
-                // taky by to mohl byt cas posledni modifikace
+                // it could also be the last modification time
                 if (!strncmp(txtPtr, "TIME(HMS)=", 10))
                 {
-                    // opet vynulujeme
+                    // reset again
                     t.wHour = 0;
                     t.wMinute = 0;
                     t.wSecond = 0;
-                    // zacatek dat
+                    // start of the data
                     while (*txtPtr != '\0' && *txtPtr != '=')
                         txtPtr++;
                     if (*txtPtr == '\0')
                         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_PARSE);
                     txtPtr++;
-                    // nacteme hodinu
+                    // read the hour
                     while (*txtPtr >= '0' && *txtPtr <= '9')
                         t.wHour = t.wHour * 10 + *txtPtr++ - '0';
                     while (*txtPtr == ' ')
                         txtPtr++;
-                    // nacteme minutu
+                    // read the minute
                     while (*txtPtr >= '0' && *txtPtr <= '9')
                         t.wMinute = t.wMinute * 10 + *txtPtr++ - '0';
                     while (*txtPtr == ' ')
                         txtPtr++;
-                    // nacteme vterinu
+                    // read the second
                     while (*txtPtr >= '0' && *txtPtr <= '9')
                         t.wSecond = t.wSecond * 10 + *txtPtr++ - '0';
 
-                    // a znova ...
+                    // and again ...
                     continue;
                 }
-                // zbyvaji jeste atributy...
+                // attributes remain...
                 if (!strncmp(txtPtr, "ATTRIB=", 7))
                 {
-                    // zacatek dat
+                    // start of the data
                     while (*txtPtr != '\0' && *txtPtr != '=')
                         txtPtr++;
                     if (*txtPtr == '\0')
                         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_PARSE);
                     txtPtr++;
-                    // predem vynulujeme
+                    // clear first
                     newfile.Attr = 0;
                     newfile.Hidden = 0;
-                    // a naorujem, co je potreba
+                    // and set what is needed
                     while (*txtPtr != '\0')
                     {
                         switch (*txtPtr++)
                         {
-                        // readonly atribut
+                        // readonly attribute
                         case 'R':
                             newfile.Attr |= FILE_ATTRIBUTE_READONLY;
                             break;
-                        // archive atribut
+                        // archive attribute
                         case 'A':
                             newfile.Attr |= FILE_ATTRIBUTE_ARCHIVE;
                             break;
-                        // system atribut
+                        // system attribute
                         case 'S':
                             newfile.Attr |= FILE_ATTRIBUTE_SYSTEM;
                             break;
-                        // hidden atribut
+                        // hidden attribute
                         case 'H':
                             newfile.Attr |= FILE_ATTRIBUTE_HIDDEN;
                             newfile.Hidden = 1;
                         }
                     }
-                    // a znova na vec ...
+                    // and again at it ...
                     continue;
                 }
-                // a nakonec jeste velikost
+                // and finally the size
                 if (!strncmp(txtPtr, "SIZE=", 5))
                 {
-                    // zase prejdeme nedulezite veci
+                    // again skip the unimportant stuff
                     while (*txtPtr != '\0' && *txtPtr != '=')
                         txtPtr++;
                     if (*txtPtr == '\0')
                         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_PARSE);
                     txtPtr++;
-                    // potrebujeme pomocnou promennou
+                    // we need a helper variable
                     unsigned __int64 tmpvalue = 0;
                     while (*txtPtr >= '0' && *txtPtr <= '9')
                         tmpvalue = tmpvalue * 10 + *txtPtr++ - '0';
-                    // a nastavime ve strukture
+                    // and store it in the structure
                     newfile.Size.Set((DWORD)(tmpvalue & 0xFFFFFFFF), (DWORD)(tmpvalue >> 32));
-                    // a trada na dalsi radek
+                    // and off to the next line
                     continue;
                 }
-                // dummy hodnoty - musime je znat, ale muzeme je ignorovat
+                // dummy values - we must know them but can ignore them
                 if (!strncmp(txtPtr, "VERSION=", 8))
                     continue;
                 if (!strncmp(txtPtr, "CHECK=", 6))
                     continue;
 
-                // neni to zadna znama polozka, tak to bude konec sekce
+                // unknown item - end of the section
                 break;
             }
             //
-            // mame vsechno, vytvorime objekt
+            // we have everything, create the object
             //
 
-            // ulozime do struktury, co tam jeste neni
+            // store in the structure what is not there yet
             FILETIME lt;
             if (!SystemTimeToFileTime(&t, &lt))
             {
@@ -1295,14 +1294,14 @@ BOOL PackUC2List(const char* archiveFileName, CPackLineArray& lineArray,
                 free(newfile.Name);
                 return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_GENERAL, buffer);
             }
-            // a nakonec uz jen vytvorime novy objekt
+            // and finally just create a new object
             newfile.IsOffline = 0;
             if (isDir)
             {
-                // pokud jde o adresar, delame to tady
+                // if it is a directory, handle it here
                 newfile.Attr |= FILE_ATTRIBUTE_DIRECTORY;
                 if (!Configuration.SortDirsByExt)
-                    newfile.Ext = newfile.Name + newfile.NameLen; // adresare nemaji pripony
+                    newfile.Ext = newfile.Name + newfile.NameLen; // directories have no extensions
                 newfile.IsLink = 0;
                 if (!dir.AddDir(currentDir, newfile, NULL))
                 {
@@ -1314,14 +1313,14 @@ BOOL PackUC2List(const char* archiveFileName, CPackLineArray& lineArray,
             {
                 newfile.IsLink = IsFileLink(newfile.Ext);
 
-                // pokud jde o soubor, jdeme tudy
+                // if it is a file, go this way
                 if (!dir.AddFile(currentDir, newfile, NULL))
                 {
                     free(newfile.Name);
                     return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_FDATA);
                 }
             }
-            // a sup na dalsi rundu
+            // and off to the next round
             continue;
         }
     }
@@ -1330,7 +1329,7 @@ BOOL PackUC2List(const char* archiveFileName, CPackLineArray& lineArray,
 
 //
 // ****************************************************************************
-// Funkce pro dekompresi
+// Decompression functions
 //
 
 //
@@ -1340,18 +1339,18 @@ BOOL PackUC2List(const char* archiveFileName, CPackLineArray& lineArray,
 //                     const char *targetDir, const char *archiveRoot,
 //                     SalEnumSelection nextName, void *param)
 //
-//   Funkce pro vybaleni pozadovanych souboru z archivu.
+//   Function for extracting requested files from an archive.
 //
-//   RET: vraci TRUE pri uspechu, FALSE pri chybe
-//        pri chybe vola callback funkci *PackErrorHandlerPtr
-//   IN:  parent je parent pro message-boxy
-//        panel je ukazatel na souborovy panel salamandra
-//        archiveFileName je nazev archivu, ze ktereho vybalujeme
-//        targetDir je cesta, kam jsou soubory vybaleny
-//        archiveRoot je adresar v archivu, ze ktereho vybalujeme
-//        nextName je callback funkce pro enumeraci nazvu k vybaleni
-//        param jsou parametry pro enumeracni funkci
-//        pluginData je interface pro praci s daty o souborech/adresarich, ktere jsou specificke pro plugin
+//   RET: returns TRUE on success, FALSE on error
+//        on error the callback function *PackErrorHandlerPtr is called
+//   IN:  parent is the parent window for message boxes
+//        panel is a pointer to the Salamander file panel
+//        archiveFileName is name of the archive we extract from
+//        targetDir is the path where files are extracted
+//        archiveRoot is the directory in the archive we extract from
+//        nextName is the callback function for enumerating names to extract
+//        param are the parameters for the enumeration function
+//        pluginData is the interface for working with file/directory data specific to the plugin
 //   OUT:
 
 BOOL PackUncompress(HWND parent, CFilesWindow* panel, const char* archiveFileName,
@@ -1360,16 +1359,16 @@ BOOL PackUncompress(HWND parent, CFilesWindow* panel, const char* archiveFileNam
                     SalEnumSelection nextName, void* param)
 {
     CALL_STACK_MESSAGE4("PackUncompress(, , %s, , %s, %s, ,)", archiveFileName, targetDir, archiveRoot);
-    // najdeme ten pravy podle tabulky
+    // find the correct one according to the table
     int format = PackerFormatConfig.PackIsArchive(archiveFileName);
-    // Nenasli jsme podporovany archiv - chyba
+    // Supported archive not found - error
     if (format == 0)
         return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_ARCNAME_UNSUP);
 
     format--;
     int index = PackerFormatConfig.GetUnpackerIndex(format);
 
-    // Nejde o interni zpracovani (DLL) ?
+    // Is this not internal processing (DLL)?
     if (index < 0)
     {
         CPluginData* plugin = Plugins.Get(-index - 1);
@@ -1395,24 +1394,24 @@ BOOL PackUncompress(HWND parent, CFilesWindow* panel, const char* archiveFileNam
 //                              const char *targetDir, const char *archiveRoot,
 //                              SalEnumSelection nextName, void *param, BOOL needANSIListFile)
 //
-//   Funkce pro vybaleni pozadovanych souboru z archivu. Na rozdil od predchozi
-//   je obecnejsi, nepouziva konfiguracni tabulky - muze byt volana samostatne,
-//   vse je urceno pouze parametry
+//   Function for extracting requested files from an archive. Unlike the previous
+//   one it is more general, does not use configuration tables and can be called
+//   standalone; everything is determined only by parameters
 //
-//   RET: vraci TRUE pri uspechu, FALSE pri chybe
-//        pri chybe vola callback funkci *PackErrorHandlerPtr
-//   IN:  parent je parent pro message-boxy
-//        command je prikazova radka pouzita pro vybaleni z archivu
-//        errorTable je ukazatel na tabulku navratovych kodu, nebo NULL, pokud neexistuje
-//        initDir je adresar, ve kterem se ma archiver spustit
-//        panel je ukazatel na souborovy panel salamandra
-//        supportLongNames znaci, jestli archivator umi s dlouhymi nazvy
-//        archiveFileName je nazev archivu, ze ktereho vybalujeme
-//        targetDir je cesta, na kterou jsou soubory vybaleny
-//        archiveRoot je cesta v archivu, ze ktere vybalujeme, nebo NULL
-//        nextName je callback funkce pro enumeraci souboru k vybaleni
-//        param jsou parametry predavane callback funkci
-//        needANSIListFile je TRUE pokud ma byt file list v ANSI (ne OEM)
+//   RET: returns TRUE on success, FALSE on error
+//        on error the callback function *PackErrorHandlerPtr is called
+//   IN:  parent is the parent for message boxes
+//        command is the command line used for extraction
+//        errorTable is a pointer to the return codes table or NULL if none exists
+//        initDir is the directory in which the archiver should run
+//        panel is a pointer to the Salamander file panel
+//        supportLongNames indicates whether the archiver supports long names
+//        archiveFileName is the name of the archive we unpack
+//        targetDir is the path where files are extracted
+//        archiveRoot is the path in the archive from which we are extracting, or NULL
+//        nextName is the callback function enumerating files to extract
+//        param are the parameters passed to the callback function
+//        needANSIListFile is TRUE if the file list must be in ANSI (not OEM)
 //   OUT:
 
 BOOL PackUniversalUncompress(HWND parent, const char* command, TPackErrorTable* const errorTable,
@@ -1426,7 +1425,7 @@ BOOL PackUniversalUncompress(HWND parent, const char* command, TPackErrorTable* 
                         targetDir, archiveRoot, needANSIListFile);
 
     //
-    // Musime upravit adresar v archivu do pozadovaneho formatu
+    // We must adjust the directory in the archive to the required format
     //
     char rootPath[MAX_PATH];
     if (archiveRoot != NULL && *archiveRoot != '\0')
@@ -1447,9 +1446,9 @@ BOOL PackUniversalUncompress(HWND parent, const char* command, TPackErrorTable* 
     }
 
     //
-    // Ted prijde na radu pomocny adresar na vybaleni
+    // Now it's time for the temporary extraction directory
 
-    // Vytvorime nazev temporary adresare
+    // Create the name of the temporary directory
     char tmpDirNameBuf[MAX_PATH];
     if (!SalGetTempFileName(targetDir, "PACK", tmpDirNameBuf, FALSE))
     {
@@ -1460,10 +1459,10 @@ BOOL PackUniversalUncompress(HWND parent, const char* command, TPackErrorTable* 
     }
 
     //
-    // Nyni pripravime pomocny soubor s vypisem souboru k rozbaleni v %TEMP% adresari
+    // Now prepare a helper file with a list of files to extract in the %TEMP% directory
     //
 
-    // Vytvorime nazev temporary souboru
+    // Create the name of the temporary file
     char tmpListNameBuf[MAX_PATH];
     if (!SalGetTempFileName(NULL, "PACK", tmpListNameBuf, TRUE))
     {
@@ -1473,7 +1472,7 @@ BOOL PackUniversalUncompress(HWND parent, const char* command, TPackErrorTable* 
         return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_GENERAL, buffer);
     }
 
-    // mame soubor, ted ho otevreme
+    // we have the file, now open it
     FILE* listFile;
     if ((listFile = fopen(tmpListNameBuf, "w")) == NULL)
     {
@@ -1482,7 +1481,7 @@ BOOL PackUniversalUncompress(HWND parent, const char* command, TPackErrorTable* 
         return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_FILE);
     }
 
-    // a muzeme ho plnit
+    // and we can fill it
     BOOL isDir;
     CQuadWord size;
     const char* name;
@@ -1492,16 +1491,16 @@ BOOL PackUniversalUncompress(HWND parent, const char* command, TPackErrorTable* 
 
     if (!needANSIListFile)
         CharToOem(rootPath, rootPath);
-    // vybereme nazev
+    // pick the name
     while ((name = nextName(parent, 1, &isDir, &size, NULL, param, &errorOccured)) != NULL)
     {
         if (!needANSIListFile)
             CharToOem(name, namecnv);
         else
             strcpy(namecnv, name);
-        // scitame celkovou velikost
+        // sum the total size
         totalSize += size;
-        // soupnem nazev do listu
+        // put the name into the list
         if (!isDir)
         {
             if (fprintf(listFile, "%s%s\n", rootPath, namecnv) <= 0)
@@ -1513,11 +1512,11 @@ BOOL PackUniversalUncompress(HWND parent, const char* command, TPackErrorTable* 
             }
         }
     }
-    // a je to
+    // and that is it
     fclose(listFile);
 
-    // pokud nastala chyba a uzivatel se rozhodl pro cancel operace, ukoncime ji +
-    // test na dostatek volneho mista na disku
+    // if an error occurred and the user chose to cancel the operation, end the it +
+    // also test for enough free disk space
     if (errorOccured == SALENUM_CANCEL ||
         !TestFreeSpace(parent, tmpDirNameBuf, totalSize, LoadStr(IDS_PACKERR_TITLE)))
     {
@@ -1527,9 +1526,9 @@ BOOL PackUniversalUncompress(HWND parent, const char* command, TPackErrorTable* 
     }
 
     //
-    // Ted budeme poustet externi program na vybaleni
+    // Now we will run an external program to unpack
     //
-    // vykonstruujeme prikazovou radku
+    // build the command line
     char cmdLine[PACK_CMDLINE_MAXLEN];
     if (!PackExpandCmdLine(archiveFileName, tmpDirNameBuf, tmpListNameBuf, NULL,
                            command, cmdLine, PACK_CMDLINE_MAXLEN, NULL))
@@ -1539,7 +1538,7 @@ BOOL PackUniversalUncompress(HWND parent, const char* command, TPackErrorTable* 
         return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_CMDLNERR);
     }
 
-    // zjistime, zda neni komandlajna moc dlouha
+    // check if the command line is too long
     if (!supportLongNames && strlen(cmdLine) >= 128)
     {
         char buffer[1000];
@@ -1549,7 +1548,7 @@ BOOL PackUniversalUncompress(HWND parent, const char* command, TPackErrorTable* 
         return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_CMDLNLEN, buffer);
     }
 
-    // vykonstruujeme aktualni adresar
+    // build the current directory
     char currentDir[MAX_PATH];
     if (!expandInitDir)
     {
@@ -1572,23 +1571,23 @@ BOOL PackUniversalUncompress(HWND parent, const char* command, TPackErrorTable* 
         }
     }
 
-    // a spustime externi program
+    // and run the external program
     if (!PackExecute(NULL, cmdLine, currentDir, errorTable))
     {
         DeleteFile(tmpListNameBuf);
         RemoveTemporaryDir(tmpDirNameBuf);
-        return FALSE; // chybove hlaseni bylo jiz vyhozeno
+        return FALSE; // the error message has already been shown
     }
-    // list souboru uz neni potreba
+    // the file list is no longer needed
     DeleteFile(tmpListNameBuf);
 
-    // a ted konecne soupneme soubory kam patri
+    // and now finally move the files where they belong
     char srcDir[MAX_PATH];
     strcpy(srcDir, tmpDirNameBuf);
     if (*rootPath != '\0')
     {
-        // vybalenou podadresarovou cestu najdeme - jmena podadresaru nemusi odpovidat kvuli
-        // cestine a dlouhym nazvum :-(
+        // locate the extracted subdirectory path - names of subdirectories may not match
+        // because of the Czech characters and long names :-(
         char* r = rootPath;
         WIN32_FIND_DATA foundFile;
         char buffer[1000];
@@ -1597,9 +1596,9 @@ BOOL PackUniversalUncompress(HWND parent, const char* command, TPackErrorTable* 
             if (*r == 0)
                 break;
             while (*r != 0 && *r != '\\')
-                r++; // preskok jednoho patra v puvodni rootPath
+                r++; // skip one level in the original rootPath
             while (*r == '\\')
-                r++; // preskok backslashe v puvodni rootPath
+                r++; // skip the backslash in the original rootPath
             strcat(srcDir, "\\*");
 
             HANDLE found = HANDLES_Q(FindFirstFile(srcDir, &foundFile));
@@ -1614,7 +1613,7 @@ BOOL PackUniversalUncompress(HWND parent, const char* command, TPackErrorTable* 
                 return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_GENERAL, buffer);
             }
             while (foundFile.cFileName[0] == 0 ||
-                   strcmp(foundFile.cFileName, ".") == 0 || // "." a ".." ignorujeme
+                   strcmp(foundFile.cFileName, ".") == 0 || // we ignore "." and ".."
                    strcmp(foundFile.cFileName, "..") == 0)
             {
                 if (!FindNextFile(found, &foundFile))
@@ -1627,7 +1626,7 @@ BOOL PackUniversalUncompress(HWND parent, const char* command, TPackErrorTable* 
             HANDLES(FindClose(found));
 
             if (foundFile.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-            { // pripojime dalsi podadresar na ceste
+            { // attach another subdirectory on the path
                 srcDir[strlen(srcDir) - 1] = 0;
                 strcat(srcDir, foundFile.cFileName);
             }
@@ -1654,15 +1653,15 @@ BOOL PackUniversalUncompress(HWND parent, const char* command, TPackErrorTable* 
 // const char * WINAPI PackEnumMask(HWND parent, int enumFiles, BOOL *isDir, CQuadWord *size,
 //                                  const CFileData **fileData, void *param, int *errorOccured)
 //
-//   Callback funkce pro enumeraci zadanych masek
+//   Callback function for enumerating given masks
 //
-//   RET: Vraci masku, ktera je prave na rade, nebo NULL, pokud je hotovo
-//   IN:  enumFiles je ignorovano
-//        fileData je ignorovano (jen init na NULL)
-//        param je ukazatel na retezec masek souboru oddelenych strednikem
-//   OUT: isDir je vzdy FALSE
-//        size je vzdy 0
-//        dochazi ke zmene retezce masek souboru oddelenych strednikem (";"->"\0" pri oddelovani masek, ";;"->";" + eliminace ";" na konci)
+//   RET: Returns the mask currently processed or NULL when it is done
+//   IN:  enumFiles is ignored
+//        fileData is ignored (only initialized to NULL)
+//        param is a pointer to a string of file masks separated by semicolon
+//   OUT: isDir is always FALSE
+//        size is always 0
+//        the string of masks separated by semicolon is modified (";"->"\0" when separating masks, ";;"->";" with the trailing ";" removed)
 
 const char* WINAPI PackEnumMask(HWND parent, int enumFiles, BOOL* isDir, CQuadWord* size,
                                 const CFileData** fileData, void* param, int* errorOccured)
@@ -1670,7 +1669,7 @@ const char* WINAPI PackEnumMask(HWND parent, int enumFiles, BOOL* isDir, CQuadWo
     CALL_STACK_MESSAGE2("PackEnumMask(%d, , ,)", enumFiles);
     if (errorOccured != NULL)
         *errorOccured = SALENUM_SUCCESS;
-    // nastavime nepouzite promenne
+    // set unused variables
     if (isDir != NULL)
         *isDir = FALSE;
     if (size != NULL)
@@ -1678,11 +1677,11 @@ const char* WINAPI PackEnumMask(HWND parent, int enumFiles, BOOL* isDir, CQuadWo
     if (fileData != NULL)
         *fileData = NULL;
 
-    // pokud uz nejsou zadne masky, vracime NULL - konec
+    // if there are no more masks return NULL - finished
     if (param == NULL || *(char**)param == NULL)
         return NULL;
 
-    // vypustime pripadny strednik na konci retezce (retezec zkracujeme)
+    // drop a possible semicolon at the end of the string (shorten the string)
     char* ptr = *(char**)param + strlen(*(char**)param) - 1;
     char* endPtr = ptr;
     while (1)
@@ -1690,23 +1689,23 @@ const char* WINAPI PackEnumMask(HWND parent, int enumFiles, BOOL* isDir, CQuadWo
         while (ptr >= *(char**)param && *ptr == ';')
             ptr--;
         if (((endPtr - ptr) & 1) == 1)
-            *endPtr-- = 0; // ';' ignorujeme jen je-li lichy (sudy pocet pozdeji prevedeme ";;"->";")
+            *endPtr-- = 0; // ignore ';' only if odd (even count will later be converted ";;"->";")
         if (endPtr >= *(char**)param && *endPtr <= ' ')
         {
             endPtr--;
             while (endPtr >= *(char**)param && *endPtr <= ' ')
-                endPtr--; // ignorujeme white-spaces na konci
+                endPtr--; // ignore trailing white - spaces
             *(endPtr + 1) = 0;
-            ptr = endPtr; // musime znovu zkusit, jestli neni treba preskocit lichy ';'
+            ptr = endPtr; // must try again to see if an odd ';' has to be skipped
         }
         else
             break;
     }
-    // uz nemame zadnou masku, jsou jen stredniky a white-spaces (nebo nic :-) )
+    // no mask left, there are only semicolons and white spaces (or nothing :-))
     if (endPtr < *(char**)param)
         return NULL;
 
-    // jinak najdeme posledni strednik (jen je-li jich lichy pocet, jinak se nahradi ";;"->";") - pred posledni maskou
+    // otherwise find the last semicolon (only if their count is odd, otherwise ";;" will be replaced with ";") - before the last mask
     while (ptr >= *(char**)param)
     {
         if (*ptr == ';')
@@ -1725,17 +1724,17 @@ const char* WINAPI PackEnumMask(HWND parent, int enumFiles, BOOL* isDir, CQuadWo
 
     if (ptr < *(char**)param)
     {
-        // pokud uz zadny strednik neni, mame jen jednu
+        // if there is no semicolon left we have only one
         *(char**)param = NULL;
     }
     else
     {
-        // odrizneme posledni masku od ostatnich nulou misto najiteho stredniku
+        // cut off the last mask from the rest by placing zero instead of the found semicolon
         *ptr = '\0';
     }
 
     while (*(ptr + 1) != 0 && *(ptr + 1) <= ' ')
-        ptr++; // preskocime white-spaces na zacatku masky
+        ptr++; // skip white - spaces at the beginning of the mask
     char* s = ptr + 1;
     while (*s != 0)
     {
@@ -1743,7 +1742,7 @@ const char* WINAPI PackEnumMask(HWND parent, int enumFiles, BOOL* isDir, CQuadWo
             memmove(s, s + 1, strlen(s + 1) + 1);
         s++;
     }
-    // a vratime ji
+    // and return it
     return ptr + 1;
 }
 
@@ -1754,19 +1753,19 @@ const char* WINAPI PackEnumMask(HWND parent, int enumFiles, BOOL* isDir, CQuadWo
 //                        CFileData *fileData, const char *targetDir, const char *newFileName,
 //                        BOOL *renamingNotSupported)
 //
-//   Funkce pro vybaleni jednoho souboru z archivu (pro viewer).
+//   Function for extracting a single file from an archive (for the viewer).
 //
-//   RET: vraci TRUE pri uspechu, FALSE pri chybe
-//        pri chybe vola callback funkci *PackErrorHandlerPtr
-//   IN:  panel je souborovy panel Salamandera
-//        archiveFileName je nazev archivu, ze ktereho vybalujeme
-//        nameInArchive je nazev souboru, ktery vybalujeme
-//        fileData je ukazatel na strukturu CFileData vypakovavaneho souboru
-//        targetDir je cesta, kam soubor vybalit
-//        newFileName (neni-li NULL) je nove jmeno vybalovaneho souboru (pri vybalovani
-//          musi dojit k prejmenovani z puvodniho jmena na toto nove)
-//        renamingNotSupported (jen neni-li newFileName NULL) - zapsat TRUE pokud plugin
-//          nepodporuje prejmenovani pri vybalovani, Salamander zobrazi chybovou hlasku
+//   RET: returns TRUE on success, FALSE on error
+//        on error the callback function *PackErrorHandlerPtr is called
+//   IN:  panel is the Salamander file panel
+//        archiveFileName is the name of the archive from which we extract
+//        nameInArchive is the name of the file we extract
+//        fileData is a pointer to the CFileData structure of the extracted file
+//        targetDir is the path where the file should be extracted
+//        newFileName (if not NULL) is the new name of the extracted file (during extraction, the file
+//          must be renamed from its original name to this new one)
+//        renamingNotSupported (only if newFileName is not NULL) - set TRUE if the plugin
+//          does not support renaming during extraction, Salamander will show an error
 //   OUT:
 
 BOOL PackUnpackOneFile(CFilesWindow* panel, const char* archiveFileName,
@@ -1777,16 +1776,16 @@ BOOL PackUnpackOneFile(CFilesWindow* panel, const char* archiveFileName,
     CALL_STACK_MESSAGE5("PackUnpackOneFile(, %s, , %s, , %s, %s, )",
                         archiveFileName, nameInArchive, targetDir, newFileName);
 
-    // najdeme ten pravy podle tabulky
+    // find the correct one according to the table
     int format = PackerFormatConfig.PackIsArchive(archiveFileName);
-    // Nenasli jsme podporovany archiv - chyba
+    // No supported archive found - error
     if (format == 0)
         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_ARCNAME_UNSUP);
 
     format--;
     int index = PackerFormatConfig.GetUnpackerIndex(format);
 
-    // Nejde o interni zpracovani (DLL) ?
+    // Is this not internal processing (DLL)?
     if (index < 0)
     {
         CPluginData* plugin = Plugins.Get(-index - 1);
@@ -1798,16 +1797,16 @@ BOOL PackUnpackOneFile(CFilesWindow* panel, const char* archiveFileName,
                                      fileData, targetDir, newFileName, renamingNotSupported);
     }
 
-    if (newFileName != NULL) // u externich archivatoru prejmenovani zatim nepodporujeme (zatim se mi nechtelo ani zjistovat, jestli to vubec umi)
+    if (newFileName != NULL) // external archivers do not support renaming yet (we did not even check if they can)
     {
         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_INVALIDNAME);
     }
 
     //
-    // Vytvorime pomocny adresar, do ktereho soubor vybalime
+    // Create a temporary directory into which we unpack the file
     //
 
-    // buffer pro fullname pomocneho adresare
+    // buffer for the full name of the temporary directory
     char tmpDirNameBuf[MAX_PATH];
     if (!SalGetTempFileName(targetDir, "PACK", tmpDirNameBuf, FALSE))
     {
@@ -1818,11 +1817,11 @@ BOOL PackUnpackOneFile(CFilesWindow* panel, const char* archiveFileName,
     }
 
     //
-    // Ted budeme poustet externi program na vybaleni
+    // Now we will run an external program to unpack
     //
     const SPackBrowseTable* browseTable = ArchiverConfig.GetUnpackerConfigTable(index);
 
-    // vykonstruujeme prikazovou radku
+    // build the command line
     char cmdLine[PACK_CMDLINE_MAXLEN];
     if (!PackExpandCmdLine(archiveFileName, tmpDirNameBuf, NULL, nameInArchive,
                            browseTable->ExtractCommand, cmdLine, PACK_CMDLINE_MAXLEN, NULL))
@@ -1831,7 +1830,7 @@ BOOL PackUnpackOneFile(CFilesWindow* panel, const char* archiveFileName,
         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_CMDLNERR);
     }
 
-    // zjistime, zda neni komandlajna moc dlouha
+    // check whether the command line is too long
     if (!browseTable->SupportLongNames && strlen(cmdLine) >= 128)
     {
         char buffer[1000];
@@ -1840,7 +1839,7 @@ BOOL PackUnpackOneFile(CFilesWindow* panel, const char* archiveFileName,
         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_CMDLNLEN, buffer);
     }
 
-    // vykonstruujeme aktualni adresar
+    // build the current directory
     char currentDir[MAX_PATH];
     if (!PackExpandInitDir(archiveFileName, NULL, tmpDirNameBuf, browseTable->ExtractInitDir,
                            currentDir, MAX_PATH))
@@ -1849,14 +1848,14 @@ BOOL PackUnpackOneFile(CFilesWindow* panel, const char* archiveFileName,
         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_IDIRERR);
     }
 
-    // a spustime externi program
+    // and run the external program
     if (!PackExecute(NULL, cmdLine, currentDir, browseTable->ErrorTable))
     {
         RemoveTemporaryDir(tmpDirNameBuf);
-        return FALSE; // chybove hlaseni bylo jiz vyhozeno
+        return FALSE; // the error message has already been shown
     }
 
-    // vybaleny soubor najdeme - jmeno nemusi odpovidat kvuli cestine a dlouhym nazvum :-(
+    // find the extracted file - the name may not match due to the Czech characters and long names :-(
     char* extractedFile = (char*)malloc(strlen(tmpDirNameBuf) + 2 + 1);
     WIN32_FIND_DATA foundFile;
     strcpy(extractedFile, tmpDirNameBuf);
@@ -1887,7 +1886,7 @@ BOOL PackUnpackOneFile(CFilesWindow* panel, const char* archiveFileName,
     }
     HANDLES(FindClose(found));
 
-    // a nakonec ho presuneme tam kam patri
+    // and finally move it where it belongs
     char* srcName = (char*)malloc(strlen(tmpDirNameBuf) + 1 + strlen(foundFile.cFileName) + 1);
     strcpy(srcName, tmpDirNameBuf);
     strcat(srcName, "\\");
@@ -1910,7 +1909,7 @@ BOOL PackUnpackOneFile(CFilesWindow* panel, const char* archiveFileName,
         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_GENERAL, buffer);
     }
 
-    // a uklidime
+    // and clean up
     free(srcName);
     free(destName);
     RemoveTemporaryDir(tmpDirNameBuf);
