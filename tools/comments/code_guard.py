@@ -228,6 +228,12 @@ def main():
         default=".",
         help="Relative path inside both repositories where scanning should start. Default is '.'."
     )
+    parser.add_argument(
+        "--keep-temp-files",
+        action="store_true",
+        default=False,
+        help="Do not delete the generated clang output files."
+    )
     args = parser.parse_args()
 
     clang_exe_path = find_clang_executable(CLANG_EXE)
@@ -265,13 +271,23 @@ def main():
         args.file_name_filter
     )
 
+    def create_temp_files():
+        temp_file1_obj = tempfile.NamedTemporaryFile(
+            mode='w+', delete=False, encoding='utf-8', suffix='.tmp', prefix='clang_out1_'
+        )
+        temp_file2_obj = tempfile.NamedTemporaryFile(
+            mode='w+', delete=False, encoding='utf-8', suffix='.tmp', prefix='clang_out2_'
+        )
+        temp_paths = Path(temp_file1_obj.name), Path(temp_file2_obj.name)
+        temp_file1_obj.close()
+        temp_file2_obj.close()
+        return temp_paths
+
     # Create temporary files for clang output
-    temp_file1_obj = tempfile.NamedTemporaryFile(mode='w+', delete=False, encoding='utf-8', suffix='.tmp', prefix='clang_out1_')
-    temp_file2_obj = tempfile.NamedTemporaryFile(mode='w+', delete=False, encoding='utf-8', suffix='.tmp', prefix='clang_out2_')
-    temp_file1 = Path(temp_file1_obj.name)
-    temp_file2 = Path(temp_file2_obj.name)
-    temp_file1_obj.close()
-    temp_file2_obj.close()
+    temp_file1 = None
+    temp_file2 = None
+    if not args.keep_temp_files:
+        temp_file1, temp_file2 = create_temp_files()
 
     try:
         for file_path in files_to_process:
@@ -335,6 +351,9 @@ def main():
             content1 = normalize_paths(res1.stdout, current_repo_path)
             content2 = normalize_paths(res2.stdout, base_repo_path)
 
+            if args.keep_temp_files:
+                temp_file1, temp_file2 = create_temp_files()
+
             temp_file1.write_text(content1, encoding='utf-8')
             temp_file2.write_text(content2, encoding='utf-8')
 
@@ -354,13 +373,18 @@ def main():
                 print(diff_process.stdout)
                 print(f"\033[36m{separator}\033[0m")
                 print()
+                if args.keep_temp_files:
+                    print(f"Kept clang outputs: {temp_file2} vs {temp_file1}")
+            elif args.keep_temp_files:
+                print(f"Kept clang outputs: {temp_file2} vs {temp_file1}")
 
     finally:
         # Cleanup temporary files
-        if temp_file1.exists():
-            temp_file1.unlink()
-        if temp_file2.exists():
-            temp_file2.unlink()
+        if not args.keep_temp_files:
+            if temp_file1 and temp_file1.exists():
+                temp_file1.unlink()
+            if temp_file2 and temp_file2.exists():
+                temp_file2.unlink()
         print("Done.")
 
 if __name__ == "__main__":
