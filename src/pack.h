@@ -1,24 +1,26 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
 // ****************************************************************************
-// Konstanty
+// Constants
 //
 
-// System nedefinuje delku komandlajny pro DOSove aplikace, musime to udelat sami
+// The system doesn't define the command line length for DOS applications, so
+// we have to do it ourselves
 #define DOS_MAX_PATH 80
-// maximalni mozna delka prikazove radky
+// maximum possible command line length
 #define PACK_CMDLINE_MAXLEN (MAX_PATH * 4)
-// na jake hodnote zacinaji vlastni chyby salspawn.exe
+// at what value do custom errors of salspawn.exe start
 #define SPAWN_ERR_BASE 10000
-// program pro spousteni 16-ti bitovych archveru (parametr -c musi odpovidat SPAWN_ERR_BASE)
+// program for running 16-bit archivers (the -c parameter must match SPAWN_ERR_BASE)
 extern const char* SPAWN_EXE_PARAMS;
-// nazev programu salspawn
+// name of the salspawn program
 extern const char* SPAWN_EXE_NAME;
 
-// indexy jednotlivych pakovacu v poli ArchiverConfig
+// indexes of individual packers in the ArchiverConfig array
 #define PACKJAR32INDEX 0
 #define PACKJAR16INDEX 5
 #define PACKRAR32INDEX 1
@@ -33,10 +35,10 @@ extern const char* SPAWN_EXE_NAME;
 #define PACKZIP16INDEX 8
 
 // ****************************************************************************
-// Typy
+// Types
 //
 
-// Typ programu
+// Program type
 enum EPackExeType
 {
     EXE_INVALID,
@@ -45,7 +47,7 @@ enum EPackExeType
     EXE_END
 };
 
-// struktura pro drzeni cesty k pakovaci
+// structure for holding the path to the packer
 struct SPackLocation
 {
     const char* Variable;
@@ -55,13 +57,13 @@ struct SPackLocation
     BOOL Valid;
 };
 
-// Trida drzici informace o nalezenych programech
+// Class storing information about found programs
 class CPackACFound
 {
 public:
-    char* FullName;     // jmeno nalezeneho programu i s cestou
-    CQuadWord Size;     // velikost
-    FILETIME LastWrite; // datum
+    char* FullName;     // name of the found program including the path
+    CQuadWord Size;     // size
+    FILETIME LastWrite; // date
     BOOL Selected;
 
     CPackACFound()
@@ -81,7 +83,7 @@ public:
     char* GetText(int column);
 };
 
-// pole nalezenych pakovacu
+// array of found packers
 class CPackACArray : public TIndirectArray<CPackACFound>
 {
 public:
@@ -93,25 +95,25 @@ public:
 
 enum EPackPackerType
 {
-    Packer_Standalone, // umi pakovat i rozpakovavat
-    Packer_Packer,     // umi jen pakovat
-    Packer_Unpacker    // umi jen rozpakovavat
+    Packer_Standalone, // can pack and unpack
+    Packer_Packer,     // can only pack
+    Packer_Unpacker    // can only unpack
 };
 
-// Trida drzici seznam pozadovanych a posleze i nalezenych pakovacu
+// Class holding the list of requested and later found packers
 class CPackACPacker
 {
 protected:
-    // odkud jsou data
-    int Index;                // index do pole ArchiversConfig
-    EPackPackerType Unpacker; // jde o packer, unpacker, nebo oboje ?
-    const char* Title;        // titulek, ktery popisuje pakovac
-    // co chceme nalezt
-    const char* Name;  // jmeno programu pro hledani
-    EPackExeType Type; // ma to byt 16 nebo 32 bit exe ?
-    // pole toho, co jsme nalezli
-    CPackACArray Found;                        // a to, co jsme nasli
-    CRITICAL_SECTION FoundDataCriticalSection; // kriticka sekce pro pristup k datum
+    // source of data
+    int Index;                // index into the ArchiversConfig array
+    EPackPackerType Unpacker; // is it a packer, an unpacker or both?
+    const char* Title;        // title describing the packer
+    // what we want to find
+    const char* Name;  // program name to search for
+    EPackExeType Type; // should it be a 16 or 32 bit exe?
+    // array of what we found
+    CPackACArray Found;                        // the items we found
+    CRITICAL_SECTION FoundDataCriticalSection; // critical section for accessing data
 
 public:
     CPackACPacker(int index, EPackPackerType unpacker, const char* title,
@@ -141,7 +143,7 @@ public:
     EPackExeType GetExeType() { return Type; }
 };
 
-// Typ tabulky nalezenych programu pro autoconfig
+// Type of table of found programs for autoconfig
 typedef TIndirectArray<CPackACPacker> APackACPackersTable;
 
 //*********************************************************************************
@@ -192,7 +194,7 @@ public:
 // CPackACDialog
 //
 
-// dialog pro autoconfig
+// dialog for autoconfig
 class CPackACDialog : public CCommonDialog
 {
 public:
@@ -233,20 +235,20 @@ protected:
     BOOL SearchRunning;
     HANDLE StopSearch;
     BOOL WillExit;
-    // data potrebna pro layoutovani dialogu
-    int HMargin;  // prostor vlevo a vpravo mezi rameckem dialogu a controly
-    int VMargin;  // prostor dole mezi tlacitky a status barou
-    int ButtonW1, // rozmery tlacitek (nemusi byt vsechny stejne siroke, napr. DE+HU+CHS verze je maji jinak siroke)
+    // data needed for laying out the dialog
+    int HMargin;  // space left and right between the dialog frame and controls
+    int VMargin;  // space at the bottom between buttons and the status bar
+    int ButtonW1, // button dimensions (they need not all have the same width; e.g. the DE+HU+CHS version has them different)
         ButtonW2,
         ButtonW3,
         ButtonW4,
         ButtonW5;
-    int ButtonMargin; // prostor mezi tlacitky
+    int ButtonMargin; // space between buttons
     int ButtonH;
-    int StatusHeight; // vyska status bary
-    int ListY;        // umisteni seznamu vysledku
-    int CheckH;       // vyska checkboxu
-    int MinDlgW;      // minimalni rozmery dialogu
+    int StatusHeight; // height of the status bar
+    int ListY;        // position of the result list
+    int CheckH;       // height of the check box
+    int MinDlgW;      // minimal dialog dimensions
     int MinDlgH;
 };
 
@@ -255,7 +257,7 @@ protected:
 // CPackACDrives
 //
 
-// dialog pro specifikaci prohledavanych disku v autokonfigu
+// dialog for specifying the disks searched in autoconfig
 class CPackACDrives : public CCommonDialog
 {
 public:
@@ -282,24 +284,24 @@ protected:
 //
 //
 
-// Typ tabulky chybovych kodu externich pakovacu
+// Type of the error code table for external packers
 typedef int TPackErrorTable[][2];
 
-// Struktura tabulky podporovanych formatu
+// Structure of the supported formats table
 struct SPackFormat
 {
-    const char* FileExtension;  // Pripona souboru archivu
-    const char* MultiExtension; // Format pripony pri pouziti deleneho archivu
-                                // (znak '?' znamena libovolne cislo)
-    int ArchiveBrowseIndex;     // Cislo formatu. Zaporne cislo je index formatu
-                                // zpracovavaneho interne (DLL), kladne cislo je
-                                // index do tabulky externich pakovacu (nemodifikujici cast)
-    int ArchiveModifyIndex;     // Cislo formatu. Zaporne cislo je index formatu
-                                // zpracovavaneho interne (DLL), kladne cislo je
-                                // index do tabulky externich pakovacu (modifikujici cast)
+    const char* FileExtension;  // archive file extension
+    const char* MultiExtension; // extension format when using a split archive
+                                // (the '?' character stands for any digit)
+    int ArchiveBrowseIndex;     // format number; negative value is the index of a format
+                                // processed internally (DLL), positive value is
+                                // an index into the external packers table (non-modifying part)
+    int ArchiveModifyIndex;     // format number; negative value is the index of a format
+                                // processed internally (DLL), positive value is
+                                // an index into the external packers table (modifying part)
 };
 
-// upraveny indirect array, ktery vola delete[]
+// modified indirect array that calls delete[]
 template <class DATA_TYPE>
 class TPackIndirectArray : public TIndirectArray<DATA_TYPE>
 {
@@ -317,100 +319,100 @@ protected:
     }
 };
 
-// typ pro pole radek prectenych z pajpy
+// type for an array of lines read from the pipe
 typedef TPackIndirectArray<char> CPackLineArray;
 
-// Obecna funkce pro parsovani listingu archivu
+// general function for parsing an archive listing
 typedef BOOL (*FPackList)(const char* archiveFileName, CPackLineArray& lineArray,
                           CSalamanderDirectory& dir);
 
-// konstanty pouzite pro SPackModifyTable::DelEmptyDir
-#define PMT_EMPDIRS_DONOTDELETE 0        // neni potreba zvlast mazat prazdny adresar
-#define PMT_EMPDIRS_DELETE 1             // je potreba zvlast mazat prazdny adresar - zadani jen cestou
-#define PMT_EMPDIRS_DELETEWITHASTERISK 2 // je potreba zvlast mazat prazdny adresar - zadani cestou + '*'
+// constants used for SPackModifyTable::DelEmptyDir
+#define PMT_EMPDIRS_DONOTDELETE 0        // no need to delete the empty directory separately
+#define PMT_EMPDIRS_DELETE 1             // delete the empty directory explicitly - specify the path only
+#define PMT_EMPDIRS_DELETEWITHASTERISK 2 // delete the empty directory explicitly - specify path with '*'
 
 //
-// Struktura pro tabulku definic externich pakovacu - modifikujici operace
+// Structure for the table of external packer definitions – modifying operations
 //
 struct SPackModifyTable
 {
     //
-    // obecne polozky
+    // general items
     //
-    TPackErrorTable* ErrorTable; // Ukazatel na tabulku navratovych kodu
-    BOOL SupportLongNames;       // TRUE, pokud podporuje dlouhe nazvy souboru
+    TPackErrorTable* ErrorTable; // pointer to the table of return codes
+    BOOL SupportLongNames;       // TRUE if long file names are supported
 
     //
-    // polozky pro kompreseni
+    // items for compression
     //
-    const char* CompressInitDir; // adresar, ve kterem bude pusten pakovaci prikaz
-    const char* CompressCommand; // prikaz pro zabaleni archivu
-    BOOL CanPackToDir;           // TRUE, pokud archivacni program podporuje baleni do adresare
+    const char* CompressInitDir; // directory in which the pack command will run
+    const char* CompressCommand; // command used to pack the archive
+    BOOL CanPackToDir;           // TRUE if the archiver program supports packing to a directory
 
     //
-    // polozky pro vymazani z archivu
+    // items for deletion from the archive
     //
-    const char* DeleteInitDir; // adresar, ve kterem bude pusten mazaci prikaz
-    const char* DeleteCommand; // prikaz pro vymazani souboru z archivu
-    int DelEmptyDir;           // viz konstanty PMT_EMPDIRS_XXX
+    const char* DeleteInitDir; // directory in which the delete command will be executed
+    const char* DeleteCommand; // command for deleting a file from the archive
+    int DelEmptyDir;           // see constants PMT_EMPDIRS_XXX
 
     //
-    // polozky pro presun do archivu
+    // items for moving to the archive
     //
-    const char* MoveInitDir; // adresar, ve kterem bude pusten presunovaci prikaz. Pokud ho neumi, NULL
-    const char* MoveCommand; // prikaz pro presun souboru do archivu. Pokud NULL, program neumi move
+    const char* MoveInitDir; // directory in which the move command will be executed; NULL if unsupported
+    const char* MoveCommand; // command for moving files into the archive; NULL if the program does not support move
 
-    BOOL NeedANSIListFile; // ma se list souboru nechat v ANSI (nema se prevest do OEM)
+    BOOL NeedANSIListFile; // should the list of files remain in ANSI (no conversion to OEM)
 };
 
-// Struktura pro tabulku definic externich pakovacu - nemodifikujici operace
+// Structure for the definition table of external packers - non-modifying operations
 struct SPackBrowseTable
 {
     //
-    // obecne polozky
+    // general items
     //
-    TPackErrorTable* ErrorTable; // Ukazatel na tabulku navratovych kodu
-    BOOL SupportLongNames;       // TRUE, pokud podporuje dlouhe nazvy souboru
+    TPackErrorTable* ErrorTable; // pointer to the table of return codes
+    BOOL SupportLongNames;       // TRUE if long file names are supported
 
     //
-    // polozky pro listovani archivu
+    // items for listing archive contents
     //
-    const char* ListInitDir; // adresar, ve kterem se spusti listovaci prikaz
-    const char* ListCommand; // prikaz pro vylistovani obsahu archivu
-    FPackList SpecialList;   // pokud neni NULL, je to funkce pro parsovani listingu
-                             // v tom pripade nemusi mit nasledujici polozky vyznam
-    const char* StartString; // jak zacina posledni radek hlavicky
-    int LinesToSkip;         // kolik radek za StartStringem jeste ignorovat
-    int AlwaysSkip;          // kolik radek za StartStringem ignorovat vzdy (nehlida se stop string)
-    int LinesPerFile;        // kolik radku dat je ve vypisu pro jeden soubor
-    const char* StopString;  // jak zacina prvni radek paticky
-    unsigned char Separator; // pokud ma archivator extra separator, bude zde (jinak treba mezera)
-    // indexy k polozkam vypisu, cislo znamena poradi polozky v radku,
-    // (prvni je 1), nula znamena, ze polozka neexistuje
-    short NameIdx;  // index jmena na radku ve vypisu
-    short SizeIdx;  // index velikosti souboru na radku ve vypisu
-    short TimeIdx;  // index casu na radku ve vypisu
-    short DateIdx;  // index datumu na radku ve vypisu
-    short AttrIdx;  // index atributu na radku ve vypisu
-    short DateYIdx; // index roku v datumu (prvni, druhy, nebo treti)
-    short DateMIdx; // index mesice v datumu (prvni, druhy, nebo treti)
+    const char* ListInitDir; // directory where the listing command is executed
+    const char* ListCommand; // command for listing archive contents
+    FPackList SpecialList;   // if it is not NULL, it is a function for parsing the listing
+                             // in that case, the following items may be meaningless
+    const char* StartString; // how the last header line begins
+    int LinesToSkip;         // number of lines to ignore after StartString
+    int AlwaysSkip;          // number of lines to always ignore after StartString (stop string not checked)
+    int LinesPerFile;        // number of data lines in the listing for one file
+    const char* StopString;  // how the first footer line begins
+    unsigned char Separator; // if the archiver uses a special separator, it is stored here (otherwise e.g. a space)
+    // indices of items in the listing; the number is the item's order on the line
+    // (the first is 1); zero means the item does not exist
+    short NameIdx;  // index of the name on the listing line
+    short SizeIdx;  // index of the file size on the listing line
+    short TimeIdx;  // index of the time on the listing line
+    short DateIdx;  // index of the date on the listing line
+    short AttrIdx;  // index of the attribute on the listing line
+    short DateYIdx; // index of the year in the date (first, second or third)
+    short DateMIdx; // index of the month in the date (first, second or third)
 
     //
-    // polozky pro dekompreseni
+    // items for decompression
     //
-    const char* UncompressInitDir; // adresar, ve kterem se spousti vybalovani archivu
-    const char* UncompressCommand; // prikaz pro vybaleni archivu
+    const char* UncompressInitDir; // directory where unpacking the archive begins
+    const char* UncompressCommand; // command for unpacking the archive
 
     //
-    // polozky pro vybaleni jednoho souboru bez cesty
+    // items for extracting a single file without its path
     //
-    const char* ExtractInitDir; // adresar, ve kterem se spousti vybalovani jednoho souboru
-    const char* ExtractCommand; // prikaz pro vybaleni jednoho souboru bez cesty
+    const char* ExtractInitDir; // directory used when extracting a single file
+    const char* ExtractCommand; // command for extracting a single file without path
 
-    BOOL NeedANSIListFile; // ma se list souboru nechat v ANSI (nema se prevest do OEM)
+    BOOL NeedANSIListFile; // should the list of files remain in ANSI (no conversion to OEM)
 };
 
-// tridy konfigurace preddefinovanych pakovavacu
+// configuration tables of predefined packers
 extern const SPackBrowseTable PackBrowseTable[];
 extern const SPackModifyTable PackModifyTable[];
 
@@ -427,20 +429,20 @@ extern const SPackModifyTable PackModifyTable[];
 #define ARC_UID_ACE32 11
 #define ARC_UID_ACE16 12
 
-// trida pro drzeni dat
+// class for storing data
 class CArchiverConfigData
 {
 public:
-    DWORD UID;                      // unikatni identifikator archiveru (viz ARC_UID_XXX)
-    char* Title;                    // jmeno, pod kterym se v konfiguraci objevi
-    const char* PackerVariable;     // jmeno promenne, ktera je expandovana jako pakovac
-    const char* UnpackerVariable;   // jmeno promenne, ktera je expandovana jako rozpakovavac (NULL, kdyz je to pakovac)
-    const char* PackerExecutable;   // nazev programu pakovace, pro hledani na disku
-    const char* UnpackerExecutable; // nazev programu rozpakovavace, nebo NULL
-    EPackExeType Type;              // typ archiveru (16bit, 32bit)
-    BOOL ExesAreSame;               // true, pokud se PackExeFile pouziva pro pack i unpack
-    char* PackExeFile;              // cesta k balicimu programu
-    char* UnpackExeFile;            // cesta k rozbalovacimu programu, nebo NULL
+    DWORD UID;                      // unique identifier of the archiver (see ARC_UID_XXX)
+    char* Title;                    // name under which it appears in the configuration
+    const char* PackerVariable;     // name of the variable expanded as the packer
+    const char* UnpackerVariable;   // name of the variable expanded as the unpacker (NULL when it's a packer)
+    const char* PackerExecutable;   // packer program name for searching on disk
+    const char* UnpackerExecutable; // unpacker program name or NULL
+    EPackExeType Type;              // archiver type (16bit, 32bit)
+    BOOL ExesAreSame;               // true if PackExeFile is used for both pack and unpack
+    char* PackExeFile;              // path to the pack program
+    char* UnpackExeFile;            // path to the unpack program or NULL
 
 public:
     CArchiverConfigData()
@@ -489,7 +491,7 @@ public:
     }
 };
 
-// trida s konfiguraci
+// configuration class
 class CArchiverConfig
 {
 protected:
@@ -497,21 +499,21 @@ protected:
 
 public:
     CArchiverConfig(/*BOOL disableDefaultValues*/);
-    void InitializeDefaultValues(); // j.r. nahrazuje puvodni volani konstruktoru
+    void InitializeDefaultValues(); // replaces the original constructor call (j.r.)
     BOOL Load(CArchiverConfig& src);
 
     void DeleteAllArchivers() { Archivers.DestroyMembers(); }
 
-    int AddArchiver();                 // vrati index zalozene polozky nebo -1 pri chybe
-    void AddDefault(int SalamVersion); // prida archivery nove od verze SalamVersion, pri SalamVersion = -1 prida vsechny (default config)
+    int AddArchiver();                 // returns the index of the created item or -1 on error
+    void AddDefault(int SalamVersion); // adds archivers introduced since SalamVersion; when SalamVersion = -1 adds all of them (default configuration)
 
-    // nastavi atributy; kdyz se neco posere, vyradi prvek z pole, zdestroji ho a vrati FALSE
+    // sets attributes; if something goes wrong, the item is removed from the array, destroyed and FALSE is returned
     BOOL SetArchiver(int index, DWORD uid, const char* title, EPackExeType type, BOOL exesAreSame,
                      const char* packerVariable, const char* unpackerVariable,
                      const char* packerExecutable, const char* unpackerExecutable,
                      const char* packExeFile, const char* unpackExeFile);
 
-    int GetArchiversCount() { return Archivers.Count; } // vrati pocet polozek v poli
+    int GetArchiversCount() { return Archivers.Count; } // returns the number of items in the array
 
     DWORD GetArchiverUID(int index) { return Archivers[index]->UID; }
     const char* GetArchiverTitle(int index) { return Archivers[index]->Title; }
@@ -531,8 +533,8 @@ public:
     BOOL Load(HKEY hKey);
 };
 
-// Trida drzici konfiguraci formatu archivu a asociaci pakovacu k nim.
-// Upraveny direct array, ktery zatriduje unikatni stringy podle abecedy.
+// Class holding the configuration of archive formats and the association of packers with them.
+// Modified direct array that sorts unique strings alphabetically.
 class CExtItem
 {
 public:
@@ -580,16 +582,16 @@ public:
     }
 };
 
-// datovy prvek
+// data item
 class CPackerFormatConfigData
 {
 public:
-    char* Ext;         // seznam pripon, ktere muze archiv mit
-    BOOL UsePacker;    // true, pokud PackerIndex je platny (umime i pakovat)
-    int PackerIndex;   // odkaz do tabulky pakovacu
-    int UnpackerIndex; // odkaz do tabulky rozpakovavacu
+    char* Ext;         // list of extensions the archive can have
+    BOOL UsePacker;    // true if PackerIndex is valid (we can also pack)
+    int PackerIndex;   // reference to the packer table
+    int UnpackerIndex; // reference to the unpacker table
 
-    BOOL OldType; // jde o stara data (verze < 6) - predpoklada interni ZIP+TAR+PAK?
+    BOOL OldType; // indicates old data (version < 6) - assumes internal ZIP+TAR+PAK?
 
 public:
     CPackerFormatConfigData()
@@ -626,7 +628,7 @@ public:
     }
 };
 
-// trida s konfiguraci
+// configuration class
 class CPackerFormatConfig
 {
 protected:
@@ -635,15 +637,15 @@ protected:
 
 public:
     CPackerFormatConfig(/*BOOL disableDefaultValues*/);
-    void InitializeDefaultValues(); // j.r. nahrazuje puvodni volani konstruktoru
+    void InitializeDefaultValues(); // replaces the original constructor call (j.r.)
     BOOL Load(CPackerFormatConfig& src);
 
     void DeleteAllFormats() { Formats.DestroyMembers(); }
 
-    int AddFormat();                   // vrati index zalozene polozky nebo -1 pri chybe
-    void AddDefault(int SalamVersion); // prida archivery nove od verze SalamVersion, pri SalamVersion = -1 prida vsechny (default config)
+    int AddFormat();                   // returns the index of the created item or -1 on error
+    void AddDefault(int SalamVersion); // adds archivers introduced since SalamVersion; when SalamVersion = -1 adds all of them (default configuration)
 
-    // nastavi atributy; kdyz se neco posere, vyradi prvek z pole, zdestroji ho a vrati FALSE
+    // sets attributes; if something goes wrong, the item is removed from the array, destroyed and FALSE is returned
     BOOL SetFormat(int index, const char* ext, BOOL usePacker,
                    const int packerIndex, const int unpackerIndex, BOOL old);
     void SetOldType(int index, BOOL old) { Formats[index]->OldType = old; }
@@ -651,16 +653,16 @@ public:
     void SetUsePacker(int index, BOOL usePacker) { Formats[index]->UsePacker = usePacker; }
     void SetPackerIndex(int index, int packerIndex) { Formats[index]->PackerIndex = packerIndex; }
 
-    // vytvori data pro vyhledavani; pokud se neco posere, vraci false a muze i radek a sloupek chyby
+    // creates search data; if anything goes wrong, it returns false and may also provide the error line and column
     BOOL BuildArray(int* line = NULL, int* column = NULL);
 
-    // archiveNameLen slouzi pouze jako optimalizace, pokud je -1, funkce si retezec omeri sama
+    // archiveNameLen serves only as an optimization; if it is -1, the function measures the string itself
     int PackIsArchive(const char* archiveName, int archiveNameLen = -1);
 
-    int GetFormatsCount() { return Formats.Count; } // vrati pocet polozek v poli
+    int GetFormatsCount() { return Formats.Count; } // returns the number of items in the array
 
-    //    BOOL SwapFormats(int index1, int index2);         // prohodi dve polozky v poli
-    BOOL MoveFormat(int srcIndex, int dstIndex); // posune polozku
+    //    BOOL SwapFormats(int index1, int index2);         // swaps two items in the array
+    BOOL MoveFormat(int srcIndex, int dstIndex); // moves the item
     void DeleteFormat(int index);
 
     int GetUnpackerIndex(int index) { return Formats[index]->UnpackerIndex; }
@@ -674,7 +676,7 @@ public:
 };
 
 // ****************************************************************************
-// Promenne
+// Variables
 //
 
 extern char SpawnExe[MAX_PATH * 2];
@@ -699,78 +701,78 @@ extern BOOL (*PackErrorHandlerPtr)(HWND parent, const WORD errNum, ...);
 extern const SPackFormat PackFormat[];
 
 // ****************************************************************************
-// Funkce
+// Functions
 //
 
-// Inicializace cesty k spawn.exe
+// Initialization of the path to spawn.exe
 BOOL InitSpawnName(HWND parent);
 
-// Nastaveni zpracovani chyb
+// setting error handling
 void PackSetErrorHandler(BOOL (*handler)(HWND parent, const WORD errNum, ...));
 
-// zjisteni obsahu archivu
+// determine the contents of the archive
 BOOL PackList(CFilesWindow* panel, const char* archiveFileName, CSalamanderDirectory& dir,
               CPluginDataInterfaceAbstract*& pluginData, CPluginData*& plugin);
 
-// vybaleni pozadovanych souboru z archivu (vola UniversalUncompress)
+// extract the selected files from the archive (calls UniversalUncompress)
 BOOL PackUncompress(HWND parent, CFilesWindow* panel, const char* archiveFileName,
                     CPluginDataInterfaceAbstract* pluginData,
                     const char* targetDir, const char* archiveRoot,
                     SalEnumSelection nextName, void* param);
 
-// Univerzalni rozbaleni archivu (pro rozbaleni celeho archivu)
+// universal archive extraction (for unpacking the entire archive)
 BOOL PackUniversalUncompress(HWND parent, const char* command, TPackErrorTable* const errorTable,
                              const char* initDir, BOOL expandInitDir, CFilesWindow* panel,
                              const BOOL supportLongNames, const char* archiveFileName,
                              const char* targetDir, const char* archiveRoot,
                              SalEnumSelection nextName, void* param, BOOL needANSIListFile);
 
-// Vybaleni jednoho souboru z archivu (pro viewer)
+// extract a single file from the archive (for viewer)
 BOOL PackUnpackOneFile(CFilesWindow* panel, const char* archiveFileName,
                        CPluginDataInterfaceAbstract* pluginData, const char* nameInArchive,
                        CFileData* fileData, const char* targetPath, const char* newFileName,
                        BOOL* renamingNotSupported);
 
-// Zabaleni pozadovanych souboru do archivu (vola UniversalCompress)
+// pack the selected files into the archive (calls UniversalCompress)
 BOOL PackCompress(HWND parent, CFilesWindow* panel, const char* archiveFileName,
                   const char* archiveRoot, BOOL move, const char* sourceDir,
                   SalEnumSelection2 nextName, void* param);
 
-// Univerzalni zabaleni archivu (pro zabaleni noveho archivu)
+// universal archive packing (for creating a new archive)
 BOOL PackUniversalCompress(HWND parent, const char* command, TPackErrorTable* const errorTable,
                            const char* initDir, BOOL expandInitDir, const BOOL supportLongNames,
                            const char* archiveFileName, const char* sourceDir,
                            const char* archiveRoot, SalEnumSelection2 nextName,
                            void* param, BOOL needANSIListFile);
 
-// Vymazani pozadovanych souboru z archivu
+// delete the selected files from the archive
 BOOL PackDelFromArc(HWND parent, CFilesWindow* panel, const char* archiveFileName,
                     CPluginDataInterfaceAbstract* pluginData,
                     const char* archiveRoot, SalEnumSelection nextName,
                     void* param);
 
-// Automaticka konfigurace pakovacu
+// automatic configuration of packers
 void PackAutoconfig(HWND parent);
 
-// Spousti externi program cmdLine a rozlisuje navratovy kod podle errorTable
+// runs the external program cmdLine and interprets the return code according to errorTable
 BOOL PackExecute(HWND parent, char* cmdLine, const char* currentDir, TPackErrorTable* const errorTable);
 
-// Callback pro enumeraci podle masky (kvuli vybaleni vsech souboru podle masky)
+// callback for enumeration by mask (used to extract all files matching the mask)
 const char* WINAPI PackEnumMask(HWND parent, int enumFiles, BOOL* isDir, CQuadWord* size,
                                 const CFileData** fileData, void* param, int* errorOccured);
 
-// provadi nahradu promennych v retezci prikazove radky
+// performs variable substitution in the command line string
 BOOL PackExpandCmdLine(const char* archiveName, const char* tgtDir, const char* lstName,
                        const char* extName, const char* varText, char* buffer,
                        const int bufferLen, char* DOSTmpName);
 
-// provadi nahradu promennych v retezci aktualniho adresare
+// performs variable substitution in the current directory string
 BOOL PackExpandInitDir(const char* archiveName, const char* srcDir, const char* tgtDir,
                        const char* varText, char* buffer, const int bufferLen);
 
-// Defaultni funkce pro zpracovani chyb - dela jen TRACE_E
+// default error handling function - only does TRACE_E
 BOOL EmptyErrorHandler(HWND parent, const WORD err, ...);
 
-// Funkce pro parsovani vystupu z UC2 pakovace
+// function for parsing the output from the UC2 packer
 BOOL PackUC2List(const char* archiveFileName, CPackLineArray& lineArray,
                  CSalamanderDirectory& dir);
