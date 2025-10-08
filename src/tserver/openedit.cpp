@@ -5,7 +5,9 @@
 
 // import EnvDTE based on its LIBID, dte80a.tlh will be created in build directory and included into project
 #pragma warning(disable : 4278)
+#ifndef __clang__ // we’ll work around clang-cl, which doesn’t support this MS extension; we’re using it for commnet-guard during comments translation
 #import "libid:80cc9f66-e7d8-4ddd-85b6-d9e6cd0e93e2" raw_interfaces_only named_guids
+#endif
 #pragma warning(default : 4278)
 
 #pragma push_macro("new")

@@ -26,7 +26,9 @@
 #include <algorithm>
 #include <functional>
 
+#ifndef __clang__ // we’ll work around clang-cl, which doesn’t support this MS extension; we’re using it for commnet-guard during comments translation
 #import <msxml6.dll>
 #import <mshtml.tlb>
+#endif
 
 // TODO: reference additional headers your program requires here

@@ -87,6 +87,7 @@ def get_clang_args(repo_path: Path) -> list:
         '-Wno-comment',
         '-Wno-nonportable-include-path',
         '-Wno-extra-tokens',
+        '-Wno-invalid-token-paste',
         '-Wno-macro-redefined',
         '-Wno-microsoft-include',
         '-Wno-#pragma-messages',
