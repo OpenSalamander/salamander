@@ -1,0 +1,47 @@
+name: PR squash guard
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, edited]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  check-commits:
+    name: Check commit count for selected authors
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check commit count and fail if necessary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const targetAuthors = ["Lemi257", "bellus869"];
+            const pr = context.payload.pull_request;
+            const author = pr?.user?.login;
+            const number = pr?.number;
+
+            if (!author || !number) {
+              core.info("Unable to determine author or PR number — skipping check.");
+              return;
+            }
+            if (!targetAuthors.includes(author)) {
+              core.info(`Author ${author} is not in the target list — check does not apply.`);
+              return;
+            }
+            let commits = typeof pr.commits === 'number' ? pr.commits : undefined;
+            if (typeof commits !== 'number') {
+              const { data: prData } = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: number,
+              });
+              commits = prData.commits;
+            }
+            core.info(`PR #${number} by ${author} has ${commits} commit(s).`);
+            if (commits > 1) {
+              core.setFailed(`This pull request must be squashed into a single commit. Found ${commits} commit(s).`);
+            } else {
+              core.info("Commit count is OK (<= 1).");
+            }
