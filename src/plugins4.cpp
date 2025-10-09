@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -77,7 +78,7 @@ void CPlugins::UpdatePluginsOrder(BOOL sortByName)
 {
     BOOL firstAdded = TRUE;
 
-    // abychom pozdeji mohli vyradit neexistujici pluginy, nastavime pomocnou promennou
+    // initialize a helper flag so we can later remove plugins that no longer exist
     int i;
     for (i = 0; i < Order.Count; i++)
         Order[i].Flags = 0;
@@ -98,7 +99,7 @@ void CPlugins::UpdatePluginsOrder(BOOL sortByName)
             }
         }
         DWORD flags = 1;
-        if (foundIndex == -1) // tento plugin nema zaznam v poli Order => pripojime ho na konec
+        if (foundIndex == -1) // this plugin has no record in the Order array => append it to the end
         {
             foundIndex = AddPluginToOrder(pluginData->DLLName, TRUE);
             if (firstAdded)
@@ -115,7 +116,7 @@ void CPlugins::UpdatePluginsOrder(BOOL sortByName)
         }
     }
 
-    // vyradime pluginy, ktere uz neexistuji
+    // remove plugins that no longer exist
     for (i = Order.Count - 1; i >= 0; i--)
     {
         if (Order[i].Flags == 0)
@@ -125,7 +126,7 @@ void CPlugins::UpdatePluginsOrder(BOOL sortByName)
         }
     }
 
-    // dohledame prvni nove pridany plugin
+    // find the first newly added plugin
     int index = -1;
     for (i = 0; i < Order.Count; i++)
     {
@@ -136,7 +137,7 @@ void CPlugins::UpdatePluginsOrder(BOOL sortByName)
         }
     }
 
-    // pokud jsme nasli nove pridany plugin a zaroven za nim jsou dalsi, seradime je
+    // if we found a newly added plugin and there are more after it, sort them
     if (Order.Count > 1 && !sortByName && (index != -1 && index < Order.Count - 1))
         QuickSortPluginsByName(index, Order.Count - 1);
     if (Order.Count > 1 && sortByName)
@@ -158,11 +159,11 @@ BOOL CPlugins::ChangePluginsOrder(int index, int newIndex)
         return FALSE;
     }
 
-    // do 'tmp' ulozim polozku ze zdrojoveho indexu
+    // store the item from the source index in 'tmp'
     CPluginOrder tmp;
     tmp = Order[index];
 
-    // posunu polozky mezi
+    // shift the items in between
     if (index < newIndex)
     {
         int i;
@@ -176,7 +177,7 @@ BOOL CPlugins::ChangePluginsOrder(int index, int newIndex)
             Order[i] = Order[i - 1];
     }
 
-    // do cile ulozim 'tmp'
+    // store 'tmp' into the destination
     Order[newIndex] = tmp;
 
     return TRUE;
@@ -238,8 +239,8 @@ int CPlugins::FindIndexForNewPluginFSTimer(DWORD timeoutAbs)
     if (PluginFSTimers.Count == 0)
         return 0;
 
-    // vsechny casy se musi vztahnout k nejblizsimu timeoutu, protoze jen tak se podari
-    // seradit timeouty, ktere prekroci 0xFFFFFFFF
+    // all times must refer to the nearest timeout, because only then
+    // can we sort timeouts that exceed 0xFFFFFFFF
     DWORD timeoutAbsBase = PluginFSTimers[0]->AbsTimeout;
     if ((int)(timeoutAbs - timeoutAbsBase) < 0)
         timeoutAbsBase = timeoutAbs;
@@ -253,19 +254,19 @@ int CPlugins::FindIndexForNewPluginFSTimer(DWORD timeoutAbs)
         if (actTimeoutAbs == timeoutAbs)
         {
             while (++m < PluginFSTimers.Count && PluginFSTimers[m]->AbsTimeout - timeoutAbsBase == timeoutAbs)
-                ;     // vratime index za posledni stejny timer
-            return m; // nalezeno
+                ;     // return the index after the last identical timer
+            return m; // found
         }
         else if (actTimeoutAbs > timeoutAbs)
         {
             if (l == r || l > m - 1)
-                return m; // nenalezeno, mel by byt na teto pozici
+                return m; // not found, should be at this position
             r = m - 1;
         }
         else
         {
             if (l == r)
-                return m + 1; // nenalezeno, mel by byt az za touto pozici
+                return m + 1; // not found, should be right after this position
             l = m + 1;
         }
     }
@@ -283,10 +284,10 @@ BOOL CPlugins::AddPluginFSTimer(DWORD relTimeout, CPluginFSInterfaceAbstract* ti
         {
             ret = TRUE;
 
-            if (index == 0) // zmena nejblizsiho timeoutu, musime zmenit windowsovy timer
+            if (index == 0) // the nearest timeout changed, adjust the Windows timer
             {
                 DWORD ti = timer->AbsTimeout - GetTickCount();
-                if ((int)ti > 0) // pokud jiz nenastal timeout noveho timeru (muze nastat i zaporny rozdil casu), zmenime nebo nahodime windows timer
+                if ((int)ti > 0) // if the new timer hasn't already timed out (the difference can even be negative), adjust or start the Windows timer
                 {
                     SetTimer(MainWindow->HWindow, IDT_PLUGINFSTIMERS, ti, NULL);
                 }
@@ -294,8 +295,8 @@ BOOL CPlugins::AddPluginFSTimer(DWORD relTimeout, CPluginFSInterfaceAbstract* ti
                 {
                     if ((int)ti < 0)
                         TRACE_E("CPlugins::AddPluginFSTimer(): expired timer was added (" << (int)ti << " ms)");
-                    KillTimer(MainWindow->HWindow, IDT_PLUGINFSTIMERS);                // zrusime pripadny Windowsovy timer, uz neni potreba
-                    PostMessage(MainWindow->HWindow, WM_TIMER, IDT_PLUGINFSTIMERS, 0); // co nejdrive zpracujeme dalsi timeout
+                    KillTimer(MainWindow->HWindow, IDT_PLUGINFSTIMERS);                // cancel any Windows timer, it's not needed
+                    PostMessage(MainWindow->HWindow, WM_TIMER, IDT_PLUGINFSTIMERS, 0); // process the next timeout as soon as possible
                 }
             }
         }
@@ -326,23 +327,23 @@ int CPlugins::KillPluginFSTimer(CPluginFSInterfaceAbstract* timerOwner, BOOL all
             ret++;
         }
     }
-    if (setTimer) // byl zrusen timer s nejblizsim timeoutem, musime prenastavit timeout
+    if (setTimer) // the timer with the nearest timeout was cancelled, the timeout must be reset
     {
         if (PluginFSTimers.Count > 0)
         {
             DWORD ti = PluginFSTimers[0]->AbsTimeout - GetTickCount();
-            if ((int)ti > 0) // pokud jiz nenastal timeout noveho timeru (muze nastat i zaporny rozdil casu), zmenime nebo nahodime windows timer
+            if ((int)ti > 0) // if the new timer hasn't already timed out (the difference can even be negative), adjust or start the Windows timer
             {
                 SetTimer(MainWindow->HWindow, IDT_PLUGINFSTIMERS, ti, NULL);
             }
             else
             {
-                KillTimer(MainWindow->HWindow, IDT_PLUGINFSTIMERS);                // zrusime pripadny Windowsovy timer, uz neni potreba
-                PostMessage(MainWindow->HWindow, WM_TIMER, IDT_PLUGINFSTIMERS, 0); // co nejdrive zpracujeme dalsi timeout
+                KillTimer(MainWindow->HWindow, IDT_PLUGINFSTIMERS);                // cancel any Windows timer, it's not needed
+                PostMessage(MainWindow->HWindow, WM_TIMER, IDT_PLUGINFSTIMERS, 0); // process the next timeout as soon as possible
             }
         }
         else
-            KillTimer(MainWindow->HWindow, IDT_PLUGINFSTIMERS); // zrusime pripadny Windowsovy timer, uz neni potreba
+            KillTimer(MainWindow->HWindow, IDT_PLUGINFSTIMERS); // cancel any Windows timer, it's no longer needed
     }
     return ret;
 }
@@ -351,10 +352,10 @@ void CPlugins::HandlePluginFSTimers()
 {
     CALL_STACK_MESSAGE1("CPlugins::HandlePluginFSTimers()");
 
-    // zrusime pripadny windowsovy timer (aby se zbytecne neopakovalo volani)
+    // cancel any Windows timer (to avoid repeated calls)
     KillTimer(MainWindow->HWindow, IDT_PLUGINFSTIMERS);
 
-    if (!StopTimerHandlerRecursion) // obrana proti rekurzi
+    if (!StopTimerHandlerRecursion) // protection against recursion
     {
         StopTimerHandlerRecursion = TRUE;
         DWORD startTimerTimeCounter = TimerTimeCounter;
@@ -364,12 +365,12 @@ void CPlugins::HandlePluginFSTimers()
         for (i = 0; i < PluginFSTimers.Count; i++)
         {
             CPluginFSTimer* timer = PluginFSTimers[i];
-            if ((int)(timer->AbsTimeout - timeNow) <= 0 &&     // nastal timeout timeru
-                timer->TimerAddedTime < startTimerTimeCounter) // jde o "stary" timer (kvuli nekonecnemu cyklu blokujeme nove pridane timery)
+            if ((int)(timer->AbsTimeout - timeNow) <= 0 &&     // the timer timed out
+                timer->TimerAddedTime < startTimerTimeCounter) // it's an "old" timer (to prevent an infinite loop, we block newly added timers)
             {
-                PluginFSTimers.Detach(i--); // odpojime timer z pole (nastal jeho timeout = je "vyrizeny")
+                PluginFSTimers.Detach(i--); // detach the timer from the array (its timeout occurred = it's "handled")
 
-                CPluginFSInterfaceEncapsulation* fs = NULL; // najdeme zapouzdreni FS-objektu timeru (FS v panelu nebo odpojeny FS)
+                CPluginFSInterfaceEncapsulation* fs = NULL; // find the encapsulation of the timer's FS object (FS in a panel or a detached FS)
                 if (MainWindow->LeftPanel->Is(ptPluginFS) &&
                     MainWindow->LeftPanel->GetPluginFS()->Contains(timer->TimerOwner))
                 {
@@ -398,8 +399,8 @@ void CPlugins::HandlePluginFSTimers()
                     fs = WorkingPluginFS;
                 if (fs != NULL)
                 {
-                    fs->Event(FSE_TIMER, timer->TimerParam); // oznamime vlastnikovi timeru jeho timeout
-                    i = -1;                                  // pro pripad zmeny v poli PluginFSTimers to vezmeme zase pekne od zacatku
+                    fs->Event(FSE_TIMER, timer->TimerParam); // notify the timer owner about its timeout
+                    i = -1;                                  // in the case of changes in the PluginFSTimers array, start again from the beginning
                 }
                 else
                     TRACE_E("CPlugins::HandlePluginFSTimers(): timer owner was not found! (" << timer->TimerOwner << ")");
@@ -410,10 +411,10 @@ void CPlugins::HandlePluginFSTimers()
         if (PluginFSTimers.Count > 0)
         {
             DWORD ti = PluginFSTimers[0]->AbsTimeout - GetTickCount();
-            if ((int)ti > 0) // pokud jiz nenastal timeout noveho timeru (muze nastat i zaporny rozdil casu), zmenime nebo nahodime windows timer
+            if ((int)ti > 0) // if the new timer hasn't already timed out (the difference can even be negative), adjust or start the Windows timer
                 SetTimer(MainWindow->HWindow, IDT_PLUGINFSTIMERS, ti, NULL);
             else
-                PostMessage(MainWindow->HWindow, WM_TIMER, IDT_PLUGINFSTIMERS, 0); // co nejdrive zpracujeme dalsi timeout
+                PostMessage(MainWindow->HWindow, WM_TIMER, IDT_PLUGINFSTIMERS, 0); // process the next timeout as soon as possible
         }
 
         StopTimerHandlerRecursion = FALSE;
