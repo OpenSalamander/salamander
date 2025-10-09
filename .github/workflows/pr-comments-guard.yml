@@ -2,7 +2,7 @@ name: PR Comment Guard
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, labeled]
 
 permissions:
   contents: read
@@ -10,6 +10,7 @@ permissions:
 jobs:
   comment-only:
     name: Ensure Only Comments Change (${{ matrix.mode }}) # Include active mode in job name for clearer logs.
+    if: contains(github.event.pull_request.labels.*.name, 'comments-only')
     strategy: # Expand the job to cover both evaluation modes.
       fail-fast: false # Make sure the relaxed run completes even if the strict mode fails first.
       matrix:
@@ -85,9 +86,9 @@ jobs:
           }
 
           if (-not [string]::IsNullOrWhiteSpace($baseRef)) {
-            git fetch --no-tags origin $baseRef --depth=1 | Out-Null
+            git fetch --no-tags origin $baseRef --depth=0 | Out-Null
           } else {
-            git fetch --no-tags origin $baseSha --depth=1 | Out-Null
+            git fetch --no-tags origin $baseSha --depth=0 | Out-Null
           }
 
           git rev-parse --verify $baseSha | Out-Null
@@ -102,7 +103,27 @@ jobs:
           git worktree add --detach $baseWorktree $baseSha | Out-Null
 
           try {
-            $files = git diff --name-only --diff-filter=ACMR $baseSha HEAD | Where-Object { $_ -ne '' }
+            # Determine which files to check based on the PR action
+            $prAction = '${{ github.event.action }}'
+            $beforeSha = '${{ github.event.before }}'
+            $afterSha = '${{ github.event.after }}'
+            
+            $files = @()
+            if ($prAction -eq 'synchronize' -and -not [string]::IsNullOrWhiteSpace($beforeSha) -and -not [string]::IsNullOrWhiteSpace($afterSha)) {
+              # For synchronize with before/after, check only files changed in the push range
+              Write-Host "Checking files changed in push range: $beforeSha..$afterSha"
+              $files = git diff --name-only --diff-filter=ACMR $beforeSha $afterSha | Where-Object { $_ -ne '' }
+            } else {
+              # For opened/reopened or other cases, use merge-base approach
+              Write-Host "Checking files changed in entire PR using merge-base"
+              $mergeBase = git merge-base origin/$baseRef HEAD
+              if ([string]::IsNullOrWhiteSpace($mergeBase)) {
+                Write-Error "Could not determine merge-base between origin/$baseRef and HEAD"
+              }
+              Write-Host "Merge-base: $mergeBase"
+              $files = git diff --name-only --diff-filter=ACMR $mergeBase..HEAD | Where-Object { $_ -ne '' }
+            }
+            
             if (-not $files) {
               Write-Host 'No tracked changes detected.'
               exit 0
@@ -256,6 +277,10 @@ jobs:
                 if ([string]::IsNullOrEmpty($message)) {
                   $message = 'Unknown error'
                 }
+
+                # Include the mode in the message for clarity
+                $modeLabel = if ($commentGuardMode -eq 'strict') { '[strict]' } else { '[ignore-whitespace]' }
+                $message = "$modeLabel $message"
 
                 $annotation = "::error"
                 if (-not [string]::IsNullOrEmpty($file)) {
