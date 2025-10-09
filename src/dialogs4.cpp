@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -115,7 +116,7 @@ BOOL CHighlightMasks::Load(CHighlightMasks& source)
 //
 // ValidatePathIsNotEmpty
 //
-// pokud je cesta prazdna, vraci FALSE, jinak TRUE (cesta "neco" obsahuje)
+// returns FALSE when the path is empty, otherwise TRUE (the path contains 'something')
 
 BOOL ValidatePathIsNotEmpty(HWND hParent, const char* path)
 {
@@ -132,27 +133,27 @@ BOOL ValidatePathIsNotEmpty(HWND hParent, const char* path)
             iterator++;
     }
 
-    // prazdny retezec je nepripustny
+    // an empty string is not allowed
     if (empty)
     {
         SalMessageBox(hParent, LoadStr(IDS_THEPATHISINVALID), LoadStr(IDS_ERRORTITLE),
                       MB_OK | MB_ICONEXCLAMATION);
         return FALSE;
     }
-    /* puvodne se funkce jmenovala ValidateCommandFile a overovala existenci souboru, ale odesli jsme od toho (mozna problemy na siti?)
+    /* originally this function was called ValidateCommandFile and checked file existence, but we abandoned that idea (maybe because of network issues?)
   if (testFileExist)
   {
-    // zkusim na soubor sahnout
+    // try to access the file
     if (!FileExists(myPath))
     {
-      // soubor jsem nenasel - nemusi existovat nebo neni dostupna cesta
-      // neacham to usera forcenout
+      // the file was not found - it might not exist or the path may be unreachable;
+      // let the user force it
       char buff[1000];
       sprintf(buff, LoadStr(IDS_THECOMMANDISINVALID), myPath, itemName);
       int ret = SalMessageBox(hParent, buff, LoadStr(IDS_ERRORTITLE),
                               MB_YESNO | MB_ICONQUESTION);
       if (ret == IDYES)
-        return FALSE;    // user chce zmenit polozku
+        return FALSE;    // the user wants to modify the item
     }
   }
 */
@@ -183,13 +184,13 @@ extern const char* LOADSAVE_REGISTRY_MUTEX_NAME;
 
 void CLoadSaveToRegistryMutex::Init()
 {
-    // 2.52b1: zavadime podporu pro FastUserSwitching/Terminal Services
-    // Do teto verze byl mutex v lokalnime namespace pod nazvem SalamanderLoadSaveToRegistryMutex.
-    // Nove chceme zajistit interoperabilitu pres vsechny sessions, takze ho vlozime do Global namespacu.
-    // Navic do nazvu (od W2K dale) vlozime SID, takze se nepotkaji mutexy Salamanderu spustenych pod
-    // ruznymi uzivateli -- stejne pracuji se svym stromem v Registry, synchronizace tam neni potreba.
-    // Do nazvu mutexu bychom mohli vlozit i verzi Salamandera (kazda verze ma svuj strom v Registry).
-    // Protoze ale nove verze Salamandera umeji smazat stare opustene konfigurace, neudelame to.
+    // 2.52b1: adding support for FastUserSwitching/Terminal Services
+    // Up to this version the mutex was created in the local namespace under the name SalamanderLoadSaveToRegistryMutex.
+    // Now we want to provide interoperability across all sessions, so we place it in the Global namespace.
+    // We also append the SID (from W2K on) so that mutexes of Salamander instances running under different users 
+    // do not collide -- they work with their own Registry trees, no synchronization needed there.
+    // We could add the Salamander version into the mutex name as well (every version has its own Registry tree).
+    // But new versions can remove obsolete configurations, so we won't do it.
     LPTSTR sid = NULL;
     if (!GetStringSid(&sid))
         sid = NULL;
@@ -197,7 +198,7 @@ void CLoadSaveToRegistryMutex::Init()
     char buff[1000];
     if (sid == NULL)
     {
-        // chyba v ziskani SID -- pojedeme v nouzovem rezimu
+        // failed to obtain SID -- continue in fallback mode
         _snprintf_s(buff, _TRUNCATE, "%s", LOADSAVE_REGISTRY_MUTEX_NAME);
     }
     else
@@ -271,7 +272,7 @@ CConfiguration::CConfiguration()
     IncludeDirs = FALSE;
     AutoSave = TRUE;
     CloseShell = FALSE;
-    ShowGrepErrors = FALSE; // vsechny ostatni findy (FAR/WinCmd/PowerDesk/Windows Find) chyby neukazuji
+    ShowGrepErrors = FALSE; // other search tools (FAR/WinCmd/PowerDesk/Windows Find) do not show errors
     FindFullRowSelect = FALSE;
     MinBeepWhenDone = TRUE;
     UseRecycleBin = 1;
@@ -279,7 +280,7 @@ CConfiguration::CConfiguration()
     SizeFormat = SIZE_FORMAT_BYTES;
     RecycleMasks.SetMasksString("*.txt;*.doc");
     LastFocusedPage = 0;
-    ConfigurationHeight = 0; // logika dialogu nepovoli mensi dialog nez je jeho nejvetsi drzena stranka
+    ConfigurationHeight = 0; // the dialog logic will not allow a smaller dialog than the largest page it contains
     ViewersAndEditorsExpanded = 0;
     PackersAndUnpackersExpanded = 0;
     ClearReadOnly = TRUE;
@@ -289,16 +290,16 @@ CConfiguration::CConfiguration()
     //  FastDirectoryMove = TRUE;
     SortUsesLocale = TRUE;
     SortDetectNumbers = TRUE;
-    SortNewerOnTop = FALSE; // implicitne radime jako Explorer pod XP, novejsi polozky dole
-    SortDirsByName = FALSE; // at nam lidi nepisi bug reporty, jako Ghislerovi
-    SortDirsByExt = FALSE;  // adresare nemaji pripony, je to option pro firmy/lidi vyuzivajici stareho typu razeni adresaru
+    SortNewerOnTop = FALSE; // by default sort like Explorer on XP, newer items at the bottom
+    SortDirsByName = FALSE; // so people do not report it as a bug like they did to Ghisler
+    SortDirsByExt = FALSE;  // directories have no extensions, an option kept for companies/users relying on the old directory ordering
     SaveHistory = TRUE;
-    SaveWorkDirs = FALSE; // implicitne setrime mistem v registry, seznam je velky
+    SaveWorkDirs = FALSE; // by default save space in the registry, the list is large
     EnableCmdLineHistory = TRUE;
     SaveCmdLineHistory = TRUE;
     //  LantasticCheck = FALSE;
     UseSalOpen = FALSE;
-    NetwareFastDirMove = FALSE; // volime pomalejsi ale 100% funkcni rezim, fajnsmekri si to muzou prepnout
+    NetwareFastDirMove = FALSE; // choose the slower but 100% working mode; power users can switch it
     UseAsyncCopyAlg = TRUE;
     ReloadEnvVariables = TRUE;
     QuickRenameSelectAll = FALSE;
@@ -319,7 +320,7 @@ CConfiguration::CConfiguration()
     IconSpacingVert = 43;
     IconSpacingHorz = 43;
     TileSpacingVert = 8;
-    ThumbnailSpacingHorz = 19; // 29 je pod WinXP
+    ThumbnailSpacingHorz = 19; // 29 on Windows XP
     ThumbnailSize = THUMBNAIL_SIZE_DEFAULT;
 
     // options for Compare Directories
@@ -368,11 +369,11 @@ CConfiguration::CConfiguration()
     KeepPluginsSorted = TRUE;
     ShowSLGIncomplete = TRUE;
 
-    LastUsedSpeedLimit = 1024 * 1024; // defaultne 1 MB/s
+    LastUsedSpeedLimit = 1024 * 1024; // default 1 MB/s
 
     QuickSearchEnterAlt = FALSE;
 
-    // pro zobrazeni polozek v panelu
+    // for displaying items in the panel
     FullRowSelect = FALSE;
     FullRowHighlight = TRUE;
     UseIconTincture = TRUE;
@@ -385,7 +386,7 @@ CConfiguration::CConfiguration()
     DrvSpecFloppyMon = TRUE;
     DrvSpecFloppySimple = TRUE;
     DrvSpecRemovableMon = TRUE;
-    DrvSpecRemovableSimple = FALSE; // 2.5b11: Floppy maji svoji kategorii, takze si muzeme dovolit cist ikony
+    DrvSpecRemovableSimple = FALSE; // 2.5b11: since floppies have their own category, we can afford to read icons
     DrvSpecFixedMon = TRUE;
     DrvSpecFixedSimple = FALSE;
     DrvSpecRemoteMon = TRUE;
@@ -411,7 +412,7 @@ CConfiguration::CConfiguration()
     strcpy(LeftToolBar, DefLeftToolBar);
     strcpy(RightToolBar, DefRightToolBar);
 
-    SkillLevel = SKILL_LEVEL_ADVANCED; // pokusime se prezentovat maximum moznosti
+    SkillLevel = SKILL_LEVEL_ADVANCED; // try to present as many options as possible
 
     int i;
     for (i = 0; i < SELECT_HISTORY_SIZE; i++)
@@ -435,7 +436,7 @@ CConfiguration::CConfiguration()
     for (i = 0; i < FILTER_HISTORY_SIZE; i++)
         FilterHistory[i] = NULL;
 
-    FileListHistory[0] = DupStr("$(FileName)$(CRLF)"); // default pro MakeFileList
+    FileListHistory[0] = DupStr("$(FileName)$(CRLF)"); // default for MakeFileList
 
     FileListName[0] = 0;
     FileListAppend = FALSE;
@@ -494,8 +495,8 @@ CConfiguration::CConfiguration()
     GripsVisible = TRUE;
 
     // Packers / Unpackers
-    UseAnotherPanelForPack = FALSE;   // jako WinZipove - at je vyprudime
-    UseAnotherPanelForUnpack = FALSE; // teda radeji vykostime :-)
+    UseAnotherPanelForPack = FALSE;   // like WinZip folks - let's annoy them
+    UseAnotherPanelForUnpack = FALSE; // or rather strip them bare :-)
     UseSubdirNameByArchiveForUnpack = FALSE;
     UseSimpleIconsInArchives = FALSE;
 
@@ -513,9 +514,9 @@ CConfiguration::CConfiguration()
 
     // Find dialog
     SearchFileContent = FALSE;
-    FindDialogWindowPlacement.length = 0; // zatim neplatne
-    // sirky sloupce Find dialogu
-    FindColNameWidth = -1; // nechame nastavit podle okna
+    FindDialogWindowPlacement.length = 0; // not valid yet
+    // column width of the Find dialog
+    FindColNameWidth = -1; // let it be set according to the window size
 
     // Language
     LoadedSLGName[0] = 0;
@@ -525,23 +526,23 @@ CConfiguration::CConfiguration()
     UseAsAltSLGInOtherPlugins = FALSE;
     AltPluginSLGName[0] = 0;
 
-    // promenna ConversionTable neni nactena z konfigurace
+    // the ConversionTable variable is not loaded from the configuration
     strcpy(ConversionTable, "*");
 
     TitleBarShowPath = TRUE;
-    TitleBarMode = TITLE_BAR_MODE_DIRECTORY; // podle Exploreru
+    TitleBarMode = TITLE_BAR_MODE_DIRECTORY; // like Explorer
     UseTitleBarPrefix = FALSE;
     strcpy(TitleBarPrefix, "ADMIN");
     UseTitleBarPrefixForced = FALSE;
     TitleBarPrefixForced[0] = 0;
 
-    MainWindowIconIndex = 0; // default ikona
+    MainWindowIconIndex = 0; // default icon
     MainWindowIconIndexForced = -1;
 
     ClickQuickRename = TRUE;
 
-    VisibleDrives = DRIVES_MASK; // implicitne zobrazujeme vsechny disky
-    SeparatedDrives = 0;         // implicitne zadne separatory nevkladame, nevime kam
+    VisibleDrives = DRIVES_MASK; // by default show all drives
+    SeparatedDrives = 0;         // insert no separators by default, we do not know where
 
     ShowSplashScreen = TRUE;
 
@@ -697,9 +698,9 @@ CConfigurationDlg::CConfigurationDlg(HWND parent, CUserMenuItems* userMenuItems,
 {
     HOldPluginMsgBoxParent = NULL;
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // pri zmene poradi stranek je treba zmenit konstruktor
+    // when the page order changes, update the constructor
     // mode == 0 ? Configuration.LastFocusedPage : 4
-    // v 1.6b2 me to vypeklo
+    // in 1.6b2 this fooled me
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     /*00*/ Add(&PageGeneral);       // General
     /*01*/ Add(&PagePanels);        // Panels
@@ -730,9 +731,9 @@ CConfigurationDlg::CConfigurationDlg(HWND parent, CUserMenuItems* userMenuItems,
     /*26*/ Add(&PageP2, &PagePP);
     /*27*/ //  Add(&PageShellExtensions);
            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-           // pri zmene poradi stranek je treba zmenit konstruktor
+           // when the page order changes, update the constructor
            // mode == 0 ? Configuration.LastFocusedPage : 4
-           // v 1.6b2 me to vypeklo
+           // in 1.6b2 this fooled me
            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 }
 
@@ -742,8 +743,8 @@ void CConfigurationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // z ColorsChanged() se vola metoda plug-inu (pri zmenach barev se vola
-        // PLUGINEVENT_COLORSCHANGED) -> nutne nastaveni parenta pro jejich messageboxy
+        // ColorsChanged() calls a plug-in method (when colors change PLUGINEVENT_COLORSCHANGED 
+        // is called) -> we must set the parent for their message boxes
         HOldPluginMsgBoxParent = PluginMsgBoxParent;
         PluginMsgBoxParent = Dialog.HWindow;
         MultiMonCenterWindow(Dialog.HWindow, Parent, TRUE);
@@ -752,7 +753,7 @@ void CConfigurationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_DESTROY:
     {
-        if (GetKeyState(VK_ESCAPE) & 0x8000) // opatreni, aby se neprerusoval listing v panelu po kazdem ESC
+        if (GetKeyState(VK_ESCAPE) & 0x8000) // prevent listing interruption in the panel after each ESC
             WaitForESCReleaseBeforeTestingESC = TRUE;
 
         PluginMsgBoxParent = HOldPluginMsgBoxParent;
@@ -888,9 +889,9 @@ void CCfgPageRegional::Transfer(CTransferInfo& ti)
             SalMessageBox(HWindow, LoadStr(IDS_LANGUAGE_CHANGE), LoadStr(IDS_INFOTITLE),
                           MB_OK | MB_ICONINFORMATION);
             lstrcpy(Configuration.SLGName, SLGName);
-            Configuration.ShowSLGIncomplete = TRUE; // neni-li jazyk kompletni, zobrazime pri startu hlasku (rekrutujeme prekladatele)
+            Configuration.ShowSLGIncomplete = TRUE; // if the language is not complete, show a message at startup (recruit translators)
         }
-        // pokud doslo ke zmene tabulky a stare uz jsou nactene, je treba restartnout Salama
+        // if the table has changed and the old one is already loaded we need to restart Salamander
         if (stricmp(Configuration.ConversionTable, DirName) != 0)
         {
             lstrcpy(Configuration.ConversionTable, DirName);
@@ -956,7 +957,7 @@ CCfgPageRegional::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 // CCfgPageView
 //
 
-// slouzi pouze na potlaceni quick searche v listview
+// used only to suppress quick search in the list view
 class CMyListView : public CWindow
 {
 public:
@@ -1047,7 +1048,7 @@ void CCfgPageView::Transfer(CTransferInfo& ti)
             sprintf(buff, "Alt+%d", i < VIEW_TEMPLATES_COUNT - 1 ? i + 1 : 0);
             ListView_SetItemText(HListView, i, 2, buff);
         }
-        // nastavim sirky sloupcu
+        // set column widths
         ListView_SetColumnWidth(HListView, 0, LVSCW_AUTOSIZE_USEHEADER);
         int w = ListView_GetColumnWidth(HListView, 0);
         w += 30;
@@ -1318,11 +1319,11 @@ CCfgPageView::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         origFlags = ListView_GetExtendedListViewStyle(HListView2);
         ListView_SetExtendedListViewStyle(HListView2, origFlags | exFlags); // 4.71
 
-        // zjistim velikost listview
+        // determine the list view size
         RECT r;
         GetClientRect(HListView, &r);
 
-        // naleju do listview sloupce Name, Mode a HotKey
+        // fill the list view with Name, Mode and HotKey columns
         LVCOLUMN lvc;
         lvc.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
         lvc.pszText = LoadStr(IDS_HOTPATH_NAME);
@@ -1343,7 +1344,7 @@ CCfgPageView::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         ListView_InsertColumn(HListView, 2, &lvc);
         ListView_SetColumnWidth(HListView, 2, LVSCW_AUTOSIZE_USEHEADER);
 
-        // naleju sloupec Name do listview se sloupci
+        // insert the Name column into the list view with columns
         GetClientRect(HListView2, &r);
         lvc.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
         lvc.pszText = LoadStr(IDS_COLUMN_NAME);
@@ -1351,7 +1352,7 @@ CCfgPageView::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         lvc.iSubItem = 0;
         ListView_InsertColumn(HListView2, 0, &lvc);
 
-        // prvky dialogu se maji natahovat podle jeho velikosti, nastavime delici controly
+        // dialog elements should stretch with the dialog size, set split controls
         ElasticVerticalLayout(2, IDC_VIEW_LIST, IDC_VIEW_LIST2);
 
         break;
@@ -1410,7 +1411,7 @@ CCfgPageView::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             case LVN_ITEMCHANGING:
             {
                 LPNMLISTVIEW nmhi = (LPNMLISTVIEW)nmh;
-                // nesouhlasne :-) pipneme pri pokusu zhasnout sloupec Name
+                // disagree :-) beep when attempting to hide the Name column
                 if (nmhi->iItem == 0 && (nmhi->uOldState & 0xF000) != (nmhi->uNewState & 0xF000))
                 {
                     MessageBeep(MB_ICONASTERISK);
@@ -1427,11 +1428,11 @@ CCfgPageView::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 LPNMLISTVIEW nmhi = (LPNMLISTVIEW)nmh;
                 if ((nmhi->uOldState & 0xF000) != (nmhi->uNewState & 0xF000))
                 {
-                    StoreControls(); // pri kliknuti na checkbox ulozim data
+                    StoreControls(); // save data when the checkbox is clicked
                     EnableControls();
                 }
                 else if (!(nmhi->uOldState & LVIS_SELECTED) && nmhi->uNewState & LVIS_SELECTED)
-                    LoadControls(); // pri zmene sloupce nacucnu nova data do radiaku a editlajny
+                    LoadControls(); // on column change, load new data to the list and edit line
                 break;
             }
             }
@@ -1647,8 +1648,8 @@ void CCfgPageViewer::Validate(CTransferInfo& ti)
     char buf[MAX_PATH];
     if (ti.IsGood())
     {
-        lstrcpyn(buf, Configuration.TextModeMasks.GetMasksString(), MAX_PATH); // zaloha TextModeMasks
-        // poskytneme MasksString, je zde kontrola rozsahu, o nic nejde
+        lstrcpyn(buf, Configuration.TextModeMasks.GetMasksString(), MAX_PATH); // backup of TextModeMasks
+        // provide MasksString, there is range checking, nothing serious
         ti.EditLine(IDC_VIEW_INTEXT, Configuration.TextModeMasks.GetWritableMasksString(), MAX_PATH);
         int errorPos;
         if (!Configuration.TextModeMasks.PrepareMasks(errorPos))
@@ -1659,14 +1660,14 @@ void CCfgPageViewer::Validate(CTransferInfo& ti)
             SendMessage(GetDlgItem(HWindow, IDC_VIEW_INTEXT), EM_SETSEL, errorPos, errorPos + 1);
             ti.ErrorOn(IDC_VIEW_INTEXT);
         }
-        Configuration.TextModeMasks.SetMasksString(buf); // obnova TextModeMasks
+        Configuration.TextModeMasks.SetMasksString(buf); // TextModeMasks restoration
         Configuration.TextModeMasks.PrepareMasks(errorPos);
     }
 
     if (ti.IsGood())
     {
-        lstrcpyn(buf, Configuration.HexModeMasks.GetMasksString(), MAX_PATH); // zaloha HexModeMasks
-        // poskytneme MasksString, je zde kontrola kozsahu, o nic nejde
+        lstrcpyn(buf, Configuration.HexModeMasks.GetMasksString(), MAX_PATH); // backup of HexModeMasks
+        // provide MasksString, there is range checking, nothing serious
         ti.EditLine(IDC_VIEW_INHEX, (char*)Configuration.HexModeMasks.GetWritableMasksString(), MAX_PATH);
         int errorPos;
         if (!Configuration.HexModeMasks.PrepareMasks(errorPos))
@@ -1677,7 +1678,7 @@ void CCfgPageViewer::Validate(CTransferInfo& ti)
             SendMessage(GetDlgItem(HWindow, IDC_VIEW_INHEX), EM_SETSEL, errorPos, errorPos + 1);
             ti.ErrorOn(IDC_VIEW_INHEX);
         }
-        Configuration.HexModeMasks.SetMasksString(buf); // obnova HexModeMasks
+        Configuration.HexModeMasks.SetMasksString(buf); // HexModeMasks restoration
         Configuration.HexModeMasks.PrepareMasks(errorPos);
     }
 }
@@ -1698,9 +1699,9 @@ void CCfgPageViewer::Transfer(CTransferInfo& ti)
     if (Configuration.SavePosition)
         Configuration.WindowPlacement.length = 0;
 
-    // poskytneme MasksString, je zde kontrola rozsahu, o nic nejde
+    // provide MasksString, there is range checking, nothing serious
     ti.EditLine(IDC_VIEW_INHEX, (char*)Configuration.HexModeMasks.GetWritableMasksString(), MAX_PATH);
-    // poskytneme MasksString, je zde kontrola rozsahu, o nic nejde
+    // provide MasksString, there is range checking, nothing serious
     ti.EditLine(IDC_VIEW_INTEXT, (char*)Configuration.TextModeMasks.GetWritableMasksString(), MAX_PATH);
     int errPos;
     Configuration.TextModeMasks.PrepareMasks(errPos);
@@ -1718,7 +1719,7 @@ void CCfgPageViewer::Transfer(CTransferInfo& ti)
     {
         UseCustomViewerFont = LocalUseCustomViewerFont;
         if (memcmp(&ViewerLogFont, &LocalViewerLogFont, sizeof(LocalViewerLogFont)) != 0)
-        { // pri zmene fontu musime novy font premerit
+        { // when the font changes we must measure the new one
             HANDLES(EnterCriticalSection(&ViewerFontMeasureCS));
             memcpy(&ViewerLogFont, &LocalViewerLogFont, sizeof(LocalViewerLogFont));
             ViewerFontMeasured = FALSE;
@@ -1736,11 +1737,11 @@ void CCfgPageViewer::Transfer(CTransferInfo& ti)
         }
         UpdateViewerColors(ViewerColors);
 
-        // rozesleme tuto novinku i mezi plug-iny
+        // broadcast this change to the plug-ins as well
         if (colorChanged)
             Plugins.Event(PLUGINEVENT_COLORSCHANGED, 0);
 
-        // po zavreni dialogu bude volana BroadcastConfigChanged
+        // after closing the dialog BroadcastConfigChanged will be called
     }
 }
 
@@ -1756,7 +1757,7 @@ void CCfgPageViewer::LoadControls()
 
     HWND hEdit = GetDlgItem(HWindow, IDE_VIEWERFONT);
     int origHeight = logFont.lfHeight;
-    logFont.lfHeight = GetWindowFontHeight(hEdit); // pro prezentaci fontu v edit line pouzijeme jeji velikost fontu
+    logFont.lfHeight = GetWindowFontHeight(hEdit); // use the edit line font size for font presentation
     if (HFont != NULL)
         HANDLES(DeleteObject(HFont));
     HFont = HANDLES(CreateFontIndirect(&logFont));
@@ -1800,8 +1801,8 @@ CCfgPageViewer::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
             case IDB_VIEWERFONT:
             {
-                /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volanim InsertMenu() dole...
+                /* used by the export_mnu.py script that generates salmenu.mnu for the Translator
+    keep synchronized with the InsertMenu() call below...
 MENU_TEMPLATE_ITEM CfgPageViewerMenu[] = 
 {
   {MNTT_PB, 0
@@ -1855,8 +1856,8 @@ MENU_TEMPLATE_ITEM CfgPageViewerMenu[] =
                 CColorArrowButton* button = (CColorArrowButton*)WindowsManager.GetWindowPtr((HWND)lParam);
                 if (button != NULL)
                 {
-                    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volanim InsertMenu() dole...
+                    /* used by the export_mnu.py script that generates salmenu.mnu for the Translator
+    keep synchronized with the InsertMenu() call below...
 MENU_TEMPLATE_ITEM CfgPageViewerMenu[] = 
 {
   {MNTT_PB, 0
@@ -2047,12 +2048,12 @@ void CCfgPageUserMenu::Transfer(CTransferInfo& ti)
     else
     {
         SourceUserMenuItems->LoadUMI(*UserMenuItems, UserMenuIconBkgndReader.IsReadingIcons() ||
-                                                         UserMenuIconBkgndReader.HasSysColorsChanged()); // po zmene systemovych barev nestaci jen kopie ikon, musi se nacist znovu (v dialogu se u ikon zmena systemovych barev neresi, ikony muzou byt "rozbite")
+                                                         UserMenuIconBkgndReader.HasSysColorsChanged()); // after a system color change copying icons is not enough, they must be reloaded (the dialog does not handle icon color changes, icons might appear "broken")
     }
 }
 
-// vytahne child z dialogu a povoli ho nebo zakaze na zaklade promenne 'enable'
-// pokud je 'enable' FALSE a 'clear' FALSE, jeste umi promaznout editline nebo checkbox
+// pulls a child from the dialog and enables or disables it based on the 'enable' parameter;
+// if 'enable' is FALSE and 'clear' is FALSE, it can also clear the edit line or the checkbox
 
 void EnableDlgWindow(HWND hDialog, int resID, BOOL enable, BOOL clear = FALSE)
 {
@@ -2148,10 +2149,10 @@ void CCfgPageUserMenu::LoadControls()
                 (LPARAM)(empty ? "" : item->UMCommand));
     SendMessage(GetDlgItem(HWindow, IDE_ARGUMENTS), WM_SETTEXT, 0,
                 (LPARAM)(empty ? "" : item->Arguments));
-    SendMessage(GetDlgItem(HWindow, IDE_ARGUMENTS), EM_SETSEL, 0, -1); // aby browse prepsal obsah
+    SendMessage(GetDlgItem(HWindow, IDE_ARGUMENTS), EM_SETSEL, 0, -1); // so that Browse overwrites the content
     SendMessage(GetDlgItem(HWindow, IDE_INITDIR), WM_SETTEXT, 0,
                 (LPARAM)(empty ? "" : item->InitDir));
-    SendMessage(GetDlgItem(HWindow, IDE_INITDIR), EM_SETSEL, 0, -1); // aby browse prepsal obsah
+    SendMessage(GetDlgItem(HWindow, IDE_INITDIR), EM_SETSEL, 0, -1); // so that Browse overwrites the content
 
     //  SmallIcon->SetIcon(!empty ? item->HIcon : NULL);
 
@@ -2212,7 +2213,7 @@ void CCfgPageUserMenu::DeleteSubmenuEnd(int index)
     int endIndex = UserMenuItems->GetSubmenuEndIndex(index);
     if (endIndex != -1)
     {
-        // mame zaviraci polozku, jdem ji smazat
+        // a closing item exists, delete it
         EditLB->DeleteItem(endIndex);
         UserMenuItems->Delete(endIndex);
     }
@@ -2236,8 +2237,8 @@ CCfgPageUserMenu::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        RefreshGroupIconInUMItems();                                                          // pokud doslo ke zmene barev pred prvnim pristupem na stranku User Menu, neprislo nam WM_SYSCOLORCHANGE, tak to resime takhle
-        EditLB = new CEditListBox(HWindow, IDL_MENUITEMS, ELB_ENABLECOMMANDS | ELB_SHOWICON); // potrebujeme enabler a ikony
+        RefreshGroupIconInUMItems();                                                          // if colors changed before first visiting the User Menu page and we did not receive WM_SYSCOLORCHANGE, handle it here
+        EditLB = new CEditListBox(HWindow, IDL_MENUITEMS, ELB_ENABLECOMMANDS | ELB_SHOWICON); // we need the enabler and icons
         if (EditLB == NULL)
             TRACE_E(LOW_MEMORY);
         ChangeToArrowButton(HWindow, IDB_BROWSECOMMAND);
@@ -2247,7 +2248,7 @@ CCfgPageUserMenu::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         //      SmallIcon = new CSmallIconWindow(HWindow, IDC_UM_ICON);
         //      if (SmallIcon == NULL) TRACE_E(LOW_MEMORY);
 
-        // prvky dialogu se maji natahovat podle jeho velikosti, nastavime delici controly
+        // dialog elements should stretch with the dialog size, set split controls
         ElasticVerticalLayout(1, IDL_MENUITEMS);
 
         break;
@@ -2269,7 +2270,7 @@ CCfgPageUserMenu::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     BOOL submenu = IsDlgButtonChecked(HWindow, IDC_UM_SUBMENU) == BST_CHECKED;
                     if (submenu)
                     {
-                        // user zaskrtnul Submenu checkbox; pridame zaviraci polozku
+                        // user checked the Submenu checkbox; add a closing item
                         static char emptyBuffer[] = "";
                         CUserMenuItem* item = new CUserMenuItem(LoadStr(IDS_ENDUSERSUBMENU), emptyBuffer, emptyBuffer, emptyBuffer, emptyBuffer,
                                                                 FALSE, FALSE, FALSE, FALSE, umitSubmenuEnd, NULL);
@@ -2278,12 +2279,12 @@ CCfgPageUserMenu::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         UserMenuItems->Insert(index + 1, item);
                         EditLB->InsertItem((INT_PTR)item, index + 1);
 
-                        // nastane zmena ikony
+                        // the icon will change
                         //              EditLB->RedrawFocusedItem();
                     }
                     else
                     {
-                        // user vypnul Submenu checkbox; odebereme zaviraci polozku
+                        // user cleared the Submenu checkbox; remove the closing item
                         DeleteSubmenuEnd(index);
                     }
                 }
@@ -2315,7 +2316,7 @@ CCfgPageUserMenu::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                     CommandExecutes, IDS_EXEFILTER);
             if (item != NULL)
             {
-                // update ikonky
+                // update icons
                 int index;
                 EditLB->GetCurSel(index);
                 if (index >= 0 && index < EditLB->GetCount())
@@ -2355,8 +2356,8 @@ CCfgPageUserMenu::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 CUserMenuItem* item = UserMenuItems->At(index);
                 if (item->Icon != NULL && item->Icon[0] != 0)
                 {
-                    // Icon je ve formatu "nazev souboru,resID"
-                    // provedu rozklad
+                    // Icon is in the format "file name,resID"
+                    // perform decomposition
                     char* iterator = item->Icon + strlen(item->Icon) - 1;
                     while (iterator > item->Icon && *iterator != ',')
                         iterator--;
@@ -2482,7 +2483,7 @@ CCfgPageUserMenu::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     if (UserMenuItems->At(index)->Type == umitSubmenuBegin)
                     {
-                        // umitSubmenuBegin - zacatkem lze pohybovat nahoru vzdy, dolu dokud jemu nalezici konec nenarazi na konec seznamu
+                        // umitSubmenuBegin - the start can always move up, down until its matching end hits the list end
                         dispInfo->Enable |= TLBHDRMASK_UP;
                         int endIndex = UserMenuItems->GetSubmenuEndIndex(index);
                         if (endIndex != -1 && endIndex + 1 < UserMenuItems->Count)
@@ -2492,7 +2493,7 @@ CCfgPageUserMenu::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     }
                     else
                     {
-                        // umitSubmenuEnd - koncem neumoznime prejet pres jiny konec nebo zacatek
+                        // umitSubmenuEnd - do not allow the end to move over a different end or start
                         if (index > 0)
                         {
                             if (UserMenuItems->At(index - 1)->Type != umitSubmenuBegin &&
@@ -2528,11 +2529,11 @@ CCfgPageUserMenu::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 int endIndex = UserMenuItems->GetSubmenuEndIndex(index);
                 if (endIndex != -1)
                 {
-                  // nasli jsme SubmenuEnd
+                  // found SubmenuEnd
                   BYTE buf[sizeof(CUserMenuItem)];
                   if (dispInfo->Up)
                   {
-                    // suneme s celym blokem nahoru
+                    // move the whole block up
                     if (index > 0)
                     {
                       memcpy(buf, UserMenuItems->At(index - 1), sizeof(CUserMenuItem));
@@ -2545,7 +2546,7 @@ CCfgPageUserMenu::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   }
                   else
                   {
-                    // suneme s celym blokem dolu
+                    // move the whole block down
                     if (endIndex > 0 && endIndex < EditLB->GetCount() - 1)
                     {
                       memcpy(buf, UserMenuItems->At(endIndex + 1), sizeof(CUserMenuItem));
@@ -2559,7 +2560,7 @@ CCfgPageUserMenu::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   InvalidateRect(EditLB->HWindow, NULL, FALSE);
                 }
 
-                SetWindowLongPtr(HWindow, DWLP_MSGRESULT, TRUE);  // zakazu jeho zmeny
+                SetWindowLongPtr(HWindow, DWLP_MSGRESULT, TRUE);  // disallow the change
                 return TRUE;
               }
               else
@@ -2572,7 +2573,7 @@ CCfgPageUserMenu::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 memcpy(UserMenuItems->At(srcIndex), UserMenuItems->At(dstIndex), sizeof(CUserMenuItem));
                 memcpy(UserMenuItems->At(dstIndex), buf, sizeof(CUserMenuItem));
 
-                SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE);  // povolim jeho zmeny
+                SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE);  // allow the change
                 return TRUE;
               }
             }
@@ -2592,11 +2593,11 @@ CCfgPageUserMenu::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     int endIndex = UserMenuItems->GetSubmenuEndIndex(index);
                     if (endIndex != -1)
                     {
-                        // nasli jsme SubmenuEnd
+                        // found SubmenuEnd
                         BYTE buf[sizeof(CUserMenuItem)];
                         if (srcIndex > dstIndex)
                         {
-                            // suneme s celym blokem nahoru
+                            // move the whole block up
                             if (index > 0)
                             {
                                 memcpy(buf, UserMenuItems->At(index - 1), sizeof(CUserMenuItem));
@@ -2609,7 +2610,7 @@ CCfgPageUserMenu::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         }
                         else
                         {
-                            // suneme s celym blokem dolu
+                            // move the whole block down
                             if (endIndex > 0 && endIndex < EditLB->GetCount() - 1)
                             {
                                 memcpy(buf, UserMenuItems->At(endIndex + 1), sizeof(CUserMenuItem));
@@ -2623,7 +2624,7 @@ CCfgPageUserMenu::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         InvalidateRect(EditLB->HWindow, NULL, FALSE);
                     }
 
-                    SetWindowLongPtr(HWindow, DWLP_MSGRESULT, TRUE); // zakazu jeho zmeny
+                    SetWindowLongPtr(HWindow, DWLP_MSGRESULT, TRUE); // disallow the changes
                     return TRUE;
                 }
                 else
@@ -2635,7 +2636,7 @@ CCfgPageUserMenu::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     memcpy(UserMenuItems->At(srcIndex), UserMenuItems->At(dstIndex), sizeof(CUserMenuItem));
                     memcpy(UserMenuItems->At(dstIndex), buf, sizeof(CUserMenuItem));
 
-                    SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE); // povolim jeho zmeny
+                    SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE); // allow the change
                     return TRUE;
                 }
             }
@@ -2645,12 +2646,12 @@ CCfgPageUserMenu::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 int index;
                 EditLB->GetCurSel(index);
 
-                // pokud user maza popup, musime smazat take zaviratko
+                // when the user deletes a popup we must remove the closing item
                 if (UserMenuItems->At(index)->Type == umitSubmenuBegin)
                     DeleteSubmenuEnd(index);
 
                 UserMenuItems->Delete(index);
-                SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE); // povolim smazani
+                SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE); // allow deletion
                 return TRUE;
             }
             }
@@ -2916,9 +2917,9 @@ CCfgPageHotPath::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_PAINT:
     {
-        // strasna prasarna - potrebuju nejakou message, kter prijde
-        // po WM_INITDIALOG, abych mohl nastavit focus
-        // do pristi verze Salama to tu snad vydrzi :-)
+        // Horrible mess - I need a message that arrives
+        // after WM_INITDIALOG so we can set the focus
+        // hopefully this will survive until the next Salamander version :-)
         if (EditMode)
         {
             SetFocus(HListView);
@@ -2945,12 +2946,12 @@ CCfgPageHotPath::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         DWORD origFlags = ListView_GetExtendedListViewStyle(HListView);
         ListView_SetExtendedListViewStyle(HListView, origFlags | exFlags);
 
-        // zjistim velikost listview
+        // determine the list view size
         RECT r;
         GetClientRect(HListView, &r);
         int nameWidth = r.right - (int)(r.right / 7);
 
-        // naleju do listview sloupce Name a HotKey
+        // fill the list view with the Name and HotKey columns
         LVCOLUMN lvc;
         lvc.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
         lvc.pszText = LoadStr(IDS_HOTPATH_NAME);
@@ -2966,7 +2967,7 @@ CCfgPageHotPath::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         ChangeToArrowButton(HWindow, IDC_HOTPATH_BROWSE);
 
-        // prvky dialogu se maji natahovat podle jeho velikosti, nastavime delici controly
+        // dialog elements should stretch with the dialog size, set split controls
         ElasticVerticalLayout(1, IDC_HOTPATH_LIST);
 
         break;
@@ -3133,8 +3134,8 @@ void CCfgPageSystem::Validate(CTransferInfo& ti)
     if (useRecycle == 2)
     {
         char buf[MAX_PATH];
-        lstrcpyn(buf, Configuration.RecycleMasks.GetMasksString(), MAX_PATH); // zaloha RecycleBinMasks
-        // poskytneme MasksString, je zde kontrola rozsahu, o nic nejde
+        lstrcpyn(buf, Configuration.RecycleMasks.GetMasksString(), MAX_PATH); // backup of RecycleBinMasks
+        // provide MasksString, there is range checking, nothing serious
         ti.EditLine(IDE_RECYCLEMASKS, Configuration.RecycleMasks.GetWritableMasksString(), MAX_PATH);
         int errorPos;
         if (!Configuration.RecycleMasks.PrepareMasks(errorPos))
@@ -3145,7 +3146,7 @@ void CCfgPageSystem::Validate(CTransferInfo& ti)
             SendMessage(GetDlgItem(HWindow, IDE_RECYCLEMASKS), EM_SETSEL, errorPos, errorPos + 1);
             ti.ErrorOn(IDE_RECYCLEMASKS);
         }
-        Configuration.RecycleMasks.SetMasksString(buf); // obnova RecycleBinMasks
+        Configuration.RecycleMasks.SetMasksString(buf); // RecycleBinMasks restoration
     }
 }
 
@@ -3154,7 +3155,7 @@ void CCfgPageSystem::Transfer(CTransferInfo& ti)
     ti.RadioButton(IDR_RECYCLE1, 0, Configuration.UseRecycleBin);
     ti.RadioButton(IDR_RECYCLE2, 1, Configuration.UseRecycleBin);
     ti.RadioButton(IDR_RECYCLE3, 2, Configuration.UseRecycleBin);
-    // poskytneme MasksString, je zde kontrola rozsahu, o nic nejde
+    // provide MasksString, there is range checking, nothing serious
     ti.EditLine(IDE_RECYCLEMASKS, Configuration.RecycleMasks.GetWritableMasksString(), MAX_PATH);
 
     if (ti.Type == ttDataToWindow)
@@ -3193,21 +3194,21 @@ CCfgPageSystem::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 // CCfgPageColors
 //
 
-#define CFG7F_SINGLECOLOR 0x01 // platna je pouze jedna barva (foreground)
-#define CFG7F_DEFFG 0x02       // foreground muze nabyvat default hodnot
-#define CFG7F_DEFBK 0x04       // background muze nabyvat default hodnot
+#define CFG7F_SINGLECOLOR 0x01 // only one color is valid (foreground)
+#define CFG7F_DEFFG 0x02       // foreground can take the default value
+#define CFG7F_DEFBK 0x04       // background can take the default value
 
 struct CConfigurationPage7SubData
 {
-    int Label;    // resID stringu s nazvem prvni barvy [static pred tlacitkem]
-    BYTE ColorFg; // index barvy popredi (textu), kterou to ma ovlivnit
-    BYTE ColorBk; // index barvy pozadi, kterou to ma ovlivnit
-    BYTE Flags;   // options pro polozku
+    int Label;    // resID of the string with the first color name [static before the button]
+    BYTE ColorFg; // index of the foreground color (text) to affect
+    BYTE ColorBk; // index of the background color to affect
+    BYTE Flags;   // options for the item
 };
 
 struct CConfigurationPage7Data
 {
-    int ItemLabel; // resID stringu s nazvem polozky [combobox]
+    int ItemLabel; // resID of the string with the item name [combobox]
     CConfigurationPage7SubData Items[CFG_COLORS_BUTTONS];
 };
 
@@ -3215,7 +3216,7 @@ struct CConfigurationPage7Data
 
 CConfigurationPage7Data Page7Data[PAGE7DATA_COUNT] =
     {
-        // barvy polozek v panelu
+        // panel item colors
         {
             IDS_COLORITEM_PANELITEM,
             {{IDS_COLORLABEL_NORMAL, ITEM_FG_NORMAL, ITEM_BK_NORMAL, CFG7F_DEFFG | CFG7F_DEFBK},
@@ -3224,7 +3225,7 @@ CConfigurationPage7Data Page7Data[PAGE7DATA_COUNT] =
              {IDS_COLORLABEL_FOCUSEDSELECTED, ITEM_FG_FOCSEL, ITEM_BK_FOCSEL, 0},
              {IDS_COLORLABEL_HIGHLIGHTED, ITEM_FG_HIGHLIGHT, ITEM_BK_HIGHLIGHT, CFG7F_DEFFG | CFG7F_DEFBK}},
         },
-        // barvy pera pro ramecek kolem polozky
+        // pen colors for the frame around an item
         {
             IDS_COLORITEM_FOCUSEDFRAME,
             {{IDS_COLORLABEL_ACTIVENORMAL, FOCUS_ACTIVE_NORMAL, 0, CFG7F_SINGLECOLOR | CFG7F_DEFFG},
@@ -3232,7 +3233,7 @@ CConfigurationPage7Data Page7Data[PAGE7DATA_COUNT] =
              {IDS_COLORLABEL_INACTIVENORMAL, FOCUS_FG_INACTIVE_NORMAL, FOCUS_BK_INACTIVE_NORMAL, CFG7F_DEFBK},
              {IDS_COLORLABEL_INACTIVESELECTED, FOCUS_FG_INACTIVE_SELECTED, FOCUS_BK_INACTIVE_SELECTED, CFG7F_DEFBK},
              {0, 0, 0, 0}}},
-        // barvy pera pro ramecek kolem thumbnails
+        // pen colors for the frame around thumbnails
         {
             IDS_COLORITEM_THUMBNAILFRAME,
             {{IDS_COLORLABEL_NORMAL, THUMBNAIL_FRAME_NORMAL, 0, CFG7F_SINGLECOLOR | CFG7F_DEFFG},
@@ -3240,7 +3241,7 @@ CConfigurationPage7Data Page7Data[PAGE7DATA_COUNT] =
              {IDS_COLORLABEL_SELECTED, THUMBNAIL_FRAME_SELECTED, 0, CFG7F_SINGLECOLOR},
              {IDS_COLORLABEL_FOCUSEDSELECTED, THUMBNAIL_FRAME_FOCSEL, 0, CFG7F_SINGLECOLOR},
              {0, 0, 0, 0}}},
-        // barvy pro blend ikonek
+        // colors for icon blending
         {
             IDS_COLORITEM_BLENDEDICONS,
             {{IDS_COLORLABEL_SELECTED, ICON_BLEND_SELECTED, 0, CFG7F_SINGLECOLOR | CFG7F_DEFFG},
@@ -3248,7 +3249,7 @@ CConfigurationPage7Data Page7Data[PAGE7DATA_COUNT] =
              {IDS_COLORLABEL_FOCUSEDSELECTED, ICON_BLEND_FOCSEL, 0, CFG7F_SINGLECOLOR},
              {0, 0, 0, 0},
              {0, 0, 0, 0}}},
-        // barvy progress bary
+        // progress bar colors
         {
             IDS_COLORITEM_PROGRESS,
             {{IDS_COLORLABEL_LEFTPART, PROGRESS_FG_SELECTED, PROGRESS_BK_SELECTED, CFG7F_DEFFG | CFG7F_DEFBK},
@@ -3256,7 +3257,7 @@ CConfigurationPage7Data Page7Data[PAGE7DATA_COUNT] =
              {0, 0, 0, 0},
              {0, 0, 0, 0},
              {0, 0, 0, 0}}},
-        // barvy titulku panelu
+        // panel caption colors
         {
             IDS_COLORITEM_CAPTION,
             {{IDS_COLORLABEL_ACTIVE, ACTIVE_CAPTION_FG, ACTIVE_CAPTION_BK, CFG7F_DEFFG | CFG7F_DEFBK},
@@ -3264,7 +3265,7 @@ CConfigurationPage7Data Page7Data[PAGE7DATA_COUNT] =
              {0, 0, 0, 0},
              {0, 0, 0, 0},
              {0, 0, 0, 0}}},
-        // barvy hot polozky
+        // hot item colors
         {
             IDS_COLORITEM_HOT,
             {{IDS_COLORLABEL_HOTPANEL, HOT_PANEL, 0, CFG7F_SINGLECOLOR | CFG7F_DEFFG},
@@ -3331,7 +3332,7 @@ void CCfgPageColors::Transfer(CTransferInfo& ti)
         SendMessage(HScheme, CB_SETCURSEL, index, 0);
         SendMessage(HItem, CB_SETCURSEL, 0, 0);
 
-        // naleju seznam hilight polozek
+        // populate the highlight items list
         for (i = 0; i < HighlightMasks.Count; i++)
             EditLB->AddItem((INT_PTR)HighlightMasks[i]);
 
@@ -3361,7 +3362,7 @@ void CCfgPageColors::Transfer(CTransferInfo& ti)
                 UserColors[i] = TmpColors[i];
         }
 
-        ColorsChanged(TRUE, TRUE, FALSE); // sporime cas, nechame zmenit jen barvo-zavisle polozky, neloadime znovu ikony
+        ColorsChanged(TRUE, TRUE, FALSE); // save time, change only color-dependent items, do not reload icons
 
         SourceHighlightMasks->Load(HighlightMasks);
         int errPos;
@@ -3388,7 +3389,7 @@ void CCfgPageColors::LoadColors()
     else
         tmpColors = TmpColors;
 
-    // nechame vytahnout default hodnoty
+    // let default values be retrieved
     UpdateDefaultColors(tmpColors, &HighlightMasks, TRUE, TRUE);
 
     index = (int)SendMessage(HItem, CB_GETCURSEL, 0, 0);
@@ -3562,7 +3563,7 @@ CCfgPageColors::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         EditLB->MakeHeader(IDC_C_LIST_HEADER);
         EditLB->EnableDrag(::GetParent(HWindow));
 
-        // prvky dialogu se maji natahovat podle jeho velikosti, nastavime delici controly
+        // dialog elements should stretch with the dialog size, set split controls
         ElasticVerticalLayout(1, IDC_C_LIST);
 
         break;
@@ -3720,8 +3721,8 @@ CCfgPageColors::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             int maxCmd;
             if (singleColor)
             {
-                /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volanim InsertMenu() dole...
+                /* used by the export_mnu.py script that generates salmenu.mnu for the Translator,
+    keep synchronized with the InsertMenu() call below...
 MENU_TEMPLATE_ITEM CfgPageColorsMenu1[] = 
 {
   {MNTT_PB, 0
@@ -3738,8 +3739,8 @@ MENU_TEMPLATE_ITEM CfgPageColorsMenu1[] =
             }
             else
             {
-                /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volanim InsertMenu() dole...
+                /* used by the export_mnu.py script that generates salmenu.mnu for the Translator,
+    keep synchronized with the InsertMenu() call below...
 MENU_TEMPLATE_ITEM CfgPageColorsMenu2[] = 
 {
   {MNTT_PB, 0
@@ -3852,7 +3853,7 @@ MENU_TEMPLATE_ITEM CfgPageColorsMenu3[] =
                         *color = *color & 0x00ffffff | (((DWORD)flags) << 24);
                     }
                 }
-                // natahneme barvy do tlacitek
+                // load the colors into the buttons
                 LoadColors();
             }
             DestroyMenu(hMenu);
@@ -3924,7 +3925,7 @@ MENU_TEMPLATE_ITEM CfgPageColorsMenu3[] =
               memcpy(HighlightMasks[srcIndex], HighlightMasks[dstIndex], sizeof(CHighlightMasksItem));
               memcpy(HighlightMasks[dstIndex], buf, sizeof(CHighlightMasksItem));
 
-              SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE);  // povolim prohozeni
+              SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE);  // allow swapping
               return TRUE;
             }
 */
@@ -3952,7 +3953,7 @@ MENU_TEMPLATE_ITEM CfgPageColorsMenu3[] =
                 }
                 memcpy(HighlightMasks[dstIndex], buf, sizeof(CHighlightMasksItem));
 
-                SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE); // povolime zmenu
+                SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE); // allow change
                 return TRUE;
             }
 
@@ -3961,7 +3962,7 @@ MENU_TEMPLATE_ITEM CfgPageColorsMenu3[] =
                 int index;
                 EditLB->GetCurSel(index);
                 HighlightMasks.Delete(index);
-                SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE); // povolim smazani
+                SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE); // allow deletion
                 return TRUE;
             }
             }
@@ -4024,40 +4025,40 @@ void CCfgPageHistory::EnableControls()
 
 void CCfgPageHistory::OnClearHistory()
 {
-    // cesty v panelech dame na fixed (jinak se muze hned opustenim cesty
-    // v panelu naplnit Alt+F12, atd.)
+    // set panel paths to fixed (otherwise leaving the path could
+    // immediately populate Alt+F12, etc.)
     if (MainWindow->LeftPanel != NULL)
         MainWindow->LeftPanel->ChangeToRescuePathOrFixedDrive(HWindow);
     if (MainWindow->RightPanel != NULL)
         MainWindow->RightPanel->ChangeToRescuePathOrFixedDrive(HWindow);
 
-    // historie hlavniho okna (FileHistory, DirHistory)
+    // main window history (FileHistory, DirHistory)
     MainWindow->ClearHistory();
 
-    // historie z konfigurace (SelectHistory, CopyHistory, EditHistory, ChangeDirHistory, FileListHistory)
+    // history from the configuration (SelectHistory, CopyHistory, EditHistory, ChangeDirHistory, FileListHistory)
     Configuration.ClearHistory();
     MainWindow->EditWindow->FillHistory();
 
-    // historie Find dialogu vcetne comboboxu otevrenych oken
+    // Find dialog history including combobox of open windows
     ClearFindHistory(FALSE);
 
-    // historie internich vieweru vcetne combboxu otevrenych Find oken
+    // internal viewer history including combobox of open Find windows
     ClearViewerHistory(FALSE);
 
-    // uloziste vybranych jmen
+    // storage of selected names
     GlobalSelection.Clear();
 
-    // historie obou panelu (PathHistory, FilterHistory, Selection)
+    // history of both panels (PathHistory, FilterHistory, Selection)
     if (MainWindow->LeftPanel != NULL)
         MainWindow->LeftPanel->ClearHistory();
     if (MainWindow->RightPanel != NULL)
         MainWindow->RightPanel->ClearHistory();
 
-    // vycistime historii ve vsech pluginech (zustanou vsechny naloadene, aby sel
-    // provest dodatecne Save - smazani dat v Registry)
+    // clear history in all plugins (they remain loaded so that a subsequent
+    // Save can remove data from the Registry)
     Plugins.ClearHistory(HWindow);
 
-    // zrusime take pamet posledne pouzivanych adresaru na jednotlivych discich
+    // also clear the memory of recently used directories on individual drives
     InitDefaultDir();
 }
 
