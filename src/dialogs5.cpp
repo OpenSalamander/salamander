@@ -16,7 +16,7 @@
 #include "menu.h"
 #include "shellib.h"
 
-static char LastSelectedPluginDLLName[MAX_PATH] = {0}; // po dalsim otevreni Plugins manageru vybereme posledni vybranej plugin
+static char LastSelectedPluginDLLName[MAX_PATH] = {0}; // after reopening Plugins Manager, select the last chosen plugin
 
 //
 // ****************************************************************************
@@ -46,29 +46,29 @@ void CPluginsDlg::InitColumns()
     lvc.mask = LVCF_FMT | LVCF_TEXT | LVCF_SUBITEM;
     lvc.fmt = LVCFMT_LEFT;
     int i;
-    for (i = 0; i < 4; i++) // vytvorim sloupce
+    for (i = 0; i < 4; i++) // create columns
     {
         lvc.pszText = LoadStr(header[i]);
         lvc.iSubItem = i;
         ListView_InsertColumn(HListView, i, &lvc);
-        //    ListView_SetColumnWidth(HListView, i, LVSCW_AUTOSIZE_USEHEADER);   // sirky nastavime az v SetColumnWidths()
+        //    ListView_SetColumnWidth(HListView, i, LVSCW_AUTOSIZE_USEHEADER);   // widths will be set later in SetColumnWidths()
     }
 }
 
 void CPluginsDlg::SetColumnWidths()
 {
-    // vsem sloupcum nastavim optimalni sirky
+    // set optimal widths for all columns
     int i;
     for (i = 0; i <= 3; i++)
-        ListView_SetColumnWidth(HListView, i, i < 3 ? LVSCW_AUTOSIZE_USEHEADER : LVSCW_AUTOSIZE); // posledni sloupec nechceme vyplnovej, zaroven bude obsah sirsi nez nadpis
+        ListView_SetColumnWidth(HListView, i, i < 3 ? LVSCW_AUTOSIZE_USEHEADER : LVSCW_AUTOSIZE); // the last column shouldn’t stretch to fill the view; its content is wider than the header.
 
-    // nascitam sirky sloupcu, ktere urcite chceme mit zobrazene cele (vse za nazvem, ktery pripadne budeme zkracovat)
+    // sum the widths of columns we want to show completely (everything after name, which we may shorten)
     int nameWidth = ListView_GetColumnWidth(HListView, 0);
     int otherWidths = 0 + GetSystemMetrics(SM_CXHSCROLL);
     for (i = 1; i < 4; i++)
         otherWidths += ListView_GetColumnWidth(HListView, i);
 
-    //  SCROLLBARINFO si; // bylo by potreba loadit dynamicky, kaslem na to
+    //  SCROLLBARINFO si; // would need to be loaded dynamically, we won't bother
     //  si.cbSize = sizeof(si);
     //  GetScrollBarInfo(HListView, OBJID_VSCROLL, &si);
 
@@ -77,13 +77,13 @@ void CPluginsDlg::SetColumnWidths()
     int lvWidth = r.right - r.left;
     if (nameWidth + otherWidths < lvWidth + 10 + 10)
     {
-        // pokud na to je prostor, zvetsime sloupce Loaded a Version o 10px (lip to pak vypada)
+        // if space allows, enlarge the Loaded and Version columns by 10px (looks better)
         for (i = 1; i <= 2; i++)
             ListView_SetColumnWidth(HListView, i, ListView_GetColumnWidth(HListView, i) + 10);
         otherWidths += 10 + 10;
     }
 
-    // doplnkovy sloupec bude prvni -- Name, ale pouze pokud neni celkova sirka sloupcu moc velka
+    // the supplementary column will be the first one -- Name but only if the total width is not too large
     if (nameWidth + otherWidths < lvWidth)
         ListView_SetColumnWidth(HListView, 0, lvWidth - otherWidths);
 }
@@ -92,7 +92,7 @@ void CPluginsDlg::RefreshListView(BOOL setOnly, int selIndex, const CPluginData*
 {
     SendMessage(HListView, WM_SETREDRAW, FALSE, 0);
 
-    HIMAGELIST hIcons = Plugins.CreateIconsList(FALSE); // o destrukci se postara listview
+    HIMAGELIST hIcons = Plugins.CreateIconsList(FALSE); // destruction is handled by the listview
     HIMAGELIST hOldIcons = ListView_SetImageList(HListView, hIcons, LVSIL_SMALL);
     if (hOldIcons != NULL)
         ImageList_Destroy(hOldIcons);
@@ -111,11 +111,11 @@ void CPluginsDlg::RefreshListView(BOOL setOnly, int selIndex, const CPluginData*
     }
 
     if (setColumnWidths)
-        SetColumnWidths(); // nastavime sirky sloupcu
+        SetColumnWidths(); // set column widths
 
-    // Petr: kdyz byl tento radek na konci funkce (kde je logictejsi), tak zustavala
-    // fokusla polozka schovana na spodnim scrollbarem, aneb nebyla plne viditelna,
-    // asi MS potrebuji redraw, aby scrollbar ukazali, a pak s nim i pocitali
+    // Petr: when this line was at the end of the function (which would be more logical)
+    // the focused item remained hidden under the bottom scrollbar and was not fully visible,
+    // apparently Windows needs a redraw first so the scrollbar is displayed and accounted for
     SendMessage(HListView, WM_SETREDRAW, TRUE, 0);
 
     if (!setOnly)
@@ -134,7 +134,7 @@ void CPluginsDlg::RefreshListView(BOOL setOnly, int selIndex, const CPluginData*
             ListView_EnsureVisible(HListView, selIndex, FALSE);
         }
         else
-            OnSelChanged(); // vynutime prazdne polozky
+            OnSelChanged(); // force empty items
     }
     else
     {
@@ -145,7 +145,7 @@ void CPluginsDlg::RefreshListView(BOOL setOnly, int selIndex, const CPluginData*
             ListView_SetItemState(HListView, selIndex, state, state);
             ListView_EnsureVisible(HListView, selIndex, FALSE);
         }
-        OnSelChanged(); // vynutime enablery
+        OnSelChanged(); // force enable state update
     }
 }
 
@@ -233,7 +233,7 @@ void CPluginsDlg::OnSelChanged()
         // FS Name
         char buf[500];
         buf[0] = 0;
-        int remainingSize = sizeof(buf); // ulozime do 'buf' seznam fs-names, jmena budou oddelena ';'
+        int remainingSize = sizeof(buf); // store the list of FS names in 'buf', names will be separated by ';'
         int i;
         for (i = 0; remainingSize > 1 && i < p->FSNames.Count; i++)
         {
@@ -262,7 +262,7 @@ void CPluginsDlg::OnSelChanged()
         if (p->SupportCustomUnpack)
         {
             if (p->SupportCustomPack)
-                strcat(buf, ", "); // text custom packeru je kratsi - stejna radka
+                strcat(buf, ", "); // text of custom packer is shorter - same line
             else
             {
                 if (buf[0] != 0)
@@ -279,7 +279,7 @@ void CPluginsDlg::OnSelChanged()
         if (p->MenuItems.Count > 0 || p->SupportDynMenuExt)
         {
             if (p->SupportViewer)
-                strcat(buf, ", "); // text viewru je kratsi - stejna radka
+                strcat(buf, ", "); // viewer text is shorter - same line
             else
             {
                 if (buf[0] != 0)
@@ -290,7 +290,7 @@ void CPluginsDlg::OnSelChanged()
 
         if (p->SupportFS)
         {
-            // text viewru+menu je kratsi - stejna radka
+            // viewer+menu text is shorter - same line
             if (p->SupportViewer || p->MenuItems.Count > 0 || p->SupportDynMenuExt)
                 strcat(buf, ", ");
             else
@@ -322,7 +322,7 @@ void CPluginsDlg::OnSelChanged()
         char buff[MAX_PATH + 200];
         char pluginName[300];
         lstrcpyn(pluginName, p->Name, 299);
-        DuplicateAmpersands(pluginName, 299); // nazev pluginu muze obsahovat znak '&'
+        DuplicateAmpersands(pluginName, 299); // plugin name may contain the '&' character
         sprintf(buff, ShowInBarText, pluginName);
         SetWindowText(showInBar, buff);
 
@@ -335,7 +335,7 @@ void CPluginsDlg::OnSelChanged()
                 s++;
             if (*s == 0)
                 itemText = p->ChDrvMenuFSItemName;
-            else // je tam aspon jeden tabelator
+            else // there is at least one tab character
             {
                 lstrcpyn(fsItemText, s + 1, 200);
                 itemText = fsItemText;
@@ -384,8 +384,8 @@ void CPluginsDlg::OnSelChanged()
         SetWindowText(GetDlgItem(HWindow, IDC_PLUGINFSNAME), "");
         SetWindowText(GetDlgItem(HWindow, IDC_PLUGINTHUMBNAILS), "");
         SetWindowText(GetDlgItem(HWindow, IDC_PLUGINFUNCTIONS), "");
-        /*if (IsWindowVisible(showInBar))*/ ShowWindow(showInBar, SW_HIDE);     // podminka zakomentovana, protoze jinak zlobi pri WM_INITDIALOG (dialog jeste neni videt jako celek -> podminka selze)
-        /*if (IsWindowVisible(showInChDrv))*/ ShowWindow(showInChDrv, SW_HIDE); // podminka zakomentovana, protoze jinak zlobi pri WM_INITDIALOG (dialog jeste neni videt jako celek -> podminka selze)
+        /*if (IsWindowVisible(showInBar))*/ ShowWindow(showInBar, SW_HIDE);     // condition commented out because it misbehaves during WM_INITDIALOG (the dialog is not visible as a whole -> the check fails)
+        /*if (IsWindowVisible(showInChDrv))*/ ShowWindow(showInChDrv, SW_HIDE); // condition commented out because it misbehaves during WM_INITDIALOG (the dialog is not visible as a whole -> the check fails)
         EnableButtons(NULL);
     }
 }
@@ -415,7 +415,7 @@ void CPluginsDlg::OnContextMenu(int x, int y)
     if (selCount < 1)
         return;
 
-    // vytahame texty z tlacitek a naplnime context menu
+    // fetch button texts and fill the context menu
     int ids[] = {-2, IDB_PLUGINCONFIG, // -2 -> next item will be default
                  IDB_PLUGINKEYS,
                  IDB_PLUGINABOUT,
@@ -485,19 +485,19 @@ CPluginsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // vytahnu text Show In Bar checkboxu do naseho bufferu
+        // copy the Show In Bar checkbox text into our buffer
         GetDlgItemText(HWindow, IDC_PLUGINSHOWINBAR, ShowInBarText, 200);
 
-        // vytahnu text Show In Change Drive Menu checkboxu do naseho bufferu
+        // copy the Show In Change Drive Menu checkbox text into our buffer
         GetDlgItemText(HWindow, IDC_PLUGINSHOWINCHDRV, ShowInChDrvText, 200);
 
-        // vytahnu text "Installed Plugins:" do naseho bufferu
+        // copy the "Installed Plugins:" text into our buffer
         GetDlgItemText(HWindow, IDC_PLUGINHEADER, InstalledPluginsText, 200);
 
-        // Add bude mit drop down
+        // Add will have a drop-down
         // new CButton(HWindow, IDB_PLUGINADD, BTF_DROPDOWN);
 
-        // www bude hyperlink
+        // www will be a hyperlink
         Url = new CHyperLink(HWindow, IDC_PLUGINWWW);
         if (Url == NULL)
             TRACE_E(LOW_MEMORY);
@@ -514,16 +514,16 @@ CPluginsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         Header->CheckToolbar(Configuration.KeepPluginsSorted ? TLBHDRMASK_SORT : 0);
 
-        // vlozime sloupce
+        // insert columns
         InitColumns();
 
-        // pro vetsi pohodli vybereme posledne vybranou polozku (pokud existuje)
+        // for convenience select the last chosen item (if it exists)
         CPluginData* lastSelectPluginData = NULL;
         int lastSelectedPluginIndex = 0;
         if (Plugins.FindDLL(LastSelectedPluginDLLName, lastSelectedPluginIndex))
             lastSelectPluginData = Plugins.Get(lastSelectedPluginIndex);
 
-        // vlozime polozky
+        // insert items
         RefreshListView(FALSE, 0, lastSelectPluginData, TRUE);
 
         break;
@@ -531,7 +531,7 @@ CPluginsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_DESTROY:
     {
-        MainWindow->OnPluginsStateChanged(); // mozna by to chtelo Dirty flag
+        MainWindow->OnPluginsStateChanged(); // maybe this should have a Dirty flag
         break;
     }
 
@@ -651,7 +651,7 @@ CPluginsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (p != NULL)
             {
                 p->About(HWindow);
-                RefreshListView(); // doslo k loadu DLL, mame novejsi data ...
+                RefreshListView(); // a DLL was loaded, we have fresher data ...
             }
             return 0;
         }
@@ -663,7 +663,7 @@ CPluginsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (p != NULL && p->SupportConfiguration)
             {
                 p->Configuration(HWindow);
-                RefreshListView(); // doslo k loadu DLL, mame novejsi data ...
+                RefreshListView(); // a DLL was loaded, we have fresher data ...
             }
             return 0;
         }
@@ -674,19 +674,19 @@ CPluginsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             CPluginData* p = GetSelectedPlugin();
             if (p != NULL && (p->MenuItems.Count > 0 || p->SupportDynMenuExt))
             {
-                // pokud uz je plugin nacteny, rebuildneme jeho menu - pokud nacteny neni, rebuildne se
-                // jeho menu az pri nacitani pluginu samo
+                // if the plugin is already loaded, rebuild its menu - if not,
+                // the menu will be rebuilt when the plugin loads
                 if (p->GetLoaded() && p->SupportDynMenuExt)
                 {
                     p->BuildMenu(HWindow, TRUE);
-                    p->ReleasePluginDynMenuIcons(); // tenhle objekt nikdo nepotrebuje (pro dalsi zobrazeni menu se vse ziska znovu)
+                    p->ReleasePluginDynMenuIcons(); // nobody needs this object (the menu is reloaded when displayed again)
                 }
-                // pripadne nacteme plugin, at mame posledni verzi menu
+                // load the plugin if needed to get the latest version of the menu
                 if (p->InitDLL(HWindow) &&
                     (p->MenuItems.Count > 0 ||
                      p->SupportDynMenuExt && p->GetPluginInterfaceForMenuExt()->NotEmpty()))
                 {
-                    if (p->MenuItems.Count > 0) // pro prazdne dynamicke menu dialog otevirat nebudeme (prazdne staticke vypadne o podminku drive bez hlasky)
+                    if (p->MenuItems.Count > 0) // do not open the dialog for an empty dynamic menu (an empty static one fails earlier without a message)
                     {
                         CPluginKeys keys(HWindow, p);
                         if (keys.IsGood())
@@ -694,7 +694,7 @@ CPluginsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             keys.Execute();
                             if (keys.Reset)
                             {
-                                UpdateWindow(HWindow); // nechame updatnout Plugins Manager, at tam nezustava viset Shortcut Keys okno
+                                UpdateWindow(HWindow); // let Plugins Manager update so the Shortcut Keys window doesn't remain visible
                                 p->Unload(HWindow, FALSE);
                                 goto AGAIN;
                             }
@@ -703,7 +703,7 @@ CPluginsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     else
                         TRACE_I("Plugin has dynamic menu which is empty (unexpected situation). We will not open Keyboard Shortcuts dialog.");
                 }
-                RefreshListView(); // doslo k loadu DLL, mame novejsi data ...
+                RefreshListView(); // a DLL was loaded, we have fresher data ...
             }
             return 0;
         }
@@ -719,7 +719,7 @@ CPluginsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             ofn.hwndOwner = HWindow;
             char* s = LoadStr(IDS_PLUGINFILTER);
             ofn.lpstrFilter = s;
-            while (*s != 0) // vytvoreni double-null terminated listu
+            while (*s != 0) // creating a double-null terminated list
             {
                 if (*s == '|')
                     *s = 0;
@@ -745,16 +745,16 @@ CPluginsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             if (SafeGetOpenFileName(&ofn))
             {
-                // cyklus pro vsechna oznacena jmena
+                // loop over all selected names
                 char oneName[MAX_PATH];
                 char* fName = NULL;
                 int off = 0;
                 strcpy(oneName, fileName);
                 off = (int)strlen(oneName);
-                if (off + 1 < 2000 && *(fileName + off + 1) != 0) // neni jedine jmeno
+                if (off + 1 < 2000 && *(fileName + off + 1) != 0) // not a single name
                 {
                     fName = oneName + off;
-                    if (off > 0 && *(fileName + off - 1) != '\\') // chybi backslash
+                    if (off > 0 && *(fileName + off - 1) != '\\') // missing backslash
                     {
                         *fName++ = '\\';
                         *fName = 0;
@@ -771,7 +771,7 @@ CPluginsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         off += (int)(strlen(fileName + off + 1) + 1);
                     }
 
-                    // v oneName je jmeno x-teho oznaceneho pluginu (enumerace)
+                    // oneName contains the name of the x-th selected plugin (enumeration)
                     char pluginName[MAX_PATH];
                     if (StrNICmp(oneName, buf, (int)strlen(buf)) == 0 && oneName[(int)strlen(buf)] == '\\')
                     {
@@ -799,7 +799,7 @@ CPluginsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             addedPlugin = Plugins.Get(pluginIndex);
                     }
 
-                    // konec pokud najdeme dve nuly
+                    // finish when two zero characters are found
                     if (off + 1 >= 2000 || *(fileName + off + 1) == 0)
                         break;
                 }
@@ -808,7 +808,7 @@ CPluginsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     if (Configuration.KeepPluginsSorted)
                         Plugins.UpdatePluginsOrder(TRUE);
-                    // vlozime polozky a vybereme pridanou
+                    // insert items and select the one that was added
                     RefreshListView(FALSE, -1, addedPlugin);
                 }
             }
@@ -830,7 +830,7 @@ CPluginsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                   MB_YESNO | MB_ICONQUESTION) == IDYES)
                 {
                     Plugins.Remove(HWindow, index, TRUE);
-                    RefreshListView(FALSE, lvIndex); // doslo k odstraneni DLL, mame novejsi data ...
+                    RefreshListView(FALSE, lvIndex); // a DLL was removed, we have fresher data ...
                 }
             }
             return 0;
@@ -848,7 +848,7 @@ CPluginsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     sprintf(buf, LoadStr(IDS_PLUGINTESTOK), p->Name);
                     SalMessageBox(HWindow, buf, LoadStr(IDS_INFOTITLE), MB_OK | MB_ICONINFORMATION);
                 }
-                RefreshListView(); // doslo k loadu DLL, mame novejsi data ...
+                RefreshListView(); // a DLL was loaded, we have fresher data ...
             }
             return 0;
         }
@@ -856,7 +856,7 @@ CPluginsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case IDB_PLUGINTESTALL:
         {
             RefreshPanels = TRUE;
-            if (Plugins.TestAll(HWindow)) // doslo k loadu aspon jednoho pluginu, mame novejsi data ...
+            if (Plugins.TestAll(HWindow)) // at least one plugin was loaded, we have fresher data ...
             {
                 RefreshListView();
             }
@@ -866,13 +866,13 @@ CPluginsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case IDB_PLUGINFOCUS:
         {
             CPluginData* p = GetSelectedPlugin();
-#ifdef _WIN64 // FIXME_X64_WINSCP - tohle bude chtit asi poresit jinak... (ignorace chybejiciho WinSCP v x64 verzi Salama)
+#ifdef _WIN64 // FIXME_X64_WINSCP - this will probably need to be solved differently... (ignoring the missing WinSCP in the x64 version of Salamander)
             char bufText[MAX_PATH + 200];
             if (p != NULL && IsPluginUnsupportedOnX64(p->DLLName))
             {
-                // napiseme userovi, ze tenhle plugin je k mani jen v 32-bit verzi (x86)
-                // IDS_PLUGINISX86ONLY neni idealni text, ale kaslu na to, svuj ucel to
-                // splni a nebudeme zbytecne prudit prekladatele
+                // inform the user that this plugin is available only in the 32-bit version (x86)
+                // IDS_PLUGINISX86ONLY is not an ideal text but I don't care, it will do,
+                // and we won't bother translators unnecessarily
                 sprintf(bufText, LoadStr(IDS_PLUGINISX86ONLY), p->Name);
                 SalMessageBox(HWindow, bufText, LoadStr(IDS_INFOTITLE), MB_OK | MB_ICONINFORMATION);
                 return 0;
@@ -882,8 +882,8 @@ CPluginsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 char buf[MAX_PATH];
                 char* s = p->DLLName;
-                if ((*s != '\\' || *(s + 1) != '\\') && // ne UNC
-                    (*s == 0 || *(s + 1) != ':'))       // ne "c:" -> relativni cesta k podadresari plugins
+                if ((*s != '\\' || *(s + 1) != '\\') && // not UNC
+                    (*s == 0 || *(s + 1) != ':'))       // not "c:" -> relative path to plugins subdirectory
                 {
                     GetModuleFileName(HInstance, buf, MAX_PATH);
                     s = strrchr(buf, '\\') + 1;
@@ -904,7 +904,7 @@ CPluginsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (p != NULL)
             {
                 p->Unload(HWindow, TRUE);
-                RefreshListView(); // doslo k loadu DLL, mame novejsi data ...
+                RefreshListView(); // a DLL was loaded, we have fresher data ...
             }
             return 0;
         }
@@ -998,8 +998,8 @@ void CPluginKeys::Transfer(CTransferInfo& ti)
             if (HotKeys[i] != 0)
             {
                 WORD hotKey = HOTKEY_GET(HotKeys[i]);
-                Plugins.RemoveHotKey(hotKey, NULL);        // ve vsech pluginech nechame sestrelit 'hotKey'
-                Plugin->MenuItems[i]->HotKey = HotKeys[i]; // k nam ji priradime
+                Plugins.RemoveHotKey(hotKey, NULL);        // remove 'hotKey' from all plugins
+                Plugin->MenuItems[i]->HotKey = HotKeys[i]; // assign it to us
             }
         }
     }
@@ -1014,7 +1014,7 @@ void CPluginKeys::InitColumns()
     lvc.mask = LVCF_FMT | LVCF_TEXT | LVCF_SUBITEM;
     lvc.fmt = LVCFMT_LEFT;
     int i;
-    for (i = 0; i < 2; i++) // vytvorim sloupce
+    for (i = 0; i < 2; i++) // create columns
     {
         lvc.pszText = LoadStr(header[i]);
         lvc.iSubItem = i;
@@ -1027,7 +1027,7 @@ void CPluginKeys::SetColumnWidths()
     RECT r;
     GetClientRect(HListView, &r);
     ListView_SetColumnWidth(HListView, 0, (int)((double)r.right * 0.70));
-    // posledni sloupec bude zbytkovy
+    // the last column will occupy the remaining space
     ListView_SetColumnWidth(HListView, 1, LVSCW_AUTOSIZE_USEHEADER);
 }
 
@@ -1035,7 +1035,7 @@ void CPluginKeys::RefreshListView(BOOL setOnly)
 {
     SendMessage(HListView, WM_SETREDRAW, FALSE, 0);
 
-    HIMAGELIST hIcons = ImageList_LoadBitmap(HInstance, MAKEINTRESOURCE(IDB_MENUITEMS), 13, 0, RGB(255, 0, 255)); // o destrukci se postara listview
+    HIMAGELIST hIcons = ImageList_LoadBitmap(HInstance, MAKEINTRESOURCE(IDB_MENUITEMS), 13, 0, RGB(255, 0, 255)); // destruction is handled by the listview
     HIMAGELIST hOldIcons = ListView_SetImageList(HListView, hIcons, LVSIL_SMALL);
     if (hOldIcons != NULL)
         ImageList_Destroy(hOldIcons);
@@ -1044,7 +1044,7 @@ void CPluginKeys::RefreshListView(BOOL setOnly)
         ListView_DeleteAllItems(HListView);
 
     int row = 0;
-    int level = 0; // odsazeni
+    int level = 0; // indentation
     int i;
     for (i = 0; i < Plugin->MenuItems.Count; i++)
     {
