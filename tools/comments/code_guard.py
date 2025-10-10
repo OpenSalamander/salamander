@@ -66,7 +66,8 @@ EXCLUDE_PATTERNS = [
     'src/plugins/winscp/packages',
     'src/plugins/winscp/putty',
     'src/plugins/winscp/resource',
-    'src/plugins/winscp/windows'
+    'src/plugins/winscp/windows',
+    'src/tools'
 ]
 
 def get_clang_args(repo_path: Path) -> list:
@@ -302,24 +303,28 @@ def main():
             print(f'Comparing "{relative_path}"')
 
             try:
-                clang_args = get_clang_args(current_repo_path)
+                clang_args_current = get_clang_args(current_repo_path)
+                clang_args_base = get_clang_args(base_repo_path)
 
-                # Apply plugin-specific flags
+                # Apply plugin-specific flags to both invocations so preprocessing stays comparable
                 relative_path_str = str(relative_path).replace('\\', '/')
                 if 'src/plugins/renamer' in relative_path_str:
-                    clang_args.append('-D_CHAR_UNSIGNED')
+                    clang_args_current.append('-D_CHAR_UNSIGNED')
+                    clang_args_base.append('-D_CHAR_UNSIGNED')
                 if 'src/plugins/zip/selfextr' in relative_path_str:
-                    clang_args.append('-DLANG_DEFINED')
-                    clang_args.append('-DEXT_VER')
+                    clang_args_current.append('-DLANG_DEFINED')
+                    clang_args_current.append('-DEXT_VER')
+                    clang_args_base.append('-DLANG_DEFINED')
+                    clang_args_base.append('-DEXT_VER')
 
-                cmd1 = [clang_exe_path, *clang_args, str(file_path)]
+                cmd1 = [clang_exe_path, *clang_args_current, str(file_path)]
                 if args.debug:
                     print(f"DEBUG: Running clang on current repo: {' '.join(cmd1)}")
                 res1 = subprocess.run(cmd1, capture_output=True, text=True, encoding='utf-8', check=True, cwd=current_repo_path)
                 if res1.stderr.strip():
                     print(res1.stderr)
 
-                cmd2 = [clang_exe_path, *clang_args, str(file_in_base_repo)]
+                cmd2 = [clang_exe_path, *clang_args_base, str(file_in_base_repo)]
                 if args.debug:
                     print(f"DEBUG: Running clang on base repo: {' '.join(cmd2)}")
                 res2 = subprocess.run(cmd2, capture_output=True, text=True, encoding='utf-8', check=True, cwd=base_repo_path)
