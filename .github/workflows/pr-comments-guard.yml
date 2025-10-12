@@ -10,7 +10,9 @@ permissions:
 jobs:
   comment-only:
     name: Ensure Only Comments Change (${{ matrix.mode }}) # Include active mode in job name for clearer logs.
-    if: contains(github.event.pull_request.labels.*.name, 'comments translation')
+    if: >-
+      contains(github.event.pull_request.labels.*.name, 'comments translation')
+      || (github.event.action == 'labeled' && github.event.label.name == 'comments translation')
     strategy: # Expand the job to cover both evaluation modes.
       fail-fast: false # Make sure the relaxed run completes even if the strict mode fails first.
       matrix:
