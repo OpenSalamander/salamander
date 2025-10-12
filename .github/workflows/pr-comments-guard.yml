@@ -10,9 +10,6 @@ permissions:
 jobs:
   comment-only:
     name: Ensure Only Comments Change (${{ matrix.mode }}) # Include active mode in job name for clearer logs.
-    if: >-
-      contains(github.event.pull_request.labels.*.name, 'comments translation')
-      || (github.event.action == 'labeled' && github.event.label.name == 'comments translation')
     strategy: # Expand the job to cover both evaluation modes.
       fail-fast: false # Make sure the relaxed run completes even if the strict mode fails first.
       matrix:
@@ -23,7 +20,44 @@ jobs:
         shell: pwsh
 
     steps:
+      - name: Check for "comments translation" label
+        id: label_check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+
+          $token = $env:GITHUB_TOKEN
+          if ([string]::IsNullOrWhiteSpace($token)) {
+            Write-Error 'GITHUB_TOKEN is not available.'
+          }
+
+          $issueUri = "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}"
+          $headers = @{
+            Authorization = "Bearer $token"
+            'User-Agent' = 'actions/pr-comments-guard'
+            Accept = 'application/vnd.github+json'
+          }
+
+          $response = Invoke-RestMethod -Method Get -Uri $issueUri -Headers $headers
+          $hasLabel = $false
+          foreach ($label in $response.labels) {
+            if ($label.name -eq 'comments translation') {
+              $hasLabel = $true
+              break
+            }
+          }
+
+          if (-not $hasLabel) {
+            'should-skip=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            Write-Host "Label 'comments translation' not present on PR; skipping verification."
+          } else {
+            Write-Host "Label 'comments translation' detected; continuing verification."
+          }
+
       - name: Checkout PR
+        if: steps.label_check.outputs.should-skip != 'true'
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
@@ -31,6 +65,7 @@ jobs:
           persist-credentials: false
 
       - name: Verify comment-only changes
+        if: steps.label_check.outputs.should-skip != 'true'
         env:
           COMMENT_GUARD_MODE: ${{ matrix.mode }} # Pass the selected mode down to the PowerShell script.
         run: |
