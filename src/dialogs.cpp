@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -17,7 +18,7 @@
 
 CConfiguration Configuration;
 
-#define IDT_UPDATESTATUS_PERIOD 500 // perioda updatu statusu v progres dialogu
+#define IDT_UPDATESTATUS_PERIOD 500 // interval for updating progress dialog status
 
 //
 // ****************************************************************************
@@ -117,20 +118,20 @@ void CChangeAttrDialog::Transfer(CTransferInfo& ti)
         EnableWindow(GetDlgItem(HWindow, IDC_COMPRESSED), FileBasedCompression);
         EnableWindow(GetDlgItem(HWindow, IDC_ENCRYPTED), FileBasedEncryption);
 
-        // napred naleju datumy
+        // first fill in the dates
         DateTime_SetSystemtime(HModifiedDate, GDT_VALID, &TimeModified);
         DateTime_SetSystemtime(HCreatedDate, GDT_VALID, &TimeCreated);
         DateTime_SetSystemtime(HAccessedDate, GDT_VALID, &TimeAccessed);
-        // potom nastavim stav na disabled (nelze provest v jedne operaci)
+        // then disable them (cannot be done in a single step)
         DateTime_SetSystemtime(HModifiedDate, GDT_NONE, &TimeModified);
         DateTime_SetSystemtime(HCreatedDate, GDT_NONE, &TimeCreated);
         DateTime_SetSystemtime(HAccessedDate, GDT_NONE, &TimeAccessed);
-        // naleju casy
+        // fill in the times
         DateTime_SetSystemtime(HModifiedTime, GDT_VALID, &TimeModified);
         DateTime_SetSystemtime(HCreatedTime, GDT_VALID, &TimeCreated);
         DateTime_SetSystemtime(HAccessedTime, GDT_VALID, &TimeAccessed);
-        // obejdeme chybu v common controls -- pokud nezavolam SetFocus,
-        // tvarej se vsechny tri controly jako focused
+        // work around a common controls bug -- if SetFocus is not called,
+        // all three controls appear focused
         SetFocus(HModifiedDate);
         SetFocus(HCreatedDate);
         SetFocus(HAccessedDate);
@@ -206,7 +207,7 @@ CChangeAttrDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if (IsDlgButtonChecked(HWindow, IDC_COMPRESSED) == BST_CHECKED)
                 {
                     EncryptedDirty = TRUE;
-                    CheckDlgButton(HWindow, IDC_ENCRYPTED, BST_UNCHECKED); // Compressed & Encrypted se vzajemne vylucuji
+                    CheckDlgButton(HWindow, IDC_ENCRYPTED, BST_UNCHECKED); // Compressed & Encrypted are mutually exclusive
                 }
                 break;
             }
@@ -217,16 +218,16 @@ CChangeAttrDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if (IsDlgButtonChecked(HWindow, IDC_ENCRYPTED) == BST_CHECKED)
                 {
                     CompressedDirty = TRUE;
-                    CheckDlgButton(HWindow, IDC_COMPRESSED, BST_UNCHECKED); // Compressed & Encrypted se vzajemne vylucuji
+                    CheckDlgButton(HWindow, IDC_COMPRESSED, BST_UNCHECKED); // Compressed & Encrypted are mutually exclusive
                 }
                 break;
             }
 
             case IDC_RECURSESUBDIRS:
             {
-                // pokud user zapne Include Subdirs, nastavime neuspinene checkboxy na grayed,
-                // protoze nevime, co vybrane adresare obsahuji
-                // pokud user voblu vypne, vratime neuspinene checkboxy do puvodniho stavu
+                // when the user enables Include Subdirs we gray untouched check boxes
+                // because we do not know what the selected directories contain
+                // when it is turned off we restore the original check box states
                 BOOL checked = IsDlgButtonChecked(HWindow, IDC_RECURSESUBDIRS) == BST_CHECKED;
                 if (!ArchiveDirty)
                     CheckDlgButton(HWindow, IDC_ARCHIVE, checked ? 2 : Archive);
@@ -245,7 +246,7 @@ CChangeAttrDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             case IDC_ATTR_CURRENT:
             {
                 SYSTEMTIME st;
-                GetLocalTime(&st); // vytahneme aktualni case
+                GetLocalTime(&st); // get the current time
 
                 SYSTEMTIME dummy;
                 if (DateTime_GetSystemtime(HModifiedDate, &dummy) == GDT_VALID)
@@ -309,8 +310,8 @@ unsigned ThreadProgressDlgBody(void* parameter)
 
     CProgressDialog dlg(NULL, data->Script, data->Caption, attrsData, convertData, TRUE, data);
     INT_PTR res = dlg.Execute();
-    if (res == 0 || res == -1 || res == IDABORT) // selhani otevirani dialogu nebo worker threadu
-        SetEvent(data->ContEvent);               // pustime dal hl. thread (otevreni dialogu nebo start operace se nezdaril)
+    if (res == 0 || res == -1 || res == IDABORT) // failed to open the dialog or worker thread
+        SetEvent(data->ContEvent);               // let the main thread continue (opening the dialog or starting the operation failed)
 
     if (workPath1[0] != 0)
         MainWindow->PostChangeOnPathNotification(workPath1, workPath1InclSubDirs);
@@ -333,7 +334,7 @@ unsigned ThreadProgressDlgEH(void* param)
     {
         TRACE_I("Thread Progress Dlg: calling ExitProcess(1).");
         //    ExitProcess(1);
-        TerminateProcess(GetCurrentProcess(), 1); // tvrdsi exit (tenhle jeste neco vola)
+        TerminateProcess(GetCurrentProcess(), 1); // harder exit (this one still calls some operations)
         return 1;
     }
 #endif // CALLSTK_DISABLE
@@ -374,8 +375,8 @@ BOOL StartProgressDialog(COperations* script, const char* caption,
             HANDLE dlgThread = HANDLES(CreateThread(NULL, 0, ThreadProgressDlg, &data, 0, &threadID));
             if (dlgThread != NULL)
             {
-                // pockame az thread dialogu prevezme data a otevre dialog a nastartuje worker thread a
-                // preda mu data
+                // wait until the dialog thread takes the data, opens the dialog and starts the worker thread and
+                // passes the data to it
                 WaitForSingleObject(contEvent, INFINITE);
                 ProgressDlgArray.SetDlgData(newDlg, dlgThread, NULL);
                 ret = data.OperationWasStarted;
@@ -465,7 +466,7 @@ char* RemapNames(char* name, int bufLen, char* source, COperations* script)
 BOOL CProgressDialog::FlushCachedData()
 {
     BOOL changed = CacheIsDirty | OperationProgressCacheIsDirty | SummaryProgressCacheIsDirty;
-    // texty
+    // texts
     if (CacheIsDirty)
     {
         if (OperationText != NULL)
@@ -494,7 +495,7 @@ BOOL CProgressDialog::FlushCachedData()
         OperationProgressCacheIsDirty = FALSE;
     }
 
-    // progress bar + titulek dialogu
+    // progress bar + dialog title
     if (SummaryProgressCacheIsDirty)
     {
         SetDlgTitle(IsIconic(RunningInOwnThread ? HWindow : MainWindow->HWindow));
@@ -514,7 +515,7 @@ void CProgressDialog::SetDlgTitle(BOOL minimized)
     if (RunningInOwnThread)
     {
         if (ShowPause)
-            sprintf(buf, "(%d %%) %s", (int)((min(1000, SummaryProgress) /*+ 5*/) / 10), Caption); // nezaokrouhlujeme (100% musi byt az pri 100% a ne pri 99.5%)
+            sprintf(buf, "(%d %%) %s", (int)((min(1000, SummaryProgress) /*+ 5*/) / 10), Caption); // no rounding (100% must appear only at 100% and not at 99.5%)
         else
             sprintf(buf, "(%s) %s", LoadStr(AutoPaused ? IDS_PROGDLGQUEUEPAUSED : IDS_PROGDLGPAUSED),
                     AutoPaused && Script != NULL && Script->WaitInQueueSubject != NULL ? Script->WaitInQueueSubject : Caption);
@@ -529,7 +530,7 @@ void CProgressDialog::SetDlgTitle(BOOL minimized)
         if (minimized)
         {
             if (ShowPause)
-                sprintf(buf, "(%d %%) %s: %s", (int)((min(1000, SummaryProgress) /*+ 5*/) / 10), MAINWINDOW_NAME, Caption); // nezaokrouhlujeme (100% musi byt az pri 100% a ne pri 99.5%)
+                sprintf(buf, "(%d %%) %s: %s", (int)((min(1000, SummaryProgress) /*+ 5*/) / 10), MAINWINDOW_NAME, Caption); // no rounding (100% must appear only at 100% and not at 99.5%)
             else
                 sprintf(buf, "(%s) %s: %s", LoadStr(IDS_PROGDLGPAUSED), MAINWINDOW_NAME, Caption);
 
@@ -544,9 +545,9 @@ void CProgressDialog::SetWindowIcon()
 {
     if (RunningInOwnThread)
     {
-        // od XP se v taskbar zobrazuje ikonka aplikace i pro okna, ktera ikonku prirazenou nemaji
-        // protoze nemame pod kontrolou, jakou ikonku OS zobrazi (asi bere default ikonu EXE?),
-        // nastavime radeji dialogu spravnou ikonku a problemu tak predejdeme
+        // from XP the taskbar shows the application icon even for windows without an assigned icon
+        // because we do not control which icon the OS shows (it probably uses the default EXE icon),
+        // set the correct icon for the dialog to avoid this problem
         int resID = MainWindowIcons[Configuration.GetMainWindowIconIndex()].IconResID;
         SendMessage(HWindow, WM_SETICON, ICON_BIG,
                     (LPARAM)HANDLES(LoadIcon(HInstance, MAKEINTRESOURCE(resID))));
@@ -564,7 +565,7 @@ CProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         SetDlgItemText(HWindow, IDB_PAUSERESUME, LoadStr(IDS_PROGDLGPAUSE));
 
         if (!RunningInOwnThread)
-            SetWindowText(HWindow, Caption); // v modalni verzi dialogu je to jedine nastaveni titulku dialogu
+            SetWindowText(HWindow, Caption); // in the modal version of the dialog this is the only title setup
 
         SetWindowIcon();
 
@@ -585,7 +586,7 @@ CProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             ShowWindow(GetDlgItem(HWindow, IDT_STATUS), SW_HIDE);
             Status = NULL;
 
-            HDWP hdwp = HANDLES(BeginDeferWindowPos(3)); // zmensime dialog (vyhodime status radek)
+            HDWP hdwp = HANDLES(BeginDeferWindowPos(3)); // shrink the dialog (remove the status line)
             if (hdwp != NULL)
             {
                 RECT r;
@@ -615,25 +616,25 @@ CProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         HPreposition = GetDlgItem(HWindow, IDS_PREPOSITION);
 
-        PostMessage(HWindow, WM_USER_PROGRDLGSTART, 0, 0); // pod W2K+ asi zbytecne: start worker threadu zpozdime
+        PostMessage(HWindow, WM_USER_PROGRDLGSTART, 0, 0); // probably needless on W2K+: delay the start of the worker thread
 
         if (Parent == NULL && ProgrDlgData != NULL)
         {
             MultiMonCenterWindowByRect(HWindow, ProgrDlgData->MainWndRectClipR, ProgrDlgData->MainWndRectByR);
-            return CDialog::DialogProc(uMsg, wParam, lParam); // preskocime CCommonDialog::DialogProc()
+            return CDialog::DialogProc(uMsg, wParam, lParam); // skip CCommonDialog::DialogProc()
         }
         else
             break;
     }
 
-    case WM_USER_PROGRDLGSTART: // pod W2K+ asi zbytecne: jen zpozdeny start worker threadu
+    case WM_USER_PROGRDLGSTART: // probably needless on W2K+: just a delayed worker thread start
     {
-        //--- vytvoreni synchronizacnich objektu
+        //--- creation of synchronization objects
         WContinue = HANDLES(CreateEvent(NULL, FALSE, FALSE, NULL));
         if (WContinue == NULL)
         {
             TRACE_E("Unable to create WContinue event.");
-            EndDialog(HWindow, IDABORT); // k.o.
+            EndDialog(HWindow, IDABORT); // fatal error
             break;
         }
         WorkerNotSuspended = HANDLES(CreateEvent(NULL, TRUE, TRUE, NULL));
@@ -642,7 +643,7 @@ CProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             TRACE_E("Unable to create WorkerNotSuspended event.");
             HANDLES(CloseHandle(WContinue));
             WContinue = NULL;
-            EndDialog(HWindow, IDABORT); // k.o.
+            EndDialog(HWindow, IDABORT); // fatal error
             break;
         }
         BOOL startPaused = FALSE;
@@ -682,7 +683,7 @@ CProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             WorkerNotSuspended = NULL;
             HANDLES(CloseHandle(WContinue));
             WContinue = NULL;
-            EndDialog(HWindow, IDABORT); // k.o.
+            EndDialog(HWindow, IDABORT); // fatal error
         }
         else
         {
@@ -692,13 +693,13 @@ CProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     ProgressDlgArray.SetDlgData(ProgrDlgData->NewDlg, NULL, HWindow);
                     ProgrDlgData->OperationWasStarted = TRUE;
-                    SetEvent(ProgrDlgData->ContEvent); // pustime dale hl. thread (ceka na otevreni dialogu a start operace)
+                    SetEvent(ProgrDlgData->ContEvent); // let the main thread continue (it waits for the dialog to open and the operation to start)
                     ProgrDlgData = NULL;
                 }
-                if (Configuration.AlwaysOnTop) // always-on-top osetrime aspon "staticky" (neni v system menu)
+                if (Configuration.AlwaysOnTop) // handle always-on-top at least "statically" (not in the system menu)
                     SetWindowPos(HWindow, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
                 if (startPaused)
-                    PostMessage(HWindow, WM_COMMAND, IDB_MINIMIZE, 0); // "waiting" operaci rovnou zminimalizujeme (neni na co koukat, usetrime userovi jeden krok)
+                    PostMessage(HWindow, WM_COMMAND, IDB_MINIMIZE, 0); // minimize the "waiting" operation immediately (nothing to watch, saves one step for the user)
                 else
                     SetForegroundWindow(HWindow);
             }
@@ -711,13 +712,13 @@ CProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         return TRUE;
     }
 
-        //--- nastavoveni controlu a captionu
+        //--- setting controls and caption
     case WM_USER_SETDIALOG:
     {
         CProgressData* data = (CProgressData*)wParam;
         if (data != NULL)
         {
-            // data nevykreslime hned, az na timer
+            // do not draw data immediately, only on the timer
             lstrcpyn(OperationCache, data->Operation, 100);
             lstrcpyn(PrepositionCache, data->Preposition, 100);
             lstrcpyn(SourceCache, data->Source, 2 * MAX_PATH);
@@ -745,7 +746,7 @@ CProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         if (!TimerIsRunning)
         {
-            // pro aktualizaci udaju
+            // for updating data
             SetTimer(HWindow, IDT_REPAINT, 100, NULL);
             TimerIsRunning = TRUE;
             FlushCachedData();
@@ -753,11 +754,11 @@ CProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         return TRUE;
     }
-        //--- vyvolani dialogu na prani workera
+        //--- worker request to show a dialog
     case WM_USER_DIALOG:
     {
         if (CancelWorker)
-            return TRUE; // uz se ma terminovat, nema nic chtit
+            return TRUE; // should terminate, it should not request anything
 
         BOOL canFlash = RunningInOwnThread;
         if (IsIconic(RunningInOwnThread ? HWindow : MainWindow->HWindow))
@@ -777,14 +778,14 @@ CProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         else
             canFlash = FALSE;
 
-        //      EndSuspendMode();  // preruseni prace, je cas na refresh
+        //      EndSuspendMode();  // work interruption, time to refresh
         //      MainWindow->RefreshDiskFreeSpace();
 
         if (Status != NULL)
-        { // musime zastavit zobrazovani statusu
+        { // we must stop showing the status
             KillTimer(HWindow, IDT_UPDATESTATUS);
-            StatusPaused = TRUE;                                 // aby se nezobrazoval time-left a speed
-            PostMessage(HWindow, WM_TIMER, IDT_UPDATESTATUS, 0); // jeden timer jeste posleme, at se zobrazi "zastaveny" status
+            StatusPaused = TRUE;                                 // so that time-left and speed are not displayed
+            PostMessage(HWindow, WM_TIMER, IDT_UPDATESTATUS, 0); // send one more timer so that the "paused" status is displayed
         }
 
         char** data = (char**)lParam;
@@ -895,17 +896,17 @@ CProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         }
 
-        StatusPaused = FALSE; // ted uz se zase klidne muze zobrazovat time-left a speed
+        StatusPaused = FALSE; // now time-left and speed can be displayed again
 
         if (Status != NULL && ShowPause)
-        { // operace jede dal, zase zobrazime status operace
+        { // the operation continues, show the status again
             NextTimeLeftUpdateTime = GetTickCount();
             SetTimer(HWindow, IDT_UPDATESTATUS, IDT_UPDATESTATUS_PERIOD, NULL);
             if (Script != NULL)
                 Script->InitSpeedMeters(TRUE);
         }
 
-        //      BeginSuspendMode();  // zase budem neco delat ...
+        //      BeginSuspendMode();  // we are doing something again ...
 
         if (canFlash)
             FlashWindow(RunningInOwnThread ? HWindow : MainWindow->HWindow, FALSE);
@@ -917,7 +918,7 @@ CProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (wParam == IDT_REPAINT)
         {
-            if (!FlushCachedData()) // neprisel WM_USER_SETDIALOG, timer muzeme klidne zrusit
+            if (!FlushCachedData()) // WM_USER_SETDIALOG did not arrive, we can safely cancel the timer
             {
                 TimerIsRunning = FALSE;
                 KillTimer(HWindow, IDT_REPAINT);
@@ -926,7 +927,7 @@ CProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         if (wParam == IDT_UPDATESTATUS)
         {
-            // textovy status operace (prenosova rychlost, atd.)
+            // text operation status (transfer speed, etc.)
             if (Status != NULL)
             {
                 char buf[300];
@@ -982,7 +983,7 @@ CProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             buf[len++] = ' ';
                         }
 
-                        CQuadWord secs = (Script->TotalSize - progressSize) / progressSpeed; // odhad zbyvajicich sekund
+                        CQuadWord secs = (Script->TotalSize - progressSize) / progressSpeed; // estimate of remaining seconds
                                                                                              /*
               SYSTEMTIME st;
               GetLocalTime(&st);
@@ -990,9 +991,9 @@ CProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
               SystemTimeToFileTime(&st, &ft);
               *(unsigned __int64 *)&ft = *(unsigned __int64 *)&ft + secs.Value * 1000 * 1000 * 10;
 */
-                        secs.Value++;                                                        // jedna vterina navic, abysme koncili operaci s "time left: 1 sec" (misto 0 sec)
+                        secs.Value++;                                                        // add one second so we finish the operation with "time left: 1 sec" (instead of 0 sec)
 
-                        // vypocet zaokrouhleni (zhruba 10% chyba + zaokrouhlujeme po hezkych cislech 1,2,5,10,20,40)
+                        // rounding calculation (roughly 10% error + rounded to nice numbers 1,2,5,10,20,40)
                         CQuadWord dif = (secs + CQuadWord(5, 0)) / CQuadWord(10, 0);
                         int expon = 0;
                         while (dif >= CQuadWord(50, 0))
@@ -1014,14 +1015,14 @@ CProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             dif = CQuadWord(40, 0);
                         while (expon--)
                             dif *= CQuadWord(60, 0);
-                        secs = ((secs + dif / CQuadWord(2, 0)) / dif) * dif; // zaokrouhlime 'secs' na 'dif' sekund
+                        secs = ((secs + dif / CQuadWord(2, 0)) / dif) * dif; // round 'secs' to 'dif' seconds
 
-                        if ((int)(ti - NextTimeLeftUpdateTime) >= 0 ||                         // je cas zobrazit novou hodnotu
-                            (secs > (TimeLeftLastValue * CQuadWord(3, 0)) / CQuadWord(2, 0) || // nebo se nova hodnota lisi o vic jak 50%
+                        if ((int)(ti - NextTimeLeftUpdateTime) >= 0 ||                         // time to display a new value
+                            (secs > (TimeLeftLastValue * CQuadWord(3, 0)) / CQuadWord(2, 0) || // or the new value differs by more than 50%
                              secs < TimeLeftLastValue / CQuadWord(2, 0)))
                         {
                             TimeLeftLastValue = secs;
-                            // zpomaleni updatu time-left udaje v zavislosti na vypocitanem case (cim delsi cas, tim mene updatujeme)
+                            // slow down updating the time-left information based on the calculated time (the longer the time, the fewer the updates)
                             if (secs.Value <= 10)
                                 NextTimeLeftUpdateTime = 500;
                             else if (secs.Value <= 30)
@@ -1035,7 +1036,7 @@ CProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             NextTimeLeftUpdateTime += ti - IDT_UPDATESTATUS_PERIOD / 2;
                         }
                         else
-                            secs = TimeLeftLastValue; // jinak zobrazime starou hodnotu (aby se odhad time-left nemenil zbytecne moc casto)
+                            secs = TimeLeftLastValue; // otherwise show the old value (to keep the time-left estimate from changing too often)
 
                         PrintTimeLeft(num1, secs);
                         sprintf(buf + len, LoadStr(IDS_PROGDLGTIMELEFT), num1);
@@ -1064,18 +1065,18 @@ CProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (!AcceptCommands || !CanClose || CancelWorker || Script == NULL)
             return 0;
 
-        Script->ChangeSpeedLimit = TRUE; // mozna se bude menit speed-limit, nechame workera zastavit na "vhodnem" miste
+        Script->ChangeSpeedLimit = TRUE; // the speed limit may change, let the worker stop at an "appropriate" point
         if (ShowPause)
             ResetEvent(WorkerNotSuspended);
 
-        // zobrazime cache, at se nam neprekresluje pod menu/dialogama
+        // show the cache so it does not redraw under menus or dialogs
         FlushCachedData();
 
         if (Status != NULL && !AutoPaused)
-        { // musime zastavit zobrazovani statusu
+        { // we must stop showing the status
             KillTimer(HWindow, IDT_UPDATESTATUS);
-            StatusPaused = TRUE;                                 // aby se nezobrazoval time-left a speed
-            SendMessage(HWindow, WM_TIMER, IDT_UPDATESTATUS, 0); // jeden timer jeste posleme, at se zobrazi "zastaveny" status
+            StatusPaused = TRUE;                                 // so that time-left and speed are not displayed
+            SendMessage(HWindow, WM_TIMER, IDT_UPDATESTATUS, 0); // send one more timer so the "stopped" status is displayed
         }
 
         HWND hCtrl = GetDlgItem(HWindow, (int)wParam);
@@ -1086,8 +1087,8 @@ CProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         CMenuPopup* popup = new CMenuPopup;
         if (popup != NULL)
         {
-            /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volanim InsertItem() dole...
+            /* used by the export_mnu.py script that generates salmenu.mnu for the Translator
+   keep synchronized with the InsertItem() calls below...
 MENU_TEMPLATE_ITEM ProgressDialogMenu1[] = 
 {
   {MNTT_PB, 0
@@ -1150,7 +1151,7 @@ MENU_TEMPLATE_ITEM ProgressDialogMenu2[] =
                 ShowPause = FALSE;
                 SetDlgItemText(HWindow, IDB_PAUSERESUME, LoadStr(IDS_PROGDLGRESUME));
                 PostMessage(HWindow, WM_NEXTDLGCTL, (WPARAM)GetDlgItem(HWindow, IDB_MINIMIZE), TRUE);
-                PostMessage(HWindow, WM_COMMAND, IDB_MINIMIZE, 0); // "waiting" operaci rovnou zminimalizujeme (neni na co koukat, usetrime userovi jeden krok)
+                PostMessage(HWindow, WM_COMMAND, IDB_MINIMIZE, 0); // minimize the "waiting" operation immediately (nothing to watch, saves one step for the user)
                 if (activateOperDlg != NULL)
                 {
                     PostMessage(activateOperDlg, WM_USER_FOCUSPROGRDLG, 0, 0);
@@ -1168,10 +1169,10 @@ MENU_TEMPLATE_ITEM ProgressDialogMenu2[] =
             DWORD speedLimit;
             Script->GetSpeedLimit(&useSpeedLimit, &speedLimit);
             if (!useSpeedLimit && speedLimit == 1)
-                speedLimit = Configuration.LastUsedSpeedLimit; // pro prvni zapnuti speed-limitu at je tam posledni pouzita hodnota
+                speedLimit = Configuration.LastUsedSpeedLimit; // on first enable of speed limit use its last used value
             CSetSpeedLimDialog dlg(HWindow, &useSpeedLimit, &speedLimit);
             if (!AutoPaused)
-                SendMessage(HWindow, WM_TIMER, IDT_UPDATESTATUS, 0); // jeden timer jeste posleme, at se aktualizuje status (mohlo se neco dokopirovat)
+                SendMessage(HWindow, WM_TIMER, IDT_UPDATESTATUS, 0); // send one more timer so status gets updated (some data might have finished copying)
             if (dlg.Execute() == IDOK)
             {
                 if (useSpeedLimit)
@@ -1179,13 +1180,13 @@ MENU_TEMPLATE_ITEM ProgressDialogMenu2[] =
                 Script->SetSpeedLimit(useSpeedLimit, speedLimit);
             }
             if (!AutoPaused)
-                SendMessage(HWindow, WM_TIMER, IDT_UPDATESTATUS, 0); // jeden timer jeste posleme, at se aktualizuje status (mohlo se neco dokopirovat)
+                SendMessage(HWindow, WM_TIMER, IDT_UPDATESTATUS, 0); // send one more timer so status gets updated (some data might have finished copying)
         }
 
-        StatusPaused = FALSE; // ted uz se zase klidne muze zobrazovat time-left a speed
+        StatusPaused = FALSE; // now time-left and speed can be displayed again
 
         if (Status != NULL && ShowPause)
-        { // operace jede dal, zase zobrazime status operace
+        { // the operation continues, show the status again
             NextTimeLeftUpdateTime = GetTickCount();
             SetTimer(HWindow, IDT_UPDATESTATUS, IDT_UPDATESTATUS_PERIOD, NULL);
             if (Script != NULL)
@@ -1204,21 +1205,21 @@ MENU_TEMPLATE_ITEM ProgressDialogMenu2[] =
     {
         if (CanClose)
         {
-            if (!IsWindowEnabled(HWindow)) // nad dialogem je nejaky modalni dialog (messagebox s dotazem na cancel operace nebo s chybou operace)
+            if (!IsWindowEnabled(HWindow)) // there is a modal dialog above this dialog (a message box asking about operation canceling or reporting an error)
                 CloseAllOwnedEnabledDialogs(HWindow);
-            CancelWorker = TRUE; // nastavime cancel workera
+            CancelWorker = TRUE; // set worker cancel
             EnableWindow(GetDlgItem(HWindow, IDB_PAUSERESUME), FALSE);
             if (WorkerNotSuspended != NULL)
-                SetEvent(WorkerNotSuspended); // aby probehl Cancel i po stisku Pause
+                SetEvent(WorkerNotSuspended); // so that Cancel proceeds even after Pause is pressed
             DoNotBeepOnClose = TRUE;
         }
-        return TRUE; // zprava zpracovana
+        return TRUE; // message processed
     }
 
     case WM_USER_PROGRDLG_UPDATEICON:
     {
         SetWindowIcon();
-        return TRUE; // zprava zpracovana
+        return TRUE; // message processed
     }
 
     case WM_USER_FOCUSPROGRDLG:
@@ -1234,7 +1235,7 @@ MENU_TEMPLATE_ITEM ProgressDialogMenu2[] =
                 SetThreadPriority(Worker, THREAD_PRIORITY_NORMAL);
             AcceptCommands = TRUE;
         }
-        if (!IsWindowEnabled(HWindow)) // nad dialogem je nejaky modalni okno (messagebox s dotazem na cancel operace nebo s chybou operace)
+        if (!IsWindowEnabled(HWindow)) // there is a modal window above this dialog (a message box asking about operation canceling or reporting an error)
         {
             HWND dlg = GetLastActivePopup(HWindow);
             if (dlg != NULL && dlg != HWindow)
@@ -1242,7 +1243,7 @@ MENU_TEMPLATE_ITEM ProgressDialogMenu2[] =
         }
         else
             SetForegroundWindow(HWindow);
-        return TRUE; // zprava zpracovana
+        return TRUE; // message processed
     }
 
     case WM_SYSCOMMAND:
@@ -1253,7 +1254,7 @@ MENU_TEMPLATE_ITEM ProgressDialogMenu2[] =
             return TRUE;
         }
         if (RunningInOwnThread && (wParam == SC_RESTORE || wParam == SC_RESTORE + 2))
-        { // probehne restore okna - musime na to zareagovat:
+        { // window is being restored - we must react:
             SetDlgTitle(FALSE);
             if (Worker != NULL)
                 SetThreadPriority(Worker, THREAD_PRIORITY_NORMAL);
@@ -1262,14 +1263,14 @@ MENU_TEMPLATE_ITEM ProgressDialogMenu2[] =
         break;
     }
 
-    case WM_USER_PROGRDLGEND: // pod W2K+ asi zbytecne: konec dialogu, museli jsme ho trochu oddalit
+    case WM_USER_PROGRDLGEND: // probably needless on W2K+: we had to delay the dialog termination a bit
     {
         uMsg = WM_COMMAND;
         if (RunningInOwnThread && !Configuration.AlwaysOnTop && GetForegroundWindow() == HWindow)
         {
-            // Do Windows Vista jsme volali pouze GetNextWindow(), coz stacilo na dosazeni nasledujiciho okna v z-order.
-            // Ve Vistach zrejme MS pridali nove helper okna "MSCTFIME UI" a "Default IME", ktere jsou hidden a jsou mezi
-            // nama a nasim oknem (hlavni, viver, atd). Proto skryta okna preskaceme.
+            // Prior to Windows Vista we only called GetNextWindow(), which was enough to reach the next window in the Z-order.
+            // Vista introduced new hidden helper windows such as "MSCTFIME UI" and "Default IME" that sit between us and 
+            // our window (main, viver, ect.). So we skip hidden windows here.
             BOOL valid;
             HWND hNext = HWindow;
             do
@@ -1300,19 +1301,19 @@ MENU_TEMPLATE_ITEM ProgressDialogMenu2[] =
     case WM_COMMAND:
     {
         if (WorkerNotSuspended == NULL || Worker == NULL)
-            return TRUE; // jeste neprobehl kompletni start dialogu, ignorujeme command
+            return TRUE; // the dialog has not fully started yet, ignore the command
 
         switch (LOWORD(wParam))
         {
-        case IDOK: // konec prace, vola jen worker, nesmi prijit z dialogu
+        case IDOK: // operation finished, called only by the worker, must not come from the dialog
         {
-            if (!IsWindowEnabled(HWindow)) // pokud mame otevreny modalni dialog, musime ho najit a zavrit
+            if (!IsWindowEnabled(HWindow)) // if a modal dialog is open we must locate and close it
                 CloseAllOwnedEnabledDialogs(HWindow);
             if (InSendMessage())
-                ReplyMessage(0);                   // pustime dale workera
-            Script = NULL;                         // skript se dealokuje v threadu workera, takze ho zde jiz dale nesmime pouzivat
-            SetEvent(WContinue);                   // worker muze zacit mazat script
-            WaitForSingleObject(Worker, INFINITE); // pockame az to dodela a chcipne
+                ReplyMessage(0);                   // let the worker continue
+            Script = NULL;                         // script is freed in the worker thread, so we must not use it here anymore
+            SetEvent(WContinue);                   // worker may start deleting the script
+            WaitForSingleObject(Worker, INFINITE); // wait until it finishes and exits
             HANDLES(CloseHandle(Worker));
             Worker = NULL;
             HANDLES(CloseHandle(WorkerNotSuspended));
@@ -1326,72 +1327,72 @@ MENU_TEMPLATE_ITEM ProgressDialogMenu2[] =
 
             if (!DoNotBeepOnClose && Configuration.MinBeepWhenDone && GetForegroundWindow() != HWindow)
                 MessageBeep(0);
-            PostMessage(HWindow, WM_USER_PROGRDLGEND, wParam, lParam); // pod W2K+ asi zbytecne: konec dialogu trochu oddalime
+            PostMessage(HWindow, WM_USER_PROGRDLGEND, wParam, lParam); // probably needless on W2K+: delay ending the dialog a bit
             return TRUE;
         }
 
-        case IDCANCEL: // preruseni
+        case IDCANCEL: // abort
         {
             if (CanClose && !CancelWorker)
             {
                 ResetEvent(WorkerNotSuspended);
 
-                //            EndSuspendMode();  // preruseni prace, je cas na refresh
+                //            EndSuspendMode();  // work interruption, time to refresh
                 //            MainWindow->RefreshDiskFreeSpace();
 
-                // zobrazime cache, at se nam neprekresluje pod messageboxem
+                // show the cache so it does not redraw under the message box
                 FlushCachedData();
 
                 if (Status != NULL)
-                { // musime zastavit zobrazovani statusu
+                { // we must stop showing the status
                     KillTimer(HWindow, IDT_UPDATESTATUS);
-                    StatusPaused = TRUE;                                 // aby se nezobrazoval time-left a speed
-                    PostMessage(HWindow, WM_TIMER, IDT_UPDATESTATUS, 0); // jeden timer jeste posleme, at se zobrazi "zastaveny" status
+                    StatusPaused = TRUE;                                 // so that time-left and speed are not displayed
+                    PostMessage(HWindow, WM_TIMER, IDT_UPDATESTATUS, 0); // send one more timer so the "stopped" status is displayed
                 }
 
                 int ret = SalMessageBox(HWindow, LoadStr(IDS_CANCELOPERATION),
                                         LoadStr(IDS_QUESTION),
-                                        MB_YESNO | MB_ICONQUESTION /*| MSGBOXEX_ESCAPEENABLED*/); // Escape neni dobrej
-                // napad -- Zarevak si nechtic zacal mazat velky balik souboru, pak zacal mackat Escape (masina byla
-                // zatizena, takze hned nereagovala) a stornovaval si konfirmaci, takze nyni konfirmaci nebude
-                // mozne Escapem zavirat.
+                                        MB_YESNO | MB_ICONQUESTION /*| MSGBOXEX_ESCAPEENABLED*/); // Escape key is not a good
+                // idea -- Zarevak accidentally started deleting a large batch of files, then began hitting Escape (the machine was 
+                // heavily loaded so it did not respond immediately) canceling the confirmation, therefore the confirmation can 
+                // no longer be closed with Escape.
 
-                //            BeginSuspendMode();  // zase budem neco delat ...
+                //            BeginSuspendMode();  // we are doing something again ...
 
-                StatusPaused = FALSE; // ted uz se zase klidne muze zobrazovat time-left a speed
+                StatusPaused = FALSE; // now time-left and speed can be displayed again
 
                 if (ret == IDYES)
                 {
-                    CancelWorker = TRUE; // nastavime cancel workera
+                    CancelWorker = TRUE; // set cancel of the worker
                     EnableWindow(GetDlgItem(HWindow, IDB_PAUSERESUME), FALSE);
                 }
                 else
                 {
                     if (Status != NULL && ShowPause)
-                    { // operace jede dal, zase zobrazime status operace
+                    { // the operation continues, show the status again
                         NextTimeLeftUpdateTime = GetTickCount();
                         SetTimer(HWindow, IDT_UPDATESTATUS, IDT_UPDATESTATUS_PERIOD, NULL);
                         if (Script != NULL)
                             Script->InitSpeedMeters(TRUE);
                     }
                 }
-                if ((CancelWorker || ShowPause) && // jen pokud jde o Cancel nebo operace neni pauznuta
+                if ((CancelWorker || ShowPause) && // only if it's Cancel or the operation isn't paused
                     WorkerNotSuspended != NULL)
                 {
-                    SetEvent(WorkerNotSuspended); // muze byt NULL, pokud byl msgbox killnuty z IDOK pres WM_CLOSE
+                    SetEvent(WorkerNotSuspended); // may be NULL if the message box was closed from IDOK via WM_CLOSE
                 }
             }
-            return TRUE; // terminovat dialog bude az worker pomoci IDOK ...
+            return TRUE; // only the worker using IDOK will terminate the dialog ...
         }
 
-        case CM_RESUMEOPER:   // resume postnuty z fronty operaci
+        case CM_RESUMEOPER:   // resume posted from the operations queue
         case IDB_PAUSERESUME: // pause/resume
         {
             if ((LOWORD(wParam) == CM_RESUMEOPER || AcceptCommands) && CanClose && !CancelWorker)
             {
-                AutoPaused = FALSE; // bud jde o rucni pause/resume nebo o automaticky resume
+                AutoPaused = FALSE; // this may be a manual pause/resume or an automatic resume
                 BOOL speedMetersInitCalled = FALSE;
-                if (LOWORD(wParam) != CM_RESUMEOPER || IsWindowEnabled(HWindow)) // nad dialogem neni nic otevreneho (hrozi Cancel dotaz)
+                if (LOWORD(wParam) != CM_RESUMEOPER || IsWindowEnabled(HWindow)) // nothing open above the dialog (a Cancel question may pop up)
                 {
                     if (ShowPause)
                         ResetEvent(WorkerNotSuspended);
@@ -1420,10 +1421,10 @@ MENU_TEMPLATE_ITEM ProgressDialogMenu2[] =
                         if (!speedMetersInitCalled && Script != NULL)
                             Script->InitSpeedMeters(TRUE);
                     }
-                    else // musime zastavit zobrazovani statusu
+                    else // we must stop showing the status
                     {
                         KillTimer(HWindow, IDT_UPDATESTATUS);
-                        PostMessage(HWindow, WM_TIMER, IDT_UPDATESTATUS, 0); // jeden timer jeste posleme, at se zobrazi "paused" status
+                        PostMessage(HWindow, WM_TIMER, IDT_UPDATESTATUS, 0); // send one more timer so that the "paused" status is displayed
                     }
                 }
             }
@@ -1437,11 +1438,11 @@ MENU_TEMPLATE_ITEM ProgressDialogMenu2[] =
             AcceptCommands = FALSE;
 
             ResetEvent(WorkerNotSuspended);
-            // musi se odcerpat message od Workera, jinak se v
-            // MinimizeApp zavolaji a app se zachova nekorektne
-            MSG msg; // nemuze zalolat rekurzivne (AcceptCommands == FALSE) -> o.k.
+            // must drain messages from the Worker, otherwise
+            // MinimizeApp calls them and the app behaves incorrectly
+            MSG msg; // cannot be called recursively (AcceptCommands == FALSE) -> ok
             BOOL oldCanClose = CanClose;
-            CanClose = FALSE; // nenechame se zavrit, jsme uvnitr metody
+            CanClose = FALSE; // do not allow closing, we are inside a method
             while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
             {
                 TranslateMessage(&msg);
@@ -1452,7 +1453,7 @@ MENU_TEMPLATE_ITEM ProgressDialogMenu2[] =
             if (RunningInOwnThread)
                 ShowWindow(HWindow, SW_MINIMIZE);
             else
-                MinimizeApp(MainWindow->HWindow); // ma vlastni message-loop (ShowWindow) !!!
+                MinimizeApp(MainWindow->HWindow); // it has its own message loop (ShowWindow) !!!
             if (Worker != NULL)
                 SetThreadPriority(Worker, THREAD_PRIORITY_BELOW_NORMAL);
             SetDlgTitle(TRUE);
@@ -1477,8 +1478,8 @@ MENU_TEMPLATE_ITEM ProgressDialogMenu2[] =
                 SetThreadPriority(Worker, THREAD_PRIORITY_NORMAL);
             AcceptCommands = TRUE;
         }
-        if (wParam == FALSE) // pri deaktivaci uteceme z adresaru zobrazenych v panelech,
-        {                    // aby sly mazat, odpojovat atd. z jinych softu
+        if (wParam == FALSE) // when deactivated we leave directories shown in the panels,
+        {                    // so they can be deleted, disconnected, etc. from other software
             if (!RunningInOwnThread && CanChangeDirectory())
                 SetCurrentDirectoryToSystem();
         }
@@ -1493,18 +1494,18 @@ MENU_TEMPLATE_ITEM ProgressDialogMenu2[] =
             TimerIsRunning = FALSE;
         }
 
-        // na XP service pack 1 s otevrenym top-most oknem po zavreni tohoto dialogu
-        // system nevybere spravne okno pro foreground (podle Z-orderu), ale na foreground
-        // da nelogicky top-most okno - nasledujici bypass to resi ke spokojenosti useru;
-        // dava na foreground jen okna Salamandera, ktera jsou "hlavni" (bez parenta, nebo
+        // on XP service pack 1 with a top-most window open after closing this dialog
+        // system may not pick the correct foreground window (according to Z-order) and instead
+        // brings an illogical top-most window to the foreground - the following workaround satisfies users;
+        // foreground is set only to Salamander windows that are "main" (without a parent, or
         // parent disabled)
         //
-        // poznamka: ve Windows Vista se problem projevi, pokud kopirujeme a nad progress
-        // oknem vyskoci dotaz (konfirmace na prapis, cancel konfirmace, atd) -- pak dojde
-        // rozbiti z-orderu a system bez nasledujiciho hacku po zavreni progress okna
-        // aktivuje top-most okno, ktere je nevic nahore; vice viz \Source\zorder a
-        // \Source\windowtest utilitky.
-        // Problem hlasen zde: https://forum.altap.cz/viewtopic.php?t=2922&start=15
+        // note: under Windows Vista the problem occurs if we copy and above the progress
+        // window a question pops up (overwrite confirmation, cancel confirmation, etc.) -- this then
+        // messes up the Z-order and the system without the following hack after closing the progress window
+        // activates the top-most window that is the highest; see \Source\zorder and
+        // \Source\windowtest utilities.
+        // Issue reported here: https://forum.altap.cz/viewtopic.php?t=2922&start=15
         if (NextForegroundWindow != NULL && NextForegroundWindow != GetForegroundWindow())
         {
             DWORD pid;
@@ -1585,8 +1586,8 @@ CFileErrorDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             char buf[100];
             if (GetDlgItemText(HWindow, IDB_IGNORE, buf, 100))
             {
-                /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volanim InsertItem() dole...
+                /* used by the export_mnu.py script that generates salmenu.mnu for the Translator
+   keep synchronized with the InsertItem() calls below...
 MENU_TEMPLATE_ITEM FileErrorDlgMenu[] = 
 {
   {MNTT_PB, 0
@@ -1822,7 +1823,7 @@ void BrowseFileName(HWND hParent, int editlineResID, const char* name)
     ofn.hwndOwner = hParent;
     char* s = LoadStr(IDS_ALLFILTER);
     ofn.lpstrFilter = s;
-    while (*s != 0) // vytvoreni double-null terminated listu
+    while (*s != 0) // creating a double-null terminated list
     {
         if (*s == '|')
             *s = 0;
@@ -1911,7 +1912,7 @@ void CFileListDialog::Validate(CTransferInfo& ti)
     {
         if (ti.GetControl(hWnd, IDC_FL_FILENAME))
         {
-            // obnova DefaultDir
+            // DefaultDir restoration
             MainWindow->UpdateDefaultDir(TRUE);
 
             char buffFile[MAX_PATH];
@@ -1932,7 +1933,7 @@ void CFileListDialog::Validate(CTransferInfo& ti)
             BOOL append;
             ti.CheckBox(IDC_FL_APPEND, append);
 
-            // nesmi jit o adresar
+            // must not be a directory
             DWORD attr;
             attr = SalGetFileAttributes(buffFile);
 
@@ -1943,7 +1944,7 @@ void CFileListDialog::Validate(CTransferInfo& ti)
                 ti.ErrorOn(IDC_FL_FILENAME);
                 return;
             }
-            // kdyz neni append, zeptame se na overwrite
+            // if not appending, ask whether to overwrite
             if (!append && attr != 0xFFFFFFFF)
             {
                 char text[300];
@@ -1979,7 +1980,7 @@ CFileListDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (hl != NULL)
             hl->SetActionShowHint(LoadStr(IDS_FILELISTLINE_HINT));
 
-        InstallWordBreakProc(GetDlgItem(HWindow, IDC_FL_FILENAME)); // instalujeme WordBreakProc do editline
+        InstallWordBreakProc(GetDlgItem(HWindow, IDC_FL_FILENAME)); // install WordBreakProc into the editline
 
         HWND hCombo = GetDlgItem(HWindow, IDC_FL_LINE);
         EditLine->AttachToWindow(GetWindow(hCombo, GW_CHILD));
@@ -1998,12 +1999,12 @@ CFileListDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case IDC_FL_FNBROWSE:
         {
             char buffFile[MAX_PATH];
-            // obnova DefaultDir
+            // DefaultDir restoration
             MainWindow->UpdateDefaultDir(TRUE);
 
             SendMessage(GetDlgItem(HWindow, IDC_FL_FILENAME), WM_GETTEXT, MAX_PATH, (LPARAM)buffFile);
             if (!SalGetFullName(buffFile, NULL, MainWindow->GetActivePanel()->Is(ptDisk) ? MainWindow->GetActivePanel()->GetPath() : NULL))
-            { // my to neumime, takze at si s tim poradi Windows browse jak chce ...
+            { // we cannot do it, so let Windows Browse handle it however it wants...
                 SendMessage(GetDlgItem(HWindow, IDC_FL_FILENAME), WM_GETTEXT, MAX_PATH, (LPARAM)buffFile);
             }
 
@@ -2034,7 +2035,7 @@ CFileListDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 CBetaExpiredDialog::CBetaExpiredDialog(HWND parent)
     : CCommonDialog(HLanguage, IDD_BETAEXPIRED, parent)
 {
-    // expirovali jsme, ale 14 dnu jeste pobezime jen 3s waitem; pak uz 30s
+    // our beta expired, but we will run for 14 more days with just a 3s wait; afterwards 30s
     SYSTEMTIME st;
     GetLocalTime(&st);
     __int64 currentFT;
@@ -2043,7 +2044,7 @@ CBetaExpiredDialog::CBetaExpiredDialog(HWND parent)
     __int64 expireFT;
     SystemTimeToFileTime(&BETA_EXPIRATION_DATE, (FILETIME*)&expireFT);
 
-    if (currentFT > expireFT + (__int64)10000000 * 60 * 60 * 24 * 14) // 14 dnu
+    if (currentFT > expireFT + (__int64)10000000 * 60 * 60 * 24 * 14) // 14 days
         Count = 30;
     else
         Count = 3;
@@ -2069,8 +2070,8 @@ CBetaExpiredDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         hl = new CHyperLink(HWindow, IDC_BETAEXPIREDURL);
         if (hl != NULL)
         {
-            // je-li prostredi v cestine nebo slovenstine, budeme ukazovat automaticky ceskou verzi webu
-            BOOL english = LanguageID != 0x405 /* cesky */ && LanguageID != 0x41B /* slovensky */;
+            // if the environment is Czech or Slovak, we will automatically show the Czech version of the web
+            BOOL english = LanguageID != 0x405 /* Czech */ && LanguageID != 0x41B /* Slovak */;
 
             const char* url =
 #ifndef THIS_IS_EAP_VERSION
@@ -2099,7 +2100,7 @@ CBetaExpiredDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         sprintf(buff, orig, today, expired);
         SetDlgItemText(HWindow, IDC_BETAEXPIREDDATE, buff);
 
-        // v OK tlacitku budou cisla s odpoctem, ulozime puvodni text
+        // the OK button will show numbers counting down, store the original text
         GetDlgItemText(HWindow, IDOK, OldOK, 100);
 
         EnableWindow(GetDlgItem(HWindow, IDOK), FALSE);
@@ -2142,7 +2143,7 @@ CSetSpeedLimDialog::CSetSpeedLimDialog(HWND parent, BOOL* useSpeedLim, DWORD* sp
     SpeedLimit = speedLimit;
 }
 
-BOOL GetSpeedLimit(int sel, char* speedLimitText, DWORD* returnSpeedLimit); // je v dialogs3.cpp
+BOOL GetSpeedLimit(int sel, char* speedLimitText, DWORD* returnSpeedLimit); // is implemented in dialogs3.cpp
 
 void CSetSpeedLimDialog::Validate(CTransferInfo& ti)
 {
@@ -2185,7 +2186,7 @@ void CSetSpeedLimDialog::Transfer(CTransferInfo& ti)
             {
                 speedLimNum /= 1024;
                 speedLimUnits++;
-                if (speedLimNum == 0 || speedLimUnits > 3) // nemuze nastat, jen pro klid v dusi
+                if (speedLimNum == 0 || speedLimUnits > 3) // should not happen, just for peace of mind
                 {
                     TRACE_E("CSetSpeedLimDialog::Transfer(): unexpected situation!");
                     speedLimNum = 4;
