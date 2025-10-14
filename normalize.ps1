@@ -1005,17 +1005,56 @@ function Invoke-TextNormalization {
                 $bytes = [System.IO.File]::ReadAllBytes($fullPath)
                 $streamLength = $bytes.Length
 
-                $hasBom = $false
-                if ($streamLength -ge 3) {
-                    $hasBom = ($bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF)
+                $decoder = $null
+                $byteOffset = 0
+                $hasUtf8Bom = $false
+                $needsUtf8Conversion = $false
+
+                if ($streamLength -ge 4 -and
+                    $bytes[0] -eq 0xFF -and $bytes[1] -eq 0xFE -and $bytes[2] -eq 0x00 -and $bytes[3] -eq 0x00) {
+                    # UTF-32 LE with BOM.
+                    $decoder = [System.Text.UTF32Encoding]::new($false, $true)
+                    $byteOffset = 4
+                    $needsUtf8Conversion = $true
+                }
+                elseif ($streamLength -ge 4 -and
+                    $bytes[0] -eq 0x00 -and $bytes[1] -eq 0x00 -and $bytes[2] -eq 0xFE -and $bytes[3] -eq 0xFF) {
+                    # UTF-32 BE with BOM.
+                    $decoder = [System.Text.UTF32Encoding]::new($true, $true)
+                    $byteOffset = 4
+                    $needsUtf8Conversion = $true
+                }
+                elseif ($streamLength -ge 3 -and
+                    $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
+                    # UTF-8 with BOM.
+                    $decoder = [System.Text.UTF8Encoding]::new($false, $true)
+                    $byteOffset = 3
+                    $hasUtf8Bom = $true
+                }
+                elseif ($streamLength -ge 2 -and
+                    $bytes[0] -eq 0xFF -and $bytes[1] -eq 0xFE) {
+                    # UTF-16 LE with BOM.
+                    $decoder = [System.Text.UnicodeEncoding]::new($false, $true)
+                    $byteOffset = 2
+                    $needsUtf8Conversion = $true
+                }
+                elseif ($streamLength -ge 2 -and
+                    $bytes[0] -eq 0xFE -and $bytes[1] -eq 0xFF) {
+                    # UTF-16 BE with BOM.
+                    $decoder = [System.Text.UnicodeEncoding]::new($true, $true)
+                    $byteOffset = 2
+                    $needsUtf8Conversion = $true
+                }
+                else {
+                    # Assume UTF-8 without BOM.
+                    $decoder = [System.Text.UTF8Encoding]::new($false, $true)
                 }
 
-                # Use strict UTF-8 decoding to surface invalid byte sequences as exceptions.
-                $utf8Strict = [System.Text.UTF8Encoding]::new($false, $true)
-                if ($hasBom) {
-                    $text = $utf8Strict.GetString($bytes, 3, $bytes.Length - 3)
+                $remainingLength = $streamLength - $byteOffset
+                if ($remainingLength -gt 0) {
+                    $text = $decoder.GetString($bytes, $byteOffset, $remainingLength)
                 } else {
-                    $text = $utf8Strict.GetString($bytes)
+                    $text = ''
                 }
 
                 # First collapse every variant to LF so the subsequent replace can fan back out to the desired newline.
@@ -1024,12 +1063,18 @@ function Invoke-TextNormalization {
                     $eolNormalized = $eolNormalized -replace "`n", "`r`n"
                 }
 
-                $shouldAddBom = (-not $hasBom)
+                $shouldAddBom = (-not $hasUtf8Bom) -and (-not $needsUtf8Conversion)
                 $eolChanged = ($text -ne $eolNormalized)
+                $needsRewrite = $needsUtf8Conversion -or $shouldAddBom -or $eolChanged
 
-                if ($shouldAddBom -or $eolChanged) {
+                if ($needsRewrite) {
                     $changes = @()
-                    if ($shouldAddBom) { $changes += 'BOM' }
+                    if ($needsUtf8Conversion) {
+                        $changes += 'Encoding to UTF-8 BOM'
+                    }
+                    elseif ($shouldAddBom) {
+                        $changes += 'BOM'
+                    }
                     if ($eolChanged) { $changes += "EOL to $NewlineLabel" }
                     $changeString = $changes -join ', '
 
