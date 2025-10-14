@@ -1013,14 +1013,14 @@ function Invoke-TextNormalization {
                 if ($streamLength -ge 4 -and
                     $bytes[0] -eq 0xFF -and $bytes[1] -eq 0xFE -and $bytes[2] -eq 0x00 -and $bytes[3] -eq 0x00) {
                     # UTF-32 LE with BOM.
-                    $decoder = [System.Text.UTF32Encoding]::new($false, $true)
+                    $decoder = [System.Text.UTF32Encoding]::new($false, $true, $true)
                     $byteOffset = 4
                     $needsUtf8Conversion = $true
                 }
                 elseif ($streamLength -ge 4 -and
                     $bytes[0] -eq 0x00 -and $bytes[1] -eq 0x00 -and $bytes[2] -eq 0xFE -and $bytes[3] -eq 0xFF) {
                     # UTF-32 BE with BOM.
-                    $decoder = [System.Text.UTF32Encoding]::new($true, $true)
+                    $decoder = [System.Text.UTF32Encoding]::new($true, $true, $true)
                     $byteOffset = 4
                     $needsUtf8Conversion = $true
                 }
@@ -1034,14 +1034,14 @@ function Invoke-TextNormalization {
                 elseif ($streamLength -ge 2 -and
                     $bytes[0] -eq 0xFF -and $bytes[1] -eq 0xFE) {
                     # UTF-16 LE with BOM.
-                    $decoder = [System.Text.UnicodeEncoding]::new($false, $true)
+                    $decoder = [System.Text.UnicodeEncoding]::new($false, $true, $true)
                     $byteOffset = 2
                     $needsUtf8Conversion = $true
                 }
                 elseif ($streamLength -ge 2 -and
                     $bytes[0] -eq 0xFE -and $bytes[1] -eq 0xFF) {
                     # UTF-16 BE with BOM.
-                    $decoder = [System.Text.UnicodeEncoding]::new($true, $true)
+                    $decoder = [System.Text.UnicodeEncoding]::new($true, $true, $true)
                     $byteOffset = 2
                     $needsUtf8Conversion = $true
                 }
