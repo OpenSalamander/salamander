@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -71,91 +72,92 @@ protected:
 //
 // CPasswordManager
 //
-// Uloziste hesel. Pokud uzivatel zapne volbu "Use a master password",
-// jsou hesla v konfiguraci ulozena sifrovana pomoci AES. Jinak jsou
-// pouze scramblena metodou, kterou Petr zavedl puvodne v FTP clientu.
+// Password storage. When the user enables the "Use Master Password" option,
+// configuration passwords are stored and encrypted with AES; otherwise they are only
+// scrambled using Petr's original FTP client method.
 //
-// Metody Password Manageru lze volat pouze z hlavniho threadu Salamandera.
-// Planovana mista pristupu jsou: FTP connect, WinSCP connect, konfigurace
-// Salamandera, Save/Load konfigurace Salamandera. Vse momentalne bezi v
-// hlavnim threadu, takze nemusime resit konkurenci a zamykani manageru.
+// Password manager methods may be called only from Salamander's main thread.
+// Planned access points are: FTP connect, WinSCP connect, the
+// Salamander configuration and saving/loading Salamander’s configuration. Because all of them currently run in the
+// main thread, so we don’t need to handle concurrency or locking of the manager.
 
 #pragma pack(push)
 #pragma pack(1)
 struct CMasterPasswordVerifier
 {
-    BYTE Salt[16];  // nahodny salt, mode==3
-    BYTE Dummy[16]; // nahodna sifrovana data
-    BYTE MAC[10];   // kontrolni zaznam, pomoci ktereho overime spravnost master password
+    BYTE Salt[16];  // random salt, mode == 3
+    BYTE Dummy[16]; // random encrypted data
+    BYTE MAC[10];   // verification record used to check the correctness of the master password
 };
 #pragma pack(pop)
 
 class CPasswordManager
 {
 private:
-    BOOL UseMasterPassword;                          // uzivatel (nekdy) zadal master password, ktery byl pouzit pro zasifrovani dat, samotny 'MasterPassword' vsak muze byt ted NULL a bude nutne se na nej doptat
-    char* PlainMasterPassword;                       // alokovane heslo (v otevrenem stavu) zakoncene nulou; NULL pokud ho uzivatel v ramci teto session nezadal; neuklada se do registry
-    char* OldPlainMasterPassword;                    // docasne drzi stare 'PlainMasterPassword' behem volani Plugins.PasswordManagerEvent(), aby plugin mohl pozadat o rozsifrovani hesel
-    CMasterPasswordVerifier* MasterPasswordVerifier; // slouzi pro overeni spravnosti master password; uklada se do registry; muze byt NULL
+    BOOL UseMasterPassword;                          // the user has (at some point) provided the master password used for data encryption; the plaintext value may later be NULL and must be requested again
+    char* PlainMasterPassword;                       // allocated password (in plaintext) terminated by a null character; NULL if the user has not entered it during this session; not stored into the registry
+    char* OldPlainMasterPassword;                    // temporarily holds the previous PlainMasterPassword during the call to Plugins.PasswordManagerEvent(), allowing the plug-in to request decryption of its passwords
+    CMasterPasswordVerifier* MasterPasswordVerifier; // used to verify the correctness of the master password; stored in the registry; may be NULL
 
-    CSalamanderCryptAbstract* SalamanderCrypt; // interface pro praci s Crypt knihovnou
+    CSalamanderCryptAbstract* SalamanderCrypt; // interface for the work with cryptographic library
 
 public:
     CPasswordManager();
     ~CPasswordManager();
 
-    BOOL IsPasswordSecure(const char* password); // posoudi, zda je heslo dostatecne silne, vraci TRUE pokud ano, jinak FALSE
+    BOOL IsPasswordSecure(const char* password); // returns TRUE when the password meets strength requirements, otherwise FALSE
 
-    // nastavi master password, pokud je 'password' NULL nebo prazdnej retezec, vypne master password
+    // sets the master password; if 'password' is NULL or an empty string, master password is turned off
     void SetMasterPassword(HWND hParent, const char* password);
 
-    // slouzi pro vlozeni master password, ktery momentalne neni znamy v plain verzi
+    // used to provide the master password when it is not currently known in plaintext form
     BOOL EnterMasterPassword(const char* password);
 
     BOOL ChangeMasterPassword(HWND hParent);
-    BOOL IsUsingMasterPassword() { return UseMasterPassword; }         // jsou hesla chranena pomoci AES/Master Password?
-    BOOL IsMasterPasswordSet() { return PlainMasterPassword != NULL; } // zadal uzivatel v teto session Master Password?
+    BOOL IsUsingMasterPassword() { return UseMasterPassword; }         // are the passwords protected using AES/Master Password?
+    BOOL IsMasterPasswordSet() { return PlainMasterPassword != NULL; } // has the user entered the Master Password in this session?
 
-    // pokud je zapnute pouzivani master password a ten jeste nebyl v teto session zadan, zobrazi okno pro jeho zadani
-    // vraci FALSE pokud se v takovem pripade nepodari korektni master password zadat; ve vsech ostatnich pripadaech vraci TRUE
-    // metodu je nutne zavolat vzdy pred volanim metod EncryptPassword/DecryptPassword, pokud je encrypt/encrypted == TRUE
-    // pro zjednoduseni ji lze volat i v pripade, ze neni zapnute pouzivani master password (tise vrati TRUE)
+    // when master password usage is enabled and the password has not been entered
+    // in this session, it displays a dialog for entering it
+    // returns FALSE if the correct master password cannot be entered in that situation; returns TRUE otherwise
+    // this method needs to be called before calling the EncryptPassword/DecryptPassword methods, when it is encrypt/encrypted == TRUE
+    // callers may invoke it even when master password usage is turned off (quietly returns TRUE)
     BOOL AskForMasterPassword(HWND hParent);
 
     void NotifyAboutMasterPasswordChange(HWND hParent);
 
-    BOOL Save(HKEY hKey); // ulozi drzena hesla do Registry
-    BOOL Load(HKEY hKey); // nacte hesla z Registry
+    BOOL Save(HKEY hKey); // saves stored passwords to the Registry
+    BOOL Load(HKEY hKey); // loads data from the registry
 
-    // 'encryptedPasswordSize' udava velikost bufferu, do ktereho bude ulozeno zasifrovane heslo; velikost musi byt o 50 znaku vetsi nez je delka 'plainPassword'
+    // 'encryptedPasswordSize' specifies the buffer size for the encrypted password to be stored; the size must be 50 characters greater than the 'plainPassword' length
 
-    // zasifruje plain text heslo do binarniho tvaru pomoci silne sifry (AES)
-    // pred AES sifrovanim provede jeste scramble, kterym se pridava padding (posileni pro kratka hesla)
-    // pokud volajici vyzaduje zasifrovani hesla pomoci AES ('encrypt'==TRUE), pred volanim metody musi zavolat AskForMasterPassword(), ktera musi vratit TRUE
-    // 'plainPassword' je ukazatel na heslo v textove podobe, zakonecene nulou
-    // 'encryptedPassword' vrati ukazatel na Salamanderem alokovany binarni buffer s zasifrovanym heslem; tento buffer je treba dealokovat pomoci CSalamanderGeneralAbstract::Free
-    // 'encryptedPasswordSize' vrati velikost bufferu 'encryptedPassword' v bajtech
-    // pokud je 'encrypt' TRUE, funkce ma heslo zasifrovat pomoci AES (bezpecne, chranene pomoci master password); pokud je FALSE, heslo bude pouze scramblene
+    // encrypts the plaintext password into the binary form using strong encryption (AES)
+    // before AES encryption, it performs an additional scramble that adds padding (hardening short passwords)
+    // if the caller requires AES password encryption ('encrypt' == TRUE), before calling the method he must call AskForMasterPassword() that must return TRUE
+    // 'plainPassword' is the pointer to the zero-terminated password in text form
+    // 'encryptedPassword' returns a pointer to a binary buffer allocated by Salamander with the encrypted password; this buffer must be deallocated using CSalamanderGeneralAbstract::Free
+    // 'encryptedPasswordSize' returns the size of the 'encryptedPassword' buffer in bytes
+    // if 'encrypt' is TRUE, the function encrypts the password using AES (safe, protected by the master password); if FALSE, the password is only scrambled
     BOOL EncryptPassword(const char* plainPassword, BYTE** encryptedPassword, int* encryptedPasswordSize, BOOL encrypt);
-    // 'plainPassword' je treba dealokovat pomoci CSalamanderGeneralAbstract::Free
-    // pokud je 'plainPassword' NULL, pouze overi, zda lze heslo rozsifrovat
+    // 'plainPassword' must be deallocated using CSalamanderGeneralAbstract::Free
+    // if 'plainPassword' is NULL, only checks whether the password can be decrypted
     BOOL DecryptPassword(const BYTE* encryptedPassword, int encryptedPasswordSize, char** plainPassword);
-    // vraci TRUE, pokud jde o AES-sifrovane heslo, jinak vraci FALSE; rozhoduje se podle signatury na prvnim bajtu hesla
+    // returns TRUE for an AES-encrypted password, otherwise returns FALSE; the signature in the first byte of the password determines it
     BOOL IsPasswordEncrypted(const BYTE* encyptedPassword, int encyptedPasswordSize);
 
-    // prida do pole Passwords nove heslo, vraci TRUE v pripade uspechu (zaroven naplni 'passwordID' hodnotou vetsi nez nula a mensi nez 0xffffffff), jinak FALSE
-    // 'pluginDLLName' musi byt NULL, pokud heslo patri jadru Salamandera, jinak je plneno CPluginData
-    // 'password' je heslo v otevrenem stavu
-    //BOOL StorePassword(const char *pluginDLLName, const char *password, DWORD *passwordID); // volani musi predchazet uspesne AskForMasterPassword()
-    //BOOL SetPassword(const char *pluginDLLName, DWORD passwordID, const char *password); // volani musi predchazet uspesne AskForMasterPassword()
-    //BOOL GetPassword(const char *pluginDLLName, DWORD passwordID, char *password, int bufferLen); // volani musi predchazet uspesne AskForMasterPassword()
+    // adds a new password to the Passwords array; returns TRUE if successful (also fills 'passwordID' with a value greater than zero and less than 0xffffffff), otherwise FALSE
+    // 'pluginDLLName' must be NULL if the password belongs to the Salamander's core, otherwise it is filled by CPluginData
+    // 'password' is the password in plain form
+    //BOOL StorePassword(const char *pluginDLLName, const char *password, DWORD *passwordID); // the call must be preceded by a successful AskForMasterPassword()
+    //BOOL SetPassword(const char *pluginDLLName, DWORD passwordID, const char *password); // the call must be preceded by a successful AskForMasterPassword()
+    //BOOL GetPassword(const char *pluginDLLName, DWORD passwordID, char *password, int bufferLen); // the call must be preceded by a successful AskForMasterPassword()
     //BOOL DeletePassword(const char *pluginDLLName, DWORD passwordID);
 
-    // overi, zda 'password' odpovida heslu drzenemu v 'MasterPasswordVerifier'; vraci TRUE pokud odpovida, jinak FALSE
+    // verifies that 'password' matches the password stored in MasterPasswordVerifier; returns TRUE on success, otherwise FALSE
     BOOL VerifyMasterPassword(const char* password);
 
 protected:
-    // naalokuje a napocita 'MasterPasswordVerifier', ktery ukladame do registry pro naslednou verifikaci
+    // allocates and computes MasterPasswordVerifier, which is stored into the registry for subsequent verification
     void CreateMasterPasswordVerifier(const char* password);
 };
 
