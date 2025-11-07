@@ -1,44 +1,44 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
-// pri zmene hledat "BuiltForVersion" - testy na starsi verze pluginu uz nebudou mit smysl, zahodit je
-#define PLUGIN_REQVER 103 // ("5.0") loadit jen pluginy, ktere vraci alespon tuto pozadovanou verzi Salamandera
+// when changing this header search for "BuiltForVersion" - tests for older plugin versions will no longer make sense and should be removed
+#define PLUGIN_REQVER 103 // ("5.0") load only plugins that return at least this required Salamander version
 
 //
 // ****************************************************************************
-// CPluginInterfaceEncapsulation + zapouzdreni jednotlivych casti pluginoveho interfacu
+// CPluginInterfaceEncapsulation + encapsulation of individual parts of the plugin interface
 //
-// trida pres kterou Salamander pristupuje k metodam interfacu CPluginInterfaceAbstract,
-// zajistuje volani EnterPlugin a LeavePlugin, prime volani metod interfacu
-// CPluginInterfaceAbstract muze vest k chybam (napr. refresh panelu behem prace s jeho
-// daty - neplatne ukazatele, atd.)
+// class through which Salamander accesses the methods of the CPluginInterfaceAbstract interface,
+// ensures EnterPlugin and LeavePlugin are called; direct calls to to CPluginInterfaceAbstract interface methods may lead to errors
+// (e.g. refreshing a panel while operating on its data - invalid pointers, etc.)
 //
-// call-stack-message jsou obsazene jiz v CPluginData, odkud se volaji vsechny metody
-// tohoto ifacu, vyjimkou jsou CloseFS a ReleasePluginDataInterface
+// call-stack messages are handled in CPluginData where all interface methods are invoked,
+// with the exception of CloseFS and ReleasePluginDataInterface
 
-// funkce volane pred a po volani jakekoliv metody plug-inu
+// functions called before and after invoking any plugin method
 void EnterPlugin();
 void LeavePlugin();
 
 class CPluginInterfaceForArchiverEncapsulation
 {
 protected:
-    CPluginInterfaceForArchiverAbstract* Interface; // zapouzdreny interface
+    CPluginInterfaceForArchiverAbstract* Interface; // encapsulated interface
 
 public:
     CPluginInterfaceForArchiverEncapsulation(CPluginInterfaceForArchiverAbstract* iface = NULL) { Interface = iface; }
-    // je zapouzdreni inicializovano?
+    // is the encapsulation initialized?
     BOOL NotEmpty() { return Interface != NULL; }
-    // inicializace zapouzdreni
+    // initialize the encapsulation
     void Init(CPluginInterfaceForArchiverAbstract* iface) { Interface = iface; }
-    // zapouzdrujeme tento iface?
+    // are we encapsulating this iface?
     BOOL Contains(CPluginInterfaceForArchiverAbstract const* iface) { return iface != NULL && Interface == iface; }
-    // vraci ukazatel na zapouzdreny interface
+    // returns a pointer to the encapsulated interface
     CPluginInterfaceForArchiverAbstract* GetInterface() { return Interface; }
 
-    // metody interfacu CPluginInterfaceForArchiverAbstract bez "virtual" (je zbytecne, jen by zpomalovalo)
+    // methods of the CPluginInterfaceForArchiverAbstract interface without "virtual" (would be unnecessary and slower)
 
     BOOL ListArchive(CSalamanderForOperationsAbstract* salamander, const char* fileName,
                      CSalamanderDirectoryAbstract* dir,
@@ -138,27 +138,27 @@ public:
     }
 
     // ********************************************************************************
-    // POZOR: pred spustenim operace v plug-inu je potreba snizit prioritu threadu !!!
+    // WARNING: lower thread priority before executing plug-in operations!
     // ********************************************************************************
 };
 
 class CPluginInterfaceForViewerEncapsulation
 {
 protected:
-    CPluginInterfaceForViewerAbstract* Interface; // zapouzdreny interface
+    CPluginInterfaceForViewerAbstract* Interface; // encapsulated interface
 
 public:
     CPluginInterfaceForViewerEncapsulation(CPluginInterfaceForViewerAbstract* iface = NULL) { Interface = iface; }
-    // je zapouzdreni inicializovano?
+    // is the encapsulation initialized?
     BOOL NotEmpty() { return Interface != NULL; }
-    // inicializace zapouzdreni
+    // encapsulation initialization
     void Init(CPluginInterfaceForViewerAbstract* iface) { Interface = iface; }
-    // zapouzdrujeme tento iface?
+    // are we encapsulating this iface?
     BOOL Contains(CPluginInterfaceForViewerAbstract const* iface) { return iface != NULL && Interface == iface; }
-    // vraci ukazatel na zapouzdreny interface
+    // returns a pointer to the encapsulated interface
     CPluginInterfaceForViewerAbstract* GetInterface() { return Interface; }
 
-    // metody interfacu CPluginInterfaceForViewerAbstract bez "virtual" (je zbytecne, jen by zpomalovalo)
+    // methods of the CPluginInterfaceForViewerAbstract interface without 'virtual' (unnecessary — it would only slow things down)
 
     BOOL ViewFile(const char* name, int left, int top, int width, int height,
                   UINT showCmd, BOOL alwaysOnTop, BOOL returnLock, HANDLE* lock,
@@ -185,8 +185,8 @@ public:
 class CPluginInterfaceForMenuExtEncapsulation
 {
 protected:
-    CPluginInterfaceForMenuExtAbstract* Interface; // zapouzdreny interface
-    int BuiltForVersion;                           // platne jen kdyz je plugin naloadeny: verze Salamandera, pro kterou byl tento plugin nakompilovan (viz prehled verzi u LAST_VERSION_OF_SALAMANDER v spl_vers.h)
+    CPluginInterfaceForMenuExtAbstract* Interface; // encapsulated interface
+    int BuiltForVersion;                           // valid only when the plugin is loaded: Salamander version the plugin was compiled for (the list of versions under LAST_VERSION_OF_SALAMANDER in spl_vers.h)
 
 public:
     CPluginInterfaceForMenuExtEncapsulation(CPluginInterfaceForMenuExtAbstract* iface, int builtForVersion)
@@ -195,22 +195,22 @@ public:
         BuiltForVersion = builtForVersion;
     }
 
-    // je zapouzdreni inicializovano?
+    // is the encapsulation initialized?
     BOOL NotEmpty() { return Interface != NULL; }
 
-    // inicializace zapouzdreni
+    // encapsulation initialization
     void Init(CPluginInterfaceForMenuExtAbstract* iface, BOOL builtForVersion)
     {
         Interface = iface;
         BuiltForVersion = builtForVersion;
     }
 
-    // zapouzdrujeme tento iface?
+    // are we encapsulating this iface?
     BOOL Contains(CPluginInterfaceForMenuExtAbstract const* iface) { return iface != NULL && Interface == iface; }
-    // vraci ukazatel na zapouzdreny interface
+    // returns a pointer to the encapsulated interface
     CPluginInterfaceForMenuExtAbstract* GetInterface() { return Interface; }
 
-    // metody interfacu CPluginInterfaceForMenuExtAbstract bez "virtual" (je zbytecne, jen by zpomalovalo)
+    // methods of the CPluginInterfaceForMenuExtAbstract interface without 'virtual' (unnecessary — it would only slow things down)
 
     DWORD GetMenuItemState(int id, DWORD eventMask)
     {
@@ -248,8 +248,8 @@ public:
 class CPluginInterfaceForFSEncapsulation
 {
 protected:
-    CPluginInterfaceForFSAbstract* Interface; // zapouzdreny interface
-    int BuiltForVersion;                      // platne jen kdyz je plugin naloadeny: verze Salamandera, pro kterou byl tento plugin nakompilovan (viz prehled verzi u LAST_VERSION_OF_SALAMANDER v spl_vers.h)
+    CPluginInterfaceForFSAbstract* Interface; // encapsulated interface
+    int BuiltForVersion;                      // valid only when the plugin is loaded: Salamander version the plugin was compiled for (see the list of versions under LAST_VERSION_OF_SALAMANDER in spl_vers.h)
 
 public:
     CPluginInterfaceForFSEncapsulation(CPluginInterfaceForFSAbstract* iface, int builtForVersion)
@@ -258,25 +258,25 @@ public:
         BuiltForVersion = builtForVersion;
     }
 
-    // je zapouzdreni inicializovano?
+    // is the encapsulation initialized?
     BOOL NotEmpty() { return Interface != NULL; }
 
-    // inicializace zapouzdreni
+    // encapsulation initialization
     void Init(CPluginInterfaceForFSAbstract* iface, int builtForVersion)
     {
         Interface = iface;
         BuiltForVersion = builtForVersion;
     }
 
-    // zapouzdrujeme tento iface?
+    // are we encapsulating this iface?
     BOOL Contains(CPluginInterfaceForFSAbstract const* iface) { return iface != NULL && Interface == iface; }
-    // vraci ukazatel na zapouzdreny interface
+    // returns a pointer to the encapsulated interface
     CPluginInterfaceForFSAbstract* GetInterface() { return Interface; }
 
-    // vraci verzi Salamandera, pro kterou byl tento plugin nakompilovan (viz prehled verzi u LAST_VERSION_OF_SALAMANDER v spl_vers.h)
+    // returns the Salamander version this plugin was built for (see the list of versions under LAST_VERSION_OF_SALAMANDER in spl_vers.h)
     int GetBuiltForVersion() { return BuiltForVersion; }
 
-    // metody interfacu CPluginInterfaceForFSAbstract bez "virtual" (je zbytecne, jen by zpomalovalo)
+    // methods of the CPluginInterfaceForFSAbstract interface without 'virtual' (unnecessary — it would only slow things down)
 
     CPluginFSInterfaceAbstract* OpenFS(const char* fsName, int fsNameIndex)
     {
@@ -286,7 +286,7 @@ public:
         return r;
     }
 
-    // prime volani interfacu (nejde pres CPluginData + InitDLL), zakladame call-stack-message
+    // direct interface call (does not go through CPluginData + InitDLL), a call-stack message is created
     void CloseFS(CPluginFSInterfaceAbstract* fs);
 
     void ExecuteChangeDriveMenuItem(int panel);
@@ -297,28 +297,28 @@ public:
                                         BOOL isDetachedFS, BOOL& refreshMenu,
                                         BOOL& closeMenu, int& postCmd, void*& postCmdParam);
 
-    // prime volani interfacu (nejde pres CPluginData + InitDLL), zakladame call-stack-message;
-    // vola se tesne po ChangeDriveMenuItemContextMenu - plug-in je urcite naloaden
+    // direct interface call (does not go through CPluginData + InitDLL), a call-stack message is created;
+    // called right after ChangeDriveMenuItemContextMenu -- the plugin is definitely loaded
     void ExecuteChangeDrivePostCommand(int panel, int postCmd, void* postCmdParam);
 
-    // prime volani interfacu (nejde pres CPluginData + InitDLL), zakladame call-stack-message;
-    // vola se pouze kdyz je v panelu 'pluginFS' - plug-in je urcite naloaden
+    // direct interface call (does not go through CPluginData + InitDLL), call-stack-message is created;
+    // called only when 'pluginFS' is in a panel - the plugin is definitely loaded
     void ExecuteOnFS(int panel, CPluginFSInterfaceAbstract* pluginFS,
                      const char* pluginFSName, int pluginFSNameIndex,
                      CFileData& file, int isDir);
 
-    // prime volani interfacu (nejde pres CPluginData + InitDLL), zakladame call-stack-message;
-    // vola se pouze kdyz 'pluginFS' existuje (v panelu nebo odpojeny) - plug-in je urcite naloaden
+    // direct interface call (does not go through CPluginData + InitDLL), call-stack-message is created;
+    // called only when 'pluginFS' exists (either in a panel or detached) - the plugin is definitely loaded
     BOOL DisconnectFS(HWND parent, BOOL isInPanel, int panel,
                       CPluginFSInterfaceAbstract* pluginFS,
                       const char* pluginFSName, int pluginFSNameIndex);
 
-    // prime volani interfacu (nejde pres CPluginData + InitDLL), zakladame call-stack-message;
-    // vola se pouze kdyz je plug-in naloaden (je otevreny FS)
+    // direct interface call (does not go through CPluginData + InitDLL), call-stack-message is created;
+    // called only when the plugin is loaded (its FS is open)
     void ConvertPathToInternal(const char* fsName, int fsNameIndex, char* fsUserPart);
 
-    // prime volani interfacu (nejde pres CPluginData + InitDLL), zakladame call-stack-message;
-    // vola se pouze kdyz je plug-in naloaden (je otevreny FS)
+    // direct interface call (does not go through CPluginData + InitDLL), call-stack-message is created;
+    // called only when the plugin is loaded (its FS is open)
     void ConvertPathToExternal(const char* fsName, int fsNameIndex, char* fsUserPart);
 
     void EnsureShareExistsOnServer(int panel, const char* server, const char* share)
@@ -332,10 +332,10 @@ public:
 class CPluginInterfaceForThumbLoaderEncapsulation
 {
 protected:
-    CPluginInterfaceForThumbLoaderAbstract* Interface; // zapouzdreny interface
+    CPluginInterfaceForThumbLoaderAbstract* Interface; // encapsulated interface
 
-    const char* DLLName; // odkaz na retezec z CPluginData plug-inu, ktery iface vytvoril
-    const char* Version; // odkaz na retezec z CPluginData plug-inu, ktery iface vytvoril
+    const char* DLLName; // reference to the string from CPluginData of the plugin that created this interface
+    const char* Version; // reference to the string from CPluginData of the plugin that created this interface
 
 public:
     CPluginInterfaceForThumbLoaderEncapsulation(CPluginInterfaceForThumbLoaderAbstract* iface = NULL,
@@ -346,10 +346,10 @@ public:
         Version = version;
     }
 
-    // je zapouzdreni inicializovano?
+    // is the encapsulation initialized?
     BOOL NotEmpty() { return Interface != NULL; }
 
-    // inicializace zapouzdreni
+    // initialization of the encapsulation
     void Init(CPluginInterfaceForThumbLoaderAbstract* iface, const char* dllName, const char* version)
     {
         Interface = iface;
@@ -357,15 +357,15 @@ public:
         Version = version;
     }
 
-    // zapouzdrujeme tento iface?
+    // are we encapsulating this iface?
     BOOL Contains(CPluginInterfaceForThumbLoaderAbstract const* iface) { return iface != NULL && Interface == iface; }
-    // vraci ukazatel na zapouzdreny interface
+    // returns a pointer to the encapsulated interface
     CPluginInterfaceForThumbLoaderAbstract* GetInterface() { return Interface; }
 
-    // metody interfacu CPluginInterfaceForThumbLoaderAbstract bez "virtual" (je zbytecne, jen by zpomalovalo)
+    // methods of CPluginInterfaceForThumbLoaderAbstract interface without "virtual" (it's unnecessary and would just slow things down)
 
-    // nepotrebuje Enter/LeavePlugin, protoze smi pouzivat ze sal-general jen metody,
-    // ktere jsou volatelne z libovolneho threadu (coz operace s panelem nejsou)
+    // does not need Enter/LeavePlugin because it may use only sal-general methods
+    // that can be called from any thread (unlike panel operations)
     BOOL LoadThumbnail(const char* filename, int thumbWidth, int thumbHeight,
                        CSalamanderThumbnailMakerAbstract* thumbMaker, BOOL fastThumbnail)
     {
@@ -378,8 +378,8 @@ public:
 class CPluginInterfaceEncapsulation
 {
 protected:
-    CPluginInterfaceAbstract* Interface; // zapouzdreny interface; behem entry-pointu je nastaveno na -1
-    int BuiltForVersion;                 // platne jen po dobu platnosti 'Interface': verze Salamandera, pro kterou byl tento plugin nakompilovan (viz prehled verzi u LAST_VERSION_OF_SALAMANDER v spl_vers.h)
+    CPluginInterfaceAbstract* Interface; // encapsulated interface; during the entry point, it is set to -1
+    int BuiltForVersion;                 // valid only while 'Interface' is active: Salamander version the plugin was compiled for (see the list of versions under LAST_VERSION_OF_SALAMANDER in spl_vers.h)
 
 public:
     CPluginInterfaceEncapsulation()
@@ -392,20 +392,20 @@ public:
         Interface = iface;
         BuiltForVersion = builtForVersion;
     }
-    // je zapouzdreni inicializovano?
-    BOOL NotEmpty() { return Interface != NULL && (INT_PTR)Interface != -1; } // -1 je nastaveno behem entry-pointu
-    // inicializace zapouzdreni
+    // is the encapsulation initialized?
+    BOOL NotEmpty() { return Interface != NULL && (INT_PTR)Interface != -1; } // -1 is set during the entry point
+    // initialization of the encapsulation
     void Init(CPluginInterfaceAbstract* iface, int builtForVersion)
     {
         Interface = iface;
         BuiltForVersion = builtForVersion;
     }
-    // zapouzdrujeme tento iface?
+    // are we encapsulating this iface?
     BOOL Contains(CPluginInterfaceAbstract const* iface) { return iface != NULL && Interface == iface; }
-    // vraci ukazatel na zapouzdreny interface
+    // returns a pointer to the encapsulated interface
     CPluginInterfaceAbstract* GetInterface() { return Interface; }
 
-    // metody interfacu CPluginInterfaceAbstract bez "virtual" (je zbytecne, jen by zpomalovalo)
+    // methods of the CPluginInterfaceAbstract interface without 'virtual' (unnecessary — it would only slow things down)
 
     void About(HWND parent)
     {
@@ -450,7 +450,7 @@ public:
         LeavePlugin();
     }
 
-    // prime volani interfacu (nejde pres CPluginData + InitDLL), zakladame call-stack-message
+    // direct interface call (does not go through CPluginData + InitDLL), a call-stack message is created
     void ReleasePluginDataInterface(CPluginDataInterfaceAbstract* pluginData);
 
     CPluginInterfaceForArchiverAbstract* GetInterfaceForArchiver()
@@ -526,22 +526,22 @@ public:
 // ****************************************************************************
 // CPluginDataInterfaceEncapsulation
 //
-// trida pres kterou Salamander pristupuje k metodam interfacu CPluginDataInterfaceAbstract,
-// zajistuje volani EnterPlugin a LeavePlugin, prime volani metod interfacu
-// CPluginDataInterfaceAbstract muze vest k chybam (napr. refresh panelu behem prace s jeho
-// daty - neplatne ukazatele, atd.)
+// Class through which Salamander accesses the methods of the CPluginDataInterfaceAbstract interface.
+// It ensures EnterPlugin and LeavePlugin are invoked. Direct calls to the
+// CPluginDataInterfaceAbstract interface methods may lead to errors (e.g., refreshing a panel while its data
+// are in use can leave invalid pointers, etc.)
 
 class CFilesArray;
 
 class CPluginDataInterfaceEncapsulation
 {
 protected:
-    CPluginDataInterfaceAbstract* Interface; // zapouzdreny interface
-    int BuiltForVersion;                     // platne jen po dobu platnosti 'Interface': verze Salamandera, pro kterou byl tento plugin nakompilovan (viz prehled verzi u LAST_VERSION_OF_SALAMANDER v spl_vers.h)
+    CPluginDataInterfaceAbstract* Interface; // encapsulated interface
+    int BuiltForVersion;                     // valid only while 'Interface' is active: Salamander version this plugin was compiled for (see the list of versions under LAST_VERSION_OF_SALAMANDER in spl_vers.h)
 
-    const char* DLLName;              // odkaz na retezec z CPluginData plug-inu, ktery iface vytvoril
-    const char* Version;              // odkaz na retezec z CPluginData plug-inu, ktery iface vytvoril
-    CPluginInterfaceAbstract* Plugin; // plug-in, ktery iface vytvoril
+    const char* DLLName;              // string reference from the CPluginData of the plugin that created this interface
+    const char* Version;              // string reference from the CPluginData of the plugin that created this interface
+    CPluginInterfaceAbstract* Plugin; // plugin that created this interface
 
 public:
     CPluginDataInterfaceEncapsulation()
@@ -564,10 +564,10 @@ public:
         BuiltForVersion = builtForVersion;
     }
 
-    // je zapouzdreni inicializovano?
+    // is the encapsulation initialized?
     BOOL NotEmpty() { return Interface != NULL; }
 
-    // inicializace zapouzdreni
+    // initialization of the encapsulation
     void Init(CPluginDataInterfaceAbstract* iface, const char* dllName, const char* version,
               CPluginInterfaceAbstract* plugin, int builtForVersion)
     {
@@ -578,28 +578,28 @@ public:
         BuiltForVersion = builtForVersion;
     }
 
-    // zapouzdrujeme tento iface?
+    // are we encapsulating this iface?
     BOOL Contains(CPluginDataInterfaceAbstract const* iface) { return iface != NULL && Interface == iface; }
 
-    // vraci ukazatel na zapouzdreny interface
+    // returns a pointer to the encapsulated interface
     CPluginDataInterfaceAbstract* GetInterface() { return Interface; }
 
-    // vraci odkaz na retezec z CPluginData plug-inu, ktery iface vytvoril
+    // returns a reference to the string from the CPluginData of the plugin that created this interface
     const char* GetDLLName() { return DLLName; }
 
-    // vraci odkaz na retezec z CPluginData plug-inu, ktery iface vytvoril
+    // returns a reference to the string from the CPluginData of the plugin that created this interface
     const char* GetVersion() { return Version; }
 
-    // vraci iface plug-inu, ktery PluginData-iface vytvoril
+    // returns the plugin interface that created the PluginData interface
     CPluginInterfaceAbstract* GetPluginInterface() { return Plugin; }
 
-    // vraci verzi Salamandera, pro kterou byl tento plugin nakompilovan (viz prehled verzi u LAST_VERSION_OF_SALAMANDER v spl_vers.h)
+    // returns the Salamander version this plugin was compiled for (see the list of versions under LAST_VERSION_OF_SALAMANDER in spl_vers.h)
     int GetBuiltForVersion() { return BuiltForVersion; }
 
-    // nahrazka (kvuli rychlosti) za ReleasePluginData
+    // replacement (for performance reasons) for ReleasePluginData
     void ReleaseFilesOrDirs(CFilesArray* filesOrDirs, BOOL areDirs);
 
-    // ReleasePluginData, jen jinak pojmenovane, aby se upozornilo na ReleaseFilesOrDirs
+    // Same as ReleasePluginData but renamed to highlight the ReleaseFilesOrDirs call
     void ReleasePluginData2(CFileData& file, BOOL isDir)
     {
         CALL_STACK_MESSAGE4("CPluginDataInterfaceEncapsulation::ReleasePluginData2(, %d) (%s v. %s)",
@@ -609,7 +609,7 @@ public:
         LeavePlugin();
     }
 
-    // metody interfacu CPluginDataInterfaceAbstract bez "virtual" (je zbytecne, jen by zpomalovalo)
+    // methods of the CPluginDataInterfaceAbstract interface without 'virtual' (unnecessary — it would only slow things down)
 
     BOOL CallReleaseForFiles()
     {
@@ -679,7 +679,7 @@ public:
         HIMAGELIST il = Interface->GetSimplePluginIcons(size);
         LeavePlugin();
 
-        // prevedeme image list pluginu do naseho CIconList
+        // convert the plugin's image list into our CIconList
         CIconList* iconList = new CIconList();
         if (iconList != NULL)
         {
@@ -769,18 +769,18 @@ public:
         return r;
     }
 
-    // nepotrebuje Enter/LeavePlugin, protoze smi pouzivat ze sal-general jen metody,
-    // ktere jsou volatelne z libovolneho threadu (coz operace s panelem nejsou)
+    // does not need Enter/LeavePlugin because it may use only sal-general methods
+    // that can be called from any thread (unlike panel operations)
     BOOL HasSimplePluginIcon(CFileData& file, BOOL isDir)
     {
-        // vola se pro vsechny soubory a adresare, CALL_STACK_MESSAGE zde zdrzuje (40ms na 3000 volanich)
+        // called for all files and directories; CALL_STACK_MESSAGE slows it down here (40ms for 3000 calls)
         //      CALL_STACK_MESSAGE5("CPluginDataInterfaceEncapsulation::HasSimplePluginIcon(%s, %d) (%s v. %s)",
         //                          file.Name, isDir, DLLName, Version);
         return Interface->HasSimplePluginIcon(file, isDir);
     }
 
-    // nepotrebuje Enter/LeavePlugin, protoze smi pouzivat ze sal-general jen metody,
-    // ktere jsou volatelne z libovolneho threadu (coz operace s panelem nejsou)
+    // does not need Enter/LeavePlugin because it may use only sal-general methods
+    // that can be called from any thread (unlike panel operations)
     HICON GetPluginIcon(const CFileData* file, CIconSizeEnum iconSize, BOOL& destroyIcon)
     {
         CALL_STACK_MESSAGE4("CPluginDataInterfaceEncapsulation::GetPluginIcon(%s,) (%s v. %s)",
@@ -807,19 +807,19 @@ public:
         return Interface->GetPluginIcon(file, size, destroyIcon);
     }
 
-    // nepotrebuje Enter/LeavePlugin, protoze smi pouzivat ze sal-general jen metody,
-    // ktere jsou volatelne z libovolneho threadu (coz operace s panelem nejsou)
+    // does not need Enter/LeavePlugin because it may use only sal-general methods
+    // that can be called from any thread (unlike panel operations)
     int CompareFilesFromFS(const CFileData* file1, const CFileData* file2)
     {
         CALL_STACK_MESSAGE_NONE
-        // nema call-stack z rychlostnich duvodu
+        // no call-stack here for speed reasons
         //      CALL_STACK_MESSAGE5("CPluginDataInterfaceEncapsulation::CompareFilesFromFS(%s, %s) (%s v. %s)",
         //                          file1->Name, file2->Name, DLLName, Version);
         return Interface->CompareFilesFromFS(file1, file2);
     }
 
-    // nepotrebuje Enter/LeavePlugin, protoze smi pouzivat ze sal-general jen metody,
-    // ktere jsou volatelne z libovolneho threadu (coz operace s panelem nejsou)
+    // does not need Enter/LeavePlugin because it may use only sal-general methods
+    // that can be called from any thread (unlike panel operations)
     void SetupView(BOOL leftPanel, CSalamanderViewAbstract* view, const char* archivePath,
                    const CFileData* upperDir)
     {
@@ -829,7 +829,7 @@ public:
     }
 
 private:
-    void ReleasePluginData(CFileData& file, BOOL isDir) {} // bylo by prilis pomale, nahrazuje ReleaseFilesOrDirs
+    void ReleasePluginData(CFileData& file, BOOL isDir) {} // would be too slow, replaced by ReleaseFilesOrDirs
 };
 
 //
@@ -876,29 +876,29 @@ public:
 // ****************************************************************************
 // CPluginFSInterfaceEncapsulation
 //
-// trida pres kterou Salamander pristupuje k metodam interfacu CPluginFSInterfaceAbstract,
-// zajistuje volani EnterPlugin a LeavePlugin, prime volani metod interfacu
-// CPluginFSInterfaceAbstract muze vest k chybam (napr. refresh panelu behem prace s jeho
-// daty - neplatne ukazatele, atd.)
+// class through which Salamander accesses methods of the CPluginFSInterfaceAbstract interface;
+// it ensures EnterPlugin and LeavePlugin are called. Direct calls to
+// methods of the CPluginFSInterfaceAbstract interface may cause issues (e.g., refreshing
+// a panel while its data are being processed could leave invalid pointers, etc.)
 
 class CPluginFSInterfaceEncapsulation
 {
 protected:
-    CPluginFSInterfaceAbstract* Interface; // zapouzdreny interface
-    int BuiltForVersion;                   // platne jen kdyz je plugin naloadeny: verze Salamandera, pro kterou byl tento plugin nakompilovan (viz prehled verzi u LAST_VERSION_OF_SALAMANDER v spl_vers.h)
+    CPluginFSInterfaceAbstract* Interface; // encapsulated interface
+    int BuiltForVersion;                   // valid only when the plugin is loaded: Salamander version the plugin was compiled for (see the list of versions under LAST_VERSION_OF_SALAMANDER in spl_vers.h)
 
-    const char* DLLName;                           // odkaz na retezec z CPluginData plug-inu, ktery iface vytvoril
-    const char* Version;                           // odkaz na retezec z CPluginData plug-inu, ktery iface vytvoril
-    CPluginInterfaceForFSEncapsulation IfaceForFS; // plug-in, ktery iface vytvoril (cast pro FS)
-    CPluginInterfaceAbstract* Iface;               // plug-in, ktery iface vytvoril (zaklad)
-    DWORD SupportedServices;                       // posledni hodnota vracena metodou Interface->GetSupportedServices()
-    char PluginFSName[MAX_PATH];                   // jmeno otevreneho FS
-    int PluginFSNameIndex;                         // index jmena otevreneho FS
+    const char* DLLName;                           // reference to the string from CPluginData of the plugin that created this interface
+    const char* Version;                           // reference to the string from CPluginData of the plugin that created this interface
+    CPluginInterfaceForFSEncapsulation IfaceForFS; // plugin that created this interface (FS part)
+    CPluginInterfaceAbstract* Iface;               // plugin that created this interface (base)
+    DWORD SupportedServices;                       // last value returned by the Interface->GetSupportedServices() method
+    char PluginFSName[MAX_PATH];                   // name of the opened FS
+    int PluginFSNameIndex;                         // index of the opened FS name
 
-    static DWORD PluginFSTime; // globalni "cas" (pocitadlo) pro ziskani "casu" vytvoreni FS
-    DWORD PluginFSCreateTime;  // "cas" vytvoreni tohoto FS (0 == neinicializovana hodnota)
+    static DWORD PluginFSTime; // global "time" (counter) used to obtain the creation time of a FS
+    DWORD PluginFSCreateTime;  // "time" of creation of this FS (0 == uninitialized)
 
-    int ChngDrvDuplicateItemIndex; // poradove cislo duplicitni polozky v Change Drive menu (nepouziva se pokud menu neobsahuje duplicitni polozku k polozce pro tento FS) (0 = neinicializovana hodnota)
+    int ChngDrvDuplicateItemIndex; // index number of the duplicate item in the Change Drive menu (not used if the menu contains no duplicate item for this FS) (0 = uninitialized value)
 
 public:
     CPluginFSInterfaceEncapsulation() : IfaceForFS(NULL, 0)
@@ -943,10 +943,10 @@ public:
         ChngDrvDuplicateItemIndex = chngDrvDuplicateItemIndex;
     }
 
-    // je zapouzdreni inicializovano?
+    // is the encapsulation initialized?
     BOOL NotEmpty() { return Interface != NULL; }
 
-    // inicializace zapouzdreni
+    // initialization of the encapsulation
     void Init(CPluginFSInterfaceAbstract* fsIface, const char* dllName, const char* version,
               CPluginInterfaceForFSAbstract* ifaceForFS, CPluginInterfaceAbstract* iface,
               const char* pluginFSName, int pluginFSNameIndex, DWORD pluginFSCreateTime,
@@ -974,34 +974,35 @@ public:
         ChngDrvDuplicateItemIndex = chngDrvDuplicateItemIndex;
     }
 
-    // zapouzdrujeme tento iface?
+    // are we encapsulating this iface?
     BOOL Contains(CPluginFSInterfaceAbstract const* iface) { return iface != NULL && Interface == iface; }
 
-    // vraci ukazatel na zapouzdreny interface
+    // returns a pointer to the encapsulated interface
     CPluginFSInterfaceAbstract* GetInterface() { return Interface; }
 
-    // vraci verzi Salamandera, pro kterou byl tento plugin nakompilovan (viz prehled verzi u LAST_VERSION_OF_SALAMANDER v spl_vers.h)
+    // returns the Salamander version this plugin was compiled for (see the list of versions under
+    // LAST_VERSION_OF_SALAMANDER in spl_vers.h)
     int GetBuiltForVersion() { return BuiltForVersion; }
 
-    // vraci odkaz na retezec z CPluginData plug-inu, ktery iface vytvoril
+    // returns a reference to the string from the CPluginData of the plugin that created this interface
     const char* GetDLLName() { return DLLName; }
 
-    // vraci odkaz na retezec z CPluginData plug-inu, ktery iface vytvoril
+    // returns a reference to the string from the CPluginData of the plugin that created this interface
     const char* GetVersion() { return Version; }
 
-    // vraci iface plug-inu, ktery FS-iface vytvoril (cast pro FS)
+    // returns the plug-in interface that created the FS interface (FS part)
     CPluginInterfaceForFSEncapsulation* GetPluginInterfaceForFS() { return &IfaceForFS; }
 
-    // vraci iface plug-inu, ktery FS-iface vytvoril (zaklad)
+    // returns the plug-in interface that created the FS interface (base class)
     CPluginInterfaceAbstract* GetPluginInterface() { return Iface; }
 
-    // vraci jmeno otevreneho FS
+    // returns the name of the opened FS
     const char* GetPluginFSName() { return PluginFSName; }
 
-    // vraci index jmena otevreneho FS
+    // returns the index name of the opened FS
     int GetPluginFSNameIndex() { return PluginFSNameIndex; }
 
-    // zmena jmena FS
+    // change the FS name
     void SetPluginFS(const char* fsName, int fsNameIndex)
     {
         lstrcpyn(PluginFSName, fsName, MAX_PATH);
@@ -1013,18 +1014,18 @@ public:
     int GetChngDrvDuplicateItemIndex() { return ChngDrvDuplicateItemIndex; }
     void SetChngDrvDuplicateItemIndex(int i) { ChngDrvDuplicateItemIndex = i; }
 
-    // vraci TRUE pokud je 'fsName' ze stejneho pluginu jako tento FS; pokud vraci TRUE,
-    // vraci i index 'fsNameIndex' jmena FS 'fsName' pluginu
+    // returns TRUE if 'fsName' belongs to the same plugin as this FS; if it returns TRUE,
+    // it also returns the index 'fsNameIndex' of the plugin FS name 'fsName'
     BOOL IsFSNameFromSamePluginAsThisFS(const char* fsName, int& fsNameIndex);
 
-    // vraci TRUE pokud je cesta 'fsName':'fsUserPart' z tohoto FS ('fsName' je ze stejneho pluginu
-    // jako tento FS a IsOurPath('fsName', 'fsUserPart') vraci TRUE)
+    // returns TRUE if the path 'fsName':'fsUserPart' is from this FS ('fsName' is from the same plugin
+    // as this FS and IsOurPath('fsName', 'fsUserPart') returns TRUE)
     BOOL IsPathFromThisFS(const char* fsName, const char* fsUserPart);
 
-    // vraci TRUE pokud je sluzba na FS podporovana
+    // returns TRUE if the service on the FS is supported
     BOOL IsServiceSupported(DWORD s) { return (SupportedServices & s) != 0; }
 
-    // metody interfacu CPluginFSInterfaceAbstract bez "virtual" (je zbytecne, jen by zpomalovalo)
+    // methods of the CPluginFSInterfaceAbstract interface without 'virtual' (unnecessary — it would only slow things down)
 
     BOOL GetCurrentPath(char* userPart)
     {
@@ -1101,7 +1102,7 @@ public:
         return r;
     }
 
-    // v debug verzi pocitame OpenedPDCounter, proto musi byt v .cpp modulu
+    // in the debug version we count OpenedPDCounter, therefore it must be in the .cpp module
     BOOL ListCurrentPath(CSalamanderDirectoryAbstract* dir,
                          CPluginDataInterfaceAbstract*& pluginData,
                          int& iconsType, BOOL forceRefresh);
@@ -1125,7 +1126,7 @@ public:
         LeavePlugin();
     }
 
-    void Event(int event, DWORD param) // FIXME_X64 - nemel by 'param' umet podrzet x64 hodnotu?
+    void Event(int event, DWORD param) // FIXME_X64 - shouldn't 'param' be able to hold an x64 value?
     {
         CALL_STACK_MESSAGE5("CPluginFSInterfaceEncapsulation::Event(%d, 0x%X) (%s v. %s)",
                             (int)event, param, DLLName, Version);
@@ -1250,7 +1251,7 @@ public:
         }
     }
 
-    // POZOR: pouziva se vyhradne uvnitr sekce EnterPlugin+LeavePlugin, nevolat mimo tuto sekci!
+    // WARNING: used exclusively within the EnterPlugin+LeavePlugin section, do not call outside this section!
     void AcceptChangeOnPathNotification(const char* fsName, const char* path, BOOL includingSubdirs)
     {
         CALL_STACK_MESSAGE6("CPluginFSInterfaceEncapsulation::AcceptChangeOnPathNotification(%s, %s, %d) (%s v. %s)",
@@ -1361,7 +1362,7 @@ public:
                               LoadStr(IDS_ERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
                 if (invalidPathOrCancel != NULL)
                     *invalidPathOrCancel = TRUE;
-                return FALSE; // at uzivatel opravi cilovou cestu (kopirovani/presun na tuto cestu neni podporovan)
+                return FALSE; // let the user fix the target path (copy/move to this path is not supported)
             }
         }
     }
@@ -1483,11 +1484,11 @@ public:
     }
 
     // ********************************************************************************
-    // POZOR: pred spustenim operace v plug-inu je potreba snizit prioritu threadu !!!
+    // WARNING: lower the thread priority before launching an operation in the plugin !!!
     // ********************************************************************************
 
 private:
-    // pouzivat spise IsServiceSupported() - SupportedServices je cachovano
+    // prefer calling IsServiceSupported() - SupportedServices is cached
     DWORD GetSupportedServices()
     {
         CALL_STACK_MESSAGE3("CPluginFSInterfaceEncapsulation::GetSupportedServices() (%s v. %s)",
@@ -1522,10 +1523,10 @@ public:
 // CSalamanderColumns
 //
 
-// interface by mel byt pripraveny na opakovane volani (listing se nemusi
-// povest napoprve (u FS) nebo se nemusi povest vubec), nebo zajistit aby
-// se zmeny provedly az pokud se listing povede, nebo poznamenat v spl_xxxx.h,
-// ze na tenhle iface je mozne sahat jen pokud bude vraceno TRUE z listingu (uspech)
+// the interface should be ready for repeated calls (listing may not succeed on the
+// first attempt (for FS) or may fail completely). alternatively, ensure changes are made
+// only if listing succeeds, or note in spl_xxxx.h that this interface may be
+// accessed only when the listing returns TRUE (success)
 
 class CSalamanderView : public CSalamanderViewAbstract
 {
@@ -1576,8 +1577,8 @@ struct CPluginData;
 class CSalamanderDebug : public CSalamanderDebugAbstract
 {
 protected:
-    const char* DLLName; // odkaz na retezec z CPluginData plug-inu, ktery iface pouziva
-    const char* Version; // odkaz na retezec z CPluginData plug-inu, ktery iface pouziva
+    const char* DLLName; // reference to the string from CPluginData used by this interface
+    const char* Version; // reference to the string from CPluginData used by this interface
 
 public:
     CSalamanderDebug()
@@ -1586,14 +1587,14 @@ public:
         Version = NULL;
     }
 
-    // nutne volat behem SetBasicPluginData pri zmene retezcu
+    // must be called during SetBasicPluginData when strings change
     void Init(const char* dllName, const char* version)
     {
         DLLName = dllName;
         Version = version;
     }
 
-    // Implementace metod CSalamanderDebugAbstract:
+    // Implementation of CSalamanderDebugAbstract methods:
 
     virtual void WINAPI TraceI(const char* file, int line, const char* str);
     virtual void WINAPI TraceIW(const WCHAR* file, int line, const WCHAR* str);
@@ -1630,15 +1631,15 @@ class CProgressBar;
 class CGUIProgressBar : public CGUIProgressBarAbstract
 {
 protected:
-    CProgressBar* Control; // zapouzdreny WinLib objekt
+    CProgressBar* Control; // encapsulated WinLib object
 
 public:
     CGUIProgressBar() {}
 
-    // pomocna: nastaveni zapouzdreneho WinLib objektu
+    // helper: setting of the encapsulated WinLib object
     void SetControl(CProgressBar* control) { Control = control; }
 
-    // Implementace metod CGUIProgressBarAbstract:
+    // Implementation of CGUIProgressBarAbstract methods:
     virtual void WINAPI SetProgress(DWORD progress, const char* text);
     virtual void WINAPI SetSelfMoveTime(DWORD time);
     virtual void WINAPI SetSelfMoveSpeed(DWORD moveTime);
@@ -1657,15 +1658,15 @@ class CStaticText;
 class CGUIStaticText : public CGUIStaticTextAbstract
 {
 protected:
-    CStaticText* Control; // zapouzdreny WinLib objekt
+    CStaticText* Control; // encapsulated WinLib object
 
 public:
     CGUIStaticText() {}
 
-    // pomocna: nastaveni zapouzdreneho WinLib objektu
+    // helper: setting of the encapsulated WinLib object
     void SetControl(CStaticText* control) { Control = control; }
 
-    // Implementace metod CGUIStaticTextAbstract:
+    // Implementation of CGUIStaticTextAbstract methods:
     virtual BOOL WINAPI SetText(const char* text);
     virtual const char* WINAPI GetText();
     virtual void WINAPI SetPathSeparator(char separator);
@@ -1683,15 +1684,15 @@ class CHyperLink;
 class CGUIHyperLink : public CGUIHyperLinkAbstract
 {
 protected:
-    CHyperLink* Control; // zapouzdreny WinLib objekt
+    CHyperLink* Control; // encapsulated WinLib object
 
 public:
     CGUIHyperLink() {}
 
-    // pomocna: nastaveni zapouzdreneho WinLib objektu
+    // helper: setting of the encapsulated WinLib object
     void SetControl(CHyperLink* control) { Control = control; }
 
-    // Implementace metod CGUIHyperLinkAbstract:
+    // Implementation of CGUIHyperLinkAbstract methods:
     virtual BOOL WINAPI SetText(const char* text);
     virtual const char* WINAPI GetText();
     virtual void WINAPI SetActionOpen(const char* file);
@@ -1711,15 +1712,15 @@ class CButton;
 class CGUIButton : public CGUIButtonAbstract
 {
 protected:
-    CButton* Control; // zapouzdreny WinLib objekt
+    CButton* Control; // encapsulated WinLib object
 
 public:
     CGUIButton() {}
 
-    // pomocna: nastaveni zapouzdreneho WinLib objektu
+    // helper: setting of the encapsulated WinLib object
     void SetControl(CButton* control) { Control = control; }
 
-    // Implementace metod CGUIButtonAbstract:
+    // Implementation of CGUIButtonAbstract methods:
     virtual BOOL WINAPI SetToolTipText(const char* text);
     virtual void WINAPI SetToolTip(HWND hNotifyWindow, DWORD id);
 };
@@ -1734,15 +1735,15 @@ class CColorArrowButton;
 class CGUIColorArrowButton : public CGUIColorArrowButtonAbstract
 {
 protected:
-    CColorArrowButton* Control; // zapouzdreny WinLib objekt
+    CColorArrowButton* Control; // encapsulated WinLib object
 
 public:
     CGUIColorArrowButton() {}
 
-    // pomocna: nastaveni zapouzdreneho WinLib objektu
+    // helper: setting of the encapsulated WinLib object
     void SetControl(CColorArrowButton* control) { Control = control; }
 
-    // Implementace metod CGUIColorArrowButtonAbstract:
+    // Implementation of CGUIColorArrowButtonAbstract methods:
     virtual void WINAPI SetColor(COLORREF textColor, COLORREF bkgndColor);
     virtual void WINAPI SetTextColor(COLORREF textColor);
     virtual void WINAPI SetBkgndColor(COLORREF bkgndColor);
@@ -1760,15 +1761,15 @@ class CToolbarHeader;
 class CGUIToolbarHeader : public CGUIToolbarHeaderAbstract
 {
 protected:
-    CToolbarHeader* Control; // zapouzdreny WinLib objekt
+    CToolbarHeader* Control; // encapsulated WinLib object
 
 public:
     CGUIToolbarHeader() {}
 
-    // pomocna: nastaveni zapouzdreneho WinLib objektu
+    // helper: setting of the encapsulated WinLib object
     void SetControl(CToolbarHeader* control) { Control = control; }
 
-    // Implementace metod CGUIColorArrowButtonAbstract:
+    // Implementation of CGUIColorArrowButtonAbstract methods:
     virtual void WINAPI EnableToolbar(DWORD enableMask);
     virtual void WINAPI CheckToolbar(DWORD checkMask);
     virtual void WINAPI SetNotifyWindow(HWND hWnd);
@@ -1784,7 +1785,7 @@ class CSalamanderGUI : public CSalamanderGUIAbstract
 public:
     CSalamanderGUI() {}
 
-    // Implementace metod CSalamanderGUIAbstract:
+    // Implementation of CSalamanderGUIAbstract methods:
     virtual CGUIProgressBarAbstract* WINAPI AttachProgressBar(HWND hParent, int ctrlID);
     virtual CGUIStaticTextAbstract* WINAPI AttachStaticText(HWND hParent, int ctrlID, DWORD flags);
     virtual CGUIHyperLinkAbstract* WINAPI AttachHyperLink(HWND hParent, int ctrlID, DWORD flags);
@@ -1812,15 +1813,15 @@ public:
     virtual int WINAPI GetWindowFontHeight(HWND hWindow);
 
 protected:
-    // pomocna funkce: otestuje, zda se 'control' povedlo alokovat a attachnout;
-    // pokud ne, vola na ukazatel detete a vraci FALSE
+    // helper function: checks whether 'control' was successfully allocated and attached;
+    // if not, it calls the pointer's delete function and returns FALSE
     BOOL CheckControlAndDeleteOnError(CWindow* control);
 };
 
 class CSalamanderPasswordManager : public CSalamanderPasswordManagerAbstract
 {
 private:
-    const char* DLLName; // odkaz na retezec z CPluginData plug-inu, ktery iface pouziva
+    const char* DLLName; // reference to the string from the CPluginData plugin used by this interface
 
 public:
     CSalamanderPasswordManager()
@@ -1828,13 +1829,13 @@ public:
         DLLName = NULL;
     }
 
-    // nutne volat behem SetBasicPluginData pri zmene retezcu
+    // must be called during SetBasicPluginData when strings change
     void Init(const char* dllName)
     {
         DLLName = dllName;
     }
 
-    // Implementace metod CSalamanderPasswordManagerAbstract:
+    // Implementation of CSalamanderPasswordManagerAbstract methods:
     virtual BOOL WINAPI IsUsingMasterPassword();
     virtual BOOL WINAPI IsMasterPasswordSet();
     virtual BOOL WINAPI AskForMasterPassword(HWND hParent);
@@ -1852,28 +1853,28 @@ public:
 class CSalamanderGeneral : public CSalamanderGeneralAbstract
 {
 protected:
-    CPluginInterfaceAbstract* Plugin; // plug-in, ktery iface pouziva, !!! POZOR: muze byt i NULL
-                                      // (plug-in neni naloaden) nebo -1 (behem entry-pointu plug-inu)
+    CPluginInterfaceAbstract* Plugin; // plug-in used by this iface; !!! note: may be NULL
+                                      // (plugin not loaded) or -1 (during the plugin's entry point)
 
-    char HelpFileName[MAX_PATH]; // pokud neni prazdne, jde o jmeno (bez cesty) .chm souboru s napovedou pouzivaneho timto pluginem (jen optimalizace, nikam se neuklada)
+    char HelpFileName[MAX_PATH]; // if not empty, this is the name (without path) of the .chm help file used by this plugin (optimization only, not stored anywhere)
 
 public:
-    HINSTANCE LanguageModule; // pokud neni NULL, jde o handle .SLG jazykoveho modulu pluginu
+    HINSTANCE LanguageModule; // if not NULL, it is the handle to the plugin's .SLG language module
 
 public:
     CSalamanderGeneral();
     ~CSalamanderGeneral();
 
-    // nutne volat hned po entry-pointu plug-inu
+    // must be called immediately after the plugin's entry point
     void Init(CPluginInterfaceAbstract* plugin) { Plugin = plugin; }
 
-    // vola se po unloadu pluginu - priprava dat pro dalsi load pluginu
+    // called after the plugin unloads - prepares data for the next plugin load
     void Clear();
 
-    // pomocna nevirtualni funkce pro ziskani ukazatele na panel podle PATH_TYPE_XXX
+    // helper non-virtual function to obtain a pointer to the panel according to PATH_TYPE_XXX
     CFilesWindow* WINAPI GetPanel(int panel);
 
-    // Implementace metod CSalamanderGeneralAbstract:
+    // Implementation of CSalamanderGeneralAbstract methods:
 
     virtual int WINAPI ShowMessageBox(const char* text, const char* title, int type);
     virtual int WINAPI SalMessageBox(HWND hParent, LPCTSTR lpText, LPCTSTR lpCaption, UINT uType);
@@ -2339,15 +2340,15 @@ public:
 
 enum CPluginMenuItemType
 {
-    pmitItemOrSeparator, // polozka nebo separator (Name neni nebo je NULL)
-    pmitStartSubmenu,    // zacatek submenu (polozka umoznujici otevrit submenu, ktere obsahuje vsechny polozky z pole polozek menu az do symbolu konce submenu)
-    pmitEndSubmenu,      // symbol konce submenu (pouziva se jen pri stavbe menu, ostatni data v CPluginMenuItem jsou prazdna)
+    pmitItemOrSeparator, // item or separator (Name is missing or it is NULL)
+    pmitStartSubmenu,    // start of a submenu (an item that allows opening a submenu containing all menu items from the array up to the submenu end marker)
+    pmitEndSubmenu,      // end-of-submenu marker (used only while building the menu, other data in CPluginMenuItem are blank)
 };
 
-// pokud ma HotKey nastaven tento bit, zmenil tuto klavesu uzivatel v konfiguraci a behem
-// Plugin::Connect()/AddMenuItems ji musime zachovat
+// If the HotKey has this bit set, the user has changed this key in the configuration and
+// we must preserve it during Plugin::Connect()/AddMenuItems
 #define HOTKEY_DIRTY 0x00010000
-#define HOTKEY_HINT 0x00020000 // 'Name' obsahuje za znakem '\t' horkou klavesu, ktera bude zobrazena v menu, pokud uzivatel nepriradi commandu vlastni klavesu
+#define HOTKEY_HINT 0x00020000 // 'Name' contains, after the '\t' character, a hotkey that will be displayed in the menu if the user does not assign a custom key to the command
 #define HOTKEY_MASK 0x0000FFFF
 #define HOTKEY_GET(x) (WORD)(x & HOTKEY_MASK)
 #define HOTKEY_GETDIRTY(x) ((x & HOTKEY_DIRTY) != 0)
@@ -2355,17 +2356,17 @@ enum CPluginMenuItemType
 struct CPluginMenuItem
 {
 public:
-    CPluginMenuItemType Type; // typ polozky, viz popis u CPluginMenuItemType
-    int IconIndex;            // index ikony v bitmape s ikonami pluginu; -1=zadna ikona; POZOR: index neni overovan (muze byt neplatny)
-    char* Name;               // jmeno polozky v menu, je-li NULL jde o separator
-    DWORD StateMask;          // hiword je or-maska, loword je and-maska, pokud je -1, pouziva se
-                              // CPluginInterfaceAbstract::GetMenuItemState
-    DWORD SkillLevel;         // ktere urovni uzivatelu mame ukazovat tuto polozku MENU_SKILLLEVEL_XXX
-    int ID;                   // plug-in-UID - unikatni cislo itemy v ramci plug-inu
-    DWORD HotKey;             // horka klavesa: LOWORD=hotkey(LOBYTE:vk, HIBYTE:mods), HIWORD=(0:uzivatel ji nemenil, 1:uzivatel ji zmenil, je dirty)
+    CPluginMenuItemType Type; // item type, see description in CPluginMenuItemType
+    int IconIndex;            // icon index in the plugin icon bitmap; -1 = no icon; WARNING: index is unchecked (may be invalid)
+    char* Name;               // name of the menu item; if NULL, it represents a separator
+    DWORD StateMask;          // hiword is an OR mask, loword is an AND mask; if it is -1,
+                              // CPluginInterfaceAbstract::GetMenuItemState is used
+    DWORD SkillLevel;         // which user levels should see this item MENU_SKILLLEVEL_XXX
+    int ID;                   // plug-in UID - unique item number within the plugin
+    DWORD HotKey;             // hot key: LOWORD=hotkey(LOBYTE:vk, HIBYTE:mods), HIWORD=(0:user kept it, 1:user changed it,it is dirty)
 
-    // pomocna data:
-    int SUID; // salamander-UID - unikatni cislo v ramci Salamandera, pocita se pri plneni menu
+    // helper data:
+    int SUID; // Salamander-UID - unique number within Salamander, computed when filling the menu
 
 public:
     CPluginMenuItem(int iconIndex, const char* name, DWORD hotKey, DWORD stateMask, int id, DWORD skillLevel,
@@ -2384,101 +2385,101 @@ class CToolBar;
 struct CPluginData
 {
 public:
-    int BuiltForVersion;       // platne jen kdyz je plugin naloadeny: verze Salamandera, pro kterou byl tento plugin nakompilovan (viz prehled verzi u LAST_VERSION_OF_SALAMANDER v spl_vers.h)
-    char* Name;                // jmeno plug-inu - zobrazeno v dialozich Extensions/C.Packers/C.Unpackers
-                               // max. delka jmena MAX_PATH - 1
-    char* DLLName;             // jmeno DLL souboru, relativni k "plugins" nebo absolutni
-                               // max. delka jmena MAX_PATH - 1
-    BOOL SupportPanelView;     // TRUE => umi ListArchive, UnpackArchive, UnpackOneFile (panel archivator/view)
-    BOOL SupportPanelEdit;     // TRUE => umi PackToArchive, DeleteFromArchive (panel archivator/edit)
-    BOOL SupportCustomPack;    // TRUE => umi PackToArchive (custom archivator/pack)
-    BOOL SupportCustomUnpack;  // TRUE => umi UnpackWholeArchive (custom archivator/unpack)
-    BOOL SupportConfiguration; // TRUE => umi Configuration (lze konfigurovat)
-    BOOL SupportLoadSave;      // TRUE => umi load/save do registry (perzistence)
-    BOOL SupportViewer;        // TRUE => umi ViewFile a CanViewFile (file viewer)
-    BOOL SupportFS;            // TRUE => umi FS (file system)
-    BOOL SupportDynMenuExt;    // TRUE => menu se pridava v PluginIfaceForMenuExt::BuildMenu misto v PluginIface::Connect (menu je dynamicke, stavi se znovu pred kazdym otevrenim menu pluginu)
+    int BuiltForVersion;       // valid only when the plugin is loaded: Salamander version the plugin was compiled for (see the list of versions under LAST_VERSION_OF_SALAMANDER in spl_vers.h)
+    char* Name;                // plugin name shown in Extensions/C.Packers/C.Unpackers dialogs
+                               // max. length of the name MAX_PATH - 1
+    char* DLLName;             // DLL file name, relative to "plugins" or absolute
+                               // max. length of the name MAX_PATH - 1
+    BOOL SupportPanelView;     // TRUE => supports ListArchive, UnpackArchive, UnpackOneFile (panel archiver/view)
+    BOOL SupportPanelEdit;     // TRUE => supports PackToArchive, DeleteFromArchive (panel archiver/edit)
+    BOOL SupportCustomPack;    // TRUE => supports PackToArchive (custom archiver/pack)
+    BOOL SupportCustomUnpack;  // TRUE => supports UnpackWholeArchive (custom archiver/unpack)
+    BOOL SupportConfiguration; // TRUE => supports Configuration (can be configured)
+    BOOL SupportLoadSave;      // TRUE => supports registry load/save (persistence)
+    BOOL SupportViewer;        // TRUE => supports ViewFile and CanViewFile (file viewer)
+    BOOL SupportFS;            // TRUE => supports a file system
+    BOOL SupportDynMenuExt;    // TRUE => menu is added in PluginIfaceForMenuExt::BuildMenu instead of PluginIface::Connect (menu is dynamic and rebuilt before each plugin menu open)
 
-    BOOL LoadOnStart; // ma se plug-in loadit pri kazdem startu Salamandera?
+    BOOL LoadOnStart; // should the plugin load at every Salamander start?
 
-    char* Version;                // verze plug-inu (max. delka MAX_PATH - 1)
-    char* Copyright;              // copyright vyrobce (max. delka MAX_PATH - 1)
-    char* Description;            // strucny popis plug-inu (max. delka MAX_PATH - 1)
-    char* RegKeyName;             // jmeno klice v registry - konfigurace (max. delka MAX_PATH - 1)
-    char* Extensions;             // pripony archivu oddelene ';' (max. delka MAX_PATH - 1)
-    TIndirectArray<char> FSNames; // pole jmen file systemu pluginu (kazde ma max. delku MAX_PATH - 1)
+    char* Version;                // plugin version (max length MAX_PATH - 1)
+    char* Copyright;              // manufacturer's copyright (max length MAX_PATH - 1)
+    char* Description;            // short plugin description (max length MAX_PATH - 1)
+    char* RegKeyName;             // registry key name for configuration (max length MAX_PATH - 1)
+    char* Extensions;             // archive extensions separated by ';' (max length MAX_PATH - 1)
+    TIndirectArray<char> FSNames; // array of plugin filesystem names (each max length MAX_PATH - 1)
 
-    char* LastSLGName; // jmeno posledniho pouziteho .SLG souboru (NULL = zatim zadny nebo shodny jazyk se Salamanderem)
+    char* LastSLGName; // name of the last used .SLG file (NULL = none yet or same language as Salamander)
 
-    char* PluginHomePageURL; // URL na home-page pluginu (NULL == zadna home-page neexistuje)
+    char* PluginHomePageURL; // URL of the plugin home page (NULL == no home page exists)
 
-    char* ChDrvMenuFSItemName;    // prikaz FS v change-drive menu: jmeno (max. delka MAX_PATH - 1)
-    int ChDrvMenuFSItemIconIndex; // prikaz FS v change-drive menu: index ikony (v PluginIcons; -1=zadna ikona; index ikony neni kontrolovan - muze byt neplatny)
-    BOOL ChDrvMenuFSItemVisible;  // prikaz FS v change-drive menu: je viditelny? (user muze potlacit jeho zobrazovani z Plugins Manageru)
+    char* ChDrvMenuFSItemName;    // filesystem command in the change-drive menu: name (max length MAX_PATH - 1)
+    int ChDrvMenuFSItemIconIndex; // filesystem command in the change-drive menu: icon index (in PluginIcons; -1=no icon; the index is not checked – it may be invalid)
+    BOOL ChDrvMenuFSItemVisible;  // filesystem command in the change-drive menu: is it visible? (users can hide it from Plugins Manager)
 
-    TIndirectArray<CPluginMenuItem> MenuItems; // pole polozek v menu
-    BOOL DynMenuWasAlreadyBuild;               // TRUE = BuildMenu() uz se volala, proto se jeho dalsi volani maji ignorovat
+    TIndirectArray<CPluginMenuItem> MenuItems; // array of items in the menu
+    BOOL DynMenuWasAlreadyBuild;               // TRUE if BuildMenu() was already called; further calls are ignored
 
-    char* BugReportMessage; // zprava, kterou ma zobrazit Bug Report dialog, je-li exceptiona v plug-inu
-    char* BugReportEMail;   // e-mail, ktery ma zobrazit Bug Report dialog, je-li exceptiona v plug-inu
+    char* BugReportMessage; // message to be displayed by the Bug Report dialog when a plugin exception occurs
+    char* BugReportEMail;   // e-mail to be displayed by the Bug Report dialog when a plugin exception occurs
 
-    CMaskGroup ThumbnailMasks;   // masky urcujici soubory, kterym plugin umi vytvorit thumbnaily (max. delka MAX_GROUPMASK - 1) - NULL == plugin zadne thumbnaily negeneruje
-    BOOL ThumbnailMasksDisabled; // TRUE jen pokud probiha unload/remove pluginu
+    CMaskGroup ThumbnailMasks;   // masks determining files for which the plugin can create thumbnails (max length MAX_GROUPMASK - 1); NULL == the plugin does not generate any thumbnails
+    BOOL ThumbnailMasksDisabled; // TRUE only when the plugin is unloading/removing
 
-    BOOL ArcCacheHaveInfo;    // TRUE = uz mame informace o pouzivani disk-cache v archivu pluginu (bylo volano CPluginInterfaceForArchiverAbstract::GetCacheInfo)
-    char* ArcCacheTmpPath;    // umisteni kopii souboru z archivu: NULL = TEMP, jinak cesta (root-dir cache)
-    BOOL ArcCacheOwnDelete;   // TRUE = pro mazani kopii z cache volat CPluginInterfaceForArchiverAbstract::DeleteTmpCopy()
-    BOOL ArcCacheCacheCopies; // TRUE = crtCache (mazat pri zavreni archivu + na limitu cache), FALSE = crtDirect (mazat hned jak neni potreba)
+    BOOL ArcCacheHaveInfo;    // TRUE == information about the use of disk cache in the archive plugin is already available (CPluginInterfaceForArchiverAbstract::GetCacheInfo has been called)
+    char* ArcCacheTmpPath;    // location of copies of files extracted from the archive: NULL = TEMP, otherwise a path (root directory of the cache)
+    BOOL ArcCacheOwnDelete;   // TRUE = call CPluginInterfaceForArchiverAbstract::DeleteTmpCopy() to delete cached copies
+    BOOL ArcCacheCacheCopies; // TRUE = crtCache (delete when closing the archive or when cache limit is reached), FALSE = crtDirect (delete immediately when not needed)
 
-    CIconList* PluginIcons;     // ikony pluginu pro GUI (menu, toolbars, dialogy) (vlastnikem je Salamander + prezije unload pluginu)
-    CIconList* PluginIconsGray; // cernobila verze
+    CIconList* PluginIcons;     // plugin icons for the GUI (menus, toolbars, dialogs) owned by Salamander and surviving plugin unload
+    CIconList* PluginIconsGray; // grayscale version
 
-    CIconList* PluginDynMenuIcons; // ikony pro dynamicke menu, viz SupportDynMenuExt (vlastnikem je Salamander)
+    CIconList* PluginDynMenuIcons; // icons for the dynamic menu, see SupportDynMenuExt (owned by Salamander)
 
-    int PluginIconIndex;          // index ikony pluginu (okno Plugins/Plugins + menu Help/About Plugin + pripadne submenu pluginu v menu Plugins (detaily viz PluginSubmenuIconIndex)) (index v PluginIcons; -1=zadna ikona; index ikony neni kontrolovan - muze byt neplatny)
-    int PluginSubmenuIconIndex;   // index ikony submenu pluginu v menu Plugins a pripadne drop-down buttonu pro submenu na top-toolbare (index v PluginIcons; -1=pouzit PluginIconIndex; index ikony neni kontrolovan - muze byt neplatny)
-    BOOL ShowSubmenuInPluginsBar; // TRUE = v top-toolare se ma ukazat drop-down button se submenu pluginu s ikonou PluginSubmenuIconIndex
+    int PluginIconIndex;          // index of the plugin icon (Plugins window/Plugins menu + Help/About Plugin menu and optional submenu icon in the Plugins menu — see details in PluginSubmenuIconIndex) (index in PluginIcons; -1=no icon; the icon index is not checked – it may be invalid)
+    int PluginSubmenuIconIndex;   // icon index for the plugin submenu in the Plugins menu and optionally in the drop-down button for the submenu on the top toolbar (index in PluginIcons; -1=PluginIconIndex was used; the icon index is not checked – it may be invalid)
+    BOOL ShowSubmenuInPluginsBar; // TRUE = show a drop-down button with the plugin submenu on the top toolbar using PluginSubmenuIconIndex icon
 
-    BOOL PluginIsNethood;           // TRUE = plugin je nahrada za Network polozku z Change Drive menu (pridano pro plugin Nethood)
-    BOOL PluginUsesPasswordManager; // TRUE = plugin pouziva Password Manager
+    BOOL PluginIsNethood;           // TRUE = the plugin replaces the Network item from the Change Drive menu (added for Nethood plugin)
+    BOOL PluginUsesPasswordManager; // TRUE = the plugin uses the Password Manager
 
-    int IconOverlaysCount; // pocet trojic icon-overlays v poli IconOverlays
-    HICON* IconOverlays;   // alokovane pole icon-overlays, pocet prvku = 3 * IconOverlaysCount (velikosti: 16 + 32 + 48)
+    int IconOverlaysCount; // number of icon-overlay triples in the IconOverlays array
+    HICON* IconOverlays;   // allocated array of icon overlays, number of elements = 3 * IconOverlaysCount (sizes: 16 + 32 + 48)
 
-    // pomocna data:
-    CMenuPopup* SubMenu; // ukazatel na submenu nalezici tomuto plug-inu, NULL - neexistuje
+    // helper data:
+    CMenuPopup* SubMenu; // pointer to the submenu belonging to this plugin, NULL if none exists
 
-    CSalamanderDebug SalamanderDebug;                     // objekt s TRACE + CALL_STACK pro tento plug-in
-    CSalamanderGeneral SalamanderGeneral;                 // objekt s obecne pouzitelnymi metodami pro tento plug-in
-    CSalamanderGUI SalamanderGUI;                         // objekt poskytujici upravene Windows controly pouzivane v Salamanderovi
-    CSalamanderPasswordManager SalamanderPasswordManager; // objekt s pristupem do password manageru pro tento plug-in
+    CSalamanderDebug SalamanderDebug;                     // object with TRACE and CALL_STACK for this plugin
+    CSalamanderGeneral SalamanderGeneral;                 // object with general-purpose methods for this plugin
+    CSalamanderGUI SalamanderGUI;                         // object providing customized Windows controls used in Salamander
+    CSalamanderPasswordManager SalamanderPasswordManager; // object providing access to the password manager for this plugin
 
-    BOOL ShouldUnload;      // TRUE pokud se ma plug-in unloadnout pri nejblizsi mozne prilezitosti
-    BOOL ShouldRebuildMenu; // TRUE pokud se ma rebuildnout menu plug-inu pri nejblizsi mozne prilezitosti
+    BOOL ShouldUnload;      // TRUE if the plugin should unload at the next possible opportunity
+    BOOL ShouldRebuildMenu; // TRUE if the plugin menu should be rebuilt at the next possible opportunity
 
-    // prikazy, o ktere si pozadal tento plug-in (cekaji na spusteni v "sal-idle"):
-    // <0, 499> - prikazy Salamandera
-    // <500, 1000499> - prikazy z menu pluginu (menu-extensiona)
+    // commands requested by this plugin (waiting to run in "sal-idle"):
+    // <0, 499>  - Salamander commands
+    // <500, 1000499> - commands from the plugin menu (menu extensions)
     TDirectArray<DWORD> Commands;
 
-    BOOL OpenPackDlg;                // TRUE = ma se otevrit Pack dialog pro tento plugin
-    int PackDlgDelFilesAfterPacking; // Pack dialog: checkbox "Delete files after packing": 0=default, 1=zapnuty, 2=vypnuty
-    BOOL OpenUnpackDlg;              // TRUE = ma se otevrit Unpack dialog pro tento plugin
-    char* UnpackDlgUnpackMask;       // Unpack dialog: maska "Unpack files": NULL=default, jinak text masky (alokovany)
+    BOOL OpenPackDlg;                // TRUE = open the Pack dialog for this plugin
+    int PackDlgDelFilesAfterPacking; // Pack dialog: "Delete files after packing" checkbox: 0=default, 1=on, 2=off
+    BOOL OpenUnpackDlg;              // TRUE = open the Unpack dialog for this plugin
+    char* UnpackDlgUnpackMask;       // Unpack dialog: "Unpack files" mask; NULL=default, otherwise allocated mask text
 
 #ifdef _DEBUG
-    int OpenedFSCounter; // pocty otevrenych FS ifacu
-    int OpenedPDCounter; // pocty otevrenych PluginData ifacu
+    int OpenedFSCounter; // count of open FS interfaces
+    int OpenedPDCounter; // count of open PluginData interfaces
 #endif
 
 protected:
-    HINSTANCE DLL;                                                         // handle DLL souboru plug-inu
-    CPluginInterfaceEncapsulation PluginIface;                             // interface plug-inu (behem volani entry-pointu je -1)
-    CPluginInterfaceForArchiverEncapsulation PluginIfaceForArchiver;       // interface plug-inu: archivator
-    CPluginInterfaceForViewerEncapsulation PluginIfaceForViewer;           // interface plug-inu: viewer
-    CPluginInterfaceForMenuExtEncapsulation PluginIfaceForMenuExt;         // interface plug-inu: rozsireni menu
-    CPluginInterfaceForFSEncapsulation PluginIfaceForFS;                   // interface plug-inu: file-system
-    CPluginInterfaceForThumbLoaderEncapsulation PluginIfaceForThumbLoader; // interface plug-inu: thumbnail loader
+    HINSTANCE DLL;                                                         // handle of the plug-in’s DLL file
+    CPluginInterfaceEncapsulation PluginIface;                             // plugin interface (set to -1 during the entry point call)
+    CPluginInterfaceForArchiverEncapsulation PluginIfaceForArchiver;       // plugin interface: archiver
+    CPluginInterfaceForViewerEncapsulation PluginIfaceForViewer;           // plugin interface: viewer
+    CPluginInterfaceForMenuExtEncapsulation PluginIfaceForMenuExt;         // plugin interface: menu extension
+    CPluginInterfaceForFSEncapsulation PluginIfaceForFS;                   // plugin interface: file system
+    CPluginInterfaceForThumbLoaderEncapsulation PluginIfaceForThumbLoader; // plugin interface: thumbnail loader
 
 public:
     CPluginData(const char* name, const char* dllName, BOOL supportPanelView,
@@ -2490,9 +2491,9 @@ public:
                 char* lastSLGName, const char* pluginHomePageURL);
     ~CPluginData();
 
-    BOOL IsGood() { return Name != NULL; } // probehl konstruktor o.k.?
+    BOOL IsGood() { return Name != NULL; } // was the constructor successful?
 
-    // vraci interface plug-inu
+    // returns the plugin interface
     CPluginInterfaceEncapsulation* GetPluginInterface() { return &PluginIface; }
     CPluginInterfaceForFSEncapsulation* GetPluginInterfaceForFS() { return &PluginIfaceForFS; }
     CPluginInterfaceForMenuExtEncapsulation* GetPluginInterfaceForMenuExt() { return &PluginIfaceForMenuExt; }
@@ -2500,13 +2501,13 @@ public:
     CPluginInterfaceForViewerEncapsulation* GetPluginInterfaceForViewer() { return &PluginIfaceForViewer; }
     CPluginInterfaceForThumbLoaderEncapsulation* GetPluginInterfaceForThumbLoader() { return &PluginIfaceForThumbLoader; }
 
-    // nacte DLL do pameti, pripoji se a overi platnost zde ulozenych informaci (SupportXXX atd.),
-    // nacte jen DLL, ktere presne odpovida, jinak nutna reinstalace plug-inu,
-    // parent je "parent" okno pro messageboxy, je-li "quiet"==TRUE nevypisuji se chybove hlasky
-    // (ale hlasky uvnitr plug-inu se vypisuji)
-    // 'waitCursor' slouzi zobrazeni Wait kurzoru behem nacitani DLL knihovny
-    // je-li 'showUnsupOnX64' TRUE, ukazuje se u pluginu nepodporovanych na x64 messagebox
-    // je-li 'releaseDynMenuIcons' TRUE, uvolni se ikony dynamickeho menu pluginu (pred otevrenim menu se totiz ziskavaji znovu)
+    // loads the DLL into memory, attaches to it and verifies the validity of the stored information (SupportXXX, etc.)
+    // loads only a DLL that matches exactly, otherwise the plugin reinstallation is required
+    // 'parent' is the parent window for message boxes; if it is 'quiet'==TRUE no error messages are shown
+    // (however, messages from inside the plugin are still displayed)
+    // 'waitCursor' shows the Wait cursor while loading the DLL library
+    // if 'showUnsupOnX64' is TRUE, a message box warns about plugins unsupported on x64
+    // if 'releaseDynMenuIcons' is TRUE, plugins`s dynamic menu icons are released (they are reloaded before opening the menu)
     BOOL InitDLL(HWND parent, BOOL quiet = FALSE, BOOL waitCursor = TRUE, BOOL showUnsupOnX64 = TRUE,
                  BOOL releaseDynMenuIcons = TRUE);
 
@@ -2514,229 +2515,229 @@ public:
 
     HINSTANCE GetPluginDLL() { return DLL; }
 
-    // vraci jmeno plug-inu rozsirene o "(Plugin)", pouziva se tam, kde neni jasne, ze jde o plug-in
-    // (napr. v combo-boxech v Archivers/Extensions, atd.)
+    // returns the plugin name extended with "(Plugin)"; used where it's not clear that it is a plugin
+    // (e.g. in combo boxes within Archivers/Extensions, etc.)
     void GetDisplayName(char* buf, int bufSize);
 
-    // volani plug-inu: uloz vlastni konfiguraci, parent je okno pro messageboxy
+    // plugin call: save its configuration; 'parent' is the parent window for message boxes
     void Save(HWND parent, HKEY regKeyConfig);
 
-    // otevira konfiguracni dialog plug-inu, parent je okno pro messageboxy
+    // opens the plugin configuration dialog; 'parent' is the parent window for message boxes
     void Configuration(HWND parent);
 
-    // otevira about dialog plug-inu, parent je okno pro messageboxy
+    // opens the plugin about dialog; 'parent' is the parent window for message boxes
     void About(HWND parent);
 
-    // zavola 'loadOrSaveFunc' pro load/save konfigurace plug-inu (popis viz
-    // CSalamanderGeneral::CallLoadOrSaveConfiguration
+    // calls 'loadOrSaveFunc' to load or save the plugin configuration (see
+    // CSalamanderGeneral::CallLoadOrSaveConfiguration for details)
     void CallLoadOrSaveConfiguration(BOOL load, FSalLoadOrSaveConfiguration loadOrSaveFunc,
                                      void* param);
 
-    // provede unload DLL, je-li 'ask' TRUE, zepta se na Save pokud je "save on exit" "on",
-    // parent je okno pro messageboxy, je-li 'ask' FALSE provede pripadny Save bez ptani,
-    // vraci TRUE pokud doslo k unloadu
+    // unloads the DLL; if 'ask' is TRUE, it prompts to Save when "save on exit" is enabled,
+    // 'parent' is the parent window for message boxes; if 'ask' is FALSE it saves without asking,
+    // returns TRUE if the DLL was unloaded
     BOOL Unload(HWND parent, BOOL ask);
 
-    // zjisti jestli je mozne plug-in odstranit, parent je okno pro messageboxy,
-    // index je index tohoto plug-inu v Plugins, vraci TRUE pokud je mozne plug-in odstranit
+    // checks if the plugin can be removed; 'parent' is the parent message box window,
+    // 'index' is this plugin index in Plugins; returns TRUE if the plugin can be removed
     BOOL Remove(HWND parent, int index, BOOL canDelPluginRegKey);
 
-    // prida polozku menu do MenuItems
+    // adds a menu item to MenuItems
     void AddMenuItem(int iconIndex, const char* name, DWORD hotKey, int id, BOOL callGetState, DWORD state_or,
                      DWORD state_and, DWORD skillLevel, CPluginMenuItemType type);
 
-    // prohleda polozky menu pluginu a hleda command s 'id'; pokud ho nalezne, nastavi podle nej
-    // 'hotKey' (muze byt NULL) a 'hotKeyText' (muze byt NULL) a vrati TRUE; jinak vrati FALSE
+    // searches the plugin menu items for a command with 'id'; if it is found, sets
+    // 'hotKey' (may be NULL) and 'hotKeyText' (may be NULL) and returns TRUE; otherwise FALSE
     BOOL GetMenuItemHotKey(int id, WORD* hotKey, char* hotKeyText, int hotKeyTextSize);
 
-    // inicializuje polozky menu tohoto plug-inu, 'parent' je okno pro messageboxy,
-    // 'index' je index tohoto plug-inu v Plugins, 'menu' je submenu pro tento plug-in
+    // initializes menu items for this plugin; 'parent' is the parent message box window,
+    // 'index' is this plugin index in Plugins, 'menu' is the submenu for this plugin
     void InitMenuItems(HWND parent, int index, CMenuPopup* menu);
-    // pomocna metoda: vytvari z pole MenuItems jeden level submenu (pro vnorene levely
-    // submenu se vola rekurzivne); 'menu' je submenu, do ktereho se pridavaji polozky;
-    // 'i' je aktualni index do pole MenuItems - pri navratu z metody je bud za koncem
-    // pole nebo na polozce symbolu end-submenu; 'count' je pocet polozek v submenu
-    // 'menu'; 'mask' je predpocitana state-maska
+    // helper method: builds one submenu level from MenuItems array (for nested submenu levels,
+    // it is called recursively); 'menu' is the submenu receiving the items;
+    // 'i' is the current index in MenuItems array - upon return, it is either past the end of the array
+    // or at the item marking the end of the submenu; 'count' is the number of items in the submenu
+    // 'menu'; 'mask' is the precomputed state mask
     void AddMenuItemsToSubmenuAux(CMenuPopup* menu, int& i, int count, DWORD mask);
 
-    // vycisti SUID vsech polozek menu
+    // clears the SUID of all menu items
     void ClearSUID();
 
-    // volani plug-inu: ExecuteMenuItem
-    // spousti prikaz menu s identifikacnim cislem 'suid' (reakce na WM_COMMAND),
-    // 'panel' je panel, pro ktery se ma provest prikaz z menu (pouziva se pro MoveFiles),
-    // 'parent' je "parent" okno messageboxu, 'index' je index tohoto plug-inu v Plugins,
-    // vraci TRUE pokud 'suid' byl nalezen mezi polozkami menu tohoto plug-inu,
-    // vraci 'unselect'=navratova hodnota volani plug-inu ExecuteMenuItem
+    // plugin call: ExecuteMenuItem
+    // runs a menu command with the identifier 'suid' (response to WM_COMMAND),
+    // 'panel' is the panel for which the command should execute (used for MoveFiles),
+    // 'parent' is the parent message box window, 'index' is this plugin index in Plugins,
+    // returns TRUE if 'suid' was found among the plugin's menu items,
+    // returns 'unselect' = the return value of the plugin ExecuteMenuItem call
     BOOL ExecuteMenuItem(CFilesWindow* panel, HWND parent, int index, int suid, BOOL& unselect);
-    // 'id' je interni ID commandu; ExecuteMenuItem2 se pouziva pro Last Command
+    // 'id' is the internal command ID; ExecuteMenuItem2 is used for Last Command
     BOOL ExecuteMenuItem2(CFilesWindow* panel, HWND parent, int index, int id, BOOL& unselect);
 
-    // volani plug-inu: HelpForMenuItem
-    // zobrazi help k prikazu menu s identifikacnim cislem 'suid' (reakce na WM_COMMAND),
-    // 'parent' je "parent" okno messageboxu, 'index' je index tohoto plug-inu v Plugins,
-    // vraci TRUE pokud 'suid' byl nalezen mezi polozkami menu tohoto plug-inu,
-    // vraci 'helpDisplayed'=navratova hodnota volani plug-inu HelpForMenuItem
+    // plugin call: HelpForMenuItem
+    // shows help for the menu command with the identifier 'suid' (response to WM_COMMAND),
+    // 'parent' is the parent message box window, 'index' is this plugin index in Plugins,
+    // returns TRUE if 'suid' was found among this plugin's menu items,
+    // returns 'helpDisplayed' = the return value of the plugin HelpForMenuItem call
     BOOL HelpForMenuItem(HWND parent, int index, int suid, BOOL& helpDisplayed);
 
-    // volani plug-inu: BuildMenu
-    // nechame plugin sestavit nove menu, 'parent' je "parent" okno messageboxu;
-    // je-li 'force' TRUE, ignoruje se 'DynMenuWasAlreadyBuild' a menu se sestavi vzdy;
-    // vraci TRUE pokud je plugin nacteny a ma staticke menu nebo ma dynamicke menu a
-    // zaroven vraci rozhrani menu-ext
+    // plugin call: BuildMenu
+    // let the plugin build a new menu; 'parent' is the parent message box window;
+    // if 'force' is TRUE, 'DynMenuWasAlreadyBuild' is ignored and the menu is always built;
+    // returns TRUE if the plugin is loaded and has a static menu or has a dynamic menu and
+    // also returns the menu-extension interface
     BOOL BuildMenu(HWND parent, BOOL force);
 
-    // volani plug-inu: ListArchive
+    // plugin call: ListArchive
     BOOL ListArchive(CFilesWindow* panel, const char* archiveFileName, CSalamanderDirectory& dir,
                      CPluginDataInterfaceAbstract*& pluginData);
 
-    // volani plug-inu: UnpackArchive
+    // plugin call: UnpackArchive
     BOOL UnpackArchive(CFilesWindow* panel, const char* archiveFileName,
                        CPluginDataInterfaceAbstract* pluginData,
                        const char* targetDir, const char* archiveRoot,
                        SalEnumSelection nextName, void* param);
 
-    // volani plug-inu: UnpackOneFile
+    // plugin call: UnpackOneFile
     BOOL UnpackOneFile(CFilesWindow* panel, const char* archiveFileName,
                        CPluginDataInterfaceAbstract* pluginData, const char* nameInArchive,
                        const CFileData* fileData, const char* targetDir,
                        const char* newFileName, BOOL* renamingNotSupported);
 
-    // volani plug-inu: PackToArchive
+    // plugin call: PackToArchive
     BOOL PackToArchive(CFilesWindow* panel, const char* archiveFileName,
                        const char* archiveRoot, BOOL move, const char* sourceDir,
                        SalEnumSelection2 nextName, void* param);
 
-    // volani plug-inu: DeleteFromArchive
+    // plugin call: DeleteFromArchive
     BOOL DeleteFromArchive(CFilesWindow* panel, const char* archiveFileName,
                            CPluginDataInterfaceAbstract* pluginData, const char* archiveRoot,
                            SalEnumSelection nextName, void* param);
 
-    // volani plug-inu: UnpackWholeArchive
+    // plugin call: UnpackWholeArchive
     BOOL UnpackWholeArchive(CFilesWindow* panel, const char* archiveFileName, const char* mask,
                             const char* targetDir, BOOL delArchiveWhenDone,
                             CDynamicString* archiveVolumes);
 
-    // volani plug-inu: CanCloseArchive
+    // plugin call: CanCloseArchive
     BOOL CanCloseArchive(CFilesWindow* panel, const char* archiveFileName, BOOL force);
 
-    // volani plug-inu: CanViewFile
+    // plugin call: CanViewFile
     BOOL CanViewFile(const char* name);
 
-    // volani plug-inu: ViewFile
+    // plugin call: ViewFile
     BOOL ViewFile(const char* name, int left, int top, int width, int height,
                   UINT showCmd, BOOL alwaysOnTop, BOOL returnLock,
                   HANDLE* lock, BOOL* lockOwner,
                   int enumFilesSourceUID, int enumFilesCurrentIndex);
 
-    // volani plug-inu: OpenFS
+    // plugin call: OpenFS
     CPluginFSInterfaceAbstract* OpenFS(const char* fsName, int fsNameIndex);
 
-    // volani plug-inu: ExecuteChangeDriveMenuItem
+    // plugin call: ExecuteChangeDriveMenuItem
     void ExecuteChangeDriveMenuItem(int panel);
 
-    // volani plug-inu: ChangeDriveMenuItemContextMenu
+    // plugin call: ChangeDriveMenuItemContextMenu
     BOOL ChangeDriveMenuItemContextMenu(HWND parent, int panel, int x, int y,
                                         CPluginFSInterfaceAbstract* pluginFS,
                                         const char* pluginFSName, int pluginFSNameIndex,
                                         BOOL isDetachedFS, BOOL& refreshMenu,
                                         BOOL& closeMenu, int& postCmd, void*& postCmdParam);
 
-    // volani plug-inu: EnsureShareExistsOnServer
+    // plugin call: EnsureShareExistsOnServer
     void EnsureShareExistsOnServer(HWND parent, int panel, const char* server, const char* share);
 
-    // pokud je plugin loaded, volani plug-inu: Event
+    // if the plugin is loaded, plugin call: Event
     void Event(int event, DWORD param);
 
-    // volani plug-inu: ClearHistory
+    // plugin call: ClearHistory
     void ClearHistory(HWND parent);
 
-    // pokud je plugin loaded, volani plug-inu: AcceptChangeOnPathNotification
+    // if the plugin is loaded, plugin call: AcceptChangeOnPathNotification
     void AcceptChangeOnPathNotification(const char* path, BOOL includingSubdirs);
 
-    // volani plug-inu: PasswordManagerEvent
+    // plugin call: PasswordManagerEvent
     void PasswordManagerEvent(HWND parent, int event);
 
-    // ziskani nastaveni disk-cache pro archiver - pouziva volani pluginu
+    // obtain the disk-cache settings from the archiver - uses a plugin call
     void GetCacheInfo(char* arcCacheTmpPath, BOOL* arcCacheOwnDelete, BOOL* arcCacheCacheCopies);
 
-    // volani plug-inu: DeleteTmpCopy
+    // plugin call: DeleteTmpCopy
     void DeleteTmpCopy(const char* fileName, BOOL firstFile);
 
-    // volani plug-inu: PrematureDeleteTmpCopy
+    // plugin call: PrematureDeleteTmpCopy
     BOOL PrematureDeleteTmpCopy(HWND parent, int copiesCount);
 
-    // vraci TRUE pokud je plugin archivator a ma vlastni mazani kopii souboru vybalenych z archivu
-    // musi fungovat i po unloadu pluginu (az do pristiho loadu pluginu)
+    // returns TRUE if the plugin is an archiver and has its own mechanism for deleting copies of files extracted from the archive 
+    // must work even after unloading the plugin (until it is loaded again)
     BOOL IsArchiverAndHaveOwnDelete() { return ArcCacheOwnDelete; }
 
     HIMAGELIST CreateImageList(BOOL gray);
 
-    // naplni strukturu 'mii::State' a 'mii::Type' podle commandu urcneho 'pluginIndex' a 'menuItemIndex'
-    // vraci pokud TRUE, pokud je polozka enabled a FALSE pokud je GRAYED
+    // fills 'mii::State' and 'mii::Type' structuresaccording to the command for 'pluginIndex' and 'menuItemIndex'
+    // returns TRUE if the item is enabled and FALSE if it is grayed
     BOOL GetMenuItemStateType(int pluginIndex, int menuItemIndex, MENU_ITEM_INFO* mii);
 
-    // synchronizuje stare (z konfigurace) a nove (z Connect()) hot keys:
-    // z pole 'oldMenuItems' vytaha hot keys, ktere maji nastaven dirty bit a prenese je do pole 'MenuItems'
-    // synchronizace se ridi ID hodnotou commandu
+    // synchronizes old hot keys (from configuration) with new ones (from Connect()):
+    // extracts hot keys with the dirty bit set from the 'oldMenuItems' array and moves them into the 'MenuItems' array
+    // synchronization is driven by the command ID value
     void HotKeysMerge(TIndirectArray<CPluginMenuItem>* oldMenuItems);
 
-    // zajisteni integrity horkych klaves (nezadouci nastavi na 0):
-    // - hot key nesmi patrit Salamu
-    // - hot key nesmi patrit jinemu pluginu
-    // - hot key se v ramci jednoho submenu nesmi opakovat
+    // ensures hot-key integrity (invalid ones set to 0):
+    // - hot key must not belong to Salamander
+    // - hot key must not belong to another plugin
+    // - hot key cannot be repeated within one submenu
     void HotKeysEnsureIntegrity();
 
-    // uvolni a vynuluje 'PluginDynMenuIcons'
+    // releases and zeros 'PluginDynMenuIcons'
     void ReleasePluginDynMenuIcons();
 
-    // uvolni a vynuluje 'IconOverlays' a 'IconOverlaysCount'
+    // releases and zeros 'IconOverlays' and 'IconOverlaysCount'
     void ReleaseIconOverlays();
 
 protected:
-    // vrati mask (0 nebo kombinace MENU_EVENT_xxx) pro tento plugin a soucasny stav
+    // returns a mask (0 or a combination of MENU_EVENT_xxx) for this plugin and the current state
     // ActualStateMask, ActiveUnpackerIndex, ActivePackerIndex...
-    // 'index' je index tohoto plug-inu v Plugins
+    // 'index' is this plugin index in Plugins
     DWORD GetMaskForMenuItems(int index);
 
     friend class CCallStack;
 };
 
-// Prehled objektu spojenych s archivatory/viewry:
-//   CPackerFormatConfig - seznam pripon archivu, k nim asociovane panelove archivatory view/edit,
-//                         'PackerIndex' (edit) a 'UnpackerIndex' (view), viz nize
-//   CArchiverConfig - externi panelove archivatory (data pro moduly packX.cpp)
-//   CPackerConfig - custom pack - Alt+F5 - externi i interni pakovace
-//   CUnpackerConfig - custom unpack - Alt+F6 - externi i interni rozpakovavace
-//   CPlugins - seznam plug-inu archivatoru/viewru
+// Overview of objects related to archivers/viewers:
+//   CPackerFormatConfig - list of archive extensions with associated panel archivers for view/edit,
+//                         'PackerIndex' (edit) and 'UnpackerIndex' (view), see below
+//   CArchiverConfig - external panel archivers (data for packX.cpp modules)
+//   CPackerConfig - custom pack - Alt+F5 - external and internal packers
+//   CUnpackerConfig - custom unpack - Alt+F6 - external and internal unpackers
+//   CPlugins - list of archiver/viewer plugins
 //
-// 'PackerIndex' a 'UnpackerIndex' v CPackerFormatConfig:
-//   i < 0  => (-i - 1) je index v CPlugins plug-inu, ktery je pouzit pro "panel-arch. view/edit"
-//   i >= 0 => i je index v CArchiverConfig pro externi "panel-arch. view/edit"
+// 'PackerIndex' and 'UnpackerIndex' in CPackerFormatConfig:
+//   i < 0  => (-i - 1) is the index in CPlugins of the plugin used for "panel-arch. view/edit"
+//   i >= 0 => i is the index in CArchiverConfig for an external "panel-arch. view/edit"
 //
-// 'Type' v CPackerConfig a CUnpackerConfig:
-//   i == 0 => jde o externi archivator, pouzivaji se data pro externi "custom pack/unpack"
-//   i < 0 => (-i - 1) je index v CPlugins plug-inu, ktery je pouzit pro "custom pack/unpack"
+// 'Type' in CPackerConfig and CUnpackerConfig:
+//   i == 0 => it is an external archiver; data for external "custom pack/unpack" are used
+//   i < 0 => (-i - 1) is the index in CPlugins of the plugin used for "custom pack/unpack"
 //
-// 'ViewerType' v CViewerMasks:
-//   i == 0 => jde o externi viewer, pouzivaji se data pro externi "file viewer"
-//   i == 1 => jde o interni text/hex viewer
-//   i < 0 => (-i - 1) je index v CPlugins plug-inu, ktery je pouzit pro "file viewer"
+// 'ViewerType' in CViewerMasks:
+//   i == 0 => it is an external viewer; data for the external "file viewer" are used
+//   i == 1 => it is an internal text/hex viewer
+//   i < 0 => (-i - 1) is the index in CPlugins of the plugin that is used for "file viewer"
 
 class CMenuPopup;
 class CDrivesList;
 
 struct CPluginsStateCache
 {
-    DWORD ActualStateMask;      // predpocitana maska pro CPluginMenuItem::StateMask
-    int ActiveUnpackerIndex;    // predpocitany index "unpacker" pro aktivni panel, -1 => neplatne
-    int ActivePackerIndex;      // predpocitany index "packer" pro aktivni panel, -1 => neplatne
-    int NonactiveUnpackerIndex; // predpocitany index "unpacker" pro neaktivni panel, -1 => neplatne
-    int NonactivePackerIndex;   // predpocitany index "packer" pro neaktivni panel, -1 => neplatne
-    int FileUnpackerIndex;      // predpocitany index "unpacker" pro fokuseny soubor, -1 => neplatne
-    int FilePackerIndex;        // predpocitany index "packer" pro fokuseny soubor, -1 => neplatne
-    int ActiveFSIndex;          // predpocitany index "FS" pro aktivni panel, -1 => neplatne
-    int NonactiveFSIndex;       // predpocitany index "FS" pro neaktivni panel, -1 => neplatne
+    DWORD ActualStateMask;      // precomputed mask for CPluginMenuItem::StateMask
+    int ActiveUnpackerIndex;    // precomputed "unpacker" index for the active panel, -1 => invalid
+    int ActivePackerIndex;      // precomputed "packer" index for the active panel, -1 => invalid
+    int NonactiveUnpackerIndex; // precomputed "unpacker" index for the inactive panel, -1 => invalid
+    int NonactivePackerIndex;   // precomputed "packer" index for the inactive panel, -1 => invalid
+    int FileUnpackerIndex;      // precomputed "unpacker" index for the focused file, -1 => invalid
+    int FilePackerIndex;        // precomputed "packer" index for the focused file, -1 => invalid
+    int ActiveFSIndex;          // precomputed "FS" index for the active panel, -1 => invalid
+    int NonactiveFSIndex;       // precomputed "FS" index for the inactive panel, -1 => invalid
 
     void Clean()
     {
@@ -2752,24 +2753,24 @@ struct CPluginsStateCache
     }
 };
 
-// CPluginOrder slouzi pro urceni poradi, v jakem budou pluginy zobrazeny (menu, plugin bar, ...)
+// CPluginOrder specifies the order in which plugins are displayed (menu, plugin bar, ...)
 struct CPluginOrder
 {
-    char* DLLName; // jmeno DLL souboru, relativni k "plugins" nebo absolutni
+    char* DLLName; // DLL file name, relative to "plugins" or absolute
 
-    // docasne promenne, neukladaji se do registry
-    BOOL ShowInBar; // pouze pro konverzi stare konfigurace
-    int Index;      // index v CPlugins::Data
-    DWORD Flags;    // docasna pomocna promenna pro UpdatePluginsOrder
+    // temporary variables, not stored in the registry
+    BOOL ShowInBar; // used only when converting the old configuration
+    int Index;      // index in CPlugins::Data
+    DWORD Flags;    // temporary helper variable for UpdatePluginsOrder
 };
 
 struct CPluginFSTimer
 {
-    DWORD AbsTimeout;                       // absolutni cas timeoutu timeru
-    CPluginFSInterfaceAbstract* TimerOwner; // FS-objekt, kteremu se ma hlasit timeout timeru
-    DWORD TimerParam;                       // parametr timeru (data pluginu)
+    DWORD AbsTimeout;                       // absolute timeout value for the timer
+    CPluginFSInterfaceAbstract* TimerOwner; // FS object that should receive the timer timeout
+    DWORD TimerParam;                       // timer parameter (plugin data)
 
-    DWORD TimerAddedTime; // "cas" pridani timeru (zamezeni nekonecneho cyklu uvnitr CPlugins::HandlePluginFSTimers())
+    DWORD TimerAddedTime; // "time" the timer was added (prevents endless loops inside CPlugins::HandlePluginFSTimers())
 
     CPluginFSTimer(DWORD absTimeout, CPluginFSInterfaceAbstract* timerOwner, DWORD timerParam, DWORD timerAddedTime)
     {
@@ -2784,29 +2785,29 @@ class CPlugins
 {
 protected:
     TIndirectArray<CPluginData> Data;
-    CRITICAL_SECTION DataCS; // sekce pouzita jen pro synchronizaci dat pouzivanych metodou GetIndex()
+    CRITICAL_SECTION DataCS; // critical section used only to synchronize data accessed by GetIndex() method
 
-    TDirectArray<CPluginOrder> Order; // poradi pro zobrazovani pluginu
+    TDirectArray<CPluginOrder> Order; // order in which plugins are displayed
 
-    BOOL DefaultConfiguration; // TRUE => ZIP+TAR+PAK, je mozne prekodovat stare archivator-data
+    BOOL DefaultConfiguration; // TRUE => ZIP+TAR+PAK; allows recoding of old archiver data
 
-    TIndirectArray<CPluginFSTimer> PluginFSTimers;    // timery jednotlivych pluginovych FS
-    DWORD TimerTimeCounter;                           // "cas" pro pridavani timeru (slouzi k zamezeni nekonecneho cyklu uvnitr CPlugins::HandlePluginFSTimers())
-    BOOL StopTimerHandlerRecursion;                   // brani rekurzivnimu volani HandlePluginFSTimers()
-    CPluginFSInterfaceEncapsulation* WorkingPluginFS; // pracovni objekt pluginoveho FS (zatim neni ani v panelu, ani mezi odpojenymi FS)
+    TIndirectArray<CPluginFSTimer> PluginFSTimers;    // timers of individual plugin FS
+    DWORD TimerTimeCounter;                           // "time" for adding timer (prevents endless loops inside CPlugins::HandlePluginFSTimers())
+    BOOL StopTimerHandlerRecursion;                   // prevents recursive calls to HandlePluginFSTimers()
+    CPluginFSInterfaceEncapsulation* WorkingPluginFS; // working plugin FS object (neither in a panel nor among detached FS yet)
 
-    // LastPlgCmdXXX udrzuji informaci o poslednim spustenem commandu z menu Plugins
-    // pokud je LastPlgCmdPlugin == NULL, nema LastPlgCmdID vyznam a polozka v menu bude disabled s default textem
-    char* LastPlgCmdPlugin; // cesta k pluginu, jemuz command patril (CPluginData::DLLName)
-    int LastPlgCmdID;       // interni ID commandu (CPluginMenuItem::ID)
+    // LastPlgCmdXXX keep information about the last executed command from the Plugins menu
+    // if LastPlgCmdPlugin == NULL, LastPlgCmdID is meaningless and the menu item will be disabled with the default text
+    char* LastPlgCmdPlugin; // path to the plugin whose command was executed (CPluginData::DLLName)
+    int LastPlgCmdID;       // internal ID of the command (CPluginMenuItem::ID)
 
-public:                     // pomocne promenne pro osetreni polozek menu z plug-inu:
-    int LastSUID;           // pomocna promenna pro generovani SUID pro menuitemy
-    int RootMenuItemsCount; // puvodni pocet polozek v root menu pro menu plug-inu, -1 je "zatim nezjisten"
+public:                     // helper variables for handling menu items coming from plugins:
+    int LastSUID;           // helper variable for generating SUID for menu items
+    int RootMenuItemsCount; // original number of items in the plugin root menu, -1 means "not yet determined"
 
     CPluginsStateCache StateCache;
 
-    DWORD LoadInfoBase; // zaklad pro tvorbu flagu vraceneho pres CSalamanderPluginEntry::GetLoadInformation()
+    DWORD LoadInfoBase; // base for creating flag returned via CSalamanderPluginEntry::GetLoadInformation()
 
 public:
     CPlugins() : Data(30, 10), Order(30, 10), PluginFSTimers(10, 50)
@@ -2819,7 +2820,7 @@ public:
         StateCache.Clean();
         LoadInfoBase = 0;
         LastPlgCmdPlugin = NULL;
-        // LastPlgCmdID incializace nema vyznam
+        // initializing LastPlgCmdID has no meaning
         TimerTimeCounter = 0;
         StopTimerHandlerRecursion = FALSE;
         WorkingPluginFS = NULL;
@@ -2829,16 +2830,16 @@ public:
     void EnterDataCS() { HANDLES(EnterCriticalSection(&DataCS)); }
     void LeaveDataCS() { HANDLES(LeaveCriticalSection(&DataCS)); }
 
-    // nacte objekt z registry klic regKey nebo default hodnoty (regKey==NULL) (ZIP + TAR + PAK)
-    // parent je okno pro messageboxy (muze byt i NULL)
+    // loads the object from registry key 'regKey' or default values (if regKey==NULL) (ZIP + TAR + PAK)
+    // 'parent' is the parent window for message boxes (may be NULL)
     void Load(HWND parent, HKEY regKey);
-    void LoadOrder(HWND parent, HKEY regKey); // nacte poradi pluginu do pole Order
+    void LoadOrder(HWND parent, HKEY regKey); // loads plugin order into the Order array
 
-    // ulozi objekt do registry (info o plug-inech + vlastni konfigurace plug-inu),
-    // parent je okno pro messageboxy
+    // saves the object to the registry (plugin info + plugin`s own configuration),
+    // 'parent' is the parent window for message boxes
     void Save(HWND parent, HKEY regKey, HKEY regKeyConfig, HKEY regKeyOrder);
 
-    // vycisti zaznamy o plug-inech (pak je treba volat CheckData)
+    // clears plugin records (CheckData must be called afterwards)
     void Clear()
     {
         HANDLES(EnterCriticalSection(&DataCS));
@@ -2847,17 +2848,17 @@ public:
         DefaultConfiguration = FALSE;
     }
 
-    // upravi vsechny datove struktury tykajici se archivu -> zajisti konzistenci dat
+    // adjusts all archive-related data structures -> ensures data consistency
     void CheckData();
 
-    // vyhazi z Data pluginy, jejichz .spl prestalo existovat; je-li 'canDelPluginRegKey'
-    // TRUE, podmazne tez jejich konfiguraci v registry; v 'notLoadedPluginNames' (buffer
-    // o velikosti 'notLoadedPluginNamesSize') vraci seznam jmen (maximalne 'maxNotLoadedPluginNames'
-    // jmen) nenactenych pluginu s konfiguraci v registry (bud vyhozenych nebo jim selhalo
-    // InitDLL()) oddeleny ", " + v 'numOfSkippedNotLoadedPluginNames' (neni-li NULL) vraci pocet
-    // jmen, ktere nejsou uvedena v 'notLoadedPluginNames'; v 'loadAllPlugins' je TRUE jen
-    // pokud jde o upgrade na novou verzi Salama a mame nacist vsechny pluginy a ty co
-    // nejdou a zaroven maji konfiguraci v registry mame ulozit do 'notLoadedPluginNames'
+    // removes from Data all plugins whose .spl file no longer exists; if 'canDelPluginRegKey' is TRUE,
+    // their configuration in the registry is also deleted. in the 'notLoadedPluginNames' (buffer of size
+    // 'notLoadedPluginNamesSize') returns a list of names (up to 'maxNotLoadedPluginNames' names) of
+    // plugins that were not loaded but with the configuration in the registry(either removed or failed InitDLL()),
+    // separated by ", " + in 'numOfSkippedNotLoadedPluginNames' (if not NULL) returns the number of
+    // names that are not stored in 'notLoadedPluginNames'. in 'loadAllPlugins' is TRUE only when upgrading
+    // to a new Salamander version and all plugins should be loaded; those that fail and still
+    // have the configuration in the registryare should be stored in 'notLoadedPluginNames'
     void RemoveNoLongerExistingPlugins(BOOL canDelPluginRegKey, BOOL loadAllPlugins = FALSE,
                                        char* notLoadedPluginNames = NULL,
                                        int notLoadedPluginNamesSize = 0,
@@ -2865,42 +2866,41 @@ public:
                                        int* numOfSkippedNotLoadedPluginNames = NULL,
                                        HWND parent = NULL);
 
-    // obstara automatickou instalaci pluginu ze std. adresare "plugins" (prida jen
-    // dosud nepridane) + automaticky odinstaluje pluginy, kterym prestaly existovat
-    // .spl soubory
+    // automatically installs plugins from the standard "plugins" directory (adds only
+    // those not yet added) and automatically uninstalls plugins whose .spl files disappeared
     void AutoInstallStdPluginsDir(HWND parent);
 
-    // obstara pridani nove doinstalovanych plug-inu (nacte plugins.ver); vraci TRUE pokud byla
-    // nalezena nova verze souboru plugins.ver (je treba ulozit konfiguraci, aby se pri pristim
-    // spusteni Salama vse neopakovalo)
+    // handles addition of newly installed plugins (reads plugins.ver); returns TRUE if a new
+    // version of plugins.ver file was found (configuration must be saved so the process doesn't repeat
+    // on the next start of Salamander)
     BOOL ReadPluginsVer(HWND parent, BOOL importFromOldConfig);
 
-    // obstara load vsech pluginu a zavolani jejich metody ClearHistory
+    // loads all plugins and calls their ClearHistory methods
     void ClearHistory(HWND parent);
 
-    // zkusi load vsech pluginu (tlacitko Test All v dialogu Plugins), vraci TRUE pokud se
-    // aspon jeden plugin nove naloadil
+    // tries to load all plugins (Test All button in the Plugins dialog), returns TRUE if at
+    // least one plugin was newly loaded
     BOOL TestAll(HWND parent);
 
-    // zkusi load vsech pluginu (pri prvnim spusteni Salama po zmene jazyka)
+    // tries to load all plugins (on first Salamander start after a language change)
     void LoadAll(HWND parent);
 
-    // provede load vsech plug-inu s flagem load-on-start
+    // loads all plugins with the load-on-start flag
     void HandleLoadOnStartFlag(HWND parent);
 
-    // provede rebuild menu a unload vsech plug-inu, ktere si pozadaly; vraci cislo prvniho prikazu Salamandera/menu,
-    // o ktery plug-iny pozadaly (WM_COMMAND se okamzite doruci hlavnimu oknu) + prislusny plugin (v 'data')
+    // performs a rebuild of the menu and unloads all plugins that requested it; returns the ID of the first Salamander/menu
+    // command requested by the plugins (WM_COMMAND is sent immediately to the main window) along with the plugin in 'data'
     void GetCmdAndUnloadMarkedPlugins(HWND parent, int* cmd, CPluginData** data);
 
-    // vraci plugin, ktery zada o otevreni Pack/Unpack dialogu; pokud zadny neni, vraci v 'data'
-    // NULL a v 'pluginIndex' -1
+    // returns the plugin that requested to open the Pack/Unpack dialog; if there is none, returns NULL in 'data'
+    // and -1 in 'pluginIndex'
     void OpenPackOrUnpackDlgForMarkedPlugins(CPluginData** data, int* pluginIndex);
 
-    // vraci postupne salamand.exe a vsechny plug-iny vcetne verzi, index jde od nuly (in/out)
-    // vraci TRUE pokud vysledek plati
+    // returns, one by one, salamand.exe and all plugins including their versions; index counts from zero (in/out)
+    // returns TRUE if the result is valid
     BOOL EnumInstalledModules(int* index, char* module, char* version);
 
-    // prida plug-in, vraci uspech
+    // adds a plugin, returns on success
     BOOL AddPlugin(const char* name, const char* dllName, BOOL supportPanelView,
                    BOOL supportPanelEdit, BOOL supportCustomPack, BOOL supportCustomUnpack,
                    BOOL supportConfiguration, BOOL supportLoadSave, BOOL supportViewer,
@@ -2909,36 +2909,35 @@ public:
                    const char* extensions, TIndirectArray<char>* fsNames, BOOL loadOnStart,
                    char* lastSLGName, const char* pluginHomePageURL);
 
-    // prida plug-in, 'parent' je "parent" okno messageboxu, 'fileName' je jmeno DLL souboru
-    // plug-inu, vraci TRUE pokud je plug-in pridan
+    // adds a plugin; 'parent' is the parent message box window, 'fileName' is the DLL file name
+    // of the plugin, returns TRUE if the plugin is added
     BOOL AddPlugin(HWND parent, const char* fileName);
 
-    // odstrani plug-in, 'parent' je "parent" okno messageboxu, udrzuje konzistenci dat,
-    // vraci uspech
+    // removes a plugin; 'parent' is the parent message box window, maintains data consistency,
+    // returns success
     BOOL Remove(HWND parent, int index, BOOL canDelPluginRegKey);
 
-    // Salamander konci, plug-iny by mely taky koncit, vraci usech (TRUE = plug-iny jsou unloadeny)
+    // Salamander is exiting; plugins should exit as well, returns success (TRUE = plugins unloaded)
     BOOL UnloadAll(HWND parent);
 
-    // do 'uniqueKeyName' ulozi unikatni jmeno klice v registry pro "soukrome" data
-    // plug-inu, jmeno je zalozene na 'regKeyName'
+    // it stores a unique registry key name for plugin private data in 'uniqueKeyName',
+    // the name is based on 'regKeyName'
     void GetUniqueRegKeyName(char* uniqueKeyName, const char* regKeyName);
 
-    // do 'uniqueFSName' ulozi unikatni jmeno FS, jmeno je zalozene na 'fsName';
-    // 'uniqueFSNames' (neni-li NULL) je pole jmen, ke kterym ma byt vysledne
-    // 'uniqueFSName' take unikatni; 'oldFSNames' (neni-li NULL) je pole starych
-    // (z predchoziho loadu pluginu) fs-names, unikatni jmeno FS se prednostne
-    // vybira a odstranuje z tohoto pole (aby se fs-name uzivateli nemenil pri
-    // kazdem loadu pluginu)
+    // it stores a unique FS name based on 'fsName' in 'uniqueFSName';
+    // 'uniqueFSNames' (if not NULL) is an array of names to which the resulting
+    // 'uniqueFSName' must also be unique; 'oldFSNames' (if not NULL) is an array of old
+    // fs names from previous plugin loads from which a unique name is preferably selected
+    // and removed (so the user's FS name doesn't change with each plugin load)
     void GetUniqueFSName(char* uniqueFSName, const char* fsName,
                          TIndirectArray<char>* uniqueFSNames,
                          TIndirectArray<char>* oldFSNames);
 
-    // vraci pocet pluginu
+    // returns the number of plugins
     int GetCount() { return Data.Count; }
 
-    // vraci data o plug-inu z indexu 'index'
-    // POZOR: ukazatel je platny jen do pristi zmeny poctu plug-inu (pole se roztahuje/smrstuje)
+    // returns plugin data from the given index
+    // NOTE: the pointer is valid only until the number of plugins changes (the array expands or shrinks)
     CPluginData* Get(int index)
     {
         if (index >= 0 && index < Data.Count)
@@ -2947,272 +2946,273 @@ public:
             return NULL;
     }
 
-    // vraci index pluginu v Data, -1 pokud neni nalezen; pouziti jen pro CSalamanderConnect
-    // a CSalamanderBuildMenu, jinak pokud mozno CPluginData jako ukazatel neukladat - tudiz
-    // nedohledavat podle nej)
-    // POZOR: index je platny jen do pristi zmeny poctu plug-inu (pole se roztahuje/smrstuje)
+    // returns the index of a plugin in Data, -1 if not found; used only by CSalamanderConnect
+    // and CSalamanderBuildMenu. Avoid storing CPluginData pointers and thus avoid searching by them.
+    // NOTE: the index is valid only until the number of plugins changes (the array expands or shrinks)
     int GetIndexJustForConnect(const CPluginData* plugin);
 
-    // vraci index pluginu v Data, -1 pokud neni nalezen
-    // POZOR: index je platny jen do pristi zmeny poctu plug-inu (pole se roztahuje/smrstuje)
-    // mozne volat z libovolneho threadu
+    // returns the index of a plugin in Data, -1 if not found
+    // NOTE: the index is valid only until the number of plugins changes (the array expands or shrinks)
+    // may be called from any thread
     int GetIndex(const CPluginInterfaceAbstract* plugin);
 
-    // vraci CPluginData obsahujici iface 'plugin', pokud neexistuje vraci NULL
-    // POZOR: ukazatel je platny jen do pristi zmeny poctu plug-inu (pole se roztahuje/smrstuje)
+    // returns the CPluginData containing iface 'plugin', or NULL if it does not exist
+    // NOTE: the pointer is valid only until the number of plugins changes (the array expands or shrinks)
     CPluginData* GetPluginData(const CPluginInterfaceForFSAbstract* plugin);
 
-    // vraci CPluginData obsahujici iface 'plugin', pokud neexistuje vraci NULL
-    // POZOR: ukazatel je platny jen do pristi zmeny poctu plug-inu (pole se roztahuje/smrstuje)
+    // returns the CPluginData with iface 'plugin', or NULL if none exists
+    // NOTE: the pointer is valid only until the number of plugins changes (the array expands or shrinks)
     CPluginData* GetPluginData(const CPluginInterfaceAbstract* plugin, int* lastIndex = NULL);
 
-    // vraci CPluginData obsahujici DLLName==dllName (DLLName se alokuje jen jednou -> jednoznacne
-    // identifikuje plug-in), pokud neexistuje vraci NULL
-    // POZOR: ukazatel je platny jen do pristi zmeny poctu plug-inu (pole se roztahuje/smrstuje)
+    // returns the CPluginData whose DLLName equals dllName (DLLName is allocated only once -> unique
+    // plugin identifier). Returns NULL if not found.
+    // NOTE: the pointer is valid only until the number of plugins changes (the array expands or shrinks)
     CPluginData* GetPluginData(const char* dllName);
 
-    // vraci CPluginData obsahujici DLLName koncici na 'dllSuffix', pokud neexistuje vraci NULL
-    // POZOR: ukazatel je platny jen do pristi zmeny poctu plug-inu (pole se roztahuje/smrstuje)
+    // returns the CPluginData containing DLLName that ends with 'dllSuffix'; returns NULL if it does not exist
+    // NOTE: the pointer is valid only until the number of plugins changes (the array expands or shrinks)
     CPluginData* GetPluginDataFromSuffix(const char* dllSuffix);
 
-    // vytvori imagelist (barevny je-li gray == FALSE, jinak v odstinech sede)
-    // kazdy plugin je v imagelistu reprezentovan jednou ikonkou
-    // pokud plugin nema svou ikonu, bude vlozena defaultni ikona (zastrcka)
+    // creates an image list (colorful, if gray == FALSE, otherwise grayscale)
+    // each plugin is represented by a single icon in the imagelist
+    // a default plug icon (plug symbol) is used when the plugin lacks its own icon
     HIMAGELIST CreateIconsList(BOOL gray);
 
-    // prida vsechna jmena plug-inu do listview; pokud je setOnly, pouze nastavi hodnoty;
-    // v 'numOfLoaded' vraci pocet naloadenych pluginu
+    // adds all plugin names to the list view; if setOnly is TRUE, only thevalues are set;
+    // 'numOfLoaded' returns the number of loaded plugins
     void AddNamesToListView(HWND hListView, BOOL setOnly, int* numOfLoaded);
 
-    // prida ukazatele na CPluginData pluginu, ktere poskytuji thumbnaily
-    // POZOR: ukazatele jsou platne jen do pristi zmeny poctu plug-inu (pole se roztahuje/smrstuje)
+    // adds pointers to CPluginData of plugins that provide thumbnails
+    // NOTE: the pointers are valid only until the number of plugins changes (the array expands or shrinks)
     void AddThumbLoaderPlugins(TIndirectArray<CPluginData>& thumbLoaderPlugins);
 
-    // prida jmena plug-inu do menu
-    // pocet omezi promennou maxCount
-    // commandy nastavi na firstID + itemIndex
-    // 'configurableOnly' pokud je TRUE, budou zarazeny pouze pluginy podporujici konfiguraci
-    //                    jinak budou pridana vsechna jmena
-    // vraci TRUE, pokud byl pridan alespon jeden plugin a maji se priradit Alt+? klavesy
+    // adds plugin names to a menu
+    // the number of entries is limited by maxCount variable
+    // commands are set to firstID + itemIndex
+    // if 'configurableOnly' is TRUE only plugins supporting configuration are listed,
+    // otherwise all names are added
+    // returns TRUE if at least one plugin was added and Alt+? keys should be assigned
     BOOL AddNamesToMenu(CMenuPopup* menu, DWORD firstID, int maxCount, BOOL configurableOnly);
 
-    // prida prikazy FS do change-drive menu, vraci uspech
+    // adds FS commands to the change-drive menu, returns success
     BOOL AddItemsToChangeDrvMenu(CDrivesList* drvList, int& currentFSIndex,
                                  CPluginInterfaceForFSAbstract* ifaceForFS,
                                  BOOL getGrayIcons);
 
-    // otevre about dialog pluginu
+    // opens the plugin about dialog
     void OnPluginAbout(HWND hParent, int index);
 
-    // otevre konfiguracni dialog pluginu (pokud je podporovan)
+    // opens the plugin configuration dialog (if supported)
     void OnPluginConfiguration(HWND hParent, int index);
 
-    // reaguje na WM_USER_INITMENUPOPUP pro Plugins menu
-    // 'parent' je "parent" okno messageboxu, 'root' je menu Plugins
+    // reacts to WM_USER_INITMENUPOPUP for the Plugins menu
+    // 'parent' is the parent message box window, 'root' is the Plugins menu
     void InitMenuItems(HWND parent, CMenuPopup* root);
 
-    // reaguje na WM_USER_INITMENUPOPUP pro submenu jednotlivych pluginu z menu Plugins
-    // 'parent' je "parent" okno messageboxu, 'submenu' je menu konkretniho pluginu
+    // handles WM_USER_INITMENUPOPUP for individual plugin submenus from the Plugins menu
+    // 'parent' is the parent window for message boxes, 'submenu' is the specific plugin menu
     void InitSubMenuItems(HWND parent, CMenuPopup* submenu);
 
-    // inicializuje polozky menu pluginu, 'parent' je okno pro messageboxy,
-    // 'index' je index pluginu v Plugins, 'menu' je submenu pro tento plugin
-    // vraci TRUE v pripade uspechu, jinak vraci FALSE
+    // initializes menu items of a plugin; 'parent' is the parent window for message boxes,
+    // 'index' is the plugin index in Plugins, 'menu' is the submenu for that plugin
+    // returns TRUE on success, otherwise FALSE
     BOOL InitPluginMenuItemsForBar(HWND parent, int index, CMenuPopup* menu);
 
-    // do toolbary napridava tlacitka pluginu, ktere maji menu a maji byt videt
+    // adds to the toolbar the buttons of plugins that have menus and are set to be visible
     BOOL InitPluginsBar(CToolBar* bar);
 
-    // spousti prikaz menu s identifikacnim cislem 'suid' (reakce na WM_COMMAND),
-    // 'parent' je "parent" okno messageboxu, vraci TRUE pokud se ma zrusit oznaceni v panelu
+    // runs the menu command with the identifier 'suid' (response to WM_COMMAND)
+    // 'parent' is the parent window for message boxes; returns TRUE if panel selection should be cleared
     BOOL ExecuteMenuItem(CFilesWindow* panel, HWND parent, int suid);
 
-    // zobrazi help k prikazu menu s identifikacnim cislem 'suid' (reakce na WM_COMMAND v HelpMode),
-    // 'parent' je "parent" okno messageboxu, vraci TRUE pokud se help zobrazil
+    // shows help for the menu command with the identifier 'suid' (WM_COMMAND in HelpMode)
+    // 'parent' is the parent window for message boxes; returns TRUE if the help was shown
     BOOL HelpForMenuItem(HWND parent, int suid);
 
-    // hleda plug-iny a externi archivatory podporujici "panel archiver view/edit" pro
-    // alespon jednu z 'extensions', 'exclude' je index plug-inu, o ktery nestojice (bude zrusen),
-    // 'view' a 'edit' jsou indexy nalezenych archivatoru (konvence 'PackerIndex' a 'UnpackerIndex'
-    // z CPackerFormatConfig, viz vyse), 'viewFound' a 'editFound' rikaji jestli jsou 'view'
-    // a 'edit' platne
+    // searches plugins and external archivers that support "panel archiver view/edit" for at least
+    // one of the given extensions; 'exclude' is the plugin index to ignore (it will be cleared),
+    // 'view' and 'edit' are the indexes of the found archivers (following the PackerIndex and UnpackerIndex
+    // conventions from CPackerFormatConfig, see above), 'viewFound' and 'editFound' say whether 'view'
+    // and 'edit' are valid
     void FindViewEdit(const char* extensions, int exclude, BOOL& viewFound, int& view,
                       BOOL& editFound, int& edit);
 
-    // hleda DLL soubor mezi DLL soubory plug-inu, pokud existuje, vraci TRUE a index plug-inu
+    // searches for a DLL file among plugin DLL files; if it exists, returns TRUE and the plugin index
     BOOL FindDLL(const char* dllName, int& index);
 
-    // vraci TRUE pokud je fsName znamy plug-in file system; pokud vraci TRUE, vraci i 'index'
-    // pluginu FS a index 'fsNameIndex' jmena file systemu pluginu
+    // returns TRUE if fsName is a known plugin file system; if TRUE, it also returns 'index'
+    // of the FS plugin and the 'fsNameIndex' index of the plugin's file system name
     BOOL IsPluginFS(const char* fsName, int& index, int& fsNameIndex);
 
-    // vraci TRUE pokud jsou 'fsName1' a 'fsName2' ze stejneho pluginu; pokud vraci TRUE,
-    // vraci i index 'fsName2Index' jmena file systemu 'fsName2' pluginu
+    // returns TRUE if 'fsName1' and 'fsName2' are from the same plugin; if TRUE,
+    // it also returns the 'fsName2Index' index of the file system name 'fsName2' within that plugin
     BOOL AreFSNamesFromSamePlugin(const char* fsName1, const char* fsName2, int& fsName2Index);
 
-    // vraci index plug-inu pro "custom pack", ktery je 'count'-ty v poradi (od nulteho),
-    // vraci -1, pokud takovy neexistuje
+    // returns the index of the plugin for "custom pack" that is the 'count'-th in order (from zero),
+    // returns -1 if such plugin does not exist
     int GetCustomPackerIndex(int count);
 
-    // vraci pocet plug-inu pro "custom pack" pred zadanym indexem,
-    // inverzni funkce k GetCustomPackerIndex,
-    // vraci -1, pokud je 'index' neplatny
+    // returns the number of "custom pack" plugins before the given index,
+    // inverse function to GetCustomPackerIndex,
+    // returns -1 if 'index' is invalid
     int GetCustomPackerCount(int index);
 
-    // vraci index plug-inu pro "custom unpack", ktery je 'count'-ty v poradi (od nulteho),
-    // vraci -1, pokud takovy neexistuje
+    // returns the index of the plugin for "custom unpack" that is the 'count'-th in order (from zero),
+    // returns -1 if such plugin does not exist
     int GetCustomUnpackerIndex(int count);
 
-    // vraci pocet plug-inu pro "custom unpack" pred zadanym indexem,
-    // inverzni funkce k GetCustomUnpackerIndex,
-    // vraci -1, pokud je 'index' neplatny
+    // returns the number of "custom unpack" plugins before the given index,
+    // inverse function to GetCustomUnpackerIndex,
+    // returns -1 if 'index' is invalid
     int GetCustomUnpackerCount(int index);
 
-    // vraci index plug-inu pro "panel view", ktery je 'count'-ty v poradi (od nulteho),
-    // vraci -1, pokud takovy neexistuje
+    // returns the index of the plugin for "panel view" that is the 'count'-th in order (from zero),
+    // returns -1 if such plugin does not exist
     int GetPanelViewIndex(int count);
 
-    // vraci pocet plug-inu pro "panel view" pred zadanym indexem,
-    // inverzni funkce k GetPanelViewIndex,
-    // vraci -1, pokud je 'index' neplatny
+    // returns the number of plugins for "panel view" before the given index,
+    // inverse function to GetPanelViewIndex,
+    // returns -1 if 'index' is invalid
     int GetPanelViewCount(int index);
 
-    // vraci index plug-inu pro "panel edit", ktery je 'count'-ty v poradi (od nulteho),
-    // vraci -1, pokud takovy neexistuje
+    // returns the index of the plugin for "panel edit" that is the 'count'-th in order (from zero),
+    // returns -1 if such plugin does not exist
     int GetPanelEditIndex(int count);
 
-    // vraci pocet plug-inu pro "panel edit" pred zadanym indexem,
-    // inverzni funkce k GetPanelEditIndex,
-    // vraci -1, pokud je 'index' neplatny
+    // returns the number of plugins for "panel edit" before the given index,
+    // inverse function to GetPanelEditIndex,
+    // returns -1 if 'index' is invalid
     int GetPanelEditCount(int index);
 
-    // vraci index plug-inu pro "file viewer", ktery je 'count'-ty v poradi (od nulteho),
-    // vraci -1, pokud takovy neexistuje
+    // returns the index of the plugin for "file viewer" that is the 'count'-th in order (from zero),
+    // returns -1 if such plugin does not exist
     int GetViewerIndex(int count);
 
-    // vraci pocet plug-inu pro "file viewer" pred zadanym indexem,
-    // inverzni funkce k GetViewerIndex,
-    // vraci -1, pokud je 'index' neplatny
+    // returns the number of plugins for "file viewer" before the given index,
+    // inverse function to GetViewerIndex,
+    // returns -1 if 'index' is invalid
     int GetViewerCount(int index);
 
-    // zavola metodu Event vsech plug-inu (doruceni zpravy nactenym plug-inum)
+    // calls the Event method of all plugins (delivering the message to loaded plugins)
     void Event(int event, DWORD param);
 
-    // zavola metodu AcceptChangeOnPathNotification vsech plug-inu (doruceni zpravy nactenym plug-inum)
+    // calls AcceptChangeOnPathNotification method for all plugins (delivering the message to loaded plugins)
     void AcceptChangeOnPathNotification(const char* path, BOOL includingSubdirs);
 
-    // reakce na prikaz Plugins/Last Commad -- pokud existuje nejaky Last Command, spusti ho
-    // 'parent' je "parent" okno messageboxu, vraci TRUE pokud se ma zrusit oznaceni v panelu
+    // reaction to the Plugins/Last Command -- if a Last Command exists, it is executed
+    // 'parent' is the parent window for message boxes; returns TRUE if the panel selection should be cleared
     BOOL OnLastCommand(CFilesWindow* panel, HWND parent);
 
-    // execute commandu vyvolany horkou klavesou; 'pluginIndex' a 'menuItemIndex' urcuji command
-    // 'parent' je "parent" okno messageboxu, vraci TRUE pokud se ma zrusit oznaceni v panelu
+    // executes a command triggered by a hot key; 'pluginIndex' and 'menuItemIndex' specify the command
+    // 'parent' is the parent window for message boxes; returns TRUE if the panel selection should be cleared
     BOOL ExecuteCommand(int pluginIndex, int menuItemIndex, CFilesWindow* panel, HWND parent);
 
-    // projde pole Order, vyradi z nej jiz neexistujici pluginy a na konec pripoji
-    // nove pluginy, ktere v poli jeste nemaji zaznam
-    // pokud je 'sortByName' TRUE, pluginy abecedne seradi
+    // goes through the Order array, removes plugins that no longer exist and finally appends
+    // new plugins that do not yet have a record in the array
+    // if 'sortByName' is TRUE, plugins are sorted alphabetically
     void UpdatePluginsOrder(BOOL sortByName);
 
-    // presune v ramci pole Order polozku z 'index' na 'newIndex'
+    // moves an item within the Order array from 'index' to 'newIndex'
     BOOL ChangePluginsOrder(int index, int newIndex);
 
-    // vrati Order[index].Index
+    // returns Order[index].Index
     int GetIndexByOrder(int index);
 
-    // vrati index daneho pluginu (podle pole Order) nebo -1, pokud ho nenalezne
+    // returns the index of the given plugin (according to the Order array) or -1 if not found
     int GetPluginOrderIndex(const CPluginData* plugin);
 
-    // ziska/nastavuje promennou v poli CPluginData::ShowSubmenuInPluginsBar
-    // 'index' je index pluginu v poli Data (ne Orders)
+    // gets/sets the variable in the CPluginData::ShowSubmenuInPluginsBar array
+    // 'index' is the plugin index in the Data array (not Orders)
     BOOL GetShowInBar(int index);
     void SetShowInBar(int index, BOOL showInBar);
 
-    // ziska/nastavuje promennou pluginu CPluginData::ChDrvMenuFSItemVisible
-    // 'index' je index pluginu v poli Data (ne Orders)
+    // gets/sets the plugin variable CPluginData::ChDrvMenuFSItemVisible
+    // 'index' is the plugin index in the Data array (not Orders)
     BOOL GetShowInChDrv(int index);
     void SetShowInChDrv(int index, BOOL showInChDrv);
 
-    // prida do pole PluginFSTimers novy timer, absolutni timeout je GetTickCount() + 'relTimeout';
-    // az GetTickCount() vrati hodnotu vetsi nebo rovnu timeoutu, zavola se metoda Event() FS-objektu
-    // 'timerOwner' s parametry FSE_TIMER a 'timerParam'; vraci uspech (TRUE = timer uspesne pridan)
+    // adds a new timer to the PluginFSTimers array; the absolute timeout is GetTickCount() + 'relTimeout'.
+    // Once GetTickCount() returns a value greater than or equal to that timeout,
+    // the FS object's Event() method is called with FSE_TIMER and 'timerParam'.
+    // Returns TRUE on success (timer successfully added)
     BOOL AddPluginFSTimer(DWORD relTimeout, CPluginFSInterfaceAbstract* timerOwner, DWORD timerParam);
 
-    // zrusi z pole PluginFSTimers bud vsechny timery FS-objektu 'timerOwner' (je-li 'allTimers' TRUE)
-    // nebo jen vsechny timery s parametrem rovnym 'timerParam' (je-li 'allTimers' FALSE); vraci pocet
-    // zrusenych timeru
+    // removes from the PluginFSTimers array either all timers belonging to 'timerOwner' (when 'allTimers' is TRUE),
+    // or only those timers whose parameter equals 'timerParam' (when 'allTimers' is FALSE); returns the
+    // number of removed timers
     int KillPluginFSTimer(CPluginFSInterfaceAbstract* timerOwner, BOOL allTimers, DWORD timerParam);
 
-    // vola se pri prichodu WM_TIMER s parametrem IDT_PLUGINFSTIMERS; slouzi k vyvolavani timeru
-    // z pole PluginFSTimers
+    // called when WM_TIMER with IDT_PLUGINFSTIMERS arrives; used to trigger timers
+    // from the PluginFSTimers array
     void HandlePluginFSTimers();
 
     void SetWorkingPluginFS(CPluginFSInterfaceEncapsulation* workingPluginFS) { WorkingPluginFS = workingPluginFS; }
 
-    // hleda 'hotKey' v menu pluginu, vraci TRUE pokud hotKey nalezl a v 'pluginIndex' a 'menuItemIndex'
-    // vrati umisteni
+    // searches plugin menus for 'hotKey'; returns TRUE when found and provides
+    // its location in 'pluginIndex' and 'menuItemIndex'
     BOOL FindHotKey(WORD hotKey, BOOL ignoreSkillLevels, const CPluginData* ignorePlugin, int* pluginIndex, int* menuItemIndex);
 
-    // obehne vsechny pluginy mimo 'ignorePlugin' a pokud ma nektera polozka menu uvedenou horkou klavesu, odstrani ji
+    // traverses all plugins except 'ignorePlugin' and removes the hot key if any
+    // menu item has it assigned
     void RemoveHotKey(WORD hotKey, const CPluginData* ignorePlugin);
 
-    // vrati TRUE, pokud nekteremu z commandu patri horka klavesa, zaroven pak nastavi 'pluginIndex' a 'menuItemIndex'
+    // returns TRUE if any command has an assigned hot key and also sets 'pluginIndex' and 'menuItemIndex' accordingly
     BOOL QueryHotKey(WPARAM wParam, LPARAM lParam, int* pluginIndex, int* menuItemIndex);
 
-    // rakce na WM_(SYS)KEYDOWN v panelu nebo edit line -- pluginy prohledaji menu,
-    // zda nemaji tuto hot key zabranou; pokud zpravu zpracuji, vraci TRUE, jinak FALSE
+    // reaction to WM_(SYS)KEYDOWN in the panel or the edit line -- plugins search
+    // their menus to check whether this hotkey is taken; if they process the message, TRUE is returned, otherwise FALSE
     BOOL HandleKeyDown(WPARAM wParam, LPARAM lParam, CFilesWindow* activePanel, HWND hParent);
 
-    // nastavi promenne LastPlgCmdPlugin a LastPlgCmdID
+    // sets the LastPlgCmdPlugin and LastPlgCmdID variables
     void SetLastPlgCmd(const char* dllName, int id);
 
-    // vraci pocet loadlych pluginu, ktere budou ukladat konfiguraci
+    // returns the number of loaded plugins that will save their configuration
     int GetPluginSaveCount();
 
-    // po zmene jazyka v Salamanderovi promaze LastSLGName vsem pluginum, aby doslo k nove volbe nahradniho
-    // jazyka u pluginu (pokud pro plugin nebude existovat jazyk zvoleny pro Salamandera)
+    // after changing Salamander's language clears LastSLGName for all plugins so a new fallback
+    // language is chosen for a plugin (used if the plug-in does not support the language currently selected in Salamander)
     void ClearLastSLGNames();
 
-    // vraci pocet pluginu, ktere lze naloadit (vraci GetLoaded() TRUE)
+    // returns the number of plugins that can be loaded (GetLoaded() returns TRUE)
     int GetNumOfPluginsToLoad();
 
-    // vraci FS name prvniho pluginu, ktery pridava FS a zaroven ma nastavene PluginIsNethood
-    // na TRUE; neni-li 'fsName' NULL, vraci v nem nalezene FS name; neni-li 'nethoodPlugin' NULL,
-    // vraci v nem nalezeny plugin; vraci uspech (FALSE = zadny takovy plugin neexistuje)
+    // returns the FS name of the first plugin that adds a file system and at the same time, has PluginIsNethood
+    // set to TRUE; if 'fsName' is not NULL, the found FS name is copied there; if 'nethoodPlugin'
+    // is not NULL, it receives the found plugin. Returns success (FALSE if no such plugin exists)
     BOOL GetFirstNethoodPluginFSName(char* fsName = NULL, CPluginData** nethoodPlugin = NULL);
 
-    // zavola metodu PasswordManagerEvent vsech pluginu, ktere pouzivaji Password Manager,
-    // viz CSalamanderGeneralAbstract::SetPluginUsesPasswordManager (nenactene pluginy nacte)
+    // invokes PasswordManagerEvent method for all plugins using the Password Manager.
+    // See CSalamanderGeneralAbstract::SetPluginUsesPasswordManager (loads unloaded plug-ins if necessary)
     void PasswordManagerEvent(HWND parent, int event);
 
-    // uvolni a vynuluje 'PluginDynMenuIcons' vsech pluginu
+    // releases and clears each plugin's 'PluginDynMenuIcons'
     void ReleasePluginDynMenuIcons();
 
 protected:
-    // dle promennych LastPlgCmdXXX dohleda plugin a polozku v jeho menu odpovidajici poslednimu
-    // spustenemu prikazu z menu Plugins; 'rebuildDynMenu' je TRUE pokud se ma v pripade dynamickeho
-    // menu provest pred hledanim prikazu BuildMenu(); 'parent' je parent messageboxu (jen v pripade,
-    // ze 'rebuildDynMenu' je TRUE);
-    // pokud prikaz nalezne, vraci TRUE a 'pluginIndex' obsahuje index pluginu v poli CPlugins::Data
-    // a 'menuItemIndex' index do pole MenuItems
-    // jinak vraci FALSE
+    // based on the LastPlgCmdXXX variables finds the plugin and item in its menu corresponding to
+    // the the last executed command from the Plugins menu; 'rebuildDynMenu' is TRUE if, in the case of a
+    // dynamic menu, BuildMenu() should be called before searching; 'parent' is the parent message box
+    // window (only when 'rebuildDynMenu' is TRUE);
+    // if the command is found, TRUE is returned and 'pluginIndex' holds the plugin index in CPlugins::Data
+    // and 'menuItemIndex' holds the index in the MenuItems array
+    // otherwise FALSE is returned
     BOOL FindLastCommand(int* pluginIndex, int* menuItemIndex, BOOL rebuildDynMenu, HWND parent);
 
-    // napocteme novy CPluginsStateCache::ActualStateMask a ostatni promenne (pokud to ma cenu)
-    // pozdeji z nich bude CPluginData::GetMaskForMenuItems urcovat masku
-    // count je pocek polozek menu Plugins
+    // compute a new CPluginsStateCache::ActualStateMask and other variables (if it makes sense)
+    // later CPluginData::GetMaskForMenuItems will determine the mask from them
+    // count is the number of items in the Plugins menu
     void CalculateStateCache();
 
-    // prida zaznam do pole Order; vraci index v poli v pripade uspechu, jinak vraci -1
+    // adds a record to the Order array; returns the index in the array on success, otherwise returns -1
     int AddPluginToOrder(const char* dllName, BOOL showInBar);
 
-    // seradi pole Orders podle nazvu pluginu (slouzi pro nove pridane pluginy, aby byly abecedne serazeny)
+    // Sorts the Orders array by plugin name (used for newly added plug-ins to ensure alphabetical order)
     void QuickSortPluginsByName(int left, int right);
 
-    // pouze pro konverzi ze stare konfigurace (promennou pro viditelnost jsem presunul do CPluginData)
+    // used only for the conversion from the old configuration (the visibility variable has been moved to CPluginData)
     BOOL PluginVisibleInBar(const char* dllName);
 
-    // pomocna funkce: vyhledani indexu pro umisteni timeru s 'timeoutAbs' v poli PluginFSTimers
+    // helper function: finds the index position for inserting a timer with 'timeoutAbs' into the PluginFSTimers array
     int FindIndexForNewPluginFSTimer(DWORD timeoutAbs);
 };
 
@@ -3224,12 +3224,12 @@ protected:
 class CSalamanderPluginEntry : public CSalamanderPluginEntryAbstract
 {
 protected:
-    HWND Parent;                     // parent pripadnych messageboxu
-    CPluginData* Plugin;             // zaznam o plug-inu
-    BOOL Valid;                      // TRUE pokud byla uspesne volana SetBasicPluginData
-    BOOL Error;                      // uz byl vypsan na obrazovku error?
-    DWORD LoadInfo;                  // DWORD, ktery vraci GetLoadInformation()
-    TIndirectArray<char> OldFSNames; // pole starych fs-names (jmena z registry, nahrazuji se pri nacitani pluginu)
+    HWND Parent;                     // parent window of possible message boxes
+    CPluginData* Plugin;             // plugin record
+    BOOL Valid;                      // TRUE if SetBasicPluginData was called successfully
+    BOOL Error;                      // has an error already been displayed?
+    DWORD LoadInfo;                  // DWORD value returned by GetLoadInformation()
+    TIndirectArray<char> OldFSNames; // array of old fs-names (names from the registry, replaced during plug-in loading)
 
 public:
     CSalamanderPluginEntry(HWND parent, CPluginData* plugin) : OldFSNames(1, 10)
@@ -3244,7 +3244,7 @@ public:
     BOOL DataValid() { return Valid; }
     BOOL ShowError() { return !Error; }
 
-    // pridava do LoadInfo dalsi LOADINFO_XXX flag
+    // adds another LOADINFO_XXX flag to LoadInfo
     void AddLoadInfo(DWORD flag) { LoadInfo |= flag; }
 
     virtual int WINAPI GetVersion() { return LAST_VERSION_OF_SALAMANDER; }
@@ -3281,33 +3281,33 @@ public:
 class CSalamanderRegistry : public CSalamanderRegistryAbstract
 {
 public:
-    // vycisti klic 'key' od vsech podklicu a hodnot, vraci uspech
+    // clears the key 'key' of all subkeys and values; returns success
     virtual BOOL WINAPI ClearKey(HKEY key);
 
-    // vytvori nebo otevre existujici podklic 'name' klice 'key', vraci 'createdKey' a uspech
+    // creates or opens an existing subkey 'name' of key 'key'; returns 'createdKey' and success
     virtual BOOL WINAPI CreateKey(HKEY key, const char* name, HKEY& createdKey);
 
-    // otevre existujici podklic 'name' klice 'key', vraci 'openedKey' a uspech
+    // opens an existing subkey 'name' of key 'key'; returns 'openedKey' and success
     virtual BOOL WINAPI OpenKey(HKEY key, const char* name, HKEY& openedKey);
 
-    // zavre klic otevreny pres OpenKey nebo CreateKey
+    // closes a key opened via OpenKey or CreateKey
     virtual void WINAPI CloseKey(HKEY key);
 
-    // smaze podklic 'name' klice 'key', vraci uspech
+    // deletes the subkey 'name' of the key 'key'; returns success
     virtual BOOL WINAPI DeleteKey(HKEY key, const char* name);
 
-    // nacte hodnotu 'name'+'type'+'buffer'+'bufferSize' z klice 'key', vraci uspech
+    // loads the value 'name'+'type'+'buffer'+'bufferSize' from key 'key'; returns success
     virtual BOOL WINAPI GetValue(HKEY key, const char* name, DWORD type, void* buffer, DWORD bufferSize);
 
-    // ulozi hodnotu 'name'+'type'+'data'+'dataSize' do klice 'key', pro retezce je mozne
-    // zadat 'dataSize' == -1 -> vypocet delky retezce pomoci funkce strlen,
-    // vraci uspech
+    // stores the value 'name'+'type'+'data'+'dataSize' to key 'key'; for strings you may
+    // specify 'dataSize' == -1 -> the string length is calculated using the strlen function;
+    // returns success
     virtual BOOL WINAPI SetValue(HKEY key, const char* name, DWORD type, const void* data, DWORD dataSize);
 
-    // smaze hodnotu 'name' klice 'key', vraci uspech
+    // deletes the value 'name' of the key 'key'; returns success
     virtual BOOL WINAPI DeleteValue(HKEY key, const char* name);
 
-    // vytahne do 'bufferSize' protrebnou velikost pro hodnotu 'name'+'type' z klice 'key', vraci uspech
+    // retrieves into 'bufferSize' the required size for the value of 'name' + 'type' from the key 'key'; returns success
     virtual BOOL WINAPI GetSize(HKEY key, const char* name, DWORD type, DWORD& bufferSize);
 };
 
@@ -3319,15 +3319,15 @@ public:
 class CSalamanderConnect : public CSalamanderConnectAbstract
 {
 protected:
-    int Index; // index plug-inu v Plugins
+    int Index; // plugin index in Plugins
 
-    // peti-promenny filtr pro upgrade plug-inu, menu se upgraduje vzdy
-    BOOL CustomPack;   // TRUE -> modifikace "custom pack" povoleny
-    BOOL CustomUnpack; // TRUE -> modifikace "custom unpack" povoleny
-    BOOL PanelView;    // TRUE -> modifikace "panel view" povoleny
-    BOOL PanelEdit;    // TRUE -> modifikace "panel edit" povoleny
-    BOOL Viewer;       // TRUE -> modifikace "file viewer" povoleny
-    int SubmenuLevel;  // aktualni level vkladanych submenu (0 = submenu pluginu v menu Plugins)
+    // five-variable filter for plugin upgrade, the menu is always upgraded
+    BOOL CustomPack;   // TRUE -> "custom pack" modifications allowed
+    BOOL CustomUnpack; // TRUE -> "custom unpack" modifications allowed
+    BOOL PanelView;    // TRUE -> "panel view" modifications allowed
+    BOOL PanelEdit;    // TRUE -> "panel edit" modifications allowed
+    BOOL Viewer;       // TRUE -> "file viewer" modifications allowed
+    int SubmenuLevel;  // current level of inserted submenus (0 = plugin submenu in the Plugins menu)
 
 public:
     CSalamanderConnect(int index, BOOL customPack, BOOL customUnpack, BOOL panelView, BOOL panelEdit,
@@ -3379,8 +3379,8 @@ public:
 class CSalamanderBuildMenu : public CSalamanderBuildMenuAbstract
 {
 protected:
-    int Index;        // index plug-inu v Plugins
-    int SubmenuLevel; // aktualni level vkladanych submenu (0 = submenu pluginu v menu Plugins)
+    int Index;        // plugin index in Plugins
+    int SubmenuLevel; // current level of inserted submenus (0 = plugin submenu in the Plugins menu)
 
 public:
     CSalamanderBuildMenu(int index)
@@ -3407,15 +3407,15 @@ public:
 extern CPlugins Plugins;
 extern int AlreadyInPlugin;
 
-// interni funkce pro praci s ikonkama pluginu
+// internal function for handling plugin icons
 BOOL CreateGrayscaleDIB(HBITMAP hSource, COLORREF transparent, HBITMAP& hGrayscale);
 //HICON GetIconFromDIB(HBITMAP hBitmap, int index);
 
-// provede konverzi cesty na externi format (zavola prislusnemu pluginu metodu
+// executes the conversion of a path to the external format (calls the corresponding plugin method)
 // CPluginInterfaceForFSAbstract::ConvertPathToExternal())
 void PluginFSConvertPathToExternal(char* path);
 
 #ifdef _WIN64 // FIXME_X64_WINSCP
-// test, jestli jde o plugin chybejici v x64 verzi Salama: uz jen WinSCP
+// test whether this is a plugin missing in the x64 version of Salamander: currently only WinSCP
 BOOL IsPluginUnsupportedOnX64(const char* dllName, const char** pluginNameEN = NULL);
 #endif // _WIN64
