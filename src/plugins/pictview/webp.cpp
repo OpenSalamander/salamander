@@ -130,9 +130,6 @@ PVCODE ImageWebp::Read(HBITMAP& bmp, TProgressProc Progress, void* AppSpecific)
     if (!bmp)
         return PVC_GDI_ERROR;
 
-    // reading done
-    if (Progress)
-        Progress(100, AppSpecific);
     // image loaded successfully
     return PVC_OK;
 }
