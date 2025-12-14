@@ -6,6 +6,14 @@
 #include <fstream>
 #include <assert.h>
 
+struct HeifProgressData
+{
+    TProgressProc progressProc;
+    void* appSpecific;
+    int cancelFlag{false};
+    int maxProgress{0};
+};
+
 ImageHeif::~ImageHeif()
 {
     if (m_image)
@@ -78,22 +86,26 @@ PVCODE ImageHeif::Read(HBITMAP& bmp, TProgressProc Progress, void* AppSpecific)
     assert(m_ctx);
     assert(m_handle);
 
-#if 0
-    // TODO: decoding progress and cancellation doesn't work yet!
+    // decoding progress and cancellation doesn't work yet!
     heif_decoding_options* options = heif_decoding_options_alloc();
     if (!options)
         return PVC_OUT_OF_MEMORY;
 
-    options->version = 1;
-    options->start_progress = start_progress;
-    options->on_progress = on_progress;
-    options->end_progress = end_progress;
-    options->cancel_decoding = cancel_decoding;
+    options->version = 6;
+    options->start_progress = &ImageHeif::StartProgress;
+    options->on_progress = &ImageHeif::OnProgress;
+    // options->end_progress = &ImageHeif::EndProgress;
+    options->cancel_decoding = &ImageHeif::CancelDecoding;
+
+    HeifProgressData progress_data{
+        .progressProc = Progress,
+        .appSpecific = AppSpecific
+    };
     options->progress_user_data = &progress_data;
-#endif
 
     // decode the image
-    heif_error err = heif_decode_image(m_handle, &m_image, heif_colorspace_RGB, heif_chroma_interleaved_RGB, nullptr);
+    heif_error err = heif_decode_image(m_handle, &m_image, heif_colorspace_RGB, heif_chroma_interleaved_RGB, options);
+    heif_decoding_options_free(options);
     if (err.code != heif_error_Ok)
         return PVC_READING_ERROR;
 
@@ -134,4 +146,32 @@ PVCODE ImageHeif::Read(HBITMAP& bmp, TProgressProc Progress, void* AppSpecific)
 
     // image loaded successfully
     return PVC_OK;
+}
+
+void ImageHeif::StartProgress(heif_progress_step step, int max_progress, void* user)
+{
+    if (step != heif_progress_step_total)
+        return;
+    auto* data = static_cast<HeifProgressData*>(user);
+    data->maxProgress = max_progress;
+}
+
+void ImageHeif::OnProgress(heif_progress_step step, int progress, void* user)
+{
+    if (step != heif_progress_step_total)
+        return;
+
+    auto* data = static_cast<HeifProgressData*>(user);
+    if (data->progressProc && data->maxProgress != 0)
+    {
+        const int percent = progress * 100 / data->maxProgress;
+        if (data->progressProc(percent, data->appSpecific) && data->cancelFlag)
+            data->cancelFlag = true;
+    }
+}
+
+int ImageHeif::CancelDecoding(void* user)
+{
+    const auto* data = static_cast<HeifProgressData*>(user);
+    return data->cancelFlag;
 }

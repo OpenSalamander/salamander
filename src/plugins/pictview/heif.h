@@ -16,6 +16,10 @@ public:
     PVCODE Read(HBITMAP& bmp, TProgressProc Progress, void* AppSpecific);
 
 private:
+    static void StartProgress(enum heif_progress_step step, int max_progress, void* user);
+    static void OnProgress(enum heif_progress_step step, int progress, void* user);
+    static int CancelDecoding(void* user);
+
     heif_context* m_ctx{};
     heif_image_handle* m_handle{};
     heif_image* m_image{};
