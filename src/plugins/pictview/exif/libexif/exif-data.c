@@ -191,9 +191,15 @@ exif_data_load_data_entry (ExifData *data, ExifEntry *entry,
 		doff = offset + 8;
 
 	/* Sanity checks */
-	if ((doff + s < doff) || (doff + s < s) || (doff + s > size)) {
+	if (doff >= size) {
 		exif_log (data->priv->log, EXIF_LOG_CODE_DEBUG, "ExifData",
-				  "Tag data past end of buffer (%u > %u)", doff+s, size);	
+				  "Tag starts past end of buffer (%u > %u)", doff, size);
+		return 0;
+	}
+
+	if (s > size - doff) {
+		exif_log (data->priv->log, EXIF_LOG_CODE_DEBUG, "ExifData",
+				  "Tag data goes past end of buffer (%u > %u)", doff+s, size);
 		return 0;
 	}
 
@@ -308,13 +314,14 @@ exif_data_load_data_thumbnail (ExifData *data, const unsigned char *d,
 			       unsigned int ds, ExifLong o, ExifLong s)
 {
 	/* Sanity checks */
-	if ((o + s < o) || (o + s < s) || (o + s > ds) || (o > ds)) {
-		exif_log (data->priv->log, EXIF_LOG_CODE_DEBUG, "ExifData",
-			  "Bogus thumbnail offset (%u) or size (%u).",
-			  o, s);
+	if (o >= ds) {
+		exif_log (data->priv->log, EXIF_LOG_CODE_DEBUG, "ExifData", "Bogus thumbnail offset (%u).", o);
 		return;
 	}
-
+	if (s > ds - o) {
+		exif_log (data->priv->log, EXIF_LOG_CODE_DEBUG, "ExifData", "Bogus thumbnail size (%u), max would be %u.", s, ds-o);
+		return;
+	}
 	if (data->data) 
 		exif_mem_free (data->priv->mem, data->data);
 	if (!(data->data = exif_data_alloc (data, s))) {
