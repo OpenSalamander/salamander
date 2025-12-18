@@ -1,18 +1,19 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
-// slouzi pro cteni (a pripadnou modifikaci) resource VERSIONINFO; pro cteni
-// by bylo mozne pouzit API GetFileVersionInfo/VerQueryValue, ale nasledna modifikace
-// neni podporena, takze problem resime vlastnim modulem navic by pouziti API
-// znamenalo linkovani Version.LIB/DLL, kterou na nic jineho nepouzivame
-// POZOR: modul se vyskytuje jak v Salanderu, tak v Translatoru
+// Used to read (and optionally modify) the VERSIONINFO resource. Reading alone 
+// could be handled by the GetFileVersionInfo/VerQueryValue API, but that API does not support later modifications,
+// so we solve the problem with our own module. Using the API would also mean 
+// linking Version.LIB/DLL, which we do not use for anything else.
+// WARNING: the module exists both in Salamander and in Translator.
 
-// pokud je definovana nasledujici promenna, bude modul podporovat vedle cteni take zapis
+// If the following variable is defined, the module supports writing in addition to reading.
 #define VERSINFO_SUPPORT_WRITE
 
-// umi ulozit resource na disk; slouzi pro ladici ucely modulu
+// Can save the resource to disk; used for module debugging purposes.
 #define VERSINFO_SUPPORT_DEBUG
 
 // VERSIONINFO
@@ -46,8 +47,8 @@ public:
     CVersionBlockType Type;
     WCHAR* Key;
     BOOL Text;      // 1 if the version resource contains text data and 0 if the version resource contains binary data
-    VOID* Value;    // zalezi na Type
-    WORD ValueSize; // pouzivame pouze pro Var, jinak pocitam
+    VOID* Value;    // depends on Type
+    WORD ValueSize; // used only for Var blocks, otherwise we compute it
     TIndirectArray<CVersionBlock> Children;
 
 public:
@@ -73,23 +74,23 @@ public:
     CVersionInfo();
     ~CVersionInfo();
 
-    // nacte VERSIONINFO ze specifikovaneho modulu
+    // Loads VERSIONINFO from the specified module.
     BOOL ReadResource(HINSTANCE hInstance, int resID);
 
-    // QueryValue slouzi k vytazeni dat z resource
-    // 'block' viz FindBlock
+    // QueryValue extracts data from the resource.
+    // 'block' - see FindBlock
     BOOL QueryValue(const char* block, BYTE** buffer, DWORD* size);
 
-    // vytahne retezec ze sekce StringFileInfo, ktery rovnou konvertuje retezec z Unicode
-    // 'block' viz FindBlock
+    // Extracts a string from the StringFileInfo section and converts the Unicode string on the fly.
+    // 'block' - see FindBlock.
     BOOL QueryString(const char* block, char* buffer, DWORD maxSize, WCHAR* bufferW = NULL, DWORD maxSizeW = 0);
 
 #ifdef VERSINFO_SUPPORT_WRITE
-    // nastavi retezec do blocku 'block'; vraci TRUE v pripade uspechu, jinak FALSE
-    // blok musi jiz existovat
+    // Sets the string into the 'block' block; returns TRUE on success, otherwise FALSE.
+    // The block must already exist.
     BOOL SetString(const char* block, const char* buffer);
 
-    // alokuje kus pameti, pripravi VERSIONINFO stream a updatne resource
+    // Allocates a block of memory, prepares the VERSIONINFO stream, and updates the resource.
     BOOL UpdateResource(HANDLE hUpdateRes, int resID);
 #endif //VERSINFO_SUPPORT_WRITE
 
@@ -98,19 +99,19 @@ public:
 #endif //VERSINFO_SUPPORT_DEBUG
 
 private:
-    // ptr: ukazuje do streamu VS_VERSIONINFO na blok, ktery se ma nacist
-    // parent: NULL pokud jde o VS_VERSIONINFO, jinak ukazatel na rodice
+    // ptr: points into the VS_VERSIONINFO stream at the block to be loaded.
+    // parent: NULL for VS_VERSIONINFO, otherwise pointer to the parent block.
     CVersionBlock* LoadBlock(const BYTE*& ptr, CVersionBlock* parent);
 
-    // vyhleda blok
-    // 'block' je vstupni parametr a udava co se ma ziskat
-    //   "\" vrati ukazatel na VS_FIXEDFILEINFO
-    //   "\VarFileInfo\Translation" vrati ukazatel na DWORD
-    //   "\StringFileInfo\lang-codepage\string-name" vrati ukazatel na hodnotu (UNICODE)
+    // Locates a block.
+    // 'block' is the input parameter and specifies what to retrieve:
+    //   "\" returns a pointer to VS_FIXEDFILEINFO
+    //   "\VarFileInfo\Translation" returns a pointer to a DWORD
+    //   "\StringFileInfo\lang-codepage\string-name" returns a pointer to the value (UNICODE)
     CVersionBlock* FindBlock(const char* block);
 
 #ifdef VERSINFO_SUPPORT_WRITE
-    // rekurzivni funkce pro build VERSIONINFO streamu
+    // Recursive helper for building the VERSIONINFO stream.
     BOOL SaveBlock(CVersionBlock* block, BYTE*& ptr, const BYTE* maxPtr);
 #endif //VERSINFO_SUPPORT_WRITE
 };
