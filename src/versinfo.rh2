@@ -1,5 +1,6 @@
 ﻿// defines for SALAMAND.EXE and ENGLISH.SLG VERSIONINFO
 // look at shared\versinfo.rc
+// CommentsTranslationProject: TRANSLATED
 
 // WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
 #ifndef __VERSINFO_RH2
@@ -9,7 +10,7 @@
 #error this file is not editable by Microsoft Visual C++
 #endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
 
-#include "plugins\shared\spl_vers.h" // vytahneme cisla verzi + buildu
+#include "plugins\shared\spl_vers.h" // get numbers of the version + the build
 
 #define VERSINFO_MAJOR       VERSINFO_SALAMANDER_MAJOR
 #define VERSINFO_MINORA      VERSINFO_SALAMANDER_MINORA
