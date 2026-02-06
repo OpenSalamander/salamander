@@ -1,66 +1,67 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
-// mutex pro pristup do sdilene pameti
+// mutex for accessing the shared memory
 extern HANDLE SalShExtSharedMemMutex;
-// sdilena pamet - viz struktura CSalShExtSharedMem
+// shared memory - see the CSalShExtSharedMem structure
 extern HANDLE SalShExtSharedMem;
-// event pro zaslani zadosti o provedeni Paste ve zdrojovem Salamanderovi (pouziva se jen ve Vista+)
+// event for sending a request to perform Paste in the source Salamander (used only on Vista+)
 extern HANDLE SalShExtDoPasteEvent;
-// namapovana sdilena pamet - viz struktura CSalShExtSharedMem
+// mapped shared memory - see the CSalShExtSharedMem structure
 extern CSalShExtSharedMem* SalShExtSharedMemView;
 
-// TRUE pokud se podarilo registrovat SalShExt/SalExten/SalamExt/SalExtX86/SalExtX64.DLL nebo uz registrovane bylo
+// TRUE if registering SalShExt/SalExten/SalamExt/SalExtX86/SalExtX64.DLL succeeded or it was already registered
 extern BOOL SalShExtRegistered;
 
-// maximalni prasarna: potrebujeme zjistit do ktereho okna probehne Drop, zjistujeme to
-// v GetData podle pozice mysi, v tyhle promenny je posledni vysledek testu
+// utter hack: we need to find out into which window the Drop will happen,
+// we detect it in GetData based on the mouse position; this variable stores the last test result
 extern HWND LastWndFromGetData;
 
-// maximalni prasarna: potrebujeme zjistit do ktereho okna probehne Paste, zjistujeme to
-// v GetData podle foreground window, v tyhle promenny je posledni vysledek testu
+// utter hack: we need to find out into which window the Paste will happen
+// we detect it in GetData based on the foreground window; this variable stores the last test result
 extern HWND LastWndFromPasteGetData;
 
-extern BOOL OurDataOnClipboard; // TRUE = na clipboardu je nas data-object (copy&paste z archivu)
+extern BOOL OurDataOnClipboard; // TRUE = our data object is on the clipboard (copy & paste from an archive)
 
 //*****************************************************************************
 
-// volat pred pouzitim knihovny
+// call before using the library
 void InitSalShLib();
 
-// volat pro uvolneni knihovny
+// call to release the library
 void ReleaseSalShLib();
 
-// vraci TRUE pokud data objekt obsahuje jen "fake" adresar; ve 'fakeType' (neni-li NULL) vraci
-// 1 pokud je zdroj archiv a 2 pokud je zdroj FS; je-li zdroj FS a 'srcFSPathBuf' neni NULL,
-// vraci zdrojovou FS cestu ('srcFSPathBufSize' je velikost bufferu 'srcFSPathBuf')
+// returns TRUE if the data object contains only a "fake" directory; in 'fakeType' (if not NULL) it returns
+// 1 if the source is an archive and 2 if the source is the filesystem; if the source is the filesystem and 'srcFSPathBuf' is not NULL,
+// it returns the source filesystem path ('srcFSPathBufSize' is the size of the 'srcFSPathBuf' buffer)
 BOOL IsFakeDataObject(IDataObject* pDataObject, int* fakeType, char* srcFSPathBuf, int srcFSPathBufSize);
 
 //
 //*****************************************************************************
 // CFakeDragDropDataObject
 //
-// data object pouzivany pro zjistovani cile drag&drop operace (pouziva se pri
-// vybalovani z archivu a pri kopirovani z pluginoveho file-systemu),
-// zapouzdruje windowsovy data object ziskany pro "fake" adresar a pridava
-// format SALCF_FAKE_REALPATH (urcuje cestu, ktera se ma po dropu objevit
-// v directory-line, command-line + blokuje drop do usermenu-toolbar),
-// SALCF_FAKE_SRCTYPE (typ zdroje - 1=archiv, 2=FS) a v pripade FS jeste
-// SALCF_FAKE_SRCFSPATH (zdrojova FS cesta) do GetData()
+// data object used to detect the target of a drag & drop operation (used during
+// extraction from an archive and when copying from a plug-in file system),
+// it encapsulates the Windows data object obtained for the "fake" directory and adds
+// the SALCF_FAKE_REALPATH format (defines the path that should appear after the drop
+// in the directory line, command line + blocks dropping to the usermenu toolbar),
+// SALCF_FAKE_SRCTYPE (source type - 1 = archive, 2 = filesystem) and for the filesystem
+// also SALCF_FAKE_SRCFSPATH (source filesystem path) into GetData()
 
 class CFakeDragDropDataObject : public IDataObject
 {
 private:
     long RefCount;
-    IDataObject* WinDataObject;   // zapouzdreny data object
-    char RealPath[2 * MAX_PATH];  // cesta pro drop do directory a command line
-    int SrcType;                  // typ zdroje (1=archiv, 2=FS)
-    char SrcFSPath[2 * MAX_PATH]; // jen pro zdroj typu FS: zdrojova FS cesta
-    UINT CFSalFakeRealPath;       // clipboard format pro sal-fake-real-path
-    UINT CFSalFakeSrcType;        // clipboard format pro sal-fake-src-type
-    UINT CFSalFakeSrcFSPath;      // clipboard format pro sal-fake-src-fs-path
+    IDataObject* WinDataObject;   // encapsulated data object
+    char RealPath[2 * MAX_PATH];  // path for dropping into the directory and command line
+    int SrcType;                  // source type (1 = archive, 2 = filesystem)
+    char SrcFSPath[2 * MAX_PATH]; // only for filesystem sources: source filesystem path
+    UINT CFSalFakeRealPath;       // clipboard format for sal-fake-real-path
+    UINT CFSalFakeSrcType;        // clipboard format for sal-fake-src-type
+    UINT CFSalFakeSrcFSPath;      // clipboard format for sal-fake-src-fs-path
 
 public:
     CFakeDragDropDataObject(IDataObject* winDataObject, const char* realPath, int srcType,
@@ -97,7 +98,7 @@ public:
         if (--RefCount == 0)
         {
             delete this;
-            return 0; // nesmime sahnout do objektu, uz neexistuje
+            return 0; // we must not touch the object, it no longer exists
         }
         return RefCount;
     }
@@ -115,7 +116,7 @@ public:
     (FORMATETC* formatEtc)
     {
         if (formatEtc->cfFormat == CF_HDROP)
-            return DV_E_FORMATETC; // timto zajistime "NO" drop u jednodussich softu (BOSS, WinCmd, SpeedCommander, MSIE, Word, atd.)
+            return DV_E_FORMATETC; // this ensures a "NO" drop in simpler software (BOSS, WinCmd, SpeedCommander, MSIE, Word, etc.)
         return WinDataObject->QueryGetData(formatEtc);
     }
 
@@ -161,25 +162,25 @@ public:
 //*****************************************************************************
 // CSalShExtPastedData
 //
-// data pro Paste z clipboardu ulozena uvnitr "zdrojoveho" Salamandera
+// data for Paste from the clipboard stored inside the "source" Salamander
 
 class CSalamanderDirectory;
 
 class CSalShExtPastedData
 {
 protected:
-    DWORD DataID; // verze dat ulozenych pro Paste z clipboardu
+    DWORD DataID; // version of data stored for Paste from the clipboard
 
-    BOOL Lock; // TRUE = je zamknuty proti zruseni, FALSE = neni zamknuty
+    BOOL Lock; // TRUE = it is locked against deletion, FALSE = not locked
 
-    char ArchiveFileName[MAX_PATH]; // plna cesta k archivu
-    char PathInArchive[MAX_PATH];   // cesta uvnitr archivu, na ktere doslo ke Copy na clipboard
-    CNames SelFilesAndDirs;         // jmena souboru a adresaru z PathInArchive, ktere se budou vypakovavat
+    char ArchiveFileName[MAX_PATH]; // full path to the archive
+    char PathInArchive[MAX_PATH];   // path inside the archive where Copy to the clipboard happened
+    CNames SelFilesAndDirs;         // names of files and directories from PathInArchive that will be extracted
 
-    CSalamanderDirectory* StoredArchiveDir;             // ulozena struktura archivu (vyuziva se pokud archiv neni otevreny v panelu)
-    CPluginDataInterfaceEncapsulation StoredPluginData; // ulozene rozhrani plugin-data archivu (vyuziva se pokud archiv neni otevreny v panelu)
-    FILETIME StoredArchiveDate;                         // datum souboru archivu (pro testy platnosti listingu archivu)
-    CQuadWord StoredArchiveSize;                        // velikost souboru archivu (pro testy platnosti listingu archivu)
+    CSalamanderDirectory* StoredArchiveDir;             // stored archive structure (used if the archive is not open in the panel)
+    CPluginDataInterfaceEncapsulation StoredPluginData; // stored plug-in data interface of the archive (used if the archive is not open in the panel)
+    FILETIME StoredArchiveDate;                         // archive file`s date (for testing the validity of the archive listing)
+    CQuadWord StoredArchiveSize;                        // archive file`s size (for testing the validity of the archive listing)
 
 public:
     CSalShExtPastedData();
@@ -191,56 +192,56 @@ public:
     BOOL IsLocked() { return Lock; }
     void SetLock(BOOL lock) { Lock = lock; }
 
-    // nastavi data objektu, vraci TRUE pri uspechu, pri neuspechu necha objekt prazdny
-    // a vraci FALSE
+    // sets the object's data, returns TRUE on success; on failure leaves the object empty
+    // and returns FALSE
     BOOL SetData(const char* archiveFileName, const char* pathInArchive, CFilesArray* files,
                  CFilesArray* dirs, BOOL namesAreCaseSensitive, int* selIndexes,
                  int selIndexesCount);
 
-    // vycisti data ulozena v StoredArchiveDir a StoredPluginData
+    // clears the data stored in StoredArchiveDir and StoredPluginData
     void ReleaseStoredArchiveData();
 
-    // vycisti objekt (zrusi vsechna jeho data, objekt zustane pripraven pro dalsi pouziti)
+    // clears the object (removes all its data, the object remains ready for further use)
     void Clear();
 
-    // provede paste operaci se soucasnymi daty; 'copy' je TRUE pokud se maji data kopirovat,
-    // FALSE pokud se maji presouvat; 'tgtPath' je cilova diskova cesta operace
+    // performs the paste operation with the current data; 'copy' is TRUE if the data should be copied,
+    // FALSE if they should be moved; 'tgtPath' is the target disk path of the operation
     void DoPasteOperation(BOOL copy, const char* tgtPath);
 
-    // pokud se objektu hodi poskytovana data, necha si je a vrati TRUE, jinak vraci
-    // FALSE (poskytovana data budou nasledne uvolnena)
+    // if the provided data suit the object, it keeps them and returns TRUE; otherwise it returns
+    // FALSE (the provided data will then be released)
     BOOL WantData(const char* archiveFileName, CSalamanderDirectory* archiveDir,
                   CPluginDataInterfaceEncapsulation pluginData,
                   FILETIME archiveDate, CQuadWord archiveSize);
 
-    // vraci TRUE, pokud je mozne unloadnout plugin 'plugin'; pokud objekt obsahuje
-    // data pluginu 'plugin', pokusi se jich zbavit, aby mohl vratit TRUE
+    // returns TRUE if it is possible to unload the plugin 'plugin'; if the object contains
+    // data for the plug-in 'plugin', it tries to get rid of them so it can return TRUE
     BOOL CanUnloadPlugin(HWND parent, CPluginInterfaceAbstract* plugin);
 };
 
-// data pro Paste z clipboardu ulozena uvnitr "zdrojoveho" Salamandera
+// data for Paste from the clipboard stored inside the "source" Salamander
 extern CSalShExtPastedData SalShExtPastedData;
 
 //
 //*****************************************************************************
 // CFakeCopyPasteDataObject
 //
-// data object pouzivany pro zjistovani cile copy&paste operace (pouziva se pri
-// vybalovani z archivu), zapouzdruje windowsovy data object ziskany pro "fake"
-// adresar a zajistuje vymaz "fake" adresare z disku po uvolneni objektu z
-// clipboardu
+// data object used to detect the target of a copy & paste operation (used when
+// extracting from an archive), it encapsulates the Windows data object obtained for the "fake"
+// directory and ensures the "fake" directory is deleted from disk after the object is released from
+// the clipboard
 
 class CFakeCopyPasteDataObject : public IDataObject
 {
 private:
     long RefCount;
-    IDataObject* WinDataObject; // zapouzdreny data object
-    char FakeDir[MAX_PATH];     // "fake" dir
-    UINT CFSalFakeRealPath;     // clipboard format pro sal-fake-real-path
-    UINT CFIdList;              // clipboard format pro shell id list (pouziva Explorer misto jednodussiho CF_HDROP)
+    IDataObject* WinDataObject; // encapsulated data object
+    char FakeDir[MAX_PATH];     // "fake" directory
+    UINT CFSalFakeRealPath;     // clipboard format for sal-fake-real-path
+    UINT CFIdList;              // clipboard format for the shell ID list (Explorer uses it instead of the simpler CF_HDROP)
 
-    DWORD LastGetDataCallTime; // cas posledniho volani GetData()
-    BOOL CutOrCopyDone;        // FALSE = objekt se teprve uklada na clipboard, Release nic nedela dokud CutOrCopyDone neni TRUE
+    DWORD LastGetDataCallTime; // time of the last GetData() call
+    BOOL CutOrCopyDone;        // FALSE = the object is still being placed on the clipboard; Release does nothing until CutOrCopyDone is TRUE
 
 public:
     CFakeCopyPasteDataObject(IDataObject* winDataObject, const char* fakeDir)
@@ -251,7 +252,7 @@ public:
         lstrcpyn(FakeDir, fakeDir, MAX_PATH);
         CFSalFakeRealPath = RegisterClipboardFormat(SALCF_FAKE_REALPATH);
         CFIdList = RegisterClipboardFormat(CFSTR_SHELLIDLIST);
-        LastGetDataCallTime = GetTickCount() - 60000; // inicializujeme na 1 minutu pred zalozenim objektu
+        LastGetDataCallTime = GetTickCount() - 60000; // initialize to 1 minute before the object is created
         CutOrCopyDone = FALSE;
     }
 
@@ -290,7 +291,7 @@ public:
     {
         //      TRACE_I("QueryGetData");
         if (formatEtc->cfFormat == CF_HDROP)
-            return DV_E_FORMATETC; // timto zajistime "NO" drop u jednodussich softu (BOSS, WinCmd, SpeedCommander, MSIE, Word, atd.)
+            return DV_E_FORMATETC; // this enforces a "NO" drop in simpler softwares (BOSS, WinCmd, SpeedCommander, MSIE, Word, etc.)
         return WinDataObject->QueryGetData(formatEtc);
     }
 
