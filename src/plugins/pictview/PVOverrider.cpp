@@ -6,6 +6,7 @@
 #include "pictview.h"
 #include "heif.h"
 #include "webp.h"
+#include "xpm.h"
 #include <assert.h>
 #include <optional>
 #include <variant>
@@ -20,7 +21,8 @@ namespace
     {
         PictView = 0, // the original PictView handle
         Heif,
-        Webp
+        Webp,
+        Xpm
     };
 
     struct StretchParams
@@ -36,7 +38,7 @@ namespace
         HandleType type{HandleType::PictView};
         std::optional<COLORREF> bkColor;
         std::optional<StretchParams> stretch;
-        std::variant<LPPVHandle, ImageHeif, ImageWebp> data;
+        std::variant<LPPVHandle, ImageHeif, ImageWebp, ImageXpm> data;
     };
 
     // utilities
@@ -92,6 +94,21 @@ namespace
                     return PVC_OK;
                 }
             }
+
+            {
+                // try out to load the image as XPM
+                handle->type = HandleType::Xpm;
+                handle->data.emplace<ImageXpm>();
+                auto& xpm = std::get<ImageXpm>(handle->data);
+                result = xpm.Open(pOpenExInfo->FileName, info);
+                if (result == PVC_OK)
+                {
+                    // image opened successfully
+                    *Img = reinterpret_cast<LPPVHandle>(handle);
+                    *pImgInfo = info;
+                    return PVC_OK;
+                }
+            }
         }
 
         // call the original function
@@ -130,6 +147,9 @@ namespace
             break;
         case HandleType::Webp:
             result = std::get<ImageWebp>(handle->data).Read(bmp, Progress, AppSpecific);
+            break;
+        case HandleType::Xpm:
+            result = std::get<ImageXpm>(handle->data).Read(bmp, Progress, AppSpecific);
             break;
         default:
             assert(0 || "Invalid image type");
@@ -426,7 +446,8 @@ namespace
         // check that the handle type is valid
         assert(handle->type == HandleType::PictView ||
                handle->type == HandleType::Heif ||
-               handle->type == HandleType::Webp);
+               handle->type == HandleType::Webp ||
+               handle->type == HandleType::Xpm);
 
         return handle;
     }

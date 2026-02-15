@@ -177,6 +177,9 @@
     <ClCompile Include="..\webp.cpp" />
     <ClCompile Include="..\wiawrap.cpp">
     </ClCompile>
+    <ClCompile Include="..\x11-colormap.cpp" />
+    <ClCompile Include="..\xpm-lite.cpp" />
+    <ClCompile Include="..\xpm.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\auxtools.h">
@@ -238,6 +241,9 @@
     <ClInclude Include="..\webp.h" />
     <ClInclude Include="..\wiawrap.h">
     </ClInclude>
+    <ClInclude Include="..\x11-colormap.h" />
+    <ClInclude Include="..\xpm-lite.h" />
+    <ClInclude Include="..\xpm.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\lang\lang.rh">

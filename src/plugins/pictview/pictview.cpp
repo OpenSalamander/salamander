@@ -1066,7 +1066,7 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
 
     if (ConfigVersion < 23) // Added HEIF and WebP formats
     {
-        salamander->AddViewer("*.heic;*.heif;*.webp", TRUE);
+        salamander->AddViewer("*.heic;*.heif;*.webp;*.xpm", TRUE);
     }
 
     /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
@@ -1119,7 +1119,7 @@ MENU_TEMPLATE_ITEM PluginMenu[] =
                                    "*.flc;*.fli;*.gem;*.gif;*.ham;*.hmr;*.hrz;*.icn;*.ico;*.iff;*.img;"
                                    "*.cdt;*.cel;*.clp;*.cit;*.cmx;*.cot;*.cpt;*.cur;*.cut;*.dcx;*.dib;"
                                    "*.82i;*.83i;*.85i;*.86i;*.89i;*.92i;*.awd;*.bmi;*.bmp;*.cal;*.cdr;"
-                                   "*.arw;*.blp;*.cr2;*.dng;*.orf;*.pef;*.heic;*.heif;*.webp");
+                                   "*.arw;*.blp;*.cr2;*.dng;*.orf;*.pef;*.heic;*.heif;*.webp;*.xpm");
 }
 
 void CPluginInterface::ClearHistory(HWND parent)

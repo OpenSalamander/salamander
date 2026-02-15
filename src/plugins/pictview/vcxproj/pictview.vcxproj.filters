@@ -90,6 +90,15 @@
     <ClCompile Include="..\webp.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
+    <ClCompile Include="..\x11-colormap.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xpm-lite.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xpm.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\dialogs.h">
@@ -183,6 +192,15 @@
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\webp.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\x11-colormap.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\xpm-lite.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\xpm.h">
       <Filter>h</Filter>
     </ClInclude>
   </ItemGroup>
