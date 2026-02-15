@@ -91,7 +91,7 @@ BOOL WriteSFXHeader()
     const char* sdl;
     const char* sdr;
     HKEY key;
-    //navratovku netestujem otestovano jiz drive
+    // no need to test the return value; it was verified earlier
     ParseTargetDir(Settings.TargetDir, &td, &sd, &sdl, &sdr, &key);
     l = lstrlen(sd);
     offs += ++l;
@@ -109,17 +109,17 @@ BOOL WriteSFXHeader()
     offs += ++l;
     header.ArchiveNameOffs = offs;
     //l = lstrlen(archName);
-    //ArchiveDataOffs += l;//tohle jsme predtim nezapocitaly
+    //ArchiveDataOffs += l; // we accounted for this earlier
     //offs += ++l;
     offs++;
     header.TargetDirSpecOffs = offs;
     offs += (sdr - sdl) + 1;
     if (td == SE_REGVALUE)
     {
-        offs += sizeof(LONG); //na zacatek ulozime jeste HKEY: i 64-bitova verze uklada jen 32-bitovy klic, jsou to jen zname rooty (napr. HKEY_CURRENT_USER), ktere jsou definovany jako 32-bit id-cka
+        offs += sizeof(LONG); // prepend the HKEY value; even the 64-bit build stores only a 32-bit key for known roots (e.g. HKEY_CURRENT_USER)
         const char* bs = StrNChr(sdl, sdr - sdl, '\\');
         if (!bs)
-            offs += 1; //pridame znak pro oddeleni subkey a value
+            offs += 1; // add a separator character between the subkey and value
     }
     header.MBoxStyle = (lstrlen(Settings.MBoxTitle) ||
                         Settings.MBoxText && lstrlen(Settings.MBoxText))
@@ -173,7 +173,7 @@ BOOL WriteSFXHeader()
         return FALSE;
     if (td == SE_REGVALUE)
     {
-        //key - i 64-bitova verze uklada jen 32-bitovy klic, jsou to jen zname rooty (napr. HKEY_CURRENT_USER), ktere jsou definovany jako 32-bit id-cka
+        // key - even the 64-bit build stores only a 32-bit key; known roots (e.g. HKEY_CURRENT_USER) are defined as 32-bit IDs
         LONG lkey = (LONG)key;
         if (!Write(ExeFile, &lkey, sizeof(lkey)))
             return FALSE;
@@ -321,7 +321,7 @@ BOOL WriteSfxExecutable()
                                     : ID_SFX_MANIFEST_REGULAR,
                                 manifestSize);
     if (!manifest)
-        return Error(STR_ERRMANIFEST); // tohle by se nikdy nemelo stat
+        return Error(STR_ERRMANIFEST); // this should never happen
 
     //change icon
     if (!ChangeSfxIconAndAddManifest(ExeName, Icons, IconsCount, manifest,

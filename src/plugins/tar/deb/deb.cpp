@@ -219,12 +219,12 @@ BOOL CDEBArchive::UnpackArchive(const char* targetPath, const char* archiveRoot,
 
         totalSize = totalSize + size;
     }
-    // kontrola volneho mista, predpokladam, ze TestFreeSpace vyhodi patricnou hlasku
+    // check free space; assume TestFreeSpace reports an appropriate message
     if (!SalamanderGeneral->TestFreeSpace(SalamanderGeneral->GetMsgBoxParent(),
                                           targetPath, totalSize, LoadStr(IDS_TARERR_HEADER)))
         return FALSE;
 
-    // a vlastni vybaleni podle jmen
+    // and perform the actual extraction by name
     BOOL ret = FALSE;
     char* path = (char*)malloc(strlen(targetPath) + max(sizeof(DEB_STREAM_NAME_CONTROL), sizeof(DEB_STREAM_NAME_DATA)) - 1 + 1 + 1);
     if (path)

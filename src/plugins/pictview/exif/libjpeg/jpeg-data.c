@@ -29,7 +29,7 @@
 #include <libexif/i18n.h>
 
 #pragma warning(push)
-#pragma warning(disable: 4267) // FIXME_X64 - docasne potlacen warning, vyresit
+#pragma warning(disable: 4267) // FIXME_X64 - warning temporarily suppressed, fix it
 
 struct _JPEGDataPrivate
 {
@@ -469,4 +469,4 @@ jpeg_data_log (JPEGData *data, ExifLog *log)
 	exif_log_ref (log);
 }
 
-#pragma warning(pop) // FIXME_X64 - docasne potlacen warning, vyresit
+#pragma warning(pop) // FIXME_X64 - warning temporarily suppressed, fix it

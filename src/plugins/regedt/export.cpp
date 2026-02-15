@@ -18,18 +18,18 @@ BOOL ExportKey(LPWSTR fullName)
         if (dlg.Execute() != IDOK)
             return FALSE;
 
-        // vyseparujeme z FS path user part
+        // separate the user part from the FS path
         if (!direct)
         {
             if (!RemoveFSNameFromPath(fullName))
             {
                 Error(IDS_NOTREGEDTPATH);
-                continue; // zobrazime dialog znova
+                continue; // show the dialog again
             }
             if (!wcslen(fullName))
             {
                 Error(IDS_BADPATH);
-                continue; // zobrazime dialog znova
+                continue; // show the dialog again
             }
         }
 
@@ -39,7 +39,7 @@ BOOL ExportKey(LPWSTR fullName)
             if (!wcslen(fullName))
             {
                 Error(IDS_BADPATH);
-                continue; // zobrazime dialog znova
+                continue; // show the dialog again
             }
         }
 
@@ -48,10 +48,10 @@ BOOL ExportKey(LPWSTR fullName)
         if (!ParseFullPath(fullName, key, root))
         {
             Error(IDS_BADPATH);
-            continue; // zobrazime dialog znova
+            continue; // show the dialog again
         }
 
-        // overime, ze klic existuje
+        // verify that the key exists
         if (root != -1)
         {
             HKEY hKey;
@@ -59,37 +59,37 @@ BOOL ExportKey(LPWSTR fullName)
             if (err != ERROR_SUCCESS)
             {
                 ErrorL(err, IDS_OPEN);
-                continue; // zobrazime dialog znova
+                continue; // show the dialog again
             }
             RegCloseKey(hKey);
         }
 
-        // overime, zda cilovy soubor neexistuje
+        // verify that the target file does not exist
         DWORD attr = SG->SalGetFileAttributes(file);
         if (attr != -1)
         {
             if (attr & FILE_ATTRIBUTE_DIRECTORY)
             {
                 Error(IDS_FILENAMEISDIR);
-                continue; // zobrazime dialog znova
+                continue; // show the dialog again
             }
             if (SG->DialogQuestion(GetParent(), BUTTONS_YESNOCANCEL, file, LoadStr(IDS_OVERWRITE), LoadStr(IDS_OVERWRITETITLE)) != DIALOG_YES)
-                continue; // zobrazime dialog znova
+                continue; // show the dialog again
             SG->ClearReadOnlyAttr(file);
             if (!DeleteFile(file))
             {
                 Error(IDS_REPLACEERROR);
-                continue; // zobrazime dialog znova
+                continue; // show the dialog again
             }
         }
 
         SG->CutDirectory(strcpy(LastExportPath, file));
 
         char command[4096];
-        if (root != -1) // regedit.exe umi "export all", takze ho pro tuto ulohu pouzijeme i od XP dal
+        if (root != -1) // regedit.exe can do "export all", so we'll use it for this task even after XP
         {
-            // od XP zavolame command line reg.exe, viz https://forum.altap.cz/viewtopic.php?f=24&t=5682
-            // vyhoda reg.exe je, ze od Vista dal nevyzaduje UAC eskalaci pro exporty
+            // starting with XP we invoke the reg.exe command line, see https://forum.altap.cz/viewtopic.php?f=24&t=5682
+            // the advantage of reg.exe is that from Vista onward it does not require UAC elevation for exports
             char sysdir[MAX_PATH];
             if (!GetSystemDirectory(sysdir, MAX_PATH))
                 *sysdir = 0;
@@ -137,7 +137,7 @@ BOOL ExportKey(LPWSTR fullName)
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
 
-        // ohlasime zmenu na ceste (pribyl nas soubor)
+        // announce the change on the path (our file was added)
         char changedPath[MAX_PATH];
         lstrcpyn(changedPath, file, MAX_PATH);
         SG->CutDirectory(changedPath);

@@ -369,7 +369,7 @@ protected:
 #ifdef SALAMANDER
         if (this->_callback)
         {
-            //POZOR! Callback tady jeste neexistuje - zkontrolovat s SetCallback metodou, aby bylo stejne
+            //WARNING! Callback does not exist here yet - verify with SetCallback so it behaves the same
             this->_diskMap->SetDirectoryOverlayVisibility(this->_callback->GetShowFolders());
             this->_diskMap->SetTooltipEnabled(this->_callback->GetShowTooltip());
             this->_tooltip->SetPathFormat((ETooltipPathFormat)(this->_callback->GetPathFormat()));
@@ -413,7 +413,7 @@ protected:
             delete this->_connector;
         this->_connector = NULL;
 
-        PostQuitMessage(0); //konec UI vlakna...
+        PostQuitMessage(0); //end of the UI thread...
     }
 
 public:

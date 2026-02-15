@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -9,7 +10,7 @@
 //
 
 BOOL CALLBACK CorrectDisabledButtons(HWND hwnd, LPARAM lParam)
-{ // obehneme disablovane buttony a kdyz narazime na "default" styl, zrusime ho (chyba windows, ze ho tam nechaly)
+{ // iterate through disabled buttons and when we encounter the "default" style, remove it (Windows bug that left it there)
     BOOL cont = TRUE;
     if (hwnd != NULL && !IsWindowEnabled(hwnd))
     {
@@ -18,7 +19,7 @@ BOOL CALLBACK CorrectDisabledButtons(HWND hwnd, LPARAM lParam)
         {
             LONG style = GetWindowLong(hwnd, GWL_STYLE);
             if ((style & BS_CHECKBOX) == 0 && (style & BS_DEFPUSHBUTTON) != 0)
-            { // mame ho, zmenime ho na "ne-default" a tim koncime (dva defaultni byt nemuzou)
+            { // found it, change it to "non-default" and finish (there cannot be two default buttons)
                 PostMessage(hwnd, BM_SETSTYLE, BS_PUSHBUTTON, TRUE);
                 cont = FALSE;
             }
@@ -31,7 +32,7 @@ INT_PTR
 COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     SLOW_CALL_STACK_MESSAGE4("COperationDlg::DialogProc(0x%X, 0x%IX, 0x%IX)", uMsg, wParam, lParam);
-    int sysCmdShowCmd; // pomocna promenna
+    int sysCmdShowCmd; // helper variable
     switch (uMsg)
     {
     case WM_INITDIALOG:
@@ -43,7 +44,7 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         CFTPOperationType operType = Oper->GetOperationType();
         if (operType == fotCopyDownload || operType == fotMoveDownload)
         {
-            // nahodime thread pro ziskavani volneho mista na disku
+            // start a thread to fetch the free disk space
             char pathBuf[MAX_PATH];
             Oper->GetTargetPath(pathBuf, MAX_PATH);
             GetDiskFreeSpaceThread = new CGetDiskFreeSpaceThread(pathBuf, HWindow);
@@ -51,14 +52,14 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 if (GetDiskFreeSpaceThread->Create(AuxThreadQueue) == NULL)
                 {
-                    delete GetDiskFreeSpaceThread; // thread se nepustil, error
+                    delete GetDiskFreeSpaceThread; // thread did not start, error
                     GetDiskFreeSpaceThread = NULL;
                 }
             }
             else
             {
                 if (GetDiskFreeSpaceThread == NULL)
-                    TRACE_E(LOW_MEMORY); // malo pameti, error
+                    TRACE_E(LOW_MEMORY); // low memory, error
                 else
                 {
                     delete GetDiskFreeSpaceThread;
@@ -91,7 +92,7 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (GetWindowText(GetDlgItem(HWindow, IDT_OPERATIONSTEXT), buf, 100))
         {
             if (OperationsTextOrig != NULL)
-                SalamanderGeneral->Free(OperationsTextOrig); // pro strycka prihodu...
+                SalamanderGeneral->Free(OperationsTextOrig); // just in case...
             OperationsTextOrig = SalamanderGeneral->DupStr(buf);
         }
 
@@ -100,8 +101,8 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             ElapsedTime == NULL || OperationsTextOrig == NULL ||
             !Oper->InitOperDlg(this))
         {
-            DestroyWindow(HWindow); // chyba -> neotevreme dialog
-            return FALSE;           // konec zpracovani
+            DestroyWindow(HWindow); // error -> we will not open the dialog
+            return FALSE;           // end of processing
         }
 
         Progress->SetSelfMoveTime(OPERDLG_STATUSUPDATEPERIOD);
@@ -109,7 +110,7 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         SetDlgTitle(-1, NULL);
 
-        // init listviewu
+        // initialize list views
         ListView_SetExtendedListViewStyle(ConsListView, ListView_GetExtendedListViewStyle(ConsListView) |
                                                             LVS_EX_FULLROWSELECT); // 4.70
         ConsListViewObj.Attach(ConsListView, this, TRUE);
@@ -120,9 +121,9 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         RECT r1, r2;
         GetWindowRect(HWindow, &r1);
         GetWindowRect(GetDlgItem(HWindow, IDC_DLGSPLITBAR), &r2);
-        MinDlgHeight1 = r2.top - r1.top + 1;                 // vyska simple dialogu
-        LastDlgHeight1 = MinDlgHeight2 = r1.bottom - r1.top; // vyska detailed dialogu
-        MinDlgWidth = r1.right - r1.left;                    // sirka kompletniho dialogu
+        MinDlgHeight1 = r2.top - r1.top + 1;                 // height of the simple dialog
+        LastDlgHeight1 = MinDlgHeight2 = r1.bottom - r1.top; // height of the detailed dialog
+        MinDlgWidth = r1.right - r1.left;                    // width of the entire dialog
 
         GetClientRect(HWindow, &r1);
         MinClientHeight = r1.bottom - r1.top;
@@ -251,7 +252,7 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         ShowOnlyErrXOffset = p.x;
         ShowOnlyErrYOffset = p.y;
 
-        // do praveho spodniho ruzku vlozime znacek pro resize okna
+        // insert a marker for resizing the window in the bottom-right corner
         SizeBox = CreateWindowEx(0,
                                  "scrollbar",
                                  "",
@@ -279,13 +280,13 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         SetShowLowDiskWarning(ShowLowDiskWarning);
 
-        if (Config.OperDlgPlacement.length != 0) // pozice je platna
+        if (Config.OperDlgPlacement.length != 0) // the position is valid
         {
             BOOL oldSimpleLook = SimpleLook;
             SimpleLook = FALSE;
             WINDOWPLACEMENT place = Config.OperDlgPlacement;
-            // GetWindowPlacement cti Taskbar, takze pokud je Taskbar nahore nebo vlevo,
-            // jsou hodnoty posunute o jeho rozmery. Provedeme korekci.
+            // GetWindowPlacement respects the Taskbar, so if the Taskbar is at the top or on the left,
+            // the values are offset by its dimensions. Apply a correction.
             RECT monitorRect;
             RECT workRect;
             SalamanderGeneral->MultiMonGetClipRectByRect(&place.rcNormalPosition, &workRect, &monitorRect);
@@ -301,15 +302,15 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             SimpleLook = oldSimpleLook;
             if (CenterToWnd != NULL)
             {
-                // horizontalni i vertikalni vycentrovani dialogu k 'CenterToWnd'
+                // horizontal and vertical centering of the dialog to 'CenterToWnd'
                 SalamanderGeneral->MultiMonCenterWindow(HWindow, CenterToWnd, TRUE);
             }
             if (place.showCmd == SW_MAXIMIZE || place.showCmd == SW_SHOWMAXIMIZED)
             {
                 if (SimpleLook)
-                    ToggleSimpleLook(); // forcneme detailed mode
+                    ToggleSimpleLook(); // force the detailed mode
                 else
-                    ShowControlsAndChangeSize(SimpleLook); // ukazame/schovame "detailed" cast dialogu
+                    ShowControlsAndChangeSize(SimpleLook); // show/hide the "detailed" part of the dialog
                 LastFocusedControl = GetDlgItem(HWindow, IDCANCEL);
                 SetFocus(LastFocusedControl);
                 preventSystemFromSettingFocus = TRUE;
@@ -317,16 +318,16 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 ShowWindow(HWindow, SW_MAXIMIZE);
             }
             else
-                ShowControlsAndChangeSize(SimpleLook); // ukazame/schovame "detailed" cast dialogu
+                ShowControlsAndChangeSize(SimpleLook); // show/hide the "detailed" part of the dialog
         }
         else
         {
             if (CenterToWnd != NULL)
             {
-                // horizontalni i vertikalni vycentrovani dialogu k 'CenterToWnd'
+                // horizontal and vertical centering of the dialog to 'CenterToWnd'
                 SalamanderGeneral->MultiMonCenterWindow(HWindow, CenterToWnd, TRUE);
             }
-            // ukazame/schovame "detailed" cast dialogu
+            // show/hide the "detailed" part of the dialog
             ShowControlsAndChangeSize(SimpleLook);
         }
         PostMessage(HWindow, WM_APP_ACTIVATEWORKERS, 0, 0);
@@ -335,22 +336,22 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         SetTimer(HWindow, OPERDLG_CHECKCOUNTERSTIMER, OPERDLG_CHECKCOUNTERSPERIOD, NULL);
 #endif
 
-        // nahodime pravidelny update progresu/statusu + prvni update naplanujeme hned
+        // start periodic updates of progress/status and schedule the first one immediately
         SetTimer(HWindow, OPERDLG_STATUSUPDATETIMER, OPERDLG_STATUSUPDATEPERIOD, NULL);
         PostMessage(HWindow, WM_TIMER, OPERDLG_STATUSUPDATETIMER, 0);
 
-        // nahodime timer pro test jestli se nema ukazat nejaky Show Error dialog
+        // start a timer to check whether any Show Error dialog should appear
         SetTimer(HWindow, OPERDLG_AUTOSHOWERRTIMER, OPERDLG_AUTOSHOWERRPERIOD, NULL);
-        SetTimer(HWindow, OPERDLG_AUTOSHOWERRTIMER2, 200, 0); // aby byla "okamzita" reakce na "rychle" chyby
+        SetTimer(HWindow, OPERDLG_AUTOSHOWERRTIMER2, 200, 0); // to have an "immediate" reaction to "quick" errors
 
-        // FIXME: az budeme mit okno fronty operaci, zase muzeme Hide zviditelnit (+vyhodit "disabled" z resourcu)
-        // zaroven pak zase vratit text v resourcich:  IDS_OPERDLGCONFIRMCANCEL, "Do you really want to cancel operation?\n\nNote: use Hide button to close window without cancelling operation."
+        // FIXME: once we have the operations queue window we can make Hide visible again (and remove "disabled" from the resources)
+        // also restore the text in the resources:  IDS_OPERDLGCONFIRMCANCEL, "Do you really want to cancel operation?\n\nNote: use Hide button to close window without cancelling operation."
         ShowWindow(GetDlgItem(HWindow, IDB_HIDE), SW_HIDE);
 
         if (preventSystemFromSettingFocus)
         {
             CDialog::DialogProc(uMsg, wParam, lParam);
-            return FALSE; // nechceme od systemu nastavovat focus v dialogu
+            return FALSE; // we do not want the system to set the focus in the dialog
         }
         break;
     }
@@ -361,8 +362,8 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             CQuadWord freeSpace = GetDiskFreeSpaceThread->GetResult();
             BOOL showLowDiskWarning = FALSE;
-            if (freeSpace != CQuadWord(-1, -1) &&           // pokud zname volne misto na cilovem disku
-                LastNeededDiskSpace != CQuadWord(-1, -1) && // pokud zname potrebne misto na disku
+            if (freeSpace != CQuadWord(-1, -1) &&           // if we know the free space on the target disk
+                LastNeededDiskSpace != CQuadWord(-1, -1) && // if we know the required space on the disk
                 LastNeededDiskSpace > freeSpace)
             {
                 char num1[100];
@@ -395,13 +396,13 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             SendMessage(HWindow, WM_NEXTDLGCTL, (WPARAM)GetDlgItem(HWindow, IDCANCEL), TRUE);
         }
         EnableWindow(details, FALSE);
-        return TRUE; // dale nezpracovavat
+        return TRUE; // do not process further
     }
 
     case WM_APP_ACTIVATEWORKERS:
     {
         WorkersList->ActivateWorkers();
-        return TRUE; // dale nezpracovavat
+        return TRUE; // do not process further
     }
 
     case WM_APP_WORKERCHANGEREP:
@@ -410,14 +411,14 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             IsDirtyProgress = TRUE;
         IsDirtyConsListView = TRUE;
         ScheduleDelayedUpdate();
-        return TRUE; // dale nezpracovavat
+        return TRUE; // do not process further
     }
 
     case WM_APP_ITEMCHANGEREP:
     {
         IsDirtyItemsListView = TRUE;
         ScheduleDelayedUpdate();
-        return TRUE; // dale nezpracovavat
+        return TRUE; // do not process further
     }
 
     case WM_APP_OPERSTATECHANGE:
@@ -425,7 +426,7 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         SetupCloseButton(TRUE);
         IsDirtyStatus = TRUE;
         ScheduleDelayedUpdate();
-        return TRUE; // dale nezpracovavat
+        return TRUE; // do not process further
     }
 
     case WM_SYSCOMMAND:
@@ -451,7 +452,7 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 sysCmdShowCmd = SW_SHOWMAXIMIZED;
                 RestoreToMaximized = FALSE;
                 if (SimpleLook)
-                    ToggleSimpleLook(); // v maximize jde jen detailed mode
+                    ToggleSimpleLook(); // only the detailed mode works when maximized
                 PostMessage(HWindow, WM_APP_DISABLEDETAILED, 0, 0);
             }
             else
@@ -465,12 +466,12 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (wParam == SC_CLOSE)
             {
                 PostMessage(HWindow, WM_COMMAND, IDCANCEL, 0);
-                return TRUE; // dale nezpracovavat
+                return TRUE; // do not process further
             }
             break;
         }
-        // break;  // neni tu schvalne, aby se ukladala pozice i pri maximize/restore/minimize
-        // POZOR: prochazi tudy hodnota 'sysCmdShowCmd'
+        // break;  // intentionally omitted so the position is stored even for maximize/restore/minimize
+        // WARNING: the value 'sysCmdShowCmd' is handled here
     }
     case WM_EXITSIZEMOVE:
     {
@@ -478,9 +479,9 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (lastFocus != NULL)
             LastFocusedControl = lastFocus;
         LastActivityTime = GetTickCount();
-        Config.OperDlgPlacement.length = sizeof(WINDOWPLACEMENT); // ulozime pozici okna
+        Config.OperDlgPlacement.length = sizeof(WINDOWPLACEMENT); // store the window position
         GetWindowPlacement(HWindow, &Config.OperDlgPlacement);
-        if (SimpleLook) // simple-look se nam nehodi, ukladame velikost otevreneho dialogu
+        if (SimpleLook) // simple-look is unsuitable; store the size of the opened dialog
             Config.OperDlgPlacement.rcNormalPosition.bottom = Config.OperDlgPlacement.rcNormalPosition.top + LastDlgHeight1;
         else
         {
@@ -494,7 +495,7 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_APP_CLOSEDLG:
         wParam = IDCANCEL;
-        // break;  // tady break nechybi!
+        // break;  // break is not missing here!
     case WM_COMMAND:
     {
         if (IsWindowEnabled(HWindow))
@@ -509,20 +510,20 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             switch (LOWORD(wParam))
             {
             case IDOK:
-                return TRUE; // dale nezpracovavat, Enter nesmi ukoncovat dialog
+                return TRUE; // do not process further, Enter must not close the dialog
 
             case IDC_OPCLOSEWINWHENDONE:
             {
                 if (HIWORD(wParam) == BN_CLICKED)
                 {
                     if (GetTickCount() - ClearChkboxTime < 300)
-                    { // pokud doslo k vycisteni checkboxu kvuli kliknuti na checkbox, byl hned zase nastaven, takze ho musime zase vycistit
+                    { // if the checkbox was cleared due to clicking it, it was immediately set again, so we must clear it once more
                         CheckDlgButton(HWindow, IDC_OPCLOSEWINWHENDONE, BST_UNCHECKED);
                     }
                     DlgWillCloseIfOpFinWithSkips = (IsDlgButtonChecked(HWindow, IDC_OPCLOSEWINWHENDONE) == BST_CHECKED);
-                    // zapamatujeme si novou hodnotu pro dalsi dialogy
-                    // zakomentovano, protoze pamet tohoto checkboxu na me pusobi divne - smysl checkboxu ted vidim
-                    // v tom, mit moznost nechat dialog zavrit po dokonceni operace (coz nezavisi na predchozi operaci)
+                    // remember the new value for the next dialogs
+                    // commented out because remembering this checkbox feels odd to me - the purpose of the checkbox now is
+                    // to provide the option to close the dialog after the operation completes (which does not depend on the previous operation)
                     // Config.CloseOperationDlgWhenOperFinishes = (IsDlgButtonChecked(HWindow, IDC_OPCLOSEWINWHENDONE) == BST_CHECKED);
                 }
                 break;
@@ -554,11 +555,11 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
 
                 // ***************************************************************************
-                // POZOR: aby sla modalni okna "nenasilne" zavrit (napr. pri unloadu pluginu),
-                //        musi vsechna otevrena modalni okna umet skoncit na WM_CLOSE
-                //        (asi kdyz umi skoncit na klavesu Esc) + nesmi se vyvolavat
-                //        vic modalnich oken po sobe, pokud predchazejici modalni
-                //        okno bylo ukonceno pres Esc
+                // WARNING: to close modal windows "gently" (for example when unloading a plugin),
+                //        all open modal windows must be able to end on WM_CLOSE
+                //        (probably if they can end on the Esc key) and must not trigger
+                //        more modal windows in a row if the previous modal
+                //        window was closed via Esc
                 // ***************************************************************************
 
             case IDCANCEL:
@@ -578,32 +579,32 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     DlgWillCloseIfOpFinWithSkips = (IsDlgButtonChecked(HWindow, IDC_OPCLOSEWINWHENDONE) == BST_CHECKED);
                     CorrectLookOfPrevFocusedDisabledButton(focus);
                     if (res != IDYES)
-                        return TRUE; // zadny Cancel/Close nebude
+                        return TRUE; // no Cancel/Close will happen
                     break;
                 }
 
                 case opstFinishedWithSkips:
                 case opstSuccessfullyFinished:
-                    break; // umoznime tichy odchod
+                    break; // allow a quiet exit
                 }
 
-                // ukoncime a zrusime vsechny workery operace
+                // stop and destroy all operation workers
                 int operUID = Oper->GetUID();
-                FTPOperationsList.StopWorkers(HWindow, operUID, -1 /* vsechny workery */);
+                FTPOperationsList.StopWorkers(HWindow, operUID, -1 /* all workers */);
 
-                SalamanderGeneral->WaitForESCRelease(); // opatreni, aby se neprerusovala dalsi akce pokud jsme pro Close dialogu pouzili ESC
+                SalamanderGeneral->WaitForESCRelease(); // precaution so the next action is not interrupted if we used ESC to close the dialog
 
-                // zaridime uvolneni operace po zavreni dialogu operace
+                // ensure the operation is released after the dialog closes
                 if (!CanceledOperations.Add(operUID))
-                    return TRUE;                                                      // nelze zrusit operaci, musime nechat dialog otevreny
-                SalamanderGeneral->PostMenuExtCommand(FTPCMD_CANCELOPERATION, FALSE); // spustime prikaz co nejdrive
+                    return TRUE;                                                      // cannot cancel the operation; we must keep the dialog open
+                SalamanderGeneral->PostMenuExtCommand(FTPCMD_CANCELOPERATION, FALSE); // trigger the command as soon as possible
                 break;
             }
 
             case IDB_HIDE:
             {
-                PostMessage(HWindow, WM_CLOSE, 0, 0); // zavre okno, operace bezi dale
-                return TRUE;                          // dale nezpracovavat
+                PostMessage(HWindow, WM_CLOSE, 0, 0); // closes the window, the operation keeps running
+                return TRUE;                          // do not process further
             }
 
             case IDB_PAUSERESUME:
@@ -611,14 +612,14 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if (IsWindowEnabled(HWindow))
                 {
                     int operUID = Oper->GetUID();
-                    FTPOperationsList.PauseWorkers(HWindow, operUID, -1, !PauseButtonIsResume); // pause/resume vsech workeru
+                    FTPOperationsList.PauseWorkers(HWindow, operUID, -1, !PauseButtonIsResume); // pause/resume all workers
                     RefreshConnections(FALSE);
                     EnablePauseButton();
                     EnableErrorsButton();
                     IsDirtyStatus = TRUE;
-                    ScheduleDelayedUpdate(); // pokud jde o zacatek/konec "paused" rezimu, hned to vykreslime
+                    ScheduleDelayedUpdate(); // if it is the start or end of the "paused" mode, redraw immediately
                 }
-                return TRUE; // dale nezpracovavat
+                return TRUE; // do not process further
             }
 
             case IDB_OPOPERSSHOWONLYERR:
@@ -637,30 +638,30 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 HWND focus = GetForegroundWindow() == HWindow ? GetFocus() : NULL;
                 SolveErrorOnItem(FocusedItemUID);
                 CorrectLookOfPrevFocusedDisabledButton(focus);
-                return TRUE; // dale nezpracovavat
+                return TRUE; // do not process further
             }
 
             case IDB_OPOPERSRETRY:
             {
                 int changedIndex = Queue->RetryItem(FocusedItemUID, Oper);
                 if (!ShowOnlyErrors)
-                    RefreshItems(FALSE, changedIndex); // refreshneme zmenenou polozku
+                    RefreshItems(FALSE, changedIndex); // refresh the changed item
                 else
-                    RefreshItems(FALSE); // refreshneme vse (jsou-li zobrazeny jen chyby, polozka zmizne)
+                    RefreshItems(FALSE); // refresh everything (if only errors are shown, the item disappears)
                 EnableErrorsButton();
-                WorkersList->PostNewWorkAvailable(TRUE); // informujeme pripadneho prvniho spiciho workera o pripadne nove praci (retry se nemusel povest)
-                return TRUE;                             // dale nezpracovavat
+                WorkersList->PostNewWorkAvailable(TRUE); // inform the first sleeping worker, if any, about possible new work (the retry might have failed)
+                return TRUE;                             // do not process further
             }
 
             case IDB_OPOPERSSKIP:
             {
                 int changedIndex = Queue->SkipItem(FocusedItemUID, Oper);
                 if (!ShowOnlyErrors)
-                    RefreshItems(FALSE, changedIndex); // refreshneme zmenenou polozku
+                    RefreshItems(FALSE, changedIndex); // refresh the changed item
                 else
-                    RefreshItems(FALSE); // refreshneme vse (jinak by se musel dohledat index v listview)
+                    RefreshItems(FALSE); // refresh everything (otherwise we would have to find the index in the list view)
                 EnableErrorsButton();
-                return TRUE; // dale nezpracovavat
+                return TRUE; // do not process further
             }
 
             case IDB_OPCONSSOLVEERROR:
@@ -672,7 +673,7 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     SolveErrorOnConnection(index);
                     CorrectLookOfPrevFocusedDisabledButton(focus);
                 }
-                return TRUE; // dale nezpracovavat
+                return TRUE; // do not process further
             }
 
             case IDB_OPCONSADD:
@@ -680,9 +681,9 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 CFTPWorker* newWorker = Oper->AllocNewWorker();
                 if (newWorker != NULL)
                 {
-                    if (!SocketsThread->AddSocket(newWorker) ||   // pridani do sockets-threadu
-                        !newWorker->RefreshCopiesOfUIDAndMsg() || // obnovime kopie UID+Msg (doslo k jejich zmene)
-                        !Oper->AddWorker(newWorker))              // pridani mezi workery operace
+                    if (!SocketsThread->AddSocket(newWorker) ||   // adding to the sockets thread
+                        !newWorker->RefreshCopiesOfUIDAndMsg() || // refresh the copies of UID+Msg (they changed)
+                        !Oper->AddWorker(newWorker))              // adding among the operation workers
                     {
                         DeleteSocket(newWorker);
                     }
@@ -692,11 +693,11 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         EnablePauseButton();
                         EnableErrorsButton();
                         IsDirtyStatus = TRUE;
-                        ScheduleDelayedUpdate();      // pokud jde o konec "stopped" rezimu, hned to vykreslime
-                        newWorker->PostActivateMsg(); // aktivujeme pridaneho workera
+                        ScheduleDelayedUpdate();      // if it is the end of the "stopped" mode, redraw immediately
+                        newWorker->PostActivateMsg(); // activate the added worker
                     }
                 }
-                return TRUE; // dale nezpracovavat
+                return TRUE; // do not process further
             }
 
             case IDB_OPCONSSTOP:
@@ -717,18 +718,18 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         if (res == IDYES)
                         {
                             int operUID = Oper->GetUID();
-                            FTPOperationsList.StopWorkers(HWindow, operUID, index); // zastavime vybraneho workera
-                            WorkersList->PostNewWorkAvailable(TRUE);                // informujeme pripadneho prvniho spiciho workera o pripadne vracene praci
+                            FTPOperationsList.StopWorkers(HWindow, operUID, index); // stop the selected worker
+                            WorkersList->PostNewWorkAvailable(TRUE);                // inform the first sleeping worker, if any, about the possibly returned work
                             RefreshConnections(FALSE);
                             EnablePauseButton();
                             EnableErrorsButton();
                             IsDirtyStatus = TRUE;
-                            ScheduleDelayedUpdate(); // pokud jde o zacatek "stopped" rezimu, hned to vykreslime
+                            ScheduleDelayedUpdate(); // if it is the start of the "stopped" mode, redraw immediately
                         }
                         DlgWillCloseIfOpFinWithSkips = (IsDlgButtonChecked(HWindow, IDC_OPCLOSEWINWHENDONE) == BST_CHECKED);
                     }
                 }
-                return TRUE; // dale nezpracovavat
+                return TRUE; // do not process further
             }
 
             case IDB_OPCONSPAUSERESUME:
@@ -739,15 +740,15 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     if (index >= 0)
                     {
                         int operUID = Oper->GetUID();
-                        FTPOperationsList.PauseWorkers(HWindow, operUID, index, !ConPauseButtonIsResume); // pause/resume vybraneho workera
+                        FTPOperationsList.PauseWorkers(HWindow, operUID, index, !ConPauseButtonIsResume); // pause/resume the selected worker
                         RefreshConnections(FALSE, -1, index);
                         EnablePauseButton();
                         EnableErrorsButton();
                         IsDirtyStatus = TRUE;
-                        ScheduleDelayedUpdate(); // pokud jde o zacatek/konec "paused" rezimu, hned to vykreslime
+                        ScheduleDelayedUpdate(); // if it is the start or end of the "paused" mode, redraw immediately
                     }
                 }
-                return TRUE; // dale nezpracovavat
+                return TRUE; // do not process further
             }
             }
         }
@@ -775,7 +776,7 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 Queue->GetListViewDataFor(index, (NMLVDISPINFO*)lParam, ItemsTextBuf[ItemsActTextBuf], OPERDLG_ITEMSTEXTBUFSIZE);
                 if (++ItemsActTextBuf > 2)
                     ItemsActTextBuf = 0;
-                return FALSE; // zpracovavat dale
+                return FALSE; // continue processing
             }
 
             case LVN_ITEMCHANGED:
@@ -801,7 +802,7 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             case LVN_ODFINDITEM:
             {
                 SetWindowLongPtr(HWindow, DWLP_MSGRESULT, -1);
-                return TRUE; // nezpracovavat dale
+                return TRUE; // do not process further
             }
 
             case NM_DBLCLK:
@@ -825,7 +826,7 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                                     ConsTextBuf[ConsActTextBuf], OPERDLG_CONSTEXTBUFSIZE);
                     if (++ConsActTextBuf > 2)
                         ConsActTextBuf = 0;
-                    return FALSE; // zpracovavat dale
+                    return FALSE; // continue processing
                 }
 
                 case LVN_ITEMCHANGED:
@@ -860,7 +861,7 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 case LVN_ODFINDITEM:
                 {
                     SetWindowLongPtr(HWindow, DWLP_MSGRESULT, -1);
-                    return TRUE; // nezpracovavat dale
+                    return TRUE; // do not process further
                 }
 
                 case NM_DBLCLK:
@@ -882,16 +883,16 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             LastGetDiskFreeSpace = GetTickCount() - OPERDLG_GETDISKSPACEPERIOD;
             IsDirtyStatus = TRUE;
             ScheduleDelayedUpdate();
-            SetTimer(HWindow, OPERDLG_CORRECTBTNSTIMER, 100, 0); // pockame az se dialog aktivuje, pak zkontrolujeme stav tlacitek (disablovane s rameckem nechceme)
+            SetTimer(HWindow, OPERDLG_CORRECTBTNSTIMER, 100, 0); // wait for the dialog to activate, then check the button states (we do not want disabled ones with a frame)
         }
 
         if (wParam == WA_INACTIVE &&
-            (ConsListViewObj.HToolTip == NULL || (HWND)lParam != ConsListViewObj.HToolTip) && // deaktivace prepnutim do tooltipu zlobila, deaktivovalo se okno operacniho dialogu + ukazoval se nechtene Solve Error dialog
+            (ConsListViewObj.HToolTip == NULL || (HWND)lParam != ConsListViewObj.HToolTip) && // deactivation by switching to the tooltip misbehaved; the operation dialog window deactivated and an unwanted Solve Error dialog appeared
             (ItemsListViewObj.HToolTip == NULL || (HWND)lParam != ItemsListViewObj.HToolTip))
         {
             ConsListViewObj.HideToolTip();
             ItemsListViewObj.HideToolTip();
-            SetTimer(HWindow, OPERDLG_AUTOSHOWERRTIMER2, 100, 0); // aby byla "okamzita" reakce na deaktivaci dialogu operace
+            SetTimer(HWindow, OPERDLG_AUTOSHOWERRTIMER2, 100, 0); // to have an "immediate" reaction to deactivating the operation dialog
         }
         break;
     }
@@ -916,14 +917,14 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             break;
         }
 
-        case OPERDLG_UPDATETIMER: // provedeme zpozdeny refresh
+        case OPERDLG_UPDATETIMER: // perform a delayed refresh
         {
             if (!UpdateDataInDialog())
-            { // behem doby "hajeni" nebylo potreba refreshnout, zrusime timer
+            { // during the "grace" period there was no need to refresh, cancel the timer
                 HasDelayedUpdateTimer = FALSE;
                 KillTimer(HWindow, OPERDLG_UPDATETIMER);
             }
-            return TRUE; // dale nezpracovavat
+            return TRUE; // do not process further
         }
 
 #ifdef _DEBUG
@@ -933,7 +934,7 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             //        TRACE_I("Calling: Queue->DebugCheckCounters()...");
             DWORD ti = GetTickCount();
             Queue->DebugCheckCounters(Oper);
-            DWORD timeout = 10 * (GetTickCount() - ti); // aspon 10x vic casu at to maka nez kontroluje, at se to samo nezahlti
+            DWORD timeout = 10 * (GetTickCount() - ti); // at least 10 times more time for working than checking so it does not overwhelm itself
                                                         //        TRACE_I("Finished: Queue->DebugCheckCounters()...");
             SetTimer(HWindow, OPERDLG_CHECKCOUNTERSTIMER, max(timeout, OPERDLG_CHECKCOUNTERSPERIOD), NULL);
             break;
@@ -951,12 +952,12 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
 
         case OPERDLG_AUTOSHOWERRTIMER2:
-            KillTimer(HWindow, OPERDLG_AUTOSHOWERRTIMER2); // tady break nechybi!
+            KillTimer(HWindow, OPERDLG_AUTOSHOWERRTIMER2); // break is intentionally omitted here!
         case OPERDLG_AUTOSHOWERRTIMER:
         {
             if (Config.OpenSolveErrIfIdle &&
-                IsWindowEnabled(HWindow) &&                                // jen pokud uz neni otevrene jine modalni okno
-                !ConsListViewObj.Scrolling && !ItemsListViewObj.Scrolling) // a jen pokud user zrovna netaha scrollbaru ani jednoho listview
+                IsWindowEnabled(HWindow) &&                                // only if no other modal window is open
+                !ConsListViewObj.Scrolling && !ItemsListViewObj.Scrolling) // and only if the user is not currently dragging the scrollbar of either list view
             {
                 BOOL dlgIsInactive = GetForegroundWindow() != HWindow;
                 if (!UserWasActive && !DelayAfterCancel || dlgIsInactive || GetTickCount() - LastActivityTime >= OPERDLG_SHOWERRMINIDLETIME)
@@ -968,21 +969,21 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     if (Oper->SearchWorkerWithNewError(&workerIndex) ||
                         Queue->SearchItemWithNewError(&itemUID, &itemIndex))
                     {
-                        /*  // zakomentovano, aby Solve Error dialogy nevypinaly auto-close okna operace
+                        /*  // commented out so Solve Error dialogs do not disable auto-close of the operation window
                 if (!UserWasActive)
                 {
                   SetUserWasActive();
-                  LastActivityTime = GetTickCount() - OPERDLG_SHOWERRMINIDLETIME;  // simulace "idle"
+                  LastActivityTime = GetTickCount() - OPERDLG_SHOWERRMINIDLETIME;  // simulate "idle"
                 }
 */
                         KillTimer(HWindow, OPERDLG_AUTOSHOWERRTIMER);
-                        if (IsIconic(HWindow)) // minimalizovane okno musim restornout (bez aktivace), jinak nebude po aktivaci/zavreni Solve Error dialogu videt (bude stale minimalizovane)
+                        if (IsIconic(HWindow)) // must restore the minimized window (without activation), otherwise it will remain minimized after the Solve Error dialog is activated/closed
                             ShowWindow(HWindow, SW_SHOWNOACTIVATE);
                         if (SimpleLook)
-                            ToggleSimpleLook(); // dialog musime zobrazit v Detailed podobe
+                            ToggleSimpleLook(); // the dialog must be shown in the detailed form
                         if (workerIndex != -1)
                         {
-                            // provedeme focus workera, u ktereho jdeme resit chybu
+                            // focus the worker whose error we are going to solve
                             BOOL oldEnableChangeFocusedCon = EnableChangeFocusedCon;
                             EnableChangeFocusedCon = FALSE;
                             ListView_SetItemState(ConsListView, workerIndex, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
@@ -1010,7 +1011,7 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                     if (i == ErrorsIndexes.Count)
                                         itemIndex = -1;
                                 }
-                                if (itemIndex != -1) // provedeme focus polozky, u ktere jdeme resit chybu
+                                if (itemIndex != -1) // focus the item whose error we are going to solve
                                 {
                                     BOOL oldEnableChangeFocusedItemUID = EnableChangeFocusedItemUID;
                                     EnableChangeFocusedItemUID = FALSE;
@@ -1028,8 +1029,8 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             else
                                 TRACE_E("Unexpected situation in COperationDlg::DialogProc::OPERDLG_AUTOSHOWERRTIMER!");
                         }
-                        SetTimer(HWindow, OPERDLG_AUTOSHOWERRTIMER2, 100, 0);                         // aby byla "okamzita" reakce na dalsi chybu (PostMessage zde nejde, protoze dalsi okno z nejakeho duvodu pipa, nevyzkoumal jsem proc, zpusobuje to volani WorkersList->PostNewWorkAvailable)
-                        SetTimer(HWindow, OPERDLG_AUTOSHOWERRTIMER, OPERDLG_AUTOSHOWERRPERIOD, NULL); // obnovime pravidelne testovani chyb
+                        SetTimer(HWindow, OPERDLG_AUTOSHOWERRTIMER2, 100, 0);                         // to have an "immediate" reaction to the next error (PostMessage cannot be used here because another window beeps for some reason; I did not investigate why, WorkersList->PostNewWorkAvailable causes it)
+                        SetTimer(HWindow, OPERDLG_AUTOSHOWERRTIMER, OPERDLG_AUTOSHOWERRPERIOD, NULL); // resume regular error checks
                     }
                 }
             }
@@ -1048,7 +1049,7 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
 
     case WM_QUERYDRAGICON:
-        return (BOOL)(INT_PTR)FTPOperIconBig; // nejpis zbytecne
+        return (BOOL)(INT_PTR)FTPOperIconBig; // probably unnecessary
 
     case WM_SIZE:
         LayoutDialog(wParam == SIZE_RESTORED);
@@ -1111,7 +1112,7 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     if (clientRect.bottom - MinClientHeight - yDiff < 0)
                         yDiff = clientRect.bottom - MinClientHeight;
 
-                    // prepocitame pomer zpet podle realne situace (aby to pri resize neblblo)
+                    // recalculate the ratio according to the real situation (so it does not glitch during resizing)
                     if (dy > 0 /* always true */)
                         ListviewSplitRatio = (yDiff + ConnectionsHeight) / (double)dy;
 
@@ -1139,11 +1140,11 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                                   clientRect.right - OperationsBorderWidth, OperationsHeight + yDiffRest,
                                                   SWP_NOZORDER));
 
-                    // aby neproblikavaly scrollbary v listviewech pri zmensovani okna
+                    // prevent scroll bars in the list views from flickering when the window shrinks
                     SendMessage(ConsListView, WM_SETREDRAW, FALSE, 0);
                     SendMessage(ItemsListView, WM_SETREDRAW, FALSE, 0);
 
-                    HANDLES(EndDeferWindowPos(hdwp)); // provedeme premisteni listviewu a tlacitek
+                    HANDLES(EndDeferWindowPos(hdwp)); // perform the repositioning of the list views and buttons
 
                     SendMessage(ConsListView, WM_SETREDRAW, TRUE, 0);
                     SendMessage(ItemsListView, WM_SETREDRAW, TRUE, 0);
@@ -1151,7 +1152,7 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             if (ListviewSplitRatio != oldListviewSplitRatio)
                 SetUserWasActive();
-            return TRUE; // dale nezpracovavat
+            return TRUE; // do not process further
         }
         InListViewSplit = !SimpleLook &&
                           (x >= OperationsXOffset && x <= OperationsXOffset + ConnectionsActWidth &&
@@ -1163,7 +1164,7 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (InListViewSplit)
         {
-            DWORD pos = GetMessagePos(); // provedeme detekci znovu, mys nad buttony negeneruje WM_MOUSEMOVE
+            DWORD pos = GetMessagePos(); // detect it again; the mouse over buttons does not generate WM_MOUSEMOVE
             POINT p;
             p.x = GET_X_LPARAM(pos);
             p.y = GET_Y_LPARAM(pos);
@@ -1174,7 +1175,7 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (InListViewSplit)
             {
                 SetCursor(LoadCursor(NULL, IDC_SIZENS));
-                return TRUE; // dale nezpracovavat
+                return TRUE; // do not process further
             }
         }
         break;
@@ -1191,7 +1192,7 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             SetCapture(HWindow);
             Captured = TRUE;
             DragOriginY = GET_Y_LPARAM(lParam);
-            return TRUE; // dale nezpracovavat
+            return TRUE; // do not process further
         }
         break;
     }
@@ -1217,16 +1218,16 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_CLOSE:
     {
-        if (SendWMClose != NULL &&     // pokud je mozne nechat si poslat WM_CLOSE +
-            !IsWindowEnabled(HWindow)) // pokud mame otevreny modalni dialog, musime ho najit a zavrit,
-        {                              // pak si nechame poslat znovu WM_CLOSE (zajisti "vynoreni"
-                                       // z messageloopy toho modalniho dialogu)
+        if (SendWMClose != NULL &&     // if it is possible to have WM_CLOSE sent to us +
+            !IsWindowEnabled(HWindow)) // if a modal dialog is open, we must find and close it,
+        {                              // then request WM_CLOSE again (ensures it "surfaces"
+                                       // from the message loop of that modal dialog)
             SalamanderGeneral->CloseAllOwnedEnabledDialogs(HWindow);
-            *SendWMClose = TRUE; // nechame si znovu poslat WM_CLOSE
-            return TRUE;         // dale nezpracovavat (close byl zakazan)
+            *SendWMClose = TRUE; // request WM_CLOSE again
+            return TRUE;         // do not process further (closing was denied)
         }
-        DestroyWindow(HWindow); // zrusime okno (std. varianta se snazi o IDCANCEL, to se nam nehodi)
-        return TRUE;            // dale nezpracovavat
+        DestroyWindow(HWindow); // destroy the window (the standard variant tries IDCANCEL, which we do not want)
+        return TRUE;            // do not process further
     }
 
     case WM_DESTROY:
@@ -1238,22 +1239,22 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         ConsListViewObj.DetachWindow();
         ItemsListViewObj.DetachWindow();
 
-        // uvolnime image-list z list-view, chceme image-list uvolnit sami
+        // detach the image list from the list view; we want to release the image list ourselves
         ListView_SetImageList(ConsListView, NULL, LVSIL_SMALL);
         if (ConsImageList != NULL)
         {
             ImageList_Destroy(ConsImageList);
-            ConsImageList = NULL; // simulujeme stav, kdy se imagelist nepodarilo vytvorit
+            ConsImageList = NULL; // simulate the situation where creating the image list failed
         }
         ListView_SetImageList(ItemsListView, NULL, LVSIL_SMALL);
         if (ItemsImageList != NULL)
         {
             ImageList_Destroy(ItemsImageList);
-            ItemsImageList = NULL; // simulujeme stav, kdy se imagelist nepodarilo vytvorit
+            ItemsImageList = NULL; // simulate the situation where creating the image list failed
         }
 
         if (!CloseDlg)
-            Oper->SetOperationDlg(NULL); // od ted jiz objekt dialogu neni platny
+            Oper->SetOperationDlg(NULL); // from now on the dialog object is no longer valid
         PostQuitMessage(0);
         break;
     }
@@ -1274,34 +1275,34 @@ void COperationDlg::SetupCloseButton(BOOL flashTitle)
     case opstFinishedWithSkips:
     case opstSuccessfullyFinished:
         if (Config.CloseOperationDlgIfSuccessfullyFinished && !UserWasActive ||
-            IsWindowEnabled(HWindow) && // pokud neni zrovna otevreny nejaky Solve Error dialog, zavreme na prani usera dialog
+            IsWindowEnabled(HWindow) && // if no Solve Error dialog is currently open, close the dialog at the user's request
                 IsDlgButtonChecked(HWindow, IDC_OPCLOSEWINWHENDONE) == BST_CHECKED)
         {
             winStaysOpened = FALSE;
             PostMessage(HWindow, WM_APP_CLOSEDLG, 0, 0);
         }
-        else // okno zustane otevrene
+        else // the window stays open
         {
-            if (state == opstSuccessfullyFinished && Queue->AllItemsDone()) // vse je "done" -> ukoncime vsechny workery operace, uz nebudou k nicemu potreba
+            if (state == opstSuccessfullyFinished && Queue->AllItemsDone()) // everything is "done" -> stop all operation workers; they will no longer be needed
             {
                 int operUID = Oper->GetUID();
-                FTPOperationsList.StopWorkers(HWindow, operUID, -1 /* vsechny workery */);
+                FTPOperationsList.StopWorkers(HWindow, operUID, -1 /* all workers */);
                 DisableAddWorkerButton = TRUE;
 
-                // Add button disablujeme hned
+                // disable the Add button immediately
                 HWND button = GetDlgItem(HWindow, IDB_OPCONSADD);
                 if (GetFocus() == button)
                     SendMessage(HWindow, WM_NEXTDLGCTL, (WPARAM)GetDlgItem(HWindow, IDCANCEL), TRUE);
                 EnableWindow(button, FALSE);
 
-                // disablujeme checkbox "Close this dialog when operation finishes"
+                // disable the "Close this dialog when operation finishes" checkbox
                 button = GetDlgItem(HWindow, IDC_OPCLOSEWINWHENDONE);
                 if (GetFocus() == button)
                     SendMessage(HWindow, WM_NEXTDLGCTL, (WPARAM)GetDlgItem(HWindow, IDCANCEL), TRUE);
                 EnableWindow(button, FALSE);
             }
         }
-        // tady umyslne neni break;
+        // break is intentionally omitted here;
     case opstFinishedWithErrors:
     {
         SetDlgItemText(HWindow, IDCANCEL, LoadStr(IDS_OPERDLGCLOSEBUTTON1));

@@ -54,14 +54,14 @@ int CMenuData::FindItemIndex(WORD id)
 BOOL CMenuData::LoadMenu(LPCSTR original, LPCSTR translated, CData* data)
 {
     int level = 0;
-    int conflictGroupMax = 0; // nejvyssi cislo group
+    int conflictGroupMax = 0; // highest group number
     TDirectArray<int> conflictGroupStack(100, 100);
-    TDirectArray<DWORD> popupFlagsStack(100, 100); // slouzi pro detekci konciciho popupu
+    TDirectArray<DWORD> popupFlagsStack(100, 100); // used to detect an ending popup
     WORD oID;
     WORD tID;
     char errBuf[3000];
 
-    // ukazka obsahu ConflictGroup pro rozvetvene menu
+    // example of ConflictGroup contents for a nested menu
     // MENU  [ConflictGroup]
     // ---------------------
     // AAAA  [0]
@@ -93,7 +93,7 @@ BOOL CMenuData::LoadMenu(LPCSTR original, LPCSTR translated, CData* data)
             oID = GET_WORD(original);
             tID = GET_WORD(translated);
         }
-        if (oFlags != tFlags && // neshoda flagu vyjma ruzne zapsanych separatoru (prazdny string nebo pres MF_SEPARATOR, jako je to v german menu automation)
+        if (oFlags != tFlags && // flag mismatch except for differently encoded separators (empty string or MF_SEPARATOR as in the German menu automation)
             (oFlags != 0 || MENU_ITEM_TYPE(tFlags) != MF_SEPARATOR ||
              wcslen((LPCWSTR)(original + sizeof(WORD))) != 0) &&
             (tFlags != 0 || MENU_ITEM_TYPE(oFlags) != MF_SEPARATOR ||
@@ -127,7 +127,7 @@ BOOL CMenuData::LoadMenu(LPCSTR original, LPCSTR translated, CData* data)
             MessageBox(GetMsgParent(), errBuf, ERROR_TITLE, MB_OK | MB_ICONEXCLAMATION);
             return FALSE;
         }
-        // umime jen texty a separatory (zapsane jako prazdne stringy i pres MF_SEPARATOR, jako je to v german menu automation)
+        // we support only text items and separators (stored as empty strings or via MF_SEPARATOR as in the German menu automation)
         if (!IS_STRING_ITEM(oFlags) && MENU_ITEM_TYPE(oFlags) != MF_SEPARATOR)
         {
             sprintf_s(errBuf, "Original menu item has not string nor is separator.\n\n"
@@ -165,7 +165,7 @@ BOOL CMenuData::LoadMenu(LPCSTR original, LPCSTR translated, CData* data)
         item.ID = oID;
         item.Flags = oFlags;
         if (oLen == 1)
-            item.State = PROGRESS_STATE_TRANSLATED; // separator, nebude zobrazen, prazdny retezec je "prelozeny"
+            item.State = PROGRESS_STATE_TRANSLATED; // separator, will not be displayed; an empty string counts as "translated"
         else
             item.State = data->QueryTranslationState(tteMenus, Items.Count, ID, item.OString, item.TString);
         item.Level = level;
@@ -177,12 +177,12 @@ BOOL CMenuData::LoadMenu(LPCSTR original, LPCSTR translated, CData* data)
             return FALSE;
         }
 
-        // POZOR -- polozka muze mit zaroven MF_POPUP i MF_END v pripade popupu, ktere jsou posledni ve svem levelu
-        // prazdny popup nemuze existovat (kompiler rve chybu)
-        // popup, ktery na svem levelu za sebou nema dalsi polozku ma flag (MF_POPUP | MF_END)
-        // popup, za kterym jeste neco nasleduje ma flagy MF_POPUP
-        // polozka, ktera neni posledni v popupu nema flag MF_END
-        // polozka, ktera je posledni v popupu ma flag MF_END
+        // NOTE -- an item can have both MF_POPUP and MF_END when the popup is the last one at its level
+        // an empty popup cannot exist (the compiler reports an error)
+        // a popup with no following items at its level uses (MF_POPUP | MF_END)
+        // a popup followed by more items at the same level has MF_POPUP
+        // an item that is not last in a popup does not have MF_END
+        // an item that is last in a popup has MF_END
         if (oFlags & MF_POPUP)
         {
             level++;
@@ -193,7 +193,7 @@ BOOL CMenuData::LoadMenu(LPCSTR original, LPCSTR translated, CData* data)
         }
         if (!(oFlags & MF_POPUP) && (oFlags & MF_END))
         {
-            // jde o polozku, ktera neni popup a zaroven je v popupu posledni
+            // this is a non-popup item that is the last one in its popup
             DWORD popupFlags;
             do
             {
@@ -222,15 +222,15 @@ BOOL CMenuData::LoadMenu(LPCSTR original, LPCSTR translated, CData* data)
     return TRUE;
 }
 
-// maximalne zjednodusene nacitani ciste kvuli hledani v MUIMode
-// pokud bychom meli MENUEX zacit pouzivat i pro ukladani, je ho treba prepsat
+// heavily simplified loading used only for searching in MUIMode
+// if we start using MENUEX for saving as well, this needs to be rewritten
 BOOL CMenuData::LoadMenuEx(LPCSTR original, LPCSTR translated, CData* data)
 {
     char errBuf[3000];
     DWORD muiID = 1;
     DWORD oResinfo;
     int level = 0;
-    TDirectArray<DWORD> popupFlagsStack(100, 100); // slouzi pro detekci konciciho popupu
+    TDirectArray<DWORD> popupFlagsStack(100, 100); // used to detect an ending popup
 
     do
     {
@@ -307,7 +307,7 @@ BOOL CMenuData::LoadMenuEx(LPCSTR original, LPCSTR translated, CData* data)
         }
         if (!(oResinfo & 1) && (oResinfo & MF_END))
         {
-            // jde o polozku, ktera neni popup a zaroven je v popupu posledni
+            // this is a non-popup item that is the last one in its popup
             DWORD popupFlags;
             do
             {
@@ -351,7 +351,7 @@ BOOL CData::SaveMenus(HANDLE hUpdateRes)
             EncodeString(menuItem->TString, (wchar_t**)&iter);
         }
         BOOL result = TRUE;
-        if (menuData->TLangID != MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL)) // resource neni "neutral", musime ho smaznout, aby ve vyslednem .SLG nebyly menu dve
+        if (menuData->TLangID != MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL)) // resource is not "neutral"; delete it so the resulting .SLG does not contain the menu twice
         {
             result = UpdateResource(hUpdateRes, RT_MENU, MAKEINTRESOURCE(menuData->ID),
                                     menuData->TLangID,

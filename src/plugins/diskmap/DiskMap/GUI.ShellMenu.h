@@ -284,7 +284,7 @@ public:
 
     BOOL InvokeDefaultCommand(TCHAR* filename)
     {
-        //if (this->_pcm != NULL) return FALSE; //menu je otevreno
+        //if (this->_pcm != NULL) return FALSE; //the menu is open
 
 #ifdef UNICODE
         WCHAR* wFileName = filename;
@@ -330,7 +330,7 @@ public:
 #endif
     {
         if (this->_pcm != NULL)
-            return NULL; //menu jiz otevreno
+            return NULL; //menu already open
 
         POINT pt = {xPos, yPos};
         /*if (pt.x == -1 && pt.y == -1) {
@@ -360,15 +360,15 @@ public:
 
                 if (
 #ifdef SALAMANDER
-                    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volani InsertMenu() dole...
-MENU_TEMPLATE_ITEM FileMenu[] = 
+                    /* used by the export_mnu.py script, which generates salmenu.mnu for the Translator
+   keep in sync with the InsertMenu() calls below...
+MENU_TEMPLATE_ITEM FileMenu[] =
 {
-	{MNTT_PB, 0
-	{MNTT_IT, IDS_DISKMAP_SHELL_FOCUS
-	{MNTT_IT, IDS_DISKMAP_SHELL_ZOOMIN
-	{MNTT_IT, IDS_DISKMAP_SHELL_ZOOMOUT
-	{MNTT_PE, 0
+        {MNTT_PB, 0
+        {MNTT_IT, IDS_DISKMAP_SHELL_FOCUS
+        {MNTT_IT, IDS_DISKMAP_SHELL_ZOOMIN
+        {MNTT_IT, IDS_DISKMAP_SHELL_ZOOMOUT
+        {MNTT_PE, 0
 };
 */
                     InsertMenu(hmenu, mPos++, MF_BYPOSITION | (canFocus ? MF_ENABLED : MF_GRAYED), IDM_FOCUS, CZResourceString::GetString(IDS_DISKMAP_SHELL_FOCUS)) &&
@@ -389,7 +389,7 @@ MENU_TEMPLATE_ITEM FileMenu[] =
 					}*/
                     else
                     {
-                        //C4245 ok: podle MSDN ma byt -1 pro nevybrani zadneho defaultu
+                        //C4245 ok: according to MSDN it should be -1 to avoid selecting any default
                         SetMenuDefaultItem(hmenu, (UINT)-1, TRUE);
                     }
 #else
@@ -399,7 +399,7 @@ MENU_TEMPLATE_ITEM FileMenu[] =
                     }
                     else
                     {
-                        //C4245 ok: podle MSDN ma byt -1 pro nevybrani zadneho defaultu
+                        //C4245 ok: according to MSDN it should be -1 to avoid selecting any default
                         SetMenuDefaultItem(hmenu, (UINT)-1, TRUE);
                     }
 #endif
@@ -466,7 +466,7 @@ MENU_TEMPLATE_ITEM FileMenu[] =
 #endif
     {
         if (this->_pcm != NULL)
-            return NULL; //menu jiz otevreno
+            return NULL; //menu already open
 
         POINT pt = {xPos, yPos};
         /*if (pt.x == -1 && pt.y == -1) {
@@ -496,9 +496,9 @@ MENU_TEMPLATE_ITEM FileMenu[] =
 
                 if (
 #ifdef SALAMANDER
-                    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volani InsertMenu() dole...
-MENU_TEMPLATE_ITEM DirMenu[] = 
+                    /* used by the export_mnu.py script, which generates salmenu.mnu for the Translator
+   keep in sync with the InsertMenu() calls below...
+MENU_TEMPLATE_ITEM DirMenu[] =
 {
   {MNTT_PB, 0
   {MNTT_IT, IDS_DISKMAP_SHELL_DIROPEN
@@ -523,7 +523,7 @@ MENU_TEMPLATE_ITEM DirMenu[] =
 					}*/
                     else
                     {
-                        //C4245 ok: podle MSDN ma byt -1 pro nevybrani zadneho defaultu
+                        //C4245 ok: according to MSDN it should be -1 to avoid selecting any default
                         SetMenuDefaultItem(hmenu, (UINT)-1, TRUE);
                     }
 #else
@@ -533,7 +533,7 @@ MENU_TEMPLATE_ITEM DirMenu[] =
                     }
                     else
                     {
-                        //C4245 ok: podle MSDN ma byt -1 pro nevybrani zadneho defaultu
+                        //C4245 ok: according to MSDN it should be -1 to avoid selecting any default
                         SetMenuDefaultItem(hmenu, (UINT)-1, TRUE);
                     }
 #endif

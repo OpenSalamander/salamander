@@ -15,15 +15,15 @@ public:
     }
     BOOL TryEnter()
     {
-        return InterlockedExchange(&this->_lock, 1) == 0; // pred zapisem 0 znamena zamknuti, jinak uz bylo zamknute (1)
+        return InterlockedExchange(&this->_lock, 1) == 0; // before writing, 0 means acquire the lock; otherwise it was already locked (1)
     }
     void Enter()
     {
         while (!this->TryEnter())
-            Sleep(0); // Sleep(0): cas pro tento thread preplanujeme jinemu threadu naseho procesu
+            Sleep(0); // Sleep(0): reschedule this thread's time slice to another thread in our process
     }
     void Leave()
     {
-        this->_lock = 0; // zapis 32-bit je vzdy atomicky (nevyzaduje "interlocked" funkci)
+        this->_lock = 0; // 32-bit writes are always atomic (no "interlocked" function required)
     }
 };

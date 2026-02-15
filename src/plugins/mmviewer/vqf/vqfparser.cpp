@@ -84,7 +84,7 @@ CParserVQF::GetFileInfo(COutputInterface* output)
                 {'(', 'c', ')', ' ', IDS_VQF_COPYRIGHT, NULL},
                 {'F', 'I', 'L', 'E', IDS_VQF_ORIGFILENAME, NULL},
 
-                //TODO nevim presne co tyhle tafy znamenaji, musite si to zjisit
+                //TODO I do not know exactly what these tags mean, you will have to find out
                 {'L', 'Y', 'R', 'C', IDS_VQF_LYRC, NULL},
                 {'W', 'O', 'R', 'D', IDS_VQF_WORD, NULL},
                 {'M', 'U', 'S', 'C', IDS_VQF_MUSC, NULL},
@@ -104,11 +104,11 @@ CParserVQF::GetFileInfo(COutputInterface* output)
 
         while (fread(&tag, sizeof(tag), 1, f))
         {
-            //konec
+            // end
             if (tag.Compare("DATA"))
                 break;
 
-            //kdyz po 64k nenasel zadny tag, vzdej to
+            // if no tag was found after 64k, give up
             if (!first_tag_found && ftell(f) > 64000)
                 return preUnknownFile;
 
@@ -121,7 +121,7 @@ CParserVQF::GetFileInfo(COutputInterface* output)
                 {
                     tag.len = SWAP_DW(tag.len);
 
-                    if (tag.len > 8192) //zcela urcite chyba
+                    if (tag.len > 8192) // definitely an error
                         break;
 
                     char* mem = (char*)malloc(tag.len + 1);
@@ -142,7 +142,7 @@ CParserVQF::GetFileInfo(COutputInterface* output)
                 }
             }
 
-            //tag nenalezen
+            // tag not found
             if (!ok)
                 fseek(f, -signed(sizeof(tag)) + 1, SEEK_CUR);
         }

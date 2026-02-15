@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -42,14 +43,14 @@ COperationDlg::COperationDlg(HWND parent, HWND centerToWnd, CFTPOperation* oper,
     ConsImageList = ImageList_Create(16, 16, ILC_MASK | SalamanderGeneral->GetImageListColorFlags(), 1, 0);
     if (ConsImageList != NULL)
     {
-        ImageList_SetImageCount(ConsImageList, 1); // inicializace
+        ImageList_SetImageCount(ConsImageList, 1); // initialization
         ImageList_ReplaceIcon(ConsImageList, 0, FTPIcon);
     }
 
     ItemsImageList = ImageList_Create(16, 16, ILC_MASK | SalamanderGeneral->GetImageListColorFlags(), 2, 0);
     if (ItemsImageList != NULL)
     {
-        ImageList_SetImageCount(ItemsImageList, 2); // inicializace
+        ImageList_SetImageCount(ItemsImageList, 2); // initialization
         const char* Shell32DLLName = "shell32.dll";
         HINSTANCE iconsDLL;
         if (WindowsVistaAndLater)
@@ -190,9 +191,9 @@ COperationDlg::COperationDlg(HWND parent, HWND centerToWnd, CFTPOperation* oper,
 
     PauseButtonIsEnabled = TRUE;
     PauseButtonIsResume = FALSE;
-    PauseButtonPauseText[0] = 0; // plni se az v WM_INITDIALOG
+    PauseButtonPauseText[0] = 0; // filled in WM_INITDIALOG
     ConPauseButtonIsResume = FALSE;
-    ConPauseButtonPauseText[0] = 0; // plni se az v WM_INITDIALOG
+    ConPauseButtonPauseText[0] = 0; // filled in WM_INITDIALOG
 }
 
 COperationDlg::~COperationDlg()
@@ -201,8 +202,8 @@ COperationDlg::~COperationDlg()
     {
         HANDLE t = GetDiskFreeSpaceThread->GetHandle();
         GetDiskFreeSpaceThread->ScheduleTerminate();
-        GetDiskFreeSpaceThread = NULL;       // thread se ukonci a pritom se necha dealokovat
-        AuxThreadQueue.WaitForExit(t, 1000); // dame threadu sanci se ukoncit
+        GetDiskFreeSpaceThread = NULL;       // the thread terminates and deallocates itself
+        AuxThreadQueue.WaitForExit(t, 1000); // give the thread a chance to terminate
     }
     if (ConsImageList != NULL)
         ImageList_Destroy(ConsImageList);
@@ -251,7 +252,7 @@ void COperationDlg::ShowControlsAndChangeSize(BOOL simple)
             }
             if (focus != NULL && !IsWindowVisible(focus))
             {
-                // Details musi byt enabled, jinak by tato akce nenastala, hodime na nej fokus
+                // Details must be enabled or this action would not occur, so set focus to it
                 SendMessage(HWindow, WM_NEXTDLGCTL, (WPARAM)GetDlgItem(HWindow, IDB_SHOWDETAILS), TRUE);
             }
         }
@@ -266,7 +267,7 @@ void COperationDlg::ShowControlsAndChangeSize(BOOL simple)
             else
                 placement.rcNormalPosition.bottom = placement.rcNormalPosition.top + LastDlgHeight1;
             if (!visible)
-                placement.showCmd = SW_HIDE; // visible muze byt FALSE jen pri volani z WM_INITDIALOG; resi se tu: pri maximized stavu pri otevirani se ukazovalo jako restored a pak teprve jako maximized (problikavalo)
+                placement.showCmd = SW_HIDE; // visible can be FALSE only when called from WM_INITDIALOG; fixes flicker when opening maximized window, which first showed restored then maximized
             SetWindowPlacement(HWindow, &placement);
         }
     }
@@ -281,14 +282,14 @@ void COperationDlg::SetDlgTitle(int progressValue, const char* state)
         char* text = txt;
         if (progressValue != -1)
         {
-            _snprintf_s(txt, _TRUNCATE, "(%d %%) %s", (int)((progressValue /*+ 5*/) / 10), TitleText); // nezaokrouhlujeme (100% musi byt az pri 100% a ne pri 99.5%)
+            _snprintf_s(txt, _TRUNCATE, "(%d %%) %s", (int)((progressValue /*+ 5*/) / 10), TitleText); // do not round (100% must appear only at 100%, not at 99.5%)
         }
         else
         {
             if (state != NULL)
                 _snprintf_s(txt, _TRUNCATE, "(%s) %s", state, TitleText);
             else
-                text = TitleText; // progress neznamy, status tez neznamy (ukazuje se jen cisty titulek)
+                text = TitleText; // progress unknown, status also unknown (shows plain title)
         }
         if (!GetWindowText(HWindow, txt2, 500) || strcmp(text, txt2) != 0)
         {
@@ -297,7 +298,7 @@ void COperationDlg::SetDlgTitle(int progressValue, const char* state)
             while (foreground != HWindow && (foreground = ::GetParent(foreground)) != NULL)
                 ;
             if (foreground != HWindow && CurrentFlashWnd != NULL)
-                FlashWindow(CurrentFlashWnd, TRUE); // zmena titulku vede ke ztrate flashe, musime ho nastavit znovu
+                FlashWindow(CurrentFlashWnd, TRUE); // changing the title cancels flashing, so enable it again
         }
     }
 }
@@ -306,8 +307,8 @@ void COperationDlg::ScheduleDelayedUpdate()
 {
     if (!HasDelayedUpdateTimer)
     {
-        UpdateDataInDialog(); // provedeme refresh
-        // dalsi refresh provedeme nejdrive za OPERDLG_UPDATEPERIOD milisekund
+        UpdateDataInDialog(); // perform a refresh
+        // schedule the next refresh no sooner than OPERDLG_UPDATEPERIOD milliseconds later
         HasDelayedUpdateTimer = (SetTimer(HWindow, OPERDLG_UPDATETIMER, OPERDLG_UPDATEPERIOD, NULL) != 0);
     }
 }
@@ -316,7 +317,7 @@ BOOL COperationDlg::UpdateDataInDialog()
 {
     BOOL reportProgressChange = TRUE;
     int workerID = -1;
-    if (IsDirtyConsListView) // zjistime, co se vlastne zmenilo
+    if (IsDirtyConsListView) // find out what actually changed
         workerID = Oper->GetChangedWorker(&reportProgressChange);
 
     BOOL change = IsDirtyStatus || IsDirtyProgress && reportProgressChange ||
@@ -327,14 +328,14 @@ BOOL COperationDlg::UpdateDataInDialog()
     {
         IsDirtyConsListView = FALSE;
 
-        if (workerID != -1) // zmena jednoho workera
+        if (workerID != -1) // change of a single worker
         {
-            // prekreslime zmeneneho workera
+            // redraw the changed worker
             int index = WorkersList->GetWorkerIndex(workerID);
             RefreshConnections(FALSE, -1, index);
         }
         else
-            RefreshConnections(FALSE); // zmena ve vice nez dvou workerech -> refreshenem vsechny
+            RefreshConnections(FALSE); // change in more than two workers -> refresh all of them
         EnablePauseButton();
     }
 
@@ -401,7 +402,7 @@ BOOL COperationDlg::UpdateDataInDialog()
         }
 
         BOOL reallyInProgress = FALSE;
-        if (operState == opstInProgress) // zkontrolujeme jestli existuje aspon jeden nepausnuty worker, jinak se neda mluvit o probihajici operaci
+        if (operState == opstInProgress) // verify there is at least one worker not paused; otherwise the operation is not actually running
             reallyInProgress = !WorkersList->EmptyOrAllShouldStop() && !PauseButtonIsResume && PauseButtonIsEnabled;
 
         char num1[100];
@@ -442,7 +443,7 @@ BOOL COperationDlg::UpdateDataInDialog()
                 }
                 lstrcpyn(statusText + statusTextLen, num1, 300 - statusTextLen);
             }
-            if (reallyInProgress) // status bude jen u probihajici operace
+            if (reallyInProgress) // show status only for a running operation
             {
                 DWORD transferIdleTime;
                 DWORD speed = Oper->GetGlobalTransferSpeedMeter()->GetSpeed(&transferIdleTime);
@@ -450,11 +451,11 @@ BOOL COperationDlg::UpdateDataInDialog()
                 {
                     if (totalCount > 0 && transferIdleTime <= 30)
                     {
-                        DWORD secs = (SMPLCMD_APPROXBYTESIZE * waitingCount) / speed; // odhad zbyvajicich sekund
-                        secs++;                                                       // jedna vterina navic, abysme koncili operaci s "time left: 1 sec" (misto 0 sec)
+                        DWORD secs = (SMPLCMD_APPROXBYTESIZE * waitingCount) / speed; // estimate remaining seconds
+                        secs++;                                                       // add one second so we end with "time left: 1 sec" instead of 0 sec
                         if (LastTimeEstimation != -1)
                             secs = (2 * secs + LastTimeEstimation) / 3;
-                        // vypocet zaokrouhleni (zhruba 10% chyba + zaokrouhlujeme po hezkych cislech 1,2,5,10,20,40)
+                        // rounding calculation (roughly 10% error + round to nice numbers 1,2,5,10,20,40)
                         DWORD dif = (secs + 5) / 10;
                         int expon = 0;
                         while (dif >= 50)
@@ -476,7 +477,7 @@ BOOL COperationDlg::UpdateDataInDialog()
                             dif = 40;
                         while (expon--)
                             dif *= 60;
-                        secs = ((secs + dif / 2) / dif) * dif; // zaokrouhlime 'secs' na 'dif' sekund
+                        secs = ((secs + dif / 2) / dif) * dif; // round 'secs' to 'dif' seconds
                         SalamanderGeneral->PrintTimeLeft(timeLeftText, CQuadWord(secs, 0));
                         LastTimeEstimation = secs;
                     }
@@ -493,13 +494,13 @@ BOOL COperationDlg::UpdateDataInDialog()
                         _snprintf_s(statusText + statusTextLen, 300 - statusTextLen, _TRUNCATE, LoadStr(IDS_OPERDLGCONNECTIONSIDLE2), num1);
                     }
                 }
-                //        else progressValue = -1;  // zakomentovano, protoze pri Pause/Resume vypina nesmyslne hodnotu progresu
+                //        else progressValue = -1;  // commented out because Pause/Resume resets progress to a nonsensical value
             }
         }
         else
         {
             if (operType == fotCopyDownload || operType == fotMoveDownload ||
-                operType == fotCopyUpload || operType == fotMoveUpload) // status bude zatim jen u Copy a Move
+                operType == fotCopyUpload || operType == fotMoveUpload) // status will only be shown for Copy and Move for now
             {
                 if (total != CQuadWord(0, 0) || transferred != CQuadWord(0, 0))
                 {
@@ -540,7 +541,7 @@ BOOL COperationDlg::UpdateDataInDialog()
                     }
                     lstrcpyn(statusText + statusTextLen, num1, 300 - statusTextLen);
                 }
-                if (reallyInProgress) // status bude jen u probihajici operace
+                if (reallyInProgress) // show status only for a running operation
                 {
                     DWORD transferIdleTime;
                     DWORD speed = Oper->GetGlobalTransferSpeedMeter()->GetSpeed(&transferIdleTime);
@@ -548,11 +549,11 @@ BOOL COperationDlg::UpdateDataInDialog()
                     {
                         if (total > CQuadWord(0, 0) && speed > 0 && transferIdleTime <= 30)
                         {
-                            CQuadWord secs = waiting / CQuadWord(speed, 0); // odhad zbyvajicich sekund
-                            secs.Value++;                                   // jedna vterina navic, abysme koncili operaci s "time left: 1 sec" (misto 0 sec)
+                            CQuadWord secs = waiting / CQuadWord(speed, 0); // estimate remaining seconds
+                            secs.Value++;                                   // add one second so we end with "time left: 1 sec" instead of 0 sec
                             if (LastTimeEstimation != -1)
                                 secs = (CQuadWord(2, 0) * secs + CQuadWord(LastTimeEstimation, 0)) / CQuadWord(3, 0);
-                            // vypocet zaokrouhleni (zhruba 10% chyba + zaokrouhlujeme po hezkych cislech 1,2,5,10,20,40)
+                            // rounding calculation (roughly 10% error + round to nice numbers 1,2,5,10,20,40)
                             CQuadWord dif = (secs + CQuadWord(5, 0)) / CQuadWord(10, 0);
                             int expon = 0;
                             while (dif >= CQuadWord(50, 0))
@@ -574,7 +575,7 @@ BOOL COperationDlg::UpdateDataInDialog()
                                 dif = CQuadWord(40, 0);
                             while (expon--)
                                 dif *= CQuadWord(60, 0);
-                            secs = ((secs + dif / CQuadWord(2, 0)) / dif) * dif; // zaokrouhlime 'secs' na 'dif' sekund
+                            secs = ((secs + dif / CQuadWord(2, 0)) / dif) * dif; // round 'secs' to 'dif' seconds
                             SalamanderGeneral->PrintTimeLeft(timeLeftText, secs);
                             LastTimeEstimation = (int)secs.Value;
                         }
@@ -638,7 +639,7 @@ BOOL COperationDlg::UpdateDataInDialog()
         if (progressValue < -1)
         {
             TRACE_E("COperationDlg::UpdateDataInDialog(): attempt to set progress smaller than 0 (and not -1)! ... " << progressValue);
-            progressValue = 0; // -1 je hodnota pro "unknown progress"
+            progressValue = 0; // -1 means "unknown progress"
         }
         if (reallyInProgress)
         {
@@ -673,13 +674,13 @@ BOOL COperationDlg::UpdateDataInDialog()
                 else
                 {
                     SetDlgTitle(-1, (progressTxt = LoadStr(WorkersList->EmptyOrAllShouldStop() ? IDS_OPERDLGTITLE_STOPPED : WorkersList->AtLeastOneWorkerIsWaitingForUser() ? IDS_OPERDLGTITLE_WAITING
-                                                                                                                                                                            : IDS_OPERDLGTITLE_PAUSED))); // neni hotovo, ale nejsou pridany zadni workeri, takze operace nebezi...
+                                                                                                                                                                            : IDS_OPERDLGTITLE_PAUSED))); // not finished, but no workers are added, so the operation is not running...
                 }
             }
             if ((int)ProgressValue < 0)
             {
                 if (ProgressValue == -1)
-                    Progress->Stop(); // zastavime okamzite pohyb progresu
+                    Progress->Stop(); // stop the progress animation immediately
                 Progress->SetProgress(0, progressTxt);
                 progressValue = -2;
             }
@@ -691,7 +692,7 @@ BOOL COperationDlg::UpdateDataInDialog()
         }
         ProgressValue = progressValue;
 
-        if (operState == opstInProgress && // kontrola mista na disku ma smysl jen pokud jeste neni dokoncena operace
+        if (operState == opstInProgress && // checking disk space only makes sense while the operation is not finished yet
             (operType == fotCopyDownload || operType == fotMoveDownload) &&
             waiting > CQuadWord(0, 0) &&
             GetDiskFreeSpaceThread != NULL &&
@@ -705,7 +706,7 @@ BOOL COperationDlg::UpdateDataInDialog()
         {
             if (operState != opstInProgress && ShowLowDiskWarning)
             {
-                LastNeededDiskSpace.Set(-1, -1); // zneplatneni
+                LastNeededDiskSpace.Set(-1, -1); // invalidate
                 SetShowLowDiskWarning(FALSE);
                 LayoutDialog(SizeBox != NULL ? IsWindowVisible(SizeBox) : 0);
             }
@@ -716,20 +717,20 @@ BOOL COperationDlg::UpdateDataInDialog()
     {
         IsDirtyItemsListView = FALSE;
 
-        // zjistime, co se vlastne zmenilo
+        // determine what actually changed
         int itemUID1, itemUID2;
         Oper->GetChangedItems(&itemUID1, &itemUID2);
-        if (!ShowOnlyErrors && itemUID1 != -1) // zmena jedne polozky (pri ShowOnlyErrors neni povoleno, nutny refresh vsech polozek - mozne schovani/ukazani polozky)
+        if (!ShowOnlyErrors && itemUID1 != -1) // change of a single item (ShowOnlyErrors disallows this; must refresh all items because the item may hide/show)
         {
-            // prekreslime zmenenou polozku
+            // redraw the changed item
             int index1 = Queue->GetItemIndex(itemUID1);
             int index2 = itemUID2 != -1 ? Queue->GetItemIndex(itemUID2) : -1;
             if (itemUID2 != -1 && index2 == -1)
-                index1 = -1;                     // nezname druha polozka, radsi refreshneme vse
-            RefreshItems(FALSE, index1, index2); // index1==-1 je refresh vsech polozek (nastava: neznama polozka)
+                index1 = -1;                     // second item unknown, so refresh everything
+            RefreshItems(FALSE, index1, index2); // index1==-1 refreshes all items (happens when the item is unknown)
         }
         else
-            RefreshItems(FALSE); // zmena ve vice nez dvou polozkach -> refreshenem vsechny
+            RefreshItems(FALSE); // change in more than two items -> refresh all of them
     }
     if (listsChange)
         EnableErrorsButton();
@@ -744,7 +745,7 @@ void COperationDlg::InitColumns()
     lvc.mask = LVCF_FMT | LVCF_TEXT | LVCF_SUBITEM;
     lvc.fmt = LVCFMT_LEFT;
     int i;
-    for (i = 0; i < 3; i++) // vytvorim sloupce
+    for (i = 0; i < 3; i++) // create columns
     {
         lvc.pszText = LoadStr(header[i]);
         lvc.iSubItem = i;
@@ -752,7 +753,7 @@ void COperationDlg::InitColumns()
     }
     int header2[2] = {IDS_OPERDLGOPERS_DESCR, IDS_OPERDLGOPERS_STATUS};
     int j;
-    for (j = 0; j < 2; j++) // vytvorim sloupce
+    for (j = 0; j < 2; j++) // create columns
     {
         lvc.pszText = LoadStr(header2[j]);
         lvc.iSubItem = j;
@@ -766,28 +767,28 @@ void COperationDlg::InitColumns()
 
 void COperationDlg::SetColumnWidths()
 {
-    if (!IsIconic(HWindow)) // pokud je minimalizovane, zavola se po restore znovu
+    if (!IsIconic(HWindow)) // if it is minimized, this is called again after restore
     {
         RECT r;
         GetWindowRect(ItemsListView, &r);
-        r.right -= r.left + OperationsEdges; // sirku maji oba listview stejnou
+        r.right -= r.left + OperationsEdges; // both list views share the same width
 
-        int cxID = ListView_GetStringWidth(ConsListView, "00") + 16 + 8; // + ikona + "padding"
+        int cxID = ListView_GetStringWidth(ConsListView, "00") + 16 + 8; // + icon + "padding"
         ListView_SetColumnWidth(ConsListView, 0, cxID);
-        ListView_SetColumnWidth(ConsListView, 1, r.right * 0.3); // 30% mista zabere sloupec Action
+        ListView_SetColumnWidth(ConsListView, 1, r.right * 0.3); // column Action occupies 30% of the space
         int cxScroll = GetSystemMetrics(SM_CXHSCROLL);
         int lastCX = r.right - cxID - (int)(r.right * 0.3) - cxScroll;
-        ListView_SetColumnWidth(ConsListView, 2, lastCX); // zbytek zabere sloupec Status
+        ListView_SetColumnWidth(ConsListView, 2, lastCX); // the rest is used by the Status column
 
-        ListView_SetColumnWidth(ItemsListView, 0, r.right * 0.7); // 70% mista zabere sloupec Description
+        ListView_SetColumnWidth(ItemsListView, 0, r.right * 0.7); // column Description occupies 70% of the space
         lastCX = r.right - (int)(r.right * 0.7) - cxScroll;
-        ListView_SetColumnWidth(ItemsListView, 1, lastCX); // zbytek zabere sloupec Status
+        ListView_SetColumnWidth(ItemsListView, 1, lastCX); // the rest is used by the Status column
     }
 }
 
 void COperationDlg::RefreshConnections(BOOL init, int newFocusIndex, int refreshOnlyIndex)
 {
-    if (refreshOnlyIndex == -1) // refresh vsech
+    if (refreshOnlyIndex == -1) // refresh all
     {
         EnableChangeFocusedCon = FALSE;
         int topIndex = ListView_GetTopIndex(ConsListView);
@@ -795,12 +796,12 @@ void COperationDlg::RefreshConnections(BOOL init, int newFocusIndex, int refresh
 
         SendMessage(ConsListView, WM_SETREDRAW, FALSE, 0);
 
-        // urcime a nastavime pocet polozek v listview + najdeme index prvni chyby
+        // determine and set the number of items in the list view and find the index of the first error
         int count = WorkersList->GetCount();
         ListView_SetItemCountEx(ConsListView, count, LVSICF_NOSCROLL);
         ConErrorIndex = WorkersList->GetFirstErrorIndex();
 
-        // enablujeme button Add
+        // enable the Add button
         HWND button = GetDlgItem(HWindow, IDB_OPCONSADD);
         if (IsWindowEnabled(button) && DisableAddWorkerButton)
         {
@@ -809,7 +810,7 @@ void COperationDlg::RefreshConnections(BOOL init, int newFocusIndex, int refresh
             EnableWindow(button, FALSE);
         }
 
-        // enablujeme button Stop
+        // enable the Stop button
         button = GetDlgItem(HWindow, IDB_OPCONSSTOP);
         if ((IsWindowEnabled(button) != 0) != (count > 0))
         {
@@ -818,19 +819,19 @@ void COperationDlg::RefreshConnections(BOOL init, int newFocusIndex, int refresh
             EnableWindow(button, count > 0);
         }
 
-        // schovame pripadny tooltip
+        // hide any tooltip
         ConsListViewObj.HideToolTip();
 
-        // fokusneme zvolenou polozku
+        // focus the selected item
         if (count > 0)
         {
-            if (init) // fokus 0. polozky
+            if (init) // focus the first item
             {
                 ListView_SetItemState(ConsListView, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
                 if (!ConsListViewObj.Scrolling)
                     ListView_EnsureVisible(ConsListView, 0, FALSE);
             }
-            else // co nejsetrnejsi refresh listview (zachovava top-index + focusi podle UID nebo posledniho fokusu)
+            else // refresh the list view as gently as possible (preserves top index and focus by UID or the last focus)
             {
                 if (newFocusIndex != -1)
                     lastFocus = newFocusIndex;
@@ -845,7 +846,7 @@ void COperationDlg::RefreshConnections(BOOL init, int newFocusIndex, int refresh
                         topIndex = count - 1;
                     if (topIndex < 0)
                         topIndex = 0;
-                    // nahrazka za SetTopIndex u list-view
+                    // replacement for SetTopIndex on list view
                     if (!ConsListViewObj.Scrolling)
                     {
                         ListView_EnsureVisible(ConsListView, count - 1, FALSE);
@@ -862,20 +863,20 @@ void COperationDlg::RefreshConnections(BOOL init, int newFocusIndex, int refresh
         EnableChangeFocusedCon = TRUE;
         SendMessage(ConsListView, WM_SETREDRAW, TRUE, 0);
     }
-    else // refresh jedineho workera
+    else // refresh a single worker
     {
-        // najdeme index prvni chyby (mohl se zmenit i se zmenou jednoho workera)
+        // find the first error index (it might change even when a single worker changes)
         ConErrorIndex = WorkersList->GetFirstErrorIndex();
 
-        // schovame pripadny tooltip
+        // hide any tooltip
         ConsListViewObj.HideToolTip(refreshOnlyIndex);
 
-        // prekreslime zmeneneho workera
+        // redraw the changed worker
         ListView_RedrawItems(ConsListView, refreshOnlyIndex, refreshOnlyIndex);
     }
 
-    EnableSolveConError(-1);  // jeste enablujeme Solve Error button (zmena fokusu)
-    EnablePauseConButton(-1); // jeste nastavime Pause button (zmena fokusu)
+    EnableSolveConError(-1);  // also enable the Solve Error button (focus change)
+    EnablePauseConButton(-1); // also update the Pause button (focus change)
 }
 
 void COperationDlg::RefreshItems(BOOL init, int refreshOnlyIndex1, int refreshOnlyIndex2)
@@ -888,7 +889,7 @@ void COperationDlg::RefreshItems(BOOL init, int refreshOnlyIndex1, int refreshOn
     int allIndex, errIndex;
     int errCount = Queue->GetUserInputNeededCount(ShowOnlyErrors, &ErrorsIndexes,
                                                   FocusedItemUID, &allIndex, &errIndex);
-    // disablujeme "only errors" checkbox pokud nejsou polozky s errory ("user input neeeded")
+    // disable the "only errors" checkbox when there are no items with errors ("user input needed")
     if (errCount <= 0 && ShowOnlyErrors)
     {
         ShowOnlyErrors = FALSE;
@@ -903,24 +904,24 @@ void COperationDlg::RefreshItems(BOOL init, int refreshOnlyIndex1, int refreshOn
         EnableWindow(check, EnableShowOnlyErrors);
     }
 
-    if (ShowOnlyErrors || refreshOnlyIndex1 == -1) // refresh vsech (pri filtrovani erroru nutnost)
+    if (ShowOnlyErrors || refreshOnlyIndex1 == -1) // refresh everything (mandatory when filtering errors)
     {
         int topIndex = ListView_GetTopIndex(ItemsListView);
         int lastFocus = ListView_GetNextItem(ItemsListView, -1, LVIS_FOCUSED);
 
         SendMessage(ItemsListView, WM_SETREDRAW, FALSE, 0);
 
-        // urcime a nastavime pocet polozek v listview
+        // determine and set the number of items in the list view
         int count = ShowOnlyErrors ? errCount : Queue->GetCount();
         ListView_SetItemCountEx(ItemsListView, count, LVSICF_NOSCROLL);
 
-        // schovame pripadny tooltip
+        // hide any tooltip
         ItemsListViewObj.HideToolTip();
 
-        // fokusneme zvolenou polozku
+        // focus the selected item
         if (count > 0)
         {
-            if (init) // fokus 0. polozky
+            if (init) // focus the first item
             {
                 ListView_SetItemState(ItemsListView, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
                 if (!ItemsListViewObj.Scrolling)
@@ -930,7 +931,7 @@ void COperationDlg::RefreshItems(BOOL init, int refreshOnlyIndex1, int refreshOn
                     focusIndex = ErrorsIndexes[0];
                 FocusedItemUID = Queue->GetItemUID(focusIndex);
             }
-            else // co nejsetrnejsi refresh listview (zachovava top-index + focusi podle UID nebo posledniho fokusu)
+            else // refresh the list view as gently as possible (preserves top index and focus by UID or the last focus)
             {
                 int index = lastFocus >= 0 ? lastFocus : 0;
                 if (ShowOnlyErrors)
@@ -952,7 +953,7 @@ void COperationDlg::RefreshItems(BOOL init, int refreshOnlyIndex1, int refreshOn
                         topIndex = count - 1;
                     if (topIndex < 0)
                         topIndex = 0;
-                    // nahrazka za SetTopIndex u list-view
+                    // replacement for SetTopIndex on list view
                     if (!ItemsListViewObj.Scrolling)
                     {
                         ListView_EnsureVisible(ItemsListView, count - 1, FALSE);
@@ -974,21 +975,21 @@ void COperationDlg::RefreshItems(BOOL init, int refreshOnlyIndex1, int refreshOn
 
         SendMessage(ItemsListView, WM_SETREDRAW, TRUE, 0);
     }
-    else // refresh jedne nebo dvou polozek
+    else // refresh one or two items
     {
-        // schovame pripadny tooltip
+        // hide any tooltip
         ItemsListViewObj.HideToolTip(refreshOnlyIndex1);
         if (refreshOnlyIndex2 != -1)
             ItemsListViewObj.HideToolTip(refreshOnlyIndex2);
 
-        // prekreslime zmenenou polozku
+        // redraw the changed item
         ListView_RedrawItems(ItemsListView, refreshOnlyIndex1, refreshOnlyIndex1);
         if (refreshOnlyIndex2 != -1)
             ListView_RedrawItems(ItemsListView, refreshOnlyIndex2, refreshOnlyIndex2);
     }
 
     EnableChangeFocusedItemUID = TRUE;
-    EnableRetryItem(-1); // jeste enablujeme Retry button (zmena fokusu)
+    EnableRetryItem(-1); // also enable the Retry button (focus change)
 }
 
 void COperationDlg::EnableErrorsButton()
@@ -1212,19 +1213,19 @@ void COperationDlg::LayoutDialog(BOOL showSizeBox)
             {
                 hdwp = HANDLES(DeferWindowPos(hdwp, SizeBox, NULL, clientRect.right - SizeBoxWidth,
                                               clientRect.bottom - SizeBoxHeight, SizeBoxWidth, SizeBoxHeight, SWP_NOZORDER));
-                // pry nejde show/hide kombinovat se zmenou velikosti a posunem
+                // apparently show/hide cannot be combined with resizing and moving
                 hdwp = HANDLES(DeferWindowPos(hdwp, SizeBox, NULL, 0, 0, 0, 0,
                                               SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | (showSizeBox ? SWP_SHOWWINDOW : SWP_HIDEWINDOW)));
             }
 
-            if (!SimpleLook) // aby neproblikavaly scrollbary v listviewech pri zmensovani okna
+            if (!SimpleLook) // prevent list view scroll bars from flickering when shrinking the window
             {
                 SendMessage(ConsListView, WM_SETREDRAW, FALSE, 0);
                 SendMessage(ItemsListView, WM_SETREDRAW, FALSE, 0);
             }
 
-            HANDLES(EndDeferWindowPos(hdwp)); // provedeme premisteni vsech prvku dialogu
-            SetColumnWidths();                // jeste nastavime nove sire sloupcu v listviewech
+            HANDLES(EndDeferWindowPos(hdwp)); // reposition all dialog elements
+            SetColumnWidths();                // also set the new column widths in the list views
 
             if (!SimpleLook)
             {
@@ -1232,7 +1233,7 @@ void COperationDlg::LayoutDialog(BOOL showSizeBox)
                 SendMessage(ItemsListView, WM_SETREDRAW, TRUE, 0);
             }
 
-            // progress je treba invalidatnout, nejak nebere ohled na zmenu velikosti (posun cisla %)
+            // progress must be invalidated; otherwise it ignores the size change (percentage text shifts)
             InvalidateRect(GetDlgItem(HWindow, IDC_OPPROGRESS), NULL, FALSE);
         }
     }
@@ -1256,10 +1257,10 @@ void COperationDlg::SolveErrorOnConnection(int index)
     CCertificate* unverifiedCertificate;
     if (WorkersList->GetErrorDescr(index, errBuf, FTPWORKER_ERRDESCR_BUFSIZE, &unverifiedCertificate))
     {
-        if (unverifiedCertificate != NULL) // SSL: doslo ke zmene certifikatu serveru a ten novy nelze overit duveryhodnou certifikacni autoritou, musime se tedy zeptat usera, jestli chce novemu certifikatu duverovat
+        if (unverifiedCertificate != NULL) // SSL: the server certificate changed and the new one cannot be verified by a trusted certificate authority, so ask the user whether to trust it
         {
             char errBuf2[300];
-            if (!unverifiedCertificate->CheckCertificate(errBuf2, 300)) // nechame znovu overit certifikat + ziskat prislusnou chybovou hlasku
+            if (!unverifiedCertificate->CheckCertificate(errBuf2, 300)) // revalidate the certificate and obtain the corresponding error message
             {
                 INT_PTR dlgRes;
                 do
@@ -1270,23 +1271,23 @@ void COperationDlg::SolveErrorOnConnection(int index)
                     DlgWillCloseIfOpFinWithSkips = (IsDlgButtonChecked(HWindow, IDC_OPCLOSEWINWHENDONE) == BST_CHECKED);
                     if (CurrentFlashWnd != NULL)
                     {
-                        FlashWindow(CurrentFlashWnd, FALSE); // pod W2K+ uz asi neni potreba: flashovani se musi odstranit rucne
+                        FlashWindow(CurrentFlashWnd, FALSE); // on W2K+ this is probably no longer needed: flashing must be cleared manually
                         CurrentFlashWnd = NULL;
                     }
                     switch (dlgRes)
                     {
                     case IDOK: // Accept once
                     {
-                        LastActivityTime = GetTickCount() - OPERDLG_SHOWERRMINIDLETIME; // simulace "idle" (aby dalsi error mohl prijit hned)
+                        LastActivityTime = GetTickCount() - OPERDLG_SHOWERRMINIDLETIME; // simulate "idle" so the next error can appear immediately
                         Oper->SetCertificate(unverifiedCertificate);
-                        // dame vedet vsem workerum s chybou connectiony
+                        // notify all workers with a connection error
                         WorkersList->PostLoginChanged(-1);
                         break;
                     }
 
-                    case IDCANCEL: // user dal Cancel, dalsi chybu ukazeme az po timeoutu
+                    case IDCANCEL: // user pressed Cancel; show the next error after a timeout
                     {
-                        //              SetUserWasActive();  // zakomentovano, aby po ESC ze Solve Error dialogu okno operace bylo stale jeste "untouched"
+                        //              SetUserWasActive();  // commented out to keep the operation window "untouched" after ESC from the Solve Error dialog
                         DelayAfterCancel = TRUE;
                         LastActivityTime = GetTickCount();
                         break;
@@ -1300,24 +1301,24 @@ void COperationDlg::SolveErrorOnConnection(int index)
                         DlgWillCloseIfOpFinWithSkips = (IsDlgButtonChecked(HWindow, IDC_OPCLOSEWINWHENDONE) == BST_CHECKED);
                         if (CurrentFlashWnd != NULL)
                         {
-                            FlashWindow(CurrentFlashWnd, FALSE); // pod W2K+ uz asi neni potreba: flashovani se musi odstranit rucne
+                            FlashWindow(CurrentFlashWnd, FALSE); // on W2K+ this is probably no longer needed: flashing must be cleared manually
                             CurrentFlashWnd = NULL;
                         }
-                        if (SendWMClose != NULL && *SendWMClose) // progress dialog se zavira -> koncime
+                        if (SendWMClose != NULL && *SendWMClose) // progress dialog is closing -> exit
                         {
-                            dlgRes = -1;             // jen aby se necyklilo
-                            DelayAfterCancel = TRUE; // simulujeme Cancel
+                            dlgRes = -1;             // just to avoid looping
+                            DelayAfterCancel = TRUE; // simulate Cancel
                             LastActivityTime = GetTickCount();
                         }
                         else
                         {
                             if (unverifiedCertificate->CheckCertificate(errBuf2, 300))
-                            {                // certifikat serveru uz je duveryhodny (uzivatel ho nejspis rucne importoval)
-                                dlgRes = -1; // jen aby se necyklilo
+                            {                // the server certificate is already trusted (the user probably imported it manually)
+                                dlgRes = -1; // just to avoid looping
                                 unverifiedCertificate->SetVerified(true);
-                                LastActivityTime = GetTickCount() - OPERDLG_SHOWERRMINIDLETIME; // simulace "idle" (aby dalsi error mohl prijit hned)
+                                LastActivityTime = GetTickCount() - OPERDLG_SHOWERRMINIDLETIME; // simulate "idle" so the next error can appear immediately
                                 Oper->SetCertificate(unverifiedCertificate);
-                                // dame vedet vsem workerum s chybou connectiony
+                                // notify all workers with a connection error
                                 WorkersList->PostLoginChanged(-1);
                             }
                         }
@@ -1326,19 +1327,19 @@ void COperationDlg::SolveErrorOnConnection(int index)
                     }
                 } while (dlgRes == IDB_CERTIFICATE_VIEW);
             }
-            else // certifikat uz je v poradku (zobrazovat dialog nema smysl?)
+            else // the certificate is already fine (showing the dialog would be pointless?)
             {
                 unverifiedCertificate->SetVerified(true);
-                LastActivityTime = GetTickCount() - OPERDLG_SHOWERRMINIDLETIME; // simulace "idle" (aby dalsi error mohl prijit hned)
+                LastActivityTime = GetTickCount() - OPERDLG_SHOWERRMINIDLETIME; // simulate "idle" so the next error can appear immediately
                 Oper->SetCertificate(unverifiedCertificate);
-                // dame vedet vsem workerum s chybou connectiony
+                // notify all workers with a connection error
                 WorkersList->PostLoginChanged(-1);
             }
             unverifiedCertificate->Release();
         }
         else
         {
-            // pripravime docasne hodnoty pro editaci v dialogu
+            // prepare temporary values for editing in the dialog
             BOOL retryLoginWithoutAsking;
             BOOL proxyUsed;
             CProxyScriptParams proxyScriptParams;
@@ -1358,20 +1359,20 @@ void COperationDlg::SolveErrorOnConnection(int index)
             DlgWillCloseIfOpFinWithSkips = (IsDlgButtonChecked(HWindow, IDC_OPCLOSEWINWHENDONE) == BST_CHECKED);
             if (CurrentFlashWnd != NULL)
             {
-                FlashWindow(CurrentFlashWnd, FALSE); // pod W2K+ uz asi neni potreba: flashovani se musi odstranit rucne
+                FlashWindow(CurrentFlashWnd, FALSE); // on W2K+ this is probably no longer needed: flashing must be cleared manually
                 CurrentFlashWnd = NULL;
             }
             if (res == IDOK)
             {
-                LastActivityTime = GetTickCount() - OPERDLG_SHOWERRMINIDLETIME; // simulace "idle" (aby dalsi error mohl prijit hned)
+                LastActivityTime = GetTickCount() - OPERDLG_SHOWERRMINIDLETIME; // simulate "idle" so the next error can appear immediately
                 Oper->SetLoginErrorDlgInfo(proxyScriptParams.Password, proxyScriptParams.Account, dlg.RetryWithoutAsking,
                                            proxyUsed, proxyScriptParams.ProxyUser, proxyScriptParams.ProxyPassword);
-                // dame vedet prislusnemu workerovi nebo vsem workerum s chybou connectiony
+                // notify the relevant worker or all workers with a connection error
                 WorkersList->PostLoginChanged(dlg.ApplyToAll ? -1 : workerID);
             }
-            else // user dal Cancel, dalsi chybu ukazeme az po timeoutu
+            else // user pressed Cancel; show the next error after a timeout
             {
-                //        SetUserWasActive();  // zakomentovano, aby po ESC ze Solve Error dialogu okno operace bylo stale jeste "untouched"
+                //        SetUserWasActive();  // commented out to keep the operation window "untouched" after ESC from the Solve Error dialog
                 DelayAfterCancel = TRUE;
                 LastActivityTime = GetTickCount();
             }
@@ -1384,8 +1385,8 @@ void COperationDlg::SetUserWasActive()
     if (!UserWasActive)
     {
         UserWasActive = TRUE;
-        // v pripade, ze je checkbox zatrzeny jen kvuli Config.CloseOperationDlgIfSuccessfullyFinished,
-        // musime ted checkbox vycistit (doslo k akci usera v okne = uz nedojde k zavreni okna)
+        // if the checkbox was checked only because of Config.CloseOperationDlgIfSuccessfullyFinished,
+        // clear it now (the user interacted with the window, so it will no longer close automatically)
         if (!CloseDlgWhenOperFin && IsDlgButtonChecked(HWindow, IDC_OPCLOSEWINWHENDONE) == BST_CHECKED)
         {
             CheckDlgButton(HWindow, IDC_OPCLOSEWINWHENDONE, BST_UNCHECKED);
@@ -1403,22 +1404,22 @@ void COperationDlg::SolveErrorOnItem(int itemUID)
     DlgWillCloseIfOpFinWithSkips = (IsDlgButtonChecked(HWindow, IDC_OPCLOSEWINWHENDONE) == BST_CHECKED);
     if (CurrentFlashWnd != NULL)
     {
-        FlashWindow(CurrentFlashWnd, FALSE); // pod W2K+ uz asi neni potreba: flashovani se musi odstranit rucne
+        FlashWindow(CurrentFlashWnd, FALSE); // on W2K+ this is probably no longer needed: flashing must be cleared manually
         CurrentFlashWnd = NULL;
     }
-    if (changedIndex != -2) // pokud doslo aspon k nejake zmene
+    if (changedIndex != -2) // if there was at least some change
     {
-        LastActivityTime = GetTickCount() - OPERDLG_SHOWERRMINIDLETIME; // simulace "idle" (aby dalsi error mohl prijit hned)
+        LastActivityTime = GetTickCount() - OPERDLG_SHOWERRMINIDLETIME; // simulate "idle" so the next error can appear immediately
         if (!ShowOnlyErrors && changedIndex != -1)
-            RefreshItems(FALSE, changedIndex); // refreshneme zmenenou polozku
+            RefreshItems(FALSE, changedIndex); // refresh the changed item
         else
-            RefreshItems(FALSE); // refreshneme vse (jsou-li zobrazeny jen chyby, polozka/y muzou zmizet)
+            RefreshItems(FALSE); // refresh everything (when only errors are shown, the item(s) may disappear)
         EnableErrorsButton();
-        WorkersList->PostNewWorkAvailable(changedIndex != -1); // informujeme pripadneho prvniho nebo vsechny spici workery o pripadne nove praci
+        WorkersList->PostNewWorkAvailable(changedIndex != -1); // inform any sleeping workers (first or all) about possible new work
     }
-    else // user dal nejspis Cancel, dalsi chybu ukazeme az po timeoutu
+    else // the user most likely pressed Cancel; show the next error after a timeout
     {
-        //    SetUserWasActive();  // zakomentovano, aby po ESC ze Solve Error dialogu okno operace bylo stale jeste "untouched"
+        //    SetUserWasActive();  // commented out to keep the operation window "untouched" after ESC from the Solve Error dialog
         DelayAfterCancel = TRUE;
         LastActivityTime = GetTickCount();
     }

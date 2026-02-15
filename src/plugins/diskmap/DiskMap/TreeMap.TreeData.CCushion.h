@@ -77,7 +77,7 @@ public:
         int r = 0, g = 0, b = 0;
         if (e != NULL)
         {
-            e++; //za tecku
+            e++; //past the dot
             if (*e != '\0')
             {
                 if ((*e >= '0') && (*e <= '9'))

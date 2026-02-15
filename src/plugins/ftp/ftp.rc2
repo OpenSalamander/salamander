@@ -1,5 +1,5 @@
 ﻿//
-// ftp.rc2 - resources Microsoft Visual C++ does not edit directly
+// ftp.rc2 - resources that Microsoft Visual C++ does not edit directly
 //
 
 #ifdef APSTUDIO_INVOKED
@@ -7,7 +7,7 @@
 #endif //APSTUDIO_INVOKED
 
 /////////////////////////////////////////////////////////////////////////////
-// Add manually edited resources here...
+// Add resources edited manually here...
 
 #include "versinfo.rh2"
 #include "versinfo.rc2"

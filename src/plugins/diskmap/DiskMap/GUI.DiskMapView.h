@@ -76,15 +76,15 @@ protected:
         }
         else if (this->_diskmap && this->_diskmap->Paint(hdc, rect))
         {
-            //OK... no body - vse nakresleno v DiskMap::Paint()
+            //OK... no body - everything drawn in DiskMap::Paint()
         }
         else
         {
             //TODO: Display something!
             BitBlt(hdc, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, NULL, 0, 0, BLACKNESS);
 
-            //HACK: toto bylo udelano narychlo, aby neco bylo pro verzi 1.0; nastesti by nemelo nastat moc casto
-            //TODO: predelat poradne
+            //HACK: this was put together quickly to have something for version 1.0; fortunately it should not happen too often
+            //TODO: rework properly
             NONCLIENTMETRICS ncm;
             ncm.cbSize = sizeof ncm;
             SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof ncm, &ncm, 0);
@@ -99,9 +99,9 @@ protected:
             GetTextExtentPoint32(hdc, info1.GetString(), (int)info1.GetLength(), &sz1);
             GetTextExtentPoint32(hdc, info2.GetString(), (int)info2.GetLength(), &sz2);
 
-            int w = (8 + 1) * 24 + 3; // z LoadAnimation
+            int w = (8 + 1) * 24 + 3; // from LoadAnimation
             int x = (rect.left + rect.right - w) / 2;
-            int y = (rect.bottom - 8 - 4) / 2 + 8 + 4 + 6; //odpovida titulku z LoadAnimation
+            int y = (rect.bottom - 8 - 4) / 2 + 8 + 4 + 6; //matches the title from LoadAnimation
 
             SetTextColor(hdc, RGB(255, 255, 255));
             SetBkColor(hdc, RGB(0, 0, 0));
@@ -178,7 +178,7 @@ protected:
         if (this->_shellmenu && this->_diskmap && this->_diskmap->GetSelectedCushion() != NULL)
         {
             CCushion* cs = this->_diskmap->GetSelectedCushion();
-            if (xPos == -1 && yPos == -1) // z klavesnice
+            if (xPos == -1 && yPos == -1) // from the keyboard
             {
                 /*POINT pt;
 				this->_diskmap->GetSelectedCushionPos(&pt);*/
@@ -617,7 +617,7 @@ public:
         CCushionHitInfo* cshi = this->SelectCushionByPos(x, y);
         if (cshi != NULL)
         {
-            //aby po vybrani upravena souradnice nebyla na okraji polstare, ale uprostred - lepe pochopitelne
+            //after selection, adjust the coordinate so it is in the cushion center instead of on the edge - easier to understand
             switch (vkey)
             {
             case VK_LEFT:
@@ -629,7 +629,7 @@ public:
                 this->_cursorPos.y = cshi->GetPosY() + cshi->GetHeight() / 2;
                 break;
             }
-            //zobrazit tooltip
+            //show the tooltip
             CZFile* f = cshi->GetCushion()->GetFile();
             if (f != NULL)
             {

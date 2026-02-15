@@ -375,7 +375,11 @@ public:
 #ifndef TRACE_ENABLE
 
 // aby nedochazelo k problemum se stredniky v nize nadefinovanych makrech
-inline void __TraceEmptyFunction(){}
+
+// Bypasses a clang-format bug in version 19.1.5 (part of Visual Studio 2022 17.14).
+// clang-format off
+inline void __TraceEmptyFunction() {}
+// clang-format on
 
 #define TRACE_MI(file, line, str) __TraceEmptyFunction()
 #define TRACE_MIW(file, line, str) __TraceEmptyFunction()
@@ -782,7 +786,7 @@ extern BOOL __CallStk_T; // always TRUE - just to check format string and type o
 #define DEBUG_SLOW_CALL_STACK_MESSAGE20 SLOW_CALL_STACK_MESSAGE20
 #define DEBUG_SLOW_CALL_STACK_MESSAGE21 SLOW_CALL_STACK_MESSAGE21
 
-#else _DEBUG
+#else // _DEBUG
 
 #define DEBUG_SLOW_CALL_STACK_MESSAGE1(p1)
 #define DEBUG_SLOW_CALL_STACK_MESSAGE2(p1, p2)

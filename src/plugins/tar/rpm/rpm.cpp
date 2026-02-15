@@ -14,35 +14,35 @@ CRPM::CRPM(const char* filename, HANDLE file, unsigned char* buffer, unsigned lo
 {
     CALL_STACK_MESSAGE2("CRPM::CRPM(%s, , , , )", filename);
 
-    // pokud neprosel konstruktor parenta, balime to rovnou
+    // if the parent constructor failed, bail out immediately
     if (!Ok)
         return;
 
     short signatureType;
 
-    // precteme RPM lead
+    // read the RPM lead
     if (!RPMDumpLead(fContents, signatureType) || !Ok)
     {
-        // pokud doslo k chybe, nic nehlasime, jen nastavime chybovy flag
+        // if an error occurs, do not report it; simply set the error flag
         Ok = FALSE;
         FreeBufAndFile = FALSE;
         return;
     }
-    // precteme RPM signaturu
+    // read the RPM signature
     if (!RPMReadSignature(fContents, signatureType) || !Ok)
     {
         Ok = FALSE;
         FreeBufAndFile = FALSE;
         return;
     }
-    // precteme header
+    // read the header
     if (!RPMReadSection(fContents) || !Ok)
     {
         Ok = FALSE;
         FreeBufAndFile = FALSE;
         return;
     }
-    // vytvorime gzipovany stream nad datovou casti
+    // create a gzip-compressed stream over the data section
     read = (unsigned long)(DataEnd - DataStart);
     _ASSERTE(read > 512); // what should we do if there are too few bytes available???
     memmove(buffer, DataStart, read);
@@ -79,7 +79,7 @@ CRPM::CRPM(const char* filename, HANDLE file, unsigned char* buffer, unsigned lo
         Buffer = NULL;
         FreeBufAndFile = FALSE;
     }
-    // hotovo
+    // done
 }
 
 CRPM::~CRPM(void)

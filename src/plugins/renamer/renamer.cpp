@@ -3,25 +3,25 @@
 
 #include "precomp.h"
 
-// zapina vypis bloku ktere zustaly alokovane na heapu po skonceni pluginu
+// enables dumping of blocks that remain allocated on the heap after the plugin finishes
 // #define DUMP_MEM
 
 // ****************************************************************************
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to the SPL - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to the SLG - language-dependent resources
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object; its methods are called by Salamander
 CPluginInterface PluginInterface;
 CPluginInterfaceForMenuExt InterfaceForMenuExt;
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// Salamander general interface - valid from startup until the plugin terminates
 CSalamanderGeneralAbstract* SG = NULL;
 
-// definice promenne pro "dbg.h"
+// variable definition for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
-// definice promenne pro "spl_com.h"
+// variable definition for "spl_com.h"
 int SalamanderVersion = 0;
 
 CSalamanderGUIAbstract* SalGUI = NULL;
@@ -180,9 +180,9 @@ int WINAPI SalamanderPluginGetReqVer()
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
     CALL_STACK_MESSAGE_NONE
-    // nastavime SalamanderDebug pro "dbg.h"
+    // set SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
-    // nastavime SalamanderVersion pro "spl_com.h"
+    // set SalamanderVersion for "spl_com.h"
     SalamanderVersion = salamander->GetVersion();
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
@@ -191,37 +191,37 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
     _CrtMemCheckpoint(&___CrtMemState);
 #endif //DUMP_MEM
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plugin is built for the current Salamander version and newer - perform a check
     if (SalamanderVersion < LAST_VERSION_OF_SALAMANDER)
-    { // tady nelze volat Error, protoze pouziva SG->SalMessageBox (SG neni inicializovane + jde o nekompatibilni rozhrani)
+    { // cannot call Error here because it uses SG->SalMessageBox (SG is not initialized yet and the interface is incompatible)
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
-                   "Renamer" /* neprekladat! */, MB_OK | MB_ICONERROR);
+                   "Renamer" /* do not translate! */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
-    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "Renamer" /* neprekladat! */);
+    // load the language module (.slg)
+    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "Renamer" /* do not translate! */);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain the Salamander general interface
     SG = salamander->GetSalamanderGeneral();
     SalGUI = salamander->GetSalamanderGUI();
 
-    // nastavime jmeno souboru s helpem
+    // set the help file name
     SG->SetHelpFileName("renamer.chm");
 
     if (!InitDialogs())
         return NULL;
 
-    // nastavime zakladni informace o pluginu
+    // set the basic plugin information
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_LOADSAVECONFIGURATION | FUNCTION_CONFIGURATION,
                                    VERSINFO_VERSION_NO_PLATFORM,
                                    VERSINFO_COPYRIGHT,
                                    LoadStr(IDS_DESCRIPTION),
-                                   "Renamer" /* neprekladat! */);
+                                   "Renamer" /* do not translate! */);
 
     salamander->SetPluginHomePageURL("www.altap.cz");
 
@@ -278,7 +278,7 @@ BOOL CPluginInterface::Release(HWND parent, BOOL force)
 void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRegistryAbstract* registry)
 {
     CALL_STACK_MESSAGE1("CPluginInterface::LoadConfiguration(, , )");
-    // nastavime default hodnoty
+    // set default values
     DialogWidth = DialogHeight = -1;
     LastOptions.Reset(FALSE);
     strcpy(LastMask, "*.*");
@@ -293,19 +293,19 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     {
         char buffer[4096];
 
-        // historie
+        // history
         LoadHistory(regKey, CONFIG_MASKHISTORY, MaskHistory, buffer, MAX_GROUPMASK, registry);
         LoadHistory(regKey, CONFIG_NEWNAMEHISTORY, NewNameHistory, buffer, 2 * MAX_PATH, registry);
         LoadHistory(regKey, CONFIG_SEARCHHISTORY, SearchHistory, buffer, MAX_PATH, registry);
         LoadHistory(regKey, CONFIG_REPLACEHISTORY, ReplaceHistory, buffer, MAX_PATH, registry);
         LoadHistory(regKey, CONFIG_COMMANDHISTORY, CommandHistory, buffer, MAX_PATH, registry);
 
-        // load z registry
+        // load from the registry
         registry->GetValue(regKey, CONFIG_CUSTOMFONT, REG_DWORD, &UseCustomFont, sizeof(int));
         UseCustomFont = UseCustomFont &&
                         registry->GetValue(regKey, CONFIG_MANUALFONT, REG_BINARY, &ManualModeLogFont, sizeof(LOGFONT));
 
-        // pozice okna
+        // window position
         if (!registry->GetValue(regKey, CONFIG_WIDTH, REG_DWORD, &DialogWidth, sizeof(int)) ||
             !registry->GetValue(regKey, CONFIG_HEIGHT, REG_DWORD, &DialogHeight, sizeof(int)))
         {
@@ -313,7 +313,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
         }
         registry->GetValue(regKey, CONFIG_MAXIMIZED, REG_DWORD, &Maximized, sizeof(BOOL));
 
-        // posledni nastaveni voleb
+        // last options settings
         HKEY subKey;
         if (registry->OpenKey(regKey, CONFIG_LASTUSED, subKey))
         {
@@ -349,7 +349,7 @@ void CPluginInterface::SaveConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     }
     else
     {
-        //podrizneme historie
+        // trim the histories
         char buf[32];
         int i;
         for (i = 0; i < MAX_HISTORY_ENTRIES; i++)
@@ -371,7 +371,7 @@ void CPluginInterface::SaveConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     if (UseCustomFont)
         registry->SetValue(regKey, CONFIG_MANUALFONT, REG_BINARY, &ManualModeLogFont, sizeof(LOGFONT));
 
-    // pozice okna
+    // window position
     HWND lastWnd = WindowQueue.GetLastWnd();
     if (lastWnd != NULL)
     {
@@ -394,7 +394,7 @@ void CPluginInterface::SaveConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     registry->SetValue(regKey, CONFIG_WIDTH, REG_DWORD, &DialogWidth, sizeof(int));
     registry->SetValue(regKey, CONFIG_HEIGHT, REG_DWORD, &DialogHeight, sizeof(int));
     registry->SetValue(regKey, CONFIG_MAXIMIZED, REG_DWORD, &Maximized, sizeof(BOOL));
-    // posledni nastaveni voleb
+    // last options settings
     HKEY subKey;
     if (registry->CreateKey(regKey, CONFIG_LASTUSED, subKey))
     {
@@ -439,8 +439,8 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
 {
     CALL_STACK_MESSAGE1("CPluginInterface::Connect(,)");
 
-    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volani salamander->AddMenuItem() dole...
+    /* used by the export_mnu.py script, which generates salmenu.mnu for the Translator
+   keep synchronized with the salamander->AddMenuItem() calls below...
 MENU_TEMPLATE_ITEM PluginMenu[] = 
 {
   {MNTT_PB, 0
@@ -454,7 +454,7 @@ MENU_TEMPLATE_ITEM PluginMenu[] =
     // salamander->AddMenuItem(-1, LoadStr(IDS_PLUGMENU_UNDO), 0, MID_UNDO, FALSE,
     //     MENU_EVENT_TRUE, MENU_EVENT_TRUE, MENU_SKILLLEVEL_ALL);
 
-    // nastavime ikonku pluginu
+    // set the plugin icon
     HBITMAP hBmp = (HBITMAP)LoadImage(DLLInstance, MAKEINTRESOURCE(IDB_RENAMER),
                                       IMAGE_BITMAP, 16, 16, SG->GetIconLRFlags());
     salamander->SetBitmapWithIcons(hBmp);
@@ -477,7 +477,7 @@ void CPluginInterface::Event(int event, DWORD param)
     {
     case PLUGINEVENT_COLORSCHANGED:
     {
-        // nutne HSymbolsImageList != NULL, jinak by entry-point vratil chybu
+        // HSymbolsImageList must not be NULL, otherwise the entry point would return an error
         COLORREF bkColor = GetSysColor(COLOR_WINDOW);
         if (ImageList_GetBkColor(HSymbolsImageList) != bkColor)
             ImageList_SetBkColor(HSymbolsImageList, bkColor);
@@ -486,7 +486,7 @@ void CPluginInterface::Event(int event, DWORD param)
 
     case PLUGINEVENT_CONFIGURATIONCHANGED:
     {
-        // nacteme confirmations z konfigurace
+        // load confirmations from the configuration
         Silent = 0;
         BOOL b;
         if (SG->GetConfigParameter(SALCFG_CNFRMFILEOVER, &b, sizeof(b), NULL) && !b)

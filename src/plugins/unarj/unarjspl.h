@@ -12,7 +12,7 @@
 #define SF_VERSION 0x00200000
 #define SF_METHOD 0x00400000
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from startup until the plugin is closed
 extern CSalamanderGeneralAbstract* SalamanderGeneral;
 
 // ****************************************************************************
@@ -35,10 +35,10 @@ protected:
     HANDLE TargetFile;
     BOOL UnPackWholeArchive;
     BOOL NotWholeArchListed;
-    // jeli TRUE pridavame velikost do progressy v ProcessDataProc,
-    // na FALSE se nastavi pri prechodu na dalsi volume aby progresa nepretejkala
-    // arj totiz neobsahuje informaci o celkove velikosti souboru
-    // ale pouze o velikosti jedne 'porce', ktera je na aktalnim volumu
+    // when TRUE we add the size to the progress in ProcessDataProc,
+    // set to FALSE when moving to the next volume so the progress bar does not overflow
+    // ARJ does not contain information about the total size of the file,
+    // only about the size of a single "portion" that is on the current volume
     BOOL UpdateProgress;
     BOOL AllocateWholeFile;
     BOOL TestAllocateWholeFile;
@@ -109,21 +109,21 @@ public:
     virtual void WINAPI PasswordManagerEvent(HWND parent, int event) {}
 };
 
-extern HINSTANCE DLLInstance; // handle k SPL-ku - jazykove nezavisle resourcy
-extern HINSTANCE HLanguage;   // handle k SLG-cku - jazykove zavisle resourcy
+extern HINSTANCE DLLInstance; // handle to the SPL - language-independent resources
+extern HINSTANCE HLanguage;   // handle to the SLG - language-dependent resources
 
-// zatim staci tohleto misto konfigurace
-#define OP_SKIPCONTINUED 0x01    // budeme preskakovat vsechny soubory, ktere zacinaji na predchozim volumu?
-#define OP_NO_VOL_ATTENTION 0x02 // nebudeme upozornovat, kdyz nejde vylistovat cely archive
+// for now this configuration placeholder is sufficient
+#define OP_SKIPCONTINUED 0x01    // should we skip all files that start on the previous volume?
+#define OP_NO_VOL_ATTENTION 0x02 // do not warn when the entire archive cannot be listed
 
-extern DWORD Options; // konfigurace
+extern DWORD Options; // configuration
 
 char* LoadStr(int resID);
 void GetInfo(char* buffer, FILETIME* lastWrite, unsigned size);
 
 //***********************************************************************************
 //
-// Rutiny ze SHLWAPI.DLL
+// Routines from SHLWAPI.DLL
 //
 
 //BOOL PathAppend(LPTSTR  pPath, LPCTSTR pMore);

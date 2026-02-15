@@ -109,22 +109,22 @@ enum CViewerWindowEnablerEnum
 class CViewerWindow : public CWindow
 {
 public:
-    HANDLE Lock; // 'lock' objekt nebo NULL (do signaled stavu az zavreme soubor)
+    HANDLE Lock; // 'lock' object or NULL (goes to the signaled state once the file is closed)
     CRendererWindow Renderer;
-    int ConversionsCount; // pocet konverzi vytazenych vcetna Don't covnert; bez separatoru
+    int ConversionsCount; // number of conversions retrieved including "Don't convert"; without separators
     CCSVConfig CfgCSV;
     CFindDialog FindDialog;
 
-    HWND HRebar; // drzi MenuBar a ToolBar
+    HWND HRebar; // holds the MenuBar and ToolBar
     CGUIMenuPopupAbstract* MainMenu;
     CGUIMenuBarAbstract* MenuBar;
     CGUIToolBarAbstract* ToolBar;
 
-    HIMAGELIST HGrayToolBarImageList; // toolbar a menu v sedivem provedeni (pocitano z barevneho)
-    HIMAGELIST HHotToolBarImageList;  // toolbar a menu v barevnem provedeni
+    HIMAGELIST HGrayToolBarImageList; // toolbar and menu in a gray variant (derived from the colored one)
+    HIMAGELIST HHotToolBarImageList;  // toolbar and menu in a colored variant
 
     DWORD Enablers[vweCount];
-    BOOL IsSrcFileSelected; // platne jen je-li Enablers[vweSelSrcFile]==TRUE: TRUE/FALSE zdrojovy soubor je selected/unselected
+    BOOL IsSrcFileSelected; // valid only if Enablers[vweSelSrcFile]==TRUE: TRUE/FALSE source file is selected/unselected
 
 public:
     CViewerWindow(int enumFilesSourceUID, int enumFilesCurrentIndex);

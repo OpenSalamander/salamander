@@ -1,29 +1,30 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
-CFTPOperationsList FTPOperationsList; // vsechny operace na FTP
+CFTPOperationsList FTPOperationsList; // all FTP operations
 
-CRITICAL_SECTION CFTPQueueItem::NextItemUIDCritSect; // kriticka sekce pro pristup k CFTPQueueItem::NextItemUID
-int CFTPQueueItem::NextItemUID = 0;                  // globalni pocitadlo pro UID polozek
+CRITICAL_SECTION CFTPQueueItem::NextItemUIDCritSect; // critical section for accessing CFTPQueueItem::NextItemUID
+int CFTPQueueItem::NextItemUID = 0;                  // global counter for item UIDs
 
-int CFTPOperation::NextOrdinalNumber = 0;            // globalni pocitadlo pro OrdinalNumber operace (pristupovat jen v sekci NextOrdinalNumberCS!)
-CRITICAL_SECTION CFTPOperation::NextOrdinalNumberCS; // kriticka sekce pro NextOrdinalNumber
+int CFTPOperation::NextOrdinalNumber = 0;            // global counter for an operation's OrdinalNumber (access only within the NextOrdinalNumberCS section!)
+CRITICAL_SECTION CFTPOperation::NextOrdinalNumberCS; // critical section for NextOrdinalNumber
 
-CUIDArray CanceledOperations(5, 5); // pole UID operaci, ktere se maji zrusit (po prijeti prikazu FTPCMD_CANCELOPERATION)
+CUIDArray CanceledOperations(5, 5); // array of operation UIDs that should be canceled (after receiving the FTPCMD_CANCELOPERATION command)
 
-HANDLE WorkerMayBeClosedEvent = NULL;      // generuje pulz v okamziku zavreni socketu workera
-int WorkerMayBeClosedState = 0;            // navysuje se s kazdym zavrenim socketu workera
-CRITICAL_SECTION WorkerMayBeClosedStateCS; // kriticka sekce pro pristup k WorkerMayBeClosedState
+HANDLE WorkerMayBeClosedEvent = NULL;      // generates a pulse when a worker socket is closed
+int WorkerMayBeClosedState = 0;            // increases with every worker socket closure
+CRITICAL_SECTION WorkerMayBeClosedStateCS; // critical section for accessing WorkerMayBeClosedState
 
-CReturningConnections ReturningConnections(5, 5); // pole s vracenymi spojenimi (z workeru do panelu)
+CReturningConnections ReturningConnections(5, 5); // array with returned connections (from workers back to the panel)
 
-CFTPDiskThread* FTPDiskThread = NULL; // thread zajistujici diskove operace (duvod: neblokujici volani)
+CFTPDiskThread* FTPDiskThread = NULL; // thread handling disk operations (reason: non-blocking calls)
 
-CUploadListingCache UploadListingCache; // cache listingu cest na serverech - pouziva se pri uploadu pro zjistovani, jestli cilovy soubor/adresar jiz existuje
+CUploadListingCache UploadListingCache; // cache of path listings on servers - used during uploads to check whether the target file/directory already exists
 
-CFTPOpenedFiles FTPOpenedFiles; // seznam souboru prave ted otevrenych z tohoto Salamandera na FTP serverech
+CFTPOpenedFiles FTPOpenedFiles; // list of files currently opened from this Salamander on FTP servers
 
 //
 // ****************************************************************************
@@ -58,15 +59,15 @@ BOOL CFTPOperationsList::AddOperation(CFTPOperation* newOper, int* newuid)
 
     BOOL ret = TRUE;
     HANDLES(EnterCriticalSection(&OpListCritSect));
-    if (FirstFreeIndexInOperations != -1) // mame kam vlozit novy objekt?
+    if (FirstFreeIndexInOperations != -1) // do we have a place to insert the new object?
     {
-        // vlozeni 'newOper' do pole
+        // insert 'newOper' into the array
         Operations[FirstFreeIndexInOperations] = newOper;
         if (newuid != NULL)
             *newuid = FirstFreeIndexInOperations;
         newOper->SetUID(FirstFreeIndexInOperations);
 
-        // hledani dalsiho volneho mista v poli
+        // searching for the next free slot in the array
         int i;
         for (i = FirstFreeIndexInOperations + 1; i < Operations.Count; i++)
         {
@@ -116,7 +117,7 @@ void CFTPOperationsList::DeleteOperation(int uid, BOOL doNotPostChangeOnPathNoti
         CFTPOperation* oper = Operations[uid];
         CFTPOperationType operType = oper->GetOperationType();
         if (operType == fotCopyUpload || operType == fotMoveUpload)
-        { // je-li to upload operace, zkusime po jejim zahozeni, jestli muzeme procistit cache listingu pro upload
+        { // if this is an upload operation, after discarding it try to clean up the upload listing cache
             uploadOperDeleted = TRUE;
             oper->GetUserHostPort(uploadUser, uploadHost, &uploadPort);
         }
@@ -124,21 +125,21 @@ void CFTPOperationsList::DeleteOperation(int uid, BOOL doNotPostChangeOnPathNoti
         {
             COperationState state = oper->GetOperationState(FALSE);
             if (state != opstSuccessfullyFinished && state != opstFinishedWithSkips && state != opstFinishedWithErrors)
-                oper->PostChangeOnPathNotifications(FALSE); // notifikace o zmene na cestach jeste nebyla poslana, posleme ji ted (pozdeji to uz nepujde)
+                oper->PostChangeOnPathNotifications(FALSE); // the change-on-path notification has not been sent yet, send it now (later it will no longer be possible)
         }
-        delete oper;                     // dealokace objektu operace
-        Operations[uid] = NULL;          // uvolneni pozice v poli
-        if (uid + 1 == Operations.Count) // posledni prvek, dealokujeme prazdny konec pole
+        delete oper;                     // deallocate the operation object
+        Operations[uid] = NULL;          // free the slot in the array
+        if (uid + 1 == Operations.Count) // last element, deallocate the empty end of the array
         {
             while (uid > 0 && Operations[uid - 1] == NULL)
                 uid--;
-            Operations.Delete(uid, Operations.Count - uid); // zrusime prazdny konec pole (same NULL prvky)
+            Operations.Delete(uid, Operations.Count - uid); // remove the empty end of the array (only NULL elements)
             if (!Operations.IsGood())
                 Operations.ResetState();
             if (FirstFreeIndexInOperations >= Operations.Count)
                 FirstFreeIndexInOperations = -1;
         }
-        else // mazani uvnitr pole, zadna dealokace pole neni mozna
+        else // deleting inside the array, no array deallocation is possible
         {
             if (FirstFreeIndexInOperations == -1 || uid < FirstFreeIndexInOperations)
                 FirstFreeIndexInOperations = uid;
@@ -148,9 +149,9 @@ void CFTPOperationsList::DeleteOperation(int uid, BOOL doNotPostChangeOnPathNoti
         TRACE_E("CFTPOperationsList::DeleteOperation(): Pokus o vymaz neplatneho prvku pole!");
     HANDLES(LeaveCriticalSection(&OpListCritSect));
 
-    // pokud byla zrusena upload operace a pokud jiz zadna upload operace nepracuje se
-    // serverem, se kterym pracovala zrusena operace, muzeme tento server uvolnit z cache
-    // listingu pro upload
+    // if an upload operation was canceled and no other upload operation is working with
+    // the server used by the canceled operation, we can release this server from the upload
+    // listing cache
     if (uploadOperDeleted && !IsUploadingToServer(uploadUser, uploadHost, uploadPort))
         UploadListingCache.RemoveServer(uploadUser, uploadHost, uploadPort);
 }
@@ -170,7 +171,7 @@ void CFTPOperationsList::CloseAllOperationDlgs()
             oper->CloseOperationDlg(&t);
             if (t != NULL)
             {
-                HANDLES(LeaveCriticalSection(&OpListCritSect)); // musime opustit sekci, thread dialogu vola CFTPOperationsList::SetOperationDlg()
+                HANDLES(LeaveCriticalSection(&OpListCritSect)); // we must leave the section; the dialog thread calls CFTPOperationsList::SetOperationDlg()
                 CALL_STACK_MESSAGE1("AuxThreadQueue.WaitForExit()");
                 AuxThreadQueue.WaitForExit(t, INFINITE);
                 HANDLES(EnterCriticalSection(&OpListCritSect));
@@ -186,21 +187,21 @@ void CFTPOperationsList::WaitForFinishOrESC(HWND parent, int milliseconds, CWait
 {
     CALL_STACK_MESSAGE2("CFTPOperationsList::WaitForFinishOrESC(, %d,)", milliseconds);
 
-    const DWORD cycleTime = 200; // perioda testovani stisku ESC v ms (200 = 5x za sekundu) - POZOR: tez opatreni proti nechtenemu soubehu (PulseEvent(WorkerMayBeClosedEvent) muze probehnout jeste pred vstupem do wait funkce)
+    const DWORD cycleTime = 200; // period for checking the ESC key in ms (200 = 5 times per second) - NOTE: also a safeguard against unintended races (PulseEvent(WorkerMayBeClosedEvent) may happen before entering the wait function)
     DWORD timeStart = GetTickCount();
-    DWORD restOfWaitTime = milliseconds; // zbytek cekaci doby
+    DWORD restOfWaitTime = milliseconds; // remaining waiting time
 
-    GetAsyncKeyState(VK_ESCAPE); // init GetAsyncKeyState - viz help
+    GetAsyncKeyState(VK_ESCAPE); // init GetAsyncKeyState - see help
     while (1)
     {
         HANDLES(EnterCriticalSection(&WorkerMayBeClosedStateCS));
         BOOL socketClosure = lastWorkerMayBeClosedState != WorkerMayBeClosedState;
         lastWorkerMayBeClosedState = WorkerMayBeClosedState;
         HANDLES(LeaveCriticalSection(&WorkerMayBeClosedStateCS));
-        if (socketClosure) // doslo k zavreni socketu workera (nebo je to prvni volani teto metody a 'lastWorkerMayBeClosedState' bylo -1)
+        if (socketClosure) // the worker socket was closed (or this is the first call to this method and 'lastWorkerMayBeClosedState' was -1)
         {
             reason = wwsrWorkerSocketClosure;
-            break; // ohlasime zavreni socketu workera
+            break; // report the worker socket closure
         }
 
         DWORD waitTime;
@@ -210,28 +211,28 @@ void CFTPOperationsList::WaitForFinishOrESC(HWND parent, int milliseconds, CWait
             waitTime = cycleTime;
         DWORD waitRes = MsgWaitForMultipleObjects(1, &WorkerMayBeClosedEvent, FALSE, waitTime, QS_ALLINPUT);
 
-        // nejdrive zkontrolujeme stisk ESC (abychom ho userovi nevyignorovali)
-        if (milliseconds != 0 &&                                                          // je-li nulovy timeout, jde jen o pumpovani zprav, ESC neresime
-            ((GetAsyncKeyState(VK_ESCAPE) & 0x8001) && GetForegroundWindow() == parent || // stisk ESC
-             waitWnd != NULL && waitWnd->GetWindowClosePressed()))                        // close button ve wait-okenku
+        // check the ESC key first (so we do not ignore it for the user)
+        if (milliseconds != 0 &&                                                          // if the timeout is zero we are only pumping messages, do not handle ESC
+            ((GetAsyncKeyState(VK_ESCAPE) & 0x8001) && GetForegroundWindow() == parent || // ESC pressed
+             waitWnd != NULL && waitWnd->GetWindowClosePressed()))                        // close button in the wait window
         {
-            MSG msg; // vyhodime nabufferovany ESC
+            MSG msg; // discard the buffered ESC
             while (PeekMessage(&msg, NULL, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
                 ;
             reason = wwsrEsc;
-            break; // ohlasime ESC
+            break; // report ESC
         }
-        if (waitRes != WAIT_OBJECT_0) // nedoslo k zavreni dalsiho workera (tuto udalost ignorujeme, jen "budi" cekani)
+        if (waitRes != WAIT_OBJECT_0) // no additional worker was closed (we ignore this event; it only "wakes" the waiting)
         {
-            if (waitRes == WAIT_OBJECT_0 + 1) // zpracujeme Windows message
+            if (waitRes == WAIT_OBJECT_0 + 1) // process Windows messages
             {
                 MSG msg;
                 while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
                 {
-                    if (msg.message == WM_CLOSE) // WM_CLOSE nemuzeme dorucit, postneme ji az po enablovani parenta
+                    if (msg.message == WM_CLOSE) // we cannot deliver WM_CLOSE; post it only after enabling the parent
                     {
                         postWM_CLOSE = TRUE;
-                        SetForegroundWindow(parent); // prozatim vytahneme disablovane okno na oci userovi, at vi na co ceka
+                        SetForegroundWindow(parent); // for now bring the disabled window into view so the user knows what they are waiting for
                     }
                     else
                     {
@@ -243,56 +244,56 @@ void CFTPOperationsList::WaitForFinishOrESC(HWND parent, int milliseconds, CWait
             else
             {
                 if (waitRes == WAIT_TIMEOUT &&
-                    restOfWaitTime == waitTime) // neni to jen timeout cyklu testu klavesy ESC, ale globalni timeout
+                    restOfWaitTime == waitTime) // this is not just the ESC key test cycle timeout but the global timeout
                 {
                     reason = wwsrTimeout;
-                    break; // ohlasime timeout
+                    break; // report the timeout
                 }
             }
         }
-        if (milliseconds != INFINITE) // napocitame znovu zbytek cekaci doby (podle realneho casu)
+        if (milliseconds != INFINITE) // recalculate the remaining wait time (according to real time)
         {
-            DWORD t = GetTickCount() - timeStart; // funguje i pri preteceni tick-counteru
+            DWORD t = GetTickCount() - timeStart; // works even when the tick counter overflows
             if (t < (DWORD)milliseconds)
                 restOfWaitTime = (DWORD)milliseconds - t;
             else
-                restOfWaitTime = 0; // nechame ohlasit timeout (sami nesmime - prioritu ma udalost zavreni socketu pred timeoutem)
+                restOfWaitTime = 0; // let the timeout be reported (we must not do it ourselves - the worker socket closure has priority over the timeout)
         }
     }
 }
 
-#define WORKERS_VICTIMS_COUNT 50 // pocet socketu workeru, se kterymi se bude pracovat v jednom kole
+#define WORKERS_VICTIMS_COUNT 50 // number of worker sockets processed in one cycle
 
 void CFTPOperationsList::StopWorkers(HWND parent, int operUID, int workerInd)
 {
     CALL_STACK_MESSAGE3("CFTPOperationsList::StopWorkers(, %d, %d)", operUID, workerInd);
 
     parent = FindPopupParent(parent);
-    // schovame si fokus z 'parent' (neni-li fokus z 'parent', ulozime NULL)
+    // remember the focus from 'parent' (store NULL if the focus is not within 'parent')
     HWND focusedWnd = GetFocus();
     HWND hwnd = focusedWnd;
     while (hwnd != NULL && hwnd != parent)
         hwnd = GetParent(hwnd);
     if (hwnd != parent)
         focusedWnd = NULL;
-    // disablujeme 'parent', pri enablovani obnovime i fokus
+    // disable 'parent'; when enabling it restore the focus as well
     EnableWindow(parent, FALSE);
 
-    // nahodime cekaci kurzor nad parentem, bohuzel to jinak neumime
+    // set the wait cursor over the parent; unfortunately we cannot do it differently
     CSetWaitCursorWindow* winParent = new CSetWaitCursorWindow;
     if (winParent != NULL)
         winParent->AttachToWindow(parent);
 
-    // zajistime, aby se zpracovavani workeri dozvedeli o tom, ze maji koncit (maji-li
-    // data-connectionu, prerusime ji)
-    CFTPWorker* victims[WORKERS_VICTIMS_COUNT]; // nutne, aby se operace se sockety nevolaly v sekci OpListCritSect
-    int lastOpIndex = 0;                        // optimalizace (index posledni zpracovavane operace - pristi kolo zaciname u ni)
+    // ensure the running workers learn that they should finish (if they have
+    // a data connection, interrupt it)
+    CFTPWorker* victims[WORKERS_VICTIMS_COUNT]; // necessary to avoid calling socket operations inside the OpListCritSect section
+    int lastOpIndex = 0;                        // optimization (index of the last processed operation - start with it in the next round)
     while (1)
     {
         BOOL done = TRUE;
         int count = 0;
         HANDLES(EnterCriticalSection(&OpListCritSect));
-        if (operUID != -1) // tyka se jen jedne operace
+        if (operUID != -1) // applies only to a single operation
         {
             if (operUID >= 0 && operUID < Operations.Count)
             {
@@ -301,7 +302,7 @@ void CFTPOperationsList::StopWorkers(HWND parent, int operUID, int workerInd)
                     done &= !oper->InformWorkersAboutStop(workerInd, victims, WORKERS_VICTIMS_COUNT, &count);
             }
         }
-        else // tyka se vsech operaci a vsech workeru
+        else // applies to all operations and all workers
         {
             int i;
             for (i = lastOpIndex; count < WORKERS_VICTIMS_COUNT && i < Operations.Count; i++)
@@ -319,12 +320,12 @@ void CFTPOperationsList::StopWorkers(HWND parent, int operUID, int workerInd)
         for (i = 0; i < count; i++)
             victims[i]->CloseDataConnectionOrPostShouldStop();
         if (done)
-            break; // vsechny operace vratily, ze nechteji dalsi volani
+            break; // all operations reported they do not want another call
     }
 
-    // zajistime zastaveni "elapsed time" v operacnich dialozich zastavovanych operaci
+    // ensure that the "elapsed time" stops in the operation dialogs of the halted operations
     HANDLES(EnterCriticalSection(&OpListCritSect));
-    if (operUID != -1) // tyka se jen jedne operace
+    if (operUID != -1) // applies only to a single operation
     {
         if (operUID >= 0 && operUID < Operations.Count)
         {
@@ -333,7 +334,7 @@ void CFTPOperationsList::StopWorkers(HWND parent, int operUID, int workerInd)
                 oper->OperationStatusMaybeChanged();
         }
     }
-    else // tyka se vsech operaci a vsech workeru
+    else // applies to all operations and all workers
     {
         int i;
         for (i = 0; i < Operations.Count; i++)
@@ -345,8 +346,8 @@ void CFTPOperationsList::StopWorkers(HWND parent, int operUID, int workerInd)
     }
     HANDLES(LeaveCriticalSection(&OpListCritSect));
 
-    // otevrit wait-okenko + cekat na ESC + timeout + dokonceni zavirani workeru + Windows message
-    // (WM_CLOSE zpracovavat pozdeji + pri prijmu provest SetForegroundWindow na 'parent')
+    // open the wait window + wait for ESC + timeout + completion of worker shutdown + Windows messages
+    // (process WM_CLOSE later + call SetForegroundWindow on 'parent' when received)
     int closConResID = operUID != -1 ? (workerInd != -1 ? IDS_CLOSINGOPERCONS1 : IDS_CLOSINGOPERCONS2) : IDS_CLOSINGOPERCONS3;
     int termConResID = operUID != -1 ? (workerInd != -1 ? IDS_TERMCONFOROPER1 : IDS_TERMCONFOROPER2) : IDS_TERMCONFOROPER3;
     BOOL postWM_CLOSE = FALSE;
@@ -356,12 +357,12 @@ void CFTPOperationsList::StopWorkers(HWND parent, int operUID, int workerInd)
     waitWnd.Create(WAITWND_CLWORKCON);
     int serverTimeout = Config.GetServerRepliesTimeout() * 1000;
     if (serverTimeout < 1000)
-        serverTimeout = 1000; // aspon sekundu
+        serverTimeout = 1000; // at least one second
 
     DWORD start = GetTickCount();
     while (1)
     {
-        // pockame na zavreni socketu nektereho workera nebo ESC
+        // wait for a worker socket to close or for ESC
         DWORD now = GetTickCount();
         if (now - start > (DWORD)serverTimeout)
             now = start + (DWORD)serverTimeout;
@@ -384,7 +385,7 @@ void CFTPOperationsList::StopWorkers(HWND parent, int operUID, int workerInd)
             }
             else
             {
-                SalamanderGeneral->WaitForESCRelease(); // opatreni, aby se neprerusovala dalsi akce po kazdem ESC v predeslem messageboxu
+                SalamanderGeneral->WaitForESCRelease(); // safeguard so that subsequent actions are not interrupted after every ESC in the previous message box
                 waitWnd.Show(TRUE);
             }
             break;
@@ -396,18 +397,18 @@ void CFTPOperationsList::StopWorkers(HWND parent, int operUID, int workerInd)
             break;
         }
 
-            // case wwsrWorkerSocketClosure: break;  // jen se ma proverit jestli uz nejsou vsechny sockety workeru zavrene
+            // case wwsrWorkerSocketClosure: break;  // only check whether all worker sockets are already closed
         }
 
-        if (terminate) // cancel nebo timeout, prinutime workery urychlene koncit a budeme dal cekat na jejich konec
+        if (terminate) // cancel or timeout, force workers to finish quickly and continue waiting for them to end
         {
-            lastOpIndex = 0; // optimalizace (index posledni zpracovavane operace - pristi kolo zaciname u ni)
+            lastOpIndex = 0; // optimization (index of the last processed operation - start with it in the next round)
             while (1)
             {
                 BOOL done = TRUE;
                 int count = 0;
                 HANDLES(EnterCriticalSection(&OpListCritSect));
-                if (operUID != -1) // tyka se jen jedne operace
+                if (operUID != -1) // applies only to a single operation
                 {
                     if (operUID >= 0 && operUID < Operations.Count)
                     {
@@ -416,7 +417,7 @@ void CFTPOperationsList::StopWorkers(HWND parent, int operUID, int workerInd)
                             done &= !oper->ForceCloseWorkers(workerInd, victims, WORKERS_VICTIMS_COUNT, &count);
                     }
                 }
-                else // tyka se vsech operaci a vsech workeru
+                else // applies to all operations and all workers
                 {
                     int i;
                     for (i = lastOpIndex; count < WORKERS_VICTIMS_COUNT && i < Operations.Count; i++)
@@ -434,14 +435,14 @@ void CFTPOperationsList::StopWorkers(HWND parent, int operUID, int workerInd)
                 for (i = 0; i < count; i++)
                     victims[i]->ForceClose();
                 if (done)
-                    break; // vsechny operace vratily, ze nechteji dalsi volani
+                    break; // all operations reported they do not want another call
             }
         }
 
-        // zjistime jestli uz muzeme zavrit vsechny workery
+        // check whether we can already close all workers
         BOOL finished = TRUE;
         HANDLES(EnterCriticalSection(&OpListCritSect));
-        if (operUID != -1) // tyka se jen jedne operace
+        if (operUID != -1) // applies only to a single operation
         {
             if (operUID >= 0 && operUID < Operations.Count)
             {
@@ -450,7 +451,7 @@ void CFTPOperationsList::StopWorkers(HWND parent, int operUID, int workerInd)
                     finished &= oper->CanCloseWorkers(workerInd);
             }
         }
-        else // tyka se vsech operaci a vsech workeru
+        else // applies to all operations and all workers
         {
             int i;
             for (i = 0; i < Operations.Count; i++)
@@ -462,21 +463,21 @@ void CFTPOperationsList::StopWorkers(HWND parent, int operUID, int workerInd)
         }
         HANDLES(LeaveCriticalSection(&OpListCritSect));
         if (!finished)
-            Sleep(100); // pokud probehl test socketu workeru, pockame chvilku pred dalsim moznym testem (opatreni proti zbytecnemu zahlcovani masiny)
+            Sleep(100); // if the worker sockets were tested, wait a moment before the next possible test (prevents unnecessary machine load)
         else
-            break; // sockety workeru jsou zavrene, muzeme koncit
+            break; // worker sockets are closed, we can finish
     }
     waitWnd.Destroy();
 
-    // zrusime ukoncene workery (predtim uvolnime jejich data - vratime polozky operace zpet do fronty)
-    CUploadWaitingWorker* uploadFirstWaitingWorker = NULL; // upload operace: seznam workeru, kteri cekaji na listingy, ktere tahaji nekteri z ukoncovanych workeru (jinak: seznam workeru, ktere je potreba informovat o ukonceni workeru na jejichz praci cekali)
-    lastOpIndex = 0;                                       // optimalizace (index posledni zpracovavane operace - pristi kolo zaciname u ni)
+    // remove finished workers (first release their data - return the operation items back to the queue)
+    CUploadWaitingWorker* uploadFirstWaitingWorker = NULL; // upload operation: list of workers waiting for listings retrieved by some of the terminated workers (i.e. workers that need to be informed that the workers they waited on have finished)
+    lastOpIndex = 0;                                       // optimization (index of the last processed operation - start with it in the next round)
     while (1)
     {
         BOOL done = TRUE;
         int count = 0;
         HANDLES(EnterCriticalSection(&OpListCritSect));
-        if (operUID != -1) // tyka se jen jedne operace
+        if (operUID != -1) // applies only to a single operation
         {
             if (operUID >= 0 && operUID < Operations.Count)
             {
@@ -485,7 +486,7 @@ void CFTPOperationsList::StopWorkers(HWND parent, int operUID, int workerInd)
                     done &= !oper->DeleteWorkers(workerInd, victims, WORKERS_VICTIMS_COUNT, &count, &uploadFirstWaitingWorker);
             }
         }
-        else // tyka se vsech operaci a vsech workeru
+        else // applies to all operations and all workers
         {
             int i;
             for (i = lastOpIndex; count < WORKERS_VICTIMS_COUNT && i < Operations.Count; i++)
@@ -499,7 +500,7 @@ void CFTPOperationsList::StopWorkers(HWND parent, int operUID, int workerInd)
         }
         HANDLES(LeaveCriticalSection(&OpListCritSect));
 
-        // upload operace: informujeme workery, kteri cekaji na listing ziskavany ukoncovanymi workery
+        // upload operation: inform workers waiting for listings obtained by the terminating workers
         while (uploadFirstWaitingWorker != NULL)
         {
             SocketsThread->PostSocketMessage(uploadFirstWaitingWorker->WorkerMsg,
@@ -515,21 +516,21 @@ void CFTPOperationsList::StopWorkers(HWND parent, int operUID, int workerInd)
         for (i = 0; i < count; i++)
             DeleteSocket(victims[i]);
         if (done)
-            break; // vsechny operace vratily, ze nechteji dalsi volani
+            break; // all operations reported they do not want another call
     }
 
-    Logs.RefreshListOfLogsInLogsDlg(); // obnovime Log - workeri jsou zavreni
+    Logs.RefreshListOfLogsInLogsDlg(); // refresh the Log - workers are closed
 
-    // shodime cekaci kurzor nad parentem
+    // drop the wait cursor over the parent
     if (winParent != NULL)
     {
         winParent->DetachWindow();
         delete winParent;
     }
 
-    // enablujeme 'parent'
+    // enable 'parent'
     EnableWindow(parent, TRUE);
-    // pokud je aktivni 'parent', obnovime i fokus
+    // if 'parent' is active, restore the focus as well
     if (GetForegroundWindow() == parent)
     {
         if (parent == SalamanderGeneral->GetMainWindowHWND())
@@ -541,8 +542,8 @@ void CFTPOperationsList::StopWorkers(HWND parent, int operUID, int workerInd)
         }
     }
 
-    // pokud behem cekani na dokonceni workeru prisla WM_CLOSE, postneme ji do fronty ted,
-    // uz je mozne ji provest
+    // if WM_CLOSE arrived while waiting for the workers to finish, post it to the queue now,
+    // it can be processed now
     if (postWM_CLOSE)
         PostMessage(parent, WM_CLOSE, 0, 0);
 }
@@ -551,15 +552,15 @@ void CFTPOperationsList::PauseWorkers(HWND parent, int operUID, int workerInd, B
 {
     CALL_STACK_MESSAGE4("CFTPOperationsList::PauseWorkers(, %d, %d, %d)", operUID, workerInd, pause);
 
-    // zajistime, aby se prislusni workeri dozvedeli o tom, ze maji provest pause/resume
-    CFTPWorker* victims[WORKERS_VICTIMS_COUNT]; // nutne, aby se operace se sockety nevolaly v sekci OpListCritSect
-    int lastOpIndex = 0;                        // optimalizace (index posledni zpracovavane operace - pristi kolo zaciname u ni)
+    // ensure the relevant workers learn that they should perform pause/resume
+    CFTPWorker* victims[WORKERS_VICTIMS_COUNT]; // necessary to avoid calling socket operations inside the OpListCritSect section
+    int lastOpIndex = 0;                        // optimization (index of the last processed operation - start with it in the next round)
     while (1)
     {
         BOOL done = TRUE;
         int count = 0;
         HANDLES(EnterCriticalSection(&OpListCritSect));
-        if (operUID != -1) // tyka se jen jedne operace
+        if (operUID != -1) // applies only to a single operation
         {
             if (operUID >= 0 && operUID < Operations.Count)
             {
@@ -568,7 +569,7 @@ void CFTPOperationsList::PauseWorkers(HWND parent, int operUID, int workerInd, B
                     done &= !oper->InformWorkersAboutPause(workerInd, victims, WORKERS_VICTIMS_COUNT, &count, pause);
             }
         }
-        else // tyka se vsech operaci a vsech workeru
+        else // applies to all operations and all workers
         {
             int i;
             for (i = lastOpIndex; count < WORKERS_VICTIMS_COUNT && i < Operations.Count; i++)
@@ -586,13 +587,13 @@ void CFTPOperationsList::PauseWorkers(HWND parent, int operUID, int workerInd, B
         for (i = 0; i < count; i++)
             victims[i]->PostShouldPauseOrResume();
         if (done)
-            break; // vsechny operace vratily, ze nechteji dalsi volani
+            break; // all operations reported they do not want another call
     }
 
-    // nechame pro kazdou operaci zkontrolovat jestli nedoslo ke kompletnimu pausnuti/resumnuti
-    // (zastaveni/pusteni casomiry + nulovani meraku tesne po resumnuti)
+    // let every operation check whether a full pause/resume happened
+    // (stop/start the timer + reset meters immediately after resuming)
     HANDLES(EnterCriticalSection(&OpListCritSect));
-    if (operUID != -1) // tyka se jen jedne operace
+    if (operUID != -1) // applies only to a single operation
     {
         if (operUID >= 0 && operUID < Operations.Count)
         {
@@ -601,7 +602,7 @@ void CFTPOperationsList::PauseWorkers(HWND parent, int operUID, int workerInd, B
                 oper->OperationStatusMaybeChanged();
         }
     }
-    else // tyka se vsech operaci a vsech workeru
+    else // applies to all operations and all workers
     {
         int i;
         for (i = 0; i < Operations.Count; i++)
@@ -915,7 +916,7 @@ BOOL CFTPQueue::ReplaceItemWithListOfItems(int itemUID, CFTPQueueItem** items, i
 
     HANDLES(EnterCriticalSection(&QueueCritSect));
     BOOL ret = FALSE;
-    if (FindItemWithUID(itemUID) != NULL) // polozka nalezena
+    if (FindItemWithUID(itemUID) != NULL) // item found
     {
         if (itemsCount > 1)
         {
@@ -935,7 +936,7 @@ BOOL CFTPQueue::ReplaceItemWithListOfItems(int itemUID, CFTPQueueItem** items, i
                         item->ErrorOccurenceTime = GiveLastErrorOccurenceTime();
                 }
                 ret = TRUE;
-                HandleFirstWaitingItemIndex(TRUE, // misto prohledavani pole ocekavame nejhorsi variantu - explore polozku na prvnim miste v poli
+                HandleFirstWaitingItemIndex(TRUE, // instead of searching the array we expect the worst case - an explore item at the first position in the array
                                             LastFoundIndex);
             }
             else
@@ -957,11 +958,11 @@ BOOL CFTPQueue::ReplaceItemWithListOfItems(int itemUID, CFTPQueueItem** items, i
             else // itemsCount == 0
             {
                 if (FirstWaitingItemIndex > LastFoundIndex)
-                    FirstWaitingItemIndex--; // dojde k sesunuti pole, osetrime zmenu FirstWaitingItemIndex
+                    FirstWaitingItemIndex--; // the array will shift, adjust FirstWaitingItemIndex
                 UpdateCounters(Items[LastFoundIndex], FALSE);
                 Items.Delete(LastFoundIndex);
                 if (!Items.IsGood())
-                    Items.ResetState(); // max. chyba pri zmensovani pole, ale vymaz byl jiste proveden
+                    Items.ResetState(); // maximum error when shrinking the array, but the deletion was surely executed
                 LastFoundIndex = 0;
                 LastFoundUID = -1;
             }
@@ -1000,7 +1001,7 @@ void CFTPQueue::AddToNotDoneSkippedFailed(int itemDirUID, int notDone, int skipp
                         "NotDone="
                         << itemDir->ChildItemsNotDone << ", Skipped=" << itemDir->ChildItemsSkipped << ", Failed=" << itemDir->ChildItemsFailed << ", UINeeded=" << itemDir->ChildItemsUINeeded);
             }
-            // pokud je mozna automaticka zmena stavu, provedeme ji
+            // if an automatic state change is possible, perform it
             if (itemDir->GetItemState() == sqisDelayed || itemDir->GetItemState() == sqisForcedToFail)
             {
                 CFTPQueueItemState newState = itemDir->GetStateFromCounters();
@@ -1110,7 +1111,7 @@ void CFTPQueue::GetListViewDataFor(int index, NMLVDISPINFO* lvdi, char* buf, int
 
     HANDLES(EnterCriticalSection(&QueueCritSect));
     LVITEM* itemData = &(lvdi->item);
-    if (index >= 0 && index < Items.Count) // index je platny
+    if (index >= 0 && index < Items.Count) // index is valid
     {
         CFTPQueueItem* item = Items[index];
         if (itemData->mask & LVIF_IMAGE)
@@ -1200,11 +1201,11 @@ void CFTPQueue::GetListViewDataFor(int index, NMLVDISPINFO* lvdi, char* buf, int
                 case fqitMoveFileOrFileLink:
                 {
                     if (((CFTPQueueItemCopyOrMove*)item)->Size != CQuadWord(-1, -1))
-                    { // pokud je velikost znama
+                    { // if the size is known
                         strcpy(size, " (");
-                        if (((CFTPQueueItemCopyOrMove*)item)->SizeInBytes) // velikost v bytech
+                        if (((CFTPQueueItemCopyOrMove*)item)->SizeInBytes) // size in bytes
                             SalamanderGeneral->PrintDiskSize(size + 2, ((CFTPQueueItemCopyOrMove*)item)->Size, 0);
-                        else // velikost v blocich
+                        else // size in blocks
                         {
                             SalamanderGeneral->NumberToStr(size + 2, ((CFTPQueueItemCopyOrMove*)item)->Size);
                             strcat(size, " ");
@@ -1215,13 +1216,13 @@ void CFTPQueue::GetListViewDataFor(int index, NMLVDISPINFO* lvdi, char* buf, int
                     else
                         size[0] = 0;
                     if (strcmp(((CFTPQueueItemCopyOrMove*)item)->TgtName, item->Name) == 0)
-                    { // stejne cilove jmeno souboru
+                    { // same target file name
                         _snprintf_s(buf, bufSize, _TRUNCATE,
                                     LoadStr(item->Type == fqitCopyFileOrFileLink ? IDS_OPERDOPDS_COPY1 : IDS_OPERDOPDS_MOVE1), item->Name, size,
                                     item->Path, ((CFTPQueueItemCopyOrMove*)item)->TgtPath,
                                     LoadStr(((CFTPQueueItemCopyOrMove*)item)->AsciiTransferMode ? IDS_OPERDOPDS_ASCIITRMODE : IDS_OPERDOPDS_BINARYTRMODE));
                     }
-                    else // jine cilove jmeno souboru
+                    else // different target file name
                     {
                         _snprintf_s(buf, bufSize, _TRUNCATE,
                                     LoadStr(item->Type == fqitCopyFileOrFileLink ? IDS_OPERDOPDS_COPY2 : IDS_OPERDOPDS_MOVE2), item->Name, size,
@@ -1242,13 +1243,13 @@ void CFTPQueue::GetListViewDataFor(int index, NMLVDISPINFO* lvdi, char* buf, int
                     CFTPQueueItemCopyOrMoveUpload* uploadItem = (CFTPQueueItemCopyOrMoveUpload*)item;
                     char* name = uploadItem->RenamedName != NULL ? uploadItem->RenamedName : uploadItem->TgtName;
                     if (strcmp(name, item->Name) == 0)
-                    { // stejne cilove jmeno souboru
+                    { // same target file name
                         _snprintf_s(buf, bufSize, _TRUNCATE,
                                     LoadStr(item->Type == fqitUploadCopyFile ? IDS_OPERDOPDS_COPY1 : IDS_OPERDOPDS_MOVE1),
                                     item->Name, size, item->Path, uploadItem->TgtPath,
                                     LoadStr(uploadItem->AsciiTransferMode ? IDS_OPERDOPDS_ASCIITRMODE : IDS_OPERDOPDS_BINARYTRMODE));
                     }
-                    else // jine cilove jmeno souboru
+                    else // different target file name
                     {
                         _snprintf_s(buf, bufSize, _TRUNCATE,
                                     LoadStr(item->Type == fqitUploadCopyFile ? IDS_OPERDOPDS_COPY2 : IDS_OPERDOPDS_MOVE2),
@@ -1388,10 +1389,10 @@ void CFTPQueue::GetListViewDataFor(int index, NMLVDISPINFO* lvdi, char* buf, int
             itemData->pszText = buf;
         }
     }
-    else // pri neplatnem indexu (listview jeste nestihlo refresh) musime vratit aspon prazdnou polozku
+    else // for an invalid index (the list view has not refreshed yet) we must return at least an empty item
     {
         if (itemData->mask & LVIF_IMAGE)
-            itemData->iImage = 1 /* ikona souboru je mene vyrazna */;
+            itemData->iImage = 1 /* the file icon is less pronounced */;
         if (itemData->mask & LVIF_TEXT)
         {
             if (bufSize > 0)
@@ -1412,7 +1413,7 @@ BOOL CFTPQueue::IsItemWithErrorToSolve(int index, BOOL* canSkip, BOOL* canRetry)
     if (canRetry != NULL)
         *canRetry = FALSE;
     HANDLES(EnterCriticalSection(&QueueCritSect));
-    if (index >= 0 && index < Items.Count) // index je platny
+    if (index >= 0 && index < Items.Count) // index is valid
     {
         CFTPQueueItem* item = Items[index];
         ret = item->HasErrorToSolve(canSkip, canRetry);
@@ -1427,7 +1428,7 @@ CFTPQueue::FindItemWithUID(int UID)
     if (LastFoundUID == UID && LastFoundIndex < Items.Count &&
         Items[LastFoundIndex]->UID == LastFoundUID)
     {
-        return Items[LastFoundIndex]; // nalezeno v cache, nemusime prochazet cele pole
+        return Items[LastFoundIndex]; // found in the cache; no need to traverse the entire array
     }
     else
     {
@@ -1456,7 +1457,7 @@ void CFTPQueue::HandleFirstWaitingItemIndex(BOOL exploreOrResolveItem, int itemI
     else
     {
         if ((!GetOnlyExploreAndResolveItems || exploreOrResolveItem) &&
-            FirstWaitingItemIndex > itemIndex) // FirstWaitingItemIndex je treba aktualizovat
+            FirstWaitingItemIndex > itemIndex) // FirstWaitingItemIndex needs to be updated
         {
             FirstWaitingItemIndex = itemIndex;
         }
@@ -1480,7 +1481,7 @@ int CFTPQueue::SkipItem(int UID, CFTPOperation* oper)
             found->ChangeStateAndCounters(sqisSkipped, oper, this);
             if (found->ProblemID == ITEMPR_OK)
                 found->ProblemID = ITEMPR_SKIPPEDBYUSER;
-            found->ForceAction = fqiaNone; // jen tak pro jistotu (asi neni potreba)
+            found->ForceAction = fqiaNone; // just to be safe (probably not needed)
         }
         else
             TRACE_I("CFTPQueue::SkipItem(): cannot skip item because it's not in any of skip-possible states!");
@@ -1525,8 +1526,8 @@ int CFTPQueue::RetryItem(int UID, CFTPOperation* oper)
             ret = LastFoundIndex;
             found->ChangeStateAndCounters(newState, oper, this);
             if (found->ProblemID == ITEMPR_UNABLETORESUME)
-                oper->SetResumeIsNotSupported(FALSE); // aby mel Retry vubec smysl
-            oper->SetSizeCmdIsSupported(TRUE);        // at se pripadne prikaz SIZE zkusi znovu pouzit
+                oper->SetResumeIsNotSupported(FALSE); // so Retry makes any sense at all
+            oper->SetSizeCmdIsSupported(TRUE);        // so that the SIZE command is tried again if needed
             found->ProblemID = ITEMPR_OK;
             found->WinError = NO_ERROR;
             if (found->ErrAllocDescr != NULL)
@@ -1534,7 +1535,7 @@ int CFTPQueue::RetryItem(int UID, CFTPOperation* oper)
                 SalamanderGeneral->Free(found->ErrAllocDescr);
                 found->ErrAllocDescr = NULL;
             }
-            found->ForceAction = fqiaNone; // aby se misto Retry neprovedl treba Autorename
+            found->ForceAction = fqiaNone; // to ensure Autorename is not performed instead of Retry
         }
         else
             TRACE_I("CFTPQueue::RetryItem(): cannot retry item because it's not in any of error states!");
@@ -1810,7 +1811,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
             {
                 switch (found->Type)
                 {
-                case fqitDeleteExploreDir: // explore adresare pro delete (pozn.: linky na adresare mazeme jako celek, ucel operace se splni a nesmaze se nic "navic") (objekt tridy CFTPQueueItemDelExplore)
+                case fqitDeleteExploreDir: // explore a directory for delete (note: directory links are removed as a whole, the operation objective is met and nothing "extra" is deleted) (object of class CFTPQueueItemDelExplore)
                 {
                     if (found->ProblemID == ITEMPR_DIRISHIDDEN)
                         openDlgWithID = 9;
@@ -1819,26 +1820,26 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                     break;
                 }
 
-                case fqitDeleteLink: // delete pro link (objekt tridy CFTPQueueItemDel)
-                case fqitDeleteFile: // delete pro soubor (objekt tridy CFTPQueueItemDel)
+                case fqitDeleteLink: // delete for a link (object of class CFTPQueueItemDel)
+                case fqitDeleteFile: // delete for a file (object of class CFTPQueueItemDel)
                 {
                     if (found->ProblemID == ITEMPR_FILEISHIDDEN)
                         openDlgWithID = 10;
                     break;
                 }
                     /*
-            case fqitCopyResolveLink:        // kopirovani: zjisteni jestli jde o link na soubor nebo adresar (objekt tridy CFTPQueueItemCopyOrMove)
-            case fqitMoveResolveLink:        // presun: zjisteni jestli jde o link na soubor nebo adresar (objekt tridy CFTPQueueItemCopyOrMove)
-            case fqitDeleteDir:              // delete pro adresar (objekt tridy CFTPQueueItemDir)
-            case fqitMoveDeleteDir:          // smazani adresare po presunuti jeho obsahu (objekt tridy CFTPQueueItemDir)
-            case fqitMoveDeleteDirLink:      // smazani linku na adresar po presunuti jeho obsahu (objekt tridy CFTPQueueItemDir)
-            case fqitChAttrsExploreDir:      // explore adresare pro zmenu atributu (prida i polozku pro zmenu atributu adresare) (objekt tridy CFTPQueueItemChAttrExplore)
-            case fqitChAttrsResolveLink:     // zmena atributu: zjisteni jestli jde o link na adresar (objekt tridy CFTPQueueItem)
-            case fqitChAttrsExploreDirLink:  // explore linku na adresar pro zmenu atributu (objekt tridy CFTPQueueItem)
+            case fqitCopyResolveLink:        // copying: determine whether it is a link to a file or a directory (object of class CFTPQueueItemCopyOrMove)
+            case fqitMoveResolveLink:        // move: determine whether it is a link to a file or a directory (object of class CFTPQueueItemCopyOrMove)
+            case fqitDeleteDir:              // delete for a directory (object of class CFTPQueueItemDir)
+            case fqitMoveDeleteDir:          // delete a directory after moving its contents (object of class CFTPQueueItemDir)
+            case fqitMoveDeleteDirLink:      // delete a directory link after moving its contents (object of class CFTPQueueItemDir)
+            case fqitChAttrsExploreDir:      // explore a directory to change attributes (also adds an item to change the directory attributes) (object of class CFTPQueueItemChAttrExplore)
+            case fqitChAttrsResolveLink:     // change attributes: determine whether it is a link to a directory (object of class CFTPQueueItem)
+            case fqitChAttrsExploreDirLink:  // explore a link to a directory to change attributes (object of class CFTPQueueItem)
               break;
 */
-                case fqitChAttrsFile: // zmena atributu souboru (pozn.: u linku se atributy menit nedaji) (objekt tridy CFTPQueueItemChAttr)
-                case fqitChAttrsDir:  // zmena atributu adresare (objekt tridy CFTPQueueItemChAttrDir)
+                case fqitChAttrsFile: // change file attributes (note: attributes cannot be changed on links) (object of class CFTPQueueItemChAttr)
+                case fqitChAttrsDir:  // change directory attributes (object of class CFTPQueueItemChAttrDir)
                 {
                     if (found->ProblemID == ITEMPR_UNKNOWNATTRS)
                     {
@@ -1865,9 +1866,9 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                     break;
                 }
 
-                case fqitCopyExploreDir:     // explore adresare nebo linku na adresar pro kopirovani (objekt tridy CFTPQueueItemCopyMoveExplore)
-                case fqitMoveExploreDir:     // explore adresare pro presun (po dokonceni smaze adresar) (objekt tridy CFTPQueueItemCopyMoveExplore)
-                case fqitMoveExploreDirLink: // explore linku na adresar pro presun (po dokonceni smaze link na adresar) (objekt tridy CFTPQueueItemCopyMoveExplore)
+                case fqitCopyExploreDir:     // explore a directory or a link to a directory for copying (object of class CFTPQueueItemCopyMoveExplore)
+                case fqitMoveExploreDir:     // explore a directory for moving (deletes the directory after completion) (object of class CFTPQueueItemCopyMoveExplore)
+                case fqitMoveExploreDirLink: // explore a link to a directory for moving (deletes the link to the directory after completion) (object of class CFTPQueueItemCopyMoveExplore)
                 {
                     if (((CFTPQueueItemCopyMoveExplore*)found)->TgtDirState == TGTDIRSTATE_UNKNOWN)
                     {
@@ -1888,8 +1889,8 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                     break;
                 }
 
-                case fqitUploadCopyExploreDir: // upload: explore adresare pro kopirovani (objekt tridy CFTPQueueItemCopyMoveUploadExplore)
-                case fqitUploadMoveExploreDir: // upload: explore adresare pro presun (po dokonceni smaze adresar) (objekt tridy CFTPQueueItemCopyMoveUploadExplore)
+                case fqitUploadCopyExploreDir: // upload: explore a directory for copying (object of class CFTPQueueItemCopyMoveUploadExplore)
+                case fqitUploadMoveExploreDir: // upload: explore a directory for moving (deletes the directory after completion) (object of class CFTPQueueItemCopyMoveUploadExplore)
                 {
                     if (((CFTPQueueItemCopyMoveUploadExplore*)found)->TgtDirState == UPLOADTGTDIRSTATE_UNKNOWN)
                     {
@@ -1929,8 +1930,8 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                     break;
                 }
 
-                case fqitCopyFileOrFileLink: // kopirovani souboru nebo linku na soubor (objekt tridy CFTPQueueItemCopyOrMove)
-                case fqitMoveFileOrFileLink: // presun souboru nebo linku na soubor (objekt tridy CFTPQueueItemCopyOrMove)
+                case fqitCopyFileOrFileLink: // copying a file or a link to a file (object of class CFTPQueueItemCopyOrMove)
+                case fqitMoveFileOrFileLink: // moving a file or a link to a file (object of class CFTPQueueItemCopyOrMove)
                 {
                     if (((CFTPQueueItemCopyOrMove*)found)->TgtFileState != TGTFILESTATE_TRANSFERRED)
                     {
@@ -1960,8 +1961,8 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                     break;
                 }
 
-                case fqitUploadCopyFile: // upload: kopirovani souboru (objekt tridy CFTPQueueItemCopyOrMoveUpload)
-                case fqitUploadMoveFile: // upload: kopirovani souboru (objekt tridy CFTPQueueItemCopyOrMoveUpload)
+                case fqitUploadCopyFile: // upload: copying a file (object of class CFTPQueueItemCopyOrMoveUpload)
+                case fqitUploadMoveFile: // upload: moving a file (object of class CFTPQueueItemCopyOrMoveUpload)
                 {
                     if (((CFTPQueueItemCopyOrMoveUpload*)found)->TgtFileState != UPLOADTGTFILESTATE_TRANSFERRED)
                     {
@@ -2024,21 +2025,21 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
     }
     HANDLES(LeaveCriticalSection(&QueueCritSect));
 
-    int ret = -2; // zadna zmena
+    int ret = -2; // no change
     if (openDlgWithID > 0)
     {
-        // otevreme dialog Solve Error
+        // open the Solve Error dialog
         INT_PTR dlgResult = IDCANCEL;
         switch (openDlgWithID)
         {
-        case 1: // nedostatek pameti
+        case 1: // insufficient memory
         {
             CSolveLowMemoryErr dlg(parent, isUploadItem ? diskPath : ftpPath, isUploadItem ? diskName : ftpName, &applyToAll);
             dlgResult = dlg.Execute();
             break;
         }
 
-        case 2: // chyba vytvareni ciloveho adresare
+        case 2: // error creating the target directory
         {
             CSolveItemErrorDlg dlg(parent, oper, winError, NULL, ftpPath, ftpName, diskPath,
                                    diskName, &applyToAll, &newName, sidtCannotCreateTgtDir);
@@ -2046,7 +2047,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
             break;
         }
 
-        case 3: // cilovy adresar jiz existuje
+        case 3: // target directory already exists
         {
             CSolveItemErrorDlg dlg(parent, oper, winError, NULL, ftpPath, ftpName, diskPath,
                                    diskName, &applyToAll, &newName, sidtTgtDirAlreadyExists);
@@ -2054,7 +2055,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
             break;
         }
 
-        case 4: // chyba vytvareni ciloveho souboru
+        case 4: // error creating the target file
         {
             CSolveItemErrorDlg dlg(parent, oper, winError, NULL, ftpPath, ftpName, diskPath,
                                    diskName, &applyToAll, &newName, sidtCannotCreateTgtFile);
@@ -2062,7 +2063,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
             break;
         }
 
-        case 5: // cilovy soubor jiz existuje
+        case 5: // target file already exists
         {
             CSolveItemErrorDlg dlg(parent, oper, winError, NULL, ftpPath, ftpName, diskPath,
                                    diskName, &applyToAll, &newName, sidtTgtFileAlreadyExists);
@@ -2070,8 +2071,8 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
             break;
         }
 
-        case 6:  // chyba prenosu souboru, soubor byl vytvoren nebo prepsan nebo resumnut s moznosti prepisu
-        case 42: // upload: chyba prenosu souboru, soubor byl vytvoren nebo prepsan nebo resumnut s moznosti prepisu
+        case 6:  // file transfer error, the file was created or overwritten or resumed with overwrite allowed
+        case 42: // upload: file transfer error, the file was created or overwritten or resumed with overwrite allowed
         {
             CSolveItemErrorDlg dlg(parent, oper, winError, NULL, ftpPath, ftpName, diskPath,
                                    diskName, &applyToAll, &newName,
@@ -2080,8 +2081,8 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
             break;
         }
 
-        case 7:  // chyba prenosu souboru, soubor byl resumnuty bez moznosti prepisu
-        case 43: // upload: chyba prenosu souboru, soubor byl resumnuty bez moznosti prepisu
+        case 7:  // file transfer error, the file was resumed without the option to overwrite
+        case 43: // upload: file transfer error, the file was resumed without the option to overwrite
         {
             CSolveItemErrorDlg dlg(parent, oper, winError, NULL, ftpPath, ftpName, diskPath,
                                    diskName, &applyToAll, &newName,
@@ -2090,13 +2091,13 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
             break;
         }
 
-        case 8: // chyba: soubor/adresar ma nezname atributy, ktere neumime zachovat (jina prava nez 'r'+'w'+'x')
+        case 8: // error: the file/directory has unknown attributes we cannot preserve (permissions other than 'r'+'w'+'x')
         {
             CSolveItemErrUnkAttrDlg dlg(parent, oper, ftpPath, ftpName, origRights, newAttr, &applyToAll);
             dlgResult = dlg.Execute();
             if (dlgResult == CM_SIEA_SETNEWATTRS)
             {
-                applyToAll = FALSE; // normalne se budou nastavovat atributy jen pro jeden soubor/adresar (ne jedny atributy pro vsechny polozky)
+                applyToAll = FALSE; // normally attributes are set only for one file/directory (not one set of attributes for all items)
                 CSolveItemSetNewAttrDlg dlg2(parent, oper, ftpPath, ftpName, origRights, &newAttr, &applyToAll);
                 if (dlg2.Execute() == IDCANCEL)
                     dlgResult = IDCANCEL;
@@ -2104,7 +2105,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
             break;
         }
 
-        case 9: // chyba mazani adresare: adresar je skryty (spis jde o konfirmaci nez chybu)
+        case 9: // delete directory error: the directory is hidden (more a confirmation than an error)
         {
             CSolveItemErrorSimpleDlg dlg(parent, oper, ftpPath, ftpName,
                                          &applyToAll, sisdtDelHiddenDir);
@@ -2112,7 +2113,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
             break;
         }
 
-        case 10: // chyba mazani souboru nebo linku: soubor je skryty (spis jde o konfirmaci nez chybu)
+        case 10: // delete file or link error: the file is hidden (more a confirmation than an error)
         {
             CSolveItemErrorSimpleDlg dlg(parent, oper, ftpPath, ftpName,
                                          &applyToAll, sisdtDelHiddenFile);
@@ -2120,7 +2121,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
             break;
         }
 
-        case 11: // chyba mazani adresare: adresar je neprazdny (spis jde o konfirmaci nez chybu)
+        case 11: // delete directory error: the directory is not empty (more a confirmation than an error)
         {
             CSolveItemErrorSimpleDlg dlg(parent, oper, ftpPath, ftpName,
                                          &applyToAll, sisdtDelNonEmptyDir);
@@ -2128,21 +2129,21 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
             break;
         }
 
-        case 12: // chyba pri zmene pracovni cesty na serveru
-        case 13: // chyba pri zjistovani pracovni cesty na serveru
-        case 14: // nelze nacist cely seznam souboru a adresaru ze serveru
-        case 15: // chyba pri priprave otevirani aktivniho datoveho spojeni
-        case 17: // chyba pri zjistovani jestli je link adresar nebo soubor
-        case 18: // chyba pri mazani souboru nebo linku
-        case 19: // chyba pri mazani adresare
-        case 20: // chyba pri zmene atributu (chmod)
-        case 30: // upload: chyba pri listovani cilove cesty (neni mozne zjistit kolize jmen v cilovem adresari)
-        case 31: // upload: chyba pri listovani zdrojove cesty
-        case 33: // upload: chyba pri mazani vyprazdneneho zdrojoveho adresare (pri Move)
-        case 35: // upload: zdrojovy soubor nelze otevrit
-        case 39: // upload: chyba cteni zdrojoveho souboru
-        case 41: // upload: nelze smazat zdrojovy soubor na disku (Move)
-        case 49: // upload: chyba pri priprave otevirani aktivniho datoveho spojeni
+        case 12: // error changing the working path on the server
+        case 13: // error retrieving the working path on the server
+        case 14: // unable to load the full list of files and directories from the server
+        case 15: // error preparing to open the active data connection
+        case 17: // error checking whether the link is a directory or a file
+        case 18: // error while deleting a file or link
+        case 19: // error while deleting a directory
+        case 20: // error changing attributes (chmod)
+        case 30: // upload: error listing the target path (cannot detect name collisions in the target directory)
+        case 31: // upload: error listing the source path
+        case 33: // upload: error deleting the emptied source directory (during Move)
+        case 35: // upload: unable to open the source file
+        case 39: // upload: error reading the source file
+        case 41: // upload: unable to delete the source file on disk (Move)
+        case 49: // upload: error preparing to open the active data connection
         {
             BOOL useDiskPathAndName = openDlgWithID == 31 || openDlgWithID == 33 || openDlgWithID == 35 ||
                                       openDlgWithID == 39 || openDlgWithID == 41 || openDlgWithID == 49;
@@ -2169,9 +2170,9 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
             break;
         }
 
-        case 16: // neznamy format seznamu souboru a adresaru (listingu) ze serveru
-        case 37: // cilovy soubor nebo link je zamknuty jinou operaci
-        case 50: // zdrojovy soubor nebo link je zamknuty jinou operaci
+        case 16: // unknown format of the file and directory list (listing) from the server
+        case 37: // target file or link is locked by another operation
+        case 50: // source file or link is locked by another operation
         {
             CSolveLowMemoryErr dlg(parent, ftpPath, ftpName, &applyToAll, openDlgWithID == 16 ? IDS_SCRD_TITLE1 : openDlgWithID == 37 ? IDS_SCRD_TITLE2
                                                                                                                                       : IDS_SCRD_TITLE3);
@@ -2181,15 +2182,15 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
 
         case 21: // unable to resume (Copy/Move) - server does not support resuming
         case 22: // unable to resume (Copy/Move) - unexpected tail of file (file has changed)
-        case 23: // chyba cteni ciloveho souboru
-        case 24: // chyba zapisu ciloveho souboru
+        case 23: // error reading the target file
+        case 24: // error writing the target file
         case 25: // Copy/Move: unable to retrieve file from server: %s
-        case 26: // Move: nelze smazat zdrojovy soubor
-        case 44: // upload: resume v ASCII prenosovem rezimu neni podporovan (zkuste resume v binarnim rezimu)
+        case 26: // Move: unable to delete the source file
+        case 44: // upload: resume in ASCII transfer mode is not supported (try resuming in binary mode)
         case 45: // upload: unable to resume (Copy/Move) - server does not support resuming
-        case 46: // upload: nelze resumnout soubor, protoze neni znama velikost ciloveho souboru
-        case 47: // upload: nelze resumnout soubor, protoze cilovy soubor je vetsi nez zdrojovy soubor
-        case 51: // problem "nelze overit jestli se soubor uspesne uploadnul" (poslali jsme cely soubor + server "jen" neodpovedel, nejspis je soubor OK, ale nejsme schopni to otestovat - duvody: ASCII transfer mode nebo nemame velikost v bytech (ani listing ani prikaz SIZE))
+        case 46: // upload: unable to resume the file because the target file size is unknown
+        case 47: // upload: unable to resume the file because the target file is larger than the source file
+        case 51: // issue "unable to verify whether the file was uploaded successfully" (we sent the entire file and the server simply did not respond; the file is most likely OK but we cannot test it - reasons: ASCII transfer mode or we do not have the size in bytes (neither listing nor the SIZE command))
         {
             CSolveServerCmdErr2 dlg(parent,
                                     openDlgWithID == 21 || openDlgWithID == 22 || openDlgWithID == 44 ||
@@ -2210,8 +2211,8 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
             break;
         }
 
-        case 27: // ASCII transfer mode pro binarni soubor
-        case 38: // upload: ASCII transfer mode pro binarni soubor
+        case 27: // ASCII transfer mode for a binary file
+        case 38: // upload: ASCII transfer mode for a binary file
         {
             CSolveItemErrorDlg dlg(parent, oper, NO_ERROR, NULL, ftpPath, ftpName, diskPath,
                                    diskName, &applyToAll, NULL,
@@ -2220,7 +2221,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
             break;
         }
 
-        case 28: // upload: chyba vytvareni ciloveho adresare
+        case 28: // upload: error creating the target directory
         {
             CSolveItemErrorDlg dlg(parent, oper, NO_ERROR, errDescrBuf, ftpPath, ftpName, diskPath,
                                    diskName, &applyToAll, &newName, sidtUploadCannotCreateTgtDir);
@@ -2228,7 +2229,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
             break;
         }
 
-        case 29: // upload: cilovy adresar jiz existuje
+        case 29: // upload: target directory already exists
         {
             CSolveItemErrorDlg dlg(parent, oper, NO_ERROR, NULL, ftpPath, ftpName, diskPath,
                                    diskName, &applyToAll, &newName, sidtUploadTgtDirAlreadyExists);
@@ -2236,8 +2237,8 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
             break;
         }
 
-        case 32: // upload: chyba vytvareni ciloveho adresare s auto-renamem (pod jinym jmenem)
-        case 48: // upload: chyba vytvareni ciloveho souboru s auto-renamem (pod jinym jmenem)
+        case 32: // upload: error creating the target directory with auto-rename (under a different name)
+        case 48: // upload: error creating the target file with auto-rename (under a different name)
         case 40: // upload: unable to store file to server
         {
             CSolveItemErrorDlg dlg(parent, oper, NO_ERROR, errDescrBuf, ftpPath, ftpName, diskPath,
@@ -2248,7 +2249,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
             break;
         }
 
-        case 34: // upload: chyba vytvareni ciloveho souboru
+        case 34: // upload: error creating the target file
         {
             CSolveItemErrorDlg dlg(parent, oper, NO_ERROR, errDescrBuf, ftpPath, ftpName, diskPath,
                                    diskName, &applyToAll, &newName, sidtUploadCannotCreateTgtFile);
@@ -2256,7 +2257,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
             break;
         }
 
-        case 36: // upload: cilovy soubor jiz existuje
+        case 36: // upload: target file already exists
         {
             CSolveItemErrorDlg dlg(parent, oper, NO_ERROR, NULL, ftpPath, ftpName, diskPath,
                                    diskName, &applyToAll, &newName, sidtUploadTgtFileAlreadyExists);
@@ -2265,7 +2266,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
         }
         }
 
-        if (dlgResult != IDCANCEL) // ulozime userem zadane hodnoty do polozky
+        if (dlgResult != IDCANCEL) // store the values entered by the user in the item
         {
             HANDLES(EnterCriticalSection(&QueueCritSect));
             found = FindItemWithUID(UID);
@@ -2273,13 +2274,13 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
             {
                 if (found->HasErrorToSolve(NULL, NULL))
                 {
-                    // ulozeni vysledku dialogu do polozek
+                    // save the dialog result to the items
                     CFTPQueueItem* item = found;
                     int itemIndex = LastFoundIndex;
                     int enumIndex = 0;
                     DWORD wantedProblemID = found->ProblemID;
                     BOOL notAccessibleListingsRemoved = FALSE;
-                    oper->SetSizeCmdIsSupported(TRUE); // at se pripadne prikaz SIZE zkusi znovu pouzit
+                    oper->SetSizeCmdIsSupported(TRUE); // so that the SIZE command is tried again if needed
                     while (1)
                     {
                         if (!notAccessibleListingsRemoved &&
@@ -2298,9 +2299,9 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                         {
                             switch (dlgResult)
                             {
-                            case IDOK:                   // Retry nebo Use Binary Mode (jen u openDlgWithID==27, 38)
-                            case CM_SATR_RETRY:          // Retry (jen u openDlgWithID==27, 38)
-                            case CM_SATR_IGNORE:         // Ignore (jen u openDlgWithID==27, 38)
+                            case IDOK:                   // Retry or Use Binary Mode (only for openDlgWithID==27, 38)
+                            case CM_SATR_RETRY:          // Retry (only for openDlgWithID==27, 38)
+                            case CM_SATR_IGNORE:         // Ignore (only for openDlgWithID==27, 38)
                             case CM_SSCD_USEALTNAME:     // use alternate name (openDlgWithID: 21, 22, 23, 24, 25, 44, 45, 46, 47)
                             case CM_SSCD_RESUME:         // resume (openDlgWithID: 21, 22, 23, 24, 25, 44, 45, 46, 47)
                             case CM_SSCD_RESUMEOROVR:    // resume or overwrite (openDlgWithID: 21, 22, 23, 24, 25, 44, 45, 46, 47)
@@ -2326,28 +2327,28 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                 if (openDlgWithID == 27 &&
                                     (item->Type == fqitCopyFileOrFileLink || item->Type == fqitMoveFileOrFileLink))
                                 {
-                                    if (dlgResult == IDOK) // Use Binary Mode (ASCII transfer mode pro binarni soubor)
+                                    if (dlgResult == IDOK) // Use Binary Mode (ASCII transfer mode for a binary file)
                                         UpdateAsciiTransferMode((CFTPQueueItemCopyOrMove*)item, FALSE);
                                     else
                                     {
-                                        if (dlgResult == CM_SATR_IGNORE) // Ignore (ASCII transfer mode pro binarni soubor)
+                                        if (dlgResult == CM_SATR_IGNORE) // Ignore (ASCII transfer mode for a binary file)
                                             UpdateIgnoreAsciiTrModeForBinFile((CFTPQueueItemCopyOrMove*)item, TRUE);
                                     }
                                 }
                                 if (openDlgWithID == 38 &&
                                     (item->Type == fqitUploadCopyFile || item->Type == fqitUploadMoveFile))
                                 {
-                                    if (dlgResult == IDOK) // Use Binary Mode (ASCII transfer mode pro binarni soubor)
+                                    if (dlgResult == IDOK) // Use Binary Mode (ASCII transfer mode for a binary file)
                                         UpdateAsciiTransferMode((CFTPQueueItemCopyOrMoveUpload*)item, FALSE);
                                     else
                                     {
-                                        if (dlgResult == CM_SATR_IGNORE) // Ignore (ASCII transfer mode pro binarni soubor)
+                                        if (dlgResult == CM_SATR_IGNORE) // Ignore (ASCII transfer mode for a binary file)
                                             UpdateIgnoreAsciiTrModeForBinFile((CFTPQueueItemCopyOrMoveUpload*)item, TRUE);
                                     }
                                 }
                                 if (openDlgWithID == 12 &&
                                     (item->Type == fqitUploadCopyExploreDir || item->Type == fqitUploadMoveExploreDir))
-                                { // invalidatneme listing cilove cesty (pokud se pouziva neaktualni listing obsahujici cilovy adresar, hlasi se pri CWD do tohoto adresare "path not found" - s aktualnim listingem se provede vytvoreni tohoto adresare pres MKD)
+                                { // invalidate the target path listing (if an outdated listing containing the target directory is used, CWD into this directory reports "path not found" - with an up-to-date listing the directory is created via MKD)
                                     CFTPQueueItemCopyMoveUploadExplore* curItem = (CFTPQueueItemCopyMoveUploadExplore*)item;
                                     UpdateUploadTgtDirState(curItem, UPLOADTGTDIRSTATE_UNKNOWN);
                                     oper->GetUserHostPort(userBuf, hostBuf, &portBuf);
@@ -2355,7 +2356,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                     UploadListingCache.InvalidatePathListing(userBuf, hostBuf, portBuf, curItem->TgtPath, pathType);
                                 }
                                 if (found->ProblemID == ITEMPR_UNABLETORESUME)
-                                    oper->SetResumeIsNotSupported(FALSE); // aby mel Retry vubec smysl
+                                    oper->SetResumeIsNotSupported(FALSE); // so Retry makes any sense at all
                                 item->ProblemID = ITEMPR_OK;
                                 item->WinError = NO_ERROR;
                                 if (item->ErrAllocDescr != NULL)
@@ -2380,7 +2381,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                     ret = -1;
 
                                 item->ChangeStateAndCounters(sqisSkipped, oper, this);
-                                item->ForceAction = fqiaNone; // jen tak pro jistotu (asi neni potreba)
+                                item->ForceAction = fqiaNone; // just to be safe (probably not needed)
                                 break;
                             }
 
@@ -2399,7 +2400,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                     SalamanderGeneral->Free(item->ErrAllocDescr);
                                     item->ErrAllocDescr = NULL;
                                 }
-                                item->ForceAction = fqiaNone; // jen tak pro jistotu (asi neni potreba)
+                                item->ForceAction = fqiaNone; // just to be safe (probably not needed)
                                 break;
                             }
 
@@ -2411,7 +2412,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                     ret = -1;
 
                                 ((CFTPQueueItemCopyOrMoveUpload*)item)->TgtFileState = UPLOADTGTFILESTATE_TRANSFERRED;
-                                if (item->Type == fqitUploadMoveFile) // musime jeste smaznout zdrojovy soubor
+                                if (item->Type == fqitUploadMoveFile) // we still need to delete the source file
                                 {
                                     HandleFirstWaitingItemIndex(item->IsExploreOrResolveItem(), itemIndex);
                                     item->ChangeStateAndCounters(sqisWaiting, oper, this);
@@ -2419,7 +2420,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                 else
                                     item->ChangeStateAndCounters(sqisDone, oper, this);
                                 item->ProblemID = ITEMPR_OK;
-                                item->ForceAction = fqiaNone; // jen tak pro jistotu (asi neni potreba)
+                                item->ForceAction = fqiaNone; // just to be safe (probably not needed)
                                 break;
                             }
                             }
@@ -2428,16 +2429,16 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                         {
                             switch (item->Type)
                             {
-                            case fqitChAttrsFile: // zmena atributu souboru (pozn.: u linku se atributy menit nedaji) (objekt tridy CFTPQueueItemChAttr)
-                            case fqitChAttrsDir:  // zmena atributu adresare (objekt tridy CFTPQueueItemChAttrDir)
+                            case fqitChAttrsFile: // change file attributes (note: attributes cannot be changed on links) (object of class CFTPQueueItemChAttr)
+                            case fqitChAttrsDir:  // change directory attributes (object of class CFTPQueueItemChAttrDir)
                             {
-                                if (openDlgWithID == 8) // chyba: soubor/adresar ma nezname atributy, ktere neumime zachovat (jina prava nez 'r'+'w'+'x')
+                                if (openDlgWithID == 8) // error: the file/directory has unknown attributes we cannot preserve (permissions other than 'r'+'w'+'x')
                                 {
                                     switch (dlgResult)
                                     {
                                     case IDOK:                // ignore
                                     case CM_SIEA_RETRY:       // retry
-                                    case CM_SIEA_SETNEWATTRS: // preje si nastavit novou hodnotu atributu
+                                    case CM_SIEA_SETNEWATTRS: // wants to set a new attribute value
                                     {
                                         CFTPQueueItemState newState = sqisWaiting;
                                         if (item->Type == fqitChAttrsDir)
@@ -2458,7 +2459,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                                 ((CFTPQueueItemChAttrDir*)item)->AttrErr = FALSE; // fqitChAttrsDir
                                         }
 
-                                        if (dlgResult == CM_SIEA_SETNEWATTRS) // preje si nastavit novou hodnotu atributu
+                                        if (dlgResult == CM_SIEA_SETNEWATTRS) // wants to set a new attribute value
                                         {
                                             if (item->Type == fqitChAttrsFile)
                                             {
@@ -2491,7 +2492,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                             ret = -1;
 
                                         item->ChangeStateAndCounters(sqisSkipped, oper, this);
-                                        item->ForceAction = fqiaNone; // jen tak pro jistotu (asi neni potreba)
+                                        item->ForceAction = fqiaNone; // just to be safe (probably not needed)
                                         break;
                                     }
                                     }
@@ -2500,13 +2501,13 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                 break;
                             }
 
-                            case fqitDeleteExploreDir: // explore adresare pro delete (pozn.: linky na adresare mazeme jako celek, ucel operace se splni a nesmaze se nic "navic") (objekt tridy CFTPQueueItemDelExplore)
-                            case fqitDeleteLink:       // delete pro link (objekt tridy CFTPQueueItemDel)
-                            case fqitDeleteFile:       // delete pro soubor (objekt tridy CFTPQueueItemDel)
+                            case fqitDeleteExploreDir: // explore a directory for delete (note: directory links are removed as a whole, the operation objective is met and nothing "extra" is deleted) (object of class CFTPQueueItemDelExplore)
+                            case fqitDeleteLink:       // delete for a link (object of class CFTPQueueItemDel)
+                            case fqitDeleteFile:       // delete for a file (object of class CFTPQueueItemDel)
                             {
-                                if (openDlgWithID == 9 ||  // chyba mazani adresare: adresar je skryty (spis jde o konfirmaci nez chybu)
-                                    openDlgWithID == 10 || // chyba mazani souboru nebo linku: soubor je skryty (spis jde o konfirmaci nez chybu)
-                                    openDlgWithID == 11)   // chyba mazani adresare: adresar je neprazdny (spis jde o konfirmaci nez chybu)
+                                if (openDlgWithID == 9 ||  // delete directory error: the directory is hidden (more a confirmation than an error)
+                                    openDlgWithID == 10 || // delete file or link error: the file is hidden (more a confirmation than an error)
+                                    openDlgWithID == 11)   // delete directory error: the directory is not empty (more a confirmation than an error)
                                 {
                                     switch (dlgResult)
                                     {
@@ -2526,9 +2527,9 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                             {
                                             case fqitDeleteExploreDir:
                                             {
-                                                if (openDlgWithID == 9) // chyba: skryty adresar
+                                                if (openDlgWithID == 9) // error: hidden directory
                                                     ((CFTPQueueItemDelExplore*)item)->IsHiddenDir = FALSE;
-                                                else // chyba: neprazdny adresar
+                                                else // error: directory not empty
                                                     ((CFTPQueueItemDelExplore*)item)->IsTopLevelDir = FALSE;
                                                 break;
                                             }
@@ -2543,7 +2544,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                         item->ChangeStateAndCounters(sqisWaiting, oper, this);
                                         item->ProblemID = ITEMPR_OK;
                                         item->WinError = NO_ERROR;
-                                        if (item->ErrAllocDescr != NULL) // jen tak pro jistotu (asi neni potreba)
+                                        if (item->ErrAllocDescr != NULL) // just to be safe (probably not needed)
                                         {
                                             SalamanderGeneral->Free(item->ErrAllocDescr);
                                             item->ErrAllocDescr = NULL;
@@ -2560,7 +2561,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                             ret = -1;
 
                                         item->ChangeStateAndCounters(sqisSkipped, oper, this);
-                                        item->ForceAction = fqiaNone; // jen tak pro jistotu (asi neni potreba)
+                                        item->ForceAction = fqiaNone; // just to be safe (probably not needed)
                                         break;
                                     }
                                     }
@@ -2569,19 +2570,19 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                 break;
                             }
 
-                            case fqitCopyExploreDir:       // explore adresare nebo linku na adresar pro kopirovani (objekt tridy CFTPQueueItemCopyMoveExplore)
-                            case fqitMoveExploreDir:       // explore adresare pro presun (po dokonceni smaze adresar) (objekt tridy CFTPQueueItemCopyMoveExplore)
-                            case fqitMoveExploreDirLink:   // explore linku na adresar pro presun (po dokonceni smaze link na adresar) (objekt tridy CFTPQueueItemCopyMoveExplore)
-                            case fqitUploadCopyExploreDir: // upload: explore adresare pro kopirovani (objekt tridy CFTPQueueItemCopyMoveUploadExplore)
-                            case fqitUploadMoveExploreDir: // upload: explore adresare pro presun (po dokonceni smaze adresar) (objekt tridy CFTPQueueItemCopyMoveUploadExplore)
+                            case fqitCopyExploreDir:       // explore a directory or a link to a directory for copying (object of class CFTPQueueItemCopyMoveExplore)
+                            case fqitMoveExploreDir:       // explore a directory for moving (deletes the directory after completion) (object of class CFTPQueueItemCopyMoveExplore)
+                            case fqitMoveExploreDirLink:   // explore a link to a directory for moving (deletes the link to the directory after completion) (object of class CFTPQueueItemCopyMoveExplore)
+                            case fqitUploadCopyExploreDir: // upload: explore a directory for copying (object of class CFTPQueueItemCopyMoveUploadExplore)
+                            case fqitUploadMoveExploreDir: // upload: explore a directory for moving (deletes the directory after completion) (object of class CFTPQueueItemCopyMoveUploadExplore)
                             {
                                 switch (openDlgWithID)
                                 {
-                                case 2:  // chyba vytvareni ciloveho adresare
-                                case 3:  // cilovy adresar jiz existuje
-                                case 28: // upload: chyba vytvareni ciloveho adresare
-                                case 29: // upload: cilovy adresar jiz existuje
-                                case 32: // upload: chyba vytvareni ciloveho adresare s auto-renamem (pod jinym jmenem)
+                                case 2:  // error creating the target directory
+                                case 3:  // target directory already exists
+                                case 28: // upload: error creating the target directory
+                                case 29: // upload: target directory already exists
+                                case 32: // upload: error creating the target directory with auto-rename (under a different name)
                                 {
                                     switch (dlgResult)
                                     {
@@ -2614,7 +2615,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
 
                                         if (openDlgWithID == 28 &&
                                             (item->Type == fqitUploadCopyExploreDir || item->Type == fqitUploadMoveExploreDir))
-                                        { // invalidatneme listing cilove cesty (pokud se pouziva neaktualni listing neobsahujici cilovy adresar, hlasi se pri MKD tohoto adresare "already exists" - s aktualnim listingem se provede primo zmena do tohoto adresare pres CWD)
+                                        { // invalidate the target path listing (if an outdated listing lacking the target directory is used, MKD for this directory reports "already exists" - with an up-to-date listing the change goes directly into this directory via CWD)
                                             CFTPQueueItemCopyMoveUploadExplore* curItem = (CFTPQueueItemCopyMoveUploadExplore*)item;
                                             UpdateUploadTgtDirState(curItem, UPLOADTGTDIRSTATE_UNKNOWN);
                                             oper->GetUserHostPort(userBuf, hostBuf, &portBuf);
@@ -2631,13 +2632,13 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                             item->ErrAllocDescr = NULL;
                                         }
                                         if (dlgResult == IDOK)
-                                            item->ForceAction = fqiaNone; // jen tak pro jistotu (asi neni potreba)
+                                            item->ForceAction = fqiaNone; // just to be safe (probably not needed)
                                         else
                                         {
                                             if (dlgResult == CM_SCRD_USEALTNAME)
-                                                item->ForceAction = fqiaUseAutorename; // pri dalsim pokusu forcneme autorename
+                                                item->ForceAction = fqiaUseAutorename; // force Autorename on the next attempt
                                             else
-                                                item->ForceAction = fqiaUseExistingDir; // pri dalsim pokusu forcneme use existing dir
+                                                item->ForceAction = fqiaUseExistingDir; // force Use Existing Directory on the next attempt
                                         }
                                         break;
                                     }
@@ -2650,7 +2651,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                             ret = -1;
 
                                         item->ChangeStateAndCounters(sqisSkipped, oper, this);
-                                        item->ForceAction = fqiaNone; // jen tak pro jistotu (asi neni potreba)
+                                        item->ForceAction = fqiaNone; // just to be safe (probably not needed)
                                         break;
                                     }
                                     }
@@ -2660,23 +2661,23 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                 break;
                             }
 
-                            case fqitCopyFileOrFileLink: // kopirovani souboru nebo linku na soubor (objekt tridy CFTPQueueItemCopyOrMove)
-                            case fqitMoveFileOrFileLink: // presun souboru nebo linku na soubor (objekt tridy CFTPQueueItemCopyOrMove)
-                            case fqitUploadCopyFile:     // upload: kopirovani souboru (objekt tridy CFTPQueueItemCopyOrMoveUpload)
-                            case fqitUploadMoveFile:     // upload: presun souboru (objekt tridy CFTPQueueItemCopyOrMoveUpload)
+                            case fqitCopyFileOrFileLink: // copying a file or a link to a file (object of class CFTPQueueItemCopyOrMove)
+                            case fqitMoveFileOrFileLink: // moving a file or a link to a file (object of class CFTPQueueItemCopyOrMove)
+                            case fqitUploadCopyFile:     // upload: copying a file (object of class CFTPQueueItemCopyOrMoveUpload)
+                            case fqitUploadMoveFile:     // upload: moving a file (object of class CFTPQueueItemCopyOrMoveUpload)
                             {
                                 switch (openDlgWithID)
                                 {
-                                case 4:  // chyba vytvareni ciloveho souboru
-                                case 5:  // cilovy soubor jiz existuje
-                                case 6:  // chyba prenosu souboru, soubor byl vytvoren nebo prepsan nebo resumnut s moznosti prepisu
-                                case 7:  // chyba prenosu souboru, soubor byl resumnuty bez moznosti prepisu
-                                case 34: // upload: chyba vytvareni ciloveho souboru
-                                case 36: // upload: cilovy soubor jiz existuje
+                                case 4:  // error creating the target file
+                                case 5:  // target file already exists
+                                case 6:  // file transfer error, the file was created or overwritten or resumed with overwrite allowed
+                                case 7:  // file transfer error, the file was resumed without the option to overwrite
+                                case 34: // upload: error creating the target file
+                                case 36: // upload: target file already exists
                                 case 40: // upload: unable to store file to server
-                                case 42: // upload: chyba prenosu souboru, soubor byl vytvoren nebo prepsan nebo resumnut s moznosti prepisu
-                                case 43: // upload: chyba prenosu souboru, soubor byl resumnuty bez moznosti prepisu
-                                case 48: // upload: cilovy soubor neumime vytvorit pod zadnym jmenem
+                                case 42: // upload: file transfer error, the file was created or overwritten or resumed with overwrite allowed
+                                case 43: // upload: file transfer error, the file was resumed without the option to overwrite
+                                case 48: // upload: unable to create the target file under any name
                                 {
                                     switch (dlgResult)
                                     {
@@ -2685,7 +2686,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                     case CM_SIED_RESUME:      // resume
                                     case CM_SIED_RESUMEOROVR: // resume or overwrite
                                     case CM_SIED_OVERWRITE:   // overwrite
-                                        // case CM_SIED_OVERWRITEALL: // overwrite-all se preklada na overwrite + applyToAll==TRUE
+                                        // case CM_SIED_OVERWRITEALL: // overwrite-all translates to overwrite + applyToAll==TRUE
                                         {
                                             if (newName != NULL)
                                             {
@@ -2722,20 +2723,20 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                             {
                                             case IDOK:
                                                 item->ForceAction = fqiaNone;
-                                                break; // aby se provedl Retry a ne treba Autorename
+                                                break; // to make sure Retry is performed and not, for example, Autorename
                                             case CM_SCRD_USEALTNAME:
                                                 item->ForceAction = fqiaUseAutorename;
-                                                break; // pri dalsim pokusu forcneme autorename
+                                                break; // force Autorename on the next attempt
                                             case CM_SIED_RESUME:
                                                 item->ForceAction = fqiaResume;
-                                                break; // pri dalsim pokusu forcneme resume
+                                                break; // force Resume on the next attempt
                                             case CM_SIED_RESUMEOROVR:
                                                 item->ForceAction = fqiaResumeOrOverwrite;
-                                                break; // pri dalsim pokusu forcneme resume or overwrite
+                                                break; // force Resume or Overwrite on the next attempt
                                             case CM_SIED_OVERWRITE:
                                                 item->ForceAction = fqiaOverwrite;
-                                                break; // pri dalsim pokusu forcneme overwrite
-                                                       // case CM_SIED_OVERWRITEALL: // overwrite-all se preklada na overwrite + applyToAll==TRUE
+                                                break; // force Overwrite on the next attempt
+                                                       // case CM_SIED_OVERWRITEALL: // overwrite-all translates to overwrite + applyToAll==TRUE
                                             }
                                             break;
                                         }
@@ -2748,7 +2749,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                             ret = -1;
 
                                         item->ChangeStateAndCounters(sqisSkipped, oper, this);
-                                        item->ForceAction = fqiaNone; // jen tak pro jistotu (asi neni potreba)
+                                        item->ForceAction = fqiaNone; // just to be safe (probably not needed)
                                         break;
                                     }
                                     }
@@ -2768,7 +2769,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                 free(newName);
                                 newName = NULL;
                             }
-                            // zkusime najit dalsi polozku se stejnou chybou
+                            // try to find another item with the same error
                             BOOL nextItemFound = FALSE;
                             for (; enumIndex < Items.Count; enumIndex++)
                             {
@@ -2783,7 +2784,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                 }
                             }
                             if (!nextItemFound)
-                                break; // dalsi polozka uz nebyla nalezena
+                                break; // no further item was found
                         }
                     }
                 }
@@ -2809,20 +2810,20 @@ void CFTPQueue::UpdateItemState(CFTPQueueItem* item, CFTPQueueItemState state, D
     HANDLES(EnterCriticalSection(&QueueCritSect));
     if (item != NULL)
     {
-        if (state == sqisWaiting && FindItemWithUID(item->UID) != NULL) // polozka byla nalezena ("always true")
+        if (state == sqisWaiting && FindItemWithUID(item->UID) != NULL) // item found ("always true")
             HandleFirstWaitingItemIndex(item->IsExploreOrResolveItem(), LastFoundIndex);
 
-        item->ChangeStateAndCounters(state, oper, this); // zmena stavu polozky
+        item->ChangeStateAndCounters(state, oper, this); // item state change
         item->ProblemID = problemID;
         item->WinError = winError;
         if (item->ErrAllocDescr != NULL)
-            SalamanderGeneral->Free(item->ErrAllocDescr); // uvolnime pripadnou predeslou hodnotu
+            SalamanderGeneral->Free(item->ErrAllocDescr); // free any previous value
         item->ErrAllocDescr = errAllocDescr;
     }
     else
     {
         if (errAllocDescr != NULL)
-            free(errAllocDescr); // hodnotu neni kam ulozit, aspon ji tedy uvolnime
+            free(errAllocDescr); // there is nowhere to store the value, so at least free it
     }
     HANDLES(LeaveCriticalSection(&QueueCritSect));
 }
@@ -3176,7 +3177,7 @@ void CFTPQueue::GetCopyProgressInfo(CQuadWord* downloaded, int* unknownSizeCount
     if (oper->GetApproxByteSize(&size, DoneOrSkippedBlockSize))
         *downloaded += size;
     else
-        *unknownSizeCount += CopyUnknownSizeCountIfUnknownBlockSize; // neni znama velikost bloku, takze k neznamym pridame ty s velikosti v blocich
+        *unknownSizeCount += CopyUnknownSizeCountIfUnknownBlockSize; // block size is unknown, so add those with size in blocks to the unknown ones
     *totalWithoutErrors = WaitingOrProcessingOrDelayedByteSize;
     if (oper->GetApproxByteSize(&size, WaitingOrProcessingOrDelayedBlockSize))
         *totalWithoutErrors += size;
@@ -3225,8 +3226,8 @@ BOOL CFTPQueue::SearchItemWithNewError(int* itemUID, int* itemIndex)
     CALL_STACK_MESSAGE1("CFTPQueue::SearchItemWithNewError()");
     HANDLES(EnterCriticalSection(&QueueCritSect));
     BOOL res = FALSE;
-    if (LastFoundErrorOccurenceTime + 1 < LastErrorOccurenceTime + 1) // +1 je zde kvuli pouziti -1 jako inicializacnich hodnot
-    {                                                                 // ma smysl hledat
+    if (LastFoundErrorOccurenceTime + 1 < LastErrorOccurenceTime + 1) // +1 is here because -1 is used as the initial value
+    {                                                                 // it makes sense to search
         int foundUID = -1;
         int foundIndex = -1;
         DWORD foundErrorOccurenceTime = -1;
@@ -3237,9 +3238,9 @@ BOOL CFTPQueue::SearchItemWithNewError(int* itemUID, int* itemIndex)
             DWORD itemErrorOccurenceTime = -1;
             if (item->IsItemInSimpleErrorState() && item->HasErrorToSolve(NULL, NULL))
                 itemErrorOccurenceTime = item->ErrorOccurenceTime;
-            if (itemErrorOccurenceTime != -1 &&                                       // polozka obsahuje chybu
-                itemErrorOccurenceTime >= LastFoundErrorOccurenceTime + 1 &&          // je to "nova" chyba
-                (foundUID == -1 || foundErrorOccurenceTime > itemErrorOccurenceTime)) // zatim prvni nalezena nebo "nejstarsi" (chyby resime poporade jak nastaly)
+            if (itemErrorOccurenceTime != -1 &&                                       // the item contains an error
+                itemErrorOccurenceTime >= LastFoundErrorOccurenceTime + 1 &&          // it is a "new" error
+                (foundUID == -1 || foundErrorOccurenceTime > itemErrorOccurenceTime)) // so far the first found or the "oldest" (we resolve errors in the order they occurred)
             {
                 foundErrorOccurenceTime = itemErrorOccurenceTime;
                 foundUID = item->UID;
@@ -3247,7 +3248,7 @@ BOOL CFTPQueue::SearchItemWithNewError(int* itemUID, int* itemIndex)
             }
         }
         if (foundUID == -1)
-            LastFoundErrorOccurenceTime = LastErrorOccurenceTime; // nenalezeno -> upravime LastFoundErrorOccurenceTime tak, aby se priste hledaly jen "novejsi" chyby
+            LastFoundErrorOccurenceTime = LastErrorOccurenceTime; // not found -> adjust LastFoundErrorOccurenceTime so that only "newer" errors are searched for next time
         else
         {
             *itemUID = foundUID;
@@ -3372,7 +3373,7 @@ void CFTPQueue::DebugCheckCounters(CFTPOperation* oper)
             item->Type == fqitDeleteDir || item->Type == fqitMoveDeleteDir ||
             item->Type == fqitUploadMoveDeleteDir || item->Type == fqitMoveDeleteDirLink ||
             item->Type == fqitChAttrsDir)
-        { // vysetrujeme jen operaci a dir-polozky
+        { // we examine only operations and directory items
             if (item != NULL)
                 dirItems++;
             CFTPQueueItemDir* itemDir = item != NULL ? (CFTPQueueItemDir*)item : NULL;
@@ -3483,10 +3484,10 @@ CFTPQueue::GetNextWaitingItem(CFTPOperation* oper)
         {
             CFTPQueueItem* item = Items[i];
             if (item->GetItemState() == sqisWaiting &&
-                (!getOnlyExploreAndResolveItems || item->IsExploreOrResolveItem())) // polozka nalezena
+                (!getOnlyExploreAndResolveItems || item->IsExploreOrResolveItem())) // item found
             {
                 FirstWaitingItemIndex = i + 1;
-                item->ChangeStateAndCounters(sqisProcessing, oper, this); // zmena stavu polozky
+                item->ChangeStateAndCounters(sqisProcessing, oper, this); // item state change
                 ret = item;
                 break;
             }
@@ -3495,7 +3496,7 @@ CFTPQueue::GetNextWaitingItem(CFTPOperation* oper)
             break;
         else
         {
-            // uz nejsou ani "explore" ani "resolve", v druhem kole tedy bereme tedy vsechny polozky
+            // there are no more "explore" or "resolve" items, so in the second round we take all items
             getOnlyExploreAndResolveItems = GetOnlyExploreAndResolveItems = FALSE;
             FirstWaitingItemIndex = 0;
         }
@@ -3518,13 +3519,13 @@ void CFTPQueue::ReturnToWaitingItems(CFTPQueueItem* item, CFTPOperation* oper)
         {
             newState = ((CFTPQueueItemDir*)item)->GetStateFromCounters();
         }
-        item->ChangeStateAndCounters(newState, oper, this); // zmena stavu polozky
+        item->ChangeStateAndCounters(newState, oper, this); // item state change
         if (newState == sqisWaiting)
         {
             BOOL exploreOrResolve = item->IsExploreOrResolveItem();
             if (exploreOrResolve || !GetOnlyExploreAndResolveItems)
             {
-                FirstWaitingItemIndex = 0; // nebudeme zjistovat index vracene polozky (vypocetne stejne slozite jako hledani prvni "waiting" polozky - coz se ale dela jen jednou, narozdil od volani teto funkce)
+                FirstWaitingItemIndex = 0; // we will not determine the index of the returned item (computationally as difficult as finding the first "waiting" item - which is done only once, unlike calling this function)
                 if (exploreOrResolve)
                     GetOnlyExploreAndResolveItems = TRUE;
             }
@@ -3565,7 +3566,7 @@ CFTPOperation::CFTPOperation()
     RetryLoginWithoutAsking = FALSE;
     InitFTPCommands = NULL;
     UsePassiveMode = FALSE;
-    SizeCmdIsSupported = TRUE; // aspon jednou to na server zkusime
+    SizeCmdIsSupported = TRUE; // we will try it on the server at least once
     ListCommand = NULL;
     ServerIP = INADDR_NONE;
     ServerSystem = NULL;
@@ -3576,7 +3577,7 @@ CFTPOperation::CFTPOperation()
     ReportChangeInWorkerID = -2;
     ReportProgressChange = FALSE;
     ReportChangeInItemUID = -3;
-    ReportChangeInItemUID2 = -1; // jen tak pro formu (zbytecne)
+    ReportChangeInItemUID2 = -1; // just for form's sake (pointless)
     OperStateChangedPosted = FALSE;
     LastReportedOperState = opstNone;
 
@@ -3640,8 +3641,8 @@ CFTPOperation::CFTPOperation()
     pCertificate = NULL;
     CompressData = 0;
 
-    GlobalTransferSpeedMeter.JustConnected();   // globalni prenosovou rychlost merime od startu operace
-    GlobalLastActivityTime.Set(GetTickCount()); // prvni aktivita je start operace
+    GlobalTransferSpeedMeter.JustConnected();   // measure the global transfer speed from the start of the operation
+    GlobalLastActivityTime.Set(GetTickCount()); // the first activity is the start of the operation
 
     OperationEnd = OperationStart = GetTickCount();
     if (OperationEnd == -1)

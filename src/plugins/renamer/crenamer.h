@@ -5,19 +5,19 @@
 
 struct CSourceFile
 {
-    char* FullName;        // naalokovane jmeno souboru (s plnou cestou)
-    char* Name;            // ukazatel do FullName za posledni backslash nebo na zacatek FullName
-    char* Ext;             // u souboru: ukazatel do Name za prvni tecku zprava (vyjma tecky na zacatku
-                           // jmena) nebo na konec Name, pokud pripona neexistuje; u adresaru: ukazatel
-                           // na konec Name (adresare nemaji pripony)
-    CQuadWord Size;        // velikost souboru v bytech
-    DWORD Attr;            // atributy souboru - ORovane konstanty FILE_ATTRIBUTE_XXX
-    FILETIME LastWrite;    // cas posledniho zapisu do souboru (UTC-based time)
-    unsigned NameLen : 15; // delka retezce FullName (strlen(FullName))
+    char* FullName;        // allocated file name (with full path)
+    char* Name;            // pointer within FullName after the last backslash or to the start of FullName
+    char* Ext;             // for files: pointer in Name after the first dot from the right (except a dot at
+                           // the start of the name) or to the end of Name if there is no extension;
+                           // for directories: pointer to the end of Name (directories have no extensions)
+    CQuadWord Size;        // file size in bytes
+    DWORD Attr;            // file attributes - ORed FILE_ATTRIBUTE_XXX constants
+    FILETIME LastWrite;    // time of the last write to the file (UTC-based time)
+    unsigned NameLen : 15; // length of the FullName string (strlen(FullName))
     unsigned IsDir : 1;
-    // unsigned Delete:	1; // v destructoru se ma volat free(FullName);
-    unsigned State : 1; // 0 -- neprejmenovany soubor (error, cancel, undo)
-                        // 1 -- uspesne prejmenovany
+    // unsigned Delete:	1; // the destructor should call free(FullName);
+    unsigned State : 1; // 0 -- file not renamed (error, cancel, undo)
+                        // 1 -- successfully renamed
 
     CSourceFile(const CFileData* fileData, const char* path, int pathLen, BOOL isDir);
     CSourceFile(CSourceFile* orig);
@@ -107,7 +107,7 @@ protected:
     char (&Root)[MAX_PATH];
     int& RootLen;
 
-    // informace o posledni chybe
+    // information about the last error
     int Error, ErrorPos1, ErrorPos2;
     CRenamerErrorType ErrorType;
 
@@ -149,7 +149,7 @@ public:
 protected:
     int BMSearchForward(const char* string, int length, int offset);
     int BMSubst(const char* source, int len, char* dest, int max);
-    BOOL ValidetaReplacePattern(); // nutne zaovolat pre SafeSubst, ale az po RegCompile
+    BOOL ValidetaReplacePattern(); // must be called before SafeSubst, but only after RegCompile
     int SafeSubst(char* dest, int max, int& pos);
     int RESubst(const char* source, int len, char* dest, int max);
 };

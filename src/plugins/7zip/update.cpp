@@ -315,7 +315,7 @@ STDMETHODIMP CArchiveUpdateCallback::CryptoGetTextPassword2(Int32* passwordIsDef
         case IDCANCEL:
             return E_ABORT;
             /*
-      // pripraveno pri skip a skip all (snad to rusak v pristi verzi dodela)
+      // prepared for skip and skip all (hopefully it will be completed in the next version)
       case DIALOG_SKIP:
         PasswordIsDefined = false;
         AskPassword = false;

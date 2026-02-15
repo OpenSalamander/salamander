@@ -34,19 +34,19 @@
 
 #include <assert.h>
 
-// zde si zvolte formaty jake chcete aby plugin podporoval
-// retezce ve stringlistu ale zustanou vzdy vsechny (nedostatecna podpora preprocesoru od MS)
+// select here which formats you want the plugin to support
+// strings in the stringlist will always remain all of them (insufficient preprocessor support from MS)
 
-//#define _MP4_SUPPORT_ - zatim neimplementovano
+//#define _MP4_SUPPORT_ - not implemented yet
 #define _MPG_SUPPORT_
 #define _MOD_SUPPORT_
 #define _VQF_SUPPORT_
 #define _WAV_SUPPORT_
 #define _WMA_SUPPORT_
-// FIXME - zatloukl jsem OGG support, protoze ogglib je priserny kolos (lib ma nove pres 2MB)
-// a stara verze co jsme pouzivali nema x64 podporu; reseni je prejit na TagLib projekt
-// http://taglib.github.com/ ktery je malicky a ktery nam umozni podporovat i dalsi formaty
-// chce to prozkoumat jeho MPL licenci, ale zrejme je volnejsi nez LGPL a knihovna by sla zakompilovat
-#if ((_MSC_VER < 1600) && !defined(_WIN64)) // pouze VC2008 a x87
+// FIXME - I hammered down OGG support because ogglib is a terrible behemoth (the library now has over 2MB)
+// and the old version we used does not have x64 support; the solution is to move to the TagLib project
+// http://taglib.github.com/ which is tiny and will allow us to support additional formats
+// we need to examine its MPL license, but it is apparently more permissive than LGPL and the library could be compiled in
+#if ((_MSC_VER < 1600) && !defined(_WIN64)) // only VC2008 and x87
 //#define _OGG_SUPPORT_
 #endif

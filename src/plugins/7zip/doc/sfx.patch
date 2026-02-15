@@ -20,12 +20,12 @@ diff -ur c:\old\7zip\7za\7zip\Archive\7z\7zIn.cpp c:\new\7zip\7za\7zip\Archive\7
 +
 +  RINOK(ReadDirect(stream, data, sizeof(IMAGE_DOS_HEADER), &processedSize));
 +
-+  // zkontroluj ze je tam MZ signatura
++  // verify that the MZ signature is present
 +  if (((IMAGE_DOS_HEADER *)data)->e_magic != ('M' + ('Z' << 8)))
 +    return S_OK;
 +  RINOK(stream->Seek(((IMAGE_DOS_HEADER *)data)->e_lfanew, STREAM_SEEK_SET, NULL));
 +
-+  // precti headery
++  // read the headers
 +  RINOK(ReadDirect(stream, data, sizeof(unsigned long) + sizeof(IMAGE_FILE_HEADER) + 24 * 4, &processedSize));
 +  if (processedSize != sizeof(unsigned long) + sizeof(IMAGE_FILE_HEADER) + 24 * 4)
 +    return S_OK;
@@ -36,12 +36,12 @@ diff -ur c:\old\7zip\7za\7zip\Archive\7z\7zIn.cpp c:\new\7zip\7za\7zip\Archive\7
 +  sections = ((IMAGE_FILE_HEADER *)(data + sizeof(unsigned long)))->NumberOfSections;
 +  // number of directory entries
 +  direntries = ((IMAGE_OPTIONAL_HEADER *)(data + sizeof(unsigned long) + sizeof(IMAGE_FILE_HEADER)))->NumberOfRvaAndSizes;
-+  // preskoc dir entries
++  // skip the directory entries
 +  RINOK(stream->Seek(direntries * sizeof(IMAGE_DATA_DIRECTORY), STREAM_SEEK_CUR, NULL));
 +
 +  sectionOffset = 0;
 +  sectionSize = 0;
-+  // precti hlavicky vsech sekci
++  // read the headers of all sections
 +  for (; sections > 0; sections--)
 +  {
 +    RINOK(ReadDirect(stream, data, sizeof(IMAGE_SECTION_HEADER), &processedSize));

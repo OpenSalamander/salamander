@@ -11,20 +11,20 @@
 
 #pragma once
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from start until the plugin is unloaded
 extern CSalamanderGeneralAbstract* SalamanderGeneral;
 
-// rozhrani pro praci se soubory - platne od startu az do ukonceni pluginu
+// interface for working with files - valid from start until the plugin is unloaded
 extern CSalamanderSafeFileAbstract* SalamanderSafeFile;
 
-// casto pouzita chybova hlaska
+// frequently used error message
 extern const char* LOW_MEMORY;
 
-// aktualni hodnota konfiguracni promenne Salamandera SALCFG_SORTBYEXTDIRSASFILES
+// current value of Salamander's SALCFG_SORTBYEXTDIRSASFILES configuration variable
 extern int SortByExtDirsAsFiles;
 
-// nulove/male soubory trvaji aspon jako soubory s velikosti COPY_MIN_FILE_SIZE
-#define COPY_MIN_FILE_SIZE CQuadWord(1024, 0) // nesmi byt mensi nez 1
+// zero/small files take at least as long as files with size COPY_MIN_FILE_SIZE
+#define COPY_MIN_FILE_SIZE CQuadWord(1024, 0) // must not be less than 1
 
 // ****************************************************************************
 //
@@ -88,17 +88,17 @@ public:
     virtual void WINAPI PasswordManagerEvent(HWND parent, int event) {}
 };
 
-extern HINSTANCE DLLInstance; // handle k SPL-ku - jazykove nezavisle resourcy
-extern HINSTANCE HLanguage;   // handle k SLG-cku - jazykove zavisle resourcy
+extern HINSTANCE DLLInstance; // handle to the SPL module - language-independent resources
+extern HINSTANCE HLanguage;   // handle to the SLG module - language-dependent resources
 
-//extern DWORD Options;// konfigurace
+//extern DWORD Options;// configuration
 struct COptions
 {
     BOOL ClearReadOnly;      // Clear read-only attribute when copying from archive
     BOOL SessionAsDirectory; // Show session as directory (allow access to all sessions)
 };
 
-extern COptions Options; // konfigurace
+extern COptions Options; // configuration
 
 char* LoadStr(int resID);
 void GetInfo(char* buffer, FILETIME* lastWrite, unsigned size);

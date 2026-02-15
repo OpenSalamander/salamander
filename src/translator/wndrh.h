@@ -31,7 +31,7 @@ class CRHWindow : public CWindow
 public:
     CRHListBox ListBox;
     HFONT HFont;
-    int VisibleItems; // pocet zobrazenych polozek
+    int VisibleItems; // Number of items currently visible
 
 public:
     CRHWindow();

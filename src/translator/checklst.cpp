@@ -11,24 +11,24 @@
 #include "wndout.h"
 #include "datarh.h"
 
-/* popis formatu check.lst
-Same Size of Property Pages: 300 1105 2645  --seznam IDcek dialogu se oddeluje mezerou, delka seznamu libovolna, ale musi byt v jednom radku
+/* Description of the check.lst format
+Same Size of Property Pages: 300 1105 2645  --list of dialog IDs separated by spaces; the list can be any length, but it must be on one line
 
-Multi-Text Control: 150: 151: 13712 10149 10151 10153 10154 12087 10155       --1. cislo je dialog ID, 2. je ID controlu u nejz mame zkusit nastavit text na vsechny IDcka v nasledujicim seznamu (jde o test, jestli je control dost velky pro vsechny texty, ktere se v nem muzou objevit)
-Multi-Text Control Bold: 150: 151: 13712 10149 10151 10153 10154 12087 10155  --1. cislo je dialog ID, 2. je ID controlu u nejz mame zkusit nastavit text na vsechny IDcka v nasledujicim seznamu (jde o test, jestli je control dost velky pro vsechny texty, ktere se v nem muzou objevit) - text omerovat BOLDem
-Text Control Bold: 150: 151 --1. cislo je dialog ID, 2. je ID controlu u nejz mame zkusit, jestli je control dost velky pro obsazeny text - text omerovat BOLDem
+Multi-Text Control: 150: 151: 13712 10149 10151 10153 10154 12087 10155       --the first number is the dialog ID, the second is the control ID; we try to set the control text to every ID in the following list (this checks whether the control is large enough for all texts that might appear in it)
+Multi-Text Control Bold: 150: 151: 13712 10149 10151 10153 10154 12087 10155  --same as above, but the text is measured in bold
+Text Control Bold: 150: 151 --the first number is the dialog ID, the second is the control ID that we test to ensure the control is large enough for the text it contains—the text is measured in bold
 
-Drop-Down Button: 190: 147  --1. cislo je dialog ID, 2. je ID controlu: jde o tlacitko, mame zkontrolovat, jestli se do nej vejde drop-down sipka (vpravo na tlacitku je symbol sipky dolu)
+Drop-Down Button: 190: 147  --the first number is the dialog ID, the second is the control ID; the control is a button and we verify that a drop-down arrow fits into it (there is an arrow symbol on the right side of the button)
 
-More Button: 190: 147       --1. cislo je dialog ID, 2. je ID controlu: jde o tlacitko, mame zkontrolovat, jestli se do nej vejde more sipka (vpravo na tlacitku je symbol dvou sipek dolu)
+More Button: 190: 147       --the first number is the dialog ID, the second is the control ID; the control is a button and we verify that the "more" arrow fits (there is a double-arrow symbol on the right side of the button)
 
-Combo Box: 205: 227: 13990 13991 13992 13993  --1. cislo je dialog ID, 2. je ID controlu: jde o combo box, mame zkontrolovat, jestli se do nej vejdou vsechny texty v seznamu
+Combo Box: 205: 227: 13990 13991 13992 13993  --the first number is the dialog ID, the second is the control ID; the control is a combo box and we verify that all texts from the list fit inside it
 
-About Dialog Title: 10500: 10501      --specialitka pro About dialogy: 1. cislo je dialog ID, 2. je ID controlu u nejz mame zkusit do jeho textu pres sprintf vlozit verzi: "99.99 beta 10 (PB999 x86)" a text omerovat BOLDem
+About Dialog Title: 10500: 10501      --special case for About dialogs: the first number is the dialog ID, the second is the control ID whose text we try to fill with the version string "99.99 beta 10 (PB999 x86)" via sprintf, measuring the text in bold
 
-Progress Dialog Status: 150: 159  --specialitka pro Progress dialog: 1. cislo je dialog ID, 2. je ID controlu u nejz mame zkusit vytvorit text odpovidajici rutine v CProgressDialog::DialogProc(): WM_TIMER: IDT_UPDATESTATUS
+Progress Dialog Status: 150: 159  --special case for the Progress dialog: the first number is the dialog ID, the second is the control ID whose text we try to create according to the routine in CProgressDialog::DialogProc(): WM_TIMER: IDT_UPDATESTATUS
 
-Strings With CSV: 10400 10401 10402 10403 10404 10405 10406 10407 10408 --kontrola, ze sedi pocet carek v originalnim a prelozenem textu (jde o CSV=Comma Separated Values, pouziva se pro texty pro bottom baru): kontroluji se postupne stringy v seznamu (vzajemne nemusi mit stejny pocet carek)
+Strings With CSV: 10400 10401 10402 10403 10404 10405 10406 10407 10408 --verify that the number of commas matches in the original and translated texts (CSV = Comma Separated Values, used for bottom bar texts); the strings in the list are checked sequentially (they do not need to contain the same number of commas)
 */
 
 BOOL ProcessCheckLstLineAux(const char* overlapHeader, BOOL readDlgAndCtrlID, BOOL readList, int listMinCount,
@@ -126,16 +126,16 @@ BOOL CData::ProcessCheckLstLine(const char* line, const char* lineEnd, int row)
 {
     const char* p = line;
 
-    // preskocim uvodni whitespacy
+    // Skip leading whitespace
     while (p < lineEnd && (*p == ' ' || *p == '\t'))
         p++;
 
-    // orizneme whitespacy na konci radku
+    // Trim whitespace at the end of the line
     while ((lineEnd - 1) > line && (*(lineEnd - 1) == ' ' || *(lineEnd - 1) == '\t'))
         lineEnd--;
 
     BOOL ret = TRUE;
-    if (p < lineEnd) // zajimaji nas jen neprazdne radky
+    if (p < lineEnd) // we only care about non-empty lines
     {
         CCheckLstItem* item = new CCheckLstItem;
         if (item != NULL)
@@ -236,7 +236,7 @@ BOOL CData::LoadCheckLst(const char* fileName)
         HANDLES(CloseHandle(hFile));
         return FALSE;
     }
-    checkLstData[checkLstDataSize] = 0; // vlozime terminator
+    checkLstData[checkLstDataSize] = 0; // insert the terminator
 
     const char* lineStart = checkLstData;
     const char* lineEnd = checkLstData;

@@ -27,7 +27,7 @@
 #include "tserver.rh"
 #include "tserver.rh2"
 
-DWORD LastPSPIndex = 0; // naposledy otevrena stranka
+DWORD LastPSPIndex = 0; // most recently opened page
 
 //****************************************************************************
 //
@@ -253,7 +253,7 @@ BOOL DoSetupDialog(HWND hWindow)
     const WCHAR* strBuff[PAGES_COUNT + 1] =
         {
             L"Configuration", // caption
-            L"General",       // prvni zalozka
+            L"General",       // first tab
             L"View",
         };
 

@@ -28,7 +28,7 @@ static inline bool SalIsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorV
     VER_MINORVERSION, VER_GREATER_EQUAL),
     VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL);
 
-  SecureZeroMemory(&osvi, sizeof(osvi));     // nahrada za memset (nevyzaduje RTLko)
+  SecureZeroMemory(&osvi, sizeof(osvi));     // replacement for memset (does not require the RTL)
   osvi.dwOSVersionInfoSize = sizeof(osvi);
   osvi.dwMajorVersion = wMajorVersion;
   osvi.dwMinorVersion = wMinorVersion;
@@ -41,7 +41,7 @@ static inline bool IsItWindowsNT()
 //  OSVERSIONINFO vi;
 //  vi.dwOSVersionInfoSize = sizeof(vi);
 //  return (::GetVersionEx(&vi) && vi.dwPlatformId == VER_PLATFORM_WIN32_NT);
-  return SalIsWindowsVersionOrGreater(5, 0, 0);   // Petr: jsou to aspon W2K?
+  return SalIsWindowsVersionOrGreater(5, 0, 0);   // Petr: is this at least Windows 2000?
 }
 // OPENSAL_7ZIP_PATCH END
 #endif

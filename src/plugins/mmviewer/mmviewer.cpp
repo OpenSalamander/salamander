@@ -14,34 +14,34 @@
 #include "buffer.h"
 #include "parser.h"
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object, its methods are called from Salamander
 CPluginInterface PluginInterface;
-// cast interfacu CPluginInterface pro viewer
+// part of the CPluginInterface interface for the viewer
 CPluginInterfaceForViewer InterfaceForViewer;
 CPluginInterfaceForMenuExt InterfaceForMenuExt;
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to the SPL - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to the SLG - language-dependent resources
 HACCEL HAccel = NULL;
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from startup until the plugin shuts down
 CSalamanderGeneralAbstract* SalGeneral = NULL;
 
-// definice promenne pro "dbg.h"
+// variable definition for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
-// definice promenne pro "spl_com.h"
+// variable definition for "spl_com.h"
 int SalamanderVersion = 0;
 
-// rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+// interface providing customized Windows controls used in Salamander
 CSalamanderGUIAbstract* SalamanderGUI = NULL;
 
 HFONT HNormalFont = NULL;
 HFONT HBoldFont = NULL;
 int FontHeight = -1;
 
-CWindowQueue ViewerWindowQueue("MMViewer Viewers"); // seznam vsech oken viewru
-CThreadQueue ThreadQueue("MMViewer Viewers");       // seznam vsech threadu oken
+CWindowQueue ViewerWindowQueue("MMViewer Viewers"); // list of all viewer windows
+CThreadQueue ThreadQueue("MMViewer Viewers");       // list of all window threads
 
 const char* CONFIG_VERSION = "Version";
 const char* CONFIG_LOGFONT = "LogFont";
@@ -51,7 +51,7 @@ const char* CONFIG_AUTOSELECT = "Auto Select";
 const char* CONFIG_DEFAULT_CODING = "Default Coding";
 const char* CONFIG_FINDHISTORY = "Find History";
 
-const char* PLUGIN_NAME = "MMVIEWER"; // jmeno pluginu potrebne pro WinLib
+const char* PLUGIN_NAME = "MMVIEWER"; // plugin name required for WinLib
 
 // Configuration variables
 
@@ -133,9 +133,9 @@ MENU_TEMPLATE_ITEM PopupMenuTemplate[] =
 struct CButtonData
 {
     int ImageIndex;                   // zero base index
-    WORD ToolTipResID;                // resID se stringem pro tooltip
-    WORD ID;                          // univerzalni Command
-    CViewerWindowEnablerEnum Enabler; // ridici promenna pro enablovani tlacitka
+    WORD ToolTipResID;                // resource ID with the tooltip string
+    WORD ID;                          // universal command
+    CViewerWindowEnablerEnum Enabler; // control variable for enabling the button
 };
 
 CButtonData ToolBarButtons[] =
@@ -260,46 +260,46 @@ int WINAPI SalamanderPluginGetReqVer()
 
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
-    // nastavime SalamanderDebug pro "dbg.h"
+    // set SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
-    // nastavime SalamanderVersion pro "spl_com.h"
+    // set SalamanderVersion for "spl_com.h"
     SalamanderVersion = salamander->GetVersion();
 
     HANDLES_CAN_USE_TRACE();
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plugin is built for the current Salamander version and newer - perform a check
     if (SalamanderVersion < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
-                   "Multimedia Viewer" /* neprekladat! */, MB_OK | MB_ICONERROR);
+                   "Multimedia Viewer" /* do not translate! */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
-    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "Multimedia Viewer" /* neprekladat! */);
+    // let it load the language module (.slg)
+    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "Multimedia Viewer" /* do not translate! */);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain the general Salamander interface
     SalGeneral = salamander->GetSalamanderGeneral();
 
-    // ziskame rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+    // obtain the interface providing customized Windows controls used in Salamander
     SalamanderGUI = salamander->GetSalamanderGUI();
 
-    // nastavime jmeno souboru s helpem
+    // set the help file name
     SalGeneral->SetHelpFileName("mmviewer.chm");
 
     if (!InitViewer())
-        return NULL; // chyba
+        return NULL; // error
 
-    // nastavime zakladni informace o pluginu
+    // set the basic plugin information
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGIN_NAME),
                                    FUNCTION_LOADSAVECONFIGURATION | FUNCTION_VIEWER /*|FUNCTION_CONFIGURATION*/,
                                    VERSINFO_VERSION_NO_PLATFORM,
-                                   // pozor, dlouhy string, at nam nevytece v okne Plugins Manager
+                                   // warning, long string so it doesn't overflow in the Plugins Manager window
                                    VERSINFO_COPYRIGHT,
                                    LoadStr(IDS_PLUGIN_DESCRIPTION),
                                    "MMVIEWER");
@@ -429,11 +429,11 @@ BOOL SaveHistory(CSalamanderRegistryAbstract* registry, HKEY hKey, const char* n
 void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRegistryAbstract* registry)
 {
     CALL_STACK_MESSAGE1("CPluginInterface::LoadConfiguration(, ,)");
-    if (regKey != NULL) // load z registry
+    if (regKey != NULL) // load from the registry
     {
         if (!registry->GetValue(regKey, CONFIG_VERSION, REG_DWORD, &ConfigVersion, sizeof(DWORD)))
         {
-            ConfigVersion = CURRENT_CONFIG_VERSION; // asi nejakej nenechavec... ;-)
+            ConfigVersion = CURRENT_CONFIG_VERSION; // probably some prankster... ;-)
         }
         registry->GetValue(regKey, CONFIG_LOGFONT, REG_BINARY, &CfgLogFont, sizeof(LOGFONT));
         registry->GetValue(regKey, CONFIG_SAVEPOS, REG_DWORD, &CfgSavePosition, sizeof(DWORD));
@@ -519,15 +519,15 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
 #endif
 
                           ,
-                          FALSE); // default (install pluginu), jinak Salam ignoruje
+                          FALSE); // default (plugin installation), otherwise Salamander ignores it
 
-    if (ConfigVersion < 1) // pripony pridane po 2.5b6
+    if (ConfigVersion < 1) // extensions added after 2.5b6
     {
         salamander->AddViewer("*.wav;*.wave;*.wma;*.ogg", TRUE);
     }
 
-    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volani salamander->AddMenuItem() dole...
+    /* used by the export_mnu.py script, which generates salmenu.mnu for the Translator
+   keep it synchronized with the salamander->AddMenuItem() calls below...
 MENU_TEMPLATE_ITEM PluginMenu[] = 
 {
   {MNTT_PB, 0
@@ -566,8 +566,8 @@ struct CTVData
     BOOL* LockOwner;
     BOOL Success;
     HANDLE Continue;
-    int EnumFilesSourceUID;    // UID zdroje pro enumeraci souboru ve vieweru
-    int EnumFilesCurrentIndex; // index prvniho souboru ve vieweru ve zdroji
+    int EnumFilesSourceUID;    // source UID for enumerating files in the viewer
+    int EnumFilesCurrentIndex; // index of the first file in the viewer within the source
 };
 
 unsigned WINAPI ViewerThreadBody(void* param)
@@ -592,8 +592,8 @@ unsigned WINAPI ViewerThreadBody(void* param)
             if (CfgSavePosition && CfgWindowPlacement.length != 0)
             {
                 WINDOWPLACEMENT place = CfgWindowPlacement;
-                // GetWindowPlacement cti Taskbar, takze pokud je Taskbar nahore nebo vlevo,
-                // jsou hodnoty posunute o jeho rozmery. Provedeme korekci.
+                // GetWindowPlacement counts the Taskbar, so if the Taskbar is at the top or on the left,
+                // the values are shifted by its dimensions. We will correct that.
                 RECT monitorRect;
                 RECT workRect;
                 SalGeneral->MultiMonGetClipRectByRect(&place.rcNormalPosition, &workRect, &monitorRect);
@@ -621,7 +621,7 @@ unsigned WINAPI ViewerThreadBody(void* param)
                                  window) != NULL)
             {
                 CALL_STACK_MESSAGE1("ViewerThreadBody::ShowWindow");
-                // !POZOR! ziskane ikony je treba ve WM_DESTROY destruovat
+                // WARNING! icons obtained here must be destroyed in WM_DESTROY
                 SendMessage(window->HWindow, WM_SETICON, ICON_BIG,
                             (LPARAM)LoadIcon(DLLInstance, MAKEINTRESOURCE(IDI_MAIN)));
                 SendMessage(window->HWindow, WM_SETICON, ICON_SMALL,
@@ -644,17 +644,17 @@ unsigned WINAPI ViewerThreadBody(void* param)
     char name[MAX_PATH];
     strcpy(name, data->Name);
     BOOL openFile = data->Success;
-    SetEvent(data->Continue); // pustime dale hl. thread, od tohoto bodu nejsou data platna (=NULL)
+    SetEvent(data->Continue); // let the main thread continue, data are invalid from this point (=NULL)
     data = NULL;
 
-    // pokud probehlo vse bez potizi, otevreme v okne pozadovany soubor
+    // if everything went smoothly, open the requested file in the window
     if (openFile)
     {
         CALL_STACK_MESSAGE1("ViewerThreadBody::OpenFile");
         window->Renderer.OpenFile(name);
 
         CALL_STACK_MESSAGE1("ViewerThreadBody::message-loop");
-        // message loopa
+        // message loop
         MSG msg;
         while (GetMessage(&msg, NULL, 0, 0))
         {
@@ -695,13 +695,13 @@ BOOL CPluginInterfaceForViewer::ViewFile(const char* name, int left, int top, in
     data.EnumFilesCurrentIndex = enumFilesCurrentIndex;
     if (data.Continue == NULL)
     {
-        TRACE_E("Nepodarilo se vytvorit Continue event.");
+        TRACE_E("Failed to create the Continue event.");
         return FALSE;
     }
 
     if (ThreadQueue.StartThread(ViewerThreadBody, &data))
     {
-        // pockame, az thread zpracuje predana data a vrati vysledky
+        // wait until the thread processes the passed data and returns the results
         WaitForSingleObject(data.Continue, INFINITE);
     }
     else
@@ -796,7 +796,7 @@ BOOL CViewerWindow::FillToolBar()
         ToolBar->InsertItem2(0xFFFFFFFF, TRUE, &tii);
     }
 
-    // obehne enablery
+    // iterate over the enablers
     ToolBar->UpdateItemsState();
     return TRUE;
 }
@@ -887,7 +887,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                 0, 0, r.right, r.bottom, // dummy
                                 HWindow, (HMENU)0, DLLInstance, NULL);
 
-        // nechceme vizualni styly pro rebar
+        // we do not want visual styles for the rebar
         SalamanderGUI->DisableWindowVisualStyles(HRebar);
 
         Renderer.CreateEx(WS_EX_CLIENTEDGE,
@@ -924,9 +924,9 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         //    case WM_KEYDOWN:
         //    case WM_KEYUP:
         {
-            // Misto Post je treba volat Send, protoze dojde-li k aktivaci tohoto
-            // okna, chodi sem WM_CONTEXTMENU pri Shift+F10, misto aby bylo zachyceno
-            // v Renderer okne. Dochazi pak k aktivaci system menu tohoto okna.
+            // Instead of Post we must call Send, because if this window becomes active,
+            // WM_CONTEXTMENU arrives here when Shift+F10 is pressed instead of being captured
+            // in the Renderer window. That would activate the system menu of this window.
             if (Renderer.HWindow != NULL)
                 SendMessage(Renderer.HWindow, uMsg, wParam, lParam);
             break;
@@ -957,9 +957,9 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             HDWP hdwp = BeginDeferWindowPos(2);
             if (hdwp != NULL)
             {
-                // + 4: pri zvetsovani sirky okna mi nechodilo prekreslovani poslednich 4 bodu
-                // v rebaru; ani po nekolika hodinach jsem nenasel pricinu; v Salamu to slape;
-                // zatim to resim takto; treba si casem vzpomenu, kde je problem
+                // + 4: when increasing the window width the last 4 points of the rebar were not redrawn
+                // in the rebar; even after several hours I did not find the cause; it works in Salamander;
+                // for now I'm handling it like this; maybe I'll remember later where the problem is
                 hdwp = DeferWindowPos(hdwp, HRebar, NULL,
                                       0, 0, r.right + 4, rebarHeight,
                                       SWP_NOACTIVATE | SWP_NOZORDER);
@@ -982,14 +982,14 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_SYSCOLORCHANGE:
     {
-        // tady by se mely premapovat barvy
+        // color remapping should happen here
         TRACE_I("CViewerWindow::WindowProc - WM_SYSCOLORCHANGE");
         break;
     }
 
     case WM_USER_VIEWERCFGCHNG:
     {
-        // tady by se mely projevit zmeny v konfiguraci pluginu
+        // changes in the plugin configuration should take effect here
         TRACE_I("CViewerWindow::WindowProc - config has changed");
         // Renderer.RebuildGraphics();
         // Renderer.SetupScrollBars();
@@ -1019,7 +1019,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (!LOWORD(wParam))
         {
-            // hlavni okno pri prepnuti z viewru nebude delat refresh
+            // the main window will not refresh when switching away from the viewer
             SalGeneral->SkipOneActivateRefresh();
         }
         break;
@@ -1067,8 +1067,8 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         ReleaseGraphics();
 
-        // ikony ziskane bez flagu LR_SHARED je treba destruovat (ICON_SMALL)
-        // a sdilenym (ICON_BIG) destrukce neublizi (nic se nestane)
+        // icons obtained without the LR_SHARED flag must be destroyed (ICON_SMALL)
+        // and destroying shared ones (ICON_BIG) does no harm (nothing happens)
         HICON hIcon = (HICON)SendMessage(HWindow, WM_SETICON, ICON_BIG, NULL);
         if (hIcon != NULL)
             DestroyIcon(hIcon);
@@ -1120,7 +1120,7 @@ void WINAPI MMVOperationFromDisk(const char* sourcePath, SalEnumSelection2 next,
 {
     SMMVOperationFromDiskData* data = (SMMVOperationFromDiskData*)param;
 
-    data->Success = TRUE; // zatim hlasime uspech operace
+    data->Success = TRUE; // for now we report the operation as successful
 
     BOOL isDir;
     const char* name;
@@ -1136,8 +1136,8 @@ void WINAPI MMVOperationFromDisk(const char* sourcePath, SalEnumSelection2 next,
 
     while ((name = next(data->Parent, 1, &dosName, &isDir, &size, &attr, &lastWrite, nextParam, &errorOccured)) != NULL)
     {
-        //if (errorOccured == SALENUM_ERROR); // sem SALENUM_CANCEL prijit nemuze
-        //  data->Success = FALSE; // Petr: skipnute soubory si myslim nebrani dalsimu processingu (uzivatel o nich vi)
+        //if (errorOccured == SALENUM_ERROR); // SALENUM_CANCEL cannot arrive here
+        //  data->Success = FALSE; // Petr: I think skipped files do not block further processing (the user knows about them)
 
         if (!isDir)
         {
@@ -1163,7 +1163,7 @@ void WINAPI MMVOperationFromDisk(const char* sourcePath, SalEnumSelection2 next,
         }
     }
 
-    if (errorOccured == SALENUM_CANCEL || // Petr: skipnute soubory si myslim nebrani dalsimu processingu (uzivatel o nich vi), ovsem pokud dal uzivatel Cancel, operaci zrusime
+    if (errorOccured == SALENUM_CANCEL || // Petr: I think skipped files do not block further processing (the user knows about them), but if the user pressed Cancel we abort the operation
         data->ProcessedFiles == 0)
     {
         data->Success = FALSE;
@@ -1221,7 +1221,7 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
                 {
                 case -1:
                 case -2:
-                default: //prozatim vsechny chyby write error
+                default: // for now treat all errors as write errors
                     SalGeneral->SalMessageBox(parent, LoadStr(IDS_MMV_WRITE_ERROR), LoadStr(IDS_PLUGIN_NAME), MB_OK | MB_ICONEXCLAMATION);
                     break;
                 }
@@ -1387,7 +1387,7 @@ bool IsUTF8Text(const char* s)
     return false;
 }
 
-//inteligentni dynamicky konverter - zabranuje zbytecne realokaci
+// intelligent dynamic converter - prevents unnecessary reallocation
 char* AnsiToUTF8(const char* chars, int len)
 {
     static TBuffer<char> tmpbuf;
@@ -1420,7 +1420,7 @@ char* AnsiToUTF8(const char* chars, int len)
     return tmpbuf.Get();
 }
 
-//inteligentni dynamicky konverter - zabranuje zbytecne realokaci
+// intelligent dynamic converter - prevents unnecessary reallocation
 char* UTF8ToAnsi(const char* chars, int len)
 {
     static TBuffer<char> tmpbuf;
@@ -1453,7 +1453,7 @@ char* UTF8ToAnsi(const char* chars, int len)
     return tmpbuf.Get();
 }
 
-//inteligentni dynamicky konverter - zabranuje zbytecne realokaci
+// intelligent dynamic converter - prevents unnecessary reallocation
 // Actually called only from 1 place in wmaparser.cpp
 char* WideToAnsi(const wchar_t* chars, int len)
 {
@@ -1475,7 +1475,7 @@ char* WideToAnsi(const wchar_t* chars, int len)
     return c;
 }
 
-//inteligentni dynamicky konverter - zabranuje zbytecne realokaci
+// intelligent dynamic converter - prevents unnecessary reallocation
 wchar_t* AnsiToWide(const char* chars, int len)
 {
     static TBuffer<wchar_t> tmpbufw;
@@ -1496,7 +1496,7 @@ wchar_t* AnsiToWide(const char* chars, int len)
     return wc;
 }
 
-//inteligentni dynamicky konverter - zabranuje zbytecne realokaci
+// intelligent dynamic converter - prevents unnecessary reallocation
 wchar_t* UTF8ToWide(const char* chars, int len)
 {
     static TBuffer<wchar_t> tmpbufw;
@@ -1520,7 +1520,7 @@ void ExecuteFile(LPCTSTR fname)
 {
     if (int((INT_PTR)ShellExecute(::GetDesktopWindow(), _T("open"), fname, _T(""), _T("."), SW_SHOW)) <= 32)
     {
-        // dej na vyber, s cim to asociovat
+        // let the user choose what to associate it with
         ShellExecute(NULL,
                      _T("open"),
                      _T("rundll32.exe"),
@@ -1541,7 +1541,7 @@ BOOL GetOpenFileName(HWND parent, const char* title, char* filter, char* buffer,
     ofn.lStructSize = sizeof(OPENFILENAME);
     ofn.hwndOwner = parent;
     ofn.lpstrFilter = filter;
-    while (*filter != 0) // vytvoreni double-null terminated listu
+    while (*filter != 0) // create a double-null terminated list
     {
         if (*filter == '|')
             *filter = 0;

@@ -781,8 +781,8 @@ void __fastcall CPluginFSInterface::PathChanged(const AnsiString Path,
     {
         if (AffectsCurrentPath(Path, IncludingSubDirs))
         {
-            // tohle byvalo pocitadlo, problem je, ze pri vicenasobnem
-            // PostRefreshPanelFS() se ListCurrentPath zavola jen jednou
+            // this used to be a counter; the problem is that with multiple
+            // PostRefreshPanelFS() calls, ListCurrentPath is invoked only once
             FPreloaded = true;
         }
         SalamanderGeneral()->PostChangeOnPathNotification(
@@ -1671,13 +1671,13 @@ BOOL WINAPI CPluginFSInterface::ListCurrentPath(CSalamanderDirectoryAbstract* Di
                 if (File->IsParentDirectory ||
                     (File->IsDirectory && !SortByExtDirsAsFiles))
                 {
-                    FileData.Ext = FileData.Name + FileData.NameLen; // adresare nemaji pripony
+                    FileData.Ext = FileData.Name + FileData.NameLen; // directories have no extensions
                 }
                 else
                 {
                     char* s = strrchr(FileData.Name, '.');
                     if (s != NULL)
-                        FileData.Ext = s + 1; // ".cvspass" ve Windows je pripona
+                        FileData.Ext = s + 1; // ".cvspass" is considered an extension on Windows
                     else
                         FileData.Ext = FileData.Name + FileData.NameLen;
                 }
@@ -1734,7 +1734,7 @@ BOOL WINAPI CPluginFSInterface::TryCloseOrDetach(BOOL ForceClose, BOOL CanDetach
 
     if (FClosing)
     {
-        // dovolime pluginu se zavrit, napr. pokud spadlo spojeni
+        // allow the plugin to close, e.g. when the connection dropped
         return TRUE;
     }
 
@@ -2067,10 +2067,10 @@ void WINAPI CPluginFSInterface::AcceptChangeOnPathNotification(
 
         CPluginInterfaceForFS::ParseUserPart(FullPath, UnixPaths(), NULL, NULL,
                                              NULL, NULL, NULL, &Path);
-        // pokud notifikaci poslal tento FS, tak nemazene cache
-        // (pro pripad ze byla iniciovana prenosem na pozadi, protoze pak bychom
-        // prIsli o nahrany adresar a nedoslo by k refreshi)
-        // btw, je to dost nedokonala kontrola, ale zatim staci
+        // if this FS sent the notification, do not clear the cache
+        // (in case it was triggered by a background transfer, because then we would
+        // lose the loaded directory and there would be no refresh)
+        // btw, this is a rather imperfect check, but sufficient for now
         if (!FPreloaded)
         {
             FTerminal->DirectoryModified(Path, IncludingSubdirs);
@@ -2891,7 +2891,7 @@ void WINAPI CPluginFSInterface::GetDropEffect(const char* SrcFSPath,
 
     AnsiString UserPart = SrcFSPath;
     if (FLAGSET(*DropEffect, DROPEFFECT_MOVE | DROPEFFECT_COPY) &&
-        // (strcmp(SrcFSPath, TgtFSPath) != 0) &&  // Petr: zakomentovano, aby pri tazeni do vedlejsiho panelu na stejnou cestu byl effect Move (jinak byl Copy, coz nebylo OK)
+        // (strcmp(SrcFSPath, TgtFSPath) != 0) &&  // Petr: commented out so dragging to the adjacent panel with the same path results in a Move effect (otherwise it was Copy, which was not OK)
         StripFS(UserPart, false) && IsOurUserPart(UserPart))
     {
         *DropEffect = DROPEFFECT_MOVE;

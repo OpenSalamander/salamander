@@ -16,7 +16,7 @@
 
 #define TIMER_SCROLL_ID 1
 
-BOOL IsAlphaNumeric[256]; // pole TRUE/FALSE pro znaky (FALSE = neni pismeno ani cislice)
+BOOL IsAlphaNumeric[256]; // TRUE/FALSE table for characters (FALSE = neither a letter nor a digit)
 BOOL IsAlpha[256];
 
 //****************************************************************************
@@ -219,7 +219,7 @@ void CRendererWindow::OnFileOpen()
     ofn.hwndOwner = HWindow;
     char* s = LoadStr(IDS_VIEWERFILTER);
     ofn.lpstrFilter = s;
-    while (*s != 0) // vytvoreni double-null terminated listu
+    while (*s != 0) // create a double-null-terminated list
     {
         if (*s == '|')
             *s = 0;
@@ -288,7 +288,7 @@ BOOL CRendererWindow::OpenFile(const char* name, BOOL useDefaultConfig)
     if (useDefaultConfig)
         Viewer->CfgCSV = CfgDefaultCSV;
     Bookmarks.ClearAll();
-    // pokud pri OpenFile dojde k chybe, bude podmazano pozadi
+    // if OpenFile fails, the background will be filled
     InvalidateRect(HWindow, NULL, TRUE);
 
     BOOL ret = Database.Open(name);
@@ -381,7 +381,7 @@ void CRendererWindow::RecognizeCodePage()
 
     char winCodePage[101];
     SalGeneral->GetWindowsCodePage(HWindow, winCodePage);
-    if (winCodePage[0] != 0) // jen pokud je WindowsCodePage znama
+    if (winCodePage[0] != 0) // only if WindowsCodePage is known
     {
         char pattern[10000];
         size_t spaceLeft = 9999;
@@ -482,7 +482,7 @@ void CRendererWindow::Find(BOOL forward, BOOL wholeWords,
     int row;
     int col;
     char* buf = NULL;
-    BOOL skip = TRUE; // prvni nalez preskocim
+    BOOL skip = TRUE; // skip the first match
     int patLen = bmSearchData ? bmSearchData->GetLength() : 0;
     Selection.GetFocus(&col, &row);
     int bufSize = 0;
@@ -708,9 +708,9 @@ void CRendererWindow::SetupScrollBars(DWORD update)
         si.fMask = SIF_DISABLENOSCROLL | SIF_POS | SIF_RANGE | SIF_PAGE;
         si.nMin = 0;
         si.nMax = rowWidth - 1;
-        si.nPage = Width - RowHeight; // sloupec vlevo
+        si.nPage = Width - RowHeight; // exclude the left column
         si.nPos = XOffset;
-        // nastavime rolovatka
+        // update scrollbars
         SetScrollInfo(HWindow, SB_HORZ, &si, TRUE);
     }
 
@@ -949,14 +949,14 @@ BOOL CRendererWindow::HitTestColumnSplit(int x, int* column, int* offset)
     {
         if (i > 0 && x >= colX - 3 && x <= colX)
         {
-            // pokud se nejedna o levou stranu nulteho sloupce a pod lezi v sodahu predelu, mame ho
+            // if this is not the left edge of the first column and the point overlaps a divider, we found it
             if (column != NULL)
                 *column = i - 1;
             if (offset != NULL)
                 *offset = x - colX;
             return TRUE;
         }
-        if (i < count) // nesmime sahnout mimo pole
+        if (i < count) // must not access beyond the array
             colX += Database.GetVisibleColumn(i)->Width;
     }
     return FALSE;
@@ -1221,7 +1221,7 @@ void CRendererWindow::OnHScroll(int scrollCode, int pos)
 
 void CRendererWindow::CopySelectionToClipboard()
 {
-    // napocitame velikost pameti potrebne pro ulozeni dat
+    // calculate the memory required to store the data
     DWORD size = 0;
     RECT r;
     BOOL bUnicode = Database.GetIsUnicode();
@@ -1249,7 +1249,7 @@ void CRendererWindow::CopySelectionToClipboard()
             size += 2; // eol
     }
 
-    // naalokujeme potrebny prostor
+    // allocate the required space
     char* buff = (char*)malloc(size * (!bUnicode ? 1 : 2));
     if (buff == NULL)
     {
@@ -1324,7 +1324,7 @@ void CRendererWindow::SelectAll()
     Viewer->UpdateRowNumberOnToolBar(0, Database.GetRowCount());
     Selection.SetAnchor(max(0, Database.GetVisibleColumnCount() - 1),
                         max(0, Database.GetRowCount() - 1));
-    Paint(NULL, NULL, TRUE); // prekreslime zmeny
+    Paint(NULL, NULL, TRUE); // redraw the changes
 }
 
 void CRendererWindow::CheckAndCorrectBoundaries()
@@ -1333,7 +1333,7 @@ void CRendererWindow::CheckAndCorrectBoundaries()
         return;
     if (Width - RowHeight > 0 && Height - RowHeight > 0)
     {
-        // zajistim odrolovani v pripade, ze se zvetsilo okno, vpravo nebo dole jsme na dorazu a jeste muzeme rolovat
+        // ensure scrolling is adjusted when the window grows, we are at the right or bottom edge, and further scrolling is possible
         int rowWidth = Database.GetVisibleColumnsWidth();
         int newXOffset = XOffset;
         if (newXOffset > 0 && rowWidth - newXOffset < (Width - RowHeight) + 1)
@@ -1359,7 +1359,7 @@ void CRendererWindow::CheckAndCorrectBoundaries()
 
 void CRendererWindow::ColumnsWasChanged()
 {
-    // ohlidame selection
+    // keep the selection within bounds
     int clipX = max(0, Database.GetVisibleColumnCount() - 1);
     Selection.Clip(clipX);
     OldSelection.Clip(clipX);
@@ -1411,7 +1411,7 @@ void CRendererWindow::ResetMouseWheelAccumulatorHandler(UINT uMsg, WPARAM wParam
     case WM_SYSKEYDOWN:
     case WM_KEYDOWN:
     {
-        // pokud je SHIFT stisteny, chodi autorepeat, ale nas zajima jen ten prvni stisk
+        // if SHIFT is held, auto-repeat occurs, but we care only about the first press
         BOOL firstPress = (lParam & 0x40000000) == 0;
         if (!firstPress)
             break;
@@ -1444,13 +1444,13 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         short zDelta = (short)HIWORD(wParam);
         if ((zDelta < 0 && MouseWheelAccumulator > 0) || (zDelta > 0 && MouseWheelAccumulator < 0))
-            ResetMouseWheelAccumulator(); // pri zmene smeru otaceni kolecka je potreba nulovat akumulator
+            ResetMouseWheelAccumulator(); // when the wheel direction changes, the accumulator must be reset
 
         BOOL controlPressed = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
         BOOL altPressed = (GetKeyState(VK_MENU) & 0x8000) != 0;
         BOOL shiftPressed = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
 
-        // standardni scrolovani bez modifikacnich klaves
+        // standard scrolling without modifier keys
         if (!controlPressed && !altPressed && !shiftPressed)
         {
             SCROLLINFO si;
@@ -1458,8 +1458,8 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             si.fMask = SIF_POS | SIF_RANGE | SIF_PAGE;
             GetScrollInfo(HWindow, SB_VERT, &si);
 
-            DWORD wheelScroll = SalGeneral->GetMouseWheelScrollLines(); // muze byt az WHEEL_PAGESCROLL(0xffffffff)
-            wheelScroll = max(1, min(wheelScroll, si.nPage - 1));       // omezime maximalne na delku stranky
+            DWORD wheelScroll = SalGeneral->GetMouseWheelScrollLines(); // can be up to WHEEL_PAGESCROLL(0xffffffff)
+            wheelScroll = max(1, min(wheelScroll, si.nPage - 1));       // clamp to at most the page length
 
             MouseWheelAccumulator += 1000 * zDelta;
             int stepsPerLine = max(1, (1000 * WHEEL_DELTA) / wheelScroll);
@@ -1471,7 +1471,7 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
         }
 
-        // SHIFT: horizontalni rolovani
+        // SHIFT: horizontal scrolling
         if (!controlPressed && !altPressed && shiftPressed)
         {
             SCROLLINFO si;
@@ -1479,8 +1479,8 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             si.fMask = SIF_POS | SIF_RANGE | SIF_PAGE;
             GetScrollInfo(HWindow, SB_HORZ, &si);
 
-            DWORD wheelScroll = RowHeight * SalGeneral->GetMouseWheelScrollLines(); // 'delta' muze byt az WHEEL_PAGESCROLL(0xffffffff)
-            wheelScroll = max(1, min(wheelScroll, si.nPage));                       // omezime maximalne na sirku stranky
+            DWORD wheelScroll = RowHeight * SalGeneral->GetMouseWheelScrollLines(); // 'delta' can be up to WHEEL_PAGESCROLL(0xffffffff)
+            wheelScroll = max(1, min(wheelScroll, si.nPage));                       // clamp to at most the page width
 
             MouseWheelAccumulator += 1000 * zDelta;
             int stepsPerLine = max(1, (1000 * WHEEL_DELTA) / wheelScroll);
@@ -1499,7 +1499,7 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         short zDelta = (short)HIWORD(wParam);
         if ((zDelta < 0 && MouseHWheelAccumulator > 0) || (zDelta > 0 && MouseHWheelAccumulator < 0))
-            ResetMouseWheelAccumulator(); // pri zmene smeru naklapeni kolecka je potreba nulovat akumulator
+            ResetMouseWheelAccumulator(); // when the wheel tilting direction changes, the accumulator must be reset
 
         SCROLLINFO si;
         si.cbSize = sizeof(si);
@@ -1507,7 +1507,7 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         GetScrollInfo(HWindow, SB_HORZ, &si);
 
         DWORD wheelScroll = RowHeight * SalGeneral->GetMouseWheelScrollChars();
-        wheelScroll = max(1, min(wheelScroll, si.nPage - 1)); // omezime maximalne na delku stranky
+        wheelScroll = max(1, min(wheelScroll, si.nPage - 1)); // clamp to at most the page length
 
         MouseHWheelAccumulator += 1000 * zDelta;
         int stepsPerChar = max(1, (1000 * WHEEL_DELTA) / wheelScroll);
@@ -1517,7 +1517,7 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             MouseHWheelAccumulator -= charsToScroll * stepsPerChar;
             OnHScroll(SB_THUMBPOSITION, si.nPos + charsToScroll);
         }
-        return TRUE; // udalost jsme zpracovali a nemame zajem o emulaci pomoci klikani na scrollbar (stane se v pripade vraceni FALSE)
+        return TRUE; // event handled; skip emulating scrollbar clicks (would happen when returning FALSE)
     }
 
     switch (uMsg)
@@ -1539,7 +1539,7 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         UINT drag;
         char path[MAX_PATH];
 
-        drag = DragQueryFile((HDROP)wParam, 0xFFFFFFFF, NULL, 0); // kolik souboru nam hodili
+        drag = DragQueryFile((HDROP)wParam, 0xFFFFFFFF, NULL, 0); // how many files were dropped
         if (drag > 0)
         {
             DragQueryFile((HDROP)wParam, 0, path, MAX_PATH);
@@ -1566,7 +1566,7 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         Width = r.right;
         Height = r.bottom;
 
-        RowsOnPage = (Height - RowHeight) / RowHeight; // odecteme headeline
+        RowsOnPage = (Height - RowHeight) / RowHeight; // subtract the header line
         if (RowsOnPage < 1)
             RowsOnPage = 1;
 
@@ -1772,7 +1772,7 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             BOOL selOnly = topIndex == TopIndex;
             TopIndex = topIndex;
-            Paint(NULL, NULL, selOnly); // prekreslime zmeny
+            Paint(NULL, NULL, selOnly); // redraw the changes
             if (y < Database.GetRowCount())
                 EnsureRowIsVisible(y);
             EnsureColumnIsVisible(x);
@@ -1791,7 +1791,7 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         if (xPos > RowHeight && yPos < RowHeight)
         {
-            // nejde o zacatek tazeni sirky sloupce?
+            // is this the start of column-width dragging?
             int colIndex;
             int offset;
             if (HitTestColumnSplit(xPos, &colIndex, &offset))
@@ -1812,7 +1812,7 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         if (xPos < RowHeight)
         {
-            // select pres radky
+            // selection across rows
             int y;
             if (HitTestRow(yPos, &y, FALSE))
             {
@@ -1820,7 +1820,7 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 Selection.SetFocus(0, y);
                 Viewer->UpdateRowNumberOnToolBar(y, Database.GetRowCount());
                 Selection.SetAnchor(Database.GetVisibleColumnCount() - 1, y);
-                Paint(NULL, NULL, TRUE); // prekreslime zmeny
+                Paint(NULL, NULL, TRUE); // redraw the changes
                 BeginSelectionDrag(dsmRows);
             }
             break;
@@ -1828,7 +1828,7 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         if (yPos < RowHeight)
         {
-            // select pres sloupce
+            // selection across columns
             int x;
             if (HitTestColumn(xPos, &x, FALSE))
             {
@@ -1836,7 +1836,7 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 Selection.SetFocus(x, 0);
                 Viewer->UpdateRowNumberOnToolBar(0, Database.GetRowCount());
                 Selection.SetAnchor(x, Database.GetRowCount() - 1);
-                Paint(NULL, NULL, TRUE); // prekreslime zmeny
+                Paint(NULL, NULL, TRUE); // redraw the changes
                 BeginSelectionDrag(dsmColumns);
             }
             break;
@@ -1851,7 +1851,7 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 OldSelection = Selection;
                 Selection.SetFocusAndAnchor(x, y);
                 Viewer->UpdateRowNumberOnToolBar(y, Database.GetRowCount());
-                Paint(NULL, NULL, TRUE); // prekreslime zmeny
+                Paint(NULL, NULL, TRUE); // redraw the changes
                 BeginSelectionDrag(dsmNormal);
             }
             break;
@@ -1878,7 +1878,7 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     OldSelection = Selection;
                     Selection.SetFocusAndAnchor(x, y);
                     Viewer->UpdateRowNumberOnToolBar(y, Database.GetRowCount());
-                    Paint(NULL, NULL, TRUE); // prekreslime zmeny
+                    Paint(NULL, NULL, TRUE); // redraw the changes
                 }
                 POINT p;
                 GetCursorPos(&p);
@@ -1935,11 +1935,11 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     CDatabaseColumn col = *column;
                     col.Width = newWidth;
                     Database.SetVisibleColumn(DragColumn, &col);
-                    // presunuto az na ukonceni tazeni, aby nedochazelo k rychlym
-                    // zmenam rozmeru sloupce pri zmensovani s odrolovanim vpravo
+                    // moved to the end of dragging to avoid rapid
+                    // column-size changes when shrinking with right-edge scrolling
                     //            CheckAndCorrectBoundaries();
                     //            SetupScrollBars(UPDATE_HORZ_SCROLL);
-                    Paint(NULL, NULL, FALSE); // trochu si zablikame
+                    Paint(NULL, NULL, FALSE); // causes a slight flicker
                 }
             }
         }
@@ -1950,7 +1950,7 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 OldSelection = Selection;
                 Selection.SetAnchor(x, y);
-                Paint(NULL, NULL, TRUE); // prekreslime zmeny
+                Paint(NULL, NULL, TRUE); // redraw the changes
             }
         }
         if (DragMode == dsmColumns)
@@ -1960,7 +1960,7 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 OldSelection = Selection;
                 Selection.SetAnchor(x, Database.GetRowCount() - 1);
-                Paint(NULL, NULL, TRUE); // prekreslime zmeny
+                Paint(NULL, NULL, TRUE); // redraw the changes
             }
         }
         if (DragMode == dsmRows)
@@ -1970,7 +1970,7 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 OldSelection = Selection;
                 Selection.SetAnchor(Database.GetVisibleColumnCount() - 1, y);
-                Paint(NULL, NULL, TRUE); // prekreslime zmeny
+                Paint(NULL, NULL, TRUE); // redraw the changes
             }
         }
 
@@ -1996,12 +1996,12 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (p.x - RowHeight >= Database.GetVisibleColumnsWidth() - XOffset ||
                 p.y - RowHeight >= RowHeight * (Database.GetRowCount() - TopIndex))
             {
-                // pokud je kurzor mimo validni obdelnik dat, dame sipku
+                // if the cursor is outside the valid data rectangle, show the arrow
                 SetCursor(LoadCursor(NULL, IDC_ARROW));
             }
             else
             {
-                // pokud je v datech, rozlisime moznost, ze je nad oddelovacem sloupcu v header line
+                // if it is within the data, check whether it is above a column divider in the header row
                 BOOL hitSplit = FALSE;
                 if (p.y < RowHeight && p.x > RowHeight)
                 {

@@ -17,20 +17,20 @@ typedef struct
     unsigned Flags;
     unsigned EOCentrDirOffs;
     unsigned ArchiveSize; //size of zip archive following this header
-    short CommandOffs;    //leght of command line string following this structure, include terminating '\0'
+    short CommandOffs;    // length of the command line string following this structure, including the terminating '\0'
     short TextOffs;
     short TitleOffs;
     short SubDirOffs;
     short AboutOffs;
     short ExtractBtnTextOffs;
-    short VendorOffs;        //jmeno firmy
+    short VendorOffs;        // company name
     short WWWOffs;           //www link
-    short ArchiveNameOffs;   //name of first archive volume
-    short TargetDirSpecOffs; //0 or environment variable or regitry valaue
+    short ArchiveNameOffs;   // name of the first archive volume
+    short TargetDirSpecOffs; // 0 or an environment variable or registry value
     UINT MBoxStyle;
     short MBoxTitleOffs;
     short MBoxTextOffs;
-    int WaitForOffs; // tohle nemuze byt short, MBoxText muze byt hodne dlouhy
+    int WaitForOffs; // this cannot be short; MBoxText may be very long
     //char          Command[];
     //char          Text[];
     //char          Title[];
@@ -49,9 +49,9 @@ typedef struct
 
 #define SELFEXTR_SIG 0x45537353
 
-//#define SE_CURRENTDIR         0x01 //extract files to current directory
-#define SE_TEMPDIR 0x0001        //extract files to temporarry directory, set iff SE_TEMPDIREX is set
-#define SE_NOTALLOWCHANGE 0x0002 //preserve user from changing target diretory
+//#define SE_CURRENTDIR         0x01 // extract files to the current directory
+#define SE_TEMPDIR 0x0001        // extract files to a temporary directory; set iff SE_TEMPDIREX is set
+#define SE_NOTALLOWCHANGE 0x0002 // prevent the user from changing the target directory
 #define SE_REMOVEAFTER 0x0004    //delete files after extraction
 #define SE_AUTO 0x0008           //start extraction automatically
 #define SE_SHOWSUMARY 0x0010     //displays report of successfully extracted files
@@ -63,13 +63,13 @@ typedef struct
 #define SE_REQUIRESADMIN 0x0400 //requires administrative privileges
 #define SE_DIRMASK 0xF000
 #define SE_CURDIR 0x0000    //extract files to current directory
-#define SE_TEMPDIREX 0x1000 //extract files to temporarry directory
+#define SE_TEMPDIREX 0x1000 // extract files to a temporary directory
 #define SE_WINDIR 0x2000    //extract files to windows directory
 #define SE_SYSDIR 0x3000    //extract files to system directory
 #define SE_REGVALUE 0x4000  //extract files to directory specified by registry value
 #define SE_ENVVAR 0x5000    //extract files to directory specified by system variable
 
-// typy long message dialogu
+// long message dialog types
 #define SE_LONGMESSAGE 0x80000000
 #define SE_MBOK 0x80000000
 #define SE_MBOKCANCEL 0x80000001

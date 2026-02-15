@@ -8,14 +8,14 @@ BOOL CRenamerDialog::MoveFile(char* sourceName, char* targetName, char* newPart,
 {
     CALL_STACK_MESSAGE4("CRenamerDialog::MoveFile(, , , %d, %d, %d)", overwrite,
                         isDir, skip);
-    // vytvorime cestu
+    // create the path
     char dir[MAX_PATH];
     strcpy(dir, targetName);
     SG->CutDirectory(dir);
     if (!CheckAndCreateDirectory(dir, dir + (newPart - targetName), skip))
         return FALSE;
 
-    // provedeme move
+    // perform the move
     if (SG->HasTheSameRootPath(sourceName, targetName))
     {
         while (1)
@@ -26,13 +26,13 @@ BOOL CRenamerDialog::MoveFile(char* sourceName, char* targetName, char* newPart,
                         SG->SalPathFindFileName(sourceName),
                         SG->SalPathFindFileName(targetName)) == 0 ||
                 SG->SalMoveFile(sourceName, targetName, &err))
-                return TRUE; // uspech
+                return TRUE; // success
 
             if ((err == ERROR_ALREADY_EXISTS || err == ERROR_FILE_EXISTS) &&
                 SG->StrICmp(sourceName, targetName) != 0)
             {
                 DWORD attr = SG->SalGetFileAttributes(targetName);
-                if (attr != 0xFFFFFFFF && attr & FILE_ATTRIBUTE_DIRECTORY) // nelze prepsat adresar
+                if (attr != 0xFFFFFFFF && attr & FILE_ATTRIBUTE_DIRECTORY) // cannot overwrite a directory
                 {
                     return FileError(HWindow, targetName,
                                      isDir ? IDS_DIRDIR : IDS_FILEDIR,
@@ -44,7 +44,7 @@ BOOL CRenamerDialog::MoveFile(char* sourceName, char* targetName, char* newPart,
                                    IDS_CNFRM_SHOVERWRITE, IDS_OVEWWRITETITLE, &skip, &Silent))
                     return FALSE;
 
-                SG->ClearReadOnlyAttr(targetName); // aby sel smazat ...
+                SG->ClearReadOnlyAttr(targetName); // so it can be deleted ...
                 while (1)
                 {
                     if (DeleteFile(targetName))
@@ -67,13 +67,13 @@ BOOL CRenamerDialog::MoveFile(char* sourceName, char* targetName, char* newPart,
     {
         if (isDir)
         {
-            TRACE_E("Chyba ve scriptu.");
+            TRACE_E("Error in the script.");
             return skip = FALSE;
         }
         if (!CopyFile(sourceName, targetName, overwrite, skip))
             return FALSE;
-        // jeste je potreba uklidit soubor ze sourcu
-        SG->ClearReadOnlyAttr(sourceName); // aby sel smazat ...
+        // we still need to clean up the file from the sources
+        SG->ClearReadOnlyAttr(sourceName); // so it can be deleted ...
         while (1)
         {
             if (DeleteFile(sourceName))
@@ -94,7 +94,7 @@ BOOL CRenamerDialog::CheckAndCreateDirectory(char* directory, char* newPart, BOO
     HANDLE f;
     char* directoryEnd = directory + strlen(directory);
 
-    // preskocime drive
+    // skip drives
     char *start = directory, *end;
     if (start[0] == '\\' && start[1] == '\\') // UNC
     {
@@ -112,7 +112,7 @@ BOOL CRenamerDialog::CheckAndCreateDirectory(char* directory, char* newPart, BOO
 
     start = max(start, newPart);
 
-    // existujici cast
+    // existing part
     while (start < directoryEnd)
     {
         end = (char*)GetNextPathComponent(start);
@@ -123,7 +123,7 @@ BOOL CRenamerDialog::CheckAndCreateDirectory(char* directory, char* newPart, BOO
         else
         {
             FindClose(f);
-            // upravime case jmena
+            // adjust the case of the name
             if (strcmp(start, fd.cFileName))
             {
                 char old[MAX_PATH];
@@ -151,7 +151,7 @@ BOOL CRenamerDialog::CheckAndCreateDirectory(char* directory, char* newPart, BOO
         *end = '\\';
         start = end + 1;
     }
-    // neexistujici cast
+    // non-existing part
     while (start < directoryEnd)
     {
         end = (char*)GetNextPathComponent(start);
@@ -236,22 +236,22 @@ COPY_AGAIN:
 
                                     // retry
                                     if (out != NULL)
-                                        CloseHandle(out); // zavreme invalidni handle
+                                        CloseHandle(out); // close the invalid handle
                                     out = CreateFile(targetName, GENERIC_WRITE, 0, NULL,
                                                      OPEN_ALWAYS, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
-                                    if (out != INVALID_HANDLE_VALUE) // otevreno, jeste nastavime offset
+                                    if (out != INVALID_HANDLE_VALUE) // opened, now set the offset
                                     {
                                         CQuadWord size;
                                         DWORD err;
                                         if (!SG->SalGetFileSize(out, size, err) ||
                                             size < operationDone)
-                                        { // nelze ziskat velikost nebo je soubor prilis maly, jedeme to cely znovu
+                                        { // cannot get the size or the file is too small, start over
                                             CloseHandle(in);
                                             CloseHandle(out);
                                             DeleteFile(targetName);
                                             goto COPY_AGAIN;
                                         }
-                                        else // uspech (soubor je dost veliky), nastavime offset
+                                        else // success (the file is large enough), set the offset
                                         {
                                             LONG lo, hi;
                                             lo = operationDone.LoDWord;
@@ -260,7 +260,7 @@ COPY_AGAIN:
                                             if (lo == 0xFFFFFFFF && GetLastError() != NO_ERROR ||
                                                 lo != (LONG)operationDone.LoDWord ||
                                                 hi != (LONG)operationDone.HiDWord)
-                                            { // nelze nastavit offset, jedeme to cely znovu
+                                            { // cannot set the offset, start over
                                                 CloseHandle(in);
                                                 CloseHandle(out);
                                                 DeleteFile(targetName);
@@ -269,7 +269,7 @@ COPY_AGAIN:
                                             break;
                                         }
                                     }
-                                    else // nejde otevrit, problem trva ...
+                                    else // cannot open it, the problem persists ...
                                     {
                                         out = NULL;
                                     }
@@ -294,23 +294,23 @@ COPY_AGAIN:
                                 }
 
                                 if (in != NULL)
-                                    CloseHandle(in); // zavreme invalidni handle
+                                    CloseHandle(in); // close the invalid handle
                                 in = CreateFile(sourceName, GENERIC_READ,
                                                 FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
                                                 OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
-                                if (in != INVALID_HANDLE_VALUE) // otevreno, jeste nastavime offset
+                                if (in != INVALID_HANDLE_VALUE) // opened, now set the offset
                                 {
                                     CQuadWord size;
                                     DWORD err;
                                     if (!SG->SalGetFileSize(out, size, err) ||
                                         size < operationDone)
-                                    { // nelze ziskat velikost nebo je soubor prilis maly, jedeme to cely znovu
+                                    { // cannot get the size or the file is too small, start over
                                         CloseHandle(in);
                                         CloseHandle(out);
                                         DeleteFile(targetName);
                                         goto COPY_AGAIN;
                                     }
-                                    else // uspech (soubor je dost veliky), nastavime offset
+                                    else // success (the file is large enough), set the offset
                                     {
                                         LONG lo, hi;
                                         lo = operationDone.LoDWord;
@@ -319,7 +319,7 @@ COPY_AGAIN:
                                         if (lo == 0xFFFFFFFF && GetLastError() != NO_ERROR ||
                                             lo != (LONG)operationDone.LoDWord ||
                                             hi != (LONG)operationDone.HiDWord)
-                                        { // nelze nastavit offset, jedeme to cely znovu
+                                        { // cannot set the offset, start over
                                             CloseHandle(in);
                                             CloseHandle(out);
                                             DeleteFile(targetName);
@@ -328,7 +328,7 @@ COPY_AGAIN:
                                         break;
                                     }
                                 }
-                                else // nejde otevrit, problem trva ...
+                                else // cannot open it, the problem persists ...
                                 {
                                     in = NULL;
                                 }
@@ -355,7 +355,7 @@ COPY_AGAIN:
                     DWORD attr = SG->SalGetFileAttributes(targetName);
                     if (err == ERROR_FILE_EXISTS || err == ERROR_ALREADY_EXISTS)
                     {
-                        // prepsat soubor ?
+                        // overwrite the file?
                         if (!overwrite &&
                             !FileOverwrite(HWindow, targetName, NULL, sourceName, NULL, attr,
                                            IDS_CNFRM_SHOVERWRITE, IDS_OVEWWRITETITLE, &skip, &Silent))
@@ -364,7 +364,7 @@ COPY_AGAIN:
                             return FALSE;
                         }
 
-                        // aby sel prepsat
+                        // so it can be overwritten
                         BOOL readonly = FALSE;
                         if (attr != 0xFFFFFFFF && (attr & FILE_ATTRIBUTE_READONLY))
                         {
@@ -377,10 +377,10 @@ COPY_AGAIN:
 
                         if (out != INVALID_HANDLE_VALUE)
                         {
-                            // zapisujeme od zacatku souboru (tenhle seek si vynutily Windows XP)
+                            // write from the start of the file (this seek was forced by Windows XP)
                             SetFilePointer(out, 0, NULL, FILE_BEGIN);
 
-                            SetEndOfFile(out); // vynulovani delky souboru
+                            SetEndOfFile(out); // reset the file length to zero
                             goto COPY;
                         }
                         else
@@ -391,7 +391,7 @@ COPY_AGAIN:
                             goto NORMAL_ERROR;
                         }
                     }
-                    else // obyc. error
+                    else // plain error
                     {
                     NORMAL_ERROR:
 

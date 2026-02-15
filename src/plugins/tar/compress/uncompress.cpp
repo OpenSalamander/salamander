@@ -18,27 +18,27 @@ CCompress::CCompress(const char* filename, HANDLE file, unsigned char* buffer, u
 {
     CALL_STACK_MESSAGE2("CCompress::CCompress(%s, , , )", filename);
 
-    // pokud neprosel konstruktor parenta, balime to rovnou
+    // if the parent constructor failed, bail out immediately
     if (!Ok)
         return;
 
-    // nemuze to byt compress archiv, pokud mame min nez identifikaci...
+    // this cannot be a compress archive if we have less than the identifier...
     if (DataEnd - DataStart < 3)
     {
         Ok = FALSE;
         FreeBufAndFile = FALSE;
         return;
     }
-    // pokud neni spravne "magicke cislo" na zacatku, nejde o compress
+    // if the "magic number" at the start is wrong, it is not a compress archive
     if (((unsigned short*)DataStart)[0] != LZW_MAGIC)
     {
         Ok = FALSE;
         FreeBufAndFile = FALSE;
         return;
     }
-    // prvni byte za magic je info o archivu, precteme ho
+    // the first byte after the magic value stores archive info; read it
     unsigned char info = ((unsigned char*)DataStart)[2];
-    // ostatni bity jsou reserved
+    // the remaining bits are reserved
     if ((info & RESERVED_MASK) != 0)
     {
         ErrorCode = IDS_GZERR_BADFLAGS;
@@ -46,7 +46,7 @@ CCompress::CCompress(const char* filename, HANDLE file, unsigned char* buffer, u
         FreeBufAndFile = FALSE;
         return;
     }
-    // nacti informace o archivu
+    // load archive parameters
     BlockMode = (info & BLCKMODE_MASK) != 0;
     MaxBitsNumber = info & BITNUM_MASK;
     if (MaxBitsNumber > BITS)
@@ -56,7 +56,7 @@ CCompress::CCompress(const char* filename, HANDLE file, unsigned char* buffer, u
         FreeBufAndFile = FALSE;
         return;
     }
-    // mame archiv, potvrdime precteny zacatek
+    // a valid archive is present; confirm the consumed header
     FReadBlock(3);
     if (!Ok)
     {
@@ -64,7 +64,7 @@ CCompress::CCompress(const char* filename, HANDLE file, unsigned char* buffer, u
         return;
     }
 
-    // a nainicializujeme promenne pro dekompresi
+    // initialize the variables used for decompression
     BitsNumber = INIT_BITS;
     MaxMaxCode = MAXCODE(MaxBitsNumber);
     MaxCode = MAXCODE(BitsNumber) - 1;
@@ -76,7 +76,7 @@ CCompress::CCompress(const char* filename, HANDLE file, unsigned char* buffer, u
     ReadyBits = 0;
     InputData = 0;
     UsedBytes = 0;
-    // naalokuj tabulky
+    // allocate the tables
     PrefixTab = (unsigned short*)malloc(MAXCODE(BITS) * sizeof(unsigned short));
     SuffixTab = (unsigned char*)malloc(MAXCODE(BITS) * sizeof(unsigned char));
     DecoStack = (unsigned char*)malloc(MAXCODE(BITS) * sizeof(char));
@@ -89,13 +89,13 @@ CCompress::CCompress(const char* filename, HANDLE file, unsigned char* buffer, u
     }
     StackTop = DecoStack + MAXCODE(BITS) - 1;
     StackPtr = StackTop;
-    // a nainicializuj je
+    // and initialize them
     memset(PrefixTab, 0, 256);
     int i;
     for (i = 0; i < 256; i++)
         SuffixTab[i] = (unsigned char)i;
 
-    // hotovo
+    // done
 }
 
 // class cleanup
@@ -112,35 +112,35 @@ CCompress::~CCompress()
 
 BOOL CCompress::DecompressBlock(unsigned short needed)
 {
-    // nejprve zjistime, jestli nam na stacku nezbylo neco od minula
+    // first determine whether the stack still contains leftover data
     unsigned long cnt = (unsigned long)(StackTop - StackPtr);
     if (cnt > 0)
     {
-        // do vystupniho bufferu vykopirujeme stack
+        // copy the stack contents to the output buffer
         if (ExtrEnd + cnt >= Window + BUFSIZE)
         {
-            // je toho vic, nez mame mista, pustime ven jen co se vejde
+            // if there is more than fits, write out only what we can store
             if (cnt + ExtrEnd > Window + BUFSIZE)
                 cnt = (unsigned long)(Window + BUFSIZE - ExtrEnd);
             memcpy(ExtrEnd, StackPtr, cnt);
             ExtrEnd += cnt;
             StackPtr += cnt;
-            // mame plny buffer, muzem si dat padla
+            // the buffer is full; pause until it is consumed
             return TRUE;
         }
         else
         {
-            // vykopirujeme stack na vystup
+            // copy the stack to the output
             memcpy(ExtrEnd, StackPtr, cnt);
-            // a posuneme ukazatel vystupu zase na volne misto
+            // and advance the output pointer to the free space again
             ExtrEnd += cnt;
         }
     }
-    // v bufferu je porad misto, pokracujem normalnim postupem
+    // there is still space in the buffer; continue with the normal workflow
     unsigned long code;
     for (;;)
     {
-        // pokud nam uz nestaci maximalni velikost kodu, musime pridat bity
+        // if the current maximum code size is insufficient, increase the bit width
         if (FreeEnt > MaxCode)
         {
             if (UsedBytes)
@@ -170,9 +170,9 @@ BOOL CCompress::DecompressBlock(unsigned short needed)
                 MaxCode = MAXCODE(BitsNumber) - 1;
             BitMask = MAXCODE(BitsNumber) - 1;
         }
-        // zasobnik nainicializujeme na zacatek (vyprazdnime ho)
+        // reset the stack pointer (effectively emptying it)
         StackPtr = StackTop;
-        // dopln ze vstupniho bufferu kod na delku BitsNumber bitu
+        // extend the input code to BitsNumber bits from the input buffer
         while (ReadyBits < BitsNumber && !Finished)
         {
             InputData |= FReadByte() << ReadyBits;
@@ -193,35 +193,35 @@ BOOL CCompress::DecompressBlock(unsigned short needed)
                     UsedBytes = 0;
             }
         }
-        // pokud nemame z ceho rozbalovat, skoncili jsme...
+        // if there is nothing left to decompress, we are finished...
         if (ReadyBits < BitsNumber)
             return (ExtrEnd - ExtrStart >= needed);
         code = InputData & BitMask;
         InputData >>= BitsNumber;
         ReadyBits -= BitsNumber;
 
-        // prvni znak zpracujeme mimo tabulky
+        // process the first symbol outside the tables
         if (OldCode == -1)
         {
-            // prvni kod musi byt cisty znak
+            // the first code must be a literal character
             if (code >= 256)
             {
                 Ok = FALSE;
                 ErrorCode = IDS_ERR_CORRUPT;
                 return FALSE;
             }
-            // posli precteny kod na vystup
+            // emit the decoded code to the output
             OldCode = code;
             FInChar = (unsigned char)code;
             *ExtrEnd++ = (unsigned char)code;
-            // pokud jsme na konci bufferu, dame si padla, dokud nebudou treba dalsi data
+            // if we reached the end of the buffer, pause until more data is needed
             if (ExtrEnd >= Window + BUFSIZE)
                 return (ExtrEnd - ExtrStart >= needed);
-            // a jdi pro dalsi kod ze vstupu
+            // and fetch the next code from the input
             continue;
         }
-        // pokud jedeme v blokovem modu a prisel znak CLEAR, zrusime
-        //   vytvorene tabulky a zacnem znova
+        // if we are in block mode and receive the CLEAR code, reset the tables
+        //   and start over
         if (code == CLEAR && BlockMode)
         {
             memset(PrefixTab, 0, 256);
@@ -242,21 +242,20 @@ BOOL CCompress::DecompressBlock(unsigned short needed)
             BitMask = MAXCODE(BitsNumber) - 1;
             continue;
         }
-        // zapamatujeme si nacteny kod
+        // remember the code we just read
         unsigned long incode = code;
 
         // Special case for KwKwK string
         if (code >= FreeEnt)
         {
-            // pokud jsme dostali kod, ktery jeste neni v tabulce, nastal problem
+            // if we received a code that is not yet in the table, something went wrong
             if (code > FreeEnt)
             {
                 Ok = FALSE;
                 ErrorCode = IDS_ERR_CORRUPT;
                 return FALSE;
             }
-            // ulozime na stack znak vybaleny jako prvni (skutecne nacteny, jen prekodovany)
-            //   v minulem kole
+            // push onto the stack the first character decoded in the previous iteration
             StackPtr--;
             if (StackPtr < DecoStack)
             {
@@ -265,14 +264,14 @@ BOOL CCompress::DecompressBlock(unsigned short needed)
                 return FALSE;
             }
             *StackPtr = FInChar;
-            // obnovime kod nacteny v minulem kole
+            // restore the code read in the previous loop iteration
             code = OldCode;
         }
-        // pokud slo o retezec, ktery uz mame v tabulce, vyexpandujeme ho
+        // if the code references a string that is already in the table, expand it
         while (code >= 256)
         {
-            // nahazej znaky do zasobniku v opacnem poradi
-            // v SuffixTab jsou dekompresene znaky
+            // push the characters onto the stack in reverse order
+            // SuffixTab stores the decompressed characters
             StackPtr--;
             if (StackPtr < DecoStack)
             {
@@ -281,10 +280,10 @@ BOOL CCompress::DecompressBlock(unsigned short needed)
                 return FALSE;
             }
             *StackPtr = SuffixTab[code];
-            // v PrefixTab jsou kody pro zretezeni
+            // PrefixTab stores the codes used for concatenation
             code = PrefixTab[code];
         }
-        // hodime na stack i posledni znak
+        // push the final character onto the stack as well
         FInChar = SuffixTab[code];
         StackPtr--;
         if (StackPtr < DecoStack)
@@ -294,34 +293,34 @@ BOOL CCompress::DecompressBlock(unsigned short needed)
             return FALSE;
         }
         *StackPtr = FInChar;
-        // prihodime kod do dekompresnich tabulek
+        // add the new code to the decompression tables
         if (FreeEnt < MaxMaxCode)
         {
             PrefixTab[FreeEnt] = (unsigned short)OldCode;
             SuffixTab[FreeEnt] = FInChar;
             FreeEnt++;
         }
-        // uloz predchozi kod pro pristi kolo
+        // store the previous code for the next iteration
         OldCode = incode;
-        // pocet znaku na stacku k vyhozeni na vystup
+        // determine how many characters are on the stack to write to the output
         unsigned long cnt2 = (unsigned long)(StackTop - StackPtr);
-        // a do vystupniho bufferu je ulozime ve spravnem poradi
+        // and store them in the output buffer in the proper order
         if (ExtrEnd + cnt2 >= Window + BUFSIZE)
         {
-            // je toho vic, nez mame mista, pustime ven jen co se vejde
+            // if more data exists than space allows, write only what fits
             if (cnt2 + ExtrEnd > Window + BUFSIZE)
                 cnt2 = (unsigned long)(Window + BUFSIZE - ExtrEnd);
             memcpy(ExtrEnd, StackPtr, cnt2);
             ExtrEnd += cnt2;
             StackPtr += cnt2;
-            // mame plny buffer, muzem si dat padla
+            // the buffer is full; pause until it is consumed
             return TRUE;
         }
         else
         {
-            // vykopirujeme stack na vystup
+            // copy the stack to the output
             memcpy(ExtrEnd, StackPtr, cnt2);
-            // a posuneme ukazatel vystupu zase na volne misto
+            // and advance the output pointer to the next free position
             ExtrEnd += cnt2;
         }
     }

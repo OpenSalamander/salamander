@@ -12,14 +12,14 @@
 #include "folders.rh2"
 #include "lang\lang.rh"
 
-// FS-name pridelene Salamanderem po loadu pluginu
+// FS name assigned by Salamander after the plugin is loaded
 char AssignedFSName[MAX_PATH] = "";
 
-// image-list pro jednoduche ikony FS
+// image list for simple FS icons
 HIMAGELIST DFSImageList = NULL;
 
-// globalni promenne, do ktery si ulozim ukazatele na globalni promenne v Salamanderovi
-// pro archiv i pro FS - promenne se sdileji
+// global variables where we store pointers to Salamander's global variables
+// shared for both the archiver and the FS
 const CFileData** TransferFileData = NULL;
 int* TransferIsDir = NULL;
 char* TransferBuffer = NULL;
@@ -28,11 +28,11 @@ DWORD* TransferRowData = NULL;
 CPluginDataInterfaceAbstract** TransferPluginDataIface = NULL;
 DWORD* TransferActCustomData = NULL;
 
-// pomocna promenna pro testy
+// helper variable for tests
 CPluginFSInterfaceAbstract* LastDetachedFS = NULL;
 
 // ****************************************************************************
-// SEKCE FILE SYSTEMU
+// FILE SYSTEM SECTION
 // ****************************************************************************
 
 BOOL InitFS()
@@ -40,10 +40,10 @@ BOOL InitFS()
     DFSImageList = ImageList_Create(16, 16, ILC_MASK | SalamanderGeneral->GetImageListColorFlags(), 2, 0);
     if (DFSImageList == NULL)
     {
-        TRACE_E("Nepodarilo se vytvorit image list.");
+        TRACE_E("Failed to create the image list.");
         return FALSE;
     }
-    ImageList_SetImageCount(DFSImageList, 2); // inicializace
+    ImageList_SetImageCount(DFSImageList, 2); // initialization
     ImageList_SetBkColor(DFSImageList, SalamanderGeneral->GetCurrentColor(SALCOL_ITEM_BK_NORMAL));
 
     HICON hIcon = SalamanderGeneral->GetSalamanderIcon(SALICON_DIRECTORY, SALICONSIZE_16);
@@ -88,7 +88,7 @@ CPluginInterfaceForFS::OpenFS(const char* fsName, int fsNameIndex)
 void WINAPI
 CPluginInterfaceForFS::CloseFS(CPluginFSInterfaceAbstract* fs)
 {
-    CPluginFSInterface* dfsFS = (CPluginFSInterface*)fs; // aby se volal spravny destruktor
+    CPluginFSInterface* dfsFS = (CPluginFSInterface*)fs; // ensure the correct destructor is called
 
     if (dfsFS == LastDetachedFS)
         LastDetachedFS = NULL;
@@ -107,7 +107,7 @@ CPluginInterfaceForFS::ExecuteChangeDriveMenuItem(int panel)
 #define CMD_ID_FIRST 1
 #define CMD_ID_LAST 0x7fff
 
-IShellFolder* ChangePathNewFolder = NULL; // predavani cesty pres globalky
+IShellFolder* ChangePathNewFolder = NULL; // passing the path through globals
 LPITEMIDLIST ChangePathNewPIDL = NULL;
 
 void WINAPI
@@ -116,7 +116,7 @@ CPluginInterfaceForFS::ExecuteOnFS(int panel, CPluginFSInterfaceAbstract* plugin
                                    CFileData& file, int isDir)
 {
     CPluginFSInterface* fs = (CPluginFSInterface*)pluginFS;
-    if (isDir) // podadresar nebo up-dir
+    if (isDir) // subdirectory or up-dir
     {
         IShellFolder* newFolder;
         LPITEMIDLIST newPIDL;
@@ -125,7 +125,7 @@ CPluginInterfaceForFS::ExecuteOnFS(int panel, CPluginFSInterfaceAbstract* plugin
         {
             if (CutLastItemFromIL(fs->CurrentPIDL, &newFolder, &newPIDL))
             {
-                ChangePathNewFolder = newFolder; // predavani cesty pres globalky
+                ChangePathNewFolder = newFolder; // passing the path through globals
                 ChangePathNewPIDL = newPIDL;
                 SalamanderGeneral->ChangePanelPathToPluginFS(panel, pluginFSName, "?");
                 if (ChangePathNewFolder != NULL)
@@ -140,7 +140,7 @@ CPluginInterfaceForFS::ExecuteOnFS(int panel, CPluginFSInterfaceAbstract* plugin
                 }
             }
         }
-        else // podadresar
+        else // subdirectory
         {
             if (AddItemToIL(fs->CurrentPIDL, (LPCITEMIDLIST)file.PluginData, &newFolder, &newPIDL))
             {
@@ -160,9 +160,9 @@ CPluginInterfaceForFS::ExecuteOnFS(int panel, CPluginFSInterfaceAbstract* plugin
             }
         }
     }
-    else // soubor
+    else // file
     {
-        SalamanderGeneral->SetUserWorkedOnPanelPath(panel); // adresar do Working Directories
+        SalamanderGeneral->SetUserWorkedOnPanelPath(panel); // folder for Working Directories
 
         HWND hParent = SalamanderGeneral->GetMsgBoxParent();
         IContextMenu* contextMenu = fs->GetContextMenu(hParent, (LPCITEMIDLIST*)&file.PluginData, 1);
@@ -224,7 +224,7 @@ CPluginDataInterface::CPluginDataInterface(IShellFolder* folder, LPCITEMIDLIST f
     ShellFolder2 = NULL;
     ShellDetails = NULL;
 
-    // do W2K byl podporovan IID_IShellDetails, potom presli na IID_IShellFolder2
+    // until Windows 2000 IID_IShellDetails was supported, later they switched to IID_IShellFolder2
     if (FAILED(Folder->QueryInterface(IID_IShellFolder2, (void**)&ShellFolder2)))
     {
         ShellFolder2 = NULL;
@@ -267,7 +267,7 @@ BOOL CPluginDataInterface::IsGood()
 }
 
 //************************************************
-// Implementace metod CPluginDataInterfaceAbstract
+// Implementation of CPluginDataInterfaceAbstract methods
 //************************************************
 
 void WINAPI
@@ -311,9 +311,9 @@ CPluginDataInterface::CompareFilesFromFS(const CFileData* file1, const CFileData
     if (pidl1 == pidl2)
         return 0;
     if (pidl1 == NULL)
-        return -1; // chodi sem adresar "..", ten ma pidl==NULL
+        return -1; // the ".." directory arrives here and has pidl==NULL
     if (pidl2 == NULL)
-        return 1; // chodi sem adresar "..", ten ma pidl==NULL
+        return 1; // the ".." directory arrives here and has pidl==NULL
 
     while (1)
     {
@@ -321,28 +321,28 @@ CPluginDataInterface::CompareFilesFromFS(const CFileData* file1, const CFileData
         LPCITEMIDLIST end2 = GetNextItemFromIL(pidl2);
         int res = (int)(((char*)end1 - (char*)pidl1) - ((char*)end2 - (char*)pidl2));
         if (res != 0)
-            return res; // delsi pidl je "vetsi"
+            return res; // a longer PIDL is considered "greater"
         res = memcmp(pidl1, pidl2, ((char*)end1 - (char*)pidl1));
         if (res != 0)
-            return res; // lisi se binarne
+            return res; // they differ at the binary level
         if (end1->mkid.cb == 0)
         {
             if (end2->mkid.cb == 0)
-                return 0; // pidly jsou zcela shodne
+                return 0; // PIDLs are identical
             else
-                return -1; // prvni pidl je kratsi, tedy "mensi"
+                return -1; // the first PIDL is shorter, thus "lesser"
         }
         else
         {
             if (end2->mkid.cb == 0)
-                return 1; // prvni pidl je delsi, tedy "vetsi"
+                return 1; // the first PIDL is longer, thus "greater"
         }
         pidl1 = end1;
         pidl2 = end2;
     }
 }
 
-// callback volany ze Salamandera pro ziskani textu
+// callback invoked by Salamander to obtain text
 void WINAPI GetRowText()
 {
     const CFileData* file = *TransferFileData;
@@ -378,15 +378,15 @@ void WINAPI
 CPluginDataInterface::SetupView(BOOL leftPanel, CSalamanderViewAbstract* view, const char* archivePath,
                                 const CFileData* upperDir)
 {
-    // ziskame globalni promenne pro rychly pristup
+    // obtain the global variables for quick access
     view->GetTransferVariables(TransferFileData, TransferIsDir, TransferBuffer, TransferLen,
                                TransferRowData, TransferPluginDataIface, TransferActCustomData);
 
-    if (view->GetViewMode() == VIEW_MODE_DETAILED) // upravime sloupce
+    if (view->GetViewMode() == VIEW_MODE_DETAILED) // adjust the columns
     {
         GetShellColumns();
 
-        view->SetViewMode(VIEW_MODE_DETAILED, VALID_DATA_NONE); // zrusime ostatni sloupce, nechame jen sloupec Name
+        view->SetViewMode(VIEW_MODE_DETAILED, VALID_DATA_NONE); // remove the other columns and keep only the Name column
 
         CColumn column;
         int colIndex = 0;
@@ -397,7 +397,7 @@ CPluginDataInterface::SetupView(BOOL leftPanel, CSalamanderViewAbstract* view, c
             CShellColumn* shellCol = &ShellColumns[realIndex];
             if (i == 0)
             {
-                // 0-ty sloupec je Name
+                // the 0th column is Name
                 colIndex++;
             }
             else
@@ -408,8 +408,8 @@ CPluginDataInterface::SetupView(BOOL leftPanel, CSalamanderViewAbstract* view, c
                 column.SupportSorting = 0;
                 column.LeftAlignment = (shellCol->Fmt == LVCFMT_LEFT) ? 1 : 0;
                 column.ID = COLUMN_ID_CUSTOM;
-                column.Width = 0;      // FIXME: sirka sloupce by se mela cist z konfigurace
-                column.FixedWidth = 0; // FIXME: elasticita sloupce by se mela cist z konfigurace (ted sloupec nepujde prepnout na pevnou sirku)
+                column.Width = 0;      // FIXME: the column width should be read from the configuration
+                column.FixedWidth = 0; // FIXME: the column elasticity should be read from the configuration (the column cannot be switched to a fixed width now)
                 column.CustomData = realIndex;
                 view->InsertColumn(colIndex++, &column);
             }
@@ -427,7 +427,7 @@ CPluginDataInterface::GetInfoLineContent(int panel, const CFileData* file, BOOL 
 }
 
 //************************************************
-// Nase metody
+// Our methods
 //************************************************
 
 BOOL CPluginDataInterface::GetShellColumns()
@@ -448,9 +448,9 @@ BOOL CPluginDataInterface::GetShellColumns()
         StrRetToBuf(&di.str, NULL, col.Name, SAL_ARRAYSIZE(col.Name));
         col.Fmt = di.fmt;
         col.Char = di.cxChar;
-        col.Flags = SHCOLSTATE_ONBYDEFAULT; // implicitne zobrazeny soloupce
+        col.Flags = SHCOLSTATE_ONBYDEFAULT; // columns shown by default
 
-        // zkusime vytahnout default stav od shellu
+        // try to obtain the default state from the shell
         if (ShellFolder2 != NULL)
         {
             if (FAILED(ShellFolder2->GetDefaultColumnState(realIndex, &col.Flags)))
@@ -465,7 +465,7 @@ BOOL CPluginDataInterface::GetShellColumns()
         }
     }
 
-    // vybereme viditelne sloupce
+    // select the visible columns
     for (realIndex = 0; realIndex < ShellColumns.Count; realIndex++)
     {
         if (ShellColumns[realIndex].Flags & SHCOLSTATE_ONBYDEFAULT)

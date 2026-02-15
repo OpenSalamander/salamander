@@ -143,8 +143,8 @@ BOOL CISO9660::FillBootRecordInfoElTorito(CBootRecordInfo* bri, BYTE bootMedia, 
         if (mbr[510] != 0x55 || mbr[511] != 0xAA)
             return FALSE;
 
-        DWORD hddSectorCount; // pocet sektoru v prvni partition
-        // v ElTorito HDD boot discich nesmi byt vice nez jedna partition
+        DWORD hddSectorCount; // number of sectors in the first partition
+        // El Torito HDD boot discs must not contain more than one partition
         memcpy(&hddSectorCount, mbr + 0x1CA, sizeof(DWORD));
 
         bootRecordLength = hddSectorCount * 0x200;

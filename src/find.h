@@ -1,61 +1,61 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
-// struktura pro pridavani hlasek do Find Logu, posila se jako parametr zpravy
-// WM_USER_ADDLOG; parametry budou okopirovany do dat logu (po navratu je lze dealokovat)
-#define FLI_INFO 0x00000000   // jde o INFORMATION
-#define FLI_ERROR 0x00000001  // jde o ERROR
-#define FLI_IGNORE 0x00000002 // povolit Ignore tlacitko na teto polozce
+// structure for adding messages to the Find Log; sent as the message parameter
+// of WM_USER_ADDLOG; parameters will be copied into the log data (can be deallocated after returning)
+#define FLI_INFO 0x00000000   // INFORMATION item
+#define FLI_ERROR 0x00000001  // ERROR item
+#define FLI_IGNORE 0x00000002 // allow the Ignore button on this item
 struct FIND_LOG_ITEM
 {
     DWORD Flags;      // FLI_xxx
-    const char* Text; // text zpravy, musi byt ruzny od NULL
-    const char* Path; // cesta k souboru nebo adresari, muze byt NULL
+    const char* Text; // message text, must not be NULL
+    const char* Path; // path to a file or directory, may be NULL
 };
 
-#define WM_USER_ADDLOG WM_APP + 210     // prida polozku do logu [FIND_LOG_ITEM *item, 0]
+#define WM_USER_ADDLOG WM_APP + 210     // add an item to the log [FIND_LOG_ITEM* item, 0]
 #define WM_USER_ADDFILE WM_APP + 211    // [0, 0]
-#define WM_USER_SETREADING WM_APP + 212 // [0, 0] - zadost o prekresleni status-bary ("Reading:")
-#define WM_USER_BUTTONS WM_APP + 213    // zavolej si EnableButtons() [HWND hButton]
-#define WM_USER_FLASHICON WM_APP + 214  // po aktivaci findu mame zablikat stavovou ikonkou
+#define WM_USER_SETREADING WM_APP + 212 // [0, 0] - request to repaint the status bar ("Reading:")
+#define WM_USER_BUTTONS WM_APP + 213    // call EnableButtons() yourself [HWND hButton]
+#define WM_USER_FLASHICON WM_APP + 214  // after activating the find, flash the status icon
 
 extern BOOL IsNotAlpha[256];
 
 #define ITEMNAME_TEXT_LEN MAX_PATH + MAX_PATH + 10
-#define NAMED_TEXT_LEN MAX_PATH  // maximalni velikost textu v comboboxu
-#define LOOKIN_TEXT_LEN MAX_PATH // maximalni velikost textu v comboboxu
-#define GREP_TEXT_LEN 201        // maximalni velikost textu v comboboxu; POZOR: melo by byt shodne s FIND_TEXT_LEN
-#define GREP_LINE_LEN 10000      // max. delka radky pro reg. expr. (viewer ma jine makro)
+#define NAMED_TEXT_LEN MAX_PATH  // maximum text length in the combobox
+#define LOOKIN_TEXT_LEN MAX_PATH // maximum text length in the combobox
+#define GREP_TEXT_LEN 201        // maximum text length in the combobox; NOTE: should match FIND_TEXT_LEN
+#define GREP_LINE_LEN 10000      // maximum line length for regular expressions (viewer uses a different macro)
 
-// delka mapovaneho view souboru; musi byt vetsi nez delka radky pro regexp + EOL +
+// Length of the mapped view; must be greater than the length of a line for regexp + EOL +
 // AllocationGranularity
-#define VOF_VIEW_SIZE 0x2800400 // 40 MB (vic radsi ne, nemusel by byt k dispozici virt. prostor) + 1 KB (rezerva pro rozumnou text. radku)
+#define VOF_VIEW_SIZE 0x2800400 // 40 MB (more is risky, virtual memory may be limited) + 1 KB (space for a reasonable text line)
 
-// historie pro combobox Named
-#define FIND_NAMED_HISTORY_SIZE 30 // pocet pamatovanych stringu
+// history for the Named combobox
+#define FIND_NAMED_HISTORY_SIZE 30 // number of remembered strings
 extern char* FindNamedHistory[FIND_NAMED_HISTORY_SIZE];
 
-// historie pro combobox LookIn
-#define FIND_LOOKIN_HISTORY_SIZE 30 // pocet pamatovanych stringu
+// history for the LookIn combobox
+#define FIND_LOOKIN_HISTORY_SIZE 30 // number of remembered strings
 extern char* FindLookInHistory[FIND_LOOKIN_HISTORY_SIZE];
 
-// historie pro combobox Containing
-#define FIND_GREP_HISTORY_SIZE 30 // pocet pamatovanych stringu
+// history for the Containing combobox
+#define FIND_GREP_HISTORY_SIZE 30 // number of remembered strings
 extern char* FindGrepHistory[FIND_GREP_HISTORY_SIZE];
 
-extern BOOL FindManageInUse; // je otevreny Manage dialog?
-extern BOOL FindIgnoreInUse; // je otevreny Ignore dialog?
+extern BOOL FindManageInUse; // is the Manage dialog open?
+extern BOOL FindIgnoreInUse; // is the Ignore dialog open?
 
 BOOL InitializeFind();
 void ReleaseFind();
 
-// promazne vsechny historie Findu; pokud je 'dataOnly' == TRUE, nebudou se
-// promazavat combboxy otevrenych oken
+// clears all Find histories; if 'dataOnly' == TRUE, comboboxes of open windows are not cleared
 void ClearFindHistory(BOOL dataOnly);
 
-DWORD WINAPI GrepThreadF(void* ptr); // telo grep-threadu
+DWORD WINAPI GrepThreadF(void* ptr); // body of the grep thread
 
 extern HACCEL FindDialogAccelTable;
 
@@ -99,7 +99,7 @@ struct CSearchForData
 //
 // CSearchingString
 //
-// synchronizovany buffer pro "Searching" text ve status bare Find dialogu
+// synchronized buffer for the "Searching" text in the Find dialog's status bar
 
 class CSearchingString
 {
@@ -113,16 +113,16 @@ public:
     CSearchingString();
     ~CSearchingString();
 
-    // nastavi zaklad, ke kteremu pomoci Set pripojuje dalsi text + dirty na FALSE
+    // sets the base to which additional text is appended via Set, and sets dirty to FALSE
     void SetBase(const char* buf);
-    // pripojovani k zakladu nastavenemu pres SetBase
+    // appending to the base value set via SetBase
     void Set(const char* buf);
-    // vraci komplet string
+    // returns the complete string
     void Get(char* buf, int bufSize);
 
-    // nastavuje dirty (ceka uz se na prekresleni?)
+    // sets the dirty flag (is a redraw already pending?)
     void SetDirty(BOOL dirty);
-    // vraci TRUE pokud uz se ceka na prekresleni
+    // returns TRUE if a redraw is already pending
     BOOL GetDirty();
 };
 
@@ -131,45 +131,45 @@ public:
 // CGrepData
 //
 
-// flagy pro hledeni identickych souboru
-// alespon _NAME nebo _SIZE bude specifikovano
-// _CONTENT muze byt nastaveno pouze je-li nastaveno take _SIZE
+// flags for searching identical files
+// at least _NAME or _SIZE must be specified
+// _CONTENT can be set only when _SIZE is set as well
 #define FIND_DUPLICATES_NAME 0x00000001    // same name
 #define FIND_DUPLICATES_SIZE 0x00000002    // same size
 #define FIND_DUPLICATES_CONTENT 0x00000004 // same content
 
 struct CGrepData
 {
-    BOOL FindDuplicates; // hledame duplikaty?
-    DWORD FindDupFlags;  // FIND_DUPLICATES_xxx; ma vyznam je-li 'FindDuplicates' TRUE
-    int Refine;          // 0: hledat nova data, 1 & 2: hledat nad nalezenyma datama; 1: intersect with old data; 2: subtract from old data
-    BOOL Grep;           // grepovat ?
-    BOOL WholeWords;     // jen cela slova ?
-    BOOL Regular;        // regularni vyraz ?
-    BOOL EOL_CRLF,       // EOLy pri hledani regularnich vyrazu
+    BOOL FindDuplicates; // do we search for duplicates?
+    DWORD FindDupFlags;  // FIND_DUPLICATES_xxx; meaningful only if 'FindDuplicates' is TRUE
+    int Refine;          // 0: search new data, 1 & 2: search within found data; 1: intersect with old data; 2: subtract from old data
+    BOOL Grep;           // use grep?
+    BOOL WholeWords;     // match whole words only?
+    BOOL Regular;        // regular expression?
+    BOOL EOL_CRLF,       // EOL handling when searching regular expressions
         EOL_CR,
         EOL_LF;
-    //       EOL_NULL;              // na to nemam regexp :(
+    //       EOL_NULL;              // unsupported by the regular expression parser :(
 
     CSearchData SearchData;
     CRegularExpression RegExp;
     // advanced search
-    DWORD AttributesMask;  // nejprve vymaskujem
-    DWORD AttributesValue; // pak porovname
+    DWORD AttributesMask;  // mask first
+    DWORD AttributesValue; // then compare
     CFilterCriteria Criteria;
-    // rizeni + data
-    BOOL StopSearch;    // nastavuje hl. thread pro ukonceni grep threadu
-    BOOL SearchStopped; // byl terminovan nebo ne ?
-    HWND HWindow;       // s kym grep thread komunikuje
+    // control and data
+    BOOL StopSearch;    // the main thread sets this to terminate the grep thread
+    BOOL SearchStopped; // has it been terminated or not?
+    HWND HWindow;       // window the grep thread communicates with
     TIndirectArray<CSearchForData>* Data;
-    CFoundFilesListView* FoundFilesListView; // sem ladujeme nalezene soubory
-    // dve kriteria pro update listview
-    int FoundVisibleCount;  // pocet polozek zobrazenych v listview
-    DWORD FoundVisibleTick; // kdy bylo naposled zobrazovano
-    BOOL NeedRefresh;       // je potreba refreshnout zobrazeni (pribyla polozka bez zobrazeni)
+    CFoundFilesListView* FoundFilesListView; // found files are loaded here
+    // two criteria for updating the list view
+    int FoundVisibleCount;  // number of items displayed in the list view
+    DWORD FoundVisibleTick; // when it was last displayed
+    BOOL NeedRefresh;       // need to refresh the display (an item was added without being shown)
 
-    CSearchingString* SearchingText;  // synchronizovany text "Searching" ve status-bare Findu
-    CSearchingString* SearchingText2; // [optional] druhy text vpravo; pouzivame pro "Total: 35%"
+    CSearchingString* SearchingText;  // synchronized "Searching" text in the Find status bar
+    CSearchingString* SearchingText2; // [optional] second text on the right; used for "Total: 35%"
 };
 
 //*********************************************************************************
@@ -200,17 +200,17 @@ public:
 
 public:
     CFindOptionsItem();
-    // !POZOR! jakmile bude objekt obsahovat alokovana data, prestane fungovat
-    // kod pro presouvani polozek v Options Manageru, kde dochazi k destrukci tmp prvku
+    // WARNING! Once the object contains allocated data the code for moving items
+    // in the Options Manager stops working because temporary items get destroyed
 
     CFindOptionsItem& operator=(const CFindOptionsItem& s);
 
-    // na zaklade NamedText a LookInText postavi nazev polozky (ItemName)
+    // builds name of the item (ItemName) based on NamedText and LookInText
     void BuildItemName();
 
-    // !!! POZOR: ukladani optimalizovano, ukladaji se pouze zmenene hodnoty; pred ulozenim do klice musi by tento klic napred promazan
-    BOOL Save(HKEY hKey);                   // ulozi itemu
-    BOOL Load(HKEY hKey, DWORD cfgVersion); // nacte itemu
+    // WARNING: saving is optimized; only changed values are stored. The key has to be cleared first, before saving.
+    BOOL Save(HKEY hKey);                   // saves the item
+    BOOL Load(HKEY hKey, DWORD cfgVersion); // loads the item
 };
 
 //*********************************************************************************
@@ -226,8 +226,8 @@ protected:
 public:
     CFindOptions();
 
-    BOOL Save(HKEY hKey);                   // ulozi cele pole
-    BOOL Load(HKEY hKey, DWORD cfgVersion); // nacte cele pole
+    BOOL Save(HKEY hKey);                   // saves the entire array
+    BOOL Load(HKEY hKey, DWORD cfgVersion); // loads the entire array
 
     BOOL Load(CFindOptions& source);
 
@@ -236,7 +236,7 @@ public:
     CFindOptionsItem* At(int i) { return Items[i]; }
     void Delete(int i) { Items.Delete(i); }
 
-    // vycisti predchozi vlozene polozky a naboucha tam nove
+    // clears previous inserted items and fills in the new ones
     void InitMenu(CMenuPopup* popup, BOOL enabled, int originalCount);
 };
 
@@ -248,9 +248,9 @@ public:
 enum CFindIgnoreItemType
 {
     fiitUnknow,
-    fiitFull,     // Plna cesta vcetne rootu: 'C:\' 'D:\TMP\' \\server\share\'
-    fiitRooted,   // Cesta zacinajici v libovolnem rootu
-    fiitRelative, // Cesta bez rootu: 'aaa' 'aaa\bbbb\ccc'
+    fiitFull,     // Full path including root: 'C:\' 'D:\TMP\' \\server\share\'
+    fiitRooted,   // Path starting in any root
+    fiitRelative, // Path without a root: 'aaa' 'aaa\bbbb\ccc'
 };
 
 class CFindIgnoreItem
@@ -259,7 +259,7 @@ public:
     BOOL Enabled;
     char* Path;
 
-    // nasledujici data se neukladaji, inicializuji se v Prepare()
+    // the following data are not saved; they are initialized in Prepare()
     CFindIgnoreItemType Type;
     int Len;
 
@@ -268,10 +268,10 @@ public:
     ~CFindIgnoreItem();
 };
 
-// Objekt CFindIgnore slouzi dvema zpusoby:
-// 1. Globalni objekt drzici seznam cest, editovatelnyc z Find/Options/Ignore Directory List
-// 2. Docasna kopie tohoto pole za ucelem hledani -- obsahuje pouze Enabled polozky, ty jsou
-//    navic upraveny (pridany zpetna lomitka) a kvalifikovany (nastavena CFindIgnoreItem::Type)
+// The CFindIgnore object serves two purposes:
+// 1. A global object holding the list of paths editable in the Find/Options/Ignore Directory List
+// 2. A temporary copy used for searching -- contains only Enabled items which are
+//    adjusted (backslashes added) and classified (CFindIgnoreItem::Type set)
 class CFindIgnore
 {
 protected:
@@ -280,27 +280,27 @@ protected:
 public:
     CFindIgnore();
 
-    BOOL Save(HKEY hKey);                   // ulozi cele pole
-    BOOL Load(HKEY hKey, DWORD cfgVersion); // nacte cele pole
+    BOOL Save(HKEY hKey);                   // saves the entire array
+    BOOL Load(HKEY hKey, DWORD cfgVersion); // loads the entire array
 
-    // vola se pro lokalni kopii objekt, ktera se nasledne pouziva pro hledani
-    // je treba zavolat pred volanim Contains()
-    // z 'source' nakopiruje polozky a pripravi pro hledani
-    // vraci TRUE, pokud se zadarilo, jinak vraci FALSE
+    // called for the local copy of the object which is then used for searching
+    // must be called before calling Contains()
+    // copies items from 'source' and prepares them for search
+    // returns TRUE on success, otherwise FALSE
     BOOL Prepare(CFindIgnore* source);
 
-    // vraci TRUE, pokud seznam obashuje polozku odpovidajici ceste 'path'
-    // vyhodnocuji se pouze 'Enabled'==TRUE polozky
-    // pokud takovou polozku nenajde, vraci FALSE
-    // !pozor! do metody musi vstupovat plna cesta s lomitkem na konci
+    // returns TRUE if the list contains an item matching the 'path'
+    // only items with 'Enabled' == TRUE are evaluated
+    // returns FALSE if no such item is found
+    // Note: the method must receive the full path with a trailing slash
     BOOL Contains(const char* path, int startPathLen);
 
-    // prida cestu pouze v pripade, ze jiz v seznamu neexistuje
+    // adds the path only if it does not already exist in the list
     BOOL AddUnique(BOOL enabled, const char* path);
 
 protected:
     void DeleteAll();
-    void Reset(); // sestreli existujici polozky, prida default hodnoty
+    void Reset(); // clears existing items and adds default values
 
     BOOL Load(CFindIgnore* source);
 
@@ -331,7 +331,7 @@ class CFindAdvancedDialog: public CCommonDialog
     int Execute();
     virtual void Validate(CTransferInfo &ti);
     virtual void Transfer(CTransferInfo &ti);
-    void EnableControls();   // zajistuje disable/enable operace
+    void EnableControls();   // handles disabling/enabling operations
     void LoadTime();
 
   protected:
@@ -372,7 +372,7 @@ class CFindIgnoreDialog : public CCommonDialog
 {
 protected:
     CEditListBox* EditLB;
-    CFindIgnore* IgnoreList; // nase pracovni kopie dat
+    CFindIgnore* IgnoreList; // our working copy of the data
     CFindIgnore* GlobalIgnoreList;
     BOOL DisableNotification;
     HICON HChecked;
@@ -400,7 +400,7 @@ protected:
 class CFindDuplicatesDialog : public CCommonDialog
 {
 public:
-    // nastaveni si budeme pamatovat po dobu behu Salamandera
+    // the settings will be remembered for the duration of Salamander's run
     static BOOL SameName;
     static BOOL SameSize;
     static BOOL SameContent;
@@ -414,14 +414,14 @@ public:
 protected:
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-    void EnableControls(); // zajistuje disable/enable operace
+    void EnableControls(); // handles disabling/enabling operations
 };
 
 //*********************************************************************************
 //
 // CFindLog
 //
-// Slouzi k drzeni chyb, ktere nastaly behem hledani.
+// Used for storing errors that occurred during the search.
 //
 
 struct CFindLogItem
@@ -435,7 +435,7 @@ class CFindLog
 {
 protected:
     TDirectArray<CFindLogItem> Items;
-    int SkippedErrors; // pocet chyb, ktere jsme neukladali
+    int SkippedErrors; // number of errors that were not stored
     int ErrorCount;
     int InfoCount;
 
@@ -443,7 +443,7 @@ public:
     CFindLog();
     ~CFindLog();
 
-    void Clean(); // uvolni vsechny drzene polozky
+    void Clean(); // releases all held items
 
     BOOL Add(DWORD flags, const char* text, const char* path);
     int GetCount() { return Items.Count; }
@@ -457,7 +457,7 @@ public:
 //
 // CFindLogDialog
 //
-// Slouzi k zobrazni chyb, ktere nastaly behem hledani.
+// Used to display errors that occurred during the search.
 //
 
 class CFindLogDialog : public CCommonDialog
@@ -501,19 +501,19 @@ struct CFoundFilesData
     DWORD Attr;
     FILETIME LastWrite;
 
-    // 'Group' se vyuziva dvema zpusoby:
-    // 1) behem hledani duplicitnich souboru v pripade, ze se porovana obsah,
-    //    obsahuje ukazatel na CMD5Digest s napocitanou MD5 pro soubor
-    // 2) pred predanim vysledku hledani duplicitnich souboru do ListView
-    //    obsahuje cislo spojujici vice souboru do ekvivaletni skupiny
+    // 'Group' is used in two ways:
+    // 1) while searching for duplicate files, when contents are compared,
+    //    it holds a pointer to CMD5Digest with the computed MD5 of the file
+    // 2) before passing duplicate search results to the ListView
+    //    it contains a number connecting multiple files into an equivalent group
     DWORD_PTR Group;
 
-    unsigned IsDir : 1; // 0 - polozka je soubor, 1 - polozka je adresar
-    // Selected a Focused maji vyznam pouze lokalne pro StoreItemsState/RestoreItemsState
-    unsigned Selected : 1; // 0 - polozka neoznacena, 1 - polozka oznacena
-    unsigned Focused : 1;  // 0 - polozka je focused, 1 - polozka neni focused
-    // Different se pouziva k rozliseni skupin souboru pri hledani duplicit
-    unsigned Different : 1; // 0 - polozka ma klasicke bile pozadi, 1 - polozka me jine pozadi (pouziva se pri hledani diferenci)
+    unsigned IsDir : 1; // 0 - item is a file, 1 - item is a directory
+    // Selected and Focused are used only locally for StoreItemsState/RestoreItemsState
+    unsigned Selected : 1; // 0 - item not selected, 1 - item selected
+    unsigned Focused : 1;  // 0 - item is focused, 1 - item is not focused
+    // 'Different' is used to distinguish file groups during duplicate search
+    unsigned Different : 1; // 0 - item has standard white background, 1 - item uses a different one (for difference highlighting)
 
     CFoundFilesData()
     {
@@ -535,10 +535,10 @@ struct CFoundFilesData
     }
     BOOL Set(const char* path, const char* name, const CQuadWord& size, DWORD attr,
              const FILETIME* lastWrite, BOOL isDir);
-    // v pripade Name nebo Path vrati ukazatel na prislusnou promennou
-    // jinak naplmi buffer 'text' (musi byt nejmene 50 znaku dlouhy) odpovidajici hodnotou
-    // a vrati ukazatel na 'text'
-    // 'fileNameFormat' urcuje formatovani jmena nalezenych polozek
+    // if 'i' refers to Name or Path, returns a pointer to the corresponding variable
+    // otherwise fills the buffer 'text' (must be at least 50 characters long) with the appropriate value
+    // and returns a pointer to 'text'
+    // 'fileNameFormat' determines formatting of names of found items
     char* GetText(int i, char* text, int fileNameFormat);
 };
 
@@ -546,12 +546,12 @@ class CFoundFilesListView : public CWindow
 {
 protected:
     TIndirectArray<CFoundFilesData> Data;
-    CRITICAL_SECTION DataCriticalSection; // kriticka sekce pro pristup k datum
+    CRITICAL_SECTION DataCriticalSection; // critical section for accessing data
     CFindDialog* FindDialog;
     TIndirectArray<CFoundFilesData> DataForRefine;
 
 public:
-    int EnumFileNamesSourceUID; // UID zdroje pro enumeraci jmen ve viewerech
+    int EnumFileNamesSourceUID; // UID of the source for name enumeration in viewers
 
 public:
     CFoundFilesListView(HWND dlg, int ctrlID, CFindDialog* findDialog);
@@ -570,9 +570,9 @@ public:
 
     void QuickSortDuplicates(int left, int right, BOOL byName);
     int CompareDuplicatesFunc(CFoundFilesData* f1, CFoundFilesData* f2, BOOL byName);
-    void SetDifferentByGroup(); // nastavi bit Different podle Group tak, aby se bit Different stridal na rozhrani skupin
+    void SetDifferentByGroup(); // sets the Different bit based on Group so that the Different bit alternates at group boundaries
 
-    // interface pro Data
+    // interface for Data
     CFoundFilesData* At(int index);
     void DestroyMembers();
     int GetCount();
@@ -581,23 +581,23 @@ public:
     BOOL IsGood();
     void ResetState();
 
-    // ze seznamu Data pretaha potrebne casti do seznamu DataForRefine
-    // smi byt volano pouze pokud nebezi hledaci thread
+    // moves the necessary parts from Data to DataForRefine
+    // may only be called  when the search thread is not running
     BOOL TakeDataForRefine();
     void DestroyDataForRefine();
     int GetDataForRefineCount();
     CFoundFilesData* GetDataForRefine(int index);
 
-    DWORD GetSelectedListSize();                     // vrati pocet bajtu, ktery bude potreba pro ulozeni vsech vybranych
-                                                     // polozek ve tvaru "c:\\bla\\bla.txt\\0c:\\bla\\bla2.txt\0\0"
-                                                     // pokud neni vybrana zadna polozka, vraci 2 (dva terminatory)
-    BOOL GetSelectedList(char* list, DWORD maxSize); // naplni list seznamem dle GetSelectedListSize
-                                                     // neprekroci maxSize
+    DWORD GetSelectedListSize();                     // returns how many bytes are needed to store all selected
+                                                     // items as "c:\\bla\\bla.txt\0c:\\bla\\bla2.txt\0\0"
+                                                     // if no item is selected, returns 2 (two terminators)
+    BOOL GetSelectedList(char* list, DWORD maxSize); // fills the list according to GetSelectedListSize
+                                                     // without exceeding maxSize
 
-    // probehne vsechny selected soubory a adresare a pokud uz neexistuji, vyradi je
-    // je-li nastavena promenna 'forceRemove', budou vyrazeny vybrane polozky bez kontroly
-    // 'lastFocusedIndex' rika index, ktery byl 'focused' nez doslo k "mazani"
-    // 'lastFocusedItem' ukazuje na kopii dat 'focused' polozky, abychom se ji mohli pokusit dohledat polde nazvu a cesty
+    // scans all selected files and directories and removes those that no longer exist
+    // if 'forceRemove' variable is TRUE, selected items are removed without needing checks
+    // 'lastFocusedIndex' indicates which index was focused before deletion started
+    // 'lastFocusedItem' points to a copy of the focused item so we can try to find it again by name and path
     void CheckAndRemoveSelectedItems(BOOL forceRemove, int lastFocusedIndex, const CFoundFilesData* lastFocusedItem);
 };
 
@@ -613,7 +613,7 @@ class CFindTBHeader : public CWindow
 protected:
     CToolBar* ToolBar;
     CToolBar* LogToolBar;
-    HWND HNotifyWindow; // kam posilam comandy
+    HWND HNotifyWindow; // window to which commands are sent
     char Text[200];
     int FoundCount;
     int ErrorsCount;
@@ -666,10 +666,10 @@ enum CCopyNameToClipboardModeEnum
 
 enum CStateOfFindCloseQueryEnum
 {
-    sofcqNotUsed,     // klid, nic se nedeje
-    sofcqSentToFind,  // poslali jsme pozadavek, jeste nedorazil nebo user jeste neodpovedel na "stop searching?"
-    sofcqCanClose,    // muzeme zavrit Find okno
-    sofcqCannotClose, // nemuzeme zavrit Find okno
+    sofcqNotUsed,     // idle, nothing is happening
+    sofcqSentToFind,  // request sent; the response has not arrived yet or the user has not answered "stop searching?"
+    sofcqCanClose,    // the Find window can be closed
+    sofcqCannotClose, // the Find window cannot be closed
 };
 
 class CComboboxEdit;
@@ -678,50 +678,50 @@ class CButton;
 class CFindDialog : public CCommonDialog
 {
 protected:
-    // data potrebna pro layoutovani dialogu
+    // data needed for laying out the dialog
     BOOL FirstWMSize;
-    int VMargin; // prostor vlevo a vpravo mezi rameckem dialogu a controly
-    int HMargin; // prostor dole mezi tlacitky a status barou
-    int ButtonW; // rozmery tlacitka
+    int VMargin; // space on the left and right between the dialog frame and controls
+    int HMargin; // space below between buttons and the status bar
+    int ButtonW; // button width
     int ButtonH;
-    int RegExpButtonW; // rozmery tlacitka RegExpBrowse
-    int RegExpButtonY; // umisteni tlacitka RegExpBrowse
-    int MenuBarHeight; // vyska menu bary
-    int StatusHeight;  // vyska status bary
-    int ResultsY;      // umisteni seznamu vysledku
-    int AdvancedY;     // umisteni tlacitka Advanced
-    int AdvancedTextY; // umisteni textu za tlacitkem Advanced
-    int AdvancedTextX; // umisteni textu za tlacitkem Advanced
-    int FindTextY;     // Umisteni headru nad vysledkama
-    int FindTextH;     // vyska headru
-    int CombosX;       // umisteni comboboxu
-    int CombosH;       // vyska comboboxu
-    int BrowseY;       // umisteni tlacitka Browse
-    int Line2X;        // umisteni oddelovaci cary u Search file content
-    int FindNowY;      // umisteni tlacitka Find now
-    int SpacerH;       // vyska o kterou budeme zkracovat/prodluzovat dialog
+    int RegExpButtonW; // size of the RegExpBrowse button
+    int RegExpButtonY; // position of the RegExpBrowse button
+    int MenuBarHeight; // height of the menu bar
+    int StatusHeight;  // height of the status bar
+    int ResultsY;      // position of the results list
+    int AdvancedY;     // position of the Advanced button
+    int AdvancedTextY; // position of the text after the Advanced button
+    int AdvancedTextX; // position of the text after the Advanced button
+    int FindTextY;     // position of the header above the results
+    int FindTextH;     // height of the header
+    int CombosX;       // position of the comboboxes
+    int CombosH;       // height of the comboboxes
+    int BrowseY;       // position of the Browse button
+    int Line2X;        // position of the separator line of Search file content
+    int FindNowY;      // position of the Find now button
+    int SpacerH;       // height by which the dialog shrinks or expands
 
-    BOOL Expanded; // dialog je roztazeny - jsou zobrazeny polozky SearchFileContent
+    BOOL Expanded; // dialog is expanded - the SearchFileContent items are visible
 
-    int MinDlgW; // minimalni rozmery Find dialogu
-    int MinDlgH;
+    int MinDlgW; // minimal width of the Find dialog
+    int MinDlgH; // minimal height
 
-    int FileNameFormat; // jak upravit filename po nacteni z disku, prebirame z globalni konfigurace, kvuli problemum se synchronizaci
-    BOOL SkipCharacter; // zabrani pipnuti pri Alt+Enter ve findu
+    int FileNameFormat; // how to adjust filenames after reading from disk, taken from global configuration due to synchronization issues
+    BOOL SkipCharacter; // prevents a beep when Alt+Enter is pressed in Find
 
-    // dalsi data
+    // additional data
     BOOL DlgFailed;
     CMenuPopup* MainMenu;
     CMenuBar* MenuBar;
     HWND HStatusBar;
-    HWND HProgressBar; // child okno status bary, zobrazene pro nektere operace ve zvlastnim policku
-    BOOL TwoParts;     // ma status bar dva texty?
+    HWND HProgressBar; // status bar child window shown for certain operations in a special field
+    BOOL TwoParts;     // does the status bar have two texts?
                        //    CFindAdvancedDialog FindAdvanced;
     CFoundFilesListView* FoundFilesListView;
-    char FoundFilesDataTextBuffer[MAX_PATH]; // pro ziskavani textu z CFoundFilesData::GetText
+    char FoundFilesDataTextBuffer[MAX_PATH]; // for obtaining text from CFoundFilesData::GetText
     CFindTBHeader* TBHeader;
     BOOL SearchInProgress;
-    BOOL CanClose; // je mozne zavrit okno (nejsme v metode tohoto objektu)
+    BOOL CanClose; // the window can be closed (we are not inside a method of this object)
     HANDLE GrepThread;
     CGrepData GrepData;
     CSearchingString SearchingText;
@@ -729,29 +729,29 @@ protected:
     CComboboxEdit* EditLine;
     BOOL UpdateStatusBar;
     IContextMenu2* ContextMenu;
-    CFindDialog** ZeroOnDestroy; // hodnota, ukazatele bude pri destrukci nulovana
+    CFindDialog** ZeroOnDestroy; // the pointer will be zeroed on destruction
     CButton* OKButton;
 
     BOOL OleInitialized;
 
-    TIndirectArray<CSearchForData> SearchForData; // seznam adresaru a masek, ktere budou prohledany
+    TIndirectArray<CSearchForData> SearchForData; // list of directories and masks that will be searched
 
-    // jedna polozka, nad kterou pracuji Find dialog a Advanced dialog
+    // a single item worked with by both the Find dialog and the Advanced dialog
     CFindOptionsItem Data;
 
-    BOOL ProcessingEscape; // message loop prave maka na ESCAPE -- pokud bude nagenerovano
-                           // IDCANCEL, zobrazime konfirmaci
+    BOOL ProcessingEscape; // the message loop is currently handling ESCAPE -- if
+                           // IDCANCEL is generated, a confirmation is shown
 
-    CFindLog Log; // uloziste chyb a informaci
+    CFindLog Log; // storage for errors and information
 
-    CBitmap* CacheBitmap; // pro vykreslovani cesty
+    CBitmap* CacheBitmap; // used when drawing the path
 
-    BOOL FlashIconsOnActivation; // az nas aktivuji, nechame zablikat stavove ikonky
+    BOOL FlashIconsOnActivation; // flash the status icons when we get activated
 
     char FindNowText[100];
 
 public:
-    CStateOfFindCloseQueryEnum StateOfFindCloseQuery; // hl. thread zjistuje v threadu Findu jestli muze zavrit okno, nesynchronizovane, pouziva se jen pri shutdownu, staci bohate...
+    CStateOfFindCloseQueryEnum StateOfFindCloseQuery; // main thread asks the Find thread whether the window can close; unsynchronized, used only during shutdown, more than enough...
 
 public:
     CFindDialog(HWND hCenterAgainst, const char* initPath);
@@ -764,7 +764,7 @@ public:
 
     void SetZeroOnDestroy(CFindDialog** zeroOnDestroy) { ZeroOnDestroy = zeroOnDestroy; }
 
-    BOOL GetFocusedFile(char* buffer, int bufferLen, int* viewedIndex /* muze byt NULL */);
+    BOOL GetFocusedFile(char* buffer, int bufferLen, int* viewedIndex /* can be NULL */);
     const char* GetName(int index);
     const char* GetPath(int index);
     void UpdateInternalViewerData();
@@ -776,41 +776,40 @@ public:
     // If the message is translated, the return value is TRUE.
     BOOL IsMenuBarMessage(CONST MSG* lpMsg);
 
-    // pro vybrane polozky alokuje prislusna data
+    // allocates the appropriate data for selected items
     HGLOBAL CreateHDrop();
     HGLOBAL CreateShellIdList();
 
-    // hlavni okno vola tuto metodu vsem Find dialogum - doslo ke zmene barev
+    // the main window calls this method for all Find dialogs - colors have changed
     void OnColorsChange();
 
     void SetProcessingEscape(BOOL value) { ProcessingEscape = value; }
 
-    // umoznuje zpracovat Alt+C a dalsi horke klavesy, ktere patri prave
-    // schovanym controlum: pokud je dialog zabalen a jedna se o horkou
-    // klavesu skrytych controlu, rozbali ho
-    // vzdy vraci FALSE
+    // allows processing Alt+C and other hotkeys that belong to hidden controls:
+    // if the dialog is collapsed and a hidden control's hot key is pressed,
+    // the dialog expands. Always returns FALSE
     BOOL ManageHiddenShortcuts(const MSG* msg);
 
 protected:
     void GetLayoutParams();
-    void LayoutControls(); // rozlozi prvky do plochy okna
+    void LayoutControls(); // arranges controls within the dialog
 
-    void SetTwoStatusParts(BOOL two, BOOL force = FALSE); // nastavi jednu nebo dve casti pro status bar; rozmery nastavuje podle delky status bar
+    void SetTwoStatusParts(BOOL two, BOOL force = FALSE); // sets one or two status bar parts; sizes are adjusted according to the status bar length
 
     void SetContentVisible(BOOL visible);
     void UpdateAdvancedText();
 
-    void LoadControls(int index); // z pole Items vytahne prislusnou polozku a nacpe ji do dialogu
+    void LoadControls(int index); // loads the item from Items[index] into the dialog
 
     void StartSearch(WORD command);
     void StopSearch();
 
-    void BuildSerchForData(); // naplni seznam SearchForData
+    void BuildSerchForData(); // fills the SearchForData list
 
     void EnableControls(BOOL nextIsButton = FALSE);
     void EnableToolBar();
 
-    void InsertDrives(HWND hEdit, BOOL network); // naleje do hEdit seznam fixed disku (pripadne i network disku)
+    void InsertDrives(HWND hEdit, BOOL network); // fills hEdit with a list of fixed drives (and network drives if requested)
 
     void UpdateListViewItems();
 
@@ -827,12 +826,12 @@ protected:
     void OnInvertSelection();
     void OnShowLog();
     void OnOpen(BOOL onlyFocused);
-    void UpdateStatusText(); // pokud nejsme v search modu, informuje o poctu a velikosti vybranych polozek
+    void UpdateStatusText(); // if we are not in search mode, displays the count and total size of selected items
 
     // OLE clipboard operations
 
-    // pro vybrane polozky vytvori context menu a vola ContextMenuInvoke pro specifikovany lpVerb
-    // vraci TRUE, pokud byla zavolana Invoke, jinak pokud neco selze vraci FALSE
+    // creates a context menu for the selected items and calls ContextMenuInvoke for the specified lpVerb
+    // returns TRUE if Invoke was called, otherwise returns FALSE if something fails
     BOOL InvokeContextMenu(const char* lpVerb);
 
     void OnCutOrCopy(BOOL cut);
@@ -846,9 +845,9 @@ protected:
 
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-    // obehne vybrane polozky v listview a pokusi se najit spolecny nadadresar
-    // pokud ho najde, nakopci hodo bufferu a vrati TRUE
-    // pokud ho nenajde nebo je buffer maly, vrati FALSE
+    // iterates over selected list view items and tries to find a common parent directory
+    // if it founds it, it copies it to the buffer and returns TRUE
+    // if it does not found it or the buffer is too small, it returns FALSE
     BOOL GetCommonPrefixPath(char* buffer, int bufferMax, int& commonPrefixChars);
 
     BOOL InitializeOle();
@@ -880,4 +879,4 @@ BOOL OpenFindDialog(HWND hCenterAgainst, const char* initPath);
 
 extern CFindOptions FindOptions;
 extern CFindIgnore FindIgnore;
-extern CFindDialogQueue FindDialogQueue; // seznam vsech Find dialogu
+extern CFindDialogQueue FindDialogQueue; // list of all Find dialogs

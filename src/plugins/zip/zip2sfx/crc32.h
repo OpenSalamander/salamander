@@ -3,7 +3,7 @@
 
 #pragma once
 
-// definice pro uziti v ZIP2SFX
+// definitions used by ZIP2SFX
 #define __UINT32 unsigned long
 #define __UINT8 unsigned char
 #define STATIC_CRC_TAB

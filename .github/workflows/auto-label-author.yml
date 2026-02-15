@@ -1,0 +1,59 @@
+name: Auto-label PRs from specific authors
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Label PRs from bellus869 and Lemi257
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labelName = "comments translation";
+            const author = context.payload.pull_request.user.login;
+            const allowed = new Set(["bellus869", "Lemi257"]);
+            core.info(`PR author: ${author}`);
+
+            if (!allowed.has(author)) {
+              core.info("Author not in allowed list; skipping labeling.");
+              return;
+            }
+
+            // Ensure the label exists (create if missing)
+            try {
+              await github.rest.issues.getLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: labelName,
+              });
+              core.info(`Label "${labelName}" exists.`);
+            } catch (err) {
+              if (err.status === 404) {
+                core.info(`Label "${labelName}" not found. Creating it...`);
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: labelName,
+                  color: "0E8A16",
+                  description: "PRs related to comment translations",
+                });
+              } else {
+                throw err;
+              }
+            }
+
+            // Add the label to the PR
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              labels: [labelName],
+            });

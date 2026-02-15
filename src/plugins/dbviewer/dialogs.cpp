@@ -51,7 +51,7 @@ void HistoryComboBox(HWND hWindow, CTransferInfo& ti, int ctrlID, char* Text,
             SendMessage(hwnd, CB_LIMITTEXT, textLen - 1, 0);
             SendMessage(hwnd, WM_SETTEXT, 0, (LPARAM)Text);
 
-            // vse o.k. zalozime do historie
+            // everything is OK, add it to the history
             if (ti.IsGood())
             {
                 if (Text[0] != 0)
@@ -62,8 +62,8 @@ void HistoryComboBox(HWND hWindow, CTransferInfo& ti, int ctrlID, char* Text,
                     {
                         if (history[i] != NULL)
                         {
-                            if (strcmp(history[i], Text) == 0) // je-li uz v historii
-                            {                                  // pujde na 0. pozici
+                            if (strcmp(history[i], Text) == 0) // if already in the history
+                            {                                  // move it to position 0
                                 if (i > 0)
                                 {
                                     char* swap = history[i];
@@ -97,7 +97,7 @@ void HistoryComboBox(HWND hWindow, CTransferInfo& ti, int ctrlID, char* Text,
         }
 
         int i;
-        for (i = 0; i < historySize; i++) // naplneni listu combo-boxu
+        for (i = 0; i < historySize; i++) // fill the combo box list
             if (history[i] != NULL)
                 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)history[i]);
             else
@@ -127,10 +127,10 @@ CCommonDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // horizontalni i vertikalni vycentrovani dialogu k parentu
+        // horizontally and vertically center the dialog relative to the parent
         if (Parent != NULL)
             SalGeneral->MultiMonCenterWindow(HWindow, Parent, TRUE);
-        break; // chci focus od DefDlgProc
+        break; // let DefDlgProc handle focus
     }
     }
     return CDialog::DialogProc(uMsg, wParam, lParam);
@@ -197,7 +197,7 @@ CGoToDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 // CCSVOptionsDialog
 //
 
-// slouzi pro neustale prepisovani jednoho povoleneho znaku
+// used to repeatedly overwrite a single allowed character
 class COneCharEditLine : public CWindow
 {
 public:
@@ -250,7 +250,7 @@ void CCSVOptionsDialog::MyTransfer(CTransferInfo& ti, CCSVConfig* cfg)
     }
     ti.EditLine(IDE_CSV_OTHER, buff, 2);
     if (ti.Type == ttDataFromWindow)
-        cfg->ValueSeparatorChar = buff[0]; // kdyz bude prazdny retezec, bude to '\0'
+        cfg->ValueSeparatorChar = buff[0]; // if the string is empty, this becomes '\0'
 
     ti.RadioButton(IDC_CSV_AS_FR, 0, cfg->FirstRowAsName);
     ti.RadioButton(IDC_CSV_ASHEADER, 1, cfg->FirstRowAsName);
@@ -378,7 +378,7 @@ void CConfigurationDialog::SetFontText()
 
     HWND hEdit = GetDlgItem(HWindow, IDE_CFG_FONT);
     int oldHeight = logFont.lfHeight;
-    logFont.lfHeight = SalamanderGUI->GetWindowFontHeight(hEdit); // pro prezentaci fontu v edit line pouzijeme jeji velikost fontu
+    logFont.lfHeight = SalamanderGUI->GetWindowFontHeight(hEdit); // for presenting the font in the edit line use its font size
     if (HFont != NULL)
         DeleteObject(HFont);
     HFont = CreateFontIndirect(&logFont);
@@ -413,8 +413,8 @@ CConfigurationDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
         case IDB_CFG_FONT:
         {
-            /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volanim InsertMenu() dole...
+            /* used by the export_mnu.py script that generates salmenu.mnu for Translator
+   keep it synchronized with the InsertMenu() calls below...
 MENU_TEMPLATE_ITEM ConfigurationDialogMenu[] = 
 {
   {MNTT_PB, 0
@@ -480,7 +480,7 @@ CColumnsDialog::CColumnsDialog(HWND hParent, CRendererWindow* renderer)
     Renderer = renderer;
     HListView = NULL;
     DisableNotification = FALSE;
-    // natahneme si sloupce k nam, abychom nad nima mohli konfigurovat
+    // pull the columns locally so that we can configure them
     int i;
     for (i = 0; i < Renderer->Database.GetColumnCount(); i++)
         MyColumns.Add(*Renderer->Database.GetColumn(i));
@@ -546,7 +546,7 @@ void CColumnsDialog::Transfer(CTransferInfo& ti)
     }
     else
     {
-        // vratime zmenene sloupce do okna
+        // send the modified columns back to the window
         int i;
         for (i = 0; i < MyColumns.Count; i++)
             Renderer->Database.SetColumn(i, &MyColumns[i]);
@@ -556,7 +556,7 @@ void CColumnsDialog::Transfer(CTransferInfo& ti)
 
 void CColumnsDialog::Validate(CTransferInfo& ti)
 {
-    // alespon jeden sloupec musi zustat zobrazeny
+    // at least one column must remain visible
     BOOL visible = FALSE;
     int i;
     for (i = 0; i < MyColumns.Count; i++)
@@ -652,12 +652,12 @@ CColumnsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         DWORD origFlags = ListView_GetExtendedListViewStyle(HListView);
         ListView_SetExtendedListViewStyle(HListView, origFlags | exFlags); // 4.71
 
-        // zjistim velikost listview
+        // determine the list view size
         RECT r;
         GetClientRect(HListView, &r);
         int colWidth = (int)(r.right / 4);
 
-        // naleju do listview sloupce Name
+        // populate the list view with the Name column
         LVCOLUMN lvc;
         lvc.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
         lvc.pszText = LoadStr(IDS_COLUMNS_NAME);
@@ -694,7 +694,7 @@ CColumnsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (LOWORD(wParam) == IDC_COL_RESTORE)
         {
-            // nahazime originalni hodnoty
+            // load the original values
             int i;
             for (i = 0; i < MyColumns.Count; i++)
             {
@@ -704,11 +704,11 @@ CColumnsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     if (Renderer->Database.GetColumn(j)->OriginalIndex == i)
                     {
                         MyColumns[i] = *Renderer->Database.GetColumn(j);
-                        MyColumns[i].Visible = TRUE; // na zacatku byly vsechny sloupce viditelne
+                        MyColumns[i].Visible = TRUE; // initially all columns were visible
                         break;
                     }
                 }
-                // promitneme do LV
+                // reflect it in the list view
                 SetLVTexts(i);
             }
             return 0;
@@ -815,9 +815,9 @@ void CFindDialog::Transfer(CTransferInfo& ti)
                     FIND_HISTORY_SIZE, FindHistory);
     /*
   if (ti.Type == ttDataToWindow)
-  { // inicializace hledaneho textu podle oznaceni ve viewru (parent tohoto dialogu)
+  { // initialize the searched text according to the selection in the viewer (parent of this dialog)
     CWindowsObject *win = WindowsManager.GetWindowPtr(Parent);
-    if (win != NULL && win->Is(otViewerWindow))  // pro jistotu test je-li to okno viewru
+    if (win != NULL && win->Is(otViewerWindow))  // double-check that this is a viewer window
     {
       CViewerWindow *view = (CViewerWindow *)win;
       char buf[FIND_TEXT_LEN];

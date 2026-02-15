@@ -1,25 +1,26 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
-WSADATA WinSocketsData; // info o implementaci Windows Sockets
+WSADATA WinSocketsData; // information about the Windows Sockets implementation
 
-CThreadQueue SocketsThreadQueue("FTP Sockets"); // fronta vsech threadu pouzitych ve spojitosti se sockety
+CThreadQueue SocketsThreadQueue("FTP Sockets"); // queue of all threads used in connection with sockets
 
-CSocketsThread* SocketsThread = NULL;   // thread obsluhy vsech socketu
-CRITICAL_SECTION SocketsThreadCritSect; // pro synchronizaci ukonceni threadu SocketsThread
+CSocketsThread* SocketsThread = NULL;   // handler thread for all sockets
+CRITICAL_SECTION SocketsThreadCritSect; // for synchronizing the termination of the SocketsThread thread
 
 const char* SOCKETSWINDOW_CLASSNAME = "SocketsHiddenWindowClass";
 
-int CSocket::NextSocketUID = 0;                  // globalni pocitadlo pro objekty socketu
-CRITICAL_SECTION CSocket::NextSocketUIDCritSect; // kriticka sekce pocitadla (sockety se vytvari v ruznych threadech)
+int CSocket::NextSocketUID = 0;                  // global counter for socket objects
+CRITICAL_SECTION CSocket::NextSocketUIDCritSect; // critical section of the counter (sockets are created in different threads)
 
 #ifdef _DEBUG
-BOOL InDeleteSocket = FALSE; // TRUE pokud jsme uvnitr DeleteSocket (pro test primeho volani "delete socket")
+BOOL InDeleteSocket = FALSE; // TRUE if we are inside DeleteSocket (for testing direct calls to "delete socket")
 #endif
 
-DWORD CSocketsThread::LastWM_TIMER_Processing = 0; // GetTickCount() z okamziku posledniho zpracovani WM_TIMER (WM_TIMER chodi jen pri "idle" messageloopy, coz je pro nas nepripustne)
+DWORD CSocketsThread::LastWM_TIMER_Processing = 0; // GetTickCount() from the moment WM_TIMER was last processed (WM_TIMER arrives only during "idle" message loops, which is unacceptable for us)
 
 // ***************************************************************************************
 
@@ -52,7 +53,7 @@ BOOL InitSockets(HWND parent)
         else
         {
             if (!SocketsThread->IsRunning())
-                SocketsThread = NULL; // nastala chyba, thread se dealokuje sam
+                SocketsThread = NULL; // an error occurred, the thread deallocates itself
         }
     }
     else
@@ -70,30 +71,30 @@ void ReleaseSockets()
 {
     if (SocketsThread != NULL)
     {
-        // musime vynulovat SocketsThread, aby ostatni thready vedeli, ze uz neni komu poslat
-        // svuj vysledek (pokud je drive nesejme SocketsThreadQueue.KillAll)
+        // we have to null out SocketsThread so other threads know there is no one left to receive
+        // their result (unless SocketsThreadQueue.KillAll removes them earlier)
         CSocketsThread* s = SocketsThread;
         HANDLES(EnterCriticalSection(&SocketsThreadCritSect));
         SocketsThread = NULL;
         HANDLES(LeaveCriticalSection(&SocketsThreadCritSect));
         HANDLE thread = s->GetHandle();
         s->Terminate();
-        // dealokace objektu je automaticka (v pripade normalniho ukonceni threadu) - nelze jiz dale
-        // pouzivat 's'
+        // object deallocation is automatic (if the thread terminates normally) - 's' must not be used
+        // afterwards
         CALL_STACK_MESSAGE1("ReleaseSockets(): SocketsThreadQueue.WaitForExit()");
-        SocketsThreadQueue.WaitForExit(thread, INFINITE); // pockame na ukonceni threadu
+        SocketsThreadQueue.WaitForExit(thread, INFINITE); // wait for the thread to finish
     }
 
-    // pokud nedobehly "legalne", pozabijime je
+    // if they did not finish "legally", we will kill them
     SocketsThreadQueue.KillAll(TRUE, 0, 0);
 
     HANDLES(DeleteCriticalSection(&CSocket::NextSocketUIDCritSect));
-    HANDLES(DeleteCriticalSection(&SocketsThreadCritSect)); // vs. thready jsou mrtve, sekci uz nikdo neuzije
+    HANDLES(DeleteCriticalSection(&SocketsThreadCritSect)); // all threads are dead, no one will use the section anymore
 
     if (WSACleanup() == SOCKET_ERROR)
     {
         int err = WSAGetLastError();
-#ifdef _DEBUG // jinak hlasi kompilator warning "errBuf - unreferenced local variable"
+#ifdef _DEBUG // otherwise the compiler reports warning "errBuf - unreferenced local variable"
         char errBuf[300];
         TRACE_E("Unable to release Windows Sockets: " << FTPGetErrorText(err, errBuf, 300));
 #endif
@@ -131,7 +132,7 @@ CSocket::CSocket()
     Msg = -1;
     Socket = INVALID_SOCKET;
     SSLConn = NULL;
-    ReuseSSLSession = 0 /* zkusit */;
+    ReuseSSLSession = 0 /* try */;
     ReuseSSLSessionFailed = FALSE;
     pCertificate = NULL;
     OurShutdown = FALSE;
@@ -183,7 +184,7 @@ BOOL CSocket::Shutdown(DWORD* error)
     HANDLES(EnterCriticalSection(&SocketCritSect));
 
     BOOL ret = FALSE;
-    if (Socket != INVALID_SOCKET) // socket je pripojeny (jinak ho nelze zavrit)
+    if (Socket != INVALID_SOCKET) // the socket is connected (otherwise it cannot be closed)
     {
         if (SSLConn)
         {
@@ -193,10 +194,10 @@ BOOL CSocket::Shutdown(DWORD* error)
         }
         if (shutdown(Socket, SD_SEND) != SOCKET_ERROR)
         {
-            ret = TRUE; // uspech
+            ret = TRUE; // success
             OurShutdown = TRUE;
         }
-        else // chyba, zjistime jaka
+        else // an error occurred, find out which one
         {
             if (error != NULL)
                 *error = WSAGetLastError();
@@ -219,7 +220,7 @@ BOOL CSocket::CloseSocket(DWORD* error)
     HANDLES(EnterCriticalSection(&SocketCritSect));
 
     BOOL ret = FALSE;
-    if (Socket != INVALID_SOCKET) // socket je pripojeny (jinak ho nelze zavrit)
+    if (Socket != INVALID_SOCKET) // the socket is connected (otherwise it cannot be closed)
     {
         if (SSLConn)
         {
@@ -229,14 +230,14 @@ BOOL CSocket::CloseSocket(DWORD* error)
         }
         if (closesocket(Socket) != SOCKET_ERROR)
         {
-            ret = TRUE; // uspech
+            ret = TRUE; // success
             Socket = INVALID_SOCKET;
             OurShutdown = FALSE;
             SocketState = ssNotOpened;
-            ReuseSSLSession = 0 /* zkusit */;
+            ReuseSSLSession = 0 /* try */;
             ReuseSSLSessionFailed = FALSE;
         }
-        else // chyba, zjistime jaka
+        else // an error occurred, find out which one
         {
             if (error != NULL)
                 *error = WSAGetLastError();
@@ -324,7 +325,7 @@ void CSocket::SetSndRcvBuffers()
 #ifdef DATACON_USES_OUR_BUF_SIZES
     CALL_STACK_MESSAGE1("CSocket::SetSndRcvBuffers()");
 
-    if (IsDataConnection) // mimo data connectiony nechame defaulty
+    if (IsDataConnection) // for non-data connections we keep the defaults
     {
         int bufSize;
         int len = sizeof(bufSize);
@@ -378,7 +379,7 @@ BOOL CSocket::Connect(DWORD ip, unsigned short port, DWORD* error, BOOL calledFr
 
     HWND socketsWindow = SocketsThread->GetHiddenWindow();
 
-    /*  // zakomentovano: pokud uz jsme v CSocketsThread::CritSect, neni vnoreni do sekce SocketCritSect problem
+    /*  // commented out: if we are already inside CSocketsThread::CritSect, entering SocketCritSect is not a problem
 #ifdef _DEBUG
   if (SocketCritSect.RecursionCount > 1) TRACE_E("Incorrect call to CSocket::Connect: from section SocketCritSect!");
 #endif
@@ -406,9 +407,9 @@ BOOL CSocket::Connect(DWORD ip, unsigned short port, DWORD* error, BOOL calledFr
     ShouldPostFD_WRITE = FALSE;
 
     BOOL addCalled = FALSE;
-    if (Msg == -1) // socket neni v SocketsThread, pridame ho
+    if (Msg == -1) // the socket is not in SocketsThread, add it
     {
-        if (!SocketsThread->AddSocket(this)) // jsme v sekci CSocketsThread::CritSect, takze je tohle volani mozne i ze sekce CSocket::SocketCritSect
+        if (!SocketsThread->AddSocket(this)) // we are inside CSocketsThread::CritSect, so this call is possible even from CSocket::SocketCritSect
         {
             if (!calledFromConnect)
             {
@@ -425,10 +426,10 @@ BOOL CSocket::Connect(DWORD ip, unsigned short port, DWORD* error, BOOL calledFr
     Socket = socket(AF_INET, SOCK_STREAM, 0);
     if (Socket != INVALID_SOCKET)
     {
-        // disablujeme Nagle algoritmus, nechceme zadne zbytecne cekani
-        // POZOR: pri downloadu na lokalni siti dochazelo k castym vypadkum, casto se
-        //        restartoval prenos, navic zrychleni jsem nepozoroval, takze jsem
-        //        od tohoto radsi upustil (bylo to jeste u accept())
+        // disable the Nagle algorithm, we do not want any unnecessary waiting
+        // WARNING: when downloading on a local network there were frequent dropouts, the transfer often
+        //          restarted, and I did not notice any speedup, so I decided
+        //          to give this up (this was still at accept())
         // BOOL noDelayOn = TRUE;
         // setsockopt(Socket, IPPROTO_TCP, TCP_NODELAY, (char *)&noDelayOn, sizeof(noDelayOn));
 
@@ -445,17 +446,17 @@ BOOL CSocket::Connect(DWORD ip, unsigned short port, DWORD* error, BOOL calledFr
             if (connect(Socket, (SOCKADDR*)&addr, sizeof(addr)) == SOCKET_ERROR)
             {
                 DWORD err = WSAGetLastError();
-                if (err == WSAEWOULDBLOCK) // normalni reakce na connect neblokujiciho socketu
+                if (err == WSAEWOULDBLOCK) // normal reaction to connecting a non-blocking socket
                 {
                     ret = TRUE;
                 }
-                else // jina chyba connectu
+                else // a different connect error
                 {
                     if (error != NULL)
                         *error = WSAGetLastError();
                 }
             }
-            else // vratila NO_ERROR, tvari se jako blokujici varianta "connect", nemelo by vubec nastat
+            else // returned NO_ERROR, behaves like the blocking variant of "connect", should never happen
             {
                 TRACE_E("CSocket::Connect(): connect has returned unexpected value!");
             }
@@ -481,7 +482,7 @@ BOOL CSocket::Connect(DWORD ip, unsigned short port, DWORD* error, BOOL calledFr
     if (!calledFromConnect && !ret)
         SocketState = ssNotOpened;
     if (!ret && addCalled)
-        SocketsThread->DeleteSocket(this, TRUE); // odpojime objekt ze SocketsThread; jsme v sekci CSocketsThread::CritSect, takze je tohle volani mozne i ze sekce CSocket::SocketCritSect
+        SocketsThread->DeleteSocket(this, TRUE); // detach the object from SocketsThread; we are inside CSocketsThread::CritSect, so this call is possible even from CSocket::SocketCritSect
     if (!calledFromConnect)
     {
         HANDLES(LeaveCriticalSection(&SocketCritSect));
@@ -538,7 +539,7 @@ BOOL CSocket::GetLocalIP(DWORD* ip, DWORD* error)
 
     HANDLES(LeaveCriticalSection(&SocketCritSect));
 
-    return *ip != INADDR_ANY; // INADDR_ANY neni platne IP
+    return *ip != INADDR_ANY; // INADDR_ANY is not a valid IP
 }
 
 BOOL CSocket::OpenForListening(DWORD* listenOnIP, unsigned short* listenOnPort, DWORD* error)
@@ -573,9 +574,9 @@ BOOL CSocket::OpenForListening(DWORD* listenOnIP, unsigned short* listenOnPort, 
     ProxyWinError = NO_ERROR;
 
     BOOL addCalled = FALSE;
-    if (Msg == -1) // socket neni v SocketsThread, pridame ho
+    if (Msg == -1) // the socket is not in SocketsThread, add it
     {
-        if (!SocketsThread->AddSocket(this)) // jsme v sekci CSocketsThread::CritSect, takze je tohle volani mozne i ze sekce CSocket::SocketCritSect
+        if (!SocketsThread->AddSocket(this)) // we are inside CSocketsThread::CritSect, so this call is possible even from CSocket::SocketCritSect
         {
             SocketState = ssNotOpened;
             HANDLES(LeaveCriticalSection(&SocketCritSect));
@@ -618,7 +619,7 @@ BOOL CSocket::OpenForListening(DWORD* listenOnIP, unsigned short* listenOnPort, 
         if (!ret)
         {
             if (error != NULL)
-                *error = WSAGetLastError(); // zjisti chybu posledniho volani WSA (select, bind, get, listen)
+                *error = WSAGetLastError(); // determine the error of the last WSA call (select, bind, get, listen)
 
             closesocket(Socket);
             Socket = INVALID_SOCKET;
@@ -633,7 +634,7 @@ BOOL CSocket::OpenForListening(DWORD* listenOnIP, unsigned short* listenOnPort, 
     if (!ret)
         SocketState = ssNotOpened;
     if (!ret && addCalled)
-        SocketsThread->DeleteSocket(this, TRUE); // odpojime objekt ze SocketsThread; jsme v sekci CSocketsThread::CritSect, takze je tohle volani mozne i ze sekce CSocket::SocketCritSect
+        SocketsThread->DeleteSocket(this, TRUE); // detach the object from SocketsThread; we are inside CSocketsThread::CritSect, so this call is possible even from CSocket::SocketCritSect
     HANDLES(LeaveCriticalSection(&SocketCritSect));
     SocketsThread->UnlockSocketsThread();
     return ret;
@@ -711,10 +712,10 @@ BOOL CSocket::OpenForListeningWithProxy(DWORD listenOnIP, unsigned short listenO
 class CGetHostByNameThread : public CThread
 {
 protected:
-    char* Address; // zjistovana adresa
-    int HostUID;   // hostUID z volani GetHostByAddress, ktera zalozila tento thread
-    int SocketMsg; // Msg z objektu socketu, ktery ma dostat vysledek
-    int SocketUID; // UID z objektu socketu, ktery ma dostat vysledek
+    char* Address; // address being looked up
+    int HostUID;   // hostUID from the GetHostByAddress call that created this thread
+    int SocketMsg; // Msg from the socket object that should receive the result
+    int SocketUID; // UID from the socket object that should receive the result
 
 public:
     CGetHostByNameThread(const char* address, int hostUID, int socketMsg,
@@ -735,7 +736,7 @@ public:
     virtual unsigned Body()
     {
         CALL_STACK_MESSAGE2("CGetHostByNameThread::Body(%s)", Address);
-        // ziskame IP adresu volanim gethostbyname
+        // obtain the IP address by calling gethostbyname
         HOSTENT* host = NULL;
         int err = 0;
         DWORD ip = INADDR_NONE; // error
@@ -747,7 +748,7 @@ public:
             else
                 ip = *(DWORD*)(host->h_addr);
         }
-        // posleme vysledek do threadu "sockets"
+        // send the result to the "sockets" thread
         HANDLES(EnterCriticalSection(&SocketsThreadCritSect));
         if (SocketsThread != NULL)
         {
@@ -764,13 +765,13 @@ BOOL CSocket::GetHostByAddress(const char* address, int hostUID)
 
     SocketsThread->LockSocketsThread();
     HANDLES(EnterCriticalSection(&SocketCritSect));
-    /*  // zakomentovano: pokud uz jsme v CSocketsThread::CritSect, neni vnoreni do sekce SocketCritSect problem
+    /*  // commented out: if we are already inside CSocketsThread::CritSect, entering SocketCritSect is not a problem
 #ifdef _DEBUG
   if (SocketCritSect.RecursionCount > 1) TRACE_E("Incorrect call to CSocket::GetHostByAddress: from section SocketCritSect!");
 #endif
 */
     BOOL addCalled = FALSE;
-    if (Msg == -1) // socket neni v SocketsThread, pridame ho
+    if (Msg == -1) // the socket is not in SocketsThread, add it
     {
         if (!SocketsThread->AddSocket(this))
         {
@@ -781,7 +782,7 @@ BOOL CSocket::GetHostByAddress(const char* address, int hostUID)
         addCalled = TRUE;
     }
 
-    BOOL postMsg = FALSE; // je-li TRUE, ma se zavolat SocketsThread->PostHostByAddressResult s nasl. parametry:
+    BOOL postMsg = FALSE; // if TRUE, SocketsThread->PostHostByAddressResult should be called with the following parameters:
     int postSocketMsg = Msg;
     int postSocketUID = UID;
     DWORD postIP;
@@ -790,37 +791,37 @@ BOOL CSocket::GetHostByAddress(const char* address, int hostUID)
 
     BOOL maybeOK = FALSE;
     DWORD ip = inet_addr(address);
-    if (ip == INADDR_NONE) // nejde o IP string (aa.bb.cc.dd), zkusime gethostbyname
+    if (ip == INADDR_NONE) // not an IP string (aa.bb.cc.dd), try gethostbyname
     {
         CGetHostByNameThread* t = new CGetHostByNameThread(address, hostUID, Msg, UID);
         if (t != NULL)
         {
             if (t->Create(SocketsThreadQueue) == NULL)
-                delete t; // thread se nepustil, error
+                delete t; // the thread did not start, error
             else
-                maybeOK = TRUE; // thread je spusteny, mozna se to ziskani adresy povede
+                maybeOK = TRUE; // the thread is running, the address lookup may succeed
         }
         else
-            TRACE_E(LOW_MEMORY); // malo pameti, error
+            TRACE_E(LOW_MEMORY); // low memory, error
         if (!maybeOK)
         {
-            postMsg = TRUE; // post error to object
+            postMsg = TRUE; // post the error to the object
             postIP = INADDR_NONE;
         }
     }
     else
     {
         maybeOK = TRUE;
-        postMsg = TRUE; // post IP
+        postMsg = TRUE; // post the IP
         postIP = ip;
     }
     if (!maybeOK && addCalled)
-        SocketsThread->DeleteSocket(this, TRUE); // odpojime objekt ze SocketsThread
+        SocketsThread->DeleteSocket(this, TRUE); // detach the object from SocketsThread
 
     HANDLES(LeaveCriticalSection(&SocketCritSect));
     SocketsThread->UnlockSocketsThread();
 
-    if (postMsg) // aby bylo mimo kritickou sekci SocketCritSect
+    if (postMsg) // to keep it outside the SocketCritSect critical section
     {
         SocketsThread->PostHostByAddressResult(postSocketMsg, postSocketUID, postIP, postHostUID, postErr);
     }
@@ -854,7 +855,7 @@ void CSocket::ReceiveHostByAddressInt(DWORD ip, int hostUID, int err, int index)
     HANDLES(EnterCriticalSection(&SocketCritSect));
     if (SocketState == ssSocks4_WaitForIP)
     {
-        if (ip != INADDR_NONE) // mame IP adresu FTP serveru, posleme connect-request na proxy server
+        if (ip != INADDR_NONE) // we have the FTP server's IP address, send a connect request to the proxy server
         {
             HostIP = ip;
             SocketState = ssSocks4_WaitForCon;
@@ -863,13 +864,13 @@ void CSocket::ReceiveHostByAddressInt(DWORD ip, int hostUID, int err, int index)
             if (!csLeft)
                 HANDLES(LeaveCriticalSection(&SocketCritSect));
         }
-        else // chyba pri ziskavani IP adresy FTP serveru
+        else // error while obtaining the FTP server's IP address
         {
             ProxyErrorCode = pecGettingHostIP;
             ProxyWinError = err;
             SocketState = ssConnectFailed;
             HANDLES(LeaveCriticalSection(&SocketCritSect));
-            ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* jen nesmi byt NO_ERROR */), index);
+            ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* it just must not be NO_ERROR */), index);
         }
     }
     else
@@ -884,7 +885,7 @@ BOOL CSocket::GetProxyError(char* errBuf, int errBufSize, char* formatBuf, int f
     CALL_STACK_MESSAGE1("CSocket::GetProxyError(, , ,)");
 
     HANDLES(EnterCriticalSection(&SocketCritSect));
-    BOOL ret = FALSE; // FALSE = neni to chyba hlasena proxy serverem (ale treba chyba pripojovani na proxy server)
+    BOOL ret = FALSE; // FALSE = it is not an error reported by the proxy server (but for example an error connecting to the proxy server)
     if (ProxyErrorCode != pecNoError)
     {
         ret = TRUE;
@@ -902,7 +903,7 @@ BOOL CSocket::GetProxyError(char* errBuf, int errBufSize, char* formatBuf, int f
                 char* s = errText + strlen(errText);
                 while (s > errText && (*(s - 1) == '\n' || *(s - 1) == '\r'))
                     s--;
-                *s = 0; // oriznuti znaku konce radky z textu chyby
+                *s = 0; // trim newline characters from the error text
             }
         }
         else
@@ -1002,7 +1003,7 @@ BOOL CSocket::GetProxyError(char* errBuf, int errBufSize, char* formatBuf, int f
                                                                                       : ProxyErrorCode == pecUserPassAuthUnsup ? IDS_PROXYERRUSERPASSAUTHUNSUP
                                                                                       : ProxyErrorCode == pecUserPassAuthFail  ? IDS_PROXYERRUSERPASSFAIL
                                                                                       : ProxyErrorCode == pecListenUnsup       ? IDS_PROXYERRLISTENUNSUP
-                                                                                                                               : IDS_PROXYOPENCONERROR), // ProxyErrorCode == pecProxySrvError nebo pecHTTPProxySrvError
+                                                                                                                               : IDS_PROXYOPENCONERROR), // ProxyErrorCode == pecProxySrvError or pecHTTPProxySrvError
                             HostAddress, HostPort);
             }
             lstrcpyn(errBuf, errText, errBufSize);
@@ -1017,7 +1018,7 @@ BOOL CSocket::GetProxyTimeoutDescr(char* buf, int bufSize)
     CALL_STACK_MESSAGE1("CSocket::GetProxyTimeoutDescr(,)");
 
     HANDLES(EnterCriticalSection(&SocketCritSect));
-    BOOL ret = FALSE; // FALSE = timeout pripojovani na FTP server
+    BOOL ret = FALSE; // FALSE = connection to the FTP server timed out
     switch (SocketState)
     {
     case ssSocks4_Connect:
@@ -1053,30 +1054,30 @@ void CSocket::ProxySendBytes(const char* buf, int bufLen, int index, BOOL* csLef
 {
     *csLeft = FALSE;
     if (Socket != INVALID_SOCKET && bufLen > 0)
-    { // zjednodusili jsme si tu situaci - pokud se nepodari 'buf' poslat najednou, ohlasime chybu a hotovo
-        // (korektni by bylo cekat na FD_WRITE a poslat zbytek bytu, ale nejspis to tu nebude potreba,
-        // 'bufLen' je male cislo (cca do 1000))
+    { // we simplified the situation - if sending 'buf' at once fails, we report an error and that's it
+        // (proper handling would wait for FD_WRITE and send the remaining bytes, but this is most likely unnecessary here,
+        // 'bufLen' is a small number (around 1000))
         int len = 0;
         if (!SSLConn)
         {
-            while (1) // cyklus nutny kvuli funkci 'send' (pokud nastane chyba "would block", ohlasi ji az v dalsim kole)
+            while (1) // loop necessary because of the 'send' function (if a "would block" error occurs, it reports it only in the next iteration)
             {
                 int sentLen = send(Socket, buf + len, bufLen - len, 0);
-                if (sentLen != SOCKET_ERROR) // aspon neco je uspesne odeslano (nebo spis prevzato Windowsama, doruceni je ve hvezdach)
+                if (sentLen != SOCKET_ERROR) // at least something was sent successfully (or rather accepted by Windows, delivery is uncertain)
                 {
                     len += sentLen;
                     if (len >= bufLen)
-                        break; // prestaneme posilat (jiz neni co)
+                        break; // stop sending (nothing left)
                 }
-                else // nastala chyba pri posilani bytu proxy serveru -> hotovo: connect failed
+                else // an error occurred while sending bytes to the proxy server -> done: connect failed
                 {
                     ProxyErrorCode = pecSendingBytes;
-                    // je-li WSAEWOULDBLOCK -> nic dalsiho uz poslat nejde (Windowsy jiz nemaji buffer space), zbytek poslat az po FD_WRITE (zatim neimplementovano, snad zbytecne)
+                    // if WSAEWOULDBLOCK -> nothing else can be sent (Windows no longer has buffer space), send the rest after FD_WRITE (not implemented yet, hopefully unnecessary)
                     ProxyWinError = WSAGetLastError();
                     SocketState = isConnect ? ssConnectFailed : ssListenFailed;
                     HANDLES(LeaveCriticalSection(&SocketCritSect));
                     if (isConnect)
-                        ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* jen nesmi byt NO_ERROR */), index);
+                        ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* it just must not be NO_ERROR */), index);
                     else
                         ListeningForConnection(INADDR_NONE, 0, TRUE /* proxy error */);
                     *csLeft = TRUE;
@@ -1086,24 +1087,24 @@ void CSocket::ProxySendBytes(const char* buf, int bufLen, int index, BOOL* csLef
         }
         else
         {
-            while (1) // cyklus nutny kvuli funkci 'send' (pokud nastane chyba "would block", ohlasi ji az v dalsim kole)
+            while (1) // loop necessary because of the 'send' function (if a "would block" error occurs, it reports it only in the next iteration)
             {
                 int sentLen = SSLLib.SSL_write(SSLConn, buf + len, bufLen - len);
-                if (sentLen > 0) // aspon neco je uspesne odeslano (nebo spis prevzato Windowsama, doruceni je ve hvezdach)
+                if (sentLen > 0) // at least something was sent successfully (or rather accepted by Windows, delivery is uncertain)
                 {
                     len += sentLen;
                     if (len >= bufLen)
-                        break; // prestaneme posilat (jiz neni co)
+                        break; // stop sending (nothing left)
                 }
-                else // nastala chyba pri posilani bytu proxy serveru -> hotovo: connect failed
+                else // an error occurred while sending bytes to the proxy server -> done: connect failed
                 {
                     ProxyErrorCode = pecSendingBytes;
-                    // je-li WSAEWOULDBLOCK -> nic dalsiho uz poslat nejde (Windowsy jiz nemaji buffer space), zbytek poslat az po FD_WRITE (zatim neimplementovano, snad zbytecne)
+                    // if WSAEWOULDBLOCK -> nothing else can be sent (Windows no longer has buffer space), send the rest after FD_WRITE (not implemented yet, hopefully unnecessary)
                     ProxyWinError = SSLtoWS2Error(SSLLib.SSL_get_error(SSLConn, sentLen));
                     SocketState = isConnect ? ssConnectFailed : ssListenFailed;
                     HANDLES(LeaveCriticalSection(&SocketCritSect));
                     if (isConnect)
-                        ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* jen nesmi byt NO_ERROR */), index);
+                        ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* it just must not be NO_ERROR */), index);
                     else
                         ListeningForConnection(INADDR_NONE, 0, TRUE /* proxy error */);
                     *csLeft = TRUE;
@@ -1118,13 +1119,13 @@ void CSocket::Socks4SendRequest(int request, int index, BOOL* csLeft, BOOL isCon
 {
     *csLeft = FALSE;
     char buf[300 + HOST_MAX_SIZE];
-    buf[0] = 4; // 4 = verze
+    buf[0] = 4; // 4 = version
     buf[1] = request;
     *(unsigned short*)(buf + 2) = htons(HostPort); // port
     if (isSocks4A && HostIP == INADDR_NONE)
-        HostIP = inet_addr(HostAddress); // pokud jde o IP string, ziskame IP (nektere proxy servery tento prevod neumi)
+        HostIP = inet_addr(HostAddress); // if it is an IP string, obtain the IP (some proxy servers cannot perform this conversion)
     if (isSocks4A && HostIP == INADDR_NONE)
-        *(DWORD*)(buf + 4) = 0x01000000; // SOCKS 4A "IP address": 0.0.0.x (x ma byt nenulove, tak treba 1)
+        *(DWORD*)(buf + 4) = 0x01000000; // SOCKS 4A "IP address": 0.0.0.x (x must be non-zero, so for example 1)
     else
         *(DWORD*)(buf + 4) = HostIP; // IP address
     int len = 8;
@@ -1137,7 +1138,7 @@ void CSocket::Socks4SendRequest(int request, int index, BOOL* csLeft, BOOL isCon
             len += sl;
         }
     }
-    buf[len++] = 0; // koncova nula
+    buf[len++] = 0; // terminating zero
     if (isSocks4A && HostIP == INADDR_NONE)
     {
         int sl = (int)strlen(HostAddress);
@@ -1146,7 +1147,7 @@ void CSocket::Socks4SendRequest(int request, int index, BOOL* csLeft, BOOL isCon
             memcpy(buf + len, HostAddress, sl);
             len += sl;
         }
-        buf[len++] = 0; // koncova nula pro SOCKS 4A
+        buf[len++] = 0; // terminating zero for SOCKS 4A
     }
     ProxySendBytes(buf, len, index, csLeft, isConnect);
 }
@@ -1155,8 +1156,8 @@ void CSocket::Socks5SendMethods(int index, BOOL* csLeft, BOOL isConnect)
 {
     *csLeft = FALSE;
     char buf[10];
-    buf[0] = 5;                         // 5 = verze
-    buf[1] = ProxyUser == NULL ? 1 : 2; // pocet metod
+    buf[0] = 5;                         // 5 = version
+    buf[1] = ProxyUser == NULL ? 1 : 2; // number of methods
     int off = 2;
     if (ProxyUser != NULL)
         buf[off++] = 2; // "user+password"
@@ -1168,13 +1169,13 @@ void CSocket::Socks5SendLogin(int index, BOOL* csLeft, BOOL isConnect)
 {
     *csLeft = FALSE;
     char buf[600];
-    buf[0] = 1; // 1 = verze
+    buf[0] = 1; // 1 = version
     int userLen = (int)strlen(HandleNULLStr(ProxyUser));
     if (userLen > 255)
-        userLen = 255; // delsi jmeno proste nelze zadat do SOCKS 5 requestu
+        userLen = 255; // longer names simply cannot be entered in a SOCKS 5 request
     int passLen = (int)strlen(HandleNULLStr(ProxyPassword));
     if (passLen > 255)
-        passLen = 255; // delsi password proste nelze zadat do SOCKS 5 requestu
+        passLen = 255; // longer passwords simply cannot be entered in a SOCKS 5 request
     buf[1] = userLen;
     memcpy(buf + 2, HandleNULLStr(ProxyUser), userLen);
     buf[2 + userLen] = passLen;
@@ -1186,21 +1187,21 @@ void CSocket::Socks5SendRequest(int request, int index, BOOL* csLeft, BOOL isCon
 {
     *csLeft = FALSE;
     char buf[300];
-    buf[0] = 5; // 5 = verze
+    buf[0] = 5; // 5 = version
     buf[1] = request;
     buf[2] = 0; // reserved
     if (HostIP == INADDR_NONE)
-        HostIP = inet_addr(HostAddress); // pokud jde o IP string, ziskame IP (nektere proxy servery tento prevod neumi)
+        HostIP = inet_addr(HostAddress); // if it is an IP string, obtain the IP (some proxy servers cannot perform this conversion)
     buf[3] = HostIP == INADDR_NONE ? 3 /* name address */ : 1 /* IP address */;
     int len;
-    if (HostIP == INADDR_NONE) // nemame IP adresu, pouzijeme jmennou adresu
+    if (HostIP == INADDR_NONE) // we do not have an IP address, use the named address
     {
         len = (int)strlen(HostAddress);
         if (len > 255)
-            len = 255; // delsi jmenne adresy proste nelze zadat do SOCKS 5 requestu
+            len = 255; // longer named addresses simply cannot be entered in a SOCKS 5 request
         buf[4] = (unsigned char)len;
         memcpy(buf + 5, HostAddress, len);
-        len++; // za byte s velikosti adresy
+        len++; // for the byte with the address length
     }
     else
     {
@@ -1225,8 +1226,8 @@ void EncodeToBase64(char* buf, const char* txt)
         *b++ = Base64Table[((str[0] & 0x03) << 4) + (str[1] >> 4)];
         *b++ = Base64Table[((str[1] & 0x0F) << 2) + (str[2] >> 6)];
         *b++ = Base64Table[(str[2] & 0x3F)];
-        /*  // zakomentovano, protoze napr. WinGate s user+pass na vice radek neumi delat
-    if (len > 3 && ++eol % 18 == 0)  // 72 znaku na radek
+        /*  // commented out because, for example, WinGate cannot handle user+pass split across multiple lines
+    if (len > 3 && ++eol % 18 == 0)  // 72 characters per line
     {
       *b++ = '\r';
       *b++ = '\n';
@@ -1257,7 +1258,7 @@ void CSocket::HTTP11SendRequest(int index, BOOL* csLeft)
     {
         char login[500];
         _snprintf_s(login, _TRUNCATE, "%s:%s", HandleNULLStr(ProxyUser), HandleNULLStr(ProxyPassword));
-        char loginInBase64[700]; // 4/3 * 500 + ((4/3 * 500) / 72) * 2 = 686 (zvetseni je 4/3 + EOL po kazdych 72 znacich)
+        char loginInBase64[700]; // 4/3 * 500 + ((4/3 * 500) / 72) * 2 = 686 (increase is 4/3 + EOL every 72 characters)
         EncodeToBase64(loginInBase64, login);
 
         _snprintf_s(passwordPart, _TRUNCATE, "Authorization: Basic %s\r\nProxy-Authorization: Basic %s\r\n\r\n",
@@ -1275,13 +1276,13 @@ BOOL CSocket::ProxyReceiveBytes(LPARAM lParam, char* buf, int* read, int index, 
 {
     DWORD event = WSAGETSELECTEVENT(lParam);
     BOOL ret = FALSE;
-    if (event == FD_READ || event == FD_CLOSE) // FD_CLOSE nekdy chodi pred poslednim FD_READ, nezbyva tedy nez napred zkusit FD_READ a pokud uspeje, poslat si FD_CLOSE znovu (muze pred nim znovu uspet FD_READ)
+    if (event == FD_READ || event == FD_CLOSE) // FD_CLOSE sometimes arrives before the last FD_READ, so we must first try FD_READ and if it succeeds, post FD_CLOSE again (FD_READ may succeed once more before it)
     {
         BOOL reportError = FALSE;
         DWORD err = WSAGETSELECTERROR(lParam);
         if (err == NO_ERROR)
         {
-            if (Socket != INVALID_SOCKET) // socket je pripojeny
+            if (Socket != INVALID_SOCKET) // the socket is connected
             {
                 int len;
                 if (!readOnlyToEOL)
@@ -1297,22 +1298,22 @@ BOOL CSocket::ProxyReceiveBytes(LPARAM lParam, char* buf, int* read, int index, 
                             if (buf[i] == '\n')
                             {
                                 len = i + 1;
-                                break; // nactenim LF koncime
+                                break; // stop once LF is read
                             }
                         }
                         else
                         {
                             if (i > 0 && WSAGetLastError() == WSAEWOULDBLOCK)
-                                len = i; // jen uz neni co dal cist
+                                len = i; // there is simply nothing more to read
                             else
-                                len = SOCKET_ERROR; // stala se nejaka chyba nebo jsme vubec nic neprecetli
+                                len = SOCKET_ERROR; // some error occurred or we did not read anything at all
                             break;
                         }
                     }
                     if (i == *read)
-                        len = i; // cteni skoncilo kvuli omezene velikosti bufferu
+                        len = i; // reading ended because of the limited buffer size
                 }
-                if (len != SOCKET_ERROR) // mozna jsme neco precetli (0 = spojeni uz je zavrene)
+                if (len != SOCKET_ERROR) // maybe we read something (0 = the connection is already closed)
                 {
                     if (len > 0)
                     {
@@ -1333,7 +1334,7 @@ BOOL CSocket::ProxyReceiveBytes(LPARAM lParam, char* buf, int* read, int index, 
                 else
                 {
                     err = WSAGetLastError();
-                    if (err != WSAEWOULDBLOCK) // pokud nejde o chybu "neni co cist"
+                    if (err != WSAEWOULDBLOCK) // if it is not the "nothing to read" error
                     {
                         ProxyErrorCode = pecReceivingBytes;
                         ProxyWinError = err;
@@ -1357,7 +1358,7 @@ BOOL CSocket::ProxyReceiveBytes(LPARAM lParam, char* buf, int* read, int index, 
             if (isConnect)
             {
                 HANDLES(LeaveCriticalSection(&SocketCritSect));
-                ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* jen nesmi byt NO_ERROR */), index);
+                ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* it just must not be NO_ERROR */), index);
             }
             else
             {
@@ -1384,10 +1385,10 @@ DWORD GetSOCKS4ErrDescr(char replyCode)
     switch (replyCode)
     {
     case 92:
-        return IDS_PROXYERRNEEDIDENTD; // request rejected becasue SOCKS server cannot connect to identd on the client
+        return IDS_PROXYERRNEEDIDENTD; // request rejected because the SOCKS server cannot connect to identd on the client
     case 93:
         return IDS_PROXYERRDIFFUSERS; // request rejected because the client program and identd report different user-ids
-    // case 91: // rejected of failed
+    // case 91: // rejected or failed
     default:
         return IDS_PROXYERRREJORFAIL;
     }
@@ -1425,7 +1426,7 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
     if (SocketState == ssNoProxyOrConnected)
     {
         HANDLES(LeaveCriticalSection(&SocketCritSect));
-        ReceiveNetEvent(lParam, index); // bezny provoz presmerujeme do ReceiveNetEvent()
+        ReceiveNetEvent(lParam, index); // redirect normal operation into ReceiveNetEvent()
     }
     else
     {
@@ -1436,8 +1437,8 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
             ShouldPostFD_WRITE = TRUE;
         switch (SocketState)
         {
-        case ssNotOpened: // Socket by se mel rovnat INVALID_SOCKET, takze by se to sem vubec nemelo dostat
-        {                 // muze se stat: na zacatku metody je vstup do kriticke sekce, pred vstupem je v kriticke sekci jiny thread, ktery nastavi Socket na INVALID_SOCKET a SocketState na ssNotOpened
+        case ssNotOpened: // the socket should equal INVALID_SOCKET, so execution should never get here
+        {                 // it can happen: at the start of the method we enter the critical section, and before entering, another thread inside the critical section sets Socket to INVALID_SOCKET and SocketState to ssNotOpened
             // TRACE_E("CSocket::ReceiveNetEventInt(): unexpected situation: called when SocketState == ssNotOpened");
             HANDLES(LeaveCriticalSection(&SocketCritSect));
             break;
@@ -1449,13 +1450,13 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
         {
             if (event == FD_CONNECT)
             {
-                if (err != NO_ERROR) // chyba pripojovani na proxy server => hotovo: connect failed
+                if (err != NO_ERROR) // error connecting to the proxy server => done: connect failed
                 {
                     SocketState = ssConnectFailed;
                     HANDLES(LeaveCriticalSection(&SocketCritSect));
                     ReceiveNetEvent(MAKELPARAM(FD_CONNECT, err), index);
                 }
-                else // jsme pripojeny na proxy server
+                else // we are connected to the proxy server
                 {
                     if (SocketState == ssSocks5_Connect) // SOCKS 5
                     {
@@ -1477,7 +1478,7 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
                         }
                         else // SOCKS 4
                         {
-                            if (HostIP != INADDR_NONE) // mame IP adresu FTP serveru, posleme CONNECT request
+                            if (HostIP != INADDR_NONE) // we have the FTP server's IP address, send the CONNECT request
                             {
                                 SocketState = ssSocks4_WaitForCon;
                                 BOOL csLeft;
@@ -1485,16 +1486,16 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
                                 if (!csLeft)
                                     HANDLES(LeaveCriticalSection(&SocketCritSect));
                             }
-                            else // provedeme nejdrive preklad host-adresy na IP
+                            else // first translate the host address to an IP address
                             {
-                                // uz jsme v sekci CSocketsThread::CritSect, takze je mozne volat tuhle metodu i ze sekce SocketCritSect
-                                if (!GetHostByAddress(HostAddress, 0)) // chyba zjistovani IP => hotovo: connect failed
+                                // we are already inside CSocketsThread::CritSect, so it is possible to call this method even from SocketCritSect
+                                if (!GetHostByAddress(HostAddress, 0)) // error obtaining the IP => done: connect failed
                                 {
                                     ProxyErrorCode = pecGettingHostIP;
                                     ProxyWinError = NO_ERROR;
                                     SocketState = ssConnectFailed;
                                     HANDLES(LeaveCriticalSection(&SocketCritSect));
-                                    ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* jen nesmi byt NO_ERROR */), index);
+                                    ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* it just must not be NO_ERROR */), index);
                                 }
                                 else
                                 {
@@ -1513,50 +1514,50 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
 
         case ssSocks4_WaitForIP:
         {
-            if (event == FD_CLOSE) // spojeni s proxy serverm se zavrelo => hotovo: connect failed
+            if (event == FD_CLOSE) // the connection to the proxy server closed => done: connect failed
             {
                 SocketState = ssConnectFailed;
                 HANDLES(LeaveCriticalSection(&SocketCritSect));
                 if (err == NO_ERROR)
-                    err = WSAECONNABORTED; // potrebujeme vypsat nejakou chybu, uspech connectu to proste byt nemuze
+                    err = WSAECONNABORTED; // we need to report some error, it simply cannot be a successful connect
                 ReceiveNetEvent(MAKELPARAM(FD_CONNECT, err), index);
             }
             else
                 HANDLES(LeaveCriticalSection(&SocketCritSect));
-            break; // v tomto stavu cekame na IP v ReceiveHostByAddressInt (timeout neresime, staci globalni timeout pro prijeti FD_CONNECT)
+            break; // in this state we wait for the IP in ReceiveHostByAddressInt (we do not handle timeout, the global timeout for receiving FD_CONNECT is enough)
         }
 
-        case ssSocks4_WaitForCon:  // cekame na vysledek pozadavku na spojeni s FTP serverem (timeout neresime, staci globalni timeout pro prijeti FD_CONNECT)
-        case ssSocks4A_WaitForCon: // cekame na vysledek pozadavku na spojeni s FTP serverem (timeout neresime, staci globalni timeout pro prijeti FD_CONNECT)
+        case ssSocks4_WaitForCon:  // waiting for the result of the request to connect to the FTP server (we do not handle timeout, the global timeout for receiving FD_CONNECT is enough)
+        case ssSocks4A_WaitForCon: // waiting for the result of the request to connect to the FTP server (we do not handle timeout, the global timeout for receiving FD_CONNECT is enough)
         {
             int read = 8;
             if (ProxyReceiveBytes(lParam, buf, &read, index, TRUE /* connect */, FALSE, FALSE))
-            {                                 // zpracujeme odpoved SOCKS4 proxy serveru
-                if (read == 8 && buf[0] == 0) // odpoved by mela mit 8 bytu + "version" by mela byt 0
+            {                                 // process the SOCKS4 proxy server response
+                if (read == 8 && buf[0] == 0) // the response should have 8 bytes and the "version" should be 0
                 {
-                    if (buf[1] == 90) // reply code == uspech
+                    if (buf[1] == 90) // reply code == success
                     {
                         SocketState = ssNoProxyOrConnected;
-                        if (ShouldPostFD_WRITE) // aby ReceiveNetEvent() dostal take FD_WRITE (FD_READ se vygeneroval/vygeneruje sam, ten postit nemusime)
+                        if (ShouldPostFD_WRITE) // to ensure ReceiveNetEvent() also receives FD_WRITE (FD_READ is generated on its own, so we do not have to post it)
                         {
                             PostMessage(SocketsThread->GetHiddenWindow(), WM_APP_SOCKET_MIN + index,
                                         (WPARAM)Socket, MAKELPARAM(FD_WRITE, NO_ERROR));
                         }
-                        if (event == FD_CLOSE) // tenhle close nastal az po uspesnem pripojeni na FTP server, ten se zpracuje pozdeji...
+                        if (event == FD_CLOSE) // this close occurred after a successful connection to the FTP server, it will be processed later...
                         {
                             PostMessage(SocketsThread->GetHiddenWindow(), WM_APP_SOCKET_MIN + index,
                                         (WPARAM)Socket, lParam);
                         }
                         HANDLES(LeaveCriticalSection(&SocketCritSect));
-                        ReceiveNetEvent(MAKELPARAM(FD_CONNECT, NO_ERROR), index); // ohlasime uspesny connect
+                        ReceiveNetEvent(MAKELPARAM(FD_CONNECT, NO_ERROR), index); // announce a successful connect
                     }
-                    else // chyba
+                    else // error
                     {
                         ProxyErrorCode = pecProxySrvError;
                         ProxyWinError = GetSOCKS4ErrDescr(buf[1] /* reply code */);
                         SocketState = ssConnectFailed;
                         HANDLES(LeaveCriticalSection(&SocketCritSect));
-                        ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* jen nesmi byt NO_ERROR */), index);
+                        ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* it just must not be NO_ERROR */), index);
                     }
                 }
                 else
@@ -1564,19 +1565,19 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
                     ProxyErrorCode = pecUnexpectedReply;
                     SocketState = ssConnectFailed;
                     HANDLES(LeaveCriticalSection(&SocketCritSect));
-                    ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* jen nesmi byt NO_ERROR */), index);
+                    ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* it just must not be NO_ERROR */), index);
                 }
             }
-            // else HANDLES(LeaveCriticalSection(&SocketCritSect));  // ProxyReceiveBytes() vraci FALSE = sekce SocketCritSect uz byla opustena
+            // else HANDLES(LeaveCriticalSection(&SocketCritSect));  // ProxyReceiveBytes() returns FALSE = the SocketCritSect section has already been left
             break;
         }
 
-        case ssSocks5_WaitForMeth: // cekame jakou metodu autentifikace si server vybere
+        case ssSocks5_WaitForMeth: // waiting to see which authentication method the server chooses
         {
             int read = 2;
             if (ProxyReceiveBytes(lParam, buf, &read, index, TRUE /* connect */, FALSE, FALSE))
-            {                  // zpracujeme prvni odpoved SOCKS5 proxy serveru
-                if (read == 2) // odpoved by mela mit 2 byty (prvni byte je verze, ale nepisou na co ma byt nastavena, tak ji ignorujeme)
+            {                  // process the first response from the SOCKS5 proxy server
+                if (read == 2) // the response should have 2 bytes (the first byte is the version, but they do not say what it should be set to, so we ignore it)
                 {
                     if (buf[1] == 0 /* anonymous */)
                     {
@@ -1596,14 +1597,14 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
                             if (!csLeft)
                                 HANDLES(LeaveCriticalSection(&SocketCritSect));
                         }
-                        else // chyba
+                        else // error
                         {
-                            // WinGate neposila 0xFF, ale vzdy 0/2 podle toho jestli chce user+password,
-                            // takze tenhle test skipneme: if (buf[1] == 0xFF)  // no acceptable method
+                            // WinGate does not send 0xFF, but always 0/2 depending on whether it wants user+password,
+                            // so skip this test: if (buf[1] == 0xFF)  // no acceptable method
                             ProxyErrorCode = ProxyUser == NULL ? pecNoAuthUnsup : pecUserPassAuthUnsup;
                             SocketState = ssConnectFailed;
                             HANDLES(LeaveCriticalSection(&SocketCritSect));
-                            ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* jen nesmi byt NO_ERROR */), index);
+                            ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* it just must not be NO_ERROR */), index);
                         }
                     }
                 }
@@ -1612,21 +1613,21 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
                     ProxyErrorCode = pecUnexpectedReply;
                     SocketState = ssConnectFailed;
                     HANDLES(LeaveCriticalSection(&SocketCritSect));
-                    ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* jen nesmi byt NO_ERROR */), index);
+                    ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* it just must not be NO_ERROR */), index);
                 }
             }
-            // else HANDLES(LeaveCriticalSection(&SocketCritSect));  // ProxyReceiveBytes() vraci FALSE = sekce SocketCritSect uz byla opustena
+            // else HANDLES(LeaveCriticalSection(&SocketCritSect));  // ProxyReceiveBytes() returns FALSE = the SocketCritSect section has already been left
             break;
         }
 
-        case ssSocks5_WaitForLogin: // cekame na vysledek loginu na proxy server (poslali jsme user+password)
+        case ssSocks5_WaitForLogin: // waiting for the proxy server login result (we sent user+password)
         {
             int read = 2;
             if (ProxyReceiveBytes(lParam, buf, &read, index, TRUE /* connect */, FALSE, FALSE))
-            {                  // zpracujeme odpoved SOCKS5 proxy serveru na user+password
-                if (read == 2) // odpoved by mela mit 2 byty (prvni byte je verze, ale nepisou na co ma byt nastavena, tak ji ignorujeme)
+            {                  // process the SOCKS5 proxy server response to user+password
+                if (read == 2) // the response should have 2 bytes (the first byte is the version, but they do not say what it should be set to, so we ignore it)
                 {
-                    if (buf[1] == 0) // uspech
+                    if (buf[1] == 0) // success
                     {
                         SocketState = ssSocks5_WaitForCon;
                         BOOL csLeft;
@@ -1634,12 +1635,12 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
                         if (!csLeft)
                             HANDLES(LeaveCriticalSection(&SocketCritSect));
                     }
-                    else // server nas odmitnul, koncime
+                    else // the server rejected us, we are done
                     {
                         ProxyErrorCode = pecUserPassAuthFail;
                         SocketState = ssConnectFailed;
                         HANDLES(LeaveCriticalSection(&SocketCritSect));
-                        ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* jen nesmi byt NO_ERROR */), index);
+                        ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* it just must not be NO_ERROR */), index);
                     }
                 }
                 else
@@ -1647,43 +1648,43 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
                     ProxyErrorCode = pecUnexpectedReply;
                     SocketState = ssConnectFailed;
                     HANDLES(LeaveCriticalSection(&SocketCritSect));
-                    ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* jen nesmi byt NO_ERROR */), index);
+                    ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* it just must not be NO_ERROR */), index);
                 }
             }
-            // else HANDLES(LeaveCriticalSection(&SocketCritSect));  // ProxyReceiveBytes() vraci FALSE = sekce SocketCritSect uz byla opustena
+            // else HANDLES(LeaveCriticalSection(&SocketCritSect));  // ProxyReceiveBytes() returns FALSE = the SocketCritSect section has already been left
             break;
         }
 
-        case ssSocks5_WaitForCon: // cekame na vysledek pozadavku na spojeni s FTP serverem
+        case ssSocks5_WaitForCon: // waiting for the result of the request to connect to the FTP server
         {
             int read = 10;
             if (ProxyReceiveBytes(lParam, buf, &read, index, TRUE /* connect */, FALSE, FALSE))
-            {                                                 // zpracujeme odpoved SOCKS5 proxy serveru na CONNECT request
-                if (read == 10 && buf[0] == 5 && buf[3] == 1) // odpoved by mela mit 10 bytu + "version" by mela byt 5 + address type by mel byt 1 (IPv4)
+            {                                                 // process the SOCKS5 proxy server response to the CONNECT request
+                if (read == 10 && buf[0] == 5 && buf[3] == 1) // the response should have 10 bytes, the "version" should be 5, and the address type should be 1 (IPv4)
                 {
-                    if (buf[1] == 0) // reply code == uspech
+                    if (buf[1] == 0) // reply code == success
                     {
                         SocketState = ssNoProxyOrConnected;
-                        if (ShouldPostFD_WRITE) // aby ReceiveNetEvent() dostal take FD_WRITE (FD_READ se vygeneroval/vygeneruje sam, ten postit nemusime)
+                        if (ShouldPostFD_WRITE) // to ensure ReceiveNetEvent() also receives FD_WRITE (FD_READ is generated on its own, so we do not have to post it)
                         {
                             PostMessage(SocketsThread->GetHiddenWindow(), WM_APP_SOCKET_MIN + index,
                                         (WPARAM)Socket, MAKELPARAM(FD_WRITE, NO_ERROR));
                         }
-                        if (event == FD_CLOSE) // tenhle close nastal az po uspesnem pripojeni na FTP server, ten se zpracuje pozdeji...
+                        if (event == FD_CLOSE) // this close occurred after a successful connection to the FTP server, it will be processed later...
                         {
                             PostMessage(SocketsThread->GetHiddenWindow(), WM_APP_SOCKET_MIN + index,
                                         (WPARAM)Socket, lParam);
                         }
                         HANDLES(LeaveCriticalSection(&SocketCritSect));
-                        ReceiveNetEvent(MAKELPARAM(FD_CONNECT, NO_ERROR), index); // ohlasime uspesny connect
+                        ReceiveNetEvent(MAKELPARAM(FD_CONNECT, NO_ERROR), index); // announce a successful connect
                     }
-                    else // chyba
+                    else // error
                     {
                         ProxyErrorCode = pecProxySrvError;
                         ProxyWinError = GetSOCKS5ErrDescr(buf[1] /* reply code */);
                         SocketState = ssConnectFailed;
                         HANDLES(LeaveCriticalSection(&SocketCritSect));
-                        ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* jen nesmi byt NO_ERROR */), index);
+                        ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* it just must not be NO_ERROR */), index);
                     }
                 }
                 else
@@ -1691,10 +1692,10 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
                     ProxyErrorCode = pecUnexpectedReply;
                     SocketState = ssConnectFailed;
                     HANDLES(LeaveCriticalSection(&SocketCritSect));
-                    ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* jen nesmi byt NO_ERROR */), index);
+                    ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* it just must not be NO_ERROR */), index);
                 }
             }
-            // else HANDLES(LeaveCriticalSection(&SocketCritSect));  // ProxyReceiveBytes() vraci FALSE = sekce SocketCritSect uz byla opustena
+            // else HANDLES(LeaveCriticalSection(&SocketCritSect));  // ProxyReceiveBytes() returns FALSE = the SocketCritSect section has already been left
             break;
         }
 
@@ -1704,7 +1705,7 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
         {
             if (event == FD_CONNECT)
             {
-                if (err != NO_ERROR) // chyba pripojovani na proxy server => hotovo: listen failed
+                if (err != NO_ERROR) // error connecting to the proxy server => done: listen failed
                 {
                     ProxyErrorCode = pecConPrxSrvError;
                     ProxyWinError = err;
@@ -1712,7 +1713,7 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
                     HANDLES(LeaveCriticalSection(&SocketCritSect));
                     ListeningForConnection(INADDR_NONE, 0, TRUE /* proxy error */);
                 }
-                else // jsme pripojeny na proxy server, posleme LISTEN request
+                else // we are connected to the proxy server, send the LISTEN request
                 {
                     if (SocketState == ssSocks5_Listen) // SOCKS 5
                     {
@@ -1748,12 +1749,12 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
             break;
         }
 
-        case ssSocks5_ListenWaitForMeth: // cekame jakou metodu autentifikace si server vybere
+        case ssSocks5_ListenWaitForMeth: // waiting to see which authentication method the server chooses
         {
             int read = 2;
             if (ProxyReceiveBytes(lParam, buf, &read, index, FALSE, TRUE /* listen */, FALSE))
-            {                  // zpracujeme prvni odpoved SOCKS5 proxy serveru
-                if (read == 2) // odpoved by mela mit 2 byty (prvni byte je verze, ale nepisou na co ma byt nastavena, tak ji ignorujeme)
+            {                  // process the first response from the SOCKS5 proxy server
+                if (read == 2) // the response should have 2 bytes (the first byte is the version, but they do not say what it should be set to, so we ignore it)
                 {
                     if (buf[1] == 0 /* anonymous */)
                     {
@@ -1773,12 +1774,12 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
                             if (!csLeft)
                                 HANDLES(LeaveCriticalSection(&SocketCritSect));
                         }
-                        else // chyba
+                        else // error
                         {
                             if (buf[1] == 0xFF) // no acceptable method
                                 ProxyErrorCode = ProxyUser == NULL ? pecNoAuthUnsup : pecUserPassAuthUnsup;
                             else
-                                ProxyErrorCode = pecUnexpectedReply; // neocekavana odpoved (server vybral jinou metodu nez jsme pozadovali)
+                                ProxyErrorCode = pecUnexpectedReply; // unexpected response (the server selected a different method than we requested)
                             SocketState = ssListenFailed;
                             HANDLES(LeaveCriticalSection(&SocketCritSect));
                             ListeningForConnection(INADDR_NONE, 0, TRUE /* proxy error */);
@@ -1793,18 +1794,18 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
                     ListeningForConnection(INADDR_NONE, 0, TRUE /* proxy error */);
                 }
             }
-            // else HANDLES(LeaveCriticalSection(&SocketCritSect));  // ProxyReceiveBytes() vraci FALSE = sekce SocketCritSect uz byla opustena
+            // else HANDLES(LeaveCriticalSection(&SocketCritSect));  // ProxyReceiveBytes() returns FALSE = the SocketCritSect section has already been left
             break;
         }
 
-        case ssSocks5_ListenWaitForLogin: // cekame na vysledek loginu na proxy server (poslali jsme user+password)
+        case ssSocks5_ListenWaitForLogin: // waiting for the proxy server login result (we sent user+password)
         {
             int read = 2;
             if (ProxyReceiveBytes(lParam, buf, &read, index, FALSE, TRUE /* listen */, FALSE))
-            {                  // zpracujeme odpoved SOCKS5 proxy serveru na user+password
-                if (read == 2) // odpoved by mela mit 2 byty (prvni byte je verze, ale nepisou na co ma byt nastavena, tak ji ignorujeme)
+            {                  // process the SOCKS5 proxy server response to user+password
+                if (read == 2) // the response should have 2 bytes (the first byte is the version, but they do not say what it should be set to, so we ignore it)
                 {
-                    if (buf[1] == 0) // uspech
+                    if (buf[1] == 0) // success
                     {
                         SocketState = ssSocks5_WaitForListenRes;
                         BOOL csLeft;
@@ -1812,7 +1813,7 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
                         if (!csLeft)
                             HANDLES(LeaveCriticalSection(&SocketCritSect));
                     }
-                    else // server nas odmitnul, koncime
+                    else // the server rejected us, we are done
                     {
                         ProxyErrorCode = pecUserPassAuthFail;
                         SocketState = ssListenFailed;
@@ -1828,19 +1829,19 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
                     ListeningForConnection(INADDR_NONE, 0, TRUE /* proxy error */);
                 }
             }
-            // else HANDLES(LeaveCriticalSection(&SocketCritSect));  // ProxyReceiveBytes() vraci FALSE = sekce SocketCritSect uz byla opustena
+            // else HANDLES(LeaveCriticalSection(&SocketCritSect));  // ProxyReceiveBytes() returns FALSE = the SocketCritSect section has already been left
             break;
         }
 
-        case ssSocks4_WaitForListenRes:  // cekame az proxy otevre port pro "listen" a vrati IP+port, kde posloucha nebo vrati chybu (timeout by se mel resit venku - timeout pro volani ListeningForConnection())
-        case ssSocks4A_WaitForListenRes: // cekame az proxy otevre port pro "listen" a vrati IP+port, kde posloucha nebo vrati chybu (timeout by se mel resit venku - timeout pro volani ListeningForConnection())
+        case ssSocks4_WaitForListenRes:  // waiting for the proxy to open a port for "listen" and return the IP+port where it listens or an error (timeout should be handled outside - timeout for calling ListeningForConnection())
+        case ssSocks4A_WaitForListenRes: // waiting for the proxy to open a port for "listen" and return the IP+port where it listens or an error (timeout should be handled outside - timeout for calling ListeningForConnection())
         {
             int read = 8;
             if (ProxyReceiveBytes(lParam, buf, &read, index, FALSE, TRUE /* listen */, FALSE))
-            {                                 // zpracujeme odpoved SOCKS4 proxy serveru
-                if (read == 8 && buf[0] == 0) // odpoved by mela mit 8 bytu + "version" by mela byt 0
+            {                                 // process the SOCKS4 proxy server response
+                if (read == 8 && buf[0] == 0) // the response should have 8 bytes + "version" should be 0
                 {
-                    if (buf[1] == 90) // reply code == uspech
+                    if (buf[1] == 90) // reply code == success
                     {
                         if (SocketState == ssSocks4A_WaitForListenRes)
                             SocketState = ssSocks4A_WaitForAccept;
@@ -1848,12 +1849,12 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
                             SocketState = ssSocks4_WaitForAccept;
                         DWORD ip = *(DWORD*)(buf + 4);
                         if (ip == 0)
-                            ip = ProxyIP; // proxy server si preje, abysme zde pouzili jeho IP adresu
+                            ip = ProxyIP; // the proxy server wants us to use its IP address here
                         int port = ntohs(*(unsigned short*)(buf + 2));
                         HANDLES(LeaveCriticalSection(&SocketCritSect));
-                        ListeningForConnection(ip, port, FALSE); // ohlasime ip+port, kde se ceka na spojeni z FTP serveru
+                        ListeningForConnection(ip, port, FALSE); // report the IP+port where we wait for the connection from the FTP server
                     }
-                    else // chyba
+                    else // error
                     {
                         ProxyErrorCode = pecProxySrvError;
                         ProxyWinError = GetSOCKS4ErrDescr(buf[1] /* reply code */);
@@ -1870,28 +1871,28 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
                     ListeningForConnection(INADDR_NONE, 0, TRUE /* proxy error */);
                 }
             }
-            // else HANDLES(LeaveCriticalSection(&SocketCritSect));  // ProxyReceiveBytes() vraci FALSE = sekce SocketCritSect uz byla opustena
+            // else HANDLES(LeaveCriticalSection(&SocketCritSect));  // ProxyReceiveBytes() returns FALSE = the SocketCritSect section has already been left
             break;
         }
 
-        case ssSocks5_WaitForListenRes: // cekame az proxy otevre port pro "listen" a vrati IP+port, kde posloucha nebo vrati chybu (timeout by se mel resit venku - timeout pro volani ListeningForConnection())
+        case ssSocks5_WaitForListenRes: // waiting for the proxy to open a port for "listen" and return the IP+port where it listens or an error (timeout should be handled outside - timeout for calling ListeningForConnection())
         {
             int read = 10;
             if (ProxyReceiveBytes(lParam, buf, &read, index, FALSE, TRUE /* listen */, FALSE))
-            {                                                 // zpracujeme odpoved SOCKS5 proxy serveru
-                if (read == 10 && buf[0] == 5 && buf[3] == 1) // odpoved by mela mit 10 bytu + "version" by mela byt 5 + address type by mel byt 1 (IPv4)
+            {                                                 // process the SOCKS5 proxy server response
+                if (read == 10 && buf[0] == 5 && buf[3] == 1) // the response should have 10 bytes + "version" should be 5 + address type should be 1 (IPv4)
                 {
-                    if (buf[1] == 0) // reply code == uspech
+                    if (buf[1] == 0) // reply code == success
                     {
                         SocketState = ssSocks5_WaitForAccept;
                         DWORD ip = *(DWORD*)(buf + 4);
                         if (ip == 0)
-                            ip = ProxyIP; // neni v dokumentaci, ale "antinat" vraci nulu = zrejme ocekava stejne chovani jako SOCKS4/4A: proxy server si preje, abysme zde pouzili jeho IP adresu
+                            ip = ProxyIP; // not in the documentation, but "antinat" returns zero = apparently expects the same behavior as SOCKS4/4A: the proxy server wants us to use its IP address here
                         int port = ntohs(*(unsigned short*)(buf + 8));
                         HANDLES(LeaveCriticalSection(&SocketCritSect));
-                        ListeningForConnection(ip, port, FALSE); // ohlasime ip+port, kde se ceka na spojeni z FTP serveru
+                        ListeningForConnection(ip, port, FALSE); // report the IP+port where we wait for the connection from the FTP server
                     }
-                    else // chyba
+                    else // error
                     {
                         ProxyErrorCode = pecProxySrvError;
                         ProxyWinError = GetSOCKS5ErrDescr(buf[1] /* reply code */);
@@ -1908,35 +1909,35 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
                     ListeningForConnection(INADDR_NONE, 0, TRUE /* proxy error */);
                 }
             }
-            // else HANDLES(LeaveCriticalSection(&SocketCritSect));  // ProxyReceiveBytes() vraci FALSE = sekce SocketCritSect uz byla opustena
+            // else HANDLES(LeaveCriticalSection(&SocketCritSect));  // ProxyReceiveBytes() returns FALSE = the SocketCritSect section has already been left
             break;
         }
 
-        case ssSocks4_WaitForAccept:  // cekame az proxy prijme spojeni z FTP serveru nebo vrati chybu (timeout neresime, staci globalni timeout pro metodu ConnectionAccepted())
-        case ssSocks4A_WaitForAccept: // cekame az proxy prijme spojeni z FTP serveru nebo vrati chybu (timeout neresime, staci globalni timeout pro metodu ConnectionAccepted())
+        case ssSocks4_WaitForAccept:  // waiting for the proxy to accept a connection from the FTP server or return an error (we do not handle timeout, the global timeout for the ConnectionAccepted() method is enough)
+        case ssSocks4A_WaitForAccept: // waiting for the proxy to accept a connection from the FTP server or return an error (we do not handle timeout, the global timeout for the ConnectionAccepted() method is enough)
         {
             int read = 8;
             if (ProxyReceiveBytes(lParam, buf, &read, index, FALSE, FALSE /* accept */, FALSE))
-            {                                 // zpracujeme odpoved SOCKS4 proxy serveru
-                if (read == 8 && buf[0] == 0) // odpoved by mela mit 8 bytu + "version" by mela byt 0
+            {                                 // process the SOCKS4 proxy server response
+                if (read == 8 && buf[0] == 0) // the response should have 8 bytes and the "version" should be 0
                 {
-                    if (buf[1] == 90) // reply code == uspech
+                    if (buf[1] == 90) // reply code == success
                     {
                         SocketState = ssNoProxyOrConnected;
-                        if (ShouldPostFD_WRITE) // aby ReceiveNetEvent() dostal take FD_WRITE (FD_READ se vygeneroval/vygeneruje sam, ten postit nemusime)
+                        if (ShouldPostFD_WRITE) // to ensure ReceiveNetEvent() also receives FD_WRITE (FD_READ is generated on its own, so we do not have to post it)
                         {
                             PostMessage(SocketsThread->GetHiddenWindow(), WM_APP_SOCKET_MIN + index,
                                         (WPARAM)Socket, MAKELPARAM(FD_WRITE, NO_ERROR));
                         }
-                        if (event == FD_CLOSE) // tenhle close nastal az po uspesnem pripojeni z FTP serveru, ten se zpracuje pozdeji...
+                        if (event == FD_CLOSE) // this close occurred after a successful connection from the FTP server, it will be processed later...
                         {
                             PostMessage(SocketsThread->GetHiddenWindow(), WM_APP_SOCKET_MIN + index,
                                         (WPARAM)Socket, lParam);
                         }
-                        ConnectionAccepted(TRUE, NO_ERROR, FALSE); // ohlasime uspesne navazani spojeni
+                        ConnectionAccepted(TRUE, NO_ERROR, FALSE); // announce a successful connection establishment
                         HANDLES(LeaveCriticalSection(&SocketCritSect));
                     }
-                    else // chyba - connectiona z neznameho IP
+                    else // error - connection from an unknown IP
                     {
                         ProxyErrorCode = pecProxySrvError;
                         ProxyWinError = IDS_PROXYERRINVHOST;
@@ -1953,34 +1954,34 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
                     HANDLES(LeaveCriticalSection(&SocketCritSect));
                 }
             }
-            // else HANDLES(LeaveCriticalSection(&SocketCritSect));  // ProxyReceiveBytes() vraci FALSE = sekce SocketCritSect uz byla opustena
+            // else HANDLES(LeaveCriticalSection(&SocketCritSect));  // ProxyReceiveBytes() returns FALSE = the SocketCritSect section has already been left
             break;
         }
 
-        case ssSocks5_WaitForAccept: // cekame az proxy prijme spojeni z FTP serveru (nebo vrati chybu)
+        case ssSocks5_WaitForAccept: // waiting for the proxy to accept a connection from the FTP server (or return an error)
         {
             int read = 10;
             if (ProxyReceiveBytes(lParam, buf, &read, index, FALSE, FALSE /* accept */, FALSE))
-            {                                                 // zpracujeme odpoved SOCKS5 proxy serveru
-                if (read == 10 && buf[0] == 5 && buf[3] == 1) // odpoved by mela mit 10 bytu + "version" by mela byt 5 + address type by mel byt 1 (IPv4)
+            {                                                 // process the SOCKS5 proxy server response
+                if (read == 10 && buf[0] == 5 && buf[3] == 1) // the response should have 10 bytes, the "version" should be 5, and the address type should be 1 (IPv4)
                 {
-                    if (buf[1] == 0) // reply code == uspech
+                    if (buf[1] == 0) // reply code == success
                     {
                         SocketState = ssNoProxyOrConnected;
-                        if (ShouldPostFD_WRITE) // aby ReceiveNetEvent() dostal take FD_WRITE (FD_READ se vygeneroval/vygeneruje sam, ten postit nemusime)
+                        if (ShouldPostFD_WRITE) // to ensure ReceiveNetEvent() also receives FD_WRITE (FD_READ is generated on its own, so we do not have to post it)
                         {
                             PostMessage(SocketsThread->GetHiddenWindow(), WM_APP_SOCKET_MIN + index,
                                         (WPARAM)Socket, MAKELPARAM(FD_WRITE, NO_ERROR));
                         }
-                        if (event == FD_CLOSE) // tenhle close nastal az po uspesnem pripojeni z FTP serveru, ten se zpracuje pozdeji...
+                        if (event == FD_CLOSE) // this close occurred after a successful connection from the FTP server, it will be processed later...
                         {
                             PostMessage(SocketsThread->GetHiddenWindow(), WM_APP_SOCKET_MIN + index,
                                         (WPARAM)Socket, lParam);
                         }
-                        ConnectionAccepted(TRUE, NO_ERROR, FALSE); // ohlasime uspesne navazani spojeni
+                        ConnectionAccepted(TRUE, NO_ERROR, FALSE); // announce a successful connection establishment
                         HANDLES(LeaveCriticalSection(&SocketCritSect));
                     }
-                    else // chyba
+                    else // error
                     {
                         ProxyErrorCode = pecProxySrvError;
                         ProxyWinError = GetSOCKS5ErrDescr(buf[1] /* reply code */);
@@ -1997,7 +1998,7 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
                     HANDLES(LeaveCriticalSection(&SocketCritSect));
                 }
             }
-            // else HANDLES(LeaveCriticalSection(&SocketCritSect));  // ProxyReceiveBytes() vraci FALSE = sekce SocketCritSect uz byla opustena
+            // else HANDLES(LeaveCriticalSection(&SocketCritSect));  // ProxyReceiveBytes() returns FALSE = the SocketCritSect section has already been left
             break;
         }
 
@@ -2005,13 +2006,13 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
         {
             if (event == FD_CONNECT)
             {
-                if (err != NO_ERROR) // chyba pripojovani na proxy server => hotovo: connect failed
+                if (err != NO_ERROR) // error connecting to the proxy server => done: connect failed
                 {
                     SocketState = ssConnectFailed;
                     HANDLES(LeaveCriticalSection(&SocketCritSect));
                     ReceiveNetEvent(MAKELPARAM(FD_CONNECT, err), index);
                 }
-                else // jsme pripojeny na proxy server
+                else // we are connected to the proxy server
                 {
                     SocketState = ssHTTP1_1_WaitForCon;
                     if (HTTP11_FirstLineOfReply != NULL)
@@ -2031,13 +2032,13 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
             break;
         }
 
-        case ssHTTP1_1_WaitForCon: // HTTP 1.1 - CONNECT: cekame na vysledek pozadavku na spojeni s FTP serverem
+        case ssHTTP1_1_WaitForCon: // HTTP 1.1 - CONNECT: waiting for the result of the request to connect to the FTP server
         {
             int read = 200;
             if (ProxyReceiveBytes(lParam, buf, &read, index, TRUE /* connect */, FALSE,
                                   TRUE /* read only to first LF */) &&
                 read > 0)
-            { // zpracujeme dalsi cast odpovedi HTTP1.1 proxy serveru na CONNECT request
+            { // process another part of the HTTP1.1 proxy server response to the CONNECT request
                 if (HTTP11_EmptyRowCharsReceived > 0 && HTTP11_EmptyRowCharsReceived != 4)
                 {
                     const char* endline = "\r\n\r\n" + HTTP11_EmptyRowCharsReceived;
@@ -2065,7 +2066,7 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
                 }
                 BOOL unexpReply = FALSE;
                 int len = HTTP11_FirstLineOfReply != NULL ? (int)strlen(HTTP11_FirstLineOfReply) : 0;
-                if (len == 0 || HTTP11_FirstLineOfReply[len - 1] != '\n') // jen pokud jeste neni nactena cela prvni radka
+                if (len == 0 || HTTP11_FirstLineOfReply[len - 1] != '\n') // only if the entire first line has not been read yet
                 {
                     char* newStr = (char*)malloc(len + read + 1);
                     if (newStr != NULL)
@@ -2082,13 +2083,13 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
                     else
                     {
                         TRACE_E(LOW_MEMORY);
-                        unexpReply = TRUE; // nizka pravdepodobnost chyby, simulujeme spatnou odpoved serveru...
+                        unexpReply = TRUE; // low probability of an error, simulate a bad server response...
                     }
                 }
 
                 BOOL csLeft = FALSE;
                 if (!unexpReply && len > 0 && HTTP11_FirstLineOfReply[len - 1] == '\n')
-                { // pokud uz je nacteny cely prvni radek odpovedi
+                { // if the entire first response line has already been read
                     if (_strnicmp("HTTP/", HTTP11_FirstLineOfReply, 5) == 0)
                     {
                         char* s = HTTP11_FirstLineOfReply + 5;
@@ -2098,11 +2099,11 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
                             s++;
                         if (*s != 0)
                         {
-                            if (*s == '2') // uspech
+                            if (*s == '2') // success
                             {
-                                if (HTTP11_EmptyRowCharsReceived == 4) // uz jsme precetli i konec odpovedi (prazdny radek)
+                                if (HTTP11_EmptyRowCharsReceived == 4) // we have also read the end of the response (an empty line)
                                 {
-                                    // pri uspesnem pripojeni zahodime text prvniho radku odpovedi, neni dale uz k nicemu
+                                    // upon successful connection discard the text of the first response line, it is no longer useful
                                     if (HTTP11_FirstLineOfReply != NULL)
                                     {
                                         free(HTTP11_FirstLineOfReply);
@@ -2110,28 +2111,28 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
                                     }
 
                                     SocketState = ssNoProxyOrConnected;
-                                    if (ShouldPostFD_WRITE) // aby ReceiveNetEvent() dostal take FD_WRITE (FD_READ se vygeneroval/vygeneruje sam, ten postit nemusime)
+                                    if (ShouldPostFD_WRITE) // to ensure ReceiveNetEvent() also receives FD_WRITE (FD_READ is generated on its own, so we do not have to post it)
                                     {
                                         PostMessage(SocketsThread->GetHiddenWindow(), WM_APP_SOCKET_MIN + index,
                                                     (WPARAM)Socket, MAKELPARAM(FD_WRITE, NO_ERROR));
                                     }
-                                    if (event == FD_CLOSE) // tenhle close nastal az po uspesnem pripojeni na FTP server, ten se zpracuje pozdeji...
+                                    if (event == FD_CLOSE) // this close occurred after a successful connection to the FTP server, it will be processed later...
                                     {
                                         PostMessage(SocketsThread->GetHiddenWindow(), WM_APP_SOCKET_MIN + index,
                                                     (WPARAM)Socket, lParam);
                                     }
                                     HANDLES(LeaveCriticalSection(&SocketCritSect));
                                     csLeft = TRUE;
-                                    ReceiveNetEvent(MAKELPARAM(FD_CONNECT, NO_ERROR), index); // ohlasime uspesny connect
+                                    ReceiveNetEvent(MAKELPARAM(FD_CONNECT, NO_ERROR), index); // announce a successful connect
                                 }
                             }
-                            else // proxy server hlasi chybu
+                            else // the proxy server reports an error
                             {
-                                ProxyErrorCode = pecHTTPProxySrvError; // hlasku si to vezme z HTTP11_FirstLineOfReply
+                                ProxyErrorCode = pecHTTPProxySrvError; // the message will be taken from HTTP11_FirstLineOfReply
                                 SocketState = ssConnectFailed;
                                 HANDLES(LeaveCriticalSection(&SocketCritSect));
                                 csLeft = TRUE;
-                                ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* jen nesmi byt NO_ERROR */), index);
+                                ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* it just must not be NO_ERROR */), index);
                             }
                         }
                         else
@@ -2146,12 +2147,12 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
                     SocketState = ssConnectFailed;
                     HANDLES(LeaveCriticalSection(&SocketCritSect));
                     csLeft = TRUE;
-                    ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* jen nesmi byt NO_ERROR */), index);
+                    ReceiveNetEvent(MAKELPARAM(FD_CONNECT, ERROR_INVALID_FUNCTION /* it just must not be NO_ERROR */), index);
                 }
                 if (!csLeft)
                     HANDLES(LeaveCriticalSection(&SocketCritSect));
             }
-            // else HANDLES(LeaveCriticalSection(&SocketCritSect));  // ProxyReceiveBytes() vraci FALSE = sekce SocketCritSect uz byla opustena
+            // else HANDLES(LeaveCriticalSection(&SocketCritSect));  // ProxyReceiveBytes() returns FALSE = the SocketCritSect section has already been left
             break;
         }
 
@@ -2173,7 +2174,7 @@ void CSocket::ReceiveNetEventInt(LPARAM lParam, int index)
         case ssListenFailed:
         {
             HANDLES(LeaveCriticalSection(&SocketCritSect));
-            break; // chybu connectu jsme jiz ohlasili, uz nic nedelame
+            break; // we already reported the connect error, nothing else to do
         }
 
         default:
@@ -2195,16 +2196,16 @@ void CSocket::ReceiveNetEvent(LPARAM lParam, int index)
     case FD_CLOSE:
     {
         DWORD error;
-        if (eventError == NO_ERROR) // zatim to vypada na graceful close
+        if (eventError == NO_ERROR) // so far it looks like a graceful close
         {
-            // sekvence podle helpu: "Graceful Shutdown, Linger Options, and Socket Closure"
+            // sequence according to the help: "Graceful Shutdown, Linger Options, and Socket Closure"
 
             HANDLES(EnterCriticalSection(&SocketCritSect));
 
-            // podle helpu u "shutdown" se ma radsi volat jeste recv (nejspis zbytecne - data ignorujeme) +
-            // shutdownuje server, muze pri spatnem zpracovani FD_CLOSE na socketu zbyt neprectena data (jen
-            // vypiseme warning pro programatora)
-            if (Socket != INVALID_SOCKET) // socket je pripojeny (jinak chybu "nepripojeny socket" oznami CloseSocket)
+            // according to the help for "shutdown" we should also call recv (most likely unnecessary - we ignore the data) +
+            // the server is performing the shutdown, so with incorrect handling of FD_CLOSE there may remain unread data on the socket (we only
+            // print a warning for the programmer)
+            if (Socket != INVALID_SOCKET) // the socket is connected (otherwise CloseSocket reports the "not connected" error)
             {
                 char buf[500];
                 if (!SSLConn)
@@ -2213,12 +2214,12 @@ void CSocket::ReceiveNetEvent(LPARAM lParam, int index)
                     {
                         int r = recv(Socket, buf, 500, 0);
                         if (r == SOCKET_ERROR || r == 0)
-                            break; // cyklime do chyby nebo nuly (0 = gracefully closed)
+                            break; // loop until an error or zero (0 = gracefully closed)
                         else
                         {
-                            if (OurShutdown) // shutdown inicioval klient
+                            if (OurShutdown) // shutdown was initiated by the client
                                 TRACE_E("Unexpected: please inform Petr Solin: recv() read some bytes in FD_CLOSE on " << index);
-                            else // shutdown inicioval server
+                            else // shutdown was initiated by the server
                                 TRACE_E("Probably invalid handling of FD_CLOSE: recv() read some bytes in FD_CLOSE on " << index);
                         }
                     }
@@ -2229,12 +2230,12 @@ void CSocket::ReceiveNetEvent(LPARAM lParam, int index)
                     {
                         int r = SSLLib.SSL_read(SSLConn, buf, 500);
                         if (r <= 0)
-                            break; // cyklime do chyby nebo nuly (0 = gracefully closed)
+                            break; // loop until an error or zero (0 = gracefully closed)
                         else
                         {
-                            if (OurShutdown) // shutdown inicioval klient
+                            if (OurShutdown) // shutdown was initiated by the client
                                 TRACE_E("Unexpected: please inform Petr Solin: SSL_read() read some bytes in FD_CLOSE on " << index);
-                            else // shutdown inicioval server
+                            else // shutdown was initiated by the server
                                 TRACE_E("Probably invalid handling of FD_CLOSE: SSL_read() read some bytes in FD_CLOSE on " << index);
                         }
                     }
@@ -2243,7 +2244,7 @@ void CSocket::ReceiveNetEvent(LPARAM lParam, int index)
             BOOL ourShutdown = OurShutdown;
             HANDLES(LeaveCriticalSection(&SocketCritSect));
 
-            if (!ourShutdown) // shutdown inicioval server
+            if (!ourShutdown) // shutdown was initiated by the server
             {
                 if (!Shutdown(&error))
                     eventError = error;
@@ -2252,13 +2253,13 @@ void CSocket::ReceiveNetEvent(LPARAM lParam, int index)
         if (!CloseSocket(&error) && eventError == NO_ERROR)
             eventError = error;
 
-        SocketWasClosed(eventError); // ohlasime uzavreni socketu (pripadne i chybu)
+        SocketWasClosed(eventError); // report the socket closure (and possibly the error)
         break;
     }
 
     case FD_ACCEPT:
     {
-        HWND socketsWindow = SocketsThread->GetHiddenWindow(); // aby bylo mimo sekci SocketCritSect
+        HWND socketsWindow = SocketsThread->GetHiddenWindow(); // to keep it outside the SocketCritSect section
 
         HANDLES(EnterCriticalSection(&SocketCritSect));
 
@@ -2267,26 +2268,26 @@ void CSocket::ReceiveNetEvent(LPARAM lParam, int index)
             TRACE_E("Incorrect call to CSocket::ReceiveNetEvent(FD_ACCEPT): from section SocketCritSect!");
 #endif
 
-        if (eventError == NO_ERROR) // bereme jen accept bez chyby, ostatni ignorujeme (spojeni se zkousi trvale az do timeoutu)
+        if (eventError == NO_ERROR) // only accept without error, ignore the rest (the connection is retried until timeout)
         {
-            if (Socket != INVALID_SOCKET) // socket je pripojeny (jinak ignorujeme - uzivatel zrejme dal abort)
+            if (Socket != INVALID_SOCKET) // the socket is connected (otherwise ignore it - the user probably aborted)
             {
                 SOCKADDR_IN addr;
                 memset(&addr, 0, sizeof(addr));
                 int len = sizeof(addr);
                 SOCKET sock = accept(Socket, (SOCKADDR*)&addr, &len);
                 if (sock != INVALID_SOCKET &&
-                    // volani WSAAsyncSelect podle helpu neni nutne, ale pry to nektere verze Windows Socketu
-                    // nedelaji automaticky, takze to nutne je - vyskytla se anomalie: pri krokovani posilani
-                    // prikazu LIST to generuje FD_XXX dvojmo (druha sada prijde po prvnim FD_CLOSE -> je nedorucitelna)
+                    // according to the help calling WSAAsyncSelect is not necessary, but supposedly some versions of Windows Sockets
+                    // do not do it automatically, so it must be done - an anomaly occurred: when stepping through sending
+                    // the LIST command it generates FD_XXX twice (the second set arrives after the first FD_CLOSE -> it is undeliverable)
                     WSAAsyncSelect(sock, socketsWindow, Msg, FD_READ | FD_WRITE | FD_CLOSE) != SOCKET_ERROR)
                 {
-                    closesocket(Socket); // zavreme "listen" socket, uz nebude potreba - volani CloseSocketEx nezadouci
+                    closesocket(Socket); // close the "listen" socket, it will no longer be needed - calling CloseSocketEx is undesirable
                     Socket = sock;
                     OurShutdown = FALSE;
                     ConnectionAccepted(TRUE, NO_ERROR, FALSE);
                 }
-                else // chyba - posleme ji aspon do logu
+                else // error - at least log it
                 {
                     DWORD err = WSAGetLastError();
                     if (sock != INVALID_SOCKET)
@@ -2355,7 +2356,7 @@ CSocket::GetSocket()
 void CSocket::SetCertificate(CCertificate* certificate)
 {
     HANDLES(EnterCriticalSection(&SocketCritSect));
-    CCertificate* old = pCertificate; // duvodem je zajisteni volani AddRef pres Release (pro pripad, ze je pCertificate == certificate)
+    CCertificate* old = pCertificate; // ensures AddRef is called via Release (in case pCertificate == certificate)
     pCertificate = certificate;
     if (pCertificate)
         pCertificate->AddRef();
@@ -2378,7 +2379,7 @@ CSocket::GetCertificate()
 void CSocket::SwapSockets(CSocket* sock)
 {
     HANDLES(EnterCriticalSection(&SocketCritSect));
-    HANDLES(EnterCriticalSection(&sock->SocketCritSect)); // nezablokuje se, pokud se SwapSockets() nezavola soucasne s prohozenymi parametry (opacne poradi vstupu do sekci)
+    HANDLES(EnterCriticalSection(&sock->SocketCritSect)); // will not deadlock unless SwapSockets() is called simultaneously with reversed parameters (opposite order of entering sections)
     int swapMsg = Msg;
     Msg = sock->Msg;
     sock->Msg = swapMsg;
@@ -2501,10 +2502,10 @@ void CSocketsThread::Terminate()
     HANDLES(EnterCriticalSection(&CritSect));
     if (HWindow != NULL)
     {
-        KillTimer(HWindow, SOCKETSTHREAD_TIMERID); // ukoncime timer
-        PostMessage(HWindow, WM_CLOSE, 0, 0);      // zasleme oknu zpravu o ukonceni
+        KillTimer(HWindow, SOCKETSTHREAD_TIMERID); // stop the timer
+        PostMessage(HWindow, WM_CLOSE, 0, 0);      // send the window a termination message
     }
-    Terminating = TRUE; // Windows timer uz nepujde nahodit
+    Terminating = TRUE; // the Windows timer can no longer be started
     HANDLES(LeaveCriticalSection(&CritSect));
 }
 
@@ -2513,13 +2514,13 @@ BOOL CSocketsThread::AddSocket(CSocket* sock)
     CALL_STACK_MESSAGE1("CSocketsThread::AddSocket()");
     BOOL ret = TRUE;
     HANDLES(EnterCriticalSection(&CritSect));
-    if (FirstFreeIndexInSockets != -1) // mame kam vlozit novy socket?
+    if (FirstFreeIndexInSockets != -1) // do we have a place to insert a new socket?
     {
-        // vlozeni 'sock' do pole
+        // insert 'sock' into the array
         Sockets[FirstFreeIndexInSockets] = sock;
         sock->SetMsgIndex(FirstFreeIndexInSockets);
 
-        // hledani dalsiho volneho mista v poli
+        // search for the next free slot in the array
         int i;
         for (i = FirstFreeIndexInSockets + 1; i < Sockets.Count; i++)
         {
@@ -2534,7 +2535,7 @@ BOOL CSocketsThread::AddSocket(CSocket* sock)
     }
     else
     {
-        if (WM_APP_SOCKET_MAX - WM_APP_SOCKET_MIN >= Sockets.Count) // vejdeme se s novym socketem?
+        if (WM_APP_SOCKET_MAX - WM_APP_SOCKET_MIN >= Sockets.Count) // can we fit a new socket?
         {
             int index = Sockets.Add(sock);
             if (Sockets.IsGood())
@@ -2565,16 +2566,16 @@ void CSocketsThread::DeleteSocketFromIndex(int index, BOOL onlyDetach)
         {
 #ifdef _DEBUG
             BOOL old = InDeleteSocket;
-            InDeleteSocket = TRUE; // sice nemusime byt primo v ::DeleteSocket, ale volani je korektni
+            InDeleteSocket = TRUE; // we may not be directly in ::DeleteSocket, but the call is correct
 #endif
-            delete Sockets[index]; // dealokace objektu socketu
+            delete Sockets[index]; // deallocate the socket object
 #ifdef _DEBUG
             InDeleteSocket = old;
 #endif
         }
         else
-            Sockets[index]->ResetMsgIndex(); // odpojeni objektu socketu
-        Sockets[index] = NULL;               // uvolneni pozice v poli (pole nezkracujeme, neni s tim pocitano + je to zbytecne)
+            Sockets[index]->ResetMsgIndex(); // detach the socket object
+        Sockets[index] = NULL;               // free the position in the array (we do not shrink the array, it is not expected and would be unnecessary)
         if (FirstFreeIndexInSockets == -1 || index < FirstFreeIndexInSockets)
             FirstFreeIndexInSockets = index;
     }
@@ -2592,9 +2593,9 @@ void CSocketsThread::BeginSocketsSwap(CSocket* sock1, CSocket* sock2)
     int index2 = sock2->GetMsgIndex();
     if (index1 != -1 && index2 != -1)
     {
-        // prohodime vnitrni data objektu socketu (jen data tridy CSocket, zbytek je na volajicim)
+        // swap the internal data of the socket object (only data of the CSocket class, the caller handles the rest)
         sock1->SwapSockets(sock2);
-        // prohodime objekty v poli obsluhovanych socketu
+        // swap the objects in the array of handled sockets
         Sockets[index1] = sock2;
         Sockets[index2] = sock1;
     }
@@ -2650,20 +2651,20 @@ void CSocketsThread::ReceiveMsgData()
     HANDLES(EnterCriticalSection(&CritSect));
     if (MsgData.Count > 0)
     {
-        CMsgData* data = MsgData[0]; // bereme prvni nezpracovana data vlozena do pole
+        CMsgData* data = MsgData[0]; // take the first unprocessed data inserted into the array
         int index = data->SocketMsg - WM_APP_SOCKET_MIN;
         if (index >= 0 && index < Sockets.Count) // "always true"
         {
             CSocket* s = Sockets[index];
-            if (s != NULL && s->GetUID() == data->SocketUID) // je to prijemce zpravy (dockal se)
+            if (s != NULL && s->GetUID() == data->SocketUID) // it is the recipient of the message (it was waiting)
                 s->ReceiveHostByAddressInt(data->IP, data->HostUID, data->Err, index);
-            else // jde o IP, ktere nedoslo z duvodu zruseni socketu nebo swapnuti socketu,
-            {    // pri swapnuti socketu dohledame cilovy socket sekvencne a dorucime IP
+            else // IP that did not arrive because the socket was cancelled or swapped,
+            {    // when sockets are swapped, find the target socket sequentially and deliver the IP
                 int i;
                 for (i = 0; i < Sockets.Count; i++)
                 {
                     CSocket* s2 = Sockets[i];
-                    if (s2 != NULL && s2->GetUID() == data->SocketUID) // je to prijemce zpravy (dockal se)
+                    if (s2 != NULL && s2->GetUID() == data->SocketUID) // it is the recipient of the message (it was waiting)
                     {
                         s2->ReceiveHostByAddressInt(data->IP, data->HostUID, data->Err, i);
                         break;
@@ -2672,7 +2673,7 @@ void CSocketsThread::ReceiveMsgData()
 #ifdef _DEBUG
                 if (i == Sockets.Count)
                 {
-                    // vypiseme warning, ze se ztratilo IP (nedoslo do objektu socketu)
+                    // print a warning that the IP was lost (did not reach the socket object)
                     TRACE_I("Lost IP-address with host-UID " << data->HostUID << " for UID " << data->SocketUID);
                 }
 #endif
@@ -2737,7 +2738,7 @@ BOOL CSocketsThread::IsSocketConnected(int socketUID, BOOL* isConnected)
     for (i = 0; i < Sockets.Count; i++)
     {
         CSocket* s = Sockets[i];
-        if (s != NULL && s->GetUID() == socketUID) // je to hledany socket
+        if (s != NULL && s->GetUID() == socketUID) // this is the socket we are looking for
         {
             ret = TRUE;
             if (isConnected != NULL)
@@ -2755,20 +2756,20 @@ void CSocketsThread::ReceivePostMessage()
     HANDLES(EnterCriticalSection(&CritSect));
     if (PostMsgs.Count > 0)
     {
-        CPostMsgData* data = PostMsgs[0]; // bereme prvni nezpracovana data vlozena do pole
+        CPostMsgData* data = PostMsgs[0]; // take the first unprocessed data inserted into the array
         int index = data->SocketMsg - WM_APP_SOCKET_MIN;
         if (index >= 0 && index < Sockets.Count) // "always true"
         {
             CSocket* s = Sockets[index];
-            if (s != NULL && s->GetUID() == data->SocketUID) // je to prijemce zpravy (dockal se)
+            if (s != NULL && s->GetUID() == data->SocketUID) // it is the recipient of the message (it was waiting)
                 s->ReceivePostMessage(data->ID, data->Param);
-            else // jde o zpravu, ktera nedosla z duvodu zruseni socketu nebo swapnuti socketu,
-            {    // pri swapnuti socketu dohledame cilovy socket sekvencne a dorucime zpravu
+            else // a message that did not arrive because the socket was cancelled or swapped,
+            {    // when sockets are swapped, find the target socket sequentially and deliver the message
                 int i;
                 for (i = 0; i < Sockets.Count; i++)
                 {
                     CSocket* s2 = Sockets[i];
-                    if (s2 != NULL && s2->GetUID() == data->SocketUID) // je to prijemce zpravy (dockal se)
+                    if (s2 != NULL && s2->GetUID() == data->SocketUID) // it is the recipient of the message (it was waiting)
                     {
                         s2->ReceivePostMessage(data->ID, data->Param);
                         break;
@@ -2777,7 +2778,7 @@ void CSocketsThread::ReceivePostMessage()
 #ifdef _DEBUG
                 if (i == Sockets.Count)
                 {
-                    // vypiseme warning, ze se ztratila zprava (nedosla do objektu socketu)
+                    // print a warning that the message was lost (did not reach the socket object)
                     TRACE_I("Lost post-message " << data->ID << " for UID " << data->SocketUID);
                 }
 #endif
@@ -2799,8 +2800,7 @@ int CSocketsThread::FindIndexForNewTimer(DWORD timeoutAbs, int leftIndex)
     if (leftIndex >= Timers.Count)
         return leftIndex;
 
-    // vsechny casy se musi vztahnout k nejblizsimu timeoutu, protoze jen tak se podari
-    // seradit timeouty, ktere prekroci 0xFFFFFFFF
+    // all times must be related to the nearest timeout, because only then can timeouts that exceed 0xFFFFFFFF be sorted
     DWORD timeoutAbsBase = Timers[leftIndex]->TimeoutAbs;
     if ((int)(timeoutAbs - timeoutAbsBase) < 0)
         timeoutAbsBase = timeoutAbs;
@@ -2814,19 +2814,19 @@ int CSocketsThread::FindIndexForNewTimer(DWORD timeoutAbs, int leftIndex)
         if (actTimeoutAbs == timeoutAbs)
         {
             while (++m < Timers.Count && Timers[m]->TimeoutAbs - timeoutAbsBase == timeoutAbs)
-                ;     // vratime index za posledni stejny timer
-            return m; // nalezeno
+                ;     // return the index after the last identical timer
+            return m; // found
         }
         else if (actTimeoutAbs > timeoutAbs)
         {
             if (l == r || l > m - 1)
-                return m; // nenalezeno, mel by byt na teto pozici
+                return m; // not found, should be at this position
             r = m - 1;
         }
         else
         {
             if (l == r)
-                return m + 1; // nenalezeno, mel by byt az za touto pozici
+                return m + 1; // not found, should be after this position
             l = m + 1;
         }
     }
@@ -2840,22 +2840,22 @@ BOOL CSocketsThread::AddTimer(int socketMsg, int socketUID, DWORD timeoutAbs, DW
     CTimerData* data = new CTimerData(socketMsg, socketUID, timeoutAbs, id, param);
     if (data != NULL)
     {
-        // musime vlozit az za chraneny usek (timery v tomto useku se po zpracovani smazou)
+        // we must insert only after the protected section (timers in this section are deleted after processing)
         int i = FindIndexForNewTimer(timeoutAbs, (LockedTimers == -1 ? 0 : LockedTimers));
         Timers.Insert(i, data);
         if (Timers.IsGood())
         {
-            if (i == 0 && !Terminating) // vlozeni timeru s nejkratsim casem do timeoutu
+            if (i == 0 && !Terminating) // inserting the timer with the shortest time into the timeout
             {
                 DWORD ti = timeoutAbs - GetTickCount();
-                if ((int)ti > 0) // pokud jiz nenastal timeout noveho timeru (muze nastat i zaporny rozdil casu), zmenime nebo nahodime Windows timer
+                if ((int)ti > 0) // if the new timer has not yet expired (the time difference can also be negative), adjust or start the Windows timer
                     SetTimer(GetHiddenWindow(), SOCKETSTHREAD_TIMERID, ti, NULL);
                 else
                 {
                     if ((int)ti < 0)
                         TRACE_E("CSocketsThread::AddTimer(): expired timer was added (" << (int)ti << " ms)");
-                    KillTimer(GetHiddenWindow(), SOCKETSTHREAD_TIMERID);                // zrusime pripadny Windowsovy timer, uz neni potreba
-                    PostMessage(GetHiddenWindow(), WM_TIMER, SOCKETSTHREAD_TIMERID, 0); // co nejdrive zpracujeme dalsi timeout
+                    KillTimer(GetHiddenWindow(), SOCKETSTHREAD_TIMERID);                // cancel the possible Windows timer, it is no longer needed
+                    PostMessage(GetHiddenWindow(), WM_TIMER, SOCKETSTHREAD_TIMERID, 0); // process the next timeout as soon as possible
                 }
             }
             ret = TRUE;
@@ -2879,12 +2879,12 @@ BOOL CSocketsThread::DeleteTimer(int socketUID, DWORD id)
 
     BOOL ret = FALSE;
     BOOL setTimer = FALSE;
-    int last = (LockedTimers != -1 ? LockedTimers : 0); // muzeme mazat jen za chranenym usekem (timery v tomto useku se po zpracovani smazou)
+    int last = (LockedTimers != -1 ? LockedTimers : 0); // we can delete only beyond the protected section (timers in this section are deleted after processing)
     int i;
     for (i = Timers.Count - 1; i >= 0; i--)
     {
         CTimerData* timer = Timers[i];
-        if (timer->SocketUID == socketUID && timer->ID == id) // smazeme vsechny odpovidajici timery
+        if (timer->SocketUID == socketUID && timer->ID == id) // delete all matching timers
         {
             if (i >= last)
             {
@@ -2892,30 +2892,30 @@ BOOL CSocketsThread::DeleteTimer(int socketUID, DWORD id)
                     setTimer = TRUE;
                 Timers.Delete(i);
                 if (!Timers.IsGood())
-                    Timers.ResetState(); // Delete se nemuze nepovest, ale nemusi se podarit zmenseni pole
+                    Timers.ResetState(); // Delete cannot fail, but the array might not shrink
             }
-            else // vymaz timeru z uzamcene oblasti pole Timers = jen zmena SocketMsg na (WM_APP_SOCKET_MIN-1)
+            else // deleting a timer from the locked area of the Timers array = only change SocketMsg to (WM_APP_SOCKET_MIN-1)
             {
                 Timers[i]->SocketMsg = WM_APP_SOCKET_MIN - 1;
             }
             ret = TRUE;
         }
     }
-    if (setTimer) // byl zrusen timer s nejblizsim timeoutem, musime prenastavit timeout
+    if (setTimer) // a timer with the nearest timeout was cancelled, adjust the timeout
     {
         if (Timers.Count > 0 && !Terminating)
         {
             DWORD ti = Timers[0]->TimeoutAbs - GetTickCount();
-            if ((int)ti > 0) // pokud jiz nenastal timeout noveho timeru (muze nastat i zaporny rozdil casu), zmenime nebo nahodime Windows timer
+            if ((int)ti > 0) // if the new timer has not yet expired (the time difference can also be negative), adjust or start the Windows timer
                 SetTimer(GetHiddenWindow(), SOCKETSTHREAD_TIMERID, ti, NULL);
             else
             {
-                KillTimer(GetHiddenWindow(), SOCKETSTHREAD_TIMERID);                // zrusime pripadny Windowsovy timer, uz neni potreba
-                PostMessage(GetHiddenWindow(), WM_TIMER, SOCKETSTHREAD_TIMERID, 0); // co nejdrive zpracujeme dalsi timeout
+                KillTimer(GetHiddenWindow(), SOCKETSTHREAD_TIMERID);                // cancel the possible Windows timer, it is no longer needed
+                PostMessage(GetHiddenWindow(), WM_TIMER, SOCKETSTHREAD_TIMERID, 0); // process the next timeout as soon as possible
             }
         }
         else
-            KillTimer(GetHiddenWindow(), SOCKETSTHREAD_TIMERID); // zrusime pripadny Windowsovy timer, uz neni potreba
+            KillTimer(GetHiddenWindow(), SOCKETSTHREAD_TIMERID); // cancel the possible Windows timer, it is no longer needed
     }
 
     HANDLES(LeaveCriticalSection(&CritSect));
@@ -2924,20 +2924,20 @@ BOOL CSocketsThread::DeleteTimer(int socketUID, DWORD id)
 
 void CSocketsThread::ReceiveTimer()
 {
-    // zrusime pripadny Windowsovy timer (aby se zbytecne neopakovalo volani)
+    // cancel the possible Windows timer (to avoid repeated calls)
     KillTimer(GetHiddenWindow(), SOCKETSTHREAD_TIMERID);
 
     HANDLES(EnterCriticalSection(&CritSect));
 
-    // obrana proti rekurzivnimu volani ReceiveTimer() - WM_TIMER nema cenu posilat, az dobehne
-    // zpracovani prvniho volani ReceiveTimer(), bude nahozeny novy timer nebo postnuty WM_TIMER
+    // guard against recursive calls to ReceiveTimer() - there is no point posting WM_TIMER until the first run completes
+    // processing the first call to ReceiveTimer(), a new timer will be started or WM_TIMER posted
     if (LockedTimers == -1)
     {
         DWORD ti = GetTickCount();
         int last = FindIndexForNewTimer(ti, 0);
-        if (last > 0) // pokud nastal nejaky timeout timeru
+        if (last > 0) // if any timer timeout occurred
         {
-            LockedTimers = last; // budeme chranit zpracovavane timery proti mazani a rozesunuti pole
+            LockedTimers = last; // protect the timers being processed from deletion and array shifting
             int i;
             for (i = 0; i < last; i++)
             {
@@ -2946,15 +2946,15 @@ void CSocketsThread::ReceiveTimer()
                 if (index >= 0 && index < Sockets.Count) // "always true"
                 {
                     CSocket* s = Sockets[index];
-                    if (s != NULL && s->GetUID() == timer->SocketUID) // je to prijemce zpravy (dockal se)
+                    if (s != NULL && s->GetUID() == timer->SocketUID) // it is the recipient of the message (it was waiting)
                         s->ReceiveTimer(timer->ID, timer->Param);
-                    else // jde o timer, ktery nedosel z duvodu zruseni socketu nebo swapnuti socketu,
-                    {    // pri swapnuti socketu dohledame cilovy socket sekvencne a dorucime timer
+                    else // a timer that did not arrive because the socket was cancelled or swapped,
+                    {    // when sockets are swapped, find the target socket sequentially and deliver the timer
                         int j;
                         for (j = 0; j < Sockets.Count; j++)
                         {
                             CSocket* s2 = Sockets[j];
-                            if (s2 != NULL && s2->GetUID() == timer->SocketUID) // je to prijemce zpravy (dockal se)
+                            if (s2 != NULL && s2->GetUID() == timer->SocketUID) // it is the recipient of the message (it was waiting)
                             {
                                 s2->ReceiveTimer(timer->ID, timer->Param);
                                 break;
@@ -2963,7 +2963,7 @@ void CSocketsThread::ReceiveTimer()
 #ifdef _DEBUG
                         if (j == Sockets.Count)
                         {
-                            // vypiseme warning, ze se ztratil timer-event (nedosel do objektu socketu)
+                            // print a warning that the timer event was lost (did not reach the socket object)
                             TRACE_I("Lost timer-event " << timer->ID << " for UID " << timer->SocketUID);
                         }
 #endif
@@ -2976,15 +2976,15 @@ void CSocketsThread::ReceiveTimer()
                 }
             }
             Timers.Delete(0, last);
-            LockedTimers = -1; // uz neni co chranit
+            LockedTimers = -1; // nothing left to protect
         }
         if (Timers.Count > 0 && !Terminating)
         {
             ti = Timers[0]->TimeoutAbs - GetTickCount();
-            if ((int)ti > 0) // pokud jiz nenastal dalsi timeout (muze nastat i zaporny rozdil casu), nahodime znovu timer
+            if ((int)ti > 0) // if another timeout has not yet occurred (the time difference can also be negative), start the timer again
                 SetTimer(GetHiddenWindow(), SOCKETSTHREAD_TIMERID, ti, NULL);
             else
-                PostMessage(GetHiddenWindow(), WM_TIMER, SOCKETSTHREAD_TIMERID, 0); // co nejdrive zpracujeme dalsi timeout
+                PostMessage(GetHiddenWindow(), WM_TIMER, SOCKETSTHREAD_TIMERID, 0); // process the next timeout as soon as possible
         }
     }
     HANDLES(LeaveCriticalSection(&CritSect));
@@ -3000,26 +3000,26 @@ CSocketsThread::ReceiveNetEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
     if (index >= 0 && index < Sockets.Count) // "always true"
     {
         CSocket* s = Sockets[index];
-        if (s != NULL && s->GetSocket() == (SOCKET)wParam) // je to prijemce zpravy (dockal se)
+        if (s != NULL && s->GetSocket() == (SOCKET)wParam) // it is the recipient of the message (it was waiting)
         {
             s->ReceiveNetEventInt(lParam, index);
         }
         else
         {
 #ifdef _DEBUG
-            // vypiseme warning, ze se ztratila zprava (nedosla do objektu socketu)
+            // print a warning that the message was lost (it did not reach the socket object)
             switch (WSAGETSELECTEVENT(lParam))
             {
             case FD_READ: /*TRACE_I("Lost FD_READ on " << (uMsg - WM_APP_SOCKET_MIN));*/
-                break;    // chodi po FD_CLOSE; chodi podruhe (po FD_CLOSE), pokud se po accept() pouzije WSAAsyncSelect()
+                break;    // arrives after FD_CLOSE; arrives a second time (after FD_CLOSE) if WSAAsyncSelect() is used after accept()
             case FD_WRITE:
                 TRACE_I("Lost FD_WRITE on " << (uMsg - WM_APP_SOCKET_MIN));
-                break;     // chodi podruhe (po FD_CLOSE), pokud se po accept() pouzije WSAAsyncSelect()
+                break;     // arrives a second time (after FD_CLOSE) if WSAAsyncSelect() is used after accept()
             case FD_CLOSE: /*TRACE_I("Lost FD_CLOSE on " << (uMsg - WM_APP_SOCKET_MIN));*/
-                break;     // chodi podruhe (po FD_CLOSE), pokud se po accept() pouzije WSAAsyncSelect()
+                break;     // arrives a second time (after FD_CLOSE) if WSAAsyncSelect() is used after accept()
             case FD_CONNECT:
                 TRACE_I("Lost FD_CONNECT on " << (uMsg - WM_APP_SOCKET_MIN));
-                break; // nastava u adresaru nepristupnych pro listovani na VMS (data-connection se zavre jeste nez dobehne jeji connect)
+                break; // occurs for directories inaccessible for listing on VMS (the data connection closes before its connect completes)
             case FD_ACCEPT:
                 TRACE_I("Lost FD_ACCEPT on " << (uMsg - WM_APP_SOCKET_MIN));
                 break;
@@ -3042,14 +3042,14 @@ CSocketsThread::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     //  SLOW_CALL_STACK_MESSAGE5("CSocketsThread::WindowProc(0x%X, 0x%X, 0x%X, 0x%X)", hwnd, uMsg, wParam, lParam);
 
     if (GetTickCount() - LastWM_TIMER_Processing >= 500 && uMsg != WM_TIMER)
-    {                                             // pokud ubehlo 1000ms od posledniho WM_TIMER, vlozime ho do zpracovani umele, protoze nejspis "jen"
-                                                  // neni thread "idle", a proto system WM_TIMER neposila (je to bohuzel low-priority message)
-        LastWM_TIMER_Processing = GetTickCount(); // ulozime kdy byl naposledy zpracovan WM_TIMER
+    {                                             // if 1000 ms passed since the last WM_TIMER, insert it for processing manually, because most likely
+                                                  // the thread simply is not "idle", and therefore the system does not send WM_TIMER (it is unfortunately a low-priority message)
+        LastWM_TIMER_Processing = GetTickCount(); // store when WM_TIMER was last processed
         if (SocketsThread != NULL)
             SocketsThread->ReceiveTimer();
     }
 
-    if (uMsg >= WM_APP_SOCKET_MIN && uMsg <= WM_APP_SOCKET_MAX) // jde o zpravu pro socket od Windows Sockets
+    if (uMsg >= WM_APP_SOCKET_MIN && uMsg <= WM_APP_SOCKET_MAX) // message for the socket from Windows Sockets
     {
         if (SocketsThread != NULL)
             return SocketsThread->ReceiveNetEvent(uMsg, wParam, lParam);
@@ -3067,7 +3067,7 @@ CSocketsThread::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         case WM_TIMER:
         {
-            // ulozime kdy byl naposledy zpracovan WM_TIMER
+            // store when WM_TIMER was last processed
             LastWM_TIMER_Processing = GetTickCount();
             if (SocketsThread != NULL)
                 SocketsThread->ReceiveTimer();
@@ -3081,7 +3081,7 @@ CSocketsThread::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             return 0;
         }
 
-        case WM_DESTROY: // s ukoncenim okna ukoncime i smycku zprav
+        case WM_DESTROY: // closing the window ends the message loop
         {
             PostQuitMessage(0);
             return 0;
@@ -3096,7 +3096,7 @@ BOOL CSocketsThread::IsRunning()
     CALL_STACK_MESSAGE1("CSocketsThread::IsRunning()");
     WaitForSingleObject(RunningEvent, INFINITE);
     BOOL run = Running;
-    SetEvent(CanEndThread); // ted uz se muze thread ukoncit a tento objekt dealokovat
+    SetEvent(CanEndThread); // now the thread can terminate and this object can be deallocated
     return run;
 }
 
@@ -3118,13 +3118,13 @@ CSocketsThread::Body()
                                CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, DLLInstance, 0);
         if (HWindow != NULL)
         {
-            // ohlasime uspesne nastartovani a inicializaci threadu
+            // announce successful thread startup and initialization
             Running = TRUE;
             SetEvent(RunningEvent);
             WaitForSingleObject(CanEndThread, INFINITE);
             LastWM_TIMER_Processing = GetTickCount();
 
-            // smycka zprav
+            // message loop
             MSG msg;
             while (GetMessage(&msg, NULL, 0, 0))
             {
@@ -3132,7 +3132,7 @@ CSocketsThread::Body()
                 DispatchMessage(&msg);
             }
 
-            // nulujeme handle okna - ted uz je zbytecne posilat message
+            // clear the window handle - there is no point sending messages anymore
             HANDLES(EnterCriticalSection(&CritSect));
             HWindow = NULL;
             HANDLES(LeaveCriticalSection(&CritSect));
@@ -3143,11 +3143,11 @@ CSocketsThread::Body()
     }
     if (!Running)
     {
-        SetEvent(RunningEvent); // v pripade chyby ohlasime smrt threadu
+        SetEvent(RunningEvent); // announce the thread's death in case of an error
         WaitForSingleObject(CanEndThread, INFINITE);
     }
 
-    // Petr: pokud se v tomto threadu pracovalo s OpenSSL, musime uvolnit pamet nasledujicim volanim
+    // Petr: if this thread used OpenSSL, we must release memory with the following call
     SSLThreadLocalCleanup();
 
     TRACE_I("End");

@@ -252,7 +252,7 @@ BEGIN
     LTEXT           "Zvolte, kam si přejete nainstalovat zástupce programu:",-1,20,50,209,8
     CONTROL         "&Plocha",IDC_SPF_DESKTOP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,61,54,12
     CONTROL         "&Nabídka Start",IDC_SPF_LINK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,73,73,12
-    //CONTROL         "Připn&out na hlavní panel",IDC_SPF_PINTOTASKBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,85,153,12
+    //CONTROL         "&Pin to Taskbar",IDC_SPF_PINTOTASKBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,85,153,12 // disabled option kept for reference
     LTEXT           "Instalovat zástupce pro:",IDC_SPF_FOLDERS,19,111,197,8
     CONTROL         "&Aktuálního uživatele",IDC_SPF_PERSONAL,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,29,122,96,12
     CONTROL         "&Všechny uživatele",IDC_SPF_COMMON,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,29,134,108,12
@@ -514,7 +514,7 @@ BEGIN
     LTEXT           "Wählen Sie, wo Sie die Programm-Verknüpfung installieren möchten:",-1,20,50,244,8
     CONTROL         "&Desktop",IDC_SPF_DESKTOP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,61,50,12
     CONTROL         "&Startmenü",IDC_SPF_LINK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,73,63,12
-    //CONTROL         "An &Taskleiste anheften", IDC_SPF_PINTOTASKBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,85,87,12
+    //CONTROL         "An &Taskleiste anheften", IDC_SPF_PINTOTASKBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,85,87,12 // disabled option kept for reference
     LTEXT           "Installiere Verknüpfungen für:",IDC_SPF_FOLDERS,19,111,197,8
     CONTROL         "&Aktuellen Benutzer",IDC_SPF_PERSONAL,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,29,122,89,12
     CONTROL         "A&lle Benutzer",IDC_SPF_COMMON,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,29,134,70,12
@@ -796,7 +796,7 @@ BEGIN
     LTEXT           "Select where you want to install program shortcut:",-1,20,50,189,8
     CONTROL         "&Desktop",IDC_SPF_DESKTOP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,61,55,12
     CONTROL         "&Start Menu",IDC_SPF_LINK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,73,68,12
-    //CONTROL         "&Pin to Taskbar", IDC_SPF_PINTOTASKBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,85,80,12
+    //CONTROL         "&Pin to Taskbar", IDC_SPF_PINTOTASKBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,85,80,12 // disabled option kept for reference
     LTEXT           "Install shortcuts for:",IDC_SPF_FOLDERS,19,111,197,8
     CONTROL         "&Current user only",IDC_SPF_PERSONAL,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,29,122,85,12
     CONTROL         "&All users",IDC_SPF_COMMON,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,29,134,102,12

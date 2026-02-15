@@ -18,12 +18,12 @@ protected:
     BOOL Compressing;
     BOOL Uploading;
     BOOL Minidumping;
-    int UploadingIndex; // index do pole BugReports, ktery prave uploadime
+    int UploadingIndex; // index into the BugReports array we are currently uploading
     CCompressParams CompressParams;
     CUploadParams UploadParams;
     CMinidumpParams MinidumpParams;
     char CurrentProgressText[200];
-    BOOL MinidumpOnOpen; // ma se po otevreni okna zacit generovat minidump?
+    BOOL MinidumpOnOpen; // should minidump generation start after opening the window?
 
 public:
     CMainDialog(HINSTANCE modul, int resID, BOOL minidumpOnOpen);

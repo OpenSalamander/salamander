@@ -26,7 +26,7 @@
 #include "tserver.rh"
 #include "tserver.rh2"
 
-// id male ikony na task bare
+// ID of the small icon on the taskbar
 #define ICON_ID 1
 
 #define FLUSH_MESSAGES_CACHE_TIMER_ID 1
@@ -35,7 +35,7 @@
 #define RESET_DATA_ACCEPT_EVENT_TIMER_ID 2
 #define RESET_DATA_ACCEPT_EVENT_TIMER_TO 1000
 
-// pokud je TRUE, po WM_CLOSE se zavre program
+// if TRUE, WM_CLOSE will exit the program
 BOOL QuitProgram = FALSE;
 
 //****************************************************************************
@@ -58,7 +58,7 @@ void CMainWindow::FlushMessagesCache(BOOL& ErrorMessage)
     int newCount = Data.MessagesCache.GetCount();
     int firstNew = Data.Messages.Count;
 
-    // pokud je treba, vycistim prvnich x polozek z pole DataMessages
+    // if necessary, remove the first X items from the Data.Messages array
     BOOL needRepaint = FALSE;
     if (UseMaxMessagesCount)
     {
@@ -88,13 +88,13 @@ void CMainWindow::FlushMessagesCache(BOOL& ErrorMessage)
         if (IsErrorMsg(Data.MessagesCache[i].Type))
             ErrorMessage = TRUE;
     }
-    Data.MessagesCache.DestroyMembers(); // nevola destruktory
+    Data.MessagesCache.DestroyMembers(); // does not call destructors
     Data.MessagesCache.UnBlockArray();
 
     Data.MessagesFlushInProgress = FALSE;
     SetEvent(MessagesFlushDoneEvent);
 
-    // zatridim nove message do pole
+    // insert new messages into the array
     if (newCount > 0)
     {
         if (firstNew == 0 && newCount > 1)
@@ -130,7 +130,7 @@ void CMainWindow::Activate()
     }
     if (!ConfigData.UseToolbarCaption)
     {
-        // pokud neni hlavni okno viditelne, zobrazim ho
+        // if the main window is not visible, show it
         if (IsIconic(HWindow))
         {
             ShowWindow(HWindow, SW_RESTORE);
@@ -140,19 +140,19 @@ void CMainWindow::Activate()
         {
             if (GetActiveWindow() == HWindow)
             {
-                // pokud je akno aktivni, zhasnu ho
+                // if the window is active, minimize it
                 ShowWindow(HWindow, SW_MINIMIZE);
             }
             else
             {
-                // jinak ho zaktivuju
+                // otherwise activate it
                 SetForegroundWindow(HWindow);
             }
         }
     }
     else
     {
-        // pokud neni hlavni okno viditelne, zobrazim ho
+        // if the main window is not visible, show it
         if (!IsWindowVisible(HWindow))
         {
             ShowWindow(HWindow, SW_SHOW);
@@ -162,12 +162,12 @@ void CMainWindow::Activate()
         {
             if (GetActiveWindow() == HWindow)
             {
-                // pokud je akno aktivni, zhasnu ho
+                // if the window is active, hide it
                 ShowWindow(HWindow, SW_HIDE);
             }
             else
             {
-                // jinak ho zaktivuju
+                // otherwise activate it
                 SetForegroundWindow(HWindow);
             }
         }
@@ -176,7 +176,7 @@ void CMainWindow::Activate()
 
 void CMainWindow::OnErrorMessage()
 {
-    // pokud jsme restored, nebudeme prudit
+    // if we are restored, do not bother the user
     if (!IsWindowVisible(HWindow) || IsIconic(HWindow))
     {
         MessageBeep(0);
@@ -202,7 +202,7 @@ void CMainWindow::ClearAllMessages()
         if (Data.Messages[i].File != NULL)
             free(Data.Messages[i].File);
     }
-    Data.Messages.DestroyMembers(); // nevola destruktory
+    Data.Messages.DestroyMembers(); // does not call destructors
     TabList->SetCount(0);
 }
 
@@ -211,7 +211,7 @@ void CMainWindow::ShowMessageDetails()
     int index = TabList->GetSelectedIndex();
     if (index != -1)
     {
-        // docasne potlacime topmost flag, aby se dialog dal hodit pod MSVC
+        // temporarily suppress the topmost flag so the dialog can be placed under MSVC
         if (ConfigData.AlwaysOnTop)
             SetWindowPos(MainWindow->HWindow, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
@@ -270,7 +270,7 @@ void CMainWindow::ExportAllMessages()
             if (file == INVALID_HANDLE_VALUE)
                 return;
 
-            // napocitam maximalni velikosti sloupcu
+            // calculate maximum column widths
 
             const WCHAR* strPID = L"PID";
             const WCHAR* strUPID = L"UPID";
@@ -370,11 +370,11 @@ void CMainWindow::ExportAllMessages()
                     maxMessage = wcslen(buff);
             }
 
-            // vytisknu hlavicku
+            // print the header
             swprintf_s(line, L"\xFEFF" /* BOM */ L"Trace Server Log File\r\n\r\n");
             WriteFile(file, line, sizeof(WCHAR) * wcslen(line), &written, NULL);
 
-            // oddelovac
+            // separator
 
             wcscpy_s(separator, L"-+");
 
@@ -488,7 +488,7 @@ void CMainWindow::ExportAllMessages()
 
             WriteFile(file, separator, sizeof(WCHAR) * wcslen(separator), &written, NULL);
 
-            // nahazim tam radky
+            // dump the rows into the file
             for (int i = 0; i < Data.Messages.Count; i++)
             {
                 WCHAR buff[1000];
@@ -718,7 +718,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                 HInstance,
                                 TabList))
             {
-                // nahodim timer pro nacitani cache
+                // start a timer for loading the cache
                 SetTimer(HWindow, FLUSH_MESSAGES_CACHE_TIMER_ID, FLUSH_MESSAGES_CACHE_TIMER_TO, NULL);
 
                 if (ConfigData.HotKey != 0)
@@ -736,12 +736,12 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             TRACE_EW(L"Out of memory.");
         }
 
-        // nahodim timer pro reseteni ConnectDataAcceptedEvent, ktery stari klienti nutne musi mit
-        // pred pripojenim resetly, jinak connect zkolabuje (od verze 7 si klienti event predem reseti a
-        // tohle neni potreba); jak nastava: pokud se klient nedocka odpovedi serveru, ukonci connect
-        // timeoutem a v tom pripade az server akci dokonci a pripravi odpoved klientovi, nahodi
-        // ConnectDataAcceptedEvent, a event uz nema co resetnout, takze zustava nahozeny pro dalsi
-        // connect (ktery tim zkolabuje, pokud nejde o klienta verze 7 a vyssi)
+        // start a timer to reset ConnectDataAcceptedEvent, which older clients must have
+        // reset before connecting, otherwise the connect would collapse (since version 7 clients reset it
+        // in advance and this is not needed); scenario: if the client does not receive the server response,
+        // it ends the connect with a timeout, and when the server finishes the action and prepares the response,
+        // it signals ConnectDataAcceptedEvent, and nobody resets the event, so it stays signaled for the next
+        // connect (which then fails unless it is a version 7 or newer client)
         SetTimer(HWindow, RESET_DATA_ACCEPT_EVENT_TIMER_ID, RESET_DATA_ACCEPT_EVENT_TIMER_TO, NULL);
 
         TaskbarRestartMsg = RegisterWindowMessage(TEXT("TaskbarCreated"));
@@ -798,10 +798,10 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_SIZE:
     {
-        // ulozim polohu hlavniho okna do konfigurace
+        // save the main window position to the configuration
         GetWindowPos();
 
-        // umistim TabList
+        // position the TabList
         if (TabList != NULL)
         {
             RECT r;
@@ -824,11 +824,11 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             if (wParam == RESET_DATA_ACCEPT_EVENT_TIMER_ID && ConnectDataAcceptedEventMayBeSignaled)
             {
-                if (WaitForSingleObject(OpenConnectionMutex, 0) == WAIT_OBJECT_0) // at nikdo neceka na ConnectDataAcceptedEvent
+                if (WaitForSingleObject(OpenConnectionMutex, 0) == WAIT_OBJECT_0) // so nobody waits on ConnectDataAcceptedEvent
                 {
-                    ConnectDataAcceptedEventMayBeSignaled = FALSE; // uz bude resetly, i kdyby ho predchozi klient neresetnul
+                    ConnectDataAcceptedEventMayBeSignaled = FALSE; // it will be reset even if the previous client skipped it
                     ResetEvent(ConnectDataAcceptedEvent);
-                    ReleaseMutex(OpenConnectionMutex); // opet zpristupnim connect klientum
+                    ReleaseMutex(OpenConnectionMutex); // make connects available to clients again
                 }
             }
         }
@@ -864,13 +864,13 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_USER_CT_OPENCONNECTION:
     {
-        ReleaseMutex(OpenConnectionMutex); // zacina fungovat connection thread
+        ReleaseMutex(OpenConnectionMutex); // the connection thread starts operating
         return 0;
     }
 
     case WM_USER_CT_TERMINATED:
     {
-        WaitForSingleObject(ConnectingThread, 5000); // pockame nez skonci
+        WaitForSingleObject(ConnectingThread, 5000); // wait until it finishes
 
         DWORD exitCode;
         if (GetExitCodeThread(ConnectingThread, &exitCode))
@@ -892,7 +892,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 break;
             }
 
-            default: // STILL_ACTIVE a jine ...
+            default: // STILL_ACTIVE and other values...
             {
                 MESSAGE_EW(NULL, L"Unexpected exit code of connecting thread.", MB_OK);
                 break;

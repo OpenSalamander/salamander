@@ -17,7 +17,7 @@
 
 #include "precomp.h"
 
-#if _MSC_VER < 1600 // ve VC2008 (pred Visual Studio 2010) neexistuje nullptr, tady by melo stacit tohle:
+#if _MSC_VER < 1600 // in VC2008 (before Visual Studio 2010) nullptr does not exist; this should be sufficient here.
 #define nullptr 0
 #endif
 

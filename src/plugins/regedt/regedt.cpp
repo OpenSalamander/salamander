@@ -3,27 +3,27 @@
 
 #include "precomp.h"
 
-// zapina vypis bloku ktere zustaly alokovane na heapu po skonceni pluginu
+// enable dumping blocks left allocated on the heap when the plug-in ends
 // #define DUMP_MEM
 
 // ****************************************************************************
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to SPL - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to SLG - language-dependent resources
 BOOL WindowsVistaAndLater;
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plug-in interface object whose methods Salamander calls
 CPluginInterface PluginInterface;
 CPluginInterfaceForMenuExt InterfaceForMenuExt;
 CPluginInterfaceForFS InterfaceForFS;
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from plug-in startup until shutdown
 CSalamanderGeneralAbstract* SG = NULL;
 
-// definice promenne pro "dbg.h"
+// define the variable for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
-// definice promenne pro "spl_com.h"
+// define the variable for "spl_com.h"
 int SalamanderVersion = 0;
 
 CSalamanderGUIAbstract* SalGUI = NULL;
@@ -46,7 +46,7 @@ const char* CONFIG_DATATIMECOLW = "DataTimeColW";
 const char* CONFIG_SIZECOLFW = "SizeColFW";
 const char* CONFIG_SIZECOLW = "SizeColW";
 
-// FS-name pridelene Salamanderem po loadu pluginu
+// FS name assigned by Salamander after loading the plug-in
 char AssignedFSName[MAX_PATH] = "";
 
 CThreadQueue ThreadQueue("RegEdt Find Dialogs, Workers, and Changes Monitor");
@@ -91,7 +91,7 @@ BOOL ErrorHelper(HWND parent, const char* message, int lastError, va_list arglis
     vsprintf(buf, message, arglist);
     if (lastError != ERROR_SUCCESS)
     {
-        // mezi nasi hlaskou a popisem systemove chyby chceme mezeru
+        // insert a space between our message and the system error description
         if (*buf != 0 && *(buf + strlen(buf) - 1) != ' ')
             strcat(buf, " ");
         int l = lstrlen(buf);
@@ -204,9 +204,9 @@ int WINAPI SalamanderPluginGetReqVer()
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
     CALL_STACK_MESSAGE_NONE
-    // nastavime SalamanderDebug pro "dbg.h"
+    // set SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
-    // nastavime SalamanderVersion pro "spl_com.h"
+    // set SalamanderVersion for "spl_com.h"
     SalamanderVersion = salamander->GetVersion();
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
@@ -215,28 +215,28 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
     _CrtMemCheckpoint(&___CrtMemState);
 #endif //DUMP_MEM
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plug-in targets the current Salamander version and newer - verify that
     if (SalamanderVersion < LAST_VERSION_OF_SALAMANDER)
-    { // tady nelze volat Error, protoze pouziva SG->SalMessageBox (SG neni inicializovane + jde o nekompatibilni rozhrani)
+    { // cannot call Error here because it uses SG->SalMessageBox (SG not initialized + incompatible interface)
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
                    "Registry Editor" /* neprekladat! */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
+    // load the language module (.slg)
     HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "Registry Editor" /* neprekladat! */);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain Salamander's general interface
     SG = salamander->GetSalamanderGeneral();
     SalGUI = salamander->GetSalamanderGUI();
 
-    // nastavime jmeno souboru s helpem
+    // set the help file name
     SG->SetHelpFileName("regedt.chm");
 
-    // zjistime si na jakem bezime OS
+    // detect which OS we run on
     WindowsVistaAndLater = SalIsWindowsVersionOrGreater(6, 0, 0);
 
     if (!InitDialogs())
@@ -248,7 +248,7 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
         return NULL;
     }
 
-    // nastavime zakladni informace o pluginu
+    // set the basic plug-in information
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_FILESYSTEM | FUNCTION_LOADSAVECONFIGURATION | FUNCTION_CONFIGURATION,
                                    VERSINFO_VERSION_NO_PLATFORM,
@@ -260,7 +260,7 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
 
     salamander->SetPluginHomePageURL("www.altap.cz");
 
-    // ziskame nase FS-name (nemusi byt "reg", Salamander ho muze upravit)
+    // obtain our FS name (it may differ from "reg"; Salamander can adjust it)
     SG->GetPluginFSName(AssignedFSName, 0);
 
     return &PluginInterface;
@@ -296,9 +296,9 @@ BOOL CPluginInterface::Release(HWND parent, BOOL force)
         ChangeMonitor.Stop();
 
         if (!ThreadQueue.KillAll(force) && !force)
-            ret = FALSE; // Petr: nevadi, ze monitor zmen je zastaveny, nase
-        else             // FS by uz nikde nemelo byt (plugin se unloadi =
-        {                // byl odstranen z panelu)
+            ret = FALSE; // Petr: it's OK that the change monitor stopped; our FS should be gone
+        else             // the FS should no longer exist (plug-in unload = removed from panel)
+        {
             ReleaseDialogs();
             ReleaseFS();
 
@@ -313,7 +313,7 @@ BOOL CPluginInterface::Release(HWND parent, BOOL force)
 void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRegistryAbstract* registry)
 {
     CALL_STACK_MESSAGE1("CPluginInterface::LoadConfiguration(, , )");
-    // default hodnoty
+    // default values
     DialogWidth = DialogHeight = -1;
     wcscpy(RecentFullPath, L"\\");
     strcpy(Command, "");
@@ -325,14 +325,14 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
         registry->GetValue(regKey, CONFIG_RECENTPATH, REG_BINARY, RecentFullPath, MAX_FULL_KEYNAME * 2);
 
         WCHAR buffer[max(MAX_FULL_KEYNAME, 1024)];
-        // historie oteviranych souboru
+        // history of opened files
         LoadHistory(regKey, CONFIG_COPYORMOVEHISTORY, CopyOrMoveHistory, buffer, MAX_FULL_KEYNAME, registry);
-        // historie hledanych vzoru
+        // history of searched patterns
         LoadHistory(regKey, CONFIG_PATTERNHISTORY, PatternHistory, buffer, MAX_KEYNAME, registry);
-        // historie prohledavanych cest
+        // history of searched paths
         LoadHistory(regKey, CONFIG_LOOKINHISTORY, LookInHistory, buffer, 1024, registry);
 
-        // pozice okna
+        // window position
         if (!registry->GetValue(regKey, CONFIG_WIDTH, REG_DWORD, &DialogWidth, sizeof(int)) ||
             !registry->GetValue(regKey, CONFIG_HEIGHT, REG_DWORD, &DialogHeight, sizeof(int)))
         {
@@ -367,7 +367,7 @@ void CPluginInterface::SaveConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     }
     else
     {
-        //podrizneme historie
+        // trim the histories
         char buf[32];
         int i;
         for (i = 0; i < MAX_HISTORY_ENTRIES; i++)
@@ -380,7 +380,7 @@ void CPluginInterface::SaveConfiguration(HWND parent, HKEY regKey, CSalamanderRe
             registry->DeleteValue(regKey, buf);
         }
     }
-    // pozice okna
+    // window position
     HWND lastWnd = WindowQueue.GetLastWnd();
     if (lastWnd != NULL)
     {
@@ -420,8 +420,8 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
 {
     CALL_STACK_MESSAGE1("CPluginInterface::Connect(,)");
 
-    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volani salamander->AddMenuItem() dole...
+    /* used by the export_mnu.py script that generates salmenu.mnu for Translator
+   keep synchronized with the salamander->AddMenuItem() calls below...
 MENU_TEMPLATE_ITEM PluginMenu[] = 
 {
 	{MNTT_PB, 0
@@ -436,7 +436,7 @@ MENU_TEMPLATE_ITEM PluginMenu[] =
     salamander->AddMenuItem(-1, NULL, 0, 0, FALSE, 0, 0, MENU_SKILLLEVEL_ALL);
     /*
   char name[256];
-  // pridame za prikaz klavesovou zkratku ze salama
+  // append Salamander's shortcut to the command name
   SG->GetSalamanderCommand(SALCMD_CREATEDIRECTORY, name, 256, NULL, NULL);
   const char * str = LoadStr(IDS_MENUNEWKEY);
   int len = strlen(str);
@@ -497,7 +497,7 @@ void CPluginInterface::Event(int event, DWORD param)
     CALL_STACK_MESSAGE2("CPluginInterface::Event(, 0x%X)", param);
     if (event == PLUGINEVENT_COLORSCHANGED)
     {
-        // nutne ImageList != NULL, jinak by entry-point vratil chybu
+        // ImageList must not be NULL, otherwise the entry point would fail
         COLORREF bkColor = SG->GetCurrentColor(SALCOL_ITEM_BK_NORMAL);
         if (ImageList_GetBkColor(ImageList) != bkColor)
             ImageList_SetBkColor(ImageList, bkColor);

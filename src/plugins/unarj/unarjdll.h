@@ -17,18 +17,18 @@
 #define AE_CRC 10
 #define AE_BADVOL 11
 
-// operace pro  ProcessFile()
+// operations for ProcessFile()
 #define PFO_SKIP 0
 #define PFO_EXTRACT 1
 
-// mody pro ARJChangeVolProc()
+// modes for ARJChangeVolProc()
 #define CVM_NOTIFY 0
 #define CVM_ASK 1
 
-// flagy pro ARJErrorProc()
+// flags for ARJErrorProc()
 #define EF_RETRY 0x01
 
-// callbacky z dllka
+// callbacks from the DLL
 typedef BOOL(WINAPI* FARJChangeVolProc)(char* volName, char* prevName, int mode);
 typedef BOOL(WINAPI* FARJProcessDataProc)(const void* buffer, DWORD size);
 typedef BOOL(WINAPI* FARJErrorProc)(int error, BOOL flags);

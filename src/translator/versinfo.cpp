@@ -164,9 +164,9 @@ CVersionInfo::LoadBlock(BYTE*& ptr, CVersionBlock* parent)
         }
     }
 
-    // preskocime VERSIONINFO a retezec Key
+    // Skip the VERSIONINFO structure and the Key string
     ptr += sizeof(VERSIONINFO) + sizeof(WCHAR) * wcslen(block->Key);
-    // preskocime Padding
+    // Skip the padding bytes
     ptr = ALIGN_DWORD(BYTE*, ptr);
 
     switch (block->Type)
@@ -177,7 +177,7 @@ CVersionInfo::LoadBlock(BYTE*& ptr, CVersionBlock* parent)
     {
         int valSize = info->wValueLength;
 
-        if (block->Type == vbtVersionInfo) // udelame par kontrol konzistence dat
+        if (block->Type == vbtVersionInfo) // Perform a few consistency checks on the data
         {
             if (valSize != sizeof(VS_FIXEDFILEINFO))
             {
@@ -201,20 +201,20 @@ CVersionInfo::LoadBlock(BYTE*& ptr, CVersionBlock* parent)
             return NULL;
         }
 
-        // preskocime Value
+        // Skip the Value field
         ptr += valSize;
-        // preskocime padding
+        // Skip the padding
         ptr = ALIGN_DWORD(BYTE*, ptr);
 
         if (block->Type == vbtString || block->Type == vbtVar)
         {
-            // String a Var nemaji childy, takze vypadneme
+            // String and Var blocks do not have children, so we are done here
             return block;
         }
     }
     }
 
-    // pridame child bloky
+    // Add child blocks
     while (ptr < terminatorPtr)
     {
         CVersionBlock* child = LoadBlock(ptr, block);
@@ -409,14 +409,14 @@ BOOL CVersionInfo::SaveBlock(CVersionBlock* block, BYTE*& ptr, const BYTE* maxPt
         return FALSE;
     }
 
-    BYTE* oldPtr = ptr; // ulozim si pro nasledny vypocet velikosti nas a nasich childu
+    BYTE* oldPtr = ptr; // Remember this pointer to compute the size of this block and all children later
 
     // wLength
-    WORD* wLength = (WORD*)ptr; // ulozim si pro nasledne nastaveni
+    WORD* wLength = (WORD*)ptr; // Remember for later when we fill in the final length
     ptr += 2;
 
     // wValueLength
-    WORD* wValueLength = (WORD*)ptr; // ulozim si pro nasledne nastaveni
+    WORD* wValueLength = (WORD*)ptr; // Remember for later when we fill in the value length
     *wValueLength = 0;
     ptr += 2;
 
@@ -483,7 +483,7 @@ BOOL CVersionInfo::SaveBlock(CVersionBlock* block, BYTE*& ptr, const BYTE* maxPt
     }
     }
 
-    // pokud nemam childy, ulozime velikost bez paddingu
+    // When there are no children, store the size without padding.
     if (block->Children.Count == 0)
         *wLength = ptr - oldPtr;
 
@@ -498,7 +498,7 @@ BOOL CVersionInfo::SaveBlock(CVersionBlock* block, BYTE*& ptr, const BYTE* maxPt
             return FALSE;
     }
 
-    // v opacnem pripad s paddingem
+    // Otherwise include the padding in the stored size.
     if (block->Children.Count > 0)
         *wLength = ptr - oldPtr;
 
@@ -514,7 +514,7 @@ BOOL CVersionInfo::UpdateResource(HANDLE hUpdateRes, int resID)
         return FALSE;
     }
     memset(buff, 0, 50000);
-    BYTE* ptr = buff; // pozor, hodnota bude zmenena
+    BYTE* ptr = buff; // Note: SaveBlock updates this pointer.
     if (!SaveBlock(Root, ptr, ptr + 49999))
     {
         free(buff);
@@ -523,7 +523,7 @@ BOOL CVersionInfo::UpdateResource(HANDLE hUpdateRes, int resID)
     DWORD resSize = ptr - buff;
 
     BOOL result = TRUE;
-    if (TLangID != MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL)) // resource neni "neutral", musime ho smaznout, aby ve vyslednem .SLG nebyly version-infa dve
+    if (TLangID != MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL)) // Remove the non-neutral resource so the final .SLG contains only one version block
     {
         result = ::UpdateResource(hUpdateRes, RT_VERSION, MAKEINTRESOURCE(resID),
                                   TLangID, NULL, 0);

@@ -20,33 +20,33 @@
 
 // ****************************************************************************
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to the SPL module - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to the SLG module - language-dependent resources
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object; its methods are called by Salamander
 CPluginInterface PluginInterface;
-// cast interfacu CPluginInterface pro archivator
+// the portion of CPluginInterface used for the archiver
 CPluginInterfaceForArchiver InterfaceForArchiver;
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from start until the plugin is unloaded
 CSalamanderGeneralAbstract* SalamanderGeneral = NULL;
 
-// rozhrani pro praci se soubory - platne od startu az do ukonceni pluginu
+// interface for working with files - valid from start until the plugin is unloaded
 CSalamanderSafeFileAbstract* SalamanderSafeFile = NULL;
 
-// definice promenne pro "dbg.h"
+// variable definition for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
-// definice promenne pro "spl_com.h"
+// variable definition for "spl_com.h"
 int SalamanderVersion = 0;
 
-// zatim staci tohleto misto konfigurace
+// this placeholder is enough for configuration for now
 //DWORD Options;
 COptions Options;
 
-int SortByExtDirsAsFiles = FALSE; // aktualni hodnota konfiguracni promenne Salamandera SALCFG_SORTBYEXTDIRSASFILES
+int SortByExtDirsAsFiles = FALSE; // current value of Salamander's SALCFG_SORTBYEXTDIRSASFILES configuration variable
 
-// casto pouzita chybova hlaska
+// frequently used error message
 const char* LOW_MEMORY = "Low memory";
 
 //const char *CONFIG_OPTIONS = "Options";
@@ -83,45 +83,45 @@ int WINAPI SalamanderPluginGetReqVer()
 
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
-    // nastavime SalamanderDebug pro "dbg.h"
+    // set SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
-    // nastavime SalamanderVersion pro "spl_com.h"
+    // set SalamanderVersion for "spl_com.h"
     SalamanderVersion = salamander->GetVersion();
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plugin is made for the current version of Salamander or newer - perform a check
     if (SalamanderVersion < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
-                   "UnFAT" /* neprekladat! */, MB_OK | MB_ICONERROR);
+                   "UnFAT" /* do not translate! */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
-    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "UnFAT" /* neprekladat! */);
+    // let Salamander load the language module (.slg)
+    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "UnFAT" /* do not translate! */);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain the general Salamander interface
     SalamanderGeneral = salamander->GetSalamanderGeneral();
     SalamanderSafeFile = salamander->GetSalamanderSafeFile();
 
     SalamanderGeneral->GetConfigParameter(SALCFG_SORTBYEXTDIRSASFILES, &SortByExtDirsAsFiles,
                                           sizeof(SortByExtDirsAsFiles), NULL);
 
-    if (!InitializeWinLib("UnFAT" /* neprekladat! */, DLLInstance))
+    if (!InitializeWinLib("UnFAT" /* do not translate! */, DLLInstance))
         return NULL;
     SetWinLibStrings("Invalid number!", LoadStr(IDS_PLUGINNAME));
 
-    // nastavime zakladni informace o pluginu
+    // set up the basic plugin information
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_PANELARCHIVERVIEW | FUNCTION_CUSTOMARCHIVERUNPACK,
                                    VERSINFO_VERSION_NO_PLATFORM,
                                    VERSINFO_COPYRIGHT,
                                    LoadStr(IDS_PLUGIN_DESCRIPTION),
-                                   "UnFAT" /* neprekladat! */, "ima");
+                                   "UnFAT" /* do not translate! */, "ima");
 
     salamander->SetPluginHomePageURL("www.altap.cz");
 
@@ -148,7 +148,7 @@ BOOL Error(char* msg, DWORD err, BOOL quiet)
 {
     if (!quiet)
     {
-        //    if (err != ERROR_FILE_NOT_FOUND && err != ERROR_NO_MORE_FILES)  // jde o chybu
+        //    if (err != ERROR_FILE_NOT_FOUND && err != ERROR_NO_MORE_FILES)  // treat as an error
         //    {
         char buf[1024];
         sprintf(buf, "%s\n\n%s", msg, SalamanderGeneral->GetErrorText(err));
@@ -219,7 +219,7 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
 {
     CALL_STACK_MESSAGE1("CPluginInterface::Connect(,)");
 
-    // ZAKLADNI CAST
+    // BASIC SECTION
     salamander->AddPanelArchiver("ima", FALSE, FALSE);
     salamander->AddCustomUnpacker("UnFAT (Plugin)", "*.ima", FALSE);
 }
@@ -256,13 +256,13 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
     CALL_STACK_MESSAGE2("CPluginInterfaceForArchiver::ListArchive(, %s, ,)", fileName);
     pluginData = NULL;
 
-    // pokusime se otevrit FAT image
+    // attempt to open the FAT image
     BOOL ret = FALSE;
     HWND hParent = SalamanderGeneral->GetMsgBoxParent();
-    CFATImage fatImage; // destruktor zavola Close
+    CFATImage fatImage; // the destructor calls Close
     if (fatImage.Open(fileName, FALSE, hParent))
     {
-        // predame kompletni listing jadru Salamandera
+        // hand over the complete listing to the Salamander core
         if (fatImage.ListImage(dir, hParent))
         {
             ret = TRUE;
@@ -280,13 +280,13 @@ BOOL CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract
 
     HWND hParent = SalamanderGeneral->GetMsgBoxParent();
 
-    // pokusime se otevrit FAT image
-    CFATImage fatImage; // destruktor zavola Close
+    // attempt to open the FAT image
+    CFATImage fatImage; // the destructor calls Close
     if (!fatImage.Open(fileName, FALSE, hParent))
         return FALSE;
 
     BOOL ret = FALSE;
-    // spocitame 'totalSize' pro progress dialog
+    // compute 'totalSize' for the progress dialog
     BOOL isDir;
     CQuadWord size;
     CQuadWord totalSize(0, 0);
@@ -311,26 +311,26 @@ BOOL CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract
         totalSize += size;
     }
 
-    // test, jestli nenastala chyba a uzivatel si nepral prerusit operaci (tlacitko Cancel) +
-    // test volneho mista na disku + pripadne vybalit
+    // check whether an error occurred or the user requested to cancel the operation (Cancel button) +
+    // check the free disk space and optionally unpack
     if (errorOccured != SALENUM_CANCEL &&
         SalamanderGeneral->TestFreeSpace(hParent, targetDir, realTotalSize, LoadStr(IDS_PLUGINNAME)))
     {
         char title[2 * MAX_PATH];
         sprintf(title, LoadStr(IDS_EXTRACTING_ARCHIVE), SalamanderGeneral->SalPathFindFileName(fileName));
         salamander->OpenProgressDialog(title, TRUE, NULL, FALSE);
-        // nastavime maximalni hodnotu pro teplomer TOTAL
+        // set the maximum value for the TOTAL progress bar
         salamander->ProgressSetTotalSize(CQuadWord(-1, -1), totalSize);
 
         BOOL toSkip = FALSE;
 
         CAllocWholeFileEnum allocWholeFileOnStart = awfNeededTest;
-        char skipPath[2 * MAX_PATH]; // vsechny poadresare a soubory pod touto cestou budou ignorovany
-        skipPath[0] = 0;             // zatim zakazeme skip
-        DWORD silentMask = 0;        // maska drzici skipovaci rezimy; 0 = no-skip
+        char skipPath[2 * MAX_PATH]; // all subdirectories and files under this path will be ignored
+        skipPath[0] = 0;             // disallow skipping for now
+        DWORD silentMask = 0;        // mask holding skip modes; 0 = no skip
         ret = TRUE;
-        next(NULL, -1, NULL, NULL, NULL, nextParam, NULL); // reset enumerace
-        while ((name = next(NULL /* podruhe uz chyby nepiseme */, 1, &isDir, &size, &fileData, nextParam, NULL)) != NULL)
+        next(NULL, -1, NULL, NULL, NULL, nextParam, NULL); // reset the enumeration
+        while ((name = next(NULL /* do not report errors the second time */, 1, &isDir, &size, &fileData, nextParam, NULL)) != NULL)
         {
             char destPath[2 * MAX_PATH];
             strcpy(destPath, targetDir);
@@ -339,7 +339,7 @@ BOOL CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract
             strcpy(nameInArchive, archiveRoot);
             SalamanderGeneral->SalPathAppend(nameInArchive, name, 2 * MAX_PATH);
 
-            // nastavime hodnotu pro teplomer FILE na pocatek
+            // reset the FILE progress bar to its initial value
             salamander->ProgressSetSize(CQuadWord(0, 0), CQuadWord(-1, -1), TRUE);
 
             if (SalamanderGeneral->SalPathAppend(destPath, name, 2 * MAX_PATH))
@@ -347,14 +347,14 @@ BOOL CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract
                 if (skipPath[0] != 0)
                 {
                     if (SalamanderGeneral->PathIsPrefix(skipPath, destPath))
-                        continue; // polozka lezi pod skipPath, takze ji ignorujeme
+                        continue; // the item lies under skipPath so it is ignored
                     else
-                        skipPath[0] = 0; // polozka nepatri pod skipPath, takze skipPath zahodime
+                        skipPath[0] = 0; // the item does not belong under skipPath, discard skipPath
                 }
 
                 if (isDir)
                 {
-                    // vytvorime cilovou cestu
+                    // create the target path
                     BOOL skipped;
                     if (SalamanderSafeFile->SafeFileCreate(destPath, 0, 0, 0, TRUE, hParent, NULL, NULL, &silentMask, TRUE, &skipped,
                                                            skipPath, 2 * MAX_PATH, NULL, NULL) == INVALID_HANDLE_VALUE)
@@ -365,7 +365,7 @@ BOOL CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract
                             break;
                         }
                     }
-                    // nastavime maximalni hodnotu pro teplomer FILE
+                    // set the maximum value for the FILE progress bar
                     salamander->ProgressSetTotalSize(COPY_MIN_FILE_SIZE, CQuadWord(-1, -1));
                     // "extracting: %s..."
                     char progressText[2 * MAX_PATH + 100];
@@ -376,13 +376,13 @@ BOOL CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract
                     if (!salamander->ProgressAddSize((int)size2.Value, TRUE))
                     {
                         ret = FALSE;
-                        break; // preruseni akce
+                        break; // the operation was cancelled
                     }
                 }
                 else
                 {
                     // file
-                    // nastavime maximalni hodnotu pro teplomer FILE
+                    // set the maximum value for the FILE progress bar
                     salamander->ProgressSetTotalSize(fileData->Size, CQuadWord(-1, -1));
 
                     char* lastComp = _tcsrchr(destPath, '\\');
@@ -427,8 +427,8 @@ BOOL CPluginInterfaceForArchiver::UnpackOneFile(CSalamanderForOperationsAbstract
     }
 
     HWND hParent = SalamanderGeneral->GetMsgBoxParent();
-    // pokusime se otevrit FAT image
-    CFATImage fatImage; // destruktor zavola Close
+    // attempt to open the FAT image
+    CFATImage fatImage; // the destructor calls Close
     if (!fatImage.Open(fileName, FALSE, hParent))
         return FALSE;
 
@@ -459,7 +459,7 @@ BOOL CPluginInterfaceForArchiver::UnpackOneFile(CSalamanderForOperationsAbstract
 void CalcSize(CSalamanderDirectoryAbstract const* dir, CSalamanderMaskGroup* maskGroup,
               char* path, int pathBufSize, CQuadWord* totalSize, CQuadWord* realTotalSize)
 {
-    *totalSize += COPY_MIN_FILE_SIZE; // za adresar
+    *totalSize += COPY_MIN_FILE_SIZE; // account for the directory
 
     int count = dir->GetFilesCount();
     int i;
@@ -497,7 +497,7 @@ BOOL ExtractArchive(CSalamanderDirectoryAbstract const* dir, CSalamanderMaskGrou
                     char* path, int pathBufSize, DWORD* silent, char* skipPath, int skipPathMax)
 {
     HWND hParent = SalamanderGeneral->GetMsgBoxParent();
-    // napred soubory
+    // process files first
     CAllocWholeFileEnum allocWholeFileOnStart = awfNeededTest;
     int filesCount = dir->GetFilesCount();
     int unpackedCount = 0;
@@ -512,7 +512,7 @@ BOOL ExtractArchive(CSalamanderDirectoryAbstract const* dir, CSalamanderMaskGrou
 
         if (maskGroup->AgreeMasks(fileData->Name, fileData->Ext))
         {
-            // nastavime maximalni hodnotu pro teplomer FILE
+            // set the maximum value for the FILE progress bar
             salamander->ProgressSetTotalSize(fileData->Size, CQuadWord(-1, -1));
 
             char myTargetDir[2 * MAX_PATH];
@@ -526,10 +526,10 @@ BOOL ExtractArchive(CSalamanderDirectoryAbstract const* dir, CSalamanderMaskGrou
             {
                 if (SalamanderGeneral->PathIsPrefix(skipPath, myTargetDir))
                 {
-                    unpack = FALSE; // polozka lezi pod skipPath, takze ji ignorujeme
+                    unpack = FALSE; // the item lies under skipPath so it is ignored
                 }
                 else
-                    skipPath[0] = 0; // polozka nepatri pod skipPath, takze skipPath zahodime
+                    skipPath[0] = 0; // the item does not belong under skipPath, discard skipPath
             }
 
             if (unpack)
@@ -538,9 +538,9 @@ BOOL ExtractArchive(CSalamanderDirectoryAbstract const* dir, CSalamanderMaskGrou
                 if (!img->UnpackFile(salamander, archiveName, path, fileData, myTargetDir, silent,
                                      TRUE, &skipped, skipPath, 2 * MAX_PATH, hParent, &allocWholeFileOnStart))
                 {
-                    // skip || skip all || cancel || chyba
+                    // skip || skip all || cancel || error
                     if (!skipped)
-                        return FALSE; // Cancel, musime vypadnout
+                        return FALSE; // Cancel -- we have to exit
                 }
             }
 
@@ -550,7 +550,7 @@ BOOL ExtractArchive(CSalamanderDirectoryAbstract const* dir, CSalamanderMaskGrou
         }
     }
 
-    // potom rekurzivne adresare
+    // then recurse into directories
     int dirsCount = dir->GetDirsCount();
     pathLen = strlen(path);
     int j;
@@ -569,10 +569,10 @@ BOOL ExtractArchive(CSalamanderDirectoryAbstract const* dir, CSalamanderMaskGrou
 
             if (SalamanderGeneral->PathIsPrefix(skipPath, testPath))
             {
-                unpack = FALSE; // polozka lezi pod skipPath, takze ji ignorujeme
+                unpack = FALSE; // the item lies under skipPath so it is ignored
             }
             else
-                skipPath[0] = 0; // polozka nepatri pod skipPath, takze skipPath zahodime
+                skipPath[0] = 0; // the item does not belong under skipPath, discard skipPath
         }
 
         if (unpack)
@@ -586,12 +586,12 @@ BOOL ExtractArchive(CSalamanderDirectoryAbstract const* dir, CSalamanderMaskGrou
 
     if (unpackedCount == 0 && dirsCount == 0)
     {
-        // zanoreni do posledniho prazdneho adresare -- nechame vytvorit alespon ten adresar
+        // descend into the last empty directory -- create at least that directory
         salamander->ProgressSetSize(CQuadWord(0, 0), CQuadWord(-1, -1), TRUE);
-        // nastavime maximalni hodnotu pro teplomer FILE
+        // set the maximum value for the FILE progress bar
         salamander->ProgressSetTotalSize(COPY_MIN_FILE_SIZE, CQuadWord(-1, -1));
 
-        // prazdny adresar musime vytvorit explicitne
+        // an empty directory must be created explicitly
         char dirName[MAX_PATH];
         lstrcpyn(dirName, targetDir, MAX_PATH);
         SalamanderGeneral->SalPathAppend(dirName, path, MAX_PATH);
@@ -601,7 +601,7 @@ BOOL ExtractArchive(CSalamanderDirectoryAbstract const* dir, CSalamanderMaskGrou
         sprintf(progressText, LoadStr(IDS_EXTRACTING), path);
         salamander->ProgressDialogAddText(progressText, TRUE);
 
-        // vytvorime cilovou cestu
+        // create the target path
         BOOL skipped;
         if (SalamanderSafeFile->SafeFileCreate(dirName, 0, 0, 0, TRUE, hParent, NULL, NULL, silent, TRUE, &skipped,
                                                skipPath, 2 * MAX_PATH, NULL, NULL) == INVALID_HANDLE_VALUE)
@@ -655,17 +655,17 @@ BOOL CPluginInterfaceForArchiver::UnpackWholeArchive(CSalamanderForOperationsAbs
                     char title[2 * MAX_PATH];
                     sprintf(title, LoadStr(IDS_EXTRACTING_ARCHIVE), SalamanderGeneral->SalPathFindFileName(fileName));
                     salamander->OpenProgressDialog(title, TRUE, NULL, FALSE);
-                    // nastavime maximalni hodnotu pro teplomer TOTAL
+                    // set the maximum value for the TOTAL progress bar
                     salamander->ProgressSetTotalSize(CQuadWord(-1, -1), totalSize);
 
                     HWND hParent = SalamanderGeneral->GetMsgBoxParent();
-                    CFATImage fatImage; // destruktor zavola Close
+                    CFATImage fatImage; // the destructor calls Close
                     if (fatImage.Open(fileName, FALSE, hParent))
                     {
                         path[0] = 0;
                         DWORD silent = 0;
-                        char skipPath[2 * MAX_PATH]; // vsechny poadresare a soubory pod touto cestou budou ignorovany
-                        skipPath[0] = 0;             // zatim zakazeme skip
+                        char skipPath[2 * MAX_PATH]; // all subdirectories and files under this path will be ignored
+                        skipPath[0] = 0;             // disallow skipping for now
                         ret = ExtractArchive(dir, maskGroup, salamander, &fatImage, fileName, targetDir, path, MAX_PATH, &silent, skipPath, 2 * MAX_PATH);
                     }
 
@@ -677,7 +677,7 @@ BOOL CPluginInterfaceForArchiver::UnpackWholeArchive(CSalamanderForOperationsAbs
 
         if (pluginData != NULL)
         {
-            // dir->Clear(pluginData); // nepouzivame, neni treba uvolnovat
+            // dir->Clear(pluginData); // unused, no need to free it
             PluginInterface.ReleasePluginDataInterface(pluginData);
         }
     }

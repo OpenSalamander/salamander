@@ -1,11 +1,12 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
 //
 //*****************************************************************************
-// Funkce pro wild-card operace
+// Functions for wildcard operations
 //
 
 void PrepareMask(char* mask, const char* src)
@@ -13,7 +14,7 @@ void PrepareMask(char* mask, const char* src)
     SLOW_CALL_STACK_MESSAGE2("PrepareMask(, %s)", src);
     char* begMask = mask;
     char lastChar = 0;
-    // odstranime mezery na zacatku masky
+    // remove spaces at the beginning of the mask
     while (*src == ' ')
         src++;
     while (*src != 0)
@@ -29,7 +30,7 @@ void PrepareMask(char* mask, const char* src)
         else
             *mask++ = (lastChar = *src++);
     }
-    // orizneme mezery na konci masky
+    // trim spaces at the end of the mask
     while (mask > begMask && *(mask - 1) == ' ')
         mask--;
     *mask = 0;
@@ -38,39 +39,39 @@ void PrepareMask(char* mask, const char* src)
 BOOL AgreeMask(const char* filename, const char* mask, BOOL hasExtension, BOOL extendedMode)
 {
     CALL_STACK_MESSAGE_NONE;
-    //  CALL_STACK_MESSAGE4("AgreeMask(%s, %s, %d)", filename, mask, hasExtension);  // brutalne zpomaluje (vola se rekurzivne)
+    //  CALL_STACK_MESSAGE4("AgreeMask(%s, %s, %d)", filename, mask, hasExtension);  // slows things down massively (called recursively)
     while (*filename != 0)
     {
         if (*mask == 0)
-            return FALSE; // prilis kratka maska
+            return FALSE; // mask is too short
         BOOL agree;
         if (extendedMode)
-            agree = (LowerCase[*filename] == LowerCase[*mask] || *mask == '?' || // trefa nebo '?' zastupuje libovolny znak nebo '#' zastupuje libovolnou cislici
+            agree = (LowerCase[*filename] == LowerCase[*mask] || *mask == '?' || // match or '?' represents any character or '#' represents any digit
                      (*mask == '#' && *filename >= '0' && *filename <= '9'));
         else
-            agree = (LowerCase[*filename] == LowerCase[*mask] || *mask == '?'); // trefa nebo '?' zastupuje libovolny znak
+            agree = (LowerCase[*filename] == LowerCase[*mask] || *mask == '?'); // match or '?' represents any character
         if (agree)
         {
             filename++;
             mask++;
         }
-        else if (*mask == '*') // '*' zastupuje retezec znaku (muze byt i prazdny)
+        else if (*mask == '*') // '*' represents a sequence of characters (possibly empty)
         {
             mask++;
             while (*filename != 0)
             {
                 if (AgreeMask(filename, mask, hasExtension, extendedMode))
-                    return TRUE; // zbytek masky sohlasi
+                    return TRUE; // the rest of the mask matches
                 filename++;
             }
-            break; // konec filename ...
+            break; // end of filename...
         }
         else
             return FALSE;
     }
     if (*mask == '*')
-        mask++;                        // hvezdicka za -> zastupuje "" -> vse o.k.
-    if (!hasExtension && *mask == '.') // bez pripony musi maska "*.*" vzit ...
+        mask++;                        // asterisk '*' afterwards -> represents "" -> everything is ok
+    if (!hasExtension && *mask == '.') // without extension mask "*.*" must still match...
         return *(mask + 1) == 0 || (*(mask + 1) == '*' && *(mask + 2) == 0);
     else
         return *mask == 0;
@@ -87,11 +88,11 @@ char* MaskName(char* buffer, int bufSize, const char* name, const char* mask)
         return buffer;
     }
 
-    // prvni tecka v masce je oddelovac dvou casti operacni masky: prvni pro jmeno, druha pro
-    // priponu (priklad: "a.b.c.d" + "*.*.old": "a.b.c" + "*" = "a.b.c"; "d" + "*.old" = "d.old" -> vysledek
-    // je spojeni: "a.b.c.d.old")
+    // the first dot in the mask separates two operational parts: the first for the name,
+    // the second for the extension (example: "a.b.c.d" + "*.*.old": "a.b.c" + "*" = "a.b.c";
+    // "d" + "*.old" = "d.old" -> the result is the combination "a.b.c.d.old")
 
-    int ignPoints = 0; // kolik tecek obsahuje jmeno (teto sekci odpovida text masky od zacatku do prvni tecky); pripone odpovida zbytek masky (za prvni teckou)
+    int ignPoints = 0; // how many dots the name contains (this section corresponds to the text of the mask from the start to the first dot); the rest matches the extension (after the fisrt dot)
     const char* n = name;
     while (*n != 0)
         if (*n++ == '.')
@@ -102,11 +103,11 @@ char* MaskName(char* buffer, int bufSize, const char* name, const char* mask)
         {
             ignPoints--;
             break;
-        } // v masce je smysluplna jen jedna tecka (name.ext), cast masky za druhou teckou budeme expandovat na konci jmena
-    //  while (*s != 0) if (*s++ == '.') {ignPoints--;}  // v teto variante si budou odpovidat useky ve jmene a masce mezi teckami odzadu ("a.b.c.d" + "*.*.old": "a.b" + "*"; "c" + "*"; "d" + "old" -> 'a.b.c.old')
+        } // in the mask, only one dot is meaningful (name.ext); the part after the second dot will be expanded at the end of the name
+    //  while (*s != 0) if (*s++ == '.') {ignPoints--;}  // in this variant, sections in the name and mask between dots are matched from the end ("a.b.c.d" + "*.*.old": "a.b" + "*"; "c" + "*"; "d" + "old" -> "a.b.c.old")
     if (ignPoints < 0)
         ignPoints = 0;
-    //  if (ignPoints == 0 && *name == '.') ignPoints++;   // tecka na zacatku jmena se ma ignorovat (neni pripona); oprava: ".cvspass" ve Windows je pripona ...
+    //  if (ignPoints == 0 && *name == '.') ignPoints++;   // dot at the start of the name should be ignored (not an extension); fix: ".cvspass" is an extension in Windows...
 
     n = name;
     char* d = buffer;
@@ -116,14 +117,14 @@ char* MaskName(char* buffer, int bufSize, const char* name, const char* mask)
     {
         switch (*s)
         {
-        case '*': // nakopirujeme zbytek sekce jmena (do 'ignPoints+1'-te tecky)
+        case '*': // copy the rest of the name section (up to the "ignPoints+1"-th dot)
         {
             while (*n != 0)
             {
                 if (*n == '.')
                 {
                     if (ignPoints > 0)
-                        ignPoints--; // tato tecka je soucasti sekce, pokracujeme
+                        ignPoints--; // this dot is part of the section, continue
                     else
                         break;
                 }
@@ -134,7 +135,7 @@ char* MaskName(char* buffer, int bufSize, const char* name, const char* mask)
             break;
         }
 
-        case '?': // nakopirujeme jeden znak pokud nejde o konec sekce jmena (do 'ignPoints+1'-te tecky)
+        case '?': // copy one character unless it is the end of the name section (up to the "ignPoints+1"-th dot)
         {
             if (*n != 0)
             {
@@ -142,7 +143,7 @@ char* MaskName(char* buffer, int bufSize, const char* name, const char* mask)
                 {
                     if (ignPoints > 0)
                     {
-                        ignPoints--; // tato tecka je soucasti sekce, pokracujeme
+                        ignPoints--; // this dot is part of the section, continue
                         *d++ = *n++;
                     }
                 }
@@ -152,7 +153,7 @@ char* MaskName(char* buffer, int bufSize, const char* name, const char* mask)
             break;
         }
 
-        case '.': // konec aktualni sekce jmena (preskocime na dalsi sekci ve jmene)
+        case '.': // end of the current name section (jump to the next section in the name)
         {
             *d++ = '.';
             while (*n != 0)
@@ -160,7 +161,7 @@ char* MaskName(char* buffer, int bufSize, const char* name, const char* mask)
                 if (*n == '.')
                 {
                     if (ignPoints > 0)
-                        ignPoints--; // tato tecka je soucasti sekce, pokracujeme
+                        ignPoints--; // this dot is part of the section, continue
                     else
                         break;
                 }
@@ -173,17 +174,17 @@ char* MaskName(char* buffer, int bufSize, const char* name, const char* mask)
 
         default:
         {
-            *d++ = *s; // normalni znak - pouze kopirujeme
+            *d++ = *s; // regular character - just copy it
             if (*n != 0)
             {
                 if (*n != '.')
-                    n++; // pokud nejde o '.', preskocime jeden znak ze jmena
+                    n++; // if it isn't a '.', skip one character from the name
                 else
                 {
                     if (ignPoints > 0)
                     {
                         ignPoints--;
-                        n++; // je-li tecka soucasti sekce, preskocime ji tez
+                        n++; // if the dot is part of the section, skip it as well
                     }
                 }
             }
@@ -193,20 +194,20 @@ char* MaskName(char* buffer, int bufSize, const char* name, const char* mask)
         s++;
     }
     while (--d >= buffer && *d == '.')
-        ; // vysledek musime orezat o koncove '.'
+        ; // the result must be trimmed of trailing '.'
     *++d = 0;
     return buffer;
 }
 
 //
 //*****************************************************************************
-// Funkce pro quick-search vyhledavani
-// znak '/' zastupuje lib. pocet znaku (ala '*' v normalni masce)
+// Functions for quick-search
+// the '/' character represents any number of characters (like '*' in a standard mask)
 
-// vraci TRUE, pokud se jedna o znak zastupujici '*'
-// musi se jednat o znaky, ktere nejsou povolene v nazvu souboru
-// zaroven by mely byt dobre vlozitelne (viz znak '<' na nemecke klavesnici;
-// pro zpetne lomitko je na nemecke klavesnici treba stisknout AltGr+\)
+// returns TRUE if it is a wildcard character replacing '*'
+// it must be a character not allowed in file names
+// and at the same time, it should be easy to type (see the '<' on the German keyboard;
+// for the backslash on the German keyboard you must press AltGr+\)
 BOOL IsQSWildChar(char ch)
 {
     return (ch == '/' || ch == '\\' || ch == '<');
@@ -225,7 +226,7 @@ void PrepareQSMask(char* mask, const char* src)
                 src++;
             else
             {
-                // konverze 'ostatni' wild znaku na '/'
+                // convert other wild characters to '/'
                 src++;
                 *mask++ = (lastChar = '/');
             }
@@ -233,7 +234,7 @@ void PrepareQSMask(char* mask, const char* src)
         else
             *mask++ = (lastChar = *src++);
     }
-    // orizneme '/' na konci masky (nema zde smysl)
+    // trim '/' at the end of the mask (it has no meaning here)
     if (mask > begMask && *(mask - 1) == '/')
         mask--;
     *mask = 0;
@@ -248,32 +249,32 @@ BOOL AgreeQSMaskAux(const char* filename, BOOL hasExtension, const char* filenam
         if (!wholeString && *mask == 0)
         {
             offset = (int)(filename - filenameBase);
-            return TRUE; // konec masky, 'offset' = kam az to saha do jmena souboru
+            return TRUE; // end of mask, 'offset' = how far it reaches into the file name
         }
         if (LowerCase[*filename] == LowerCase[*mask])
         {
             filename++;
             mask++;
         }
-        else if (*mask == '/') // '/' zastupuje retezec znaku (muze byt i prazdny)
+        else if (*mask == '/') // '/' stands for a sequence of characters (can be empty)
         {
             mask++;
             while (*filename != 0)
             {
                 if (AgreeQSMaskAux(filename, hasExtension, filenameBase, mask, wholeString, offset))
-                    return TRUE; // zbytek masky souhlasi
+                    return TRUE; // the rest of the mask matches
                 filename++;
             }
-            break; // konec filename ...
+            break; // end of filename...
         }
         else
             return FALSE;
     }
     if (*mask == 0 ||
-        !hasExtension && *mask == '.' && *(mask + 1) == 0) // tecka na konci masky se u jmen bez pripony toleruje ('/' na konci retezce se orezava, neresime)
+        !hasExtension && *mask == '.' && *(mask + 1) == 0) // a dot at the end of the mask is tolerated for names without an extension ('/' at the end is trimmed, not handled)
     {
         offset = (int)(filename - filenameBase);
-        return TRUE; // maska vysla na cele jmeno -> 'offset' = delka jmena souboru
+        return TRUE; // mask matched the entire name -> 'offset' = length of the file name
     }
     else
         return FALSE;
@@ -341,7 +342,7 @@ CMaskGroup::operator=(const CMaskGroup& s)
     if (!s.NeedPrepare)
     {
         int errpos = 0;
-        if (!PrepareMasks(errpos)) // k chybe by nemelo dojit, protoze zdrojova maska je ok
+        if (!PrepareMasks(errpos)) // an error shouldn't occur, the source mask is valid
             TRACE_E("CMaskGroup::operator= Internal error, PrepareMasks() failed.");
     }
     return *this;
@@ -354,11 +355,11 @@ void CMaskGroup::ReleaseMasksHashArray()
         int i;
         for (i = 0; i < MasksHashArraySize; i++)
         {
-            if (MasksHashArray[i].Mask != NULL) // neni-li prvek pole prazdny
+            if (MasksHashArray[i].Mask != NULL) // if this array element is not empty
             {
                 free(MasksHashArray[i].Mask);
                 CMasksHashEntry* next = MasksHashArray[i].Next;
-                while (next != NULL) // pokud je vic masek na stejnem prvku (hashi)
+                while (next != NULL) // if there are multiple masks at the same entry (hash)
                 {
                     CMasksHashEntry* nextNext = next->Next;
                     if (next->Mask != NULL)
@@ -368,7 +369,7 @@ void CMaskGroup::ReleaseMasksHashArray()
                 }
             }
         }
-        free(MasksHashArray); // aby se nevolali destruktory jednotlivych objektu v poli
+        free(MasksHashArray); // so destructors of objects in the array aren't called
         MasksHashArray = NULL;
         MasksHashArraySize = 0;
     }
@@ -382,8 +383,8 @@ void CMaskGroup::SetMasksString(const char* masks, BOOL extendedMode)
         l = MAX_GROUPMASK - 1;
         TRACE_E("Group mask string is longer than MAX_GROUPMASK, using only first MAX_GROUPMASK-1 characters...");
     }
-    // puvodne memcpy, ale pri nekterych volani vstupoval jako
-    // masks ukazatel na MasksString a dochazelo k prekryvu
+    // originally memcpy was used, but in some calls, the masks pointer referenced
+    // MasksString itself, causing overlap
     memmove(MasksString, masks, l);
 
     MasksString[l] = 0;
@@ -400,7 +401,7 @@ CMaskGroup::GetMasksString()
 
 char* CMaskGroup::GetWritableMasksString()
 {
-    NeedPrepare = TRUE; // pouziva se bohuzel i jako buffer pro zapis, takze musime povolit dalsi PrepareMasks
+    NeedPrepare = TRUE; // unfortunately also used as a write buffer, so we have to allow another PrepareMasks
     return MasksString;
 }
 
@@ -442,13 +443,13 @@ BOOL CMaskGroup::PrepareMasks(int& errorPos, const char* masksString)
     const char* s = useMasksString;
     char buf[MAX_PATH];
     char maskBuf[MAX_PATH];
-    int excludePos = -1;   // pokud je ruzny od -1, vsechny nasledujici masky jsou typu exclude
-                           // a budeme je zarazovat na zacatek pole
-    int hashableMasks = 0; // pocet masek, ktere je mozne hashovat (MASK_OPTIMIZE_EXTENSION + CMaskItemFlags::Exclude==0)
+    int excludePos = -1;   // if not -1, all following masks are exclude type
+                           // and will be inserted at the beginning of the array
+    int hashableMasks = 0; // number of masks that can be hashed (MASK_OPTIMIZE_EXTENSION + CMaskItemFlags::Exclude==0)
 
-    // abychom predesli zbytecnym relokacim u delsich poli, nastavime rozumne deltu
+    // to avoid unnecessary reallocations for longer arrays, set a reasonable delta
     int masksLen = (int)strlen(s);
-    PreparedMasks.SetDelta(max(10, (masksLen / 6) / 2)); // "*.xxx;" to je 6 znaku, dame polovinu pripon
+    PreparedMasks.SetDelta(max(10, (masksLen / 6) / 2)); // "*.xxx;" is 6 characters, use half the extensions
 
     while (1)
     {
@@ -468,7 +469,7 @@ BOOL CMaskGroup::PrepareMasks(int& errorPos, const char* masksString)
             *mask++ = *s++;
         }
         *mask = 0;
-        if (*s != 0 && *s != ';' && (*s != '|' || excludePos != -1)) // exclude znak '|' muze byt v masce pouze jednou
+        if (*s != 0 && *s != ';' && (*s != '|' || excludePos != -1)) // the exclude character '|' may appear only once in the mask
         {
             errorPos = (int)(s - useMasksString);
             return FALSE;
@@ -483,7 +484,7 @@ BOOL CMaskGroup::PrepareMasks(int& errorPos, const char* masksString)
 
         if (*mask != 0)
         {
-            PrepareMask(buf, mask); // pro extendedMode volame take PrepareMask
+            PrepareMask(buf, mask); // call PrepareMask for extendedMode as well
             if (buf[0] != 0)
             {
                 int l = (int)strlen(buf) + 1;
@@ -492,7 +493,7 @@ BOOL CMaskGroup::PrepareMasks(int& errorPos, const char* masksString)
                 {
                     CMaskItemFlags* flags = (CMaskItemFlags*)newMask;
                     flags->Optimize = MASK_OPTIMIZE_NONE;
-                    // zjistim, jestli bude mozne pouzit jednu z optimalizaci
+                    // determine whether one of the optimizations can be used
                     if (lstrcmp(buf, "*") == 0 || lstrcmp(buf, "*.*") == 0)
                         flags->Optimize = MASK_OPTIMIZE_ALL; // *.* nebo *
                     else
@@ -522,9 +523,9 @@ BOOL CMaskGroup::PrepareMasks(int& errorPos, const char* masksString)
 
                     memmove(newMask + 1, buf, l);
                     if (excludePos != -1)
-                        PreparedMasks.Insert(0, newMask); // exlude vkladam na zacatek
+                        PreparedMasks.Insert(0, newMask); // insert exclude masks at the beginning
                     else
-                        PreparedMasks.Add(newMask); // include pripojim na konec
+                        PreparedMasks.Add(newMask); // append include masks at the end
                     if (!PreparedMasks.IsGood())
                     {
                         free(newMask);
@@ -547,7 +548,7 @@ BOOL CMaskGroup::PrepareMasks(int& errorPos, const char* masksString)
             if (excludePos != -1 && (PreparedMasks.Count == 0 ||
                                      ((CMaskItemFlags*)PreparedMasks[0])->Exclude == 0))
             {
-                // pokud znak '|' neni nasledovan dalsi maskou, je to syntakticka chyba
+                // if the '|' character is not followed by another mask, the syntax is invalid
                 errorPos = excludePos;
                 return FALSE;
             }
@@ -557,7 +558,7 @@ BOOL CMaskGroup::PrepareMasks(int& errorPos, const char* masksString)
         {
             if (PreparedMasks.Count == 0)
             {
-                // uzivatel zadal sekvenci zacinajici znakem '|', musime na konec pripojit implicitni *
+                // the user specified a sequence starting with '|', we must append an implicit * at the end
                 char* newMask = (char*)malloc(1 + 2);
                 if (newMask != NULL)
                 {
@@ -582,12 +583,12 @@ BOOL CMaskGroup::PrepareMasks(int& errorPos, const char* masksString)
                     return FALSE;
                 }
             }
-            excludePos = (int)(s - useMasksString); // nasledujici masku budou typu exclude
+            excludePos = (int)(s - useMasksString); // the next mask will be of the exclude type
         }
         s++;
     }
 
-    if (hashableMasks >= 10) // aby to vubec melo smysl, at je jich aspon 10
+    if (hashableMasks >= 10) // to be worthwhile there should be at least 10
     {
         MasksHashArraySize = 2 * hashableMasks;
         MasksHashArray = (CMasksHashEntry*)malloc(MasksHashArraySize * sizeof(CMasksHashEntry));
@@ -600,7 +601,7 @@ BOOL CMaskGroup::PrepareMasks(int& errorPos, const char* masksString)
                 CMaskItemFlags* mask = (CMaskItemFlags*)PreparedMasks[i2];
                 if (mask->Optimize == MASK_OPTIMIZE_EXTENSION &&
                     mask->Exclude == 0)
-                { // to je hashovatelna maska, jdeme ji pridat do hashovaciho pole
+                { // this mask can be hashed; add it to the hash array
                     DWORD hash = 0;
                     COMPUTEMASKGROUPHASH(hash, (unsigned char*)mask + 3);
                     if (MasksHashArray[hash].Mask == NULL)
@@ -608,7 +609,7 @@ BOOL CMaskGroup::PrepareMasks(int& errorPos, const char* masksString)
                         MasksHashArray[hash].Mask = mask;
                         PreparedMasks.Detach(i2);
                         if (!PreparedMasks.IsGood())
-                            PreparedMasks.ResetState(); // Detach se vzdy povede (max se nesesune pole a to je nam fuk)
+                            PreparedMasks.ResetState(); // Detach always succeeds (at most the array won't shift, which is fine)
                     }
                     else
                     {
@@ -624,9 +625,9 @@ BOOL CMaskGroup::PrepareMasks(int& errorPos, const char* masksString)
                             next->Next->Next = NULL;
                             PreparedMasks.Detach(i2);
                             if (!PreparedMasks.IsGood())
-                                PreparedMasks.ResetState(); // Detach se vzdy povede (max se nesesune pole a to je nam fuk)
+                                PreparedMasks.ResetState(); // Detach always succeeds (at most the array won't shift, which is fine)
                         }
-                        else // malo pameti -> nic se nedeje, vykasleme se na tuhle jednu masku
+                        else // out of memory -> nothing happens, we skip this one mask
                             TRACE_E(LOW_MEMORY);
                     }
                 }
@@ -657,7 +658,7 @@ BOOL CMaskGroup::PrepareMasks(int& errorPos, const char* masksString)
 #endif // _DEBUG
 */
         }
-        else // malo pameti -> nic se nedeje, jen nebudeme zrychlovat hledani v maskach
+        else // out of memory -> we simply won't accelerate searching in masks
         {
             TRACE_E(LOW_MEMORY);
             MasksHashArraySize = 0;
@@ -680,12 +681,12 @@ BOOL CMaskGroup::AgreeMasks(const char* fileName, const char* fileExt)
         while (--fileExt >= fileName && *fileExt != '.')
             ;
         if (fileExt < fileName)
-            fileExt = fileName + tmpLen; // ".cvspass" ve Windows je pripona ...
+            fileExt = fileName + tmpLen; // ".cvspass" in Windows is an extension ...
         else
             fileExt++;
     }
     const char* ext = fileExt;
-    if (*ext == 0 && *fileName == '.' && *(ext - 1) != '.') // muze jit o pripad ".cvspass"; ".." nema priponu
+    if (*ext == 0 && *fileName == '.' && *(ext - 1) != '.') // may be the ".cvspass" case; ".." has no extension
     {
         TRACE_E("CMaskGroup::AgreeMasks: Unexpected situation: fileName starts with '.' but fileExt points to end of name: " << fileName);
         ext = fileName + 1;
@@ -729,7 +730,7 @@ BOOL CMaskGroup::AgreeMasks(const char* fileName, const char* fileExt)
             }
         }
     }
-    if (MasksHashArray != NULL) // jeste mame nejake masky v hashovacim poli
+    if (MasksHashArray != NULL) // there are still some masks in the hash array
     {
         DWORD hash = 0;
         COMPUTEMASKGROUPHASH(hash, (unsigned char*)ext);

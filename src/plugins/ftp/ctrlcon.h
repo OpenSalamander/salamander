@@ -1,111 +1,112 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
 // ***************************************************************************
-// funkce:
+// functions:
 
-// pomocna funkce pro prevod retezce ze streamu na null-terminated retezec
-// 'buf'+'bufSize' je vystupni buffer; 'txt'+'size' je vstupni retezec
-// vraci 'buf'
+// helper function for converting a string from a stream into a null-terminated string
+// 'buf'+'bufSize' is the output buffer; 'txt'+'size' is the input string
+// returns 'buf'
 char* CopyStr(char* buf, int bufSize, const char* txt, int size);
 
-// pomocna funkce pro rozklad retezce s init-ftp-prikazy (oddelene ';') na
-// jednotlive prikazy; vraci TRUE pokud je k dispozici dalsi prikaz (prikaz
-// vraci v 's'); 'next' je IN/OUT promenna, inicializuje se na zacatek retezce
-// a mezi volanimi GetToken se nesmi menit
+// helper function for decomposing a string with initial FTP commands (separated by ';')
+// into individual commands; returns TRUE if another command is available (the
+// command is returned in 's'); 'next' is an IN/OUT variable, initialize it to
+// the start of the string and leave it unchanged between calls to GetToken
 BOOL GetToken(char** s, char** next);
 
-// kody prikazu pro PrepareFTPCommand (v [] jsou parametry do vypustky)
+// command codes for PrepareFTPCommand (parameters in [] are passed through the ellipsis)
 enum CFtpCmdCode
 {
     ftpcmdQuit,              // [] - logout from FTP server
-    ftpcmdSystem,            // [] - zjisti operacni system na serveru (muze byt jen simulace)
-    ftpcmdAbort,             // [] - abort prave provadeneho prikazu
-    ftpcmdPrintWorkingPath,  // [] - zjisti pracovni (aktualni) adresar na FTP serveru
-    ftpcmdChangeWorkingPath, // [char *path] - zmena pracovniho adresare na FTP serveru
-    ftpcmdSetTransferMode,   // [BOOL ascii] - nastaveni prenosoveho rezimu (ASCII/BINAR(IMAGE))
-    ftpcmdPassive,           // [] - zada server, aby pouzil pro datove spojeni "listen" (klient navazuje datove spojeni)
-    ftpcmdSetPort,           // [DWORD IP, unsigned short port] - nastavi na serveru ip+port pro datove spojeni
+    ftpcmdSystem,            // [] - determine the operating system on the server (may be just a simulation)
+    ftpcmdAbort,             // [] - abort the command currently being executed
+    ftpcmdPrintWorkingPath,  // [] - get the working (current) directory on the FTP server
+    ftpcmdChangeWorkingPath, // [char *path] - change the working directory on the FTP server
+    ftpcmdSetTransferMode,   // [BOOL ascii] - set the transfer mode (ASCII/BINARY(IMAGE))
+    ftpcmdPassive,           // [] - request the server to use "listen" for the data connection (the client establishes the data connection)
+    ftpcmdSetPort,           // [DWORD IP, unsigned short port] - set the IP and port for the data connection on the server
     ftpcmdNoOperation,       // [] - keep-alive command "no operation"
-    ftpcmdDeleteFile,        // [char *filename] - smazani souboru 'filename'
-    ftpcmdDeleteDir,         // [char *dirname] - smazani adresare 'dirname'
-    ftpcmdChangeAttrs,       // [int newAttr, char *name] - zmena atributu (modu) souboru/adresare 'name' na 'newAttr'
-    ftpcmdChangeAttrsQuoted, // [int newAttr, char *nameToQuotes (pred vsechny znaky '"' ve jmene je nutne vlozit '\\')] - zmena atributu (modu) souboru/adresare 'name' na 'newAttr' - jmeno souboru/adresare je v uvozovkach (Linux FTP to vyzaduje pro jmena s mezerama)
-    ftpcmdRestartTransfer,   // [char *number] - prikaz REST (resume / restart-transfer)
-    ftpcmdRetrieveFile,      // [char *filename] - download souboru 'filename'
-    ftpcmdCreateDir,         // [char *path] - vytvoreni adresare 'path'
-    ftpcmdRenameFrom,        // [char *fromName] - zahajeni prejmenovani ("rename from")
-    ftpcmdRenameTo,          // [char *newName] - ukonceni prejmenovani ("rename to")
-    ftpcmdStoreFile,         // [char *filename] - upload souboru 'filename'
-    ftpcmdGetSize,           // [char *filename] - zjisteni velikosti souboru (muze byt i link na soubor)
-    ftpcmdAppendFile,        // [char *filename] - upload: append souboru 'filename'
+    ftpcmdDeleteFile,        // [char *filename] - delete the file 'filename'
+    ftpcmdDeleteDir,         // [char *dirname] - delete the directory 'dirname'
+    ftpcmdChangeAttrs,       // [int newAttr, char *name] - change the attributes (mode) of the file/directory 'name' to 'newAttr'
+    ftpcmdChangeAttrsQuoted, // [int newAttr, char *nameToQuotes (insert '\\' before every '"' character in the name)] - change the attributes (mode) of the file/directory 'name' to 'newAttr' - the file/directory name is in quotation marks (Linux FTP requires this for names with spaces)
+    ftpcmdRestartTransfer,   // [char *number] - REST command (resume / restart transfer)
+    ftpcmdRetrieveFile,      // [char *filename] - download the file 'filename'
+    ftpcmdCreateDir,         // [char *path] - create the directory 'path'
+    ftpcmdRenameFrom,        // [char *fromName] - start renaming ("rename from")
+    ftpcmdRenameTo,          // [char *newName] - finish renaming ("rename to")
+    ftpcmdStoreFile,         // [char *filename] - upload the file 'filename'
+    ftpcmdGetSize,           // [char *filename] - get the size of the file (may also be a link to a file)
+    ftpcmdAppendFile,        // [char *filename] - upload: append the file 'filename'
 };
 
-// pripravi text prikazu pro FTP server (vcetne CRLF na konci), vraci TRUE
-// pokud se prikaz vesel do bufferu 'buf' (o velikosti 'bufSize'); 'ftpCmd'
-// je kod prikazu (viz CFtpCmdCode); v 'cmdLen' (neni-li NULL) vraci delku
-// pripraveneho textu prikazu (je vzdy ukoncen nulou na konci);
-// 'logBuf' o delce 'logBufSize' bude obsahovat verzi prikazu vhodnou pro
-// log-file (misto hesel hvezdicky, atd.) - jde o null-terminated string
+// prepares the text of a command for the FTP server (including CRLF at the end), returns TRUE
+// if the command fits into the buffer 'buf' (with the size 'bufSize'); 'ftpCmd'
+// is the command code (see CFtpCmdCode); if 'cmdLen' is not NULL, it returns the length
+// of the prepared command text (it is always null-terminated at the end);
+// 'logBuf' with the length 'logBufSize' will contain a version of the command suitable for
+// the log file (passwords replaced with asterisks, etc.) - this is a null-terminated string
 BOOL PrepareFTPCommand(char* buf, int bufSize, char* logBuf, int logBufSize,
                        CFtpCmdCode ftpCmd, int* cmdLen, ...);
 
-// pomocna funkce pro pripravu textu chyb
+// helper function for preparing error texts
 const char* GetFatalErrorTxt(int fatalErrorTextID, char* errBuf);
-// pomocna funkce pro pripravu textu chyb
+// helper function for preparing error texts
 const char* GetOperationFatalErrorTxt(int opFatalError, char* errBuf);
 
 // ****************************************************************************
-// makra:
+// macros:
 
-// makra pro vytazeni cislic z FTP reply code (ocekava se int v rozsahu 0-999)
-#define FTP_DIGIT_1(n) ((n) / 100)       // 1. cislice
-#define FTP_DIGIT_2(n) (((n) / 10) % 10) // 2. cislice
-#define FTP_DIGIT_3(n) ((n) % 10)        // 3. cislice
+// macros for extracting digits from the FTP reply code (expects an int in the range 0-999)
+#define FTP_DIGIT_1(n) ((n) / 100)       // 1st digit
+#define FTP_DIGIT_2(n) (((n) / 10) % 10) // 2nd digit
+#define FTP_DIGIT_3(n) ((n) % 10)        // 3rd digit
 
 // ****************************************************************************
-// konstanty:
+// constants:
 
-#define WAITWND_STARTCON 2000   // start control connection: ukazat wait-wnd za 2 sekundy
-#define WAITWND_CLOSECON 2000   // close control connection: ukazat wait-wnd za 2 sekundy
-#define WAITWND_COMOPER 2000    // bezna operace (poslani prikazu): ukazat wait-wnd za 2 sekundy
-#define WAITWND_PARSINGLST 2000 // parsovani listingu: ukazat wait-wnd za 2 sekundy
-#define WAITWND_CONTOOPER 2000  // predani aktivni "control connection" do workera operace: ukazat wait-wnd za 2 sekundy
-#define WAITWND_CLWORKCON 250   // close control connections of workers in operations: ukazat wait-wnd za ctvrt vteriny (puvodne bylo za 2 sekundy - useri zkouseli mackat Add a dalsi buttony, coz nejde, ale neni to visualizovane - pri otevrenem wait-okenku je jasne, proc to nejde)
-#define WAITWND_CLOPERDLGS 2000 // close all operation dialogs (when plugin is unloaded): ukazat wait-wnd za 2 sekundy
+#define WAITWND_STARTCON 2000   // start control connection: show wait window after 2 seconds
+#define WAITWND_CLOSECON 2000   // close control connection: show wait window after 2 seconds
+#define WAITWND_COMOPER 2000    // regular operation (sending a command): show wait window after 2 seconds
+#define WAITWND_PARSINGLST 2000 // parsing listing: show wait window after 2 seconds
+#define WAITWND_CONTOOPER 2000  // handing the active "control connection" to the worker of an operation: show wait window after 2 seconds
+#define WAITWND_CLWORKCON 250   // close control connections of workers in operations: show wait window after a quarter of a second (originally after 2 seconds - users tried to click Add and other buttons, which is impossible, but it was not visualized - with the wait window open it is clear why it does not work)
+#define WAITWND_CLOPERDLGS 2000 // close all operation dialogs (when the plugin is unloaded): show wait window after 2 seconds
 
-#define CRTLCON_BYTESTOWRITEONSOCKETPREALLOC 512 // kolik bytu se ma predalokovat pro zapis (aby dalsi zapis zbytecne nealokoval treba kvuli 1 bytovemu presahu)
-#define CRTLCON_BYTESTOREADONSOCKET 1024         // po minimalne kolika bytech se ma cist socket (take alokovat buffer pro prectena data)
-#define CRTLCON_BYTESTOREADONSOCKETPREALLOC 512  // kolik bytu se ma predalokovat pro cteni (aby dalsi cteni okamzite nealokovalo znovu)
+#define CRTLCON_BYTESTOWRITEONSOCKETPREALLOC 512 // how many bytes to preallocate for writing (so the next write does not allocate unnecessarily, for example due to a 1-byte overflow)
+#define CRTLCON_BYTESTOREADONSOCKET 1024         // the minimum number of bytes to read from the socket at once (also allocate the buffer for the read data)
+#define CRTLCON_BYTESTOREADONSOCKETPREALLOC 512  // how many bytes to preallocate for reading (so the next read does not immediately allocate again)
 
-// kody odpovedi pro 1. cislici FTP reply code
-#define FTP_D1_MAYBESUCCESS 1   // mozna uspech (klient musi cekat na dalsi reply)
-#define FTP_D1_SUCCESS 2        // uspech (klient muze poslat dalsi prikaz)
-#define FTP_D1_PARTIALSUCCESS 3 // castecny uspech (klient musi poslat dalsi prikaz v sekvenci)
-#define FTP_D1_TRANSIENTERROR 4 // docasna chyba (neuspech, ale je sance aby stejny prikaz priste uspel)
-#define FTP_D1_ERROR 5          // chyba (prikaz nema cenu opakovat, je ho treba zmenit)
+// response codes for the 1st digit of the FTP reply code
+#define FTP_D1_MAYBESUCCESS 1   // possible success (the client must wait for the next reply)
+#define FTP_D1_SUCCESS 2        // success (the client may send the next command)
+#define FTP_D1_PARTIALSUCCESS 3 // partial success (the client must send the next command in the sequence)
+#define FTP_D1_TRANSIENTERROR 4 // temporary error (failure, but the same command might succeed next time)
+#define FTP_D1_ERROR 5          // error (there is no point repeating the command; it needs to be changed)
 
-// kody odpovedi pro 2. cislici FTP reply code
-#define FTP_D2_SYNTAX 0         // u chyb jde o syntaxi, jinak funkcne jinam nezarazene prikazy
-#define FTP_D2_INFORMATION 1    // informace (status nebo help, atd.)
-#define FTP_D2_CONNECTION 2     // tyka se pripojeni
-#define FTP_D2_AUTHENTICATION 3 // tyka se prihlasovani/autentifikace/uctovani
+// response codes for the 2nd digit of the FTP reply code
+#define FTP_D2_SYNTAX 0         // in case of errors it is syntax; otherwise commands not classified elsewhere functionally
+#define FTP_D2_INFORMATION 1    // information (status or help, etc.)
+#define FTP_D2_CONNECTION 2     // related to the connection
+#define FTP_D2_AUTHENTICATION 3 // related to login/authentication/accounting
 #define FTP_D2_UNKNOWN 4        // not specified
 #define FTP_D2_FILESYSTEM 5     // file system action
 
-#define CTRLCON_KEEPALIVE_TIMERID 1 // CControlConnectionSocket: ID timeru pro keep-alive
+#define CTRLCON_KEEPALIVE_TIMERID 1 // CControlConnectionSocket: ID of the timer for keep-alive
 
-#define CTRLCON_KAPOSTSETUPNEXT 2 // CControlConnectionSocket: ID postnute zpravy pro provedeni SetupNextKeepAliveTimer()
-#define CTRLCON_LISTENFORCON 3    // CControlConnectionSocket: ID postnute zpravy o otevreni portu pro "listen" (na proxy serveru)
-#define CTRLCON_KALISTENFORCON 4  // CControlConnectionSocket: keep-alive: ID postnute zpravy o otevreni portu pro "listen" (na proxy serveru)
+#define CTRLCON_KAPOSTSETUPNEXT 2 // CControlConnectionSocket: ID of the posted message for executing SetupNextKeepAliveTimer()
+#define CTRLCON_LISTENFORCON 3    // CControlConnectionSocket: ID of the posted message about opening the port for "listen" (on the proxy server)
+#define CTRLCON_KALISTENFORCON 4  // CControlConnectionSocket: keep-alive: ID of the posted message about opening the port for "listen" (on the proxy server)
 
 //
 // ****************************************************************************
 // CDynString
 //
-// pomocny objekt pro dynamicky alokovany string
+// helper object for a dynamically allocated string
 
 struct CDynString
 {
@@ -133,10 +134,10 @@ struct CDynString
             Buffer[0] = 0;
     }
 
-    BOOL Append(const char* str, int len); // vraci TRUE pro uspechu; je-li 'len' -1, bere se "len=strlen(str)"
+    BOOL Append(const char* str, int len); // returns TRUE on success; if 'len' is -1, "len=strlen(str)" is used
 
-    // preskoci minimalne 'len' znaku, preskakuje po celych radcich; pocty preskocenych znaku/radek
-    // pricita do 'skippedChars'/'skippedLines'
+    // skips at least 'len' characters, skipping entire lines; adds the counts of skipped characters/lines
+    // to 'skippedChars'/'skippedLines'
     void SkipBeginning(DWORD len, int* skippedChars, int* skippedLines);
 
     const char* GetString() const { return Buffer; }
@@ -146,34 +147,34 @@ struct CDynString
 // ****************************************************************************
 // CLogs
 //
-// sprava logu pro vsechna pripojeni (control connection v panelech a workeri v operacich)
+// log management for all connections (control connections in panels and workers in operations)
 
 class CControlConnectionSocket;
 
 class CLogData
 {
 protected:
-    static int NextLogUID;          // globalni pocitadlo pro objekty logu
-    static int OldestDisconnectNum; // disconnect-cislo nejstarsiho logu serveru, ktery se disconnectnul
-    static int NextDisconnectNum;   // disconnect-cislo pro dalsi log serveru, ktery se disconnectne
+    static int NextLogUID;          // global counter for log objects
+    static int OldestDisconnectNum; // disconnect number of the oldest server log that disconnected
+    static int NextDisconnectNum;   // disconnect number for the next server log that will disconnect
 
-    // identifikace logu:
-    int UID;             // unikatni cislo logu (hodnota -1 je vyhrazena pro "invalid UID")
-    char* Host;          // adresa serveru
-    unsigned short Port; // pouzivany port na serveru
-    char* User;          // uzivatelovo jmeno
+    // log identification:
+    int UID;             // unique log number (value -1 is reserved for "invalid UID")
+    char* Host;          // server address
+    unsigned short Port; // port used on the server
+    char* User;          // user name
 
-    BOOL CtrlConOrWorker; // TRUE/FALSE = logujeme "control connection" z panelu / workera
-    BOOL WorkerIsAlive;   // TRUE/FALSE = worker existuje / uz neexistuje
-    // "control connection", kterou logujeme (NULL == FS jiz neexistuje);
-    // POZOR: nesmime sahat do objektu "control connection" - zakazane vnoreni kritickych sekci
+    BOOL CtrlConOrWorker; // TRUE/FALSE = logging the "control connection" from the panel / from a worker
+    BOOL WorkerIsAlive;   // TRUE/FALSE = the worker exists / no longer exists
+    // the "control connection" we are logging (NULL == FS no longer exists);
+    // WARNING: we must not access the "control connection" object - nesting critical sections is forbidden
     CControlConnectionSocket* CtrlCon;
-    BOOL Connected;    // TRUE/FALSE == aktivni/neaktivni "control connection" (panel i worker)
-    int DisconnectNum; // je-li (CtrlCon==NULL && !WorkerIsAlive), je zde cislo udavajici stari mrtveho logu (abychom rusili vzdy od nejdele mrtveho logu)
+    BOOL Connected;    // TRUE/FALSE == active/inactive "control connection" (panel and worker)
+    int DisconnectNum; // if (CtrlCon==NULL && !WorkerIsAlive), holds the number describing how old the dead log is (so that we always delete starting from the longest dead log)
 
-    CDynString Text;  // samotny text logu
-    int SkippedChars; // pocet skipnutych znaku od posledniho vypisu do edit-okna v Logs
-    int SkippedLines; // pocet skipnutych radek od posledniho vypisu do edit-okna v Logs
+    CDynString Text;  // the actual log text
+    int SkippedChars; // number of skipped characters since the last output to the edit window in Logs
+    int SkippedLines; // number of skipped lines since the last output to the edit window in Logs
 
 protected:
     CLogData(const char* host, unsigned short port, const char* user,
@@ -182,7 +183,7 @@ protected:
 
     BOOL IsGood() { return Host != NULL && User != NULL; }
 
-    // zmena usera, vraci TRUE pri uspechu (pri neuspechu necha v User prazdny retezec)
+    // change user; returns TRUE on success (on failure leaves an empty string in User)
     BOOL ChangeUser(const char* user);
 
     friend class CLogs;
@@ -194,14 +195,14 @@ class CLogsDlg;
 class CLogs
 {
 protected:
-    CRITICAL_SECTION LogCritSect; // kriticka sekce objektu (POZOR: uvnitr teto sekce je zakazany vstup do jinych sekci)
+    CRITICAL_SECTION LogCritSect; // critical section of the object (WARNING: entering other sections inside this one is forbidden)
 
-    TIndirectArray<CLogData> Data; // pole vsech logu
-    int LastUID;                   // jednomistna vyhledavaci cache - je-li LastUID==UID, zkusi pouzit LastIndex
-    int LastIndex;                 // pomocny udaj pro vyhledavaci cache (hledani logu podle UID v Data)
+    TIndirectArray<CLogData> Data; // array of all logs
+    int LastUID;                   // single-entry lookup cache - if LastUID==UID, it tries to use LastIndex
+    int LastIndex;                 // helper value for the lookup cache (searching logs by UID in Data)
 
-    CLogsDlg* LogsDlg; // obsahuje ukazatel na otevreny (NULL = zavreny) Logs dialog
-    HANDLE LogsThread; // handle threadu, ve kterem bezel/bezi naposledy otevreny Logs dialog
+    CLogsDlg* LogsDlg; // holds a pointer to the open (NULL = closed) Logs dialog
+    HANDLE LogsThread; // handle of the thread in which the last opened Logs dialog ran/is running
 
 public:
     CLogs() : Data(5, 5)
@@ -215,120 +216,126 @@ public:
 
     ~CLogs() { HANDLES(DeleteCriticalSection(&LogCritSect)); }
 
-    // vytvori novy log, vraci TRUE pri uspechu + v 'uid' (nesmi byt NULL) UID noveho logu;
-    // POZOR: nebere ohled na Config.EnableLogging
+    // creates a new log; returns TRUE on success and writes the new log's UID into 'uid' (must not be NULL);
+    // WARNING: does not take Config.EnableLogging into account
     BOOL CreateLog(int* uid, const char* host, unsigned short port, const char* user,
                    CControlConnectionSocket* ctrlCon, BOOL connected, BOOL isWorker);
 
-    // nastavi v logu s UID=='uid' CLogData::Connected na 'isConnected'
+    // sets CLogData::Connected to 'isConnected' in the log with UID=='uid'
     void SetIsConnected(int uid, BOOL isConnected);
 
-    // oznaci log s UID=='uid' jako log zavreneho spojeni; pouziva se pro oznameni zavreni spojeni
-    // na FTP server; vraci TRUE pri uspechu (UID nalezeno)
+    // marks the log with UID=='uid' as a closed-connection log; used to announce the connection
+    // closure on the FTP server; returns TRUE on success (UID found)
     BOOL ClosingConnection(int uid);
 
-    // zmena jmena uzivatele (behem pripojovani muze dojit k teto zmene); vraci TRUE pri uspechu
+    // changes the user name (this can happen during connection); returns TRUE on success
     BOOL ChangeUser(int uid, const char* user);
 
-    // prida text 'str' (delka 'len') do logu s UID=='uid'; je-li 'uid' -1 ("invalid UID"), nema se
-    // nic logovat; je-li 'len' -1, bere se "len=strlen(str)"; je-li 'addTimeToLog' TRUE, umisti
-    // se pred hlasku aktualni cas; vraci TRUE pri uspesnem pridani do logu nebo je-li 'uid' -1
+    // adds the text 'str' (length 'len') to the log with UID=='uid'; if 'uid' is -1 ("invalid UID")
+    // nothing is logged; if 'len' is -1, it uses "len=strlen(str)"; if 'addTimeToLog' is TRUE, the
+    // current time is placed before the message; returns TRUE when the text is added to the log or
+    // when 'uid' is -1
     BOOL LogMessage(int uid, const char* str, int len, BOOL addTimeToLog = FALSE);
 
-    // vraci TRUE pokud je log s UID=='uid' v poli logu (tedy log lze prohlizet v dialogu Logs)
+    // returns TRUE if the log with UID=='uid' is in the log array (therefore the log can be viewed
+    // in the Logs dialog)
     BOOL HasLogWithUID(int uid);
 
-    // vola se po zmene parametru logovani v konfiguraci
+    // called after logging parameters change in the configuration
     void ConfigChanged();
 
-    // prida logy do combo-boxu; vraci fokus v 'focusIndex' (nesmi byt NULL) podle
-    // 'prevItemUID' (UID polozky, kterou chceme vybrat, pripadne muze byt i -1),
-    // pokud 'prevItemUID' nenajde, vraci v 'focusIndex' -1; v 'empty' (nesmi byt NULL) vraci
-    // TRUE pokud neexistuji zadne logy
+    // adds logs to the combo box; returns the focus in 'focusIndex' (must not be NULL) based on
+    // 'prevItemUID' (the UID of the item we want to select, it may also be -1); if 'prevItemUID'
+    // is not found, it returns -1 in 'focusIndex'; in 'empty' (must not be NULL) it returns TRUE if
+    // no logs exist
     void AddLogsToCombo(HWND combo, int prevItemUID, int* focusIndex, BOOL* empty);
 
-    // nastavi text logu s UID 'logUID' do editu 'edit'; je-li 'update' TRUE, jde o update textu
+    // sets the text of the log with UID 'logUID' into the edit control 'edit'; if 'update' is TRUE,
+    // the text is being updated
     void SetLogToEdit(HWND edit, int logUID, BOOL update);
 
-    // nastavi hodnotu 'LogsDlg' (v kriticke sekci)
+    // sets the value of 'LogsDlg' (inside the critical section)
     void SetLogsDlg(CLogsDlg* logsDlg);
 
-    // vrati TRUE, pokud je sance, ze se bude aktivovat Logs dialog (ve svem threadu), vraci
-    // FALSE pri chybe; neni-li 'showLogUID' -1, jde o UID logu, ktery se ma aktivovat;
+    // returns TRUE if there is a chance the Logs dialog will be activated (in its own thread),
+    // returns FALSE on failure; if 'showLogUID' is not -1, it specifies the UID of the log to
+    // activate
     BOOL ActivateLogsDlg(int showLogUID);
 
-    // pokud je otevreny Logs dialog, aktivuje v nem log s UID 'showLogUID'
+    // if the Logs dialog is open, activates the log with UID 'showLogUID' in it
     void ActivateLog(int showLogUID);
 
-    // je-li otevreny Logs dialog, zavre ho a sekundu pocka na ukonceni jeho threadu
-    // (pokud se nedocka, nic se nedeje)
+    // if the Logs dialog is open, closes it and waits one second for its thread to finish (if it
+    // does not finish in time, nothing happens)
     void CloseLogsDlg();
 
-    // ulozi aktualni pozici dialogu Logs do konfigurace
+    // saves the current position of the Logs dialog into the configuration
     void SaveLogsDlgPos();
 
-    // refreshne seznam logu v dialogu Logs (existuje-li)
+    // refreshes the list of logs in the Logs dialog (if it exists)
     void RefreshListOfLogsInLogsDlg();
 
-    // ulozi do souboru (necha usera vybrat) log; 'itemName' je jmeno logu; 'uid' je UID logu
+    // saves the log to a file (letting the user choose); 'itemName' is the log name; 'uid' is the
+    // log UID
     void SaveLog(HWND parent, const char* itemName, int uid);
 
-    // nakopiruje na clipboard log; 'itemName' je jmeno logu; 'uid' je UID logu
+    // copies the log to the clipboard; 'itemName' is the log name; 'uid' is the log UID
     void CopyLog(HWND parent, const char* itemName, int uid);
 
-    // vyprazdni text logu; 'itemName' je jmeno logu; 'uid' je UID logu
+    // clears the log text; 'itemName' is the log name; 'uid' is the log UID
     void ClearLog(HWND parent, const char* itemName, int uid);
 
-    // odstrani log; 'itemName' je jmeno logu; 'uid' je UID logu
+    // removes the log; 'itemName' is the log name; 'uid' is the log UID
     void RemoveLog(HWND parent, const char* itemName, int uid);
 
-    // ulozi do souboru (necha usera vybrat) vsechny logy
+    // saves all logs to a file (letting the user choose)
     void SaveAllLogs(HWND parent);
 
-    // nakopiruje na clipboard vsechny logy
+    // copies all logs to the clipboard
     void CopyAllLogs(HWND parent);
 
-    // odstrani vsechny logy
+    // removes all logs
     void RemoveAllLogs(HWND parent);
 
 protected:
-    // zrusi pripadne nadbytecne stare logy;
-    // POZOR: musi se volat z kriticke sekce
+    // discards any redundant old logs;
+    // WARNING: must be called from the critical section
     void LimitClosedConLogs();
 
-    // v 'index' vraci index logu s UID 'uid'; pokud neni log nalezen vraci FALSE (jinak TRUE)
-    // POZOR: musi se volat z kriticke sekce
+    // returns in 'index' the index of the log with UID 'uid'; returns FALSE if the log is not
+    // found (otherwise TRUE)
+    // WARNING: must be called from the critical section
     BOOL GetLogIndex(int uid, int* index);
 };
 
-extern CLogs Logs; // logy vsech pripojeni na FTP servery
+extern CLogs Logs; // logs of all connections to FTP servers
 
 //
 // ****************************************************************************
 // CListingCache
 //
-// cache listingu na FTP serverech - pouziva se pro zmenu cesty a listovani cesty
-// bez pristupu na server
+// listing cache on FTP servers - used when changing or listing a path without accessing the server
 
 struct CListingCacheItem
 {
 public:
-    // parametry pripojeni na server:
-    char* Host;          // host-address (nesmi byt NULL)
-    unsigned short Port; // port na kterem bezi FTP server
-    char* User;          // user-name, NULL==anonymous
-    int UserLength;      // jen optimalizacni promenna: delka 'User' pokud jsou v nem "zakazane" znaky (je-li 'User==NULL', je zde nula)
+    // connection parameters for the server:
+    char* Host;          // host address (must not be NULL)
+    unsigned short Port; // port on which the FTP server runs
+    char* User;          // user name, NULL == anonymous
+    int UserLength;      // optimization-only variable: length of 'User' if it contains "forbidden" characters (if 'User==NULL',
+                         // this is zero)
 
-    char* Path;                  // cachovana cesta (lokalni na serveru)
-    CFTPServerPathType PathType; // typ cachovane cesty
+    char* Path;                  // cached path (local on the server)
+    CFTPServerPathType PathType; // type of the cached path
 
-    char* ListCmd; // prikaz, kterym byl listing ziskan (jiny prikaz = muze byt jiny listing)
-    BOOL IsFTPS;   // TRUE = jde o FTPS, FALSE = jde o FTP
+    char* ListCmd; // command that retrieved the listing (a different command may produce a different listing)
+    BOOL IsFTPS;   // TRUE = FTPS, FALSE = FTP
 
-    char* CachedListing;          // listing cachovane cesty
-    int CachedListingLen;         // delka listingu cachovane cesty
-    CFTPDate CachedListingDate;   // datum, kdy byl listing porizen (potrebne pro spravne vyhodnoceni "year_or_time")
-    DWORD CachedListingStartTime; // IncListingCounter() z okamziku, kdy byl poslan prikaz "LIST" ke ziskani tohoto listingu
+    char* CachedListing;          // listing of the cached path
+    int CachedListingLen;         // length of the listing of the cached path
+    CFTPDate CachedListingDate;   // date when the listing was created (needed to evaluate "year_or_time" correctly)
+    DWORD CachedListingStartTime; // IncListingCounter() value at the moment the "LIST" command was sent to obtain this listing
 
     CListingCacheItem(const char* host, unsigned short port, const char* user, const char* path,
                       const char* listCmd, BOOL isFTPS, const char* cachedListing, int cachedListingLen,
@@ -342,34 +349,34 @@ public:
 class CListingCache
 {
 protected:
-    CRITICAL_SECTION CacheCritSect;          // kriticka sekce objektu
-    TIndirectArray<CListingCacheItem> Cache; // pole cachovanych listingu cest
-    CQuadWord TotalCacheSize;                // celkova velikost polozek v cache (casem bude na disku, proto quad-word)
+    CRITICAL_SECTION CacheCritSect;          // critical section of the object
+    TIndirectArray<CListingCacheItem> Cache; // array of cached path listings
+    CQuadWord TotalCacheSize;                // total size of items in the cache (will later be stored on disk, hence a quad word)
 
 public:
     CListingCache();
     ~CListingCache();
 
-    // vraci TRUE pokud je k dispozici pouzitelny listing cesty 'path' (typu 'pathType')
-    // na serveru 'host', kde je uzivatel 'user' pripojen na portu 'port'; listing se
-    // vraci v alokovanem retezci 'cachedListing' (nesmi byt NULL, pokud vraci NULL,
-    // jde o chybu alokace pameti), delka retezce se vraci v 'cachedListingLen' (nesmi
-    // byt NULL), volajici je odpovedny za dealokaci; datum porizeni listingu se vraci
-    // v 'cachedListingDate' (nesmi byt NULL); v 'path' se vraci presne zneni cachovane cesty
-    // (jak ji vratil server v okamziku vlozeni do cache), 'path' je buffer o velikosti
-    // 'pathBufSize' bytu
-    // mozne volat z libovolneho threadu
+    // returns TRUE if a usable listing of the path 'path' (of type 'pathType') is available on the
+    // server 'host', where user 'user' is connected on port 'port'; the listing is returned in the
+    // allocated string 'cachedListing' (must not be NULL; returning NULL means an allocation error),
+    // the string length is returned in 'cachedListingLen' (must not be NULL); the caller is
+    // responsible for deallocation; the date when the listing was captured is returned in
+    // 'cachedListingDate' (must not be NULL); 'path' returns the exact text of the cached path (as
+    // provided by the server when it was inserted into the cache); 'path' is a buffer of size
+    // 'pathBufSize' bytes
+    // can be called from any thread
     BOOL GetPathListing(const char* host, unsigned short port, const char* user,
                         CFTPServerPathType pathType, char* path, int pathBufSize,
                         const char* listCmd, BOOL isFTPS, char** cachedListing,
                         int* cachedListingLen, CFTPDate* cachedListingDate,
                         DWORD* cachedListingStartTime);
 
-    // prida nebo obnovi (prepise) listing cesty 'path' (typu 'pathType') na serveru
-    // 'host', kde je uzivatel 'user' pripojen na portu 'port'; listing je v retezci
-    // 'cachedListing' (nesmi byt NULL), delka retezce je v 'cachedListingLen';
-    // datum porizeni listingu je v 'cachedListingDate' (nesmi byt NULL);
-    // mozne volat z libovolneho threadu
+    // adds or refreshes (overwrites) the listing of the path 'path' (type 'pathType') on the server
+    // 'host', where user 'user' is connected on port 'port'; the listing is in the string
+    // 'cachedListing' (must not be NULL), the string length is in 'cachedListingLen'; the date when
+    // the listing was captured is in 'cachedListingDate' (must not be NULL);
+    // can be called from any thread
     void AddOrUpdatePathListing(const char* host, unsigned short port, const char* user,
                                 CFTPServerPathType pathType, const char* path,
                                 const char* listCmd, BOOL isFTPS,
@@ -377,24 +384,24 @@ public:
                                 const CFTPDate* cachedListingDate,
                                 DWORD cachedListingStartTime);
 
-    // hlasi do cache, ze user dal tvrdy refresh na ceste 'path' (typu 'pathType')
-    // na serveru 'host', kde je uzivatel 'user' pripojen na portu 'port'; znamena
-    // to projev neduvery v aktualnost cache, smazeme tedy z cache tuto cestu vcetne
-    // jejich podcest; je-li 'ignorePath' TRUE, smazeme z cache listingy vsech cest
-    // ze serveru 'host', kde je uzivatel 'user' pripojen na portu 'port'
-    // mozne volat z libovolneho threadu
+    // reports to the cache that the user issued a hard refresh on the path 'path' (type 'pathType')
+    // on the server 'host', where user 'user' is connected on port 'port'; this expresses distrust in
+    // the cache's freshness, so we remove the path including its subpaths from the cache; if
+    // 'ignorePath' is TRUE, listings of all paths from server 'host', where user 'user' is connected
+    // on port 'port', are removed from the cache
+    // can be called from any thread
     void RefreshOnPath(const char* host, unsigned short port, const char* user,
                        CFTPServerPathType pathType, const char* path, BOOL ignorePath = FALSE);
 
-    // hlasi do cache, ze doslo ke zmene na ceste 'userPart' (format cesty FS user-part);
-    // je-li 'includingSubdirs' TRUE, tak zahrnuje i zmenu v podadresarich cesty 'userPart';
-    // smazeme z cache zmenene cesty (aby se priste zase nacetly ze serveru)
+    // reports to the cache that a change occurred on the path 'userPart' (FS user-part path
+    // format); if 'includingSubdirs' is TRUE, changes in subdirectories of 'userPart' are included;
+    // the changed paths are removed from the cache (so they will be loaded from the server next time)
     void AcceptChangeOnPathNotification(const char* userPart, BOOL includingSubdirs);
 
 protected:
-    // hleda polozku v cache; pokud polozku najde, vraci TRUE a jeji index v 'index'
-    // (nesmi byt NULL); vraci FALSE pokud polozka v cache neexistuje;
-    // POZOR: volat jen z kriticke sekce CacheCritSect
+    // searches for an item in the cache; if found, returns TRUE and its index in 'index'
+    // (must not be NULL); returns FALSE if the item does not exist in the cache;
+    // WARNING: call only from the CacheCritSect critical section
     BOOL Find(const char* host, unsigned short port, const char* user,
               CFTPServerPathType pathType, const char* path, const char* listCmd,
               BOOL isFTPS, int* index);
@@ -404,65 +411,65 @@ protected:
 // ****************************************************************************
 // CControlConnectionSocket
 //
-// objekt socketu, ktery slouzi jako "control connection" na FTP server
-// pro dealokaci pouzivat funkci ::DeleteSocket!
+// socket object that serves as the FTP server "control connection"
+// use ::DeleteSocket! to deallocate it
 
-// kody udalosti pro CControlConnectionSocket::WaitForEventOrESC
+// event codes for CControlConnectionSocket::WaitForEventOrESC
 enum CControlConnectionSocketEvent
 {
-    ccsevESC,               // jen navratova hodnota z WaitForEventOrESC
-    ccsevTimeout,           // jen navratova hodnota z WaitForEventOrESC
-    ccsevWriteDone,         // dokonceni zapisu bufferu (viz metoda Write)
-    ccsevNewBytesRead,      // precteni dalsiho bloku dat do bufferu socketu (viz metoda ReadFTPReply)
-    ccsevClosed,            // socket byl uzavren
-    ccsevIPReceived,        // dostali jsme IP
-    ccsevConnected,         // otevreni spojeni na server
-    ccsevUserIfaceFinished, // user-iface hlasi dokonceni prace (zavreni "data connection" nebo dokonceni "keep alive" prikazu)
-    ccsevListenForCon,      // uspesne nebo neuspesne otevreni "listen" portu na proxy serveru
+    ccsevESC,               // return value of WaitForEventOrESC only
+    ccsevTimeout,           // return value of WaitForEventOrESC only
+    ccsevWriteDone,         // buffer write finished (see the Write method)
+    ccsevNewBytesRead,      // another block of data read into the socket buffer (see ReadFTPReply)
+    ccsevClosed,            // the socket was closed
+    ccsevIPReceived,        // IP received
+    ccsevConnected,         // connection to the server opened
+    ccsevUserIfaceFinished, // user interface reports completion ("data connection" closed or "keep alive" command finished)
+    ccsevListenForCon,      // successful or failed opening of the "listen" port on the proxy server
 };
 
 struct CControlConnectionSocketEventData
 {
-    CControlConnectionSocketEvent Event; // cislo udalosti (viz ccsevXXX)
+    CControlConnectionSocketEvent Event; // event number (see ccsevXXX)
     DWORD Data1;
     DWORD Data2;
 
-    // popis pouziti Data1 a Data2 pro jednotlive udalosti:
+    // description of Data1 and Data2 usage for individual events:
     //
-    // udalost ccsevWriteDone:
-    //   Data1 - je-li NO_ERROR, zapis byl uspesne dokoncen; jinak obsahuje kod Windows chyby
+    // event ccsevWriteDone:
+    //   Data1 - if NO_ERROR, the write completed successfully; otherwise contains the Windows error code
     //
-    // udalost ccsevNewBytesRead:
-    //   Data1 - je-li NO_ERROR, nacetly se do bufferu 'ReadBytes' nove byty; jinak obsahuje
-    //           kod Windows chyby
+    // event ccsevNewBytesRead:
+    //   Data1 - if NO_ERROR, new bytes were read into the 'ReadBytes' buffer; otherwise contains the
+    //           Windows error code
     //
-    // udalost ccsevClosed:
-    //   Data1 - je-li NO_ERROR, socket byl zavren "gracefully"; jinak byl zavren "abortively"
+    // event ccsevClosed:
+    //   Data1 - if NO_ERROR, the socket closed gracefully; otherwise it closed abortively
     //
-    // udalost ccsevIPReceived:
-    //   Data1 - obsahuje parametr 'ip' (z volani ReceiveHostByAddress)
-    //   Data2 - obsahuje parametr 'error' (z volani ReceiveHostByAddress)
+    // event ccsevIPReceived:
+    //   Data1 - contains the 'ip' parameter (from ReceiveHostByAddress)
+    //   Data2 - contains the 'error' parameter (from ReceiveHostByAddress)
     //
-    // udalost ccsevConnected:
-    //   Data1 - chybovy kod z FD_CONNECT (NO_ERROR = uspesne pripojeno)
+    // event ccsevConnected:
+    //   Data1 - error code from FD_CONNECT (NO_ERROR = connected successfully)
     //
-    // udalost ccsevUserIfaceFinished:
-    //   nevyuziva ani Data1, ani Data2
+    // event ccsevUserIfaceFinished:
+    //   neither Data1 nor Data2 is used
     //
-    // udalost ccsevListenForCon:
-    //   Data1 - UID data connectiony, ktera se ozyva
+    // event ccsevListenForCon:
+    //   Data1 - UID of the data connection that is reporting back
 };
 
-// kody pro prenosovy rezim v otevrene "control connection" (server si pamatuje posledni nastaveni)
+// codes for the transfer mode in an open "control connection" (the server remembers the last setting)
 enum CCurrentTransferMode
 {
-    ctrmUnknown, // neznamy - zatim jsme ho nenastavovali nebo ho mohl user zmenit
-    ctrmBinary,  // binary mod (image mod)
-    ctrmASCII    // ascii mod
+    ctrmUnknown, // unknown - we have not set it yet or the user might have changed it
+    ctrmBinary,  // binary mode (image mode)
+    ctrmASCII    // ASCII mode
 };
 
-// pomocne rozhrani pro CControlConnectionSocket::SendFTPCommand() - resi ruzna
-// uzivatelska rozhrani pri posilani FTP prikazu (napr. PWD a LIST se dost lisi)
+// helper interface for CControlConnectionSocket::SendFTPCommand() - handles various user interfaces
+// when sending FTP commands (e.g. PWD and LIST differ significantly)
 class CSendCmdUserIfaceAbstract
 {
 public:
@@ -476,20 +483,34 @@ public:
     virtual void MaybeSuccessReplyReceived(const char* reply, int replySize) = 0; // FTP reply code: 1xx
     virtual void CancelDataCon() = 0;
 
-    // sada metod pro cekani na zavreni user-ifacu ("data connection") v pripade uspesneho
-    // dokonceni prikazu na serveru
-    virtual BOOL CanFinishSending(int replyCode, BOOL* useTimeout) = 0;       // pokud vrati FALSE, bude se cekat na event ziskany pres GetFinishedEvent()
-    virtual void BeforeWaitingForFinish(int replyCode, BOOL* useTimeout) = 0; // vola se po prvnim CanFinishSending(), ktere vrati FALSE
-    virtual void HandleDataConTimeout(DWORD* start) = 0;                      // vola se pouze tehdy, kdyz BeforeWaitingForFinish vrati v 'useTimeout' TRUE
-    virtual HANDLE GetFinishedEvent() = 0;                                    // az bude "signaled", testne se znovu CanFinishSending()
-    virtual void HandleESCWhenWaitingForFinish(HWND parent) = 0;              // user dal ESC pri cekani (po teto metode se testne znovu CanFinishSending())
+    // collection of methods for waiting for the user interface ("data connection") to close when the
+    // command finishes successfully on the server
+    virtual BOOL CanFinishSending(int replyCode, BOOL* useTimeout) = 0;       // if it returns FALSE, the
+                                                                              // event obtained via
+                                                                              // GetFinishedEvent() will be
+                                                                              // waited on
+    virtual void BeforeWaitingForFinish(int replyCode, BOOL* useTimeout) = 0; // called after the first
+                                                                              // CanFinishSending() that
+                                                                              // returns FALSE
+    virtual void HandleDataConTimeout(DWORD* start) = 0;                      // called only if
+                                                                              // BeforeWaitingForFinish
+                                                                              // returns TRUE in
+                                                                              // 'useTimeout'
+    virtual HANDLE GetFinishedEvent() = 0;                                    // once it is signaled,
+                                                                              // CanFinishSending() is
+                                                                              // tested again
+    virtual void HandleESCWhenWaitingForFinish(HWND parent) = 0;              // user pressed ESC while
+                                                                              // waiting (after this method
+                                                                              // CanFinishSending() is tested
+                                                                              // again)
 };
 
 class CSendCmdUserIfaceForListAndDownload : public CSendCmdUserIfaceAbstract
 {
 protected:
-    BOOL ForDownload;     // vyuziti objektu pro: TRUE = download, FALSE = list
-    BOOL DatConCancelled; // TRUE = data-connection byla zcancelovana (bud nedoslo k jejimu otevreni (acceptu) nebo zavreni po prijmu chyby ze serveru)
+    BOOL ForDownload;     // object usage: TRUE = download, FALSE = list
+    BOOL DatConCancelled; // TRUE = the data connection was cancelled (either it never opened (accept)
+                          // or it was closed after an error from the server was received)
 
     CListWaitWindow WaitWnd;
 
@@ -535,24 +556,26 @@ public:
     virtual void HandleESCWhenWaitingForFinish(HWND parent);
 };
 
-// stavy provadeni keep-alive v "control connection"
+// states of keep-alive processing in the "control connection"
 enum CKeepAliveMode
 {
-    kamNone,                      // keep-alive se neresi (neni navazane spojeni, je zakazany, atd.)
-    kamWaiting,                   // ceka se az ubehne keep-alive doba (pred posilanim keep-alive prikazu)
-    kamProcessing,                // prave se provadi keep-alive prikazy
-    kamWaitingForEndOfProcessing, // prave se provadi keep-alive prikazy + normalni prikazy uz cekaji na dokonceni keep-alive prikazu
-    kamForbidden,                 // prave probiha normalni prikaz, keep-alive je az do jeho dobehnuti zakazany
+    kamNone,                      // keep-alive not handled (no connection established, disabled, etc.)
+    kamWaiting,                   // waiting for the keep-alive period to elapse (before sending keep-alive commands)
+    kamProcessing,                // keep-alive commands are currently being executed
+    kamWaitingForEndOfProcessing, // keep-alive commands are running and regular commands already wait for them to finish
+    kamForbidden,                 // a regular command is currently in progress, keep-alive is forbidden until it finishes
 };
 
 enum CKeepAliveDataConState
 {
-    kadcsNone,                // nenastaveno (zatim se "data connection" nestartuje)
-    kadcsWaitForPassiveReply, // passive: ceka na odpoved na prikaz PASV (ip+port, kam se ma otevrit socket "data connection")
-    kadcsWaitForListen,       // active: ceka na otevreni listen portu (lokalne nebo na proxy serveru) ("listen" rezim "data connection")
-    kadcsWaitForSetPortReply, // active: ceka na odpoved na prikaz PORT ("listen" rezim "data connection")
-    kadcsWaitForListStart,    // active+passive: prikaz "list" byl odeslan, ceka na spojeni ze serveru (connect "data connection")
-    kadcsDone,                // active+passive: server uz ohlasil konec listingu
+    kadcsNone,                // not set (the "data connection" is not being started yet)
+    kadcsWaitForPassiveReply, // passive: waiting for the PASV reply (IP+port where the "data connection" socket must open)
+    kadcsWaitForListen,       // active: waiting for the listen port to open (locally or on the proxy server) ("listen" mode of the
+                              // "data connection")
+    kadcsWaitForSetPortReply, // active: waiting for the reply to the PORT command ("listen" mode of the "data connection")
+    kadcsWaitForListStart,    // active + passive: the "list" command was sent, waiting for the server to connect ("data connection"
+                              // connect)
+    kadcsDone,                // active + passive: the server has already reported the end of the listing
 };
 
 class CWaitWindow;
@@ -563,26 +586,27 @@ class CFTPWorker;
 class CControlConnectionSocket : public CSocket
 {
 private:
-    // data tykajici se udalosti (pracovat s nimi jen pres AddEvent a GetEvent):
-    // udalosti generuje "receive" cast (v "sockets" threadu spoustene "receive" metody), udalosti
-    // prijima ridici cast (cekani na ESC/timeout nebo dokonceni prace se socketem v hl. threadu)
-    // POZNAMKA: jsou podporeny i prepisovatelne udalosti, ktere se ve fronte udrzi jen dokud neni
-    //           nagenerovana dalsi udalost (ochrana proti zbytecnemu shromazdovani)
+    // event-related data (access them only via AddEvent and GetEvent):
+    // events are generated by the "receive" part ("receive" methods running in the "sockets" thread),
+    // events are consumed by the control part (waiting for ESC/timeout or finishing work with the
+    // socket in the main thread)
+    // NOTE: overwritable events are also supported; they remain in the queue only until another event
+    //       is generated (to prevent unnecessary accumulation)
     //
-    // kriticka sekce pro praci s udalostmi
-    // POZOR: v teto sekci nesmi dojit ke vnoreni do CSocket::SocketCritSect ani do
-    // SocketsThread->CritSect (nesmi se volat metody SocketsThread)
+    // critical section for handling events
+    // WARNING: inside this section, do not nest into CSocket::SocketCritSect or
+    // SocketsThread->CritSect (do not call SocketsThread methods)
     CRITICAL_SECTION EventCritSect;
-    TIndirectArray<CControlConnectionSocketEventData> Events; // fronta udalosti
-    int EventsUsedCount;                                      // pocet skutecne pouzivanych prvku pole Events (prvky se pouzivaji opakovane)
-    HANDLE NewEvent;                                          // system event: signaled pokud Events obsahuje nejakou udalost
-    BOOL RewritableEvent;                                     // TRUE pokud nova udalost muze prepsat posledni udalost ve fronte
+    TIndirectArray<CControlConnectionSocketEventData> Events; // event queue
+    int EventsUsedCount;                                      // number of array elements actually used in Events (elements are reused)
+    HANDLE NewEvent;                                          // system event: signaled if Events contains an event
+    BOOL RewritableEvent;                                     // TRUE if the new event may overwrite the last event in the queue
 
 protected:
-    // kriticka sekce pro pristup k datum objektu je CSocket::SocketCritSect
-    // POZOR: v teto sekci nesmi dojit ke vnoreni do SocketsThread->CritSect (nesmi se volat metody SocketsThread)
+    // the critical section for accessing object data is CSocket::SocketCritSect
+    // WARNING: inside this section, do not nest into SocketsThread->CritSect (do not call SocketsThread methods)
 
-    // parametry pripojeni na FTP server
+    // connection parameters for the FTP server
     CFTPProxyServer* ProxyServer; // NULL = "not used (direct connection)"
     char Host[HOST_MAX_SIZE];
     unsigned short Port;
@@ -593,52 +617,55 @@ protected:
     char* InitFTPCommands;
     BOOL UsePassiveMode;
     char* ListCommand;
-    BOOL UseLIST_aCommand; // TRUE = ignoruj ListCommand, pouzij "LIST -a" (list hidden files (unix))
+    BOOL UseLIST_aCommand; // TRUE = ignore ListCommand, use "LIST -a" (list hidden files (UNIX))
 
-    DWORD ServerIP;                           // IP adresa serveru (==INADDR_NONE dokud neni IP zname)
-    BOOL CanSendOOBData;                      // FALSE pokud server nepodporuje OOB data (pouziva se pri posilani prikazu pro abortovani)
-    char* ServerSystem;                       // system serveru (odpoved na prikaz SYST) - muze byt i NULL
-    char* ServerFirstReply;                   // prvni odpoved serveru (obsahuje casto verzi FTP serveru) - muze byt i NULL
-    BOOL HaveWorkingPath;                     // TRUE pokud je WorkingPath platne
-    char WorkingPath[FTP_MAX_PATH];           // aktualni pracovni cesta na FTP serveru
-    CCurrentTransferMode CurrentTransferMode; // aktualni prenosovy rezim na FTP serveru (jen pamet pro posledni FTP prikaz "TYPE")
+    DWORD ServerIP;                           // server IP address (==INADDR_NONE until the IP is known)
+    BOOL CanSendOOBData;                      // FALSE if the server does not support OOB data (used when sending abort commands)
+    char* ServerSystem;                       // server system (reply to SYST command) - may also be NULL
+    char* ServerFirstReply;                   // first server reply (often contains the FTP server version) - may also be NULL
+    BOOL HaveWorkingPath;                     // TRUE if WorkingPath is valid
+    char WorkingPath[FTP_MAX_PATH];           // current working directory on the FTP server
+    CCurrentTransferMode CurrentTransferMode; // current transfer mode on the FTP server (memory of the last FTP "TYPE" command)
 
-    BOOL EventConnectSent; // TRUE jen pokud jiz byla poslana udalost ccsevConnected (resi prichod FD_READ pred FD_CONNECT)
+    BOOL EventConnectSent; // TRUE only if the ccsevConnected event was already sent (handles FD_READ arriving before FD_CONNECT)
 
-    char* BytesToWrite;            // buffer pro byty, ktere se nezapsaly ve Write (zapisou se po prijeti FD_WRITE)
-    int BytesToWriteCount;         // pocet platnych bytu v bufferu 'BytesToWrite'
-    int BytesToWriteOffset;        // pocet jiz odeslanych bytu v bufferu 'BytesToWrite'
-    int BytesToWriteAllocatedSize; // alokovana velikost bufferu 'BytesToWrite'
+    char* BytesToWrite;            // buffer for bytes that were not written in Write (written after FD_WRITE is received)
+    int BytesToWriteCount;         // number of valid bytes in the 'BytesToWrite' buffer
+    int BytesToWriteOffset;        // number of bytes already sent from the 'BytesToWrite' buffer
+    int BytesToWriteAllocatedSize; // allocated size of the 'BytesToWrite' buffer
 
-    char* ReadBytes;            // buffer pro prectene byty ze socketu (ctou se po prijeti FD_READ)
-    int ReadBytesCount;         // pocet platnych bytu v bufferu 'ReadBytes'
-    int ReadBytesOffset;        // pocet jiz zpracovanych (preskocenych) bytu v bufferu 'ReadBytes'
-    int ReadBytesAllocatedSize; // alokovana velikost bufferu 'ReadBytes'
+    char* ReadBytes;            // buffer for bytes read from the socket (read after FD_READ is received)
+    int ReadBytesCount;         // number of valid bytes in the 'ReadBytes' buffer
+    int ReadBytesOffset;        // number of bytes already processed (skipped) in the 'ReadBytes' buffer
+    int ReadBytesAllocatedSize; // allocated size of the 'ReadBytes' buffer
 
-    DWORD StartTime; // cas zacatku sledovane operace (slouzi pro vypocet timeoutu + wait-okenek)
+    DWORD StartTime; // start time of the tracked operation (used to compute timeouts and wait windows)
 
-    int LogUID; // UID logu pro tuto connectionu (-1 dokud neni log zalozen)
+    int LogUID; // log UID for this connection (-1 until the log is created)
 
-    // neni-li NULL, je to chybova hlaska o duvodu zavreni spojeni v odpojenem FS (zobrazi se
-    // v messageboxu pri pripojeni FS do panelu)
+    // if not NULL, this is the error message explaining the disconnection reason in a detached FS
+    // (displayed in a message box when the FS is connected into a panel)
     char* ConnectionLostMsg;
 
-    HWND OurWelcomeMsgDlg; // handle okna welcome-msg (neni treba synchronizovat, pristup jen z hl. threadu) - NULL=jeste nebylo otevrene, pozor: okno uz muze byt zavrene
+    HWND OurWelcomeMsgDlg; // handle of the welcome-message window (no synchronization needed, accessed only from the main
+                           // thread) - NULL = not opened yet; note: the window may already be closed
 
-    BOOL KeepAliveEnabled;            // TRUE pokud se v teto "control connection" mame snazit zamezit odpojeni posilanim keep-alive prikazu
-    int KeepAliveSendEvery;           // po jake dobe posilat keep-alive prikazy (perioda) (kopie kvuli pouziti z vice threadu)
-    int KeepAliveStopAfter;           // po jake dobe prestat posilat keep-alive prikazy (kopie kvuli pouziti z vice threadu)
-    int KeepAliveCommand;             // prikaz pro keep-alive (0-NOOP, 1-PWD, 2-NLST, 3-LIST) (kopie kvuli pouziti z vice threadu)
-    DWORD KeepAliveStart;             // GetTickCount() posledniho provedeneho prikazu (mimo keep-alive) v "control connection"
-    CKeepAliveMode KeepAliveMode;     // soucasny stav zpracovani keep-alive v "control connection"
-    BOOL KeepAliveCmdAllBytesWritten; // FALSE = posledni keep-alive prikaz jeste nebyl komplet odeslan (musime cekat na FD_WRITE)
-    HANDLE KeepAliveFinishedEvent;    // "signaled" po ukonceni keep-alive prikazu (vyuziva hl. thread, kdyz ceka na spusteni normalniho prikazu)
-    // "data connection" pro keep-alive prikaz (NLST+LIST) - jen zahazuje data (destrukce objektu
-    // probiha v sekci SocketsThread->CritSect, takze objekt nemuze "receive" metodam zmizet "pod
-    // nohama" + pred destrukci objektu probiha NULLovani KeepAliveDataCon v sekci tohoto objektu
-    // (objekt lze "ziskat" jen pro prvni destrukci))
+    BOOL KeepAliveEnabled;            // TRUE if this "control connection" should prevent disconnects by sending keep-alive commands
+    int KeepAliveSendEvery;           // interval for sending keep-alive commands (period) (copy for use across threads)
+    int KeepAliveStopAfter;           // time after which keep-alive commands stop (copy for use across threads)
+    int KeepAliveCommand;             // keep-alive command (0-NOOP, 1-PWD, 2-NLST, 3-LIST) (copy for use across threads)
+    DWORD KeepAliveStart;             // GetTickCount() of the last executed command (excluding keep-alive) in the "control connection"
+    CKeepAliveMode KeepAliveMode;     // current state of keep-alive processing in the "control connection"
+    BOOL KeepAliveCmdAllBytesWritten; // FALSE = the last keep-alive command has not been fully sent yet (must wait for FD_WRITE)
+    HANDLE KeepAliveFinishedEvent;    // signaled after the keep-alive command finishes (used by the main thread when waiting to
+                                      // start a normal command)
+    // "data connection" for the keep-alive command (NLST+LIST) - it only discards data (object destruction happens inside
+    // SocketsThread->CritSect, so the object cannot disappear "under the feet" of "receive" methods; before destroying the
+    // object, KeepAliveDataCon is set to NULL in this object's section (the object can only be "retrieved" for the first
+    // destruction))
     CKeepAliveDataConSocket* KeepAliveDataCon;
-    CKeepAliveDataConState KeepAliveDataConState; // stav "data connection" pro keep-alive prikaz (NLST+LIST) - pro aktivni i pasivni spojeni
+    CKeepAliveDataConState KeepAliveDataConState; // state of the "data connection" for the keep-alive command (NLST+LIST) - for
+                                                  // active and passive connections
 
     int EncryptControlConnection;
     int EncryptDataConnection;
@@ -650,14 +677,14 @@ public:
     virtual ~CControlConnectionSocket();
 
     // ******************************************************************************************
-    // metody pro praci s control socketem
+    // methods for working with the control socket
     // ******************************************************************************************
 
     BOOL IsGood() { return NewEvent != NULL && KeepAliveFinishedEvent != NULL; }
 
-    // nastavi parametry pripojeni na FTP server; retezce nesmi byt NULL (vyjimka je
-    // 'initFTPCommands' a 'listCommand' - ty mohou byt NULL)
-    // mozne volat z libovolneho threadu
+    // sets the connection parameters for the FTP server; strings must not be NULL (except for
+    // 'initFTPCommands' and 'listCommand' - they may be NULL)
+    // can be called from any thread
     void SetConnectionParameters(const char* host, unsigned short port, const char* user,
                                  const char* password, BOOL useListingsCache,
                                  const char* initFTPCommands, BOOL usePassiveMode,
@@ -667,77 +694,78 @@ public:
                                  int encryptControlConnection, int encryptDataConnection,
                                  int compressData);
 
-    // metody pro sledovani doby spousteni operace se socketem:
-    // POZOR: neni synchronizovane - pouzivat z jednoho threadu nebo vyuzit jine synchronizace
+    // methods for tracking the duration of an operation with the socket:
+    // WARNING: not synchronized - use from one thread or apply other synchronization
     //
-    // nastavi cas zacatku operace (casovy krok zhruba 10ms - vyuziva GetTickCount)
+    // sets the start time of the operation (time step approx. 10 ms - uses GetTickCount)
     void SetStartTime(BOOL setOldTime = FALSE) { StartTime = GetTickCount() - (setOldTime ? 60000 : 0); }
-    // vraci pocet ms od zacatku operace (max. doba je zhruba 50dni)
+    // returns the number of ms since the operation started (maximum duration is roughly 50 days)
     DWORD GetTimeFromStart();
-    // odecita od 'showTime' cas od zacatku operace, vraci minimalne 0 ms (zadne zaporne cisla)
+    // subtracts the time since the operation started from 'showTime', returns at least 0 ms (no negative numbers)
     DWORD GetWaitTime(DWORD showTime);
 
     int GetEncryptControlConnection() { return EncryptControlConnection; }
     int GetEncryptDataConnection() { return EncryptDataConnection; }
     int GetCompressData() { return CompressData; }
 
-    // otevre "control connection" na FTP server (zadany predchozim volanim SetConnectionParameters);
-    // ocekava nastaveny SetStartTime() - zobrazuje wait-okenko s pouzitim GetWaitTime();
-    // 'parent' je "foreground" okno threadu (po stisku ESC se pouziva pro zjisteni
-    // jestli byl stisknut ESC v tomto okne a ne napriklad v jine aplikaci; u hl. threadu jde
-    // o SalamanderGeneral->GetMsgBoxParent() nebo pluginem otevreny dialog); 'parent' je zaroven
-    // parent pripadnych messageboxu s chybami; 'reconnect' je TRUE pokud se jedna o reconnect
-    // zavrene "control connection"; neni-li 'workDir' NULL, zjisti aktualni pracovni cestu
-    // na serveru (hned po pripojeni) a ulozi ji do 'workDir' (buffer o velikosti 'workDirBufSize');
-    // neni-li 'totalAttemptNum' NULL, jde o in/out promennou s celkovym poctem pokusu o pripojeni
-    // (pred prvnim volanim inicializovat na hodnotu 1); neni-li 'retryMsg' NULL, zobrazi se pred
-    // dalsim pokusem o pripojeni (nejsou-li jiz vsechny vycerpane) hlaseni 'retryMsg' (text pro
-    // retry wait-okenko) - umoznuje simulaci stavu, kdy k preruseni spojeni doslo uvnitr teto metody;
-    // neni-li 'reconnectErrResID' -1, pouzije se jako text pro reconnect wait okenko (je-li -1,
-    // pouzije se text IDS_SENDCOMMANDERROR); je-li 'useFastReconnect' TRUE, probehne reconnect
-    // bez cekani;
-    // vraci TRUE pokud se podarilo pripojit; jmeno uzivatele se muze behem pripojovani zmenit
-    // (nezavisi na uspechu metody) - aktualni jmeno se vraci v 'user' (max. 'userSize' bytu);
-    // mozne volat jen z hl. threadu (pouziva wait-okenka, atd.)
+    // opens the "control connection" to the FTP server (configured by the preceding
+    // SetConnectionParameters call); expects SetStartTime() to be set - shows a wait window using
+    // GetWaitTime(); 'parent' is the thread's foreground window (after ESC is pressed it is used to
+    // detect whether ESC was pressed in this window or, for example, in another application; in the
+    // main thread this is SalamanderGeneral->GetMsgBoxParent() or a dialog opened by the plugin);
+    // 'parent' is also the parent of any error message boxes; 'reconnect' is TRUE when reconnecting
+    // a closed "control connection"; if 'workDir' is not NULL, the current working directory on the
+    // server is determined (right after the connection) and stored in 'workDir' (buffer of size
+    // 'workDirBufSize'); if 'totalAttemptNum' is not NULL, it is an in/out variable containing the
+    // total number of connection attempts (initialize to 1 before the first call); if 'retryMsg' is
+    // not NULL, the message 'retryMsg' (text for the retry wait window) is displayed before the next
+    // connection attempt (provided not all attempts are exhausted) - this allows simulating a state
+    // where the disconnect occurred inside this method; if 'reconnectErrResID' is not -1, it is used
+    // as the text for the reconnect wait window (if it is -1, IDS_SENDCOMMANDERROR is used); if
+    // 'useFastReconnect' is TRUE, reconnect is performed without waiting;
+    // returns TRUE if the connection succeeded; the user name may change during connection (it does
+    // not depend on the method's success) - the current name is returned in 'user' (maximum
+    // 'userSize' bytes);
+    // can be called only from the main thread (uses wait windows, etc.)
     BOOL StartControlConnection(HWND parent, char* user, int userSize, BOOL reconnect,
                                 char* workDir, int workDirBufSize, int* totalAttemptNum,
                                 const char* retryMsg, BOOL canShowWelcomeDlg,
                                 int reconnectErrResID, BOOL useFastReconnect);
 
-    // zmeni pracovni cestu v "control connection"; ocekava nastaveny SetStartTime() - v pripade,
-    // ze neni treba obnovit spojeni, zobrazuje wait-okenko s pouzitim GetWaitTime();
-    // 'notInPanel' je TRUE jde-li o odpojeny FS (neni v panelu); je-li 'notInPanel'
-    // FALSE, jde o spojeni v panelu - je-li 'leftPanel' TRUE, jde o levy panel,
-    // jinak jde o pravy panel; 'parent' je "foreground" okno threadu (po
-    // stisku ESC se pouziva pro zjisteni jestli byl stisknut ESC v tomto okne a ne napriklad
-    // v jine aplikaci; u hl. threadu jde o SalamanderGeneral->GetMsgBoxParent() nebo pluginem
-    // otevreny dialog); 'parent' je zaroven parent pripadnych messageboxu s chybami;
-    // 'path' je nova pracovni cesta; je-li 'parsedPath' TRUE, je napred nutne zjistit jestli
-    // se ze zacatku 'path' nema oriznout slash (napr. u OpenVMS/MVS cest) - pouziva se v pripade,
-    // kdy se 'path' ziska parsovanim user-part casti cesty na FS; v 'path' vraci (max.
-    // 'pathBufSize' bytu) novou pracovni cestu; 'userBuf'+'userBufSize' je in/out buffer pro
-    // user-name na FTP serveru (muze se pri reconnectu zmenit); je-li 'forceRefresh' TRUE,
-    // nesmi se pri zmene cesty pouzit zadne cachovane udaje (nutne menit cestu primo na
-    // serveru); 'mode' je rezim zmeny cesty (viz CPluginFSInterfaceAbstract::ChangePath);
-    // je-li 'cutDirectory' TRUE, je potreba 'path' pred pouzitim zkratit (o jeden adresar);
-    // v pripade, ze se cesta zkracuje z duvodu, ze jde o cestu k souboru (staci domenka, ze
-    // by mohlo jit o cestu k souboru - po vylistovani cesty se overuje jestli soubor existuje,
-    // pripadne se zobrazi uzivateli chyba) a 'cutFileName' neni NULL (mozne jen v 'mode' 3
-    // a pri 'cutDirectory' FALSE), vraci v bufferu 'cutFileName' (o velikosti MAX_PATH znaku)
-    // jmeno tohoto souboru (bez cesty), jinak v bufferu 'cutFileName' vraci prazdny retezec;
-    // neni-li 'pathWasCut' NULL, vraci se v nem TRUE pokud doslo ke zkraceni cesty; Salamander
-    // pouziva 'cutFileName' a 'pathWasCut' u prikazu Change Directory (Shift+F7) pri zadani
-    // jmena souboru - dochazi k fokusu tohoto souboru; 'rescuePath' obsahuje posledni pristupnou
-    // a listovatelnou cestu na serveru, ktera se ma pouzit az vse ostatni zklame (lepsi je
-    // jina cesta nez disconnect) - jde o in/out retezec (max. velikost FTP_MAX_PATH znaku);
-    // je-li 'showChangeInLog' TRUE, ma se v logu objevit hlaska "Changing path to...";
-    // je-li listing v cache (nemusi se ziskavat na serveru), vraci se v 'cachedListing' (nesmi
-    // byt NULL) jako alokovany retezec, delka retezce se vraci v 'cachedListingLen' (nesmi
-    // byt NULL), volajici je odpovedny za dealokaci; v 'cachedListingDate' (nesmi byt NULL)
-    // se vraci datum porizeni listingu; 'totalAttemptNum'+'skipFirstReconnectIfNeeded'
-    // je parametr pro SendChangeWorkingPath(); vraci FALSE pokud se zmena cesty nepodarila
-    // (nerika nic o "control connection" - muze byt otevrena i zavrena)
-    // mozne volat jen z hl. threadu (pouziva wait-okenka, atd.)
+    // changes the working directory in the "control connection"; expects SetStartTime() to be set -
+    // if the connection does not need to be restored, shows a wait window using GetWaitTime();
+    // 'notInPanel' is TRUE for a detached FS (not present in a panel); if 'notInPanel' is FALSE, the
+    // connection is in a panel - if 'leftPanel' is TRUE it is the left panel, otherwise the right
+    // panel; 'parent' is the thread's foreground window (after ESC is pressed it is used to detect
+    // whether ESC was pressed in this window and not, for example, in another application; in the
+    // main thread this is SalamanderGeneral->GetMsgBoxParent() or a dialog opened by the plugin);
+    // 'parent' is also the parent of any error message boxes; 'path' is the new working directory;
+    // if 'parsedPath' is TRUE, it is first necessary to determine whether the leading slash should
+    // be trimmed from 'path' (e.g. for OpenVMS/MVS paths) - used when 'path' is obtained by parsing
+    // the user-part of an FS path; 'path' returns (up to 'pathBufSize' bytes) the new working
+    // directory; 'userBuf' + 'userBufSize' is an in/out buffer for the user name on the FTP server
+    // (it may change during reconnect); if 'forceRefresh' is TRUE, no cached data may be used when
+    // changing the path (the path must be changed directly on the server); 'mode' is the path change
+    // mode (see CPluginFSInterfaceAbstract::ChangePath); if 'cutDirectory' is TRUE, 'path' must be
+    // shortened before use (by one directory); if the path is shortened because it leads to a file
+    // (a mere suspicion that it might be a file path is enough - after listing the path it checks
+    // whether the file exists, otherwise an error is shown) and 'cutFileName' is not NULL (possible
+    // only in 'mode' 3 and with 'cutDirectory' FALSE), the buffer 'cutFileName' (size MAX_PATH
+    // characters) receives that file name (without path), otherwise 'cutFileName' receives an empty
+    // string; if 'pathWasCut' is not NULL, it returns TRUE if the path was shortened; Salamander uses
+    // 'cutFileName' and 'pathWasCut' in the Change Directory command (Shift+F7) when a file name is
+    // entered - the file gains focus; 'rescuePath' contains the last accessible and listable path on
+    // the server that should be used when everything else fails (better than disconnecting) - it is
+    // an in/out string (maximum size FTP_MAX_PATH characters);
+    // if 'showChangeInLog' is TRUE, the log should contain the message "Changing path to...";
+    // if the listing is cached (no need to retrieve it from the server), it is returned in
+    // 'cachedListing' (must not be NULL) as an allocated string, the string length is returned in
+    // 'cachedListingLen' (must not be NULL), the caller is responsible for deallocation; the date the
+    // listing was captured is returned in 'cachedListingDate' (must not be NULL);
+    // 'totalAttemptNum' + 'skipFirstReconnectIfNeeded' are parameters for SendChangeWorkingPath();
+    // returns FALSE if the path change failed (says nothing about the "control connection" - it may
+    // remain open or closed)
+    // can be called only from the main thread (uses wait windows, etc.)
     BOOL ChangeWorkingPath(BOOL notInPanel, BOOL leftPanel, HWND parent, char* path,
                            int pathBufSize, char* userBuf, int userBufSize, BOOL parsedPath,
                            BOOL forceRefresh, int mode, BOOL cutDirectory,
@@ -746,28 +774,29 @@ public:
                            CFTPDate* cachedListingDate, DWORD* cachedListingStartTime,
                            int* totalAttemptNum, BOOL skipFirstReconnectIfNeeded);
 
-    // listuje pracovni cestu v "control connection" (nepouziva zadne cache); ocekava nastaveny
-    // SetStartTime() (zobrazuje wait-okenko s pouzitim GetWaitTime()), nastavenou pracovni
-    // cestu na 'path' a otevrene spojeni (je-li zavrene, nabidne reconnect); 'parent'
-    // je "foreground" okno threadu (po stisku ESC se pouziva pro zjisteni jestli byl stisknut
-    // ESC v tomto okne a ne napriklad v jine aplikaci; u hl. threadu jde o
-    // SalamanderGeneral->GetMsgBoxParent() nebo pluginem otevreny dialog); 'parent' je zaroven
-    // parent pripadnych messageboxu s chybami; 'path' je pracovni cesta; 'userBuf'+'userBufSize'
-    // je in/out buffer pro user-name na FTP serveru (muze se pri reconnectu zmenit); vraci TRUE
-    // pokud se podarilo ziskat aspon cast listingu (v nejhorsim prazdny retezec), listing se
-    // vraci v alokovanem retezci 'allocatedListing' (nesmi byt NULL, pokud vraci NULL, jde
-    // o chybu alokace pameti), delka retezce se vraci v 'allocatedListingLen' (nesmi byt NULL),
-    // volajici je odpovedny za dealokaci; v 'listingDate' (nesmi byt NULL) se vraci datum porizeni
-    // listingu; v 'pathListingIsIncomplete' (nesmi byt NULL) se vraci TRUE pokud listing neni
-    // kompletni (byl prerusen) nebo FALSE pokud je listing kompletni; v 'pathListingIsBroken'
-    // (nesmi byt NULL) se vraci TRUE pokud prikaz pro listovani vratil chybu (3xx, 4xx nebo 5xx);
-    // je-li 'forceRefresh' TRUE, nesmi se pouzivat zadne cache, vse je nutne provest primo
-    // na serveru; 'totalAttemptNum' jsou parametry pro StartControlConnection(); vraci FALSE
-    // pokud server odmita cestu vylistovat (nerika nic o "control connection" - muze byt otevrena
-    // i zavrena); vraci FALSE a ve 'fatalError' (nesmi byt NULL) TRUE, pokud nastala fatalni
-    // chyba (server neodpovida jako FTP server, atp.); 'dontClearCache' je TRUE pokud se nema
-    // volat ListingCache.RefreshOnPath() pro cisteni cache pro aktualni cestu (cisti se jinde);
-    // mozne volat jen z hl. threadu (pouziva wait-okenka, atd.)
+    // lists the working directory in the "control connection" (does not use any cache); expects
+    // SetStartTime() to be set (shows a wait window using GetWaitTime()), the working directory set to
+    // 'path' and an open connection (if it is closed, offers reconnect); 'parent' is the thread's
+    // foreground window (after ESC is pressed it is used to detect whether ESC was pressed in this
+    // window and not, for example, in another application; in the main thread this is
+    // SalamanderGeneral->GetMsgBoxParent() or a dialog opened by the plugin); 'parent' is also the
+    // parent of any error message boxes; 'path' is the working directory; 'userBuf' + 'userBufSize'
+    // is an in/out buffer for the user name on the FTP server (it may change during reconnect);
+    // returns TRUE if at least part of the listing was obtained (empty string in the worst case); the
+    // listing is returned in the allocated string 'allocatedListing' (must not be NULL; returning NULL
+    // means an allocation error), the string length is returned in 'allocatedListingLen' (must not be
+    // NULL), the caller is responsible for deallocation; 'listingDate' (must not be NULL) returns the
+    // date when the listing was captured; 'pathListingIsIncomplete' (must not be NULL) returns TRUE if
+    // the listing is incomplete (was interrupted) or FALSE if it is complete; 'pathListingIsBroken'
+    // (must not be NULL) returns TRUE if the listing command returned an error (3xx, 4xx, or 5xx);
+    // if 'forceRefresh' is TRUE, no cache may be used; everything must be executed directly on the
+    // server; 'totalAttemptNum' are parameters for StartControlConnection(); returns FALSE if the
+    // server refuses to list the path (says nothing about the "control connection" - it may remain
+    // open or closed); returns FALSE and sets 'fatalError' (must not be NULL) to TRUE if a fatal error
+    // occurred (the server is not responding like an FTP server, etc.); 'dontClearCache' is TRUE if
+    // ListingCache.RefreshOnPath() should not be called to clear the cache for the current path (it is
+    // cleared elsewhere);
+    // can be called only from the main thread (uses wait windows, etc.)
     BOOL ListWorkingPath(HWND parent, const char* path, char* userBuf, int userBufSize,
                          char** allocatedListing, int* allocatedListingLen,
                          CFTPDate* listingDate, BOOL* pathListingIsIncomplete,
@@ -775,429 +804,416 @@ public:
                          DWORD* listingStartTime, BOOL forceRefresh, int* totalAttemptNum,
                          BOOL* fatalError, BOOL dontClearCache);
 
-    // zjisti aktualni pracovni cestu v "control connection"; ocekava nastaveny
-    // SetStartTime() - zobrazuje wait-okenko s pouzitim GetWaitTime(); 'parent' je
-    // "foreground" okno threadu (po stisku ESC se pouziva pro zjisteni jestli byl stisknut
-    // ESC v tomto okne a ne napriklad v jine aplikaci; u hl. threadu jde o
-    // SalamanderGeneral->GetMsgBoxParent() nebo pluginem otevreny dialog); 'parent' je
-    // zaroven parent pripadnych messageboxu s chybami; v 'path' vraci (max. 'pathBufSize'
-    // bytu) aktualni pracovni cestu, pri chybe zjistovani pracovni cesty (napr. "jeste
-    // nebyla definovana") vraci prazdny retezec; je-li 'forceRefresh' TRUE, nesmi se pri
-    // zjistovani cesty pouzit zadne cachovane udaje (nutne ziskat cestu primo ze serveru);
-    // vraci FALSE pokud se zjisteni cesty nepodarilo (napr. spatny format odpovedi
-    // serveru), doslo k preruseni spojeni (pri timeoutu automaticky tvrde zavira
-    // spojeni - posilat "QUIT" nema smysl) - neni-li 'canRetry' NULL, muze se text chyby
-    // vratit v 'retryMsg' (buffer o velikosti 'retryMsgBufSize') - v 'canRetry' se vraci
-    // TRUE, jinak se chyba zobrazi v messageboxu ('canRetry' je bud NULL nebo se v nem
-    // vraci FALSE);
-    // mozne volat jen z hl. threadu (pouziva wait-okenka, atd.)
+    // obtains the current working directory in the "control connection"; expects SetStartTime() to be
+    // set - shows a wait window using GetWaitTime(); 'parent' is the thread's foreground window (after
+    // ESC is pressed it is used to detect whether ESC was pressed in this window and not, for example,
+    // in another application; in the main thread this is SalamanderGeneral->GetMsgBoxParent() or a
+    // dialog opened by the plugin); 'parent' is also the parent of any error message boxes; 'path'
+    // returns (up to 'pathBufSize' bytes) the current working directory, or an empty string if getting
+    // the working directory fails (e.g. "not defined yet"); if 'forceRefresh' is TRUE, no cached data
+    // may be used when retrieving the path (it must be fetched directly from the server);
+    // returns FALSE if getting the path failed (e.g. invalid reply format from the server), the
+    // connection was interrupted (on timeout it automatically closes the connection hard - sending
+    // "QUIT" makes no sense); if 'canRetry' is not NULL, the error text may be returned in 'retryMsg'
+    // (buffer of size 'retryMsgBufSize') - 'canRetry' returns TRUE; otherwise the error is shown in a
+    // message box ('canRetry' is either NULL or FALSE is returned there);
+    // can be called only from the main thread (uses wait windows, etc.)
     BOOL GetCurrentWorkingPath(HWND parent, char* path, int pathBufSize, BOOL forceRefresh,
                                BOOL* canRetry, char* retryMsg, int retryMsgBufSize);
 
-    // je-li treba, nastavi rezim prenosu (ASCII/BINAR(IMAGE) - v 'asciiMode' je TRUE/FALSE)
-    // v "control connection"; ocekava nastaveny SetStartTime() - zobrazuje wait-okenko
-    // s pouzitim GetWaitTime(); 'parent' je "foreground" okno threadu (po stisku ESC se
-    // pouziva pro zjisteni jestli byl stisknut ESC v tomto okne a ne napriklad v jine
-    // aplikaci; u hl. threadu jde o SalamanderGeneral->GetMsgBoxParent() nebo pluginem
-    // otevreny dialog); 'parent' je zaroven parent pripadnych messageboxu s chybami;
-    // neni-li 'success' NULL, vraci se v nem TRUE pokud server vrati uspech; pokud server
-    // vrati neuspech, text odpovedi serveru je v bufferu 'ftpReplyBuf' (max. velikost
-    // 'ftpReplyBufSize'), je null-terminated - je-li delsi nez buffer, je jednoduse oriznut;
-    // je-li 'forceRefresh' TRUE, nesmi se pri nastavovani rezimu prenosu pouzit zadne
-    // cachovane udaje (rezim se nastavi, i kdyz by teoreticky nemusel, protoze uz
-    // je nastaveny); vraci FALSE pokud se nastaveni rezimu prenosu nepodarilo, doslo
-    // k preruseni spojeni (pri timeoutu automaticky tvrde zavira spojeni - posilat
-    // "QUIT" nema smysl) - neni-li 'canRetry' NULL, muze se text chyby vratit v 'retryMsg'
-    // (buffer o velikosti 'retryMsgBufSize') - v 'canRetry' se vraci TRUE, jinak se chyba
-    // zobrazi v messageboxu ('canRetry' je bud NULL nebo se v nem vraci FALSE);
-    // mozne volat jen z hl. threadu (pouziva wait-okenka, atd.)
+    // if needed, sets the transfer mode (ASCII/BINARY(IMAGE) - TRUE/FALSE in 'asciiMode') in the
+    // "control connection"; expects SetStartTime() to be set - shows a wait window using
+    // GetWaitTime(); 'parent' is the thread's foreground window (after ESC is pressed it is used to
+    // detect whether ESC was pressed in this window and not, for example, in another application; in
+    // the main thread this is SalamanderGeneral->GetMsgBoxParent() or a dialog opened by the plugin);
+    // 'parent' is also the parent of any error message boxes; if 'success' is not NULL, it returns
+    // TRUE when the server reports success; if the server reports failure, the server reply text is in
+    // the buffer 'ftpReplyBuf' (maximum size 'ftpReplyBufSize'), null-terminated - if it is longer
+    // than the buffer it is simply truncated; if 'forceRefresh' is TRUE, no cached data may be used
+    // when setting the transfer mode (the mode is set even if theoretically unnecessary because it is
+    // already set); returns FALSE if setting the transfer mode failed, the connection was interrupted
+    // (on timeout it automatically closes the connection hard - sending "QUIT" makes no sense); if
+    // 'canRetry' is not NULL, the error text may be returned in 'retryMsg' (buffer of size
+    // 'retryMsgBufSize') - 'canRetry' returns TRUE; otherwise the error is displayed in a message box
+    // ('canRetry' is either NULL or FALSE is returned there);
+    // can be called only from the main thread (uses wait windows, etc.)
     BOOL SetCurrentTransferMode(HWND parent, BOOL asciiMode, BOOL* success, char* ftpReplyBuf,
                                 int ftpReplyBufSize, BOOL forceRefresh, BOOL* canRetry,
                                 char* retryMsg, int retryMsgBufSize);
 
-    // vyprazdneni cache pro aktualni pracovni cestu: synchronizovane HaveWorkingPath=FALSE,
+    // clears the cache for the current working directory: synchronized HaveWorkingPath=FALSE,
     void ResetWorkingPathCache();
 
-    // zneplatneni zapamatovaneho prenosoveho rezimu: synchronizovane CurrentTransferMode=ctrmUnknown
+    // invalidates the remembered transfer mode: synchronized CurrentTransferMode=ctrmUnknown
     void ResetCurrentTransferModeCache();
 
-    // posle prikaz na zmenu pracovni cesty v "control connection" na 'path'; ocekava nastaveny
-    // SetStartTime() - v pripade, ze neni treba obnovit spojeni, zobrazuje wait-okenko
-    // s pouzitim GetWaitTime(); 'parent' je "foreground" okno threadu (po stisku ESC
-    // se pouziva pro zjisteni jestli byl stisknut ESC v tomto okne a ne napriklad
-    // v jine aplikaci; u hl. threadu jde o SalamanderGeneral->GetMsgBoxParent()
-    // nebo pluginem otevreny dialog); 'parent' je zaroven parent pripadnych messageboxu s chybami;
-    // v 'success' (nesmi byt NULL) se vraci TRUE pri uspechu operace;
-    // 'notInPanel'+'leftPanel'+'userBuf'+'userBufSize'+'totalAttemptNum'+'retryMsg' jsou parametry
-    // pro ReconnectIfNeeded(); text odpovedi serveru je v bufferu 'ftpReplyBuf' (max. velikost
-    // 'ftpReplyBufSize'), je null-terminated - je-li delsi nez buffer, je jednoduse oriznut;
-    // neni-li 'startPath' NULL a dojde k obnoveni spojeni, posle se nejdrive prikaz pro
-    // zmenu pracovni cesty na 'startPath', a pak az na 'path' (resi relativni zmenu cesty);
-    // neni-li 'startPath' NULL a neni potreba obnovit spojeni, zkontroluje pres metodu
-    // GetCurrentWorkingPath (s parametrem 'forceRefresh'=FALSE) jestli pracovni cesta na
-    // serveru je presne 'startPath', pokud ne, posle se nejdrive prikaz pro zmenu pracovni
-    // cesty na 'startPath', a pak az na 'path'; je-li 'skipFirstReconnectIfNeeded' TRUE,
-    // predpoklada se, ze je spojeni navazane (pouziva se pro navazani pripadneho "retry");
-    // v 'userRejectsReconnect' (neni-li NULL) se vraci TRUE pokud je operace neuspesna jen
-    // z duvodu, ze user odmita reconnect; vraci FALSE jen pokud se nepodarilo prikaz
-    // poslat - doslo k preruseni spojeni (pri timeoutu automaticky tvrde zavira
-    // spojeni - posilat "QUIT" nema smysl)
-    // mozne volat jen z hl. threadu (pouziva wait-okenka, atd.)
+    // sends a command to change the working directory in the "control connection" to 'path'; expects
+    // SetStartTime() to be set - if reconnect is unnecessary, shows a wait window using GetWaitTime();
+    // 'parent' is the thread's foreground window (after ESC is pressed it is used to detect whether
+    // ESC was pressed in this window and not, for example, in another application; in the main thread
+    // this is SalamanderGeneral->GetMsgBoxParent() or a dialog opened by the plugin); 'parent' is also
+    // the parent of any error message boxes; 'success' (must not be NULL) returns TRUE when the
+    // operation succeeds;
+    // 'notInPanel' + 'leftPanel' + 'userBuf' + 'userBufSize' + 'totalAttemptNum' + 'retryMsg' are
+    // parameters for ReconnectIfNeeded(); the server reply text is in the buffer 'ftpReplyBuf'
+    // (maximum size 'ftpReplyBufSize'), null-terminated - if it is longer than the buffer it is simply
+    // truncated; if 'startPath' is not NULL and the connection is restored, a command to change the
+    // working directory to 'startPath' is sent first and then to 'path' (handles relative path
+    // changes); if 'startPath' is not NULL and reconnect is unnecessary, GetCurrentWorkingPath (with
+    // 'forceRefresh'=FALSE) verifies whether the working directory on the server is exactly
+    // 'startPath'; if not, the command first changes the working directory to 'startPath' and only
+    // then to 'path'; if 'skipFirstReconnectIfNeeded' is TRUE, the connection is assumed to be
+    // established (used to pick up a possible "retry"); 'userRejectsReconnect' (if not NULL) returns
+    // TRUE when the operation fails solely because the user refused reconnect; returns FALSE only when
+    // the command could not be sent - the connection was interrupted (on timeout it automatically
+    // closes the connection hard - sending "QUIT" makes no sense)
+    // can be called only from the main thread (uses wait windows, etc.)
     BOOL SendChangeWorkingPath(BOOL notInPanel, BOOL leftPanel, HWND parent, const char* path,
                                char* userBuf, int userBufSize, BOOL* success, char* ftpReplyBuf,
                                int ftpReplyBufSize, const char* startPath, int* totalAttemptNum,
                                const char* retryMsg, BOOL skipFirstReconnectIfNeeded,
                                BOOL* userRejectsReconnect);
 
-    // zjisti typ cesty na FTP serveru (vola v kriticke sekci ::GetFTPServerPathType()
-    // s parametry 'ServerSystem' a 'ServerFirstReply')
+    // determines the path type on the FTP server (calls ::GetFTPServerPathType() inside the critical
+    // section with 'ServerSystem' and 'ServerFirstReply')
     CFTPServerPathType GetFTPServerPathType(const char* path);
 
-    // zjisti jestli 'ServerSystem' obsahuje jmeno 'systemName'
+    // checks whether 'ServerSystem' contains the name 'systemName'
     BOOL IsServerSystem(const char* systemName);
 
-    // je-li zavrena "control connection", nabidne uzivateli jeji nove otevreni
-    // (POZOR: nenastavuje pracovni adresar na serveru); vraci TRUE pokud je
-    // "control connection" pripravena pro pouziti, zaroven v tomto pripade nastavuje
-    // SetStartTime() (aby dalsi cekani uzivatele mohlo navazat na pripadny reconnect);
-    // 'notInPanel' je TRUE jde-li o odpojeny FS (neni v panelu); je-li 'notInPanel' FALSE,
-    // jde o spojeni v panelu - je-li 'leftPanel' TRUE, jde o levy panel, jinak jde o pravy panel;
-    // 'parent' je "foreground" okno threadu (po stisku ESC se pouziva pro zjisteni
-    // jestli byl stisknut ESC v tomto okne a ne napriklad v jine aplikaci; u hl. threadu jde
-    // o SalamanderGeneral->GetMsgBoxParent() nebo pluginem otevreny dialog); 'parent' je
-    // zaroven parent pripadnych messageboxu s chybami; 'userBuf'+'userBufSize' je buffer
-    // pro novy user-name na FTP serveru (muze se pri reconnectu zmenit); v 'reconnected'
-    // (neni-li NULL) vraci TRUE pokud doslo k obnoveni spojeni (byla znovu otevrena
-    // "control connection"); je-li 'setStartTimeIfConnected' FALSE a neni-li treba spojeni
-    // obnovovat, nenastavuje se SetStartTime(); 'totalAttemptNum'+'retryMsg'+'reconnectErrResID'+
-    // 'useFastReconnect' jsou parametry pro StartControlConnection(); v 'userRejectsReconnect'
-    // (neni-li NULL) vraci TRUE pokud user odmitne provest reconnect
-    // mozne volat jen z hl. threadu (pouziva wait-okenka, atd.)
+    // if the "control connection" is closed, offers the user to reopen it (WARNING: does not set the
+    // working directory on the server); returns TRUE when the "control connection" is ready for use,
+    // and in that case sets SetStartTime() (so further waiting can continue after a possible
+    // reconnect); 'notInPanel' is TRUE for a detached FS (not in a panel); if 'notInPanel' is FALSE,
+    // the connection is in a panel - if 'leftPanel' is TRUE it is the left panel, otherwise the right
+    // panel; 'parent' is the thread's foreground window (after ESC is pressed it is used to detect
+    // whether ESC was pressed in this window and not, for example, in another application; in the
+    // main thread this is SalamanderGeneral->GetMsgBoxParent() or a dialog opened by the plugin);
+    // 'parent' is also the parent of any error message boxes; 'userBuf' + 'userBufSize' is the buffer
+    // for a new user name on the FTP server (it may change during reconnect); 'reconnected' (if not
+    // NULL) returns TRUE when the connection was restored (the "control connection" was reopened); if
+    // 'setStartTimeIfConnected' is FALSE and reconnecting is unnecessary, SetStartTime() is not set;
+    // 'totalAttemptNum' + 'retryMsg' + 'reconnectErrResID' + 'useFastReconnect' are parameters for
+    // StartControlConnection(); 'userRejectsReconnect' (if not NULL) returns TRUE if the user refuses
+    // to perform a reconnect
+    // can be called only from the main thread (uses wait windows, etc.)
     BOOL ReconnectIfNeeded(BOOL notInPanel, BOOL leftPanel, HWND parent, char* userBuf,
                            int userBufSize, BOOL* reconnected, BOOL setStartTimeIfConnected,
                            int* totalAttemptNum, const char* retryMsg,
                            BOOL* userRejectsReconnect, int reconnectErrResID,
                            BOOL useFastReconnect);
 
-    // posle prikaz na FTP server a vrati odpoved serveru (POZOR: odpovedi typu FTP_D1_MAYBESUCCESS
-    // nevraci - automaticky ceka na dalsi odpoved serveru); 'parent' je "foreground" okno threadu
-    // (po stisku ESC se pouziva pro zjisteni jestli byl stisknut ESC v tomto okne a ne napriklad v jine
-    // aplikaci; u hl. threadu jde o SalamanderGeneral->GetMsgBoxParent() nebo pluginem otevreny
-    // dialog); 'parent' je zaroven parent pripadnych messageboxu s chybami; 'ftpCmd' je
-    // posilany prikaz; 'logCmd' je retezec pro Log (shodny s 'ftpCmd' az na vynechana hesla, atp.);
-    // 'waitWndText' je text pro wait okenko (NULL = standardni text zobrazujici zpravu o posilani
-    // 'logCmd'); 'waitWndTime' je zpozdeni zobrazeni wait okenka; je-li 'allowCmdAbort' TRUE, po
-    // prvnim ESC se posila "ABOR" (zrejme ma smysl jen pro prikazy s data connection) a az po druhem
-    // ESC se prerusi spojeni, je-li 'allowCmdAbort' FALSE, prerusi se spojeni uz po prvnim ESC;
-    // je-li 'resetWorkingPathCache' TRUE, zavola se po poslani prikazu metoda
-    // ResetWorkingPathCache(), pouziva se v pripade, ze posilany prikaz muze zmenit aktualni
-    // pracovni cestu; je-li 'resetCurrentTransferModeCache' TRUE, zavola se po poslani prikazu
-    // metoda ResetCurrentTransferModeCache(), pouziva se v pripade, ze posilany prikaz muze zmenit
-    // aktualni prenosovy rezim; vraci TRUE pokud se poslani prikazu nebo jeho preruseni a prijeti
-    // odpovedi podarilo, v 'cmdAborted' (neni-li NULL) vraci TRUE pokud byl prikaz uspesne
-    // prerusen; kod odpovedi se vraci v 'ftpReplyCode' (nesmi byt NULL) - je platne (!=-1)
-    // i pri 'cmdAborted'==TRUE; text odpovedi je v bufferu 'ftpReplyBuf' (max. velikost
-    // 'ftpReplyBufSize'), je null-terminated - je-li delsi nez buffer, je jednoduse oriznut;
-    // je-li 'specialUserInterface' NULL, ma se pro uzivatelske rozhrani pouzit standardni
-    // wait-okenko, jinak se ma pouzit objekt predany pres 'specialUserInterface' (vyuziva se
-    // napr. u listovani aktualni cesty);
-    // vraci FALSE pokud doslo k preruseni spojeni (pri timeoutu automaticky tvrde zavira
-    // spojeni - posilat "QUIT" nema smysl) - neni-li 'canRetry' NULL, muze se text chyby vratit
-    // v 'retryMsg' (buffer o velikosti 'retryMsgBufSize') - v 'canRetry' se vraci TRUE,
-    // jinak se chyba zobrazi v messageboxu ('canRetry' je bud NULL nebo se v nem vraci FALSE);
-    // mozne volat jen z hl. threadu (pouziva wait-okenka, atd.)
+    // sends a command to the FTP server and returns the server's reply (WARNING: does not return
+    // replies of type FTP_D1_MAYBESUCCESS - it automatically waits for the next server reply);
+    // 'parent' is the thread's foreground window (after ESC is pressed it is used to detect whether
+    // ESC was pressed in this window and not, for example, in another application; in the main thread
+    // this is SalamanderGeneral->GetMsgBoxParent() or a dialog opened by the plugin); 'parent' is also
+    // the parent of any error message boxes; 'ftpCmd' is the command being sent; 'logCmd' is the string
+    // for the log (identical to 'ftpCmd' except for omitted passwords, etc.); 'waitWndText' is the text
+    // for the wait window (NULL = standard text showing the message about sending 'logCmd');
+    // 'waitWndTime' is the delay before displaying the wait window; if 'allowCmdAbort' is TRUE, the
+    // first ESC sends "ABOR" (probably only makes sense for commands with a data connection) and the
+    // connection is aborted only after the second ESC; if 'allowCmdAbort' is FALSE, the connection is
+    // aborted after the first ESC; if 'resetWorkingPathCache' is TRUE, ResetWorkingPathCache() is
+    // called after sending the command (used when the command may change the current working
+    // directory); if 'resetCurrentTransferModeCache' is TRUE, ResetCurrentTransferModeCache() is called
+    // after sending the command (used when the command may change the current transfer mode); returns
+    // TRUE if sending the command or aborting it and receiving the reply succeeded; 'cmdAborted'
+    // (if not NULL) returns TRUE when the command was successfully aborted; the reply code is returned
+    // in 'ftpReplyCode' (must not be NULL) - it is valid (!=-1) even when 'cmdAborted' == TRUE; the
+    // reply text is stored in the buffer 'ftpReplyBuf' (maximum size 'ftpReplyBufSize'),
+    // null-terminated - if it is longer than the buffer, it is simply truncated; if
+    // 'specialUserInterface' is NULL, the standard wait window is used for the user interface,
+    // otherwise the object provided via 'specialUserInterface' should be used (for example when
+    // listing the current path);
+    // returns FALSE if the connection was interrupted (on timeout it automatically closes the
+    // connection hard - sending "QUIT" makes no sense); if 'canRetry' is not NULL, the error text can
+    // be returned in 'retryMsg' (buffer of size 'retryMsgBufSize') - 'canRetry' returns TRUE; otherwise
+    // the error is shown in a message box ('canRetry' is either NULL or FALSE is returned there);
+    // can be called only from the main thread (uses wait windows, etc.)
     //
-    // POZOR: u abortovani prikazu ('allowCmdAbort'==TRUE) neni doreseny system prijmu odpovedi
-    //        serveru (servery vraci bud jednu odpoved jen pro ABOR nebo dve odpovedi (list + abort),
-    //        bohuzel maji stejny kod 226, takze nelze poznat o kterou situaci jde) - resi se to
-    //        tak, ze se zkusi prijmou vse co server posle v jednom paketu (posila pravdepodobne
-    //        obe odpovedi najednou), pripadne dalsi odpovedi se vyignoruji jako "unexpected" pred
-    //        dalsim FTP prikazem posilanym touto metodou
+    // WARNING: when aborting commands ('allowCmdAbort'==TRUE) the system for receiving server replies
+    //          is not fully resolved (servers return either one reply just for ABOR or two replies
+    //          (list + abort); unfortunately both use code 226, so it is impossible to tell which case
+    //          occurred) - this is handled by trying to receive everything the server sends in one
+    //          packet (it probably sends both replies together); any additional replies are ignored as
+    //          "unexpected" before the next FTP command sent by this method
     BOOL SendFTPCommand(HWND parent, const char* ftpCmd, const char* logCmd, const char* waitWndText,
                         int waitWndTime, BOOL* cmdAborted, int* ftpReplyCode, char* ftpReplyBuf,
                         int ftpReplyBufSize, BOOL allowCmdAbort, BOOL resetWorkingPathCache,
                         BOOL resetCurrentTransferModeCache, BOOL* canRetry, char* retryMsg,
                         int retryMsgBufSize, CSendCmdUserIfaceAbstract* specialUserInterface);
 
-    // zavre "control connection" na FTP server (prip. po timeoutu provede tvrde zavreni socketu);
-    // 'parent' je "foreground" okno threadu (po stisku ESC se pouziva pro zjisteni
-    // jestli byl stisknut ESC v tomto okne a ne napriklad v jine aplikaci; u hl. threadu jde
-    // o SalamanderGeneral->GetMsgBoxParent() nebo pluginem otevreny dialog); 'parent' je zaroven
-    // parent pripadnych messageboxu s chybami
-    // mozne volat jen z hl. threadu (pouziva wait-okenka, atd.)
+    // closes the "control connection" to the FTP server (or performs a hard socket close after a
+    // timeout); 'parent' is the thread's foreground window (after ESC is pressed it is used to detect
+    // whether ESC was pressed in this window and not, for example, in another application; in the main
+    // thread this is SalamanderGeneral->GetMsgBoxParent() or a dialog opened by the plugin); 'parent'
+    // is also the parent of any error message boxes
+    // can be called only from the main thread (uses wait windows, etc.)
     void CloseControlConnection(HWND parent);
 
-    // pokud se jeste user nedozvedel o zavreni "control connection" v panelu, dozvi se to
-    // v teto metode; 'notInPanel' je TRUE jde-li o odpojeny FS (neni v panelu); je-li
-    // 'notInPanel' FALSE, jde o spojeni v panelu - je-li 'leftPanel' TRUE, jde o levy panel,
-    // jinak jde o pravy panel; 'parent' je parent pripadnych messageboxu; je-li 'quiet'
-    // TRUE, zobrazi se hlaska s informaci o zavreni "control connection" jen do logu,
-    // je-li 'quiet' FALSE, zobrazi se i messagebox
-    // POZOR: spoleha se na to, ze v "idle" Salamandera se s "control connection"
-    //        nepracuje (nic neceka na udalosti, atd.)
+    // if the user has not yet been informed about the "control connection" closing in the panel, this
+    // method informs them; 'notInPanel' is TRUE for a detached FS (not in a panel); if 'notInPanel' is
+    // FALSE, the connection is in a panel - if 'leftPanel' is TRUE it is the left panel, otherwise the
+    // right panel; 'parent' is the parent of any message boxes; if 'quiet' is TRUE, the message about
+    // the "control connection" closing is written only to the log; if 'quiet' is FALSE, a message box
+    // is also displayed
+    // WARNING: relies on Salamander doing no work with the "control connection" while idle (nothing is
+    //          waiting for events, etc.)
     void CheckCtrlConClose(BOOL notInPanel, BOOL leftPanel, HWND parent, BOOL quiet);
 
-    // vraci UID logu (-1 neexistuje-li log)
+    // returns the log UID (-1 if the log does not exist)
     int GetLogUID();
 
-    // prida text 'str' (delka 'len') do logu teto "control connection"; je-li 'len' -1, bere
-    // se "len=strlen(str)"; je-li 'addTimeToLog' TRUE, umisti se pred hlasku aktualni cas;
-    // vraci TRUE pri uspesnem pridani do logu nebo pokud log vubec neexistuje
+    // adds the text 'str' (length 'len') to the log of this "control connection"; if 'len' is -1, it
+    // uses "len=strlen(str)"; if 'addTimeToLog' is TRUE, the current time is placed before the
+    // message; returns TRUE when the log is updated successfully or if the log does not exist at all
     BOOL LogMessage(const char* str, int len, BOOL addTimeToLog = FALSE);
 
-    // je-li otevrene okno welcome-messsage a je aktivovano hl. okno Salamandera, provede se
-    // aktivace okna welcome-messsage (napr. po zavreni message-boxu s chybou se aktivuje hl.
-    // okno misto okna welcome-messsage)
-    // POZOR: volani mozne jen v hl. threadu
+    // if the welcome-message window is open and the main Salamander window becomes active, activates
+    // the welcome-message window (e.g. after closing an error message box the main window would become
+    // active instead of the welcome-message window)
+    // WARNING: may only be called in the main thread
     void ActivateWelcomeMsg();
 
-    // odpoji okno welcome-msg od teto "control connection" (dale se uz nebude aktivovat pres
-    // metodu ActivateWelcomeMsg)
-    // POZOR: volani mozne jen v hl. threadu
+    // detaches the welcome-message window from this "control connection" (it will no longer be
+    // activated via ActivateWelcomeMsg)
+    // WARNING: may only be called in the main thread
     void DetachWelcomeMsg() { OurWelcomeMsgDlg = NULL; }
 
-    // vraci naalokovany retezec s odpovedi serveru na prikaz SYST (get operating system);
-    // pri chybe alokace vraci NULL
+    // returns an allocated string with the server's reply to the SYST command (get operating system);
+    // returns NULL if allocation fails
     char* AllocServerSystemReply();
 
-    // vraci naalokovany retezec s prvni odpovedi serveru; pri chybe alokace vraci NULL
+    // returns an allocated string with the first server reply; returns NULL if allocation fails
     char* AllocServerFirstReply();
 
-    // postne socketu message 'msgID' (CTRLCON_KAPOSTSETUPNEXT: aby v pripade, ze
-    // 'KeepAliveMode' je 'kamProcessing' nebo 'kamWaitingForEndOfProcessing', vyvolal
-    // metodu SetupNextKeepAliveTimer()) (CTRLCON_KALISTENFORCON: doslo k otevreni
-    // "listen" portu na proxy serveru)
-    // POZOR: neni mozne volat tuto metodu z kriticke sekce SocketCritSect (metoda pouziva
-    //        SocketsThread)
-    // mozne volat z libovolneho threadu
+    // posts the message 'msgID' to the socket (CTRLCON_KAPOSTSETUPNEXT: to trigger
+    // SetupNextKeepAliveTimer() when 'KeepAliveMode' is 'kamProcessing' or
+    // 'kamWaitingForEndOfProcessing') (CTRLCON_KALISTENFORCON: the "listen" port on the proxy server
+    // was opened)
+    // WARNING: this method must not be called from the SocketCritSect critical section (the method uses
+    //          SocketsThread)
+    // can be called from any thread
     void PostMsgToCtrlCon(int msgID, void* msgParam);
 
-    // inicializuje objekt operace - vola jeho SetConnection() a vraci TRUE pri uspechu;
-    // POZOR: operace 'oper' nesmi byt vlozena v FTPOperationsList !!!
+    // initializes the operation object - calls its SetConnection() and returns TRUE on success;
+    // WARNING: the operation 'oper' must not be inserted in FTPOperationsList !!!
     BOOL InitOperation(CFTPOperation* oper);
 
-    // predani aktivni "control connection" do nove vznikleho workera 'newWorker' (nemuze
-    // byt NULL); 'parent' je "foreground" okno threadu (po stisku ESC se pouziva pro zjisteni
-    // jestli byl stisknut ESC v tomto okne a ne napriklad v jine aplikaci; u hl. threadu jde
-    // o SalamanderGeneral->GetMsgBoxParent() nebo pluginem otevreny dialog)
-    // POZOR: neni mozne volat tuto metodu z kriticke sekce SocketCritSect (metoda pouziva
-    //        SocketsThread)
+    // hands the active "control connection" to the newly created worker 'newWorker' (cannot be NULL);
+    // 'parent' is the thread's foreground window (after ESC is pressed it is used to detect whether
+    // ESC was pressed in this window and not, for example, in another application; in the main thread
+    // this is SalamanderGeneral->GetMsgBoxParent() or a dialog opened by the plugin)
+    // WARNING: this method must not be called from the SocketCritSect critical section (the method uses
+    //          SocketsThread)
     void GiveConnectionToWorker(CFTPWorker* newWorker, HWND parent);
 
-    // prevzeti aktivni "control connection" z workera 'workerWithCon' (nemuze byt NULL),
-    // pokud jiz tento objekt ma connectionu otevrenou, k prevzeti nedojde;
-    // POZOR: neni mozne volat tuto metodu z kriticke sekce SocketCritSect (metoda pouziva
-    //        SocketsThread)
+    // takes over the active "control connection" from the worker 'workerWithCon' (cannot be NULL);
+    // if this object already has the connection open, the takeover does not happen;
+    // WARNING: this method must not be called from the SocketCritSect critical section (the method uses
+    //          SocketsThread)
     void GetConnectionFromWorker(CFTPWorker* workerWithCon);
 
-    // vraci (v krit. sekci) hodnotu UseListingsCache
+    // returns (inside the critical section) the value of UseListingsCache
     BOOL GetUseListingsCache();
 
-    // provede download jednoho souboru na pracovni ceste; jmeno souboru (bez cesty)
-    // je 'fileName'; je-li znama velikost souboru v bytech, je v 'fileSizeInBytes',
-    // pokud znama neni, je zde CQuadWord(-1, -1); 'asciiMode' je TRUE/FALSE pokud mame
-    // prenaset soubor v ASCII/binarnim prenosovem rezimu; 'parent' je "foreground"
-    // okno threadu (po stisku ESC se pouziva pro zjisteni jestli byl stisknut
-    // ESC v tomto okne a ne napriklad v jine aplikaci; u hl. threadu jde o
-    // SalamanderGeneral->GetMsgBoxParent() nebo pluginem otevreny dialog); 'parent'
-    // je zaroven parent pripadnych messageboxu s chybami; 'workPath' je pracovni cesta;
-    // 'tgtFileName' je jmeno ciloveho souboru (kam provest download); v 'newFileCreated'
-    // vraci TRUE pokud se podarilo downloadnout aspon cast souboru (aspon neco je na
-    // disku); v 'newFileIncomplete' vraci TRUE pokud se nepodarilo stahnout kompletni
-    // soubor; je-li 'newFileCreated' TRUE, vraci v 'newFileSize' velikost souboru na disku;
-    // 'totalAttemptNum', 'panel', 'notInPanel', 'userBuf' a 'userBufSize' jsou parametry
-    // pro ReconnectIfNeeded()
+    // downloads a single file in the working directory; the file name (without path) is 'fileName'; if
+    // the file size in bytes is known, it is provided in 'fileSizeInBytes', otherwise it is
+    // CQuadWord(-1, -1); 'asciiMode' is TRUE/FALSE for transferring the file in ASCII/binary transfer
+    // mode; 'parent' is the thread's foreground window (after ESC is pressed it is used to detect
+    // whether ESC was pressed in this window and not, for example, in another application; in the main
+    // thread this is SalamanderGeneral->GetMsgBoxParent() or a dialog opened by the plugin); 'parent'
+    // is also the parent of any error message boxes; 'workPath' is the working directory; 'tgtFileName'
+    // is the target file name (where the download is stored); 'newFileCreated' returns TRUE if at least
+    // part of the file was downloaded (something exists on disk); 'newFileIncomplete' returns TRUE if
+    // the file was not downloaded completely; if 'newFileCreated' is TRUE, 'newFileSize' returns the
+    // file size on disk; 'totalAttemptNum', 'panel', 'notInPanel', 'userBuf', and 'userBufSize' are
+    // parameters for ReconnectIfNeeded()
     void DownloadOneFile(HWND parent, const char* fileName, CQuadWord const& fileSizeInBytes,
                          BOOL asciiMode, const char* workPath, const char* tgtFileName,
                          BOOL* newFileCreated, BOOL* newFileIncomplete, CQuadWord* newFileSize,
                          int* totalAttemptNum, int panel, BOOL notInPanel, char* userBuf,
                          int userBufSize);
 
-    // vytvori adresar 'newName' (muze byt libovolny retezec od usera - bereme jako plnou nebo
-    // relativni cestu na serveru - ignorujeme syntaxi cest Salamandera); 'parent' je parent
-    // pripadnych messageboxu; 'newName' je jmeno vytvareneho adresare; v 'newName' (buffer
-    // 2 * MAX_PATH znaku) se pri uspechu vraci jmeno adresare pro focus v panelu pri dalsim
-    // refreshi; vraci uspech (pri neuspechu se ocekava, ze user jiz videl okno s chybou); 'workPath'
-    // je pracovni cesta; 'totalAttemptNum', 'panel', 'notInPanel', 'userBuf' a 'userBufSize'
-    // jsou parametry pro ReconnectIfNeeded(); v 'changedPath' (aspon FTP_MAX_PATH znaku)
-    // vraci cestu na serveru, kterou je potreba refreshnout (je-li 'changedPath' prazdne,
-    // zadny refresh neni potreba)
+    // creates the directory 'newName' (any string from the user - treated as an absolute or relative
+    // path on the server - Salamander path syntax is ignored); 'parent' is the parent of any message
+    // boxes; 'newName' is the name of the directory being created; on success, 'newName' (buffer
+    // 2 * MAX_PATH characters) returns the directory name to focus in the panel on the next refresh;
+    // returns success (on failure it is assumed the user has already seen an error window); 'workPath'
+    // is the working directory; 'totalAttemptNum', 'panel', 'notInPanel', 'userBuf', and 'userBufSize'
+    // are parameters for ReconnectIfNeeded(); 'changedPath' (at least FTP_MAX_PATH characters)
+    // returns the server path that needs to be refreshed (if 'changedPath' is empty, no refresh is
+    // required)
     BOOL CreateDir(char* changedPath, HWND parent, char* newName, const char* workPath,
                    int* totalAttemptNum, int panel, BOOL notInPanel, char* userBuf,
                    int userBufSize);
 
-    // prejmenuje soubor/adresar 'fromName' na 'newName'; 'parent' je parent pripadnych
-    // messageboxu; v 'newName' (buffer 2 * MAX_PATH znaku) se pri uspechu vraci jmeno
-    // souboru/adresare pro focus v panelu pri dalsim refreshi; vraci uspech (pri neuspechu
-    // se ocekava, ze user jiz videl okno s chybou); 'workPath' je pracovni cesta;
-    // 'totalAttemptNum', 'panel', 'notInPanel', 'userBuf' a 'userBufSize'
-    // jsou parametry pro ReconnectIfNeeded(); v 'changedPath' (aspon FTP_MAX_PATH znaku)
-    // vraci cestu na serveru, kterou je potreba refreshnout (je-li 'changedPath' prazdne,
-    // zadny refresh neni potreba)
+    // renames the file/directory 'fromName' to 'newName'; 'parent' is the parent of any message
+    // boxes; on success, 'newName' (buffer 2 * MAX_PATH characters) returns the file/directory name
+    // to focus in the panel during the next refresh; returns success (on failure it is assumed the user
+    // has already seen an error window); 'workPath' is the working directory; 'totalAttemptNum',
+    // 'panel', 'notInPanel', 'userBuf', and 'userBufSize' are parameters for ReconnectIfNeeded();
+    // 'changedPath' (at least FTP_MAX_PATH characters) returns the server path that needs to be
+    // refreshed (if 'changedPath' is empty, no refresh is required)
     BOOL QuickRename(char* changedPath, HWND parent, const char* fromName, char* newName,
                      const char* workPath, int* totalAttemptNum, int panel, BOOL notInPanel,
                      char* userBuf, int userBufSize, BOOL isVMS, BOOL isDir);
 
-    // posle pozadavek na otevreni "listen" portu (bud na lokalni masine nebo na proxy serveru)
-    // pro data-connectionu 'dataConnection'; na vstupu je 'listenOnIP'+'listenOnPort' IP+port,
-    // kde by se mel otevrit "listen" port (ma smysl jen bez proxy serveru);
-    // 'parent' je "foreground" okno threadu (po stisku ESC se pouziva pro zjisteni jestli byl
-    // stisknut ESC v tomto okne a ne napriklad v jine aplikaci; u hl. threadu jde o
-    // SalamanderGeneral->GetMsgBoxParent() nebo pluginem otevreny dialog); 'parent' je zaroven
-    // parent pripadnych messageboxu s chybami; 'waitWndTime' je zpozdeni zobrazeni wait okenka;
-    // vraci TRUE pri uspechu - v 'listenOnIP'+'listenOnPort' IP+port, kde cekame na spojeni
-    // z FTP serveru; vraci FALSE pokud doslo k preruseni nebo chybe; pokud ma smysl zkouset
-    // "retry", tvrde prerusi spojeni (mohli bysme posilat "QUIT", ale prozatim si zjednodusime
-    // zivot) a vraci text chyby v 'retryMsg' (buffer o velikosti 'retryMsgBufSize', nesmi byt 0) a
-    // v 'canRetry' (nesmi byt NULL) vraci TRUE; pokud "retry" nema smysl, chyba se zobrazi
-    // v messageboxu a v 'canRetry' se vrati FALSE (spojeni se neprerusuje); 'errBuf' je
-    // pomocny buffer o velikosti 'errBufSize' (nesmi byt 0) - pouziva se pro texty zobrazovane
-    // v messageboxech;
-    // mozne volat jen z hl. threadu (pouziva wait-okenka, atd.)
+    // sends a request to open a "listen" port (either on the local machine or on the proxy server) for
+    // the data connection 'dataConnection'; inputs 'listenOnIP' + 'listenOnPort' specify the IP+port
+    // where the "listen" port should be opened (makes sense only without a proxy server);
+    // 'parent' is the thread's foreground window (after ESC is pressed it is used to detect whether ESC
+    // was pressed in this window and not, for example, in another application; in the main thread this
+    // is SalamanderGeneral->GetMsgBoxParent() or a dialog opened by the plugin); 'parent' is also the
+    // parent of any error message boxes; 'waitWndTime' is the delay before displaying the wait window;
+    // returns TRUE on success - 'listenOnIP' + 'listenOnPort' then contain the IP+port where we wait
+    // for the FTP server to connect; returns FALSE if an interruption or error occurred; if retrying is
+    // meaningful, the connection is forcibly closed (we could send "QUIT", but for now we simplify
+    // our lives) and the error text is returned in 'retryMsg' (buffer of size 'retryMsgBufSize', must
+    // not be 0) and 'canRetry' (must not be NULL) returns TRUE; if retrying makes no sense, the error
+    // is shown in a message box and 'canRetry' returns FALSE (the connection is not interrupted);
+    // 'errBuf' is a helper buffer of size 'errBufSize' (must not be 0) - used for texts displayed in
+    // message boxes;
+    // can be called only from the main thread (uses wait windows, etc.)
     BOOL OpenForListeningAndWaitForRes(HWND parent, CDataConnectionSocket* dataConnection,
                                        DWORD* listenOnIP, unsigned short* listenOnPort,
                                        BOOL* canRetry, char* retryMsg, int retryMsgBufSize,
                                        int waitWndTime, char* errBuf, int errBufSize);
 
-    // vraci TRUE pokud se pro listovani pouziva prikaz "LIST -a"
+    // returns TRUE if the "LIST -a" command is used for listing
     BOOL IsListCommandLIST_a();
 
-    // pokud se pro listovani pouziva prikaz "LIST -a", pouzije ListCommand nebo "LIST";
-    // jinak pouzije "LIST -a"
+    // if listing uses the "LIST -a" command, it switches to ListCommand or "LIST"; otherwise it uses
+    // "LIST -a"
     void ToggleListCommandLIST_a();
 
 protected:
     // ******************************************************************************************
-    // pomocne metody - nepouzivat mimo tento objekt
+    // helper methods - do not use outside this object
     // ******************************************************************************************
 
-    // pridani udalosti; je-li 'rewritable' TRUE, bude tato udalost prepsana pri pokusu
-    // o pridani dalsi udalosti; 'event'+'data1'+'data2' jsou data udalosti; vraci TRUE pokud
-    // se udalost podarilo pridat do fronty, vraci FALSE pri nedostatku pameti
+    // adds an event; if 'rewritable' is TRUE, this event will be overwritten when another event is
+    // added; 'event' + 'data1' + 'data2' are the event data; returns TRUE if the event was added to
+    // the queue successfully, returns FALSE on insufficient memory
     BOOL AddEvent(CControlConnectionSocketEvent event, DWORD data1, DWORD data2, BOOL rewritable = FALSE);
 
-    // ziskani udalosti; udalost se vraci v 'event'+'data1'+'data2' (nesmi byt NULL); vraci TRUE
-    // pokud vraci udalost z fronty, vraci FALSE pokud ve fronte zadna udalost nebyla
+    // retrieves an event; the event is returned in 'event' + 'data1' + 'data2' (must not be NULL);
+    // returns TRUE if an event is returned from the queue, returns FALSE when the queue is empty
     BOOL GetEvent(CControlConnectionSocketEvent* event, DWORD* data1, DWORD* data2);
 
-    // ceka na udalost na socketu (udalost = probehla dalsi faze spoustene operace nebo ESC);
-    // 'parent' je "foreground" okno threadu (po stisku ESC se pouziva pro zjisteni
-    // jestli byl stisknut ESC v tomto okne a ne napriklad v jine aplikaci; u hl. threadu jde
-    // o SalamanderGeneral->GetMsgBoxParent() nebo pluginem otevreny dialog); v 'event'+'data1'+
-    // 'data2' (nesmi byt NULL) se vraci udalost (jedna z ccsevXXX; ccsevESC pokud user stiskl
-    // ESC); 'milliseconds' je cas v ms, po ktery se ma cekat na udalost, po teto dobe vraci
-    // metoda 'event'==ccsevTimeout, je-li 'milliseconds' INFINITE, ma se cekat bez casoveho
-    // omezeni; neni-li 'waitWnd' NULL, sleduje stisk close buttonu ve wait-okenku 'waitWnd';
-    // neni-li 'userIface' NULL, sleduje stisk close buttonu v uzivatelskem rozhrani 'userIface',
-    // zaroven je-li navic 'waitForUserIfaceFinish' TRUE, sleduje misto udalosti na socketu
-    // udalost ohlasujici dokonceni uzivatelskeho rozhrani ("data connection" + "keep alive");
-    // mozne volat z libovolneho threadu
+    // waits for an event on the socket (event = the next phase of the started operation finished or
+    // ESC); 'parent' is the thread's foreground window (after ESC is pressed it is used to detect
+    // whether ESC was pressed in this window and not, for example, in another application; in the main
+    // thread this is SalamanderGeneral->GetMsgBoxParent() or a dialog opened by the plugin);
+    // 'event' + 'data1' + 'data2' (must not be NULL) return the event (one of ccsevXXX; ccsevESC if the
+    // user pressed ESC); 'milliseconds' is the time in ms to wait for the event; after that the method
+    // returns 'event' == ccsevTimeout; if 'milliseconds' is INFINITE, wait without a time limit; if
+    // 'waitWnd' is not NULL, it monitors the close button in the wait window 'waitWnd'; if 'userIface'
+    // is not NULL, it monitors the close button in the user interface 'userIface'; additionally, if
+    // 'waitForUserIfaceFinish' is TRUE, it watches for the event announcing the completion of the user
+    // interface ("data connection" + "keep alive") instead of the socket event; can be called from any
+    // thread
     void WaitForEventOrESC(HWND parent, CControlConnectionSocketEvent* event,
                            DWORD* data1, DWORD* data2, int milliseconds, CWaitWindow* waitWnd,
                            CSendCmdUserIfaceAbstract* userIface, BOOL waitForUserIfaceFinish);
 
-    // pomocna metoda pro detekovani jestli jiz je v bufferu 'ReadBytes' cela odpoved
-    // od FTP serveru; vraci TRUE pri uspechu - v 'reply' (nesmi byt NULL) vraci ukazatel
-    // na zacatek odpovedi, v 'replySize' (nesmi byt NULL) vraci delku odpovedi,
-    // v 'replyCode' (neni-li NULL) vraci FTP kod odpovedi nebo -1 pokud odpoved nema
-    // zadny kod (nezacina na triciferne cislo); pokud jeste neni odpoved kompletni, vraci
-    // FALSE - dalsi volani ReadFTPReply ma smysl az po prijeti nejake udalosti
-    // (ccsevNewBytesRead nebo jine, ktera mohla ccsevNewBytesRead prepsat, protoze
-    // ccsevNewBytesRead je v pripade uspesneho cteni prepsatelna)
-    // POZOR: nutne volat z kriticke sekce SocketCritSect (jinak by se buffer 'ReadBytes'
-    // mohl libovolne zmenit)
+    // helper method to detect whether the buffer 'ReadBytes' already contains the entire reply from the
+    // FTP server; returns TRUE on success - 'reply' (must not be NULL) receives the pointer to the
+    // beginning of the reply, 'replySize' (must not be NULL) receives the reply length, 'replyCode'
+    // (if not NULL) receives the FTP reply code or -1 if the reply has no code (does not start with a
+    // three-digit number); if the reply is not complete yet, returns FALSE - another call to
+    // ReadFTPReply makes sense only after an event is received (ccsevNewBytesRead or another event that
+    // may have overwritten ccsevNewBytesRead, because ccsevNewBytesRead is overwritable when the read
+    // succeeds)
+    // WARNING: must be called from the SocketCritSect critical section (otherwise the 'ReadBytes'
+    // buffer could change arbitrarily)
     BOOL ReadFTPReply(char** reply, int* replySize, int* replyCode = NULL);
 
-    // pomocna metoda pro uvolneni odpovedi od FTP serveru (o delce 'replySize') z bufferu
-    // 'ReadBytes'
-    // POZOR: nutne volat z kriticke sekce SocketCritSect (jinak by se buffer 'ReadBytes'
-    // mohl libovolne zmenit)
+    // helper method to release the FTP server reply (length 'replySize') from the 'ReadBytes' buffer
+    // WARNING: must be called from the SocketCritSect critical section (otherwise the 'ReadBytes'
+    // buffer could change arbitrarily)
     void SkipFTPReply(int replySize);
 
-    // zapise na socket (provede "send") byty z bufferu 'buffer' o delce 'bytesToWrite'
-    // (je-li 'bytesToWrite' -1, zapise strlen(buffer) bytu); pri chybe vraci FALSE a
-    // je-li znamy kod Windows chyby, vraci ho v 'error' (neni-li NULL); vraci-li TRUE,
-    // alespon cast bytu z bufferu byla uspesne zapsana; v 'allBytesWritten' (nesmi byt
-    // NULL) se vraci TRUE pokud probehl zapis celeho bufferu; vraci-li 'allBytesWritten'
-    // FALSE, je pred dalsim volanim metody Write nutne pockat na udalost ccsevWriteDone
-    // (jakmile dojde, je zapis hotovy)
-    // mozne volat z libovolneho threadu
+    // writes bytes from the buffer 'buffer' of length 'bytesToWrite' to the socket (performs "send");
+    // if 'bytesToWrite' is -1, it writes strlen(buffer) bytes; returns FALSE on error and, if the
+    // Windows error code is known, returns it in 'error' (if not NULL); if it returns TRUE, at least
+    // part of the buffer was written successfully; 'allBytesWritten' (must not be NULL) returns TRUE if
+    // the entire buffer was written; if 'allBytesWritten' returns FALSE, you must wait for the
+    // ccsevWriteDone event before calling Write again (once it arrives, the write has finished)
+    // can be called from any thread
     BOOL Write(const char* buffer, int bytesToWrite, DWORD* error, BOOL* allBytesWritten);
 
-    // vyprazdni buffery pro cteni i zapis a frontu udalosti (hodi se napr. pred
-    // znovu-otevrenim pripojeni)
+    // clears the read and write buffers and the event queue (useful before reopening the connection)
     void ResetBuffersAndEvents();
 
-    // pokud v teto "control connection" probiha posilani keep-alive prikazu, pocka na
-    // jeho dokonceni; pokud neprobiha posilani keep-alive prikazu, ukonci se okamzite;
-    // zrusi timer pro keep-alive (pokud existuje); prepne rezim 'KeepAliveMode' na
-    // 'kamForbidden'; vypadek spojeni hlasi do logu a vyvola i messagebox s chybou
-    // vedouci k preruseni (reconnect zajisti az dalsi normalni prikaz); chyby keep-alive
-    // prikazu hlasi jen do logu; 'parent' je jiz disablovane "foreground" okno threadu
-    // (po stisku ESC se pouziva pro zjisteni jestli byl stisknut ESC v tomto okne a ne
-    // napriklad v jine aplikaci; u hl. threadu jde o SalamanderGeneral->GetMsgBoxParent()
-    // nebo pluginem otevreny dialog); 'parent' je zaroven parent pripadnych messageboxu
-    // s chybami; 'waitWndTime' je zpozdeni zobrazeni wait okenka;
-    // POZOR: neni mozne volat tuto metodu z kriticke sekce SocketCritSect (metoda pouziva
-    //        SocketsThread)
-    // mozne volat jen z hl. threadu (pouziva wait-okenka, atd.)
+    // if a keep-alive command is currently being sent in this "control connection", waits for it to
+    // finish; if no keep-alive command is in progress, exits immediately; cancels the keep-alive timer
+    // (if it exists); switches 'KeepAliveMode' to 'kamForbidden'; reports the connection loss to the log
+    // and also shows an error message box leading to a disconnect (reconnect is handled by the next
+    // regular command); keep-alive command errors are reported only in the log; 'parent' is the already
+    // disabled foreground window of the thread (after ESC is pressed it is used to detect whether ESC
+    // was pressed in this window and not, for example, in another application; in the main thread this
+    // is SalamanderGeneral->GetMsgBoxParent() or a dialog opened by the plugin); 'parent' is also the
+    // parent of any error message boxes; 'waitWndTime' is the delay before showing the wait window;
+    // WARNING: this method must not be called from the SocketCritSect critical section (the method uses
+    //          SocketsThread)
+    // can be called only from the main thread (uses wait windows, etc.)
     void WaitForEndOfKeepAlive(HWND parent, int waitWndTime);
 
-    // vola se po dokonceni normalniho prikazu ('KeepAliveMode' musi byt 'kamForbidden' nebo
-    // 'kamNone'), kdy je potreba nastavit timer pro keep-alive; prepne rezim 'KeepAliveMode'
-    // na 'kamWaiting' (nebo 'kamNone' pokud je keep-alive zakazany); je-li 'immediate'
-    // TRUE, provede se prvni keep-alive prikaz co nejdrive
-    // POZOR: neni mozne volat tuto metodu z kriticke sekce SocketCritSect (metoda pouziva
-    //        SocketsThread)
-    // mozne volat z libovolneho threadu
+    // called after a regular command finishes ('KeepAliveMode' must be 'kamForbidden' or 'kamNone')
+    // when the keep-alive timer must be set; switches 'KeepAliveMode' to 'kamWaiting' (or 'kamNone' if
+    // keep-alive is disabled); if 'immediate' is TRUE, the first keep-alive command is executed as soon
+    // as possible
+    // WARNING: this method must not be called from the SocketCritSect critical section (the method uses
+    //          SocketsThread)
+    // can be called from any thread
     void SetupKeepAliveTimer(BOOL immediate = FALSE);
 
-    // vola se po dokonceni keep-alive prikazu ('KeepAliveMode' by mel byt 'kamProcessing'
-    // nebo 'kamWaitingForEndOfProcessing' nebo 'kamNone' (po volani ReleaseKeepAlive())),
-    // kdy je mozna potreba nastavit novy timer pro dalsi keep-alive prikaz; prepne rezim
-    // 'KeepAliveMode' na 'kamWaiting' (jen pri 'KeepAliveMode' == 'kamProcessing');
-    // POZOR: neni mozne volat tuto metodu z kriticke sekce SocketCritSect (metoda pouziva
-    //        SocketsThread)
-    // mozne volat z libovolneho threadu
+    // called after a keep-alive command finishes ('KeepAliveMode' should be 'kamProcessing' or
+    // 'kamWaitingForEndOfProcessing' or 'kamNone' (after ReleaseKeepAlive())); if needed, sets a new
+    // timer for the next keep-alive command; switches 'KeepAliveMode' to 'kamWaiting' (only when
+    // 'KeepAliveMode' == 'kamProcessing')
+    // WARNING: this method must not be called from the SocketCritSect critical section (the method uses
+    //          SocketsThread)
+    // can be called from any thread
     void SetupNextKeepAliveTimer();
 
-    // uvolni prostredky ziskane pro provedeni keep-alive prikazu, zrusi timer pro
-    // keep-alive (pokud existuje), nastavi 'KeepAliveMode' na 'kamNone' a uvolni
-    // 'KeepAliveDataCon' (maze SocketsThread ve sve kriticke sekci, takze behem
-    // provadeni metod socketu v tomto threadu uvolneni nehrozi); muze se volat
-    // v jakemkoliv stavu 'KeepAliveMode';
-    // POZOR: neni mozne volat tuto metodu z kriticke sekce SocketCritSect (metoda pouziva
-    //        SocketsThread)
-    // mozne volat z libovolneho threadu
+    // releases resources obtained for the keep-alive command, cancels the keep-alive timer (if it
+    // exists), sets 'KeepAliveMode' to 'kamNone' and frees 'KeepAliveDataCon' (deleted by
+    // SocketsThread inside its critical section, so during the execution of socket methods in this
+    // thread the release cannot happen); may be called in any 'KeepAliveMode' state;
+    // WARNING: this method must not be called from the SocketCritSect critical section (the method uses
+    //          SocketsThread)
+    // can be called from any thread
     void ReleaseKeepAlive();
 
-    // posle keep-alive prikaz 'ftpCmd' na server; 'logUID' je UID logu
+    // sends the keep-alive command 'ftpCmd' to the server; 'logUID' is the log UID
     BOOL SendKeepAliveCmd(int logUID, const char* ftpCmd);
 
     // ******************************************************************************************
-    // metody volane v "sockets" threadu (na zaklade prijmu zprav od systemu nebo jinych threadu)
+    // methods called in the "sockets" thread (based on messages received from the system or other threads)
     //
-    // POZOR: volane v sekci SocketsThread->CritSect, mely by se provadet co nejrychleji (zadne
-    //        cekani na vstup usera, atd.)
+    // WARNING: called in SocketsThread->CritSect; they should run as quickly as possible (no waiting for
+    //          user input, etc.)
     // ******************************************************************************************
 
-    // prijem vysledku volani GetHostByAddress; je-li 'ip' == INADDR_NONE jde o chybu a v 'err'
-    // muze byt chybovy kod (pokud 'err' != 0)
+    // receives the result of GetHostByAddress; if 'ip' == INADDR_NONE it is an error and 'err' may
+    // contain the error code (if 'err' != 0)
     virtual void ReceiveHostByAddress(DWORD ip, int hostUID, int err);
 
-    // prijem udalosti pro tento socket (FD_READ, FD_WRITE, FD_CLOSE, atd.); 'index' je
-    // index socketu v poli SocketsThread->Sockets (pouziva se pro opakovane posilani
-    // zprav pro socket)
+    // receives events for this socket (FD_READ, FD_WRITE, FD_CLOSE, etc.); 'index' is the index of the
+    // socket in SocketsThread->Sockets (used for re-sending messages for the socket)
     virtual void ReceiveNetEvent(LPARAM lParam, int index);
 
-    // prijem vysledku ReceiveNetEvent(FD_CLOSE) - neni-li 'error' NO_ERROR, jde
-    // o kod Windowsove chyby (prisla s FD_CLOSE nebo vznikla behem zpracovani FD_CLOSE)
+    // receives the result of ReceiveNetEvent(FD_CLOSE) - if 'error' is not NO_ERROR, it is the Windows
+    // error code (came with FD_CLOSE or occurred while processing FD_CLOSE)
     virtual void SocketWasClosed(DWORD error);
 
-    // prijem timeru i ID 'id' a parametrem 'param'
+    // receives a timer with ID 'id' and parameter 'param'
     virtual void ReceiveTimer(DWORD id, void* param);
 
-    // prijem postnute zpravy s ID 'id' a parametrem 'param'
+    // receives a posted message with ID 'id' and parameter 'param'
     virtual void ReceivePostMessage(DWORD id, void* param);
 };
 
@@ -1205,38 +1221,38 @@ protected:
 // ****************************************************************************
 // CClosedCtrlConChecker
 //
-// resi informovani uzivatele o zavreni "control connection" mimo operace (napr.
-// timeout nebo "kick" vedouci k odpojeni z FTP serveru)
+// handles informing the user about a "control connection" closing outside operations (e.g. timeout or
+// "kick" leading to a disconnect from the FTP server)
 
 class CClosedCtrlConChecker
 {
 protected:
-    CRITICAL_SECTION DataSect; // kriticka sekce pro pristup k datum objektu
+    CRITICAL_SECTION DataSect; // critical section for accessing the object's data
 
-    // pole zavrenych socketu, ktere budeme kontrolovat (vzdy pri prijeti FTPCMD_CLOSECONNOTIF)
+    // array of closed sockets that we check (whenever FTPCMD_CLOSECONNOTIF is received)
     TIndirectArray<CControlConnectionSocket> CtrlConSockets;
 
-    BOOL CmdNotPost; // FALSE pokud jiz byl postnuty prikaz FTPCMD_CLOSECONNOTIF
+    BOOL CmdNotPost; // FALSE if the FTPCMD_CLOSECONNOTIF command has already been posted
 
 public:
     CClosedCtrlConChecker();
     ~CClosedCtrlConChecker();
 
-    // pridani zavrene "control connection" do testu; vraci TRUE pri uspechu
+    // adds a closed "control connection" to the test; returns TRUE on success
     BOOL Add(CControlConnectionSocket* sock);
 
-    // informuje uzivatele o zavreni "control connection", pokud se tak jiz nestalo;
-    // vola se v hlavnim threadu v "idle"; 'parent' je parent pripadnych messageboxu
+    // informs the user about the "control connection" closing if it has not been reported yet;
+    // called in the main thread while idle; 'parent' is the parent of any message boxes
     void Check(HWND parent);
 };
 
-extern CClosedCtrlConChecker ClosedCtrlConChecker; // resi informovani uzivatele o zavreni "control connection" mimo operace
-extern CListingCache ListingCache;                 // cache listingu cest na serverech (pouziva se pri zmene a listovani cest)
+extern CClosedCtrlConChecker ClosedCtrlConChecker; // handles informing the user about "control connection" closures outside operations
+extern CListingCache ListingCache;                 // cache of path listings on servers (used when changing and listing paths)
 
-// "control connection" z leveho/praveho panelu (NULL == v levem/pravem panelu neni nase FS)
-// POZOR: nesmime sahat do objektu "control connection" - jen pro zjisteni umisteni FS v panelu (levy/pravy/odpojeny)
+// "control connection" from the left/right panel (NULL == our FS is not in the left/right panel)
+// WARNING: do not touch the "control connection" object - only used to determine the FS position in the panel (left/right/disconnected)
 extern CControlConnectionSocket* LeftPanelCtrlCon;
 extern CControlConnectionSocket* RightPanelCtrlCon;
-extern CRITICAL_SECTION PanelCtrlConSect; // kriticka sekce pro pristup k LeftPanelCtrlCon a RightPanelCtrlCon
+extern CRITICAL_SECTION PanelCtrlConSect; // critical section for accessing LeftPanelCtrlCon and RightPanelCtrlCon
 
-void RefreshValuesOfPanelCtrlCon(); // obnovi hodnoty LeftPanelCtrlCon a RightPanelCtrlCon podle aktualniho stavu
+void RefreshValuesOfPanelCtrlCon(); // refreshes LeftPanelCtrlCon and RightPanelCtrlCon values according to the current state

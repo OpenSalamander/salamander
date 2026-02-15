@@ -11,24 +11,24 @@
 
 #pragma once
 
-// je-li DEMOPLUG_QUIET definovano, setri se dotazy v message-boxech
+// if DEMOPLUG_QUIET is defined, keep message-box prompts to a minimum
 #define DEMOPLUG_QUIET
 
-// je-li ENABLE_DYNAMICMENUEXT definovano, nepridavaji se polozky do menu
-// v CPluginInterface::Connect (vola se jen jednou pri loadu pluginu),
-// ale opakovane pred kazdym otevrenim menu, viz FUNCTION_DYNAMICMENUEXT
-// (umoznuje pluginu menit dynamicky menu podle aktualnich potreb)
+// if ENABLE_DYNAMICMENUEXT is defined, menu items are not added
+// in CPluginInterface::Connect (called only once when the plugin loads),
+// but repeatedly before each menu is opened, see FUNCTION_DYNAMICMENUEXT
+// (lets the plugin change the menu dynamically based on current needs)
 //#define ENABLE_DYNAMICMENUEXT
 
-// globalni data
-extern const char* PluginNameEN; // neprekladane jmeno pluginu, pouziti pred loadem jazykoveho modulu + pro debug veci
-extern HINSTANCE DLLInstance;    // handle k SPL-ku - jazykove nezavisle resourcy
-extern HINSTANCE HLanguage;      // handle k SLG-cku - jazykove zavisle resourcy
+// global data
+extern const char* PluginNameEN; // untranslated plugin name, used before the language module loads and for debug purposes
+extern HINSTANCE DLLInstance;    // handle to the SPL - language-independent resources
+extern HINSTANCE HLanguage;      // handle to the SLG - language-dependent resources
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from startup until the plugin terminates
 extern CSalamanderGeneralAbstract* SalamanderGeneral;
 
-// rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+// interface providing customized Windows controls used in Salamander
 extern CSalamanderGUIAbstract* SalamanderGUI;
 
 BOOL InitViewer();
@@ -37,20 +37,20 @@ void ReleaseViewer();
 BOOL InitFS();
 void ReleaseFS();
 
-// FS-name pridelene Salamanderem po loadu pluginu
+// FS name assigned by Salamander after the plugin loads
 extern char AssignedFSName[MAX_PATH];
 extern int AssignedFSNameLen;
 
-// vyvolava se pro prvni instanci DEMOPLUGu: pripadny vymaz vlastniho tmp-diru
-// s kopiemi souboru vybalenymi z archivu predchozimi instancemi DEMOPLUGu
+// invoked for the first instance of DEMOPLUG: optional cleanup of its own temp directory
+// with file copies extracted from archives by previous DEMOPLUG instances
 void ClearTEMPIfNeeded(HWND parent);
 
-// ukazatele na tabulky mapovani na mala/velka pismena
+// pointers to tables for lower/upper case mapping
 extern unsigned char* LowerCase;
 extern unsigned char* UpperCase;
 
-// globalni promenne, do ktery si ulozim ukazatele na globalni promenne v Salamanderovi
-// pro archiv i pro FS - promenne se sdileji
+// global variables used to store pointers to Salamander's global variables
+// shared between the archiver and the FS
 extern const CFileData** TransferFileData;
 extern int* TransferIsDir;
 extern char* TransferBuffer;
@@ -59,40 +59,40 @@ extern DWORD* TransferRowData;
 extern CPluginDataInterfaceAbstract** TransferPluginDataIface;
 extern DWORD* TransferActCustomData;
 
-// globalni data
+// global data
 extern char Str[MAX_PATH];
 extern int Number;
-extern int Selection; // "second" in configuration dialog
+extern int Selection; // "second" option in the configuration dialog
 extern BOOL CheckBox;
 extern int RadioBox;                       // radio 2 in configuration dialog
-extern BOOL CfgSavePosition;               // ukladat pozici okna/umistit dle hlavniho okna
-extern WINDOWPLACEMENT CfgWindowPlacement; // neplatne, pokud CfgSavePosition != TRUE
-extern int Size2FixedWidth;                // sloupec Size2 (archiver): LO/HI-WORD: levy/pravy panel: FixedWidth
-extern int Size2Width;                     // sloupec Size2 (archiver): LO/HI-WORD: levy/pravy panel: Width
-extern int CreatedFixedWidth;              // sloupec Created (FS): LO/HI-WORD: levy/pravy panel: FixedWidth
-extern int CreatedWidth;                   // sloupec Created (FS): LO/HI-WORD: levy/pravy panel: Width
-extern int ModifiedFixedWidth;             // sloupec Modified (FS): LO/HI-WORD: levy/pravy panel: FixedWidth
-extern int ModifiedWidth;                  // sloupec Modified (FS): LO/HI-WORD: levy/pravy panel: Width
-extern int AccessedFixedWidth;             // sloupec Accessed (FS): LO/HI-WORD: levy/pravy panel: FixedWidth
-extern int AccessedWidth;                  // sloupec Accessed (FS): LO/HI-WORD: levy/pravy panel: Width
-extern int DFSTypeFixedWidth;              // sloupec DFS Type (FS): LO/HI-WORD: levy/pravy panel: FixedWidth
-extern int DFSTypeWidth;                   // sloupec DFS Type (FS): LO/HI-WORD: levy/pravy panel: Width
+extern BOOL CfgSavePosition;               // save the window position/place it according to the main window
+extern WINDOWPLACEMENT CfgWindowPlacement; // invalid when CfgSavePosition != TRUE
+extern int Size2FixedWidth;                // Size2 column (archiver): LOW/HIGH WORD: left/right panel: FixedWidth
+extern int Size2Width;                     // Size2 column (archiver): LOW/HIGH WORD: left/right panel: Width
+extern int CreatedFixedWidth;              // Created column (FS): LOW/HIGH WORD: left/right panel: FixedWidth
+extern int CreatedWidth;                   // Created column (FS): LOW/HIGH WORD: left/right panel: Width
+extern int ModifiedFixedWidth;             // Modified column (FS): LOW/HIGH WORD: left/right panel: FixedWidth
+extern int ModifiedWidth;                  // Modified column (FS): LOW/HIGH WORD: left/right panel: Width
+extern int AccessedFixedWidth;             // Accessed column (FS): LOW/HIGH WORD: left/right panel: FixedWidth
+extern int AccessedWidth;                  // Accessed column (FS): LOW/HIGH WORD: left/right panel: Width
+extern int DFSTypeFixedWidth;              // DFS Type column (FS): LOW/HIGH WORD: left/right panel: FixedWidth
+extern int DFSTypeWidth;                   // DFS Type column (FS): LOW/HIGH WORD: left/right panel: Width
 
-extern DWORD LastCfgPage; // start page (sheet) in configuration dialog
+extern DWORD LastCfgPage; // start page (sheet) in the configuration dialog
 
-// image-list pro jednoduche ikony FS
+// image list for simple FS icons
 extern HIMAGELIST DFSImageList;
 
-// [0, 0] - pro otevrena okna viewru: konfigurace pluginu se zmenila
+// [0, 0] - for open viewer windows: plugin configuration has changed
 #define WM_USER_VIEWERCFGCHNG WM_APP + 3246
-// [0, 0] - pro otevrena okna viewru: je treba podriznou historie
+// [0, 0] - for open viewer windows: history needs to be trimmed
 #define WM_USER_CLEARHISTORY WM_APP + 3247
-// [0, 0] - pro otevrena okna vieweru: Salamander pregeneroval fonty, mame zavolat SetFont() listam
+// [0, 0] - for open viewer windows: Salamander regenerated fonts, call SetFont() for the lists
 #define WM_USER_SETTINGCHANGE WM_APP + 3248
 
 char* LoadStr(int resID);
 
-// prikazy pluginoveho menu
+// plugin menu commands
 #define MENUCMD_ALWAYS 1
 #define MENUCMD_DIR 2
 #define MENUCMD_ARCFILE 3
@@ -107,7 +107,7 @@ char* LoadStr(int resID);
 #define MENUCMD_SHOWCONTROLS 12
 #define MENUCMD_SEP 13
 #define MENUCMD_HIDDENITEM 14
-#define MENUCMD_CHECKDEMOPLUGTMPDIR 15 // prvni instance DEMOPLUGu: pripadny vymaz vlastniho tmp-diru s kopiemi souboru vybalenymi z archivu predchozimi instancemi DEMOPLUGu
+#define MENUCMD_CHECKDEMOPLUGTMPDIR 15 // first DEMOPLUG instance: optionally clean its temp dir with files unpacked by previous instances
 #define MENUCMD_DISCONNECT_LEFT 16
 #define MENUCMD_DISCONNECT_RIGHT 17
 #define MENUCMD_DISCONNECT_ACTIVE 18
@@ -126,12 +126,12 @@ public:
 
     virtual void WINAPI GetFileDataForUpDir(const char* archivePath, CFileData& upDir)
     {
-        // zadna vlastni data plugin v CFileData nema, takze neni potreba nic menit/alokovat
+        // the plugin stores no custom data in CFileData, so nothing needs to change or be allocated
     }
     virtual BOOL WINAPI GetFileDataForNewDir(const char* dirName, CFileData& dir)
     {
-        // zadna vlastni data plugin v CFileData nema, takze neni potreba nic menit/alokovat
-        return TRUE; // vracime uspech
+        // the plugin stores no custom data in CFileData, so nothing needs to change or be allocated
+        return TRUE; // report success
     }
 
     virtual HIMAGELIST WINAPI GetSimplePluginIcons(int iconSize) { return NULL; }
@@ -221,7 +221,7 @@ public:
 class CPluginInterfaceForFS : public CPluginInterfaceForFSAbstract
 {
 protected:
-    int ActiveFSCount; // pocet aktivnich FS interfacu (jen pro kontrolu dealokace)
+    int ActiveFSCount; // number of active FS interfaces (only to verify deallocation)
 
 public:
     CPluginInterfaceForFS() { ActiveFSCount = 0; }
@@ -322,29 +322,29 @@ protected:
 class CViewerWindow : public CWindow
 {
 public:
-    HANDLE Lock;                      // 'lock' objekt nebo NULL (do signaled stavu az zavreme soubor)
-    char Name[MAX_PATH];              // jmeno souboru nebo ""
-    CRendererWindow Renderer;         // vnitrni okno vieweru
-    HIMAGELIST HGrayToolBarImageList; // toolbar a menu v sedivem provedeni (pocitano z barevneho)
-    HIMAGELIST HHotToolBarImageList;  // toolbar a menu v barevnem provedeni
+    HANDLE Lock;                      // 'lock' object or NULL (set to the signaled state after the file is closed)
+    char Name[MAX_PATH];              // file name or ""
+    CRendererWindow Renderer;         // inner viewer window
+    HIMAGELIST HGrayToolBarImageList; // toolbar and menu in the gray variant (computed from the colored one)
+    HIMAGELIST HHotToolBarImageList;  // toolbar and menu in the colored variant
 
     DWORD Enablers[vweCount];
 
-    HWND HRebar; // drzi MenuBar a ToolBar
+    HWND HRebar; // holds the menu bar and toolbar
     CGUIMenuPopupAbstract* MainMenu;
     CGUIMenuBarAbstract* MenuBar;
     CGUIToolBarAbstract* ToolBar;
 
-    int EnumFilesSourceUID;    // UID zdroje pro enumeraci souboru ve vieweru
-    int EnumFilesCurrentIndex; // index aktualniho souboru ve vieweru ve zdroji
+    int EnumFilesSourceUID;    // source UID for enumerating files in the viewer
+    int EnumFilesCurrentIndex; // index of the current viewer file within the source
 
 public:
     CViewerWindow(int enumFilesSourceUID, int enumFilesCurrentIndex);
 
     HANDLE GetLock();
 
-    // je-li 'setLock' TRUE, dojde k nastaveni 'Lock' do signaled stavu (je
-    // potreba po zavreni souboru)
+    // if 'setLock' is TRUE, set 'Lock' to the signaled state (it is
+    // needed after closing the file)
     void OpenFile(const char* name, BOOL setLock = TRUE);
 
     BOOL IsMenuBarMessage(CONST MSG* lpMsg);
@@ -365,8 +365,8 @@ protected:
     void UpdateEnablers();
 };
 
-extern CWindowQueue ViewerWindowQueue; // seznam vsech oken viewru
-extern CThreadQueue ThreadQueue;       // seznam vsech threadu oken
+extern CWindowQueue ViewerWindowQueue; // list of all viewer windows
+extern CThreadQueue ThreadQueue;       // list of all window threads
 
 //
 // ****************************************************************************
@@ -377,7 +377,7 @@ extern CThreadQueue ThreadQueue;       // seznam vsech threadu oken
 // ****************************************************************************
 // CConnectData
 //
-// struktura pro predani dat z "Connect" dialogu do nove vytvoreneho FS
+// structure for passing data from the "Connect" dialog to a newly created FS
 
 struct CConnectData
 {
@@ -391,24 +391,24 @@ struct CConnectData
     }
 };
 
-// struktura pro predani dat z "Connect" dialogu do nove vytvoreneho FS
+// structure for passing data from the "Connect" dialog to a newly created FS
 extern CConnectData ConnectData;
 
 //
 // ****************************************************************************
 // CDeleteProgressDlg
 //
-// ukazka vlastniho progress dialogu pro operaci Delete na FS
+// example of a custom progress dialog for the Delete operation on the FS
 
 class CDeleteProgressDlg : public CCommonDialog
 {
 protected:
     CGUIProgressBarAbstract* ProgressBar;
-    BOOL WantCancel; // TRUE pokud uzivatel chce Cancel
+    BOOL WantCancel; // TRUE if the user wants to cancel
 
-    // protoze dialog nebezi ve vlastnim threadu, je zbytecne pouzivat WM_TIMER
-    // metodu; stejna nas musi zavolat pro vypumpovani message queue
-    DWORD LastTickCount; // pro detekci ze uz je treba prekreslit zmenena data
+    // because the dialog does not run in its own thread, using a WM_TIMER method is pointless
+    // the caller must invoke us anyway to pump the message queue
+    DWORD LastTickCount; // to detect when changed data needs to be repainted
 
     char TextCache[MAX_PATH];
     BOOL TextCacheIsDirty;
@@ -420,8 +420,8 @@ public:
 
     void Set(const char* fileName, DWORD progress, BOOL dalayedPaint);
 
-    // vyprazdni message queue (volat dostatecne casto) a umozni prekreslit, stisknout Cancel...
-    // vraci TRUE, pokud uzivatel chce prerusit operaci
+    // empties the message queue (call often enough) and allows repainting, handling Cancel, ...
+    // returns TRUE if the user wants to interrupt the operation
     BOOL GetWantCancel();
 
 protected:
@@ -455,8 +455,8 @@ struct CFSData
 class CPluginFSDataInterface : public CPluginDataInterfaceAbstract
 {
 protected:
-    char Path[MAX_PATH]; // buffer pro plne jmeno souboru/adresare pouzivane pri nacitani ikon
-    char* Name;          // ukazatel do Path za posledni backslash cesty (na jmeno)
+    char Path[MAX_PATH]; // buffer for the full file/directory name used when loading icons
+    char* Name;          // pointer within Path after the last backslash (to the name)
 
 public:
     CPluginFSDataInterface(const char* path);
@@ -501,18 +501,18 @@ public:
 //
 // CTopIndexMem
 //
-// pamet top-indexu listboxu v panelu - pouziva CPluginFSInterface pro korektni
-// chovani ExecuteOnFS (zachovani top-indexu po vstupu a vystupu z podadresare)
+// memory for the listbox top index in the panel - used by CPluginFSInterface for proper
+// ExecuteOnFS behavior (preserves the top index when entering and leaving subdirectories)
 
-#define TOP_INDEX_MEM_SIZE 50 // pocet pamatovanych top-indexu (urovni), minimalne 1
+#define TOP_INDEX_MEM_SIZE 50 // number of remembered top indexes (levels), at least 1
 
 class CTopIndexMem
 {
 protected:
-    // cesta pro posledni zapamatovany top-index
+    // path for the last remembered top index
     char Path[MAX_PATH];
-    int TopIndexes[TOP_INDEX_MEM_SIZE]; // zapamatovane top-indexy
-    int TopIndexesCount;                // pocet zapamatovanych top-indexu
+    int TopIndexes[TOP_INDEX_MEM_SIZE]; // stored top indexes
+    int TopIndexesCount;                // number of stored top indexes
 
 public:
     CTopIndexMem() { Clear(); }
@@ -520,25 +520,25 @@ public:
     {
         Path[0] = 0;
         TopIndexesCount = 0;
-    } // vycisti pamet
-    void Push(const char* path, int topIndex);        // uklada top-index pro danou cestu
-    BOOL FindAndPop(const char* path, int& topIndex); // hleda top-index pro danou cestu, FALSE->nenalezeno
+    } // clears the memory
+    void Push(const char* path, int topIndex);        // stores the top index for the given path
+    BOOL FindAndPop(const char* path, int& topIndex); // finds the top index for the given path, FALSE -> not found
 };
 
 //
 // ****************************************************************************
 // CPluginFSInterface
 //
-// sada metod pluginu, ktere potrebuje Salamander pro praci s file systemem
+// set of plugin methods required by Salamander to work with the file system
 
 class CPluginFSInterface : public CPluginFSInterfaceAbstract
 {
 public:
-    char Path[MAX_PATH];             // aktualni cesta
-    BOOL PathError;                  // TRUE pokud se nepovedla ListCurrentPath (path error), bude se volat ChangePath
-    BOOL FatalError;                 // TRUE pokud se nepovedla ListCurrentPath (fatal error), bude se volat ChangePath
-    CTopIndexMem TopIndexMem;        // pamet top-indexu pro ExecuteOnFS()
-    BOOL CalledFromDisconnectDialog; // TRUE = user chce disconnectnout toto FS z Disconnect dialogu (klavesa F12)
+    char Path[MAX_PATH];             // current path
+    BOOL PathError;                  // TRUE if ListCurrentPath failed (path error); ChangePath will be called
+    BOOL FatalError;                 // TRUE if ListCurrentPath failed (fatal error); ChangePath will be called
+    CTopIndexMem TopIndexMem;        // top-index cache used by ExecuteOnFS()
+    BOOL CalledFromDisconnectDialog; // TRUE = the user wants to disconnect this FS from the Disconnect dialog (F12)
 
 public:
     CPluginFSInterface();
@@ -608,17 +608,17 @@ public:
     virtual void WINAPI ShowSecurityInfo(HWND parent) {}
 };
 
-// spolecny interface pro pluginova data archivatoru
+// common interface for archiver plugin data
 extern CArcPluginDataInterface ArcPluginDataInterface;
 
-// pomocna promenna pro testy
+// helper variable for tests
 extern CPluginFSInterfaceAbstract* LastDetachedFS;
 
-// rozhrani pluginu poskytnute Salamanderovi
+// plugin interface provided to Salamander
 extern CPluginInterface PluginInterface;
 
-// otevre konfiguracni dialog; pokud jiz existuje, zobrazi hlasku a vrati se
+// opens the configuration dialog; if it already exists, shows a message and returns
 void OnConfiguration(HWND hParent);
 
-// otevre About okno
+// opens the About window
 void OnAbout(HWND hParent);

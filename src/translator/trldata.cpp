@@ -13,7 +13,7 @@
 
 CData Data;
 
-// pro konverze
+// Utilities used during conversions.
 #define TEMP_BUFF_LEN 500000
 static wchar_t TempBuff[TEMP_BUFF_LEN];
 
@@ -101,7 +101,7 @@ BOOL __GetNextChar(wchar_t& charValue, wchar_t*& start, wchar_t* end)
                             }
                             else
                             {
-                                ok = c != 4; // alespon jedna cifra
+                                ok = c != 4; // Require at least a single digit.
                                 break;
                             }
                         }
@@ -127,11 +127,11 @@ BOOL __GetNextChar(wchar_t& charValue, wchar_t*& start, wchar_t* end)
     }
 }
 
-int __GetCharacterString(wchar_t* buf, int bufSize, wchar_t data) // wchar_t buf[7] alespon
+int __GetCharacterString(wchar_t* buf, int bufSize, wchar_t data) // Buffer should be at least wchar_t buf[7].
 {
     switch (data)
     {
-        //    case L'\'': wcscpy_s(buf, L"\\'"); return 2;   // pro ucely ALTAP Trlanslator je toto zbytecne
+        //    case L'\'': wcscpy_s(buf, L"\\'"); return 2;   // Not needed for Altap Translator.
         //    case L'\"': wcscpy_s(buf, L"\\\""); return 2;
     case L'\\':
         wcscpy_s(buf, bufSize, L"\\\\");
@@ -160,7 +160,7 @@ int __GetCharacterString(wchar_t* buf, int bufSize, wchar_t data) // wchar_t buf
 
     default:
     {
-        if (data != 0xFFFE && data != 0xFEFF && data != 0xFFFF) // nejsou to specialni znaky
+        if (data != 0xFFFE && data != 0xFEFF && data != 0xFFFF) // Ignore special Unicode markers.
         {
             buf[0] = data;
             return 1;
@@ -216,7 +216,7 @@ void EncodeString(wchar_t* iter, wchar_t** string)
                 break;
         }
     }
-    PUT_WORD(*string, 0); // terminator za retezcem
+    PUT_WORD(*string, 0); // Append the string terminator.
     (*string) += 1;
 }
 
@@ -238,7 +238,7 @@ BOOL GetStringFromWindow(HWND hWindow, wchar_t** string)
     GetWindowTextW(hWindow, tmp, len + 1);
     //  SendMessageW(hWindow, WM_GETTEXT, len + 1, (LPARAM)tmp);
 
-    //  MessageBoxW(hWindow, tmp, tmp, IDOK); // test funkcniho unicode
+    //  MessageBoxW(hWindow, tmp, tmp, IDOK); // Check that Unicode path works.
 
     free(*string);
     *string = tmp;
@@ -364,9 +364,9 @@ BOOL CData::Save()
             lstrcpy(buff, Data.FullTargetFile);
             lstrcpy(strrchr(buff, '.') + 1, "bak");
             if (!DeleteFile(buff) &&
-                GetFileAttributes(buff) != INVALID_FILE_ATTRIBUTES) // neselhalo to kvuli neexistenci .bak souboru
-            {                                                       // pokud selze mazani (asi je .bak otevreny v bezicim Salamanderovi z bin adresare)
-                // zkusime prejmenovani do "xxxx (2).bak", "xxxx (3).bak", atd.
+                GetFileAttributes(buff) != INVALID_FILE_ATTRIBUTES) // The deletion did not fail due to a missing .bak file.
+            {                                                       // Deletion probably failed because the .bak is opened by a running Salamander from the bin folder.
+                // Attempt to rename it to "xxxx (2).bak", "xxxx (3).bak", etc.
                 char buff2[MAX_PATH + 20];
                 lstrcpyn(buff2, buff, MAX_PATH);
                 char* num = strrchr(buff2, '.');
@@ -427,19 +427,19 @@ BOOL CALLBACK EnumResLangProc(HANDLE hModule, LPCTSTR lpszType, LPCTSTR lpszName
 {
     if (*(DWORD*)lParam != 0xFFFFFFFF)
     {
-        // resource obsahuje vice jazyku, vyhlasime chybu
+        // multiple languages found inside the same resource—report an error
         *(DWORD*)lParam = 0xFFFFFFFF;
         return FALSE;
     }
     *(WORD*)lParam = wIDLanguage;
-    return TRUE; // chceme dalsi jazyky, abychom upozornili na chybu
+    return TRUE; // continue enumeration to discover additional languages for diagnostics
 }
 
 BOOL CALLBACK EnumResNameProc(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LPARAM lParam)
 {
     char errtext[3000];
     CData* data = (CData*)lParam;
-    if ((((DWORD)lpszName) & 0xFFFF0000) != 0 && !data->MUIMode) // v MUIMode potrebujeme nacitat i silene MS resourcy pouzivajici stringy misto ID
+    if ((((DWORD)lpszName) & 0xFFFF0000) != 0 && !data->MUIMode) // in MUIMode we must accept quirky MS resources that use strings instead of IDs
     {
         sprintf_s(errtext, "Non integer identifier: %s.", lpszName);
         MessageBox(GetMsgParent(), errtext, ERROR_TITLE, MB_OK | MB_ICONEXCLAMATION);
@@ -447,7 +447,7 @@ BOOL CALLBACK EnumResNameProc(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName
         return FALSE;
     }
 
-    DWORD langID = 0xFFFFFFFF; // pred volanim enumerace musime resetnout
+    DWORD langID = 0xFFFFFFFF; // reset before invoking the enumeration
     if (!EnumResourceLanguages(data->HTranModule, lpszType, lpszName, (ENUMRESLANGPROC)EnumResLangProc, (LONG_PTR)&langID))
     {
         DWORD err = GetLastError();
@@ -701,12 +701,12 @@ BOOL CALLBACK EnumResNameProc(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName
 BOOL CData::CheckIdentifiers(BOOL reportAsErrors)
 {
     BOOL ret = TRUE;
-    WORD lvIndex; // index v ListView
+    WORD lvIndex; // Index within the list view.
     int i, j;
     wchar_t buff[10000];
     CMessageTypeEnum msgType = reportAsErrors ? mteError : mteWarning;
 
-    // prohledame dialogy
+    // Inspect all dialogs.
     for (i = 0; i < DlgData.Count; i++)
     {
         CDialogData* dialog = DlgData[i];
@@ -714,7 +714,7 @@ BOOL CData::CheckIdentifiers(BOOL reportAsErrors)
         if (!DataRH.GetIDIndex(dialog->ID, idIndex))
         {
             swprintf_s(buff, L"Dialog %hs has unknown identifier", DataRH.GetIdentifier(dialog->ID));
-            OutWindow.AddLine(buff, msgType, rteDialog, dialog->ID, 0); // fokusne prvni control v dialogu (neni uplne koser, ale nam to staci)
+            OutWindow.AddLine(buff, msgType, rteDialog, dialog->ID, 0); // Sets focus to the first control in the dialog; not perfect but sufficient.
         }
         lvIndex = 0;
         for (j = 0; j < dialog->Controls.Count; j++)
@@ -723,7 +723,7 @@ BOOL CData::CheckIdentifiers(BOOL reportAsErrors)
             if (!control->ShowInLVWithControls(j))
                 continue;
 
-            if (j > 0 && !DataRH.GetIDIndex(control->ID, idIndex)) // na j==0 je titulek dialogu + ID dialogu, to se resi pred cyklem
+            if (j > 0 && !DataRH.GetIDIndex(control->ID, idIndex)) // j==0 handles the dialog title and ID before the loop.
             {
                 swprintf_s(buff, L"Dialog %hs: Unknown identifier: %hs (%ls)", DataRH.GetIdentifier(dialog->ID),
                            DataRH.GetIdentifier(control->ID), control->TWindowName);
@@ -733,7 +733,7 @@ BOOL CData::CheckIdentifiers(BOOL reportAsErrors)
         }
     }
 
-    // prohledame menu
+    // Inspect all menus.
     for (i = 0; i < MenuData.Count; i++)
     {
         CMenuData* menu = MenuData[i];
@@ -741,7 +741,7 @@ BOOL CData::CheckIdentifiers(BOOL reportAsErrors)
         if (!DataRH.GetIDIndex(menu->ID, idIndex))
         {
             swprintf_s(buff, L"Menu %hs has unknown identifier", DataRH.GetIdentifier(menu->ID));
-            OutWindow.AddLine(buff, msgType, rteMenu, menu->ID, 0); // fokusne prvni item v menu (neni uplne koser, ale nam to staci)
+            OutWindow.AddLine(buff, msgType, rteMenu, menu->ID, 0); // Sets focus to the first item in the menu; good enough for reporting.
         }
         lvIndex = 0;
         for (j = 0; j < menu->Items.Count; j++)
@@ -750,7 +750,7 @@ BOOL CData::CheckIdentifiers(BOOL reportAsErrors)
             if (wcslen(item->TString) == 0)
                 continue;
 
-            if ((item->Flags & MF_POPUP) == 0 && // popup nema ID
+            if ((item->Flags & MF_POPUP) == 0 && // POPUP entries do not carry IDs.
                 !DataRH.GetIDIndex(item->ID, idIndex))
             {
                 swprintf_s(buff, L"Menu %hs: Unknown identifier %hs (%ls)", DataRH.GetIdentifier(menu->ID),
@@ -761,7 +761,7 @@ BOOL CData::CheckIdentifiers(BOOL reportAsErrors)
         }
     }
 
-    // prohledame strings
+    // Inspect all string tables.
     for (i = 0; i < StrData.Count; i++)
     {
         CStrData* strData = StrData[i];
@@ -801,7 +801,7 @@ BOOL CData::EnumResources(HINSTANCE hSrcModule, HINSTANCE hDstModule, BOOL impor
         EnumResourceNames(hSrcModule, RT_STRING, EnumResNameProc, (LPARAM)this);
     HTranModule = NULL;
 
-    // projdeme prelozitelne prvky, zda maji prirazeny symbolicke identifikatory
+    // Verify that every translatable item has an associated symbolic identifier.
     if (!MUIMode)
         CheckIdentifiers(FALSE);
 
@@ -816,7 +816,7 @@ BOOL CData::Load(const char* original, const char* translated, BOOL import)
     {
         wchar_t buff[2 * MAX_PATH];
 
-        if (!MUIMode) // bezne tento vystup zatucu, zbytecne to zdrzuje
+        if (!MUIMode) // This logging is usually suppressed because it slows things down.
         {
             if (MUIMode)
             {
@@ -840,7 +840,7 @@ BOOL CData::Load(const char* original, const char* translated, BOOL import)
         {
             ret = EnumResources(hSrcModule, hDstModule, import);
 
-            if (ret /*&& !import*/ && !MUIMode) // signaturu chceme take importovat; v MUIMode naopak nesmime, MS nic takoveh v DLL nemaji
+            if (ret /*&& !import*/ && !MUIMode) // Import the SLG signature as well; in MUI mode we must skip it because MS DLLs do not contain one.
             {
                 ret &= LoadSLGSignature(hDstModule);
                 if (!ret)
@@ -1019,17 +1019,17 @@ BOOL CData::Import(const char* project, BOOL trlPropOnly, BOOL onlyDlgLayouts)
             lstrcpyW(SLGSignature.Web, oldData.SLGSignature.Web);
             lstrcpyW(SLGSignature.Comment, oldData.SLGSignature.Comment);
         }
-        if (!trlPropOnly)                                      // importem (dela se obvykle jen ze starsi verze) vznikne nova verze, kterou jsme neimportovali z SLT, proto:
-            SLGSignature.SetCRCofImpSLTIfFound((wchar_t*)L""); // zmenena verze, ktera nebyla importena/exportena do SLT
+        if (!trlPropOnly)                                      // Importing (typically from an older version) creates a new version that has not yet been imported from SLT, therefore:
+            SLGSignature.SetCRCofImpSLTIfFound((wchar_t*)L""); // Mark as changed without an SLT import/export.
         else
-            SLGSignature.SLTDataChanged(); // import jen SLG properties bereme stejne jako rucni editaci SLG
+            SLGSignature.SLTDataChanged(); // Treat importing only SLG properties as if the SLG was edited manually.
         if (!onlyDlgLayouts &&
-            SLGSignature.HelpDirExist == oldData.SLGSignature.HelpDirExist) // pri importu translation properties ze salamand.atp do pluginu nesmime prenest HelpDir
+            SLGSignature.HelpDirExist == oldData.SLGSignature.HelpDirExist) // Do not copy HelpDir when importing translation properties from salamand.atp into a plug-in.
         {
             lstrcpyW(SLGSignature.HelpDir, oldData.SLGSignature.HelpDir);
         }
         if (!onlyDlgLayouts &&
-            SLGSignature.SLGIncompleteExist == oldData.SLGSignature.SLGIncompleteExist) // pri importu translation properties ze salamand.atp do pluginu nesmime prenest SLGIncomplete
+            SLGSignature.SLGIncompleteExist == oldData.SLGSignature.SLGIncompleteExist) // Likewise keep SLGIncomplete unchanged when importing translation properties.
         {
             lstrcpyW(SLGSignature.SLGIncomplete, oldData.SLGSignature.SLGIncomplete);
         }
@@ -1040,17 +1040,17 @@ BOOL CData::Import(const char* project, BOOL trlPropOnly, BOOL onlyDlgLayouts)
 
             CleanRelayout();
 
-            // import sekce dialogs
+            // Import the dialogs section.
             int dlgTotalCount = 0;
             int dlgTranslatedCount = 0;
             int i;
             for (i = 0; i < DlgData.Count; i++)
             {
-                // zkusime nase ID najit v importovanych datech
+                // Try to locate our ID in the imported data.
                 int index = oldData.FindDialogData(DlgData[i]->ID);
                 if (index != -1)
                 {
-                    // zjistime, zda se stara anglicka verze zmenila z hlediska layoutu proti nove anglicke verzi
+                    // Check whether the original English layout differs from the new English layout.
                     BOOL orgLayoutChanged = DlgData[i]->DoesLayoutChanged2(oldData.DlgData[index]);
                     if (orgLayoutChanged)
                     {
@@ -1060,7 +1060,7 @@ BOOL CData::Import(const char* project, BOOL trlPropOnly, BOOL onlyDlgLayouts)
                     }
                     if (onlyDlgLayouts)
                     {
-                        if (orgLayoutChanged) // layouty anglickych verzi musi byt shodne, importi se v ramci jedne verze
+                        if (orgLayoutChanged) // English layouts must match; importing happens within the same version.
                         {
                             swprintf_s(buff, L"Original dialog layouts must be the same, it's not true for %hs", DataRH.GetIdentifier(DlgData[i]->ID));
                             OutWindow.AddLine(buff, mteError, rteDialog, DlgData[i]->ID);
@@ -1077,20 +1077,20 @@ BOOL CData::Import(const char* project, BOOL trlPropOnly, BOOL onlyDlgLayouts)
                     {
                         if (!orgLayoutChanged)
                         {
-                            // anglicka verze se nezmenila, muzeme prenest stary layout 1:1;
-                            // ignorovane rozdily stylu (napr. u editboxu ES_AUTOHSCROLL) se resi zmenou stylu
-                            // na novy primo ve stare verzi dat, viz DoesLayoutChanged2 (jinak by se po teto
-                            // kopii pouzival stary styl a to prirozene nechceme)
+                            // The English version did not change, so we can copy the old layout verbatim.
+                            // Ignored style differences (e.g. ES_AUTOHSCROLL on edit boxes) are fixed by
+                            // updating the style in the old data during DoesLayoutChanged2 so that the copy
+                            // does not continue using outdated styles.
                             DlgData[i]->LoadFrom(oldData.DlgData[index], TRUE);
                         }
                     }
                     for (int j = 0; j < DlgData[i]->Controls.Count; j++)
                     {
-                        // zkusime nase ID najit v importovanych datech
+                        // Try to locate the control ID in the imported data.
                         int ctrlIndex = oldData.DlgData[index]->FindControlIndex(DlgData[i]->Controls[j]->ID, j == 0);
                         if (ctrlIndex != -1)
                         {
-                            if (onlyDlgLayouts) // prenos rozmeru controlu (pouzito pro import layoutu dialogu z ceske do slovenske verze 2.55 po prechodu na W2K look dialogu a kompletnim rozbiti layoutu dialogu)
+                            if (onlyDlgLayouts) // Transfer control dimensions (used for Czech to Slovak layout import after switching to the W2K look and breaking dialogs).
                             {
                                 CControl* n = DlgData[i]->Controls[j];
                                 CControl* o = oldData.DlgData[index]->Controls[ctrlIndex];
@@ -1107,27 +1107,27 @@ BOOL CData::Import(const char* project, BOOL trlPropOnly, BOOL onlyDlgLayouts)
                                 {
                                     if (HIWORD(newOriginal) == 0x0000)
                                     {
-                                        // misto retezce je v nazvu ciselna hodnota
+                                        // The name contains a numeric value instead of a string.
                                         if (newOriginal == oldOriginal)
                                         {
                                             DlgData[i]->Controls[j]->TWindowName = oldData.DlgData[index]->Controls[ctrlIndex]->TWindowName;
-                                            // stav nastavime jako prelozeny
+                                            // Mark the control as translated.
                                             DlgData[i]->Controls[j]->State = oldData.DlgData[index]->Controls[ctrlIndex]->State;
                                             importedTotal++;
                                         }
                                     }
                                     else
                                     {
-                                        // pokud je originalni retezec stejny jako originalni v importovane verzi
+                                        // If the original strings match between current and imported data.
                                         if (wcscmp(newOriginal, oldOriginal) == 0)
                                         {
-                                            // prekopirujeme z importu prelozen retezec
+                                            // Copy the translated string from the imported data.
                                             int len = wcslen(oldData.DlgData[index]->Controls[ctrlIndex]->TWindowName) + 1;
                                             wchar_t* s = (wchar_t*)malloc(len * sizeof(wchar_t));
                                             wcscpy_s(s, len, oldData.DlgData[index]->Controls[ctrlIndex]->TWindowName);
                                             free(DlgData[i]->Controls[j]->TWindowName);
                                             DlgData[i]->Controls[j]->TWindowName = s;
-                                            // stav nastavime jako prelozeny
+                                            // Mark the control as translated.
                                             DlgData[i]->Controls[j]->State = oldData.DlgData[index]->Controls[ctrlIndex]->State;
                                             importedTotal++;
                                         }
@@ -1144,27 +1144,27 @@ BOOL CData::Import(const char* project, BOOL trlPropOnly, BOOL onlyDlgLayouts)
                 swprintf_s(buff, L"Importing Menus...");
                 OutWindow.AddLine(buff, mteInfo);
 
-                // import sekce menus
+                // Import the menus section.
                 for (i = 0; i < MenuData.Count; i++)
                 {
-                    // zkusime nase ID najit v importovanych datech
+                    // Try to locate our ID in the imported data.
                     int index = oldData.FindMenuData(MenuData[i]->ID);
                     if (index != -1)
                     {
                         for (int j = 0; j < MenuData[i]->Items.Count; j++)
                         {
-                            // zkusime nase ID najit v importovanych datech
+                            // Try to locate the menu item ID in the imported data.
                             int itemIndex = oldData.MenuData[i]->FindItemIndex(MenuData[i]->Items[j].ID);
-                            if (MenuData[i]->Items[j].ID == 0) // popup jedeme podle indexu
+                            if (MenuData[i]->Items[j].ID == 0) // Popups are matched by index.
                             {
                                 itemIndex = j < oldData.MenuData[index]->Items.Count ? j : -1;
                                 if (itemIndex == -1 ||
                                     *MenuData[i]->Items[j].OString == 0 || *oldData.MenuData[index]->Items[itemIndex].OString == 0 ||
                                     wcscmp(MenuData[i]->Items[j].OString, oldData.MenuData[index]->Items[itemIndex].OString) != 0)
-                                { // pokud jsme ho nenasli podle indexu, zkusime ho dohledat hrubou silou
+                                { // If the index lookup failed, fall back to a brute-force search.
                                     for (int popupIndex = 0; popupIndex < oldData.MenuData[index]->Items.Count; popupIndex++)
                                     {
-                                        if (oldData.MenuData[index]->Items[popupIndex].ID == 0) // popup
+                                        if (oldData.MenuData[index]->Items[popupIndex].ID == 0) // Another popup entry.
                                         {
                                             if (*MenuData[i]->Items[j].OString != 0 && *oldData.MenuData[index]->Items[popupIndex].OString != 0 &&
                                                 wcscmp(MenuData[i]->Items[j].OString, oldData.MenuData[index]->Items[popupIndex].OString) == 0)
@@ -1180,16 +1180,16 @@ BOOL CData::Import(const char* project, BOOL trlPropOnly, BOOL onlyDlgLayouts)
                             {
                                 if (*MenuData[i]->Items[j].OString != 0 && *oldData.MenuData[index]->Items[itemIndex].OString != 0)
                                 {
-                                    // pokud je originalni retezec stejny jako originalni v importovane verzi
+                                    // If the original strings match between current and imported data.
                                     if (wcscmp(MenuData[i]->Items[j].OString, oldData.MenuData[index]->Items[itemIndex].OString) == 0)
                                     {
-                                        // prekopirujeme z importu prelozen retezec
+                                        // Copy the translated string from the imported data.
                                         int len = wcslen(oldData.MenuData[index]->Items[itemIndex].TString) + 1;
                                         wchar_t* s = (wchar_t*)malloc(len * sizeof(wchar_t));
                                         wcscpy_s(s, len, oldData.MenuData[index]->Items[itemIndex].TString);
                                         free(MenuData[i]->Items[j].TString);
                                         MenuData[i]->Items[j].TString = s;
-                                        // stav nastavime jako prelozeny
+                                        // Mark the menu item as translated.
                                         MenuData[i]->Items[j].State = oldData.MenuData[index]->Items[itemIndex].State;
                                         importedTotal++;
                                     }
@@ -1202,10 +1202,10 @@ BOOL CData::Import(const char* project, BOOL trlPropOnly, BOOL onlyDlgLayouts)
                 swprintf_s(buff, L"Importing String Tables...");
                 OutWindow.AddLine(buff, mteInfo);
 
-                // import sekce strings
+                // Import the string tables section.
                 for (i = 0; i < StrData.Count; i++)
                 {
-                    // zkusime nase ID najit v importovanych datech
+                    // Try to locate our ID in the imported data.
                     int index = oldData.FindStrData(StrData[i]->ID);
                     if (index != -1)
                     {
@@ -1213,16 +1213,16 @@ BOOL CData::Import(const char* project, BOOL trlPropOnly, BOOL onlyDlgLayouts)
                         {
                             if (StrData[i]->TStrings[j] != NULL && oldData.StrData[index]->TStrings[j] != NULL)
                             {
-                                // pokud je originalni retezec stejny jako originalni v importovane verzi
+                                // If the original strings match between current and imported data.
                                 if (wcscmp(StrData[i]->OStrings[j], oldData.StrData[index]->OStrings[j]) == 0)
                                 {
-                                    // prekopirujeme z importu prelozen retezec
+                                    // Copy the translated string from the imported data.
                                     int len = wcslen(oldData.StrData[index]->TStrings[j]) + 1;
                                     wchar_t* s = (wchar_t*)malloc(len * sizeof(wchar_t));
                                     wcscpy_s(s, len, oldData.StrData[index]->TStrings[j]);
                                     free(StrData[i]->TStrings[j]);
                                     StrData[i]->TStrings[j] = s;
-                                    // stav nastavime jako prelozeny
+                                    // Mark the string as translated.
                                     StrData[i]->TState[j] = oldData.StrData[index]->TState[j];
                                     importedTotal++;
                                 }
@@ -1241,8 +1241,8 @@ BOOL CData::Import(const char* project, BOOL trlPropOnly, BOOL onlyDlgLayouts)
         }
 
         Data.SetDirty();
-        Data.UpdateAllNodes(); // nastavime translated stavy na treeview
-        Data.UpdateTexts();    // update list view v okne Texts
+        Data.UpdateAllNodes(); // Refresh translated states inside the tree view.
+        Data.UpdateTexts();    // Refresh the list view in the Texts window.
 
         OutWindow.EnablePaint(TRUE);
         SetCursor(hOldCursor);
@@ -1275,7 +1275,7 @@ void RemoveAmpersands(wchar_t* buff)
     }
 }
 
-// postrili ampersandy, \n, \t
+// Remove ampersands and escape sequences such as \n and \t.
 
 void RemoveGarbage(wchar_t* buff)
 {
@@ -1399,31 +1399,31 @@ BOOL CData::ExportAsTextArchive(const char* fileName, BOOL withoutVerInfo)
     swprintf_s(outputBuff, L"Exporting translation to SLT text archive...");
     OutWindow.AddLine(outputBuff, mteInfo);
 
-    /* strucne schema pro nasledujici podminku:
-  SLG:
-    -EN (nakompilovana anglicka verze)
-      -SLT neexistuje                               OK
-      -SLT existuje                                 dotaz (prepis neznameho souboru)
-    -po importu/exportu do SLT
-      -SLT neexistuje                               OK
-      -SLT existuje
-        -shoda CRC s SLT odkud se imp/exportilo     OK (import a hned export nebo opakovany export = zadna zmena SLT)
-        -neshoda CRC s SLT odkud se imp/exportilo   dotaz (jine SLT, muze jit o aktualizovanou podobu, kterou bysme takhle znicili)
-    -po zmene
-      -SLT neexistuje
-        -neimportilo se z SLT                       ok
-        -importilo se z SLT                         dotaz (exporti se nova verze SLT, ktera by se mela archivovat, ovsem rucni prepis archivu muze znamenat ztratu dat, je potreba rucni merge s archivem)
-      -SLT existuje
-        -neimportilo se z SLT                       dotaz (prepis neznameho souboru)
-        -shoda CRC s SLT odkud se importilo         OK
-        -neshoda CRC s SLT odkud se importilo       dotaz (jine SLT, muze jit o aktualizovanou podobu, kterou bysme takhle znicili, je potreba prejmenovat SLT, provest export do noveho SLT, a pak rucni merge obou verzi SLT)
-*/
+    /* Summary of the decision tree below:
+       SLG:
+         - English build
+           - SLT missing                               -> OK
+           - SLT exists                                -> ask (overwriting unknown file)
+         - After importing/exporting SLT
+           - SLT missing                               -> OK
+           - SLT exists
+             - CRC matches last import/export source   -> OK (import then export or repeated export means no change)
+             - CRC differs from last import/export     -> ask (likely an updated SLT we should not overwrite)
+         - After changes
+           - SLT missing
+             - No SLT import performed                 -> OK
+             - SLT imported previously                 -> ask (new SLT version should be archived; manual merge might be required)
+           - SLT exists
+             - No SLT import performed                 -> ask (overwriting unknown file)
+             - CRC matches last import source          -> OK
+             - CRC differs from last import source     -> ask (probably an updated SLT—rename, export to a new file, then merge)
+    */
     if (!withoutVerInfo)
     {
-        if (GetFileAttributes(fileName) != INVALID_FILE_ATTRIBUTES) // cilovy SLT soubor jiz existuje
+        if (GetFileAttributes(fileName) != INVALID_FILE_ATTRIBUTES) // Target SLT file already exists.
         {
             int res = IDYES;
-            if (wcscmp(SLGSignature.CRCofImpSLT, L"none") == 0) // EN verze
+            if (wcscmp(SLGSignature.CRCofImpSLT, L"none") == 0) // English edition.
             {
                 sprintf_s(buf, "Target file already exists. Nothing is known about this file. Target file: %s.\n\n"
                                "Do you really want to overwrite this file?\n\n"
@@ -1437,7 +1437,7 @@ BOOL CData::ExportAsTextArchive(const char* fileName, BOOL withoutVerInfo)
             }
             else
             {
-                if (SLGSignature.IsSLTDataAfterImportOrExport()) // tesne po exportu do SLT nebo importu z SLT
+                if (SLGSignature.IsSLTDataAfterImportOrExport()) // Immediately after exporting to or importing from SLT.
                 {
                     DWORD existingFileCRC;
                     if (!GetFileCRC(fileName, &existingFileCRC))
@@ -1446,10 +1446,10 @@ BOOL CData::ExportAsTextArchive(const char* fileName, BOOL withoutVerInfo)
                     {
                         wchar_t crcTxt[50];
                         swprintf_s(crcTxt, L"%08X SLT", existingFileCRC);
-                        if (wcscmp(SLGSignature.CRCofImpSLT, crcTxt) == 0) // shoda CRC existujiciho SLT souboru (prepisovaneho) a CRC SLT souboru, ze ktereho se naposledy importilo nebo do ktereho se naposledy exportilo z tohoto SLG souboru: budeme predpokladat, ze jde o stejne soubory a tise provedeme prepis existujiciho SLT souboru, nemelo by dojit k jeho zmene, protoze SLG se od importu/exportu nezmenilo
+                        if (wcscmp(SLGSignature.CRCofImpSLT, crcTxt) == 0) // CRC matches the SLT used for the last import/export—assume it is the same file and overwrite silently.
                         {
                         }
-                        else // existujici SLT soubor ma jine CRC nez mame ulozeno v SLG => nejspis jde o aktualizovany SLT soubor, ktery nemuzeme jen tak prepsat
+                        else // Existing SLT differs from what we imported/exported—likely updated; warn before overwriting.
                         {
                             sprintf_s(buf, "Target file already exists and differs from the SLT file from which you "
                                            "have imported translation or to which you have exported translation. It is likely to "
@@ -1467,11 +1467,11 @@ BOOL CData::ExportAsTextArchive(const char* fileName, BOOL withoutVerInfo)
                 }
                 else
                 {
-                    if (SLGSignature.IsSLTDataChanged()) // po zmene
+                    if (SLGSignature.IsSLTDataChanged()) // Data changed since last import/export.
                     {
-                        if (wcscmp(SLGSignature.CRCofImpSLT, L"") == 0 ||   // zmenena verze, ktera nebyla importena/exportena do SLT
-                            wcscmp(SLGSignature.CRCofImpSLT, L"none") == 0) // EN verze
-                        {                                                   // neimportili/neexportili jsme z/do SLT
+                        if (wcscmp(SLGSignature.CRCofImpSLT, L"") == 0 ||   // Changed version without SLT import/export.
+                            wcscmp(SLGSignature.CRCofImpSLT, L"none") == 0) // English edition.
+                        {                                                   // No SLT import/export performed yet.
                             sprintf_s(buf, "Target file already exists. Nothing is known about this file. Target file: %s.\n\n"
                                            "Do you really want to overwrite this file?\n\n"
                                            "We recommend to export SLT file for this module to filename with some suffix "
@@ -1493,10 +1493,10 @@ BOOL CData::ExportAsTextArchive(const char* fileName, BOOL withoutVerInfo)
                                 {
                                     wchar_t crcTxt[50];
                                     swprintf_s(crcTxt, L"%08X", existingFileCRC);
-                                    if (wcscmp(SLGSignature.CRCofImpSLT, crcTxt) == 0) // shoda CRC existujiciho SLT souboru (prepisovaneho) a CRC SLT souboru, ze ktereho se naposledy importilo nebo do ktereho se naposledy exportilo z tohoto SLG souboru: budeme predpokladat, ze jde o stejne soubory a tise provedeme prepis existujiciho SLT souboru
+                                    if (wcscmp(SLGSignature.CRCofImpSLT, crcTxt) == 0) // CRC matches the SLT used for the last import/export—overwrite silently.
                                     {
                                     }
-                                    else // existujici SLT soubor ma jine CRC nez mame ulozeno v SLG => nejspis jde o aktualizovany SLT soubor, ktery nemuzeme jen tak prepsat
+                                    else // Existing SLT differs from stored CRC—warn before overwriting.
                                     {
                                         sprintf_s(buf, "Target file already exists and differs from the SLT file from which you "
                                                        "have imported translation or to which you have exported translation. It is likely to "
@@ -1523,18 +1523,18 @@ BOOL CData::ExportAsTextArchive(const char* fileName, BOOL withoutVerInfo)
                 return FALSE;
             }
         }
-        else // cilovy SLT soubor neexistuje
+        else // Target SLT file does not exist.
         {
-            if (SLGSignature.IsSLTDataChanged()) // po zmene
+            if (SLGSignature.IsSLTDataChanged()) // Data changed since last import/export.
             {
-                if (wcscmp(SLGSignature.CRCofImpSLT, L"") == 0 ||   // zmenena verze, ktera nebyla importena/exportena do SLT
-                    wcscmp(SLGSignature.CRCofImpSLT, L"none") == 0) // EN verze
-                {                                                   // neimportili/neexportili jsme z/do SLT
+                if (wcscmp(SLGSignature.CRCofImpSLT, L"") == 0 ||   // Changed version without SLT import/export.
+                    wcscmp(SLGSignature.CRCofImpSLT, L"none") == 0) // English edition.
+                {                                                   // No SLT import/export performed yet.
                 }
                 else
                 {
                     if (wcscmp(SLGSignature.CRCofImpSLT, L"not found") != 0)
-                    { // importili/exportili jsme z/do SLT
+                    { // SLT import/export already performed.
                         sprintf_s(buf, "You have imported translation from SLT file or exported translation "
                                        "to SLT file but now target SLT file does not exist, so it is not possible "
                                        "to check if it was not changed since your last import/export. We recommend "
@@ -1731,7 +1731,7 @@ BOOL CData::ExportAsTextArchive(const char* fileName, BOOL withoutVerInfo)
 
     if (ret)
     {
-        if (!withoutVerInfo) // tenhle export neni jen pro diff, tedy update CRC32 ma smysl
+        if (!withoutVerInfo) // this export is not only for diffing, so updating the CRC32 matters
         {
             wchar_t bufW[50];
             swprintf_s(bufW, L"%08X SLT", fileCRC32);
@@ -1767,7 +1767,7 @@ BOOL CData::ExportDialogsAndControlsSizes(const char* fileName)
         return FALSE;
     }
 
-    DWORD fileCRC32 = 0; // CRC se zde nepouziva, jen jsem linej prepisovat WriteUTF8TextLine do ANSI varianty
+    DWORD fileCRC32 = 0; // CRC is unused; we simply reuse WriteUTF8TextLine instead of rewriting it for ANSI.
     BOOL ret = TRUE;
     wchar_t buff[10000];
 
@@ -2199,7 +2199,7 @@ BOOL GetUnicodeTextLine(const wchar_t **lineStart, const wchar_t *fileEnd, wchar
     memmove(buff, *lineStart, (p - *lineStart) * 2);
     buff[p - *lineStart] = 0;
 
-    // ustrihneme whitespacy na konci radku, nemusime byt s importem az tak moc striktni
+    // Trim trailing whitespace; the import does not need to be overly strict.
     wchar_t *term = buff + (p - *lineStart) - 1;
     while (term >= buff && (*term == ' ' || *term == '\t'))
     {
@@ -2209,7 +2209,7 @@ BOOL GetUnicodeTextLine(const wchar_t **lineStart, const wchar_t *fileEnd, wchar
   }
   else
   {
-    // kratky buffer
+    // Buffer too short.
     return FALSE;
   }
   if (p < fileEnd && *p == '\r')
@@ -2248,16 +2248,16 @@ int ConvertA2U(const char* src, int srcLen, WCHAR* buf, int bufSizeInChars, UINT
     if (srcLen != -1 && res > 0)
         res++;
     if (res > 0 && res <= bufSizeInChars)
-        buf[res - 1] = 0; // uspech, zakoncime string nulou
+        buf[res - 1] = 0; // Success—terminate the string.
     else
     {
         if (res > bufSizeInChars || res == 0 && GetLastError() == ERROR_INSUFFICIENT_BUFFER)
         {
             SetLastError(ERROR_INSUFFICIENT_BUFFER);
-            buf[bufSizeInChars - 1] = 0; // maly buffer, vratime chybu, ale castecne prelozeny string nechame v bufferu
+            buf[bufSizeInChars - 1] = 0; // Buffer too small: return an error but keep the partial conversion.
         }
         else
-            buf[0] = 0; // jina chyba, zajistime prazdny buffer
+            buf[0] = 0; // Other error: ensure the buffer is empty.
         res = 0;
     }
     return res;
@@ -2274,7 +2274,7 @@ BOOL GetUTF8TextLine(const char** lineStart, const char* fileEnd, wchar_t* buff,
     {
         ConvertA2U(*lineStart, (p - *lineStart), buff, buffSize, CP_UTF8);
 
-        // ustrihneme whitespacy na konci radku, nemusime byt s importem az tak moc striktni
+        // Trim trailing whitespace; the import does not need to be overly strict.
         wchar_t* term = buff + wcslen(buff) - 1;
         while (term >= buff && (*term == ' ' || *term == '\t'))
         {
@@ -2284,7 +2284,7 @@ BOOL GetUTF8TextLine(const char** lineStart, const char* fileEnd, wchar_t* buff,
     }
     else
     {
-        // kratky buffer
+        // Buffer too short.
         return FALSE;
     }
     if (p < fileEnd && *p == '\r')
@@ -2332,7 +2332,7 @@ BOOL CData::ImportTextArchive(const char* fileName, BOOL testOnly)
     char* data = (char*)malloc(size + 2);
     if (data == NULL)
     {
-        TRACE_E("Nedostatek pameti");
+        TRACE_E("Out of memory");
         HANDLES(CloseHandle(hFile));
         swprintf_s(outputBuff, L"Importing translation from SLT text archive FAILED.");
         OutWindow.AddLine(outputBuff, mteError);
@@ -2351,7 +2351,7 @@ BOOL CData::ImportTextArchive(const char* fileName, BOOL testOnly)
         OutWindow.AddLine(outputBuff, mteError);
         return FALSE;
     }
-    data[size] = 0; // vlozime terminator
+    data[size] = 0; // Append a terminator.
 
     DWORD fileCRC32 = 0;
     if (!testOnly)
@@ -2389,7 +2389,7 @@ BOOL CData::ImportTextArchive(const char* fileName, BOOL testOnly)
 
     int lineNumber = 1;
 
-    // preskocim UTF8 BOM (pokud je na zacatku souboru)
+    // Skip the UTF-8 BOM if the file starts with one.
     if (lineStart + 3 <= fileEnd && *lineStart == '\xEF' && *(lineStart + 1) == '\xBB' && *(lineStart + 2) == '\xBF')
         lineStart += 3;
 
@@ -2555,9 +2555,9 @@ BOOL CData::ImportTextArchive(const char* fileName, BOOL testOnly)
     }
 
     if (!testOnly)
-        CleanRelayout(); // jestli jsou nejake dialogy k releayout, budou v sekci [RELAYOUT] .slt souboru
+        CleanRelayout(); // If any dialogs require re-layout they will be listed in the [RELAYOUT] section of the SLT file.
 
-    // okontrolujeme, ze dal uz soubor krome pripadne [RELAYOUT] sekce nic neobsahuje
+    // Ensure the file contains nothing beyond the optional [RELAYOUT] section.
     BOOL relayoutFound = FALSE;
     while (ret && lineStart < fileEnd &&
            GetUTF8TextLine(&lineStart, fileEnd, buff, LINE_BUFF_SIZE, &lineNumber))
@@ -2592,7 +2592,7 @@ BOOL CData::ImportTextArchive(const char* fileName, BOOL testOnly)
         }
     }
 
-    if (!ret /*&& lineNumber > 1*/) // spatnej BOM tu nehlasime
+    if (!ret /*&& lineNumber > 1*/) // Do not report a bad BOM here.
     {
         sprintf_s(buf, "Syntax error in file %s on line %d.", fileName, lineNumber - 1);
         MessageBox(GetMsgParent(), buf, ERROR_TITLE, MB_OK | MB_ICONEXCLAMATION);

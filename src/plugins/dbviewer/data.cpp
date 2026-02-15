@@ -40,7 +40,7 @@ BOOL CDatabase::Open(const char* fileName)
 
     BOOL ret = TRUE;
 
-    // zkusim soubor otevrit jako DBF
+    // try to open the file as a DBF
     Parser = new CParserInterfaceDBF();
     if (Parser != NULL)
     {
@@ -48,7 +48,7 @@ BOOL CDatabase::Open(const char* fileName)
         status = Parser->OpenFile(fileName);
         if (status != psOK)
         {
-            // nevyslo to, zkusim ho otevrit jako CSV
+            // if that failed, try to open it as a CSV
             delete Parser;
             CParserInterfaceCSV* pCSVParser;
             Parser = pCSVParser = new CParserInterfaceCSV(&Renderer->Viewer->CfgCSV);
@@ -79,7 +79,7 @@ BOOL CDatabase::Open(const char* fileName)
             DWORD i;
             for (i = 0; i < Parser->GetFieldCount(); i++)
             {
-                // vytahneme potrebnou velikost bufferu pro nazev sloupce
+                // retrieve the required buffer size for the column name
                 fieldInfo.Name = NULL;
                 if (!Parser->GetFieldInfo(i, &fieldInfo))
                     break;
@@ -97,7 +97,7 @@ BOOL CDatabase::Open(const char* fileName)
                     break;
                 }
 
-                // vytahneme nazev sloupce
+                // retrieve the column name
                 Parser->GetFieldInfo(i, &fieldInfo);
 
                 column.Name = fieldInfo.Name;
@@ -106,15 +106,15 @@ BOOL CDatabase::Open(const char* fileName)
                 column.FieldLen = fieldInfo.FieldLen;
                 column.Decimals = fieldInfo.Decimals;
 
-                // sirku sloupce napocitame z poctu znaku v sloupci
-                // pokud je sirsi hlavicka sloupce, pouzijeme tu
+                // compute the column width from the number of characters in the column
+                // if the column header is wider, use that instead
                 if (!IsUnicode)
                     GetTextExtentPoint32A(hDC, column.Name, (int)strlen(column.Name), &sz);
                 else
                     GetTextExtentPoint32W(hDC, (LPWSTR)column.Name, (int)wcslen((LPWSTR)column.Name), &sz);
                 column.Width = sz.cx;
 
-                // pokud parser dokaze odhadnout maximalni pocet znaku, odhadneme sirku sloupce
+                // if the parser can estimate the maximum number of characters, estimate the column width
                 if (fieldInfo.TextMax > 0)
                 {
                     int width = Renderer->CharAvgWidth * fieldInfo.TextMax;
@@ -219,7 +219,7 @@ BOOL CDatabase::GetFileInfo(HWND hEdit)
 {
     if (Parser == NULL)
     {
-        TRACE_E("Chybne volani CDatabase::GetFileInfo: Parser == NULL");
+        TRACE_E("Invalid call to CDatabase::GetFileInfo: Parser == NULL");
         return 0;
     }
     return Parser->GetFileInfo(hEdit);
@@ -229,7 +229,7 @@ int CDatabase::GetRowCount()
 {
     if (Parser == NULL)
     {
-        TRACE_E("Chybne volani CDatabase::GetRowCount: Parser == NULL");
+        TRACE_E("Invalid call to CDatabase::GetRowCount: Parser == NULL");
         return 0;
     }
     return Parser->GetRecordCount();
@@ -302,7 +302,7 @@ BOOL CDatabase::FetchRecord(HWND hParent, DWORD rowIndex)
 {
     if (Parser == NULL)
     {
-        TRACE_E("Chybne volani CDatabase::FetchRecord");
+        TRACE_E("Invalid call to CDatabase::FetchRecord");
         return FALSE;
     }
 
@@ -324,7 +324,7 @@ CDatabase::GetCellText(const CDatabaseColumn* column, size_t* textLen)
 {
     if (Parser == NULL)
     {
-        TRACE_E("Chybne volani CDatabase::GetCellText");
+        TRACE_E("Invalid call to CDatabase::GetCellText");
         return FALSE;
     }
     return Parser->GetCellText(column->OriginalIndex, textLen);
@@ -335,7 +335,7 @@ CDatabase::GetCellTextW(const CDatabaseColumn* column, size_t* textLen)
 {
     if (Parser == NULL)
     {
-        TRACE_E("Chybne volani CDatabase::GetCellTextW");
+        TRACE_E("Invalid call to CDatabase::GetCellTextW");
         return FALSE;
     }
     return Parser->GetCellTextW(column->OriginalIndex, textLen);
@@ -345,7 +345,7 @@ BOOL CDatabase::IsRecordDeleted()
 {
     if (Parser == NULL)
     {
-        TRACE_E("Chybne volani CDatabase::IsRecordDeleted()");
+        TRACE_E("Invalid call to CDatabase::IsRecordDeleted()");
         return FALSE;
     }
     return Parser->IsRecordDeleted();

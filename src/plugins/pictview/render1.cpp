@@ -191,13 +191,13 @@ BOOL CRendererWindow::OnFileOpen(LPCTSTR defaultDirectory)
     memset(&ofn, 0, sizeof(OPENFILENAME));
     ofn.lStructSize = sizeof(OPENFILENAME);
     ofn.hwndOwner = HWindow;
-    // Pokousel jsem se do filtru narvat vsechny pripony, ale filtr prestal fungovat
-    // v MSDN o zadnem omezeni nepisou. IrfanView to resi takhle
+    // I tried stuffing all extensions into the filter, but the filter stopped working.
+    // MSDN mentions no limit. IrfanView handles it like this.
     TCHAR filterStr[1000];
     lstrcpyn(filterStr, LoadStr(IDS_OPENFILTER), SizeOf(filterStr));
     LPTSTR s = filterStr;
     ofn.lpstrFilter = s;
-    while (*s != 0) // vytvoreni double-null terminated listu
+    while (*s != 0) // create a double-null-terminated list
     {
         if (*s == '|')
             *s = 0;
@@ -406,13 +406,13 @@ BOOL CRendererWindow::OpenFile(LPCTSTR name, int showCmd, HBITMAP hBmp)
         TCHAR path[MAX_PATH];
 
         _tcscpy(path, name);
-        // nesmime do AddToHistory propadnout primo 'name', protoze muze byt z historie
-        // a doslo by ke konfliktu pri presunu
+        // we must not pass 'name' directly to AddToHistory, because it may already come from history
+        // and that would lead to a conflict when moving entries
         AddToHistory(TRUE, path);
         LPTSTR s = _tcsrchr(path, '\\');
         if (s != NULL)
         {
-            if (s == path + 2) // disky C:\, D:\, ... lomitko nechame a terminujeme az za nim
+            if (s == path + 2) // drives C:\, D:\, ... keep the slash and terminate just after it
                 s++;
             *s = 0;
             if (path[0] != 0)
@@ -453,21 +453,21 @@ void CRendererWindow::DrawCageRect(HDC hDC, const RECT* cageRect)
     PictureToClient((POINT*)&r.left);
     PictureToClient((POINT*)&r.right);
 
-    NormalizeRect(&r); // normalizujeme obdelnik, abychom obesli GDI-specificke kresleni obdelniku
+    NormalizeRect(&r); // normalize the rectangle to avoid GDI-specific rectangle drawing quirks
 
-    // pravy dolni roh zvetsime tak, abychom lezeli na hranici bodu z jeho vnitrni strany
-    if ((DWORD)XStretchedRange > pvii.Width) // pouze pro zoom > 100%
+    // expand the lower-right corner so we stay on the boundary of the point from its inside
+    if ((DWORD)XStretchedRange > pvii.Width) // only for zoom > 100%
     {
         r.right += (LONG)((double)XStretchedRange / (double)pvii.Width - 1.0);
         r.bottom += (LONG)((double)YStretchedRange / (double)pvii.Height - 1.0);
     }
 
-    WORD bits[8] = {0x000F, 0x001E, 0x003C, 0x0078, // srafovani 45 stupnu
+    WORD bits[8] = {0x000F, 0x001E, 0x003C, 0x0078, // 45-degree hatching
                     0x00F0, 0x00E1, 0x00C3, 0x0087};
     HBITMAP hBrushBitmap = CreateBitmap(8, 8, 1, 1, &bits);
     HBRUSH hBrush = CreatePatternBrush(hBrushBitmap);
     HDC hDC2 = (hDC != NULL) ? hDC : GetDC(HWindow);
-    SetBrushOrgEx(hDC2, 0, BrushOrg, NULL); // BrushOrg se meni kazdy 100ms
+    SetBrushOrgEx(hDC2, 0, BrushOrg, NULL); // BrushOrg changes every 100 ms
     DeleteObject(hBrushBitmap);
     HRGN hRgn = CreateRectRgn(r.left, r.top, r.right + 1, r.bottom + 1);
     int oldROP2 = SetROP2(hDC2, R2_XORPEN);
@@ -481,7 +481,7 @@ void CRendererWindow::DrawCageRect(HDC hDC, const RECT* cageRect)
 
 int CRendererWindow::VScroll(int ScrollRequest, int ThumbPos)
 {
-    if (PageHeight > YStretchedRange) // scrollbar vubec neni zobrazen, nemame tu co delat
+    if (PageHeight > YStretchedRange) // scrollbar is not shown at all, nothing to do here
         return 0;
 
     int oldYPos, YPos = GetScrollPos(HWindow, SB_VERT);
@@ -506,7 +506,7 @@ int CRendererWindow::VScroll(int ScrollRequest, int ThumbPos)
         YPos = ThumbPos;
         break;
     }
-    // kontrola mezi
+    // clamp the range
     if (YPos < 0)
         YPos = 0;
     if (YPos > YStretchedRange - PageHeight)
@@ -516,9 +516,9 @@ int CRendererWindow::VScroll(int ScrollRequest, int ThumbPos)
     {
         DrawCageRect(NULL, &SelectRect);
         DrawCageRect(NULL, &TmpCageRect);
-        SetScrollPos(HWindow, SB_VERT, YPos, TRUE);                                        //nastavime pozici scrolleru
+        SetScrollPos(HWindow, SB_VERT, YPos, TRUE);                                        // set the scrollbar position
                                                                                            //    ScrollWindow(HWindow, 0, oldYPos-YPos, NULL, NULL);//some people prefer ScrollWindowEx
-        ScrollWindowEx(HWindow, 0, oldYPos - YPos, NULL, NULL, NULL, NULL, SW_INVALIDATE); //odscrollujeme okno
+        ScrollWindowEx(HWindow, 0, oldYPos - YPos, NULL, NULL, NULL, NULL, SW_INVALIDATE); // scroll the window content
         bDrawCageRect = FALSE;
         UpdateWindow(HWindow);
         bDrawCageRect = TRUE;
@@ -526,12 +526,12 @@ int CRendererWindow::VScroll(int ScrollRequest, int ThumbPos)
         DrawCageRect(NULL, &SelectRect);
         Sleep(1);
     }
-    return oldYPos - YPos; //vratime zmenu
+    return oldYPos - YPos; // return the delta
 }
 
 int CRendererWindow::HScroll(int ScrollRequest, int ThumbPos)
 {
-    if (PageWidth > XStretchedRange) // scrollbar vubec neni zobrazen, nemame tu co delat
+    if (PageWidth > XStretchedRange) // scrollbar is not shown at all, nothing to do here
         return 0;
 
     int oldXPos, XPos = GetScrollPos(HWindow, SB_HORZ);
@@ -556,7 +556,7 @@ int CRendererWindow::HScroll(int ScrollRequest, int ThumbPos)
         XPos = ThumbPos;
         break;
     }
-    // kontrola mezi
+    // clamp the range
     if (XPos < 0)
         XPos = 0;
     if (XPos > XStretchedRange - PageWidth)
@@ -566,9 +566,9 @@ int CRendererWindow::HScroll(int ScrollRequest, int ThumbPos)
     {
         DrawCageRect(NULL, &SelectRect);
         DrawCageRect(NULL, &TmpCageRect);
-        SetScrollPos(HWindow, SB_HORZ, XPos, TRUE);                                        //nastavime pozici scrolleru
+        SetScrollPos(HWindow, SB_HORZ, XPos, TRUE);                                        // set the scrollbar position
                                                                                            //    ScrollWindow(HWindow, oldXPos-XPos, 0, NULL, NULL);//some people prefer ScrollWindowEx
-        ScrollWindowEx(HWindow, oldXPos - XPos, 0, NULL, NULL, NULL, NULL, SW_INVALIDATE); //odscrollujeme okno
+        ScrollWindowEx(HWindow, oldXPos - XPos, 0, NULL, NULL, NULL, NULL, SW_INVALIDATE); // scroll the window content
         bDrawCageRect = FALSE;
         UpdateWindow(HWindow);
         bDrawCageRect = TRUE;
@@ -576,7 +576,7 @@ int CRendererWindow::HScroll(int ScrollRequest, int ThumbPos)
         DrawCageRect(NULL, &TmpCageRect);
         DrawCageRect(NULL, &SelectRect);
     }
-    return oldXPos - XPos; //vratime zmenu
+    return oldXPos - XPos; // return the delta
 }
 
 void CRendererWindow::WMSize(void)
@@ -592,7 +592,7 @@ void CRendererWindow::WMSize(void)
                         PageWidth, PageHeight, XStretchedRange, YStretchedRange, rect.right, rect.bottom);
 
     if (pvii.Width == (DWORD)CW_USEDEFAULT)
-        return; //obrazek jeste nebyl nascannovan
+        return; // the image has not been scanned yet
 
     if (IsIconic(Viewer->HWindow) || !rect.right || !rect.bottom)
         return; //we are minimized -> no point of changing size; crash otherwise
@@ -667,7 +667,7 @@ void CRendererWindow::WMSize(void)
             GetScrollRange(HWindow, SB_VERT, &tmp1, &tmp2);
             if (tmp2 > tmp1)
             { // max > min
-                //obsolete GetScrollRange vrati na rozdil od GetScrollInfo smysluplne udaje
+                // obsolete GetScrollRange returns meaningful values unlike GetScrollInfo
                 GetScrollInfo(HWindow, SB_VERT, &sc);
                 if (sc.nMax >= (int)sc.nPage)
                     pw += GetSystemMetrics(SM_CXVSCROLL);
@@ -731,11 +731,11 @@ void CRendererWindow::WMSize(void)
     sc.fMask = SIF_RANGE | SIF_PAGE;
     sc.nMin = 0;
     sc.nMax = XStretchedRange - 1;
-    // temhle jednickam nerozumim - kdyz dam nMin==nMax, tak windows
-    // uz ukazou scrollbaru a jeste k tomu o bod mensi rolovatko - nechapu
+    // I do not understand these ones - when nMin==nMax, Windows still show the scrollbar
+    // and to make it worse with a one-pixel smaller thumb - beats me
     sc.nPage = PageWidth;
     if ((XStretchedRange > PageWidth) && (oldRX != XStretchedRange) && oldRX)
-    { //aneb meli jsme scrollbar a menime sirku okna
+    { // i.e. we had a scrollbar and the window width changes
         sc.fMask |= SIF_POS;
         if (oldPW > (UINT32)oldRX)
         {
@@ -752,7 +752,7 @@ void CRendererWindow::WMSize(void)
     sc.nMax = YStretchedRange - 1;
     sc.nPage = PageHeight;
     if ((YStretchedRange > PageHeight) && (oldRY != YStretchedRange) && oldRY && oldPH)
-    { //aneb meli jsme scrollbar a menime vysku okna
+    { // i.e. we had a scrollbar and the window height changes
         sc.fMask |= SIF_POS;
         if (oldPH > (UINT32)oldRY)
         {
@@ -929,7 +929,7 @@ void CRendererWindow::ZoomTo(int zoomPercent)
         __int64 OldZoomFactor = ZoomFactor;
 
         if (zoomPercent < 0)
-        { // mame se doptat dialogem
+        { // we should ask via a dialog
             // CZoomDialog works with percentage values scaled with (ZOOM_SCALE_FACTOR / 100)
             // This is to allow 2 decimal digits precision
             zoomPercent = (int)ZoomFactor; //(int)((double)ZoomFactor) / (ZOOM_SCALE_FACTOR / 100);
@@ -984,8 +984,8 @@ BOOL WINAPI ProgressProcedure(int done, void* data)
                 DispatchMessage(&msg);
             }
 
-            // John, Petr: predcasny navrat pred odcerpani vsech zprav zpusoboval
-            // pod W2K zavreni PictView a nasledni nedoslo k aktivaci Salamandera
+            // John, Petr: returning early before draining all messages caused
+            // PictView to close under W2K and Salamander would not become active afterwards
             // Patera 2002.08.11: must be conditionally enabled to allow e.g. fast
             // browsing between pages, before the current one is fully loaded
             if (((CRendererWindow*)data)->IsCanceled())
@@ -1068,7 +1068,7 @@ BOOL CRendererWindow::OnSetCursor(DWORD lParam)
 
         case RT_ZOOM:
         {
-            // vzadu podminka: behem tazeni klece nelze Shiftem nahodit ZOOMOUT
+            // background condition: during cage dragging, SHIFT cannot trigger ZOOMOUT
             if (!controlPressed && !altPressed && shiftPressed && (GetCapture() == NULL || BeginDragDrop))
                 SetCursor(LoadCursor(DLLInstance, MAKEINTRESOURCE(IDC_ZOOMOUT)));
             else
@@ -1089,8 +1089,8 @@ BOOL CRendererWindow::OnSetCursor(DWORD lParam)
 
         case RT_SELECT:
         {
-            // select kurzor neni viditelny nad sedivou plochou, ktera obklopuje obrazek
-            // budeme nad ni tedy zobrazovat bezny kurzor
+            // the selection cursor is not visible over the gray area surrounding the image
+            // so we will show the standard cursor there instead
             POINT p;
             GetCursorPos(&p);
             ScreenToClient(HWindow, &p);
@@ -1364,9 +1364,9 @@ void CRendererWindow::UpdatePipetteTooltip()
                   rgb.rgbBlue, rgb.rgbGreen, rgb.rgbRed);
     }
 
-    // nechame si poslat WM_MOUSELEAVE pri opusteni okna
-    // tato varianta postihuje i rychle vyjeti mysi mimo okno, kdy
-    // pri starem zpracovani zustal tooltip zobrazeny
+    // request WM_MOUSELEAVE when the cursor leaves the window
+    // this variant also covers quick mouse exits, where
+    // the tooltip remained visible with the old handling
     if (!IsWindowVisible(PipWindow))
     {
         TRACKMOUSEEVENT tme;
@@ -1394,8 +1394,8 @@ void CRendererWindow::UpdateInfos()
 
 void CRendererWindow::ClientToPicture(POINT* p)
 {
-    // j.r. FIXME: Honzo, je tohle OK?
-    // mrkni prosim po zbytku kodu, kde jsou tyhle konverze roztahane a preved to na volani tohoto
+    // j.r. FIXME: Honza, is this OK?
+    // please take a look at the rest of the code where these conversions are scattered and convert them to call this one
     if (XStretchedRange == 0 || YStretchedRange == 0)
     {
         p->x = 0;
@@ -1408,13 +1408,13 @@ void CRendererWindow::ClientToPicture(POINT* p)
 
 void CRendererWindow::PictureToClient(POINT* p)
 {
-    // j.r. FIXME: Honzo, je tohle OK?
-    // mrkni prosim po zbytku kodu, kde jsou tyhle konverze roztahane a preved to na volani tohoto
+    // j.r. FIXME: Honza, is this OK?
+    // please take a look at the rest of the code where these conversions are scattered and convert them to call this one
     p->x = (int)(p->x * ((double)XStretchedRange / (double)pvii.Width)) + XStart - GetScrollPos(HWindow, SB_HORZ);
     p->y = (int)(p->y * ((double)YStretchedRange / (double)pvii.Height)) + YStart - GetScrollPos(HWindow, SB_VERT);
 }
 
-// orizne obdelnik 'r' obdelnikem left/top/right/bottom
+// clip rectangle 'r' with the rectangle defined by left/top/right/bottom
 void ClipRect(RECT* r, int left, int top, int right, int bottom)
 {
     if (r->left < left)
@@ -1578,7 +1578,7 @@ LRESULT CRendererWindow::OnPaint()
             DoNotAttempToLoad = TRUE;
             Canceled = FALSE;
             Loading = TRUE;
-            Viewer->UpdateEnablers(); // po nastaveni Loading promenne se zmeni Fullscreen enabler
+            Viewer->UpdateEnablers(); // after setting the Loading variable the Fullscreen enabler changes
             Viewer->UpdateToolBar();
             LoadingDC = dc;
             XStartLoading = XStart;
@@ -1688,17 +1688,17 @@ LRESULT CRendererWindow::OnPaint()
                 }
             }
 
-            // prisla nam padacka, kdy se pristupovalo na neinicializovanou promennou oldCursor, takze se behem cteni obrazku musela zmenit promenna HiddenCursor
-            // radeji nyni oldCursor inicializuji a testuji
+            // we received a crash when accessing the uninitialized variable oldCursor, so HiddenCursor had to change while reading the image
+            // better to initialize and verify oldCursor now
             if (!HiddenCursor && oldCursor != NULL)
             {
                 SetCursor(oldCursor);
             }
 
-            // PictView STRESS TEST (po nacteni obrazku se zacne nacitat dalsi)
+            // PictView STRESS TEST (after one image loads, start loading the next one)
             // PostMessage(HWindow, WM_COMMAND, CMD_FILE_NEXT, 0);
 
-            Loading = FALSE; // nastavime, ze mame nacteno a na Esc zavreme okno
+            Loading = FALSE; // signal that loading finished so Esc will close the window
             if ((code != PVC_OK) && (code != PVC_CANCELED))
             {
                 SalamanderGeneral->SalMessageBox(HWindow, PVW32DLL.PVGetErrorText(code),
@@ -1721,12 +1721,12 @@ LRESULT CRendererWindow::OnPaint()
             }
             else
             {
-                ImageLoaded = TRUE; //kdyz se to nepovede, ma cenu se pokouset znovu????
+                ImageLoaded = TRUE; // if this fails, is it worth trying again????
                 TryEnterHandToolMode();
                 // enable toolbar buttons
                 PostMessage(GetParent(HWindow), WM_USER_INITMENUPOPUP, 0, 0);
             }
-            //Soubor stejne celou dobu mame otevreny, nikdo nam ho nemuze zmenit....
+            // The file stays open the entire time, nobody can change it on us....
         }
     }
     EndPaint(HWindow, &ps);
@@ -1746,7 +1746,7 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 #ifdef ENABLE_TWAIN32
     if (Viewer->Twain != NULL && Viewer->Twain->GetModalUI())
     {
-        // pokud je aktivni UI scanneru, zatluceme nasi funkcionalitu
+        // if the scanner UI is active, suppress our functionality
         if (uMsg != WM_SIZE && uMsg != WM_PAINT)
             return CWindow::WindowProc(uMsg, wParam, lParam);
     }
@@ -1755,7 +1755,7 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     if (uMsg == WM_MOUSEWHEEL)
     {
         int cnt = (signed short int)HIWORD(wParam);
-        DWORD scrollLines = (wParam & MK_SHIFT) ? SalamanderGeneral->GetMouseWheelScrollChars() : SalamanderGeneral->GetMouseWheelScrollLines(); // 'scrollLines' muze byt az WHEEL_PAGESCROLL(0xffffffff)
+        DWORD scrollLines = (wParam & MK_SHIFT) ? SalamanderGeneral->GetMouseWheelScrollChars() : SalamanderGeneral->GetMouseWheelScrollLines(); // 'scrollLines' may be as large as WHEEL_PAGESCROLL(0xffffffff)
         scrollLines = (wParam & MK_SHIFT) ? min(scrollLines, (DWORD)(PageHeight / YLine)) : min(scrollLines, (DWORD)(PageWidth / XLine));
         cnt *= scrollLines;
         BOOL bUpdateSB = FALSE;
@@ -1884,7 +1884,7 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_SYSCOLORCHANGE:
     {
-        // tady by se mely premapovat barvy
+        // color remapping should take place here
         //      TRACE_I("CViewerWindow::WindowProc - WM_SYSCOLORCHANGE");
         break;
     }
@@ -1896,9 +1896,9 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_USER_VIEWERCFGCHNG:
     {
-        // tady by se mely projevit zmeny v konfiguraci pluginu
+        // plugin configuration changes should take effect here
         //      TRACE_I("CViewerWindow::WindowProc - config has changed");
-        //      SalamanderGeneral->SalMessageBox(HWindow, "Viewer cfg changed","Co se deje??",0);
+        //      SalamanderGeneral->SalMessageBox(HWindow, "Viewer cfg changed","What's going on??",0);
         if (HAreaBrush != NULL)
         {
             DeleteObject(HAreaBrush);
@@ -1915,7 +1915,7 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_USER_SAVEAS_INTERNAL:
     {
-        if (HiddenCursor) // aby byl v dialogu videt kurzor mysi
+        if (HiddenCursor) // to make the mouse cursor visible in the dialog
         {
             HiddenCursor = FALSE;
             POINT p;
@@ -1964,7 +1964,7 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (Loading) //Ooops. Soneone is closing our window, but we are still decompresing!
         {
             Canceled = TRUE;
-            break; // j.r. overit tuto cestu
+            break; // j.r. verify this path
         }
         if (PVHandle != NULL)
         {
@@ -1978,7 +1978,7 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_SIZE:
     {
         GetClientRect(HWindow, &ClientRect);
-        if (Capturing) // bylo kliknuto na minimalizovane okno v capture rezimu
+        if (Capturing) // a minimized window was clicked in capture mode
         {
             CancelCapture();
             PostMessage(HWindow, WM_COMMAND, CMD_CAPTURE_CANCELED, 0);
@@ -2050,18 +2050,18 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         UINT drag;
         TCHAR path[MAX_PATH];
 
-        drag = DragQueryFile((HDROP)wParam, 0xFFFFFFFF, NULL, 0); // kolik souboru nam hodili
-        // tenhle kod otevre vsechny soubory - je to kod z textoveho editoru,
-        // ktery jsme s Petrem psali
-        // pro PictView by to asi chtelo vybrat ze souboru prvni, a ten otevrit
-        // na ostatni se vykaslat
+        drag = DragQueryFile((HDROP)wParam, 0xFFFFFFFF, NULL, 0); // how many files were dropped on us
+        // this code opens all files - it comes from the text editor
+        // that Petr and I wrote
+        // for PictView we should probably pick the first file and open only that one
+        // and ignore the rest
         if (drag > 0)
         {
             DragQueryFile((HDROP)wParam, 0, path, MAX_PATH);
             EnumFilesSourceUID = -1;
-            //Je-li puvodni image stale nacitan, jsme ted volani
-            //z ProgressProcedure a proto nemuzeme ted zahajit nove cteni
-            //nejprve musime odcancelovat stavajici a odlozit novy
+            // If the original image is still loading we are now called from ProgressProcedure
+            // and therefore cannot start a new load
+            // first we must cancel the existing one and postpone the new request
             if (Loading)
             {
                 Canceled = TRUE;
@@ -2080,12 +2080,12 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_COMMAND:
     {
-        if (GetCapture() != NULL) // pokud probiha nejaka operace tazeni, nepustime commandy
+        if (GetCapture() != NULL) // if a drag operation is in progress, do not run commands
             return 0;
         BOOL closingViewer = FALSE;
         LRESULT res = OnCommand(wParam, lParam, &closingViewer);
-        if (!closingViewer && // chystame-li se zavrit okno (uz je postnuty WM_CLOSE), nebudeme se tu zdrzovat enablery
-            HWindow != NULL)  // pri zavreni z jineho threadu (shutdown / zavreni hl. okna Salama) uz okno neexistuje
+        if (!closingViewer && // if we are about to close the window (WM_CLOSE already posted), skip enabling
+            HWindow != NULL)  // when closing from another thread (shutdown / Salamander main window) the window may no longer exist
         {
             Viewer->UpdateEnablers();
             Viewer->UpdateToolBar();
@@ -2112,7 +2112,7 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 DWORD tickCount = GetTickCount();
                 if (tickCount - LastMoveTickCount > 3000)
                 {
-                    // 3000 odpovida trem vterinam, po kterych zhasnem kurzor
+                    // 3000 corresponds to three seconds after which we fade the cursor
                     HiddenCursor = TRUE;
                     SetCursor(NULL);
                 }
@@ -2158,7 +2158,7 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             if (dirty)
             {
-                // update klece
+                // update the cage
                 POINT p;
                 GetCursorPos(&p);
                 ScreenToClient(HWindow, &p);
@@ -2217,7 +2217,7 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         // The value is 1 if the key is down before the message is sent, or it is zero if the key is up.
         if (shiftPressed && !ShiftKeyDown && (GetCapture() == HWindow) && (CurrTool == RT_SELECT))
         {
-            // pokud doslo ke stisteni (nebo uvolneni:KEYUP) SHIFT, nechame prekreslit selection
+            // if SHIFT is pressed (or released on KEYUP), repaint the selection
             ShiftKeyDown = TRUE;
             POINT p;
             GetCursorPos(&p);
@@ -2236,8 +2236,8 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         if (wParam == VK_SPACE)
         {
-            // pokud drzime SPACE jeste z doby, kdy jsme tahli klec, bude firstDown==FALSE
-            // a prechod na dalsi obrazek se neprovede
+            // if SPACE is still held from when we were dragging the cage, firstDown==FALSE
+            // and switching to the next image will not happen
             // !IsCageValid(&TmpCageRect) needed fow fast-forward while the spacebar is kept down
             if (!GetCapture() && (firstDown || !IsCageValid(&TmpCageRect)))
             {
@@ -2263,7 +2263,7 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
         }
 
-        // pokud je kurzor nad oknem, nechame nastavit kurzor
+        // if the cursor is over the window, update it
         POINT p;
         GetCursorPos(&p);
         ScreenToClient(HWindow, &p);
@@ -2278,14 +2278,14 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         BOOL shiftPressed = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
         if (!shiftPressed && ShiftKeyDown && GetCapture() == HWindow)
         {
-            // pokud doslo ke stisteni (nebo uvolneni:KEYUP) SHIFT, nechame prekreslit selection
+            // if SHIFT is pressed (or released on KEYUP), repaint the selection
             ShiftKeyDown = FALSE;
             POINT p;
             GetCursorPos(&p);
             ScreenToClient(HWindow, &p);
             PostMessage(HWindow, WM_MOUSEMOVE, 0, MAKELPARAM(p.x, p.y));
         }
-        // pokud je kurzor nad oknem, nechame nastavit kurzor
+        // if the cursor is over the window, update it
         POINT p;
         GetCursorPos(&p);
         ScreenToClient(HWindow, &p);
@@ -2347,32 +2347,32 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     ZoomOut();
                     break;
                 }
-                // propadneme do RT_SELECT pro vyber klece
+                // fall through to RT_SELECT to handle cage selection
             }
             case RT_SELECT:
             {
                 if (CurrTool == RT_SELECT)
                 {
-                    // pokud existovala selection, sestrelime ji
+                    // if a selection already existed, clear it
                     DrawCageRect(NULL, &SelectRect);
                     InvalidateCage(&SelectRect);
                 }
 
-                // vyber zacneme az po utrzeni (drag&drop min limit)
+                // start the selection only after exceeding the drag&drop threshold
                 LButtonDown.x = LOWORD(lParam);
                 LButtonDown.y = HIWORD(lParam);
                 BeginDragDrop = TRUE;
 
-                // ulozime si pocatek vuberove klece
+                // store the anchor of the selection cage
                 CageAnchor = LButtonDown;
                 ClientToPicture(&CageAnchor);
                 CageCursor = CageAnchor;
 
-                // na hranicich obrazovky zajistime scroll okna
+                // enable window scrolling when the cursor hits the window edges
                 SetTimer(HWindow, SCROLL_TIMER_ID, 25, NULL);
                 ScrollTimerIsRunning = TRUE;
 
-                // chceme vsechny zpravy
+                // we want to receive all messages
                 SetCapture(HWindow);
                 break;
             }
@@ -2411,11 +2411,11 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (CurrTool == RT_SELECT)
         {
             if (canceled)
-                DrawCageRect(NULL, &TmpCageRect); // zhasneme pracovni klec
+                DrawCageRect(NULL, &TmpCageRect); // hide the working cage
             else
             {
-                NormalizeRect(&TmpCageRect); // SelectRect chceme mit spravne orientovany pro nasledne transformace (otaceni, flipovani)
-                SelectRect = TmpCageRect;    // pracovni klec konvertujeme na selection
+                NormalizeRect(&TmpCageRect); // we want SelectRect properly oriented for further transforms (rotation, flipping)
+                SelectRect = TmpCageRect;    // convert the working cage into the final selection
             }
             InvalidateCage(&TmpCageRect);
         }
@@ -2423,7 +2423,7 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             BOOL shiftPressed = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
 
-            DrawCageRect(NULL, &TmpCageRect); // zhasneme pracovni klec
+            DrawCageRect(NULL, &TmpCageRect); // hide the working cage
             NormalizeRect(&TmpCageRect);
 
             // Ignore if SHIFT: already handled in WM_LBUTTONDOWN
@@ -2434,7 +2434,7 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                 if (BeginDragDrop || !IsCageValid(&TmpCageRect))
                 {
-                    // nedoslo k natazeni klece, jde o klasicky zoom
+                    // the cage was not stretched, perform a classic zoom
                     // 2 fast click at the same pt: BeginDragDrop is false & TmpCageRect is invalid
                     ZoomOnTheSpot(lParam, TRUE /*bZoomIn*/);
                 }
@@ -2469,8 +2469,8 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         break;
     }
 
-        // j.r. tohle jsem musel vyhodit, protoze pri zoomovani problikavala ruka (pokud se predtim pouzila)
-        // k cemu to tu bylo???
+        // j.r. I had to remove this because the hand cursor flickered during zooming (if it had been used before)
+        // what was it doing here???
         //    case WM_CAPTURECHANGED:
         //    {
         //      SetCursor(HOldCursor);
@@ -2505,7 +2505,7 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             int scrollDeltaX = 0;
             int scrollDeltaY = 0;
 
-            // je-li prislusna scrollbara zobrazena, napocitam deltu pro scroll
+            // if the corresponding scrollbar is visible, compute the scroll delta
             if (XStretchedRange > PageWidth)
             {
                 int xPos, oldXPos;
@@ -2518,7 +2518,7 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if (xPos != oldXPos)
                 {
                     DrawCageRect(NULL, &SelectRect);
-                    SetScrollPos(HWindow, SB_HORZ, xPos, TRUE); //nastavime pozici scrolleru
+                    SetScrollPos(HWindow, SB_HORZ, xPos, TRUE); // set the scrollbar position
                     scrollDeltaX = oldXPos - xPos;
                 }
             }
@@ -2539,7 +2539,7 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         // not yet called because there is no horizontal scroll needed
                         DrawCageRect(NULL, &SelectRect);
                     }
-                    SetScrollPos(HWindow, SB_VERT, yPos, TRUE); //nastavime pozici scrolleru
+                    SetScrollPos(HWindow, SB_VERT, yPos, TRUE); // set the scrollbar position
                     scrollDeltaY = oldYPos - yPos;
                 }
             }
@@ -2547,7 +2547,7 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (scrollDeltaX != 0 || scrollDeltaY != 0)
             {
                 //          ScrollWindow(HWindow, scrollDeltaX, scrollDeltaY, NULL, NULL);//Some people prefer ScrollWindowEx
-                ScrollWindowEx(HWindow, scrollDeltaX, scrollDeltaY, NULL, NULL, NULL, NULL, SW_INVALIDATE); //odscrollujeme okno
+                ScrollWindowEx(HWindow, scrollDeltaX, scrollDeltaY, NULL, NULL, NULL, NULL, SW_INVALIDATE); // scroll the window content
                 bDrawCageRect = FALSE;
                 UpdateWindow(HWindow);
                 bDrawCageRect = TRUE;
@@ -2561,40 +2561,40 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         int statusBarID = 0;
         if (((CurrTool == RT_SELECT) || (CurrTool == RT_ZOOM)) && GetCapture() == HWindow)
         {
-            BOOL shiftPressed = IsCageValid(&TmpCageRect) && (GetKeyState(VK_SHIFT) & 0x8000) != 0; // SHIFT=ctvercovy vyber
-            BOOL spacePressed = IsCageValid(&TmpCageRect) && (GetKeyState(VK_SPACE) & 0x8000) != 0; // SPACE=posun vyberu
+            BOOL shiftPressed = IsCageValid(&TmpCageRect) && (GetKeyState(VK_SHIFT) & 0x8000) != 0; // SHIFT = square selection
+            BOOL spacePressed = IsCageValid(&TmpCageRect) && (GetKeyState(VK_SPACE) & 0x8000) != 0; // SPACE = move selection
 
             POINT pt;
             pt.x = (short)LOWORD(lParam);
             pt.y = (short)HIWORD(lParam);
-            ClientToPicture(&pt); // pt bude v souradnicich obrazku
+            ClientToPicture(&pt); // convert pt into image coordinates
 
-            if (BeginDragDrop /*&& (wParam & (MK_LBUTTON | MK_RBUTTON))*/) // "trhani" pro drag&drop
+            if (BeginDragDrop /*&& (wParam & (MK_LBUTTON | MK_RBUTTON))*/) // "tearing" for drag&drop
             {
                 int x = abs(LButtonDown.x - (short)LOWORD(lParam));
                 int y = abs(LButtonDown.y - (short)HIWORD(lParam));
-                if (x <= GetSystemMetrics(SM_CXDRAG) && y <= GetSystemMetrics(SM_CYDRAG)) // posun
-                    break;                                                                // kurzor se dostatecne nevzdalil od pocatku tazeni -- vypadneme
+                if (x <= GetSystemMetrics(SM_CXDRAG) && y <= GetSystemMetrics(SM_CYDRAG)) // move
+                    break;                                                                // the cursor did not move far enough from the drag start -- bail out
                 BeginDragDrop = FALSE;
             }
             else
-                DrawCageRect(NULL, &TmpCageRect); // zhasneme predeslou klec
+                DrawCageRect(NULL, &TmpCageRect); // hide the previous cage
 
             int selWidth;
             int selHeight;
 
             if (spacePressed)
             {
-                // velikost selection zustane zachovana, posuneme pocatek
+                // keep the selection size, move the origin
                 selWidth = CageCursor.x - CageAnchor.x;
                 selHeight = CageCursor.y - CageAnchor.y;
-                // pozici odchytime od kurzoru, aby se roh selection kryl s krizkem
+                // snap the position to the cursor so the selection corner aligns with the crosshair
                 CageAnchor.x = pt.x - selWidth;
                 CageAnchor.y = pt.y - selHeight;
             }
             else
             {
-                // menime velikost selection
+                // modify the selection size
                 selWidth = pt.x - CageAnchor.x;
                 selHeight = pt.y - CageAnchor.y;
             }
@@ -2604,12 +2604,12 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             TmpCageRect.right = TmpCageRect.left + selWidth;
             TmpCageRect.bottom = TmpCageRect.top + selHeight;
 
-            // klec nesmi presahnout pres hranici obrazku
+            // the cage must not extend beyond the image boundary
             ClipRect(&TmpCageRect, 0, 0, pvii.Width, pvii.Height);
 
             if (shiftPressed && (CurrTool == RT_SELECT))
             {
-                // SHIFT modifikator: chceme vepsany ctverec
+                // SHIFT modifier: draw an inscribed square
                 selWidth = TmpCageRect.right - TmpCageRect.left;
                 selHeight = TmpCageRect.bottom - TmpCageRect.top;
                 int width = abs(selWidth), height = abs(selHeight);
@@ -2630,7 +2630,7 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
             }
 
-            DrawCageRect(NULL, &TmpCageRect); // vykreslime klec
+            DrawCageRect(NULL, &TmpCageRect); // draw the cage
             CageCursor = pt;
         }
         if (!bEatSBTextOnce)
@@ -2657,7 +2657,7 @@ LRESULT CALLBACK ToolTipWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
         SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)((LPCREATESTRUCT)lParam)->lpCreateParams);
         break;
     }
-    case WM_PAINT: // prvni zprava - pripojeni objektu k oknu
+    case WM_PAINT: // first message - attach the object to the window
     {
         PAINTSTRUCT ps;
         RECT rc;
@@ -2720,16 +2720,16 @@ void GetInfo(LPTSTR buffer, HANDLE file)
     if (SalamanderGeneral->SalGetFileSize(file, size, err))
         SalamanderGeneral->NumberToStr(number, size);
     else
-        number[0] = 0; // chyba - velikost neznama
+        number[0] = 0; // error - size unknown
 
     _stprintf(buffer, _T("%s, %s, %s"), number, date, time);
 }
 
 void MakeValidFileName(TCHAR* path)
 {
-    // oriznuti mezer na zacatku a mezer a tecek na konci jmena, dela to tak Explorer
-    // a lidi tlacili, ze to tak taky chteji, viz https://forum.altap.cz/viewtopic.php?f=16&t=5891
-    // a https://forum.altap.cz/viewtopic.php?f=2&t=4210
+    // trim spaces at the beginning and spaces/dots at the end of the name; Explorer does it this way
+    // and users pushed for the same behaviour, see https://forum.altap.cz/viewtopic.php?f=16&t=5891
+    // and https://forum.altap.cz/viewtopic.php?f=2&t=4210
     TCHAR* n = path;
     while (*n != 0 && *n <= ' ')
         n++;
@@ -2756,12 +2756,12 @@ BOOL CRendererWindow::RenameFileInternal(LPCTSTR oldPath, LPCTSTR oldName, TCHAR
         TCHAR finalName[2 * MAX_PATH];
         SalamanderGeneral->MaskName(finalName, 2 * MAX_PATH, myOldName, newName);
 
-        // ocistime jmeno od nezadoucich znaku na zacatku a konci
+        // strip unwanted characters from the beginning and end of the name
         MakeValidFileName(finalName);
-        // orez na MAX_PATH kvuli kopirovani do newName, chybu ohlasi kod o par radek nize
+        // trim to MAX_PATH before copying to newName; the code a few lines below reports the error
         if (_tcslen(finalName) >= MAX_PATH)
             finalName[MAX_PATH - 1] = 0;
-        // aktualizujeme 'newName' na nove jmeno souboru
+        // update 'newName' with the new file name
         _tcscpy(newName, finalName);
 
         int l = (int)_tcslen(oldPath);
@@ -2781,8 +2781,8 @@ BOOL CRendererWindow::RenameFileInternal(LPCTSTR oldPath, LPCTSTR oldName, TCHAR
 
             BOOL ret = FALSE;
 
-            // zkusime prejmenovani nejdrive z dlouheho jmena a v pripade problemu jeste
-            // z DOS-jmena (resi soubor/adresare dosazitelne jen pres Unicode nebo DOS-jmena)
+            // try renaming first using the long name and if that fails
+            // fall back to the DOS name (handles files/directories reachable only via Unicode or DOS names)
             DWORD err = 0;
             BOOL moveRet = SalamanderGeneral->SalMoveFile(path, tgtPath, &err);
             if (!moveRet)
@@ -2800,7 +2800,7 @@ BOOL CRendererWindow::RenameFileInternal(LPCTSTR oldPath, LPCTSTR oldName, TCHAR
         */
             }
 
-            // ohlasime zmenu na ceste (prejmenovany soubor)
+            // report the change on the path (renamed file)
             TCHAR changedPath[MAX_PATH];
             lstrcpyn(changedPath, path, MAX_PATH);
             SalamanderGeneral->CutDirectory(changedPath);
@@ -2815,14 +2815,14 @@ BOOL CRendererWindow::RenameFileInternal(LPCTSTR oldPath, LPCTSTR oldName, TCHAR
             {
                 if ((err == ERROR_ALREADY_EXISTS ||
                      err == ERROR_FILE_EXISTS) &&
-                    SalamanderGeneral->StrICmp(path, tgtPath) != 0) // prepsat soubor ?
+                    SalamanderGeneral->StrICmp(path, tgtPath) != 0) // overwrite the file?
                 {
                     DWORD inAttr = SalamanderGeneral->SalGetFileAttributes(path);
                     DWORD outAttr = SalamanderGeneral->SalGetFileAttributes(tgtPath);
 
                     if ((inAttr & FILE_ATTRIBUTE_DIRECTORY) == 0 &&
                         (outAttr & FILE_ATTRIBUTE_DIRECTORY) == 0)
-                    { // jen pokud jsou oba soubory
+                    { // only if both files are present
                         HANDLE in = CreateFile(path, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
                                                OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
                                                NULL);
@@ -2850,7 +2850,7 @@ BOOL CRendererWindow::RenameFileInternal(LPCTSTR oldPath, LPCTSTR oldName, TCHAR
 
                             case IDYES:
                             {
-                                SalamanderGeneral->ClearReadOnlyAttr(tgtPath); // aby sel smazat ...
+                                SalamanderGeneral->ClearReadOnlyAttr(tgtPath); // to allow it to be deleted ...
                                 if (!DeleteFile(tgtPath) || !SalamanderGeneral->SalMoveFile(path, tgtPath, &err))
                                 {
                                     //err = GetLastError();
@@ -2861,7 +2861,7 @@ BOOL CRendererWindow::RenameFileInternal(LPCTSTR oldPath, LPCTSTR oldName, TCHAR
                                     err = ERROR_SUCCESS;
                                     ret = TRUE;
                                 }
-                                // ohlasime zmenu na ceste (prejmenovany soubor)
+                                // report the change on the path (renamed file)
                                 SalamanderGeneral->PostChangeOnPathNotification(changedPath, FALSE);
                                 break;
                             }
@@ -2936,13 +2936,13 @@ void CRendererWindow::OnCopyTo()
         fo.fAnyOperationsAborted = FALSE;
         fo.hNameMappings = NULL;
         fo.lpszProgressTitle = _T("");
-        // provedeme samotne mazani - uzasne snadne, bohuzel jim sem tam pada ;-)
+        // perform the actual deletion - wonderfully simple, unfortunately it occasionally crashes for them ;-)
         CALL_STACK_MESSAGE1("CRendererWindow::OnCopyTo::SHFileOperation");
         TCHAR changedPath[MAX_PATH];
         lstrcpyn(changedPath, FileName, MAX_PATH);
         if (SHFileOperation(&fo) == 0)
         {
-            // ohlasime zmenu na ceste (prejmenovany soubor)
+            // report the change on the path (renamed file)
             SalamanderGeneral->CutDirectory(changedPath);
             SalamanderGeneral->PostChangeOnPathNotification(changedPath, FALSE);
         }
@@ -2976,14 +2976,14 @@ void CRendererWindow::OnDelete(BOOL toRecycle)
     fo.fAnyOperationsAborted = FALSE;
     fo.hNameMappings = NULL;
     fo.lpszProgressTitle = _T("");
-    // provedeme samotne mazani - uzasne snadne, bohuzel jim sem tam pada ;-)
+    // perform the actual deletion - wonderfully simple, unfortunately it occasionally crashes for them ;-)
     CALL_STACK_MESSAGE1("CRendererWindow::OnDelete::SHFileOperation");
     TCHAR changedPath[MAX_PATH];
     lstrcpyn(changedPath, FileName, MAX_PATH);
     if (SHFileOperation(&fo) == 0)
     {
-        // z navratovych hodnot nepoznam zda byl soubor smazan nebo
-        // uzivatel jen stisknul Cancel v konfirmaci
+        // from the return values we cannot tell whether the file was deleted or
+        // the user merely pressed Cancel in the confirmation dialog
         if (!SalamanderGeneral->FileExists(FileName))
         {
             SalamanderGeneral->Free(FileName);
@@ -2991,7 +2991,7 @@ void CRendererWindow::OnDelete(BOOL toRecycle)
             SetTitle();
         }
     }
-    // ohlasime zmenu na ceste (prejmenovany soubor)
+    // report the change on the path (renamed file)
     SalamanderGeneral->CutDirectory(changedPath);
     SalamanderGeneral->PostChangeOnPathNotification(changedPath, FALSE);
 
@@ -3027,7 +3027,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
     {
     case CMD_OPEN:
     {
-        if (HiddenCursor) // aby byl v dialogu videt kurzor mysi
+        if (HiddenCursor) // to make the mouse cursor visible in the dialog
         {
             HiddenCursor = FALSE;
             POINT p;
@@ -3083,7 +3083,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
         if (!Viewer->Enablers[vweFileOpened2])
             return 0;
 
-        if (HiddenCursor) // aby byl v dialogu videt kurzor mysi
+        if (HiddenCursor) // to make the mouse cursor visible in the dialog
         {
             HiddenCursor = FALSE;
             POINT p;
@@ -3138,7 +3138,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
                                                                          what == CMD_FILE_PREVSELFILE,
                                                                          TRUE, fileName,
                                                                          &noMoreFiles, &srcBusy);
-                    if (ok && (what == CMD_FILE_PREVSELFILE)) // bereme jen selected soubory
+                    if (ok && (what == CMD_FILE_PREVSELFILE)) // process only selected files
                     {
                         BOOL isSrcFileSel = FALSE;
                         ok = SalamanderGeneral->IsFileNameForViewerSelected(EnumFilesSourceUID,
@@ -3158,7 +3158,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
                     else
                     {
                         if (deletedFile && enumFilesCurrentIndex >= 0)
-                            enumFilesCurrentIndex--; // aby pri smazanem souboru na Space (next-file) nedoslo k preskoceni dalsiho souboru vlivem sesunuti souboru v panelu
+                            enumFilesCurrentIndex--; // ensure that after deleting a file with Space (next-file) we do not skip the next file due to panel shifts
                     }
                     ok = SalamanderGeneral->GetNextFileNameForViewer(EnumFilesSourceUID,
                                                                      &enumFilesCurrentIndex,
@@ -3166,7 +3166,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
                                                                      what == CMD_FILE_NEXTSELFILE,
                                                                      TRUE, fileName,
                                                                      &noMoreFiles, &srcBusy);
-                    if (ok && (what == CMD_FILE_NEXTSELFILE)) // bereme jen selected soubory
+                    if (ok && (what == CMD_FILE_NEXTSELFILE)) // process only selected files
                     {
                         BOOL isSrcFileSel = FALSE;
                         ok = SalamanderGeneral->IsFileNameForViewerSelected(EnumFilesSourceUID,
@@ -3181,13 +3181,13 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
                 reallyOpenedFileName = fileName;
             } while (ok && (!Loading && !InterfaceForViewer.CanViewFile(fileName)) && (what != CMD_FILE_FIRST) && (what != CMD_FILE_LAST));
 
-            if (ok) // mame nove jmeno
+            if (ok) // we have a new name
             {
                 if (openedFileName == NULL || SalamanderGeneral->StrICmp(fileName, openedFileName) != 0)
                 {
                     if (Loading)
                     {
-                        // pokud probiha nacitani, prerusime ho a operaci dokoncime potom
+                        // if loading is in progress, interrupt it and finish the operation afterwards
                         Canceled = TRUE;
                         PostMessage(HWindow, WM_COMMAND, wParam, lParam);
                         return 0;
@@ -3196,11 +3196,11 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
                     if (Viewer->Lock != NULL)
                     {
                         SetEvent(Viewer->Lock);
-                        Viewer->Lock = NULL; // ted uz je to jen na disk-cache
+                        Viewer->Lock = NULL; // from now on only the disk cache handles it
                     }
                     if (!OpenFile(fileName, -1, NULL))
                     {
-                        // obrazek je vadny, pozavirame aktualni
+                        // the image is corrupted, close the current one
                         if (PVHandle != NULL)
                         {
                             if (PVSequence)
@@ -3213,7 +3213,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
                         }
                         ImageLoaded = FALSE;
                         SetTitle();
-                        // Viewer->UpdateEnablers();   // zbytecne, provede se ihned po dokonceni teto metody
+                        // Viewer->UpdateEnablers();   // unnecessary, it runs right after this method finishes
                         if (FileName != NULL)
                         {
                             SalamanderGeneral->Free(FileName);
@@ -3221,7 +3221,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
                         }
                     }
 
-                    // index nastavime i v pripade neuspechu, aby user mohl prejit na dalsi/predchozi obrazek
+                    // set the index even if we fail so the user can move to the next/previous image
                     EnumFilesCurrentIndex = enumFilesCurrentIndex;
                 }
             }
@@ -3240,14 +3240,14 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
             return 0;
         if (SalamanderGeneral->SalamanderIsNotBusy(NULL))
         {
-            // nemuzeme zustat ve full screen, nemohli bychom vytahnout hlavni okno Salamandera
+            // we cannot stay in full screen, otherwise we could not bring up Salamander's main window
             if (Viewer->IsFullScreen())
                 Viewer->ToggleFullScreen();
 
             lstrcpyn(Focus_Path, FileName, MAX_PATH);
             SalamanderGeneral->PostMenuExtCommand(CMD_INTERNAL_FOCUS, TRUE);
-            Sleep(500);        // dojde k prepnuti do jineho okna, takze teoreticky tenhle Sleep nicemu nebude vadit
-            Focus_Path[0] = 0; // po 0.5 sekunde uz o fokus nestojime (resi pripad, kdy jsme trefili zacatek BUSY rezimu Salamandera)
+            Sleep(500);        // switching to another window occurs, so in theory this Sleep should not hurt anything
+            Focus_Path[0] = 0; // after 0.5 seconds we no longer want the focus (handles hitting the beginning of Salamander's BUSY mode)
         }
         else
             SalamanderGeneral->SalMessageBox(HWindow, LoadStr(IDS_SAL_IS_BUSY), LoadStr(IDS_PLUGINNAME), MB_ICONINFORMATION);
@@ -3262,7 +3262,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
         if (s == NULL)
             return 0;
 
-        if (HiddenCursor) // aby byl v dialogu videt kurzor mysi
+        if (HiddenCursor) // to make the mouse cursor visible in the dialog
         {
             HiddenCursor = FALSE;
             POINT p;
@@ -3288,11 +3288,11 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
             {
                 BOOL tryAgain;
                 BOOL renamed = RenameFileInternal(oldPath, oldName, newName, &tryAgain);
-                /*  // Petr: zakomentoval jsem tenhle tvrdy refresh, protoze uz je to prezitek - refresh se provadi i v neaktivnim hl. okne Salamandera
+                /*  // Petr: I commented out this heavy refresh because it is obsolete - refresh happens even in Salamander's inactive main window
           int sourcePanel;
 
           if (SalamanderGeneral->IsFileEnumSourcePanel(EnumFilesSourceUID, &sourcePanel))
-            SalamanderGeneral->PostMenuExtCommand(sourcePanel == PANEL_LEFT ? CMD_INTERNAL_REFRESHLPANEL : CMD_INTERNAL_REFRESHRPANEL, TRUE);  // zajistime refresh i v neaktivnim panelu, aby fungovalo korektne prochazeni pres Next/Previous file ze zdroje
+            SalamanderGeneral->PostMenuExtCommand(sourcePanel == PANEL_LEFT ? CMD_INTERNAL_REFRESHLPANEL : CMD_INTERNAL_REFRESHRPANEL, TRUE);  // trigger a refresh even in the inactive panel to keep Next/Previous file navigation from the source working correctly
 */
                 if (renamed)
                 {
@@ -3326,7 +3326,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
     {
         if (!Viewer->Enablers[vweFileOpened2])
             return 0;
-        if (HiddenCursor) // aby byl v dialogu videt kurzor mysi
+        if (HiddenCursor) // to make the mouse cursor visible in the dialog
         {
             HiddenCursor = FALSE;
             POINT p;
@@ -3348,7 +3348,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
         if (!Viewer->Enablers[vweFileOpened2])
             return 0;
 
-        if (HiddenCursor) // aby byl v dialogu videt kurzor mysi
+        if (HiddenCursor) // to make the mouse cursor visible in the dialog
         {
             HiddenCursor = FALSE;
             POINT p;
@@ -3360,11 +3360,11 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
         CanHideCursor = FALSE;
 
         OnDelete((GetKeyState(VK_SHIFT) & 0x8000) == 0);
-        /*  // Petr: zakomentoval jsem tenhle tvrdy refresh, protoze uz je to prezitek - refresh se provadi i v neaktivnim hl. okne Salamandera
+        /*  // Petr: I commented out this heavy refresh because it is obsolete - refresh happens even in Salamander's inactive main window
       int sourcePanel;
 
       if (SalamanderGeneral->IsFileEnumSourcePanel(EnumFilesSourceUID, &sourcePanel))
-        SalamanderGeneral->PostMenuExtCommand(sourcePanel == PANEL_LEFT ? CMD_INTERNAL_REFRESHLPANEL : CMD_INTERNAL_REFRESHRPANEL, TRUE);  // zajistime refresh i v neaktivnim panelu, aby fungovalo korektne prochazeni pres Next/Previous file ze zdroje
+        SalamanderGeneral->PostMenuExtCommand(sourcePanel == PANEL_LEFT ? CMD_INTERNAL_REFRESHLPANEL : CMD_INTERNAL_REFRESHRPANEL, TRUE);  // trigger a refresh even in the inactive panel to keep Next/Previous file navigation from the source working correctly
 */
         CanHideCursor = oldCanHideCursor;
         return 0;
@@ -3384,8 +3384,8 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
 
         CALL_STACK_MESSAGE1("CMD_PRINT 1");
 
-        // dialog je nositelem nastaveni tiskarny, papiru, atd, takze ho budeme alokovat
-        // aby nastaveni zustalo zachovano pro dalsi tisk z tohoto okna
+        // the dialog carries printer, paper, etc. settings, so we allocate it
+        // to preserve the settings for another print from this window
         if (pPrintDlg == NULL)
         {
             pPrintDlg = new CPrintDlg(HWindow, &params);
@@ -3601,7 +3601,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
 
     case CMD_ABOUT:
     {
-        if (HiddenCursor) // aby byl v dialogu videt kurzor mysi
+        if (HiddenCursor) // to make the mouse cursor visible in the dialog
         {
             HiddenCursor = FALSE;
             POINT p;
@@ -3629,7 +3629,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
         {
         case CMD_HELP_CONTENTS:
         {
-            SalamanderGeneral->OpenHtmlHelp(HWindow, HHCDisplayContext, IDH_INTRODUCTION, TRUE); // nechceme dva messageboxy za sebou
+            SalamanderGeneral->OpenHtmlHelp(HWindow, HHCDisplayContext, IDH_INTRODUCTION, TRUE); // we do not want two message boxes in a row
             command = HHCDisplayTOC;
             break;
         }
@@ -3664,7 +3664,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
                 pSeq = pSeq->pNext;
             }
 
-            if (HiddenCursor) // aby byl v dialogu videt kurzor mysi
+            if (HiddenCursor) // to make the mouse cursor visible in the dialog
             {
                 HiddenCursor = FALSE;
                 POINT p;
@@ -3687,7 +3687,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
     {
         if (ImageLoaded && (pvii.Flags & PVFF_EXIF) && InitEXIF(HWindow, FALSE))
         {
-            if (HiddenCursor) // aby byl v dialogu videt kurzor mysi
+            if (HiddenCursor) // to make the mouse cursor visible in the dialog
             {
                 HiddenCursor = FALSE;
                 POINT p;
@@ -3724,7 +3724,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
             data[CHistogramControl::Blue] = blue;
             data[CHistogramControl::RGBSum] = rgb;
 
-            if (HiddenCursor) // aby byl v dialogu videt kurzor mysi
+            if (HiddenCursor) // to make the mouse cursor visible in the dialog
             {
                 HiddenCursor = FALSE;
                 POINT p;
@@ -3746,7 +3746,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
 
     case CMD_CFG:
     {
-        if (HiddenCursor) // aby byl v dialogu videt kurzor mysi
+        if (HiddenCursor) // to make the mouse cursor visible in the dialog
         {
             HiddenCursor = FALSE;
             POINT p;
@@ -3769,7 +3769,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
         {
             if (EmptyClipboard())
             {
-                RECT r; // 'r' je v souradnicich obrazku 1=1px; pocatek [0,0]
+                RECT r; // 'r' is in image coordinates 1=1 px; origin [0,0]
 
                 if (IsCageValid(&SelectRect))
                 {
@@ -3792,11 +3792,11 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
                 ReleaseDC(NULL, hDC);
                 HBITMAP hOldBmp = (HBITMAP)SelectObject(hMemDC, hBmp);
 
-                // j.r. FIXME: nyni je potreba ukecat engine, aby na souradnice 0, 0 do bitmapy
-                // hBmp vybrane v hMemDC vykreslil 1:1 obdelnik urceny 'r'
-                // ?Bude potreba docasne zmenit parametry pres PVSetStretchParameters a pak je vratit zpet?
-                // ?Nechetlo by to nejaky PUSH/POP metody pro tyto ucely?
-                // ?Jak urcim, ze se ma vymalovat pouze ten obdelnicek?
+                // j.r. FIXME: we now need to convince the engine to render the rectangle defined by 'r'
+                // at coordinates 0,0 into the bitmap selected into hMemDC at a 1:1 scale
+                // Would we need to temporarily change the parameters via PVSetStretchParameters and then restore them?
+                // Would a set of PUSH/POP methods be useful for this?
+                // How do I specify that only that rectangle should be painted?
                 if (PVSequence)
                 {
                     SetWindowOrgEx(hMemDC, r.left, r.top, NULL);
@@ -3821,7 +3821,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
                 DeleteDC(hMemDC);
 
                 SetClipboardData(CF_BITMAP, hBmp);
-                // !pozor! bitmapu prevzal clipboard, nesmime ji sestrelit
+                // !attention! the clipboard took ownership of the bitmap, do not destroy it
             }
             CloseClipboard();
         }
@@ -3985,7 +3985,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
             }
             else
             {
-                pvii.CurrentImage = (DWORD)lParam; // FIXME_X64 - docasne pretypovani na (DWORD), nejde o ukazatel?
+                pvii.CurrentImage = (DWORD)lParam; // FIXME_X64 - temporary cast to DWORD, it is not a pointer?
                 InitiatePageLoad();
             }
         }
@@ -4023,7 +4023,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
     case CMD_ZOOM_TO:
         if (ImageLoaded)
         {
-            if (HiddenCursor) // aby byl v dialogu videt kurzor mysi
+            if (HiddenCursor) // to make the mouse cursor visible in the dialog
             {
                 HiddenCursor = FALSE;
                 POINT p;
@@ -4093,7 +4093,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
 
     case CMD_CAPTURE:
     {
-        if (HiddenCursor) // aby byl v dialogu videt kurzor mysi
+        if (HiddenCursor) // to make the mouse cursor visible in the dialog
         {
             HiddenCursor = FALSE;
             POINT p;
@@ -4134,7 +4134,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
 
     case CMD_CAPTURE_CANCELED:
     {
-        if (HiddenCursor) // aby byl v dialogu videt kurzor mysi
+        if (HiddenCursor) // to make the mouse cursor visible in the dialog
         {
             HiddenCursor = FALSE;
             POINT p;
@@ -4159,7 +4159,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
     case CMD_WALLPAPER_RESTORE:
     case CMD_WALLPAPER_NONE:
     {
-        if (HiddenCursor) // aby byl v dialogu videt kurzor mysi
+        if (HiddenCursor) // to make the mouse cursor visible in the dialog
         {
             HiddenCursor = FALSE;
             POINT p;
@@ -4508,7 +4508,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
 
     case CMD_SCAN:
     {
-        if (HiddenCursor) // aby byl v dialogu videt kurzor mysi
+        if (HiddenCursor) // to make the mouse cursor visible in the dialog
         {
             HiddenCursor = FALSE;
             POINT p;
@@ -4568,7 +4568,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam, BOOL* closingVi
         This_command_may_seem_to_select_scanner_also_for_WIA__Add_TWAIN_to_command_name();
 #endif // ENABLE_WIA
 
-        if (HiddenCursor) // aby byl v dialogu videt kurzor mysi
+        if (HiddenCursor) // to make the mouse cursor visible in the dialog
         {
             HiddenCursor = FALSE;
             POINT p;

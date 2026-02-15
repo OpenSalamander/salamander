@@ -150,7 +150,7 @@ HexToNumber(char c)
     return isdigit(c) ? c - '0' : tolower(c) - 'a' + 10;
 }
 
-// Chceme se dozvedet o SEH Exceptions i na x64 Windows 7 SP1 a dal
+// We want to catch SEH exceptions even on x64 Windows 7 SP1 and newer
 // http://blog.paulbetts.org/index.php/2010/07/20/the-case-of-the-disappearing-onload-exception-user-mode-callback-exceptions-in-x64/
 // http://connect.microsoft.com/VisualStudio/feedback/details/550944/hardware-exceptions-on-x64-machines-are-silently-caught-in-wndproc-messages
 // http://support.microsoft.com/kb/976038
@@ -199,9 +199,9 @@ int main(int argc, char* argv[])
     const bool useUPX = false;
     if (useUPX)
     {
-        //zabalime exace UPXem
+        // pack the executables with UPX
         printf("shrinking executables...\n");
-        //nejprve odebereme resourcy
+        // remove the resources first
         CResEdit re;
         if (!re.BeginUpdateResource("Release\\sfxsmall.exe", FALSE))
             return Error("BeginUpdateResource failed.");
@@ -211,7 +211,7 @@ int main(int argc, char* argv[])
         re.RemoveAllResources();
         if (!re.EndUpdateResource(FALSE))
             return Error("EndUpdateResource failed.");
-        //potom zkomprimujeme exac
+        // then compress the executable
         STARTUPINFO si;
         PROCESS_INFORMATION pi;
         memset(&si, 0, sizeof(STARTUPINFO));
@@ -223,7 +223,7 @@ int main(int argc, char* argv[])
         DWORD exitCode;
         if (!GetExitCodeProcess(pi.hProcess, &exitCode) || exitCode != 0)
             Error("bad exit code");
-        //vratime resourcy
+        // restore the resources
         if (!re.BeginUpdateResource("Release\\sfxsmall.exe", FALSE))
             return Error("BeginUpdateResource failed.");
         if (!re.SetResourceDirectory(dir))
@@ -232,7 +232,7 @@ int main(int argc, char* argv[])
         if (!re.EndUpdateResource(FALSE))
             return Error("EndUpdateResource failed.");
 
-        //jeste druhy exac
+        // handle the second executable as well
         if (!re.BeginUpdateResource("ReleaseEx\\sfxbig.exe", FALSE))
             return Error("BeginUpdateResource failed.");
         dir = re.GetResourceDirectory();
@@ -241,7 +241,7 @@ int main(int argc, char* argv[])
         re.RemoveAllResources();
         if (!re.EndUpdateResource(FALSE))
             return Error("EndUpdateResource failed.");
-        //potom zkomprimujeme exac
+        // then compress the executable
         memset(&si, 0, sizeof(STARTUPINFO));
         si.cb = sizeof(STARTUPINFO);
         if (!CreateProcess(NULL, "upx.exe --best ReleaseEx\\sfxbig.exe", NULL, NULL, FALSE, NULL, NULL, NULL, &si, &pi))
@@ -250,7 +250,7 @@ int main(int argc, char* argv[])
             Error("wait failed");
         if (!GetExitCodeProcess(pi.hProcess, &exitCode) || exitCode != 0)
             Error("bad exit code");
-        //vratime resourcy
+        // restore the resources
         if (!re.BeginUpdateResource("ReleaseEx\\sfxbig.exe", FALSE))
             return Error("BeginUpdateResource failed.");
         if (!re.SetResourceDirectory(dir))
@@ -291,7 +291,7 @@ int main(int argc, char* argv[])
     if (SetFilePointer(SfxFile, offset, NULL, FILE_BEGIN) == 0xFFFFFFFF)
         return Error("Unable to seek SFX package file.");
 
-    //pripravime si texty do bufferu
+    // prepare the strings in the buffer
     int size = 0;
     for (int i = 0; i < LENARRAYSIZE; i++)
     {
@@ -308,7 +308,7 @@ int main(int argc, char* argv[])
     header.TextsCRC = UpdateCrc((__UINT8*)Buffer, size, INIT_CRC, StaticCrcTab);
 
     ush internAttr = -1;
-    ush flag = 0x08; //to aby ho to nahodou neulozilo jako stored
+    ush flag = 0x08; // ensures it will not accidentally be stored uncompressed
     int method = 8;
     ullg csize;
     BufPos = Buffer;
@@ -349,7 +349,7 @@ int main(int argc, char* argv[])
         return Error("Unable to sfxsmall.exe.");
     header.SmallSfxCRC = UpdateCrc((__UINT8*)Buffer, size, INIT_CRC, StaticCrcTab);
     internAttr = -1;
-    flag = 0x08; //to aby ho to nahodou neulozilo jako stored
+    flag = 0x08; // ensures it will not accidentally be stored uncompressed
     method = 8;
     csize = 0;
     BufPos = Buffer;
@@ -390,7 +390,7 @@ int main(int argc, char* argv[])
         return Error("Unable to sfxbig.exe.");
     header.BigSfxCRC = UpdateCrc((__UINT8*)Buffer, size, INIT_CRC, StaticCrcTab);
     internAttr = -1;
-    flag = 0x08; //to aby ho to nahodou neulozilo jako stored
+    flag = 0x08; // ensures it will not accidentally be stored uncompressed
     method = 8;
     csize = 0;
     BufPos = Buffer;

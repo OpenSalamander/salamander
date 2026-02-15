@@ -14,12 +14,12 @@
 //  SplitFile
 //
 
-#define MAX_CMDLINE 127 // max. delka prikazove radky
-#define MAX_FILENAME 34 // max. delka jmena souboru, aby se i minimalni prikaz copy jeste vesel do radky
+#define MAX_CMDLINE 127 // maximum command line length
+#define MAX_FILENAME 34 // maximum file name length so that even the minimal copy command still fits on the line
 #define MAX_BAT 100000
 
-#define BUFSIZE1 (128 * 1024) // velikost bufferu pro removable drive (je maly kvuli kontrole stisku ESC)
-#define BUFSIZE2 (256 * 1024) // velikost pro ostatni
+#define BUFSIZE1 (128 * 1024) // buffer size for a removable drive (kept small to check ESC presses)
+#define BUFSIZE2 (256 * 1024) // size for the others
 
 static BOOL EnsureDiskInsertedEtc(LPTSTR targetDir, CQuadWord& qwPartSize, CQuadWord* freeSpace,
                                   UINT driveType, CQuadWord& bytesRemaining, CQuadWord* thisPartSize, HWND parent)
@@ -105,42 +105,42 @@ static BOOL SplitFile(LPTSTR fileName, LPTSTR targetDir, CQuadWord& qwPartSize,
 {
     CALL_STACK_MESSAGE4("SplitFile(%s, %s, %I64u, , )", fileName, targetDir, qwPartSize.Value);
 
-    // vytvoreni target cesty
+    // create the target path
     DWORD silent = 0;
     BOOL bSkip;
     if (SalamanderSafeFile->SafeFileCreate(targetDir, 0, 0, 0, TRUE, parent, NULL, NULL, &silent,
                                            TRUE, &bSkip, NULL, 0, NULL, NULL) == INVALID_HANDLE_VALUE)
         return FALSE;
 
-    // otevreni souboru
+    // open the file
     SAFE_FILE file;
     if (!SalamanderSafeFile->SafeFileOpen(&file, fileName, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING,
                                           FILE_FLAG_SEQUENTIAL_SCAN, parent, BUTTONS_RETRYCANCEL, NULL, NULL))
     {
         return FALSE;
     }
-    // ziskani velikosti souboru
+    // obtain the file size
     CQuadWord bytesRemaining;
     bytesRemaining.LoDWord = GetFileSize(file.HFile, &bytesRemaining.HiDWord);
 
-    // ziskani casu souboru
+    // obtain the file timestamp
     FILETIME ft;
     GetFileTime(file.HFile, NULL, NULL, &ft);
 
-    // ziskani zakladu jmen souboru
+    // obtain the base name of the files
     char name[MAX_PATH];
     strcpy(name, SalamanderGeneral->SalPathFindFileName(fileName));
     if (!configIncludeFileExt)
         StripExtension(name);
 
-    // zjisteni typu ciloveho media
-    char text[MAX_PATH + 50]; // musi byt delsi nez MAX_PATH kvuli "too long name" (niz nize)
+    // determine the type of the target media
+    char text[MAX_PATH + 50]; // must be longer than MAX_PATH because of "too long name" (see below)
     SalamanderGeneral->GetRootPath(text, targetDir);
     UINT driveType = GetDriveType(text);
 
     BOOL abort = FALSE;
 
-    // test jestli user nezvolil Autodetect na fixed drive
+    // check whether the user selected Autodetect on a fixed drive
     if (driveType != DRIVE_REMOVABLE && qwPartSize == SIZE_AUTODETECT)
     {
         if (SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_FIXEDNOSENSE),
@@ -148,7 +148,7 @@ static BOOL SplitFile(LPTSTR fileName, LPTSTR targetDir, CQuadWord& qwPartSize,
             abort = TRUE;
     }
 
-    // test na vice jak 100 casti
+    // check for more than 100 parts
     if (!qwPartSize.Value || (bytesRemaining - CQuadWord(1, 0)) / qwPartSize + CQuadWord(1, 0) > CQuadWord(100, 0))
     {
         if (SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_TOOMANYPARTS),
@@ -156,13 +156,13 @@ static BOOL SplitFile(LPTSTR fileName, LPTSTR targetDir, CQuadWord& qwPartSize,
             abort = TRUE;
     }
 
-    // pokud splitujeme na fixed disk, overime ze je tam misto (na batch file kaslu)
+    // if we split to a fixed disk, verify that there is free space (ignore the batch file)
     if (!abort && driveType != DRIVE_REMOVABLE &&
         !SalamanderGeneral->TestFreeSpace(parent, targetDir, bytesRemaining, LoadStr(IDS_SPLIT)))
         abort = TRUE;
 
-    // TODO! presnejsi test
-    // kontrola jestli neni jmeno prilis dlouhe (batak by nemusel fungovat)
+    // TODO! more accurate test
+    // check whether the name is not too long (the batch file might not work)
     if (!abort && configCreateBatchFile && strlen(name) > MAX_FILENAME)
     {
         if (SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_TOOLONGNAME),
@@ -176,7 +176,7 @@ static BOOL SplitFile(LPTSTR fileName, LPTSTR targetDir, CQuadWord& qwPartSize,
         return TRUE;
     }
 
-    // alokace bufferu
+    // allocate the buffer
     DWORD dwBufSize = (driveType == DRIVE_REMOVABLE) ? BUFSIZE1 : BUFSIZE2;
     char* pBuffer = new char[dwBufSize];
     if (pBuffer == NULL)
@@ -192,11 +192,11 @@ static BOOL SplitFile(LPTSTR fileName, LPTSTR targetDir, CQuadWord& qwPartSize,
     // progress dialog
     salamander->OpenProgressDialog(LoadStr(IDS_SPLIT), TRUE, NULL, FALSE);
     salamander->ProgressSetTotalSize(CQuadWord(-1, -1), bytesRemaining);
-    BOOL delayed = (driveType != DRIVE_REMOVABLE); // u splitovani na diskety se udajne nestihal prekreslovat dialog
+    BOOL delayed = (driveType != DRIVE_REMOVABLE); // splitting to floppies allegedly failed to repaint the dialog fast enough
     salamander->ProgressSetSize(CQuadWord(-1, -1), CQuadWord(0, 0), delayed);
     CQuadWord totalProgress = CQuadWord(0, 0), fileProgress;
 
-    // parent uz je od ted progress dialog
+    // from now on the progress dialog is the parent
     parent = SalamanderGeneral->GetMsgBoxParent();
 
     BOOL ret = TRUE;
@@ -214,18 +214,18 @@ static BOOL SplitFile(LPTSTR fileName, LPTSTR targetDir, CQuadWord& qwPartSize,
             break;
         }
 
-        // vyrobime jmeno ciloveho souboru
+        // create the name of the target file
         sprintf(name2, "%s.%#03ld", name, partNum++);
         strncpy_s(text, MAX_PATH, targetDir, _TRUNCATE);
         if (!SalamanderGeneral->SalPathAppend(text, name2, MAX_PATH))
-        { // too long name - ohlasi se v SalamanderSafeFile->SafeFileCreate
+        { // too long name - reported in SalamanderSafeFile->SafeFileCreate
             char* end = text + strlen(text);
             if (end > text && *(end - 1) != '\\')
                 *end++ = '\\';
             strncpy_s(end, _countof(text) - (end - text), name2, _TRUNCATE);
         }
 
-        // vytvoreni souboru
+        // create the file
         GetInfo(buf, thisPartSize);
         SAFE_FILE outfile;
         if (SalamanderSafeFile->SafeFileCreate(text, GENERIC_WRITE, FILE_SHARE_READ, FILE_ATTRIBUTE_NORMAL,
@@ -236,7 +236,7 @@ static BOOL SplitFile(LPTSTR fileName, LPTSTR targetDir, CQuadWord& qwPartSize,
             break;
         }
 
-        // konecne: vykopirovani thisPartSize bajtu vstupniho souboru do vystupniho
+        // finally: copy thisPartSize bytes of the input file to the output file
         salamander->ProgressSetTotalSize(thisPartSize, CQuadWord(-1, -1));
         salamander->ProgressSetSize(CQuadWord(0, 0), CQuadWord(-1, -1), delayed);
         fileProgress = CQuadWord(0, 0);
@@ -276,7 +276,7 @@ static BOOL SplitFile(LPTSTR fileName, LPTSTR targetDir, CQuadWord& qwPartSize,
         }
         else
         {
-            CQuadWord distance = thisPartSize; // 'thisPartSize' se nesmi zmenit (zmeni se misto ni 'distance')
+            CQuadWord distance = thisPartSize; // 'thisPartSize' must not change (use 'distance' instead)
             SalamanderSafeFile->SafeFileSeekMsg(&file, &distance, FILE_CURRENT, parent,
                                                 BUTTONS_RETRYCANCEL, NULL, NULL, TRUE);
         }
@@ -284,7 +284,7 @@ static BOOL SplitFile(LPTSTR fileName, LPTSTR targetDir, CQuadWord& qwPartSize,
         bytesRemaining -= thisPartSize;
         totalProgress += thisPartSize;
 
-        // upozorneni na vlozeni dalsiho disku
+        // notify about inserting the next disk
         if (bytesRemaining.Value && driveType == DRIVE_REMOVABLE &&
             (qwPartSize == SIZE_AUTODETECT || freeSpace - qwPartSize < qwPartSize))
         {
@@ -300,7 +300,7 @@ static BOOL SplitFile(LPTSTR fileName, LPTSTR targetDir, CQuadWord& qwPartSize,
     delete[] pBuffer;
     SalamanderSafeFile->SafeFileClose(&file);
 
-    // vytvoreni batch file
+    // create the batch file
 
     if (ret != FALSE && configCreateBatchFile)
     {
@@ -331,7 +331,7 @@ static BOOL SplitFile(LPTSTR fileName, LPTSTR targetDir, CQuadWord& qwPartSize,
         {
             strcpy(line, "copy /b ");
             if (linenum == 1)
-            { // 1. prikaz copy, zacatek = "xxx.001"+"xxx.002"
+            { // first copy command, start = "xxx.001"+"xxx.002"
                 strcat(line, "\"");
                 strcat(line, name);
                 sprintf(buf, ".%#03ld", partnum++);
@@ -345,7 +345,7 @@ static BOOL SplitFile(LPTSTR fileName, LPTSTR targetDir, CQuadWord& qwPartSize,
                 }
             }
             else
-            { // dalsi prikazy copy - zacatek = "xxx"+"xxx.yyy"
+            { // subsequent copy commands - start = "xxx"+"xxx.yyy"
                 strcat(line, "\"");
                 strcat(line, origName);
                 strcat(line, "\"+\"");
@@ -357,7 +357,7 @@ static BOOL SplitFile(LPTSTR fileName, LPTSTR targetDir, CQuadWord& qwPartSize,
 
             while ((partnum < nparts) &&
                    (strlen(line) + strlen(origName) + strlen(name) + 10 <= MAX_CMDLINE))
-            { // zbytek radku az do vycerpani vsech casti nebo max. delky radku
+            { // remainder of the line until all parts are used or the maximum line length is reached
                 strcat(line, "+\"");
                 strcat(line, name);
                 sprintf(buf, ".%#03ld", partnum++);
@@ -365,7 +365,7 @@ static BOOL SplitFile(LPTSTR fileName, LPTSTR targetDir, CQuadWord& qwPartSize,
                 strcat(line, "\"");
             }
 
-            // konec radku
+            // end of the line
             strcat(line, " \"");
             strcat(line, origName);
             strcat(line, "\"\r\n");
@@ -392,7 +392,7 @@ static BOOL SplitFile(LPTSTR fileName, LPTSTR targetDir, CQuadWord& qwPartSize,
 
             SalamanderGeneral->GetDiskFreeSpace(&freeSpace, targetDir, NULL);
             if (driveType == DRIVE_REMOVABLE && freeSpace < batSize)
-            { // "vloz dalsi disk"
+            { // "insert next disk"
                 if (SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_INSERTNEXT),
                                                      LoadStr(IDS_SPLIT), MB_OKCANCEL | MB_ICONINFORMATION) == IDCANCEL)
                     ret = FALSE;
@@ -406,7 +406,7 @@ static BOOL SplitFile(LPTSTR fileName, LPTSTR targetDir, CQuadWord& qwPartSize,
                     strcat(name2, ".bat");
                     strncpy_s(text, MAX_PATH, targetDir, _TRUNCATE);
                     if (!SalamanderGeneral->SalPathAppend(text, name2, MAX_PATH))
-                    { // too long name - ohlasi se v SalamanderSafeFile->SafeFileCreate
+                    { // too long name - reported in SalamanderSafeFile->SafeFileCreate
                         char* end = text + strlen(text);
                         if (end > text && *(end - 1) != '\\')
                             *end++ = '\\';
@@ -445,14 +445,14 @@ static BOOL SplitFile(LPTSTR fileName, LPTSTR targetDir, CQuadWord& qwPartSize,
 BOOL SplitCommand(HWND parent, CSalamanderForOperationsAbstract* salamander)
 {
     CALL_STACK_MESSAGE1("SplitCommand( , )");
-    // ziskani informaci o souboru
+    // obtain information about the file
     char targetdir[MAX_PATH];
     const CFileData* pfd;
     BOOL isDir;
     pfd = SalamanderGeneral->GetPanelFocusedItem(PANEL_SOURCE, &isDir);
     GetTargetDir(targetdir, pfd->Name, TRUE);
 
-    // zjisteni velikosti souboru
+    // determine the file size
     char path[MAX_PATH];
     WIN32_FIND_DATA wfd;
     HANDLE hFind;
@@ -477,7 +477,7 @@ BOOL SplitCommand(HWND parent, CSalamanderForOperationsAbstract* salamander)
         return Error(IDS_SPLIT, IDS_OPENERROR);
     }
 
-    // soubory mensi nez 2 byty nejdou rozdelit
+    // files smaller than 2 bytes cannot be split
     if (qwFileSize.Value < 2)
     {
         SalamanderGeneral->ShowMessageBox(LoadStr(IDS_ZEROSIZE), LoadStr(IDS_SPLIT), MSGBOX_WARNING);
@@ -489,12 +489,12 @@ BOOL SplitCommand(HWND parent, CSalamanderForOperationsAbstract* salamander)
     if (!SplitDialog(pfd->Name, qwFileSize, targetdir, &qwPartialSize, parent))
         return FALSE;
 
-    // kontrola
+    // validation
     char panelpath[MAX_PATH];
     GetTargetDir(panelpath, NULL, TRUE);
     if (!MakePathAbsolute(targetdir, TRUE, panelpath, !configSplitToOther, IDS_SPLIT))
         return FALSE;
 
-    // rozdeleni souboru
+    // split the file
     return SplitFile(path, targetdir, qwPartialSize, parent, salamander);
 }

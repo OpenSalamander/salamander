@@ -13,72 +13,72 @@
 #include "tar.rh2"
 #include "lang\lang.rh"
 
-// TODO: vyresit case-sensitivity
-// TODO: vyresit vyskyt vice souboru se stejnym jmenem v jednom archivu
-// TODO: dodelat vypis u rpm vieweru (konverze datumu do citelneho formatu atp.)
-// TODO: zacistit dealokace u vieweru, pri chybe to dela dost nepruhledne veci
-// TODO: zkontrolovat tar proti specifikaci, jestli pokryvam maximum flagu (GNU rozsireni atp.)
-// TODO: udelat revizi chybovych hlasek a kde se pouzivaji (TAR x CPIO)
-// TODO: opravit hlaseni chyb, pokud failne stream (nespolehat na jeho ErrorNumber, ale zajistit, aby k nemu byl vzdy text)
-// TODO: vyresit multivolume archivy
-// TODO: vyresit archivy s ridkymi soubory
-// TODO: nesly by z linku delat shortcuty?
-// TODO: pridat LZMA kompresi do RPM (viz flex-32bit-2.5.35-43.88.s390x.rpm sample) Vypada to na dost ojedinele pouzivane, asi pridat az se ozve vic lidi...
+// TODO: resolve case sensitivity
+// TODO: handle multiple files with the same name in one archive
+// TODO: finish the output in the RPM viewer (convert dates to a readable format, etc.)
+// TODO: clean up viewer deallocations; on error it behaves quite opaquely
+// TODO: check tar against the specification to cover as many flags as possible (GNU extensions, etc.)
+// TODO: review error messages and where they are used (TAR vs. CPIO)
+// TODO: fix error reporting when the stream fails (do not rely on its ErrorNumber, ensure there is always text)
+// TODO: handle multi-volume archives
+// TODO: support archives with sparse files
+// TODO: could links be turned into shortcuts?
+// TODO: add LZMA compression to RPM (see flex-32bit-2.5.35-43.88.s390x.rpm sample). It seems rather rarely used, so maybe add it when more people ask...
 
 //
 // ****************************************************************************
 //
-// Deklarace a definice
+// Declarations and definitions
 //
 // ****************************************************************************
 //
 
-// ConfigVersion: 0 - instalace pluginu nebo verze pustena se Servant Salamander 2.0
-//                    (bez cisla konfigurace)
-//                1 - pracovni verze pred Servant Salamander 2.5 beta 1, pridan TBZ,BZ,BZ2 a RPM
-//                2 - pracovni verze pred Servant Salamander 2.5 beta 1, pridano CPIO (i viewer *.CPIO)
-//                3 - pracovni verze pred Servant Salamander 2.5 beta 1, vyhozeni vieweru *.CPIO
-//                4 - pracovni verze pred Servant Salamander 2.5 beta 1, pridani .z archivu
-//                5 - pracovni verze pred Servant Salamander 2.52 beta 2, pridani .DEB archivu
+// ConfigVersion: 0 - plugin installation or version released with Servant Salamander 2.0
+//                    (without a configuration number)
+//                1 - work-in-progress version before Servant Salamander 2.5 beta 1, added TBZ, BZ, BZ2, and RPM
+//                2 - work-in-progress version before Servant Salamander 2.5 beta 1, added CPIO (including the *.CPIO viewer)
+//                3 - work-in-progress version before Servant Salamander 2.5 beta 1, removed the *.CPIO viewer
+//                4 - work-in-progress version before Servant Salamander 2.5 beta 1, added .z archives
+//                5 - work-in-progress version before Servant Salamander 2.52 beta 2, added .DEB archives
 
 int ConfigVersion = 0;
 #define CURRENT_CONFIG_VERSION 5
 const char* CONFIG_VERSION = "Version";
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object, its methods are called from Salamander
 CPluginInterface PluginInterface;
-// cast interfacu CPluginInterface pro archivator
+// portion of CPluginInterface used for the archiver
 CPluginInterfaceForArchiver InterfaceForArchiver;
-// cast interfacu CPluginInterface pro viewer
+// portion of CPluginInterface used for the viewer
 CPluginInterfaceForViewer InterfaceForViewer;
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from plugin start until its termination
 CSalamanderGeneralAbstract* SalamanderGeneral = NULL;
 
-// interface pro komfortni praci se soubory
+// interface for convenient work with files
 CSalamanderSafeFileAbstract* SalamanderSafeFile = NULL;
 
-// definice promenne pro "dbg.h"
+// variable definition for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to the SPL - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to the SLG - language-dependent resources
 
 //
 // ****************************************************************************
 //
-// Pomocne funkce
+// Helper functions
 //
 // ****************************************************************************
 //
 
-// Natahuje string z dll
+// loads a string from the DLL
 char* LoadStr(int resID)
 {
     return SalamanderGeneral->LoadStr(HLanguage, resID);
 }
 
-// da dohromady string z resourcu a pripadny chybovy string
+// combines a resource string with an optional error string
 char* LoadErr(int resID, DWORD LastError)
 {
     static char buffer[1000];
@@ -91,7 +91,7 @@ char* LoadErr(int resID, DWORD LastError)
 //
 // ****************************************************************************
 //
-// Inicializace pluginu
+// Plugin initialization
 //
 // ****************************************************************************
 //
@@ -106,13 +106,13 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 //
 // ****************************************************************************
 //
-// Funkce pro komunikaci se Salamandrem
+// Functions for communication with Salamander
 //
 // ****************************************************************************
 //
 
 // ****************************************************************************
-// SalamanderPluginGetReqVer - vraci pozadovanou verzi Salamandera
+// SalamanderPluginGetReqVer - returns the required Salamander version
 //
 int WINAPI SalamanderPluginGetReqVer()
 {
@@ -120,37 +120,37 @@ int WINAPI SalamanderPluginGetReqVer()
 }
 
 // ****************************************************************************
-// SalamanderPluginEntry - hlavni vstupni bod
+// SalamanderPluginEntry - main entry point
 //
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
-    // nastavime SalamanderDebug pro "dbg.h"
+    // set SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plugin is built for the current Salamander version and newer - perform a check
     if (salamander->GetVersion() < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
                    "TAR" /* neprekladat! */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
+    // let Salamander load the language module (.slg)
     HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "TAR" /* neprekladat! */);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain Salamander's general interface
     SalamanderGeneral = salamander->GetSalamanderGeneral();
     SalamanderSafeFile = salamander->GetSalamanderSafeFile();
 
-    // vypis testovaciho hlaseni
+    // log a diagnostic message
     TRACE_I("SalamanderPluginEntry called, Salamander version " << salamander->GetVersion());
 
-    // nastavime zakladni informace o pluginu
+    // set basic plugin information
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_LOADSAVECONFIGURATION |
                                        FUNCTION_PANELARCHIVERVIEW | FUNCTION_CUSTOMARCHIVERUNPACK |
@@ -179,16 +179,16 @@ void CPluginInterface::About(HWND parent)
 void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRegistryAbstract* registry)
 {
     CALL_STACK_MESSAGE1("CPluginInterface::LoadConfiguration(, ,)");
-    if (regKey != NULL) // load z registry
+    if (regKey != NULL) // load from the registry
     {
         if (!registry->GetValue(regKey, CONFIG_VERSION, REG_DWORD, &ConfigVersion, sizeof(DWORD)))
         {
-            ConfigVersion = 0; // chyba - bereme verzi bez loadu
+            ConfigVersion = 0; // error - use the version without loading
         }
     }
-    else // default config
+    else // default configuration
     {
-        ConfigVersion = 0; // bez loadu
+        ConfigVersion = 0; // without loading
     }
 }
 
@@ -204,7 +204,7 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
 {
     CALL_STACK_MESSAGE1("CPluginInterface::Connect()");
 
-    // zakladni cast:
+    // base part:
     salamander->AddCustomUnpacker("TAR (Plugin)",
                                   "*.tar;*.tgz;*.tbz;*.taz;"
                                   "*.tar.gz;*.tar.bz;*.tar.bz2;*.tar.z;"
@@ -213,36 +213,36 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
                                   "*.tar_gz;*.tar_bz;*.tar_bz2;*.tar_z;"
                                   "*.gz;*.bz;*.bz2;*.z;"
                                   "*.rpm;*.cpio;*.deb",
-                                  ConfigVersion < 5);                                       // pri upgradech se ignoruje, az na pripad, kdy se upgraduje na verzi 4 - nutny update kvuli "*.z" a dalsim
-    salamander->AddPanelArchiver("tgz;tbz;taz;tar;gz;bz;bz2;z;rpm;cpio;deb", FALSE, FALSE); // pri upgradech pluginu se ignoruje
-    salamander->AddViewer("*.rpm", FALSE);                                                  // pri upgradech pluginu se ignoruje, az na pripad, kdy se upgraduje z verze, ktera jeste viewer nemela (verze pustena s SS 2.0)
+                                  ConfigVersion < 5);                                       // ignored during upgrades except when upgrading to version 4 - required update because of "*.z" and others
+    salamander->AddPanelArchiver("tgz;tbz;taz;tar;gz;bz;bz2;z;rpm;cpio;deb", FALSE, FALSE); // ignored when upgrading the plugin
+    salamander->AddViewer("*.rpm", FALSE);                                                  // ignored when upgrading the plugin except when upgrading from a version without the viewer (the version shipped with SS 2.0)
 
-    // cast pro upgrady:
-    if (ConfigVersion < 1) // 1 - pracovni verze pred Servant Salamander 2.5 beta 1, pridan tbz,bz,bz2 a rpm
+    // section for upgrades:
+    if (ConfigVersion < 1) // 1 - work-in-progress version before Servant Salamander 2.5 beta 1, added tbz, bz, bz2, and rpm
     {
         salamander->AddPanelArchiver("tbz;bz;bz2;rpm", FALSE, TRUE);
     }
 
-    if (ConfigVersion < 2) // 2 - pracovni verze pred Servant Salamander 2.5 beta 1, pridano cpio (i viewer *.cpio - to byl omyl)
+    if (ConfigVersion < 2) // 2 - work-in-progress version before Servant Salamander 2.5 beta 1, added cpio (including the *.cpio viewer - that was a mistake)
     {
         salamander->AddPanelArchiver("cpio", FALSE, TRUE);
 
-        // pridani *.cpio byla chyba, ve verzi 3 ji odmazeme
+        // adding *.cpio was a mistake, version 3 removes it again
         //salamander->AddViewer("*.cpio", TRUE);
     }
 
     /*
-  if (ConfigVersion < 3)    // 3 - pracovni verze pred Servant Salamander 2.5 beta 1, vyhozeni vieweru *.cpio
+  if (ConfigVersion < 3)    // 3 - work-in-progress version before Servant Salamander 2.5 beta 1, removed the *.cpio viewer
   {
-    salamander->ForceRemoveViewer("*.cpio");   // zakomentujeme az budeme povazovat za dead-code
+    salamander->ForceRemoveViewer("*.cpio");   // comment out once we consider it dead code
   }
 */
 
-    if (ConfigVersion < 4) // 4 - pracovni verze pred Servant Salamander 2.5 beta 1, pridani .z archivu
+    if (ConfigVersion < 4) // 4 - work-in-progress version before Servant Salamander 2.5 beta 1, added .z archives
     {
         salamander->AddPanelArchiver("taz;z", FALSE, TRUE);
     }
-    if (ConfigVersion < 5) // 5 - pracovni verze pred Servant Salamander 2.52 beta 2, pridani .deb archivu
+    if (ConfigVersion < 5) // 5 - work-in-progress version before Servant Salamander 2.52 beta 2, added .deb archives
     {
         salamander->AddPanelArchiver("deb", FALSE, TRUE);
     }
@@ -263,7 +263,7 @@ CPluginInterface::GetInterfaceForViewer()
 //
 // ****************************************************************************
 //
-// Vykonne funkce pluginu
+// Operational functions provided by the plugin
 //
 // ****************************************************************************
 //
@@ -276,9 +276,9 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
     CALL_STACK_MESSAGE2("CPluginInterfaceForArchiver::ListArchive(, %s, ,)", fileName);
     pluginData = NULL;
 
-    // vytvorime objekt archivu
+    // create the archive object
     CArchiveAbstract* archive = CreateArchive(fileName, salamander);
-    // a vylistujeme ho
+    // and list it
     if (archive)
     {
         BOOL ret = archive->ListArchive(NULL, dir);
@@ -296,9 +296,9 @@ BOOL CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract
     CALL_STACK_MESSAGE4("CPluginInterfaceForArchiver::UnpackArchive(, %s, , %s, %s,,,)",
                         fileName, targetDir, archiveRoot);
 
-    // vytvorime objekt archivu
+    // create the archive object
     CArchiveAbstract* archive = CreateArchive(fileName, salamander);
-    // a vybalime ho
+    // and extract it
     if (archive)
     {
         BOOL ret = archive->UnpackArchive(targetDir, archiveRoot, next, nextParam);
@@ -317,9 +317,9 @@ BOOL CPluginInterfaceForArchiver::UnpackOneFile(CSalamanderForOperationsAbstract
     CALL_STACK_MESSAGE4("CPluginInterfaceForArchiver::UnpackOneFile(, %s, , %s, , %s, ,)",
                         fileName, nameInArchive, targetDir);
 
-    // vytvorime objekt archivu
+    // create the archive object
     CArchiveAbstract* archive = CreateArchive(fileName, salamander);
-    // a vybalime ho
+    // and extract it
     if (archive)
     {
         BOOL ret = archive->UnpackOneFile(nameInArchive, fileData, targetDir, newFileName);
@@ -337,13 +337,13 @@ BOOL CPluginInterfaceForArchiver::UnpackWholeArchive(CSalamanderForOperationsAbs
     CALL_STACK_MESSAGE5("CPluginInterfaceForArchiver::UnpackWholeArchive(, %s, %s, %s, %d,)",
                         fileName, mask, targetDir, delArchiveWhenDone);
 
-    // vytvorime objekt archivu
+    // create the archive object
     CArchiveAbstract* archive = CreateArchive(fileName, salamander);
-    // a vybalime ho
+    // and extract it
     if (archive)
     {
         if (delArchiveWhenDone)
-            archiveVolumes->Add(fileName, -2); // FIXME: az plugin doucime multi-volume archivy, musime sem napridavat vsechny svazky archivu (aby se smazal kompletni archiv)
+            archiveVolumes->Add(fileName, -2); // FIXME: once the plugin learns multi-volume archives, add all volumes here (so the entire archive gets deleted)
         BOOL ret = archive->UnpackWholeArchive(mask, targetDir);
         delete archive;
         return ret;
@@ -375,18 +375,18 @@ CPluginInterfaceForArchiver::DeleteFromArchive(CSalamanderForOperationsAbstract 
 }
 */
 
-// funkce pro "file viewer", vola se pri pozadavku na otevreni viewru a nacteni souboru
-// 'name', 'left'+'right'+'width'+'height'+'showCmd'+'alwaysOnTop' je doporucene umisteni
-// okna, je-li 'returnUnlock' FALSE nemaji 'unlock'+'unlockOwner' zadny vyznam,
-// je-li 'returnUnlock' TRUE, mel by viewer vratit system-event 'unlock'
-// v non-signaled stavu, do signaled stavu 'unlock' prejde v okamziku ukonceni prohlizeni
-// souboru 'name' (soubor je v tomto okamziku odstranen z docasneho adresare), dale by mel
-// vratit v 'unlockOnwer' TRUE pokud ma byt objekt 'unlock' uzavren volajicim (FALSE znamena,
-// ze si viewer 'unlock' rusi sam); pokud viewer nenastavi 'unlock' (zustava NULL)
-// je soubor 'name' platny jen do ukonceni volani teto metody ViewFile; neni-li
-// 'viewerData' NULL, jde o predani rozsirenych parametru viewru (viz
-// CSalamanderGeneralAbstract::ViewFileInPluginViewer); vraci TRUE pri uspechu
-// (FALSE znamena neuspech, 'unlock' a 'unlockOwner' v tomto pripade nemaji zadny vyznam)
+// function for the "file viewer"; called when the viewer should open and load a file
+// 'name', 'left'+'right'+'width'+'height'+'showCmd'+'alwaysOnTop' is the recommended window placement
+// if 'returnUnlock' is FALSE, 'unlock'+'unlockOwner' have no meaning
+// if 'returnUnlock' is TRUE, the viewer should return the system event 'unlock'
+// in the non-signaled state; it transitions to the signaled state when viewing
+// the file 'name' finishes (the file is removed from the temporary directory at that time). It should also
+// return TRUE in 'unlockOwner' if the caller should close the 'unlock' object (FALSE means
+// the viewer closes 'unlock' itself); if the viewer does not set 'unlock' (stays NULL)
+// the file 'name' is valid only until this ViewFile call ends. If
+// 'viewerData' is not NULL, it passes extended parameters to the viewer (see
+// CSalamanderGeneralAbstract::ViewFileInPluginViewer). Returns TRUE on success
+// (FALSE indicates failure; 'unlock' and 'unlockOwner' have no meaning in that case)
 BOOL CPluginInterfaceForViewer::ViewFile(const char* name, int left, int top, int width, int height,
                                          UINT showCmd, BOOL alwaysOnTop, BOOL returnUnlock, HANDLE* unlock,
                                          BOOL* unlockOwner, CSalamanderPluginViewerData* viewerData,
@@ -397,14 +397,14 @@ BOOL CPluginInterfaceForViewer::ViewFile(const char* name, int left, int top, in
                          name, left, top, width, height,
                          showCmd, alwaysOnTop, returnUnlock, enumFilesSourceUID, enumFilesCurrentIndex);
 
-    // unlock zustava NULL, nepotrebujeme lockovani
-    //   takze returnUnlock a unlockOwner take ignorujeme
-    // viewerData nepouzivame
+    // unlock stays NULL, we do not need locking
+    //   therefore we also ignore returnUnlock and unlockOwner
+    // viewerData is not used
 
-    // ulozime puvodni kurzor a nahodime presypacky (i kdyz dlouho by to trvat nemelo...)
+    // store the original cursor and show the hourglass (even though it should not take long...)
     HCURSOR hOldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
-    // otevreme vstupni soubor
+    // open the input file
     HANDLE file = CreateFile(name, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
                              FILE_FLAG_SEQUENTIAL_SCAN, NULL);
     if (file == INVALID_HANDLE_VALUE)
@@ -415,7 +415,7 @@ BOOL CPluginInterfaceForViewer::ViewFile(const char* name, int left, int top, in
                                           LoadStr(IDS_GZERR_TITLE), MSGBOX_ERROR);
         return FALSE;
     }
-    // naalokujeme buffer pro cteni souboru
+    // allocate a buffer for reading the file
     unsigned char* buffer = (unsigned char*)malloc(BUFSIZE);
     if (buffer == NULL)
     {
@@ -425,11 +425,11 @@ BOOL CPluginInterfaceForViewer::ViewFile(const char* name, int left, int top, in
         CloseHandle(file);
         return FALSE;
     }
-    // precteme prvni blok dat
+    // read the first block of data
     DWORD read;
     if (!ReadFile(file, buffer, BUFSIZE, &read, NULL))
     {
-        // chyba cteni
+        // read error
         int err = GetLastError();
         SetCursor(hOldCur);
         free(buffer);
@@ -437,7 +437,7 @@ BOOL CPluginInterfaceForViewer::ViewFile(const char* name, int left, int top, in
         SalamanderGeneral->ShowMessageBox(LoadErr(IDS_ERR_FREAD, err), LoadStr(IDS_GZERR_TITLE), MSGBOX_ERROR);
         return FALSE;
     }
-    // ziskame nazev pro temporary textovy soubor s vysledky
+    // obtain a name for the temporary text file with the results
     char tempFileName[MAX_PATH];
     if (!SalamanderGeneral->SalGetTempFileName(NULL, "RPV", tempFileName, TRUE, NULL))
     {
@@ -448,7 +448,7 @@ BOOL CPluginInterfaceForViewer::ViewFile(const char* name, int left, int top, in
         return FALSE;
     }
 
-    // vytvorime docasny soubor
+    // create the temporary file
     FILE* fContents = fopen(tempFileName, "wt");
     if (fContents == NULL)
     {
@@ -462,7 +462,7 @@ BOOL CPluginInterfaceForViewer::ViewFile(const char* name, int left, int top, in
         SalamanderGeneral->ShowMessageBox(buff, LoadStr(IDS_ERR_RPMTITLE), MSGBOX_ERROR);
         return FALSE;
     }
-    // vytvorime RPM objekt a naplnime docasny soubor informacema
+    // create the RPM object and fill the temporary file with information
     CDecompressFile* archive = new CRPM(name, file, buffer, read, fContents);
     if (archive == NULL)
     {
@@ -474,7 +474,7 @@ BOOL CPluginInterfaceForViewer::ViewFile(const char* name, int left, int top, in
         SalamanderGeneral->ShowMessageBox(LoadStr(IDS_ERR_MEMORY), LoadStr(IDS_ERR_RPMTITLE), MSGBOX_ERROR);
         return FALSE;
     }
-    // TODO: asi by to chtelo zkontrolovat, aby se vevnitr chyby nehlasily a jen se nastavila promenna podle chyby
+    // TODO: probably make sure errors are not reported inside and only a flag is set according to the error
     if (!archive->IsOk())
     {
         SetCursor(hOldCur);
@@ -490,13 +490,13 @@ BOOL CPluginInterfaceForViewer::ViewFile(const char* name, int left, int top, in
         delete archive;
         return FALSE;
     }
-    // ted uz muzeme archiv zase zavrit...
-    // vstupni soubor a buffer se ulizi v destruktoru CDecompressFile
+    // now we can close the archive again...
+    // the input file and buffer are cleaned up in the CDecompressFile destructor
     delete archive;
-    // hotovo
+    // done
     fclose(fContents);
 
-    // pripravime strukturu pro text viewer salamandra
+    // prepare the structure for Salamander's text viewer
     CSalamanderPluginInternalViewerData textViewerData;
     textViewerData.Size = sizeof(textViewerData);
     textViewerData.FileName = tempFileName;
@@ -507,11 +507,11 @@ BOOL CPluginInterfaceForViewer::ViewFile(const char* name, int left, int top, in
     strcat(caption, LoadStr(IDS_RPM_VIEWTITLE));
     textViewerData.Caption = caption;
     textViewerData.WholeCaption = TRUE;
-    // zobrazime soubor v text-view salamandera s jeho naslednym smazanim
+    // show the file in Salamander's text viewer and delete it afterwards
     int err;
     SalamanderGeneral->ViewFileInPluginViewer(NULL, &textViewerData, TRUE, NULL, "rpm_dump.txt", err);
 
-    // a nakonec uklid
+    // and finally clean up
     SetCursor(hOldCur);
     return TRUE;
 }

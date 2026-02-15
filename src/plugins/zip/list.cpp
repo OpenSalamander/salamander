@@ -33,7 +33,7 @@ int CZipList::ListArchive(CSalamanderDirectoryAbstract* dir, BOOL& haveFiles)
     haveFiles = FALSE;
     ret = CreateCFile(&ZipFile, ZipName, GENERIC_READ, FILE_SHARE_READ,
                       OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, PE_NOSKIP, NULL,
-                      true, true); // 'useReadCache' dame TRUE -> optimalizovane cteni central directory
+                      true, true); // set 'useReadCache' to TRUE -> optimized central directory reading
     if (ret)
         if (ret == ERR_LOWMEM)
             return ErrorID = IDS_LOWMEM;
@@ -112,7 +112,7 @@ START_LIST:
             ProcessHeader(centralHeader, &fileInfo);
             //      path = pathBuf;
             //      SplitPath(&path, &name, fileInfo.Name);
-            // j.r. optimalizace misto SplitPath
+            // j.r. optimization instead of SplitPath
             path = fileInfo.Name;
             // _tcsrchr works correctly on MBCS file names
             name = _tcsrchr(fileInfo.Name, '\\');
@@ -157,7 +157,7 @@ START_LIST:
 
             if (!sortByExtDirsAsFiles && fileInfo.IsDir)
             {
-                file.Ext = file.Name + file.NameLen; // adresare nemaji pripony
+                file.Ext = file.Name + file.NameLen; // directories do not have extensions
             }
             else
             {
@@ -224,7 +224,7 @@ START_LIST:
         haveFiles = cnt > 0;
     }
     free(centralHeader);
-    //free(fileInfo.Name); mame destructor
+    //free(fileInfo.Name); handled in the destructor
     //  free(pathBuf);
 
     // TRACE_I("zip listing finished");

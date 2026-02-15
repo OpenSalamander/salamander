@@ -35,7 +35,7 @@ void my_delete(void *p) throw();
 #endif
 
 #ifdef _WIN32
-// JRYFIXME - muzeme si dovolit toto zatlouct? Nahore Igor pise, ze asi jo?
+// JRYFIXME - can we afford to suppress this? Igor notes above that we probably can.
 /*
 void *
 #ifdef _MSC_VER

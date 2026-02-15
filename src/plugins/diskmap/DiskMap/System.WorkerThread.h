@@ -16,12 +16,12 @@ typedef DWORD_PTR(WINAPI* PWORKERTHREAD_START_ROUTINE)(
 class CMyThreadQueue : public CThreadQueue
 {
 public:
-    CMyThreadQueue(const char* queueName /* napr. "DemoPlug Viewers" */) : CThreadQueue(queueName) {}
+    CMyThreadQueue(const char* queueName /* e.g., "DemoPlug Viewers" */) : CThreadQueue(queueName) {}
 
-    void Add(HANDLE hThread, DWORD tid) // prida polozku do fronty, vraci uspech
+    void Add(HANDLE hThread, DWORD tid) // adds an item to the queue, returns success
     {
         CS.Enter();
-        CThreadQueue::Add(new CThreadQueueItem(hThread, tid)); // nemuze selhat
+        CThreadQueue::Add(new CThreadQueueItem(hThread, tid)); // cannot fail
         CS.Leave();
     }
 };
@@ -89,8 +89,8 @@ public:
     CWorkerThread(CWorkerThread** setToThis, PWORKERTHREAD_START_ROUTINE proc, LPVOID lpParam, HWND owner,
                   UINT msg, LPVOID msgLParam, BOOL selfDelete = TRUE, BOOL suspended = FALSE)
     {
-        // Petr: nelze cekat na navrat z konstruktoru, externi ukazatel uz se pouziva v threadu, ktery
-        // bezi jiz behem konstruktoru
+        // Petr: we cannot wait for the constructor to return; the external pointer is already used in a thread that
+        // runs during construction
         if (setToThis != NULL)
             *setToThis = this;
 
@@ -108,7 +108,7 @@ public:
         this->_lock = new CLock();
         this->_rwlock = new CRWLock();
 
-        this->_doDelete = FALSE; // thread muze skoncit jeste pred navratem z CreateThread(), delete odlozime
+        this->_doDelete = FALSE; // the thread may finish before CreateThread() returns, so postpone deletion
 
         this->_hThread = CreateThread(
             NULL,                               // default security attributes
@@ -121,9 +121,9 @@ public:
         if (this->_hThread != NULL)
             ThreadQueue.Add(this->_hThread, this->_threadId);
         else
-            this->_finished = TRUE; // thread se nepovedlo nastartovat = budeme se tvarit jako jiz ukonceny
+            this->_finished = TRUE; // the thread failed to start = act as if it has already finished
         if (selfDelete)
-            this->SetSelfDelete(selfDelete); // ted uz je delete objektu mozny
+            this->SetSelfDelete(selfDelete); // deletion of the object is now possible
     }
     ~CWorkerThread()
     {
@@ -134,7 +134,7 @@ public:
 
         while (!this->_finished)
             Sleep(0);
-        this->_hThread = NULL; // zavirani handle threadu nechame na ThreadQueue
+        this->_hThread = NULL; // let ThreadQueue close the thread handle
         delete this->_innerlock;
         delete this->_lock;
         delete this->_rwlock;
@@ -144,7 +144,7 @@ public:
     CLock* GetLock() { return this->_lock; }
     CRWLock* GetRWLock() { return this->_rwlock; }
 
-    void SetSelfDelete(BOOL selfDelete) //po zavolani s TRUE jiz neni refernce na objekt bezpecna a mohla byt kdykoliv zrusena
+    void SetSelfDelete(BOOL selfDelete) //after calling with TRUE, references to the object are unsafe and it may be destroyed at any time
     {
         this->_innerlock->Enter();
         if (this->_doDelete != selfDelete)
@@ -153,13 +153,13 @@ public:
             {
                 this->_doDelete = selfDelete;
             }
-            else //pokud vlakno jiz skoncilo
+            else //if the thread has already finished
             {
-                if (selfDelete) //chce mne zrusit, tak zrusime...
+                if (selfDelete) //wants to delete me, so delete...
                 {
-                    this->_innerlock->Leave(); //nejdriv uvolnit zamek
-                    delete this;               //zrusit se
-                    return;                    //a rychle pryc
+                    this->_innerlock->Leave(); //first release the lock
+                    delete this;               //destroy ourselves
+                    return;                    //and exit quickly
                 }
             }
         }
@@ -170,11 +170,11 @@ public:
         return this->_doDelete;
     }
 
-    inline BOOL Aborting() //test z worker threadu
+    inline BOOL Aborting() //check from the worker thread
     {
         return this->_abort;
     }
-    BOOL Abort(BOOL wait = FALSE, DWORD maxwait = INFINITE) //z ridiciho vlakna pro zastaveni worker threadu
+    BOOL Abort(BOOL wait = FALSE, DWORD maxwait = INFINITE) //from the controller thread to stop the worker thread
     {
         InterlockedExchange(&this->_abort, TRUE);
         if (wait)

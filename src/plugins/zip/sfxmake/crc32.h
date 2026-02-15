@@ -3,7 +3,7 @@
 
 #pragma once
 
-// definice pro uziti v SFXMake
+// definitions used by SFXMake
 #define __UINT32 unsigned long
 #define __UINT8 unsigned char
 #define STATIC_CRC_TAB

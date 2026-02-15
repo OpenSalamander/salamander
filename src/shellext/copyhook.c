@@ -18,7 +18,7 @@ STDMETHODIMP CH_QueryInterface(THIS_ REFIID riid, void** ppv)
 
     WriteToLog("CH_QueryInterface");
 
-    // delegace
+    // delegate to the underlying object
     return ch->m_pObj->lpVtbl->QueryInterface((IShellExt*)ch->m_pObj, riid, ppv);
 }
 
@@ -29,7 +29,7 @@ CH_AddRef(THIS)
 
     WriteToLog("CH_AddRef");
 
-    // delegace
+    // delegate to the underlying object
     return ch->m_pObj->lpVtbl->AddRef((IShellExt*)ch->m_pObj);
 }
 
@@ -40,7 +40,7 @@ CH_Release(THIS)
 
     WriteToLog("CH_Release");
 
-    // delegace
+    // delegate to the underlying object
     return ch->m_pObj->lpVtbl->Release((IShellExt*)ch->m_pObj);
 }
 
@@ -114,8 +114,7 @@ PTOKEN_USER GetProcessUser(DWORD pid)
     return pReturnTokenUser;
 }
 
-// vraci TRUE jen pokud jsme zjistili uzivatele obou procesu a pokud jsou ruzni (pri
-// chybe vraci FALSE)
+// returns TRUE only if we obtained the users of both processes and they differ (returns FALSE on error)
 BOOL AreNotProcessesOfTheSameUser(DWORD pid1, DWORD pid2)
 {
     if (pid1 == pid2)
@@ -142,20 +141,18 @@ CH_CopyCallback(THIS_ HWND hwnd, UINT wFunc, UINT wFlags,
                 LPCSTR pszDestFile, DWORD dwDestAttribs)
 {
 
-    // Vista: pokud se udela Copy z archivu Salamanderovi (eskalovanem ci ne + pustenym pod
-    //  jinym userem) a Paste se provede v eskalovanem (jinem nez se delalo Copy)
-    // Salamanderovi, systemovy Drop, ktery se pro tuto akci pouziva nezavola tento
-    // copy-hook, takze se zkopiruje jen CLIPFAKE adresar (pri Paste do browse okenek
-    // eskalovaneho Salamandera se deje totez) -- Salamander by nemel bezet jako eskalovany
-    // (zatim nouzovka kvuli absenci podpory UAC), prozatim bych tento problem neresil,
-    // treba az si nekdo zacne stezovat (Paste do panelu Salamandera je v nasich rukach,
-    // to je jiste resitelne, ale asi to vubec resit nechceme).
+    // Vista: when Copy originates from Salamander's archive (regardless of elevation or user)
+    // and Paste occurs in a different elevated Salamander, the system Drop operation does not
+    // call this copy hook, so only the CLIPFAKE directory is copied. The same happens when the
+    // Paste target is one of the elevated Salamander browser windows. Salamander ideally should
+    // not run elevated (this is only a temporary workaround while UAC support is missing). We
+    // will likely leave this unresolved unless someone complains. Pasting into Salamander panels
+    // is under our control and therefore solvable, but we probably do not want to address it.
 
-    // W2K: pokud se dela Copy&Paste mezi Salamandery pustenymi pod timto a jinym userem, tak musi
-    // byt v procesu, kam se Pasti dostupny TEMP adresar usera procesu, ze ktereho se delalo
-    // Copy, jinak wokna jen napisou chybovou hlasku, ze zdrojovy adresar neni pristupny (reakce
-    // na to, ze si nemuzou sahnout na CLIPFAKE). Vzhledem k tomu, ze skoro vsichni useri jsou
-    // admini, tak by se tenhle problem nemusel vubec projevit.
+    // W2K: when Copy & Paste occurs between Salamander instances running under different users,
+    // the process handling Paste must have access to the TEMP directory of the user who executed
+    // Copy. Otherwise Windows reports that the source directory is inaccessible because it cannot
+    // reach CLIPFAKE. Since almost all users run as administrators, this issue may never show up.
 
     CopyHook* ch = (CopyHook*)This;
     const char* s;
@@ -164,13 +161,13 @@ CH_CopyCallback(THIS_ HWND hwnd, UINT wFunc, UINT wFlags,
     char text[300];
     int count;
 
-    // mutex pro pristup do sdilene pameti
+    // mutex for accessing the shared memory
     HANDLE salShExtSharedMemMutex = NULL;
-    // sdilena pamet - viz struktura CSalShExtSharedMem
+    // shared memory - see the CSalShExtSharedMem structure
     HANDLE salShExtSharedMem = NULL;
-    // event pro zaslani zadosti o provedeni Paste ve zdrojovem Salamanderovi (pouziva se jen ve Vista+)
+    // event for sending a request to perform Paste in the source Salamander (used only on Vista+)
     HANDLE salShExtDoPasteEvent = NULL;
-    // namapovana sdilena pamet - viz struktura CSalShExtSharedMem
+    // mapped shared memory - see the CSalShExtSharedMem structure
     CSalShExtSharedMem* salShExtSharedMemView = NULL;
 
     UINT ret = IDYES;
@@ -194,7 +191,7 @@ CH_CopyCallback(THIS_ HWND hwnd, UINT wFunc, UINT wFlags,
 
                 WriteToLog("CH_CopyCallback: salShExtSharedMem");
 
-                salShExtSharedMemView = (CSalShExtSharedMem*)MapViewOfFile(salShExtSharedMem, // FIXME_X64 nepredavame x86/x64 nekompatibilni data?
+                salShExtSharedMemView = (CSalShExtSharedMem*)MapViewOfFile(salShExtSharedMem, // FIXME_X64 are we passing x86/x64 incompatible data?
                                                                            FILE_MAP_WRITE, 0, 0, 0);
                 if (salShExtSharedMemView != NULL)
                 {
@@ -209,7 +206,9 @@ CH_CopyCallback(THIS_ HWND hwnd, UINT wFunc, UINT wFlags,
 
                         WriteToLog("CH_CopyCallback: drop!");
 
-                        ret = IDNO; // operace s "fake" adresarem, nenechame ji provest (misto ni se provede unpack z archivu nebo copy z FS)
+                        // The operation targets the "fake" directory; block it so Salamander can
+                        // unpack the archive or copy from the file system instead.
+                        ret = IDNO;
                         salShExtSharedMemView->DropDone = TRUE;
                         salShExtSharedMemView->PasteDone = FALSE;
                         s = pszDestFile + lstrlen(pszDestFile);
@@ -221,7 +220,11 @@ CH_CopyCallback(THIS_ HWND hwnd, UINT wFunc, UINT wFlags,
                     }
                     else
                     {
-                        BOOL ignoreGetDataTime = FALSE; // na Vista+ pokud se Copy z archivu udela v Salamanderovi pustenem na jineho usera, nedochazi pri opakovanem Paste v Exploreru k volani metody GetData, tedy nenastavi se salShExtSharedMemView->ClipDataObjLastGetDataTime: resime ignoraci tohoto testu (side-effect: drag&drop CLIPFAKE adresare tim padem spousti vybalovani z archivu)
+                        // On Vista+ if Copy from an archive is performed in Salamander running under another user,
+                        // repeated Paste in Explorer does not call GetData, so ClipDataObjLastGetDataTime is not set.
+                        // Treat this case by skipping the check (side effect: dragging the CLIPFAKE directory always
+                        // triggers unpacking from the archive).
+                        BOOL ignoreGetDataTime = FALSE;
                         if (hwnd != NULL)
                         {
                             DWORD tgtPID = -1;
@@ -253,31 +256,33 @@ CH_CopyCallback(THIS_ HWND hwnd, UINT wFunc, UINT wFlags,
 
                             WriteToLog("CH_CopyCallback: paste!");
 
-                            ret = IDNO; // operace s "fake" adresarem, nenechame ji provest (misto ni se provede unpack z archivu nebo copy z FS)
+                            // The operation targets the "fake" directory; block it so Salamander can
+                            // unpack the archive or copy from the file system instead.
+                            ret = IDNO;
                             if (salShExtSharedMemView->SalamanderMainWndPID == GetCurrentProcessId() &&
                                 salShExtSharedMemView->SalamanderMainWndTID == GetCurrentThreadId())
-                            { // jsme v hl. threadu Salamandera (a nejde o panel, ten se resi zvlast), operaci nelze provest ("Salamander is busy") - vyvola pod W2K/XP napr. Paste v Plugins/Plugins/Add... okne
+                            { // we are in Salamander's main thread (and it is not a panel, that is handled separately), the operation cannot be executed ("Salamander is busy") - triggered on W2K/XP for example by Paste in the Plugins/Plugins/Add... window
                                 samePIDAndTIDMsg = TRUE;
                                 lstrcpyn(text, salShExtSharedMemView->ArcUnableToPaste1, 300);
                             }
-                            else // jiny process nebo aspon jiny thread -> komunikace s main-window mozna
+                            else // another process or at least a different thread -> communication with the main window is possible
                             {
-                                salShExtSharedMemView->SalBusyState = 0 /* zjistuje se jestli Salamander neni "busy" */;
+                                salShExtSharedMemView->SalBusyState = 0 /* will be used to detect whether Salamander reports itself as "busy" */;
                                 salShExtDoPasteEvent = OpenEvent(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, SALSHEXT_DOPASTEEVENTNAME);
-                                if (salShExtDoPasteEvent != NULL) // Vista+: mezi copy-hookem a "as admin" spustenym Salamanderem nelze pouzit PostMessage, misto nej pouzijeme 'salShExtDoPasteEvent'
+                                if (salShExtDoPasteEvent != NULL) // Vista+: PostMessage cannot be used between the copy-hook and Salamander running "as admin", so we use 'salShExtDoPasteEvent' instead
                                 {
 
                                     WriteToLog("CH_CopyCallback: using salShExtDoPasteEvent");
 
-                                    SetEvent(salShExtDoPasteEvent); // pozadame vsechny Salamandery (minimalne 2.52 beta 1), at si zkontroluji, jestli nejsou zdrojem Copy&Paste operace a ten co je zdrojem, si sam sobe postne message WM_USER_SALSHEXT_PASTE
+                                    SetEvent(salShExtDoPasteEvent); // ask all running Salamander instances (2.52 beta 1 or newer) to check whether they initiated the Copy & Paste operation; the source instance posts WM_USER_SALSHEXT_PASTE to itself
                                 }
-                                else // na starsich OS staci primo postnout message WM_USER_SALSHEXT_PASTE
+                                else // on older OSes it is enough to post the WM_USER_SALSHEXT_PASTE message directly
                                 {
 
                                     WriteToLog("CH_CopyCallback: using PostMessage");
 
-                                    salShExtSharedMemView->BlockPasteDataRelease = TRUE;                        // na W2K+ uz asi zbytecne: aby nam fakedataobj->Release() nezrusil paste-data v Salamanderovi
-                                    salShExtSharedMemView->ClipDataObjLastGetDataTime = GetTickCount() - 60000; // na W2K+ uz asi zbytecne: cas posledniho GetData() nastavime o minutu zpatky, aby pripadny nasledny Release data-objektu probehl hladce
+                                    salShExtSharedMemView->BlockPasteDataRelease = TRUE;                        // probably unnecessary on W2K+: prevents fakedataobj->Release() from removing the paste data in Salamander
+                                    salShExtSharedMemView->ClipDataObjLastGetDataTime = GetTickCount() - 60000; // probably unnecessary on W2K+: set the last GetData() time one minute back to let a potential subsequent data-object Release run smoothly
                                     PostMessage((HWND)salShExtSharedMemView->SalamanderMainWnd, WM_USER_SALSHEXT_PASTE,
                                                 salShExtSharedMemView->PostMsgIndex, 0);
                                 }
@@ -286,28 +291,28 @@ CH_CopyCallback(THIS_ HWND hwnd, UINT wFunc, UINT wFlags,
                                 while (1)
                                 {
                                     ReleaseMutex(salShExtSharedMemMutex);
-                                    Sleep(100); // dame Salamanderovi 100ms na reakci na WM_USER_SALSHEXT_PASTE
+                                    Sleep(100); // give Salamander 100 ms to react to WM_USER_SALSHEXT_PASTE
                                     WaitForSingleObject(salShExtSharedMemMutex, INFINITE);
-                                    if (salShExtSharedMemView->SalBusyState != 0 || // pokud uz Salamander zareagoval
-                                        ++count >= 50)                              // dele nez 5 sekund cekat nebudeme
+                                    if (salShExtSharedMemView->SalBusyState != 0 || // if Salamander has already reacted
+                                        ++count >= 50)                              // do not wait more than 5 seconds
                                     {
                                         break;
                                     }
                                 }
                                 salShExtSharedMemView->PostMsgIndex++;
-                                if (salShExtDoPasteEvent == NULL) // starsi nez Vista+
+                                if (salShExtDoPasteEvent == NULL) // pre-Vista systems
                                 {
                                     salShExtSharedMemView->BlockPasteDataRelease = FALSE;
-                                    PostMessage((HWND)salShExtSharedMemView->SalamanderMainWnd, WM_USER_SALSHEXT_TRYRELDATA, 0, 0); // hlasime odblokovani paste-dat, nejsou-li data dale chranena, nechame je zrusit
+                                    PostMessage((HWND)salShExtSharedMemView->SalamanderMainWnd, WM_USER_SALSHEXT_TRYRELDATA, 0, 0); // report unblocking the paste data; if the data are not protected further, let them be freed
                                 }
                                 else
                                 {
-                                    ResetEvent(salShExtDoPasteEvent); // pokud to jeste nestihl udelat "zdrojovy" Salamander, udelame to zde (uz nehledame "zdrojoveho" Salamandera)
+                                    ResetEvent(salShExtDoPasteEvent); // if the "source" Salamander has not done it yet, do it here (we no longer search for the "source" Salamander)
                                     CloseHandle(salShExtDoPasteEvent);
                                     salShExtDoPasteEvent = NULL;
                                 }
 
-                                if (salShExtSharedMemView->SalBusyState == 1 /* Salamander neni "busy" a uz ceka na zadani operace paste */)
+                                if (salShExtSharedMemView->SalBusyState == 1 /* Salamander reported that it is not "busy" and is already waiting for the paste request */)
                                 {
                                     salShExtSharedMemView->PasteDone = TRUE;
                                     salShExtSharedMemView->DropDone = FALSE;
@@ -322,7 +327,7 @@ CH_CopyCallback(THIS_ HWND hwnd, UINT wFunc, UINT wFlags,
                                 {
                                     salBusyMsg = TRUE;
                                     lstrcpyn(text, salShExtSharedMemView->ArcUnableToPaste2, 300);
-                                    ret = IDCANCEL; // zkusime cancel, treba casem budou wokna nechavat dataobject na clipboardu pri "canclovanem" move
+                                    ret = IDCANCEL; // try cancel; perhaps Windows will eventually keep the data object on the clipboard for a "cancelled" move
                                 }
                             }
                         }
@@ -352,7 +357,7 @@ STDMETHODIMP CHW_QueryInterface(THIS_ REFIID riid, void** ppv)
 
     WriteToLog("CHW_QueryInterface");
 
-    // delegace
+    // delegate to the underlying object
     return ch->m_pObj->lpVtbl->QueryInterface((IShellExt*)ch->m_pObj, riid, ppv);
 }
 
@@ -363,7 +368,7 @@ CHW_AddRef(THIS)
 
     WriteToLog("CHW_AddRef");
 
-    // delegace
+    // delegate to the underlying object
     return ch->m_pObj->lpVtbl->AddRef((IShellExt*)ch->m_pObj);
 }
 
@@ -374,7 +379,7 @@ CHW_Release(THIS)
 
     WriteToLog("CHW_Release");
 
-    // delegace
+    // delegate to the underlying object
     return ch->m_pObj->lpVtbl->Release((IShellExt*)ch->m_pObj);
 }
 
@@ -383,6 +388,6 @@ CHW_CopyCallback(THIS_ HWND hwnd, UINT wFunc, UINT wFlags,
                  LPCWSTR pszSrcFile, DWORD dwSrcAttribs,
                  LPCWSTR pszDestFile, DWORD dwDestAttribs)
 {
-    WriteToLog("CHW_CopyCallback"); // zatim je tu tahle metoda jen z testovacich ucelu
+    WriteToLog("CHW_CopyCallback"); // for now this method exists only for testing purposes
     return IDYES;
 }

@@ -3,7 +3,7 @@
 
 #include "precomp.h"
 
-// image-list pro jednoduche ikony FS
+// image list for simple FS icons
 HIMAGELIST ImageList = NULL;
 
 const char* Str_REG_BINARY = "BINARY";
@@ -32,7 +32,7 @@ int Len_REG_SZ;
 int Len_REG_FULL_RESOURCE_DESCRIPTOR;
 int Len_REG_RESOURCE_REQUIREMENTS_LIST;
 
-// pro combo do NewKeyDialogu
+// entries for the NewKeyDialog combo box
 CRegTypeText RegTypeTexts[] =
     {
         {Str_REG_SZ, REG_SZ, 1, 1},
@@ -73,13 +73,13 @@ BOOL InitFS()
     ImageList = ImageList_Create(16, 16, ILC_MASK | SG->GetImageListColorFlags(), 4, 0);
     if (ImageList == NULL)
     {
-        TRACE_E("Nepodarilo se vytvorit image list.");
+        TRACE_E("Failed to create the image list.");
         return FALSE;
     }
-    ImageList_SetImageCount(ImageList, 4); // inicializace
+    ImageList_SetImageCount(ImageList, 4); // initialization
     ImageList_SetBkColor(ImageList, SG->GetCurrentColor(SALCOL_ITEM_BK_NORMAL));
 
-    // ikonu adresare ziskame ze Salamandera
+    // obtain the directory icon from Salamander
     HICON hIcon = SG->GetSalamanderIcon(SALICON_DIRECTORY, SALICONSIZE_16);
     if (hIcon != NULL)
     {
@@ -87,7 +87,7 @@ BOOL InitFS()
         DestroyIcon(hIcon);
     }
 
-    // ostatni ikonky jsou hard-coded
+    // the other icons are hard coded
     ImageList_ReplaceIcon(ImageList, 1, LoadIcon(DLLInstance, MAKEINTRESOURCE(IDI_SZ)));
     ImageList_ReplaceIcon(ImageList, 2, LoadIcon(DLLInstance, MAKEINTRESOURCE(IDI_BIN)));
     ImageList_ReplaceIcon(ImageList, 3, LoadIcon(DLLInstance, MAKEINTRESOURCE(IDI_UNKNOWN)));
@@ -125,7 +125,7 @@ void ReleaseFS()
 void CTopIndexMem::Push(LPCWSTR path, int topIndex)
 {
     CALL_STACK_MESSAGE2("CTopIndexMem::Push(, %d)", topIndex);
-    // zjistime, jestli path navazuje na Path (path==Path+"\\jmeno")
+    // determine whether path continues Path (path==Path+"\\name")
     LPCWSTR s = path + wcslen(path);
     if (s > path && *(s - 1) == L'\\')
         s--;
@@ -146,9 +146,9 @@ void CTopIndexMem::Push(LPCWSTR path, int topIndex)
              CompareStringW(LOCALE_USER_DEFAULT, NORM_IGNORECASE, path, l, Path, l) == CSTR_EQUAL;
     }
 
-    if (ok) // navazuje -> zapamatujeme si dalsi top-index
+    if (ok) // continues -> remember the next top index
     {
-        if (TopIndexesCount == TOP_INDEX_MEM_SIZE) // je potreba vyhodit z pameti prvni top-index
+        if (TopIndexesCount == TOP_INDEX_MEM_SIZE) // need to drop the first top index from memory
         {
             int i;
             for (i = 0; i < TOP_INDEX_MEM_SIZE - 1; i++)
@@ -158,7 +158,7 @@ void CTopIndexMem::Push(LPCWSTR path, int topIndex)
         wcscpy(Path, path);
         TopIndexes[TopIndexesCount++] = topIndex;
     }
-    else // nenavazuje -> prvni top-index v rade
+    else // does not continue -> first top index in the sequence
     {
         wcscpy(Path, path);
         TopIndexesCount = 1;
@@ -169,7 +169,7 @@ void CTopIndexMem::Push(LPCWSTR path, int topIndex)
 BOOL CTopIndexMem::FindAndPop(LPCWSTR path, int& topIndex)
 {
     CALL_STACK_MESSAGE2("CTopIndexMem::FindAndPop(, %d)", topIndex);
-    // zjistime, jestli path odpovida Path (path==Path)
+    // determine whether path matches Path (path==Path)
     int l1 = (int)wcslen(path);
     if (l1 > 0 && path[l1 - 1] == L'\\')
         l1--;
@@ -192,13 +192,13 @@ BOOL CTopIndexMem::FindAndPop(LPCWSTR path, int& topIndex)
             topIndex = TopIndexes[--TopIndexesCount];
             return TRUE;
         }
-        else // tuto hodnotu jiz nemame (nebyla ulozena nebo mala pamet->byla vyhozena)
+        else // we no longer have this value (it wasn't stored or low memory removed it)
         {
             Clear();
             return FALSE;
         }
     }
-    else // dotaz na jinou cestu -> vycistime pamet, doslo k dlouhemu skoku
+    else // query for another path -> clear the memory after a long jump
     {
         Clear();
         return FALSE;
@@ -232,7 +232,7 @@ void CPluginInterfaceForFS::CloseFS(CPluginFSInterfaceAbstract* fs)
 void CPluginInterfaceForFS::ExecuteChangeDriveMenuItem(int panel)
 {
     CALL_STACK_MESSAGE2("CPluginInterfaceForFS::ExecuteChangeDriveMenuItem(%d)", panel);
-    // zmenime cestu v aktualnim panelu na AssignedFSName:ConnectPath
+    // change the path in the active panel to AssignedFSName:ConnectPath
     SG->ChangePanelPathToPluginFS(panel, AssignedFSName, "", NULL);
 }
 
@@ -257,7 +257,7 @@ void EditValue(int root, LPWSTR key, LPWSTR name, BOOL rawEdit)
 
     if (name)
     {
-        // zjistime velikost dat
+        // determine the size of the data
         ret = RegQueryValueExW(hKey, name, 0, &type, NULL, &size);
         if (ret != ERROR_SUCCESS)
         {
@@ -268,7 +268,7 @@ void EditValue(int root, LPWSTR key, LPWSTR name, BOOL rawEdit)
 
         if (!rawEdit)
         {
-            // otestujeme, zda nejsou SZ data moc velika
+            // verify that the SZ data are not too large
             if ((type == REG_SZ || type == REG_EXPAND_SZ) && size / 2 > 0x7FFFFFFE)
             {
                 RegCloseKey(hKey);
@@ -277,7 +277,7 @@ void EditValue(int root, LPWSTR key, LPWSTR name, BOOL rawEdit)
             }
         }
 
-        // allokujeme buffer na data
+        // allocate a buffer for the data
         data = (LPBYTE)malloc(size);
         if (!data)
         {
@@ -286,7 +286,7 @@ void EditValue(int root, LPWSTR key, LPWSTR name, BOOL rawEdit)
             return;
         }
 
-        // nacteme data
+        // read the data
         ret = RegQueryValueExW(hKey, name, 0, &type, data, &size);
         if (ret != ERROR_SUCCESS)
         {
@@ -304,7 +304,7 @@ void EditValue(int root, LPWSTR key, LPWSTR name, BOOL rawEdit)
 
     if (!rawEdit)
     {
-        // overime spravnost dat
+        // verify the correctness of the data
         switch (type)
         {
         case REG_DWORD_BIG_ENDIAN:
@@ -362,7 +362,7 @@ void EditValue(int root, LPWSTR key, LPWSTR name, BOOL rawEdit)
             }
             break;
 
-        default: // zatim neumime primo, ale pouze pres externi editor
+        default: // we cannot handle it directly yet; only via an external editor
             rawEdit = TRUE;
         }
     }
@@ -421,14 +421,14 @@ void CPluginInterfaceForFS::ExecuteOnFS(int panel, CPluginFSInterfaceAbstract* p
         fs->GetCurrentPathW(newPath, MAX_FULL_KEYNAME);
         if (isDir == 2) // up-dir
         {
-            if (CutDirectory(newPath, cutDir, MAX_KEYNAME)) // zkratime cestu o posl. komponentu
+            if (CutDirectory(newPath, cutDir, MAX_KEYNAME)) // shorten the path by the last component
             {
                 if (WStrToStr(cutDirA, MAX_KEYNAME, cutDir) > 0)
                     focus = cutDirA;
-                // zmenime cestu v panelu
+                // update the path in the panel
                 if (fs->SetNewPath(newPath))
                 {
-                    int topIndex; // pristi top-index, -1 -> neplatny
+                    int topIndex; // next top index, -1 -> invalid
                     if (!fs->TopIndexMem.FindAndPop(newPath, topIndex))
                         topIndex = -1;
 
@@ -437,21 +437,21 @@ void CPluginInterfaceForFS::ExecuteOnFS(int panel, CPluginFSInterfaceAbstract* p
                 }
             }
         }
-        else // podadresar
+        else // subdirectory
         {
-            // zaloha udaju pro TopIndexMem (backupPath + topIndex)
+            // backup of the data for TopIndexMem (backupPath + topIndex)
             WCHAR backupPath[MAX_FULL_KEYNAME];
             wcscpy(backupPath, newPath);
             int topIndex = SG->GetPanelTopIndex(panel);
 
-            if (PathAppend(newPath, pluginData->Name, MAX_FULL_KEYNAME)) // nastavime cestu
+            if (PathAppend(newPath, pluginData->Name, MAX_FULL_KEYNAME)) // set the path
             {
-                // zmenime cestu v panelu
+                // update the path in the panel
                 if (fs->SetNewPath(newPath))
                 {
                     if (SG->ChangePanelPathToPluginFS(panel, pluginFSName, "?"))
                     {
-                        fs->TopIndexMem.Push(backupPath, topIndex); // zapamatujeme top-index pro navrat
+                        fs->TopIndexMem.Push(backupPath, topIndex); // remember the top index for return
                     }
                 }
             }

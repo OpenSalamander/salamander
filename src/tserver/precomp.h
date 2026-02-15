@@ -8,7 +8,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <ostream>
-#include <commctrl.h> // potrebuju LPCOLORMAP
+#include <commctrl.h> // need LPCOLORMAP
 #include <aclapi.h>
 #include <process.h>
 #include <math.h>

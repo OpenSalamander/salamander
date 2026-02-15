@@ -21,7 +21,7 @@
 class CISO9660 : public CUnISOFSAbstract
 {
 protected:
-    // struktury
+    // structures
     struct CDirectoryRecord
     {
         BYTE LengthOfDirectoryRecord;
@@ -271,7 +271,7 @@ public:
     //    CISO9660(CISOImage *image, EExt ext, BYTE *root, WORD LogicalBlockSize);
     CISO9660(CISOImage* image, DWORD extent);
     virtual ~CISO9660();
-    // metody
+    // methods
 
     virtual BOOL Open(BOOL quiet);
     virtual BOOL DumpInfo(FILE* outStream);

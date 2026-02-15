@@ -22,7 +22,7 @@ public:
     ~C__StrCriticalSection() { DeleteCriticalSection(&cs); }
 };
 
-// zajistime vcasnou konstrukci kriticke sekce
+// ensure timely construction of the critical section
 #pragma warning(disable : 4073)
 #pragma init_seg(lib)
 C__StrCriticalSection __StrCriticalSection;
@@ -31,7 +31,7 @@ C__StrCriticalSection __StrCriticalSection;
 
 HINSTANCE DLLInstance = NULL; //dll instance handle
 
-char* StringBuffer = NULL; // buffer pro mnoho stringu
+char* StringBuffer = NULL; // buffer for many strings
 char* StrAct = StringBuffer;
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
@@ -65,22 +65,22 @@ char* LoadStr(int resID)
             StrAct = StringBuffer;
 
 #ifdef _DEBUG
-        // radeji si pojistime, aby nas nekdo nevolal pred inicializaci handlu s resourcy
+        // make sure nobody calls us before the resource handle is initialized
         if (DLLInstance == NULL)
             TRACE_E("LoadStr: DLLInstance == NULL");
 #endif
 
     RELOAD:
         int size = LoadString(DLLInstance, resID, StrAct, 5120 - (StrAct - StringBuffer));
-        // size obsahuje pocet nakopirovanych znaku bez terminatoru
+        // size contains the number of copied characters without the terminator
         //    DWORD error = GetLastError();
-        if (size != 0 /* || error == NO_ERROR*/) // error je NO_ERROR, i kdyz string neexistuje - nepouzitelne
+        if (size != 0 /* || error == NO_ERROR*/) // error is NO_ERROR even when the string does not exist - unusable
         {
             if (5120 - (StrAct - StringBuffer) == size + 1 && StrAct > StringBuffer)
             {
-                // pokud byl retezec presne na konci bufferu, mohlo
-                // jit o oriznuti retezce -- pokud muzeme posunout okno
-                // na zacatek bufferu, nacteme string jeste jednou
+                // if the string was exactly at the end of the buffer, it could
+                // have been a truncation -- if we can move the window
+                // to the beginning of the buffer, load the string once again
                 StrAct = StringBuffer;
                 goto RELOAD;
             }

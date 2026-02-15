@@ -9,8 +9,8 @@ COLORREF GetSelectionColor(BOOL clipped)
         return RGB(255, 0, 0);
     else
         return RGB(0, 162, 232);
-    // Pod Win10 neslo rozlisit vybrane tlacitko od default, takze
-    // jsme odesli od barvy GetSysColor(COLOR_HIGHLIGHT)
+    // Windows 10 cannot visually distinguish the selected button from the default one, so
+    // we stopped using GetSysColor(COLOR_HIGHLIGHT)
 }
 
 void CDialogData::SetHighlightControl(int index)
@@ -32,7 +32,7 @@ void CDialogData::SetDialogSelected(BOOL value)
 int CDialogData::GetSelectedControlsCount()
 {
     int count = 0;
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip index 0; it stores the dialog title
     {
         CControl* control = Controls[i];
         if (control->Selected)
@@ -54,7 +54,7 @@ int CDialogData::SelCtrlsGetCurrentControlIndex()
 {
     if (GetSelectedControlsCount() != 1)
         return -1;
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip index 0; it stores the dialog title
     {
         CControl* control = Controls[i];
         if (control->Selected)
@@ -73,7 +73,7 @@ HWND CDialogData::SelCtrlsGetCurrentControlHandle(HWND hDialog)
 
 int CDialogData::SelCtrlsGetFirstControlIndex()
 {
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip index 0; it stores the dialog title
     {
         CControl* control = Controls[i];
         if (control->Selected)
@@ -85,7 +85,7 @@ int CDialogData::SelCtrlsGetFirstControlIndex()
 HWND CDialogData::GetControlHandle(HWND hDialog, int index)
 {
     HWND hChild = GetWindow(hDialog, GW_CHILD);
-    int i = 1; // 0-ty prvek preskocime, obsahuje nazev dialogu
+    int i = 1; // skip index 0; it stores the dialog title
     do
     {
         if (i == index)
@@ -102,7 +102,7 @@ HWND CDialogData::GetControlHandle(HWND hDialog, int index)
 int CDialogData::GetControlIndex(HWND hDialog, HWND hControl)
 {
     HWND hChild = GetWindow(hDialog, GW_CHILD);
-    int i = 1; // 0-ty prvek preskocime, obsahuje nazev dialogu
+    int i = 1; // skip index 0; it stores the dialog title
     do
     {
         if (hChild == hControl)
@@ -115,7 +115,7 @@ int CDialogData::GetControlIndex(HWND hDialog, HWND hControl)
 
 void CDialogData::CtrlsMove(BOOL selectedOnly, int deltaX, int deltaY)
 {
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip index 0; it stores the dialog title
     {
         CControl* control = Controls[i];
         if (selectedOnly && !control->Selected)
@@ -128,16 +128,16 @@ void CDialogData::CtrlsMove(BOOL selectedOnly, int deltaX, int deltaY)
 
 void CDialogData::SelCtrlsResize(CEdgeEnum edge, int delta, const RECT* originalR)
 {
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip index 0; it stores the dialog title
     {
         CControl* control = Controls[i];
         if (!control->Selected)
             continue;
 
-        if (control->IsIcon()) // nechceme zmeny rozmeru ikon
+        if (control->IsIcon()) // do not allow resizing icons
             continue;
 
-        if (control->IsComboBox() && (edge == edgeTop || edge == edgeBottom)) // u comboboxu potlacime zmenu vysky
+        if (control->IsComboBox() && (edge == edgeTop || edge == edgeBottom)) // suppress height changes for combo boxes
             continue;
 
         if (originalR != NULL)
@@ -211,19 +211,19 @@ void CDialogData::DialogResize(BOOL horizontal, int delta, const RECT* originalR
 
 void CDialogData::SelCtrlsSetSize(int width, int height)
 {
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip index 0; it stores the dialog title
     {
         CControl* control = Controls[i];
         if (!control->Selected)
             continue;
 
-        if (control->IsIcon()) // nechceme zmeny rozmeru ikon
+        if (control->IsIcon()) // do not allow resizing icons
             continue;
 
         if (width != -1)
             control->TCX = width;
 
-        if (control->IsComboBox()) // u comboboxu potlacime zmenu vysky
+        if (control->IsComboBox()) // suppress height changes for combo boxes
             continue;
 
         if (height != -1)
@@ -242,11 +242,11 @@ void CDialogData::SelCtrlsAlign(CEdgeEnum edge)
     if (GetSelectedControlsCount() < 2)
         return;
 
-    // dohledame opsanej obdelnik
+    // locate the bounding rectangle
     RECT outline = {0};
     SelCtrlsGetOuterRect(&outline);
 
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip index 0; it stores the dialog title
     {
         CControl* control = Controls[i];
         if (!control->Selected)
@@ -286,11 +286,11 @@ void CDialogData::SelCtrlsCenter(BOOL horizontal)
     if (GetSelectedControlsCount() < 2)
         return;
 
-    // dohledame opsanej obdelnik
+    // locate the bounding rectangle
     RECT outline = {0};
     SelCtrlsGetOuterRect(&outline);
 
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip index 0; it stores the dialog title
     {
         CControl* control = Controls[i];
         if (!control->Selected)
@@ -301,7 +301,7 @@ void CDialogData::SelCtrlsCenter(BOOL horizontal)
         else
         {
             short ctrlH = control->TCY;
-            if (control->IsComboBox()) // u comboboxu chceme jejich "zabaleny" rozmer
+            if (control->IsComboBox()) // for combo boxes use their collapsed size
                 ctrlH = COMBOBOX_BASE_HEIGHT;
             control->TY = (short)(outline.top + (outline.bottom - outline.top - ctrlH) / 2);
         }
@@ -313,18 +313,18 @@ void CDialogData::SelCtrlsCenterToDialog(BOOL horizontal)
     if (GetSelectedControlsCount() < 1)
         return;
 
-    // dohledame opsanej obdelnik
+    // locate the bounding rectangle
     RECT outline = {0};
     SelCtrlsGetOuterRect(&outline);
 
-    // rozmery dialogu
+    // dialog dimensions
     short dlgW = TCX;
     short dlgH = TCY;
 
     short deltaX = (short)((dlgW - (outline.right - outline.left)) / 2 - outline.left);
     short deltaY = (short)((dlgH - (outline.bottom - outline.top)) / 2 - outline.top);
 
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip index 0; it stores the dialog title
     {
         CControl* control = Controls[i];
         if (!control->Selected)
@@ -342,7 +342,7 @@ void CDialogData::SelCtrlsSizeToContent(HWND hDialog)
     if (GetSelectedControlsCount() < 1)
         return;
 
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip index 0; it stores the dialog title
     {
         CControl* control = Controls[i];
         if (!control->Selected)
@@ -355,20 +355,20 @@ void CDialogData::SelCtrlsSizeToContent(HWND hDialog)
                          multiTextOrComboItem, checkLstItem);
         if (idealSizeX != -1)
         {
-            if (control->IsStaticText(FALSE, TRUE)) // vpravo zarovnane texty rozsirime vlevo
-                control->TX = control->TX + control->TCX - (idealSizeX + 2) /* umele control zvetsime, zmensime riziko orezu kvuli zmene fontu */;
-            control->TCX = idealSizeX + 2 /* umele control zvetsime, zmensime riziko orezu kvuli zmene fontu */;
+            if (control->IsStaticText(FALSE, TRUE)) // Expand right-aligned texts to the left
+                control->TX = control->TX + control->TCX - (idealSizeX + 2) /* artificially widen the control to reduce clipping risk when the font changes */;
+            control->TCX = idealSizeX + 2 /* artificially widen the control to reduce clipping risk when the font changes */;
         }
         if (idealSizeY != -1)
             control->TCY = idealSizeY;
 
-        // upravime layout vodorovnych oddelovacu za static texty a radio/check boxy
+        // adjust horizontal separators that follow static text and radio/check boxes
         if (control->IsStaticText(TRUE) ||
             control->IsRadioOrCheckBox())
         {
             CControl* line = NULL;
             BOOL moreLines = FALSE;
-            for (int j = 1; j < Controls.Count; j++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+            for (int j = 1; j < Controls.Count; j++) // skip index 0; it stores the dialog title
             {
                 CControl* c = Controls[j];
                 if (c->IsHorizLine() && c->IsTVertContainedIn(control))
@@ -403,7 +403,7 @@ void CDialogData::SelCtrlsAlignTo(const CAlignToParams* params)
         refR.top = refCtrl->TY;
         refR.right = refCtrl->TX + refCtrl->TCX;
         int ctrlH = refCtrl->TCY;
-        if (refCtrl->IsComboBox()) // u comboboxu chceme jejich "zabaleny" rozmer
+        if (refCtrl->IsComboBox()) // for combo boxes use their collapsed size
             ctrlH = COMBOBOX_BASE_HEIGHT;
         refR.bottom = refCtrl->TY + ctrlH;
     }
@@ -449,13 +449,13 @@ void CDialogData::SelCtrlsAlignTo(const CAlignToParams* params)
     if (params->MoveAsGroup)
         SelCtrlsGetOuterRect(&selR);
 
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip index 0; it stores the dialog title
     {
         CControl* control = Controls[i];
         if (!control->Selected)
             continue;
 
-        // pokud oznacene prvky posouvame individualne, vytahneme jejich pozici
+        // when moving controls individually, keep their position
         if (!params->MoveAsGroup)
             control->GetTRect(&selR, FALSE);
 
@@ -490,7 +490,7 @@ void CDialogData::SelCtrlsAlignTo(const CAlignToParams* params)
             {
             case atpeTop:
             {
-                if (control->IsComboBox() || control->IsHorizLine()) // pro tyto prvky nemenime vysku
+                if (control->IsComboBox() || control->IsHorizLine()) // do not change the height for these controls
                     break;
                 if (control->TY > ref)
                 {
@@ -509,7 +509,7 @@ void CDialogData::SelCtrlsAlignTo(const CAlignToParams* params)
 
             case atpeBottom:
             {
-                if (control->IsComboBox() || control->IsHorizLine()) // pro tyto prvky nemenime vysku
+                if (control->IsComboBox() || control->IsHorizLine()) // do not change the height for these controls
                     break;
                 if (control->TY < ref)
                     control->TCY = ref - control->TY;
@@ -558,16 +558,16 @@ void CDialogData::SelCtrlsEqualSpacing(BOOL horizontal, int delta)
     if (count < 2)
         return;
 
-    // dohledame opsanej obdelnik
+    // locate the bounding rectangle
     RECT outline = {0};
     SelCtrlsGetOuterRect(&outline);
     short outlineW = (short)(outline.right - outline.left);
     short outlineH = (short)(outline.bottom - outline.top);
 
-    // celkova sirka a vyska controlu
+    // total width and height of the controls
     int controlsW = 0;
     int controlsH = 0;
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip index 0; it stores the dialog title
     {
         CControl* control = Controls[i];
         if (!control->Selected)
@@ -575,18 +575,18 @@ void CDialogData::SelCtrlsEqualSpacing(BOOL horizontal, int delta)
 
         controlsW += control->TCX;
         short ctrlH = control->TCY;
-        if (control->IsComboBox()) // u comboboxu chceme jejich "zabaleny" rozmer
+        if (control->IsComboBox()) // for combo boxes use their collapsed size
             ctrlH = COMBOBOX_BASE_HEIGHT;
         controlsH += ctrlH;
     }
 
-    // mezera mezi prvky (posledni prvek to muze posunout); mezera muze byt i zaporna
+    // spacing between controls (the last one may shift it); spacing can be negative
     short spaceH = (outlineW - controlsW) / (count - 1);
     short spaceV = (outlineH - controlsH) / (count - 1);
 
-    // seradime prvky podle jeji left/top hrany
+    // sort controls by their left/top edge
     TDirectArray<DWORD> indexes(count, 1);
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip index 0; it stores the dialog title
         if (Controls[i]->Selected)
             indexes.Add(i);
 
@@ -608,7 +608,7 @@ void CDialogData::SelCtrlsEqualSpacing(BOOL horizontal, int delta)
         {
             control->TY = (short)outline.top + pos;
             short ctrlH = control->TCY;
-            if (control->IsComboBox()) // u comboboxu chceme jejich "zabaleny" rozmer
+            if (control->IsComboBox()) // for combo boxes use their collapsed size
                 ctrlH = COMBOBOX_BASE_HEIGHT;
             pos += ctrlH + spaceV;
         }
@@ -625,9 +625,9 @@ void CDialogData::SelCtrlsResize(CResizeControlsEnum resize)
     WORD maxHeight = 0;
     WORD minHeight = 0;
 
-    // dohledame mezni hodnoty
+    // determine boundary values
     BOOL first = TRUE;
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip index 0; it stores the dialog title
     {
         CControl* control = Controls[i];
         if (!control->Selected)
@@ -645,13 +645,13 @@ void CDialogData::SelCtrlsResize(CResizeControlsEnum resize)
             first = FALSE;
     }
 
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip index 0; it stores the dialog title
     {
         CControl* control = Controls[i];
         if (!control->Selected)
             continue;
 
-        if (control->IsIcon()) // u ikon potlacime zmenu rozmeru
+        if (control->IsIcon()) // suppress resizing for icons
             continue;
         switch (resize)
         {
@@ -667,13 +667,13 @@ void CDialogData::SelCtrlsResize(CResizeControlsEnum resize)
         }
         case rceHeightLarge:
         {
-            if (!control->IsComboBox()) // u comboboxu poltacime zmenu vysky
+            if (!control->IsComboBox()) // suppress height changes for combo boxes
                 control->TCY = maxHeight;
             break;
         }
         case rceHeightSmall:
         {
-            if (!control->IsComboBox()) // u comboboxu poltacime zmenu vysky
+            if (!control->IsComboBox()) // suppress height changes for combo boxes
                 control->TCY = minHeight;
             break;
         }
@@ -702,7 +702,7 @@ BOOL CDialogData::SelCtrlsGetCurrentControlRect(RECT* r)
         r->top = control->TY;
         r->right = control->TX + control->TCX;
         int ctrlH = control->TCY;
-        if (control->IsComboBox()) // u comboboxu chceme jejich "zabaleny" rozmer
+        if (control->IsComboBox()) // for combo boxes use their collapsed size
             ctrlH = COMBOBOX_BASE_HEIGHT;
         r->bottom = control->TY + ctrlH;
     }
@@ -775,7 +775,7 @@ void CDialogData::GetDialogResizeDelta(const RECT* originalR, CEdgeEnum edge, in
 
 BOOL CDialogData::SelCtrlsContains(HWND hDialog, HWND hControl)
 {
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip index 0; it stores the dialog title
     {
         CControl* control = Controls[i];
         if (!control->Selected)
@@ -801,7 +801,7 @@ BOOL CDialogData::SelCtrlsContainsControlWithIndex(int index)
 void CDialogData::SelectControlByID(int id)
 {
     ClearSelection();
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip index 0; it stores the dialog title
     {
         CControl* control = Controls[i];
         if (control->ID == id)
@@ -817,7 +817,7 @@ void CDialogData::SelectNextPrevControl(BOOL next)
     int selCount = GetSelectedControlsCount();
     if (selCount > 1)
     {
-        for (int i = 1; i < Controls.Count && selCount > 1; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+        for (int i = 1; i < Controls.Count && selCount > 1; i++) // skip index 0; it stores the dialog title
         {
             CControl* control = Controls[i];
             if (control->Selected)
@@ -829,7 +829,7 @@ void CDialogData::SelectNextPrevControl(BOOL next)
     }
     else
     {
-        // vytahneme aktualne vybranou polozku (-1:zadna 0..Count-1:control Count:dialog)
+        // fetch the currently selected item (-1:none 0..Count-1:control Count:dialog)
         int selectedIndex = -1;
         if (selCount == 1)
         {
@@ -848,7 +848,7 @@ void CDialogData::SelectNextPrevControl(BOOL next)
                 selectedIndex = 0;
             selectedIndex++;
             if (selectedIndex > Controls.Count)
-                selectedIndex = 1; // preskocim title
+                selectedIndex = 1; // skip the title
         }
         else
         {
@@ -856,7 +856,7 @@ void CDialogData::SelectNextPrevControl(BOOL next)
                 selectedIndex = Controls.Count + 1;
             selectedIndex--;
             if (selectedIndex < 1)
-                selectedIndex = Controls.Count; // preskocim title
+                selectedIndex = Controls.Count; // skip the title
         }
         if (selectedIndex != -1 && selectedIndex != Controls.Count)
         {
@@ -901,7 +901,7 @@ void CDialogData::ModifySelection(HWND hDialog, CModifySelectionMode mode, HWND 
 
 void CDialogData::ClearSelection()
 {
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip index 0; it stores the dialog title
         Controls[i]->Selected = FALSE;
 }
 
@@ -913,10 +913,10 @@ void CDialogData::SelectControlsGroup(HWND hDialog, HWND hControl, BOOL keepSele
     int fromIndex = GetControlIndex(hDialog, hControl);
     if (fromIndex != -1)
     {
-        // vzorovy prvek pridame v kazdem pripade
+        // always include the reference control
         Controls[fromIndex]->Selected = TRUE;
 
-        // pokusime se pridat prvky ze skupiny vpravo/vlevo a pokud nic nenajdeme, tak dole/nahore
+        // try to add controls from the group to the right/left, otherwise use below/above
         BOOL found = FALSE;
         for (int dir = forceVertical ? esdDown : esdRight; dir <= esdUp; dir++)
         {
@@ -932,7 +932,7 @@ void CDialogData::SelectControlsGroup(HWND hDialog, HWND hControl, BOOL keepSele
                 found = TRUE;
                 iterator = index;
             }
-            // pokud jsme nasli prvky vpravo/vlevo, koncime
+            // stop once controls are found to the left/right
             if (dir == esdLeft && found)
                 break;
         }
@@ -946,20 +946,20 @@ void CDialogData::SelectControlsByCage(BOOL add, const RECT* cageR)
 
     int selected = 0;
 
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip index 0; it stores the dialog title
     {
         CControl* control = Controls[i];
         RECT controlR;
         control->GetTRect(&controlR, TRUE);
 
         RECT myCageR = *cageR;
-        if (myCageR.top == myCageR.bottom) // nulova vyska klece musi take fachcit
+        if (myCageR.top == myCageR.bottom) // zero-height cages must also work
             myCageR.bottom = myCageR.top + 1;
-        if (myCageR.left == myCageR.right) // nulova sirka klece musi take fachcit
+        if (myCageR.left == myCageR.right) // zero-width cages must work as well
             myCageR.right = myCageR.left + 1;
-        if (controlR.left == controlR.right) // nulova sirka controlu musi take fachcit
+        if (controlR.left == controlR.right) // zero-width controls must work as well
             controlR.right = controlR.left + 1;
-        if (controlR.top == controlR.bottom) // nulova vyska controlu musi take fachcit
+        if (controlR.top == controlR.bottom) // zero-height controls must work as well
             controlR.top = controlR.bottom + 1;
 
         RECT dummy;
@@ -1004,7 +1004,7 @@ void CDialogData::OutlineControls(HWND hDialog, HDC hDC)
     int childIndex = 1;
     do
     {
-        // musim kreslit do parenta, pri kresleni do hwndDlg je ramecek prerusovany controly (DC dialogu je tam asi oclipovane, ci co)
+        // draw into the parent; drawing into hwndDlg produces a dashed frame (its DC is likely clipped)
         if (hChild != NULL)
         {
             RECT r;
@@ -1023,7 +1023,7 @@ void CDialogData::OutlineControls(HWND hDialog, HDC hDC)
             r.bottom = p2.y;
 
             BOOL isClipped = FALSE;
-            // pokud control obsahuje dummy texty, nebudeme pro ne detekovat zda nejsou orezane
+            // skip clipping detection for controls containing dummy texts
             BOOL isEmpty = (Controls[childIndex]->TWindowName[0] == 0);
             if (!isEmpty)
             {
@@ -1058,13 +1058,13 @@ void CDialogData::PaintSelection(HWND hDialog, HDC hDC)
         GetChildRectPx(hParent, hDialog, &r);
         PaintSelectionRect(hDC, &r, GetSelectionColor(FALSE));
     }
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip index 0; it stores the dialog title
     {
         CControl* control = Controls[i];
         if (!control->Selected)
             continue;
 
-        // musim kreslit do parenta, pri kresleni do hwndDlg je ramecek prerusovany controly (DC dialogu je tam asi oclipovane, ci co)
+        // draw into the parent; drawing into hwndDlg produces a dashed frame (its DC is likely clipped)
         HWND hChild = GetControlHandle(hDialog, i);
         if (hChild != NULL)
         {
@@ -1096,7 +1096,7 @@ void CDialogData::PaintHighlight(HWND hDialog, HDC hDC)
     }
     else
     {
-        // musim kreslit do parenta, pri kresleni do hwndDlg je ramecek prerusovany controly (DC dialogu je tam asi oclipovane, ci co)
+        // draw into the parent; drawing into hwndDlg produces a dashed frame (its DC is likely clipped)
         HWND hChild = GetControlHandle(hDialog, HighlightIndex);
         if (hChild != NULL)
         {
@@ -1127,7 +1127,7 @@ void CDialogData::GetChildRectPx(HWND hParent, HWND hChild, RECT* r)
 BOOL CDialogData::SelCtrlsGetOuterRectPx(HWND hDialog, RECT* r)
 {
     BOOL first = TRUE;
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip index 0; it stores the dialog title
     {
         CControl* control = Controls[i];
         if (!control->Selected)
@@ -1158,9 +1158,9 @@ BOOL CDialogData::SelCtrlsGetOuterRectPx(HWND hDialog, RECT* r)
 
 BOOL CDialogData::SelCtrlsGetOuterRect(RECT* r)
 {
-    // dohledame opsanej obdelnik
+    // locate the bounding rectangle
     BOOL first = TRUE;
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip index 0; it stores the dialog title
     {
         CControl* control = Controls[i];
         if (!control->Selected)
@@ -1192,7 +1192,7 @@ BOOL CDialogData::SelCtrlsGetOuterRect(RECT* r)
 void
 CDialogData::SelCtrlsEnlargeSelectionBox(RECT *box)
 {
-  for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+  for (int i = 1; i < Controls.Count; i++) // skip index 0; it stores the dialog title
   {
     CControl *control = Controls[i];
     if (!control->Selected)

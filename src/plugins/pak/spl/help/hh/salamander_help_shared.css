@@ -206,14 +206,14 @@
 
 #help_page td.hdr
 {
-  /* tmavsi seda na leve strane */
+  /* darker gray on the left side */
   margin: .25em;
   background: #dddddd;
   vertical-align: top;
   padding: 2px 4px;
   font-weight: bold;
-  width: 10%;           /* zuzime levou stranu tabulky na minimum */
-  padding-right :10px;  /* ale nechame tam alespon 10 bodu, at to trochu vypada */
+  width: 10%;           /* narrow the left side of the table to a minimum */
+  padding-right :10px;  /* but leave at least 10 points so it looks decent */
   white-space: nowrap;
 }
 

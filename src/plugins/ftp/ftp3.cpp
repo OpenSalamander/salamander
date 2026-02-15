@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -94,7 +95,7 @@ void CServerTypeList::Load(HWND parent, HKEY regKey, CSalamanderRegistryAbstract
                 TRACE_E(LOW_MEMORY);
                 break;
             }
-            if (!item->Load(parent, subKey, registry)) // nepovedl se load, na tuhle polozku kasleme
+            if (!item->Load(parent, subKey, registry)) // loading failed, we ignore this item
             {
                 delete item;
             }
@@ -162,14 +163,14 @@ BOOL CServerTypeList::CopyItemsFrom(CServerTypeList* list)
         }
     }
     if (!ret)
-        DestroyMembers(); // obrana proti pripadnemu prehlednuti chyby
+        DestroyMembers(); // safeguard against possibly overlooking an error
     return ret;
 }
 
 BOOL CServerTypeList::ContainsTypeName(const char* typeName, CServerType* exclude, int* index)
 {
-    // porovnani bez ohledu na "user defined" (jinak by neslo editovat server type -> po
-    // editaci se meni na "user defined" a kdyby uz existoval nastal by konflikt)
+    // comparison ignoring "user defined" (otherwise the server type could not be edited ->
+    // after editing it changes to "user defined" and if it already existed there would be a conflict)
     if (*typeName == '*')
         typeName++;
     int i;
@@ -212,7 +213,7 @@ BOOL CFTPServerList::CopyMembersToList(CFTPServerList& dstList)
             }
         }
         else
-            return FALSE; // chyba
+            return FALSE; // error
     }
     return TRUE;
 }
@@ -317,14 +318,14 @@ void CFTPServerList::CheckProxyServersUID(CFTPProxyServerList& ftpProxyServerLis
         if (s->ProxyServerUID != -1 && s->ProxyServerUID != -2 &&
             !ftpProxyServerList.IsValidUID(s->ProxyServerUID))
         {
-            s->ProxyServerUID = -2; // zvalidnime UID prechodem na "default"
+            s->ProxyServerUID = -2; // validate the UID by switching to "default"
         }
     }
 }
 
 BOOL CFTPServerList::ContainsUnsecuredPassword()
 {
-    // POZOR, stejna metoda exisuje pro CFTPProxyServerList
+    // NOTE, the same method exists for CFTPProxyServerList
     CSalamanderPasswordManagerAbstract* passwordManager = SalamanderGeneral->GetSalamanderPasswordManager();
     int i;
     for (i = 0; i < Count; i++)
@@ -360,13 +361,13 @@ BOOL EncryptPasswordAux(BYTE** encryptedPassword, int* encryptedPasswordSize, BO
                         passwordManager->EncryptPassword(plainPassword, &buffEncryptedPassword, &buffEncryptedPasswordSize, TRUE))
                     {
                         UpdateEncryptedPassword(encryptedPassword, encryptedPasswordSize, buffEncryptedPassword, buffEncryptedPasswordSize);
-                        if (buffEncryptedPassword != NULL) // uvolnime buffer alokovany v EncryptPassword()
+                        if (buffEncryptedPassword != NULL) // release the buffer allocated in EncryptPassword()
                         {
                             memset(buffEncryptedPassword, 0, buffEncryptedPasswordSize);
                             SalamanderGeneral->Free(buffEncryptedPassword);
                         }
                     }
-                    // vynulujeme a uvolnime docasny plain buffer
+                    // zero out and free the temporary plain buffer
                     memset(plainPassword, 0, lstrlen(plainPassword));
                     SalamanderGeneral->Free(plainPassword);
                 }
@@ -378,7 +379,7 @@ BOOL EncryptPasswordAux(BYTE** encryptedPassword, int* encryptedPasswordSize, BO
             {
                 // encrypted -> plain
                 char* plainPassword;
-                if (passwordManager->DecryptPassword(*encryptedPassword, *encryptedPasswordSize, &plainPassword)) // muze vratit FALSE
+                if (passwordManager->DecryptPassword(*encryptedPassword, *encryptedPasswordSize, &plainPassword)) // may return FALSE
                 {
                     // plain -> scrambled
                     BYTE* scrambledPassword = NULL;
@@ -387,19 +388,19 @@ BOOL EncryptPasswordAux(BYTE** encryptedPassword, int* encryptedPasswordSize, BO
                         passwordManager->EncryptPassword(plainPassword, &scrambledPassword, &scrambledPasswordSize, FALSE))
                     {
                         UpdateEncryptedPassword(encryptedPassword, encryptedPasswordSize, scrambledPassword, scrambledPasswordSize);
-                        if (scrambledPassword != NULL) // uvolnime buffer alokovany v EncryptPassword()
+                        if (scrambledPassword != NULL) // release the buffer allocated in EncryptPassword()
                         {
                             memset(scrambledPassword, 0, scrambledPasswordSize);
                             SalamanderGeneral->Free(scrambledPassword);
                         }
                     }
-                    // vynulujeme a uvolnime docasny plain buffer
+                    // zero out and free the temporary plain buffer
                     memset(plainPassword, 0, lstrlen(plainPassword));
                     SalamanderGeneral->Free(plainPassword);
                 }
                 else
                 {
-                    // encrypted heslo se nepodarilo rozsifrovat, zrejme je zasifrovano pomoci jineho master password; dame o tom vedet pomoci navratove hodnoty
+                    // encrypted password could not be decrypted, it is probably encrypted with a different master password; report it via the return value
                     ret = FALSE;
                 }
             }
@@ -410,7 +411,7 @@ BOOL EncryptPasswordAux(BYTE** encryptedPassword, int* encryptedPasswordSize, BO
 
 BOOL CFTPServerList::EncryptPasswords(HWND hParent, BOOL encrypt)
 {
-    // POZOR, stejna metoda exisuje pro CFTPProxyServerList
+    // NOTE, the same method exists for CFTPProxyServerList
     BOOL ret = TRUE;
     int i;
     for (i = 0; i < Count; i++)
@@ -438,7 +439,7 @@ void CFTPServerList::Load(HWND parent, HKEY regKey, CSalamanderRegistryAbstract*
                 TRACE_E(LOW_MEMORY);
                 break;
             }
-            if (!item->Load(parent, subKey, registry)) // nepovedl se load, na tuhle polozku kasleme
+            if (!item->Load(parent, subKey, registry)) // loading failed, we ignore this item
             {
                 delete item;
             }
@@ -535,14 +536,14 @@ CConfiguration::CConfiguration()
     AlwaysShowLogForActPan = TRUE;
     DisableLoggingOfWorkers = FALSE;
 
-    LogsDlgPlacement.length = 0; // zatim neplatna pozice
-    OperDlgPlacement.length = 0; // zatim neplatna pozice
+    LogsDlgPlacement.length = 0; // not a valid position yet
+    OperDlgPlacement.length = 0; // not a valid position yet
     OperDlgSplitPos = 0.5;
     CloseOperationDlgIfSuccessfullyFinished = TRUE;
     CloseOperationDlgWhenOperFinishes = FALSE;
     OpenSolveErrIfIdle = TRUE;
 
-    // nasledujici data se neukladaji (drzi se jen v pameti, pak se zahodi):
+    // the following data is not saved (kept only in memory and then discarded):
     UseConnectionDataFromConfig = FALSE;
     ChangingPathInInactivePanel = FALSE;
     DisconnectCommandUsed = FALSE;
@@ -614,12 +615,12 @@ CConfiguration::~CConfiguration()
 
 BOOL CConfiguration::InitWithSalamanderGeneral()
 {
-    // alokuje se pres SalamanderGeneral, proto musi byt zde
+    // allocated through SalamanderGeneral, therefore it has to be here
     FTPServerList.AddServer("ALTAP",
                             "ftp.altap.cz",
                             "/pub/altap/salamand");
 
-    // popis retezce v poli: "visible,ID,nameStrID,nameStr,descrStrID,descrStr,colType,emptyValue,leftAlignment,fixedWidth,width"
+    // description of the string in the array: "visible,ID,nameStrID,nameStr,descrStrID,descrStr,colType,emptyValue,leftAlignment,fixedWidth,width"
     const char* unix1Columns[] = {"1,name,0,\\0,0,\\0,1,\\0",    // name
                                   "1,ext,1,\\0,1,\\0,2,\\0",     // extension
                                   "1,size,2,\\0,2,\\0,3,\\0",    // size
@@ -631,7 +632,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                   "1,user,7,\\0,7,\\0,7,\\0",    // user
                                   "1,group,8,\\0,8,\\0,7,\\0",   // group
                                   "0,device,9,\\0,9,\\0,7,\\0"}; // device minor/major number
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("UNIX1", "not syst_contains(\"z/VM \") and not syst_contains(\"OS/2 \") "
                                           "and not syst_contains(\" MACOS \") and not syst_contains(\"Windows_NT\")",
                                  11, unix1Columns,
@@ -730,7 +731,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                  "# skip empty lines anywhere\r\n"
                                  "* skip_white_spaces();\r\n");
 
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("UNIX2", "not syst_contains(\"z/VM \") and not syst_contains(\"OS/2 \") "
                                           "and not syst_contains(\" MACOS \") and not syst_contains(\"Windows_NT\")",
                                  11, unix1Columns,
@@ -797,7 +798,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                   "1,link,12,\\0,12,\\0,7,\\0",  // link target
                                   "1,user,7,\\0,7,\\0,7,\\0",    // user
                                   "0,device,9,\\0,9,\\0,7,\\0"}; // device minor/major number
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("UNIX3",
                                  "(not welcome_contains(\" NW \") or not welcome_contains(\" HellSoft.\")) "
                                  "and not syst_contains(\"z/VM \") and not syst_contains(\"OS/2 \") "
@@ -853,7 +854,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                  "# skip empty lines anywhere\r\n"
                                  "* skip_white_spaces();\r\n");
 
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("UNIX4", "not syst_contains(\"z/VM \") and not syst_contains(\"OS/2 \") "
                                           "and not syst_contains(\" MACOS \") and not syst_contains(\"Windows_NT\")",
                                  11, unix1Columns,
@@ -911,7 +912,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                  "# skip empty lines anywhere\r\n"
                                  "* skip_white_spaces();\r\n");
 
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("UNIX5", "not syst_contains(\"z/VM \") and not syst_contains(\"OS/2 \") "
                                           "and not syst_contains(\" MACOS \") and not syst_contains(\"Windows_NT\")",
                                  11, unix1Columns,
@@ -1018,7 +1019,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                     "1,rights,6,\\0,6,\\0,7,\\0", // rights
                                     "1,user,7,\\0,7,\\0,7,\\0",   // user
                                     "1,group,8,\\0,8,\\0,7,\\0"}; // group
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("Xbox 360", "not syst_contains(\"z/VM \") and not syst_contains(\"OS/2 \") "
                                              "and not syst_contains(\" MACOS \") and not syst_contains(\"Windows_NT\")",
                                  9, xbox360Columns,
@@ -1041,7 +1042,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                   "1,user,7,\\0,7,\\0,7,\\0",    // user
                                   "1,group,8,\\0,8,\\0,7,\\0",   // group
                                   "0,device,9,\\0,9,\\0,7,\\0"}; // device minor/major number
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("UNIX6", "not syst_contains(\"z/VM \") and not syst_contains(\"OS/2 \") "
                                           "and not syst_contains(\" MACOS \") and not syst_contains(\"Windows_NT\")",
                                  9, unix6Columns,
@@ -1095,7 +1096,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                     "1,time,4,\\0,4,\\0,9,\\0,0", // time
                                     "1,rights,6,\\0,6,\\0,7,\\0", // rights
                                     "1,user,7,\\0,7,\\0,7,\\0"};  // user
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("Netware", "not syst_contains(\"z/VM \") and not syst_contains(\"OS/2 \") "
                                             "and not syst_contains(\" MACOS \") and not syst_contains(\"Windows_NT\")",
                                  8, netwareColumns,
@@ -1132,7 +1133,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                  "1,time,4,\\0,4,\\0,9,\\0,0",       // time
                                  "1,rights,6,\\0,6,\\0,7,\\0",       // rights
                                  "1,user,7,\\0,7,\\0,7,\\0"};        // user
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("VMS1", "syst_contains(\" VMS \")",
                                  8, vms1Columns,
                                  "# parse lines with directories\r\n"
@@ -1206,7 +1207,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                  "1,rights,6,\\0,6,\\0,7,\\0",          // rights
                                  "1,user,7,\\0,7,\\0,7,\\0",            // user
                                  "1,allocblks,11,\\0,11,\\0,10,\\0,0"}; // allocated blocks
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("VMS2", "syst_contains(\" VMS \")",
                                  9, vms2Columns,
                                  "# parse lines with directories\r\n"
@@ -1279,7 +1280,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                  "1,time,4,\\0,4,\\0,9,\\0,0",        // time
                                  "1,rights,6,\\0,6,\\0,7,\\0",        // rights
                                  "1,blksize,10,\\0,10,\\0,10,\\0,0"}; // block size
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("VMS3", "syst_contains(\" VMS \")",
                                  8, vms3Columns,
                                  "# parse lines with directories\r\n"
@@ -1335,7 +1336,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                  "0,type,5,\\0,5,\\0,6,\\0",         // type
                                  "1,date,3,\\0,3,\\0,8,\\0,0",       // date
                                  "1,time,4,\\0,4,\\0,9,\\0,0"};      // time
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("VMS4", "syst_contains(\" VMS \")",
                                  6, vms4Columns,
                                  "# parse lines with directories\r\n"
@@ -1389,7 +1390,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                     "1,date,3,\\0,3,\\0,4,\\0",    // date
                                     "1,time,4,\\0,4,\\0,9,\\0,0",  // time
                                     "1,rights,6,\\0,6,\\0,7,\\0"}; // rights
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("NetPresenz", "welcome_contains(\" NetPresenz \") and syst_contains(\" MACOS \")",
                                  7, netPrezColumns,
                                  "# parse lines with files\r\n"
@@ -1416,7 +1417,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                      "1,blocks,10,\\0,10,\\0,10,\\0,0",  // blocks
                                      "1,date,3,\\0,3,\\0,8,\\0",         // date
                                      "1,time,4,\\0,4,\\0,9,\\0,0"};      // time
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("IBM z/VM (CMS) 1", NULL,
                                  8, IBMz_VM1Columns,
                                  "# parse lines with directories\r\n"
@@ -1445,7 +1446,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                      "1,date,3,\\0,3,\\0,8,\\0",         // date
                                      "1,time,4,\\0,4,\\0,9,\\0,0",       // time
                                      "1,user,7,\\0,7,\\0,7,\\0"};        // user
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("IBM z/VM (CMS) 2", NULL,
                                  9, IBMz_VM2Columns,
                                  "# parse lines with directories\r\n"
@@ -1475,7 +1476,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                      "1,blocks,10,\\0,10,\\0,10,\\0,0",  // blocks
                                      "1,date,3,\\0,3,\\0,8,\\0",         // date
                                      "1,time,4,\\0,4,\\0,9,\\0,0"};      // time
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("IBM z/VM (CMS) 3", "syst_contains(\"z/VM\")",
                                  9, IBMz_VM3Columns,
                                  "# parse lines with directories\r\n"
@@ -1511,7 +1512,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                  "1,recfm,21,\\0,21,\\0,7,\\0",      // recfm
                                  "1,lrecl,14,\\0,14,\\0,10,\\0,0",   // lrecl
                                  "1,blksz,22,\\0,22,\\0,10,\\0,0"};  // blksz
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("MVS1", "syst_contains(\" MVS \")",
                                  10, mvs1Columns,
                                  "# data sets\r\n"
@@ -1596,7 +1597,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                  "# skip empty lines anywhere\r\n"
                                  "* skip_white_spaces();\r\n");
 
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("MVS2", "syst_contains(\" MVS \")",
                                  10, mvs1Columns,
                                  "# data sets\r\n"
@@ -1676,7 +1677,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                    "1,init,26,\\0,26,\\0,10,\\0,0",   // init size
                                    "1,mod,27,\\0,27,\\0,10,\\0,0",    // mod
                                    "1,id,28,\\0,28,\\0,7,\\0"};       // id
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("MVS PO 1", "syst_contains(\" MVS \")",
                                  9, mvsPO1Columns,
                                  "# members\r\n"
@@ -1698,7 +1699,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                  "# skip empty lines anywhere\r\n"
                                  "* skip_white_spaces();\r\n");
 
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("MVS PO 2", "syst_contains(\" MVS \")",
                                  9, mvsPO1Columns,
                                  "# members\r\n"
@@ -1728,7 +1729,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                    "1,init,26,\\0,26,\\0,10,\\0,0", // init size
                                    "1,mod,27,\\0,27,\\0,10,\\0,0",  // mod
                                    "1,id,28,\\0,28,\\0,7,\\0"};     // id
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("MVS PO 3", "syst_contains(\" MVS \")",
                                  8, mvsPO3Columns,
                                  "# members\r\n"
@@ -1757,7 +1758,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                    "1,attr,32,\\0,32,\\0,7,\\0",   // attr
                                    "1,amode,33,\\0,33,\\0,7,\\0",  // amode
                                    "1,rmode,34,\\0,34,\\0,7,\\0"}; // rmode
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("MVS PO 4", "syst_contains(\" MVS \")",
                                  8, mvsPO4Columns,
                                  "#datasets\r\n"
@@ -1781,7 +1782,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                 "0,type,5,\\0,5,\\0,6,\\0",  // type
                                 "1,date,3,\\0,3,\\0,4,\\0",  // date
                                 "1,time,4,\\0,4,\\0,5,\\0"}; // time
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("Microsoft IIS", NULL,
                                  6, IISColumns,
                                  "# parse lines with files\r\n"
@@ -1813,7 +1814,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                 "1,date,3,\\0,3,\\0,4,\\0",     // date
                                 "1,time,4,\\0,4,\\0,9,\\0,0",   // time
                                 "1,attrs,32,\\0,32,\\0,7,\\0"}; // attributes
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("OS/2", NULL,
                                  7, os2Columns,
                                  "# parse lines with files and directories\r\n"
@@ -1832,7 +1833,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                     "0,type,5,\\0,5,\\0,6,\\0",    // type
                                     "1,date,3,\\0,3,\\0,4,\\0",    // date
                                     "1,time,4,\\0,4,\\0,9,\\0,0"}; // time
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("VxWorks", "welcome_contains(\" VxWorks \")",
                                  6, vxWorksColumns,
                                  "# parse lines with directories\r\n"
@@ -1858,7 +1859,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                  "# skip empty lines anywhere\r\n"
                                  "* skip_white_spaces();\r\n");
 
-    // popis retezce v poli: "visible,ID,nameStrID,nameStr,descrStrID,descrStr,colType,emptyValue,leftAlignment,fixedWidth,width"
+    // description of the string in the array: "visible,ID,nameStrID,nameStr,descrStrID,descrStr,colType,emptyValue,leftAlignment,fixedWidth,width"
     const char* tandemColumns[] = {"1,name,0,\\0,0,\\0,1,\\0",      // name
                                    "1,code,35,\\0,35,\\0,10,\\0,0", // code
                                    "1,size,2,\\0,2,\\0,3,\\0",      // size
@@ -1867,7 +1868,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                    "1,user,7,\\0,7,\\0,7,\\0",      // user
                                    "1,RWEP,36,\\0,36,\\0,7,\\0"};   // RWEP
 
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("Tandem", NULL, 7, tandemColumns,
                                  "# parse lines with files\r\n"
                                  "* word(<name>), white_spaces(), number(<code>), white_spaces(), positive_number(<size>),\r\n"
@@ -1883,7 +1884,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                  "# skip empty lines anywhere\r\n"
                                  "* skip_white_spaces();\r\n");
 
-    // popis retezce v poli: "visible,ID,nameStrID,nameStr,descrStrID,descrStr,colType,emptyValue,leftAlignment,fixedWidth,width"
+    // description of the string in the array: "visible,ID,nameStrID,nameStr,descrStrID,descrStr,colType,emptyValue,leftAlignment,fixedWidth,width"
     const char* IBM_AS_400Columns[] = {"1,name,0,\\0,0,\\0,1,\\0",     // name
                                        "1,ext,1,\\0,1,\\0,2,\\0",      // extension
                                        "1,size,2,\\0,2,\\0,10,\\0,0",  // size
@@ -1893,7 +1894,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                        "1,type,5,\\0,5,\\0,7,\\0",     // AS/400 file type
                                        "1,user,7,\\0,7,\\0,7,\\0"};    // user
 
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("IBM iSeries/i5, AS/400 (EN)", "syst_contains(\" OS/400 \")", 8, IBM_AS_400Columns,
                                  "# parse lines with files\r\n"
                                  "* word(<user>), skip_white_spaces(), positive_number(<size>), skip_white_spaces(),\r\n"
@@ -1937,7 +1938,7 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
                                  "# skip empty lines anywhere\r\n"
                                  "* skip_white_spaces();\r\n");
 
-    // neni treba pouzivat LockServerTypeList() a UnlockServerTypeList(), jeste zadne dalsi thready nebezi
+    // no need to use LockServerTypeList() and UnlockServerTypeList(), no other threads are running yet
     ServerTypeList.AddServerType("IBM iSeries/i5, AS/400 (CZ)", "syst_contains(\" OS/400 \")", 8, IBM_AS_400Columns,
                                  "# parse lines with files\r\n"
                                  "* word(<user>), skip_white_spaces(), positive_number(<size>), skip_white_spaces(),\r\n"
@@ -2002,8 +2003,8 @@ BOOL CConfiguration::InitWithSalamanderGeneral()
 void CConfiguration::ReleaseDataFromSalamanderGeneral()
 {
     SalamanderGeneral->FreeSalamanderMaskGroup(ASCIIFileMasks);
-    FTPServerList.DestroyMembers();      // pro jistotu (kdyby se dealokovalo pres SalamanderGeneral)
-    FTPProxyServerList.DestroyMembers(); // pro jistotu (kdyby se dealokovalo pres SalamanderGeneral)
+    FTPServerList.DestroyMembers();      // just in case (if it were deallocated through SalamanderGeneral)
+    FTPProxyServerList.DestroyMembers(); // just in case (if it were deallocated through SalamanderGeneral)
 }
 
 void CConfiguration::GetAnonymousPasswd(char* buf, int bufSize)

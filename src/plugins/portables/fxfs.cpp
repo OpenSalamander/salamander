@@ -230,38 +230,41 @@ namespace Fx
         BOOL forceRefresh,
         int mode)
     {
-        // zmeni aktualni cestu v tomto FS na cestu zadanou pres 'fsName' a 'userPart' (presne
-        // nebo na nejblizsi pristupnou podcestu 'userPart' - viz hodnota 'mode'); v pripade, ze
-        // se cesta zkracuje z duvodu, ze jde o cestu k souboru (staci domenka, ze by mohlo jit
-        // o cestu k souboru - po vylistovani cesty se overuje jestli soubor existuje, pripadne
-        // se zobrazi uzivateli chyba) a 'cutFileName' neni NULL (mozne jen v 'mode' 3), vraci
-        // v bufferu 'cutFileName' (o velikosti MAX_PATH znaku) jmeno tohoto souboru (bez cesty),
-        // jinak v bufferu 'cutFileName' vraci prazdny retezec; 'currentFSNameIndex' je index
-        // aktualniho jmena FS; 'fsName' je buffer o velikosti MAX_PATH, na vstupu je v nem jmeno
-        // FS v ceste, ktere je z tohoto pluginu (ale nemusi se shodovat s aktualnim jmenem FS
-        // v tomto objektu, staci kdyz pro nej IsOurPath() vraci TRUE), na vystupu je v 'fsName'
-        // aktualni jmeno FS v tomto objektu (musi byt z tohoto pluginu); 'fsNameIndex' je index
-        // jmena FS 'fsName' v pluginu (pro snazsi detekci o jake jmeno FS jde); neni-li
-        // 'pathWasCut' NULL, vraci se v nem TRUE pokud doslo ke zkraceni cesty; Salamander
-        // pouziva 'cutFileName' a 'pathWasCut' u prikazu Change Directory (Shift+F7) pri zadani
-        // jmena souboru - dochazi k fokusu tohoto souboru; je-li 'forceRefresh' TRUE, jde o
-        // tvrdy refresh (Ctrl+R) a plugin by mel menit cestu bez pouziti informaci z cache
-        // (je nutne overit jestli nova cesta existuje); 'mode' je rezim zmeny cesty:
-        //   1 (refresh path) - zkracuje cestu, je-li treba; nehlasit neexistenci cesty (bez hlaseni
-        //                      zkratit), hlasit soubor misto cesty, nepristupnost cesty a dalsi chyby
-        //   2 (volani ChangePanelPathToPluginFS, back/forward in history, etc.) - zkracuje cestu,
-        //                      je-li treba; hlasit vsechny chyby cesty (soubor
-        //                      misto cesty, neexistenci, nepristupnost a dalsi)
-        //   3 (change-dir command) - zkracuje cestu jen jde-li o soubor nebo cestu nelze listovat
-        //                      (ListCurrentPath pro ni vraci FALSE); nehlasit soubor misto cesty
-        //                      (bez hlaseni zkratit a vratit jmeno souboru), hlasit vsechny ostatni
-        //                      chyby cesty (neexistenci, nepristupnost a dalsi)
-        // je-li 'mode' 1 nebo 2, vraci FALSE jen pokud na tomto FS zadna cesta neni pristupna
-        // (napr. pri vypadku spojeni); je-li 'mode' 3, vraci FALSE pokud neni pristupna
-        // pozadovana cesta nebo soubor (ke zkracovani cesty dojde jen v pripade, ze jde o soubor);
-        // v pripade, ze je otevreni FS casove narocne (napr. pripojeni na FTP server) a 'mode'
-        // je 3, je mozne upravit chovani jako u archivu - zkracovat cestu, je-li treba a vracet FALSE
-        // jen pokud na FS neni zadna cesta pristupna, hlaseni chyb se nemeni
+        // Changes the current path in this FS to the path specified through 'fsName' and 'userPart'
+        // (either exactly or to the closest accessible subpath of 'userPart'—see the value of
+        // 'mode'). If the path is shortened because it points to a file (it is enough to suspect
+        // that it might be a file—the file existence is verified after listing the path and a
+        // message is shown to the user if the file is missing) and 'cutFileName' is not NULL (only
+        // possible in 'mode' 3), the buffer 'cutFileName' (MAX_PATH characters long) receives the
+        // name of that file (without the path). Otherwise, the buffer 'cutFileName' receives an
+        // empty string. 'currentFSNameIndex' is the index of the current FS name; 'fsName' is a
+        // MAX_PATH-sized buffer that contains, on input, the FS name from the path that belongs to
+        // this plugin (it does not have to match the current FS name of this object as long as
+        // IsOurPath() returns TRUE for it) and, on output, the current FS name of this object (it
+        // must belong to this plugin). 'fsNameIndex' is the index of the FS name 'fsName' inside the
+        // plugin (to make it easier to detect which FS name is used). If 'pathWasCut' is not NULL,
+        // TRUE is returned in it when the path was shortened. Salamander uses 'cutFileName' and
+        // 'pathWasCut' with the Change Directory command (Shift+F7) when a file name is entered—it
+        // selects that file. If 'forceRefresh' is TRUE, this is a hard refresh (Ctrl+R) and the
+        // plugin should change the path without using cached information (it is necessary to verify
+        // that the new path exists). 'mode' controls how the path is changed:
+        //   1 (refresh path) - shortens the path if needed; does not report path non-existence (cut
+        //                      silently), but reports files instead of paths, path inaccessibility,
+        //                      and other errors
+        //   2 (ChangePanelPathToPluginFS call, back/forward in history, etc.) - shortens the path if
+        //                      needed; reports all path errors (file instead of path, non-existence,
+        //                      inaccessibility, and others)
+        //   3 (change-dir command) - shortens the path only when it points to a file or the path
+        //                      cannot be listed (ListCurrentPath returns FALSE for it); does not
+        //                      report a file instead of a path (cut silently and return the file
+        //                      name), but reports all other path errors (non-existence,
+        //                      inaccessibility, and others)
+        // If 'mode' is 1 or 2, the function returns FALSE only when no path is accessible on this
+        // FS (e.g. when the connection is down). If 'mode' is 3, it returns FALSE when the desired
+        // path or file is not accessible (the path is shortened only if it points to a file). If
+        // opening the FS is time-consuming (e.g. connecting to an FTP server) and 'mode' is 3, the
+        // behavior can be adjusted like for archives—shorten the path if necessary and return FALSE
+        // only when no path is accessible on the FS; error reporting remains unchanged.
 
         HRESULT hr;
 

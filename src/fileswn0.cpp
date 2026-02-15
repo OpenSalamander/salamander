@@ -2905,7 +2905,7 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
                 break; // end of searching for selected items
         }
     }
-    if (focusFirstNewItem && i == Dirs->Count - 1) // found a new item
+    if (focusFirstNewItem && i == Files->Count - 1) // found a new item
     {
         if (!Is(ptDisk) || (Files->At(i).Attr & FILE_ATTRIBUTE_TEMPORARY) == 0) //  on disk, we ignore tmp files (they disappear immediately), see https://forum.altap.cz/viewtopic.php?t=2496
         {

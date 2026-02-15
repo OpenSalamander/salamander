@@ -4,35 +4,36 @@
 /****************************************************************************************\
 **                                                                                      **
 **                                                                                      **
-**   parser.cpp - analyzator MIME souboru                                               **
+**   parser.cpp - MIME file parser                                                      **
 **                                                                                      **
 **   v.1.0                                                                              **
 **                                                                                      **
-**   autor: Jakub Cerveny                                                               **
+**   author: Jakub Cerveny                                                              **
 **                                                                                      **
 **                                                                                      **
 \****************************************************************************************/
 
 //
-//  POZNAMKY K PARSERU:
+//  NOTES ABOUT THE PARSER:
 //
-//  Ze souboru parser.cpp a decoder.cpp jsou exportovany 2 hlavni funkce -
-//  ParseMailFile a DecodeSelectedBlocks. Nic dalsiho neni z vnejsiho pohledu potreba.
+//  Two main functions are exported from parser.cpp and decoder.cpp -
+//  ParseMailFile and DecodeSelectedBlocks. Nothing else is needed from the outside.
 //
-//  Jak to funguje: parser vezme mail a snazi se hledat hlavicky, uu/binhex bloky atd.
-//  Vystupem je seznam "znacek", ktere vymezuji (odkazujice se na radku v souboru)
-//  jednotlive bloky. Jsou 2 typy znacek - zacatek a konec. Vyhodou je, ze takto se
-//  daji popsat i bloky vnorene do jinych.
+//  How it works: the parser takes the mail and tries to find headers, UU/BinHex
+//  blocks, etc. The output is a list of "markers" that delineate the individual
+//  blocks (referencing their lines in the file). There are two types of markers -
+//  start and end. The advantage is that this can also describe blocks nested in
+//  other blocks.
 //
-//  Priklad - mame nejaky mail:
+//  Example - we have a mail message:
 //
-//    HLAVICKA MAILU
+//    MAIL HEADER
 //    ...
-//    TELO ZPRAVY, obsahujici take UUEncoded blok
+//    MESSAGE BODY, also containing a UUEncoded block
 //    ...
 //    ATTACHMENT
 //
-//  Vystupem parseru bude toto (S=start, E=end)
+//  The parser output will look like this (S=start, E=end)
 //
 //    S, line 1, MAINHEADER
 //    E, line 10
@@ -40,73 +41,73 @@
 //    S, line 10, BODY, encoding=TEXT, charset=blabla, filename='yyy'
 //
 //    S, line 20, BODY, encoding=UUENCODE, charset='us-ascii', filename='xxx', attachment=TRUE
-//    E, line 25   (konec UU bloku)
+//    E, line 25   (end of the UU block)
 //
-//    E, line 80   (konec zpravy)
+//    E, line 80   (end of the message)
 //
 //    S, line 82, BODY, encoding=BASE64, filename='zzz', attachment=TRUE
 //    E, line 555
 //
-//  Fce DecodeSelectedBlocks rekurzivne vola sama sebe kdyz narazi na start znacku,
-//  takze treba v predchozim prikladu UUEncoded blok "vyzere" radky z bloku TEXT.
-//  Takto se vyrezavaji UU a BinHex bloky.
+//  The DecodeSelectedBlocks function calls itself recursively when it encounters
+//  a start marker, so in the example above the UUEncoded block "eats" the lines
+//  from the TEXT block. This is how UU and BinHex blocks are carved out.
 //
-//  Parser funguje na jeden pruchod (vyjma pripadu, kdy se musi vratit z neplatnych
-//  UU/BinHex bloku nebo z falesnych hlavicek, viz nize).
+//  The parser works in a single pass (except when it has to roll back from invalid
+//  UU/BinHex blocks or from false headers, see below).
 //
-//  Jak se rozpoznavaji hlavicky: hlavicka musi mit format
+//  How headers are recognized: a header must have the format
 //    HEADERNAME [whitespace] ':' [whitespace] TEXT
-//  Pokud parser narazi na takovouto radku a zna HEADERNAME, prepne se do stavu 'hlavicka'
-//  Hlavicka konci prazdnym radkem.
+//  If the parser encounters such a line and knows HEADERNAME, it switches to the
+//  'header' state. A header ends with an empty line.
 //
-//  Vychytavka: aby nedoslo k nespravne detekci hlavicek, ktere nejsou hlavickami,
-//  napr. kdyz se v anglickem textu objevi radek "Date: blablabla", ma kazde jmeno
-//  hlavicky svoji "vahu". Vahy se nascitavaji, a pokud je po skonceni bloku hlavicek
-//  soucet vah mensi nez MIN_WEIGHT, parser se vrati zpatky a tuto "hlavicku" prilepi
-//  k predchozimu bloku.
+//  A neat trick: to avoid incorrectly detecting lines that are not headers as
+//  headers (for example, when an English text contains a line "Date: blablabla"),
+//  each header name has its own "weight". The weights are added up and if, after
+//  the header block ends, the sum of the weights is less than MIN_WEIGHT, the
+//  parser rewinds and glues this "header" back to the previous block.
 //
-//  Analyza mailovych souboru probiha podle syntaxe MIME zprav, tj. jsou detekovany
-//  multipart zpravy (dokonce i vnorene multiparty), analyzuji se hlavicky jako "Content-xxx"
-//  atd.
+//  Mail analysis follows the MIME message syntax, i.e. multipart messages (including
+//  nested multiparts) are detected and headers such as "Content-xxx" are analysed, etc.
 //
-//  Bloky UUEncode a BinHex jsou zcela nezavisle na MIME syntaxi a mohou se objevit
-//  kdekoliv krome bloku hlavicek. Po jejich detekci jsou vyrezavany, uplne mimo
-//  vedomi MIME analyzatoru.
+//  UUEncode and BinHex blocks are completely independent of MIME syntax and can
+//  appear anywhere except inside the header block. Once detected they are carved
+//  out, entirely outside the MIME parser's awareness.
 //
-//  Pozadovana syntaxe UU bloku:
-//    BEGIN whitespace poslounost_oktalovych_cislic whitespace filename eol
-//  Dale musi nasledovat radky, kde prvni znak vzdy udava pocet zakodovanych bajtu
-//  UU blok musi koncit radkou kde prvni slovo je END. Pokud jakakoliv podminka
-//  selze, parser se vrati zpatky a blok povazuje za bezny text a nic nehlasi.
-//  Pokud jsou na prvni zakodovane radce nalezeny znaky z XX charsetu, prepne se na
-//  XXEncoding
+//  Required UU block syntax:
+//    BEGIN whitespace sequence_of_octal_digits whitespace filename eol
+//  The following lines must each start with a character that specifies the number
+//  of encoded bytes. A UU block must end with a line whose first word is END. If
+//  any of the conditions fails, the parser rewinds, treats the block as plain text,
+//  and reports nothing. If characters from the XX charset are found on the first
+//  encoded line, the parser switches to XXEncoding.
 //
-//  Syntaxe BinHex bloku: za zacatek BinHex bloku se povazuje radka s textem
-//  (This file must be converted with BinHex 4.0) nebo radka zacinajici ':' a dlouha
-//  presne 64 znaku (test na predepsanych 64 znaku/radek se provadi jen zde).
-//  Pak se dalsi radky proste zkusi nacpat do dekoderu a pokud se je povede dekodovat
-//  blok se uzna BinHexe, jinak se parser vrati a povazuje jej za text, ale
-//  jen kdyz nebyla nalezena hlavicka (This file..). Pokud byla hlavicka na zacatku
-//  nalezena, ohlasi se poskozeni BinHex bloku.
+//  BinHex block syntax: a line containing the text "(This file must be converted
+//  with BinHex 4.0)" or a line starting with ':' and exactly 64 characters long
+//  is considered the start of a BinHex block (the test for the prescribed 64
+//  characters per line is performed only here). Then we simply try to feed the
+//  following lines into the decoder and, if they can be decoded, the block is
+//  accepted as BinHex. Otherwise the parser rewinds and treats it as text, but
+//  only if the header (This file..) was not found. If the header was present at
+//  the beginning, damage to the BinHex block is reported.
 //
-//  Dekodovani: program ma k dispozici nekolik dekoderu (spolecny predek CDecoder),
-//  ktere maji 3 hlavni fce: Start, DecodeLine, End. Funkce DecodeSelectedBlocks
-//  prochazi vystupem parseru a cpe radky souboru do prislusnych dekoderu, ze kterych
-//  vypadavaji vysledne soubory.
+//  Decoding: the program has several decoders available (with the common base
+//  class CDecoder) that have three main functions: Start, DecodeLine, End. The
+//  DecodeSelectedBlocks function walks through the parser output and feeds file
+//  lines into the appropriate decoders, which produce the resulting files.
 //
-//  Dekodovani je treba provadet i behem parsovani, aby se zjistily budouci
-//  velikosti dekodovanych souboru, viz pDummyDecoder.
+//  Decoding must also be done while parsing in order to determine the future size
+//  of decoded files, see pDummyDecoder.
 //
-//  Program nezna rozsirenou syntaxi UU bloku (ktera je tezce nestandardni a tyka
-//  se vetsinou rozsekanych bloku) a takove bloky povazuje za text.
+//  The program does not understand the extended UU block syntax (which is highly
+//  non-standard and mostly concerns split blocks) and treats such blocks as text.
 //
-//  Take nepodporuje rozsekani UU nebo BinHex bloku do vice souboru.
-//  WinCommander ovsem ano, ale ten neimplementuje kodovane soubory jako archivy,
-//  a celkem slozite hleda ostatni casti bloku v jinych souborech. Myslim ale,
-//  ze rozsekane bloky jsou minulost (omezeni mail serveru na velikost zpravy),
-//  a pokud by uz nekdo dostal takove soubory, neni problem je poeditovat a slepit
-//  do jednoho (jestli by vubec vedel, o co jde, a kdyz ne, tak mu ani WinCmd
-//  nepomuze...).
+//  It also does not support splitting UU or BinHex blocks into multiple files.
+//  WinCommander does, but it does not implement encoded files as archives and it
+//  quite laboriously searches for the remaining parts of a block in other files.
+//  I believe split blocks are a thing of the past (because mail servers limit the
+//  size of a message), and if someone still received such files it is not a problem
+//  to edit and glue them into one (assuming they even understand what is going on;
+//  if not, WinCmd will not help either...).
 //
 
 #include "precomp.h"
@@ -122,15 +123,15 @@ int iErrorStr;
 
 // ****************************************************************************
 //
-//  Tabulka jmen hlavicek
+//  Table of header names
 //
 
 #define MIN_WEIGHT 5
 
-// Seznam jmen hlavicek - slouzi k rozpoznani bloku hlavicek. 'name' je jmeno hlavicky,
-// 'main' je boolean a urcuje, zda se tato hlavicka vyskytuje v pouze v hlavickach
-// celeho mailu, 'weight' je vaha jmena - aby blok mohl byt hlavickou, musi byt soucet
-// vah jmen hlavicek aspon MIN_WEIGHT.
+// List of header names - used to recognize the header block. 'name' is the header name,
+// 'main' is a boolean that determines whether the header appears only in the main headers
+// of the entire mail; 'weight' is the name weight - for a block to qualify as a header, the sum
+// of the header-name weights must be at least MIN_WEIGHT.
 
 static struct HEADERINFO
 {
@@ -186,15 +187,15 @@ static struct HEADERINFO
         {"X-Enclosure-Info", 0, 2},
         {"X-Total-Enclosures", 0, 2}};
 
-// Poznamka k vaham: jmena hlavicek, ktera jsou jednoducha anglicka slova, maji
-// vahu 1. Slozeniny, ktere se tezko vyskytnou v normalnim textu, maji vahu 2.
-// Dulezite hlavicky, ktere mohou i samostatne tvorit cely blok hlavicek, maji
+// Note on weights: header names that are simple English words have
+// weight 1. Compounds that are unlikely to appear in normal text have weight 2.
+// Important headers that can form a complete header block on their own have
 // MIN_WEIGHT.
 
-static BOOL bHeaderNamesSorted = FALSE; // seznam jmen se pri prvnim pruchodu
-// fci ParseMailFile setridi a bHeaderNamesSorted se nastavi na TRUE
+static BOOL bHeaderNamesSorted = FALSE; // the list of names is sorted during the first pass
+// of ParseMailFile and bHeaderNamesSorted is set to TRUE
 
-// porovnavaci funkce pro qsort a bsearch
+// comparison function for qsort and bsearch
 static int __cdecl compare_header_names(const void* elem1, const void* elem2)
 {
     return _stricmp(((HEADERINFO*)elem1)->name, ((HEADERINFO*)elem2)->name);
@@ -202,7 +203,7 @@ static int __cdecl compare_header_names(const void* elem1, const void* elem2)
 
 // ****************************************************************************
 //
-//  Metody CInputFile
+//  CInputFile methods
 //
 
 #define TEXTBUFSIZE (256 * 1024)
@@ -373,7 +374,7 @@ void CParserOutput::UnselectAll()
 
 // ****************************************************************************
 //
-//  Pomocne funkce pro dekodovani MIME
+//  Helper functions for MIME decoding
 //
 
 #define LINE_MAX 10000
@@ -382,7 +383,7 @@ void CParserOutput::UnselectAll()
 #define TEXT_MAX 1000
 #define CURRENTCHARSET_MAX 20
 
-// stavy, ve kterych se analyzator muze nachazet
+// states the parser can be in
 typedef enum eParserState
 {
     STATE_UNRECOGNIZED = 0,
@@ -401,21 +402,21 @@ static char iCurrentEncoding, iSavedCurrentEncoding;
 static char* cCurrentCharset;
 static int iMessageNumber, iBinaryNumber;
 static char* cFileName;
-static int iNameOrigin; // puvod jmena: 0..default, 1..content-type, 2..content-disposition, 3. content-location
+static int iNameOrigin; // name origin: 0..default, 1..content-type, 2..content-disposition, 3..content-location
 static int* piDefaultNumber;
-static CDecoder* pDummyDecoder; // dekoder pro vypocet velikosti souboru ulozenych v "archivu"
+static CDecoder* pDummyDecoder; // decoder used to compute the size of files stored in the "archive"
 static eParserState iState, iSavedState;
 static BOOL bLast, bNextLast, bSavedLast, bSavedNextLast;
 
-// zasobnik pro vnorene multiparty
+// stack for nested multiparts
 #define MULTIPARTSTACK_MAX 5
 #define BOUNDARY_MAX 200
-static char (*cBoundaries)[200]; // zasobnik hranic multipartu
-static int iMultipart;           // udava uroven vnoreni multipartu a soucasne vrchol zasobniku
+static char (*cBoundaries)[200]; // stack of multipart boundaries
+static int iMultipart;           // indicates the nesting level of the multipart and also the stack top
 static int iSavedMultipart;
 #define STACKTOP (iMultipart - 1)
 
-////// PRACE S TEXTEM //////////////////////////////////////////////////////////
+////// TEXT HANDLING /////////////////////////////////////////////////////////////
 
 static BOOL IsWhiteLine(LPSTR pszLine)
 {
@@ -497,7 +498,7 @@ void GetWord(LPCSTR& pszText, LPSTR pszWord, int iMaxWord, LPCSTR pszDelimiters)
     *pszWord = 0;
 }
 
-////// PARSOVANI HLAVICEK //////////////////////////////////////////////////////
+////// HEADER PARSING ///////////////////////////////////////////////////////////
 
 static BOOL ParseHeader(LPCSTR pszLine, LPSTR pszName, int iMaxName, LPSTR pszText, int iMaxText)
 {
@@ -531,8 +532,8 @@ static void ParseContentType(LPCSTR pszText, LPSTR pszType, int iMaxType, LPSTR 
 static BOOL GetParameter(LPSTR pszText, LPCSTR pszParam, LPSTR pszBuffer, int iBufferSize)
 {
     CALL_STACK_MESSAGE3("GetParameter(%s, , , %d)", pszText, iBufferSize);
-    // vytvorim si lower-case kopie stringu abych moh hledat case-insensitive,
-    // bal jsem se pouzit fci StrStrI... (nevim jestli je dostupna na vsech systemech)
+    // create lowercase copies of the strings so I can search case-insensitively,
+    // I was afraid to use StrStrI... (I do not know if it is available on all systems)
     char* text = new char[strlen(pszText) + 1];
     strcpy(text, pszText);
     CharLower(text);
@@ -583,16 +584,16 @@ static BOOL IsHeader()
         return TRUE;
 
     char temp[10];
-    const char* p = cLine;        // Test na zvlastni pripad, kdy blok hlavicek zacina
-    SkipWSP(p);                   // radkem "From", ktery se syntakticky lisi od ostatnich.
-    GetWord(p, temp, 10, "- \t"); // Pokud je nasledujici radek jiz hlavicka,
-    return (                      // akceptujeme i radek "From" jako hlavicku.
+    const char* p = cLine;        // Check for the special case when the header block starts
+    SkipWSP(p);                   // with a "From" line, which syntactically differs from the others.
+    GetWord(p, temp, 10, "- \t"); // If the next line is already a header,
+    return (                      // accept the "From" line as a header as well.
         !_stricmp(temp, "From") &&
         ParseHeader(cNextLine, cName, NAME_MAX, cText, TEXT_MAX) &&
         GetHeaderInfo(cName) != NULL);
 }
 
-////// HRANICE /////////////////////////////////////////////////////////////////
+////// BOUNDARIES ///////////////////////////////////////////////////////////////
 
 static BOOL IsBoundary(LPCSTR pszBoundary, BOOL* bEnd)
 {
@@ -683,7 +684,7 @@ static void InsertSuffix(char* filename, int suffix)
 {
     char temp[MAX_PATH];
     char* ext = strrchr(filename, '.');
-    if (ext != NULL) // ".cvspass" ve Windows je pripona
+    if (ext != NULL) // ".cvspass" is an extension in Windows
     {
         *ext++ = 0;
         sprintf(temp, "%s(%ld).%s", filename, suffix, ext);
@@ -703,24 +704,24 @@ static void MakeNamesUnique(CParserOutput* pOutput)
     CALL_STACK_MESSAGE1("MakeNamesUnique()");
     int numblocks = pOutput->Markers.Count / 2;
     char** index = new char*[numblocks];
-    // vytvoreni indexu jmen souboru
+    // build an index of file names
     int i, j;
     for (i = 0, j = 0; i < pOutput->Markers.Count; i++)
     {
         if (pOutput->Markers[i]->iMarkerType == MARKER_START)
         {
-            if (j >= numblocks) // nesmi nastat, ale pro jistotu...
+            if (j >= numblocks) // should not happen, but just to be safe...
             {
-                TRACE_E("MakeNamesUnique(): zmatky v parser output - numblocks != pOutput->Markers.Count / 2");
+                TRACE_E("MakeNamesUnique(): inconsistency in parser output - numblocks != pOutput->Markers.Count / 2");
                 delete[] index;
                 return;
             }
             index[j++] = ((CStartMarker*)pOutput->Markers[i])->cFileName;
         }
     }
-    // setrideni indexu
+    // sort the index
     qsort(index, numblocks, sizeof(char*), compare_file_names);
-    // nyni lezi stejna jmena vedle sebe a muzeme je snadno odchytit
+    // identical names now lie next to each other and we can easily catch them
     int k, l;
     for (k = 1, l = 0; k < numblocks; k++)
     {
@@ -732,7 +733,7 @@ static void MakeNamesUnique(CParserOutput* pOutput)
     delete[] index;
 }
 
-// upravene dekodery pro rozkodovani kodovanych jmen (dekoduji do bufferu)
+// custom decoders for decoding encoded names (they decode into the buffer)
 class CBase64MiniDecoder : public CBase64Decoder
 {
 public:
@@ -760,7 +761,7 @@ public:
 static BOOL DecodeWord(const char*& p, char*& q)
 {
     CALL_STACK_MESSAGE1("DecodeWord()");
-    char conversion[200]; // misto na kod. stranku (51 znaku) + pripojeni cil. kodove stranky ('-' a ' ' se ignoruji)
+    char conversion[200]; // space for the code page (51 characters) plus the target code-page suffix ('-' and ' ' are ignored)
     GetWord(p, conversion, 50, "?");
     if (*p++ != '?')
         return FALSE;
@@ -789,11 +790,11 @@ static BOOL DecodeWord(const char*& p, char*& q)
         Decoder.DecodeLine(text, TRUE);
     }
 
-    // 'conversion' je konverze, ktera je treba provest (prevod na ve Windows pouzivanou kodovou stranku);
-    // 'start' az 'q' je retezec k prekodovani
+    // 'conversion' is the conversion that needs to be performed (conversion to the code page used by Windows);
+    // 'start' through 'q' is the string to recode
     char codePage[101];
     SalamanderGeneral->GetWindowsCodePage(NULL, codePage);
-    if (codePage[0] != 0) // jen pokud je WindowsCodePage znama
+    if (codePage[0] != 0) // only if the Windows code page is known
     {
         strcat(conversion, codePage);
         char table[256];
@@ -810,8 +811,8 @@ static BOOL DecodeWord(const char*& p, char*& q)
     return TRUE;
 }
 
-// tato funkce dekoduje specialni jmena souboru, napr "=?iso-8859-2?B?vmx1u2916Gv9IGv58i54eHg=?="
-// potrebuje k tomu upravene QP a Base64 dekodery
+// this function decodes special file names, e.g. "=?iso-8859-2?B?vmx1u2916Gv9IGv58i54eHg=?="
+// it requires modified QP and Base64 decoders
 static void DecodeSpecialWords(LPSTR pszText)
 {
     CALL_STACK_MESSAGE2("DecodeSpecialWords(%s)", pszText);
@@ -934,25 +935,25 @@ static void EverythingBaaack(CParserOutput* pOutput, int plus)
 
 // ****************************************************************************
 //
-//  TestUUBlock - pokud nalezne UU/XX blok, otestuje, zda je platny a prida
-//  ho do ParserOutput, jinak se vrati na puvodni radku
+//  TestUUBlock - if it finds a UU/XX block, it checks whether it is valid and adds
+//  it to ParserOutput; otherwise it returns to the original line
 //
 
 static BOOL TestUUBlock(CParserOutput* pOutput, BOOL& bEnd)
 {
     bEnd = FALSE;
-    // jsme na UU hlavicce?
+    // are we on a UU header?
     char text[8];
     char filename[MAX_PATH];
     const char* line = cLine;
     SkipWSP(line);
     GetWord(line, text, 8, " \t");
     if (_stricmp(text, "begin"))
-        return FALSE; // je prvni slovo 'begin' ?
+        return FALSE; // is the first word 'begin'?
     SkipWSP(line);
     if (!*line)
         return FALSE;
-    while (*line && *line != ' ' && *line != '\t') // nasleduje posloupnost oktalovych cislic?
+    while (*line && *line != ' ' && *line != '\t') // is a sequence of octal digits following?
         if ((BYTE)*line < (BYTE)'0' || (BYTE)*line > (BYTE)'7')
             return FALSE;
         else
@@ -960,32 +961,32 @@ static BOOL TestUUBlock(CParserOutput* pOutput, BOOL& bEnd)
     SkipWSP(line);
     if (!*line)
         return FALSE;
-    GetWord(line, filename, MAX_PATH, " \t"); // jeste tam musi byt nazev souboru
+    GetWord(line, filename, MAX_PATH, " \t"); // the file name also has to be present
     SkipWSP(line);
     if (*line)
-        return FALSE; // a uz nic vic
+        return FALSE; // and nothing more
 
-    // nasli jsme UU hlavicku
-    SaveState(); // ulozime pozici pro pripadny navrat
+    // we found a UU header
+    SaveState(); // save the position in case we need to return
     int iLineStart = InputFile.iCurrentLine;
     int size = 0;
-    strcpy(cLine, cNextLine); // dalsi radka
+    strcpy(cLine, cNextLine); // next line
 
     BYTE uutable[256], xxtable[256], *table = uutable;
     BuildUUTable(uutable);
     BuildXXTable(xxtable);
 
     int i;
-    for (i = 0; cLine[i]; i++) // test na XX znakovou sadu
+    for (i = 0; cLine[i]; i++) // test for the XX character set
         if (uutable[(BYTE)cLine[i]] == 255 && xxtable[(BYTE)cLine[i]] != 255)
         {
-            table = xxtable; // prepneme se na XX
+            table = xxtable; // switch to XX
             break;
         }
 
     do
     {
-        if (!cLine[0]) // nepripoustime prazdne radky
+        if (!cLine[0]) // empty lines are not allowed
         {
             RestoreState();
             return FALSE;
@@ -995,7 +996,7 @@ static BOOL TestUUBlock(CParserOutput* pOutput, BOOL& bEnd)
         SkipWSP(line);
         GetWord(line, text, 8, " \t");
         if (!_stricmp(text, "end"))
-        { // jsme uspesne na konci, pridame blok do outputu
+        { // we successfully reached the end, add the block to the output
             pOutput->StartBlock(BLOCK_BODY, iLineStart);
             CStartMarker* p = pOutput->pCurrentBlock;
             p->iEncoding = table == uutable ? ENCODING_UU : ENCODING_XX;
@@ -1011,15 +1012,15 @@ static BOOL TestUUBlock(CParserOutput* pOutput, BOOL& bEnd)
 
         int j;
         for (j = 0; cLine[j]; j++)
-            if (table[(BYTE)cLine[j]] == 255) // nepripoustime neplatne znaky
+            if (table[(BYTE)cLine[j]] == 255) // invalid characters are not allowed
             {
                 RestoreState();
                 return FALSE;
             }
 
         int numbytes = table[(BYTE)cLine[0]];
-        if ((int)(strlen(cLine) - 1) < (numbytes * 3 / 4)) // znaku musi byt na radce dostatek...
-        {                                                  // Pozn: znaku na radce mozna nekdy muze byt i prebytek, proto nekontrolujeme rovnost.
+        if ((int)(strlen(cLine) - 1) < (numbytes * 3 / 4)) // there must be enough characters on the line...
+        {                                                  // Note: there may sometimes be extra characters on the line, so we do not check for equality.
             RestoreState();
             return FALSE;
         }
@@ -1032,17 +1033,17 @@ static BOOL TestUUBlock(CParserOutput* pOutput, BOOL& bEnd)
 
 // ****************************************************************************
 //
-//  TestYEncBlock - pokud nalezne yEnc blok, otestuje, zda je platny a
-//  prida ho do ParserOutput, jinak se vrati na puvodni radku
+//  TestYEncBlock - if it finds a yEnc block, it checks whether it is valid and
+//  adds it to ParserOutput; otherwise it returns to the original line
 //
 
 static BOOL TestYEncBlock(CParserOutput* pOutput, BOOL& bEnd)
 {
-    // jsme na hlavicce?
+    // are we on a header?
     if (memcmp(cLine, "=ybegin", 7))
         return FALSE;
 
-    // ano, vyndame atributy line, size, part a name
+    // yes, extract the attributes line, size, part, and name
     const char* line = cLine + 8;
     char text[50], value[50], filename[MAX_PATH];
     int size, part = 0, attrLine = 0, attrSize = 0, attrName = 0, partsize;
@@ -1078,11 +1079,11 @@ static BOOL TestYEncBlock(CParserOutput* pOutput, BOOL& bEnd)
             GetWord(line, text, 50, " \t");
     }
 
-    // line, size a name jsou povinne
+    // line, size, and name are mandatory
     if (!attrLine || !attrSize || !attrName)
         return FALSE;
 
-    // pokud je toto multipart soubor, nasledujici radka musi zacinat =ypart
+    // if this is a multipart file, the next line must start with =ypart
     if (part)
         if (!memcmp(cNextLine, "=ypart", 6))
         {
@@ -1122,7 +1123,7 @@ static BOOL TestYEncBlock(CParserOutput* pOutput, BOOL& bEnd)
     {
         line = cLine;
         GetWord(line, text, 6, " \t");
-        if (!strcmp(text, "=yend")) // jsme na konci?
+        if (!strcmp(text, "=yend")) // are we at the end?
         {
             int endsize, endpart, attrCRC = 0, attrPartCRC = 0;
             attrSize = 0;
@@ -1189,8 +1190,8 @@ static BOOL TestYEncBlock(CParserOutput* pOutput, BOOL& bEnd)
 
 // ****************************************************************************
 //
-//  TestBinHexBlock - pokud nalezne binhexovy blok, otestuje, zda je platny a
-//  prida ho do ParserOutput, jinak se vrati na puvodni radku
+//  TestBinHexBlock - if it finds a BinHex block, it checks whether it is valid and
+//  adds it to ParserOutput; otherwise it returns to the original line
 //
 
 static BOOL TestBinHexBlock(CParserOutput* pOutput, BOOL& bEnd)
@@ -1243,7 +1244,7 @@ static BOOL TestBinHexBlock(CParserOutput* pOutput, BOOL& bEnd)
 
 // ****************************************************************************
 //
-//  ParseMailFile - hlavni funkce pro rozkodovani mailu
+//  ParseMailFile - main function for decoding mail
 //
 
 BOOL ParseMailFile(LPCTSTR pszFileName, CParserOutput* pOutput, BOOL bAppendCharset)
@@ -1276,7 +1277,7 @@ BOOL ParseMailFile(LPCTSTR pszFileName, CParserOutput* pOutput, BOOL bAppendChar
     int iWeightSum;
 
     iState = STATE_UNRECOGNIZED;
-    InputFile.iCurrentLine = -1; // kvuli tomu ze cteme jednu radku napred
+    InputFile.iCurrentLine = -1; // because we read one line ahead
     iMultipart = 0;
     iCurrentEncoding = ENCODING_UNKNOWN;
     iMessageNumber = iBinaryNumber = 0;
@@ -1309,7 +1310,7 @@ BOOL ParseMailFile(LPCTSTR pszFileName, CParserOutput* pOutput, BOOL bAppendChar
 
         do
         {
-            goback = FALSE; // tato cast sleduje hranice multipartu
+            goback = FALSE; // this part tracks multipart boundaries
             if (iMultipart)
             {
                 BOOL bEnd2;
@@ -1342,7 +1343,7 @@ BOOL ParseMailFile(LPCTSTR pszFileName, CParserOutput* pOutput, BOOL bAppendChar
                             pDummyDecoder = new CTextDecoder;
                             pDummyDecoder->Start(NULL, NULL, TRUE);
                             iState = STATE_HEADER;
-                            iWeightSum = MIN_WEIGHT; // tuhle hlavicku urcite budeme chtit..
+                            iWeightSum = MIN_WEIGHT; // we definitely want this header..
                         }
                         iCurrentEncoding = ENCODING_NONE;
                         bNextBlockIsAttachment = FALSE;
@@ -1352,13 +1353,13 @@ BOOL ParseMailFile(LPCTSTR pszFileName, CParserOutput* pOutput, BOOL bAppendChar
                     }
                     goback = TRUE;
                 }
-                else // Osetreni pripadu, kdy predchozi multipart
-                {    // nebyl radne ukoncen, ale jsme na hranici
+                else // Handling the case when the previous multipart
+                {    // was not properly terminated, yet we are at a boundary
                     int i;
-                    for (i = STACKTOP - 1; i >= 0; i--) // nektereho predchoziho.
+                    for (i = STACKTOP - 1; i >= 0; i--) // one of the previous ones.
                         if (IsBoundary(cBoundaries[i], &bEnd2))
                         {
-                            iMultipart = i + 1; // prepneme se na tento predchozi...
+                            iMultipart = i + 1; // switch to that previous one...
                             goback = TRUE;
                             break;
                         }
@@ -1376,19 +1377,19 @@ BOOL ParseMailFile(LPCTSTR pszFileName, CParserOutput* pOutput, BOOL bAppendChar
             {
                 if (IsHeader())
                 {
-                    SaveState(); // uloz stav pro pripad, ze to nebude hlavicka
+                    SaveState(); // save the state in case this is not a header
                     if (pOutput->iLevel > 0)
                     {
                         EndCalcSize(pOutput);
                         pOutput->EndBlock(InputFile.iCurrentLine);
                     }
                     iState = STATE_HEADER;
-                    pOutput->StartBlock(BLOCK_HEADER, InputFile.iCurrentLine); // zacneme hlavicku
-                    strcpy(cCurrentCharset, "us-ascii");                       // defaultni charset
+                    pOutput->StartBlock(BLOCK_HEADER, InputFile.iCurrentLine); // start the header
+                    strcpy(cCurrentCharset, "us-ascii");                       // default charset
                     SetDefaultFileName(FALSE);
                     iCurrentEncoding = ENCODING_NONE;
                     bNextBlockIsAttachment = FALSE;
-                    pDummyDecoder = new CTextDecoder;       // kvuli vypoctu vysledne velikosti souboru
+                    pDummyDecoder = new CTextDecoder;       // to compute the resulting file size
                     pDummyDecoder->Start(NULL, NULL, TRUE); // bJustCalcSize == TRUE
                     iWeightSum = 0;
                     goback = TRUE;
@@ -1404,22 +1405,22 @@ BOOL ParseMailFile(LPCTSTR pszFileName, CParserOutput* pOutput, BOOL bAppendChar
                 break;
             }
 
-            case STATE_HEADER: // jsme na bloku hlavicek
+            case STATE_HEADER: // we are in the header block
             {
-                pDummyDecoder->DecodeLine(cLine, bLast); // pocitame velikost..
+                pDummyDecoder->DecodeLine(cLine, bLast); // computing the size...
 
-                // unfolding (viz RFC822) hlavicek
+                // unfolding of headers (see RFC822)
                 while ((cNextLine[0] == ' ' || cNextLine[0] == '\t') && !IsWhiteLine(cNextLine))
                 {
                     if (strlen(cLine) + strlen(cNextLine + 1) >= LINE_MAX)
-                        break; // test preteceni
+                        break; // overflow test
                     pDummyDecoder->DecodeLine(cNextLine, bLast);
                     strcat(cLine, cNextLine + 1);
                     bLast = bNextLast;
                     bNextLast = InputFile.ReadLine(cNextLine);
                 }
 
-                // rozloz radek na jmeno hlavicky a jeji obsah
+                // split the line into the header name and its value
                 if (ParseHeader(cLine, cName, NAME_MAX, cText, TEXT_MAX))
                 {
                     if (!_stricmp(cName, "Content-Type"))
@@ -1428,13 +1429,13 @@ BOOL ParseMailFile(LPCTSTR pszFileName, CParserOutput* pOutput, BOOL bAppendChar
                         char cType[20], cSubType[20];
                         ParseContentType(cText, cType, sizeof(cType), cSubType, sizeof(cSubType));
                         if (iMultipart < MULTIPARTSTACK_MAX && !_stricmp(cType, "multipart"))
-                        { // pokud je zprava multipart , zajima nas retezec oddelujici jednotlive casti
+                        { // if the message is multipart, we care about the string that separates the individual parts
                             char cBoundary[BOUNDARY_MAX];
                             if (GetParameter(cText, "boundary", cBoundary, BOUNDARY_MAX))
                             {
                                 PushBoundary(cBoundary);
-                                pMultipartStart = pOutput->pCurrentBlock; // oznacime si, kde jsme
-                            } // s multipartem zacali
+                                pMultipartStart = pOutput->pCurrentBlock; // remember where we are
+                            } // we have started working with the multipart
                         }
                         else if (!iNameOrigin)
                             SetDefaultMIMEFileName(cType, cSubType, bAppendCharset);
@@ -1517,19 +1518,19 @@ BOOL ParseMailFile(LPCTSTR pszFileName, CParserOutput* pOutput, BOOL bAppendChar
                     {
                         iWeightSum += phi->weight;
 
-                        if (phi->main) // povysime tento blok na main header?
+                        if (phi->main) // should we promote this block to the main header?
                         {
                             pOutput->pCurrentBlock->iBlockType = BLOCK_MAINHEADER;
                             if (iWeightSum >= MIN_WEIGHT && pMultipartStart != pOutput->pCurrentBlock)
-                                iMultipart = 0; // skoncujeme s multiparty z predesleho mailu
+                                iMultipart = 0; // finish the multipart from the previous mail
                         }
                     }
                 }
 
-                // nastaveni flagu bEmpty (hlavicka neni nikdy prazdna)
+                // setting the bEmpty flag (a header is never empty)
                 pOutput->pCurrentBlock->bEmpty = 0;
 
-                // jsme na konci bloku hlavicek (= prazdna radka) ?
+                // are we at the end of the header block (= empty line)?
                 if (IsWhiteLine(cNextLine))
                 {
                     pDummyDecoder->DecodeLine(cNextLine, bLast);
@@ -1537,22 +1538,22 @@ BOOL ParseMailFile(LPCTSTR pszFileName, CParserOutput* pOutput, BOOL bAppendChar
 
                     if (iWeightSum < MIN_WEIGHT)
                     {
-                        EverythingBaaack(pOutput, 1); // vsechno zpatky !!! tohle nebyla hlavicka...
+                        EverythingBaaack(pOutput, 1); // roll everything back!!! this was not a header...
                     }
                     else
                     {
                         BOOL bLastStartedMPart = pOutput->pCurrentBlock == pMultipartStart;
-                        pOutput->EndBlock(InputFile.iCurrentLine + 2); // ukoncime tento blok
-                        iState = STATE_BODY;                           // bude nasledovat telo
+                        pOutput->EndBlock(InputFile.iCurrentLine + 2); // close this block
+                        iState = STATE_BODY;                           // the body will follow
 
                         if (iMultipart && bLastStartedMPart)
-                        { // Pokud prave skoncila hlavicka kde byl pocat multipart, zacina MIME preambule.
+                        { // If the header that started the multipart has just ended, a MIME preamble begins.
                             pOutput->StartBlock(BLOCK_PREAMBLE, InputFile.iCurrentLine + 2);
                             pDummyDecoder = new CTextDecoder;
                             pDummyDecoder->Start(NULL, NULL, TRUE);
                         }
                         else
-                        { // Jinak se jedna o obycejne telo/cast zpravy.
+                        { // Otherwise it is an ordinary body/message part.
                             pOutput->StartBlock(BLOCK_BODY, InputFile.iCurrentLine + 2);
                             CStartMarker* p = pOutput->pCurrentBlock;
                             p->iEncoding = iCurrentEncoding;
@@ -1616,7 +1617,7 @@ skipout:
         }
     }
 
-    // doplneni nazvu casti, ktere nejsou BODY
+    // add names to the parts that are not BODY
     int h = 0, s = 0, p = 0, e = 0;
     int i;
     for (i = 0; i < pOutput->Markers.Count; i++)
@@ -1644,7 +1645,7 @@ skipout:
 
     MakeNamesUnique(pOutput);
 
-    pOutput->EndBlock(InputFile.iCurrentLine + 1); // jeden End navic kvuli dekoderu
+    pOutput->EndBlock(InputFile.iCurrentLine + 1); // one extra End because of the decoder
 
     delete[] cLine;
     delete[] cNextLine;

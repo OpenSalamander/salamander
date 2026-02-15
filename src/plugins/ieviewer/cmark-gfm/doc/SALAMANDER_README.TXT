@@ -7,7 +7,7 @@ Copy headers to build\src and build\extensions.
 
 ---
 
-TODO pro IE Viewer plugin
-•Pøejmenovat plugin na Markup Viewer?
-•Doplnit nápovìdu ohlednì podpory Markdown
-•Do headru generovaného HTML bychom mohli dát instrukce pro IE, že je má renderovat poslední verzí místo IE6 (sice to zapisujeme do registry Windows, ale takto by to byla jistota)
+TODO for the IE Viewer plugin
+Rename the plugin to Markup Viewer?
+Add help text about Markdown support
+In the generated HTML head we could add instructions for IE to render the latest version instead of IE6 (we already write this to the Windows registry, but this would make it certain)

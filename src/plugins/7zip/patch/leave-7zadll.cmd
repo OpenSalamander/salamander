@@ -1,8 +1,8 @@
 rem
-rem Odstrani ze stromu 7z313 soubory, ktere nejsou potreba pro kompilovani 7za.dll
+rem Remove from the 7z313 tree the files that are not needed to build 7za.dll
 rem
 
-rem nejdriv smazneme soubory
+rem delete the files first
 
 del /Q 7zip\Archive\7z\7z.dsp
 del /Q 7zip\Archive\7z\7z.dsw
@@ -776,7 +776,7 @@ del /Q Windows\Control\Trackbar.h
 del /Q Windows\Control\Window2.cpp
 del /Q Windows\Control\Window2.h
 
-rem smazat prazdne adresare
+rem delete empty directories
 
 rmdir /Q Far
 

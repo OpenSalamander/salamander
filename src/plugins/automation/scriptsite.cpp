@@ -271,7 +271,7 @@ HRESULT STDMETHODCALLTYPE CScriptSite::GetDocumentContextFromPosition(
     {
         ULONG ulStartPos = 0;
 
-        pdi->pDbgDocHelper->GetScriptBlockInfo((DWORD)dwSourceContext, // FIXME_X64 potlacen warning C4244: 'argument' : conversion from 'DWORDLONG' to 'DWORD', possible loss of data
+        pdi->pDbgDocHelper->GetScriptBlockInfo((DWORD)dwSourceContext, // FIXME_X64 suppressed warning C4244: 'argument' : conversion from 'DWORDLONG' to 'DWORD', possible loss of data
                                                NULL, &ulStartPos, NULL);
         hr = pdi->pDbgDocHelper->CreateDebugDocumentContext(
             ulStartPos + uCharacterOffset, uNumChars, ppsc);

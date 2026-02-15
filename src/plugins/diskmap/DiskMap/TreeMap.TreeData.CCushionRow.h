@@ -16,8 +16,8 @@ class CCushionRow
 protected:
     POINT _location;
     EDirection _dir;
-    int _length; // DELKA
-    int _width;  //sirka
+    int _length; // length
+    int _width;  //width
 
     CCushion* _firstCushion;
     CCushion* _lastCushion;
@@ -228,7 +228,7 @@ public:
                 return NULL;
             if (y >= this->_location.y + this->_length)
                 return NULL;
-            //proslo, takze je to nejaky nas polstar
+            //passed the checks, so it is one of our cushions
             int sy = this->_location.y;
 
             for (CCushion* cs = this->_firstCushion; cs != NULL; cs = cs->GetNext())
@@ -237,7 +237,7 @@ public:
                 if (y < sy)
                     return cs->GetHitInfo(x, y, this->_location.x, sy - cs->_size, this->_width, cs->_size, parent);
             }
-            return NULL; // CHYBA (data)!!
+            return NULL; // ERROR (data)!!
         }
         else // ------
         {
@@ -245,7 +245,7 @@ public:
                 return NULL;
             if (y >= this->_location.y + this->_width)
                 return NULL;
-            //proslo, takze je to nejaky nas polstar
+            //passed the checks, so it is one of our cushions
             int sx = this->_location.x;
 
             for (CCushion* cs = this->_firstCushion; cs != NULL; cs = cs->GetNext())
@@ -254,8 +254,8 @@ public:
                 if (x < sx)
                     return cs->GetHitInfo(x, y, sx - cs->_size, this->_location.y, cs->_size, this->_width, parent);
             }
-            return NULL; // CHYBA (data)!!
+            return NULL; // ERROR (data)!!
         }
-        return NULL; // CHYBA (compiler)?!?!
+        return NULL; // ERROR (compiler)?!?!
     }
 };

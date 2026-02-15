@@ -6,15 +6,15 @@
 enum CParserResultEnum
 {
     preOK,
-    preOutOfMemory,    // nedostatek pameti pro dokonceni operace
-    preUnknownFile,    // neznamy format souboru
-    preOpenError,      // chyba pri otevirani souboru
-    preReadError,      // chyba pri cteni ze souboru
-    preWriteError,     // chyba pri zapisu do souboru
-    preSeekError,      // chyba pri nastavovani pozice v souboru
+    preOutOfMemory,    // insufficient memory to complete the operation
+    preUnknownFile,    // unknown file format
+    preOpenError,      // error while opening the file
+    preReadError,      // error while reading from the file
+    preWriteError,     // error while writing to the file
+    preSeekError,      // error while setting the position in the file
     preCorruptedFile,  // corruped file
     preExtensionError, // unable to initialize Windows extensions e.g. WMA
-    preCount           // jina chyba
+    preCount           // another error
 };
 
 void ShowParserError(HWND hParent, CParserResultEnum result);
@@ -29,15 +29,15 @@ class COutputInterface;
 class CParserInterface
 {
 public:
-    // vola se pro otevreni pozadovaneho souboru
+    // called to open the requested file
     virtual CParserResultEnum OpenFile(const char* fileName) = 0;
 
-    // vola se pro zavreni prave otevreneho souboru; paruje s OpenFile
-    // po zavolani CloseFile je interface povazovany za neplatny
+    // called to close the currently opened file; pairs with OpenFile
+    // after CloseFile is called the interface is considered invalid
     virtual CParserResultEnum CloseFile() = 0;
 
     //
-    // nasledujici metody maji vyznam pouze je-li otevren soubor
+    // the following methods make sense only when a file is open
     //
     virtual CParserResultEnum GetFileInfo(COutputInterface* output) = 0;
 };
@@ -46,8 +46,8 @@ public:
 //
 // CreateAppropriateParser
 //
-// Pokusi se k nazvu souboru vytvorit instanci parseru, ktery bude schopny
-// podat o souboru informace.
+// Attempts to create a parser instance for the file name that will be able
+// to provide information about the file.
 //
 
 CParserResultEnum CreateAppropriateParser(const char* fileName, CParserInterface** parser);

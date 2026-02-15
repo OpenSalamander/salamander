@@ -172,7 +172,7 @@ BOOL CHexFileViewWindow::SetData(QWORD firstDiff, const char* path, QWORD siblin
         FirstDiff = 0; // Files are actually equal
     SiblinkSize = siblinkSize;
 
-    // zjistime velikost mista pro offset
+    // determine the size of the area reserved for the offset
     LineNumDigits = ComputeAddressCharWidth(Mapping.GetFileSize(), SiblinkSize);
     LineNumWidth = (LineNumDigits + 1) * FontWidth + BORDER_WIDTH;
 
@@ -199,7 +199,7 @@ void CHexFileViewWindow::Paint()
         oldPalette = SelectPalette(dc, Palette, FALSE);
     HFONT oldFont = (HFONT)SelectObject(dc, HFont);
 
-    // urcim interval radku, ktery je treba prekreslit
+    // determine the range of rows that needs to be repainted
     RECT clipRect;
     int clipRet = GetClipBox(dc, &clipRect);
     int clipFirstRow = 0;
@@ -210,11 +210,11 @@ void CHexFileViewWindow::Paint()
         clipLastRow = clipRect.bottom / FontHeight + 1;
     }
 
-    RECT r1; // cislo radky
+    RECT r1; // line number
     r1.left = 0;
     r1.right = LineNumDigits * FontWidth + 2 * BORDER_WIDTH;
-    r1.bottom = 0; // abychom meli pozdeji platana data, kdyby kreslici smycka vubec neprobehla
-    RECT r2;       // tri znaky + mezera v hexa oblasti (napr "1F ")
+    r1.bottom = 0; // to keep valid data even if the drawing loop never runs
+    RECT r2;       // three characters plus a space in the hex area (e.g. "1F ")
     RECT r3;       // ascii oblast
     //r2.left = r1.right;
     //r2.right = Width;
@@ -267,14 +267,14 @@ void CHexFileViewWindow::Paint()
     __try
     {
         int i;
-        // vykreslime mezeru offsetem a textem
+        // draw the spacing between the offset and the text
         r.top = clipRect.top;
         r.bottom = clipRect.bottom;
         r.left = r1.right;
         r.right = LineNumWidth;
         SetBkColor(dc, LineColors[LC_NORMAL].BkColor);
         ExtTextOut(dc, 0, 0, ETO_OPAQUE, &r, NULL, 0, NULL);
-        // vykreslime mezeru mezi sloupci s DWORDy mezery
+        // draw the gap between the columns with DWORD spacing
         for (i = HScrollOffs / 13; i < BytesPerLine / 4; i++)
         {
             r.left = LineNumWidth + FontWidth * (11 + i * 13) - HScrollOffs * FontWidth;
@@ -283,7 +283,7 @@ void CHexFileViewWindow::Paint()
                 r.left = LineNumWidth;
             ExtTextOut(dc, 0, 0, ETO_OPAQUE, &r, NULL, 0, NULL);
         }
-        // vykreslime zbytek
+        // draw the rest
         for (i = clipFirstRow; i < clipLastRow; i++)
         {
             text_y = r1.top = r2.top = r3.top = i * FontHeight;
@@ -291,7 +291,7 @@ void CHexFileViewWindow::Paint()
 
             colorScheme = LC_NORMAL;
 
-            // vykreslime cislo radky najednou s pozadim
+            // draw the line number together with its background
             char num[32];
             QWord2Ascii(ViewOffset + i * BytesPerLine, num, LineNumDigits);
             SetTextColor(dc, LineColors[colorScheme].LineNumFgColor);
@@ -335,13 +335,13 @@ void CHexFileViewWindow::Paint()
                     SetBkColor(dc, GetPALETTERGB(Colors[TEXT_BK_SELECTION]));
                 }
 
-                // kreslime ASCII cast
+                // draw the ASCII section
                 if (r3.left >= LineNumWidth)
                 {
                     MappedASCII8TextOut.DoTextOut(dc, r3.left, text_y, ETO_OPAQUE | ETO_CLIPPED, &r3, data + j, 1, NULL);
                 }
 
-                // kreslime hex cast
+                // draw the hex section
                 if (r2.right > LineNumWidth)
                 {
                     char buf[2];
@@ -352,7 +352,7 @@ void CHexFileViewWindow::Paint()
                     if (colorScheme == LC_NORMAL ||
                         k < maxj && (k >= siblinkSize || siblinkData[k] != data[k]))
                     {
-                        // vykreslime celou trojici ('XX ') v jedne barve
+                        // draw the entire triplet ('XX ') in one color
                         r = r2;
                         if (r.left < LineNumWidth)
                             r.left = LineNumWidth;
@@ -360,7 +360,7 @@ void CHexFileViewWindow::Paint()
                     }
                     else
                     {
-                        // vykreslime prvni dva znaky
+                        // draw the first two characters
                         r = r2;
                         r.right = r2.left + 2 * FontWidth;
                         if (r2.right > LineNumWidth)
@@ -369,7 +369,7 @@ void CHexFileViewWindow::Paint()
                                 r.left = LineNumWidth;
                             MappedASCII8TextOut.DoTextOut(dc, r2.left, text_y, ETO_OPAQUE | ETO_CLIPPED, &r, buf, 2, NULL);
                         }
-                        // vykreslime oddelujici mezeru
+                        // draw the separating space
                         if (r.right < r2.right)
                         {
                             SetTextColor(dc, LineColors[LC_NORMAL].FgColor);
@@ -399,7 +399,7 @@ void CHexFileViewWindow::Paint()
     }
     __except (HandleFileException(GetExceptionInformation()))
     {
-        // chyba v souboru
+        // file error
         goto LERASE_WINDOW;
     }
 
@@ -418,19 +418,19 @@ void CHexFileViewWindow::Paint()
 
     if (r1.bottom < clipRect.bottom)
     {
-        // jeste vykreslime prazdny prostor od posledniho platneho
-        // radku do spodniho okraje okna
+        // also fill the empty space from the last valid line
+        // down to the bottom edge of the window
 
         r1.top = r2.top = r1.bottom;
         r1.bottom = r2.bottom = clipRect.bottom;
         r2.left = LineNumWidth;
         r2.right = Width;
 
-        // vykreslime jen pozadi u cisla radky
+        // draw only the background behind the line number
         SetBkColor(dc, LineColors[LC_NORMAL].LineNumBkColor);
         ExtTextOut(dc, 0, 0, ETO_OPAQUE, &r1, NULL, 0, NULL);
 
-        // vykreslime prazdnou radku
+        // draw an empty line
         SetBkColor(dc, LineColors[LC_NORMAL].BkColor);
         ExtTextOut(dc, 0, 0, ETO_OPAQUE, &r2, NULL, 0, NULL);
     }
@@ -445,11 +445,11 @@ void CHexFileViewWindow::Paint()
         r2.left = r1.right;
         r2.right = Width;
 
-        // vykreslime jen pozadi u cisla radky
+        // draw only the background behind the line number
         SetBkColor(dc, LineColors[LC_NORMAL].LineNumBkColor);
         ExtTextOut(dc, 0, 0, ETO_OPAQUE, &r1, NULL, 0, NULL);
 
-        // vykreslime prazdnou radku
+        // draw an empty line
         SetBkColor(dc, LineColors[LC_NORMAL].BkColor);
         ExtTextOut(dc, 0, 0, ETO_OPAQUE, &r2, NULL, 0, NULL);
     }
@@ -466,14 +466,14 @@ int CHexFileViewWindow::HandleFileException(EXCEPTION_POINTERS* e)
     if (Mapping.IsFileIOException(e))
     {
         HandleFileError(Path, ERROR_SUCCESS);
-        return EXCEPTION_EXECUTE_HANDLER; // spustime __except blok
+        return EXCEPTION_EXECUTE_HANDLER; // start the __except block
     }
     if (((CHexFileViewWindow*)Siblink)->Mapping.IsFileIOException(e))
     {
         HandleFileError(((CHexFileViewWindow*)Siblink)->GetPath(), ERROR_SUCCESS);
-        return EXCEPTION_EXECUTE_HANDLER; // spustime __except blok
+        return EXCEPTION_EXECUTE_HANDLER; // start the __except block
     }
-    return EXCEPTION_CONTINUE_SEARCH; // hodime vyjimku dale ... call-stacku
+    return EXCEPTION_CONTINUE_SEARCH; // propagate the exception further up the call stack
 }
 
 void CHexFileViewWindow::HandleFileError(const char* path, int error)
@@ -554,7 +554,7 @@ CHexFileViewWindow::FindDifference(int cmd, QWORD* pOffset)
 
                     if ((GetAsyncKeyState(VK_ESCAPE) & 0x8001) && GetForegroundWindow() == GetParent(HWindow))
                     {
-                        MSG msg; // vyhodime nabufferovany ESC
+                        MSG msg; // discard the buffered ESC key
                         while (PeekMessage(&msg, NULL, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
                             ;
                         return 0;
@@ -610,7 +610,7 @@ CHexFileViewWindow::FindDifference(int cmd, QWORD* pOffset)
 
                 if ((GetAsyncKeyState(VK_ESCAPE) & 0x8001) && GetForegroundWindow() == GetParent(HWindow))
                 {
-                    MSG msg; // vyhodime nabufferovany ESC
+                    MSG msg; // discard the buffered ESC key
                     while (PeekMessage(&msg, NULL, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
                         ;
                     return 0;
@@ -635,7 +635,7 @@ CHexFileViewWindow::FindDifference(int cmd, QWORD* pOffset)
         }
         else
         {
-            // hledame pozpatku
+            // search backwards
             QWORD diffEnd;
 
             if (cmd == CM_PREVDIFF || cmd == CM_LASTDIFF && Mapping.GetFileSize() == SiblinkSize)
@@ -688,7 +688,7 @@ CHexFileViewWindow::FindDifference(int cmd, QWORD* pOffset)
 
                     if ((GetAsyncKeyState(VK_ESCAPE) & 0x8001) && GetForegroundWindow() == GetParent(HWindow))
                     {
-                        MSG msg; // vyhodime nabufferovany ESC
+                        MSG msg; // discard the buffered ESC key
                         while (PeekMessage(&msg, NULL, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
                             ;
                         return 0;
@@ -696,7 +696,7 @@ CHexFileViewWindow::FindDifference(int cmd, QWORD* pOffset)
                 }
 
                 if (!remain)
-                    return 0; // jsou shodny
+                    return 0; // they are identical
 
                 offset = offset - (start - ptr0);
                 diffEnd = remain = offset + 1;
@@ -742,7 +742,7 @@ CHexFileViewWindow::FindDifference(int cmd, QWORD* pOffset)
 
                 if ((GetAsyncKeyState(VK_ESCAPE) & 0x8001) && GetForegroundWindow() == GetParent(HWindow))
                 {
-                    MSG msg; // vyhodime nabufferovany ESC
+                    MSG msg; // discard the buffered ESC key
                     while (PeekMessage(&msg, NULL, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
                         ;
                     return 0;
@@ -787,7 +787,7 @@ void CHexFileViewWindow::SelectDifference(QWORD offset, QWORD length, BOOL cente
     }
     else
     {
-      ViewOffset = __max(((__int64)pos - (page - (__int64)lines)/2), 0) *BytesPerLine; // vycentrujeme differenci k oknu
+      ViewOffset = __max(((__int64)pos - (page - (__int64)lines)/2), 0) *BytesPerLine; // center the difference in the window
     }
     */
         if (lines <= page)
@@ -810,7 +810,7 @@ CHexFileViewWindow::CalculateOffset(int x, int y)
     if (y < 0)
     {
         y = 0;
-        x = LineNumWidth - HScrollOffs * FontWidth; // aby vyslo hOffs nula
+        x = LineNumWidth - HScrollOffs * FontWidth; // so that hOffs ends up as zero
     }
     QWORD offset = ViewOffset + y / FontHeight * BytesPerLine;
     int hOffs = (x - LineNumWidth) + HScrollOffs * FontWidth;
@@ -902,7 +902,7 @@ void CHexFileViewWindow::UpdateSelection(int x, int y)
         }
         InvalidateRect(HWindow, NULL, TRUE);
         UpdateWindow(HWindow);
-        // enablujem/disablujem tlacitko pro COPY v toolbare
+        // enable or disable the COPY button on the toolbar
         CMainWindow* parent = (CMainWindow*)WindowsManager.GetWindowPtr(GetParent(HWindow));
         if (parent)
             parent->UpdateToolbarButtons(UTB_TEXTSELECTION);
@@ -915,14 +915,14 @@ CHexFileViewWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     CALL_STACK_MESSAGE4("CHexFileViewWindow::WindowProc(0x%X, 0x%IX, 0x%IX)", uMsg,
                         wParam, lParam);
 
-    // dame prilezitost k resetu akumulatoru pro mouse wheel
+    // give the mouse wheel accumulator a chance to reset
     ResetMouseWheelAccumulatorHandler(uMsg, wParam, lParam);
 
     switch (uMsg)
     {
     case WM_SETFOCUS:
     {
-        // informujeme parenta, ze jsme prevzali fokus
+        // inform the parent that we took focus
         CMainWindow* parent = (CMainWindow*)WindowsManager.GetWindowPtr(GetParent(HWindow));
         if (parent)
             parent->SetActiveFileView(ID);
@@ -941,7 +941,7 @@ CHexFileViewWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (LOWORD(lParam) >= LineNumWidth)
             {
                 QWORD offset = CalculateOffset(LOWORD(lParam), HIWORD(lParam));
-                // zkusime vybrat differenci
+                // try to select the difference
                 SelectDifferenceOnButtonUp = TRUE;
                 TrackingOffsetBegin = offset;
                 Tracking = TRUE;
@@ -1047,7 +1047,7 @@ CHexFileViewWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         lParam = (LPARAM)pos;
         wParam = (WPARAM)(pos >> 32);
     }
-        // pokracujem dal ...
+        // keep going ...
 
     case WM_USER_VSCROLL:
     {
@@ -1070,8 +1070,8 @@ CHexFileViewWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
 
     case WM_HSCROLL:
-        // aby nedochazelo ke konfliktu SB_FASTLEFT a SB_FASTRIGHT
-        // se standardnimi parametry
+        // to avoid conflicts between SB_FASTLEFT and SB_FASTRIGHT
+        // with the standard parameters
         if (!TestHScrollWParam(wParam))
             return 0;
         if (LOWORD(wParam) == SB_THUMBTRACK)
@@ -1084,7 +1084,7 @@ CHexFileViewWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         wParam &= 0xFFFF;
         SendMessage(Siblink->HWindow, WM_USER_HSCROLL, wParam, lParam);
-        // pokracujem dal ...
+        // keep going ...
 
     case WM_USER_HSCROLL:
     {

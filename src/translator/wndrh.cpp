@@ -104,7 +104,7 @@ CRHListBox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
 
     case WM_CHAR:
-        return 0; // jinak hleda podle prvniho znaku, coz je nechtene
+        return 0; // Otherwise it searches by the first character, which we do not want
 
     case WM_KEYDOWN:
     {
@@ -211,7 +211,7 @@ CRHWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         GetFixedLogFont(&lf);
         HFont = HANDLES(CreateFontIndirect(&lf));
 
-        // priradim oknu ikonku
+        // Assign an icon to the window
         //      SendMessage(HWindow, WM_SETICON, ICON_BIG,
         //                  (LPARAM)LoadIcon(HInstance, MAKEINTRESOURCE(IDI_MAIN)));
         ListBox.CreateEx(WS_EX_STATICEDGE, "SysListView32", "", WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_VSCROLL | LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER,

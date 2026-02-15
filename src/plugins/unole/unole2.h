@@ -11,7 +11,7 @@
 #define FILE_ATTRIBUTE_ARCHIVE              0x00000020
 */
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// Salamander general interface - valid from plugin startup until shutdown
 extern CSalamanderGeneralAbstract* SalamanderGeneral;
 
 BOOL Error(HRESULT hr, int error, ...);
@@ -83,8 +83,8 @@ public:
     virtual void WINAPI PasswordManagerEvent(HWND parent, int event) {}
 };
 
-extern HINSTANCE DLLInstance; // handle k SPL-ku - jazykove nezavisle resourcy
-extern HINSTANCE HLanguage;   // handle k SLG-cku - jazykove zavisle resourcy
+extern HINSTANCE DLLInstance; // handle to SPL - language-independent resources
+extern HINSTANCE HLanguage;   // handle to SLG - language-dependent resources
 
 char* LoadStr(int resID);
 

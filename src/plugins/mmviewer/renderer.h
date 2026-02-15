@@ -15,18 +15,18 @@ class CViewerWindow;
 class CRendererWindow : public CWindow
 {
 public:
-    COutput Output; // rozhrani pro praci s otevrenou databazi
+    COutput Output; // interface for working with the open database
     CViewerWindow* Viewer;
-    char FileName[MAX_PATH]; // naze v prave otevreneho souboru; 0 pokud neni zadny otevreny
+    char FileName[MAX_PATH]; // name of the currently opened file; 0 if none is open
 
-    BOOL Creating; // okno se vytvari -- zatim nemazat pozadi
+    BOOL Creating; // the window is being created -- do not erase the background yet
 
-    SIZE sLeft, sRight; //velikost textu width/height
+    SIZE sLeft, sRight; // text size width/height
     int width, height;
 
 protected:
-    int EnumFilesSourceUID;    // UID zdroje pro enumeraci souboru ve vieweru
-    int EnumFilesCurrentIndex; // index aktualniho souboru ve vieweru ve zdroji
+    int EnumFilesSourceUID;    // source UID for enumerating files in the viewer
+    int EnumFilesCurrentIndex; // index of the current file in the viewer within the source
 
 public:
     CRendererWindow(int enumFilesSourceUID, int enumFilesCurrentIndex);

@@ -3,23 +3,23 @@
 
 #pragma once
 
-// [0, 0] - pro otevrena okna viewru: konfigurace pluginu se zmenila
+// [0, 0] - for open viewer windows: the plugin configuration changed
 #define WM_USER_VIEWERCFGCHNG WM_APP + 3246
-// [0, 0] - pro otevrena okna viewru: je treba podriznou historie
+// [0, 0] - for open viewer windows: the history needs to be cleared
 #define WM_USER_CLEARHISTORY WM_APP + 3247
-// [0, 0] - pro otevrena okna vieweru: Salamander pregeneroval fonty, mame zavolat SetFont() listam
+// [0, 0] - for open viewer windows: Salamander regenerated fonts, lists should call SetFont()
 #define WM_USER_SETTINGCHANGE WM_APP + 3248
 
 char* LoadStr(int resID);
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// generic Salamander interface - valid from plugin start until shutdown
 extern CSalamanderGeneralAbstract* SalGeneral;
 
-extern HINSTANCE DLLInstance; // handle k SPL-ku - jazykove nezavisle resourcy
-extern HINSTANCE HLanguage;   // handle k SLG-cku - jazykove zavisle resourcy
+extern HINSTANCE DLLInstance; // handle to SPL - language-independent resources
+extern HINSTANCE HLanguage;   // handle to SLG - language-dependent resources
 
 // Configuration variables
 extern BOOL CfgUseCustomFont;
-extern LOGFONT CfgLogFont;                 // popis fontu pouzivaneho pro panel
-extern BOOL CfgSavePosition;               // ukladat pozici okna/umistit dle hlavniho okna
-extern WINDOWPLACEMENT CfgWindowPlacement; // neplatne, pokud CfgSavePosition != TRUE
+extern LOGFONT CfgLogFont;                 // description of the font used for the panel
+extern BOOL CfgSavePosition;               // store the window position/place according to the main window
+extern WINDOWPLACEMENT CfgWindowPlacement; // invalid if CfgSavePosition != TRUE

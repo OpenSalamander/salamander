@@ -18,7 +18,7 @@ const char* VarCounter = "Counter";
 class CVariableEx : public CVarString::CVariable
 {
 public:
-    // slouzi pouze k rozseparovani argumentu, vola SerArgument()
+    // serves only to split arguments, calls SetArgument()
     virtual BOOL SetArguments(const char* argStart, const char* argEnd,
                               int& error, const char*& errorPos1, const char*& errorPos2)
     {
@@ -33,7 +33,7 @@ public:
                 if (!SetArgument(start, end, error, errorPos1, errorPos2, state))
                     return FALSE;
             }
-            start = end + 1; // preskocime carku
+            start = end + 1; // skip the comma
         }
         return TRUE;
     };
@@ -280,7 +280,7 @@ public:
         strStart = p->File->Name;
         strEnd = p->File->Ext;
         if (*strEnd != 0)
-            strEnd--; //ext ukazuje za tecku
+            strEnd--; // ext points past the dot
 
         return DoExpand(string, end, strStart, strEnd);
     }

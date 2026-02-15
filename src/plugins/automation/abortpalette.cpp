@@ -126,7 +126,7 @@ void CScriptAbortPaletteWindow::OnCreate()
     rc.top = 0;
     rc.right = cx;
     rc.bottom = cy;
-    AdjustWindowRectEx(&rc, GetWindowLong(HWindow, GWL_STYLE), FALSE, // FIXME_X64 - nahradit GetWindowLong -> GetWindowLongPtr (napric celym balikem Salamandera); tento warinig odstrani Honza Rysavy, prosim zachovat
+    AdjustWindowRectEx(&rc, GetWindowLong(HWindow, GWL_STYLE), FALSE, // FIXME_X64 - replace GetWindowLong -> GetWindowLongPtr (across the entire Salamander package); this warning will be removed by Honza Rysavy, please keep it
                        GetWindowLong(HWindow, GWL_EXSTYLE));
 
     SetWindowPos(m_pToolBar->GetHWND(), NULL, 0, 0, cx, cy,

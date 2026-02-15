@@ -3,95 +3,95 @@
 
 #pragma once
 
-#define TRACE_SERVER_VERSION 7 // aktualni verze serveru
+#define TRACE_SERVER_VERSION 7 // current server version
 
 #define HOT_KEY_ID 0x0001
 #define HOT_KEYCLEAR_ID 0x0002
 
-/// Nazev tridy MainWindow.
+/// Name of the MainWindow class.
 #define WC_MAINWINDOW L"MainWindowsTSClass"
 
-// nazev aplikace
+// application name
 extern const WCHAR* MAINWINDOW_NAME;
-// nazvy souboru
+// file names
 extern const WCHAR* CONFIG_FILENAME;
 
-// texty v about dialogu
-extern WCHAR AboutText1[]; // texty, ktere se zobrazi
-extern WCHAR AboutText2[]; // v dialogu About
+// texts for the About dialog
+extern WCHAR AboutText1[]; // texts that will be displayed
+extern WCHAR AboutText2[]; // in the About dialog
 
 extern BOOL UseMaxMessagesCount;
 extern int MaxMessagesCount;
 
 extern BOOL WindowsVistaAndLater;
 
-// prijde hlavnimu oknu v pripade, ze connecting thread skonci s chybou
+// posted to the main window if the connecting thread ends with an error
 #define WM_USER_CT_TERMINATED WM_USER + 100 // [0, 0]
-// uvolni OpenConnectionMutex -> umozni komunikaci mezi clientem a serverem
+// releases OpenConnectionMutex -> allows communication between client and server
 #define WM_USER_CT_OPENCONNECTION WM_USER + 101 // [0, 0]
-// ohlasi chybu - chybove konstanty viz nize
+// reports an error - see error constants below
 #define WM_USER_SHOWERROR WM_USER + 102 // [error code, 0]
-// doslo ke zmene v Data.Processes
+// Data.Processes changed
 #define WM_USER_PROCESSES_CHANGE WM_USER + 103 // [0, 0]
-// doslo ke zmene v Data.Threads
+// Data.Threads changed
 #define WM_USER_THREADS_CHANGE WM_USER + 104 // [0, 0]
-// novy process se konektnul
+// a new process connected
 #define WM_USER_PROCESS_CONNECTED WM_USER + 105 // [0, 0]
-// ohlasi systemovou chybu
+// reports a system error
 #define WM_USER_PROCESS_DISCONNECTED WM_USER + 107 // [processID, 0]
-// ohlasi systemovou chybu
+// reports a system error
 #define WM_USER_SHOWSYSTEMERROR WM_USER + 108 // [sysErrCode, 0]
-// pokud se zaplnila message cache
+// message cache filled up
 #define WM_USER_FLUSH_MESSAGES_CACHE WM_USER + 109 // [0, 0]
-// spatna verze clientu (clientName je alokovano -> volat free)
+// incorrect client version (clientName is allocated -> call free)
 #define WM_USER_INCORRECT_VERSION WM_USER + 110 // [client, client PID]
 
-// pokud dojde nad ikonou k nejake udalosti, prijde tato message
+// message sent when something happens over the icon
 #define WM_USER_ICON_NOTIFY WM_USER + 111 // [0, 0]
 
-// doslo ke zmene viditelnosti sloupcu v seznamu
+// column visibility in the list changed
 #define WM_USER_HEADER_CHANGE WM_USER + 120 // [0, 0]
 
-// doslo ke zmene poradi sloupcu v seznamu
+// column order in the list changed
 #define WM_USER_HEADER_POS_CHANGE WM_USER + 121 // [0, 0]
 
-// doslo ke zmene poradi sloupcu v seznamu
+// column order in the list changed
 #define WM_USER_HEADER_DEL_ITEM WM_USER + 122 // [index, 0]
 
-// doslo k aktivaci aplikace
+// application was activated
 #define WM_USER_ACTIVATE_APP WM_USER + 123 // [0, 0]
 
-// uzivatel drazdi vodorovnou scrollbaru u listboxu
+// user is fiddling with the horizontal scrollbar of the list box
 #define WM_USER_HSCROLL WM_USER + 124 // [pos, 0]
 
-//// uzivatel provedl doubleclik v listboxu
+//// user double-clicked in the list box
 //#define WM_USER_LISTBOX_DBLCLK       WM_USER + 114  // [0, 0]
 
-// pokud prekroci pocet messagi tuto mez, je postnuta message na flushnuti
+// if the number of messages exceeds this limit, a flush message is posted
 #define MESSAGES_CACHE_MAX 1000
 
-// exit cody connecting threadu
+// exit codes of the connecting thread
 #define CT_SUCCESS 0
 #define CT_UNABLE_TO_CREATE_FILE_MAPPING 1
 #define CT_UNABLE_TO_MAP_VIEW_OF_FILE 2
 
-// chybove kody pro WM_USER_SHOWERROR
+// error codes for WM_USER_SHOWERROR
 #define EC_CANNOT_CREATE_READ_PIPE_THREAD 10
 #define EC_LOW_MEMORY 11
 #define EC_UNKNOWN_MESSAGE_TYPE 12
 
-// mutex - vlastni ho client proces, ktery zapisuje do sdilene pameti
+// mutex owned by the client process that writes into shared memory
 extern HANDLE OpenConnectionMutex;
-// event - signaled -> server prijal data ze sdilene pameti
+// event - signaled -> the server accepted data from shared memory
 extern HANDLE ConnectDataAcceptedEvent;
 extern BOOL ConnectDataAcceptedEventMayBeSignaled;
-// event - manual reset - nahodit po flushnuti message cache
+// event - manual reset - set after the message cache is flushed
 extern HANDLE MessagesFlushDoneEvent;
 
-// thread, ktery zajistuje pripojeni k serveru
+// thread that handles connecting to the server
 extern HANDLE ConnectingThread;
 
-// pokud je tato promenna FALSE, nelze program ovladat pomoci ikony
+// if this variable is FALSE, the program cannot be controlled through the icon
 extern BOOL IconControlEnable;
 
 inline BOOL TServerIsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServicePackMajor)
@@ -102,7 +102,7 @@ inline BOOL TServerIsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVers
                                                                                VER_MINORVERSION, VER_GREATER_EQUAL),
                                                            VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL);
 
-    SecureZeroMemory(&osvi, sizeof(osvi)); // nahrada za memset (nevyzaduje RTLko)
+    SecureZeroMemory(&osvi, sizeof(osvi)); // replacement for memset (does not require RTL)
     osvi.dwOSVersionInfoSize = sizeof(osvi);
     osvi.dwMajorVersion = wMajorVersion;
     osvi.dwMinorVersion = wMinorVersion;
@@ -203,20 +203,20 @@ public:
 class CGlobalDataMessage
 {
 public:
-    DWORD ProcessID;     // PID processu, ze ktereho message pochazi
-    DWORD ThreadID;      // pro upresneni jeste ID threadu
-    C__MessageType Type; // typ zpravy
-    SYSTEMTIME Time;     // cas vzniku message
-    double Counter;      // presne pocitadlo v ms
-    WCHAR* Message;      // text message (ukazatel do File bufferu za 1. 0)
-    WCHAR* File;         // jmeno souboru
-    DWORD Line;          // cislo radky
-    DWORD Index;         // poradi, ve kterem byla message vlozena
+    DWORD ProcessID;     // PID of the process that produced the message
+    DWORD ThreadID;      // thread ID for better precision
+    C__MessageType Type; // message type
+    SYSTEMTIME Time;     // time when the message originated
+    double Counter;      // precise counter in ms
+    WCHAR* Message;      // message text (pointer to the File buffer after the first null)
+    WCHAR* File;         // file name
+    DWORD Line;          // line number
+    DWORD Index;         // order in which the message was inserted
 
-    DWORD UniqueProcessID; // unikatni ID procesu
-    DWORD UniqueThreadID;  // unikatni ID threadu
+    DWORD UniqueProcessID; // unique process ID
+    DWORD UniqueThreadID;  // unique thread ID
 
-    static DWORD StaticIndex; // index pro dalsi message
+    static DWORD StaticIndex; // index for the next message
 
 public:
     BOOL operator<(const CGlobalDataMessage& message);
@@ -258,7 +258,7 @@ public:
     void GetThreadName(DWORD uniqueProcessID, DWORD uniqueThreadID,
                        WCHAR* buff, int buffLen);
 
-    /// Otevre BOSSe s prislusnym souborem a radkou.
+    /// Opens BOSS with the corresponding file and line.
     void GotoEditor(int index);
 };
 
@@ -295,7 +295,7 @@ public:
     void ShowMessageDetails();
 
 protected:
-    // vola se z timeru a pri preplneni cache
+    // called from the timer and when the cache overflows
     void FlushMessagesCache(BOOL& ErrorMessage);
     void OnErrorMessage();
 
@@ -346,5 +346,5 @@ void TSynchronizedDirectArray<DATA_TYPE>::ResetState()
 
 extern CGlobalData Data;
 
-// ukazatal na hlavni okno
+// pointer to the main window
 extern CMainWindow* MainWindow;

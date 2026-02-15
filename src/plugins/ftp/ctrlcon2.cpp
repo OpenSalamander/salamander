@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -16,16 +17,16 @@ char* CopyStr(char* buf, int bufSize, const char* txt, int size)
     memcpy(buf, txt, size);
     buf[size] = 0;
 
-    // je-li to nutne, provedeme konverzi LF na CRLF
+    // If necessary, convert LF to CRLF
     int insBytes = 0;
     char* s = buf;
     while (*s != 0)
     {
         if (*s == '\n' && (s == buf || *(s - 1) != '\r'))
         {
-            if (++size >= bufSize && --size == (s - buf) + 1) // maly buffer
+            if (++size >= bufSize && --size == (s - buf) + 1) // small buffer
             {
-                *s = 0; // oriznuti posledniho LF (CRLF se nevejde)
+                *s = 0; // trim the last LF (CRLF would not fit)
                 break;
             }
             memmove(s + 1, s, size - (s - buf) - 1);
@@ -144,8 +145,8 @@ BOOL PrepareFTPCommand(char* buf, int bufSize, char* logBuf, int logBufSize,
         }
     }
     else
-        len = -1; // asi nehrozi, jen prevence
-    // hromadny test na vysledek _vsnprintf_s + pridame CRLF na konec
+        len = -1; // should not happen, just prevention
+    // a combined check of the _vsnprintf_s result + add CRLF to the end
     if (len < 0 || len + 2 >= bufSize)
     {
         TRACE_E("PrepareFTPCommand(): Insufficient buffer size: " << bufSize);
@@ -183,14 +184,14 @@ BOOL CDynString::Append(const char* str, int len)
         len = (int)strlen(str);
     if (Length + len >= Allocated)
     {
-        int size = Length + len + 1 + 256; // +256 znaku do foroty, at se tak casto nealokuje
+        int size = Length + len + 1 + 256; // add 256 characters in reserve so we don't reallocate so often
         char* newBuf = (char*)realloc(Buffer, size);
         if (newBuf != NULL)
         {
             Buffer = newBuf;
             Allocated = size;
         }
-        else // nedostatek pameti, smula...
+        else // insufficient memory, tough luck...
         {
             TRACE_E(LOW_MEMORY);
             return FALSE;
@@ -251,29 +252,29 @@ void CControlConnectionSocket::CloseControlConnection(HWND parent)
     CALL_STACK_MESSAGE1("CControlConnectionSocket::CloseControlConnection()");
 
     parent = FindPopupParent(parent);
-    const DWORD showWaitWndTime = WAITWND_CLOSECON; // show time wait-okenka
+    const DWORD showWaitWndTime = WAITWND_CLOSECON; // time to display the wait window
     int serverTimeout = Config.GetServerRepliesTimeout() * 1000;
     if (serverTimeout < 1000)
-        serverTimeout = 1000; // aspon sekundu
+        serverTimeout = 1000; // at least a second
     SetStartTime();
 
-    // schovame si fokus z 'parent' (neni-li fokus z 'parent', ulozime NULL)
+    // Remember the focus from 'parent' (if the focus is not from 'parent', store NULL)
     HWND focusedWnd = GetFocus();
     HWND hwnd = focusedWnd;
     while (hwnd != NULL && hwnd != parent)
         hwnd = GetParent(hwnd);
     if (hwnd != parent)
         focusedWnd = NULL;
-    // disablujeme 'parent', pri enablovani obnovime i fokus
+    // Disable 'parent'; when enabling again we'll also restore the focus
     EnableWindow(parent, FALSE);
 
-    // nahodime cekaci kurzor nad parentem, bohuzel to jinak neumime
+    // Show the wait cursor over the parent; unfortunately we cannot do it differently
     CSetWaitCursorWindow* winParent = new CSetWaitCursorWindow;
     if (winParent != NULL)
         winParent->AttachToWindow(parent);
 
-    // pockame na dokonceni keep-alive prikazu (pokud prave probiha) + nastavime
-    // keep-alive na 'kamForbidden' (probiha normalni prikaz)
+    // Wait for any active keep-alive command to finish and switch the keep-alive mode
+    // to 'kamForbidden', because a regular command is currently in progress
     WaitForEndOfKeepAlive(parent, GetWaitTime(showWaitWndTime));
 
     CWaitWindow waitWnd(parent, TRUE);
@@ -294,11 +295,11 @@ void CControlConnectionSocket::CloseControlConnection(HWND parent)
         BOOL allBytesWritten;
         if (Write(buf, cmdLen, &error, &allBytesWritten))
         {
-            // sestavime text pro wait okenko
+            // Compose the wait-window message text
             HANDLES(EnterCriticalSection(&SocketCritSect));
             Logs.LogMessage(logUID, errBuf, -1);
             int l = (int)strlen(Host);
-            if (l > 22) // zkratime text (do 22 znaku bereme, jinak jen 20 znaku + "...")
+            if (l > 22) // shorten the text (keep up to 22 characters, otherwise 20 + "...")
             {
                 memcpy(errBuf, Host, 20);
                 strcpy(errBuf + 20, "...");
@@ -317,7 +318,7 @@ void CControlConnectionSocket::CloseControlConnection(HWND parent)
             BOOL run = TRUE;
             while (run)
             {
-                // pockame na udalost na socketu (odpoved serveru) nebo ESC
+                // Wait for either a socket event (server reply) or ESC
                 CControlConnectionSocketEvent event;
                 DWORD data1, data2;
                 DWORD now = GetTickCount();
@@ -334,13 +335,13 @@ void CControlConnectionSocket::CloseControlConnection(HWND parent)
                                                          LoadStr(IDS_FTPPLUGINTITLE),
                                                          MB_YESNO | MSGBOXEX_ESCAPEENABLED |
                                                              MB_ICONQUESTION) == IDYES)
-                    { // user si preje tvrde terminovani connectiony
+                    { // the user wants to force the connection to terminate
                         run = FALSE;
-                        Logs.LogMessage(logUID, LoadStr(IDS_LOGMSGACTIONCANCELED), -1, TRUE); // ESC (cancel) do logu
+                        Logs.LogMessage(logUID, LoadStr(IDS_LOGMSGACTIONCANCELED), -1, TRUE); // record that ESC (Cancel) was pressed
                     }
                     else
                     {
-                        SalamanderGeneral->WaitForESCRelease(); // opatreni, aby se neprerusovala dalsi akce po kazdem ESC v predeslem messageboxu
+                        SalamanderGeneral->WaitForESCRelease(); // ensure the next action is not interrupted by the ESC from the previous message box
                         waitWnd.Show(TRUE);
                     }
                     break;
@@ -348,27 +349,27 @@ void CControlConnectionSocket::CloseControlConnection(HWND parent)
 
                 case ccsevTimeout:
                 {
-                    Logs.LogMessage(logUID, LoadStr(IDS_LOGMSGDISCONTIMEOUT), -1, TRUE); // timeout disconnectu do logu
+                    Logs.LogMessage(logUID, LoadStr(IDS_LOGMSGDISCONTIMEOUT), -1, TRUE); // record the disconnection timeout in the log
                     run = FALSE;
                     break;
                 }
 
-                case ccsevWriteDone:    // uz odesly vsechny byty (osetrime to, ze ccsevWriteDone mohla prepsat ccsevNewBytesRead)
-                case ccsevClosed:       // mozna necekana ztrata pripojeni (osetrime take to, ze ccsevClosed mohla prepsat ccsevNewBytesRead)
-                case ccsevNewBytesRead: // nacetli jsme nove byty
+                case ccsevWriteDone:    // all bytes have been sent (handles the fact that ccsevWriteDone could overwrite ccsevNewBytesRead)
+                case ccsevClosed:       // possibly an unexpected connection loss (also handles ccsevClosed overwriting ccsevNewBytesRead)
+                case ccsevNewBytesRead: // new bytes were read
                 {
                     char* reply;
                     int replySize;
 
                     HANDLES(EnterCriticalSection(&SocketCritSect));
-                    while (ReadFTPReply(&reply, &replySize)) // dokud mame nejakou odpoved serveru
+                    while (ReadFTPReply(&reply, &replySize)) // process responses from the server as long as we have any
                     {
                         Logs.LogMessage(logUID, reply, replySize);
 
-                        if (!shutdownCalled) // prisla odpoved (at uspech ci chyba), shutdowneme socket
+                        if (!shutdownCalled) // a reply arrived (success or error), so shut down the socket
                         {
                             shutdownCalled = TRUE;
-                            run = Shutdown(NULL); // v behu pokracujeme jen pri uspesnem zahajeni shutdownu
+                            run = Shutdown(NULL); // continue only if shutdown started successfully
                         }
                         SkipFTPReply(replySize);
                     }
@@ -377,7 +378,7 @@ void CControlConnectionSocket::CloseControlConnection(HWND parent)
                     if (event == ccsevClosed)
                     {
                         run = FALSE;
-                        socketClosed = TRUE; // doslo k zavreni spojeni, koncime
+                        socketClosed = TRUE; // the connection was closed, we are done
                     }
                     break;
                 }
@@ -387,16 +388,16 @@ void CControlConnectionSocket::CloseControlConnection(HWND parent)
         }
     }
 
-    // shodime cekaci kurzor nad parentem
+    // Remove the wait cursor from the parent
     if (winParent != NULL)
     {
         winParent->DetachWindow();
         delete winParent;
     }
 
-    // enablujeme 'parent'
+    // Re-enable 'parent'
     EnableWindow(parent, TRUE);
-    // pokud je aktivni 'parent', obnovime i fokus
+    // If 'parent' is active, restore the focus
     if (GetForegroundWindow() == parent)
     {
         if (parent == SalamanderGeneral->GetMainWindowHWND())
@@ -410,12 +411,12 @@ void CControlConnectionSocket::CloseControlConnection(HWND parent)
 
     if (!socketClosed)
     {
-        CloseSocket(NULL); // zavreme socket (je-li otevreny), system se pokusi o "graceful" shutdown (nedozvime se o vysledku)
+        CloseSocket(NULL); // close the socket (if it is open); the system will attempt a "graceful" shutdown (we won't learn the result)
         Logs.SetIsConnected(logUID, IsConnected());
-        Logs.RefreshListOfLogsInLogsDlg(); // hlaseni "connection inactive"
+        Logs.RefreshListOfLogsInLogsDlg(); // show the "connection inactive" notification
     }
 
-    // uvolnime keep-alive, ted uz nebude potreba (uz neni navazane spojeni)
+    // Release the keep-alive; it is no longer needed because the connection is gone
     ReleaseKeepAlive();
 }
 
@@ -424,13 +425,13 @@ void CControlConnectionSocket::CheckCtrlConClose(BOOL notInPanel, BOOL leftPanel
     CALL_STACK_MESSAGE4("CControlConnectionSocket::CheckCtrlConClose(%d, %d, , %d)",
                         notInPanel, leftPanel, quiet);
 
-    // socket je jiste zavreny + aktivne s nim nic nepracuje (nesleduje udalosti, atd.)
+    // The socket is definitely closed and nothing is actively using it (no event monitoring, etc.)
 
     HANDLES(EnterCriticalSection(&EventCritSect));
     DWORD error = NO_ERROR;
     BOOL found = FALSE;
     int i;
-    for (i = 0; i < EventsUsedCount; i++) // test pritomnosti udalosti ccsevClosed
+    for (i = 0; i < EventsUsedCount; i++) // check whether the ccsevClosed event is present
     {
         if (Events[i]->Event == ccsevClosed)
         {
@@ -443,8 +444,8 @@ void CControlConnectionSocket::CheckCtrlConClose(BOOL notInPanel, BOOL leftPanel
     char* auxConnectionLostMsg = ConnectionLostMsg;
     HANDLES(LeaveCriticalSection(&EventCritSect));
 
-    if (found ||                      // ceka na nas udalost ccsevClosed -> user jeste nevi o tom, ze je zavrena connectiona
-        auxConnectionLostMsg != NULL) // mame ulozeny text z okamziku uzavreni connectiony (tehdy sla jen do logu)
+    if (found ||                      // the ccsevClosed event is waiting for us—the user still does not know that the connection is closed
+        auxConnectionLostMsg != NULL) // we cached the message captured when the connection closed (at that moment it only went into the log)
     {
         char errBuf[300];
         errBuf[0] = 0;
@@ -458,7 +459,7 @@ void CControlConnectionSocket::CheckCtrlConClose(BOOL notInPanel, BOOL leftPanel
             BOOL haveErr = FALSE;
 
             HANDLES(EnterCriticalSection(&SocketCritSect));
-            while (ReadFTPReply(&reply, &replySize, &replyCode)) // dokud mame nejakou odpoved serveru
+            while (ReadFTPReply(&reply, &replySize, &replyCode)) // process responses from the server as long as we have any
             {
                 Logs.LogMessage(logUID, reply, replySize, TRUE);
 
@@ -466,25 +467,25 @@ void CControlConnectionSocket::CheckCtrlConClose(BOOL notInPanel, BOOL leftPanel
                     (FTP_DIGIT_1(replyCode) == FTP_D1_TRANSIENTERROR ||
                      FTP_DIGIT_1(replyCode) == FTP_D1_ERROR))
                 {
-                    CopyStr(errBuf, 300, reply, replySize); // chybova hlaska (bereme posledni v rade)
+                    CopyStr(errBuf, 300, reply, replySize); // error message (take the last one in the sequence)
                     haveErr = TRUE;
                 }
                 if (!haveErr)
-                    CopyStr(errBuf, 300, reply, replySize); // pokud nemame chybu, bereme kazdou hlasku (posledni v rade)
+                    CopyStr(errBuf, 300, reply, replySize); // if there is no error yet, take every message (the last one in the sequence)
                 SkipFTPReply(replySize);
             }
             HANDLES(LeaveCriticalSection(&SocketCritSect));
 
             if (errBuf[0] == 0)
             {
-                if (auxConnectionLostMsg != NULL) // mame ulozeny text z okamziku uzavreni connectiony (tehdy sla jen do logu)
-                {                                 // zobrazime ji jeste v messageboxu
+                if (auxConnectionLostMsg != NULL) // we cached the message captured when the connection closed (at that moment it only went into the log)
+                {                                 // show it again in a message box
                     HANDLES(EnterCriticalSection(&SocketCritSect));
                     if (ConnectionLostMsg != NULL)
                         lstrcpyn(errBuf, ConnectionLostMsg, 300);
                     else
                         errBuf[0] = 0;
-                    SalamanderGeneral->Free(ConnectionLostMsg); // uz nebude potreba
+                    SalamanderGeneral->Free(ConnectionLostMsg); // it is no longer needed
                     ConnectionLostMsg = NULL;
                     HANDLES(LeaveCriticalSection(&SocketCritSect));
                 }
@@ -502,14 +503,14 @@ void CControlConnectionSocket::CheckCtrlConClose(BOOL notInPanel, BOOL leftPanel
                 Logs.LogMessage(logUID, buf, -1, TRUE);
             }
         }
-        else // mame ulozeny text z okamziku uzavreni connectiony (tehdy sla jen do logu)
-        {    // zobrazime ji jeste v messageboxu
+        else // we cached the message captured when the connection closed (at that moment it only went into the log)
+        {    // show it again in a message box
             HANDLES(EnterCriticalSection(&SocketCritSect));
             if (ConnectionLostMsg != NULL)
                 lstrcpyn(errBuf, ConnectionLostMsg, 300);
             else
                 errBuf[0] = 0;
-            SalamanderGeneral->Free(ConnectionLostMsg); // uz nebude potreba
+            SalamanderGeneral->Free(ConnectionLostMsg); // it is no longer needed
             ConnectionLostMsg = NULL;
             HANDLES(LeaveCriticalSection(&SocketCritSect));
         }
@@ -543,7 +544,7 @@ void CControlConnectionSocket::CheckCtrlConClose(BOOL notInPanel, BOOL leftPanel
                     ActivateWelcomeMsg();
             }
         }
-        // demolice zbytku dat (schvalne az po boxu - zpozdeni, dojdou vsechny udalosti), uz nebudou potreba
+        // Tear down the remaining data (intentionally after closing the box so every event arrives); it is no longer needed
         ResetBuffersAndEvents();
     }
 }
@@ -571,8 +572,8 @@ BOOL CControlConnectionSocket::ReadFTPReply(char** reply, int* replySize, int* r
     CALL_STACK_MESSAGE1("CControlConnectionSocket::ReadFTPReply(, ,)");
 
 #ifdef _DEBUG
-    if (SocketCritSect.RecursionCount == 0 /* nechytne situaci, kdy
-      sekci pouziva jiny thread */
+    if (SocketCritSect.RecursionCount == 0 /* does not catch the situation when
+      the section is used by another thread */
     )
         TRACE_E("Incorrect call to CControlConnectionSocket::ReadFTPReply: not from section SocketCritSect!");
 #endif
@@ -585,14 +586,14 @@ void CControlConnectionSocket::SkipFTPReply(int replySize)
     CALL_STACK_MESSAGE2("CControlConnectionSocket::SkipFTPReply(%d)", replySize);
 
 #ifdef _DEBUG
-    if (SocketCritSect.RecursionCount == 0 /* nechytne situaci, kdy
-      sekci pouziva jiny thread */
+    if (SocketCritSect.RecursionCount == 0 /* does not catch the situation when
+      the section is used by another thread */
     )
         TRACE_E("Incorrect call to CControlConnectionSocket::SkipFTPReply: not from section SocketCritSect!");
 #endif
 
     ReadBytesOffset += replySize;
-    if (ReadBytesOffset >= ReadBytesCount) // uz jsme precetli vse - resetneme buffer
+    if (ReadBytesOffset >= ReadBytesCount) // everything has been read already - reset the buffer
     {
         if (ReadBytesOffset > ReadBytesCount)
             TRACE_E("Error in call to CControlConnectionSocket::SkipFTPReply(): trying to skip more bytes than is read");
@@ -611,7 +612,7 @@ BOOL CControlConnectionSocket::Write(const char* buffer, int bytesToWrite, DWORD
     if (allBytesWritten != NULL)
         *allBytesWritten = FALSE;
 
-    if (bytesToWrite == 0) // zapis prazdneho bufferu
+    if (bytesToWrite == 0) // writing an empty buffer
     {
         if (allBytesWritten != NULL)
             *allBytesWritten = TRUE;
@@ -621,89 +622,89 @@ BOOL CControlConnectionSocket::Write(const char* buffer, int bytesToWrite, DWORD
     HANDLES(EnterCriticalSection(&SocketCritSect));
 
     BOOL ret = FALSE;
-    if (Socket != INVALID_SOCKET) // socket je pripojeny
+    if (Socket != INVALID_SOCKET) // the socket is connected
     {
-        if (BytesToWriteCount == BytesToWriteOffset) // nic neceka na poslani, muzeme posilat
+        if (BytesToWriteCount == BytesToWriteOffset) // nothing is waiting to be sent, we can transmit
         {
             if (BytesToWriteCount != 0)
                 TRACE_E("Unexpected value of BytesToWriteCount.");
 
             int len = 0;
             if (!SSLConn)
-                while (1) // cyklus nutny kvuli funkci 'send' (neposila FD_WRITE pri 'sentLen' < 'bytesToWrite')
+                while (1) // loop needed because 'send' does not post FD_WRITE when 'sentLen' < 'bytesToWrite'
                 {
-                    // POZOR: pokud se nekdy zase bude zavadet TELNET protokol, je nutne predelat posilani IAC+IP
-                    // pred abortovanim prikazu v metode SendFTPCommand()
+                    // WARNING: if the TELNET protocol is ever introduced again, sending IAC+IP before aborting
+                    // a command in the SendFTPCommand() method must be adjusted
 
                     int sentLen = send(Socket, buffer + len, bytesToWrite - len, 0);
-                    if (sentLen != SOCKET_ERROR) // aspon neco je uspesne odeslano (nebo spis prevzato Windowsama, doruceni je ve hvezdach)
+                    if (sentLen != SOCKET_ERROR) // at least something was sent successfully (or rather taken over by Windows; delivery is uncertain)
                     {
                         len += sentLen;
-                        if (len >= bytesToWrite) // uz je poslano vsechno?
+                        if (len >= bytesToWrite) // has everything been sent?
                         {
                             ret = TRUE;
-                            break; // prestaneme posilat (jiz neni co)
+                            break; // stop sending (there is nothing left)
                         }
                     }
                     else
                     {
                         DWORD err = WSAGetLastError();
-                        if (err == WSAEWOULDBLOCK) // nic dalsiho uz poslat nejde (Windowsy jiz nemaji buffer space)
+                        if (err == WSAEWOULDBLOCK) // nothing else can be sent (Windows no longer have buffer space)
                         {
                             ret = TRUE;
-                            break; // prestaneme posilat (dodela se po FD_WRITE)
+                            break; // stop sending (the rest will be done after FD_WRITE)
                         }
-                        else // chyba posilani
+                        else // send error
                         {
                             if (error != NULL)
                                 *error = err;
-                            break; // vratime chybu
+                            break; // return the error
                         }
                     }
                 }
             else
-                while (1) // cyklus nutny kvuli funkci 'send' (neposila FD_WRITE pri 'sentLen' < 'bytesToWrite')
+                while (1) // loop needed because 'send' does not post FD_WRITE when 'sentLen' < 'bytesToWrite'
                 {
-                    // POZOR: pokud se nekdy zase bude zavadet TELNET protokol, je nutne predelat posilani IAC+IP
-                    // pred abortovanim prikazu v metode SendFTPCommand()
+                    // WARNING: if the TELNET protocol is ever introduced again, sending IAC+IP before aborting
+                    // a command in the SendFTPCommand() method must be adjusted
 
                     int sentLen = SSLLib.SSL_write(SSLConn, buffer + len, bytesToWrite - len);
-                    if (sentLen >= 0) // aspon neco je uspesne odeslano (nebo spis prevzato Windowsama, doruceni je ve hvezdach)
+                    if (sentLen >= 0) // at least something was sent successfully (or rather taken over by Windows; delivery is uncertain)
                     {
                         len += sentLen;
-                        if (len >= bytesToWrite) // uz je poslano vsechno?
+                        if (len >= bytesToWrite) // has everything been sent?
                         {
                             ret = TRUE;
-                            break; // prestaneme posilat (jiz neni co)
+                            break; // stop sending (there is nothing left)
                         }
                     }
                     else
                     {
                         DWORD err = SSLtoWS2Error(SSLLib.SSL_get_error(SSLConn, sentLen));
-                        if (err == WSAEWOULDBLOCK) // nic dalsiho uz poslat nejde (Windowsy jiz nemaji buffer space)
+                        if (err == WSAEWOULDBLOCK) // nothing else can be sent (Windows no longer have buffer space)
                         {
                             ret = TRUE;
-                            break; // prestaneme posilat (dodela se po FD_WRITE)
+                            break; // stop sending (the rest will be done after FD_WRITE)
                         }
-                        else // chyba posilani
+                        else // send error
                         {
                             if (error != NULL)
                                 *error = err;
-                            break; // vratime chybu
+                            break; // return the error
                         }
                     }
                 }
 
-            if (ret) // uspesne odeslani, v 'len' je pocet poslanych bytu (zbytek posleme po prijeti FD_WRITE)
+            if (ret) // successful send, 'len' holds the number of bytes sent (the rest is sent after FD_WRITE is received)
             {
                 if (allBytesWritten != NULL)
                     *allBytesWritten = (len >= bytesToWrite);
-                if (len < bytesToWrite) // zbytek vlozime do bufferu 'BytesToWrite'
+                if (len < bytesToWrite) // store the rest in the 'BytesToWrite' buffer
                 {
                     const char* buf = buffer + len;
                     int size = bytesToWrite - len;
 
-                    if (BytesToWriteAllocatedSize - BytesToWriteCount < size) // malo mista v bufferu 'BytesToWrite'
+                    if (BytesToWriteAllocatedSize - BytesToWriteCount < size) // not enough space in the 'BytesToWrite' buffer
                     {
                         int newSize = BytesToWriteCount + size + CRTLCON_BYTESTOWRITEONSOCKETPREALLOC;
                         char* newBuf = (char*)realloc(BytesToWrite, newSize);
@@ -712,14 +713,14 @@ BOOL CControlConnectionSocket::Write(const char* buffer, int bytesToWrite, DWORD
                             BytesToWrite = newBuf;
                             BytesToWriteAllocatedSize = newSize;
                         }
-                        else // nedostatek pameti pro ulozeni dat v nasem bufferu (chybu hlasi jen TRACE)
+                        else // not enough memory to store data in our buffer (only TRACE reports the error)
                         {
                             TRACE_E(LOW_MEMORY);
                             ret = FALSE;
                         }
                     }
 
-                    if (ret) // muzeme zapsat (v bufferu je dost mista)
+                    if (ret) // we can write (the buffer has enough space)
                     {
                         memcpy(BytesToWrite + BytesToWriteCount, buf, size);
                         BytesToWriteCount += size;
@@ -727,7 +728,7 @@ BOOL CControlConnectionSocket::Write(const char* buffer, int bytesToWrite, DWORD
                 }
             }
         }
-        else // jeste nebylo odeslano vse -> chybne pouziti Write
+        else // not everything has been sent yet — incorrect use of Write
         {
             TRACE_E("Incorrect use of CControlConnectionSocket::Write(): called again before waiting for ccsevWriteDone event.");
         }
@@ -777,7 +778,7 @@ BOOL CControlConnectionSocket::SendKeepAliveCmd(int logUID, const char* ftpCmd)
     if (Write(ftpCmd, -1, &error, &allBytesWritten))
     {
         Logs.LogMessage(logUID, ftpCmd, -1);
-        if (!allBytesWritten) // dost nepravdepodobne, ale stejne resime
+        if (!allBytesWritten) // rather unlikely, but still handled
         {
             HANDLES(EnterCriticalSection(&SocketCritSect));
             KeepAliveCmdAllBytesWritten = FALSE;
@@ -785,18 +786,18 @@ BOOL CControlConnectionSocket::SendKeepAliveCmd(int logUID, const char* ftpCmd)
         }
         return TRUE;
     }
-    else // chyba Write (low memory, disconnected, chyba neblokujiciho "send")
+    else // Write error (low memory, disconnected, non-blocking "send" failure)
     {
-        // pridame hlasku do logu, o zbytek by se mel postarat ClosedCtrlConChecker (hlaska userovi o vypadku spojeni)
+        // Add the error to the log; ClosedCtrlConChecker will alert the user about the lost connection
         const char* e = GetOperationFatalErrorTxt(error, errBuf);
         lstrcpyn(buf, e, 500);
         char* s = buf + strlen(buf);
         while (s > buf && (*(s - 1) == '\n' || *(s - 1) == '\r'))
             s--;
-        strcpy(s, "\r\n");                      // CRLF na konec textu posledni chyby
-        Logs.LogMessage(logUID, buf, -1, TRUE); // text posledni chyby pridame do logu
+        strcpy(s, "\r\n");                      // CRLF at the end of the last error text
+        Logs.LogMessage(logUID, buf, -1, TRUE); // add the last error text to the log
 
-        ReleaseKeepAlive(); // nic jsme neposlali (chyba spojeni, nema smysl pokracovat v keep-alive), zrusime keep-alive
+        ReleaseKeepAlive(); // nothing was sent (connection error, no point in continuing keep-alive), cancel keep-alive
         return FALSE;
     }
 }
@@ -807,16 +808,16 @@ void CControlConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
     DWORD eventError = WSAGETSELECTERROR(lParam); // extract error code of event
     switch (WSAGETSELECTEVENT(lParam))            // extract event
     {
-    case FD_CLOSE: // nekdy chodi pred poslednim FD_READ, nezbyva tedy nez napred zkusit FD_READ a pokud uspeje, poslat si FD_CLOSE znovu (muze pred nim znovu uspet FD_READ)
+    case FD_CLOSE: // sometimes arrives before the final FD_READ; we must first try FD_READ and, if it succeeds, post FD_CLOSE again (another FD_READ may succeed before it)
     case FD_READ:
     {
-        BOOL sendFDCloseAgain = FALSE; // TRUE = prisel FD_CLOSE + bylo co cist (provedl se jako FD_READ) => posleme si znovu FD_CLOSE (soucasny FD_CLOSE byl plany poplach)
+        BOOL sendFDCloseAgain = FALSE; // TRUE = FD_CLOSE arrived and there was data to read (handled as FD_READ), so post FD_CLOSE again (the current FD_CLOSE was a false alarm)
         HANDLES(EnterCriticalSection(&SocketCritSect));
 
-        if (!EventConnectSent) // pokud prisla FD_READ pred FD_CONNECT, posleme ccsevConnected jeste pred ctenim
+        if (!EventConnectSent) // if FD_READ arrived before FD_CONNECT, send ccsevConnected before reading
         {
             EventConnectSent = TRUE;
-            AddEvent(ccsevConnected, eventError, 0); // posleme si udalost s vysledkem pripojeni
+            AddEvent(ccsevConnected, eventError, 0); // post an event with the result of the connection attempt
         }
 
         BOOL ret = FALSE;
@@ -824,19 +825,19 @@ void CControlConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
         BOOL genEvent = FALSE;
         if (eventError == NO_ERROR)
         {
-            if (Socket != INVALID_SOCKET) // socket je pripojeny
+            if (Socket != INVALID_SOCKET) // the socket is connected
             {
                 BOOL lowMem = FALSE;
-                if (ReadBytesAllocatedSize - ReadBytesCount < CRTLCON_BYTESTOREADONSOCKET) // maly buffer 'ReadBytes'
+                if (ReadBytesAllocatedSize - ReadBytesCount < CRTLCON_BYTESTOREADONSOCKET) // the 'ReadBytes' buffer is small
                 {
-                    if (ReadBytesOffset > 0) // je mozny sesun dat v bufferu?
+                    if (ReadBytesOffset > 0) // is it possible to move data within the buffer?
                     {
                         memmove(ReadBytes, ReadBytes + ReadBytesOffset, ReadBytesCount - ReadBytesOffset);
                         ReadBytesCount -= ReadBytesOffset;
                         ReadBytesOffset = 0;
                     }
 
-                    if (ReadBytesAllocatedSize - ReadBytesCount < CRTLCON_BYTESTOREADONSOCKET) // stale maly buffer 'ReadBytes'
+                    if (ReadBytesAllocatedSize - ReadBytesCount < CRTLCON_BYTESTOREADONSOCKET) // the 'ReadBytes' buffer is still small
                     {
                         int newSize = ReadBytesCount + CRTLCON_BYTESTOREADONSOCKET +
                                       CRTLCON_BYTESTOREADONSOCKETPREALLOC;
@@ -846,7 +847,7 @@ void CControlConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                             ReadBytes = newBuf;
                             ReadBytesAllocatedSize = newSize;
                         }
-                        else // nedostatek pameti pro ulozeni dat v nasem bufferu (chybu hlasi jen TRACE)
+                        else // not enough memory to store data in our buffer (only TRACE reports the error)
                         {
                             TRACE_E(LOW_MEMORY);
                             lowMem = TRUE;
@@ -855,16 +856,16 @@ void CControlConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                 }
 
                 if (!lowMem)
-                { // precteme co nejvice bytu do bufferu, necteme cyklicky, aby se data zpracovavala postupne
-                    // (staci mensi buffery); je-li jeste neco ke cteni, dostaneme znovu FD_READ
+                { // read as many bytes as possible into the buffer; do not read in a loop so the data is processed gradually
+                    // (smaller buffers are sufficient); if there is still something to read, we will receive FD_READ again
                     if (!SSLConn)
                     {
                         int len = recv(Socket, ReadBytes + ReadBytesCount, ReadBytesAllocatedSize - ReadBytesCount, 0);
-                        if (len != SOCKET_ERROR) // mozna jsme neco precetli (0 = spojeni uz je zavrene)
+                        if (len != SOCKET_ERROR) // we may have read something (0 = the connection is already closed)
                         {
                             if (len > 0)
                             {
-                                ReadBytesCount += len; // upravime pocet jiz nactenych bytu o nove nactene
+                                ReadBytesCount += len; // adjust the number of bytes read by the newly received ones
                                 ret = TRUE;
                                 genEvent = TRUE;
                                 if (WSAGETSELECTEVENT(lParam) == FD_CLOSE)
@@ -875,19 +876,19 @@ void CControlConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                         {
                             err = WSAGetLastError();
                             if (err != WSAEWOULDBLOCK)
-                                genEvent = TRUE; // budeme generovat udalost s chybou
+                                genEvent = TRUE; // we will generate an event with the error
                         }
                     }
                     else
                     {
-                        if (SSLLib.SSL_pending(SSLConn) > 0) // je-li neprazdny interni SSL buffer nedojde vubec k volani recv() a tudiz neprijde dalsi FD_READ, tedy musime si ho poslat sami, jinak se prenos dat zastavi
+                        if (SSLLib.SSL_pending(SSLConn) > 0) // if the internal SSL buffer is not empty, recv() is not called at all and no FD_READ arrives, so post it ourselves to avoid stalling the transfer
                             PostMessage(SocketsThread->GetHiddenWindow(), Msg, (WPARAM)Socket, FD_READ);
                         int len = SSLLib.SSL_read(SSLConn, ReadBytes + ReadBytesCount, ReadBytesAllocatedSize - ReadBytesCount);
-                        if (len >= 0) // mozna jsme neco precetli (0 = spojeni uz je zavrene)
+                        if (len >= 0) // we may have read something (0 = the connection is already closed)
                         {
                             if (len > 0)
                             {
-                                ReadBytesCount += len; // upravime pocet jiz nactenych bytu o nove nactene
+                                ReadBytesCount += len; // adjust the number of bytes read by the newly received ones
                                 ret = TRUE;
                                 genEvent = TRUE;
                                 if (WSAGETSELECTEVENT(lParam) == FD_CLOSE)
@@ -899,21 +900,21 @@ void CControlConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                             err = SSLtoWS2Error(SSLLib.SSL_get_error(SSLConn, len));
                             ;
                             if (err != WSAEWOULDBLOCK)
-                                genEvent = TRUE; // budeme generovat udalost s chybou
+                                genEvent = TRUE; // we will generate an event with the error
                         }
                     }
                 }
             }
             else
             {
-                // muze nastat: hl. thread stihne zavolat CloseSocket() pred dorucenim FD_READ
+                // May occur: the main thread manages to call CloseSocket() before FD_READ is delivered
                 // TRACE_E("Unexpected situation in CControlConnectionSocket::ReceiveNetEvent(FD_READ): Socket is not connected.");
-                // udalost s touto necekanou chybou nebudeme zavadet (reseni: user pouzije ESC)
+                // do not generate an event for this unexpected error (solution: the user presses ESC)
             }
         }
-        else // hlaseni chyby v FD_READ (podle helpu jen WSAENETDOWN)
+        else // reporting an error in FD_READ (according to the help only WSAENETDOWN)
         {
-            if (WSAGETSELECTEVENT(lParam) != FD_CLOSE) // chybu si osetri FD_CLOSE sam
+            if (WSAGETSELECTEVENT(lParam) != FD_CLOSE) // let FD_CLOSE handle the error itself
             {
                 genEvent = TRUE;
                 err = eventError;
@@ -924,25 +925,25 @@ void CControlConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
             char* reply;
             int replySize;
             int replyCode;
-            while (ReadFTPReply(&reply, &replySize, &replyCode)) // dokud mame nejakou odpoved serveru
+            while (ReadFTPReply(&reply, &replySize, &replyCode)) // process responses from the server as long as we have any
             {
                 Logs.LogMessage(LogUID, reply, replySize);
                 BOOL run = TRUE;
                 BOOL leave = TRUE;
                 BOOL setupNextKA = TRUE;
                 BOOL sendList = FALSE;
-                int logUID = LogUID; // UID logu teto connectiony
+                int logUID = LogUID; // log UID of this connection
                 int listCmd = KeepAliveCommand;
                 CKeepAliveDataConSocket* kaDataConnection = KeepAliveDataCon;
                 switch (KeepAliveDataConState)
                 {
-                case kadcsWaitForPassiveReply: // odpoved na PASV (otevreme "data connection" + posleme listovaci prikaz)
+                case kadcsWaitForPassiveReply: // response to PASV (open the data connection and send the listing command)
                 {
                     setupNextKA = FALSE;
                     DWORD ip;
                     unsigned short port;
-                    if (FTP_DIGIT_1(replyCode) == FTP_D1_SUCCESS &&             // uspech (melo by byt 227)
-                        FTPGetIPAndPortFromReply(reply, replySize, &ip, &port)) // podarilo se ziskat IP+port
+                    if (FTP_DIGIT_1(replyCode) == FTP_D1_SUCCESS &&             // success (should be 227)
+                        FTPGetIPAndPortFromReply(reply, replySize, &ip, &port)) // successfully obtained IP and port
                     {
                         KeepAliveDataConState = kadcsWaitForListStart;
                         SkipFTPReply(replySize);
@@ -950,11 +951,11 @@ void CControlConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                         leave = FALSE;
 
                         kaDataConnection->SetPassive(ip, port, logUID);
-                        kaDataConnection->PassiveConnect(NULL); // prvni pokus, vysledek nas nezajima (testuje se pozdeji)
+                        kaDataConnection->PassiveConnect(NULL); // first attempt; the result is irrelevant (checked later)
 
                         sendList = TRUE;
                     }
-                    else // pasivni rezim neni podporovan, koncime...
+                    else // passive mode is not supported, abort...
                     {
                         SkipFTPReply(replySize);
                         HANDLES(LeaveCriticalSection(&SocketCritSect));
@@ -962,7 +963,7 @@ void CControlConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
 
                         Logs.LogMessage(logUID, LoadStr(IDS_LOGMSGKAPASVNOTSUPPORTED), -1, TRUE);
                         ReleaseKeepAlive();
-                        run = FALSE; // koncime...
+                        run = FALSE; // abort...
                     }
                     break;
                 }
@@ -985,9 +986,9 @@ void CControlConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                         leave = FALSE;
 
                         if (kaDataConnection->FinishDataTransfer(replyCode))
-                        { // uvolnime "data connection" pres volani metody SocketsThread
+                        { // release the data connection via the SocketsThread method call
                             HANDLES(EnterCriticalSection(&SocketCritSect));
-                            kaDataConnection = KeepAliveDataCon; // opatreni proti dvojite destrukci (pokud hl.thread ceka na destrukci, je zde uz NULL)
+                            kaDataConnection = KeepAliveDataCon; // prevent double destruction (if the main thread waits for destruction, it is already NULL)
                             KeepAliveDataCon = NULL;
                             KeepAliveDataConState = kadcsNone;
                             HANDLES(LeaveCriticalSection(&SocketCritSect));
@@ -995,8 +996,8 @@ void CControlConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                                 DeleteSocket(kaDataConnection);
                         }
                         else
-                            setupNextKA = FALSE; // "data connection" jeste neskoncila, cekame na jeji konec
-                        run = FALSE;             // koncime...
+                            setupNextKA = FALSE; // the data connection has not finished yet; wait for it to end
+                        run = FALSE;             // abort...
                     }
                     else
                     {
@@ -1016,7 +1017,7 @@ void CControlConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                     HANDLES(LeaveCriticalSection(&SocketCritSect));
                 }
 
-                if (sendList) // posleme prikaz "list" ('listCmd' ('KeepAliveCommand') musi byt 2 nebo 3, jinak by to sem nedoslo)
+                if (sendList) // send the "list" command ('listCmd' ('KeepAliveCommand') must be 2 or 3 to reach this point)
                 {
                     char ftpCmd[200];
                     const char* s = (listCmd == 3 ? LIST_CMD_TEXT : NLST_CMD_TEXT);
@@ -1025,24 +1026,24 @@ void CControlConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                     if (SendKeepAliveCmd(logUID, ftpCmd))
                         kaDataConnection->ActivateConnection();
                     else
-                        run = FALSE; // koncime...
+                        run = FALSE; // abort...
                 }
 
                 if (setupNextKA)
                 {
-                    // pri prijmu odpovedi pustime dale hl.thread (pokud ceka) nebo nastavime dalsi
-                    // keep-alive timer (hl.thread neceka) nebo uplne uvolnime keep-alive (uz vyprsela
-                    // doba posilani keep-alive prikazu)
+                    // when the reply arrives, resume the main thread (if it is waiting) or set up the next
+                    // keep-alive timer (if the main thread is not waiting), or release keep-alive completely
+                    // (the keep-alive command period has expired)
                     SetupNextKeepAliveTimer();
 
-                    // odcerpame nadbytecne zpravy od serveru (napr. WarFTPD je generuje pri LIST v nepristupnem adresari)
+                    // consume extra messages from the server (e.g. WarFTPD generates them when LISTing an inaccessible directory)
                     HANDLES(EnterCriticalSection(&SocketCritSect));
-                    while (ReadFTPReply(&reply, &replySize, &replyCode)) // dokud mame nejakou odpoved serveru
+                    while (ReadFTPReply(&reply, &replySize, &replyCode)) // process responses from the server as long as we have any
                     {
                         Logs.LogMessage(LogUID, reply, replySize);
                         SkipFTPReply(replySize);
                     }
-                    break; // koncime...
+                    break; // abort...
                 }
                 HANDLES(EnterCriticalSection(&SocketCritSect));
                 if (!run)
@@ -1054,22 +1055,22 @@ void CControlConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
         else
             HANDLES(LeaveCriticalSection(&SocketCritSect));
 
-        if (genEvent) // vygenerujeme udalost ccsevNewBytesRead
+        if (genEvent) // generate the ccsevNewBytesRead event
         {
-            AddEvent(ccsevNewBytesRead, (!ret ? err : NO_ERROR), 0, ret); // prepsatelna jen pokud nejde o chybu
+            AddEvent(ccsevNewBytesRead, (!ret ? err : NO_ERROR), 0, ret); // overwritable only if it is not an error
         }
 
-        // ted zpracujeme FD_CLOSE
+        // now process FD_CLOSE
         if (WSAGETSELECTEVENT(lParam) == FD_CLOSE)
         {
-            if (sendFDCloseAgain) // FD_CLOSE byl misto FD_READ => posleme FD_CLOSE znovu
+            if (sendFDCloseAgain) // FD_CLOSE arrived instead of FD_READ, so post FD_CLOSE again
             {
                 PostMessage(SocketsThread->GetHiddenWindow(), WM_APP_SOCKET_MIN + index,
                             (WPARAM)GetSocket(), lParam);
             }
-            else // korektni FD_CLOSE
+            else // proper FD_CLOSE
             {
-                CSocket::ReceiveNetEvent(lParam, index); // zavolame metodu predka
+                CSocket::ReceiveNetEvent(lParam, index); // call the base method
             }
         }
         break;
@@ -1084,113 +1085,113 @@ void CControlConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
         BOOL genEvent = FALSE;
         if (eventError == NO_ERROR)
         {
-            if (BytesToWriteCount > BytesToWriteOffset) // mame nejaky restiky, budeme posilat zbyla data z bufferu 'BytesToWrite'
+            if (BytesToWriteCount > BytesToWriteOffset) // we have remaining data, send the rest from the 'BytesToWrite' buffer
             {
-                if (Socket != INVALID_SOCKET) // socket je pripojeny
+                if (Socket != INVALID_SOCKET) // the socket is connected
                 {
                     int len = 0;
                     if (!SSLConn)
                     {
-                        while (1) // cyklus nutny kvuli funkci 'send' (neposila FD_WRITE pri 'sentLen' < 'bytesToWrite')
+                        while (1) // loop needed because 'send' does not post FD_WRITE when 'sentLen' < 'bytesToWrite'
                         {
                             int sentLen = send(Socket, BytesToWrite + BytesToWriteOffset + len,
                                                BytesToWriteCount - BytesToWriteOffset - len, 0);
-                            if (sentLen != SOCKET_ERROR) // aspon neco je uspesne odeslano (nebo spis prevzato Windowsama, doruceni je ve hvezdach)
+                            if (sentLen != SOCKET_ERROR) // at least something was sent successfully (or rather taken over by Windows; delivery is uncertain)
                             {
                                 len += sentLen;
-                                if (len >= BytesToWriteCount - BytesToWriteOffset) // uz je poslano vsechno?
+                                if (len >= BytesToWriteCount - BytesToWriteOffset) // has everything been sent?
                                 {
                                     ret = TRUE;
-                                    break; // prestaneme posilat (jiz neni co)
+                                    break; // stop sending (there is nothing left)
                                 }
                             }
                             else
                             {
                                 err = WSAGetLastError();
-                                if (err == WSAEWOULDBLOCK) // nic dalsiho uz poslat nejde (Windowsy jiz nemaji buffer space)
+                                if (err == WSAEWOULDBLOCK) // nothing else can be sent (Windows no longer have buffer space)
                                 {
                                     ret = TRUE;
-                                    break; // prestaneme posilat (dodela se po FD_WRITE)
+                                    break; // stop sending (the rest will be done after FD_WRITE)
                                 }
-                                else // jina chyba - resetneme buffer
+                                else // different error - reset the buffer
                                 {
                                     BytesToWriteOffset = 0;
                                     BytesToWriteCount = 0;
-                                    break; // vratime chybu
+                                    break; // return the error
                                 }
                             }
                         }
                     }
                     else
                     {
-                        while (1) // cyklus nutny kvuli funkci 'send' (neposila FD_WRITE pri 'sentLen' < 'bytesToWrite')
+                        while (1) // loop needed because 'send' does not post FD_WRITE when 'sentLen' < 'bytesToWrite'
                         {
                             int sentLen = SSLLib.SSL_write(SSLConn, BytesToWrite + BytesToWriteOffset + len,
                                                            BytesToWriteCount - BytesToWriteOffset - len);
-                            if (sentLen >= 0) // aspon neco je uspesne odeslano (nebo spis prevzato Windowsama, doruceni je ve hvezdach)
+                            if (sentLen >= 0) // at least something was sent successfully (or rather taken over by Windows; delivery is uncertain)
                             {
                                 len += sentLen;
-                                if (len >= BytesToWriteCount - BytesToWriteOffset) // uz je poslano vsechno?
+                                if (len >= BytesToWriteCount - BytesToWriteOffset) // has everything been sent?
                                 {
                                     ret = TRUE;
-                                    break; // prestaneme posilat (jiz neni co)
+                                    break; // stop sending (there is nothing left)
                                 }
                             }
                             else
                             {
                                 err = SSLtoWS2Error(SSLLib.SSL_get_error(SSLConn, sentLen));
-                                if (err == WSAEWOULDBLOCK) // nic dalsiho uz poslat nejde (Windowsy jiz nemaji buffer space)
+                                if (err == WSAEWOULDBLOCK) // nothing else can be sent (Windows no longer have buffer space)
                                 {
                                     ret = TRUE;
-                                    break; // prestaneme posilat (dodela se po FD_WRITE)
+                                    break; // stop sending (the rest will be done after FD_WRITE)
                                 }
-                                else // jina chyba - resetneme buffer
+                                else // different error - reset the buffer
                                 {
                                     BytesToWriteOffset = 0;
                                     BytesToWriteCount = 0;
-                                    break; // vratime chybu
+                                    break; // return the error
                                 }
                             }
                         }
                     }
 
-                    if (ret && len > 0) // aspon neco bylo odeslano -> zmena 'BytesToWriteOffset'
+                    if (ret && len > 0) // some data was sent, so adjust 'BytesToWriteOffset'
                     {
                         BytesToWriteOffset += len;
-                        if (BytesToWriteOffset >= BytesToWriteCount) // vsechno poslano, reset bufferu
+                        if (BytesToWriteOffset >= BytesToWriteCount) // everything sent, reset the buffer
                         {
                             BytesToWriteOffset = 0;
                             BytesToWriteCount = 0;
                         }
                     }
 
-                    genEvent = (!ret || BytesToWriteCount == BytesToWriteOffset); // chyba nebo se jiz podarilo poslat vse
+                    genEvent = (!ret || BytesToWriteCount == BytesToWriteOffset); // an error occurred or everything has been sent
                 }
                 else
                 {
-                    // muze nastat: hl. thread stihne zavolat CloseSocket() pred dorucenim FD_WRITE
+                    // May occur: the main thread manages to call CloseSocket() before FD_WRITE is delivered
                     //TRACE_E("Unexpected situation in CControlConnectionSocket::ReceiveNetEvent(FD_WRITE): Socket is not connected.");
-                    BytesToWriteCount = 0; // chyba -> resetneme buffer
+                    BytesToWriteCount = 0; // error — reset the buffer
                     BytesToWriteOffset = 0;
-                    // udalost s touto necekanou chybou nebudeme zavadet (reseni: user pouzije ESC)
+                    // do not generate an event for this unexpected error (solution: the user presses ESC)
                 }
             }
         }
-        else // hlaseni chyby v FD_WRITE (podle helpu jen WSAENETDOWN)
+        else // reporting an error in FD_WRITE (according to the help only WSAENETDOWN)
         {
             genEvent = TRUE;
             err = eventError;
-            BytesToWriteCount = 0; // chyba -> resetneme buffer
+            BytesToWriteCount = 0; // error — reset the buffer
             BytesToWriteOffset = 0;
         }
         if (genEvent && (KeepAliveMode == kamProcessing || KeepAliveMode == kamWaitingForEndOfProcessing))
-        { // dokoncen zapis prikazu pro keep-alive: misto udalosti ccsevWriteDone jen zapiseme do KeepAliveCmdAllBytesWritten
+        { // keep-alive command finished sending: instead of the ccsevWriteDone event just write to KeepAliveCmdAllBytesWritten
             KeepAliveCmdAllBytesWritten = TRUE;
             genEvent = FALSE;
         }
         HANDLES(LeaveCriticalSection(&SocketCritSect));
 
-        if (genEvent) // vygenerujeme udalost ccsevWriteDone
+        if (genEvent) // generate the ccsevWriteDone event
         {
             AddEvent(ccsevWriteDone, (!ret ? err : NO_ERROR), 0);
         }
@@ -1203,7 +1204,7 @@ void CControlConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
         if (!EventConnectSent)
         {
             EventConnectSent = TRUE;
-            AddEvent(ccsevConnected, eventError, 0); // posleme si udalost s vysledkem pripojeni
+            AddEvent(ccsevConnected, eventError, 0); // post an event with the result of the connection attempt
         }
         HANDLES(LeaveCriticalSection(&SocketCritSect));
         break;
@@ -1217,18 +1218,18 @@ void CControlConnectionSocket::SocketWasClosed(DWORD error)
 
     AddEvent(ccsevClosed, error, 0);
 
-    // informujeme uzivatele o zavreni "control connection", pokud se tak nestane
-    // behem operace se socketem (informuje uzivatele napr. o timeoutu nebo "kick"
-    // vedoucimu k odpojeni z FTP serveru)
+    // Inform the user about the control connection closing if it does not happen
+    // during a socket operation (when the user would be told about a timeout or a "kick"
+    // leading to disconnection from the FTP server)
     ClosedCtrlConChecker.Add(this);
 
     HANDLES(EnterCriticalSection(&SocketCritSect));
-    int logUID = LogUID; // UID logu teto connectiony
+    int logUID = LogUID; // log UID of this connection
     HANDLES(LeaveCriticalSection(&SocketCritSect));
     Logs.SetIsConnected(logUID, IsConnected());
-    Logs.RefreshListOfLogsInLogsDlg(); // hlaseni "connection inactive"
+    Logs.RefreshListOfLogsInLogsDlg(); // display the "connection inactive" notification
 
-    // uvolnime keep-alive, ted uz nebude potreba (uz neni navazane spojeni)
+    // Release the keep-alive; it is no longer needed because the connection is gone
     ReleaseKeepAlive();
 }
 
@@ -1279,16 +1280,16 @@ void CClosedCtrlConChecker::Check(HWND parent)
     CmdNotPost = TRUE;
 
     int k;
-    for (k = 0; k < CtrlConSockets.Count; k++) // pro vsechny ulozene zavrene "control connection" (muzou byt i dealokovane)
+    for (k = 0; k < CtrlConSockets.Count; k++) // for all stored closed control connections (may already be deallocated)
     {
         CControlConnectionSocket* ctrlCon = CtrlConSockets[k];
         int i;
-        for (i = 0; i < FTPConnections.Count; i++) // zkusime najit FS vyuzivajici 'ctrlCon' (FS uz ale muze byt zavreny)
+        for (i = 0; i < FTPConnections.Count; i++) // try to find a FS using 'ctrlCon' (the FS may already be closed)
         {
             CPluginFSInterface* fs = FTPConnections[i];
-            if (fs->Contains(ctrlCon)) // nasli jsme FS s zavrenou "control connection"
+            if (fs->Contains(ctrlCon)) // found a FS with a closed control connection
             {
-                fs->CheckCtrlConClose(parent); // pokud se jeste user nedozvedel o zavreni, dozvi se ted
+                fs->CheckCtrlConClose(parent); // if the user has not been informed yet, notify them now
                 break;
             }
         }
@@ -1308,7 +1309,7 @@ CLogData::CLogData(const char* host, unsigned short port, const char* user,
 {
     UID = NextLogUID++;
     if (UID == -1)
-        UID = NextLogUID++; // -1 je vyhrazeno
+        UID = NextLogUID++; // -1 is reserved
     Host = SalamanderGeneral->DupStr(host);
     Port = port;
     User = SalamanderGeneral->DupStr(user);
@@ -1369,9 +1370,9 @@ public:
     {
         CALL_STACK_MESSAGE1("CLogsDlgThread::Body()");
 
-        // 'sendWMClose': dialog nastavi na TRUE v pripade, ze doslo k prijeti WM_CLOSE
-        // v okamziku, kdy je otevreny modalni dialog nad dialogem logu - az se tento
-        // modalni dialog ukonci, posle se WM_CLOSE znovu do dialogu logu
+        // 'sendWMClose': the dialog sets this to TRUE when WM_CLOSE is received
+        // while a modal dialog is open above the logs dialog; once that
+        // modal dialog finishes, WM_CLOSE is sent to the logs dialog again
         BOOL sendWMClose = FALSE;
         LogsDlg->SendWMClose = &sendWMClose;
 
@@ -1380,17 +1381,17 @@ public:
             if (!LogsDlg->CloseDlg)
                 Logs.SetLogsDlg(NULL);
             if (LogsDlg->HWindow != NULL)
-                DestroyWindow(LogsDlg->HWindow); // WM_CLOSE nemuze dojit, protoze ho nema co dorucit (message-loopa zatim nebezi)
+                DestroyWindow(LogsDlg->HWindow); // WM_CLOSE cannot arrive because nothing delivers it yet (the message loop is not running)
         }
         else
         {
             HWND dlg = LogsDlg->HWindow;
-            if (AlwaysOnTop) // always-on-top osetrime aspon "staticky" (neni v system menu)
+            if (AlwaysOnTop) // handle always-on-top at least "statically" (not in the system menu)
                 SetWindowPos(dlg, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
             SetForegroundWindow(dlg);
 
-            // message-loopa - pockame do ukonceni nemodalniho dialogu
+            // Message loop – wait until the modeless dialog ends
             MSG msg;
             while (GetMessage(&msg, NULL, 0, 0))
             {
@@ -1415,7 +1416,7 @@ public:
 
 void CLogs::AddLogsToCombo(HWND combo, int prevItemUID, int* focusIndex, BOOL* empty)
 {
-    *focusIndex = -1; // nenalezen
+    *focusIndex = -1; // not found
 
     SendMessage(combo, CB_RESETCONTENT, 0, 0);
 
@@ -1469,7 +1470,7 @@ void CLogs::AddLogsToCombo(HWND combo, int prevItemUID, int* focusIndex, BOOL* e
             else
                 sprintf(buf + strlen(buf), " (%s)", LoadStr(fsPosID));
 
-            // pridame sestavene jmeno + UID logu
+            // add the assembled name + log UID
             if (i == SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)buf))
                 SendMessage(combo, CB_SETITEMDATA, i, d->UID);
             if (d->UID == prevItemUID)
@@ -1499,7 +1500,7 @@ BOOL CLogs::GetLogIndex(int uid, int* index)
                 break;
             }
         }
-        if (i == Data.Count) // log neexistuje
+        if (i == Data.Count) // log does not exist
         {
             *index = -1;
             return FALSE;
@@ -1517,7 +1518,7 @@ void CLogs::SetLogToEdit(HWND edit, int logUID, BOOL update)
     {
         BOOL lockUpdate = GetForegroundWindow() == GetParent(edit);
         CLogData* d = Data[index];
-        if (!update) // nastaveni textu logu
+        if (!update) // set the log text
         {
             if (lockUpdate)
                 LockWindowUpdate(edit);
@@ -1529,7 +1530,7 @@ void CLogs::SetLogToEdit(HWND edit, int logUID, BOOL update)
             d->SkippedChars = 0;
             d->SkippedLines = 0;
         }
-        else // update textu logu
+        else // update the log text
         {
             if (lockUpdate)
                 LockWindowUpdate(edit);
@@ -1537,8 +1538,8 @@ void CLogs::SetLogToEdit(HWND edit, int logUID, BOOL update)
             int pos;
             SendMessage(edit, EM_GETSEL, 0, (LPARAM)&pos);
             if (pos == SendMessage(edit, WM_GETTEXTLENGTH, 0, 0))
-                pos = d->Text.Length; // drzime konec textu
-            else                      // drzime pozici caretu
+                pos = d->Text.Length; // keep the end of the text
+            else                      // keep the caret position
             {
                 pos -= d->SkippedChars;
                 if (pos < 0)
@@ -1548,7 +1549,7 @@ void CLogs::SetLogToEdit(HWND edit, int logUID, BOOL update)
                     firstLine = 0;
             }
 
-            // zjistime jestli scrollovat na caret nebo na prvni viditelnou radku z minuleho obsahu editu
+            // determine whether to scroll to the caret or to the first visible line from the previous content of the edit control
             BOOL scrollCaret = pos == d->Text.Length;
             SCROLLINFO si;
             si.cbSize = sizeof(SCROLLINFO);
@@ -1570,14 +1571,14 @@ void CLogs::SetLogToEdit(HWND edit, int logUID, BOOL update)
         }
     }
     else
-        SetWindowText(edit, ""); // neznamy log -> cistime edit
+        SetWindowText(edit, ""); // unknown log -> clear the edit
     HANDLES(LeaveCriticalSection(&LogCritSect));
 }
 
 void CLogs::ConfigChanged()
 {
     HANDLES(EnterCriticalSection(&LogCritSect));
-    if (!Config.EnableLogging) // demolice dat
+    if (!Config.EnableLogging) // tear down the data
     {
         Data.DestroyMembers();
         if (!Data.IsGood())
@@ -1587,13 +1588,13 @@ void CLogs::ConfigChanged()
     }
     else
     {
-        if (Config.DisableLoggingOfWorkers) // demolice dat logu workeru
+        if (Config.DisableLoggingOfWorkers) // remove worker logs
         {
             BOOL change = FALSE;
             int i;
             for (i = Data.Count - 1; i >= 0; i--)
             {
-                if (!Data[i]->CtrlConOrWorker) // jde o log workera
+                if (!Data[i]->CtrlConOrWorker) // this is a worker log
                 {
                     change = TRUE;
                     Data.Delete(i);
@@ -1605,16 +1606,16 @@ void CLogs::ConfigChanged()
                 PostMessage(LogsDlg->HWindow, WM_APP_UPDATELISTOFLOGS, 0, 0);
         }
 
-        LimitClosedConLogs(); // osetri zmenu limitu pro pocet logu zavrenych spojeni
+        LimitClosedConLogs(); // handle changes to the limit of closed connection logs
 
-        if (Config.UseLogMaxSize) // existuje limit pro velikost logu
+        if (Config.UseLogMaxSize) // there is a limit for the log size
         {
-            DWORD size = Config.LogMaxSize * 1024; // preteceni se resi uz pri zadani
+            DWORD size = Config.LogMaxSize * 1024; // overflow is handled when the value is entered
             int i;
             for (i = 0; i < Data.Count; i++)
             {
                 CLogData* d = Data[i];
-                if ((DWORD)(d->Text.Length) > size) // log je prilis velky
+                if ((DWORD)(d->Text.Length) > size) // the log is too large
                 {
                     d->Text.SkipBeginning((DWORD)(d->Text.Length) - size, &(d->SkippedChars), &(d->SkippedLines));
                     if (LogsDlg != NULL && LogsDlg->HWindow != NULL)
@@ -1675,17 +1676,17 @@ BOOL CLogs::ChangeUser(int uid, const char* user)
 
 void CLogs::LimitClosedConLogs()
 {
-    if (Config.UseMaxClosedConLogs) // existuje limit pro pocet logu zavrenych spojeni
+    if (Config.UseMaxClosedConLogs) // there is a limit for the number of closed connection logs
     {
         int firstSurvival = CLogData::NextDisconnectNum - Config.MaxClosedConLogs;
-        if (CLogData::OldestDisconnectNum < firstSurvival) // je co rusit
+        if (CLogData::OldestDisconnectNum < firstSurvival) // there is something to remove
         {
             int i;
             for (i = Data.Count - 1; i >= 0; i--)
             {
                 CLogData* d = Data[i];
-                if (d->CtrlCon == NULL && !d->WorkerIsAlive && // log zavreneho spojeni (mrtvy log)
-                    d->DisconnectNum < firstSurvival)          // jde o prilis stary log
+                if (d->CtrlCon == NULL && !d->WorkerIsAlive && // log of a closed connection (dead log)
+                    d->DisconnectNum < firstSurvival)          // it is an overly old log
                 {
                     Data.Delete(i);
                     if (!Data.IsGood())
@@ -1742,7 +1743,7 @@ BOOL CLogs::ClosingConnection(int uid)
 BOOL CLogs::LogMessage(int uid, const char* str, int len, BOOL addTimeToLog)
 {
     if (uid == -1)
-        return TRUE; // "invalid UID" -> nemame nic logovat
+        return TRUE; // "invalid UID" means there is nothing to log
 
     HANDLES(EnterCriticalSection(&LogCritSect));
     BOOL ret = FALSE;
@@ -1754,24 +1755,24 @@ BOOL CLogs::LogMessage(int uid, const char* str, int len, BOOL addTimeToLog)
         if (addTimeToLog)
         {
             SYSTEMTIME st;
-            GetLocalTime(&st); // pouzijeme std. casovy format, at zbytecne nebrzdime s GetTimeFormat
+            GetLocalTime(&st); // use the standard time format to avoid slowing things down with GetTimeFormat
             timeLen = sprintf(timeBuf, "(%u:%02u:%02u): ", st.wHour, st.wMinute, st.wSecond);
         }
 
         if (len == -1)
             len = (int)strlen(str);
         CLogData* d = Data[index];
-        if (Config.UseLogMaxSize) // existuje limit pro velikost logu
+        if (Config.UseLogMaxSize) // there is a limit for the log size
         {
-            DWORD size = Config.LogMaxSize * 1024; // preteceni se resi uz pri zadani
+            DWORD size = Config.LogMaxSize * 1024; // overflow is handled when the value is entered
             if ((DWORD)(d->Text.Length + len + timeLen) > size)
             {
                 d->Text.SkipBeginning((DWORD)(d->Text.Length + len + timeLen) - size, &(d->SkippedChars), &(d->SkippedLines));
             }
         }
 
-        // zapiseme hlasku do logu (v nejslozitejsim pripade zapiseme nejprve CR+LF pred textem, pak
-        // aktualni cas, a pak zbytek textu (za jiz zapsanymi CR+LF))
+        // Write the message to the log (in the most complex case write CR+LF before the text,
+        // then the current time, and finally the rest of the text after the inserted CR+LF)
         const char* s = str;
         if (timeLen > 0)
         {
@@ -1830,7 +1831,7 @@ BOOL CLogs::ActivateLogsDlg(int showLogUID)
     BOOL ret = FALSE;
     if (LogsDlg != NULL)
     {
-        if (LogsDlg->HWindow != NULL) // "always true" (jinak: dialog se teprve otevre, cimz se sam aktivuje)
+        if (LogsDlg->HWindow != NULL) // "always true" (otherwise the dialog will open and activate itself)
         {
             if (IsIconic(LogsDlg->HWindow))
                 ShowWindow(LogsDlg->HWindow, SW_RESTORE);
@@ -1848,15 +1849,15 @@ BOOL CLogs::ActivateLogsDlg(int showLogUID)
             if (t != NULL)
             {
                 if ((LogsThread = t->Create(AuxThreadQueue)) == NULL)
-                { // thread se nepustil, error
+                { // the thread did not start, error
                     delete t;
                     delete LogsDlg;
                     LogsDlg = NULL;
                 }
                 else
-                    ret = TRUE; // uspech
+                    ret = TRUE; // success
             }
-            else // malo pameti, error
+            else // out of memory, error
             {
                 delete LogsDlg;
                 LogsDlg = NULL;
@@ -1864,7 +1865,7 @@ BOOL CLogs::ActivateLogsDlg(int showLogUID)
             }
         }
         else
-            TRACE_E(LOW_MEMORY); // malo pameti, error
+            TRACE_E(LOW_MEMORY); // out of memory, error
     }
     HANDLES(LeaveCriticalSection(&LogCritSect));
     return ret;
@@ -1875,10 +1876,10 @@ void CLogs::CloseLogsDlg()
     HANDLES(EnterCriticalSection(&LogCritSect));
     if (LogsDlg != NULL)
     {
-        LogsDlg->CloseDlg = TRUE; // k CloseDlg neni synchronizovany pristup, snad zbytecne
+        LogsDlg->CloseDlg = TRUE; // access to CloseDlg is not synchronized, hopefully unnecessarily
         if (LogsDlg->HWindow != NULL)
             PostMessage(LogsDlg->HWindow, WM_CLOSE, 0, 0);
-        LogsDlg = NULL; // dealokaci zajisti thread dialogu
+        LogsDlg = NULL; // deallocation is handled by the dialog thread
     }
     HANDLE t = LogsThread;
     HANDLES(LeaveCriticalSection(&LogCritSect));
@@ -1922,7 +1923,7 @@ void CLogs::SaveLog(HWND parent, const char* itemName, int uid)
     ofn.hwndOwner = parent;
     char* s = LoadStr(IDS_SAVELOGFILTER);
     ofn.lpstrFilter = s;
-    while (*s != 0) // vytvoreni double-null terminated listu
+    while (*s != 0) // create a double-null-terminated list
     {
         if (*s == '|')
             *s = 0;
@@ -1949,7 +1950,7 @@ void CLogs::SaveLog(HWND parent, const char* itemName, int uid)
             initDir[s - fileName] = 0;
         }
 
-        if (SalamanderGeneral->SalGetFileAttributes(fileName) != 0xFFFFFFFF) // aby sel prepsat i read-only soubor
+        if (SalamanderGeneral->SalGetFileAttributes(fileName) != 0xFFFFFFFF) // so that a read-only file can be overwritten
             SetFileAttributes(fileName, FILE_ATTRIBUTE_ARCHIVE);
         HANDLE file = HANDLES_Q(CreateFile(fileName, GENERIC_WRITE,
                                            FILE_SHARE_READ, NULL,
@@ -1968,7 +1969,7 @@ void CLogs::SaveLog(HWND parent, const char* itemName, int uid)
                 CLogData* d = Data[i];
                 if (uid == -1 || d->UID == uid)
                 {
-                    // zapis logu
+                    // write the log
                     ULONG written;
                     BOOL success;
                     if ((success = WriteFile(file, d->Text.GetString(), d->Text.Length, &written, NULL)) == 0 ||
@@ -1982,9 +1983,9 @@ void CLogs::SaveLog(HWND parent, const char* itemName, int uid)
                     }
 
                     if (uid != -1)
-                        break; // zapisujeme jen jeden log, koncime...
+                        break; // writing only one log, stop here
 
-                    if (i + 1 < Data.Count) // zapis separatoru
+                    if (i + 1 < Data.Count) // write a separator
                     {
                         if ((success = WriteFile(file, LogsSeparator, sepLen, &written, NULL)) == 0 ||
                             written != (DWORD)sepLen)
@@ -2002,15 +2003,15 @@ void CLogs::SaveLog(HWND parent, const char* itemName, int uid)
 
             HANDLES(CloseHandle(file));
             SetCursor(oldCur);
-            if (err != NO_ERROR) // vypis chyby
+            if (err != NO_ERROR) // report the error
             {
                 sprintf(buf, LoadStr(IDS_SAVELOGERROR), SalamanderGeneral->GetErrorText(err));
                 SalamanderGeneral->SalMessageBox(parent, buf, LoadStr(IDS_FTPERRORTITLE),
                                                  MB_OK | MB_ICONEXCLAMATION);
-                DeleteFile(fileName); // pri chybe soubor smazem
+                DeleteFile(fileName); // delete the file when an error occurs
             }
 
-            // ohlasime zmenu na ceste (mozna pribyl nas soubor)
+            // announce a change on the path (our file may have appeared)
             SalamanderGeneral->CutDirectory(fileName);
             SalamanderGeneral->PostChangeOnPathNotification(fileName, FALSE);
         }

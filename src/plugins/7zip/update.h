@@ -60,7 +60,7 @@ private:
 //  UString SourcePath;
   AString ProcessedFileName;
 
-  // synchronizace pro volani
+  // synchronization for calls
   CRITICAL_SECTION CSUpdate;
 
   TIndirectArray<CFileItem> *FileItems;
@@ -147,7 +147,7 @@ public:
 public:
     AString ProcessedFileName;
 
-    // synchronizace pro volani
+    // synchronization for calls
     CRITICAL_SECTION CSUpdate;
 
     TIndirectArray<CFileItem>* FileItems;

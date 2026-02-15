@@ -3,7 +3,7 @@
 REM
 REM Usage: makeall.bat
 REM
-REM Provede build SFX balicku do podadresare sfx
+REM Build the SFX package into the sfx subdirectory
 
 if "%OPENSAL_BUILD_DIR%"=="" (
   echo Please set OPENSAL_BUILD_DIR environment variable.
@@ -67,7 +67,7 @@ if "%makeall_should_pause%"=="" (
 @exit /b
 
 
-rem ---------------------------- Copy rutina
+rem ---------------------------- Copy routine
 
 :sfxcopy
 
@@ -82,7 +82,7 @@ pause
 
 exit /b
 
-rem ---------------------------- Move rutina
+rem ---------------------------- Move routine
 
 :sfxmove
 
@@ -97,7 +97,7 @@ pause
 
 exit /b
 
-rem ---------------------------- Remove Directory with auto-retry rutina
+rem ---------------------------- Remove directory with auto-retry routine
 
 :remove_dir_autoretry
 if exist %1 rmdir /Q /S %1

@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -35,7 +36,7 @@ void CConfigPageServers::Transfer(CTransferInfo& ti)
         }
         else
         {
-            // prelejeme data zpatky do konfigurace
+            // transfer the data back into the configuration
             if (TmpServerTypeList != NULL)
             {
                 CServerTypeList* s = Config.LockServerTypeList();
@@ -43,7 +44,7 @@ void CConfigPageServers::Transfer(CTransferInfo& ti)
                 s->CopyItemsFrom(TmpServerTypeList);
                 Config.UnlockServerTypeList();
 
-                // refreshneme listingy v panelech -> at se pouziji nove parsery
+                // refresh the panel listings -> so the new parsers are used
                 CPluginFSInterface* fs1 = (CPluginFSInterface*)SalamanderGeneral->GetPanelPluginFS(PANEL_LEFT);
                 if (fs1 != NULL)
                 {
@@ -113,8 +114,8 @@ void CConfigPageServers::EnableControls()
 
 void CConfigPageServers::MoveItem(HWND list, int fromIndex, int toIndex)
 {
-    // 'TmpServerTypeList' jiste neni NULL, 'fromIndex' a 'toIndex' jsou jiste platne indexy
-    // prohodime data v poli
+    // 'TmpServerTypeList' is certainly not NULL; 'fromIndex' and 'toIndex' are definitely valid indices
+    // swap the data in the array
     CServerType* s = TmpServerTypeList->At(fromIndex);
     TmpServerTypeList->Detach(fromIndex);
     if (TmpServerTypeList->IsGood())
@@ -122,7 +123,7 @@ void CConfigPageServers::MoveItem(HWND list, int fromIndex, int toIndex)
         TmpServerTypeList->Insert(toIndex, s);
         if (TmpServerTypeList->IsGood())
         {
-            // prohodime data v listboxu
+            // swap the data in the listbox
             SendMessage(list, WM_SETREDRAW, FALSE, 0);
             int topIndex = (int)SendMessage(list, LB_GETTOPINDEX, 0, 0);
             SendMessage(list, LB_DELETESTRING, fromIndex, 0);
@@ -137,7 +138,7 @@ void CConfigPageServers::MoveItem(HWND list, int fromIndex, int toIndex)
         {
             SendMessage(list, LB_DELETESTRING, fromIndex, 0);
             TmpServerTypeList->ResetState();
-            delete s; // zbyl nam mimo pole, zrusime ho
+            delete s; // it was left outside the array, destroy it
         }
         PostMessage(HWindow, WM_COMMAND, MAKELONG(IDL_SUPPORTEDSERVERS, LBN_SELCHANGE), 0);
     }
@@ -163,7 +164,7 @@ void CConfigPageServers::OnExportServer(CServerType* serverType)
     ofn.hwndOwner = HWindow;
     char* s = LoadStr(IDS_SRVTYPEFILEFILTER);
     ofn.lpstrFilter = s;
-    while (*s != 0) // vytvoreni double-null terminated listu
+    while (*s != 0) // create a double-null-terminated list
     {
         if (*s == '|')
             *s = 0;
@@ -190,7 +191,7 @@ void CConfigPageServers::OnExportServer(CServerType* serverType)
             ImpExpInitDir[s - fileName] = 0;
         }
 
-        if (SalamanderGeneral->SalGetFileAttributes(fileName) != 0xFFFFFFFF) // aby sel prepsat i read-only soubor
+        if (SalamanderGeneral->SalGetFileAttributes(fileName) != 0xFFFFFFFF) // so a read-only file can be overwritten
             SetFileAttributes(fileName, FILE_ATTRIBUTE_ARCHIVE);
         HANDLE file = HANDLES_Q(CreateFile(fileName, GENERIC_WRITE,
                                            FILE_SHARE_READ, NULL,
@@ -203,12 +204,12 @@ void CConfigPageServers::OnExportServer(CServerType* serverType)
 
             HANDLES(CloseHandle(file));
             SetCursor(oldCur);
-            if (err != NO_ERROR) // vypis chyby
+            if (err != NO_ERROR) // display the error
             {
                 sprintf(buf, LoadStr(IDS_SRVTYPEEXPORTERROR), SalamanderGeneral->GetErrorText(err));
                 SalamanderGeneral->SalMessageBox(HWindow, buf, LoadStr(IDS_FTPERRORTITLE),
                                                  MB_OK | MB_ICONEXCLAMATION);
-                DeleteFile(fileName); // pri chybe soubor smazem
+                DeleteFile(fileName); // delete the file if there was an error
             }
         }
         else
@@ -219,7 +220,7 @@ void CConfigPageServers::OnExportServer(CServerType* serverType)
             SalamanderGeneral->SalMessageBox(HWindow, buf, LoadStr(IDS_FTPERRORTITLE),
                                              MB_OK | MB_ICONEXCLAMATION);
         }
-        // ohlasime zmenu na ceste (pribyl nas soubor)
+        // announce the change on the path (our file was added)
         SalamanderGeneral->CutDirectory(fileName);
         SalamanderGeneral->PostChangeOnPathNotification(fileName, FALSE);
     }
@@ -240,7 +241,7 @@ void CConfigPageServers::OnImportServer()
         ofn.hwndOwner = HWindow;
         char* s = LoadStr(IDS_SRVTYPEFILEFILTER);
         ofn.lpstrFilter = s;
-        while (*s != 0) // vytvoreni double-null terminated listu
+        while (*s != 0) // create a double-null-terminated list
         {
             if (*s == '|')
                 *s = 0;
@@ -287,17 +288,17 @@ void CConfigPageServers::OnImportServer()
                         {
                             delete (TmpServerTypeList->At(index));
                             TmpServerTypeList->At(index) = serverType;
-                            serverType = NULL;         // je pridany, nebudeme ho dealokovat
-                            RefreshList(FALSE, index); // ukazeme novy typ uzivateli (je na indexu 'index')
+                            serverType = NULL;         // it has been added, we will not deallocate it
+                            RefreshList(FALSE, index); // show the new type to the user (it is at index 'index')
                         }
                     }
-                    else // jdeme pridat novy typ serveru
+                    else // we are about to add a new server type
                     {
                         TmpServerTypeList->Add(serverType);
                         if (TmpServerTypeList->IsGood())
                         {
-                            serverType = NULL; // je pridany, nebudeme ho dealokovat
-                            RefreshList(TRUE); // ukazeme novy typ uzivateli (je na konci seznamu)
+                            serverType = NULL; // it has been added, we will not deallocate it
+                            RefreshList(TRUE); // show the new type to the user (it is at the end of the list)
                         }
                         else
                             TmpServerTypeList->ResetState();
@@ -306,7 +307,7 @@ void CConfigPageServers::OnImportServer()
 
                 HANDLES(CloseHandle(file));
                 SetCursor(oldCur);
-                if (err != NO_ERROR || errResID != 0) // vypis chyby
+                if (err != NO_ERROR || errResID != 0) // display the error
                 {
                     if (errResID != 0)
                         sprintf(buf, LoadStr(IDS_SRVTYPEIMPORTERROR), LoadStr(errResID));
@@ -358,10 +359,10 @@ CConfigPageServers::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (TmpServerTypeList == NULL)
             TRACE_E("CConfigPageServers::DialogProc(): Unable to make a copy of server types list, dialog can't work.");
 
-        // pripojime se na listbox (kvuli Alt+sipkam, ty do WM_VKEYTOITEM nechodi)
+        // attach to the listbox (due to Alt+arrow keys; they do not go to WM_VKEYTOITEM)
         CServersListbox* list = new CServersListbox(this, IDL_SUPPORTEDSERVERS);
         if (list != NULL && list->HWindow == NULL)
-            delete list; // pokud chybi control, uvolnime objekt (jinak se uvolni sam)
+            delete list; // if the control is missing, release the object (otherwise it frees itself)
 
         SalamanderGUI->AttachButton(HWindow, IDB_OTHERSERVERACT, BTF_RIGHTARROW);
         INT_PTR ret = CCommonPropSheetPage::DialogProc(uMsg, wParam, lParam);
@@ -400,7 +401,7 @@ CConfigPageServers::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     s = TmpServerTypeList->At(caret);
                     if (s == NULL)
-                        return TRUE; // fatal, dale nepokracujeme
+                        return TRUE; // fatal, do not continue
                 }
                 char buf[300 + SERVERTYPE_MAX_SIZE];
                 char typeBuf[SERVERTYPE_MAX_SIZE + 101];
@@ -435,8 +436,8 @@ CConfigPageServers::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     {
                         TmpServerTypeList->Delete(caret);
                         if (!TmpServerTypeList->IsGood())
-                            TmpServerTypeList->ResetState(); // ke smazani stejne doslo
-                        // zrusime jeste radek v listboxu
+                            TmpServerTypeList->ResetState(); // deletion happened anyway
+                        // remove the row in the listbox as well
                         SendMessage(list, WM_SETREDRAW, FALSE, 0);
                         int topIndex = (int)SendMessage(list, LB_GETTOPINDEX, 0, 0);
                         SendMessage(list, LB_DELETESTRING, caret, 0);
@@ -479,7 +480,7 @@ CConfigPageServers::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                 sprintf(buf, LoadStr(IDS_SRVTYPENOTUNIQUE), name + 1);
                                 SalamanderGeneral->SalMessageBox(HWindow, buf, LoadStr(IDS_FTPERRORTITLE),
                                                                  MB_OK | MB_ICONEXCLAMATION);
-                                continue; // nechame usera jmeno zmenit
+                                continue; // let the user change the name
                             }
                             if (LOWORD(wParam) == IDB_NEWSERVER || LOWORD(wParam) == CM_COPYSERVERTO) // new/copy to
                             {
@@ -496,7 +497,7 @@ CConfigPageServers::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             else // rename
                             {
                                 if (strcmp(s->TypeName, s->TypeName[0] != '*' ? name + 1 : name) != 0)
-                                { // eliminace prechodu na user defined jen na zaklade OK tlacitka beze zmeny jmena
+                                { // prevent switching to user defined just by pressing OK without changing the name
                                     UpdateStr(s->TypeName, name);
                                 }
                             }
@@ -574,7 +575,7 @@ CEditServerTypeDlg::CEditServerTypeDlg(HWND parent, CServerType* serverType)
     HListView = NULL;
     CanReadListViewChanges = TRUE;
 
-    // vytvorime lokalni kopii dat sloupcu
+    // create a local copy of the column data
     BOOL ok = TRUE;
     int i;
     for (i = 0; i < ServerType->Columns.Count; i++)
@@ -598,7 +599,7 @@ CEditServerTypeDlg::CEditServerTypeDlg(HWND parent, CServerType* serverType)
         }
     }
     if (!ok)
-        ColumnsData.DestroyMembers(); // obrana proti pripadnemu prehlednuti chyby
+        ColumnsData.DestroyMembers(); // safeguard against a potential overlooked error
 
     RawListing = NULL;
     RawListIncomplete = FALSE;
@@ -612,7 +613,7 @@ CEditServerTypeDlg::~CEditServerTypeDlg()
 
 void CEditServerTypeDlg::Validate(CTransferInfo& ti)
 {
-    // overime podminku autodetekce
+    // verify the autodetect condition
     char cond[AUTODETCOND_MAX_SIZE];
     ti.EditLine(IDE_AUTODETECTCOND, cond, AUTODETCOND_MAX_SIZE);
     int errorPos = -1;
@@ -622,16 +623,16 @@ void CEditServerTypeDlg::Validate(CTransferInfo& ti)
     errBuf[0] = 0;
     CFTPAutodetCondNode* node = CompileAutodetectCond(cond, &errorPos, &errorResID, &lowMem, errBuf, 200);
     if (node != NULL)
-        delete node; // podminka je OK, zase ji zrusime
-    else             // vypiseme co se stalo za chybu a oznacime chybu v editboxu "autodetect condition"
+        delete node; // the condition is OK, delete it again
+    else             // display the error and mark the error in the "autodetect condition" edit box
     {
-        if (errBuf[0] != 0 || errorResID != -1) // byla nalezena nejaka "rozumna" chyba, okomentujeme to
+        if (errBuf[0] != 0 || errorResID != -1) // some "reasonable" error was found, comment on it
         {
             char buf[300];
             sprintf(buf, LoadStr(IDS_STPAR_UNABLECOMPAUTODCOND), (errBuf[0] == 0 ? LoadStr(errorResID) : errBuf));
             SalamanderGeneral->SalMessageBox(HWindow, buf, LoadStr(IDS_FTPERRORTITLE),
                                              MB_OK | MB_ICONEXCLAMATION);
-            // oznacime misto chyby v textu podminky
+            // mark the error location in the condition text
             SendMessage(HWindow, WM_NEXTDLGCTL, (WPARAM)GetDlgItem(HWindow, IDE_AUTODETECTCOND), TRUE);
             SendDlgItemMessage(HWindow, IDE_AUTODETECTCOND, EM_SETSEL, (WPARAM)errorPos,
                                (LPARAM)errorPos);
@@ -639,7 +640,7 @@ void CEditServerTypeDlg::Validate(CTransferInfo& ti)
         }
     }
 
-    if (ti.IsGood()) // overime sloupce
+    if (ti.IsGood()) // validate the columns
     {
         BOOL errResID = 0;
         if (!ValidateSrvTypeColumns(&ColumnsData, &errResID))
@@ -650,7 +651,7 @@ void CEditServerTypeDlg::Validate(CTransferInfo& ti)
         }
     }
 
-    if (ti.IsGood()) // overime pravidla pro parsovani
+    if (ti.IsGood()) // validate the parsing rules
     {
         char rules[PARSER_MAX_SIZE];
         ti.EditLine(IDE_PARSINGRULES, rules, PARSER_MAX_SIZE);
@@ -659,16 +660,16 @@ void CEditServerTypeDlg::Validate(CTransferInfo& ti)
         lowMem = FALSE;
         CFTPParser* parser = CompileParsingRules(rules, &ColumnsData, &errorPos, &errorResID, &lowMem);
         if (parser != NULL)
-            delete parser; // parser je OK, zase ho zrusime
-        else               // vypiseme co se stalo za chybu a oznacime chybu v editboxu "rules for parsing"
+            delete parser; // the parser is OK, delete it again
+        else               // display the error and mark the error in the "rules for parsing" edit box
         {
-            if (errorResID != -1) // byla nalezena nejaka "rozumna" chyba, okomentujeme to
+            if (errorResID != -1) // some "reasonable" error was found, comment on it
             {
                 char buf[300];
                 sprintf(buf, LoadStr(IDS_STPAR_UNABLECOMPPARSER), LoadStr(errorResID));
                 SalamanderGeneral->SalMessageBox(HWindow, buf, LoadStr(IDS_FTPERRORTITLE),
                                                  MB_OK | MB_ICONEXCLAMATION);
-                // oznacime misto chyby v textu pravidel pro parsovani
+                // mark the error location in the parsing rules text
                 SendDlgItemMessage(HWindow, IDE_PARSINGRULES, EM_SETSEL, (WPARAM)errorPos,
                                    (LPARAM)errorPos);
                 SendDlgItemMessage(HWindow, IDE_PARSINGRULES, EM_SCROLLCARET, 0, 0); // scroll caret into view
@@ -688,7 +689,7 @@ void CEditServerTypeDlg::Transfer(CTransferInfo& ti)
     }
     else // data from window
     {
-        BOOL change = FALSE; // TRUE = v dialogu doslo ke zmene dat (nutny rename na "user defined")
+        BOOL change = FALSE; // TRUE = the data changed in the dialog (requires renaming to "user defined")
         char buf[AUTODETCOND_MAX_SIZE];
         ti.EditLine(IDE_AUTODETECTCOND, buf, AUTODETCOND_MAX_SIZE);
         if (strcmp(buf, HandleNULLStr(ServerType->AutodetectCond)) != 0)
@@ -715,7 +716,7 @@ void CEditServerTypeDlg::Transfer(CTransferInfo& ti)
             }
         }
 
-        // testneme zmenu sloupcu, pripadne preneseme lokalni kopii dat sloupcu do objektu s vysledky
+        // check for changes to the columns and, if needed, copy the local column data into the result object
         BOOL needUpdate = TRUE;
         if (ServerType->Columns.Count == ColumnsData.Count)
         {
@@ -766,10 +767,10 @@ void CEditServerTypeDlg::Transfer(CTransferInfo& ti)
                 }
             }
             if (!ok)
-                ServerType->Columns.DestroyMembers(); // obrana proti pripadnemu prehlednuti chyby
+                ServerType->Columns.DestroyMembers(); // safeguard against a potential overlooked error
         }
 
-        // pokud doslo ke zmene dat, musime zmenit server type na "user defined"
+        // if the data changed, we must change the server type to "user defined"
         if (change && ServerType->TypeName[0] != '*')
         {
             char name[SERVERTYPE_MAX_SIZE];
@@ -778,7 +779,7 @@ void CEditServerTypeDlg::Transfer(CTransferInfo& ti)
             BOOL err = FALSE;
             UpdateStr(ServerType->TypeName, name, &err);
             if (err && ServerType->TypeName[0] != 0)
-                ServerType->TypeName[0] = '*'; // "user defined" za kazdou cenu
+                ServerType->TypeName[0] = '*'; // "user defined" at any cost
         }
     }
 }
@@ -787,7 +788,7 @@ void CEditServerTypeDlg::EnableControls()
 {
     int i = ListView_GetNextItem(HListView, -1, LVIS_FOCUSED);
     if (i == -1)
-        return; // prijde dalsi volani az bude zase focus, pockame si na nej
+        return; // another call will arrive once focus returns; wait for it
     BOOL enableRemove = (i > 0);
     HWND focus = GetFocus();
     if (!enableRemove && focus == GetDlgItem(HWindow, IDB_REMOVECOLUMN))
@@ -807,12 +808,12 @@ void CEditServerTypeDlg::InitColumns()
     lvc.mask = LVCF_FMT | LVCF_TEXT | LVCF_SUBITEM;
     lvc.fmt = LVCFMT_LEFT;
     int i;
-    for (i = 0; i < 6; i++) // vytvorim sloupce
+    for (i = 0; i < 6; i++) // create columns
     {
         lvc.pszText = LoadStr(header[i]);
         lvc.iSubItem = i;
         ListView_InsertColumn(HListView, i, &lvc);
-        //    ListView_SetColumnWidth(HListView, i, LVSCW_AUTOSIZE_USEHEADER);  // sirky nastavime az v SetColumnWidths()
+        //    ListView_SetColumnWidth(HListView, i, LVSCW_AUTOSIZE_USEHEADER);  // set the widths later in SetColumnWidths()
     }
 }
 
@@ -826,10 +827,10 @@ void CEditServerTypeDlg::SetColumnWidths()
 void CEditServerTypeDlg::RefreshListView(BOOL onlySet, int selIndex)
 {
     CanReadListViewChanges = FALSE;
-    //  LockWindowUpdate(HListView);    // nepouzivat - blika cely Windows
+    //  LockWindowUpdate(HListView);    // do not use - it makes the entire Windows flicker
     SendMessage(HListView, WM_SETREDRAW, FALSE, 0);
-    // zde pro zhasinani okna nevidim duvod, sloupcu je malo a volani SetColumnWidths()
-    // nezpusobuje blikani listview
+    // I see no reason to dim the window here; there are few columns and calling SetColumnWidths()
+    // does not cause the list view to flicker
     //  SetWindowPos(HListView, NULL, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_HIDEWINDOW | SWP_NOREDRAW | SWP_NOSENDCHANGING | SWP_NOZORDER);
 
     int topIndex = 0;
@@ -843,7 +844,7 @@ void CEditServerTypeDlg::RefreshListView(BOOL onlySet, int selIndex)
     {
         CSrvTypeColumn* col = ColumnsData[i];
 
-        // sloupec ID + pripadne vlozime polozku
+        // column ID + insert the item if needed
         if (!onlySet)
         {
             LVITEM lvi;
@@ -857,12 +858,12 @@ void CEditServerTypeDlg::RefreshListView(BOOL onlySet, int selIndex)
             ListView_SetItemText(HListView, i, 0, HandleNULLStr(col->ID));
 
         // checkbox visible
-        // tohle bohuzel nemam v headru: ListView_SetCheckState(HListView, i, col->Visible != FALSE);
-        // takze jsem to nahradil timto:
+        // unfortunately this is not available in the header: ListView_SetCheckState(HListView, i, col->Visible != FALSE);
+        // so I replaced it with this:
         ListView_SetItemState(HListView, i, INDEXTOSTATEIMAGEMASK((col->Visible != FALSE) + 1),
                               LVIS_STATEIMAGEMASK);
 
-        // sloupec name
+        // column name
         char bufName[STC_NAME_MAX_SIZE + 2];
         if (col->NameID != -1)
             LoadStdColumnStrName(bufName, STC_NAME_MAX_SIZE, col->NameID);
@@ -870,12 +871,12 @@ void CEditServerTypeDlg::RefreshListView(BOOL onlySet, int selIndex)
             _snprintf_s(bufName, _TRUNCATE, "\"%s\"", HandleNULLStr(col->NameStr));
         ListView_SetItemText(HListView, i, 1, bufName);
 
-        // sloupec type
+        // column type
         char bufType[100];
         GetColumnTypeName(bufType, 100, col->Type);
         ListView_SetItemText(HListView, i, 2, bufType);
 
-        // sloupec empty value
+        // column empty value
         char* emptyVal;
         char emptyValBuf[100];
         if (col->EmptyValue == NULL || *(col->EmptyValue) == 0)
@@ -887,7 +888,7 @@ void CEditServerTypeDlg::RefreshListView(BOOL onlySet, int selIndex)
             emptyVal = col->EmptyValue;
         ListView_SetItemText(HListView, i, 3, emptyVal);
 
-        // sloupec description
+        // column description
         char bufDescr[STC_DESCR_MAX_SIZE + 2];
         if (col->DescrID != -1)
             LoadStdColumnStrDescr(bufDescr, STC_DESCR_MAX_SIZE, col->DescrID);
@@ -895,7 +896,7 @@ void CEditServerTypeDlg::RefreshListView(BOOL onlySet, int selIndex)
             _snprintf_s(bufDescr, _TRUNCATE, "\"%s\"", HandleNULLStr(col->DescrStr));
         ListView_SetItemText(HListView, i, 4, bufDescr);
 
-        // sloupec alignment
+        // column alignment
         char emptyBuff[] = "";
         ListView_SetItemText(HListView, i, 5, col->Type >= stctFirstGeneral ? LoadStr(col->LeftAlignment ? IDS_SRVTYPECOL_ALIGNLEFT : IDS_SRVTYPECOL_ALIGNRIGHT) : emptyBuff);
     }
@@ -907,7 +908,7 @@ void CEditServerTypeDlg::RefreshListView(BOOL onlySet, int selIndex)
             topIndex = count - 1;
         if (topIndex < 0)
             topIndex = 0;
-        // nahrazka za SetTopIndex u list-view
+        // replacement for SetTopIndex in list view
         ListView_EnsureVisible(HListView, count - 1, FALSE);
         ListView_EnsureVisible(HListView, topIndex, FALSE);
 
@@ -919,7 +920,7 @@ void CEditServerTypeDlg::RefreshListView(BOOL onlySet, int selIndex)
         ListView_SetItemState(HListView, selIndex, state, state);
         ListView_EnsureVisible(HListView, selIndex, FALSE);
     }
-    //  LockWindowUpdate(NULL);  // nepouzivat - blika cely Windows
+    //  LockWindowUpdate(NULL);  // do not use - it makes the entire Windows flicker
     //  SetWindowPos(HListView, NULL, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_SHOWWINDOW | SWP_NOREDRAW | SWP_NOSENDCHANGING | SWP_NOZORDER);
     SendMessage(HListView, WM_SETREDRAW, TRUE, 0);
 
@@ -931,7 +932,7 @@ CEditRulesControlWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
     {
-    case WM_GETDLGCODE: // postarame se, aby nam porad neoznacovali text v editboxu
+    case WM_GETDLGCODE: // make sure the text in the edit box is not constantly selected
     {
         LRESULT ret = CWindow::WindowProc(uMsg, wParam, lParam);
         return (ret & (~DLGC_HASSETSEL));
@@ -944,14 +945,14 @@ CEditRulesControlWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (GetFocus() != HWindow)
         {
             SendMessage(GetParent(HWindow), WM_NEXTDLGCTL, (WPARAM)HWindow, TRUE);
-            SendMessage(HWindow, EM_SETSEL, i, i); // vzdy zmena pozice caretu
+            SendMessage(HWindow, EM_SETSEL, i, i); // always change the caret position
         }
         else
         {
             DWORD start, end;
             SendMessage(HWindow, EM_GETSEL, (WPARAM)&start, (LPARAM)&end);
             if ((i < start || i >= end) && (i < end || i >= start))
-                SendMessage(HWindow, EM_SETSEL, i, i); // klik mimo selectionu -> zmena pozice caretu
+                SendMessage(HWindow, EM_SETSEL, i, i); // click outside the selection -> change the caret position
         }
         break;
     }
@@ -1233,11 +1234,11 @@ CEditRulesControlWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         "cut_end_of_string(<column-id>, number)",
                         "skip_to_number()",
                     };
-                    int firstFunc = 16; /* index prvni funkce - AKTUALIZOVAT !!! */
-                    if (strID < 52 /* pocet stringu v strArr - AKTUALIZOVAT !!! */)
+                    int firstFunc = 16; /* index of the first function - UPDATE!!! */
+                    if (strID < 52 /* number of strings in strArr - UPDATE!!! */)
                     {
                         const char* str = strArr[strID];
-                        if (start == 0 || end == 0) // jsme-li na zacatku editline, skipneme predsazeny EOL
+                        if (start == 0 || end == 0) // if we are at the start of the edit line, skip the leading EOL
                         {
                             if (*str == '\r')
                                 str++;
@@ -1265,7 +1266,7 @@ CEditRulesControlWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                         break;
                                     }
                                     else
-                                        spaceBefore = FALSE; // zbytecna, uz tam je
+                                        spaceBefore = FALSE; // unnecessary, it's already there
                                     s--;
                                 }
                             }
@@ -1308,10 +1309,10 @@ CEditServerTypeDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // zakazeme select-all pri fokusu a zajistime vlastni kontextove menu pro edit s pravidly pro parsovani
+        // disable select-all on focus and provide a custom context menu for the parsing rules edit
         CEditRulesControlWindow* wnd = new CEditRulesControlWindow(HWindow, IDE_PARSINGRULES);
         if (wnd != NULL && wnd->HWindow == NULL)
-            delete wnd; // nepodarilo se attachnout - nedealokuje se samo
+            delete wnd; // attaching failed - it will not deallocate itself
 
         // listview setup
         HListView = GetDlgItem(HWindow, IDL_SRVTYPECOLUMNS);
@@ -1319,23 +1320,23 @@ CEditServerTypeDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         DWORD origFlags = ListView_GetExtendedListViewStyle(HListView);
         ListView_SetExtendedListViewStyle(HListView, origFlags | exFlags); // 4.71
 
-        // vlozime sloupce
+        // insert columns
         InitColumns();
 
-        // vlozime polozky
+        // insert items
         RefreshListView(FALSE);
 
-        // nastavime sirky sloupcu
+        // set column widths
         SetColumnWidths();
 
-        // upravime tlacitka
+        // adjust buttons
         SalamanderGUI->ChangeToArrowButton(HWindow, IDB_ADCONDINSERT);
         SalamanderGUI->AttachButton(HWindow, IDB_MOVECOLUMN, BTF_RIGHTARROW);
 
-        // dokoncime init dialogu
+        // finish initializing the dialog
         INT_PTR ret = CCenteredDialog::DialogProc(uMsg, wParam, lParam);
 
-        // enablujeme controly
+        // enable controls
         EnableControls();
         return ret;
     }
@@ -1346,7 +1347,7 @@ CEditServerTypeDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
         case IDCANCEL:
         {
-            BOOL change = FALSE; // TRUE = v dialogu doslo ke zmene dat
+            BOOL change = FALSE; // TRUE = the data in the dialog were changed
             char buf[AUTODETCOND_MAX_SIZE];
             CTransferInfo ti(HWindow, ttDataFromWindow);
             ti.EditLine(IDE_AUTODETECTCOND, buf, AUTODETCOND_MAX_SIZE);
@@ -1360,7 +1361,7 @@ CEditServerTypeDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     change = TRUE;
                 else
                 {
-                    // testneme zmenu sloupcu
+                    // check for a change in columns
                     if (ServerType->Columns.Count == ColumnsData.Count)
                     {
                         char colStr1[STC_MAXCOLUMNSTR];
@@ -1398,8 +1399,8 @@ CEditServerTypeDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             HMENU menu = CreatePopupMenu();
             if (menu != NULL)
             {
-                /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volani AppendMenu() dole...
+                /* used by the script export_mnu.py, which generates salmenu.mnu for Translator
+   keep synchronized with the AppendMenu() calls below...
 MENU_TEMPLATE_ITEM EditServerTypeADCondMenu[] =
 {
   {MNTT_PB, 0
@@ -1450,7 +1451,7 @@ MENU_TEMPLATE_ITEM EditServerTypeADCondMenu[] =
                     index = 1;
                     while (*r != 0)
                     {
-                        if (index == cmd && *r != -1 && *s != NULL) // nalezeno, vlozime text
+                        if (index == cmd && *r != -1 && *s != NULL) // found, insert the text
                         {
                             DWORD start;
                             SendDlgItemMessage(HWindow, IDE_AUTODETECTCOND, EM_GETSEL, (WPARAM)&start, NULL);
@@ -1465,7 +1466,7 @@ MENU_TEMPLATE_ITEM EditServerTypeADCondMenu[] =
                 }
                 DestroyMenu(menu);
             }
-            return TRUE; // dale nepokracovat
+            return TRUE; // do not continue further
         }
 
         case IDB_NEWCOLUMN:
@@ -1478,11 +1479,11 @@ MENU_TEMPLATE_ITEM EditServerTypeADCondMenu[] =
                                           LOWORD(wParam) == IDB_EDITCOLUMN)
                         .Execute() == IDOK)
                 {
-                    RefreshListView(FALSE, i); // totalni refresh, i editace muze posouvat polozky
+                    RefreshListView(FALSE, i); // full refresh; even editing can move items
                     SetColumnWidths();
                 }
             }
-            return TRUE; // dale nepokracovat
+            return TRUE; // do not continue further
         }
 
         case IDB_REMOVECOLUMN:
@@ -1516,7 +1517,7 @@ MENU_TEMPLATE_ITEM EditServerTypeADCondMenu[] =
                     }
                 }
             }
-            return TRUE; // dale nepokracovat
+            return TRUE; // do not continue further
         }
 
         case CM_MOVECOLUMNUP:
@@ -1529,7 +1530,7 @@ MENU_TEMPLATE_ITEM EditServerTypeADCondMenu[] =
                 ColumnsData[i] = swap;
                 RefreshListView(TRUE, i - 1);
             }
-            return TRUE; // dale nepokracovat
+            return TRUE; // do not continue further
         }
 
         case CM_MOVECOLUMNDOWN:
@@ -1542,7 +1543,7 @@ MENU_TEMPLATE_ITEM EditServerTypeADCondMenu[] =
                 ColumnsData[i + 1] = swap;
                 RefreshListView(TRUE, i + 1);
             }
-            return TRUE; // dale nepokracovat
+            return TRUE; // do not continue further
         }
 
         case IDB_MOVECOLUMN:
@@ -1568,7 +1569,7 @@ MENU_TEMPLATE_ITEM EditServerTypeADCondMenu[] =
                 }
                 DestroyMenu(main);
             }
-            return TRUE; // dale nepokracovat
+            return TRUE; // do not continue further
         }
 
         case IDB_TESTPARSER:
@@ -1576,32 +1577,32 @@ MENU_TEMPLATE_ITEM EditServerTypeADCondMenu[] =
             char rules[PARSER_MAX_SIZE];
             GetDlgItemText(HWindow, IDE_PARSINGRULES, rules, PARSER_MAX_SIZE);
 
-            // zkompilujeme pravidla pro parsovani -> ziskame parser listingu
+            // compile the parsing rules -> obtain the listing parser
             int errorPos = -1;
             int errorResID = -1;
             BOOL lowMem = FALSE;
             CFTPParser* parser = CompileParsingRules(rules, &ColumnsData, &errorPos, &errorResID, &lowMem);
-            if (parser != NULL) // parser mame, muzeme otevrit dialog
+            if (parser != NULL) // we have the parser, we can open the dialog
             {
                 CSrvTypeTestParserDlg(HWindow, parser, &ColumnsData, &RawListing, &RawListIncomplete).Execute();
                 delete parser;
             }
-            else // vypiseme co se stalo za chybu a oznacime chybu v editboxu "rules for parsing"
+            else // display the error and mark the error in the "rules for parsing" edit box
             {
-                if (errorResID != -1) // byla nalezena nejaka "rozumna" chyba, okomentujeme to
+                if (errorResID != -1) // some "reasonable" error was found, comment on it
                 {
                     char buf[300];
                     sprintf(buf, LoadStr(IDS_STPAR_UNABLECOMPPARSER), LoadStr(errorResID));
                     SalamanderGeneral->SalMessageBox(HWindow, buf, LoadStr(IDS_FTPERRORTITLE),
                                                      MB_OK | MB_ICONEXCLAMATION);
-                    // oznacime misto chyby v textu pravidel pro parsovani
+                    // mark the error location in the parsing rules text
                     SendDlgItemMessage(HWindow, IDE_PARSINGRULES, EM_SETSEL, (WPARAM)errorPos,
                                        (LPARAM)errorPos);
                     SendDlgItemMessage(HWindow, IDE_PARSINGRULES, EM_SCROLLCARET, 0, 0); // scroll caret into view
                     SendMessage(HWindow, WM_NEXTDLGCTL, (WPARAM)GetDlgItem(HWindow, IDE_PARSINGRULES), TRUE);
                 }
             }
-            return TRUE; // dale nepokracovat
+            return TRUE; // do not continue further
         }
         }
         break;
@@ -1643,7 +1644,7 @@ MENU_TEMPLATE_ITEM EditServerTypeADCondMenu[] =
                     }
                     DestroyMenu(main);
                 }
-                return FALSE; // zpracovavat dale
+                return FALSE; // continue processing
             }
 
             case LVN_KEYDOWN:
@@ -1659,14 +1660,14 @@ MENU_TEMPLATE_ITEM EditServerTypeADCondMenu[] =
                     PostMessage(HWindow, WM_COMMAND, IDB_NEWCOLUMN, 0);
                 if (nmhk->wVKey == VK_DELETE)
                     PostMessage(HWindow, WM_COMMAND, IDB_REMOVECOLUMN, 0);
-                return FALSE; // zpracovavat dale
+                return FALSE; // continue processing
             }
 
             case LVN_ITEMCHANGING:
             {
                 LPNMLISTVIEW nmhi = (LPNMLISTVIEW)nmh;
-                // zapis noveho stavu checkboxu do ColumnsData
-                if (CanReadListViewChanges && // pri plneni se generuje take, zmena promenne je nezadouci
+                // write the new checkbox state into ColumnsData
+                if (CanReadListViewChanges && // also generated during filling; changing the variable is undesirable
                     (nmhi->uOldState & LVIS_STATEIMAGEMASK) != (nmhi->uNewState & LVIS_STATEIMAGEMASK) &&
                     nmhi->iItem >= 0 && nmhi->iItem < ColumnsData.Count)
                 {
@@ -1674,12 +1675,12 @@ MENU_TEMPLATE_ITEM EditServerTypeADCondMenu[] =
                         (nmhi->uNewState & LVIS_STATEIMAGEMASK) != INDEXTOSTATEIMAGEMASK(2))
                     {
                         SetWindowLongPtr(HWindow, DWLP_MSGRESULT, TRUE);
-                        return TRUE; // konec zpracovani
+                        return TRUE; // end of processing
                     }
                     ColumnsData[nmhi->iItem]->Visible = (nmhi->uNewState & LVIS_STATEIMAGEMASK) ==
                                                         INDEXTOSTATEIMAGEMASK(2); // 2 = "checked" state
                 }
-                return FALSE; // zpracovavat dale
+                return FALSE; // continue processing
             }
 
             case LVN_ITEMCHANGED:
@@ -1687,7 +1688,7 @@ MENU_TEMPLATE_ITEM EditServerTypeADCondMenu[] =
                 LPNMLISTVIEW nmhi = (LPNMLISTVIEW)nmh;
                 if ((nmhi->uOldState & LVIS_SELECTED) != (nmhi->uNewState & LVIS_SELECTED))
                     EnableControls();
-                return FALSE; // zpracovavat dale
+                return FALSE; // continue processing
             }
             }
         }

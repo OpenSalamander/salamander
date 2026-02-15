@@ -230,7 +230,7 @@ void CResourceDirectoryDumper::DumpCore(CFileStream* outStream)
     if (m_peFile.ImageFileType(NULL) != IMAGE_NT_SIGNATURE)
         return;
 
-    //najdeme .rsrc section
+    // Find the .rsrc section
     if (!m_peFile.GetSectionHdrByName(&rsrcSection, ".rsrc"))
         return;
 

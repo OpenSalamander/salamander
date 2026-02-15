@@ -18,9 +18,9 @@ static int core_extensions_registration(cmark_plugin *plugin) {
 }
 
 void cmark_gfm_core_extensions_ensure_registered(void) {
-  // JRYFIXME: jak mame uvolnit takto inicializovane pluginy?
-  // Docasny hack, inicializujeme / uvolnujeme je vzdy.
-  // Zrejme chyba, zavest issue na GitHub.
+  // JRYFIXME: how are we supposed to release plugins initialized like this?
+  // Temporary hack, we always initialize / release them.
+  // Probably a bug, file an issue on GitHub.
   //static int registered = 0;
 
   //if (!registered) {

@@ -109,8 +109,8 @@ CPreviewWindow::PreviewDialogProcW(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
     case WM_INITDIALOG:
     {
         /*
-      // HACK HACK: pokus o prebiti Aero animace na DEF tlacitku, ktera nam nici outline ramecek kolem nej
-      // EDIT: zruseno, poblikava to
+      // HACK HACK: attempt to override the Aero animation on the default button,
+      // which wrecked the outline rectangle around it. EDIT: removed because it flickered.
       DWORD defID = (DWORD)SendMessage(hwndDlg, DM_GETDEFID, 0, 0); 
       HWND hDefBtn = GetDlgItem(hwndDlg, LOWORD(defID));
       if (hDefBtn != NULL)
@@ -140,7 +140,7 @@ CPreviewWindow::PreviewDialogProcW(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
 
     case WM_POSTPAINT:
     {
-        // child windows jeste nejsou prekreslena - donutime je
+        // Child windows are not repainted yet—force an update.
         UpdateWindow(hwndDlg);
 
         if (Config.PreviewOutlineControls)
@@ -151,14 +151,14 @@ CPreviewWindow::PreviewDialogProcW(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
             ReleaseDC(GetParent(hwndDlg), hDC);
         }
 
-        // nakreslime obdelnik kolem aktivniho child window (existuje-li)
+        // Draw a rectangle around the active child window, if there is one.
         HWND hChild = NULL;
         if (PreviewWindow.HighlightedControlID != 0)
             hChild = GetDlgItem(hwndDlg, PreviewWindow.HighlightedControlID);
 
         if (hChild != NULL)
         {
-            HWND parent = GetParent(hwndDlg); // musim kreslit do parenta, pri kresleni do hwndDlg je ramecek prerusovany controly (DC dialogu je tam asi oclipovane, ci co)
+            HWND parent = GetParent(hwndDlg); // Must paint into the parent; drawing into hwndDlg produces broken outlines due to clipping.
             RECT r;
             GetWindowRect(hChild, &r);
             POINT p1;
@@ -230,7 +230,7 @@ void CPreviewWindow::PreviewDialog(int index)
     WORD buff[200000];
     data->PrepareTemplate(buff, FALSE, TRUE, Config.PreviewExtendDialogs);
 
-    // dialog umistime do pocatku okna a shodime mu napriklad DS_CENTER, aby se nepokousel centrovat
+    // Position the dialog at the top-left corner of the window and strip flags such as DS_CENTER so it does not attempt to center itself.
     DWORD addStyles = WS_CHILDWINDOW | WS_DISABLED | WS_OVERLAPPED | DS_MODALFRAME;
     DWORD removeStyles = WS_VISIBLE | WS_POPUP | DS_CENTER | DS_SETFOREGROUND;
     data->TemplateAddRemoveStyles(buff, addStyles, removeStyles);
@@ -241,7 +241,7 @@ void CPreviewWindow::PreviewDialog(int index)
     BOOL controlPressed = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
 
     if (!altPressed && !shiftPressed && !controlPressed)
-        BufferKey(VK_CONTROL); // donutime Windows zobrazit horke klavesy; pokud je Ctrl stisknuty, nesmime ho rozhodit; navic jsou pak podtriztka zobrazeny tak jako tak
+        BufferKey(VK_CONTROL); // Force Windows to reveal hotkeys; if Ctrl is already pressed we must keep that state, and the underscores remain visible regardless.
 
     CurrentPreviewWindow = this;
     HWND hDlg = CreateDialogIndirectW(HInstance, (LPDLGTEMPLATE)buff, HWindow, PreviewDialogProcW);
@@ -265,7 +265,9 @@ void CPreviewWindow::PreviewDialog(int index)
 
 BOOL CALLBACK InvalidateAllEnum(HWND hwnd, LPARAM lParam)
 {
-    /*  // Petr: odstavil jsem invalidovani jen postizenych controlu, protoze to delalo neplechu u Renameru, kde je velky editbox prekryvajici spoustu controlu, takze pri pohybu po controlech se pak ty vyoptimalizovane neukazaly (prekryl je editbox)
+    /*  // Petr: disabled invalidation of only the affected controls because it broke Renamer,
+        // where a large edit box covers many controls; when switching between them the optimized
+        // controls failed to repaint because the edit box obscured them.
   RECT r;
   GetWindowRect(hwnd, &r);
   RECT dummy;
@@ -324,18 +326,16 @@ void InvalidateChild(HWND hDialog, int childID)
     InvalidateRect(parent, &parentR, TRUE);
 
     /*
-  // jeste invalidatnu vsechny controly v oblastni, kterou chceme prekreslit,
-  // protoze mi tu zustavaly vnitrky kontrolu neprekresleny,
-  // viz Checksum, dialog 1000, control 1005/1007/1006 (jsou pres sebe)
+  // Invalidate every control within the region we repaint because the interior of
+  // overlapping controls (Checksum dialog 1000, controls 1005/1007/1006) used to stay stale.
   scrR.left -= 5;
   scrR.top -= 5;
   scrR.right += 5;
   scrR.bottom += 5;
   EnumChildWindows(hDialog, InvalidateEnum, (LPARAM)&scrR);
 */
-    // jeste invalidatnu vsechny controly v dialogu, protoze mi tu zustavaly
-    // vnitrky kontrolu neprekresleny, viz Checksum, dialog 1000, control
-    // 1005/1007/1006 (jsou pres sebe)
+    // Still invalidate all controls in the dialog because the interior of the
+    // overlapping controls (Checksum dialog 1000, controls 1005/1007/1006) stayed unpainted.
     EnumChildWindows(hDialog, InvalidateAllEnum, 0);
 }
 
@@ -384,7 +384,7 @@ void CPreviewWindow::CloseCurrentDialog()
 
 HWND GetChildWindow(POINT p, HWND hDialog, int* index)
 {
-    // prohledame vsechny childy a vyberem nejmensi, ktery lezi pod bodem
+    // Scan all child windows and choose the smallest one covering the point
     if (hDialog == NULL)
         return NULL;
 

@@ -293,7 +293,7 @@ BOOL CPackDialog::OnInit(WPARAM wParam, LPARAM lParam)
     else
     {
         DecimalSeparatorLen--;
-        DecimalSeparator[DecimalSeparatorLen] = 0; // posychrujeme nulu na konci
+        DecimalSeparator[DecimalSeparatorLen] = 0; // make sure there is a zero terminator at the end
     }
 
     SendDlgItemMessage(Dlg, IDC_UNITS, CB_ADDSTRING, 0, (LPARAM)LoadStr(IDS_SIZE_KB));
@@ -417,7 +417,7 @@ BOOL CPackDialog::OnSelfExtr(WORD wNotifyCode, WORD wID, HWND hwndCtl)
             SplitPath2(ZipFile, path, name, ext);
             strcat(path, name);
             strcat(path, ".exe");
-            *(path + MAX_PATH - 1) = 0; //jen tak pro jistotu
+            *(path + MAX_PATH - 1) = 0; // just to be sure
             SendDlgItemMessage(Dlg, IDC_ARCHIVE, WM_SETTEXT, 0, (LPARAM)path);
             InvalidateRect(GetDlgItem(Dlg, IDC_ARCHIVE), NULL, TRUE);
             UpdateWindow(GetDlgItem(Dlg, IDC_ARCHIVE));
@@ -707,7 +707,7 @@ BOOL CPackDialog::OnOK(WORD wNotifyCode, WORD wID, HWND hwndCtl)
 void CPackDialog::ResetControls()
 {
     CALL_STACK_MESSAGE1("CPackDialog::ResetControls()");
-    char archive[MAX_PATH + 4]; //aby to neprelezlo u  SE
+    char archive[MAX_PATH + 4]; // leave room so the self-extractor suffix does not overflow the buffer
 
     if (PackOptions->Action & PA_MULTIVOL)
         SendDlgItemMessage(Dlg, IDC_MULTIVOL, BM_SETCHECK, (WPARAM)BST_CHECKED, 0);
@@ -733,7 +733,7 @@ void CPackDialog::ResetControls()
         SplitPath2(ZipFile, archive, name, ext);
         lstrcat(archive, name);
         lstrcat(archive, ".exe");
-        *(archive + MAX_PATH - 1) = 0; //jen tak pro jistotu
+        *(archive + MAX_PATH - 1) = 0; // just to be sure
     }
     SendDlgItemMessage(Dlg, IDC_ARCHIVE, WM_SETTEXT, 0, (LPARAM)archive);
 }
@@ -973,7 +973,7 @@ BOOL CConfigDialog::OnDefault(WORD wNotifyCode, WORD wID, HWND hwndCtl)
     else
         SendDlgItemMessage(Dlg, IDC_SHOWEXOPTIONS, BM_SETCHECK, (WPARAM)BST_UNCHECKED, 0);
 
-    //jeste vybereme spravny sfx balicek
+    // also select the correct SFX package
     if (IsWindowEnabled(GetDlgItem(Dlg, IDC_LANGUAGE)))
     {
         CSfxLang* lang;

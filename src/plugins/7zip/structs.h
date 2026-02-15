@@ -19,7 +19,7 @@ struct CUpdateInfo
     bool IsAnti;
 };
 
-// pouziva se v updatecallback
+// used in updatecallback
 struct CFileItem
 {
     UINT32 Attributes;
@@ -31,11 +31,11 @@ struct CFileItem
     UString FullPath;
     bool IsDir;
 
-    BOOL CanDelete; // TRUE, pokud se pri update do archivu zvolilo Overwrite, jinak FALSE
+    BOOL CanDelete; // TRUE if Overwrite was chosen when updating the archive, otherwise FALSE
 
     CFileItem(const char* sourcePath, const char* archiveRoot, const char* name, DWORD attr, UINT64 size, FILETIME lastWrite, bool isDir)
     {
-        // pokud je archiveRoot prazdne, nesmi jmeno zacinat backslashem '\'
+        // if archiveRoot is empty, the name must not start with a backslash '\'
         if (strlen(archiveRoot) > 0)
             Name = GetUnicodeString(archiveRoot) + GetUnicodeString("\\") + GetUnicodeString(name);
         else
@@ -51,10 +51,10 @@ struct CFileItem
     }
 };
 
-// pouziva se v extractcallback
+// used in extractcallback
 struct CArchiveItem
 {
-    UString NameInArchive; // v archivu (tedy i s cestou)
+    UString NameInArchive; // in the archive (i.e. including the path)
     UString Name;
     DWORD Attr;
     FILETIME LastWrite;

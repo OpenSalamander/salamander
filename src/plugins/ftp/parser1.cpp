@@ -1,9 +1,10 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
-// preskoci mezery, tabelatory a EOLy, vraci TRUE pokud 's' nedospelo ke konci retezce ('end')
+// skips spaces, tabs and EOLs, returns TRUE if 's' has not reached the end of the string ('end')
 BOOL SkipWSAndEOLs(const char*& s, const char* end)
 {
     while (s < end && (*s == ' ' || *s == '\t' || *s == '\r' || *s == '\n'))
@@ -11,7 +12,7 @@ BOOL SkipWSAndEOLs(const char*& s, const char* end)
     return s < end;
 }
 
-// preskoci zbytek radky i s EOLem, vraci TRUE pokud 's' nedospelo ke konci retezce ('end')
+// skips the rest of the line including the EOL, returns TRUE if 's' has not reached the end of the string ('end')
 BOOL SkipRestOfLine(const char*& s, const char* end)
 {
     while (s < end && *s != '\r' && *s != '\n')
@@ -34,7 +35,7 @@ CFTPParser* CompileParsingRules(const char* rules, TIndirectArray<CSrvTypeColumn
     if (lowMem != NULL)
         *lowMem = FALSE;
 
-    BOOL* colAssigned = new BOOL[columns->Count]; // predalokovane pole pro sledovani do jakych sloupcu uz se priradilo
+    BOOL* colAssigned = new BOOL[columns->Count]; // preallocated array used to track which columns have already been assigned
     if (colAssigned == NULL)
     {
         TRACE_E(LOW_MEMORY);
@@ -71,14 +72,14 @@ CFTPParser* CompileParsingRules(const char* rules, TIndirectArray<CSrvTypeColumn
                 {
                     int i;
                     for (i = 0; i < columns->Count; i++)
-                        colAssigned[i] = FALSE; // zadny sloupec neni prirazeny
+                        colAssigned[i] = FALSE; // no column is assigned
                     if (!parser->CompileNewRule(rules, rulesEnd, columns, errorResID, lowMem, colAssigned))
                     {
                         error = TRUE;
                         break;
                     }
                 }
-                else // neocekavany symbol
+                else // unexpected symbol
                 {
                     if (errorResID != NULL)
                         *errorResID = IDS_STPAR_ERR_UNEXPSYM;
@@ -158,7 +159,7 @@ CFTPParserFunctionCode FindFunctionCode(const char* name)
         "skip_to_number",
     };
 
-    // celkovy pocet funkci (AKTUALIZOVAT !!! + rovnat s CFTPParserFunction + doplnit i functionCodes)
+    // total number of functions (UPDATE!!! keep in sync with CFTPParserFunction + update functionCodes)
     static const int count = 29;
 
     static CFTPParserFunctionCode functionCodes[] = {
@@ -204,7 +205,7 @@ BOOL CFTPParser::CompileNewRule(const char*& rules, const char* rulesEnd,
                                 int* errorResID, BOOL* lowMem, BOOL* colAssigned)
 {
     CALL_STACK_MESSAGE1("CFTPParser::CompileNewRule()");
-    rules++; // vime ze prisla '*', preskocime ji
+    rules++; // we know '*' arrived, skip it
     CFTPParserRule* ruleObj = new CFTPParserRule;
     if (ruleObj == NULL)
     {
@@ -223,7 +224,7 @@ BOOL CFTPParser::CompileNewRule(const char*& rules, const char* rulesEnd,
         return FALSE;
     }
 
-    BOOL funcExpected = FALSE; // TRUE = je ocekavane volani funkce (za ',' v pravidle)
+    BOOL funcExpected = FALSE; // TRUE = a function call is expected (after ',' in the rule)
     while (rules < rulesEnd)
     {
         if (SkipWSAndEOLs(rules, rulesEnd))
@@ -241,14 +242,14 @@ BOOL CFTPParser::CompileNewRule(const char*& rules, const char* rulesEnd,
                         return FALSE;
                     }
                     rules++;
-                    return TRUE; // timto je pravidlo zkompilovano
+                    return TRUE; // with this, the rule is compiled
                 }
-                else // tady musi zacinat funkce
+                else // a function has to start here
                 {
                     const char* beg = rules;
                     if (SkipIdentifier(rules, rulesEnd, errorResID, IDS_STPAR_ERR_INVALIDFUNCNAME))
                     {
-                        funcExpected = FALSE; // uz jsme se funkce dockali
+                        funcExpected = FALSE; // we have already encountered the function
                         char functionName[100];
                         lstrcpyn(functionName, beg, (int)min(100, rules - beg + 1));
                         CFTPParserFunctionCode func = FindFunctionCode(functionName);
@@ -267,7 +268,7 @@ BOOL CFTPParser::CompileNewRule(const char*& rules, const char* rulesEnd,
                                     SkipRestOfLine(rules, rulesEnd);
                                 else
                                 {
-                                    if (*rules == '(') // tady zacinaji parametry funkce
+                                    if (*rules == '(') // the function parameters start here
                                     {
                                         parFound = TRUE;
                                         if (!ruleObj->CompileNewFunction(func, rules, rulesEnd, columns, errorResID, lowMem, colAssigned))
@@ -359,7 +360,7 @@ BOOL FindColumnIndex(const char* columnName, TIndirectArray<CSrvTypeColumn>* col
                 }
                 if (errorResID != NULL)
                     *errorResID = IDS_STPAR_ERR_UNKNOWNCOLUMN;
-                return FALSE; // nenalezeno = neznamy sloupec
+                return FALSE; // not found = unknown column
             }
         }
     }
@@ -378,7 +379,7 @@ BOOL FindStateVarOrBool(const char* name, CFTPParserStateVariables* var, int* bo
         "rest_of_line",
     };
 
-    // celkovy pocet funkci (AKTUALIZOVAT !!! + rovnat s CFTPParserStateVariables + doplnit i stateVarCodes)
+    // total number of functions (UPDATE!!! keep in sync with CFTPParserStateVariables + update stateVarCodes)
     static const int count = 7;
 
     static CFTPParserStateVariables stateVarCodes[] = {
@@ -408,7 +409,7 @@ BOOL CFTPParserRule::CompileNewFunction(CFTPParserFunctionCode func, const char*
                                         int* errorResID, BOOL* lowMem, BOOL* colAssigned)
 {
     DEBUG_SLOW_CALL_STACK_MESSAGE2("CFTPParserRule::CompileNewFunction(%d)", (int)func);
-    rules++; // vime ze prisla '(', preskocime ji
+    rules++; // we know '(' arrived, skip it
     CFTPParserFunction* funcObj = new CFTPParserFunction(func);
     if (funcObj == NULL)
     {
@@ -427,9 +428,9 @@ BOOL CFTPParserRule::CompileNewFunction(CFTPParserFunctionCode func, const char*
         return FALSE;
     }
 
-    BOOL parExpected = FALSE;          // TRUE pokud je ocekavan dalsi parametr (za ',' v parametrech)
-    BOOL canBeExpression = TRUE;       // FALSE pokud se jiz vyraz nacita (umime jen jednoduche vyrazy)
-    BOOL rightOperandExpected = FALSE; // TRUE pokud je ocekavan pravy operand (ve vyrazu za bin. operatorem)
+    BOOL parExpected = FALSE;          // TRUE if another parameter is expected (after ',' in the parameter list)
+    BOOL canBeExpression = TRUE;       // FALSE if an expression is already being read (we handle only simple expressions)
+    BOOL rightOperandExpected = FALSE; // TRUE if the right operand is expected (in an expression after the binary operator)
     while (rules < rulesEnd)
     {
         if (SkipWSAndEOLs(rules, rulesEnd))
@@ -453,20 +454,20 @@ BOOL CFTPParserRule::CompileNewFunction(CFTPParserFunctionCode func, const char*
                         return FALSE;
                     }
                     rules++;
-                    // provedeme jeste kontrolu typu a poctu parametru pouzivanych zkompilovanou funkci
+                    // also check the types and counts of parameters used by the compiled function
                     if (!funcObj->CheckParameters(columns, errorResID, colAssigned))
                         return FALSE;
-                    return TRUE; // timto je funkce zkompilovana
+                    return TRUE; // with this, the function is compiled
                 }
-                else // tady musi zacinat parametr
+                else // a parameter has to start here
                 {
-                    parExpected = FALSE; // uz jsme se parametru dockali
+                    parExpected = FALSE; // we have already encountered the parameter
 
-                    if (*rules == '<') // idenfitikator sloupce nebo prvni cast vyrazu
+                    if (*rules == '<') // column identifier or the first part of an expression
                     {
                         rules++;
                         BOOL colNameFound = FALSE;
-                        int columnIndex = -50; // jen pro ladici ucely
+                        int columnIndex = -50; // for debugging purposes only
                         while (rules < rulesEnd)
                         {
                             if (SkipWSAndEOLs(rules, rulesEnd))
@@ -483,7 +484,7 @@ BOOL CFTPParserRule::CompileNewFunction(CFTPParserFunctionCode func, const char*
                                         if (!FindColumnIndex(columnName, columns, &columnIndex, errorResID))
                                             return FALSE;
 
-                                        // preskocime jeste ukoncujici '>'
+                                        // skip the closing '>' as well
                                         BOOL colEndFound = FALSE;
                                         while (rules < rulesEnd)
                                         {
@@ -525,24 +526,24 @@ BOOL CFTPParserRule::CompileNewFunction(CFTPParserFunctionCode func, const char*
                         if (!funcObj->AddColumnIDParameter(columnIndex, lowMem))
                             return FALSE;
                     }
-                    else // retezec, boolean, stavova promenna, cislo nebo prvni cast vyrazu
+                    else // string, boolean, state variable, number or the first part of an expression
                     {
-                        if (*rules == '"') // retezec nebo prvni cast vyrazu
+                        if (*rules == '"') // string or the first part of an expression
                         {
                             rules++;
                             const char* beg = rules;
-                            int esc = 0; // pocet escape sekvenci
+                            int esc = 0; // number of escape sequences
                             BOOL strEndFound = FALSE;
                             while (rules < rulesEnd)
                             {
-                                if (*rules == '"') // konec retezce
+                                if (*rules == '"') // end of the string
                                 {
                                     strEndFound = TRUE;
                                     break;
                                 }
                                 if (*rules == '\r' || *rules == '\n')
-                                    break;                                  // retezec nemuze obsahovat primo EOL (pouzite escape sekvence '\r' a '\n')
-                                if (*rules == '\\' && rules + 1 < rulesEnd) // escape sekvence
+                                    break;                                  // the string cannot directly contain an EOL (use escape sequences '\r' and '\n')
+                                if (*rules == '\\' && rules + 1 < rulesEnd) // escape sequence
                                 {
                                     rules++;
                                     esc++;
@@ -604,13 +605,13 @@ BOOL CFTPParserRule::CompileNewFunction(CFTPParserFunctionCode func, const char*
                                 }
                             }
                             *s = 0;
-                            rules++; // preskocime koncovou '"' retezce
+                            rules++; // skip the closing '"' of the string
                             if (!funcObj->AddStringParameter(str, lowMem))
                                 return FALSE;
                         }
-                        else // boolean, stavova promenna, cislo nebo prvni cast vyrazu
+                        else // boolean, state variable, number or the first part of an expression
                         {
-                            if (*rules >= '0' && *rules <= '9' || *rules == '-' || *rules == '+') // cislo nebo prvni cast vyrazu
+                            if (*rules >= '0' && *rules <= '9' || *rules == '-' || *rules == '+') // number or the first part of an expression
                             {
                                 __int64 num = 0;
                                 BOOL minus = FALSE;
@@ -644,7 +645,7 @@ BOOL CFTPParserRule::CompileNewFunction(CFTPParserFunctionCode func, const char*
                                     return FALSE;
                                 }
                             }
-                            else // boolean, stavova promenna nebo prvni cast vyrazu
+                            else // boolean, state variable or the first part of an expression
                             {
                                 const char* beg = rules;
                                 if (SkipIdentifier(rules, rulesEnd, errorResID, IDS_STPAR_ERR_INVALVARORBOOL))
@@ -671,7 +672,7 @@ BOOL CFTPParserRule::CompileNewFunction(CFTPParserFunctionCode func, const char*
                         }
                     }
 
-                    if (rightOperandExpected) // slo o pravy operand vyrazu?
+                    if (rightOperandExpected) // was this the right operand of an expression?
                     {
                         if (!funcObj->MoveRightOperandToExpression(columns, errorResID,
                                                                    lowMem, colAssigned))
@@ -681,7 +682,7 @@ BOOL CFTPParserRule::CompileNewFunction(CFTPParserFunctionCode func, const char*
                         rightOperandExpected = FALSE;
                     }
 
-                    // podivame se po dalsim parametru nebo po operatoru vyrazu
+                    // look for another parameter or an expression operator
                     while (rules < rulesEnd)
                     {
                         if (SkipWSAndEOLs(rules, rulesEnd))
@@ -690,7 +691,7 @@ BOOL CFTPParserRule::CompileNewFunction(CFTPParserFunctionCode func, const char*
                                 SkipRestOfLine(rules, rulesEnd);
                             else
                             {
-                                // zjistime jestli nejde o vyraz (najdeme-li operator, je to vyraz)
+                                // determine whether this is an expression (if we find an operator, it is an expression)
                                 CFTPParserBinaryOperators oper = pboNone;
                                 int opCodeLen = 2;
                                 if (rules + 1 < rulesEnd)
@@ -898,10 +899,10 @@ BOOL CFTPParserFunction::AddExpressionParameter(CFTPParserBinaryOperators oper, 
         return FALSE;
     }
     arr[0] = Parameters[Parameters.Count - 1];
-    arr[1] = NULL; // zatim, pravy parametr nacteme az casem
+    arr[1] = NULL; // for now, the right parameter will be read later
     Parameters.Detach(Parameters.Count - 1);
     if (!Parameters.IsGood())
-        Parameters.ResetState(); // detach vzdy funguje, ale muze hlasit chybu pameti
+        Parameters.ResetState(); // detach always works, but it can report a memory error
 
     CFTPParserParameter* par;
     if (AddParameter(par, lowMem))
@@ -934,7 +935,7 @@ BOOL CFTPParserFunction::MoveRightOperandToExpression(TIndirectArray<CSrvTypeCol
     oper->Parameters[1] = Parameters[Parameters.Count - 1];
     Parameters.Detach(Parameters.Count - 1);
     if (!Parameters.IsGood())
-        Parameters.ResetState(); // detach vzdy funguje, ale muze hlasit chybu pameti
+        Parameters.ResetState(); // detach always works, but it can report a memory error
 
     BOOL ok = FALSE;
     CFTPParserOperandType left = oper->Parameters[0]->GetOperandType(columns);
@@ -967,7 +968,7 @@ BOOL CFTPParserFunction::MoveRightOperandToExpression(TIndirectArray<CSrvTypeCol
         }
     }
     int errCode = IDS_STPAR_ERR_UNEXPTYPESINEXP;
-    if (ok) // jeste otestujeme jestli necte sloupce, do kterych se zatim nepriradila zadna hodnota
+    if (ok) // also test whether it reads columns that have not been assigned any value yet
     {
         int i;
         for (i = 0; i < 2; i++)
@@ -975,7 +976,7 @@ BOOL CFTPParserFunction::MoveRightOperandToExpression(TIndirectArray<CSrvTypeCol
             if (oper->Parameters[i]->Type == pptColumnID)
             {
                 int index = oper->Parameters[i]->ColumnIndex;
-                if (index >= 0 && index < columns->Count) // neni to is_dir, is_hidden ani is_link
+                if (index >= 0 && index < columns->Count) // it is not is_dir, is_hidden or is_link
                 {
                     CSrvTypeColumnTypes type = columns->At(index)->Type;
                     if (type == stctDate || type == stctGeneralDate)
@@ -991,7 +992,7 @@ BOOL CFTPParserFunction::MoveRightOperandToExpression(TIndirectArray<CSrvTypeCol
                     if (!ok)
                     {
                         errCode = IDS_STPAR_ERR_BADUSEOFCOLID;
-                        break; // koncime, jedna chyba staci
+                        break; // stop, one error is enough
                     }
                 }
             }
@@ -1007,7 +1008,7 @@ BOOL IsMonthThreeLetterString(const char* str, int* errCode)
     if (str != NULL && strlen(str) == 47)
     {
         int i;
-        for (i = 0; i < 11; i++) // test na 11 mezer (za poslednim mesicem neni)
+        for (i = 0; i < 11; i++) // check for 11 spaces (there is none after the last month)
         {
             if (str[3] > ' ')
             {
@@ -1027,7 +1028,7 @@ BOOL IsMonthTxtLetterString(const char* str, int* errCode)
     if (str != NULL)
     {
         int i;
-        for (i = 0; i < 12; i++) // test na 12 mesicu oddelenych mezerami
+        for (i = 0; i < 12; i++) // check for 12 months separated by spaces
         {
             if (*str != 0 && *str != ' ')
                 str++;
@@ -1068,14 +1069,14 @@ BOOL CFTPParserFunction::CheckParameters(TIndirectArray<CSrvTypeColumn>* columns
     int errCode = IDS_STPAR_ERR_BADPARINFUNC;
     switch (Function)
     {
-    // bez parametru
+    // no parameters
     case fpfSkip_white_spaces:
     case fpfSkip_to_number:
     case fpfWhite_spaces_and_line_ends:
         ok = Parameters.Count == 0;
         break;
 
-    // bez parametru nebo cislo
+    // no parameters or a number
     case fpfWhite_spaces:
     {
         ok = Parameters.Count == 0 ||
@@ -1083,7 +1084,7 @@ BOOL CFTPParserFunction::CheckParameters(TIndirectArray<CSrvTypeColumn>* columns
         break;
     }
 
-    // bez parametru nebo sloupec_retezec
+    // no parameters or column_string
     case fpfRest_of_line:
     case fpfWord:
     {
@@ -1098,7 +1099,7 @@ BOOL CFTPParserFunction::CheckParameters(TIndirectArray<CSrvTypeColumn>* columns
         break;
     }
 
-    // sloupec_cislo
+    // column_number
     case fpfNumber:
     case fpfPositiveNumber:
     {
@@ -1112,7 +1113,7 @@ BOOL CFTPParserFunction::CheckParameters(TIndirectArray<CSrvTypeColumn>* columns
         break;
     }
 
-    // sloupec_cislo a retezec
+    // column_number and string
     case fpfNumber_with_separators:
     {
         if (Parameters.Count == 2 && first_par == pfptColumnNumber && second_par == pfptString)
@@ -1125,7 +1126,7 @@ BOOL CFTPParserFunction::CheckParameters(TIndirectArray<CSrvTypeColumn>* columns
         break;
     }
 
-    // sloupec_datum + pripadne retezec s mesici
+    // column_date + optional month string
     case fpfMonth_3:
     {
         if (Parameters.Count == 1 && first_par == pfptColumnDate ||
@@ -1140,7 +1141,7 @@ BOOL CFTPParserFunction::CheckParameters(TIndirectArray<CSrvTypeColumn>* columns
         break;
     }
 
-    // sloupec_datum + pripadne retezec s mesici
+    // column_date + optional month string
     case fpfMonth_txt:
     {
         if (Parameters.Count == 1 && first_par == pfptColumnDate ||
@@ -1155,7 +1156,7 @@ BOOL CFTPParserFunction::CheckParameters(TIndirectArray<CSrvTypeColumn>* columns
         break;
     }
 
-    // sloupec_datum
+    // column_date
     case fpfMonth:
     case fpfDay:
     case fpfYear:
@@ -1170,7 +1171,7 @@ BOOL CFTPParserFunction::CheckParameters(TIndirectArray<CSrvTypeColumn>* columns
         break;
     }
 
-    // sloupec_cas
+    // column_time
     case fpfTime:
     {
         if (Parameters.Count == 1 && first_par == pfptColumnTime)
@@ -1183,7 +1184,7 @@ BOOL CFTPParserFunction::CheckParameters(TIndirectArray<CSrvTypeColumn>* columns
         break;
     }
 
-    // sloupec_datum a sloupec_cas
+    // column_date and column_time
     case fpfYear_or_time:
     {
         if (Parameters.Count == 2 && first_par == pfptColumnDate && second_par == pfptColumnTime)
@@ -1192,13 +1193,13 @@ BOOL CFTPParserFunction::CheckParameters(TIndirectArray<CSrvTypeColumn>* columns
             int i = Parameters[0]->ColumnIndex;
             if (i >= 0 && i < columns->Count)
                 colAssigned[i] |= 4 /* year */;
-            // i = Parameters[1]->ColumnIndex;  // sloupec s casem se nemusi naplnit, pokud je k dispozici jen rok
+            // i = Parameters[1]->ColumnIndex;  // the time column may remain empty if only the year is available
             // if (i >= 0 && i < columns->Count) colAssigned[i] = TRUE;
         }
         break;
     }
 
-    // cislo nebo sloupec_retezec a cislo
+    // number or column_string and number
     case fpfAll:
     {
         ok = Parameters.Count == 1 && first_par == pfptNumber;
@@ -1212,7 +1213,7 @@ BOOL CFTPParserFunction::CheckParameters(TIndirectArray<CSrvTypeColumn>* columns
         break;
     }
 
-    // retezec nebo sloupec_retezec a retezec
+    // string or column_string and string
     case fpfAll_to:
     {
         ok = Parameters.Count == 1 && first_par == pfptString;
@@ -1226,7 +1227,7 @@ BOOL CFTPParserFunction::CheckParameters(TIndirectArray<CSrvTypeColumn>* columns
         break;
     }
 
-    // sloupec_retezec a retezec
+    // column_string and string
     case fpfAll_up_to:
     {
         if (Parameters.Count == 2 && first_par == pfptColumnString && second_par == pfptString)
@@ -1239,26 +1240,26 @@ BOOL CFTPParserFunction::CheckParameters(TIndirectArray<CSrvTypeColumn>* columns
         break;
     }
 
-    // sloupec_is_dir, sloupec_name, sloupec_retezec
+    // column_is_dir, column_name, column_string
     case fpfUnix_link:
     {
         if (Parameters.Count == 3 && first_par == pfptColumnBoolean &&
             second_par == pfptColumnString && third_par == pfptColumnString &&
-            Parameters[0]->ColumnIndex == COL_IND_ISDIR && // sloupec_is_dir
+            Parameters[0]->ColumnIndex == COL_IND_ISDIR && // column_is_dir
             Parameters[1]->ColumnIndex >= 0 && Parameters[1]->ColumnIndex < columns->Count &&
-            columns->At(Parameters[1]->ColumnIndex)->Type == stctName) // sloupec_name
+            columns->At(Parameters[1]->ColumnIndex)->Type == stctName) // column_name
         {
             ok = TRUE;
             int i = Parameters[1]->ColumnIndex;
             if (i >= 0 && i < columns->Count)
                 colAssigned[i] = TRUE;
-            // i = Parameters[2]->ColumnIndex;  // cil linku nemusi byt pristupny (muze zustat prazdny)
+            // i = Parameters[2]->ColumnIndex;  // the link target does not have to be accessible (it can remain empty)
             // if (i >= 0 && i < columns->Count) colAssigned[i] = TRUE;
         }
         break;
     }
 
-    // sloupec_retezec
+    // column_string
     case fpfUnix_device:
     {
         if (Parameters.Count == 1 && first_par == pfptColumnString)
@@ -1271,14 +1272,14 @@ BOOL CFTPParserFunction::CheckParameters(TIndirectArray<CSrvTypeColumn>* columns
         break;
     }
 
-    // vyraz_boolean
+    // boolean_expression
     case fpfIf:
     {
         ok = Parameters.Count == 1 && (first_par == pfptBoolean || first_par == pfptColumnBoolean);
         if (ok && first_par == pfptColumnBoolean)
         {
             int i = Parameters[0]->ColumnIndex;
-            if (i >= 0 && i < columns->Count && !colAssigned[i]) // cteni ze sloupce bez prirazene hodnoty
+            if (i >= 0 && i < columns->Count && !colAssigned[i]) // reading from a column without an assigned value
             {
                 ok = FALSE;
                 errCode = IDS_STPAR_ERR_BADUSEOFCOLID;
@@ -1288,7 +1289,7 @@ BOOL CFTPParserFunction::CheckParameters(TIndirectArray<CSrvTypeColumn>* columns
         break;
     }
 
-    // sloupec, vyraz_hodnota (typ sloupce musi odpovidat hodnote)
+    // column, value_expression (the column type must match the value)
     case fpfAssign:
     {
         if (Parameters.Count == 2)
@@ -1306,7 +1307,7 @@ BOOL CFTPParserFunction::CheckParameters(TIndirectArray<CSrvTypeColumn>* columns
                     second_par == pfptColumnTime)
                 {
                     int i = Parameters[1]->ColumnIndex;
-                    if (i >= 0 && i < columns->Count && !colAssigned[i]) // cteni ze sloupce bez prirazene hodnoty
+                    if (i >= 0 && i < columns->Count && !colAssigned[i]) // reading from a column without an assigned value
                     {
                         ok = FALSE;
                         errCode = IDS_STPAR_ERR_BADUSEOFCOLID;
@@ -1317,7 +1318,7 @@ BOOL CFTPParserFunction::CheckParameters(TIndirectArray<CSrvTypeColumn>* columns
                     if (second_par == pfptColumnDate)
                     {
                         int i = Parameters[1]->ColumnIndex;
-                        if (i >= 0 && i < columns->Count && colAssigned[i] != 7 /* day + month + year */) // cteni ze sloupce bez prirazene hodnoty
+                        if (i >= 0 && i < columns->Count && colAssigned[i] != 7 /* day + month + year */) // reading from a column without an assigned value
                         {
                             ok = FALSE;
                             errCode = IDS_STPAR_ERR_BADUSEOFCOLID;
@@ -1329,7 +1330,7 @@ BOOL CFTPParserFunction::CheckParameters(TIndirectArray<CSrvTypeColumn>* columns
         break;
     }
 
-    // sloupec_retezec
+    // column_string
     case fpfCut_white_spaces_end:
     case fpfCut_white_spaces_start:
     case fpfCut_white_spaces:
@@ -1338,7 +1339,7 @@ BOOL CFTPParserFunction::CheckParameters(TIndirectArray<CSrvTypeColumn>* columns
         {
             ok = TRUE;
             int i = Parameters[0]->ColumnIndex;
-            if (i >= 0 && i < columns->Count && !colAssigned[i]) // cteni ze sloupce bez prirazene hodnoty
+            if (i >= 0 && i < columns->Count && !colAssigned[i]) // reading from a column without an assigned value
             {
                 ok = FALSE;
                 errCode = IDS_STPAR_ERR_BADUSEOFCOLID;
@@ -1347,12 +1348,12 @@ BOOL CFTPParserFunction::CheckParameters(TIndirectArray<CSrvTypeColumn>* columns
         break;
     }
 
-    // cislo
+    // number
     case fpfBack:
         ok = Parameters.Count == 1 && first_par == pfptNumber;
         break;
 
-    // sloupec_retezec, vyraz_hodnota_retezec
+    // column_string, value_expression_string
     case fpfAdd_string_to_column:
     {
         if (Parameters.Count == 2 &&
@@ -1361,7 +1362,7 @@ BOOL CFTPParserFunction::CheckParameters(TIndirectArray<CSrvTypeColumn>* columns
             ok = TRUE;
             int i = Parameters[0]->ColumnIndex;
             int j = (second_par == pfptColumnString ? Parameters[1]->ColumnIndex : -1000);
-            if (i >= 0 && i < columns->Count && !colAssigned[i] || // cteni ze sloupce bez prirazene hodnoty
+            if (i >= 0 && i < columns->Count && !colAssigned[i] || // reading from a column without an assigned value
                 j >= 0 && j < columns->Count && !colAssigned[j])
             {
                 ok = FALSE;
@@ -1377,7 +1378,7 @@ BOOL CFTPParserFunction::CheckParameters(TIndirectArray<CSrvTypeColumn>* columns
         {
             ok = TRUE;
             int i = Parameters[0]->ColumnIndex;
-            if (i >= 0 && i < columns->Count && !colAssigned[i]) // cteni ze sloupce bez prirazene hodnoty
+            if (i >= 0 && i < columns->Count && !colAssigned[i]) // reading from a column without an assigned value
             {
                 ok = FALSE;
                 errCode = IDS_STPAR_ERR_BADUSEOFCOLID;
@@ -1410,15 +1411,15 @@ CFTPParserParameter::GetOperandType(TIndirectArray<CSrvTypeColumn>* columns)
     }
     else
     {
-        if (Type == pptColumnID) // u sloupce zjistime typ podle typu hodnot ve sloupci
+        if (Type == pptColumnID) // for a column, determine the type according to the column's value type
         {
             if (ColumnIndex >= 0 && ColumnIndex < columns->Count)
             {
                 CSrvTypeColumnTypes t = columns->At(ColumnIndex)->Type;
                 switch (t)
                 {
-                // case stctExt:   // chyba uz byla hlasena (nemelo by sem vubec prijit)
-                // case stctType:  // chyba uz byla hlasena (nemelo by sem vubec prijit)
+                // case stctExt:   // the error has already been reported (it should never get here)
+                // case stctType:  // the error has already been reported (it should never get here)
                 case stctName:
                 case stctGeneralText:
                     return potString;
@@ -1492,22 +1493,22 @@ CFTPParserParameter::GetFuncParType(TIndirectArray<CSrvTypeColumn>* columns)
 {
     if (Type == pptExpression)
     {
-        return pfptBoolean; // vsechny vyrazy zatim maji vysledny typ boolean
+        return pfptBoolean; // all expressions currently have the boolean result type
 
-        // POZOR: pokud se pridaji vyrazy dalsich typu, je treba prislusne upravit
+        // NOTE: if expressions of other types are added, adjust accordingly
         // CFTPParserParameter::GetXXX()
     }
     else
     {
-        if (Type == pptColumnID) // u sloupce zjistime typ podle typu hodnot ve sloupci
+        if (Type == pptColumnID) // for a column, determine the type according to the column's value type
         {
             if (ColumnIndex >= 0 && ColumnIndex < columns->Count)
             {
                 CSrvTypeColumnTypes t = columns->At(ColumnIndex)->Type;
                 switch (t)
                 {
-                // case stctExt:   // chyba uz byla hlasena (nemelo by sem vubec prijit)
-                // case stctType:  // chyba uz byla hlasena (nemelo by sem vubec prijit)
+                // case stctExt:   // the error has already been reported (it should never get here)
+                // case stctType:  // the error has already been reported (it should never get here)
                 case stctName:
                 case stctGeneralText:
                     return pfptColumnString;
@@ -1551,7 +1552,7 @@ CFTPParserParameter::GetFuncParType(TIndirectArray<CSrvTypeColumn>* columns)
                 case psvRestOfLine:
                     return pfptString;
 
-                    // POZOR: pokud se pridaji stavove promene dalsich typu, je treba prislusne upravit
+                    // NOTE: if state variables of other types are added, adjust accordingly
                     // CFTPParserParameter::GetXXX()
                 }
                 TRACE_E("Unexpected situation 2 in CFTPParserParameter::GetFuncParType()!");
@@ -1705,7 +1706,7 @@ BOOL CFTPParserParameter::GetBoolean(CFileData* file, BOOL* isDir,
                     {
                         CFTPParserOperandType leftType = left->GetOperandType(columns);
                         CFTPParserOperandType rightType = right->GetOperandType(columns);
-                        if (leftType != potNone && leftType == rightType) // zatim mame jen operace
+                        if (leftType != potNone && leftType == rightType) // so far we have only operations
                         {
                             switch (leftType)
                             {
@@ -1753,13 +1754,13 @@ BOOL CFTPParserParameter::GetBoolean(CFileData* file, BOOL* isDir,
                                 case pboSubStrIsNotInString:
                                 {
                                     BOOL found = FALSE;
-                                    if (lBeg < lEnd) // neprazdny vzorek pro hledani
+                                    if (lBeg < lEnd) // non-empty sample to search for
                                     {
                                         const char* s = rBeg;
                                         while (s < rEnd)
                                         {
-                                            if (LowerCase[*lBeg] == LowerCase[*s]) // shoduje se prvni pismeno hledaneho vzorku
-                                            {                                      // hledame 'lBeg' v 's' (tim nejhloupejsim algoritmem - O(m*n), ovsem v realnych pripadech temer O(1))
+                                            if (LowerCase[*lBeg] == LowerCase[*s]) // does the first letter of the pattern match
+                                            {                                      // searching for 'lBeg' in 's' (using the simplest algorithm - O(m*n), but almost O(1) in real cases)
                                                 const char* m = lBeg + 1;
                                                 const char* t = s + 1;
                                                 while (m < lEnd && t < rEnd && LowerCase[*m] == LowerCase[*t])
@@ -1767,7 +1768,7 @@ BOOL CFTPParserParameter::GetBoolean(CFileData* file, BOOL* isDir,
                                                     m++;
                                                     t++;
                                                 }
-                                                if (m == lEnd) // nalezeno
+                                                if (m == lEnd) // found
                                                 {
                                                     found = TRUE;
                                                     break;
@@ -1903,7 +1904,7 @@ CFTPParserParameter::GetNumberOperand(CFileData* file, CFTPListingPluginDataInte
             else
             {
                 __int64 num = dataIface->GetNumberFromColumn(*file, ColumnIndex);
-                // if (num == INT64_EMPTYNUMBER) num = 0;  // hodnota "prazdne hodnoty" je nula // nemuze nastat, vylitne chyba kompilace parseru: pouziti hodnoty pred jeji inicializaci
+                // if (num == INT64_EMPTYNUMBER) num = 0;  // the "empty value" equals zero // cannot occur, the parser compilation fails: using the value before it is initialized
                 *minus = num < 0;
                 return num;
             }

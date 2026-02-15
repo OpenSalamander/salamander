@@ -18,7 +18,7 @@ protected:
     int BaseLen;
     BOOL Dirty;
     BOOL UpdateInIdle;
-    CCS Section; // kriticka sekce pro pristup k textovemu bufferu
+    CCS Section; // critical section for accessing the text buffer
     int Width;
     int TextWidth;
     int Height;
@@ -29,11 +29,11 @@ public:
     virtual ~CStatusBar();
     void AllocateBitmap();
 
-    // nastavi zaklad, ke kteremu pomoci Set pripojuje dalsi text
+    // set the base to which Set appends additional text
     void SetBase(LPCWSTR text, BOOL updateInIdle = FALSE);
-    // pripojovani k zakladu nastavenemu pres SetBase
+    // append to the base set via SetBase
     void Set(LPCWSTR text, BOOL updateInIdle = FALSE);
-    // vraci komplet string
+    // returns the complete string
     //void Get(char *buf, int bufSize);
 
     void OnEnterIdle();
@@ -47,7 +47,7 @@ public:
 // CFoundFilesListView
 //
 
-// indexy sloupcu
+// column indices
 
 #define CI_NAME 0
 #define CI_TYPE 1
@@ -67,8 +67,8 @@ struct CFoundFilesData
     unsigned Allocated : 1;
     FILETIME Time;
     BOOL IsDir;
-    DWORD State;          // pro ulozeni state stavu
-    unsigned Default : 1; // jde o default polozku
+    DWORD State;          // stores the item state
+    unsigned Default : 1; // denotes the default item
 
     CFoundFilesData()
     {
@@ -98,10 +98,10 @@ struct CFoundFilesData
     //char *GetFullPath(char *buffer, int size, BOOL skipName = FALSE);
 };
 
-#define SYMBOL_CX 16 // rozmery bitmap
+#define SYMBOL_CX 16 // bitmap dimensions
 #define SYMBOL_CY 16
 
-#define ICON_CX 16 // rozmery ikon v panelech a v cache-bitmape
+#define ICON_CX 16 // icon dimensions in panels and in the cache bitmap
 #define ICON_CY 16
 
 class CFindDialog;
@@ -110,7 +110,7 @@ class CFoundFilesListView : public CWindow
 {
 protected:
     TIndirectArray<CFoundFilesData> Data;
-    CCS DataCriticalSection; // kriticka sekce pro pristup k datum
+    CCS DataCriticalSection; // critical section for accessing the data
     CFindDialog* SearchDialog;
 
 public:
@@ -142,8 +142,8 @@ public:
 //
 // CComboboxEdit
 //
-// Protoze je combobox vyprasenej, nelze klasickou cestou (CB_GETEDITSEL) zjistit
-// po opusteni focusu, jaka byla selection. To resi tento control.
+// Because the combo box is emptied, the classic way (CB_GETEDITSEL) cannot
+// determine what the selection was after it loses focus. This control handles it.
 //
 
 class CComboboxEdit: public CWindow
@@ -176,7 +176,7 @@ class CFindDialog : public CDialogEx
 protected:
     LPWSTR LookInInit;
 
-    // layoutovaci parametry
+    // layout parameters
     int MinDlgW;
     int MinDlgH;
     int HMargin;
@@ -195,10 +195,10 @@ protected:
 
     CStatusBar* StatusBar;
     CFoundFilesListView* List;
-    CFindDialog** ZeroOnDestroy; // hodnota ukazatele bude pri destrukci nulovana
+    CFindDialog** ZeroOnDestroy; // the pointer value will be cleared during destruction
     //CComboboxEdit * LookIn;
 
-    // parametry dotazu
+    // query parameters
     WCHAR Pattern[MAX_KEYNAME];
     TIndirectArray<WCHAR> LookInList;
     BOOL IncludeSubkeys;
@@ -281,7 +281,7 @@ class CFindThread : public CThread
     CFindDialog* FindDialog;
     HANDLE CancelEvent;
 
-    // pro pro preklad unicode retezce pri hledani pomoci regexp
+    // used to translate a Unicode string when searching with a regexp
     TBuffer<char> AsciiBuffer;
 
     CSalamanderBMSearchData* BMForPatternA;

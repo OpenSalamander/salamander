@@ -11,44 +11,44 @@
 #include "wndout.h"
 #include "datarh.h"
 
-/* popis formatu ignore.lst
-Overlap in dialog: 580: 590 x 591      --1. cislo je dialog ID, 2. a 3. jsou IDcka koliznich controlu
+/* ignore.lst format description
+Overlap in dialog: 580: 590 x 591      -- first number is the dialog ID; the second and third are IDs of the overlapping controls
 
-Clipped text in dialog: 500: 502       --1. cislo je dialog ID, 2. je ID controlu u nejz mame ignorovat oriznuti textu
+Clipped text in dialog: 500: 502       -- first number is the dialog ID; the second is the control ID whose clipping should be ignored
 
-Size of icon is small: 750: 776        --1. cislo je dialog ID, 2. je ID ikony, ktera je mala (16x16) a ne velka (32x32), tedy je treba ignorovat velikost a misto ni pouzit 10x10 dlg-units
+Size of icon is small: 750: 776        -- first number is the dialog ID; the second is the icon ID that stays small (16x16) instead of large (32x32), so the size check must be skipped and 10x10 dialog units used instead
 
-Hotkeys collision in dialog: 1000: 1004 x 1003  --1. cislo je dialog ID, 2. a 3. jsou IDcka koliznich controlu
+Hotkeys collision in dialog: 1000: 1004 x 1003  -- first number is the dialog ID; the second and third are IDs of controls with colliding hotkeys
 
-Too close to dialog frame: 2500: 2510  --1. cislo je dialog ID, 2. je ID controlu, ktery muze byt az tesne na okraji
+Too close to dialog frame: 2500: 2510  -- first number is the dialog ID; the second is the control ID that may sit right at the edge
 
-Misaligned controls in dialog: 150: 152 x 159  --1. cislo je dialog ID, 2. a 3. jsou IDcka nezarovnanych controlu
+Misaligned controls in dialog: 150: 152 x 159  -- first number is the dialog ID; the second and third are IDs of misaligned controls
 
-Different sized controls in dialog: 560: 567 x 571  --1. cislo je dialog ID, 2. a 3. jsou IDcka mirne se velikosti lisicich controlu
+Different sized controls in dialog: 560: 567 x 571  -- first number is the dialog ID; the second and third are IDs of controls whose sizes differ slightly
 
-Different spacing between controls: 2500: 2510  --1. cislo je dialog ID, 2. je ID controlu, ktery muze byt nepravidelne umisten mezi ostatnimi
+Different spacing between controls: 2500: 2510  -- first number is the dialog ID; the second is the control ID that may be spaced irregularly among its neighbours
 
-Not standard control size: 2500: 2510  --1. cislo je dialog ID, 2. je ID controlu, ktery muze byt nestandardne veliky
+Not standard control size: 2500: 2510  -- first number is the dialog ID; the second is the control ID that can have a non-standard size
 
-Incorrectly placed label: 560: 567 x 571  --1. cislo je dialog ID, 2. a 3. jsou IDcka nespravne zarovnaneho labelu a jeho controlu
+Incorrectly placed label: 560: 567 x 571  -- first number is the dialog ID; the second and third are IDs of a label and its control that may be misaligned
 
-Missing colon at end of text: 1017  -- 1. cislo je ID stringu, ve kterem proti originalu chybi dvojtecka na konci (diskcopy: "...drive %c:." v nemcine "Laufwerk %c: nicht bestimmen." - takze text ending je ruzny, ale chyba to neni)
+Missing colon at end of text: 1017  -- first number is the string ID that intentionally lacks the colon present in the source (diskcopy: "...drive %c:." versus German "Laufwerk %c: nicht bestimmen."), so the different ending is acceptable
 
-Inconsistent text endings in control: 535: 1153  --1. cislo je dialog ID, 2. je ID controlu, u ktereho se nekontroluje zakonceni textu proti originalni verzi (prvni az predposledni radek z odstavce)
+Inconsistent text endings in control: 535: 1153  -- first number is the dialog ID; the second is the control ID whose paragraph ending is not compared with the source (we allow differences from the first up to the penultimate line)
 
-Inconsistent text endings in string: 10401  -- 1. cislo je ID stringu, u ktereho se nekontroluje zakonceni textu proti originalni verzi
+Inconsistent text endings in string: 10401  -- first number is the string ID whose ending is not compared with the source version
 
-Inconsistent text beginnings in string: 10401  -- 1. cislo je ID stringu, u ktereho se nekontroluje zacatek textu proti originalni verzi
+Inconsistent text beginnings in string: 10401  -- first number is the string ID whose beginning is not compared with the source version
 
-Inconsistent control characters in string: 1210  -- 1. cislo je ID stringu, u ktereho se nekontroluji control-chars (\r, \n, \t) proti originalni verzi
+Inconsistent control characters in string: 1210  -- first number is the string ID whose control characters (\r, \n, \t) are not compared with the source version
 
-Inconsistent hot keys in string: 12137  -- 1. cislo je ID stringu, u ktereho se nekontroluji hotkeys ('&') proti originalni verzi
+Inconsistent hot keys in string: 12137  -- first number is the string ID whose hotkeys ('&') are not compared with the source version
 
-Control is progress bar: 2500: 2510  --1. cislo je dialog ID, 2. je ID controlu, na jehoz miste bude progress bar (proste nejde o static text, jak by se mohlo zdat)
+Control is progress bar: 2500: 2510  -- first number is the dialog ID; the second is the control ID that represents a progress bar (so it is not a static text as one might assume)
 
-Inconsistent format specifier in string: 1210  -- 1. cislo je ID stringu, u ktereho se nekontroluji format-specifiers (%d, %f, atd.) proti originalni verzi
+Inconsistent format specifier in string: 1210  -- first number is the string ID whose format specifiers (%d, %f, etc.) are not compared with the source version
 
-Inconsistent format specifier in control: 2500: 2510  --1. cislo je dialog ID, 2. je ID controlu, u ktereho se nekontroluji format-specifiers (%d, %f, atd.) proti originalni verzi
+Inconsistent format specifier in control: 2500: 2510  -- first number is the dialog ID; the second is the control ID whose format specifiers (%d, %f, etc.) are not compared with the source version
 */
 
 BOOL ProcessIgnoreLstLineAux(const char* overlapHeader, BOOL readCtrlID1, BOOL readCtrlID2, const char*& p,
@@ -120,16 +120,16 @@ BOOL CData::ProcessIgnoreLstLine(const char* line, const char* lineEnd, int row)
 {
     const char* p = line;
 
-    // preskocim uvodni whitespacy
+    // skip leading whitespace
     while (p < lineEnd && (*p == ' ' || *p == '\t'))
         p++;
 
-    // orizneme whitespacy na konci radku
+    // trim whitespace at the end of the line
     while ((lineEnd - 1) > line && (*(lineEnd - 1) == ' ' || *(lineEnd - 1) == '\t'))
         lineEnd--;
 
     BOOL ret = TRUE;
-    if (p < lineEnd) // zajimaji nas jen neprazdne radky
+    if (p < lineEnd) // only non-empty lines are relevant
     {
         CIgnoreLstItemType type;
         int dlgID = 0;
@@ -292,7 +292,7 @@ BOOL CData::LoadIgnoreLst(const char* fileName)
     char* ignoreLstData = (char*)malloc(ignoreLstDataSize + 1);
     if (ignoreLstData == NULL)
     {
-        TRACE_E("Nedostatek pameti");
+        TRACE_E("Out of memory");
         HANDLES(CloseHandle(hFile));
         return FALSE;
     }
@@ -308,7 +308,7 @@ BOOL CData::LoadIgnoreLst(const char* fileName)
         HANDLES(CloseHandle(hFile));
         return FALSE;
     }
-    ignoreLstData[ignoreLstDataSize] = 0; // vlozime terminator
+    ignoreLstData[ignoreLstDataSize] = 0; // append a terminator
 
     const char* lineStart = ignoreLstData;
     const char* lineEnd = ignoreLstData;

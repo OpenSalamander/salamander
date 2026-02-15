@@ -504,15 +504,15 @@ const char* rpmTypeTable[] = {
 #define LEFTCOLUMN1WIDTH 15
 #define LEFTCOLUMN2WIDTH 25
 
-// tato funkce nehlasi chyby, muze byt pouzita i k detekci archivu
-// hlaseni chyb je treba zpracovat ve volajicim kodu
+// this function does not report errors and can therefore be used for archive detection
+// error reporting must be handled by the caller
 BOOL CRPM::RPMDumpLead(FILE* fContents, short& SignatureType)
 {
-    // nemuze to byt RPM, pokud mame min nez signaturu...
+    // this cannot be an RPM archive if we have less than the signature...
     if (DataEnd - DataStart < RPMLEAD_SIZE)
         return FALSE;
 
-    // pokud neni "magicke cislo" na zacatku, nejde o RPM
+    // if the "magic number" is not at the start, it is not an RPM archive
     rpmlead* RPMLead = (rpmlead*)DataStart;
     if (RPMLead->magic[0] != RPMLEAD_MAGIC0 ||
         RPMLead->magic[1] != RPMLEAD_MAGIC1 ||
@@ -520,12 +520,12 @@ BOOL CRPM::RPMDumpLead(FILE* fContents, short& SignatureType)
         RPMLead->magic[3] != RPMLEAD_MAGIC3)
         return FALSE;
 
-    // mame RPM, potvrdime precteny header
+    // we have an RPM; confirm the header we just read
     FReadBlock(RPMLEAD_SIZE);
 
     if (fContents != NULL)
     {
-        // analyzujeme archive lead
+        // analyze the archive lead
         fprintf(fContents, "Archive lead (unreliable information):\n");
         fprintf(fContents, "%*s: %u.%u\n", LEFTCOLUMN2WIDTH, "Archive version", RPMLead->major, RPMLead->minor);
         fprintf(fContents, "%*s: ", LEFTCOLUMN2WIDTH, "Archive type");
@@ -534,7 +534,7 @@ BOOL CRPM::RPMDumpLead(FILE* fContents, short& SignatureType)
         case RPMLEAD_BINARY:
             fprintf(fContents, "binary\n");
             fprintf(fContents, "%*s: ", LEFTCOLUMN2WIDTH, "Target architecture: ");
-            switch (RPMToShort(RPMLead->archnum)) // TODO: zkontrolovat nazvy
+            switch (RPMToShort(RPMLead->archnum)) // TODO: verify the architecture names
             {
             case 1:
                 fprintf(fContents, "i386\n");
@@ -592,7 +592,7 @@ BOOL CRPM::RPMDumpLead(FILE* fContents, short& SignatureType)
         }
         fprintf(fContents, "%*s: %s\n", LEFTCOLUMN2WIDTH, "Name", RPMLead->name);
         fprintf(fContents, "%*s: ", LEFTCOLUMN2WIDTH, "Target operating system");
-        switch (RPMToShort(RPMLead->osnum)) // TODO: zkontrolovat nazvy
+        switch (RPMToShort(RPMLead->osnum)) // TODO: verify the OS names
         {
         case 1:
             fprintf(fContents, "Linux\n");
@@ -692,7 +692,7 @@ BOOL CRPM::RPMReadHeader(FILE* fContents)
 {
     const unsigned char* header;
 
-    // nemuze to byt RPM header, pokud mame min nez signaturu...
+    // this cannot be an RPM header if we have less than the signature...
     if (DataEnd - DataStart < 8)
     {
         SalamanderGeneral->SalMessageBox(SalamanderGeneral->GetMsgBoxParent(),
@@ -700,7 +700,7 @@ BOOL CRPM::RPMReadHeader(FILE* fContents)
                                          MB_OK | MB_ICONEXCLAMATION);
         return FALSE;
     }
-    // pokud neni "magicke cislo" na zacatku, nejde o RPM
+    // if the "magic number" is not at the start, it is not an RPM header
     header = DataStart;
     if (header[0] != RPMHEADER_MAGIC0 || header[1] != RPMHEADER_MAGIC1 ||
         header[2] != RPMHEADER_MAGIC2)
@@ -710,7 +710,7 @@ BOOL CRPM::RPMReadHeader(FILE* fContents)
                                          MB_OK | MB_ICONEXCLAMATION);
         return FALSE;
     }
-    // pokud jsme ho nasli, potvrdime ho
+    // if we find it, confirm it
     header = FReadBlock(8);
 
     // check version number
@@ -854,7 +854,7 @@ void PrintIndexEntry(FILE* fContents, const char* const (*TagNameFn)(int tagNum)
     fprintf(fContents, "%*s: %u\n", LEFTCOLUMN2WIDTH, "Offset", index.Offset);
     fprintf(fContents, "%*s: %u\n", LEFTCOLUMN2WIDTH, "Count", index.Count);
     fprintf(fContents, "%*s: ", LEFTCOLUMN2WIDTH, "Data");
-    // TODO: spesl zpracovani pro nektere zmname sekce (datum, permissions apod.)
+    // TODO: provide special handling for certain well-known sections (dates, permissions, etc.)
     switch (index.Type)
     {
     case RPM_CHAR_TYPE:

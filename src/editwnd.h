@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -33,8 +34,8 @@ protected:
 // ****************************************************************************
 //
 
-// text v comboboxu v commandline; cachujeme jej, aby neblikal
-// protoze je obsluhovan z hlavniho threadu, muzeme jet pres ItemBitmap
+// text in the combo box in command line; we cach it so it will not flicker
+// because it is handled from the main thread we can operate via ItemBitmap
 
 class CInnerText : public CWindow
 {
@@ -48,7 +49,7 @@ public:
     CInnerText(CEditWindow* editWindow);
     ~CInnerText();
 
-    BOOL SetText(const char* txt); // nastavi jen Message, vraci je-li potreba redraw
+    BOOL SetText(const char* txt); // sets only Message, returns when a redraw is needed
     void UpdateControl();
     int GetNeededWidth();
 
@@ -67,9 +68,9 @@ protected:
     BOOL Enabled;
     BOOL Tracking;
 
-    char* LastText; // kdyz bylo okno docasne schovano, ulozil se sem obsah
-    // nasledujici dve promenne maji vyznam pouze pokud je LastText != NULL
-    int LastSelStart; // pozice selectiony
+    char* LastText; // when the window was temporarily hidden, its contents were stored here
+    // the following two variables are relevant only when LastText != NULL
+    int LastSelStart; // selection position
     int LastSelEnd;
 
 public:
@@ -82,7 +83,7 @@ public:
     int GetNeededHeight();
     void SetFont();
     void FillHistory();
-    BOOL Dropped(); // listobx je vybaleny
+    BOOL Dropped(); // listbox is dropped down
     void Enable(BOOL enable);
     BOOL IsEnabled() { return Enabled; }
     CEditLine* GetEditLine() { return EditLine; }

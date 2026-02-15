@@ -35,9 +35,9 @@ BOOL CutDirectory(WCHAR* path, WCHAR* cutDir, int size)
     WCHAR* slash = wcsrchr(path, L'\\');
     if (!slash)
     {
-        // cesta nezacinajici lomitkem
+        // path not starting with a slash
         if (*path == L'\0')
-            return FALSE; // tohle uz zkratit nepujde
+            return FALSE; // nothing left to shorten
         if (cutDir)
             lstrcpynW(cutDir, path, size);
         *path = L'\0';
@@ -78,7 +78,7 @@ char* DupStrA(const WCHAR* str)
     {
         if (WStrToStr(ret, len + 1, str, len + 1) <= 0)
         {
-            TRACE_E("nejde prevest unicode na char, GetLastError()=" << ret);
+            TRACE_E("Unable to convert Unicode to char, GetLastError()=" << ret);
             free(ret);
             ret = SG->DupStr("?");
         }
@@ -139,11 +139,11 @@ BOOL RegOperationError(int lastError, int error, int title, int keyRoot, LPWSTR 
     int l = (int)strlen(strcpy(buf, LoadStr(error)));
     SG->GetErrorText(lastError, buf + l, 1024 - l);
 
-    char fullName[MAX_FULL_KEYNAME]; // buffer pro plne jmeno na REG pro chybovy dialog
+    char fullName[MAX_FULL_KEYNAME]; // buffer for the full REG name shown in an error dialog
     l = WStrToStr(fullName, MAX_FULL_KEYNAME, PredefinedHKeys[keyRoot].KeyName) - 1;
     fullName[l++] = '\\';
     l += WStrToStr(fullName + l, MAX_FULL_KEYNAME - l, keyName) - 1;
-    fullName[l] = 0; // pro jistotu
+    fullName[l] = 0; // just in case
 
     int res = skip ? SG->DialogError(GetParent(), BUTTONS_RETRYSKIPCANCEL, fullName, buf, LoadStr(title)) : SG->DialogError(GetParent(), BUTTONS_RETRYCANCEL, fullName, buf, LoadStr(title));
     switch (res)
@@ -214,7 +214,7 @@ BOOL TestForCancel()
     BOOL cancel = FALSE;
     if ((GetAsyncKeyState(VK_ESCAPE) & 0x8001) && GetForegroundWindow() == SG->GetMainWindowHWND())
     {
-        MSG msg; // vyhodime nabufferovany ESC
+        MSG msg; // discard the buffered ESC
         while (PeekMessage(&msg, NULL, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
             ;
         cancel = TRUE;
@@ -256,14 +256,14 @@ BOOL DuplicateChar(WCHAR dup, LPWSTR buffer, int bufferSize)
         {
             if (l + 1 < bufferSize)
             {
-                memmove(s + 1, s, (l - (s - buffer) + 1) * 2); // zdvojime dup
+                memmove(s + 1, s, (l - (s - buffer) + 1) * 2); // duplicate the quote
                 l++;
                 s++;
             }
-            else // nevejde se, orizneme buffer
+            else // doesn't fit, trim the buffer
             {
                 ret = FALSE;
-                memmove(s + 1, s, (l - (s - buffer)) * 2); // zdvojime dup, orizneme o znak
+                memmove(s + 1, s, (l - (s - buffer)) * 2); // duplicate the quote, trim by one char
                 buffer[l] = L'\0';
                 s++;
             }
@@ -389,11 +389,11 @@ void ConvertHexToString(LPWSTR text, char* hex, int& len)
                 if (IsXdigit(*s))
                 {
                     if (*s >= L'0' && *s <= L'9')
-                        value = (BYTE)(*s - L'0'); // prvni cislice
+                        value = (BYTE)(*s - L'0'); // first digit
                     else
                         value = (BYTE)(10 + (towlower(*s) - L'a'));
                     s++;
-                    if (IsXdigit(*s)) // druha cislice
+                    if (IsXdigit(*s)) // second digit
                     {
                         value <<= 4;
                         if (*s >= L'0' && *s <= L'9')
@@ -407,9 +407,9 @@ void ConvertHexToString(LPWSTR text, char* hex, int& len)
                 else
                 {
                     if (*s == L'\0')
-                        break; // konec retezce
+                        break; // end of string
                     else
-                        s++; // preskok mezery
+                        s++; // skip the space
                 }
             }
         }
@@ -463,7 +463,7 @@ BOOL ValidateHexString(LPWSTR text)
                 if (IsXdigit(*s))
                 {
                     s++;
-                    if (IsXdigit(*s)) // druha cislice (povina)
+                    if (IsXdigit(*s)) // second digit (required)
                     {
                         s++;
                     }
@@ -473,12 +473,12 @@ BOOL ValidateHexString(LPWSTR text)
                 else
                 {
                     if (*s == L'\0')
-                        break; // konec retezce
+                        break; // end of string
                     else
                     {
                         if (*s != L' ')
                             return FALSE;
-                        s++; // preskok mezery
+                        s++; // skip the space
                     }
                 }
             }
@@ -586,10 +586,10 @@ BOOL RemoveFSNameFromPath(LPWSTR path)
                     return TRUE;
                 }
                 else
-                    return FALSE; // neznamy FS
+                    return FALSE; // unknown FS
             }
             else
-                return FALSE; // neznamy FS
+                return FALSE; // unknown FS
         }
         iterator++;
     }
@@ -602,7 +602,7 @@ BOOL DecStringToNumber(char* string, QWORD& qw)
     //  CALL_STACK_MESSAGE1("DecStringToNumber(, )");
     QWORD ret = 0;
 
-    // orizneme whitespace ze zacatku
+    // trim leading whitespace
     while (isspace(*string))
         string++;
 
@@ -612,12 +612,12 @@ BOOL DecStringToNumber(char* string, QWORD& qw)
     while (isdigit(*string))
     {
         if (ret > (((QWORD)-1) - (*string - '0')) / 10)
-            return FALSE; // preteceni
+            return FALSE; // overflow
         ret = ret * 10 + *string - '0';
         string++;
     }
 
-    // orizneme whitespace na konci
+    // trim trailing whitespace
     while (*string)
     {
         if (!isspace(*string))
@@ -635,7 +635,7 @@ BOOL HexStringToNumber(char* string, QWORD& qw)
     //  CALL_STACK_MESSAGE1("HexStringToNumber(, )");
     QWORD ret = 0;
 
-    // orizneme whitespace ze zacatku
+    // trim leading whitespace
     while (isspace(*string))
         string++;
 
@@ -646,12 +646,12 @@ BOOL HexStringToNumber(char* string, QWORD& qw)
     {
         if (ret >
             (((QWORD)-1) - (isdigit(*string) ? *string - '0' : tolower(*string) - 'a' + 10)) / 10)
-            return FALSE; // preteceni
+            return FALSE; // overflow
         ret = (ret << 4) + (isdigit(*string) ? *string - '0' : tolower(*string) - 'a' + 10);
         string++;
     }
 
-    // orizneme whitespace na konci
+    // trim trailing whitespace
     while (*string)
     {
         if (!isspace(*string))
@@ -716,35 +716,35 @@ ReplaceDlgTemplateFont(LPDLGTEMPLATE dlgTemplate, DWORD &size, LPCWSTR newFont)
   CALL_STACK_MESSAGE2("ReplaceDlgTemplateFont(, 0x%X, )", size);
   if (!(dlgTemplate->style & DS_SETFONT ))
   {
-    TRACE_E("ReplaceDlgTemplateFont: Dialog template nema DS_SETFONT.");
+    TRACE_E("ReplaceDlgTemplateFont: Dialog template lacks DS_SETFONT.");
     return dlgTemplate;
   }
 
   LPWSTR ptr = LPWSTR((char *)dlgTemplate + sizeof(DLGTEMPLATE));
 
-  // preskocime menu array
-  if (*ptr == 0xFFFF) ptr += 2; // nasleduje ordinal value of a menu resource 
+  // skip the menu array
+  if (*ptr == 0xFFFF) ptr += 2; // followed by the ordinal value of a menu resource
   else
   {
-    // jde o NULL terminated string
+    // this is a NULL-terminated string
     ptr += wcslen(ptr) + 1;
   }
 
-  // preskocime class array
-  if (*ptr == 0xFFFF) ptr += 2; // nasleduje ordinal value of a predefined system window class
+  // skip the class array
+  if (*ptr == 0xFFFF) ptr += 2; // followed by the ordinal value of a predefined system window class
   else
   {
-    // jde o NULL terminated string
+    // this is a NULL-terminated string
     ptr += wcslen(ptr) + 1;
   }
 
-  // preskocime window title
+  // skip the window title
   ptr += wcslen(ptr) + 1;
 
-  // preskocime point size 
+  // skip the point size
   ptr++;
 
-  // upravime velikost template a presune data nasledujici za jmenem fontu
+  // adjust the template size and move the data following the font name
   int len1 = wcslen(ptr) + 1;
   int len2 = wcslen(newFont) + 1;
   DWORD dest = (DWORD(ptr + len2) - DWORD(dlgTemplate) + 3)/4*4;
@@ -773,7 +773,7 @@ ReplaceDlgTemplateFont(LPDLGTEMPLATE dlgTemplate, DWORD &size, LPCWSTR newFont)
     }
   }
 
-  // zapiseme novy font name
+  // write the new font name
   wcscpy(ptr, newFont);
   
   return dlgTemplate;

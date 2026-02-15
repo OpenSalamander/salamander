@@ -95,13 +95,13 @@ BOOL MakeArgv(const char* commandLine, char argv[2][MAX_PATH], int& argc,
     const char* start = commandLine;
     while (*start)
     {
-        // orizneme white-space na zacatku
+        // trim the whitespace at the beginning
         while (*start && IsSpace(*start))
             start++;
         if (!*start || argc >= maxarg)
             break;
         const char* end = start;
-        // najdeme konec tokenu
+        // find the end of the token
         while (*end && !IsSpace(*end))
         {
             if (*end++ == '"')
@@ -114,7 +114,7 @@ BOOL MakeArgv(const char* commandLine, char argv[2][MAX_PATH], int& argc,
                     end = start + lstrlen(start);
             }
         }
-        // pridame token do pole
+        // add the token to the array
         int len = RemoveQuotes(argv[argc], start, min((int)(end - start), maxlen - 1));
         argv[argc++][len] = 0;
         start = end;
@@ -135,7 +135,7 @@ BOOL PathAppend(LPTSTR pPath, LPCTSTR pMore)
         return TRUE;
     }
     int len = lstrlen(pPath);
-    // ostrim zpetne lomitko pred pripojenim
+    // trim the trailing backslash before appending
     if (len > 1 && pPath[len - 1] != '\\' && pMore[0] != '\\')
     {
         pPath[len] = '\\';
@@ -177,7 +177,7 @@ int RemoteCompareFiles(HINSTANCE hInstance, LPTSTR lpCmdLine)
     /*
   char spl[MAX_PATH];
   GetModuleFileName(hInstance, spl, MAX_PATH);
-  PathRemoveFileSpec(spl); // odeberem fcremote.exe
+  PathRemoveFileSpec(spl); // remove fcremote.exe
   PathAppend(spl, "filecomp.spl");
   DLLInstance = LoadLibraryEx(spl, NULL, LOAD_LIBRARY_AS_DATAFILE);
 */
@@ -186,7 +186,7 @@ int RemoteCompareFiles(HINSTANCE hInstance, LPTSTR lpCmdLine)
     int first, second;
     BOOL wait = FALSE;
 
-    // pripavime argv
+    // prepare argv
     BOOL argOK = MakeArgv(lpCmdLine, argv, argc, MAX_PATH, 4) &&
                  3 <= argc && argc <= 4;
     if (argOK)
@@ -225,7 +225,7 @@ int RemoteCompareFiles(HINSTANCE hInstance, LPTSTR lpCmdLine)
         {
             if (firstTry)
             {
-                // zkusime pustit salamandera
+                // try to launch Salamander
                 char sal[MAX_PATH];
                 GetModuleFileName(hInstance, sal, MAX_PATH);
                 PathRemoveFileSpec(sal); // fcremote.exe
@@ -252,7 +252,7 @@ int RemoteCompareFiles(HINSTANCE hInstance, LPTSTR lpCmdLine)
                 CloseHandle(pi.hProcess);
                 CloseHandle(pi.hThread);
                 firstTry = FALSE;
-                continue; // zkusime znova s nastartovanym salamanderem
+                continue; // try again with Salamander already running
             }
             MessageBox(NULL, LoadStr(IDS_MSGERR2), LoadStr(IDS_SPLERROR), MB_OK | MB_ICONERROR);
             break;
@@ -297,7 +297,7 @@ int RemoteCompareFiles(HINSTANCE hInstance, LPTSTR lpCmdLine)
 // EnableExceptionsOn64
 //
 
-// Chceme se dozvedet o SEH Exceptions i na x64 Windows 7 SP1 a dal
+// We want to be notified about SEH exceptions even on x64 Windows 7 SP1 and newer
 // http://blog.paulbetts.org/index.php/2010/07/20/the-case-of-the-disappearing-onload-exception-user-mode-callback-exceptions-in-x64/
 // http://connect.microsoft.com/VisualStudio/feedback/details/550944/hardware-exceptions-on-x64-machines-are-silently-caught-in-wndproc-messages
 // http://support.microsoft.com/kb/976038
@@ -328,7 +328,7 @@ void EnableExceptionsOn64()
     }
 }
 
-// vyzaduje VC2008
+// requires VC2008
 void* __cdecl operator new(size_t size)
 {
     return HeapAlloc(GetProcessHeap(), 0, size);
@@ -339,7 +339,7 @@ void __cdecl operator delete(void* ptr)
     HeapFree(GetProcessHeap(), 0, ptr);
 }
 
-// vyzaduje VC2015
+// requires VC2015
 void* __cdecl operator new[](size_t size)
 {
     return HeapAlloc(GetProcessHeap(), 0, size);
@@ -353,7 +353,7 @@ void __cdecl operator delete[](void* ptr)
 void WinMainCRTStartup()
 {
     EnableExceptionsOn64();
-    // nechci zadne kriticke chyby jako "no disk in drive A:"
+    // avoid critical errors such as "no disk in drive A:"
     SetErrorMode(SetErrorMode(0) | SEM_FAILCRITICALERRORS);
 
     int ret = RemoteCompareFiles(GetModuleHandle(NULL), GetCommandLine());

@@ -1,83 +1,84 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
-//#define DEBUGLOGPACKETSIZEANDWRITESIZE    // povoleno = pisou se do logu aktualni velikosti bloku posilanych pri uploadu na socket a navic kazdou vterinu kolik se podarilo odeslat dat
+//#define DEBUGLOGPACKETSIZEANDWRITESIZE    // enabled = logs the current block sizes sent during upload to the socket and, additionally, every second how much data was successfully sent
 
 // ****************************************************************************
-// konstanty:
+// constants:
 
-#define DATACON_BYTESTOREADONSOCKET 8192         // po minimalne kolika bytech se ma cist socket (take alokovat buffer pro prectena data)
-#define DATACON_BYTESTOREADONSOCKETPREALLOC 8192 // kolik bytu se ma predalokovat pro cteni (aby dalsi cteni okamzite nealokovalo znovu)
+#define DATACON_BYTESTOREADONSOCKET 8192         // minimum number of bytes to read from the socket (also allocate the buffer for the read data)
+#define DATACON_BYTESTOREADONSOCKETPREALLOC 8192 // how many bytes to preallocate for reading (so the next read does not immediately allocate again)
 
-#define KEEPALIVEDATACON_READBUFSIZE 8192 // po kolika bytech se ma cist socket (data se zahazuji - jen keep-alive)
+#define KEEPALIVEDATACON_READBUFSIZE 8192 // how many bytes to read from the socket (data are discarded - keep-alive only)
 
-#define DATACON_FLUSHBUFFERSIZE 65536     // velikost bufferu pro predavani dat pro overeni/zapis na disk (viz CDataConnectionSocket::FlushBuffer)
-#define DATACON_FLUSHTIMEOUT 1000         // doba v milisekundach, za kterou dojde k predani dat pro overeni/zapis na disk v pripade, ze k predani dat nedoslo na zaklade naplneni flush bufferu (viz CDataConnectionSocket::FlushBuffer)
-#define DATACON_TESTNODATATRTIMEOUT 10000 // doba v milisekundach, za kterou periodicky dochazi k testovani no-data-transfer timeoutu
+#define DATACON_FLUSHBUFFERSIZE 65536     // buffer size for handing data over for verification/write to disk (see CDataConnectionSocket::FlushBuffer)
+#define DATACON_FLUSHTIMEOUT 1000         // time in milliseconds after which data are passed on for verification/write to disk if the flush buffer did not already trigger it (see CDataConnectionSocket::FlushBuffer)
+#define DATACON_TESTNODATATRTIMEOUT 10000 // time in milliseconds between periodic checks of the no-data-transfer timeout
 
-#define DATACON_FLUSHTIMERID 50        // ID timeru v data-connectione, ktery zajistuje periodicke flushovani dat (viz DATACON_FLUSHTIMEOUT)
-#define DATACON_TESTNODATATRTIMERID 51 // ID timeru v data-connectione, ktery zajistuje periodicke testovani no-data-transfer timeoutu (viz DATACON_TESTNODATATRTIMEOUT)
+#define DATACON_FLUSHTIMERID 50        // ID of the timer in the data connection that ensures periodic data flushing (see DATACON_FLUSHTIMEOUT)
+#define DATACON_TESTNODATATRTIMERID 51 // ID of the timer in the data connection that ensures periodic testing of the no-data-transfer timeout (see DATACON_TESTNODATATRTIMEOUT)
 
-#define DATACON_DISKWORKWRITEFINISHED 40 // ID zpravy postnute data-connectione v okamziku, kdy FTPDiskThread dokonci zadanou praci na disku - zapis (jen pri primem flushovani dat do souboru v data-connectione, viz CDataConnectionSocket::SetDirectFlushParams)
+#define DATACON_DISKWORKWRITEFINISHED 40 // ID of the message posted to the data connection when FTPDiskThread finishes the requested disk work - write (only for direct flushing of data to the file in the data connection, see CDataConnectionSocket::SetDirectFlushParams)
 
-// POZOR: krome DATACON_UPLOADFLUSHBUFFERSIZE je dulezity tez odhad velikosti "paketu" pri zapisu (viz CUploadDataConnectionSocket::LastPacketSizeEstimation)
-#define DATACON_UPLOADFLUSHBUFFERSIZE 65536 // velikost bufferu pro predavani dat pro zapis do data-connectiony (viz CUploadDataConnectionSocket::FlushBuffer)
+// WARNING: besides DATACON_UPLOADFLUSHBUFFERSIZE the estimated "packet" size during writes is also important (see CUploadDataConnectionSocket::LastPacketSizeEstimation)
+#define DATACON_UPLOADFLUSHBUFFERSIZE 65536 // buffer size for handing data over for writing to the data connection (see CUploadDataConnectionSocket::FlushBuffer)
 
 //
 // *********************************************************************************
 // CDataConnectionBaseSocket + CDataConnectionSocket + CUploadDataConnectionSocket
 //
-// objekt socketu, ktery slouzi jako "data connection" na FTP server
-// pro dealokaci pouzivat funkci ::DeleteSocket!
+// socket object that serves as the "data connection" to an FTP server
+// use the ::DeleteSocket() function for deallocation!
 
 class CDataConnectionBaseSocket : public CSocket
 {
 protected:
-    // kriticka sekce pro pristup k datum objektu je CSocket::SocketCritSect
-    // POZOR: v teto sekci nesmi dojit ke vnoreni do SocketsThread->CritSect (nesmi se volat metody SocketsThread)
+    // the critical section for accessing the object's data is CSocket::SocketCritSect
+    // WARNING: SocketsThread->CritSect must not be entered while inside this section (do not call SocketsThread methods)
 
-    BOOL UsePassiveMode; // TRUE = pasivni mod (PASV), jinak aktivni mod (PORT)
+    BOOL UsePassiveMode; // TRUE = passive mode (PASV), otherwise active mode (PORT)
     BOOL EncryptConnection;
-    int CompressData;                 // 0 = nepouziva se MODE Z, neni-li 0, MODE Z se pouziva (prenos komprimovanych dat)
-    CFTPProxyForDataCon* ProxyServer; // NULL = "not used (direct connection)" (read-only, inicializuje se v konstruktoru, pristup tedy mozny bez kriticke sekce)
-    DWORD ServerIP;                   // IP serveru, kam se pripojujeme v pasivnim modu
-    unsigned short ServerPort;        // port serveru, kam se pripojujeme v pasivnim modu
+    int CompressData;                 // 0 = MODE Z is not used; if not 0, MODE Z is used (transfer of compressed data)
+    CFTPProxyForDataCon* ProxyServer; // NULL = "not used (direct connection)" (read-only, initialized in the constructor, therefore accessible without a critical section)
+    DWORD ServerIP;                   // IP of the server we connect to in passive mode
+    unsigned short ServerPort;        // server port we connect to in passive mode
 
-    int LogUID; // UID logu pro odpovidajici "control connection" (-1 dokud neni log zalozen)
+    int LogUID; // log UID for the corresponding "control connection" (-1 until the log is created)
 
-    DWORD NetEventLastError; // kod posledni chyby, ktera byla hlasena do ReceiveNetEvent() nebo nastala v PassiveConnect()
-    int SSLErrorOccured;     // viz konstanty SSLCONERR_XXX
-    BOOL ReceivedConnected;  // TRUE = doslo k otevreni (connect nebo accept) "data connection" (nic nerika o soucasnem stavu)
-    DWORD LastActivityTime;  // GetTickCount() z okamziku, kdy se naposledy delalo s "data connection" (sleduje se inicializace (SetPassive() a SetActive()), uspesny connect a read)
-    DWORD SocketCloseTime;   // GetTickCount() z okamziku, kdy se zavrel socket "data connection"
+    DWORD NetEventLastError; // code of the last error reported to ReceiveNetEvent() or that occurred in PassiveConnect()
+    int SSLErrorOccured;     // see constants SSLCONERR_XXX
+    BOOL ReceivedConnected;  // TRUE = the "data connection" opened (connect or accept); does not describe the current state
+    DWORD LastActivityTime;  // GetTickCount() from when we last worked with the "data connection" (tracks initialization (SetPassive() and SetActive()), successful connect, and read)
+    DWORD SocketCloseTime;   // GetTickCount() from the moment the "data connection" socket closed
 
-    CSynchronizedDWORD* GlobalLastActivityTime; // objekt pro ukladani casu posledni aktivity na skupine data-connection
+    CSynchronizedDWORD* GlobalLastActivityTime; // object for storing the last activity time of a group of data connections
 
-    BOOL PostMessagesToWorker;        // TRUE = posilat zpravy majiteli (workerovi - jeho identifikace viz dale)
-    int WorkerSocketMsg;              // identifikace majitele data-connectiony
-    int WorkerSocketUID;              // identifikace majitele data-connectiony
-    DWORD WorkerMsgConnectedToServer; // cislo zpravy, kterou si majitel data-connection preje dostat po navazani spojeni se serverem (do parametru 'param' volani PostSocketMessage jde UID tohoto objektu)
-    DWORD WorkerMsgConnectionClosed;  // cislo zpravy, kterou si majitel data-connection preje dostat po uzavreni/preruseni spojeni se serverem (do parametru 'param' volani PostSocketMessage jde UID tohoto objektu)
-    DWORD WorkerMsgListeningForCon;   // cislo zpravy, kterou si majitel data-connection preje dostat po otevreni portu pro "listen" (do parametru 'param' volani PostSocketMessage jde UID tohoto objektu)
+    BOOL PostMessagesToWorker;        // TRUE = send messages to the owner (worker - see below for its identification)
+    int WorkerSocketMsg;              // identifies the owner of the data connection
+    int WorkerSocketUID;              // identifies the owner of the data connection
+    DWORD WorkerMsgConnectedToServer; // ID of the message the data connection owner wants to receive after connecting to the server (the UID of this object goes into the 'param' parameter of PostSocketMessage)
+    DWORD WorkerMsgConnectionClosed;  // ID of the message the data connection owner wants to receive after the connection to the server closes/breaks (the UID of this object goes into the 'param' parameter of PostSocketMessage)
+    DWORD WorkerMsgListeningForCon;   // ID of the message the data connection owner wants to receive after the port for "listen" opens (the UID of this object goes into the 'param' parameter of PostSocketMessage)
 
-    BOOL WorkerPaused;         // TRUE = worker je ve stavu "paused", takze nesmime prenaset dalsi data
-    int DataTransferPostponed; // 1 = behem WorkerPaused==TRUE byl odlozen pozadavek na preneseni dat (FD_READ/FD_WRITE), 2 = byl odlozen FD_CLOSE
+    BOOL WorkerPaused;         // TRUE = the worker is in the "paused" state, so we must not transfer more data
+    int DataTransferPostponed; // 1 = while WorkerPaused==TRUE a request to transfer data (FD_READ/FD_WRITE) was postponed, 2 = FD_CLOSE was postponed
 
-    CTransferSpeedMeter TransferSpeedMeter;        // objekt pro mereni rychlosti prenosu dat v teto data-connectione
-    CTransferSpeedMeter ComprTransferSpeedMeter;   // objekt pro mereni rychlosti prenosu komprimovanych dat v teto data-connectione (pouziva se jen pri zapnutem MODE Z)
-    CTransferSpeedMeter* GlobalTransferSpeedMeter; // objekt pro mereni celkove rychlosti prenosu dat (vsech data-connection workeru FTP operace); je-li NULL, neexistuje
+    CTransferSpeedMeter TransferSpeedMeter;        // object for measuring the data transfer speed in this data connection
+    CTransferSpeedMeter ComprTransferSpeedMeter;   // object for measuring the speed of compressed data transfer in this data connection (used only when MODE Z is enabled)
+    CTransferSpeedMeter* GlobalTransferSpeedMeter; // object for measuring the overall data transfer speed (all data connection workers of the FTP operation); if NULL, it does not exist
 
-    DWORD ListenOnIP;            // IP, na kterem nasloucha proxy server (ceka na spojeni); je-li INADDR_NONE, nebyla zatim volana metoda ListeningForConnection() nebo proxy server vratil nejakou chybu
-    unsigned short ListenOnPort; // port, na kterem nasloucha proxy server (ceka na spojeni)
+    DWORD ListenOnIP;            // IP on which the proxy server listens (waits for a connection); if INADDR_NONE, the ListeningForConnection() method has not been called yet or the proxy server reported an error
+    unsigned short ListenOnPort; // port on which the proxy server listens (waits for a connection)
     CSalZLIB ZLIBInfo;           // Control structure for ZLIB compression
 
-    // SSLConForReuse: neni-li NULL, je socket, ze ktereho mame pouzit SSL session (rika se
-    // tomu "SSL session reuse", viz napr. http://vincent.bernat.im/en/blog/2011-ssl-session-reuse-rfc5077.html
-    // a pouziva se to z control connectiony pro vsechny jeji data connectiony)
-    // POZOR: pouziva se bez synchronizace, funguje na zaklade predpokladu, ze SSLConForReuse
-    //        (control connectiona) existuje urcite dele nez tento socket (data connectiona)
+    // SSLConForReuse: if not NULL, this is the socket whose SSL session should be reused
+    // this is called "SSL session reuse", see for example http://vincent.bernat.im/en/blog/2011-ssl-session-reuse-rfc5077.html
+    // and it is used from the control connection for all of its data connections
+    // WARNING: used without synchronization, it relies on the assumption that SSLConForReuse
+    //          (the control connection) definitely exists longer than this socket (the data connection)
     CSocket* SSLConForReuse;
 
 public:
@@ -85,387 +86,384 @@ public:
                               CCertificate* certificate, int compressData, CSocket* conForReuse);
     virtual ~CDataConnectionBaseSocket();
 
-    // popis viz potomci tohoto objektu
+    // description provided in the derived classes of this object
     virtual BOOL CloseSocketEx(DWORD* error) = 0;
 
-    // nastavi parametry pro pasivni mod "data connection"; tyto parametry se pouzivaji
-    // v metode PassiveConnect(); 'ip' + 'port' jsou parametry pripojeni ziskane od serveru;
-    // 'logUID' je UID logu "control connection", ktere patri tato "data connection"
+    // sets parameters for the passive mode of the "data connection"; these parameters are used
+    // in the PassiveConnect() method; 'ip' + 'port' are the connection parameters obtained from the server;
+    // 'logUID' is the log UID of the "control connection" to which this "data connection" belongs
     void SetPassive(DWORD ip, unsigned short port, int logUID);
 
-    // cisteni promennych pred connectem data-socketu
+    // cleanup of variables before connecting the data socket
     virtual void ClearBeforeConnect() {}
 
-    // zavola Connect() pro ulozene parametry pro pasivni mod
-    // POZOR: neni mozne volat tuto metodu z kriticke sekce SocketCritSect (metoda pouziva
-    //        SocketsThread)
-    // volani mozne z libovolneho threadu
+    // calls Connect() for the stored parameters for passive mode
+    // WARNING: this method must not be called from the SocketCritSect critical section (the method uses
+    //          SocketsThread)
+    // can be called from any thread
     BOOL PassiveConnect(DWORD* error);
 
-    // nastaveni objektu pro ukladani casu posledni aktivity na skupine data-connection
-    // (vsech data-connection workeru FTP operace)
-    // volani mozne z libovolneho threadu
+    // sets the object for storing the last activity time of a group of data connections
+    // (all data connection workers of the FTP operation)
+    // can be called from any thread
     void SetGlobalLastActivityTime(CSynchronizedDWORD* globalLastActivityTime);
 
-    // nastavi aktivni mod "data connection"; otevreni socketu viz CSocket::OpenForListening();
-    // 'logUID' je UID logu "control connection", ktere patri tato "data connection"
-    // volani mozne z libovolneho threadu
+    // sets the active mode of the "data connection"; socket opening see CSocket::OpenForListening();
+    // 'logUID' is the log UID of the "control connection" to which this "data connection" belongs
+    // can be called from any thread
     void SetActive(int logUID);
 
-    // vraci TRUE, pokud je "data connection" otevrena pro prenos dat (uz doslo ke spojeni
-    // se serverem); v 'transferFinished' (neni-li NULL) vraci TRUE pokud jiz prenos
-    // dat probehl (FALSE = jeste nedoslo ke spojeni se serverem)
+    // returns TRUE if the "data connection" is open for data transfer (the server connection has already been established);
+    // in 'transferFinished' (if not NULL) it returns TRUE if the data transfer has already taken place (FALSE = the server connection has not been established yet)
     BOOL IsTransfering(BOOL* transferFinished);
 
-    // vraci LastActivityTime (ma kritickou sekci)
+    // returns LastActivityTime (uses a critical section)
     DWORD GetLastActivityTime();
 
-    // vola se v okamziku, kdy ma zacit datovy prenos (napr. po poslani prikazu pro listovani);
-    // v pasivnim modu se zkontroluje jestli nedoslo k odmitnuti prvniho pokusu o navazani
-    // spojeni, pripadne se provede dalsi pokus o navazani spojeni; v aktivnim modu se nedeje
-    // nic (mohlo by tu byt povoleni navazani spojeni ("accept"), ale pro vetsi obecnost je
-    // navazani spojeni mozne stale);
-    // POZOR: neni mozne volat tuto metodu z kriticke sekce SocketCritSect (metoda pouziva
-    //        SocketsThread)
-    // volani mozne z libovolneho threadu
+    // called at the moment when the data transfer should start (for example after sending a listing command);
+    // in passive mode it checks whether the first attempt to establish the connection was rejected
+    // and, if so, it performs another attempt; in active mode nothing happens (allowing the connection via "accept"
+    // could be placed here, but to keep things more general establishing the connection is always allowed);
+    // WARNING: this method must not be called from the SocketCritSect critical section (the method uses
+    //          SocketsThread)
+    // can be called from any thread
     virtual void ActivateConnection();
 
-    // vraci SocketCloseTime (ma kritickou sekci)
+    // returns SocketCloseTime (uses a critical section)
     DWORD GetSocketCloseTime();
 
-    // vraci LogUID (v kriticke sekci)
+    // returns LogUID (within a critical section)
     int GetLogUID();
 
-    // pokud jde o pasivni rezim a je zapnute sifrovani data connectiony, zkusi ji zasifrovat
+    // if this is passive mode and encryption of the data connection is enabled, attempts to encrypt it
     void EncryptPassiveDataCon();
 
-    // nastaveni objektu pro mereni celkove rychlosti prenosu dat (vsech data-connection
-    // workeru FTP operace)
-    // volani mozne z libovolneho threadu
+    // sets the object for measuring overall data transfer speed (all data connection workers of the FTP operation)
+    // can be called from any thread
     void SetGlobalTransferSpeedMeter(CTransferSpeedMeter* globalTransferSpeedMeter);
 
-    // jen zapouzdrene volani CSocket::OpenForListeningWithProxy() s parametry z 'ProxyServer'
+    // just wraps a call to CSocket::OpenForListeningWithProxy() with parameters from 'ProxyServer'
     BOOL OpenForListeningWithProxy(DWORD listenOnIP, unsigned short listenOnPort,
                                    BOOL* listenError, DWORD* err);
 
-    // zapamatuje si "listen" IP+port (kde se ceka na spojeni) a jestli nedoslo k chybe,
-    // pak posle WorkerMsgListeningForCon vlastnikovi data-connectiony
-    // POZOR: pri pripojeni bez proxy serveru se tato metoda vola primo z OpenForListeningWithProxy(),
-    //        tedy nemusi to byt ze "sockets" threadu
-    // POZOR: nesmi se volat z kriticke sekce CSocket::SocketCritSect
+    // remembers the "listen" IP+port (where we wait for the connection) and whether an error occurred,
+    // then posts WorkerMsgListeningForCon to the owner of the data connection
+    // WARNING: without a proxy server this method is called directly from OpenForListeningWithProxy(),
+    //          so it may not run in the "sockets" thread
+    // WARNING: must not be called from the CSocket::SocketCritSect critical section
     virtual void ListeningForConnection(DWORD listenOnIP, unsigned short listenOnPort,
                                         BOOL proxyError);
 
-    // pokud se uspesne otevrel "listen" port, vraci TRUE + "listen" IP+port
-    // v 'listenOnIP'+'listenOnPort'; pri chybe "listen" vraci FALSE
+    // if the "listen" port was opened successfully, returns TRUE + the "listen" IP+port
+    // in 'listenOnIP'+'listenOnPort'; returns FALSE on a "listen" error
     BOOL GetListenIPAndPort(DWORD* listenOnIP, unsigned short* listenOnPort);
 
 protected:
-    // pokud je PostMessagesToWorker==TRUE, postne zpravu 'msgID' workerovi;
-    // POZOR: musi se volat z kriticke sekce SocketCritSect + musi jit o jedine vnoreni
-    //        do teto sekce
+    // if PostMessagesToWorker==TRUE, posts message 'msgID' to the worker;
+    // WARNING: must be called from the SocketCritSect critical section and only with a single nesting
+    //          into this section
     void DoPostMessageToWorker(int msgID);
 
-    // vypise do logu chybu z NetEventLastError
+    // writes the NetEventLastError failure to the log
     void LogNetEventLastError(BOOL canBeProxyError);
 
 private:
-    // zastineni metody CSocket::CloseSocket()
+    // hides the CSocket::CloseSocket() method
     BOOL CloseSocket(DWORD* error) { TRACE_E("Use CloseSocketEx() instead of CloseSocket()!"); }
 };
 
 class CDataConnectionSocket : public CDataConnectionBaseSocket
 {
 protected:
-    // kriticka sekce pro pristup k datum objektu je CSocket::SocketCritSect
-    // POZOR: v teto sekci nesmi dojit ke vnoreni do SocketsThread->CritSect (nesmi se volat metody SocketsThread)
+    // the critical section for accessing the object's data is CSocket::SocketCritSect
+    // WARNING: SocketsThread->CritSect must not be entered while inside this section (do not call SocketsThread methods)
 
-    char* ReadBytes;              // buffer pro prectene byty ze socketu (ctou se po prijeti FD_READ)
-    int ValidBytesInReadBytesBuf; // pocet platnych bytu v bufferu 'ReadBytes'
-    int ReadBytesAllocatedSize;   // alokovana velikost bufferu 'ReadBytes'
-    BOOL ReadBytesLowMemory;      // TRUE = nedostatek pameti pro ctena data
+    char* ReadBytes;              // buffer for bytes read from the socket (read after receiving FD_READ)
+    int ValidBytesInReadBytesBuf; // number of valid bytes in the 'ReadBytes' buffer
+    int ReadBytesAllocatedSize;   // allocated size of the 'ReadBytes' buffer
+    BOOL ReadBytesLowMemory;      // TRUE = insufficient memory for the read data
 
-    CQuadWord TotalReadBytesCount; // celkovy pocet bytu prectenych z data-connectiony; pri kompresi je zde velikost dekomprimovanych dat prectenych z data-connectiony
+    CQuadWord TotalReadBytesCount; // total number of bytes read from the data connection; with compression this holds the size of the decompressed data read from the data connection
 
-    // sdilene mezi vsemi thready - "signaled" po uzavreni "data connection" (po prijeti vsech bytu) a take po dokonceni flushe na disk (viz TgtDiskFileName)
+    // shared among all threads - set to "signaled" after the "data connection" closes (after receiving all bytes) and also after the flush to disk is completed (see TgtDiskFileName)
     HANDLE TransferFinished;
 
-    HWND WindowWithStatus;  // handle okna, ktere ma prijimat zpravy o zmene stavu "data connection" (NULL = nic neposilat)
-    UINT StatusMessage;     // zprava, ktera se posila pri zmene stavu "data connection"
-    BOOL StatusMessageSent; // TRUE = predchozi zprava jeste nebyla dorucena, nema smysl posilat dalsi
+    HWND WindowWithStatus;  // handle of the window that should receive notifications about changes in the "data connection" state (NULL = do not send anything)
+    UINT StatusMessage;     // message sent when the "data connection" state changes
+    BOOL StatusMessageSent; // TRUE = the previous message has not been delivered yet, so there is no point sending another one
 
-    DWORD WorkerMsgFlushData; // cislo zpravy, kterou si majitel data-connection preje dostat jakmile jsou pripravena data ve flush-bufferu pro overeni/zapis na disk (do parametru 'param' volani PostSocketMessage jde UID tohoto objektu)
+    DWORD WorkerMsgFlushData; // ID of the message the data connection owner wants to receive once data are ready in the flush buffer for verification/write to disk (the UID of this object goes into the 'param' parameter of PostSocketMessage)
 
-    BOOL FlushData;              // TRUE pokud se data maji predavat pro overeni/zapis na disk, FALSE=data prijdou komplet do pameti 'ReadBytes'
-    char* FlushBuffer;           // flush-buffer pro predani dat pro overeni/zapis na disk (NULL pokud neni alokovany (ValidBytesInFlushBuffer==0) nebo pokud je predany ve workerovi aneb disk-threadu)
-    int ValidBytesInFlushBuffer; // pocet platnych bytu v bufferu 'FlushBuffer' (POZOR: 'FlushBuffer' muze byt i NULL, pokud je predany ve workerovi aneb disk-threadu); je-li > 0, cekame az worker dokonci predani dat pro overeni/zapis na disk (zacina postnutim 'WorkerMsgFlushData' workerovi, konci vyvolanim metody FlushDataFinished tohoto objektu z workera)
+    BOOL FlushData;              // TRUE if data should be passed on for verification/write to disk, FALSE = data go entirely into the 'ReadBytes' memory
+    char* FlushBuffer;           // flush buffer used to hand data over for verification/write to disk (NULL if it is not allocated (ValidBytesInFlushBuffer==0) or if it has been handed over to the worker i.e. disk thread)
+    int ValidBytesInFlushBuffer; // number of valid bytes in the 'FlushBuffer' (WARNING: 'FlushBuffer' can also be NULL if it has been handed to the worker i.e. disk thread); if > 0 we wait until the worker finishes passing data on for verification/write to disk (starts by posting 'WorkerMsgFlushData' to the worker, ends by invoking this object's FlushDataFinished method from the worker)
 
-    char* DecomprDataBuffer;             // dekomprimovana data (z flush-bufferu) pro overeni/zapis na disk (NULL pokud neni alokovany (DecomprDataAllocatedSize==0) nebo pokud je predany ve workerovi aneb disk-threadu)
-    int DecomprDataAllocatedSize;        // alokovana velikost bufferu 'DecomprDataBuffer'
-    int DecomprDataDelayedBytes;         // pocet bytu v 'DecomprDataBuffer', kterych overeni/zapis na disk bylo odlozeno na dalsi cyklus GiveFlushData & FlushDataFinished
-    int AlreadyDecomprPartOfFlushBuffer; // kde ma zacit dalsi kolo dekomprimace dat z 'FlushBuffer' do 'DecomprDataBuffer'
+    char* DecomprDataBuffer;             // decompressed data (from the flush buffer) for verification/write to disk (NULL if not allocated (DecomprDataAllocatedSize==0) or if handed over to the worker i.e. disk thread)
+    int DecomprDataAllocatedSize;        // allocated size of the 'DecomprDataBuffer'
+    int DecomprDataDelayedBytes;         // number of bytes in 'DecomprDataBuffer' whose verification/write to disk was postponed to the next GiveFlushData & FlushDataFinished cycle
+    int AlreadyDecomprPartOfFlushBuffer; // where the next round of decompression from 'FlushBuffer' to 'DecomprDataBuffer' should start
 
-    int NeedFlushReadBuf; // 0 = nic; 1, 2 a 3 = potrebuje flushnout data; je-li 2 nebo 3, potrebuje pak jeste postnout: 2 = FD_READ, 3 = FD_CLOSE
-    BOOL FlushTimerAdded; // TRUE pokud existuje timer pro flushnuti dat (uplatni se jen pokud predtim nedojde k flushnuti z duvodu naplneni read-bufferu)
+    int NeedFlushReadBuf; // 0 = nothing; 1, 2, and 3 = needs to flush data; if 2 or 3, it then needs to post: 2 = FD_READ, 3 = FD_CLOSE
+    BOOL FlushTimerAdded; // TRUE if a timer for flushing data exists (used only if the flush did not already happen because the read buffer filled up)
 
-    CQuadWord DataTotalSize; // celkova velikost prenasenych dat v bytech: -1 = neznama
+    CQuadWord DataTotalSize; // total size of the transferred data in bytes: -1 = unknown
 
-    char TgtDiskFileName[MAX_PATH];           // neni-li "", jde o plne jmeno diskoveho souboru, kam se maji flushnout data (soubor se prepisuje, zadne resumy se zde nedelaji)
-    HANDLE TgtDiskFile;                       // cilovy diskovy soubor pro flush dat (NULL = zatim jsme ho neotevreli)
-    BOOL TgtDiskFileCreated;                  // TRUE pokud byl vytvoren cilovy diskovy soubor pro flush dat
-    DWORD TgtFileLastError;                   // kod posledni chyby, ktera byla hlasena z disk-threadu ze zapisu do souboru TgtDiskFileName
-    CQuadWord TgtDiskFileSize;                // aktualni velikost diskoveho souboru pro flush dat
-    CCurrentTransferMode CurrentTransferMode; // soucasny rezim prenosu (ascii/binar)
-    BOOL AsciiTrModeForBinFileProblemOccured; // TRUE = detekovana chyba "ascii rezim pro binarni soubor"
-    int AsciiTrModeForBinFileHowToSolve;      // jak resit problem "ascii rezim pro binarni soubor": 0 = zeptat se uzivatele, 1 = downloadnout znovu v binary rezimu, 2 = prerusit download souboru (cancel), 3 = ignorovat (dokoncit download v ascii rezimu)
-    BOOL TgtDiskFileClosed;                   // TRUE = soubor pro flush dat uz je zavreny (zadne dalsi zapisovani uz se neprovede)
-    int TgtDiskFileCloseIndex;                // index zavreni souboru v disk-work threadu (-1 = nepouzity)
-    BOOL DiskWorkIsUsed;                      // TRUE pokud je DiskWork vlozeny v FTPDiskThread
+    char TgtDiskFileName[MAX_PATH];           // if not "", this is the full name of the disk file to which data should be flushed (the file is overwritten; no resumes are performed here)
+    HANDLE TgtDiskFile;                       // target disk file for flushing data (NULL = we have not opened it yet)
+    BOOL TgtDiskFileCreated;                  // TRUE if the target disk file for flushing data was created
+    DWORD TgtFileLastError;                   // code of the last error reported by the disk thread when writing to the TgtDiskFileName file
+    CQuadWord TgtDiskFileSize;                // current size of the disk file used for flushing data
+    CCurrentTransferMode CurrentTransferMode; // current transfer mode (ASCII/binary)
+    BOOL AsciiTrModeForBinFileProblemOccured; // TRUE = the "ASCII mode for binary file" error was detected
+    int AsciiTrModeForBinFileHowToSolve;      // how to solve the "ASCII mode for binary file" problem: 0 = ask the user, 1 = download again in binary mode, 2 = interrupt the file download (cancel), 3 = ignore (finish the download in ASCII mode)
+    BOOL TgtDiskFileClosed;                   // TRUE = the file used for flushing data is already closed (no additional writing will occur)
+    int TgtDiskFileCloseIndex;                // file close index in the disk-work thread (-1 = unused)
+    BOOL DiskWorkIsUsed;                      // TRUE if DiskWork is queued in FTPDiskThread
 
-    BOOL NoDataTransTimeout;  // TRUE = nastal no-data-transfer timeout - zavreli jsme data-connectionu
-    BOOL DecomprErrorOccured; // TRUE = nastala chyba pri dekompresi dat (MODE Z) - prisla corruptla data
-    //BOOL DecomprMissingStreamEnd;   // bohuzel tenhle test je nepruchozi, napr. Serv-U 7 a 8 proste stream neukoncuje // TRUE = pri dekompresi jsme zatim nenarazili na konec streamu (nekompletni dekomprese) - pouziva se jen pri FlushData==TRUE (tedy ne pro ziskavani listingu, tam probiha dekomprese najednou v GiveData a stream bez konce vyvolava chybu)
+    BOOL NoDataTransTimeout;  // TRUE = a no-data-transfer timeout occurred - we closed the data connection
+    BOOL DecomprErrorOccured; // TRUE = a data decompression error occurred (MODE Z) - corrupted data arrived
+    //BOOL DecomprMissingStreamEnd;   // unfortunately this test is not viable, for example Serv-U 7 and 8 simply do not terminate the stream // TRUE = decompression has not encountered the end of the stream yet (incomplete decompression) - used only when FlushData==TRUE (not for obtaining listings, there the decompression happens at once in GiveData and a stream without an end raises an error)
 
-    // data bez potreby kriticke sekce (zapisuje se jen v sockets-threadu a disk-threadu, synchronizace pres FTPDiskThread a DiskWorkIsUsed):
-    CFTPDiskWork DiskWork; // data prace, ktera se zadava objektu FTPDiskThread (thread provadejici operace na disku)
+    // data that do not require a critical section (written only in the sockets thread and disk thread, synchronization via FTPDiskThread and DiskWorkIsUsed):
+    CFTPDiskWork DiskWork; // work data submitted to the FTPDiskThread object (thread performing disk operations)
 
 public:
-    // 'flushData' je TRUE pokud se data maji predavat pro overeni/zapis na disk, FALSE=data prijdou komplet do pameti 'ReadBytes'
+    // 'flushData' is TRUE if data should be passed on for verification/write to disk, FALSE = data go entirely into the 'ReadBytes' memory
     CDataConnectionSocket(BOOL flushData, CFTPProxyForDataCon* proxyServer, int encryptConnection,
                           CCertificate* certificate, int compressData, CSocket* conForReuse);
     virtual ~CDataConnectionSocket();
 
-    BOOL IsGood() { return TransferFinished != NULL; } // kriticka sekce neni potreba
+    BOOL IsGood() { return TransferFinished != NULL; } // no critical section required
 
-    HANDLE GetTransferFinishedEvent() { return TransferFinished; } // kriticka sekce neni potreba
+    HANDLE GetTransferFinishedEvent() { return TransferFinished; } // no critical section required
 
-    // jen vola CloseSocket() + nastavuje SocketCloseTime a TransferFinished event
+    // just calls CloseSocket() + sets SocketCloseTime and the TransferFinished event
     virtual BOOL CloseSocketEx(DWORD* error);
 
-    // cisteni promennych pred connectem data-socketu
+    // cleanup of variables before connecting the data socket
     virtual void ClearBeforeConnect();
 
-    // vraci NetEventLastError, ReadBytesLowMemory, TgtFileLastError, NoDataTransTimeout,
+    // returns NetEventLastError, ReadBytesLowMemory, TgtFileLastError, NoDataTransTimeout,
     // SSLErrorOccured, DecomprErrorOccured
-    // (maji kritickou sekci)
+    // (these use a critical section)
     void GetError(DWORD* netErr, BOOL* lowMem, DWORD* tgtFileErr, BOOL* noDataTransTimeout,
                   int* sslErrorOccured, BOOL* decomprErrorOccured);
 
-    // vraci DecomprMissingStreamEnd (ma kritickou sekci)
+    // returns DecomprMissingStreamEnd (uses a critical section)
     //BOOL GetDecomprMissingStreamEnd();
 
-    // predani dat z "data connection"; vraci alokovany buffer s daty a v 'length' (nesmi byt
-    // NULL) jejich delku; pri chybe dekomprese (MODE Z) vraci v 'decomprErr' TRUE a pokud
-    // jde o chybu v datech, vraci prazdny buffer; vraci NULL jen pri nedostatku pameti
+    // handing over data from the "data connection"; returns an allocated buffer with data and in 'length' (must not be
+    // NULL) their length; if a decompression error occurs (MODE Z) it returns TRUE in 'decomprErr' and if
+    // it is a data error, it returns an empty buffer; it returns NULL only when memory is insufficient
     char* GiveData(int* length, BOOL* decomprErr);
 
-    // vraci status "data connection" (parametry nesmi byt NULL): 'downloaded' (kolik se jiz
-    // precetlo/downloadlo), 'total' (celkova velikost cteni/downloadu - neni-li znama, vraci -1),
-    // 'connectionIdleTime' (cas v sekundach od posledniho prijmu dat), 'speed' (rychlost spojeni
-    // v bytech za sekundu)
-    // volani mozne z libovolneho threadu
+    // returns the status of the "data connection" (parameters must not be NULL): 'downloaded' (how much has already been
+    // read/downloaded), 'total' (total size of the read/download - if unknown, returns -1),
+    // 'connectionIdleTime' (time in seconds since data were last received), 'speed' (connection speed
+    // in bytes per second)
+    // can be called from any thread
     void GetStatus(CQuadWord* downloaded, CQuadWord* total, DWORD* connectionIdleTime, DWORD* speed);
 
-    // nastavi handle okna, kteremu se maji posilat (post-msg) notifikacni zpravy
-    // pri zmenach stavu objektu (viz metoda GetStatus); 'hwnd' je handle takoveho okna;
-    // 'msg' je kod zpravy, na kterou okno reaguje; k poslani dalsi zpravy dojde vzdy
-    // az po volani metody StatusMessageReceived (branime se tak posilani nadbytecnych zprav);
-    // je-li 'hwnd' NULL, znamena to, ze uz se nemaji posilat zadne zpravy
+    // sets the handle of the window that should receive (post-msg) notification messages
+    // when the object's state changes (see GetStatus); 'hwnd' is the handle of such a window;
+    // 'msg' is the message code the window reacts to; another message is sent only
+    // after the StatusMessageReceived method is called (prevents sending redundant messages);
+    // if 'hwnd' is NULL, it means no further messages should be sent
     void SetWindowWithStatus(HWND hwnd, UINT msg);
 
-    // okno hlasi, ze prijalo zpravu o zmene stavu, a ze se tedy pri dalsi zmene stavu
-    // ma opet poslat zprava
+    // the window reports that it received the state-change message, so upon the next change
+    // a message should be sent again
     void StatusMessageReceived();
 
-    // povoluje/zakazuje posilani zprav o data-connectine workerovi; vyznam parametru viz
+    // enables/disables sending data connection messages to the worker; parameter meaning see
     // PostMessagesToWorker, WorkerSocketMsg, WorkerSocketUID, WorkerMsgConnectedToServer,
-    // WorkerMsgConnectionClosed, WorkerMsgFlushData a WorkerMsgListeningForCon
+    // WorkerMsgConnectionClosed, WorkerMsgFlushData, and WorkerMsgListeningForCon
     void SetPostMessagesToWorker(BOOL post, int msg, int uid, DWORD msgIDConnected,
                                  DWORD msgIDConClosed, DWORD msgIDFlushData,
                                  DWORD msgIDListeningForCon);
 
-    // nastavuje TgtDiskFileName a CurrentTransferMode, zaroven povoli flushovani dat
-    // primo do souboru TgtDiskFileName (vyuziva FTPDiskThread)
+    // sets TgtDiskFileName and CurrentTransferMode, while also enabling flushing data
+    // directly into the TgtDiskFileName file (uses FTPDiskThread)
     void SetDirectFlushParams(const char* tgtFileName, CCurrentTransferMode currentTransferMode);
 
-    // vraci stav ciloveho souboru pri flushovani dat primo do souboru TgtDiskFileName;
-    // ve 'fileCreated' vraci TRUE pokud byl soubor vytvoren; v 'fileSize' vraci velikost
-    // souboru
+    // returns the state of the target file when flushing data directly to the TgtDiskFileName file;
+    // in 'fileCreated' it returns TRUE if the file was created; in 'fileSize' it returns the size
+    // of the file
     void GetTgtFileState(BOOL* fileCreated, CQuadWord* fileSize);
 
-    // vola se po dokonceni datoveho prenosu (uspesnem ci nikoli); ma smysl jen pri flushovani
-    // dat primo do souboru TgtDiskFileName
+    // called after the data transfer finishes (successful or not); meaningful only when flushing
+    // data directly into the TgtDiskFileName file
     void CloseTgtFile();
 
-    // vola worker po dokonceni flushnuti dat; 'flushBuffer' je prave flushnuty buffer
-    // (vraci se tak do tohoto objektu - vytazeni z objektu viz metoda GiveFlushData();
-    // POZOR: muze jit i o buffer z 'DecomprDataBuffer'); pokud jsou dalsi data k flushnuti,
-    // dojde k prohozeni bufferu a postnuti WorkerMsgFlushData workerovi; je-li treba posti
-    // tez FD_READ nebo FD_CLOSE do tohoto socketu (viz NeedFlushReadBuf);
-    // 'enterSocketCritSect' je TRUE az na nize popsanou vyjimku
-    // POZOR: neni mozne volat tuto metodu z kriticke sekce SocketCritSect (metoda pouziva
-    //        SocketsThread), vyjimka: pokud jsme v CSocketsThread::CritSect a
-    //        SocketCritSect, volani je mozne pokud nastavime 'enterSocketCritSect' na FALSE
+    // called by the worker after data flushing finishes; 'flushBuffer' is the buffer that was just flushed
+    // (it is therefore returned to this object - retrieve it via GiveFlushData();
+    // WARNING: it can also be a buffer from 'DecomprDataBuffer'); if there is more data to flush,
+    // the buffers are swapped and WorkerMsgFlushData is posted to the worker; if necessary it will also post
+    // FD_READ or FD_CLOSE to this socket (see NeedFlushReadBuf);
+    // 'enterSocketCritSect' is TRUE except for the exception described below
+    // WARNING: this method must not be called from the SocketCritSect critical section (the method uses
+    //          SocketsThread), exception: if we are in CSocketsThread::CritSect and
+    //          SocketCritSect, the call is possible if we set 'enterSocketCritSect' to FALSE
     void FlushDataFinished(char* flushBuffer, BOOL enterSocketCritSect);
 
-    // jsou-li nova data ve FlushBuffer, vraci TRUE a data ve 'flushBuffer'
-    // (nesmi byt NULL) a 'validBytesInFlushBuffer' (nesmi byt NULL), po predani dat
-    // vyNULLuje FlushBuffer (bez MODE Z) nebo DecomprDataBuffer (s MODE Z) (vraceni
-    // pres FlushDataFinished() nebo dealokace bufferu je na volajicim); v 'deleteTgtFile'
-    // (nesmi byt NULL) vraci TRUE pokud jsme prisli na to, ze data v souboru muzou byt
-    // poskozena a soubor je tedy nutne smazat; vraci FALSE pokud neni potreba zadny
-    // flush dat
+    // if new data are present in FlushBuffer it returns TRUE and the data in 'flushBuffer'
+    // (must not be NULL) and 'validBytesInFlushBuffer' (must not be NULL); after handing the data over
+    // it nulls FlushBuffer (without MODE Z) or DecomprDataBuffer (with MODE Z) (returning it
+    // via FlushDataFinished() or deallocating the buffer is up to the caller); in 'deleteTgtFile'
+    // (must not be NULL) it returns TRUE if we discovered that data in the file may be
+    // corrupted and the file must therefore be deleted; returns FALSE if no data flush is needed
+    //
     BOOL GiveFlushData(char** flushBuffer, int* validBytesInFlushBuffer, BOOL* deleteTgtFile);
 
-    // jen v rezimu FlushData==TRUE: uvolni nactena data z bufferu; slouzi jen jako
-    // obrana pred error tracem v destruktoru objektu (ten hlasi, ze ne vsechna data
-    // se podarilo flushnout)
+    // only when FlushData==TRUE: releases the loaded data from the buffer; serves only as
+    // a safeguard against an error trace in the object's destructor (which reports that not all data
+    // were flushed)
     void FreeFlushData();
 
-    // vola se po zavreni teto data-connection; vraci TRUE pokud jsou vsechna data
-    // flushnuta (aneb data-connectiona uz neobsahuje zadna data); je-li 'onlyTest'
-    // FALSE a je-li treba, zajisti prohozeni bufferu a postnuti WorkerMsgFlushData
-    // workerovi (flushnuti dat); vraci TRUE az po volani FlushDataFinished pro
-    // posledni flushovana data
-    // POZOR: neni mozne volat tuto metodu z kriticke sekce SocketCritSect (metoda pouziva
-    //        SocketsThread)
+    // called after this data connection closes; returns TRUE if all data are
+    // flushed (meaning the data connection no longer contains any data); if 'onlyTest'
+    // is FALSE and necessary, it swaps buffers and posts WorkerMsgFlushData
+    // to the worker (flush the data); it returns TRUE only after FlushDataFinished is called for
+    // the last flushed data
+    // WARNING: this method must not be called from the SocketCritSect critical section (the method uses
+    //          SocketsThread)
     BOOL AreAllDataFlushed(BOOL onlyTest);
 
-    // zajisti okamzite nasilne ukonceni data-connectiony: vola CloseSocketEx + pri
-    // pouziti primeho flushe dat do souboru z data-connectiony: prerusi flushovani
-    // dat + vycisti flush buffer
+    // ensures an immediate forced termination of the data connection: calls CloseSocketEx and, when
+    // using direct flushing of data from the data connection into a file, stops flushing
+    // data and clears the flush buffer
     void CancelConnectionAndFlushing();
 
-    // jen pri pouziti primeho flushe dat do souboru z data-connectiony: vraci TRUE
-    // pokud probiha flush dat; jinak vraci FALSE
+    // only when using direct flushing of data from the data connection into a file: returns TRUE
+    // if data are being flushed; otherwise returns FALSE
     BOOL IsFlushingDataToDisk();
 
-    // vraci TRUE pokud je treba resit problem "ascii transfer mode for binary file", pak
-    // v 'howToSolve' vraci jak problem resit: 0 = zeptat se uzivatele, 1 = downloadnout
-    // znovu v binary rezimu, 2 = prerusit download souboru (cancel); vraci FALSE pokud
-    // k problemu nedoslo nebo pokud uzivatel zvolil: ignorovat (dokoncit download v ascii
-    // rezimu)
+    // returns TRUE if the "ASCII transfer mode for binary file" problem needs to be handled, then
+    // in 'howToSolve' it returns how to handle the problem: 0 = ask the user, 1 = download
+    // again in binary mode, 2 = interrupt the file download (cancel); returns FALSE if
+    // the problem did not occur or the user chose: ignore (finish the download in ASCII
+    // mode)
     BOOL IsAsciiTrForBinFileProblem(int* howToSolve);
 
-    // nastavuje AsciiTrModeForBinFileHowToSolve na howToSolve; vola se po odpovedi uzivatele
-    // na dotaz jak resit problem "ascii transfer mode for binary file"; konstanty viz
+    // sets AsciiTrModeForBinFileHowToSolve to howToSolve; called after the user's answer
+    // to the question how to solve the "ASCII transfer mode for binary file" problem; constants see
     // AsciiTrModeForBinFileHowToSolve (0, 1, 2, 3)
     void SetAsciiTrModeForBinFileHowToSolve(int howToSolve);
 
-    // ceka na zavreni souboru, do ktereho se provadel primy flush dat, nebo na timeout
-    // ('timeout' v milisekundach nebo hodnota INFINITE = zadny timeout); vraci TRUE
-    // pokud se dockal zavreni, FALSE pri timeoutu
+    // waits for the file into which data were flushed directly to close, or for a timeout
+    // ('timeout' in milliseconds or the value INFINITE = no timeout); returns TRUE
+    // if the closure occurred, FALSE on timeout
     BOOL WaitForFileClose(DWORD timeout);
 
-    // nastaveni celkove velikosti prenasenych dat v bytech (-1 = neznama); ma kritickou sekci +
-    // bude informovat "user-iface" objekt (stejne jako o velikosti dosud stazene casti
-    // dat, rychlosti stahovani a idle casu connectiony)
-    // volani mozne z libovolneho threadu
+    // sets the total size of the transferred data in bytes (-1 = unknown); uses a critical section and
+    // will inform the "user-iface" object (just like about the size downloaded so far
+    // of data, download speed, and connection idle time)
+    // can be called from any thread
     void SetDataTotalSize(CQuadWord const& size);
 
-    // vola se, kdyz uzivatel prepne workera do/ze stavu "paused"; data-connectiona by v "paused"
-    // stavu mela prestat prenaset data, po skonceni tohoto stavu by se melo v prenosu pokracovat
+    // called when the user switches the worker into/out of the "paused" state; in the "paused" state the data connection
+    // should stop transferring data, and after the state ends the transfer should continue
     void UpdatePauseStatus(BOOL pause);
 
 protected:
-    // vola "data connection" v okamziku zmeny stavu (vyhodnocuje se zde, jestli se
-    // ma poslat zprava oknu se stavem - viz SetWindowWithStatus)
+    // the "data connection" calls this when its state changes (evaluates whether
+    // a status message should be sent to the window - see SetWindowWithStatus)
     void StatusHasChanged();
 
-    // jen pri pouziti primeho flushe dat do souboru z data-connectiony (viz metoda
-    // SetDirectFlushParams), jinak nic nedela: zajisti predani flushovanych dat do
-    // disk-work threadu
-    // POZOR: musi se volat z kriticke sekce SocketCritSect
+    // only when using direct flushing of data from the data connection into a file (see
+    // SetDirectFlushParams), otherwise does nothing: ensures the flushed data are passed
+    // to the disk-work thread
+    // WARNING: must be called from the SocketCritSect critical section
     void DirectFlushData();
 
-    // vola se po navazani spojeni se serverem
-    // POZOR: volat jen z kriticke sekce CSocket::SocketCritSect a CSocketsThread::CritSect
+    // called after the connection with the server is established
+    // WARNING: call only from the CSocket::SocketCritSect and CSocketsThread::CritSect critical sections
     void JustConnected();
 
-    // prehozeni naplneneho bufferu ReadBytes do FlushBuffer
-    // POZOR: musi se volat z kriticke sekce SocketCritSect
+    // moves a filled ReadBytes buffer into FlushBuffer
+    // WARNING: must be called from the SocketCritSect critical section
     void MoveReadBytesToFlushBuffer();
 
     // ******************************************************************************************
-    // metody volane v "sockets" threadu (na zaklade prijmu zprav od systemu nebo jinych threadu)
+    // methods called in the "sockets" thread (based on messages received from the system or other threads)
     //
-    // POZOR: volane v sekci SocketsThread->CritSect, mely by se provadet co nejrychleji (zadne
-    //        cekani na vstup usera, atd.)
+    // WARNING: called inside SocketsThread->CritSect, they should be executed as quickly as possible (no
+    //        waiting for user input, etc.)
     // ******************************************************************************************
 
-    // prijem udalosti pro tento socket (FD_READ, FD_WRITE, FD_CLOSE, atd.); 'index' je
-    // index socketu v poli SocketsThread->Sockets (pouziva se pro opakovane posilani
-    // zprav pro socket)
+    // receiving events for this socket (FD_READ, FD_WRITE, FD_CLOSE, etc.); 'index' is
+    // the socket index in the SocketsThread->Sockets array (used for repeatedly posting
+    // messages for the socket)
     virtual void ReceiveNetEvent(LPARAM lParam, int index);
 
-    // prijem vysledku ReceiveNetEvent(FD_CLOSE) - neni-li 'error' NO_ERROR, jde
-    // o kod Windowsove chyby (prisla s FD_CLOSE nebo vznikla behem zpracovani FD_CLOSE)
+    // receiving the result of ReceiveNetEvent(FD_CLOSE) - if 'error' is not NO_ERROR it is
+    // a Windows error code (came with FD_CLOSE or occurred while handling FD_CLOSE)
     virtual void SocketWasClosed(DWORD error);
 
-    // prijem timeru s ID 'id' a parametrem 'param'
+    // receiving a timer with ID 'id' and parameter 'param'
     virtual void ReceiveTimer(DWORD id, void* param);
 
-    // prijem postnute zpravy s ID 'id' a parametrem 'param'
+    // receiving a posted message with ID 'id' and parameter 'param'
     virtual void ReceivePostMessage(DWORD id, void* param);
 
-    // vola se po prijeti a zpracovani FD_ACCEPT (za predpokladu, ze se pro FD_ACCEPT vola metoda
-    // CSocket::ReceiveNetEvent): 'success' je uspech acceptu, pri neuspechu je ve 'winError'
-    // windowsovy kod chyby a v 'proxyError' TRUE pokud jde o chybu hlasenou proxy serverem
-    // (text chyby lze ziskat pres GetProxyError())
-    // POZOR: volat jen po jednom vstupu do kriticke sekce CSocket::SocketCritSect a CSocketsThread::CritSect
+    // called after FD_ACCEPT is received and processed (assuming CSocket::ReceiveNetEvent is used for FD_ACCEPT)
+    // CSocket::ReceiveNetEvent): 'success' indicates accept succeeded; on failure 'winError' contains
+    // the Windows error code and 'proxyError' is TRUE if the proxy server reported the error
+    // (retrieve the error text via GetProxyError())
+    // WARNING: call only after a single entry into the CSocket::SocketCritSect and CSocketsThread::CritSect critical sections
     virtual void ConnectionAccepted(BOOL success, DWORD winError, BOOL proxyError);
 };
 
 class CUploadDataConnectionSocket : public CDataConnectionBaseSocket
 {
 protected:
-    // kriticka sekce pro pristup k datum objektu je CSocket::SocketCritSect
-    // POZOR: v teto sekci nesmi dojit ke vnoreni do SocketsThread->CritSect (nesmi se volat metody SocketsThread)
+    // the critical section for accessing the object's data is CSocket::SocketCritSect
+    // WARNING: SocketsThread->CritSect must not be entered while inside this section (do not call SocketsThread methods)
 
-    char* BytesToWrite;     // buffer pro data, ktera se budou zapisovat na socket (zapisou se po prijeti FD_WRITE)
-    int BytesToWriteCount;  // pocet platnych bytu v bufferu 'BytesToWrite'
-    int BytesToWriteOffset; // pocet jiz odeslanych bytu v bufferu 'BytesToWrite'
+    char* BytesToWrite;     // buffer for data that will be written to the socket (written after receiving FD_WRITE)
+    int BytesToWriteCount;  // number of valid bytes in the 'BytesToWrite' buffer
+    int BytesToWriteOffset; // number of bytes already sent from the 'BytesToWrite' buffer
 
-    CQuadWord TotalWrittenBytesCount; // celkovy pocet bytu zapsanych do data-connectiony (POZOR: pri MODE Z je zde velikost dekomprimovanych dat)
+    CQuadWord TotalWrittenBytesCount; // total number of bytes written to the data connection (WARNING: with MODE Z this is the size of the decompressed data)
 
-    char* FlushBuffer;           // flush-buffer pro data pripravena pro zapis na socket (NULL pokud je predany ve workerovi aneb disk-threadu - nacitaji se do nej data z disku)
-    int ValidBytesInFlushBuffer; // pocet platnych bytu v bufferu 'FlushBuffer'; je-li > 0, cekame az se dokonci zapis dat na socket a pak doplnime buffer BytesToWrite a zkusime nechat nacist dalsi data ze souboru
-    BOOL EndOfFileReached;       // TRUE = jiz nelze pripravit dalsi data pro zapis na socket (docetli jsme az ke konci souboru na disku)
-    BOOL WaitingForWriteEvent;   // FALSE = az prijdou data pro zapis, je potreba postnout FD_WRITE; TRUE = prave se ceka, az bude mozne zapsat dalsi data, pak prijde FD_WRITE (neni potreba ho postit)
-    BOOL ConnectionClosedOnEOF;  // TRUE = data-connectionu jsme zavreli, protoze jsme zapsali vsechna data az po end-of-file
+    char* FlushBuffer;           // flush buffer for data prepared to be written to the socket (NULL if handed to the worker i.e. disk thread - data from disk are loaded into it)
+    int ValidBytesInFlushBuffer; // number of valid bytes in the 'FlushBuffer'; if > 0, we wait until the socket write finishes and then refill BytesToWrite and try to read more data from the file
+    BOOL EndOfFileReached;       // TRUE = no more data can be prepared for writing to the socket (we have reached the end of the file on disk)
+    BOOL WaitingForWriteEvent;   // FALSE = when new data arrive for writing, we must post FD_WRITE; TRUE = currently waiting until more data can be written, then FD_WRITE will arrive (no need to post it)
+    BOOL ConnectionClosedOnEOF;  // TRUE = we closed the data connection because all data were written up to end-of-file
 
-    char* ComprDataBuffer;             // data, ktera se po kompresi zapisou do flush-bufferu (pro zapis na socket) (NULL pokud neni alokovany (ComprDataAllocatedSize==0) nebo pokud je predany ve workerovi aneb disk-threadu - nacitaji se do nej data z disku)
-    int ComprDataAllocatedSize;        // alokovana velikost bufferu 'ComprDataBuffer'
-    int ComprDataDelayedOffset;        // pocet jiz zkomprimovanych bytu v 'ComprDataBuffer'
-    int ComprDataDelayedCount;         // pocet platnych bytu v 'ComprDataBuffer': komprimace bytu od 'ComprDataDelayedOffset' do 'ComprDataDelayedCount' je odlozena na dalsi cyklus GiveBufferForData & DataBufferPrepared
-    int AlreadyComprPartOfFlushBuffer; // kam se ma ulozit dalsi davka komprimovanych dat z 'ComprDataBuffer' do 'FlushBuffer'
-    int DecomprBytesInBytesToWrite;    // do kolika bytu se dekomprimuji data z BytesToWrite (od BytesToWriteOffset do BytesToWriteCount)
-    int DecomprBytesInFlushBuffer;     // do kolika bytu se dekomprimuji data z FlushBuffer
+    char* ComprDataBuffer;             // data that, after compression, are written to the flush buffer (for writing to the socket) (NULL if not allocated (ComprDataAllocatedSize==0) or if handed to the worker i.e. disk thread - data from disk are read into it)
+    int ComprDataAllocatedSize;        // allocated size of the 'ComprDataBuffer'
+    int ComprDataDelayedOffset;        // count of already compressed bytes in 'ComprDataBuffer'
+    int ComprDataDelayedCount;         // number of valid bytes in 'ComprDataBuffer'; compression of bytes from 'ComprDataDelayedOffset' to 'ComprDataDelayedCount' is postponed to the next GiveBufferForData & DataBufferPrepared cycle
+    int AlreadyComprPartOfFlushBuffer; // where to store the next batch of compressed data from 'ComprDataBuffer' into 'FlushBuffer'
+    int DecomprBytesInBytesToWrite;    // number of bytes the data from BytesToWrite (from BytesToWriteOffset to BytesToWriteCount) decompress into
+    int DecomprBytesInFlushBuffer;     // number of bytes the data from FlushBuffer decompress into
 
-    DWORD WorkerMsgPrepareData; // cislo zpravy, kterou si majitel data-connection preje dostat jakmile ma pripravit (nacist z disku) dalsi data do flush-bufferu pro poslani na server (do parametru 'param' volani PostSocketMessage jde UID tohoto objektu)
-    BOOL PrepareDataMsgWasSent; // TRUE = uz jsme poslali WorkerMsgPrepareData, ted cekame na reakci majitele (workera); FALSE = pokud jsou potreba dalsi data, posleme WorkerMsgPrepareData
+    DWORD WorkerMsgPrepareData; // ID of the message the data connection owner wants to receive once more data need to be prepared (read from disk) into the flush buffer for sending to the server (the UID of this object goes into the 'param' parameter of PostSocketMessage)
+    BOOL PrepareDataMsgWasSent; // TRUE = WorkerMsgPrepareData has already been sent and we are waiting for the owner's (worker's) response; FALSE = if more data are needed, we send WorkerMsgPrepareData
 
-    CQuadWord DataTotalSize; // celkova velikost prenasenych dat v bytech (-1 = neinicializovana hodnota)
+    CQuadWord DataTotalSize; // total size of the transferred data in bytes (-1 = uninitialized value)
 
-    BOOL NoDataTransTimeout; // TRUE = nastal no-data-transfer timeout - zavreli jsme data-connectionu
+    BOOL NoDataTransTimeout; // TRUE = a no-data-transfer timeout occurred - we closed the data connection
 
-    BOOL FirstWriteAfterConnect;      // TRUE = po tomto pripojeni na server se jeste zadna data na socket nezapisovala
-    DWORD FirstWriteAfterConnectTime; // cas prvniho zapisu na socket (zacatek plneni lokalnich bufferu) po tomto pripojeni na server
-    DWORD SkippedWriteAfterConnect;   // kolik bytu jsme nepocitali do vypoctu rychlosti uploadu z duvodu, ze sly nejspis do lokalniho bufferu (umele a nesmyslne zvysuje pocatecni rychlost uploadu)
-    DWORD LastSpeedTestTime;          // cas posledniho testu rychlosti spojeni (pro odhad kolik bytu najednou zapisovat na socket)
-    DWORD LastPacketSizeEstimation;   // posledni odhad optimalni velikosti "paketu" (kolik bytu najednou zapisovat na socket)
-    DWORD PacketSizeChangeTime;       // cas posledni zmeny LastPacketSizeEstimation
-    DWORD BytesSentAfterPckSizeCh;    // kolik bytu jsme poslali behem jedne vteriny od posledni zmeny LastPacketSizeEstimation
-    DWORD PacketSizeChangeSpeed;      // prenosova rychlost pred posledni zmenou LastPacketSizeEstimation
-    DWORD TooBigPacketSize;           // velikost paketu, pri ktere uz dochazi k degradaci prenosove rychlosti (napr. z 5MB/s na 160KB/s); -1 pokud takova velikost nebyla zjistena
+    BOOL FirstWriteAfterConnect;      // TRUE = after this connection to the server no data have been written to the socket yet
+    DWORD FirstWriteAfterConnectTime; // time of the first write to the socket (start of filling the local buffers) after this connection to the server
+    DWORD SkippedWriteAfterConnect;   // number of bytes excluded from the upload speed calculation because they most likely went into a local buffer (artificially and incorrectly increases the initial upload speed)
+    DWORD LastSpeedTestTime;          // time of the last connection speed test (to estimate how many bytes to write to the socket at once)
+    DWORD LastPacketSizeEstimation;   // last estimate of the optimal "packet" size (how many bytes to write to the socket at once)
+    DWORD PacketSizeChangeTime;       // time of the last change to LastPacketSizeEstimation
+    DWORD BytesSentAfterPckSizeCh;    // number of bytes sent within one second after the last change to LastPacketSizeEstimation
+    DWORD PacketSizeChangeSpeed;      // transfer speed before the last change to LastPacketSizeEstimation
+    DWORD TooBigPacketSize;           // packet size at which transfer speed starts to degrade (e.g. from 5MB/s to 160KB/s); -1 if no such size was detected
 
     BOOL Activated; // Data not sent over socket until ActivateConnection is called
 
 #ifdef DEBUGLOGPACKETSIZEANDWRITESIZE
-    // sekce pomocnych dat pro DebugLogPacketSizeAndWriteSize
-    DWORD DebugLastWriteToLog;        // cas posledniho zapisu do logu (piseme jednou za vterinu, abysme totalne nezahltili log)
-    DWORD DebugSentButNotLoggedBytes; // kolik bytu jsme skipli kvuli DebugLastWriteToLog
-    DWORD DebugSentButNotLoggedCount; // pocet zapsanych bloku, ktere jsme skipli kvuli DebugLastWriteToLog
+    // auxiliary data section for DebugLogPacketSizeAndWriteSize
+    DWORD DebugLastWriteToLog;        // time of the last log write (we write once per second to avoid flooding the log)
+    DWORD DebugSentButNotLoggedBytes; // number of bytes skipped because of DebugLastWriteToLog
+    DWORD DebugSentButNotLoggedCount; // number of written blocks skipped because of DebugLastWriteToLog
 #endif                                // DEBUGLOGPACKETSIZEANDWRITESIZE
 
 public:
@@ -475,108 +473,108 @@ public:
 
     BOOL IsGood() { return BytesToWrite != NULL && FlushBuffer != NULL; }
 
-    // vraci NetEventLastError, NoDataTransTimeout a SSLErrorOccured (maji kritickou sekci)
+    // returns NetEventLastError, NoDataTransTimeout, and SSLErrorOccured (use a critical section)
     void GetError(DWORD* netErr, BOOL* noDataTransTimeout, int* sslErrorOccured);
 
-    // jen vola CloseSocket() + nastavuje SocketCloseTime
+    // just calls CloseSocket() + sets SocketCloseTime
     virtual BOOL CloseSocketEx(DWORD* error);
 
-    // povoluje/zakazuje posilani zprav o upload data-connectine workerovi; vyznam parametru viz
+    // enables/disables sending upload data connection messages to the worker; parameter meaning see
     // PostMessagesToWorker, WorkerSocketMsg, WorkerSocketUID, WorkerMsgConnectedToServer,
-    // WorkerMsgConnectionClosed, WorkerMsgPrepareData a WorkerMsgListeningForCon
+    // WorkerMsgConnectionClosed, WorkerMsgPrepareData, and WorkerMsgListeningForCon
     void SetPostMessagesToWorker(BOOL post, int msg, int uid, DWORD msgIDConnected,
                                  DWORD msgIDConClosed, DWORD msgIDPrepareData,
                                  DWORD msgIDListeningForCon);
 
-    // cisteni promennych pred connectem data-socketu
+    // cleanup of variables before connecting the data socket
     virtual void ClearBeforeConnect();
 
     void ActivateConnection();
 
-    // nastaveni celkove velikosti prenasenych dat v bytech; ma kritickou sekci
-    // volani mozne z libovolneho threadu
+    // sets the total size of the transferred data in bytes; uses a critical section
+    // can be called from any thread
     void SetDataTotalSize(CQuadWord const& size);
 
-    // vraci skutecny pocet bytu preneseny data-connectionou
+    // returns the actual number of bytes transferred by the data connection
     void GetTotalWrittenBytesCount(CQuadWord* uploadSize);
 
-    // vraci TRUE pokud byla vsechna data uspesne prenesena
+    // returns TRUE if all data were transferred successfully
     BOOL AllDataTransferred();
 
-    // je-li FlushBuffer (pri kompresi ComprDataBuffer) prazdny a jeste nebyl predan do
-    // workera, vraci TRUE a buffer FlushBuffer (pri kompresi ComprDataBuffer) ve 'flushBuffer'
-    // (nesmi byt NULL), po predani bufferu se FlushBuffer (pri kompresi ComprDataBuffer)
-    // vyNULLuje (vraceni pres FlushDataFinished() nebo dealokace bufferu je na volajicim);
-    // vraci FALSE pokud neni potreba zadny flush dat
+    // if FlushBuffer (ComprDataBuffer when compression is used) is empty and has not yet been handed
+    // to the worker, returns TRUE and the FlushBuffer (ComprDataBuffer when compression is used) in 'flushBuffer'
+    // (must not be NULL); after handing over the buffer, FlushBuffer (ComprDataBuffer when compression is used)
+    // is cleared (returning it via FlushDataFinished() or deallocating the buffer is up to the caller);
+    // returns FALSE if no data flush is needed
     BOOL GiveBufferForData(char** flushBuffer);
 
-    // uvolni pripravena data z obou bufferu (data pro poslani na server); slouzi jen jako
-    // obrana pred error tracem v destruktoru objektu (ten hlasi, ze ne vsechna data
-    // se podarilo flushnout)
+    // releases prepared data from both buffers (data for sending to the server); serves only as
+    // a safeguard against an error trace in the object's destructor (which reports that not all data
+    // were flushed)
     void FreeBufferedData();
 
-    // vola worker po dokonceni cteni dat z disku; 'flushBuffer' je prave nacteny buffer;
-    // pokud je volny druhy buffer pro data a nedosahli jsme jeste konce souboru, dojde
-    // k prohozeni bufferu a postnuti WorkerMsgPrepareData workerovi; je-li treba posti
-    // tez FD_WRITE do tohoto socketu (viz WaitingForWriteEvent); pri kompresi zajisti
-    // postupne naplneni bufferu FlushBuffer komprimovanymi daty (dokud neni plny a nejsme
-    // na konci souboru, posti WorkerMsgPrepareData workerovi)
+    // called by the worker after finishing reading data from disk; 'flushBuffer' is the buffer that was just filled;
+    // if the second data buffer is free and we have not reached the end of the file yet,
+    // the buffers are swapped and WorkerMsgPrepareData is posted to the worker; if necessary it will also post
+    // FD_WRITE to this socket (see WaitingForWriteEvent); with compression it ensures
+    // gradually fills the FlushBuffer with compressed data (until it is full and we are not
+    // at the end of the file, posts WorkerMsgPrepareData to the worker)
     void DataBufferPrepared(char* flushBuffer, int validBytesInFlushBuffer, BOOL enterCS);
 
-    // worker vola po prijeti odpovedi na STOR/APPE prikaz ze serveru (upload uz je ze strany
-    // serveru dokonceny)
+    // called by the worker after receiving the response to the STOR/APPE command from the server (upload is finished on the server side)
+    // (upload is finished on the server side)
     void UploadFinished();
 
-    // vraci status "data connection" (parametry nesmi byt NULL): 'uploaded' (kolik se jiz
-    // zapsalo/uploadlo), 'total' (celkova velikost zapisu/uploadu),
-    // 'connectionIdleTime' (cas v sekundach od posledniho zapisu dat), 'speed' (rychlost spojeni
-    // v bytech za sekundu)
-    // volani mozne z libovolneho threadu
+    // returns the status of the "data connection" (parameters must not be NULL): 'uploaded' (how much has already been
+    // written/uploaded), 'total' (total size of the write/upload),
+    // 'connectionIdleTime' (time in seconds since data were last written), 'speed' (connection speed
+    // in bytes per second)
+    // can be called from any thread
     void GetStatus(CQuadWord* uploaded, CQuadWord* total, DWORD* connectionIdleTime, DWORD* speed);
 
-    // vola se, kdyz uzivatel prepne workera do/ze stavu "paused"; data-connectiona by v "paused"
-    // stavu mela prestat prenaset data, po skonceni tohoto stavu by se melo v prenosu pokracovat
+    // called when the user switches the worker into/out of the "paused" state; the data connection should stop transferring data in the "paused" state
+    // and after the state ends the transfer should continue
     void UpdatePauseStatus(BOOL pause);
 
 protected:
-    // vola se po navazani spojeni se serverem
-    // POZOR: volat jen z kriticke sekce CSocket::SocketCritSect a CSocketsThread::CritSect
+    // called after the connection with the server is established
+    // WARNING: call only from the CSocket::SocketCritSect and CSocketsThread::CritSect critical sections
     void JustConnected();
 
 #ifdef DEBUGLOGPACKETSIZEANDWRITESIZE
-    // vola se pro vypis hodnot souvisejicich se zmenou velikosti bloku dat posilanych pres 'send'
-    // POZOR: volat jen z kriticke sekce CSocket::SocketCritSect
+    // called to log values related to changes in the block size of data sent via 'send'
+    // WARNING: call only from the CSocket::SocketCritSect critical section
     void DebugLogPacketSizeAndWriteSize(int size, BOOL noChangeOfLastPacketSizeEstimation = FALSE);
 #endif // DEBUGLOGPACKETSIZEANDWRITESIZE
 
-    // prehozeni naplneneho bufferu FlushBuffer do BytesToWrite
-    // POZOR: musi se volat z kriticke sekce SocketCritSect
+    // moves a filled FlushBuffer into BytesToWrite
+    // WARNING: must be called from the SocketCritSect critical section
     void MoveFlushBufferToBytesToWrite();
 
     // ******************************************************************************************
-    // metody volane v "sockets" threadu (na zaklade prijmu zprav od systemu nebo jinych threadu)
+    // methods called in the "sockets" thread (based on messages received from the system or other threads)
     //
-    // POZOR: volane v sekci SocketsThread->CritSect, mely by se provadet co nejrychleji (zadne
-    //        cekani na vstup usera, atd.)
+    // WARNING: called inside SocketsThread->CritSect, they should be executed as quickly as possible (no
+    //        waiting for user input, etc.)
     // ******************************************************************************************
 
-    // prijem udalosti pro tento socket (FD_READ, FD_WRITE, FD_CLOSE, atd.); 'index' je
-    // index socketu v poli SocketsThread->Sockets (pouziva se pro opakovane posilani
-    // zprav pro socket)
+    // receiving events for this socket (FD_READ, FD_WRITE, FD_CLOSE, etc.); 'index' is
+    // the socket index in the SocketsThread->Sockets array (used for repeatedly posting
+    // messages for the socket)
     virtual void ReceiveNetEvent(LPARAM lParam, int index);
 
-    // prijem vysledku ReceiveNetEvent(FD_CLOSE) - neni-li 'error' NO_ERROR, jde
-    // o kod Windowsove chyby (prisla s FD_CLOSE nebo vznikla behem zpracovani FD_CLOSE)
+    // receiving the result of ReceiveNetEvent(FD_CLOSE) - if 'error' is not NO_ERROR it is
+    // a Windows error code (came with FD_CLOSE or occurred while handling FD_CLOSE)
     virtual void SocketWasClosed(DWORD error);
 
-    // prijem timeru s ID 'id' a parametrem 'param'
+    // receiving a timer with ID 'id' and parameter 'param'
     virtual void ReceiveTimer(DWORD id, void* param);
 
-    // vola se po prijeti a zpracovani FD_ACCEPT (za predpokladu, ze se pro FD_ACCEPT vola metoda
-    // CSocket::ReceiveNetEvent): 'success' je uspech acceptu, pri neuspechu je ve 'winError'
-    // windowsovy kod chyby a v 'proxyError' TRUE pokud jde o chybu hlasenou proxy serverem
-    // (text chyby lze ziskat pres GetProxyError())
-    // POZOR: volat jen po jednom vstupu do kriticke sekce CSocket::SocketCritSect a CSocketsThread::CritSect
+    // called after FD_ACCEPT is received and processed (assuming CSocket::ReceiveNetEvent is used for FD_ACCEPT)
+    // CSocket::ReceiveNetEvent): 'success' indicates accept succeeded; on failure 'winError' contains
+    // the Windows error code and 'proxyError' is TRUE if the proxy server reported the error
+    // (retrieve the error text via GetProxyError())
+    // WARNING: call only after a single entry into the CSocket::SocketCritSect and CSocketsThread::CritSect critical sections
     virtual void ConnectionAccepted(BOOL success, DWORD winError, BOOL proxyError);
 };
 
@@ -584,143 +582,143 @@ protected:
 // ****************************************************************************
 // CKeepAliveDataConSocket
 //
-// objekt socketu, ktery slouzi jako "data connection" na FTP server; vsechna data
-// se jednoduse ignoruji, datovy prenost je jen "keep-alive" divadlo pro server
-// pro dealokaci pouzivat funkci ::DeleteSocket!
+// socket object that serves as the "data connection" to an FTP server; all data
+// are simply ignored, the data transfer is just "keep-alive" theatre for the server
+// use the ::DeleteSocket() function for deallocation!
 
 class CKeepAliveDataConSocket : public CSocket
 {
 protected:
-    // kriticka sekce pro pristup k datum objektu je CSocket::SocketCritSect
-    // POZOR: v teto sekci nesmi dojit ke vnoreni do SocketsThread->CritSect (nesmi se volat metody SocketsThread)
+    // the critical section for accessing the object's data is CSocket::SocketCritSect
+    // WARNING: SocketsThread->CritSect must not be entered while inside this section (do not call SocketsThread methods)
 
-    BOOL UsePassiveMode; // TRUE = pasivni mod (PASV), jinak aktivni mod (PORT)
+    BOOL UsePassiveMode; // TRUE = passive mode (PASV), otherwise active mode (PORT)
     BOOL EncryptConnection;
-    CFTPProxyForDataCon* ProxyServer; // NULL = "not used (direct connection)" (read-only, inicializuje se v konstruktoru, pristup tedy mozny bez kriticke sekce)
-    DWORD ServerIP;                   // IP serveru, kam se pripojujeme v pasivnim modu
-    unsigned short ServerPort;        // port serveru, kam se pripojujeme v pasivnim modu
+    CFTPProxyForDataCon* ProxyServer; // NULL = "not used (direct connection)" (read-only, initialized in the constructor, therefore accessible without a critical section)
+    DWORD ServerIP;                   // IP of the server we connect to in passive mode
+    unsigned short ServerPort;        // server port we connect to in passive mode
 
-    int LogUID; // UID logu pro odpovidajici "control connection" (-1 dokud neni log zalozen)
+    int LogUID; // log UID for the corresponding "control connection" (-1 until the log is created)
 
-    DWORD NetEventLastError; // kod posledni chyby, ktera byla hlasena do ReceiveNetEvent() nebo nastala v PassiveConnect()
-    int SSLErrorOccured;     // viz konstanty SSLCONERR_XXX
-    BOOL ReceivedConnected;  // TRUE = doslo k otevreni (connect nebo accept) "data connection" (nic nerika o soucasnem stavu)
-    DWORD LastActivityTime;  // GetTickCount() z okamziku, kdy se naposledy delalo s "data connection" (sleduje se inicializace (SetPassive() a SetActive()), uspesny connect a read)
-    DWORD SocketCloseTime;   // GetTickCount() z okamziku, kdy se zavrel socket "data connection"
+    DWORD NetEventLastError; // code of the last error reported to ReceiveNetEvent() or that occurred in PassiveConnect()
+    int SSLErrorOccured;     // see constants SSLCONERR_XXX
+    BOOL ReceivedConnected;  // TRUE = the "data connection" opened (connect or accept); does not describe the current state
+    DWORD LastActivityTime;  // GetTickCount() from when we last worked with the "data connection" (tracks initialization (SetPassive() and SetActive()), successful connect, and read)
+    DWORD SocketCloseTime;   // GetTickCount() from the moment the "data connection" socket closed
 
-    // pouziva se pri zavirani "data connection" (vyhodnoceni jestli uz se dokoncil keep-alive prikaz)
-    // POZOR: nesmi se vstoupit do sekce ParentControlSocket->SocketCritSect (volat metody
-    //        ParentControlSocket) ze sekce SocketCritSect tohoto objektu (jiz se vyuziva
-    //        opacneho poradi vstupu viz ccsevTimeout v CControlConnectionSocket::WaitForEndOfKeepAlive())
-    // POZNAMKA: zaroven se pouziva stejne jako CDataConnectionBaseSocket::SSLConForReuse, viz jeji komentar
+    // used when closing the "data connection" (evaluates whether the keep-alive command has finished)
+    // WARNING: ParentControlSocket->SocketCritSect must not be entered (do not call ParentControlSocket methods)
+    //        from this object's SocketCritSect (the opposite order of entry is already used, see
+    //        ccsevTimeout in CControlConnectionSocket::WaitForEndOfKeepAlive())
+    // NOTE: used the same way as CDataConnectionBaseSocket::SSLConForReuse, see its comment
     CControlConnectionSocket* ParentControlSocket;
-    BOOL CallSetupNextKeepAliveTimer; // TRUE pokud se po uzavreni socketu ma volat SetupNextKeepAliveTimer() objektu ParentControlSocket (neprimo)
+    BOOL CallSetupNextKeepAliveTimer; // TRUE if SetupNextKeepAliveTimer() of ParentControlSocket should be called after closing the socket (indirectly)
 
-    DWORD ListenOnIP;            // IP, na kterem nasloucha proxy server (ceka na spojeni); je-li INADDR_NONE, nebyla zatim volana metoda ListeningForConnection() nebo proxy server vratil nejakou chybu
-    unsigned short ListenOnPort; // port, na kterem nasloucha proxy server (ceka na spojeni)
+    DWORD ListenOnIP;            // IP on which the proxy server listens (waits for a connection); if INADDR_NONE, ListeningForConnection() has not been called yet or the proxy server reported an error
+    unsigned short ListenOnPort; // port on which the proxy server listens (waits for a connection)
 
 public:
     CKeepAliveDataConSocket(CControlConnectionSocket* parentControlSocket, CFTPProxyForDataCon* proxyServer, int encryptConnection, CCertificate* certificate);
     virtual ~CKeepAliveDataConSocket();
 
-    // vola se v okamziku, kdy "control connection" dostane odpoved serveru ('replyCode')
-    // ohlasujici konec datoveho prenosu; vraci TRUE pokud prenos skutecne skoncil (je mozne
-    // uvolnit "data connection"); vraci FALSE pokud prenos jeste neskoncil ("data connection"
-    // se neda uvolnit), az prenos skutecne skonci, zavola neprimo metodu SetupNextKeepAliveTimer()
-    // objektu ParentControlSocket
+    // called when the "control connection" receives the server's response ('replyCode')
+    // announcing the end of the data transfer; returns TRUE if the transfer really finished (the
+    // "data connection" can be released); returns FALSE if the transfer has not finished yet (the "data connection"
+    // cannot be released); once the transfer actually ends, it indirectly calls SetupNextKeepAliveTimer()
+    // of the ParentControlSocket object
     BOOL FinishDataTransfer(int replyCode);
 
-    // vraci TRUE, pokud je "data connection" otevrena pro prenos dat (uz doslo ke spojeni
-    // se serverem); v 'transferFinished' (neni-li NULL) vraci TRUE pokud jiz prenos
-    // dat probehl (FALSE = jeste nedoslo ke spojeni se serverem)
+    // returns TRUE if the "data connection" is open for data transfer (the connection to the server has already been established)
+    // in 'transferFinished' (if not NULL) it returns TRUE if the transfer has already finished
+    // (FALSE = the connection to the server has not been established yet)
     BOOL IsTransfering(BOOL* transferFinished);
 
-    // jen vola CloseSocket() + nastavuje SocketCloseTime a TransferFinished event
+    // just calls CloseSocket() + sets SocketCloseTime and the TransferFinished event
     BOOL CloseSocketEx(DWORD* error);
 
-    // vraci SocketCloseTime (ma kritickou sekci)
+    // returns SocketCloseTime (uses a critical section)
     DWORD GetSocketCloseTime();
 
-    // nastavi parametry pro pasivni mod "data connection"; tyto parametry se pouzivaji
-    // v metode PassiveConnect(); 'ip' + 'port' jsou parametry pripojeni ziskane od serveru;
-    // 'logUID' je UID logu "control connection", ktere patri tato "data connection"
+    // sets parameters for the passive mode of the "data connection"; these parameters are used
+    // in the PassiveConnect() method; 'ip' + 'port' are the connection parameters obtained from the server;
+    // 'logUID' is the log UID of the "control connection" to which this "data connection" belongs
     void SetPassive(DWORD ip, unsigned short port, int logUID);
 
-    // zavola Connect() pro ulozene parametry pro pasivni mod
-    // POZOR: neni mozne volat tuto metodu z kriticke sekce SocketCritSect (metoda pouziva
+    // calls Connect() for the stored parameters for passive mode
+    // WARNING: this method must not be called from the SocketCritSect critical section (the method uses
     //        SocketsThread)
-    // volani mozne z libovolneho threadu
+    // can be called from any thread
     BOOL PassiveConnect(DWORD* error);
 
-    // nastavi aktivni mod "data connection"; otevreni socketu viz CSocket::OpenForListening();
-    // 'logUID' je UID logu "control connection", ktere patri tato "data connection"
-    // volani mozne z libovolneho threadu
+    // sets the active mode of the "data connection"; socket opening see CSocket::OpenForListening();
+    // 'logUID' is the log UID of the "control connection" to which this "data connection" belongs
+    // can be called from any thread
     void SetActive(int logUID);
 
-    // vola se v okamziku, kdy ma zacit datovy prenos (napr. po poslani prikazu pro listovani);
-    // v pasivnim modu se zkontroluje jestli nedoslo k odmitnuti prvniho pokusu o navazani
-    // spojeni, pripadne se provede dalsi pokus o navazani spojeni; v aktivnim modu se nedeje
-    // nic (mohlo by tu byt povoleni navazani spojeni ("accept"), ale pro vetsi obecnost je
-    // navazani spojeni mozne stale);
-    // POZOR: neni mozne volat tuto metodu z kriticke sekce SocketCritSect (metoda pouziva
+    // called when the data transfer should start (for example after sending a listing command);
+    // in passive mode it checks whether the first attempt to establish the connection was rejected
+    // and, if so, performs another attempt; in active mode nothing happens
+    // (accepting the connection via "accept" could be done here, but to keep things more general establishing the connection is always allowed)
+    //
+    // WARNING: this method must not be called from the SocketCritSect critical section (the method uses
     //        SocketsThread)
-    // volani mozne z libovolneho threadu
+    // can be called from any thread
     void ActivateConnection();
 
-    // jen zapouzdrene volani CSocket::OpenForListeningWithProxy() s parametry z 'ProxyServer'
+    // just wraps a call to CSocket::OpenForListeningWithProxy() with parameters from 'ProxyServer'
     BOOL OpenForListeningWithProxy(DWORD listenOnIP, unsigned short listenOnPort,
                                    BOOL* listenError, DWORD* err);
 
-    // zapamatuje si "listen" IP+port (kde se ceka na spojeni) a jestli nedoslo k chybe,
-    // pak posle CTRLCON_KALISTENFORCON vlastnikovi data-connectiony
-    // POZOR: pri pripojeni bez proxy serveru se tato metoda vola primo z OpenForListeningWithProxy(),
-    //        tedy nemusi to byt ze "sockets" threadu
-    // POZOR: nesmi se volat z kriticke sekce CSocket::SocketCritSect
+    // remembers the "listen" IP+port (where we wait for the connection) and whether an error occurred,
+    // then posts CTRLCON_KALISTENFORCON to the owner of the data connection
+    // WARNING: without a proxy server this method is called directly from OpenForListeningWithProxy(),
+    //        so it may not run in the "sockets" thread
+    // WARNING: must not be called from the CSocket::SocketCritSect critical section
     virtual void ListeningForConnection(DWORD listenOnIP, unsigned short listenOnPort,
                                         BOOL proxyError);
 
-    // pokud se uspesne otevrel "listen" port, vraci TRUE + "listen" IP+port
-    // v 'listenOnIP'+'listenOnPort'; pri chybe "listen" vraci FALSE
+    // if the "listen" port was opened successfully, returns TRUE + the "listen" IP+port
+    // in 'listenOnIP'+'listenOnPort'; returns FALSE on a "listen" error
     BOOL GetListenIPAndPort(DWORD* listenOnIP, unsigned short* listenOnPort);
 
-    // pokud jde o pasivni rezim a je zapnute sifrovani data connectiony, zkusi ji zasifrovat
+    // if this is passive mode and encryption of the data connection is enabled, tries to encrypt it
     void EncryptPassiveDataCon();
 
 protected:
-    // vola se po navazani spojeni se serverem
-    // POZOR: volat jen z kriticke sekce CSocket::SocketCritSect a CSocketsThread::CritSect
+    // called after the connection with the server is established
+    // WARNING: call only from the CSocket::SocketCritSect and CSocketsThread::CritSect critical sections
     void JustConnected();
 
-    // vypise do logu chybu z NetEventLastError
+    // writes the NetEventLastError failure to the log
     void LogNetEventLastError(BOOL canBeProxyError);
 
     // ******************************************************************************************
-    // metody volane v "sockets" threadu (na zaklade prijmu zprav od systemu nebo jinych threadu)
+    // methods called in the "sockets" thread (based on messages received from the system or other threads)
     //
-    // POZOR: volane v sekci SocketsThread->CritSect, mely by se provadet co nejrychleji (zadne
-    //        cekani na vstup usera, atd.)
+    // WARNING: called inside SocketsThread->CritSect, they should be executed as quickly as possible (no
+    //        waiting for user input, etc.)
     // ******************************************************************************************
 
-    // prijem udalosti pro tento socket (FD_READ, FD_WRITE, FD_CLOSE, atd.); 'index' je
-    // index socketu v poli SocketsThread->Sockets (pouziva se pro opakovane posilani
-    // zprav pro socket)
+    // receiving events for this socket (FD_READ, FD_WRITE, FD_CLOSE, etc.); 'index' is
+    // the socket index in the SocketsThread->Sockets array (used for repeatedly posting
+    // messages for the socket)
     virtual void ReceiveNetEvent(LPARAM lParam, int index);
 
-    // prijem vysledku ReceiveNetEvent(FD_CLOSE) - neni-li 'error' NO_ERROR, jde
-    // o kod Windowsove chyby (prisla s FD_CLOSE nebo vznikla behem zpracovani FD_CLOSE)
+    // receiving the result of ReceiveNetEvent(FD_CLOSE) - if 'error' is not NO_ERROR it is
+    // a Windows error code (came with FD_CLOSE or occurred while handling FD_CLOSE)
     virtual void SocketWasClosed(DWORD error);
 
-    // prijem timeru s ID 'id' a parametrem 'param'
+    // timer reception with ID 'id' and parameter 'param'
     virtual void ReceiveTimer(DWORD id, void* param);
 
-    // vola se po prijeti a zpracovani FD_ACCEPT (za predpokladu, ze se pro FD_ACCEPT vola metoda
-    // CSocket::ReceiveNetEvent): 'success' je uspech acceptu, pri neuspechu je ve 'winError'
-    // windowsovy kod chyby a v 'proxyError' TRUE pokud jde o chybu hlasenou proxy serverem
-    // (text chyby lze ziskat pres GetProxyError())
-    // POZOR: volat jen po jednom vstupu do kriticke sekce CSocket::SocketCritSect a CSocketsThread::CritSect
+    // called after FD_ACCEPT is received and processed (assuming CSocket::ReceiveNetEvent is used for FD_ACCEPT)
+    // CSocket::ReceiveNetEvent): 'success' is the accept success flag; on failure it is in 'winError'
+    // the Windows error code and 'proxyError' is TRUE if the proxy server reported the error
+    // (retrieve the error text via GetProxyError())
+    // WARNING: call only after a single entry into the CSocket::SocketCritSect and CSocketsThread::CritSect critical sections
     virtual void ConnectionAccepted(BOOL success, DWORD winError, BOOL proxyError);
 
 private:
-    // zastineni metody CSocket::CloseSocket()
+    // hides the CSocket::CloseSocket() method
     BOOL CloseSocket(DWORD* error) { TRACE_E("Use CloseSocketEx() instead of CloseSocket()!"); }
 };

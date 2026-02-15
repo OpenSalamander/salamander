@@ -11,9 +11,9 @@
 
 #include "precomp.h"
 
-// projekt DemoView obsahuje tri skupiny modulu
+// the DemoView project contains three groups of modules
 //
-// 1) modul precomp.cpp, ktery postavi demoview.pch (/Yc"precomp.h")
-// 2) moduly vyuzivajici demoview.pch (/Yu"precomp.h")
-// 3) commony maji vlastni, automaticky generovany WINDOWS.PCH
+// 1) the precomp.cpp module, which builds demoview.pch (/Yc"precomp.h")
+// 2) modules that use demoview.pch (/Yu"precomp.h")
+// 3) common modules have their own automatically generated WINDOWS.PCH
 //    (/YX"windows.h" /Fp"$(OutDir)\WINDOWS.PCH")

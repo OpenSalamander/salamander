@@ -17,13 +17,13 @@ protected:
     //friend class CZResourceString;
 
     //CZResourceString *_strings[IDS_DISKMAP_LAST - IDS_DISKMAP_FIRST + 1];
-    TCHAR _buffer[100 * COUNT_IDS_DISKMAP]; //buffer na vsechny retezce... pocitame 100 znaku na retezec = celkem cca 2Kb
-    TCHAR const* _start[COUNT_IDS_DISKMAP]; //zacatky jednotlivych retezcu
-    size_t _length[COUNT_IDS_DISKMAP];      //delky jednotlivych retezcu
-    TCHAR* _freepos;                        //odkaz na volne misto
-    TCHAR const* _bufferend;                //odkaz na konec bufferu - znak za bufferem
+    TCHAR _buffer[100 * COUNT_IDS_DISKMAP]; //buffer for all strings... assume 100 characters per string ≈ 2 KB in total
+    TCHAR const* _start[COUNT_IDS_DISKMAP]; //start of each string
+    size_t _length[COUNT_IDS_DISKMAP];      //length of each string
+    TCHAR* _freepos;                        //pointer to free space
+    TCHAR const* _bufferend;                //pointer to the end of the buffer - the character past the buffer
 
-    //size_t _errlen; //delka chybove hlasky
+    //size_t _errlen; //length of the error message
     //CZString _error("ERROR LOADING STRING");
     //static CZLocalizer *s_instance;
 public:

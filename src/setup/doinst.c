@@ -11,12 +11,12 @@
 #include "infinst.h"
 #include "remove\ctxmenu.h"
 
-#define COPY_FLAG_NOREMOVE 0x00000001 // nebude zarazeno do odnistlacniho logu
-//#define COPY_FLAG_DELAY_ENABLED 0x00000002  // pokud bude cila otevren, dojde k delay copy
-#define COPY_FLAG_FORCE_OVERWRITE 0x00000004 // nekompromisne prepise cil, at je jakej je
-#define COPY_FLAG_DONT_OVERWRITE 0x00000008  // neprepise cil, pokud je novejsi
-#define COPY_FLAG_TEST_CONFLICT 0x00000010   // testuje existenci minule (jine) verze
-#define COPY_FLAG_SKIP_SAME 0x00000020       // preskocit stejny soubor bez ptani
+#define COPY_FLAG_NOREMOVE 0x00000001 // will not be added to the uninstall log
+//#define COPY_FLAG_DELAY_ENABLED 0x00000002  // if the target is open, perform a delayed copy
+#define COPY_FLAG_FORCE_OVERWRITE 0x00000004 // unconditionally overwrites the target, no matter what it is
+#define COPY_FLAG_DONT_OVERWRITE 0x00000008  // does not overwrite the target if it is newer
+#define COPY_FLAG_TEST_CONFLICT 0x00000010   // checks for the existence of a previous (different) version
+#define COPY_FLAG_SKIP_SAME 0x00000020       // skip identical files without asking
 
 DWORD InstallFinish(BOOL DoRunOnce);
 
@@ -208,11 +208,11 @@ BOOL CheckAndCreateDirectory(const char* dir)
     DWORD attrs = GetFileAttributes(dir);
     char buf[MAX_PATH + 100];
     char name[MAX_PATH];
-    if (attrs == INVALID_FILE_ATTRIBUTES) // asi neexistuje, umoznime jej vytvorit
+    if (attrs == INVALID_FILE_ATTRIBUTES) // probably does not exist, allow it to be created
     {
         char root[MAX_PATH];
         GetRootPath(root, dir);
-        if (lstrlen(dir) <= lstrlen(root)) // dir je root adresar
+        if (lstrlen(dir) <= lstrlen(root)) // directory is the root directory
         {
             if (!SetupInfo.Silent)
             {
@@ -229,7 +229,7 @@ BOOL CheckAndCreateDirectory(const char* dir)
             int len;
 
             lstrcpy(name, dir);
-            while (1) // najdeme prvni existujici adresar
+            while (1) // find the first existing directory
             {
                 s = strrchr(name, '\\');
                 if (s == NULL)
@@ -246,14 +246,14 @@ BOOL CheckAndCreateDirectory(const char* dir)
                 else
                 {
                     lstrcpy(name, root);
-                    break; // uz jsme na root-adresari
+                    break; // already at the root directory
                 }
                 attrs = GetFileAttributes(name);
-                if (attrs != INVALID_FILE_ATTRIBUTES) // jmeno existuje
+                if (attrs != INVALID_FILE_ATTRIBUTES) // name exists
                 {
                     if (attrs & FILE_ATTRIBUTE_DIRECTORY)
-                        break; // budeme stavet od tohoto adresare
-                    else       // je to soubor, to by neslo ...
+                        break; // we will build from this directory
+                    else       // it's a file, that would not work ...
                     {
                         if (!SetupInfo.Silent)
                         {
@@ -295,7 +295,7 @@ BOOL CheckAndCreateDirectory(const char* dir)
                             return FALSE;
                     }
                     else
-                        break; // hotovo
+                        break; // done
                 }
                 name[len++] = '\\';
                 if (*slash == '\\')
@@ -308,7 +308,7 @@ BOOL CheckAndCreateDirectory(const char* dir)
     }
     if (attrs & FILE_ATTRIBUTE_DIRECTORY)
         return TRUE;
-    else // soubor, to by neslo ...
+    else // it's a file, that would not work ...
     {
         if (!SetupInfo.Silent)
         {
@@ -378,8 +378,8 @@ BOOL GetModuleVersion(HINSTANCE hModule, DWORD* major, DWORD* minor)
 // QueryOverwrite
 //
 
-// QueryOverwrite: dialog Overwrite pro copy file rutinu
-// pokud uspeje, vrati v promenne result nasledujici hodnoty:
+// QueryOverwrite: "Overwrite" dialog for the copy-file routine
+// if it succeeds, it returns the following values in the result variable:
 #define CFQO_YES 0
 #define CFQO_YESALL 1
 #define CFQO_SKIP 2
@@ -408,10 +408,10 @@ INT_PTR CALLBACK QueryOverwriteDlgProc(HWND hWindow, UINT uMsg, WPARAM wParam, L
     {
         CFQOInternal* data = (CFQOInternal*)lParam;
 
-        // vycentruji dialog k obrazovce
+        // center the dialog on the screen
         CenterWindow(hWindow);
 
-        // nastavim retezce
+        // set the strings
         SetDlgItemText(hWindow, IDC_CF_SOURCEFILENAME, data->sFileName);
         SetDlgItemText(hWindow, IDC_CF_SOURCEFILEATTR, data->sourceAttr);
         SetDlgItemText(hWindow, IDC_CF_TARGETFILENAME, data->tFileName);
@@ -503,14 +503,14 @@ INT_PTR CALLBACK QueryRetryDlgProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPARA
         CFQRInternal* data;
         data = (CFQRInternal*)lParam;
 
-        // vycentruji dialog k obrazovce
+        // center the dialog on the screen
         CenterWindow(hWindow);
 
         FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, data->Error,
                       MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buff,
                       1024, NULL);
 
-        // nastavim retezce
+        // set the strings
         SetDlgItemText(hWindow, IDC_CF_RETRYNAME, data->sFileName);
         SetDlgItemText(hWindow, IDC_CF_RETRYERROR, buff);
         return TRUE;
@@ -575,13 +575,13 @@ BOOL QueryRetry(const char* sFileName, DWORD error, int* result)
 // GetComCtlVersion
 //
 
-// soubor z cesty sFileName nakopci do souboru tFileName
-// pokud cilovy soubor uz existuje, dostavi se promenne overwrite
-// a skip pokud je nastavena promenna overwrite, nepta se na prepis
-// pokud je nastavena promenna skip, je soubor preskocen
-// pri chybe vrati FALSE - pak options nemaji vyznam
-// pri korektnim ukonceni vrati TRUE a promenna options
-// je nastavena podle zpusobu provedeni operace
+// copies the file from sFileName into tFileName
+// if the target file already exists, the overwrite variable is set
+// and skip; if the overwrite variable is set, it does not ask about overwriting
+// if the skip variable is set, the file is skipped
+// on error returns FALSE - options then have no meaning
+// on successful completion returns TRUE and the options variable
+// is set according to how the operation was performed
 
 #define COPYFILEOPTIONS_NONE 0
 #define COPYFILEOPTIONS_OVERWRITE 1
@@ -602,7 +602,7 @@ BOOL FileExist(const char* fileName)
         return FALSE;
     return TRUE;
     /*
-  // tohle nefacha na sitovem disku (zkouseno pod NT 4.0)
+  // this does not work on a network drive (tested under NT 4.0)
   HANDLE hFile = CreateFile(fileName, 0, 0,
                             NULL, OPEN_EXISTING, 0, NULL);
   if (hFile == INVALID_HANDLE_VALUE)
@@ -650,8 +650,8 @@ BOOL MyCopyFile(const char* sFileName, const char* tFileName,
 {
     HANDLE hSourceFile = NULL;
     HANDLE hTargetFile = NULL;
-    char buff[1000];                 // pro hlasky
-    char copyBuffer[COPYBUFFER_MAX]; // pro vlastni kopirovani
+    char buff[1000];                 // for messages
+    char copyBuffer[COPYBUFFER_MAX]; // for the actual copying
     DWORD read;
     DWORD fileAtttr;
 
@@ -661,7 +661,7 @@ BOOL MyCopyFile(const char* sFileName, const char* tFileName,
 
     *options = COPYFILEOPTIONS_NONE;
 
-    // pokusim se otevrit zdrojovy soubor
+    // try to open the source file
     hSourceFile = CreateFile(sFileName, GENERIC_READ,
                              FILE_SHARE_READ, NULL,
                              OPEN_EXISTING,
@@ -669,15 +669,15 @@ BOOL MyCopyFile(const char* sFileName, const char* tFileName,
                              NULL);
     if (hSourceFile == INVALID_HANDLE_VALUE)
     {
-        // nepovedlo se - utecu pryc
+        // failed - bail out
         DWORD error = GetLastError();
         wsprintf(buff, LoadStr(ERROR_CF_OPENFILE), sFileName);
         HandleErrorM(IDS_MAINWINDOWTITLE, buff, error);
         return FALSE;
     }
 
-    // pokud nemame force na overwrite a cilovy soubor existuje, musime se zeptat
-    // na jeho prepsani
+    // if we are not forcing overwrite and the target file exists, we must ask
+    // about overwriting it
     if (!overwrite)
     {
         if (FileExist(tFileName))
@@ -696,7 +696,7 @@ BOOL MyCopyFile(const char* sFileName, const char* tFileName,
             hTargetFile = CreateFile(tFileName, 0, 0, NULL, OPEN_EXISTING, 0, NULL);
             if (hTargetFile == INVALID_HANDLE_VALUE)
             {
-                // tohle by vubec nemelo nastat, pred chvilkou jsem ho otevrel v stejnem rezimu
+                // this should never happen; moments ago I opened it in the same mode
                 DWORD error = GetLastError();
                 wsprintf(buff, LoadStr(ERROR_CF_OPENFILE), tFileName);
                 HandleErrorM(IDS_MAINWINDOWTITLE, buff, error);
@@ -731,8 +731,8 @@ BOOL MyCopyFile(const char* sFileName, const char* tFileName,
 
                 if (flags & COPY_FLAG_SKIP_SAME)
                 {
-                    // pokud ma soubor stejnou velikost a verzi, skipneme ho
-                    // pokusim se oba moduly nacist
+                    // if the file has the same size and version, skip it
+                    // try to load both modules
                     if (sourceInformation.nFileSizeLow == targetInformation.nFileSizeLow && IsSameFile(sFileName, tFileName))
                     {
                         result = CFQO_SKIP;
@@ -740,8 +740,8 @@ BOOL MyCopyFile(const char* sFileName, const char* tFileName,
                     }
                 }
 
-                // pokud je prepisovany soubor novejsi a neni nastaven COPY_FLAG_FORCE_OVERWRITE,
-                // doptame se uzivatele
+                // if the file being overwritten is newer and COPY_FLAG_FORCE_OVERWRITE is not set,
+                // ask the user
                 if (testTime)
                 {
                     if (CompareFileTime(&sourceInformation.ftLastWriteTime, &targetInformation.ftLastWriteTime) == -1)
@@ -782,7 +782,7 @@ BOOL MyCopyFile(const char* sFileName, const char* tFileName,
                     }
                     else
                         result = CFQO_YES;
-                } //else result je jiz nastaven z na CFQO_SKIP
+                } // else result is already set to CFQO_SKIP
             }
             else
                 result = CFQO_YES;
@@ -813,7 +813,7 @@ BOOL MyCopyFile(const char* sFileName, const char* tFileName,
                 *options == COPYFILEOPTIONS_SKIP || *options == COPYFILEOPTIONS_SKIPALL)
                 return TRUE;
 
-            // zbejva nam overwrite a overwrite all, takze jdem na vec
+            // only overwrite and overwrite all remain, so let's proceed
         }
     }
 
@@ -825,7 +825,7 @@ BOOL MyCopyFile(const char* sFileName, const char* tFileName,
 
     if (FileExist(tFileName))
     {
-        // prevalcujeme READONLY/SYSTEM/HIDDEN soubory
+        // override READONLY/SYSTEM/HIDDEN attributes
         if (!SetFileAttributes(tFileName, FILE_ATTRIBUTE_ARCHIVE))
         {
             DWORD error = GetLastError();
@@ -844,7 +844,7 @@ BOOL MyCopyFile(const char* sFileName, const char* tFileName,
         return FALSE;
     }
 
-    // otevreme si vystupni soubor pro zapis
+    // open the output file for writing
 CreateAgain:
     hTargetFile = CreateFile(tFileName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, fileAtttr, NULL);
     if (hTargetFile == INVALID_HANDLE_VALUE)
@@ -888,7 +888,7 @@ CreateAgain:
         return FALSE;
     }
 
-    // prekopcime obsah zdrojoveho souboru do ciloveho
+    // copy the contents of the source file into the target
     do
     {
         if (!ReadFile(hSourceFile, copyBuffer, COPYBUFFER_MAX, &read, NULL))
@@ -916,7 +916,7 @@ CreateAgain:
         }
     } while (read == COPYBUFFER_MAX);
 
-    // nastavime cilovemu souboru stejny cas, jaky ma soubor zdrojovy
+    // set the target file to the same timestamp as the source file
     GetFileTime(hSourceFile, &ftCreationTime, &ftLastAccessTime, &ftLastWriteTime);
     SetFileTime(hTargetFile, &ftCreationTime, &ftLastAccessTime, &ftLastWriteTime);
 
@@ -929,9 +929,9 @@ CreateAgain:
     return TRUE;
 }
 /*
-// presune soubor ciloveho adresare, ale pod pracovni nazev
-// nastavi, aby po rebootu byl cil smazan a zdroj prejmenovan na cil
-// nastavi promennou RebootNeeded
+// moves the file into the target directory but under a temporary name
+// schedules the target to be deleted after reboot and the source renamed to the target
+// sets the RebootNeeded variable
 
 BOOL AfterRebootCopy(const char *sFileName, const char *tFileName)
 {
@@ -1015,7 +1015,7 @@ HRESULT GetComCtlVersion(LPDWORD pdwMajor, LPDWORD pdwMinor)
 //
 // CheckRunningApp
 //
-// zjisti, jestli nebezi nejaka aplikace s tridou okna appWindowClassName
+// checks whether an application with the window class appWindowClassName is running
 //
 
 void CheckRunningApp(const char* appWindowClassName)
@@ -1067,7 +1067,7 @@ BOOL OpenInfFile()
     lstrcpy(InfFileName, ModulePath);
     lstrcat(InfFileName, INF_FILENAME);
 
-    // nacteme inf soubor
+    // load the INF file
     hFile = CreateFile(InfFileName, GENERIC_READ, 0, NULL,
                        OPEN_EXISTING, FILE_ATTRIBUTE_ARCHIVE, NULL);
     if (hFile == INVALID_HANDLE_VALUE)
@@ -1094,11 +1094,11 @@ BOOL OpenInfFile()
     }
     CloseHandle(hFile);
 
-    // vytahneme sekci GetRegistryVar
+    // extract the GetRegistryVar section
     if (!DoGetRegistryVarSection())
         return FALSE;
 
-    // je-li treba, zkontroloujeme verzi common controls
+    // if needed, verify the common controls version
     SetupInfo.TmpSection[0] = 0;
     GetPrivateProfileString(INF_PRIVATE_SECTION, INF_CHECKCOMMONCONTROLS, "",
                             SetupInfo.TmpSection, MAX_PATH, InfFileName);
@@ -1126,7 +1126,7 @@ BOOL OpenInfFile()
         }
     }
 
-    // je-li treba, zkontrolujeme bezici aplikace
+    // if needed, check running applications
     SetupInfo.TmpSection[0] = 0;
     GetPrivateProfileString(INF_PRIVATE_SECTION, INF_CHECKRUNNINGAPPS, "",
                             SetupInfo.CheckRunningApps, MAX_PATH, InfFileName);
@@ -1151,7 +1151,7 @@ BOOL OpenInfFile()
         }
     }
 
-    // nacteme zakladni data
+    // load the basic data
     GetPrivateProfileString(INF_PRIVATE_SECTION, INF_APPNAME, "",
                             SetupInfo.ApplicationName, MAX_PATH, InfFileName);
 
@@ -1170,7 +1170,7 @@ BOOL OpenInfFile()
     GetPrivateProfileString(INF_PRIVATE_SECTION, INF_SAVEREMOVELOG, "",
                             SetupInfo.SaveRemoveLog, MAX_PATH, InfFileName);
 
-    if (GetCurDispLangID() == 1029 /* cestina */) // zkousime CZ a pokud neni, tak i EN verzi licence
+    if (GetCurDispLangID() == 1029 /* Czech */) // try the Czech version and, if it is missing, fall back to the English license
     {
         GetPrivateProfileString(INF_PRIVATE_SECTION, INF_LICENSEFILECZ, "",
                                 SetupInfo.LicenseFilePath, MAX_PATH, InfFileName);
@@ -1180,7 +1180,7 @@ BOOL OpenInfFile()
                                     SetupInfo.LicenseFilePath, MAX_PATH, InfFileName);
         }
     }
-    else // zkousime jen EN verzi licence
+    else // only attempt to load the English version of the license
     {
         GetPrivateProfileString(INF_PRIVATE_SECTION, INF_LICENSEFILE, "",
                                 SetupInfo.LicenseFilePath, MAX_PATH, InfFileName);
@@ -1244,7 +1244,7 @@ BOOL OpenInfFile()
     ExtractCopySection();
 
     if (CmdLineDestination[0] == 0 && !SetupInfo.Silent)
-        LoadLastDirectory(); // mame nastavene DefaultDirectory a UseLastDirectory - muzem jit na vec
+        LoadLastDirectory(); // DefaultDirectory and UseLastDirectory are set - we can proceed
 
     return TRUE;
 }
@@ -1313,7 +1313,7 @@ BOOL MyGetPrivateProfileSection(const char* infFile, const char* section, char* 
     return FALSE;
 }
 
-// pokud line uz v target neexistuje, pripoji ji na konec zakonci dvouma nulama
+// if the line is not yet in the target, append it and terminate with two zeros
 void RemoveAddLine(char* target, const char* line)
 {
     char* p = target;
@@ -1326,7 +1326,7 @@ void RemoveAddLine(char* target, const char* line)
 
     lstrcpy(p, line);
     p += lstrlen(line) + 1;
-    *p = 0; // konecny terminator
+    *p = 0; // final terminator
 }
 
 //************************************************************************************
@@ -1367,7 +1367,7 @@ BOOL QueryFreeSpace(char* driveSpec, LONGLONG* spaceRequired)
 
 BOOL GetSpecialFolderPath(int folder, char* path)
 {
-    ITEMIDLIST* pidl; // vyber root-folderu
+    ITEMIDLIST* pidl; // select the root folder
     *path = 0;
     if (SUCCEEDED(SHGetSpecialFolderLocation(HWizardDialog, folder, &pidl)))
     {
@@ -1384,7 +1384,7 @@ BOOL GetSpecialFolderPath(int folder, char* path)
     return FALSE;
 }
 
-// vraci ukazatel na zaverecne %SLG (pokud existuje), jinak vraci NULL
+// returns a pointer to the trailing %SLG (if it exists), otherwise returns NULL
 char* FindSLGEnding(char* buff)
 {
     int len = lstrlen(buff);
@@ -1452,7 +1452,7 @@ void ExtractCopySection()
                 end++;
             lstrcpyn(dst, begin, (int)(end - begin + 1));
 
-            /* velikost uz neziskavame
+            /* we no longer retrieve the size
       if (*end == ',')
         end++;
       begin = end;
@@ -1473,7 +1473,7 @@ void ExtractCopySection()
                 flagsNum = MyStrToDWORD(flags) & 0xFF;
             }
 
-            // overime, zda src i dst nekonci "%SLG"; pokud ano, udealme expanzi
+            // verify whether src and dst both end with "%SLG"; if so, expand it
             srcSLGEnding = FindSLGEnding(src);
             dstSLGEnding = FindSLGEnding(dst);
             expandLanguages = (srcSLGEnding != NULL && dstSLGEnding != NULL);
@@ -1503,7 +1503,7 @@ void ExtractCopySection()
         }
         line += len + 1;
     }
-    //  SetupInfo.SpaceRequired += 10000; // uninstall log :-))) to je prasarna, co
+    //  SetupInfo.SpaceRequired += 10000; // uninstall log :-))) what a hack, huh
     *from = 0;
     *to = 0;
 }
@@ -1654,7 +1654,7 @@ BOOL CreateShortcuts()
             if (hres != ERROR_SUCCESS)
             {
                 char buff[200 + MAX_PATH];
-                // nepovedlo se - ohlasime to uzivateli, at vi na cem je
+                // it failed - report it to the user so they know what's going on
                 wsprintf(buff, LoadStr(ERROR_CREATESHORTCUT), hres, dst);
                 HandleErrorM(IDS_MAINWINDOWTITLE, buff, hres == 0x80004005 ? ERROR_ACCESS_DENIED : hres);
             }
@@ -2056,7 +2056,7 @@ BOOL AddRegistryValues()
 
             if (typeNum == 1 || typeNum == 2 || typeNum == 101 || typeNum == 102)
             {
-                // typy do 100 se zapisuji do remove logu, nad sto ne
+                // types below 100 are written to the remove log; those above 100 are not
                 BOOL writeToRemoveLog = (typeNum < 100);
                 if (typeNum >= 100)
                     typeNum -= 100;
@@ -2069,7 +2069,7 @@ BOOL AddRegistryValues()
 
                 ExpandPath(value);
 
-                if (typeNum == 1) // umime pouze typ REG_SZ(1) a REG_DWORD(2)
+                if (typeNum == 1) // we support only the types REG_SZ (1) and REG_DWORD (2)
                 {
                     dwType = REG_SZ;
                     ret = RegSetValueEx(hKey, valueName, 0, dwType, value, lstrlen(value));
@@ -2128,12 +2128,13 @@ BOOL IsWow64()
 
 void AddWERLocalDump(const char* exeName)
 {
-    // Pokud padne x86 aplikace pod x64 windows, pouziji se pro WER zaznamy z x64 Registry.
-    // Klic HKEY_LOCAL_MACHINE\SOFTWARE podleha Registry Redirectoru, takze x86 Setup vidi x86 verzi,
-    // zatimco x64 Setup vidi x64 verzi. My z x86 verze Setup.exe potrebujeme zapisovat do x64 vetve
-    // Registry, coz lze zaridit pomoci specialniho klice KEY_WOW64_64KEY, viz MSDN:
+    // If an x86 application crashes on x64 Windows, WER uses entries from the x64 registry.
+    // The HKEY_LOCAL_MACHINE\SOFTWARE key is subject to the registry redirector, so the x86 Setup
+    // sees the x86 view, while the x64 Setup sees the x64 view. From the x86 Setup.exe we need to
+    // write to the x64 branch of the registry, which can be achieved using the special
+    // KEY_WOW64_64KEY flag, see MSDN:
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa384129%28v=vs.85%29.aspx
-    // Pozor, obchazeni redirectoru se tyka i modulu remove.c!
+    // Note that bypassing the redirector also applies to remove.c!
     HKEY hKey;
     DWORD dwDisposition;
     DWORD altapRefCount = 0;
@@ -2144,7 +2145,7 @@ void AddWERLocalDump(const char* exeName)
     if (hKey != NULL)
     {
         HKEY hExeKey;
-        // otevreme nebo vytvorime klic s nazvem EXE
+        // open or create the key named after the EXE
         if (RegCreateKeyEx(hKey, exeName, 0, NULL, REG_OPTION_NON_VOLATILE, samDesired | KEY_READ | KEY_WRITE, NULL, &hExeKey, &dwDisposition) == ERROR_SUCCESS)
         {
             DWORD dwType;
@@ -2152,7 +2153,7 @@ void AddWERLocalDump(const char* exeName)
             DWORD dumpType;
             DWORD customDumpFlags;
             const char* dumpFolder = "%LOCALAPPDATA%\\Open Salamander";
-            // pokud klic jiz existoval, nacteme pocet referenci
+            // if the key already existed, read the reference count
             if (dwDisposition == REG_OPENED_EXISTING_KEY)
             {
                 DWORD size = sizeof(altapRefCount);
@@ -2168,7 +2169,7 @@ void AddWERLocalDump(const char* exeName)
             RegSetValueEx(hExeKey, "DumpCount", 0, dwType, (const BYTE*)&dumpCount, sizeof(dumpCount));
             dumpType = 0; // custom dump type
             RegSetValueEx(hExeKey, "DumpType", 0, dwType, (const BYTE*)&dumpType, sizeof(dumpType));
-            customDumpFlags = 0x21921; // flagy MINIDUMP_TYPE
+            customDumpFlags = 0x21921; // MINIDUMP_TYPE flags
             RegSetValueEx(hExeKey, "CustomDumpFlags", 0, dwType, (const BYTE*)&customDumpFlags, sizeof(customDumpFlags));
             dwType = REG_EXPAND_SZ;
             RegSetValueEx(hExeKey, "DumpFolder", 0, dwType, (const BYTE*)dumpFolder, (DWORD)lstrlen(dumpFolder));
@@ -2180,9 +2181,9 @@ void AddWERLocalDump(const char* exeName)
 
 void AddWERLocalDumps()
 {
-    // WER Local Dumps jsou podporovany od Windows Vista, viz
+    // WER Local Dumps are supported starting with Windows Vista, see
     // http://msdn.microsoft.com/en-us/library/windows/desktop/bb787181%28v=vs.85%29.aspx
-    // x64 Salamander ma x64 instalak/odinstalak, takze se bude zapisovat do spravnych klicu
+    // x64 Salamander has an x64 installer/uninstaller, so it will write to the correct keys
     char exeName[MAX_PATH];
     const char* names = SetupInfo.WERLocalDumps;
     while (*names != 0)
@@ -2201,7 +2202,7 @@ void AddWERLocalDumps()
 
 #define VALUE_LAST_DIRECTORY "LastDirectory"
 
-// ulozi adresar, kam byl Salamander instalovan pro pristi instalaci
+// saves the directory where Salamander was installed for the next installation
 BOOL SaveLastDirectory()
 {
     char root[MAX_PATH];
@@ -2240,7 +2241,7 @@ BOOL SaveLastDirectory()
     {
         lstrcpy(value, SetupInfo.DefaultDirectory);
 
-        dwType = REG_SZ; // umime pouze typ 1
+        dwType = REG_SZ; // we support only type 1
         ret = RegSetValueEx(hKey, VALUE_LAST_DIRECTORY, 0, dwType, value, lstrlen(value));
         if (ret != ERROR_SUCCESS)
         {
@@ -2252,7 +2253,7 @@ BOOL SaveLastDirectory()
     return TRUE;
 }
 
-// vytahne z registry LastDir
+// retrieves LastDir from the registry
 BOOL LoadLastDirectory()
 {
     char root[MAX_PATH];
@@ -2275,7 +2276,7 @@ BOOL LoadLastDirectory()
     key[0] = 0;
     value[0] = 0;
 
-    // vytahnu root
+    // extract the root
     begin = end = SetupInfo.LastDirectories;
     while (*end != 0 && *end != ',')
         end++;
@@ -2283,9 +2284,9 @@ BOOL LoadLastDirectory()
     if (*end == ',')
         end++;
 
-    // vytahnu cestu ke klici platnemu pro prave instalovanou verzi
+    // extract the path to the key valid for the currently installed version
     begin = end;
-    keyLastComponent = NULL; // bude ukazovat za posledni zpetne lomitko, kam potom budeme vkladat starsi kandidaty ze seznamu, pokud ten aktualni selze
+    keyLastComponent = NULL; // will point past the last backslash, where we will insert older candidates from the list if the current one fails
     while (*end != 0 && *end != ',')
     {
         if (*end == '\\')
@@ -2296,7 +2297,7 @@ BOOL LoadLastDirectory()
     if (*end == ',')
         end++;
 
-    // pokud jsme nenasli posledni komponentu, je neco spatne a je cas zmizet
+    // if we did not find the last component, something is wrong and it's time to bail out
     if (keyLastComponent == NULL)
         return FALSE;
 
@@ -2305,19 +2306,19 @@ BOOL LoadLastDirectory()
     exit = FALSE;
     do
     {
-        // otevreme klic
+        // open the key
         ret = RegOpenKeyEx(hRoot, key, 0, KEY_QUERY_VALUE, &hKey);
         if (ret == ERROR_SUCCESS)
         {
-            // a v nem se pokusime nacist REG_SZ retezec "LastDirectory"
-            dwType = REG_SZ; // umime pouze typ 1
+            // and try to read the REG_SZ string "LastDirectory"
+            dwType = REG_SZ; // we support only type 1
             dwDataSize = MAX_PATH;
             ret = RegQueryValueEx(hKey, VALUE_LAST_DIRECTORY, 0, &dwType, value, &dwDataSize);
             RegCloseKey(hKey);
             if (ret == ERROR_SUCCESS && dwType == REG_SZ && value[0] != 0)
             {
-                // mame kandidata na adresar, kam bychom se mohli tlacit
-                // overime, zda splnuje dalsi podminky
+                // we have a candidate directory we could use
+                // verify whether it meets additional conditions
                 if (ContainsPathUpgradableVersion(value))
                 {
                     lstrcpy(SetupInfo.DefaultDirectory, value);
@@ -2326,8 +2327,8 @@ BOOL LoadLastDirectory()
             }
         }
 
-        // pro aktualni verzi jsme nenasli vyhovujici adresar, takze zkusime
-        // starsi verze dle seznamu
+        // we did not find a suitable directory for the current version, so try
+        // older versions according to the list
         begin = end;
         while (*end != 0 && *end != ',')
             end++;
@@ -2362,8 +2363,8 @@ const char* REMOVE_DELDIRS2 = "DelDirs";
 const char* REMOVE_DELSHELLEXTS = "[DelShellExts]\r\n";
 const char* REMOVE_NEXTLINE = "\r\n";
 
-// zapise seznam retezcu oddelenych nulama a zakoncenych dvouma nulama
-// do souboru; radek zakoncuje \r\n
+// writes a list of strings separated by zeros and terminated with two zeros
+// to a file; lines end with \r\n
 void WriteList(HANDLE hFile, const char* list, BOOL expand)
 {
     char buff[5000];
@@ -2540,7 +2541,7 @@ BOOL LoadRemoveLog()
 
     MyGetPrivateProfileSection(removeLog, REMOVE_OPTIONS2, SetupInfo.OldRemoveOptions, sizeof(SetupInfo.OldRemoveOptions));
 
-    // nacucneme seznamy k podrezani
+    // load the lists slated for removal
     MyGetPrivateProfileSection(removeLog, REMOVE_UNPINFROMTASKBAR, SetupInfo.UnpinFromTaskbar, sizeof(SetupInfo.UnpinFromTaskbar));
     MyGetPrivateProfileSection(removeLog, REMOVE_DELFILES2, SetupInfo.RemoveFiles, sizeof(SetupInfo.RemoveFiles));
     MyGetPrivateProfileSection(removeLog, REMOVE_DELDIRS2, SetupInfo.RemoveDirs, sizeof(SetupInfo.RemoveDirs));
@@ -2612,7 +2613,7 @@ BOOL DoGetRegistryVarSectionLine(char* line)
     ret = RegOpenKeyEx(hRoot, key, 0, KEY_QUERY_VALUE, &hKey);
     if (ret == ERROR_SUCCESS)
     {
-        dwType = REG_SZ; // umime pouze typ 1
+        dwType = REG_SZ; // we support only type 1
         dwDataSize = MAX_PATH;
         ret = RegQueryValueEx(hKey, valueName, 0, &dwType, value, &dwDataSize);
         RegCloseKey(hKey);
@@ -2627,7 +2628,7 @@ BOOL DoGetRegistryVarSectionLine(char* line)
                 return FALSE;
             }
 
-            // upalime zpetne lomitko na konci, pokud tam je
+            // remove the trailing backslash if present
             if (lstrlen(value) > 1 && value[lstrlen(value) - 1] == '\\')
                 value[lstrlen(value) - 1] = 0;
 
@@ -2685,13 +2686,13 @@ BOOL FindConflictWithAnotherVersion(BOOL* sameOrOlderVersion, BOOL* sameVersion,
         dst[lstrlen(dst) + 1] = 0;
 
         flags = SetupInfo.CopyFlags[i];
-        if (flags & COPY_FLAG_TEST_CONFLICT) // mame modul testovat na existenci jine verze?
+        if (flags & COPY_FLAG_TEST_CONFLICT) // should we test the module for the existence of another version?
         {
             DWORD srcMajor, srcMinor;
             DWORD dstMajor, dstMinor;
             HINSTANCE hSrc, hDst;
 
-            // pokusim se oba moduly nacist
+            // try to load both modules
             hSrc = LoadLibraryEx(src, NULL, LOAD_LIBRARY_AS_DATAFILE);
             hDst = LoadLibraryEx(dst, NULL, LOAD_LIBRARY_AS_DATAFILE);
             if (hSrc != NULL && hDst != NULL)
@@ -2709,7 +2710,8 @@ BOOL FindConflictWithAnotherVersion(BOOL* sameOrOlderVersion, BOOL* sameVersion,
                         *sameVersion = (dstMajor == srcMajor && dstMinor == srcMinor);
                     }
 
-                    /* pri releasu 2.52 beta 2 jsme zjistili, ze nemuzeme ignorovat build number, instalak nam pri upgradu z beta 1 hlasil, ze aplikace se stejnou verzi je jiz nainstalovana 
+                    /* during the 2.52 beta 2 release we learned that we cannot ignore the build number;
+                       when upgrading from beta 1 the installer reported that an application with the same version was already installed
           // ignoring the build WORD
           dstMinor &= 0xffff0000;
           srcMinor &= 0xffff0000;
@@ -2751,7 +2753,7 @@ BOOL FindConflictWithAnotherVersion(BOOL* sameOrOlderVersion, BOOL* sameVersion,
     return FALSE;
 }
 
-// proveri danou cestu, zda obsahuje "salamand.exe" a "remove.rlg" -- dva soubory nezbytne pro pripadny upgrade
+// checks the given path for "salamand.exe" and "remove.rlg" -- two files required for a potential upgrade
 BOOL ContainsPathUpgradableVersion(const char* path)
 {
     char backupDefaultDirectory[MAX_PATH];
@@ -2759,20 +2761,20 @@ BOOL ContainsPathUpgradableVersion(const char* path)
     BOOL foundRemoveLog;
     BOOL sameOrOlderVersion;
 
-    // cesta musi existovat
+    // the path must exist
     DWORD attrs = GetFileAttributes(path);
     if (attrs == INVALID_FILE_ATTRIBUTES || (attrs & FILE_ATTRIBUTE_DIRECTORY) == 0)
         return FALSE;
 
-    // zaloha globalky
+    // back up the global value
     lstrcpy(backupDefaultDirectory, SetupInfo.DefaultDirectory);
-    // globalku musim nastavit, aby se sprave expandovaly cesty
+    // set the global so that paths expand correctly
     lstrcpy(SetupInfo.DefaultDirectory, path);
 
-    // overim, zda je v adresari pritomna starsi nebo shodna verze EXE
+    // verify whether the directory contains an older or identical EXE version
     foundAnotherEXEVersion = FindConflictWithAnotherVersion(&sameOrOlderVersion, NULL, &foundRemoveLog);
 
-    // obnova ze zalohy
+    // restore from the backup
     lstrcpy(SetupInfo.DefaultDirectory, backupDefaultDirectory);
 
     if (foundAnotherEXEVersion && sameOrOlderVersion && foundRemoveLog)
@@ -2786,7 +2788,7 @@ BOOL RefreshDesktop(BOOL sleep)
     ITEMIDLIST root = {0};
     SHChangeNotify(SHCNE_UPDATEDIR, SHCNF_IDLIST, &root, 0);
     if (sleep)
-        Sleep(500); // dame systemu nejaky cas
+        Sleep(500); // give the system some time
     return TRUE;
 }
 
@@ -2912,7 +2914,7 @@ BOOL DoInstallation()
     AddRegistryValues(); // 9
     AddWERLocalDumps();
     SetProgressPos(progress++);
-    //  SaveLastDirectory();    // 10 // provedeme uz po spisteni instalace
+    //  SaveLastDirectory();    // 10 // we will perform this after starting the installation
     //  SetProgressPos(progress++);
     ExpandPath(SetupInfo.UnistallRunProgramQuietPath);
 
@@ -2925,8 +2927,8 @@ BOOL DoInstallation()
 
     SetProgressPos(progress++);
 
-    // pod W2K dochazelo k tomu, ze po instalaci Sal2.51 zustala na plose take ikonka Sal2.5 a zmizela az na
-    // manualni refresh (F5) desktopu; vlastni link uz byl smazanej, pouze desktop porad zobrazoval ikonu
+    // under W2K it happened that after installing Sal2.51 the Sal2.5 icon remained on the desktop and disappeared only after
+    // manually refreshing (F5) the desktop; the link itself was already deleted, only the desktop kept showing the icon
     RefreshDesktop(FALSE);
 
     return TRUE;

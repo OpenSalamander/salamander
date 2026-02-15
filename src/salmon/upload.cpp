@@ -29,7 +29,7 @@ BOOL CreateHTTPOutput(CUploadParams* uploadParams, char** buffer, int* bufferSiz
         DWORD fileSize = GetFileSize(hFile, NULL);
         if (fileSize != INVALID_FILE_SIZE)
         {
-            int allocatedSize = (int)(fileSize + 2000); // rezerva pro HTTP stringy
+            int allocatedSize = (int)(fileSize + 2000); // reserve for HTTP strings
             char* header = (char*)malloc(allocatedSize);
             ZeroMemory(header, allocatedSize);
             if (header != NULL)
@@ -44,7 +44,7 @@ BOOL CreateHTTPOutput(CUploadParams* uploadParams, char** buffer, int* bufferSiz
                 sprintf(s, "Content-Type: multipart/form-data; boundary=---------------------------90721038027008\r\n");
                 s += strlen(s);
                 sprintf(s, "Content-Length: %d\r\n", allocatedSize);
-                s += strlen(s); // snad nebude tato nepresnost zlobit, uvidime
+                s += strlen(s); // hopefully this imprecision will not cause trouble; we will see
                 sprintf(s, "\r\n");
                 s += strlen(s);
                 sprintf(s, "-----------------------------90721038027008\r\n");
@@ -85,7 +85,7 @@ BOOL CreateHTTPOutput(CUploadParams* uploadParams, char** buffer, int* bufferSiz
     return ret;
 }
 
-// z PHP dle http://php.net/manual/en/features.file-upload.errors.php
+// taken from PHP at http://php.net/manual/en/features.file-upload.errors.php
 #define UPLOAD_ERR_OK 0
 #define UPLOAD_ERR_INI_SIZE 1
 #define UPLOAD_ERR_FORM_SIZE 2
@@ -153,8 +153,8 @@ BOOL GetFilesError(int err, CUploadParams* uploadParams)
 
 BOOL AnalyzeResponse(const char* str, int strLen, CUploadParams* uploadParams)
 {
-    // vyhledame nasi odpoved z php skriptu, ve tvaru <response>X</response>, kde X je
-    // error z http://php.net/manual/en/features.file-upload.errors.php
+    // find our response from the PHP script in the form <response>X</response>, where X is
+    // an error from http://php.net/manual/en/features.file-upload.errors.php
     const char* TAG_OPEN = "<response>";
     const char* TAG_CLOSE = "</response>";
     const char* tagOpen = strstr(str, TAG_OPEN);

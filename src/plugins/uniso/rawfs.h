@@ -9,11 +9,11 @@
 //
 // CRawFS
 //
-// Tento filesystem pro vybalovani tzv. raw tracku. Primarne je pouzit pro vybalovani
-// data tracku z video a supervideo CD.
-// Metoda ListDirectory vraci TRUE, protoze na video a supervideo CD jsou adresare
-// nahrany v jinem tracku.
-// Vykonna je pouze metoda UnpackFile.
+// This file system unpacks so-called raw tracks. It is primarily used for extracting
+// data tracks from video and super video CDs.
+// The ListDirectory method returns TRUE because directories on video and super video CDs are
+// stored in a different track.
+// Only the UnpackFile method is functional.
 //
 
 class CRawFS : public CUnISOFSAbstract
@@ -24,7 +24,7 @@ protected:
 public:
     CRawFS(CISOImage* image, DWORD extent);
     virtual ~CRawFS();
-    // metody
+    // methods
 
     virtual BOOL Open(BOOL quiet);
     virtual BOOL DumpInfo(FILE* outStream);

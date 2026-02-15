@@ -15,7 +15,7 @@
 STDMETHODIMP SEI_QueryInterface(THIS_ REFIID riid, LPVOID* ppvObj)
 {
     ShellExtInit* sei = (ShellExtInit*)This;
-    // delegace
+    // delegate to the underlying object
 
     return sei->m_pObj->lpVtbl->QueryInterface((IShellExt*)sei->m_pObj, riid, ppvObj);
 }
@@ -24,7 +24,7 @@ STDMETHODIMP_(ULONG)
 SEI_AddRef(THIS)
 {
     ShellExtInit* sei = (ShellExtInit*)This;
-    // delegace
+    // delegate to the underlying object
     return sei->m_pObj->lpVtbl->AddRef((IShellExt*)sei->m_pObj);
 }
 
@@ -32,7 +32,7 @@ STDMETHODIMP_(ULONG)
 SEI_Release(THIS)
 {
     ShellExtInit* sei = (ShellExtInit*)This;
-    // delegace
+    // delegate to the underlying object
     return sei->m_pObj->lpVtbl->Release((IShellExt*)sei->m_pObj);
 }
 

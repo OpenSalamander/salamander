@@ -16,25 +16,25 @@ CLZH::CLZH(const char* filename, HANDLE file, unsigned char* buffer, unsigned lo
 {
     CALL_STACK_MESSAGE2("CLZH::CLZH(%s, , , )", filename);
 
-    // pokud neprosel konstruktor parenta, balime to rovnou
+    // if the parent constructor failed, bail out immediately
     if (!Ok)
         return;
 
-    // nemuze to byt compress archiv, pokud mame min nez identifikaci...
+    // this cannot be a compress archive if we have less than the identifier...
     if (DataEnd - DataStart < 3)
     {
         Ok = FALSE;
         FreeBufAndFile = FALSE;
         return;
     }
-    // pokud neni spravne "magicke cislo" na zacatku, nejde o LZH
+    // if the "magic number" at the start is wrong, it is not an LZH archive
     if (((unsigned short*)DataStart)[0] != LZH_MAGIC)
     {
         Ok = FALSE;
         FreeBufAndFile = FALSE;
         return;
     }
-    // mame archiv, potvrdime precteny zacatek
+    // a valid archive is present; confirm the consumed header
     FReadBlock(2);
     if (!Ok)
         FreeBufAndFile = FALSE;

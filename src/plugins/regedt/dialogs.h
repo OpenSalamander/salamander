@@ -7,11 +7,11 @@
 
 #define MAX_HISTORY_ENTRIES 20
 
-// pro okno FTP Searche
-// informuje o tom, ze jeden vyhledavaci thread zkoncil
+// for the FTP Search window
+// notifies that one search thread has finished
 #define WM_USER_SEARCH_FINISHED (WM_APP + 2)
 
-// informuje hlavni okno, ze ma refreshnout list view
+// notifies the main window that it should refresh the list view
 #define WM_USER_ADDFILE (WM_APP + 3)
 
 #define WM_USER_BUTTONS (WM_APP + 4)
@@ -26,15 +26,15 @@ extern LPWSTR CopyOrMoveHistory[MAX_HISTORY_ENTRIES];
 extern int DialogWidth;
 extern int DialogHeight;
 extern BOOL Maximized;
-extern int TypeDateColFW; // LO/HI-WORD: levy/pravy panel: sloupec Type/Date: FixedWidth
-extern int TypeDateColW;  // LO/HI-WORD: levy/pravy panel: sloupec Type/Date: Width
-extern int DataTimeColFW; // LO/HI-WORD: levy/pravy panel: sloupec Data/Time: FixedWidth
-extern int DataTimeColW;  // LO/HI-WORD: levy/pravy panel: sloupec Data/Time: Width
-extern int SizeColFW;     // LO/HI-WORD: levy/pravy panel: sloupec Size: FixedWidth
-extern int SizeColW;      // LO/HI-WORD: levy/pravy panel: sloupec Size: Width
+extern int TypeDateColFW; // LO/HI-WORD: left/right panel: Type/Date column: FixedWidth
+extern int TypeDateColW;  // LO/HI-WORD: left/right panel: Type/Date column: Width
+extern int DataTimeColFW; // LO/HI-WORD: left/right panel: Data/Time column: FixedWidth
+extern int DataTimeColW;  // LO/HI-WORD: left/right panel: Data/Time column: Width
+extern int SizeColFW;     // LO/HI-WORD: left/right panel: Size column: FixedWidth
+extern int SizeColW;      // LO/HI-WORD: left/right panel: Size column: Width
 
-extern HFONT EnvFont;     // font prostredi (edit, toolbar, header, status)
-extern int EnvFontHeight; // vyska fontu
+extern HFONT EnvFont;     // environment font (edit, toolbar, header, status)
+extern int EnvFontHeight; // font height
 
 BOOL InitDialogs();
 void ReleaseDialogs();
@@ -85,8 +85,8 @@ public:
     virtual BOOL TransferData(CTransferType type);
     virtual void Transfer(CTransferInfoEx& /*ti*/) {}
 
-    INT_PTR Execute(); // modalni dialog
-    HWND Create();     // nemodalni dialog
+    INT_PTR Execute(); // modal dialog
+    HWND Create();     // modeless dialog
 
 protected:
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);

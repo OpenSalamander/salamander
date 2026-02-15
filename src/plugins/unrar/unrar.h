@@ -50,7 +50,7 @@ struct CFileHeader
     DWORD Flags;
 };
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from startup until the plugin ends
 extern CSalamanderGeneralAbstract* SalamanderGeneral;
 
 // used in CFileData.PluginData
@@ -228,12 +228,12 @@ public:
     virtual void WINAPI PasswordManagerEvent(HWND parent, int event) {}
 };
 
-extern HINSTANCE DLLInstance; // handle k SPL-ku - jazykove nezavisle resourcy
-extern HINSTANCE HLanguage;   // handle k SLG-cku - jazykove zavisle resourcy
+extern HINSTANCE DLLInstance; // handle to SPL - language-independent resources
+extern HINSTANCE HLanguage;   // handle to SLG - language-dependent resources
 
-// zatim staci tohleto misto konfigurace
-#define OP_SKIPCONTINUED 0x01    // budeme preskakovat vsechny soubory, ktere zacinaji na predchozim volumu?
-#define OP_NO_VOL_ATTENTION 0x02 // nebudeme upozornovat, kdyz nejde vylistovat cely archive
+// this is sufficient for now instead of a configuration
+#define OP_SKIPCONTINUED 0x01    // should we skip all files that start on the previous volume?
+#define OP_NO_VOL_ATTENTION 0x02 // do not warn when the entire archive cannot be listed
 
 #define OP_SAVED_IN_REGISTRY (OP_SKIPCONTINUED | OP_NO_VOL_ATTENTION)
 

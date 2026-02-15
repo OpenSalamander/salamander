@@ -46,7 +46,7 @@ int CRendererWindow::ComputeExtents(HDC hDC, SIZE& s, BOOL value, BOOL computeHe
 
         HFONT hOldFont = (HFONT)GetCurrentObject(hDC, OBJ_FONT);
 
-        if (item->Name && item->Value) //neni-li to header
+        if (item->Name && item->Value) // if this is not a header
         {
             const char* str = value ? item->Value : item->Name;
             SelectObject(hDC, value ? HBoldFont : HNormalFont);
@@ -59,7 +59,7 @@ int CRendererWindow::ComputeExtents(HDC hDC, SIZE& s, BOOL value, BOOL computeHe
         s.cy = r.bottom;
 */
         }
-        else if (item->Name && computeHeaderWidth) //spocti pozadovanou sirku headeru (nekdy muze byt sirsi nez name+value dohromady)
+        else if (item->Name && computeHeaderWidth) // compute the required header width (sometimes it can be wider than name+value together)
         {
             SelectObject(hDC, HBoldFont);
             DrawText(hDC, item->Name, (int)strlen(item->Name), &r, DT_CALCRECT | DT_SINGLELINE | DT_LEFT);
@@ -73,11 +73,11 @@ int CRendererWindow::ComputeExtents(HDC hDC, SIZE& s, BOOL value, BOOL computeHe
 
     s.cy = (FontHeight + 1) * Output.GetCount();
 
-    //udelej trochu mista okolo
+    // make a little room around
     s.cx += 15;
     s.cy += 15;
 
-    if (s.cx > 4096) //edit boxy si s velkou sirkou nevi rady
+    if (s.cx > 4096) // edit boxes cannot cope with a huge width
         s.cx = 4096;
 
     return headerWidth + 15;
@@ -158,11 +158,11 @@ void CRendererWindow::Paint(HDC hDC, BOOL moveEditBoxes, DWORD deferFlg)
                     {
                         LRESULT lines = SendMessage(item->hwnd, (UINT)EM_GETLINECOUNT, 0, 0);
 
-                        if (lines > 1) //pridej scrollbarek ;-)
+                        if (lines > 1) // add a tiny scrollbar ;-)
                         {
                             LONG style = GetWindowLong(item->hwnd, GWL_STYLE);
                             SetWindowLong(item->hwnd, GWL_STYLE, style | WS_VSCROLL);
-                            //Nyni je treba takovyhle brutalni refresh
+                            // Now this kind of brutal refresh is necessary
                             SetWindowPos(item->hwnd, HWND_TOP, startH + sLeft.cx, y, sRight.cx, FontHeight,
                                          SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOZORDER | SWP_NOSIZE);
                         }

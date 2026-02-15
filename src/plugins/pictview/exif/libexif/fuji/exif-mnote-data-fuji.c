@@ -29,7 +29,7 @@
 #include "exif-mnote-data-fuji.h"
 
 #pragma warning(push)
-#pragma warning(disable: 4267) // FIXME_X64 - docasne potlacen warning, vyresit
+#pragma warning(disable: 4267) // FIXME_X64 - warning temporarily suppressed, fix it
 
 struct _MNoteFujiDataPrivate {
 	ExifByteOrder order;
@@ -351,4 +351,4 @@ exif_mnote_data_fuji_new (ExifMem *mem)
 	return d;
 }
 
-#pragma warning(pop) // FIXME_X64 - docasne potlacen warning, vyresit
+#pragma warning(pop) // FIXME_X64 - warning temporarily suppressed, fix it

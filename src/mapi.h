@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -108,29 +109,28 @@ typedef ULONG(FAR PASCAL* PFNMAPISENDMAIL)(LHANDLE lhSession,
 class CSimpleMAPI
 {
 protected:
-    HINSTANCE HLibrary;           // knihovna MAPI32.DLL
-    PFNMAPISENDMAIL MAPISendMail; // z ni vytazena funkce
+    HINSTANCE HLibrary;           // MAPI32.DLL library
+    PFNMAPISENDMAIL MAPISendMail; // function extracted from it
 
-    TDirectArray<char*> FileNames; // pole ukazatelu na nazvy posilanych souboru
-    CQuadWord TotalSize;           // celkova velikost souboru (z FileNames)
+    TDirectArray<char*> FileNames; // array of pointers to the names of files being sent
+    CQuadWord TotalSize;           // total size of the files (from FileNames)
 
 public:
     CSimpleMAPI();
     ~CSimpleMAPI();
 
-    // pokusi se nacist knihovnu mapi32.dll a nalinkovat potrebne funkce
-    // vrati TRUE, pokud se to podarilo; jinak zobrazi chybocou hlasku s predkem
-    // hParent a vrati FALSE
+    // tries to load mapi32.dll library and link required functions
+    // returns TRUE on success; otherwise shows an error message with the parent
+    // window hParent and returns FALSE
     BOOL Init(HWND hParent);
 
-    // odlinkuje funkce a uvolni nactenou knihovnu
+    // unlinks the functions and frees the loaded library
     void Release();
 
-    // prida do seznamu zasilanych souboru dalsi jmeno
-    // k celkove velikosti pricte velikost souboru
-    // vytvari si jeho kopii
-    // vrati TRUE v pripade uspechu; jinak vraci FALSE
-    // pole je nulovano pri volani metody Release
+    // adds another file name to the list of files to send
+    // increases TotalSize by the file size and creates its own copy of the name
+    // returns TRUE on success, otherwise returns FALSE
+    // the array is cleared when Release method is called
     BOOL AddFile(const char* fileName, const CQuadWord* size);
 
     int GetFilesCount() { return FileNames.Count; }
@@ -139,14 +139,14 @@ public:
     BOOL SendMail();
 };
 
-// vytvori novy thread, ze ktereho zavola mapi->SendMail();
-// tim je zajistena nemodalita okna dopisu
-// vraci TRUE, pokud se thread povedlo vytvorit, jinak FALSE
-// v pripade uspechu i neuspechu vola delete na ukazatel 'mapi'
+// creates a new thread that calls mapi->SendMail();
+// this ensures the mail compose window is non-modal
+// returns TRUE if the thread could be created, otherwise returns FALSE
+// whether successful or not, it deletes the 'mapi' pointer
 //
-// CSimpleMAPI nema resen pristup do dat pres kriticke sekce,
-// proto je treba funkci poucivat takto:
-// 1) v hlavnim threadu alokace instance CSimpleMAPI
-// 2) pridani souboru do alokovane instance pres metodu AddFile
-// 3) zavolani SimpleMAPISendMail s instanci; ta uz se postara o destrukci
+// CSimpleMAPI does not handle data access using critical sections,
+// so use the function this way:
+// 1) allocate a CSimpleMAPI instance in the main thread
+// 2) add files to the allocated instance using AddFile method
+// 3) call SimpleMAPISendMail with the instance; it will handle destruction
 BOOL SimpleMAPISendMail(CSimpleMAPI* mapi);

@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -48,7 +49,7 @@ BOOL IsValidIdentifier(const char* s, int* errResID)
 
 void CEditSrvTypeColumnDlg::Validate(CTransferInfo& ti)
 {
-    // kontrola syntaxe, nepouziti vyhrazenych ID (is_dir+is_hidden+is_link), unikatnosti a neprazdnosti ID
+    // check syntax, avoid reserved IDs (is_dir+is_hidden+is_link), ensure uniqueness and non-empty ID
     char id[STC_ID_MAX_SIZE];
     BOOL ok = TRUE;
     ti.EditLine(IDE_COL_ID, id, STC_ID_MAX_SIZE);
@@ -77,14 +78,14 @@ void CEditSrvTypeColumnDlg::Validate(CTransferInfo& ti)
         return;
     }
 
-    // kontrola syntaxe "empty value"
+    // check syntax of "empty value"
     CSrvTypeColumnTypes type = stctNone;
     HWND combo = GetDlgItem(HWindow, IDC_COL_TYPE);
     int i = (int)SendMessage(combo, CB_GETCURSEL, 0, 0);
     if (i != CB_ERR)
     {
-        // x64 - ITEMDATA nedrzi ukazatel, pretypovani na (int) je bezpecne
-        int t = (int)SendMessage(combo, CB_GETITEMDATA, i, 0); // ziskame vybrany typ sloupce
+        // x64 - ITEMDATA does not hold a pointer, casting to (int) is safe
+        int t = (int)SendMessage(combo, CB_GETITEMDATA, i, 0); // obtain the selected column type
         if (t > stctNone && t < stctLastItem)
             type = (CSrvTypeColumnTypes)t;
     }
@@ -98,7 +99,7 @@ void CEditSrvTypeColumnDlg::Validate(CTransferInfo& ti)
         return;
     }
 
-    // kontrola neprazdnosti jmena a popisu sloupce
+    // check that the column name and description are not empty
     BOOL errOnName = LastUsedIndexForName == -1 && GetWindowTextLength(GetDlgItem(HWindow, IDC_COL_NAME)) == 0;
     BOOL errOnDescr = LastUsedIndexForDescr == -1 && GetWindowTextLength(GetDlgItem(HWindow, IDC_COL_DESCR)) == 0;
     if (errOnName || errOnDescr)
@@ -119,7 +120,7 @@ void CEditSrvTypeColumnDlg::Transfer(CTransferInfo& ti)
     if (ti.Type == ttDataToWindow)
     {
         char emptyBuff[] = "";
-        ti.EditLine(IDE_COL_ID, Edit ? ColumnsData->At(*EditedColumn)->ID : emptyBuff, STC_ID_MAX_SIZE); // ID nemuze byt NULL
+        ti.EditLine(IDE_COL_ID, Edit ? ColumnsData->At(*EditedColumn)->ID : emptyBuff, STC_ID_MAX_SIZE); // ID cannot be NULL
         ti.EditLine(IDE_COL_EMPTY, Edit ? HandleNULLStr(ColumnsData->At(*EditedColumn)->EmptyValue) : emptyBuff,
                     STC_EMPTYVAL_MAX_SIZE);
     }
@@ -138,7 +139,7 @@ void CEditSrvTypeColumnDlg::Transfer(CTransferInfo& ti)
     {
         if (ti.Type == ttDataToWindow)
         {
-            // napridavame std. stringy
+            // append standard strings first
             SendMessage(comboName, CB_RESETCONTENT, 0, 0);
             SendMessage(comboDescr, CB_RESETCONTENT, 0, 0);
             int i;
@@ -149,10 +150,10 @@ void CEditSrvTypeColumnDlg::Transfer(CTransferInfo& ti)
                 SendMessage(comboName, CB_ADDSTRING, 0, (LPARAM)bufName);
                 SendMessage(comboDescr, CB_ADDSTRING, 0, (LPARAM)bufDescr);
             }
-            // nastavime limity na texty
+            // set text limits
             SendMessage(comboName, CB_LIMITTEXT, STC_NAME_MAX_SIZE - 1, 0);
             SendMessage(comboDescr, CB_LIMITTEXT, STC_DESCR_MAX_SIZE - 1, 0);
-            // pokud jde o editaci, vlozime do editline i aktualni texty
+            // if editing, insert the current texts into the edit line
             if (Edit)
             {
                 CSrvTypeColumn* col = ColumnsData->At(*EditedColumn);
@@ -178,8 +179,8 @@ void CEditSrvTypeColumnDlg::Transfer(CTransferInfo& ti)
         }
         else
         {
-            // pokud ma user vlastni text, vytahneme ho, jinak pouzijeme indexy z posledniho vyberu
-            // v combu (zjisteni indexu dohledanim stringu v seznamu neni mozne, hrozi duplitita stringu)
+            // if the user has custom text, pull it out, otherwise use indexes from the last selection
+            // in the combo (finding the index by looking up the string in the list is impossible, duplicate strings may occur)
             if (LastUsedIndexForName == -1)
                 GetWindowText(comboName, bufName, STC_NAME_MAX_SIZE);
             if (LastUsedIndexForDescr == -1)
@@ -202,13 +203,13 @@ void CEditSrvTypeColumnDlg::Transfer(CTransferInfo& ti)
             {
                 BOOL add = TRUE;
                 if (i == stctExt && Edit && *EditedColumn != 1)
-                    add = FALSE; // pripona muze byt jen druhy sloupec
+                    add = FALSE; // the extension can only be the second column
                 if (add && i < stctFirstGeneral)
                 {
                     int j;
                     for (j = 0; j < ColumnsData->Count; j++)
                     {
-                        if ((!Edit || *EditedColumn != j) && // pri editaci pridame prirozene i nas soucasny typ
+                        if ((!Edit || *EditedColumn != j) && // when editing we naturally include our current type
                             i == (int)ColumnsData->At(j)->Type)
                         {
                             add = FALSE;
@@ -218,13 +219,13 @@ void CEditSrvTypeColumnDlg::Transfer(CTransferInfo& ti)
                 }
                 if (add && GetColumnTypeName(buf, 100, (CSrvTypeColumnTypes)i))
                 {
-                    SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)buf); // pridame string a
-                    SendMessage(combo, CB_SETITEMDATA, count++, i);   // k nemu o jaky typ sloupce jde
+                    SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)buf); // add the string and
+                    SendMessage(combo, CB_SETITEMDATA, count++, i);   // associate which column type it is
                     if (Edit && (int)(ColumnsData->At(*EditedColumn)->Type) == i)
                     {
-                        focus = count - 1; // pri editace focusime nas typ
+                        focus = count - 1; // when editing we focus our type
                         if (i == stctName)
-                            break; // typ prvniho sloupce se zmenit neda
+                            break; // the type of the first column cannot be changed
                     }
                 }
             }
@@ -237,8 +238,8 @@ void CEditSrvTypeColumnDlg::Transfer(CTransferInfo& ti)
             int i = (int)SendMessage(combo, CB_GETCURSEL, 0, 0);
             if (i != CB_ERR)
             {
-                // x64 - ITEMDATA nedrzi ukazatel, pretypovani na (int) je bezpecne
-                int type = (int)SendMessage(combo, CB_GETITEMDATA, i, 0); // ziskame vybrany typ sloupce
+                // x64 - ITEMDATA does not hold a pointer, casting to (int) is safe
+                int type = (int)SendMessage(combo, CB_GETITEMDATA, i, 0); // obtain the selected column type
                 if (type > stctNone && type < stctLastItem)
                     colType = (CSrvTypeColumnTypes)type;
                 else
@@ -253,8 +254,8 @@ void CEditSrvTypeColumnDlg::Transfer(CTransferInfo& ti)
         if (ti.Type == ttDataToWindow)
         {
             SendMessage(combo, CB_RESETCONTENT, 0, 0);
-            SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)LoadStr(IDS_SRVTYPECOL_ALIGNLEFT));  // pridame string "left"
-            SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)LoadStr(IDS_SRVTYPECOL_ALIGNRIGHT)); // pridame string "right"
+            SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)LoadStr(IDS_SRVTYPECOL_ALIGNLEFT));  // add the string "left"
+            SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)LoadStr(IDS_SRVTYPECOL_ALIGNRIGHT)); // add the string "right"
             SendMessage(combo, CB_SETCURSEL, ColumnsData->At(*EditedColumn)->Type >= stctFirstGeneral ? (ColumnsData->At(*EditedColumn)->LeftAlignment ? 0 : 1) : -1, 0);
         }
         else
@@ -265,24 +266,24 @@ void CEditSrvTypeColumnDlg::Transfer(CTransferInfo& ti)
         }
     }
 
-    // zpracujeme ziskana data (id, emptyVal, LastUsedIndexForName, bufName, LastUsedIndexForDescr,
+    // process the acquired data (id, emptyVal, LastUsedIndexForName, bufName, LastUsedIndexForDescr,
     // bufDescr, colType, leftAlignment)
     if (ti.Type == ttDataFromWindow)
     {
-        // u typu Name, Ext a Type nemaji prazdne hodnoty smysl, vycistime je
+        // for types Name, Ext, and Type empty values make no sense, clear them
         if (colType == stctName || colType == stctExt || colType == stctType)
             emptyVal[0] = 0;
 
-        if (Edit) // editace sloupce
+        if (Edit) // editing a column
         {
             CSrvTypeColumn* col = ColumnsData->At(*EditedColumn);
-            UpdateStr(col->ID, id); // pri chybe zustaneme u puvodniho ID
+            UpdateStr(col->ID, id); // in case of an error we keep the original ID
             if (LastUsedIndexForName == -1)
             {
                 BOOL err = FALSE;
                 UpdateStr(col->NameStr, bufName, &err);
                 if (!err)
-                    col->NameID = -1; // pri chybe nechame puvodni jmeno sloupce
+                    col->NameID = -1; // in case of an error we leave the original column name
             }
             else
             {
@@ -298,7 +299,7 @@ void CEditSrvTypeColumnDlg::Transfer(CTransferInfo& ti)
                 BOOL err = FALSE;
                 UpdateStr(col->DescrStr, bufDescr, &err);
                 if (!err)
-                    col->DescrID = -1; // pri chybe nechame puvodni popis sloupce
+                    col->DescrID = -1; // in case of an error we leave the original column description
             }
             else
             {
@@ -309,7 +310,7 @@ void CEditSrvTypeColumnDlg::Transfer(CTransferInfo& ti)
                 }
                 col->DescrID = LastUsedIndexForDescr;
             }
-            // pri editaci na stctExt musi dojit k Visible = TRUE
+            // editing stctExt must result in Visible = TRUE
             if (colType == stctExt)
                 col->Visible = TRUE;
             col->Type = colType;
@@ -322,7 +323,7 @@ void CEditSrvTypeColumnDlg::Transfer(CTransferInfo& ti)
                 col->EmptyValue = NULL;
             }
         }
-        else // novy sloupec
+        else // new column
         {
             CSrvTypeColumn* col = new CSrvTypeColumn;
             if (col != NULL && col->IsGood())
@@ -330,16 +331,16 @@ void CEditSrvTypeColumnDlg::Transfer(CTransferInfo& ti)
                 col->Set(TRUE, id, LastUsedIndexForName, bufName[0] == 0 ? NULL : bufName,
                          LastUsedIndexForDescr, bufDescr[0] == 0 ? NULL : bufDescr, colType,
                          emptyVal[0] == 0 ? NULL : emptyVal, leftAlignment, 0, 0);
-                // pridani typu stctExt musi vest ke vlozeni za "Name" (tedy na index 1 v poli)
+                // adding type stctExt must insert it after "Name" (that is, at index 1 in the array)
                 if (colType == stctExt)
                 {
                     ColumnsData->Insert(1, col);
-                    *EditedColumn = 1; // fokus vlozeneho sloupce
+                    *EditedColumn = 1; // focus the inserted column
                 }
                 else
                 {
                     ColumnsData->Add(col);
-                    *EditedColumn = ColumnsData->Count - 1; // fokus pridaneho sloupce
+                    *EditedColumn = ColumnsData->Count - 1; // focus the added column
                 }
                 if (ColumnsData->IsGood())
                     col = NULL;
@@ -372,7 +373,7 @@ CEditSrvTypeColumnDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case IDC_COL_NAME:
         case IDC_COL_DESCR:
         {
-            if (HIWORD(wParam) == CBN_SELCHANGE) // ulozime posledni zvoleny index z comboboxu
+            if (HIWORD(wParam) == CBN_SELCHANGE) // save the last selected index from the combo box
             {
                 HWND combo = GetDlgItem(HWindow, LOWORD(wParam));
                 int i = (int)SendMessage(combo, CB_GETCURSEL, 0, 0);
@@ -384,7 +385,7 @@ CEditSrvTypeColumnDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         LastUsedIndexForDescr = i;
                 }
             }
-            if (HIWORD(wParam) == CBN_EDITCHANGE) // zneplatnime posledni zvoleny index z comboboxu
+            if (HIWORD(wParam) == CBN_EDITCHANGE) // invalidate the last selected index from the combo box
             {
                 if (LOWORD(wParam) == IDC_COL_NAME)
                     LastUsedIndexForName = -1;
@@ -396,14 +397,14 @@ CEditSrvTypeColumnDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         case IDC_COL_TYPE:
         {
-            if (HIWORD(wParam) == CBN_SELCHANGE) // nastavime napovedu pro format "Empty Value" + enablujeme a nastavime combo Alignment
+            if (HIWORD(wParam) == CBN_SELCHANGE) // set the help text for the "Empty Value" format and enable and set the Alignment combo box
             {
                 HWND combo = GetDlgItem(HWindow, IDC_COL_TYPE);
                 int i = (int)SendMessage(combo, CB_GETCURSEL, 0, 0);
                 if (i != CB_ERR)
                 {
-                    // x64 - ITEMDATA nedrzi ukazatel, pretypovani na (int) je bezpecne
-                    int type = (int)SendMessage(combo, CB_GETITEMDATA, i, 0); // ziskame vybrany typ sloupce
+                    // x64 - ITEMDATA does not hold a pointer, casting to (int) is safe
+                    int type = (int)SendMessage(combo, CB_GETITEMDATA, i, 0); // obtain the selected column type
                     if (type > stctNone && type < stctLastItem)
                     {
                         BOOL leftAlignment = TRUE;
@@ -430,14 +431,14 @@ CEditSrvTypeColumnDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         }
                         SetDlgItemText(HWindow, IDT_COL_FORMHELP, LoadStr(resID));
 
-                        // enablujeme editline Empty Value
+                        // enable the Empty Value edit line
                         BOOL enable = (type != stctName && type != stctExt && type != stctType);
                         HWND focus = GetFocus();
                         if (!enable && focus == GetDlgItem(HWindow, IDE_COL_EMPTY))
                             SendMessage(HWindow, WM_NEXTDLGCTL, (WPARAM)GetDlgItem(HWindow, IDC_COL_TYPE), TRUE);
                         EnableWindow(GetDlgItem(HWindow, IDE_COL_EMPTY), enable);
 
-                        // enablujeme a nastavujeme combo Alignment
+                        // enable and configure the Alignment combo box
                         enable = type >= stctFirstGeneral;
                         if (!FirstSelNotifyAfterTransfer)
                         {
@@ -482,7 +483,7 @@ CSrvTypeTestParserDlg::CSrvTypeTestParserDlg(HWND parent, CFTPParser* parser,
     SymbolsImageList = ImageList_Create(16, 16, ILC_MASK | SalamanderGeneral->GetImageListColorFlags(), 3, 0);
     if (SymbolsImageList != NULL)
     {
-        ImageList_SetImageCount(SymbolsImageList, 3); // inicializace
+        ImageList_SetImageCount(SymbolsImageList, 3); // initialization
 
         HINSTANCE iconsDLL;
         if (WindowsVistaAndLater)
@@ -571,7 +572,7 @@ void CSrvTypeTestParserDlg::Transfer(CTransferInfo& ti)
         int len = GetWindowTextLength(edit);
         if (len >= 0)
         {
-            if (AllocatedSizeOfRawListing != len + 1) // realokujeme buffer na presnou velikost textu
+            if (AllocatedSizeOfRawListing != len + 1) // reallocate the buffer to the exact size of the text
             {
                 AllocatedSizeOfRawListing = len + 1;
                 char* n = (char*)realloc(*RawListing, AllocatedSizeOfRawListing);
@@ -596,14 +597,14 @@ void CSrvTypeTestParserDlg::Transfer(CTransferInfo& ti)
             }
         }
 
-        // uvolnime image-list z list-view, chceme image-list uvolnit sami
+        // release the image list from the list view, we want to free the image list ourselves
         ListView_SetImageList(HListView, NULL, LVSIL_SMALL);
         if (SymbolsImageList != NULL)
         {
             ImageList_Destroy(SymbolsImageList);
-            SymbolsImageList = NULL; // simulujeme stav, kdy se imagelist nepodarilo vytvorit
+            SymbolsImageList = NULL; // simulate the state when the image list could not be created
         }
-        ListView_DeleteAllItems(HListView); // promazeme listview dokud je dialog videt - celkove lepsi chovani
+        ListView_DeleteAllItems(HListView); // clear the list view while the dialog is visible - overall better behavior
     }
 }
 
@@ -613,7 +614,7 @@ void CSrvTypeTestParserDlg::InitColumns()
     lvc.mask = LVCF_FMT | LVCF_TEXT | LVCF_SUBITEM;
     lvc.fmt = LVCFMT_LEFT;
     int i;
-    for (i = 0; i < Columns->Count; i++) // vytvorim sloupce
+    for (i = 0; i < Columns->Count; i++) // create columns
     {
         CSrvTypeColumn* col = Columns->At(i);
         char bufName[STC_NAME_MAX_SIZE];
@@ -626,7 +627,7 @@ void CSrvTypeTestParserDlg::InitColumns()
             lvc.pszText = HandleNULLStr(col->NameStr);
         lvc.iSubItem = i;
         ListView_InsertColumn(HListView, i, &lvc);
-        //    ListView_SetColumnWidth(HListView, i, LVSCW_AUTOSIZE_USEHEADER); // sirky nastavime az v SetColumnWidths()
+        //    ListView_SetColumnWidth(HListView, i, LVSCW_AUTOSIZE_USEHEADER); // widths will be set later in SetColumnWidths()
     }
     if (SymbolsImageList != NULL)
         ListView_SetImageList(HListView, SymbolsImageList, LVSIL_SMALL);
@@ -646,10 +647,10 @@ void CSrvTypeTestParserDlg::ParseListingToListView()
 {
     HCURSOR oldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
-    // LockWindowUpdate(HListView);  // nepouzivat - blika cely Windows
+    // LockWindowUpdate(HListView);  // do not use - the entire Windows flickers
     //  SendMessage(HListView, WM_SETREDRAW, FALSE, 0);
-    // pri volani SetColumnWidths() dochazi pru pouziti samotneho WM_SETREDRAW ke
-    // smazani obsahu listview a tedy zbytecnemu blikani. Proto okno po dobu plneni zhasneme.
+    // when calling SetColumnWidths(), using only WM_SETREDRAW leads to
+    // clearing the list view and thus unnecessary flickering. Therefore we hide the window during filling.
     SetWindowPos(HListView, NULL, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_HIDEWINDOW | SWP_NOREDRAW | SWP_NOSENDCHANGING | SWP_NOZORDER);
 
     int selIndex = 0;
@@ -670,19 +671,19 @@ void CSrvTypeTestParserDlg::ParseListingToListView()
     lstrcpyn(strDIR, LoadStr(IDS_SRVTYPE_SIZEISDIR), 100);
 
     CFileData file;
-    CFTPListingPluginDataInterface dataIface(Columns, FALSE, 0 /* nepouziva se zde */, FALSE /* nepouziva se zde */);
+    CFTPListingPluginDataInterface dataIface(Columns, FALSE, 0 /* not used here */, FALSE /* not used here */);
     char buf[100];
     CQuadWord qwVal(0, 0);
     __int64 int64Val = 0;
     SYSTEMTIME stDateVal;
-    GetLocalTime(&stDateVal);         // inicializujeme na nejake platne hodnoty
-    SYSTEMTIME stTimeVal = stDateVal; // inicializujeme na nejake platne hodnoty
-    SYSTEMTIME st;                    // pomocne
-    FILETIME ft;                      // pomocne
+    GetLocalTime(&stDateVal);         // initialize to some valid values
+    SYSTEMTIME stTimeVal = stDateVal; // initialize to some valid values
+    SYSTEMTIME st;                    // helper
+    FILETIME ft;                      // helper
     const char* listingStart = HandleNULLStr(*RawListing);
     const char* listing = listingStart;
     const char* listingEnd = listing + strlen(listing);
-    if (*RawListIncomplete) // zkratime listing tak, aby obsahoval jen cele radky
+    if (*RawListIncomplete) // shorten the listing so that it contains only complete lines
     {
         const char* s = listingEnd;
         while (s > listingStart && *(s - 1) != '\r' && *(s - 1) != '\n')
@@ -690,21 +691,21 @@ void CSrvTypeTestParserDlg::ParseListingToListView()
         listingEnd = s;
     }
     BOOL lowMem = FALSE;
-    DWORD* emptyCol = new DWORD[Columns->Count]; // pomocne predalokovane pole pro GetNextItemFromListing
+    DWORD* emptyCol = new DWORD[Columns->Count]; // helper preallocated array for GetNextItemFromListing
     if (dataIface.IsGood() && emptyCol != NULL)
     {
         const char* itemStart = NULL;
         BOOL isDir = FALSE;
         int i = 0;
         Parser->BeforeParsing(listingStart, listingEnd, stDateVal.wYear, stDateVal.wMonth,
-                              stDateVal.wDay, *RawListIncomplete); // init parseru
+                              stDateVal.wDay, *RawListIncomplete); // initialize the parser
         while (Parser->GetNextItemFromListing(&file, &isDir, &dataIface, Columns, &listing,
                                               listingEnd, &itemStart, &lowMem, emptyCol))
         {
             Offsets.Add((DWORD)(itemStart - listingStart));
             Offsets.Add((DWORD)(listing - listingStart));
 
-            // prvni sloupec je vzdy Name
+            // the first column is always Name
             LVITEM lvi;
             lvi.mask = LVIF_STATE | LVIF_TEXT | (SymbolsImageList != NULL ? LVIF_IMAGE : 0);
             lvi.iImage = (isDir ? 0 : 1);
@@ -714,7 +715,7 @@ void CSrvTypeTestParserDlg::ParseListingToListView()
             lvi.pszText = file.Name;
             ListView_InsertItem(HListView, &lvi);
 
-            // vlozime data pro dalsi sloupce
+            // insert data for other columns
             int j;
             for (j = 1; j < Columns->Count; j++)
             {
@@ -723,7 +724,7 @@ void CSrvTypeTestParserDlg::ParseListingToListView()
                 CSrvTypeColumn* col = Columns->At(j);
                 switch (col->Type)
                 {
-                // case stctName:   // Name muze byt jen v prvnim sloupci
+                // case stctName:   // Name can only be in the first column
                 case stctGeneralText:
                     value = HandleNULLStr(dataIface.GetStringFromColumn(file, j));
                     break;
@@ -755,7 +756,7 @@ void CSrvTypeTestParserDlg::ParseListingToListView()
                     }
                     else
                     {
-                        if (int64Val != INT64_EMPTYNUMBER) // nema se zobrazit ""
+                        if (int64Val != INT64_EMPTYNUMBER) // should not display ""
                         {
                             buf[0] = '-';
                             SalamanderGeneral->NumberToStr(buf + 1, qwVal.SetUI64((unsigned __int64)(-int64Val)));
@@ -778,7 +779,7 @@ void CSrvTypeTestParserDlg::ParseListingToListView()
                 case stctGeneralDate:
                 {
                     dataIface.GetDateFromColumn(file, j, &stDateVal);
-                    if (stDateVal.wDay != 0) // nema se zobrazit ""
+                    if (stDateVal.wDay != 0) // should not display ""
                     {
                         if (GetDateFormat(LOCALE_USER_DEFAULT, DATE_SHORTDATE, &stDateVal, NULL, buf, 100) == 0)
                             sprintf(buf, "%u.%u.%u", stDateVal.wDay, stDateVal.wMonth, stDateVal.wYear);
@@ -800,7 +801,7 @@ void CSrvTypeTestParserDlg::ParseListingToListView()
                 case stctGeneralTime:
                 {
                     dataIface.GetTimeFromColumn(file, j, &stTimeVal);
-                    if (stTimeVal.wHour != 24) // nema se zobrazit ""
+                    if (stTimeVal.wHour != 24) // should not display ""
                     {
                         if (GetTimeFormat(LOCALE_USER_DEFAULT, 0, &stTimeVal, NULL, buf, 100) == 0)
                             sprintf(buf, "%u:%02u:%02u", stTimeVal.wHour, stTimeVal.wMinute, stTimeVal.wSecond);
@@ -812,7 +813,7 @@ void CSrvTypeTestParserDlg::ParseListingToListView()
                 ListView_SetItemText(HListView, i, j, value);
             }
             i++;
-            // uvolnime data souboru nebo adresare
+            // release data of the file or directory
             dataIface.ReleasePluginData(file, isDir);
             free(file.Name);
         }
@@ -837,29 +838,29 @@ void CSrvTypeTestParserDlg::ParseListingToListView()
             selIndex = count - 1;
         if (selIndex < 0)
             selIndex = 0;
-        // nahrazka za SetTopIndex u list-view
+        // replacement for SetTopIndex in the list view
         ListView_EnsureVisible(HListView, count - 1, FALSE);
         ListView_EnsureVisible(HListView, topIndex, FALSE);
-        // normalni focus
+        // normal focus
         DWORD state = LVIS_SELECTED | LVIS_FOCUSED;
         ListView_SetItemState(HListView, selIndex, state, state);
         ListView_EnsureVisible(HListView, selIndex, FALSE);
     }
     SetColumnWidths();
 
-    //  LockWindowUpdate(NULL);   // nepouzivat - pri delsim parsovani blika cely Windows
+    //  LockWindowUpdate(NULL);   // do not use - Windows flickers during longer parsing
     //  SendMessage(HListView, WM_SETREDRAW, TRUE, 0);
     SetWindowPos(HListView, NULL, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_SHOWWINDOW /*| SWP_NOREDRAW */ | SWP_NOSENDCHANGING | SWP_NOZORDER);
 
     SetCursor(oldCur);
 
-    // pokud nedoslo k uspesnemu rozparsovani celeho listingu, ohlasime chybu
-    if (!lowMem && listing < listingEnd) // nedostatek pameti nehlasime (fatal error)
+    // if the entire listing was not parsed successfully, report an error
+    if (!lowMem && listing < listingEnd) // we do not report lack of memory (fatal error)
     {
         SalamanderGeneral->SalMessageBox(HWindow, LoadStr(IDS_SRVTYPE_PARSEERROR),
                                          LoadStr(IDS_FTPERRORTITLE),
                                          MB_OK | MB_ICONEXCLAMATION);
-        // oznacime misto chyby v textu pravidel pro parsovani
+        // highlight the error location in the parsing rules text
         DWORD errorPos = (DWORD)(listing - listingStart);
         SendDlgItemMessage(HWindow, IDE_PARSER_RAWLIST, EM_SETSEL, (WPARAM)errorPos,
                            (LPARAM)errorPos);
@@ -881,7 +882,7 @@ void CSrvTypeTestParserDlg::LoadTextFromFile()
     ofn.hwndOwner = HWindow;
     char* s = LoadStr(IDS_RAWLISTINGFILTER);
     ofn.lpstrFilter = s;
-    while (*s != 0) // vytvoreni double-null terminated listu
+    while (*s != 0) // creating a double-null-terminated list
     {
         if (*s == '|')
             *s = 0;
@@ -956,7 +957,7 @@ void CSrvTypeTestParserDlg::LoadTextFromFile()
 
             HANDLES(CloseHandle(file));
             SetCursor(oldCur);
-            if (err != NO_ERROR) // vypis chyby
+            if (err != NO_ERROR) // print the error
             {
                 sprintf(buf, LoadStr(IDS_SRVTYPE_READRAWLISTERR), SalamanderGeneral->GetErrorText(err));
                 SalamanderGeneral->SalMessageBox(HWindow, buf, LoadStr(IDS_FTPERRORTITLE),
@@ -1013,7 +1014,7 @@ void CSrvTypeTestParserDlg::OnWMSize(int width, int height, BOOL notInitDlg, WPA
                                           height - SizeBoxHeight, SizeBoxWidth, SizeBoxHeight, SWP_NOZORDER));
             if (notInitDlg)
             {
-                // pry nejde show/hide kombinovat se zmenou velikosti a posunem
+                // supposedly show/hide cannot be combined with resizing and moving
                 hdwp = HANDLES(DeferWindowPos(hdwp, SizeBox, NULL, 0, 0, 0, 0,
                                               SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | (wParam == SIZE_RESTORED ? SWP_SHOWWINDOW : SWP_HIDEWINDOW)));
             }
@@ -1031,10 +1032,10 @@ CSrvTypeTestParserDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // zakazeme select-all pri fokusu + nastavime fixed-font pro edit s listingem
+        // disable select-all on focus and set a fixed font for the listing edit
         CSimpleDlgControlWindow* wnd = new CSimpleDlgControlWindow(HWindow, IDE_PARSER_RAWLIST, FALSE);
         if (wnd != NULL && wnd->HWindow == NULL)
-            delete wnd; // nepodarilo se attachnout - nedealokuje se samo
+            delete wnd; // failed to attach - it does not deallocate itself
         if (FixedFont != NULL)
             SendDlgItemMessage(HWindow, IDE_PARSER_RAWLIST, WM_SETFONT, (WPARAM)FixedFont, TRUE);
 
@@ -1042,11 +1043,11 @@ CSrvTypeTestParserDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         GetWindowRect(HWindow, &r1);
         GetClientRect(GetDlgItem(HWindow, IDE_PARSER_RAWLIST), &r2);
         GetClientRect(GetDlgItem(HWindow, IDL_PARSER_COLUMNS), &r3);
-        MinDlgHeight = r1.bottom - r1.top - r3.bottom + 50; // edit nechame zmensit na 50 bodu client area "results of parsing"
+        MinDlgHeight = r1.bottom - r1.top - r3.bottom + 50; // allow the edit to shrink to 50 points of client area "results of parsing"
         GetWindowRect(GetDlgItem(HWindow, IDC_PARSER_LISTINCOMPL), &r4);
         GetWindowRect(GetDlgItem(HWindow, IDB_PARSER_PARSELIST), &r5);
         GetWindowRect(GetDlgItem(HWindow, IDB_PARSER_LOADLIST), &r6);
-        MinDlgWidth = r1.right - r1.left - r2.right + r4.right - r4.left + r6.right - r5.left; // do client area editu nechame vejit aspon checkbox a dva butony vcetne mezery mezi nimi
+        MinDlgWidth = r1.right - r1.left - r2.right + r4.right - r4.left + r6.right - r5.left; // allow the edit control's client area to fit at least the checkbox and two buttons including the gap between them
 
         RECT r7, r8, r9, r10;
         GetWindowRect(GetDlgItem(HWindow, IDE_PARSER_RAWLIST), &r7);
@@ -1078,7 +1079,7 @@ CSrvTypeTestParserDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         ResultsSpacingX = r8.right - (r10.right - r10.left);
         ResultsSpacingY = r8.bottom - (r10.bottom - r10.top);
 
-        // do praveho spodniho ruzku vlozime znacek pro resize okna
+        // insert a resize grip into the bottom right corner
         SizeBox = CreateWindowEx(0,
                                  "scrollbar",
                                  "",
@@ -1094,16 +1095,16 @@ CSrvTypeTestParserDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         SizeBoxWidth = r11.right;
         SizeBoxHeight = r11.bottom;
 
-        // nastavime pozadovane pocatecni rozmery dialogu
+        // set the desired initial dimensions of the dialog
         if (Config.TestParserDlgWidth > 0 && Config.TestParserDlgHeight > 0)
             MoveWindow(HWindow, r1.left, r1.top, Config.TestParserDlgWidth, Config.TestParserDlgHeight, TRUE);
 
-        // provedeme layoutovani dialogu
+        // perform the dialog layout
         RECT clientRect;
         GetClientRect(HWindow, &clientRect);
         OnWMSize(clientRect.right, clientRect.bottom, FALSE, 0);
 
-        // provedeme transfer dat do okna
+        // transfer data into the window
         INT_PTR ret = CCenteredDialog::DialogProc(uMsg, wParam, lParam);
 
         // listview setup
@@ -1112,13 +1113,13 @@ CSrvTypeTestParserDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         DWORD origFlags = ListView_GetExtendedListViewStyle(HListView);
         ListView_SetExtendedListViewStyle(HListView, origFlags | exFlags); // 4.71
 
-        // vlozime sloupce
+        // insert columns
         InitColumns();
 
-        // nastavime sirky sloupcu
+        // set column widths
         SetColumnWidths();
 
-        // hned po otevreni dialogu spustime parsovani listingu
+        // immediately after opening the dialog start parsing the listing
         PostMessage(HWindow, WM_COMMAND, IDB_PARSER_PARSELIST, 0);
 
         if (Config.TestParserDlgWidth == -2) // show maximized
@@ -1152,12 +1153,12 @@ CSrvTypeTestParserDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
         case IDCANCEL:
             wParam = IDOK;
-            break; // v tomto dialogu Cancel = OK (vzdy je treba transferit data)
+            break; // in this dialog Cancel = OK (data always need to be transferred)
 
         case IDE_PARSER_RAWLIST:
         {
             if (HIWORD(wParam) == EN_CHANGE)
-                Offsets.DestroyMembers(); // zmena textu -> offsety prestavaji byt platne
+                Offsets.DestroyMembers(); // text change -> offsets are no longer valid
             break;
         }
 
@@ -1171,7 +1172,7 @@ CSrvTypeTestParserDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if (AllocatedSizeOfRawListing < len + 1)
                 {
                     AllocatedSizeOfRawListing = len + 50;
-                    char* n = (char*)realloc(*RawListing, AllocatedSizeOfRawListing); // udelame trochu rezervu
+                    char* n = (char*)realloc(*RawListing, AllocatedSizeOfRawListing); // make a bit of headroom
                     if (n == NULL)
                     {
                         TRACE_E(LOW_MEMORY);
@@ -1183,19 +1184,19 @@ CSrvTypeTestParserDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 if (*RawListing != NULL)
                 {
-                    // nacteme novy text listingu z editboxu
+                    // read new listing text from the edit box
                     GetWindowText(edit, *RawListing, len + 1);
-                    // spustime parsovani, vysledky primo do listview
+                    // start parsing, results go directly into the list view
                     ParseListingToListView();
                 }
             }
-            return TRUE; // dale nepokracovat
+            return TRUE; // do not continue further
         }
 
         case IDB_PARSER_LOADLIST:
         {
             LoadTextFromFile();
-            return TRUE; // dale nepokracovat
+            return TRUE; // do not continue further
         }
         }
         break;
@@ -1208,7 +1209,7 @@ CSrvTypeTestParserDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             LPNMHDR nmh = (LPNMHDR)lParam;
             if (nmh->code == LVN_DELETEALLITEMS)
             {
-                SetWindowLongPtr(HWindow, DWLP_MSGRESULT, TRUE); // potlaceni posilani LVN_DELETEITEM pro kazdou polozku
+                SetWindowLongPtr(HWindow, DWLP_MSGRESULT, TRUE); // suppress sending LVN_DELETEITEM for every item
                 return TRUE;
             }
             if (nmh->code == LVN_ITEMCHANGED)
@@ -1304,7 +1305,7 @@ CCopyMoveDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        SalamanderGeneral->InstallWordBreakProc(GetDlgItem(HWindow, IDC_TGTPATH)); // instalujeme WordBreakProc do comboboxu
+        SalamanderGeneral->InstallWordBreakProc(GetDlgItem(HWindow, IDC_TGTPATH)); // install WordBreakProc into the combo box
         SetWindowText(HWindow, Title);
         SetDlgItemText(HWindow, IDT_TGTPATHSUBJECT, Subject);
         break;

@@ -11,11 +11,11 @@
 
 #include "precomp.h"
 
-// spolecny interface pro pluginova data archivatoru
+// shared interface for archiver plugin data
 CArcPluginDataInterface ArcPluginDataInterface;
 
 // ****************************************************************************
-// SEKCE ARCHIVERU
+// ARCHIVER SECTION
 // ****************************************************************************
 
 //
@@ -23,8 +23,8 @@ CArcPluginDataInterface ArcPluginDataInterface;
 // CArcPluginDataInterface
 //
 
-// callback volany ze Salamandera pro ziskani textu
-// popis viz. spl_com.h / FColumnGetText
+// callback invoked by Salamander to obtain text
+// see spl_com.h / FColumnGetText for details
 void WINAPI GetSzText()
 {
     if (*TransferIsDir && !(*TransferFileData)->SizeValid)
@@ -43,11 +43,11 @@ CArcPluginDataInterface::SetupView(BOOL leftPanel, CSalamanderViewAbstract* view
     view->GetTransferVariables(TransferFileData, TransferIsDir, TransferBuffer, TransferLen, TransferRowData,
                                TransferPluginDataIface, TransferActCustomData);
 
-    // sloupce upravujeme jen v detailed rezimu
+    // adjust columns only in detailed mode
     if (view->GetViewMode() == VIEW_MODE_DETAILED)
     {
-        // zkusime najit std. Size a zaradit se za nej; pokud ho nenajdeme,
-        // zaradime se na konec
+        // try to find the standard Size column and insert after it; if it is not found,
+        // append the column at the end
         int sizeIndex = view->GetColumnsCount();
         int i;
         for (i = 0; i < sizeIndex; i++)
@@ -100,7 +100,7 @@ CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* salam
     SalamanderGeneral->ShowMessageBox("CPluginInterfaceForArchiver::ListArchive", LoadStr(IDS_PLUGINNAME), MSGBOX_INFO);
 #endif // DEMOPLUG_QUIET
 
-    // nastavime jaka data ve 'file' jsou platna
+    // define which data fields in 'file' are valid
     dir->SetValidData(VALID_DATA_EXTENSION |
                       VALID_DATA_DOSNAME |
                       VALID_DATA_SIZE |
@@ -126,13 +126,13 @@ CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* salam
     file.NameLen = strlen(file.Name);
     char* s = strrchr(file.Name, '.');
     if (s != NULL)
-        file.Ext = s + 1; // ".cvspass" ve Windows je pripona ...
+        file.Ext = s + 1; // ".cvspass" is a Windows extension...
     else
         file.Ext = file.Name + file.NameLen;
     file.Size = CQuadWord(666, 0);
     file.Attr = FILE_ATTRIBUTE_ARCHIVE;
     file.Hidden = 0;
-    file.PluginData = 666; // zbytecne, jen tak pro formu
+    file.PluginData = 666; // redundant, just for show
 
     SYSTEMTIME st;
     GetSystemTime(&st);
@@ -161,8 +161,8 @@ CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* salam
     file.IsOffline = 0;
     file.IconOverlayIndex = 1; // icon-overlay: slow file
 
-    // prida automaticky dva adresare "test" a "path" (protoze jeste neexistuji),
-    // aby mohl pridat 'file'
+    // automatically adds two directories "test" and "path" (because they do not yet exist)
+    // so that it can add 'file'
     if (!dir->AddFile("test\\path", file, pluginData))
     {
         SalamanderGeneral->Free(file.Name);
@@ -170,7 +170,7 @@ CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* salam
         return FALSE;
     }
 
-    // pridame jeste dva soubory
+    // add two more files
     file.Name = SalamanderGeneral->DupStr("test2.txt");
     if (file.Name == NULL)
     {
@@ -180,7 +180,7 @@ CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* salam
     file.NameLen = strlen(file.Name);
     s = strrchr(file.Name, '.');
     if (s != NULL)
-        file.Ext = s + 1; // ".cvspass" ve Windows je pripona ...
+        file.Ext = s + 1; // ".cvspass" is a Windows extension...
     else
         file.Ext = file.Name + file.NameLen;
     file.Size = CQuadWord(555, 0);
@@ -201,13 +201,13 @@ CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* salam
     file.NameLen = strlen(file.Name);
     s = strrchr(file.Name, '.');
     if (s != NULL)
-        file.Ext = s + 1; // ".cvspass" ve Windows je pripona ...
+        file.Ext = s + 1; // ".cvspass" is a Windows extension...
     else
         file.Ext = file.Name + file.NameLen;
     file.Size = CQuadWord(444, 0);
     file.Attr |= FILE_ATTRIBUTE_ENCRYPTED;
     file.IsLink = SalamanderGeneral->IsFileLink(file.Ext);
-    file.IconOverlayIndex = ICONOVERLAYINDEX_NOTUSED; // none icon-overlay
+    file.IconOverlayIndex = ICONOVERLAYINDEX_NOTUSED; // no icon overlay
     if (!dir->AddFile("test\\path", file, pluginData))
     {
         SalamanderGeneral->Free(file.Name);
@@ -226,23 +226,23 @@ CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* salam
     }
     file.NameLen = strlen(file.Name);
     if (!sortByExtDirsAsFiles)
-        file.Ext = file.Name + file.NameLen; // adresare nemaji pripony
+        file.Ext = file.Name + file.NameLen; // directories have no extension
     else
     {
         s = strrchr(file.Name, '.');
         if (s != NULL)
-            file.Ext = s + 1; // ".cvspass" ve Windows je pripona ...
+            file.Ext = s + 1; // ".cvspass" is a Windows extension...
         else
             file.Ext = file.Name + file.NameLen;
     }
     file.Size = CQuadWord(0, 0);
     file.Attr = FILE_ATTRIBUTE_DIRECTORY;
     file.Hidden = 0;
-    file.PluginData = 666; // zbytecne, jen tak pro formu
+    file.PluginData = 666; // redundant, just for show
     file.IsLink = 0;
-    file.IconOverlayIndex = ICONOVERLAYINDEX_NOTUSED; // none icon-overlay
+    file.IconOverlayIndex = ICONOVERLAYINDEX_NOTUSED; // no icon overlay
 
-    // zmeni data adresare "test" (vytvoren automaticky, viz predchozi AddFile) na 'file'
+    // change the data of the "test" directory (created automatically, see the previous AddFile) to 'file'
     if (!dir->AddDir("", file, pluginData))
     {
         SalamanderGeneral->Free(file.Name);
@@ -265,10 +265,10 @@ CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract* sal
     SalamanderGeneral->ShowMessageBox("CPluginInterfaceForArchiver::UnpackArchive", LoadStr(IDS_PLUGINNAME), MSGBOX_INFO);
 #endif // DEMOPLUG_QUIET
 
-    // interni pakovace nejspis pouziji metodu salCalls->SafeCreateFile pro prime
-    //   vypakovavani
-    // pro ostatni je zde zpusob s vypakovanim do docasneho adresare a nasledny
-    //   presun na spravnou pozici na disku (resi prepisy souboru, atd.):
+    // internal packers will probably use salCalls->SafeCreateFile for direct
+    //   extraction
+    // for the rest there is an approach that unpacks to a temporary directory and then
+    //   moves the files to the correct location on disk (handles overwriting files, etc.):
 
     BOOL ret = FALSE;
     char tmpExtractDir[MAX_PATH];
@@ -290,17 +290,17 @@ CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract* sal
         {
             totalSize += size;
 
-            // vytvareni listu souboru, ktery se maji vypakovat
+            // building the list of files that should be extracted
         }
 
-        /*  // zopakujeme enumeraci (jen tak, ukazka "resetu" enumerace)
+        /*  // repeat the enumeration (just as a demonstration of "resetting" the enumeration)
     totalSize = 0;
     next(NULL, -1, NULL, NULL, NULL, nextParam, NULL);
     while ((name = next(NULL, 0, &isDir, &size, &fileData, nextParam, NULL)) != NULL)
     {
       totalSize += size;
 
-      // vytvareni listu souboru, ktery se maji vypakovat
+      // building the list of files that should be extracted
     }
 */
 
@@ -309,64 +309,64 @@ CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract* sal
                                              tmpExtractDir, totalSize, "Unpacking DemoPlug Archive"))
         {
             /*
-      // ukazka progress dialogu s jednim progress metrem
+      // demonstration of a progress dialog with a single progress bar
       salamander->OpenProgressDialog("Unpacking DemoPlug Archive", FALSE, NULL, FALSE);
       salamander->ProgressSetTotalSize(CQuadWord(30, 0), CQuadWord(-1, -1));
-      // provedeni rozpakovani - prubezne se volaji nasl. metody:
-      salamander->ProgressDialogAddText("preparing data...", FALSE); // delayedPaint==FALSE, protoze nechceme cekat na timer a navic nebudeme volat ProgressAddSize
-      Sleep(1000);  // simulace cinosti
+      // performing the extraction - the following methods are called sequentially:
+      salamander->ProgressDialogAddText("preparing data...", FALSE); // delayedPaint==FALSE because we do not want to wait for the timer and we are not going to call ProgressAddSize
+      Sleep(1000);  // activity simulation
       ret = TRUE;
       int c = 30;
       while (c--)
       {
-        salamander->ProgressDialogAddText("test text", TRUE);  // delayedPaint==TRUE, abychom nebrzdili
-        Sleep(50);  // simulace cinnosti
-        if (!salamander->ProgressAddSize(1, TRUE))  // delayedPaint==TRUE, abychom nebrzdili
+        salamander->ProgressDialogAddText("test text", TRUE);  // delayedPaint==TRUE so that we do not slow the UI down
+        Sleep(50);  // activity simulation
+        if (!salamander->ProgressAddSize(1, TRUE))  // delayedPaint==TRUE so that we do not slow the UI down
         {
           salamander->ProgressDialogAddText("canceling operation, please wait...", FALSE);
           salamander->ProgressEnableCancel(FALSE);
-          Sleep(1000);  // simulace uklizeci cinosti
+          Sleep(1000);  // cleanup simulation
           ret = FALSE;
-          break;   // preruseni akce
+          break;   // cancel the action
         }
       }
-      Sleep(500);  // simulace cinosti
+      Sleep(500);  // activity simulation
       salamander->CloseProgressDialog();
 */
 
-            // ukazka progress dialogu s dvema progress metry
+            // demonstration of a progress dialog with two progress bars
             salamander->OpenProgressDialog("Unpacking DemoPlug Archive", TRUE, NULL, FALSE);
             salamander->ProgressSetTotalSize(CQuadWord(30, 0), CQuadWord(90, 0));
-            // provedeni rozpakovani - prubezne se volaji nasl. metody:
-            salamander->ProgressDialogAddText("preparing data...", FALSE); // delayedPaint==FALSE, protoze nechceme cekat na timer a navic nebudeme volat ProgressAddSize
-            Sleep(1000);                                                   // simulace cinosti
+            // performing the extraction - the following methods are called repeatedly:
+            salamander->ProgressDialogAddText("preparing data...", FALSE); // delayedPaint==FALSE because we do not want to wait for the timer and we are not going to call ProgressAddSize
+            Sleep(1000);                                                   // activity simulation
             ret = TRUE;
             int c = 90;
             while (c--)
             {
-                salamander->ProgressDialogAddText("test text", TRUE); // delayedPaint==TRUE, abychom nebrzdili
-                Sleep(50);                                            // simulace cinnosti
-                if ((c + 1) % 30 == 0)                                // simulace "dalsi soubor"
+                salamander->ProgressDialogAddText("test text", TRUE); // delayedPaint==TRUE so that we do not slow the UI down
+                Sleep(50);                                            // activity simulation
+                if ((c + 1) % 30 == 0)                                // simulating "another file"
                 {
-                    // salamander->ProgressSetTotalSize(CQuadWord(30, 0), CQuadWord(-1, -1)); // nastaveni "velikosti" dalsiho souboru (zakomentovano, protoze tady je zbytecne, at se nenastavuje porad dokola 30)
-                    salamander->ProgressSetSize(CQuadWord(0, 0), CQuadWord(-1, -1), TRUE); // delayedPaint==TRUE, abychom nebrzdili
+                    // salamander->ProgressSetTotalSize(CQuadWord(30, 0), CQuadWord(-1, -1)); // configuring the "size" of the next file (commented out here so it is not repeatedly set to 30)
+                    salamander->ProgressSetSize(CQuadWord(0, 0), CQuadWord(-1, -1), TRUE); // delayedPaint==TRUE so that we do not slow the UI down
                 }
-                if (!salamander->ProgressAddSize(1, TRUE)) // delayedPaint==TRUE, abychom nebrzdili
+                if (!salamander->ProgressAddSize(1, TRUE)) // delayedPaint==TRUE so that we do not slow the UI down
                 {
                     salamander->ProgressDialogAddText("canceling operation, please wait...", FALSE);
                     salamander->ProgressEnableCancel(FALSE);
-                    Sleep(1000); // simulace uklizeci cinosti
+                    Sleep(1000); // cleanup simulation
                     ret = FALSE;
-                    break; // preruseni akce
+                    break; // cancel the action
                 }
             }
-            Sleep(500); // simulace cinosti
+            Sleep(500); // activity simulation
             salamander->CloseProgressDialog();
 
-            // ret je pri uspechu TRUE, jinak zustava FALSE
+            // ret is TRUE on success; otherwise it remains FALSE
             if (ret)
             {
-                // soubory jsou vybalene v tmp-adresari, je treba je umistit
+                // the files are unpacked in the temporary directory and must be placed
                 if (!salamander->MoveFiles(tmpExtractDir, targetDir, tmpExtractDir, fileName))
                     delTempDir = FALSE;
             }
@@ -398,9 +398,9 @@ CPluginInterfaceForArchiver::UnpackOneFile(CSalamanderForOperationsAbstract* sal
         return FALSE;
     }
 
-    // rozpakovani bez progress dialogu
+    // unpacking without a progress dialog
 
-    // misto rozpakovani jen vytvorime pokusny soubor
+    // instead of unpacking we only create a test file
     char name[MAX_PATH];
     strcpy(name, targetDir);
     const char* lastComp = strrchr(nameInArchive, '\\');
@@ -420,7 +420,7 @@ CPluginInterfaceForArchiver::UnpackOneFile(CSalamanderForOperationsAbstract* sal
             ULONG written;
             WriteFile(file, "New File\r\n", 10, &written, NULL);
             HANDLES(CloseHandle(file));
-            return TRUE; // "rozpakovani" se povedlo
+            return TRUE; // the "unpacking" succeeded
         }
     }
 
@@ -456,17 +456,17 @@ CPluginInterfaceForArchiver::PackToArchive(CSalamanderForOperationsAbstract* sal
     while ((name = next(SalamanderGeneral->GetMsgBoxParent(), 3, &dosName, &isDir, &size,
                         &attr, &lastWrite, nextParam, &errorOccured)) != NULL)
     {
-        if (errorOccured == SALENUM_ERROR) // sem SALENUM_CANCEL prijit nemuze
+        if (errorOccured == SALENUM_ERROR) // SALENUM_CANCEL cannot appear here
             TRACE_I("Not all files and directories from disk will be packed.");
 
         totalSize += size;
 
-        // vytvareni listu souboru, ktery se maji zapakovat
+        // building the list of files that should be packed
     }
     if (errorOccured != SALENUM_SUCCESS)
     {
         TRACE_I("Not all files and directories from disk will be packed.");
-        // test, jestli nenastala chyba a uzivatel si nepral prerusit operaci (tlacitko Cancel)
+        // check whether an error occurred and the user requested to cancel the operation (Cancel button)
         if (errorOccured == SALENUM_CANCEL)
         {
             salamander->CloseProgressDialog();
@@ -491,25 +491,25 @@ CPluginInterfaceForArchiver::PackToArchive(CSalamanderForOperationsAbstract* sal
     {
         salamander->ProgressSetTotalSize(CQuadWord(100, 0) /*totalSize*/, CQuadWord(-1, -1));
 
-        // provedeni pakovani
+        // perform the packing
         salamander->ProgressDialogAddText("test text 1", FALSE);
-        Sleep(500); // simulace cinosti
+        Sleep(500); // activity simulation
         if (!salamander->ProgressAddSize(50, FALSE))
-            ret = FALSE; // break;   // preruseni akce
+            ret = FALSE; // cancel the action
         else
         {
             salamander->ProgressDialogAddText("test text 2", FALSE);
-            Sleep(500); // simulace cinosti
+            Sleep(500); // activity simulation
             if (!salamander->ProgressAddSize(50, FALSE))
-                ret = FALSE; // break;   // preruseni akce
+                ret = FALSE; // cancel the action
             else
                 ret = TRUE;
         }
-        // ret je pri uspechu TRUE, jinak zustava FALSE
+        // ret is TRUE on success; otherwise it remains FALSE
     }
     salamander->CloseProgressDialog();
 
-    // POZOR: nezapomenout nastavit Archive atribut souboru (zmena souboru archivu -> je treba ho oznacit pro backup)
+    // NOTE: do not forget to set the Archive attribute on the file (the archive file changed -> it must be marked for backup)
 
     return ret;
 }
@@ -539,30 +539,30 @@ CPluginInterfaceForArchiver::DeleteFromArchive(CSalamanderForOperationsAbstract*
     {
         totalSize += size;
 
-        // vytvareni listu souboru, ktery se maji smazat
+        // building the list of files that should be deleted
     }
 
     salamander->ProgressSetTotalSize(CQuadWord(100, 0) /*totalSize*/, CQuadWord(-1, -1));
 
-    // provedeni mazani
+    // perform the deletion
     salamander->ProgressDialogAddText("test text 1", FALSE);
-    Sleep(500); // simulace cinosti
+    Sleep(500); // activity simulation
     if (!salamander->ProgressAddSize(50, FALSE))
-        ret = FALSE; // break;   // preruseni akce
+        ret = FALSE; // cancel the action
     else
     {
         salamander->ProgressDialogAddText("test text 2", FALSE);
-        Sleep(500); // simulace cinosti
+        Sleep(500); // activity simulation
         if (!salamander->ProgressAddSize(50, FALSE))
-            ret = FALSE; // break;   // preruseni akce
+            ret = FALSE; // cancel the action
         else
             ret = TRUE;
     }
-    // ret je pri uspechu TRUE, jinak zustava FALSE
+    // ret is TRUE on success; otherwise it remains FALSE
 
     salamander->CloseProgressDialog();
 
-    // POZOR: nezapomenout nastavit Archive atribut souboru (zmena souboru archivu -> je treba ho oznacit pro backup)
+    // NOTE: do not forget to set the Archive attribute on the file (the archive file changed -> it must be marked for backup)
 
     return ret;
 }
@@ -623,25 +623,25 @@ CPluginInterfaceForArchiver::UnpackWholeArchive(CSalamanderForOperationsAbstract
 
     BOOL ret = FALSE;
     if (delArchiveWhenDone)
-        archiveVolumes->Add(fileName, -2); // FIXME: az plugin doucime multi-volume archivy, musime sem napridavat vsechny svazky archivu (aby se smazal kompletni archiv)
+        archiveVolumes->Add(fileName, -2); // FIXME: once the plugin learns multi-volume archives we must add all archive volumes here (to delete the entire archive)
     salamander->OpenProgressDialog("Unpacking DemoPlug Archive", FALSE, NULL, FALSE);
     salamander->ProgressSetTotalSize(CQuadWord(100, 0), CQuadWord(-1, -1));
 
-    // provedeni rozpakovani
+    // perform the unpacking
     salamander->ProgressDialogAddText("test text 1", FALSE);
-    Sleep(500); // simulace cinosti
+    Sleep(500); // activity simulation
     if (!salamander->ProgressAddSize(50, FALSE))
-        ret = FALSE; // break;   // preruseni akce
+        ret = FALSE; // cancel the action
     else
     {
         salamander->ProgressDialogAddText("test text 2", FALSE);
-        Sleep(500); // simulace cinosti
+        Sleep(500); // activity simulation
         if (!salamander->ProgressAddSize(50, FALSE))
-            ret = FALSE; // break;   // preruseni akce
+            ret = FALSE; // cancel the action
         else
             ret = TRUE;
     }
-    // ret je pri uspechu TRUE, jinak zustava FALSE
+    // ret is TRUE on success; otherwise it remains FALSE
 
     salamander->CloseProgressDialog();
 
@@ -659,7 +659,7 @@ CPluginInterfaceForArchiver::CanCloseArchive(CSalamanderForOperationsAbstract* s
 #else  // DEMOPLUG_QUIET
 
     if (SalamanderGeneral->IsCriticalShutdown())
-        return TRUE; // pri critical shutdown se na nic neptame
+        return TRUE; // during a critical shutdown we do not ask any questions
 
     return force && SalamanderGeneral->ShowMessageBox("CPluginInterfaceForArchiver::CanCloseArchive (can close).\n"
                                                       "Return is forced to TRUE.",
@@ -697,7 +697,7 @@ CPluginInterfaceForArchiver::GetCacheInfo(char* tempPath, BOOL* ownDelete, BOOL*
     if (tempPath[0] == 0 ||
         !SalamanderGeneral->SalPathAppend(tempPath, "DemoPlug Temporary Copies", MAX_PATH))
     {
-        tempPath[0] = 0; // chyba -> jdeme do systemoveho TEMPu
+        tempPath[0] = 0; // error -> fall back to the system TEMP
     }
     *ownDelete = TRUE;
     *cacheCopies = FALSE;
@@ -713,7 +713,7 @@ void ClearTEMPIfNeeded(HWND parent)
     {
         SalamanderGeneral->SalPathAddBackslash(tmpDir, 2 * MAX_PATH);
         char* tmpDirEnd = tmpDir + strlen(tmpDir);
-        // pridame masku (nevejde se = nema smysl nic hledat)
+        // add the mask (if it does not fit, there is no point in searching)
         if (SalamanderGeneral->SalPathAppend(tmpDir, "SAL*.tmp", 2 * MAX_PATH))
         {
             TIndirectArray<char> tmpDirs(10, 50);
@@ -723,14 +723,14 @@ void ClearTEMPIfNeeded(HWND parent)
             if (find != INVALID_HANDLE_VALUE)
             {
                 do
-                { // zpracujeme vsechny nalezene adresare (chyby hledani ignorujeme)
+                { // process all found directories (ignore search errors)
                     if ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && strlen(data.cFileName) > 3)
                     {
                         char* s = data.cFileName + 3;
                         while (*s != 0 && *s != '.' &&
                                (*s >= '0' && *s <= '9' || *s >= 'a' && *s <= 'f' || *s >= 'A' && *s <= 'F'))
                             s++;
-                        if (SalamanderGeneral->StrICmp(s, ".tmp") == 0) // odpovida "SAL" + hex-cislo + ".tmp" = je temer jiste nas adresar
+                        if (SalamanderGeneral->StrICmp(s, ".tmp") == 0) // matches "SAL" + hex number + ".tmp" = almost certainly our directory
                         {
                             char* tmp = SalamanderGeneral->DupStr(data.cFileName);
                             if (tmp != NULL)
@@ -797,10 +797,9 @@ CPluginInterfaceForArchiver::DeleteTmpCopy(const char* fileName, BOOL firstFile)
     CALL_STACK_MESSAGE3("CPluginInterfaceForArchiver::DeleteTmpCopy(%s, %d)", fileName, firstFile);
 
     /*
-  // test messageboxu (messageboxy pouzivat jen v krajnim pripade) - dela bordel
-  // v pripade, ze ma nektery plugin otevreny nejaky vlastni modalni dialog (kosmeticke
-  // vady: messagebox k tomuto dialogu neni modalni a po svem zavreni aktivuje
-  // parenta dialogu)
+  // message box test (message boxes should be used only in an extreme situation) - it makes a mess
+  // if another plugin has its own modal dialog open (cosmetic issue: the message box for this dialog is not modal
+  // and after closing it activates the dialog's parent)
   char buf[500];
   sprintf(buf, "File \"%s\" will be deleted.", fileName);
   SalamanderGeneral->SalMessageBox(SalamanderGeneral->GetMsgBoxParent(),
@@ -808,32 +807,32 @@ CPluginInterfaceForArchiver::DeleteTmpCopy(const char* fileName, BOOL firstFile)
                                    MB_OK | MB_ICONINFORMATION);
 */
 
-    // je-li critical shutdown, neni vhodna doba na pomale mazani souboru (brzo nas proces zabiji),
-    // pri prvnim dalsim startu pluginu v prvnim spustenem Salamanderovi se to smaze "v klidu",
-    // nic lepsiho asi nevymyslime
+    // if this is a critical shutdown it is not a good time for slow file deletion (our process will be killed soon),
+    // at the first subsequent plugin start in the first Salamander instance this will be deleted "calmly",
+    // we probably cannot come up with anything better
     if (SalamanderGeneral->IsCriticalShutdown())
         return;
 
-    // ukazka pouziti wait-okenka
-    static DWORD ti = 0; // cas zacatku mazani prvniho souboru z rady (pri vice najednou mazanych souborech)
+    // demonstration of using the wait window
+    static DWORD ti = 0; // time when deletion of the first file in the batch started (when deleting multiple files at once)
     DWORD showTime = 1000;
     if (firstFile)
-        ti = GetTickCount(); // zajistime, aby se wait-okno ukazovalo po jedne sekunde v ramci vsech mazani
+        ti = GetTickCount(); // ensure that the wait window shows up after one second across the entire deletion batch
     else
     {
-        DWORD work = GetTickCount() - ti; // jak dlouho uz se maze (od mazani prvniho souboru z rady)
+        DWORD work = GetTickCount() - ti; // how long the deletion has been running (since the first file in the batch)
         if (work < 1000)
             showTime -= work;
         else
             showTime = 0;
     }
     SalamanderGeneral->CreateSafeWaitWindow("Deleting temporary file unpacked from archive, please wait...",
-                                            LoadStr(IDS_PLUGINNAME), showTime, FALSE /* TRUE pokud umime cinnost prerusit */,
+                                            LoadStr(IDS_PLUGINNAME), showTime, FALSE /* TRUE if we can cancel the operation */,
                                             SalamanderGeneral->GetMsgBoxParent());
-    // simulace cinnosti (okenko je videt az po 1 sekunde)
+    // activity simulation (the window becomes visible after one second)
     Sleep(2000);
 
-    // obycejne mazani souboru
+    // regular file deletion
     SalamanderGeneral->ClearReadOnlyAttr(fileName);
 
     if (DeleteFile(fileName))
@@ -841,7 +840,7 @@ CPluginInterfaceForArchiver::DeleteTmpCopy(const char* fileName, BOOL firstFile)
     else
         TRACE_I("Unable to delete temporary copy from disk-cache (" << fileName << ").");
 
-    // zavreme wait-okenko, akce skoncila
+    // close the wait window; the action finished
     SalamanderGeneral->DestroySafeWaitWindow();
 }
 
@@ -850,11 +849,11 @@ CPluginInterfaceForArchiver::PrematureDeleteTmpCopy(HWND parent, int copiesCount
 {
     CALL_STACK_MESSAGE2("CPluginInterfaceForArchiver::PrematureDeleteTmpCopy(, %d)", copiesCount);
 
-    // je-li critical shutdown, neni vhodna doba na pomale mazani souboru (brzo nas proces zabiji),
-    // pri prvnim dalsim startu pluginu v prvnim spustenem Salamanderovi se to smaze "v klidu",
-    // nic lepsiho asi nevymyslime
+    // if this is a critical shutdown it is not a good time for slow file deletion (our process will be killed soon),
+    // at the first subsequent plugin start in the first Salamander instance this will be deleted "calmly",
+    // we probably cannot come up with anything better
     if (SalamanderGeneral->IsCriticalShutdown())
-        return FALSE; // pri critical shutdown se na nic neptame
+        return FALSE; // during a critical shutdown we do not ask any questions
 
     char buf[500];
     sprintf(buf, "%d temporary file(s) extracted from archive are still in use.\n"

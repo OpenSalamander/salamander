@@ -63,17 +63,17 @@ protected:
 
 struct CColorsCfgButton
 {
-    int TextID;         // nazev tlacitka
-    int ColorLineNumFG; // index FG barvy pro 1. tlacitko nebo -1 (FG nelze konfigurovat)
-    int ColorLineNumBK; // index BK barvy pro 1. tlacitko nebo -1 (tlaciko nebude videt)
-    int ColorTextFG;    // index FG barvy pro 2. tlacitko nebo -1 (FG nelze konfigurovat)
-    int ColorTextBK;    // index BK barvy pro 2. tlacitko nebo -1 (tlaciko nebude videt)
+    int TextID;         // button label identifier
+    int ColorLineNumFG; // index of the FG color for the first button or -1 (FG cannot be configured)
+    int ColorLineNumBK; // index of the BG color for the first button or -1 (the button will not be visible)
+    int ColorTextFG;    // index of the FG color for the second button or -1 (FG cannot be configured)
+    int ColorTextBK;    // index of the BG color for the second button or -1 (the button will not be visible)
 };
 
 struct CColorsCfgItem
 {
-    int TextID;       // nazev polozky
-    int ButtonsCount; // pocet pouzitych tlacitek
+    int TextID;       // item label identifier
+    int ButtonsCount; // number of buttons used
     CColorsCfgButton* Buttons;
 };
 
@@ -181,7 +181,7 @@ protected:
 //
 // CTextArrowButton
 //
-// klasicky text, za kterym je jeste sipka - slouzi pro rozbaleni menu
+// plain text followed by an arrow - used to expand a menu
 //
 
 // class CTextArrowButton : public CButton
@@ -197,7 +197,7 @@ protected:
 //
 // CColorArrowButton
 //
-// pozadi s textem, za kterym je jeste sipka - slouzi pro rozbaleni menu
+// background with text followed by an arrow - used to expand a menu
 //
 
 // class CColorArrowButton : public CButton

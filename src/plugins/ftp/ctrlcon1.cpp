@@ -1,20 +1,21 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
-CClosedCtrlConChecker ClosedCtrlConChecker; // resi informovani uzivatele o zavreni "control connection" mimo operace
-CListingCache ListingCache;                 // cache listingu cest na serverech (pouziva se pri zmene a listovani cest)
+CClosedCtrlConChecker ClosedCtrlConChecker; // handles informing the user about "control connection" closure outside of operations
+CListingCache ListingCache;                 // cache of directory listings on servers (used when changing and listing directories)
 
-int CLogData::NextLogUID = 0;          // globalni pocitadlo pro objekty logu
-int CLogData::OldestDisconnectNum = 0; // disconnect-cislo nejstarsiho logu serveru, ktery se disconnectnul
-int CLogData::NextDisconnectNum = 0;   // disconnect-cislo pro dalsi log serveru, ktery se disconnectne
+int CLogData::NextLogUID = 0;          // global counter for log objects
+int CLogData::OldestDisconnectNum = 0; // disconnect number of the oldest server log that disconnected
+int CLogData::NextDisconnectNum = 0;   // disconnect number for the next server log that will disconnect
 
-CLogs Logs; // logy vsech pripojeni na FTP servery
+CLogs Logs; // logs of all connections to FTP servers
 
 CControlConnectionSocket* LeftPanelCtrlCon = NULL;
 CControlConnectionSocket* RightPanelCtrlCon = NULL;
-CRITICAL_SECTION PanelCtrlConSect; // kriticka sekce pro pristup k LeftPanelCtrlCon a RightPanelCtrlCon
+CRITICAL_SECTION PanelCtrlConSect; // critical section for access to LeftPanelCtrlCon and RightPanelCtrlCon
 
 //
 // ****************************************************************************
@@ -112,14 +113,14 @@ CControlConnectionSocket::~CControlConnectionSocket()
     if (ProxyServer != NULL)
         delete ProxyServer;
 
-    memset(Password, 0, PASSWORD_MAX_SIZE); // mazeme pamet, ve ktere se objevil password
+    memset(Password, 0, PASSWORD_MAX_SIZE); // wipe the memory where the password appeared
     if (NewEvent != NULL)
         HANDLES(CloseHandle(NewEvent));
     HANDLES(DeleteCriticalSection(&EventCritSect));
 
-    // Logs nemuze sahat na "control connection" (zakazane vnoreni kritickych sekci),
-    // toto volani synchronizuje jen platnost ukazatele na "control connection" (ne obsah objektu,
-    // proto muze byt az na konci destkruktoru)
+    // Logs cannot touch the "control connection" (nested critical sections are forbidden),
+    // this call synchronizes only the validity of the pointer to the "control connection" (not the object contents,
+    // therefore it can be at the very end of the destructor)
     if (LogUID != -1)
         Logs.ClosingConnection(LogUID);
 }
@@ -128,7 +129,7 @@ DWORD
 CControlConnectionSocket::GetTimeFromStart()
 {
     DWORD t = GetTickCount();
-    return t - StartTime; // funguje i pro t < StartTime (preteceni tick-counteru)
+    return t - StartTime; // works even for t < StartTime (tick counter wraparound)
 }
 
 DWORD
@@ -154,8 +155,8 @@ BOOL CControlConnectionSocket::AddEvent(CControlConnectionSocketEvent event, DWO
     else
     {
         if (EventsUsedCount < Events.Count)
-            e = Events[EventsUsedCount++]; // uz mame predalokovane misto pro udalost
-        else                               // musime alokovat
+            e = Events[EventsUsedCount++]; // we already have preallocated space for the event
+        else                               // we must allocate it
         {
             e = new CControlConnectionSocketEventData;
             if (e != NULL)
@@ -174,7 +175,7 @@ BOOL CControlConnectionSocket::AddEvent(CControlConnectionSocketEvent event, DWO
                 TRACE_E(LOW_MEMORY);
         }
     }
-    if (e != NULL) // mame misto pro udalost, ulozime do nej data
+    if (e != NULL) // we have space for the event, store the data into it
     {
         e->Event = event;
         e->Data1 = data1;
@@ -203,16 +204,16 @@ BOOL CControlConnectionSocket::GetEvent(CControlConnectionSocketEvent* event, DW
         Events.Detach(0);
         if (!Events.IsGood())
             Events.ResetState();
-        Events.Add(e); // objekt udalosti se casem znovu pouzije, dame ho na konec fronty
+        Events.Add(e); // the event object will be reused later, put it at the end of the queue
         if (!Events.IsGood())
         {
-            delete e; // neporadilo se ho pridat, smula
+            delete e; // failed to add it, too bad
             Events.ResetState();
         }
         RewritableEvent = FALSE;
         ret = TRUE;
         if (EventsUsedCount > 0)
-            SetEvent(NewEvent); // je tam jeste dalsi
+            SetEvent(NewEvent); // there is another one
     }
     HANDLES(LeaveCriticalSection(&EventCritSect));
     return ret;
@@ -226,9 +227,9 @@ void CControlConnectionSocket::WaitForEventOrESC(HWND parent, CControlConnection
     CALL_STACK_MESSAGE3("CControlConnectionSocket::WaitForEventOrESC(, , , , %d, , , %d)",
                         milliseconds, waitForUserIfaceFinish);
 
-    const DWORD cycleTime = 200; // perioda testovani stisku ESC v ms (200 = 5x za sekundu)
+    const DWORD cycleTime = 200; // period of testing the ESC key press in ms (200 = 5 times per second)
     DWORD timeStart = GetTickCount();
-    DWORD restOfWaitTime = milliseconds; // zbytek cekaci doby
+    DWORD restOfWaitTime = milliseconds; // remaining waiting time
 
     HANDLE watchedEvent;
     BOOL watchingUserIface;
@@ -237,11 +238,11 @@ void CControlConnectionSocket::WaitForEventOrESC(HWND parent, CControlConnection
         if ((watchedEvent = userIface->GetFinishedEvent()) == NULL)
         {
             TRACE_E("Unexpected situation in CControlConnectionSocket::WaitForEventOrESC(): userIface->GetFinishedEvent() returned NULL!");
-            Sleep(200); // at nevytuhne cela masina...
+            Sleep(200); // so the whole machine does not freeze...
             *event = ccsevUserIfaceFinished;
             *data1 = 0;
             *data2 = 0;
-            return; // ohlasime dokonceni prace v user-ifacu
+            return; // report completion of work in the user interface
         }
         watchingUserIface = TRUE;
     }
@@ -251,7 +252,7 @@ void CControlConnectionSocket::WaitForEventOrESC(HWND parent, CControlConnection
         watchedEvent = NewEvent;
     }
 
-    GetAsyncKeyState(VK_ESCAPE); // init GetAsyncKeyState - viz help
+    GetAsyncKeyState(VK_ESCAPE); // init GetAsyncKeyState - see help
     while (1)
     {
         DWORD waitTime;
@@ -261,42 +262,42 @@ void CControlConnectionSocket::WaitForEventOrESC(HWND parent, CControlConnection
             waitTime = cycleTime;
         DWORD waitRes = MsgWaitForMultipleObjects(1, &watchedEvent, FALSE, waitTime, QS_ALLINPUT);
 
-        // nejdrive zkontrolujeme stisk ESC (abychom ho userovi nevyignorovali)
-        if (milliseconds != 0 &&                                                          // je-li nulovy timeout, jde jen o pumpovani zprav, ESC neresime
-            ((GetAsyncKeyState(VK_ESCAPE) & 0x8001) && GetForegroundWindow() == parent || // stisk ESC
-             waitWnd != NULL && waitWnd->GetWindowClosePressed() ||                       // close button ve wait-okenku
-             userIface != NULL && userIface->GetWindowClosePressed()))                    // close button v uziv. rozhrani
+        // first check for ESC press (so we do not ignore it for the user)
+        if (milliseconds != 0 &&                                                          // if the timeout is zero, we are only pumping messages, ignore ESC
+            ((GetAsyncKeyState(VK_ESCAPE) & 0x8001) && GetForegroundWindow() == parent || // ESC key pressed
+             waitWnd != NULL && waitWnd->GetWindowClosePressed() ||                       // close button in the wait window
+             userIface != NULL && userIface->GetWindowClosePressed()))                    // close button in the user interface
         {
-            // ted nelze udalost precist, nechame to na priste
+            // cannot read the event now, leave it for next time
             if (waitRes == WAIT_OBJECT_0 && !watchingUserIface)
                 SetEvent(NewEvent);
 
-            MSG msg; // vyhodime nabufferovany ESC
+            MSG msg; // discard buffered ESC
             while (PeekMessage(&msg, NULL, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
                 ;
             *event = ccsevESC;
             *data1 = 0;
             *data2 = 0;
-            break; // ohlasime ESC
+            break; // report ESC
         }
-        if (waitRes == WAIT_OBJECT_0) // zkusime precist novou udalost
+        if (waitRes == WAIT_OBJECT_0) // try to read a new event
         {
             if (!watchingUserIface)
             {
                 if (GetEvent(event, data1, data2))
-                    break; // ohlasime novou udalost
+                    break; // report a new event
             }
-            else // user-iface hlasi dokonceni prace
+            else // user interface reports completion
             {
                 *event = ccsevUserIfaceFinished;
                 *data1 = 0;
                 *data2 = 0;
-                break; // ohlasime dokonceni prace v user-ifacu
+                break; // report completion of work in the user interface
             }
         }
         else
         {
-            if (waitRes == WAIT_OBJECT_0 + 1) // zpracujeme Windows message
+            if (waitRes == WAIT_OBJECT_0 + 1) // process Windows messages
             {
                 MSG msg;
                 while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
@@ -308,22 +309,22 @@ void CControlConnectionSocket::WaitForEventOrESC(HWND parent, CControlConnection
             else
             {
                 if (waitRes == WAIT_TIMEOUT &&
-                    restOfWaitTime == waitTime) // neni to jen timeout cyklu testu klavesy ESC, ale globalni timeout
+                    restOfWaitTime == waitTime) // not just the timeout of the ESC key test cycle, but the global timeout
                 {
-                    *event = ccsevTimeout; // nezbyva jiz zadny cas
+                    *event = ccsevTimeout; // no time remains
                     *data1 = 0;
                     *data2 = 0;
-                    break; // ohlasime timeout
+                    break; // report timeout
                 }
             }
         }
-        if (milliseconds != INFINITE) // napocitame znovu zbytek cekaci doby (podle realneho casu)
+        if (milliseconds != INFINITE) // recalculate the remaining waiting time (based on real time)
         {
-            DWORD t = GetTickCount() - timeStart; // funguje i pri preteceni tick-counteru
+            DWORD t = GetTickCount() - timeStart; // works even when the tick counter wraps around
             if (t < (DWORD)milliseconds)
                 restOfWaitTime = (DWORD)milliseconds - t;
             else
-                restOfWaitTime = 0; // nechame ohlasit timeout (sami nesmime - prioritu ma event pred timeoutem)
+                restOfWaitTime = 0; // let it report the timeout (we must not do it ourselves - the event has priority over the timeout)
         }
     }
 }
@@ -350,17 +351,17 @@ void CControlConnectionSocket::SetConnectionParameters(const char* host, unsigne
         ProxyServer = NULL;
     else
     {
-        ProxyServer = Config.FTPProxyServerList.MakeCopyOfProxyServer(proxyServerUID, NULL); // nedostatek pameti ignorujeme (automaticky "not used (direct connection)")
+        ProxyServer = Config.FTPProxyServerList.MakeCopyOfProxyServer(proxyServerUID, NULL); // ignore lack of memory (automatically "not used (direct connection)")
         if (ProxyServer != NULL)
         {
             if (ProxyServer->ProxyEncryptedPassword != NULL)
             {
-                // rozsifrujeme heslo do ProxyPlainPassword
+                // decrypt the password into ProxyPlainPassword
                 CSalamanderPasswordManagerAbstract* passwordManager = SalamanderGeneral->GetSalamanderPasswordManager();
                 char* plainPassword = NULL;
                 if (!passwordManager->DecryptPassword(ProxyServer->ProxyEncryptedPassword, ProxyServer->ProxyEncryptedPasswordSize, &plainPassword))
                 {
-                    // v tuto chvili ma byt overeno, ze lze heslo rozsifrovat (ve vsech vetvich volajicich SetConnectionParameters()
+                    // at this point it should be verified that the password can be decrypted (in all branches calling SetConnectionParameters()
                     TRACE_E("CControlConnectionSocket::SetConnectionParameters(): internal error, cannot decrypt password!");
                     ProxyServer->SetProxyPassword(NULL);
                 }
@@ -398,41 +399,40 @@ void CControlConnectionSocket::SetConnectionParameters(const char* host, unsigne
     HANDLES(LeaveCriticalSection(&SocketCritSect));
 }
 
-enum CStartCtrlConStates // stavy automatu pro CControlConnectionSocket::StartControlConnection
+enum CStartCtrlConStates // states of the automaton for CControlConnectionSocket::StartControlConnection
 {
-    // ziskani IP adresy z textove adresy FTP serveru
+    // obtain an IP address from the textual address of the FTP server
     sccsGetIP,
 
-    // fatalni chyba (res-id textu je v 'fatalErrorTextID' + je-li 'fatalErrorTextID' -1, je
-    // string rovnou v 'errBuf')
+    // fatal error (resource ID of the text is in 'fatalErrorTextID' + if 'fatalErrorTextID' is -1, the string is directly in 'errBuf')
     sccsFatalError,
 
-    // fatalni chyba operace (res-id textu je v 'opFatalErrorTextID' a cislo Windows chyby v
-    // 'opFatalError' + je-li 'opFatalError' -1, je string rovnou v 'errBuf' + je-li
-    // 'opFatalErrorTextID' -1, je string rovnou v 'formatBuf')
+    // fatal operation error (resource ID of the text is in 'opFatalErrorTextID' and the Windows error number in
+    // 'opFatalError' + if 'opFatalError' is -1, the string is directly in 'errBuf' + if
+    // 'opFatalErrorTextID' is -1, the string is directly in 'formatBuf')
     sccsOperationFatalError,
 
-    // pripojeni na FTP server (ziskane IP je v 'auxServerIP')
+    // connect to the FTP server (retrieved IP is in 'auxServerIP')
     sccsConnect,
 
-    // zkusi znovu pripojeni (podle Config.DelayBetweenConRetries + Config.ConnectRetries),
-    // pokud jiz nema zkouset, prejde do stavu z 'noRetryState' + je-li 'fastRetry' TRUE, nema
-    // pred dalsim pokusem cekat
+    // retry the connection (based on Config.DelayBetweenConRetries + Config.ConnectRetries),
+    // if it should not retry anymore, it transitions to the state from 'noRetryState' + if 'fastRetry' is TRUE, it must not
+    // wait before the next attempt
     sccsRetry,
 
-    // ted pripojeno, precteme zpravu od serveru (ocekavame "220 Service ready for new user")
+    // now connected, read the message from the server (expecting "220 Service ready for new user")
     sccsServerReady,
 
-    // inicializace posilani login sekvence prikazu - podle proxy server skriptu
+    // initialize sending of the login sequence of commands - according to the proxy server script
     sccsStartLoginScript,
 
-    // postupne posilani login sekvence prikazu - podle proxy server skriptu
+    // gradually send the login sequence of commands - according to the proxy server script
     sccsProcessLoginScript,
 
-    // zkusi znovu login (bez cekani a ztraty connectiony) - jen prejde do stavu sccsStartLoginScript - nelze pouzit s proxy serverem!!!
+    // retry the login (without waiting and losing the connection) - only transitions to sccsStartLoginScript - cannot be used with a proxy server!!!
     sccsRetryLogin,
 
-    // konec metody (uspesny i neuspesny - podle 'ret' TRUE/FALSE)
+    // end of the method (successful or unsuccessful - according to 'ret' TRUE/FALSE)
     sccsDone
 };
 
@@ -461,13 +461,13 @@ BOOL GetToken(char** s, char** next)
     char* t = *next;
     *s = t;
     if (*t == 0)
-        return FALSE; // konec retezce, uz zadny token
+        return FALSE; // end of string, no more tokens
     char* dst = NULL;
     do
     {
         if (*t == ';')
         {
-            if (*(t + 1) == ';') // escape sekvence: ";;" -> ";"
+            if (*(t + 1) == ';') // escape sequence: ";;" -> ";"
             {
                 if (dst == NULL)
                     dst = t;
@@ -527,27 +527,27 @@ BOOL CControlConnectionSocket::StartControlConnection(HWND parent, char* user, i
     if (workDirBufSize > 0)
         workDir[0] = 0;
     if (retryMsg != NULL)
-        reconnect = TRUE; // v tomto pripade jde jiste o reconnect
+        reconnect = TRUE; // in this case it certainly is a reconnect
 
     BOOL ret = FALSE;
     int fatalErrorTextID = 0;
     int opFatalErrorTextID = 0;
     int opFatalError = 0;
     CStartCtrlConStates noRetryState = sccsDone;
-    BOOL retryLogError = TRUE;   // FALSE = nevypise error hlasku do logu (duvod: uz tam je vypsana)
-    BOOL fatalErrLogMsg = TRUE;  // FALSE = nevypise error hlasku do logu (duvod: uz tam je vypsana)
-    BOOL actionCanceled = FALSE; // TRUE = vypsat u 'sccsDone' do logu "action canceled"
+    BOOL retryLogError = TRUE;   // FALSE = do not print the error message to the log (reason: it has already been printed)
+    BOOL fatalErrLogMsg = TRUE;  // FALSE = do not print the error message to the log (reason: it has already been printed)
+    BOOL actionCanceled = FALSE; // TRUE = write "action canceled" to the log at 'sccsDone'
 
     int attemptNum = 1;
     if (totalAttemptNum != NULL)
-        attemptNum = *totalAttemptNum; // init na celkovy pocet pokusu
+        attemptNum = *totalAttemptNum; // initialize with the total number of attempts
     CDynString welcomeMessage;
     BOOL useWelcomeMessage = canShowWelcomeDlg && !reconnect && Config.ShowWelcomeMessage;
     BOOL retryLoginWithoutAsking = FALSE;
     BOOL fastRetry = FALSE;
     unsigned short port;
     in_addr srvAddr;
-    int logUID = -1; // UID logu teto connectiony: zatim "invalid log"
+    int logUID = -1; // UID of the log for this connection: currently "invalid log"
 
     char proxyScriptText[PROXYSCRIPT_MAX_SIZE];
     char host[HOST_MAX_SIZE];
@@ -557,12 +557,12 @@ BOOL CControlConnectionSocket::StartControlConnection(HWND parent, char* user, i
     char formatBuf[300];
     char retryBuf[700];
 
-    const DWORD showWaitWndTime = WAITWND_STARTCON; // show time wait-okenka
+    const DWORD showWaitWndTime = WAITWND_STARTCON; // show time of the wait window
     int serverTimeout = Config.GetServerRepliesTimeout() * 1000;
     if (serverTimeout < 1000)
-        serverTimeout = 1000; // aspon sekundu
+        serverTimeout = 1000; // at least one second
 
-    // schovame si fokus z 'parent' (neni-li fokus z 'parent', ulozime NULL)
+    // store the focus from 'parent' (if the focus is not from 'parent', store NULL)
     HWND focusedWnd = GetFocus();
     HWND hwnd = focusedWnd;
     while (hwnd != NULL && hwnd != parent)
@@ -570,15 +570,15 @@ BOOL CControlConnectionSocket::StartControlConnection(HWND parent, char* user, i
     if (hwnd != parent)
         focusedWnd = NULL;
 
-    // disablujeme 'parent', pri enablovani obnovime i fokus
+    // disable 'parent', restore the focus when re-enabling
     EnableWindow(parent, FALSE);
 
-    // nahodime cekaci kurzor nad parentem, bohuzel to jinak neumime
+    // set a wait cursor over the parent, unfortunately we cannot do it otherwise
     CSetWaitCursorWindow* winParent = new CSetWaitCursorWindow;
     if (winParent != NULL)
         winParent->AttachToWindow(parent);
 
-    OurWelcomeMsgDlg = NULL; // neni treba synchronizovat, pristup jen z hl. threadu
+    OurWelcomeMsgDlg = NULL; // no need to synchronize, accessed only from the main thread
 
     CWaitWindow waitWnd(parent, TRUE);
 
@@ -594,17 +594,17 @@ BOOL CControlConnectionSocket::StartControlConnection(HWND parent, char* user, i
     {
         const char* txt = GetProxyScriptText(proxyType, FALSE);
         if (txt[0] == 0)
-            txt = GetProxyScriptText(fpstNotUsed, FALSE); // nedefinovany skript = "not used (direct connection)" skript - SOCKS 4/4A/5, HTTP 1.1
+            txt = GetProxyScriptText(fpstNotUsed, FALSE); // undefined script = "not used (direct connection)" script - SOCKS 4/4A/5, HTTP 1.1
         lstrcpyn(proxyScriptText, txt, PROXYSCRIPT_MAX_SIZE);
     }
     DWORD auxServerIP = ServerIP;
     srvAddr.s_addr = auxServerIP;
-    ResetWorkingPathCache();         // po pripojeni na server je nutne zjistit working-dir
-    ResetCurrentTransferModeCache(); // po pripojeni na server je nutne nastavit prenosovy rezim (mel by byt ascii, ale neverime tomu)
+    ResetWorkingPathCache();         // after connecting to the server it is necessary to determine the working dir
+    ResetCurrentTransferModeCache(); // after connecting to the server it is necessary to set the transfer mode (it should be ASCII, but we do not trust it)
     HANDLES(LeaveCriticalSection(&SocketCritSect));
 
     const char* proxyScriptExecPoint = NULL;
-    const char* proxyScriptStartExecPoint = NULL; // prvni prikaz skriptu (radek nasledujici za "connect to:")
+    const char* proxyScriptStartExecPoint = NULL; // first script command (line following "connect to:")
     int proxyLastCmdReply = -1;
     char proxyLastCmdReplyText[300];
     proxyLastCmdReplyText[0] = 0;
@@ -624,42 +624,42 @@ BOOL CControlConnectionSocket::StartControlConnection(HWND parent, char* user, i
         strcpy(proxyLogCmdBuf, proxySendCmdBuf);
     }
 
-    // pripravime na dalsi pouziti keep-alive + nastavime keep-alive na 'kamForbidden' (probiha normalni prikaz)
+    // prepare keep-alive for further use + set keep-alive to 'kamForbidden' (a normal command is in progress)
     ReleaseKeepAlive();
-    WaitForEndOfKeepAlive(parent, 0); // nemuze otevrit wait-okenko (je ve stavu 'kamNone')
+    WaitForEndOfKeepAlive(parent, 0); // cannot open the wait window (it is in the 'kamNone' state)
 
     CStartCtrlConStates state = (auxServerIP == INADDR_NONE ? sccsGetIP : sccsConnect);
 
-    if (retryMsg != NULL) // simulace stavu, kdy preruseni spojeni nastalo primo v teto metode - "retry" pripojeni
+    if (retryMsg != NULL) // simulate the state when the connection was interrupted directly in this method - "retry" connection
     {
-        lstrcpyn(errBuf, retryMsg, 300); // ulozime retry message do errBuf (pro sccsOperationFatalError)
+        lstrcpyn(errBuf, retryMsg, 300); // store the retry message in errBuf (for sccsOperationFatalError)
         opFatalErrorTextID = reconnectErrResID != -1 ? reconnectErrResID : IDS_SENDCOMMANDERROR;
-        opFatalError = -1;                      // "error" (reply) je primo v errBuf
-        noRetryState = sccsOperationFatalError; // pokud se neprovede retry, provede se sccsOperationFatalError
-        retryLogError = FALSE;                  // chyba uz v logu je, nepridavat znovu
+        opFatalError = -1;                      // the "error" (reply) is directly in errBuf
+        noRetryState = sccsOperationFatalError; // if retry is not performed, execute sccsOperationFatalError
+        retryLogError = FALSE;                  // the error is already in the log, do not add it again
         state = sccsRetry;
-        // useWelcomeMessage = FALSE;  // uz jsme ji vypsali, znovu uz nema smysl  -- "always FALSE"
+        // useWelcomeMessage = FALSE;  // we already printed it, repeating it makes no sense  -- "always FALSE"
         fastRetry = useFastReconnect;
     }
 
     if (ProcessProxyScript(proxyScriptText, &proxyScriptExecPoint, proxyLastCmdReply,
                            &proxyScriptParams, host, &port, NULL, NULL, errBuf2, NULL))
     {
-        if (proxyScriptParams.NeedUserInput()) // teoreticky by nemelo nastat
-        {                                      // jen proxyScriptParams->NeedProxyHost muze byt TRUE (jinak by ProcessProxyScript vratil chybu)
+        if (proxyScriptParams.NeedUserInput()) // theoretically should not happen
+        {                                      // only proxyScriptParams->NeedProxyHost can be TRUE (otherwise ProcessProxyScript would return an error)
             strcpy(errBuf, LoadStr(IDS_PROXYSRVADREMPTY));
             lstrcpyn(errBuf, errBuf2, 300);
-            opFatalError = -1; // error je primo v errBuf
+            opFatalError = -1; // error is directly in errBuf
             opFatalErrorTextID = IDS_ERRINPROXYSCRIPT;
             state = sccsOperationFatalError;
         }
         else
             proxyScriptStartExecPoint = proxyScriptExecPoint;
     }
-    else // teoreticky by nikdy nemelo nastat (ulozene skripty jsou validovane)
+    else // theoretically should never happen (saved scripts are validated)
     {
         lstrcpyn(errBuf, errBuf2, 300);
-        opFatalError = -1; // error je primo v errBuf
+        opFatalError = -1; // error is directly in errBuf
         opFatalErrorTextID = IDS_ERRINPROXYSCRIPT;
         state = sccsOperationFatalError;
     }
@@ -668,16 +668,16 @@ RETRY_LABEL:
 
     while (state != sccsDone)
     {
-        CALL_STACK_MESSAGE2("state = %d", state); // at je pripadne videt kde to spadlo/vytuhlo
+        CALL_STACK_MESSAGE2("state = %d", state); // so we can see where it eventually crashed/froze
         switch (state)
         {
-        case sccsGetIP: // ziskani IP adresy z textove adresy FTP serveru
+        case sccsGetIP: // obtain an IP address from the textual address of the FTP server
         {
-            if (!GetHostByAddress(host, 0)) // musi byt mimo sekci SocketCritSect
-            {                               // neni sance na uspech -> ohlasime chybu
+            if (!GetHostByAddress(host, 0)) // must be outside the SocketCritSect section
+            {                               // no chance of success -> report an error
                 sprintf(formatBuf, LoadStr(IDS_GETIPERROR), host);
-                opFatalErrorTextID = -1; // text je v 'formatBuf'
-                opFatalError = NO_ERROR; // neznama chyba
+                opFatalErrorTextID = -1; // the text is in 'formatBuf'
+                opFatalError = NO_ERROR; // unknown error
                 state = sccsOperationFatalError;
             }
             else
@@ -689,7 +689,7 @@ RETRY_LABEL:
                 DWORD start = GetTickCount();
                 while (state == sccsGetIP)
                 {
-                    // pockame na udalost na socketu (prijem zjistene IP adresy) nebo ESC
+                    // wait for an event on the socket (receiving the resolved IP address) or ESC
                     CControlConnectionSocketEvent event;
                     DWORD data1, data2;
                     DWORD now = GetTickCount();
@@ -712,7 +712,7 @@ RETRY_LABEL:
                         }
                         else
                         {
-                            SalamanderGeneral->WaitForESCRelease(); // opatreni, aby se neprerusovala dalsi akce po kazdem ESC v predeslem messageboxu
+                            SalamanderGeneral->WaitForESCRelease(); // measure to prevent interrupting the next action after every ESC in the previous message box
                             waitWnd.Show(TRUE);
                         }
                         break;
@@ -725,9 +725,9 @@ RETRY_LABEL:
                         break;
                     }
 
-                    case ccsevIPReceived: // data1 == ip, data2 == error
+                    case ccsevIPReceived: // data1 == IP, data2 == error
                     {
-                        if (data1 != INADDR_NONE) // mame IP
+                        if (data1 != INADDR_NONE) // we have an IP
                         {
                             HANDLES(EnterCriticalSection(&SocketCritSect));
                             auxServerIP = ServerIP = data1;
@@ -735,10 +735,10 @@ RETRY_LABEL:
 
                             state = sccsConnect;
                         }
-                        else // chyba
+                        else // error
                         {
                             sprintf(formatBuf, LoadStr(IDS_GETIPERROR), host);
-                            opFatalErrorTextID = -1; // text je v 'formatBuf'
+                            opFatalErrorTextID = -1; // the text is in 'formatBuf'
                             opFatalError = data2;
                             state = sccsOperationFatalError;
                         }
@@ -755,7 +755,7 @@ RETRY_LABEL:
             break;
         }
 
-        case sccsConnect: // pripojeni na FTP server (ziskane IP je v 'auxServerIP')
+        case sccsConnect: // connect to the FTP server (retrieved IP is in 'auxServerIP')
         {
             srvAddr.s_addr = auxServerIP;
 
@@ -769,8 +769,8 @@ RETRY_LABEL:
 
             HANDLES(EnterCriticalSection(&SocketCritSect));
 
-            // zalozime log a vlozime do logu header
-            if (!reconnect && LogUID == -1) // jeste nemame log
+            // create a log and insert the header into the log
+            if (!reconnect && LogUID == -1) // we do not have a log yet
             {
                 if (Config.EnableLogging)
                     Logs.CreateLog(&LogUID, Host, Port, User, this, FALSE, FALSE);
@@ -809,23 +809,23 @@ RETRY_LABEL:
 
             HANDLES(LeaveCriticalSection(&SocketCritSect));
 
-            // pridame header - Host + Port + IP + User
+            // add the header - Host + Port + IP + User
             Logs.LogMessage(logUID, buf, -1);
 
-            ResetBuffersAndEvents(); // vyprazdnime buffery (zahodime stara data) a zahodime stare udalosti
+            ResetBuffersAndEvents(); // empty the buffers (discard old data) and discard old events
             if (useWelcomeMessage)
-                welcomeMessage.Clear(); // vycistime predchozi pokus (ma smysl jen po "retry")
+                welcomeMessage.Clear(); // clear the previous attempt (only makes sense after a "retry")
 
             if ((proxyType == fpstSocks5 || proxyType == fpstHTTP1_1) &&
                 proxyScriptParams.ProxyUser[0] != 0 && proxyScriptParams.ProxyPassword[0] == 0)
-            { // user by mel zadat proxy-password
+            { // the user should enter the proxy password
                 _snprintf_s(connectingToAs, _TRUNCATE, LoadStr(IDS_CONNECTINGTOAS2),
                             proxyScriptParams.ProxyHost, proxyScriptParams.ProxyUser);
                 if (CEnterStrDlg(parent, LoadStr(IDS_ENTERPRXPASSTITLE), LoadStr(IDS_ENTERPRXPASSTEXT),
                                  proxyScriptParams.ProxyPassword, PASSWORD_MAX_SIZE, TRUE,
                                  connectingToAs, FALSE)
                         .Execute() != IDCANCEL)
-                { // zmena hodnot -> musime zmenit i originaly
+                { // value change -> we must update the originals as well
                     HANDLES(EnterCriticalSection(&SocketCritSect));
                     if (ProxyServer != NULL)
                         ProxyServer->SetProxyPassword(proxyScriptParams.ProxyPassword);
@@ -852,7 +852,7 @@ RETRY_LABEL:
                 DWORD start = GetTickCount();
                 while (state == sccsConnect)
                 {
-                    // pockame na udalost na socketu (otevreni spojeni na server) nebo ESC
+                    // wait for an event on the socket (opening the connection to the server) or ESC
                     CControlConnectionSocketEvent event;
                     DWORD data1, data2;
                     DWORD now = GetTickCount();
@@ -875,7 +875,7 @@ RETRY_LABEL:
                         }
                         else
                         {
-                            SalamanderGeneral->WaitForESCRelease(); // opatreni, aby se neprerusovala dalsi akce po kazdem ESC v predeslem messageboxu
+                            SalamanderGeneral->WaitForESCRelease(); // measure to prevent interrupting the next action after every ESC in the previous message box
                             waitWnd.Show(TRUE);
                         }
                         break;
@@ -884,10 +884,10 @@ RETRY_LABEL:
                     case ccsevTimeout:
                     {
                         if (GetProxyTimeoutDescr(errBuf, 300))
-                            fatalErrorTextID = -1; // popis je primo v 'errBuf'
+                            fatalErrorTextID = -1; // the description is directly in 'errBuf'
                         else
                             fatalErrorTextID = IDS_OPENCONTIMEOUT;
-                        noRetryState = sccsFatalError; // pokud se neprovede retry, provede se sccsFatalError
+                        noRetryState = sccsFatalError; // if retry is not performed, execute sccsFatalError
                         state = sccsRetry;
                         break;
                     }
@@ -895,23 +895,23 @@ RETRY_LABEL:
                     case ccsevConnected: // data1 == error
                     {
                         if (data1 == NO_ERROR)
-                            state = sccsServerReady; // jsme pripojeny
-                        else                         // chyba
+                            state = sccsServerReady; // we are connected
+                        else                         // error
                         {
                             if (GetProxyError(errBuf, 300, formatBuf, 300, FALSE))
-                                opFatalError = -1; // chyba behem pripojovani pres proxy server: text chyby je primo v 'errBuf'+'formatBuf'
+                                opFatalError = -1; // error while connecting through the proxy server: the error text is directly in 'errBuf'+'formatBuf'
                             else
                             {
                                 opFatalError = data1;
                                 sprintf(formatBuf, LoadStr(IDS_OPENCONERROR), host, inet_ntoa(srvAddr), port);
                             }
-                            opFatalErrorTextID = -1;                  // text je v 'formatBuf'
-                            noRetryState = sccsOperationFatalError;   // pokud se neprovede retry, provede se sccsOperationFatalError
-                            if (opFatalError == -1 && errBuf[0] == 0) // jednoducha chyba -> prevedeme ji na sccsFatalError
+                            opFatalErrorTextID = -1;                  // the text is in 'formatBuf'
+                            noRetryState = sccsOperationFatalError;   // if retry is not performed, execute sccsOperationFatalError
+                            if (opFatalError == -1 && errBuf[0] == 0) // simple error -> convert it to sccsFatalError
                             {
                                 fatalErrorTextID = -1;
                                 lstrcpyn(errBuf, formatBuf, 300);
-                                noRetryState = sccsFatalError; // pokud se neprovede retry, provede se sccsFatalError
+                                noRetryState = sccsFatalError; // if retry is not performed, execute sccsFatalError
                             }
                             state = sccsRetry;
                         }
@@ -930,16 +930,16 @@ RETRY_LABEL:
             {
                 opFatalError = error;
                 sprintf(formatBuf, LoadStr(IDS_OPENCONERROR), host, inet_ntoa(srvAddr), port);
-                opFatalErrorTextID = -1;                // text je v 'formatBuf'
-                noRetryState = sccsOperationFatalError; // pokud se neprovede retry, provede se sccsOperationFatalError
+                opFatalErrorTextID = -1;                // the text is in 'formatBuf'
+                noRetryState = sccsOperationFatalError; // if retry is not performed, execute sccsOperationFatalError
                 state = sccsRetry;
             }
             break;
         }
 
-        case sccsRetry: // zkusi znovu pripojeni (podle Config.DelayBetweenConRetries + Config.ConnectRetries),
-        {               // pokud jiz nema zkouset, prejde do stavu z 'noRetryState' + je-li 'fastRetry' TRUE,
-                        // nema pred dalsim pokusem cekat
+        case sccsRetry: // try connecting again (based on Config.DelayBetweenConRetries + Config.ConnectRetries),
+        {               // if it should no longer try, transition to the state from 'noRetryState' + if 'fastRetry' is TRUE,
+                        // do not wait before the next attempt
             // Resend AUTH TLS if needed
             if (EncryptControlConnection)
             {
@@ -949,7 +949,7 @@ RETRY_LABEL:
             }
             bModeZSent = false;
 
-            switch (noRetryState) // text posledni chyby pro log
+            switch (noRetryState) // text of the last error for the log
             {
             case sccsFatalError:
             {
@@ -977,42 +977,42 @@ RETRY_LABEL:
                 s1--;
             if (retryLogError)
             {
-                strcpy(s1, "\r\n");                     // CRLF na konec textu posledni chyby
-                Logs.LogMessage(logUID, buf, -1, TRUE); // text posledni chyby pridame do logu
+                strcpy(s1, "\r\n");                     // CRLF at the end of the last error text
+                Logs.LogMessage(logUID, buf, -1, TRUE); // add the last error text to the log
             }
             retryLogError = TRUE;
-            *s1 = 0; // oriznuti znaku konce radky z textu posledni chyby
+            *s1 = 0; // trim end-of-line characters from the last error text
 
-            // pri zavreni control-connection ze strany serveru dojde ke zmene keep-alive na 'kamNone', proto:
-            // pripravime na dalsi pouziti keep-alive + nastavime keep-alive na 'kamForbidden' (probiha normalni prikaz)
+            // when the server closes the control connection, keep-alive changes to 'kamNone', therefore:
+            // prepare keep-alive for further use + set keep-alive to 'kamForbidden' (a normal command is in progress)
             ReleaseKeepAlive();
-            WaitForEndOfKeepAlive(parent, 0); // nemuze otevrit wait-okenko (je ve stavu 'kamNone')
+            WaitForEndOfKeepAlive(parent, 0); // cannot open the wait window (it is in the 'kamNone' state)
 
-            if (fastRetry) // mozna je toto "retry" kvuli zpozdeni uzivatele - nebudeme cekat, ma to sanci vyjit (ftp.novell.com - po 20s kill)
+            if (fastRetry) // this "retry" may be due to user delay - we will not wait, it might succeed (ftp.novell.com - kills after 20s)
             {
                 fastRetry = FALSE;
 
-                // je-li potreba, zavreme socket, system se pokusi o "graceful" shutdown (nedozvime se o vysledku)
+                // if necessary, close the socket; the system will attempt a graceful shutdown (we will not learn the result)
                 CloseSocket(NULL);
                 Logs.SetIsConnected(logUID, IsConnected());
-                Logs.RefreshListOfLogsInLogsDlg(); // hlaseni "connection inactive"
+                Logs.RefreshListOfLogsInLogsDlg(); // display "connection inactive"
 
-                state = sccsConnect; // zkusime se znovu pripojit (IP uz je zname)
+                state = sccsConnect; // try to connect again (the IP is already known)
             }
             else
             {
-                if (attemptNum < Config.GetConnectRetries() + 1) // zkusime se pripojit znovu, nejdrive pockame
+                if (attemptNum < Config.GetConnectRetries() + 1) // try to connect again, but wait first
                 {
-                    attemptNum++; // zvysime cislo pokusu o pripojeni
+                    attemptNum++; // increase the connection attempt number
                     if (totalAttemptNum != NULL)
-                        *totalAttemptNum = attemptNum; // ulozime celkovy pocet pokusu
+                        *totalAttemptNum = attemptNum; // store the total number of attempts
 
-                    // je-li potreba, zavreme socket, system se pokusi o "graceful" shutdown (nedozvime se o vysledku)
+                    // if necessary, close the socket; the system will attempt a graceful shutdown (we will not learn the result)
                     CloseSocket(NULL);
                     Logs.SetIsConnected(logUID, IsConnected());
-                    Logs.RefreshListOfLogsInLogsDlg(); // hlaseni "connection inactive"
+                    Logs.RefreshListOfLogsInLogsDlg(); // display "connection inactive"
 
-                    switch (noRetryState) // text posledni chyby pro wait okenko
+                    switch (noRetryState) // text of the last error for the wait window
                     {
                     case sccsFatalError:
                     {
@@ -1044,19 +1044,19 @@ RETRY_LABEL:
                             s++;
                         if (*s == '\n')
                         {
-                            if (*(s + 1) == '\n') // zruseni prazdneho radku v textu
+                            if (*(s + 1) == '\n') // remove an empty line in the text
                                 memmove(s, s + 1, strlen(s + 1) + 1);
                             s++;
                         }
                         s = s + strlen(s);
                         while (s > buf && (*(s - 1) == '\n' || *(s - 1) == '\r'))
                             s--;
-                        *s = 0; // orez EOLu na konci zpravy
+                        *s = 0; // trim the EOL at the end of the message
                         break;
                     }
                     }
 
-                    // ukazeme okenko s hlaskou o cekani
+                    // show a window with the waiting message
                     int delayBetweenConRetries = Config.GetDelayBetweenConRetries();
                     _snprintf_s(retryBuf, _TRUNCATE, LoadStr(IDS_WAITINGTORETRYSUF), buf, delayBetweenConRetries,
                                 attemptNum, Config.GetConnectRetries() + 1);
@@ -1064,7 +1064,7 @@ RETRY_LABEL:
                     waitWnd.SetText(retryBuf);
                     waitWnd.Create(0);
 
-                    // pockame na ESC nebo timeout cekani
+                    // wait for ESC or the waiting timeout
                     CControlConnectionSocketEvent event;
                     DWORD data1, data2;
                     BOOL run = TRUE;
@@ -1073,23 +1073,23 @@ RETRY_LABEL:
                     {
                         DWORD now = GetTickCount();
                         if (now - start < (DWORD)delayBetweenConRetries * 1000)
-                        { // sestavime znovu text pro retry wait okenko (obsahuje countdown)
+                        { // rebuild the text for the retry wait window (contains the countdown)
                             DWORD wait = delayBetweenConRetries * 1000 - (now - start);
-                            if (now != start) // poprve to nema smysl
+                            if (now != start) // it makes no sense the first time
                             {
                                 _snprintf_s(retryBuf, _TRUNCATE, LoadStr(IDS_WAITINGTORETRYSUF), buf, (1 + (wait - 1) / 1000),
                                             attemptNum, Config.GetConnectRetries() + 1);
                                 waitWnd.SetText(retryBuf);
                             }
-                            BOOL notTimeout = FALSE; // TRUE = nemuze jit o timeout
+                            BOOL notTimeout = FALSE; // TRUE = it cannot be a timeout
                             if (wait > 1500)
                             {
-                                wait = 1000; // cekame max. 1.5 sekundy, min. 0.5 sekundy
+                                wait = 1000; // wait at most 1.5 seconds, at least 0.5 seconds
                                 notTimeout = TRUE;
                             }
                             WaitForEventOrESC(parent, &event, &data1, &data2,
                                               wait, &waitWnd, NULL, FALSE);
-                            switch (event) // zajima nas jen ESC nebo timeout, udalosti ignorujeme
+                            switch (event) // we only care about ESC or timeout, ignore events
                             {
                             case ccsevESC:
                             {
@@ -1101,9 +1101,9 @@ RETRY_LABEL:
                                 params.Caption = LoadStr(IDS_FTPPLUGINTITLE);
                                 params.Text = LoadStr(IDS_WAITRETRESC);
                                 char aliasBtnNames[300];
-                                /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   nechame pro tlacitka msgboxu resit kolize hotkeys tim, ze simulujeme, ze jde o menu
-MENU_TEMPLATE_ITEM MsgBoxButtons[] = 
+                                /* used by the script export_mnu.py, which generates salmenu.mnu for Translator
+   we let the message box buttons resolve hotkey collisions by simulating that this is a menu
+MENU_TEMPLATE_ITEM MsgBoxButtons[] =
 {
   {MNTT_PB, 0
   {MNTT_IT, IDS_WAITRETRESCABORTBTN
@@ -1119,22 +1119,22 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                 params.AliasBtnNames = aliasBtnNames;
                                 int msgRes = SalamanderGeneral->SalMessageBoxEx(&params);
                                 if (msgRes == IDYES)
-                                { // vzdava dalsi pokusy o login
+                                { // gives up further login attempts
                                     state = sccsDone;
                                     run = FALSE;
-                                    // actionCanceled = TRUE;   // cancel v "retry" nebudeme logovat
+                                    // actionCanceled = TRUE;   // do not log cancel in "retry"
                                 }
                                 else
                                 {
                                     if (msgRes == IDNO)
                                     {
                                         event = ccsevTimeout;
-                                        run = FALSE; // rovnou zkusime dalsi login
+                                        run = FALSE; // immediately try the next login
                                     }
                                     else
                                     {
-                                        SalamanderGeneral->WaitForESCRelease(); // opatreni, aby se neprerusovala dalsi akce po kazdem ESC v predeslem messageboxu
-                                        waitWnd.Show(TRUE);                     // chce pokracovat v cekani
+                                        SalamanderGeneral->WaitForESCRelease(); // measure to prevent interrupting the next action after every ESC in the previous message box
+                                        waitWnd.Show(TRUE);                     // wants to continue waiting
                                     }
                                 }
                                 break;
@@ -1146,7 +1146,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                 break;
                             }
                         }
-                        else // uz to zkouset nebudeme (timeout)
+                        else // we will not try it anymore (timeout)
                         {
                             event = ccsevTimeout;
                             run = FALSE;
@@ -1156,19 +1156,19 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                     waitWnd.Destroy();
 
                     if (event == ccsevTimeout)
-                        state = sccsConnect; // zkusime se znovu pripojit (IP uz je zname)
+                        state = sccsConnect; // try to connect again (the IP is already known)
                 }
                 else
                 {
                     if (noRetryState == sccsFatalError || noRetryState == sccsOperationFatalError)
-                        fatalErrLogMsg = FALSE; // hlasku jsme uz do logu vypsali (bylo-li potreba), znova se vypisovat nebude
-                    state = noRetryState;       // dalsi pokus jiz nebude, pokracujeme na stav z 'noRetryState'
+                        fatalErrLogMsg = FALSE; // the message was already logged (if needed), do not log it again
+                    state = noRetryState;       // no more attempts, continue with the state from 'noRetryState'
                 }
             }
             break;
         }
 
-        case sccsServerReady: // ted pripojeno, precteme zpravu od serveru (ocekavame "220 Service ready for new user")
+        case sccsServerReady: // now connected, read the message from the server (expect "220 Service ready for new user")
         {
             waitWnd.SetText(LoadStr(IDS_WAITINGFORLOGIN));
             waitWnd.Create(GetWaitTime(showWaitWndTime));
@@ -1176,7 +1176,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
             DWORD start = GetTickCount();
             while (state == sccsServerReady)
             {
-                // pockame na udalost na socketu (odpoved serveru) nebo ESC
+                // wait for an event on the socket (server reply) or ESC
                 CControlConnectionSocketEvent event;
                 DWORD data1, data2;
                 DWORD now = GetTickCount();
@@ -1199,7 +1199,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                     }
                     else
                     {
-                        SalamanderGeneral->WaitForESCRelease(); // opatreni, aby se neprerusovala dalsi akce po kazdem ESC v predeslem messageboxu
+                        SalamanderGeneral->WaitForESCRelease(); // measure to prevent interrupting the next action after every ESC in the previous message box
                         waitWnd.Show(TRUE);
                     }
                     break;
@@ -1208,20 +1208,20 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                 case ccsevTimeout:
                 {
                     fatalErrorTextID = IDS_WAITFORLOGTIMEOUT;
-                    noRetryState = sccsFatalError; // pokud se neprovede retry, provede se sccsFatalError
+                    noRetryState = sccsFatalError; // if retry is not performed, execute sccsFatalError
                     state = sccsRetry;
                     break;
                 }
 
-                case ccsevClosed:       // mozna necekana ztrata pripojeni (osetrime take to, ze ccsevClosed mohla prepsat ccsevNewBytesRead)
-                case ccsevNewBytesRead: // nacetli jsme nove byty
+                case ccsevClosed:       // possible unexpected connection loss (also handle that ccsevClosed could overwrite ccsevNewBytesRead)
+                case ccsevNewBytesRead: // read new bytes
                 {
                     char* reply;
                     int replySize;
                     int replyCode;
 
                     HANDLES(EnterCriticalSection(&SocketCritSect));
-                    while (ReadFTPReply(&reply, &replySize, &replyCode)) // dokud mame nejakou odpoved serveru
+                    while (ReadFTPReply(&reply, &replySize, &replyCode)) // while we have some server response
                     {
                         if (useWelcomeMessage)
                             welcomeMessage.Append(reply, replySize);
@@ -1230,13 +1230,13 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                         if (replyCode != -1)
                         {
                             if (FTP_DIGIT_1(replyCode) == FTP_D1_SUCCESS &&
-                                FTP_DIGIT_2(replyCode) == FTP_D2_CONNECTION) // napr. 220 - Service ready for new user
+                                FTP_DIGIT_2(replyCode) == FTP_D2_CONNECTION) // e.g. 220 - Service ready for new user
                             {
-                                if (event != ccsevClosed) // pokud uz neni zavrena connectiona
+                                if (event != ccsevClosed) // if the connection is not closed yet
                                 {
-                                    state = sccsStartLoginScript; // posleme login sekvenci prikazu
+                                    state = sccsStartLoginScript; // send the login command sequence
 
-                                    CopyStr(retryBuf, 700, reply, replySize); // ulozime prvni odpoved serveru (zdroj informaci o verzi serveru)
+                                    CopyStr(retryBuf, 700, reply, replySize); // store the first server reply (source of server version info)
                                     if (ServerFirstReply != NULL)
                                         SalamanderGeneral->Free(ServerFirstReply);
                                     ServerFirstReply = SalamanderGeneral->DupStr(retryBuf);
@@ -1248,39 +1248,39 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                             else
                             {
                                 if (FTP_DIGIT_1(replyCode) == FTP_D1_MAYBESUCCESS &&
-                                    FTP_DIGIT_2(replyCode) == FTP_D2_CONNECTION) // napr. 120 - Service ready in nnn minutes
-                                {                                                // tuto notifikaci ignorujeme (mame jen jeden timeout)
+                                    FTP_DIGIT_2(replyCode) == FTP_D2_CONNECTION) // e.g. 120 - Service ready in nnn minutes
+                                {                                                // ignore this notification (we have only one timeout)
                                 }
                                 else
                                 {
                                     if (FTP_DIGIT_1(replyCode) == FTP_D1_TRANSIENTERROR ||
-                                        FTP_DIGIT_1(replyCode) == FTP_D1_ERROR) // napr. 421 Service not available, closing control connection
+                                        FTP_DIGIT_1(replyCode) == FTP_D1_ERROR) // e.g. 421 Service not available, closing control connection
                                     {
-                                        if (state == sccsServerReady) // pokud jiz nehlasime jinou chybu
+                                        if (state == sccsServerReady) // if we are not reporting another error yet
                                         {
                                             CopyStr(errBuf, 300, reply, replySize);
-                                            fatalErrorTextID = -1;         // text chyby je v 'errBuf'
-                                            noRetryState = sccsFatalError; // pokud se neprovede retry, provede se sccsFatalError
-                                            retryLogError = FALSE;         // chyba uz v logu je, nepridavat znovu
+                                            fatalErrorTextID = -1;         // the error text is in 'errBuf'
+                                            noRetryState = sccsFatalError; // if retry is not performed, execute sccsFatalError
+                                            retryLogError = FALSE;         // the error is already in the log, do not add it again
                                             state = sccsRetry;
                                         }
                                     }
-                                    else // necekana reakce, ignorujeme ji
+                                    else // unexpected response, ignore it
                                     {
                                         TRACE_E("Unexpected reply: " << CopyStr(errBuf, 300, reply, replySize));
                                     }
                                 }
                             }
                         }
-                        else // neni FTP server
+                        else // not an FTP server
                         {
-                            if (state == sccsServerReady) // pokud jiz nehlasime jinou chybu
+                            if (state == sccsServerReady) // if we are not reporting another error yet
                             {
                                 opFatalErrorTextID = IDS_NOTFTPSERVERERROR;
                                 CopyStr(errBuf, 300, reply, replySize);
-                                opFatalError = -1; // "error" (reply) je primo v errBuf
+                                opFatalError = -1; // the "error" (reply) is directly in errBuf
                                 state = sccsOperationFatalError;
-                                fatalErrLogMsg = FALSE; // uz je v logu, nema smysl ji tam davat znovu
+                                fatalErrLogMsg = FALSE; // already in the log, no point adding it again
                             }
                         }
                         SkipFTPReply(replySize);
@@ -1289,19 +1289,19 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
 
                     if (event == ccsevClosed)
                     {
-                        if (state == sccsServerReady) // close bez priciny
+                        if (state == sccsServerReady) // close without a reason
                         {
                             fatalErrorTextID = IDS_CONNECTIONLOSTERROR;
-                            noRetryState = sccsFatalError; // pokud se neprovede retry, provede se sccsFatalError
+                            noRetryState = sccsFatalError; // if retry is not performed, execute sccsFatalError
                             state = sccsRetry;
                         }
                         if (data1 != NO_ERROR)
                         {
-                            FTPGetErrorText(data1, buf, 1000 - 2); // (1000-2) aby zbylo na nase CRLF
+                            FTPGetErrorText(data1, buf, 1000 - 2); // (1000-2) so there is room for our CRLF
                             char* s = buf + strlen(buf);
                             while (s > buf && (*(s - 1) == '\n' || *(s - 1) == '\r'))
                                 s--;
-                            strcpy(s, "\r\n"); // dosazeni naseho CRLF na konec radky z textem chyby
+                            strcpy(s, "\r\n"); // append our CRLF to the end of the error text line
                             Logs.LogMessage(logUID, buf, -1);
                         }
                     }
@@ -1318,13 +1318,13 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
             break;
         }
 
-        case sccsRetryLogin: // zkusi znovu login (bez cekani a ztraty connectiony) - jen prejde do stavu sccsStartLoginScript - nelze pouzit s proxy serverem!!!
+        case sccsRetryLogin: // retry login (without waiting and losing the connection) - only transitions to sccsStartLoginScript - cannot be used with a proxy server!!!
         {
             state = sccsStartLoginScript;
             break;
         }
 
-        case sccsStartLoginScript: // inicializace posilani login sekvence prikazu - podle proxy server skriptu
+        case sccsStartLoginScript: // initialize sending of the login command sequence - according to the proxy server script
         {
             if (proxyScriptStartExecPoint == NULL)
                 TRACE_E("CControlConnectionSocket::StartControlConnection(): proxyScriptStartExecPoint cannot be NULL here!");
@@ -1335,7 +1335,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
             break;
         }
 
-        case sccsProcessLoginScript: // postupne posilani login sekvence prikazu - podle proxy server skriptu
+        case sccsProcessLoginScript: // gradually send the login command sequence - according to the proxy server script
         {
             while (1)
             {
@@ -1344,7 +1344,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                        &proxyScriptParams, NULL, NULL, proxySendCmdBuf,
                                        proxyLogCmdBuf, errBuf, NULL))
                 {
-                    if (sslisNone == SSLInitSequence && proxyScriptParams.NeedUserInput()) // je potreba zadat nejake udaje (user, password, atd.)
+                    if (sslisNone == SSLInitSequence && proxyScriptParams.NeedUserInput()) // it is necessary to enter some data (user, password, etc.)
                     {
                         if (proxyScriptParams.NeedProxyHost)
                         {
@@ -1353,15 +1353,15 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                              proxyScriptParams.ProxyHost, HOST_MAX_SIZE, FALSE, NULL, FALSE)
                                     .Execute() == IDCANCEL)
                             {
-                                state = sccsDone; // dal cancel -> koncime
+                                state = sccsDone; // user canceled -> finish
                                 actionCanceled = TRUE;
                                 break;
                             }
-                            else // mame zadany "proxyhost:port"
+                            else // we have entered "proxyhost:port"
                             {
                                 char* s = strchr(proxyScriptParams.ProxyHost, ':');
                                 int portNum = 0;
-                                if (s != NULL) // je zadany i port
+                                if (s != NULL) // the port is also specified
                                 {
                                     char* hostEnd = s++;
                                     while (*s != 0 && *s >= '0' && *s <= '9')
@@ -1398,11 +1398,11 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                              connectingToAs, FALSE)
                                     .Execute() == IDCANCEL)
                             {
-                                state = sccsDone; // dal cancel -> koncime
+                                state = sccsDone; // user canceled -> finish
                                 actionCanceled = TRUE;
                                 break;
                             }
-                            else // zmena hodnot -> musime zmenit i originaly
+                            else // values changed -> we must update the originals
                             {
                                 HANDLES(EnterCriticalSection(&SocketCritSect));
                                 if (ProxyServer != NULL)
@@ -1417,11 +1417,11 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                              connectingToAs, FALSE)
                                     .Execute() == IDCANCEL)
                             {
-                                state = sccsDone; // dal cancel -> koncime
+                                state = sccsDone; // user canceled -> finish
                                 actionCanceled = TRUE;
                                 break;
                             }
-                            else // zmena hodnot -> musime zmenit i originaly
+                            else // values changed -> we must update the originals
                             {
                                 HANDLES(EnterCriticalSection(&SocketCritSect));
                                 lstrcpyn(User, proxyScriptParams.User, USER_MAX_SIZE);
@@ -1439,14 +1439,14 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                              connectingToAs, TRUE)
                                     .Execute() == IDCANCEL)
                             {
-                                state = sccsDone; // dal cancel -> koncime
+                                state = sccsDone; // user canceled -> finish
                                 actionCanceled = TRUE;
                                 break;
                             }
-                            else // zmena hodnot -> musime zmenit i originaly
+                            else // values changed -> we must update the originals
                             {
                                 if (proxyScriptParams.Password[0] == 0)
-                                    proxyScriptParams.AllowEmptyPassword = TRUE; // prazdne heslo na prani uzivatele (uz se nebudeme znovu ptat)
+                                    proxyScriptParams.AllowEmptyPassword = TRUE; // empty password at the user's request (we will not ask again)
                                 HANDLES(EnterCriticalSection(&SocketCritSect));
                                 lstrcpyn(Password, proxyScriptParams.Password, PASSWORD_MAX_SIZE);
                                 HANDLES(LeaveCriticalSection(&SocketCritSect));
@@ -1461,18 +1461,18 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                              connectingToAs, FALSE)
                                     .Execute() == IDCANCEL)
                             {
-                                state = sccsDone; // dal cancel -> koncime
+                                state = sccsDone; // user canceled -> finish
                                 actionCanceled = TRUE;
                                 break;
                             }
-                            else // zmena hodnot -> musime zmenit i originaly
+                            else // values changed -> we must update the originals
                             {
                                 HANDLES(EnterCriticalSection(&SocketCritSect));
                                 lstrcpyn(Account, proxyScriptParams.Account, ACCOUNT_MAX_SIZE);
                                 HANDLES(LeaveCriticalSection(&SocketCritSect));
                             }
                         }
-                        // nechame prekreslit hlavni okno (aby user cely connect nekoukal na zbytek po dialogu)
+                        // repaint the main window (so the user does not stare at the remainder after the dialog during the whole connect)
                         UpdateWindow(SalamanderGeneral->GetMainWindowHWND());
                     }
                     else
@@ -1483,30 +1483,30 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                             strcpy(proxyLogCmdBuf, proxySendCmdBuf);
                             bModeZSent = true;
                         }
-                        if (proxySendCmdBuf[0] == 0) // konec login skriptu
+                        if (proxySendCmdBuf[0] == 0) // end of the login script
                         {
-                            if (proxyLastCmdReply == -1) // skript neobsahuje zadny prikaz, ktery by se poslal na server - napr. pokud se prikazy preskoci kvuli tomu, ze obsahuji nepovinne promenne
+                            if (proxyLastCmdReply == -1) // the script contains no command sent to the server - e.g. commands skipped because they contain optional variables
                             {
                                 fatalErrorTextID = IDS_INCOMPLETEPRXSCR2;
                                 state = sccsFatalError;
                             }
                             else
                             {
-                                if (FTP_DIGIT_1(proxyLastCmdReply) == FTP_D1_SUCCESS) // napr. 230 User logged in, proceed
+                                if (FTP_DIGIT_1(proxyLastCmdReply) == FTP_D1_SUCCESS) // e.g. 230 User logged in, proceed
                                 {
                                     state = sccsDone;
-                                    ret = TRUE; // USPECH, jsme zalogovany!
+                                    ret = TRUE; // SUCCESS, we are logged in!
                                 }
-                                else // FTP_DIGIT_1(proxyLastCmdReply) == FTP_D1_PARTIALSUCCESS  // napr. 331 User name okay, need password
+                                else // FTP_DIGIT_1(proxyLastCmdReply) == FTP_D1_PARTIALSUCCESS  // e.g. 331 User name okay, need password
                                 {
                                     lstrcpyn(errBuf, proxyLastCmdReplyText, 300);
-                                    opFatalError = -1; // error je primo v errBuf
+                                    opFatalError = -1; // error is directly in errBuf
                                     opFatalErrorTextID = IDS_INCOMPLETEPRXSCR;
                                     state = sccsOperationFatalError;
                                 }
                             }
                         }
-                        else // mame prikaz k odeslani na server
+                        else // we have a command to send to the server
                         {
                             DWORD error;
                             BOOL allBytesWritten;
@@ -1528,7 +1528,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                 BOOL replyReceived = FALSE;
                                 while (!allBytesWritten || state == sccsProcessLoginScript && !replyReceived)
                                 {
-                                    // pockame na udalost na socketu (odpoved serveru) nebo ESC
+                                    // wait for an event on the socket (server reply) or ESC
                                     CControlConnectionSocketEvent event;
                                     DWORD data1, data2;
                                     DWORD now = GetTickCount();
@@ -1548,11 +1548,11 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                         { // cancel
                                             state = sccsDone;
                                             actionCanceled = TRUE;
-                                            allBytesWritten = TRUE; // ted uz to neni dulezite, dojde k zavreni socketu
+                                            allBytesWritten = TRUE; // no longer important, the socket will be closed
                                         }
                                         else
                                         {
-                                            SalamanderGeneral->WaitForESCRelease(); // opatreni, aby se neprerusovala dalsi akce po kazdem ESC v predeslem messageboxu
+                                            SalamanderGeneral->WaitForESCRelease(); // measure to prevent interrupting the next action after every ESC in the previous message box
                                             waitWnd.Show(TRUE);
                                         }
                                         break;
@@ -1561,16 +1561,16 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                     case ccsevTimeout:
                                     {
                                         fatalErrorTextID = IDS_SNDORABORCMDTIMEOUT;
-                                        noRetryState = sccsFatalError; // pokud se neprovede retry, provede se sccsFatalError
+                                        noRetryState = sccsFatalError; // if retry is not performed, execute sccsFatalError
                                         state = sccsRetry;
-                                        allBytesWritten = TRUE; // ted uz to neni dulezite, dojde k zavreni socketu
+                                        allBytesWritten = TRUE; // no longer important, the socket will be closed
                                         break;
                                     }
 
                                     case ccsevWriteDone:
-                                        allBytesWritten = TRUE; // uz odesly vsechny byty (osetrime take to, ze ccsevWriteDone mohla prepsat ccsevNewBytesRead)
-                                    case ccsevClosed:           // mozna necekana ztrata pripojeni (osetrime take to, ze ccsevClosed mohla prepsat ccsevNewBytesRead)
-                                    case ccsevNewBytesRead:     // nacetli jsme nove byty
+                                        allBytesWritten = TRUE; // all bytes have been sent (also handle that ccsevWriteDone could overwrite ccsevNewBytesRead)
+                                    case ccsevClosed:           // possible unexpected connection loss (also handle that ccsevClosed could overwrite ccsevNewBytesRead)
+                                    case ccsevNewBytesRead:     // read new bytes
                                     {
                                         char* reply;
                                         int replySize;
@@ -1578,7 +1578,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
 
                                         HANDLES(EnterCriticalSection(&SocketCritSect));
                                         BOOL sectLeaved = FALSE;
-                                        while (ReadFTPReply(&reply, &replySize, &replyCode)) // dokud mame nejakou odpoved serveru
+                                        while (ReadFTPReply(&reply, &replySize, &replyCode)) // while we have some server response
                                         {
                                             if (useWelcomeMessage)
                                                 welcomeMessage.Append(reply, replySize);
@@ -1593,29 +1593,29 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                                     CompressData = FALSE;
                                                     Logs.LogMessage(logUID, LoadStr(IDS_MODEZ_LOG_UNSUPBYSERVER), -1);
                                                 }
-                                                if (FTP_DIGIT_1(replyCode) == FTP_D1_SUCCESS ||      // napr. 230 User logged in, proceed
-                                                    FTP_DIGIT_1(replyCode) == FTP_D1_PARTIALSUCCESS) // napr. 331 User name okay, need password
-                                                {                                                    // mame uspesnou odpoved na prikaz, ulozime ji a budeme pokracovat v provadeni login skriptu
-                                                    fastRetry = FALSE;                               // pripadne dalsi "retry" jiz nebude kvuli zpozdeni uzivatele
+                                                if (FTP_DIGIT_1(replyCode) == FTP_D1_SUCCESS ||      // e.g. 230 User logged in, proceed
+                                                    FTP_DIGIT_1(replyCode) == FTP_D1_PARTIALSUCCESS) // e.g. 331 User name okay, need password
+                                                {                                                    // we have a successful reply to the command, store it and continue executing the login script
+                                                    fastRetry = FALSE;                               // any further "retry" will no longer be due to user delay
                                                     if (replyReceived)
                                                         TRACE_E("CControlConnectionSocket::StartControlConnection(): unexpected situation: more replies to one command!");
                                                     else
                                                     {
-                                                        replyReceived = TRUE; // bereme jen prvni odpoved serveru na prikaz (dalsi odpoved uz se nejspis nevztahuje k prikazu, ale ke stavu control-connectiony - napr. "timeout")
+                                                        replyReceived = TRUE; // take only the first server reply to the command (another reply probably relates to the control connection state, e.g. "timeout")
                                                         proxyLastCmdReply = replyCode;
                                                         CopyStr(proxyLastCmdReplyText, 300, reply, replySize);
                                                     }
                                                     if (event == ccsevClosed)
-                                                        state = sccsProcessLoginScript; // aby se nize jiste vypsala chyba
+                                                        state = sccsProcessLoginScript; // ensure an error is reported later
                                                 }
                                                 else
                                                 {
-                                                    if (FTP_DIGIT_1(replyCode) == FTP_D1_TRANSIENTERROR || // napr. 421 Service not available (too many users), closing control connection
-                                                        FTP_DIGIT_1(replyCode) == FTP_D1_ERROR)            // napr. 530 Not logged in (invalid password)
+                                                    if (FTP_DIGIT_1(replyCode) == FTP_D1_TRANSIENTERROR || // e.g. 421 Service not available (too many users), closing control connection
+                                                        FTP_DIGIT_1(replyCode) == FTP_D1_ERROR)            // e.g. 530 Not logged in (invalid password)
                                                     {
                                                         if (FTP_DIGIT_1(replyCode) == FTP_D1_TRANSIENTERROR)
-                                                        { // pohodlne reseni chyby "too many users" - zadne dotazy, hned "retry"
-                                                            // muze vadit: s timto kodem prijde zprava, na kterou je treba reagovat zmenou user/passwd
+                                                        { // convenient handling of the "too many users" error - no questions, immediately "retry"
+                                                            // drawback: with this code comes a message that may require changing user/password
                                                             retryLoginWithoutAsking = TRUE;
                                                         }
 
@@ -1623,22 +1623,22 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                                         SkipFTPReply(replySize);
                                                         if (!retryLoginWithoutAsking)
                                                         {
-                                                            fastRetry = TRUE; // zpozdeni kvuli uzivateli, to nektere servery nesnasi dobre (ftp.novell.com - po 20s kill)
+                                                            fastRetry = TRUE; // user-induced delay, some servers do not like it (ftp.novell.com - kills after 20s)
                                                             BOOL proxyUsed = ProxyServer != NULL;
 
-                                                            HANDLES(LeaveCriticalSection(&SocketCritSect)); // musime opustit sekci - jdeme vybalit dialog, to bude na dlouho...
+                                                            HANDLES(LeaveCriticalSection(&SocketCritSect)); // must leave the section - opening a dialog will take a while...
                                                             sectLeaved = TRUE;
 
                                                             waitWnd.Show(FALSE);
                                                             if (replyCode == 534 && EncryptDataConnection ||
                                                                 FTP_DIGIT_1(replyCode) == FTP_D1_ERROR && SSLInitSequence == sslisAUTH)
                                                             {
-                                                                // 534 comes after PROT when data connection encyption is requested but not supported
-                                                                // 530 comes after AUTH when AUTH is not recoginized
+                                                                // 534 comes after PROT when data connection encryption is requested but not supported
+                                                                // 530 comes after AUTH when AUTH is not recognized
                                                                 SalamanderGeneral->SalMessageBox(parent, LoadStr((SSLInitSequence == sslisAUTH) ? IDS_SSL_ERR_CONTRENCUNSUP : IDS_SSL_ERR_DATAENCUNSUP),
                                                                                                  LoadStr(IDS_FTPPLUGINTITLE), MB_OK | MB_ICONSTOP);
                                                                 state = sccsDone;
-                                                                allBytesWritten = TRUE;      // no longer important, the socket is gonna be closed
+                                                                allBytesWritten = TRUE;      // no longer important, the socket is going to be closed
                                                                 SSLInitSequence = sslisNone; // do not attempt to load OpenSSL libs
                                                             }
                                                             else
@@ -1649,8 +1649,8 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                                                 if (dlg.Execute() == IDOK)
                                                                 {
                                                                     if (proxyScriptParams.Password[0] == 0)
-                                                                        proxyScriptParams.AllowEmptyPassword = TRUE; // prazdne heslo na prani uzivatele (uz se nebudeme znovu ptat)
-                                                                    // zmenime originaly (premaze pripadne zmeny v jinem threadu) + kopii ve 'value'
+                                                                        proxyScriptParams.AllowEmptyPassword = TRUE; // empty password at the user's request (we will not ask again)
+                                                                    // update the originals (overwriting possible changes in another thread) + the copy in 'value'
                                                                     HANDLES(EnterCriticalSection(&SocketCritSect));
                                                                     if (ProxyServer != NULL)
                                                                     {
@@ -1666,49 +1666,49 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
 
                                                                     retryLoginWithoutAsking = dlg.RetryWithoutAsking;
                                                                     if (dlg.LoginChanged && event != ccsevClosed && !proxyUsed)
-                                                                    { // zkusi znovu login (bez cekani a zavreni connectiony) - resi reakce typu "invalid user/password"
+                                                                    { // retry login (without waiting and closing the connection) - handles responses such as "invalid user/password"
                                                                         state = sccsRetryLogin;
-                                                                        // allBytesWritten = TRUE;   // nedojde k zavreni connectiony, musime pockat (navic, kdyz uz prisla odpoved, je snad jiste ze odesel cely prikaz)
+                                                                        // allBytesWritten = TRUE;   // the connection will not be closed, we must wait (besides, once a reply arrived, it is likely the whole command was sent)
                                                                     }
                                                                 }
                                                                 else // cancel
                                                                 {
                                                                     state = sccsDone;
                                                                     actionCanceled = TRUE;
-                                                                    allBytesWritten = TRUE; // ted uz to neni dulezite, dojde k zavreni socketu
+                                                                    allBytesWritten = TRUE; // no longer important, the socket will be closed
                                                                 }
-                                                                // nechame prekreslit hlavni okno (aby user cely connect nekoukal na zbytek po dialogu)
+                                                                // repaint the main window (so the user does not stare at the remainder after the dialog during the whole connect)
                                                             }
                                                             UpdateWindow(SalamanderGeneral->GetMainWindowHWND());
                                                         }
 
                                                         if (state == sccsProcessLoginScript)
-                                                        { // std. retry (zavreni connectiony + cekani) - resi reakce typu "too many users"
+                                                        { // standard retry (connection closure + waiting) - handles responses like "too many users"
                                                             opFatalErrorTextID = IDS_LOGINERROR;
-                                                            // CopyStr(errBuf, 300, reply, replySize);   // dela se drive - pred opustenim kriticke sekce
-                                                            opFatalError = -1;                      // text chyby je v 'errBuf'
-                                                            noRetryState = sccsOperationFatalError; // pokud se neprovede retry, provede se sccsOperationFatalError
-                                                            retryLogError = FALSE;                  // chyba uz v logu je, nepridavat znovu
+                                                            // CopyStr(errBuf, 300, reply, replySize);   // done earlier - before leaving the critical section
+                                                            opFatalError = -1;                      // the error text is in 'errBuf'
+                                                            noRetryState = sccsOperationFatalError; // if retry is not performed, execute sccsOperationFatalError
+                                                            retryLogError = FALSE;                  // the error is already in the log, do not add it again
                                                             state = sccsRetry;
-                                                            allBytesWritten = TRUE; // ted uz to neni dulezite, dojde k zavreni socketu
+                                                            allBytesWritten = TRUE; // no longer important, the socket will be closed
                                                         }
-                                                        // SkipFTPReply(replySize);  // dela se drive - pred opustenim kriticke sekce
+                                                        // SkipFTPReply(replySize);  // done earlier - before leaving the critical section
                                                         break;
                                                     }
-                                                    else // necekana reakce, ignorujeme ji
+                                                    else // unexpected response, ignore it
                                                         TRACE_E("Unexpected reply: " << CopyStr(errBuf, 300, reply, replySize));
                                                 }
                                             }
-                                            else // neni FTP server
+                                            else // not an FTP server
                                             {
-                                                if (state == sccsProcessLoginScript) // pokud jiz nehlasime jinou chybu
+                                                if (state == sccsProcessLoginScript) // if we are not reporting another error yet
                                                 {
                                                     opFatalErrorTextID = IDS_NOTFTPSERVERERROR;
                                                     CopyStr(errBuf, 300, reply, replySize);
-                                                    opFatalError = -1; // "error" (reply) je primo v errBuf
+                                                    opFatalError = -1; // the "error" (reply) is directly in errBuf
                                                     state = sccsOperationFatalError;
-                                                    fatalErrLogMsg = FALSE; // uz je v logu, nema smysl ji tam davat znovu
-                                                    allBytesWritten = TRUE; // ted uz to neni dulezite, dojde k zavreni socketu
+                                                    fatalErrLogMsg = FALSE; // already in the log, no point adding it again
+                                                    allBytesWritten = TRUE; // no longer important, the socket will be closed
                                                 }
                                             }
                                             SkipFTPReply(replySize);
@@ -1718,20 +1718,20 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
 
                                         if (event == ccsevClosed)
                                         {
-                                            allBytesWritten = TRUE;              // ted uz to neni dulezite, doslo k zavreni socketu
-                                            if (state == sccsProcessLoginScript) // close bez priciny
+                                            allBytesWritten = TRUE;              // no longer important, the socket has been closed
+                                            if (state == sccsProcessLoginScript) // close without a reason
                                             {
                                                 fatalErrorTextID = IDS_CONNECTIONLOSTERROR;
-                                                noRetryState = sccsFatalError; // pokud se neprovede retry, provede se sccsFatalError
+                                                noRetryState = sccsFatalError; // if retry is not performed, execute sccsFatalError
                                                 state = sccsRetry;
                                             }
                                             if (data1 != NO_ERROR)
                                             {
-                                                FTPGetErrorText(data1, buf, 1000 - 2); // (1000-2) aby zbylo na nase CRLF
+                                                FTPGetErrorText(data1, buf, 1000 - 2); // (1000-2) so there is room for our CRLF
                                                 char* s2 = buf + strlen(buf);
                                                 while (s2 > buf && (*(s2 - 1) == '\n' || *(s2 - 1) == '\r'))
                                                     s2--;
-                                                strcpy(s2, "\r\n"); // dosazeni naseho CRLF na konec radky z textem chyby
+                                                strcpy(s2, "\r\n"); // append our CRLF to the end of the error text line
                                                 Logs.LogMessage(logUID, buf, -1);
                                             }
                                         }
@@ -1747,9 +1747,9 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                                     int err;
                                                     CCertificate* unverifiedCert;
                                                     if (!EncryptSocket(logUID, &err, &unverifiedCert, &errID, errBuf, 300,
-                                                                       NULL /* pro control connection je to vzdy NULL */))
+                                                                       NULL /* it's always NULL for the control connection */))
                                                     {
-                                                        allBytesWritten = TRUE; // ted uz to neni dulezite, dojde k zavreni socketu
+                                                        allBytesWritten = TRUE; // no longer important, the socket will be closed
                                                         if (errBuf[0] == 0)
                                                         {
                                                             state = sccsFatalError;
@@ -1763,7 +1763,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                                         }
                                                         if (err == SSLCONERR_CANRETRY)
                                                         {
-                                                            noRetryState = state; // pokud se neprovede retry, provede se sccsFatalError nebo sccsOperationFatalError
+                                                            noRetryState = state; // if retry is not performed, execute sccsFatalError or sccsOperationFatalError
                                                             state = sccsRetry;
                                                             retryLogError = FALSE;
                                                         }
@@ -1772,9 +1772,9 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                                     }
                                                     else
                                                     {
-                                                        if (unverifiedCert != NULL) // socket je zasifrovany, ale certifikat serveru neni overeny, musime se zeptat uzivatele, jestli mu duveruje
+                                                        if (unverifiedCert != NULL) // socket is encrypted, but the server certificate is not verified; ask the user whether to trust it
                                                         {
-                                                            fastRetry = TRUE; // zpozdeni kvuli uzivateli, to nektere servery nesnasi dobre (ftp.novell.com - po 20s kill)
+                                                            fastRetry = TRUE; // user-induced delay, some servers do not like it (ftp.novell.com - kills after 20s)
                                                             waitWnd.Show(FALSE);
 
                                                             INT_PTR dlgRes;
@@ -1783,7 +1783,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                                                 dlgRes = CCertificateErrDialog(parent, errBuf).Execute();
                                                                 switch (dlgRes)
                                                                 {
-                                                                case IDOK: // Accept once
+                                                                case IDOK: // accept once
                                                                 {
                                                                     Logs.LogMessage(logUID, LoadStr(IDS_SSL_LOG_CERTACCEPTED), -1, TRUE);
                                                                     SetCertificate(unverifiedCert);
@@ -1793,7 +1793,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                                                 case IDCANCEL:
                                                                 {
                                                                     Logs.LogMessage(logUID, LoadStr(IDS_SSL_LOG_CERTREJECTED), -1, TRUE);
-                                                                    allBytesWritten = TRUE; // ted uz to neni dulezite, dojde k zavreni socketu
+                                                                    allBytesWritten = TRUE; // no longer important, the socket will be closed
                                                                     state = sccsDone;
                                                                     break;
                                                                 }
@@ -1802,9 +1802,9 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                                                 {
                                                                     unverifiedCert->ShowCertificate(parent);
                                                                     if (unverifiedCert->CheckCertificate(errBuf, 300))
-                                                                    { // certifikat serveru uz je duveryhodny (uzivatel ho nejspis rucne importoval)
+                                                                    { // the server certificate is already trusted (the user probably imported it manually)
                                                                         Logs.LogMessage(logUID, LoadStr(IDS_SSL_LOG_CERTVERIFIED), -1, TRUE);
-                                                                        dlgRes = -1; // jen pro ukonceni cyklu
+                                                                        dlgRes = -1; // only to terminate the loop
                                                                         unverifiedCert->SetVerified(true);
                                                                         SetCertificate(unverifiedCert);
                                                                     }
@@ -1818,7 +1818,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                                 }
                                                 else // Error! OpenSSL libs not found? Or not W2K+?
                                                 {
-                                                    allBytesWritten = TRUE; // ted uz to neni dulezite, dojde k zavreni socketu
+                                                    allBytesWritten = TRUE; // no longer important, the socket will be closed
                                                     state = sccsFatalError;
                                                     fatalErrorTextID = errID;
                                                     fatalErrLogMsg = FALSE;
@@ -1860,50 +1860,50 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
 
                                 waitWnd.Destroy();
                             }
-                            else // chyba Write (low memory, disconnected, chyba neblokujiciho "send")
+                            else // Write error (low memory, disconnected, non-blocking "send" failure)
                             {
                                 while (state == sccsProcessLoginScript)
                                 {
-                                    // vybereme udalost na socketu
+                                    // pick an event on the socket
                                     CControlConnectionSocketEvent event;
                                     DWORD data1, data2;
-                                    WaitForEventOrESC(parent, &event, &data1, &data2, 0, NULL, NULL, FALSE); // necekame, jen prijimame udalosti
+                                    WaitForEventOrESC(parent, &event, &data1, &data2, 0, NULL, NULL, FALSE); // do not wait, just receive events
                                     switch (event)
                                     {
-                                    // case ccsevESC:   // (uzivatel nemuze stihnout ESC behem 0 ms timeoutu)
-                                    case ccsevTimeout: // zadna zprava neceka -> zobrazime primo error z metody Write
+                                    // case ccsevESC:   // (the user cannot press ESC during a 0 ms timeout)
+                                    case ccsevTimeout: // no message pending -> show the error from Write directly
                                     {
                                         opFatalErrorTextID = IDS_SENDCOMMANDERROR;
                                         opFatalError = error;
-                                        noRetryState = sccsOperationFatalError; // pokud se neprovede retry, provede se sccsOperationFatalError
+                                        noRetryState = sccsOperationFatalError; // if retry is not performed, execute sccsOperationFatalError
                                         state = sccsRetry;
                                         break;
                                     }
 
-                                    case ccsevClosed:       // slo o necekanou ztratu pripojeni (osetrime take to, ze ccsevClosed mohla prepsat ccsevNewBytesRead)
-                                    case ccsevNewBytesRead: // nacetli jsme nove byty (mozna popis chyby vedouci k disconnectu)
+                                    case ccsevClosed:       // unexpected loss of connection (also handle that ccsevClosed could overwrite ccsevNewBytesRead)
+                                    case ccsevNewBytesRead: // read new bytes (possibly an error description leading to disconnect)
                                     {
                                         char* reply;
                                         int replySize;
                                         int replyCode;
 
                                         HANDLES(EnterCriticalSection(&SocketCritSect));
-                                        while (ReadFTPReply(&reply, &replySize, &replyCode)) // dokud mame nejakou odpoved serveru
+                                        while (ReadFTPReply(&reply, &replySize, &replyCode)) // while we have some server response
                                         {
                                             Logs.LogMessage(logUID, reply, replySize);
 
-                                            if (replyCode == -1 ||                                 // neni FTP odpoved
-                                                FTP_DIGIT_1(replyCode) == FTP_D1_TRANSIENTERROR || // popis docasne chyby
-                                                FTP_DIGIT_1(replyCode) == FTP_D1_ERROR)            // popis chyby
+                                            if (replyCode == -1 ||                                 // not an FTP reply
+                                                FTP_DIGIT_1(replyCode) == FTP_D1_TRANSIENTERROR || // description of a temporary error
+                                                FTP_DIGIT_1(replyCode) == FTP_D1_ERROR)            // description of an error
                                             {
                                                 opFatalErrorTextID = IDS_SENDCOMMANDERROR;
                                                 CopyStr(errBuf, 300, reply, replySize);
                                                 SkipFTPReply(replySize);
-                                                opFatalError = -1;                      // "error" (reply) je primo v errBuf
-                                                noRetryState = sccsOperationFatalError; // pokud se neprovede retry, provede se sccsOperationFatalError
-                                                retryLogError = FALSE;                  // chyba uz v logu je, nepridavat znovu
+                                                opFatalError = -1;                      // the "error" (reply) is directly in errBuf
+                                                noRetryState = sccsOperationFatalError; // if retry is not performed, execute sccsOperationFatalError
+                                                retryLogError = FALSE;                  // the error is already in the log, do not add it again
                                                 state = sccsRetry;
-                                                break; // dalsi hlasku uz neni nutne cist
+                                                break; // no need to read another message
                                             }
                                             SkipFTPReply(replySize);
                                         }
@@ -1911,10 +1911,10 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
 
                                         if (event == ccsevClosed)
                                         {
-                                            if (state == sccsProcessLoginScript) // close bez priciny
+                                            if (state == sccsProcessLoginScript) // close without a reason
                                             {
                                                 fatalErrorTextID = IDS_CONNECTIONLOSTERROR;
-                                                noRetryState = sccsFatalError; // pokud se neprovede retry, provede se sccsFatalError
+                                                noRetryState = sccsFatalError; // if retry is not performed, execute sccsFatalError
                                                 state = sccsRetry;
                                             }
                                             if (data1 != NO_ERROR)
@@ -1932,9 +1932,9 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                         break;
                     }
                 }
-                else // teoreticky by nikdy nemelo nastat (ulozene skripty jsou validovane)
+                else // theoretically should never happen (saved scripts are validated)
                 {
-                    opFatalError = -1; // error je primo v errBuf
+                    opFatalError = -1; // error is directly in errBuf
                     opFatalErrorTextID = IDS_ERRINPROXYSCRIPT;
                     state = sccsOperationFatalError;
                     break;
@@ -1943,7 +1943,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
             break;
         }
 
-        case sccsFatalError: // fatalni chyba (res-id textu je v 'fatalErrorTextID' + je-li 'fatalErrorTextID' -1, je string rovnou v 'errBuf')
+        case sccsFatalError: // fatal error (resource ID of the text is in 'fatalErrorTextID' + if 'fatalErrorTextID' is -1, the string is directly in 'errBuf')
         {
             lstrcpyn(buf, GetFatalErrorTxt(fatalErrorTextID, errBuf), 1000);
             char* s = buf + strlen(buf);
@@ -1951,8 +1951,8 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                 s--;
             if (fatalErrLogMsg)
             {
-                strcpy(s, "\r\n");                      // CRLF na konec textu posledni chyby
-                Logs.LogMessage(logUID, buf, -1, TRUE); // text posledni chyby pridame do logu
+                strcpy(s, "\r\n");                      // CRLF at the end of the last error text
+                Logs.LogMessage(logUID, buf, -1, TRUE); // add the last error text to the log
             }
             fatalErrLogMsg = TRUE;
             *s = 0;
@@ -1961,10 +1961,10 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
             break;
         }
 
-        case sccsOperationFatalError: // fatalni chyba operace (res-id textu je v 'opFatalErrorTextID' a
-        {                             // cislo Windows chyby v 'opFatalError' + je-li 'opFatalError' -1,
-                                      // je string rovnou v 'errBuf' + je-li 'opFatalErrorTextID' -1, je
-                                      // string rovnou v 'formatBuf')
+        case sccsOperationFatalError: // fatal operation error (resource ID of the text is in 'opFatalErrorTextID' and
+        {                             // the Windows error number in 'opFatalError' + if 'opFatalError' is -1,
+                                      // the string is directly in 'errBuf' + if 'opFatalErrorTextID' is -1, the
+                                      // string is directly in 'formatBuf')
             const char* e = GetOperationFatalErrorTxt(opFatalError, errBuf);
             if (fatalErrLogMsg)
             {
@@ -1972,8 +1972,8 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                 char* s = buf + strlen(buf);
                 while (s > buf && (*(s - 1) == '\n' || *(s - 1) == '\r'))
                     s--;
-                strcpy(s, "\r\n");                      // CRLF na konec textu posledni chyby
-                Logs.LogMessage(logUID, buf, -1, TRUE); // text posledni chyby pridame do logu
+                strcpy(s, "\r\n");                      // CRLF at the end of the last error text
+                Logs.LogMessage(logUID, buf, -1, TRUE); // add the last error text to the log
             }
             fatalErrLogMsg = TRUE;
             char* f;
@@ -1998,18 +1998,18 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
     }
 
     if (actionCanceled)
-        Logs.LogMessage(logUID, LoadStr(IDS_LOGMSGACTIONCANCELED), -1, TRUE); // ESC (cancel) do logu
+        Logs.LogMessage(logUID, LoadStr(IDS_LOGMSGACTIONCANCELED), -1, TRUE); // ESC (cancel) to the log
 
-    // shodime cekaci kurzor nad parentem
+    // drop the wait cursor over the parent
     if (winParent != NULL)
     {
         winParent->DetachWindow();
         delete winParent;
     }
 
-    // enablujeme 'parent'
+    // enable 'parent' again
     EnableWindow(parent, TRUE);
-    // pokud je aktivni 'parent', obnovime i fokus
+    // if 'parent' is active, restore the focus as well
     if (GetForegroundWindow() == parent)
     {
         if (parent == SalamanderGeneral->GetMainWindowHWND())
@@ -2021,12 +2021,12 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
         }
     }
 
-    if (ret) // jsme uspesne pripojeni na FTP server
+    if (ret) // we are successfully connected to the FTP server
     {
         Logs.LogMessage(logUID, LoadStr(IDS_LOGMSGLOGINSUCCESS), -1, TRUE);
 
         if (useWelcomeMessage && welcomeMessage.Length > 0)
-        { // zobrazime "welcome message"
+        { // display the "welcome message"
             CWelcomeMsgDlg* w = new CWelcomeMsgDlg(SalamanderGeneral->GetMainWindowHWND(),
                                                    welcomeMessage.GetString());
             if (w != NULL)
@@ -2041,7 +2041,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                     ModelessDlgs.Add(w);
                     if (!ModelessDlgs.IsGood())
                     {
-                        DestroyWindow(w->HWindow); // zaroven dealokace 'w'
+                        DestroyWindow(w->HWindow); // also deallocates 'w'
                         ModelessDlgs.ResetState();
                     }
                     else
@@ -2053,7 +2053,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
             }
         }
 
-        // posleme inicializacni FTP prikazy
+        // send the initial FTP commands
         HANDLES(EnterCriticalSection(&SocketCritSect));
         char cmdBuf[FTP_MAX_PATH];
         if (InitFTPCommands != NULL && *InitFTPCommands != 0)
@@ -2070,8 +2070,8 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
             while (GetToken(&s, &next))
             {
                 if (*s != 0 && *s <= ' ')
-                    s++;     // odbourame jen prvni mezeru (aby na zacatek prikazu bylo mozne dat i mezery)
-                if (*s != 0) // je-li co, posleme to na server
+                    s++;     // strip only the first space (so the command can start with spaces)
+                if (*s != 0) // if there is anything, send it to the server
                 {
                     _snprintf_s(retryBuf, _TRUNCATE, "%s\r\n", s);
                     int ftpReplyCode;
@@ -2079,14 +2079,14 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                         NULL, &ftpReplyCode, NULL, 0, FALSE, TRUE, TRUE, &canRetry,
                                         errBuf, 300, NULL))
                     {
-                        ret = FALSE; // uz nejsme pripojeni
-                        break;       // jdeme provest "retry"
+                        ret = FALSE; // we are no longer connected
+                        break;       // go perform the "retry"
                     }
                 }
             }
         }
 
-        // zjistime operacni system serveru
+        // find out the server operating system
         if (ret && PrepareFTPCommand(buf, 1000, formatBuf, 300, ftpcmdSystem, NULL))
         {
             int ftpReplyCode;
@@ -2101,45 +2101,45 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                 HANDLES(LeaveCriticalSection(&SocketCritSect));
             }
             else
-                ret = FALSE; // chyba -> zavrena connectiona - jdeme provest "retry"
+                ret = FALSE; // error -> connection closed - go perform the "retry"
         }
 
         if (ret && workDir != NULL &&
             !GetCurrentWorkingPath(parent, workDir, workDirBufSize, FALSE, &canRetry, errBuf, 300))
         {
-            ret = FALSE; // chyba -> zavrena connectiona - jdeme provest "retry"
+            ret = FALSE; // error -> connection closed - go perform the "retry"
         }
 
-        if (canRetry && !ret) // predpoklada nastaveny 'errBuf'
+        if (canRetry && !ret) // assumes 'errBuf' has been set
         {
             opFatalErrorTextID = IDS_SENDCOMMANDERROR;
-            opFatalError = -1;                      // "error" (reply) je primo v errBuf
-            noRetryState = sccsOperationFatalError; // pokud se neprovede retry, provede se sccsOperationFatalError
-            retryLogError = FALSE;                  // chyba uz v logu je, nepridavat znovu
+            opFatalError = -1;                      // the "error" (reply) is directly in errBuf
+            noRetryState = sccsOperationFatalError; // if retry is not performed, execute sccsOperationFatalError
+            retryLogError = FALSE;                  // the error is already in the log, do not add it again
             state = sccsRetry;
-            useWelcomeMessage = FALSE; // uz jsme ji vypsali, znovu uz nema smysl
+            useWelcomeMessage = FALSE; // we already printed it, repeating it makes no sense
 
-            // znovu disablujeme 'parent', pri enablovani obnovime i fokus
+            // disable 'parent' again, restore the focus when re-enabling
             EnableWindow(parent, FALSE);
 
-            // nahodime cekaci kurzor nad parentem, bohuzel to jinak neumime
+            // set a wait cursor over the parent again, unfortunately we cannot do it otherwise
             winParent = new CSetWaitCursorWindow;
             if (winParent != NULL)
                 winParent->AttachToWindow(parent);
 
-            goto RETRY_LABEL; // jdeme na dalsi pokus
+            goto RETRY_LABEL; // proceed to the next attempt
         }
     }
     else
     {
-        CloseSocket(NULL); // zavreme socket (je-li otevreny), system se pokusi o "graceful" shutdown (nedozvime se o vysledku)
+        CloseSocket(NULL); // close the socket (if open); the system attempts a "graceful" shutdown (we will not learn the result)
         Logs.SetIsConnected(logUID, IsConnected());
-        Logs.RefreshListOfLogsInLogsDlg(); // hlaseni "connection inactive"
+        Logs.RefreshListOfLogsInLogsDlg(); // display "connection inactive"
     }
     if (ret)
-        SetupKeepAliveTimer(); // pokud je vse OK, nastavime timer pro keep-alive
+        SetupKeepAliveTimer(); // if everything is OK, set the timer for keep-alive
     else
-        ReleaseKeepAlive(); // pri chybe uvolnime keep-alive (nelze pouzivat bez navazaneho spojeni)
+        ReleaseKeepAlive(); // on error release keep-alive (cannot be used without an established connection)
     return ret;
 }
 
@@ -2156,7 +2156,7 @@ BOOL CControlConnectionSocket::ReconnectIfNeeded(BOOL notInPanel, BOOL leftPanel
         *reconnected = FALSE;
     if (userRejectsReconnect != NULL)
         *userRejectsReconnect = FALSE;
-    if (retryMsg == NULL && IsConnected()) // nezname duvod preruseni spojeni + spojeni neni preruseno
+    if (retryMsg == NULL && IsConnected()) // unknown reason for disconnect + the connection is not interrupted
     {
         if (setStartTimeIfConnected)
             SetStartTime();
@@ -2164,9 +2164,9 @@ BOOL CControlConnectionSocket::ReconnectIfNeeded(BOOL notInPanel, BOOL leftPanel
     }
     else
     {
-        if (retryMsg == NULL) // preruseni spojeni z neznameho duvodu - vypiseme + zeptame se na reconnect
+        if (retryMsg == NULL) // connection interrupted for an unknown reason - display it and ask about reconnecting
         {
-            // pokud jsme jeste nestihli vypsat co vedlo k zavreni connectiny, udelame to ted
+            // if we have not yet displayed what led to the connection closing, do it now
             CheckCtrlConClose(notInPanel, leftPanel, parent, FALSE);
 
             BOOL reconnectToSrv = FALSE;
@@ -2196,9 +2196,9 @@ BOOL CControlConnectionSocket::ReconnectIfNeeded(BOOL notInPanel, BOOL leftPanel
                 return ret;
             }
             else
-                return FALSE; // uzivatel nechce ani zkusit znovu otevrit "control connection"
+                return FALSE; // the user does not even want to try reopening the "control connection"
         }
-        else // preruseni spojeni ze znameho duvodu - pustime "retry" uvnitr StartControlConnection()
+        else // connection interrupted for a known reason - run "retry" inside StartControlConnection()
         {
             BOOL ret = StartControlConnection(parent, userBuf, userBufSize, TRUE, NULL, 0,
                                               totalAttemptNum, retryMsg, FALSE,
@@ -2215,9 +2215,9 @@ void CControlConnectionSocket::ActivateWelcomeMsg()
     if (OurWelcomeMsgDlg != NULL && GetForegroundWindow() == SalamanderGeneral->GetMainWindowHWND())
     {
         int i;
-        for (i = ModelessDlgs.Count - 1; i >= 0; i--) // hledame od zadu (posledni okno je posledni v poli)
+        for (i = ModelessDlgs.Count - 1; i >= 0; i--) // search from the end (the last window is the last in the array)
         {
-            if (ModelessDlgs[i]->HWindow == OurWelcomeMsgDlg) // okno je jeste otevrene, aktivujeme ho
+            if (ModelessDlgs[i]->HWindow == OurWelcomeMsgDlg) // the window is still open, activate it
             {
                 SetForegroundWindow(OurWelcomeMsgDlg);
                 break;

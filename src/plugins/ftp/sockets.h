@@ -1,113 +1,114 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
 // ****************************************************************************
-// KONSTANTY
+// CONSTANTS
 // ****************************************************************************
 
-// je-li definovane nastavuje se pro data-connectiony DATACON_SNDBUF_SIZE a DATACON_RCVBUF_SIZE
-// resi problem: https://forum.altap.cz/viewtopic.php?f=6&t=31923
-// help pro forum: ver1 = 8k (verze bez nastavovani bufferu), ver2 = 4m (4MB RECV buffer, 256KB SEND buffer)
+// if defined, DATACON_SNDBUF_SIZE and DATACON_RCVBUF_SIZE are set for data connections
+// solves the problem: https://forum.altap.cz/viewtopic.php?f=6&t=31923
+// help for the forum: ver1 = 8k (version without setting buffers), ver2 = 4m (4MB RECV buffer, 256KB SEND buffer)
 #define DATACON_USES_OUR_BUF_SIZES
 
-#define DATACON_SNDBUF_SIZE (256 * 1024)      // hodnota prevzata z WinSCP (download 2,2MB/s misto 1,6MB/s)
-#define DATACON_RCVBUF_SIZE (4 * 1024 * 1024) // hodnota prevzata z WinSCP (download 2,2MB/s misto 1,6MB/s)
+#define DATACON_SNDBUF_SIZE (256 * 1024)      // value taken from WinSCP (download 2.2MB/s instead of 1.6MB/s)
+#define DATACON_RCVBUF_SIZE (4 * 1024 * 1024) // value taken from WinSCP (download 2.2MB/s instead of 1.6MB/s)
 
-#define WM_APP_SOCKET_POSTMSG (WM_APP + 98) // [0, 0] - ma se volat ReceivePostMessage
-#define WM_APP_SOCKET_ADDR (WM_APP + 99)    // [0, 0] - ma se volat ReceiveHostByAddress
-#define WM_APP_SOCKET_MIN (WM_APP + 100)    // prvni cislo zpravy pouzite pri prijmu udalosti na socketech
-#define WM_APP_SOCKET_MAX (WM_APP + 16099)  // posledni cislo zpravy pouzite pri prijmu udalosti na socketech
+#define WM_APP_SOCKET_POSTMSG (WM_APP + 98) // [0, 0] - ReceivePostMessage should be called
+#define WM_APP_SOCKET_ADDR (WM_APP + 99)    // [0, 0] - ReceiveHostByAddress should be called
+#define WM_APP_SOCKET_MIN (WM_APP + 100)    // first message number used when receiving events on sockets
+#define WM_APP_SOCKET_MAX (WM_APP + 16099)  // last message number used when receiving events on sockets
 
-#define SD_SEND 0x01 // nejak na tuhle konstantu ve winsock.h zapomeli (je ve winsock2.h)
-
-// ****************************************************************************
-// GLOBALNI PROMENNE
-// ****************************************************************************
-
-extern WSADATA WinSocketsData; // info o implementaci Windows Sockets
+#define SD_SEND 0x01 // they somehow forgot this constant in winsock.h (it is in winsock2.h)
 
 // ****************************************************************************
-// GLOBALNI FUNKCE
+// GLOBAL VARIABLES
 // ****************************************************************************
 
-// inicializace modulu sockets; \parent' je parent messageboxu,
-// vraci TRUE je-li inicializace uspesna
+extern WSADATA WinSocketsData; // info about the implementation of Windows Sockets
+
+// ****************************************************************************
+// GLOBAL FUNCTIONS
+// ****************************************************************************
+
+// initialization of the sockets module; 'parent' is the parent of the message box,
+// returns TRUE if initialization is successful
 BOOL InitSockets(HWND parent);
-// uvolneni modulu sockets
+// release the sockets module
 void ReleaseSockets();
 
-// uvolni objekt socketu; pouzivat misto volani operatoru delete ("delete socket;");
-// (ukonci sledovani udalosti na socketu a vyradi ho z objektu SocketsThread)
+// frees the socket object; use instead of calling the delete operator ("delete socket;");
+// (stops monitoring events on the socket and removes it from the SocketsThread object)
 void DeleteSocket(class CSocket* socket);
 
 #ifdef _DEBUG
-extern BOOL InDeleteSocket; // TRUE pokud jsme uvnitr ::DeleteSocket (pro test primeho volani "delete socket")
+extern BOOL InDeleteSocket; // TRUE if we are inside ::DeleteSocket (to test direct calls of "delete socket")
 #endif
 
 //
 // ****************************************************************************
 // CSocket
 //
-// zakladni objekt socketu, pouziva se jen pro definici dalsich objektu
-// pro dealokaci pouzivat funkci ::DeleteSocket!
+// basic socket object, used only to define further objects
+// use the ::DeleteSocket function for deallocation!
 
-enum CSocketState // stav socketu
+enum CSocketState // socket state
 {
-    ssNotOpened, // socket zatim neni otevreny (Socket == INVALID_SOCKET)
+    ssNotOpened, // the socket is not yet open (Socket == INVALID_SOCKET)
 
-    ssSocks4_Connect,    // SOCKS 4 - CONNECT: cekame na FD_CONNECT (probiha connect na proxy server)
-    ssSocks4_WaitForIP,  // SOCKS 4 - CONNECT: cekame na IP FTP serveru
-    ssSocks4_WaitForCon, // SOCKS 4 - CONNECT: cekame na vysledek pozadavku na spojeni s FTP serverem
+    ssSocks4_Connect,    // SOCKS 4 - CONNECT: waiting for FD_CONNECT (connecting to the proxy server is in progress)
+    ssSocks4_WaitForIP,  // SOCKS 4 - CONNECT: waiting for the FTP server IP
+    ssSocks4_WaitForCon, // SOCKS 4 - CONNECT: waiting for the result of the request to connect to the FTP server
 
-    ssSocks4A_Connect,    // SOCKS 4A - CONNECT: cekame na FD_CONNECT (probiha connect na proxy server)
-    ssSocks4A_WaitForCon, // SOCKS 4A - CONNECT: cekame na vysledek pozadavku na spojeni s FTP serverem
+    ssSocks4A_Connect,    // SOCKS 4A - CONNECT: waiting for FD_CONNECT (connecting to the proxy server is in progress)
+    ssSocks4A_WaitForCon, // SOCKS 4A - CONNECT: waiting for the result of the request to connect to the FTP server
 
-    ssSocks5_Connect,      // SOCKS 5 - CONNECT: cekame na FD_CONNECT (probiha connect na proxy server)
-    ssSocks5_WaitForMeth,  // SOCKS 5 - CONNECT: cekame jakou metodu autentifikace si server vybere
-    ssSocks5_WaitForLogin, // SOCKS 5 - CONNECT: cekame na vysledek loginu na proxy server (poslali jsme user+password)
-    ssSocks5_WaitForCon,   // SOCKS 5 - CONNECT: cekame na vysledek pozadavku na spojeni s FTP serverem
+    ssSocks5_Connect,      // SOCKS 5 - CONNECT: waiting for FD_CONNECT (connecting to the proxy server is in progress)
+    ssSocks5_WaitForMeth,  // SOCKS 5 - CONNECT: waiting to see which authentication method the server chooses
+    ssSocks5_WaitForLogin, // SOCKS 5 - CONNECT: waiting for the result of the login to the proxy server (we sent user+password)
+    ssSocks5_WaitForCon,   // SOCKS 5 - CONNECT: waiting for the result of the request to connect to the FTP server
 
-    ssHTTP1_1_Connect,    // HTTP 1.1 - CONNECT: cekame na FD_CONNECT (probiha connect na proxy server)
-    ssHTTP1_1_WaitForCon, // HTTP 1.1 - CONNECT: cekame na vysledek pozadavku na spojeni s FTP serverem
+    ssHTTP1_1_Connect,    // HTTP 1.1 - CONNECT: waiting for FD_CONNECT (connecting to the proxy server is in progress)
+    ssHTTP1_1_WaitForCon, // HTTP 1.1 - CONNECT: waiting for the result of the request to connect to the FTP server
 
-    ssSocks4_Listen,           // SOCKS 4 - LISTEN: cekame na FD_CONNECT (probiha connect na proxy server)
-    ssSocks4_WaitForListenRes, // SOCKS 4 - LISTEN: cekame az proxy otevre port pro "listen" a vrati IP+port, kde posloucha (nebo vrati chybu)
-    ssSocks4_WaitForAccept,    // SOCKS 4 - LISTEN: cekame az proxy prijme spojeni z FTP serveru (nebo vrati chybu)
+    ssSocks4_Listen,           // SOCKS 4 - LISTEN: waiting for FD_CONNECT (connecting to the proxy server is in progress)
+    ssSocks4_WaitForListenRes, // SOCKS 4 - LISTEN: waiting for the proxy to open a "listen" port and return the IP+port where it listens (or return an error)
+    ssSocks4_WaitForAccept,    // SOCKS 4 - LISTEN: waiting for the proxy to accept a connection from the FTP server (or return an error)
 
-    ssSocks4A_Listen,           // SOCKS 4A - LISTEN: cekame na FD_CONNECT (probiha connect na proxy server)
-    ssSocks4A_WaitForListenRes, // SOCKS 4A - LISTEN: cekame az proxy otevre port pro "listen" a vrati IP+port, kde posloucha (nebo vrati chybu)
-    ssSocks4A_WaitForAccept,    // SOCKS 4A - LISTEN: cekame az proxy prijme spojeni z FTP serveru (nebo vrati chybu)
+    ssSocks4A_Listen,           // SOCKS 4A - LISTEN: waiting for FD_CONNECT (connecting to the proxy server is in progress)
+    ssSocks4A_WaitForListenRes, // SOCKS 4A - LISTEN: waiting for the proxy to open a "listen" port and return the IP+port where it listens (or return an error)
+    ssSocks4A_WaitForAccept,    // SOCKS 4A - LISTEN: waiting for the proxy to accept a connection from the FTP server (or return an error)
 
-    ssSocks5_Listen,             // SOCKS 5 - LISTEN: cekame na FD_CONNECT (probiha connect na proxy server)
-    ssSocks5_ListenWaitForMeth,  // SOCKS 5 - LISTEN: cekame jakou metodu autentifikace si server vybere
-    ssSocks5_ListenWaitForLogin, // SOCKS 5 - LISTEN: cekame na vysledek loginu na proxy server (poslali jsme user+password)
-    ssSocks5_WaitForListenRes,   // SOCKS 5 - LISTEN: cekame az proxy otevre port pro "listen" a vrati IP+port, kde posloucha (nebo vrati chybu)
-    ssSocks5_WaitForAccept,      // SOCKS 5 - LISTEN: cekame az proxy prijme spojeni z FTP serveru (nebo vrati chybu)
+    ssSocks5_Listen,             // SOCKS 5 - LISTEN: waiting for FD_CONNECT (connecting to the proxy server is in progress)
+    ssSocks5_ListenWaitForMeth,  // SOCKS 5 - LISTEN: waiting to see which authentication method the server chooses
+    ssSocks5_ListenWaitForLogin, // SOCKS 5 - LISTEN: waiting for the result of the login to the proxy server (we sent user+password)
+    ssSocks5_WaitForListenRes,   // SOCKS 5 - LISTEN: waiting for the proxy to open a "listen" port and return the IP+port where it listens (or return an error)
+    ssSocks5_WaitForAccept,      // SOCKS 5 - LISTEN: waiting for the proxy to accept a connection from the FTP server (or return an error)
 
-    ssHTTP1_1_Listen, // HTTP 1.1 - LISTEN: cekame na FD_CONNECT (probiha connect na proxy server)
+    ssHTTP1_1_Listen, // HTTP 1.1 - LISTEN: waiting for FD_CONNECT (connecting to the proxy server is in progress)
 
-    ssConnectFailed, // CONNECT: uz jen cekame na reakci na ohlasenou chybu (pres FD_CONNECT s chybou)
-    ssListenFailed,  // LISTEN: uz jen cekame na reakci na ohlasenou chybu (pres ListeningForConnection() nebo ConnectionAccepted())
+    ssConnectFailed, // CONNECT: just waiting for the response to the reported error (via FD_CONNECT with an error)
+    ssListenFailed,  // LISTEN: just waiting for the response to the reported error (via ListeningForConnection() or ConnectionAccepted())
 
-    ssNoProxyOrConnected, // spojeni bez proxy serveru nebo uz jsme pripojeni (proxy server je pro nas transparentni)
+    ssNoProxyOrConnected, // connection without a proxy server or we are already connected (the proxy server is transparent for us)
 };
 
 enum CProxyErrorCode
 {
-    pecNoError,           // zatim zadna chyba nenastala
-    pecGettingHostIP,     // CONNECT: chyba ziskavani IP FTP serveru (SOCKS4)
-    pecSendingBytes,      // CONNECT+LISTEN: chyba pri posilani dat proxy serveru
-    pecReceivingBytes,    // CONNECT+LISTEN: chyba pri prijimani dat z proxy serveru
-    pecUnexpectedReply,   // CONNECT+LISTEN: prijem neocekavane odpovedi - hlasime chybu; ProxyWinError se nepouziva
-    pecProxySrvError,     // CONNECT+LISTEN: proxy server hlasi chybu pri pripojovani na FTP server; ProxyWinError je primo text-res-id
-    pecNoAuthUnsup,       // CONNECT+LISTEN: proxy server nepodporuje pristup bez autentifikace
-    pecUserPassAuthUnsup, // CONNECT+LISTEN: proxy server nepodporuje autentifikaci pres user+password
-    pecUserPassAuthFail,  // CONNECT+LISTEN: proxy server neprijal nas user+password
-    pecConPrxSrvError,    // LISTEN: chyba pri pripojovani na proxy server
+    pecNoError,           // no error has occurred yet
+    pecGettingHostIP,     // CONNECT: error obtaining the FTP server IP (SOCKS4)
+    pecSendingBytes,      // CONNECT+LISTEN: error while sending data to the proxy server
+    pecReceivingBytes,    // CONNECT+LISTEN: error while receiving data from the proxy server
+    pecUnexpectedReply,   // CONNECT+LISTEN: received an unexpected response - report an error; ProxyWinError is not used
+    pecProxySrvError,     // CONNECT+LISTEN: the proxy server reports an error when connecting to the FTP server; ProxyWinError contains the text resource ID
+    pecNoAuthUnsup,       // CONNECT+LISTEN: the proxy server does not support access without authentication
+    pecUserPassAuthUnsup, // CONNECT+LISTEN: the proxy server does not support authentication via user+password
+    pecUserPassAuthFail,  // CONNECT+LISTEN: the proxy server did not accept our user+password
+    pecConPrxSrvError,    // LISTEN: error when connecting to the proxy server
     pecListenUnsup,       // HTTP 1.1: LISTEN: not supported
-    pecHTTPProxySrvError, // HTTP 1.1: CONNECT: proxy server vratil chybu, jeji textovy popis je v HTTP11_FirstLineOfReply
+    pecHTTPProxySrvError, // HTTP 1.1: CONNECT: the proxy server returned an error, its textual description is in HTTP11_FirstLineOfReply
 };
 
 enum CFTPProxyServerType;
@@ -115,351 +116,346 @@ enum CFTPProxyServerType;
 class CSocket
 {
 public:
-    static CRITICAL_SECTION NextSocketUIDCritSect; // kriticka sekce pocitadla (sockety se vytvari v ruznych threadech)
+    static CRITICAL_SECTION NextSocketUIDCritSect; // critical section for the counter (sockets are created in different threads)
 
 private:
-    static int NextSocketUID; // globalni pocitadlo pro objekty socketu
+    static int NextSocketUID; // global counter for socket objects
 
 protected:
-    // kriticka sekce pro pristup k datum objektu
-    // POZOR: v teto sekci nesmi dojit ke vnoreni do SocketsThread->CritSect (nesmi se volat metody SocketsThread)
+    // critical section for accessing the object's data
+    // WARNING: this section must not nest into SocketsThread->CritSect (SocketsThread methods must not be called)
     CRITICAL_SECTION SocketCritSect;
 
-    int UID; // unikatni cislo tohoto objektu (nepresouva se ve SwapSockets())
+    int UID; // unique number of this object (it is not moved in SwapSockets())
 
-    int Msg;                    // cislo zpravy pouzite pro prijem udalosti pro tento objekt (-1 == objekt jeste neni pripojeny)
-    SOCKET Socket;              // zapouzdreny Windows Sockets socket; je-li INVALID_SOCKET, neni socket otevreny
+    int Msg;                    // message number used to receive events for this object (-1 == the object is not yet connected)
+    SOCKET Socket;              // encapsulated Windows Sockets socket; if INVALID_SOCKET, the socket is not open
     SSL* SSLConn;               // SSL connection, use instead of Socket if non-NULL
-    int ReuseSSLSession;        // reuse SSL session teto ctrl-con pro vsechny jeji data-con: 0 = zkusit, 1 = ano, 2 = ne
-    BOOL ReuseSSLSessionFailed; // TRUE = reuse SSL session pro posledni oteviranou data-con selhal: jestli se bez nej neobejdeme, nezbyva nez reconnectnout tuto ctrl-con
+    int ReuseSSLSession;        // reuse the SSL session of this control connection for all its data connections: 0 = try, 1 = yes, 2 = no
+    BOOL ReuseSSLSessionFailed; // TRUE = reusing the SSL session for the last data connection opened failed: if we cannot do without it, we have to reconnect this control connection
     CCertificate* pCertificate; // non-NULL on FTPS connections
-    BOOL OurShutdown;           // TRUE pokud shutdown iniciovala tato strana (FTP client)
-    BOOL IsDataConnection;      // TRUE = socket pro prenos dat, nastavime vetsi buffery (urychleni listingu, downloadu i uploadu)
+    BOOL OurShutdown;           // TRUE if this side (the FTP client) initiated the shutdown
+    BOOL IsDataConnection;      // TRUE = socket for data transfer, set larger buffers (speed up listing, downloads and uploads)
 
-    CSocketState SocketState; // stav socketu
+    CSocketState SocketState; // socket state
 
-    // data pro pripojovani pres proxy servery (firewally)
-    char* HostAddress;       // jmenna adresa cilove masiny, kam se chceme pripojit
-    DWORD HostIP;            // IP adresa 'HostAddress' (==INADDR_NONE dokud neni IP zname)
-    unsigned short HostPort; // port cilove masiny, kam se chceme pripojit
-    char* ProxyUser;         // username pro proxy server
-    char* ProxyPassword;     // password pro proxy server
-    DWORD ProxyIP;           // IP adresa proxy serveru (pouziva se jen pro LISTEN - jinak ==INADDR_NONE)
+    // data for connecting through proxy servers (firewalls)
+    char* HostAddress;       // name address of the target machine we want to connect to
+    DWORD HostIP;            // IP address of 'HostAddress' (==INADDR_NONE until the IP is known)
+    unsigned short HostPort; // port of the target machine we want to connect to
+    char* ProxyUser;         // username for the proxy server
+    char* ProxyPassword;     // password for the proxy server
+    DWORD ProxyIP;           // IP address of the proxy server (used only for LISTEN - otherwise ==INADDR_NONE)
 
-    CProxyErrorCode ProxyErrorCode; // kod chyby vznikle pri pripojovani na FTP server pres proxy server
-    DWORD ProxyWinError;            // jestli se pouziva zalezi na hodnote ProxyErrorCode: kod windows chyby (NO_ERROR = pouzit text IDS_UNKNOWNERROR)
+    CProxyErrorCode ProxyErrorCode; // error code that occurred when connecting to the FTP server through the proxy server
+    DWORD ProxyWinError;            // whether it is used depends on the value of ProxyErrorCode: Windows error code (NO_ERROR = use IDS_UNKNOWNERROR text)
 
-    BOOL ShouldPostFD_WRITE; // TRUE = FD_WRITE prisel v dobe pripojovani pres proxy server, takze ho po navazani spojeni s FTP serverem budeme muset preposlat do ReceiveNetEvent()
+    BOOL ShouldPostFD_WRITE; // TRUE = FD_WRITE arrived while connecting through the proxy server, so after the FTP connection is established we will have to forward it to ReceiveNetEvent()
 
-    char* HTTP11_FirstLineOfReply;    // neni-li NULL, je zde prvni radek odpovedi od HTTP 1.1 proxy serveru (na CONNECT request)
-    int HTTP11_EmptyRowCharsReceived; // odpoved serveru konci na CRLFCRLF, zde si ukladame kolik znaku z teho sekvence uz prislo
+    char* HTTP11_FirstLineOfReply;    // if not NULL, contains the first line of the reply from the HTTP 1.1 proxy server (to the CONNECT request)
+    int HTTP11_EmptyRowCharsReceived; // the server response ends with CRLFCRLF, here we store how many characters of that sequence have already arrived
 
-    DWORD IsSocketConnectedLastCallTime; // 0 pokud jeste nebylo volane CSocketsThread::IsSocketConnected() pro tento socket, jinak GetTickCount() posledniho volani
+    DWORD IsSocketConnectedLastCallTime; // 0 if CSocketsThread::IsSocketConnected() has not yet been called for this socket, otherwise the GetTickCount() of the last call
 
 public:
     CSocket();
     virtual ~CSocket();
 
     // ******************************************************************************************
-    // metody vyuzivane objektem SocketsThread
+    // methods used by the SocketsThread object
     // ******************************************************************************************
 
-    // pouziva objekt SocketsThread k predani cisla zpravy (indexu v poli obsluhovanych
-    // socketu), kterou ma tento objekt pouzivat pro prijem udalosti; ostatni metody objektu
-    // je mozne volat az po pridani objektu do SocketsThread (volanim metody SocketsThread->AddSocket)
-    // volani mozne z libovolneho threadu
+    // used by the SocketsThread object to pass the message number (index in the array of handled
+    // sockets) that this object should use for receiving events; other methods of the object can
+    // be called only after the object has been added to SocketsThread (by calling the SocketsThread->AddSocket method)
+    // callable from any thread
     void SetMsgIndex(int index);
 
-    // vola pri odpojovani objektu ze SocketsThread
-    // volani mozne z libovolneho threadu
+    // called when disconnecting the object from SocketsThread
+    // callable from any thread
     void ResetMsgIndex();
 
-    // vraci index objektu v poli obsluhovanych socketu; vraci -1 pokud objekt neni v tomto poli
-    // volani mozne z libovolneho threadu
+    // returns the index of the object in the array of handled sockets; returns -1 if the object is not in this array
+    // callable from any thread
     int GetMsgIndex();
 
-    // vraci aktualni hodnotu Msg (v krit. sekci)
-    // volani mozne z libovolneho threadu
+    // returns the current value of Msg (inside the critical section)
+    // callable from any thread
     int GetMsg();
 
-    // pouziva objekt SocketsThread k jednoznacne identifikaci tohoto objektu (cisla zprav se
-    // pouzivaji opakovane - po dealokaci objektu se jeho cislo zpravy prideli nove vzniklemu)
-    // volani mozne z libovolneho threadu
+    // used by the SocketsThread object to uniquely identify this object (message numbers are reused -
+    // after the object is deallocated its message number is assigned to a newly created one)
+    // callable from any thread
     int GetUID();
 
-    // pouziva objekt SocketsThread k jednoznacne identifikaci tohoto objektu (cisla zprav se
-    // pouzivaji opakovane - po dealokaci objektu se jeho cislo zpravy prideli nove vzniklemu)
-    // volani mozne z libovolneho threadu
+    // used by the SocketsThread object to uniquely identify this object (message numbers are reused -
+    // after the object is deallocated its message number is assigned to a newly created one)
+    // callable from any thread
     SOCKET GetSocket();
 
-    CCertificate* GetCertificate(); // POZOR: vraci certifikat az po volani jeho AddRef(), tedy volajici je zodpovedny za uvolneni pomoci volani Release() certifikatu
+    CCertificate* GetCertificate(); // WARNING: returns the certificate only after calling its AddRef(), so the caller is responsible for releasing the certificate by calling Release()
     void SetCertificate(CCertificate* certificate);
 
-    // pouziva objekt SocketsThread pri prohazovani objektu socketu, viz
-    // CSocketsThread::BeginSocketsSwap(); prohodi Msg a Socket
-    // volani mozne z libovolneho threadu
+    // used by the SocketsThread object when swapping socket objects, see
+    // CSocketsThread::BeginSocketsSwap(); swaps Msg and Socket
+    // callable from any thread
     void SwapSockets(CSocket* sock);
 
-    // vraci TRUE pokud bylo pro tento socket volano CSocketsThread::IsSocketConnected() - cas
-    // volani vraci v 'lastCallTime'; vraci FALSE pokud k volani CSocketsThread::IsSocketConnected()
-    // jeste nedoslo
+    // returns TRUE if CSocketsThread::IsSocketConnected() has been called for this socket -
+    // returns the call time in 'lastCallTime'; returns FALSE if CSocketsThread::IsSocketConnected()
+    // has not been called yet
     BOOL GetIsSocketConnectedLastCallTime(DWORD* lastCallTime);
 
-    // nastavi IsSocketConnectedLastCallTime na soucasny GetTickCount()
+    // sets IsSocketConnectedLastCallTime to the current GetTickCount()
     void SetIsSocketConnectedLastCallTime();
 
     // ******************************************************************************************
-    // neblokujici metody pro praci s objektem (jsou asynchronni, vysledky prijima tento objekt
-    // v "sockets" threadu - volaji se v nem "receive" metody tohoto objektu)
+    // non-blocking methods for working with the object (they are asynchronous, this object
+    // receives the results in the "sockets" thread - the "receive" methods of this object are called there)
     // ******************************************************************************************
 
-    // ziska IP adresu ze jmenne adresy (prip. i primo text IP adresy); 'hostUID' slouzi
-    // k identifikaci vysledku pri vice volanich teto metody; vysledek (vcetne 'hostUID')
-    // bude v parametrech volani metody ReceiveHostByAddress v "sockets" threadu;
-    // vraci TRUE pri sanci na uspech (podari-li se spustit thread zjistujici IP adresu),
-    // pri neuspechu vraci FALSE; pokud vraci TRUE a tento objekt nebyl pripojen do
-    // SocketsThread, pripoji ho (viz metoda AddSocket)
-    // POZOR: neni mozne volat tuto metodu z kriticke sekce SocketCritSect (metoda pouziva
-    //        SocketsThread); vyjimkou je, kdyz uz v kriticke sekci CSocketsThread::CritSect jsme
-    // volani mozne z libovolneho threadu
+    // obtains an IP address from a host name (or even the textual IP address itself); 'hostUID' is used
+    // to identify the result when this method is called multiple times; the result (including 'hostUID')
+    // will be in the parameters of the ReceiveHostByAddress method called in the "sockets" thread;
+    // returns TRUE if there is a chance of success (if the thread retrieving the IP address can be started),
+    // returns FALSE on failure; if it returns TRUE and this object was not connected to
+    // SocketsThread, it connects it (see the AddSocket method)
+    // WARNING: this method cannot be called from the SocketCritSect critical section (the method uses
+    //          SocketsThread); the exception is when we are already inside the CSocketsThread::CritSect critical section
+    // callable from any thread
     BOOL GetHostByAddress(const char* address, int hostUID = 0);
 
-    // pripoji se na SOCKS 4/4A/5 nebo HTTP 1.1 (typ proxy je v 'proxyType') proxy server
-    // 'serverIP' na port 'serverPort' + pokud nejde o tyto proxy servery, funguje stejne
-    // jako metoda Connect; vytvori Windows socket a nastavi ho jako neblokujici - zpravy
-    // posila do objektu SocketsThread, ktery podle protokolu proxy serveru provede
-    // pripojeni na adresu 'host' port 'port' s proxy-user-name 'proxyUser' a proxy-password
-    // 'proxyPassword' (jen SOCKS 5 a HTTP 1.1); 'hostIP' (jen SOCKS 4) je IP adresa 'host'
-    // (pokud neni znama, pouzit INADDR_NONE); vraci TRUE pri sanci na uspech (vysledek
-    // pripojeni na 'host' prijme metoda ReceiveNetEvent - FD_CONNECT), pri neuspechu vraci
-    // FALSE a je-li znamy kod Windows chyby, vraci ho v 'error' (neni-li NULL); pokud
-    // vraci TRUE a tento objekt nebyl pripojen do SocketsThread, pripoji ho (viz metoda
-    // AddSocket)
-    // POZOR: neni mozne volat tuto metodu z kriticke sekce SocketCritSect (metoda pouziva
-    //        SocketsThread)
-    // volani mozne z libovolneho threadu
+    // connects to a SOCKS 4/4A/5 or HTTP 1.1 (the proxy type is in 'proxyType') proxy server
+    // 'serverIP' on port 'serverPort' + if it is not one of these proxy servers, it works the same as
+    // the Connect method; creates a Windows socket and sets it as non-blocking - it sends messages
+    // to the SocketsThread object, which, according to the proxy server protocol, performs
+    // the connection to address 'host' port 'port' with proxy-user-name 'proxyUser' and proxy-password
+    // 'proxyPassword' (only SOCKS 5 and HTTP 1.1); 'hostIP' (only SOCKS 4) is the IP address of 'host'
+    // (if unknown, use INADDR_NONE); returns TRUE if there is a chance of success (the result of
+    // connecting to 'host' is received by the ReceiveNetEvent method - FD_CONNECT), returns FALSE on failure
+    // and if the Windows error code is known, returns it in 'error' (if not NULL); if it returns TRUE
+    // and this object was not connected to SocketsThread, it connects it (see the AddSocket method)
+    // WARNING: this method cannot be called from the SocketCritSect critical section (the method uses
+    //          SocketsThread)
+    // callable from any thread
     BOOL ConnectWithProxy(DWORD serverIP, unsigned short serverPort, CFTPProxyServerType proxyType,
                           DWORD* err, const char* host, unsigned short port, const char* proxyUser,
                           const char* proxyPassword, DWORD hostIP);
 
-    // pripoji se na IP adresu 'ip' na port 'port'; vytvori Windows socket a nastavi ho
-    // jako neblokujici - zpravy posila do objektu SocketsThread, ktery na zaklade techto
-    // zprav vyvolava metodu ReceiveNetEvent tohoto objektu; vraci TRUE pri sanci na uspech
-    // (vysledek prijme metoda ReceiveNetEvent - FD_CONNECT), pri neuspechu vraci FALSE
-    // a je-li znamy kod Windows chyby, vraci ho v 'error' (neni-li NULL); pokud vraci
-    // TRUE a tento objekt nebyl pripojen do SocketsThread, pripoji ho (viz metoda AddSocket);
-    // 'calledFromConnect' je TRUE jen pri volani z nektere z metod ConnectUsingXXX;
-    // POZOR: neni mozne volat tuto metodu z kriticke sekce SocketCritSect (metoda pouziva
-    //        SocketsThread)
-    // volani mozne z libovolneho threadu
+    // connects to IP address 'ip' on port 'port'; creates a Windows socket and sets it as non-blocking -
+    // it sends messages to the SocketsThread object, which based on these messages calls the
+    // ReceiveNetEvent method of this object; returns TRUE if there is a chance of success
+    // (the result is received by the ReceiveNetEvent method - FD_CONNECT), returns FALSE on failure
+    // and if the Windows error code is known, returns it in 'error' (if not NULL); if it returns
+    // TRUE and this object was not connected to SocketsThread, it connects it (see the AddSocket method);
+    // 'calledFromConnect' is TRUE only when called from one of the ConnectUsingXXX methods;
+    // WARNING: this method cannot be called from the SocketCritSect critical section (the method uses
+    //          SocketsThread)
+    // callable from any thread
     BOOL Connect(DWORD ip, unsigned short port, DWORD* error, BOOL calledFromConnect = FALSE);
 
-    // pokud behem pripojovani pres proxy server vznikla chyba, vrati tato metoda
-    // TRUE + chybu v 'errBuf'+'formalBuf'; jinak metoda vraci FALSE; 'errBuf' je
-    // buffer pro text chyby o delce aspon 'errBufSize' znaku; 'formatBuf' je buffer
-    // (o delce aspon 'formatBufSize' znaku) pro formatovaci retezec (pro sprintf)
-    // popisujici pri cem chyba nastala; je-li 'oneLineText' TRUE, naplni se jen
-    // 'errBuf' a to jedinym radkem textu (bez CR+LF)
+    // if an error occurred while connecting through the proxy server, this method returns
+    // TRUE + the error in 'errBuf'+'formatBuf'; otherwise the method returns FALSE; 'errBuf' is
+    // the buffer for the error text with a length of at least 'errBufSize' characters; 'formatBuf' is a buffer
+    // (with a length of at least 'formatBufSize' characters) for the formatting string (for sprintf)
+    // describing when the error occurred; if 'oneLineText' is TRUE, only 'errBuf' is filled
+    // and only with a single line of text (without CR+LF)
     BOOL GetProxyError(char* errBuf, int errBufSize, char* formatBuf, int formatBufSize,
                        BOOL oneLineText);
 
-    // vraci popis timeoutu, ktery nastal pri pripojovani pres proxy server; vraci FALSE
-    // pokud jde o timeout pripojovani na FTP server; 'buf' je buffer pro popis timeoutu
-    // o delce aspon 'bufSize' znaku
+    // returns a description of the timeout that occurred when connecting through the proxy server; returns FALSE
+    // if it is a timeout while connecting to the FTP server; 'buf' is a buffer for the timeout description
+    // with a length of at least 'bufSize' characters
     BOOL GetProxyTimeoutDescr(char* buf, int bufSize);
 
-    // vraci TRUE pokud neni socket zavreny (INVALID_SOCKET)
+    // returns TRUE if the socket is not closed (INVALID_SOCKET)
     BOOL IsConnected();
 
-    // zahaji shutdown socketu - po uspesnem odeslani+potvrzeni neposlanych dat prijde
-    // FD_CLOSE, ktery socket zavre (uvolni prostredky Windows socketu); po zahajeni
-    // shutdownu jiz nelze zapsat na socket zadna data (pokud Write nezapise cely buffer
-    // najednou, je nutne pockat na dokonceni zapisu - udalost ccsevWriteDone);
-    // vraci TRUE pri uspechu, FALSE pri chybe - je-li znamy kod Windows chyby, vraci
-    // ho v 'error' (neni-li NULL)
-    // POZNAMKA: po prijeti FD_CLOSE se vola metoda SocketWasClosed (info o zavreni socketu)
+    // initiates a socket shutdown - after successfully sending + confirming the unsent data,
+    // FD_CLOSE arrives and closes the socket (releases Windows socket resources); after starting
+    // the shutdown, no data can be written to the socket anymore (if Write does not write the whole buffer
+    // at once, you must wait for the write to finish - event ccsevWriteDone);
+    // returns TRUE on success, FALSE on error - if the Windows error code is known, returns it
+    // in 'error' (if not NULL)
+    // NOTE: after receiving FD_CLOSE, the SocketWasClosed method is called (information about the socket closure)
     BOOL Shutdown(DWORD* error);
 
-    // tvrde zavreni socketu (jen kdyz timeoutnul Shutdown) - vola closesocket (dealokace
-    // Windows socketu); vraci TRUE pri uspechu, FALSE pri chybe - je-li znamy kod Windows
-    // chyby, vraci ho v 'error' (neni-li NULL)
+    // hard socket closure (only when Shutdown timed out) - calls closesocket (deallocation of
+    // the Windows socket); returns TRUE on success, FALSE on error - if the Windows error
+    // code is known, returns it in 'error' (if not NULL)
     BOOL CloseSocket(DWORD* error);
 
-    // zasifruje socket, vraci TRUE pri uspechu; pokud certifikat serveru nelze ani
-    // overit, ani ho predtim uzivatel neprijmul jako duveryhodny: je-li 'unverifiedCert'
-    // NULL, vraci neuspech a v 'sslErrorOccured' SSLCONERR_UNVERIFIEDCERT, neni-li
-    // 'unverifiedCert' NULL, vraci uspech a v 'unverifiedCert' certifikat serveru,
-    // volajici je zodpovedny za jeho uvolneni volanim unverifiedCert->Release() a
-    // v 'errorBuf' (o velikosti 'errorBufLen', je-li 0, muze byt 'errorBuf' NULL)
-    // vraci proc nelze certifikat overit; v 'errorID' (neni-li NULL) vraci resource-id
-    // textu chyby nebo -1 pokud se zadna chyba nema vypisovat; pri jinych chybach
-    // (krome neduveryhodneho certifikatu): v 'unverifiedCert' vraci NULL, v 'errorBuf'
-    // (o velikosti 'errorBufLen', je-li 0, muze byt 'errorBuf' NULL) vraci doplnujici
-    // text k chybe (vklada se do 'errorID' na pozici %s pres sprintf); v 'sslErrorOccured'
-    // (neni-li NULL) vraci chybovy kod (jeden z SSLCONERR_XXX); 'logUID' je UID logu;
-    // 'conForReuse' (neni-li NULL) je socket, ze ktereho mame pouzit SSL session (rika se
-    // tomu "SSL session reuse", viz napr. http://vincent.bernat.im/en/blog/2011-ssl-session-reuse-rfc5077.html
-    // a pouziva se to z control connectiony pro vsechny jeji data connectiony)
+    // encrypts the socket, returns TRUE on success; if the server certificate cannot be
+    // verified and the user has not previously accepted it as trusted: if 'unverifiedCert'
+    // is NULL, it returns failure and SSLCONERR_UNVERIFIEDCERT in 'sslErrorOccured'; if
+    // 'unverifiedCert' is not NULL, it returns success and the server certificate in 'unverifiedCert',
+    // the caller is responsible for releasing it by calling unverifiedCert->Release() and
+    // returns the reason why the certificate cannot be verified in 'errorBuf' (of size 'errorBufLen',
+    // if it is 0, 'errorBuf' can be NULL); in 'errorID' (if not NULL) it returns the resource-id
+    // of the error text or -1 if no error should be displayed; for other errors
+    // (except an untrusted certificate): it returns NULL in 'unverifiedCert', returns supplementary
+    // text for the error in 'errorBuf' (of size 'errorBufLen', if it is 0, 'errorBuf' can be NULL) (it is inserted
+    // into 'errorID' at position %s via sprintf); in 'sslErrorOccured' (if not NULL) it returns the error code (one of SSLCONERR_XXX);
+    // 'logUID' is the log UID; 'conForReuse' (if not NULL) is the socket whose SSL session should be reused (called
+    // "SSL session reuse", see for example http://vincent.bernat.im/en/blog/2011-ssl-session-reuse-rfc5077.html
+    // and it is used from the control connection for all its data connections)
     BOOL EncryptSocket(int logUID, int* sslErrorOccured, CCertificate** unverifiedCert,
                        int* errorID, char* errorBuf, int errorBufLen, CSocket* conForReuse);
 
-    // pripoji se na SOCKS 4/4A/5 nebo HTTP 1.1 (typ proxy je v 'proxyType') proxy server
-    // 'proxyIP' na port 'proxyPort' a otevre na nem port pro "listen"; IP+port, kde se
-    // nasloucha, socket prijme v metode ListeningForConnection(); pokud nejde o tyto
-    // proxy servery, funguje jako OpenForListening(), az na to, ze vysledek predava tez
-    // pres ListeningForConnection() - vola se primo z metody OpenForListeningWithProxy();
-    // 'listenOnIP'+'listenOnPort' se pouziva jen pokud nejde o pripojeni pres tyto proxy
-    // servery - 'listenOnIP' je IP teto masiny (pri bindnuti socketu na multi-home masinach
-    // nemusi jit IP zjistit, u FTP bereme IP z "control connection"), 'listenOnPort' je
-    // port, na kterem se ma naslouchat, pokud na tom nezalezi, pouzije se hodnota 0;
-    // vytvori Windows socket a nastavi ho jako neblokujici - zpravy posila do objektu
-    // SocketsThread, ktery podle protokolu proxy serveru pozada o otevreni "listen" portu
-    // pro pripojeni z adresy 'host' (IP 'hostIP') port 'hostPort' s proxy-user-name
-    // 'proxyUser' a proxy-password 'proxyPassword' (jen SOCKS 5 a HTTP 1.1); 'hostIP'
-    // (pouziva se jen pro SOCKS 4, jinak INADDR_NONE) je IP adresa 'host' (IP musi byt
-    // zname - musi byt otevrene spojeni na 'hostIP', jinak nelze zadat o toto otevreni
-    // "listen" portu); vraci TRUE pri sanci na uspech ("listen" IP+port prijme metoda
-    // ListeningForConnection(), a pak vysledek pripojeni z 'host' prijme
-    // metoda ConnectionAccepted() - za predpokladu, ze se pro FD_ACCEPT vola metoda
-    // CSocket::ReceiveNetEvent); pri neuspechu vraci FALSE a je-li znamy kod Windows
-    // chyby, vraci ho v 'err' (neni-li NULL) a neni-li 'listenError' NULL, vraci v nem
-    // TRUE/FALSE pokud jde o chybu LISTEN(chyba listen bez proxy serveru)/CONNECT(chyba
-    // connectu na proxy server); pokud vraci TRUE a tento objekt nebyl pripojen do
-    // SocketsThread, pripoji ho (viz metoda AddSocket)
-    // POZOR: neni mozne volat tuto metodu z kriticke sekce SocketCritSect (metoda pouziva
-    //        SocketsThread)
-    // volani mozne z libovolneho threadu
+    // connects to a SOCKS 4/4A/5 or HTTP 1.1 (the proxy type is in 'proxyType') proxy server
+    // 'proxyIP' on port 'proxyPort' and opens a port for "listen" on it; the IP+port where it
+    // listens is received by the socket in the ListeningForConnection() method; if it is not one of these
+    // proxy servers, it works like OpenForListening(), except that it also passes the result
+    // through ListeningForConnection() - it is called directly from the OpenForListeningWithProxy() method;
+    // 'listenOnIP'+'listenOnPort' is used only when it is not a connection through these proxy
+    // servers - 'listenOnIP' is the IP of this machine (when binding the socket on multi-home machines
+    // the IP may not be detectable, for FTP we take the IP from the "control connection"), 'listenOnPort' is
+    // the port on which to listen; if it does not matter, value 0 is used;
+    // it creates a Windows socket and sets it as non-blocking - it sends messages to the
+    // SocketsThread object, which according to the proxy server protocol requests the opening of a "listen" port
+    // for connections from address 'host' (IP 'hostIP') port 'hostPort' with proxy-user-name
+    // 'proxyUser' and proxy-password 'proxyPassword' (only SOCKS 5 and HTTP 1.1); 'hostIP'
+    // (used only for SOCKS 4, otherwise INADDR_NONE) is the IP address of 'host' (the IP must be
+    // known - a connection to 'hostIP' must be open, otherwise it is impossible to request this opening of a
+    // "listen" port); returns TRUE if there is a chance of success (the "listen" IP+port is received by the
+    // ListeningForConnection() method, and then the result of the connection from 'host' is received by the
+    // ConnectionAccepted() method - provided that the CSocket::ReceiveNetEvent method is called for FD_ACCEPT);
+    // returns FALSE on failure and if the Windows error code is known, returns it in 'err' (if not NULL), and
+    // if 'listenError' is not NULL, returns TRUE/FALSE in it depending on whether it is a LISTEN error (listen error without a proxy server)
+    // or CONNECT error (error connecting to the proxy server); if it returns TRUE and this object was not connected
+    // to SocketsThread, it connects it (see the AddSocket method)
+    // WARNING: this method cannot be called from the SocketCritSect critical section (the method uses
+    //          SocketsThread)
+    // callable from any thread
     BOOL OpenForListeningWithProxy(DWORD listenOnIP, unsigned short listenOnPort,
                                    const char* host, DWORD hostIP, unsigned short hostPort,
                                    CFTPProxyServerType proxyType, DWORD proxyIP,
                                    unsigned short proxyPort, const char* proxyUser,
                                    const char* proxyPassword, BOOL* listenError, DWORD* err);
 
-    // otevre socket a ceka na nem na spojeni (nasloucha); 'listenOnIP' (nesmi byt NULL) je na
-    // vstupu IP teto masiny (pri bindnuti socketu na multi-home masinach nemusi jit IP zjistit,
-    // u FTP bereme IP z "control connection"), na vystupu je IP, na kterem se ceka na spojeni;
-    // 'listenOnPort' (nesmi byt NULL) je na vstupu port, na kterem se ma cekat na spojeni,
-    // pokud na tom nezalezi, pouzije se hodnota 0, na vystupu jde o port, na kterem se ceka
-    // na spojeni; vytvori Windows socket a nastavi ho jako neblokujici - zpravy posila do
-    // objektu SocketsThread, ktery na zaklade techto zprav vyvolava metodu ReceiveNetEvent
-    // tohoto objektu (prichozi spojeni je oznameno volanim metody ConnectionAccepted() - za
-    // za predpokladu, ze se pro FD_ACCEPT vola metoda CSocket::ReceiveNetEvent); vraci TRUE
-    // pri uspesnem otevreni socketu, pri neuspechu vraci FALSE a je-li znamy kod Windows chyby,
-    // vraci ho v 'error' (neni-li NULL); pokud vraci TRUE a tento objekt nebyl pripojen do
-    // SocketsThread, pripoji ho (viz metoda AddSocket)
-    // POZOR: neni mozne volat tuto metodu z kriticke sekce SocketCritSect (metoda pouziva
-    //        SocketsThread)
-    // volani mozne z libovolneho threadu
+    // opens a socket and waits for a connection on it (listens); 'listenOnIP' (must not be NULL) is on
+    // input the IP of this machine (when binding the socket on multi-home machines the IP may not be detectable,
+    // for FTP we take the IP from the "control connection"), on output it is the IP where the connection is awaited;
+    // 'listenOnPort' (must not be NULL) is on input the port on which to wait for a connection,
+    // if it does not matter, value 0 is used; on output it is the port where the connection is awaited;
+    // it creates a Windows socket and sets it as non-blocking - it sends messages to the
+    // SocketsThread object, which based on these messages calls the ReceiveNetEvent method of this object
+    // (the incoming connection is announced by calling the ConnectionAccepted() method - provided that the
+    // CSocket::ReceiveNetEvent method is called for FD_ACCEPT); returns TRUE when the socket is opened successfully,
+    // returns FALSE on failure and if the Windows error code is known, returns it in 'error' (if not NULL);
+    // if it returns TRUE and this object was not connected to SocketsThread, it connects it (see the AddSocket method)
+    // WARNING: this method cannot be called from the SocketCritSect critical section (the method uses
+    //          SocketsThread)
+    // callable from any thread
     BOOL OpenForListening(DWORD* listenOnIP, unsigned short* listenOnPort, DWORD* error);
 
-    // vraci lokalni IP adresu, socket musi byt pripojeny (viz funkce getsockname());
-    // v 'ip' (nesmi byt NULL) vraci zjistenou IP adresu; vraci TRUE pri uspechu;
-    // pri neuspechu vraci FALSE a je-li znamy kod Windows chyby, vraci ho v 'error'
-    // (neni-li NULL)
-    // volani mozne z libovolneho threadu
+    // returns the local IP address, the socket must be connected (see the getsockname() function);
+    // returns the discovered IP address in 'ip' (must not be NULL); returns TRUE on success;
+    // returns FALSE on failure and if the Windows error code is known, returns it in 'error'
+    // (if not NULL)
+    // callable from any thread
     BOOL GetLocalIP(DWORD* ip, DWORD* error);
 
     // ******************************************************************************************
-    // metody volane v "sockets" threadu (na zaklade prijmu zprav od systemu nebo jinych threadu)
+    // methods called in the "sockets" thread (based on receiving messages from the system or other threads)
     //
-    // POZOR: volane v sekci SocketsThread->CritSect, mely by se provadet co nejrychleji (zadne
-    //        cekani na vstup usera, atd.)
+    // WARNING: called inside SocketsThread->CritSect, they should be performed as quickly as possible (no
+    //          waiting for user input, etc.)
     // ******************************************************************************************
 
-    // prijem vysledku volani GetHostByAddress; je-li 'ip' == INADDR_NONE jde o chybu a v 'err'
-    // muze byt chybovy kod (pokud 'err' != 0)
+    // receives the result of calling GetHostByAddress; if 'ip' == INADDR_NONE it is an error and 'err'
+    // may contain the error code (if 'err' != 0)
     virtual void ReceiveHostByAddress(DWORD ip, int hostUID, int err);
 
-    // prijem udalosti pro tento socket (FD_READ, FD_WRITE, FD_CLOSE, atd.); 'index' je
-    // index socketu v poli SocketsThread->Sockets (pouziva se pro opakovane posilani
-    // zprav pro socket)
+    // receives events for this socket (FD_READ, FD_WRITE, FD_CLOSE, etc.); 'index' is
+    // the index of the socket in the SocketsThread->Sockets array (used for repeated sending of
+    // messages for the socket)
     virtual void ReceiveNetEvent(LPARAM lParam, int index);
 
-    // prijem vysledku ReceiveNetEvent(FD_CLOSE) - neni-li 'error' NO_ERROR, jde
-    // o kod Windowsove chyby (prisla s FD_CLOSE nebo vznikla behem zpracovani FD_CLOSE)
+    // receives the result of ReceiveNetEvent(FD_CLOSE) - if 'error' is not NO_ERROR, it is
+    // the Windows error code (arrived with FD_CLOSE or occurred during FD_CLOSE processing)
     virtual void SocketWasClosed(DWORD error) {}
 
-    // prijem timeru s ID 'id' a parametrem 'param'
+    // receives a timer with ID 'id' and parameter 'param'
     virtual void ReceiveTimer(DWORD id, void* param) {}
 
-    // prijem postnute zpravy s ID 'id' a parametrem 'param'
+    // receives a posted message with ID 'id' and parameter 'param'
     virtual void ReceivePostMessage(DWORD id, void* param) {}
 
-    // interni metoda tohoto objektu: resi pripojeni na proxy server, po pripojeni nebo chybe
-    // pripojeni presmeruje udalosti do virtualni metody ReceiveNetEvent()
+    // internal method of this object: handles the connection to the proxy server, after connecting or failing to connect
+    // it redirects events to the virtual ReceiveNetEvent() method
     void ReceiveNetEventInt(LPARAM lParam, int index);
 
-    // interni metoda tohoto objektu: resi pripojeni na proxy server - konkretne u Socks4 cekani
-    // na IP adresu FTP serveru, vse ostatni presmeruje do metody ReceiveHostByAddress();
-    // 'index' je index socketu v poli SocketsThread->Sockets (pouziva se pri volani ReceiveNetEvent())
+    // internal method of this object: handles connecting to the proxy server - specifically for Socks4 waiting
+    // for the FTP server IP address, everything else is redirected to the ReceiveHostByAddress() method;
+    // 'index' is the index of the socket in the SocketsThread->Sockets array (used when calling ReceiveNetEvent())
     void ReceiveHostByAddressInt(DWORD ip, int hostUID, int err, int index);
 
-    // vola se po otevreni socketu pro "listen": 'listenOnIP'+'listenOnPort' je IP+port, na kterem se
-    // nasloucha; 'proxyError' je TRUE pokud proxy server hlasi chybu pri otevirani socketu pro
-    // "listen" (text chyby lze ziskat pres GetProxyError())
-    // POZOR: pri pripojeni bez proxy serveru se tato metoda vola primo z OpenForListeningWithProxy(),
-    //        tedy nemusi to byt ze "sockets" threadu
-    // POZOR: nesmi se volat z kriticke sekce CSocket::SocketCritSect
+    // called after opening the socket for "listen": 'listenOnIP'+'listenOnPort' is the IP+port where
+    // listening takes place; 'proxyError' is TRUE if the proxy server reports an error when opening the socket for
+    // "listen" (the error text can be obtained via GetProxyError())
+    // WARNING: when connecting without a proxy server this method is called directly from OpenForListeningWithProxy(),
+    //          so it does not have to be from the "sockets" thread
+    // WARNING: must not be called from the CSocket::SocketCritSect critical section
     virtual void ListeningForConnection(DWORD listenOnIP, unsigned short listenOnPort,
                                         BOOL proxyError) {}
 
-    // vola se po prijeti a zpracovani FD_ACCEPT (za predpokladu, ze se pro FD_ACCEPT vola metoda
-    // CSocket::ReceiveNetEvent): 'success' je uspech acceptu, pri neuspechu je ve 'winError'
-    // windowsovy kod chyby (pouziva se jen pri pripojeni bez proxy serveru) a v 'proxyError'
-    // TRUE pokud jde o chybu hlasenou proxy serverem (text chyby lze ziskat pres GetProxyError())
-    // POZOR: volat jen po jednom vstupu do kriticke sekce CSocket::SocketCritSect a CSocketsThread::CritSect
+    // called after receiving and processing FD_ACCEPT (provided that the CSocket::ReceiveNetEvent method is called for FD_ACCEPT):
+    // 'success' indicates whether accept succeeded; on failure 'winError' contains the Windows error code (used only when connecting without a proxy server)
+    // and 'proxyError' is TRUE if the error is reported by the proxy server (the error text can be obtained via GetProxyError())
+    // WARNING: call only after a single entry into the CSocket::SocketCritSect and CSocketsThread::CritSect critical sections
     virtual void ConnectionAccepted(BOOL success, DWORD winError, BOOL proxyError) {}
 
 protected:
-    // pomocna metoda pro nastaveni dat pro pripojeni pres proxy server
-    // POZOR: volat jen ze sekce SocketCritSect
+    // helper method for setting data for connecting through a proxy server
+    // WARNING: call only from the SocketCritSect section
     BOOL SetProxyData(const char* hostAddress, unsigned short hostPort,
                       const char* proxyUser, const char* proxyPassword,
                       DWORD hostIP, DWORD* error, DWORD proxyIP);
 
-    // pomocna metoda: posle byty z 'buf' na socket; 'index' je index socketu v poli
-    // SocketsThread->Sockets (pouziva se pri volani ReceiveNetEvent()); uvnitr metody
-    // se muze opustit kriticka sekce SocketCritSect, v tomto pripade ze v 'csLeft'
-    // vraci TRUE; 'isConnect' je TRUE/FALSE pro CONNECT/LISTEN
-    // POZOR: volat jen pri jednom zanoreni do sekce SocketCritSect
+    // helper method: sends bytes from 'buf' to the socket; 'index' is the socket index in the
+    // SocketsThread->Sockets array (used when calling ReceiveNetEvent()); inside the method
+    // the SocketCritSect critical section may be left, in which case it returns TRUE in 'csLeft';
+    // 'isConnect' is TRUE/FALSE for CONNECT/LISTEN
+    // WARNING: call only with a single nesting level in the SocketCritSect section
     void ProxySendBytes(const char* buf, int bufLen, int index, BOOL* csLeft, BOOL isConnect);
 
-    // pomocne metody: 'index' je index socketu v poli SocketsThread->Sockets (pouziva se
-    // pri volani ReceiveNetEvent()); uvnitr metody se muze opustit kriticka sekce
-    // SocketCritSect, v tomto pripade ze v 'csLeft' vraci TRUE
-    // POZOR: volat jen pri jednom zanoreni do sekce SocketCritSect
+    // helper methods: 'index' is the socket index in the SocketsThread->Sockets array (used
+    // when calling ReceiveNetEvent()); inside the method the SocketCritSect critical section may be left,
+    // in which case it returns TRUE in 'csLeft'
+    // WARNING: call only with a single nesting level in the SocketCritSect section
     //
-    // posle request 'request' (1=CONNECT, 2=LISTEN) na SOCKS4 proxy server; 'isConnect' je
-    // TRUE/FALSE pro CONNECT/LISTEN; 'isSocks4A' je TRUE/FALSE pro SOCKS 4A/4
+    // sends request 'request' (1=CONNECT, 2=LISTEN) to the SOCKS4 proxy server; 'isConnect' is
+    // TRUE/FALSE for CONNECT/LISTEN; 'isSocks4A' is TRUE/FALSE for SOCKS 4A/4
     void Socks4SendRequest(int request, int index, BOOL* csLeft, BOOL isConnect, BOOL isSocks4A);
-    // posle seznam podporovanych autentifikacnich metod na SOCKS5 proxy server; 'isConnect'
-    // je TRUE/FALSE pro CONNECT/LISTEN
+    // sends the list of supported authentication methods to the SOCKS5 proxy server; 'isConnect'
+    // is TRUE/FALSE for CONNECT/LISTEN
     void Socks5SendMethods(int index, BOOL* csLeft, BOOL isConnect);
-    // posle request 'request' (1=CONNECT, 2=LISTEN) na SOCKS5 proxy server; 'isConnect' je
-    // TRUE/FALSE pro CONNECT/LISTEN
+    // sends request 'request' (1=CONNECT, 2=LISTEN) to the SOCKS5 proxy server; 'isConnect' is
+    // TRUE/FALSE for CONNECT/LISTEN
     void Socks5SendRequest(int request, int index, BOOL* csLeft, BOOL isConnect);
-    // posle username+password na SOCKS5 proxy server; 'isConnect' je TRUE/FALSE pro CONNECT/LISTEN
+    // sends username+password to the SOCKS5 proxy server; 'isConnect' is TRUE/FALSE for CONNECT/LISTEN
     void Socks5SendLogin(int index, BOOL* csLeft, BOOL isConnect);
-    // posle pozadavek (na otevreni spojeni na FTP server) na HTTP 1.1 proxy server
+    // sends a request (to open a connection to the FTP server) to the HTTP 1.1 proxy server
     void HTTP11SendRequest(int index, BOOL* csLeft);
 
-    // pomocna metoda: prijem odpovedi z proxy serveru; vraci TRUE pokud se na socketu
-    // objevi nejaka data (pokud prisla FD_CLOSE, vrati data + dalsi zpracovani FD_CLOSE
-    // je na volajicim); POZOR: pokud vraci FALSE, opustil sekci SocketCritSect; 'buf'
-    // je buffer pro tuto odpoved ('read' je na vstupu velikost bufferu 'buf', na
-    // vystupu je zde pocet prectenych bytu); 'index' je index socketu v poli
-    // SocketsThread->Sockets (pouziva se pri volani ReceiveNetEvent()); 'isConnect' je
-    // TRUE/FALSE pri CONNECT/LISTEN_nebo_ACCEPT; 'isListen' ma smysl jen pri
-    // 'isConnect'==FALSE a je TRUE/FALSE pri LISTEN/ACCEPT; je-li 'readOnlyToEOL' TRUE,
-    // cte se socket po jednom bytu jen do okamziku vyskytu prvniho LF (nacte max.
-    // jeden radek vcetne koncoveho LF)
-    // POZOR: volat jen pri jednom zanoreni do sekce SocketCritSect a aspon jednom
-    //        zanoreni do sekce CSocketsThread::CritSect
+    // helper method: receives a reply from the proxy server; returns TRUE if any data appears on
+    // the socket (if FD_CLOSE arrived, it returns the data + further FD_CLOSE processing is up to the caller);
+    // WARNING: if it returns FALSE, it has left the SocketCritSect section; 'buf'
+    // is the buffer for this response ('read' is on input the size of the 'buf' buffer, on
+    // output it is the number of bytes read); 'index' is the socket index in the
+    // SocketsThread->Sockets array (used when calling ReceiveNetEvent()); 'isConnect' is
+    // TRUE/FALSE for CONNECT/LISTEN_or_ACCEPT; 'isListen' only makes sense when
+    // 'isConnect'==FALSE and is TRUE/FALSE for LISTEN/ACCEPT; if 'readOnlyToEOL' is TRUE,
+    // the socket is read byte by byte only until the first LF occurs (reads at most
+    // one line including the trailing LF)
+    // WARNING: call only with a single nesting in the SocketCritSect section and at least one
+    //          nesting in the CSocketsThread::CritSect section
     BOOL ProxyReceiveBytes(LPARAM lParam, char* buf, int* read, int index,
                            BOOL isConnect, BOOL isListen, BOOL readOnlyToEOL);
 
-    // pomocna metoda: nastavime vetsi buffery na socketu data-connectiony (urychleni
-    // listingu, downloadu i uploadu)
+    // helper method: sets larger buffers on the data connection socket (speeding up
+    // listing, downloads and uploads)
     void SetSndRcvBuffers();
 };
 
@@ -467,10 +463,10 @@ protected:
 // ****************************************************************************
 // CSocketsThread
 //
-// thread obsluhy vsech socketu (obsahuje neviditelne okno pro prijem zprav),
-// pouzivaji ho objekty socketu, mimo moduly socketu neni potreba
+// thread handling all sockets (contains an invisible window for receiving messages),
+// used by socket objects; outside the sockets modules it is not needed
 
-struct CMsgData // data pro WM_APP_SOCKET_ADDR
+struct CMsgData // data for WM_APP_SOCKET_ADDR
 {
     int SocketMsg;
     int SocketUID;
@@ -488,15 +484,15 @@ struct CMsgData // data pro WM_APP_SOCKET_ADDR
     }
 };
 
-#define SOCKETSTHREAD_TIMERID 666 // ID Windows timeru CSocketsThread::Timers (viz CSocketsThread::AddTimer())
+#define SOCKETSTHREAD_TIMERID 666 // Windows timer ID of CSocketsThread::Timers (see CSocketsThread::AddTimer())
 
-struct CTimerData // data pro WM_TIMER (viz CSocketsThread::AddTimer())
+struct CTimerData // data for WM_TIMER (see CSocketsThread::AddTimer())
 {
-    int SocketMsg;    // cislo zpravy pouzite pro prijem udalosti pro informovany socket; je-li (WM_APP_SOCKET_MIN-1), jde o smazany timer v uzamcene oblasti pole Timers
-    int SocketUID;    // UID informovaneho socketu
-    DWORD TimeoutAbs; // absolutni cas v milisekundach, ke spusteni timeru dojde az GetTickCount() vrati minimalne tuto hodnotu
-    DWORD ID;         // id timeru
-    void* Param;      // parametr timeru
+    int SocketMsg;    // message number used to receive events for the informed socket; if (WM_APP_SOCKET_MIN-1), it is a deleted timer in the locked section of the Timers array
+    int SocketUID;    // UID of the informed socket
+    DWORD TimeoutAbs; // absolute time in milliseconds; the timer fires only when GetTickCount() returns at least this value
+    DWORD ID;         // timer id
+    void* Param;      // timer parameter
 
     CTimerData(int socketMsg, int socketUID, DWORD timeoutAbs, DWORD id, void* param)
     {
@@ -508,12 +504,12 @@ struct CTimerData // data pro WM_TIMER (viz CSocketsThread::AddTimer())
     }
 };
 
-struct CPostMsgData // data pro WM_APP_SOCKET_POSTMSG
+struct CPostMsgData // data for WM_APP_SOCKET_POSTMSG
 {
-    int SocketMsg; // cislo zpravy pouzite pro prijem udalosti pro informovany socket
-    int SocketUID; // UID informovaneho socketu
-    DWORD ID;      // id udalosti
-    void* Param;   // parametr udalosti
+    int SocketMsg; // message number used to receive events for the informed socket
+    int SocketUID; // UID of the informed socket
+    DWORD ID;      // event id
+    void* Param;   // event parameter
 
     CPostMsgData(int socketMsg, int socketUID, DWORD id, void* param)
     {
@@ -527,106 +523,106 @@ struct CPostMsgData // data pro WM_APP_SOCKET_POSTMSG
 class CSocketsThread : public CThread
 {
 protected:
-    CRITICAL_SECTION CritSect; // kriticka sekce pro pristup k datum objektu
-    HANDLE RunningEvent;       // signaled az po spusteni message-loopy v threadu
-    HANDLE CanEndThread;       // signaled az po volani IsRunning() - hl. thread uz si precetl 'Running'
-    BOOL Running;              // TRUE po uspesnem spusteni message-loopy v threadu (jinak hlasi error)
-    HWND HWindow;              // handle neviditelneho okna pro prijem zprav o socketech
-    BOOL Terminating;          // TRUE jen po volani Terminate()
+    CRITICAL_SECTION CritSect; // critical section for accessing the object's data
+    HANDLE RunningEvent;       // signaled only after the message loop in the thread starts
+    HANDLE CanEndThread;       // signaled only after IsRunning() is called - the main thread has already read 'Running'
+    BOOL Running;              // TRUE after the message loop in the thread starts successfully (otherwise it reports an error)
+    HWND HWindow;              // handle of the invisible window for receiving socket messages
+    BOOL Terminating;          // TRUE only after Terminate() is called
 
-    // pole obsluhovanych objektu (potomku CSocket); pozice v poli odpovidaji prijimanym
-    // zpravam (index nula == WM_APP_SOCKET_MIN), takze PRVKY POLE NELZE POSOUVAT (vymaz
-    // se resi prepisem indexu na NULL)
+    // array of handled objects (descendants of CSocket); positions in the array correspond to received
+    // messages (index zero == WM_APP_SOCKET_MIN), so ARRAY ELEMENTS MUST NOT BE MOVED (removal
+    // is handled by rewriting the index to NULL)
     TIndirectArray<CSocket> Sockets;
-    int FirstFreeIndexInSockets; // nejnizsi volny index uvnitr pole Sockets (-1 = zadny)
+    int FirstFreeIndexInSockets; // lowest free index inside the Sockets array (-1 = none)
 
-    TIndirectArray<CMsgData> MsgData; // data pro WM_APP_SOCKET_ADDR (pri prijmu zpravy distribujeme data z pole)
+    TIndirectArray<CMsgData> MsgData; // data for WM_APP_SOCKET_ADDR (when receiving the message we distribute data from the array)
 
-    TIndirectArray<CTimerData> Timers;    // pole timeru pro sockety
-    int LockedTimers;                     // usek pole Timers (pocet prvku od zacatku pole), ktery se nesmi menit (pouziva se behem CSocketsThread::ReceiveTimer()); -1 = takovy usek pole neexistuje
-    static DWORD LastWM_TIMER_Processing; // GetTickCount() z okamziku posledniho zpracovani WM_TIMER (WM_TIMER chodi jen pri "idle" messageloopy, coz je pro nas nepripustne)
+    TIndirectArray<CTimerData> Timers;    // array of timers for sockets
+    int LockedTimers;                     // section of the Timers array (number of elements from the start of the array) that must not change (used during CSocketsThread::ReceiveTimer()); -1 = such a section does not exist
+    static DWORD LastWM_TIMER_Processing; // GetTickCount() from the time of the last WM_TIMER processing (WM_TIMER arrives only during an "idle" message loop, which is unacceptable for us)
 
-    TIndirectArray<CPostMsgData> PostMsgs; // data pro WM_APP_SOCKET_POSTMSG (pri prijmu zpravy distribujeme data z pole)
+    TIndirectArray<CPostMsgData> PostMsgs; // data for WM_APP_SOCKET_POSTMSG (when receiving the message we distribute data from the array)
 
 public:
     CSocketsThread();
     ~CSocketsThread();
 
-    // vraci stav objektu (TRUE=OK); nutne volat po konstruktoru pro zjisteni vysledku konstrukce
+    // returns the state of the object (TRUE=OK); must be called after the constructor to determine the result of construction
     BOOL IsGood() { return Sockets.IsGood() && RunningEvent != NULL && CanEndThread != NULL; }
 
-    // vraci handle neviditelneho okna (okno pro prijem zprav o socketech)
+    // returns the handle of the invisible window (window for receiving socket messages)
     HWND GetHiddenWindow() const { return HWindow; }
 
     void LockSocketsThread() { HANDLES(EnterCriticalSection(&CritSect)); }
     void UnlockSocketsThread() { HANDLES(LeaveCriticalSection(&CritSect)); }
 
-    // vola hl. thread - pocka, az bude jasne jestli thread nabehl, pak vrati TRUE
-    // pri uspesnem behu nebo FALSE pri chybe
+    // called by the main thread - waits until it is clear whether the thread started, then returns TRUE
+    // for successful execution or FALSE on error
     BOOL IsRunning();
 
-    // vola hl. thread, pokud je treba terminovat sockets thread
+    // called by the main thread if the sockets thread needs to terminate
     void Terminate();
 
-    // prida do pole timeru timer s timeoutem v 'timeoutAbs' (absolutni cas v milisekundach,
-    // ke spusteni timeru dojde az GetTickCount() vrati minimalne tuto hodnotu);
-    // po spusteni timeru dojde k jeho zruseni z pole timeru; 'socketMsg'+'socketUID' identifikuje
-    // socket, kteremu se ma timeout pridavaneho timeru hlasit (viz metoda CSocket::ReceiveTimer());
-    // 'id' je ID timeru; 'param' je volitelny parametr timeru, pokud je v nem nejaka alokovana
-    // hodnota, musi se o dealokaci postarat objekt CSocket pri prijmu timeru, pri chybe pridavani
-    // timeru nebo pri unloadu pluginu; vraci TRUE pri uspesnem pridani timeru, jinak vraci FALSE
-    // (jedina chyba nedostatek pameti)
-    // volani mozne z libovolneho threadu
+    // adds a timer to the timers array with timeout 'timeoutAbs' (absolute time in milliseconds,
+    // the timer will fire only after GetTickCount() returns at least this value);
+    // after the timer fires it is removed from the timers array; 'socketMsg'+'socketUID' identifies
+    // the socket that should be notified of the added timer timeout (see the CSocket::ReceiveTimer() method);
+    // 'id' is the timer ID; 'param' is an optional timer parameter, if it contains any allocated
+    // value, the CSocket object must take care of deallocation when receiving the timer, when adding the timer fails,
+    // or when unloading the plugin; returns TRUE when the timer is added successfully, otherwise returns FALSE
+    // (the only error is lack of memory)
+    // callable from any thread
     BOOL AddTimer(int socketMsg, int socketUID, DWORD timeoutAbs, DWORD id, void* param);
 
-    // najde a zrusi z pole timeru timer s ID 'id' pro socket s UID 'socketUID';
-    // pokud je v poli vic timeru, ktere odpovidaji kriteriu, dojde k vymazu vsech;
-    // vraci TRUE pokud byl nalezen a zrusen aspon jeden timer
-    // volani mozne z libovolneho threadu
+    // finds and removes from the timers array the timer with ID 'id' for the socket with UID 'socketUID';
+    // if there are multiple timers in the array that match the criteria, all of them are removed;
+    // returns TRUE if at least one timer was found and removed
+    // callable from any thread
     BOOL DeleteTimer(int socketUID, DWORD id);
 
-    // vlozi do fronty postnutou zpravu - neprimo vyvola metodu CSocket::ReceivePostMessage;
-    // zprava nemusi byt prijata k doruceni (nedostatek pameti nebo chyba PostMessage) - pak
-    // vraci FALSE; 'socketMsg' a 'socketUID' identifikuje objekt socketu, kam ma zprava dojit;
-    // 'id' a 'param' jsou parametry predane do CSocket::ReceivePostMessage, pokud je
-    // v 'param' nejaka alokovana hodnota, musi se o dealokaci postarat objekt CSocket
-    // pri prijmu zpravy, pri chybe PostSocketMessage nebo pri unloadu pluginu
-    // volani mozne z libovolneho threadu
+    // queues a posted message - indirectly invokes the CSocket::ReceivePostMessage method;
+    // the message might not be accepted for delivery (lack of memory or PostMessage error) - then it returns FALSE;
+    // 'socketMsg' and 'socketUID' identify the socket object that should receive the message;
+    // 'id' and 'param' are parameters passed to CSocket::ReceivePostMessage; if
+    // 'param' holds any allocated value, the CSocket object must take care of deallocation
+    // when receiving the message, when PostSocketMessage fails, or when unloading the plugin
+    // callable from any thread
     BOOL PostSocketMessage(int socketMsg, int socketUID, DWORD id, void* param);
 
-    // zjisti jestli existuje objekt socketu s UID 'socketUID';
-    // pokud existuje vraci TRUE (jinak FALSE); pokud socket existuje vraci
-    // v 'isConnected' (neni-li NULL) TRUE, pokud neni socket zavreny (INVALID_SOCKET),
-    // jinak v 'isConnected' vraci FALSE; nastavi v socketu cas posledniho volani
-    // IsSocketConnected() - IsSocketConnectedLastCallTime
+    // checks whether a socket object with UID 'socketUID' exists;
+    // if it exists returns TRUE (otherwise FALSE); if the socket exists it returns
+    // TRUE in 'isConnected' (if not NULL) when the socket is not closed (INVALID_SOCKET),
+    // otherwise it returns FALSE in 'isConnected'; sets the time of the last IsSocketConnected()
+    // call in the socket - IsSocketConnectedLastCallTime
     BOOL IsSocketConnected(int socketUID, BOOL* isConnected);
 
-    // prida do pole obsluhovanych objektu 'sock' (musi byt alokovany); vraci TRUE pri uspechu
-    // ('sock' bude dealokovan automaticky pri zavreni socketu), pokud vraci FALSE, je potreba
-    // objekt 'sock' dealokovat
-    // volani mozne z libovolneho threadu
+    // adds 'sock' (must be allocated) to the array of handled objects; returns TRUE on success
+    // ('sock' will be deallocated automatically when the socket closes); if it returns FALSE,
+    // the object 'sock' needs to be deallocated
+    // callable from any thread
     BOOL AddSocket(CSocket* sock);
 
-    // dealokuje/odpojuje ('onlyDetach' je FALSE/TRUE) objekt socketu 'sock' z pole obsluhovanych
-    // objektu (zapise na pozici NULL a nastavi FirstFreeIndexInSockets); pokud objekt neni v poli
-    // a 'onlyDetach' je TRUE, dojde k jeho dealokaci
-    // volani mozne z libovolneho threadu
+    // deallocates/detaches ('onlyDetach' is FALSE/TRUE) the socket object 'sock' from the array of handled
+    // objects (writes NULL to the position and sets FirstFreeIndexInSockets); if the object is not in the array
+    // and 'onlyDetach' is TRUE, it is deallocated
+    // callable from any thread
     void DeleteSocket(CSocket* sock, BOOL onlyDetach = FALSE)
     {
         if (sock != NULL)
         {
             int i = sock->GetMsgIndex();
             if (i != -1)
-                DeleteSocketFromIndex(i, onlyDetach); // je-li v poli obsluhovanych objektu
+                DeleteSocketFromIndex(i, onlyDetach); // if it is in the array of handled objects
             else
             {
                 if (!onlyDetach)
                 {
 #ifdef _DEBUG
                     BOOL old = InDeleteSocket;
-                    InDeleteSocket = TRUE; // sice nemusime byt primo v ::DeleteSocket, ale volani je korektni
+                    InDeleteSocket = TRUE; // we might not be directly in ::DeleteSocket, but the call is correct
 #endif
-                    delete sock; // neni v poli, uvolnime ho primo
+                    delete sock; // not in the array, release it directly
 #ifdef _DEBUG
                     InDeleteSocket = old;
 #endif
@@ -635,61 +631,60 @@ public:
         }
     }
 
-    // dealokuje/odpojuje ('onlyDetach' je FALSE/TRUE) objekt socketu na pozici 'index' v poli
-    // obsluhovanych objektu (zapise na pozici NULL a nastavi FirstFreeIndexInSockets)
-    // volani mozne z libovolneho threadu
+    // deallocates/detaches ('onlyDetach' is FALSE/TRUE) the socket object at position 'index' in the
+    // array of handled objects (writes NULL to the position and sets FirstFreeIndexInSockets)
+    // callable from any thread
     void DeleteSocketFromIndex(int index, BOOL onlyDetach = FALSE);
 
-    // dvojice metod umoznujici prohozeni objektu socketu - nedorucene a nove udalosti na
-    // socketu, vysledky volani GetHostByAddress, timery a postnute zpravy se doruci
-    // do prohozeneho objektu socketu; BeginSocketsSwap() zajisti vstup do kriticke
-    // sekce sockets threadu (CritSect) a prohozeni objektu socketu; po volani
-    // BeginSocketsSwap() je mozne prohodit vnitrni data objektu socketu (mimo dat tridy
-    // CSocket, ty uz jsou prohozene) bez rizika, ze bude objektum socketu dorucena
-    // nejaka zprava v sockets threadu; pro dokonceni prohozeni je nutne zavolat
-    // EndSocketsSwap(), ktery opusti kritickou sekci sockets threadu (CritSect), cimz
-    // povoli normalni funkci sockets threadu; 'sock1' a 'sock2' (nesmi byt NULL a
-    // musi byt v poli obsluhovanych objektu - viz metoda AddSocket()) jsou objekty
-    // prohazovanych socketu
+    // pair of methods that allow socket objects to be swapped - undelivered and new events on the
+    // socket, results of GetHostByAddress, timers and posted messages are delivered
+    // to the swapped socket object; BeginSocketsSwap() ensures entering the sockets thread critical
+    // section (CritSect) and swapping the socket objects; after calling
+    // BeginSocketsSwap() it is possible to swap the internal data of the socket object (except for data of the
+    // CSocket class, those are already swapped) without the risk of delivering any message to the
+    // socket objects in the sockets thread; to complete the swap you must call
+    // EndSocketsSwap(), which leaves the sockets thread critical section (CritSect), thus
+    // allowing the normal operation of the sockets thread; 'sock1' and 'sock2' (must not be NULL and
+    // must be in the array of handled objects - see the AddSocket() method) are the swapped socket objects
     void BeginSocketsSwap(CSocket* sock1, CSocket* sock2);
     void EndSocketsSwap();
 
     // ******************************************************************************************
-    // soukrome metody objektu, nevolat zvenci (mimo sockets.cpp)
+    // private methods of the object, do not call from outside (outside sockets.cpp)
     // ******************************************************************************************
 
-    // vlozi do fronty zpravu o vysledku volani CSocket::GetHostByAddress - neprimo vyvola
-    // metodu CSocket::ReceiveHostByAddress; zprava nemusi byt prijata k doruceni (nedostatek
-    // pameti nebo chyba PostMessage) - pak vraci FALSE; 'socketMsg' a 'socketUID' identifikuje
-    // objekt socketu, kam ma zprava dojit; 'ip', 'hostUID' a 'err' jsou parametry predane
-    // do CSocket::ReceiveHostByAddress
-    // volani mozne z libovolneho threadu
+    // queues a message with the result of calling CSocket::GetHostByAddress - indirectly invokes
+    // the CSocket::ReceiveHostByAddress method; the message might not be accepted for delivery (lack of
+    // memory or PostMessage error) - then it returns FALSE; 'socketMsg' and 'socketUID' identify
+    // the socket object that should receive the message; 'ip', 'hostUID' and 'err' are parameters passed
+    // to CSocket::ReceiveHostByAddress
+    // callable from any thread
     BOOL PostHostByAddressResult(int socketMsg, int socketUID, DWORD ip, int hostUID, int err);
 
-    // vola CSocketsThread::WindowProc pri prijmu WM_APP_SOCKET_ADDR
+    // called by CSocketsThread::WindowProc when receiving WM_APP_SOCKET_ADDR
     void ReceiveMsgData();
 
-    // vola CSocketsThread::WindowProc pri prijmu WM_TIMER
+    // called by CSocketsThread::WindowProc when receiving WM_TIMER
     void ReceiveTimer();
 
-    // vola CSocketsThread::WindowProc pri prijmu WM_APP_SOCKET_POSTMSG
+    // called by CSocketsThread::WindowProc when receiving WM_APP_SOCKET_POSTMSG
     void ReceivePostMessage();
 
-    // vola CSocketsThread::WindowProc pri prijmu WM_APP_SOCKET_MIN az WM_APP_SOCKET_MAX
+    // called by CSocketsThread::WindowProc when receiving WM_APP_SOCKET_MIN to WM_APP_SOCKET_MAX
     LRESULT ReceiveNetEvent(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-    // tato metoda obsahuje telo threadu
+    // this method contains the body of the thread
     virtual unsigned Body();
 
 protected:
     static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-    // najde index v poli Timers, kam by se mel vlozit novy timer s timeoutem 'timeoutAbs'
-    // pokud jiz v poli existuji timery s timto timeoutem, novy timer se vklada za ne
-    // (zachovava casovou souslednost); 'leftIndex' je prvni index na ktery je mozne
-    // novy timer vlozit (pouziva se pri zamknutem zacatku pole Timers)
-    // POZOR: volat jen ze sekce 'CritSect'
+    // finds the index in the Timers array where a new timer with timeout 'timeoutAbs' should be inserted
+    // if timers with this timeout already exist in the array, the new timer is inserted after them
+    // (preserves chronological order); 'leftIndex' is the first index where the new timer can
+    // be inserted (used when the beginning of the Timers array is locked)
+    // WARNING: call only from the 'CritSect' section
     int FindIndexForNewTimer(DWORD timeoutAbs, int leftIndex);
 };
 
-extern CSocketsThread* SocketsThread; // thread obsluhy vsech socketu, jen vnitrni pouziti v modulech socketu
+extern CSocketsThread* SocketsThread; // thread handling all sockets, intended only for internal use in the sockets modules

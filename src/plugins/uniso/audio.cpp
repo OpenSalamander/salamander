@@ -59,12 +59,12 @@ BOOL CAudio::AddFileDir(const char* path, char* fileName,
 
     fd.DosName = NULL;
 
-    fd.Attr = FILE_ATTRIBUTE_READONLY; // vse je defaultne read-only
+    fd.Attr = FILE_ATTRIBUTE_READONLY; // everything is read-only by default
     fd.Hidden = 0;
 
     fd.Size = CQuadWord(0, 0);
 
-    // soubor
+    // file
     fd.IsLink = SalamanderGeneral->IsFileLink(fd.Ext);
     fd.IsOffline = 0;
     if (dir && !dir->AddFile(path, fd, pluginData))

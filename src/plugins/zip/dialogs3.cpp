@@ -130,7 +130,7 @@ CCommentDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_SHOWWINDOW:
         if (FirstShow)
         {
-            // zrusime vyber celeho textu
+            // clear the selection of the entire text
             SendMessage(CommentHWnd, EM_SETSEL, 0, 0);
             FirstShow = FALSE;
         }
@@ -186,7 +186,7 @@ BOOL CCommentDialog::OnInit(WPARAM wParam, LPARAM lParam)
     SetWindowText(Dlg, title);
     SendMessage(Dlg, WM_SETICON, ICON_SMALL, (WPARAM)LoadIcon(DLLInstance, MAKEINTRESOURCE(IDI_COMMENT)));
 
-    // zadisablime polozku 'save'
+    // disable the 'save' item
     if (PackObject->MultiVol)
     {
         HMENU menu = GetMenu(Dlg);
@@ -200,7 +200,7 @@ BOOL CCommentDialog::OnInit(WPARAM wParam, LPARAM lParam)
             SetMenuItemInfo(menu, CM_SAVE, FALSE, &mi);
         }
     }
-    // nastavime tenky ramecek
+    // set a thin frame
     LONG style = GetWindowLong(CommentHWnd, GWL_EXSTYLE);
     if (style)
     {

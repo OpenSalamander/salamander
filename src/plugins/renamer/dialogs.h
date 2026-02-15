@@ -8,15 +8,15 @@
 #define MAX_HISTORY_ENTRIES 20
 
 #define WM_USER_RELOADSOURCE WM_APP
-#define WM_USER_CARETMOVE WM_APP + 1 // informuje o mozne zmene pozice \
-                                     // caretu v edit controlu
+#define WM_USER_CARETMOVE WM_APP + 1 // notifies about a possible change in the position of the \
+                                     // caret in the edit control
 
 #define WM_USER_CFGCHNG (WM_APP + 3246)
 
-// [0, 0] - pro otevrena okna vieweru: Salamander pregeneroval fonty, mame zavolat SetFont() listam
+// [0, 0] - for open viewer windows: Salamander regenerated fonts, we must call SetFont() on the lists
 #define WM_USER_SETTINGCHANGE (WM_APP + 3248)
 
-// TODO: pouzit
+// TODO: use it
 extern BOOL MinBeepWhenDone;
 
 extern char* MaskHistory[MAX_HISTORY_ENTRIES];
@@ -57,8 +57,8 @@ void TransferCombo(CTransferInfo& ti, int id, int* comboContent, int& value);
 //
 // CComboboxEdit
 //
-// Protoze je combobox vyprasenej, nelze klasickou cestou (CB_GETEDITSEL) zjistit
-// po opusteni focusu, jaka byla selection. To resi tento control.
+// Because the combobox is cleared, the classic method (CB_GETEDITSEL) cannot determine
+// what the selection was after focus is lost. This control solves it.
 //
 
 class CComboboxEdit : public CWindow
@@ -86,7 +86,7 @@ protected:
 //
 // CNotifyEdit
 //
-// Posila WM_USER_KEYDOWN pri stisku klavesy nebo mysiho tlacitka
+// Sends WM_USER_KEYDOWN when a key or mouse button is pressed
 //
 
 class CNotifyEdit : public CWindow

@@ -12,8 +12,8 @@ CSalmonSharedMemory* SalmonSharedMemory = NULL;
 
 char BugReportPath[MAX_PATH] = {0};
 extern TDirectArray<CBugReport> BugReports(1, 10);
-char LatestBugReport[MAX_PATH] = {0}; // jmeno casove posledniho bug reportu (pouze jmeno bez pripony)
-BOOL ReportOldBugs = TRUE;            // uzivatel povolil upload i starych reportu
+char LatestBugReport[MAX_PATH] = {0}; // name of the most recent bug report (name only, without extension)
+BOOL ReportOldBugs = TRUE;            // the user allowed uploading old reports as well
 
 const char* APP_NAME = "Open Salamander Bug Reporter";
 
@@ -28,7 +28,7 @@ public:
     ~C__StrCriticalSection() { HANDLES(DeleteCriticalSection(&cs)); }
 };
 
-// zajistime vcasnou konstrukci kriticke sekce
+// ensure the critical section is constructed in time
 #pragma warning(disable : 4073)
 #pragma init_seg(lib)
 C__StrCriticalSection __StrCriticalSection;
@@ -38,7 +38,7 @@ C__StrCriticalSection __StrCriticalSection2;
 
 char* LoadStr(int resID, HINSTANCE hInstance)
 {
-    static char buffer[10000]; // buffer pro mnoho stringu
+    static char buffer[10000]; // buffer for many strings
     static char* act = buffer;
 
     HANDLES(EnterCriticalSection(&__StrCriticalSection.cs));
@@ -49,23 +49,23 @@ char* LoadStr(int resID, HINSTANCE hInstance)
     if (hInstance == NULL)
         hInstance = HLanguage;
 #ifdef _DEBUG
-    // radeji si pojistime, aby nas nekdo nevolal pred inicializaci handlu s resourcy
+    // better ensure nobody calls us before the resource handle is initialized
     if (hInstance == NULL)
         TRACE_E("LoadStr: hInstance == NULL");
 #endif // _DEBUG
 
 RELOAD:
     int size = LoadString(hInstance, resID, act, 10000 - (int)(act - buffer));
-    // size obsahuje pocet nakopirovanych znaku bez terminatoru
+    // size contains the number of copied characters without the terminator
     //  DWORD error = GetLastError();
     char* ret;
-    if (size != 0) // error je NO_ERROR, i kdyz string neexistuje - nepouzitelne
+    if (size != 0) // error is NO_ERROR even when the string does not exist - unusable
     {
         if ((10000 - (act - buffer) == size + 1) && (act > buffer))
         {
-            // pokud byl retezec presne na konci bufferu, mohlo
-            // jit o oriznuti retezce -- pokud muzeme posunout okno
-            // na zacatek bufferu, nacteme string jeste jednou
+            // if the string ended exactly at the end of the buffer, it might
+            // have been truncated -- if we can shift the window to the beginning
+            // of the buffer, load the string once more
             act = buffer;
             goto RELOAD;
         }
@@ -91,12 +91,12 @@ RELOAD:
 //
 // GetErrorText
 //
-// az do soubehu minimalne 10 vypisovanych chyb naraz by to melo jiste fungovat,
-// vic threadu nez 10 najednou neocekavame ;-)
+// this should reliably work for at least 10 errors being written at once,
+// we do not expect more than 10 threads at the same time ;-)
 
 char* GetErrorText(DWORD error)
 {
-    static char buffer[10 * MAX_PATH]; // buffer pro mnoho stringu
+    static char buffer[10 * MAX_PATH]; // buffer for many strings
     static char* act = buffer;
 
     HANDLES(EnterCriticalSection(&__StrCriticalSection2.cs));
@@ -105,8 +105,8 @@ char* GetErrorText(DWORD error)
         act = buffer;
 
     char* ret = act;
-    // POZOR: sprintf_s v debug verzi vyplnuje cely buffer, tedy nelze mu podat cely buffer (jsou
-    // v nem i dalsi stringy), resit bud pres _CrtSetDebugFillThreshold nebo zadanim mensi velikosti)
+    // NOTE: sprintf_s in the debug build fills the entire buffer, so we cannot pass it the whole buffer (it
+    // also contains other strings); handle it via _CrtSetDebugFillThreshold or by specifying a smaller size
     int l = sprintf(act, ((int)error < 0 ? "(%08X) " : "(%d) "), error);
     int fl;
     if ((fl = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,
@@ -180,7 +180,7 @@ void OpenFolder(HWND hWnd, const char* szDir)
         memset(&se, 0, sizeof(SHELLEXECUTEINFO));
         se.cbSize = sizeof(SHELLEXECUTEINFO);
         se.fMask = SEE_MASK_IDLIST;
-        se.lpVerb = "explore"; // volba zda otevirat se stromeckem
+        se.lpVerb = "explore"; // option whether to open with the tree view
         se.hwnd = hWnd;
         se.nShow = SW_SHOWNORMAL;
         se.lpIDList = pidl;
@@ -205,10 +205,10 @@ DWORD SalGetFileAttributes(const char* fileName)
 {
     int fileNameLen = (int)strlen(fileName);
     char fileNameCopy[3 * MAX_PATH];
-    // pokud cesta konci mezerou/teckou, musime pripojit '\\', jinak GetFileAttributes
-    // mezery/tecky orizne a pracuje tak s jinou cestou + u souboru to sice nefunguje,
-    // ale porad lepsi nez ziskat atributy jineho souboru/adresare (pro "c:\\file.txt   "
-    // pracuje se jmenem "c:\\file.txt")
+    // if the path ends with a space/dot, we must append '\\', otherwise GetFileAttributes trims
+    // the spaces/dots and works with a different path; for files it does not work anyway,
+    // but it is still better than getting attributes of another file/directory (for "c:\\file.txt   "
+    // it works with the name "c:\\file.txt")
     if (fileNameLen > 0 && (fileName[fileNameLen - 1] <= ' ' || fileName[fileNameLen - 1] == '.') &&
         fileNameLen + 1 < _countof(fileNameCopy))
     {
@@ -217,7 +217,7 @@ DWORD SalGetFileAttributes(const char* fileName)
         fileNameCopy[fileNameLen + 1] = 0;
         return GetFileAttributes(fileNameCopy);
     }
-    else // obycejna cesta, neni co resit, jen zavolame windowsovou GetFileAttributes
+    else // a plain path, nothing special to do, just call the Windows GetFileAttributes
     {
         return GetFileAttributes(fileName);
     }
@@ -290,8 +290,8 @@ HINSTANCE LoadSLG(const char* slgName)
     HINSTANCE hSLG = LoadLibrary(path);
     if (hSLG == NULL)
     {
-        // pokud se SLG nepovedlo nacist, nemusi existovat nebo nam nepredali validni nazev
-        // pokusime se najit nejake vhodne jine, podle priority
+        // if loading the SLG failed, it might not exist or we were not given a valid name
+        // try to find another suitable one based on priority
         const char* masks[] = {"english.slg", "czech.slg", "german.slg", "spanish.slg", "*.slg", ""};
         for (int i = 0; *masks[i] != 0 && (hSLG == NULL); i++)
         {
@@ -395,8 +395,8 @@ BOOL CleanBugReportsDirectory(BOOL keep7ZipArchives)
 // GetBugReportNameIndexIgnoreExt()
 //
 
-// prohleda pole BugReports (ktere obsahuje nazvy vcetne pripon) a vrati index 'name'
-// ignoruje pripony
+// search the BugReports array (which contains names including extensions) and return the index of 'name'
+// ignores extensions
 int GetBugReportNameIndexIgnoreExt(const char* name)
 {
     char strippedName[MAX_PATH];
@@ -429,11 +429,11 @@ BOOL GetBugReportNames()
     if (BugReportPath[0] == 0)
         return FALSE;
 
-    // pokud adresar neexistuje, nemuze obsahovat reporty
+    // if the directory does not exist, it cannot contain reports
     if (!DirExists(BugReportPath))
         return FALSE;
 
-    // hledame reporty podle pripon
+    // look for reports by extension
     char findPath[MAX_PATH];
     const char* extensions[] = {"*.DMP", "*.TXT", NULL};
     FILETIME latestFiletime;
@@ -456,7 +456,7 @@ BOOL GetBugReportNames()
                 BOOL skipFile = FALSE;
                 if (_stricmp(ext + 1, "dmp") == 0)
                 {
-                    // minidumpy nad 200MB proste smazeme, protoze neverim, ze by po zapakovani prosly na server
+                    // delete minidumps over 200 MB because I do not believe they would pass to the server even after packing
                     if (find.nFileSizeHigh > 0 || find.nFileSizeLow > 200 * 1000 * 1024)
                     {
                         char deleteFileName[MAX_PATH];
@@ -469,14 +469,14 @@ BOOL GetBugReportNames()
 
                 if (!skipFile)
                 {
-                    // ulozime nejnovejsi jmeno a cas
+                    // store the newest name and timestamp
                     if (latestFilename[0] == 0 || CompareFileTime(&latestFiletime, &find.ftLastWriteTime) == -1)
                     {
                         strcpy(latestFilename, item.Name);
                         latestFiletime = find.ftLastWriteTime;
                     }
 
-                    // jmena co nemame v seznamu do nej pridame
+                    // add names that are missing from the list
                     if (GetBugReportNameIndexIgnoreExt(item.Name) == -1)
                         BugReports.Add(item);
                 }
@@ -485,7 +485,7 @@ BOOL GetBugReportNames()
         }
     }
 
-    // nejnovejsi report vybublame na nultou pozici
+    // bubble the newest report to index zero
     if (BugReports.Count > 1)
     {
         int index = GetBugReportNameIndexIgnoreExt(latestFilename);
@@ -497,13 +497,13 @@ BOOL GetBugReportNames()
         }
     }
 
-    // pokud jde o padacky z WERu, nemaji predponu s UID a verzi - prejmenujeme je
+    // if these are crash dumps from WER, they lack the UID/version prefix - rename them
     char uid[17];
     sprintf(uid, "%I64X", SalmonSharedMemory->UID);
     for (int i = 0; i < BugReports.Count; i++)
     {
         CBugReport* item = &BugReports[i];
-        // pokud soubor nezacina nasim UID, generoval ho nekdo jiny (WER) a polozku prejmenujeme
+        // if the file does not start with our UID, someone else (WER) generated it and we rename the item
         if (_strnicmp(item->Name, uid, strlen(uid)) != 0)
         {
             char fullOrgName[MAX_PATH];
@@ -514,7 +514,7 @@ BOOL GetBugReportNames()
 
             strcpy(fullOrgName, BugReportPath);
             strcat(fullOrgName, item->Name);
-            char* ext = strrchr(item->Name, '.'); // priponu dame az na konec
+            char* ext = strrchr(item->Name, '.'); // move the extension to the end
             if (ext != NULL)
                 strcpy(extName, ext);
             else
@@ -525,23 +525,23 @@ BOOL GetBugReportNames()
 
             strcpy(tmpName, item->Name);
             if (ext != NULL)
-                *strrchr(tmpName, '.') = 0; // uvnitr jmena ji vystrihnem
+                *strrchr(tmpName, '.') = 0; // cut it out inside the name
             strcat(tmpName, "-");
             strcat(tmpName, SalmonSharedMemory->BugName);
             GetReportBaseName(newName, sizeof(newName), BugReportPath, tmpName, SalmonSharedMemory->UID, lt);
             strcat(newName, extName);
 
-            // nove jmeno v poli
+            // new name in the array
             strcpy(item->Name, newName);
 
-            // nove jmeno na disku
+            // new name on disk
             strcpy(fullNewName, BugReportPath);
             strcat(fullNewName, newName);
             MoveFile(fullOrgName, fullNewName);
         }
     }
 
-    // pripona nas nezajima, ustrihneme ji
+    // the extension is irrelevant, trim it off
     for (int i = 0; i < BugReports.Count; i++)
     {
         CBugReport* item = &BugReports[i];
@@ -553,7 +553,7 @@ BOOL GetBugReportNames()
     return BugReports.Count > 0;
 }
 
-// ignoruje 'oversize' reporty, ktere konci -1 az -99
+// ignore 'oversize' reports that end with -1 to -99
 int GetUniqueBugReportCount()
 {
     TDirectArray<CBugReport> UniqueNames(1, 10);
@@ -562,7 +562,7 @@ int GetUniqueBugReportCount()
     {
         CBugReport* item = &BugReports[i];
         //    MessageBox(NULL, item->Name, item->Name, MB_OK);
-        // z nazvu orizneme koncove -1 az -99
+        // remove trailing -1 to -99 from the name
         strcpy(buff, item->Name);
         int len = (int)strlen(buff);
         if (len > 3)
@@ -572,7 +572,7 @@ int GetUniqueBugReportCount()
             if (buff[len - 3] == '-')
                 buff[len - 3] = 0;
         }
-        // pokud polozku nenajdeme v unikatnich nazvech, pridame ji tam
+        // if we do not find the item among unique names, add it there
         int j;
         for (j = 0; j < UniqueNames.Count; j++)
         {
@@ -601,7 +601,7 @@ BOOL SaveDescriptionAndEmail()
 
     BOOL ret = FALSE;
     char name[MAX_PATH];
-    sprintf(name, "%s%s.INF", BugReportPath, BugReports[0].Name); // budeme pracovat s nejnovejsim nazvem
+    sprintf(name, "%s%s.INF", BugReportPath, BugReports[0].Name); // work with the newest name
     HANDLE hFile = CreateFile(name, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hFile != INVALID_HANDLE_VALUE)
     {
@@ -748,7 +748,7 @@ BOOL GetStringSid(LPTSTR* stringSid)
         return FALSE;
     }
 
-    // volajici musi uvolnit vracenou pamet pomoci LocalFree, viz MSDN
+    // the caller must release the returned memory with LocalFree, see MSDN
     ConvertSidToStringSid(pTokenUser->User.Sid, stringSid);
 
     free(pTokenUser);
@@ -783,7 +783,7 @@ public:
     void Leave();
 };
 
-CMainDialogMutex MainDialogMutex; // mutex zajistujici, abychom uzivatelum ukazovali pro jednoho uzivatele (i na serveru) jen jeden dialog
+CMainDialogMutex MainDialogMutex; // mutex ensuring that we show only one dialog per user (even on the server)
 
 void CMainDialogMutex::Init()
 {
@@ -794,7 +794,7 @@ void CMainDialogMutex::Init()
     char buff[1000];
     if (sid == NULL)
     {
-        // chyba v ziskani SID -- pojedeme v nouzovem rezimu
+        // failed to obtain the SID -- fall back to a degraded mode
         _snprintf_s(buff, _TRUNCATE, "%s", SALMON_MAINDLG_MUTEX_NAME);
     }
     else
@@ -834,7 +834,7 @@ BOOL CMainDialogMutex::Enter()
         if (ret == WAIT_FAILED)
             TRACE_E("CMainDialogMutex::Enter(): WaitForSingleObject() failed!");
         if (ret == WAIT_TIMEOUT)
-            return FALSE; // je otevrene jine okno, nemuzeme se otevrit my
+            return FALSE; // another window is open, we cannot open ourselves
     }
     else
         TRACE_E("CMainDialogMutex::Enter(): the Mutex==NULL! Not initialized?");
@@ -927,16 +927,16 @@ void ChechForBugs(CSalmonSharedMemory* mem, const char* slgName)
         {
             if (GetBugReportNames())
             {
-                // potrebujeme zobrazit GUI, musime nacist SLG
+                // we need to display the GUI, we must load the SLG
                 if (LoadHLanguageVerbose(slgName))
                 {
                     if (GetUniqueBugReportCount() > 1)
                     {
-                        // reportu je vic, doptame se zda je mame poslat vsechny
+                        // if multiple reports exist, ask whether to send them all
                         int res = MessageBox(NULL, LoadStr(IDS_SALMON_MORE_REPORTS, HLanguage), LoadStr(IDS_SALMON_TITLE, HLanguage), MB_YESNO | MB_ICONQUESTION | MB_SETFOREGROUND);
                         ReportOldBugs = (res == IDYES);
                     }
-                    // nyni muzeme otevrit dialog
+                    // with that decision made we can open the dialog
                     OpenMainDialog(FALSE);
                 }
             }
@@ -945,7 +945,7 @@ void ChechForBugs(CSalmonSharedMemory* mem, const char* slgName)
     }
 
     ResetEvent(mem->CheckBugs);
-    SetEvent(mem->Done); // dame do Salamandera vedet, ze jsme si nazev SLG prevzali
+    SetEvent(mem->Done); // let Salamander know we have taken over the SLG name
 }
 
 //------------------------------------------------------------------------------------------------
@@ -965,14 +965,14 @@ LPARAM PostponedMsgLParam = 0;
 int WINAPI
 WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int cmdShow)
 {
-    // v 99% kdy Salamander nespadne pobezi salmon.exe nepozorovane na pozadi a mel by mit jen co nejmensi pametove / cpu naroky;
-    // proto odlozime nacitani SLG az na okamzik, kdy bude potreba neco zobrazovat (pad Salamandera)
+    // in 99% of cases when Salamander does not crash, salmon.exe will run unnoticed in the background and should
+    // consume as little memory/CPU as possible; therefore delay loading the SLG until something needs to be shown (a Salamander crash)
 
     SetTraceProcessName("Salmon");
     SetThreadNameInVCAndTrace("Main");
     TRACE_I("Begin");
 
-    // nechceme zadne kriticke chyby jako "no disk in drive A:"
+    // we do not want critical errors such as "no disk in drive A:"
     SetErrorMode(SetErrorMode(0) | SEM_FAILCRITICALERRORS);
 
     HInstance = hInstance;
@@ -980,11 +980,11 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int cmdShow
     Config.Load();
 
     char fileMappingName[SALMON_FILEMAPPIN_NAME_SIZE];
-    char slgName[MAX_PATH] = {0}; // nazev slg (napr "english.slg"), ktere se ma nacist do HLanguage; muze byt i prazdny retezec (potom se nacte nejaky default)
+    char slgName[MAX_PATH] = {0}; // name of the SLG (e.g. "english.slg") to load into HLanguage; can be empty (then a default is loaded)
 
     if (!ParseCommandLine(cmdLine, fileMappingName, slgName) || strlen(fileMappingName) == 0)
     {
-        HINSTANCE hLanguage = LoadSLG(slgName); // nactu default SLG, abychom mohli zobrazovat pripadne chyby
+        HINSTANCE hLanguage = LoadSLG(slgName); // load the default SLG so that we can display possible errors
         if (hLanguage != NULL)
             MessageBox(NULL, LoadStr(IDS_SALMON_WRONG_CMDLINE, hLanguage), LoadStr(IDS_SALMON_TITLE, hLanguage), MB_OK | MB_ICONEXCLAMATION | MB_SETFOREGROUND);
         return SALMON_RET_ERROR;
@@ -998,7 +998,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int cmdShow
     {
         if (fm != NULL)
             CloseHandle(fm);
-        HINSTANCE hLanguage = LoadSLG(slgName); // nactu default SLG, abychom mohli zobrazovat pripadne chyby
+        HINSTANCE hLanguage = LoadSLG(slgName); // load the default SLG so that we can display possible errors
         if (hLanguage != NULL)
             MessageBox(NULL, LoadStr(IDS_SALMON_WRONG_CMDLINE, hLanguage), LoadStr(IDS_SALMON_TITLE, hLanguage), MB_OK | MB_ICONEXCLAMATION | MB_SETFOREGROUND);
         return SALMON_RET_ERROR;
@@ -1008,7 +1008,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int cmdShow
     {
         UnmapViewOfFile(mem);
         CloseHandle(fm);
-        HINSTANCE hLanguage = LoadSLG(slgName); // nactu default SLG, abychom mohli zobrazovat pripadne chyby
+        HINSTANCE hLanguage = LoadSLG(slgName); // load the default SLG so that we can display possible errors
         if (hLanguage != NULL)
             MessageBox(NULL, LoadStr(IDS_SALMON_WRONG_CMDLINE, hLanguage), LoadStr(IDS_SALMON_TITLE, hLanguage), MB_OK | MB_ICONEXCLAMATION | MB_SETFOREGROUND);
         return SALMON_RET_ERROR;
@@ -1020,7 +1020,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int cmdShow
     arr[2] = mem->SetSLG;
     arr[3] = mem->CheckBugs;
 
-    SalmonSharedMemory = mem; // nastavime globalku, at to nemusime pasirovat pres parametry
+    SalmonSharedMemory = mem; // set the global pointer so we do not have to thread it through parameters
     strcpy(BugReportPath, mem->BugPath);
     if (BugReportPath[0] != 0 && *(BugReportPath + strlen(BugReportPath) - 1) != '\\')
         strcat(BugReportPath, "\\");
@@ -1028,19 +1028,19 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int cmdShow
     BOOL run = TRUE;
     while (run)
     {
-        // pockame na nektery z hlidanych eventu
+        // wait for one of the monitored events
         DWORD waitRet = MsgWaitForMultipleObjects(4, arr, FALSE, INFINITE, QS_ALLINPUT);
         switch (waitRet)
         {
         case WAIT_OBJECT_0 + 0: // sharedMemory->Process
         {
-            // parent proces prestal existovat, koncime take
+            // the parent process has terminated, so we exit as well
 
-            // pokud najdeme nejake dumpy, odbavime je - Salamander mohl padnou napriklad pri initu behem nacitani
-            // shell extensions a nestihl otevrit hlavni okno a zavolat nam ChechForBugs
-            // pripadne Salamander padnul jeste pred instalaci exception handleru a minidump zachytil WER, ktery
-            // mame nasmerovany do naseho bug report adresare (Vista+)
-            // dale mohl Salamander padnou tak, ze nezabral exception handler (typicky to delaji vadne shell extensions)
+            // if we find any dumps, process them - Salamander could have crashed during init while loading
+            // shell extensions and did not manage to open the main window and call CheckForBugs
+            // or Salamander crashed before the exception handler was installed and the minidump was captured by WER,
+            // which we have redirected to our bug report directory (Vista+)
+            // Salamander could also have crashed in a way that bypassed the exception handler (typically caused by faulty shell extensions)
             ChechForBugs(mem, slgName);
 
             run = FALSE;
@@ -1049,11 +1049,11 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int cmdShow
 
         case WAIT_OBJECT_0 + 1: // sharedMemory->Fire
         {
-            // parent proces po nas chce nagenerovani minidumpu
-            if (LoadHLanguageVerbose(slgName)) // potrebujeme zobrazit GUI, musime nacist SLG
+            // the parent process wants us to generate a minidump
+            if (LoadHLanguageVerbose(slgName)) // we need to display the GUI, we must load the SLG
             {
-                // pokud se nam podari mutex zabrat, pozdeji ho uvolnime; neprejeme si, aby
-                // behem naseho okna vyskakovala dalsi z nove spoustenych procesu
+                // if we manage to lock the mutex, release it later; we do not want
+                // additional processes started afterwards to pop up their windows during ours
                 BOOL leave = MainDialogMutex.Enter();
                 OpenMainDialog(TRUE);
                 if (leave)
@@ -1065,29 +1065,29 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int cmdShow
 
         case WAIT_OBJECT_0 + 2: // sharedMemory->SetSLG
         {
-            // Salamander nacetl "spravne" slg a dava nam vedet, at na nej take prejdeme
-            // ulozime si jeho nazev, aktivne zatim nema smysl ho cist
+            // Salamander loaded the “correct” SLG and lets us know we should switch to it
+            // store its name; actively reading it now makes no sense yet
             strcpy(slgName, mem->SLGName);
             ResetEvent(mem->SetSLG);
-            SetEvent(mem->Done); // dame do Salamandera vedet, ze jsme si nazev SLG prevzali
+            SetEvent(mem->Done); // let Salamander know we have taken over the SLG name
             break;
         }
 
         case WAIT_OBJECT_0 + 3: // sharedMemory->CheckBugs
         {
-            // Salamander nam dava vedet, ze ma otevrene hlavni okno a je cas provest kontrolu, zda
-            // v adresari s bug reporty nelezi nejake stare soubory, co bychom meli odeslat na server
+            // Salamander informs us that the main window is open and it is time to check whether
+            // there are old files in the bug report directory that we should send to the server
             ChechForBugs(mem, slgName);
             break;
         }
 
-        case WAIT_OBJECT_0 + 4: // dorazila zprava do message queue, vypumpujeme ji
+        case WAIT_OBJECT_0 + 4: // a message arrived in the message queue, pump it out
         {
-            // salmon.exe pouziva win32 subsystem u ktereho Windows ocekavaji message loop, kterou vsak nemame
-            // po spusteni salmon.exe se tak na 5s zobrazoval wait cursor, viz
-            // https://forum.altap.cz/viewtopic.php?f=16&t=5572
-            // abychom se ho zbavili, mame dve moznosti: prejit na "console" subsystem
-            // nebo pumpovat message loop, coz jsem zvolil jako hezci reseni (pri spusteni uzivatelem neukaze shell okno, jen msgbox)
+            // salmon.exe uses the Win32 subsystem where Windows expects a message loop, which we do not have.
+            // After starting salmon.exe a wait cursor was shown for about 5 seconds, see
+            // https://forum.altap.cz/viewtopic.php?f=16&t=5572.
+            // To get rid of it we had two options: switch to the "console" subsystem
+            // or pump the message loop, which I chose as the cleaner solution (when launched by the user it shows no shell window, only a message box).
             MSG msg;
             while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
             {

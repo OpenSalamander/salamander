@@ -58,7 +58,7 @@ typedef unsigned long ulong;   /* 32 bits or more */
 #define OS 0
 #define PATH_SEPARATORS "\\:/"
 #define PATH_CHAR '\\'
-#define MAXSFX 250000L // lukas: tohle jsem zvednul 10x
+#define MAXSFX 250000L // lukas: I increased this tenfold
 #define ARJ_SUFFIX ".ARJ"
 #define SWITCH_CHARS "-"
 #define FIX_PARITY(c) c &= ASCII_MASK
@@ -226,7 +226,7 @@ void decode_f(void);
 
 //***********************************************************************************
 //
-// moje "novinky"
+// my "updates"
 //
 
 #define INBUFSIZ (16 * 1024)

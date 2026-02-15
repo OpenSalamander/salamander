@@ -6,7 +6,7 @@
 class CVarString
 {
 public:
-    // tridy
+    // classes
     class CVariable
     {
     public:
@@ -24,7 +24,7 @@ public:
         CVariable* (*Alloc)();
     };
 
-    // metody
+    // methods
     CVarString();
 
     BOOL IsGood() { return Error == 0; }

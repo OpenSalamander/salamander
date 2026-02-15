@@ -2238,7 +2238,7 @@ CWiaWrap::AcquireImage(HWND parent, TDirectArray<HBITMAP>** extraScanImages, BOO
         return NULL;
 
     AcquiringImage = TRUE;
-    ShouldCloseParentAfterAcquiring = FALSE; // prevence proti necekanemu zavreni parenta (zatim o to neslo pozadat)
+    ShouldCloseParentAfterAcquiring = FALSE; // prevention against unexpected closing of the parent window (so far we did not need to request it)
 
     // Launch the get image dialog
 
@@ -2272,7 +2272,7 @@ CWiaWrap::AcquireImage(HWND parent, TDirectArray<HBITMAP>** extraScanImages, BOO
         if (ShouldCloseParentAfterAcquiring)
         {
             if (closeParent != NULL)
-                *closeParent = TRUE; // napr. nepocitat enablery, nezdrzovat
+                *closeParent = TRUE; // e.g. skip recalculating enablers, avoid delays
             ShouldCloseParentAfterAcquiring = FALSE;
         }
         return NULL; // Cancel
@@ -2367,7 +2367,7 @@ CWiaWrap::AcquireImage(HWND parent, TDirectArray<HBITMAP>** extraScanImages, BOO
     if (ShouldCloseParentAfterAcquiring)
     {
         if (closeParent != NULL)
-            *closeParent = TRUE; // napr. nepocitat enablery, nezdrzovat
+            *closeParent = TRUE; // e.g. skip recalculating enablers, avoid delays
         ShouldCloseParentAfterAcquiring = FALSE;
     }
     return hFirstBitmap;

@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -20,12 +21,12 @@ void WINAPI GetTextFromGeneralTextColumn()
         *TransferLen = 0;
 }
 
-SYSTEMTIME GlobalGeneralDateTimeStruct = {2002, 1, 0, 1, 0, 0, 0, 0}; // pomocna globalka, sloupce se plni jen v hl. threadu, zadne synchr. problemy
+SYSTEMTIME GlobalGeneralDateTimeStruct = {2002, 1, 0, 1, 0, 0, 0, 0}; // helper global variable, columns are populated only in the main thread, no sync problems
 
 void WINAPI GetTextFromGeneralDateColumn()
 {
     CFTPDate* date = (CFTPDate*)(((char*)((*TransferFileData)->PluginData)) + (*TransferActCustomData));
-    if (date->Day != 0) // nema se zobrazit ""
+    if (date->Day != 0) // should not display ""
     {
         GlobalGeneralDateTimeStruct.wDay = date->Day;
         GlobalGeneralDateTimeStruct.wMonth = date->Month;
@@ -46,7 +47,7 @@ void WINAPI GetTextFromGeneralDateColumn()
 void WINAPI GetTextFromGeneralTimeColumn()
 {
     CFTPTime* time = (CFTPTime*)(((char*)((*TransferFileData)->PluginData)) + (*TransferActCustomData));
-    if (time->Hour != 24) // nema se zobrazit ""
+    if (time->Hour != 24) // should not display ""
     {
         GlobalGeneralDateTimeStruct.wHour = time->Hour;
         GlobalGeneralDateTimeStruct.wMinute = time->Minute;
@@ -75,7 +76,7 @@ void WINAPI GetTextFromGeneralNumberColumn()
     }
     else
     {
-        if (int64Val != INT64_EMPTYNUMBER) // nema se zobrazit ""
+        if (int64Val != INT64_EMPTYNUMBER) // should not display ""
         {
             TransferBuffer[0] = '-';
             SalamanderGeneral->NumberToStr(TransferBuffer + 1, CQuadWord().SetUI64((unsigned __int64)(-int64Val)));
@@ -92,14 +93,14 @@ void CFTPListingPluginDataInterface::SetupView(BOOL leftPanel, CSalamanderViewAb
     view->GetTransferVariables(TransferFileData, TransferIsDir, TransferBuffer, TransferLen,
                                TransferRowData, TransferPluginDataIface, TransferActCustomData);
 
-    // sloupce upravujeme jen v detailed rezimu
+    // adjust columns only in detailed mode
     if (view->GetViewMode() == VIEW_MODE_DETAILED)
     {
-        BOOL sepExt = FALSE; // TRUE = samostatny sloupec "Extension", FALSE = pripona soucasti sloupce "Name"
+        BOOL sepExt = FALSE; // TRUE = standalone "Extension" column, FALSE = extension is part of the "Name" column
         if (view->GetColumnsCount() > 1 && view->GetColumn(1)->ID == COLUMN_ID_EXTENSION)
             sepExt = TRUE;
 
-        view->SetViewMode(VIEW_MODE_DETAILED, VALID_DATA_NONE); // zrusime ostatni sloupce, nechame jen sloupec Name
+        view->SetViewMode(VIEW_MODE_DETAILED, VALID_DATA_NONE); // drop the other columns, keep only the Name column
 
         char tmpName[COLUMN_NAME_MAX];
         char tmpDescr[COLUMN_DESCRIPTION_MAX];
@@ -109,7 +110,7 @@ void CFTPListingPluginDataInterface::SetupView(BOOL leftPanel, CSalamanderViewAb
         {
             CSrvTypeColumn* col = Columns->At(i);
 
-            if (col->Visible) // sloupec ukazeme jen je-li viditelny
+            if (col->Visible) // show the column only when it is visible
             {
                 char bufName[STC_NAME_MAX_SIZE];
                 char* colName;
@@ -133,12 +134,12 @@ void CFTPListingPluginDataInterface::SetupView(BOOL leftPanel, CSalamanderViewAb
 
                 switch (col->Type)
                 {
-                case stctName: // sloupec Name uz je vlozeny (nelze smazat), jen upravime jmeno+popis
+                case stctName: // the Name column is already inserted (cannot be removed), just tweak the name+description
                 {
                     lstrcpyn(tmpName, colName, COLUMN_NAME_MAX);
-                    SalamanderGeneral->AddStrToStr(tmpName, COLUMN_NAME_MAX, "a"); // dummy nazev "Ext" sloupce (nutne vzdy, protoze sloupec "Name" je v tuto chvili v panelu jediny)
+                    SalamanderGeneral->AddStrToStr(tmpName, COLUMN_NAME_MAX, "a"); // dummy title of the "Ext" column (always needed because the "Name" column is currently the only one in the panel)
                     lstrcpyn(tmpDescr, colDescr, COLUMN_DESCRIPTION_MAX);
-                    SalamanderGeneral->AddStrToStr(tmpDescr, COLUMN_DESCRIPTION_MAX, "a"); // dummy popis "Ext" sloupce (nutne vzdy, protoze sloupec "Name" je v tuto chvili v panelu jediny)
+                    SalamanderGeneral->AddStrToStr(tmpDescr, COLUMN_DESCRIPTION_MAX, "a"); // dummy description of the "Ext" column (always needed because the "Name" column is currently the only one in the panel)
                     view->SetColumnName(i, tmpName, tmpDescr);
 
                     CColumn* c = (CColumn*)(view->GetColumn(0));
@@ -148,13 +149,13 @@ void CFTPListingPluginDataInterface::SetupView(BOOL leftPanel, CSalamanderViewAb
 
                 case stctExt:
                 {
-                    if (sepExt) // user preferuje samostatny sloupec pro priponu
+                    if (sepExt) // user prefers a standalone column for the extension
                     {
                         view->InsertStandardColumn(colCount, COLUMN_ID_EXTENSION);
                         view->SetColumnName(colCount, colName, colDescr);
                         colCount++;
                     }
-                    else // user preferuje jmeno a priponu v jednom sloupci
+                    else // user prefers the name and extension in one column
                     {
                         strcpy(tmpName, view->GetColumn(0)->Name);
                         SalamanderGeneral->AddStrToStr(tmpName, COLUMN_NAME_MAX, colName);
@@ -297,12 +298,12 @@ BOOL CFTPListingPluginDataInterface::GetInfoLineContent(int panel, const CFileDa
     char num2[50];
     if (file == NULL)
     {
-        if (selectedFiles == 0 && selectedDirs == 0)                                  // Information Line pro prazdny panel
-            return FALSE;                                                             // text at vypise Salamander
-        if (BytesColumnOffset == -1 && BlocksColumnOffset == -1 || selectedDirs != 0) // neni velikost v bytech ani blocich nebo jsou oznacene i adresare
-            return FALSE;                                                             // pocty oznacenych souboru a adresaru at vypise Salamander
-        // jsou-li oznacene jen soubory (u adresaru velikost v blocich nezname)
-        // zjistime soucet poctu bloku
+        if (selectedFiles == 0 && selectedDirs == 0)                                  // Information Line for an empty panel
+            return FALSE;                                                             // let Salamander print the text
+        if (BytesColumnOffset == -1 && BlocksColumnOffset == -1 || selectedDirs != 0) // no size in bytes nor blocks or directories are selected too
+            return FALSE;                                                             // let Salamander print the counts of selected files and folders
+        // when only files are selected (block size is unknown for directories)
+        // sum up the number of blocks
         DWORD numOffset = (BytesColumnOffset != -1 ? BytesColumnOffset : BlocksColumnOffset);
         __int64 size = 0;
         int index = 0;
@@ -313,12 +314,12 @@ BOOL CFTPListingPluginDataInterface::GetInfoLineContent(int panel, const CFileDa
             if (s != INT64_EMPTYNUMBER)
                 size += s;
             else
-                return FALSE; // je-li ve sloupci prazdna hodnota, nelze napocitat celkovou velikost, proto koncime ... pocty oznacenych souboru a adresaru at vypise Salamander
+                return FALSE; // if the column contains an empty value we cannot compute the total size, so stop here and let Salamander print the counts of selected files and folders
         }
 
         CQuadWord params[2];
         params[0].SetUI64(size);
-        if (BytesColumnOffset == -1) // velikost v blocich
+        if (BytesColumnOffset == -1) // size in blocks
         {
             params[1].Set(selectedFiles, 0);
             SalamanderGeneral->NumberToStr(num1, params[0]);
@@ -326,7 +327,7 @@ BOOL CFTPListingPluginDataInterface::GetInfoLineContent(int panel, const CFileDa
             SalamanderGeneral->ExpandPluralString(buf, 1000, LoadStr(IDS_PLSTR_BLOCKSINSELFILES), 2, params);
             _snprintf_s(buffer, 1000, _TRUNCATE, buf, num1, num2);
         }
-        else // velikost v bytech
+        else // size in bytes
             SalamanderGeneral->ExpandPluralBytesFilesDirs(buffer, 1000, params[0], selectedFiles, 0, TRUE);
         return SalamanderGeneral->LookForSubTexts(buffer, hotTexts, &hotTextsCount);
     }
@@ -351,7 +352,7 @@ BOOL CFTPListingPluginDataInterface::GetInfoLineContent(int panel, const CFileDa
                 int fileNameFormat;
                 SalamanderGeneral->GetConfigParameter(SALCFG_FILENAMEFORMAT, &fileNameFormat,
                                                       sizeof(fileNameFormat), NULL);
-                char formatedFileName[MAX_PATH]; // CFileData::Name je omezeno na MAX_PATH-5 znaku
+                char formatedFileName[MAX_PATH]; // CFileData::Name is limited to MAX_PATH-5 characters
                 SalamanderGeneral->AlterFileName(formatedFileName, file->Name, fileNameFormat, 0, isDir);
 
                 beg = s;
@@ -362,7 +363,7 @@ BOOL CFTPListingPluginDataInterface::GetInfoLineContent(int panel, const CFileDa
                 break;
             }
 
-                // case stctExt: break;  // je soucasti "Name"
+                // case stctExt: break;  // it is part of "Name"
 
             case stctSize:
             {
@@ -413,7 +414,7 @@ BOOL CFTPListingPluginDataInterface::GetInfoLineContent(int panel, const CFileDa
                 break;
             }
 
-                // case stctType: break; // do infoline nedavame
+                // case stctType: break; // we do not include it in the info line
 
             case stctGeneralText:
             {
@@ -440,7 +441,7 @@ BOOL CFTPListingPluginDataInterface::GetInfoLineContent(int panel, const CFileDa
                     separate = TRUE;
                 beg = s;
                 CFTPDate* date = (CFTPDate*)(((char*)(file->PluginData)) + DataOffsets[i]);
-                if (date->Day != 0) // nema se zobrazit ""
+                if (date->Day != 0) // should not display ""
                 {
                     GlobalGeneralDateTimeStruct.wDay = date->Day;
                     GlobalGeneralDateTimeStruct.wMonth = date->Month;
@@ -466,7 +467,7 @@ BOOL CFTPListingPluginDataInterface::GetInfoLineContent(int panel, const CFileDa
                     separate = TRUE;
                 beg = s;
                 CFTPTime* time = (CFTPTime*)(((char*)(file->PluginData)) + DataOffsets[i]);
-                if (time->Hour != 24) // nema se zobrazit ""
+                if (time->Hour != 24) // should not display ""
                 {
                     GlobalGeneralDateTimeStruct.wHour = time->Hour;
                     GlobalGeneralDateTimeStruct.wMinute = time->Minute;
@@ -502,7 +503,7 @@ BOOL CFTPListingPluginDataInterface::GetInfoLineContent(int panel, const CFileDa
                 }
                 else
                 {
-                    if (int64Val != INT64_EMPTYNUMBER) // nema se zobrazit ""
+                    if (int64Val != INT64_EMPTYNUMBER) // should not display ""
                     {
                         buf[0] = '-';
                         SalamanderGeneral->NumberToStr(buf + 1, CQuadWord().SetUI64((unsigned __int64)(-int64Val)));
@@ -548,7 +549,7 @@ CFTPQueueItem* CreateItemForDeleteOperation(const CFileData* f, BOOL isDir, int 
     }
     else
     {
-        if (isDir) // adresar
+        if (isDir) // directory
         {
             isFile = FALSE;
             *type = fqitDeleteExploreDir;
@@ -556,7 +557,7 @@ CFTPQueueItem* CreateItemForDeleteOperation(const CFileData* f, BOOL isDir, int 
             if (item != NULL && !((CFTPQueueItemDelExplore*)item)->SetItemDelExplore(isTopLevelDir, f->Hidden))
                 *ok = FALSE;
         }
-        else // soubor
+        else // file
         {
             *type = fqitDeleteFile;
             item = new CFTPQueueItemDel;
@@ -615,21 +616,21 @@ BOOL CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int p
     if (ControlConnection == NULL)
     {
         TRACE_E("Unexpected situation in CPluginFSInterface::Delete(): ControlConnection == NULL!");
-        cancelOrError = TRUE; // preruseni operace
+        cancelOrError = TRUE; // cancel the operation
         return TRUE;
     }
 
-    // otestujeme jestli neni v panelu jen simple listing -> v tom pripade aspon zatim nic neumime
+    // check whether the panel shows only a simple listing -> in that case we cannot do anything yet
     CFTPListingPluginDataInterface* dataIface = (CFTPListingPluginDataInterface*)SalamanderGeneral->GetPanelPluginData(panel);
     if (dataIface != NULL && (void*)dataIface == (void*)&SimpleListPluginDataInterface)
     {
         SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_NEEDPARSEDLISTING),
                                          LoadStr(IDS_FTPPLUGINTITLE), MB_OK | MB_ICONINFORMATION);
-        cancelOrError = TRUE; // preruseni operace
+        cancelOrError = TRUE; // cancel the operation
         return TRUE;
     }
 
-    // priprava textu popisujiciho to, s cim pracujeme ("file "test.txt"", atp.)
+    // prepare the text describing what we are working with ("file "test.txt"", etc.)
     char subjectSrc[MAX_PATH + 100];
     SalamanderGeneral->GetCommonFSOperSourceDescr(subjectSrc, MAX_PATH + 100, panel,
                                                   selectedFiles, selectedDirs, NULL, FALSE, FALSE);
@@ -644,11 +645,11 @@ BOOL CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int p
 
         if (CnfrmFileDirDel)
         {
-            // sestaveni dotazu na mazani
+            // build the delete prompt
             char subject[MAX_PATH + 200];
             sprintf(subject, LoadStr(IDS_DELETEFROMFTP), subjectSrc);
 
-            // otevreme messagebox s dotazem na delete
+            // open a message box asking about the delete
             const char* Shell32DLLName = "shell32.dll";
             HINSTANCE Shell32DLL;
             Shell32DLL = HANDLES(LoadLibraryEx(Shell32DLLName, NULL, LOAD_LIBRARY_AS_DATAFILE));
@@ -660,26 +661,26 @@ BOOL CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int p
                 HANDLES(FreeLibrary(Shell32DLL));
             }
             INT_PTR res = CConfirmDeleteDlg(parent, subject, hIcon).Execute();
-            UpdateWindow(SalamanderGeneral->GetMainWindowHWND()); // aby na zbytek dialogu user nemusel koukat celou operaci
+            UpdateWindow(SalamanderGeneral->GetMainWindowHWND()); // so the user does not have to watch the rest of the dialog for the whole operation
             if (hIcon != NULL)
                 HANDLES(DestroyIcon(hIcon));
 
             if (res != IDOK)
             {
-                cancelOrError = TRUE; // preruseni operace
+                cancelOrError = TRUE; // cancel the operation
                 return TRUE;
             }
         }
     }
 
-    // ignorujeme hodnoty "Confirm on" z konfigurace (zakryva je pluginove nastaveni reseni situaci kolem Delete operace)
+    // ignore the "Confirm on" values from the configuration (they are overridden by the plugin settings for handling Delete situations)
     // BOOL ConfirmOnNotEmptyDirDelete, ConfirmOnSystemHiddenFileDelete, ConfirmOnSystemHiddenDirDelete;
     // SalamanderGeneral->GetConfigParameter(SALCFG_CNFRMNEDIRDEL, &ConfirmOnNotEmptyDirDelete, 4, NULL);
     // SalamanderGeneral->GetConfigParameter(SALCFG_CNFRMSHFILEDEL, &ConfirmOnSystemHiddenFileDelete, 4, NULL);
     // SalamanderGeneral->GetConfigParameter(SALCFG_CNFRMSHDIRDEL, &ConfirmOnSystemHiddenDirDelete, 4, NULL);
 
-    cancelOrError = TRUE; // predpripravime cancel/error operace
-    // zalozime objekt operace
+    cancelOrError = TRUE; // pre-set the cancel/error state of the operation
+    // create the operation object
     CFTPOperation* oper = new CFTPOperation;
     if (oper != NULL)
     {
@@ -690,7 +691,7 @@ BOOL CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int p
         if (cert)
             cert->Release();
         oper->SetCompressData(ControlConnection->GetCompressData());
-        if (ControlConnection->InitOperation(oper)) // inicializace spojeni se serverem podle "control connection"
+        if (ControlConnection->InitOperation(oper)) // initialize the server connection according to the "control connection"
         {
             oper->SetBasicData(dlgSubjectSrc, (AutodetectSrvType ? NULL : LastServerType));
             char path[2 * MAX_PATH];
@@ -706,30 +707,30 @@ BOOL CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int p
             {
                 BOOL ok = TRUE;
 
-                // sestavime frontu polozek operace
+                // build the queue of operation items
                 CFTPQueue* queue = new CFTPQueue;
                 if (queue != NULL)
                 {
                     if (dataIface != NULL && (void*)dataIface == (void*)&SimpleListPluginDataInterface)
-                        dataIface = NULL; // zajima nas jen data iface typu CFTPListingPluginDataInterface
-                    int rightsCol = -1;   // index sloupce s pravy (pouziva se pro detekci linku)
+                        dataIface = NULL; // we care only about a data interface of type CFTPListingPluginDataInterface
+                    int rightsCol = -1;   // column index with permissions (used to detect links)
                     if (dataIface != NULL)
                         rightsCol = dataIface->FindRightsColumn();
-                    const CFileData* f = NULL; // ukazatel na soubor/adresar/link v panelu, ktery se ma zpracovat
-                    BOOL isDir = FALSE;        // TRUE pokud 'f' je adresar
+                    const CFileData* f = NULL; // pointer to the file/directory/link in the panel to process
+                    BOOL isDir = FALSE;        // TRUE if 'f' is a directory
                     BOOL focused = (selectedFiles == 0 && selectedDirs == 0);
-                    int skippedItems = 0;  // pocet skipnutych polozek vlozenych do fronty
-                    int uiNeededItems = 0; // pocet user-input-needed polozek vlozenych do fronty
+                    int skippedItems = 0;  // number of skipped items inserted into the queue
+                    int uiNeededItems = 0; // number of user-input-needed items inserted into the queue
                     int index = 0;
                     while (1)
                     {
-                        // vyzvedneme data o zpracovavanem souboru
+                        // fetch the data about the processed file
                         if (focused)
                             f = SalamanderGeneral->GetPanelFocusedItem(panel, &isDir);
                         else
                             f = SalamanderGeneral->GetPanelSelectedItem(panel, &index, &isDir);
 
-                        // zpracujeme soubor/adresar/link
+                        // process the file/directory/link
                         if (f != NULL)
                         {
                             CFTPQueueItemType type;
@@ -743,7 +744,7 @@ BOOL CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int p
                             {
                                 if (ok)
                                     item->SetItem(-1, type, state, problemID, Path, f->Name);
-                                if (!ok || !queue->AddItem(item)) // pridani operace do fronty
+                                if (!ok || !queue->AddItem(item)) // add the operation to the queue
                                 {
                                     ok = FALSE;
                                     delete item;
@@ -755,7 +756,7 @@ BOOL CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int p
                                 ok = FALSE;
                             }
                         }
-                        // zjistime jestli ma cenu pokracovat (pokud neni chyba a existuje jeste nejaka dalsi oznacena polozka)
+                        // determine whether it makes sense to continue (if there is no error and another selected item still exists)
                         if (!ok || focused || f == NULL)
                             break;
                     }
@@ -773,24 +774,24 @@ BOOL CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int p
                     ok = FALSE;
                 }
 
-                if (ok) // mame naplnenou frontu s polozkama operace
+                if (ok) // the queue with the operation items is filled
                 {
-                    oper->SetQueue(queue); // nastavime operaci frontu jejich polozek
+                    oper->SetQueue(queue); // assign the queue of its items to the operation
                     queue = NULL;
                     if (Config.DeleteAddToQueue)
-                        cancelOrError = FALSE; // provest operaci pozdeji -> prozatim jde o uspech operace
-                    else                       // provest operaci v aktivni "control connection"
+                        cancelOrError = FALSE; // run the operation later -> for now the operation succeeds
+                    else                       // run the operation within the active "control connection"
                     {
-                        // otevreme okno s progresem operace a spustime operaci
+                        // open the operation progress window and start the operation
                         if (RunOperation(SalamanderGeneral->GetMsgBoxParent(), operUID, oper, NULL))
-                            cancelOrError = FALSE; // uspech operace
+                            cancelOrError = FALSE; // operation succeeded
                         else
                             ok = FALSE;
                     }
                 }
                 if (!ok)
                     FTPOperationsList.DeleteOperation(operUID, TRUE);
-                oper = NULL; // operace uz je pridana v poli, nebudeme ji uvolnovat pres 'delete' (viz nize)
+                oper = NULL; // the operation is already added to the array, do not release it via 'delete' (see below)
             }
         }
         if (oper != NULL)
@@ -811,15 +812,15 @@ CFTPQueueItem* CreateItemForCopyOrMoveOperation(const CFileData* f, BOOL isDir, 
     CFTPQueueItem* item = NULL;
     *type = fqitNone;
 
-    char *name, *ext;               // pomocne promenne pro auto-detect-transfer-mode
-    BOOL asciiTransferMode = FALSE; // pomocna promenna pro auto-detect-transfer-mode
-    char buffer[MAX_PATH];          // pomocna promenna pro auto-detect-transfer-mode
+    char *name, *ext;               // helper variables for auto-detect transfer mode
+    BOOL asciiTransferMode = FALSE; // helper variable for auto-detect transfer mode
+    char buffer[MAX_PATH];          // helper variable for auto-detect transfer mode
     BOOL isLink = rightsCol != -1 && IsUNIXLink(dataIface->GetStringFromColumn(*f, rightsCol));
-    if (isLink || !isDir) // pokud se pouziva 'asciiTransferMode', napocteme ho
+    if (isLink || !isDir) // when 'asciiTransferMode' is used, calculate it
     {
         if (transferMode == trmAutodetect)
         {
-            if (dataIface != NULL) // na VMS si musime nechat jmeno "oriznout" na zaklad (cislo verze pri porovnani s maskami vadi)
+            if (dataIface != NULL) // on VMS we must trim the name to the base (the version number gets in the way when matching masks)
                 dataIface->GetBasicName(*f, &name, &ext, buffer);
             else
             {
@@ -849,12 +850,12 @@ CFTPQueueItem* CreateItemForCopyOrMoveOperation(const CFileData* f, BOOL isDir, 
         item = new CFTPQueueItemCopyOrMove;
         if (item != NULL)
         {
-            ((CFTPQueueItemCopyOrMove*)item)->SetItemCopyOrMove(targetPath, targetName, CQuadWord(-1, -1) /* neznama velikost */, asciiTransferMode, TRUE, TGTFILESTATE_UNKNOWN, dateAndTimeValid, date, time);
+            ((CFTPQueueItemCopyOrMove*)item)->SetItemCopyOrMove(targetPath, targetName, CQuadWord(-1, -1) /* unknown size */, asciiTransferMode, TRUE, TGTFILESTATE_UNKNOWN, dateAndTimeValid, date, time);
         }
     }
     else
     {
-        if (isDir) // adresar
+        if (isDir) // directory
         {
             *type = copy ? fqitCopyExploreDir : fqitMoveExploreDir;
             item = new CFTPQueueItemCopyMoveExplore;
@@ -863,14 +864,14 @@ CFTPQueueItem* CreateItemForCopyOrMoveOperation(const CFileData* f, BOOL isDir, 
                 ((CFTPQueueItemCopyMoveExplore*)item)->SetItemCopyMoveExplore(targetPath, targetName, TGTDIRSTATE_UNKNOWN);
             }
         }
-        else // soubor
+        else // file
         {
             *type = copy ? fqitCopyFileOrFileLink : fqitMoveFileOrFileLink;
             item = new CFTPQueueItemCopyOrMove;
             if (dataIface != NULL && dataIface->GetSize(*f, *size, *sizeInBytes))
                 *totalSize += *size;
             else
-                size->Set(-1, -1); // nezname velikost souboru
+                size->Set(-1, -1); // unknown file size
 
             BOOL dateAndTimeValid = FALSE;
             CFTPDate date;
@@ -904,20 +905,20 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
     {
         TRACE_E("Unexpected situation in CPluginFSInterface::CopyOrMoveFromFS(): ControlConnection == NULL!");
         cancelOrHandlePath = TRUE;
-        return TRUE; // cancel operace
+        return TRUE; // cancel the operation
     }
 
-    // otestujeme jestli neni v panelu jen simple listing -> v tom pripade aspon zatim nic neumime
+    // check whether the panel shows only a simple listing -> in that case we cannot do anything yet
     CFTPListingPluginDataInterface* dataIface = (CFTPListingPluginDataInterface*)SalamanderGeneral->GetPanelPluginData(panel);
     if (dataIface != NULL && (void*)dataIface == (void*)&SimpleListPluginDataInterface)
     {
         SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_NEEDPARSEDLISTING),
                                          LoadStr(IDS_FTPPLUGINTITLE), MB_OK | MB_ICONINFORMATION);
-        cancelOrHandlePath = TRUE; // cancel operace
+        cancelOrHandlePath = TRUE; // cancel the operation
         return TRUE;
     }
 
-    // sestaveni nadpisu editline s cilem kopirovani/presouvani
+    // compose the edit line title with the copy/move destination
     char subjectSrc[MAX_PATH + 100];
     SalamanderGeneral->GetCommonFSOperSourceDescr(subjectSrc, MAX_PATH + 100, panel,
                                                   selectedFiles, selectedDirs, NULL, FALSE, FALSE);
@@ -927,10 +928,10 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
     char subject[MAX_PATH + 200];
     sprintf(subject, LoadStr(copy ? IDS_COPYFROMFTP : IDS_MOVEFROMFTP), subjectSrc);
 
-    if (mode == 1 && targetPath[0] != 0) // jen pri prvnim otevirani dialogu + je-li vybrana cilova cesta
+    if (mode == 1 && targetPath[0] != 0) // only when opening the dialog for the first time and the target path is selected
     {
         SalamanderGeneral->SalPathAppend(targetPath, "*.*", 2 * MAX_PATH);
-        SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_TARGET); // default akce = prace s cestou v cilovem panelu
+        SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_TARGET); // default action = work with the path in the target panel
     }
     if (mode != 3 && mode != 5)
     {
@@ -940,35 +941,35 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
         CCopyMoveDlg dlg(parent, targetPath, 2 * MAX_PATH, LoadStr(copy ? IDS_COPYTITLE : IDS_MOVETITLE),
                          subject, history, historyCount, copy ? IDD_COPYMOVEDLG : IDH_MOVEDLG);
         INT_PTR res = dlg.Execute();
-        UpdateWindow(SalamanderGeneral->GetMainWindowHWND()); // aby na zbytek dialogu user nemusel koukat celou operaci
+        UpdateWindow(SalamanderGeneral->GetMainWindowHWND()); // so the user does not have to watch the rest of the dialog for the whole operation
         if (res == IDOK)
         {
             cancelOrHandlePath = TRUE;
             operationMask = TRUE;
-            return FALSE; // nechame cestu rozanalyzovat std. zpusobem
+            return FALSE; // let the path be parsed in the standard way
         }
         else
         {
             cancelOrHandlePath = TRUE;
-            return TRUE; // cancel operace
+            return TRUE; // cancel the operation
         }
     }
     else
     {
-        const char* opMask = NULL; // maska operace
-        if (mode == 5)             // cil operace byl zadan pres drag&drop
+        const char* opMask = NULL; // operation mask
+        if (mode == 5)             // the operation target was provided via drag&drop
         {
-            // pokud jde o diskovou cestu, pak jen nastavime masku operace a pokracujeme (stejne s 'mode'==3);
-            // pokud jde o cestu do archivu nebo na FS, vyhodime error "not supported"
+            // if it is a disk path, just set the operation mask and continue (same as with 'mode'==3);
+            // if it is a path to an archive or another FS, report a "not supported" error
 
             BOOL ok = FALSE;
             opMask = "*.*";
             int type;
             char* secondPart;
             BOOL isDir;
-            if (targetPath[0] != 0 && targetPath[1] == ':' ||   // diskova cesta (C:\path)
-                targetPath[0] == '\\' && targetPath[1] == '\\') // UNC cesta (\\server\share\path)
-            {                                                   // pridame na konec backslash, aby slo k kazdem pripade o cestu (pri 'mode'==5 jde vzdy o cestu)
+            if (targetPath[0] != 0 && targetPath[1] == ':' ||   // disk path (C:\path)
+                targetPath[0] == '\\' && targetPath[1] == '\\') // UNC path (\\server\share\path)
+            {                                                   // add a trailing backslash so it is a path in every case ('mode'==5 always provides a path)
                 SalamanderGeneral->SalPathAddBackslash(targetPath, MAX_PATH);
             }
             lstrcpyn(subject, LoadStr(IDS_FTPERRORTITLE), MAX_PATH + 200);
@@ -980,7 +981,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
                 {
                 case PATH_TYPE_WINDOWS:
                 {
-                    if (*secondPart != 0) // asi by vubec nikdy nemelo nastat
+                    if (*secondPart != 0) // this should probably never happen
                     {
                         SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_DRAGDROP_TGTNOTEXIST),
                                                          LoadStr(IDS_FTPERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
@@ -990,7 +991,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
                     break;
                 }
 
-                default: // archiv nebo FS, jen ohlasime "not supported"
+                default: // archive or FS, just report "not supported"
                 {
                     SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_DRAGDROP_TGTARCORFS),
                                                      LoadStr(IDS_FTPERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
@@ -1005,15 +1006,15 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
             }
         }
 
-        // cesta je rozanalyzovana, zacneme operaci
+        // the path is parsed, start the operation
 
-        // ignorujeme hodnoty "Confirm on" z konfigurace (zakryva je nastaveni reseni problemu "soubor jiz existuje" - viz FILEALREADYEXISTS_XXX)
+        // ignore the "Confirm on" values from the configuration (they are overridden by the handling settings for "file already exists" - see FILEALREADYEXISTS_XXX)
         // BOOL ConfirmOnFileOverwrite, ConfirmOnDirOverwrite, ConfirmOnSystemHiddenFileOverwrite;
         // SalamanderGeneral->GetConfigParameter(SALCFG_CNFRMFILEOVER, &ConfirmOnFileOverwrite, 4, NULL);
         // SalamanderGeneral->GetConfigParameter(SALCFG_CNFRMDIROVER, &ConfirmOnDirOverwrite, 4, NULL);
         // SalamanderGeneral->GetConfigParameter(SALCFG_CNFRMSHFILEOVER, &ConfirmOnSystemHiddenFileOverwrite, 4, NULL);
 
-        // najdeme si masku operace (cilova cesta je v 'targetPath')
+        // find the operation mask (the target path is in 'targetPath')
         if (opMask == NULL)
         {
             opMask = targetPath;
@@ -1022,8 +1023,8 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
             opMask++;
         }
 
-        BOOL success = FALSE; // predpripravime cancel/error operace
-        // zalozime objekt operace
+        BOOL success = FALSE; // pre-set the cancel/error state of the operation
+        // create the operation object
         CFTPOperation* oper = new CFTPOperation;
         if (oper != NULL)
         {
@@ -1034,7 +1035,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
             if (cert)
                 cert->Release();
             oper->SetCompressData(ControlConnection->GetCompressData());
-            if (ControlConnection->InitOperation(oper)) // inicializace spojeni se serverem podle "control connection"
+            if (ControlConnection->InitOperation(oper)) // initialize the server connection according to the "control connection"
             {
                 oper->SetBasicData(dlgSubjectSrc, (AutodetectSrvType ? NULL : LastServerType));
                 char path[2 * MAX_PATH];
@@ -1063,40 +1064,40 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
                     {
                         BOOL ok = TRUE;
 
-                        // sestavime frontu polozek operace
+                        // build the queue of operation items
                         CFTPQueue* queue = new CFTPQueue;
                         if (queue != NULL)
                         {
                             if (dataIface != NULL && (void*)dataIface == (void*)&SimpleListPluginDataInterface)
-                                dataIface = NULL; // zajima nas jen data iface typu CFTPListingPluginDataInterface
-                            int rightsCol = -1;   // index sloupce s pravy (pouziva se pro detekci linku)
+                                dataIface = NULL; // we care only about a data interface of type CFTPListingPluginDataInterface
+                            int rightsCol = -1;   // column index with permissions (used to detect links)
                             if (dataIface != NULL)
                                 rightsCol = dataIface->FindRightsColumn();
-                            CQuadWord totalSize(0, 0); // celkova velikost (v bytech nebo blocich)
-                            CQuadWord size(-1, -1);    // promenna pro velikost aktualniho souboru
-                            BOOL sizeInBytes = TRUE;   // TRUE/FALSE = velikosti v bytech/blocich (na jednom listingu se nemuze stridat - viz CFTPListingPluginDataInterface::GetSize())
-                            const CFileData* f = NULL; // ukazatel na soubor/adresar/link v panelu, ktery se ma zpracovat
-                            BOOL isDir = FALSE;        // TRUE pokud 'f' je adresar
+                            CQuadWord totalSize(0, 0); // total size (in bytes or blocks)
+                            CQuadWord size(-1, -1);    // variable for the current file size
+                            BOOL sizeInBytes = TRUE;   // TRUE/FALSE = sizes in bytes/blocks (a single listing cannot mix them - see CFTPListingPluginDataInterface::GetSize())
+                            const CFileData* f = NULL; // pointer to the file/directory/link in the panel to process
+                            BOOL isDir = FALSE;        // TRUE if 'f' is a directory
                             BOOL focused = (selectedFiles == 0 && selectedDirs == 0);
                             BOOL donotUseOpMask = strcmp(opMask, "*.*") == 0 || strcmp(opMask, "*") == 0;
                             int index = 0;
                             while (1)
                             {
-                                // vyzvedneme data o zpracovavanem souboru
+                                // fetch the data about the processed file
                                 if (focused)
                                     f = SalamanderGeneral->GetPanelFocusedItem(panel, &isDir);
                                 else
                                     f = SalamanderGeneral->GetPanelSelectedItem(panel, &index, &isDir);
 
-                                // zpracujeme soubor/adresar/link
+                                // process the file/directory/link
                                 if (f != NULL)
                                 {
-                                    // vytvorime cilove jmeno podle operacni masky
+                                    // create the target name according to the operation mask
                                     char targetName[2 * MAX_PATH];
                                     if (!is_AS_400_QSYS_LIB_Path)
                                     {
                                         if (donotUseOpMask)
-                                            lstrcpyn(targetName, f->Name, 2 * MAX_PATH); // masky orezavaji '.' z koncu jmen, coz neni vzdy OK (slouci se napr. adresare "a.b" a "a.b.") - neni asi casty problem, proto aspon zatim resime jen takto provizorne
+                                            lstrcpyn(targetName, f->Name, 2 * MAX_PATH); // masks trim '.' from name ends, which is not always OK (e.g. directories "a.b" and "a.b." would merge) - probably rare, so for now we solve it only provisionally like this
                                         else
                                             SalamanderGeneral->MaskName(targetName, 2 * MAX_PATH, f->Name, opMask);
                                     }
@@ -1105,7 +1106,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
                                         char mbrName[MAX_PATH];
                                         FTPAS400CutFileNamePart(mbrName, f->Name);
                                         if (donotUseOpMask)
-                                            lstrcpyn(targetName, mbrName, 2 * MAX_PATH); // masky orezavaji '.' z koncu jmen, coz neni vzdy OK (slouci se napr. adresare "a.b" a "a.b.") - neni asi casty problem, proto aspon zatim resime jen takto provizorne
+                                            lstrcpyn(targetName, mbrName, 2 * MAX_PATH); // masks trim '.' from name ends, which is not always OK (e.g. directories "a.b" and "a.b." would merge) - probably rare, so for now we solve it only provisionally like this
                                         else
                                             SalamanderGeneral->MaskName(targetName, 2 * MAX_PATH, mbrName, opMask);
                                     }
@@ -1121,7 +1122,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
                                     {
                                         if (ok)
                                             item->SetItem(-1, type, sqisWaiting, ITEMPR_OK, Path, f->Name);
-                                        if (!ok || !queue->AddItem(item)) // pridani operace do fronty
+                                        if (!ok || !queue->AddItem(item)) // add the operation to the queue
                                         {
                                             ok = FALSE;
                                             delete item;
@@ -1133,7 +1134,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
                                         ok = FALSE;
                                     }
                                 }
-                                // zjistime jestli ma cenu pokracovat (pokud neni chyba a existuje jeste nejaka dalsi oznacena polozka)
+                                // determine whether it makes sense to continue (if there is no error and another selected item still exists)
                                 if (!ok || focused || f == NULL)
                                     break;
                             }
@@ -1154,24 +1155,24 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
                             ok = FALSE;
                         }
 
-                        if (ok) // mame naplnenou frontu s polozkama operace
+                        if (ok) // the queue with the operation items is filled
                         {
-                            oper->SetQueue(queue); // nastavime operaci frontu jejich polozek
+                            oper->SetQueue(queue); // assign the queue of its items to the operation
                             queue = NULL;
                             if (Config.DownloadAddToQueue)
-                                success = TRUE; // provest operaci pozdeji -> prozatim jde o uspech operace
-                            else                // provest operaci v aktivni "control connection"
+                                success = TRUE; // run the operation later -> for now the operation succeeds
+                            else                // run the operation within the active "control connection"
                             {
-                                // otevreme okno s progresem operace a spustime operaci
+                                // open the operation progress window and start the operation
                                 if (RunOperation(SalamanderGeneral->GetMsgBoxParent(), operUID, oper, dropTarget))
-                                    success = TRUE; // uspech operace
+                                    success = TRUE; // operation succeeded
                                 else
                                     ok = FALSE;
                             }
                         }
                         if (!ok)
                             FTPOperationsList.DeleteOperation(operUID, TRUE);
-                        oper = NULL; // operace uz je pridana v poli, nebudeme ji uvolnovat pres 'delete' (viz nize)
+                        oper = NULL; // the operation is already added to the array, do not release it via 'delete' (see below)
                     }
                 }
             }
@@ -1183,11 +1184,11 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
 
         if (success)
         {
-            cancelOrHandlePath = FALSE; // uspech operace
-            targetPath[0] = 0;          // zadne jmeno se nema fokusit (to by muselo byt copy uvnitr FTP serveru, coz zatim neumime)
+            cancelOrHandlePath = FALSE; // operation succeeded
+            targetPath[0] = 0;          // no name should receive focus (that would have to be a copy within the FTP server, which we do not support yet)
         }
         else
-            cancelOrHandlePath = TRUE; // cancel operace
+            cancelOrHandlePath = TRUE; // cancel the operation
         return TRUE;
     }
 }
@@ -1206,58 +1207,58 @@ CFTPQueueItem* CreateItemForChangeAttrsOperation(const CFileData* f, BOOL isDir,
     *type = fqitNone;
     *state = sqisWaiting;
     *problemID = ITEMPR_OK;
-    *skip = FALSE; // TRUE pokud se vubec nema soubor/adresar/link zpracovavat (nema vztah ke skippedItems)
+    *skip = FALSE; // TRUE if the file/directory/link should not be processed at all (unrelated to skippedItems)
     char* rights = NULL;
     if (rightsCol != -1 && IsUNIXLink((rights = dataIface->GetStringFromColumn(*f, rightsCol))))
     {                       // link
-        if (includeSubdirs) // zkusime jestli nejde o link na adresar (jinak neni co delat)
+        if (includeSubdirs) // try whether it is a link to a directory (otherwise there is nothing to do)
         {
             *type = fqitChAttrsResolveLink;
             item = new CFTPQueueItem;
         }
         else
-            *skip = TRUE; // linku atributy menit nejdou, takze neni co delat
+            *skip = TRUE; // attributes of a link cannot be changed, so there is nothing to do
     }
     else
     {
-        // vypocteme nova prava pro soubor/adresar
+        // calculate new permissions for the file/directory
         DWORD actAttr;
         DWORD attrDiff = 0;
         BOOL attrErr = FALSE;
         if (rightsCol != -1 && GetAttrsFromUNIXRights(&actAttr, &attrDiff, rights))
         {
             DWORD changeMask = (~attrAndMask | attrOrMask) & 0777;
-            if ((!includeSubdirs || !isDir) &&                                                   // takto nelze optimalizovat "explore dir"
-                (attrDiff & changeMask) == 0 &&                                                  // nemame zmenit zadny neznamy atribut
-                (actAttr & changeMask) == (((actAttr & attrAndMask) | attrOrMask) & changeMask)) // nemame zmenit zadny znamy atribut
-            {                                                                                    // neni co delat (zadna zmena atributu)
+            if ((!includeSubdirs || !isDir) &&                                                   // cannot optimize "explore dir" this way
+                (attrDiff & changeMask) == 0 &&                                                  // no unknown attribute should be changed
+                (actAttr & changeMask) == (((actAttr & attrAndMask) | attrOrMask) & changeMask)) // no known attribute should be changed
+            {                                                                                    // nothing to do (no attribute change)
                 *skip = TRUE;
             }
             else
             {
                 if (((attrDiff & attrAndMask) & attrOrMask) != (attrDiff & attrAndMask))
-                {                        // prusvih, neznamy atribut ma byt zachovan, coz neumime
-                    actAttr |= attrDiff; // dame tam aspon 'x', kdyz uz neumime 's' nebo 't' nebo co to tam ted vlastne je (viz UNIXova prava)
+                {                        // problem: an unknown attribute should be preserved, which we cannot do
+                    actAttr |= attrDiff; // set at least 'x' when we cannot handle 's' or 't' or whatever it currently is (see UNIX permissions)
                     attrErr = TRUE;
                 }
                 actAttr = (actAttr & attrAndMask) | attrOrMask;
             }
         }
-        else // nezname prava
+        else // unknown permissions
         {
-            actAttr = attrOrMask; // predpokladame zadna prava (actAttr==0)
+            actAttr = attrOrMask; // assume no permissions (actAttr==0)
             if (((~attrAndMask | attrOrMask) & 0777) != 0777)
-            { // prusvih, nezname prava a nejaky atribut ma byt zachovan (nezname jeho hodnotu -> neumime ho zachovat)
+            { // problem: permissions are unknown and some attribute should be preserved (we do not know its value -> cannot keep it)
                 attrErr = TRUE;
             }
         }
 
         if (!*skip)
         {
-            if (isDir) // adresar
+            if (isDir) // directory
             {
-                if (includeSubdirs) // zmena atributu se provede i na obsahu adresare
-                {                   // pripadna chyba prav se ohlasi az do vlozene polozky fqitChAttrsDir
+                if (includeSubdirs) // apply the attribute change to the directory contents as well
+                {                   // any permissions error will be reported by the inserted fqitChAttrsDir item
                     *type = fqitChAttrsExploreDir;
                     item = new CFTPQueueItemChAttrExplore;
                     if (item != NULL)
@@ -1266,7 +1267,7 @@ CFTPQueueItem* CreateItemForChangeAttrsOperation(const CFileData* f, BOOL isDir,
                 else
                 {
                     if (selDirs)
-                    { // bez podadresaru se uloha redukuje na nastaveni atributu vybraneho adresare
+                    { // without subdirectories the task reduces to setting attributes of the selected directory
                         if (attrErr)
                         {
                             switch (operationsUnknownAttrs)
@@ -1293,7 +1294,7 @@ CFTPQueueItem* CreateItemForChangeAttrsOperation(const CFileData* f, BOOL isDir,
                             }
                         }
                         if (!attrErr)
-                            rights = NULL; // je-li vse OK, neni duvod si pamatovat puvodni prava
+                            rights = NULL; // if everything is OK there is no reason to remember the original permissions
                         *type = fqitChAttrsDir;
                         item = new CFTPQueueItemChAttrDir;
                         if (item != NULL)
@@ -1305,10 +1306,10 @@ CFTPQueueItem* CreateItemForChangeAttrsOperation(const CFileData* f, BOOL isDir,
                         }
                     }
                     else
-                        *skip = TRUE; // na adresare pry nemame sahat
+                        *skip = TRUE; // we are not supposed to touch directories
                 }
             }
-            else // soubor
+            else // file
             {
                 if (selFiles)
                 {
@@ -1338,14 +1339,14 @@ CFTPQueueItem* CreateItemForChangeAttrsOperation(const CFileData* f, BOOL isDir,
                         }
                     }
                     if (!attrErr)
-                        rights = NULL; // je-li vse OK, neni duvod si pamatovat puvodni prava
+                        rights = NULL; // if everything is OK there is no reason to remember the original permissions
                     *type = fqitChAttrsFile;
                     item = new CFTPQueueItemChAttr;
                     if (item != NULL)
                         ((CFTPQueueItemChAttr*)item)->SetItemChAttr((WORD)actAttr, rights, attrErr);
                 }
                 else
-                    *skip = TRUE; // na soubory pry nemame sahat
+                    *skip = TRUE; // we are not supposed to touch files
             }
         }
     }

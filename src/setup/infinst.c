@@ -21,8 +21,8 @@ HINSTANCE HInstance = NULL;
 BOOL SfxDirectoriesValid = FALSE;
 char SfxDirectories[7][MAX_PATH];
 
-HWND SfxDlg = NULL;    // okno SFX7ZIP, ktere spustilo tento setup.exe (pred ukoncenim setup.exe toto okno nechame ukazat a aktivovat, aby se z nej mohly spoustet instalovane readme a Salam)
-BOOL RunBySfx = FALSE; // TRUE = setup.exe byl spusten s parametrem /runbysfx
+HWND SfxDlg = NULL;    // SFX7ZIP window that launched this setup.exe (before setup.exe exits we show and activate it so the installed readme and Salam can be launched from it)
+BOOL RunBySfx = FALSE; // TRUE if setup.exe was started with the /runbysfx parameter
 
 BYTE LowerCase[256];
 
@@ -48,7 +48,7 @@ char* LoadStr(int resID)
 {
     int size;
     char* ret;
-    static char buffer[5000]; // buffer pro mnoho stringu
+    static char buffer[5000]; // buffer for many strings
     static char* act = buffer;
 
     //  HANDLES(EnterCriticalSection(&__StrCriticalSection.cs));
@@ -99,7 +99,7 @@ void CenterWindow(HWND hWindow)
 //
 // InsertProgramName
 //
-// nahradi v str %s za jmeno onstalovane aplikace
+// replaces %s in str with the name of the installed application
 //
 
 void InsertProgramName(char* str, BOOL version)
@@ -165,7 +165,7 @@ BOOL LoadTextFile(const char* fileName, char* buff, int buffMax)
 // EnableExceptionsOn64
 //
 
-// Chceme se dozvedet o SEH Exceptions i na x64 Windows 7 SP1 a dal
+// We want to be notified about SEH exceptions even on x64 Windows 7 SP1 and later
 // http://blog.paulbetts.org/index.php/2010/07/20/the-case-of-the-disappearing-onload-exception-user-mode-callback-exceptions-in-x64/
 // http://connect.microsoft.com/VisualStudio/feedback/details/550944/hardware-exceptions-on-x64-machines-are-silently-caught-in-wndproc-messages
 // http://support.microsoft.com/kb/976038
@@ -218,7 +218,7 @@ char* strrchr(const char* string, int c)
     return NULL;
 }
 
-void* mini_memcpy(void* out, const void* in, int len); // definovano v remove casti kodu
+void* mini_memcpy(void* out, const void* in, int len); // defined in the remove part of the code
 
 BOOL GetStringFromDLL(const char* dllName, int resID, char* buff, int buffSize)
 {
@@ -247,7 +247,7 @@ void ExpandPath(char* path)
         char srcVal = *(src + 1);
         if (*src == '%' &&
             (srcVal == '%' ||
-             srcVal == '@' && mui == NULL || // na radku muze byt pouze jedna MUI znacka, konci s koncem radku
+             srcVal == '@' && mui == NULL || // only one MUI marker per line, ending with the end of the line
              srcVal >= '0' && srcVal <= '9' ||
              srcVal >= 'A' && srcVal <= 'Z' ||
              srcVal >= 'a' && srcVal <= 'z'))
@@ -261,7 +261,7 @@ void ExpandPath(char* path)
             else if (srcVal == '@')
             {
                 p = "@";
-                mui = dst; // ulozim MUI znacku, pro pripadnou finalne expanzi
+                mui = dst; // store the MUI marker for potential final expansion
             }
             else if (srcVal >= '0' && srcVal <= '9')
             {
@@ -325,12 +325,12 @@ void ExpandPath(char* path)
 
 // ****************************************************************************
 //
-// GetCmdLine - ziskani parametru z prikazove radky
+// GetCmdLine - extract parameters from the command line
 //
-// buf + size - buffer pro parametry
-// argv - pole ukazatelu, ktere se naplni parametry
-// argCount - na vstupu je to pocet prvku v argv, na vystupu obsahuje pocet parametru
-// cmdLine - parametry prikazove radky (bez jmena .exe souboru - z WinMain)
+// buf + size - buffer for the parameters
+// argv - array of pointers that will be filled with the parameters
+// argCount - on input the number of elements in argv; on output contains the number of parameters
+// cmdLine - command-line parameters (without the .exe file name - from WinMain)
 
 BOOL GetCmdLine(char* buf, int size, char* argv[], int* argCount, const char* cmdLine)
 {
@@ -343,7 +343,7 @@ BOOL GetCmdLine(char* buf, int size, char* argv[], int* argCount, const char* cm
 
     while (*s != 0)
     {
-        if (*s == '"') // pocatecni '"'
+        if (*s == '"') // opening '"'
         {
             if (*++s == 0)
                 break;
@@ -355,13 +355,13 @@ BOOL GetCmdLine(char* buf, int size, char* argv[], int* argCount, const char* cm
         if (*argCount < space && c < end)
             argv[(*argCount)++] = c;
         else
-            return c < end; // chyba jen pokud je maly buffer
+            return c < end; // failure only if the buffer is too small
 
         while (1)
         {
             if (*s == term || *s == 0)
             {
-                if (*s == 0 || term != '"' || *++s != '"') // neni-li to nahrada "" -> "
+                if (*s == 0 || term != '"' || *++s != '"') // unless this is the escaped "" -> " sequence
                 {
                     if (*s != 0)
                         s++;
@@ -424,7 +424,7 @@ BOOL LoadSfxDirectories(HANDLE* fileOut, BOOL openAndPrepareForWrite)
                 {
                     while (s < end && *s != '\r' && *s != '\n')
                         s++;
-                    *s++ = 0; // s == end je jeste platny znak
+                    *s++ = 0; // s == end is still a valid position
 
                     if (CompareString(LOCALE_USER_DEFAULT, NORM_IGNORECASE, line, -1, "end-of-params", -1) == CSTR_EQUAL &&
                         index == 7)
@@ -498,7 +498,7 @@ DWORD Hex2DWORD(const char* s)
             else if (*s >= 'A' && *s <= 'F')
                 ret = ret * 16 + 10 + (*s++ - 'A');
             else
-                break; // neni hexa, koncime
+                break; // not hexadecimal, stop
         }
     }
     return ret;
@@ -508,14 +508,14 @@ BOOL GetCmdLineOptions(const char* cmdLine)
 {
     char buf[MAX_PATH];
     char* argv[30];
-    int p = 30; // pocet prvku pole argv
+    int p = 30; // number of elements in the argv array
     BOOL ret = TRUE;
     if (GetCmdLine(buf, MAX_PATH, argv, &p, cmdLine))
     {
         int i;
         for (i = 0; i < p; i++)
         {
-            if ((StrICmp(argv[i], "-runbysfx") == 0 || StrICmp(argv[i], "/runbysfx") == 0)) // setup.exe spusteny z neeskalovaneho sfx7zip.exe; prevezmeme cesty z neeskalovaneho procesu a pripadne si v neeskalovanem procesu nechame otevrit Readme a spustit Salamandera
+            if ((StrICmp(argv[i], "-runbysfx") == 0 || StrICmp(argv[i], "/runbysfx") == 0)) // setup.exe started from the non-elevated sfx7zip.exe; take paths from the non-elevated process and optionally have it open the Readme and launch Salamander
             {
                 if (i + 1 < p)
                 {
@@ -525,7 +525,7 @@ BOOL GetCmdLineOptions(const char* cmdLine)
                     i++;
                     continue;
                 }
-                // jinak chyba
+                // otherwise it's an error
             }
 
             if (StrICmp(argv[i], "-s") == 0 || StrICmp(argv[i], "/s") == 0) // silent mode
@@ -542,7 +542,7 @@ BOOL GetCmdLineOptions(const char* cmdLine)
                     i++;
                     continue;
                 }
-                // jinak chyba
+                // otherwise it's an error
             }
 
             if (StrICmp(argv[i], "-id") == 0 || StrICmp(argv[i], "/id") == 0) // desktop icon
@@ -553,7 +553,7 @@ BOOL GetCmdLineOptions(const char* cmdLine)
                     i++;
                     continue;
                 }
-                // jinak chyba
+                // otherwise it's an error
             }
 
             if (StrICmp(argv[i], "-is") == 0 || StrICmp(argv[i], "/is") == 0) // start menu icon
@@ -564,7 +564,7 @@ BOOL GetCmdLineOptions(const char* cmdLine)
                     i++;
                     continue;
                 }
-                // jinak chyba
+                // otherwise it's an error
             }
 
             //if (StrICmp(argv[i], "-it") == 0 || StrICmp(argv[i], "/it") == 0) // pin to taskbar
@@ -575,7 +575,7 @@ BOOL GetCmdLineOptions(const char* cmdLine)
             //    i++;
             //    continue;
             //  }
-            //  // jinak chyba
+            //  // otherwise it's an error
             //}
 
             if (StrICmp(argv[i], "-au") == 0 || StrICmp(argv[i], "/au") == 0) // all users
@@ -586,7 +586,7 @@ BOOL GetCmdLineOptions(const char* cmdLine)
                     i++;
                     continue;
                 }
-                // jinak chyba
+                // otherwise it's an error
             }
 
             ret = FALSE;
@@ -606,7 +606,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdS
 
     EnableExceptionsOn64();
 
-    // nechceme zadne kriticke chyby jako "no disk in drive A:"
+    // we do not want critical errors such as "no disk in drive A:"
     SetErrorMode(SetErrorMode(0) | SEM_FAILCRITICALERRORS);
 
     for (int i = 0; i < 256; i++)
@@ -649,14 +649,14 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdS
 
     if (SetupInfo.Silent)
     {
-        GetFoldersPaths();                // na zaklade SetupInfo.CommonFolders vytahneme foldery
-        if (FindOutIfThisIsUpgrade(NULL)) // vraci FALSE jen pokud neni mozne pokracovat (upgradovani novejsi verze neumime)
+        GetFoldersPaths();                // based on SetupInfo.CommonFolders extract the folders
+        if (FindOutIfThisIsUpgrade(NULL)) // returns FALSE only if it cannot continue (we cannot upgrade a newer version)
         {
             BOOL cont = TRUE;
             if (!SetupInfo.UninstallExistingVersion)
                 DeleteAutoImportConfigMarker(SetupInfo.AutoImportConfig);
             else
-                cont = DoUninstall(NULL, NULL); // vraci FALSE pokud musi dojit k Restartu nebo odinstalace selhala
+                cont = DoUninstall(NULL, NULL); // returns FALSE if a restart is required or the uninstall failed
             if (cont)
                 DoInstallation();
         }

@@ -32,7 +32,7 @@
 
 #include "regexp.h"
 
-//    - moznost definice svych vlastnich hlasek, jinak staci nakopirovat do kodu
+//    - option to define your own messages; otherwise just copy it into the code
 
 const char* RegExpErrorText(CRegExpErrors err)
 {
@@ -88,7 +88,7 @@ const char* RegExpErrorText(CRegExpErrors err)
 //*****************************************************************************
 //*****************************************************************************
 //
-// puvodni regexp.cpp
+// original regexp.cpp
 //
 //*****************************************************************************
 //*****************************************************************************
@@ -1274,7 +1274,7 @@ BOOL CRegExp::RegExec(char* string, int length, int offset, BOOL separateThread)
 
         /* Mark beginning of line for ^ . */
         RegBol = string;
-        // ulozime si ukazatel za posledni znak radky
+        // store the pointer past the last character of the line
         RegEol = string + length;
 
         /* If there is a "must appear" string, look for it. */

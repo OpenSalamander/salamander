@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -24,7 +25,7 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
         BOOL lookForNewWork = FALSE;
         BOOL handleShouldStop = FALSE;
         BOOL quitCmdWasSent = FALSE;
-        if (SubState == fwssNone) // pred zahajenim praci testneme ShouldStop
+        if (SubState == fwssNone) // before starting work we test ShouldStop
         {
             SubState = fwssWorkStartWork;
 
@@ -37,17 +38,17 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
             }
 
             if (ShouldStop)
-                handleShouldStop = TRUE; // postActivate = TRUE je zbytecne, v ShouldStop==TRUE worker nezacne makat
+                handleShouldStop = TRUE; // postActivate = TRUE is unnecessary; with ShouldStop==TRUE the worker will not start working
             else
-                goto SKIP_TEST; // at se zbytecne neblbne s postActivate (optimalizace)
+                goto SKIP_TEST; // so we do not needlessly fiddle with postActivate (optimization)
         }
         else
         {
         SKIP_TEST:
             if (CurItem != NULL) // "always true"
             {
-                // pokud polozka pouziva data-connection (listovani i download), osetrime
-                // zpravy o otevreni a zavreni data-connectiony
+                // if the item uses a data connection (listing and download), handle
+                // messages about opening and closing the data connection
                 if ((event == fweDataConConnectedToServer || event == fweDataConConnectionClosed) &&
                     (CurItem->Type == fqitDeleteExploreDir ||
                      CurItem->Type == fqitCopyExploreDir ||
@@ -66,10 +67,10 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                             if (WorkerDataCon != NULL)
                             {
                                 HANDLES(LeaveCriticalSection(&WorkerCritSect));
-                                // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-                                // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
-                                if (WorkerDataCon->IsConnected())       // zavreme "data connection", system se pokusi o "graceful"
-                                    WorkerDataCon->CloseSocketEx(NULL); // shutdown (nedozvime se o vysledku)
+                                // since we are already inside CSocketsThread::CritSect, this call
+                                // is also possible from CSocket::SocketCritSect (no risk of deadlock)
+                                if (WorkerDataCon->IsConnected())       // close the data connection; the system will try a "graceful"
+                                    WorkerDataCon->CloseSocketEx(NULL); // shutdown (we will not learn the result)
                                 WorkerDataCon->FreeFlushData();
                                 DeleteSocket(WorkerDataCon);
                                 WorkerDataCon = NULL;
@@ -79,7 +80,7 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                         }
                         else
                         {
-                            if (ShouldBePaused && WorkerDataCon != NULL) // pausnuti tesne pred zacatkem prenosu dat
+                            if (ShouldBePaused && WorkerDataCon != NULL) // pausing right before the data transfer starts
                             {
                                 HANDLES(LeaveCriticalSection(&WorkerCritSect));
                                 WorkerDataCon->UpdatePauseStatus(TRUE);
@@ -91,7 +92,7 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                             else
                                 TRACE_E("CFTPWorker::HandleEventInWorkingState(): fweDataConConnectedToServer: WorkerDataConState is not wdcsWaitingForConnection!");
 
-                            // zahajime periodicky update zobrazovani statusu "downloadu" (listing + copy & move z FTP na disk)
+                            // start periodic updates of the "download" status display (listing + copy & move from FTP to disk)
                             if (StatusType != wstNone)
                                 TRACE_E("CFTPWorker::HandleEventInWorkingState(): fweDataConConnectedToServer: unexpected situation: StatusType != wstNone");
                             StatusType = wstDownloadStatus;
@@ -101,10 +102,10 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                             StatusTotal.Set(-1, -1);
                             LastTimeEstimation = -1;
 
-                            // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                            // mozne i ze sekce CSocket::SocketCritSect a CFTPWorker::WorkerCritSect (nehrozi dead-lock)
-                            SocketsThread->AddTimer(Msg, UID, GetTickCount() + 100 /* prvni update statusu udelame "okamzite" */,
-                                                    WORKER_STATUSUPDATETIMID, NULL); // chybu ignorujeme, max. se nebude updatit status
+                            // since we are already inside CSocketsThread::CritSect, this call
+                            // is also possible from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of deadlock)
+                            SocketsThread->AddTimer(Msg, UID, GetTickCount() + 100 /* perform the first status update "immediately" */,
+                                                    WORKER_STATUSUPDATETIMID, NULL); // ignore the error; at worst the status will not update
                         }
                     }
                     else // fweDataConConnectionClosed
@@ -120,7 +121,7 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                             BOOL dataConDecomprErrorOccured;
                             WorkerDataCon->GetError(&dataConError, &dataConLowMem, NULL, &dataConNoDataTransTimeout,
                                                     &dataSSLErrorOccured, &dataConDecomprErrorOccured);
-                            //BOOL dataConDecomprMissingStreamEnd = WorkerDataCon->GetDecomprMissingStreamEnd(); // bohuzel tenhle test je nepruchozi, napr. Serv-U 7 a 8 proste stream neukoncuje
+                            //BOOL dataConDecomprMissingStreamEnd = WorkerDataCon->GetDecomprMissingStreamEnd(); // unfortunately this test cannot be used; for example, Serv-U 7 and 8 simply do not terminate the stream
                             BOOL allDataFlushed = usesFlushData ? WorkerDataCon->AreAllDataFlushed(TRUE) : TRUE;
                             HANDLES(EnterCriticalSection(&WorkerCritSect));
                             DataConAllDataTransferred = !dataConDecomprErrorOccured && /*!dataConDecomprMissingStreamEnd &&*/
@@ -134,29 +135,29 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                             WorkerDataConState = wdcsTransferFinished;
                         else
                         {
-                            if (WorkerDataConState != wdcsWaitingForConnection) // chodi i pri chybe connectu data-connectiony
+                            if (WorkerDataConState != wdcsWaitingForConnection) // this also arrives when the data-connection connect fails
                                 TRACE_E("CFTPWorker::HandleEventInWorkingState(): fweDataConConnectionClosed: WorkerDataConState is not wdcsTransferingData!");
                         }
                     }
                 }
-                // pokud polozka pouziva upload data-connection (upload souboru), osetrime
-                // zpravy o otevreni a zavreni upload data-connectiony
+                // if the item uses an upload data connection (uploading files), handle
+                // messages about opening and closing the upload data connection
                 if ((event == fweUplDataConConnectedToServer || event == fweUplDataConConnectionClosed) &&
                     (CurItem->Type == fqitUploadCopyFile || CurItem->Type == fqitUploadMoveFile))
                 {
                     if (event == fweUplDataConConnectedToServer)
                     {
-                        if (ResumingFileOnServer) // APPE zpusobil otevreni data-connectiony -> APPE je nejspis funkcni (implementovany)
+                        if (ResumingFileOnServer) // APPE caused the data connection to open -> APPE is probably functional (implemented)
                             Oper->SetDataConWasOpenedForAppendCmd(TRUE);
                         if (ShouldStop)
                         {
                             if (WorkerUploadDataCon != NULL)
                             {
                                 HANDLES(LeaveCriticalSection(&WorkerCritSect));
-                                // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-                                // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
-                                if (WorkerUploadDataCon->IsConnected())       // zavreme "data connection", system se pokusi o "graceful"
-                                    WorkerUploadDataCon->CloseSocketEx(NULL); // shutdown (nedozvime se o vysledku)
+                                // since we are already inside CSocketsThread::CritSect, this call
+                                // is also possible from CSocket::SocketCritSect (no risk of deadlock)
+                                if (WorkerUploadDataCon->IsConnected())       // close the data connection; the system will try a "graceful"
+                                    WorkerUploadDataCon->CloseSocketEx(NULL); // shutdown (we will not learn the result)
                                 WorkerUploadDataCon->FreeBufferedData();
                                 DeleteSocket(WorkerUploadDataCon);
                                 WorkerUploadDataCon = NULL;
@@ -166,7 +167,7 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                         }
                         else
                         {
-                            if (ShouldBePaused && WorkerUploadDataCon != NULL) // pausnuti tesne pred zacatkem prenosu dat
+                            if (ShouldBePaused && WorkerUploadDataCon != NULL) // pausing right before the data transfer starts
                             {
                                 HANDLES(LeaveCriticalSection(&WorkerCritSect));
                                 WorkerUploadDataCon->UpdatePauseStatus(TRUE);
@@ -178,7 +179,7 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                             else
                                 TRACE_E("CFTPWorker::HandleEventInWorkingState(): fweUplDataConConnectedToServer: WorkerDataConState is not wdcsWaitingForConnection!");
 
-                            // zahajime periodicky update zobrazovani statusu "uploadu"
+                            // start periodic updates of the "upload" status display
                             if (StatusType != wstNone)
                                 TRACE_E("CFTPWorker::HandleEventInWorkingState(): fweUplDataConConnectedToServer: unexpected situation: StatusType != wstNone");
                             StatusType = wstUploadStatus;
@@ -188,10 +189,10 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                             StatusTotal.Set(-1, -1);
                             LastTimeEstimation = -1;
 
-                            // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                            // mozne i ze sekce CSocket::SocketCritSect a CFTPWorker::WorkerCritSect (nehrozi dead-lock)
-                            SocketsThread->AddTimer(Msg, UID, GetTickCount() + 100 /* prvni update statusu udelame "okamzite" */,
-                                                    WORKER_STATUSUPDATETIMID, NULL); // chybu ignorujeme, max. se nebude updatit status
+                            // since we are already inside CSocketsThread::CritSect, this call
+                            // is also possible from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of deadlock)
+                            SocketsThread->AddTimer(Msg, UID, GetTickCount() + 100 /* we perform the first status update "immediately" */,
+                                                    WORKER_STATUSUPDATETIMID, NULL); // ignore the error; at worst the status will not update
                         }
                     }
                     else // fweUplDataConConnectionClosed
@@ -207,13 +208,13 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                             WorkerDataConState = wdcsTransferFinished;
                         else
                         {
-                            if (WorkerDataConState != wdcsWaitingForConnection) // chodi i pri chybe connectu data-connectiony
+                            if (WorkerDataConState != wdcsWaitingForConnection) // also arrives when the data connection connect fails
                                 TRACE_E("CFTPWorker::HandleEventInWorkingState(): fweUplDataConConnectionClosed: WorkerDataConState is not wdcsTransferingData!");
                         }
                     }
                 }
                 if (event == fweWorkerShouldPause || event == fweWorkerShouldResume)
-                { // pausnuti/resumnuti behem prenosu dat
+                { // pausing/resuming during a data transfer
                     BOOL pause = ShouldBePaused;
                     if (WorkerDataCon != NULL)
                     {
@@ -230,12 +231,12 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                 }
                 switch (CurItem->Type)
                 {
-                case fqitDeleteExploreDir:      // explore adresare pro delete (pozn.: linky na adresare mazeme jako celek, ucel operace se splni a nesmaze se nic "navic") (objekt tridy CFTPQueueItemDelExplore)
-                case fqitCopyExploreDir:        // explore adresare nebo linku na adresar pro kopirovani (objekt tridy CFTPQueueItemCopyMoveExplore)
-                case fqitMoveExploreDir:        // explore adresare pro presun (po dokonceni smaze adresar) (objekt tridy CFTPQueueItemCopyMoveExplore)
-                case fqitMoveExploreDirLink:    // explore linku na adresar pro presun (po dokonceni smaze link na adresar) (objekt tridy CFTPQueueItemCopyMoveExplore)
-                case fqitChAttrsExploreDir:     // explore adresare pro zmenu atributu (prida i polozku pro zmenu atributu adresare) (objekt tridy CFTPQueueItemChAttrExplore)
-                case fqitChAttrsExploreDirLink: // explore linku na adresar pro zmenu atributu (objekt tridy CFTPQueueItem)
+                case fqitDeleteExploreDir:      // explore a directory for delete (note: directory links are deleted as a whole, the operation's purpose is fulfilled and nothing extra is removed) (CFTPQueueItemDelExplore object)
+                case fqitCopyExploreDir:        // explore a directory or directory link for copying (CFTPQueueItemCopyMoveExplore object)
+                case fqitMoveExploreDir:        // explore a directory for move (deletes the directory after completion) (CFTPQueueItemCopyMoveExplore object)
+                case fqitMoveExploreDirLink:    // explore a directory link for move (deletes the directory link after completion) (CFTPQueueItemCopyMoveExplore object)
+                case fqitChAttrsExploreDir:     // explore a directory for changing attributes (also adds an item for changing directory attributes) (CFTPQueueItemChAttrExplore object)
+                case fqitChAttrsExploreDirLink: // explore a directory link for changing attributes (CFTPQueueItem object)
                 {
                     HandleEventInWorkingState2(event, sendQuitCmd, postActivate, reportWorkerChange, buf, errBuf, host,
                                                cmdLen, sendCmd, reply, replySize, replyCode, ftpPath, errText,
@@ -243,42 +244,42 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                     break;
                 }
 
-                case fqitUploadCopyExploreDir: // upload: explore adresare pro kopirovani (objekt tridy CFTPQueueItemCopyMoveUploadExplore)
-                case fqitUploadMoveExploreDir: // upload: explore adresare pro presun (po dokonceni smaze adresar) (objekt tridy CFTPQueueItemCopyMoveUploadExplore)
+                case fqitUploadCopyExploreDir: // upload: explore a directory for copying (CFTPQueueItemCopyMoveUploadExplore object)
+                case fqitUploadMoveExploreDir: // upload: explore a directory for move (deletes the directory after completion) (CFTPQueueItemCopyMoveUploadExplore object)
                 {
-                    if (UploadDirGetTgtPathListing) // listujeme cilovou cestu do cache listingu pro upload
+                    if (UploadDirGetTgtPathListing) // list the target path into the upload listing cache
                     {
                         BOOL listingNotAccessible;
                         HandleEventInWorkingState2(event, sendQuitCmd, postActivate, reportWorkerChange, buf, errBuf, host,
                                                    cmdLen, sendCmd, reply, replySize, replyCode, ftpPath, errText,
                                                    conClosedRetryItem, lookForNewWork, handleShouldStop, &listingNotAccessible);
                         if (handleShouldStop || conClosedRetryItem || lookForNewWork)
-                        { // listovani selhalo, informujeme o tom pripadne cekajici workery
+                        { // listing failed, inform any waiting workers about it
                             UploadDirGetTgtPathListing = FALSE;
                             Oper->GetUserHostPort(userBuf, hostBuf, &port);
                             CFTPServerPathType pathType = Oper->GetFTPServerPathType(((CFTPQueueItemCopyMoveUploadExplore*)CurItem)->TgtPath);
                             BOOL listingOKErrorIgnored;
-                            // volani UploadListingCache.ListingFailed() je mozne jen proto, ze jsme v sekci CSocketsThread::CritSect
+                            // calling UploadListingCache.ListingFailed() is possible only because we are inside CSocketsThread::CritSect
                             UploadListingCache.ListingFailed(userBuf, hostBuf, port,
                                                              ((CFTPQueueItemCopyMoveUploadExplore*)CurItem)->TgtPath,
                                                              pathType, listingNotAccessible, NULL, &listingOKErrorIgnored);
-                            if (listingOKErrorIgnored && lookForNewWork) // na polozce je hlasena chyba listovani, tuto chybu stornujeme
+                            if (listingOKErrorIgnored && lookForNewWork) // a listing error is reported on the item; cancel this error
                             {
                                 lookForNewWork = FALSE;
                                 Queue->UpdateItemState(CurItem, sqisProcessing, ITEMPR_OK, NO_ERROR, NULL, Oper);
                                 StatusType = wstNone;
                                 SubState = fwssWorkStartWork;
-                                Oper->ReportItemChange(CurItem->UID); // pozadame o redraw polozky (pro pripad, ze uz se chyba stihla ukazat -- temer nemozne)
-                                postActivate = TRUE;                  // impulz pro pokracovani v praci
-                                reportWorkerChange = TRUE;            // potrebujeme schovat pripadny progres tahani listingu
+                                Oper->ReportItemChange(CurItem->UID); // request a redraw of the item (in case the error already appeared -- almost impossible)
+                                postActivate = TRUE;                  // impulse to continue working
+                                reportWorkerChange = TRUE;            // we need to hide any progress of fetching the listing
 
-                                // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                                // mozne i ze sekce CSocket::SocketCritSect a CFTPWorker::WorkerCritSect (nehrozi dead-lock)
-                                SocketsThread->DeleteTimer(UID, WORKER_STATUSUPDATETIMID); // zrusime pripadny timer z predchozi prace
+                                // since we are already inside CSocketsThread::CritSect, this call
+                                // is also possible from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of deadlock)
+                                SocketsThread->DeleteTimer(UID, WORKER_STATUSUPDATETIMID); // cancel any timer from previous work
                             }
                         }
                     }
-                    else // ostatni prace jde sem
+                    else // the remaining work goes here
                     {
                         HandleEventInWorkingState4(event, sendQuitCmd, postActivate, reportWorkerChange, buf, errBuf, host,
                                                    cmdLen, sendCmd, reply, replySize, replyCode, ftpPath, errText,
@@ -287,16 +288,16 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                     break;
                 }
 
-                case fqitCopyResolveLink:    // kopirovani: zjisteni jestli jde o link na soubor nebo adresar (objekt tridy CFTPQueueItemCopyOrMove)
-                case fqitMoveResolveLink:    // presun: zjisteni jestli jde o link na soubor nebo adresar (objekt tridy CFTPQueueItemCopyOrMove)
-                case fqitChAttrsResolveLink: // zmena atributu: zjisteni jestli jde o link na adresar (objekt tridy CFTPQueueItem)
+                case fqitCopyResolveLink:    // copy: detect whether this is a link to a file or directory (CFTPQueueItemCopyOrMove object)
+                case fqitMoveResolveLink:    // move: detect whether this is a link to a file or directory (CFTPQueueItemCopyOrMove object)
+                case fqitChAttrsResolveLink: // change attributes: detect whether this is a link to a directory (CFTPQueueItem object)
                 {
                     switch (SubState)
                     {
-                    case fwssWorkStartWork: // zjistime na jakou cestu se mame prepnout na serveru a posleme CWD
+                    case fwssWorkStartWork: // determine which path we should switch to on the server and send CWD
                     {
-                        // pred resolvem linku pro change-attr musime vynulovat merak rychlosti (rychlost resolve
-                        // se nemeri) - dojde k zobrazeni "(unknown)" time-left v operation-dialogu
+                        // before resolving the link for change-attr we must reset the speed meter (the resolve speed
+                        // is not measured) - this results in "(unknown)" time-left being shown in the operation dialog
                         if (CurItem->Type == fqitChAttrsResolveLink)
                         {
                             Oper->GetGlobalTransferSpeedMeter()->Clear();
@@ -306,31 +307,31 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                         lstrcpyn(ftpPath, CurItem->Path, FTP_MAX_PATH);
                         CFTPServerPathType type = Oper->GetFTPServerPathType(ftpPath);
                         if (FTPPathAppend(type, ftpPath, FTP_MAX_PATH, CurItem->Name, TRUE))
-                        { // mame cestu, posleme na server CWD do zkoumaneho adresare
+                        { // we have the path, send CWD to the examined directory on the server
                             _snprintf_s(errText, _TRUNCATE, LoadStr(IDS_LOGMSGRESOLVINGLINK), ftpPath);
                             Logs.LogMessage(LogUID, errText, -1, TRUE);
 
                             PrepareFTPCommand(buf, 200 + FTP_MAX_PATH, errBuf, 50 + FTP_MAX_PATH,
-                                              ftpcmdChangeWorkingPath, &cmdLen, ftpPath); // nemuze nahlasit chybu
+                                              ftpcmdChangeWorkingPath, &cmdLen, ftpPath); // cannot report an error
                             sendCmd = TRUE;
                             SubState = fwssWorkResLnkWaitForCWDRes;
 
-                            HaveWorkingPath = FALSE; // menime aktualni pracovni cestu na serveru
+                            HaveWorkingPath = FALSE; // we are changing the current working path on the server
                         }
-                        else // chyba syntaxe cesty nebo by vznikla moc dlouha cesta
+                        else // path syntax error or the path would become too long
                         {
-                            // chyba na polozce, zapiseme do ni tento stav
+                            // error on the item; write this state into it
                             Queue->UpdateItemState(CurItem, sqisFailed, ITEMPR_INVALIDPATHTOLINK, NO_ERROR, NULL, Oper);
                             lookForNewWork = TRUE;
                         }
                         break;
                     }
 
-                    case fwssWorkResLnkWaitForCWDRes: // resolve-link: cekame na vysledek "CWD" (zmena cesty do zkoumaneho linku - podari-li se, je to link na adresar)
+                    case fwssWorkResLnkWaitForCWDRes: // resolve-link: waiting for the "CWD" result (changing to the examined link - if it succeeds, it is a directory link)
                     {
                         switch (event)
                         {
-                        // case fweCmdInfoReceived:  // "1xx" odpovedi ignorujeme (jen se pisou do Logu)
+                        // case fweCmdInfoReceived:  // ignore "1xx" replies (only written to the Log)
                         case fweCmdReplyReceived:
                         {
                             BOOL chAttrsResolve = CurItem->Type == fqitChAttrsResolveLink;
@@ -339,12 +340,12 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                             {
                                 BOOL err = FALSE;
                                 CFTPQueueItem* item = NULL;
-                                if (FTP_DIGIT_1(replyCode) == FTP_D1_SUCCESS) // uspech, link vede do adresare
+                                if (FTP_DIGIT_1(replyCode) == FTP_D1_SUCCESS) // success, the link points to a directory
                                 {
                                     switch (CurItem->Type)
                                     {
-                                    case fqitCopyResolveLink: // kopirovani: zjisteni jestli jde o link na soubor nebo adresar (objekt tridy CFTPQueueItemCopyOrMove)
-                                    case fqitMoveResolveLink: // presun: zjisteni jestli jde o link na soubor nebo adresar (objekt tridy CFTPQueueItemCopyOrMove)
+                                    case fqitCopyResolveLink: // copy: detect whether this is a link to a file or directory (CFTPQueueItemCopyOrMove object)
+                                    case fqitMoveResolveLink: // move: detect whether this is a link to a file or directory (CFTPQueueItemCopyOrMove object)
                                     {
                                         item = new CFTPQueueItemCopyMoveExplore;
                                         if (item != NULL)
@@ -362,7 +363,7 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                                         break;
                                     }
 
-                                    case fqitChAttrsResolveLink: // zmena atributu: zjisteni jestli jde o link na adresar (objekt tridy CFTPQueueItem)
+                                    case fqitChAttrsResolveLink: // change attributes: detect whether this is a link to a directory (CFTPQueueItem object)
                                     {
                                         item = new CFTPQueueItem;
                                         if (item != NULL)
@@ -379,12 +380,12 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                                     }
                                     }
                                 }
-                                else // permanentni chyba, link vede nejspis na soubor (ale muze jit i o "550 Permission denied", bohuzel 550 je i "550 Not a directory", takze nerozlisitelne...)
+                                else // permanent error; the link probably points to a file (but it could also be "550 Permission denied", unfortunately 550 is also "550 Not a directory", so it is indistinguishable...)
                                 {
                                     switch (CurItem->Type)
                                     {
-                                    case fqitCopyResolveLink: // kopirovani: zjisteni jestli jde o link na soubor nebo adresar (objekt tridy CFTPQueueItemCopyOrMove)
-                                    case fqitMoveResolveLink: // presun: zjisteni jestli jde o link na soubor nebo adresar (objekt tridy CFTPQueueItemCopyOrMove)
+                                    case fqitCopyResolveLink: // copy: detect whether this is a link to a file or directory (CFTPQueueItemCopyOrMove object)
+                                    case fqitMoveResolveLink: // move: detect whether this is a link to a file or directory (CFTPQueueItemCopyOrMove object)
                                     {
                                         item = new CFTPQueueItemCopyOrMove;
                                         if (item != NULL)
@@ -402,45 +403,45 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                                         break;
                                     }
 
-                                        // case fqitChAttrsResolveLink:     // zmena atributu: zjisteni jestli jde o link na adresar (objekt tridy CFTPQueueItem)
-                                        // zmena atributu u linku je nesmysl, takze resolve polozku proste jen smazeme z fronty
+                                        // case fqitChAttrsResolveLink:     // change attributes: detect whether this is a link to a directory (CFTPQueueItem object)
+                                        // changing attributes on a link makes no sense, so simply remove the resolve item from the queue
                                     }
                                 }
 
                                 if (!err)
                                 {
-                                    // probiha vice operaci nad daty, ostatni musi pockat az se provedou vsechny,
-                                    // jinak budou pracovat s nekonzistentnimi daty
+                                    // multiple operations are running on the data; the others must wait for all of them to finish,
+                                    // otherwise they would work with inconsistent data
                                     Queue->LockForMoreOperations();
 
                                     int curItemParent = CurItem->ParentUID;
                                     if (Queue->ReplaceItemWithListOfItems(CurItem->UID, &item, item != NULL ? 1 : 0))
-                                    { // CurItem uz je dealokovana, byla nahrazena polozkou 'item' (nebo jen smazana)
+                                    { // CurItem has already been deallocated; it was replaced with the 'item' entry (or just removed)
                                         CurItem = NULL;
                                         BOOL itemAdded = item != NULL;
-                                        item = NULL; // aby nedoslo k dealokaci 'item', uz je pridana ve fronte
+                                        item = NULL; // prevent 'item' from being deallocated; it has already been added to the queue
 
-                                        // polozce/operaci CurItem->ParentUID snizime o jednu NotDone (za CurItem ve stavu
-                                        // sqisProcessing) a pokud pridavame polozku 'item', zvysime NotDone o jednu (nova
-                                        // polozka je ve stavu sqisWaiting, zbyla tri pocitadla jsou nulova)
+                                        // for the item/operation CurItem->ParentUID decrease NotDone by one (for CurItem in the state
+                                        // sqisProcessing) and if we add the 'item' entry, increase NotDone by one (the new
+                                        // entry is in state sqisWaiting; the other three counters are zero)
                                         Oper->AddToItemOrOperationCounters(curItemParent, (itemAdded ? 1 : 0) - 1, 0, 0, 0, FALSE);
 
                                         Queue->UnlockForMoreOperations();
 
-                                        Oper->ReportItemChange(-1); // pozadame o redraw vsech polozek
+                                        Oper->ReportItemChange(-1); // request a redraw of all items
 
-                                        // tento worker si bude muset najit dalsi praci
-                                        State = fwsLookingForWork; // neni nutne volat Oper->OperationStatusMaybeChanged(), nemeni stav operace (neni paused a nebude ani po teto zmene)
+                                        // this worker will have to look for more work
+                                        State = fwsLookingForWork; // no need to call Oper->OperationStatusMaybeChanged(); it does not change the operation state (it is not paused and will not be after this change)
                                         SubState = fwssNone;
-                                        postActivate = TRUE; // postneme si aktivaci pro dalsi stav workera
+                                        postActivate = TRUE; // post an activation for the worker's next state
                                         reportWorkerChange = TRUE;
 
-                                        // neni potreba informovat zadneho spiciho workera, ze se objevila nova prace, protoze
-                                        // tento worker ('this') si bude hledat dalsi praci a tedy najde pripadnou novou polozku
+                                        // no need to inform any sleeping worker that new work appeared, because
+                                        // this worker will look for more work and therefore find any new entry
                                     }
                                     else
                                     {
-                                        err = TRUE; // nedostatek pameti -> vepiseme chybu do polozky
+                                        err = TRUE; // not enough memory -> record the error in the item
 
                                         Queue->UnlockForMoreOperations();
                                     }
@@ -448,25 +449,25 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
 
                                 if (err)
                                 {
-                                    // chyba na polozce, zapiseme do ni tento stav
+                                    // error on the item; write this state into it
                                     Queue->UpdateItemState(CurItem, sqisFailed, ITEMPR_LOWMEM, NO_ERROR, NULL, Oper);
                                     lookForNewWork = TRUE;
                                 }
                                 if (item != NULL)
                                     delete item;
                             }
-                            else // nastala nejaka chyba, vypiseme ji uzivateli a jdeme zpracovat dalsi polozku fronty
+                            else // an error occurred; report it to the user and process the next queue item
                             {
                                 CopyStr(errText, 200 + FTP_MAX_PATH, reply, replySize);
                                 Queue->UpdateItemState(CurItem, sqisFailed, ITEMPR_UNABLETORESOLVELNK, NO_ERROR,
-                                                       SalamanderGeneral->DupStr(errText) /* low memory = chyba bude bez detailu */,
+                                                       SalamanderGeneral->DupStr(errText) /* low memory = the error will have no details */,
                                                        Oper);
                                 lookForNewWork = TRUE;
                             }
 
-                            // pokud jde o resolve linku pro change-attr, musime vynulovat merak rychlosti
-                            // (rychlost resolvu se nemeri, tento okamzik tedy muze byt zacatek mereni rychlosti operaci
-                            // mazani/change-attr), aby se korektne ukazoval time-left v operation-dialogu
+                            // if this is a resolve link for change-attr, we must reset the speed meter
+                            // (resolve speed is not measured, so this moment can be the beginning of measuring the speed of delete/change-attr operations)
+                            // to ensure the time-left in the operation dialog displays correctly
                             if (chAttrsResolve)
                             {
                                 Oper->GetGlobalTransferSpeedMeter()->Clear();
@@ -475,7 +476,7 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                             break;
                         }
 
-                        case fweCmdConClosed: // spojeni se zavrelo/timeoutlo (popis viz ErrorDescr) -> zkusime ho obnovit
+                        case fweCmdConClosed: // the connection closed/timed out (see ErrorDescr for details) -> try to restore it
                         {
                             conClosedRetryItem = TRUE;
                             break;
@@ -487,15 +488,15 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                     break;
                 }
 
-                case fqitDeleteLink:         // delete pro link (objekt tridy CFTPQueueItemDel)
-                case fqitDeleteFile:         // delete pro soubor (objekt tridy CFTPQueueItemDel)
-                case fqitDeleteDir:          // delete pro adresar (objekt tridy CFTPQueueItemDir)
-                case fqitCopyFileOrFileLink: // kopirovani souboru nebo linku na soubor (objekt tridy CFTPQueueItemCopyOrMove)
-                case fqitMoveFileOrFileLink: // presun souboru nebo linku na soubor (objekt tridy CFTPQueueItemCopyOrMove)
-                case fqitMoveDeleteDir:      // smazani adresare po presunuti jeho obsahu (objekt tridy CFTPQueueItemDir)
-                case fqitMoveDeleteDirLink:  // smazani linku na adresar po presunuti jeho obsahu (objekt tridy CFTPQueueItemDir)
-                case fqitChAttrsFile:        // zmena atributu souboru (pozn.: u linku se atributy menit nedaji) (objekt tridy CFTPQueueItemChAttr)
-                case fqitChAttrsDir:         // zmena atributu adresare (objekt tridy CFTPQueueItemChAttrDir)
+                case fqitDeleteLink:         // delete for a link (CFTPQueueItemDel object)
+                case fqitDeleteFile:         // delete for a file (CFTPQueueItemDel object)
+                case fqitDeleteDir:          // delete for a directory (CFTPQueueItemDir object)
+                case fqitCopyFileOrFileLink: // copy a file or a link to a file (CFTPQueueItemCopyOrMove object)
+                case fqitMoveFileOrFileLink: // move a file or a link to a file (CFTPQueueItemCopyOrMove object)
+                case fqitMoveDeleteDir:      // delete a directory after moving its contents (CFTPQueueItemDir object)
+                case fqitMoveDeleteDirLink:  // delete a link to a directory after moving its contents (CFTPQueueItemDir object)
+                case fqitChAttrsFile:        // change file attributes (note: link attributes cannot be changed) (CFTPQueueItemChAttr object)
+                case fqitChAttrsDir:         // change directory attributes (CFTPQueueItemChAttrDir object)
                 {
                     while (1)
                     {
@@ -511,27 +512,27 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                         {
                             switch (SubState)
                             {
-                            case fwssWorkStartWork: // prepneme se na serveru do adresare polozky (pokud v nem uz nejsme)
+                            case fwssWorkStartWork: // switch to the item's directory on the server (if we are not there yet)
                             {
-                                // nejprve zalogujeme jakou praci jdeme delat
+                                // first log which work we are about to perform
                                 int opDescrResID = 0;
                                 const char* tgtName = NULL;
                                 switch (CurItem->Type)
                                 {
                                 case fqitDeleteLink:
                                     opDescrResID = IDS_LOGMSGDELETELINK;
-                                    break; // delete pro link (objekt tridy CFTPQueueItemDel)
+                                    break; // delete for a link (CFTPQueueItemDel object)
                                 case fqitDeleteFile:
                                     opDescrResID = IDS_LOGMSGDELETEFILE;
-                                    break; // delete pro soubor (objekt tridy CFTPQueueItemDel)
+                                    break; // delete for a file (CFTPQueueItemDel object)
 
-                                case fqitMoveDeleteDir: // smazani adresare po presunuti jeho obsahu (objekt tridy CFTPQueueItemDir)
+                                case fqitMoveDeleteDir: // delete a directory after moving its contents (CFTPQueueItemDir object)
                                 case fqitDeleteDir:
                                     opDescrResID = IDS_LOGMSGDELETEDIR;
-                                    break; // delete pro adresar (objekt tridy CFTPQueueItemDir)
+                                    break; // delete for a directory (CFTPQueueItemDir object)
 
-                                case fqitCopyFileOrFileLink: // kopirovani souboru nebo linku na soubor (objekt tridy CFTPQueueItemCopyOrMove)
-                                case fqitMoveFileOrFileLink: // presun souboru nebo linku na soubor (objekt tridy CFTPQueueItemCopyOrMove)
+                                case fqitCopyFileOrFileLink: // copy a file or a link to a file (CFTPQueueItemCopyOrMove object)
+                                case fqitMoveFileOrFileLink: // move a file or a link to a file (CFTPQueueItemCopyOrMove object)
                                 {
                                     if (strcmp(CurItem->Name, ((CFTPQueueItemCopyOrMove*)CurItem)->TgtName) != 0)
                                     {
@@ -545,13 +546,13 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
 
                                 case fqitMoveDeleteDirLink:
                                     opDescrResID = IDS_LOGMSGDELETEDIRLINK;
-                                    break; // smazani linku na adresar po presunuti jeho obsahu (objekt tridy CFTPQueueItemDir)
+                                    break; // delete a link to a directory after moving its contents (CFTPQueueItemDir object)
                                 case fqitChAttrsFile:
                                     opDescrResID = IDS_LOGMSGCHATTRSFILE;
-                                    break; // zmena atributu souboru (pozn.: u linku se atributy menit nedaji) (objekt tridy CFTPQueueItemChAttr)
+                                    break; // change file attributes (note: link attributes cannot be changed) (CFTPQueueItemChAttr object)
                                 case fqitChAttrsDir:
                                     opDescrResID = IDS_LOGMSGCHATTRSDIR;
-                                    break; // zmena atributu adresare (objekt tridy CFTPQueueItemChAttrDir)
+                                    break; // change directory attributes (CFTPQueueItemChAttrDir object)
                                 }
                                 _snprintf_s(errText, _TRUNCATE, LoadStr(opDescrResID), CurItem->Name, tgtName);
                                 Logs.LogMessage(LogUID, errText, -1, TRUE);
@@ -565,28 +566,28 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                                     if (!FTPOpenedFiles.OpenFile(userBuf, hostBuf, port, CurItem->Path,
                                                                  Oper->GetFTPServerPathType(CurItem->Path),
                                                                  CurItem->Name, &LockedFileUID, ffatDelete))
-                                    { // nad timto souborem jiz probiha jina operace, at to user zkusi znovu pozdeji
-                                        // chyba na polozce, zapiseme do ni tento stav
+                                    { // another operation is already running on this file; let the user try again later
+                                        // error on the item; write this state into it
                                         Queue->UpdateItemState(CurItem, sqisFailed, ITEMPR_SRCFILEINUSE, NO_ERROR, NULL, Oper);
                                         lookForNewWork = TRUE;
                                         canContinue = FALSE;
                                     }
-                                    // else ; // soubor na serveru jeste neni otevreny, muzeme ho smazat
+                                    // else ; // the file on the server is not open yet; we can delete it
                                 }
                                 if (canContinue)
                                 {
                                     if (!HaveWorkingPath || strcmp(WorkingPath, CurItem->Path) != 0)
-                                    { // je treba zmenit pracovni cestu (predpoklad: server vraci stale stejny retezec cesty - ten
-                                        // se do polozky dostal pri explore-dir nebo z panelu, v obou pripadech slo o cestu vracenou
-                                        // serverem na prikaz PWD)
+                                    { // we need to change the working path (assumption: the server keeps returning the same path string - the one
+                                        // that reached the item during explore-dir or from the panel, in both cases it was the path returned
+                                        // by the server in response to the PWD command)
                                         PrepareFTPCommand(buf, 200 + FTP_MAX_PATH, errBuf, 50 + FTP_MAX_PATH,
-                                                          ftpcmdChangeWorkingPath, &cmdLen, CurItem->Path); // nemuze nahlasit chybu
+                                                          ftpcmdChangeWorkingPath, &cmdLen, CurItem->Path); // cannot report an error
                                         sendCmd = TRUE;
                                         SubState = fwssWorkSimpleCmdWaitForCWDRes;
 
-                                        HaveWorkingPath = FALSE; // menime aktualni pracovni cestu na serveru
+                                        HaveWorkingPath = FALSE; // we are changing the current working path on the server
                                     }
-                                    else // pracovni adresar uz je nastaveny
+                                    else // the working directory is already set
                                     {
                                         SubState = fwssWorkSimpleCmdStartWork;
                                         nextLoop = TRUE;
@@ -599,30 +600,30 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                             {
                                 switch (event)
                                 {
-                                // case fweCmdInfoReceived:  // "1xx" odpovedi ignorujeme (jen se pisou do Logu)
+                                // case fweCmdInfoReceived:  // ignore "1xx" replies (only written to the Log)
                                 case fweCmdReplyReceived:
                                 {
                                     if (FTP_DIGIT_1(replyCode) == FTP_D1_SUCCESS)
-                                    { // uspesne jsme zmenili pracovni cestu, diky tomu, ze tato cesta byla "kdysi" vracena
-                                        // ze serveru na prikaz PWD, predpokladame, ze by ted PWD vratilo opet tuto cestu a tudiz
-                                        // ho nebudeme posilat (optimalizace snad s dost malym rizikem)
+                                    { // we successfully changed the working path; because this path was "once" returned
+                                        // from the server in response to PWD, we assume that PWD would now return this path again
+                                        // and therefore we will not send it (optimization with hopefully low risk)
                                         HaveWorkingPath = TRUE;
                                         lstrcpyn(WorkingPath, CurItem->Path, FTP_MAX_PATH);
                                         SubState = fwssWorkSimpleCmdStartWork;
                                         nextLoop = TRUE;
                                     }
-                                    else // nastala nejaka chyba, vypiseme ji uzivateli a jdeme zpracovat dalsi polozku fronty
+                                    else // an error occurred; report it to the user and process the next queue item
                                     {
                                         CopyStr(errText, 200 + FTP_MAX_PATH, reply, replySize);
                                         Queue->UpdateItemState(CurItem, sqisFailed, ITEMPR_UNABLETOCWDONLYPATH, NO_ERROR,
-                                                               SalamanderGeneral->DupStr(errText) /* low memory = chyba bude bez detailu */,
+                                                               SalamanderGeneral->DupStr(errText) /* low memory = the error will have no details */,
                                                                Oper);
                                         lookForNewWork = TRUE;
                                     }
                                     break;
                                 }
 
-                                case fweCmdConClosed: // spojeni se zavrelo/timeoutlo (popis viz ErrorDescr) -> zkusime ho obnovit
+                                case fweCmdConClosed: // the connection closed/timed out (see ErrorDescr for details) -> try to restore it
                                 {
                                     conClosedRetryItem = TRUE;
                                     break;
@@ -631,27 +632,27 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                                 break;
                             }
 
-                            case fwssWorkSimpleCmdStartWork: // zacatek prace (pracovni adresar uz je nastaveny)
+                            case fwssWorkSimpleCmdStartWork: // start working (the working directory is already set)
                             {
                                 if (ShouldStop)
-                                    handleShouldStop = TRUE; // zkontrolujeme jestli se nema stopnout worker
+                                    handleShouldStop = TRUE; // check whether the worker should stop
                                 else
                                 {
                                     switch (CurItem->Type)
                                     {
-                                    case fqitDeleteFile:        // delete pro soubor (objekt tridy CFTPQueueItemDel)
-                                    case fqitDeleteLink:        // delete pro link (objekt tridy CFTPQueueItemDel)
-                                    case fqitMoveDeleteDirLink: // smazani linku na adresar po presunuti jeho obsahu (objekt tridy CFTPQueueItemDir)
+                                    case fqitDeleteFile:        // delete for a file (CFTPQueueItemDel object)
+                                    case fqitDeleteLink:        // delete for a link (CFTPQueueItemDel object)
+                                    case fqitMoveDeleteDirLink: // delete a link to a directory after moving its contents (CFTPQueueItemDir object)
                                     {
                                         PrepareFTPCommand(buf, 200 + FTP_MAX_PATH, errBuf, 50 + FTP_MAX_PATH,
-                                                          ftpcmdDeleteFile, &cmdLen, CurItem->Name); // nemuze nahlasit chybu
+                                                          ftpcmdDeleteFile, &cmdLen, CurItem->Name); // cannot report an error
                                         sendCmd = TRUE;
                                         SubState = fwssWorkDelFileWaitForDELERes;
                                         break;
                                     }
 
-                                    case fqitDeleteDir:     // delete pro adresar (objekt tridy CFTPQueueItemDir)
-                                    case fqitMoveDeleteDir: // smazani adresare po presunuti jeho obsahu (objekt tridy CFTPQueueItemDir)
+                                    case fqitDeleteDir:     // delete for a directory (CFTPQueueItemDir object)
+                                    case fqitMoveDeleteDir: // delete a directory after moving its contents (CFTPQueueItemDir object)
                                     {
                                         char vmsDirName[MAX_PATH + 10];
                                         char* dirName = CurItem->Name;
@@ -662,18 +663,18 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                                             dirName = vmsDirName;
                                         }
                                         PrepareFTPCommand(buf, 200 + FTP_MAX_PATH, errBuf, 50 + FTP_MAX_PATH,
-                                                          ftpcmdDeleteDir, &cmdLen, dirName); // nemuze nahlasit chybu
+                                                          ftpcmdDeleteDir, &cmdLen, dirName); // cannot report an error
                                         sendCmd = TRUE;
                                         SubState = fwssWorkDelDirWaitForRMDRes;
                                         break;
                                     }
 
-                                    case fqitChAttrsFile: // zmena atributu souboru (pozn.: u linku se atributy menit nedaji) (objekt tridy CFTPQueueItemChAttr)
-                                    case fqitChAttrsDir:  // zmena atributu adresare (objekt tridy CFTPQueueItemChAttrDir)
+                                    case fqitChAttrsFile: // change file attributes (note: link attributes cannot be changed) (CFTPQueueItemChAttr object)
+                                    case fqitChAttrsDir:  // change directory attributes (CFTPQueueItemChAttrDir object)
                                     {
                                         DWORD attr = CurItem->Type == fqitChAttrsFile ? ((CFTPQueueItemChAttr*)CurItem)->Attr : ((CFTPQueueItemChAttrDir*)CurItem)->Attr;
                                         PrepareFTPCommand(buf, 200 + FTP_MAX_PATH, errBuf, 50 + FTP_MAX_PATH,
-                                                          ftpcmdChangeAttrs, &cmdLen, attr, CurItem->Name); // nemuze nahlasit chybu
+                                                          ftpcmdChangeAttrs, &cmdLen, attr, CurItem->Name); // cannot report an error
                                         sendCmd = TRUE;
                                         SubState = fwssWorkChAttrWaitForCHMODRes;
                                         break;
@@ -683,39 +684,39 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                                 break;
                             }
 
-                            case fwssWorkDelFileWaitForDELERes: // mazani souboru/link: cekame na vysledek "DELE" (smazani souboru/linku)
+                            case fwssWorkDelFileWaitForDELERes: // deleting a file/link: waiting for the "DELE" result (file/link deletion)
                             {
                                 switch (event)
                                 {
-                                // case fweCmdInfoReceived:  // "1xx" odpovedi ignorujeme (jen se pisou do Logu)
+                                // case fweCmdInfoReceived:  // ignore "1xx" replies (only written to the Log)
                                 case fweCmdReplyReceived:
                                 {
                                     BOOL finished = TRUE;
                                     if (FTP_DIGIT_1(replyCode) == FTP_D1_SUCCESS)
-                                    { // soubor/link byl uspesne smazan, zapiseme do polozky "uspesne dokonceno"
+                                    { // the file/link was deleted successfully; record "completed successfully" in the item
                                         Queue->UpdateItemState(CurItem, sqisDone, ITEMPR_OK, NO_ERROR, NULL, Oper);
                                         lookForNewWork = TRUE;
 
-                                        // pokud se soubor/link smazal, zmenime listing v cache
+                                        // if the file/link was deleted, update the listing in the cache
                                         Oper->GetUserHostPort(userBuf, hostBuf, &port);
                                         UploadListingCache.ReportDelete(userBuf, hostBuf, port, CurItem->Path,
                                                                         Oper->GetFTPServerPathType(CurItem->Path),
                                                                         CurItem->Name, FALSE);
                                     }
-                                    else // nastala nejaka chyba
+                                    else // an error occurred
                                     {
                                         if (CurItem->Type == fqitDeleteFile)
-                                        { // vypiseme chybu uzivateli a jdeme zpracovat dalsi polozku fronty
+                                        { // report the error to the user and process the next queue item
                                             CopyStr(errText, 200 + FTP_MAX_PATH, reply, replySize);
                                             Queue->UpdateItemState(CurItem, sqisFailed, ITEMPR_UNABLETODELETEFILE, NO_ERROR,
-                                                                   SalamanderGeneral->DupStr(errText) /* low memory = chyba bude bez detailu */,
+                                                                   SalamanderGeneral->DupStr(errText) /* low memory = the error will have no details */,
                                                                    Oper);
                                             lookForNewWork = TRUE;
                                         }
-                                        else // zkusime jeste RMD, kdyz DELE nezabralo (hypoteza: link na adresar by se mohl mazat pres RMD)
-                                        {    // CurItem->Type je fqitDeleteLink nebo fqitMoveDeleteDirLink
+                                        else // try RMD if DELE failed (hypothesis: a directory link might be deletable via RMD)
+                                        {    // CurItem->Type is fqitDeleteLink or fqitMoveDeleteDirLink
                                             if (ShouldStop)
-                                                handleShouldStop = TRUE; // zkontrolujeme jestli se nema stopnout worker
+                                                handleShouldStop = TRUE; // check whether the worker should stop
                                             else
                                             {
                                                 char vmsDirName[MAX_PATH + 10];
@@ -727,24 +728,24 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                                                     dirName = vmsDirName;
                                                 }
                                                 PrepareFTPCommand(buf, 200 + FTP_MAX_PATH, errBuf, 50 + FTP_MAX_PATH,
-                                                                  ftpcmdDeleteDir, &cmdLen, dirName); // nemuze nahlasit chybu
+                                                                  ftpcmdDeleteDir, &cmdLen, dirName); // cannot report an error
                                                 sendCmd = TRUE;
                                                 SubState = fwssWorkDelDirWaitForRMDRes;
                                                 finished = FALSE;
                                             }
                                         }
                                     }
-                                    if (finished) // pro mereni rychlosti pouzivame az posledni prikaz na operaci (po DELE muze nasledovat RMD, to se zde eliminuje)
+                                    if (finished) // use only the final command in the operation for speed measurement (RMD may follow DELE; eliminate that here)
                                     {
-                                        // odpoved serveru prisla -> pridame teoreticke byty do meraku rychlosti
+                                        // the server replied -> add theoretical bytes to the speed meter
                                         Oper->GetGlobalTransferSpeedMeter()->BytesReceived(SMPLCMD_APPROXBYTESIZE, GetTickCount());
                                     }
                                     break;
                                 }
 
-                                case fweCmdConClosed: // spojeni se zavrelo/timeoutlo (popis viz ErrorDescr) -> zkusime ho obnovit
+                                case fweCmdConClosed: // the connection closed/timed out (see ErrorDescr for details) -> try to restore it
                                 {
-                                    // pokud nevime jak dopadl vymaz souboru/linku, zneplatnime listing v cache
+                                    // if we do not know how the file/link deletion ended, invalidate the listing cache
                                     Oper->GetUserHostPort(userBuf, hostBuf, &port);
                                     UploadListingCache.ReportDelete(userBuf, hostBuf, port, CurItem->Path,
                                                                     Oper->GetFTPServerPathType(CurItem->Path),
@@ -757,43 +758,43 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                                 break;
                             }
 
-                            case fwssWorkDelDirWaitForRMDRes: // mazani adresare/linku: cekame na vysledek "RMD" (smazani adresare/linku)
+                            case fwssWorkDelDirWaitForRMDRes: // deleting a directory/link: waiting for the "RMD" result (directory/link deletion)
                             {
                                 switch (event)
                                 {
-                                // case fweCmdInfoReceived:  // "1xx" odpovedi ignorujeme (jen se pisou do Logu)
+                                // case fweCmdInfoReceived:  // ignore "1xx" replies (only written to the Log)
                                 case fweCmdReplyReceived:
                                 {
-                                    // odpoved serveru prisla -> pridame teoreticke byty do meraku rychlosti
+                                    // the server replied -> add theoretical bytes to the speed meter
                                     Oper->GetGlobalTransferSpeedMeter()->BytesReceived(SMPLCMD_APPROXBYTESIZE, GetTickCount());
 
                                     if (FTP_DIGIT_1(replyCode) == FTP_D1_SUCCESS)
-                                    { // adresar/link byl uspesne smazan, zapiseme do polozky "uspesne dokonceno"
+                                    { // the directory/link was deleted successfully; record "completed successfully" in the item
                                         Queue->UpdateItemState(CurItem, sqisDone, ITEMPR_OK, NO_ERROR, NULL, Oper);
                                         lookForNewWork = TRUE;
 
-                                        // pokud se adresar/link smazal, zmenime listing v cache
+                                        // if the directory/link was deleted, update the listing in the cache
                                         Oper->GetUserHostPort(userBuf, hostBuf, &port);
                                         UploadListingCache.ReportDelete(userBuf, hostBuf, port, CurItem->Path,
                                                                         Oper->GetFTPServerPathType(CurItem->Path),
                                                                         CurItem->Name, FALSE);
                                     }
-                                    else // nastala nejaka chyba, vypiseme ji uzivateli a jdeme zpracovat dalsi polozku fronty
-                                    {    // CurItem->Type je fqitDeleteLink / fqitMoveDeleteDirLink nebo fqitDeleteDir / fqitMoveDeleteDir
+                                    else // an error occurred; report it to the user and process the next queue item
+                                    {    // CurItem->Type is fqitDeleteLink / fqitMoveDeleteDirLink or fqitDeleteDir / fqitMoveDeleteDir
                                         CopyStr(errText, 200 + FTP_MAX_PATH, reply, replySize);
                                         Queue->UpdateItemState(CurItem, sqisFailed,
                                                                (CurItem->Type == fqitDeleteLink || CurItem->Type == fqitMoveDeleteDirLink) ? ITEMPR_UNABLETODELETEFILE : ITEMPR_UNABLETODELETEDIR,
                                                                NO_ERROR,
-                                                               SalamanderGeneral->DupStr(errText) /* low memory = chyba bude bez detailu */,
+                                                               SalamanderGeneral->DupStr(errText) /* low memory = the error will have no details */,
                                                                Oper);
                                         lookForNewWork = TRUE;
                                     }
                                     break;
                                 }
 
-                                case fweCmdConClosed: // spojeni se zavrelo/timeoutlo (popis viz ErrorDescr) -> zkusime ho obnovit
+                                case fweCmdConClosed: // the connection closed/timed out (see ErrorDescr for details) -> try to restore it
                                 {
-                                    // pokud nevime jak dopadl vymaz adresare/linku, zneplatnime listing v cache
+                                    // if we do not know how the directory/link deletion ended, invalidate the listing cache
                                     Oper->GetUserHostPort(userBuf, hostBuf, &port);
                                     UploadListingCache.ReportDelete(userBuf, hostBuf, port, CurItem->Path,
                                                                     Oper->GetFTPServerPathType(CurItem->Path),
@@ -806,34 +807,34 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                                 break;
                             }
 
-                            case fwssWorkChAttrWaitForCHMODRes:       // zmena atributu: cekame na vysledek "SITE CHMOD" (zmena modu souboru/adresare, asi jen pro Unix)
-                            case fwssWorkChAttrWaitForCHMODQuotedRes: // zmena atributu (jmeno v uvozovkach): cekame na vysledek "SITE CHMOD" (zmena modu souboru/adresare, asi jen pro Unix)
+                            case fwssWorkChAttrWaitForCHMODRes:       // change attributes: waiting for the "SITE CHMOD" result (changing file/directory mode, likely Unix only)
+                            case fwssWorkChAttrWaitForCHMODQuotedRes: // change attributes (name in quotes): waiting for the "SITE CHMOD" result (changing file/directory mode, likely Unix only)
                             {
                                 switch (event)
                                 {
-                                // case fweCmdInfoReceived:  // "1xx" odpovedi ignorujeme (jen se pisou do Logu)
+                                // case fweCmdInfoReceived:  // ignore "1xx" replies (only written to the Log)
                                 case fweCmdReplyReceived:
                                 {
                                     BOOL finished = TRUE;
                                     if (FTP_DIGIT_1(replyCode) == FTP_D1_SUCCESS)
-                                    { // soubor/adresar ma uspesne zmenene atributy, zapiseme do polozky "uspesne dokonceno"
+                                    { // the file/directory attributes were changed successfully; record "completed successfully" in the item
                                         Queue->UpdateItemState(CurItem, sqisDone, ITEMPR_OK, NO_ERROR, NULL, Oper);
                                         lookForNewWork = TRUE;
                                     }
-                                    else // CurItem->Type je fqitChAttrsFile nebo fqitChAttrsDir
+                                    else // CurItem->Type is fqitChAttrsFile or fqitChAttrsDir
                                     {
                                         char* s = CurItem->Name;
                                         while (*s != 0 && *s > ' ')
                                             s++;
-                                        if (*s != 0 && SubState == fwssWorkChAttrWaitForCHMODRes) // jmeno souboru/adresare obsahuje white-spaces, zkusime jeste dat jmeno do uvozovek (jen pokud uz jsme to nezkouseli)
+                                        if (*s != 0 && SubState == fwssWorkChAttrWaitForCHMODRes) // the file/directory name contains white-spaces; try placing the name in quotes (only if we have not tried this yet)
                                         {
                                             if (ShouldStop)
-                                                handleShouldStop = TRUE; // zkontrolujeme jestli se nema stopnout worker
+                                                handleShouldStop = TRUE; // check whether the worker should stop
                                             else
                                             {
                                                 DWORD attr = CurItem->Type == fqitChAttrsFile ? ((CFTPQueueItemChAttr*)CurItem)->Attr : ((CFTPQueueItemChAttrDir*)CurItem)->Attr;
                                                 s = CurItem->Name;
-                                                char nameToQuotes[2 * MAX_PATH]; // ve jmene musime doplnit escape-char '\\' pred '"'
+                                                char nameToQuotes[2 * MAX_PATH]; // in the name we must insert the escape char '\\' before '"'
                                                 char* d = nameToQuotes;
                                                 char* end = nameToQuotes + 2 * MAX_PATH - 1;
                                                 while (*s != 0 && d < end)
@@ -844,30 +845,30 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                                                 }
                                                 *d = 0;
                                                 PrepareFTPCommand(buf, 200 + FTP_MAX_PATH, errBuf, 50 + FTP_MAX_PATH,
-                                                                  ftpcmdChangeAttrsQuoted, &cmdLen, attr, nameToQuotes); // nemuze nahlasit chybu
+                                                                  ftpcmdChangeAttrsQuoted, &cmdLen, attr, nameToQuotes); // cannot report an error
                                                 sendCmd = TRUE;
                                                 SubState = fwssWorkChAttrWaitForCHMODQuotedRes;
                                                 finished = FALSE;
                                             }
                                         }
-                                        else // nastala nejaka chyba, vypiseme ji uzivateli a jdeme zpracovat dalsi polozku fronty
+                                        else // an error occurred; report it to the user and process the next queue item
                                         {
                                             CopyStr(errText, 200 + FTP_MAX_PATH, reply, replySize);
                                             Queue->UpdateItemState(CurItem, sqisFailed, ITEMPR_UNABLETOCHATTRS, NO_ERROR,
-                                                                   SalamanderGeneral->DupStr(errText) /* low memory = chyba bude bez detailu */,
+                                                                   SalamanderGeneral->DupStr(errText) /* low memory = the error will have no details */,
                                                                    Oper);
                                             lookForNewWork = TRUE;
                                         }
                                     }
-                                    if (finished) // pro mereni rychlosti pouzivame az posledni prikaz na operaci (po DELE muze nasledovat RMD, to se zde eliminuje)
+                                    if (finished) // use only the final command in the operation for speed measurement (RMD may follow DELE; eliminate that here)
                                     {
-                                        // odpoved serveru prisla -> pridame teoreticke byty do meraku rychlosti
+                                        // the server replied -> add theoretical bytes to the speed meter
                                         Oper->GetGlobalTransferSpeedMeter()->BytesReceived(SMPLCMD_APPROXBYTESIZE, GetTickCount());
                                     }
                                     break;
                                 }
 
-                                case fweCmdConClosed: // spojeni se zavrelo/timeoutlo (popis viz ErrorDescr) -> zkusime ho obnovit
+                                case fweCmdConClosed: // the connection closed/timed out (see ErrorDescr for details) -> try to restore it
                                 {
                                     conClosedRetryItem = TRUE;
                                     break;
@@ -883,42 +884,42 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                     break;
                 }
 
-                case fqitUploadCopyFile: // upload: kopirovani souboru (objekt tridy CFTPQueueItemCopyOrMoveUpload)
-                case fqitUploadMoveFile: // upload: presun souboru (objekt tridy CFTPQueueItemCopyOrMoveUpload)
+                case fqitUploadCopyFile: // upload: copy a file (CFTPQueueItemCopyOrMoveUpload object)
+                case fqitUploadMoveFile: // upload: move a file (CFTPQueueItemCopyOrMoveUpload object)
                 {
-                    if (UploadDirGetTgtPathListing) // listujeme cilovou cestu do cache listingu pro upload
+                    if (UploadDirGetTgtPathListing) // list the target path into the upload listing cache
                     {
                         BOOL listingNotAccessible;
                         HandleEventInWorkingState2(event, sendQuitCmd, postActivate, reportWorkerChange, buf, errBuf, host,
                                                    cmdLen, sendCmd, reply, replySize, replyCode, ftpPath, errText,
                                                    conClosedRetryItem, lookForNewWork, handleShouldStop, &listingNotAccessible);
                         if (handleShouldStop || conClosedRetryItem || lookForNewWork)
-                        { // listovani selhalo, informujeme o tom pripadne cekajici workery
+                        { // listing failed; inform any waiting workers about it
                             UploadDirGetTgtPathListing = FALSE;
                             Oper->GetUserHostPort(userBuf, hostBuf, &port);
                             CFTPServerPathType pathType = Oper->GetFTPServerPathType(((CFTPQueueItemCopyOrMoveUpload*)CurItem)->TgtPath);
                             BOOL listingOKErrorIgnored;
-                            // volani UploadListingCache.ListingFailed() je mozne jen proto, ze jsme v sekci CSocketsThread::CritSect
+                            // calling UploadListingCache.ListingFailed() is possible only because we are inside CSocketsThread::CritSect
                             UploadListingCache.ListingFailed(userBuf, hostBuf, port,
                                                              ((CFTPQueueItemCopyOrMoveUpload*)CurItem)->TgtPath,
                                                              pathType, listingNotAccessible, NULL, &listingOKErrorIgnored);
-                            if (listingOKErrorIgnored && lookForNewWork) // na polozce je hlasena chyba listovani, tuto chybu stornujeme
+                            if (listingOKErrorIgnored && lookForNewWork) // a listing error is reported on the item; cancel this error
                             {
                                 lookForNewWork = FALSE;
                                 Queue->UpdateItemState(CurItem, sqisProcessing, ITEMPR_OK, NO_ERROR, NULL, Oper);
                                 StatusType = wstNone;
                                 SubState = fwssWorkStartWork;
-                                Oper->ReportItemChange(CurItem->UID); // pozadame o redraw polozky (pro pripad, ze uz se chyba stihla ukazat -- temer nemozne)
-                                postActivate = TRUE;                  // impulz pro pokracovani v praci
-                                reportWorkerChange = TRUE;            // potrebujeme schovat pripadny progres tahani listingu
+                                Oper->ReportItemChange(CurItem->UID); // request a redraw of the item (in case the error already appeared -- almost impossible)
+                                postActivate = TRUE;                  // impulse to continue working
+                                reportWorkerChange = TRUE;            // we need to hide any progress of fetching the listing
 
-                                // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                                // mozne i ze sekce CSocket::SocketCritSect a CFTPWorker::WorkerCritSect (nehrozi dead-lock)
-                                SocketsThread->DeleteTimer(UID, WORKER_STATUSUPDATETIMID); // zrusime pripadny timer z predchozi prace
+                                // since we are already inside CSocketsThread::CritSect, this call
+                                // is also possible from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of deadlock)
+                                SocketsThread->DeleteTimer(UID, WORKER_STATUSUPDATETIMID); // cancel any timer from previous work
                             }
                         }
                     }
-                    else // ostatni prace jde sem
+                    else // the remaining work goes here
                     {
                         HandleEventInWorkingState5(event, sendQuitCmd, postActivate, reportWorkerChange, buf, errBuf, host,
                                                    cmdLen, sendCmd, reply, replySize, replyCode, ftpPath, errText,
@@ -927,8 +928,8 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                     break;
                 }
 
-                case fqitUploadMoveDeleteDir: // upload: smazani adresare po presunuti jeho obsahu (objekt tridy CFTPQueueItemDir)
-                {                             // smazani adresare z disku se provede ve stavu fwsPreparing (neni treba connectiona, takze ani stav fwsWorking)
+                case fqitUploadMoveDeleteDir: // upload: delete a directory after moving its contents (CFTPQueueItemDir object)
+                {                             // deleting the directory from disk is handled in the fwsPreparing state (no connection needed, so there is no fwsWorking state)
                     TRACE_E("Unexpected call to CFTPWorker::HandleEventInWorkingState(): operation item type is fqitUploadMoveDeleteDir!");
                     break;
                 }
@@ -944,20 +945,20 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                 TRACE_E("Unexpected situation in CFTPWorker::HandleEventInWorkingState(): missing active operation item!");
         }
 
-        if (ShouldStop && handleShouldStop) // mame ukoncit workera + je mozne poslat prikaz "QUIT"
+        if (ShouldStop && handleShouldStop) // we should stop the worker and it is possible to send the "QUIT" command
         {
             if (sendCmd)
                 TRACE_E("Unexpected situation in CFTPWorker::HandleEventInWorkingState(): can't send QUIT and user command together!");
             if (!SocketClosed)
-                sendQuitCmd = TRUE;     // mame koncit + mame otevrenou connectionu -> posleme serveru prikaz "QUIT" (odpoved ignorujeme, kazdopadne by mela vest k zavreni spojeni a o nic jineho ted nejde)
-            SubState = fwssWorkStopped; // je-li connectiona, tak abychom neposilali "QUIT" vicekrat + pokud connectiona neni, tak aby prace zbytecne nepokracovala
+                sendQuitCmd = TRUE;     // we must finish and have an open connection -> send the server the "QUIT" command (ignore the reply; it should lead to closing the connection and that is all we need now)
+            SubState = fwssWorkStopped; // if there is a connection, avoid sending "QUIT" multiple times; if there is no connection, prevent work from continuing unnecessarily
         }
         else
         {
-            if (conClosedRetryItem) // rozpadlo se spojeni, ukoncime operaci na polozce a jdeme na dalsi pokus o provedeni polozky
+            if (conClosedRetryItem) // the connection broke; end the operation on the item and try to perform the item again
             {
-                CloseOpenedFile(TRUE, FALSE, NULL, NULL, FALSE, NULL); // tento prenos se nepovedl, zavreme cilovy soubor (pokud nejaky vubec pouzivame)
-                CloseOpenedInFile();                                   // tento prenos se nepovedl, zavreme zdrojovy soubor (pokud nejaky vubec pouzivame)
+                CloseOpenedFile(TRUE, FALSE, NULL, NULL, FALSE, NULL); // this transfer failed; close the target file (if we are using one at all)
+                CloseOpenedInFile();                                   // this transfer failed; close the source file (if we are using one at all)
                 if (LockedFileUID != 0)
                 {
                     FTPOpenedFiles.CloseFile(LockedFileUID);
@@ -967,26 +968,26 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                     ((CFTPQueueItemCopyOrMoveUpload*)CurItem)->RenamedName != NULL)
                 {
                     Queue->UpdateRenamedName((CFTPQueueItemCopyOrMoveUpload*)CurItem, NULL);
-                    Oper->ReportItemChange(CurItem->UID); // pozadame o redraw polozky
+                    Oper->ReportItemChange(CurItem->UID); // request a redraw of the item
                 }
-                State = fwsPreparing; // neni nutne volat Oper->OperationStatusMaybeChanged(), nemeni stav operace (neni paused a nebude ani po teto zmene)
+                State = fwsPreparing; // no need to call Oper->OperationStatusMaybeChanged(); it does not change the operation state (it is not paused and will not be after this change)
                 if (quitCmdWasSent)
-                    SubState = fwssPrepQuitSent; // predame do fwsPreparing, ze QUIT uz byl poslany
+                    SubState = fwssPrepQuitSent; // let fwsPreparing know that QUIT was already sent
                 else
                     SubState = fwssNone;
-                postActivate = TRUE; // postneme si aktivaci pro dalsi stav workera
+                postActivate = TRUE; // post an activation for the worker's next state
                 reportWorkerChange = TRUE;
 
-                // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                // mozne i ze sekce CSocket::SocketCritSect a CFTPWorker::WorkerCritSect (nehrozi dead-lock)
-                SocketsThread->DeleteTimer(UID, WORKER_STATUSUPDATETIMID); // zrusime pripadny timer z predchozi prace
+                // since we are already inside CSocketsThread::CritSect, this call
+                // is also possible from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of deadlock)
+                SocketsThread->DeleteTimer(UID, WORKER_STATUSUPDATETIMID); // cancel any timer from previous work
             }
             else
             {
                 if (lookForNewWork)
                 {
-                    CloseOpenedFile(TRUE, FALSE, NULL, NULL, FALSE, NULL); // pokud jeste neni zavreny cilovy soubor, znamena to, ze se tento prenos nepovedl, zavreme cilovy soubor (pokud nejaky vubec pouzivame)
-                    CloseOpenedInFile();                                   // pokud jeste neni zavreny zdrojovy soubor, znamena to, ze se tento prenos nepovedl, zavreme zdrojovy soubor (pokud nejaky vubec pouzivame)
+                    CloseOpenedFile(TRUE, FALSE, NULL, NULL, FALSE, NULL); // if the target file is not closed yet, this transfer failed; close the target file (if we are using one at all)
+                    CloseOpenedInFile();                                   // if the source file is not closed yet, this transfer failed; close the source file (if we are using one at all)
                     if (LockedFileUID != 0)
                     {
                         FTPOpenedFiles.CloseFile(LockedFileUID);
@@ -997,22 +998,22 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                     {
                         Queue->UpdateRenamedName((CFTPQueueItemCopyOrMoveUpload*)CurItem, NULL);
                     }
-                    Oper->ReportItemChange(CurItem->UID); // pozadame o redraw polozky
+                    Oper->ReportItemChange(CurItem->UID); // request a redraw of the item
                     if (CurItem->GetItemState() == sqisProcessing)
                         TRACE_E("Unexpected situation in CFTPWorker::HandleEventInWorkingState(): returned item is still in processing state!");
 
                     CurItem = NULL;
-                    State = fwsLookingForWork; // neni nutne volat Oper->OperationStatusMaybeChanged(), nemeni stav operace (neni paused a nebude ani po teto zmene)
+                    State = fwsLookingForWork; // no need to call Oper->OperationStatusMaybeChanged(); it does not change the operation state (it is not paused and will not be after this change)
                     if (quitCmdWasSent)
-                        SubState = fwssLookFWQuitSent; // predame do fwsLookingForWork, ze QUIT uz byl poslany
+                        SubState = fwssLookFWQuitSent; // pass to fwsLookingForWork that QUIT was already sent
                     else
                         SubState = fwssNone;
-                    postActivate = TRUE; // postneme si aktivaci pro dalsi stav workera
+                    postActivate = TRUE; // post an activation for the worker's next state
                     reportWorkerChange = TRUE;
 
-                    // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                    // mozne i ze sekce CSocket::SocketCritSect a CFTPWorker::WorkerCritSect (nehrozi dead-lock)
-                    SocketsThread->DeleteTimer(UID, WORKER_STATUSUPDATETIMID); // zrusime pripadny timer z predchozi prace
+                    // since we are already inside CSocketsThread::CritSect, this call
+                    // is also possible from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of deadlock)
+                    SocketsThread->DeleteTimer(UID, WORKER_STATUSUPDATETIMID); // cancel any timer from previous work
                 }
             }
         }
@@ -1027,14 +1028,14 @@ void CFTPWorker::HandleEvent(CFTPWorkerEvent event, char* reply, int replySize, 
     char errBuf[50 + FTP_MAX_PATH];
     char host[HOST_MAX_SIZE];
 
-    BOOL sendQuitCmd = FALSE;  // TRUE = ma se poslat FTP prikaz "QUIT"
-    BOOL postActivate = FALSE; // TRUE = ma se postnout WORKER_ACTIVATE (fweActivate)
+    BOOL sendQuitCmd = FALSE;  // TRUE = an FTP command "QUIT" should be sent
+    BOOL postActivate = FALSE; // TRUE = WORKER_ACTIVATE (fweActivate) should be posted
 
     int cmdLen = 0;
-    BOOL sendCmd = FALSE; // TRUE = ma se poslat FTP prikaz 'buf' o delce 'cmdLen' + do logu dat 'errBuf'
+    BOOL sendCmd = FALSE; // TRUE = send the FTP command 'buf' with length 'cmdLen' and log 'errBuf'
 
-    BOOL operStatusMaybeChanged = FALSE; // TRUE = volat Oper->OperationStatusMaybeChanged();
-    BOOL reportWorkerChange = FALSE;     // TRUE = volat Oper->ReportWorkerChange(workerID, FALSE)
+    BOOL operStatusMaybeChanged = FALSE; // TRUE = call Oper->OperationStatusMaybeChanged();
+    BOOL reportWorkerChange = FALSE;     // TRUE = call Oper->ReportWorkerChange(workerID, FALSE)
 
     HANDLES(EnterCriticalSection(&WorkerCritSect));
 
@@ -1050,35 +1051,35 @@ void CFTPWorker::HandleEvent(CFTPWorkerEvent event, char* reply, int replySize, 
     {
     case fwsLookingForWork:
     {
-        if (ShouldStop) // mame ukoncit workera
+        if (ShouldStop) // we should stop the worker
         {
             if (SubState != fwssLookFWQuitSent && !SocketClosed)
             {
-                SubState = fwssLookFWQuitSent; // abychom neposilali "QUIT" vicekrat
-                sendQuitCmd = TRUE;            // mame koncit + mame otevrenou connectionu -> posleme serveru prikaz "QUIT" (odpoved ignorujeme, kazdopadne by mela vest k zavreni spojeni a o nic jineho ted nejde)
+                SubState = fwssLookFWQuitSent; // prevent sending "QUIT" multiple times
+                sendQuitCmd = TRUE;            // we must finish and have an open connection -> send the server the "QUIT" command (ignore the reply; it should lead to closing the connection and that is all we need now)
             }
         }
         else
         {
-            if (!ShouldBePaused) // pokud nemame delat pausnuty: normalni cinnost
+            if (!ShouldBePaused) // if we do not need to stay paused: normal operation
             {
                 if (CurItem != NULL)
                     TRACE_E("Unexpected situation in CFTPWorker::HandleEvent(): CurItem is not NULL in state fwsLookingForWork!");
-                CurItem = Queue->GetNextWaitingItem(Oper); // zkusime najit polozku ve fronte
-                if (CurItem != NULL)                       // nasel ve fronte polozku ke zpracovani
+                CurItem = Queue->GetNextWaitingItem(Oper); // try to find an item in the queue
+                if (CurItem != NULL)                       // found an item in the queue to process
                 {
-                    State = fwsPreparing; // neni nutne volat Oper->OperationStatusMaybeChanged(), nemeni stav operace (neni paused a nebude ani po teto zmene)
+                    State = fwsPreparing; // no need to call Oper->OperationStatusMaybeChanged(); it does not change the operation state (it is not paused and will not be after this change)
                     SubState = fwssNone;
-                    postActivate = TRUE; // postneme si aktivaci pro dalsi stav workera
+                    postActivate = TRUE; // post an activation for the worker's next state
                     reportWorkerChange = TRUE;
-                    Oper->ReportItemChange(CurItem->UID); // pozadame o redraw polozky
+                    Oper->ReportItemChange(CurItem->UID); // request a redraw of the item
                 }
-                else // nenasel ve fronte zadnou polozku ke zpracovani
+                else // did not find any item in the queue to process
                 {
                     State = fwsSleeping;
                     operStatusMaybeChanged = TRUE;
                     SubState = fwssNone;
-                    // postActivate = TRUE;  // ve fwsSleeping se na fweActivate stejne nic nedeje, nema ho smysl postit
+                    // postActivate = TRUE;  // in fwsSleeping nothing happens on fweActivate, so posting it makes no sense
                     reportWorkerChange = TRUE;
                 }
             }
@@ -1088,27 +1089,27 @@ void CFTPWorker::HandleEvent(CFTPWorkerEvent event, char* reply, int replySize, 
 
     case fwsSleeping:
     {
-        if (ShouldStop) // mame ukoncit workera
+        if (ShouldStop) // we should stop the worker
         {
             if (SubState != fwssSleepingQuitSent && !SocketClosed)
             {
-                SubState = fwssSleepingQuitSent; // abychom neposilali "QUIT" vicekrat
-                sendQuitCmd = TRUE;              // mame koncit + mame otevrenou connectionu -> posleme serveru prikaz "QUIT" (odpoved ignorujeme, kazdopadne by mela vest k zavreni spojeni a o nic jineho ted nejde)
+                SubState = fwssSleepingQuitSent; // prevent sending "QUIT" multiple times
+                sendQuitCmd = TRUE;              // we must finish and have an open connection -> send the server the "QUIT" command (ignore the reply; it should lead to closing the connection and that is all we need now)
             }
         }
         else
         {
             if (event == fweWakeUp)
             {
-                // buzeni workeru (nova polozka ve fronte nejspis ceka na zpracovani)
+                // waking the worker (a new item in the queue is probably waiting to be processed)
                 State = fwsLookingForWork;
                 operStatusMaybeChanged = TRUE;
                 SubState = fwssNone;
-                postActivate = TRUE; // postneme si aktivaci pro dalsi stav workera
+                postActivate = TRUE; // post an activation for the worker's next state
                 reportWorkerChange = TRUE;
 
                 if (SocketClosed)
-                    ConnectAttemptNumber = 0; // probuzenemu workerovi bez connectiony dame sanci na novy connect
+                    ConnectAttemptNumber = 0; // give the awakened worker without a connection a chance for a new connect
             }
         }
         break;
@@ -1132,17 +1133,17 @@ void CFTPWorker::HandleEvent(CFTPWorkerEvent event, char* reply, int replySize, 
     {
         if (ShouldStop || ShouldBePaused)
         {
-            // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-            // mozne i ze sekce CSocket::SocketCritSect a CFTPWorker::WorkerCritSect (nehrozi dead-lock)
+            // since we are already inside CSocketsThread::CritSect, this call
+            // is also possible from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of deadlock)
             SocketsThread->DeleteTimer(UID, WORKER_RECONTIMEOUTTIMID);
         }
-        else // normalni cinnost
+        else // normal activity
         {
-            if (event == fweReconTimeout || event == fweWorkerShouldResume) // jdeme na dalsi pokus o connect
+            if (event == fweReconTimeout || event == fweWorkerShouldResume) // proceed to another connection attempt
             {
-                State = fwsConnecting; // neni nutne volat Oper->OperationStatusMaybeChanged(), nemeni stav operace (neni paused a nebude ani po teto zmene)
+                State = fwsConnecting; // no need to call Oper->OperationStatusMaybeChanged(); it does not change the operation state (it is not paused and will not be after this change)
                 SubState = fwssNone;
-                postActivate = TRUE; // postneme si aktivaci pro dalsi stav workera
+                postActivate = TRUE; // post an activation for the worker's next state
                 reportWorkerChange = TRUE;
             }
         }
@@ -1151,31 +1152,31 @@ void CFTPWorker::HandleEvent(CFTPWorkerEvent event, char* reply, int replySize, 
 
     case fwsConnectionError:
     {
-        CloseOpenedFile(TRUE, FALSE, NULL, NULL, FALSE, NULL); // tento prenos se nepovedl, zavreme cilovy soubor (pokud nejaky vubec pouzivame)
-        CloseOpenedInFile();                                   // tento prenos se nepovedl, zavreme zdrojovy soubor (pokud nejaky vubec pouzivame)
+        CloseOpenedFile(TRUE, FALSE, NULL, NULL, FALSE, NULL); // this transfer failed; close the target file (if we are using one at all)
+        CloseOpenedInFile();                                   // this transfer failed; close the source file (if we are using one at all)
         if (CurItem != NULL)
         {
-            ReturnCurItemToQueue(); // vratime polozku do fronty
+            ReturnCurItemToQueue(); // return the item to the queue
             HANDLES(LeaveCriticalSection(&WorkerCritSect));
-            // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-            // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
-            Oper->PostNewWorkAvailable(TRUE); // informujeme pripadneho prvniho spiciho workera
+            // since we are already inside CSocketsThread::CritSect, this call
+            // is also possible from CSocket::SocketCritSect (no risk of deadlock)
+            Oper->PostNewWorkAvailable(TRUE); // inform any first sleeping worker that new work is available
             HANDLES(EnterCriticalSection(&WorkerCritSect));
         }
-        if (!ShouldStop) // normalni cinnost
+        if (!ShouldStop) // normal operation
         {
             if (event == fweNewLoginParams)
             {
                 Logs.LogMessage(LogUID, LoadStr(IDS_WORKERLOGPARCHANGED), -1);
-                ErrorDescr[0] = 0; // od teto chvile uz chybu nebudeme hlasit (user se ji snazi opravit)
+                ErrorDescr[0] = 0; // do not report the error from this point on (the user is trying to fix it)
                 if (UnverifiedCertificate != NULL)
                     UnverifiedCertificate->Release();
                 UnverifiedCertificate = NULL;
-                ConnectAttemptNumber = 0; // aby se povedl connect i pri max. 1 pokusu o connect
+                ConnectAttemptNumber = 0; // allow the connect to succeed even with only one attempt remaining
                 State = fwsLookingForWork;
                 operStatusMaybeChanged = TRUE;
                 SubState = fwssNone;
-                postActivate = TRUE; // postneme si aktivaci pro dalsi stav workera
+                postActivate = TRUE; // post an activation for the worker's next state
                 reportWorkerChange = TRUE;
             }
         }
@@ -1209,36 +1210,36 @@ void CFTPWorker::HandleEvent(CFTPWorkerEvent event, char* reply, int replySize, 
 
     if (sendQuitCmd)
     {
-        // pokud jsme dostali "control connection" z panelu, pokusime se ji vratit (misto jejiho zavreni pres "QUIT")
+        // if we obtained the "control connection" from the panel, try to return it (instead of closing it via "QUIT")
         int ctrlUID = ControlConnectionUID;
-        if (ctrlUID != -1) // dostali jsme connectionu z panelu
+        if (ctrlUID != -1) // we received the connection from the panel
         {
             DWORD lastIdle, lastIdle2;
             BOOL isNotBusy = SalamanderGeneral->SalamanderIsNotBusy(&lastIdle);
-            if (isNotBusy || GetTickCount() - lastIdle < 2000) // je velka sance, ze se dockame "idle" stavu Salamandera (bude mozne predat connectionu zpet do panelu)
+            if (isNotBusy || GetTickCount() - lastIdle < 2000) // high chance that Salamander reaches the "idle" state (the connection can be returned to the panel)
             {
                 HANDLES(LeaveCriticalSection(&WorkerCritSect));
 
                 BOOL isConnected;
-                // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+                // since we are already inside CSocketsThread::CritSect, this call
+                // is also possible from CSocket::SocketCritSect (no risk of deadlock)
                 if (SocketsThread->IsSocketConnected(ctrlUID, &isConnected) &&
-                    !isConnected) // objekt socketu "control connectiony" z panelu stale existuje a nema spojeni se serverem
+                    !isConnected) // the socket object of the panel's control connection still exists and has no connection to the server
                 {
-                    // zkusime pockat na "idle" Salamandera cca pet vterin
+                    // try to wait for Salamander to become "idle" for about five seconds
                     DWORD startTime = GetTickCount();
                     while (1)
                     {
-                        if (isNotBusy || startTime - lastIdle < 500 ||                                   // uz je v "idle" nebo jeste pred pul vterinou byl (takze je silne nepravdepodobne, ze je napr. otevreny dialog -> "idle" stav zase brzy nastane)
-                            SalamanderGeneral->SalamanderIsNotBusy(&lastIdle2) || lastIdle2 != lastIdle) // je velka sance, ze k prevzeti connectiony dojde hned (jinak ji radsi zavreme pres "QUIT")
+                        if (isNotBusy || startTime - lastIdle < 500 ||                                   // already idle or was idle half a second ago (it is very unlikely that e.g. a dialog is open -> the idle state should return soon)
+                            SalamanderGeneral->SalamanderIsNotBusy(&lastIdle2) || lastIdle2 != lastIdle) // strong chance the connection handover happens immediately (otherwise we prefer to close it via "QUIT")
                         {
                             if (ReturningConnections.Add(ctrlUID, this))
                             {
                                 HANDLES(EnterCriticalSection(&WorkerCritSect));
                                 CanDeleteSocket = FALSE;
                                 ReturnToControlCon = TRUE;
-                                SalamanderGeneral->PostMenuExtCommand(FTPCMD_RETURNCONNECTION, TRUE); // pockame na "sal-idle"
-                                sendQuitCmd = FALSE;                                                  // zkousime predat connectionu, "QUIT" se nekona
+                                SalamanderGeneral->PostMenuExtCommand(FTPCMD_RETURNCONNECTION, TRUE); // wait for "sal-idle"
+                                sendQuitCmd = FALSE;                                                  // attempting to hand over the connection; "QUIT" will not be sent
                             }
                             break;
                         }
@@ -1252,7 +1253,7 @@ void CFTPWorker::HandleEvent(CFTPWorkerEvent event, char* reply, int replySize, 
                 }
 
                 if (sendQuitCmd)
-                    HANDLES(EnterCriticalSection(&WorkerCritSect)); // problemy: pouzijeme "QUIT"
+                    HANDLES(EnterCriticalSection(&WorkerCritSect)); // if problems persist, use "QUIT"
             }
         }
 
@@ -1260,24 +1261,24 @@ void CFTPWorker::HandleEvent(CFTPWorkerEvent event, char* reply, int replySize, 
             TRACE_E("Incorrect use of send-quit-command in CFTPWorker::HandleEvent(): CommandState is not fwcsIdle before sending new command!");
         int logUID = LogUID;
 
-        if (sendQuitCmd) // nejde o predani socketu z workera do panelu, posilame "QUIT"
+        if (sendQuitCmd) // we are not handing the socket from the worker back to the panel; send "QUIT"
         {
             Logs.LogMessage(logUID, LoadStr(IDS_LOGMSGDISCONNECT), -1, TRUE);
 
-            PrepareFTPCommand(buf, 200 + FTP_MAX_PATH, errBuf, 50 + FTP_MAX_PATH, ftpcmdQuit, &cmdLen); // nemuze nahlasit chybu
+            PrepareFTPCommand(buf, 200 + FTP_MAX_PATH, errBuf, 50 + FTP_MAX_PATH, ftpcmdQuit, &cmdLen); // cannot report an error
             sendCmd = TRUE;
         }
-        else // probehne predani spojeni, simulujeme zavreni socketu workera (aby se ukoncilo cekani na zavreni socketu pri Stop workeru)
+        else // the connection will be handed over; simulate closing the worker's socket (to end waiting for socket closure when stopping the worker)
         {
             SocketClosed = TRUE;
-            ErrorDescr[0] = 0; // zadna chyba to neni (navic uz by se nikde nemelo zobrazovat)
+            ErrorDescr[0] = 0; // this is not an error (and it should no longer be displayed anywhere)
             CommandReplyTimeout = FALSE;
 
             HANDLES(LeaveCriticalSection(&WorkerCritSect));
-            HandleEvent(fweCmdConClosed, NULL, 0, 0); // oznamime "zavreni" socketu do HandleEvent()
+            HandleEvent(fweCmdConClosed, NULL, 0, 0); // report the socket "closure" to HandleEvent()
             HANDLES(EnterCriticalSection(&WorkerCritSect));
 
-            ReportWorkerMayBeClosed(); // ohlasime zavreni socketu (pro ostatni cekajici thready)
+            ReportWorkerMayBeClosed(); // announce the socket closure (for other waiting threads)
         }
     }
     if (sendCmd)
@@ -1292,44 +1293,44 @@ void CFTPWorker::HandleEvent(CFTPWorkerEvent event, char* reply, int replySize, 
         BOOL allBytesWritten;
         if (Write(buf, cmdLen, &error, &allBytesWritten))
         {
-            Logs.LogMessage(logUID, errBuf, -1); // poslany prikaz dame do logu
-            // nastavime novy timeout timer
+            Logs.LogMessage(logUID, errBuf, -1); // record the sent command in the log
+            // set up a new timeout timer
             int serverTimeout = Config.GetServerRepliesTimeout() * 1000;
             if (serverTimeout < 1000)
-                serverTimeout = 1000; // aspon sekundu
-            // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-            // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+                serverTimeout = 1000; // at least one second
+            // since we are already inside CSocketsThread::CritSect, this call
+            // is also possible from CSocket::SocketCritSect (no risk of deadlock)
             SocketsThread->AddTimer(Msg, UID, GetTickCount() + serverTimeout,
-                                    WORKER_TIMEOUTTIMERID, NULL); // chybu ignorujeme, maximalne si user da Stop
+                                    WORKER_TIMEOUTTIMERID, NULL); // ignore errors; at worst the user will press Stop
         }
         else
         {
-            // nejspis doslo k zavreni socketu (FD_CLOSE dojde casem), pokud doslo k jine chybe,
-            // zavreme po 100ms socket tvrde pres CloseSocket() - pockame si jaka z techto dvou
-            // variant nastala (zaroven se budeme snazit chytit error hlasku a vypsat ji do logu)
+            // the socket most likely closed (FD_CLOSE will arrive eventually); if another error occurred,
+            // close the socket hard via CloseSocket() after 100 ms - wait to see which of the two
+            // variants happens (while trying to capture an error message and log it)
             HANDLES(EnterCriticalSection(&WorkerCritSect));
             CommandState = fwcsWaitForCmdError;
             CommandTransfersData = FALSE;
-            WaitForCmdErrError = error; // zapiseme si error z Write(), kdyz nesezeneme nic jineho, dame do logu aspon tento error
-            // ReadFTPErrorReplies();  // nelze pouzit (vola SkipFTPReply, cimz preskoci v teto metode zpracovavanou odpoved a po navratu z teto metody dojde k chybe), pokud je socket davno zavreny, nacteme z nej chyby hned ted (zadne udalosti na socketu nenastanou, nic by se nenacetlo)
+            WaitForCmdErrError = error; // store the error from Write(); if we get nothing else, log at least this error
+            // ReadFTPErrorReplies();  // cannot be used (calls SkipFTPReply, which skips the reply processed in this method and causes an error after returning); if the socket has long been closed, read its errors right now (no socket events will occur; nothing would be read)
             HANDLES(LeaveCriticalSection(&WorkerCritSect));
 
-            // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-            // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
-            SocketsThread->AddTimer(Msg, UID, GetTickCount() + 100, // dame 0.1 sekundy na pripadne prijeti bytu ze socketu (muze re-postit FD_CLOSE, atd.)
-                                    WORKER_CMDERRORTIMERID, NULL);  // chybu ignorujeme, maximalne si user da Stop
+            // since we are already inside CSocketsThread::CritSect, this call
+            // is also possible from CSocket::SocketCritSect (no risk of deadlock)
+            SocketsThread->AddTimer(Msg, UID, GetTickCount() + 100, // give 0.1 seconds to possibly receive bytes from the socket (it may re-post FD_CLOSE, etc.)
+                                    WORKER_CMDERRORTIMERID, NULL);  // ignore errors; at worst the user will press Stop
         }
     }
     else
         HANDLES(LeaveCriticalSection(&WorkerCritSect));
     if (postActivate)
     {
-        // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-        // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
-        SocketsThread->PostSocketMessage(Msg, UID, WORKER_ACTIVATE, NULL); // chybu ignorujeme, maximalne si user da Stop
+        // since we are already inside CSocketsThread::CritSect, this call
+        // is also possible from CSocket::SocketCritSect (no risk of deadlock)
+        SocketsThread->PostSocketMessage(Msg, UID, WORKER_ACTIVATE, NULL); // ignore errors; at worst the user will press Stop
     }
     if (operStatusMaybeChanged)
         Oper->OperationStatusMaybeChanged();
     if (reportWorkerChange)
-        Oper->ReportWorkerChange(workerID, FALSE); // pozadame o redraw workera
+        Oper->ReportWorkerChange(workerID, FALSE); // request a redraw of the worker
 }

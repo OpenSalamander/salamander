@@ -26,7 +26,7 @@ protected:
 public:
     CUDFISO(CISOImage* image, DWORD extent);
     virtual ~CUDFISO();
-    // metody
+    // methods
 
     virtual BOOL Open(BOOL quiet);
     virtual BOOL DumpInfo(FILE* outStream);

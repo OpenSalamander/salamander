@@ -3,7 +3,7 @@
 
 #include "precomp.h"
 
-// projekt Trace Server obsahuje dve skupiny modulu
+// the Trace Server project contains two groups of modules
 //
-// 1) modul precomp.cpp, ktery postavi tserver.pch (/Yc"precomp.h")
-// 2) moduly vyuzivajici tserver.pch (/Yu"precomp.h")
+// 1) the precomp.cpp module, which builds tserver.pch (/Yc"precomp.h")
+// 2) modules that use tserver.pch (/Yu"precomp.h")

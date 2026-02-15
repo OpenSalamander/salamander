@@ -15,10 +15,10 @@
 #define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
 #define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))
 
-HFONT HNormalFont = NULL; // normalni
-HFONT HBoldFont = NULL;   // tucny
+HFONT HNormalFont = NULL; // regular
+HFONT HBoldFont = NULL;   // bold
 int LineHeight = 0;
-HCURSOR HHandCursor = NULL; // kurzor - ruka
+HCURSOR HHandCursor = NULL; // hand cursor
 HBRUSH HBkBrush = NULL;
 BOOL ClassIsRegistred = FALSE;
 
@@ -28,7 +28,7 @@ int YOffset = 0;
 
 const char* LOGWINDOW_CLASSNAME = "CheckVerLogWindow";
 
-TDirectArray<char*> LogLines(100, 50); // radky drzene v log okne
+TDirectArray<char*> LogLines(100, 50); // lines kept in the log window
 
 LRESULT APIENTRY LogWindowProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -90,7 +90,7 @@ void SetVScrollBarInfo(BOOL redraw)
     SetScrollInfo(HWindow, SB_VERT, &sc, redraw);
 }
 
-// alokuje prostredky potrbne pro zobrazeni vieweru
+// allocate resources needed for displaying the viewer
 BOOL InitializeLogWindow(HWND hWindow)
 {
     LOGFONT lf;
@@ -109,7 +109,7 @@ BOOL InitializeLogWindow(HWND hWindow)
     LineHeight = tm.tmHeight + 2;
 
     HHandCursor = LoadCursor(NULL, IDC_HAND);
-    HBkBrush = GetSysColorBrush(COLOR_WINDOW); // neni treba uvolnovat
+    HBkBrush = GetSysColorBrush(COLOR_WINDOW); // no need to release
 
     if (HNormalFont == NULL || HBoldFont == NULL ||
         HHandCursor == NULL || HBkBrush == NULL)
@@ -157,7 +157,7 @@ void ReleaseLogWindow(HWND hWindow)
 
 BOOL FlexWriteText(HDC hDC, int x, int y, const char* text, int cchText, int* hitIndex)
 {
-    //schovej nastavení
+    // save the settings
     HFONT hOldFont = (HFONT)SelectObject(hDC, HNormalFont);
     COLORREF oldColor = SetTextColor(hDC, GetSysColor(COLOR_BTNTEXT));
     SIZE size;
@@ -167,7 +167,7 @@ BOOL FlexWriteText(HDC hDC, int x, int y, const char* text, int cchText, int* hi
     if (hitIndex != NULL)
         x = 0;
 
-    int len = 0; // pocet znaku k vykresleni
+    int len = 0; // number of characters to draw
 
     int ix;
     for (ix = 0; text[ix] != '\0'; ix++)
@@ -222,12 +222,12 @@ BOOL FlexWriteText(HDC hDC, int x, int y, const char* text, int cchText, int* hi
 
             case 'l':
             {
-                // link - sezeru URL
+                // link - consume the URL
                 while (text[ix] != 0 && text[ix + 1] != '\t')
                     ix++;
                 if (text[ix] != 0 && text[ix + 1] == '\t' && text[ix + 2] == 'i')
                 {
-                    // sezereme item name
+                    // consume the item name
                     ix += 2;
                     while (text[ix] != 0 && text[ix + 1] != '\t')
                         ix++;
@@ -307,7 +307,7 @@ void ClearLogWindow()
 {
     ReleaseLogLines();
     SetVScrollBarInfo(FALSE);
-    SetScrollPos(HWindow, SB_VERT, 0, TRUE); //nastavime pozici scrolleru
+    SetScrollPos(HWindow, SB_VERT, 0, TRUE); // reset the scrollbar position
     YOffset = 0;
     InvalidateRect(HWindow, NULL, TRUE);
     UpdateWindow(HWindow);
@@ -331,7 +331,7 @@ void AddLogLine(const char* line, BOOL scrollToEnd)
     r.bottom = r.top + LineHeight;
     InvalidateRect(HWindow, &r, TRUE);
     r.left = 0;
-    r.top -= LineHeight; // sejmeme sipku
+    r.top -= LineHeight; // remove the arrow indicator
     r.right = LEFT_MARGIN;
     r.bottom -= LineHeight;
     InvalidateRect(HWindow, &r, TRUE);
@@ -373,7 +373,7 @@ BOOL LinkHitTest(int x, int y, char* link, char* item)
             //      TRACE_I("LineIndex="<<lineIndex<<" CharIndex="<<charIndex);
             if (link != NULL)
             {
-                // najdu "\t"
+                // find the "\t"
                 const char* begin = line + charIndex;
                 while (*begin != 0 && *begin != '\t')
                     begin++;
@@ -472,7 +472,7 @@ LogWindowProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     {
                         int index = atoi(item);
                         ModulesChangeShowDetails(index);
-                        ClearLogWindow(); // vycisteni logu pred vypisem novych modulu
+                        ClearLogWindow(); // clear the log before listing new modules
                         ModulesCreateLog(NULL, FALSE);
                     }
                     else
@@ -491,7 +491,7 @@ LogWindowProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPARAM lParam)
                             AddUniqueFilter(item);
                             if (ModulesHasCorrectData())
                             {
-                                ClearLogWindow(); // vycisteni logu pred vypisem novych modulu
+                                ClearLogWindow(); // clear the log before listing new modules
                                 ModulesCreateLog(NULL, FALSE);
                             }
                         }
@@ -515,8 +515,8 @@ LogWindowProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPARAM lParam)
             *itemVer = 0;
         if (link[0] != 0 && strcmp(link, "DETAILS") != 0 && strcmp(link, "FILTER") != 0)
         {
-            /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volani AppendMenu() dole...
+            /* used by the export_mnu.py script, which generates salmenu.mnu for the Translator
+   keep synchronized with the AppendMenu() calls below...
 MENU_TEMPLATE_ITEM LogWindowMenu1[] = 
 {
 	{MNTT_PB, 0
@@ -586,7 +586,7 @@ MENU_TEMPLATE_ITEM LogWindowMenu2[] =
                         AddUniqueFilter(item);
                         if (ModulesHasCorrectData())
                         {
-                            ClearLogWindow(); // vycisteni logu pred vypisem novych modulu
+                            ClearLogWindow(); // clear the log before listing new modules
                             ModulesCreateLog(NULL, FALSE);
                         }
                     }
@@ -629,7 +629,7 @@ MENU_TEMPLATE_ITEM LogWindowMenu2[] =
 
         if (yPos != oldYPos)
         {
-            SetScrollPos(hWindow, SB_VERT, yPos, TRUE); //nastavime pozici scrolleru
+            SetScrollPos(hWindow, SB_VERT, yPos, TRUE); // update the scrollbar position
             int newPos = GetScrollPos(hWindow, SB_VERT);
             YOffset = newPos;
             if (LogLines.Count * LineHeight + 2 * TOP_MARGIN <=
@@ -638,7 +638,7 @@ MENU_TEMPLATE_ITEM LogWindowMenu2[] =
             int delta = oldYPos - newPos;
             if (delta != 0)
             {
-                ScrollWindow(hWindow, 0, delta, NULL, NULL); //odscrollujeme okno
+                ScrollWindow(hWindow, 0, delta, NULL, NULL); // scroll the window contents
                 UpdateWindow(hWindow);
             }
         }

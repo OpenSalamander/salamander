@@ -17,8 +17,8 @@
 #define OSSPECIFIC_PLATFORM_NT (VER_PLATFORM_WIN32_NT << OSSPECIFIC_PLATFORM_SHIFT)
 #define OSSPECIFIC_PLATFORM_MASK (OSSPECIFIC_PLATFORM_NT)
 
-// Petr: pokud se sem bude pridavat novejsi verze Windows (posledni detekovana je Windows 8.1),
-//       je nutne pridat tez jeji detekci do DllMain
+// Petr: if a newer version of Windows is added here (the last detected is Windows 8.1),
+//       its detection must also be added to DllMain
 
 #define OSSPECIFIC(major, minor, platform) ((DWORD)(((minor) & 0xFF) | (((major) & 0xFF) << 8) | platform))
 #define OSSPECIFIC_7 OSSPECIFIC(6, 1, OSSPECIFIC_PLATFORM_NT)

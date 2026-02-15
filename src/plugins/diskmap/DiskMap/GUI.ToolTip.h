@@ -14,7 +14,7 @@ const TCHAR szToolTipWindowClass[] = TEXT("Zar.DM.ToolTip.WC");
 #define CS_DROPSHADOW 0x00020000
 #define SPI_GETDROPSHADOW 0x1024
 
-#define MAX_TYPELEN 80 //odpovida SHFILEINFO.szTypeName[80]
+#define MAX_TYPELEN 80 //matches SHFILEINFO.szTypeName[80]
 #define MAX_DATELEN 64
 #define MAX_SIZELEN 64
 
@@ -532,7 +532,7 @@ public:
             if (this->_hicon)
                 DestroyIcon(this->_hicon);
             this->_hicon = hicon;
-            this->Repaint(TRUE); //kresli se jen ikona pres prazdne misto
+            this->Repaint(TRUE); //only the icon is drawn over the empty space
         }
         else
         {

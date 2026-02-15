@@ -1,10 +1,11 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
 #define EDTLBN_FIRST (0U - 3050U)
-// chodi struktura EDTLB_DISPINFO
+// the EDTLB_DISPINFO structure is sent
 #define EDTLBN_GETDISPINFO (EDTLBN_FIRST - 1U)
 //#define EDTLBN_MOVEITEM       (EDTLBN_FIRST - 2U)
 #define EDTLBN_DELETEITEM (EDTLBN_FIRST - 3U)
@@ -13,12 +14,12 @@
 #define EDTLBN_MOVEITEM2 (EDTLBN_FIRST - 7U)
 #define EDTLBN_ICONCLICKED (EDTLBN_FIRST - 8U)
 
-// itemID jsou povazovany za indexy a jsou tak obsluhovany pri insertu, movu a deletu
+// itemID values are considered indexes and are handled as such during insert, move and delete
 #define ELB_ITEMINDEXES 0x00000001
 #define ELB_RIGHTARROW 0x00000002
-#define ELB_ENABLECOMMANDS 0x00000004   // kontrol bude zasilat EDTLBN_ENABLECOMMANDS
-#define ELB_SHOWICON 0x00000008         // kazda polozka ma ikonu
-#define ELB_SPACEASICONCLICK 0x00000010 // klavesa space nageneruje EDTLBN_ICONCLICKED
+#define ELB_ENABLECOMMANDS 0x00000004   // the control will send EDTLBN_ENABLECOMMANDS
+#define ELB_SHOWICON 0x00000008         // each item has an icon
+#define ELB_SPACEASICONCLICK 0x00000010 // the Space key generates EDTLBN_ICONCLICKED
 
 enum CEdtLBEnum
 {
@@ -35,12 +36,12 @@ typedef struct
     int Index;
     int BufferLen;
     INT_PTR ItemID;
-    BOOL Bold;    // ma se text vypsat tucne?
-                  //  BOOL          Up;            // pro EDTLBN_MOVEITEM
-    HWND HEdit;   // pro EDTLBN_CONTEXTMENU
-    POINT Point;  // pro EDTLBN_CONTEXTMENU
-    BYTE Enable;  // pro EDTLBN_ENABLECOMMANDS, obsahuje TLBHDRMASK_xxx
-    int NewIndex; // pro EDTLBN_MOVEITEM2
+    BOOL Bold;    // should the text be printed bold?
+                  //  BOOL          Up;            // for EDTLBN_MOVEITEM
+    HWND HEdit;   // for EDTLBN_CONTEXTMENU
+    POINT Point;  // for EDTLBN_CONTEXTMENU
+    BYTE Enable;  // for EDTLBN_ENABLECOMMANDS, contains TLBHDRMASK_xxx
+    int NewIndex; // for EDTLBN_MOVEITEM2
 } EDTLB_DISPINFO;
 
 //******************************************************************************
@@ -87,45 +88,45 @@ protected:
 
     //    DWORD          DragNotify;
 
-    BOOL WaitForDrag; // po WM_LBUTTONDOWN; je nastaven DragAnchor
-    POINT DragAnchor; // kde doslo k WM_LBUTTONDOWN (client souradnice)
-    BOOL Dragging;    // doslo k utrhnuti po WaitForDrag
-    BOOL SelChanged;  // pri WM_LBUTTONDOWN doslo ke zmene polozky
+    BOOL WaitForDrag; // after WM_LBUTTONDOWN DragAnchor is set
+    POINT DragAnchor; // where WM_LBUTTONDOWN occurred (client coordinates)
+    BOOL Dragging;    // break-away happened after WaitForDrag
+    BOOL SelChanged;  // WM_LBUTTONDOWN changed the item
                       //    BOOL           MovedDuringDrag;
 
-    HWND HMarkWindow; // pokud je ruzny od NULL, je povolen d&d
+    HWND HMarkWindow; // if not NULL, drag&drop is enabled
 
 public:
-    // je-li nastavena promenna itemIndexes na TRUE, jsou itemID povazovany za
-    // indexy a jsou tak obsluhovany pri insertu, movu a deletu
+    // if the itemIndexes variable is set to TRUE, itemID values are treated as
+    // indexes and are handled as such when inserting, moving and deleting
     CEditListBox(HWND hDlg, int ctrlID, DWORD flags = 0, CObjectOrigin origin = ooAllocated);
     ~CEditListBox();
 
-    // prida polozku a vrati jeji index
+    // adds an item and returns its index
     int AddItem(INT_PTR itemID = 0);
-    // vlozi polozku a vrati jeji index
+    // inserts an item and returns its index
     int InsertItem(INT_PTR itemID, int index);
     BOOL SetItemData(INT_PTR itemID = 0);
-    // smaze polozku na urcitem indexu
+    // deletes the item at the specified index
     BOOL DeleteItem(int index);
-    // smaze vsechny polozky
+    // deletes all items
     void DeleteAllItems();
 
     BOOL SetCurSel(int index);
 
-    // vraci index vybrane polozky - pro novou polozku je o 1 vetsi, nez
-    // pocet polozek
+    // returns index of the selected item - for a new item it is one more than
+    // the number of items
     BOOL GetCurSel(int& index);
-    // vraci -1 pro prazdnou polozku
+    // returns -1 for an empty item
     BOOL GetCurSelItemID(INT_PTR& itemID);
     BOOL GetItemID(int index, INT_PTR& itemID);
 
-    // zmeni ID dane polozky
+    // changes the ID of the specified item
     BOOL SetItemID(int index, INT_PTR itemID);
 
     int GetCount() { return ItemsCount; }
 
-    // zmeni static tak, aby byl nad celym oknem a prid do nej toolbaru
+    // modifies the static control so it covers the entire window and adds a toolbar to it
     BOOL MakeHeader(int ctrlID);
 
     //    BOOL OnWMNotify(LPARAM lParam, LRESULT &result);
@@ -138,22 +139,22 @@ public:
     void OnMoveDown();
     void MoveItem(int newIndex);
 
-    // vrati zda jsou povolene jednotlive commandy (umi se doptat parenta)
+    // returns which commands are enabled (can query the parent)
     BYTE GetEnabler();
 
     void RedrawFocusedItem();
 
-    // zacneme editovat aktualni polozku
+    // start editing the current item
     void OnBeginEdit(int start = 0, int end = -1);
     void OnEndEdit();
-    BOOL OnSaveEdit(); // vrati TRUE, pokud to uzivatel povoli
+    BOOL OnSaveEdit(); // returns TRUE if the user allows it
 
-    // namaluje tlacitko za editline
+    // draws the button after the edit line
     void PaintButton();
     void OnPressButton();
 
-    // povili drag&drop polozek, 'hMarkWindow' je okno, kam bude vykreslovana znacka dopadu d&d
-    // pokud je 'hMarkWindow' nastaveno na NULL, je d&d zakazan
+    // enables drag&drop of items; 'hMarkWindow' is the window where the drop marker will be drawn
+    // if 'hMarkWindow' is set to NULL, drag&drop is disabled
     void EnableDrag(HWND hMarkWindow);
 
 protected:

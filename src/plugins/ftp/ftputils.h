@@ -1,276 +1,276 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
-extern const char* FTP_ANONYMOUS; // standardni jmeno pro anonymniho uzivatele
-// standardni port FTP (21) je definovan v konstante: IPPORT_FTP
+extern const char* FTP_ANONYMOUS; // standard name for an anonymous user
+// standard FTP port (21) is defined in the constant: IPPORT_FTP
 
-// konstanty typu cest na FTP serveru pro funkci GetFTPServerPathType
+// path type constants on an FTP server for function GetFTPServerPathType
 enum CFTPServerPathType
 {
-    ftpsptEmpty,   // prazdna hodnota (zatim vubec nebyl vyhodnocen)
-    ftpsptUnknown, // neodpovida zadnemu z nasledujicich typu cest
-    ftpsptUnix,    // napr. /pub/altap/salamand (ale i /\dir-with-backslash)
-    ftpsptNetware, // napr. /pub/altap/salamand nebo \pub\altap\salamand
-    ftpsptOpenVMS, // napr. PUB$DEVICE:[PUB.VMS] nebo [PUB.VMS]  (pojmenovano "OpenVMS" aby se nepletlo s "MVS")
-    ftpsptMVS,     // napr. 'VEA0016.MAIN.CLIST'
-    ftpsptWindows, // napr. /pub/altap/salamand nebo \pub\altap\salamand
-    ftpsptIBMz_VM, // napr. ACADEM:ANONYMOU.PICS nebo ACADEM:ANONYMOU. (root)
-    ftpsptOS2,     // napr. C:/DIR1/DIR2 nebo C:\DIR1\DIR2
-    ftpsptTandem,  // napr. \SYSTEM.$VVVVV.SUBVOLUM.FILENAME
-    ftpsptAS400,   // napr. /QSYS.LIB/GARY.LIB (nebo /QDLS/oetst)
+    ftpsptEmpty,   // empty value (has not been evaluated yet at all)
+    ftpsptUnknown, // does not match any of the following path types
+    ftpsptUnix,    // e.g. /pub/altap/salamand (but also /\dir-with-backslash)
+    ftpsptNetware, // e.g. /pub/altap/salamand or \pub\altap\salamand
+    ftpsptOpenVMS, // e.g. PUB$DEVICE:[PUB.VMS] or [PUB.VMS] (named "OpenVMS" so it is not confused with "MVS")
+    ftpsptMVS,     // e.g. 'VEA0016.MAIN.CLIST'
+    ftpsptWindows, // e.g. /pub/altap/salamand or \pub\altap\salamand
+    ftpsptIBMz_VM, // e.g. ACADEM:ANONYMOU.PICS or ACADEM:ANONYMOU. (root)
+    ftpsptOS2,     // e.g. C:/DIR1/DIR2 or C:\DIR1\DIR2
+    ftpsptTandem,  // e.g. \SYSTEM.$VVVVV.SUBVOLUM.FILENAME
+    ftpsptAS400,   // e.g. /QSYS.LIB/GARY.LIB (or /QDLS/oetst)
 };
 
-// zjisti typ cesty na FTP serveru; neni-li 'serverFirstReply' NULL, jde o prvni odpoved
-// serveru (casto v ni je verze serveru); neni-li 'serverSystem' NULL, jde o odpoved FTP
-// serveru na prikaz SYST (nas ftpcmdSystem); 'path' je cesta na FTP serveru; vraci typ cesty
+// determines the path type on an FTP server; if 'serverFirstReply' is not NULL, it is the first
+// reply from the server (often containing the server version); if 'serverSystem' is not NULL, it
+// is the FTP server response to the SYST command (our ftpcmdSystem); 'path' is the path on the FTP
 CFTPServerPathType GetFTPServerPathType(const char* serverFirstReply, const char* serverSystem,
                                         const char* path);
 
-// vyparsuje z odpovedi serveru na prikaz SYST ulozene v 'serverSystem' jmeno systemu
-// a ulozi ho do 'sysName' (buffer aspon 201 znaku); pokud neni mozne zjistit z teto
-// odpovedi jmeno systemu, vraci prazdny retezec
+// parses the system name from the server response to the SYST command stored in 'serverSystem'
+// and stores it into 'sysName' (a buffer of at least 201 characters); if it is not possible to
+// obtain the system name from this response, returns an empty string
 void FTPGetServerSystem(const char* serverSystem, char* sysName);
 
-// zkracuje cestu na FTP serveru o posledni adresar/soubor (oddelovace adresaru jsou zavisle
-// na typu cesty - 'type'), 'path' je in/out buffer (min. velikost 'pathBufSize' bytu,
-// pozor u VMS cest se muze stat, ze je treba do 'path' zapsat vic znaku, nez je
-// delka 'path' - pri nedostatku mista v 'path' se retezec orizne), v 'cutDir'
-// (buffer o min. velikosti 'cutDirBufSize') se vraci posledni adresar (odriznuta
-// cast; pokud se retezec nevejde do bufferu, je oriznut); neni-li 'fileNameCouldBeCut'
-// NULL, vraci se v nem TRUE pokud odriznuta cast muze byt jmeno souboru; vraci TRUE
-// pokud doslo ke zkraceni (neslo o root cestu a 'type' je znamy typ cesty)
+// shortens the FTP server path by the last directory/file (directory separators depend on the
+// path type - 'type'), 'path' is an in/out buffer (min. size 'pathBufSize' bytes; note that with
+// VMS paths it may be necessary to write more characters into 'path' than its length - if there is
+// not enough space in 'path', the string is truncated); 'cutDir'
+// (a buffer of at least 'cutDirBufSize') returns the last directory (the removed part;
+// if the string does not fit into the buffer, it is truncated); if 'fileNameCouldBeCut'
+// is not NULL, it returns TRUE when the removed part can be a file name; returns TRUE
+// if shortening was performed (it was not a root path and 'type' is a known path type)
 BOOL FTPCutDirectory(CFTPServerPathType type, char* path, int pathBufSize,
                      char* cutDir, int cutDirBufSize, BOOL* fileNameCouldBeCut);
 
-// spoji cestu 'path' a 'name' (jmeno souboru/adresare - 'isDir' je FALSE/TRUE) do 'path',
-// zajisti spojeni podle typu cesty - 'type'; 'path' je buffer alespon 'pathSize' znaku;
-// vraci TRUE pokud se 'name' veslo do 'path'; je-li 'path' nebo 'name' prazdne, ke
-// spojeni nedojde (muze dojit k uprave cesty 'path' - oriznuti na minimalni delku - napr.
+// concatenates the path 'path' and 'name' (file/directory name - 'isDir' is FALSE/TRUE) into
+// 'path', performing the concatenation according to the path type - 'type'; 'path' is a buffer of
+// at least 'pathSize' characters; returns TRUE if 'name' fits into 'path'; if 'path' or 'name' is
+// empty, no concatenation occurs (the 'path' path may be adjusted - truncated to the minimal length - e.g.
 // "/pub/" + "" = "/pub")
 BOOL FTPPathAppend(CFTPServerPathType type, char* path, int pathSize, const char* name, BOOL isDir);
 
-// zjisti jestli je cesta na FTP serveru (ne userpart cesta) 'path' platna a jestli nejde
-// o root cestu (detekce podle typu cesty - 'type'); vraci TRUE je-li 'path' platna a neni
-// to root cesta
+// determines whether the FTP server path (not a user-part path) 'path' is valid and whether it is
+// not a root path (detection is based on the path type - 'type'); returns TRUE if 'path' is valid
+// and is not a root path
 BOOL FTPIsValidAndNotRootPath(CFTPServerPathType type, const char* path);
 
-// prevede escape sekvence (napr. "%20" = " ") v retezci 'txt' na ASCII znaky
+// converts escape sequences (e.g. "%20" = " ") in the string 'txt' to ASCII characters
 void FTPConvertHexEscapeSequences(char* txt);
-// pripravi text 'txt' tak, aby bez uhony prezil naslednou konverzi escape sekvenci na ASCII
-// znaky (napr. "%20" = "%2520"); 'txtSize' je velikost bufferu 'txt'; vraci FALSE je-li buffer
-// prilis maly pro uspesnou konverzi
+// prepares the text 'txt' so that it survives the subsequent conversion of escape sequences to
+// ASCII characters (e.g. "%20" = "%2520"); 'txtSize' is the size of the 'txt' buffer; returns
+// FALSE if the buffer is too small for a successful conversion
 BOOL FTPAddHexEscapeSequences(char* txt, int txtSize);
 
-// rozdeli user-part cestu na jednotlive casti (jmeno uzivatele, hostitele, port a cestu (bez '/'
-// nebo '\\' na zacatku)); vlozi do retezce cesty 'p' nuly tak, aby byly jednotlive casti nulou
-// ukoncene retezce; neni-li 'firstCharOfPath' NULL a obsahuje-li cesta na FTP cestu v ramci
-// serveru (retezec 'path'), vlozi se do 'firstCharOfPath' oddelovac teto cesty ('/' nebo '\\');
-// nemusi vracet vsechny casti ('user', 'host', 'port' i 'path' muzou byt NULL); pokud se
-// nepodari ziskat danou cast cesty (cesta ji nemusi obsahovat), vraci se v prislusne promenne
-// NULL; 'user', 'host' a 'port' vraci orezane o mezery z obou stran; 'userLength' je
-// nula pokud netusime, jak dlouhe je uzivatelske jmeno nebo pokud v nem nejsou "zakazane"
-// znaky, jinak je to ocekavana delka uzivatelskeho jmena; format cesty:
-// "//user:password@host:port/path" nebo jen "user:password@host:port/path" (+ "/path" muze byt
-// i "\path") + "user:password@", ":password" a ":port" muzou byt vynechane
+// splits the user-part path into individual components (user name, host, port, and path (without
+// '/' or '\\' at the beginning)); inserts zero terminators into the path string 'p' so each
+// component becomes a null-terminated string; if 'firstCharOfPath' is not NULL and the FTP path
+// contains a path within the server ('path' string), 'firstCharOfPath' receives the separator of this
+// path ('/' or '\\'); it does not need to return all components ('user', 'host', 'port', and 'path'
+// can be NULL); if a particular component cannot be obtained (the path might not contain it), the
+// corresponding variable receives NULL; 'user', 'host', and 'port' are returned trimmed of
+// whitespace on both sides; 'userLength' is zero if we do not know how long the user name is or if it
+// does not contain "forbidden" characters, otherwise it is the expected length of the user name;
+// path format: "//user:password@host:port/path" or just "user:password@host:port/path" (and
+// "/path" can also be "\path") + "user:password@", ":password", and ":port" can be omitted
 void FTPSplitPath(char* p, char** user, char** password, char** host, char** port,
                   char** path, char* firstCharOfPath, int userLength);
 
-// vraci delku username pro pouziti v parametrech "userLength" (FTPSplitPath, FTPFindPath, atd.);
-// pro anonymniho usera a dalsi usernamy bez specialnich znaku ('@', '/', '\\', ':') vraci nulu;
-// 'user' muze byt i NULL
+// returns the length of the username for use in the "userLength" parameters (FTPSplitPath,
+// FTPFindPath, etc.); for an anonymous user and other usernames without special characters
+// ('@', '/', '\', ':') returns zero; 'user' can also be NULL
 int FTPGetUserLength(const char* user);
 
-// vraci ukazatel na remote-path v FTP ceste (ukazatel do bufferu 'path'); 'path' je cesta
-// ve formatu "//user:password@host:port/remotepath" nebo jen "user:password@host:port/remotepath"
-// ("user:password@", ":password" a ":port" muzou byt vynechane); 'userLength' je
-// nula pokud netusime, jak dlouhe je uzivatelske jmeno nebo pokud v nem nejsou "zakazane"
-// znaky, jinak je to ocekavana delka uzivatelskeho jmena; pokud nenajde remote-path, vraci
-// ukazatel na konec retezce 'path'
+// returns a pointer to the remote path in an FTP path (a pointer into the 'path' buffer); 'path'
+// is in the format "//user:password@host:port/remotepath" or just
+// "user:password@host:port/remotepath" ("user:password@", ":password", and ":port" can be
+// omitted); 'userLength' is zero if we do not know how long the user name is or if it does not
+// contain "forbidden" characters, otherwise it is the expected length of the user name; if the
+// remote path is not found, returns a pointer to the end of the 'path' string
 const char* FTPFindPath(const char* path, int userLength);
 
-// podle typu cesty vraci ukazatel na remote-path v ceste (ukazatel do bufferu 'path');
-// slouzi k preskoceni/nechani uvodniho slashe/backslashe v ceste; 'path' je cesta formatu
-// "/remotepath" nebo "\remotepath" (cast cesty za hostem v user-part ceste); 'type' je
-// typ cesty
+// based on the path type returns a pointer to the remote path in the path (a pointer into the
+// 'path' buffer); used to skip/keep the leading slash/backslash in the path; 'path' is of the form
+// "/remotepath" or "\remotepath" (the part of the path after the host in the user-part path); 'type' is
+// the path type
 const char* FTPGetLocalPath(const char* path, CFTPServerPathType type);
 
-// porovnava dve cesty na FTP serveru (ne user-part cesty), vraci TRUE pokud jsou stejne;
-// 'type' je typ aspon jedne z cest
+// compares two paths on the FTP server (not user-part paths), returns TRUE if they are the same;
+// 'type' is the type of at least one of the paths
 BOOL FTPIsTheSameServerPath(CFTPServerPathType type, const char* p1, const char* p2);
 
-// zjistuje, jestli je 'prefix' prefix 'path' - obe cesty jsou na FTP serveru (nejde o user-part
-// cesty), vraci TRUE pokud jde o prefix; 'type' je typ aspon jedne z cest; je-li 'mustBeSame'
-// TRUE, musi se 'prefix' a 'path' shodovat (shodna funkce s FTPIsTheSameServerPath())
+// determines whether 'prefix' is a prefix of 'path' - both paths are on the FTP server (not
+// user-part paths), returns TRUE if it is a prefix; 'type' is the type of at least one of the
+// paths; if 'mustBeSame' is TRUE, 'prefix' and 'path' must match (same function as
 BOOL FTPIsPrefixOfServerPath(CFTPServerPathType type, const char* prefix, const char* path,
                              BOOL mustBeSame = FALSE);
 
-// porovna dve user-part cesty na FTP, vraci TRUE pokud jsou stejne; je-li 'sameIfPath2IsRelative'
-// TRUE, vraci TRUE i pokud se 'p1' a 'p2' shodujici jen v user+host+port a 'p2' neobsahuje cestu
-// v ramci FTP serveru (napr. "ftp://petr@localhost"); 'type' je typ aspon jedne z cest;
-// 'userLength' je nula pokud netusime, jak dlouhe je uzivatelske jmeno nebo pokud v nem nejsou
-// "zakazane" znaky, jinak je to ocekavana delka uzivatelskeho jmena
+// compares two user-part paths on FTP, returns TRUE if they are the same; if
+// 'sameIfPath2IsRelative' is TRUE, returns TRUE even if 'p1' and 'p2' match only in user+host+port
+// and 'p2' does not contain a path within the FTP server (e.g. "ftp://petr@localhost"); 'type' is
+// 'userLength' is zero if we do not know how long the user name is or if it does not contain "forbidden"
+// characters, otherwise it is the expected length of the user name
 BOOL FTPIsTheSamePath(CFTPServerPathType type, const char* p1, const char* p2,
                       BOOL sameIfPath2IsRelative, int userLength);
 
-// porovna rooty dvou user-part cest na FTP, vraci TRUE pokud jsou stejne;
-// 'userLength' je nula pokud netusime, jak dlouhe je uzivatelske jmeno nebo pokud v nem nejsou
-// "zakazane" znaky, jinak je to ocekavana delka uzivatelskeho jmena
+// compares the roots of two user-part FTP paths, returns TRUE if they are the same;
+// 'userLength' is zero if we do not know how long the user name is or if it does not contain "forbidden"
+// characters, otherwise it is the expected length of the user name
 BOOL FTPHasTheSameRootPath(const char* p1, const char* p2, int userLength);
 
-// vraci popis chyby
+// returns an error description
 char* FTPGetErrorText(int err, char* buf, int bufSize);
 
-// vraci podle typu cesty jeden znak, ktery se pouziva k oddelovani komponent cest (podadresaru)
+// returns, based on the path type, the character used to separate path components (subdirectories)
 char FTPGetPathDelimiter(CFTPServerPathType pathType);
 
-// jen pro typ cest ftpsptIBMz_VM: ziska root cestu z cesty 'path'; 'root'+'rootSize' je buffer
-// pro vysledek; vraci uspech
+// only for the ftpsptIBMz_VM path type: obtains the root path from the path 'path';
+// 'root'+'rootSize' is the buffer for the result; returns success
 BOOL FTPGetIBMz_VMRootPath(char* root, int rootSize, const char* path);
 
-// jen pro typ cest ftpsptOS2: ziska root cestu z cesty 'path'; 'root'+'rootSize' je buffer
-// pro vysledek; vraci uspech
+// only for the ftpsptOS2 path type: obtains the root path from the path 'path';
+// 'root'+'rootSize' is the buffer for the result; returns success
 BOOL FTPGetOS2RootPath(char* root, int rootSize, const char* path);
 
-// ziska ciselnou hodnotu z retezce UNIXovych prav 'rights'; hodnotu vraci v actAttr (nesmi byt NULL);
-// najde-li prava nenastavitelna pomoci "site chmod" ('s','t', atd.), naORuje prislusne
-// bity do 'attrDiff' (nesmi byt NULL); pokud jde o UNIXova prava, vraci TRUE, jinak vraci
-// FALSE (neznamy retezec prav nebo napr. ACL prava na UNIXU (napr. "drwxrwxr-x+"))
+// obtains the numeric value from the UNIX rights string 'rights'; returns the value in actAttr
+// (must not be NULL); if it finds permissions that cannot be set via "site chmod" ('s', 't', etc.),
+// it ORs the respective bits into 'attrDiff' (must not be NULL); if the rights are UNIX rights, it
+// returns TRUE, otherwise it returns FALSE (unknown rights string or e.g. ACL rights on UNIX (such
 BOOL GetAttrsFromUNIXRights(DWORD* actAttr, DWORD* attrDiff, const char* rights);
 
-// prevede 'attrs' (ciselna prava na UNIXu) na retezec UNIXovych prav (bez prvniho
-// pismene) do bufferu 'buf' o velikosti 'bufSize'
+// converts 'attrs' (numeric rights on UNIX) to a UNIX rights string (without the first letter)
+// into the 'buf' buffer of size 'bufSize'
 void GetUNIXRightsStr(char* buf, int bufSize, DWORD attrs);
 
-// vraci TRUE, pokud jsou 'rights' prava UNIXoveho linku; UNIXova prava = musi mit 10 znaku
-// nebo 11 pokud konci na '+' (ACL prava); format prav linku: 'lrw?rw?rw?' + misto 'r' a 'w'
-// muze byt '-'
+// returns TRUE if 'rights' represents UNIX link rights; UNIX rights = must have 10 characters or 11
+// if it ends with '+' (ACL rights); link rights format: 'lrw?rw?rw?' + instead of 'r' and 'w'
+// there may be '-'
 BOOL IsUNIXLink(const char* rights);
 
-// stejna funkce jako FTPGetErrorText, jen zajistuje na konci retezce CRLF;
-// POZOR: 'bufSize' musi byt vetsi nez 2
+// same function as FTPGetErrorText, only ensures CRLF at the end of the string;
+// NOTE: 'bufSize' must be greater than 2
 void FTPGetErrorTextForLog(DWORD err, char* errBuf, int bufSize);
 
-// metoda pro detekovani jestli jiz je v bufferu 'readBytes' (platnych 'readBytesCount'
-// bytu, cte se od pozice 'readBytesOffset') cela odpoved od FTP serveru; vraci TRUE
-// pri uspechu - v 'reply' (nesmi byt NULL) vraci ukazatel na zacatek odpovedi,
-// v 'replySize' (nesmi byt NULL) vraci delku odpovedi, v 'replyCode' (neni-li NULL)
-// vraci FTP kod odpovedi nebo -1 pokud odpoved nema zadny kod (nezacina na triciferne
-// cislo); pokud jeste neni odpoved kompletni, vraci FALSE
+// method for detecting whether the buffer 'readBytes' (with 'readBytesCount' valid bytes, reading
+// from position 'readBytesOffset') already contains the entire response from the FTP server;
+// returns TRUE on success - 'reply' (must not be NULL) receives a pointer to the beginning of the
+// response, 'replySize' (must not be NULL) receives the length of the response, 'replyCode'
+// (if not NULL) receives the FTP response code or -1 if the response has no code (does not start
+// with a three-digit number); if the response is not complete yet, returns FALSE
 BOOL FTPReadFTPReply(char* readBytes, int readBytesCount, int readBytesOffset,
                      char** reply, int* replySize, int* replyCode);
 
-// z retezce 'reply' vyparsuje adresar (pravidla viz RFC 959 - FTP odpoved cislo "257");
-// nevyzaduje striktne "257" na zacatku retezce (je-li nutne, osetrit pred volanim);
-// vraci TRUE pokud se podarilo adresar ziskat
-// mozne volat z libovolneho threadu
+// parses the directory from the string 'reply' (rules see RFC 959 - FTP response number "257");
+// does not strictly require "257" at the beginning of the string (handle if necessary before
+// calling); returns TRUE if the directory was obtained successfully
+// can be called from any thread
 BOOL FTPGetDirectoryFromReply(const char* reply, int replySize, char* dirBuf, int dirBufSize);
 
-// z retezce 'reply' o delce 'replySize' (-1 == pouzit 'strlen(reply)') vyparsuje IP+port
-// (vraci v 'ip'+'port' (nesmi byt NULL); pravidla viz RFC 959 - FTP odpoved cislo 227);
-// nevyzaduje striktne "227" na zacatku retezce (je-li nutne, osetrit pred volanim);
-// vraci TRUE pokud se podarilo IP+port ziskat
-// mozne volat z libovolneho threadu
+// parses IP+port from the string 'reply' of length 'replySize' (-1 == use 'strlen(reply)') (returns
+// it in 'ip'+'port' (must not be NULL); rules see RFC 959 - FTP response number 227);
+// does not strictly require "227" at the beginning of the string (handle if necessary before
+// calling); returns TRUE if obtaining IP+port succeeded
+// can be called from any thread
 BOOL FTPGetIPAndPortFromReply(const char* reply, int replySize, DWORD* ip, unsigned short* port);
 
-// z retezce 'reply' o delce 'replySize' vyparsuje velikost dat a vraci je v 'size';
-// pri uspechu vraci TRUE, jinak FALSE a 'size' nahodne nastavene
+// parses the data size from the string 'reply' of length 'replySize' and returns it in 'size';
+// on success returns TRUE, otherwise FALSE and 'size' is set arbitrarily
 BOOL FTPGetDataSizeInfoFromSrvReply(CQuadWord& size, const char* reply, int replySize);
 
-// vytvori VMS jmeno adresare (prida ".DIR;1")
+// creates a VMS directory name (adds ".DIR;1")
 void FTPMakeVMSDirName(char* vmsDirNameBuf, int vmsDirNameBufSize, const char* dirName);
 
-// overi jestli je v ceste 'pathBeginning' escape sekvence pred znakem 'checkedChar'
-// (napr. "^." je '.', kterou VMS nepovazuje za oddelovac cesty ani pripony, atd.);
-// vraci TRUE pokud je pred znakem escape sekvence (aneb znak nema specialni vyznam)
+// checks whether there is an escape sequence before the character 'checkedChar' in the path
+// 'pathBeginning' (e.g. "^." is '.', which VMS does not consider a path or extension separator,
+// etc.); returns TRUE if there is an escape sequence before the character (meaning the character
 BOOL FTPIsVMSEscapeSequence(const char* pathBeginning, const char* checkedChar);
 
-// vraci TRUE pokud cesta 'path' typu 'type' konci oddelovacem komponent cesty
-// (napr. "/pub/dir/" nebo "PUB$DEVICE:[PUB.VMS.]")
+// returns TRUE if the path 'path' of type 'type' ends with a path component delimiter
+// (e.g. "/pub/dir/" or "PUB$DEVICE:[PUB.VMS.]")
 BOOL FTPPathEndsWithDelimiter(CFTPServerPathType type, const char* path);
 
-// zkracuje IBM z/VM cestu na FTP serveru o posledni dve komponenty, 'path' je in/out
-// buffer (min. velikost 'pathBufSize' bytu), v 'cutDir' (buffer o min. velikosti
-// 'cutDirBufSize') se vraci posledni dve komponenty (odriznuta cast; pokud se retezec
-// nevejde do bufferu, je oriznut); vraci TRUE pokud doslo ke zkraceni
+// shortens an IBM z/VM path on the FTP server by the last two components; 'path' is an in/out
+// buffer (min. size 'pathBufSize' bytes), 'cutDir' (a buffer of at least
+// 'cutDirBufSize') returns the last two components (the removed part; if the string
+// does not fit into the buffer, it is truncated); returns TRUE if shortening occurred
 BOOL FTPIBMz_VmCutTwoDirectories(char* path, int pathBufSize, char* cutDir, int cutDirBufSize);
 
-// orezava cislo verze souboru ze jmena souboru na OpenVMS (napr. "a.txt;1" -> "a.txt");
-// 'name' je jmeno; 'nameLen' je delka 'name' (-1 = delka neni znama, pouzit strlen(name));
-// vraci TRUE pokud doslo k oriznuti
+// trims the file version number from an OpenVMS file name (e.g. "a.txt;1" -> "a.txt");
+// 'name' is the name; 'nameLen' is the length of 'name' (-1 = length unknown, use strlen(name));
+// returns TRUE if trimming occurred
 BOOL FTPVMSCutFileVersion(char* name, int nameLen);
 
-// vraci TRUE pokud je 'path' relativni cesta na ceste typu 'pathType';
-// POZOR: napr. "[pub]" na VMS nebo "/dir" na OS/2 jsou pro tuto funkci
-// absolutni cesty, i kdyz na plnou absolutni cestu se musi doplnit
-// volanim funkce FTPCompleteAbsolutePath
+// returns TRUE if 'path' is a relative path on a path of type 'pathType';
+// NOTE: e.g. "[pub]" on VMS or "/dir" on OS/2 are considered absolute paths for this function,
+// even though they need to be completed to a full absolute path
+// by calling FTPCompleteAbsolutePath
 BOOL FTPIsPathRelative(CFTPServerPathType pathType, const char* path);
 
-// vraci prvni podadresar na relativni ceste a zkrati o nej tuto relativni cestu;
-// 'path' je relativni cesta na ceste typu 'pathType'; 'cut' je buffer pro
-// oriznuty prvni podadresar o velikosti 'cutBufSize'; vraci TRUE pokud se
-// oriznuti povedlo (po oriznuti posledniho podadresare z cesty je v 'path'
-// prazdny retezec); POZOR: neumi pracovat se jmeny souboru (napr. VMS: chybne
-// rozdeli "[.a]b.c;1" na "a", "b" a "c;1")
+// returns the first subdirectory on a relative path and shortens that relative path by it;
+// 'path' is a relative path on a path of type 'pathType'; 'cut' is a buffer for
+// the removed first subdirectory of size 'cutBufSize'; returns TRUE if the
+// trimming succeeded (after trimming the last subdirectory from the path 'path'
+// contains an empty string); NOTE: does not handle file names (e.g. VMS: incorrectly
+// splits "[.a]b.c;1" into "a", "b", and "c;1")
 BOOL FTPCutFirstDirFromRelativePath(CFTPServerPathType pathType, char* path,
                                     char* cut, int cutBufSize);
 
-// doplni absolutni cestu na plnou absolutni cestu (u VMS se doplnuje svazek - napr.
-// "PUB$DEVICE:", u OS/2 disk - napr. "C:"); 'pathType' je typ cesty; 'path' je
-// absolutni cesta; v 'path' (buffer alespon 'pathBufSize' znaku) vraci plnou
-// absolutni cestu (nedostatek mista = oriznuty vysledek); 'workPath' je pracovni
-// plna absolutni cesta (odkud se bere svazek/disk); vraci uspech (i v pripade, ze
-// 'path' je plna absolutni cesta uz na vstupu - aneb neni co delat)
+// completes an absolute path to a full absolute path (for VMS the volume is added - e.g.
+// "PUB$DEVICE:", for OS/2 the drive - e.g. "C:"); 'pathType' is the path type; 'path' is an
+// absolute path; 'path' (a buffer of at least 'pathBufSize' characters) returns the full
+// absolute path (lack of space = truncated result); 'workPath' is the working
+// full absolute path (from which the volume/drive is taken); returns success (even if
+// 'path' is already a full absolute path on input - meaning there is nothing to do)
 BOOL FTPCompleteAbsolutePath(CFTPServerPathType pathType, char* path, int pathBufSize,
                              const char* workPath);
 
-// vypusti z cesty 'path' typu 'pathType' "." a ".." (tyka se jen vybranych typu
-// cest, napr. na VMS tato funkce nic nedela); vraci FALSE jen pokud nelze vypustit
-// ".." (jde o invalidni cestu: napr. "/..")
+// removes "." and ".." from the path 'path' of type 'pathType' (applies only to selected path
+// types; for example on VMS this function does nothing); returns FALSE only if ".." cannot be
+// removed (the path is invalid: e.g. "/..")
 BOOL FTPRemovePointsFromPath(char* path, CFTPServerPathType pathType);
 
-// vraci TRUE pokud je filesystem s typem cest 'pathType' case-sensitive (unix),
-// jinak je case-insensitive (windows)
+// returns TRUE if the file system with path type 'pathType' is case-sensitive (unix),
+// otherwise it is case-insensitive (windows)
 BOOL FTPIsCaseSensitive(CFTPServerPathType pathType);
 
-// vraci TRUE pokud jde o chybovou odpoved na prikaz LIST, ktera rika jen, ze
-// adresar je prazdny (proste nejde o chybu - VMS a Z/VM takove chyby nechyby
-// bohuzel hlasi)
+// returns TRUE if this is an error response to the LIST command that only says the directory is
+// empty (so it is not actually an error - unfortunately VMS and Z/VM still report such errors)
 BOOL FTPIsEmptyDirListErrReply(const char* listErrReply);
 
-// vraci TRUE, pokud jmeno 'name' muze byt jmeno jednoho souboru/adresare ('isDir' je
-// FALSE/TRUE) na ceste 'path' typu 'pathType'; slouzi jen k zamezeni vytvoreni vice
-// podadresaru misto jedineho (napr. "a.b.c" na VMS vytvori tri podadresare),
-// syntaktickou chybu ve jmene vraci az server
+// returns TRUE if the name 'name' can be the name of a single file/directory ('isDir' is
+// FALSE/TRUE) on the path 'path' of type 'pathType'; used only to prevent creating multiple
+// subdirectories instead of just one (e.g. "a.b.c" on VMS creates three subdirectories)
+// the server reports the syntax error in the name
 BOOL FTPMayBeValidNameComponent(const char* name, const char* path, BOOL isDir,
                                 CFTPServerPathType pathType);
 
-// pro upload na server: prida k cilove ceste masku *.* nebo * (pro pozdejsi zpracovani
-// operacni masky); 'pathType' je typ cesty; 'targetPath' je buffer (o velikosti
-// 'targetPathBufSize') obsahujici na vstupu cilovou cestu (plnou, vcetne fs-name),
-// na vystupu obohacenou o masku; 'noFilesSelected' je TRUE pokud se nemaji uploadit
-// zadne soubory (v panelu jsou oznacene jen adresare)
+// for uploading to the server: adds the *.* or * mask to the target path (for later processing of
+// the operation mask); 'pathType' is the path type; 'targetPath' is a buffer (of size
+// 'targetPathBufSize') containing the target path on input (full, including fs-name)
+// and on output enriched with the mask; 'noFilesSelected' is TRUE if no files should be uploaded
+// (only directories are selected in the panel)
 void FTPAddOperationMask(CFTPServerPathType pathType, char* targetPath, int targetPathBufSize,
                          BOOL noFilesSelected);
 
-// generuje nove jmeno pro jmeno 'originalName' (jde o soubor/adresar pokud je 'isDir'
-// FALSE/TRUE) na ceste typu 'pathType'; 'phase' je IN/OUT faze generovani (0 = pocatecni
-// faze, vraci -1 pokud jiz dalsi faze neni, jinak vraci cislo dalsi faze - pouzije se
-// pri pripadnem nasledujicim volani teto funkce); 'newName' je buffer pro vygenerovane
-// jmeno (velikost bufferu je MAX_PATH); 'index' je IN/OUT index jmena ve fazi 'phase'
-// (pouziva se pro generovani dalsich jmen v jedne fazi), pri prvnim volani v ramci jedne
-// faze je nula; 'alreadyRenamedFile' je TRUE jen pokud jde o soubor, ktery uz nejspis
-// byl prejmenovan (zajistime "name (2)"->"name (3)" misto ->"name (2) (2)")
+// generates a new name for the name 'originalName' (it is a file/directory if 'isDir' is
+// FALSE/TRUE) on a path of type 'pathType'; 'phase' is the IN/OUT generation phase (0 = initial
+// phase, returns -1 if there is no next phase, otherwise returns the number of the next phase -
+// used for possible subsequent calls of this function); 'newName' is the buffer for the generated
+// name (buffer size is MAX_PATH); 'index' is the IN/OUT name index within phase 'phase'
+// (used for generating additional names in a single phase), zero on the first call within one
+// phase; 'alreadyRenamedFile' is TRUE only if it is a file that has most likely
+// already been renamed (we ensure "name (2)"->"name (3)" instead of ->"name (2) (2)")
 void FTPGenerateNewName(int* phase, char* newName, int* index, const char* originalName,
                         CFTPServerPathType pathType, BOOL isDir, BOOL alreadyRenamedFile);
 
-// pro AS/400: pokud jde o jmeno formatu "???1.file/???2.mbr" (obe jmena ???1 a ???2 jsou shodna),
-// nakopiruje do 'mbrName' (buffer o velikosti MAX_PATH) "???2.mbr", jinak nakopiruje
+// for AS/400: if the name is in the form "???1.file/???2.mbr" (both names ???1 and ???2 are the
+// same), copies "???2.mbr" into 'mbrName' (a buffer of size MAX_PATH), otherwise copies
 // "???1.???2.mbr"
 void FTPAS400CutFileNamePart(char* mbrName, const char* name);
 
-// pro AS/400: pokud jde o jmeno formatu "???.mbr", prepise 'name' (buffer o velikosti
-// aspon 2*MAX_PATH) na "???.file/???.mbr" (obe jmena ??? jsou shodna), pokud jde o
-// jmeno formatu "???1.???2.mbr", zapise do 'name' "???1.file.???2.mbr"
+// for AS/400: if the name is in the form "???.mbr", rewrites 'name' (a buffer of size at least
+// 2*MAX_PATH) to "???.file/???.mbr" (both names ??? are the same); if the name is in the form
+// "???1.???2.mbr", writes "???1.file.???2.mbr" into 'name'
 void FTPAS400AddFileNamePart(char* name);

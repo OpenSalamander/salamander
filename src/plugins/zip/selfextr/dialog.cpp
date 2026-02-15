@@ -408,7 +408,7 @@ LRESULT CALLBACK ProgressControlProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             HRGN region = CreateRectRgn(2, 2, right, Height - 2);
             if (region != NULL)
             {
-                ExtSelectClipRgn(dc, region, RGN_AND); // budem kreslit jen do leve casti
+                ExtSelectClipRgn(dc, region, RGN_AND); // we will draw only into the left part
                 SetTextColor(dc, PGC_FONT_SELECT);
                 DrawText(dc, txt, lstrlen(txt), &r, DT_CENTER | DT_SINGLELINE | DT_VCENTER);
                 DeleteObject(region);
@@ -518,7 +518,7 @@ int TestFreeSpace(bool* unpack)
     else
     {
         clusterSize = 1;
-        free = 0xFFFFFFFF; // to staci sfx nikdy nebude vetsi:))
+        free = 0xFFFFFFFF; // enough — the SFX will never grow that large :))
     }
 
     //compute estimated free space
@@ -734,7 +734,7 @@ int CALLBACK DirectoryBrowse(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
     if (uMsg == BFFM_INITIALIZED)
     {
         SetWindowText(hwnd, StringTable[STR_BROWSEDIRTITLE]);
-        if (GetRootLen(TargetPath) < lstrlen(TargetPath)) // neni to root-dir
+        if (GetRootLen(TargetPath) < lstrlen(TargetPath)) // this is not a root directory
             PathRemoveBackslash(TargetPath);
         else
             PathAddBackslash(TargetPath);
@@ -762,7 +762,7 @@ void OnBrowse()
         SHGetPathFromIDList(res, TargetPath);
         SetDlgItemText(DlgWin, IDC_PATH, TargetPath);
     }
-    // uvolneni item-id-listu
+    // release the item ID list
     IMalloc* alloc;
     if (SUCCEEDED(CoGetMalloc(1, &alloc)))
     {
@@ -813,18 +813,18 @@ BOOL SfxOnInit(WPARAM wParam, LPARAM lParam)
     DlgWinAboutHeigth = r.bottom - r.top;
     RECT r2;
     GetWindowRect(GetDlgItem(DlgWin, IDC_SEPARATOR), &r2);
-    // aplikace prelozena s novejsim platform toolset pracuje jinak s velikosti oken, vice viz
+    // an application built with a newer platform toolset handles dialog sizes differently; see
     // https://social.msdn.microsoft.com/Forums/vstudio/en-US/7ca548b5-8931-41dc-ac1d-ed9aed223d7a/different-dialog-box-position-and-size-with-visual-c-2012
     // https://connect.microsoft.com/VisualStudio/feedback/details/768135/different-dialog-box-size-and-position-when-compiled-in-visual-c-2012-vs-2010-2008
-    // proto nefunguje puvodni reseni (ve vc2012+ je okno nizsi nez ve vc2010-): DlgWinHeigth = r2.top - r.top + 1;
-    // reseni: DlgWinHeigth = plna vyska okna minus rozdil vysky client-area dialogu a umisteni separatoru
-    //         v ramci client-area dialogu
+    // therefore the original logic no longer works (in VC2012+ the window is shorter than in VC2010-): DlgWinHeigth = r2.top - r.top + 1;
+    // fix: DlgWinHeigth = full window height minus the difference between the client area height and the separator position
+    //         within the dialog's client area
     POINT p;
     p.x = r2.left;
     p.y = r2.top;
     ScreenToClient(DlgWin, &p);
     GetClientRect(DlgWin, &r2);
-    DlgWinHeigth = DlgWinAboutHeigth - (r2.bottom - p.y) - 2; // -2 pro dosazeni puvodni vysky z vc2010-
+    DlgWinHeigth = DlgWinAboutHeigth - (r2.bottom - p.y) - 2; // subtract 2 to match the original VC2010- height
 
     SetWindowPos(DlgWin, 0, 0, 0, DlgWinWidth, DlgWinHeigth, SWP_NOMOVE | SWP_NOZORDER);
     AboutShowed = false;

@@ -185,11 +185,11 @@ MPEG Audio version ID
     else
         pmhd->frames = 0;
 
-    //kontrola variable bitrate
+    // check variable bitrate
     char xinghead[12];
     int pos = 0;
 
-    //zjisti pozici xing-headeru
+    // find the position of the xing header
     if ((pmhd->mpeg == 0x0200) || (pmhd->mpeg == 0x0205))
     {
         if (pmhd->mode == 3)

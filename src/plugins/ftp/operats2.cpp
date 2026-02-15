@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -28,9 +29,9 @@ public:
     {
         CALL_STACK_MESSAGE1("COperationDlgThread::Body()");
 
-        // 'sendWMClose': dialog nastavi na TRUE v pripade, ze doslo k prijeti WM_CLOSE
-        // v okamziku, kdy je otevreny modalni dialog nad dialogem operace - az se tento
-        // modalni dialog ukonci, posle se WM_CLOSE znovu do dialogu operace
+        // 'sendWMClose': the dialog sets it to TRUE when WM_CLOSE is received
+        // when a modal dialog above the operation dialog is open - once that
+        // modal dialog closes, WM_CLOSE is sent again to the operation dialog
         BOOL sendWMClose = FALSE;
         OperDlg->SendWMClose = &sendWMClose;
         if (OperDlg->Create() == NULL || OperDlg->CloseDlg)
@@ -38,21 +39,21 @@ public:
             if (!OperDlg->CloseDlg)
                 OperDlg->Oper->SetOperationDlg(NULL);
             if (OperDlg->HWindow != NULL)
-                DestroyWindow(OperDlg->HWindow); // WM_CLOSE nemuze dojit, protoze ho nema co dorucit (message-loopa zatim nebezi)
+                DestroyWindow(OperDlg->HWindow); // WM_CLOSE cannot arrive because nothing can deliver it (the message loop is not running yet)
         }
         else
         {
-            HWND dlg = OperDlg->HWindow; // bezpecne ulozeny handle okna (platny i po destrukci OperDlg)
-            if (AlwaysOnTop)             // always-on-top osetrime aspon "staticky" (neni v system menu)
+            HWND dlg = OperDlg->HWindow; // safely stored window handle (valid even after OperDlg is destroyed)
+            if (AlwaysOnTop)             // handle always-on-top at least "statically" (it's not in the system menu)
                 SetWindowPos(dlg, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
             SetForegroundWindow(dlg);
 
-            // aby se pri drag&dropu aktivoval drop-target a ne dialog operace
+            // ensure the drop target activates during drag & drop instead of the operation dialog
             if (DropTargetWnd != NULL)
                 SalamanderGeneral->ActivateDropTarget(DropTargetWnd, dlg);
 
-            // message-loopa - pockame do ukonceni nemodalniho dialogu
+            // message loop - wait until the modeless dialog is closed
             MSG msg;
             while (GetMessage(&msg, NULL, 0, 0))
             {
@@ -90,7 +91,7 @@ BOOL CFTPOperation::SetConnection(CFTPProxyServer* proxyServer, const char* host
     BOOL err = (host == NULL || *host == 0);
     Host = SalamanderGeneral->DupStr(host);
     Port = port;
-    User = SalamanderGeneral->DupStr((user != NULL && *user == 0) ? NULL : user); // je-li NULL, zustane NULL
+    User = SalamanderGeneral->DupStr((user != NULL && *user == 0) ? NULL : user); // remains NULL if it is NULL
     Password = SalamanderGeneral->DupStr((password != NULL && *password == 0) ? NULL : password);
     Account = SalamanderGeneral->DupStr((account != NULL && *account == 0) ? NULL : account);
     InitFTPCommands = SalamanderGeneral->DupStr((initFTPCommands != NULL && *initFTPCommands == 0) ? NULL : initFTPCommands);
@@ -118,7 +119,7 @@ BOOL CFTPOperation::SetConnection(CFTPProxyServer* proxyServer, const char* host
     {
         ProxyScriptText = GetProxyScriptText(proxyType, FALSE);
         if (ProxyScriptText[0] == 0)
-            ProxyScriptText = GetProxyScriptText(fpstNotUsed, FALSE); // nedefinovany skript = "not used (direct connection)" skript - SOCKS 4/4A/5, HTTP 1.1
+            ProxyScriptText = GetProxyScriptText(fpstNotUsed, FALSE); // undefined script = "not used (direct connection)" script - SOCKS 4/4A/5, HTTP 1.1
     }
     if (!err)
     {
@@ -130,7 +131,7 @@ BOOL CFTPOperation::SetConnection(CFTPProxyServer* proxyServer, const char* host
                                &proxyScriptParams, connectToHost, &ConnectToPort,
                                NULL, NULL, errBuf, NULL))
         {
-            if (proxyScriptParams.NeedUserInput()) // teoreticky by nemelo nastat (navic jiz overene spustenim v panelu)
+            if (proxyScriptParams.NeedUserInput()) // theoretically should not happen (already verified by running it in the panel)
             {
                 err = TRUE;
                 TRACE_E("CFTPOperation::SetConnection(): unexpected situation: proxy script needs user input!");
@@ -138,7 +139,7 @@ BOOL CFTPOperation::SetConnection(CFTPProxyServer* proxyServer, const char* host
             else
                 ConnectToHost = SalamanderGeneral->DupStr(connectToHost);
         }
-        else // teoreticky by nikdy nemelo nastat (ulozene skripty jsou validovane, navic jiz overene spustenim v panelu)
+        else // theoretically should never happen (stored scripts are validated and already verified by running them in the panel)
         {
             err = TRUE;
             TRACE_E("CFTPOperation::SetConnection(): proxy script error: " << errBuf);
@@ -152,7 +153,7 @@ void CFTPOperation::SetBasicData(char* operationSubject, const char* listingServ
     CALL_STACK_MESSAGE1("CFTPOperation::SetBasicData()");
 
     OperationSubject = SalamanderGeneral->DupStr(operationSubject);
-    ListingServerType = SalamanderGeneral->DupStr(listingServerType); // je-li NULL, zustane NULL
+    ListingServerType = SalamanderGeneral->DupStr(listingServerType); // remains NULL if it is NULL
 }
 
 void CFTPOperation::SetOperationDelete(const char* sourcePath, char srcPathSeparator,
@@ -194,7 +195,7 @@ BOOL CFTPOperation::SetOperationCopyMoveDownload(BOOL isCopy, const char* source
     TgtPathSeparator = tgtPathSeparator;
     TgtPathCanChange = tgtPathCanChange;
     TgtPathCanChangeInclSubdirs = tgtPathCanChangeInclSubdirs;
-    if (asciiFileMasks != NULL) // neprazdna maska, jinak nema smysl tvorit group-mask objekt
+    if (asciiFileMasks != NULL) // non-empty mask; otherwise creating a group-mask object makes no sense
     {
         ASCIIFileMasks = SalamanderGeneral->AllocSalamanderMaskGroup();
         if (ASCIIFileMasks != NULL)
@@ -241,7 +242,7 @@ BOOL CFTPOperation::SetOperationCopyMoveUpload(BOOL isCopy, const char* sourcePa
     TgtPathSeparator = tgtPathSeparator;
     TgtPathCanChange = tgtPathCanChange;
     TgtPathCanChangeInclSubdirs = tgtPathCanChangeInclSubdirs;
-    if (asciiFileMasks != NULL) // neprazdna maska, jinak nema smysl tvorit group-mask objekt
+    if (asciiFileMasks != NULL) // non-empty mask; otherwise creating a group-mask object makes no sense
     {
         ASCIIFileMasks = SalamanderGeneral->AllocSalamanderMaskGroup();
         if (ASCIIFileMasks != NULL)
@@ -334,7 +335,7 @@ void CFTPOperation::SendHeaderToLog(int logUID)
     char buf[500];
     char timeBuf[100];
     BOOL ok = TRUE;
-    // sestaveni titulku okna
+    // building the window title
     int titleResID = 0;
     switch (Type)
     {
@@ -412,20 +413,20 @@ void CFTPOperation::AddToNotDoneSkippedFailed(int notDone, int skipped, int fail
     COperationState state = GetOperationState(FALSE);
     if (LastReportedOperState != state)
     {
-        if (state == opstInProgress) // doslo k retry, vracime se k praci, musime vynulovat globalni meric rychlosti (nemuzeme pocitat prumer za dobu, kdy se cekalo na usera)
+        if (state == opstInProgress) // a retry happened, we are returning to work, so reset the global speed meter (we cannot compute an average for the time spent waiting for the user)
         {
             GlobalTransferSpeedMeter.Clear();
             GlobalTransferSpeedMeter.JustConnected();
-            GlobalLastActivityTime.Set(GetTickCount()); // retry je aktivita
+            GlobalLastActivityTime.Set(GetTickCount()); // retry counts as activity
         }
         ReportOperationStateChange();
     }
     if (state == opstSuccessfullyFinished ||
         !onlyUINeededOrFailedToSkipped && (state == opstFinishedWithSkips || state == opstFinishedWithErrors))
     {
-        BOOL softRefresh = state == opstFinishedWithErrors || // FIXME: az bude existovat okno s frontou operaci, budeme muset OperationDlg->DlgWillCloseIfOpFinWithSkips nahradit jinou detekci jestli dojde k zavreni workeru (predani connectiony zpet do panelu)
+        BOOL softRefresh = state == opstFinishedWithErrors || // FIXME: once a window with the operation queue exists, we must replace OperationDlg->DlgWillCloseIfOpFinWithSkips with a different detection of whether the worker closes (passing the connection back to the panel)
                            state == opstFinishedWithSkips && (OperationDlg != NULL ? !OperationDlg->DlgWillCloseIfOpFinWithSkips : TRUE);
-        PostChangeOnPathNotifications(softRefresh); // uz je volna linka (aspon co se tyce teto operace), muzeme si dovolit refreshe listingu
+        PostChangeOnPathNotifications(softRefresh); // the line is free now (at least for this operation), so we can afford listing refreshes
     }
     HANDLES(LeaveCriticalSection(&OperCritSect));
 }
@@ -470,9 +471,9 @@ void CFTPOperation::SetOperationDlg(COperationDlg* operDlg)
 
     HANDLES(EnterCriticalSection(&OperCritSect));
     OperationDlg = operDlg;
-    ReportChangeInWorkerID = -2;  // zmena dialogu, resetneme reporteni zmen
-    ReportProgressChange = FALSE; // zmena dialogu, resetneme reporteni zmen
-    ReportChangeInItemUID = -3;   // zmena dialogu, resetneme reporteni zmen
+    ReportChangeInWorkerID = -2;  // dialog changed, reset reporting of changes
+    ReportProgressChange = FALSE; // dialog changed, reset reporting of changes
+    ReportChangeInItemUID = -3;   // dialog changed, reset reporting of changes
     HANDLES(LeaveCriticalSection(&OperCritSect));
 }
 
@@ -484,7 +485,7 @@ BOOL CFTPOperation::ActivateOperationDlg(HWND dropTargetWnd)
     BOOL ret = FALSE;
     if (OperationDlg != NULL)
     {
-        if (OperationDlg->HWindow != NULL) // "always true" (jinak: dialog se teprve otevre, cimz se sam aktivuje)
+        if (OperationDlg->HWindow != NULL) // "always true" (otherwise the dialog is only just opening and will activate itself)
         {
             if (IsIconic(OperationDlg->HWindow))
                 ShowWindow(OperationDlg->HWindow, SW_RESTORE);
@@ -496,38 +497,38 @@ BOOL CFTPOperation::ActivateOperationDlg(HWND dropTargetWnd)
     {
         OperationDlg = new COperationDlg(NULL, SalamanderGeneral->GetMainWindowHWND(),
                                          this, Queue, &WorkersList);
-        ReportChangeInWorkerID = -2;  // zmena dialogu, resetneme reporteni zmen
-        ReportProgressChange = FALSE; // zmena dialogu, resetneme reporteni zmen
-        ReportChangeInItemUID = -3;   // zmena dialogu, resetneme reporteni zmen
+        ReportChangeInWorkerID = -2;  // dialog changed, reset reporting of changes
+        ReportProgressChange = FALSE; // dialog changed, reset reporting of changes
+        ReportChangeInItemUID = -3;   // dialog changed, reset reporting of changes
         if (OperationDlg != NULL)
         {
             COperationDlgThread* t = new COperationDlgThread(OperationDlg, dropTargetWnd);
             if (t != NULL)
             {
                 if ((OperationDlgThread = t->Create(AuxThreadQueue)) == NULL)
-                { // thread se nepustil, error
+                { // thread did not start, error
                     delete t;
                     delete OperationDlg;
                     OperationDlg = NULL;
-                    ReportChangeInWorkerID = -2;  // zmena dialogu, resetneme reporteni zmen
-                    ReportProgressChange = FALSE; // zmena dialogu, resetneme reporteni zmen
-                    ReportChangeInItemUID = -3;   // zmena dialogu, resetneme reporteni zmen
+                    ReportChangeInWorkerID = -2;  // dialog changed, reset reporting of changes
+                    ReportProgressChange = FALSE; // dialog changed, reset reporting of changes
+                    ReportChangeInItemUID = -3;   // dialog changed, reset reporting of changes
                 }
                 else
-                    ret = TRUE; // uspech
+                    ret = TRUE; // success
             }
-            else // malo pameti, error
+            else // low memory, error
             {
                 delete OperationDlg;
                 OperationDlg = NULL;
-                ReportChangeInWorkerID = -2;  // zmena dialogu, resetneme reporteni zmen
-                ReportProgressChange = FALSE; // zmena dialogu, resetneme reporteni zmen
-                ReportChangeInItemUID = -3;   // zmena dialogu, resetneme reporteni zmen
+                ReportChangeInWorkerID = -2;  // dialog changed, reset reporting of changes
+                ReportProgressChange = FALSE; // dialog changed, reset reporting of changes
+                ReportChangeInItemUID = -3;   // dialog changed, reset reporting of changes
                 TRACE_E(LOW_MEMORY);
             }
         }
         else
-            TRACE_E(LOW_MEMORY); // malo pameti, error
+            TRACE_E(LOW_MEMORY); // low memory, error
     }
     HANDLES(LeaveCriticalSection(&OperCritSect));
     return ret;
@@ -540,13 +541,13 @@ void CFTPOperation::CloseOperationDlg(HANDLE* dlgThread)
     HANDLES(EnterCriticalSection(&OperCritSect));
     if (OperationDlg != NULL)
     {
-        OperationDlg->CloseDlg = TRUE; // k CloseDlg neni synchronizovany pristup, snad zbytecne
+        OperationDlg->CloseDlg = TRUE; // there is no synchronized access to CloseDlg, hopefully unnecessarily
         if (OperationDlg->HWindow != NULL)
             PostMessage(OperationDlg->HWindow, WM_CLOSE, 0, 0);
-        OperationDlg = NULL;          // dealokaci zajisti thread dialogu
-        ReportChangeInWorkerID = -2;  // zmena dialogu, resetneme reporteni zmen
-        ReportProgressChange = FALSE; // zmena dialogu, resetneme reporteni zmen
-        ReportChangeInItemUID = -3;   // zmena dialogu, resetneme reporteni zmen
+        OperationDlg = NULL;          // the dialog thread takes care of deallocation
+        ReportChangeInWorkerID = -2;  // dialog changed, reset reporting of changes
+        ReportProgressChange = FALSE; // dialog changed, reset reporting of changes
+        ReportChangeInItemUID = -3;   // dialog changed, reset reporting of changes
     }
     if (dlgThread != NULL)
         *dlgThread = OperationDlgThread;
@@ -556,10 +557,10 @@ void CFTPOperation::CloseOperationDlg(HANDLE* dlgThread)
 BOOL CFTPOperation::AddWorker(CFTPWorker* newWorker)
 {
     CALL_STACK_MESSAGE1("CFTPOperation::AddWorker()");
-    BOOL ret = WorkersList.AddWorker(newWorker); // synchronizace je uvnitr WorkersList (sekce OperCritSect zde neni potreba)
+    BOOL ret = WorkersList.AddWorker(newWorker); // synchronization is inside WorkersList (the OperCritSect section is not needed here)
     if (ret)
     {
-        GlobalLastActivityTime.Set(GetTickCount()); // pridani workera je aktivita
+        GlobalLastActivityTime.Set(GetTickCount()); // adding a worker counts as activity
         OperationStatusMaybeChanged();
     }
     return ret;
@@ -577,21 +578,21 @@ void CFTPOperation::OperationStatusMaybeChanged()
     HANDLES(EnterCriticalSection(&OperCritSect));
     if (!paused &&
         ChildItemsNotDone - ChildItemsSkipped - ChildItemsFailed - ChildItemsUINeeded <= 0)
-    { // workeri bezi, ale polozky nebezi => operace nebezi
+    { // workers are running but items are not => the operation is not running
         paused = TRUE;
     }
-    if (paused || stopping) // operace ma byt "paused"
+    if (paused || stopping) // the operation is supposed to be "paused"
     {
-        if (OperationEnd == -1) // operace bezi
+        if (OperationEnd == -1) // the operation is running
         {
             OperationEnd = GetTickCount();
             if (OperationEnd == -1)
-                OperationEnd++; // zamezime kolizi s hodnotou -1 (posuneme cas o 1 ms)
+                OperationEnd++; // avoid colliding with the value -1 (shift the time by 1 ms)
         }
     }
-    else // operace ma byt "resumed"
+    else // the operation is supposed to be "resumed"
     {
-        if (OperationEnd != -1) // operace nebezi
+        if (OperationEnd != -1) // the operation is not running
         {
             GlobalTransferSpeedMeter.Clear();
             GlobalTransferSpeedMeter.JustConnected();
@@ -607,27 +608,27 @@ BOOL CFTPOperation::InformWorkersAboutStop(int workerInd, CFTPWorker** victims,
                                            int maxVictims, int* foundVictims)
 {
     CALL_STACK_MESSAGE1("CFTPOperation::InformWorkersAboutStop()");
-    return WorkersList.InformWorkersAboutStop(workerInd, victims, maxVictims, foundVictims); // synchronizace je uvnitr WorkersList (sekce OperCritSect zde neni potreba)
+    return WorkersList.InformWorkersAboutStop(workerInd, victims, maxVictims, foundVictims); // synchronization is inside WorkersList (the OperCritSect section is not needed here)
 }
 
 BOOL CFTPOperation::InformWorkersAboutPause(int workerInd, CFTPWorker** victims,
                                             int maxVictims, int* foundVictims, BOOL pause)
 {
     CALL_STACK_MESSAGE1("CFTPOperation::InformWorkersAboutPause()");
-    return WorkersList.InformWorkersAboutPause(workerInd, victims, maxVictims, foundVictims, pause); // synchronizace je uvnitr WorkersList (sekce OperCritSect zde neni potreba)
+    return WorkersList.InformWorkersAboutPause(workerInd, victims, maxVictims, foundVictims, pause); // synchronization is inside WorkersList (the OperCritSect section is not needed here)
 }
 
 BOOL CFTPOperation::CanCloseWorkers(int workerInd)
 {
     CALL_STACK_MESSAGE1("CFTPOperation::CanCloseWorkers()");
-    return WorkersList.CanCloseWorkers(workerInd); // synchronizace je uvnitr WorkersList (sekce OperCritSect zde neni potreba)
+    return WorkersList.CanCloseWorkers(workerInd); // synchronization is inside WorkersList (the OperCritSect section is not needed here)
 }
 
 BOOL CFTPOperation::ForceCloseWorkers(int workerInd, CFTPWorker** victims,
                                       int maxVictims, int* foundVictims)
 {
     CALL_STACK_MESSAGE1("CFTPOperation::ForceCloseWorkers()");
-    return WorkersList.ForceCloseWorkers(workerInd, victims, maxVictims, foundVictims); // synchronizace je uvnitr WorkersList (sekce OperCritSect zde neni potreba)
+    return WorkersList.ForceCloseWorkers(workerInd, victims, maxVictims, foundVictims); // synchronization is inside WorkersList (the OperCritSect section is not needed here)
 }
 
 BOOL CFTPOperation::DeleteWorkers(int workerInd, CFTPWorker** victims,
@@ -635,7 +636,7 @@ BOOL CFTPOperation::DeleteWorkers(int workerInd, CFTPWorker** victims,
                                   CUploadWaitingWorker** uploadFirstWaitingWorker)
 {
     CALL_STACK_MESSAGE1("CFTPOperation::DeleteWorkers()");
-    BOOL ret = WorkersList.DeleteWorkers(workerInd, victims, maxVictims, foundVictims, uploadFirstWaitingWorker); // synchronizace je uvnitr WorkersList (sekce OperCritSect zde neni potreba)
+    BOOL ret = WorkersList.DeleteWorkers(workerInd, victims, maxVictims, foundVictims, uploadFirstWaitingWorker); // synchronization is inside WorkersList (the OperCritSect section is not needed here)
     OperationStatusMaybeChanged();
     return ret;
 }
@@ -646,7 +647,7 @@ BOOL CFTPOperation::InitOperDlg(COperationDlg* dlg)
     HANDLES(EnterCriticalSection(&OperCritSect));
     BOOL ok = TRUE;
 
-    // sestaveni titulku okna
+    // building the window title
     int titleResID = 0;
     switch (Type)
     {
@@ -682,7 +683,7 @@ BOOL CFTPOperation::InitOperDlg(COperationDlg* dlg)
             ok = FALSE;
     }
 
-    // nastaveni zdrojove a cilove cesty
+    // set the source and target paths
     if (ok)
     {
         dlg->Source->SetPathSeparator(SrcPathSeparator);
@@ -714,7 +715,7 @@ BOOL CFTPOperation::GetServerAddress(DWORD* serverIP, char* host, int hostBufSiz
     HANDLES(EnterCriticalSection(&OperCritSect));
     BOOL ret = TRUE;
     *serverIP = ServerIP;
-    if (ServerIP == INADDR_NONE) // IP adresa neni znama, vracime host-name
+    if (ServerIP == INADDR_NONE) // IP address is unknown, return the host name
     {
         lstrcpyn(host, ConnectToHost, hostBufSize);
         ret = FALSE;
@@ -808,7 +809,7 @@ void CFTPOperation::SetServerSystem(const char* reply, int replySize)
     if (ServerSystem == NULL)
     {
         char buf[700];
-        CopyStr(buf, 700, reply, replySize); // ulozime prvni odpoved serveru (zdroj informaci o verzi serveru)
+        CopyStr(buf, 700, reply, replySize); // store the first server reply (source of information about the server version)
         ServerSystem = SalamanderGeneral->DupStr(buf);
     }
     HANDLES(LeaveCriticalSection(&OperCritSect));
@@ -821,7 +822,7 @@ void CFTPOperation::SetServerFirstReply(const char* reply, int replySize)
     if (ServerFirstReply == NULL)
     {
         char buf[700];
-        CopyStr(buf, 700, reply, replySize); // ulozime prvni odpoved serveru (zdroj informaci o verzi serveru)
+        CopyStr(buf, 700, reply, replySize); // store the first server reply (source of information about the server version)
         ServerFirstReply = SalamanderGeneral->DupStr(buf);
     }
     HANDLES(LeaveCriticalSection(&OperCritSect));
@@ -848,18 +849,18 @@ BOOL CFTPOperation::PrepareNextScriptCmd(char* buf, int bufSize, char* logBuf, i
     char proxyLogCmdBuf[FTPCOMMAND_MAX_SIZE];
     BOOL ret = TRUE;
     if (*proxyScriptExecPoint == NULL)
-        *proxyScriptExecPoint = ProxyScriptStartExecPoint; // mame pripravit prvni prikaz skriptu
+        *proxyScriptExecPoint = ProxyScriptStartExecPoint; // we should prepare the first script command
     if (ProcessProxyScript(ProxyScriptText, proxyScriptExecPoint, proxyScriptLastCmdReply,
                            &proxyScriptParams, NULL, NULL, proxySendCmdBuf,
                            proxyLogCmdBuf, errDescrBuf, NULL))
     {
-        if (proxyScriptParams.NeedUserInput()) // je potreba zadat nejake udaje (user, password, atd.)
+        if (proxyScriptParams.NeedUserInput()) // some details need to be entered (user, password, etc.)
         {
             *needUserInput = TRUE;
             int resID = 0;
             if (proxyScriptParams.NeedProxyHost)
             {
-                resID = IDS_WORKERUNKNOWNPROXYHOST; // sice napiseme, ze ho potrebujeme, ale user ho neni schopen zadat - jestli to nekdy bude potreba (zatim by nemelo hrozit, protoze v panelu uz login probehl i bez ProxyHost, takze je predpoklad, ze ani tady nebude potreba), dopsat dialog pro zadavani ProxyHost...
+                resID = IDS_WORKERUNKNOWNPROXYHOST; // we do say we need it, but the user cannot provide it - if it is ever required (should not happen yet because the login in the panel succeeded even without ProxyHost, so it likely will not be needed here either), add a dialog for entering ProxyHost...
                 TRACE_E("CFTPOperation::PrepareNextScriptCmd(): unexpected situation: ProxyHost is empty!");
             }
             if (proxyScriptParams.NeedProxyPassword)
@@ -875,17 +876,17 @@ BOOL CFTPOperation::PrepareNextScriptCmd(char* buf, int bufSize, char* logBuf, i
         }
         else
         {
-            if (proxySendCmdBuf[0] != 0) // mame prikaz k odeslani na server
+            if (proxySendCmdBuf[0] != 0) // we have a command to send to the server
             {
                 lstrcpyn(buf, proxySendCmdBuf, bufSize);
                 if (bufSize > 0)
                     *cmdLen = (int)strlen(buf);
                 lstrcpyn(logBuf, proxyLogCmdBuf, logBufSize);
             }
-            // else ; // konec login skriptu
+            // else ; // end of the login script
         }
     }
-    else // teoreticky by nikdy nemelo nastat (ulozene skripty jsou validovane)
+    else // theoretically should never happen (stored scripts are validated)
     {
         ret = FALSE;
     }
@@ -977,23 +978,23 @@ void CFTPOperation::ReportWorkerChange(int workerID, BOOL reportProgressChange)
     CALL_STACK_MESSAGE1("CFTPOperation::ReportWorkerChange()");
 
     HANDLES(EnterCriticalSection(&OperCritSect));
-    if (OperationDlg != NULL && OperationDlg->HWindow != NULL) // jen pokud je dialog otevreny
+    if (OperationDlg != NULL && OperationDlg->HWindow != NULL) // only if the dialog is open
     {
         if (reportProgressChange)
             ReportProgressChange = TRUE;
-        if (ReportChangeInWorkerID == -2) // zatim nehlasime zadne zmeny
+        if (ReportChangeInWorkerID == -2) // not reporting any changes yet
         {
             ReportChangeInWorkerID = workerID;
-            PostMessage(OperationDlg->HWindow, WM_APP_WORKERCHANGEREP, 0, 0); // dame vedet dialogu, ze si ma prijit pro zmeny
+            PostMessage(OperationDlg->HWindow, WM_APP_WORKERCHANGEREP, 0, 0); // notify the dialog that it should fetch the changes
         }
         else
         {
             if (ReportChangeInWorkerID != workerID)
-                ReportChangeInWorkerID = -1; // zmeny ve vice nez jednom workerovi
+                ReportChangeInWorkerID = -1; // changes in more than one worker
         }
     }
     else
-        ReportChangeInWorkerID = -2; // dialog neni otevreny, nema smysl reportit zmeny
+        ReportChangeInWorkerID = -2; // the dialog is not open, reporting changes makes no sense
     HANDLES(LeaveCriticalSection(&OperCritSect));
 }
 
@@ -1002,7 +1003,7 @@ int CFTPOperation::GetChangedWorker(BOOL* reportProgressChange)
     CALL_STACK_MESSAGE1("CFTPOperation::GetChangedWorker()");
 
     HANDLES(EnterCriticalSection(&OperCritSect));
-    int ret = ReportChangeInWorkerID == -2 ? -1 : ReportChangeInWorkerID; // -2 by nemelo nastat (ale pro sychr: vratime "zmena ve vsech")
+    int ret = ReportChangeInWorkerID == -2 ? -1 : ReportChangeInWorkerID; // -2 should not occur (but to be safe, return "change in all")
     ReportChangeInWorkerID = -2;
     if (reportProgressChange != NULL)
         *reportProgressChange = ReportProgressChange;
@@ -1016,9 +1017,9 @@ void CFTPOperation::ReportItemChange(int itemUID)
     CALL_STACK_MESSAGE1("CFTPOperation::ReportItemChange()");
 
     HANDLES(EnterCriticalSection(&OperCritSect));
-    if (OperationDlg != NULL && OperationDlg->HWindow != NULL) // jen pokud je dialog otevreny
+    if (OperationDlg != NULL && OperationDlg->HWindow != NULL) // only if the dialog is open
     {
-        if (ReportChangeInItemUID == -3) // zatim nehlasime zadne zmeny
+        if (ReportChangeInItemUID == -3) // not reporting any changes yet
         {
             if (itemUID != -1)
             {
@@ -1026,30 +1027,30 @@ void CFTPOperation::ReportItemChange(int itemUID)
                 ReportChangeInItemUID = -2;
             }
             else
-                ReportChangeInItemUID = -1;                                 // hlasime vice zmen
-            PostMessage(OperationDlg->HWindow, WM_APP_ITEMCHANGEREP, 0, 0); // dame vedet dialogu, ze si ma prijit pro zmeny
+                ReportChangeInItemUID = -1;                                 // reporting multiple changes
+            PostMessage(OperationDlg->HWindow, WM_APP_ITEMCHANGEREP, 0, 0); // notify the dialog that it should fetch the changes
         }
         else
         {
             if (itemUID != -1)
             {
-                if (ReportChangeInItemUID == -2) // zatim hlasime jednu zmenu
+                if (ReportChangeInItemUID == -2) // currently reporting one change
                 {
                     if (ReportChangeInItemUID2 != itemUID)
-                        ReportChangeInItemUID = itemUID; // uz hlasime dve zmeny
+                        ReportChangeInItemUID = itemUID; // already reporting two changes
                 }
                 else
                 {
                     if (ReportChangeInItemUID != itemUID && ReportChangeInItemUID2 != itemUID)
-                        ReportChangeInItemUID = -1; // zmeny ve vice nez dvou polozkach
+                        ReportChangeInItemUID = -1; // changes in more than two items
                 }
             }
             else
-                ReportChangeInItemUID = -1; // hlasime vice zmen
+                ReportChangeInItemUID = -1; // reporting multiple changes
         }
     }
     else
-        ReportChangeInItemUID = -3; // dialog neni otevreny, nema smysl reportit zmeny
+        ReportChangeInItemUID = -3; // the dialog is not open, reporting changes makes no sense
     HANDLES(LeaveCriticalSection(&OperCritSect));
 }
 
@@ -1059,7 +1060,7 @@ void CFTPOperation::GetChangedItems(int* firstUID, int* secondUID)
 
     HANDLES(EnterCriticalSection(&OperCritSect));
     if (ReportChangeInItemUID == -1 || ReportChangeInItemUID == -3)
-    { // -3 by nemelo nastat (ale pro sychr: vratime "zmena ve vsech")
+    { // -3 should not occur (but to be safe, return "change in all")
         *firstUID = -1;
         *secondUID = -1;
     }
@@ -1087,8 +1088,8 @@ void CFTPOperation::ReportOperationStateChange()
 
     HANDLES(EnterCriticalSection(&OperCritSect));
     if (OperationDlg != NULL && OperationDlg->HWindow != NULL && !OperStateChangedPosted)
-    {                                                                     // jen pokud je dialog otevreny a jeste nedoslo k reportu (postmessage)
-        PostMessage(OperationDlg->HWindow, WM_APP_OPERSTATECHANGE, 0, 0); // dame vedet dialogu, ze si ma prijit pro zmeny
+    {                                                                     // only if the dialog is open and the report has not been posted yet (PostMessage)
+        PostMessage(OperationDlg->HWindow, WM_APP_OPERSTATECHANGE, 0, 0); // notify the dialog that it should fetch the changes
         OperStateChangedPosted = TRUE;
     }
     HANDLES(LeaveCriticalSection(&OperCritSect));
@@ -1102,7 +1103,7 @@ CFTPOperation::GetOperationState(BOOL calledFromSetupCloseButton)
 
     HANDLES(EnterCriticalSection(&OperCritSect));
     if (calledFromSetupCloseButton)
-        OperStateChangedPosted = FALSE; // uz zase ma smysl posilat zpravy o zmenach stavu
+        OperStateChangedPosted = FALSE; // it again makes sense to send messages about state changes
     COperationState state;
     if (ChildItemsNotDone - ChildItemsSkipped - ChildItemsFailed - ChildItemsUINeeded > 0)
         state = opstInProgress;
@@ -1111,7 +1112,7 @@ CFTPOperation::GetOperationState(BOOL calledFromSetupCloseButton)
     else
     {
         if (ChildItemsSkipped > 0)
-            state = opstFinishedWithSkips; // neni-li Skip na urovni operace, musi byt na urovni operace ForcedToFail -> vysledek je opstFinishedWithErrors
+            state = opstFinishedWithSkips; // if there is no Skip at the operation level, there must be a ForcedToFail at the operation level -> the result is opstFinishedWithErrors
         else
             state = opstSuccessfullyFinished;
     }
@@ -1180,7 +1181,7 @@ int CFTPOperation::GetCopyProgress(CQuadWord* downloaded, CQuadWord* total, CQua
     WorkersList.AddCurrentDownloadSize(downloaded);
     if (totalWithoutErrors >= *downloaded)
         *waiting = totalWithoutErrors - *downloaded;
-    // else; nastava u serveru, kde neni znama velikost v bytech (download probiha, ale jeste nezname odhad celkove velikosti)
+    // else; occurs on servers where the byte size is unknown (the download is in progress, but we do not yet know the estimated total size)
 
     HANDLES(EnterCriticalSection(&OperCritSect));
     if (TotalSizeInBlocks != CQuadWord(0, 0))
@@ -1213,7 +1214,7 @@ int CFTPOperation::GetCopyUploadProgress(CQuadWord* uploaded, CQuadWord* total, 
     WorkersList.AddCurrentUploadSize(uploaded);
     if (totalWithoutErrors >= *uploaded)
         *waiting = totalWithoutErrors - *uploaded;
-    // else; nastava napriklad u ASCII prenosu, kde zdrojovy soubor je mensi nez cilovy (soubor s LF konci radku uploadeny na windowsovy ftp server)
+    // else; happens for example with ASCII transfers where the source file is smaller than the target (a file with LF line endings uploaded to a Windows FTP server)
 
     HANDLES(EnterCriticalSection(&OperCritSect));
     *total = TotalSizeInBytes;
@@ -1231,17 +1232,17 @@ void CFTPOperation::AddBlkSizeInfo(CQuadWord const& sizeInBytes, CQuadWord const
 {
     CALL_STACK_MESSAGE1("CFTPOperation::AddBlkSizeInfo()");
 
-    // velikost bloku lze zjistit jen u souboru o velikosti nad jeden blok (jinak hrozi urceni mensi
-    // velikosti bloku - napr. pri velikosti 1 byte se pise velikost 1 blok u libovolne velikosti bloku)
+    // block size can only be detected for files larger than one block (otherwise we risk determining a smaller
+    // block size - e.g. a 1 byte file would be reported as 1 block regardless of the actual block size)
     if (sizeInBlocks > CQuadWord(1, 0))
     {
         HANDLES(EnterCriticalSection(&OperCritSect));
         BlkSizeTotalInBytes += sizeInBytes;
         BlkSizeTotalInBlocks += sizeInBlocks;
         if (BlkSizeActualValue == -1)
-            BlkSizeActualValue = 1024; // nejobvyklejsi hodnota
-        // provedeme upravu stavajici velikosti tak, aby slo o nejblizsi vyssi mocninu dvojky (1, 2, 4, 8, 16, 32, ...)
-        while (1) // BlkSizeTotalInBlocks nesmi byt nula (jinak jde o nekonecny cyklus), coz neni protoze sizeInBlocks > CQuadWord(1, 0) a BlkSizeTotalInBlocks se inicializuje na nulu
+            BlkSizeActualValue = 1024; // the most common value
+        // adjust the current size so that it becomes the nearest higher power of two (1, 2, 4, 8, 16, 32, ...)
+        while (1) // BlkSizeTotalInBlocks must not be zero (otherwise it would be an infinite loop), which holds because sizeInBlocks > CQuadWord(1, 0) and BlkSizeTotalInBlocks is initialized to zero
         {
             if (CQuadWord(BlkSizeActualValue / 2, 0) * BlkSizeTotalInBlocks >= BlkSizeTotalInBytes)
                 BlkSizeActualValue /= 2;
@@ -1499,7 +1500,7 @@ void CFTPOperation::SetCertificate(CCertificate* certificate)
     CALL_STACK_MESSAGE1("CFTPOperation::SetCertificate()");
 
     HANDLES(EnterCriticalSection(&OperCritSect));
-    CCertificate* old = pCertificate; // duvodem je zajisteni volani AddRef pres Release (pro pripad, ze je pCertificate == certificate)
+    CCertificate* old = pCertificate; // ensures AddRef is called via Release (in case pCertificate == certificate)
     pCertificate = certificate;
     if (pCertificate)
         pCertificate->AddRef();
@@ -1677,13 +1678,13 @@ void CFTPOperation::SetUploadAsciiTrModeButBinFile(int value)
 void CFTPOperation::PostNewWorkAvailable(BOOL onlyOneItem)
 {
     CALL_STACK_MESSAGE1("CFTPOperation::PostNewWorkAvailable(,)");
-    WorkersList.PostNewWorkAvailable(onlyOneItem); // synchronizace je uvnitr WorkersList (sekce OperCritSect zde neni potreba)
+    WorkersList.PostNewWorkAvailable(onlyOneItem); // synchronization is inside WorkersList (the OperCritSect section is not needed here)
 }
 
 BOOL CFTPOperation::GiveWorkToSleepingConWorker(CFTPWorker* sourceWorker)
 {
     CALL_STACK_MESSAGE1("CFTPOperation::GiveWorkToSleepingConWorker()");
-    return WorkersList.GiveWorkToSleepingConWorker(sourceWorker); // synchronizace je uvnitr WorkersList (sekce OperCritSect zde neni potreba)
+    return WorkersList.GiveWorkToSleepingConWorker(sourceWorker); // synchronization is inside WorkersList (the OperCritSect section is not needed here)
 }
 
 CFTPServerPathType
@@ -1938,10 +1939,10 @@ BOOL CFTPOperation::CanMakeChangesOnPath(const char* user, const char* host, uns
     HANDLES(EnterCriticalSection(&OperCritSect));
     if (SrcPathCanChange)
     {
-        BOOL isFTP = SalamanderGeneral->StrNICmp(SourcePath, AssignedFSName, AssignedFSNameLen) == 0 &&          // jde o nase fs-name (FTP)
-                     SourcePath[AssignedFSNameLen] == ':';                                                       // nase fs-name neni jen prefix
-        BOOL isFTPS = SalamanderGeneral->StrNICmp(SourcePath, AssignedFSNameFTPS, AssignedFSNameLenFTPS) == 0 && // jde o nase fs-name (FTPS)
-                      SourcePath[AssignedFSNameLenFTPS] == ':';                                                  // nase fs-name neni jen prefix
+        BOOL isFTP = SalamanderGeneral->StrNICmp(SourcePath, AssignedFSName, AssignedFSNameLen) == 0 &&          // this is our fs-name (FTP)
+                     SourcePath[AssignedFSNameLen] == ':';                                                       // our fs-name is not just a prefix
+        BOOL isFTPS = SalamanderGeneral->StrNICmp(SourcePath, AssignedFSNameFTPS, AssignedFSNameLenFTPS) == 0 && // this is our fs-name (FTPS)
+                      SourcePath[AssignedFSNameLenFTPS] == ':';                                                  // our fs-name is not just a prefix
         if (isFTP || isFTPS)
         {
             lstrcpyn(buf, SourcePath + (isFTP ? AssignedFSNameLen : AssignedFSNameLenFTPS) + 1, FTP_USERPART_SIZE);
@@ -1967,10 +1968,10 @@ BOOL CFTPOperation::CanMakeChangesOnPath(const char* user, const char* host, uns
     }
     if (!ret && TgtPathCanChange)
     {
-        BOOL isFTP = SalamanderGeneral->StrNICmp(TargetPath, AssignedFSName, AssignedFSNameLen) == 0 &&          // jde o nase fs-name (FTP)
-                     TargetPath[AssignedFSNameLen] == ':';                                                       // nase fs-name neni jen prefix
-        BOOL isFTPS = SalamanderGeneral->StrNICmp(TargetPath, AssignedFSNameFTPS, AssignedFSNameLenFTPS) == 0 && // jde o nase fs-name (FTPS)
-                      TargetPath[AssignedFSNameLenFTPS] == ':';                                                  // nase fs-name neni jen prefix
+        BOOL isFTP = SalamanderGeneral->StrNICmp(TargetPath, AssignedFSName, AssignedFSNameLen) == 0 &&          // this is our fs-name (FTP)
+                     TargetPath[AssignedFSNameLen] == ':';                                                       // our fs-name is not just a prefix
+        BOOL isFTPS = SalamanderGeneral->StrNICmp(TargetPath, AssignedFSNameFTPS, AssignedFSNameLenFTPS) == 0 && // this is our fs-name (FTPS)
+                      TargetPath[AssignedFSNameLenFTPS] == ':';                                                  // our fs-name is not just a prefix
         if (isFTP || isFTPS)
         {
             lstrcpyn(buf, TargetPath + (isFTP ? AssignedFSNameLen : AssignedFSNameLenFTPS) + 1, FTP_USERPART_SIZE);
@@ -2006,12 +2007,12 @@ BOOL CFTPOperation::IsUploadingToServer(const char* user, const char* host, unsi
     BOOL ret = FALSE;
     HANDLES(EnterCriticalSection(&OperCritSect));
 
-    if (Type == fotCopyUpload || Type == fotMoveUpload) // jde o Upload
+    if (Type == fotCopyUpload || Type == fotMoveUpload) // this is an upload
     {
-        BOOL isFTP = SalamanderGeneral->StrNICmp(TargetPath, AssignedFSName, AssignedFSNameLen) == 0 &&          // jde o nase fs-name (FTP)
-                     TargetPath[AssignedFSNameLen] == ':';                                                       // nase fs-name neni jen prefix
-        BOOL isFTPS = SalamanderGeneral->StrNICmp(TargetPath, AssignedFSNameFTPS, AssignedFSNameLenFTPS) == 0 && // jde o nase fs-name (FTPS)
-                      TargetPath[AssignedFSNameLenFTPS] == ':';                                                  // nase fs-name neni jen prefix
+        BOOL isFTP = SalamanderGeneral->StrNICmp(TargetPath, AssignedFSName, AssignedFSNameLen) == 0 &&          // this is our fs-name (FTP)
+                     TargetPath[AssignedFSNameLen] == ':';                                                       // our fs-name is not just a prefix
+        BOOL isFTPS = SalamanderGeneral->StrNICmp(TargetPath, AssignedFSNameFTPS, AssignedFSNameLenFTPS) == 0 && // this is our fs-name (FTPS)
+                      TargetPath[AssignedFSNameLenFTPS] == ':';                                                  // our fs-name is not just a prefix
         if (isFTP || isFTPS)
         {
             lstrcpyn(buf, TargetPath + (isFTP ? AssignedFSNameLen : AssignedFSNameLenFTPS) + 1, FTP_USERPART_SIZE);
@@ -2106,7 +2107,7 @@ void CFTPQueueItem::SetItem(int parentUID, CFTPQueueItemType type, CFTPQueueItem
 
 BOOL CFTPQueueItem::HasErrorToSolve(BOOL* canSkip, BOOL* canRetry)
 {
-    BOOL solvableErr = ProblemID != ITEMPR_INVALIDPATHTODIR && // nejde o neresitelny problem (zadne Retry nemuze pomoct)
+    BOOL solvableErr = ProblemID != ITEMPR_INVALIDPATHTODIR && // not an unsolvable problem (no Retry can help)
                        ProblemID != ITEMPR_DIREXPLENDLESSLOOP &&
                        ProblemID != ITEMPR_INVALIDPATHTOLINK;
     if (canSkip != NULL)
@@ -2115,13 +2116,13 @@ BOOL CFTPQueueItem::HasErrorToSolve(BOOL* canSkip, BOOL* canRetry)
                    (GetItemState() == sqisWaiting || GetItemState() == sqisFailed ||
                     GetItemState() == sqisUserInputNeeded);
     }
-    if (GetItemState() >= sqisSkipped /* sqisSkipped, sqisFailed, sqisForcedToFail nebo sqisUserInputNeeded */ &&
-        GetItemState() != sqisForcedToFail /* nelze resit primo, musi se resit pres child polozky */ &&
+    if (GetItemState() >= sqisSkipped /* sqisSkipped, sqisFailed, sqisForcedToFail or sqisUserInputNeeded */ &&
+        GetItemState() != sqisForcedToFail /* cannot be solved directly, it must be handled through child items */ &&
         solvableErr)
     {
         if (canRetry != NULL)
             *canRetry = TRUE;
-        return ProblemID != ITEMPR_SKIPPEDBYUSER; // "Solve Error" pro "skipped by user" nema smysl
+        return ProblemID != ITEMPR_SKIPPEDBYUSER; // "Solve Error" for "skipped by user" makes no sense
     }
     else
     {
@@ -2134,7 +2135,7 @@ BOOL CFTPQueueItem::HasErrorToSolve(BOOL* canSkip, BOOL* canRetry)
 void CFTPQueueItem::GetProblemDescr(char* buf, int bufSize)
 {
     char errBuf[300];
-    BOOL addErrAllocDescr = FALSE; // TRUE = pokud mame nejakou odpoved serveru v ErrAllocDescr, pridame jeji prvni radek do hlasky
+    BOOL addErrAllocDescr = FALSE; // TRUE = if we have some server reply in ErrAllocDescr, append its first line to the message
     if (bufSize > 0)
     {
         switch (ProblemID)
@@ -2239,7 +2240,7 @@ void CFTPQueueItem::GetProblemDescr(char* buf, int bufSize)
             }
             if (attrs == NULL)
                 attrs = LoadStr(IDS_OPERDOPPR_UNKEXISTATTR);
-            _snprintf_s(buf, bufSize, _TRUNCATE, LoadStr(IDS_OPERDOPPR_UNKNOWNATTRS), attrs); // attrs muze byt i asi NULL (pri chybe), sprintf se z toho vzpamatuje
+            _snprintf_s(buf, bufSize, _TRUNCATE, LoadStr(IDS_OPERDOPPR_UNKNOWNATTRS), attrs); // attrs might even be NULL (on error); sprintf can cope with that
             break;
         }
 
@@ -2454,7 +2455,7 @@ void CFTPQueueItem::GetProblemDescr(char* buf, int bufSize)
         }
     }
     if (addErrAllocDescr && ErrAllocDescr != NULL && bufSize > 0)
-    { // pokud mame nejakou odpoved serveru, pridame jeji prvni radek do hlasky
+    { // if we have some server reply, append its first line to the message
         char* end = buf + bufSize - 1;
         char* s = buf + strlen(buf);
         char* src = ErrAllocDescr;
@@ -2475,7 +2476,7 @@ void CFTPQueueItemAncestor::ChangeStateAndCounters(CFTPQueueItemState state, CFT
                                                    CFTPQueue* queue)
 {
     if (State == state)
-        return; // neni co delat
+        return; // nothing to do
     int childItemsNotDone = 1;
     int childItemsFailed = 0;
     int childItemsSkipped = 0;
@@ -2547,7 +2548,7 @@ void CFTPQueueItemAncestor::ChangeStateAndCounters(CFTPQueueItemState state, CFT
         break;
     }
     }
-    queue->UpdateCounters((CFTPQueueItem*)this, FALSE); // zmenu stavu resime tak, ze polozku jakoby odebereme a po zmene stavu zase pridame
+    queue->UpdateCounters((CFTPQueueItem*)this, FALSE); // handle the state change by virtually removing the item and adding it back after the state changes
     State = state;
     queue->UpdateCounters((CFTPQueueItem*)this, TRUE);
     if (((CFTPQueueItem*)this)->IsItemInSimpleErrorState())
@@ -2590,8 +2591,8 @@ void CFTPQueueItemDir::SetStateAndNotDoneSkippedFailed(int childItemsNotDone, in
     ChildItemsSkipped = childItemsSkipped;
     ChildItemsFailed = childItemsFailed;
     ChildItemsUINeeded = childItemsUINeeded;
-    if (GetItemState() == sqisWaiting) // pokud je polozka pripravena ke zpracovani, zkontrolujeme jestli
-    {                                  // ji neni treba zpozdit nebo jestli nemusi failnout kvuli child polozkam
+    if (GetItemState() == sqisWaiting) // if the item is ready to process, check whether
+    {                                  // it needs to be delayed or must fail because of child items
         if (ChildItemsNotDone - ChildItemsSkipped - ChildItemsFailed - ChildItemsUINeeded > 0)
             SetStateInternal(sqisDelayed);
         else

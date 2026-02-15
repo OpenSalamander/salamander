@@ -305,7 +305,7 @@ int ReadCentralDirectory()
             return 1;
     }
     else if (ChangeDisk(ECRec->StartDisk + 1, TRUE))
-        return 1; //otevreme si prvni soubor
+        return 1; // open the first file
     DiskNum = ECRec->StartDisk + 1;
     unsigned left = ECRec->CentrDirSize;
     char* dest = (char*)CentrDir;

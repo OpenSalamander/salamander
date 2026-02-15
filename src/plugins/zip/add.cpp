@@ -214,7 +214,7 @@ int CZipPack::PackMultiVol(SalEnumSelection2 next, void* param)
     CALL_STACK_MESSAGE1("CZipPack::PackMultiVol( , )");
 
     bool firstSfxDisk = false;
-    QWORD ecrecOffs; //pro sfxa
+    QWORD ecrecOffs; // for SFX
 
     IgnoreAllFreeSp = false;
     OverwriteAll = false;
@@ -272,7 +272,7 @@ int CZipPack::PackMultiVol(SalEnumSelection2 next, void* param)
                          false);
             CharToOem(archName, archName);
             if (!WriteSFXHeader(archName, 0, 0) ||
-                Write(TempFile, &EONewCentrDir, sizeof(CEOCentrDirRecord), NULL) || //jen tak pro formu, pozdeji ho aktualizujem
+                Write(TempFile, &EONewCentrDir, sizeof(CEOCentrDirRecord), NULL) || // just as a placeholder, we update it later
                 Flush(TempFile, TempFile->OutputBuffer, TempFile->BufferPosition, NULL))
             {
                 ErrorID = IDS_NODISPLAY;
@@ -356,7 +356,7 @@ int CZipPack::PackMultiVol(SalEnumSelection2 next, void* param)
                 }
                 else
                 {
-                    //rezervujeme si misto pro central directory na zacatku souboru
+                    // reserve space for the central directory at the beginning of the file
                     if (Options.Action & PA_SELFEXTRACT)
                     {
                         ErrorID = FinishPack(FPR_SFXRESERVE);
@@ -377,7 +377,7 @@ int CZipPack::PackMultiVol(SalEnumSelection2 next, void* param)
                             else
                             {
                                 ErrorID = FinishPack(FPR_NORMAL);
-                                // prejmenujeme posledni soubor
+                                // rename the last file
                                 if (!ErrorID && Options.SeqNames && Config.WinZipNames)
                                 {
                                     if (TempFile)
@@ -846,7 +846,7 @@ int CZipPack::WriteCentralHeader(CFileInfo* fileInfo, char* buffer, BOOL first, 
     case FPR_SFXEND:
         /*EONewCentrDir.*/ NewCentrDirSize += centrDirSizeUpd;
         EONewCentrDir.TotalEntries++;
-        //EONewCentrDir.DiskTotalEntries++; //snad takovyto prohrsek nebude tolik vadit
+        //EONewCentrDir.DiskTotalEntries++; // hopefully such a minor offense will not matter much
         break;
     case FPR_SFXRESERVE:
         TempFile->FilePointer += centrDirSizeUpd;
@@ -979,7 +979,7 @@ int CZipPack::EnumFiles2(SalEnumSelection2 next, void* param)
         }
     }
 
-    // nastala chyba a uzivatel si preje prerusit operaci
+    // an error occurred and the user wants to cancel the operation
     if (errorOccured == SALENUM_CANCEL)
         errorID = IDS_NODISPLAY;
 
@@ -1069,7 +1069,7 @@ int CZipPack::MatchFiles(int& count)
 
     count = 0;
 
-    // test na unix archiv a spocitani souboru v archivu
+    // test for a Unix archive and count files in the archive
     for (centralHeader = (CFileHeader*)NewCentrDir;
          (char*)centralHeader < NewCentrDir + /*EONewCentrDir.*/ NewCentrDirSize &&
          !errorID;
@@ -1122,14 +1122,14 @@ int CZipPack::MatchFiles(int& count)
                 next->Action != AF_ADD && !next->IsDir ||
                 next->Action == AF_DEL || next->Action == AF_OVERWRITE)
             {
-                // na unixech pokracujem v ptani se na prepis jiz skiplych souboru, muze tam byt
-                // jiny soubor se stejnym jmenem, ale jinym casem
+                // on Unix we continue asking about overwriting files that were already skipped; there may be
+                // another file with the same name but a different timestamp
                 if (!Unix || next->Action != AF_NOADD)
                     continue;
             }
             lstrcpy(destName, next->Name + SourceLen + 1);
             destLen = RootLen + next->NameLen - SourceLen - (RootLen ? 0 : 1);
-            if (next->Action == AF_NOADD && next->IsDir) //tohle uz muze platit pro adresare soubory preskocime vyse
+            if (next->Action == AF_NOADD && next->IsDir) // this may already apply to directories; files are skipped above
                 if (Move)
                 {
                     if (inZipLen >= destLen &&
@@ -1254,12 +1254,12 @@ int CZipPack::MatchFiles(int& count)
 
                         if (Unix)
                         {
-                            // na unixovem archivu mohl byt jednou skipnuty a podruhy vybrany
-                            // pro prepis, nastavime, ze soubor ma byt pridany
+                            // in a Unix archive it could have been skipped once and selected the second time
+                            // for overwrite, mark that the file should be added
                             next->Action = AF_OVERWRITE;
 
-                            // jeste nastavime jmeno zdrojoveho souboru na shodne (vcetne case)
-                            // se jmenem prepisovaneho souboru
+                            // also set the source file name to match (including case)
+                            // the name of the file being overwritten
                             strcpy(next->Name + SourceLen + 1, inZip + RootLen + (RootLen ? 1 : 0));
                         }
                     }
@@ -1411,7 +1411,7 @@ int CZipPack::PackFiles()
 #pragma pack(pop)
     int encHeaderSize = 0;
 
-    AESContextValid = FALSE; // inicializace
+    AESContextValid = FALSE; // initialization
 
     buffer = (char*)malloc(MAX_HEADER_SIZE);
     if (!buffer || !defObj)
@@ -2078,7 +2078,7 @@ int CZipPack::LoadExPackOptions(unsigned flags)
   if (Options.Action & PA_SELFEXTRACT)
   {
     LastUsedSfxSet.Settings = Options.SfxSettings;
-    //to jmeno je jen pro interni potrebu (nekde dal se to testuje na "")
+    // this name is only needed internally (it is checked for "" somewhere else)
     lstrcpy(LastUsedSfxSet.Name,  "Last Used");
   }
   return 0;
@@ -2234,7 +2234,7 @@ int CZipPack::CreateNextFile(bool firstSfxDisk)
                         DiskSize = Options.VolumeSize;
                         if (firstSfxDisk)
                         {
-                            //pro pripad non-removable disku, pro removable se testuje vyse
+                            // for the case of non-removable disks; removable ones are handled above
                             if (ArchiveDataOffs + MIN_VOLSIZE <= (QWORD)Options.VolumeSize)
                             {
                                 DiskSize -= ArchiveDataOffs;
@@ -2558,7 +2558,7 @@ int CZipPack::WriteSfxExecutable(const char* sfxFile, const char* sfxPackage, BO
                                     : ID_SFX_MANIFEST_REGULAR,
                                 manifestSize);
     if (!manifest)
-        return ErrorID = IDS_ERROR; // tohle by se nikdy nemelo stat
+        return ErrorID = IDS_ERROR; // this should never happen
 
     //change icon
     if (!ChangeSfxIconAndAddManifest(sfxFile, Options.Icons, Options.IconsCount,
@@ -2591,7 +2591,7 @@ int CZipPack::WriteSfxExecutable(const char* sfxFile, const char* sfxPackage, BO
     const char* sd;
     const char* sdl;
     const char* sdr;
-    //navratovku netestujem otestovano jiz drive
+    // we do not recheck the return value; it was already verified earlier
     ParseTargetDir(Options.SfxSettings.TargetDir, &td, &sd, &sdl, &sdr, NULL);
     l = lstrlen(sd);
     ArchiveDataOffs += ++l;
@@ -2604,15 +2604,15 @@ int CZipPack::WriteSfxExecutable(const char* sfxFile, const char* sfxPackage, BO
     l = lstrlen(Options.SfxSettings.WWW);
     ArchiveDataOffs += ++l;
 
-    ArchiveDataOffs++; //predpokladame, ze ArchiveName je "", je-li jina, pricte se pozdeji lstrlen(ArchiveName)
+    ArchiveDataOffs++; // we assume ArchiveName is ""; if it differs, lstrlen(ArchiveName) is added later
 
     ArchiveDataOffs += (sdr - sdl) + 1;
     if (td == SE_REGVALUE)
     {
-        ArchiveDataOffs += sizeof(LONG); //na zacatek ulozime jeste HKEY: i 64-bitova verze uklada jen 32-bitovy klic, jsou to jen zname rooty (napr. HKEY_CURRENT_USER), ktere jsou definovany jako 32-bit id-cka
+        ArchiveDataOffs += sizeof(LONG); // store HKEY at the beginning; even the 64-bit version keeps only a 32-bit key (known roots like HKEY_CURRENT_USER are defined as 32-bit IDs)
         const char* bs = StrNChr(sdl, (int)(sdr - sdl), '\\');
         if (!bs)
-            ArchiveDataOffs += 1; //pridame znak pro oddeleni subkey a value
+            ArchiveDataOffs += 1; // add a character to separate the subkey and value
     }
     l = lstrlen(Options.SfxSettings.MBoxTitle);
     ArchiveDataOffs += ++l;
@@ -2691,7 +2691,7 @@ BOOL CZipPack::WriteSFXHeader(const char* archName, QWORD eoCentrDirOffs, DWORD 
     const char* sdl;
     const char* sdr;
     HKEY key;
-    //navratovku netestujem otestovano jiz drive
+    // we do not recheck the return value; it was already verified earlier
     ParseTargetDir(Options.SfxSettings.TargetDir, &td, &sd, &sdl, &sdr, &key);
     l = lstrlen(sd);
     offs += ++l;
@@ -2709,16 +2709,16 @@ BOOL CZipPack::WriteSFXHeader(const char* archName, QWORD eoCentrDirOffs, DWORD 
     offs += ++l;
     header.ArchiveNameOffs = offs;
     l = lstrlen(archName);
-    ArchiveDataOffs += l; //tohle jsme predtim nezapocitaly
+    ArchiveDataOffs += l; // we did not count this earlier
     offs += ++l;
     header.TargetDirSpecOffs = offs;
     offs += (int)(sdr - sdl) + 1;
     if (td == SE_REGVALUE)
     {
-        offs += sizeof(LONG); // HKEY: je ulozeny na zacatku + i 64-bitova verze uklada jen 32-bitovy klic, jsou to jen zname rooty (napr. HKEY_CURRENT_USER), ktere jsou definovany jako 32-bit id-cka
+        offs += sizeof(LONG); // the HKEY is stored at the beginning; even the 64-bit version keeps only a 32-bit key (known roots like HKEY_CURRENT_USER are defined as 32-bit IDs)
         const char* bs = StrNChr(sdl, (int)(sdr - sdl), '\\');
         if (!bs)
-            offs += 1; //pridame znak pro oddeleni subkey a value
+            offs += 1; // add a character to separate the subkey and value
     }
     header.MBoxStyle = (lstrlen(Options.SfxSettings.MBoxTitle) ||
                         Options.SfxSettings.MBoxText && lstrlen(Options.SfxSettings.MBoxText))
@@ -2774,7 +2774,7 @@ BOOL CZipPack::WriteSFXHeader(const char* archName, QWORD eoCentrDirOffs, DWORD 
         return FALSE;
     if (td == SE_REGVALUE)
     {
-        //key - i 64-bitova verze uklada jen 32-bitovy klic, jsou to jen zname rooty (napr. HKEY_CURRENT_USER), ktere jsou definovany jako 32-bit id-cka
+        // key - even the 64-bit version keeps only a 32-bit key; these are just known roots (e.g. HKEY_CURRENT_USER) defined as 32-bit IDs
         LONG lkey = (LONG)(DWORD_PTR)key;
         if (Write(TempFile, &lkey, sizeof(lkey), NULL))
             return FALSE;
@@ -2827,7 +2827,7 @@ BOOL CZipPack::LoadDefaults()
 {
   Options = DefOptions;
 
-  // Config->DefSfxFile je "" kdyz nenajdeme zadny *.sfx, takze nelze balit sfx
+  // Config->DefSfxFile is "" when we do not find any *.sfx, so we cannot package SFX
   if (Config.DefSfxFile)
   {
     char file[MAX_PATH];
@@ -2918,7 +2918,7 @@ int CZipPack::CheckArchiveForSFXCompatibility()
              header->LocHeaderOffs == 0xFFFFFFFF ||
              header->StartDisk == 0xFFFF))
         {
-            // jde o Zip64 odmitneme ho
+            // this is Zip64, reject it
             ErrorID = IDS_ERRZIP64;
             break;
         }
@@ -2934,7 +2934,7 @@ int CZipPack::SaveComment()
     CALL_STACK_MESSAGE1("CZipPack::SaveComment()");
     if (ZipAttr & FILE_ATTRIBUTE_READONLY)
         return IDS_READONLY;
-    // otevreme si ho pro zapis
+    // open it for writing
     CloseCFile(ZipFile);
     ZipFile = NULL;
     int ret = CreateCFile(&ZipFile, ZipName, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ,
@@ -3064,6 +3064,6 @@ int CZipPack::WriteSFXCentralDir()
     if (ret)
         ret;
 
-    TempFile->FilePointer = 4; //preskocime signaturu
+    TempFile->FilePointer = 4; // skip the signature
     return FinishPack(FPR_WRITE);
 }

@@ -3,10 +3,10 @@
 
 #pragma once
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from startup until the plugin shuts down
 extern CSalamanderGeneralAbstract* SalamanderGeneral;
 
-// interface pro komfortni praci se soubory
+// interface for convenient work with files
 extern CSalamanderSafeFileAbstract* SalamanderSafeFile;
 
 class CCHMFile;
@@ -59,7 +59,7 @@ public:
     virtual void WINAPI DeleteTmpCopy(const char* fileName, BOOL firstFile) {}
     virtual BOOL WINAPI PrematureDeleteTmpCopy(HWND parent, int copiesCount) { return FALSE; }
 
-    // vlastni metody pluginu
+    // plugin-specific methods
 public:
     BOOL Init();
 };
@@ -137,15 +137,15 @@ public:
     virtual BOOL WINAPI GetLastWriteTime(const CFileData* file, BOOL isDir, SYSTEMTIME* time) { return FALSE; }
 };
 
-extern HINSTANCE DLLInstance; // handle k SPL-ku - jazykove nezavisle resourcy
-extern HINSTANCE HLanguage;   // handle k SLG-cku - jazykove zavisle resourcy
+extern HINSTANCE DLLInstance; // handle to the SPL - language-independent resources
+extern HINSTANCE HLanguage;   // handle to the SLG - language-dependent resources
 
-//extern DWORD Options;// konfigurace
+//extern DWORD Options;// configuration
 struct COptions
 {
 };
 
-extern COptions Options; // konfigurace
+extern COptions Options; // configuration
 
 char* LoadStr(int resID);
 void GetInfo(char* buffer, FILETIME* lastWrite, unsigned size);
